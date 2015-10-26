@@ -1,33 +1,35 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0675C1A0CBE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:20:24 +1100 (AEDT)
-Date: Mon, 26 Oct 2015 14:20:21 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>,
- Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
-Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
- *cmpxchg a full barrier
-Message-ID: <20151026032021.GA5420@iris.ozlabs.ibm.com>
-References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
- <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
- <20151014201916.GB3910@linux.vnet.ibm.com>
- <20151020071532.GB17714@fixme-laptop.cn.ibm.com>
- <20151020092147.GX17308@twins.programming.kicks-ass.net>
- <20151020212835.GH5105@linux.vnet.ibm.com>
- <20151021081833.GB2881@worktop.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151021081833.GB2881@worktop.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1E0211A0E8A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:20:31 +1100 (AEDT)
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Mon, 26 Oct 2015 13:20:30 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 161862CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:20:27 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9Q3KIDG35127352
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:20:27 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9Q3JsdN030684
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:19:54 +1100
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com, mpe@ellerman.id.au,
+ aik@ozlabs.ru
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
+Subject: [PATCH V10 11/12] powerpc/eeh: Don't block PCI config on resetting VF
+ PE
+Date: Mon, 26 Oct 2015 11:16:01 +0800
+Message-Id: <1445829362-2738-12-git-send-email-weiyang@linux.vnet.ibm.com>
+In-Reply-To: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
+References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,31 +39,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 21, 2015 at 10:18:33AM +0200, Peter Zijlstra wrote:
-> On Tue, Oct 20, 2015 at 02:28:35PM -0700, Paul E. McKenney wrote:
-> > I am not seeing a sync there, but I really have to defer to the
-> > maintainers on this one.  I could easily have missed one.
-> 
-> So x86 implies a full barrier for everything that changes the CPL; and
-> some form of implied ordering seems a must if you change the privilege
-> level unless you tag every single load/store with the priv level at that
-> time, which seems the more expensive option.
-> 
-> So I suspect the typical implementation will flush all load/stores,
-> change the effective priv level and continue.
-> 
-> This can of course be implemented at a pure per CPU ordering (RCpc),
-> which would be in line with the rest of Power, in which case you do
-> indeed need an explicit sync to make it visible to other CPUs.
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Right - interrupts and returns from interrupt are context
-synchronizing operations, which means they wait until all outstanding
-instructions have got to the point where they have reported any
-exceptions they're going to report, which means in turn that loads and
-stores have completed address translation.  But all of that doesn't
-imply anything about the visibility of the loads and stores.
+When passing through SRIOV VF from host to guest via VFIO PCI
+infrastructure, the VF is resetted by EEH specific backend
+(pcibios_set_pcie_reset_state()). We can't block the PCI config,
+otherwise, the reset (FLR or AF FLR), to be completed by PCI
+config access to the VF, can't be done. Then the VF can't be
+put into initial state when passing it to the guest and returning
+back to the host.
 
-There is a full barrier in the context switch path, but not in the
-system call entry/exit path.
+The patch just doesn't block the VF's PCI config space when doing
+the reset. It fixes EEH error caused by DMA traffic to bogus DMA
+address on restarting guest after killing the QEMU process, which
+includes Mellanox VF passed through from host.
 
-Paul.
+Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Tested-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/kernel/eeh.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 28e4d73..e1846f5 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -745,7 +745,8 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
+ 	case pcie_deassert_reset:
+ 		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
+ 		eeh_unfreeze_pe(pe, false);
+-		eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
++		if (!(pe->type & EEH_PE_VF))
++			eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
+ 		eeh_pe_dev_traverse(pe, eeh_restore_dev_state, dev);
+ 		eeh_pe_state_clear(pe, EEH_PE_ISOLATED);
+ 		break;
+@@ -753,14 +754,16 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
+ 		eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
+ 		eeh_ops->set_option(pe, EEH_OPT_FREEZE_PE);
+ 		eeh_pe_dev_traverse(pe, eeh_disable_and_save_dev_state, dev);
+-		eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
++		if (!(pe->type & EEH_PE_VF))
++			eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
+ 		eeh_ops->reset(pe, EEH_RESET_HOT);
+ 		break;
+ 	case pcie_warm_reset:
+ 		eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
+ 		eeh_ops->set_option(pe, EEH_OPT_FREEZE_PE);
+ 		eeh_pe_dev_traverse(pe, eeh_disable_and_save_dev_state, dev);
+-		eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
++		if (!(pe->type & EEH_PE_VF))
++			eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
+ 		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL);
+ 		break;
+ 	default:
+-- 
+2.5.0
