@@ -1,28 +1,33 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0121.outbound.protection.outlook.com [207.46.100.121])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A05141A0479
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:15:47 +1100 (AEDT)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
- <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
-Subject: RE: [PATCH v12 3/6] CPM/QE: use genalloc to manage CPM/QE muram
-Date: Mon, 26 Oct 2015 03:15:40 +0000
-Message-ID: <SN1PR0301MB15504A8672AFF152F56D48C19B230@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
- <1444806968-4627-3-git-send-email-qiang.zhao@freescale.com>
- <1445569177.701.133.camel@freescale.com>
- <SN1PR0301MB1550906A0C2A2F6BA4EF807D9B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1445633947.701.231.camel@freescale.com>
-In-Reply-To: <1445633947.701.231.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BA01A0483
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:17:47 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Mon, 26 Oct 2015 08:47:43 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id AF788125801E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 08:47:35 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9Q3HfPv58523714
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 08:47:41 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9Q3HfXJ011045
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 08:47:41 +0530
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com, mpe@ellerman.id.au,
+ aik@ozlabs.ru
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V10 00/12] VF EEH on Power8
+Date: Mon, 26 Oct 2015 11:15:50 +0800
+Message-Id: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,66 +37,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gU2F0LCAyMDE1LTEwLTI0IGF0IDA0OjU5IEFNLCBXb29kIFNjb3R0LUIwNzQyMSA8c2NvdHR3
-b29kQGZyZWVzY2FsZS5jb20+IHdyb3RlOg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
-PiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBTZW50OiBTYXR1cmRheSwgT2N0b2JlciAyNCwg
-MjAxNSA0OjU5IEFNDQo+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3NSA8cWlhbmcuemhhb0BmcmVlc2Nh
-bGUuY29tPg0KPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2
-QGxpc3RzLm96bGFicy5vcmc7DQo+IGxhdXJhYUBjb2RlYXVyb3JhLm9yZzsgWGllIFhpYW9iby1S
-NjMwNjEgPFguWGllQGZyZWVzY2FsZS5jb20+Ow0KPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7
-IExpIFlhbmctTGVvLVI1ODQ3MiA8TGVvTGlAZnJlZXNjYWxlLmNvbT47DQo+IHBhdWx1c0BzYW1i
-YS5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2MTIgMy82XSBDUE0vUUU6IHVzZSBnZW5hbGxv
-YyB0byBtYW5hZ2UgQ1BNL1FFIG11cmFtDQo+IA0KPiBEb24ndCBzZW5kIEhUTUwgZS1tYWlsLg0K
-PiANCj4gT24gRnJpLCAyMDE1LTEwLTIzIGF0IDAyOjA2IC0wNTAwLCBaaGFvIFFpYW5nLUI0NTQ3
-NSB3cm90ZToNCj4gPiBPbiBGcmksIDIwMTUtMTAtMjMgYXQgMTE6MDAgQU0sIFdvb2QgU2NvdHQt
-QjA3NDIxDQo+ID4gPHNjb3R0d29vZEBmcmVlc2NhbGUuY29tPg0KPiA+IHdyb3RlOg0KPiA+ID4g
-LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
-DQo+ID4gPiBTZW50OiBGcmlkYXksIE9jdG9iZXIgMjMsIDIwMTUgMTE6MDAgQU0NCj4gPiA+IFRv
-OiBaaGFvIFFpYW5nLUI0NTQ3NSA8cWlhbmcuemhhb0BmcmVlc2NhbGUuY29tPg0KPiA+ID4gQ2M6
-IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
-b3JnOw0KPiA+ID4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUgWGlhb2JvLVI2MzA2MSA8WC5Y
-aWVAZnJlZXNjYWxlLmNvbT47DQo+ID4gPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpIFlh
-bmctTGVvLVI1ODQ3MiA8TGVvTGlAZnJlZXNjYWxlLmNvbT47DQo+ID4gPiBwYXVsdXNAc2FtYmEu
-b3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIHYxMiAzLzZdIENQTS9RRTogdXNlIGdlbmFs
-bG9jIHRvIG1hbmFnZSBDUE0vUUUNCj4gPiA+IG11cmFtDQo+ID4gPg0KPiA+ID4gT24gV2VkLCAy
-MDE1LTEwLTE0IGF0IDE1OjE2ICswODAwLCBaaGFvIFFpYW5nIHdyb3RlOg0KPiA+ID4gPiAtLyoq
-DQo+ID4gPiA+ICsvKg0KPiA+ID4gPiAgICogY3BtX211cmFtX2FsbG9jIC0gYWxsb2NhdGUgdGhl
-IHJlcXVlc3RlZCBzaXplIHdvcnRoIG9mDQo+ID4gPiA+IG11bHRpLXVzZXINCj4gPiByYW0NCj4g
-PiA+ID4gICAqIEBzaXplOiBudW1iZXIgb2YgYnl0ZXMgdG8gYWxsb2NhdGUNCj4gPiA+ID4gICAq
-IEBhbGlnbjogcmVxdWVzdGVkIGFsaWdubWVudCwgaW4gYnl0ZXMgQEAgLTE0MSw1OSArMTUxLDEw
-MiBAQCBvdXQ6DQo+ID4gPiA+ICAgKi8NCj4gPiA+ID4gIHVuc2lnbmVkIGxvbmcgY3BtX211cmFt
-X2FsbG9jKHVuc2lnbmVkIGxvbmcgc2l6ZSwgdW5zaWduZWQgbG9uZw0KPiA+ID4gPiBhbGlnbikg
-IHsNCj4gPiA+ID4gLSAgICAgdW5zaWduZWQgbG9uZyBzdGFydDsNCj4gPiA+ID4gICAgICAgdW5z
-aWduZWQgbG9uZyBmbGFnczsNCj4gPiA+ID4gLQ0KPiA+ID4gPiArICAgICB1bnNpZ25lZCBsb25n
-IHN0YXJ0Ow0KPiA+ID4gPiArICAgICBzdGF0aWMgc3RydWN0IGdlbnBvb2xfZGF0YV9hbGlnbiBt
-dXJhbV9wb29sX2RhdGE7DQo+ID4gPiA+ICAgICAgIHNwaW5fbG9ja19pcnFzYXZlKCZjcG1fbXVy
-YW1fbG9jaywgZmxhZ3MpOw0KPiA+ID4gPiAtICAgICBjcG1fbXVyYW1faW5mby5hbGlnbm1lbnQg
-PSBhbGlnbjsNCj4gPiA+ID4gLSAgICAgc3RhcnQgPSByaF9hbGxvYygmY3BtX211cmFtX2luZm8s
-IHNpemUsICJjb21tcHJvYyIpOw0KPiA+ID4gPiAtICAgICBtZW1zZXQoY3BtX211cmFtX2FkZHIo
-c3RhcnQpLCAwLCBzaXplKTsNCj4gPiA+ID4gKyAgICAgbXVyYW1fcG9vbF9kYXRhLmFsaWduID0g
-YWxpZ247DQo+ID4gPiA+ICsgICAgIGdlbl9wb29sX3NldF9hbGdvKG11cmFtX3Bvb2wsIGdlbl9w
-b29sX2ZpcnN0X2ZpdF9hbGlnbiwNCj4gPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgJm11
-cmFtX3Bvb2xfZGF0YSk7DQo+ID4gPiA+ICsgICAgIHN0YXJ0ID0gY3BtX211cmFtX2FsbG9jX2Nv
-bW1vbihzaXplLCAmbXVyYW1fcG9vbF9kYXRhKTsNCj4gPiA+ID4gICAgICAgc3Bpbl91bmxvY2tf
-aXJxcmVzdG9yZSgmY3BtX211cmFtX2xvY2ssIGZsYWdzKTsNCj4gPiA+ID4gLQ0KPiA+ID4gPiAg
-ICAgICByZXR1cm4gc3RhcnQ7DQo+ID4gPiA+ICB9DQo+ID4gPiA+ICBFWFBPUlRfU1lNQk9MKGNw
-bV9tdXJhbV9hbGxvYyk7DQo+ID4gPg0KPiA+ID4gV2h5IGlzIG11cmFtX3Bvb2xfZGF0YSBzdGF0
-aWM/ICBXaHkgaXMgaXQgYmVpbmcgcGFzc2VkIHRvDQo+ID4gPiBnZW5fcG9vbF9zZXRfYWxnbygp
-Pw0KPiA+IENwbV9tdXJhbSB1c2UgYm90aCBhbGlnbiBhbGdvIGFuZCBmaXhlZCBhbGdvLCBzbyB3
-ZSBuZWVkIHRvIHNldA0KPiA+IGNvcnJlc3BvbmRpbmcgYWxnbyBhbmQgQWxnbyBkYXRhLg0KPiAN
-Cj4gVGhlIGRhdGEgZ2V0cyBwYXNzZWQgaW4gdmlhIGdlbl9wb29sX2FsbG9jX2RhdGEoKS4gIFRo
-ZSBwb2ludCB3YXMgdG8gYWxsb3cgaXQgdG8NCj4gYmUgb24gdGhlIGNhbGxlcidzIHN0YWNrLCBu
-b3QgYSBsb25nLWxpdmVkIGRhdGEgc3RydWN0dXJlIHNoYXJlZCBieSBhbGwgY2FsbGVycyBhbmQN
-Cj4gbmVlZGluZyBzeW5jaHJvbml6YXRpb24uDQoNCllvdSBtZWFuIGl0IGlzIG5vdCBuZWNlc3Nh
-cnkgdG8gcG9pbnQgcG9vbC0+ZGF0YSB0byBkYXRhLCBqdXN0IHBhc3NpbmcgdGhlIGRhdGEgdG8g
-Z2VuX3Bvb2xfYWxsb2NfZGF0YSgpPw0KSG93ZXZlciwgdGhlIGFsZ28gaXQgbmVlZGVkIHRvIGJl
-IHNldC4NCg0KPiANCj4gPiA+VGhlIHdob2xlIHJlYXNvbiB3ZSdyZSBhZGRpbmcgZ2VuX3Bvb2xf
-YWxsb2NfZGF0YSgpICBpcyB0byBhdm9pZA0KPiA+ID50aGF0LiAgRG8gd2UgbmVlZCBnZW5fcG9v
-bF9hbGxvY19hbGdvKCkgdG9vPw0KPiA+DQo+ID4gV2UgYWRkIGdlbl9wb29sX2FsbG9jX2RhdGEo
-KSB0byBwYXNzIGRhdGEgdG8gYWxnbywgYmVjYXVzZSBhbGlnbiBhbGdvDQo+ID4gYW5kIGZpeGVk
-IGFsZ28sIEJlY2F1c2UgYWxpZ24gYW5kIGZpeGVkIGFsZ29zIG5lZWQgc3BlY2lmaWMgZGF0YS4N
-Cj4gDQo+IEFuZCBteSBwb2ludCBpcyB0aGF0IGJlY2F1c2Ugb2YgdGhhdCwgaXQgc2VlbXMgbGlr
-ZSB3ZSBuZWVkIGEgdmVyc2lvbiB0aGF0DQo+IGFjY2VwdHMgYW4gYWxnb3JpdGhtIGFzIHdlbGwu
-DQoNCkl0IHRoZSB1c2VyIGp1c3QgdXNlIG9ubHkgb25lIGFsZ28sIGl0IGRvZXNu4oCZdCBuZWVk
-IHRvIHNldCBhbGdvLCANCkhvd2V2ZXIsIHFlX211cmFtIHVzZSB0d28gYWxnb3Mgd2l0aCBhbGxv
-Y19hbGlnbiBmdW5jdGlvbg0KQW5kIGFsbG9jX2ZpeGVkIGZ1bmN0aW9uLg0KDQotWmhhbw0KDQo=
+This patchset enables EEH on SRIOV VFs. The general idea is to create proper
+VF edev and VF PE and handle them properly.
+
+Different from the Bus PE, VF PE just contain one VF. This introduces the
+difference of EEH error handling on a VF PE. Generally, it has several
+differences.
+
+First, the VF's removal and re-enumerate rely on its PF. VF has a tight
+relationship between its PF. This is not proper to enumerate a VF by usual
+scan procedure. That's why virtfn_add/virtfn_remove are exported in this patch
+set.
+
+Second, the reset/restore of a VF is done in kernel space. FW is not aware of
+the VF, this means the usual reset function done in FW will not work. One of
+the patch will imitate the reset/restore function in kernel space.
+
+Third, the VF may be removed during the PF's error_detected function. In this
+case, the original error_detected->slot_reset->resume sequence is not proper
+to those removed VFs, since they are re-created by PF in a fresh state. A flag
+in eeh_dev is introduce to mark the eeh_dev is in error state. By doing so, we
+track whether this device needs to be reset or not.
+
+This has been tested both on host and in guest on Power8 with latest kernel
+version.
+
+v10:
+   * delete the last patch "powerpc/powernv: compound PE for VFs" since after
+     redesign of SRIOV, there is no compound PE for VFs now.
+   * add two patches which fix problems found during tests
+     powerpc/eeh: Support error recovery for VF PE                                 
+     powerpc/eeh: Handle hot removed VF when PF is EEH aware
+v9:
+   * split pcibios_bus_add_device() into a separate patch
+   * Bjorn acked the PCI part and agreed this patch set to be merged from ppc
+     tree
+   * rebased on mpe/linux.git next branch
+v8:
+   * fix on checking the return value of pnv_eeh_do_flr()
+   * introduced a weak function pcibios_bus_add_device() to create PE for VFs
+v7:
+   * fix compile error when PCI_IOV is not set
+v6:
+   * code / commit log refactor by Gavin
+v5:
+   * remove the compound field, iterate on Master VF PE instead
+   * some code refine on PCI config restore and reset on VF
+     the wait time for assert and deassert
+     PCI device address format
+     check on edev->pcie_cap and edev->aer_cap before access them
+v4:
+   * refine the change logs, comment and code style
+   * change pnv_pci_fixup_vf_eeh() to pnv_eeh_vf_final_fixup() and remove the
+     CONFIG_PCI_IOV macro
+   * reorder patch 5/6 to make the logic more reasonable
+   * remove remove_dev_pci_data()
+   * remove the EEH_DEV_VF flag, use edev->physfn to identify a VF EEH DEV and
+     remove related CONFIG_PCI_IOV macro
+   * add the option for VF reset
+   * fix the pnv_eeh_cfg_blocked() logic
+   * replace pnv_pci_cfg_{read,write} with eeh_ops->{read,write}_config in
+     pnv_eeh_vf_restore_config()
+   * rename pnv_eeh_vf_restore_config() to pnv_eeh_restore_vf_config()
+   * rename pnv_pci_fixup_vf_caps() to pnv_pci_vf_header_fixup() and move it
+     to arch/powerpc/platforms/powernv/pci.c
+   * add a field compound in pnv_ioda_pe to link compound PEs
+   * handle compound PE for VF PEs
+v3:
+   * add back vf_index in pci_dn to track the VF's index
+   * rename ppdev in eeh_dev to physfn for consistency
+   * move edev->physfn assignment before dev->dev.archdata.edev is set
+   * move pnv_pci_fixup_vf_eeh() and pnv_pci_fixup_vf_caps() to eeh-powernv.c
+   * more clear and detail in commit log and comment in code
+   * merge eeh_rmv_virt_device() with eeh_rmv_device()
+   * move the cfg_blocked check logic from pnv_eeh_read/write_config() to
+     pnv_eeh_cfg_blocked()
+   * move the vf reset/restore logic into its own patch, two patches are
+     created.
+     powerpc/powernv: Support PCI config restore for VFs
+     powerpc/powernv: Support EEH reset for VFs
+   * simplify the vf reset logic
+v2:
+   * add prefix pci_iov_ to virtfn_add/virtfn_remove
+   * use EEH_DEV_VF as a flag for a VF's eeh_dev
+   * use eeh_dev instead of edev in change log
+   * remove vf_index in eeh_dev, calculate it from pdn->busno and devfn
+   * do eeh_add_device_late() and eeh_sysfs_add_device() both after pci_dev is
+     well initialized
+   * do FLR to reset a VF PE
+   * imitate the restore function in FW for VF
+   * remove the reverse order patch, since it is still under discussion
+
+Gavin Shan (1):
+  powerpc/eeh: Don't block PCI config on resetting VF PE
+
+Wei Yang (11):
+  PCI/IOV: Rename and export virtfn_add/virtfn_remove
+  PCI: Add pcibios_bus_add_device() weak function
+  powerpc/pci: Cache VF index in pci_dn
+  powerpc/pci: Remove VFs prior to PF
+  powerpc/eeh: Cache only BARs, not windows or IOV BARs
+  powerpc/powernv: EEH device for VF
+  powerpc/eeh: Create PE for VFs
+  powerpc/powernv: Support EEH reset for VF PE
+  powerpc/powernv: Support PCI config restore for VFs
+  powerpc/eeh: Support error recovery for VF PE
+  powerpc/eeh: Handle hot removed VF when PF is EEH aware
+
+ arch/powerpc/include/asm/eeh.h               |  10 ++
+ arch/powerpc/include/asm/pci-bridge.h        |   2 +
+ arch/powerpc/kernel/eeh.c                    |  17 ++-
+ arch/powerpc/kernel/eeh_cache.c              |   6 +-
+ arch/powerpc/kernel/eeh_dev.c                |   1 +
+ arch/powerpc/kernel/eeh_driver.c             | 130 ++++++++++++----
+ arch/powerpc/kernel/eeh_pe.c                 |  13 +-
+ arch/powerpc/kernel/pci-hotplug.c            |   2 +-
+ arch/powerpc/kernel/pci_dn.c                 |  16 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 220 ++++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/pci.c         |  18 +++
+ drivers/pci/bus.c                            |   3 +
+ drivers/pci/iov.c                            |  10 +-
+ include/linux/pci.h                          |   8 +
+ 14 files changed, 408 insertions(+), 48 deletions(-)
+
+-- 
+2.5.0
