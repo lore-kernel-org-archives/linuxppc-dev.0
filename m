@@ -1,37 +1,29 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 840171A09EE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 07:17:33 +1100 (AEDT)
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 26 Oct 2015 14:17:31 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C89B33E40048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:17:12 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9QKHCLL12452144
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 13:17:12 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9QKHC3d016620
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:17:12 -0600
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: mingo@redhat.com, ak@linux.intel.com,
- Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: namhyung@kernel.org, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v18 13/19] perf, tools, jevents: Add support for event topics
-Date: Mon, 26 Oct 2015 13:14:27 -0700
-Message-Id: <1445890473-22877-14-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1445890473-22877-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1445890473-22877-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ABD51A046D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 10:05:47 +1100 (AEDT)
+Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
+ [IPv6:2607:f8b0:400e:c03::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 5971214132F
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Oct 2015 10:05:45 +1100 (AEDT)
+Received: by pacfv9 with SMTP id fv9so210303549pac.3
+ for <linuxppc-dev@ozlabs.org>; Mon, 26 Oct 2015 16:05:43 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/eeh: eeh_pci_enable(): fix checking of
+ post-request state
+In-Reply-To: <1445581186-10533-1-git-send-email-andrew.donnellan@au1.ibm.com>
+References: <1445581186-10533-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Date: Tue, 27 Oct 2015 10:05:28 +1100
+Message-ID: <87vb9tp6x3.fsf@gamma.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,110 +33,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Allow assigning categories "Topics" field to the PMU events  i.e.
-process the topic field from the JSON file and add a corresponding
-topic field to the generated C events tables.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Acked-by: Jiri Olsa <jolsa@redhat.com>
----
+Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
 
-Changelog[v14]
-	[Jiri Olsa] Move this independent code off into a separate patch.
----
- tools/perf/pmu-events/jevents.c    | 12 +++++++++---
- tools/perf/pmu-events/jevents.h    |  2 +-
- tools/perf/pmu-events/pmu-events.h |  1 +
- 3 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/tools/perf/pmu-events/jevents.c b/tools/perf/pmu-events/jevents.c
-index a8507c9..ea3474b 100644
---- a/tools/perf/pmu-events/jevents.c
-+++ b/tools/perf/pmu-events/jevents.c
-@@ -203,7 +203,7 @@ static void print_events_table_prefix(FILE *fp, const char *tblname)
- }
- 
- static int print_events_table_entry(void *data, char *name, char *event,
--				    char *desc, char *long_desc)
-+				    char *desc, char *long_desc, char *topic)
- {
- 	FILE *outfp = data;
- 	/*
-@@ -217,6 +217,8 @@ static int print_events_table_entry(void *data, char *name, char *event,
- 	fprintf(outfp, "\t.desc = \"%s\",\n", desc);
- 	if (long_desc && long_desc[0])
- 		fprintf(outfp, "\t.long_desc = \"%s\",\n", long_desc);
-+	if (topic)
-+		fprintf(outfp, "\t.topic = \"%s\",\n", topic);
- 
- 	fprintf(outfp, "},\n");
- 
-@@ -238,7 +240,7 @@ static void print_events_table_suffix(FILE *outfp)
- /* Call func with each event in the json file */
- int json_events(const char *fn,
- 	  int (*func)(void *data, char *name, char *event, char *desc,
--		      char *long_desc),
-+		      char *long_desc, char *topic),
- 	  void *data)
- {
- 	int err = -EIO;
-@@ -259,6 +261,7 @@ int json_events(const char *fn,
- 		char *event = NULL, *desc = NULL, *name = NULL;
- 		char *long_desc = NULL;
- 		char *extra_desc = NULL;
-+		char *topic = NULL;
- 		struct msrmap *msr = NULL;
- 		jsmntok_t *msrval = NULL;
- 		jsmntok_t *precise = NULL;
-@@ -297,6 +300,8 @@ int json_events(const char *fn,
- 				   !json_streq(map, val, "null")) {
- 				addfield(map, &extra_desc, ". ",
- 					" Spec update: ", val);
-+			} else if (json_streq(map, field, "Topic")) {
-+				addfield(map, &topic, "", "", val);
- 			} else if (json_streq(map, field, "Data_LA") && nz) {
- 				addfield(map, &extra_desc, ". ",
- 					" Supports address when precise",
-@@ -320,12 +325,13 @@ int json_events(const char *fn,
- 			addfield(map, &event, ",", msr->pname, msrval);
- 		fixname(name);
- 
--		err = func(data, name, event, desc, long_desc);
-+		err = func(data, name, event, desc, long_desc, topic);
- 		free(event);
- 		free(desc);
- 		free(name);
- 		free(long_desc);
- 		free(extra_desc);
-+		free(topic);
- 		if (err)
- 			break;
- 		tok += j;
-diff --git a/tools/perf/pmu-events/jevents.h b/tools/perf/pmu-events/jevents.h
-index b0eb274..9ffcb89 100644
---- a/tools/perf/pmu-events/jevents.h
-+++ b/tools/perf/pmu-events/jevents.h
-@@ -3,7 +3,7 @@
- 
- int json_events(const char *fn,
- 		int (*func)(void *data, char *name, char *event, char *desc,
--				char *long_desc),
-+				char *long_desc, char *topic),
- 		void *data);
- char *get_cpu_str(void);
- 
-diff --git a/tools/perf/pmu-events/pmu-events.h b/tools/perf/pmu-events/pmu-events.h
-index 711f049..6b69f4b 100644
---- a/tools/perf/pmu-events/pmu-events.h
-+++ b/tools/perf/pmu-events/pmu-events.h
-@@ -9,6 +9,7 @@ struct pmu_event {
- 	const char *event;
- 	const char *desc;
- 	const char *long_desc;
-+	const char *topic;
- };
- 
- /*
--- 
-2.5.3
+> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> index 40e4d4a..d757e7c 100644
+> --- a/arch/powerpc/kernel/eeh.c
+> +++ b/arch/powerpc/kernel/eeh.c
+> @@ -677,7 +677,7 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
+>  	/* Check if the request is finished successfully */
+>  	if (active_flag) {
+>  		rc =3D eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
+> -		if (rc <=3D 0)
+> +		if (rc < 0)
+>  			return rc;
+>=20=20
+>  		if (rc & active_flag)
+
+
+Reviewed-by: Daniel Axtens <dja@axtens.net>
+
+
+> --=20
+> Andrew Donnellan              Software Engineer, OzLabs
+> andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
+> +61 2 6201 8874 (work)        IBM Australia Limited
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAEBCgAGBQJWLrG4AAoJEPC3R3P2I92FITMQAMwAswNLhPMxgXoYdDaNgyFx
+C/BBUf9A7vp0veiuGpFovGsykMquafNuk1TxvMqryhW4zdSNgAsLEVaNJqAlIC/X
+wbOUPoFojqTpp40IRycULmjtnglGAFM8NBtBjtBwUeoDR4vCpC1G98aslB9eBBmZ
+SeY9hdN8ZRyY+TztqbbWHqf1DPXOvMx5uF5wr76me1kblDiINqypBW0oBnn7m2um
+7prpKdAy2w7/Ibe4lhfGZtdHHFbhZmONwyc53jL7C2UICqEqMzwUZ6GDQhux3rCW
+8TTg88v4BSiFjxAk6Iy7BmJ10nRO/UVu2OUJYLpeQBAD1nGwmC4vb+8csXhgJoM5
+T0AW4BOvhchWxmRkSB06UuaTl/6T7GV8u0qE3A5ACOOer+Q3pe2u14Eia8FFMOQc
+TFXIAPI8XAgK0vEGutlkdtVwb7SOPybvHDn0U/dZ5df4zsMiDyAF03rtnGqKcP9y
+s8c0w8FskIIWPw9Ktke9TRbBhdauCiuQOw5QodC9JuZcnpUcD38BbUXWXuUpINvD
+/S3tdy0QbqyfuaVDqAlpjk/l2217gN7SdiMtRUMEsCay0EjEOMfpCUF5GxdwWYSs
+XUTCdq7jR4VBlwI3nXZH+nY5mft+dlYPd5HkX4lWss/Ae8Z1aa2DVqTdDI2SQoLf
+dRskN+nyU+97c5DF7JBj
+=JVbS
+-----END PGP SIGNATURE-----
+--=-=-=--
