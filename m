@@ -1,39 +1,26 @@
 Return-Path: <boqun.feng@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
+Received: from mail-io0-x22f.google.com (mail-io0-x22f.google.com
+ [IPv6:2607:f8b0:4001:c06::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2F27C1A040E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 19:58:38 +1100 (AEDT)
-Received: by pacik9 with SMTP id ik9so20730627pac.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 01:58:36 -0700 (PDT)
-Date: Mon, 26 Oct 2015 16:58:10 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 79AF71A0456
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 20:51:34 +1100 (AEDT)
+Received: by iody8 with SMTP id y8so24713795iod.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 02:51:32 -0700 (PDT)
 From: Boqun Feng <boqun.feng@gmail.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>,
+To: linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>,
- Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
-Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
- *cmpxchg a full barrier
-Message-ID: <20151026085810.GC13641@fixme-laptop.cn.ibm.com>
-References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
- <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
- <20151014201916.GB3910@linux.vnet.ibm.com>
- <20151020071532.GB17714@fixme-laptop.cn.ibm.com>
- <20151020092147.GX17308@twins.programming.kicks-ass.net>
- <20151020212835.GH5105@linux.vnet.ibm.com>
- <20151021081833.GB2881@worktop.programming.kicks-ass.net>
- <20151026032021.GA5420@iris.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="2JFBq9zoW8cOFH7v"
-In-Reply-To: <20151026032021.GA5420@iris.ozlabs.ibm.com>
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
+ Boqun Feng <boqun.feng@gmail.com>
+Subject: [PATCH tip/locking/core v5 0/6] atomics: powerpc: Implement
+ relaxed/acquire/release variants of some atomics
+Date: Mon, 26 Oct 2015 17:50:51 +0800
+Message-Id: <1445853057-20735-1-git-send-email-boqun.feng@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,59 +30,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi all,
 
---2JFBq9zoW8cOFH7v
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is v5 of the series.
 
-On Mon, Oct 26, 2015 at 02:20:21PM +1100, Paul Mackerras wrote:
-> On Wed, Oct 21, 2015 at 10:18:33AM +0200, Peter Zijlstra wrote:
-> > On Tue, Oct 20, 2015 at 02:28:35PM -0700, Paul E. McKenney wrote:
-> > > I am not seeing a sync there, but I really have to defer to the
-> > > maintainers on this one.  I could easily have missed one.
-> >=20
-> > So x86 implies a full barrier for everything that changes the CPL; and
-> > some form of implied ordering seems a must if you change the privilege
-> > level unless you tag every single load/store with the priv level at that
-> > time, which seems the more expensive option.
-> >=20
-> > So I suspect the typical implementation will flush all load/stores,
-> > change the effective priv level and continue.
-> >=20
-> > This can of course be implemented at a pure per CPU ordering (RCpc),
-> > which would be in line with the rest of Power, in which case you do
-> > indeed need an explicit sync to make it visible to other CPUs.
->=20
-> Right - interrupts and returns from interrupt are context
-> synchronizing operations, which means they wait until all outstanding
-> instructions have got to the point where they have reported any
-> exceptions they're going to report, which means in turn that loads and
-> stores have completed address translation.  But all of that doesn't
-> imply anything about the visibility of the loads and stores.
->=20
-> There is a full barrier in the context switch path, but not in the
-> system call entry/exit path.
->=20
+Link for v1: https://lkml.org/lkml/2015/8/27/798
+Link for v2: https://lkml.org/lkml/2015/9/16/527
+Link for v3: https://lkml.org/lkml/2015/10/12/368
+Link for v4: https://lkml.org/lkml/2015/10/14/670
 
-Thank you, Paul. That's much clear now ;-)
+Changes since v4:
+
+*	define PPC_ATOMIC_ENTRY_BARRIER as "sync" (Paul E. Mckenney)
+
+*	remove PPC-specific __atomic_op_fence().
+
+
+Relaxed/acquire/release variants of atomic operations {add,sub}_return
+and {cmp,}xchg are introduced by commit:
+
+"atomics: add acquire/release/relaxed variants of some atomic operations"
+
+and {inc,dec}_return has been introduced by commit:
+
+"locking/asm-generic: Add _{relaxed|acquire|release}() variants for
+inc/dec atomics"
+
+Both of these are in the current locking/core branch of the tip tree.
+
+By default, the generic code will implement a relaxed variant as a full
+ordered atomic operation and release/acquire a variant as a relaxed
+variant with a necessary general barrier before or after.
+
+On PPC, which has a weak memory order model, a relaxed variant can be
+implemented more lightweightly than a full ordered one. Further more, release
+and acquire variants can be implemented with arch-specific lightweight
+barriers.
+
+Besides, cmpxchg, xchg and their atomic_ versions are only RELEASE+ACQUIRE
+rather that fully ordered in current PPC implementation, which is incorrect
+according to memory-barriers.txt. Further more, PPC_ATOMIC_ENTRY_BARRIER, the
+leading barrier of fully ordered atomics, should be "sync" rather than "lwsync"
+if SMP=y, to guarantee fully ordered semantics.
+
+Therefore this patchset fixes the order guarantee of cmpxchg, xchg and
+value-returning atomics on PPC and implements the relaxed/acquire/release
+variants based on PPC memory model and specific barriers, Some trivial tests
+for these new variants are also included in this series, because some of these
+variants are not used in kernel for now, I think is a good idea to at least
+generate the code for these variants somewhere.
+
+The patchset consists of 6 parts:
+
+1.	Make value-returning atomics, futex atomics, xchg and cmpxchg fully
+	ordered
+
+2.	Add trivial tests for the new variants in lib/atomic64_test.c
+
+3.	Allow architectures to define their own __atomic_op_*() helpers
+	to build other variants based on relaxed.
+
+4.	Implement atomic{,64}_{add,sub,inc,dec}_return_* variants
+
+5.	Implement xchg_* and atomic{,64}_xchg_* variants
+
+6.	Implement cmpxchg_* atomic{,64}_cmpxchg_* variants
+
+
+This patchset is based on current locking/core branch of the tip tree
+and all patches are built and boot tested for little endian pseries, and
+also tested by 0day.
+
+
+Looking forward to any suggestion, question and comment ;-)
 
 Regards,
 Boqun
-
---2JFBq9zoW8cOFH7v
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWLeseAAoJEEl56MO1B/q4D10H/RE1XzJo877CPu4Gnuug0rCk
-1+VjkOMfht55Ox+W6AWBADkPn+7zCEU2kynZ4dyvrpBWj7F771sbJ6jzQ2B+MuRS
-SlhJhuiLVwG8A4Rng+oKOVKRDH6zvbM48Ffgg1WgNgBHB1Smz+1SwBsxva/dX/RG
-HeAyIFNpCVlcVEdhn44zJtsk5xDY+hr/us2KNjrvmXlECU1+G7v6sAK8HWFiYuaX
-fKMg9/TCHNF2xlgQcDGJ/Bml1tgkczJhjkDDZ0RhftcmUsiEolDGWEB3dIQC1VB0
-LM+rPWXYpIPiaBI1tIYi3e1/cmljO6fzdlImuSQpBKnohPthttBUg+xFqyULRro=
-=Knjc
------END PGP SIGNATURE-----
-
---2JFBq9zoW8cOFH7v--
