@@ -1,32 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0142.outbound.protection.outlook.com [207.46.100.142])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E67C61A03EF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 13:20:08 +1100 (AEDT)
-Message-ID: <1445826001.27249.2.camel@ellerman.id.au>
-Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
- *cmpxchg a full barrier
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: paulmck@linux.vnet.ibm.com, Peter Zijlstra <peterz@infradead.org>
-Cc: Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>, Will Deacon
- <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>, Davidlohr Bueso
- <dave@stgolabs.net>,  stable@vger.kernel.org
-Date: Mon, 26 Oct 2015 11:20:01 +0900
-In-Reply-To: <20151021193638.GU5105@linux.vnet.ibm.com>
-References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
- <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
- <20151014201916.GB3910@linux.vnet.ibm.com>
- <20151020071532.GB17714@fixme-laptop.cn.ibm.com>
- <20151020092147.GX17308@twins.programming.kicks-ass.net>
- <20151020212835.GH5105@linux.vnet.ibm.com>
- <20151021081833.GB2881@worktop.programming.kicks-ass.net>
- <20151021193638.GU5105@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 631271A0404
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 13:33:10 +1100 (AEDT)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Subject: RE: [PATCH v12 6/6] QE: Move QE from arch/powerpc to drivers/soc
+Date: Mon, 26 Oct 2015 02:33:03 +0000
+Message-ID: <SN1PR0301MB1550A18F085D4497A541DFDE9B230@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
+ <1444806968-4627-6-git-send-email-qiang.zhao@freescale.com>
+ <20151023031952.GA31843@home.buserror.net>
+ <SN1PR0301MB155072B05697D15EC990E0229B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1445633739.701.227.camel@freescale.com>
+In-Reply-To: <1445633739.701.227.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,50 +32,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-10-21 at 12:36 -0700, Paul E. McKenney wrote:
-
-> On Wed, Oct 21, 2015 at 10:18:33AM +0200, Peter Zijlstra wrote:
-
-> > On Tue, Oct 20, 2015 at 02:28:35PM -0700, Paul E. McKenney wrote:
-
-> > > I am not seeing a sync there, but I really have to defer to the
-> > > maintainers on this one.  I could easily have missed one.
-> > 
-> > So x86 implies a full barrier for everything that changes the CPL; and
-> > some form of implied ordering seems a must if you change the privilege
-> > level unless you tag every single load/store with the priv level at that
-> > time, which seems the more expensive option.
-> 
-> And it is entirely possible that there is some similar operation
-> somewhere in the powerpc entry/exit code.  I would not trust myself
-> to recognize it, though.
-
-> > So I suspect the typical implementation will flush all load/stores,
-> > change the effective priv level and continue.
-> > 
-> > This can of course be implemented at a pure per CPU ordering (RCpc),
-> > which would be in line with the rest of Power, in which case you do
-> > indeed need an explicit sync to make it visible to other CPUs.
-> > 
-> > But yes, if Michael or Ben could clarify this it would be good.
-> 
-> :-) ;-) ;-)
-
-Sorry guys, these threads are so long I tend not to read them very actively :}
-
-Looking at the system call path, the straight line path does not include any
-barriers. I can't see any hidden in macros either.
-
-We also have an explicit sync in the switch_to() path, which suggests that we
-know system call is not a full barrier.
-
-Also looking at the architecture, section 1.5 which talks about the
-synchronisation that occurs on system calls, defines nothing in terms of
-memory ordering, and includes a programming note which says "Unlike the
-Synchronize instruction, a context synchronizing operation does not affect the
-order in which storage accesses are performed.".
-
-Whether that's actually how it's implemented I don't know, I'll see if I can
-find out.
-
-cheers
+T24gU2F0LCBPY3QgMjQsIDIwMTUgYXQgMDQ6NTYgQU0sIFdvb2QgU2NvdHQtQjA3NDIxIHdyb3Rl
+Og0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQy
+MQ0KPiBTZW50OiBTYXR1cmRheSwgT2N0b2JlciAyNCwgMjAxNSA0OjU2IEFNDQo+IFRvOiBaaGFv
+IFFpYW5nLUI0NTQ3NSA8cWlhbmcuemhhb0BmcmVlc2NhbGUuY29tPg0KPiBDYzogbGludXgta2Vy
+bmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+IGxh
+dXJhYUBjb2RlYXVyb3JhLm9yZzsgWGllIFhpYW9iby1SNjMwNjEgPFguWGllQGZyZWVzY2FsZS5j
+b20+Ow0KPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpIFlhbmctTGVvLVI1ODQ3MiA8TGVv
+TGlAZnJlZXNjYWxlLmNvbT47DQo+IHBhdWx1c0BzYW1iYS5vcmcNCj4gU3ViamVjdDogUmU6IFtQ
+QVRDSCB2MTIgNi82XSBRRTogTW92ZSBRRSBmcm9tIGFyY2gvcG93ZXJwYyB0byBkcml2ZXJzL3Nv
+Yw0KPiANCj4gT24gRnJpLCAyMDE1LTEwLTIzIGF0IDAyOjQ5IC0wNTAwLCBaaGFvIFFpYW5nLUI0
+NTQ3NSB3cm90ZToNCj4gPiBPbiBGcmksIE9jdCAyMywgMjAxNSBhdCAxMToyMCBBTSwgV29vZCBT
+Y290dC1CMDc0MjENCj4gPiA8c2NvdHR3b29kQGZyZWVzY2FsZS5jb20NCj4gPiA+IHdyb3RlOg0K
+PiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFdvb2QgU2NvdHQt
+QjA3NDIxDQo+ID4gPiBTZW50OiBGcmlkYXksIE9jdG9iZXIgMjMsIDIwMTUgMTE6MjAgQU0NCj4g
+PiA+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3NSA8cWlhbmcuemhhb0BmcmVlc2NhbGUuY29tPg0KPiA+
+ID4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5v
+emxhYnMub3JnOw0KPiA+ID4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUgWGlhb2JvLVI2MzA2
+MSA8WC5YaWVAZnJlZXNjYWxlLmNvbT47DQo+ID4gPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7
+IExpIFlhbmctTGVvLVI1ODQ3MiA8TGVvTGlAZnJlZXNjYWxlLmNvbT47DQo+ID4gPiBwYXVsdXNA
+c2FtYmEub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIHYxMiA2LzZdIFFFOiBNb3ZlIFFF
+IGZyb20gYXJjaC9wb3dlcnBjIHRvDQo+ID4gPiBkcml2ZXJzL3NvYw0KPiA+ID4NCj4gPiA+IE9u
+IFdlZCwgT2N0IDE0LCAyMDE1IGF0IDAzOjE2OjA4UE0gKzA4MDAsIFpoYW8gUWlhbmcgd3JvdGU6
+DQo+ID4gPg0KPiA+ID4NCj4gPiA+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9zeXNkZXYv
+cWVfbGliL0tjb25maWcNCj4gPiA+ID4gYi9kcml2ZXJzL3NvYy9mc2wvcWUvS2NvbmZpZyBzaW1p
+bGFyaXR5IGluZGV4IDUwJSBjb3B5IGZyb20NCj4gPiA+ID4gYXJjaC9wb3dlcnBjL3N5c2Rldi9x
+ZV9saWIvS2NvbmZpZw0KPiA+ID4gPiBjb3B5IHRvIGRyaXZlcnMvc29jL2ZzbC9xZS9LY29uZmln
+IGluZGV4IDNjMjUxOTkuLjI4M2ZlMGQgMTAwNjQ0DQo+ID4gPiA+IC0tLSBhL2FyY2gvcG93ZXJw
+Yy9zeXNkZXYvcWVfbGliL0tjb25maWcNCj4gPiA+ID4gKysrIGIvZHJpdmVycy9zb2MvZnNsL3Fl
+L0tjb25maWcNCj4gPiA+ID4gQEAgLTIsNiArMiwxNyBAQA0KPiA+ID4gPiAgIyBRRSBDb21tdW5p
+Y2F0aW9uIG9wdGlvbnMNCj4gPiA+ID4gICMNCj4gPiA+ID4NCj4gPiA+ID4gK2NvbmZpZyBRVUlD
+Q19FTkdJTkUNCj4gPiA+ID4gKyBib29sICJGcmVlc2NhbGUgUVVJQ0MgRW5naW5lIChRRSkgU3Vw
+cG9ydCINCj4gPiA+ID4gKyBkZXBlbmRzIG9uIEZTTF9TT0MgJiYgUFBDMzINCj4gPiA+ID4gKyBz
+ZWxlY3QgR0VORVJJQ19BTExPQ0FUT1INCj4gPiA+ID4gKyBzZWxlY3QgQ1JDMzINCj4gPiA+ID4g
+KyBoZWxwDQo+ID4gPiA+ICsgICBUaGUgUVVJQ0MgRW5naW5lIChRRSkgaXMgYSBuZXcgZ2VuZXJh
+dGlvbiBvZiBjb21tdW5pY2F0aW9ucw0KPiA+ID4gPiArICAgY29wcm9jZXNzb3JzIG9uIEZyZWVz
+Y2FsZSBlbWJlZGRlZCBDUFVzIChha2luIHRvIENQTSBpbiBvbGRlcg0KPiA+ID4gY2hpcHMpLg0K
+PiA+ID4gPiArICAgU2VsZWN0aW5nIHRoaXMgb3B0aW9uIG1lYW5zIHRoYXQgeW91IHdpc2ggdG8g
+YnVpbGQgYSBrZXJuZWwNCj4gPiA+ID4gKyAgIGZvciBhIG1hY2hpbmUgd2l0aCBhIFFFIGNvcHJv
+Y2Vzc29yLg0KPiA+ID4gPiArDQo+ID4gPiA+ICBjb25maWcgVUNDX1NMT1cNCj4gPiA+ID4gICBi
+b29sDQo+ID4gPiA+ICAgZGVmYXVsdCB5IGlmIFNFUklBTF9RRQ0KPiA+ID4gPiBAQCAtMTksOSAr
+MzAsMyBAQCBjb25maWcgVUNDX0ZBU1QNCj4gPiA+ID4gIGNvbmZpZyBVQ0MNCj4gPiA+ID4gICBi
+b29sDQo+ID4gPiA+ICAgZGVmYXVsdCB5IGlmIFVDQ19GQVNUIHx8IFVDQ19TTE9XDQo+ID4gPiA+
+IC0NCj4gPiA+ID4gLWNvbmZpZyBRRV9VU0INCj4gPiA+ID4gLSBib29sDQo+ID4gPiA+IC0gZGVm
+YXVsdCB5IGlmIFVTQl9GU0xfUUUNCj4gPiA+ID4gLSBoZWxwDQo+ID4gPiA+IC0gICBRRSBVU0Ig
+Q29udHJvbGxlciBzdXBwb3J0DQo+ID4gPg0KPiA+ID4gV2h5IGRpZCBzb21lIGNvbmZpZyBzeW1i
+b2xzIGdldCBtb3ZlZCBhbmQgb3RoZXJzIG5vdD8NCj4gPg0KPiA+IEJlY2F1c2UgUUVfVVNCIHNo
+b3VsZCBiZSBwdXR0ZWQgdW5kZXIgZHJpdmVycy91c2IsIEl0IGlzIGluZGVwZW5kZW50DQo+ID4g
+b2YgdGhpcyBwYXRjaHNldC4NCj4gDQo+IElmIGl0J3MgaW5kZXBlbmRlbnQgb2YgdGhpcyBwYXRj
+aHNldCB0aGVuIGRvbid0IHB1dCBpdCBpbiB0aGlzIHBhdGNoc2V0Lg0KPiBNb3ZlIGFsbCB0aGUg
+UUUgc3R1ZmYgdG8gZHJpdmVycy9zb2MgYW5kIHRoZW4gbGF0ZXIgaWYgc29tZXRoaW5nIGJlbG9u
+Z3MNCj4gc29tZXdoZXJlIGVsc2UsIGhhdmUgYSBzZXBhcmF0ZSBwYXRjaCBtb3ZlIGl0IHRoZXJl
+Lg0KDQpPayANCg0KLVpoYW8NCg==
