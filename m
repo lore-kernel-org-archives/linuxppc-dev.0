@@ -2,34 +2,34 @@ Return-Path: <sukadev@linux.vnet.ibm.com>
 Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 614701A03F4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 840171A09EE
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 07:17:33 +1100 (AEDT)
 Received: from localhost
  by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
  Mon, 26 Oct 2015 14:17:31 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 1CF841FF0046
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:05:31 -0600 (MDT)
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C89B33E40048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:17:12 -0600 (MDT)
 Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9QKDx6V39387206
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 13:13:59 -0700
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9QKHCLL12452144
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 13:17:12 -0700
 Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
  by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9QKHHkS017134
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:17:19 -0600
+ t9QKHC3d016620
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:17:12 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: mingo@redhat.com, ak@linux.intel.com,
  Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>
 Cc: namhyung@kernel.org, maddy@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v18 18/19] perf, tools, pmu-events: Fix fixed counters on Intel
-Date: Mon, 26 Oct 2015 13:14:32 -0700
-Message-Id: <1445890473-22877-19-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v18 13/19] perf, tools, jevents: Add support for event topics
+Date: Mon, 26 Oct 2015 13:14:27 -0700
+Message-Id: <1445890473-22877-14-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1445890473-22877-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1445890473-22877-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,69 +41,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andi Kleen <ak@linux.intel.com>
-
-The JSON event lists use a different encoding for fixed counters
-than perf for instructions and cycles (ref-cycles is ok)
-
-This lead to some common events like inst_retired.any
-or cpu_clk_unhalted.thread not counting, when specified with their
-JSON name.
-
-Special case these events in the jevents conversion process.
-I prefer to not touch the JSON files for this, as it's intended
-that standard JSON files can be just dropped into the perf
-build without changes.
+Allow assigning categories "Topics" field to the PMU events  i.e.
+process the topic field from the JSON file and add a corresponding
+topic field to the generated C events tables.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-[Fix minor compile error]
+Acked-by: Jiri Olsa <jolsa@redhat.com>
 ---
- tools/perf/pmu-events/jevents.c | 25 +++++++++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
+
+Changelog[v14]
+	[Jiri Olsa] Move this independent code off into a separate patch.
+---
+ tools/perf/pmu-events/jevents.c    | 12 +++++++++---
+ tools/perf/pmu-events/jevents.h    |  2 +-
+ tools/perf/pmu-events/pmu-events.h |  1 +
+ 3 files changed, 11 insertions(+), 4 deletions(-)
 
 diff --git a/tools/perf/pmu-events/jevents.c b/tools/perf/pmu-events/jevents.c
-index 7347cca..247d777e 100644
+index a8507c9..ea3474b 100644
 --- a/tools/perf/pmu-events/jevents.c
 +++ b/tools/perf/pmu-events/jevents.c
-@@ -237,6 +237,28 @@ static void print_events_table_suffix(FILE *outfp)
- 	fprintf(outfp, "};\n");
+@@ -203,7 +203,7 @@ static void print_events_table_prefix(FILE *fp, const char *tblname)
  }
  
-+static struct fixed {
-+	const char *name;
-+	const char *event;
-+} fixed[] = {
-+	{ "inst_retired.any", "event=0xc0" },
-+	{ "cpu_clk_unhalted.thread", "event=0x3c" },
-+	{ "cpu_clk_unhalted.thread_any", "event=0x3c,any=1" },
-+	{ NULL, NULL},
-+};
-+
-+/*
-+ * Handle different fixed counter encodings between JSON and perf.
-+ */
-+static char *real_event(const char *name, char *event)
-+{
-+	int i;
-+	for (i = 0; fixed[i].name; i++)
-+		if (!strcasecmp(name, fixed[i].name))
-+			return (char *)fixed[i].event;
-+	return event;
-+}
-+
+ static int print_events_table_entry(void *data, char *name, char *event,
+-				    char *desc, char *long_desc)
++				    char *desc, char *long_desc, char *topic)
+ {
+ 	FILE *outfp = data;
+ 	/*
+@@ -217,6 +217,8 @@ static int print_events_table_entry(void *data, char *name, char *event,
+ 	fprintf(outfp, "\t.desc = \"%s\",\n", desc);
+ 	if (long_desc && long_desc[0])
+ 		fprintf(outfp, "\t.long_desc = \"%s\",\n", long_desc);
++	if (topic)
++		fprintf(outfp, "\t.topic = \"%s\",\n", topic);
+ 
+ 	fprintf(outfp, "},\n");
+ 
+@@ -238,7 +240,7 @@ static void print_events_table_suffix(FILE *outfp)
  /* Call func with each event in the json file */
  int json_events(const char *fn,
  	  int (*func)(void *data, char *name, char *event, char *desc,
-@@ -324,8 +346,7 @@ int json_events(const char *fn,
- 		if (msr != NULL)
+-		      char *long_desc),
++		      char *long_desc, char *topic),
+ 	  void *data)
+ {
+ 	int err = -EIO;
+@@ -259,6 +261,7 @@ int json_events(const char *fn,
+ 		char *event = NULL, *desc = NULL, *name = NULL;
+ 		char *long_desc = NULL;
+ 		char *extra_desc = NULL;
++		char *topic = NULL;
+ 		struct msrmap *msr = NULL;
+ 		jsmntok_t *msrval = NULL;
+ 		jsmntok_t *precise = NULL;
+@@ -297,6 +300,8 @@ int json_events(const char *fn,
+ 				   !json_streq(map, val, "null")) {
+ 				addfield(map, &extra_desc, ". ",
+ 					" Spec update: ", val);
++			} else if (json_streq(map, field, "Topic")) {
++				addfield(map, &topic, "", "", val);
+ 			} else if (json_streq(map, field, "Data_LA") && nz) {
+ 				addfield(map, &extra_desc, ". ",
+ 					" Supports address when precise",
+@@ -320,12 +325,13 @@ int json_events(const char *fn,
  			addfield(map, &event, ",", msr->pname, msrval);
  		fixname(name);
--
--		err = func(data, name, event, desc, long_desc, topic);
-+		err = func(data, name, real_event(name, event), desc, long_desc, topic);
+ 
+-		err = func(data, name, event, desc, long_desc);
++		err = func(data, name, event, desc, long_desc, topic);
  		free(event);
  		free(desc);
  		free(name);
+ 		free(long_desc);
+ 		free(extra_desc);
++		free(topic);
+ 		if (err)
+ 			break;
+ 		tok += j;
+diff --git a/tools/perf/pmu-events/jevents.h b/tools/perf/pmu-events/jevents.h
+index b0eb274..9ffcb89 100644
+--- a/tools/perf/pmu-events/jevents.h
++++ b/tools/perf/pmu-events/jevents.h
+@@ -3,7 +3,7 @@
+ 
+ int json_events(const char *fn,
+ 		int (*func)(void *data, char *name, char *event, char *desc,
+-				char *long_desc),
++				char *long_desc, char *topic),
+ 		void *data);
+ char *get_cpu_str(void);
+ 
+diff --git a/tools/perf/pmu-events/pmu-events.h b/tools/perf/pmu-events/pmu-events.h
+index 711f049..6b69f4b 100644
+--- a/tools/perf/pmu-events/pmu-events.h
++++ b/tools/perf/pmu-events/pmu-events.h
+@@ -9,6 +9,7 @@ struct pmu_event {
+ 	const char *event;
+ 	const char *desc;
+ 	const char *long_desc;
++	const char *topic;
+ };
+ 
+ /*
 -- 
 2.5.3
