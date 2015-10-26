@@ -1,33 +1,33 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 200831A0BF9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:18:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C71981A0D14
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:19:00 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 26 Oct 2015 13:18:40 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 514F82CE8050
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:18:37 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9Q3IU9r32375026
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:18:38 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9Q3I4Co021149
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:18:04 +1100
+ Mon, 26 Oct 2015 13:18:59 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id DF33A3578054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:18:56 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9Q3ImMV62062692
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:18:56 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9Q3INMi002029
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:18:23 +1100
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com, mpe@ellerman.id.au,
  aik@ozlabs.ru
 Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
  Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH V10 04/12] powerpc/pci: Remove VFs prior to PF
-Date: Mon, 26 Oct 2015 11:15:54 +0800
-Message-Id: <1445829362-2738-5-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V10 06/12] powerpc/powernv: EEH device for VF
+Date: Mon, 26 Oct 2015 11:15:56 +0800
+Message-Id: <1445829362-2738-7-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,32 +39,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As commit ac205b7bb72f ("PCI: make sriov work with hotplug remove") indicates,
-VFs, which might be hooked to same PCI bus as their PF should be removed
-before the PF. Otherwise, the PCI hot unplugging on the PCI bus would
-cause kernel crash.
+VFs and their corresponding pci_dn instances are created and released
+dynamically as their PF's SRIOV capability is enabled and disabled.
+The patch creates and releases EEH devices for VFs when creating and
+releasing their pci_dn instances, which means EEH devices and pci_dn
+instances have same life cycle. Also, VF's EEH device is identified
+by (struct eeh_dev::physfn).
 
-The patch applies the above pattern to PowerPC PCI hotplug path.
-
-[gwshan: changelog]
+[gwshan: changelog and removed CONFIG_PCI_IOV]
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/pci-hotplug.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/eeh.h |  1 +
+ arch/powerpc/kernel/pci_dn.c   | 12 ++++++++++++
+ 2 files changed, 13 insertions(+)
 
-diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-index 7f9ed0c..59c4361 100644
---- a/arch/powerpc/kernel/pci-hotplug.c
-+++ b/arch/powerpc/kernel/pci-hotplug.c
-@@ -55,7 +55,7 @@ void pcibios_remove_pci_devices(struct pci_bus *bus)
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index c5eb86f..6c383ad 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -140,6 +140,7 @@ struct eeh_dev {
+ 	struct pci_controller *phb;	/* Associated PHB		*/
+ 	struct pci_dn *pdn;		/* Associated PCI device node	*/
+ 	struct pci_dev *pdev;		/* Associated PCI device	*/
++	struct pci_dev *physfn;		/* Associated PF PORT		*/
+ 	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
+ };
  
- 	pr_debug("PCI: Removing devices on bus %04x:%02x\n",
- 		 pci_domain_nr(bus),  bus->number);
--	list_for_each_entry_safe(dev, tmp, &bus->devices, bus_list) {
-+	list_for_each_entry_safe_reverse(dev, tmp, &bus->devices, bus_list) {
- 		pr_debug("   Removing %s...\n", pci_name(dev));
- 		pci_stop_and_remove_bus_device(dev);
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index f771130..f0ddde7 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -180,7 +180,9 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+ {
+ #ifdef CONFIG_PCI_IOV
++	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+ 	struct pci_dn *parent, *pdn;
++	struct eeh_dev *edev;
+ 	int i;
+ 
+ 	/* Only support IOV for now */
+@@ -206,6 +208,9 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+ 				 __func__, i);
+ 			return NULL;
+ 		}
++		eeh_dev_init(pdn, hose);
++		edev = pdn_to_eeh_dev(pdn);
++		edev->physfn = pdev;
  	}
+ #endif /* CONFIG_PCI_IOV */
+ 
+@@ -254,10 +259,17 @@ void remove_dev_pci_data(struct pci_dev *pdev)
+ 	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
+ 		list_for_each_entry_safe(pdn, tmp,
+ 			&parent->child_list, list) {
++			struct eeh_dev *edev;
+ 			if (pdn->busno != pci_iov_virtfn_bus(pdev, i) ||
+ 			    pdn->devfn != pci_iov_virtfn_devfn(pdev, i))
+ 				continue;
+ 
++			edev = pdn_to_eeh_dev(pdn);
++			if (edev) {
++				pdn->edev = NULL;
++				kfree(edev);
++			}
++
+ 			if (!list_empty(&pdn->list))
+ 				list_del(&pdn->list);
+ 
 -- 
 2.5.0
