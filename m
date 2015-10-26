@@ -1,17 +1,17 @@
 Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ABD51A046D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 10:05:47 +1100 (AEDT)
-Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
- [IPv6:2607:f8b0:400e:c03::233])
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB1E31A0477
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 10:09:45 +1100 (AEDT)
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5971214132F
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Oct 2015 10:05:45 +1100 (AEDT)
-Received: by pacfv9 with SMTP id fv9so210303549pac.3
- for <linuxppc-dev@ozlabs.org>; Mon, 26 Oct 2015 16:05:43 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 7931F140E31
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Oct 2015 10:09:45 +1100 (AEDT)
+Received: by padhk11 with SMTP id hk11so201603484pad.1
+ for <linuxppc-dev@ozlabs.org>; Mon, 26 Oct 2015 16:09:44 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -19,8 +19,8 @@ Subject: Re: [PATCH] powerpc/eeh: eeh_pci_enable(): fix checking of
  post-request state
 In-Reply-To: <1445581186-10533-1-git-send-email-andrew.donnellan@au1.ibm.com>
 References: <1445581186-10533-1-git-send-email-andrew.donnellan@au1.ibm.com>
-Date: Tue, 27 Oct 2015 10:05:28 +1100
-Message-ID: <87vb9tp6x3.fsf@gamma.ozlabs.ibm.com>
+Date: Tue, 27 Oct 2015 10:09:30 +1100
+Message-ID: <87twpdp6qd.fsf@gamma.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; boundary="=-=-=";
  micalg=pgp-sha512; protocol="application/pgp-signature"
@@ -75,18 +75,18 @@ Content-Type: application/pgp-signature; name="signature.asc"
 Version: GnuPG v1
 Comment: GPGTools - https://gpgtools.org
 
-iQIcBAEBCgAGBQJWLrG4AAoJEPC3R3P2I92FITMQAMwAswNLhPMxgXoYdDaNgyFx
-C/BBUf9A7vp0veiuGpFovGsykMquafNuk1TxvMqryhW4zdSNgAsLEVaNJqAlIC/X
-wbOUPoFojqTpp40IRycULmjtnglGAFM8NBtBjtBwUeoDR4vCpC1G98aslB9eBBmZ
-SeY9hdN8ZRyY+TztqbbWHqf1DPXOvMx5uF5wr76me1kblDiINqypBW0oBnn7m2um
-7prpKdAy2w7/Ibe4lhfGZtdHHFbhZmONwyc53jL7C2UICqEqMzwUZ6GDQhux3rCW
-8TTg88v4BSiFjxAk6Iy7BmJ10nRO/UVu2OUJYLpeQBAD1nGwmC4vb+8csXhgJoM5
-T0AW4BOvhchWxmRkSB06UuaTl/6T7GV8u0qE3A5ACOOer+Q3pe2u14Eia8FFMOQc
-TFXIAPI8XAgK0vEGutlkdtVwb7SOPybvHDn0U/dZ5df4zsMiDyAF03rtnGqKcP9y
-s8c0w8FskIIWPw9Ktke9TRbBhdauCiuQOw5QodC9JuZcnpUcD38BbUXWXuUpINvD
-/S3tdy0QbqyfuaVDqAlpjk/l2217gN7SdiMtRUMEsCay0EjEOMfpCUF5GxdwWYSs
-XUTCdq7jR4VBlwI3nXZH+nY5mft+dlYPd5HkX4lWss/Ae8Z1aa2DVqTdDI2SQoLf
-dRskN+nyU+97c5DF7JBj
-=JVbS
+iQIcBAEBCgAGBQJWLrKqAAoJEPC3R3P2I92FYksQANdPQ1xfYEcb71gnREhqL93Z
+WHJAE2yVasL1L6PObY5dCUzZb7sPwC69E2Ug4NBLCgtjBgm1v7xm12DSnPlU6MyE
+0iNrVAvEB313gosuEt1HnykcKppN4xAro8mzWAHmk2qrCEM4zVkjWJXEBXYf4Uev
+OQsrQ50vZsUHcP774iFnZppLUpPYdftqkbiz6SQTPs9UjnZu9V/9Xs8ZNDbhRked
+uDLxmWh7vhhUigKdIMl3+Y6lUc3GeqBULPTjR6XhLhSZeG2nUF9knP193woICVeO
+XLAOizgxGIgmyo/Zs8GvCFRCdSpPIhOU8hTKm7frh2m3j30LAMK/X4wHoI0sM66s
+IU+qYsDhiLHmqYf3epij7k5JpoF+jSMghDEayGaXdPbkshoLhFsIQVtq6AZqxusE
+Zju/3YzissZ9VZhIItf9gDL8U8+d5x44REBAUmpQj+/t4w9RzPGmgcMzZ03leEns
+Wzu2SxWKf/EhRd+vBfjN5p0l6/TZNtNYj+F/3fEBCWFz8lQgNgN16sUQjxiPB8Yh
+8zgad0K7TkjpX6tnJq4PRuPP45IQFT1O4bAnjPWMUNn+7TS50nfgkvitOKIBfhpG
+IphrXvYSgmXflt/RuBz/9SvJLe1FUTxoc/9FqI8KKHVdgaEqtBDHIoYANIHmfIEW
+ZcLNYkt+XyBdhOpssPn1
+=aIUV
 -----END PGP SIGNATURE-----
 --=-=-=--
