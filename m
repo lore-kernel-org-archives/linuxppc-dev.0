@@ -1,36 +1,23 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0116.outbound.protection.outlook.com [157.56.110.116])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 619E71A0D89
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:20:49 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 26 Oct 2015 13:20:48 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A6A243578052
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:20:44 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9Q3KVYP9240586
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:20:39 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9Q3KBQL031441
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 14:20:12 +1100
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com, mpe@ellerman.id.au,
- aik@ozlabs.ru
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH V10 12/12] powerpc/eeh: Handle hot removed VF when PF is EEH
- aware
-Date: Mon, 26 Oct 2015 11:16:02 +0800
-Message-Id: <1445829362-2738-13-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
-References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A0A601A046D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 17:50:58 +1100 (AEDT)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>
+CC: <stuart.yoder@freescale.com>, <shawnguo@kernel.org>, <robh+dt@kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
+ <jason.jin@freescale.com>, Wang Dongsheng <dongsheng.wang@freescale.com>,
+ Chenhui Zhao <chenhui.zhao@freescale.com>, Tang Yuantian
+ <Yuantian.Tang@freescale.com>
+Subject: [PATCH v4] Documentation: dt: binding: fsl: add devicetree binding
+ for describing RCPM
+Date: Mon, 26 Oct 2015 14:44:12 +0800
+Message-ID: <1445841852-6830-1-git-send-email-dongsheng.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,158 +27,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When PF is EEH aware while VFs are not, VFs will be removed during EEH
-recovery. This is not supported in current code, while will leads to the VF
-lost.
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-This patch fixes this by adding VFs back. VFs should be added back after PF
-get recovered properly.
+RCPM is the Run Control and Power Management module performs all
+device-level tasks associated with device run control and power
+management.
 
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Add this for freescale powerpc platform and layerscape platform.
+
+Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 ---
- arch/powerpc/include/asm/eeh.h   |  6 ++++++
- arch/powerpc/kernel/eeh_dev.c    |  1 +
- arch/powerpc/kernel/eeh_driver.c | 30 +++++++++++++++++++++++-------
- 3 files changed, 30 insertions(+), 7 deletions(-)
+*v4*
+- Change patch subject.
+- A few grammatical mistakes.
+- Change "rcpm-wakeup" property to "fsl,rcpm-wakeup" property.
+- Remove a few "fsl,<chip>-rcpm" examples.
+- Now the value of "fsl,#rcpm-wakeup-cells" is not contain rcpm node.
+- Add a NOTE to describe IPPDEXPCR register.
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index ea1f13c4..c529a23 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -127,6 +127,11 @@ static inline bool eeh_pe_passed(struct eeh_pe *pe)
- #define EEH_DEV_SYSFS		(1 << 9)	/* Sysfs created	*/
- #define EEH_DEV_REMOVED		(1 << 10)	/* Removed permanently	*/
- 
-+struct eeh_rmv_data {
-+	struct list_head edev_list;
-+	int removed;
-+};
+*v3*
+- Add "fsl,#rcpm-wakeup-cells" for rcpm node. The number of cells
+  correspond rcpm-wakeup property.
+- Modify rcpm-wakeup property description.
+
+*v2*
+- Remove P4080 example.
+- Modify rcpm-wakeup property description.
+
+diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+new file mode 100644
+index 0000000..757e0eb
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+@@ -0,0 +1,64 @@
++* Run Control and Power Management
++-------------------------------------------
++The RCPM performs all device-level tasks associated with device run control
++and power management.
 +
- struct eeh_dev {
- 	int mode;			/* EEH mode			*/
- 	int class_code;			/* Class code of the device	*/
-@@ -139,6 +144,7 @@ struct eeh_dev {
- 	int af_cap;			/* Saved AF capability		*/
- 	struct eeh_pe *pe;		/* Associated PE		*/
- 	struct list_head list;		/* Form link list in the PE	*/
-+	struct list_head rmv_list;	/* Record the removed edev 	*/
- 	struct pci_controller *phb;	/* Associated PHB		*/
- 	struct pci_dn *pdn;		/* Associated PCI device node	*/
- 	struct pci_dev *pdev;		/* Associated PCI device	*/
-diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
-index aabba94..7815095 100644
---- a/arch/powerpc/kernel/eeh_dev.c
-+++ b/arch/powerpc/kernel/eeh_dev.c
-@@ -67,6 +67,7 @@ void *eeh_dev_init(struct pci_dn *pdn, void *data)
- 	edev->pdn = pdn;
- 	edev->phb = phb;
- 	INIT_LIST_HEAD(&edev->list);
-+	INIT_LIST_HEAD(&edev->rmv_list);
- 
- 	return NULL;
- }
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 99868e2..f2406b4 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -420,7 +420,8 @@ static void *eeh_rmv_device(void *data, void *userdata)
- 	struct pci_driver *driver;
- 	struct eeh_dev *edev = (struct eeh_dev *)data;
- 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
--	int *removed = (int *)userdata;
-+	struct eeh_rmv_data *rmv_data = (struct eeh_rmv_data *)userdata;
-+	int *removed = rmv_data ? &rmv_data->removed : NULL;
- 	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
- 
- 	/*
-@@ -467,6 +468,9 @@ static void *eeh_rmv_device(void *data, void *userdata)
- 		 * required to plug the VF successfully.
- 		 */
- 		pdn->pe_number = IODA_INVALID_PE;
++Required properites:
++  - reg : Offset and length of the register set of the RCPM block.
++  - fsl,#rcpm-wakeup-cells : The number of IPPDEXPCR register cells in the
++	fsl,rcpm-wakeup property.
++  - compatible : Must contain a chip-specific RCPM block compatible string
++	and (if applicable) may contain a chassis-version RCPM compatible
++	string. Chip-specific strings are of the form "fsl,<chip>-rcpm",
++	such as:
++	* "fsl,p2041-rcpm"
++	* "fsl,p5020-rcpm"
++	* "fsl,t4240-rcpm"
 +
-+		if (rmv_data)
-+			list_add(&edev->rmv_list, &rmv_data->edev_list);
- 	} else {
- 		pci_lock_rescan_remove();
- 		pci_stop_and_remove_bus_device(dev);
-@@ -585,11 +589,12 @@ int eeh_pe_reset_and_recover(struct eeh_pe *pe)
-  * During the reset, udev might be invoked because those affected
-  * PCI devices will be removed and then added.
-  */
--static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
-+static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
-+				struct eeh_rmv_data *rmv_data)
- {
- 	struct pci_bus *frozen_bus = eeh_pe_bus_get(pe);
- 	struct timeval tstamp;
--	int cnt, rc, removed = 0;
-+	int cnt, rc;
- 	struct eeh_dev *edev;
- 
- 	/* pcibios will clear the counter; save the value */
-@@ -612,7 +617,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 			pci_unlock_rescan_remove();
- 		}
- 	} else if (frozen_bus)
--		eeh_pe_dev_traverse(pe, eeh_rmv_device, &removed);
-+		eeh_pe_dev_traverse(pe, eeh_rmv_device, rmv_data);
- 
- 	/*
- 	 * Reset the pci controller. (Asserts RST#; resets config space).
-@@ -659,7 +664,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 			eeh_add_virt_device(edev, NULL);
- 		else
- 			pcibios_add_pci_devices(bus);
--	} else if (frozen_bus && removed) {
-+	} else if (frozen_bus && rmv_data->removed) {
- 		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
- 		ssleep(5);
- 
-@@ -687,8 +692,10 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- static void eeh_handle_normal_event(struct eeh_pe *pe)
- {
- 	struct pci_bus *frozen_bus;
-+	struct eeh_dev *edev, *tmp;
- 	int rc = 0;
- 	enum pci_ers_result result = PCI_ERS_RESULT_NONE;
-+	struct eeh_rmv_data rmv_data = {LIST_HEAD_INIT(rmv_data.edev_list), 0};
- 
- 	frozen_bus = eeh_pe_bus_get(pe);
- 	if (!frozen_bus) {
-@@ -735,7 +742,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 	 */
- 	if (result == PCI_ERS_RESULT_NONE) {
- 		pr_info("EEH: Reset with hotplug activity\n");
--		rc = eeh_reset_device(pe, frozen_bus);
-+		rc = eeh_reset_device(pe, frozen_bus, NULL);
- 		if (rc) {
- 			pr_warn("%s: Unable to reset, err=%d\n",
- 				__func__, rc);
-@@ -787,7 +794,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 	/* If any device called out for a reset, then reset the slot */
- 	if (result == PCI_ERS_RESULT_NEED_RESET) {
- 		pr_info("EEH: Reset without hotplug activity\n");
--		rc = eeh_reset_device(pe, NULL);
-+		rc = eeh_reset_device(pe, NULL, &rmv_data);
- 		if (rc) {
- 			pr_warn("%s: Cannot reset, err=%d\n",
- 				__func__, rc);
-@@ -807,6 +814,15 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 		goto hard_fail;
- 	}
- 
-+	/*
-+	 * For those hot removed VFs, we should add back them after PF get
-+	 * recovered properly.
-+	 */
-+	list_for_each_entry_safe(edev, tmp, &rmv_data.edev_list, rmv_list) {
-+		eeh_add_virt_device(edev, NULL);
-+		list_del(&edev->rmv_list);
-+	}
++	Chassis-version strings are of the form "fsl,qoriq-rcpm-<version>",
++	such as:
++	* "fsl,qoriq-rcpm-1.0": for chassis 1.0 rcpm
++	* "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
++	* "fsl,qoriq-rcpm-2.1": for chassis 2.1 rcpm
 +
- 	/* Tell all device drivers that they can resume operations */
- 	pr_info("EEH: Notify device driver to resume\n");
- 	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
++All references to "1.0" and "2.0" refer to the QorIQ chassis version to
++which the chip complies.
++Chassis Version		Example Chips
++---------------		-------------------------------
++1.0				p4080, p5020, p5040, p2041, p3041
++2.0				t4240, b4860, b4420
++2.1				t1040, ls1021
++
++Example:
++The RCPM node for T4240:
++	rcpm: global-utilities@e2000 {
++		compatible = "fsl,t4240-rcpm", "fsl,qoriq-rcpm-2.0";
++		reg = <0xe2000 0x1000>;
++		fsl,#rcpm-wakeup-cells = <2>;
++	};
++
++* Freescale RCPM Wakeup Source Device Tree Bindings
++-------------------------------------------
++Required fsl,rcpm-wakeup property should be added to a device node if the device
++can be used as a wakeup source.
++
++  - fsl,rcpm-wakeup: Consists of a pointer to the rcpm node and the IPPDEXPCR
++	register cells. The number of IPPDEXPCR register cells is defined in
++	"fsl,#rcpm-wakeup-cells" in the rcpm node. The first register cell is
++	the bit mask that should be set in IPPDEXPCR0, and the second register
++	cell is for IPPDEXPCR1, and so on.
++
++	Note: IPPDEXPCR(IP Powerdown Exception Control Register) provides a
++	mechanism for keeping certain blocks awake during STANDBY and MEM, in
++	order to use them as wake-up sources.
++
++Example:
++	lpuart0: serial@2950000 {
++		compatible = "fsl,ls1021a-lpuart";
++		reg = <0x0 0x2950000 0x0 0x1000>;
++		interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk>;
++		clock-names = "ipg";
++		fsl,rcpm-wakeup = <&rcpm 0x0 0x40000000>;
++		status = "disabled";
++	};
 -- 
-2.5.0
+2.1.0.27.g96db324
