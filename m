@@ -2,16 +2,15 @@ Return-Path: <duwe@lst.de>
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BF50C1A17FB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 05:02:56 +1100 (AEDT)
-Date: Mon, 26 Oct 2015 19:02:53 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 583D81A1969
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 05:03:56 +1100 (AEDT)
+Date: Mon, 26 Oct 2015 19:03:53 +0100
 From: Torsten Duwe <duwe@lst.de>
 To: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
-Subject: [PATCH v3 8/8] Enable LIVEPATCH to be configured on ppc64le and
- add livepatch.o if it is selected.
-Message-ID: <20151026180253.GI29592@lst.de>
+Subject: [PATCH v3 3/8] ppc64 ftrace_with_regs configuration variables
+Message-ID: <20151026180353.GJ29592@lst.de>
 References: <20151026174930.GA29592@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,43 +24,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+  * Makefile:
+    - globally use -mprofile-kernel in case it's configured.
+  * arch/powerpc/Kconfig / kernel/trace/Kconfig:
+    - declare that ppc64 HAVE_MPROFILE_KERNEL and
+      HAVE_DYNAMIC_FTRACE_WITH_REGS, and use it.
+
 Signed-off-by: Torsten Duwe <duwe@suse.de>
 ---
- arch/powerpc/Kconfig         | 5 +++++
- arch/powerpc/kernel/Makefile | 1 +
- 2 files changed, 6 insertions(+)
+ arch/powerpc/Kconfig  | 2 ++
+ arch/powerpc/Makefile | 7 +++++++
+ kernel/trace/Kconfig  | 5 +++++
+ 3 files changed, 14 insertions(+)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 0e6011c..341ebe9 100644
+index 9a7057e..0e6011c 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -163,6 +163,9 @@ config PPC
- 	select ARCH_HAS_DMA_SET_COHERENT_MASK
- 	select HAVE_ARCH_SECCOMP_FILTER
+@@ -97,8 +97,10 @@ config PPC
+ 	select OF_RESERVED_MEM
+ 	select HAVE_FTRACE_MCOUNT_RECORD
+ 	select HAVE_DYNAMIC_FTRACE
++	select HAVE_DYNAMIC_FTRACE_WITH_REGS
+ 	select HAVE_FUNCTION_TRACER
+ 	select HAVE_FUNCTION_GRAPH_TRACER
++	select HAVE_MPROFILE_KERNEL
+ 	select SYSCTL_EXCEPTION_TRACE
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select VIRT_TO_BUS if !PPC64
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index b9b4af2..25d0034 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -133,6 +133,13 @@ else
+ CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=powerpc64
+ endif
  
-+config HAVE_LIVEPATCH
-+       def_bool PPC64 && CPU_LITTLE_ENDIAN
++ifeq ($(CONFIG_PPC64),y)
++ifdef CONFIG_HAVE_MPROFILE_KERNEL
++CC_FLAGS_FTRACE	:= -pg $(call cc-option,-mprofile-kernel)
++KBUILD_CPPFLAGS	+= -DCC_USING_MPROFILE_KERNEL
++endif
++endif
 +
- config GENERIC_CSUM
- 	def_bool CPU_LITTLE_ENDIAN
+ CFLAGS-$(CONFIG_CELL_CPU) += $(call cc-option,-mcpu=cell)
+ CFLAGS-$(CONFIG_POWER4_CPU) += $(call cc-option,-mcpu=power4)
+ CFLAGS-$(CONFIG_POWER5_CPU) += $(call cc-option,-mcpu=power5)
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 1153c43..dbcb635 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -52,6 +52,11 @@ config HAVE_FENTRY
+ 	help
+ 	  Arch supports the gcc options -pg with -mfentry
  
-@@ -1095,3 +1098,5 @@ config PPC_LIB_RHEAP
++config HAVE_MPROFILE_KERNEL
++	bool
++	help
++	  Arch supports the gcc options -pg with -mprofile-kernel
++
+ config HAVE_C_RECORDMCOUNT
  	bool
- 
- source "arch/powerpc/kvm/Kconfig"
-+
-+source "kernel/livepatch/Kconfig"
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 0f417d5..f9a2925 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -119,6 +119,7 @@ obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
- obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
- obj-$(CONFIG_FTRACE_SYSCALLS)	+= ftrace.o
- obj-$(CONFIG_TRACING)		+= trace_clock.o
-+obj-$(CONFIG_LIVEPATCH)		+= livepatch.o
- 
- ifneq ($(CONFIG_PPC_INDIRECT_PIO),y)
- obj-y				+= iomap.o
+ 	help
 -- 
 1.8.5.6
