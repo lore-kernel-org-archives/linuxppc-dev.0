@@ -1,31 +1,31 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-ob0-x22a.google.com (mail-ob0-x22a.google.com
- [IPv6:2607:f8b0:4003:c01::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0105.outbound.protection.outlook.com [65.55.169.105])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 27B4D1A03DB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 14:07:21 +1100 (AEDT)
-Received: by obcqt19 with SMTP id qt19so159478708obc.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2015 20:07:18 -0700 (PDT)
-Date: Tue, 27 Oct 2015 11:06:52 +0800
-From: Boqun Feng <boqun.feng@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
- Peter Zijlstra <peterz@infradead.org>,
- Will Deacon <will.deacon@arm.com>, stable@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>
-Subject: Re: [RESEND, tip/locking/core, v5, 1/6] powerpc: atomic: Make
- _return atomics and *{cmp}xchg fully ordered
-Message-ID: <20151027030652.GB26372@fixme-laptop.cn.ibm.com>
-References: <1445854536-22645-1-git-send-email-boqun.feng@gmail.com>
- <20151027023347.6178D140E31@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8AC1C1A0410
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 15:48:26 +1100 (AEDT)
+Message-ID: <1445921289.701.301.camel@freescale.com>
+Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management functions to
+ qe_common
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
+ <paulus@samba.org>
+Date: Mon, 26 Oct 2015 23:48:09 -0500
+In-Reply-To: <SN1PR0301MB155083232AD1076F0779F7A49B230@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
+ <1444806968-4627-4-git-send-email-qiang.zhao@freescale.com>
+ <1445569799.701.142.camel@freescale.com>
+ <SN1PR0301MB1550CC4F282309872FF5ACBD9B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1445633780.701.228.camel@freescale.com>
+ <SN1PR0301MB155083232AD1076F0779F7A49B230@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="zx4FCpZtqtKETZ7O"
-In-Reply-To: <20151027023347.6178D140E31@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,66 +35,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, 2015-10-25 at 21:42 -0500, Zhao Qiang-B45475 wrote:
+> On Sat, Oct 24, 2015 at 04:56 AM, Wood Scott-B07421 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Saturday, October 24, 2015 4:56 AM
+> > To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > lauraa@codeaurora.org; Xie Xiaobo-R63061 <X.Xie@freescale.com>;
+> > benh@kernel.crashing.org; Li Yang-Leo-R58472 <LeoLi@freescale.com>;
+> > paulus@samba.org
+> > Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management functions to
+> > qe_common
+> > 
+> > On Fri, 2015-10-23 at 02:45 -0500, Zhao Qiang-B45475 wrote:
+> > > On Fri, 2015-10-23 at 11:10 AM, Wood Scott-B07421
+> > > <scottwood@freescale.com>
+> > > wrote:
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: Friday, October 23, 2015 11:10 AM
+> > > > To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+> > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > > > lauraa@codeaurora.org; Xie Xiaobo-R63061 <X.Xie@freescale.com>;
+> > > > benh@kernel.crashing.org; Li Yang-Leo-R58472 <LeoLi@freescale.com>;
+> > > > paulus@samba.org
+> > > > Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management
+> > functions
+> > > > to qe_common
+> > > > 
+> > > > On Wed, 2015-10-14 at 15:16 +0800, Zhao Qiang wrote:
+> > > > > QE and CPM have the same muram, they use the same management
+> > > > > functions. Now QE support both ARM and PowerPC, it is necessary to
+> > > > > move QE to "driver/soc", so move the muram management functions
+> > > > > from cpm_common to qe_common for preparing to move QE code to
+> > "driver/soc"
+> > > > > 
+> > > > > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+> > > > > ---
+> > > > > Changes for v2:
+> > > > >       - no changes
+> > > > > Changes for v3:
+> > > > >       - no changes
+> > > > > Changes for v4:
+> > > > >       - no changes
+> > > > > Changes for v5:
+> > > > >       - no changes
+> > > > > Changes for v6:
+> > > > >       - using genalloc instead rheap to manage QE MURAM
+> > > > >       - remove qe_reset from platform file, using
+> > > > >       - subsys_initcall to call qe_init function.
+> > > > > Changes for v7:
+> > > > >       - move this patch from 3/3 to 2/3
+> > > > >       - convert cpm with genalloc
+> > > > >       - check for gen_pool allocation failure Changes for v8:
+> > > > >       - rebase
+> > > > >       - move BD_SC_* macro instead of copy Changes for v9:
+> > > > >       - doesn't modify CPM, add a new patch to modify.
+> > > > >       - rebase
+> > > > > Changes for v10:
+> > > > >       - rebase
+> > > > > Changes for v11:
+> > > > >       - remove renaming
+> > > > >       - delete removing qe_reset and delete adding qe_init.
+> > > > > Changes for v12:
+> > > > >       - SPI_FSL_CPM depends on QE-MURAM, select QUICC_ENGINE for it.
+> > > > 
+> > > > Why is the SPI change part of this patch?  Why is it even part of
+> > > > this patchset, rather than an independent patch sent to the SPI list
+> > > > and maintainer?  If it's tied to other changes you're making,
+> > > > explain that.  As is, there is zero mention of the SPI change in the
+> > > > part of the e-mail that will become the git changelog.
+> > > > 
+> > > This SPI_FSL_CPM is cpm-spi, it is part of CPM.
+> > 
+> > So then why are you selecting QUICC_ENGINE?  And again, what does it have
+> > to do with this patch?
+> 
+> Cpm-spi is dependent on qe_muram, if not select it, Cpm-spi will failed to 
+> build.
 
---zx4FCpZtqtKETZ7O
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Why QUICC_ENGINE and not CPM?
 
-On Tue, Oct 27, 2015 at 01:33:47PM +1100, Michael Ellerman wrote:
-> On Mon, 2015-26-10 at 10:15:36 UTC, Boqun Feng wrote:
-> > This patch fixes two problems to make value-returning atomics and
-> > {cmp}xchg fully ordered on PPC.
->=20
-> Hi Boqun,
->=20
-> Can you please split this into two patches. One that does the cmpxchg cha=
-nge
-> and one that changes PPC_ATOMIC_ENTRY_BARRIER.
->=20
-
-OK, make sense ;-)
-
-> Also given how pervasive this change is I'd like to take it via the power=
-pc
-> next tree, so can you please send this patch (which will be two after you=
- split
-> it) as powerpc patches. And the rest can go via tip?
->=20
-
-One problem is that patch 5 will remove __xchg_u32 and __xchg_64
-entirely, which are modified in this patch(patch 1), so there will be
-some conflicts if two branch get merged, I think.
-
-Alternative way is that all this series go to powerpc next tree as most
-of the dependent patches are already there. I just need to remove
-inc/dec related code and resend them when appropriate. Besides, I can
-pull patch 2 out and send it as a tip patch because it's general code
-and no one depends on this in this series.
-
-To summerize:
-
-patch 1(split to two), 3, 4(remove inc/dec implementation), 5, 6 sent as
-powerpc patches for powerpc next, patch 2(unmodified) sent as tip patch
-for locking/core.
-
-Peter and Michael, this works for you both?
-
-Regards,
-
---zx4FCpZtqtKETZ7O
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWLupJAAoJEEl56MO1B/q4g14IAJvo1BWopEVRbpgKTzlDSXNL
-tPj4Xpe7663v0IIMBnKPhqRKH4dfGda9g6EC/gp2frSr3xZN0wp19abJiuxIO6S0
-Z7+pRCmVlx2rQ25cfb29jgD2M4rgPZpSfKc0XoU2egFFblh3K8L1FDSkA490bXhL
-/5deB7dZ6vVX2aAjBtJYOaiTTlmniG4V1Wqrh94Ty6z7+qZwt53G52RRms3O/l7u
-H3dGPxA3FeFy0mVGqD0+kKh63CnNUUrEvB5RWcoDHrMvlyHPFVhlBkOQryi7YVNd
-2DP053fHKivKCv6nuNR85HECwbTmbo0jUCXF4aKRJw1d+nxYZEHv9crs6Qcvp48=
-=jVtf
------END PGP SIGNATURE-----
-
---zx4FCpZtqtKETZ7O--
+-Scott
