@@ -1,36 +1,36 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 011F71A0D5F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 05:25:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F181B1A0A85
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 05:25:51 +1100 (AEDT)
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 27 Oct 2015 14:24:57 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 787B738C8039
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 14:24:54 -0400 (EDT)
+ Tue, 27 Oct 2015 14:25:49 -0400
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id C8EF4C90043
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 14:13:57 -0400 (EDT)
 Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9RIOs7O62521590
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 18:24:54 GMT
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9RIPkMK47644728
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 18:25:46 GMT
 Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
  by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9RIOsi7015381
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 14:24:54 -0400
+ t9RIPkog021185
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 14:25:46 -0400
 Received: from [9.41.105.89] ([9.41.105.89])
  by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- t9RIOqYd015213
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 14:24:53 -0400
-Subject: [PATCH v2 2/6] powerpc/pseries: Factor out common cpu hotplug code
+ t9RIPk8r021157
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 14:25:46 -0400
+Subject: [PATCH v2 3/6] powerpc/pseries: Update CPU hotplug error recovery
 To: linuxppc-dev@lists.ozlabs.org
 References: <562FC0C3.7000303@linux.vnet.ibm.com>
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Message-ID: <562FC174.60905@linux.vnet.ibm.com>
-Date: Tue, 27 Oct 2015 13:24:52 -0500
+Message-ID: <562FC1AA.9080203@linux.vnet.ibm.com>
+Date: Tue, 27 Oct 2015 13:25:46 -0500
 MIME-Version: 1.0
 In-Reply-To: <562FC0C3.7000303@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
@@ -43,129 +43,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Re-factor the cpu hotplug code to support doing cpu hotplug completely in
-the kernel and using the existing sysfs probe/release interfaces. This
-patch pulls out pieces of existing cpu hotplug code into common routines,
-dlpar_cpu_add() and dlpar_cpu_remove(), to be used by both interfaces.
-There are no functional changes introduced.
+Update the cpu dlpar add/remove paths to do better error recovery when
+a failure occurs during the add/remove operation.
 
 Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/hotplug-cpu.c |   70 ++++++++++++++------------
- 1 file changed, 39 insertions(+), 31 deletions(-)
+
+Updates for v2:
+- Corrected some pr_* statements moving pr_info to pr_debug staements
+  and pr_debug to pr_warn statements.
+
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |   76 ++++++++++++++++++++++----
+ 1 file changed, 63 insertions(+), 13 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 10c2942..d6cb184 100644
+index d6cb184..f080e81 100644
 --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
 +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -340,8 +340,6 @@ static void pseries_remove_processor(struct device_node *np)
- 	cpu_maps_update_done();
- }
+@@ -18,6 +18,8 @@
+  *      2 of the License, or (at your option) any later version.
+  */
  
--#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
--
- static int dlpar_online_cpu(struct device_node *dn)
- {
- 	int rc = 0;
-@@ -409,16 +407,11 @@ static bool dlpar_cpu_exists(struct device_node *parent, u32 drc_index)
- 	return found;
- }
- 
--static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
-+static ssize_t dlpar_cpu_add(u32 drc_index)
++#define pr_fmt(fmt)     "pseries-hotplug-cpu: " fmt
++
+ #include <linux/kernel.h>
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
+@@ -410,38 +412,67 @@ static bool dlpar_cpu_exists(struct device_node *parent, u32 drc_index)
+ static ssize_t dlpar_cpu_add(u32 drc_index)
  {
  	struct device_node *dn, *parent;
--	u32 drc_index;
- 	int rc;
+-	int rc;
++	int rc, saved_rc;
++
++	pr_debug("Attempting to add CPU, drc index: %x\n", drc_index);
  
--	rc = kstrtou32(buf, 0, &drc_index);
--	if (rc)
--		return -EINVAL;
--
  	parent = of_find_node_by_path("/cpus");
- 	if (!parent)
+-	if (!parent)
++	if (!parent) {
++		pr_warn("Failed to find CPU root node \"/cpus\"\n");
  		return -ENODEV;
-@@ -449,10 +442,7 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
- 	}
++	}
  
- 	rc = dlpar_online_cpu(dn);
--	if (rc)
--		return rc;
--
--	return count;
-+	return rc;
- }
- 
- static int dlpar_offline_cpu(struct device_node *dn)
-@@ -511,6 +501,41 @@ out:
- 
- }
- 
-+static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
-+{
-+	int rc;
-+
-+	rc = dlpar_offline_cpu(dn);
-+	if (rc)
-+		return -EINVAL;
-+
-+	rc = dlpar_release_drc(drc_index);
-+	if (rc)
-+		return rc;
-+
-+	rc = dlpar_detach_node(dn);
-+	if (rc)
-+		dlpar_acquire_drc(drc_index);
-+
-+	return rc;
-+}
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+
-+static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
-+{
-+	u32 drc_index;
-+	int rc;
-+
-+	rc = kstrtou32(buf, 0, &drc_index);
-+	if (rc)
-+		return -EINVAL;
-+
-+	rc = dlpar_cpu_add(drc_index);
-+
-+	return rc ? rc : count;
-+}
-+
- static ssize_t dlpar_cpu_release(const char *buf, size_t count)
- {
- 	struct device_node *dn;
-@@ -527,27 +552,10 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
+ 	if (dlpar_cpu_exists(parent, drc_index)) {
+ 		of_node_put(parent);
+-		printk(KERN_WARNING "CPU with drc index %x already exists\n",
+-		       drc_index);
++		pr_warn("CPU with drc index %x already exists\n", drc_index);
  		return -EINVAL;
  	}
  
--	rc = dlpar_offline_cpu(dn);
--	if (rc) {
--		of_node_put(dn);
--		return -EINVAL;
--	}
--
--	rc = dlpar_release_drc(drc_index);
--	if (rc) {
--		of_node_put(dn);
--		return rc;
--	}
--
--	rc = dlpar_detach_node(dn);
--	if (rc) {
--		dlpar_acquire_drc(drc_index);
--		return rc;
--	}
--
-+	rc = dlpar_cpu_remove(dn, drc_index);
- 	of_node_put(dn);
+ 	rc = dlpar_acquire_drc(drc_index);
+ 	if (rc) {
++		pr_warn("Failed to acquire DRC, rc: %d, drc index: %x\n",
++			rc, drc_index);
+ 		of_node_put(parent);
+ 		return -EINVAL;
+ 	}
  
--	return count;
-+	return rc ? rc : count;
+ 	dn = dlpar_configure_connector(cpu_to_be32(drc_index), parent);
+ 	of_node_put(parent);
+-	if (!dn)
++	if (!dn) {
++		pr_warn("Failed call to configure-connector, drc index: %x\n",
++			drc_index);
++		dlpar_release_drc(drc_index);
+ 		return -EINVAL;
++	}
+ 
+ 	rc = dlpar_attach_node(dn);
+ 	if (rc) {
+-		dlpar_release_drc(drc_index);
+-		dlpar_free_cc_nodes(dn);
+-		return rc;
++		saved_rc = rc;
++		pr_warn("Failed to attach node %s, rc: %d, drc index: %x\n",
++			dn->name, rc, drc_index);
++
++		rc = dlpar_release_drc(drc_index);
++		if (!rc)
++			dlpar_free_cc_nodes(dn);
++
++		return saved_rc;
+ 	}
+ 
+ 	rc = dlpar_online_cpu(dn);
++	if (rc) {
++		saved_rc = rc;
++		pr_warn("Failed to online cpu %s, rc: %d, drc index: %x\n",
++			dn->name, rc, drc_index);
++
++		rc = dlpar_detach_node(dn);
++		if (!rc)
++			dlpar_release_drc(drc_index);
++
++		return saved_rc;
++	}
++
++	pr_debug("Successfully added CPU %s, drc index: %x\n", dn->name,
++		 drc_index);
+ 	return rc;
  }
  
- #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
+@@ -505,19 +536,38 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
+ {
+ 	int rc;
+ 
++	pr_debug("Attemping to remove CPU %s, drc index: %x\n",
++		 dn->name, drc_index);
++
+ 	rc = dlpar_offline_cpu(dn);
+-	if (rc)
++	if (rc) {
++		pr_warn("Failed to offline CPU %s, rc: %d\n", dn->name, rc);
+ 		return -EINVAL;
++	}
+ 
+ 	rc = dlpar_release_drc(drc_index);
+-	if (rc)
++	if (rc) {
++		pr_warn("Failed to release drc (%x) for CPU %s, rc: %d\n",
++			drc_index, dn->name, rc);
++		dlpar_online_cpu(dn);
+ 		return rc;
++	}
+ 
+ 	rc = dlpar_detach_node(dn);
+-	if (rc)
+-		dlpar_acquire_drc(drc_index);
++	if (rc) {
++		int saved_rc = rc;
+ 
+-	return rc;
++		pr_warn("Failed to detach CPU %s, rc: %d", dn->name, rc);
++
++		rc = dlpar_acquire_drc(drc_index);
++		if (!rc)
++			dlpar_online_cpu(dn);
++
++		return saved_rc;
++	}
++
++	pr_debug("Successfully removed CPU, drc index: %x\n", drc_index);
++	return 0;
+ }
+ 
+ #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
