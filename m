@@ -1,24 +1,26 @@
-Return-Path: <yinghai@kernel.org>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
+ [IPv6:2607:f8b0:400e:c03::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 677D81A0244
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 08:02:26 +1100 (AEDT)
-From: Yinghai Lu <yinghai@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Wei Yang <weiyang@linux.vnet.ibm.com>, TJ <linux@iam.tj>,
- Yijing Wang <wangyijing@huawei.com>, Khalid Aziz <khalid.aziz@oracle.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- Yinghai Lu <yinghai@kernel.org>, Michal Simek <monstr@monstr.eu>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org
-Subject: [PATCH v8 52/61] PCI: Unify skip_ioresource_align()
-Date: Tue, 27 Oct 2015 13:55:44 -0700
-Message-Id: <1445979353-1728-53-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1445979353-1728-1-git-send-email-yinghai@kernel.org>
-References: <1445979353-1728-1-git-send-email-yinghai@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EB0991A041D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 09:04:52 +1100 (AEDT)
+Received: by padhk11 with SMTP id hk11so234628732pad.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 15:04:50 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
+ bhelgaas@google.com, mpe@ellerman.id.au, aik@ozlabs.ru
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: Re: [PATCH V10 03/12] powerpc/pci: Cache VF index in pci_dn
+In-Reply-To: <1445829362-2738-4-git-send-email-weiyang@linux.vnet.ibm.com>
+References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1445829362-2738-4-git-send-email-weiyang@linux.vnet.ibm.com>
+Date: Wed, 28 Oct 2015 09:04:34 +1100
+Message-ID: <87pp00otn1.fsf@gamma.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,193 +30,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are powerpc generic version and x86 local version for
-skip_ioresource_align().
+--=-=-=
+Content-Type: text/plain
 
-Move the powerpc version to setup-bus.c, and kill x86 local version.
+Hi,
 
-Also kill dummy version in microblaze.
+>
+> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+> index b3a226b..3d7e537 100644
+> --- a/arch/powerpc/include/asm/pci-bridge.h
+> +++ b/arch/powerpc/include/asm/pci-bridge.h
+> @@ -210,6 +210,7 @@ struct pci_dn {
+>  #define IODA_INVALID_PE		(-1)
+>  #ifdef CONFIG_PPC_POWERNV
+>  	int	pe_number;
+> +	int     vf_index;		/* VF index in the PF */
 
-Cc: Michal Simek <monstr@monstr.eu>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-arch@vger.kernel.org
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/microblaze/pci/pci-common.c |  8 --------
- arch/powerpc/kernel/pci-common.c | 11 +----------
- arch/x86/include/asm/pci_x86.h   |  1 -
- arch/x86/pci/common.c            |  4 ++--
- arch/x86/pci/i386.c              | 12 ++----------
- drivers/pci/setup-bus.c          |  9 +++++++++
- include/asm-generic/pci-bridge.h |  2 ++
- 7 files changed, 16 insertions(+), 31 deletions(-)
+Here, vf_index is inside CONFIG_PPC_POWERNV...
 
-diff --git a/arch/microblaze/pci/pci-common.c b/arch/microblaze/pci/pci-common.c
-index ae838ed..09b1af6 100644
---- a/arch/microblaze/pci/pci-common.c
-+++ b/arch/microblaze/pci/pci-common.c
-@@ -878,11 +878,6 @@ void pcibios_fixup_bus(struct pci_bus *bus)
- }
- EXPORT_SYMBOL(pcibios_fixup_bus);
- 
--static int skip_isa_ioresource_align(struct pci_dev *dev)
--{
--	return 0;
--}
--
- /*
-  * We need to avoid collisions with `mirrored' VGA ports
-  * and other strange ISA hardware, so we always want the
-@@ -899,12 +894,9 @@ static int skip_isa_ioresource_align(struct pci_dev *dev)
- resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- 				resource_size_t size, resource_size_t align)
- {
--	struct pci_dev *dev = data;
- 	resource_size_t start = res->start;
- 
- 	if (res->flags & IORESOURCE_IO) {
--		if (skip_isa_ioresource_align(dev))
--			return start;
- 		if (start & 0x300)
- 			start = (start + 0x3ff) & ~0x3ff;
- 	}
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 7587b2a..8853667 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1052,15 +1052,6 @@ void pci_fixup_cardbus(struct pci_bus *bus)
- 	pcibios_setup_bus_devices(bus);
- }
- 
--
--static int skip_isa_ioresource_align(struct pci_dev *dev)
--{
--	if (pci_has_flag(PCI_CAN_SKIP_ISA_ALIGN) &&
--	    !(dev->bus->bridge_ctl & PCI_BRIDGE_CTL_ISA))
--		return 1;
--	return 0;
--}
--
- /*
-  * We need to avoid collisions with `mirrored' VGA ports
-  * and other strange ISA hardware, so we always want the
-@@ -1081,7 +1072,7 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- 	resource_size_t start = res->start;
- 
- 	if (res->flags & IORESOURCE_IO) {
--		if (skip_isa_ioresource_align(dev))
-+		if (skip_isa_ioresource_align(dev->bus))
- 			return start;
- 		if (start & 0x300)
- 			start = (start + 0x3ff) & ~0x3ff;
-diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
-index fa1195d..81a7abf 100644
---- a/arch/x86/include/asm/pci_x86.h
-+++ b/arch/x86/include/asm/pci_x86.h
-@@ -28,7 +28,6 @@ do {						\
- #define PCI_ASSIGN_ROMS		0x1000
- #define PCI_BIOS_IRQ_SCAN	0x2000
- #define PCI_ASSIGN_ALL_BUSSES	0x4000
--#define PCI_CAN_SKIP_ISA_ALIGN	0x8000
- #define PCI_USE__CRS		0x10000
- #define PCI_CHECK_ENABLE_AMD_MMCONF	0x20000
- #define PCI_HAS_IO_ECS		0x40000
-diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index dc78a4a..7c018df 100644
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -83,7 +83,7 @@ DEFINE_RAW_SPINLOCK(pci_config_lock);
- 
- static int __init can_skip_ioresource_align(const struct dmi_system_id *d)
- {
--	pci_probe |= PCI_CAN_SKIP_ISA_ALIGN;
-+	pci_add_flags(PCI_CAN_SKIP_ISA_ALIGN);
- 	printk(KERN_INFO "PCI: %s detected, can skip ISA alignment\n", d->ident);
- 	return 0;
- }
-@@ -619,7 +619,7 @@ char *__init pcibios_setup(char *str)
- 		pci_routeirq = 1;
- 		return NULL;
- 	} else if (!strcmp(str, "skip_isa_align")) {
--		pci_probe |= PCI_CAN_SKIP_ISA_ALIGN;
-+		pci_add_flags(PCI_CAN_SKIP_ISA_ALIGN);
- 		return NULL;
- 	} else if (!strcmp(str, "noioapicquirk")) {
- 		noioapicquirk = 1;
-diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-index 0a9f2ca..3f17726 100644
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -33,6 +33,7 @@
- #include <linux/errno.h>
- #include <linux/bootmem.h>
- 
-+#include <asm-generic/pci-bridge.h>
- #include <asm/pat.h>
- #include <asm/e820.h>
- #include <asm/pci_x86.h>
-@@ -128,15 +129,6 @@ static void __init pcibios_fw_addr_list_del(void)
- 	pcibios_fw_addr_done = true;
- }
- 
--static int
--skip_isa_ioresource_align(struct pci_dev *dev) {
--
--	if ((pci_probe & PCI_CAN_SKIP_ISA_ALIGN) &&
--	    !(dev->bus->bridge_ctl & PCI_BRIDGE_CTL_ISA))
--		return 1;
--	return 0;
--}
--
- /*
-  * We need to avoid collisions with `mirrored' VGA ports
-  * and other strange ISA hardware, so we always want the
-@@ -158,7 +150,7 @@ pcibios_align_resource(void *data, const struct resource *res,
- 	resource_size_t start = res->start;
- 
- 	if (res->flags & IORESOURCE_IO) {
--		if (skip_isa_ioresource_align(dev))
-+		if (skip_isa_ioresource_align(dev->bus))
- 			return start;
- 		if (start & 0x300)
- 			start = (start + 0x3ff) & ~0x3ff;
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index bbc10d8..f1c7b46 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -1151,6 +1151,15 @@ static resource_size_t window_alignment(struct pci_bus *bus,
- 	return max(align, arch_align);
- }
- 
-+int skip_isa_ioresource_align(struct pci_bus *bus)
-+{
-+	if (pci_has_flag(PCI_CAN_SKIP_ISA_ALIGN) &&
-+	    !(bus->bridge_ctl & PCI_BRIDGE_CTL_ISA))
-+		return 1;
-+
-+	return 0;
-+}
-+
- static resource_size_t size_aligned_for_isa(resource_size_t size)
- {
- 	/*
-diff --git a/include/asm-generic/pci-bridge.h b/include/asm-generic/pci-bridge.h
-index 20db2e5..fab4bd0 100644
---- a/include/asm-generic/pci-bridge.h
-+++ b/include/asm-generic/pci-bridge.h
-@@ -60,6 +60,8 @@ static inline int pci_has_flag(int flag)
- {
- 	return pci_flags & flag;
- }
-+
-+int skip_isa_ioresource_align(struct pci_bus *bus);
- #else
- static inline void pci_set_flags(int flags) { }
- static inline void pci_add_flags(int flags) { }
--- 
-1.8.4.5
+>  #ifdef CONFIG_PCI_IOV
+>  	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
+>  	u16     num_vfs;		/* number of VFs enabled*/
+> diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+> index b3b4df9..f771130 100644
+> --- a/arch/powerpc/kernel/pci_dn.c
+> +++ b/arch/powerpc/kernel/pci_dn.c
+> @@ -139,6 +139,7 @@ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
+>  #ifdef CONFIG_PCI_IOV
+>  static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+>  					   struct pci_dev *pdev,
+> +					   int vf_index,
+>  					   int busno, int devfn)
+>  {
+>  	struct pci_dn *pdn;
+> @@ -157,6 +158,7 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+>  	pdn->parent = parent;
+>  	pdn->busno = busno;
+>  	pdn->devfn = devfn;
+> +	pdn->vf_index = vf_index;
+>  #ifdef CONFIG_PPC_POWERNV
+>  	pdn->pe_number = IODA_INVALID_PE;
+... but here, vf_index is outside CONFIG_PPC_POWERNV.
+
+Otherwise, the patch looks fine to me.
+
+I'm still trying to get my head around SR-IOV generally - once I do I
+will add any more comments I have or add a reviewed-by.
+
+Regards,
+Daniel
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAEBCgAGBQJWL/TyAAoJEPC3R3P2I92FDOYQAK308mSVjJMwzWsRyQjYYhZl
+Hrow29pj8Lu4gmTdntb4xWX0+hc8uIbJpFk0mvFzIhCv/QhY0PQgURK04FQQLiv9
+lti0624zP1ah6C7JzLRkRQsCbZAuTpMlj/IvHroFg0YJQNdKkyCM2ijq+7SrKzkJ
+OUD10QA9RGTTX8tt6BfW6hHoxMPA4EB+I074LLQtNMjQcZRQh8aE/ezSpIazrPV/
+yhac7Jgf6evmRCl/xovRi5YPZs+qnyKm79o5YSaug0VLVEDwtMXySwgtKsPIZzF7
+HFCDmS9ThWo+Td9R0+dnybOgwxFhXW59aTbXcs7VLFRUtO0U1gJvv3ytKtLL1aSa
+GqxPcBhrpDeJJw1Yd94rxx7ZK8n0vJ4sAtdqCHwPsbG6wxax7YlvnNnSFzBvWerv
+5LUrEd1SEm5CE9gQrp7GLQsGg+dSPT++0muBPyA4YUMQLfsngYOmIzST620L7bfX
+jIZYIh/9JaB/GHJf4vQQ8FiZ5rHi2UEyfan3dWOgP5Tj+XXk/5bLWSQk5TV2Sc47
+t9kFgTtq1nwhfSl3SMsOdwtByxWhNhDrTCFYJbnbCBhAn0waJ7Ig1sMfp9lF9yMi
+m4IYattxpuJmVWlLC/0LAvFUuCdyiIkH68O8XjZcuaxtpEFNxcGtyoSXJ7bZ0AlW
+9pSia8FdoYjscWeP5sSL
+=i6vB
+-----END PGP SIGNATURE-----
+--=-=-=--
