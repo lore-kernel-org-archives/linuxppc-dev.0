@@ -1,24 +1,33 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0125.outbound.protection.outlook.com [65.55.169.125])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 874901A0483
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 03:32:57 +1100 (AEDT)
-From: Liberman Igal <Igal.Liberman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Madalin-Cristian Bucur <madalin.bucur@freescale.com>
-Subject: RE: [V5, 2/6] fsl/fman: Add FMan support
-Date: Tue, 27 Oct 2015 16:32:47 +0000
-Message-ID: <BL2PR03MB5006080090B6783629A33A5E6220@BL2PR03MB500.namprd03.prod.outlook.com>
-References: <1442836354-5445-1-git-send-email-igal.liberman@freescale.com>
- <20150925230153.GA4626@home.buserror.net>
-In-Reply-To: <20150925230153.GA4626@home.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0DDF61A03BD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 03:42:29 +1100 (AEDT)
+Received: from localhost
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Tue, 27 Oct 2015 16:42:26 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id C1A5F2190056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 16:42:20 +0000 (GMT)
+Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
+ [9.149.37.250])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9RGgNbI7668176
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 16:42:23 GMT
+Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9RGgNdv032507
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 10:42:23 -0600
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com
+Subject: [PATCH v2] powerpc/mm: Add page soft dirty tracking
+Date: Tue, 27 Oct 2015 17:42:22 +0100
+Message-Id: <1445964142-32050-1-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,934 +37,216 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Regards,
-Igal Liberman
-
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Saturday, September 26, 2015 2:02 AM
-> To: Liberman Igal-B31950 <Igal.Liberman@freescale.com>
-> Cc: netdev@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
-> kernel@vger.kernel.org; Bucur Madalin-Cristian-B32716
-> <madalin.bucur@freescale.com>
-> Subject: Re: [V5, 2/6] fsl/fman: Add FMan support
->=20
-> On Mon, Sep 21, 2015 at 02:52:34PM +0300, Igal.Liberman wrote:
-> > diff --git a/drivers/net/ethernet/freescale/fman/fman.c
-> > b/drivers/net/ethernet/freescale/fman/fman.c
-> > new file mode 100644
-> > index 0000000..924685f
-> > --- /dev/null
-> > +++ b/drivers/net/ethernet/freescale/fman/fman.c
-> > @@ -0,0 +1,2738 @@
-> > +/*
-> > + * Copyright 2008-2015 Freescale Semiconductor Inc.
-> > + *
-> > + * Redistribution and use in source and binary forms, with or without
-> > + * modification, are permitted provided that the following conditions =
-are
-> met:
-> > + *     * Redistributions of source code must retain the above copyrigh=
-t
-> > + *       notice, this list of conditions and the following disclaimer.
-> > + *     * Redistributions in binary form must reproduce the above copyr=
-ight
-> > + *       notice, this list of conditions and the following disclaimer =
-in the
-> > + *       documentation and/or other materials provided with the
-> distribution.
-> > + *     * Neither the name of Freescale Semiconductor nor the
-> > + *       names of its contributors may be used to endorse or promote
-> products
-> > + *       derived from this software without specific prior written per=
-mission.
-> > + *
-> > +//  *
-> > + * ALTERNATIVELY, this software may be distributed under the terms of
-> > +the
-> > + * GNU General Public License ("GPL") as published by the Free
-> > +Software
-> > + * Foundation, either version 2 of that License or (at your option)
-> > +any
-> > + * later version.
->=20
-> What is that // doing there?
-
-Removed.
-
->=20
-> > +/* Exceptions bit map */
-> > +#define EX_DMA_BUS_ERROR		0x80000000
-> > +#define EX_DMA_READ_ECC			0x40000000
-> > +#define EX_DMA_SYSTEM_WRITE_ECC	0x20000000
-> > +#define EX_DMA_FM_WRITE_ECC		0x10000000
-> > +#define EX_FPM_STALL_ON_TASKS		0x08000000
-> > +#define EX_FPM_SINGLE_ECC		0x04000000
-> > +#define EX_FPM_DOUBLE_ECC		0x02000000
-> > +#define EX_QMI_SINGLE_ECC		0x01000000
-> > +#define EX_QMI_DEQ_FROM_UNKNOWN_PORTID	0x00800000
-> > +#define EX_QMI_DOUBLE_ECC		0x00400000
-> > +#define EX_BMI_LIST_RAM_ECC		0x00200000
-> > +#define EX_BMI_STORAGE_PROFILE_ECC	0x00100000
-> > +#define EX_BMI_STATISTICS_RAM_ECC	0x00080000
-> > +#define EX_IRAM_ECC			0x00040000
-> > +#define EX_MURAM_ECC			0x00020000
-> > +#define EX_BMI_DISPATCH_RAM_ECC	0x00010000
-> > +#define EX_DMA_SINGLE_PORT_ECC		0x00008000
-> > +
-> > +#define DFLT_EXCEPTIONS	\
-> > +	 ((EX_DMA_BUS_ERROR)            | \
-> > +	  (EX_DMA_READ_ECC)              | \
-> > +	  (EX_DMA_SYSTEM_WRITE_ECC)      | \
-> > +	  (EX_DMA_FM_WRITE_ECC)          | \
-> > +	  (EX_FPM_STALL_ON_TASKS)        | \
-> > +	  (EX_FPM_SINGLE_ECC)            | \
-> > +	  (EX_FPM_DOUBLE_ECC)            | \
-> > +	  (EX_QMI_DEQ_FROM_UNKNOWN_PORTID) | \
-> > +	  (EX_BMI_LIST_RAM_ECC)          | \
-> > +	  (EX_BMI_STORAGE_PROFILE_ECC)   | \
-> > +	  (EX_BMI_STATISTICS_RAM_ECC)    | \
-> > +	  (EX_MURAM_ECC)                 | \
-> > +	  (EX_BMI_DISPATCH_RAM_ECC)      | \
-> > +	  (EX_QMI_DOUBLE_ECC)            | \
-> > +	  (EX_QMI_SINGLE_ECC))
->=20
-> You don't need parentheses around each symbol.
->=20
-
-Removed the parentheses (here and in other places)
-
-> This is only used in one place -- why put the list here rather than in th=
-e place
-> where it's used?
->=20
-
-Moved this define.
-
-> > +struct fman_state_struct {
-> > +	u8 fm_id;
-> > +	u16 fm_clk_freq;
-> > +	struct fman_rev_info rev_info;
-> > +	bool enabled_time_stamp;
-> > +	u8 count1_micro_bit;
-> > +	u8 total_num_of_tasks;
-> > +	u8 accumulated_num_of_tasks;
-> > +	u32 accumulated_fifo_size;
-> > +	u8 accumulated_num_of_open_dmas;
-> > +	u8 accumulated_num_of_deq_tnums;
-> > +	bool low_end_restriction;
-> > +	u32 exceptions;
-> > +	u32 extra_fifo_pool_size;
-> > +	u8 extra_tasks_pool_size;
-> > +	u8 extra_open_dmas_pool_size;
-> > +	u16 port_mfl[MAX_NUM_OF_MACS];
-> > +	u16 mac_mfl[MAX_NUM_OF_MACS];
-> > +
-> > +	/* SOC specific */
-> > +	u32 fm_iram_size;
-> > +	/* DMA */
-> > +	u32 dma_thresh_max_commq;
-> > +	u32 dma_thresh_max_buf;
-> > +	u32 max_num_of_open_dmas;
-> > +	/* QMI */
-> > +	u32 qmi_max_num_of_tnums;
-> > +	u32 qmi_def_tnums_thresh;
-> > +	/* BMI */
-> > +	u32 bmi_max_num_of_tasks;
-> > +	u32 bmi_max_fifo_size;
-> > +	/* General */
-> > +	u32 fm_port_num_of_cg;
-> > +	u32 num_of_rx_ports;
-> > +	u32 total_fifo_size;
-> > +
-> > +	u32 qman_channel_base;
-> > +	u32 num_of_qman_channels;
-> > +
-> > +	struct resource *res;
-> > +};
-> > +
-> > +struct fman_cfg {
-> > +	u8 disp_limit_tsh;
-> > +	u8 prs_disp_tsh;
-> > +	u8 plcr_disp_tsh;
-> > +	u8 kg_disp_tsh;
-> > +	u8 bmi_disp_tsh;
-> > +	u8 qmi_enq_disp_tsh;
-> > +	u8 qmi_deq_disp_tsh;
-> > +	u8 fm_ctl1_disp_tsh;
-> > +	u8 fm_ctl2_disp_tsh;
-> > +	int dma_cache_override;
-> > +	enum fman_dma_aid_mode dma_aid_mode;
-> > +	bool dma_aid_override;
-> > +	u32 dma_axi_dbg_num_of_beats;
-> > +	u32 dma_cam_num_of_entries;
-> > +	u32 dma_watchdog;
-> > +	u8 dma_comm_qtsh_asrt_emer;
-> > +	u32 dma_write_buf_tsh_asrt_emer;
-> > +	u32 dma_read_buf_tsh_asrt_emer;
-> > +	u8 dma_comm_qtsh_clr_emer;
-> > +	u32 dma_write_buf_tsh_clr_emer;
-> > +	u32 dma_read_buf_tsh_clr_emer;
-> > +	u32 dma_sos_emergency;
-> > +	int dma_dbg_cnt_mode;
-> > +	bool dma_stop_on_bus_error;
-> > +	bool dma_en_emergency;
-> > +	u32 dma_emergency_bus_select;
-> > +	int dma_emergency_level;
-> > +	bool dma_en_emergency_smoother;
-> > +	u32 dma_emergency_switch_counter;
-> > +	bool halt_on_external_activ;
-> > +	bool halt_on_unrecov_ecc_err;
-> > +	int catastrophic_err;
-> > +	int dma_err;
-> > +	bool en_muram_test_mode;
-> > +	bool en_iram_test_mode;
-> > +	bool external_ecc_rams_enable;
-> > +	u16 tnum_aging_period;
-> > +	u32 exceptions;
-> > +	u16 clk_freq;
-> > +	bool pedantic_dma;
-> > +	u32 cam_base_addr;
-> > +	u32 fifo_base_addr;
-> > +	u32 total_fifo_size;
-> > +	u32 total_num_of_tasks;
-> > +	bool qmi_deq_option_support;
-> > +	u32 qmi_def_tnums_thresh;
-> > +};
->=20
-> Some documentation on this stuff would be nice.
->=20
-> > +static inline u8 hw_port_id_to_sw_port_id(u8 major, u8 hw_port_id) {
-> > +	u8 sw_port_id =3D 0;
-> > +
-> > +	if (hw_port_id >=3D BASE_TX_PORTID) {
-> > +		sw_port_id =3D hw_port_id - BASE_TX_PORTID;
-> > +	} else if (hw_port_id >=3D BASE_RX_PORTID) {
-> > +		sw_port_id =3D hw_port_id - BASE_RX_PORTID;
-> > +	} else {
-> > +		sw_port_id =3D 0;
-> > +		WARN_ON(false);
->=20
-> WARN_ON(false) is a no-op.
->=20
-
-Removed.
-
-> > +	}
-> > +
-> > +	return sw_port_id;
-> > +}
-> > +
-> > +static void set_port_order_restoration(struct fman_fpm_regs __iomem
-> *fpm_rg,
-> > +				       u8 port_id)
-> > +{
-> > +	u32 tmp =3D 0;
-> > +
-> > +	tmp =3D (u32)(port_id << FPM_PORT_FM_CTL_PORTID_SHIFT);
->=20
-> Unnecessary cast.  Likewise elsewhere.
->=20
-
-Removed.
-
-> > +
-> > +	tmp |=3D (FPM_PRT_FM_CTL2 | FPM_PRT_FM_CTL1);
-> > +
-> > +	/* order restoration */
-> > +	if (port_id % 2)
-> > +		tmp |=3D (FPM_PRT_FM_CTL1 <<
-> FPM_PRC_ORA_FM_CTL_SEL_SHIFT);
-> > +	else
-> > +		tmp |=3D (FPM_PRT_FM_CTL2 <<
-> FPM_PRC_ORA_FM_CTL_SEL_SHIFT);
->=20
-> Unnecessary parens.
->=20
-
-Removed.
-
-> > +static int get_module_event(enum fman_event_modules module, u8
-> mod_id,
-> > +			    enum fman_intr_type intr_type) {
-> > +	int event;
-> > +
-> > +	switch (module) {
-> > +	case FMAN_MOD_MAC:
-> > +			event =3D (intr_type =3D=3D FMAN_INTR_TYPE_ERR) ?
-> > +			(FMAN_EV_ERR_MAC0 + mod_id) :
-> > +			(FMAN_EV_MAC0 + mod_id);
->=20
-> Use if/else...
->=20
-
-Done.
-
-> > +		break;
-> > +	case FMAN_MOD_FMAN_CTRL:
-> > +		if (intr_type =3D=3D FMAN_INTR_TYPE_ERR)
-> > +			event =3D FMAN_EV_CNT;
-> > +		else
-> > +			event =3D (FMAN_EV_FMAN_CTRL_0 + mod_id);
-> > +		break;
->=20
-> ...just like here.
->=20
-> > +	/* Read, modify and write to HW */
-> > +	tmp =3D (u32)((fifo / FMAN_BMI_FIFO_UNITS - 1) |
-> > +		    ((extra_fifo / FMAN_BMI_FIFO_UNITS) <<
-> > +		    BMI_EXTRA_FIFO_SIZE_SHIFT));
->=20
-> Unnecessary cast.
->=20
-
-Removed.
-
-> > +	if (extra_tasks)
-> > +		fman->state->extra_tasks_pool_size =3D
-> > +		(u8)max(fman->state->extra_tasks_pool_size, extra_tasks);
->=20
-> Unnecessary cast.
->=20
-
-Removed.
-
-> > +static int fman_init(struct fman *fman) {
-> > +	struct fman_cfg *cfg =3D NULL;
-> > +	struct fman_rg fman_rg;
-> > +	int err =3D 0, i;
-> > +
-> > +	if (is_init_done(fman->cfg))
-> > +		return -EINVAL;
-> > +
-> > +	fman_rg.bmi_rg =3D fman->bmi_regs;
-> > +	fman_rg.qmi_rg =3D fman->qmi_regs;
-> > +	fman_rg.fpm_rg =3D fman->fpm_regs;
-> > +	fman_rg.dma_rg =3D fman->dma_regs;
->=20
-> Why keep this information in two different places and formats?
-
-Removed struct fman_rg.=20
-The pointers to the memory map are saved only in struct fman now.=20
-
->=20
-> > +	/* Reset the FM if required. */
-> > +	if (fman->reset_on_init) {
->=20
-> When is this ever not true?
->=20
-
-Removed the check, always preform reset.
-
-> > +		if (fman->state->rev_info.major >=3D 6) {
-> > +			/* Errata A007273 */
-> > +			pr_debug("FManV3 reset is not supported!\n");
->=20
-> No plan to implement the workaround involving DEVDISR2?
->=20
-
-Not now. This is probably required for loadable module support.
-I'll consider adding a workaround if needed.
-
-> > +		} else {
-> > +			out_be32(&fman->fpm_regs->fm_rstc,
-> FPM_RSTC_FM_RESET);
-> > +			/* Memory barrier */
-> > +			mb();
-> > +			usleep_range(100, 300);
-> > +		}
->=20
-> Where does 100us come from?  Shouldn't you wait for the FM_RESET bit to
-> be cleared?
->=20
-
-Changed the way the driver waits for FMan reset completion.=20
-
-> > +
-> > +		if (!!(ioread32be(&fman_rg.qmi_rg->fmqm_gs) &
-> > +		    QMI_GS_HALT_NOT_BUSY)) {
-> > +			resume(fman->fpm_regs);
-> > +			usleep_range(100, 300);
-> > +		}
->=20
-> There's no need for !! here.
->=20
-=20
-Removed.
-
-> Same question as above regarding the delay.
->=20
-
-Changed the way the driver waits for resume completion.
-
-> > +static int fman_set_exception(struct fman *fman,
-> > +			      enum fman_exceptions exception, bool enable) {
-> > +	u32 bit_mask =3D 0;
-> > +	struct fman_rg fman_rg;
-> > +
-> > +	if (!is_init_done(fman->cfg))
-> > +		return -EINVAL;
-> > +
-> > +	fman_rg.bmi_rg =3D fman->bmi_regs;
-> > +	fman_rg.qmi_rg =3D fman->qmi_regs;
-> > +	fman_rg.fpm_rg =3D fman->fpm_regs;
-> > +	fman_rg.dma_rg =3D fman->dma_regs;
-> > +
-> > +	bit_mask =3D get_exception_flag(exception);
-> > +	if (bit_mask) {
-> > +		if (enable)
-> > +			fman->state->exceptions |=3D bit_mask;
-> > +		else
-> > +			fman->state->exceptions &=3D ~bit_mask;
-> > +	} else {
-> > +		pr_err("Undefined exception\n");
-> > +		return -EINVAL;
->=20
-> This is not a useful error message.
->=20
-> Use dev_err, __func__, and print the unexpected value.
->=20
-> Likewise elsewhere.
->=20
-
-Changed to dev_err/warn/debug where possible.
-
-> > +	}
-> > +
-> > +	return set_exckeption(&fman_rg, exception, enable); }
-> > +
-> > +void fman_register_intr(struct fman *fman, enum fman_event_modules
-> module,
-> > +			u8 mod_id, enum fman_intr_type intr_type,
-> > +			void (*isr_cb)(void *src_arg), void *src_arg) {
-> > +	int event =3D 0;
-> > +
-> > +	event =3D get_module_event(module, mod_id, intr_type);
-> > +	WARN_ON(!(event < FMAN_EV_CNT));
->=20
-> This isn't floating point.  You can safely say WARN_ON(event >=3D
-> FMAN_EV_CNT). :-P
->=20
-
-Done.
-
-> > +	spin_lock_irqsave(&fman->spinlock, int_flags);
->=20
-> "flags", rather than "int_flags" is idiomatic.
-
-Replaced int_flags with flags.
-
->=20
-> > +
-> > +	err =3D set_num_of_tasks(fman, port_params->port_id,
-> > +			       &port_params->num_of_tasks,
-> > +			       &port_params->num_of_extra_tasks);
-> > +	if (err) {
-> > +		spin_unlock_irqrestore(&fman->spinlock, int_flags);
-> > +		return err;
-> > +	}
->=20
-> Use the standard goto error handling model.
->=20
-
-Done.=20
-
-> > +		/* if deq_th is too small, we enlarge it to the min
-> > +		 * value that is still 0.
-> > +		 * depTh may not be larger than 63
-> > +		 * (fman->state->qmi_max_num_of_tnums-1).
-> > +		 */
-> > +		if ((deq_th <=3D fman->state-
-> >accumulated_num_of_deq_tnums) &&
-> > +		    (deq_th < fman->state->qmi_max_num_of_tnums - 1)) {
-> > +				deq_th =3D
-> > +				fman->state-
-> >accumulated_num_of_deq_tnums + 1;
-> > +			reg =3D ioread32be(&fman_rg.qmi_rg->fmqm_gc);
->=20
-> Whitespace
->=20
-
-removed.
-
-> > +/* Max frame size, across all interfaces.
-> > + * Configurable from bootargs, to avoid allocating oversized (socket)
-> > + * buffers when not using jumbo frames.
-> > + * Must be large enough to accommodate the network MTU, but small
-> > +enough
-> > + * to avoid wasting skb memory.
-> > + *
-> > + * Could be overridden once, at boot-time, via the
-> > + * fm_set_max_frm() callback.
-> > + */
-> > +int fsl_fm_max_frm =3D FSL_FM_MAX_FRAME_SIZE;
-> > +module_param(fsl_fm_max_frm, int, 0);
-> > +MODULE_PARM_DESC(fsl_fm_max_frm, "Maximum frame size, across all
-> > +interfaces");
-> > +
-> > +u16 fman_get_max_frm(void)
-> > +{
-> > +	static bool fm_check_mfl;
-> > +
-> > +	if (!fm_check_mfl) {
-> > +		if (fsl_fm_max_frm > FSL_FM_MAX_POSSIBLE_FRAME_SIZE
-> ||
-> > +		    fsl_fm_max_frm < FSL_FM_MIN_POSSIBLE_FRAME_SIZE)
-> {
-> > +			pr_warn("Invalid fsl_fm_max_frm value (%d) in
-> bootargs, valid range is %d-%d. Falling back to the default (%d)\n",
-> > +				fsl_fm_max_frm,
-> > +				FSL_FM_MIN_POSSIBLE_FRAME_SIZE,
-> > +				FSL_FM_MAX_POSSIBLE_FRAME_SIZE,
-> > +				FSL_FM_MAX_FRAME_SIZE);
-> > +			fsl_fm_max_frm =3D FSL_FM_MAX_FRAME_SIZE;
-> > +		}
-> > +		fm_check_mfl =3D true;
-> > +	}
-> > +
-> > +	return fsl_fm_max_frm;
-> > +}
-> > +EXPORT_SYMBOL(fman_get_max_frm);
-> > +
-> > +int fman_get_rx_extra_headroom(void)
-> > +{
-> > +	static bool fm_check_rx_extra_headroom;
-> > +
-> > +	if (!fm_check_rx_extra_headroom) {
-> > +		if (fsl_fm_rx_extra_headroom >
-> FSL_FM_RX_EXTRA_HEADROOM_MAX ||
-> > +		    fsl_fm_rx_extra_headroom <
-> FSL_FM_RX_EXTRA_HEADROOM_MIN) {
-> > +			pr_warn("Invalid fsl_fm_rx_extra_headroom value
-> (%d) in bootargs, valid range is %d-%d. Falling back to the default (%d)\=
-n",
-> > +				fsl_fm_rx_extra_headroom,
-> > +				FSL_FM_RX_EXTRA_HEADROOM_MIN,
-> > +				FSL_FM_RX_EXTRA_HEADROOM_MAX,
-> > +				FSL_FM_RX_EXTRA_HEADROOM);
-> > +			fsl_fm_rx_extra_headroom =3D
-> FSL_FM_RX_EXTRA_HEADROOM;
-> > +		}
-> > +
-> > +		fsl_fm_rx_extra_headroom =3D true;
-> > +		fsl_fm_rx_extra_headroom =3D
-> ALIGN(fsl_fm_rx_extra_headroom, 16);
-> > +	}
-> > +
-> > +	return fsl_fm_rx_extra_headroom;
-> > +}
-> > +EXPORT_SYMBOL(fman_get_rx_extra_headroom);
-> > +
->=20
-> What calls these functions?
->=20
-
-DPAA Ethernet driver.
-
-> > +struct fman *fman_bind(struct device *fm_dev) {
-> > +	return (struct fman *)(dev_get_drvdata(get_device(fm_dev)));
-> > +}
-> > +
-> > +void fman_unbind(struct fman *fman)
-> > +{
-> > +	put_device(fman->dev);
-> > +}
->=20
-> Why?
->=20
-
-It's was used by the MAC, but it's not mandatory for now, removed.
-
-> > +
-> > +struct device *fman_get_device(struct fman *fman) {
-> > +	return fman->dev;
-> > +}
->=20
-> Is this really necessary?
->=20
-
-Fman port needs fman->dev, fman structure is opaque, so yes, it's needed.
-
-> > +static irqreturn_t fman_irq(int irq, void *fman) {
-> > +	fman_event_isr(fman);
-> > +
-> > +	return IRQ_HANDLED;
-> > +}
->=20
-> Only return IRQ_HANDLED if something was actually handled.
->=20
-
-Done.=20
-
-> > +static const struct of_device_id fman_muram_match[] =3D {
-> > +	{
-> > +	 .compatible =3D "fsl,fman-muram"},
-> > +	{}
-> k> +};
->=20
-> Whitespace
->=20
-
-Removed.
-
-> > +	clk =3D of_clk_get_by_name(fm_node, NULL);
-> > +	if (IS_ERR(clk)) {
-> > +		pr_err("Failed to get FM%d clock structure\n",
-> > +		       fman->dts_params.id);
-> > +		goto fman_node_put;
-> > +	}
->=20
-> Why is name NULL?  If you just want to get the first/only clock without
-> needing a name, why not use of_clk_get(fm_node, 0)?
->=20
-
-It's possible, done.
-
->=20
-> > +
-> > +	clk_rate =3D clk_get_rate(clk);
-> > +	if (!clk_rate) {
-> > +		pr_err("Failed to determine FM%d clock rate\n",
-> > +		       fman->dts_params.id);
-> > +		goto fman_node_put;
-> > +	}
-> > +	/* Rounding to MHz */
-> > +	fman->dts_params.clk_freq =3D (u16)((clk_rate + 500000) / 1000000);
->=20
-> DIV_ROUND_UP()
->=20
-
-OK.
-
-> > +
-> > +	u32_prop =3D (const u32 *)of_get_property(fm_node,
-> > +						"fsl,qman-channel-range",
-> > +						&lenp);
-> > +	if (!u32_prop) {
-> > +		pr_err("of_get_property(%s, fsl,qman-channel-range)
-> failed\n",
-> > +		       fm_node->full_name);
-> > +		goto fman_node_put;
-> > +	}
-> > +	if (WARN_ON(lenp !=3D sizeof(u32) * 2))
-> > +		goto fman_node_put;
-> > +	fman->dts_params.qman_channel_base =3D u32_prop[0];
-> > +	fman->dts_params.num_of_qman_channels =3D u32_prop[1];
->=20
-> fdt32_to_cpu()
->=20
-
-Done.=20
-
-> > +
-> > +	/* Get the MURAM base address and size */
-> > +	muram_node =3D of_find_matching_node(fm_node,
-> fman_muram_match);
-> > +	if (!muram_node) {
-> > +		pr_err("could not find MURAM node\n");
-> > +		goto fman_node_put;
-> > +	}
-> > +
-> > +	err =3D of_address_to_resource(muram_node, 0, res);
-> > +	if (err) {
-> > +		of_node_put(muram_node);
-> > +		pr_err("of_address_to_resource() =3D %d\n", err);
-> > +		goto fman_node_put;
-> > +	}
-> > +
-> > +	fman->dts_params.muram_phy_base_addr =3D res->start;
-> > +	fman->dts_params.muram_size =3D res->end + 1 - res->start;
->=20
-> Why not just put a struct resource in fman->dts_params?
-
-Changed this code. dts_params holds resource structure for MURAM.
-In addition, I'm using resource_size instead of calculating the size.=20
-
->=20
-> > +	{
-> > +		/* In B4 rev 2.0 (and above) the MURAM size is 512KB.
-> > +		 * Check the SVR and update MURAM size if required.
-> > +		 */
-> > +		u32 svr;
-> > +
-> > +		svr =3D mfspr(SPRN_SVR);
-> > +
-> > +		if ((SVR_SOC_VER(svr) =3D=3D SVR_B4860) && (SVR_MAJ(svr) >=3D
-> 2))
-> > +			fman->dts_params.muram_size =3D 0x80000;
-> > +	}
->=20
-> Why wasn't the MURAM size described in the device tree, as it was with
-> CPM/QE?
->=20
-
-MURAM size described by the device-tree.
-In B4860 rev 2.0 (and above) MURAM size is bigger.=20
-This is workaround, in order to have the same device tree for all B4860 rev=
-isions.
-
-> > +
-> > +	of_node_put(muram_node);
-> > +	of_node_put(fm_node);
-> > +
-> > +	err =3D devm_request_irq(&of_dev->dev, irq, fman_irq,
-> > +			       IRQF_NO_SUSPEND, "fman", fman);
-> > +	if (err < 0) {
-> > +		pr_err("Error: allocating irq %d (error =3D %d)\n", irq, err);
-> > +		goto fman_free;
-> > +	}
->=20
-> Why IRQF_NO_SUSPEND?
->=20
-
-It shouldn't be IRQF_NO_SUSPEND for now, removed.=20
-
-
-> Also please use dev_err where possible.
->=20
-
-Done.
-
-> > +static const struct of_device_id fman_match[] =3D {
-> > +	{
-> > +	 .compatible =3D "fsl,fman"},
-> > +	{}
-> > +};
->=20
-> Whitespace
->=20
-
-Removed.
-
-> > +
-> > +MODULE_DEVICE_TABLE(of, fm_match);
-> > +
-> > +static struct platform_driver fman_driver =3D {
-> > +	.driver =3D {
-> > +		   .name =3D "fsl-fman",
-> > +		   .of_match_table =3D fman_match,
-> > +		   },
-> > +	.probe =3D fman_probe,
-> > +};
->=20
-> Whitespace
->=20
-
-Removed.
-
-> > +/* Parse results memory layout */
-> > +struct fman_prs_result {
-> > +	u8 lpid;		/* Logical port id */
-> > +	u8 shimr;		/* Shim header result  */
-> > +	u16 l2r;		/* Layer 2 result */
-> > +	u16 l3r;		/* Layer 3 result */
-> > +	u8 l4r;		/* Layer 4 result */
-> > +	u8 cplan;		/* Classification plan id */
-> > +	u16 nxthdr;		/* Next Header  */
-> > +	u16 cksum;		/* Running-sum */
-> > +	/* Flags&fragment-offset field of the last IP-header */
-> > +	u16 flags_frag_off;
-> > +	/* Routing type field of a IPV6 routing extension header */
-> > +	u8 route_type;
-> > +	/* Routing Extension Header Present; last bit is IP valid */
-> > +	u8 rhp_ip_valid;
-> > +	u8 shim_off[2];		/* Shim offset */
-> > +	u8 ip_pid_off;		/* IP PID (last IP-proto) offset */
-> > +	u8 eth_off;		/* ETH offset */
-> > +	u8 llc_snap_off;	/* LLC_SNAP offset */
-> > +	u8 vlan_off[2];		/* VLAN offset */
-> > +	u8 etype_off;		/* ETYPE offset */
-> > +	u8 pppoe_off;		/* PPP offset */
-> > +	u8 mpls_off[2];		/* MPLS offset */
-> > +	u8 ip_off[2];		/* IP offset */
-> > +	u8 gre_off;		/* GRE offset */
-> > +	u8 l4_off;		/* Layer 4 offset */
-> > +	u8 nxthdr_off;		/** Parser end point */
-> > +} __attribute__((__packed__));
->=20
-> Why is this packed?
->=20
-
-Removed __packed__ attribute.
-
-> Why does "Parser end point" have a kerneldoc comment?
->=20
-
-Removed.
-
-> > +
-> > +/**
-> > + * fman_get_revision
-> > + * @fman		- Pointer to the FMan module
-> > + * @rev_info		- A structure of revision information
-> parameters.
-> > + *
-> > + * Returns the FM revision
-> > + *
-> > + * Allowed only following fman_init().
-> > + *
-> > + * Return: 0 on success; Error code otherwise.
-> > + */
-> > +void fman_get_revision(struct fman *fman, struct fman_rev_info
-> > +*rev_info);
-> > +
-> > +/**
-> > + * fman_register_intr
-> > + * @fman:	A Pointer to FMan device
-> > + * @mod:	Calling module
-> > + * @mod_id:	Module id (if more than 1 exists, '0' if not)
-> > + * @intr_type:	Interrupt type (error/normal) selection.
-> > + * @f_isr:	The interrupt service routine.
-> > + * @h_src_arg:	Argument to be passed to f_isr.
-> > + *
-> > + * Used to register an event handler to be processed by FMan
-> > + *
-> > + * Return: 0 on success; Error code otherwise.
-> > + */
-> > +void fman_register_intr(struct fman *fman, enum fman_event_modules
-> mod,
-> > +			u8 mod_id, enum fman_intr_type intr_type,
-> > +			void (*f_isr)(void *h_src_arg), void *h_src_arg);
-> > +
-> > +/**
-> > + * fman_unregister_intr
-> > + * @fman:	A Pointer to FMan device
-> > + * @mod:	Calling module
-> > + * @mod_id:	Module id (if more than 1 exists, '0' if not)
-> > + * @intr_type:	Interrupt type (error/normal) selection.
-> > + *
-> > + * Used to unregister an event handler to be processed by FMan
-> > + *
-> > + * Return: 0 on success; Error code otherwise.
-> > + */
-> > +void fman_unregister_intr(struct fman *fman, enum
-> fman_event_modules mod,
-> > +			  u8 mod_id, enum fman_intr_type intr_type);
-> > +
-> > +/**
-> > + * fman_set_port_params
-> > + * @fman:		A Pointer to FMan device
-> > + * @port_params:	Port parameters
-> > + *
-> > + * Used by FMan Port to pass parameters to the FMan
-> > + *
-> > + * Return: 0 on success; Error code otherwise.
-> > + */
-> > +int fman_set_port_params(struct fman *fman,
-> > +			 struct fman_port_init_params *port_params);
-> > +
-> > +/**
-> > + * fman_reset_mac
-> > + * @fman:	A Pointer to FMan device
-> > + * @mac_id:	MAC id to be reset
-> > + *
-> > + * Reset a specific MAC
-> > + *
-> > + * Return: 0 on success; Error code otherwise.
-> > + */
-> > +int fman_reset_mac(struct fman *fman, u8 mac_id);
-> > +
-> > +/**
-> > + * fman_get_clock_freq
-> > + * @fman:	A Pointer to FMan device
-> > + *
-> > + * Get FMan clock frequency
-> > + *
-> > + * Return: FMan clock frequency
-> > + */
-> > +
-> > +u16 fman_get_clock_freq(struct fman *fman);
-> > +
-> > +/**
-> > + * fman_get_bmi_max_fifo_size
-> > + * @fman:	A Pointer to FMan device
-> > + *
-> > + * Get FMan maximum FIFO size
-> > + *
-> > + * Return: FMan Maximum FIFO size
-> > + */
-> > +u32 fman_get_bmi_max_fifo_size(struct fman *fman);
-> > +
-> > +/**
-> > + * fman_set_mac_max_frame
-> > + * @fman:	A Pointer to FMan device
-> > + * @mac_id:	MAC id
-> > + * @mfl:	Maximum frame length
-> > + *
-> > + * Set maximum frame length of specific MAC in FMan driver
-> > + *
-> > + * Return: 0 on success; Error code otherwise.
-> > + */
-> > +int fman_set_mac_max_frame(struct fman *fman, u8 mac_id, u16 mfl);
-> > +
-> > +/**
-> > + * fman_get_qman_channel_id
-> > + * @fman:	A Pointer to FMan device
-> > + * @port_id:	Port id
-> > + *
-> > + * Get QMan channel ID associated to the Port id
-> > + *
-> > + * Return: QMan channel ID
-> > + */
-> > +u32 fman_get_qman_channel_id(struct fman *fman, u32 port_id);
-> > +
-> > +/**
-> > + * fman_get_mem_region
-> > + * @fman:	A Pointer to FMan device
-> > + *
-> > + * Get FMan memory region
-> > + *
-> > + * Return: A structure with FMan memory region information  */ struct
-> > +resource *fman_get_mem_region(struct fman *fman);
-> > +
-> > +/**
-> > + * fman_get_max_frm
-> > + *
-> > + * Return: Max frame length configured in the FM driver  */
-> > +u16 fman_get_max_frm(void);
-> > +
-> > +/**
-> > + * fman_get_rx_extra_headroom
-> > + *
-> > + * Return: Extra headroom size configured in the FM driver  */ int
-> > +fman_get_rx_extra_headroom(void);
-> > +
-> > +/**
-> > + * fman_bind
-> > + * @dev:	FMan OF device pointer
-> > + *
-> > + * Bind to a specific FMan device.
-> > + *
-> > + * Allowed only after the port was created.
-> > + *
-> > + * Return: A pointer to the FMan device  */ struct fman
-> > +*fman_bind(struct device *dev);
-> > +
-> > +/**
-> > + * fman_unbind
-> > + * @fman:	Pointer to the FMan device
-> > + *
-> > + * Un-bind from a specific FMan device.
-> > + *
-> > + * Allowed only after the port was created.
-> > + */
-> > +void fman_unbind(struct fman *fman);
-> > +
-> > +/**
-> > + * fman_get_device
-> > + * @fman:	A pointer to the FMan device.
-> > + *
-> > + * Get the FMan device pointer
-> > + *
-> > + * Return: Pointer to FMan device.
-> > + */
-> > +struct device *fman_get_device(struct fman *fman);
->=20
-> Usually kerneldoc comments go on the implementation, not the prototype.
->=20
-
-OK, moved kernel doc to the source files, here and elsewhere.
-
-> -Scott
+User space checkpoint and restart tool (CRIU) needs the page's change
+to be soft tracked. This allows to do a pre checkpoint and then dump
+only touched pages.
+
+This is done by using a newly assigned PTE bit (_PAGE_SOFT_DIRTY) when
+the page is backed in memory, and a new _PAGE_SWP_SOFT_DIRTY bit when
+the page is swapped out.
+
+The _PAGE_SWP_SOFT_DIRTY bit is dynamically put after the swap type
+in the swap pte. A check is added to ensure that the bit is not
+overwritten by _PAGE_HPTEFLAGS.
+
+V2:
+- Fix allnoconfig build
+
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+CC: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/Kconfig                     |  2 ++
+ arch/powerpc/include/asm/pgtable-ppc64.h | 13 +++++++++--
+ arch/powerpc/include/asm/pgtable.h       | 40 +++++++++++++++++++++++++++++++-
+ arch/powerpc/include/asm/pte-book3e.h    |  1 +
+ arch/powerpc/include/asm/pte-common.h    |  8 +++++--
+ arch/powerpc/include/asm/pte-hash64.h    |  1 +
+ 6 files changed, 60 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9a7057ec2154..73a4a36a6b38 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -559,6 +559,7 @@ choice
+ 
+ config PPC_4K_PAGES
+ 	bool "4k page size"
++	select HAVE_ARCH_SOFT_DIRTY if CHECKPOINT_RESTORE && PPC_BOOK3S
+ 
+ config PPC_16K_PAGES
+ 	bool "16k page size"
+@@ -567,6 +568,7 @@ config PPC_16K_PAGES
+ config PPC_64K_PAGES
+ 	bool "64k page size"
+ 	depends on !PPC_FSL_BOOK3E && (44x || PPC_STD_MMU_64 || PPC_BOOK3E_64)
++	select HAVE_ARCH_SOFT_DIRTY if CHECKPOINT_RESTORE && PPC_BOOK3S
+ 
+ config PPC_256K_PAGES
+ 	bool "256k page size"
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 3245f2d96d4f..9ae686003b12 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -315,7 +315,8 @@ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
+ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+ {
+ 	unsigned long bits = pte_val(entry) &
+-		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
++		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC |
++		 _PAGE_SOFT_DIRTY);
+ 
+ #ifdef PTE_ATOMIC_UPDATES
+ 	unsigned long old, tmp;
+@@ -354,6 +355,7 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+ 	 * We filter HPTEFLAGS on set_pte.			\
+ 	 */							\
+ 	BUILD_BUG_ON(_PAGE_HPTEFLAGS & (0x1f << _PAGE_BIT_SWAP_TYPE)); \
++	BUILD_BUG_ON(_PAGE_HPTEFLAGS & _PAGE_SWP_SOFT_DIRTY);	\
+ 	} while (0)
+ /*
+  * on pte we don't need handle RADIX_TREE_EXCEPTIONAL_SHIFT;
+@@ -371,6 +373,8 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+ 
+ void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
+ void pgtable_cache_init(void);
++
++#define _PAGE_SWP_SOFT_DIRTY	(1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
+ #endif /* __ASSEMBLY__ */
+ 
+ /*
+@@ -389,7 +393,7 @@ void pgtable_cache_init(void);
+  */
+ #define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS |		\
+ 			 _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPLITTING | \
+-			 _PAGE_THP_HUGE)
++			 _PAGE_THP_HUGE | _PAGE_SOFT_DIRTY)
+ 
+ #ifndef __ASSEMBLY__
+ /*
+@@ -521,6 +525,11 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
+ #define pmd_mkyoung(pmd)	pte_pmd(pte_mkyoung(pmd_pte(pmd)))
+ #define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
+ 
++#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
++#define pmd_soft_dirty(pmd)	pte_soft_dirty(pmd_pte(pmd))
++#define pmd_mksoft_dirty(pmd)	pte_pmd(pte_mksoft_dirty(pmd_pte(pmd)))
++#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
++
+ #define __HAVE_ARCH_PMD_WRITE
+ #define pmd_write(pmd)		pte_write(pmd_pte(pmd))
+ 
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index b64b4212b71f..9f1bc8a58ba4 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -38,6 +38,44 @@ static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL;
+ static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
+ static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
+ 
++#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
++static inline int pte_soft_dirty(pte_t pte)
++{
++	return pte_val(pte) & _PAGE_SOFT_DIRTY;
++}
++static inline pte_t pte_mksoft_dirty(pte_t pte)
++{
++	pte_val(pte) |= _PAGE_SOFT_DIRTY;
++	return pte;
++}
++
++static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
++{
++	pte_val(pte) |= _PAGE_SWP_SOFT_DIRTY;
++	return pte;
++}
++static inline int pte_swp_soft_dirty(pte_t pte)
++{
++	return pte_val(pte) & _PAGE_SWP_SOFT_DIRTY;
++}
++static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
++{
++	pte_val(pte) &= ~_PAGE_SWP_SOFT_DIRTY;
++	return pte;
++}
++
++static inline pte_t pte_clear_flags(pte_t pte, pte_basic_t clear)
++{
++	pte_val(pte) &= ~clear;
++	return pte;
++}
++static inline pmd_t pmd_clear_flags(pmd_t pmd, unsigned long clear)
++{
++	pmd_val(pmd) &= ~clear;
++	return pmd;
++}
++#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
++
+ #ifdef CONFIG_NUMA_BALANCING
+ /*
+  * These work without NUMA balancing but the kernel does not care. See the
+@@ -89,7 +127,7 @@ static inline pte_t pte_mkwrite(pte_t pte) {
+ 	pte_val(pte) &= ~_PAGE_RO;
+ 	pte_val(pte) |= _PAGE_RW; return pte; }
+ static inline pte_t pte_mkdirty(pte_t pte) {
+-	pte_val(pte) |= _PAGE_DIRTY; return pte; }
++	pte_val(pte) |= _PAGE_DIRTY | _PAGE_SOFT_DIRTY; return pte; }
+ static inline pte_t pte_mkyoung(pte_t pte) {
+ 	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
+ static inline pte_t pte_mkspecial(pte_t pte) {
+diff --git a/arch/powerpc/include/asm/pte-book3e.h b/arch/powerpc/include/asm/pte-book3e.h
+index 8d8473278d91..df5581f817f6 100644
+--- a/arch/powerpc/include/asm/pte-book3e.h
++++ b/arch/powerpc/include/asm/pte-book3e.h
+@@ -57,6 +57,7 @@
+ 
+ #define _PAGE_HASHPTE	0
+ #define _PAGE_BUSY	0
++#define _PAGE_SOFT_DIRTY	0
+ 
+ #define _PAGE_SPECIAL	_PAGE_SW0
+ 
+diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
+index 71537a319fc8..4ac8c2cff8e5 100644
+--- a/arch/powerpc/include/asm/pte-common.h
++++ b/arch/powerpc/include/asm/pte-common.h
+@@ -16,6 +16,9 @@
+ #ifndef _PAGE_EXEC
+ #define _PAGE_EXEC	0
+ #endif
++#ifndef _PAGE_SOFT_DIRTY
++#define _PAGE_SOFT_DIRTY	0
++#endif
+ #ifndef _PAGE_ENDIAN
+ #define _PAGE_ENDIAN	0
+ #endif
+@@ -94,13 +97,14 @@ extern unsigned long bad_call_to_PMD_PAGE_SIZE(void);
+  * pgprot changes
+  */
+ #define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_HPTEFLAGS | _PAGE_DIRTY | \
+-                         _PAGE_ACCESSED | _PAGE_SPECIAL)
++			 _PAGE_ACCESSED | _PAGE_SPECIAL | _PAGE_SOFT_DIRTY)
+ 
+ /* Mask of bits returned by pte_pgprot() */
+ #define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
+ 			 _PAGE_WRITETHRU | _PAGE_ENDIAN | _PAGE_4K_PFN | \
+ 			 _PAGE_USER | _PAGE_ACCESSED | _PAGE_RO | \
+-			 _PAGE_RW | _PAGE_HWWRITE | _PAGE_DIRTY | _PAGE_EXEC)
++			 _PAGE_RW | _PAGE_HWWRITE | _PAGE_DIRTY | \
++			 _PAGE_EXEC | _PAGE_SOFT_DIRTY)
+ 
+ /*
+  * We define 2 sets of base prot bits, one for basic pages (ie,
+diff --git a/arch/powerpc/include/asm/pte-hash64.h b/arch/powerpc/include/asm/pte-hash64.h
+index ef612c160da7..19ffd150957f 100644
+--- a/arch/powerpc/include/asm/pte-hash64.h
++++ b/arch/powerpc/include/asm/pte-hash64.h
+@@ -19,6 +19,7 @@
+ #define _PAGE_BIT_SWAP_TYPE	2
+ #define _PAGE_EXEC		0x0004 /* No execute on POWER4 and newer (we invert) */
+ #define _PAGE_GUARDED		0x0008
++#define _PAGE_SOFT_DIRTY	0x0010 /* software dirty tracking */
+ /* We can derive Memory coherence from _PAGE_NO_CACHE */
+ #define _PAGE_NO_CACHE		0x0020 /* I: cache inhibit */
+ #define _PAGE_WRITETHRU		0x0040 /* W: cache write-through */
+-- 
+1.9.1
