@@ -1,23 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0119.outbound.protection.outlook.com [65.55.169.119])
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0117.outbound.protection.outlook.com [157.56.110.117])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 84EBF1A045F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 17:50:46 +1100 (AEDT)
-Message-ID: <1445928629.701.323.camel@freescale.com>
-Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management functions to
- qe_common
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 055B41A0490
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 18:34:59 +1100 (AEDT)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
  <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
- <paulus@samba.org>
-Date: Tue, 27 Oct 2015 01:50:29 -0500
-In-Reply-To: <SN1PR0301MB1550974588581984B4146FB19B220@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Subject: RE: [PATCH v12 4/6] QE/CPM: move muram management functions to
+ qe_common
+Date: Tue, 27 Oct 2015 07:34:49 +0000
+Message-ID: <SN1PR0301MB1550F9AB9D4FCC0F3D74E8CC9B220@SN1PR0301MB1550.namprd03.prod.outlook.com>
 References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
  <1444806968-4627-4-git-send-email-qiang.zhao@freescale.com>
  <1445569799.701.142.camel@freescale.com>
@@ -26,7 +24,9 @@ References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
  <SN1PR0301MB155083232AD1076F0779F7A49B230@SN1PR0301MB1550.namprd03.prod.outlook.com>
  <1445921289.701.301.camel@freescale.com>
  <SN1PR0301MB1550974588581984B4146FB19B220@SN1PR0301MB1550.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ <1445928629.701.323.camel@freescale.com>
+In-Reply-To: <1445928629.701.323.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -37,110 +37,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-10-27 at 01:24 -0500, Zhao Qiang-B45475 wrote:
-> On Tue, Oct 27, 2015 at 12:48 PM, Wood Scott-B07421 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Tuesday, October 27, 2015 12:48 PM
-> > To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > lauraa@codeaurora.org; Xie Xiaobo-R63061 <X.Xie@freescale.com>;
-> > benh@kernel.crashing.org; Li Yang-Leo-R58472 <LeoLi@freescale.com>;
-> > paulus@samba.org
-> > Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management functions to
-> > qe_common
-> > 
-> > On Sun, 2015-10-25 at 21:42 -0500, Zhao Qiang-B45475 wrote:
-> > > On Sat, Oct 24, 2015 at 04:56 AM, Wood Scott-B07421 wrote:
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: Saturday, October 24, 2015 4:56 AM
-> > > > To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-> > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > > > lauraa@codeaurora.org; Xie Xiaobo-R63061 <X.Xie@freescale.com>;
-> > > > benh@kernel.crashing.org; Li Yang-Leo-R58472 <LeoLi@freescale.com>;
-> > > > paulus@samba.org
-> > > > Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management
-> > functions
-> > > > to qe_common
-> > > > 
-> > > > On Fri, 2015-10-23 at 02:45 -0500, Zhao Qiang-B45475 wrote:
-> > > > > On Fri, 2015-10-23 at 11:10 AM, Wood Scott-B07421
-> > > > > <scottwood@freescale.com>
-> > > > > wrote:
-> > > > > > -----Original Message-----
-> > > > > > From: Wood Scott-B07421
-> > > > > > Sent: Friday, October 23, 2015 11:10 AM
-> > > > > > To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-> > > > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > > > > > lauraa@codeaurora.org; Xie Xiaobo-R63061 <X.Xie@freescale.com>;
-> > > > > > benh@kernel.crashing.org; Li Yang-Leo-R58472
-> > > > > > <LeoLi@freescale.com>; paulus@samba.org
-> > > > > > Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management
-> > > > functions
-> > > > > > to qe_common
-> > > > > > 
-> > > > > > On Wed, 2015-10-14 at 15:16 +0800, Zhao Qiang wrote:
-> > > > > > > QE and CPM have the same muram, they use the same management
-> > > > > > > functions. Now QE support both ARM and PowerPC, it is
-> > > > > > > necessary to move QE to "driver/soc", so move the muram
-> > > > > > > management functions from cpm_common to qe_common for
-> > > > > > > preparing to move QE code to
-> > > > "driver/soc"
-> > > > > > > 
-> > > > > > > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
-> > > > > > > ---
-> > > > > > > Changes for v2:
-> > > > > > >       - no changes
-> > > > > > > Changes for v3:
-> > > > > > >       - no changes
-> > > > > > > Changes for v4:
-> > > > > > >       - no changes
-> > > > > > > Changes for v5:
-> > > > > > >       - no changes
-> > > > > > > Changes for v6:
-> > > > > > >       - using genalloc instead rheap to manage QE MURAM
-> > > > > > >       - remove qe_reset from platform file, using
-> > > > > > >       - subsys_initcall to call qe_init function.
-> > > > > > > Changes for v7:
-> > > > > > >       - move this patch from 3/3 to 2/3
-> > > > > > >       - convert cpm with genalloc
-> > > > > > >       - check for gen_pool allocation failure Changes for v8:
-> > > > > > >       - rebase
-> > > > > > >       - move BD_SC_* macro instead of copy Changes for v9:
-> > > > > > >       - doesn't modify CPM, add a new patch to modify.
-> > > > > > >       - rebase
-> > > > > > > Changes for v10:
-> > > > > > >       - rebase
-> > > > > > > Changes for v11:
-> > > > > > >       - remove renaming
-> > > > > > >       - delete removing qe_reset and delete adding qe_init.
-> > > > > > > Changes for v12:
-> > > > > > >       - SPI_FSL_CPM depends on QE-MURAM, select QUICC_ENGINE for
-> > it.
-> > > > > > 
-> > > > > > Why is the SPI change part of this patch?  Why is it even part
-> > > > > > of this patchset, rather than an independent patch sent to the
-> > > > > > SPI list and maintainer?  If it's tied to other changes you're
-> > > > > > making, explain that.  As is, there is zero mention of the SPI
-> > > > > > change in the part of the e-mail that will become the git 
-> > > > > > changelog.
-> > > > > > 
-> > > > > This SPI_FSL_CPM is cpm-spi, it is part of CPM.
-> > > > 
-> > > > So then why are you selecting QUICC_ENGINE?  And again, what does it
-> > > > have to do with this patch?
-> > > 
-> > > Cpm-spi is dependent on qe_muram, if not select it, Cpm-spi will
-> > > failed to build.
-> > 
-> > Why QUICC_ENGINE and not CPM?
-> 
-> QE and CPM use the same muram, and it has been moved to qe_muram from 
-> cpm_muram.
-
-Fix the makefiles so that the muram code continues to be built for both 
-QUICC_ENGINE and CPM.  It's not acceptable to have to bring in the entire QE 
-code just for the muram.
-
--Scott
+T24gVHVlLCBPY3QgMjcsIDIwMTUgYXQgMjo1MCBQTSwgV29vZCBTY290dC1CMDc0MjEgd3JvdGU6
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
+DQo+IFNlbnQ6IFR1ZXNkYXksIE9jdG9iZXIgMjcsIDIwMTUgMjo1MCBQTQ0KPiBUbzogWmhhbyBR
+aWFuZy1CNDU0NzUgPHFpYW5nLnpoYW9AZnJlZXNjYWxlLmNvbT4NCj4gQ2M6IGxpbnV4LWtlcm5l
+bEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBsYXVy
+YWFAY29kZWF1cm9yYS5vcmc7IFhpZSBYaWFvYm8tUjYzMDYxIDxYLlhpZUBmcmVlc2NhbGUuY29t
+PjsNCj4gYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBMaSBZYW5nLUxlby1SNTg0NzIgPExlb0xp
+QGZyZWVzY2FsZS5jb20+Ow0KPiBwYXVsdXNAc2FtYmEub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFU
+Q0ggdjEyIDQvNl0gUUUvQ1BNOiBtb3ZlIG11cmFtIG1hbmFnZW1lbnQgZnVuY3Rpb25zIHRvDQo+
+IHFlX2NvbW1vbg0KPiANCj4gT24gVHVlLCAyMDE1LTEwLTI3IGF0IDAxOjI0IC0wNTAwLCBaaGFv
+IFFpYW5nLUI0NTQ3NSB3cm90ZToNCj4gPiBPbiBUdWUsIE9jdCAyNywgMjAxNSBhdCAxMjo0OCBQ
+TSwgV29vZCBTY290dC1CMDc0MjEgd3JvdGU6DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2Ut
+LS0tLQ0KPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IFR1ZXNkYXks
+IE9jdG9iZXIgMjcsIDIwMTUgMTI6NDggUE0NCj4gPiA+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3NSA8
+cWlhbmcuemhhb0BmcmVlc2NhbGUuY29tPg0KPiA+ID4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtl
+cm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiA+ID4gbGF1cmFhQGNv
+ZGVhdXJvcmEub3JnOyBYaWUgWGlhb2JvLVI2MzA2MSA8WC5YaWVAZnJlZXNjYWxlLmNvbT47DQo+
+ID4gPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpIFlhbmctTGVvLVI1ODQ3MiA8TGVvTGlA
+ZnJlZXNjYWxlLmNvbT47DQo+ID4gPiBwYXVsdXNAc2FtYmEub3JnDQo+ID4gPiBTdWJqZWN0OiBS
+ZTogW1BBVENIIHYxMiA0LzZdIFFFL0NQTTogbW92ZSBtdXJhbSBtYW5hZ2VtZW50DQo+IGZ1bmN0
+aW9ucw0KPiA+ID4gdG8gcWVfY29tbW9uDQo+ID4gPg0KPiA+ID4gT24gU3VuLCAyMDE1LTEwLTI1
+IGF0IDIxOjQyIC0wNTAwLCBaaGFvIFFpYW5nLUI0NTQ3NSB3cm90ZToNCj4gPiA+ID4gT24gU2F0
+LCBPY3QgMjQsIDIwMTUgYXQgMDQ6NTYgQU0sIFdvb2QgU2NvdHQtQjA3NDIxIHdyb3RlOg0KPiA+
+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gRnJvbTogV29vZCBT
+Y290dC1CMDc0MjENCj4gPiA+ID4gPiBTZW50OiBTYXR1cmRheSwgT2N0b2JlciAyNCwgMjAxNSA0
+OjU2IEFNDQo+ID4gPiA+ID4gVG86IFpoYW8gUWlhbmctQjQ1NDc1IDxxaWFuZy56aGFvQGZyZWVz
+Y2FsZS5jb20+DQo+ID4gPiA+ID4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxp
+bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiA+ID4gPiA+IGxhdXJhYUBjb2RlYXVyb3Jh
+Lm9yZzsgWGllIFhpYW9iby1SNjMwNjEgPFguWGllQGZyZWVzY2FsZS5jb20+Ow0KPiA+ID4gPiA+
+IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgTGkgWWFuZy1MZW8tUjU4NDcyDQo+ID4gPiA+ID4g
+PExlb0xpQGZyZWVzY2FsZS5jb20+OyBwYXVsdXNAc2FtYmEub3JnDQo+ID4gPiA+ID4gU3ViamVj
+dDogUmU6IFtQQVRDSCB2MTIgNC82XSBRRS9DUE06IG1vdmUgbXVyYW0gbWFuYWdlbWVudA0KPiA+
+ID4gZnVuY3Rpb25zDQo+ID4gPiA+ID4gdG8gcWVfY29tbW9uDQo+ID4gPiA+ID4NCj4gPiA+ID4g
+PiBPbiBGcmksIDIwMTUtMTAtMjMgYXQgMDI6NDUgLTA1MDAsIFpoYW8gUWlhbmctQjQ1NDc1IHdy
+b3RlOg0KPiA+ID4gPiA+ID4gT24gRnJpLCAyMDE1LTEwLTIzIGF0IDExOjEwIEFNLCBXb29kIFNj
+b3R0LUIwNzQyMQ0KPiA+ID4gPiA+ID4gPHNjb3R0d29vZEBmcmVlc2NhbGUuY29tPg0KPiA+ID4g
+PiA+ID4gd3JvdGU6DQo+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+
+ID4gPiA+ID4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4gPiA+IFNlbnQ6
+IEZyaWRheSwgT2N0b2JlciAyMywgMjAxNSAxMToxMCBBTQ0KPiA+ID4gPiA+ID4gPiBUbzogWmhh
+byBRaWFuZy1CNDU0NzUgPHFpYW5nLnpoYW9AZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4gPiA+ID4g
+Q2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4gPiA+ID4gPiA+IGxpbnV4cHBj
+LWRldkBsaXN0cy5vemxhYnMub3JnOyBsYXVyYWFAY29kZWF1cm9yYS5vcmc7IFhpZQ0KPiA+ID4g
+PiA+ID4gPiBYaWFvYm8tUjYzMDYxIDxYLlhpZUBmcmVlc2NhbGUuY29tPjsNCj4gPiA+ID4gPiA+
+ID4gYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBMaSBZYW5nLUxlby1SNTg0NzINCj4gPiA+ID4g
+PiA+ID4gPExlb0xpQGZyZWVzY2FsZS5jb20+OyBwYXVsdXNAc2FtYmEub3JnDQo+ID4gPiA+ID4g
+PiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjEyIDQvNl0gUUUvQ1BNOiBtb3ZlIG11cmFtIG1hbmFn
+ZW1lbnQNCj4gPiA+ID4gPiBmdW5jdGlvbnMNCj4gPiA+ID4gPiA+ID4gdG8gcWVfY29tbW9uDQo+
+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gU28gdGhlbiB3aHkgYXJlIHlvdSBzZWxlY3RpbmcgUVVJ
+Q0NfRU5HSU5FPyAgQW5kIGFnYWluLCB3aGF0DQo+ID4gPiA+ID4gZG9lcyBpdCBoYXZlIHRvIGRv
+IHdpdGggdGhpcyBwYXRjaD8NCj4gPiA+ID4NCj4gPiA+ID4gQ3BtLXNwaSBpcyBkZXBlbmRlbnQg
+b24gcWVfbXVyYW0sIGlmIG5vdCBzZWxlY3QgaXQsIENwbS1zcGkgd2lsbA0KPiA+ID4gPiBmYWls
+ZWQgdG8gYnVpbGQuDQo+ID4gPg0KPiA+ID4gV2h5IFFVSUNDX0VOR0lORSBhbmQgbm90IENQTT8N
+Cj4gPg0KPiA+IFFFIGFuZCBDUE0gdXNlIHRoZSBzYW1lIG11cmFtLCBhbmQgaXQgaGFzIGJlZW4g
+bW92ZWQgdG8gcWVfbXVyYW0NCj4gZnJvbQ0KPiA+IGNwbV9tdXJhbS4NCj4gDQo+IEZpeCB0aGUg
+bWFrZWZpbGVzIHNvIHRoYXQgdGhlIG11cmFtIGNvZGUgY29udGludWVzIHRvIGJlIGJ1aWx0IGZv
+ciBib3RoDQo+IFFVSUNDX0VOR0lORSBhbmQgQ1BNLiAgSXQncyBub3QgYWNjZXB0YWJsZSB0byBo
+YXZlIHRvIGJyaW5nIGluIHRoZSBlbnRpcmUgUUUNCj4gY29kZSBqdXN0IGZvciB0aGUgbXVyYW0u
+DQo+IA0KSG93IGFib3V0IHRvIGRlZmluZSBhbmQgQ09ORklHX1FFX01VUkFNIGluIEtjb25maWcg
+Zm9yIG11cmFtPw0KDQotWmhhbw0K
