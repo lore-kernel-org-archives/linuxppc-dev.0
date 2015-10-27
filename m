@@ -1,38 +1,27 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7032B1A0478
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 12:32:29 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 27 Oct 2015 11:32:27 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id DF04E2CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 12:32:25 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9R1WJkT22741108
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 12:32:27 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9R1VqpV021000
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 12:31:53 +1100
-Message-ID: <562ED40E.1050007@au1.ibm.com>
-Date: Tue, 27 Oct 2015 12:31:58 +1100
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Return-Path: <vinod.koul@intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by lists.ozlabs.org (Postfix) with ESMTP id 0409D1A0329
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 13:22:43 +1100 (AEDT)
+Date: Tue, 27 Oct 2015 11:22:32 +0900
+From: Vinod Koul <vinod.koul@intel.com>
+To: Alexander Popov <alex.popov@linux.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Anatolij Gustschin <agust@denx.de>, Rob Herring <robh@kernel.org>,
+ Timur Tabi <timur@tabi.org>, Grant Likely <grant.likely@linaro.org>,
+ Dan Williams <dan.j.williams@intel.com>, Pawel Moll <pawel.moll@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
+ dmaengine@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 0/2] powerpc/512x: add LocalPlus Bus FIFO device driver
+Message-ID: <20151027022231.GF11691@vkoul-mobl.iind.intel.com>
+References: <1444597682-22181-1-git-send-email-alex.popov@linux.com>
+ <56280E66.2040804@linux.com>
 MIME-Version: 1.0
-To: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
- bhelgaas@google.com, mpe@ellerman.id.au, aik@ozlabs.ru
-CC: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V10 01/12] PCI/IOV: Rename and export
- virtfn_add/virtfn_remove
-References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1445829362-2738-2-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1445829362-2738-2-git-send-email-weiyang@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <56280E66.2040804@linux.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,22 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26/10/15 14:15, Wei Yang wrote:
-> During EEH recovery, hotplug is applied to the devices which don't
-> have drivers or their drivers don't support EEH. However, the hotplug,
-> which was implemented based on PCI bus, can't be applied to VF directly.
->
-> The patch renames virtn_{add,remove}() and exports them so that they
-> can be used in PCI hotplug during EEH recovery.
->
-> [gwshan: changelog]
-> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+On Thu, Oct 22, 2015 at 01:15:03AM +0300, Alexander Popov wrote:
+> On 12.10.2015 00:08, Alexander Popov wrote:
+> > This driver for Freescale MPC512x LocalPlus Bus FIFO (called SCLPC
+> > in the Reference Manual) allows Direct Memory Access transfers
+> > between RAM and peripheral devices on LocalPlus Bus.
+> 
+> > Changes in v4:
+> >  - the race condition is fixed;
+> >  - plenty of style fixes are made;
+> >  - devm_* functions and EPROBE_DEFER are used in probe().
+> 
+> Hello,
+> 
+> I've done my best to fix the issues pointed by Timur Tabi and Vinod Koul.
+> Could I have a feedback please?
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+I dont see to have v4 in my list :( Can you please repost
 
 -- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+~Vinod
