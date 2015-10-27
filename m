@@ -1,38 +1,20 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <sebastian.huber@embedded-brains.de>
+Received: from mail.embedded-brains.de
+ (host-82-135-62-35.customer.m-online.net [82.135.62.35])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D55B1A0479
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 00:51:43 +1100 (AEDT)
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 27 Oct 2015 09:51:39 -0400
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id C48AAC90042
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 09:39:47 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9RDpaHC50659330
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 13:51:36 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9RDpaGo031798
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 09:51:36 -0400
-Subject: Re: [PATCH] powerpc/pseries: Correct string length in
- pseries_of_derive_parent()
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <562E7FF1.1040806@linux.vnet.ibm.com>
- <1445933855.6332.13.camel@linux.intel.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Message-ID: <562F8167.4000302@linux.vnet.ibm.com>
-Date: Tue, 27 Oct 2015 08:51:35 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1562C1A040E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 01:47:28 +1100 (AEDT)
+To: linuxppc-dev@lists.ozlabs.org
+References: <1439410497-19039-4-git-send-email-Roy.Pledge@freescale.com>
+Subject: Re: [v2 03/11] soc/fsl: Introduce the DPAA BMan portal driver
+From: Sebastian Huber <sebastian.huber@embedded-brains.de>
+Cc: Geoff Thorpe <Geoff.Thorpe@freescale.com>
+Message-ID: <562F8C7C.5080203@embedded-brains.de>
+Date: Tue, 27 Oct 2015 15:38:52 +0100
 MIME-Version: 1.0
-In-Reply-To: <1445933855.6332.13.camel@linux.intel.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1439410497-19039-4-git-send-email-Roy.Pledge@freescale.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,72 +24,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/27/2015 03:17 AM, Andy Shevchenko wrote:
-> On Mon, 2015-10-26 at 14:33 -0500, Nathan Fontenot wrote:
->> Commit a030e1e4bbd085bbcfd0a23f8d355fcd41f39bed made a change to use
->> kstrndup() instead of kmalloc() + strlcpy() in
->> pseries_of_derive_parent()
->> which introduces a subtle change in the parent path name generated.
->> The kstrndup() routine will copy n characters followed by a
->> terminating null,
->> whereas strlcpy() will copy n-1 characters and add a terminating
->> null.
-> 
-> Nice catch!
-> One comment below.
-> 
->>
->> This slight difference results in having a parent path that includes
->> the
->> trailing '/' character, i.e. "/cpus/" vs. "/cpus". This then causes
->> the
->> subsequent call to of_find_node_by_path() to fail, and in the case of
->> DLPAR add operations, the DLPAR request fails.
->>
->> This patch reduces the total length of the string to copy in kstrndup
->> by 1
->> so we no longer copy the trailing '/'.
->>
->> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/platforms/pseries/of_helpers.c |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/platforms/pseries/of_helpers.c
->> b/arch/powerpc/platforms/pseries/of_helpers.c
->> index 4417afe..6d90378 100644
->> --- a/arch/powerpc/platforms/pseries/of_helpers.c
->> +++ b/arch/powerpc/platforms/pseries/of_helpers.c
->> @@ -24,7 +24,7 @@ struct device_node *pseries_of_derive_parent(const
->> char *path)
->>  		return ERR_PTR(-EINVAL);
->>  
->>  	if (tail > path + 1) {
->> -		parent_path = kstrndup(path, tail - path,
->> GFP_KERNEL);
->> +		parent_path = kstrndup(path, (tail - 1) - path,
->> GFP_KERNEL);
-> 
-> Since  previous line has (tail > path + 1) which is equivalent to (tail
-> - 1 > path), can we amend both?
-> 
-> For example (might be better, but first comes to my mind)
-> 
-> const char *tail = kbasename(path) - 1;
+Hello,
 
-Agreed. I'll send out a v2 of the patch with this update and add a comment
-to indicate we do not want to include the trailing '\' character.
+sorry for the message format, but I don't have the original e-mail.
 
--Nathan
+[...]
 
-> 
-> ...
-> 
-> if (tail > path) {
-> 
-> 
->>  		if (!parent_path)
->>  			return ERR_PTR(-ENOMEM);
->>  	}
->>
-> 
+diff --git a/drivers/soc/fsl/qbman/bman.h b/drivers/soc/fsl/qbman/bman.h
+new file mode 100644
+index 0000000..c987938
+--- /dev/null
++++ b/drivers/soc/fsl/qbman/bman.h
+@@ -0,0 +1,542 @@
++/* Copyright 2008 - 2015 Freescale Semiconductor, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions ar=
+e met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyrig=
+ht
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission=
+.
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of th=
+e
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND AN=
+Y
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
+LIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
+E
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
+NY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
+MAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
+RVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
+ED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
+ TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
+ OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include "bman_priv.h"
++
++extern u16 bman_pool_max;
+[...]
+diff --git a/drivers/soc/fsl/qbman/bman_portal.c b/drivers/soc/fsl/qbman/=
+bman_portal.c
+new file mode 100644
+index 0000000..62d8f64
+--- /dev/null
++++ b/drivers/soc/fsl/qbman/bman_portal.c
+@@ -0,0 +1,351 @@
++/* Copyright 2008 - 2015 Freescale Semiconductor, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions ar=
+e met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyrig=
+ht
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission=
+.
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of th=
+e
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND AN=
+Y
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
+LIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
+E
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
+NY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
+MAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
+RVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
+ED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
+ TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
+ OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include "bman_priv.h"
++
++/*
++ * Global variables of the max portal/pool number this BMan version supp=
+orted
++ */
++u16 bman_ip_rev;
++EXPORT_SYMBOL(bman_ip_rev);
++
++u16 bman_pool_max;
++EXPORT_SYMBOL(bman_pool_max);
+[...]
+
+Why are there two bman_pool_max variables, one global and one module spec=
+ific (drivers/soc/fsl/qbman/bman.c) which are similarly initialized. One =
+via the BMan register, the other via the FDT?
+
+--=20
+Sebastian Huber, embedded brains GmbH
+
+Address : Dornierstr. 4, D-82178 Puchheim, Germany
+Phone   : +49 89 189 47 41-16
+Fax     : +49 89 189 47 41-09
+E-Mail  : sebastian.huber@embedded-brains.de
+PGP     : Public key available on request.
+
+Diese Nachricht ist keine gesch=C3=A4ftliche Mitteilung im Sinne des EHUG=
+.
