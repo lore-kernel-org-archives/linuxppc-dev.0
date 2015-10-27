@@ -1,27 +1,27 @@
 Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B78361A0475
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 09:22:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A59EC1A0475
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 09:27:13 +1100 (AEDT)
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 27 Oct 2015 16:22:34 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 2B98C3E40044
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 16:22:32 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9RMJB0q4063622
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 15:19:11 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9RMMUHZ029869
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 16:22:31 -0600
-Date: Tue, 27 Oct 2015 15:22:29 -0700
+ Tue, 27 Oct 2015 16:27:11 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 23CC01FF002D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 16:15:22 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9RMPkMP2425276
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 15:25:46 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9RMR752004598
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 16:27:10 -0600
+Date: Tue, 27 Oct 2015 15:27:06 -0700
 From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: Michael Ellerman <mpe@ellerman.id.au>,
@@ -34,15 +34,14 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>,
  "David S. Miller" <davem@davemloft.net>,
  linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org
-Subject: Re: [PATCH 4/7 v2] pseries/iommu: implement DDW-aware
- dma_get_page_shift
-Message-ID: <20151027222229.GE7716@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/7 v2] powerpc/dma-mapping: override dma_get_page_shift
+Message-ID: <20151027222706.GF7716@linux.vnet.ibm.com>
 References: <20151023205420.GA10197@linux.vnet.ibm.com>
- <20151023205925.GF10197@linux.vnet.ibm.com>
- <562F11FA.9090805@ozlabs.ru>
+ <20151023205718.GC10197@linux.vnet.ibm.com>
+ <562F1368.1030204@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <562F11FA.9090805@ozlabs.ru>
+In-Reply-To: <562F1368.1030204@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,61 +51,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27.10.2015 [16:56:10 +1100], Alexey Kardashevskiy wrote:
-> On 10/24/2015 07:59 AM, Nishanth Aravamudan wrote:
-> >When DDW (Dynamic DMA Windows) are present for a device, we have stored
-> >the TCE (Translation Control Entry) size in a special device tree
-> >property. Check if we have enabled DDW for the device and return the TCE
-> >size from that property if present. If the property isn't present,
-> >fallback to looking the value up in struct iommu_table. If we don't find
-> >a iommu_table, fallback to the kernel's page size.
+On 27.10.2015 [17:02:16 +1100], Alexey Kardashevskiy wrote:
+> On 10/24/2015 07:57 AM, Nishanth Aravamudan wrote:
+> >On Power, the kernel's page size can differ from the IOMMU's page size,
+> >so we need to override the generic implementation, which always returns
+> >the kernel's page size. Lookup the IOMMU's page size from struct
+> >iommu_table, if available. Fallback to the kernel's page size,
+> >otherwise.
 > >
 > >Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 > >---
-> >  arch/powerpc/platforms/pseries/iommu.c | 36 ++++++++++++++++++++++++++++++++++
-> >  1 file changed, 36 insertions(+)
+> >  arch/powerpc/include/asm/dma-mapping.h | 3 +++
+> >  arch/powerpc/kernel/dma.c              | 9 +++++++++
+> >  2 files changed, 12 insertions(+)
 > >
-> >diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> >index 0946b98..1bf6471 100644
-> >--- a/arch/powerpc/platforms/pseries/iommu.c
-> >+++ b/arch/powerpc/platforms/pseries/iommu.c
-> >@@ -1292,6 +1292,40 @@ static u64 dma_get_required_mask_pSeriesLP(struct device *dev)
-> >  	return dma_iommu_ops.get_required_mask(dev);
+> >diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+> >index 7f522c0..c5638f4 100644
+> >--- a/arch/powerpc/include/asm/dma-mapping.h
+> >+++ b/arch/powerpc/include/asm/dma-mapping.h
+> >@@ -125,6 +125,9 @@ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
+> >  #define HAVE_ARCH_DMA_SET_MASK 1
+> >  extern int dma_set_mask(struct device *dev, u64 dma_mask);
+> >
+> >+#define HAVE_ARCH_DMA_GET_PAGE_SHIFT 1
+> >+extern unsigned long dma_get_page_shift(struct device *dev);
+> >+
+> >  #include <asm-generic/dma-mapping-common.h>
+> >
+> >  extern int __dma_set_mask(struct device *dev, u64 dma_mask);
+> >diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+> >index 59503ed..e805af2 100644
+> >--- a/arch/powerpc/kernel/dma.c
+> >+++ b/arch/powerpc/kernel/dma.c
+> >@@ -335,6 +335,15 @@ int dma_set_mask(struct device *dev, u64 dma_mask)
 > >  }
+> >  EXPORT_SYMBOL(dma_set_mask);
 > >
-> >+static unsigned long dma_get_page_shift_pSeriesLP(struct device *dev)
+> >+unsigned long dma_get_page_shift(struct device *dev)
 > >+{
-> >+	struct iommu_table *tbl;
-> >+
-> >+	if (!disable_ddw && dev_is_pci(dev)) {
-> >+		struct pci_dev *pdev = to_pci_dev(dev);
-> >+		struct device_node *dn;
-> >+
-> >+		dn = pci_device_to_OF_node(pdev);
-> >+
-> >+		/* search upwards for ibm,dma-window */
-> >+		for (; dn && PCI_DN(dn) && !PCI_DN(dn)->table_group;
-> >+				dn = dn->parent)
-> >+			if (of_get_property(dn, "ibm,dma-window", NULL))
-> >+				break;
-> >+		/*
-> >+		 * if there is a DDW configuration, the TCE shift is stored in
-> >+		 * the property
-> >+		 */
-> >+		if (dn && PCI_DN(dn)) {
-> >+			const struct dynamic_dma_window_prop *direct64 =
-> >+				of_get_property(dn, DIRECT64_PROPNAME, NULL);
+> >+	struct iommu_table *tbl = get_iommu_table_base(dev);
+> >+	if (tbl)
+> >+		return tbl->it_page_shift;
 > 
 > 
-> This DIRECT64_PROPNAME property is only present under pHyp, QEMU/KVM
-> does not set it as 64bit windows are dynamic there so something like
-> find_existing_ddw() needs to be used here.
+> All PCI devices have this initialized on POWER (at least, our, IBM's
+> POWER) so 4K will always be returned here while in the case of
+> (get_dma_ops(dev)==&dma_direct_ops) it could actually return
+> PAGE_SHIFT. Is 4K still preferred value to return here?
 
-DIRECT64_PROPNAME is a Linux thing, not a pHyp or QEMU/KVM thing -- it's
-created by the Linux DDW logic and left in the device-tree when we
-successfully configure DDW.
+Right, so the logic of my series, goes like this:
 
-You're right, though, that logically find_existing_ddw() would be better
-to use here. I'll spin up a new version.
+a) We currently are assuming DMA_PAGE_SHIFT (conceptual constant) is
+PAGE_SHIFT everywhere, including Power.
+
+b) After 2/7, the Power code will return either the IOMMU table's shift
+value, if set, or PAGE_SHIFT (I guess this would be the case if
+get_dma_ops(dev) == &dma_direct_ops, as you said). That is no different
+than we have now, except we can return the accurate IOMMU value if
+available.
+
+3) After 3/7, the platform can override the generic Power
+get_dma_page_shift().
+
+4) After 4/7, pseries will return the DDW value, if available, then
+fallback to the IOMMU table's value. I think in the case of
+get_dma_ops(dev)==&dma_direct_ops, the only way that can happen is if we
+are using DDW, right?
 
 -Nish
