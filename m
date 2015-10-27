@@ -1,27 +1,24 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by lists.ozlabs.org (Postfix) with ESMTP id 0409D1A0329
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 13:22:43 +1100 (AEDT)
-Date: Tue, 27 Oct 2015 11:22:32 +0900
-From: Vinod Koul <vinod.koul@intel.com>
-To: Alexander Popov <alex.popov@linux.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anatolij Gustschin <agust@denx.de>, Rob Herring <robh@kernel.org>,
- Timur Tabi <timur@tabi.org>, Grant Likely <grant.likely@linaro.org>,
- Dan Williams <dan.j.williams@intel.com>, Pawel Moll <pawel.moll@arm.com>,
- Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 0/2] powerpc/512x: add LocalPlus Bus FIFO device driver
-Message-ID: <20151027022231.GF11691@vkoul-mobl.iind.intel.com>
-References: <1444597682-22181-1-git-send-email-alex.popov@linux.com>
- <56280E66.2040804@linux.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <56280E66.2040804@linux.com>
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9B2EE1A0410
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 13:33:47 +1100 (AEDT)
+In-Reply-To: <1445854536-22645-1-git-send-email-boqun.feng@gmail.com>
+To: Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
+ Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>,
+ Will Deacon <will.deacon@arm.com>, stable@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>
+Subject: Re: [RESEND, tip/locking/core, v5,
+ 1/6] powerpc: atomic: Make _return atomics and *{cmp}xchg fully
+ ordered
+Message-Id: <20151027023347.6178D140E31@ozlabs.org>
+Date: Tue, 27 Oct 2015 13:33:47 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,23 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 22, 2015 at 01:15:03AM +0300, Alexander Popov wrote:
-> On 12.10.2015 00:08, Alexander Popov wrote:
-> > This driver for Freescale MPC512x LocalPlus Bus FIFO (called SCLPC
-> > in the Reference Manual) allows Direct Memory Access transfers
-> > between RAM and peripheral devices on LocalPlus Bus.
-> 
-> > Changes in v4:
-> >  - the race condition is fixed;
-> >  - plenty of style fixes are made;
-> >  - devm_* functions and EPROBE_DEFER are used in probe().
-> 
-> Hello,
-> 
-> I've done my best to fix the issues pointed by Timur Tabi and Vinod Koul.
-> Could I have a feedback please?
+On Mon, 2015-26-10 at 10:15:36 UTC, Boqun Feng wrote:
+> This patch fixes two problems to make value-returning atomics and
+> {cmp}xchg fully ordered on PPC.
 
-I dont see to have v4 in my list :( Can you please repost
+Hi Boqun,
 
--- 
-~Vinod
+Can you please split this into two patches. One that does the cmpxchg change
+and one that changes PPC_ATOMIC_ENTRY_BARRIER.
+
+Also given how pervasive this change is I'd like to take it via the powerpc
+next tree, so can you please send this patch (which will be two after you split
+it) as powerpc patches. And the rest can go via tip?
+
+cheers
