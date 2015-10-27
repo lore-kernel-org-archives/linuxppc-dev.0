@@ -1,35 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0115.outbound.protection.outlook.com [207.46.100.115])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 262D21A09A7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 18:36:27 +1100 (AEDT)
-Message-ID: <1445931372.701.327.camel@freescale.com>
-Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management functions to
- qe_common
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
- <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
- <paulus@samba.org>
-Date: Tue, 27 Oct 2015 02:36:12 -0500
-In-Reply-To: <SN1PR0301MB1550F9AB9D4FCC0F3D74E8CC9B220@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
- <1444806968-4627-4-git-send-email-qiang.zhao@freescale.com>
- <1445569799.701.142.camel@freescale.com>
- <SN1PR0301MB1550CC4F282309872FF5ACBD9B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1445633780.701.228.camel@freescale.com>
- <SN1PR0301MB155083232AD1076F0779F7A49B230@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1445921289.701.301.camel@freescale.com>
- <SN1PR0301MB1550974588581984B4146FB19B220@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1445928629.701.323.camel@freescale.com>
- <SN1PR0301MB1550F9AB9D4FCC0F3D74E8CC9B220@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Return-Path: <andriy.shevchenko@linux.intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by lists.ozlabs.org (Postfix) with ESMTP id F204B1A045F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 19:17:40 +1100 (AEDT)
+Message-ID: <1445933855.6332.13.camel@linux.intel.com>
+Subject: Re: [PATCH] powerpc/pseries: Correct string length in
+ pseries_of_derive_parent()
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 27 Oct 2015 10:17:35 +0200
+In-Reply-To: <562E7FF1.1040806@linux.vnet.ibm.com>
+References: <562E7FF1.1040806@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,83 +22,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-10-27 at 02:34 -0500, Zhao Qiang-B45475 wrote:
-> On Tue, Oct 27, 2015 at 2:50 PM, Wood Scott-B07421 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Tuesday, October 27, 2015 2:50 PM
-> > To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > lauraa@codeaurora.org; Xie Xiaobo-R63061 <X.Xie@freescale.com>;
-> > benh@kernel.crashing.org; Li Yang-Leo-R58472 <LeoLi@freescale.com>;
-> > paulus@samba.org
-> > Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management functions to
-> > qe_common
-> > 
-> > On Tue, 2015-10-27 at 01:24 -0500, Zhao Qiang-B45475 wrote:
-> > > On Tue, Oct 27, 2015 at 12:48 PM, Wood Scott-B07421 wrote:
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: Tuesday, October 27, 2015 12:48 PM
-> > > > To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-> > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > > > lauraa@codeaurora.org; Xie Xiaobo-R63061 <X.Xie@freescale.com>;
-> > > > benh@kernel.crashing.org; Li Yang-Leo-R58472 <LeoLi@freescale.com>;
-> > > > paulus@samba.org
-> > > > Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management
-> > functions
-> > > > to qe_common
-> > > > 
-> > > > On Sun, 2015-10-25 at 21:42 -0500, Zhao Qiang-B45475 wrote:
-> > > > > On Sat, Oct 24, 2015 at 04:56 AM, Wood Scott-B07421 wrote:
-> > > > > > -----Original Message-----
-> > > > > > From: Wood Scott-B07421
-> > > > > > Sent: Saturday, October 24, 2015 4:56 AM
-> > > > > > To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-> > > > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > > > > > lauraa@codeaurora.org; Xie Xiaobo-R63061 <X.Xie@freescale.com>;
-> > > > > > benh@kernel.crashing.org; Li Yang-Leo-R58472
-> > > > > > <LeoLi@freescale.com>; paulus@samba.org
-> > > > > > Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management
-> > > > functions
-> > > > > > to qe_common
-> > > > > > 
-> > > > > > On Fri, 2015-10-23 at 02:45 -0500, Zhao Qiang-B45475 wrote:
-> > > > > > > On Fri, 2015-10-23 at 11:10 AM, Wood Scott-B07421
-> > > > > > > <scottwood@freescale.com>
-> > > > > > > wrote:
-> > > > > > > > -----Original Message-----
-> > > > > > > > From: Wood Scott-B07421
-> > > > > > > > Sent: Friday, October 23, 2015 11:10 AM
-> > > > > > > > To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-> > > > > > > > Cc: linux-kernel@vger.kernel.org;
-> > > > > > > > linuxppc-dev@lists.ozlabs.org; lauraa@codeaurora.org; Xie
-> > > > > > > > Xiaobo-R63061 <X.Xie@freescale.com>;
-> > > > > > > > benh@kernel.crashing.org; Li Yang-Leo-R58472
-> > > > > > > > <LeoLi@freescale.com>; paulus@samba.org
-> > > > > > > > Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management
-> > > > > > functions
-> > > > > > > > to qe_common
-> > > > > > > > 
-> > > > > > So then why are you selecting QUICC_ENGINE?  And again, what
-> > > > > > does it have to do with this patch?
-> > > > > 
-> > > > > Cpm-spi is dependent on qe_muram, if not select it, Cpm-spi will
-> > > > > failed to build.
-> > > > 
-> > > > Why QUICC_ENGINE and not CPM?
-> > > 
-> > > QE and CPM use the same muram, and it has been moved to qe_muram
-> > from
-> > > cpm_muram.
-> > 
-> > Fix the makefiles so that the muram code continues to be built for both
-> > QUICC_ENGINE and CPM.  It's not acceptable to have to bring in the entire 
-> > QE
-> > code just for the muram.
-> > 
-> How about to define and CONFIG_QE_MURAM in Kconfig for muram?
+On Mon, 2015-10-26 at 14:33 -0500, Nathan Fontenot wrote:
+> Commit a030e1e4bbd085bbcfd0a23f8d355fcd41f39bed made a change to use
+> kstrndup() instead of kmalloc() + strlcpy() in
+> pseries_of_derive_parent()
+> which introduces a subtle change in the parent path name generated.
+> The kstrndup() routine will copy n characters followed by a
+> terminating null,
+> whereas strlcpy() will copy n-1 characters and add a terminating
+> null.
 
-That's fine.
+Nice catch!
+One comment below.
 
--Scott
+> 
+> This slight difference results in having a parent path that includes
+> the
+> trailing '/' character, i.e. "/cpus/" vs. "/cpus". This then causes
+> the
+> subsequent call to of_find_node_by_path() to fail, and in the case of
+> DLPAR add operations, the DLPAR request fails.
+> 
+> This patch reduces the total length of the string to copy in kstrndup
+> by 1
+> so we no longer copy the trailing '/'.
+> 
+> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/of_helpers.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/of_helpers.c
+> b/arch/powerpc/platforms/pseries/of_helpers.c
+> index 4417afe..6d90378 100644
+> --- a/arch/powerpc/platforms/pseries/of_helpers.c
+> +++ b/arch/powerpc/platforms/pseries/of_helpers.c
+> @@ -24,7 +24,7 @@ struct device_node *pseries_of_derive_parent(const
+> char *path)
+>  		return ERR_PTR(-EINVAL);
+>  
+>  	if (tail > path + 1) {
+> -		parent_path = kstrndup(path, tail - path,
+> GFP_KERNEL);
+> +		parent_path = kstrndup(path, (tail - 1) - path,
+> GFP_KERNEL);
+
+Since  previous line has (tail > path + 1) which is equivalent to (tail
+- 1 > path), can we amend both?
+
+For example (might be better, but first comes to my mind)
+
+const char *tail = kbasename(path) - 1;
+
+...
+
+if (tail > path) {
+
+
+>  		if (!parent_path)
+>  			return ERR_PTR(-ENOMEM);
+>  	}
+> 
+
+-- 
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
