@@ -1,34 +1,25 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-lb0-f173.google.com (mail-lb0-f173.google.com
- [209.85.217.173])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yinghai@kernel.org>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 832761A0100
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 07:39:13 +1100 (AEDT)
-Received: by lbbec13 with SMTP id ec13so71092349lbb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 13:39:10 -0700 (PDT)
-Reply-To: alex.popov@linux.com
-Subject: Re: [PATCH v4 0/2] powerpc/512x: add LocalPlus Bus FIFO device driver
-References: <1444597682-22181-1-git-send-email-alex.popov@linux.com>
- <56280E66.2040804@linux.com>
- <20151027022231.GF11691@vkoul-mobl.iind.intel.com>
-To: Vinod Koul <vinod.koul@intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anatolij Gustschin <agust@denx.de>, Rob Herring <robh@kernel.org>,
- Timur Tabi <timur@tabi.org>, Grant Likely <grant.likely@linaro.org>,
- Dan Williams <dan.j.williams@intel.com>, Pawel Moll <pawel.moll@arm.com>,
- Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, Alexander Popov <alex.popov@linux.com>
-From: Alexander Popov <alex.popov@linux.com>
-Message-ID: <562FE1D1.3010903@linux.com>
-Date: Tue, 27 Oct 2015 23:42:57 +0300
-MIME-Version: 1.0
-In-Reply-To: <20151027022231.GF11691@vkoul-mobl.iind.intel.com>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 687851A042A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 07:56:52 +1100 (AEDT)
+From: Yinghai Lu <yinghai@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, TJ <linux@iam.tj>,
+ Yijing Wang <wangyijing@huawei.com>, Khalid Aziz <khalid.aziz@oracle.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Yinghai Lu <yinghai@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v8 10/61] powerpc/PCI: Add IORESOURCE_MEM_64 for 64-bit
+ resource in OF parsing
+Date: Tue, 27 Oct 2015 13:55:02 -0700
+Message-Id: <1445979353-1728-11-git-send-email-yinghai@kernel.org>
+In-Reply-To: <1445979353-1728-1-git-send-email-yinghai@kernel.org>
+References: <1445979353-1728-1-git-send-email-yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27.10.2015 05:22, Vinod Koul wrote:
-> On Thu, Oct 22, 2015 at 01:15:03AM +0300, Alexander Popov wrote:
->> On 12.10.2015 00:08, Alexander Popov wrote:
->>> This driver for Freescale MPC512x LocalPlus Bus FIFO (called SCLPC
->>> in the Reference Manual) allows Direct Memory Access transfers
->>> between RAM and peripheral devices on LocalPlus Bus.
->>
->>> Changes in v4:
->>>  - the race condition is fixed;
->>>  - plenty of style fixes are made;
->>>  - devm_* functions and EPROBE_DEFER are used in probe().
->>
->> Hello,
->>
->> I've done my best to fix the issues pointed by Timur Tabi and Vinod Koul.
->> Could I have a feedback please?
-> 
-> I dont see to have v4 in my list :( Can you please repost
+For device resource PREF bit setting under bridge 64-bit pref resource,
+we need to make sure only set PREF for 64bit resource, so set
+IORESOUCE_MEM_64 for 64bit resource during of device resource flags
+parsing.
 
-Hello, Vinod
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=96261
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=96241
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Yijing Wang <wangyijing@huawei.com>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/pci_of_scan.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-I'm sure I haven't miss your address in the list of the recipients.
-Anyway I can repost.
-
-Anatolij Gustschin wrote that he applied v4 with some fix to mpc5xxx/next
-some time ago.
-
-So should I repost v4 for everybody? How should I mark the reposted patches?
-
-Best regards,
-Alexander
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 349ed11..d7305d7 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -44,8 +44,10 @@ static unsigned int pci_parse_of_flags(u32 addr0, int bridge)
+ 
+ 	if (addr0 & 0x02000000) {
+ 		flags = IORESOURCE_MEM | PCI_BASE_ADDRESS_SPACE_MEMORY;
+-		flags |= (addr0 >> 22) & PCI_BASE_ADDRESS_MEM_TYPE_64;
+ 		flags |= (addr0 >> 28) & PCI_BASE_ADDRESS_MEM_TYPE_1M;
++		if (addr0 & 0x01000000)
++			flags |= IORESOURCE_MEM_64
++				 | PCI_BASE_ADDRESS_MEM_TYPE_64;
+ 		if (addr0 & 0x40000000)
+ 			flags |= IORESOURCE_PREFETCH
+ 				 | PCI_BASE_ADDRESS_MEM_PREFETCH;
+-- 
+1.8.4.5
