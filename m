@@ -1,24 +1,43 @@
-Return-Path: <keith.busch@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by lists.ozlabs.org (Postfix) with ESMTP id D67311A0BBB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 00:59:30 +1100 (AEDT)
-Date: Wed, 28 Oct 2015 13:59:23 +0000
-From: "Busch, Keith" <keith.busch@intel.com>
-To: David Miller <davem@davemloft.net>
-Cc: nacc@linux.vnet.ibm.com, willy@linux.intel.com,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- aik@ozlabs.ru, david@gibson.dropbear.id.au, hch@infradead.org,
- linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org
-Subject: Re: [PATCH 0/5 v3] Fix NVMe driver support on Power with 32-bit DMA
-Message-ID: <20151028135922.GA27909@localhost.localdomain>
-References: <20151026.182746.1323901353520152838.davem@davemloft.net>
- <20151027222010.GD7716@linux.vnet.ibm.com>
- <20151027223643.GA25332@localhost.localdomain>
- <20151027.175443.140992924519172506.davem@davemloft.net>
+Return-Path: <tomeu.vizoso@gmail.com>
+Received: from mail-wi0-x233.google.com (mail-wi0-x233.google.com
+ [IPv6:2a00:1450:400c:c05::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E15371A039F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 01:40:54 +1100 (AEDT)
+Received: by wicll6 with SMTP id ll6so15193330wic.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 07:40:50 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151027.175443.140992924519172506.davem@davemloft.net>
+Sender: tomeu.vizoso@gmail.com
+In-Reply-To: <1445549230.701.116.camel@freescale.com>
+References: <1442844182-27787-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1442844182-27787-23-git-send-email-tomeu.vizoso@collabora.com>
+ <1445406845.701.55.camel@freescale.com>
+ <CAL_JsqLhZmc8cEC+tFJ25KLe0bQZsWmrRWGBMQake9VN6OjvdQ@mail.gmail.com>
+ <1445467912.701.90.camel@freescale.com>
+ <CAAObsKAfufBe_SycibUN3ZsE3fOkBfUjZRx1SWEMwVtM6t7inQ@mail.gmail.com>
+ <1445549230.701.116.camel@freescale.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Date: Wed, 28 Oct 2015 15:40:31 +0100
+Message-ID: <CAAObsKDR6pTEDK-G+jw+cr9MD-XoZqU8niqvDFHqFM0ve-+Smw@mail.gmail.com>
+Subject: Re: [PATCH v6 22/22] of/platform: Defer probes of registered devices
+To: Scott Wood <scottwood@freescale.com>
+Cc: Rob Herring <robh+dt@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Stephen Warren <swarren@wwwdotorg.org>,
+ Javier Martinez Canillas <javier@osg.samsung.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Mark Brown <broonie@kernel.org>, Thierry Reding <thierry.reding@gmail.com>,
+ Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Hu Mingkai-B21284 <Mingkai.Hu@freescale.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +47,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 27, 2015 at 05:54:43PM -0700, David Miller wrote:
-> From: "Busch, Keith" <keith.busch@intel.com>
-> Date: Tue, 27 Oct 2015 22:36:43 +0000
-> 
-> > If you're suggesting to compile-time break architectures that currently
-> > work just fine with NVMe, let me stop you right there.
-> 
-> Silently "working" without the architecture maintainer having to explicity
-> look at the new interface and make sure his platform is implementing it
-> properly is an extremely bad practice.
+On 22 October 2015 at 23:27, Scott Wood <scottwood@freescale.com> wrote:
+> On Thu, 2015-10-22 at 15:04 +0200, Tomeu Vizoso wrote:
+>> On 22 October 2015 at 00:51, Scott Wood <scottwood@freescale.com> wrote:
+>> > On Wed, 2015-10-21 at 08:44 -0500, Rob Herring wrote:
+>> > > On Wed, Oct 21, 2015 at 12:54 AM, Scott Wood <scottwood@freescale.com>
+>> > > wrote:
+>> > > > On Mon, 2015-09-21 at 16:03 +0200, Tomeu Vizoso wrote:
+>> > > > > Instead of trying to match and probe platform and AMBA devices right
+>> > > > > after each is registered, delay their probes until
+>> > > > > device_initcall_sync.
+>> > > > >
+>> > > > > This means that devices will start probing once all built-in drivers
+>> > > > > have registered, and after all platform and AMBA devices from the DT
+>> > > > > have been registered already.
+>> > > > >
+>> > > > > This allows us to prevent deferred probes by probing dependencies on
+>> > > > > demand.
+>> > > > >
+>> > > > > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+>> > > > > ---
+>> > > > >
+>> > > > > Changes in v4:
+>> > > > > - Also defer probes of AMBA devices registered from the DT as they
+>> > > > > can
+>> > > > >   also request resources.
+>> > > > >
+>> > > > >  drivers/of/platform.c | 11 ++++++++---
+>> > > > >  1 file changed, 8 insertions(+), 3 deletions(-)
+>> > > >
+>> > > > This breaks arch/powerpc/sysdev/fsl_pci.c.  The PCI bus is an OF
+>> > > > platform
+>> > > > device, and it must be probed before pcibios_init() which is a
+>> > > > subsys_initcall(), or else the PCI bus never gets scanned.
+>> > >
+>> > > Thanks for the report. This is probably getting dropped, but it could
+>> > > be disabled for PPC.
+>> >
+>> > I don't think that adding another arbitrary arch difference would be the
+>> > right solution.
+>>
+>> I think Rob meant temporarily disable it while things get fixed. At
+>> least,
+>
+> So, what is the permanent fix for the swiotlb issue (or more generally, the
+> inability to have a late_initcall that runs after non-module, non-hotplug
+> platform devices have been probed)?
 
-It won't work if it's wrong. It'll BUG_ON, and I'll be assigned to help
-fix it, like what's happened here (on a private bugzilla).
+If the code in pcibios_init() depends on the PCI bus device having
+probed, then I would recommend making that dependency explicit by
+calling of_device_probe() on the OF node of the PCI controller when
+looking it up.
 
-The "new" interface for all the other architectures is the same as the
-old one we've been using for the last 5 years.
+>> I don't see any reason why PPC wouldn't benefit from this
+>> series.
+>
+> It's not clear to me what the benefit of this is at all, much less for PPC.
+> What is the fundamental problem with deferred probes?  In the cover letter
+> you say this change saves 2.3 seconds, but where is that time being consumed?
+>  Are the drivers taking too long in their probe function trying to initialize
+> and then deferring, rather than checking for dependencies up front?  Or are
+> there really so many devices and such a pessimal ordering that most of the
+> time is spent iterating through and reordering the list, with each defer
+> happening quickly?
 
-I welcome x86 maintainer feedback to confirm virtual and DMA addresses
-have the same offset at 4k alignment, but I have to insist we don't
-break my currently working hardware to force their attention.
+The problem is that a device that defers its probe is currently sent
+to the back of the queue, and that's undesired in some use cases in
+which there's a device that should be up as soon as possible during
+boot (and boot takes a long time). So the goal is to change the order
+in which devices with dependencies end up probing.
+
+> Even if something different does need to be done at this level, forcing all
+> OF platform devices to be probed at the late_initcall level seems quite
+> intrusive.  You limited it to OF because people complained that other things
+> will break.  Things still broke.  Surely there's a better way to address the
+> problem.  Can't the delay be requested by drivers that might otherwise need
+> to defer (which could be done incrementally, focusing on the worst
+> performance problems), rather than enabling it for everything?
+
+Yes, given the amount of breakage that's a sensible option. But in any
+case and even if this series is most likely to be dropped, I recommend
+to make explicit as many implicit dependencies as possible.
+
+Regards,
+
+Tomeu
+
+> -Scott
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
