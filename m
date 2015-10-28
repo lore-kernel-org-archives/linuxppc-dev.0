@@ -1,29 +1,20 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by lists.ozlabs.org (Postfix) with ESMTP id 0D3661A0BC4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 17:20:50 +1100 (AEDT)
-Date: Wed, 28 Oct 2015 15:20:34 +0900
-From: Vinod Koul <vinod.koul@intel.com>
-To: Alexander Popov <alex.popov@linux.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anatolij Gustschin <agust@denx.de>, Rob Herring <robh@kernel.org>,
- Timur Tabi <timur@tabi.org>, Grant Likely <grant.likely@linaro.org>,
- Dan Williams <dan.j.williams@intel.com>, Pawel Moll <pawel.moll@arm.com>,
- Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 0/2] powerpc/512x: add LocalPlus Bus FIFO device driver
-Message-ID: <20151028062030.GA3041@vkoul-mobl.iind.intel.com>
-References: <1444597682-22181-1-git-send-email-alex.popov@linux.com>
- <56280E66.2040804@linux.com>
- <20151027022231.GF11691@vkoul-mobl.iind.intel.com>
- <562FE1D1.3010903@linux.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <562FE1D1.3010903@linux.com>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CD59F1A0252
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 19:31:37 +1100 (AEDT)
+Message-ID: <1446021081.22351.0.camel@ellerman.id.au>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.3-6 tag
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Date: Wed, 28 Oct 2015 17:31:21 +0900
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature";
+ boundary="=-gNpVv/CwcKkJD38txb5r"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,28 +24,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 27, 2015 at 11:42:57PM +0300, Alexander Popov wrote:
-> >> Hello,
-> >>
-> >> I've done my best to fix the issues pointed by Timur Tabi and Vinod Koul.
-> >> Could I have a feedback please?
-> > 
-> > I dont see to have v4 in my list :( Can you please repost
-> 
-> Hello, Vinod
-> 
-> I'm sure I haven't miss your address in the list of the recipients.
-> Anyway I can repost.
-> 
-> Anatolij Gustschin wrote that he applied v4 with some fix to mpc5xxx/next
-> some time ago.
 
-Okay, I though these were dmaengine patches but looking back they seemed to
-be for arch code, so nothing to do here for me and then you :)
+--=-gNpVv/CwcKkJD38txb5r
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> So should I repost v4 for everybody? How should I mark the reposted patches?
+Hi Linus,
 
-Its merged so fine with me
+Please pull one more powerpc fix for 4.3:
 
--- 
-~Vinod
+The following changes since commit 8832317f662c06f5c06e638f57bfe89a71c9b266=
+:
+
+  powerpc/rtas: Validate rtas.entry before calling enter_rtas() (2015-10-22=
+ 11:03:25 +1100)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powe=
+rpc-4.3-6
+
+for you to fetch changes up to 977bf062bba3eb8d03f66d5b4e227e5d7ebc1e08:
+
+  powerpc/dma: dma_set_coherent_mask() should not be GPL only (2015-10-28 1=
+4:20:50 +0900)
+
+----------------------------------------------------------------
+powerpc fixes for 4.3 #5
+
+ - powerpc/dma: dma_set_coherent_mask() should not be GPL only from Ben
+
+----------------------------------------------------------------
+Benjamin Herrenschmidt (1):
+      powerpc/dma: dma_set_coherent_mask() should not be GPL only
+
+ arch/powerpc/kernel/dma.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--=-gNpVv/CwcKkJD38txb5r
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAABAgAGBQJWMIfZAAoJEFHr6jzI4aWAroMP/iNS0H2M+Beoa8G2CGtghsFO
+HAuRaDEQZ76D+Bt2clkXzxdLCzu2uwCvmZ7Lv487sW3maOPRG+iY0rNDNdwdtqk1
+9StWSUX3CxFJuGXoBKQiS0xASsgnHWPOhmSoD1IIROGeMfPrFV5wFzYGBTMPCXB/
+85utuBTly/1L2FeNuPuY5WycQ+zeCaawa9g75NcwkKa3NirShKf4XYsDm9bU20Kq
+J2vs+TMEETFisQTEKzJfj2Wvr3CQYJ1qDiVZJQjvLYaM91b1XJiZanUIRvVEezI2
+axKO909dTmFZZUnY+/w+QhbWwjVaBVblWcNqLTNeXUcSFgz0I5c4FG4JyhAdsbBq
+bsQBL0vid8DJAKqcckTNQkVrrbG+wFvf0QxMbhxwO29kVtEsDRx3uXxkvdmzLC6M
+zO1btUVbF3DeujCkv8BLWdRAIAdeWQnCjwAqX5wqgJVu5aohUtvqYd2s5vovIoV6
+OLet6B+BXpC9Gd5apwqQHXqObp/+wQBXdZlzx0RzOLrqZdWCEzi1u5QHQ/4eS1//
+V1G202k3A4vfqsMIIO7qAwhfHCFzNDPFqzJuipk3DvGGEkhRMsmVexF7A/9mw2Oi
+Cx+SYVQaTiLTr846n6LjWML0xj/iI6tnY236o8Bg2ozClDhuUiglPUfVpyECpVzh
+KdxEh3t6fgM+CeCjXlJJ
+=k1x/
+-----END PGP SIGNATURE-----
+
+--=-gNpVv/CwcKkJD38txb5r--
