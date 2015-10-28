@@ -1,18 +1,31 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B6371A0314
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 11:51:50 +1100 (AEDT)
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mikey@neuling.org, cyrilbur@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 19/19] powerpc: clean up asm/switch_to.h
-Date: Wed, 28 Oct 2015 11:51:07 +1100
-Message-Id: <1445993467-667-19-git-send-email-anton@samba.org>
-In-Reply-To: <1445993467-667-1-git-send-email-anton@samba.org>
-References: <1445993467-667-1-git-send-email-anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C8E81A0EA9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 12:00:30 +1100 (AEDT)
+Received: by pacfv9 with SMTP id fv9so248991620pac.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 18:00:28 -0700 (PDT)
+Subject: Re: [PATCH 2/7 v2] powerpc/dma-mapping: override dma_get_page_shift
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+References: <20151023205420.GA10197@linux.vnet.ibm.com>
+ <20151023205718.GC10197@linux.vnet.ibm.com> <562F1368.1030204@ozlabs.ru>
+ <20151027222706.GF7716@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Matthew Wilcox <willy@linux.intel.com>, Keith Busch <keith.busch@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, David Gibson
+ <david@gibson.dropbear.id.au>, Christoph Hellwig <hch@infradead.org>,
+ "David S. Miller" <davem@davemloft.net>, linux-nvme@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <56301E24.1060304@ozlabs.ru>
+Date: Wed, 28 Oct 2015 12:00:20 +1100
+MIME-Version: 1.0
+In-Reply-To: <20151027222706.GF7716@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,103 +35,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove a bunch of unnecessary fallback functions and group
-things in a more logical way.
+On 10/28/2015 09:27 AM, Nishanth Aravamudan wrote:
+> On 27.10.2015 [17:02:16 +1100], Alexey Kardashevskiy wrote:
+>> On 10/24/2015 07:57 AM, Nishanth Aravamudan wrote:
+>>> On Power, the kernel's page size can differ from the IOMMU's page size,
+>>> so we need to override the generic implementation, which always returns
+>>> the kernel's page size. Lookup the IOMMU's page size from struct
+>>> iommu_table, if available. Fallback to the kernel's page size,
+>>> otherwise.
+>>>
+>>> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+>>> ---
+>>>   arch/powerpc/include/asm/dma-mapping.h | 3 +++
+>>>   arch/powerpc/kernel/dma.c              | 9 +++++++++
+>>>   2 files changed, 12 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+>>> index 7f522c0..c5638f4 100644
+>>> --- a/arch/powerpc/include/asm/dma-mapping.h
+>>> +++ b/arch/powerpc/include/asm/dma-mapping.h
+>>> @@ -125,6 +125,9 @@ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
+>>>   #define HAVE_ARCH_DMA_SET_MASK 1
+>>>   extern int dma_set_mask(struct device *dev, u64 dma_mask);
+>>>
+>>> +#define HAVE_ARCH_DMA_GET_PAGE_SHIFT 1
+>>> +extern unsigned long dma_get_page_shift(struct device *dev);
+>>> +
+>>>   #include <asm-generic/dma-mapping-common.h>
+>>>
+>>>   extern int __dma_set_mask(struct device *dev, u64 dma_mask);
+>>> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+>>> index 59503ed..e805af2 100644
+>>> --- a/arch/powerpc/kernel/dma.c
+>>> +++ b/arch/powerpc/kernel/dma.c
+>>> @@ -335,6 +335,15 @@ int dma_set_mask(struct device *dev, u64 dma_mask)
+>>>   }
+>>>   EXPORT_SYMBOL(dma_set_mask);
+>>>
+>>> +unsigned long dma_get_page_shift(struct device *dev)
+>>> +{
+>>> +	struct iommu_table *tbl = get_iommu_table_base(dev);
+>>> +	if (tbl)
+>>> +		return tbl->it_page_shift;
+>>
+>>
+>> All PCI devices have this initialized on POWER (at least, our, IBM's
+>> POWER) so 4K will always be returned here while in the case of
+>> (get_dma_ops(dev)==&dma_direct_ops) it could actually return
+>> PAGE_SHIFT. Is 4K still preferred value to return here?
+>
+> Right, so the logic of my series, goes like this:
+>
+> a) We currently are assuming DMA_PAGE_SHIFT (conceptual constant) is
+> PAGE_SHIFT everywhere, including Power.
+>
+> b) After 2/7, the Power code will return either the IOMMU table's shift
+> value, if set, or PAGE_SHIFT (I guess this would be the case if
+> get_dma_ops(dev) == &dma_direct_ops, as you said). That is no different
+> than we have now, except we can return the accurate IOMMU value if
+> available.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/include/asm/switch_to.h | 39 ++++++++++--------------------------
- 1 file changed, 11 insertions(+), 28 deletions(-)
+If it is not available, then something went wrong and BUG_ON(!tbl || 
+!tbl->it_page_shift) make more sense here than pretending that this 
+function can ever return PAGE_SHIFT. imho.
 
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 08e2d65..171ce13 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -14,24 +14,18 @@ extern struct task_struct *__switch_to(struct task_struct *,
- 	struct task_struct *);
- #define switch_to(prev, next, last)	((last) = __switch_to((prev), (next)))
- 
--struct thread_struct;
- extern struct task_struct *_switch(struct thread_struct *prev,
- 				   struct thread_struct *next);
- 
--extern void enable_kernel_fp(void);
--extern void enable_kernel_altivec(void);
--extern void enable_kernel_vsx(void);
-+extern void switch_booke_debug_regs(struct debug_reg *new_debug);
-+
- extern int emulate_altivec(struct pt_regs *);
--extern void __giveup_vsx(struct task_struct *);
--extern void giveup_vsx(struct task_struct *);
--extern void enable_kernel_spe(void);
--extern void giveup_spe(struct task_struct *);
--extern void load_up_spe(struct task_struct *);
--extern void giveup_all(struct task_struct *);
-+
- extern void flush_all_to_thread(struct task_struct *);
--extern void switch_booke_debug_regs(struct debug_reg *new_debug);
-+extern void giveup_all(struct task_struct *);
- 
- #ifdef CONFIG_PPC_FPU
-+extern void enable_kernel_fp(void);
- extern void flush_fp_to_thread(struct task_struct *);
- extern void giveup_fpu(struct task_struct *);
- extern void __giveup_fpu(struct task_struct *);
-@@ -39,14 +33,10 @@ static inline void disable_kernel_fp(void)
- {
- 	msr_check_and_clear(MSR_FP);
- }
--
--#else
--static inline void flush_fp_to_thread(struct task_struct *t) { }
--static inline void giveup_fpu(struct task_struct *t) { }
--static inline void __giveup_fpu(struct task_struct *t) { }
- #endif
- 
- #ifdef CONFIG_ALTIVEC
-+extern void enable_kernel_altivec(void);
- extern void flush_altivec_to_thread(struct task_struct *);
- extern void giveup_altivec(struct task_struct *);
- extern void __giveup_altivec(struct task_struct *);
-@@ -54,34 +44,27 @@ static inline void disable_kernel_altivec(void)
- {
- 	msr_check_and_clear(MSR_VEC);
- }
--#else
--static inline void flush_altivec_to_thread(struct task_struct *t) { }
--static inline void giveup_altivec(struct task_struct *t) { }
--static inline void __giveup_altivec(struct task_struct *t) { }
- #endif
- 
- #ifdef CONFIG_VSX
-+extern void enable_kernel_vsx(void);
- extern void flush_vsx_to_thread(struct task_struct *);
-+extern void giveup_vsx(struct task_struct *);
-+extern void __giveup_vsx(struct task_struct *);
- static inline void disable_kernel_vsx(void)
- {
- 	msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
- }
--#else
--static inline void flush_vsx_to_thread(struct task_struct *t)
--{
--}
- #endif
- 
- #ifdef CONFIG_SPE
-+extern void enable_kernel_spe(void);
- extern void flush_spe_to_thread(struct task_struct *);
-+extern void giveup_spe(struct task_struct *);
- static inline void disable_kernel_spe(void)
- {
- 	msr_check_and_clear(MSR_SPE);
- }
--#else
--static inline void flush_spe_to_thread(struct task_struct *t)
--{
--}
- #endif
- 
- static inline void clear_task_ebb(struct task_struct *t)
+
+>
+> 3) After 3/7, the platform can override the generic Power
+> get_dma_page_shift().
+>
+> 4) After 4/7, pseries will return the DDW value, if available, then
+> fallback to the IOMMU table's value. I think in the case of
+> get_dma_ops(dev)==&dma_direct_ops, the only way that can happen is if we
+> are using DDW, right?
+
+This is for pseries guests; for the powernv host it is a "bypass" mode 
+which does 64bit direct DMA mapping and there is no additional window for 
+that (i.e. DIRECT64_PROPNAME, etc).
+
+
+
 -- 
-2.5.0
+Alexey
