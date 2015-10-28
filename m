@@ -1,39 +1,43 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 37CD41A0329
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 12:50:21 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by lists.ozlabs.org (Postfix) with ESMTPS id B73C61A041D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 12:53:04 +1100 (AEDT)
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 28 Oct 2015 07:20:18 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id B705EE0054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 07:20:25 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9S1oF0S8388898
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 07:20:15 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9S1oF1R024143
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 07:20:15 +0530
-Date: Wed, 28 Oct 2015 09:50:14 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
- bhelgaas@google.com, mpe@ellerman.id.au, aik@ozlabs.ru,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH V10 00/12] VF EEH on Power8
-Message-ID: <20151028015014.GA17539@Richards-MacBook-Pro.local>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <20151027231113.GB5155@localhost>
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 27 Oct 2015 21:53:01 -0400
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 869B46E8047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 21:41:10 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9S1qxOh64421934
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 01:52:59 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9S1quIA023870
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 21:52:59 -0400
+Date: Tue, 27 Oct 2015 18:52:55 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: willy@linux.intel.com, keith.busch@intel.com, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, aik@ozlabs.ru,
+ david@gibson.dropbear.id.au, hch@infradead.org,
+ linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org
+Subject: Re: [PATCH 0/5 v3] Fix NVMe driver support on Power with 32-bit DMA
+Message-ID: <20151028015255.GG7716@linux.vnet.ibm.com>
+References: <20151023205420.GA10197@linux.vnet.ibm.com>
+ <20151026.182746.1323901353520152838.davem@davemloft.net>
+ <20151027222010.GD7716@linux.vnet.ibm.com>
+ <20151027.175322.247163553940004154.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151027231113.GB5155@localhost>
+In-Reply-To: <20151027.175322.247163553940004154.davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,54 +47,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 27, 2015 at 06:11:13PM -0500, Bjorn Helgaas wrote:
->On Mon, Oct 26, 2015 at 11:15:50AM +0800, Wei Yang wrote:
->> This patchset enables EEH on SRIOV VFs. The general idea is to create proper
->> VF edev and VF PE and handle them properly.
->> ...
->
->> Gavin Shan (1):
->>   powerpc/eeh: Don't block PCI config on resetting VF PE
->> 
->> Wei Yang (11):
->>   PCI/IOV: Rename and export virtfn_add/virtfn_remove
->>   PCI: Add pcibios_bus_add_device() weak function
->>   powerpc/pci: Cache VF index in pci_dn
->>   powerpc/pci: Remove VFs prior to PF
->>   powerpc/eeh: Cache only BARs, not windows or IOV BARs
->>   powerpc/powernv: EEH device for VF
->>   powerpc/eeh: Create PE for VFs
->>   powerpc/powernv: Support EEH reset for VF PE
->>   powerpc/powernv: Support PCI config restore for VFs
->>   powerpc/eeh: Support error recovery for VF PE
->>   powerpc/eeh: Handle hot removed VF when PF is EEH aware
->> 
->>  arch/powerpc/include/asm/eeh.h               |  10 ++
->>  arch/powerpc/include/asm/pci-bridge.h        |   2 +
->>  arch/powerpc/kernel/eeh.c                    |  17 ++-
->>  arch/powerpc/kernel/eeh_cache.c              |   6 +-
->>  arch/powerpc/kernel/eeh_dev.c                |   1 +
->>  arch/powerpc/kernel/eeh_driver.c             | 130 ++++++++++++----
->>  arch/powerpc/kernel/eeh_pe.c                 |  13 +-
->>  arch/powerpc/kernel/pci-hotplug.c            |   2 +-
->>  arch/powerpc/kernel/pci_dn.c                 |  16 +-
->>  arch/powerpc/platforms/powernv/eeh-powernv.c | 220 ++++++++++++++++++++++++++-
->>  arch/powerpc/platforms/powernv/pci.c         |  18 +++
->>  drivers/pci/bus.c                            |   3 +
->>  drivers/pci/iov.c                            |  10 +-
->>  include/linux/pci.h                          |   8 +
->>  14 files changed, 408 insertions(+), 48 deletions(-)
->
->This really only affects powerpc, so I assume this series will go through
->the powerpc tree.  Let me know if you want me to do anything else.
->
+On 27.10.2015 [17:53:22 -0700], David Miller wrote:
+> From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> Date: Tue, 27 Oct 2015 15:20:10 -0700
+> 
+> > Well, looks like I should spin up a v4 anyways for the powerpc changes.
+> > So, to make sure I understand your point, should I make the generic
+> > dma_get_page_shift a compile-error kind of thing? It will only fail on
+> > architectures that actually build the NVME driver (as the only caller).
+> > But I'm not sure how exactly to achieve that, if you could give a bit
+> > more detail I'd appreciate it!
+> 
+> Yes, I am basically suggesting to simply not provide a default at all.
 
-Yep, as we talked about it, this will be merged in powerpc tree.
+For my own edification -- what is the way that gets resolved? I guess I
+mean it seems like linux-next would cease to compile because of my new
+series. Would my patches just get kicked out of -next for introducing
+that (or even via the 0-day notifications), or should I put something
+into the commit message indicating it is an API introduction?
 
-Have a good day :-)
+Sorry for the tentativeness, I have not introduce a cross-architecture
+API like this before.
 
->Bjorn
+Thanks,
+Nish
 
--- 
-Richard Yang
-Help you, Help me
+> 
