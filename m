@@ -1,18 +1,30 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id 9E7121A027B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 10:11:29 +1100 (AEDT)
-Date: Tue, 27 Oct 2015 18:11:13 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Cc: gwshan@linux.vnet.ibm.com, bhelgaas@google.com, mpe@ellerman.id.au,
- aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH V10 00/12] VF EEH on Power8
-Message-ID: <20151027231113.GB5155@localhost>
-References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C89DF1A0A2F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 11:31:13 +1100 (AEDT)
+Message-ID: <1445992192.1856.23.camel@kernel.crashing.org>
+Subject: Re: [PATCH 0/5 v3] Fix NVMe driver support on Power with 32-bit DMA
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Julian Calaby <julian.calaby@gmail.com>, Nishanth Aravamudan
+ <nacc@linux.vnet.ibm.com>
+Cc: David Miller <davem@davemloft.net>, willy@linux.intel.com,
+ keith.busch@intel.com, paulus@samba.org, mpe@ellerman.id.au,
+ aik@ozlabs.ru, david@gibson.dropbear.id.au,
+ Christoph Hellwig <hch@infradead.org>, linux-nvme@lists.infradead.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, sparclinux <sparclinux@vger.kernel.org>
+Date: Wed, 28 Oct 2015 09:29:52 +0900
+In-Reply-To: <CAGRGNgVvvcjHFjU4H1wnj6bGy69X19d-xR9O+Xc-p-TmtPxNgQ@mail.gmail.com>
+References: <20151023205420.GA10197@linux.vnet.ibm.com>
+ <20151026.182746.1323901353520152838.davem@davemloft.net>
+ <20151027222010.GD7716@linux.vnet.ibm.com>
+ <CAGRGNgXV+RJvjOBe351HyguYkonQ8F=CM3uZTijcqoQg6ArAcw@mail.gmail.com>
+ <20151027234018.GA48779@linux.vnet.ibm.com>
+ <CAGRGNgVvvcjHFjU4H1wnj6bGy69X19d-xR9O+Xc-p-TmtPxNgQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,44 +34,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 26, 2015 at 11:15:50AM +0800, Wei Yang wrote:
-> This patchset enables EEH on SRIOV VFs. The general idea is to create proper
-> VF edev and VF PE and handle them properly.
-> ...
+On Wed, 2015-10-28 at 10:43 +1100, Julian Calaby wrote:
+> Hi Nishanth,
+> You'll be CCing the maintainers of each architecture on the patches
+> to
+> add the functions, so if they do have specific requirements, I'm sure
+> they'll let you know or provide patches.
 
-> Gavin Shan (1):
->   powerpc/eeh: Don't block PCI config on resetting VF PE
-> 
-> Wei Yang (11):
->   PCI/IOV: Rename and export virtfn_add/virtfn_remove
->   PCI: Add pcibios_bus_add_device() weak function
->   powerpc/pci: Cache VF index in pci_dn
->   powerpc/pci: Remove VFs prior to PF
->   powerpc/eeh: Cache only BARs, not windows or IOV BARs
->   powerpc/powernv: EEH device for VF
->   powerpc/eeh: Create PE for VFs
->   powerpc/powernv: Support EEH reset for VF PE
->   powerpc/powernv: Support PCI config restore for VFs
->   powerpc/eeh: Support error recovery for VF PE
->   powerpc/eeh: Handle hot removed VF when PF is EEH aware
-> 
->  arch/powerpc/include/asm/eeh.h               |  10 ++
->  arch/powerpc/include/asm/pci-bridge.h        |   2 +
->  arch/powerpc/kernel/eeh.c                    |  17 ++-
->  arch/powerpc/kernel/eeh_cache.c              |   6 +-
->  arch/powerpc/kernel/eeh_dev.c                |   1 +
->  arch/powerpc/kernel/eeh_driver.c             | 130 ++++++++++++----
->  arch/powerpc/kernel/eeh_pe.c                 |  13 +-
->  arch/powerpc/kernel/pci-hotplug.c            |   2 +-
->  arch/powerpc/kernel/pci_dn.c                 |  16 +-
->  arch/powerpc/platforms/powernv/eeh-powernv.c | 220 ++++++++++++++++++++++++++-
->  arch/powerpc/platforms/powernv/pci.c         |  18 +++
->  drivers/pci/bus.c                            |   3 +
->  drivers/pci/iov.c                            |  10 +-
->  include/linux/pci.h                          |   8 +
->  14 files changed, 408 insertions(+), 48 deletions(-)
+That sort of accross-all-arch change tend to take forever. I'd rather
+get the existing series in to fix the problem, we can look into
+improving things later but I tend to think that the default of using
+PAGE_SHIFT in asm-generic will be fine for most archs.
 
-This really only affects powerpc, so I assume this series will go through
-the powerpc tree.  Let me know if you want me to do anything else.
-
-Bjorn
+Ben.
