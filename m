@@ -2,16 +2,18 @@ Return-Path: <anton@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 77AE31A028B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 11:51:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1CAC01A028E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 11:51:13 +1100 (AEDT)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  mikey@neuling.org, cyrilbur@gmail.com
 Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 01/19] powerpc: Don't disable kernel FP/VMX/VSX MSR bits on
- context switch
-Date: Wed, 28 Oct 2015 11:50:49 +1100
-Message-Id: <1445993467-667-1-git-send-email-anton@samba.org>
+Subject: [PATCH 02/19] powerpc: Don't disable MSR bits in
+ do_load_up_transact_*() functions
+Date: Wed, 28 Oct 2015 11:50:50 +1100
+Message-Id: <1445993467-667-2-git-send-email-anton@samba.org>
+In-Reply-To: <1445993467-667-1-git-send-email-anton@samba.org>
+References: <1445993467-667-1-git-send-email-anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,56 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Writing the MSR is slow, so we want to avoid it whenever possible.
-
-A subsequent patch will add a debug option that strictly manages the
-FP/VMX/VSX unavailable bits. For now just remove it, matching what
-we do in other areas of the kernel (eg enable_kernel_altivec()).
-
-A context switch microbenchmark using yield():
-
-http://ozlabs.org/~anton/junkcode/context_switch2.c
-
-./context_switch2 --test=yield --fp 0 0
-
-shows an improvement of almost 3% on POWER8.
+Similar to the non TM load_up_*() functions, don't disable the MSR
+bits on the way out.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/kernel/entry_64.S | 15 +--------------
- 1 file changed, 1 insertion(+), 14 deletions(-)
+ arch/powerpc/kernel/fpu.S    | 4 ----
+ arch/powerpc/kernel/vector.S | 4 ----
+ 2 files changed, 8 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index a94f155..93bb284 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -453,26 +453,13 @@ _GLOBAL(_switch)
- 	SAVE_8GPRS(14, r1)
- 	SAVE_10GPRS(22, r1)
- 	mflr	r20		/* Return to switch caller */
--	mfmsr	r22
--	li	r0, MSR_FP
--#ifdef CONFIG_VSX
--BEGIN_FTR_SECTION
--	oris	r0,r0,MSR_VSX@h	/* Disable VSX */
--END_FTR_SECTION_IFSET(CPU_FTR_VSX)
--#endif /* CONFIG_VSX */
- #ifdef CONFIG_ALTIVEC
- BEGIN_FTR_SECTION
--	oris	r0,r0,MSR_VEC@h	/* Disable altivec */
- 	mfspr	r24,SPRN_VRSAVE	/* save vrsave register value */
- 	std	r24,THREAD_VRSAVE(r3)
- END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- #endif /* CONFIG_ALTIVEC */
--	and.	r0,r0,r22
--	beq+	1f
--	andc	r22,r22,r0
--	MTMSRD(r22)
+diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
+index 9ad236e..38eb79b 100644
+--- a/arch/powerpc/kernel/fpu.S
++++ b/arch/powerpc/kernel/fpu.S
+@@ -73,10 +73,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ 	MTFSF_L(fr0)
+ 	REST_32FPVSRS(0, R4, R7)
+ 
+-	/* FP/VSX off again */
+-	MTMSRD(r6)
+-	SYNC
+-
+ 	blr
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ 
+diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
+index f5c80d5..1c54259 100644
+--- a/arch/powerpc/kernel/vector.S
++++ b/arch/powerpc/kernel/vector.S
+@@ -29,10 +29,6 @@ _GLOBAL(do_load_up_transact_altivec)
+ 	addi	r10,r3,THREAD_TRANSACT_VRSTATE
+ 	REST_32VRS(0,r4,r10)
+ 
+-	/* Disable VEC again. */
+-	MTMSRD(r6)
 -	isync
--1:	std	r20,_NIP(r1)
-+	std	r20,_NIP(r1)
- 	mfcr	r23
- 	std	r23,_CCR(r1)
- 	std	r1,KSP(r3)	/* Set old stack pointer */
+-
+ 	blr
+ #endif
+ 
 -- 
 2.5.0
