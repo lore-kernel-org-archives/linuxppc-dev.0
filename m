@@ -1,17 +1,16 @@
 Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8A3E01A03C6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 11:51:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 113291A02C2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 11:51:22 +1100 (AEDT)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  mikey@neuling.org, cyrilbur@gmail.com
 Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 05/19] powerpc: Remove UP only lazy floating point and vector
- optimisations
-Date: Wed, 28 Oct 2015 11:50:53 +1100
-Message-Id: <1445993467-667-5-git-send-email-anton@samba.org>
+Subject: [PATCH 06/19] powerpc: Simplify TM restore checks
+Date: Wed, 28 Oct 2015 11:50:54 +1100
+Message-Id: <1445993467-667-6-git-send-email-anton@samba.org>
 In-Reply-To: <1445993467-667-1-git-send-email-anton@samba.org>
 References: <1445993467-667-1-git-send-email-anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,635 +22,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The UP only lazy floating point and vector optimisations were written
-back when SMP was not common, and neither glibc nor gcc used vector
-instructions. Now SMP is very common, glibc aggressively uses vector
-instructions and gcc autovectorises.
+Instead of having multiple giveup_*_maybe_transactional() functions,
+separate out the TM check into a new function called
+check_if_tm_restore_required().
 
-We want to add new optimisations that apply to both UP and SMP, but
-in preparation for that remove these UP only optimisations.
+This will make it easier to optimise the giveup_*() functions in a
+subsequent patch.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/processor.h |   6 --
- arch/powerpc/include/asm/switch_to.h |   8 ---
- arch/powerpc/kernel/fpu.S            |  35 -----------
- arch/powerpc/kernel/head_fsl_booke.S |  32 ----------
- arch/powerpc/kernel/idle_power7.S    |   7 ---
- arch/powerpc/kernel/process.c        | 113 +----------------------------------
- arch/powerpc/kernel/signal_32.c      |  18 ------
- arch/powerpc/kernel/signal_64.c      |  18 ------
- arch/powerpc/kernel/vector.S         |  68 ---------------------
- 9 files changed, 1 insertion(+), 304 deletions(-)
+ arch/powerpc/kernel/process.c | 53 ++++++++++++++++---------------------------
+ 1 file changed, 19 insertions(+), 34 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index c273f3e..a2e8918 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -88,12 +88,6 @@ struct task_struct;
- void start_thread(struct pt_regs *regs, unsigned long fdptr, unsigned long sp);
- void release_thread(struct task_struct *);
- 
--/* Lazy FPU handling on uni-processor */
--extern struct task_struct *last_task_used_math;
--extern struct task_struct *last_task_used_altivec;
--extern struct task_struct *last_task_used_vsx;
--extern struct task_struct *last_task_used_spe;
--
- #ifdef CONFIG_PPC32
- 
- #if CONFIG_TASK_SIZE > CONFIG_KERNEL_START
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 33a071d..bd1d933 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -27,14 +27,6 @@ extern void giveup_spe(struct task_struct *);
- extern void load_up_spe(struct task_struct *);
- extern void switch_booke_debug_regs(struct debug_reg *new_debug);
- 
--#ifndef CONFIG_SMP
--extern void discard_lazy_cpu_state(void);
--#else
--static inline void discard_lazy_cpu_state(void)
--{
--}
--#endif
--
- #ifdef CONFIG_PPC_FPU
- extern void flush_fp_to_thread(struct task_struct *);
- extern void giveup_fpu(struct task_struct *);
-diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-index 38eb79b..50d2352 100644
---- a/arch/powerpc/kernel/fpu.S
-+++ b/arch/powerpc/kernel/fpu.S
-@@ -132,31 +132,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	SYNC
- 	MTMSRD(r5)			/* enable use of fpu now */
- 	isync
--/*
-- * For SMP, we don't do lazy FPU switching because it just gets too
-- * horrendously complex, especially when a task switches from one CPU
-- * to another.  Instead we call giveup_fpu in switch_to.
-- */
--#ifndef CONFIG_SMP
--	LOAD_REG_ADDRBASE(r3, last_task_used_math)
--	toreal(r3)
--	PPC_LL	r4,ADDROFF(last_task_used_math)(r3)
--	PPC_LCMPI	0,r4,0
--	beq	1f
--	toreal(r4)
--	addi	r4,r4,THREAD		/* want last_task_used_math->thread */
--	addi	r10,r4,THREAD_FPSTATE
--	SAVE_32FPVSRS(0, R5, R10)
--	mffs	fr0
--	stfd	fr0,FPSTATE_FPSCR(r10)
--	PPC_LL	r5,PT_REGS(r4)
--	toreal(r5)
--	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
--	li	r10,MSR_FP|MSR_FE0|MSR_FE1
--	andc	r4,r4,r10		/* disable FP for previous task */
--	PPC_STL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
--1:
--#endif /* CONFIG_SMP */
- 	/* enable use of FP after return */
- #ifdef CONFIG_PPC32
- 	mfspr	r5,SPRN_SPRG_THREAD	/* current task's THREAD (phys) */
-@@ -175,11 +150,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	lfd	fr0,FPSTATE_FPSCR(r10)
- 	MTFSF_L(fr0)
- 	REST_32FPVSRS(0, R4, R10)
--#ifndef CONFIG_SMP
--	subi	r4,r5,THREAD
--	fromreal(r4)
--	PPC_STL	r4,ADDROFF(last_task_used_math)(r3)
--#endif /* CONFIG_SMP */
- 	/* restore registers and return */
- 	/* we haven't used ctr or xer or lr */
- 	blr
-@@ -226,11 +196,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	andc	r4,r4,r3		/* disable FP for previous task */
- 	PPC_STL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
- 1:
--#ifndef CONFIG_SMP
--	li	r5,0
--	LOAD_REG_ADDRBASE(r4,last_task_used_math)
--	PPC_STL	r5,ADDROFF(last_task_used_math)(r4)
--#endif /* CONFIG_SMP */
- 	blr
- 
- /*
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index fffd1f9..ec936ab 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -857,29 +857,6 @@ _GLOBAL(load_up_spe)
- 	oris	r5,r5,MSR_SPE@h
- 	mtmsr	r5			/* enable use of SPE now */
- 	isync
--/*
-- * For SMP, we don't do lazy SPE switching because it just gets too
-- * horrendously complex, especially when a task switches from one CPU
-- * to another.  Instead we call giveup_spe in switch_to.
-- */
--#ifndef CONFIG_SMP
--	lis	r3,last_task_used_spe@ha
--	lwz	r4,last_task_used_spe@l(r3)
--	cmpi	0,r4,0
--	beq	1f
--	addi	r4,r4,THREAD	/* want THREAD of last_task_used_spe */
--	SAVE_32EVRS(0,r10,r4,THREAD_EVR0)
--	evxor	evr10, evr10, evr10	/* clear out evr10 */
--	evmwumiaa evr10, evr10, evr10	/* evr10 <- ACC = 0 * 0 + ACC */
--	li	r5,THREAD_ACC
--	evstddx	evr10, r4, r5		/* save off accumulator */
--	lwz	r5,PT_REGS(r4)
--	lwz	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
--	lis	r10,MSR_SPE@h
--	andc	r4,r4,r10	/* disable SPE for previous task */
--	stw	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
--1:
--#endif /* !CONFIG_SMP */
- 	/* enable use of SPE after return */
- 	oris	r9,r9,MSR_SPE@h
- 	mfspr	r5,SPRN_SPRG_THREAD	/* current task's THREAD (phys) */
-@@ -889,10 +866,6 @@ _GLOBAL(load_up_spe)
- 	evlddx	evr4,r10,r5
- 	evmra	evr4,evr4
- 	REST_32EVRS(0,r10,r5,THREAD_EVR0)
--#ifndef CONFIG_SMP
--	subi	r4,r5,THREAD
--	stw	r4,last_task_used_spe@l(r3)
--#endif /* !CONFIG_SMP */
- 	blr
- 
- /*
-@@ -1035,11 +1008,6 @@ _GLOBAL(giveup_spe)
- 	andc	r4,r4,r3		/* disable SPE for previous task */
- 	stw	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
- 1:
--#ifndef CONFIG_SMP
--	li	r5,0
--	lis	r4,last_task_used_spe@ha
--	stw	r5,last_task_used_spe@l(r4)
--#endif /* !CONFIG_SMP */
- 	blr
- #endif /* CONFIG_SPE */
- 
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index 112ccf4..cf4fb54 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -89,13 +89,6 @@ _GLOBAL(power7_powersave_common)
- 	std	r0,_LINK(r1)
- 	std	r0,_NIP(r1)
- 
--#ifndef CONFIG_SMP
--	/* Make sure FPU, VSX etc... are flushed as we may lose
--	 * state when going to nap mode
--	 */
--	bl	discard_lazy_cpu_state
--#endif /* CONFIG_SMP */
--
- 	/* Hard disable interrupts */
- 	mfmsr	r9
- 	rldicl	r9,r9,48,1
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 3aabed4..e098f43 100644
+index e098f43..ef64219 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -67,13 +67,6 @@
- 
+@@ -68,7 +68,7 @@
  extern unsigned long _get_SP(void);
  
--#ifndef CONFIG_SMP
--struct task_struct *last_task_used_math = NULL;
--struct task_struct *last_task_used_altivec = NULL;
--struct task_struct *last_task_used_vsx = NULL;
--struct task_struct *last_task_used_spe = NULL;
--#endif
--
  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- void giveup_fpu_maybe_transactional(struct task_struct *tsk)
+-void giveup_fpu_maybe_transactional(struct task_struct *tsk)
++static void check_if_tm_restore_required(struct task_struct *tsk)
  {
-@@ -134,16 +127,14 @@ void flush_fp_to_thread(struct task_struct *tsk)
- 		 */
- 		preempt_disable();
- 		if (tsk->thread.regs->msr & MSR_FP) {
--#ifdef CONFIG_SMP
- 			/*
- 			 * This should only ever be called for current or
- 			 * for a stopped child process.  Since we save away
--			 * the FP register state on context switch on SMP,
-+			 * the FP register state on context switch,
- 			 * there is something wrong if a stopped child appears
+ 	/*
+ 	 * If we are saving the current thread's registers, and the
+@@ -82,31 +82,9 @@ void giveup_fpu_maybe_transactional(struct task_struct *tsk)
+ 		tsk->thread.ckpt_regs.msr = tsk->thread.regs->msr;
+ 		set_thread_flag(TIF_RESTORE_TM);
+ 	}
+-
+-	giveup_fpu(tsk);
+-}
+-
+-void giveup_altivec_maybe_transactional(struct task_struct *tsk)
+-{
+-	/*
+-	 * If we are saving the current thread's registers, and the
+-	 * thread is in a transactional state, set the TIF_RESTORE_TM
+-	 * bit so that we know to restore the registers before
+-	 * returning to userspace.
+-	 */
+-	if (tsk == current && tsk->thread.regs &&
+-	    MSR_TM_ACTIVE(tsk->thread.regs->msr) &&
+-	    !test_thread_flag(TIF_RESTORE_TM)) {
+-		tsk->thread.ckpt_regs.msr = tsk->thread.regs->msr;
+-		set_thread_flag(TIF_RESTORE_TM);
+-	}
+-
+-	giveup_altivec(tsk);
+ }
+-
+ #else
+-#define giveup_fpu_maybe_transactional(tsk)	giveup_fpu(tsk)
+-#define giveup_altivec_maybe_transactional(tsk)	giveup_altivec(tsk)
++static inline void check_if_tm_restore_required(struct task_struct *tsk) { }
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ 
+ #ifdef CONFIG_PPC_FPU
+@@ -135,7 +113,8 @@ void flush_fp_to_thread(struct task_struct *tsk)
  			 * to still have its FP state in the CPU registers.
  			 */
  			BUG_ON(tsk != current);
--#endif
- 			giveup_fpu_maybe_transactional(tsk);
+-			giveup_fpu_maybe_transactional(tsk);
++			check_if_tm_restore_required(tsk);
++			giveup_fpu(tsk);
  		}
  		preempt_enable();
-@@ -156,14 +147,10 @@ void enable_kernel_fp(void)
+ 	}
+@@ -147,10 +126,12 @@ void enable_kernel_fp(void)
  {
  	WARN_ON(preemptible());
  
--#ifdef CONFIG_SMP
- 	if (current->thread.regs && (current->thread.regs->msr & MSR_FP))
- 		giveup_fpu_maybe_transactional(current);
- 	else
+-	if (current->thread.regs && (current->thread.regs->msr & MSR_FP))
+-		giveup_fpu_maybe_transactional(current);
+-	else
++	if (current->thread.regs && (current->thread.regs->msr & MSR_FP)) {
++		check_if_tm_restore_required(current);
++		giveup_fpu(current);
++	} else {
  		giveup_fpu(NULL);	/* just enables FP for kernel */
--#else
--	giveup_fpu_maybe_transactional(last_task_used_math);
--#endif /* CONFIG_SMP */
++	}
  }
  EXPORT_SYMBOL(enable_kernel_fp);
  
-@@ -172,14 +159,10 @@ void enable_kernel_altivec(void)
+@@ -159,10 +140,12 @@ void enable_kernel_altivec(void)
  {
  	WARN_ON(preemptible());
  
--#ifdef CONFIG_SMP
- 	if (current->thread.regs && (current->thread.regs->msr & MSR_VEC))
- 		giveup_altivec_maybe_transactional(current);
- 	else
+-	if (current->thread.regs && (current->thread.regs->msr & MSR_VEC))
+-		giveup_altivec_maybe_transactional(current);
+-	else
++	if (current->thread.regs && (current->thread.regs->msr & MSR_VEC)) {
++		check_if_tm_restore_required(current);
++		giveup_altivec(current);
++	} else {
  		giveup_altivec_notask();
--#else
--	giveup_altivec_maybe_transactional(last_task_used_altivec);
--#endif /* CONFIG_SMP */
++	}
  }
  EXPORT_SYMBOL(enable_kernel_altivec);
  
-@@ -192,9 +175,7 @@ void flush_altivec_to_thread(struct task_struct *tsk)
- 	if (tsk->thread.regs) {
+@@ -176,7 +159,8 @@ void flush_altivec_to_thread(struct task_struct *tsk)
  		preempt_disable();
  		if (tsk->thread.regs->msr & MSR_VEC) {
--#ifdef CONFIG_SMP
  			BUG_ON(tsk != current);
--#endif
- 			giveup_altivec_maybe_transactional(tsk);
+-			giveup_altivec_maybe_transactional(tsk);
++			check_if_tm_restore_required(tsk);
++			giveup_altivec(tsk);
  		}
  		preempt_enable();
-@@ -208,14 +189,10 @@ void enable_kernel_vsx(void)
- {
- 	WARN_ON(preemptible());
- 
--#ifdef CONFIG_SMP
- 	if (current->thread.regs && (current->thread.regs->msr & MSR_VSX))
- 		giveup_vsx(current);
- 	else
- 		giveup_vsx(NULL);	/* just enable vsx for kernel - force */
--#else
--	giveup_vsx(last_task_used_vsx);
--#endif /* CONFIG_SMP */
- }
- EXPORT_SYMBOL(enable_kernel_vsx);
- 
-@@ -232,9 +209,7 @@ void flush_vsx_to_thread(struct task_struct *tsk)
- 	if (tsk->thread.regs) {
- 		preempt_disable();
- 		if (tsk->thread.regs->msr & MSR_VSX) {
--#ifdef CONFIG_SMP
- 			BUG_ON(tsk != current);
--#endif
- 			giveup_vsx(tsk);
- 		}
- 		preempt_enable();
-@@ -249,14 +224,10 @@ void enable_kernel_spe(void)
- {
- 	WARN_ON(preemptible());
- 
--#ifdef CONFIG_SMP
- 	if (current->thread.regs && (current->thread.regs->msr & MSR_SPE))
- 		giveup_spe(current);
- 	else
- 		giveup_spe(NULL);	/* just enable SPE for kernel - force */
--#else
--	giveup_spe(last_task_used_spe);
--#endif /* __SMP __ */
- }
- EXPORT_SYMBOL(enable_kernel_spe);
- 
-@@ -265,9 +236,7 @@ void flush_spe_to_thread(struct task_struct *tsk)
- 	if (tsk->thread.regs) {
- 		preempt_disable();
- 		if (tsk->thread.regs->msr & MSR_SPE) {
--#ifdef CONFIG_SMP
- 			BUG_ON(tsk != current);
--#endif
- 			tsk->thread.spefscr = mfspr(SPRN_SPEFSCR);
- 			giveup_spe(tsk);
- 		}
-@@ -276,32 +245,6 @@ void flush_spe_to_thread(struct task_struct *tsk)
- }
- #endif /* CONFIG_SPE */
- 
--#ifndef CONFIG_SMP
--/*
-- * If we are doing lazy switching of CPU state (FP, altivec or SPE),
-- * and the current task has some state, discard it.
-- */
--void discard_lazy_cpu_state(void)
--{
--	preempt_disable();
--	if (last_task_used_math == current)
--		last_task_used_math = NULL;
--#ifdef CONFIG_ALTIVEC
--	if (last_task_used_altivec == current)
--		last_task_used_altivec = NULL;
--#endif /* CONFIG_ALTIVEC */
--#ifdef CONFIG_VSX
--	if (last_task_used_vsx == current)
--		last_task_used_vsx = NULL;
--#endif /* CONFIG_VSX */
--#ifdef CONFIG_SPE
--	if (last_task_used_spe == current)
--		last_task_used_spe = NULL;
--#endif
--	preempt_enable();
--}
--#endif /* CONFIG_SMP */
--
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
- void do_send_trap(struct pt_regs *regs, unsigned long address,
- 		  unsigned long error_code, int signal_code, int breakpt)
-@@ -831,30 +774,9 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 
- 	__switch_to_tm(prev);
- 
--#ifdef CONFIG_SMP
--	/* avoid complexity of lazy save/restore of fpu
--	 * by just saving it every time we switch out if
--	 * this task used the fpu during the last quantum.
--	 *
--	 * If it tries to use the fpu again, it'll trap and
--	 * reload its fp regs.  So we don't have to do a restore
--	 * every switch, just a save.
--	 *  -- Cort
--	 */
- 	if (prev->thread.regs && (prev->thread.regs->msr & MSR_FP))
- 		giveup_fpu(prev);
- #ifdef CONFIG_ALTIVEC
--	/*
--	 * If the previous thread used altivec in the last quantum
--	 * (thus changing altivec regs) then save them.
--	 * We used to check the VRSAVE register but not all apps
--	 * set it, so we don't rely on it now (and in fact we need
--	 * to save & restore VSCR even if VRSAVE == 0).  -- paulus
--	 *
--	 * On SMP we always save/restore altivec regs just to avoid the
--	 * complexity of changing processors.
--	 *  -- Cort
--	 */
- 	if (prev->thread.regs && (prev->thread.regs->msr & MSR_VEC))
- 		giveup_altivec(prev);
- #endif /* CONFIG_ALTIVEC */
-@@ -864,39 +786,10 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 		__giveup_vsx(prev);
- #endif /* CONFIG_VSX */
- #ifdef CONFIG_SPE
--	/*
--	 * If the previous thread used spe in the last quantum
--	 * (thus changing spe regs) then save them.
--	 *
--	 * On SMP we always save/restore spe regs just to avoid the
--	 * complexity of changing processors.
--	 */
- 	if ((prev->thread.regs && (prev->thread.regs->msr & MSR_SPE)))
- 		giveup_spe(prev);
- #endif /* CONFIG_SPE */
- 
--#else  /* CONFIG_SMP */
--#ifdef CONFIG_ALTIVEC
--	/* Avoid the trap.  On smp this this never happens since
--	 * we don't set last_task_used_altivec -- Cort
--	 */
--	if (new->thread.regs && last_task_used_altivec == new)
--		new->thread.regs->msr |= MSR_VEC;
--#endif /* CONFIG_ALTIVEC */
--#ifdef CONFIG_VSX
--	if (new->thread.regs && last_task_used_vsx == new)
--		new->thread.regs->msr |= MSR_VSX;
--#endif /* CONFIG_VSX */
--#ifdef CONFIG_SPE
--	/* Avoid the trap.  On smp this this never happens since
--	 * we don't set last_task_used_spe
--	 */
--	if (new->thread.regs && last_task_used_spe == new)
--		new->thread.regs->msr |= MSR_SPE;
--#endif /* CONFIG_SPE */
--
--#endif /* CONFIG_SMP */
--
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 	switch_booke_debug_regs(&new->thread.debug);
- #else
-@@ -1111,13 +1004,10 @@ void show_regs(struct pt_regs * regs)
- 
- void exit_thread(void)
- {
--	discard_lazy_cpu_state();
- }
- 
- void flush_thread(void)
- {
--	discard_lazy_cpu_state();
--
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
- 	flush_ptrace_hw_breakpoint(current);
- #else /* CONFIG_HAVE_HW_BREAKPOINT */
-@@ -1355,7 +1245,6 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
- 		regs->msr = MSR_USER32;
  	}
- #endif
--	discard_lazy_cpu_state();
- #ifdef CONFIG_VSX
- 	current->thread.used_vsr = 0;
- #endif
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 0dbee46..3cd7a32 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -687,15 +687,6 @@ static long restore_user_regs(struct pt_regs *regs,
- 	if (sig)
- 		regs->msr = (regs->msr & ~MSR_LE) | (msr & MSR_LE);
+@@ -198,8 +182,9 @@ EXPORT_SYMBOL(enable_kernel_vsx);
  
--	/*
--	 * Do this before updating the thread state in
--	 * current->thread.fpr/vr/evr.  That way, if we get preempted
--	 * and another task grabs the FPU/Altivec/SPE, it won't be
--	 * tempted to save the current CPU state into the thread_struct
--	 * and corrupt what we are writing there.
--	 */
--	discard_lazy_cpu_state();
--
- #ifdef CONFIG_ALTIVEC
- 	/*
- 	 * Force the process to reload the altivec registers from
-@@ -798,15 +789,6 @@ static long restore_tm_user_regs(struct pt_regs *regs,
- 	/* Restore the previous little-endian mode */
- 	regs->msr = (regs->msr & ~MSR_LE) | (msr & MSR_LE);
- 
--	/*
--	 * Do this before updating the thread state in
--	 * current->thread.fpr/vr/evr.  That way, if we get preempted
--	 * and another task grabs the FPU/Altivec/SPE, it won't be
--	 * tempted to save the current CPU state into the thread_struct
--	 * and corrupt what we are writing there.
--	 */
--	discard_lazy_cpu_state();
--
- #ifdef CONFIG_ALTIVEC
- 	regs->msr &= ~MSR_VEC;
- 	if (msr & MSR_VEC) {
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 20756df..6f2b555 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -350,15 +350,6 @@ static long restore_sigcontext(struct pt_regs *regs, sigset_t *set, int sig,
- 		err |=  __get_user(set->sig[0], &sc->oldmask);
- 
- 	/*
--	 * Do this before updating the thread state in
--	 * current->thread.fpr/vr.  That way, if we get preempted
--	 * and another task grabs the FPU/Altivec, it won't be
--	 * tempted to save the current CPU state into the thread_struct
--	 * and corrupt what we are writing there.
--	 */
--	discard_lazy_cpu_state();
--
--	/*
- 	 * Force reload of FP/VEC.
- 	 * This has to be done before copying stuff into current->thread.fpr/vr
- 	 * for the reasons explained in the previous comment.
-@@ -465,15 +456,6 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
- 	err |= __get_user(regs->result, &sc->gp_regs[PT_RESULT]);
- 
- 	/*
--	 * Do this before updating the thread state in
--	 * current->thread.fpr/vr.  That way, if we get preempted
--	 * and another task grabs the FPU/Altivec, it won't be
--	 * tempted to save the current CPU state into the thread_struct
--	 * and corrupt what we are writing there.
--	 */
--	discard_lazy_cpu_state();
--
--	/*
- 	 * Force reload of FP/VEC.
- 	 * This has to be done before copying stuff into current->thread.fpr/vr
- 	 * for the reasons explained in the previous comment.
-diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-index 1c54259..1757c0c 100644
---- a/arch/powerpc/kernel/vector.S
-+++ b/arch/powerpc/kernel/vector.S
-@@ -80,39 +80,6 @@ _GLOBAL(load_up_altivec)
- 	MTMSRD(r5)			/* enable use of AltiVec now */
- 	isync
- 
--/*
-- * For SMP, we don't do lazy VMX switching because it just gets too
-- * horrendously complex, especially when a task switches from one CPU
-- * to another.  Instead we call giveup_altvec in switch_to.
-- * VRSAVE isn't dealt with here, that is done in the normal context
-- * switch code. Note that we could rely on vrsave value to eventually
-- * avoid saving all of the VREGs here...
-- */
--#ifndef CONFIG_SMP
--	LOAD_REG_ADDRBASE(r3, last_task_used_altivec)
--	toreal(r3)
--	PPC_LL	r4,ADDROFF(last_task_used_altivec)(r3)
--	PPC_LCMPI	0,r4,0
--	beq	1f
--
--	/* Save VMX state to last_task_used_altivec's THREAD struct */
--	toreal(r4)
--	addi	r4,r4,THREAD
--	addi	r6,r4,THREAD_VRSTATE
--	SAVE_32VRS(0,r5,r6)
--	mfvscr	v0
--	li	r10,VRSTATE_VSCR
--	stvx	v0,r10,r6
--	/* Disable VMX for last_task_used_altivec */
--	PPC_LL	r5,PT_REGS(r4)
--	toreal(r5)
--	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
--	lis	r10,MSR_VEC@h
--	andc	r4,r4,r10
--	PPC_STL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
--1:
--#endif /* CONFIG_SMP */
--
- 	/* Hack: if we get an altivec unavailable trap with VRSAVE
- 	 * set to all zeros, we assume this is a broken application
- 	 * that fails to set it properly, and thus we switch it to
-@@ -141,12 +108,6 @@ _GLOBAL(load_up_altivec)
- 	lvx	v0,r10,r6
- 	mtvscr	v0
- 	REST_32VRS(0,r4,r6)
--#ifndef CONFIG_SMP
--	/* Update last_task_used_altivec to 'current' */
--	subi	r4,r5,THREAD		/* Back to 'current' */
--	fromreal(r4)
--	PPC_STL	r4,ADDROFF(last_task_used_altivec)(r3)
--#endif /* CONFIG_SMP */
- 	/* restore registers and return */
- 	blr
- 
-@@ -199,11 +160,6 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_VSX)
- 	andc	r4,r4,r3		/* disable FP for previous task */
- 	PPC_STL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
- 1:
--#ifndef CONFIG_SMP
--	li	r5,0
--	LOAD_REG_ADDRBASE(r4,last_task_used_altivec)
--	PPC_STL	r5,ADDROFF(last_task_used_altivec)(r4)
--#endif /* CONFIG_SMP */
- 	blr
- 
- #ifdef CONFIG_VSX
-@@ -226,20 +182,6 @@ _GLOBAL(load_up_vsx)
- 	andis.	r5,r12,MSR_VEC@h
- 	beql+	load_up_altivec		/* skip if already loaded */
- 
--#ifndef CONFIG_SMP
--	ld	r3,last_task_used_vsx@got(r2)
--	ld	r4,0(r3)
--	cmpdi	0,r4,0
--	beq	1f
--	/* Disable VSX for last_task_used_vsx */
--	addi	r4,r4,THREAD
--	ld	r5,PT_REGS(r4)
--	ld	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
--	lis	r6,MSR_VSX@h
--	andc	r6,r4,r6
--	std	r6,_MSR-STACK_FRAME_OVERHEAD(r5)
--1:
--#endif /* CONFIG_SMP */
- 	ld	r4,PACACURRENT(r13)
- 	addi	r4,r4,THREAD		/* Get THREAD */
- 	li	r6,1
-@@ -247,11 +189,6 @@ _GLOBAL(load_up_vsx)
- 	/* enable use of VSX after return */
- 	oris	r12,r12,MSR_VSX@h
- 	std	r12,_MSR(r1)
--#ifndef CONFIG_SMP
--	/* Update last_task_used_vsx to 'current' */
--	ld	r4,PACACURRENT(r13)
--	std	r4,0(r3)
--#endif /* CONFIG_SMP */
- 	b	fast_exception_return
- 
- /*
-@@ -277,11 +214,6 @@ _GLOBAL(__giveup_vsx)
- 	andc	r4,r4,r3		/* disable VSX for previous task */
- 	std	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
- 1:
--#ifndef CONFIG_SMP
--	li	r5,0
--	ld	r4,last_task_used_vsx@got(r2)
--	std	r5,0(r4)
--#endif /* CONFIG_SMP */
- 	blr
- 
- #endif /* CONFIG_VSX */
+ void giveup_vsx(struct task_struct *tsk)
+ {
+-	giveup_fpu_maybe_transactional(tsk);
+-	giveup_altivec_maybe_transactional(tsk);
++	check_if_tm_restore_required(tsk);
++	giveup_fpu(tsk);
++	giveup_altivec(tsk);
+ 	__giveup_vsx(tsk);
+ }
+ EXPORT_SYMBOL(giveup_vsx);
 -- 
 2.5.0
