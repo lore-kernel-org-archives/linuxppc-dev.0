@@ -2,15 +2,15 @@ Return-Path: <anton@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 113291A02C2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 11:51:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1031F1A028E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 11:51:24 +1100 (AEDT)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  mikey@neuling.org, cyrilbur@gmail.com
 Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 06/19] powerpc: Simplify TM restore checks
-Date: Wed, 28 Oct 2015 11:50:54 +1100
-Message-Id: <1445993467-667-6-git-send-email-anton@samba.org>
+Subject: [PATCH 07/19] powerpc: Create mtmsrd_isync()
+Date: Wed, 28 Oct 2015 11:50:55 +1100
+Message-Id: <1445993467-667-7-git-send-email-anton@samba.org>
 In-Reply-To: <1445993467-667-1-git-send-email-anton@samba.org>
 References: <1445993467-667-1-git-send-email-anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,127 +22,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Instead of having multiple giveup_*_maybe_transactional() functions,
-separate out the TM check into a new function called
-check_if_tm_restore_required().
-
-This will make it easier to optimise the giveup_*() functions in a
-subsequent patch.
+mtmsrd_isync() will do an mtmsrd followed by an isync on older
+processors. On newer processors we avoid the isync via a feature fixup.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/kernel/process.c | 53 ++++++++++++++++---------------------------
- 1 file changed, 19 insertions(+), 34 deletions(-)
+ arch/powerpc/include/asm/reg.h |  8 ++++++++
+ arch/powerpc/kernel/process.c  | 30 ++++++++++++++++++++++--------
+ 2 files changed, 30 insertions(+), 8 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index a908ada..987dac0 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1193,12 +1193,20 @@
+ #define __mtmsrd(v, l)	asm volatile("mtmsrd %0," __stringify(l) \
+ 				     : : "r" (v) : "memory")
+ #define mtmsr(v)	__mtmsrd((v), 0)
++#define __MTMSR		"mtmsrd"
+ #else
+ #define mtmsr(v)	asm volatile("mtmsr %0" : \
+ 				     : "r" ((unsigned long)(v)) \
+ 				     : "memory")
++#define __MTMSR		"mtmsr"
+ #endif
+ 
++static inline void mtmsr_isync(unsigned long val)
++{
++	asm volatile(__MTMSR " %0; " ASM_FTR_IFCLR("isync", "nop", %1) : :
++			"r" (val), "i" (CPU_FTR_ARCH_206) : "memory");
++}
++
+ #define mfspr(rn)	({unsigned long rval; \
+ 			asm volatile("mfspr %0," __stringify(rn) \
+ 				: "=r" (rval)); rval;})
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index e098f43..ef64219 100644
+index ef64219..5bf8ec2 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -68,7 +68,7 @@
- extern unsigned long _get_SP(void);
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--void giveup_fpu_maybe_transactional(struct task_struct *tsk)
-+static void check_if_tm_restore_required(struct task_struct *tsk)
- {
- 	/*
- 	 * If we are saving the current thread's registers, and the
-@@ -82,31 +82,9 @@ void giveup_fpu_maybe_transactional(struct task_struct *tsk)
- 		tsk->thread.ckpt_regs.msr = tsk->thread.regs->msr;
- 		set_thread_flag(TIF_RESTORE_TM);
+@@ -130,7 +130,10 @@ void enable_kernel_fp(void)
+ 		check_if_tm_restore_required(current);
+ 		giveup_fpu(current);
+ 	} else {
+-		giveup_fpu(NULL);	/* just enables FP for kernel */
++		u64 oldmsr = mfmsr();
++
++		if (!(oldmsr & MSR_FP))
++			mtmsr_isync(oldmsr | MSR_FP);
  	}
--
--	giveup_fpu(tsk);
--}
--
--void giveup_altivec_maybe_transactional(struct task_struct *tsk)
--{
--	/*
--	 * If we are saving the current thread's registers, and the
--	 * thread is in a transactional state, set the TIF_RESTORE_TM
--	 * bit so that we know to restore the registers before
--	 * returning to userspace.
--	 */
--	if (tsk == current && tsk->thread.regs &&
--	    MSR_TM_ACTIVE(tsk->thread.regs->msr) &&
--	    !test_thread_flag(TIF_RESTORE_TM)) {
--		tsk->thread.ckpt_regs.msr = tsk->thread.regs->msr;
--		set_thread_flag(TIF_RESTORE_TM);
--	}
--
--	giveup_altivec(tsk);
- }
--
- #else
--#define giveup_fpu_maybe_transactional(tsk)	giveup_fpu(tsk)
--#define giveup_altivec_maybe_transactional(tsk)	giveup_altivec(tsk)
-+static inline void check_if_tm_restore_required(struct task_struct *tsk) { }
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
- 
- #ifdef CONFIG_PPC_FPU
-@@ -135,7 +113,8 @@ void flush_fp_to_thread(struct task_struct *tsk)
- 			 * to still have its FP state in the CPU registers.
- 			 */
- 			BUG_ON(tsk != current);
--			giveup_fpu_maybe_transactional(tsk);
-+			check_if_tm_restore_required(tsk);
-+			giveup_fpu(tsk);
- 		}
- 		preempt_enable();
- 	}
-@@ -147,10 +126,12 @@ void enable_kernel_fp(void)
- {
- 	WARN_ON(preemptible());
- 
--	if (current->thread.regs && (current->thread.regs->msr & MSR_FP))
--		giveup_fpu_maybe_transactional(current);
--	else
-+	if (current->thread.regs && (current->thread.regs->msr & MSR_FP)) {
-+		check_if_tm_restore_required(current);
-+		giveup_fpu(current);
-+	} else {
- 		giveup_fpu(NULL);	/* just enables FP for kernel */
-+	}
  }
  EXPORT_SYMBOL(enable_kernel_fp);
- 
-@@ -159,10 +140,12 @@ void enable_kernel_altivec(void)
+@@ -144,7 +147,10 @@ void enable_kernel_altivec(void)
+ 		check_if_tm_restore_required(current);
+ 		giveup_altivec(current);
+ 	} else {
+-		giveup_altivec_notask();
++		u64 oldmsr = mfmsr();
++
++		if (!(oldmsr & MSR_VEC))
++			mtmsr_isync(oldmsr | MSR_VEC);
+ 	}
+ }
+ EXPORT_SYMBOL(enable_kernel_altivec);
+@@ -173,10 +179,14 @@ void enable_kernel_vsx(void)
  {
  	WARN_ON(preemptible());
  
--	if (current->thread.regs && (current->thread.regs->msr & MSR_VEC))
--		giveup_altivec_maybe_transactional(current);
+-	if (current->thread.regs && (current->thread.regs->msr & MSR_VSX))
++	if (current->thread.regs && (current->thread.regs->msr & MSR_VSX)) {
+ 		giveup_vsx(current);
 -	else
-+	if (current->thread.regs && (current->thread.regs->msr & MSR_VEC)) {
-+		check_if_tm_restore_required(current);
-+		giveup_altivec(current);
+-		giveup_vsx(NULL);	/* just enable vsx for kernel - force */
 +	} else {
- 		giveup_altivec_notask();
++		u64 oldmsr = mfmsr();
++
++		if (!(oldmsr & MSR_VSX))
++			mtmsr_isync(oldmsr | MSR_VSX);
 +	}
  }
- EXPORT_SYMBOL(enable_kernel_altivec);
+ EXPORT_SYMBOL(enable_kernel_vsx);
  
-@@ -176,7 +159,8 @@ void flush_altivec_to_thread(struct task_struct *tsk)
- 		preempt_disable();
- 		if (tsk->thread.regs->msr & MSR_VEC) {
- 			BUG_ON(tsk != current);
--			giveup_altivec_maybe_transactional(tsk);
-+			check_if_tm_restore_required(tsk);
-+			giveup_altivec(tsk);
- 		}
- 		preempt_enable();
- 	}
-@@ -198,8 +182,9 @@ EXPORT_SYMBOL(enable_kernel_vsx);
- 
- void giveup_vsx(struct task_struct *tsk)
+@@ -209,10 +219,14 @@ void enable_kernel_spe(void)
  {
--	giveup_fpu_maybe_transactional(tsk);
--	giveup_altivec_maybe_transactional(tsk);
-+	check_if_tm_restore_required(tsk);
-+	giveup_fpu(tsk);
-+	giveup_altivec(tsk);
- 	__giveup_vsx(tsk);
+ 	WARN_ON(preemptible());
+ 
+-	if (current->thread.regs && (current->thread.regs->msr & MSR_SPE))
++	if (current->thread.regs && (current->thread.regs->msr & MSR_SPE)) {
+ 		giveup_spe(current);
+-	else
+-		giveup_spe(NULL);	/* just enable SPE for kernel - force */
++	} else {
++		u64 oldmsr = mfmsr();
++
++		if (!(oldmsr & MSR_SPE))
++			mtmsr_isync(oldmsr | MSR_SPE);
++	}
  }
- EXPORT_SYMBOL(giveup_vsx);
+ EXPORT_SYMBOL(enable_kernel_spe);
+ 
 -- 
 2.5.0
