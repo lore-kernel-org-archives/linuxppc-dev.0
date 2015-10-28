@@ -1,31 +1,41 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
- [IPv6:2607:f8b0:400e:c03::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C8E81A0EA9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 12:00:30 +1100 (AEDT)
-Received: by pacfv9 with SMTP id fv9so248991620pac.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2015 18:00:28 -0700 (PDT)
-Subject: Re: [PATCH 2/7 v2] powerpc/dma-mapping: override dma_get_page_shift
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-References: <20151023205420.GA10197@linux.vnet.ibm.com>
- <20151023205718.GC10197@linux.vnet.ibm.com> <562F1368.1030204@ozlabs.ru>
- <20151027222706.GF7716@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Matthew Wilcox <willy@linux.intel.com>, Keith Busch <keith.busch@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, David Gibson
- <david@gibson.dropbear.id.au>, Christoph Hellwig <hch@infradead.org>,
- "David S. Miller" <davem@davemloft.net>, linux-nvme@lists.infradead.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <56301E24.1060304@ozlabs.ru>
-Date: Wed, 28 Oct 2015 12:00:20 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id CAFA91A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 12:22:32 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 28 Oct 2015 06:51:35 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 714851258019
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 06:51:27 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9S1LVLW12517854
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 06:51:32 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9S1LV4C005914
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 06:51:31 +0530
+Date: Wed, 28 Oct 2015 09:21:22 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
+ bhelgaas@google.com, mpe@ellerman.id.au, aik@ozlabs.ru,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH V10 01/12] PCI/IOV: Rename and export
+ virtfn_add/virtfn_remove
+Message-ID: <20151028012122.GA16965@Richards-MacBook-Pro.local>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1445829362-2738-2-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20151027230654.GA5155@localhost>
 MIME-Version: 1.0
-In-Reply-To: <20151027222706.GF7716@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151027230654.GA5155@localhost>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,85 +45,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/28/2015 09:27 AM, Nishanth Aravamudan wrote:
-> On 27.10.2015 [17:02:16 +1100], Alexey Kardashevskiy wrote:
->> On 10/24/2015 07:57 AM, Nishanth Aravamudan wrote:
->>> On Power, the kernel's page size can differ from the IOMMU's page size,
->>> so we need to override the generic implementation, which always returns
->>> the kernel's page size. Lookup the IOMMU's page size from struct
->>> iommu_table, if available. Fallback to the kernel's page size,
->>> otherwise.
->>>
->>> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
->>> ---
->>>   arch/powerpc/include/asm/dma-mapping.h | 3 +++
->>>   arch/powerpc/kernel/dma.c              | 9 +++++++++
->>>   2 files changed, 12 insertions(+)
->>>
->>> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
->>> index 7f522c0..c5638f4 100644
->>> --- a/arch/powerpc/include/asm/dma-mapping.h
->>> +++ b/arch/powerpc/include/asm/dma-mapping.h
->>> @@ -125,6 +125,9 @@ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
->>>   #define HAVE_ARCH_DMA_SET_MASK 1
->>>   extern int dma_set_mask(struct device *dev, u64 dma_mask);
->>>
->>> +#define HAVE_ARCH_DMA_GET_PAGE_SHIFT 1
->>> +extern unsigned long dma_get_page_shift(struct device *dev);
->>> +
->>>   #include <asm-generic/dma-mapping-common.h>
->>>
->>>   extern int __dma_set_mask(struct device *dev, u64 dma_mask);
->>> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
->>> index 59503ed..e805af2 100644
->>> --- a/arch/powerpc/kernel/dma.c
->>> +++ b/arch/powerpc/kernel/dma.c
->>> @@ -335,6 +335,15 @@ int dma_set_mask(struct device *dev, u64 dma_mask)
->>>   }
->>>   EXPORT_SYMBOL(dma_set_mask);
->>>
->>> +unsigned long dma_get_page_shift(struct device *dev)
->>> +{
->>> +	struct iommu_table *tbl = get_iommu_table_base(dev);
->>> +	if (tbl)
->>> +		return tbl->it_page_shift;
->>
->>
->> All PCI devices have this initialized on POWER (at least, our, IBM's
->> POWER) so 4K will always be returned here while in the case of
->> (get_dma_ops(dev)==&dma_direct_ops) it could actually return
->> PAGE_SHIFT. Is 4K still preferred value to return here?
+On Tue, Oct 27, 2015 at 06:06:54PM -0500, Bjorn Helgaas wrote:
+>On Mon, Oct 26, 2015 at 11:15:51AM +0800, Wei Yang wrote:
+>> During EEH recovery, hotplug is applied to the devices which don't
+>> have drivers or their drivers don't support EEH. However, the hotplug,
+>> which was implemented based on PCI bus, can't be applied to VF directly.
+>> 
+>> The patch renames virtn_{add,remove}() and exports them so that they
+>> can be used in PCI hotplug during EEH recovery.
 >
-> Right, so the logic of my series, goes like this:
+>Trivial, but write this as an imperative sentence, e.g.,
 >
-> a) We currently are assuming DMA_PAGE_SHIFT (conceptual constant) is
-> PAGE_SHIFT everywhere, including Power.
+>  Rename virtn_{add,remove}() and export them so they
+>  can be used in PCI hotplug during EEH recovery.
 >
-> b) After 2/7, the Power code will return either the IOMMU table's shift
-> value, if set, or PAGE_SHIFT (I guess this would be the case if
-> get_dma_ops(dev) == &dma_direct_ops, as you said). That is no different
-> than we have now, except we can return the accurate IOMMU value if
-> available.
+>"The patch" doesn't add any useful information; it's obvious that the
+>changelog applied to this patch.
 
-If it is not available, then something went wrong and BUG_ON(!tbl || 
-!tbl->it_page_shift) make more sense here than pretending that this 
-function can ever return PAGE_SHIFT. imho.
-
+Yep, thanks, will change in next version.
 
 >
-> 3) After 3/7, the platform can override the generic Power
-> get_dma_page_shift().
+>This comment also applies to at least the next patch.
 >
-> 4) After 4/7, pseries will return the DDW value, if available, then
-> fallback to the IOMMU table's value. I think in the case of
-> get_dma_ops(dev)==&dma_direct_ops, the only way that can happen is if we
-> are using DDW, right?
-
-This is for pseries guests; for the powernv host it is a "bypass" mode 
-which does 64bit direct DMA mapping and there is no additional window for 
-that (i.e. DIRECT64_PROPNAME, etc).
-
-
+>Bjorn
 
 -- 
-Alexey
+Richard Yang
+Help you, Help me
