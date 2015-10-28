@@ -1,16 +1,16 @@
 Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 95F471A0314
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 11:51:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 99DAE1A0296
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 11:51:34 +1100 (AEDT)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  mikey@neuling.org, cyrilbur@gmail.com
 Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 11/19] crypto: vmx: Only call enable_kernel_vsx()
-Date: Wed, 28 Oct 2015 11:50:59 +1100
-Message-Id: <1445993467-667-11-git-send-email-anton@samba.org>
+Subject: [PATCH 12/19] powerpc: Create msr_check_and_{set,clear}()
+Date: Wed, 28 Oct 2015 11:51:00 +1100
+Message-Id: <1445993467-667-12-git-send-email-anton@samba.org>
 In-Reply-To: <1445993467-667-1-git-send-email-anton@samba.org>
 References: <1445993467-667-1-git-send-email-anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,144 +22,207 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the recent change to enable_kernel_vsx(), we no longer need
-to call enable_kernel_fp() and enable_kernel_altivec().
+Create helper functions to set and clear MSR bits after first
+checking if they are already set. Grouping them will make it
+easy to avoid the MSR writes in a subsequent optimisation.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- drivers/crypto/vmx/aes.c     | 3 ---
- drivers/crypto/vmx/aes_cbc.c | 3 ---
- drivers/crypto/vmx/aes_ctr.c | 3 ---
- drivers/crypto/vmx/ghash.c   | 8 --------
- 4 files changed, 17 deletions(-)
+ arch/powerpc/kernel/process.c | 107 ++++++++++++++++++++----------------------
+ 1 file changed, 52 insertions(+), 55 deletions(-)
 
-diff --git a/drivers/crypto/vmx/aes.c b/drivers/crypto/vmx/aes.c
-index 263af70..20539fb 100644
---- a/drivers/crypto/vmx/aes.c
-+++ b/drivers/crypto/vmx/aes.c
-@@ -83,7 +83,6 @@ static int p8_aes_setkey(struct crypto_tfm *tfm, const u8 *key,
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index c39aa5a..5f244d0 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -87,23 +87,46 @@ static void check_if_tm_restore_required(struct task_struct *tsk)
+ static inline void check_if_tm_restore_required(struct task_struct *tsk) { }
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
  
- 	preempt_disable();
- 	pagefault_disable();
--	enable_kernel_altivec();
- 	enable_kernel_vsx();
- 	ret = aes_p8_set_encrypt_key(key, keylen * 8, &ctx->enc_key);
- 	ret += aes_p8_set_decrypt_key(key, keylen * 8, &ctx->dec_key);
-@@ -103,7 +102,6 @@ static void p8_aes_encrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
- 	} else {
- 		preempt_disable();
- 		pagefault_disable();
--		enable_kernel_altivec();
- 		enable_kernel_vsx();
- 		aes_p8_encrypt(src, dst, &ctx->enc_key);
- 		pagefault_enable();
-@@ -120,7 +118,6 @@ static void p8_aes_decrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
- 	} else {
- 		preempt_disable();
- 		pagefault_disable();
--		enable_kernel_altivec();
- 		enable_kernel_vsx();
- 		aes_p8_decrypt(src, dst, &ctx->dec_key);
- 		pagefault_enable();
-diff --git a/drivers/crypto/vmx/aes_cbc.c b/drivers/crypto/vmx/aes_cbc.c
-index 0b8fe2e..8847b92 100644
---- a/drivers/crypto/vmx/aes_cbc.c
-+++ b/drivers/crypto/vmx/aes_cbc.c
-@@ -84,7 +84,6 @@ static int p8_aes_cbc_setkey(struct crypto_tfm *tfm, const u8 *key,
+-#ifdef CONFIG_PPC_FPU
+-void giveup_fpu(struct task_struct *tsk)
++static void msr_check_and_set(unsigned long bits)
+ {
+-	u64 oldmsr = mfmsr();
+-	u64 newmsr;
++	unsigned long oldmsr = mfmsr();
++	unsigned long newmsr;
  
- 	preempt_disable();
- 	pagefault_disable();
--	enable_kernel_altivec();
- 	enable_kernel_vsx();
- 	ret = aes_p8_set_encrypt_key(key, keylen * 8, &ctx->enc_key);
- 	ret += aes_p8_set_decrypt_key(key, keylen * 8, &ctx->dec_key);
-@@ -115,7 +114,6 @@ static int p8_aes_cbc_encrypt(struct blkcipher_desc *desc,
- 	} else {
- 		preempt_disable();
- 		pagefault_disable();
--		enable_kernel_altivec();
- 		enable_kernel_vsx();
+-	check_if_tm_restore_required(tsk);
++	newmsr = oldmsr | bits;
  
- 		blkcipher_walk_init(&walk, dst, src, nbytes);
-@@ -156,7 +154,6 @@ static int p8_aes_cbc_decrypt(struct blkcipher_desc *desc,
- 	} else {
- 		preempt_disable();
- 		pagefault_disable();
--		enable_kernel_altivec();
- 		enable_kernel_vsx();
+-	newmsr = oldmsr | MSR_FP;
+ #ifdef CONFIG_VSX
+-	if (cpu_has_feature(CPU_FTR_VSX))
++	if (cpu_has_feature(CPU_FTR_VSX) && (bits & MSR_FP))
+ 		newmsr |= MSR_VSX;
+ #endif
++
+ 	if (oldmsr != newmsr)
+ 		mtmsr_isync(newmsr);
++}
++
++static void msr_check_and_clear(unsigned long bits)
++{
++	unsigned long oldmsr = mfmsr();
++	unsigned long newmsr;
++
++	newmsr = oldmsr & ~bits;
++
++#ifdef CONFIG_VSX
++	if (cpu_has_feature(CPU_FTR_VSX) && (bits & MSR_FP))
++		newmsr &= ~MSR_VSX;
++#endif
  
- 		blkcipher_walk_init(&walk, dst, src, nbytes);
-diff --git a/drivers/crypto/vmx/aes_ctr.c b/drivers/crypto/vmx/aes_ctr.c
-index ee1306c..8095866 100644
---- a/drivers/crypto/vmx/aes_ctr.c
-+++ b/drivers/crypto/vmx/aes_ctr.c
-@@ -81,7 +81,6 @@ static int p8_aes_ctr_setkey(struct crypto_tfm *tfm, const u8 *key,
- 	struct p8_aes_ctr_ctx *ctx = crypto_tfm_ctx(tfm);
++	if (oldmsr != newmsr)
++		mtmsr_isync(newmsr);
++}
++
++#ifdef CONFIG_PPC_FPU
++void giveup_fpu(struct task_struct *tsk)
++{
++	check_if_tm_restore_required(tsk);
++
++	msr_check_and_set(MSR_FP);
+ 	__giveup_fpu(tsk);
++	msr_check_and_clear(MSR_FP);
+ }
+ EXPORT_SYMBOL(giveup_fpu);
  
- 	pagefault_disable();
--	enable_kernel_altivec();
- 	enable_kernel_vsx();
- 	ret = aes_p8_set_encrypt_key(key, keylen * 8, &ctx->enc_key);
- 	pagefault_enable();
-@@ -100,7 +99,6 @@ static void p8_aes_ctr_final(struct p8_aes_ctr_ctx *ctx,
- 	unsigned int nbytes = walk->nbytes;
+@@ -144,30 +167,21 @@ void enable_kernel_fp(void)
+ {
+ 	WARN_ON(preemptible());
  
- 	pagefault_disable();
--	enable_kernel_altivec();
- 	enable_kernel_vsx();
- 	aes_p8_encrypt(ctrblk, keystream, &ctx->enc_key);
- 	pagefault_enable();
-@@ -133,7 +131,6 @@ static int p8_aes_ctr_crypt(struct blkcipher_desc *desc,
- 		ret = blkcipher_walk_virt_block(desc, &walk, AES_BLOCK_SIZE);
- 		while ((nbytes = walk.nbytes) >= AES_BLOCK_SIZE) {
- 			pagefault_disable();
--			enable_kernel_altivec();
- 			enable_kernel_vsx();
- 			aes_p8_ctr32_encrypt_blocks(walk.src.virt.addr,
- 						    walk.dst.virt.addr,
-diff --git a/drivers/crypto/vmx/ghash.c b/drivers/crypto/vmx/ghash.c
-index 2183a2e..1f4586c 100644
---- a/drivers/crypto/vmx/ghash.c
-+++ b/drivers/crypto/vmx/ghash.c
-@@ -118,9 +118,7 @@ static int p8_ghash_setkey(struct crypto_shash *tfm, const u8 *key,
+-	if (current->thread.regs && (current->thread.regs->msr & MSR_FP)) {
+-		giveup_fpu(current);
+-	} else {
+-		u64 oldmsr = mfmsr();
++	msr_check_and_set(MSR_FP);
  
- 	preempt_disable();
- 	pagefault_disable();
--	enable_kernel_altivec();
- 	enable_kernel_vsx();
--	enable_kernel_fp();
- 	gcm_init_p8(ctx->htable, (const u64 *) key);
- 	pagefault_enable();
- 	preempt_enable();
-@@ -149,9 +147,7 @@ static int p8_ghash_update(struct shash_desc *desc,
- 			       GHASH_DIGEST_SIZE - dctx->bytes);
- 			preempt_disable();
- 			pagefault_disable();
--			enable_kernel_altivec();
- 			enable_kernel_vsx();
--			enable_kernel_fp();
- 			gcm_ghash_p8(dctx->shash, ctx->htable,
- 				     dctx->buffer, GHASH_DIGEST_SIZE);
- 			pagefault_enable();
-@@ -164,9 +160,7 @@ static int p8_ghash_update(struct shash_desc *desc,
- 		if (len) {
- 			preempt_disable();
- 			pagefault_disable();
--			enable_kernel_altivec();
- 			enable_kernel_vsx();
--			enable_kernel_fp();
- 			gcm_ghash_p8(dctx->shash, ctx->htable, src, len);
- 			pagefault_enable();
- 			preempt_enable();
-@@ -195,9 +189,7 @@ static int p8_ghash_final(struct shash_desc *desc, u8 *out)
- 				dctx->buffer[i] = 0;
- 			preempt_disable();
- 			pagefault_disable();
--			enable_kernel_altivec();
- 			enable_kernel_vsx();
--			enable_kernel_fp();
- 			gcm_ghash_p8(dctx->shash, ctx->htable,
- 				     dctx->buffer, GHASH_DIGEST_SIZE);
- 			pagefault_enable();
+-		if (!(oldmsr & MSR_FP))
+-			mtmsr_isync(oldmsr | MSR_FP);
+-	}
++	if (current->thread.regs && (current->thread.regs->msr & MSR_FP))
++		__giveup_fpu(current);
+ }
+ EXPORT_SYMBOL(enable_kernel_fp);
+ 
+ #ifdef CONFIG_ALTIVEC
+ void giveup_altivec(struct task_struct *tsk)
+ {
+-	u64 oldmsr = mfmsr();
+-	u64 newmsr;
+-
+ 	check_if_tm_restore_required(tsk);
+ 
+-	newmsr = oldmsr | MSR_VEC;
+-	if (oldmsr != newmsr)
+-		mtmsr_isync(newmsr);
+-
++	msr_check_and_set(MSR_VEC);
+ 	__giveup_altivec(tsk);
++	msr_check_and_clear(MSR_VEC);
+ }
+ EXPORT_SYMBOL(giveup_altivec);
+ 
+@@ -175,14 +189,10 @@ void enable_kernel_altivec(void)
+ {
+ 	WARN_ON(preemptible());
+ 
+-	if (current->thread.regs && (current->thread.regs->msr & MSR_VEC)) {
+-		giveup_altivec(current);
+-	} else {
+-		u64 oldmsr = mfmsr();
++	msr_check_and_set(MSR_VEC);
+ 
+-		if (!(oldmsr & MSR_VEC))
+-			mtmsr_isync(oldmsr | MSR_VEC);
+-	}
++	if (current->thread.regs && (current->thread.regs->msr & MSR_VEC))
++		__giveup_altivec(current);
+ }
+ EXPORT_SYMBOL(enable_kernel_altivec);
+ 
+@@ -207,20 +217,15 @@ EXPORT_SYMBOL_GPL(flush_altivec_to_thread);
+ #ifdef CONFIG_VSX
+ void giveup_vsx(struct task_struct *tsk)
+ {
+-	u64 oldmsr = mfmsr();
+-	u64 newmsr;
+-
+ 	check_if_tm_restore_required(tsk);
+ 
+-	newmsr = oldmsr | (MSR_FP|MSR_VEC|MSR_VSX);
+-	if (oldmsr != newmsr)
+-		mtmsr_isync(newmsr);
+-
++	msr_check_and_set(MSR_FP|MSR_VEC|MSR_VSX);
+ 	if (tsk->thread.regs->msr & MSR_FP)
+ 		__giveup_fpu(tsk);
+ 	if (tsk->thread.regs->msr & MSR_VEC)
+ 		__giveup_altivec(tsk);
+ 	__giveup_vsx(tsk);
++	msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
+ }
+ EXPORT_SYMBOL(giveup_vsx);
+ 
+@@ -228,13 +233,14 @@ void enable_kernel_vsx(void)
+ {
+ 	WARN_ON(preemptible());
+ 
+-	if (current->thread.regs && (current->thread.regs->msr & MSR_VSX)) {
+-		giveup_vsx(current);
+-	} else {
+-		u64 oldmsr = mfmsr();
++	msr_check_and_set(MSR_FP|MSR_VEC|MSR_VSX);
+ 
+-		if (!(oldmsr & MSR_VSX))
+-			mtmsr_isync(oldmsr | MSR_VSX);
++	if (current->thread.regs && (current->thread.regs->msr & MSR_VSX)) {
++		if (current->thread.regs->msr & MSR_FP)
++			__giveup_fpu(current);
++		if (current->thread.regs->msr & MSR_VEC)
++			__giveup_altivec(current);
++		__giveup_vsx(current);
+ 	}
+ }
+ EXPORT_SYMBOL(enable_kernel_vsx);
+@@ -256,16 +262,11 @@ EXPORT_SYMBOL_GPL(flush_vsx_to_thread);
+ #ifdef CONFIG_SPE
+ void giveup_spe(struct task_struct *)
+ {
+-	u64 oldmsr = mfmsr();
+-	u64 newmsr;
+-
+ 	check_if_tm_restore_required(tsk);
+ 
+-	newmsr = oldmsr | MSR_SPE;
+-	if (oldmsr != newmsr)
+-		mtmsr_isync(newmsr);
+-
++	msr_check_and_set(MSR_SPE);
+ 	__giveup_spe(tsk);
++	msr_check_and_clear(MSR_SPE);
+ }
+ EXPORT_SYMBOL(giveup_spe);
+ 
+@@ -273,14 +274,10 @@ void enable_kernel_spe(void)
+ {
+ 	WARN_ON(preemptible());
+ 
+-	if (current->thread.regs && (current->thread.regs->msr & MSR_SPE)) {
+-		giveup_spe(current);
+-	} else {
+-		u64 oldmsr = mfmsr();
++	msr_check_and_set(MSR_SPE);
+ 
+-		if (!(oldmsr & MSR_SPE))
+-			mtmsr_isync(oldmsr | MSR_SPE);
+-	}
++	if (current->thread.regs && (current->thread.regs->msr & MSR_SPE))
++		__giveup_spe(current);
+ }
+ EXPORT_SYMBOL(enable_kernel_spe);
+ 
 -- 
 2.5.0
