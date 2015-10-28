@@ -2,16 +2,15 @@ Return-Path: <anton@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A2A571A028E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 11:51:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 75BA41A034F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 11:51:43 +1100 (AEDT)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  mikey@neuling.org, cyrilbur@gmail.com
 Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 15/19] powerpc: Remove fp_enable() and vec_enable(),
- use msr_check_and_{set, clear}()
-Date: Wed, 28 Oct 2015 11:51:03 +1100
-Message-Id: <1445993467-667-15-git-send-email-anton@samba.org>
+Subject: [PATCH 16/19] powerpc: create giveup_all()
+Date: Wed, 28 Oct 2015 11:51:04 +1100
+Message-Id: <1445993467-667-16-git-send-email-anton@samba.org>
 In-Reply-To: <1445993467-667-1-git-send-email-anton@samba.org>
 References: <1445993467-667-1-git-send-email-anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,98 +22,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-More consolidation of our MSR available bit handling.
+Create a single function that gives everything up (FP, VMX, VSX, SPE).
+Doing this all at once means we only do one MSR write.
+
+A context switch microbenchmark using yield():
+
+http://ozlabs.org/~anton/junkcode/context_switch2.c
+
+./context_switch2 --test=yield --fp --altivec --vector 0 0
+
+shows an improvement of 3% on POWER8.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/processor.h |  2 --
- arch/powerpc/kernel/fpu.S            | 16 ----------------
- arch/powerpc/kernel/process.c        |  6 ++++--
- arch/powerpc/kernel/vector.S         | 10 ----------
- 4 files changed, 4 insertions(+), 30 deletions(-)
+ arch/powerpc/include/asm/switch_to.h |  1 +
+ arch/powerpc/kernel/process.c        | 75 ++++++++++++++++++++++++++++--------
+ arch/powerpc/kvm/book3s_pr.c         | 17 +-------
+ 3 files changed, 63 insertions(+), 30 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index a2e8918..ac23308 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -380,8 +380,6 @@ extern int set_endian(struct task_struct *tsk, unsigned int val);
- extern int get_unalign_ctl(struct task_struct *tsk, unsigned long adr);
- extern int set_unalign_ctl(struct task_struct *tsk, unsigned int val);
+diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+index b6a4951..0b4a339 100644
+--- a/arch/powerpc/include/asm/switch_to.h
++++ b/arch/powerpc/include/asm/switch_to.h
+@@ -27,6 +27,7 @@ extern void giveup_vsx(struct task_struct *);
+ extern void enable_kernel_spe(void);
+ extern void giveup_spe(struct task_struct *);
+ extern void load_up_spe(struct task_struct *);
++extern void giveup_all(struct task_struct *);
+ extern void switch_booke_debug_regs(struct debug_reg *new_debug);
  
--extern void fp_enable(void);
--extern void vec_enable(void);
- extern void load_fp_state(struct thread_fp_state *fp);
- extern void store_fp_state(struct thread_fp_state *fp);
- extern void load_vr_state(struct thread_vr_state *vr);
-diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-index 431ab57..2117eac 100644
---- a/arch/powerpc/kernel/fpu.S
-+++ b/arch/powerpc/kernel/fpu.S
-@@ -77,22 +77,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
- 
- /*
-- * Enable use of the FPU, and VSX if possible, for the caller.
-- */
--_GLOBAL(fp_enable)
--	mfmsr	r3
--	ori	r3,r3,MSR_FP
--#ifdef CONFIG_VSX
--BEGIN_FTR_SECTION
--	oris	r3,r3,MSR_VSX@h
--END_FTR_SECTION_IFSET(CPU_FTR_VSX)
--#endif
--	SYNC
--	MTMSRD(r3)
--	isync			/* (not necessary for arch 2.02 and later) */
--	blr
--
--/*
-  * Load state from memory into FP registers including FPSCR.
-  * Assumes the caller has enabled FP in the MSR.
-  */
+ #ifdef CONFIG_PPC_FPU
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 878ea17..cf2d811 100644
+index cf2d811..5ca416c 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -732,13 +732,15 @@ void restore_tm_state(struct pt_regs *regs)
- 	msr_diff = current->thread.ckpt_regs.msr & ~regs->msr;
- 	msr_diff &= MSR_FP | MSR_VEC | MSR_VSX;
- 	if (msr_diff & MSR_FP) {
--		fp_enable();
-+		msr_check_and_set(MSR_FP);
- 		load_fp_state(&current->thread.fp_state);
-+		msr_check_and_clear(MSR_FP);
- 		regs->msr |= current->thread.fpexc_mode;
- 	}
- 	if (msr_diff & MSR_VEC) {
--		vec_enable();
-+		msr_check_and_set(MSR_VEC);
- 		load_vr_state(&current->thread.vr_state);
-+		msr_check_and_clear(MSR_VEC);
- 	}
- 	regs->msr |= msr_diff;
+@@ -308,6 +308,64 @@ void flush_spe_to_thread(struct task_struct *tsk)
  }
-diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-index 98675b0..162d0f7 100644
---- a/arch/powerpc/kernel/vector.S
-+++ b/arch/powerpc/kernel/vector.S
-@@ -33,16 +33,6 @@ _GLOBAL(do_load_up_transact_altivec)
- #endif
+ #endif /* CONFIG_SPE */
  
- /*
-- * Enable use of VMX/Altivec for the caller.
-- */
--_GLOBAL(vec_enable)
--	mfmsr	r3
--	oris	r3,r3,MSR_VEC@h
--	MTMSRD(r3)
--	isync
--	blr
++static unsigned long msr_all_available;
++
++static int __init init_msr_all_available(void)
++{
++#ifdef CONFIG_PPC_FPU
++	msr_all_available |= MSR_FP;
++#endif
++#ifdef CONFIG_ALTIVEC
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		msr_all_available |= MSR_VEC;
++#endif
++#ifdef CONFIG_VSX
++	if (cpu_has_feature(CPU_FTR_VSX))
++		msr_all_available |= MSR_VSX;
++#endif
++#ifdef CONFIG_SPE
++	if (cpu_has_feature(CPU_FTR_SPE))
++		msr_all_available |= MSR_SPE;
++#endif
++
++	return 0;
++}
++early_initcall(init_msr_all_available);
++
++void giveup_all(struct task_struct *tsk)
++{
++	unsigned long usermsr;
++
++	if (!tsk->thread.regs)
++		return;
++
++	usermsr = tsk->thread.regs->msr;
++
++	if ((usermsr & msr_all_available) == 0)
++		return;
++
++	msr_check_and_set(msr_all_available);
++
++#ifdef CONFIG_PPC_FPU
++	if (usermsr & MSR_FP)
++		__giveup_fpu(tsk);
++#endif
++#ifdef CONFIG_ALTIVEC
++	if (usermsr & MSR_VEC)
++		__giveup_altivec(tsk);
++#endif
++#ifdef CONFIG_VSX
++	if (usermsr & MSR_VSX)
++		__giveup_vsx(tsk);
++#endif
++#ifdef CONFIG_SPE
++	if (usermsr & MSR_SPE)
++		__giveup_spe(tsk);
++#endif
++
++	msr_check_and_clear(msr_all_available);
++}
++
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+ void do_send_trap(struct pt_regs *regs, unsigned long address,
+ 		  unsigned long error_code, int signal_code, int breakpt)
+@@ -839,21 +897,8 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 
+ 	__switch_to_tm(prev);
+ 
+-	if (prev->thread.regs && (prev->thread.regs->msr & MSR_FP))
+-		giveup_fpu(prev);
+-#ifdef CONFIG_ALTIVEC
+-	if (prev->thread.regs && (prev->thread.regs->msr & MSR_VEC))
+-		giveup_altivec(prev);
+-#endif /* CONFIG_ALTIVEC */
+-#ifdef CONFIG_VSX
+-	if (prev->thread.regs && (prev->thread.regs->msr & MSR_VSX))
+-		/* VMX and FPU registers are already save here */
+-		__giveup_vsx(prev);
+-#endif /* CONFIG_VSX */
+-#ifdef CONFIG_SPE
+-	if ((prev->thread.regs && (prev->thread.regs->msr & MSR_SPE)))
+-		giveup_spe(prev);
+-#endif /* CONFIG_SPE */
++	/* Save FPU, Altivec, VSX and SPE state */
++	giveup_all(prev);
+ 
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+ 	switch_booke_debug_regs(&new->thread.debug);
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 49f5dad..a78e0e6 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -1490,21 +1490,8 @@ static int kvmppc_vcpu_run_pr(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 		goto out;
+ 	/* interrupts now hard-disabled */
+ 
+-	/* Save FPU state in thread_struct */
+-	if (current->thread.regs->msr & MSR_FP)
+-		giveup_fpu(current);
 -
--/*
-  * Load state from memory into VMX registers including VSCR.
-  * Assumes the caller has enabled VMX in the MSR.
-  */
+-#ifdef CONFIG_ALTIVEC
+-	/* Save Altivec state in thread_struct */
+-	if (current->thread.regs->msr & MSR_VEC)
+-		giveup_altivec(current);
+-#endif
+-
+-#ifdef CONFIG_VSX
+-	/* Save VSX state in thread_struct */
+-	if (current->thread.regs->msr & MSR_VSX)
+-		__giveup_vsx(current);
+-#endif
++	/* Save FPU, Altivec and VSX state */
++	giveup_all(current);
+ 
+ 	/* Preload FPU if it's enabled */
+ 	if (kvmppc_get_msr(vcpu) & MSR_FP)
 -- 
 2.5.0
