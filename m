@@ -2,15 +2,15 @@ Return-Path: <anton@samba.org>
 Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 613681A0CFF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 12:06:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B08681A0CC9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 12:06:49 +1100 (AEDT)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  mikey@neuling.org, cyrilbur@gmail.com, scottwood@freescale.com
 Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 13/19] powerpc: Create disable_kernel_{fp,altivec,vsx,spe}()
-Date: Thu, 29 Oct 2015 11:44:05 +1100
-Message-Id: <1446079451-8774-14-git-send-email-anton@samba.org>
+Subject: [PATCH 11/19] crypto: vmx: Only call enable_kernel_vsx()
+Date: Thu, 29 Oct 2015 11:44:03 +1100
+Message-Id: <1446079451-8774-12-git-send-email-anton@samba.org>
 In-Reply-To: <1446079451-8774-1-git-send-email-anton@samba.org>
 References: <1446079451-8774-1-git-send-email-anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,376 +22,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The enable_kernel_*() functions leave the relevant MSR bits enabled
-until we exit the kernel sometime later. Create disable versions
-that wrap the kernel use of FP, Altivec VSX or SPE.
-
-While we don't want to disable it normally for performance reasons
-(MSR writes are slow), it will be used for a debug boot option that
-does this and catches bad uses in other areas of the kernel.
+With the recent change to enable_kernel_vsx(), we no longer need
+to call enable_kernel_fp() and enable_kernel_altivec().
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/crypto/aes-spe-glue.c       | 1 +
- arch/powerpc/crypto/sha1-spe-glue.c      | 1 +
- arch/powerpc/crypto/sha256-spe-glue.c    | 1 +
- arch/powerpc/include/asm/switch_to.h     | 5 +++++
- arch/powerpc/kernel/align.c              | 2 ++
- arch/powerpc/kvm/book3s_paired_singles.c | 1 +
- arch/powerpc/kvm/book3s_pr.c             | 4 ++++
- arch/powerpc/kvm/booke.c                 | 4 ++++
- arch/powerpc/lib/vmx-helper.c            | 2 ++
- arch/powerpc/lib/xor_vmx.c               | 4 ++++
- drivers/crypto/vmx/aes.c                 | 3 +++
- drivers/crypto/vmx/aes_cbc.c             | 3 +++
- drivers/crypto/vmx/aes_ctr.c             | 3 +++
- drivers/crypto/vmx/ghash.c               | 4 ++++
- lib/raid6/altivec.uc                     | 1 +
- 15 files changed, 39 insertions(+)
+ drivers/crypto/vmx/aes.c     | 3 ---
+ drivers/crypto/vmx/aes_cbc.c | 3 ---
+ drivers/crypto/vmx/aes_ctr.c | 3 ---
+ drivers/crypto/vmx/ghash.c   | 8 --------
+ 4 files changed, 17 deletions(-)
 
-diff --git a/arch/powerpc/crypto/aes-spe-glue.c b/arch/powerpc/crypto/aes-spe-glue.c
-index bd5e63f..93ee046 100644
---- a/arch/powerpc/crypto/aes-spe-glue.c
-+++ b/arch/powerpc/crypto/aes-spe-glue.c
-@@ -85,6 +85,7 @@ static void spe_begin(void)
- 
- static void spe_end(void)
- {
-+	disable_kernel_spe();
- 	/* reenable preemption */
- 	preempt_enable();
- }
-diff --git a/arch/powerpc/crypto/sha1-spe-glue.c b/arch/powerpc/crypto/sha1-spe-glue.c
-index 3e1d222..f9ebc38 100644
---- a/arch/powerpc/crypto/sha1-spe-glue.c
-+++ b/arch/powerpc/crypto/sha1-spe-glue.c
-@@ -46,6 +46,7 @@ static void spe_begin(void)
- 
- static void spe_end(void)
- {
-+	disable_kernel_spe();
- 	/* reenable preemption */
- 	preempt_enable();
- }
-diff --git a/arch/powerpc/crypto/sha256-spe-glue.c b/arch/powerpc/crypto/sha256-spe-glue.c
-index f4a616f..718a079 100644
---- a/arch/powerpc/crypto/sha256-spe-glue.c
-+++ b/arch/powerpc/crypto/sha256-spe-glue.c
-@@ -47,6 +47,7 @@ static void spe_begin(void)
- 
- static void spe_end(void)
- {
-+	disable_kernel_spe();
- 	/* reenable preemption */
- 	preempt_enable();
- }
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index c2678b9..438502f 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -26,6 +26,11 @@ extern void enable_kernel_spe(void);
- extern void load_up_spe(struct task_struct *);
- extern void switch_booke_debug_regs(struct debug_reg *new_debug);
- 
-+static inline void disable_kernel_fp(void) { }
-+static inline void disable_kernel_altivec(void) { }
-+static inline void disable_kernel_spe(void) { }
-+static inline void disable_kernel_vsx(void) { }
-+
- #ifdef CONFIG_PPC_FPU
- extern void flush_fp_to_thread(struct task_struct *);
- extern void giveup_fpu(struct task_struct *);
-diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-index 86150fb..8e7cb8e 100644
---- a/arch/powerpc/kernel/align.c
-+++ b/arch/powerpc/kernel/align.c
-@@ -960,6 +960,7 @@ int fix_alignment(struct pt_regs *regs)
- 			preempt_disable();
- 			enable_kernel_fp();
- 			cvt_df(&data.dd, (float *)&data.x32.low32);
-+			disable_kernel_fp();
- 			preempt_enable();
- #else
- 			return 0;
-@@ -1000,6 +1001,7 @@ int fix_alignment(struct pt_regs *regs)
- 		preempt_disable();
- 		enable_kernel_fp();
- 		cvt_fd((float *)&data.x32.low32, &data.dd);
-+		disable_kernel_fp();
- 		preempt_enable();
- #else
- 		return 0;
-diff --git a/arch/powerpc/kvm/book3s_paired_singles.c b/arch/powerpc/kvm/book3s_paired_singles.c
-index a759d9a..eab96cf 100644
---- a/arch/powerpc/kvm/book3s_paired_singles.c
-+++ b/arch/powerpc/kvm/book3s_paired_singles.c
-@@ -1265,6 +1265,7 @@ int kvmppc_emulate_paired_single(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 	if (rcomp)
- 		kvmppc_set_cr(vcpu, cr);
- 
-+	disable_kernel_fp();
- 	preempt_enable();
- 
- 	return emulated;
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 64891b0..49f5dad 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -751,6 +751,7 @@ static int kvmppc_handle_ext(struct kvm_vcpu *vcpu, unsigned int exit_nr,
- 		preempt_disable();
- 		enable_kernel_fp();
- 		load_fp_state(&vcpu->arch.fp);
-+		disable_kernel_fp();
- 		t->fp_save_area = &vcpu->arch.fp;
- 		preempt_enable();
- 	}
-@@ -760,6 +761,7 @@ static int kvmppc_handle_ext(struct kvm_vcpu *vcpu, unsigned int exit_nr,
- 		preempt_disable();
- 		enable_kernel_altivec();
- 		load_vr_state(&vcpu->arch.vr);
-+		disable_kernel_altivec();
- 		t->vr_save_area = &vcpu->arch.vr;
- 		preempt_enable();
- #endif
-@@ -788,6 +790,7 @@ static void kvmppc_handle_lost_ext(struct kvm_vcpu *vcpu)
- 		preempt_disable();
- 		enable_kernel_fp();
- 		load_fp_state(&vcpu->arch.fp);
-+		disable_kernel_fp();
- 		preempt_enable();
- 	}
- #ifdef CONFIG_ALTIVEC
-@@ -795,6 +798,7 @@ static void kvmppc_handle_lost_ext(struct kvm_vcpu *vcpu)
- 		preempt_disable();
- 		enable_kernel_altivec();
- 		load_vr_state(&vcpu->arch.vr);
-+		disable_kernel_altivec();
- 		preempt_enable();
- 	}
- #endif
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index fd58751..778ef86 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -98,6 +98,7 @@ void kvmppc_vcpu_disable_spe(struct kvm_vcpu *vcpu)
- 	preempt_disable();
- 	enable_kernel_spe();
- 	kvmppc_save_guest_spe(vcpu);
-+	disable_kernel_spe();
- 	vcpu->arch.shadow_msr &= ~MSR_SPE;
- 	preempt_enable();
- }
-@@ -107,6 +108,7 @@ static void kvmppc_vcpu_enable_spe(struct kvm_vcpu *vcpu)
- 	preempt_disable();
- 	enable_kernel_spe();
- 	kvmppc_load_guest_spe(vcpu);
-+	disable_kernel_spe();
- 	vcpu->arch.shadow_msr |= MSR_SPE;
- 	preempt_enable();
- }
-@@ -141,6 +143,7 @@ static inline void kvmppc_load_guest_fp(struct kvm_vcpu *vcpu)
- 	if (!(current->thread.regs->msr & MSR_FP)) {
- 		enable_kernel_fp();
- 		load_fp_state(&vcpu->arch.fp);
-+		disable_kernel_fp();
- 		current->thread.fp_save_area = &vcpu->arch.fp;
- 		current->thread.regs->msr |= MSR_FP;
- 	}
-@@ -182,6 +185,7 @@ static inline void kvmppc_load_guest_altivec(struct kvm_vcpu *vcpu)
- 		if (!(current->thread.regs->msr & MSR_VEC)) {
- 			enable_kernel_altivec();
- 			load_vr_state(&vcpu->arch.vr);
-+			disable_kernel_altivec();
- 			current->thread.vr_save_area = &vcpu->arch.vr;
- 			current->thread.regs->msr |= MSR_VEC;
- 		}
-diff --git a/arch/powerpc/lib/vmx-helper.c b/arch/powerpc/lib/vmx-helper.c
-index ac93a3b..b27e030 100644
---- a/arch/powerpc/lib/vmx-helper.c
-+++ b/arch/powerpc/lib/vmx-helper.c
-@@ -46,6 +46,7 @@ int enter_vmx_usercopy(void)
-  */
- int exit_vmx_usercopy(void)
- {
-+	disable_kernel_altivec();
- 	pagefault_enable();
- 	preempt_enable();
- 	return 0;
-@@ -70,6 +71,7 @@ int enter_vmx_copy(void)
-  */
- void *exit_vmx_copy(void *dest)
- {
-+	disable_kernel_altivec();
- 	preempt_enable();
- 	return dest;
- }
-diff --git a/arch/powerpc/lib/xor_vmx.c b/arch/powerpc/lib/xor_vmx.c
-index e905f7c..07f49f1 100644
---- a/arch/powerpc/lib/xor_vmx.c
-+++ b/arch/powerpc/lib/xor_vmx.c
-@@ -74,6 +74,7 @@ void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
- 		v2 += 4;
- 	} while (--lines > 0);
- 
-+	disable_kernel_altivec();
- 	preempt_enable();
- }
- EXPORT_SYMBOL(xor_altivec_2);
-@@ -102,6 +103,7 @@ void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
- 		v3 += 4;
- 	} while (--lines > 0);
- 
-+	disable_kernel_altivec();
- 	preempt_enable();
- }
- EXPORT_SYMBOL(xor_altivec_3);
-@@ -135,6 +137,7 @@ void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
- 		v4 += 4;
- 	} while (--lines > 0);
- 
-+	disable_kernel_altivec();
- 	preempt_enable();
- }
- EXPORT_SYMBOL(xor_altivec_4);
-@@ -172,6 +175,7 @@ void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
- 		v5 += 4;
- 	} while (--lines > 0);
- 
-+	disable_kernel_altivec();
- 	preempt_enable();
- }
- EXPORT_SYMBOL(xor_altivec_5);
 diff --git a/drivers/crypto/vmx/aes.c b/drivers/crypto/vmx/aes.c
-index 20539fb..022c7ab 100644
+index 263af70..20539fb 100644
 --- a/drivers/crypto/vmx/aes.c
 +++ b/drivers/crypto/vmx/aes.c
-@@ -86,6 +86,7 @@ static int p8_aes_setkey(struct crypto_tfm *tfm, const u8 *key,
+@@ -83,7 +83,6 @@ static int p8_aes_setkey(struct crypto_tfm *tfm, const u8 *key,
+ 
+ 	preempt_disable();
+ 	pagefault_disable();
+-	enable_kernel_altivec();
  	enable_kernel_vsx();
  	ret = aes_p8_set_encrypt_key(key, keylen * 8, &ctx->enc_key);
  	ret += aes_p8_set_decrypt_key(key, keylen * 8, &ctx->dec_key);
-+	disable_kernel_vsx();
- 	pagefault_enable();
- 	preempt_enable();
- 
-@@ -104,6 +105,7 @@ static void p8_aes_encrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
+@@ -103,7 +102,6 @@ static void p8_aes_encrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
+ 	} else {
+ 		preempt_disable();
  		pagefault_disable();
+-		enable_kernel_altivec();
  		enable_kernel_vsx();
  		aes_p8_encrypt(src, dst, &ctx->enc_key);
-+		disable_kernel_vsx();
  		pagefault_enable();
- 		preempt_enable();
- 	}
-@@ -120,6 +122,7 @@ static void p8_aes_decrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
+@@ -120,7 +118,6 @@ static void p8_aes_decrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
+ 	} else {
+ 		preempt_disable();
  		pagefault_disable();
+-		enable_kernel_altivec();
  		enable_kernel_vsx();
  		aes_p8_decrypt(src, dst, &ctx->dec_key);
-+		disable_kernel_vsx();
  		pagefault_enable();
- 		preempt_enable();
- 	}
 diff --git a/drivers/crypto/vmx/aes_cbc.c b/drivers/crypto/vmx/aes_cbc.c
-index 8847b92..1881b3f 100644
+index 0b8fe2e..8847b92 100644
 --- a/drivers/crypto/vmx/aes_cbc.c
 +++ b/drivers/crypto/vmx/aes_cbc.c
-@@ -87,6 +87,7 @@ static int p8_aes_cbc_setkey(struct crypto_tfm *tfm, const u8 *key,
+@@ -84,7 +84,6 @@ static int p8_aes_cbc_setkey(struct crypto_tfm *tfm, const u8 *key,
+ 
+ 	preempt_disable();
+ 	pagefault_disable();
+-	enable_kernel_altivec();
  	enable_kernel_vsx();
  	ret = aes_p8_set_encrypt_key(key, keylen * 8, &ctx->enc_key);
  	ret += aes_p8_set_decrypt_key(key, keylen * 8, &ctx->dec_key);
-+	disable_kernel_vsx();
- 	pagefault_enable();
- 	preempt_enable();
+@@ -115,7 +114,6 @@ static int p8_aes_cbc_encrypt(struct blkcipher_desc *desc,
+ 	} else {
+ 		preempt_disable();
+ 		pagefault_disable();
+-		enable_kernel_altivec();
+ 		enable_kernel_vsx();
  
-@@ -127,6 +128,7 @@ static int p8_aes_cbc_encrypt(struct blkcipher_desc *desc,
- 			ret = blkcipher_walk_done(desc, &walk, nbytes);
- 		}
+ 		blkcipher_walk_init(&walk, dst, src, nbytes);
+@@ -156,7 +154,6 @@ static int p8_aes_cbc_decrypt(struct blkcipher_desc *desc,
+ 	} else {
+ 		preempt_disable();
+ 		pagefault_disable();
+-		enable_kernel_altivec();
+ 		enable_kernel_vsx();
  
-+		disable_kernel_vsx();
- 		pagefault_enable();
- 		preempt_enable();
- 	}
-@@ -167,6 +169,7 @@ static int p8_aes_cbc_decrypt(struct blkcipher_desc *desc,
- 			ret = blkcipher_walk_done(desc, &walk, nbytes);
- 		}
- 
-+		disable_kernel_vsx();
- 		pagefault_enable();
- 		preempt_enable();
- 	}
+ 		blkcipher_walk_init(&walk, dst, src, nbytes);
 diff --git a/drivers/crypto/vmx/aes_ctr.c b/drivers/crypto/vmx/aes_ctr.c
-index 8095866..2d58b18 100644
+index ee1306c..8095866 100644
 --- a/drivers/crypto/vmx/aes_ctr.c
 +++ b/drivers/crypto/vmx/aes_ctr.c
-@@ -83,6 +83,7 @@ static int p8_aes_ctr_setkey(struct crypto_tfm *tfm, const u8 *key,
+@@ -81,7 +81,6 @@ static int p8_aes_ctr_setkey(struct crypto_tfm *tfm, const u8 *key,
+ 	struct p8_aes_ctr_ctx *ctx = crypto_tfm_ctx(tfm);
+ 
  	pagefault_disable();
+-	enable_kernel_altivec();
  	enable_kernel_vsx();
  	ret = aes_p8_set_encrypt_key(key, keylen * 8, &ctx->enc_key);
-+	disable_kernel_vsx();
  	pagefault_enable();
+@@ -100,7 +99,6 @@ static void p8_aes_ctr_final(struct p8_aes_ctr_ctx *ctx,
+ 	unsigned int nbytes = walk->nbytes;
  
- 	ret += crypto_blkcipher_setkey(ctx->fallback, key, keylen);
-@@ -101,6 +102,7 @@ static void p8_aes_ctr_final(struct p8_aes_ctr_ctx *ctx,
  	pagefault_disable();
+-	enable_kernel_altivec();
  	enable_kernel_vsx();
  	aes_p8_encrypt(ctrblk, keystream, &ctx->enc_key);
-+	disable_kernel_vsx();
  	pagefault_enable();
- 
- 	crypto_xor(keystream, src, nbytes);
-@@ -139,6 +141,7 @@ static int p8_aes_ctr_crypt(struct blkcipher_desc *desc,
- 						    AES_BLOCK_SIZE,
- 						    &ctx->enc_key,
- 						    walk.iv);
-+			disable_kernel_vsx();
- 			pagefault_enable();
- 
- 			/* We need to update IV mostly for last bytes/round */
+@@ -133,7 +131,6 @@ static int p8_aes_ctr_crypt(struct blkcipher_desc *desc,
+ 		ret = blkcipher_walk_virt_block(desc, &walk, AES_BLOCK_SIZE);
+ 		while ((nbytes = walk.nbytes) >= AES_BLOCK_SIZE) {
+ 			pagefault_disable();
+-			enable_kernel_altivec();
+ 			enable_kernel_vsx();
+ 			aes_p8_ctr32_encrypt_blocks(walk.src.virt.addr,
+ 						    walk.dst.virt.addr,
 diff --git a/drivers/crypto/vmx/ghash.c b/drivers/crypto/vmx/ghash.c
-index 1f4586c..6c999cb0 100644
+index 2183a2e..1f4586c 100644
 --- a/drivers/crypto/vmx/ghash.c
 +++ b/drivers/crypto/vmx/ghash.c
-@@ -120,6 +120,7 @@ static int p8_ghash_setkey(struct crypto_shash *tfm, const u8 *key,
+@@ -118,9 +118,7 @@ static int p8_ghash_setkey(struct crypto_shash *tfm, const u8 *key,
+ 
+ 	preempt_disable();
  	pagefault_disable();
+-	enable_kernel_altivec();
  	enable_kernel_vsx();
+-	enable_kernel_fp();
  	gcm_init_p8(ctx->htable, (const u64 *) key);
-+	disable_kernel_vsx();
  	pagefault_enable();
  	preempt_enable();
- 	return crypto_shash_setkey(ctx->fallback, key, keylen);
-@@ -150,6 +151,7 @@ static int p8_ghash_update(struct shash_desc *desc,
- 			enable_kernel_vsx();
- 			gcm_ghash_p8(dctx->shash, ctx->htable,
- 				     dctx->buffer, GHASH_DIGEST_SIZE);
-+			disable_kernel_vsx();
- 			pagefault_enable();
- 			preempt_enable();
- 			src += GHASH_DIGEST_SIZE - dctx->bytes;
-@@ -162,6 +164,7 @@ static int p8_ghash_update(struct shash_desc *desc,
+@@ -149,9 +147,7 @@ static int p8_ghash_update(struct shash_desc *desc,
+ 			       GHASH_DIGEST_SIZE - dctx->bytes);
+ 			preempt_disable();
  			pagefault_disable();
+-			enable_kernel_altivec();
  			enable_kernel_vsx();
- 			gcm_ghash_p8(dctx->shash, ctx->htable, src, len);
-+			disable_kernel_vsx();
- 			pagefault_enable();
- 			preempt_enable();
- 			src += len;
-@@ -192,6 +195,7 @@ static int p8_ghash_final(struct shash_desc *desc, u8 *out)
- 			enable_kernel_vsx();
+-			enable_kernel_fp();
  			gcm_ghash_p8(dctx->shash, ctx->htable,
  				     dctx->buffer, GHASH_DIGEST_SIZE);
-+			disable_kernel_vsx();
+ 			pagefault_enable();
+@@ -164,9 +160,7 @@ static int p8_ghash_update(struct shash_desc *desc,
+ 		if (len) {
+ 			preempt_disable();
+ 			pagefault_disable();
+-			enable_kernel_altivec();
+ 			enable_kernel_vsx();
+-			enable_kernel_fp();
+ 			gcm_ghash_p8(dctx->shash, ctx->htable, src, len);
  			pagefault_enable();
  			preempt_enable();
- 			dctx->bytes = 0;
-diff --git a/lib/raid6/altivec.uc b/lib/raid6/altivec.uc
-index bec27fc..682aae8 100644
---- a/lib/raid6/altivec.uc
-+++ b/lib/raid6/altivec.uc
-@@ -101,6 +101,7 @@ static void raid6_altivec$#_gen_syndrome(int disks, size_t bytes, void **ptrs)
- 
- 	raid6_altivec$#_gen_syndrome_real(disks, bytes, ptrs);
- 
-+	disable_kernel_altivec();
- 	preempt_enable();
- }
- 
+@@ -195,9 +189,7 @@ static int p8_ghash_final(struct shash_desc *desc, u8 *out)
+ 				dctx->buffer[i] = 0;
+ 			preempt_disable();
+ 			pagefault_disable();
+-			enable_kernel_altivec();
+ 			enable_kernel_vsx();
+-			enable_kernel_fp();
+ 			gcm_ghash_p8(dctx->shash, ctx->htable,
+ 				     dctx->buffer, GHASH_DIGEST_SIZE);
+ 			pagefault_enable();
 -- 
 2.5.0
