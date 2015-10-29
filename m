@@ -1,8 +1,8 @@
 Return-Path: <fengguang.wu@intel.com>
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- by lists.ozlabs.org (Postfix) with ESMTP id 689671A045F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 20:49:54 +1100 (AEDT)
-Date: Thu, 29 Oct 2015 17:49:09 +0800
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by lists.ozlabs.org (Postfix) with ESMTP id EF2C21A0B5F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 21:22:35 +1100 (AEDT)
+Date: Thu, 29 Oct 2015 18:21:32 +0800
 From: kbuild test robot <lkp@intel.com>
 To: igal.liberman@freescale.com
 Cc: kbuild-all@01.org, netdev@vger.kernel.org, pebolle@tiscali.nl,
@@ -10,11 +10,11 @@ Cc: kbuild-all@01.org, netdev@vger.kernel.org, pebolle@tiscali.nl,
  stephen@networkplumber.org, Igal Liberman <igal.liberman@freescale.com>,
  scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  davem@davemloft.net, madalin.bucur@freescale.com
-Subject: Re: [v6, 5/6] fsl/fman: Add FMan Port Support
-Message-ID: <201510291741.GxLZbj2r%fengguang.wu@intel.com>
+Subject: Re: [v6, 6/6] fsl/fman: Add FMan MAC driver
+Message-ID: <201510291842.P44xhMre%fengguang.wu@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="mP3DRpeJDSE+ciuQ"
-In-Reply-To: <1446022429-31621-6-git-send-email-igal.liberman@freescale.com>
+Content-Type: multipart/mixed; boundary="VS++wcV0S1rZb1Fb"
+In-Reply-To: <1446022429-31621-7-git-send-email-igal.liberman@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,7 +25,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---mP3DRpeJDSE+ciuQ
+--VS++wcV0S1rZb1Fb
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
@@ -43,34 +43,35 @@ reproduce:
 
 All errors (new ones prefixed by >>):
 
->> drivers/net/ethernet/freescale/fman/fman_port.c:39:25: fatal error: asm/mpc85xx.h: No such file or directory
-    #include <asm/mpc85xx.h>
-                            ^
-   compilation terminated.
+   drivers/net/ethernet/freescale/fman/mac.c: In function 'mac_probe':
+>> drivers/net/ethernet/freescale/fman/mac.c:804:3: error: implicit declaration of function 'out_be32' [-Werror=implicit-function-declaration]
+      out_be32(priv->vaddr + TBIPA_OFFSET, tbiaddr);
+      ^
+   cc1: some warnings being treated as errors
 
-vim +39 drivers/net/ethernet/freescale/fman/fman_port.c
+vim +/out_be32 +804 drivers/net/ethernet/freescale/fman/mac.c
 
-    33	#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-    34	
-    35	#include "fman_port.h"
-    36	#include "fman.h"
-    37	#include "fman_sp.h"
-    38	
-  > 39	#include <asm/mpc85xx.h>
-    40	#include <linux/io.h>
-    41	#include <linux/slab.h>
-    42	#include <linux/module.h>
+   798		if (tbi_node) {
+   799			u32 tbiaddr = TBIPA_DEFAULT_ADDR;
+   800	
+   801			u32_prop = of_get_property(tbi_node, "reg", NULL);
+   802			if (u32_prop)
+   803				tbiaddr = *u32_prop;
+ > 804			out_be32(priv->vaddr + TBIPA_OFFSET, tbiaddr);
+   805		}
+   806	
+   807		if (!of_device_is_available(mac_node)) {
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
---mP3DRpeJDSE+ciuQ
+--VS++wcV0S1rZb1Fb
 Content-Type: application/octet-stream
 Content-Disposition: attachment; filename=".config.gz"
 Content-Transfer-Encoding: base64
 
-H4sICErpMVYAAy5jb25maWcAjFxNk9s2k77nV7CcPewekpGo792aAwhCEiKSoAlS0swFpYxl
+H4sICHvwMVYAAy5jb25maWcAjFxNk9s2k77nV7CcPewekpGo792aAwhCEiKSoAlS0swFpYxl
 R5WZkUuS89r/fhsAKQIgJMeVis2nG0ATaPQXQP36y68B+nY5vu0uh5fd6+uP4Mv+fX/aXfaf
 gs+H1/3/BTELMlYGJKbl78CcHN6/fX/Ynd6C4e+D33u/nV7GwWp/et+/Bvj4/vnw5Rs0Phzf
 f/n1F8yyOV0IVKSPP4wHsURc8IXAS0SzlpIREks4TpFISLYol3YriVecCMrStOqSFCxQQhdZ
@@ -1066,4 +1067,4 @@ tXszKZotc3I2hl9tzOWyaR3H5WFy19amSS5aw5mXV5GpipEWse2D1W8W4M8j40Mw1EkpF3FV
 m96J5zkclzyfg0itHND517lHMYchkU6/TN91RDr7mhw7JAxvkzAZCvjmjKGjt9b2+Isp7Mj7
 koypFVAn06/p1CFPjr4m1tZWob19wm5KfedWOBKFGf0MlYQakcR3nfz6//GCFvLJVwMA
 
---mP3DRpeJDSE+ciuQ--
+--VS++wcV0S1rZb1Fb--
