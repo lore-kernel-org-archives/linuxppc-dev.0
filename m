@@ -1,49 +1,42 @@
-Return-Path: <robh+dt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id B9CF41A0C1B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 15:18:20 +1100 (AEDT)
-Received: from mail.kernel.org (localhost [127.0.0.1])
- by mail.kernel.org (Postfix) with ESMTP id B3C53209D1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 04:18:17 +0000 (UTC)
-Received: from mail-yk0-f175.google.com (mail-yk0-f175.google.com
- [209.85.160.175])
- (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hemant@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E25AF209E8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 04:18:14 +0000 (UTC)
-Received: by ykft191 with SMTP id t191so30653389ykf.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 21:18:14 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1994E1A0ADA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 18:07:31 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
+ Thu, 29 Oct 2015 12:37:27 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id ADE1B125805D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 12:37:19 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9T77LDY18808898
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 12:37:22 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9T77JAO016376
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 12:37:20 +0530
+Message-ID: <5631C5A6.4040101@linux.vnet.ibm.com>
+Date: Thu, 29 Oct 2015 12:37:18 +0530
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAAObsKDR6pTEDK-G+jw+cr9MD-XoZqU8niqvDFHqFM0ve-+Smw@mail.gmail.com>
-References: <1442844182-27787-1-git-send-email-tomeu.vizoso@collabora.com>
- <1442844182-27787-23-git-send-email-tomeu.vizoso@collabora.com>
- <1445406845.701.55.camel@freescale.com>
- <CAL_JsqLhZmc8cEC+tFJ25KLe0bQZsWmrRWGBMQake9VN6OjvdQ@mail.gmail.com>
- <1445467912.701.90.camel@freescale.com>
- <CAAObsKAfufBe_SycibUN3ZsE3fOkBfUjZRx1SWEMwVtM6t7inQ@mail.gmail.com>
- <1445549230.701.116.camel@freescale.com>
- <CAAObsKDR6pTEDK-G+jw+cr9MD-XoZqU8niqvDFHqFM0ve-+Smw@mail.gmail.com>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Wed, 28 Oct 2015 23:17:54 -0500
-Message-ID: <CAL_JsqKrRMtapB9D-WnUgB67S+m09LhcNDUx_Uh7aXzphQUc+Q@mail.gmail.com>
-Subject: Re: [PATCH v6 22/22] of/platform: Defer probes of registered devices
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: Scott Wood <scottwood@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Stephen Warren <swarren@wwwdotorg.org>,
- Javier Martinez Canillas <javier@osg.samsung.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Mark Brown <broonie@kernel.org>, Thierry Reding <thierry.reding@gmail.com>,
- Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Linus Walleij <linus.walleij@linaro.org>,
- "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Hu Mingkai-B21284 <Mingkai.Hu@freescale.com>
-Content-Type: text/plain; charset=UTF-8
+To: Alexander Yarygin <yarygin@linux.vnet.ibm.com>
+CC: David Ahern <dsahern@gmail.com>, linux-kernel@vger.kernel.org,
+ srikar@linux.vnet.ibm.com, acme@kernel.org, borntraeger@de.ibm.com,
+ mingo@redhat.com, paulus@samba.org, scottwood@freescale.com,
+ naveen.n.rao@linux.vnet.ibm.com, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v9 1/4] perf, kvm/{x86,
+ s390}: Remove dependency on uapi/kvm_perf.h
+References: <1444184711-8559-1-git-send-email-hemant@linux.vnet.ibm.com>
+ <5615443F.7030909@gmail.com> <561639B8.8040407@linux.vnet.ibm.com>
+ <8737wuk9g6.fsf@linux.vnet.ibm.com>
+In-Reply-To: <8737wuk9g6.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,98 +46,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 28, 2015 at 9:40 AM, Tomeu Vizoso
-<tomeu.vizoso@collabora.com> wrote:
-> On 22 October 2015 at 23:27, Scott Wood <scottwood@freescale.com> wrote:
->> On Thu, 2015-10-22 at 15:04 +0200, Tomeu Vizoso wrote:
->>> On 22 October 2015 at 00:51, Scott Wood <scottwood@freescale.com> wrote:
->>> > On Wed, 2015-10-21 at 08:44 -0500, Rob Herring wrote:
->>> > > On Wed, Oct 21, 2015 at 12:54 AM, Scott Wood <scottwood@freescale.com>
->>> > > wrote:
->>> > > > On Mon, 2015-09-21 at 16:03 +0200, Tomeu Vizoso wrote:
->>> > > > > Instead of trying to match and probe platform and AMBA devices right
->>> > > > > after each is registered, delay their probes until
->>> > > > > device_initcall_sync.
->>> > > > >
->>> > > > > This means that devices will start probing once all built-in drivers
->>> > > > > have registered, and after all platform and AMBA devices from the DT
->>> > > > > have been registered already.
->>> > > > >
->>> > > > > This allows us to prevent deferred probes by probing dependencies on
->>> > > > > demand.
->>> > > > >
->>> > > > > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
->>> > > > > ---
->>> > > > >
->>> > > > > Changes in v4:
->>> > > > > - Also defer probes of AMBA devices registered from the DT as they
->>> > > > > can
->>> > > > >   also request resources.
->>> > > > >
->>> > > > >  drivers/of/platform.c | 11 ++++++++---
->>> > > > >  1 file changed, 8 insertions(+), 3 deletions(-)
->>> > > >
->>> > > > This breaks arch/powerpc/sysdev/fsl_pci.c.  The PCI bus is an OF
->>> > > > platform
->>> > > > device, and it must be probed before pcibios_init() which is a
->>> > > > subsys_initcall(), or else the PCI bus never gets scanned.
->>> > >
->>> > > Thanks for the report. This is probably getting dropped, but it could
->>> > > be disabled for PPC.
->>> >
->>> > I don't think that adding another arbitrary arch difference would be the
->>> > right solution.
+
+
+On 10/29/2015 02:17 AM, Alexander Yarygin wrote:
+> Hemant Kumar writes:
+>
+>> Hi David,
+>>
+>>
+>> On 10/07/2015 09:41 PM, David Ahern wrote:
+>>> On 10/6/15 8:25 PM, Hemant Kumar wrote:
+>>>> @@ -358,7 +357,12 @@ static bool handle_end_event(struct
+>>>> perf_kvm_stat *kvm,
+>>>>        time_diff = sample->time - time_begin;
+>>>>
+>>>>        if (kvm->duration && time_diff > kvm->duration) {
+>>>> -        char decode[DECODE_STR_LEN];
+>>>> +        char *decode = zalloc(decode_str_len);
+>>> decode can still be a stack variable even with variable length.
 >>>
->>> I think Rob meant temporarily disable it while things get fixed. At
->>> least,
+>> Yeah, we can do that. But, I am not sure whether its a standard way.
 >>
->> So, what is the permanent fix for the swiotlb issue (or more generally, the
->> inability to have a late_initcall that runs after non-module, non-hotplug
->> platform devices have been probed)?
+> Well, I also vote for making them variable length arrays. I guess that
+> wouldn't be a problem because the "variable" here is actually a constant
+> compile time value, even if it's extern.
 >
-> If the code in pcibios_init() depends on the PCI bus device having
-> probed, then I would recommend making that dependency explicit by
-> calling of_device_probe() on the OF node of the PCI controller when
-> looking it up.
->
->>> I don't see any reason why PPC wouldn't benefit from this
->>> series.
+> But if people are strongly against it, as an alternative I can suggest
+> to move the 'char *decode' variable to the perf_kvm_stat structure,
+> allocate it once e.g. in kvm_events_report() and just write to it via
+> decode_key(). If I'm not mistaken, we always write \0 trimmed strings,
+> so garbage after \0 shouldn't be a problem.
+
+I agree. We can do that. But, since this is a small change (making
+the variable a constant compile time value rather than the array being
+a run time value), we can do that subsequently. For now, we can go
+with the current patchset.
+
+> It's not a real problem anyway :)
+
+Yeah.
+
+> For s390 parts:
+> Acked-by: Alexander Yarygin <yarygin@linux.vnet.ibm.com>
+
+Thanks a lot for testing and acking it. :)
+
+>>> -----8<-----
+>>>
+>>>> @@ -575,7 +581,7 @@ static void show_timeofday(void)
+>>>>
+>>>>    static void print_result(struct perf_kvm_stat *kvm)
+>>>>    {
+>>>> -    char decode[DECODE_STR_LEN];
+>>>> +    char *decode;
+>>> and a stack variable here too.
+>>>
+>> Same here.
 >>
->> It's not clear to me what the benefit of this is at all, much less for PPC.
->> What is the fundamental problem with deferred probes?  In the cover letter
->> you say this change saves 2.3 seconds, but where is that time being consumed?
->>  Are the drivers taking too long in their probe function trying to initialize
->> and then deferring, rather than checking for dependencies up front?  Or are
->> there really so many devices and such a pessimal ordering that most of the
->> time is spent iterating through and reordering the list, with each defer
->> happening quickly?
->
-> The problem is that a device that defers its probe is currently sent
-> to the back of the queue, and that's undesired in some use cases in
-> which there's a device that should be up as soon as possible during
-> boot (and boot takes a long time). So the goal is to change the order
-> in which devices with dependencies end up probing.
->
->> Even if something different does need to be done at this level, forcing all
->> OF platform devices to be probed at the late_initcall level seems quite
->> intrusive.  You limited it to OF because people complained that other things
->> will break.  Things still broke.  Surely there's a better way to address the
->> problem.  Can't the delay be requested by drivers that might otherwise need
->> to defer (which could be done incrementally, focusing on the worst
->> performance problems), rather than enabling it for everything?
->
-> Yes, given the amount of breakage that's a sensible option. But in any
-> case and even if this series is most likely to be dropped, I recommend
-> to make explicit as many implicit dependencies as possible.
+>>> David
+>>> _______________________________________________
+>>> Linuxppc-dev mailing list
+>>> Linuxppc-dev@lists.ozlabs.org
+>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-It is dropped for now, but I expect much of this to still integrate
-with Rafael's proposal. However, it will need to be opt-in it seems.
-That is somewhat unfortunate because things like async probe are
-opt-in and seem to rarely get used. As to how we can make it opt-in, I
-think we can make of_platform_populate() callable multiple times at
-the root level. This will allow a platform to skip calling it and then
-a late call to it can register the devices after drivers have
-registered. This late call will then be a nop for platforms that don't
-opt-in and call of_platform_populate themselves.
-
-Rob
+-- 
+Thanks,
+Hemant Kumar
