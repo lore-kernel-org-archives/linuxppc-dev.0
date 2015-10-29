@@ -1,27 +1,49 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <robh+dt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id B9CF41A0C1B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 15:18:20 +1100 (AEDT)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id B3C53209D1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 04:18:17 +0000 (UTC)
+Received: from mail-yk0-f175.google.com (mail-yk0-f175.google.com
+ [209.85.160.175])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A41111A02C2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 14:29:36 +1100 (AEDT)
-Received: by padhk11 with SMTP id hk11so26348080pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 20:29:34 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
- bhelgaas@google.com, mpe@ellerman.id.au, aik@ozlabs.ru
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V10 05/12] powerpc/eeh: Cache only BARs,
- not windows or IOV BARs
-In-Reply-To: <1445829362-2738-6-git-send-email-weiyang@linux.vnet.ibm.com>
-References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1445829362-2738-6-git-send-email-weiyang@linux.vnet.ibm.com>
-Date: Thu, 29 Oct 2015 14:29:19 +1100
-Message-ID: <87h9lapd2o.fsf@gamma.ozlabs.ibm.com>
+ by mail.kernel.org (Postfix) with ESMTPSA id E25AF209E8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 04:18:14 +0000 (UTC)
+Received: by ykft191 with SMTP id t191so30653389ykf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2015 21:18:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+In-Reply-To: <CAAObsKDR6pTEDK-G+jw+cr9MD-XoZqU8niqvDFHqFM0ve-+Smw@mail.gmail.com>
+References: <1442844182-27787-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1442844182-27787-23-git-send-email-tomeu.vizoso@collabora.com>
+ <1445406845.701.55.camel@freescale.com>
+ <CAL_JsqLhZmc8cEC+tFJ25KLe0bQZsWmrRWGBMQake9VN6OjvdQ@mail.gmail.com>
+ <1445467912.701.90.camel@freescale.com>
+ <CAAObsKAfufBe_SycibUN3ZsE3fOkBfUjZRx1SWEMwVtM6t7inQ@mail.gmail.com>
+ <1445549230.701.116.camel@freescale.com>
+ <CAAObsKDR6pTEDK-G+jw+cr9MD-XoZqU8niqvDFHqFM0ve-+Smw@mail.gmail.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Wed, 28 Oct 2015 23:17:54 -0500
+Message-ID: <CAL_JsqKrRMtapB9D-WnUgB67S+m09LhcNDUx_Uh7aXzphQUc+Q@mail.gmail.com>
+Subject: Re: [PATCH v6 22/22] of/platform: Defer probes of registered devices
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Stephen Warren <swarren@wwwdotorg.org>,
+ Javier Martinez Canillas <javier@osg.samsung.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Mark Brown <broonie@kernel.org>, Thierry Reding <thierry.reding@gmail.com>,
+ Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Hu Mingkai-B21284 <Mingkai.Hu@freescale.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,92 +53,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Wei Yang <weiyang@linux.vnet.ibm.com> writes:
-
-> EEH address cache, which helps to locate the PCI device according to
-> the given (physical) MMIO address, didn't cover PCI bridges. Also, it
-> shouldn't return PF with address in PF's IOV BARs. Instead, the VFs
-> should be returned.
+On Wed, Oct 28, 2015 at 9:40 AM, Tomeu Vizoso
+<tomeu.vizoso@collabora.com> wrote:
+> On 22 October 2015 at 23:27, Scott Wood <scottwood@freescale.com> wrote:
+>> On Thu, 2015-10-22 at 15:04 +0200, Tomeu Vizoso wrote:
+>>> On 22 October 2015 at 00:51, Scott Wood <scottwood@freescale.com> wrote:
+>>> > On Wed, 2015-10-21 at 08:44 -0500, Rob Herring wrote:
+>>> > > On Wed, Oct 21, 2015 at 12:54 AM, Scott Wood <scottwood@freescale.com>
+>>> > > wrote:
+>>> > > > On Mon, 2015-09-21 at 16:03 +0200, Tomeu Vizoso wrote:
+>>> > > > > Instead of trying to match and probe platform and AMBA devices right
+>>> > > > > after each is registered, delay their probes until
+>>> > > > > device_initcall_sync.
+>>> > > > >
+>>> > > > > This means that devices will start probing once all built-in drivers
+>>> > > > > have registered, and after all platform and AMBA devices from the DT
+>>> > > > > have been registered already.
+>>> > > > >
+>>> > > > > This allows us to prevent deferred probes by probing dependencies on
+>>> > > > > demand.
+>>> > > > >
+>>> > > > > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+>>> > > > > ---
+>>> > > > >
+>>> > > > > Changes in v4:
+>>> > > > > - Also defer probes of AMBA devices registered from the DT as they
+>>> > > > > can
+>>> > > > >   also request resources.
+>>> > > > >
+>>> > > > >  drivers/of/platform.c | 11 ++++++++---
+>>> > > > >  1 file changed, 8 insertions(+), 3 deletions(-)
+>>> > > >
+>>> > > > This breaks arch/powerpc/sysdev/fsl_pci.c.  The PCI bus is an OF
+>>> > > > platform
+>>> > > > device, and it must be probed before pcibios_init() which is a
+>>> > > > subsys_initcall(), or else the PCI bus never gets scanned.
+>>> > >
+>>> > > Thanks for the report. This is probably getting dropped, but it could
+>>> > > be disabled for PPC.
+>>> >
+>>> > I don't think that adding another arbitrary arch difference would be the
+>>> > right solution.
+>>>
+>>> I think Rob meant temporarily disable it while things get fixed. At
+>>> least,
+>>
+>> So, what is the permanent fix for the swiotlb issue (or more generally, the
+>> inability to have a late_initcall that runs after non-module, non-hotplug
+>> platform devices have been probed)?
 >
-> Also, by doing so, it removes the type check in
-> eeh_addr_cache_insert_dev(), since bridge's window would not be cached.
+> If the code in pcibios_init() depends on the PCI bus device having
+> probed, then I would recommend making that dependency explicit by
+> calling of_device_probe() on the OF node of the PCI controller when
+> looking it up.
 >
-> The patch restricts the address cache to cover first 7 BARs for the
-> above purposes.
-If I've understoond the patch correctly, I think you want to swap the
-last two paragraphs in the commit message:
-
-"Restrict the address cache to cover the first 7 BARs...
-
-Since the window of a bridge will now not be cached, remove the type
-check..."
-
-With regards to the actual patch, I have now got access to the PCI and
-SR-IOV specs, but I'm still getting to grips with it all so let me know
-if something I say doesn't make sense.
-
-Here, you restrict the enumeration of resources to the standard and
-extension ROM resources (the first 7), which excludes enumeration of
-VF resources. That much I understand.
-
-I'm having more trouble convincing myself that it's safe or desirable to
-drop the test for bridges. I think I understand that the change to the
-for loop means it _should_ be safe, but is there any motivation for the
-change other than making the code more straightforward?
-
->  	/* Walk resources on this device, poke them into the tree *
-This comment probably needs to be made more descriptive given the change.
-> -	for (i =3D 0; i < DEVICE_COUNT_RESOURCE; i++) {
-> +	for (i =3D 0; i <=3D PCI_ROM_RESOURCE; i++) {
->  		resource_size_t start =3D pci_resource_start(dev,i);
->  		resource_size_t end =3D pci_resource_end(dev,i);
->  		unsigned long flags =3D pci_resource_flags(dev,i);
-> @@ -222,10 +222,6 @@ void eeh_addr_cache_insert_dev(struct pci_dev *dev)
->  {
-
-Regards,
-Daniel
-
->  	unsigned long flags;
->=20=20
-> -	/* Ignore PCI bridges */
-> -	if ((dev->class >> 16) =3D=3D PCI_BASE_CLASS_BRIDGE)
-> -		return;
-> -
->  	spin_lock_irqsave(&pci_io_addr_cache_root.piar_lock, flags);
->  	__eeh_addr_cache_insert_dev(dev);
->  	spin_unlock_irqrestore(&pci_io_addr_cache_root.piar_lock, flags);
-> --=20
-> 2.5.0
+>>> I don't see any reason why PPC wouldn't benefit from this
+>>> series.
+>>
+>> It's not clear to me what the benefit of this is at all, much less for PPC.
+>> What is the fundamental problem with deferred probes?  In the cover letter
+>> you say this change saves 2.3 seconds, but where is that time being consumed?
+>>  Are the drivers taking too long in their probe function trying to initialize
+>> and then deferring, rather than checking for dependencies up front?  Or are
+>> there really so many devices and such a pessimal ordering that most of the
+>> time is spent iterating through and reordering the list, with each defer
+>> happening quickly?
 >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> The problem is that a device that defers its probe is currently sent
+> to the back of the queue, and that's undesired in some use cases in
+> which there's a device that should be up as soon as possible during
+> boot (and boot takes a long time). So the goal is to change the order
+> in which devices with dependencies end up probing.
+>
+>> Even if something different does need to be done at this level, forcing all
+>> OF platform devices to be probed at the late_initcall level seems quite
+>> intrusive.  You limited it to OF because people complained that other things
+>> will break.  Things still broke.  Surely there's a better way to address the
+>> problem.  Can't the delay be requested by drivers that might otherwise need
+>> to defer (which could be done incrementally, focusing on the worst
+>> performance problems), rather than enabling it for everything?
+>
+> Yes, given the amount of breakage that's a sensible option. But in any
+> case and even if this series is most likely to be dropped, I recommend
+> to make explicit as many implicit dependencies as possible.
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+It is dropped for now, but I expect much of this to still integrate
+with Rafael's proposal. However, it will need to be opt-in it seems.
+That is somewhat unfortunate because things like async probe are
+opt-in and seem to rarely get used. As to how we can make it opt-in, I
+think we can make of_platform_populate() callable multiple times at
+the root level. This will allow a platform to skip calling it and then
+a late call to it can register the devices after drivers have
+registered. This late call will then be a nop for platforms that don't
+opt-in and call of_platform_populate themselves.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAEBCgAGBQJWMZKPAAoJEPC3R3P2I92F4yUP/2+LVfLEulfsQFlu8wYybzFB
-Ql7EBUTmS0jLABLiEstd5vbQCtMIwZeqDkeKYyJwXC0AqNBK2QjIRGviTS/VdK6l
-9SFMfiefVUPd/kKCHTNCSP3ZCTbPNWZHqxuyfrDIsTO9rRnKWRBrxBWs/jDk3Ids
-BZ4JZuEt3i6sgEwnivnD6sMIO7ZqIghVHG9cutIKWxCi/H8weO2UZwtaalySCQ2h
-98WR91l2/kz/wH0Q49tVxijcaqx0+m8IAzxTFBismTGh00uikW3REm1euIfrqZSs
-KXmpPZSWJPjPj0JjIuZFE73XJnbTlNBIA7x/pUC0a0SaSVRb5irk+EzpHlCTGPvx
-zi98ugS842la+I2mx7x8IxQVNkPMBcnY669XrZOvaJM+fDg2M0n/tbWXuf3m2gJ8
-kRVN7rBiSE59wr9g585KE/YZBQ6S1R7apX2Ha3f9Ze+StvrQ1DkVSHwh+Qq0HBli
-fAzgbbpxu1+wW4l10R9a3RNsDB5nx5mCAZRPPlNSqgj4rY4M10CjGIDZEXdv+HCL
-tYXQr1KZtz3ORB35OlUMDg6fkkWr5cBJ1Oq6Cw9Pjcqesqw0w+FeslXzHbs06jKe
-sPV2z2a/xl0uJ1PgSOx+5UV+UjpvMbOM/hQnH4JUIWkfG1ECKGrpE9kN4K83EZrt
-BVphs8FSiX0s4hLmPI+p
-=y51B
------END PGP SIGNATURE-----
---=-=-=--
+Rob
