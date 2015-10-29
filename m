@@ -1,26 +1,45 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0136.outbound.protection.outlook.com [207.46.100.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6EC281A0B62
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 02:37:16 +1100 (AEDT)
-From: Liberman Igal <Igal.Liberman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Madalin-Cristian Bucur <madalin.bucur@freescale.com>
-Subject: RE: [V5, 2/6] fsl/fman: Add FMan support
-Date: Thu, 29 Oct 2015 15:22:23 +0000
-Message-ID: <DM2PR03MB509C1B1A5272C9D0A9F8295E6200@DM2PR03MB509.namprd03.prod.outlook.com>
-References: <1442836354-5445-1-git-send-email-igal.liberman@freescale.com>
- <20150925230153.GA4626@home.buserror.net>
- <BL2PR03MB5006080090B6783629A33A5E6220@BL2PR03MB500.namprd03.prod.outlook.com>
- <1446067854.701.365.camel@freescale.com>
-In-Reply-To: <1446067854.701.365.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id BCB5E1A0B6F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 02:57:14 +1100 (AEDT)
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 29 Oct 2015 11:57:11 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id EF92C38C803B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 11:57:07 -0400 (EDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9TFv7Vt55181566
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 15:57:07 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9TFu2LP004044
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 11:56:05 -0400
+Date: Thu, 29 Oct 2015 08:57:01 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "Busch, Keith" <keith.busch@intel.com>, aik@ozlabs.ru,
+ linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
+ paulus@samba.org, sparclinux@vger.kernel.org, willy@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ david@gibson.dropbear.id.au
+Subject: Re: [PATCH 0/5 v3] Fix NVMe driver support on Power with 32-bit DMA
+Message-ID: <20151029155701.GJ7716@linux.vnet.ibm.com>
+References: <20151026.182746.1323901353520152838.davem@davemloft.net>
+ <20151027222010.GD7716@linux.vnet.ibm.com>
+ <20151027223643.GA25332@localhost.localdomain>
+ <20151027.175443.140992924519172506.davem@davemloft.net>
+ <20151028135922.GA27909@localhost.localdomain>
+ <20151029115536.GA28090@infradead.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151029115536.GA28090@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,48 +49,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQpSZWdhcmRzLA0KSWdhbCBMaWJlcm1hbg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0t
-DQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFdlZG5lc2RheSwgT2N0b2JlciAy
-OCwgMjAxNSAxMTozMSBQTQ0KPiBUbzogTGliZXJtYW4gSWdhbC1CMzE5NTAgPElnYWwuTGliZXJt
-YW5AZnJlZXNjYWxlLmNvbT4NCj4gQ2M6IG5ldGRldkB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBj
-LWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsg
-QnVjdXIgTWFkYWxpbi1DcmlzdGlhbi1CMzI3MTYNCj4gPG1hZGFsaW4uYnVjdXJAZnJlZXNjYWxl
-LmNvbT4NCj4gU3ViamVjdDogUmU6IFtWNSwgMi82XSBmc2wvZm1hbjogQWRkIEZNYW4gc3VwcG9y
-dA0KPiANCj4gT24gVHVlLCAyMDE1LTEwLTI3IGF0IDExOjMyIC0wNTAwLCBMaWJlcm1hbiBJZ2Fs
-LUIzMTk1MCB3cm90ZToNCj4gDQo+ID4gPiA+ICsNCj4gPiA+ID4gK3N0cnVjdCBkZXZpY2UgKmZt
-YW5fZ2V0X2RldmljZShzdHJ1Y3QgZm1hbiAqZm1hbikgeyAgcmV0dXJuDQo+ID4gPiA+ICtmbWFu
-LT5kZXY7IH0NCj4gPiA+DQo+ID4gPiBJcyB0aGlzIHJlYWxseSBuZWNlc3Nhcnk/DQo+ID4gPg0K
-PiA+DQo+ID4gRm1hbiBwb3J0IG5lZWRzIGZtYW4tPmRldiwgZm1hbiBzdHJ1Y3R1cmUgaXMgb3Bh
-cXVlLCBzbyB5ZXMsIGl0J3MgbmVlZGVkLg0KPiANCj4gV2h5IGlzIG9wYWNpdHkgYmVpbmcgbWFp
-bnRhaW5lZCBmcm9tIG9uZSBwYXJ0IG9mIHRoZSBmbWFuIGRyaXZlciB0bw0KPiBhbm90aGVyPw0K
-PiBJc24ndCB0aGlzIHRoZSBzb3J0IG9mIGV4Y2Vzc2l2ZSBsYXllcmluZyB0aGF0IHdhcyBjb21w
-bGFpbmVkIGFib3V0Pw0KPiANCj4gDQoNCkl0J3Mgbm90IHJlYWxseSBsYXllcmluZy4NCkZtYW4g
-UG9ydCB1c2VzIEZtYW4gcmVzb3VyY2VzLCBpdCdzIG5vdCBjb21wbGV0ZWx5IHN0YW5kYWxvbmUu
-IA0KDQo+ID4gPiA+ICsgICAgICAgICAvKiBJbiBCNCByZXYgMi4wIChhbmQgYWJvdmUpIHRoZSBN
-VVJBTSBzaXplIGlzIDUxMktCLg0KPiA+ID4gPiArICAgICAgICAgICogQ2hlY2sgdGhlIFNWUiBh
-bmQgdXBkYXRlIE1VUkFNIHNpemUgaWYgcmVxdWlyZWQuDQo+ID4gPiA+ICsgICAgICAgICAgKi8N
-Cj4gPiA+ID4gKyAgICAgICAgIHUzMiBzdnI7DQo+ID4gPiA+ICsNCj4gPiA+ID4gKyAgICAgICAg
-IHN2ciA9IG1mc3ByKFNQUk5fU1ZSKTsNCj4gPiA+ID4gKw0KPiA+ID4gPiArICAgICAgICAgaWYg
-KChTVlJfU09DX1ZFUihzdnIpID09IFNWUl9CNDg2MCkgJiYgKFNWUl9NQUooc3ZyKSA+PQ0KPiA+
-ID4gMikpDQo+ID4gPiA+ICsgICAgICAgICAgICAgICAgIGZtYW4tPmR0c19wYXJhbXMubXVyYW1f
-c2l6ZSA9IDB4ODAwMDA7IH0NCj4gPiA+DQo+ID4gPiBXaHkgd2Fzbid0IHRoZSBNVVJBTSBzaXpl
-IGRlc2NyaWJlZCBpbiB0aGUgZGV2aWNlIHRyZWUsIGFzIGl0IHdhcw0KPiA+ID4gd2l0aCBDUE0v
-UUU/DQo+ID4gPg0KPiA+DQo+ID4gTVVSQU0gc2l6ZSBkZXNjcmliZWQgYnkgdGhlIGRldmljZS10
-cmVlLg0KPiA+IEluIEI0ODYwIHJldiAyLjAgKGFuZCBhYm92ZSkgTVVSQU0gc2l6ZSBpcyBiaWdn
-ZXIuDQo+ID4gVGhpcyBpcyB3b3JrYXJvdW5kLCBpbiBvcmRlciB0byBoYXZlIHRoZSBzYW1lIGRl
-dmljZSB0cmVlIGZvciBhbGwNCj4gPiBCNDg2MCByZXZpc2lvbnMuDQo+IA0KPiBXZSBkb24ndCBz
-dXBwb3J0IGI0ODYwIHByaW9yIHRvIHJldiAyLjAgKGR1ZSB0byBlNjUwMCBjb3JlIGVycmF0YSkg
-c28gdGhpcyBpcw0KPiBpcnJlbGV2YW50LiAgRml4IHRoZSBkZXZpY2UgdHJlZS4NCj4gDQoNCk9L
-LCB0aGFua3MuDQpJJ2xsIHN1Ym1pdCBhIG5ldyBkZXZpY2UgdHJlZSBwYXRjaCAob24gdG9wIG9m
-IHRoZSBleGlzdGluZyBwYXRjaGVzLCB3aGljaCBhcmUgYXdhaXRpbmcgdXBzdHJlYW0pIGFuZCBy
-ZW1vdmUgdGhpcyBjb2RlIGZyb20gRm1hbi4gDQoNCj4gPiA+ID4gKw0KPiA+ID4gPiArIG9mX25v
-ZGVfcHV0KG11cmFtX25vZGUpOw0KPiA+ID4gPiArIG9mX25vZGVfcHV0KGZtX25vZGUpOw0KPiA+
-ID4gPiArDQo+ID4gPiA+ICsgZXJyID0gZGV2bV9yZXF1ZXN0X2lycSgmb2ZfZGV2LT5kZXYsIGly
-cSwgZm1hbl9pcnEsDQo+ID4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICBJUlFGX05PX1NV
-U1BFTkQsICJmbWFuIiwgZm1hbik7IGlmIChlcnIgPA0KPiA+ID4gPiArIDApIHsNCj4gPiA+ID4g
-KyAgICAgICAgIHByX2VycigiRXJyb3I6IGFsbG9jYXRpbmcgaXJxICVkIChlcnJvciA9ICVkKVxu
-IiwgaXJxLCBlcnIpOw0KPiA+ID4gPiArICAgICAgICAgZ290byBmbWFuX2ZyZWU7DQo+ID4gPiA+
-ICsgfQ0KPiA+ID4NCj4gPiA+IFdoeSBJUlFGX05PX1NVU1BFTkQ/DQo+ID4gPg0KPiA+DQo+ID4g
-SXQgc2hvdWxkbid0IGJlIElSUUZfTk9fU1VTUEVORCBmb3Igbm93LCByZW1vdmVkLg0KPiANCj4g
-V2h5IGp1c3QgImZvciBub3ciPw0KPiANCg0KVW5zdWNjZXNzZnVsIHdvcmRpbmcsIHNvcnJ5Lg0K
-DQo+IC1TY290dA0KDQo=
+On 29.10.2015 [04:55:36 -0700], Christoph Hellwig wrote:
+> On Wed, Oct 28, 2015 at 01:59:23PM +0000, Busch, Keith wrote:
+> > The "new" interface for all the other architectures is the same as the
+> > old one we've been using for the last 5 years.
+> > 
+> > I welcome x86 maintainer feedback to confirm virtual and DMA addresses
+> > have the same offset at 4k alignment, but I have to insist we don't
+> > break my currently working hardware to force their attention.
+> 
+> We had a quick cht about this issue and I think we simply should
+> default to a NVMe controler page size of 4k everywhere as that's the
+> safe default.  This is also what we do for RDMA Memory reigstrations and
+> it works fine there for SRP and iSER.
+
+So, would that imply changing just the NVMe driver code rather than
+adding the dma_page_shift API at all? What about
+architectures that can support the larger page sizes? There is an
+implied performance impact, at least, of shifting the IO size down.
+
+Sorry for the continuing questions -- I got lots of conflicting feedback
+on the last series and want to make sure v4 is more acceptable.
+
+Thanks,
+Nish
