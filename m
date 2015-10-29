@@ -2,15 +2,15 @@ Return-Path: <anton@samba.org>
 Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 36DAA1A0D0B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 12:06:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D2ED91A0CCF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 12:07:07 +1100 (AEDT)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  mikey@neuling.org, cyrilbur@gmail.com, scottwood@freescale.com
 Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 19/19] powerpc: clean up asm/switch_to.h
-Date: Thu, 29 Oct 2015 11:44:11 +1100
-Message-Id: <1446079451-8774-20-git-send-email-anton@samba.org>
+Subject: [PATCH 14/19] powerpc: Add ppc_strict_facility_enable boot option
+Date: Thu, 29 Oct 2015 11:44:06 +1100
+Message-Id: <1446079451-8774-15-git-send-email-anton@samba.org>
 In-Reply-To: <1446079451-8774-1-git-send-email-anton@samba.org>
 References: <1446079451-8774-1-git-send-email-anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,124 +22,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove a bunch of unnecessary fallback functions and group
-things in a more logical way.
+Add a boot option that strictly manages the MSR unavailable bits.
+This catches kernel uses of FP/Altivec/SPE that would otherwise
+corrupt user state.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/switch_to.h | 35 ++++++++++-------------------------
- arch/powerpc/kernel/process.c        |  2 +-
- 2 files changed, 11 insertions(+), 26 deletions(-)
+ Documentation/kernel-parameters.txt  |  6 ++++++
+ arch/powerpc/include/asm/reg.h       |  9 +++++++++
+ arch/powerpc/include/asm/switch_to.h | 24 +++++++++++++++++++-----
+ arch/powerpc/kernel/process.c        | 17 +++++++++++++++--
+ 4 files changed, 49 insertions(+), 7 deletions(-)
 
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 22a4b68..f535a02 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2939,6 +2939,12 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 			may be specified.
+ 			Format: <port>,<port>....
+ 
++	ppc_strict_facility_enable
++			[PPC] This option catches any kernel floating point,
++			Altivec, VSX and SPE outside of regions specifically
++			allowed (eg kernel_enable_fpu()/kernel_disable_fpu()).
++			There is some performance impact when enabling this.
++
+ 	print-fatal-signals=
+ 			[KNL] debug: print fatal signals
+ 
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 987dac0..eb2986e 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1214,6 +1214,15 @@ static inline void mtmsr_isync(unsigned long val)
+ 				     : "r" ((unsigned long)(v)) \
+ 				     : "memory")
+ 
++extern void msr_check_and_set(unsigned long bits);
++extern bool strict_msr_control;
++extern void __msr_check_and_clear(unsigned long bits);
++static inline void msr_check_and_clear(unsigned long bits)
++{
++	if (strict_msr_control)
++		__msr_check_and_clear(bits);
++}
++
+ static inline unsigned long mfvtb (void)
+ {
+ #ifdef CONFIG_PPC_BOOK3S_64
 diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 81d46a4..5b268b6 100644
+index 438502f..9414dcb 100644
 --- a/arch/powerpc/include/asm/switch_to.h
 +++ b/arch/powerpc/include/asm/switch_to.h
-@@ -14,23 +14,18 @@ extern struct task_struct *__switch_to(struct task_struct *,
- 	struct task_struct *);
- #define switch_to(prev, next, last)	((last) = __switch_to((prev), (next)))
+@@ -4,6 +4,8 @@
+ #ifndef _ASM_POWERPC_SWITCH_TO_H
+ #define _ASM_POWERPC_SWITCH_TO_H
  
--struct thread_struct;
- extern struct task_struct *_switch(struct thread_struct *prev,
- 				   struct thread_struct *next);
- 
--extern void enable_kernel_fp(void);
--extern void enable_kernel_altivec(void);
--extern void enable_kernel_vsx(void);
-+extern void switch_booke_debug_regs(struct debug_reg *new_debug);
++#include <asm/reg.h>
 +
- extern int emulate_altivec(struct pt_regs *);
--extern void __giveup_vsx(struct task_struct *);
--extern void giveup_vsx(struct task_struct *);
--extern void enable_kernel_spe(void);
--extern void load_up_spe(struct task_struct *);
--extern void giveup_all(struct task_struct *);
-+
- extern void flush_all_to_thread(struct task_struct *);
--extern void switch_booke_debug_regs(struct debug_reg *new_debug);
-+extern void giveup_all(struct task_struct *);
+ struct thread_struct;
+ struct task_struct;
+ struct pt_regs;
+@@ -26,15 +28,15 @@ extern void enable_kernel_spe(void);
+ extern void load_up_spe(struct task_struct *);
+ extern void switch_booke_debug_regs(struct debug_reg *new_debug);
  
+-static inline void disable_kernel_fp(void) { }
+-static inline void disable_kernel_altivec(void) { }
+-static inline void disable_kernel_spe(void) { }
+-static inline void disable_kernel_vsx(void) { }
+-
  #ifdef CONFIG_PPC_FPU
-+extern void enable_kernel_fp(void);
  extern void flush_fp_to_thread(struct task_struct *);
  extern void giveup_fpu(struct task_struct *);
  extern void __giveup_fpu(struct task_struct *);
-@@ -38,14 +33,12 @@ static inline void disable_kernel_fp(void)
- {
- 	msr_check_and_clear(MSR_FP);
- }
--
++static inline void disable_kernel_fp(void)
++{
++	msr_check_and_clear(MSR_FP);
++}
++
  #else
  static inline void flush_fp_to_thread(struct task_struct *t) { }
--static inline void giveup_fpu(struct task_struct *t) { }
--static inline void __giveup_fpu(struct task_struct *t) { }
- #endif
- 
- #ifdef CONFIG_ALTIVEC
-+extern void enable_kernel_altivec(void);
+ static inline void giveup_fpu(struct task_struct *t) { }
+@@ -45,6 +47,10 @@ static inline void __giveup_fpu(struct task_struct *t) { }
  extern void flush_altivec_to_thread(struct task_struct *);
  extern void giveup_altivec(struct task_struct *);
  extern void __giveup_altivec(struct task_struct *);
-@@ -53,25 +46,21 @@ static inline void disable_kernel_altivec(void)
- {
- 	msr_check_and_clear(MSR_VEC);
- }
--#else
--static inline void flush_altivec_to_thread(struct task_struct *t) { }
--static inline void giveup_altivec(struct task_struct *t) { }
--static inline void __giveup_altivec(struct task_struct *t) { }
- #endif
++static inline void disable_kernel_altivec(void)
++{
++	msr_check_and_clear(MSR_VEC);
++}
+ #else
+ static inline void flush_altivec_to_thread(struct task_struct *t) { }
+ static inline void giveup_altivec(struct task_struct *t) { }
+@@ -53,6 +59,10 @@ static inline void __giveup_altivec(struct task_struct *t) { }
  
  #ifdef CONFIG_VSX
-+extern void enable_kernel_vsx(void);
  extern void flush_vsx_to_thread(struct task_struct *);
-+extern void giveup_vsx(struct task_struct *);
-+extern void __giveup_vsx(struct task_struct *);
- static inline void disable_kernel_vsx(void)
++static inline void disable_kernel_vsx(void)
++{
++	msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
++}
+ #else
+ static inline void flush_vsx_to_thread(struct task_struct *t)
  {
- 	msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
- }
--#else
--static inline void flush_vsx_to_thread(struct task_struct *t)
--{
--}
- #endif
- 
- #ifdef CONFIG_SPE
-+extern void enable_kernel_spe(void);
+@@ -63,6 +73,10 @@ static inline void flush_vsx_to_thread(struct task_struct *t)
  extern void flush_spe_to_thread(struct task_struct *);
  extern void giveup_spe(struct task_struct *);
  extern void __giveup_spe(struct task_struct *);
-@@ -79,10 +68,6 @@ static inline void disable_kernel_spe(void)
- {
- 	msr_check_and_clear(MSR_SPE);
- }
--#else
--static inline void flush_spe_to_thread(struct task_struct *t) { }
--static inline void giveup_spe(struct task_struct *t) { }
--static inline void __giveup_spe(struct task_struct *t) { }
- #endif
- 
- static inline void clear_task_ebb(struct task_struct *t)
++static inline void disable_kernel_spe(void)
++{
++	msr_check_and_clear(MSR_SPE);
++}
+ #else
+ static inline void flush_spe_to_thread(struct task_struct *t) { }
+ static inline void giveup_spe(struct task_struct *t) { }
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index b34e1e5..1841b59 100644
+index 5cdd35c..1eafcee 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -174,7 +174,6 @@ void flush_fp_to_thread(struct task_struct *tsk)
- 	}
- }
- EXPORT_SYMBOL_GPL(flush_fp_to_thread);
--#endif /* CONFIG_PPC_FPU */
+@@ -87,7 +87,19 @@ static void check_if_tm_restore_required(struct task_struct *tsk)
+ static inline void check_if_tm_restore_required(struct task_struct *tsk) { }
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
  
- void enable_kernel_fp(void)
+-static void msr_check_and_set(unsigned long bits)
++bool strict_msr_control;
++EXPORT_SYMBOL(strict_msr_control);
++
++static int __init enable_strict_msr_control(char *str)
++{
++	strict_msr_control = true;
++	pr_info("Enabling strict facility control\n");
++
++	return 0;
++}
++early_param("ppc_strict_facility_enable", enable_strict_msr_control);
++
++void msr_check_and_set(unsigned long bits)
  {
-@@ -186,6 +185,7 @@ void enable_kernel_fp(void)
- 		__giveup_fpu(current);
+ 	unsigned long oldmsr = mfmsr();
+ 	unsigned long newmsr;
+@@ -103,7 +115,7 @@ static void msr_check_and_set(unsigned long bits)
+ 		mtmsr_isync(newmsr);
  }
- EXPORT_SYMBOL(enable_kernel_fp);
-+#endif /* CONFIG_PPC_FPU */
  
- #ifdef CONFIG_ALTIVEC
- void giveup_altivec(struct task_struct *tsk)
+-static void msr_check_and_clear(unsigned long bits)
++void __msr_check_and_clear(unsigned long bits)
+ {
+ 	unsigned long oldmsr = mfmsr();
+ 	unsigned long newmsr;
+@@ -118,6 +130,7 @@ static void msr_check_and_clear(unsigned long bits)
+ 	if (oldmsr != newmsr)
+ 		mtmsr_isync(newmsr);
+ }
++EXPORT_SYMBOL(__msr_check_and_clear);
+ 
+ #ifdef CONFIG_PPC_FPU
+ void giveup_fpu(struct task_struct *tsk)
 -- 
 2.5.0
