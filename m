@@ -1,29 +1,33 @@
-Return-Path: <BATV+0025e96819a5a6961c09+4449+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <frederic.barrat@fr.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 66A981A0B5F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 22:55:51 +1100 (AEDT)
-Date: Thu, 29 Oct 2015 04:55:36 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: "Busch, Keith" <keith.busch@intel.com>
-Cc: David Miller <davem@davemloft.net>, aik@ozlabs.ru, mpe@ellerman.id.au,
- nacc@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- linux-nvme@lists.infradead.org, hch@infradead.org, paulus@samba.org,
- benh@kernel.crashing.org, sparclinux@vger.kernel.org,
- willy@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
- david@gibson.dropbear.id.au
-Subject: Re: [PATCH 0/5 v3] Fix NVMe driver support on Power with 32-bit DMA
-Message-ID: <20151029115536.GA28090@infradead.org>
-References: <20151026.182746.1323901353520152838.davem@davemloft.net>
- <20151027222010.GD7716@linux.vnet.ibm.com>
- <20151027223643.GA25332@localhost.localdomain>
- <20151027.175443.140992924519172506.davem@davemloft.net>
- <20151028135922.GA27909@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151028135922.GA27909@localhost.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9B2681A0AF0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 23:39:32 +1100 (AEDT)
+Received: from localhost
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <frederic.barrat@fr.ibm.com>;
+ Thu, 29 Oct 2015 12:39:28 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id B4A88219005F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 12:39:21 +0000 (GMT)
+Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
+ [9.149.37.252])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9TCdOFi59769072
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 12:39:25 GMT
+Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9TCdO0v023120
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 06:39:24 -0600
+From: Frederic Barrat <frederic.barrat@fr.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: imunsie@au1.ibm.com, Frederic Barrat <frederic.barrat@fr.ibm.com>
+Subject: [PATCH] cxl: Fix reference count on struct pid when attaching
+Date: Thu, 29 Oct 2015 13:39:03 +0100
+Message-Id: <1446122343-26068-1-git-send-email-frederic.barrat@fr.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,15 +37,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 28, 2015 at 01:59:23PM +0000, Busch, Keith wrote:
-> The "new" interface for all the other architectures is the same as the
-> old one we've been using for the last 5 years.
-> 
-> I welcome x86 maintainer feedback to confirm virtual and DMA addresses
-> have the same offset at 4k alignment, but I have to insist we don't
-> break my currently working hardware to force their attention.
+When the cxl driver creates a context, it stores the pid of the
+calling task, incrementing the reference count on the struct
+pid. Current code mistakenly increments the reference count twice,
+once through get_task_pid(), once through get_pid(). The reference
+count is only decremented once on detach, thus the struct pid of the
+task attaching is never freed. The fix is to simply remove the call to
+get_pid().
 
-We had a quick cht about this issue and I think we simply should
-default to a NVMe controler page size of 4k everywhere as that's the
-safe default.  This is also what we do for RDMA Memory reigstrations and
-it works fine there for SRP and iSER.
+Signed-off-by: Frederic Barrat <frederic.barrat@fr.ibm.com>
+---
+ drivers/misc/cxl/api.c  | 1 -
+ drivers/misc/cxl/file.c | 2 +-
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+index 103baf0..94b6627 100644
+--- a/drivers/misc/cxl/api.c
++++ b/drivers/misc/cxl/api.c
+@@ -176,7 +176,6 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
+ 
+ 	if (task) {
+ 		ctx->pid = get_task_pid(task, PIDTYPE_PID);
+-		get_pid(ctx->pid);
+ 		kernel = false;
+ 	}
+ 
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index 7ccd299..97003ee 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -199,7 +199,7 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
+ 	 * behalf of another process, so the AFU's mm gets bound to the process
+ 	 * that performs this ioctl and not the process that opened the file.
+ 	 */
+-	ctx->pid = get_pid(get_task_pid(current, PIDTYPE_PID));
++	ctx->pid = get_task_pid(current, PIDTYPE_PID);
+ 
+ 	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
+ 
+-- 
+1.9.1
