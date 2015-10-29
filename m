@@ -1,21 +1,20 @@
 Return-Path: <fengguang.wu@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by lists.ozlabs.org (Postfix) with ESMTP id 4A4DE1A03CD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 20:10:24 +1100 (AEDT)
-Date: Thu, 29 Oct 2015 17:09:32 +0800
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by lists.ozlabs.org (Postfix) with ESMTP id 689671A045F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 20:49:54 +1100 (AEDT)
+Date: Thu, 29 Oct 2015 17:49:09 +0800
 From: kbuild test robot <lkp@intel.com>
 To: igal.liberman@freescale.com
-Cc: kbuild-all@01.org, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- scottwood@freescale.com, madalin.bucur@freescale.com,
- pebolle@tiscali.nl, joakim.tjernlund@transmode.se,
- ppc@mindchasers.com, stephen@networkplumber.org,
- davem@davemloft.net, Igal Liberman <igal.liberman@freescale.com>
-Subject: Re: [v6, 3/6] fsl/fman: Add FMan MAC support
-Message-ID: <201510291757.Jgve5XVg%fengguang.wu@intel.com>
+Cc: kbuild-all@01.org, netdev@vger.kernel.org, pebolle@tiscali.nl,
+ linux-kernel@vger.kernel.org, ppc@mindchasers.com,
+ stephen@networkplumber.org, Igal Liberman <igal.liberman@freescale.com>,
+ scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net, madalin.bucur@freescale.com
+Subject: Re: [v6, 5/6] fsl/fman: Add FMan Port Support
+Message-ID: <201510291741.GxLZbj2r%fengguang.wu@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="cWoXeonUoKmBZSoM"
-In-Reply-To: <1446022429-31621-4-git-send-email-igal.liberman@freescale.com>
+Content-Type: multipart/mixed; boundary="mP3DRpeJDSE+ciuQ"
+In-Reply-To: <1446022429-31621-6-git-send-email-igal.liberman@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,7 +25,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---cWoXeonUoKmBZSoM
+--mP3DRpeJDSE+ciuQ
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
@@ -44,88 +43,34 @@ reproduce:
 
 All errors (new ones prefixed by >>):
 
-   drivers/net/ethernet/freescale/fman/fman_dtsec.c: In function 'dtsec_isr':
->> drivers/net/ethernet/freescale/fman/fman_dtsec.c:872:4: error: implicit declaration of function 'in_be32' [-Werror=implicit-function-declaration]
-       tpkt1 = in_be32(&regs->tpkt);
-       ^
->> drivers/net/ethernet/freescale/fman/fman_dtsec.c:913:5: error: implicit declaration of function 'out_be32' [-Werror=implicit-function-declaration]
-        out_be32(&regs->rctrl,
-        ^
-   cc1: some warnings being treated as errors
---
-   drivers/net/ethernet/freescale/fman/fman_memac.c: In function 'memac_init':
->> drivers/net/ethernet/freescale/fman/fman_memac.c:1189:3: error: implicit declaration of function 'in_be32' [-Werror=implicit-function-declaration]
-      reg32 = in_be32(&memac->regs->command_config);
-      ^
->> drivers/net/ethernet/freescale/fman/fman_memac.c:1191:3: error: implicit declaration of function 'out_be32' [-Werror=implicit-function-declaration]
-      out_be32(&memac->regs->command_config, reg32);
-      ^
-   cc1: some warnings being treated as errors
+>> drivers/net/ethernet/freescale/fman/fman_port.c:39:25: fatal error: asm/mpc85xx.h: No such file or directory
+    #include <asm/mpc85xx.h>
+                            ^
+   compilation terminated.
 
-vim +/in_be32 +872 drivers/net/ethernet/freescale/fman/fman_dtsec.c
+vim +39 drivers/net/ethernet/freescale/fman/fman_port.c
 
-   866			if (dtsec->fm_rev_info.major == 2) {
-   867				u32 tpkt1, tmp_reg1, tpkt2, tmp_reg2, i;
-   868				/* a. Write 0x00E0_0C00 to DTSEC_ID
-   869				 *	This is a read only register
-   870				 * b. Read and save the value of TPKT
-   871				 */
- > 872				tpkt1 = in_be32(&regs->tpkt);
-   873	
-   874				/* c. Read the register at dTSEC address offset 0x32C */
-   875				tmp_reg1 = in_be32(&regs->reserved02c0[27]);
-   876	
-   877				/* d. Compare bits [9:15] to bits [25:31] of the
-   878				 * register at address offset 0x32C.
-   879				 */
-   880				if ((tmp_reg1 & 0x007F0000) !=
-   881					(tmp_reg1 & 0x0000007F)) {
-   882					/* If they are not equal, save the value of
-   883					 * this register and wait for at least
-   884					 * MAXFRM*16 ns
-   885					 */
-   886					usleep_range((u32)(min
-   887						(dtsec_get_max_frame_length(dtsec) *
-   888						16 / 1000, 1)), (u32)
-   889						(min(dtsec_get_max_frame_length
-   890						(dtsec) * 16 / 1000, 1) + 1));
-   891				}
-   892	
-   893				/* e. Read and save TPKT again and read the register
-   894				 * at dTSEC address offset 0x32C again
-   895				 */
-   896				tpkt2 = in_be32(&regs->tpkt);
-   897				tmp_reg2 = in_be32(&regs->reserved02c0[27]);
-   898	
-   899				/* f. Compare the value of TPKT saved in step b to
-   900				 * value read in step e. Also compare bits [9:15] of
-   901				 * the register at offset 0x32C saved in step d to the
-   902				 * value of bits [9:15] saved in step e. If the two
-   903				 * registers values are unchanged, then the transmit
-   904				 * portion of the dTSEC controller is locked up and
-   905				 * the user should proceed to the recover sequence.
-   906				 */
-   907				if ((tpkt1 == tpkt2) && ((tmp_reg1 & 0x007F0000) ==
-   908					(tmp_reg2 & 0x007F0000))) {
-   909					/* recover sequence */
-   910	
-   911					/* a.Write a 1 to RCTRL[GRS] */
-   912	
- > 913					out_be32(&regs->rctrl,
-   914						 in_be32(&regs->rctrl) | RCTRL_GRS);
-   915	
-   916					/* b.Wait until IEVENT[GRSC]=1, or at least
+    33	#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+    34	
+    35	#include "fman_port.h"
+    36	#include "fman.h"
+    37	#include "fman_sp.h"
+    38	
+  > 39	#include <asm/mpc85xx.h>
+    40	#include <linux/io.h>
+    41	#include <linux/slab.h>
+    42	#include <linux/module.h>
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
---cWoXeonUoKmBZSoM
+--mP3DRpeJDSE+ciuQ
 Content-Type: application/octet-stream
 Content-Disposition: attachment; filename=".config.gz"
 Content-Transfer-Encoding: base64
 
-H4sICP3cMVYAAy5jb25maWcAjFxNk9s2k77nV7CcPewekpGo792aAwhCEiKSoAlS0swFpYxl
+H4sICErpMVYAAy5jb25maWcAjFxNk9s2k77nV7CcPewekpGo792aAwhCEiKSoAlS0swFpYxl
 R5WZkUuS89r/fhsAKQIgJMeVis2nG0ATaPQXQP36y68B+nY5vu0uh5fd6+uP4Mv+fX/aXfaf
 gs+H1/3/BTELMlYGJKbl78CcHN6/fX/Ynd6C4e+D33u/nV7GwWp/et+/Bvj4/vnw5Rs0Phzf
 f/n1F8yyOV0IVKSPP4wHsURc8IXAS0SzlpIREks4TpFISLYol3YriVecCMrStOqSFCxQQhdZ
@@ -1121,4 +1066,4 @@ tXszKZotc3I2hl9tzOWyaR3H5WFy19amSS5aw5mXV5GpipEWse2D1W8W4M8j40Mw1EkpF3FV
 m96J5zkclzyfg0itHND517lHMYchkU6/TN91RDr7mhw7JAxvkzAZCvjmjKGjt9b2+Isp7Mj7
 koypFVAn06/p1CFPjr4m1tZWob19wm5KfedWOBKFGf0MlYQakcR3nfz6//GCFvLJVwMA
 
---cWoXeonUoKmBZSoM--
+--mP3DRpeJDSE+ciuQ--
