@@ -1,25 +1,40 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5425B1A0AF0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 18:36:08 +1100 (AEDT)
-Received: by pacfv9 with SMTP id fv9so69224398pac.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 00:36:06 -0700 (PDT)
-Subject: Re: [PATCH V10 06/12] powerpc/powernv: EEH device for VF
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1445829362-2738-7-git-send-email-weiyang@linux.vnet.ibm.com>
- <5632E51D.30805@ozlabs.ru> <20151030065246.GC5940@richards-mbp.cn.ibm.com>
-Cc: gwshan@linux.vnet.ibm.com, bhelgaas@google.com, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <56331DE1.1090500@ozlabs.ru>
-Date: Fri, 30 Oct 2015 18:36:01 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id AADF11A0B10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 18:43:10 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Fri, 30 Oct 2015 13:13:05 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 903E41258108
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 13:04:59 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9U7YSie38338774
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 13:04:30 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9U7YRbU016969
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 13:04:27 +0530
+Subject: Re: [PATCH V2 3/3] perf/powerpc :add support for sampling intr
+ machine state
+To: Anju T <anju@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <1445863448-5746-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1445863448-5746-4-git-send-email-anju@linux.vnet.ibm.com>
+Cc: acme@redhat.com, hemant@linux.vnet.ibm.com, dsahern@gmail.com,
+ naveen.n.rao@linux.vnet.ibm.com, sukadev@linux.vnet.ibm.com,
+ jolsa@redhat.com, khandual@linux.vnet.ibm.com
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Message-ID: <56331D7B.3000205@linux.vnet.ibm.com>
+Date: Fri, 30 Oct 2015 13:04:19 +0530
 MIME-Version: 1.0
-In-Reply-To: <20151030065246.GC5940@richards-mbp.cn.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+In-Reply-To: <1445863448-5746-4-git-send-email-anju@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,115 +44,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/30/2015 05:52 PM, Wei Yang wrote:
-> On Fri, Oct 30, 2015 at 02:33:49PM +1100, Alexey Kardashevskiy wrote:
->> On 10/26/2015 02:15 PM, Wei Yang wrote:
->>> VFs and their corresponding pci_dn instances are created and released
->>> dynamically as their PF's SRIOV capability is enabled and disabled.
->>> The patch creates and releases EEH devices for VFs when creating and
->>> releasing their pci_dn instances, which means EEH devices and pci_dn
->>> instances have same life cycle. Also, VF's EEH device is identified
->>> by (struct eeh_dev::physfn).
->>
->>
->> The add_dev_pci_data() helper (the one you hack) does not create pci_dn
->> instances. The add_one_dev_pci_data() helper does.
->>
+
+
+On Monday 26 October 2015 06:14 PM, Anju T wrote:
+> The registers to sample are passed through the sample_regs_intr bitmask.
+> The name and bit position for each register is defined in asm/perf_regs.h.
+> This feature can be enabled by using -I option with perf  record command.
+> To display the sampled register values use perf script -D.
+> The kernel uses the "PERF" register ids to find offset of the register in 'struct pt_regs'.
+> CONFIG_HAVE_PERF_REGS will enable sampling of the interrupted machine state.
 >
-> Yes, you are right. The patch here create edev after the pci_dn is created.
+> Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/Kconfig          |  1 +
+>  arch/powerpc/perf/Makefile    |  1 +
+>  arch/powerpc/perf/perf_regs.c | 87 +++++++++++++++++++++++++++++++++++++++++++
+>  tools/perf/config/Makefile    |  5 +++
+>  4 files changed, 94 insertions(+)
+>  create mode 100644 arch/powerpc/perf/perf_regs.c
 >
-> So which part in the log you think is not accurate?
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 5ef2711..768d700 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -116,6 +116,7 @@ config PPC
+>  	select GENERIC_ATOMIC64 if PPC32
+>  	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+>  	select HAVE_PERF_EVENTS
+> +	select HAVE_PERF_REGS
+>  	select HAVE_REGS_AND_STACK_ACCESS_API
+>  	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
+>  	select ARCH_WANT_IPC_PARSE_VERSION
+> diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
+> index f9c083a..0d53815 100644
+> --- a/arch/powerpc/perf/Makefile
+> +++ b/arch/powerpc/perf/Makefile
+> @@ -12,6 +12,7 @@ obj-$(CONFIG_FSL_EMB_PERF_EVENT) += core-fsl-emb.o
+>  obj-$(CONFIG_FSL_EMB_PERF_EVENT_E500) += e500-pmu.o e6500-pmu.o
+>  
+>  obj-$(CONFIG_HV_PERF_CTRS) += hv-24x7.o hv-gpci.o hv-common.o
+> +obj-$(CONFIG_PERF_EVENTS)      	+= perf_regs.o
+>  
+>  obj-$(CONFIG_PPC64)		+= $(obj64-y)
+>  obj-$(CONFIG_PPC32)		+= $(obj32-y)
+> diff --git a/arch/powerpc/perf/perf_regs.c b/arch/powerpc/perf/perf_regs.c
+> new file mode 100644
+> index 0000000..2474dc4
+> --- /dev/null
+> +++ b/arch/powerpc/perf/perf_regs.c
+> @@ -0,0 +1,87 @@
+> +#include <linux/errno.h>
+> +#include <linux/kernel.h>
+> +#include <linux/sched.h>
+> +#include <linux/perf_event.h>
+> +#include <linux/bug.h>
+> +#include <linux/stddef.h>
+> +#include <asm/ptrace.h>
+> +#include <asm/perf_regs.h>
+> +
+> +#define PT_REGS_OFFSET(id, r) [id] = offsetof(struct pt_regs, r)
+> +
+> +#define REG_RESERVED (~((1ULL << PERF_REG_POWERPC_MAX) - 1))
+> +
+> +static unsigned int pt_regs_offset[PERF_REG_POWERPC_MAX] = {
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR0, gpr[0]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR1, gpr[1]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR2, gpr[2]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR3, gpr[3]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR4, gpr[4]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR5, gpr[5]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR6, gpr[6]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR7, gpr[7]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR8, gpr[8]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR9, gpr[9]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR10, gpr[10]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR11, gpr[11]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR12, gpr[12]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR13, gpr[13]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR14, gpr[14]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR15, gpr[15]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR16, gpr[16]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR17, gpr[17]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR18, gpr[18]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR19, gpr[19]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR20, gpr[20]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR21, gpr[21]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR22, gpr[22]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR23, gpr[23]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR24, gpr[24]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR25, gpr[25]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR26, gpr[26]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR27, gpr[27]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR28, gpr[28]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR29, gpr[29]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR30, gpr[30]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR31, gpr[31]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_NIP, nip),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_MSR, msr),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_ORIG_R3, orig_gpr3),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_CTR, ctr),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_LNK, link),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_XER, xer),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_CCR, ccr),
+> +#ifdef __powerpc64__
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_SOFTE, softe),
+> +#else
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_MQ, mq),
+> +#endif
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_TRAP, trap),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_DAR, dar),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_DSISR, dsisr),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_RESULT, result),
+> +};
+> +u64 perf_reg_value(struct pt_regs *regs, int idx)
+> +{
+> +	if (WARN_ON_ONCE(idx >= PERF_REG_POWERPC_MAX))
+> +		return 0;
+> +	return regs_get_register(regs, pt_regs_offset[idx]);
+> +}
+> +int perf_reg_validate(u64 mask)
+> +{
+> +	if (!mask || mask & REG_RESERVED)
+> +		return -EINVAL;
+> +	return 0;
+> +}
+> +u64 perf_reg_abi(struct task_struct *task)
+> +{
+> +	return PERF_SAMPLE_REGS_ABI_64;
+> +}
+> +void perf_get_regs_user(struct perf_regs *regs_user,
+> +			struct pt_regs *regs,
+> +			struct pt_regs *regs_user_copy)
+> +{
+> +	return;
+> +	/*TODO :Update this function when
+> +		PERF_SAMPLE_REGS_USER is enabled */
+> +}
+> diff --git a/tools/perf/config/Makefile b/tools/perf/config/Makefile
+> index 094ddae..64e5af3 100644
+> --- a/tools/perf/config/Makefile
+> +++ b/tools/perf/config/Makefile
+
+This should be part of the second patch (tools/perf).
+
+and kindly re-arrange the patch series to have the tools/perf
+patch (currently patch 2 in this patchset) as the last patch to avoid
+any compile time issues.
 
 
-The commit log is ok, I just thought loud that eeh_dev_init() could go to 
-add_one_dev_pci_data() to make things more clear.
-
-
-
->>
->>>
->>> [gwshan: changelog and removed CONFIG_PCI_IOV]
->>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>> ---
->>>   arch/powerpc/include/asm/eeh.h |  1 +
->>>   arch/powerpc/kernel/pci_dn.c   | 12 ++++++++++++
->>>   2 files changed, 13 insertions(+)
->>>
->>> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
->>> index c5eb86f..6c383ad 100644
->>> --- a/arch/powerpc/include/asm/eeh.h
->>> +++ b/arch/powerpc/include/asm/eeh.h
->>> @@ -140,6 +140,7 @@ struct eeh_dev {
->>>   	struct pci_controller *phb;	/* Associated PHB		*/
->>>   	struct pci_dn *pdn;		/* Associated PCI device node	*/
->>>   	struct pci_dev *pdev;		/* Associated PCI device	*/
->>> +	struct pci_dev *physfn;		/* Associated PF PORT		*/
->>>   	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
->>>   };
->>>
->>> diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
->>> index f771130..f0ddde7 100644
->>> --- a/arch/powerpc/kernel/pci_dn.c
->>> +++ b/arch/powerpc/kernel/pci_dn.c
->>> @@ -180,7 +180,9 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
->>>   struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
->>>   {
->>>   #ifdef CONFIG_PCI_IOV
->>> +	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
->>>   	struct pci_dn *parent, *pdn;
->>> +	struct eeh_dev *edev;
->>>   	int i;
->>>
->>>   	/* Only support IOV for now */
->>> @@ -206,6 +208,9 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
->>>   				 __func__, i);
->>>   			return NULL;
->>>   		}
->>> +		eeh_dev_init(pdn, hose);
->>> +		edev = pdn_to_eeh_dev(pdn);
->>
->>
->> In theory, pdn_to_eeh_dev() can return NULL. In this patch, it is not clear
->> if pdn->edev gets initialized before or after add_dev_pci_data().
->>
->
-> Yep, the return value should be checked.
-
-May be BUG_ON will be enough, up to you.
-
-
->
-> pdn->edev is initialized in eeh_dev_init() which is called in
-> add_dev_pci_data(). The order is not clear?
->
->>
->>
->>> +		edev->physfn = pdev;
->>>   	}
->>>   #endif /* CONFIG_PCI_IOV */
->>>
->>> @@ -254,10 +259,17 @@ void remove_dev_pci_data(struct pci_dev *pdev)
->>>   	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
->>>   		list_for_each_entry_safe(pdn, tmp,
->>>   			&parent->child_list, list) {
->>> +			struct eeh_dev *edev;
->>>   			if (pdn->busno != pci_iov_virtfn_bus(pdev, i) ||
->>>   			    pdn->devfn != pci_iov_virtfn_devfn(pdev, i))
->>>   				continue;
->>>
->>> +			edev = pdn_to_eeh_dev(pdn);
->>> +			if (edev) {
->>> +				pdn->edev = NULL;
->>> +				kfree(edev);
->>> +			}
->>> +
->>>   			if (!list_empty(&pdn->list))
->>>   				list_del(&pdn->list);
->>>
->>>
->>
-
-
--- 
-Alexey
+Maddy.
+> @@ -23,6 +23,11 @@ $(call detected_var,ARCH)
+>  
+>  NO_PERF_REGS := 1
+>  
+> +#Additional ARCH settings for ppc64
+> +ifeq ($(ARCH),powerpc)
+> +	NO_PERF_REGS := 0
+> +endif
+> +
+>  # Additional ARCH settings for x86
+>  ifeq ($(ARCH),x86)
+>    $(call detected,CONFIG_X86)
