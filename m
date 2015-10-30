@@ -1,29 +1,41 @@
-Return-Path: <keith.busch@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by lists.ozlabs.org (Postfix) with ESMTP id 222B51A0CD4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2015 08:48:51 +1100 (AEDT)
-Date: Fri, 30 Oct 2015 21:48:48 +0000
-From: Keith Busch <keith.busch@intel.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>, aik@ozlabs.ru,
- linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
- paulus@samba.org, sparclinux@vger.kernel.org, willy@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- david@gibson.dropbear.id.au
-Subject: Re: [PATCH 1/1 v3] drivers/nvme: default to 4k device page size
-Message-ID: <20151030214848.GC13904@localhost.localdomain>
-References: <20151026.182746.1323901353520152838.davem@davemloft.net>
- <20151027222010.GD7716@linux.vnet.ibm.com>
- <20151027223643.GA25332@localhost.localdomain>
- <20151027.175443.140992924519172506.davem@davemloft.net>
- <20151028135922.GA27909@localhost.localdomain>
- <20151029115536.GA28090@infradead.org>
- <20151029155701.GJ7716@linux.vnet.ibm.com>
- <20151029172043.GA8343@localhost.localdomain>
- <20151030213511.GK7716@linux.vnet.ibm.com>
+Return-Path: <linuxram@us.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2AB4B1A0468
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2015 09:13:24 +1100 (AEDT)
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 6CDD71402D2
+ for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2015 09:13:23 +1100 (AEDT)
+Received: from localhost
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <linuxram@us.ibm.com>;
+ Fri, 30 Oct 2015 16:13:21 -0600
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 4BEBA6E8048
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Oct 2015 18:01:30 -0400 (EDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9UMDJho58654810
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Oct 2015 22:13:19 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9UMCEMx016960
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Oct 2015 18:12:14 -0400
+Date: Fri, 30 Oct 2015 15:13:12 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, hbabu@us.ibm.com, nacc@us.ibm.com
+Subject: [PATCH] Endian swap ->count before handing over to the nx-842
+ compressor
+Message-ID: <20151030221312.GA22547@ram.oc3035372033.ibm.com>
+Reply-To: Ram Pai <linuxram@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151030213511.GK7716@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,16 +45,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 30, 2015 at 02:35:11PM -0700, Nishanth Aravamudan wrote:
-> Given that it's 4K just about everywhere by default (and sort of
-> implicitly expected to be, I guess), I think I'd prefer we default to
-> 4K. That should mitigate the performance impact (I'll ask our IO team to
-> do some runs, but since this impacts functionality on some hardware, I
-> don't think it's too relevant for now). Unless there are NVMe devcies
-> with a MPSMAX < 4K? 
+The nx-842 compressor overshoots the output buffer corrupting memory. Verified
+that the following patch the issue on a LE system.
 
-Right, I assumed MPSMIN was always 4k for the same reason you mentioned,
-but you can hard code it like you've done in your patch.
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+---
+ drivers/crypto/nx/nx-842-powernv.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-The spec defines MPSMAX such that it's impossible to find a device
-with MPSMAX < 4k.
+diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+index 3750e13..3b80ea7 100644
+--- a/drivers/crypto/nx/nx-842-powernv.c
++++ b/drivers/crypto/nx/nx-842-powernv.c
+@@ -66,7 +66,7 @@ static void setup_indirect_dde(struct data_descriptor_entry *dde,
+ 			       unsigned int dde_count, unsigned int byte_count)
+ {
+ 	dde->flags = 0;
+-	dde->count = dde_count;
++	dde->count = cpu_to_be32(dde_count);
+ 	dde->index = 0;
+ 	dde->length = cpu_to_be32(byte_count);
+ 	dde->address = cpu_to_be64(nx842_get_pa(ddl));
+-- 
+1.7.1
