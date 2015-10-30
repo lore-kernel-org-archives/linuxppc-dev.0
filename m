@@ -1,41 +1,25 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
+ [IPv6:2607:f8b0:400e:c03::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4E4181A0AC4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 18:30:04 +1100 (AEDT)
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Fri, 30 Oct 2015 17:30:03 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 5138F2CE8050
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 18:30:00 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9U7Trd030015618
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 18:30:01 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9U7TRrC005119
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 18:29:27 +1100
-Date: Fri, 30 Oct 2015 15:29:02 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
- bhelgaas@google.com, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org
-Subject: Re: [PATCH V10 12/12] powerpc/eeh: Handle hot removed VF when PF is
- EEH aware
-Message-ID: <20151030072902.GG5940@richards-mbp.cn.ibm.com>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5425B1A0AF0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 18:36:08 +1100 (AEDT)
+Received: by pacfv9 with SMTP id fv9so69224398pac.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 00:36:06 -0700 (PDT)
+Subject: Re: [PATCH V10 06/12] powerpc/powernv: EEH device for VF
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
 References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1445829362-2738-13-git-send-email-weiyang@linux.vnet.ibm.com>
- <563301BA.7050207@ozlabs.ru>
+ <1445829362-2738-7-git-send-email-weiyang@linux.vnet.ibm.com>
+ <5632E51D.30805@ozlabs.ru> <20151030065246.GC5940@richards-mbp.cn.ibm.com>
+Cc: gwshan@linux.vnet.ibm.com, bhelgaas@google.com, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <56331DE1.1090500@ozlabs.ru>
+Date: Fri, 30 Oct 2015 18:36:01 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <563301BA.7050207@ozlabs.ru>
+In-Reply-To: <20151030065246.GC5940@richards-mbp.cn.ibm.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,193 +29,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 30, 2015 at 04:35:54PM +1100, Alexey Kardashevskiy wrote:
->On 10/26/2015 02:16 PM, Wei Yang wrote:
->>When PF is EEH aware while VFs are not, VFs will be removed during EEH
->>recovery. This is not supported in current code, while will leads to the VF
->>lost.
+On 10/30/2015 05:52 PM, Wei Yang wrote:
+> On Fri, Oct 30, 2015 at 02:33:49PM +1100, Alexey Kardashevskiy wrote:
+>> On 10/26/2015 02:15 PM, Wei Yang wrote:
+>>> VFs and their corresponding pci_dn instances are created and released
+>>> dynamically as their PF's SRIOV capability is enabled and disabled.
+>>> The patch creates and releases EEH devices for VFs when creating and
+>>> releasing their pci_dn instances, which means EEH devices and pci_dn
+>>> instances have same life cycle. Also, VF's EEH device is identified
+>>> by (struct eeh_dev::physfn).
 >>
->>This patch fixes this by adding VFs back. VFs should be added back after PF
->>get recovered properly.
 >>
->>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> The add_dev_pci_data() helper (the one you hack) does not create pci_dn
+>> instances. The add_one_dev_pci_data() helper does.
+>>
 >
->btw please remove my "sob" from this patchset (here and 11/12 at least) as I
->did not "sob" the upstream versions of these and I did not post them and
->there is no public tree of mine with these patches. When I agree that the
->patches are good to go, it will be "reviewed-by" or "acked-by".
+> Yes, you are right. The patch here create edev after the pci_dn is created.
 >
+> So which part in the log you think is not accurate?
 
-Sure, I would obey this rule in the future.
 
->
->>---
->>  arch/powerpc/include/asm/eeh.h   |  6 ++++++
->>  arch/powerpc/kernel/eeh_dev.c    |  1 +
->>  arch/powerpc/kernel/eeh_driver.c | 30 +++++++++++++++++++++++-------
->>  3 files changed, 30 insertions(+), 7 deletions(-)
->>
->>diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
->>index ea1f13c4..c529a23 100644
->>--- a/arch/powerpc/include/asm/eeh.h
->>+++ b/arch/powerpc/include/asm/eeh.h
->>@@ -127,6 +127,11 @@ static inline bool eeh_pe_passed(struct eeh_pe *pe)
->>  #define EEH_DEV_SYSFS		(1 << 9)	/* Sysfs created	*/
->>  #define EEH_DEV_REMOVED		(1 << 10)	/* Removed permanently	*/
->>
->>+struct eeh_rmv_data {
->>+	struct list_head edev_list;
->>+	int removed;
->>+};
->>+
->>  struct eeh_dev {
->>  	int mode;			/* EEH mode			*/
->>  	int class_code;			/* Class code of the device	*/
->>@@ -139,6 +144,7 @@ struct eeh_dev {
->>  	int af_cap;			/* Saved AF capability		*/
->>  	struct eeh_pe *pe;		/* Associated PE		*/
->>  	struct list_head list;		/* Form link list in the PE	*/
->>+	struct list_head rmv_list;	/* Record the removed edev 	*/
->>  	struct pci_controller *phb;	/* Associated PHB		*/
->>  	struct pci_dn *pdn;		/* Associated PCI device node	*/
->>  	struct pci_dev *pdev;		/* Associated PCI device	*/
->>diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
->>index aabba94..7815095 100644
->>--- a/arch/powerpc/kernel/eeh_dev.c
->>+++ b/arch/powerpc/kernel/eeh_dev.c
->>@@ -67,6 +67,7 @@ void *eeh_dev_init(struct pci_dn *pdn, void *data)
->>  	edev->pdn = pdn;
->>  	edev->phb = phb;
->>  	INIT_LIST_HEAD(&edev->list);
->>+	INIT_LIST_HEAD(&edev->rmv_list);
->>
->>  	return NULL;
->>  }
->>diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
->>index 99868e2..f2406b4 100644
->>--- a/arch/powerpc/kernel/eeh_driver.c
->>+++ b/arch/powerpc/kernel/eeh_driver.c
->>@@ -420,7 +420,8 @@ static void *eeh_rmv_device(void *data, void *userdata)
->>  	struct pci_driver *driver;
->>  	struct eeh_dev *edev = (struct eeh_dev *)data;
->>  	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
->>-	int *removed = (int *)userdata;
->>+	struct eeh_rmv_data *rmv_data = (struct eeh_rmv_data *)userdata;
->>+	int *removed = rmv_data ? &rmv_data->removed : NULL;
->
->
->You just touched @userdata/@removed in [10/12] and now you are touching it
->again.
->
->It feels like this patch is better to be merged into [10/12], this will
->reduce the noise about the userdata pointer changes passed into
->eeh_pe_dev_traverse() and make more sense as "powerpc/eeh: Support error
->recovery for VF PE" without adding VFs back is pretty useless.
->
+The commit log is ok, I just thought loud that eeh_dev_init() could go to 
+add_one_dev_pci_data() to make things more clear.
 
-Agree, will merge them.
+
+
+>>
+>>>
+>>> [gwshan: changelog and removed CONFIG_PCI_IOV]
+>>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>> ---
+>>>   arch/powerpc/include/asm/eeh.h |  1 +
+>>>   arch/powerpc/kernel/pci_dn.c   | 12 ++++++++++++
+>>>   2 files changed, 13 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+>>> index c5eb86f..6c383ad 100644
+>>> --- a/arch/powerpc/include/asm/eeh.h
+>>> +++ b/arch/powerpc/include/asm/eeh.h
+>>> @@ -140,6 +140,7 @@ struct eeh_dev {
+>>>   	struct pci_controller *phb;	/* Associated PHB		*/
+>>>   	struct pci_dn *pdn;		/* Associated PCI device node	*/
+>>>   	struct pci_dev *pdev;		/* Associated PCI device	*/
+>>> +	struct pci_dev *physfn;		/* Associated PF PORT		*/
+>>>   	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
+>>>   };
+>>>
+>>> diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+>>> index f771130..f0ddde7 100644
+>>> --- a/arch/powerpc/kernel/pci_dn.c
+>>> +++ b/arch/powerpc/kernel/pci_dn.c
+>>> @@ -180,7 +180,9 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+>>>   struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+>>>   {
+>>>   #ifdef CONFIG_PCI_IOV
+>>> +	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+>>>   	struct pci_dn *parent, *pdn;
+>>> +	struct eeh_dev *edev;
+>>>   	int i;
+>>>
+>>>   	/* Only support IOV for now */
+>>> @@ -206,6 +208,9 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+>>>   				 __func__, i);
+>>>   			return NULL;
+>>>   		}
+>>> +		eeh_dev_init(pdn, hose);
+>>> +		edev = pdn_to_eeh_dev(pdn);
+>>
+>>
+>> In theory, pdn_to_eeh_dev() can return NULL. In this patch, it is not clear
+>> if pdn->edev gets initialized before or after add_dev_pci_data().
+>>
+>
+> Yep, the return value should be checked.
+
+May be BUG_ON will be enough, up to you.
+
 
 >
+> pdn->edev is initialized in eeh_dev_init() which is called in
+> add_dev_pci_data(). The order is not clear?
 >
->
->>  	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
 >>
->>  	/*
->>@@ -467,6 +468,9 @@ static void *eeh_rmv_device(void *data, void *userdata)
->>  		 * required to plug the VF successfully.
->>  		 */
->>  		pdn->pe_number = IODA_INVALID_PE;
->>+
->>+		if (rmv_data)
->>+			list_add(&edev->rmv_list, &rmv_data->edev_list);
->>  	} else {
->>  		pci_lock_rescan_remove();
->>  		pci_stop_and_remove_bus_device(dev);
->>@@ -585,11 +589,12 @@ int eeh_pe_reset_and_recover(struct eeh_pe *pe)
->>   * During the reset, udev might be invoked because those affected
->>   * PCI devices will be removed and then added.
->>   */
->>-static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
->>+static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
->>+				struct eeh_rmv_data *rmv_data)
->>  {
->>  	struct pci_bus *frozen_bus = eeh_pe_bus_get(pe);
->>  	struct timeval tstamp;
->>-	int cnt, rc, removed = 0;
->>+	int cnt, rc;
->>  	struct eeh_dev *edev;
 >>
->>  	/* pcibios will clear the counter; save the value */
->>@@ -612,7 +617,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
->>  			pci_unlock_rescan_remove();
->>  		}
->>  	} else if (frozen_bus)
->>-		eeh_pe_dev_traverse(pe, eeh_rmv_device, &removed);
->>+		eeh_pe_dev_traverse(pe, eeh_rmv_device, rmv_data);
+>>> +		edev->physfn = pdev;
+>>>   	}
+>>>   #endif /* CONFIG_PCI_IOV */
+>>>
+>>> @@ -254,10 +259,17 @@ void remove_dev_pci_data(struct pci_dev *pdev)
+>>>   	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
+>>>   		list_for_each_entry_safe(pdn, tmp,
+>>>   			&parent->child_list, list) {
+>>> +			struct eeh_dev *edev;
+>>>   			if (pdn->busno != pci_iov_virtfn_bus(pdev, i) ||
+>>>   			    pdn->devfn != pci_iov_virtfn_devfn(pdev, i))
+>>>   				continue;
+>>>
+>>> +			edev = pdn_to_eeh_dev(pdn);
+>>> +			if (edev) {
+>>> +				pdn->edev = NULL;
+>>> +				kfree(edev);
+>>> +			}
+>>> +
+>>>   			if (!list_empty(&pdn->list))
+>>>   				list_del(&pdn->list);
+>>>
+>>>
 >>
->>  	/*
->>  	 * Reset the pci controller. (Asserts RST#; resets config space).
->>@@ -659,7 +664,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
->>  			eeh_add_virt_device(edev, NULL);
->>  		else
->>  			pcibios_add_pci_devices(bus);
->>-	} else if (frozen_bus && removed) {
->>+	} else if (frozen_bus && rmv_data->removed) {
->>  		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
->>  		ssleep(5);
->>
->>@@ -687,8 +692,10 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
->>  static void eeh_handle_normal_event(struct eeh_pe *pe)
->>  {
->>  	struct pci_bus *frozen_bus;
->>+	struct eeh_dev *edev, *tmp;
->>  	int rc = 0;
->>  	enum pci_ers_result result = PCI_ERS_RESULT_NONE;
->>+	struct eeh_rmv_data rmv_data = {LIST_HEAD_INIT(rmv_data.edev_list), 0};
->>
->>  	frozen_bus = eeh_pe_bus_get(pe);
->>  	if (!frozen_bus) {
->>@@ -735,7 +742,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
->>  	 */
->>  	if (result == PCI_ERS_RESULT_NONE) {
->>  		pr_info("EEH: Reset with hotplug activity\n");
->>-		rc = eeh_reset_device(pe, frozen_bus);
->>+		rc = eeh_reset_device(pe, frozen_bus, NULL);
->>  		if (rc) {
->>  			pr_warn("%s: Unable to reset, err=%d\n",
->>  				__func__, rc);
->>@@ -787,7 +794,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
->>  	/* If any device called out for a reset, then reset the slot */
->>  	if (result == PCI_ERS_RESULT_NEED_RESET) {
->>  		pr_info("EEH: Reset without hotplug activity\n");
->>-		rc = eeh_reset_device(pe, NULL);
->>+		rc = eeh_reset_device(pe, NULL, &rmv_data);
->>  		if (rc) {
->>  			pr_warn("%s: Cannot reset, err=%d\n",
->>  				__func__, rc);
->>@@ -807,6 +814,15 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
->>  		goto hard_fail;
->>  	}
->>
->>+	/*
->>+	 * For those hot removed VFs, we should add back them after PF get
->>+	 * recovered properly.
->>+	 */
->>+	list_for_each_entry_safe(edev, tmp, &rmv_data.edev_list, rmv_list) {
->>+		eeh_add_virt_device(edev, NULL);
->>+		list_del(&edev->rmv_list);
->>+	}
->>+
->>  	/* Tell all device drivers that they can resume operations */
->>  	pr_info("EEH: Notify device driver to resume\n");
->>  	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
->>
->
->
->-- 
->Alexey
+
 
 -- 
-Richard Yang
-Help you, Help me
+Alexey
