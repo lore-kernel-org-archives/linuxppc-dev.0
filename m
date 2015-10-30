@@ -1,42 +1,29 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ACA2E1A0D6F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2015 08:35:54 +1100 (AEDT)
-Received: from localhost
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 30 Oct 2015 15:35:52 -0600
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 71DF438C803B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 17:35:49 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9ULZnNW51052604
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 21:35:49 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9ULZlN4008445
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 17:35:49 -0400
-Date: Fri, 30 Oct 2015 14:35:46 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: hch@infradead.org, keith.busch@intel.com, aik@ozlabs.ru,
+Return-Path: <keith.busch@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by lists.ozlabs.org (Postfix) with ESMTP id 222B51A0CD4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2015 08:48:51 +1100 (AEDT)
+Date: Fri, 30 Oct 2015 21:48:48 +0000
+From: Keith Busch <keith.busch@intel.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>, aik@ozlabs.ru,
  linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
  paulus@samba.org, sparclinux@vger.kernel.org, willy@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org, david@gibson.dropbear.id.au
-Subject: Re: [PATCH 0/5 v3] Fix NVMe driver support on Power with 32-bit DMA
-Message-ID: <20151030213546.GL7716@linux.vnet.ibm.com>
-References: <20151028135922.GA27909@localhost.localdomain>
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ david@gibson.dropbear.id.au
+Subject: Re: [PATCH 1/1 v3] drivers/nvme: default to 4k device page size
+Message-ID: <20151030214848.GC13904@localhost.localdomain>
+References: <20151026.182746.1323901353520152838.davem@davemloft.net>
+ <20151027222010.GD7716@linux.vnet.ibm.com>
+ <20151027223643.GA25332@localhost.localdomain>
+ <20151027.175443.140992924519172506.davem@davemloft.net>
+ <20151028135922.GA27909@localhost.localdomain>
  <20151029115536.GA28090@infradead.org>
  <20151029155701.GJ7716@linux.vnet.ibm.com>
- <20151029.184955.728736673434401711.davem@davemloft.net>
+ <20151029172043.GA8343@localhost.localdomain>
+ <20151030213511.GK7716@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151029.184955.728736673434401711.davem@davemloft.net>
+In-Reply-To: <20151030213511.GK7716@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,24 +33,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29.10.2015 [18:49:55 -0700], David Miller wrote:
-> From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> Date: Thu, 29 Oct 2015 08:57:01 -0700
-> 
-> > So, would that imply changing just the NVMe driver code rather than
-> > adding the dma_page_shift API at all? What about
-> > architectures that can support the larger page sizes? There is an
-> > implied performance impact, at least, of shifting the IO size down.
-> > 
-> > Sorry for the continuing questions -- I got lots of conflicting feedback
-> > on the last series and want to make sure v4 is more acceptable.
-> 
-> In the long term I would be very happy to see us having a real interface
-> for this stuff, just my opinion...
+On Fri, Oct 30, 2015 at 02:35:11PM -0700, Nishanth Aravamudan wrote:
+> Given that it's 4K just about everywhere by default (and sort of
+> implicitly expected to be, I guess), I think I'd prefer we default to
+> 4K. That should mitigate the performance impact (I'll ask our IO team to
+> do some runs, but since this impacts functionality on some hardware, I
+> don't think it's too relevant for now). Unless there are NVMe devcies
+> with a MPSMAX < 4K? 
 
-Yep, I think I'll try and balance the two -- fix NVMe for now with a 4K
-page size as suggested by Christoph, and then work on the more complete
-API for the next merge.
+Right, I assumed MPSMIN was always 4k for the same reason you mentioned,
+but you can hard code it like you've done in your patch.
 
-Thanks,
-Nish
+The spec defines MPSMAX such that it's impossible to find a device
+with MPSMAX < 4k.
