@@ -1,35 +1,19 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <raghav@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0109.outbound.protection.outlook.com [207.46.100.109])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 570E01A0BF9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2015 09:31:32 +1100 (AEDT)
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Fri, 30 Oct 2015 18:31:30 -0400
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id D0C7738C803B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 18:31:26 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9UMVPrK55181518
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 22:31:25 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9UMVOPw019993
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 18:31:24 -0400
-Date: Fri, 30 Oct 2015 15:31:20 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, hbabu@us.ibm.com, nacc@us.ibm.com
-Subject: [PATCH] nx-842: Ignore bit 3 of condition register returned by icswx
-Message-ID: <20151030223120.GA22550@ram.oc3035372033.ibm.com>
-Reply-To: Ram Pai <linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E65A71A0201
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 17:41:05 +1100 (AEDT)
+From: Raghav Dogra <raghav@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+CC: <scottwood@freescale.com>, <prabhakar@freescale.com>, Raghav Dogra
+ <raghav@freescale.com>
+Subject: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
+Date: Fri, 30 Oct 2015 11:54:59 +0530
+Message-ID: <1446186299-2921-1-git-send-email-raghav@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,25 +23,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-icswx occasionally under heavy load sets bit 3 of condition register 0.
-It has no software implication.
+Modify platform driver suspend/resume to syscore
+suspend/resume. This is because p1022ds needs to use
+localbus when entering the PCIE resume.
 
-Currently that bit is interpreted by the driver as a failure, when
-it should have calmly ignored it.
-
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+Signed-off-by: Raghav Dogra <raghav@freescale.com>
 ---
- arch/powerpc/include/asm/icswx.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/sysdev/Makefile  |  2 +-
+ arch/powerpc/sysdev/fsl_lbc.c | 51 +++++++++++++++++++++++++++++++++----------
+ 2 files changed, 40 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/icswx.h b/arch/powerpc/include/asm/icswx.h
-index 9f8402b..bce20c7 100644
---- a/arch/powerpc/include/asm/icswx.h
-+++ b/arch/powerpc/include/asm/icswx.h
-@@ -177,7 +177,7 @@ static inline int icswx(__be32 ccw, struct coprocessor_request_block *crb)
- 	: "r" (ccw_reg), "r" (crb)
- 	: "cr0", "memory");
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index f7cb2a1..4c19e614 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -18,9 +18,9 @@ obj-$(CONFIG_PPC_PMI)		+= pmi.o
+ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
+ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o fsl_mpic_err.o
++obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
+ obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
+ obj-$(CONFIG_FSL_PMC)		+= fsl_pmc.o
+-obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
+ obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
+ obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+= fsl_85xx_l2ctlr.o fsl_85xx_cache_sram.o
+ obj-$(CONFIG_SIMPLE_GPIO)	+= simple_gpio.o
+diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
+index d631022..332d700 100644
+--- a/arch/powerpc/sysdev/fsl_lbc.c
++++ b/arch/powerpc/sysdev/fsl_lbc.c
+@@ -27,6 +27,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/interrupt.h>
+ #include <linux/mod_devicetable.h>
++#include <linux/syscore_ops.h>
+ #include <asm/prom.h>
+ #include <asm/fsl_lbc.h>
  
--	return (int)((cr >> 28) & 0xf);
-+	return (int)((cr >> 28) & 0xe);
+@@ -354,24 +355,42 @@ err:
+ #ifdef CONFIG_SUSPEND
+ 
+ /* save lbc registers */
+-static int fsl_lbc_suspend(struct platform_device *pdev, pm_message_t state)
++static int fsl_lbc_syscore_suspend(void)
+ {
+-	struct fsl_lbc_ctrl *ctrl = dev_get_drvdata(&pdev->dev);
+-	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
++	struct fsl_lbc_ctrl *ctrl;
++	struct fsl_lbc_regs __iomem *lbc;
++
++	ctrl = fsl_lbc_ctrl_dev;
++	if (!ctrl)
++		goto out;
++
++	lbc = ctrl->regs;
++	if (!lbc)
++		goto out;
+ 
+ 	ctrl->saved_regs = kmalloc(sizeof(struct fsl_lbc_regs), GFP_KERNEL);
+ 	if (!ctrl->saved_regs)
+ 		return -ENOMEM;
+ 
+ 	_memcpy_fromio(ctrl->saved_regs, lbc, sizeof(struct fsl_lbc_regs));
++
++out:
+ 	return 0;
  }
+ 
+ /* restore lbc registers */
+-static int fsl_lbc_resume(struct platform_device *pdev)
++static int fsl_lbc_syscore_resume(void)
+ {
+-	struct fsl_lbc_ctrl *ctrl = dev_get_drvdata(&pdev->dev);
+-	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
++	struct fsl_lbc_ctrl *ctrl;
++	struct fsl_lbc_regs __iomem *lbc;
++
++	ctrl = fsl_lbc_ctrl_dev;
++	if (!ctrl)
++		goto out;
++
++	lbc = ctrl->regs;
++	if (!lbc)
++		goto out;
+ 
+ 	if (ctrl->saved_regs) {
+ 		_memcpy_toio(lbc, ctrl->saved_regs,
+@@ -379,7 +398,9 @@ static int fsl_lbc_resume(struct platform_device *pdev)
+ 		kfree(ctrl->saved_regs);
+ 		ctrl->saved_regs = NULL;
+ 	}
+-	return 0;
++
++out:
++	return;
+ }
+ #endif /* CONFIG_SUSPEND */
+ 
+@@ -391,20 +412,26 @@ static const struct of_device_id fsl_lbc_match[] = {
+ 	{},
+ };
+ 
++#ifdef CONFIG_SUSPEND
++static struct syscore_ops lbc_syscore_pm_ops = {
++	.suspend = fsl_lbc_syscore_suspend,
++	.resume = fsl_lbc_syscore_resume,
++};
++#endif
++
+ static struct platform_driver fsl_lbc_ctrl_driver = {
+ 	.driver = {
+ 		.name = "fsl-lbc",
+ 		.of_match_table = fsl_lbc_match,
+ 	},
+ 	.probe = fsl_lbc_ctrl_probe,
+-#ifdef CONFIG_SUSPEND
+-	.suspend     = fsl_lbc_suspend,
+-	.resume      = fsl_lbc_resume,
+-#endif
+ };
+ 
+ static int __init fsl_lbc_init(void)
+ {
++#ifdef CONFIG_SUSPEND
++	register_syscore_ops(&lbc_syscore_pm_ops);
++#endif
+ 	return platform_driver_register(&fsl_lbc_ctrl_driver);
+ }
+-module_init(fsl_lbc_init);
++arch_initcall(fsl_lbc_init);
+-- 
+1.9.1
