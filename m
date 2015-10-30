@@ -1,39 +1,23 @@
-Return-Path: <warrier@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0124.outbound.protection.outlook.com [65.55.169.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D91F1A0BE5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 10:41:00 +1100 (AEDT)
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43FFD1412DD
- for <linuxppc-dev@ozlabs.org>; Fri, 30 Oct 2015 10:40:59 +1100 (AEDT)
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
- Thu, 29 Oct 2015 17:40:57 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id A62BC1FF002D
- for <linuxppc-dev@ozlabs.org>; Thu, 29 Oct 2015 17:29:06 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9TNdUkw2032096
- for <linuxppc-dev@ozlabs.org>; Thu, 29 Oct 2015 16:39:30 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9TNes5i003222
- for <linuxppc-dev@ozlabs.org>; Thu, 29 Oct 2015 17:40:54 -0600
-From: Suresh Warrier <warrier@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: warrier@linux.vnet.ibm.com, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH 2/2] powerpc/smp: Add smp_muxed_ipi_rm_message_pass
-Date: Thu, 29 Oct 2015 18:40:45 -0500
-Message-Id: <1446162045-26496-3-git-send-email-warrier@linux.vnet.ibm.com>
-In-Reply-To: <1446162045-26496-1-git-send-email-warrier@linux.vnet.ibm.com>
-References: <1446162045-26496-1-git-send-email-warrier@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2D0A01A09A7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 11:17:03 +1100 (AEDT)
+Message-ID: <1446164196.22185.15.camel@freescale.com>
+Subject: Re: [PATCH v2 2/3] ppc64: Avoid rfid if no need to clear MSR_LE
+From: Scott Wood <scottwood@freescale.com>
+To: Simon Horman <horms@verge.net.au>
+CC: <linuxppc-dev@lists.ozlabs.org>, <kexec@lists.infradead.org>, "Samuel
+ Mendoza-Jonas" <sam.mj@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 29 Oct 2015 19:16:36 -0500
+In-Reply-To: <20151016014803.GF20667@verge.net.au>
+References: <1444172150-29493-1-git-send-email-scottwood@freescale.com>
+ <1444172150-29493-2-git-send-email-scottwood@freescale.com>
+ <20151016014803.GF20667@verge.net.au>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,74 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This function supports IPI message passing for real
-mode callers.
+On Fri, 2015-10-16 at 10:48 +0900, Simon Horman wrote:
+> On Tue, Oct 06, 2015 at 05:55:49PM -0500, Scott Wood wrote:
+> > Commit a304e2d82a8c3 ("ppc64: purgatory: Reset primary cpu endian to
+> > big-endian) changed bctr to rfid.  rfid is book3s-only and will cause a
+> > fatal exception on book3e.
+> > 
+> > Purgatory is an isolated environment which makes importing information
+> > about the subarch awkward, so instead rely on the fact that MSR_LE
+> > should never be set on book3e, and the rfid is only needed if MSR_LE is
+> > set (and thus needs to be cleared).  In theory that MSR bit is reserved
+> > on book3e, rather than zero, but in practice I have not seen it set.
+> > 
+> > Signed-off-by: Scott Wood <scottwood@freescale.com>
+> > Cc: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+> > ---
+> > v2: new patch
+> 
+> Could I get a review of this from at lest one ppc person?
 
-Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/smp.h |  1 +
- arch/powerpc/kernel/smp.c      | 30 ++++++++++++++++++++++++++++++
- 2 files changed, 31 insertions(+)
+Michael, can you comment on this as well as patch 3/3?
 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 9ef9c37..851a37a 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -124,6 +124,7 @@ extern const char *smp_ipi_name[];
- /* for irq controllers with only a single ipi */
- extern void smp_muxed_ipi_set_data(int cpu, unsigned long data);
- extern void smp_muxed_ipi_message_pass(int cpu, int msg);
-+extern void smp_muxed_ipi_rm_message_pass(int cpu, int msg);
- extern irqreturn_t smp_ipi_demux(void);
- 
- void smp_init_pSeries(void);
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index a53a130..8c07bfad 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -53,6 +53,9 @@
- #include <asm/vdso.h>
- #include <asm/debug.h>
- #include <asm/kexec.h>
-+#ifdef CONFIG_KVM_XICS
-+#include <asm/xics.h>
-+#endif
- 
- #ifdef DEBUG
- #include <asm/udbg.h>
-@@ -235,6 +238,33 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
- 	smp_ops->cause_ipi(cpu, info->data);
- }
- 
-+#if defined(CONFIG_KVM_XICS) && defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE)
-+/*
-+ * Message passing code for real mode callers. It does not use the
-+ * smp_ops->cause_ipi function to cause an IPI, because those functions
-+ * access the MFFR through an ioremapped address.
-+ */
-+void smp_muxed_ipi_rm_message_pass(int cpu, int msg)
-+{
-+	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
-+	char *message = (char *)&info->messages;
-+	unsigned long xics_phys;
-+
-+	/*
-+	 * Order previous accesses before accesses in the IPI handler.
-+	 */
-+	smp_mb();
-+	message[msg] = 1;
-+
-+	/*
-+	 * cause_ipi functions are required to include a full barrier
-+	 * before doing whatever causes the IPI.
-+	 */
-+	xics_phys = paca[cpu].kvm_hstate.xics_phys;
-+	out_rm8((u8 *)(xics_phys + XICS_MFRR), IPI_PRIORITY);
-+}
-+#endif
-+
- #ifdef __BIG_ENDIAN__
- #define IPI_MESSAGE(A) (1uL << ((BITS_PER_LONG - 8) - 8 * (A)))
- #else
--- 
-1.8.3.4
+-Scott
+
+> 
+> >  purgatory/arch/ppc64/v2wrap.S | 10 +++++++++-
+> >  1 file changed, 9 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/purgatory/arch/ppc64/v2wrap.S b/purgatory/arch/ppc64/v2wrap.S
+> > index 179ade9..3534080 100644
+> > --- a/purgatory/arch/ppc64/v2wrap.S
+> > +++ b/purgatory/arch/ppc64/v2wrap.S
+> > @@ -116,9 +116,17 @@ master:
+> >     stw     7,0x5c(4)       # and patch it into the kernel
+> >     mr      3,16            # restore dt address
+> >  
+> > +   mfmsr   5
+> > +   andi.   10,5,1          # test MSR_LE
+> > +   bne     little_endian
+> > +
+> > +   li      5,0             # r5 will be 0 for kernel
+> > +   mtctr   4               # prepare branch to
+> > +   bctr                    # start kernel
+> > +   
+> > +little_endian:                     # book3s-only
+> >     mtsrr0  4               # prepare branch to
+> >  
+> > -   mfmsr   5
+> >     clrrdi  5,5,1           # clear MSR_LE
+> >     mtsrr1  5
+> >  
