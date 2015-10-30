@@ -1,24 +1,23 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
+Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
+ [IPv6:2607:f8b0:400e:c03::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 03F761A0C23
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 15:56:19 +1100 (AEDT)
-Received: by pasz6 with SMTP id z6so62111026pas.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 21:56:17 -0700 (PDT)
-Subject: Re: [PATCH V10 09/12] powerpc/powernv: Support PCI config restore for
- VFs
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49B1A1A0C38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 16:20:56 +1100 (AEDT)
+Received: by pasz6 with SMTP id z6so62759350pas.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2015 22:20:54 -0700 (PDT)
+Subject: Re: [PATCH V10 10/12] powerpc/eeh: Support error recovery for VF PE
 To: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
  bhelgaas@google.com, mpe@ellerman.id.au
 References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1445829362-2738-10-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1445829362-2738-11-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <5632F86C.9060602@ozlabs.ru>
-Date: Fri, 30 Oct 2015 15:56:12 +1100
+Message-ID: <5632FE30.8040003@ozlabs.ru>
+Date: Fri, 30 Oct 2015 16:20:48 +1100
 MIME-Version: 1.0
-In-Reply-To: <1445829362-2738-10-git-send-email-weiyang@linux.vnet.ibm.com>
+In-Reply-To: <1445829362-2738-11-git-send-email-weiyang@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,185 +28,309 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/26/2015 02:15 PM, Wei Yang wrote:
-> After PE reset, OPAL API opal_pci_reinit() is called on all devices
-> contained in the PE to reinitialize them. However, VFs can't be seen
-> from skiboot firmware. We have to implement the functions, similar
-> those in skiboot firmware, to reinitialize VFs after reset on PE
-> for VFs.
+On 10/26/2015 02:16 PM, Wei Yang wrote:
+> Different from PCI bus dependent PE, PE for VFs doesn't have the
+
+s/Different from/Unlike/
+
+
+> primary bus, on which the PCI hotplug is implemented. The patch
+> supports error recovery, especially the PCI hotplug for VF's PE.
+
+The patch adds support for error recovery of what exactly?
+What is "especially" about?
+
+
+> The hotplug on VF's PE is implemented based on VFs, instead of
+> PCI bus any more.
+
+Needs rephrase.
+
+Is this patch about EEH error recovery, i.e. unplug VF, re-plug VF? Why 
+does the commit log talk about PE hotplug? I thought we do VF (i.e. PCI 
+device) hotplug, not PE.
+
+
 >
 > [gwshan: changelog and code refactoring]
 > Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 > Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 > ---
->   arch/powerpc/include/asm/pci-bridge.h        |  1 +
->   arch/powerpc/platforms/powernv/eeh-powernv.c | 70 +++++++++++++++++++++++++++-
->   arch/powerpc/platforms/powernv/pci.c         | 18 +++++++
->   3 files changed, 88 insertions(+), 1 deletion(-)
+>   arch/powerpc/include/asm/eeh.h   |   1 +
+>   arch/powerpc/kernel/eeh.c        |   8 ++++
+>   arch/powerpc/kernel/eeh_driver.c | 100 +++++++++++++++++++++++++++++++--------
+>   arch/powerpc/kernel/eeh_pe.c     |   3 +-
+>   4 files changed, 90 insertions(+), 22 deletions(-)
 >
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-> index 3d7e537..e499d93 100644
-> --- a/arch/powerpc/include/asm/pci-bridge.h
-> +++ b/arch/powerpc/include/asm/pci-bridge.h
-> @@ -219,6 +219,7 @@ struct pci_dn {
->   #define IODA_INVALID_M64        (-1)
->   	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
->   #endif /* CONFIG_PCI_IOV */
-> +	int     mps;
+> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+> index 331c856..ea1f13c4 100644
+> --- a/arch/powerpc/include/asm/eeh.h
+> +++ b/arch/powerpc/include/asm/eeh.h
+> @@ -142,6 +142,7 @@ struct eeh_dev {
+>   	struct pci_controller *phb;	/* Associated PHB		*/
+>   	struct pci_dn *pdn;		/* Associated PCI device node	*/
+>   	struct pci_dev *pdev;		/* Associated PCI device	*/
+> +	int    in_error;		/* Error flag for eeh_dev	*/
 
-int     mps; /* maximum payload size */
-?
-
-
->   #endif
->   	struct list_head child_list;
->   	struct list_head list;
-> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> index 017cd72..3cc3e76 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> @@ -1616,6 +1616,67 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
->   	return ret;
->   }
->
-> +static int pnv_eeh_restore_vf_config(struct pci_dn *pdn)
-
-It does not exactly restore it, it just tweaks few bytes.
+Make it "bool".
 
 
-> +{
-> +	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-> +	u32 devctl, cmd, cap2, aer_capctl;
-> +	int old_mps;
+>   	struct pci_dev *physfn;		/* Associated PF PORT		*/
+>   	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
+>   };
+> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> index af9b597..28e4d73 100644
+> --- a/arch/powerpc/kernel/eeh.c
+> +++ b/arch/powerpc/kernel/eeh.c
+> @@ -1227,6 +1227,14 @@ void eeh_remove_device(struct pci_dev *dev)
+>   	 * from the parent PE during the BAR resotre.
+>   	 */
+>   	edev->pdev = NULL;
 > +
-> +	/* Restore MPS */
-> +	if (edev->pcie_cap) {
-> +		old_mps = (ffs(pdn->mps) - 8) << 5;
-> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-> +				     2, &devctl);
-> +		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
-> +		devctl |= old_mps;
-> +		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-> +				      2, devctl);
-> +	}
-> +
-> +	/* Disable Completion Timeout */
-> +	if (edev->pcie_cap) {
-> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP2,
-> +				     4, &cap2);
-> +		if (cap2 & 0x10) {
-> +			eeh_ops->read_config(pdn,
-> +					edev->pcie_cap + PCI_EXP_DEVCTL2,
-> +					4, &cap2);
-> +			cap2 |= 0x10;
-> +			eeh_ops->write_config(pdn,
-> +					edev->pcie_cap + PCI_EXP_DEVCTL2,
-> +					4, cap2);
-> +		}
-> +	}
-> +
-> +	/* Enable SERR and parity checking */
-> +	eeh_ops->read_config(pdn, PCI_COMMAND, 2, &cmd);
-
-
-No complains from gcc about uninitialized @cmd and others? Cooool...
-
-
-> +	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
-> +	eeh_ops->write_config(pdn, PCI_COMMAND, 2, cmd);
-> +
-> +	/* Enable report various errors */
-> +	if (edev->pcie_cap) {
-> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-> +				2, &devctl);
-> +		devctl &= ~PCI_EXP_DEVCTL_CERE;
-> +		devctl |= (PCI_EXP_DEVCTL_NFERE |
-> +			   PCI_EXP_DEVCTL_FERE |
-> +			   PCI_EXP_DEVCTL_URRE);
-> +		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-> +				2, devctl);
-> +	}
-> +
-> +	/* Enable ECRC generation and check */
-> +	if (edev->pcie_cap && edev->aer_cap) {
-> +		eeh_ops->read_config(pdn, edev->aer_cap + PCI_ERR_CAP,
-> +				4, &aer_capctl);
-> +		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
-> +		eeh_ops->write_config(pdn, edev->aer_cap + PCI_ERR_CAP,
-> +				4, aer_capctl);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->   static int pnv_eeh_restore_config(struct pci_dn *pdn)
->   {
->   	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-> @@ -1626,7 +1687,14 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
->   		return -EEXIST;
->
->   	phb = edev->phb->private_data;
-> -	ret = opal_pci_reinit(phb->opal_id,
 > +	/*
-> +	 * We have to restore the PCI config space after reset since the
-> +	 * firmware can't see SRIOV VFs.
-
-
-When I see "restore config space", pci_restore_state() comes to my mind... 
-What you do is rather "fixup" but for some reason you do not call this from 
-pnv_pci_fixup_vf_mps (which could be more generic and call 
-pnv_eeh_restore_config()). Or that pnv_pci_fixup_vf_mps() could be merged 
-into pnv_eeh_restore_config(). Having "restore" code in 2 places with 
-unclear execution order does not feel right.
-
-
-
+> +	 * The flag "in_error" is used to trace EEH devices for VFs
+> +	 * in error state or not. It's set in eeh_report_error(). If
+> +	 * it's not set, eeh_report_{reset,resume}() won't be called
+> +	 * for the VF EEH device.
 > +	 */
-> +	if (edev->physfn)
-> +		ret = pnv_eeh_restore_vf_config(pdn);
-> +	else
-> +		ret = opal_pci_reinit(phb->opal_id,
->   			      OPAL_REINIT_PCI_DEV, edev->config_addr);
->   	if (ret) {
->   		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index 765d8ed..0e4f42e 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -788,6 +788,24 @@ static void pnv_p7ioc_rc_quirk(struct pci_dev *dev)
->   }
->   DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_IBM, 0x3b9, pnv_p7ioc_rc_quirk);
+> +	edev->in_error = 0;
+>   	dev->dev.archdata.edev = NULL;
+>   	if (!(edev->pe->state & EEH_PE_KEEP))
+>   		eeh_rmv_from_parent_pe(edev);
+> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+> index 89eb4bc..99868e2 100644
+> --- a/arch/powerpc/kernel/eeh_driver.c
+> +++ b/arch/powerpc/kernel/eeh_driver.c
+> @@ -211,6 +211,7 @@ static void *eeh_report_error(void *data, void *userdata)
+>   	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+>   	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
 >
-> +#ifdef CONFIG_PCI_IOV
-> +static void pnv_pci_fixup_vf_mps(struct pci_dev *pdev)
+> +	edev->in_error = 1;
+>   	eeh_pcid_put(dev);
+>   	return NULL;
+>   }
+> @@ -282,7 +283,8 @@ static void *eeh_report_reset(void *data, void *userdata)
+>
+>   	if (!driver->err_handler ||
+>   	    !driver->err_handler->slot_reset ||
+> -	    (edev->mode & EEH_DEV_NO_HANDLER)) {
+> +	    (edev->mode & EEH_DEV_NO_HANDLER) ||
+> +	    (!edev->in_error)) {
+>   		eeh_pcid_put(dev);
+>   		return NULL;
+>   	}
+> @@ -339,14 +341,16 @@ static void *eeh_report_resume(void *data, void *userdata)
+>
+
+bood was_in_error = edev->in_error;
+edev->in_error = false;
+
+then use was_in_error below and there is no need to replace return with 
+goto, etc -> slightly simpler code.
+
+
+>   	if (!driver->err_handler ||
+>   	    !driver->err_handler->resume ||
+> -	    (edev->mode & EEH_DEV_NO_HANDLER)) {
+> +	    (edev->mode & EEH_DEV_NO_HANDLER) ||
+> +	    (!edev->in_error)) {
+>   		edev->mode &= ~EEH_DEV_NO_HANDLER;
+> -		eeh_pcid_put(dev);
+> -		return NULL;
+> +		goto out;
+>   	}
+>
+>   	driver->err_handler->resume(dev);
+>
+> +out:
+> +	edev->in_error = 0;
+>   	eeh_pcid_put(dev);
+>   	return NULL;
+>   }
+> @@ -386,12 +390,38 @@ static void *eeh_report_failure(void *data, void *userdata)
+>   	return NULL;
+>   }
+>
+> +static void *eeh_add_virt_device(void *data, void *userdata)
 > +{
-> +	struct pci_dn *pdn = pci_get_pdn(pdev);
-> +	int parent_mps;
+> +	struct pci_driver *driver;
+> +	struct eeh_dev *edev = (struct eeh_dev *)data;
+> +	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+> +	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
 > +
-> +	if (!pdev->is_virtfn)
-> +		return;
+> +	if (!(edev->physfn)) {
+> +		pr_warn("%s: EEH dev %04x:%02x:%02x.%01x not for VF\n",
+> +			__func__, edev->phb->global_number, pdn->busno,
+> +			PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
+> +		return NULL;
+> +	}
 > +
-> +	/* Synchronize MPS for VF and PF */
-> +	parent_mps = pcie_get_mps(pdev->physfn);
-> +	if ((128 << pdev->pcie_mpss) >= parent_mps)
-> +		pcie_set_mps(pdev, parent_mps);
-
-
-There is no mentioning of MPS in the commit log. What and why is happening 
-here? Is this cut-n-paste? Is not there already some code somewhere which 
-does the same thing already for initial init()? Can this be reused? Or 
-extracted to a helper and reused?
-
-
-
-> +	pdn->mps = pcie_get_mps(pdev);
+> +	driver = eeh_pcid_get(dev);
+> +	if (driver) {
+> +		eeh_pcid_put(dev);
+> +		if (driver->err_handler)
+> +			return NULL;
+> +	}
+> +
+> +	pci_iov_virtfn_add(edev->physfn, pdn->vf_index, 0);
+> +	return NULL;
 > +}
-> +DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pnv_pci_fixup_vf_mps);
-> +#endif /* CONFIG_PCI_IOV */
 > +
->   void __init pnv_pci_init(void)
+>   static void *eeh_rmv_device(void *data, void *userdata)
 >   {
->   	struct device_node *np;
+>   	struct pci_driver *driver;
+>   	struct eeh_dev *edev = (struct eeh_dev *)data;
+>   	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+>   	int *removed = (int *)userdata;
+> +	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
+>
+>   	/*
+>   	 * Actually, we should remove the PCI bridges as well.
+> @@ -416,7 +446,7 @@ static void *eeh_rmv_device(void *data, void *userdata)
+>   	driver = eeh_pcid_get(dev);
+>   	if (driver) {
+>   		eeh_pcid_put(dev);
+> -		if (driver->err_handler)
+> +		if (removed && driver->err_handler)
+>   			return NULL;
+>   	}
+>
+> @@ -425,11 +455,23 @@ static void *eeh_rmv_device(void *data, void *userdata)
+>   		 pci_name(dev));
+>   	edev->bus = dev->bus;
+>   	edev->mode |= EEH_DEV_DISCONNECTED;
+> -	(*removed)++;
+> +	if (removed)
+> +		(*removed)++;
+>
+> -	pci_lock_rescan_remove();
+> -	pci_stop_and_remove_bus_device(dev);
+> -	pci_unlock_rescan_remove();
+> +	if (edev->physfn) {
+> +		pci_iov_virtfn_remove(edev->physfn, pdn->vf_index, 0);
+> +		edev->pdev = NULL;
+> +
+> +		/*
+> +		 * We have to set the VF PE number to invalid one, which is
+> +		 * required to plug the VF successfully.
+> +		 */
+> +		pdn->pe_number = IODA_INVALID_PE;
+> +	} else {
+> +		pci_lock_rescan_remove();
+> +		pci_stop_and_remove_bus_device(dev);
+> +		pci_unlock_rescan_remove();
+> +	}
+>
+>   	return NULL;
+>   }
+> @@ -548,6 +590,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
+>   	struct pci_bus *frozen_bus = eeh_pe_bus_get(pe);
+>   	struct timeval tstamp;
+>   	int cnt, rc, removed = 0;
+> +	struct eeh_dev *edev;
+>
+>   	/* pcibios will clear the counter; save the value */
+>   	cnt = pe->freeze_count;
+> @@ -561,12 +604,15 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
+>   	 */
+>   	eeh_pe_state_mark(pe, EEH_PE_KEEP);
+>   	if (bus) {
+> -		pci_lock_rescan_remove();
+> -		pcibios_remove_pci_devices(bus);
+> -		pci_unlock_rescan_remove();
+> -	} else if (frozen_bus) {
+> +		if (pe->type & EEH_PE_VF)
+> +			eeh_pe_dev_traverse(pe, eeh_rmv_device, NULL);
+
+
+I believe the rule is that if one branch of "if" uses curly braces, then 
+the other should have them too.
+
+
+> +		else {
+> +			pci_lock_rescan_remove();
+> +			pcibios_remove_pci_devices(bus);
+> +			pci_unlock_rescan_remove();
+> +		}
+> +	} else if (frozen_bus)
+>   		eeh_pe_dev_traverse(pe, eeh_rmv_device, &removed);
+> -	}
+>
+>   	/*
+>   	 * Reset the pci controller. (Asserts RST#; resets config space).
+> @@ -607,14 +653,22 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
+>   		 * PE. We should disconnect it so the binding can be
+>   		 * rebuilt when adding PCI devices.
+>   		 */
+> +		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
+>   		eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
+> -		pcibios_add_pci_devices(bus);
+> +		if (pe->type & EEH_PE_VF)
+
+Move "edev = list_first_entry(&pe->edevs, struct eeh_dev, list)" here. You 
+could actually do:
+
+eeh_add_virt_device(list_first_entry(&pe->edevs, struct eeh_dev, list), NULL);
+
+and drop local variable @edev. Or move it to this scope. Dunno.
+
+
+> +			eeh_add_virt_device(edev, NULL);
+> +		else
+> +			pcibios_add_pci_devices(bus);
+>   	} else if (frozen_bus && removed) {
+>   		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
+>   		ssleep(5);
+>
+> +		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
+>   		eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
+> -		pcibios_add_pci_devices(frozen_bus);
+> +		if (pe->type & EEH_PE_VF)
+
+
+The same comment as above.
+
+> +			eeh_add_virt_device(edev, NULL);
+> +		else
+> +			pcibios_add_pci_devices(frozen_bus);
+>   	}
+>   	eeh_pe_state_clear(pe, EEH_PE_KEEP);
+>
+> @@ -792,11 +846,15 @@ perm_error:
+>   	 * the their PCI config any more.
+>   	 */
+>   	if (frozen_bus) {
+> -		eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
+> -
+> -		pci_lock_rescan_remove();
+> -		pcibios_remove_pci_devices(frozen_bus);
+> -		pci_unlock_rescan_remove();
+> +		if (pe->type & EEH_PE_VF) {
+> +			eeh_pe_dev_traverse(pe, eeh_rmv_device, NULL);
+> +			eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
+> +		} else {
+> +			eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
+> +			pci_lock_rescan_remove();
+> +			pcibios_remove_pci_devices(frozen_bus);
+> +			pci_unlock_rescan_remove();
+> +		}
+>   	}
+>   }
+>
+> diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+> index 260a701..5cde950 100644
+> --- a/arch/powerpc/kernel/eeh_pe.c
+> +++ b/arch/powerpc/kernel/eeh_pe.c
+> @@ -914,7 +914,8 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
+>   	if (pe->type & EEH_PE_PHB) {
+>   		bus = pe->phb->bus;
+>   	} else if (pe->type & EEH_PE_BUS ||
+> -		   pe->type & EEH_PE_DEVICE) {
+> +		   pe->type & EEH_PE_DEVICE ||
+> +		   pe->type & EEH_PE_VF) {
+>   		if (pe->bus) {
+>   			bus = pe->bus;
+>   			goto out;
 >
 
 
