@@ -1,17 +1,17 @@
 Return-Path: <raghav@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0109.outbound.protection.outlook.com [207.46.100.109])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0108.outbound.protection.outlook.com [65.55.169.108])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E65A71A0201
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 17:41:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A7EAF1A0BFA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2015 18:57:18 +1100 (AEDT)
 From: Raghav Dogra <raghav@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: <scottwood@freescale.com>, <prabhakar@freescale.com>, Raghav Dogra
  <raghav@freescale.com>
-Subject: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
-Date: Fri, 30 Oct 2015 11:54:59 +0530
-Message-ID: <1446186299-2921-1-git-send-email-raghav@freescale.com>
+Subject: [PATCH 2/2] powerpc/fsl_lbc: removal of dead code
+Date: Fri, 30 Oct 2015 11:52:02 +0530
+Message-ID: <1446186122-2870-1-git-send-email-raghav@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,134 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Modify platform driver suspend/resume to syscore
-suspend/resume. This is because p1022ds needs to use
-localbus when entering the PCIE resume.
+The condition check is not used.
 
 Signed-off-by: Raghav Dogra <raghav@freescale.com>
 ---
- arch/powerpc/sysdev/Makefile  |  2 +-
- arch/powerpc/sysdev/fsl_lbc.c | 51 +++++++++++++++++++++++++++++++++----------
- 2 files changed, 40 insertions(+), 13 deletions(-)
+ arch/powerpc/sysdev/fsl_lbc.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index f7cb2a1..4c19e614 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -18,9 +18,9 @@ obj-$(CONFIG_PPC_PMI)		+= pmi.o
- obj-$(CONFIG_U3_DART)		+= dart_iommu.o
- obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o fsl_mpic_err.o
-+obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
- obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
- obj-$(CONFIG_FSL_PMC)		+= fsl_pmc.o
--obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
- obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
- obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+= fsl_85xx_l2ctlr.o fsl_85xx_cache_sram.o
- obj-$(CONFIG_SIMPLE_GPIO)	+= simple_gpio.o
 diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
-index d631022..332d700 100644
+index 332d700..a41d281 100644
 --- a/arch/powerpc/sysdev/fsl_lbc.c
 +++ b/arch/powerpc/sysdev/fsl_lbc.c
-@@ -27,6 +27,7 @@
- #include <linux/platform_device.h>
- #include <linux/interrupt.h>
- #include <linux/mod_devicetable.h>
-+#include <linux/syscore_ops.h>
- #include <asm/prom.h>
- #include <asm/fsl_lbc.h>
- 
-@@ -354,24 +355,42 @@ err:
- #ifdef CONFIG_SUSPEND
- 
- /* save lbc registers */
--static int fsl_lbc_suspend(struct platform_device *pdev, pm_message_t state)
-+static int fsl_lbc_syscore_suspend(void)
- {
--	struct fsl_lbc_ctrl *ctrl = dev_get_drvdata(&pdev->dev);
--	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-+	struct fsl_lbc_ctrl *ctrl;
-+	struct fsl_lbc_regs __iomem *lbc;
-+
-+	ctrl = fsl_lbc_ctrl_dev;
-+	if (!ctrl)
-+		goto out;
-+
-+	lbc = ctrl->regs;
-+	if (!lbc)
-+		goto out;
- 
- 	ctrl->saved_regs = kmalloc(sizeof(struct fsl_lbc_regs), GFP_KERNEL);
- 	if (!ctrl->saved_regs)
- 		return -ENOMEM;
- 
- 	_memcpy_fromio(ctrl->saved_regs, lbc, sizeof(struct fsl_lbc_regs));
-+
-+out:
- 	return 0;
- }
- 
- /* restore lbc registers */
--static int fsl_lbc_resume(struct platform_device *pdev)
-+static int fsl_lbc_syscore_resume(void)
- {
--	struct fsl_lbc_ctrl *ctrl = dev_get_drvdata(&pdev->dev);
--	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-+	struct fsl_lbc_ctrl *ctrl;
-+	struct fsl_lbc_regs __iomem *lbc;
-+
-+	ctrl = fsl_lbc_ctrl_dev;
-+	if (!ctrl)
-+		goto out;
-+
-+	lbc = ctrl->regs;
-+	if (!lbc)
-+		goto out;
- 
- 	if (ctrl->saved_regs) {
- 		_memcpy_toio(lbc, ctrl->saved_regs,
-@@ -379,7 +398,9 @@ static int fsl_lbc_resume(struct platform_device *pdev)
- 		kfree(ctrl->saved_regs);
- 		ctrl->saved_regs = NULL;
- 	}
--	return 0;
-+
-+out:
-+	return;
- }
- #endif /* CONFIG_SUSPEND */
- 
-@@ -391,20 +412,26 @@ static const struct of_device_id fsl_lbc_match[] = {
- 	{},
- };
- 
-+#ifdef CONFIG_SUSPEND
-+static struct syscore_ops lbc_syscore_pm_ops = {
-+	.suspend = fsl_lbc_syscore_suspend,
-+	.resume = fsl_lbc_syscore_resume,
-+};
-+#endif
-+
- static struct platform_driver fsl_lbc_ctrl_driver = {
- 	.driver = {
- 		.name = "fsl-lbc",
- 		.of_match_table = fsl_lbc_match,
- 	},
- 	.probe = fsl_lbc_ctrl_probe,
--#ifdef CONFIG_SUSPEND
--	.suspend     = fsl_lbc_suspend,
--	.resume      = fsl_lbc_resume,
--#endif
- };
- 
- static int __init fsl_lbc_init(void)
- {
-+#ifdef CONFIG_SUSPEND
-+	register_syscore_ops(&lbc_syscore_pm_ops);
-+#endif
- 	return platform_driver_register(&fsl_lbc_ctrl_driver);
- }
--module_init(fsl_lbc_init);
-+arch_initcall(fsl_lbc_init);
+@@ -244,8 +244,6 @@ static irqreturn_t fsl_lbc_ctrl_irq(int irqno, void *data)
+ 	if (status & LTESR_CS)
+ 		dev_err(ctrl->dev, "Chip select error: "
+ 			"LTESR 0x%08X\n", status);
+-	if (status & LTESR_UPM)
+-		;
+ 	if (status & LTESR_FCT) {
+ 		dev_err(ctrl->dev, "FCM command time-out: "
+ 			"LTESR 0x%08X\n", status);
 -- 
 1.9.1
