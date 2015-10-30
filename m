@@ -1,25 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0148.outbound.protection.outlook.com [207.46.100.148])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A13481A0CCF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2015 00:08:00 +1100 (AEDT)
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 39865140B0F
- for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2015 00:07:59 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org,
- imunsie@au1.ibm.com, dja@axtens.net
-Subject: Re: [PATCH] cxl: sparse: add __iomem annotations in vphb.c
-Date: Fri, 30 Oct 2015 14:07:51 +0100
-Message-ID: <6848216.pocJKKsE8F@wuerfel>
-In-Reply-To: <1446002979-29728-1-git-send-email-andrew.donnellan@au1.ibm.com>
-References: <1446002979-29728-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E46D91A0A9E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2015 06:45:18 +1100 (AEDT)
+Message-ID: <1446234303.22185.38.camel@freescale.com>
+Subject: Re: [ANNOUNCE] kexec-tools 2.0.11-rc1
+From: Scott Wood <scottwood@freescale.com>
+To: Simon Horman <horms@verge.net.au>
+CC: <kexec@lists.infradead.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ <linuxppc-dev@lists.ozlabs.org>, Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+Date: Fri, 30 Oct 2015 14:45:03 -0500
+In-Reply-To: <20151030081236.GH31252@verge.net.au>
+References: <20151029234849.GA28689@verge.net.au>
+ <1446164604.22185.19.camel@freescale.com>
+ <20151030081236.GH31252@verge.net.au>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,50 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 28 October 2015 14:29:39 Andrew Donnellan wrote:
-> --- a/drivers/misc/cxl/vphb.c
-> +++ b/drivers/misc/cxl/vphb.c
-> @@ -128,7 +128,7 @@ static int cxl_pcie_config_info(struct pci_bus *bus, unsigned int devfn,
->                 return PCIBIOS_BAD_REGISTER_NUMBER;
->         addr = cxl_pcie_cfg_addr(phb, bus->number, devfn, offset);
->  
-> -       *ioaddr = (void *)(addr & ~0x3ULL);
-> +       *ioaddr = (void __iomem *)(addr & ~0x3ULL);
->         *shift = ((addr & 0x3) * 8);
->         switch (len) {
->         case 1:
+On Fri, 2015-10-30 at 17:12 +0900, Simon Horman wrote:
+> On Thu, Oct 29, 2015 at 07:23:24PM -0500, Scott Wood wrote:
+> > On Fri, 2015-10-30 at 08:48 +0900, Simon Horman wrote:
+> > > Hi all,
+> > > 
+> > > I am happy to announce the release of kexec-tools 2.0.11-rc1.
+> > > 
+> > > This is an incremental feature pre-release.
+> > > 
+> > > So long as no serious problems arise I intend to release kexec-tools 
+> > > 2.0.11
+> > > shortly after the release of the v4.3 kernel, which I expect to occur in
+> > > the next week or so.  As such testing of 2.0.11-rc1 would be greatly
+> > > appreciated.
+> > > 
+> > > I do not have any outstanding changes for 2.0.11 at this time.
+> > > And I would like to only accept bug fixes at this time and take take
+> > > features patches once 2.0.11 has been released.
+> > 
+> > As I previously reported, "ppc64: purgatory: Reset primary cpu endian to 
+> > big-
+> > endian" breaks book3e, so can  http://patchwork.ozlabs.org/patch/527048/be 
+> > considered for this release?
+> 
+> Yes of course, sorry for not taking more note of that.
+> 
+> Would it be possible to get a review, e.g. from Michael?
 
-It would be nice to change the return value of cxl_pcie_cfg_addr to
-'void __iomem *' as well, and only do the cast (back and forth) inside 
-the calculation, to make it clear that the input type is the same as the
-output. Perhaps use a static inline function to wrap it.
+I pinged Michael again on the original patch, and CCed him and Samuel and the 
+PPC list here.  If they still don't respond, and you still don't want to put 
+the fix in without their input, then could you revert the broken patch?
 
-> @@ -249,7 +249,7 @@ int cxl_pci_vphb_add(struct cxl_afu *afu)
->         /* Setup the PHB using arch provided callback */
->         phb->ops = &cxl_pcie_pci_ops;
->         phb->cfg_addr = afu->afu_desc_mmio + afu->crs_offset;
-> -       phb->cfg_data = (void *)(u64)afu->crs_len;
-> +       phb->cfg_data = (void __iomem *)afu->crs_len;
->         phb->private_data = afu;
->         phb->controller_ops = cxl_pci_controller_ops;
-
-
-This needs a comment to explain why this is correct. I've tried to find it
-out by reading the code and could not find any explanation. Also, you
-need to cast to an intermediate (uintptr_t) type, as directly converting
-a u64 to a pointer of any sort is nonportable, and it would be good to
-at least allow compile-testing this code on other architectures.
-
-I suspect that 'phb->cfg_data' is used in this driver in a way that is
-incompatible with the other uses of the same variable. Maybe you can
-replace it with something like
-
-	union {
-		void __iomem *cfg_data;
-		u64 cxl_cfg_offset;
-	};
-
-to make it clear that in this driver it is used as an offset rather than
-a pointer.
-
-	Arnd
+-Scott
