@@ -1,16 +1,37 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 603D31A0456
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Nov 2015 21:49:03 +1100 (AEDT)
-Message-Id: <20151101104208.271700412@telegraphics.com.au>
-Date: Sun, 01 Nov 2015 21:42:26 +1100
-From: Finn Thain <fthain@telegraphics.com.au>
-To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v7 24/26] m68k/mac: Use macros for RTC accesses not magic
- numbers
-References: <20151101104202.301856132@telegraphics.com.au>
+Return-Path: <sam.mj@au1.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9B5F61A0456
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2015 09:56:56 +1100 (AEDT)
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sam.mj@au1.ibm.com>;
+ Mon, 2 Nov 2015 08:56:54 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id C78ED2BB003F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2015 09:56:50 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA1Mugg2066022
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Nov 2015 09:56:50 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA1MuH4Y002767
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Nov 2015 09:56:18 +1100
+Date: Mon, 2 Nov 2015 09:55:53 +1100
+From: Sam Mendoza-Jonas <sam.mj@au1.ibm.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Simon Horman <horms@verge.net.au>, kexec@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2 2/3] ppc64: Avoid rfid if no need to clear MSR_LE
+Message-ID: <20151101225553.GA1995@localhost.localdomain>
+References: <1444172150-29493-1-git-send-email-scottwood@freescale.com>
+ <1444172150-29493-2-git-send-email-scottwood@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1444172150-29493-2-git-send-email-scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,136 +41,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+On Tue, Oct 06, 2015 at 05:55:49PM -0500, Scott Wood wrote:
+> Commit a304e2d82a8c3 ("ppc64: purgatory: Reset primary cpu endian to
+> big-endian) changed bctr to rfid.  rfid is book3s-only and will cause a
+> fatal exception on book3e.
+> 
+> Purgatory is an isolated environment which makes importing information
+> about the subarch awkward, so instead rely on the fact that MSR_LE
+> should never be set on book3e, and the rfid is only needed if MSR_LE is
+> set (and thus needs to be cleared).  In theory that MSR bit is reserved
+> on book3e, rather than zero, but in practice I have not seen it set.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> Cc: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+> ---
+> v2: new patch
 
----
+Looks good to me, thanks for catching this!
+I'll ping Michael too if you'd like his reviewed-by.
 
-This is intended to improve code style and not affect code behaviour.
-I've tested this on a Quadra 650.
+Reviewed-by: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
 
-I don't know the meanings of the 4 undocumented write protect register
-bits 0x55, so I decided against defining 4 macros for those bits.
-
----
- arch/m68k/mac/misc.c |   59 +++++++++++++++++++++++++++++++++++----------------
- 1 file changed, 41 insertions(+), 18 deletions(-)
-
-Index: linux/arch/m68k/mac/misc.c
-===================================================================
---- linux.orig/arch/m68k/mac/misc.c	2015-11-01 21:41:55.000000000 +1100
-+++ linux/arch/m68k/mac/misc.c	2015-11-01 21:41:56.000000000 +1100
-@@ -242,6 +242,21 @@ static void via_rtc_send(__u8 data)
- }
- 
- /*
-+ * These values can be found in Inside Macintosh vol. III ch. 2
-+ * which has a description of the RTC chip in the original Mac.
-+ */
-+
-+#define RTC_FLG_READ            BIT(7)
-+#define RTC_FLG_WRITE_PROTECT   BIT(7)
-+#define RTC_CMD_READ(r)         (RTC_FLG_READ | (r << 2))
-+#define RTC_CMD_WRITE(r)        (r << 2)
-+#define RTC_REG_SECONDS_0       0
-+#define RTC_REG_SECONDS_1       1
-+#define RTC_REG_SECONDS_2       2
-+#define RTC_REG_SECONDS_3       3
-+#define RTC_REG_WRITE_PROTECT   13
-+
-+/*
-  * Execute a VIA PRAM/RTC command. For read commands
-  * data should point to a one-byte buffer for the
-  * resulting data. For write commands it should point
-@@ -250,13 +265,17 @@ static void via_rtc_send(__u8 data)
-  * This function disables all interrupts while running.
-  */
- 
--static void via_pram_command(int command, __u8 *data)
-+static void via_rtc_command(int command, __u8 *data)
- {
- 	unsigned long flags;
- 	int	is_read;
- 
- 	local_irq_save(flags);
- 
-+	/* The least significant bits must be 0b01 according to Inside Mac */
-+
-+	command = (command & ~3) | 1;
-+
- 	/* Enable the RTC and make sure the strobe line is high */
- 
- 	via1[vBufB] = (via1[vBufB] | VIA1B_vRTCClk) & ~VIA1B_vRTCEnb;
-@@ -264,10 +283,10 @@ static void via_pram_command(int command
- 	if (command & 0xFF00) {		/* extended (two-byte) command */
- 		via_rtc_send((command & 0xFF00) >> 8);
- 		via_rtc_send(command & 0xFF);
--		is_read = command & 0x8000;
-+		is_read = command & (RTC_FLG_READ << 8);
- 	} else {			/* one-byte command */
- 		via_rtc_send(command);
--		is_read = command & 0x80;
-+		is_read = command & RTC_FLG_READ;
- 	}
- 	if (is_read) {
- 		*data = via_rtc_recv();
-@@ -306,10 +325,10 @@ static long via_read_time(void)
- 	} result, last_result;
- 	int count = 1;
- 
--	via_pram_command(0x81, &last_result.cdata[3]);
--	via_pram_command(0x85, &last_result.cdata[2]);
--	via_pram_command(0x89, &last_result.cdata[1]);
--	via_pram_command(0x8D, &last_result.cdata[0]);
-+	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_0), &last_result.cdata[3]);
-+	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_1), &last_result.cdata[2]);
-+	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_2), &last_result.cdata[1]);
-+	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_3), &last_result.cdata[0]);
- 
- 	/*
- 	 * The NetBSD guys say to loop until you get the same reading
-@@ -317,10 +336,14 @@ static long via_read_time(void)
- 	 */
- 
- 	while (1) {
--		via_pram_command(0x81, &result.cdata[3]);
--		via_pram_command(0x85, &result.cdata[2]);
--		via_pram_command(0x89, &result.cdata[1]);
--		via_pram_command(0x8D, &result.cdata[0]);
-+		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_0),
-+		                &result.cdata[3]);
-+		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_1),
-+		                &result.cdata[2]);
-+		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_2),
-+		                &result.cdata[1]);
-+		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_3),
-+		                &result.cdata[0]);
- 
- 		if (result.idata == last_result.idata)
- 			return result.idata - RTC_OFFSET;
-@@ -356,18 +379,18 @@ static void via_write_time(long time)
- 	/* Clear the write protect bit */
- 
- 	temp = 0x55;
--	via_pram_command(0x35, &temp);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
- 
- 	data.idata = time + RTC_OFFSET;
--	via_pram_command(0x01, &data.cdata[3]);
--	via_pram_command(0x05, &data.cdata[2]);
--	via_pram_command(0x09, &data.cdata[1]);
--	via_pram_command(0x0D, &data.cdata[0]);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_0), &data.cdata[3]);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_1), &data.cdata[2]);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_2), &data.cdata[1]);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_3), &data.cdata[0]);
- 
- 	/* Set the write protect bit */
- 
--	temp = 0xD5;
--	via_pram_command(0x35, &temp);
-+	temp = 0x55 | RTC_FLG_WRITE_PROTECT;
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
- }
- 
- static void via_shutdown(void)
+> 
+>  purgatory/arch/ppc64/v2wrap.S | 10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
+> 
+> diff --git a/purgatory/arch/ppc64/v2wrap.S b/purgatory/arch/ppc64/v2wrap.S
+> index 179ade9..3534080 100644
+> --- a/purgatory/arch/ppc64/v2wrap.S
+> +++ b/purgatory/arch/ppc64/v2wrap.S
+> @@ -116,9 +116,17 @@ master:
+>  	stw	7,0x5c(4)	# and patch it into the kernel
+>  	mr      3,16            # restore dt address
+>  
+> +	mfmsr	5
+> +	andi.	10,5,1		# test MSR_LE
+> +	bne	little_endian
+> +
+> +	li	5,0		# r5 will be 0 for kernel
+> +	mtctr	4		# prepare branch to
+> +	bctr			# start kernel
+> +	
+> +little_endian:			# book3s-only
+>  	mtsrr0	4		# prepare branch to
+>  
+> -	mfmsr	5
+>  	clrrdi	5,5,1		# clear MSR_LE
+>  	mtsrr1	5
+>  
+> -- 
+> 2.1.4
