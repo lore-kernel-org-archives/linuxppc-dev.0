@@ -1,15 +1,16 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id BDFA31A0456
+ by lists.ozlabs.org (Postfix) with ESMTP id C823F1A0485
  for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Nov 2015 21:49:01 +1100 (AEDT)
-Message-Id: <20151101104203.551653610@telegraphics.com.au>
-Date: Sun, 01 Nov 2015 21:42:07 +1100
+Message-Id: <20151101104204.051709378@telegraphics.com.au>
+Date: Sun, 01 Nov 2015 21:42:09 +1100
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v7 05/26] char/nvram: Adopt arch_nvram_ops
+Subject: [PATCH v7 07/26] char/nvram: Allow the set_checksum and initialize
+ ioctls to be omitted
 References: <20151101104202.301856132@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,118 +21,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Different platforms and architectures offer different NVRAM sizes and
-access methods. E.g. PPC32 has byte-at-a-time read/write functions whereas
-PPC64 has byte-range read/write functions. Adopt the nvram_ops struct so
-the nvram module can call such functions as are defined by the various 
-platforms and architectures.
+The drivers/char/nvram module has previously only supported RTC "CMOS"
+NVRAM, for which it provides appropriate checksum ioctls. Make these
+ioctls optional so the module can be re-used with other kinds of NVRAM.
+
+The ops struct methods that implement the ioctls now return error
+codes so that a multi-platform kernel binary can do the right thing when
+running on hardware without suitable NVRAM.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
 
-The #ifdefs here restrict the procfs and checksumming code to those
-architectures with PC-style RTC NVRAM. There may be a better place for
-that code but it's an open question. See https://lkml.org/lkml/2015/2/3/22
-
-The procfs code here, unless relevant to an ARM platform, could be moved to
-arch/x86 (like the earlier patch does for m68k code) and the nvram ops
-could be implemented and exported by the rtc-cmos driver instead. This
-would eliminate these #ifdefs and almost eliminate the arch-specific code.
+Changed since v1:
+- Don't bother acquiring the mutex for unimplemented ioctls.
 
 ---
- drivers/char/nvram.c  |   30 +++++++++++++++++++++++++++---
- include/linux/nvram.h |    2 ++
- 2 files changed, 29 insertions(+), 3 deletions(-)
+ drivers/char/nvram.c  |   71 ++++++++++++++++++++++++++++----------------------
+ include/linux/nvram.h |    2 +
+ 2 files changed, 43 insertions(+), 30 deletions(-)
 
 Index: linux/drivers/char/nvram.c
 ===================================================================
---- linux.orig/drivers/char/nvram.c	2015-11-01 21:41:29.000000000 +1100
-+++ linux/drivers/char/nvram.c	2015-11-01 21:41:30.000000000 +1100
-@@ -51,9 +51,12 @@ static DEFINE_MUTEX(nvram_mutex);
- static DEFINE_SPINLOCK(nvram_state_lock);
- static int nvram_open_cnt;	/* #times opened */
- static int nvram_open_mode;	/* special open modes */
-+static ssize_t nvram_size;
- #define NVRAM_WRITE		1 /* opened for writing (exclusive) */
- #define NVRAM_EXCL		2 /* opened with O_EXCL */
- 
-+#if defined(CONFIG_X86) || defined(CONFIG_ARM)
-+
- /*
-  * These functions are provided to be called internally or by other parts of
-  * the kernel. It's up to the caller to ensure correct checksum before reading
-@@ -161,6 +164,20 @@ void nvram_set_checksum(void)
+--- linux.orig/drivers/char/nvram.c	2015-11-01 21:41:30.000000000 +1100
++++ linux/drivers/char/nvram.c	2015-11-01 21:41:32.000000000 +1100
+@@ -153,16 +153,25 @@ static void __nvram_set_checksum(void)
+ 	__nvram_write_byte(sum & 0xff, PC_CKS_LOC + 1);
  }
- #endif  /*  0  */
  
-+static ssize_t nvram_get_size(void)
-+{
-+	return NVRAM_BYTES;
+-#if 0
+-void nvram_set_checksum(void)
++static long nvram_set_checksum(void)
+ {
+-	unsigned long flags;
++	spin_lock_irq(&rtc_lock);
++	__nvram_set_checksum();
++	spin_unlock_irq(&rtc_lock);
++	return 0;
 +}
 +
-+const struct nvram_ops arch_nvram_ops = {
-+	.read_byte      = nvram_read_byte,
-+	.write_byte     = nvram_write_byte,
-+	.get_size       = nvram_get_size,
-+};
-+EXPORT_SYMBOL(arch_nvram_ops);
-+
-+#endif /* CONFIG_X86 || CONFIG_ARM */
-+
- /*
-  * The are the file operation function for user access to /dev/nvram
-  */
-@@ -332,7 +349,7 @@ static int nvram_misc_release(struct ino
- 	return 0;
++static long nvram_initialize(void)
++{
++	ssize_t i;
+ 
+-	spin_lock_irqsave(&rtc_lock, flags);
++	spin_lock_irq(&rtc_lock);
++	for (i = 0; i < NVRAM_BYTES; ++i)
++		__nvram_write_byte(0, i);
+ 	__nvram_set_checksum();
+-	spin_unlock_irqrestore(&rtc_lock, flags);
++	spin_unlock_irq(&rtc_lock);
++	return 0;
+ }
+-#endif  /*  0  */
+ 
+ static ssize_t nvram_get_size(void)
+ {
+@@ -173,6 +182,8 @@ const struct nvram_ops arch_nvram_ops =
+ 	.read_byte      = nvram_read_byte,
+ 	.write_byte     = nvram_write_byte,
+ 	.get_size       = nvram_get_size,
++	.set_checksum   = nvram_set_checksum,
++	.initialize     = nvram_initialize,
+ };
+ EXPORT_SYMBOL(arch_nvram_ops);
+ 
+@@ -272,51 +283,51 @@ checksum_err:
+ static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
+                              unsigned long arg)
+ {
+-	int i;
++	long ret = -ENOTTY;
+ 
+ 	switch (cmd) {
+-
+ 	case NVRAM_INIT:
+ 		/* initialize NVRAM contents and checksum */
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EACCES;
+ 
+-		mutex_lock(&nvram_mutex);
+-		spin_lock_irq(&rtc_lock);
+-
+-		for (i = 0; i < NVRAM_BYTES; ++i)
+-			__nvram_write_byte(0, i);
+-		__nvram_set_checksum();
+-
+-		spin_unlock_irq(&rtc_lock);
+-		mutex_unlock(&nvram_mutex);
+-		return 0;
+-
++		if (arch_nvram_ops.initialize != NULL) {
++			mutex_lock(&nvram_mutex);
++			ret = arch_nvram_ops.initialize();
++			mutex_unlock(&nvram_mutex);
++		}
++		break;
+ 	case NVRAM_SETCKS:
+ 		/* just set checksum, contents unchanged (maybe useful after
+ 		 * checksum garbaged somehow...) */
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EACCES;
+ 
+-		mutex_lock(&nvram_mutex);
+-		spin_lock_irq(&rtc_lock);
+-		__nvram_set_checksum();
+-		spin_unlock_irq(&rtc_lock);
+-		mutex_unlock(&nvram_mutex);
+-		return 0;
+-
+-	default:
+-		return -ENOTTY;
++		if (arch_nvram_ops.set_checksum != NULL) {
++			mutex_lock(&nvram_mutex);
++			ret = arch_nvram_ops.set_checksum();
++			mutex_unlock(&nvram_mutex);
++		}
++		break;
+ 	}
++	return ret;
  }
  
--#ifdef CONFIG_PROC_FS
-+#if defined(CONFIG_PROC_FS) && (defined(CONFIG_X86) || defined(CONFIG_ARM))
- 
- static char *floppy_types[] = {
- 	"none", "5.25'' 360k", "5.25'' 1.2M", "3.5'' 720k", "3.5'' 1.44M",
-@@ -459,13 +476,20 @@ static int __init nvram_module_init(void
+ static int nvram_misc_open(struct inode *inode, struct file *file)
  {
- 	int ret;
+ 	spin_lock(&nvram_state_lock);
  
-+	if (arch_nvram_ops.get_size == NULL)
-+		return -ENODEV;
++	/* Prevent multiple readers/writers if desired. */
+ 	if ((nvram_open_cnt && (file->f_flags & O_EXCL)) ||
+-	    (nvram_open_mode & NVRAM_EXCL) ||
+-	    ((file->f_mode & FMODE_WRITE) && (nvram_open_mode & NVRAM_WRITE))) {
++	    (nvram_open_mode & NVRAM_EXCL)) {
++		spin_unlock(&nvram_state_lock);
++		return -EBUSY;
++	}
 +
-+	nvram_size = arch_nvram_ops.get_size();
-+	if (nvram_size < 0)
-+		return nvram_size;
-+
- 	ret = misc_register(&nvram_misc);
- 	if (ret) {
- 		pr_err("nvram: can't misc_register on minor=%d\n", NVRAM_MINOR);
- 		return ret;
++	/* Prevent multiple writers if the set_checksum ioctl is implemented. */
++	if ((arch_nvram_ops.set_checksum != NULL) &&
++	    (file->f_mode & FMODE_WRITE) &&
++	    (nvram_open_mode & NVRAM_WRITE)) {
+ 		spin_unlock(&nvram_state_lock);
+ 		return -EBUSY;
  	}
- 
--#ifdef CONFIG_PROC_FS
-+#if defined(CONFIG_PROC_FS) && (defined(CONFIG_X86) || defined(CONFIG_ARM))
- 	if (!proc_create("driver/nvram", 0, NULL, &nvram_proc_fops)) {
- 		pr_err("nvram: can't create /proc/driver/nvram\n");
- 		misc_deregister(&nvram_misc);
-@@ -479,7 +503,7 @@ static int __init nvram_module_init(void
- 
- static void __exit nvram_module_exit(void)
- {
--#ifdef CONFIG_PROC_FS
-+#if defined(CONFIG_PROC_FS) && (defined(CONFIG_X86) || defined(CONFIG_ARM))
- 	remove_proc_entry("driver/nvram", NULL);
- #endif
- 	misc_deregister(&nvram_misc);
 Index: linux/include/linux/nvram.h
 ===================================================================
---- linux.orig/include/linux/nvram.h	2015-11-01 21:41:27.000000000 +1100
-+++ linux/include/linux/nvram.h	2015-11-01 21:41:30.000000000 +1100
-@@ -14,6 +14,8 @@ extern int nvram_check_checksum(void);
- struct nvram_ops {
- 	ssize_t         (*read)(char *, size_t, loff_t *);
- 	ssize_t         (*write)(char *, size_t, loff_t *);
-+	unsigned char   (*read_byte)(int);
-+	void            (*write_byte)(unsigned char, int);
+--- linux.orig/include/linux/nvram.h	2015-11-01 21:41:30.000000000 +1100
++++ linux/include/linux/nvram.h	2015-11-01 21:41:32.000000000 +1100
+@@ -17,6 +17,8 @@ struct nvram_ops {
+ 	unsigned char   (*read_byte)(int);
+ 	void            (*write_byte)(unsigned char, int);
  	ssize_t         (*get_size)(void);
++	long            (*set_checksum)(void);
++	long            (*initialize)(void);
  };
  
+ extern const struct nvram_ops arch_nvram_ops;
