@@ -1,17 +1,19 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 2809E1A0485
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Nov 2015 21:48:59 +1100 (AEDT)
-Message-Id: <20151101104203.061678383@telegraphics.com.au>
-Date: Sun, 01 Nov 2015 21:42:05 +1100
+ by lists.ozlabs.org (Postfix) with ESMTP id C824A1A04A2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Nov 2015 21:49:01 +1100 (AEDT)
+Message-Id: <20151101104203.801701049@telegraphics.com.au>
+Date: Sun, 01 Nov 2015 21:42:08 +1100
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Michael Schmitz <schmitzmic@gmail.com>,
- "James E.J. Bottomley" <JBottomley@odin.com>, linux-scsi@vger.kernel.org
-Subject: [PATCH v7 03/26] m68k/atari: Replace nvram_{read,
- write}_byte with arch_nvram_ops
+ <linuxppc-dev@lists.ozlabs.org>,
+ Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
+ Darren Hart <dvhart@infradead.org>, ibm-acpi-devel@lists.sourceforge.net,
+ platform-driver-x86@vger.kernel.org
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: [PATCH v7 06/26] x86/thinkpad_acpi: Use arch_nvram_ops methods
+ instead of nvram_read_byte() and nvram_write_byte()
 References: <20151101104202.301856132@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,191 +24,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By implementing an arch_nvram_ops struct, any platform can re-use the
-drivers/char/nvram module without needing any arch-specific code
-in that module. Atari does so here.
+Make use of arch_nvram_ops in the thinkpad_acpi driver so that the
+nvram_* function exports can be removed.
 
-Atari has one user of nvram_check_checksum() whereas the other platforms
-(i.e. x86 and ARM platforms) have none at all. Replace this
-validate-checksum-and-read-byte sequence with the equivalent
-rtc_nvram_ops.read() call and remove the now unused functions.
+This patch series was tested on a ThinkPad T43.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Tested-by: Christian T. Steigies <cts@debian.org>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Reviewed-by: Darren Hart <dvhart@linux.intel.com>
 
 ---
+ drivers/platform/x86/thinkpad_acpi.c |   20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-The advantage of the new ops struct over the old global nvram_* functions
-is that the misc device module can be shared by different platforms
-without requiring every platform to implement every nvram_* function.
-E.g. only RTC "CMOS" NVRAMs have a checksum for the entire NVRAM
-and only PowerPC platforms have a "sync" ioctl.
-
----
- arch/m68k/atari/nvram.c   |   89 ++++++++++++++++++++++++++++------------------
- drivers/scsi/atari_scsi.c |    8 ++--
- include/linux/nvram.h     |    9 ++++
- 3 files changed, 70 insertions(+), 36 deletions(-)
-
-Index: linux/arch/m68k/atari/nvram.c
+Index: linux/drivers/platform/x86/thinkpad_acpi.c
 ===================================================================
---- linux.orig/arch/m68k/atari/nvram.c	2015-11-01 21:41:25.000000000 +1100
-+++ linux/arch/m68k/atari/nvram.c	2015-11-01 21:41:27.000000000 +1100
-@@ -38,33 +38,12 @@ unsigned char __nvram_read_byte(int i)
- 	return CMOS_READ(NVRAM_FIRST_BYTE + i);
- }
+--- linux.orig/drivers/platform/x86/thinkpad_acpi.c	2015-11-01 21:41:24.000000000 +1100
++++ linux/drivers/platform/x86/thinkpad_acpi.c	2015-11-01 21:41:31.000000000 +1100
+@@ -2312,30 +2312,30 @@ static void hotkey_read_nvram(struct tp_
+ 	u8 d;
  
--unsigned char nvram_read_byte(int i)
--{
--	unsigned long flags;
--	unsigned char c;
--
--	spin_lock_irqsave(&rtc_lock, flags);
--	c = __nvram_read_byte(i);
--	spin_unlock_irqrestore(&rtc_lock, flags);
--	return c;
--}
--EXPORT_SYMBOL(nvram_read_byte);
--
- /* This races nicely with trying to read with checksum checking */
- void __nvram_write_byte(unsigned char c, int i)
+ 	if (m & TP_NVRAM_HKEY_GROUP_HK2) {
+-		d = nvram_read_byte(TP_NVRAM_ADDR_HK2);
++		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_HK2);
+ 		n->thinkpad_toggle = !!(d & TP_NVRAM_MASK_HKT_THINKPAD);
+ 		n->zoom_toggle = !!(d & TP_NVRAM_MASK_HKT_ZOOM);
+ 		n->display_toggle = !!(d & TP_NVRAM_MASK_HKT_DISPLAY);
+ 		n->hibernate_toggle = !!(d & TP_NVRAM_MASK_HKT_HIBERNATE);
+ 	}
+ 	if (m & TP_ACPI_HKEY_THNKLGHT_MASK) {
+-		d = nvram_read_byte(TP_NVRAM_ADDR_THINKLIGHT);
++		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_THINKLIGHT);
+ 		n->thinklight_toggle = !!(d & TP_NVRAM_MASK_THINKLIGHT);
+ 	}
+ 	if (m & TP_ACPI_HKEY_DISPXPAND_MASK) {
+-		d = nvram_read_byte(TP_NVRAM_ADDR_VIDEO);
++		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_VIDEO);
+ 		n->displayexp_toggle =
+ 				!!(d & TP_NVRAM_MASK_HKT_DISPEXPND);
+ 	}
+ 	if (m & TP_NVRAM_HKEY_GROUP_BRIGHTNESS) {
+-		d = nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
++		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
+ 		n->brightness_level = (d & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
+ 				>> TP_NVRAM_POS_LEVEL_BRIGHTNESS;
+ 		n->brightness_toggle =
+ 				!!(d & TP_NVRAM_MASK_HKT_BRIGHTNESS);
+ 	}
+ 	if (m & TP_NVRAM_HKEY_GROUP_VOLUME) {
+-		d = nvram_read_byte(TP_NVRAM_ADDR_MIXER);
++		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_MIXER);
+ 		n->volume_level = (d & TP_NVRAM_MASK_LEVEL_VOLUME)
+ 				>> TP_NVRAM_POS_LEVEL_VOLUME;
+ 		n->mute = !!(d & TP_NVRAM_MASK_MUTE);
+@@ -6156,7 +6156,7 @@ static unsigned int tpacpi_brightness_nv
  {
- 	CMOS_WRITE(c, NVRAM_FIRST_BYTE + i);
- }
+ 	u8 lnvram;
  
--void nvram_write_byte(unsigned char c, int i)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&rtc_lock, flags);
--	__nvram_write_byte(c, i);
--	spin_unlock_irqrestore(&rtc_lock, flags);
--}
--
- /* On Ataris, the checksum is over all bytes except the checksum bytes
-  * themselves; these are at the very end.
-  */
-@@ -83,18 +62,6 @@ int __nvram_check_checksum(void)
- 	       (__nvram_read_byte(ATARI_CKS_LOC + 1) == (sum & 0xff));
- }
+-	lnvram = (nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS)
++	lnvram = (arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS)
+ 		  & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
+ 		  >> TP_NVRAM_POS_LEVEL_BRIGHTNESS;
+ 	lnvram &= bright_maxlvl;
+@@ -6181,7 +6181,7 @@ static void tpacpi_brightness_checkpoint
+ 	if (unlikely(!acpi_ec_read(TP_EC_BACKLIGHT, &lec)))
+ 		goto unlock;
+ 	lec &= TP_EC_BACKLIGHT_LVLMSK;
+-	b_nvram = nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
++	b_nvram = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
  
--int nvram_check_checksum(void)
--{
--	unsigned long flags;
--	int rv;
--
--	spin_lock_irqsave(&rtc_lock, flags);
--	rv = __nvram_check_checksum();
--	spin_unlock_irqrestore(&rtc_lock, flags);
--	return rv;
--}
--EXPORT_SYMBOL(nvram_check_checksum);
--
- static void __nvram_set_checksum(void)
- {
- 	int i;
-@@ -106,6 +73,62 @@ static void __nvram_set_checksum(void)
- 	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
- }
+ 	if (lec != ((b_nvram & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
+ 			     >> TP_NVRAM_POS_LEVEL_BRIGHTNESS)) {
+@@ -6189,7 +6189,7 @@ static void tpacpi_brightness_checkpoint
+ 		b_nvram &= ~(TP_NVRAM_MASK_LEVEL_BRIGHTNESS <<
+ 				TP_NVRAM_POS_LEVEL_BRIGHTNESS);
+ 		b_nvram |= lec;
+-		nvram_write_byte(b_nvram, TP_NVRAM_ADDR_BRIGHTNESS);
++		arch_nvram_ops.write_byte(b_nvram, TP_NVRAM_ADDR_BRIGHTNESS);
+ 		dbg_printk(TPACPI_DBG_BRGHT,
+ 			   "updated NVRAM backlight level to %u (0x%02x)\n",
+ 			   (unsigned int) lec, (unsigned int) b_nvram);
+@@ -6797,13 +6797,13 @@ static void tpacpi_volume_checkpoint_nvr
+ 	if (unlikely(!acpi_ec_read(TP_EC_AUDIO, &lec)))
+ 		goto unlock;
+ 	lec &= ec_mask;
+-	b_nvram = nvram_read_byte(TP_NVRAM_ADDR_MIXER);
++	b_nvram = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_MIXER);
  
-+static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
-+{
-+	char *p = buf;
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+
-+	if (!__nvram_check_checksum()) {
-+		spin_unlock_irq(&rtc_lock);
-+		return -EIO;
-+	}
-+
-+	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
-+		*p = __nvram_read_byte(i);
-+
-+	spin_unlock_irq(&rtc_lock);
-+
-+	*ppos = i;
-+	return p - buf;
-+}
-+
-+static ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
-+{
-+	char *p = buf;
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+
-+	if (!__nvram_check_checksum()) {
-+		spin_unlock_irq(&rtc_lock);
-+		return -EIO;
-+	}
-+
-+	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
-+		__nvram_write_byte(*p, i);
-+
-+	__nvram_set_checksum();
-+
-+	spin_unlock_irq(&rtc_lock);
-+
-+	*ppos = i;
-+	return p - buf;
-+}
-+
-+static ssize_t nvram_get_size(void)
-+{
-+	return NVRAM_BYTES;
-+}
-+
-+const struct nvram_ops arch_nvram_ops = {
-+	.read           = nvram_read,
-+	.write          = nvram_write,
-+	.get_size       = nvram_get_size,
-+};
-+EXPORT_SYMBOL(arch_nvram_ops);
-+
- #ifdef CONFIG_PROC_FS
- static struct {
- 	unsigned char val;
-Index: linux/drivers/scsi/atari_scsi.c
-===================================================================
---- linux.orig/drivers/scsi/atari_scsi.c	2015-11-01 21:41:24.000000000 +1100
-+++ linux/drivers/scsi/atari_scsi.c	2015-11-01 21:41:27.000000000 +1100
-@@ -880,13 +880,15 @@ static int __init atari_scsi_probe(struc
- #ifdef CONFIG_NVRAM
- 	else
- 		/* Test if a host id is set in the NVRam */
--		if (ATARIHW_PRESENT(TT_CLK) && nvram_check_checksum()) {
--			unsigned char b = nvram_read_byte(14);
-+		if (ATARIHW_PRESENT(TT_CLK)) {
-+			unsigned char b;
-+			loff_t offset = 14;
-+			ssize_t count = arch_nvram_ops.read(&b, 1, &offset);
- 
- 			/* Arbitration enabled? (for TOS)
- 			 * If yes, use configured host ID
- 			 */
--			if (b & 0x80)
-+			if ((count == 1) && (b & 0x80))
- 				atari_scsi_template.this_id = b & 7;
- 		}
- #endif
-Index: linux/include/linux/nvram.h
-===================================================================
---- linux.orig/include/linux/nvram.h	2015-11-01 21:41:24.000000000 +1100
-+++ linux/include/linux/nvram.h	2015-11-01 21:41:27.000000000 +1100
-@@ -10,4 +10,13 @@ extern void __nvram_write_byte(unsigned
- extern void nvram_write_byte(unsigned char c, int i);
- extern int __nvram_check_checksum(void);
- extern int nvram_check_checksum(void);
-+
-+struct nvram_ops {
-+	ssize_t         (*read)(char *, size_t, loff_t *);
-+	ssize_t         (*write)(char *, size_t, loff_t *);
-+	ssize_t         (*get_size)(void);
-+};
-+
-+extern const struct nvram_ops arch_nvram_ops;
-+
- #endif  /* _LINUX_NVRAM_H */
+ 	if (lec != (b_nvram & ec_mask)) {
+ 		/* NVRAM needs update */
+ 		b_nvram &= ~ec_mask;
+ 		b_nvram |= lec;
+-		nvram_write_byte(b_nvram, TP_NVRAM_ADDR_MIXER);
++		arch_nvram_ops.write_byte(b_nvram, TP_NVRAM_ADDR_MIXER);
+ 		dbg_printk(TPACPI_DBG_MIXER,
+ 			   "updated NVRAM mixer status to 0x%02x (0x%02x)\n",
+ 			   (unsigned int) lec, (unsigned int) b_nvram);
