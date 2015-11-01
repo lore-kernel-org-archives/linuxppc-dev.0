@@ -1,40 +1,14 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1CBBF1A046D
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Nov 2015 12:54:03 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Sun, 1 Nov 2015 07:24:01 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 828D0E0054
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Nov 2015 07:24:10 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA11ruMd56229908
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 1 Nov 2015 07:23:56 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA11rtkW014379
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 1 Nov 2015 07:23:56 +0530
-Date: Sun, 1 Nov 2015 09:53:51 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
- bhelgaas@google.com, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org
-Subject: Re: [PATCH V10 10/12] powerpc/eeh: Support error recovery for VF PE
-Message-ID: <20151101015351.GA947@Richards-MBP.lan>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1445829362-2738-11-git-send-email-weiyang@linux.vnet.ibm.com>
- <5632FE30.8040003@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5632FE30.8040003@ozlabs.ru>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 28B5C1A04A2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Nov 2015 21:48:59 +1100 (AEDT)
+Message-Id: <20151101104202.301856132@telegraphics.com.au>
+Date: Sun, 01 Nov 2015 21:42:02 +1100
+From: Finn Thain <fthain@telegraphics.com.au>
+To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v7 00/26] Re-use nvram module
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,352 +18,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 30, 2015 at 04:20:48PM +1100, Alexey Kardashevskiy wrote:
->On 10/26/2015 02:16 PM, Wei Yang wrote:
->>Different from PCI bus dependent PE, PE for VFs doesn't have the
->
->s/Different from/Unlike/
->
 
-Will change in next version.
+The generic NVRAM module, drivers/char/generic_nvram, implements a
+/dev/nvram misc device. It is used only by 32-bit PowerPC platforms and
+isn't generic enough to be more widely used.
 
->
->>primary bus, on which the PCI hotplug is implemented. The patch
->>supports error recovery, especially the PCI hotplug for VF's PE.
->
->The patch adds support for error recovery of what exactly?
->What is "especially" about?
->
+The RTC NVRAM module, drivers/char/nvram, also implements a /dev/nvram
+misc device. It is used by x86, ARM and m68k.
 
-PFs are enumerated on PCI bus, while VFs are created by PF's driver.
+The former module cannot be used on x86, ARM or m68k because it
+cannot co-exist with the latter module, partly due to the Kconfig logic.
 
-In EEH recovery, it has two cases.
-1. Device and driver is EEH aware, error handlers are called.
-2. Device and driver is not EEH aware, un-plug the device and plug it again by
-   enumerating it.
+It is possible to modify the modules so that one kernel binary could
+have either, neither or both. However, automatically loading the
+appropriate module is then impossible; if both provide the
+char-major-10-144 alias then the wrong module will end up being loaded.
+Hence a multi-platform kernel binary needs a single generic nvram module
+with alias char-major-10-144.
 
-The special thing happens on the second case. For a PF, we could use the
-original pci core to enumerate the bus, while for VF, we need to record the VF
-which are un-plugged then plug it again.
+Therefore, drivers/char/nvram.c should be made more generic and the
+arch-specific code therein should be moved to a more appropriate
+place under arch/. Also, drivers/char/generic_nvram.c should be removed
+to reduce code duplication.
 
->
->>The hotplug on VF's PE is implemented based on VFs, instead of
->>PCI bus any more.
->
->Needs rephrase.
->
->Is this patch about EEH error recovery, i.e. unplug VF, re-plug VF? Why does
->the commit log talk about PE hotplug? I thought we do VF (i.e. PCI device)
->hotplug, not PE.
->
+In this patch series, Atari-specific code is moved from the nvram module
+to arch/m68k/atari. More arch-specific code in the nvram module could
+be moved, probably to arch/x86, but it is difficult to determine just
+what code is relevant to ARM platforms and what code is x86-only.
 
-Hmm... unlike the Bus PE for PFs, VF PE is dynamically created and released
-when VFs are created and released.
+In addressing code duplication, v1 of this patch series removes three
+inconsistent /dev/nvram misc device implementations. One of these,
+drivers/macintosh/nvram.c is entirely unused already. The other two,
+drivers/char/generic_nvram.c and the misc device implementation in
+arch/powerpc/kernel/nvram_64.c, are replaced by drivers/char/nvram.c.
 
->
->>
->>[gwshan: changelog and code refactoring]
->>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>---
->>  arch/powerpc/include/asm/eeh.h   |   1 +
->>  arch/powerpc/kernel/eeh.c        |   8 ++++
->>  arch/powerpc/kernel/eeh_driver.c | 100 +++++++++++++++++++++++++++++++--------
->>  arch/powerpc/kernel/eeh_pe.c     |   3 +-
->>  4 files changed, 90 insertions(+), 22 deletions(-)
->>
->>diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
->>index 331c856..ea1f13c4 100644
->>--- a/arch/powerpc/include/asm/eeh.h
->>+++ b/arch/powerpc/include/asm/eeh.h
->>@@ -142,6 +142,7 @@ struct eeh_dev {
->>  	struct pci_controller *phb;	/* Associated PHB		*/
->>  	struct pci_dn *pdn;		/* Associated PCI device node	*/
->>  	struct pci_dev *pdev;		/* Associated PCI device	*/
->>+	int    in_error;		/* Error flag for eeh_dev	*/
->
->Make it "bool".
->
+A benefit of this work is better consistency -- between PPC32 and PPC64
+as well as between PPC_PMAC and MAC. This new uniformity does have
+implications for userspace, that is, some error codes for some ioctl calls
+become consistent on all PowerPC platforms.
 
-Will change it in next version.
+The drivers/char/nvram module becomes sufficiently generic to be useful
+to other platforms and architectures, besides those with "CMOS" RTC. At the
+end of this patch series the module is adopted by the m68k Mac port, which
+already has PRAM access functions but lacks the /dev/nvram misc device.
 
->
->>  	struct pci_dev *physfn;		/* Associated PF PORT		*/
->>  	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
->>  };
->>diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->>index af9b597..28e4d73 100644
->>--- a/arch/powerpc/kernel/eeh.c
->>+++ b/arch/powerpc/kernel/eeh.c
->>@@ -1227,6 +1227,14 @@ void eeh_remove_device(struct pci_dev *dev)
->>  	 * from the parent PE during the BAR resotre.
->>  	 */
->>  	edev->pdev = NULL;
->>+
->>+	/*
->>+	 * The flag "in_error" is used to trace EEH devices for VFs
->>+	 * in error state or not. It's set in eeh_report_error(). If
->>+	 * it's not set, eeh_report_{reset,resume}() won't be called
->>+	 * for the VF EEH device.
->>+	 */
->>+	edev->in_error = 0;
->>  	dev->dev.archdata.edev = NULL;
->>  	if (!(edev->pe->state & EEH_PE_KEEP))
->>  		eeh_rmv_from_parent_pe(edev);
->>diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
->>index 89eb4bc..99868e2 100644
->>--- a/arch/powerpc/kernel/eeh_driver.c
->>+++ b/arch/powerpc/kernel/eeh_driver.c
->>@@ -211,6 +211,7 @@ static void *eeh_report_error(void *data, void *userdata)
->>  	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
->>  	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
->>
->>+	edev->in_error = 1;
->>  	eeh_pcid_put(dev);
->>  	return NULL;
->>  }
->>@@ -282,7 +283,8 @@ static void *eeh_report_reset(void *data, void *userdata)
->>
->>  	if (!driver->err_handler ||
->>  	    !driver->err_handler->slot_reset ||
->>-	    (edev->mode & EEH_DEV_NO_HANDLER)) {
->>+	    (edev->mode & EEH_DEV_NO_HANDLER) ||
->>+	    (!edev->in_error)) {
->>  		eeh_pcid_put(dev);
->>  		return NULL;
->>  	}
->>@@ -339,14 +341,16 @@ static void *eeh_report_resume(void *data, void *userdata)
->>
->
->bood was_in_error = edev->in_error;
->edev->in_error = false;
->
->then use was_in_error below and there is no need to replace return with goto,
->etc -> slightly simpler code.
->
+This patch series has been compile-tested for arm, m68k, powerpc and x86.
+The nvram and thinkpad_acpi modules were regression tested on a ThinkPad
+T43. The /dev/nvram functionality was also regression tested on a G3
+PowerMac. The nvram module was also tested on a PowerBook 520, Quadra 650
+and Atari Falcon. The PPC64 changes were tested on a G5 PowerMac.
 
-Will change it in next version.
+Changes since v1:
+- Minor changes to patches 7, 15 and 20 as described in commit logs.
+- Revised patches 21 and 24 to address comments from Geert.
 
->
->>  	if (!driver->err_handler ||
->>  	    !driver->err_handler->resume ||
->>-	    (edev->mode & EEH_DEV_NO_HANDLER)) {
->>+	    (edev->mode & EEH_DEV_NO_HANDLER) ||
->>+	    (!edev->in_error)) {
->>  		edev->mode &= ~EEH_DEV_NO_HANDLER;
->>-		eeh_pcid_put(dev);
->>-		return NULL;
->>+		goto out;
->>  	}
->>
->>  	driver->err_handler->resume(dev);
->>
->>+out:
->>+	edev->in_error = 0;
->>  	eeh_pcid_put(dev);
->>  	return NULL;
->>  }
->>@@ -386,12 +390,38 @@ static void *eeh_report_failure(void *data, void *userdata)
->>  	return NULL;
->>  }
->>
->>+static void *eeh_add_virt_device(void *data, void *userdata)
->>+{
->>+	struct pci_driver *driver;
->>+	struct eeh_dev *edev = (struct eeh_dev *)data;
->>+	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
->>+	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
->>+
->>+	if (!(edev->physfn)) {
->>+		pr_warn("%s: EEH dev %04x:%02x:%02x.%01x not for VF\n",
->>+			__func__, edev->phb->global_number, pdn->busno,
->>+			PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
->>+		return NULL;
->>+	}
->>+
->>+	driver = eeh_pcid_get(dev);
->>+	if (driver) {
->>+		eeh_pcid_put(dev);
->>+		if (driver->err_handler)
->>+			return NULL;
->>+	}
->>+
->>+	pci_iov_virtfn_add(edev->physfn, pdn->vf_index, 0);
->>+	return NULL;
->>+}
->>+
->>  static void *eeh_rmv_device(void *data, void *userdata)
->>  {
->>  	struct pci_driver *driver;
->>  	struct eeh_dev *edev = (struct eeh_dev *)data;
->>  	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
->>  	int *removed = (int *)userdata;
->>+	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
->>
->>  	/*
->>  	 * Actually, we should remove the PCI bridges as well.
->>@@ -416,7 +446,7 @@ static void *eeh_rmv_device(void *data, void *userdata)
->>  	driver = eeh_pcid_get(dev);
->>  	if (driver) {
->>  		eeh_pcid_put(dev);
->>-		if (driver->err_handler)
->>+		if (removed && driver->err_handler)
->>  			return NULL;
->>  	}
->>
->>@@ -425,11 +455,23 @@ static void *eeh_rmv_device(void *data, void *userdata)
->>  		 pci_name(dev));
->>  	edev->bus = dev->bus;
->>  	edev->mode |= EEH_DEV_DISCONNECTED;
->>-	(*removed)++;
->>+	if (removed)
->>+		(*removed)++;
->>
->>-	pci_lock_rescan_remove();
->>-	pci_stop_and_remove_bus_device(dev);
->>-	pci_unlock_rescan_remove();
->>+	if (edev->physfn) {
->>+		pci_iov_virtfn_remove(edev->physfn, pdn->vf_index, 0);
->>+		edev->pdev = NULL;
->>+
->>+		/*
->>+		 * We have to set the VF PE number to invalid one, which is
->>+		 * required to plug the VF successfully.
->>+		 */
->>+		pdn->pe_number = IODA_INVALID_PE;
->>+	} else {
->>+		pci_lock_rescan_remove();
->>+		pci_stop_and_remove_bus_device(dev);
->>+		pci_unlock_rescan_remove();
->>+	}
->>
->>  	return NULL;
->>  }
->>@@ -548,6 +590,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
->>  	struct pci_bus *frozen_bus = eeh_pe_bus_get(pe);
->>  	struct timeval tstamp;
->>  	int cnt, rc, removed = 0;
->>+	struct eeh_dev *edev;
->>
->>  	/* pcibios will clear the counter; save the value */
->>  	cnt = pe->freeze_count;
->>@@ -561,12 +604,15 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
->>  	 */
->>  	eeh_pe_state_mark(pe, EEH_PE_KEEP);
->>  	if (bus) {
->>-		pci_lock_rescan_remove();
->>-		pcibios_remove_pci_devices(bus);
->>-		pci_unlock_rescan_remove();
->>-	} else if (frozen_bus) {
->>+		if (pe->type & EEH_PE_VF)
->>+			eeh_pe_dev_traverse(pe, eeh_rmv_device, NULL);
->
->
->I believe the rule is that if one branch of "if" uses curly braces, then the
->other should have them too.
->
+Changes since v2:
+- Dropped patch 1, "macintosh/nvram: Remove as unused", because it has
+since been merged.
+- Inserted a new patch, "m68k/mac: Use macros for RTC accesses not
+magic numbers".
+- Revised patches 21 and 23 to address comments from Geert.
 
-Thanks for reminding, will fix it in next version.
+Changes since v3:
+- Split the patch, "m68k/atari: Move Atari-specific code out of
+drivers/char/nvram.c", as suggested by Geert.
+- Revised patches 11 and 25 to address comments from Geert.
+- Minor change to patch 21 as described in commit log.
 
->
->>+		else {
->>+			pci_lock_rescan_remove();
->>+			pcibios_remove_pci_devices(bus);
->>+			pci_unlock_rescan_remove();
->>+		}
->>+	} else if (frozen_bus)
->>  		eeh_pe_dev_traverse(pe, eeh_rmv_device, &removed);
->>-	}
->>
->>  	/*
->>  	 * Reset the pci controller. (Asserts RST#; resets config space).
->>@@ -607,14 +653,22 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
->>  		 * PE. We should disconnect it so the binding can be
->>  		 * rebuilt when adding PCI devices.
->>  		 */
->>+		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
->>  		eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
->>-		pcibios_add_pci_devices(bus);
->>+		if (pe->type & EEH_PE_VF)
->
->Move "edev = list_first_entry(&pe->edevs, struct eeh_dev, list)" here. You
->could actually do:
->
->eeh_add_virt_device(list_first_entry(&pe->edevs, struct eeh_dev, list), NULL);
->
->and drop local variable @edev. Or move it to this scope. Dunno.
->
+Changes since v4:
+- Split the patch, "powerpc, fbdev: Use arch_nvram_ops methods instead
+of nvram_read_byte() and nvram_write_byte()", so as to separately address
+inconsistent use of Kconfig symbols in PowerMac fbdev drivers.
+- Fix possible git bisect build failure with CONFIG_PPC_PMAC=n.
 
-Hmm... as I know, in eeh_pe_detach_dev() will remove the edev from pe's edevs
-list. 
+Changes since v5:
+- Dropped patch 2, "char/nvram: Use bitwise OR to obtain Atari video mode
+data", since it has been added to Greg Kroah-Hartman's char-misc-next queue.
+- In patch 15, error codes from the IOC_NVRAM_GET_OFFSET ioctl are now
+consistent with the old generic_nvram module.
 
->
->>+			eeh_add_virt_device(edev, NULL);
->>+		else
->>+			pcibios_add_pci_devices(bus);
->>  	} else if (frozen_bus && removed) {
->>  		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
->>  		ssleep(5);
->>
->>+		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
->>  		eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
->>-		pcibios_add_pci_devices(frozen_bus);
->>+		if (pe->type & EEH_PE_VF)
->
->
->The same comment as above.
->
->>+			eeh_add_virt_device(edev, NULL);
->>+		else
->>+			pcibios_add_pci_devices(frozen_bus);
->>  	}
->>  	eeh_pe_state_clear(pe, EEH_PE_KEEP);
->>
->>@@ -792,11 +846,15 @@ perm_error:
->>  	 * the their PCI config any more.
->>  	 */
->>  	if (frozen_bus) {
->>-		eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
->>-
->>-		pci_lock_rescan_remove();
->>-		pcibios_remove_pci_devices(frozen_bus);
->>-		pci_unlock_rescan_remove();
->>+		if (pe->type & EEH_PE_VF) {
->>+			eeh_pe_dev_traverse(pe, eeh_rmv_device, NULL);
->>+			eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
->>+		} else {
->>+			eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
->>+			pci_lock_rescan_remove();
->>+			pcibios_remove_pci_devices(frozen_bus);
->>+			pci_unlock_rescan_remove();
->>+		}
->>  	}
->>  }
->>
->>diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
->>index 260a701..5cde950 100644
->>--- a/arch/powerpc/kernel/eeh_pe.c
->>+++ b/arch/powerpc/kernel/eeh_pe.c
->>@@ -914,7 +914,8 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
->>  	if (pe->type & EEH_PE_PHB) {
->>  		bus = pe->phb->bus;
->>  	} else if (pe->type & EEH_PE_BUS ||
->>-		   pe->type & EEH_PE_DEVICE) {
->>+		   pe->type & EEH_PE_DEVICE ||
->>+		   pe->type & EEH_PE_VF) {
->>  		if (pe->bus) {
->>  			bus = pe->bus;
->>  			goto out;
->>
->
->
->-- 
->Alexey
->--
->To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Changes since v6:
+- In patch 21, the '#ifdef CONFIG_NVRAM' conditional was changed to
+'#if defined(CONFIG_NVRAM) && defined(CONFIG_PPC32)' to avoid changing
+behaviour as CONFIG_NVRAM becomes available to PPC64.
+- Added a new patch (22) in response to Ben's comment about XPRAM accessors.
+The patch replaces the calls to pmac_xpram_read() with calls to
+arch_nvram_ops.read_byte()
 
--- 
-Richard Yang
-Help you, Help me
+---
+ arch/m68k/Kconfig                          |    3 
+ arch/m68k/Kconfig.machine                  |    2 
+ arch/m68k/atari/Makefile                   |    2 
+ arch/m68k/atari/nvram.c                    |  291 +++++++++++
+ arch/m68k/include/asm/atarihw.h            |    6 
+ arch/m68k/include/asm/macintosh.h          |    4 
+ arch/m68k/kernel/setup_mm.c                |  100 +++
+ arch/m68k/mac/misc.c                       |  207 +++++---
+ arch/powerpc/Kconfig                       |    5 
+ arch/powerpc/include/asm/nvram.h           |   13 
+ arch/powerpc/kernel/nvram_64.c             |  206 +-------
+ arch/powerpc/kernel/setup_32.c             |   30 -
+ arch/powerpc/platforms/chrp/Makefile       |    2 
+ arch/powerpc/platforms/chrp/nvram.c        |   14 
+ arch/powerpc/platforms/chrp/setup.c        |    2 
+ arch/powerpc/platforms/powermac/Makefile   |    5 
+ arch/powerpc/platforms/powermac/nvram.c    |   37 -
+ arch/powerpc/platforms/powermac/setup.c    |    3 
+ arch/powerpc/platforms/powermac/time.c     |   19 
+ arch/powerpc/platforms/pseries/nvram.c     |    2 
+ drivers/char/Kconfig                       |   13 
+ drivers/char/Makefile                      |    6 
+ drivers/char/generic_nvram.c               |  174 ------
+ drivers/char/nvram.c                       |  740 ++++++++++++-----------------
+ drivers/platform/x86/thinkpad_acpi.c       |   20 
+ drivers/scsi/Kconfig                       |    6 
+ drivers/scsi/atari_scsi.c                  |   16 
+ drivers/video/fbdev/Kconfig                |    2 
+ drivers/video/fbdev/controlfb.c            |    4 
+ drivers/video/fbdev/imsttfb.c              |   17 
+ drivers/video/fbdev/matrox/matroxfb_base.c |    6 
+ drivers/video/fbdev/platinumfb.c           |    4 
+ drivers/video/fbdev/valkyriefb.c           |   18 
+ include/linux/nvram.h                      |   24 
+ include/uapi/linux/pmu.h                   |    2 
+ 35 files changed, 1020 insertions(+), 985 deletions(-)
