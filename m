@@ -1,17 +1,15 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id D1A2A1A060B
+ by lists.ozlabs.org (Postfix) with ESMTP id CA3AB1A04B2
  for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Nov 2015 21:49:01 +1100 (AEDT)
-Message-Id: <20151101104204.791647606@telegraphics.com.au>
-Date: Sun, 01 Nov 2015 21:42:12 +1100
+Message-Id: <20151101104204.301733351@telegraphics.com.au>
+Date: Sun, 01 Nov 2015 21:42:10 +1100
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Arnd Bergmann <arnd@arndb.de>,
+ <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v7 10/26] m68k/atari: Implement arch_nvram_ops methods and
- enable CONFIG_HAVE_ARCH_NVRAM_OPS
+Subject: [PATCH v7 08/26] char/nvram: Implement NVRAM read/write methods
 References: <20151101104202.301856132@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,113 +20,227 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Atari RTC NVRAM has a checksum so implement the remaining arch_nvram_ops
-methods for the set_checksum and initialize ioctls. Enable
-CONFIG_HAVE_ARCH_NVRAM_OPS.
+Refactor the RTC "CMOS" NVRAM functions so that they can be used as
+arch_nvram_ops methods. Checksumming logic is moved from the misc device
+operations to the nvram read/write operations.
+
+This makes the misc device implementation more generic. This also
+preserves the locking semantics such that "read if checksum valid" and
+"write and update checksum" remain atomic operations.
+
+PPC64 implements byte-range read/write methods which are similar to
+file_operations struct methods. Other platforms provide only
+byte-at-a-time functions. So the misc device prefers the former but
+will fall back on the latter.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
 ---
+ drivers/char/nvram.c |  162 +++++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 114 insertions(+), 48 deletions(-)
 
-This re-enables the nvram module for Atari.
-
-Changes since v3:
-- Use bool (and select) instead of def_bool in the definition of the
-HAVE_ARCH_NVRAM_OPS Kconfig symbol, as requested by Geert.
-
----
- arch/m68k/Kconfig         |    3 +++
- arch/m68k/Kconfig.machine |    1 +
- arch/m68k/atari/nvram.c   |   24 ++++++++++++++++++++++++
- drivers/char/Kconfig      |    2 +-
- 4 files changed, 29 insertions(+), 1 deletion(-)
-
-Index: linux/arch/m68k/atari/nvram.c
+Index: linux/drivers/char/nvram.c
 ===================================================================
---- linux.orig/arch/m68k/atari/nvram.c	2015-11-01 21:41:27.000000000 +1100
-+++ linux/arch/m68k/atari/nvram.c	2015-11-01 21:41:36.000000000 +1100
-@@ -73,6 +73,26 @@ static void __nvram_set_checksum(void)
- 	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
- }
- 
-+static long nvram_set_checksum(void)
-+{
-+	spin_lock_irq(&rtc_lock);
-+	__nvram_set_checksum();
-+	spin_unlock_irq(&rtc_lock);
-+	return 0;
-+}
-+
-+static long nvram_initialize(void)
-+{
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+	for (i = 0; i < NVRAM_BYTES; ++i)
-+		__nvram_write_byte(0, i);
-+	__nvram_set_checksum();
-+	spin_unlock_irq(&rtc_lock);
-+	return 0;
-+}
-+
- static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
- {
- 	char *p = buf;
-@@ -119,6 +139,8 @@ static ssize_t nvram_write(char *buf, si
- 
- static ssize_t nvram_get_size(void)
- {
-+	if (!MACH_IS_ATARI)
-+		return -ENODEV;
+--- linux.orig/drivers/char/nvram.c	2015-11-01 21:41:32.000000000 +1100
++++ linux/drivers/char/nvram.c	2015-11-01 21:41:34.000000000 +1100
+@@ -41,6 +41,7 @@
+ #include <linux/init.h>
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
++#include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/io.h>
+ #include <linux/uaccess.h>
+@@ -178,9 +179,48 @@ static ssize_t nvram_get_size(void)
  	return NVRAM_BYTES;
  }
  
-@@ -126,6 +148,8 @@ const struct nvram_ops arch_nvram_ops =
- 	.read           = nvram_read,
- 	.write          = nvram_write,
- 	.get_size       = nvram_get_size,
-+	.set_checksum   = nvram_set_checksum,
-+	.initialize     = nvram_initialize,
- };
- EXPORT_SYMBOL(arch_nvram_ops);
- 
-Index: linux/drivers/char/Kconfig
-===================================================================
---- linux.orig/drivers/char/Kconfig	2015-11-01 21:41:24.000000000 +1100
-+++ linux/drivers/char/Kconfig	2015-11-01 21:41:36.000000000 +1100
-@@ -247,7 +247,7 @@ source "drivers/char/hw_random/Kconfig"
- 
- config NVRAM
- 	tristate "/dev/nvram support"
--	depends on X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM
-+	depends on X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM || HAVE_ARCH_NVRAM_OPS
- 	---help---
- 	  If you say Y here and create a character special file /dev/nvram
- 	  with major number 10 and minor number 144 using mknod ("man mknod"),
-Index: linux/arch/m68k/Kconfig
-===================================================================
---- linux.orig/arch/m68k/Kconfig	2015-11-01 21:41:24.000000000 +1100
-+++ linux/arch/m68k/Kconfig	2015-11-01 21:41:36.000000000 +1100
-@@ -71,6 +71,9 @@ config PGTABLE_LEVELS
- 	default 2 if SUN3 || COLDFIRE
- 	default 3
- 
-+config HAVE_ARCH_NVRAM_OPS
-+	bool
++static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
++{
++	char *p = buf;
++	loff_t i;
 +
- source "init/Kconfig"
++	spin_lock_irq(&rtc_lock);
++	if (!__nvram_check_checksum()) {
++		spin_unlock_irq(&rtc_lock);
++		return -EIO;
++	}
++	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
++		*p = __nvram_read_byte(i);
++	spin_unlock_irq(&rtc_lock);
++
++	*ppos = i;
++	return p - buf;
++}
++
++static ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
++{
++	char *p = buf;
++	loff_t i;
++
++	spin_lock_irq(&rtc_lock);
++	if (!__nvram_check_checksum()) {
++		spin_unlock_irq(&rtc_lock);
++		return -EIO;
++	}
++	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
++		__nvram_write_byte(*p, i);
++	__nvram_set_checksum();
++	spin_unlock_irq(&rtc_lock);
++
++	*ppos = i;
++	return p - buf;
++}
++
+ const struct nvram_ops arch_nvram_ops = {
+ 	.read_byte      = nvram_read_byte,
+ 	.write_byte     = nvram_write_byte,
++	.read           = nvram_read,
++	.write          = nvram_write,
+ 	.get_size       = nvram_get_size,
+ 	.set_checksum   = nvram_set_checksum,
+ 	.initialize     = nvram_initialize,
+@@ -215,69 +255,95 @@ static loff_t nvram_misc_llseek(struct f
+ static ssize_t nvram_misc_read(struct file *file, char __user *buf,
+                                size_t count, loff_t *ppos)
+ {
+-	unsigned char contents[NVRAM_BYTES];
+-	unsigned i = *ppos;
+-	unsigned char *tmp;
+-
+-	spin_lock_irq(&rtc_lock);
++	loff_t i;
++	char __user *p = buf;
  
- source "kernel/Kconfig.freezer"
-Index: linux/arch/m68k/Kconfig.machine
-===================================================================
---- linux.orig/arch/m68k/Kconfig.machine	2015-11-01 21:41:24.000000000 +1100
-+++ linux/arch/m68k/Kconfig.machine	2015-11-01 21:41:36.000000000 +1100
-@@ -15,6 +15,7 @@ config ATARI
- 	bool "Atari support"
- 	depends on MMU
- 	select MMU_MOTOROLA if MMU
-+	select HAVE_ARCH_NVRAM_OPS
- 	help
- 	  This option enables support for the 68000-based Atari series of
- 	  computers (including the TT, Falcon and Medusa). If you plan to use
+-	if (!__nvram_check_checksum())
+-		goto checksum_err;
+-
+-	for (tmp = contents; count-- > 0 && i < NVRAM_BYTES; ++i, ++tmp)
+-		*tmp = __nvram_read_byte(i);
+-
+-	spin_unlock_irq(&rtc_lock);
+-
+-	if (copy_to_user(buf, contents, tmp - contents))
++	if (!access_ok(VERIFY_WRITE, buf, count))
+ 		return -EFAULT;
++	if (*ppos >= nvram_size)
++		return 0;
+ 
+-	*ppos = i;
+-
+-	return tmp - contents;
++	/* If the arch provided a byte range read op, use it. Otherwise
++	 * fall back on the byte-at-a-time accessor.
++	 */
++	if (arch_nvram_ops.read != NULL) {
++		char *tmp;
++		ssize_t ret;
++
++		count = min_t(size_t, count, nvram_size - *ppos);
++		count = min_t(size_t, count, PAGE_SIZE);
++
++		tmp = kmalloc(count, GFP_KERNEL);
++		if (!tmp)
++			return -ENOMEM;
++
++		ret = arch_nvram_ops.read(tmp, count, ppos);
++		if (ret <= 0)
++			goto out;
++
++		if (copy_to_user(buf, tmp, ret)) {
++			*ppos -= ret;
++			ret = -EFAULT;
++		}
++
++out:
++		kfree(tmp);
++		return ret;
++	}
+ 
+-checksum_err:
+-	spin_unlock_irq(&rtc_lock);
+-	return -EIO;
++	for (i = *ppos; count > 0 && i < nvram_size; ++i, ++p, --count)
++		if (__put_user(arch_nvram_ops.read_byte(i), p))
++			return -EFAULT;
++	*ppos = i;
++	return p - buf;
+ }
+ 
+ static ssize_t nvram_misc_write(struct file *file, const char __user *buf,
+                                 size_t count, loff_t *ppos)
+ {
+-	unsigned char contents[NVRAM_BYTES];
+-	unsigned i = *ppos;
+-	unsigned char *tmp;
+-
+-	if (i >= NVRAM_BYTES)
+-		return 0;	/* Past EOF */
+-
+-	if (count > NVRAM_BYTES - i)
+-		count = NVRAM_BYTES - i;
+-	if (count > NVRAM_BYTES)
+-		return -EFAULT;	/* Can't happen, but prove it to gcc */
++	loff_t i;
++	const char __user *p = buf;
+ 
+-	if (copy_from_user(contents, buf, count))
++	if (!access_ok(VERIFY_READ, buf, count))
+ 		return -EFAULT;
++	if (*ppos >= nvram_size)
++		return 0;
+ 
+-	spin_lock_irq(&rtc_lock);
+-
+-	if (!__nvram_check_checksum())
+-		goto checksum_err;
+-
+-	for (tmp = contents; count--; ++i, ++tmp)
+-		__nvram_write_byte(*tmp, i);
+-
+-	__nvram_set_checksum();
++	/* If the arch provided a byte range write op, use it. Otherwise
++	 * fall back on the byte-at-a-time accessor.
++	 */
++	if (arch_nvram_ops.write != NULL) {
++		char *tmp;
++		ssize_t ret;
++
++		count = min_t(size_t, count, nvram_size - *ppos);
++		count = min_t(size_t, count, PAGE_SIZE);
++
++		tmp = kmalloc(count, GFP_KERNEL);
++		if (!tmp)
++			return -ENOMEM;
++
++		if (copy_from_user(tmp, buf, count)) {
++			ret = -EFAULT;
++			goto out;
++		}
++
++		ret = arch_nvram_ops.write(tmp, count, ppos);
++
++out:
++		kfree(tmp);
++		return ret;
++	}
+ 
+-	spin_unlock_irq(&rtc_lock);
++	for (i = *ppos; count > 0 && i < nvram_size; ++i, ++p, --count) {
++		char c;
+ 
++		if (__get_user(c, p))
++			return -EFAULT;
++		arch_nvram_ops.write_byte(c, i);
++	}
+ 	*ppos = i;
+-
+-	return tmp - contents;
+-
+-checksum_err:
+-	spin_unlock_irq(&rtc_lock);
+-	return -EIO;
++	return p - buf;
+ }
+ 
+ static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
