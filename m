@@ -1,40 +1,44 @@
 Return-Path: <linuxram@us.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 196E81A0CC3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 05:46:32 +1100 (AEDT)
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3AC9D1A0CC0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 05:41:29 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 50F27140D6A
+ for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2015 05:46:31 +1100 (AEDT)
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Mon, 2 Nov 2015 11:41:26 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 8844F19D8026
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2015 11:29:32 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA2IfNXn32964626
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Nov 2015 11:41:23 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA2IfL2X014933
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Nov 2015 11:41:23 -0700
-Date: Mon, 2 Nov 2015 10:41:17 -0800
+ for <linuxppc-dev@ozlabs.org> from <linuxram@us.ibm.com>;
+ Mon, 2 Nov 2015 13:46:28 -0500
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 5128338C8046
+ for <linuxppc-dev@ozlabs.org>; Mon,  2 Nov 2015 13:46:25 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA2IkPBM60293152
+ for <linuxppc-dev@ozlabs.org>; Mon, 2 Nov 2015 18:46:25 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA2IkNWM019703
+ for <linuxppc-dev@ozlabs.org>; Mon, 2 Nov 2015 13:46:24 -0500
+Date: Mon, 2 Nov 2015 10:46:19 -0800
 From: Ram Pai <linuxram@us.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, hbabu@us.ibm.com, nacc@us.ibm.com,
- Dan Streetman <ddstreet@ieee.org>
-Subject: Re: [PATCH] nx-842: Ignore bit 3 of condition register returned by
- icswx
-Message-ID: <20151102184117.GC22547@ram.oc3035372033.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, hbabu@us.ibm.com, nacc@us.ibm.com
+Subject: Re: [PATCH] Endian swap ->count before handing over to the nx-842
+ compressor
+Message-ID: <20151102184619.GD22547@ram.oc3035372033.ibm.com>
 Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <20151030223120.GA22550@ram.oc3035372033.ibm.com>
- <1446427416.31303.1.camel@ellerman.id.au>
+References: <20151030221312.GA22547@ram.oc3035372033.ibm.com>
+ <1446427476.31303.2.camel@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1446427416.31303.1.camel@ellerman.id.au>
+In-Reply-To: <1446427476.31303.2.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,47 +48,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 02, 2015 at 12:23:36PM +1100, Michael Ellerman wrote:
-> On Fri, 2015-10-30 at 15:31 -0700, Ram Pai wrote:
-> > icswx occasionally under heavy load sets bit 3 of condition register 0.
+On Mon, Nov 02, 2015 at 12:24:36PM +1100, Michael Ellerman wrote:
+> On Fri, 2015-10-30 at 15:13 -0700, Ram Pai wrote:
 > 
-> Why?
-
-The hardware manual says that bit is undefined, though it is set under some conditions.
-
+> > The nx-842 compressor overshoots the output buffer corrupting memory. Verified
+> > that the following patch the issue on a LE system.
 > 
-> Also you seem to be using IBM bit numbering, so please be explicit about that,
-> or use normal bit numbering.
-
-Ok. 
-
-
+> This seems like a bug fix, so it should go to stable shouldn't it? If so which
+> version(s) should it apply to?
 > 
-> > It has no software implication.
-> 
-> What does it mean? You might be right but you don't give me enough info to
-> decide.
+> And which commit introduced the breakage? Or has it always been broken?
 
-The software is not supposed to interpret the bit since its meaning is
-undefined. 
+Mike,
 
-> 
-> > Currently that bit is interpreted by the driver as a failure, when
-> > it should have calmly ignored it.
-> 
-> Should the fix be in icswx or the driver? Please justify your choice.
+	Please ignore this patch. I still run into corruption even after
+	this patch.  I am looking into the issue. Will have a more
+	comprehensive fix.
 
-Yes there are two solutions. One is icswx macro should not expose that
-bit to its consumers.  Or the driver/consumers can ignore that bit.  I
-think it makes more sense to contain it in one place, which is icswx
-instruction. Drivers or whoever calls icswx should not know
-more than what they need to know. This patch uses the first approach.
-
-> 
-> This sounds like it's fixing a bug so shouldn't the patch go to stable? And if
-> so which version(s) should it apply to?
-
-It should go to stable v4.2.  I will tag it to stable, in my next
-version.
+	BTW: it has always been broken AFAICT. I find the issue even
+	with lzo software compression. So may be I am doing something
+	wrong in my driver, or there is more fundamental issue. Will dig
+	this further.
 
 RP
+
+> 
+> cheers
+
+-- 
+Ram Pai
