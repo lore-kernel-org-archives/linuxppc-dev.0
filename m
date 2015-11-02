@@ -1,27 +1,21 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
- [IPv6:2607:f8b0:4003:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A9DB1A042E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2015 12:31:37 +1100 (AEDT)
-Received: by oies6 with SMTP id s6so7609208oie.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Nov 2015 17:31:35 -0800 (PST)
-From: Boqun Feng <boqun.feng@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Boqun Feng <boqun.feng@gmail.com>, <stable@vger.kernel.org>
-Subject: [PATCH powerpc/next 2/2] powerpc: Make {cmp}xchg* and their atomic_
- versions fully ordered
-Date: Mon,  2 Nov 2015 09:30:32 +0800
-Message-Id: <1446427832-8742-2-git-send-email-boqun.feng@gmail.com>
-In-Reply-To: <1446427832-8742-1-git-send-email-boqun.feng@gmail.com>
-References: <1446427832-8742-1-git-send-email-boqun.feng@gmail.com>
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+ by lists.ozlabs.org (Postfix) with ESMTP id 6B7B41A0314
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2015 13:07:00 +1100 (AEDT)
+Date: Mon, 2 Nov 2015 11:06:55 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Sam Mendoza-Jonas <sam.mj@au1.ibm.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kexec@lists.infradead.org
+Subject: Re: [PATCH v2 2/3] ppc64: Avoid rfid if no need to clear MSR_LE
+Message-ID: <20151102020655.GD11188@verge.net.au>
+References: <1444172150-29493-1-git-send-email-scottwood@freescale.com>
+ <1444172150-29493-2-git-send-email-scottwood@freescale.com>
+ <20151101225553.GA1995@localhost.localdomain>
+ <20151102002143.GA7053@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151102002143.GA7053@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,91 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-According to memory-barriers.txt, xchg*, cmpxchg* and their atomic_
-versions all need to be fully ordered, however they are now just
-RELEASE+ACQUIRE, which are not fully ordered.
+On Mon, Nov 02, 2015 at 11:21:43AM +1100, Sam Mendoza-Jonas wrote:
+> On Mon, Nov 02, 2015 at 09:55:53AM +1100, Sam Mendoza-Jonas wrote:
+> > On Tue, Oct 06, 2015 at 05:55:49PM -0500, Scott Wood wrote:
+> > > Commit a304e2d82a8c3 ("ppc64: purgatory: Reset primary cpu endian to
+> > > big-endian) changed bctr to rfid.  rfid is book3s-only and will cause a
+> > > fatal exception on book3e.
+> > > 
+> > > Purgatory is an isolated environment which makes importing information
+> > > about the subarch awkward, so instead rely on the fact that MSR_LE
+> > > should never be set on book3e, and the rfid is only needed if MSR_LE is
+> > > set (and thus needs to be cleared).  In theory that MSR bit is reserved
+> > > on book3e, rather than zero, but in practice I have not seen it set.
+> > > 
+> > > Signed-off-by: Scott Wood <scottwood@freescale.com>
+> > > Cc: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+> > > ---
+> > > v2: new patch
+> > 
+> > Looks good to me, thanks for catching this!
+> > I'll ping Michael too if you'd like his reviewed-by.
+> > 
+> > Reviewed-by: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+> 
+> Following up, also add my
+> 
+> Tested-by: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
 
-So also replace PPC_RELEASE_BARRIER and PPC_ACQUIRE_BARRIER with
-PPC_ATOMIC_ENTRY_BARRIER and PPC_ATOMIC_EXIT_BARRIER in
-__{cmp,}xchg_{u32,u64} respectively to guarantee fully ordered semantics
-of atomic{,64}_{cmp,}xchg() and {cmp,}xchg(), as a complement of commit
-b97021f85517 ("powerpc: Fix atomic_xxx_return barrier semantics")
-
-This patch depends on patch "powerpc: Make value-returning atomics fully
-ordered" for PPC_ATOMIC_ENTRY_BARRIER definition.
-
-Cc: <stable@vger.kernel.org> # 3.4+
-Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
----
- arch/powerpc/include/asm/cmpxchg.h | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
-index ad6263c..d1a8d93 100644
---- a/arch/powerpc/include/asm/cmpxchg.h
-+++ b/arch/powerpc/include/asm/cmpxchg.h
-@@ -18,12 +18,12 @@ __xchg_u32(volatile void *p, unsigned long val)
- 	unsigned long prev;
- 
- 	__asm__ __volatile__(
--	PPC_RELEASE_BARRIER
-+	PPC_ATOMIC_ENTRY_BARRIER
- "1:	lwarx	%0,0,%2 \n"
- 	PPC405_ERR77(0,%2)
- "	stwcx.	%3,0,%2 \n\
- 	bne-	1b"
--	PPC_ACQUIRE_BARRIER
-+	PPC_ATOMIC_EXIT_BARRIER
- 	: "=&r" (prev), "+m" (*(volatile unsigned int *)p)
- 	: "r" (p), "r" (val)
- 	: "cc", "memory");
-@@ -61,12 +61,12 @@ __xchg_u64(volatile void *p, unsigned long val)
- 	unsigned long prev;
- 
- 	__asm__ __volatile__(
--	PPC_RELEASE_BARRIER
-+	PPC_ATOMIC_ENTRY_BARRIER
- "1:	ldarx	%0,0,%2 \n"
- 	PPC405_ERR77(0,%2)
- "	stdcx.	%3,0,%2 \n\
- 	bne-	1b"
--	PPC_ACQUIRE_BARRIER
-+	PPC_ATOMIC_EXIT_BARRIER
- 	: "=&r" (prev), "+m" (*(volatile unsigned long *)p)
- 	: "r" (p), "r" (val)
- 	: "cc", "memory");
-@@ -151,14 +151,14 @@ __cmpxchg_u32(volatile unsigned int *p, unsigned long old, unsigned long new)
- 	unsigned int prev;
- 
- 	__asm__ __volatile__ (
--	PPC_RELEASE_BARRIER
-+	PPC_ATOMIC_ENTRY_BARRIER
- "1:	lwarx	%0,0,%2		# __cmpxchg_u32\n\
- 	cmpw	0,%0,%3\n\
- 	bne-	2f\n"
- 	PPC405_ERR77(0,%2)
- "	stwcx.	%4,0,%2\n\
- 	bne-	1b"
--	PPC_ACQUIRE_BARRIER
-+	PPC_ATOMIC_EXIT_BARRIER
- 	"\n\
- 2:"
- 	: "=&r" (prev), "+m" (*p)
-@@ -197,13 +197,13 @@ __cmpxchg_u64(volatile unsigned long *p, unsigned long old, unsigned long new)
- 	unsigned long prev;
- 
- 	__asm__ __volatile__ (
--	PPC_RELEASE_BARRIER
-+	PPC_ATOMIC_ENTRY_BARRIER
- "1:	ldarx	%0,0,%2		# __cmpxchg_u64\n\
- 	cmpd	0,%0,%3\n\
- 	bne-	2f\n\
- 	stdcx.	%4,0,%2\n\
- 	bne-	1b"
--	PPC_ACQUIRE_BARRIER
-+	PPC_ATOMIC_EXIT_BARRIER
- 	"\n\
- 2:"
- 	: "=&r" (prev), "+m" (*p)
--- 
-2.6.2
+Thanks, I have queued this up for v2.0.11.
