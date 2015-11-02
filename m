@@ -1,18 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B80C31A03D6
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2015 20:41:30 +1100 (AEDT)
-In-Reply-To: <562F9C67.3040207@linux.vnet.ibm.com>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9DCC11A03E1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2015 20:41:31 +1100 (AEDT)
+In-Reply-To: <1445426953-15934-1-git-send-email-kda@linux-powerpc.org>
+To: Denis Kirjanov <kda@linux-powerpc.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [v2] powerpc/pseries: Correct string length in
- pseries_of_derive_parent()
-Message-Id: <20151102094130.A0131140E31@ozlabs.org>
-Date: Mon,  2 Nov 2015 20:41:30 +1100 (AEDT)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [v2] powerpc/msi: fix section mismatch warning
+Message-Id: <20151102094131.4C7E4140F95@ozlabs.org>
+Date: Mon,  2 Nov 2015 20:41:31 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,28 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-27-10 at 15:46:47 UTC, Nathan Fontenot wrote:
-> Commit a030e1e4bbd085bbcfd0a23f8d355fcd41f39bed make a change to use
-> kstrndup() instead of kmalloc() + strlcpy() in the pseries_of_derive_parent()
-> routine that introduces a subtle change in the parent path name generated.
-> The kstrndup() routine will copy n characters followed by a terminating null,
-> whereas strlcpy() will copy n-1 characters and add a terminating null.
+On Wed, 2015-21-10 at 11:29:13 UTC, Denis Kirjanov wrote:
+> Building with CONFIG_DEBUG_SECTION_MISMATCH
+> gives the following warning:
 > 
-> This slight difference results in having a parent path that includes the
-> tailing '/' character, "/cpus/" vs. "/cpus". This then causes the subsequent
-> call to of_find_node_by_path() to fail, and in the case of DLPAR add
-> operations the DLPAR request fails.
+> WARNING: vmlinux.o(.text+0x41fa8): Section mismatch in reference from
+> the function .msi_bitmap_alloc() to the function
+> .init.text:.memblock_virt_alloc_try_nid()
+> The function .msi_bitmap_alloc() references
+> the function __init .memblock_virt_alloc_try_nid().
+> This is often because .msi_bitmap_alloc lacks a __init
+> annotation or the annotation of .memblock_virt_alloc_try_nid is wrong.
 > 
-> This patch decrements the pointer returned from kbasename() to point to the
-> '/' character before the base name instead of the base name. This then
-> adjusts the string length calculations to not include the trailing '/'
-> in the parent path name.
+> memory allocation in msi_bitmap_alloc use either slab allocator or
+> memblock boot-time allocator so that's why we need the __init_refok
+> for the latter case.
 > 
-> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/f755ecfb8cec7b19dff84295
+https://git.kernel.org/powerpc/c/ccde64b51b33821159d52b09
 
 cheers
