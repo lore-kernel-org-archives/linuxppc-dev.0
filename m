@@ -1,36 +1,21 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <raghav@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0141.outbound.protection.outlook.com [207.46.100.141])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C0D2D1A03C6
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2015 15:58:13 +1100 (AEDT)
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 2 Nov 2015 14:58:11 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 5EA512CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2015 15:58:09 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA24vkpc27394188
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Nov 2015 15:57:55 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA24vZLq002135
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Nov 2015 15:57:36 +1100
-Message-ID: <5636ED27.6010707@au1.ibm.com>
-Date: Mon, 02 Nov 2015 15:57:11 +1100
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8462C1A03C2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2015 17:12:47 +1100 (AEDT)
+From: Dogra Raghav <raghav@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: Kushwaha Prabhakar <prabhakar@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
+Date: Mon, 2 Nov 2015 06:12:39 +0000
+Message-ID: <BY2PR0301MB0775A3A01F8585352ED5EFADD22C0@BY2PR0301MB0775.namprd03.prod.outlook.com>
+References: <1446186299-2921-1-git-send-email-raghav@freescale.com>
+In-Reply-To: <1446186299-2921-1-git-send-email-raghav@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
-CC: imunsie@au1.ibm.com, dja@axtens.net
-Subject: Re: [PATCH] cxl: sparse: add __iomem annotations in vphb.c
-References: <1446002979-29728-1-git-send-email-andrew.donnellan@au1.ibm.com>
- <6848216.pocJKKsE8F@wuerfel>
-In-Reply-To: <6848216.pocJKKsE8F@wuerfel>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,67 +25,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 31/10/15 00:07, Arnd Bergmann wrote:
-> On Wednesday 28 October 2015 14:29:39 Andrew Donnellan wrote:
->> --- a/drivers/misc/cxl/vphb.c
->> +++ b/drivers/misc/cxl/vphb.c
->> @@ -128,7 +128,7 @@ static int cxl_pcie_config_info(struct pci_bus *bus, unsigned int devfn,
->>                  return PCIBIOS_BAD_REGISTER_NUMBER;
->>          addr = cxl_pcie_cfg_addr(phb, bus->number, devfn, offset);
->>
->> -       *ioaddr = (void *)(addr & ~0x3ULL);
->> +       *ioaddr = (void __iomem *)(addr & ~0x3ULL);
->>          *shift = ((addr & 0x3) * 8);
->>          switch (len) {
->>          case 1:
->
-> It would be nice to change the return value of cxl_pcie_cfg_addr to
-> 'void __iomem *' as well, and only do the cast (back and forth) inside
-> the calculation, to make it clear that the input type is the same as the
-> output. Perhaps use a static inline function to wrap it.
-
-That would work, not sure if I'd bother with a wrapper function.
-
->> @@ -249,7 +249,7 @@ int cxl_pci_vphb_add(struct cxl_afu *afu)
->>          /* Setup the PHB using arch provided callback */
->>          phb->ops = &cxl_pcie_pci_ops;
->>          phb->cfg_addr = afu->afu_desc_mmio + afu->crs_offset;
->> -       phb->cfg_data = (void *)(u64)afu->crs_len;
->> +       phb->cfg_data = (void __iomem *)afu->crs_len;
->>          phb->private_data = afu;
->>          phb->controller_ops = cxl_pci_controller_ops;
->
->
-> This needs a comment to explain why this is correct. I've tried to find it
-> out by reading the code and could not find any explanation. Also, you
-> need to cast to an intermediate (uintptr_t) type, as directly converting
-> a u64 to a pointer of any sort is nonportable, and it would be good to
-> at least allow compile-testing this code on other architectures.
-
-It's impossible to compile cxl on other architectures given that we 
-depend on powerpc- and powernv-specific functions... but in any case, I 
-suppose using uintptr_t is more correct.
-
-> I suspect that 'phb->cfg_data' is used in this driver in a way that is
-> incompatible with the other uses of the same variable. Maybe you can
-> replace it with something like
->
-> 	union {
-> 		void __iomem *cfg_data;
-> 		u64 cxl_cfg_offset;
-> 	};
->
-> to make it clear that in this driver it is used as an offset rather than
-> a pointer.
-
-You're right, I hadn't looked closely at exactly how it was been used.
-
-Ian, thoughts?
 
 
-Andrew
+-----Original Message-----
+From: Raghav Dogra [mailto:raghav@freescale.com]=20
+Sent: Friday, October 30, 2015 11:55 AM
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Wood Scott-B07421 <scottwood@freescale.com>; Kushwaha Prabhakar-B32579 =
+<prabhakar@freescale.com>; Dogra Raghav-B46184 <raghav@freescale.com>
+Subject: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
 
--- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+Modify platform driver suspend/resume to syscore suspend/resume. This is be=
+cause p1022ds needs to use localbus when entering the PCIE resume.
+
+Signed-off-by: Raghav Dogra <raghav@freescale.com>
+---
+ arch/powerpc/sysdev/Makefile  |  2 +-
+ arch/powerpc/sysdev/fsl_lbc.c | 51 +++++++++++++++++++++++++++++++++------=
+----
+ 2 files changed, 40 insertions(+), 13 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile in=
+dex f7cb2a1..4c19e614 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -18,9 +18,9 @@ obj-$(CONFIG_PPC_PMI)		+=3D pmi.o
+ obj-$(CONFIG_U3_DART)		+=3D dart_iommu.o
+ obj-$(CONFIG_MMIO_NVRAM)	+=3D mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+=3D fsl_soc.o fsl_mpic_err.o
++obj-$(CONFIG_FSL_LBC)		+=3D fsl_lbc.o
+ obj-$(CONFIG_FSL_PCI)		+=3D fsl_pci.o $(fsl-msi-obj-y)
+ obj-$(CONFIG_FSL_PMC)		+=3D fsl_pmc.o
+-obj-$(CONFIG_FSL_LBC)		+=3D fsl_lbc.o
+ obj-$(CONFIG_FSL_GTM)		+=3D fsl_gtm.o
+ obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+=3D fsl_85xx_l2ctlr.o fsl_85xx_cache_sr=
+am.o
+ obj-$(CONFIG_SIMPLE_GPIO)	+=3D simple_gpio.o
+diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c =
+index d631022..332d700 100644
+--- a/arch/powerpc/sysdev/fsl_lbc.c
++++ b/arch/powerpc/sysdev/fsl_lbc.c
+@@ -27,6 +27,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/interrupt.h>
+ #include <linux/mod_devicetable.h>
++#include <linux/syscore_ops.h>
+ #include <asm/prom.h>
+ #include <asm/fsl_lbc.h>
+=20
+@@ -354,24 +355,42 @@ err:
+ #ifdef CONFIG_SUSPEND
+=20
+ /* save lbc registers */
+-static int fsl_lbc_suspend(struct platform_device *pdev, pm_message_t stat=
+e)
++static int fsl_lbc_syscore_suspend(void)
+ {
+-	struct fsl_lbc_ctrl *ctrl =3D dev_get_drvdata(&pdev->dev);
+-	struct fsl_lbc_regs __iomem *lbc =3D ctrl->regs;
++	struct fsl_lbc_ctrl *ctrl;
++	struct fsl_lbc_regs __iomem *lbc;
++
++	ctrl =3D fsl_lbc_ctrl_dev;
++	if (!ctrl)
++		goto out;
++
++	lbc =3D ctrl->regs;
++	if (!lbc)
++		goto out;
+=20
+ 	ctrl->saved_regs =3D kmalloc(sizeof(struct fsl_lbc_regs), GFP_KERNEL);
+ 	if (!ctrl->saved_regs)
+ 		return -ENOMEM;
+[Dogra Raghav-B46184] This is the existing upstream code. Are you suggestin=
+g to modify the upstream code to take care of individual registers?
+=20
+ 	_memcpy_fromio(ctrl->saved_regs, lbc, sizeof(struct fsl_lbc_regs));
++
++out:
+ 	return 0;
+ }
+=20
+ /* restore lbc registers */
+-static int fsl_lbc_resume(struct platform_device *pdev)
++static int fsl_lbc_syscore_resume(void)
+ {
+-	struct fsl_lbc_ctrl *ctrl =3D dev_get_drvdata(&pdev->dev);
+-	struct fsl_lbc_regs __iomem *lbc =3D ctrl->regs;
++	struct fsl_lbc_ctrl *ctrl;
++	struct fsl_lbc_regs __iomem *lbc;
++
++	ctrl =3D fsl_lbc_ctrl_dev;
++	if (!ctrl)
++		goto out;
++
++	lbc =3D ctrl->regs;
++	if (!lbc)
++		goto out;
+=20
+ 	if (ctrl->saved_regs) {
+ 		_memcpy_toio(lbc, ctrl->saved_regs,
+@@ -379,7 +398,9 @@ static int fsl_lbc_resume(struct platform_device *pdev)
+ 		kfree(ctrl->saved_regs);
+ 		ctrl->saved_regs =3D NULL;
+ 	}
+-	return 0;
++
++out:
++	return;
+ }
+ #endif /* CONFIG_SUSPEND */
+=20
+@@ -391,20 +412,26 @@ static const struct of_device_id fsl_lbc_match[] =3D =
+{
+ 	{},
+ };
+=20
++#ifdef CONFIG_SUSPEND
++static struct syscore_ops lbc_syscore_pm_ops =3D {
++	.suspend =3D fsl_lbc_syscore_suspend,
++	.resume =3D fsl_lbc_syscore_resume,
++};
++#endif
++
+ static struct platform_driver fsl_lbc_ctrl_driver =3D {
+ 	.driver =3D {
+ 		.name =3D "fsl-lbc",
+ 		.of_match_table =3D fsl_lbc_match,
+ 	},
+ 	.probe =3D fsl_lbc_ctrl_probe,
+-#ifdef CONFIG_SUSPEND
+-	.suspend     =3D fsl_lbc_suspend,
+-	.resume      =3D fsl_lbc_resume,
+-#endif
+ };
+=20
+ static int __init fsl_lbc_init(void)
+ {
++#ifdef CONFIG_SUSPEND
++	register_syscore_ops(&lbc_syscore_pm_ops);
++#endif
+ 	return platform_driver_register(&fsl_lbc_ctrl_driver);
+ }
+-module_init(fsl_lbc_init);
++arch_initcall(fsl_lbc_init);
+--
+1.9.1
