@@ -1,22 +1,22 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0010.hostedemail.com
- [216.40.44.10])
- by lists.ozlabs.org (Postfix) with ESMTP id 215281A0404
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 08:03:30 +1100 (AEDT)
-Message-ID: <1446498203.24485.74.camel@perches.com>
-Subject: Re: [net-next v4 3/8] dpaa_eth: add support for S/G frames
-From: Joe Perches <joe@perches.com>
-To: madalin.bucur@freescale.com
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, davem@davemloft.net, scottwood@freescale.com,
- igal.liberman@freescale.com, roy.pledge@freescale.com,
- ppc@mindchasers.com,  pebolle@tiscali.nl, joakim.tjernlund@transmode.se,
- gregkh@linuxfoundation.org
-Date: Mon, 02 Nov 2015 13:03:23 -0800
-In-Reply-To: <1446485500-9782-4-git-send-email-madalin.bucur@freescale.com>
-References: <1446485500-9782-1-git-send-email-madalin.bucur@freescale.com>
- <1446485500-9782-4-git-send-email-madalin.bucur@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9E3D31A03F6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 09:24:35 +1100 (AEDT)
+Message-ID: <1446503074.31246.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] nx-842: Ignore bit 3 of condition register returned by
+ icswx
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, hbabu@us.ibm.com, nacc@us.ibm.com, Dan
+ Streetman <ddstreet@ieee.org>
+Date: Tue, 03 Nov 2015 09:24:34 +1100
+In-Reply-To: <20151102184117.GC22547@ram.oc3035372033.ibm.com>
+References: <20151030223120.GA22550@ram.oc3035372033.ibm.com>
+ <1446427416.31303.1.camel@ellerman.id.au>
+ <20151102184117.GC22547@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,28 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-11-02 at 19:31 +0200, Madalin Bucur wrote:
-> Add support for Scater/Gather (S/G) frames. The FMan can place
-> the frame content into multiple buffers and provide a S/G Table
-> (SGT) into one first buffer with references to the others.
+On Mon, 2015-11-02 at 10:41 -0800, Ram Pai wrote:
+> On Mon, Nov 02, 2015 at 12:23:36PM +1100, Michael Ellerman wrote:
+> > On Fri, 2015-10-30 at 15:31 -0700, Ram Pai wrote:
+> > > icswx occasionally under heavy load sets bit 3 of condition register 0.
+> >
+> > Why?
+>
+> The hardware manual says that bit is undefined, though it is set under some
+> conditions.
 
-trivia:
+Which hardware manual?
 
-> diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-[]
-> @@ -347,7 +347,7 @@ static inline void clear_fd(struct qm_fd *fd)
->  }
->  
->  static inline int _dpa_tx_fq_to_id(const struct dpa_priv_s *priv,
-> -				   struct qman_fq *tx_fq)
-> +		struct qman_fq *tx_fq)
+Last I checked none of this was documented anywhere public. But the out of date
+RFC I have does define bit zero to mean something.
 
-superfluous change?
+> > > Currently that bit is interpreted by the driver as a failure, when
+> > > it should have calmly ignored it.
+> > 
+> > Should the fix be in icswx or the driver? Please justify your choice.
+> 
+> Yes there are two solutions. One is icswx macro should not expose that
+> bit to its consumers.  Or the driver/consumers can ignore that bit.  I
+> think it makes more sense to contain it in one place, which is icswx
+> instruction. Drivers or whoever calls icswx should not know
+> more than what they need to know. This patch uses the first approach.
 
-> +void dpa_release_sgt(struct qm_sg_entry *sgt)
-> +{
-> +	struct dpa_bp *dpa_bp;
-> +	struct bm_buffer bmb[DPA_BUFF_RELEASE_MAX];
-> +	u8 i = 0, j;
+Yep, I'm fine with doing it in icswx if we're 100% sure the bit is always
+undefined.
 
-Using int may be better than u8 for indexing
+> > This sounds like it's fixing a bug so shouldn't the patch go to stable? And if
+> > so which version(s) should it apply to?
+> 
+> It should go to stable v4.2.  I will tag it to stable, in my next version.
+
+Thanks.
+
+cheers
