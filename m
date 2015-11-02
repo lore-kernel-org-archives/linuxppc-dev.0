@@ -1,23 +1,34 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0153.hostedemail.com
- [216.40.44.153])
- by lists.ozlabs.org (Postfix) with ESMTP id 52F4E1A0384
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 07:07:17 +1100 (AEDT)
-Message-ID: <1446494829.24485.63.camel@perches.com>
-Subject: Re: [net-next v4 3/8] dpaa_eth: add support for S/G frames
-From: Joe Perches <joe@perches.com>
-To: madalin.bucur@freescale.com
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, davem@davemloft.net, scottwood@freescale.com,
- igal.liberman@freescale.com, roy.pledge@freescale.com,
- ppc@mindchasers.com,  pebolle@tiscali.nl, joakim.tjernlund@transmode.se,
- gregkh@linuxfoundation.org
-Date: Mon, 02 Nov 2015 12:07:09 -0800
-In-Reply-To: <1446485500-9782-4-git-send-email-madalin.bucur@freescale.com>
-References: <1446485500-9782-1-git-send-email-madalin.bucur@freescale.com>
- <1446485500-9782-4-git-send-email-madalin.bucur@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 941131A03CB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 07:25:02 +1100 (AEDT)
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Mon, 2 Nov 2015 15:25:00 -0500
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 1635B6E8040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2015 15:13:08 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA2KOuIe55115828
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Nov 2015 20:24:56 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA2KOubX027141
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Nov 2015 15:24:56 -0500
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, mingo@redhat.com,
+ Jiri Olsa <jolsa@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/4] powerpc/perf: Export Power8 PMU events in sysfs
+Date: Mon,  2 Nov 2015 12:22:21 -0800
+Message-Id: <1446495745-24001-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,22 +38,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-11-02 at 19:31 +0200, Madalin Bucur wrote:
-> Add support for Scater/Gather (S/G) frames. The FMan can place
-> the frame content into multiple buffers and provide a S/G Table
-> (SGT) into one first buffer with references to the others.
+For consistency with Power7, export Power8 PMU events in sysfs.
+This would also allow users to specify the PMU events by name:
 
-trivia: scatter
+	perf stat -e 'cpu/PM_VSU1_FPSCR/' sleep 1
 
-> diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
-[]
-> @@ -1177,10 +1177,42 @@ void dpaa_eth_init_ports(struct mac_device *mac_dev,
->  			      port_fqs->rx_defq, &buf_layout[RX]);
->  }
->  
-> +void dpa_release_sgt(struct qm_sg_entry *sgt)
-> +{
-> +	struct dpa_bp *dpa_bp;
-> +	struct bm_buffer bmb[DPA_BUFF_RELEASE_MAX];
+Sukadev Bhattiprolu (4):
+  powerpc/perf: Remove PME_ prefix for power7 events
+  powerpc/perf: Export Power8 generic and cache events in sysfs
+  perf/powerpc: Rename some Power8 events
+  powerpc/perf: Export all Power8 PMU events in sysfs
 
-Where is "struct bm_buffer" defined?
+ arch/powerpc/include/asm/perf_event_server.h |    2 +-
+ arch/powerpc/perf/power7-pmu.c               |   18 +-
+ arch/powerpc/perf/power8-events-list.h       | 1077 ++++++++++++++++++++++++++
+ arch/powerpc/perf/power8-pmu.c               |   82 +-
+ 4 files changed, 1128 insertions(+), 51 deletions(-)
+ create mode 100644 arch/powerpc/perf/power8-events-list.h
+
+-- 
+2.5.3
