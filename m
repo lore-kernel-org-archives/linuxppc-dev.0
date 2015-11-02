@@ -1,42 +1,22 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0144.outbound.protection.outlook.com [65.55.169.144])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A73131A03F6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 09:46:21 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 3 Nov 2015 08:46:19 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 561AF2CE8050
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 09:46:15 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA2MjrGl27000910
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Nov 2015 09:46:01 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA2MjgTu023009
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Nov 2015 09:45:43 +1100
-Date: Tue, 3 Nov 2015 06:45:01 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
- bhelgaas@google.com, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org
-Subject: Re: [PATCH V10 08/12] powerpc/powernv: Support EEH reset for VF PE
-Message-ID: <20151102224501.GA1425@Richards-MBP.lan>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1445829362-2738-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1445829362-2738-9-git-send-email-weiyang@linux.vnet.ibm.com>
- <5632EDE8.2010601@ozlabs.ru>
- <20151030071806.GE5940@richards-mbp.cn.ibm.com>
- <563324B1.7040009@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC9691A040C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 10:01:12 +1100 (AEDT)
+Message-ID: <1446505257.22185.43.camel@freescale.com>
+Subject: Re: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
+From: Scott Wood <scottwood@freescale.com>
+To: Dogra Raghav-B46184 <raghav@freescale.com>
+CC: Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 2 Nov 2015 17:00:57 -0600
+In-Reply-To: <BY2PR0301MB0775A3A01F8585352ED5EFADD22C0@BY2PR0301MB0775.namprd03.prod.outlook.com>
+References: <1446186299-2921-1-git-send-email-raghav@freescale.com>
+ <BY2PR0301MB0775A3A01F8585352ED5EFADD22C0@BY2PR0301MB0775.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <563324B1.7040009@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,326 +26,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 30, 2015 at 07:05:05PM +1100, Alexey Kardashevskiy wrote:
->On 10/30/2015 06:18 PM, Wei Yang wrote:
->>On Fri, Oct 30, 2015 at 03:11:20PM +1100, Alexey Kardashevskiy wrote:
->>>On 10/26/2015 02:15 PM, Wei Yang wrote:
->>>>PEs for VFs don't have primary bus. So they have to have their own reset
->>>>backend, which is used during EEH recovery. The patch implements the reset
->>>>backend for VF's PE by issuing FLR or AF FLR to the VFs, which are contained
->>>>in the PE.
->>>>
->>>>[gwshan: changelog and code refactoring]
->>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>>Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>>---
->>>>  arch/powerpc/include/asm/eeh.h               |   1 +
->>>>  arch/powerpc/platforms/powernv/eeh-powernv.c | 134 ++++++++++++++++++++++++++-
->>>>  2 files changed, 134 insertions(+), 1 deletion(-)
->>>>
->>>>diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
->>>>index ec21f8f..331c856 100644
->>>>--- a/arch/powerpc/include/asm/eeh.h
->>>>+++ b/arch/powerpc/include/asm/eeh.h
->>>>@@ -136,6 +136,7 @@ struct eeh_dev {
->>>>  	int pcix_cap;			/* Saved PCIx capability	*/
->>>>  	int pcie_cap;			/* Saved PCIe capability	*/
->>>>  	int aer_cap;			/* Saved AER capability		*/
->>>>+	int af_cap;			/* Saved AF capability		*/
->>>>  	struct eeh_pe *pe;		/* Associated PE		*/
->>>>  	struct list_head list;		/* Form link list in the PE	*/
->>>>  	struct pci_controller *phb;	/* Associated PHB		*/
->>>>diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
->>>>index cfd55dd..017cd72 100644
->>>>--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
->>>>+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
->>>>@@ -404,6 +404,7 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
->>>>  	edev->pcix_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_PCIX);
->>>>  	edev->pcie_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_EXP);
->>>>  	edev->aer_cap  = pnv_eeh_find_ecap(pdn, PCI_EXT_CAP_ID_ERR);
->>>>+	edev->af_cap   = pnv_eeh_find_cap(pdn, PCI_CAP_ID_AF);
->>>>  	if ((edev->class_code >> 8) == PCI_CLASS_BRIDGE_PCI) {
->>>>  		edev->mode |= EEH_DEV_BRIDGE;
->>>>  		if (edev->pcie_cap) {
->>>>@@ -893,6 +894,127 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
->>>>  	return 0;
->>>>  }
->>>>
->>>>+static void pnv_eeh_wait_for_pending(struct pci_dn *pdn, int pos,
->>>>+				     u16 mask, bool af_flr_rst)
->
->Missed this - @af_flr_rst is only used for warnings so better do:
->s/bool af_flr_rst/const char *reset_type/
->to make it explicit.
->
+On Mon, 2015-11-02 at 00:12 -0600, Dogra Raghav-B46184 wrote:
+> -----Original Message-----
+> From: Raghav Dogra [mailto:raghav@freescale.com] 
+> Sent: Friday, October 30, 2015 11:55 AM
+> To: linuxppc-dev@lists.ozlabs.org
+> Cc: Wood Scott-B07421 <scottwood@freescale.com>; Kushwaha Prabhakar-B32579 <
+> prabhakar@freescale.com>; Dogra Raghav-B46184 <raghav@freescale.com>
+> Subject: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
+> 
+> Modify platform driver suspend/resume to syscore suspend/resume. This is 
+> because p1022ds needs to use localbus when entering the PCIE resume.
+> 
+> Signed-off-by: Raghav Dogra <raghav@freescale.com>
+> ---
+>  arch/powerpc/sysdev/Makefile  |  2 +-
+>  arch/powerpc/sysdev/fsl_lbc.c | 51 +++++++++++++++++++++++++++++++++-------
+> ---
+>  2 files changed, 40 insertions(+), 13 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile 
+> index f7cb2a1..4c19e614 100644
+> --- a/arch/powerpc/sysdev/Makefile
+> +++ b/arch/powerpc/sysdev/Makefile
+> @@ -18,9 +18,9 @@ obj-$(CONFIG_PPC_PMI)               += pmi.o
+>  obj-$(CONFIG_U3_DART)                += dart_iommu.o
+>  obj-$(CONFIG_MMIO_NVRAM)     += mmio_nvram.o
+>  obj-$(CONFIG_FSL_SOC)                += fsl_soc.o fsl_mpic_err.o
+> +obj-$(CONFIG_FSL_LBC)                += fsl_lbc.o
+>  obj-$(CONFIG_FSL_PCI)                += fsl_pci.o $(fsl-msi-obj-y)
+>  obj-$(CONFIG_FSL_PMC)                += fsl_pmc.o
+> -obj-$(CONFIG_FSL_LBC)                += fsl_lbc.o
+>  obj-$(CONFIG_FSL_GTM)                += fsl_gtm.o
+>  obj-$(CONFIG_FSL_85XX_CACHE_SRAM)    += fsl_85xx_l2ctlr.o 
+> fsl_85xx_cache_sram.o
+>  obj-$(CONFIG_SIMPLE_GPIO)    += simple_gpio.o
+> diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c 
+> index d631022..332d700 100644
+> --- a/arch/powerpc/sysdev/fsl_lbc.c
+> +++ b/arch/powerpc/sysdev/fsl_lbc.c
+> @@ -27,6 +27,7 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/mod_devicetable.h>
+> +#include <linux/syscore_ops.h>
+>  #include <asm/prom.h>
+>  #include <asm/fsl_lbc.h>
+>  
+> @@ -354,24 +355,42 @@ err:
+>  #ifdef CONFIG_SUSPEND
+>  
+>  /* save lbc registers */
+> -static int fsl_lbc_suspend(struct platform_device *pdev, pm_message_t 
+> state)
+> +static int fsl_lbc_syscore_suspend(void)
+>  {
+> -     struct fsl_lbc_ctrl *ctrl = dev_get_drvdata(&pdev->dev);
+> -     struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
+> +     struct fsl_lbc_ctrl *ctrl;
+> +     struct fsl_lbc_regs __iomem *lbc;
+> +
+> +     ctrl = fsl_lbc_ctrl_dev;
+> +     if (!ctrl)
+> +             goto out;
+> +
+> +     lbc = ctrl->regs;
+> +     if (!lbc)
+> +             goto out;
+>  
+>       ctrl->saved_regs = kmalloc(sizeof(struct fsl_lbc_regs), GFP_KERNEL);
+>       if (!ctrl->saved_regs)
+>               return -ENOMEM;
+> [Dogra Raghav-B46184] This is the existing upstream code. Are you 
+> suggesting to modify the upstream code to take care of individual registers?
 
-Looks good, will change in next version.
+What specifically do you mean by "the upstream code"?  What other tree are we 
+talking about here?
 
->
->>>>+{
->>>>+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
->>>>+	int status, i;
->>>>+
->>>>+	/* Wait for Transaction Pending bit to be cleared */
->>>>+	for (i = 0; i < 4; i++) {
->>>>+		eeh_ops->read_config(pdn, pos, 2, &status);
->>>
->>>
->>>gcc should have complained on using uninitialized @status here.
->>>
->>
->>I remove the obj file and re-compile the file, not the warning.
->
->Hm. Does not warn me either.
->
->>And took a look at other places where read_config() is called. The laster
->>parameter is not initialized before called.
->
->So? It does not make it right.
->
->>You see the error during build?
->
->Why does it matter? We have an undefined behavior here which we should not.
->You could test the return values from read_config() but you do not so at
->least initialize local variables.
->
-
-I believe your concern is reasonable.
-
-I suggest to have a separate patch to fix the read_config() by initialize the
-last parameter.
-
->
->>
->>>
->>>>+		if (!(status & mask))
->>>>+			return;
->>>>+
->>>>+		msleep((1 << i) * 100);
->>>>+	}
->>>>+
->>>>+	pr_warn("%s: Pending transaction while issuing %s FLR to "
->>>>+		"%04x:%02x:%02x.%01x\n",
->>>
->>>Do not wrap user-visible strings.
->>>
->>
->>Will change this.
->>
->>>
->>>>+		__func__, af_flr_rst ? "AF" : "",
->>>>+		edev->phb->global_number, pdn->busno,
->>>>+		PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
->>>>+}
->>>>+
->>>>+static int pnv_eeh_do_flr(struct pci_dn *pdn, int option)
->>>>+{
->>>>+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
->>>>+	u32 reg;
->>>>+
->>>>+	if (!edev->pcie_cap)
->>>>+		return -ENOTTY;
->>>
->>>
->>>Can pnv_eeh_do_flr() be really called on a non PCIe device, can we get that
->>>far? WARN_ON_ONCE() may be?
->>>
->>
->>So you suggest to add a WARN_ON_ONCE() in this condition, right?
->
->I am asking a question here whether it makes sense or not to add a
->WARN_ON_ONCE or replace "if" with WARN_ON_ONCE or not having pcie_cap
->initialized is possible in this code - which one is it?
->
-
-I think the check here is reasonable. In the body of this function, pcie_cap
-is used to access the config space. If we remove this, it would be a chance to
-access a not correct area.
-
->
->>
->>>
->>>>+
->>>>+	eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP, 4, &reg);
->>>
->>>
->>>... and here about uninitialized @reg.
->>>
->>>
->>>>+	if (!(reg & PCI_EXP_DEVCAP_FLR))
->>>>+		return -ENOTTY;
->>>>+
->>>>+	switch (option) {
->>>>+	case EEH_RESET_HOT:
->>>>+	case EEH_RESET_FUNDAMENTAL:
->>>>+		pnv_eeh_wait_for_pending(pdn, edev->pcie_cap + PCI_EXP_DEVSTA,
->>>>+					 PCI_EXP_DEVSTA_TRPND, false);
->>>>+		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
->>>>+				     4, &reg);
->>>>+		reg |= PCI_EXP_DEVCTL_BCR_FLR;
->>>>+		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
->>>>+				      4, reg);
->>>>+		msleep(EEH_PE_RST_HOLD_TIME);
->>>>+		break;
->>>>+	case EEH_RESET_DEACTIVATE:
->>>>+		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
->>>>+				     4, &reg);
->>>>+		reg &= ~PCI_EXP_DEVCTL_BCR_FLR;
->>>>+		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
->>>>+				      4, reg);
->>>>+		msleep(EEH_PE_RST_SETTLE_TIME);
->>>>+		break;
->>>>+	}
->>>>+
->>>>+	return 0;
->>>>+}
->>>>+
->>>>+static int pnv_eeh_do_af_flr(struct pci_dn *pdn, int option)
->>>>+{
->>>>+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
->>>>+	u32 cap;
->>>>+
->>>>+	if (!edev->af_cap)
->>>>+		return -ENOTTY;
->>>>+
->>>>+	eeh_ops->read_config(pdn, edev->af_cap + PCI_AF_CAP, 1, &cap);
->>>
->>>
->>>... and here about @cap.
->>>
->>>>+	if (!(cap & PCI_AF_CAP_TP) || !(cap & PCI_AF_CAP_FLR))
->>>>+		return -ENOTTY;
->>>>+
->>>>+	switch (option) {
->>>>+	case EEH_RESET_HOT:
->>>>+	case EEH_RESET_FUNDAMENTAL:
->>>>+		/*
->>>>+		 * Wait for Transaction Pending bit to clear. A word-aligned
->>>>+		 * test is used, so we use the conrol offset rather than status
->>>>+		 * and shift the test bit to match.
->>>
->>>
->>>Why word-aligned (not byte or double word)?
->>>
->>
->>I copied this words from pci_af_flr(). Actually, I don't tried to understand
->>this reason.
->
->Ok. I looked at pci_af_flr().
->
->In this patch, the comment before pnv_eeh_wait_for_pending() is missing,
->something like "pnv_eeh_wait_for_pending() uses a word-size accessor so @pos
->must be work-aligned".
->
->
->>
->>>>+		 */
->>>>+		pnv_eeh_wait_for_pending(pdn, edev->af_cap + PCI_AF_CTRL,
->>>>+					 PCI_AF_STATUS_TP << 8, true);
->>>>+		eeh_ops->write_config(pdn, edev->af_cap + PCI_AF_CTRL,
->>>>+				      1, PCI_AF_CTRL_FLR);
->>>>+		msleep(EEH_PE_RST_HOLD_TIME);
->>>>+		break;
->>>>+	case EEH_RESET_DEACTIVATE:
->>>>+		eeh_ops->write_config(pdn, edev->af_cap + PCI_AF_CTRL, 1, 0);
->>>>+		msleep(EEH_PE_RST_SETTLE_TIME);
->>>
->>>
->>>btw there is an unrelated issue with EEH_PE_RST_SETTLE_TIME which is defined
->>>as 1800 which is A LOT (+250ms from EEH_PE_RST_HOLD_TIME and for some reason
->>>this is actually doubled so there is another reset somewhere).
->>>
->>
->>I don't know the reason for this value. This code keeps aligned with other
->>reset functions, like pnv_eeh_bridge_reset().
->
->
->Are they all in POWERNV/EEH or generic PCI uses same values on, for example,
->x86?
->
->
->
->>>Booting a guest with 63 VFs takes 6 minutes or so, is there a good reason for
->>>such a huge timeout?
->>>
->>>
->>>>+		break;
->>>>+	}
->>>>+
->>>>+	return 0;
->>>>+}
->>>>+
->>>>+static int pnv_eeh_reset_vf(struct pci_dn *pdn, int option)
->>>>+{
->>>>+	int ret;
->>>>+
->>>>+	ret = pnv_eeh_do_flr(pdn, option);
->>>>+	if (ret != -ENOTTY)
->>>>+		return ret;
->>>>+
->>>>+	return pnv_eeh_do_af_flr(pdn, option);
->>>>+}
->>>>+
->>>>+static int pnv_eeh_vf_pe_reset(struct eeh_pe *pe, int option)
->>>>+{
->>>>+	struct eeh_dev *edev, *tmp;
->>>>+	struct pci_dn *pdn;
->>>>+	int ret;
->>>>+
->>>>+	eeh_pe_for_each_dev(pe, edev, tmp) {
->>>>+		pdn = eeh_dev_to_pdn(edev);
->>>>+		ret = pnv_eeh_reset_vf(pdn, option);
->>>>+		if (ret)
->>>>+			return ret;
->>>>+	}
->>>>+
->>>>+	return 0;
->>>>+}
->>>>+
->>>>  void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
->>>>  {
->>>>  	struct pci_controller *hose;
->>>>@@ -968,7 +1090,9 @@ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
->>>>  		}
->>>>
->>>>  		bus = eeh_pe_bus_get(pe);
->>>>-		if (pci_is_root_bus(bus) ||
->>>>+		if (pe->type & EEH_PE_VF)
->>>>+			ret = pnv_eeh_vf_pe_reset(pe, option);
->>>>+		else if (pci_is_root_bus(bus) ||
->>>>  			pci_is_root_bus(bus->parent))
->>>>  			ret = pnv_eeh_root_reset(hose, option);
->>>>  		else
->>>>@@ -1108,6 +1232,14 @@ static inline bool pnv_eeh_cfg_blocked(struct pci_dn *pdn)
->>>>  	if (!edev || !edev->pe)
->>>>  		return false;
->>>>
->>>>+	/*
->>>>+	 * We will issue FLR or AF FLR to all VFs, which are contained
->>>>+	 * in VF PE. It relies on the EEH PCI config accessors. So we
->>>>+	 * can't block them during the window.
->>>>+	 */
->>>>+	if ((edev->physfn) && (edev->pe->state & EEH_PE_RESET))
->>>
->>>
->>>Extra braces around edev->physfn.
->>>
->>
->>Will remove it.
->>
->>>
->>>
->>>>+		return false;
->>>>+
->>>>  	if (edev->pe->state & EEH_PE_CFG_BLOCKED)
->>>>  		return true;
->>>>
->>>>
->
->
->-- 
->Alexey
-
--- 
-Richard Yang
-Help you, Help me
+-Scott
