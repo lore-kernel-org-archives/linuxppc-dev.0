@@ -1,34 +1,36 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 941131A03CB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 07:25:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D3C561A03CB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 07:25:03 +1100 (AEDT)
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 2 Nov 2015 15:25:00 -0500
+ Mon, 2 Nov 2015 15:25:01 -0500
 Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
  [9.57.198.23])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 1635B6E8040
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 773D2C90041
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2015 15:13:08 -0500 (EST)
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
  by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA2KOuIe55115828
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Nov 2015 20:24:56 GMT
+ tA2KOvF047710218
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Nov 2015 20:24:57 GMT
 Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
  by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA2KOubX027141
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Nov 2015 15:24:56 -0500
+ tA2KOv7r027216
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Nov 2015 15:24:57 -0500
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Arnaldo Carvalho de Melo <acme@kernel.org>, mingo@redhat.com,
  Jiri Olsa <jolsa@redhat.com>
 Cc: linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/4] powerpc/perf: Export Power8 PMU events in sysfs
-Date: Mon,  2 Nov 2015 12:22:21 -0800
-Message-Id: <1446495745-24001-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH 1/4] powerpc/perf: Remove PME_ prefix for power7 events
+Date: Mon,  2 Nov 2015 12:22:22 -0800
+Message-Id: <1446495745-24001-2-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1446495745-24001-1-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1446495745-24001-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,23 +40,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For consistency with Power7, export Power8 PMU events in sysfs.
-This would also allow users to specify the PMU events by name:
+We used the PME_ prefix earlier to avoid some macro/variable name
+collisions.  We have since changed the way we define/use the event
+macros so we no longer need the prefix.
 
-	perf stat -e 'cpu/PM_VSU1_FPSCR/' sleep 1
+By dropping the prefix, we keep the the event macros consistent with
+their official names.
 
-Sukadev Bhattiprolu (4):
-  powerpc/perf: Remove PME_ prefix for power7 events
-  powerpc/perf: Export Power8 generic and cache events in sysfs
-  perf/powerpc: Rename some Power8 events
-  powerpc/perf: Export all Power8 PMU events in sysfs
+Reported-by: Michael Ellerman <ellerman@au1.ibm.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/perf_event_server.h |  2 +-
+ arch/powerpc/perf/power7-pmu.c               | 18 +++++++++---------
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
- arch/powerpc/include/asm/perf_event_server.h |    2 +-
- arch/powerpc/perf/power7-pmu.c               |   18 +-
- arch/powerpc/perf/power8-events-list.h       | 1077 ++++++++++++++++++++++++++
- arch/powerpc/perf/power8-pmu.c               |   82 +-
- 4 files changed, 1128 insertions(+), 51 deletions(-)
- create mode 100644 arch/powerpc/perf/power8-events-list.h
-
+diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+index 8146221..0691087 100644
+--- a/arch/powerpc/include/asm/perf_event_server.h
++++ b/arch/powerpc/include/asm/perf_event_server.h
+@@ -141,7 +141,7 @@ extern ssize_t power_events_sysfs_show(struct device *dev,
+ #define	EVENT_PTR(_id, _suffix)		&EVENT_VAR(_id, _suffix).attr.attr
+ 
+ #define	EVENT_ATTR(_name, _id, _suffix)					\
+-	PMU_EVENT_ATTR(_name, EVENT_VAR(_id, _suffix), PME_##_id,	\
++	PMU_EVENT_ATTR(_name, EVENT_VAR(_id, _suffix), _id,		\
+ 			power_events_sysfs_show)
+ 
+ #define	GENERIC_EVENT_ATTR(_name, _id)	EVENT_ATTR(_name, _id, _g)
+diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+index 5b62f238..a383c23 100644
+--- a/arch/powerpc/perf/power7-pmu.c
++++ b/arch/powerpc/perf/power7-pmu.c
+@@ -54,7 +54,7 @@
+  * Power7 event codes.
+  */
+ #define EVENT(_name, _code) \
+-	PME_##_name = _code,
++	_name = _code,
+ 
+ enum {
+ #include "power7-events-list.h"
+@@ -318,14 +318,14 @@ static void power7_disable_pmc(unsigned int pmc, unsigned long mmcr[])
+ }
+ 
+ static int power7_generic_events[] = {
+-	[PERF_COUNT_HW_CPU_CYCLES] =			PME_PM_CYC,
+-	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PME_PM_GCT_NOSLOT_CYC,
+-	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] =	PME_PM_CMPLU_STALL,
+-	[PERF_COUNT_HW_INSTRUCTIONS] =			PME_PM_INST_CMPL,
+-	[PERF_COUNT_HW_CACHE_REFERENCES] =		PME_PM_LD_REF_L1,
+-	[PERF_COUNT_HW_CACHE_MISSES] =			PME_PM_LD_MISS_L1,
+-	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PME_PM_BRU_FIN,
+-	[PERF_COUNT_HW_BRANCH_MISSES] =			PME_PM_BR_MPRED,
++	[PERF_COUNT_HW_CPU_CYCLES] =			PM_CYC,
++	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PM_GCT_NOSLOT_CYC,
++	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] =	PM_CMPLU_STALL,
++	[PERF_COUNT_HW_INSTRUCTIONS] =			PM_INST_CMPL,
++	[PERF_COUNT_HW_CACHE_REFERENCES] =		PM_LD_REF_L1,
++	[PERF_COUNT_HW_CACHE_MISSES] =			PM_LD_MISS_L1,
++	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PM_BRU_FIN,
++	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_BR_MPRED,
+ };
+ 
+ #define C(x)	PERF_COUNT_HW_CACHE_##x
 -- 
 2.5.3
