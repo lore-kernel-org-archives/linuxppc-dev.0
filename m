@@ -1,24 +1,35 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0148.outbound.protection.outlook.com [157.56.111.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 061891A018C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 16:40:18 +1100 (AEDT)
-Message-ID: <1446529190.22185.51.camel@freescale.com>
-Subject: Re: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
-From: Scott Wood <scottwood@freescale.com>
-To: Dogra Raghav-B46184 <raghav@freescale.com>
-CC: Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 2 Nov 2015 23:39:50 -0600
-In-Reply-To: <BY2PR0301MB077529F563722A726BC39804D22B0@BY2PR0301MB0775.namprd03.prod.outlook.com>
-References: <1446186299-2921-1-git-send-email-raghav@freescale.com>
- <BY2PR0301MB0775A3A01F8585352ED5EFADD22C0@BY2PR0301MB0775.namprd03.prod.outlook.com>
- <1446505257.22185.43.camel@freescale.com>
- <BY2PR0301MB077529F563722A726BC39804D22B0@BY2PR0301MB0775.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B8E21A021E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 17:10:13 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Tue, 3 Nov 2015 11:40:10 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id A3A5D125805A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 11:40:05 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA36A5sm64684268
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Nov 2015 11:40:05 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA36A2aI013957
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Nov 2015 11:40:04 +0530
+From: Anju T <anju@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: anju@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, sukadev@linux.vnet.ibm.com,
+ acme@redhat.com, dsahern@gmail.com, jolsa@redhat.com,
+ hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com
+Subject: [PATCH V3 0/3] perf/powerpc:Add ability to sample intr machine state
+ in powerpc
+Date: Tue,  3 Nov 2015 11:39:59 +0530
+Message-Id: <1446531002-16582-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,109 +39,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-11-02 at 23:31 -0600, Dogra Raghav-B46184 wrote:
-> 
-> -----Original Message-----
-> From: Wood Scott-B07421 
-> Sent: Tuesday, November 03, 2015 4:31 AM
-> To: Dogra Raghav-B46184 <raghav@freescale.com>
-> Cc: Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>; 
-> linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
-> 
-> On Mon, 2015-11-02 at 00:12 -0600, Dogra Raghav-B46184 wrote:
-> > -----Original Message-----
-> > From: Raghav Dogra [mailto:raghav@freescale.com]
-> > Sent: Friday, October 30, 2015 11:55 AM
-> > To: linuxppc-dev@lists.ozlabs.org
-> > Cc: Wood Scott-B07421 <scottwood@freescale.com>; Kushwaha 
-> > Prabhakar-B32579 < prabhakar@freescale.com>; Dogra Raghav-B46184 
-> > <raghav@freescale.com>
-> > Subject: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
-> > 
-> > Modify platform driver suspend/resume to syscore suspend/resume. This 
-> > is because p1022ds needs to use localbus when entering the PCIE resume.
-> > 
-> > Signed-off-by: Raghav Dogra <raghav@freescale.com>
-> > ---
-> >  arch/powerpc/sysdev/Makefile  |  2 +-  arch/powerpc/sysdev/fsl_lbc.c 
-> > > 51 +++++++++++++++++++++++++++++++++-------
-> > ---
-> >  2 files changed, 40 insertions(+), 13 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/sysdev/Makefile 
-> > b/arch/powerpc/sysdev/Makefile index f7cb2a1..4c19e614 100644
-> > --- a/arch/powerpc/sysdev/Makefile
-> > +++ b/arch/powerpc/sysdev/Makefile
-> > @@ -18,9 +18,9 @@ obj-$(CONFIG_PPC_PMI)               += pmi.o
-> >  obj-$(CONFIG_U3_DART)                += dart_iommu.o
-> >  obj-$(CONFIG_MMIO_NVRAM)     += mmio_nvram.o
-> >  obj-$(CONFIG_FSL_SOC)                += fsl_soc.o fsl_mpic_err.o
-> > +obj-$(CONFIG_FSL_LBC)                += fsl_lbc.o
-> >  obj-$(CONFIG_FSL_PCI)                += fsl_pci.o $(fsl-msi-obj-y)
-> >  obj-$(CONFIG_FSL_PMC)                += fsl_pmc.o
-> > -obj-$(CONFIG_FSL_LBC)                += fsl_lbc.o
-> >  obj-$(CONFIG_FSL_GTM)                += fsl_gtm.o
-> >  obj-$(CONFIG_FSL_85XX_CACHE_SRAM)    += fsl_85xx_l2ctlr.o 
-> > fsl_85xx_cache_sram.o
-> >  obj-$(CONFIG_SIMPLE_GPIO)    += simple_gpio.o
-> > diff --git a/arch/powerpc/sysdev/fsl_lbc.c 
-> > b/arch/powerpc/sysdev/fsl_lbc.c index d631022..332d700 100644
-> > --- a/arch/powerpc/sysdev/fsl_lbc.c
-> > +++ b/arch/powerpc/sysdev/fsl_lbc.c
-> > @@ -27,6 +27,7 @@
-> >  #include <linux/platform_device.h>
-> >  #include <linux/interrupt.h>
-> >  #include <linux/mod_devicetable.h>
-> > +#include <linux/syscore_ops.h>
-> >  #include <asm/prom.h>
-> >  #include <asm/fsl_lbc.h>
-> >  
-> > @@ -354,24 +355,42 @@ err:
-> >  #ifdef CONFIG_SUSPEND
-> >  
-> >  /* save lbc registers */
-> > -static int fsl_lbc_suspend(struct platform_device *pdev, pm_message_t
-> > state)
-> > +static int fsl_lbc_syscore_suspend(void)
-> >  {
-> > -     struct fsl_lbc_ctrl *ctrl = dev_get_drvdata(&pdev->dev);
-> > -     struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> > +     struct fsl_lbc_ctrl *ctrl;
-> > +     struct fsl_lbc_regs __iomem *lbc;
-> > +
-> > +     ctrl = fsl_lbc_ctrl_dev;
-> > +     if (!ctrl)
-> > +             goto out;
-> > +
-> > +     lbc = ctrl->regs;
-> > +     if (!lbc)
-> > +             goto out;
-> >  
-> >       ctrl->saved_regs = kmalloc(sizeof(struct fsl_lbc_regs), GFP_KERNEL);
-> >       if (!ctrl->saved_regs)
-> >               return -ENOMEM;
-> > [Dogra Raghav-B46184] This is the existing upstream code. Are you 
-> > suggesting to modify the upstream code to take care of individual 
-> > registers?
-> 
-> What specifically do you mean by "the upstream code"?  What other tree are 
-> we talking about here?
-> 
-> -Scott
-> 
-> I meant that these two lines of code are not being added or modified by 
-> this patch. They already exist in the upstream tree. Are you suggesting I 
-> modify them as well?
-> -Raghav
+This short patch series adds the ability to sample the interrupted
+machine state for each hardware sample.
 
-I have no idea which "two lines of code" you're talking about or how any 
-comment I made applies to the above diff hunk.
+To test this patchset,
+Eg:
 
-OK, I looked at the original patch and I guess you're talking about the 
-_memcpy_fromio() that was *below* your comment?  Please configure your mailer 
-to quote properly, and put your replies below what you're quoting.
+$perf record -I ls   // record machine state at interrupt
+$perf script -D      //read the perf.data file
 
-Yes, I think that that usage of _memcpy_fromio() is bad and should be changed.
+Sample output obtained for this patchset/ output looks like as follows:
 
--Scott
+331557004666 0x1988 [0x188]: PERF_RECORD_SAMPLE(IP, 0x1): 4807/4807: 0xc0000000001ddf60 period: 1 addr: 0
+... intr regs: mask 0x7ffffffffff ABI 64-bit
+.... gpr0  0xc0000000001e6a74
+.... gpr1  0xc0000000ff33b9a0
+.... gpr2  0xc000000001523000
+.... gpr3  0xc000000ffa9deb60
+.... gpr4  0xc0000000ff971e00
+.... gpr5  0x4d32564532
+.... gpr6  0x1e000000
+.... gpr7  0x0
+.... gpr8  0x0
+.... gpr9  0x0
+.... gpr10 0x1
+.... gpr11 0x0
+.... gpr12 0x24022822
+.... gpr13 0xc00000000feeaf80
+.... gpr14 0x0
+.... gpr15 0xc0000000fbc21000
+.... gpr16 0x0
+.... gpr17 0xc000000ffa9c5000
+.... gpr18 0xc0000000ff33b8a0
+.... gpr19 0xc000000001523000
+.... gpr20 0xc0000000000a097c
+.... gpr21 0xc000000fcac65600
+.... gpr22 0xc0000000001e55a8
+.... gpr23 0xc000000001523000
+.... gpr24 0xc0000000ff33b850
+.... gpr25 0xc000000fcac65600
+.... gpr26 0xc000001e4b378210
+.... gpr27 0xfffffffffffffead
+.... gpr28 0x100000000
+.... gpr29 0xc000000fcac65600
+.... gpr30 0x1
+.... gpr31 0x0
+.... nip   0xc0000000001ddf68
+.... msr   0x9000000000009032
+.... orig_r3 0xc0000000001e5fcc
+.... ctr   0xc00000000009e1b0
+.... link  0xc0000000001e6a74
+.... xer   0x0
+.... ccr   0x84022882
+.... softe 0x0
+.... trap  0xf01
+.... dar   0x0
+.... dsisr 0xf00040060000004
+ ... thread: :4807:4807
+ ...... dso: /root/.debug/.build-id/1c/011201a1082e91b8449e6dd528f224d7a16535
+           :4807  4807   331.557004:          1 cycles:  c0000000001ddf60 .perf_ctx_unlock (/boot/vmlinux)
+
+0x1b10 [0x188]: event: 9
+
+
+Changes from V2:
+
+- tools/perf/config/Makefile is moved to the patch tools/perf.
+- The patchset is reordered.
+- perf_regs_load() function is used for the dwarf unwind test.Since it is not required here,
+  it is removed from tools/perf/arch/powerpc/include/perf_regs.h 	
+- PERF_REGS_POWERPC_RESULT is removed.
+
+
+
+
+
+Anju T (3):
+  perf/powerpc:add ability to sample intr machine state in power
+  perf/powerpc :add support for sampling intr machine state
+  tools/perf:Map the ID values with register names
+
+ arch/powerpc/Kconfig                        |   1 +
+ arch/powerpc/include/uapi/asm/perf_regs.h   |  54 +++++++++++++
+ arch/powerpc/perf/Makefile                  |   2 +
+ arch/powerpc/perf/perf_regs.c               |  92 ++++++++++++++++++++++
+ tools/perf/arch/powerpc/include/perf_regs.h | 114 ++++++++++++++++++++++++++++
+ tools/perf/config/Makefile                  |   5 ++
+ 6 files changed, 268 insertions(+)
+ create mode 100644 arch/powerpc/include/uapi/asm/perf_regs.h
+ create mode 100644 arch/powerpc/perf/perf_regs.c
+ create mode 100644 tools/perf/arch/powerpc/include/perf_regs.h
+
+-- 
+2.1.0
