@@ -1,30 +1,38 @@
-Return-Path: <keith.busch@intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by lists.ozlabs.org (Postfix) with ESMTP id 0BA181A0272
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 00:46:27 +1100 (AEDT)
-Date: Tue, 3 Nov 2015 13:46:25 +0000
-From: Keith Busch <keith.busch@intel.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, aik@ozlabs.ru,
- linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
- paulus@samba.org, sparclinux@vger.kernel.org, willy@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- david@gibson.dropbear.id.au
-Subject: Re: [PATCH 1/1 v3] drivers/nvme: default to 4k device page size
-Message-ID: <20151103134624.GG13904@localhost.localdomain>
-References: <20151026.182746.1323901353520152838.davem@davemloft.net>
- <20151027222010.GD7716@linux.vnet.ibm.com>
- <20151027223643.GA25332@localhost.localdomain>
- <20151027.175443.140992924519172506.davem@davemloft.net>
- <20151028135922.GA27909@localhost.localdomain>
- <20151029115536.GA28090@infradead.org>
- <20151029155701.GJ7716@linux.vnet.ibm.com>
- <20151029172043.GA8343@localhost.localdomain>
- <20151030213511.GK7716@linux.vnet.ibm.com>
- <20151103131824.GA12232@infradead.org>
+Return-Path: <jallen@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6005F1A0297
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 02:44:01 +1100 (AEDT)
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.vnet.ibm.com>;
+ Tue, 3 Nov 2015 08:43:59 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id B6B341FF0049
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 08:32:09 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA3FgVd56095168
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Nov 2015 08:42:31 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA3FhvBB016670
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Nov 2015 08:43:57 -0700
+Subject: Re: [PATCH] memory-hotplug: Fix kernel warning during memory hotplug
+ on ppc64
+To: gregkh@linuxfoundation.org
+References: <5637CCD5.2080202@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
+From: John Allen <jallen@linux.vnet.ibm.com>
+Message-ID: <5638D63B.9070400@linux.vnet.ibm.com>
+Date: Tue, 3 Nov 2015 09:43:55 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151103131824.GA12232@infradead.org>
+In-Reply-To: <5637CCD5.2080202@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,28 +42,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 03, 2015 at 05:18:24AM -0800, Christoph Hellwig wrote:
-> On Fri, Oct 30, 2015 at 02:35:11PM -0700, Nishanth Aravamudan wrote:
-> > diff --git a/drivers/block/nvme-core.c b/drivers/block/nvme-core.c
-> > index ccc0c1f93daa..a9a5285bdb39 100644
-> > --- a/drivers/block/nvme-core.c
-> > +++ b/drivers/block/nvme-core.c
-> > @@ -1717,7 +1717,12 @@ static int nvme_configure_admin_queue(struct nvme_dev *dev)
-> >  	u32 aqa;
-> >  	u64 cap = readq(&dev->bar->cap);
-> >  	struct nvme_queue *nvmeq;
-> > -	unsigned page_shift = PAGE_SHIFT;
-> > +	/*
-> > +	 * default to a 4K page size, with the intention to update this
-> > +	 * path in the future to accomodate architectures with differing
-> > +	 * kernel and IO page sizes.
-> > +	 */
-> > +	unsigned page_shift = 12;
-> >  	unsigned dev_page_min = NVME_CAP_MPSMIN(cap) + 12;
-> >  	unsigned dev_page_max = NVME_CAP_MPSMAX(cap) + 12;
+On 11/02/2015 02:51 PM, John Allen wrote:
+> This patch fixes a bug where a kernel warning is triggered when performing
+> a memory hotplug on ppc64. This warning may also occur on any architecture
+> that has multiple sections per memory block.
 > 
-> Looks good as a start.  Note that all the MPSMIN/MAX checking could
-> be removed as NVMe devices must support 4k pages.
+> [   78.300767] ------------[ cut here ]------------
+> [   78.300768] WARNING: at ../drivers/base/memory.c:210
+> [   78.300769] Modules linked in: rpadlpar_io(X) rpaphp(X) tcp_diag udp_diag inet_diag unix_diag af_packet_diag netlink_diag af_packet xfs libcrc32c ibmveth(X) rtc_generic btrfs xor raid6_pq xts gf128mul dm_crypt sd_mod sr_mod cdrom crc_t10dif ibmvscsi(X) scsi_transport_srp scsi_tgt dm_mod sg scsi_mod autofs4
+> [   78.300789] Supported: Yes, External
+> [   78.300791] CPU: 1 PID: 3090 Comm: systemd-udevd Tainted: G              X 3.12.45-1-default #1
+> [   78.300793] task: c0000004d7d1d970 ti: c0000004d7b90000 task.ti: c0000004d7b90000
+> [   78.300794] NIP: c0000000004fcff8 LR: c0000000004fda84 CTR: 0000000000000000
+> [   78.300795] REGS: c0000004d7b93930 TRAP: 0700   Tainted: G              X  (3.12.45-1-default)
+> [   78.300796] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 24088848  XER: 00000000
+> [   78.300800] CFAR: c0000000004fcf98 SOFTE: 1
+> GPR00: 0000000000000537 c0000004d7b93bb0 c000000000e7f200 0000000000053000
+> GPR04: 0000000000001000 0000000000000001 c000000000e0f200 0000000000000000
+> GPR08: 0000000000000000 0000000000000001 0000000000000537 00000000014dc000
+> GPR12: 0000000000054000 c00000000e7f0900 0000000010041040 0000000000000000
+> GPR16: 00000100206f0010 000000001003ff78 000000001006c824 00000000100410b0
+> GPR20: 000000001003ff90 000000001006c00c 000001002073cd20 00000100206f0760
+> GPR24: 00000100206f85a0 c00000000076d950 c0000004ef7c95e0 c0000004d7b93e00
+> GPR28: c0000004de601738 0000000000000001 c000000001218f80 00000000003fffff
+> [   78.300818] NIP [c0000000004fcff8] memory_block_action+0x258/0x2e0
+> [   78.300820] LR [c0000000004fda84] memory_subsys_online+0x54/0x100
+> [   78.300821] Call Trace:
+> [   78.300822] [c0000004d7b93bb0] [c000000009071ce0] 0xc000000009071ce0 (unreliable)
+> [   78.300824] [c0000004d7b93c40] [c0000000004fda84] memory_subsys_online+0x54/0x100
+> [   78.300826] [c0000004d7b93c70] [c0000000004df784] device_online+0xb4/0x120
+> [   78.300828] [c0000004d7b93cb0] [c0000000004fd738] store_mem_state+0x88/0x220
+> [   78.300830] [c0000004d7b93cf0] [c0000000004db448] dev_attr_store+0x68/0xa0
+> [   78.300833] [c0000004d7b93d30] [c00000000031f938] sysfs_write_file+0xf8/0x1d0
+> [   78.300835] [c0000004d7b93d90] [c00000000027d29c] vfs_write+0xec/0x250
+> [   78.300837] [c0000004d7b93de0] [c00000000027dfdc] SyS_write+0x6c/0xf0
+> [   78.300839] [c0000004d7b93e30] [c00000000000a17c] syscall_exit+0x0/0x7c
+> [   78.300840] Instruction dump:
+> [   78.300841] 780a0560 79482ea4 7ce94214 2fa70000 41de0014 7d09402a 396b4000 7907ffe3
+> [   78.300844] 4082ff54 3cc2fff9 8926b83a 69290001 <0b090000> 2fa90000 40de006c 3860fff0
+> [   78.300847] ---[ end trace dfec8da06ebbc762 ]---
+> 
+> The warning is triggered because there is a udev rule that automatically
+> tries to online memory after it has been added. The udev rule varies from
+> distro to distro, but will generally look something like:
+> 
+> SUBSYSTEM=="memory", ACTION=="add", ATTR{state}=="offline", ATTR{state}="online"
+> 
+> On any architecture that uses memory_probe_store to reserve memory,
+> this can interrupt the memory reservation process. This patch modifies
+> memory_probe_store to take the hotplug sysfs lock to prevent the online
+> of added memory before the completion of the probe.
+> 
+> Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
+> ---
+> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+> index 2804aed..baf7a22 100644
+> --- a/drivers/base/memory.c
+> +++ b/drivers/base/memory.c
+> @@ -457,6 +457,10 @@ memory_probe_store(struct device *dev, struct device_attribute *attr,
+>  	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
+>  		return -EINVAL;
+> 
+> +	ret = lock_device_hotplug_sysfs();
+> +	if (ret)
+> +		return ret;
+> +
+>  	for (i = 0; i < sections_per_block; i++) {
+>  		nid = memory_add_physaddr_to_nid(phys_addr);
+>  		ret = add_memory(nid, phys_addr,
+> @@ -467,6 +471,8 @@ memory_probe_store(struct device *dev, struct device_attribute *attr,
+>  		phys_addr += MIN_MEMORY_BLOCK_SIZE;
+>  	}
+> 
+> +	unlock_device_hotplug();
+> +
 
-MAX can go, and while it's probably the case that all devices support 4k,
-it's not a spec requirement, so we should keep the dev_page_min check.
+I realized that there is actually a bug here. If the call to add_memory in
+the above loop fails, we goto out and skip unlocking the device hotplug
+lock. I will be sending a v2 patch to address this issue shortly.
+
+John
+
+>  	ret = count;
+>  out:
+>  	return ret;
+> 
