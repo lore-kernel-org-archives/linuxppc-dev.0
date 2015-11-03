@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <raghav@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0146.outbound.protection.outlook.com [65.55.169.146])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 210721A03F8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 16:30:33 +1100 (AEDT)
-Message-ID: <1446528621.17404.33.camel@kernel.crashing.org>
-Subject: Re: [RFC PATCH 0/7] Remove 4k subpage tracking with hash 64K config
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Paul Mackerras
- <paulus@ozlabs.org>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 03 Nov 2015 16:30:21 +1100
-In-Reply-To: <87r3k7u0tf.fsf@linux.vnet.ibm.com>
-References: <1445371953-9627-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20151029030029.GA31681@fergus.ozlabs.ibm.com>
- <87r3k7u0tf.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 974BB1A03F8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 16:31:51 +1100 (AEDT)
+From: Dogra Raghav <raghav@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: Kushwaha Prabhakar <prabhakar@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
+Date: Tue, 3 Nov 2015 05:31:44 +0000
+Message-ID: <BY2PR0301MB077529F563722A726BC39804D22B0@BY2PR0301MB0775.namprd03.prod.outlook.com>
+References: <1446186299-2921-1-git-send-email-raghav@freescale.com>
+ <BY2PR0301MB0775A3A01F8585352ED5EFADD22C0@BY2PR0301MB0775.namprd03.prod.outlook.com>
+ <1446505257.22185.43.camel@freescale.com>
+In-Reply-To: <1446505257.22185.43.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-11-03 at 10:38 +0530, Aneesh Kumar K.V wrote:
-> I also ran mmtest configs/config-global-dhp__pagealloc-performance
-> config with changes including this series. (ie, the changes tested
-> include two patch series, one which change the pte format and this
-> series). I am attaching the results below. I removed the pagealloc
-> performance numbers from that because it was giving me all 00 which I
-> assume is due to systemtap script issue.
-> 
-> We don't see any performance impact with the series and some of the
-> performance change is withing the variance of test run as indicated by
-> the numbers below. We do find less page fault and in some case better
-> autonuma numbers 
-
-Did you try under pHyp (ie. hit all those H_READ ?).
-
-The easy way to do that is comment out 64K support in htab init to
-force 4k demotion allways.
-
-That would give you an idea of the impact on things like old P4/P5
-
-Cheers,
-Ben.
+DQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBXb29kIFNjb3R0LUIwNzQyMSAN
+ClNlbnQ6IFR1ZXNkYXksIE5vdmVtYmVyIDAzLCAyMDE1IDQ6MzEgQU0NClRvOiBEb2dyYSBSYWdo
+YXYtQjQ2MTg0IDxyYWdoYXZAZnJlZXNjYWxlLmNvbT4NCkNjOiBLdXNod2FoYSBQcmFiaGFrYXIt
+QjMyNTc5IDxwcmFiaGFrYXJAZnJlZXNjYWxlLmNvbT47IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
+YnMub3JnDQpTdWJqZWN0OiBSZTogW1BBVENIIDEvMl0gbXBjODV4eC9sYmM6IG1vZGlmeSBzdXNw
+ZW5kL3Jlc3VtZSBlbnRyeSBzZXF1ZW5jZQ0KDQpPbiBNb24sIDIwMTUtMTEtMDIgYXQgMDA6MTIg
+LTA2MDAsIERvZ3JhIFJhZ2hhdi1CNDYxODQgd3JvdGU6DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
+ZS0tLS0tDQo+IEZyb206IFJhZ2hhdiBEb2dyYSBbbWFpbHRvOnJhZ2hhdkBmcmVlc2NhbGUuY29t
+XQ0KPiBTZW50OiBGcmlkYXksIE9jdG9iZXIgMzAsIDIwMTUgMTE6NTUgQU0NCj4gVG86IGxpbnV4
+cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMSA8c2NvdHR3
+b29kQGZyZWVzY2FsZS5jb20+OyBLdXNod2FoYSANCj4gUHJhYmhha2FyLUIzMjU3OSA8IHByYWJo
+YWthckBmcmVlc2NhbGUuY29tPjsgRG9ncmEgUmFnaGF2LUI0NjE4NCANCj4gPHJhZ2hhdkBmcmVl
+c2NhbGUuY29tPg0KPiBTdWJqZWN0OiBbUEFUQ0ggMS8yXSBtcGM4NXh4L2xiYzogbW9kaWZ5IHN1
+c3BlbmQvcmVzdW1lIGVudHJ5IHNlcXVlbmNlDQo+IA0KPiBNb2RpZnkgcGxhdGZvcm0gZHJpdmVy
+IHN1c3BlbmQvcmVzdW1lIHRvIHN5c2NvcmUgc3VzcGVuZC9yZXN1bWUuIFRoaXMgDQo+IGlzIGJl
+Y2F1c2UgcDEwMjJkcyBuZWVkcyB0byB1c2UgbG9jYWxidXMgd2hlbiBlbnRlcmluZyB0aGUgUENJ
+RSByZXN1bWUuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBSYWdoYXYgRG9ncmEgPHJhZ2hhdkBmcmVl
+c2NhbGUuY29tPg0KPiAtLS0NCj4gIGFyY2gvcG93ZXJwYy9zeXNkZXYvTWFrZWZpbGUgIHwgIDIg
+Ky0gIGFyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX2xiYy5jIA0KPiB8IDUxICsrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKy0tLS0tLS0NCj4gLS0tDQo+ICAyIGZpbGVzIGNoYW5nZWQsIDQw
+IGluc2VydGlvbnMoKyksIDEzIGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2FyY2gv
+cG93ZXJwYy9zeXNkZXYvTWFrZWZpbGUgDQo+IGIvYXJjaC9wb3dlcnBjL3N5c2Rldi9NYWtlZmls
+ZSBpbmRleCBmN2NiMmExLi40YzE5ZTYxNCAxMDA2NDQNCj4gLS0tIGEvYXJjaC9wb3dlcnBjL3N5
+c2Rldi9NYWtlZmlsZQ0KPiArKysgYi9hcmNoL3Bvd2VycGMvc3lzZGV2L01ha2VmaWxlDQo+IEBA
+IC0xOCw5ICsxOCw5IEBAIG9iai0kKENPTkZJR19QUENfUE1JKSAgICAgICAgICAgICAgICs9IHBt
+aS5vDQo+ICBvYmotJChDT05GSUdfVTNfREFSVCkgICAgICAgICAgICAgICAgKz0gZGFydF9pb21t
+dS5vDQo+ICBvYmotJChDT05GSUdfTU1JT19OVlJBTSkgICAgICs9IG1taW9fbnZyYW0ubw0KPiAg
+b2JqLSQoQ09ORklHX0ZTTF9TT0MpICAgICAgICAgICAgICAgICs9IGZzbF9zb2MubyBmc2xfbXBp
+Y19lcnIubw0KPiArb2JqLSQoQ09ORklHX0ZTTF9MQkMpICAgICAgICAgICAgICAgICs9IGZzbF9s
+YmMubw0KPiAgb2JqLSQoQ09ORklHX0ZTTF9QQ0kpICAgICAgICAgICAgICAgICs9IGZzbF9wY2ku
+byAkKGZzbC1tc2ktb2JqLXkpDQo+ICBvYmotJChDT05GSUdfRlNMX1BNQykgICAgICAgICAgICAg
+ICAgKz0gZnNsX3BtYy5vDQo+IC1vYmotJChDT05GSUdfRlNMX0xCQykgICAgICAgICAgICAgICAg
+Kz0gZnNsX2xiYy5vDQo+ICBvYmotJChDT05GSUdfRlNMX0dUTSkgICAgICAgICAgICAgICAgKz0g
+ZnNsX2d0bS5vDQo+ICBvYmotJChDT05GSUdfRlNMXzg1WFhfQ0FDSEVfU1JBTSkgICAgKz0gZnNs
+Xzg1eHhfbDJjdGxyLm8gDQo+IGZzbF84NXh4X2NhY2hlX3NyYW0ubw0KPiAgb2JqLSQoQ09ORklH
+X1NJTVBMRV9HUElPKSAgICArPSBzaW1wbGVfZ3Bpby5vDQo+IGRpZmYgLS1naXQgYS9hcmNoL3Bv
+d2VycGMvc3lzZGV2L2ZzbF9sYmMuYyANCj4gYi9hcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9sYmMu
+YyBpbmRleCBkNjMxMDIyLi4zMzJkNzAwIDEwMDY0NA0KPiAtLS0gYS9hcmNoL3Bvd2VycGMvc3lz
+ZGV2L2ZzbF9sYmMuYw0KPiArKysgYi9hcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9sYmMuYw0KPiBA
+QCAtMjcsNiArMjcsNyBAQA0KPiAgI2luY2x1ZGUgPGxpbnV4L3BsYXRmb3JtX2RldmljZS5oPg0K
+PiAgI2luY2x1ZGUgPGxpbnV4L2ludGVycnVwdC5oPg0KPiAgI2luY2x1ZGUgPGxpbnV4L21vZF9k
+ZXZpY2V0YWJsZS5oPg0KPiArI2luY2x1ZGUgPGxpbnV4L3N5c2NvcmVfb3BzLmg+DQo+ICAjaW5j
+bHVkZSA8YXNtL3Byb20uaD4NCj4gICNpbmNsdWRlIDxhc20vZnNsX2xiYy5oPg0KPiAgDQo+IEBA
+IC0zNTQsMjQgKzM1NSw0MiBAQCBlcnI6DQo+ICAjaWZkZWYgQ09ORklHX1NVU1BFTkQNCj4gIA0K
+PiAgLyogc2F2ZSBsYmMgcmVnaXN0ZXJzICovDQo+IC1zdGF0aWMgaW50IGZzbF9sYmNfc3VzcGVu
+ZChzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2LCBwbV9tZXNzYWdlX3QNCj4gc3RhdGUpDQo+
+ICtzdGF0aWMgaW50IGZzbF9sYmNfc3lzY29yZV9zdXNwZW5kKHZvaWQpDQo+ICB7DQo+IC0gICAg
+IHN0cnVjdCBmc2xfbGJjX2N0cmwgKmN0cmwgPSBkZXZfZ2V0X2RydmRhdGEoJnBkZXYtPmRldik7
+DQo+IC0gICAgIHN0cnVjdCBmc2xfbGJjX3JlZ3MgX19pb21lbSAqbGJjID0gY3RybC0+cmVnczsN
+Cj4gKyAgICAgc3RydWN0IGZzbF9sYmNfY3RybCAqY3RybDsNCj4gKyAgICAgc3RydWN0IGZzbF9s
+YmNfcmVncyBfX2lvbWVtICpsYmM7DQo+ICsNCj4gKyAgICAgY3RybCA9IGZzbF9sYmNfY3RybF9k
+ZXY7DQo+ICsgICAgIGlmICghY3RybCkNCj4gKyAgICAgICAgICAgICBnb3RvIG91dDsNCj4gKw0K
+PiArICAgICBsYmMgPSBjdHJsLT5yZWdzOw0KPiArICAgICBpZiAoIWxiYykNCj4gKyAgICAgICAg
+ICAgICBnb3RvIG91dDsNCj4gIA0KPiAgICAgICBjdHJsLT5zYXZlZF9yZWdzID0ga21hbGxvYyhz
+aXplb2Yoc3RydWN0IGZzbF9sYmNfcmVncyksIEdGUF9LRVJORUwpOw0KPiAgICAgICBpZiAoIWN0
+cmwtPnNhdmVkX3JlZ3MpDQo+ICAgICAgICAgICAgICAgcmV0dXJuIC1FTk9NRU07DQo+IFtEb2dy
+YSBSYWdoYXYtQjQ2MTg0XSBUaGlzIGlzIHRoZSBleGlzdGluZyB1cHN0cmVhbSBjb2RlLiBBcmUg
+eW91IA0KPiBzdWdnZXN0aW5nIHRvIG1vZGlmeSB0aGUgdXBzdHJlYW0gY29kZSB0byB0YWtlIGNh
+cmUgb2YgaW5kaXZpZHVhbCByZWdpc3RlcnM/DQoNCldoYXQgc3BlY2lmaWNhbGx5IGRvIHlvdSBt
+ZWFuIGJ5ICJ0aGUgdXBzdHJlYW0gY29kZSI/ICBXaGF0IG90aGVyIHRyZWUgYXJlIHdlIHRhbGtp
+bmcgYWJvdXQgaGVyZT8NCg0KLVNjb3R0DQoNCkkgbWVhbnQgdGhhdCB0aGVzZSB0d28gbGluZXMg
+b2YgY29kZSBhcmUgbm90IGJlaW5nIGFkZGVkIG9yIG1vZGlmaWVkIGJ5IHRoaXMgcGF0Y2guIFRo
+ZXkgYWxyZWFkeSBleGlzdCBpbiB0aGUgdXBzdHJlYW0gdHJlZS4gQXJlIHlvdSBzdWdnZXN0aW5n
+IEkgbW9kaWZ5IHRoZW0gYXMgd2VsbD8NCi1SYWdoYXYNCg==
