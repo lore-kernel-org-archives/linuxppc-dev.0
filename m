@@ -1,24 +1,36 @@
-Return-Path: <yasu.isimatu@gmail.com>
-Received: from mail-qk0-x229.google.com (mail-qk0-x229.google.com
- [IPv6:2607:f8b0:400d:c09::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 727BD1A044F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 08:13:22 +1100 (AEDT)
-Received: by qkct129 with SMTP id t129so12434066qkc.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2015 13:13:19 -0800 (PST)
-Message-ID: <5639236e.08ee8c0a.476f4.198a@mx.google.com>
-Date: Tue, 03 Nov 2015 13:13:18 -0800 (PST)
-From: Yasuaki Ishimatsu <yasu.isimatu@gmail.com>
-To: John Allen <jallen@linux.vnet.ibm.com>
-Cc: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] memory-hotplug: Fix kernel warning during memory
- hotplug on ppc64
-In-Reply-To: <5638ED37.3090500@linux.vnet.ibm.com>
-References: <5638ED37.3090500@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id AD80E1A0456
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 09:26:41 +1100 (AEDT)
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Wed, 4 Nov 2015 08:26:39 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id DB0672BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 09:26:35 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA3MQDOB28770416
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 09:26:21 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA3MQ39R019273
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 09:26:03 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ stable <stable@vger.kernel.org>
+Subject: Re: [PATCH] cxl: Fix struct pid leak when attaching a process through
+ user API
+In-reply-to: <1446552832-17592-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+References: <1446552832-17592-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+Date: Wed, 04 Nov 2015 09:25:38 +1100
+Message-Id: <1446589529-sup-6435@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,97 +40,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Tue, 3 Nov 2015 11:21:59 -0600
-John Allen <jallen@linux.vnet.ibm.com> wrote:
-
-> This patch fixes a bug where a kernel warning is triggered when performing
-> a memory hotplug on ppc64. This warning may also occur on any architecture
-> that has multiple sections per memory block.
-> 
-> [   78.300767] ------------[ cut here ]------------
-> [   78.300768] WARNING: at ../drivers/base/memory.c:210
-> [   78.300769] Modules linked in: rpadlpar_io(X) rpaphp(X) tcp_diag udp_diag inet_diag unix_diag af_packet_diag netlink_diag af_packet xfs libcrc32c ibmveth(X) rtc_generic btrfs xor raid6_pq xts gf128mul dm_crypt sd_mod sr_mod cdrom crc_t10dif ibmvscsi(X) scsi_transport_srp scsi_tgt dm_mod sg scsi_mod autofs4
-> [   78.300789] Supported: Yes, External
-> [   78.300791] CPU: 1 PID: 3090 Comm: systemd-udevd Tainted: G              X 3.12.45-1-default #1
-> [   78.300793] task: c0000004d7d1d970 ti: c0000004d7b90000 task.ti: c0000004d7b90000
-> [   78.300794] NIP: c0000000004fcff8 LR: c0000000004fda84 CTR: 0000000000000000
-> [   78.300795] REGS: c0000004d7b93930 TRAP: 0700   Tainted: G              X  (3.12.45-1-default)
-> [   78.300796] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 24088848  XER: 00000000
-> [   78.300800] CFAR: c0000000004fcf98 SOFTE: 1
-> GPR00: 0000000000000537 c0000004d7b93bb0 c000000000e7f200 0000000000053000
-> GPR04: 0000000000001000 0000000000000001 c000000000e0f200 0000000000000000
-> GPR08: 0000000000000000 0000000000000001 0000000000000537 00000000014dc000
-> GPR12: 0000000000054000 c00000000e7f0900 0000000010041040 0000000000000000
-> GPR16: 00000100206f0010 000000001003ff78 000000001006c824 00000000100410b0
-> GPR20: 000000001003ff90 000000001006c00c 000001002073cd20 00000100206f0760
-> GPR24: 00000100206f85a0 c00000000076d950 c0000004ef7c95e0 c0000004d7b93e00
-> GPR28: c0000004de601738 0000000000000001 c000000001218f80 00000000003fffff
-> [   78.300818] NIP [c0000000004fcff8] memory_block_action+0x258/0x2e0
-> [   78.300820] LR [c0000000004fda84] memory_subsys_online+0x54/0x100
-> [   78.300821] Call Trace:
-> [   78.300822] [c0000004d7b93bb0] [c000000009071ce0] 0xc000000009071ce0 (unreliable)
-> [   78.300824] [c0000004d7b93c40] [c0000000004fda84] memory_subsys_online+0x54/0x100
-> [   78.300826] [c0000004d7b93c70] [c0000000004df784] device_online+0xb4/0x120
-> [   78.300828] [c0000004d7b93cb0] [c0000000004fd738] store_mem_state+0x88/0x220
-> [   78.300830] [c0000004d7b93cf0] [c0000000004db448] dev_attr_store+0x68/0xa0
-> [   78.300833] [c0000004d7b93d30] [c00000000031f938] sysfs_write_file+0xf8/0x1d0
-> [   78.300835] [c0000004d7b93d90] [c00000000027d29c] vfs_write+0xec/0x250
-> [   78.300837] [c0000004d7b93de0] [c00000000027dfdc] SyS_write+0x6c/0xf0
-> [   78.300839] [c0000004d7b93e30] [c00000000000a17c] syscall_exit+0x0/0x7c
-> [   78.300840] Instruction dump:
-> [   78.300841] 780a0560 79482ea4 7ce94214 2fa70000 41de0014 7d09402a 396b4000 7907ffe3
-> [   78.300844] 4082ff54 3cc2fff9 8926b83a 69290001 <0b090000> 2fa90000 40de006c 3860fff0
-> [   78.300847] ---[ end trace dfec8da06ebbc762 ]---
-> 
-> The warning is triggered because there is a udev rule that automatically
-> tries to online memory after it has been added. The udev rule varies from
-> distro to distro, but will generally look something like:
-> 
-> SUBSYSTEM=="memory", ACTION=="add", ATTR{state}=="offline", ATTR{state}="online"
-> 
-> On any architecture that uses memory_probe_store to reserve memory,
-> this can interrupt the memory reservation process. This patch modifies
-> memory_probe_store to take the hotplug sysfs lock to prevent the online
-> of added memory before the completion of the probe.
-> 
-> Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
-> ---
-
-Looks good to me.
-
-Reviewed-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-
-Thanks,
-Yasuaki Ishimatsu
-
-> v2: Move call to unlock_device_hotplug under "out" label
-> 
-> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-> index bece691..7c50415 100644
-> --- a/drivers/base/memory.c
-> +++ b/drivers/base/memory.c
-> @@ -422,6 +422,10 @@ memory_probe_store(struct device *dev, struct device_attribute *attr,
->  	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
->  		return -EINVAL;
-> 
-> +	ret = lock_device_hotplug_sysfs();
-> +	if (ret)
-> +		return ret;
-> +
->  	for (i = 0; i < sections_per_block; i++) {
->  		nid = memory_add_physaddr_to_nid(phys_addr);
->  		ret = add_memory(nid, phys_addr,
-> @@ -434,6 +438,7 @@ memory_probe_store(struct device *dev, struct device_attribute *attr,
-> 
->  	ret = count;
->  out:
-> +	unlock_device_hotplug();
->  	return ret;
->  }
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
