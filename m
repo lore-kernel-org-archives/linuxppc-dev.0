@@ -1,25 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0118.outbound.protection.outlook.com [157.56.110.118])
+Return-Path: <raghav@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0125.outbound.protection.outlook.com [65.55.169.125])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 127171A1E2F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 17:14:13 +1100 (AEDT)
-Message-ID: <1446531228.22185.60.camel@freescale.com>
-Subject: Re: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
-From: Scott Wood <scottwood@freescale.com>
-To: Dogra Raghav-B46184 <raghav@freescale.com>
-CC: Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4400C1A0279
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 17:23:56 +1100 (AEDT)
+From: Dogra Raghav <raghav@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: Kushwaha Prabhakar <prabhakar@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 3 Nov 2015 00:13:48 -0600
-In-Reply-To: <BY2PR0301MB0775900A89741E58FA3822D9D22B0@BY2PR0301MB0775.namprd03.prod.outlook.com>
+Subject: RE: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
+Date: Tue, 3 Nov 2015 06:09:04 +0000
+Message-ID: <BY2PR0301MB0775900A89741E58FA3822D9D22B0@BY2PR0301MB0775.namprd03.prod.outlook.com>
 References: <1446186299-2921-1-git-send-email-raghav@freescale.com>
  <BY2PR0301MB0775A3A01F8585352ED5EFADD22C0@BY2PR0301MB0775.namprd03.prod.outlook.com>
  <1446505257.22185.43.camel@freescale.com>
  <BY2PR0301MB077529F563722A726BC39804D22B0@BY2PR0301MB0775.namprd03.prod.outlook.com>
  <1446529190.22185.51.camel@freescale.com>
- <BY2PR0301MB0775900A89741E58FA3822D9D22B0@BY2PR0301MB0775.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1446529190.22185.51.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,138 +29,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-11-03 at 00:09 -0600, Dogra Raghav-B46184 wrote:
-> 
-> -----Original Message-----
-> From: Wood Scott-B07421 
-> Sent: Tuesday, November 03, 2015 11:10 AM
-> To: Dogra Raghav-B46184 <raghav@freescale.com>
-> Cc: Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>; 
-> linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
-> 
-> On Mon, 2015-11-02 at 23:31 -0600, Dogra Raghav-B46184 wrote:
-> > 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Tuesday, November 03, 2015 4:31 AM
-> > To: Dogra Raghav-B46184 <raghav@freescale.com>
-> > Cc: Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>; 
-> > linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry 
-> > sequence
-> > 
-> > On Mon, 2015-11-02 at 00:12 -0600, Dogra Raghav-B46184 wrote:
-> > > -----Original Message-----
-> > > From: Raghav Dogra [mailto:raghav@freescale.com]
-> > > Sent: Friday, October 30, 2015 11:55 AM
-> > > To: linuxppc-dev@lists.ozlabs.org
-> > > Cc: Wood Scott-B07421 <scottwood@freescale.com>; Kushwaha
-> > > Prabhakar-B32579 < prabhakar@freescale.com>; Dogra Raghav-B46184 
-> > > <raghav@freescale.com>
-> > > Subject: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry 
-> > > sequence
-> > > 
-> > > Modify platform driver suspend/resume to syscore suspend/resume. 
-> > > This is because p1022ds needs to use localbus when entering the PCIE 
-> > > resume.
-> > > 
-> > > Signed-off-by: Raghav Dogra <raghav@freescale.com>
-> > > ---
-> > >  arch/powerpc/sysdev/Makefile  |  2 +-  
-> > > arch/powerpc/sysdev/fsl_lbc.c
-> > > > 51 +++++++++++++++++++++++++++++++++-------
-> > > ---
-> > >  2 files changed, 40 insertions(+), 13 deletions(-)
-> > > 
-> > > diff --git a/arch/powerpc/sysdev/Makefile 
-> > > b/arch/powerpc/sysdev/Makefile index f7cb2a1..4c19e614 100644
-> > > --- a/arch/powerpc/sysdev/Makefile
-> > > +++ b/arch/powerpc/sysdev/Makefile
-> > > @@ -18,9 +18,9 @@ obj-$(CONFIG_PPC_PMI)               += pmi.o
-> > >  obj-$(CONFIG_U3_DART)                += dart_iommu.o
-> > >  obj-$(CONFIG_MMIO_NVRAM)     += mmio_nvram.o
-> > >  obj-$(CONFIG_FSL_SOC)                += fsl_soc.o fsl_mpic_err.o
-> > > +obj-$(CONFIG_FSL_LBC)                += fsl_lbc.o
-> > >  obj-$(CONFIG_FSL_PCI)                += fsl_pci.o $(fsl-msi-obj-y)
-> > >  obj-$(CONFIG_FSL_PMC)                += fsl_pmc.o
-> > > -obj-$(CONFIG_FSL_LBC)                += fsl_lbc.o
-> > >  obj-$(CONFIG_FSL_GTM)                += fsl_gtm.o
-> > >  obj-$(CONFIG_FSL_85XX_CACHE_SRAM)    += fsl_85xx_l2ctlr.o 
-> > > fsl_85xx_cache_sram.o
-> > >  obj-$(CONFIG_SIMPLE_GPIO)    += simple_gpio.o
-> > > diff --git a/arch/powerpc/sysdev/fsl_lbc.c 
-> > > b/arch/powerpc/sysdev/fsl_lbc.c index d631022..332d700 100644
-> > > --- a/arch/powerpc/sysdev/fsl_lbc.c
-> > > +++ b/arch/powerpc/sysdev/fsl_lbc.c
-> > > @@ -27,6 +27,7 @@
-> > >  #include <linux/platform_device.h>
-> > >  #include <linux/interrupt.h>
-> > >  #include <linux/mod_devicetable.h>
-> > > +#include <linux/syscore_ops.h>
-> > >  #include <asm/prom.h>
-> > >  #include <asm/fsl_lbc.h>
-> > >  
-> > > @@ -354,24 +355,42 @@ err:
-> > >  #ifdef CONFIG_SUSPEND
-> > >  
-> > >  /* save lbc registers */
-> > > -static int fsl_lbc_suspend(struct platform_device *pdev, 
-> > > pm_message_t
-> > > state)
-> > > +static int fsl_lbc_syscore_suspend(void)
-> > >  {
-> > > -     struct fsl_lbc_ctrl *ctrl = dev_get_drvdata(&pdev->dev);
-> > > -     struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> > > +     struct fsl_lbc_ctrl *ctrl;
-> > > +     struct fsl_lbc_regs __iomem *lbc;
-> > > +
-> > > +     ctrl = fsl_lbc_ctrl_dev;
-> > > +     if (!ctrl)
-> > > +             goto out;
-> > > +
-> > > +     lbc = ctrl->regs;
-> > > +     if (!lbc)
-> > > +             goto out;
-> > >  
-> > >       ctrl->saved_regs = kmalloc(sizeof(struct fsl_lbc_regs), 
-> > > GFP_KERNEL);
-> > >       if (!ctrl->saved_regs)
-> > >               return -ENOMEM;
-> > > [Dogra Raghav-B46184] This is the existing upstream code. Are you 
-> > > suggesting to modify the upstream code to take care of individual 
-> > > registers?
-> > 
-> > What specifically do you mean by "the upstream code"?  What other tree 
-> > are we talking about here?
-> > 
-> > -Scott
-> > 
-> > I meant that these two lines of code are not being added or modified 
-> > by this patch. They already exist in the upstream tree. Are you 
-> > suggesting I modify them as well?
-> > -Raghav
-> 
-> I have no idea which "two lines of code" you're talking about or how any 
-> comment I made applies to the above diff hunk.
-> 
-> OK, I looked at the original patch and I guess you're talking about the
-> _memcpy_fromio() that was *below* your comment?  Please configure your 
-> mailer to quote properly, and put your replies below what you're quoting.
-> 
-> Yes, I think that that usage of _memcpy_fromio() is bad and should be 
-> changed.
-> 
-> -Scott
-> 
-> Ok, I will take care that the replies are below what I am quoting in 
-> future. 
-
-Also please make your mailer use proper quote markers.
-
-> Can this patch be applied as it is then? The changes you are suggesting can 
-> come in a new patch.
-
-OK.
-
--Scott
+DQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBXb29kIFNjb3R0LUIwNzQyMSAN
+ClNlbnQ6IFR1ZXNkYXksIE5vdmVtYmVyIDAzLCAyMDE1IDExOjEwIEFNDQpUbzogRG9ncmEgUmFn
+aGF2LUI0NjE4NCA8cmFnaGF2QGZyZWVzY2FsZS5jb20+DQpDYzogS3VzaHdhaGEgUHJhYmhha2Fy
+LUIzMjU3OSA8cHJhYmhha2FyQGZyZWVzY2FsZS5jb20+OyBsaW51eHBwYy1kZXZAbGlzdHMub3ps
+YWJzLm9yZw0KU3ViamVjdDogUmU6IFtQQVRDSCAxLzJdIG1wYzg1eHgvbGJjOiBtb2RpZnkgc3Vz
+cGVuZC9yZXN1bWUgZW50cnkgc2VxdWVuY2UNCg0KT24gTW9uLCAyMDE1LTExLTAyIGF0IDIzOjMx
+IC0wNjAwLCBEb2dyYSBSYWdoYXYtQjQ2MTg0IHdyb3RlOg0KPiANCj4gLS0tLS1PcmlnaW5hbCBN
+ZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2VudDogVHVlc2RheSwg
+Tm92ZW1iZXIgMDMsIDIwMTUgNDozMSBBTQ0KPiBUbzogRG9ncmEgUmFnaGF2LUI0NjE4NCA8cmFn
+aGF2QGZyZWVzY2FsZS5jb20+DQo+IENjOiBLdXNod2FoYSBQcmFiaGFrYXItQjMyNTc5IDxwcmFi
+aGFrYXJAZnJlZXNjYWxlLmNvbT47IA0KPiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0K
+PiBTdWJqZWN0OiBSZTogW1BBVENIIDEvMl0gbXBjODV4eC9sYmM6IG1vZGlmeSBzdXNwZW5kL3Jl
+c3VtZSBlbnRyeSANCj4gc2VxdWVuY2UNCj4gDQo+IE9uIE1vbiwgMjAxNS0xMS0wMiBhdCAwMDox
+MiAtMDYwMCwgRG9ncmEgUmFnaGF2LUI0NjE4NCB3cm90ZToNCj4gPiAtLS0tLU9yaWdpbmFsIE1l
+c3NhZ2UtLS0tLQ0KPiA+IEZyb206IFJhZ2hhdiBEb2dyYSBbbWFpbHRvOnJhZ2hhdkBmcmVlc2Nh
+bGUuY29tXQ0KPiA+IFNlbnQ6IEZyaWRheSwgT2N0b2JlciAzMCwgMjAxNSAxMTo1NSBBTQ0KPiA+
+IFRvOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+IENjOiBXb29kIFNjb3R0LUIw
+NzQyMSA8c2NvdHR3b29kQGZyZWVzY2FsZS5jb20+OyBLdXNod2FoYQ0KPiA+IFByYWJoYWthci1C
+MzI1NzkgPCBwcmFiaGFrYXJAZnJlZXNjYWxlLmNvbT47IERvZ3JhIFJhZ2hhdi1CNDYxODQgDQo+
+ID4gPHJhZ2hhdkBmcmVlc2NhbGUuY29tPg0KPiA+IFN1YmplY3Q6IFtQQVRDSCAxLzJdIG1wYzg1
+eHgvbGJjOiBtb2RpZnkgc3VzcGVuZC9yZXN1bWUgZW50cnkgDQo+ID4gc2VxdWVuY2UNCj4gPiAN
+Cj4gPiBNb2RpZnkgcGxhdGZvcm0gZHJpdmVyIHN1c3BlbmQvcmVzdW1lIHRvIHN5c2NvcmUgc3Vz
+cGVuZC9yZXN1bWUuIA0KPiA+IFRoaXMgaXMgYmVjYXVzZSBwMTAyMmRzIG5lZWRzIHRvIHVzZSBs
+b2NhbGJ1cyB3aGVuIGVudGVyaW5nIHRoZSBQQ0lFIHJlc3VtZS4NCj4gPiANCj4gPiBTaWduZWQt
+b2ZmLWJ5OiBSYWdoYXYgRG9ncmEgPHJhZ2hhdkBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+
+ICBhcmNoL3Bvd2VycGMvc3lzZGV2L01ha2VmaWxlICB8ICAyICstICANCj4gPiBhcmNoL3Bvd2Vy
+cGMvc3lzZGV2L2ZzbF9sYmMuYw0KPiA+ID4gNTEgKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrLS0tLS0tLQ0KPiA+IC0tLQ0KPiA+ICAyIGZpbGVzIGNoYW5nZWQsIDQwIGluc2VydGlv
+bnMoKyksIDEzIGRlbGV0aW9ucygtKQ0KPiA+IA0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2Vy
+cGMvc3lzZGV2L01ha2VmaWxlIA0KPiA+IGIvYXJjaC9wb3dlcnBjL3N5c2Rldi9NYWtlZmlsZSBp
+bmRleCBmN2NiMmExLi40YzE5ZTYxNCAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvc3lz
+ZGV2L01ha2VmaWxlDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL3N5c2Rldi9NYWtlZmlsZQ0KPiA+
+IEBAIC0xOCw5ICsxOCw5IEBAIG9iai0kKENPTkZJR19QUENfUE1JKSAgICAgICAgICAgICAgICs9
+IHBtaS5vDQo+ID4gIG9iai0kKENPTkZJR19VM19EQVJUKSAgICAgICAgICAgICAgICArPSBkYXJ0
+X2lvbW11Lm8NCj4gPiAgb2JqLSQoQ09ORklHX01NSU9fTlZSQU0pICAgICArPSBtbWlvX252cmFt
+Lm8NCj4gPiAgb2JqLSQoQ09ORklHX0ZTTF9TT0MpICAgICAgICAgICAgICAgICs9IGZzbF9zb2Mu
+byBmc2xfbXBpY19lcnIubw0KPiA+ICtvYmotJChDT05GSUdfRlNMX0xCQykgICAgICAgICAgICAg
+ICAgKz0gZnNsX2xiYy5vDQo+ID4gIG9iai0kKENPTkZJR19GU0xfUENJKSAgICAgICAgICAgICAg
+ICArPSBmc2xfcGNpLm8gJChmc2wtbXNpLW9iai15KQ0KPiA+ICBvYmotJChDT05GSUdfRlNMX1BN
+QykgICAgICAgICAgICAgICAgKz0gZnNsX3BtYy5vDQo+ID4gLW9iai0kKENPTkZJR19GU0xfTEJD
+KSAgICAgICAgICAgICAgICArPSBmc2xfbGJjLm8NCj4gPiAgb2JqLSQoQ09ORklHX0ZTTF9HVE0p
+ICAgICAgICAgICAgICAgICs9IGZzbF9ndG0ubw0KPiA+ICBvYmotJChDT05GSUdfRlNMXzg1WFhf
+Q0FDSEVfU1JBTSkgICAgKz0gZnNsXzg1eHhfbDJjdGxyLm8gDQo+ID4gZnNsXzg1eHhfY2FjaGVf
+c3JhbS5vDQo+ID4gIG9iai0kKENPTkZJR19TSU1QTEVfR1BJTykgICAgKz0gc2ltcGxlX2dwaW8u
+bw0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9sYmMuYyANCj4gPiBi
+L2FyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX2xiYy5jIGluZGV4IGQ2MzEwMjIuLjMzMmQ3MDAgMTAw
+NjQ0DQo+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfbGJjLmMNCj4gPiArKysgYi9h
+cmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9sYmMuYw0KPiA+IEBAIC0yNyw2ICsyNyw3IEBADQo+ID4g
+ICNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4NCj4gPiAgI2luY2x1ZGUgPGxpbnV4
+L2ludGVycnVwdC5oPg0KPiA+ICAjaW5jbHVkZSA8bGludXgvbW9kX2RldmljZXRhYmxlLmg+DQo+
+ID4gKyNpbmNsdWRlIDxsaW51eC9zeXNjb3JlX29wcy5oPg0KPiA+ICAjaW5jbHVkZSA8YXNtL3By
+b20uaD4NCj4gPiAgI2luY2x1ZGUgPGFzbS9mc2xfbGJjLmg+DQo+ID4gIA0KPiA+IEBAIC0zNTQs
+MjQgKzM1NSw0MiBAQCBlcnI6DQo+ID4gICNpZmRlZiBDT05GSUdfU1VTUEVORA0KPiA+ICANCj4g
+PiAgLyogc2F2ZSBsYmMgcmVnaXN0ZXJzICovDQo+ID4gLXN0YXRpYyBpbnQgZnNsX2xiY19zdXNw
+ZW5kKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYsIA0KPiA+IHBtX21lc3NhZ2VfdA0KPiA+
+IHN0YXRlKQ0KPiA+ICtzdGF0aWMgaW50IGZzbF9sYmNfc3lzY29yZV9zdXNwZW5kKHZvaWQpDQo+
+ID4gIHsNCj4gPiAtICAgICBzdHJ1Y3QgZnNsX2xiY19jdHJsICpjdHJsID0gZGV2X2dldF9kcnZk
+YXRhKCZwZGV2LT5kZXYpOw0KPiA+IC0gICAgIHN0cnVjdCBmc2xfbGJjX3JlZ3MgX19pb21lbSAq
+bGJjID0gY3RybC0+cmVnczsNCj4gPiArICAgICBzdHJ1Y3QgZnNsX2xiY19jdHJsICpjdHJsOw0K
+PiA+ICsgICAgIHN0cnVjdCBmc2xfbGJjX3JlZ3MgX19pb21lbSAqbGJjOw0KPiA+ICsNCj4gPiAr
+ICAgICBjdHJsID0gZnNsX2xiY19jdHJsX2RldjsNCj4gPiArICAgICBpZiAoIWN0cmwpDQo+ID4g
+KyAgICAgICAgICAgICBnb3RvIG91dDsNCj4gPiArDQo+ID4gKyAgICAgbGJjID0gY3RybC0+cmVn
+czsNCj4gPiArICAgICBpZiAoIWxiYykNCj4gPiArICAgICAgICAgICAgIGdvdG8gb3V0Ow0KPiA+
+ICANCj4gPiAgICAgICBjdHJsLT5zYXZlZF9yZWdzID0ga21hbGxvYyhzaXplb2Yoc3RydWN0IGZz
+bF9sYmNfcmVncyksIEdGUF9LRVJORUwpOw0KPiA+ICAgICAgIGlmICghY3RybC0+c2F2ZWRfcmVn
+cykNCj4gPiAgICAgICAgICAgICAgIHJldHVybiAtRU5PTUVNOw0KPiA+IFtEb2dyYSBSYWdoYXYt
+QjQ2MTg0XSBUaGlzIGlzIHRoZSBleGlzdGluZyB1cHN0cmVhbSBjb2RlLiBBcmUgeW91IA0KPiA+
+IHN1Z2dlc3RpbmcgdG8gbW9kaWZ5IHRoZSB1cHN0cmVhbSBjb2RlIHRvIHRha2UgY2FyZSBvZiBp
+bmRpdmlkdWFsIA0KPiA+IHJlZ2lzdGVycz8NCj4gDQo+IFdoYXQgc3BlY2lmaWNhbGx5IGRvIHlv
+dSBtZWFuIGJ5ICJ0aGUgdXBzdHJlYW0gY29kZSI/ICBXaGF0IG90aGVyIHRyZWUgDQo+IGFyZSB3
+ZSB0YWxraW5nIGFib3V0IGhlcmU/DQo+IA0KPiAtU2NvdHQNCj4gDQo+IEkgbWVhbnQgdGhhdCB0
+aGVzZSB0d28gbGluZXMgb2YgY29kZSBhcmUgbm90IGJlaW5nIGFkZGVkIG9yIG1vZGlmaWVkIA0K
+PiBieSB0aGlzIHBhdGNoLiBUaGV5IGFscmVhZHkgZXhpc3QgaW4gdGhlIHVwc3RyZWFtIHRyZWUu
+IEFyZSB5b3UgDQo+IHN1Z2dlc3RpbmcgSSBtb2RpZnkgdGhlbSBhcyB3ZWxsPw0KPiAtUmFnaGF2
+DQoNCkkgaGF2ZSBubyBpZGVhIHdoaWNoICJ0d28gbGluZXMgb2YgY29kZSIgeW91J3JlIHRhbGtp
+bmcgYWJvdXQgb3IgaG93IGFueSBjb21tZW50IEkgbWFkZSBhcHBsaWVzIHRvIHRoZSBhYm92ZSBk
+aWZmIGh1bmsuDQoNCk9LLCBJIGxvb2tlZCBhdCB0aGUgb3JpZ2luYWwgcGF0Y2ggYW5kIEkgZ3Vl
+c3MgeW91J3JlIHRhbGtpbmcgYWJvdXQgdGhlDQpfbWVtY3B5X2Zyb21pbygpIHRoYXQgd2FzICpi
+ZWxvdyogeW91ciBjb21tZW50PyAgUGxlYXNlIGNvbmZpZ3VyZSB5b3VyIG1haWxlciB0byBxdW90
+ZSBwcm9wZXJseSwgYW5kIHB1dCB5b3VyIHJlcGxpZXMgYmVsb3cgd2hhdCB5b3UncmUgcXVvdGlu
+Zy4NCg0KWWVzLCBJIHRoaW5rIHRoYXQgdGhhdCB1c2FnZSBvZiBfbWVtY3B5X2Zyb21pbygpIGlz
+IGJhZCBhbmQgc2hvdWxkIGJlIGNoYW5nZWQuDQoNCi1TY290dA0KDQpPaywgSSB3aWxsIHRha2Ug
+Y2FyZSB0aGF0IHRoZSByZXBsaWVzIGFyZSBiZWxvdyB3aGF0IEkgYW0gcXVvdGluZyBpbiBmdXR1
+cmUuIA0KQ2FuIHRoaXMgcGF0Y2ggYmUgYXBwbGllZCBhcyBpdCBpcyB0aGVuPyBUaGUgY2hhbmdl
+cyB5b3UgYXJlIHN1Z2dlc3RpbmcgY2FuIGNvbWUgaW4gYSBuZXcgcGF0Y2guDQoNCi1SYWdoYXYN
+Cg0K
