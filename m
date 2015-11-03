@@ -1,22 +1,29 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <madalin.bucur@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0110.outbound.protection.outlook.com [207.46.100.110])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E13661A0A70
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 20:18:38 +1100 (AEDT)
-Message-ID: <1446542318.23081.7.camel@ellerman.id.au>
-Subject: Re: [RFC PATCH 0/7] Remove 4k subpage tracking with hash 64K config
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Paul Mackerras
- <paulus@ozlabs.org>
-Cc: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 03 Nov 2015 20:18:38 +1100
-In-Reply-To: <87r3k7u0tf.fsf@linux.vnet.ibm.com>
-References: <1445371953-9627-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20151029030029.GA31681@fergus.ozlabs.ibm.com>
- <87r3k7u0tf.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id B70071A30D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 20:37:29 +1100 (AEDT)
+From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>
+CC: Scott Wood <scottwood@freescale.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "ppc@mindchasers.com" <ppc@mindchasers.com>,
+ Roy Pledge <roy.pledge@freescale.com>, Liberman Igal
+ <Igal.Liberman@freescale.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>,
+ "joe@perches.com" <joe@perches.com>, "davem@davemloft.net"
+ <davem@davemloft.net>
+Subject: RE: [net-next v4 2/8] dpaa_eth: add support for DPAA Ethernet
+Date: Tue, 3 Nov 2015 09:37:22 +0000
+Message-ID: <BL2PR03MB545ED95392F5CB88EC06B11E62B0@BL2PR03MB545.namprd03.prod.outlook.com>
+References: <1446485500-9782-1-git-send-email-madalin.bucur@freescale.com>
+ <1446485500-9782-3-git-send-email-madalin.bucur@freescale.com>
+ <1446537357.21216.49.camel@transmode.se>
+In-Reply-To: <1446537357.21216.49.camel@transmode.se>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,49 +33,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-11-03 at 10:38 +0530, Aneesh Kumar K.V wrote:
-> Paul Mackerras <paulus@ozlabs.org> writes:
-> > On Wed, Oct 21, 2015 at 01:42:26AM +0530, Aneesh Kumar K.V wrote:
-> > > Hi,
-> > > 
-> > > This patch series is on top of the series posted at 
-> > > 
-> > > https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-October/135299.html
-> > > "[PATCH V4 00/31] powerpc/mm: Update page table format for book3s 64". In this
-> > > series we remove 4k subpage tracking with 64K config. Instead we do a hash
-> > > table lookup to get the slot information of 4k hash ptes. This also allow us
-> > > to remove real_pte_t. Side effect of the change is that a specific 4k slot
-> > > lookup can result in multiple H_READ hcalls. But that should only impact
-> > > when we are using 4K subpages which should be rare.
-> > > 
-> > > NOTE: I only tested this on systemsim. Wanted to get this out to get early
-> > > feedback.
-> > 
-> > I tried this on a quad G5 and it seems to work just fine.  On a kernel
-> > compile test there was very little difference in speed - I measured
-> > about 0.4% slowdown but that may not be statistically significant.
-> > This was with 64k pages configured and THP enabled.
-> > 
-> 
-> I also ran mmtest configs/config-global-dhp__pagealloc-performance
-> config with changes including this series. (ie, the changes tested
-> include two patch series, one which change the pte format and this
-> series). I am attaching the results below. I removed the pagealloc
-> performance numbers from that because it was giving me all 00 which I
-> assume is due to systemtap script issue.
-> 
-> We don't see any performance impact with the series and some of the
-> performance change is withing the variance of test run as indicated by
-> the numbers below. We do find less page fault and in some case better
-> autonuma numbers 
+> -----Original Message-----
+> From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]
+>=20
+> On Mon, 2015-11-02 at 19:31 +0200, Madalin Bucur wrote:
+> > +       if (unlikely(fd_status & FM_FD_STAT_RX_ERRORS) !=3D 0) {
+> > +               if (net_ratelimit())
+> > +                       netif_warn(priv, hw, net_dev, "FD status =3D
+> 0x%08x\n",
+> > +                                  fd_status & FM_FD_STAT_RX_ERRORS);
+> > +
+> > +               percpu_stats->rx_errors++;
+> > +               goto _release_frame;
+> > +       }
+>=20
+> I cannot find any detailed error accounting(maybe I am not looking hard
+> enough) but I
+> would appreciate if both TX and RX errors where better
+> accounted(rx_length_errors, rx_frame_errors,
+> rx_crc_errors, rx_fifo_errors etc.). This has helped me many times in the
+> past diagnosing
+> board HW problems.
+>=20
+>  Jocke
 
-Thanks for running those numbers.
+Hi Jocke,
 
-For the record, it looks like you're running those on a bare metal Tuleta
-system? What chip rev etc. is it. And how much memory does the system have
-(that's probably somewhere below but just for easy reference).
+There are some error counters exported through ethtool (used to be debugfs)=
+.
+FMan HW provides more debug information than we currently export, that will=
+ be
+improved in the future but given the current priority of having a codebase =
+as
+small and reviewable as possible we had to drop some things from the initia=
+l
+submission.
 
-I'll have to see if the boot failure I got on my G5 was actually related to
-this or just something spurious.
-
-cheers
+Madalin
