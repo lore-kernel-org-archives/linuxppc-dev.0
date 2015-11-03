@@ -1,30 +1,33 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1B89E1A022F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 23:58:49 +1100 (AEDT)
-Received: from mail-yk0-x236.google.com (mail-yk0-x236.google.com
- [IPv6:2607:f8b0:4002:c07::236])
+Return-Path: <BATV+2ab9de3fdfa901687f19+4454+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 59FCC1402BF
- for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2015 23:58:47 +1100 (AEDT)
-Received: by ykba4 with SMTP id a4so14093652ykb.3
- for <linuxppc-dev@ozlabs.org>; Tue, 03 Nov 2015 04:58:45 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CD57A1A02FC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 00:18:31 +1100 (AEDT)
+Date: Tue, 3 Nov 2015 05:18:24 -0800
+From: Christoph Hellwig <hch@infradead.org>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: "Busch, Keith" <keith.busch@intel.com>, aik@ozlabs.ru,
+ linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
+ Christoph Hellwig <hch@infradead.org>, paulus@samba.org,
+ sparclinux@vger.kernel.org, willy@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ david@gibson.dropbear.id.au
+Subject: Re: [PATCH 1/1 v3] drivers/nvme: default to 4k device page size
+Message-ID: <20151103131824.GA12232@infradead.org>
+References: <20151026.182746.1323901353520152838.davem@davemloft.net>
+ <20151027222010.GD7716@linux.vnet.ibm.com>
+ <20151027223643.GA25332@localhost.localdomain>
+ <20151027.175443.140992924519172506.davem@davemloft.net>
+ <20151028135922.GA27909@localhost.localdomain>
+ <20151029115536.GA28090@infradead.org>
+ <20151029155701.GJ7716@linux.vnet.ibm.com>
+ <20151029172043.GA8343@localhost.localdomain>
+ <20151030213511.GK7716@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1446545202.2801.2.camel@ellerman.id.au>
-References: <1446145810-5383-1-git-send-email-kda@linux-powerpc.org>
- <1446545202.2801.2.camel@ellerman.id.au>
-Date: Tue, 3 Nov 2015 15:58:44 +0300
-Message-ID: <CAOJe8K0=J033NMh++iznar21_p4G4epAgE0wONoxZxEyFPS9VQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: tracing: don't trace hcalls on offline CPUs
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>, Steven Rostedt <rostedt@goodmis.org>,
- linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151030213511.GK7716@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,55 +37,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/3/15, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> On Thu, 2015-10-29 at 22:10 +0300, Denis Kirjanov wrote:
->
->> ./drmgr -c cpu -a -r gives the following warning:
->>
->> [ 2327.035563] RCU used illegally from offline CPU!  rcu_scheduler_active
->> = 1, debug_locks = 1
->> [ 2327.035564] no locks held by swapper/12/0.
->> [ 2327.035565] stack backtrace:
->> [ 2327.035567] CPU: 12 PID: 0 Comm: swapper/12 Tainted: G S
->> 4.3.0-rc3-00060-g353169a #5
->> [ 2327.035568] Call Trace:
->> [ 2327.035573] [c0000001d62578e0] [c0000000008977fc] .dump_stack+0x98/0xd4
->> (unreliable)
->> [ 2327.035577] [c0000001d6257960] [c000000000109bd8]
->> .lockdep_rcu_suspicious+0x108/0x170
->> [ 2327.035580] [c0000001d62579f0] [c00000000006a1d0]
->> .__trace_hcall_exit+0x2b0/0x2c0
->> [ 2327.035584] [c0000001d6257ab0] [c00000000006a2e8]
->> plpar_hcall_norets_trace+0x70/0x8c
->> [ 2327.035588] [c0000001d6257b20] [c000000000067a14]
->> .icp_hv_set_cpu_priority+0x54/0xc0
->> [ 2327.035592] [c0000001d6257ba0] [c000000000066c5c]
->> .xics_teardown_cpu+0x5c/0xa0
->> [ 2327.035595] [c0000001d6257c20] [c0000000000747ac]
->> .pseries_mach_cpu_die+0x6c/0x320
->> [ 2327.035598] [c0000001d6257cd0] [c0000000000439cc] .cpu_die+0x3c/0x60
->> [ 2327.035602] [c0000001d6257d40] [c0000000000183d8]
->> .arch_cpu_idle_dead+0x28/0x40
->> [ 2327.035606] [c0000001d6257db0] [c0000000000ff1dc]
->> .cpu_startup_entry+0x4fc/0x560
->> [ 2327.035610] [c0000001d6257ed0] [c000000000043728]
->> .start_secondary+0x328/0x360
->> [ 2327.035614] [c0000001d6257f90] [c000000000008a6c]
->> start_secondary_prolog+0x10/0x14
->> [ 2327.035620] cpu 12 (hwid 12) Ready to die...
->> [ 2327.144463] cpu 13 (hwid 13) Ready to die...
->> [ 2327.294180] cpu 14 (hwid 14) Ready to die...
->> [ 2327.403599] cpu 15 (hwid 15) Ready to die...
->>
->> Make the hypervisor tracepoints conditional by introducing
->> TRACE_EVENT_FN_COND similar to TRACE_EVENT_FN
->
-> We've fixed other cases like this with RCU_NONIDLE(), but I assume that
-> doesn't work here because we're actually offline?
+On Fri, Oct 30, 2015 at 02:35:11PM -0700, Nishanth Aravamudan wrote:
+> diff --git a/drivers/block/nvme-core.c b/drivers/block/nvme-core.c
+> index ccc0c1f93daa..a9a5285bdb39 100644
+> --- a/drivers/block/nvme-core.c
+> +++ b/drivers/block/nvme-core.c
+> @@ -1717,7 +1717,12 @@ static int nvme_configure_admin_queue(struct nvme_dev *dev)
+>  	u32 aqa;
+>  	u64 cap = readq(&dev->bar->cap);
+>  	struct nvme_queue *nvmeq;
+> -	unsigned page_shift = PAGE_SHIFT;
+> +	/*
+> +	 * default to a 4K page size, with the intention to update this
+> +	 * path in the future to accomodate architectures with differing
+> +	 * kernel and IO page sizes.
+> +	 */
+> +	unsigned page_shift = 12;
+>  	unsigned dev_page_min = NVME_CAP_MPSMIN(cap) + 12;
+>  	unsigned dev_page_max = NVME_CAP_MPSMAX(cap) + 12;
 
-Yes, in this case we're moving the complete core offline through dlpar...
-
->
-> cheers
->
->
+Looks good as a start.  Note that all the MPSMIN/MAX checking could
+be removed as NVMe devices must support 4k pages.
