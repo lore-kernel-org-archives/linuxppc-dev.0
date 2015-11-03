@@ -1,15 +1,28 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 283F21A0250
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 21:39:54 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: mmarek@suse.com
-Cc: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] scripts/tags.sh: Teach tags about more powerpc macros
-Date: Tue,  3 Nov 2015 21:39:52 +1100
-Message-Id: <1446547192-22777-1-git-send-email-mpe@ellerman.id.au>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
+ by lists.ozlabs.org (Postfix) with ESMTP id C37541A0B5F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 22:23:21 +1100 (AEDT)
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "madalin.bucur@freescale.com" <madalin.bucur@freescale.com>
+CC: "scottwood@freescale.com" <scottwood@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "ppc@mindchasers.com" <ppc@mindchasers.com>, "roy.pledge@freescale.com"
+ <roy.pledge@freescale.com>, "Igal.Liberman@freescale.com"
+ <Igal.Liberman@freescale.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>,
+ "joe@perches.com" <joe@perches.com>, "davem@davemloft.net"
+ <davem@davemloft.net>
+Subject: Re: [net-next v4 2/8] dpaa_eth: add support for DPAA Ethernet
+Date: Tue, 3 Nov 2015 11:23:14 +0000
+Message-ID: <1446549794.21216.56.camel@transmode.se>
+References: <1446485500-9782-1-git-send-email-madalin.bucur@freescale.com>
+ <1446485500-9782-3-git-send-email-madalin.bucur@freescale.com>
+ <1446537357.21216.49.camel@transmode.se>
+ <BL2PR03MB545ED95392F5CB88EC06B11E62B0@BL2PR03MB545.namprd03.prod.outlook.com>
+In-Reply-To: <BL2PR03MB545ED95392F5CB88EC06B11E62B0@BL2PR03MB545.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="iso-8859-15"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,29 +32,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Teach tags.sh about the powerpc PCI macros, eg. readl/writel etc.
+On Tue, 2015-11-03 at 09:37 +0000, Madalin-Cristian Bucur wrote:
+> > -----Original Message-----
+> > From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]
+> >=20
+> > On Mon, 2015-11-02 at 19:31 +0200, Madalin Bucur wrote:
+> > > +       if (unlikely(fd_status & FM_FD_STAT_RX_ERRORS) !=3D 0) {
+> > > +               if (net_ratelimit())
+> > > +                       netif_warn(priv, hw, net_dev, "FD status =3D
+> > 0x%08x\n",
+> > > +                                  fd_status & FM_FD_STAT_RX_ERRORS);
+> > > +
+> > > +               percpu_stats->rx_errors++;
+> > > +               goto _release_frame;
+> > > +       }
+> >=20
+> > I cannot find any detailed error accounting(maybe I am not looking hard
+> > enough) but I
+> > would appreciate if both TX and RX errors where better
+> > accounted(rx_length_errors, rx_frame_errors,
+> > rx_crc_errors, rx_fifo_errors etc.). This has helped me many times in t=
+he
+> > past diagnosing
+> > board HW problems.
+> >=20
+> >  Jocke
+>=20
+> Hi Jocke,
+>=20
+> There are some error counters exported through ethtool (used to be debugf=
+s).
+> FMan HW provides more debug information than we currently export, that wi=
+ll be
+> improved in the future but given the current priority of having a codebas=
+e as
+> small and reviewable as possible we had to drop some things from the init=
+ial
+> submission.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- scripts/tags.sh | 1 +
- 1 file changed, 1 insertion(+)
+I know, but ethtool is not always available.
+Even the old fec_main.c has it:
+ 		if (status & (BD_ENET_RX_LG | BD_ENET_RX_SH | BD_ENET_RX_NO |
+			   BD_ENET_RX_CR | BD_ENET_RX_OV)) {
+			ndev->stats.rx_errors++;
+			if (status & (BD_ENET_RX_LG | BD_ENET_RX_SH)) {
+				/* Frame too long or too short. */
+				ndev->stats.rx_length_errors++;
+			}
+			if (status & BD_ENET_RX_NO)	/* Frame alignment */
+				ndev->stats.rx_frame_errors++;
+			if (status & BD_ENET_RX_CR)	/* CRC Error */
+				ndev->stats.rx_crc_errors++;
+			if (status & BD_ENET_RX_OV)	/* FIFO overrun */
+				ndev->stats.rx_fifo_errors++;
+		}
+so it is just a few more lines ... Pretty please ? :)
 
-Sorry to send another of these, I had a nagging feeling I'd missed some macros
-when I sent the last one.
-
-This applies on top of linux-next.
-
-diff --git a/scripts/tags.sh b/scripts/tags.sh
-index 262889046703..f69fa0c87312 100755
---- a/scripts/tags.sh
-+++ b/scripts/tags.sh
-@@ -200,6 +200,7 @@ exuberant()
- 	--regex-c++='/TASK_PFA_CLEAR\([^,]*,\s*([^)]*)\)/task_clear_\1/'\
- 	--regex-c++='/DEF_MMIO_(IN|OUT)_(X|D)\(([^,]*),\s*[^)]*\)/\3/'	\
- 	--regex-c++='/DEBUGGER_BOILERPLATE\(([^,]*)\)/\1/'		\
-+	--regex-c++='/DEF_PCI_AC_(NO)?RET\(([^,]*),.*/\2/'		\
- 	--regex-c='/PCI_OP_READ\((\w*).*[1-4]\)/pci_bus_read_config_\1/' \
- 	--regex-c='/PCI_OP_WRITE\((\w*).*[1-4]\)/pci_bus_write_config_\1/' \
- 	--regex-c='/DEFINE_(MUTEX|SEMAPHORE|SPINLOCK)\((\w*)/\2/v/'	\
--- 
-2.5.0
+ Jocke
