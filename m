@@ -1,22 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C30231A039D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 12:00:46 +1100 (AEDT)
-Message-ID: <1446512446.31246.5.camel@ellerman.id.au>
-Subject: Re: [PATCH] cxl: Fix reference count on struct pid when attaching
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ian Munsie <imunsie@au1.ibm.com>
-Cc: Frederic Barrat <frederic.barrat@fr.ibm.com>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 03 Nov 2015 12:00:46 +1100
-In-Reply-To: <1446507545-sup-9915@delenn.ozlabs.ibm.com>
-References: <1446122343-26068-1-git-send-email-frederic.barrat@fr.ibm.com>
- <1446425625.27828.0.camel@ellerman.id.au>
- <1446507545-sup-9915@delenn.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id 2350A1A03BE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 15:17:55 +1100 (AEDT)
+Date: Mon, 02 Nov 2015 23:17:50 -0500 (EST)
+Message-Id: <20151102.231750.1882562463767220834.davem@davemloft.net>
+To: igal.liberman@freescale.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, scottwood@freescale.com,
+ madalin.bucur@freescale.com, pebolle@tiscali.nl,
+ joakim.tjernlund@transmode.se, ppc@mindchasers.com,
+ stephen@networkplumber.org
+Subject: Re: [v7, 2/6] fsl/fman: Add FMan support
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1446467416-15992-3-git-send-email-igal.liberman@freescale.com>
+References: <1446467416-15992-1-git-send-email-igal.liberman@freescale.com>
+ <1446467416-15992-3-git-send-email-igal.liberman@freescale.com>
 Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-11-03 at 10:48 +1100, Ian Munsie wrote:
-> Excerpts from Michael Ellerman's message of 2015-11-02 11:53:45 +1100:
-> > On Thu, 2015-10-29 at 13:39 +0100, Frederic Barrat wrote:
-> > 
-> > > When the cxl driver creates a context, it stores the pid of the
-> > > calling task, incrementing the reference count on the struct
-> > > pid. Current code mistakenly increments the reference count twice,
-> > > once through get_task_pid(), once through get_pid(). The reference
-> > > count is only decremented once on detach, thus the struct pid of the
-> > > task attaching is never freed. The fix is to simply remove the call to
-> > > get_pid().
-> > > 
-> > > Signed-off-by: Frederic Barrat <frederic.barrat@fr.ibm.com>
-> > 
-> > What's the symptom?
-> 
-> Everytime a process attached to a capi device it would reduce the total
-> number of processes that can be running simultaneously by one.
+From: <igal.liberman@freescale.com>
+Date: Mon, 2 Nov 2015 14:30:12 +0200
 
-Right, and reduced it permanently until the next reboot, so eventually you'd
-kill your system presumably.
+> +static int clear_iram(struct fman *fman)
+> +{
+> +	struct fman_iram_regs __iomem *iram;
+> +	int i, count;
+> +
+> +	iram = (struct fman_iram_regs __iomem *)(fman->base_addr + IMEM_OFFSET);
 
-cheers
+"fman->base_addr" is of type "void __iomem *", therefore no cast should
+be necessary at all.
+
+Please audit your entire driver submission for this problem.
+
+THanks.
