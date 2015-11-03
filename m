@@ -1,29 +1,25 @@
-Return-Path: <raghav@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0103.outbound.protection.outlook.com [157.56.110.103])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B2EEF1A113B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 20:12:39 +1100 (AEDT)
-From: Dogra Raghav <raghav@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: Kushwaha Prabhakar <prabhakar@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH 1/2] mpc85xx/lbc: modify suspend/resume entry sequence
-Date: Tue, 3 Nov 2015 09:12:31 +0000
-Message-ID: <BY2PR0301MB0775B7E33F9D499183492087D22B0@BY2PR0301MB0775.namprd03.prod.outlook.com>
-References: <1446186299-2921-1-git-send-email-raghav@freescale.com>
- <BY2PR0301MB0775A3A01F8585352ED5EFADD22C0@BY2PR0301MB0775.namprd03.prod.outlook.com>
- <1446505257.22185.43.camel@freescale.com>
- <BY2PR0301MB077529F563722A726BC39804D22B0@BY2PR0301MB0775.namprd03.prod.outlook.com>
- <1446529190.22185.51.camel@freescale.com>
- <BY2PR0301MB0775900A89741E58FA3822D9D22B0@BY2PR0301MB0775.namprd03.prod.outlook.com>
- <1446531228.22185.60.camel@freescale.com>
- <BY2PR0301MB07750650283AD03A00191EDFD22B0@BY2PR0301MB0775.namprd03.prod.outlook.com>
- <1446536197.22185.61.camel@freescale.com>
-In-Reply-To: <1446536197.22185.61.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3DD821A0100
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 20:16:36 +1100 (AEDT)
+Message-ID: <1446542195.23081.5.camel@ellerman.id.au>
+Subject: Re: [PATCH V3 2/3] perf/powerpc :add support for sampling intr
+ machine state
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Anju T <anju@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: maddy@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ sukadev@linux.vnet.ibm.com, acme@redhat.com, dsahern@gmail.com,
+ jolsa@redhat.com,  hemant@linux.vnet.ibm.com,
+ naveen.n.rao@linux.vnet.ibm.com
+Date: Tue, 03 Nov 2015 20:16:35 +1100
+In-Reply-To: <1446531002-16582-3-git-send-email-anju@linux.vnet.ibm.com>
+References: <1446531002-16582-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1446531002-16582-3-git-send-email-anju@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,30 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVHVlc2RheSwgTm92ZW1iZXIgMDMsIDIwMTUgMTowNyBQTQ0KPiBUbzogRG9n
-cmEgUmFnaGF2LUI0NjE4NCA8cmFnaGF2QGZyZWVzY2FsZS5jb20+DQo+IENjOiBLdXNod2FoYSBQ
-cmFiaGFrYXItQjMyNTc5IDxwcmFiaGFrYXJAZnJlZXNjYWxlLmNvbT47IGxpbnV4cHBjLQ0KPiBk
-ZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDEvMl0gbXBjODV4eC9s
-YmM6IG1vZGlmeSBzdXNwZW5kL3Jlc3VtZSBlbnRyeQ0KPiBzZXF1ZW5jZQ0KPiANCj4gT24gVHVl
-LCAyMDE1LTExLTAzIGF0IDAwOjMzIC0wNjAwLCBEb2dyYSBSYWdoYXYtQjQ2MTg0IHdyb3RlOg0K
-PiA+IEhpIFNjb3R0LA0KPiA+DQo+ID4gSSBqdXN0IGNoZWNrZWQgb24gcGF0Y2h3b3JrIGFuZCBu
-b3RpY2VkIHRoYXQgdGhlIG9yaWdpbmFsIHBhdGNoIGhhcw0KPiA+IGJlZW4gbW9kaWZpZWQgYXMg
-c29tZWhvdyBteSBvcmlnaW5hbCBjb21tZW50IGhhcyBiZWNvbWUgcGFydCBvZiB0aGUNCj4gcGF0
-Y2g6DQo+ID4gKyAgICAgaWYgKCFsYmMpDQo+ID4gKyAgICAgICAgICAgICBnb3RvIG91dDsNCj4g
-Pg0KPiA+ICAgICAgIGN0cmwtPnNhdmVkX3JlZ3MgPSBrbWFsbG9jKHNpemVvZihzdHJ1Y3QgZnNs
-X2xiY19yZWdzKSwgR0ZQX0tFUk5FTCk7DQo+ID4gICAgICAgaWYgKCFjdHJsLT5zYXZlZF9yZWdz
-KQ0KPiA+ICAgICAgICAgICAgICAgcmV0dXJuIC1FTk9NRU07DQo+ID4gW0RvZ3JhIFJhZ2hhdi1C
-NDYxODRdIFRoaXMgaXMgdGhlIGV4aXN0aW5nIHVwc3RyZWFtIGNvZGUuIEFyZSB5b3UNCj4gPiBz
-dWdnZXN0aW5nIHRvIG1vZGlmeSB0aGUgdXBzdHJlYW0gY29kZSB0byB0YWtlIGNhcmUgb2YgaW5k
-aXZpZHVhbA0KPiByZWdpc3RlcnM/DQo+ID4NCj4gPiAgICAgICBfbWVtY3B5X2Zyb21pbyhjdHJs
-LT5zYXZlZF9yZWdzLCBsYmMsIHNpemVvZihzdHJ1Y3QNCj4gPiBmc2xfbGJjX3JlZ3MpKTsNCj4g
-PiArDQo+ID4gVGhlIHBhdGNod29yayBpcyBhbHNvIHNob3dpbmcgdHdvIGxpbmtzIGZvciB0aGUg
-cGF0Y2guIFBsZWFzZSBhcHBseQ0KPiA+IHRoZSBvcmlnaW5hbCBwYXRjaCBwcmVzZW50IGF0Og0K
-PiA+IGh0dHBzOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvNTM4NjA1Lw0KPiA+DQo+ID4g
-SSB3aWxsIGxvb2sgaW50byBob3cgdGhpcyBoYXBwZW5lZCB0byBhdm9pZCBzdWNoIGluY2lkZW50
-cyBpbiBmdXR1cmUuDQo+IA0KPiBZb3VyIHJlcGx5IGxvb2tlZCBsaWtlIGEgbmV3IHBhdGNoLCBz
-byBQYXRjaHdvcmsgdHJlYXRlZCBpdCBhcyBzdWNoLiAgSWYgeW91IGZpeA0KPiB5b3VyIG1haWxl
-ciB0byB1c2UgcHJvcGVyIHF1b3RlIG1hcmtlcnMgKHRoZSA+IGF0IHRoZSBiZWdpbm5pbmcgb2Yg
-ZWFjaA0KPiBsaW5lKSB0aGVuIHRoaXMgd29uJ3QgaGFwcGVuLg0KPiANCj4gLVNjb3R0DQoNCk9r
-LCBzb3J0ZWQuDQoNCi1SYWdoYXYNCg==
+On Tue, 2015-11-03 at 11:40 +0530, Anju T wrote:
+
+> The perf infrastructure uses a bit mask to find out
+> valid registers to display. Define a register mask
+> for supported registers defined in asm/perf_regs.h.
+> The bit positions also correspond to register IDs
+> which is used by perf infrastructure to fetch the register
+> values.CONFIG_HAVE_PERF_REGS enables
+> sampling of the interrupted machine state.
+
+> diff --git a/arch/powerpc/perf/perf_regs.c b/arch/powerpc/perf/perf_regs.c
+> new file mode 100644
+> index 0000000..0520492
+> --- /dev/null
+> +++ b/arch/powerpc/perf/perf_regs.c
+> @@ -0,0 +1,92 @@
+> +#include <linux/errno.h>
+> +#include <linux/kernel.h>
+> +#include <linux/sched.h>
+> +#include <linux/perf_event.h>
+> +#include <linux/bug.h>
+> +#include <linux/stddef.h>
+> +#include <asm/ptrace.h>
+> +#include <asm/perf_regs.h>
+> +
+> +#define PT_REGS_OFFSET(id, r) [id] = offsetof(struct pt_regs, r)
+> +
+> +#define REG_RESERVED (~((1ULL << PERF_REG_POWERPC_MAX) - 1))
+> +
+> +static unsigned int pt_regs_offset[PERF_REG_POWERPC_MAX] = {
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR0, gpr[0]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR1, gpr[1]),
+> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR2, gpr[2]),
+
+<snip>
+
+I realise you're following the example of other architectures, but we have
+almost this exact same structure in ptrace.c, see regoffset_table.
+
+It would be really nice if we could share them between ptrace and perf.
+
+cheers
