@@ -1,33 +1,33 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 753BC1A0A63
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 14:30:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9520C1A0CA8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 14:31:00 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 4 Nov 2015 09:00:56 +0530
+ Wed, 4 Nov 2015 09:00:58 +0530
 Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C43E31258059
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 09:00:52 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id D0FA7125805B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 09:00:55 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
  by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA43UpXJ5046676
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 09:00:51 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA43Uo0W029732
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 09:00:51 +0530
+ tA43Ut6C61210814
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 09:00:55 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA43UsoZ007645
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 09:00:55 +0530
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com, mpe@ellerman.id.au,
  aik@ozlabs.ru
 Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
  Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH V12 5/9] powerpc/powernv: EEH device for VF
-Date: Wed,  4 Nov 2015 11:28:48 +0800
-Message-Id: <1446607732-4166-6-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V12 7/9] powerpc/powernv: Support EEH reset for VF PE
+Date: Wed,  4 Nov 2015 11:28:50 +0800
+Message-Id: <1446607732-4166-8-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1446607732-4166-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1446607732-4166-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,73 +39,227 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VFs and their corresponding pci_dn instances are created and released
-dynamically as their PF's SRIOV capability is enabled and disabled.
-The patch creates and releases EEH devices for VFs when creating and
-releasing their pci_dn instances, which means EEH devices and pci_dn
-instances have same life cycle. Also, VF's EEH device is identified
-by (struct eeh_dev::physfn).
+PEs for VFs don't have primary bus. So they have to have their own reset
+backend, which is used during EEH recovery. The patch implements the reset
+backend for VF's PE by issuing FLR or AF FLR to the VFs, which are contained
+in the PE.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h |  1 +
- arch/powerpc/kernel/pci_dn.c   | 13 +++++++++++++
- 2 files changed, 14 insertions(+)
+ arch/powerpc/include/asm/eeh.h               |   1 +
+ arch/powerpc/kernel/eeh.c                    |   9 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 133 ++++++++++++++++++++++++++-
+ 3 files changed, 139 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index c5eb86f..6c383ad 100644
+index ec21f8f..331c856 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -140,6 +140,7 @@ struct eeh_dev {
+@@ -136,6 +136,7 @@ struct eeh_dev {
+ 	int pcix_cap;			/* Saved PCIx capability	*/
+ 	int pcie_cap;			/* Saved PCIe capability	*/
+ 	int aer_cap;			/* Saved AER capability		*/
++	int af_cap;			/* Saved AF capability		*/
+ 	struct eeh_pe *pe;		/* Associated PE		*/
+ 	struct list_head list;		/* Form link list in the PE	*/
  	struct pci_controller *phb;	/* Associated PHB		*/
- 	struct pci_dn *pdn;		/* Associated PCI device node	*/
- 	struct pci_dev *pdev;		/* Associated PCI device	*/
-+	struct pci_dev *physfn;		/* Associated PF PORT		*/
- 	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
- };
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index e968533..41a4b30 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -760,7 +760,8 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
+ 	case pcie_deassert_reset:
+ 		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
+ 		eeh_unfreeze_pe(pe, false);
+-		eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
++		if (!(pe->type & EEH_PE_VF))
++			eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
+ 		eeh_pe_dev_traverse(pe, eeh_restore_dev_state, dev);
+ 		eeh_pe_state_clear(pe, EEH_PE_ISOLATED);
+ 		break;
+@@ -768,14 +769,16 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
+ 		eeh_pe_state_mark_with_cfg(pe, EEH_PE_ISOLATED);
+ 		eeh_ops->set_option(pe, EEH_OPT_FREEZE_PE);
+ 		eeh_pe_dev_traverse(pe, eeh_disable_and_save_dev_state, dev);
+-		eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
++		if (!(pe->type & EEH_PE_VF))
++			eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
+ 		eeh_ops->reset(pe, EEH_RESET_HOT);
+ 		break;
+ 	case pcie_warm_reset:
+ 		eeh_pe_state_mark_with_cfg(pe, EEH_PE_ISOLATED);
+ 		eeh_ops->set_option(pe, EEH_OPT_FREEZE_PE);
+ 		eeh_pe_dev_traverse(pe, eeh_disable_and_save_dev_state, dev);
+-		eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
++		if (!(pe->type & EEH_PE_VF))
++			eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
+ 		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL);
+ 		break;
+ 	default:
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 131c7d0..4de247a 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -404,6 +404,7 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
+ 	edev->pcix_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_PCIX);
+ 	edev->pcie_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_EXP);
+ 	edev->aer_cap  = pnv_eeh_find_ecap(pdn, PCI_EXT_CAP_ID_ERR);
++	edev->af_cap   = pnv_eeh_find_cap(pdn, PCI_CAP_ID_AF);
+ 	if ((edev->class_code >> 8) == PCI_CLASS_BRIDGE_PCI) {
+ 		edev->mode |= EEH_DEV_BRIDGE;
+ 		if (edev->pcie_cap) {
+@@ -893,6 +894,126 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
+ 	return 0;
+ }
  
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index b3b4df9..5091b05 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -178,7 +178,9 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
- struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
- {
- #ifdef CONFIG_PCI_IOV
-+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
- 	struct pci_dn *parent, *pdn;
-+	struct eeh_dev *edev;
- 	int i;
- 
- 	/* Only support IOV for now */
-@@ -204,6 +206,10 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
- 				 __func__, i);
- 			return NULL;
- 		}
-+		eeh_dev_init(pdn, hose);
-+		edev = pdn_to_eeh_dev(pdn);
-+		BUG_ON(!edev);
-+		edev->physfn = pdev;
- 	}
- #endif /* CONFIG_PCI_IOV */
- 
-@@ -252,10 +258,17 @@ void remove_dev_pci_data(struct pci_dev *pdev)
- 	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
- 		list_for_each_entry_safe(pdn, tmp,
- 			&parent->child_list, list) {
-+			struct eeh_dev *edev;
- 			if (pdn->busno != pci_iov_virtfn_bus(pdev, i) ||
- 			    pdn->devfn != pci_iov_virtfn_devfn(pdev, i))
- 				continue;
- 
-+			edev = pdn_to_eeh_dev(pdn);
-+			if (edev) {
-+				pdn->edev = NULL;
-+				kfree(edev);
-+			}
++static void pnv_eeh_wait_for_pending(struct pci_dn *pdn, int pos,
++				     u16 mask, const char *reset_type)
++{
++	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
++	int i, status = 0;
 +
- 			if (!list_empty(&pdn->list))
- 				list_del(&pdn->list);
++	/* Wait for Transaction Pending bit to be cleared */
++	for (i = 0; i < 4; i++) {
++		eeh_ops->read_config(pdn, pos, 2, &status);
++		if (!(status & mask))
++			return;
++
++		msleep((1 << i) * 100);
++	}
++
++	pr_warn("%s: Pending transaction while issuing %s FLR to %04x:%02x:%02x.%01x\n",
++		__func__, reset_type,
++		edev->phb->global_number, pdn->busno,
++		PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
++}
++
++static int pnv_eeh_do_flr(struct pci_dn *pdn, int option)
++{
++	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
++	u32 reg = 0;
++
++	if (WARN_ON(!edev->pcie_cap))
++		return -ENOTTY;
++
++	eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP, 4, &reg);
++	if (!(reg & PCI_EXP_DEVCAP_FLR))
++		return -ENOTTY;
++
++	switch (option) {
++	case EEH_RESET_HOT:
++	case EEH_RESET_FUNDAMENTAL:
++		pnv_eeh_wait_for_pending(pdn, edev->pcie_cap + PCI_EXP_DEVSTA,
++					 PCI_EXP_DEVSTA_TRPND, "");
++		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
++				     4, &reg);
++		reg |= PCI_EXP_DEVCTL_BCR_FLR;
++		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
++				      4, reg);
++		msleep(EEH_PE_RST_HOLD_TIME);
++		break;
++	case EEH_RESET_DEACTIVATE:
++		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
++				     4, &reg);
++		reg &= ~PCI_EXP_DEVCTL_BCR_FLR;
++		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
++				      4, reg);
++		msleep(EEH_PE_RST_SETTLE_TIME);
++		break;
++	}
++
++	return 0;
++}
++
++static int pnv_eeh_do_af_flr(struct pci_dn *pdn, int option)
++{
++	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
++	u32 cap = 0;
++
++	if (WARN_ON(!edev->af_cap))
++		return -ENOTTY;
++
++	eeh_ops->read_config(pdn, edev->af_cap + PCI_AF_CAP, 1, &cap);
++	if (!(cap & PCI_AF_CAP_TP) || !(cap & PCI_AF_CAP_FLR))
++		return -ENOTTY;
++
++	switch (option) {
++	case EEH_RESET_HOT:
++	case EEH_RESET_FUNDAMENTAL:
++		/*
++		 * Wait for Transaction Pending bit to clear. A word-aligned
++		 * test is used, so we use the conrol offset rather than status
++		 * and shift the test bit to match.
++		 */
++		pnv_eeh_wait_for_pending(pdn, edev->af_cap + PCI_AF_CTRL,
++					 PCI_AF_STATUS_TP << 8, "AF");
++		eeh_ops->write_config(pdn, edev->af_cap + PCI_AF_CTRL,
++				      1, PCI_AF_CTRL_FLR);
++		msleep(EEH_PE_RST_HOLD_TIME);
++		break;
++	case EEH_RESET_DEACTIVATE:
++		eeh_ops->write_config(pdn, edev->af_cap + PCI_AF_CTRL, 1, 0);
++		msleep(EEH_PE_RST_SETTLE_TIME);
++		break;
++	}
++
++	return 0;
++}
++
++static int pnv_eeh_reset_vf(struct pci_dn *pdn, int option)
++{
++	int ret;
++
++	ret = pnv_eeh_do_flr(pdn, option);
++	if (ret != -ENOTTY)
++		return ret;
++
++	return pnv_eeh_do_af_flr(pdn, option);
++}
++
++static int pnv_eeh_vf_pe_reset(struct eeh_pe *pe, int option)
++{
++	struct eeh_dev *edev, *tmp;
++	struct pci_dn *pdn;
++	int ret;
++
++	eeh_pe_for_each_dev(pe, edev, tmp) {
++		pdn = eeh_dev_to_pdn(edev);
++		ret = pnv_eeh_reset_vf(pdn, option);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
+ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
+ {
+ 	struct pci_controller *hose;
+@@ -968,7 +1089,9 @@ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
+ 		}
+ 
+ 		bus = eeh_pe_bus_get(pe);
+-		if (pci_is_root_bus(bus) ||
++		if (pe->type & EEH_PE_VF)
++			ret = pnv_eeh_vf_pe_reset(pe, option);
++		else if (pci_is_root_bus(bus) ||
+ 			pci_is_root_bus(bus->parent))
+ 			ret = pnv_eeh_root_reset(hose, option);
+ 		else
+@@ -1108,6 +1231,14 @@ static inline bool pnv_eeh_cfg_blocked(struct pci_dn *pdn)
+ 	if (!edev || !edev->pe)
+ 		return false;
+ 
++	/*
++	 * We will issue FLR or AF FLR to all VFs, which are contained
++	 * in VF PE. It relies on the EEH PCI config accessors. So we
++	 * can't block them during the window.
++	 */
++	if (edev->physfn && (edev->pe->state & EEH_PE_RESET))
++		return false;
++
+ 	if (edev->pe->state & EEH_PE_CFG_BLOCKED)
+ 		return true;
  
 -- 
 2.5.0
