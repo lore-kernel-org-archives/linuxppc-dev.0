@@ -1,25 +1,25 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 677B01A0C14
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C54CC1A0C0C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:35 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 4 Nov 2015 18:43:32 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 55F503940049
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 18:43:27 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA4DDKeC5112130
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 18:43:21 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA4DDIpb013874
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 18:43:19 +0530
+ Wed, 4 Nov 2015 18:43:33 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 369A3E0056
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 18:43:47 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA4DDTvD52101138
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 18:43:29 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA4DDNwo000396
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 18:43:24 +0530
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
@@ -27,10 +27,10 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, frowand.list@gmail.com,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v7 23/50] powerpc/powernv: Use PE instead of number during
- setup and release
-Date: Thu,  5 Nov 2015 00:12:23 +1100
-Message-Id: <1446642770-4681-24-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v7 45/50] drivers/of: Avoid recursively calling
+ unflatten_dt_node()
+Date: Thu,  5 Nov 2015 00:12:45 +1100
+Message-Id: <1446642770-4681-46-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,269 +42,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In current implementation, the PEs that are allocated or picked
-from the reserved list are identified by PE number. The PE instance
-has to be picked according to the PE number eventually. We have
-same issue when PE is released.
+In current implementation, unflatten_dt_node() is called recursively
+to unflatten device nodes in FDT blob. It's stress to limited stack
+capacity.
 
-For pnv_ioda_pick_m64_pe() and pnv_ioda_alloc_pe(), this returns
-PE instance so that pnv_ioda_setup_bus_PE() can use the allocated
-or reserved PE instance directly. Also, pnv_ioda_setup_bus_PE()
-returns the reserved/allocated PE instance to be used in subsequent
-patches. On the other hand, pnv_ioda_free_pe() uses PE instance
-(not number) as its argument. No logical changes introduced.
+This avoids calling the function recursively, meaning the device
+nodes are unflattened in one call on unflatten_dt_node(): two arrays
+are introduced to track the parent path size and the device node of
+current level of depth, which will be used by the device node on next
+level of depth to be unflattened. Also, the parameter "poffset" and
+"fpsize" are unused and dropped.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 81 +++++++++++++++++--------------
- arch/powerpc/platforms/powernv/pci.h      |  2 +-
- 2 files changed, 46 insertions(+), 37 deletions(-)
+ drivers/of/fdt.c | 94 +++++++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 56 insertions(+), 38 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 488e0f8..ae82df1 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -152,7 +152,7 @@ static void pnv_ioda_reserve_pe(struct pnv_phb *phb, int pe_no)
- 	pnv_ioda_init_pe(phb, pe_no);
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 173b036..f4793d0 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -355,61 +355,82 @@ static unsigned long populate_node(const void *blob,
+ 	return fpsize;
  }
  
--static int pnv_ioda_alloc_pe(struct pnv_phb *phb)
-+static struct pnv_ioda_pe *pnv_ioda_alloc_pe(struct pnv_phb *phb)
- {
- 	unsigned long pe;
- 
-@@ -160,19 +160,20 @@ static int pnv_ioda_alloc_pe(struct pnv_phb *phb)
- 		pe = find_next_zero_bit(phb->ioda.pe_alloc,
- 					phb->ioda.total_pe_num, 0);
- 		if (pe >= phb->ioda.total_pe_num)
--			return IODA_INVALID_PE;
-+			return NULL;
- 	} while(test_and_set_bit(pe, phb->ioda.pe_alloc));
- 
--	pnv_ioda_init_pe(phb, pe);
--	return pe;
-+	return pnv_ioda_init_pe(phb, pe);
- }
- 
--static void pnv_ioda_free_pe(struct pnv_phb *phb, int pe)
-+static void pnv_ioda_free_pe(struct pnv_ioda_pe *pe)
- {
--	WARN_ON(phb->ioda.pe_array[pe].pdev);
-+	struct pnv_phb *phb = pe->phb;
++static void reverse_nodes(struct device_node *parent)
++{
++	struct device_node *child, *next;
 +
-+	WARN_ON(pe->pdev);
- 
--	memset(&phb->ioda.pe_array[pe], 0, sizeof(struct pnv_ioda_pe));
--	clear_bit(pe, phb->ioda.pe_alloc);
-+	memset(pe, 0, sizeof(struct pnv_ioda_pe));
-+	clear_bit(pe->pe_number, phb->ioda.pe_alloc);
- }
- 
- /* The default M64 BAR is shared by all PEs */
-@@ -332,7 +333,7 @@ static void pnv_ioda_reserve_m64_pe(struct pci_bus *bus,
- 	}
- }
- 
--static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
-+static struct pnv_ioda_pe *pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
++	/* In-depth first */
++	child = parent->child;
++	while (child) {
++		reverse_nodes(child);
++
++		child = child->sibling;
++	}
++
++	/* Reverse the nodes in the child list */
++	child = parent->child;
++	parent->child = NULL;
++	while (child) {
++		next = child->sibling;
++
++		child->sibling = parent->child;
++		parent->child = child;
++		child = next;
++	}
++}
++
+ /**
+  * unflatten_dt_node - Alloc and populate a device_node from the flat tree
+  * @blob: The parent device tree blob
+  * @mem: Memory chunk to use for allocating device nodes and properties
+- * @poffset: pointer to node in flat tree
+  * @dad: Parent struct device_node
+  * @nodepp: The device_node tree created by the call
+- * @fpsize: Size of the node path up at the current depth.
+  * @dryrun: If true, do not allocate device nodes but still calculate needed
+  * memory size
+  */
+ static void *unflatten_dt_node(const void *blob,
+ 			       void *mem,
+-			       int *poffset,
+ 			       struct device_node *dad,
+ 			       struct device_node **nodepp,
+-			       unsigned long fpsize,
+ 			       bool dryrun)
  {
- 	struct pci_controller *hose = pci_bus_to_host(bus);
- 	struct pnv_phb *phb = hose->private_data;
-@@ -342,7 +343,7 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
+-	struct device_node *np;
+-	static int depth;
+-	int old_depth;
+-
+-	fpsize = populate_node(blob, *poffset, &mem, dad, fpsize, &np, dryrun);
+-	if (!fpsize)
+-		return mem;
++	struct device_node *root;
++	int offset = 0, depth = 0;
++	unsigned long fpsizes[64];
++	struct device_node *nps[64];
  
- 	/* Root bus shouldn't use M64 */
- 	if (pci_is_root_bus(bus))
--		return IODA_INVALID_PE;
-+		return NULL;
+-	old_depth = depth;
+-	*poffset = fdt_next_node(blob, *poffset, &depth);
+-	if (depth < 0)
+-		depth = 0;
+-	while (*poffset > 0 && depth > old_depth)
+-		mem = unflatten_dt_node(blob, mem, poffset, np, NULL,
+-					fpsize, dryrun);
++	if (nodepp)
++		*nodepp = NULL;
++
++	root = dad;
++	fpsizes[depth] = dad ? strlen(of_node_full_name(dad)) : 0;
++	nps[depth++] = dad;
++	while (offset >= 0 && depth < 64) {
++		fpsizes[depth] = populate_node(blob, offset, &mem,
++					       nps[depth - 1],
++					       fpsizes[depth - 1],
++					       &nps[depth], dryrun);
++		if (!fpsizes[depth])
++			return mem;
++
++		if (!dryrun && nodepp && !*nodepp)
++			*nodepp = nps[depth];
++		if (!dryrun && !root)
++			root = nps[depth];
++
++		offset = fdt_next_node(blob, offset, &depth);
++	}
  
- 	/* Allocate bitmap */
- 	size = _ALIGN_UP(phb->ioda.total_pe_num / 8, sizeof(unsigned long));
-@@ -350,7 +351,7 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
- 	if (!pe_alloc) {
- 		pr_warn("%s: Out of memory !\n",
- 			__func__);
--		return IODA_INVALID_PE;
-+		return NULL;
- 	}
- 
- 	/* Figure out reserved PE numbers by the PE */
-@@ -363,7 +364,7 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
- 	 */
- 	if (bitmap_empty(pe_alloc, phb->ioda.total_pe_num)) {
- 		kfree(pe_alloc);
--		return IODA_INVALID_PE;
-+		return NULL;
- 	}
+-	if (*poffset < 0 && *poffset != -FDT_ERR_NOTFOUND)
+-		pr_err("unflatten: error %d processing FDT\n", *poffset);
++	if (offset < 0 && offset != -FDT_ERR_NOTFOUND)
++		pr_err("%s: Error %d processing FDT\n",
++		       __func__, offset);
  
  	/*
-@@ -409,7 +410,7 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
- 	}
+ 	 * Reverse the child list. Some drivers assumes node order matches .dts
+ 	 * node order
+ 	 */
+-	if (!dryrun && np->child) {
+-		struct device_node *child = np->child;
+-		np->child = NULL;
+-		while (child) {
+-			struct device_node *next = child->sibling;
+-			child->sibling = np->child;
+-			np->child = child;
+-			child = next;
+-		}
+-	}
+-
+-	if (nodepp)
+-		*nodepp = np;
++	if (!dryrun)
++		reverse_nodes(root);
  
- 	kfree(pe_alloc);
--	return master_pe->pe_number;
-+	return master_pe;
+ 	return mem;
  }
- 
- static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
-@@ -988,28 +989,26 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
-  * subordinate PCI devices and buses. The second type of PE is normally
-  * orgiriated by PCIe-to-PCI bridge or PLX switch downstream ports.
-  */
--static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
-+static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
+@@ -431,7 +452,6 @@ static void __unflatten_device_tree(const void *blob,
+ 			     void * (*dt_alloc)(u64 size, u64 align))
  {
- 	struct pci_controller *hose = pci_bus_to_host(bus);
- 	struct pnv_phb *phb = hose->private_data;
--	struct pnv_ioda_pe *pe;
--	int pe_num = IODA_INVALID_PE;
-+	struct pnv_ioda_pe *pe = NULL;
+ 	unsigned long size;
+-	int start;
+ 	void *mem;
  
- 	/* Check if PE is determined by M64 */
- 	if (phb->pick_m64_pe)
--		pe_num = phb->pick_m64_pe(bus, all);
-+		pe = phb->pick_m64_pe(bus, all);
- 
- 	/* The PE number isn't pinned by M64 */
--	if (pe_num == IODA_INVALID_PE)
--		pe_num = pnv_ioda_alloc_pe(phb);
-+	if (!pe)
-+		pe = pnv_ioda_alloc_pe(phb);
- 
--	if (pe_num == IODA_INVALID_PE) {
-+	if (!pe) {
- 		pr_warning("%s: Not enough PE# available for PCI bus %04x:%02x\n",
- 			__func__, pci_domain_nr(bus), bus->number);
--		return;
-+		return NULL;
+ 	pr_debug(" -> unflatten_device_tree()\n");
+@@ -452,8 +472,7 @@ static void __unflatten_device_tree(const void *blob,
  	}
  
--	pe = &phb->ioda.pe_array[pe_num];
- 	pe->flags |= (all ? PNV_IODA_PE_BUS_ALL : PNV_IODA_PE_BUS);
- 	pe->pbus = bus;
- 	pe->pdev = NULL;
-@@ -1018,17 +1017,16 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
+ 	/* First pass, scan for size */
+-	start = 0;
+-	size = (unsigned long)unflatten_dt_node(blob, NULL, &start, NULL, NULL, 0, true);
++	size = (unsigned long)unflatten_dt_node(blob, NULL, NULL, NULL, true);
+ 	size = ALIGN(size, 4);
  
- 	if (all)
- 		pe_info(pe, "Secondary bus %d..%d associated with PE#%d\n",
--			bus->busn_res.start, bus->busn_res.end, pe_num);
-+			bus->busn_res.start, bus->busn_res.end, pe->pe_number);
- 	else
- 		pe_info(pe, "Secondary bus %d associated with PE#%d\n",
--			bus->busn_res.start, pe_num);
-+			bus->busn_res.start, pe->pe_number);
+ 	pr_debug("  size is %lx, allocating...\n", size);
+@@ -467,8 +486,7 @@ static void __unflatten_device_tree(const void *blob,
+ 	pr_debug("  unflattening %p...\n", mem);
  
- 	if (pnv_ioda_configure_pe(phb, pe)) {
- 		/* XXX What do we do here ? */
--		if (pe_num)
--			pnv_ioda_free_pe(phb, pe_num);
-+		pnv_ioda_free_pe(pe);
- 		pe->pbus = NULL;
--		return;
-+		return NULL;
- 	}
- 
- 	/* Associate it with all child devices */
-@@ -1036,6 +1034,8 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
- 
- 	/* Put PE to the list */
- 	list_add_tail(&pe->list, &phb->ioda.pe_list);
-+
-+	return pe;
- }
- 
- static void pnv_ioda_setup_PEs(struct pci_bus *bus)
-@@ -1267,7 +1267,7 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
- 
- 		pnv_ioda_deconfigure_pe(phb, pe);
- 
--		pnv_ioda_free_pe(phb, pe->pe_number);
-+		pnv_ioda_free_pe(pe);
- 	}
- }
- 
-@@ -1276,6 +1276,7 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
- 	struct pci_bus        *bus;
- 	struct pci_controller *hose;
- 	struct pnv_phb        *phb;
-+	struct pnv_ioda_pe    *pe;
- 	struct pci_dn         *pdn;
- 	struct pci_sriov      *iov;
- 	u16                    num_vfs, i;
-@@ -1300,8 +1301,11 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
- 		/* Release PE numbers */
- 		if (pdn->m64_single_mode) {
- 			for (i = 0; i < num_vfs; i++) {
--				if (pdn->pe_num_map[i] != IODA_INVALID_PE)
--					pnv_ioda_free_pe(phb, pdn->pe_num_map[i]);
-+				if (pdn->pe_num_map[i] == IODA_INVALID_PE)
-+					continue;
-+
-+				pe = &phb->ioda.pe_array[pdn->pe_num_map[i]];
-+				pnv_ioda_free_pe(pe);
- 			}
- 		} else
- 			bitmap_clear(phb->ioda.pe_alloc, *pdn->pe_num_map, num_vfs);
-@@ -1354,9 +1358,8 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
- 
- 		if (pnv_ioda_configure_pe(phb, pe)) {
- 			/* XXX What do we do here ? */
--			if (pe_num)
--				pnv_ioda_free_pe(phb, pe_num);
- 			pe->pdev = NULL;
-+			pnv_ioda_free_pe(pe);
- 			continue;
- 		}
- 
-@@ -1374,6 +1377,7 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
- 	struct pci_bus        *bus;
- 	struct pci_controller *hose;
- 	struct pnv_phb        *phb;
-+	struct pnv_ioda_pe    *pe;
- 	struct pci_dn         *pdn;
- 	int                    ret;
- 	u16                    i;
-@@ -1416,11 +1420,13 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
- 		/* Calculate available PE for required VFs */
- 		if (pdn->m64_single_mode) {
- 			for (i = 0; i < num_vfs; i++) {
--				pdn->pe_num_map[i] = pnv_ioda_alloc_pe(phb);
--				if (pdn->pe_num_map[i] == IODA_INVALID_PE) {
-+				pe = pnv_ioda_alloc_pe(phb);
-+				if (!pe) {
- 					ret = -EBUSY;
- 					goto m64_failed;
- 				}
-+
-+				pdn->pe_num_map[i] = pe->pe_number;
- 			}
- 		} else {
- 			mutex_lock(&phb->ioda.pe_alloc_mutex);
-@@ -1465,8 +1471,11 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
- m64_failed:
- 	if (pdn->m64_single_mode) {
- 		for (i = 0; i < num_vfs; i++) {
--			if (pdn->pe_num_map[i] != IODA_INVALID_PE)
--				pnv_ioda_free_pe(phb, pdn->pe_num_map[i]);
-+			if (pdn->pe_num_map[i] == IODA_INVALID_PE)
-+				continue;
-+
-+			pe = &phb->ioda.pe_array[pdn->pe_num_map[i]];
-+			pnv_ioda_free_pe(pe);
- 		}
- 	} else
- 		bitmap_clear(phb->ioda.pe_alloc, *pdn->pe_num_map, num_vfs);
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 5df945f..e55ab0e 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -105,7 +105,7 @@ struct pnv_phb {
- 	int (*init_m64)(struct pnv_phb *phb);
- 	void (*reserve_m64_pe)(struct pci_bus *bus,
- 			       unsigned long *pe_bitmap, bool all);
--	int (*pick_m64_pe)(struct pci_bus *bus, bool all);
-+	struct pnv_ioda_pe *(*pick_m64_pe)(struct pci_bus *bus, bool all);
- 	int (*get_pe_state)(struct pnv_phb *phb, int pe_no);
- 	void (*freeze_pe)(struct pnv_phb *phb, int pe_no);
- 	int (*unfreeze_pe)(struct pnv_phb *phb, int pe_no, int opt);
+ 	/* Second pass, do actual unflattening */
+-	start = 0;
+-	unflatten_dt_node(blob, mem, &start, NULL, mynodes, 0, false);
++	unflatten_dt_node(blob, mem, NULL, mynodes, false);
+ 	if (be32_to_cpup(mem + size) != 0xdeadbeef)
+ 		pr_warning("End of tree marker overwritten: %08x\n",
+ 			   be32_to_cpup(mem + size));
 -- 
 2.1.0
