@@ -1,20 +1,20 @@
 Return-Path: <robherring2@gmail.com>
-Received: from mail-yk0-x22c.google.com (mail-yk0-x22c.google.com
- [IPv6:2607:f8b0:4002:c07::22c])
+Received: from mail-yk0-x22a.google.com (mail-yk0-x22a.google.com
+ [IPv6:2607:f8b0:4002:c07::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D9D881A0AAA
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 03:12:21 +1100 (AEDT)
-Received: by ykek133 with SMTP id k133so80336015yke.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2015 08:12:19 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B18E91A0393
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 05:43:29 +1100 (AEDT)
+Received: by ykft191 with SMTP id t191so88382735ykf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2015 10:43:27 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1446642770-4681-50-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1446642770-4681-45-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-50-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1446642770-4681-45-git-send-email-gwshan@linux.vnet.ibm.com>
 From: Rob Herring <robherring2@gmail.com>
-Date: Wed, 4 Nov 2015 10:12:00 -0600
-Message-ID: <CAL_JsqK0upkO9WcMcSJ8QOxFzAtrYn2QV3xy4fnhLGZm30VjzQ@mail.gmail.com>
-Subject: Re: [PATCH v7 49/50] drivers/of: Export OF changeset functions
+Date: Wed, 4 Nov 2015 12:43:08 -0600
+Message-ID: <CAL_JsqLp29DBdhqaaU4U7pn0juitmBBmgwaFvm+ATu+nhhwj5A@mail.gmail.com>
+Subject: Re: [PATCH v7 44/50] drivers/of: Split unflatten_dt_node()
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
@@ -35,203 +35,395 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Wed, Nov 4, 2015 at 7:12 AM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
-> The PowerNV PCI hotplug driver is going to use the OF changeset
-> to manage the changed device sub-tree. This exports those OF
-> changeset functions for that.
+> The function unflatten_dt_node() is called recursively to unflatten
+> device nodes and properties in the FDT blob. It looks complicated
+> and hard to be understood.
+>
+> This splits the function into 3 functions: populate_properties(),
+> populate_node() and unflatten_dt_node(). populate_properties(),
+> which is called by populate_node(), creates properties for the
+> indicated device node. The later one creates the device nodes
+> from FDT blob. populate_node() gets the offset in FDT blob for
+> next device nodes and then calls populate_node(). No logical
+> changes introduced.
 >
 > Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-
-Acked-by: Rob Herring <robh@kernel.org>
-
-
 > ---
->  drivers/of/dynamic.c    | 65 ++++++++++++++++++++++++++++++++++---------------
->  drivers/of/of_private.h |  2 ++
->  drivers/of/overlay.c    |  8 +++---
->  drivers/of/unittest.c   |  4 ---
->  4 files changed, 52 insertions(+), 27 deletions(-)
+>  drivers/of/fdt.c | 275 ++++++++++++++++++++++++++++++++-----------------------
+>  1 file changed, 160 insertions(+), 115 deletions(-)
 >
-> diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-> index 53826b8..c647bd1 100644
-> --- a/drivers/of/dynamic.c
-> +++ b/drivers/of/dynamic.c
-> @@ -646,6 +646,7 @@ void of_changeset_init(struct of_changeset *ocs)
->         memset(ocs, 0, sizeof(*ocs));
->         INIT_LIST_HEAD(&ocs->entries);
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index 6e82bc42..173b036 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -160,39 +160,127 @@ static void *unflatten_dt_alloc(void **mem, unsigned long size,
+>         return res;
 >  }
-> +EXPORT_SYMBOL_GPL(of_changeset_init);
->
->  /**
->   * of_changeset_destroy - Destroy a changeset
-> @@ -662,20 +663,9 @@ void of_changeset_destroy(struct of_changeset *ocs)
->         list_for_each_entry_safe_reverse(ce, cen, &ocs->entries, node)
->                 __of_changeset_entry_destroy(ce);
->  }
-> +EXPORT_SYMBOL_GPL(of_changeset_destroy);
 >
 > -/**
-> - * of_changeset_apply - Applies a changeset
-> - *
-> - * @ocs:       changeset pointer
-> - *
-> - * Applies a changeset to the live tree.
-> - * Any side-effects of live tree state changes are applied here on
-> - * sucess, like creation/destruction of devices and side-effects
-> - * like creation of sysfs properties and directories.
-> - * Returns 0 on success, a negative error value in case of an error.
-> - * On error the partially applied effects are reverted.
+> - * unflatten_dt_node - Alloc and populate a device_node from the flat tree
+> - * @blob: The parent device tree blob
+> - * @mem: Memory chunk to use for allocating device nodes and properties
+> - * @poffset: pointer to node in flat tree
+> - * @dad: Parent struct device_node
+> - * @nodepp: The device_node tree created by the call
+> - * @fpsize: Size of the node path up at the current depth.
+> - * @dryrun: If true, do not allocate device nodes but still calculate needed
+> - * memory size
 > - */
-> -int of_changeset_apply(struct of_changeset *ocs)
-> +int __of_changeset_apply(struct of_changeset *ocs)
+> -static void * unflatten_dt_node(const void *blob,
+> -                               void *mem,
+> -                               int *poffset,
+> -                               struct device_node *dad,
+> -                               struct device_node **nodepp,
+> -                               unsigned long fpsize,
+> +static void populate_properties(const void *blob,
+> +                               int offset,
+> +                               void **mem,
+> +                               struct device_node *np,
+> +                               const char *nodename,
+>                                 bool dryrun)
+
+I'd like to make dryrun implicit. It is basically a function of NULL
+or near NULL pointers.
+
 >  {
->         struct of_changeset_entry *ce;
->         int ret;
-> @@ -704,17 +694,30 @@ int of_changeset_apply(struct of_changeset *ocs)
->  }
->
->  /**
-> - * of_changeset_revert - Reverts an applied changeset
-> + * of_changeset_apply - Applies a changeset
->   *
->   * @ocs:       changeset pointer
->   *
-> - * Reverts a changeset returning the state of the tree to what it
-> - * was before the application.
-> - * Any side-effects like creation/destruction of devices and
-> - * removal of sysfs properties and directories are applied.
-> + * Applies a changeset to the live tree.
-> + * Any side-effects of live tree state changes are applied here on
-> + * success, like creation/destruction of devices and side-effects
-> + * like creation of sysfs properties and directories.
->   * Returns 0 on success, a negative error value in case of an error.
-> + * On error the partially applied effects are reverted.
->   */
-> -int of_changeset_revert(struct of_changeset *ocs)
-> +int of_changeset_apply(struct of_changeset *ocs)
-> +{
-> +       int ret;
+> -       const __be32 *p;
+> +       struct property *pp, **pprev = NULL;
+> +       int cur;
+> +       bool has_name = false;
 > +
-> +       mutex_lock(&of_mutex);
-> +       ret = __of_changeset_apply(ocs);
-> +       mutex_unlock(&of_mutex);
+> +       pprev = &np->properties;
+> +       cur = fdt_first_property_offset(blob, offset);
+> +       while (cur >= 0) {
+
+This could be better written as a for loop to avoid the gotos:
+
+for (cur = fdt_first_property_offset(blob, offset); cur >=0; cur =
+fdt_next_property_offset(blob, cur))
+
+> +               const __be32 *val;
+> +               const char *pname;
+> +               u32 sz;
 > +
-> +       return ret;
+> +               val = fdt_getprop_by_offset(blob, cur, &pname, &sz);
+> +               if (!val) {
+> +                       pr_warn("%s: Cannot locate property at 0x%x\n",
+> +                               __func__, cur);
+> +                       goto next;
+> +               }
+> +
+> +               if (!pname) {
+> +                       pr_warn("%s: Cannot find property name at 0x%x\n",
+> +                               __func__, cur);
+> +                       goto next;
+> +               } else if (!strcmp(pname, "name")) {
+> +                       has_name = true;
+> +               }
+> +
+> +               pp = unflatten_dt_alloc(mem, sizeof(struct property),
+> +                                       __alignof__(struct property));
+> +               if (!dryrun) {
+
+Then:
+
+if (dryrun)
+  continue;
+
+to save some indentation and vertical code.
+
+> +                       /* We accept flattened tree phandles either in
+> +                        * ePAPR-style "phandle" properties, or the
+> +                        * legacy "linux,phandle" properties.  If both
+> +                        * appear and have different values, things
+> +                        * will get weird. Don't do that.
+> +                        */
+> +                       if (!strcmp(pname, "phandle") ||
+> +                           !strcmp(pname, "linux,phandle")) {
+> +                               if (!np->phandle)
+> +                                       np->phandle = be32_to_cpup(val);
+> +                       }
+> +
+> +                       /* And we process the "ibm,phandle" property
+> +                        * used in pSeries dynamic device tree
+> +                        * stuff
+> +                        */
+> +                       if (!strcmp(pname, "ibm,phandle"))
+> +                               np->phandle = be32_to_cpup(val);
+> +
+> +                       pp->name   = (char *)pname;
+> +                       pp->length = sz;
+> +                       pp->value  = (__be32 *)val;
+> +                       *pprev     = pp;
+> +                       pprev      = &pp->next;
+> +               }
+> +next:
+> +               cur = fdt_next_property_offset(blob, cur);
+> +       }
+> +
+> +       /* With version 0x10 we may not have the name property,
+> +        * recreate it here from the unit name if absent
+> +        */
+> +       if (!has_name) {
+> +               const char *p = nodename, *ps = p, *pa = NULL;
+> +               int len;
+> +
+> +               while (*p) {
+> +                       if ((*p) == '@')
+> +                               pa = p;
+> +                       else if ((*p) == '/')
+> +                               ps = p + 1;
+> +                       p++;
+> +               }
+> +
+> +               if (pa < ps)
+> +                       pa = p;
+> +               len = (pa - ps) + 1;
+> +               pp = unflatten_dt_alloc(mem, sizeof(struct property) + len,
+> +                                       __alignof__(struct property));
+> +               if (!dryrun) {
+> +                       pp->name   = "name";
+> +                       pp->length = len;
+> +                       pp->value  = pp + 1;
+> +                       *pprev     = pp;
+> +                       pprev      = &pp->next;
+> +                       memcpy(pp->value, ps, len - 1);
+> +                       ((char *)pp->value)[len - 1] = 0;
+> +                       pr_debug("fixed up name for %s -> %s\n",
+> +                                nodename, (char *)pp->value);
+> +               }
+> +       }
+> +
+> +       if (!dryrun)
+> +               *pprev = NULL;
 > +}
-> +EXPORT_SYMBOL_GPL(of_changeset_apply);
 > +
-> +int __of_changeset_revert(struct of_changeset *ocs)
->  {
->         struct of_changeset_entry *ce;
->         int ret;
-> @@ -742,6 +745,29 @@ int of_changeset_revert(struct of_changeset *ocs)
->  }
->
->  /**
-> + * of_changeset_revert - Reverts an applied changeset
-> + *
-> + * @ocs:       changeset pointer
-> + *
-> + * Reverts a changeset returning the state of the tree to what it
-> + * was before the application.
-> + * Any side-effects like creation/destruction of devices and
-> + * removal of sysfs properties and directories are applied.
-> + * Returns 0 on success, a negative error value in case of an error.
-> + */
-> +int of_changeset_revert(struct of_changeset *ocs)
+> +static unsigned long populate_node(const void *blob,
+> +                                  int offset,
+> +                                  void **mem,
+> +                                  struct device_node *dad,
+> +                                  unsigned long fpsize,
+> +                                  struct device_node **pnp,
+> +                                  bool dryrun)
+
+I think dryrun could be implied here too.
+
 > +{
-> +       int ret;
-> +
-> +       mutex_lock(&of_mutex);
-> +       ret = __of_changeset_revert(ocs);
-> +       mutex_unlock(&of_mutex);
-> +
-> +       return ret;
+>         struct device_node *np;
+> -       struct property *pp, **prev_pp = NULL;
+>         const char *pathp;
+>         unsigned int l, allocl;
+> -       static int depth = 0;
+> -       int old_depth;
+> -       int offset;
+> -       int has_name = 0;
+> -       int new_format = 0;
+> +       bool new_format = false;
+> +       char *fname;
+>
+> -       pathp = fdt_get_name(blob, *poffset, &l);
+> -       if (!pathp)
+> -               return mem;
+> +       pathp = fdt_get_name(blob, offset, &l);
+> +       if (!pathp) {
+> +               *pnp = NULL;
+
+Can't pnp be NULL?
+
+> +               return 0;
+> +       }
+>
+>         allocl = ++l;
+>
+> @@ -202,7 +290,7 @@ static void * unflatten_dt_node(const void *blob,
+>          * not '/'.
+>          */
+>         if ((*pathp) != '/') {
+> -               new_format = 1;
+> +               new_format = true;
+>                 if (fpsize == 0) {
+>                         /* root node: special case. fpsize accounts for path
+>                          * plus terminating zero. root node only has '/', so
+> @@ -222,112 +310,38 @@ static void * unflatten_dt_node(const void *blob,
+>                 }
+>         }
+>
+> -       np = unflatten_dt_alloc(&mem, sizeof(struct device_node) + allocl,
+> +       np = unflatten_dt_alloc(mem, sizeof(struct device_node) + allocl,
+>                                 __alignof__(struct device_node));
+>         if (!dryrun) {
+> -               char *fn;
+>                 of_node_init(np);
+> -               np->full_name = fn = ((char *)np) + sizeof(*np);
+> +               np->full_name = fname = ((char *)np) + sizeof(*np);
+
+If you kept "fn" that would cut down the diff and make it a bit easier
+to review.
+
+>                 if (new_format) {
+> -                       /* rebuild full path for new format */
+> +                       /* Rebuild full path for new format */
+>                         if (dad && dad->parent) {
+> -                               strcpy(fn, dad->full_name);
+> +                               strcpy(fname, dad->full_name);
+>  #ifdef DEBUG
+> -                               if ((strlen(fn) + l + 1) != allocl) {
+> +                               if ((strlen(fname) + l + 1) != allocl) {
+>                                         pr_debug("%s: p: %d, l: %d, a: %d\n",
+> -                                               pathp, (int)strlen(fn),
+> -                                               l, allocl);
+> +                                                pathp, (int)strlen(fn),
+
+This won't compile if enabled (should be fname).
+
+> +                                                l, allocl);
+>                                 }
+>  #endif
+> -                               fn += strlen(fn);
+> +                               fname += strlen(fname);
+>                         }
+> -                       *(fn++) = '/';
+> +                       *(fname++) = '/';
+>                 }
+> -               memcpy(fn, pathp, l);
+> +               memcpy(fname, pathp, l);
+>
+> -               prev_pp = &np->properties;
+> -               if (dad != NULL) {
+> +               if (dad) {
+>                         np->parent = dad;
+>                         np->sibling = dad->child;
+>                         dad->child = np;
+>                 }
+>         }
+> -       /* process properties */
+> -       for (offset = fdt_first_property_offset(blob, *poffset);
+> -            (offset >= 0);
+> -            (offset = fdt_next_property_offset(blob, offset))) {
+> -               const char *pname;
+> -               u32 sz;
+>
+> -               if (!(p = fdt_getprop_by_offset(blob, offset, &pname, &sz))) {
+> -                       offset = -FDT_ERR_INTERNAL;
+> -                       break;
+> -               }
+> -
+> -               if (pname == NULL) {
+> -                       pr_info("Can't find property name in list !\n");
+> -                       break;
+> -               }
+> -               if (strcmp(pname, "name") == 0)
+> -                       has_name = 1;
+> -               pp = unflatten_dt_alloc(&mem, sizeof(struct property),
+> -                                       __alignof__(struct property));
+> -               if (!dryrun) {
+> -                       /* We accept flattened tree phandles either in
+> -                        * ePAPR-style "phandle" properties, or the
+> -                        * legacy "linux,phandle" properties.  If both
+> -                        * appear and have different values, things
+> -                        * will get weird.  Don't do that. */
+> -                       if ((strcmp(pname, "phandle") == 0) ||
+> -                           (strcmp(pname, "linux,phandle") == 0)) {
+> -                               if (np->phandle == 0)
+> -                                       np->phandle = be32_to_cpup(p);
+> -                       }
+> -                       /* And we process the "ibm,phandle" property
+> -                        * used in pSeries dynamic device tree
+> -                        * stuff */
+> -                       if (strcmp(pname, "ibm,phandle") == 0)
+> -                               np->phandle = be32_to_cpup(p);
+> -                       pp->name = (char *)pname;
+> -                       pp->length = sz;
+> -                       pp->value = (__be32 *)p;
+> -                       *prev_pp = pp;
+> -                       prev_pp = &pp->next;
+> -               }
+> -       }
+> -       /* with version 0x10 we may not have the name property, recreate
+> -        * it here from the unit name if absent
+> -        */
+> -       if (!has_name) {
+> -               const char *p1 = pathp, *ps = pathp, *pa = NULL;
+> -               int sz;
+> -
+> -               while (*p1) {
+> -                       if ((*p1) == '@')
+> -                               pa = p1;
+> -                       if ((*p1) == '/')
+> -                               ps = p1 + 1;
+> -                       p1++;
+> -               }
+> -               if (pa < ps)
+> -                       pa = p1;
+> -               sz = (pa - ps) + 1;
+> -               pp = unflatten_dt_alloc(&mem, sizeof(struct property) + sz,
+> -                                       __alignof__(struct property));
+> -               if (!dryrun) {
+> -                       pp->name = "name";
+> -                       pp->length = sz;
+> -                       pp->value = pp + 1;
+> -                       *prev_pp = pp;
+> -                       prev_pp = &pp->next;
+> -                       memcpy(pp->value, ps, sz - 1);
+> -                       ((char *)pp->value)[sz - 1] = 0;
+> -                       pr_debug("fixed up name for %s -> %s\n", pathp,
+> -                               (char *)pp->value);
+> -               }
+> -       }
+> +       /* Populate the properties */
+
+Kind of a useless comment.
+
+> +       populate_properties(blob, offset, mem, np, pathp, dryrun);
+>         if (!dryrun) {
+> -               *prev_pp = NULL;
+>                 np->name = of_get_property(np, "name", NULL);
+>                 np->type = of_get_property(np, "device_type", NULL);
+>
+> @@ -337,6 +351,37 @@ static void * unflatten_dt_node(const void *blob,
+>                         np->type = "<NULL>";
+>         }
+>
+> +       *pnp = np;
+> +       return fpsize;
 > +}
-> +EXPORT_SYMBOL_GPL(of_changeset_revert);
 > +
 > +/**
->   * of_changeset_action - Perform a changeset action
->   *
->   * @ocs:       changeset pointer
-> @@ -779,3 +805,4 @@ int of_changeset_action(struct of_changeset *ocs, unsigned long action,
->         list_add_tail(&ce->node, &ocs->entries);
->         return 0;
->  }
-> +EXPORT_SYMBOL_GPL(of_changeset_action);
-> diff --git a/drivers/of/of_private.h b/drivers/of/of_private.h
-> index 8e882e7..829469f 100644
-> --- a/drivers/of/of_private.h
-> +++ b/drivers/of/of_private.h
-> @@ -45,6 +45,8 @@ static inline struct device_node *kobj_to_device_node(struct kobject *kobj)
->  extern int of_property_notify(int action, struct device_node *np,
->                               struct property *prop, struct property *old_prop);
->  extern void of_node_release(struct kobject *kobj);
-> +extern int __of_changeset_apply(struct of_changeset *ocs);
-> +extern int __of_changeset_revert(struct of_changeset *ocs);
->  #else /* CONFIG_OF_DYNAMIC */
->  static inline int of_property_notify(int action, struct device_node *np,
->                                      struct property *prop, struct property *old_prop)
-> diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-> index 24e025f..804ea33 100644
-> --- a/drivers/of/overlay.c
-> +++ b/drivers/of/overlay.c
-> @@ -378,9 +378,9 @@ int of_overlay_create(struct device_node *tree)
->         }
->
->         /* apply the changeset */
-> -       err = of_changeset_apply(&ov->cset);
-> +       err = __of_changeset_apply(&ov->cset);
->         if (err) {
-> -               pr_err("%s: of_changeset_apply() failed for tree@%s\n",
-> +               pr_err("%s: __of_changeset_apply() failed for tree@%s\n",
->                                 __func__, tree->full_name);
->                 goto err_revert_overlay;
->         }
-> @@ -508,7 +508,7 @@ int of_overlay_destroy(int id)
->
->
->         list_del(&ov->node);
-> -       of_changeset_revert(&ov->cset);
-> +       __of_changeset_revert(&ov->cset);
->         of_free_overlay_info(ov);
->         idr_remove(&ov_idr, id);
->         of_changeset_destroy(&ov->cset);
-> @@ -539,7 +539,7 @@ int of_overlay_destroy_all(void)
->         /* the tail of list is guaranteed to be safe to remove */
->         list_for_each_entry_safe_reverse(ov, ovn, &ov_list, node) {
->                 list_del(&ov->node);
-> -               of_changeset_revert(&ov->cset);
-> +               __of_changeset_revert(&ov->cset);
->                 of_free_overlay_info(ov);
->                 idr_remove(&ov_idr, ov->id);
->                 kfree(ov);
-> diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-> index bafcf66..dad3fd2 100644
-> --- a/drivers/of/unittest.c
-> +++ b/drivers/of/unittest.c
-> @@ -526,18 +526,14 @@ static void __init of_unittest_changeset(void)
->         unittest(!of_changeset_add_property(&chgset, parent, ppadd), "fail add prop\n");
->         unittest(!of_changeset_update_property(&chgset, parent, ppupdate), "fail update prop\n");
->         unittest(!of_changeset_remove_property(&chgset, parent, ppremove), "fail remove prop\n");
-> -       mutex_lock(&of_mutex);
->         unittest(!of_changeset_apply(&chgset), "apply failed\n");
-> -       mutex_unlock(&of_mutex);
->
->         /* Make sure node names are constructed correctly */
->         unittest((np = of_find_node_by_path("/testcase-data/changeset/n2/n21")),
->                  "'%s' not added\n", n21->full_name);
->         of_node_put(np);
->
-> -       mutex_lock(&of_mutex);
->         unittest(!of_changeset_revert(&chgset), "revert failed\n");
-> -       mutex_unlock(&of_mutex);
->
->         of_changeset_destroy(&chgset);
->  #endif
+> + * unflatten_dt_node - Alloc and populate a device_node from the flat tree
+> + * @blob: The parent device tree blob
+> + * @mem: Memory chunk to use for allocating device nodes and properties
+> + * @poffset: pointer to node in flat tree
+> + * @dad: Parent struct device_node
+> + * @nodepp: The device_node tree created by the call
+> + * @fpsize: Size of the node path up at the current depth.
+> + * @dryrun: If true, do not allocate device nodes but still calculate needed
+> + * memory size
+> + */
+> +static void *unflatten_dt_node(const void *blob,
+> +                              void *mem,
+> +                              int *poffset,
+> +                              struct device_node *dad,
+> +                              struct device_node **nodepp,
+> +                              unsigned long fpsize,
+> +                              bool dryrun)
+> +{
+> +       struct device_node *np;
+> +       static int depth;
+> +       int old_depth;
+> +
+> +       fpsize = populate_node(blob, *poffset, &mem, dad, fpsize, &np, dryrun);
+
+Doesn't this give a warning assigning a ptr to long?
+
+Looks like np can be moved internal to populate_node.
+
+
+> +       if (!fpsize)
+> +               return mem;
+> +
+>         old_depth = depth;
+>         *poffset = fdt_next_node(blob, *poffset, &depth);
+>         if (depth < 0)
 > --
 > 2.1.0
 >
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
