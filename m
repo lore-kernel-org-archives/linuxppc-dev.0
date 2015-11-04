@@ -1,25 +1,25 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9AE631A0BC6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 07:46:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2A8361A0CC0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 07:46:44 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 5 Nov 2015 02:16:37 +0530
+ Thu, 5 Nov 2015 02:16:42 +0530
 Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 9242B125805C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 02:16:35 +0530 (IST)
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id DFE971258019
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 02:16:39 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
  by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA4KkZ9J4653234
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 02:16:35 +0530
+ tA4KkdO725755712
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 02:16:39 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA4KkWUJ027845
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 02:16:34 +0530
+ tA4KkbPs028085
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 02:16:39 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, x86@kernel.org
@@ -27,17 +27,13 @@ Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
  Peter Zijlstra <peterz@infradead.org>, Jiri Olsa <jolsa@kernel.org>,
  Arnaldo Carvalho de Melo <acme@kernel.org>,
- Stephane Eranian <eranian@gmail.com>,
- Russell King <linux@arm.linux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: [RFC PATCH 1/3] perf/core: extend perf_regs to include arch specific
- regs
-Date: Thu,  5 Nov 2015 02:16:16 +0530
-Message-Id: <1446669978-6366-2-git-send-email-maddy@linux.vnet.ibm.com>
+Subject: [RFC PATCH 2/3]perf/powerpc: update macros and add regs to
+ arch_misc_reg struct
+Date: Thu,  5 Nov 2015 02:16:17 +0530
+Message-Id: <1446669978-6366-3-git-send-email-maddy@linux.vnet.ibm.com>
 In-Reply-To: <1446669978-6366-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1446669978-6366-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -49,211 +45,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As a foundation patch, new structure called arch_misc_regs
-added to perf_regs. And perf_reg_value() is modified to expect
-perf_regs instead of pt_regs. This way, perf_reg_value() can decide
-on the struct to pick based on the register idx.
+Patch updates the arch_misc_regs struct (arch/powerpc/ptrace.h)
+with arch/powerpc specific regs (PMU regs). Updates asm/perf_regs.h and
+perf_regs.c with corresponding macros to export the arch_misc_reg values.
 
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Ingo Molnar <mingo@kernel.org>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Jiri Olsa <jolsa@kernel.org>
-Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Stephane Eranian <eranian@gmail.com>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
+CC: Arnaldo Carvalho de Melo <acme@kernel.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- Will really appreciate comments and feedback for the patch
+ Will really appreciate comments and feedback for the patch.
 
- arch/arm/include/asm/ptrace.h          | 2 ++
- arch/arm/kernel/perf_regs.c            | 4 +++-
- arch/arm64/include/asm/ptrace.h        | 2 ++
- arch/arm64/kernel/perf_regs.c          | 4 +++-
- arch/powerpc/include/uapi/asm/ptrace.h | 2 ++
- arch/powerpc/perf/perf_regs.c          | 4 +++-
- arch/x86/include/asm/ptrace.h          | 2 ++
- arch/x86/kernel/perf_regs.c            | 4 +++-
- include/linux/perf_regs.h              | 5 +++--
- kernel/events/core.c                   | 6 +++---
- 10 files changed, 26 insertions(+), 9 deletions(-)
+ arch/powerpc/include/uapi/asm/perf_regs.h   | 10 ++++++++++
+ arch/powerpc/include/uapi/asm/ptrace.h      | 11 ++++++++++-
+ arch/powerpc/perf/perf_regs.c               | 28 +++++++++++++++++++++++++---
+ tools/perf/arch/powerpc/include/perf_regs.h | 16 ++++++++++++++++
+ 4 files changed, 61 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/include/asm/ptrace.h b/arch/arm/include/asm/ptrace.h
-index 51622ba7c4a6..26cd8dbf1f02 100644
---- a/arch/arm/include/asm/ptrace.h
-+++ b/arch/arm/include/asm/ptrace.h
-@@ -17,6 +17,8 @@ struct pt_regs {
- 	unsigned long uregs[18];
+diff --git a/arch/powerpc/include/uapi/asm/perf_regs.h b/arch/powerpc/include/uapi/asm/perf_regs.h
+index 30fb601bdbb2..2d170734f47d 100644
+--- a/arch/powerpc/include/uapi/asm/perf_regs.h
++++ b/arch/powerpc/include/uapi/asm/perf_regs.h
+@@ -49,6 +49,16 @@ enum perf_event_powerpc_regs {
+ 	PERF_REG_POWERPC_TRAP,
+ 	PERF_REG_POWERPC_DAR,
+ 	PERF_REG_POWERPC_DSISR,
++	PERF_REG_POWERPC_PMC1,
++	PERF_REG_POWERPC_PMC2,
++	PERF_REG_POWERPC_PMC3,
++	PERF_REG_POWERPC_PMC4,
++	PERF_REG_POWERPC_PMC5,
++	PERF_REG_POWERPC_PMC6,
++	PERF_REG_POWERPC_MMCR0,
++	PERF_REG_POWERPC_MMCR1,
++
+ 	PERF_REG_POWERPC_MAX,
++	PERF_REG_PT_REGS_END = PERF_REG_POWERPC_DSISR + 1,
  };
- 
-+struct arch_misc_regs {};
-+
- #define user_mode(regs)	\
- 	(((regs)->ARM_cpsr & 0xf) == 0)
- 
-diff --git a/arch/arm/kernel/perf_regs.c b/arch/arm/kernel/perf_regs.c
-index 592dda3f21ff..18999abbadbe 100644
---- a/arch/arm/kernel/perf_regs.c
-+++ b/arch/arm/kernel/perf_regs.c
-@@ -6,8 +6,10 @@
- #include <asm/perf_regs.h>
- #include <asm/ptrace.h>
- 
--u64 perf_reg_value(struct pt_regs *regs, int idx)
-+u64 perf_reg_value(struct perf_regs *p_regs, int idx)
- {
-+	struct pt_regs *regs = p_regs->regs;
-+
- 	if (WARN_ON_ONCE((u32)idx >= PERF_REG_ARM_MAX))
- 		return 0;
- 
-diff --git a/arch/arm64/include/asm/ptrace.h b/arch/arm64/include/asm/ptrace.h
-index 536274ed292e..9a33ab69f19f 100644
---- a/arch/arm64/include/asm/ptrace.h
-+++ b/arch/arm64/include/asm/ptrace.h
-@@ -118,6 +118,8 @@ struct pt_regs {
- 	u64 syscallno;
- };
- 
-+struct arch_misc_regs {};
-+
- #define arch_has_single_step()	(1)
- 
- #ifdef CONFIG_COMPAT
-diff --git a/arch/arm64/kernel/perf_regs.c b/arch/arm64/kernel/perf_regs.c
-index 3f62b35fb6f1..8ee80d7c8604 100644
---- a/arch/arm64/kernel/perf_regs.c
-+++ b/arch/arm64/kernel/perf_regs.c
-@@ -7,8 +7,10 @@
- #include <asm/perf_regs.h>
- #include <asm/ptrace.h>
- 
--u64 perf_reg_value(struct pt_regs *regs, int idx)
-+u64 perf_reg_value(struct perf_regs *p_regs, int idx)
- {
-+	struct pt_regs *regs = p_regs->regs;
-+
- 	if (WARN_ON_ONCE((u32)idx >= PERF_REG_ARM64_MAX))
- 		return 0;
- 
+ #endif /* _ASM_POWERPC_PERF_REGS_H */
 diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
-index 8036b385417d..0025651ab8bc 100644
+index 0025651ab8bc..5e9b3259ef78 100644
 --- a/arch/powerpc/include/uapi/asm/ptrace.h
 +++ b/arch/powerpc/include/uapi/asm/ptrace.h
-@@ -51,6 +51,8 @@ struct pt_regs {
+@@ -51,7 +51,16 @@ struct pt_regs {
  	unsigned long result;		/* Result of a system call */
  };
- 
-+struct arch_misc_regs {};
-+
+
+-struct arch_misc_regs {};
++struct arch_misc_regs {
++	unsigned long pmc1;
++	unsigned long pmc2;
++	unsigned long pmc3;
++	unsigned long pmc4;
++	unsigned long pmc5;
++	unsigned long pmc6;
++	unsigned long mmcr0;
++	unsigned long mmcr1;
++};
+
  #endif /* __ASSEMBLY__ */
- 
- 
+
 diff --git a/arch/powerpc/perf/perf_regs.c b/arch/powerpc/perf/perf_regs.c
-index 0520492d4078..f7995b46078a 100644
+index f7995b46078a..48e479c91fb2 100644
 --- a/arch/powerpc/perf/perf_regs.c
 +++ b/arch/powerpc/perf/perf_regs.c
-@@ -61,8 +61,10 @@ static unsigned int pt_regs_offset[PERF_REG_POWERPC_MAX] = {
- 	PT_REGS_OFFSET(PERF_REG_POWERPC_DSISR, dsisr),
- };
- 
--u64 perf_reg_value(struct pt_regs *regs, int idx)
-+u64 perf_reg_value(struct perf_regs *p_regs, int idx)
- {
-+	struct pt_regs *regs = p_regs->regs;
+@@ -8,8 +8,11 @@
+ #include <asm/perf_regs.h>
+
+ #define PT_REGS_OFFSET(id, r) [id] = offsetof(struct pt_regs, r)
++#define ARCH_REGS_OFFSET(id, r) [id] = offsetof(struct arch_misc_regs, r)
+
+ #define REG_RESERVED (~((1ULL << PERF_REG_POWERPC_MAX) - 1))
++#define MAX_ARCH_REG_OFFSET	(offsetof(struct arch_misc_regs, mmcr1))
 +
+
+ static unsigned int pt_regs_offset[PERF_REG_POWERPC_MAX] = {
+ 	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR0, gpr[0]),
+@@ -59,15 +62,34 @@ static unsigned int pt_regs_offset[PERF_REG_POWERPC_MAX] = {
+ 	PT_REGS_OFFSET(PERF_REG_POWERPC_TRAP, trap),
+ 	PT_REGS_OFFSET(PERF_REG_POWERPC_DAR, dar),
+ 	PT_REGS_OFFSET(PERF_REG_POWERPC_DSISR, dsisr),
++	ARCH_REGS_OFFSET(PERF_REG_POWERPC_PMC1, pmc1),
++	ARCH_REGS_OFFSET(PERF_REG_POWERPC_PMC2, pmc2),
++	ARCH_REGS_OFFSET(PERF_REG_POWERPC_PMC3, pmc3),
++	ARCH_REGS_OFFSET(PERF_REG_POWERPC_PMC4, pmc4),
++	ARCH_REGS_OFFSET(PERF_REG_POWERPC_PMC5, pmc5),
++	ARCH_REGS_OFFSET(PERF_REG_POWERPC_PMC6, pmc6),
++	ARCH_REGS_OFFSET(PERF_REG_POWERPC_MMCR0, mmcr0),
++	ARCH_REGS_OFFSET(PERF_REG_POWERPC_MMCR1, mmcr1),
+ };
+
+-u64 perf_reg_value(struct perf_regs *p_regs, int idx)
++static inline unsigned long
++arch_regs_get_register(struct arch_misc_regs *regs, unsigned int offset)
+ {
+-	struct pt_regs *regs = p_regs->regs;
++	if (unlikely(offset > MAX_ARCH_REG_OFFSET))
++		return 0;
++	return *(unsigned long *)((unsigned long)regs + offset);
++}
+
++u64 perf_reg_value(struct perf_regs *p_regs, int idx)
++{
  	if (WARN_ON_ONCE(idx >= PERF_REG_POWERPC_MAX))
  		return 0;
- 	return regs_get_register(regs, pt_regs_offset[idx]);
-diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
-index 6271281f947d..410a2eb885c1 100644
---- a/arch/x86/include/asm/ptrace.h
-+++ b/arch/x86/include/asm/ptrace.h
-@@ -67,6 +67,8 @@ struct pt_regs {
- 
- #endif /* !__i386__ */
- 
-+struct arch_misc_regs {};
+-	return regs_get_register(regs, pt_regs_offset[idx]);
 +
- #ifdef CONFIG_PARAVIRT
- #include <asm/paravirt_types.h>
- #endif
-diff --git a/arch/x86/kernel/perf_regs.c b/arch/x86/kernel/perf_regs.c
-index da8cb987b973..c6e41f7f648b 100644
---- a/arch/x86/kernel/perf_regs.c
-+++ b/arch/x86/kernel/perf_regs.c
-@@ -55,8 +55,10 @@ static unsigned int pt_regs_offset[PERF_REG_X86_MAX] = {
- #endif
- };
- 
--u64 perf_reg_value(struct pt_regs *regs, int idx)
-+u64 perf_reg_value(struct perf_regs *p_regs, int idx)
- {
-+	struct pt_regs *regs = p_regs->regs;
-+
- 	if (WARN_ON_ONCE(idx >= ARRAY_SIZE(pt_regs_offset)))
- 		return 0;
- 
-diff --git a/include/linux/perf_regs.h b/include/linux/perf_regs.h
-index a5f98d53d732..7727a30e7d84 100644
---- a/include/linux/perf_regs.h
-+++ b/include/linux/perf_regs.h
-@@ -4,18 +4,19 @@
- struct perf_regs {
- 	__u64		abi;
- 	struct pt_regs	*regs;
-+	struct arch_misc_regs *arch_regs;
- };
- 
- #ifdef CONFIG_HAVE_PERF_REGS
- #include <asm/perf_regs.h>
--u64 perf_reg_value(struct pt_regs *regs, int idx);
-+u64 perf_reg_value(struct perf_regs *p_regs, int idx);
- int perf_reg_validate(u64 mask);
- u64 perf_reg_abi(struct task_struct *task);
- void perf_get_regs_user(struct perf_regs *regs_user,
- 			struct pt_regs *regs,
- 			struct pt_regs *regs_user_copy);
- #else
--static inline u64 perf_reg_value(struct pt_regs *regs, int idx)
-+static inline u64 perf_reg_value(struct perf_regs *p_regs, int idx)
- {
- 	return 0;
++	if (idx >= PERF_REG_PT_REGS_END)
++		return arch_regs_get_register(p_regs->arch_regs,
++							pt_regs_offset[idx]);
++	else
++		return regs_get_register(p_regs->regs, pt_regs_offset[idx]);
  }
-diff --git a/kernel/events/core.c b/kernel/events/core.c
-index b11756f9b6dc..c04bdad3d365 100644
---- a/kernel/events/core.c
-+++ b/kernel/events/core.c
-@@ -4934,7 +4934,7 @@ EXPORT_SYMBOL_GPL(perf_unregister_guest_info_callbacks);
- 
- static void
- perf_output_sample_regs(struct perf_output_handle *handle,
--			struct pt_regs *regs, u64 mask)
-+			struct perf_regs *regs, u64 mask)
- {
- 	int bit;
- 
-@@ -5331,7 +5331,7 @@ void perf_output_sample(struct perf_output_handle *handle,
- 		if (abi) {
- 			u64 mask = event->attr.sample_regs_user;
- 			perf_output_sample_regs(handle,
--						data->regs_user.regs,
-+						&data->regs_user,
- 						mask);
- 		}
+
+ int perf_reg_validate(u64 mask)
+diff --git a/tools/perf/arch/powerpc/include/perf_regs.h b/tools/perf/arch/powerpc/include/perf_regs.h
+index 47307ca19c28..e0d23b274644 100644
+--- a/tools/perf/arch/powerpc/include/perf_regs.h
++++ b/tools/perf/arch/powerpc/include/perf_regs.h
+@@ -106,6 +106,22 @@ static inline const char *perf_reg_name(int id)
+ 		return "dar";
+ 	case PERF_REG_POWERPC_DSISR:
+ 		return "dsisr";
++	case PERF_REG_POWERPC_PMC1:
++		return "pmc1";
++	case PERF_REG_POWERPC_PMC2:
++		return "pmc2";
++	case PERF_REG_POWERPC_PMC3:
++		return "pmc3";
++	case PERF_REG_POWERPC_PMC4:
++		return "pmc4";
++	case PERF_REG_POWERPC_PMC5:
++		return "pmc5";
++	case PERF_REG_POWERPC_PMC6:
++		return "pmc6";
++	case PERF_REG_POWERPC_MMCR0:
++		return "mmcr0";
++	case PERF_REG_POWERPC_MMCR1:
++		return "mmcr1";
+ 	default:
+ 		return NULL;
  	}
-@@ -5363,7 +5363,7 @@ void perf_output_sample(struct perf_output_handle *handle,
- 			u64 mask = event->attr.sample_regs_intr;
- 
- 			perf_output_sample_regs(handle,
--						data->regs_intr.regs,
-+						&data->regs_intr,
- 						mask);
- 		}
- 	}
--- 
+--
 1.9.1
