@@ -1,25 +1,25 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 308761A0CB4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:52 +1100 (AEDT)
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by lists.ozlabs.org (Postfix) with ESMTPS id 747EC1A0CC4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:53 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 4 Nov 2015 23:13:51 +1000
+ Wed, 4 Nov 2015 23:13:52 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id BE7132CE805D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:48 +1100 (EST)
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id D3DB13578055
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:49 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA4DDelX45613244
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:48 +1100
+ tA4DDf9V39256242
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:49 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA4DDFaw030189
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:16 +1100
+ tA4DDGnu030236
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:17 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
@@ -27,9 +27,9 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, frowand.list@gmail.com,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v7 29/50] powerpc/pci: Rename pcibios_find_pci_bus()
-Date: Thu,  5 Nov 2015 00:12:29 +1100
-Message-Id: <1446642770-4681-30-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v7 37/50] powerpc/powernv: Simplify pnv_eeh_reset()
+Date: Thu,  5 Nov 2015 00:12:37 +1100
+Message-Id: <1446642770-4681-38-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,97 +41,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This renames pcibios_find_pci_bus() to pci_find_bus_by_node() to
-avoid conflicts with those PCI subsystem weak function names, which
-have prefix "pcibios". No logical changes introduced.
+This drops unnecessary nested if statements in pnv_eeh_reset() to
+improve the code readability. After the changes, the unused local
+variable "ret" is dropped as well. No logical changes introduced.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pci-bridge.h      | 2 +-
- arch/powerpc/platforms/pseries/pci_dlpar.c | 5 ++---
- drivers/pci/hotplug/rpadlpar_core.c        | 6 +++---
- drivers/pci/hotplug/rpaphp_pci.c           | 2 +-
- 4 files changed, 7 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 61 ++++++++++++----------------
+ 1 file changed, 27 insertions(+), 34 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index c2360c8..28385cb 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -257,7 +257,7 @@ static inline struct eeh_dev *pdn_to_eeh_dev(struct pci_dn *pdn)
- #endif
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 861a7d2..a7d84a4 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -907,8 +907,9 @@ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
+ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
+ {
+ 	struct pci_controller *hose = pe->phb;
++	struct pnv_phb *phb;
+ 	struct pci_bus *bus;
+-	int ret;
++	int64_t rc;
  
- /** Find the bus corresponding to the indicated device node */
--extern struct pci_bus *pcibios_find_pci_bus(struct device_node *dn);
-+extern struct pci_bus *pci_find_bus_by_node(struct device_node *dn);
+ 	/*
+ 	 * For PHB reset, we always have complete reset. For those PEs whose
+@@ -924,43 +925,35 @@ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
+ 	 * reset. The side effect is that EEH core has to clear the frozen
+ 	 * state explicitly after BAR restore.
+ 	 */
+-	if (pe->type & EEH_PE_PHB) {
+-		ret = pnv_eeh_phb_reset(hose, option);
+-	} else {
+-		struct pnv_phb *phb;
+-		s64 rc;
++	if (pe->type & EEH_PE_PHB)
++		return pnv_eeh_phb_reset(hose, option);
  
- /** Remove all of the PCI devices under this bus */
- extern void pci_remove_pci_devices(struct pci_bus *bus);
-diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
-index 5d4a3df..aee22b4 100644
---- a/arch/powerpc/platforms/pseries/pci_dlpar.c
-+++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
-@@ -54,8 +54,7 @@ find_bus_among_children(struct pci_bus *bus,
- 	return child;
+-		/*
+-		 * The frozen PE might be caused by PAPR error injection
+-		 * registers, which are expected to be cleared after hitting
+-		 * frozen PE as stated in the hardware spec. Unfortunately,
+-		 * that's not true on P7IOC. So we have to clear it manually
+-		 * to avoid recursive EEH errors during recovery.
+-		 */
+-		phb = hose->private_data;
+-		if (phb->model == PNV_PHB_MODEL_P7IOC &&
+-		    (option == EEH_RESET_HOT ||
+-		    option == EEH_RESET_FUNDAMENTAL)) {
+-			rc = opal_pci_reset(phb->opal_id,
+-					    OPAL_RESET_PHB_ERROR,
+-					    OPAL_ASSERT_RESET);
+-			if (rc != OPAL_SUCCESS) {
+-				pr_warn("%s: Failure %lld clearing "
+-					"error injection registers\n",
+-					__func__, rc);
+-				return -EIO;
+-			}
++	/*
++	 * The frozen PE might be caused by PAPR error injection
++	 * registers, which are expected to be cleared after hitting
++	 * frozen PE as stated in the hardware spec. Unfortunately,
++	 * that's not true on P7IOC. So we have to clear it manually
++	 * to avoid recursive EEH errors during recovery.
++	 */
++	phb = hose->private_data;
++	if (phb->model == PNV_PHB_MODEL_P7IOC &&
++	    (option == EEH_RESET_HOT || option == EEH_RESET_FUNDAMENTAL)) {
++		rc = opal_pci_reset(phb->opal_id,
++				    OPAL_RESET_PHB_ERROR,
++				    OPAL_ASSERT_RESET);
++		if (rc != OPAL_SUCCESS) {
++			pr_warn("%s: Error %lld clearing error injection\n",
++				__func__, rc);
++			return -EIO;
+ 		}
+-
+-		bus = eeh_pe_bus_get(pe);
+-		if (pci_is_root_bus(bus) ||
+-			pci_is_root_bus(bus->parent))
+-			ret = pnv_eeh_root_reset(hose, option);
+-		else
+-			ret = pnv_eeh_bridge_reset(bus->self, option);
+ 	}
+ 
+-	return ret;
++	bus = eeh_pe_bus_get(pe);
++	if (pci_is_root_bus(bus) ||
++	    pci_is_root_bus(bus->parent))
++		return pnv_eeh_root_reset(hose, option);
++
++	return pnv_eeh_bridge_reset(bus->self, option);
  }
  
--struct pci_bus *
--pcibios_find_pci_bus(struct device_node *dn)
-+struct pci_bus *pci_find_bus_by_node(struct device_node *dn)
- {
- 	struct pci_dn *pdn = dn->data;
- 
-@@ -64,7 +63,7 @@ pcibios_find_pci_bus(struct device_node *dn)
- 
- 	return find_bus_among_children(pdn->phb->bus, dn);
- }
--EXPORT_SYMBOL_GPL(pcibios_find_pci_bus);
-+EXPORT_SYMBOL_GPL(pci_find_bus_by_node);
- 
- struct pci_controller *init_phb_dynamic(struct device_node *dn)
- {
-diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
-index ebd283b..9aa392b 100644
---- a/drivers/pci/hotplug/rpadlpar_core.c
-+++ b/drivers/pci/hotplug/rpadlpar_core.c
-@@ -176,7 +176,7 @@ static int dlpar_add_pci_slot(char *drc_name, struct device_node *dn)
- 	struct pci_dev *dev;
- 	struct pci_controller *phb;
- 
--	if (pcibios_find_pci_bus(dn))
-+	if (pci_find_bus_by_node(dn))
- 		return -EINVAL;
- 
- 	/* Add pci bus */
-@@ -213,7 +213,7 @@ static int dlpar_remove_phb(char *drc_name, struct device_node *dn)
- 	struct pci_dn *pdn;
- 	int rc = 0;
- 
--	if (!pcibios_find_pci_bus(dn))
-+	if (!pci_find_bus_by_node(dn))
- 		return -EINVAL;
- 
- 	/* If pci slot is hotpluggable, use hotplug to remove it */
-@@ -357,7 +357,7 @@ int dlpar_remove_pci_slot(char *drc_name, struct device_node *dn)
- 
- 	pci_lock_rescan_remove();
- 
--	bus = pcibios_find_pci_bus(dn);
-+	bus = pci_find_bus_by_node(dn);
- 	if (!bus) {
- 		ret = -EINVAL;
- 		goto out;
-diff --git a/drivers/pci/hotplug/rpaphp_pci.c b/drivers/pci/hotplug/rpaphp_pci.c
-index 256066c..e7dd573 100644
---- a/drivers/pci/hotplug/rpaphp_pci.c
-+++ b/drivers/pci/hotplug/rpaphp_pci.c
-@@ -93,7 +93,7 @@ int rpaphp_enable_slot(struct slot *slot)
- 	if (rc)
- 		return rc;
- 
--	bus = pcibios_find_pci_bus(slot->dn);
-+	bus = pci_find_bus_by_node(slot->dn);
- 	if (!bus) {
- 		err("%s: no pci_bus for dn %s\n", __func__, slot->dn->full_name);
- 		return -EINVAL;
+ /**
 -- 
 2.1.0
