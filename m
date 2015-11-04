@@ -2,24 +2,24 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B0EFA1A0C7E
+ by lists.ozlabs.org (Postfix) with ESMTPS id E1B5C1A0C8F
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:32 +1100 (AEDT)
 Received: from /spool/local
  by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Wed, 4 Nov 2015 18:43:30 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 918CA125805F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 18:43:26 +0530 (IST)
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 29014125805E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 18:43:28 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA4DDPrp55967788
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 18:43:25 +0530
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA4DDFWT36110452
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 18:43:16 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA4DDNCm032497
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 18:43:24 +0530
+ tA4DDDqB031561
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 18:43:15 +0530
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
@@ -27,9 +27,10 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, frowand.list@gmail.com,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v7 46/50] drivers/of: Rename unflatten_dt_node()
-Date: Thu,  5 Nov 2015 00:12:46 +1100
-Message-Id: <1446642770-4681-47-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v7 17/50] powerpc/powernv: Avoid calculating DMA32 segments on
+ PHB3
+Date: Thu,  5 Nov 2015 00:12:17 +1100
+Message-Id: <1446642770-4681-18-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,62 +42,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This renames unflatten_dt_node() to unflatten_dt_nodes() as it
-populates multiple device nodes from FDT blob. No logical changes
-introduced.
+In pnv_ioda_setup_dma(), it's unnecessary to calculate the DMA32
+segments for PEs on PHB3 as the whole available DMA32 space can
+be assigned to one specific PE on PHB3.
+
+This splits pnv_ioda_setup_dma() to pnv_pci_ioda1_setup_dma() and
+pnv_pci_ioda2_setup_dma() in order to avoid calculating DMA32
+segments for PEs on PHB3. No logical changes introduced.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- drivers/of/fdt.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 41 ++++++++++++++++++-------------
+ 1 file changed, 24 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index f4793d0..559ce49 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -380,7 +380,7 @@ static void reverse_nodes(struct device_node *parent)
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 5a08e20..4c2e023 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2383,7 +2383,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 		pnv_ioda_setup_bus_dma(pe, pe->pbus);
  }
  
- /**
-- * unflatten_dt_node - Alloc and populate a device_node from the flat tree
-+ * unflatten_dt_nodes - Alloc and populate device nodes from the flat tree
-  * @blob: The parent device tree blob
-  * @mem: Memory chunk to use for allocating device nodes and properties
-  * @dad: Parent struct device_node
-@@ -388,11 +388,11 @@ static void reverse_nodes(struct device_node *parent)
-  * @dryrun: If true, do not allocate device nodes but still calculate needed
-  * memory size
-  */
--static void *unflatten_dt_node(const void *blob,
--			       void *mem,
--			       struct device_node *dad,
--			       struct device_node **nodepp,
--			       bool dryrun)
-+static void *unflatten_dt_nodes(const void *blob,
-+				void *mem,
-+				struct device_node *dad,
-+				struct device_node **nodepp,
-+				bool dryrun)
+-static void pnv_ioda_setup_dma(struct pnv_phb *phb)
++static void pnv_pci_ioda1_setup_dma(struct pnv_phb *phb)
  {
- 	struct device_node *root;
- 	int offset = 0, depth = 0;
-@@ -472,7 +472,7 @@ static void __unflatten_device_tree(const void *blob,
+ 	struct pci_controller *hose = phb->hose;
+ 	unsigned int residual, remaining, segs, tw, base;
+@@ -2428,26 +2428,30 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+ 				segs = remaining;
+ 		}
+ 
+-		/*
+-		 * For IODA2 compliant PHB3, we needn't care about the weight.
+-		 * The all available 32-bits DMA space will be assigned to
+-		 * the specific PE.
+-		 */
+-		if (phb->type == PNV_PHB_IODA1) {
+-			pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
+-				pe->dma_weight, segs);
+-			pnv_pci_ioda1_setup_dma_pe(phb, pe, base, segs);
+-		} else {
+-			pe_info(pe, "Assign DMA32 space\n");
+-			segs = 0;
+-			pnv_pci_ioda2_setup_dma_pe(phb, pe);
+-		}
++		pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
++			pe->dma_weight, segs);
++		pnv_pci_ioda1_setup_dma_pe(phb, pe, base, segs);
+ 
+ 		remaining -= segs;
+ 		base += segs;
  	}
+ }
  
- 	/* First pass, scan for size */
--	size = (unsigned long)unflatten_dt_node(blob, NULL, NULL, NULL, true);
-+	size = (unsigned long)unflatten_dt_nodes(blob, NULL, NULL, NULL, true);
- 	size = ALIGN(size, 4);
++static void pnv_pci_ioda2_setup_dma(struct pnv_phb *phb)
++{
++	struct pnv_ioda_pe *pe;
++
++	pnv_pci_ioda_setup_opal_tce_kill(phb);
++
++	list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
++		if (!pe->dma_weight)
++			continue;
++
++		pe_info(pe, "Assign DMA32 space\n");
++		pnv_pci_ioda2_setup_dma_pe(phb, pe);
++	}
++}
++
+ #ifdef CONFIG_PCI_MSI
+ static void pnv_ioda2_msi_eoi(struct irq_data *d)
+ {
+@@ -2931,10 +2935,13 @@ static void pnv_pci_ioda_setup_DMA(void)
+ 	struct pnv_phb *phb;
  
- 	pr_debug("  size is %lx, allocating...\n", size);
-@@ -486,7 +486,7 @@ static void __unflatten_device_tree(const void *blob,
- 	pr_debug("  unflattening %p...\n", mem);
+ 	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+-		pnv_ioda_setup_dma(hose->private_data);
++		phb = hose->private_data;
++		if (phb->type == PNV_PHB_IODA1)
++			pnv_pci_ioda1_setup_dma(phb);
++		else
++			pnv_pci_ioda2_setup_dma(phb);
  
- 	/* Second pass, do actual unflattening */
--	unflatten_dt_node(blob, mem, NULL, mynodes, false);
-+	unflatten_dt_nodes(blob, mem, NULL, mynodes, false);
- 	if (be32_to_cpup(mem + size) != 0xdeadbeef)
- 		pr_warning("End of tree marker overwritten: %08x\n",
- 			   be32_to_cpup(mem + size));
+ 		/* Mark the PHB initialization done */
+-		phb = hose->private_data;
+ 		phb->initialized = 1;
+ 	}
+ }
 -- 
 2.1.0
