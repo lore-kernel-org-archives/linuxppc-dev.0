@@ -1,30 +1,26 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-yk0-x22a.google.com (mail-yk0-x22a.google.com
- [IPv6:2607:f8b0:4002:c07::22a])
+Return-Path: <edubezval@gmail.com>
+Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
+ [IPv6:2607:f8b0:400e:c03::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B18E91A0393
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 05:43:29 +1100 (AEDT)
-Received: by ykft191 with SMTP id t191so88382735ykf.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2015 10:43:27 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DDE5A1A037B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 06:24:50 +1100 (AEDT)
+Received: by pasz6 with SMTP id z6so63104504pas.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2015 11:24:48 -0800 (PST)
+Date: Wed, 4 Nov 2015 11:24:46 -0800
+From: Eduardo Valentin <edubezval@gmail.com>
+To: Hongtao Jia <hongtao.jia@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH V3] thermal: qoriq: Add thermal management support
+Message-ID: <20151104192444.GA14127@localhost.localdomain>
+References: <1442996938-47147-1-git-send-email-hongtao.jia@freescale.com>
+ <1443132592.32298.56.camel@freescale.com>
+ <BLUPR03MB14997B46CC6AFC247EDC340E1420@BLUPR03MB149.namprd03.prod.outlook.com>
 MIME-Version: 1.0
-In-Reply-To: <1446642770-4681-45-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-45-git-send-email-gwshan@linux.vnet.ibm.com>
-From: Rob Herring <robherring2@gmail.com>
-Date: Wed, 4 Nov 2015 12:43:08 -0600
-Message-ID: <CAL_JsqLp29DBdhqaaU4U7pn0juitmBBmgwaFvm+ATu+nhhwj5A@mail.gmail.com>
-Subject: Re: [PATCH v7 44/50] drivers/of: Split unflatten_dt_node()
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, aik@ozlabs.ru,
- Bjorn Helgaas <bhelgaas@google.com>, Grant Likely <grant.likely@linaro.org>,
- Pantelis Antoniou <panto@antoniou-consulting.com>,
- Frank Rowand <frowand.list@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <BLUPR03MB14997B46CC6AFC247EDC340E1420@BLUPR03MB149.namprd03.prod.outlook.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,396 +30,423 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 4, 2015 at 7:12 AM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
-> The function unflatten_dt_node() is called recursively to unflatten
-> device nodes and properties in the FDT blob. It looks complicated
-> and hard to be understood.
->
-> This splits the function into 3 functions: populate_properties(),
-> populate_node() and unflatten_dt_node(). populate_properties(),
-> which is called by populate_node(), creates properties for the
-> indicated device node. The later one creates the device nodes
-> from FDT blob. populate_node() gets the offset in FDT blob for
-> next device nodes and then calls populate_node(). No logical
-> changes introduced.
->
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->  drivers/of/fdt.c | 275 ++++++++++++++++++++++++++++++++-----------------------
->  1 file changed, 160 insertions(+), 115 deletions(-)
->
-> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-> index 6e82bc42..173b036 100644
-> --- a/drivers/of/fdt.c
-> +++ b/drivers/of/fdt.c
-> @@ -160,39 +160,127 @@ static void *unflatten_dt_alloc(void **mem, unsigned long size,
->         return res;
->  }
->
-> -/**
-> - * unflatten_dt_node - Alloc and populate a device_node from the flat tree
-> - * @blob: The parent device tree blob
-> - * @mem: Memory chunk to use for allocating device nodes and properties
-> - * @poffset: pointer to node in flat tree
-> - * @dad: Parent struct device_node
-> - * @nodepp: The device_node tree created by the call
-> - * @fpsize: Size of the node path up at the current depth.
-> - * @dryrun: If true, do not allocate device nodes but still calculate needed
-> - * memory size
-> - */
-> -static void * unflatten_dt_node(const void *blob,
-> -                               void *mem,
-> -                               int *poffset,
-> -                               struct device_node *dad,
-> -                               struct device_node **nodepp,
-> -                               unsigned long fpsize,
-> +static void populate_properties(const void *blob,
-> +                               int offset,
-> +                               void **mem,
-> +                               struct device_node *np,
-> +                               const char *nodename,
->                                 bool dryrun)
+On Fri, Sep 25, 2015 at 03:09:42AM +0000, Hongtao Jia wrote:
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, September 25, 2015 6:10 AM
+> > To: Jia Hongtao-B38951
+> > Cc: edubezval@gmail.com; linux-pm@vger.kernel.org; linuxppc-
+> > dev@lists.ozlabs.org
+> > Subject: Re: [PATCH V3] thermal: qoriq: Add thermal management support
+> > 
+> > On Wed, 2015-09-23 at 16:28 +0800, Jia Hongtao wrote:
+> > > This driver add thermal management support by enabling TMU (Thermal
+> > > Monitoring Unit) on QorIQ platform.
+> > >
+> > > It's based on thermal of framework:
+> > > - Trip points defined in device tree.
+> > > - Cpufreq as cooling device registered in qoriq cpufreq driver.
+> > 
+> > I don't see any cooling device registered in the qoriq cpufreq driver.
+> > Is this dependent on some other patch?
+> 
+> It's not depend on any patch. But I saw your patch below:
+> [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock implementation details
+> So I hold my patch waiting for your patch merged or there will be conflict.
+> 
+> I could send it out too if you are fine with it.
 
-I'd like to make dryrun implicit. It is basically a function of NULL
-or near NULL pointers.
-
->  {
-> -       const __be32 *p;
-> +       struct property *pp, **pprev = NULL;
-> +       int cur;
-> +       bool has_name = false;
-> +
-> +       pprev = &np->properties;
-> +       cur = fdt_first_property_offset(blob, offset);
-> +       while (cur >= 0) {
-
-This could be better written as a for loop to avoid the gotos:
-
-for (cur = fdt_first_property_offset(blob, offset); cur >=0; cur =
-fdt_next_property_offset(blob, cur))
-
-> +               const __be32 *val;
-> +               const char *pname;
-> +               u32 sz;
-> +
-> +               val = fdt_getprop_by_offset(blob, cur, &pname, &sz);
-> +               if (!val) {
-> +                       pr_warn("%s: Cannot locate property at 0x%x\n",
-> +                               __func__, cur);
-> +                       goto next;
-> +               }
-> +
-> +               if (!pname) {
-> +                       pr_warn("%s: Cannot find property name at 0x%x\n",
-> +                               __func__, cur);
-> +                       goto next;
-> +               } else if (!strcmp(pname, "name")) {
-> +                       has_name = true;
-> +               }
-> +
-> +               pp = unflatten_dt_alloc(mem, sizeof(struct property),
-> +                                       __alignof__(struct property));
-> +               if (!dryrun) {
-
-Then:
-
-if (dryrun)
-  continue;
-
-to save some indentation and vertical code.
-
-> +                       /* We accept flattened tree phandles either in
-> +                        * ePAPR-style "phandle" properties, or the
-> +                        * legacy "linux,phandle" properties.  If both
-> +                        * appear and have different values, things
-> +                        * will get weird. Don't do that.
-> +                        */
-> +                       if (!strcmp(pname, "phandle") ||
-> +                           !strcmp(pname, "linux,phandle")) {
-> +                               if (!np->phandle)
-> +                                       np->phandle = be32_to_cpup(val);
-> +                       }
-> +
-> +                       /* And we process the "ibm,phandle" property
-> +                        * used in pSeries dynamic device tree
-> +                        * stuff
-> +                        */
-> +                       if (!strcmp(pname, "ibm,phandle"))
-> +                               np->phandle = be32_to_cpup(val);
-> +
-> +                       pp->name   = (char *)pname;
-> +                       pp->length = sz;
-> +                       pp->value  = (__be32 *)val;
-> +                       *pprev     = pp;
-> +                       pprev      = &pp->next;
-> +               }
-> +next:
-> +               cur = fdt_next_property_offset(blob, cur);
-> +       }
-> +
-> +       /* With version 0x10 we may not have the name property,
-> +        * recreate it here from the unit name if absent
-> +        */
-> +       if (!has_name) {
-> +               const char *p = nodename, *ps = p, *pa = NULL;
-> +               int len;
-> +
-> +               while (*p) {
-> +                       if ((*p) == '@')
-> +                               pa = p;
-> +                       else if ((*p) == '/')
-> +                               ps = p + 1;
-> +                       p++;
-> +               }
-> +
-> +               if (pa < ps)
-> +                       pa = p;
-> +               len = (pa - ps) + 1;
-> +               pp = unflatten_dt_alloc(mem, sizeof(struct property) + len,
-> +                                       __alignof__(struct property));
-> +               if (!dryrun) {
-> +                       pp->name   = "name";
-> +                       pp->length = len;
-> +                       pp->value  = pp + 1;
-> +                       *pprev     = pp;
-> +                       pprev      = &pp->next;
-> +                       memcpy(pp->value, ps, len - 1);
-> +                       ((char *)pp->value)[len - 1] = 0;
-> +                       pr_debug("fixed up name for %s -> %s\n",
-> +                                nodename, (char *)pp->value);
-> +               }
-> +       }
-> +
-> +       if (!dryrun)
-> +               *pprev = NULL;
-> +}
-> +
-> +static unsigned long populate_node(const void *blob,
-> +                                  int offset,
-> +                                  void **mem,
-> +                                  struct device_node *dad,
-> +                                  unsigned long fpsize,
-> +                                  struct device_node **pnp,
-> +                                  bool dryrun)
-
-I think dryrun could be implied here too.
-
-> +{
->         struct device_node *np;
-> -       struct property *pp, **prev_pp = NULL;
->         const char *pathp;
->         unsigned int l, allocl;
-> -       static int depth = 0;
-> -       int old_depth;
-> -       int offset;
-> -       int has_name = 0;
-> -       int new_format = 0;
-> +       bool new_format = false;
-> +       char *fname;
->
-> -       pathp = fdt_get_name(blob, *poffset, &l);
-> -       if (!pathp)
-> -               return mem;
-> +       pathp = fdt_get_name(blob, offset, &l);
-> +       if (!pathp) {
-> +               *pnp = NULL;
-
-Can't pnp be NULL?
-
-> +               return 0;
-> +       }
->
->         allocl = ++l;
->
-> @@ -202,7 +290,7 @@ static void * unflatten_dt_node(const void *blob,
->          * not '/'.
->          */
->         if ((*pathp) != '/') {
-> -               new_format = 1;
-> +               new_format = true;
->                 if (fpsize == 0) {
->                         /* root node: special case. fpsize accounts for path
->                          * plus terminating zero. root node only has '/', so
-> @@ -222,112 +310,38 @@ static void * unflatten_dt_node(const void *blob,
->                 }
->         }
->
-> -       np = unflatten_dt_alloc(&mem, sizeof(struct device_node) + allocl,
-> +       np = unflatten_dt_alloc(mem, sizeof(struct device_node) + allocl,
->                                 __alignof__(struct device_node));
->         if (!dryrun) {
-> -               char *fn;
->                 of_node_init(np);
-> -               np->full_name = fn = ((char *)np) + sizeof(*np);
-> +               np->full_name = fname = ((char *)np) + sizeof(*np);
-
-If you kept "fn" that would cut down the diff and make it a bit easier
-to review.
-
->                 if (new_format) {
-> -                       /* rebuild full path for new format */
-> +                       /* Rebuild full path for new format */
->                         if (dad && dad->parent) {
-> -                               strcpy(fn, dad->full_name);
-> +                               strcpy(fname, dad->full_name);
->  #ifdef DEBUG
-> -                               if ((strlen(fn) + l + 1) != allocl) {
-> +                               if ((strlen(fname) + l + 1) != allocl) {
->                                         pr_debug("%s: p: %d, l: %d, a: %d\n",
-> -                                               pathp, (int)strlen(fn),
-> -                                               l, allocl);
-> +                                                pathp, (int)strlen(fn),
-
-This won't compile if enabled (should be fname).
-
-> +                                                l, allocl);
->                                 }
->  #endif
-> -                               fn += strlen(fn);
-> +                               fname += strlen(fname);
->                         }
-> -                       *(fn++) = '/';
-> +                       *(fname++) = '/';
->                 }
-> -               memcpy(fn, pathp, l);
-> +               memcpy(fname, pathp, l);
->
-> -               prev_pp = &np->properties;
-> -               if (dad != NULL) {
-> +               if (dad) {
->                         np->parent = dad;
->                         np->sibling = dad->child;
->                         dad->child = np;
->                 }
->         }
-> -       /* process properties */
-> -       for (offset = fdt_first_property_offset(blob, *poffset);
-> -            (offset >= 0);
-> -            (offset = fdt_next_property_offset(blob, offset))) {
-> -               const char *pname;
-> -               u32 sz;
->
-> -               if (!(p = fdt_getprop_by_offset(blob, offset, &pname, &sz))) {
-> -                       offset = -FDT_ERR_INTERNAL;
-> -                       break;
-> -               }
-> -
-> -               if (pname == NULL) {
-> -                       pr_info("Can't find property name in list !\n");
-> -                       break;
-> -               }
-> -               if (strcmp(pname, "name") == 0)
-> -                       has_name = 1;
-> -               pp = unflatten_dt_alloc(&mem, sizeof(struct property),
-> -                                       __alignof__(struct property));
-> -               if (!dryrun) {
-> -                       /* We accept flattened tree phandles either in
-> -                        * ePAPR-style "phandle" properties, or the
-> -                        * legacy "linux,phandle" properties.  If both
-> -                        * appear and have different values, things
-> -                        * will get weird.  Don't do that. */
-> -                       if ((strcmp(pname, "phandle") == 0) ||
-> -                           (strcmp(pname, "linux,phandle") == 0)) {
-> -                               if (np->phandle == 0)
-> -                                       np->phandle = be32_to_cpup(p);
-> -                       }
-> -                       /* And we process the "ibm,phandle" property
-> -                        * used in pSeries dynamic device tree
-> -                        * stuff */
-> -                       if (strcmp(pname, "ibm,phandle") == 0)
-> -                               np->phandle = be32_to_cpup(p);
-> -                       pp->name = (char *)pname;
-> -                       pp->length = sz;
-> -                       pp->value = (__be32 *)p;
-> -                       *prev_pp = pp;
-> -                       prev_pp = &pp->next;
-> -               }
-> -       }
-> -       /* with version 0x10 we may not have the name property, recreate
-> -        * it here from the unit name if absent
-> -        */
-> -       if (!has_name) {
-> -               const char *p1 = pathp, *ps = pathp, *pa = NULL;
-> -               int sz;
-> -
-> -               while (*p1) {
-> -                       if ((*p1) == '@')
-> -                               pa = p1;
-> -                       if ((*p1) == '/')
-> -                               ps = p1 + 1;
-> -                       p1++;
-> -               }
-> -               if (pa < ps)
-> -                       pa = p1;
-> -               sz = (pa - ps) + 1;
-> -               pp = unflatten_dt_alloc(&mem, sizeof(struct property) + sz,
-> -                                       __alignof__(struct property));
-> -               if (!dryrun) {
-> -                       pp->name = "name";
-> -                       pp->length = sz;
-> -                       pp->value = pp + 1;
-> -                       *prev_pp = pp;
-> -                       prev_pp = &pp->next;
-> -                       memcpy(pp->value, ps, sz - 1);
-> -                       ((char *)pp->value)[sz - 1] = 0;
-> -                       pr_debug("fixed up name for %s -> %s\n", pathp,
-> -                               (char *)pp->value);
-> -               }
-> -       }
-> +       /* Populate the properties */
-
-Kind of a useless comment.
-
-> +       populate_properties(blob, offset, mem, np, pathp, dryrun);
->         if (!dryrun) {
-> -               *prev_pp = NULL;
->                 np->name = of_get_property(np, "name", NULL);
->                 np->type = of_get_property(np, "device_type", NULL);
->
-> @@ -337,6 +351,37 @@ static void * unflatten_dt_node(const void *blob,
->                         np->type = "<NULL>";
->         }
->
-> +       *pnp = np;
-> +       return fpsize;
-> +}
-> +
-> +/**
-> + * unflatten_dt_node - Alloc and populate a device_node from the flat tree
-> + * @blob: The parent device tree blob
-> + * @mem: Memory chunk to use for allocating device nodes and properties
-> + * @poffset: pointer to node in flat tree
-> + * @dad: Parent struct device_node
-> + * @nodepp: The device_node tree created by the call
-> + * @fpsize: Size of the node path up at the current depth.
-> + * @dryrun: If true, do not allocate device nodes but still calculate needed
-> + * memory size
-> + */
-> +static void *unflatten_dt_node(const void *blob,
-> +                              void *mem,
-> +                              int *poffset,
-> +                              struct device_node *dad,
-> +                              struct device_node **nodepp,
-> +                              unsigned long fpsize,
-> +                              bool dryrun)
-> +{
-> +       struct device_node *np;
-> +       static int depth;
-> +       int old_depth;
-> +
-> +       fpsize = populate_node(blob, *poffset, &mem, dad, fpsize, &np, dryrun);
-
-Doesn't this give a warning assigning a ptr to long?
-
-Looks like np can be moved internal to populate_node.
+Would you guys benefit of cpufreq-cpu0?
 
 
-> +       if (!fpsize)
-> +               return mem;
-> +
->         old_depth = depth;
->         *poffset = fdt_next_node(blob, *poffset, &depth);
->         if (depth < 0)
-> --
-> 2.1.0
->
+
+
+> 
+> > 
+> > >
+> > > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> > > ---
+> > > V3: Using thermal of framework.
+> > >
+> > >  drivers/thermal/Kconfig         |  11 ++
+> > >  drivers/thermal/Makefile        |   1 +
+> > >  drivers/thermal/qoriq_thermal.c | 267
+
+Please include a binding description in your next version. Also,
+remember to include an example of your binding.
+
+
+
+> > > ++++++++++++++++++++++++++++++++++++++++
+> > >  3 files changed, 279 insertions(+)
+> > >  create mode 100644 drivers/thermal/qoriq_thermal.c
+> > >
+> > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig index
+> > > 0390044..c91041b 100644
+> > > --- a/drivers/thermal/Kconfig
+> > > +++ b/drivers/thermal/Kconfig
+> > > @@ -180,6 +180,17 @@ config IMX_THERMAL
+> > >         cpufreq is used as the cooling device to throttle CPUs when the
+> > >         passive trip is crossed.
+> > >
+> > > +config QORIQ_THERMAL
+
+
+It would be really great if you could consolidate this driver with
+IMX_THERMAL. Do you think it is doable?
+
+> > > +     tristate "Freescale QorIQ Thermal Monitoring Unit"
+> > > +     depends on CPU_THERMAL
+> > > +     depends on THERMAL_OF
+> > > +     default n
+> > > +     help
+> > > +       Enable thermal management based on Freescale QorIQ Thermal
+> > Monitoring
+> > > +       Unit (TMU). It supports one critical trip point and one passive
+> > trip
+> > > +       point. The cpufreq is used as the cooling device to throttle
+> > CPUs when
+> > > +       the passive trip is crossed.
+> > 
+> > "default n" is unnecessary -- n is already the default.
+> 
+> Right.
+> 
+> > 
+> > Where is the interaction between this driver and cpufreq?
+> 
+> It's all in cpufreq patch I mentioned above.
+> 
+> > 
+> > > config SPEAR_THERMAL
+> > >       bool "SPEAr thermal sensor driver"
+> > >       depends on PLAT_SPEAR
+> > > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile index
+> > > 26f1608..e55d703 100644
+> > > --- a/drivers/thermal/Makefile
+> > > +++ b/drivers/thermal/Makefile
+> > > @@ -33,6 +33,7 @@ obj-$(CONFIG_DOVE_THERMAL)          += dove_thermal.o
+> > >  obj-$(CONFIG_DB8500_THERMAL) += db8500_thermal.o
+> > >  obj-$(CONFIG_ARMADA_THERMAL) += armada_thermal.o
+> > >  obj-$(CONFIG_IMX_THERMAL)    += imx_thermal.o
+> > > +obj-$(CONFIG_QORIQ_THERMAL)  += qoriq_thermal.o
+> > >  obj-$(CONFIG_DB8500_CPUFREQ_COOLING) += db8500_cpufreq_cooling.o
+> > >  obj-$(CONFIG_INTEL_POWERCLAMP)       += intel_powerclamp.o
+> > >  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)   += x86_pkg_temp_thermal.o
+> > > diff --git a/drivers/thermal/qoriq_thermal.c
+> > > b/drivers/thermal/qoriq_thermal.c new file mode 100644 index
+> > > 0000000..7c2a3261
+> > > --- /dev/null
+> > > +++ b/drivers/thermal/qoriq_thermal.c
+> > > @@ -0,0 +1,267 @@
+> > > +/*
+> > > + * Copyright 2015 Freescale Semiconductor, Inc.
+> > > + *
+> > > + * This program is free software; you can redistribute it and/or
+> > > +modify it
+> > > + * under the terms and conditions of the GNU General Public License,
+> > > + * version 2, as published by the Free Software Foundation.
+> > > + *
+> > > + * This program is distributed in the hope it will be useful, but
+> > > +WITHOUT
+> > > + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+> > > +or
+> > > + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+> > > +License
+> > > for
+> > > + * more details.
+> > > + *
+> > > + */
+> > > +
+> > > +/*
+> > > + * Based on Freescale QorIQ Thermal Monitoring Unit (TMU)  */
+> > 
+> > What does this comment mean?  This *is* the "Freescale QorIQ Thermal
+> > Monitoring Unit" driver.
+> 
+> I mean thermal management based on the monitor TMU.
+> I could remove this comment though.
+> 
+> > 
+> > > +#include <linux/cpufreq.h>
+> > 
+> > What do you use from this header?
+> 
+> Sorry, forget to remove it from last version in which cooling devices are
+> registered in thermal driver instead of cpufreq driver.
+> 
+> > 
+> > > +#include <linux/module.h>
+> > > +#include <linux/platform_device.h>
+> > > +#include <linux/err.h>
+> > > +#include <linux/io.h>
+> > > +#include <linux/of.h>
+> > > +#include <linux/of_address.h>
+> > > +#include <linux/thermal.h>
+> > > +
+> > > +#include "thermal_core.h"
+> > > +
+> > > +#define SITES_MAX    16
+> > > +
+> > > +/*
+> > > + * QorIQ TMU Registers
+> > > + */
+> > > +struct qoriq_tmu_site_regs {
+> > > +     __be32 tritsr;          /* Immediate Temperature Site Register */
+> > > +     __be32 tratsr;          /* Average Temperature Site Register */
+> > > +     u8 res0[0x8];
+> > > +} __packed;
+> > > +
+> > > +struct qoriq_tmu_regs {
+> > > +     __be32 tmr;             /* Mode Register */
+> > > +#define TMR_DISABLE  0x0
+> > > +#define TMR_ME               0x80000000
+> > > +#define TMR_ALPF     0x0c000000
+> > > +#define TMR_MSITE    0x00008000      /* Core temperature site */
+> > > +#define TMR_ALL              (TMR_ME | TMR_ALPF | TMR_MSITE)
+> > > +     __be32 tsr;             /* Status Register */
+> > > +     __be32 tmtmir;          /* Temperature measurement interval
+> > Register */
+> > > +#define TMTMIR_DEFAULT       0x00000007
+> > > +     u8 res0[0x14];
+> > > +     __be32 tier;            /* Interrupt Enable Register */
+> > > +#define TIER_DISABLE 0x0
+> > > +     __be32 tidr;            /* Interrupt Detect Register */
+> > > +     __be32 tiscr;           /* Interrupt Site Capture Register */
+> > > +     __be32 ticscr;          /* Interrupt Critical Site Capture
+> > Register */
+> > > +     u8 res1[0x10];
+> > > +     __be32 tmhtcrh;         /* High Temperature Capture Register */
+> > > +     __be32 tmhtcrl;         /* Low Temperature Capture Register */
+> > > +     u8 res2[0x8];
+> > > +     __be32 tmhtitr;         /* High Temperature Immediate Threshold
+> > */
+> > > +     __be32 tmhtatr;         /* High Temperature Average Threshold */
+> > > +     __be32 tmhtactr;        /* High Temperature Average Crit
+> > Threshold */
+> > > +     u8 res3[0x24];
+> > > +     __be32 ttcfgr;          /* Temperature Configuration Register */
+> > > +     __be32 tscfgr;          /* Sensor Configuration Register */
+> > > +     u8 res4[0x78];
+> > > +     struct qoriq_tmu_site_regs site[SITES_MAX];
+> > > +     u8 res5[0x9f8];
+> > > +     __be32 ipbrr0;          /* IP Block Revision Register 0 */
+> > > +     __be32 ipbrr1;          /* IP Block Revision Register 1 */
+> > > +     u8 res6[0x310];
+> > > +     __be32 ttr0cr;          /* Temperature Range 0 Control Register
+> > */
+> > > +     __be32 ttr1cr;          /* Temperature Range 1 Control Register
+> > */
+> > > +     __be32 ttr2cr;          /* Temperature Range 2 Control Register
+> > */
+> > > +     __be32 ttr3cr;          /* Temperature Range 3 Control Register
+> > */
+> > > +};
+> > > +
+> > > +/*
+> > > + * Thermal zone data
+> > > + */
+> > > +struct qoriq_tmu_data {
+> > > +     struct thermal_zone_device *tz;
+> > > +     struct qoriq_tmu_regs __iomem *regs; };
+> > > +
+> > 
+> > > +static int tmu_get_temp(void *p, int *temp) {
+> > > +     u8 val;
+> > > +     struct qoriq_tmu_data *data = p;
+> > > +
+> > > +     val = ioread32be(&data->regs->site[0].tritsr);
+> > > +     *temp = (int)val * 1000;
+> > 
+> > Why don't you declare val as int in the first place?
+> 
+> It's a 32bit register.
+> Only the least significant 8 bits represent the temperature.
+> The most significant bit shows the validness of the value.
+> I use u8 type to remove the rest 24bits influence.
+> 
+> > 
+> > > +     for (i = 0; i < len; i += 8, calibration += 2) {
+> > > +             val = (int)of_read_number(calibration, 1);
+> > > +             iowrite32be(val, &data->regs->ttcfgr);
+> > > +             val = (int)of_read_number(calibration + 1, 1);
+> > > +             iowrite32be(val, &data->regs->tscfgr);
+> > 
+> > Unnecessary casts.
+> 
+> Ok.
+> 
+> > 
+> > > +     }
+> > > +
+> > > +     return 0;
+> > > +}
+> > > +
+> > > +static void qoriq_tmu_init_device(struct qoriq_tmu_data *data) {
+> > > +     /* Disable interrupt, using polling instead */
+> > > +     iowrite32be(TIER_DISABLE, &data->regs->tier);
+> > > +
+> > > +     /* Set update_interval */
+> > > +     iowrite32be(TMTMIR_DEFAULT, &data->regs->tmtmir);
+> > > +
+> > > +     /* Enable monitoring */
+> > > +     iowrite32be(TMR_ALL, &data->regs->tmr); }
+> > > +
+> > > +static struct thermal_zone_of_device_ops tmu_tz_ops = {
+> > > +     .get_temp = tmu_get_temp,
+> > > +};
+> > > +
+> > > +static int qoriq_tmu_probe(struct platform_device *pdev) {
+> > > +     int ret;
+> > > +     const struct thermal_trip *trip;
+> > > +     struct qoriq_tmu_data *data;
+> > > +
+> > > +     if (!pdev->dev.of_node) {
+> > > +             dev_err(&pdev->dev, "Device OF-Node is NULL");
+> > > +             return -EFAULT;
+> > > +     }
+> > 
+> > EFAULT is for bad user addresses and is not appropriate here.
+> 
+> I will change it to ENODEV.
+> 
+> > 
+> > > +
+> > > +     data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
+> > > +                         GFP_KERNEL);
+> > > +     if (!data)
+> > > +             return -ENOMEM;
+> > > +
+> > > +     platform_set_drvdata(pdev, data);
+> > > +     data->regs = of_iomap(pdev->dev.of_node, 0);
+> > > +
+> > > +     if (!data->regs) {
+> > > +             dev_err(&pdev->dev, "Failed to get memory region\n");
+> > > +             ret = -ENODEV;
+> > > +             goto err_iomap;
+> > > +     }
+> > > +
+> > > +     ret = qoriq_tmu_calibration(pdev);      /* TMU calibration */
+> > > +     if (ret < 0) {
+> > > +             dev_err(&pdev->dev, "TMU calibration failed.\n");
+> > > +             ret = -ENODEV;
+> > > +             goto err_iomap;
+> > > +     }
+> > 
+> > That function returns negative when device tree properties are missing,
+> > not when a calibration procedure fails.
+> 
+> What's your suggestion here to return then?
+> 
+> > 
+> > > +
+> > > +     qoriq_tmu_init_device(data);    /* TMU initialization */
+> > > +
+> > > +     data->tz = thermal_zone_of_sensor_register(&pdev->dev, 0,
+> > > +                             data, &tmu_tz_ops);
+> > > +     if (IS_ERR(data->tz)) {
+> > > +             ret = PTR_ERR(data->tz);
+> > > +             dev_err(&pdev->dev,
+> > > +                     "Failed to register thermal zone device %d\n",
+> > ret);
+> > > +             goto err_thermal;
+> > > +     }
+> > > +
+> > > +     trip = of_thermal_get_trip_points(data->tz);
+> > > +
+> > > +     data->tz->ops->set_mode(data->tz, THERMAL_DEVICE_ENABLED);
+> > 
+> > Doesn't thermal_zone_of_sensor_register() already call ops->set_mode with
+> > TERMAL_DEVICE_ENABLED?
+> 
+> You are right.
+> I referenced the code from other platform and did not notice this.
+> Thanks.
+> 
+> > 
+> > > +
+> > > +     return 0;
+> > > +
+> > > +err_thermal:
+> > > +     iounmap(data->regs);
+> > > +
+> > > +err_iomap:
+> > > +     platform_set_drvdata(pdev, NULL);
+> > > +     devm_kfree(&pdev->dev, data);
+> > > +
+> > > +     return ret;
+> > > +}
+> > > +
+> > > +static int qoriq_tmu_remove(struct platform_device *pdev) {
+> > > +     struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
+> > > +
+> > > +     /* Disable monitoring */
+> > > +     iowrite32be(TMR_DISABLE, &data->regs->tmr);
+> > > +
+> > > +     thermal_zone_of_sensor_unregister(&pdev->dev, data->tz);
+> > > +     iounmap(data->regs);
+> > > +
+> > > +     platform_set_drvdata(pdev, NULL);
+> > > +     devm_kfree(&pdev->dev, data);
+> > > +
+> > > +     return 0;
+> > > +}
+> > > +
+> > > +#ifdef CONFIG_PM_SLEEP
+> > > +static int qoriq_tmu_suspend(struct device *dev) {
+> > > +     struct qoriq_tmu_data *data = dev_get_drvdata(dev);
+> > > +
+> > > +     /* Disable monitoring */
+> > > +     iowrite32be(TMR_DISABLE, &data->regs->tmr);
+> > > +     data->tz->ops->set_mode(data->tz, THERMAL_DEVICE_DISABLED);
+> > > +
+> > > +     return 0;
+> > > +}
+> > > +
+> > > +static int qoriq_tmu_resume(struct device *dev) {
+> > > +     struct qoriq_tmu_data *data = dev_get_drvdata(dev);
+> > > +
+> > > +     /* Enable monitoring */
+> > > +     iowrite32be(TMR_ALL, &data->regs->tmr);
+> > > +     data->tz->ops->set_mode(data->tz, THERMAL_DEVICE_ENABLED);
+> > > +
+> > > +     return 0;
+> > > +}
+> > > +#endif
+> > > +
+> > > +static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
+> > > +                      qoriq_tmu_suspend, qoriq_tmu_resume);
+> > > +
+> > 
+> > 
+> > > +static const struct of_device_id qoriq_tmu_match[] = {
+> > > +     { .compatible = "fsl,qoriq-tmu", },
+> > > +     {},
+> > > +};
+> > 
+> > Binding?
+> 
+> Not send out yet.
+> I planned to send the patch with device tree patchset including
+> adding TMU node to T1040/T1024/LS1021A platform.
+> 
+> It's depending on the device tree files moving patch I sent out
+> not long ago.
+> 
+> > 
+> > > +
+> > > +static struct platform_driver qoriq_tmu = {
+> > > +     .driver = {
+> > > +             .name           = "qoriq_thermal",
+> > > +             .pm = &qoriq_tmu_pm_ops,
+> > > +             .of_match_table = qoriq_tmu_match,
+> > > +     },
+> > 
+> > Why the tabs after ".name"?
+> 
+> Will indent the other two.
+> 
+> > 
+> > -Scott
+> 
