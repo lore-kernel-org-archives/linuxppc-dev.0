@@ -1,33 +1,33 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E58611A0A70
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 14:30:33 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by lists.ozlabs.org (Postfix) with ESMTPS id 082AE1A0952
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 14:30:57 +1100 (AEDT)
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 4 Nov 2015 09:00:31 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 39F32125805A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 09:00:28 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA43UNtU2490390
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 09:00:24 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA43UM6l000914
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 09:00:23 +0530
+ Wed, 4 Nov 2015 13:30:55 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0C25F357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 14:30:53 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA43Uk4i32768062
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 14:30:54 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA43UKgm015815
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 14:30:20 +1100
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com, mpe@ellerman.id.au,
  aik@ozlabs.ru
 Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
  Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH V12 3/9] powerpc/pci: Remove VFs prior to PF
-Date: Wed,  4 Nov 2015 11:28:46 +0800
-Message-Id: <1446607732-4166-4-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V12 2/9] PCI: Add pcibios_bus_add_device() weak function
+Date: Wed,  4 Nov 2015 11:28:45 +0800
+Message-Id: <1446607732-4166-3-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1446607732-4166-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1446607732-4166-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,30 +39,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As commit ac205b7bb72f ("PCI: make sriov work with hotplug remove")
-indicates, VFs which is on the same PCI bus as their PF, should be removed
-before the PF. Otherwise, the PCI hot unplugging of PCI devices on the PCI
-bus would cause kernel crash.
-
-The patch applies the above pattern to PowerPC PCI hotplug path.
+Add a weak function pcibios_bus_add_device() for arch dependent code could
+do proper setup. For example, powerpc could setup EEH related resources.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- arch/powerpc/kernel/pci-hotplug.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/pci/bus.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-index 7f9ed0c..59c4361 100644
---- a/arch/powerpc/kernel/pci-hotplug.c
-+++ b/arch/powerpc/kernel/pci-hotplug.c
-@@ -55,7 +55,7 @@ void pcibios_remove_pci_devices(struct pci_bus *bus)
+diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+index d3346d2..2b8b756 100644
+--- a/drivers/pci/bus.c
++++ b/drivers/pci/bus.c
+@@ -269,6 +269,7 @@ bool pci_bus_clip_resource(struct pci_dev *dev, int idx)
  
- 	pr_debug("PCI: Removing devices on bus %04x:%02x\n",
- 		 pci_domain_nr(bus),  bus->number);
--	list_for_each_entry_safe(dev, tmp, &bus->devices, bus_list) {
-+	list_for_each_entry_safe_reverse(dev, tmp, &bus->devices, bus_list) {
- 		pr_debug("   Removing %s...\n", pci_name(dev));
- 		pci_stop_and_remove_bus_device(dev);
- 	}
+ void __weak pcibios_resource_survey_bus(struct pci_bus *bus) { }
+ 
++void __weak pcibios_bus_add_device(struct pci_dev *dev) { }
+ /**
+  * pci_bus_add_device - start driver for a single device
+  * @dev: device to add
+@@ -279,6 +280,8 @@ void pci_bus_add_device(struct pci_dev *dev)
+ {
+ 	int retval;
+ 
++	pcibios_bus_add_device(dev);
++
+ 	/*
+ 	 * Can not put in pci_device_add yet because resources
+ 	 * are not assigned yet for some devices.
 -- 
 2.5.0
