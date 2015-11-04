@@ -2,23 +2,23 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C5C41A0C8C
+ by lists.ozlabs.org (Postfix) with ESMTPS id 77A441A0CAF
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:56 +1100 (AEDT)
 Received: from /spool/local
  by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 4 Nov 2015 23:13:55 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 91C0E2BB0052
+ Wed, 4 Nov 2015 23:13:56 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 582E83578055
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:54 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA4DDe9J31260914
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:48 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA4DDL0a030447
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA4DDkik16449688
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:54 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA4DDKT3019070
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:22 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
@@ -27,9 +27,10 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, frowand.list@gmail.com,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v7 49/50] drivers/of: Export OF changeset functions
-Date: Thu,  5 Nov 2015 00:12:49 +1100
-Message-Id: <1446642770-4681-50-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v7 11/50] powerpc/powernv: IO and M32 mapping based on PCI
+ device resources
+Date: Thu,  5 Nov 2015 00:12:11 +1100
+Message-Id: <1446642770-4681-12-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,194 +42,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PowerNV PCI hotplug driver is going to use the OF changeset
-to manage the changed device sub-tree. This exports those OF
-changeset functions for that.
+Currently, the IO and M32 segments are mapped to the corresponding
+PE based on the windows of the parent bridge of PE's primary bus.
+It's not going to work when the windows of root port or upstream
+port of the PCIe switch behind root port are extended to PHB's
+aperatuses in order to support hotplug in subsequent patch.
+
+This fixes the issue by mapping IO and M32 segments based on the
+resources of the PCI devices included in the PE, instead of the
+windows of the parent bridge of the PE's primary bus.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- drivers/of/dynamic.c    | 65 ++++++++++++++++++++++++++++++++++---------------
- drivers/of/of_private.h |  2 ++
- drivers/of/overlay.c    |  8 +++---
- drivers/of/unittest.c   |  4 ---
- 4 files changed, 52 insertions(+), 27 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 131 +++++++++++++++++-------------
+ 1 file changed, 75 insertions(+), 56 deletions(-)
 
-diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index 53826b8..c647bd1 100644
---- a/drivers/of/dynamic.c
-+++ b/drivers/of/dynamic.c
-@@ -646,6 +646,7 @@ void of_changeset_init(struct of_changeset *ocs)
- 	memset(ocs, 0, sizeof(*ocs));
- 	INIT_LIST_HEAD(&ocs->entries);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 553d3f3..4ab93f8 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2741,71 +2741,90 @@ truncate_iov:
  }
-+EXPORT_SYMBOL_GPL(of_changeset_init);
+ #endif /* CONFIG_PCI_IOV */
  
- /**
-  * of_changeset_destroy - Destroy a changeset
-@@ -662,20 +663,9 @@ void of_changeset_destroy(struct of_changeset *ocs)
- 	list_for_each_entry_safe_reverse(ce, cen, &ocs->entries, node)
- 		__of_changeset_entry_destroy(ce);
- }
-+EXPORT_SYMBOL_GPL(of_changeset_destroy);
- 
--/**
-- * of_changeset_apply - Applies a changeset
-- *
-- * @ocs:	changeset pointer
-- *
-- * Applies a changeset to the live tree.
-- * Any side-effects of live tree state changes are applied here on
-- * sucess, like creation/destruction of devices and side-effects
-- * like creation of sysfs properties and directories.
-- * Returns 0 on success, a negative error value in case of an error.
-- * On error the partially applied effects are reverted.
+-/*
+- * This function is supposed to be called on basis of PE from top
+- * to bottom style. So the the I/O or MMIO segment assigned to
+- * parent PE could be overrided by its child PEs if necessary.
 - */
--int of_changeset_apply(struct of_changeset *ocs)
-+int __of_changeset_apply(struct of_changeset *ocs)
+-static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
+-				  struct pnv_ioda_pe *pe)
++static int pnv_ioda_setup_one_res(struct pnv_ioda_pe *pe,
++				  struct resource *res)
  {
- 	struct of_changeset_entry *ce;
- 	int ret;
-@@ -704,17 +694,30 @@ int of_changeset_apply(struct of_changeset *ocs)
- }
+-	struct pnv_phb *phb = hose->private_data;
++	struct pnv_phb *phb = pe->phb;
+ 	struct pci_bus_region region;
+-	struct resource *res;
+-	unsigned int segsize;
+-	int *segmap, index, i;
++	unsigned int index, segsize;
++	int *segmap;
+ 	uint16_t win;
+ 	int64_t rc;
  
- /**
-- * of_changeset_revert - Reverts an applied changeset
-+ * of_changeset_apply - Applies a changeset
-  *
-  * @ocs:	changeset pointer
-  *
-- * Reverts a changeset returning the state of the tree to what it
-- * was before the application.
-- * Any side-effects like creation/destruction of devices and
-- * removal of sysfs properties and directories are applied.
-+ * Applies a changeset to the live tree.
-+ * Any side-effects of live tree state changes are applied here on
-+ * success, like creation/destruction of devices and side-effects
-+ * like creation of sysfs properties and directories.
-  * Returns 0 on success, a negative error value in case of an error.
-+ * On error the partially applied effects are reverted.
-  */
--int of_changeset_revert(struct of_changeset *ocs)
-+int of_changeset_apply(struct of_changeset *ocs)
-+{
-+	int ret;
+-	/*
+-	 * NOTE: We only care PCI bus based PE for now. For PCI
+-	 * device based PE, for example SRIOV sensitive VF should
+-	 * be figured out later.
+-	 */
+-	BUG_ON(!(pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)));
++	if (!res->parent || !res->flags || res->start > res->end)
++		return 0;
+ 
+-	pci_bus_for_each_resource(pe->pbus, res, i) {
+-		if (!res || !res->flags ||
+-		    res->start > res->end)
+-			continue;
++	if (res->flags & IORESOURCE_IO) {
++		region.start = res->start - phb->ioda.io_pci_base;
++		region.end   = res->end - phb->ioda.io_pci_base;
++		segsize      = phb->ioda.io_segsize;
++		segmap       = phb->ioda.io_segmap;
++		win          = OPAL_IO_WINDOW_TYPE;
++	} else if ((res->flags & IORESOURCE_MEM) &&
++		   !pnv_pci_is_mem_pref_64(res->flags)) {
++		region.start = res->start -
++			       phb->hose->mem_offset[0] -
++			       phb->ioda.m32_pci_base;
++		region.end   = res->end -
++			       phb->hose->mem_offset[0] -
++			       phb->ioda.m32_pci_base;
++		segsize      = phb->ioda.m32_segsize;
++		segmap       = phb->ioda.m32_segmap;
++		win          = OPAL_M32_WINDOW_TYPE;
++	} else {
++		return 0;
++	}
+ 
+-		if (res->flags & IORESOURCE_IO) {
+-			region.start = res->start - phb->ioda.io_pci_base;
+-			region.end   = res->end - phb->ioda.io_pci_base;
+-			segsize      = phb->ioda.io_segsize;
+-			segmap       = phb->ioda.io_segmap;
+-			win          = OPAL_IO_WINDOW_TYPE;
+-		} else if ((res->flags & IORESOURCE_MEM) &&
+-			   !pnv_pci_is_mem_pref_64(res->flags)) {
+-			region.start = res->start -
+-				       hose->mem_offset[0] -
+-				       phb->ioda.m32_pci_base;
+-			region.end   = res->end -
+-				       hose->mem_offset[0] -
+-				       phb->ioda.m32_pci_base;
+-			segsize      = phb->ioda.m32_segsize;
+-			segmap       = phb->ioda.m32_segmap;
+-			win          = OPAL_M32_WINDOW_TYPE;
+-		} else {
+-			continue;
++	region.start = _ALIGN_DOWN(region.start, segsize);
++	region.end   = _ALIGN_UP(region.end, segsize);
++	index = region.start / segsize;
++	while (index < phb->ioda.total_pe_num && region.start < region.end) {
++		rc = opal_pci_map_pe_mmio_window(phb->opal_id,
++				pe->pe_number, win, 0, index);
++		if (rc != OPAL_SUCCESS) {
++			pr_warn("%s: Error %lld mapping (%d) seg#%d to PHB#%d-PE#%d\n",
++				__func__, rc, win, index,
++				phb->hose->global_number,
++				pe->pe_number);
++			return -EIO;
+ 		}
+ 
+-		index = region.start / segsize;
+-		while (index < phb->ioda.total_pe_num &&
+-		       region.start <= region.end) {
+-			segmap[index] = pe->pe_number;
+-			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
+-					pe->pe_number, win, 0, index);
+-			if (rc != OPAL_SUCCESS) {
+-				pr_warn("%s: Error %lld mapping (%d) seg#%d to PHB#%d-PE#%d\n",
+-					__func__, rc, win, index,
+-					pe->phb->hose->global_number,
+-					pe->pe_number);
+-				break;
+-			}
++		segmap[index] = pe->pe_number;
++		region.start += segsize;
++		index++;
++	}
 +
-+	mutex_lock(&of_mutex);
-+	ret = __of_changeset_apply(ocs);
-+	mutex_unlock(&of_mutex);
-+
-+	return ret;
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(of_changeset_apply);
 +
-+int __of_changeset_revert(struct of_changeset *ocs)
- {
- 	struct of_changeset_entry *ce;
- 	int ret;
-@@ -742,6 +745,29 @@ int of_changeset_revert(struct of_changeset *ocs)
- }
- 
- /**
-+ * of_changeset_revert - Reverts an applied changeset
-+ *
-+ * @ocs:	changeset pointer
-+ *
-+ * Reverts a changeset returning the state of the tree to what it
-+ * was before the application.
-+ * Any side-effects like creation/destruction of devices and
-+ * removal of sysfs properties and directories are applied.
-+ * Returns 0 on success, a negative error value in case of an error.
-+ */
-+int of_changeset_revert(struct of_changeset *ocs)
++static void pnv_ioda_setup_pe_seg(struct pnv_ioda_pe *pe)
 +{
-+	int ret;
++	struct pci_dev *pdev;
++	struct resource *res;
++	int i;
 +
-+	mutex_lock(&of_mutex);
-+	ret = __of_changeset_revert(ocs);
-+	mutex_unlock(&of_mutex);
++	/* This function only works for bus dependent PE */
++	WARN_ON(!(pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)));
 +
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(of_changeset_revert);
++	list_for_each_entry(pdev, &pe->pbus->devices, bus_list) {
++		for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
++			res = &pdev->resource[i];
++			if (pnv_ioda_setup_one_res(pe, res))
++				return;
++		}
 +
-+/**
-  * of_changeset_action - Perform a changeset action
-  *
-  * @ocs:	changeset pointer
-@@ -779,3 +805,4 @@ int of_changeset_action(struct of_changeset *ocs, unsigned long action,
- 	list_add_tail(&ce->node, &ocs->entries);
- 	return 0;
++		/*
++		 * If the PE contains all subordinate PCI buses, the
++		 * windows of the child bridges should be mapped to
++		 * the PE as well.
++		 */
++		if (!(pe->flags & PNV_IODA_PE_BUS_ALL && pci_is_bridge(pdev)))
++			continue;
+ 
+-			region.start += segsize;
+-			index++;
++		for (i = 0; i <= PCI_BRIDGE_RESOURCE_NUM; i++) {
++			res = &pdev->resource[PCI_BRIDGE_RESOURCES + i];
++			if (pnv_ioda_setup_one_res(pe, res))
++				return;
+ 		}
+ 	}
  }
-+EXPORT_SYMBOL_GPL(of_changeset_action);
-diff --git a/drivers/of/of_private.h b/drivers/of/of_private.h
-index 8e882e7..829469f 100644
---- a/drivers/of/of_private.h
-+++ b/drivers/of/of_private.h
-@@ -45,6 +45,8 @@ static inline struct device_node *kobj_to_device_node(struct kobject *kobj)
- extern int of_property_notify(int action, struct device_node *np,
- 			      struct property *prop, struct property *old_prop);
- extern void of_node_release(struct kobject *kobj);
-+extern int __of_changeset_apply(struct of_changeset *ocs);
-+extern int __of_changeset_revert(struct of_changeset *ocs);
- #else /* CONFIG_OF_DYNAMIC */
- static inline int of_property_notify(int action, struct device_node *np,
- 				     struct property *prop, struct property *old_prop)
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 24e025f..804ea33 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -378,9 +378,9 @@ int of_overlay_create(struct device_node *tree)
+@@ -2819,7 +2838,7 @@ static void pnv_pci_ioda_setup_seg(void)
+ 	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+ 		phb = hose->private_data;
+ 		list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+-			pnv_ioda_setup_pe_seg(hose, pe);
++			pnv_ioda_setup_pe_seg(pe);
+ 		}
  	}
- 
- 	/* apply the changeset */
--	err = of_changeset_apply(&ov->cset);
-+	err = __of_changeset_apply(&ov->cset);
- 	if (err) {
--		pr_err("%s: of_changeset_apply() failed for tree@%s\n",
-+		pr_err("%s: __of_changeset_apply() failed for tree@%s\n",
- 				__func__, tree->full_name);
- 		goto err_revert_overlay;
- 	}
-@@ -508,7 +508,7 @@ int of_overlay_destroy(int id)
- 
- 
- 	list_del(&ov->node);
--	of_changeset_revert(&ov->cset);
-+	__of_changeset_revert(&ov->cset);
- 	of_free_overlay_info(ov);
- 	idr_remove(&ov_idr, id);
- 	of_changeset_destroy(&ov->cset);
-@@ -539,7 +539,7 @@ int of_overlay_destroy_all(void)
- 	/* the tail of list is guaranteed to be safe to remove */
- 	list_for_each_entry_safe_reverse(ov, ovn, &ov_list, node) {
- 		list_del(&ov->node);
--		of_changeset_revert(&ov->cset);
-+		__of_changeset_revert(&ov->cset);
- 		of_free_overlay_info(ov);
- 		idr_remove(&ov_idr, ov->id);
- 		kfree(ov);
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index bafcf66..dad3fd2 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -526,18 +526,14 @@ static void __init of_unittest_changeset(void)
- 	unittest(!of_changeset_add_property(&chgset, parent, ppadd), "fail add prop\n");
- 	unittest(!of_changeset_update_property(&chgset, parent, ppupdate), "fail update prop\n");
- 	unittest(!of_changeset_remove_property(&chgset, parent, ppremove), "fail remove prop\n");
--	mutex_lock(&of_mutex);
- 	unittest(!of_changeset_apply(&chgset), "apply failed\n");
--	mutex_unlock(&of_mutex);
- 
- 	/* Make sure node names are constructed correctly */
- 	unittest((np = of_find_node_by_path("/testcase-data/changeset/n2/n21")),
- 		 "'%s' not added\n", n21->full_name);
- 	of_node_put(np);
- 
--	mutex_lock(&of_mutex);
- 	unittest(!of_changeset_revert(&chgset), "revert failed\n");
--	mutex_unlock(&of_mutex);
- 
- 	of_changeset_destroy(&chgset);
- #endif
+ }
 -- 
 2.1.0
