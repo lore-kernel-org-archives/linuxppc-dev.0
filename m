@@ -1,29 +1,38 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 53E321A0B35
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 21:15:21 +1100 (AEDT)
-Date: Wed, 4 Nov 2015 10:15:19 +0000
-From: Will Deacon <will.deacon@arm.com>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Waiman Long <waiman.long@hp.com>,
- Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>
-Subject: Re: [RESEND, tip/locking/core, v5, 1/6] powerpc: atomic: Make
- _return atomics and *{cmp}xchg fully ordered
-Message-ID: <20151104101518.GB5405@arm.com>
-References: <1445854536-22645-1-git-send-email-boqun.feng@gmail.com>
- <20151027023347.6178D140E31@ozlabs.org>
- <20151027030652.GB26372@fixme-laptop.cn.ibm.com>
- <20151030005633.GA2792@fixme-laptop.cn.ibm.com>
- <20151102012033.GA965@fixme-laptop.cn.ibm.com>
- <20151104012213.GA11056@fixme-laptop.cn.ibm.com>
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 67E801A0B68
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 23:00:27 +1100 (AEDT)
+Received: from /spool/local
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Wed, 4 Nov 2015 10:00:22 -0200
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 0D9781DC007E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 06:59:15 -0500 (EST)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA4BwCR2065932
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 09:58:13 -0200
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA4C0GYs010913
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 10:00:17 -0200
+Subject: Re: [PATCH] Enable MSI/MSI-X caps and disable MSI interrupts at PCI
+ probe time - code move
+To: bhelgaas@google.com
+References: <1445437055-7017-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au, paulus@samba.org, benh@kernel.crashing.org,
+ mst@redhat.com, shangw@linux.vnet.ibm.com
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Message-ID: <5639F34F.5020402@linux.vnet.ibm.com>
+Date: Wed, 4 Nov 2015 10:00:15 -0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151104012213.GA11056@fixme-laptop.cn.ibm.com>
+In-Reply-To: <1445437055-7017-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,14 +42,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 04, 2015 at 09:22:13AM +0800, Boqun Feng wrote:
-> Will, AFAIK, you are currently working on variants on arm64, right? I
-> wonder whether you depend on patch 3 (allow archictures to provide
-> self-defined __atomic_op_*), if so I can also send patch 3 as a patch
-> for tip tree and wait until it merged into powerpc next to send the
-> rest. 
-
-The arm64 patches are all queued in the arm64 tree and have been sitting
-in -next for a while. They don't dependent on anything else.
-
-Will
+Bjorn, ping?
