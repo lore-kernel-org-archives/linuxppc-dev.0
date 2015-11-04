@@ -1,43 +1,41 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 995BC1A0272
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 16:18:43 +1100 (AEDT)
-Received: from localhost
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6279A1A0C14
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 16:45:43 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Tue, 3 Nov 2015 22:18:41 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 5532619D803F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 22:06:47 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id tA45HTDN9699586
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Nov 2015 22:17:30 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA45Ib5P014996
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Nov 2015 22:18:38 -0700
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Wed, 4 Nov 2015 11:15:40 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id CFE6B394005A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 11:15:37 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA45jaXr16580784
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 11:15:37 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA45jYeb023379
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 11:15:35 +0530
 Subject: Re: [PATCH V3 2/3] perf/powerpc :add support for sampling intr
  machine state
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+To: Michael Ellerman <mpe@ellerman.id.au>, Anju T <anju@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 References: <1446531002-16582-1-git-send-email-anju@linux.vnet.ibm.com>
  <1446531002-16582-3-git-send-email-anju@linux.vnet.ibm.com>
  <1446542195.23081.5.camel@ellerman.id.au>
-Cc: maddy@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- sukadev@linux.vnet.ibm.com, acme@redhat.com, dsahern@gmail.com,
- jolsa@redhat.com, hemant@linux.vnet.ibm.com,
- naveen.n.rao@linux.vnet.ibm.com
-From: Anju T <anju@linux.vnet.ibm.com>
-Message-ID: <56399529.5030804@linux.vnet.ibm.com>
-Date: Wed, 4 Nov 2015 10:48:33 +0530
+Cc: hemant@linux.vnet.ibm.com, acme@redhat.com, dsahern@gmail.com,
+ naveen.n.rao@linux.vnet.ibm.com, sukadev@linux.vnet.ibm.com,
+ jolsa@redhat.com, khandual@linux.vnet.ibm.com
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Message-ID: <56399B6E.8050909@linux.vnet.ibm.com>
+Date: Wed, 4 Nov 2015 11:15:18 +0530
 MIME-Version: 1.0
 In-Reply-To: <1446542195.23081.5.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,7 +45,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+
+
 On Tuesday 03 November 2015 02:46 PM, Michael Ellerman wrote:
 > On Tue, 2015-11-03 at 11:40 +0530, Anju T wrote:
 >
@@ -85,22 +84,17 @@ On Tuesday 03 November 2015 02:46 PM, Michael Ellerman wrote:
 >
 > I realise you're following the example of other architectures, but we have
 > almost this exact same structure in ptrace.c, see regoffset_table.
->
+
+That won't work because we want to add more regs to the perf version but
+not the ptrace version.
+
+Maddy
+
 > It would be really nice if we could share them between ptrace and perf.
 >
 > cheers
 >
-
-
-Thank you for reviewing the patch.
-
-That is a great suggestion.
-
-In ptrace.c the structure doesn't include ORIG_R3. So,in that case what 
-should we do?
-
-
-
-Thanks and Regards
-
-Anju
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
