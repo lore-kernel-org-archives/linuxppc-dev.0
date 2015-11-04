@@ -1,25 +1,25 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 919281A0D00
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F6E71A0CBE
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:49 +1100 (AEDT)
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 4 Nov 2015 23:13:48 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id CD3D42BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:46 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA4DDet220840522
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:48 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA4DDDdr030083
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:14 +1100
+ Wed, 4 Nov 2015 18:43:46 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 81BB91258067
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 18:43:43 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA4DDVZ966257026
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 18:43:31 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA4DDPWu031878
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 18:43:30 +0530
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
@@ -27,9 +27,11 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, frowand.list@gmail.com,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v7 00/50] powerpc/powernv: PCI hotplug support
-Date: Thu,  5 Nov 2015 00:12:00 +1100
-Message-Id: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v7 27/50] powerpc/powernv: Dynamically release PEs
+Date: Thu,  5 Nov 2015 00:12:27 +1100
+Message-Id: <1446642770-4681-28-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,189 +41,349 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series of patches rebases on powerpc/next branch, plus below additional
-patches:
+This adds a reference count of PE, representing the number of PCI
+devices associated with the PE. The reference count is increased
+or decreased when PCI devices join or leave the PE. Once it becomes
+zero, the PE together with its used resources (IO, MMIO, DMA, PELTM,
+PELTV) are released to support PCI hot unplug.
 
-   https://patchwork.ozlabs.org/patch/534804/   (PATCH[1/1] Andrew's EEH fix)
-   https://patchwork.ozlabs.org/patch/534154/   (PATCH[7/7] Richard's SRIOV Rework)
-   commit 3b0e21e Merge branch 'next' of git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux into next
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 245 ++++++++++++++++++++++++++----
+ arch/powerpc/platforms/powernv/pci.h      |   1 +
+ 2 files changed, 218 insertions(+), 28 deletions(-)
 
-The series of patches intend to support PCI slot for PowerPC PowerNV platform,
-which is running on top of skiboot firmware. The patchset requires corresponding
-changes from skiboot firmware, which is sent to skiboot@lists.ozlabs.org
-for review. The PCI slots are exposed by skiboot with device node properties,
-and kernel utilizes those properties to populated PCI slots accordingly.
-
-The original PCI infrastructure on PowerNV platform can't support hotplug
-because the PE is assigned during PHB fixup time, which is called for once
-during system boot time. For this, the PCI infrastructure on PowerNV platform
-has been reworked for a lot. After that, the PE and its corresponding resources
-(IODT, M32DT, M64 segments, DMA32 and bypass window) are assigned upon updating
-PCI bridge's resources, which might decide PE# assigned to the PE (e.g. M64
-resources, on P8 strictly speaking). Each PE will maintain a reference count,
-which is (number of child PCI devices + 1). That indicates when last child PCI
-device leaves the PE, the PE and its included resources will be relased and put
-back into free pool again. With this design, the PE will be released when EEH PE
-is released. PATCH[1 - 27] are related to this part.
-
->From skiboot perspective, PCI slot is providing (hot/fundamental/complete)
-resets to EEH. The kernel gets to know if skiboot supports various reset on one
-particular PCI slot through device-tree node. If it does, EEH will utilize the
-functionality provided by skiboot. Besides, the device-tree nodes have to change
-in order to support PCI hotplug. For example, when one PCI adapter inserted to
-one slot, its device-tree node should be added to the system dynamically. Conversely,
-the device-tree node should be removed from the system when the PCI adapter is going
-to be offline. Since pci_dn and eeh_dev have same life cyle as PCI device nodes,
-they should be added/removed accordingly during PCI hotplug. PATCH[28 - 43] are
-doing the related work.
-
-The OF driver is changed to support unflattening FDT blob for sub-stree, which
-is covered by PATCH[44 - 49].
-
-The last one, PATCH[50], is the standalone PCI hotplug driver for PowerPC PowerNV
-platform. 
-
-Changelog
-=========
-v7:
-   * Reworked revision to some extent.
-   * Rebased to powerpc/next repository.
-   * Reorder/split/merge/drop according - Alexey.
-   * Defined macros and use array to track IO/M32/M64/DMA32 segments - Alexey.
-   * Merged 3 files to one for the hotplug driver - Alexey.
-   * As part of OPAL API, defined macros for PCI slot power state, hotplug
-     message type. Defined macros for PCI slot power confirmed state in
-     hotplug driver.
-   * Misc comments from Alexey.
-   * Reworked unflatten_dt_node() to avoid recursive function calls.
-   * Use EXPORT_SYMBOL_GPL() and document function's input/output - Rob/Frank.
-v6:
-   * Patch reorder, split, squash - Alexey.
-   * Minor coding style - Alexey.
-   * Better function names for pcibios_{add,remove}_pci_devices - Bjorn
-   * Replace pr_warn() with dev_warn() in PowerNV hotplug driver - Bjorn
-   * Concurrent depth as parameter passed to __unflatten_dt_node() - Grant / Alexey
-   * Replace overlay with of_changeset - Grant
-v5:
-   * Rebased to 4.1.rc6 and some unmerged patches as below:
-     Alexey's DDW patchset (v11);
-     Gavin's EEH error injection support (in mpe's next branch);
-     Richard's EEH cleanup patches (in mpe's next branch);
-     Richard's EEH support for VF (v7);
-     Gavin's misc EEH fixes for 4.2;
-   * The revision bases on skiboot corresponding patches (v7):
-     https://patchwork.ozlabs.org/patch/480437/
-   * Utilize OF overlay to update device-tree with help of newly introduced
-     OPAL API opal_get_overlay_dt().
-   * Split patches for easy review according to aik's comments.
-   * Fix coding style from checkpatchc.pl as pointed by aik.
-   * Code cleanup and misc fixup according to aik's input.
-v4:
-   * Rebased to 4.1.RC1
-   * Added API to unflatten FDT blob to device node sub-tree, which is attached
-     the indicated parent device node. The original mechanism based on formatted
-     string stream has been dropped.
-   * The PATCH[v3 09/21] ("powerpc/eeh: Delay probing EEH device during hotplug")
-     was picked up sent to linux-ppc@ separately for review as Richard's "VF EEH
-     Support" depends on that.
-v3:
-   * Rebased to 4.1.RC0
-   * PowerNV PCI infrasturcture is total refactored in order to support PCI
-     hotplug. The PowerNV hotplug driver is also reworked a lot because of
-     the changes in skiboot in order to support PCI hotplug.
-
-Gavin Shan (50):
-  PCI: Add pcibios_setup_bridge()
-  powerpc/pci: Override pcibios_setup_bridge()
-  powerpc/pci: Cleanup on struct pci_controller_ops
-  powerpc/powernv: Cleanup on pnv_pci_ioda_controller_ops
-  powerpc/powernv: Drop pnv_ioda_setup_dev_PE()
-  powerpc/powernv: Drop phb->bdfn_to_pe()
-  powerpc/powernv: Reorder fields in struct pnv_phb
-  powerpc/powernv: Rename PE# fields in struct pnv_phb
-  powerpc/powernv: Fix initial IO and M32 segmap
-  powerpc/powernv: Simplify pnv_ioda_setup_pe_seg()
-  powerpc/powernv: IO and M32 mapping based on PCI device resources
-  powerpc/powernv: Track M64 segment consumption
-  powerpc/powernv: Rename M64 related functions
-  powerpc/powernv: M64 support on P7IOC
-  powerpc/powernv: Rename pnv_pci_ioda_setup_dma_pe()
-  powerpc/powernv: Define PNV_IODA1_DMA32_SEGSIZE
-  powerpc/powernv: Avoid calculating DMA32 segments on PHB3
-  powerpc/powernv: Remove DMA32 PE list
-  powerpc/powernv: Track DMA32 segment consumption
-  powerpc/powernv: Improve DMA32 segment calculation
-  powerpc/powernv: Increase PE# capacity
-  powerpc/powernv: Introduce pnv_ioda_init_pe()
-  powerpc/powernv: Use PE instead of number during setup and release
-  powerpc/powernv: Allocate PE# in reverse order
-  powerpc/powernv: Reserve PE for root bus
-  powerpc/powernv: Create PEs at PCI hot plugging time
-  powerpc/powernv: Dynamically release PEs
-  powerpc/pci: Rename pcibios_{add,remove}_pci_devices()
-  powerpc/pci: Rename pcibios_find_pci_bus()
-  powerpc/pci: Move pci_find_bus_by_node() around
-  powerpc/pci: Export pci_add_device_node_info()
-  powerpc/pci: Introduce pci_remove_device_node_info()
-  powerpc/pci: Export pci_traverse_device_nodes()
-  powerpc/pci: Delay populating pdn
-  powerpc/pci: Don't scan empty slot
-  powerpc/pci: Update bridge windows on PCI plug
-  powerpc/powernv: Simplify pnv_eeh_reset()
-  powerpc/powernv: Exclude root bus in pnv_pci_reset_secondary_bus()
-  powerpc/powernv: Fundamental reset in pnv_pci_reset_secondary_bus()
-  powerpc/powernv: Support PCI slot ID
-  powerpc/powernv: Use firmware PCI slot reset infrastructure
-  powerpc/powernv: Functions to get/set PCI slot status
-  powerpc/powernv: Select OF_DYNAMIC
-  drivers/of: Split unflatten_dt_node()
-  drivers/of: Avoid recursively calling unflatten_dt_node()
-  drivers/of: Rename unflatten_dt_node()
-  drivers/of: Specify parent node in of_fdt_unflatten_tree()
-  drivers/of: Return allocated memory from of_fdt_unflatten_tree()
-  drivers/of: Export OF changeset functions
-  PCI/hotplug: PowerPC PowerNV PCI hotplug driver
-
- MAINTAINERS                                    |    6 +
- arch/powerpc/include/asm/eeh.h                 |    2 +-
- arch/powerpc/include/asm/opal-api.h            |   17 +-
- arch/powerpc/include/asm/opal.h                |    8 +-
- arch/powerpc/include/asm/pci-bridge.h          |   25 +-
- arch/powerpc/include/asm/pnv-pci.h             |    7 +
- arch/powerpc/include/asm/ppc-pci.h             |    8 +-
- arch/powerpc/kernel/eeh_dev.c                  |   19 +-
- arch/powerpc/kernel/eeh_driver.c               |   12 +-
- arch/powerpc/kernel/pci-common.c               |   16 +-
- arch/powerpc/kernel/pci-hotplug.c              |   47 +-
- arch/powerpc/kernel/pci_dn.c                   |   85 +-
- arch/powerpc/platforms/maple/pci.c             |   34 +-
- arch/powerpc/platforms/pasemi/pci.c            |    3 -
- arch/powerpc/platforms/powermac/pci.c          |   38 +-
- arch/powerpc/platforms/powernv/Kconfig         |    1 +
- arch/powerpc/platforms/powernv/eeh-powernv.c   |  173 ++--
- arch/powerpc/platforms/powernv/opal-wrappers.S |    4 +
- arch/powerpc/platforms/powernv/pci-ioda.c      | 1251 +++++++++++++++---------
- arch/powerpc/platforms/powernv/pci.c           |   92 +-
- arch/powerpc/platforms/powernv/pci.h           |   62 +-
- arch/powerpc/platforms/pseries/msi.c           |    4 +-
- arch/powerpc/platforms/pseries/pci_dlpar.c     |   32 -
- arch/powerpc/platforms/pseries/setup.c         |    8 +-
- drivers/of/dynamic.c                           |   65 +-
- drivers/of/fdt.c                               |  378 ++++---
- drivers/of/of_private.h                        |    2 +
- drivers/of/overlay.c                           |    8 +-
- drivers/of/unittest.c                          |    6 +-
- drivers/pci/hotplug/Kconfig                    |   12 +
- drivers/pci/hotplug/Makefile                   |    3 +
- drivers/pci/hotplug/pnv_php.c                  |  866 ++++++++++++++++
- drivers/pci/hotplug/rpadlpar_core.c            |    8 +-
- drivers/pci/hotplug/rpaphp_core.c              |    4 +-
- drivers/pci/hotplug/rpaphp_pci.c               |    4 +-
- drivers/pci/setup-bus.c                        |    5 +
- include/linux/of_fdt.h                         |    5 +-
- include/linux/pci.h                            |    1 +
- 38 files changed, 2389 insertions(+), 932 deletions(-)
- create mode 100644 drivers/pci/hotplug/pnv_php.c
-
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 0bb0056..dcffce5 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -129,6 +129,215 @@ static inline bool pnv_pci_is_mem_pref_64(unsigned long flags)
+ 		(IORESOURCE_MEM_64 | IORESOURCE_PREFETCH));
+ }
+ 
++static void pnv_pci_ioda1_release_dma_pe(struct pnv_ioda_pe *pe)
++{
++	struct pnv_phb *phb = pe->phb;
++	struct iommu_table *tbl;
++	int start, count, i;
++	int64_t rc;
++
++	/* Search for the used DMA32 segments */
++	start = -1;
++	count = 0;
++	for (i = 0; i < phb->ioda.dma32_count; i++) {
++		if (phb->ioda.dma32_segmap[i] != pe->pe_number)
++			continue;
++
++		count++;
++		if (start < 0)
++			start = i;
++	}
++
++	if (!count)
++		return;
++
++	/* Unlink IOMMU table from group */
++	tbl = pe->table_group.tables[0];
++	pnv_pci_unlink_table_and_group(tbl, &pe->table_group);
++	if (pe->table_group.group) {
++		iommu_group_put(pe->table_group.group);
++		WARN_ON(pe->table_group.group);
++	}
++
++	/* Release IOMMU table */
++	pnv_pci_ioda2_table_free_pages(tbl);
++	iommu_free_table(tbl, of_node_full_name(pci_bus_to_OF_node(pe->pbus)));
++
++	/* Disable TVE */
++	for (i = start; i < start + count; i++) {
++		rc = opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
++						i, 0, 0ul, 0ul, 0ul);
++		if (rc)
++			pe_warn(pe, "Error %ld unmapping DMA32 seg#%d\n",
++				rc, i);
++
++		phb->ioda.dma32_segmap[i] = IODA_INVALID_PE;
++	}
++}
++
++static unsigned int pnv_pci_ioda_pe_dma_weight(struct pnv_ioda_pe *pe);
++static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
++		int num);
++static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
++
++static void pnv_pci_ioda2_release_dma_pe(struct pnv_ioda_pe *pe)
++{
++	struct iommu_table *tbl;
++	unsigned int weight = pnv_pci_ioda_pe_dma_weight(pe);
++	int64_t rc;
++
++	if (!weight)
++		return;
++
++	tbl = pe->table_group.tables[0];
++	rc = pnv_pci_ioda2_unset_window(&pe->table_group, 0);
++	if (rc)
++		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
++
++	pnv_pci_ioda2_set_bypass(pe, false);
++	if (pe->table_group.group) {
++		iommu_group_put(pe->table_group.group);
++		WARN_ON(pe->table_group.group);
++	}
++
++	pnv_pci_ioda2_table_free_pages(tbl);
++	iommu_free_table(tbl, "pnv");
++}
++
++static void pnv_ioda_release_dma_pe(struct pnv_ioda_pe *pe)
++{
++	struct pnv_phb *phb = pe->phb;
++
++	switch (phb->type) {
++	case PNV_PHB_IODA1:
++		pnv_pci_ioda1_release_dma_pe(pe);
++		break;
++	case PNV_PHB_IODA2:
++		pnv_pci_ioda2_release_dma_pe(pe);
++		break;
++	default:
++		WARN_ON(1);
++	}
++}
++
++static void pnv_ioda_release_window(struct pnv_ioda_pe *pe, int win)
++{
++	struct pnv_phb *phb = pe->phb;
++	int index, *segmap = NULL;
++	int64_t rc;
++
++	switch (win) {
++	case OPAL_IO_WINDOW_TYPE:
++		segmap = phb->ioda.io_segmap;
++		break;
++	case OPAL_M32_WINDOW_TYPE:
++		segmap = phb->ioda.m32_segmap;
++		break;
++	case OPAL_M64_WINDOW_TYPE:
++		if (phb->type != PNV_PHB_IODA1)
++			return;
++		segmap = phb->ioda.m64_segmap;
++		break;
++	default:
++		return;
++	}
++
++	for (index = 0; index < phb->ioda.total_pe_num; index++) {
++		if (segmap[index] != pe->pe_number)
++			continue;
++
++		if (win == OPAL_M64_WINDOW_TYPE)
++			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
++					phb->ioda.reserved_pe_idx, win,
++					index / PNV_IODA1_M64_SEGS,
++					index % PNV_IODA1_M64_SEGS);
++		else
++			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
++					phb->ioda.reserved_pe_idx, win,
++					0, index);
++
++		if (rc != OPAL_SUCCESS)
++			pe_warn(pe, "Error %ld unmapping (%d) segment#%d\n",
++				rc, win, index);
++
++		segmap[index] = IODA_INVALID_PE;
++	}
++}
++
++static void pnv_ioda_release_pe_seg(struct pnv_ioda_pe *pe)
++{
++	struct pnv_phb *phb = pe->phb;
++	int win;
++
++	for (win = OPAL_M32_WINDOW_TYPE; win <= OPAL_IO_WINDOW_TYPE; win++) {
++		if (phb->type == PNV_PHB_IODA2 && win == OPAL_IO_WINDOW_TYPE)
++			continue;
++
++		pnv_ioda_release_window(pe, win);
++	}
++}
++
++static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb,
++				   struct pnv_ioda_pe *pe);
++static void pnv_ioda_free_pe(struct pnv_ioda_pe *pe);
++static void pnv_ioda_release_pe(struct pnv_ioda_pe *pe)
++{
++	struct pnv_ioda_pe *tmp, *slave;
++
++	/* Release slave PEs in compound PE */
++	if (pe->flags & PNV_IODA_PE_MASTER) {
++		list_for_each_entry_safe(slave, tmp, &pe->slaves, list)
++			pnv_ioda_release_pe(slave);
++	}
++
++	/* Remove the PE from the list */
++	list_del(&pe->list);
++
++	/* Release resources */
++	pnv_ioda_release_dma_pe(pe);
++	pnv_ioda_release_pe_seg(pe);
++	pnv_ioda_deconfigure_pe(pe->phb, pe);
++
++	pnv_ioda_free_pe(pe);
++}
++
++static inline struct pnv_ioda_pe *pnv_ioda_pe_get(struct pnv_ioda_pe *pe)
++{
++	if (!pe)
++		return NULL;
++
++	pe->device_count++;
++	return pe;
++}
++
++static inline void pnv_ioda_pe_put(struct pnv_ioda_pe *pe)
++{
++	if (!pe)
++		return;
++
++	pe->device_count--;
++	WARN_ON(pe->device_count < 0);
++	if (pe->device_count == 0)
++		pnv_ioda_release_pe(pe);
++}
++
++static void pnv_pci_release_device(struct pci_dev *pdev)
++{
++	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
++	struct pnv_phb *phb = hose->private_data;
++	struct pci_dn *pdn = pci_get_pdn(pdev);
++	struct pnv_ioda_pe *pe;
++
++	if (pdev->is_virtfn)
++		return;
++
++	if (!pdn || pdn->pe_number == IODA_INVALID_PE)
++		return;
++
++	pe = &phb->ioda.pe_array[pdn->pe_number];
++	pnv_ioda_pe_put(pe);
++}
++
+ static struct pnv_ioda_pe *pnv_ioda_init_pe(struct pnv_phb *phb, int pe_no)
+ {
+ 	phb->ioda.pe_array[pe_no].phb = phb;
+@@ -724,7 +933,6 @@ static int pnv_ioda_set_peltv(struct pnv_phb *phb,
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_PCI_IOV
+ static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
+ {
+ 	struct pci_dev *parent;
+@@ -759,9 +967,11 @@ static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
+ 		}
+ 		rid_end = pe->rid + (count << 8);
+ 	} else {
++#ifdef CONFIG_PCI_IOV
+ 		if (pe->flags & PNV_IODA_PE_VF)
+ 			parent = pe->parent_dev;
+ 		else
++#endif
+ 			parent = pe->pdev->bus->self;
+ 		bcomp = OpalPciBusAll;
+ 		dcomp = OPAL_COMPARE_RID_DEVICE_NUMBER;
+@@ -799,11 +1009,12 @@ static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
+ 
+ 	pe->pbus = NULL;
+ 	pe->pdev = NULL;
++#ifdef CONFIG_PCI_IOV
+ 	pe->parent_dev = NULL;
++#endif
+ 
+ 	return 0;
+ }
+-#endif /* CONFIG_PCI_IOV */
+ 
+ static int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
+ {
+@@ -985,6 +1196,7 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
+ 			continue;
+ 
+ 		pdn->pe_number = pe->pe_number;
++		pnv_ioda_pe_get(pe);
+ 		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
+ 			pnv_ioda_setup_same_PE(dev->subordinate, pe);
+ 	}
+@@ -1047,9 +1259,8 @@ static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
+ 			bus->busn_res.start, pe->pe_number);
+ 
+ 	if (pnv_ioda_configure_pe(phb, pe)) {
+-		/* XXX What do we do here ? */
+-		pnv_ioda_free_pe(pe);
+ 		pe->pbus = NULL;
++		pnv_ioda_release_pe(pe);
+ 		return NULL;
+ 	}
+ 
+@@ -1199,29 +1410,6 @@ m64_failed:
+ 	return -EBUSY;
+ }
+ 
+-static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
+-		int num);
+-static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
+-
+-static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe *pe)
+-{
+-	struct iommu_table    *tbl;
+-	int64_t               rc;
+-
+-	tbl = pe->table_group.tables[0];
+-	rc = pnv_pci_ioda2_unset_window(&pe->table_group, 0);
+-	if (rc)
+-		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
+-
+-	pnv_pci_ioda2_set_bypass(pe, false);
+-	if (pe->table_group.group) {
+-		iommu_group_put(pe->table_group.group);
+-		BUG_ON(pe->table_group.group);
+-	}
+-	pnv_pci_ioda2_table_free_pages(tbl);
+-	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
+-}
+-
+ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
+ {
+ 	struct pci_bus        *bus;
+@@ -1242,7 +1430,7 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
+ 		if (pe->parent_dev != pdev)
+ 			continue;
+ 
+-		pnv_pci_ioda2_release_dma_pe(pdev, pe);
++		pnv_pci_ioda2_release_dma_pe(pe);
+ 
+ 		/* Remove from list */
+ 		mutex_lock(&phb->ioda.pe_list_mutex);
+@@ -3124,6 +3312,7 @@ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
+ 	.teardown_msi_irqs	= pnv_teardown_msi_irqs,
+ #endif
+ 	.enable_device_hook	= pnv_pci_enable_device_hook,
++	.release_device		= pnv_pci_release_device,
+ 	.window_alignment	= pnv_pci_window_alignment,
+ 	.setup_bridge		= pnv_pci_setup_bridge,
+ 	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index ef5271a..3bb10de 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -30,6 +30,7 @@ struct pnv_phb;
+ struct pnv_ioda_pe {
+ 	unsigned long		flags;
+ 	struct pnv_phb		*phb;
++	int			device_count;
+ 
+ 	/* A PE can be associated with a single device or an
+ 	 * entire bus (& children). In the former case, pdev
 -- 
 2.1.0
