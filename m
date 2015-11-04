@@ -2,24 +2,24 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 325631A0CCC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 22F521A0CB2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:52 +1100 (AEDT)
 Received: from /spool/local
  by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 4 Nov 2015 23:13:50 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 18C4D3578052
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:48 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA4DDdhP65011792
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:48 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA4DDEt5030155
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:15 +1100
+ Wed, 4 Nov 2015 23:13:51 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7B7612CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:49 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA4DDfmw23330942
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:49 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA4DDG6M009785
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:17 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
@@ -27,9 +27,10 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, frowand.list@gmail.com,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v7 24/50] powerpc/powernv: Allocate PE# in reverse order
-Date: Thu,  5 Nov 2015 00:12:24 +1100
-Message-Id: <1446642770-4681-25-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v7 38/50] powerpc/powernv: Exclude root bus in
+ pnv_pci_reset_secondary_bus()
+Date: Thu,  5 Nov 2015 00:12:38 +1100
+Message-Id: <1446642770-4681-39-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,52 +42,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PE number for one particular PE can be allocated dynamically or
-reserved according to the consumed M64 (64-bits prefetchable)
-segments of the PE. The M64 resources, and hence their segments
-and PE number are assigned/reserved in ascending order. The PE
-numbers are allocated dynamically in ascending order as well.
-It's not a problem as the PE numbers are reserved and then
-allocated all at once in fine order. However, it will introduce
-conflicts when PCI hotplug is supported: the PE number to be
-reserved for newly added PE might have been assigned.
-
-To resolve above conflicts, this forces the PE number to be
-allocated dynamically in reverse order. With this patch applied,
-the PE numbers are reserved in ascending order, but allocated
-dynamically in reverse order.
+When pnv_pci_reset_secondary_bus() is called to issue reset on
+the indicated secondary bus, the bus can't be root bus. So we
+needn't consider root bus in the function.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index ae82df1..eea1c96 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -154,16 +154,14 @@ static void pnv_ioda_reserve_pe(struct pnv_phb *phb, int pe_no)
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index a7d84a4..c69b6a1 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -880,16 +880,8 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
  
- static struct pnv_ioda_pe *pnv_ioda_alloc_pe(struct pnv_phb *phb)
+ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
  {
--	unsigned long pe;
-+	unsigned long pe = phb->ioda.total_pe_num - 1;
- 
--	do {
--		pe = find_next_zero_bit(phb->ioda.pe_alloc,
--					phb->ioda.total_pe_num, 0);
--		if (pe >= phb->ioda.total_pe_num)
--			return NULL;
--	} while(test_and_set_bit(pe, phb->ioda.pe_alloc));
-+	for (pe = phb->ioda.total_pe_num - 1; pe >= 0; pe--) {
-+		if (!test_and_set_bit(pe, phb->ioda.pe_alloc))
-+			return pnv_ioda_init_pe(phb, pe);
-+	}
- 
--	return pnv_ioda_init_pe(phb, pe);
-+	return NULL;
+-	struct pci_controller *hose;
+-
+-	if (pci_is_root_bus(dev->bus)) {
+-		hose = pci_bus_to_host(dev->bus);
+-		pnv_eeh_root_reset(hose, EEH_RESET_HOT);
+-		pnv_eeh_root_reset(hose, EEH_RESET_DEACTIVATE);
+-	} else {
+-		pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
+-		pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
+-	}
++	pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
++	pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
  }
  
- static void pnv_ioda_free_pe(struct pnv_ioda_pe *pe)
+ /**
 -- 
 2.1.0
