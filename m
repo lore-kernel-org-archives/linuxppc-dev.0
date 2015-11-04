@@ -1,25 +1,25 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 22F521A0CB2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 90EF01A0CFD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:49 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 4 Nov 2015 23:13:51 +1000
+ Wed, 4 Nov 2015 23:13:48 +1000
 Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7B7612CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:49 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id EBFE63578056
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 00:13:46 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA4DDfmw23330942
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:49 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA4DDG6M009785
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:17 +1100
+ tA4DDclV47054974
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:46 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA4DDD52030095
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 00:13:14 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
@@ -27,10 +27,9 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, frowand.list@gmail.com,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v7 38/50] powerpc/powernv: Exclude root bus in
- pnv_pci_reset_secondary_bus()
-Date: Thu,  5 Nov 2015 00:12:38 +1100
-Message-Id: <1446642770-4681-39-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v7 05/50] powerpc/powernv: Drop pnv_ioda_setup_dev_PE()
+Date: Thu,  5 Nov 2015 00:12:05 +1100
+Message-Id: <1446642770-4681-6-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,37 +41,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When pnv_pci_reset_secondary_bus() is called to issue reset on
-the indicated secondary bus, the bus can't be root bus. So we
-needn't consider root bus in the function.
+Nobody uses this function and this just drops it.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/powernv/eeh-powernv.c | 12 ++----------
- 1 file changed, 2 insertions(+), 10 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 71 -------------------------------
+ 1 file changed, 71 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index a7d84a4..c69b6a1 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -880,16 +880,8 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
- 
- void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
- {
--	struct pci_controller *hose;
--
--	if (pci_is_root_bus(dev->bus)) {
--		hose = pci_bus_to_host(dev->bus);
--		pnv_eeh_root_reset(hose, EEH_RESET_HOT);
--		pnv_eeh_root_reset(hose, EEH_RESET_DEACTIVATE);
--	} else {
--		pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
--		pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
--	}
-+	pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
-+	pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index aa3645c..74288ab 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -918,77 +918,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
  }
+ #endif /* CONFIG_PCI_IOV */
  
- /**
+-#if 0
+-static struct pnv_ioda_pe *pnv_ioda_setup_dev_PE(struct pci_dev *dev)
+-{
+-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+-	struct pnv_phb *phb = hose->private_data;
+-	struct pci_dn *pdn = pci_get_pdn(dev);
+-	struct pnv_ioda_pe *pe;
+-	int pe_num;
+-
+-	if (!pdn) {
+-		pr_err("%s: Device tree node not associated properly\n",
+-			   pci_name(dev));
+-		return NULL;
+-	}
+-	if (pdn->pe_number != IODA_INVALID_PE)
+-		return NULL;
+-
+-	/* PE#0 has been pre-set */
+-	if (dev->bus->number == 0)
+-		pe_num = 0;
+-	else
+-		pe_num = pnv_ioda_alloc_pe(phb);
+-	if (pe_num == IODA_INVALID_PE) {
+-		pr_warning("%s: Not enough PE# available, disabling device\n",
+-			   pci_name(dev));
+-		return NULL;
+-	}
+-
+-	/* NOTE: We get only one ref to the pci_dev for the pdn, not for the
+-	 * pointer in the PE data structure, both should be destroyed at the
+-	 * same time. However, this needs to be looked at more closely again
+-	 * once we actually start removing things (Hotplug, SR-IOV, ...)
+-	 *
+-	 * At some point we want to remove the PDN completely anyways
+-	 */
+-	pe = &phb->ioda.pe_array[pe_num];
+-	pci_dev_get(dev);
+-	pdn->pcidev = dev;
+-	pdn->pe_number = pe_num;
+-	pe->pdev = dev;
+-	pe->pbus = NULL;
+-	pe->tce32_seg = -1;
+-	pe->mve_number = -1;
+-	pe->rid = dev->bus->number << 8 | pdn->devfn;
+-
+-	pe_info(pe, "Associated device to PE\n");
+-
+-	if (pnv_ioda_configure_pe(phb, pe)) {
+-		/* XXX What do we do here ? */
+-		if (pe_num)
+-			pnv_ioda_free_pe(phb, pe_num);
+-		pdn->pe_number = IODA_INVALID_PE;
+-		pe->pdev = NULL;
+-		pci_dev_put(dev);
+-		return NULL;
+-	}
+-
+-	/* Assign a DMA weight to the device */
+-	pe->dma_weight = pnv_ioda_dma_weight(dev);
+-	if (pe->dma_weight != 0) {
+-		phb->ioda.dma_weight += pe->dma_weight;
+-		phb->ioda.dma_pe_count++;
+-	}
+-
+-	/* Link the PE */
+-	pnv_ioda_link_pe_by_weight(phb, pe);
+-
+-	return pe;
+-}
+-#endif /* Useful for SRIOV case */
+-
+ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
+ {
+ 	struct pci_dev *dev;
 -- 
 2.1.0
