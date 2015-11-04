@@ -1,35 +1,40 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Return-Path: <imunsie@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D85BA1A0D16
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 15:08:11 +1100 (AEDT)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E0FEF1A0CC4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 14:31:25 +1100 (AEDT)
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by ozlabs.org (Postfix) with ESMTPS id 7C566140311
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2015 15:08:11 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 4 Nov 2015 13:31:24 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7A38B2CE8050
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 14:31:21 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA43VDjs63570118
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 14:31:21 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA43Umek009863
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 14:30:49 +1100
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com, mpe@ellerman.id.au,
- aik@ozlabs.ru
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH V12 4/9] powerpc/eeh: Cache only BARs, not windows or IOV BARs
-Date: Wed,  4 Nov 2015 11:28:47 +0800
-Message-Id: <1446607732-4166-5-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1446607732-4166-1-git-send-email-weiyang@linux.vnet.ibm.com>
-References: <1446607732-4166-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Wed, 4 Nov 2015 14:08:10 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id F30D72BB0055
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2015 15:08:06 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA447i6A30736588
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2015 15:07:52 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA447XS0026197
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2015 15:07:34 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: "andrew.donnellan" <andrew.donnellan@au1.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, mikey <mikey@neuling.org>
+Subject: Re: [PATCH] cxl: use correct operator when writing pcie config space
+ values
+In-reply-to: <1446603849-26796-1-git-send-email-andrew.donnellan@au1.ibm.com>
+References: <1446603849-26796-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Date: Wed, 04 Nov 2015 15:07:08 +1100
+Message-Id: <1446610015-sup-6246@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,48 +44,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This restricts the EEH address cache to use only the first 7 BARs. This
-makes __eeh_addr_cache_insert_dev() ignore PCI bridge window and IOV BARs.
-As the result of this change, eeh_addr_cache_get_dev() will return VFs from
-VF's resource addresses instead of parent PFs.
-
-This removes extra check for a PCI bridge as we limit
-__eeh_addr_cache_insert_dev() to 7 BARs and this effectively excludes PCI
-bridges from being cached.
-
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/eeh_cache.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
-index a1e86e1..ddbcfab 100644
---- a/arch/powerpc/kernel/eeh_cache.c
-+++ b/arch/powerpc/kernel/eeh_cache.c
-@@ -195,8 +195,11 @@ static void __eeh_addr_cache_insert_dev(struct pci_dev *dev)
- 		return;
- 	}
- 
--	/* Walk resources on this device, poke them into the tree */
--	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
-+	/*
-+	 * Walk resources on this device, poke the first 7 (6 normal BAR and 1
-+	 * ROM BAR) into the tree.
-+	 */
-+	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
- 		resource_size_t start = pci_resource_start(dev,i);
- 		resource_size_t end = pci_resource_end(dev,i);
- 		unsigned long flags = pci_resource_flags(dev,i);
-@@ -222,10 +225,6 @@ void eeh_addr_cache_insert_dev(struct pci_dev *dev)
- {
- 	unsigned long flags;
- 
--	/* Ignore PCI bridges */
--	if ((dev->class >> 16) == PCI_BASE_CLASS_BRIDGE)
--		return;
--
- 	spin_lock_irqsave(&pci_io_addr_cache_root.piar_lock, flags);
- 	__eeh_addr_cache_insert_dev(dev);
- 	spin_unlock_irqrestore(&pci_io_addr_cache_root.piar_lock, flags);
--- 
-2.5.0
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
