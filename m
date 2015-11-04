@@ -1,23 +1,25 @@
-Return-Path: <agust@denx.de>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0134.outbound.protection.outlook.com [157.56.111.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C6EFA1A0C0C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 08:09:44 +1100 (AEDT)
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 464CB1402D2
- for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2015 08:09:43 +1100 (AEDT)
-Date: Wed, 4 Nov 2015 21:58:26 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
- <mpe@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Pull request: powerpc/mpc5xxx next
-Message-ID: <20151104215826.3d0e094d@crub>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id B0DE31A0B78
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 09:45:36 +1100 (AEDT)
+Message-ID: <1446677115.12676.26.camel@freescale.com>
+Subject: Re: [PATCH V3] thermal: qoriq: Add thermal management support
+From: Scott Wood <scottwood@freescale.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+CC: Hongtao Jia <hongtao.jia@freescale.com>, "linux-pm@vger.kernel.org"
+ <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 4 Nov 2015 16:45:15 -0600
+In-Reply-To: <20151104192444.GA14127@localhost.localdomain>
+References: <1442996938-47147-1-git-send-email-hongtao.jia@freescale.com>
+ <1443132592.32298.56.camel@freescale.com>
+ <BLUPR03MB14997B46CC6AFC247EDC340E1420@BLUPR03MB149.namprd03.prod.outlook.com>
+ <20151104192444.GA14127@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,55 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2015-11-04 at 11:24 -0800, Eduardo Valentin wrote:
+> On Fri, Sep 25, 2015 at 03:09:42AM +0000, Hongtao Jia wrote:
+> > 
+> > > -----Original Message-----
+> > > From: Wood Scott-B07421
+> > > Sent: Friday, September 25, 2015 6:10 AM
+> > > To: Jia Hongtao-B38951
+> > > Cc: edubezval@gmail.com; linux-pm@vger.kernel.org; linuxppc-
+> > > dev@lists.ozlabs.org
+> > > Subject: Re: [PATCH V3] thermal: qoriq: Add thermal management support
+> > > 
+> > > On Wed, 2015-09-23 at 16:28 +0800, Jia Hongtao wrote:
+> > > > This driver add thermal management support by enabling TMU (Thermal
+> > > > Monitoring Unit) on QorIQ platform.
+> > > > 
+> > > > It's based on thermal of framework:
+> > > > - Trip points defined in device tree.
+> > > > - Cpufreq as cooling device registered in qoriq cpufreq driver.
+> > > 
+> > > I don't see any cooling device registered in the qoriq cpufreq driver.
+> > > Is this dependent on some other patch?
+> > 
+> > It's not depend on any patch. But I saw your patch below:
+> > [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock implementation details
+> > So I hold my patch waiting for your patch merged or there will be 
+> > conflict.
+> > 
+> > I could send it out too if you are fine with it.
+> 
+> Would you guys benefit of cpufreq-cpu0?
 
-Highlights include a driver for MPC512x LocalPlus Bus FIFO with its
-device tree binding documentation, mpc512x device tree updates and
-some minor fixes.
+If you mean cpufreq-dt, no, as I explained in 
+https://lkml.org/lkml/2015/9/18/699
 
-These patches have already been queued for linux-next for a while.
-
-The following changes since commit 353169acf1858bb2dc3f91475dafabce547de14c:
-
-  powerpc/eeh: Fix recursive fenced PHB on Broadcom shiner adapter (2015-10=
--21 20:42:16 +1100)
-
-are available in the git repository at:
-
-  git://git.denx.de/linux-denx-agust.git next
-
-for you to fetch changes up to 39e69f55f85731d9c0320c03212a4d1f149464f0:
-
-  powerpc: Introduce the use of the managed version of kzalloc (2015-10-22 =
-16:13:23 +0200)
-
-----------------------------------------------------------------
-Alexander Popov (2):
-      powerpc/512x: add LocalPlus Bus FIFO device driver
-      powerpc/512x: add a device tree binding for LocalPlus Bus FIFO
-
-Himangi Saraogi (1):
-      powerpc: Introduce the use of the managed version of kzalloc
-
-Luis de Bethencourt (1):
-      powerpc: platforms: mpc52xx_lpbfifo: Fix module autoload for OF platf=
-orm driver
-
-Uwe Kleine-K=C3=B6nig (1):
-      powerpc: mpc512x: drop bogus and unused psc register bit definitions
-
- .../bindings/powerpc/fsl/mpc512x_lpbfifo.txt       |   21 +
- arch/powerpc/boot/dts/mpc5121.dtsi                 |   11 +-
- arch/powerpc/boot/dts/mpc5125twr.dts               |   11 +-
- arch/powerpc/configs/mpc512x_defconfig             |    1 +
- arch/powerpc/include/asm/mpc5121.h                 |   59 +++
- arch/powerpc/include/asm/mpc52xx_psc.h             |    2 -
- arch/powerpc/platforms/512x/Kconfig                |    6 +
- arch/powerpc/platforms/512x/Makefile               |    1 +
- arch/powerpc/platforms/512x/mpc512x_lpbfifo.c      |  540 ++++++++++++++++=
-++++
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c          |    6 +-
- arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c      |    1 +
- 11 files changed, 650 insertions(+), 9 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpc512x_l=
-pbfifo.txt
- create mode 100644 arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
+-Scott
