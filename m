@@ -1,34 +1,37 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-ig0-x232.google.com (mail-ig0-x232.google.com
- [IPv6:2607:f8b0:4001:c05::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6A2CD1A03C3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 12:22:47 +1100 (AEDT)
-Received: by igbdj2 with SMTP id dj2so25325622igb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2015 17:22:45 -0800 (PST)
-Date: Wed, 4 Nov 2015 09:22:13 +0800
-From: Boqun Feng <boqun.feng@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Waiman Long <waiman.long@hp.com>,
- Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>
-Subject: Re: [RESEND, tip/locking/core, v5, 1/6] powerpc: atomic: Make
- _return atomics and *{cmp}xchg fully ordered
-Message-ID: <20151104012213.GA11056@fixme-laptop.cn.ibm.com>
-References: <1445854536-22645-1-git-send-email-boqun.feng@gmail.com>
- <20151027023347.6178D140E31@ozlabs.org>
- <20151027030652.GB26372@fixme-laptop.cn.ibm.com>
- <20151030005633.GA2792@fixme-laptop.cn.ibm.com>
- <20151102012033.GA965@fixme-laptop.cn.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="WIyZ46R2i8wDzkSu"
-In-Reply-To: <20151102012033.GA965@fixme-laptop.cn.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA0A61A03BA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 13:25:19 +1100 (AEDT)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 796FD141349
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2015 13:25:19 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 4 Nov 2015 12:25:18 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D0B192CE8050
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2015 13:25:14 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA42P6Kc11534458
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2015 13:25:14 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA42OfMY020141
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2015 13:24:42 +1100
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: mikey@neuling.org, imunsie@au1.ibm.com
+Subject: [PATCH] cxl: use correct operator when writing pcie config space
+ values
+Date: Wed,  4 Nov 2015 13:24:09 +1100
+Message-Id: <1446603849-26796-1-git-send-email-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,58 +41,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When writing a value to config space, cxl_pcie_write_config() calls
+cxl_pcie_config_info() to obtain a mask and shift value, shifts the new
+value accordingly, then uses the mask to combine the shifted value with the
+existing value at the address as part of a read-modify-write pattern.
 
---WIyZ46R2i8wDzkSu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Currently, we use a logical OR operator rather than a bitwise OR operator,
+which means any use of this function results in an incorrect value being
+written. Replace the logical OR operator with a bitwise OR operator so the
+value is written correctly.
 
-On Mon, Nov 02, 2015 at 09:22:40AM +0800, Boqun Feng wrote:
-> > On Tue, Oct 27, 2015 at 11:06:52AM +0800, Boqun Feng wrote:
-> > > To summerize:
-> > >=20
-> > > patch 1(split to two), 3, 4(remove inc/dec implementation), 5, 6 sent=
- as
-> > > powerpc patches for powerpc next, patch 2(unmodified) sent as tip pat=
-ch
-> > > for locking/core.
-> > >=20
-> > > Peter and Michael, this works for you both?
-> > >=20
-> >=20
-> > Thoughts? ;-)
-> >=20
->=20
-> Peter and Michael, I will split patch 1 to two and send them as patches
-> for powerpc next first. The rest of this can wait util we are on the
-> same page of where they'd better go.
->=20
+Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+Cc: stable@vger.kernel.org
+Fixes: 6f7f0b3df6d4 ("cxl: Add AFU virtual PHB and kernel API")
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+---
+ drivers/misc/cxl/vphb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I'm about to send patch 2(adding trivial tests) as a patch for the tip
-tree, and rest of this series will be patches for powerpc next.
-
-Will, AFAIK, you are currently working on variants on arm64, right? I
-wonder whether you depend on patch 3 (allow archictures to provide
-self-defined __atomic_op_*), if so I can also send patch 3 as a patch
-for tip tree and wait until it merged into powerpc next to send the
-rest.=20
-
-Thanks and Best Regards,
-Boqun
-
---WIyZ46R2i8wDzkSu
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWOV3BAAoJEEl56MO1B/q41dUH/iDGDJrNWi69wupX2/ESnTYZ
-0fF+EBl7aPwm+5WlzrfGzkeimuhaxMOIHOCvhtSoBk08kGmWecjPfA8+TzEgwLO/
-GUMgR72qFU+EiD/aor42PDFUV6xrBPOGX7L9U5HyAm2SifsIiMGkCAFcidV75FpP
-N9zgT9dGK0GwvHH/FsuSsPsWKVXTllknyAr8p9pxx/tw6ZqXdJiqNZNdE8fIXNVa
-4AY4zXhfzlg06SHYVJOZR7fCRZxU9eS7+qCEwLg7xAKGrpJjpu7sJQMYtqu+LCVZ
-FHP+2kaKj5lBG/vupBCOHReD7RAW+9bqAO3X//uG9HTyZucJnf7waWwE0BX+NlA=
-=q/rr
------END PGP SIGNATURE-----
-
---WIyZ46R2i8wDzkSu--
+diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
+index 94b5208..9be09bb 100644
+--- a/drivers/misc/cxl/vphb.c
++++ b/drivers/misc/cxl/vphb.c
+@@ -203,7 +203,7 @@ static int cxl_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
+ 	mask <<= shift;
+ 	val <<= shift;
+ 
+-	v = (in_le32(ioaddr) & ~mask) || (val & mask);
++	v = (in_le32(ioaddr) & ~mask) | (val & mask);
+ 
+ 	out_le32(ioaddr, v);
+ 	return PCIBIOS_SUCCESSFUL;
+-- 
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
