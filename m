@@ -1,44 +1,41 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 69CA51A022F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 17:18:47 +1100 (AEDT)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 477A51A0191
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 16:08:52 +1100 (AEDT)
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by ozlabs.org (Postfix) with ESMTPS id E1772140291
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2015 17:18:46 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Tue, 3 Nov 2015 22:08:49 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id CE2CB1FF002D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2015 21:56:50 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA457UcT9109840
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Nov 2015 22:07:30 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA458bNA016486
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Nov 2015 22:08:38 -0700
-Subject: Re: [PATCH V3 2/3] perf/powerpc :add support for sampling intr
- machine state
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <1446531002-16582-1-git-send-email-anju@linux.vnet.ibm.com>
- <1446531002-16582-3-git-send-email-anju@linux.vnet.ibm.com>
- <1446542195.23081.5.camel@ellerman.id.au>
-Cc: maddy@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- sukadev@linux.vnet.ibm.com, acme@redhat.com, dsahern@gmail.com,
- jolsa@redhat.com, hemant@linux.vnet.ibm.com,
- naveen.n.rao@linux.vnet.ibm.com
-From: Anju T <anju@linux.vnet.ibm.com>
-Message-ID: <563992D0.1030707@linux.vnet.ibm.com>
-Date: Wed, 4 Nov 2015 10:38:32 +0530
+ for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 4 Nov 2015 16:18:45 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 39F032BB003F
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2015 17:18:41 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA46IRoZ30736404
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2015 17:18:35 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA46I88R019952
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2015 17:18:09 +1100
+Message-ID: <5639A307.7060503@au1.ibm.com>
+Date: Wed, 04 Nov 2015 17:17:43 +1100
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1446542195.23081.5.camel@ellerman.id.au>
-Content-Type: multipart/alternative;
- boundary="------------020002040605030400040108"
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+CC: imunsie@au1.ibm.com, dja@axtens.net, Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] cxl: sparse: add __iomem annotations in vphb.c
+References: <1446002979-29728-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ <1446541751.23081.1.camel@ellerman.id.au>
+In-Reply-To: <1446541751.23081.1.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,166 +45,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------020002040605030400040108
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Hi Michael,
-On Tuesday 03 November 2015 02:46 PM, Michael Ellerman wrote:
-> On Tue, 2015-11-03 at 11:40 +0530, Anju T wrote:
+On 03/11/15 20:09, Michael Ellerman wrote:
+> Part of your problem is you're storing afu->crs_len which is not __iomem in
+> cfg_data which is, and so that's leading to some of your casts.
 >
->> The perf infrastructure uses a bit mask to find out
->> valid registers to display. Define a register mask
->> for supported registers defined in asm/perf_regs.h.
->> The bit positions also correspond to register IDs
->> which is used by perf infrastructure to fetch the register
->> values.CONFIG_HAVE_PERF_REGS enables
->> sampling of the interrupted machine state.
->> diff --git a/arch/powerpc/perf/perf_regs.c b/arch/powerpc/perf/perf_regs.c
->> new file mode 100644
->> index 0000000..0520492
->> --- /dev/null
->> +++ b/arch/powerpc/perf/perf_regs.c
->> @@ -0,0 +1,92 @@
->> +#include <linux/errno.h>
->> +#include <linux/kernel.h>
->> +#include <linux/sched.h>
->> +#include <linux/perf_event.h>
->> +#include <linux/bug.h>
->> +#include <linux/stddef.h>
->> +#include <asm/ptrace.h>
->> +#include <asm/perf_regs.h>
->> +
->> +#define PT_REGS_OFFSET(id, r) [id] = offsetof(struct pt_regs, r)
->> +
->> +#define REG_RESERVED (~((1ULL << PERF_REG_POWERPC_MAX) - 1))
->> +
->> +static unsigned int pt_regs_offset[PERF_REG_POWERPC_MAX] = {
->> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR0, gpr[0]),
->> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR1, gpr[1]),
->> +	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR2, gpr[2]),
-> <snip>
+> I don't really see why you're using cfg_data like that, you have the afu in
+> phb->private_data. But maybe cfg_data needs to hold that value for some other
+> code I'm not seeing.
+
+I can't see any obvious reason why we need to use cfg_data either.
+
+> Regardless, in cxl_pcie_config_info() you have the afu pointer, so you can just
+> look at afu->crs_len directly can't you?
 >
-> I realise you're following the example of other architectures, but we have
-> almost this exact same structure in ptrace.c, see regoffset_table.
+> That means you can drop one cast of cfg_data to unsigned long in there.
 >
-> It would be really nice if we could share them between ptrace and perf.
+> Then I see that cxl_pcie_cfg_addr() is only used in cxl_pcie_config_info(), and
+> doesn't abstract much. So I'd drop it and inline the logic. That leads to the
+> realisation that we're calling cxl_pcie_cfg_record() twice, so we can save the
+> value and only call it once.
+> You're then left with:
 >
-> cheers
+> 	addr = phb->cfg_addr + (afu->crs_len * record) + offset;
+> 	*ioaddr = (void *)(addr & ~0x3ULL);
+> 	*shift = ((addr & 0x3) * 8);
+
+Will do, that's nicer.
+
+> Ideally we'd be able to say that cfg_addr is always aligned, and so it doesn't
+> need to be part of the calculation. I suspect that is true but you'll have to
+> check. If it is you can then leave cfg_addr out of the logic and you have:
+>
+> 	addr = (afu->crs_len * record) + offset;
+>
+> 	*ioaddr = phb->cfg_addr + (addr & ~0x3ull);
+> 	*shift = (addr & 0x3) * 8;
+>
+> Which hopefully still gives you the right result! :)
+
+Will check.
 
 
-Thank you for reviewing the patch.
+Andrew
 
-That is a great suggestion.
-
-In ptrace.c the structure doesn't include ORIG_R3. So,in that case what 
-should we do?
-
-
-
-
-Thanks and Regard
-Anju
-
-
-
---------------020002040605030400040108
-Content-Type: text/html; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-    <meta content="text/html; charset=windows-1252"
-      http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    <div class="moz-cite-prefix">Hi Michael,<br>
-      On Tuesday 03 November 2015 02:46 PM, Michael Ellerman wrote:<br>
-    </div>
-    <blockquote cite="mid:1446542195.23081.5.camel@ellerman.id.au"
-      type="cite">
-      <pre wrap="">On Tue, 2015-11-03 at 11:40 +0530, Anju T wrote:
-
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">The perf infrastructure uses a bit mask to find out
-valid registers to display. Define a register mask
-for supported registers defined in asm/perf_regs.h.
-The bit positions also correspond to register IDs
-which is used by perf infrastructure to fetch the register
-values.CONFIG_HAVE_PERF_REGS enables
-sampling of the interrupted machine state.
-</pre>
-      </blockquote>
-      <pre wrap="">
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">diff --git a/arch/powerpc/perf/perf_regs.c b/arch/powerpc/perf/perf_regs.c
-new file mode 100644
-index 0000000..0520492
---- /dev/null
-+++ b/arch/powerpc/perf/perf_regs.c
-@@ -0,0 +1,92 @@
-+#include &lt;linux/errno.h&gt;
-+#include &lt;linux/kernel.h&gt;
-+#include &lt;linux/sched.h&gt;
-+#include &lt;linux/perf_event.h&gt;
-+#include &lt;linux/bug.h&gt;
-+#include &lt;linux/stddef.h&gt;
-+#include &lt;asm/ptrace.h&gt;
-+#include &lt;asm/perf_regs.h&gt;
-+
-+#define PT_REGS_OFFSET(id, r) [id] = offsetof(struct pt_regs, r)
-+
-+#define REG_RESERVED (~((1ULL &lt;&lt; PERF_REG_POWERPC_MAX) - 1))
-+
-+static unsigned int pt_regs_offset[PERF_REG_POWERPC_MAX] = {
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR0, gpr[0]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR1, gpr[1]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR2, gpr[2]),
-</pre>
-      </blockquote>
-      <pre wrap="">
-&lt;snip&gt;
-
-I realise you're following the example of other architectures, but we have
-almost this exact same structure in ptrace.c, see regoffset_table.
-
-It would be really nice if we could share them between ptrace and perf.
-
-cheers
-</pre>
-    </blockquote>
-    <br>
-    <br>
-    Thank you for reviewing the patch.<br>
-    <br>
-    <meta http-equiv="content-type" content="text/html;
-      charset=windows-1252">
-    <p style="margin-bottom: 0cm; line-height: 100%">That is a great
-      suggestion.</p>
-    <p style="margin-bottom: 0cm; line-height: 100%">In ptrace.c the
-      structure doesn't include ORIG_R3. So,in that case what should we
-      do?</p>
-    <title></title>
-    <meta name="generator" content="LibreOffice 4.3.7.2 (Linux)">
-    <style type="text/css">
-		@page { margin: 2cm }
-		p { margin-bottom: 0.25cm; line-height: 120% }
-	</style><br>
-    <br>
-    <blockquote cite="mid:1446542195.23081.5.camel@ellerman.id.au"
-      type="cite">
-      <pre wrap="">
-</pre>
-    </blockquote>
-    <br>
-    Thanks and Regard <br>
-    Anju<br>
-    <br>
-    <br>
-  </body>
-</html>
-
---------------020002040605030400040108--
+-- 
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
