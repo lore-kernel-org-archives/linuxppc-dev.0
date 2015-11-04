@@ -1,33 +1,33 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D78FC1A0BC6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 14:31:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6CDA81A0D0F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 14:31:03 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 4 Nov 2015 09:00:59 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id E2933E0058
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 09:01:13 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA43UrRR27590826
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 09:00:54 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA43Ur7x027398
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 09:00:53 +0530
+ Wed, 4 Nov 2015 09:01:00 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id B8A36394005A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2015 09:00:57 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA43UvTJ65011724
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 09:00:57 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA43UukF006981
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Nov 2015 09:00:57 +0530
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com, mpe@ellerman.id.au,
  aik@ozlabs.ru
 Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
  Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH V12 6/9] powerpc/eeh: Create PE for VFs
-Date: Wed,  4 Nov 2015 11:28:49 +0800
-Message-Id: <1446607732-4166-7-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V12 8/9] powerpc/powernv: Support PCI config restore for VFs
+Date: Wed,  4 Nov 2015 11:28:51 +0800
+Message-Id: <1446607732-4166-9-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1446607732-4166-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1446607732-4166-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,84 +39,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch creates PEs for VFs in the weak function
-pcibios_bus_add_device(). Those PEs for VFs are identified with newly
-introduced flag EEH_PE_VF so that we handle them differently during EEH
-recovery.
+After PE reset, OPAL API opal_pci_reinit() is called on all devices
+contained in the PE to reinitialize them. While skiboot is not aware of
+VFs, we have to implement the function in kernel to reinitialize VFs after
+reset on PE for VFs.
+
+In this patch, two functions pnv_pci_fixup_vf_mps() and
+pnv_eeh_restore_vf_config() both manipulate the MPS of the VF, since for a
+VF it has three cases.
+
+1. Normal creation for a VF
+   In this case, pnv_pci_fixup_vf_mps() is called to make the MPS a proper
+   value compared with its parent.
+2. EEH recovery without VF removed
+   In this case, MPS is stored in pci_dn and pnv_eeh_restore_vf_config() is
+   called to restore it and reinitialize other part.
+3. EEH recovery with VF removed
+   In this case, VF will be removed then re-created. Both functions are
+   called. First pnv_pci_fixup_vf_mps() is called to store the proper MPS
+   to pci_dn and then pnv_eeh_restore_vf_config() is called to do proper
+   thing.
+
+This patch introduces two functions:
+   pnv_pci_fixup_vf_mps() to fixup the PCI device's MPS to make sure it is
+   smaller than parent's and store this value in pci_dn for future use.
+   pnv_eeh_restore_vf_config() to re-initialize on VF by restore MPS,
+   disable completion timeout, enable SERR, etc.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h               |  1 +
- arch/powerpc/kernel/eeh_pe.c                 | 10 ++++++++--
- arch/powerpc/platforms/powernv/eeh-powernv.c | 16 ++++++++++++++++
- 3 files changed, 25 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/pci-bridge.h        |  1 +
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 70 +++++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/pci.c         | 18 +++++++
+ 3 files changed, 88 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 6c383ad..ec21f8f 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -72,6 +72,7 @@ struct pci_dn;
- #define EEH_PE_PHB	(1 << 1)	/* PHB PE    */
- #define EEH_PE_DEVICE 	(1 << 2)	/* Device PE */
- #define EEH_PE_BUS	(1 << 3)	/* Bus PE    */
-+#define EEH_PE_VF	(1 << 4)	/* VF PE     */
- 
- #define EEH_PE_ISOLATED		(1 << 0)	/* Isolated PE		*/
- #define EEH_PE_RECOVERING	(1 << 1)	/* Recovering PE	*/
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index 8654cb1..29240ad 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -299,7 +299,10 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
- 	 * EEH device already having associated PE, but
- 	 * the direct parent EEH device doesn't have yet.
- 	 */
--	pdn = pdn ? pdn->parent : NULL;
-+	if (edev->physfn)
-+		pdn = pci_get_pdn(edev->physfn);
-+	else
-+		pdn = pdn ? pdn->parent : NULL;
- 	while (pdn) {
- 		/* We're poking out of PCI territory */
- 		parent = pdn_to_eeh_dev(pdn);
-@@ -382,7 +385,10 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
- 	}
- 
- 	/* Create a new EEH PE */
--	pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
-+	if (edev->physfn)
-+		pe = eeh_pe_alloc(edev->phb, EEH_PE_VF);
-+	else
-+		pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
- 	if (!pe) {
- 		pr_err("%s: out of memory!\n", __func__);
- 		return -ENOMEM;
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 843dd3a2..9b365d6 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -219,6 +219,7 @@ struct pci_dn {
+ #define IODA_INVALID_M64        (-1)
+ 	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
+ #endif /* CONFIG_PCI_IOV */
++	int     mps;			/* Maximum Payload Size */
+ #endif
+ 	struct list_head child_list;
+ 	struct list_head list;
 diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 3bb6acb..131c7d0 100644
+index 4de247a..9019458 100644
 --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
 +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -1532,6 +1532,22 @@ static struct eeh_ops pnv_eeh_ops = {
- 	.restore_config		= pnv_eeh_restore_config
- };
+@@ -1623,6 +1623,67 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
+ 	return ret;
+ }
  
-+void pcibios_bus_add_device(struct pci_dev *pdev)
++static int pnv_eeh_restore_vf_config(struct pci_dn *pdn)
++{
++	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
++	u32 devctl, cmd, cap2, aer_capctl;
++	int old_mps;
++
++	/* Restore MPS */
++	if (edev->pcie_cap) {
++		old_mps = (ffs(pdn->mps) - 8) << 5;
++		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
++				     2, &devctl);
++		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
++		devctl |= old_mps;
++		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
++				      2, devctl);
++	}
++
++	/* Disable Completion Timeout */
++	if (edev->pcie_cap) {
++		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP2,
++				     4, &cap2);
++		if (cap2 & 0x10) {
++			eeh_ops->read_config(pdn,
++					edev->pcie_cap + PCI_EXP_DEVCTL2,
++					4, &cap2);
++			cap2 |= 0x10;
++			eeh_ops->write_config(pdn,
++					edev->pcie_cap + PCI_EXP_DEVCTL2,
++					4, cap2);
++		}
++	}
++
++	/* Enable SERR and parity checking */
++	eeh_ops->read_config(pdn, PCI_COMMAND, 2, &cmd);
++	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
++	eeh_ops->write_config(pdn, PCI_COMMAND, 2, cmd);
++
++	/* Enable report various errors */
++	if (edev->pcie_cap) {
++		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
++				2, &devctl);
++		devctl &= ~PCI_EXP_DEVCTL_CERE;
++		devctl |= (PCI_EXP_DEVCTL_NFERE |
++			   PCI_EXP_DEVCTL_FERE |
++			   PCI_EXP_DEVCTL_URRE);
++		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
++				2, devctl);
++	}
++
++	/* Enable ECRC generation and check */
++	if (edev->pcie_cap && edev->aer_cap) {
++		eeh_ops->read_config(pdn, edev->aer_cap + PCI_ERR_CAP,
++				4, &aer_capctl);
++		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
++		eeh_ops->write_config(pdn, edev->aer_cap + PCI_ERR_CAP,
++				4, aer_capctl);
++	}
++
++	return 0;
++}
++
+ static int pnv_eeh_restore_config(struct pci_dn *pdn)
+ {
+ 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+@@ -1633,7 +1694,14 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
+ 		return -EEXIST;
+ 
+ 	phb = edev->phb->private_data;
+-	ret = opal_pci_reinit(phb->opal_id,
++	/*
++	 * We have to restore the PCI config space after reset since the
++	 * firmware can't see SRIOV VFs.
++	 */
++	if (edev->physfn)
++		ret = pnv_eeh_restore_vf_config(pdn);
++	else
++		ret = opal_pci_reinit(phb->opal_id,
+ 			      OPAL_REINIT_PCI_DEV, edev->config_addr);
+ 	if (ret) {
+ 		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index f2dd772..50794d7 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -778,6 +778,24 @@ static void pnv_p7ioc_rc_quirk(struct pci_dev *dev)
+ }
+ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_IBM, 0x3b9, pnv_p7ioc_rc_quirk);
+ 
++#ifdef CONFIG_PCI_IOV
++static void pnv_pci_fixup_vf_mps(struct pci_dev *pdev)
 +{
 +	struct pci_dn *pdn = pci_get_pdn(pdev);
++	int parent_mps;
 +
 +	if (!pdev->is_virtfn)
 +		return;
 +
-+	/*
-+	 * The following operations will fail if VF's sysfs files
-+	 * aren't created or its resources aren't finalized.
-+	 */
-+	eeh_add_device_early(pdn);
-+	eeh_add_device_late(pdev);
-+	eeh_sysfs_add_device(pdev);
++	/* Synchronize MPS for VF and PF */
++	parent_mps = pcie_get_mps(pdev->physfn);
++	if ((128 << pdev->pcie_mpss) >= parent_mps)
++		pcie_set_mps(pdev, parent_mps);
++	pdn->mps = pcie_get_mps(pdev);
 +}
++DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pnv_pci_fixup_vf_mps);
++#endif /* CONFIG_PCI_IOV */
 +
- /**
-  * eeh_powernv_init - Register platform dependent EEH operations
-  *
+ void __init pnv_pci_init(void)
+ {
+ 	struct device_node *np;
 -- 
 2.5.0
