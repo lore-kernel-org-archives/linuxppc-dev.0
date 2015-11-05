@@ -1,33 +1,34 @@
-Return-Path: <BATV+3a4aedc86d2ac0237965+4456+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
+Return-Path: <eranian@googlemail.com>
+Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
+ [IPv6:2607:f8b0:4003:c06::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9BAF71A0C81
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 06:58:45 +1100 (AEDT)
-Date: Thu, 5 Nov 2015 11:58:39 -0800
-From: Christoph Hellwig <hch@infradead.org>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Cc: Keith Busch <keith.busch@intel.com>, aik@ozlabs.ru,
- linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
- paulus@samba.org, sparclinux@vger.kernel.org, willy@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- david@gibson.dropbear.id.au
-Subject: Re: [PATCH 1/1 v4] drivers/nvme: default to 4k device page size
-Message-ID: <20151105195839.GB3194@infradead.org>
-References: <20151027223643.GA25332@localhost.localdomain>
- <20151027.175443.140992924519172506.davem@davemloft.net>
- <20151028135922.GA27909@localhost.localdomain>
- <20151029115536.GA28090@infradead.org>
- <20151029155701.GJ7716@linux.vnet.ibm.com>
- <20151029172043.GA8343@localhost.localdomain>
- <20151030213511.GK7716@linux.vnet.ibm.com>
- <20151103131824.GA12232@infradead.org>
- <20151103134624.GG13904@localhost.localdomain>
- <20151105170145.GB16308@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 273561A0CDB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 01:42:34 +1100 (AEDT)
+Received: by oigi82 with SMTP id i82so4510302oig.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2015 06:42:31 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151105170145.GB16308@linux.vnet.ibm.com>
+Reply-To: eranian@gmail.com
+In-Reply-To: <1446669978-6366-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1446669978-6366-1-git-send-email-maddy@linux.vnet.ibm.com>
+Date: Thu, 5 Nov 2015 15:42:31 +0100
+Message-ID: <CAMsRxfJLLV9pOr3iL8KXqVPk0dk3t_fkueW-9WHf6WiyP6DHrA@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/3]perf/core: extend perf_reg and
+ perf_sample_regs_intr
+From: Stephane Eranian <eranian@googlemail.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "the arch/x86 maintainers" <x86@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Jiri Olsa <jolsa@kernel.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,11 +38,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Looks fine,
+Hi,
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+On Wed, Nov 4, 2015 at 9:46 PM, Madhavan Srinivasan
+<maddy@linux.vnet.ibm.com> wrote:
+>
+> This patchset extend the perf sample regs infrastructure
+> to include architecture specific regs. Current perf_sample_regs_intr
+> exports only registers in the pt_regs to perf.data using
+> PERF_SAMPLE_REGS_INTR sample type. But sometimes we end up looking
+> for or prefer raw register values at the interrupt during debug.
+>
+I don't quite understand this explanation here.
+What do you mean by raw register values?
+The content of pt_regs is also raw register values at interrupt.
 
-... but I doubt we'll ever bother updating it.  Most architectures
-with arger page sizes also have iommus and would need different settings
-for different iommus vs direct mapping for very little gain.  There's a
-reason why we never bothered for RDMA either.
+The API does not say that the content of perf_sample_regs_intr can ONLY
+contain names of registers coming from pt_regs. The meaning of each bit
+is arch specific and you are free to map to whatever is relevant for your arch.
+All the API says is that the values captured in the sampling buffer for these
+registers are taken at PMU interrupt.
+
+>
+> This patchset extends the perf_regs to include arch specific struct,
+> and makes perf_sample_regs_intr in kernel/event/core.c as __weak__
+> function. This way, an arch specific implementation of
+> perf_sample_regs_intr() can update the arch specific data to
+> the perf_regs.
+>
+> First patch defines a new structure arch_misc_reg and updates the same
+> in the struct perf_regs. Patch also modifies the perf_reg_value()
+> and perf_output_sample_regs() to take perf_regs parameter instead of pt_regs.
+>
+> Second patch updates struct arch_misc_reg for arch/powerpc with pmu registers
+> and adds offsetof macro for the same. It extends perf_reg_value()
+> to use reg idx to decide on struct to return value from.
+>
+> Third patch adds arch specific perf_sample_regs_intr() in arch/powerpc
+> to hook up the arch_misc_regs to perf_regs.
+>
+> This patchset depends on the recent posting by Anju T in
+> linuxppc-dev@lists.ozlabs.org to enable PERF_SAMPLE_REGS_INTR
+> support in arch/powerpc.
+>
+> https://patchwork.ozlabs.org/patch/539242/
+> https://patchwork.ozlabs.org/patch/539243/
+> https://patchwork.ozlabs.org/patch/539244/
+>
+> Would appreciate comments and feedback.
+>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Jiri Olsa <jolsa@kernel.org>
+> Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+> Cc: Stephane Eranian <eranian@gmail.com>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+>
+> Madhavan Srinivasan (3):
+>   perf/core: extend perf_regs to include arch specific regs
+>   perf/powerpc: update macros and add regs to arch_misc_reg struct
+>   perf/powerpc: Functions to update arch_misc_regs
+>
+>  arch/arm/include/asm/ptrace.h               |  2 ++
+>  arch/arm/kernel/perf_regs.c                 |  4 +++-
+>  arch/arm64/include/asm/ptrace.h             |  2 ++
+>  arch/arm64/kernel/perf_regs.c               |  4 +++-
+>  arch/powerpc/include/uapi/asm/perf_regs.h   | 10 ++++++++++
+>  arch/powerpc/include/uapi/asm/ptrace.h      | 11 +++++++++++
+>  arch/powerpc/perf/core-book3s.c             | 29 +++++++++++++++++++++++++++++
+>  arch/powerpc/perf/perf_regs.c               | 28 ++++++++++++++++++++++++++--
+>  arch/x86/include/asm/ptrace.h               |  2 ++
+>  arch/x86/kernel/perf_regs.c                 |  4 +++-
+>  include/linux/perf_regs.h                   |  5 +++--
+>  kernel/events/core.c                        |  8 ++++----
+>  tools/perf/arch/powerpc/include/perf_regs.h | 16 ++++++++++++++++
+>  13 files changed, 114 insertions(+), 11 deletions(-)
+>
+> --
+> 1.9.1
+>
