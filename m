@@ -1,26 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0117.outbound.protection.outlook.com [207.46.100.117])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 58EC01A0C12
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 10:40:52 +1100 (AEDT)
-Message-ID: <1446766821.12676.142.camel@freescale.com>
-Subject: Re: powerpc/fsl-pci: Unify pci/pcie initialization code
-From: Scott Wood <scottwood@freescale.com>
-To: Daniel Walker <danielwa@cisco.com>
-CC: Jia Hongtao <B38951@freescale.com>, Kumar Gala
- <galak@kernel.crashing.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
- Ellerman" <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>, "David
- Beazley (dbeazley)" <dbeazley@cisco.com>, "xe-kernel@external.cisco.com"
- <xe-kernel@external.cisco.com>
-Date: Thu, 5 Nov 2015 17:40:21 -0600
-In-Reply-To: <563BE349.6080100@cisco.com>
-References: <563BA46C.8000202@cisco.com>
- <1446765154.12676.132.camel@freescale.com> <563BE349.6080100@cisco.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1DF5B1A0C12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 10:43:43 +1100 (AEDT)
+Message-ID: <1446767022.25265.2.camel@ellerman.id.au>
+Subject: Re: [PATCH] cxl: use correct operator when writing pcie config
+ space values
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Daniel Axtens <dja@axtens.net>, Andrew Donnellan
+ <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org
+Cc: mikey@neuling.org, imunsie@au1.ibm.com
+Date: Fri, 06 Nov 2015 10:43:42 +1100
+In-Reply-To: <87oaf8hwt2.fsf@gamma.ozlabs.ibm.com>
+References: <1446603849-26796-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ <87oaf8hwt2.fsf@gamma.ozlabs.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,34 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-11-05 at 15:16 -0800, Daniel Walker wrote:
-> On 11/05/2015 03:12 PM, Scott Wood wrote:
-> > On Thu, 2015-11-05 at 10:48 -0800, Daniel Walker wrote:
-> > > Hi,
-> > > 
-> > > 905e75c46dba5f3061049277e4eb7110beedba43:arch/powerpc/platforms/85xx/mpc85xx_ads.c
-> > > 
-> > > 
-> > > 
-> > > This commit seems to cause problems with PCI devices doing DMA, just
-> > > with mpc85xx ads. If you do the "fsl_add_bridge()" after you setup the
-> > > ppc_md.pci_exclude_device to mpc85xx_exclude_device, then the
-> > > early_read_config_word() calls in
-> > > arch/powerpc/sysdev/fsl_pci.c:setup_pci_cmd() are like no-ops.
-> > > 
-> > > This issue was found by David Beazley (on the CC), he can respond to
-> > > more detailed questions on it. The fix he came up with was to remove the
-> > > "pci_exclude_device".
-> > > 
-> > > Daniel
-> > OK, please send a patch.
-> > 
+On Fri, 2015-11-06 at 10:05 +1100, Daniel Axtens wrote:
+
+> Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
 > 
-> I was hoping Jia Hongtao could address why it wasn't address in the 
-> original patch. Some of the other boards also have an exclude function, 
-> and I wonder if those work with this change.
 
-This is the only board I saw that excludes the host bridge.  It wasn't 
-addressed because it wasn't noticed.
+> > When writing a value to config space, cxl_pcie_write_config() calls
+> > cxl_pcie_config_info() to obtain a mask and shift value, shifts the new
+> > value accordingly, then uses the mask to combine the shifted value with the
+> > existing value at the address as part of a read-modify-write pattern.
+> > 
+> > Currently, we use a logical OR operator rather than a bitwise OR operator,
+> > which means any use of this function results in an incorrect value being
+> > written. Replace the logical OR operator with a bitwise OR operator so the
+> > value is written correctly.
+> > 
+> > Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+> > Cc: stable@vger.kernel.org
+> 
+> Given that there are no current users of this function, does this need
+> to go to stable? Does it actually fix a real (as opposed to theoretical)
+> bug?
 
--Scott
+If it's unused *and* broken then we should just remove it.
+
+cheers
