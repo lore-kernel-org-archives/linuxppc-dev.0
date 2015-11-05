@@ -1,17 +1,32 @@
-Return-Path: <laurent@vivier.eu>
-Received: from smtp1-g21.free.fr (smtp1-g21.free.fr [IPv6:2a01:e0c:1:1599::10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AEA6F1A0CED
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 22:47:22 +1100 (AEDT)
-From: Laurent Vivier <laurent@vivier.eu>
-To: benh@kernel.crashing.org,
-	paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 773F41A0CF7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 00:07:37 +1100 (AEDT)
+Date: Thu, 5 Nov 2015 14:07:16 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Laurent Vivier <laurent@vivier.eu>
-Subject: [PATCH] powerpc: allow cross-compilation of ppc64 kernel
-Date: Thu,  5 Nov 2015 12:47:09 +0100
-Message-Id: <1446724029-10884-1-git-send-email-laurent@vivier.eu>
+ linux-arm-kernel@lists.infradead.org, x86@kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@kernel.org>, Jiri Olsa <jolsa@kernel.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Stephane Eranian <eranian@gmail.com>,
+ Russell King <linux@arm.linux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH  0/3]perf/core: extend perf_reg and
+ perf_sample_regs_intr
+Message-ID: <20151105130716.GC3604@twins.programming.kicks-ass.net>
+References: <1446669978-6366-1-git-send-email-maddy@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1446669978-6366-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,44 +36,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When I try to cross compile a ppc64 kernel, it generally
-fails on the VDSO stage. This is true for powerpc64 cross-
-compiler, but also when I try to build a ppc64le kernel
-on a ppc64 host.
+On Thu, Nov 05, 2015 at 02:16:15AM +0530, Madhavan Srinivasan wrote:
+> Second patch updates struct arch_misc_reg for arch/powerpc with pmu registers
+> and adds offsetof macro for the same. It extends perf_reg_value()
+> to use reg idx to decide on struct to return value from.
 
-VDSO64L fails:
-
-  VDSO64L arch/powerpc/kernel/vdso64/vdso64.so.dbg
-/usr/bin/powerpc64-linux-gnu-ld: arch/powerpc/kernel/vdso64/sigtramp.o:
-file class ELFCLASS64 incompatible with ELFCLASS32
-/usr/bin/powerpc64-linux-gnu-ld: final link failed: File in wrong format
-
-This fails because gcc calls "collect2" with
-"--oformat elf32-powerpcle" with ppc64 objects, without the
-"--oformat" ld works well because it use the format of the
-first object as output format.
-
-As this case is correctly managed to build the other kernel
-objects, this patch replaces $(GCC) by $(LD) to generate the
-VDSO objects.
-
-Signed-off-by: Laurent Vivier <laurent@vivier.eu>
----
- arch/powerpc/kernel/vdso64/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
-index effca94..618c420 100644
---- a/arch/powerpc/kernel/vdso64/Makefile
-+++ b/arch/powerpc/kernel/vdso64/Makefile
-@@ -36,7 +36,7 @@ $(obj-vdso64): %.o: %.S
- 
- # actual build commands
- quiet_cmd_vdso64ld = VDSO64L $@
--      cmd_vdso64ld = $(CC) $(c_flags) -Wl,-T $^ -o $@
-+      cmd_vdso64ld = $(LD) $(LDFLAGS) $(ldflags-y) -T $^ -o $@
- quiet_cmd_vdso64as = VDSO64A $@
-       cmd_vdso64as = $(CC) $(a_flags) -c -o $@ $<
- 
--- 
-2.5.0
+Why; what's in those regs?
