@@ -1,34 +1,22 @@
-Return-Path: <eranian@googlemail.com>
-Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
- [IPv6:2607:f8b0:4003:c06::242])
+Return-Path: <mudongliangabcd@gmail.com>
+Received: from mail-lb0-x22a.google.com (mail-lb0-x22a.google.com
+ [IPv6:2a00:1450:4010:c04::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 273561A0CDB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 01:42:34 +1100 (AEDT)
-Received: by oigi82 with SMTP id i82so4510302oig.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2015 06:42:31 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 200A61A0CDB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 01:55:08 +1100 (AEDT)
+Received: by lbbwb3 with SMTP id wb3so37136135lbb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2015 06:55:04 -0800 (PST)
 MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <1446669978-6366-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1446669978-6366-1-git-send-email-maddy@linux.vnet.ibm.com>
-Date: Thu, 5 Nov 2015 15:42:31 +0100
-Message-ID: <CAMsRxfJLLV9pOr3iL8KXqVPk0dk3t_fkueW-9WHf6WiyP6DHrA@mail.gmail.com>
-Subject: Re: [RFC PATCH 0/3]perf/core: extend perf_reg and
- perf_sample_regs_intr
-From: Stephane Eranian <eranian@googlemail.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "the arch/x86 maintainers" <x86@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, Jiri Olsa <jolsa@kernel.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Russell King <linux@arm.linux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+From: =?UTF-8?B?5oWV5Yas5Lqu?= <mudongliangabcd@gmail.com>
+Date: Thu, 5 Nov 2015 22:54:34 +0800
+Message-ID: <CAD-N9QU=C0dMN50F67GihvTBikUVmF4uSGvj=nZZfJpeum+=1A@mail.gmail.com>
+Subject: [PATCH] uapi elf: delete unused macros
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ takahiro.akashi@linaro.org, will.deacon@arm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-api@vger.kernel.org
+Content-Type: multipart/alternative; boundary=001a11c36c46e605890523cc4fa0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,89 +26,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+--001a11c36c46e605890523cc4fa0
+Content-Type: text/plain; charset=UTF-8
 
-On Wed, Nov 4, 2015 at 9:46 PM, Madhavan Srinivasan
-<maddy@linux.vnet.ibm.com> wrote:
->
-> This patchset extend the perf sample regs infrastructure
-> to include architecture specific regs. Current perf_sample_regs_intr
-> exports only registers in the pt_regs to perf.data using
-> PERF_SAMPLE_REGS_INTR sample type. But sometimes we end up looking
-> for or prefer raw register values at the interrupt during debug.
->
-I don't quite understand this explanation here.
-What do you mean by raw register values?
-The content of pt_regs is also raw register values at interrupt.
+delete unused macros and unify the comment format
 
-The API does not say that the content of perf_sample_regs_intr can ONLY
-contain names of registers coming from pt_regs. The meaning of each bit
-is arch specific and you are free to map to whatever is relevant for your arch.
-All the API says is that the values captured in the sampling buffer for these
-registers are taken at PMU interrupt.
+>From e21328f3450e841abf8a312865910806d0858373 Mon Sep 17 00:00:00 2001
+From: mudongliang <mudongliangabcd@gmail.com>
+Date: Thu, 5 Nov 2015 22:46:19 +0800
+Subject: [PATCH] unify the comment form and delete unused macros
 
->
-> This patchset extends the perf_regs to include arch specific struct,
-> and makes perf_sample_regs_intr in kernel/event/core.c as __weak__
-> function. This way, an arch specific implementation of
-> perf_sample_regs_intr() can update the arch specific data to
-> the perf_regs.
->
-> First patch defines a new structure arch_misc_reg and updates the same
-> in the struct perf_regs. Patch also modifies the perf_reg_value()
-> and perf_output_sample_regs() to take perf_regs parameter instead of pt_regs.
->
-> Second patch updates struct arch_misc_reg for arch/powerpc with pmu registers
-> and adds offsetof macro for the same. It extends perf_reg_value()
-> to use reg idx to decide on struct to return value from.
->
-> Third patch adds arch specific perf_sample_regs_intr() in arch/powerpc
-> to hook up the arch_misc_regs to perf_regs.
->
-> This patchset depends on the recent posting by Anju T in
-> linuxppc-dev@lists.ozlabs.org to enable PERF_SAMPLE_REGS_INTR
-> support in arch/powerpc.
->
-> https://patchwork.ozlabs.org/patch/539242/
-> https://patchwork.ozlabs.org/patch/539243/
-> https://patchwork.ozlabs.org/patch/539244/
->
-> Would appreciate comments and feedback.
->
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Jiri Olsa <jolsa@kernel.org>
-> Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-> Cc: Stephane Eranian <eranian@gmail.com>
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will.deacon@arm.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
->
-> Madhavan Srinivasan (3):
->   perf/core: extend perf_regs to include arch specific regs
->   perf/powerpc: update macros and add regs to arch_misc_reg struct
->   perf/powerpc: Functions to update arch_misc_regs
->
->  arch/arm/include/asm/ptrace.h               |  2 ++
->  arch/arm/kernel/perf_regs.c                 |  4 +++-
->  arch/arm64/include/asm/ptrace.h             |  2 ++
->  arch/arm64/kernel/perf_regs.c               |  4 +++-
->  arch/powerpc/include/uapi/asm/perf_regs.h   | 10 ++++++++++
->  arch/powerpc/include/uapi/asm/ptrace.h      | 11 +++++++++++
->  arch/powerpc/perf/core-book3s.c             | 29 +++++++++++++++++++++++++++++
->  arch/powerpc/perf/perf_regs.c               | 28 ++++++++++++++++++++++++++--
->  arch/x86/include/asm/ptrace.h               |  2 ++
->  arch/x86/kernel/perf_regs.c                 |  4 +++-
->  include/linux/perf_regs.h                   |  5 +++--
->  kernel/events/core.c                        |  8 ++++----
->  tools/perf/arch/powerpc/include/perf_regs.h | 16 ++++++++++++++++
->  13 files changed, 114 insertions(+), 11 deletions(-)
->
-> --
-> 1.9.1
->
+Signed-off-by: mudongliang <mudongliangabcd@gmail.com>
+---
+ arch/powerpc/boot/elf.h  | 6 ++----
+ include/uapi/linux/elf.h | 7 ++-----
+ 2 files changed, 4 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/boot/elf.h b/arch/powerpc/boot/elf.h
+index 1941bc5..e6e00ed 100644
+--- a/arch/powerpc/boot/elf.h
++++ b/arch/powerpc/boot/elf.h
+@@ -133,15 +133,13 @@ typedef struct elf64_phdr {
+ #define ELFCLASSNONE 0 /* EI_CLASS */
+ #define ELFCLASS32 1
+ #define ELFCLASS64 2
+-#define ELFCLASSNUM 3
+
+-#define ELFDATANONE 0 /* e_ident[EI_DATA] */
++#define ELFDATANONE 0 /* EI_DATA */
+ #define ELFDATA2LSB 1
+ #define ELFDATA2MSB 2
+
+-#define EV_NONE 0 /* e_version, EI_VERSION */
++#define EV_NONE 0 /* EI_VERSION */
+ #define EV_CURRENT 1
+-#define EV_NUM 2
+
+ #define ELFOSABI_NONE 0
+ #define ELFOSABI_LINUX 3
+diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
+index 71e1d0e..bd049b2 100644
+--- a/include/uapi/linux/elf.h
++++ b/include/uapi/linux/elf.h
+@@ -342,15 +342,12 @@ typedef struct elf64_shdr {
+ #define ELFCLASSNONE 0 /* EI_CLASS */
+ #define ELFCLASS32 1
+ #define ELFCLASS64 2
+-#define ELFCLASSNUM 3
+
+-#define ELFDATANONE 0 /* e_ident[EI_DATA] */
++#define ELFDATANONE 0 /* EI_DATA */
+ #define ELFDATA2LSB 1
+-#define ELFDATA2MSB 2
+
+-#define EV_NONE 0 /* e_version, EI_VERSION */
++#define EV_NONE 0 /* EI_VERSION */
+ #define EV_CURRENT 1
+-#define EV_NUM 2
+
+ #define ELFOSABI_NONE 0
+ #define ELFOSABI_LINUX 3
+-- 
+2.1.4
+
+-- 
+My best regards to you.
+
+     No System Is Safe!
+     mudongliang
+
+--001a11c36c46e605890523cc4fa0
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div>delete unused macros and unify the comment format</di=
+v><div><br></div><div>From e21328f3450e841abf8a312865910806d0858373 Mon Sep=
+ 17 00:00:00 2001</div><div>From: mudongliang &lt;<a href=3D"mailto:mudongl=
+iangabcd@gmail.com">mudongliangabcd@gmail.com</a>&gt;</div><div>Date: Thu, =
+5 Nov 2015 22:46:19 +0800</div><div>Subject: [PATCH] unify the comment form=
+ and delete unused macros</div><div><br></div><div>Signed-off-by: mudonglia=
+ng &lt;<a href=3D"mailto:mudongliangabcd@gmail.com">mudongliangabcd@gmail.c=
+om</a>&gt;</div><div>---</div><div>=C2=A0arch/powerpc/boot/elf.h =C2=A0| 6 =
+++----</div><div>=C2=A0include/uapi/linux/elf.h | 7 ++-----</div><div>=C2=
+=A02 files changed, 4 insertions(+), 9 deletions(-)</div><div><br></div><di=
+v>diff --git a/arch/powerpc/boot/elf.h b/arch/powerpc/boot/elf.h</div><div>=
+index 1941bc5..e6e00ed 100644</div><div>--- a/arch/powerpc/boot/elf.h</div>=
+<div>+++ b/arch/powerpc/boot/elf.h</div><div>@@ -133,15 +133,13 @@ typedef =
+struct elf64_phdr {</div><div>=C2=A0#define<span class=3D"" style=3D"white-=
+space:pre">	</span>ELFCLASSNONE<span class=3D"" style=3D"white-space:pre">	=
+</span>0<span class=3D"" style=3D"white-space:pre">	</span>/* EI_CLASS */</=
+div><div>=C2=A0#define<span class=3D"" style=3D"white-space:pre">	</span>EL=
+FCLASS32<span class=3D"" style=3D"white-space:pre">	</span>1</div><div>=C2=
+=A0#define<span class=3D"" style=3D"white-space:pre">	</span>ELFCLASS64<spa=
+n class=3D"" style=3D"white-space:pre">	</span>2</div><div>-#define<span cl=
+ass=3D"" style=3D"white-space:pre">	</span>ELFCLASSNUM<span class=3D"" styl=
+e=3D"white-space:pre">	</span>3</div><div>=C2=A0</div><div>-#define ELFDATA=
+NONE<span class=3D"" style=3D"white-space:pre">	</span>0<span class=3D"" st=
+yle=3D"white-space:pre">	</span>/* e_ident[EI_DATA] */</div><div>+#define E=
+LFDATANONE<span class=3D"" style=3D"white-space:pre">	</span>0<span class=
+=3D"" style=3D"white-space:pre">	</span>/* EI_DATA */</div><div>=C2=A0#defi=
+ne ELFDATA2LSB<span class=3D"" style=3D"white-space:pre">	</span>1</div><di=
+v>=C2=A0#define ELFDATA2MSB<span class=3D"" style=3D"white-space:pre">	</sp=
+an>2</div><div>=C2=A0</div><div>-#define EV_NONE<span class=3D"" style=3D"w=
+hite-space:pre">		</span>0<span class=3D"" style=3D"white-space:pre">	</spa=
+n>/* e_version, EI_VERSION */</div><div>+#define EV_NONE<span class=3D"" st=
+yle=3D"white-space:pre">		</span>0<span class=3D"" style=3D"white-space:pre=
+">	</span>/* EI_VERSION */</div><div>=C2=A0#define EV_CURRENT<span class=3D=
+"" style=3D"white-space:pre">	</span>1</div><div>-#define EV_NUM<span class=
+=3D"" style=3D"white-space:pre">		</span>2</div><div>=C2=A0</div><div>=C2=
+=A0#define ELFOSABI_NONE<span class=3D"" style=3D"white-space:pre">	</span>=
+0</div><div>=C2=A0#define ELFOSABI_LINUX<span class=3D"" style=3D"white-spa=
+ce:pre">	</span>3</div><div>diff --git a/include/uapi/linux/elf.h b/include=
+/uapi/linux/elf.h</div><div>index 71e1d0e..bd049b2 100644</div><div>--- a/i=
+nclude/uapi/linux/elf.h</div><div>+++ b/include/uapi/linux/elf.h</div><div>=
+@@ -342,15 +342,12 @@ typedef struct elf64_shdr {</div><div>=C2=A0#define<s=
+pan class=3D"" style=3D"white-space:pre">	</span>ELFCLASSNONE<span class=3D=
+"" style=3D"white-space:pre">	</span>0<span class=3D"" style=3D"white-space=
+:pre">		</span>/* EI_CLASS */</div><div>=C2=A0#define<span class=3D"" style=
+=3D"white-space:pre">	</span>ELFCLASS32<span class=3D"" style=3D"white-spac=
+e:pre">	</span>1</div><div>=C2=A0#define<span class=3D"" style=3D"white-spa=
+ce:pre">	</span>ELFCLASS64<span class=3D"" style=3D"white-space:pre">	</spa=
+n>2</div><div>-#define<span class=3D"" style=3D"white-space:pre">	</span>EL=
+FCLASSNUM<span class=3D"" style=3D"white-space:pre">	</span>3</div><div>=C2=
+=A0</div><div>-#define ELFDATANONE<span class=3D"" style=3D"white-space:pre=
+">	</span>0<span class=3D"" style=3D"white-space:pre">		</span>/* e_ident[E=
+I_DATA] */</div><div>+#define ELFDATANONE<span class=3D"" style=3D"white-sp=
+ace:pre">	</span>0<span class=3D"" style=3D"white-space:pre">		</span>/* EI=
+_DATA */</div><div>=C2=A0#define ELFDATA2LSB<span class=3D"" style=3D"white=
+-space:pre">	</span>1</div><div>-#define ELFDATA2MSB<span class=3D"" style=
+=3D"white-space:pre">	</span>2</div><div>=C2=A0</div><div>-#define EV_NONE<=
+span class=3D"" style=3D"white-space:pre">		</span>0<span class=3D"" style=
+=3D"white-space:pre">		</span>/* e_version, EI_VERSION */</div><div>+#defin=
+e EV_NONE<span class=3D"" style=3D"white-space:pre">		</span>0<span class=
+=3D"" style=3D"white-space:pre">		</span>/* EI_VERSION */</div><div>=C2=A0#=
+define EV_CURRENT<span class=3D"" style=3D"white-space:pre">	</span>1</div>=
+<div>-#define EV_NUM<span class=3D"" style=3D"white-space:pre">		</span>2</=
+div><div>=C2=A0</div><div>=C2=A0#define ELFOSABI_NONE<span class=3D"" style=
+=3D"white-space:pre">	</span>0</div><div>=C2=A0#define ELFOSABI_LINUX<span =
+class=3D"" style=3D"white-space:pre">	</span>3</div><div>--=C2=A0</div><div=
+>2.1.4</div><div><br></div>-- <br><div class=3D"gmail_signature"><div dir=
+=3D"ltr"><div><div dir=3D"ltr"><div><div dir=3D"ltr">My best regards to you=
+.<span style=3D"color:rgb(17,17,17);font-family:Helvetica,Arial,sans-serif;=
+font-size:12px;line-height:19.44px"><br></span></div><div dir=3D"ltr"><span=
+ style=3D"color:rgb(17,17,17);font-family:Helvetica,Arial,sans-serif;font-s=
+ize:12px;line-height:19.44px"><br></span></div><div dir=3D"ltr"><span style=
+=3D"color:rgb(17,17,17);font-family:Helvetica,Arial,sans-serif;font-size:12=
+px;line-height:19.44px">=C2=A0 =C2=A0 =C2=A0No System Is Safe!</span><div><=
+span style=3D"color:rgb(17,17,17);font-family:Helvetica,Arial,sans-serif;fo=
+nt-size:12px;line-height:19.44px">=C2=A0 =C2=A0 =C2=A0mudongliang</span></d=
+iv></div></div></div></div></div></div>
+</div>
+
+--001a11c36c46e605890523cc4fa0--
