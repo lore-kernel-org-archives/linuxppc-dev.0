@@ -1,42 +1,26 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0117.outbound.protection.outlook.com [207.46.100.117])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C6C5E1A0D60
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 10:18:10 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9F73B1409C2
- for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2015 10:18:10 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 6 Nov 2015 09:18:09 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id E4CF42CE8052
- for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2015 10:18:06 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA5NHiof35651784
- for <linuxppc-dev@ozlabs.org>; Fri, 6 Nov 2015 10:17:52 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA5NHYwM017794
- for <linuxppc-dev@ozlabs.org>; Fri, 6 Nov 2015 10:17:34 +1100
-Message-ID: <563BE375.2000309@au1.ibm.com>
-Date: Fri, 06 Nov 2015 10:17:09 +1100
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 58EC01A0C12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 10:40:52 +1100 (AEDT)
+Message-ID: <1446766821.12676.142.camel@freescale.com>
+Subject: Re: powerpc/fsl-pci: Unify pci/pcie initialization code
+From: Scott Wood <scottwood@freescale.com>
+To: Daniel Walker <danielwa@cisco.com>
+CC: Jia Hongtao <B38951@freescale.com>, Kumar Gala
+ <galak@kernel.crashing.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>, "David
+ Beazley (dbeazley)" <dbeazley@cisco.com>, "xe-kernel@external.cisco.com"
+ <xe-kernel@external.cisco.com>
+Date: Thu, 5 Nov 2015 17:40:21 -0600
+In-Reply-To: <563BE349.6080100@cisco.com>
+References: <563BA46C.8000202@cisco.com>
+ <1446765154.12676.132.camel@freescale.com> <563BE349.6080100@cisco.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
-CC: mikey@neuling.org, imunsie@au1.ibm.com
-Subject: Re: [PATCH] cxl: use correct operator when writing pcie config space
- values
-References: <1446603849-26796-1-git-send-email-andrew.donnellan@au1.ibm.com>
- <87oaf8hwt2.fsf@gamma.ozlabs.ibm.com>
-In-Reply-To: <87oaf8hwt2.fsf@gamma.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,17 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/11/15 10:05, Daniel Axtens wrote:
-> Given that there are no current users of this function, does this need
-> to go to stable? Does it actually fix a real (as opposed to theoretical)
-> bug?
+On Thu, 2015-11-05 at 15:16 -0800, Daniel Walker wrote:
+> On 11/05/2015 03:12 PM, Scott Wood wrote:
+> > On Thu, 2015-11-05 at 10:48 -0800, Daniel Walker wrote:
+> > > Hi,
+> > > 
+> > > 905e75c46dba5f3061049277e4eb7110beedba43:arch/powerpc/platforms/85xx/mpc85xx_ads.c
+> > > 
+> > > 
+> > > 
+> > > This commit seems to cause problems with PCI devices doing DMA, just
+> > > with mpc85xx ads. If you do the "fsl_add_bridge()" after you setup the
+> > > ppc_md.pci_exclude_device to mpc85xx_exclude_device, then the
+> > > early_read_config_word() calls in
+> > > arch/powerpc/sysdev/fsl_pci.c:setup_pci_cmd() are like no-ops.
+> > > 
+> > > This issue was found by David Beazley (on the CC), he can respond to
+> > > more detailed questions on it. The fix he came up with was to remove the
+> > > "pci_exclude_device".
+> > > 
+> > > Daniel
+> > OK, please send a patch.
+> > 
+> 
+> I was hoping Jia Hongtao could address why it wasn't address in the 
+> original patch. Some of the other boards also have an exclude function, 
+> and I wonder if those work with this change.
 
-I tagged it for stable on mpe's request - I'm not fussed either way.
+This is the only board I saw that excludes the host bridge.  It wasn't 
+addressed because it wasn't noticed.
 
-
-Andrew
-
--- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+-Scott
