@@ -1,22 +1,49 @@
-Return-Path: <mudongliangabcd@gmail.com>
-Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
- [IPv6:2607:f8b0:400e:c03::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2A6611A0CDB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 02:41:43 +1100 (AEDT)
-Received: by pabfh17 with SMTP id fh17so90741853pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2015 07:41:41 -0800 (PST)
-Message-ID: <563B78AD.2060906@gmail.com>
-Date: Thu, 05 Nov 2015 23:41:33 +0800
-From: mudongliang <mudongliangabcd@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A724C1A010C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 08:54:12 +1100 (AEDT)
+Received: from localhost
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 5 Nov 2015 14:54:09 -0700
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id C0D3838C8039
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 16:54:06 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA5Ls6EP54460446
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 21:54:06 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA5Ls43o010403
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2015 16:54:06 -0500
+Date: Thu, 5 Nov 2015 13:54:03 -0800
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Keith Busch <keith.busch@intel.com>, aik@ozlabs.ru,
+ linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
+ paulus@samba.org, sparclinux@vger.kernel.org, willy@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ david@gibson.dropbear.id.au
+Subject: Re: [PATCH 1/1 v4] drivers/nvme: default to 4k device page size
+Message-ID: <20151105215403.GA18259@linux.vnet.ibm.com>
+References: <20151027.175443.140992924519172506.davem@davemloft.net>
+ <20151028135922.GA27909@localhost.localdomain>
+ <20151029115536.GA28090@infradead.org>
+ <20151029155701.GJ7716@linux.vnet.ibm.com>
+ <20151029172043.GA8343@localhost.localdomain>
+ <20151030213511.GK7716@linux.vnet.ibm.com>
+ <20151103131824.GA12232@infradead.org>
+ <20151103134624.GG13904@localhost.localdomain>
+ <20151105170145.GB16308@linux.vnet.ibm.com>
+ <20151105195839.GB3194@infradead.org>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- takahiro.akashi@linaro.org, will.deacon@arm.com
-CC: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-api@vger.kernel.org
-Subject: [PATCH] uapi elf: delete unused macros
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151105195839.GB3194@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,68 +53,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-delete unused macros and unify the comment format
+On 05.11.2015 [11:58:39 -0800], Christoph Hellwig wrote:
+> Looks fine,
+> 
+> Reviewed-by: Christoph Hellwig <hch@lst.de>
+> 
+> ... but I doubt we'll ever bother updating it.  Most architectures
+> with arger page sizes also have iommus and would need different settings
+> for different iommus vs direct mapping for very little gain.  There's a
+> reason why we never bothered for RDMA either.
 
->From e21328f3450e841abf8a312865910806d0858373 Mon Sep 17 00:00:00 2001
-From: mudongliang <mudongliangabcd@gmail.com>
-Date: Thu, 5 Nov 2015 22:46:19 +0800
-Subject: [PATCH] unify the comment form and delete unused macros
+Fair enough :) Thanks for all your reviews and comments.
 
-Signed-off-by: mudongliang <mudongliangabcd@gmail.com>
----
- arch/powerpc/boot/elf.h  | 6 ++----
- include/uapi/linux/elf.h | 7 ++-----
- 2 files changed, 4 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/boot/elf.h b/arch/powerpc/boot/elf.h
-index 1941bc5..e6e00ed 100644
---- a/arch/powerpc/boot/elf.h
-+++ b/arch/powerpc/boot/elf.h
-@@ -133,15 +133,13 @@ typedef struct elf64_phdr {
- #define	ELFCLASSNONE	0	/* EI_CLASS */
- #define	ELFCLASS32	1
- #define	ELFCLASS64	2
--#define	ELFCLASSNUM	3
- 
--#define ELFDATANONE	0	/* e_ident[EI_DATA] */
-+#define ELFDATANONE	0	/* EI_DATA */
- #define ELFDATA2LSB	1
- #define ELFDATA2MSB	2
- 
--#define EV_NONE		0	/* e_version, EI_VERSION */
-+#define EV_NONE		0	/* EI_VERSION */
- #define EV_CURRENT	1
--#define EV_NUM		2
- 
- #define ELFOSABI_NONE	0
- #define ELFOSABI_LINUX	3
-diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
-index 71e1d0e..bd049b2 100644
---- a/include/uapi/linux/elf.h
-+++ b/include/uapi/linux/elf.h
-@@ -342,15 +342,12 @@ typedef struct elf64_shdr {
- #define	ELFCLASSNONE	0		/* EI_CLASS */
- #define	ELFCLASS32	1
- #define	ELFCLASS64	2
--#define	ELFCLASSNUM	3
- 
--#define ELFDATANONE	0		/* e_ident[EI_DATA] */
-+#define ELFDATANONE	0		/* EI_DATA */
- #define ELFDATA2LSB	1
--#define ELFDATA2MSB	2
- 
--#define EV_NONE		0		/* e_version, EI_VERSION */
-+#define EV_NONE		0		/* EI_VERSION */
- #define EV_CURRENT	1
--#define EV_NUM		2
- 
- #define ELFOSABI_NONE	0
- #define ELFOSABI_LINUX	3
--- 
-2.1.4
-
--- 
-My best regards to you.
-
-     No System Is Safe!
-     mudongliang
+-Nish
