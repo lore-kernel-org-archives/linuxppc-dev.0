@@ -1,23 +1,23 @@
-Return-Path: <amanieu@gmail.com>
-Received: from mail-wm0-x234.google.com (mail-wm0-x234.google.com
- [IPv6:2a00:1450:400c:c09::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Zhiqiang.Hou@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0137.outbound.protection.outlook.com [207.46.100.137])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D19F01A0C8C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 11:51:55 +1100 (AEDT)
-Received: by wmec75 with SMTP id c75so257936wme.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2015 16:51:52 -0800 (PST)
-From: Amanieu d'Antras <amanieu@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Oleg Nesterov <oleg@redhat.com>, Amanieu d'Antras <amanieu@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 14/20] powerpc: Use generic copy_siginfo_{to,from}_user32
-Date: Thu,  5 Nov 2015 00:50:33 +0000
-Message-Id: <1446684640-4112-15-git-send-email-amanieu@gmail.com>
-In-Reply-To: <1446684640-4112-1-git-send-email-amanieu@gmail.com>
-References: <1446684640-4112-1-git-send-email-amanieu@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CF811A0C92
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 14:14:46 +1100 (AEDT)
+From: Zhiqiang Hou <Zhiqiang.Hou@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
+ <galak@kernel.crashing.org>, <benh@kernel.crashing.org>, <paulus@samba.org>,
+ <mpe@ellerman.id.au>, <devicetree@vger.kernel.org>, <robh+dt@kernel.org>,
+ <pawel.moll@arm.com>, <mark.rutland@arm.com>,
+ <ijc+devicetree@hellion.org.uk>, <harninder.rai@freescale.com>
+CC: <Minghuan.Lian@freescale.com>, <Mingkai.Hu@freescale.com>, Hou Zhiqiang
+ <B48286@freescale.com>
+Subject: [PATCH V3 1/2] powerpc/fsl: Add PCI node in device tree of bsc9132qds
+Date: Thu, 5 Nov 2015 10:52:54 +0800
+Message-ID: <1446691975-8965-1-git-send-email-Zhiqiang.Hou@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,111 +27,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Amanieu d'Antras <amanieu@gmail.com>
----
- arch/powerpc/include/asm/compat.h |  5 ---
- arch/powerpc/kernel/signal_32.c   | 72 +--------------------------------------
- 2 files changed, 1 insertion(+), 76 deletions(-)
+From: Harninder Rai <harninder.rai@freescale.com>
 
-diff --git a/arch/powerpc/include/asm/compat.h b/arch/powerpc/include/asm/compat.h
-index f0f8392..6d9c7aa 100644
---- a/arch/powerpc/include/asm/compat.h
-+++ b/arch/powerpc/include/asm/compat.h
-@@ -124,11 +124,6 @@ typedef union compat_sigval {
- 	compat_uptr_t	sival_ptr;
- } compat_sigval_t;
+Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
+Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+Reviewed-by: Zang Tiefei-R61911 <tie-fei.zang@freescale.com>
+Reviewed-by: Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>
+Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
+Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
+Signed-off-by: Hou Zhiqiang <B48286@freescale.com>
+---
+V3:
+ - Remove gerrit stuff.
+V2:
+ - Remove property clock-frequency.
+
+ arch/powerpc/boot/dts/bsc9132qds.dts          | 15 ++++++++++++++
+ arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi | 28 +++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi  |  1 +
+ 3 files changed, 44 insertions(+)
+
+diff --git a/arch/powerpc/boot/dts/bsc9132qds.dts b/arch/powerpc/boot/dts/bsc9132qds.dts
+index 6cab106..940d719 100644
+--- a/arch/powerpc/boot/dts/bsc9132qds.dts
++++ b/arch/powerpc/boot/dts/bsc9132qds.dts
+@@ -29,6 +29,21 @@
+ 	soc: soc@ff700000 {
+ 		ranges = <0x0 0x0 0xff700000 0x100000>;
+ 	};
++
++	pci0: pcie@ff70a000 {
++		reg = <0 0xff70a000 0 0x1000>;
++		ranges = <0x2000000 0x0 0x90000000 0 0x90000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0 0xc0010000 0x0 0x10000>;
++		pcie@0 {
++			ranges = <0x2000000 0x0 0x90000000
++				  0x2000000 0x0 0x90000000
++				  0x0 0x20000000
++
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x100000>;
++		};
++	};
+ };
  
--#define SI_PAD_SIZE32	(128/sizeof(int) - 3)
--
--#define HAVE_ARCH_COPY_SIGINFO_TO_USER32
--#define HAVE_ARCH_COPY_SIGINFO_FROM_USER32
--
- #define COMPAT_OFF_T_MAX	0x7fffffff
- #define COMPAT_LOFF_T_MAX	0x7fffffffffffffffL
+ /include/ "bsc9132qds.dtsi"
+diff --git a/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi b/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
+index c723071..b5f0715 100644
+--- a/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
+@@ -40,6 +40,34 @@
+ 	interrupts = <16 2 0 0 20 2 0 0>;
+ };
  
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 0dbee46..66c47d0 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -907,78 +907,8 @@ static long restore_tm_user_regs(struct pt_regs *regs,
- #endif
++/* controller at 0xa000 */
++&pci0 {
++	compatible = "fsl,bsc9132-pcie", "fsl,qoriq-pcie-v2.2";
++	device_type = "pci";
++	#size-cells = <2>;
++	#address-cells = <3>;
++	bus-range = <0 255>;
++	interrupts = <16 2 0 0>;
++
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <16 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0x0 0x0 0x1 &mpic 0x0 0x2 0x0 0x0
++			0000 0x0 0x0 0x2 &mpic 0x1 0x2 0x0 0x0
++			0000 0x0 0x0 0x3 &mpic 0x2 0x2 0x0 0x0
++			0000 0x0 0x0 0x4 &mpic 0x3 0x2 0x0 0x0
++			>;
++	};
++};
++
+ &soc {
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi b/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi
+index 301a9db..90f7949 100644
+--- a/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi
+@@ -45,6 +45,7 @@
+ 		serial0 = &serial0;
+ 		ethernet0 = &enet0;
+ 		ethernet1 = &enet1;
++		pci0 = &pci0;
+ 	};
  
- #ifdef CONFIG_PPC64
--int copy_siginfo_to_user32(struct compat_siginfo __user *d, const siginfo_t *s)
--{
--	int err;
--
--	if (!access_ok (VERIFY_WRITE, d, sizeof(*d)))
--		return -EFAULT;
--
--	/* If you change siginfo_t structure, please be sure
--	 * this code is fixed accordingly.
--	 * It should never copy any pad contained in the structure
--	 * to avoid security leaks, but must copy the generic
--	 * 3 ints plus the relevant union member.
--	 * This routine must convert siginfo from 64bit to 32bit as well
--	 * at the same time.
--	 */
--	err = __put_user(s->si_signo, &d->si_signo);
--	err |= __put_user(s->si_errno, &d->si_errno);
--	err |= __put_user((short)s->si_code, &d->si_code);
--	if (s->si_code < 0)
--		err |= __copy_to_user(&d->_sifields._pad, &s->_sifields._pad,
--				      SI_PAD_SIZE32);
--	else switch(s->si_code >> 16) {
--	case __SI_CHLD >> 16:
--		err |= __put_user(s->si_pid, &d->si_pid);
--		err |= __put_user(s->si_uid, &d->si_uid);
--		err |= __put_user(s->si_utime, &d->si_utime);
--		err |= __put_user(s->si_stime, &d->si_stime);
--		err |= __put_user(s->si_status, &d->si_status);
--		break;
--	case __SI_FAULT >> 16:
--		err |= __put_user((unsigned int)(unsigned long)s->si_addr,
--				  &d->si_addr);
--		break;
--	case __SI_POLL >> 16:
--		err |= __put_user(s->si_band, &d->si_band);
--		err |= __put_user(s->si_fd, &d->si_fd);
--		break;
--	case __SI_TIMER >> 16:
--		err |= __put_user(s->si_tid, &d->si_tid);
--		err |= __put_user(s->si_overrun, &d->si_overrun);
--		err |= __put_user(s->si_int, &d->si_int);
--		break;
--	case __SI_SYS >> 16:
--		err |= __put_user(ptr_to_compat(s->si_call_addr), &d->si_call_addr);
--		err |= __put_user(s->si_syscall, &d->si_syscall);
--		err |= __put_user(s->si_arch, &d->si_arch);
--		break;
--	case __SI_RT >> 16: /* This is not generated by the kernel as of now.  */
--	case __SI_MESGQ >> 16:
--		err |= __put_user(s->si_int, &d->si_int);
--		/* fallthrough */
--	case __SI_KILL >> 16:
--	default:
--		err |= __put_user(s->si_pid, &d->si_pid);
--		err |= __put_user(s->si_uid, &d->si_uid);
--		break;
--	}
--	return err;
--}
--
- #define copy_siginfo_to_user	copy_siginfo_to_user32
--
--int copy_siginfo_from_user32(siginfo_t *to, struct compat_siginfo __user *from)
--{
--	if (copy_from_user(to, from, 3*sizeof(int)) ||
--	    copy_from_user(to->_sifields._pad,
--			   from->_sifields._pad, SI_PAD_SIZE32))
--		return -EFAULT;
--
--	return 0;
--}
--#endif /* CONFIG_PPC64 */
-+#endif
- 
- /*
-  * Set up a signal frame for a "real-time" signal handler
+ 	cpus {
 -- 
-2.6.2
+2.1.0.27.g96db324
