@@ -1,23 +1,33 @@
-Return-Path: <danielwa@cisco.com>
-Received: from alln-iport-6.cisco.com (alln-iport-6.cisco.com [173.37.142.93])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <BATV+3a4aedc86d2ac0237965+4456+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AFB231A0D0F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 05:58:20 +1100 (AEDT)
-To: Jia Hongtao <B38951@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>,
- Kumar Gala <galak@kernel.crashing.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- "David Beazley (dbeazley)" <dbeazley@cisco.com>,
- "xe-kernel@external.cisco.com" <xe-kernel@external.cisco.com>
-From: Daniel Walker <danielwa@cisco.com>
-Subject: Re: powerpc/fsl-pci: Unify pci/pcie initialization code
-Message-ID: <563BA46C.8000202@cisco.com>
-Date: Thu, 5 Nov 2015 10:48:12 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9BAF71A0C81
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 06:58:45 +1100 (AEDT)
+Date: Thu, 5 Nov 2015 11:58:39 -0800
+From: Christoph Hellwig <hch@infradead.org>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: Keith Busch <keith.busch@intel.com>, aik@ozlabs.ru,
+ linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
+ paulus@samba.org, sparclinux@vger.kernel.org, willy@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ david@gibson.dropbear.id.au
+Subject: Re: [PATCH 1/1 v4] drivers/nvme: default to 4k device page size
+Message-ID: <20151105195839.GB3194@infradead.org>
+References: <20151027223643.GA25332@localhost.localdomain>
+ <20151027.175443.140992924519172506.davem@davemloft.net>
+ <20151028135922.GA27909@localhost.localdomain>
+ <20151029115536.GA28090@infradead.org>
+ <20151029155701.GJ7716@linux.vnet.ibm.com>
+ <20151029172043.GA8343@localhost.localdomain>
+ <20151030213511.GK7716@linux.vnet.ibm.com>
+ <20151103131824.GA12232@infradead.org>
+ <20151103134624.GG13904@localhost.localdomain>
+ <20151105170145.GB16308@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151105170145.GB16308@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,18 +37,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Looks fine,
 
-905e75c46dba5f3061049277e4eb7110beedba43:arch/powerpc/platforms/85xx/mpc85xx_ads.c
+Reviewed-by: Christoph Hellwig <hch@lst.de>
 
-This commit seems to cause problems with PCI devices doing DMA, just 
-with mpc85xx ads. If you do the "fsl_add_bridge()" after you setup the 
-ppc_md.pci_exclude_device to mpc85xx_exclude_device, then the 
-early_read_config_word() calls in 
-arch/powerpc/sysdev/fsl_pci.c:setup_pci_cmd() are like no-ops.
-
-This issue was found by David Beazley (on the CC), he can respond to 
-more detailed questions on it. The fix he came up with was to remove the 
-"pci_exclude_device".
-
-Daniel
+... but I doubt we'll ever bother updating it.  Most architectures
+with arger page sizes also have iommus and would need different settings
+for different iommus vs direct mapping for very little gain.  There's a
+reason why we never bothered for RDMA either.
