@@ -1,25 +1,22 @@
-Return-Path: <danielwa@cisco.com>
-Received: from rcdn-iport-1.cisco.com (rcdn-iport-1.cisco.com [173.37.86.72])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 812611A0CFE
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 10:16:29 +1100 (AEDT)
-Subject: Re: powerpc/fsl-pci: Unify pci/pcie initialization code
-To: Scott Wood <scottwood@freescale.com>
-References: <563BA46C.8000202@cisco.com>
- <1446765154.12676.132.camel@freescale.com>
-Cc: Jia Hongtao <B38951@freescale.com>, Kumar Gala <galak@kernel.crashing.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- "David Beazley (dbeazley)" <dbeazley@cisco.com>,
- "xe-kernel@external.cisco.com" <xe-kernel@external.cisco.com>
-From: Daniel Walker <danielwa@cisco.com>
-Message-ID: <563BE349.6080100@cisco.com>
-Date: Thu, 5 Nov 2015 15:16:25 -0800
-MIME-Version: 1.0
-In-Reply-To: <1446765154.12676.132.camel@freescale.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 17FEC1A0D48
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 10:17:03 +1100 (AEDT)
+Message-ID: <1446765422.3325.7.camel@neuling.org>
+Subject: Re: [PATCH] cxl: use correct operator when writing pcie config
+ space values
+From: Michael Neuling <mikey@neuling.org>
+To: Daniel Axtens <dja@axtens.net>, Andrew Donnellan
+ <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org
+Cc: imunsie@au1.ibm.com
+Date: Fri, 06 Nov 2015 10:17:02 +1100
+In-Reply-To: <87oaf8hwt2.fsf@gamma.ozlabs.ibm.com>
+References: <1446603849-26796-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ <87oaf8hwt2.fsf@gamma.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,29 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/05/2015 03:12 PM, Scott Wood wrote:
-> On Thu, 2015-11-05 at 10:48 -0800, Daniel Walker wrote:
->> Hi,
->>
->> 905e75c46dba5f3061049277e4eb7110beedba43:arch/powerpc/platforms/85xx/mpc85xx_ads.c
->>
->>
->> This commit seems to cause problems with PCI devices doing DMA, just
->> with mpc85xx ads. If you do the "fsl_add_bridge()" after you setup the
->> ppc_md.pci_exclude_device to mpc85xx_exclude_device, then the
->> early_read_config_word() calls in
->> arch/powerpc/sysdev/fsl_pci.c:setup_pci_cmd() are like no-ops.
->>
->> This issue was found by David Beazley (on the CC), he can respond to
->> more detailed questions on it. The fix he came up with was to remove the
->> "pci_exclude_device".
->>
->> Daniel
-> OK, please send a patch.
->
+On Fri, 2015-11-06 at 10:05 +1100, Daniel Axtens wrote:
+> Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
+>=20
+> > When writing a value to config space, cxl_pcie_write_config() calls
+> > cxl_pcie_config_info() to obtain a mask and shift value, shifts the
+> > new
+> > value accordingly, then uses the mask to combine the shifted value
+> > with the
+> > existing value at the address as part of a read-modify-write
+> > pattern.
+> >=20
+> > Currently, we use a logical OR operator rather than a bitwise OR
+> > operator,
+> > which means any use of this function results in an incorrect value
+> > being
+> > written. Replace the logical OR operator with a bitwise OR operator
+> > so the
+> > value is written correctly.
+> >=20
+> > Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+> > Cc: stable@vger.kernel.org
+>=20
+> Given that there are no current users of this function, does this
+> need
+> to go to stable? Does it actually fix a real (as opposed to
+> theoretical)
+> bug?
 
-I was hoping Jia Hongtao could address why it wasn't address in the 
-original patch. Some of the other boards also have an exclude function, 
-and I wonder if those work with this change.
+Agreed.  Not really needed in stable.
 
-Daniel
+Mikey
+
+>=20
+> Regards,
+> Daniel
+>=20
+> > Fixes: 6f7f0b3df6d4 ("cxl: Add AFU virtual PHB and kernel API")
+> > Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> > ---
+> >  drivers/misc/cxl/vphb.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >=20
+> > diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
+> > index 94b5208..9be09bb 100644
+> > --- a/drivers/misc/cxl/vphb.c
+> > +++ b/drivers/misc/cxl/vphb.c
+> > @@ -203,7 +203,7 @@ static int cxl_pcie_write_config(struct pci_bus
+> > *bus, unsigned int devfn,
+> >  	mask <<=3D shift;
+> >  	val <<=3D shift;
+> > =20
+> > -	v =3D (in_le32(ioaddr) & ~mask) || (val & mask);
+> > +	v =3D (in_le32(ioaddr) & ~mask) | (val & mask);
+> > =20
+> >  	out_le32(ioaddr, v);
+> >  	return PCIBIOS_SUCCESSFUL;
