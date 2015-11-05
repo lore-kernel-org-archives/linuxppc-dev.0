@@ -1,10 +1,10 @@
 Return-Path: <Zhiqiang.Hou@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0127.outbound.protection.outlook.com [207.46.100.127])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0116.outbound.protection.outlook.com [157.56.110.116])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1CDDA1A0C92
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 14:15:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 20D4F1A0C95
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 14:38:08 +1100 (AEDT)
 From: Zhiqiang Hou <Zhiqiang.Hou@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
  <galak@kernel.crashing.org>, <benh@kernel.crashing.org>, <paulus@samba.org>,
@@ -13,12 +13,12 @@ To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
  <ijc+devicetree@hellion.org.uk>, <harninder.rai@freescale.com>
 CC: <Minghuan.Lian@freescale.com>, <Mingkai.Hu@freescale.com>, Hou Zhiqiang
  <B48286@freescale.com>
-Subject: [PATCH V3 2/2] powerpc/85xx: Add PCIe controller support for
+Subject: [PATCH V4 2/2] powerpc/85xx: Add PCIe controller support for
  bsc9132qds
-Date: Thu, 5 Nov 2015 10:52:55 +0800
-Message-ID: <1446691975-8965-2-git-send-email-Zhiqiang.Hou@freescale.com>
-In-Reply-To: <1446691975-8965-1-git-send-email-Zhiqiang.Hou@freescale.com>
-References: <1446691975-8965-1-git-send-email-Zhiqiang.Hou@freescale.com>
+Date: Thu, 5 Nov 2015 11:16:00 +0800
+Message-ID: <1446693360-1578-2-git-send-email-Zhiqiang.Hou@freescale.com>
+In-Reply-To: <1446693360-1578-1-git-send-email-Zhiqiang.Hou@freescale.com>
+References: <1446693360-1578-1-git-send-email-Zhiqiang.Hou@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,13 +45,9 @@ PEX_PEXIWARn[TRGT] to the Local address space – 0x0 (from 0xF).
 
 Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
 Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-Reviewed-by: Zang Tiefei-R61911 <tie-fei.zang@freescale.com>
-Reviewed-by: Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>
-Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
-Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
 Signed-off-by: Hou Zhiqiang <B48286@freescale.com>
 ---
-V3:
+V4: V3:
  - Remove gerrit stuff.
 
  arch/powerpc/platforms/85xx/bsc913x_qds.c |  8 +++++++-
