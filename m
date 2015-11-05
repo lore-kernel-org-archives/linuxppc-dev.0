@@ -1,21 +1,21 @@
 Return-Path: <amanieu@gmail.com>
-Received: from mail-wi0-x235.google.com (mail-wi0-x235.google.com
- [IPv6:2a00:1450:400c:c05::235])
+Received: from mail-wm0-x234.google.com (mail-wm0-x234.google.com
+ [IPv6:2a00:1450:400c:c09::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 36A791A0C87
+ by lists.ozlabs.org (Postfix) with ESMTPS id D19F01A0C8C
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2015 11:51:55 +1100 (AEDT)
-Received: by wikq8 with SMTP id q8so835952wik.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2015 16:51:51 -0800 (PST)
+Received: by wmec75 with SMTP id c75so257936wme.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2015 16:51:52 -0800 (PST)
 From: Amanieu d'Antras <amanieu@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: Oleg Nesterov <oleg@redhat.com>, Amanieu d'Antras <amanieu@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 13/20] powerpc: Use generic compat_siginfo_t
-Date: Thu,  5 Nov 2015 00:50:32 +0000
-Message-Id: <1446684640-4112-14-git-send-email-amanieu@gmail.com>
+Subject: [PATCH v2 14/20] powerpc: Use generic copy_siginfo_{to,from}_user32
+Date: Thu,  5 Nov 2015 00:50:33 +0000
+Message-Id: <1446684640-4112-15-git-send-email-amanieu@gmail.com>
 In-Reply-To: <1446684640-4112-1-git-send-email-amanieu@gmail.com>
 References: <1446684640-4112-1-git-send-email-amanieu@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,83 +29,109 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Amanieu d'Antras <amanieu@gmail.com>
 ---
- arch/powerpc/include/asm/compat.h | 62 ++-------------------------------------
- 1 file changed, 2 insertions(+), 60 deletions(-)
+ arch/powerpc/include/asm/compat.h |  5 ---
+ arch/powerpc/kernel/signal_32.c   | 72 +--------------------------------------
+ 2 files changed, 1 insertion(+), 76 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/compat.h b/arch/powerpc/include/asm/compat.h
-index cdc8638..f0f8392 100644
+index f0f8392..6d9c7aa 100644
 --- a/arch/powerpc/include/asm/compat.h
 +++ b/arch/powerpc/include/asm/compat.h
-@@ -124,68 +124,10 @@ typedef union compat_sigval {
+@@ -124,11 +124,6 @@ typedef union compat_sigval {
  	compat_uptr_t	sival_ptr;
  } compat_sigval_t;
  
--#define HAVE_ARCH_COMPAT_SIGINFO_T
+-#define SI_PAD_SIZE32	(128/sizeof(int) - 3)
+-
 -#define HAVE_ARCH_COPY_SIGINFO_TO_USER32
 -#define HAVE_ARCH_COPY_SIGINFO_FROM_USER32
- #define SI_PAD_SIZE32	(128/sizeof(int) - 3)
- 
--typedef struct compat_siginfo {
--	int si_signo;
--	int si_errno;
--	int si_code;
 -
--	union {
--		int _pad[SI_PAD_SIZE32];
--
--		/* kill() */
--		struct {
--			compat_pid_t _pid;		/* sender's pid */
--			__compat_uid_t _uid;		/* sender's uid */
--		} _kill;
--
--		/* POSIX.1b timers */
--		struct {
--			compat_timer_t _tid;		/* timer id */
--			int _overrun;			/* overrun count */
--			compat_sigval_t _sigval;	/* same as below */
--			int _sys_private;	/* not to be passed to user */
--		} _timer;
--
--		/* POSIX.1b signals */
--		struct {
--			compat_pid_t _pid;		/* sender's pid */
--			__compat_uid_t _uid;		/* sender's uid */
--			compat_sigval_t _sigval;
--		} _rt;
--
--		/* SIGCHLD */
--		struct {
--			compat_pid_t _pid;		/* which child */
--			__compat_uid_t _uid;		/* sender's uid */
--			int _status;			/* exit code */
--			compat_clock_t _utime;
--			compat_clock_t _stime;
--		} _sigchld;
--
--		/* SIGILL, SIGFPE, SIGSEGV, SIGBUS, SIGEMT */
--		struct {
--			unsigned int _addr; /* faulting insn/memory ref. */
--		} _sigfault;
--
--		/* SIGPOLL */
--		struct {
--			int _band;	/* POLL_IN, POLL_OUT, POLL_MSG */
--			int _fd;
--		} _sigpoll;
--
--		/* SIGSYS */
--		struct {
--			unsigned int _call_addr; /* calling insn */
--			int _syscall;		 /* triggering system call number */
--			unsigned int _arch;	 /* AUDIT_ARCH_* of syscall */
--		} _sigsys;
--	} _sifields;
--} compat_siginfo_t;
-+#define HAVE_ARCH_COPY_SIGINFO_TO_USER32
-+#define HAVE_ARCH_COPY_SIGINFO_FROM_USER32
- 
  #define COMPAT_OFF_T_MAX	0x7fffffff
  #define COMPAT_LOFF_T_MAX	0x7fffffffffffffffL
+ 
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index 0dbee46..66c47d0 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -907,78 +907,8 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ #endif
+ 
+ #ifdef CONFIG_PPC64
+-int copy_siginfo_to_user32(struct compat_siginfo __user *d, const siginfo_t *s)
+-{
+-	int err;
+-
+-	if (!access_ok (VERIFY_WRITE, d, sizeof(*d)))
+-		return -EFAULT;
+-
+-	/* If you change siginfo_t structure, please be sure
+-	 * this code is fixed accordingly.
+-	 * It should never copy any pad contained in the structure
+-	 * to avoid security leaks, but must copy the generic
+-	 * 3 ints plus the relevant union member.
+-	 * This routine must convert siginfo from 64bit to 32bit as well
+-	 * at the same time.
+-	 */
+-	err = __put_user(s->si_signo, &d->si_signo);
+-	err |= __put_user(s->si_errno, &d->si_errno);
+-	err |= __put_user((short)s->si_code, &d->si_code);
+-	if (s->si_code < 0)
+-		err |= __copy_to_user(&d->_sifields._pad, &s->_sifields._pad,
+-				      SI_PAD_SIZE32);
+-	else switch(s->si_code >> 16) {
+-	case __SI_CHLD >> 16:
+-		err |= __put_user(s->si_pid, &d->si_pid);
+-		err |= __put_user(s->si_uid, &d->si_uid);
+-		err |= __put_user(s->si_utime, &d->si_utime);
+-		err |= __put_user(s->si_stime, &d->si_stime);
+-		err |= __put_user(s->si_status, &d->si_status);
+-		break;
+-	case __SI_FAULT >> 16:
+-		err |= __put_user((unsigned int)(unsigned long)s->si_addr,
+-				  &d->si_addr);
+-		break;
+-	case __SI_POLL >> 16:
+-		err |= __put_user(s->si_band, &d->si_band);
+-		err |= __put_user(s->si_fd, &d->si_fd);
+-		break;
+-	case __SI_TIMER >> 16:
+-		err |= __put_user(s->si_tid, &d->si_tid);
+-		err |= __put_user(s->si_overrun, &d->si_overrun);
+-		err |= __put_user(s->si_int, &d->si_int);
+-		break;
+-	case __SI_SYS >> 16:
+-		err |= __put_user(ptr_to_compat(s->si_call_addr), &d->si_call_addr);
+-		err |= __put_user(s->si_syscall, &d->si_syscall);
+-		err |= __put_user(s->si_arch, &d->si_arch);
+-		break;
+-	case __SI_RT >> 16: /* This is not generated by the kernel as of now.  */
+-	case __SI_MESGQ >> 16:
+-		err |= __put_user(s->si_int, &d->si_int);
+-		/* fallthrough */
+-	case __SI_KILL >> 16:
+-	default:
+-		err |= __put_user(s->si_pid, &d->si_pid);
+-		err |= __put_user(s->si_uid, &d->si_uid);
+-		break;
+-	}
+-	return err;
+-}
+-
+ #define copy_siginfo_to_user	copy_siginfo_to_user32
+-
+-int copy_siginfo_from_user32(siginfo_t *to, struct compat_siginfo __user *from)
+-{
+-	if (copy_from_user(to, from, 3*sizeof(int)) ||
+-	    copy_from_user(to->_sifields._pad,
+-			   from->_sifields._pad, SI_PAD_SIZE32))
+-		return -EFAULT;
+-
+-	return 0;
+-}
+-#endif /* CONFIG_PPC64 */
++#endif
+ 
+ /*
+  * Set up a signal frame for a "real-time" signal handler
 -- 
 2.6.2
