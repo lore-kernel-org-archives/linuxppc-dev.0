@@ -1,32 +1,20 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0116.outbound.protection.outlook.com [207.46.100.116])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 773F41A0CF7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 00:07:37 +1100 (AEDT)
-Date: Thu, 5 Nov 2015 14:07:16 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, x86@kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@kernel.org>, Jiri Olsa <jolsa@kernel.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Stephane Eranian <eranian@gmail.com>,
- Russell King <linux@arm.linux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH  0/3]perf/core: extend perf_reg and
- perf_sample_regs_intr
-Message-ID: <20151105130716.GC3604@twins.programming.kicks-ass.net>
-References: <1446669978-6366-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0518D1A0CCE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 01:16:30 +1100 (AEDT)
+From: <igal.liberman@freescale.com>
+To: <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+CC: <scottwood@freescale.com>, <mpe@ellerman.id.au>,
+ <madalin.bucur@freescale.com>, Igal Liberman <igal.liberman@freescale.com>
+Subject: [PATCH] powerpc/mpc85xx: Update B4 FMan MURAM size
+Date: Thu, 5 Nov 2015 12:23:06 +0200
+Message-ID: <1446718986-11710-1-git-send-email-igal.liberman@freescale.com>
+Reply-To: <igal.liberman@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1446669978-6366-1-git-send-email-maddy@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,9 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 05, 2015 at 02:16:15AM +0530, Madhavan Srinivasan wrote:
-> Second patch updates struct arch_misc_reg for arch/powerpc with pmu registers
-> and adds offsetof macro for the same. It extends perf_reg_value()
-> to use reg idx to decide on struct to return value from.
+From: Igal Liberman <igal.liberman@freescale.com>
 
-Why; what's in those regs?
+FMan V3H has 2 different MURAM sizes:
+    In B4860/4420 the MURAM size is 512KB.
+    In T4240 and T2080 the MURAM size is 384KB.
+
+The MURAM size in FMan V3H device tree is 384KB.
+This patch updates the MURAM size for B4 to 512KB.
+
+Based on prior submissions:
+https://patchwork.ozlabs.org/patch/503921/
+https://patchwork.ozlabs.org/patch/503922/
+
+Signed-off-by: Igal Liberman <igal.liberman@freescale.com>
+---
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+index d51e2bb..abadc28 100644
+--- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+@@ -473,6 +473,11 @@
+ 	fman@400000 {
+ 		interrupts = <96 2 0 0>, <16 2 1 30>;
+ 
++		muram@0 {
++			compatible = "fsl,fman-muram";
++			reg = <0x0 0x80000>;
++		};
++
+ 		enet0: ethernet@e0000 {
+ 		};
+ 
+-- 
+1.7.9.5
