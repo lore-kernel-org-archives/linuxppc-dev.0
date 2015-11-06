@@ -1,36 +1,23 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
+Return-Path: <mudongliangabcd@gmail.com>
+Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c03::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F18C81A0D15
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 21:25:49 +1100 (AEDT)
-Date: Fri, 6 Nov 2015 11:25:40 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, x86@kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@kernel.org>, Jiri Olsa <jolsa@kernel.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Stephane Eranian <eranian@gmail.com>,
- Russell King <linux@arm.linux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/3]perf/core: extend perf_reg and
- perf_sample_regs_intr
-Message-ID: <20151106102540.GR3604@twins.programming.kicks-ass.net>
-References: <1446669978-6366-1-git-send-email-maddy@linux.vnet.ibm.com>
- <20151105130716.GC3604@twins.programming.kicks-ass.net>
- <563C5655.3000605@linux.vnet.ibm.com>
- <20151106092430.GO3604@twins.programming.kicks-ass.net>
- <1446804240.21859.4.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 537621A0D49
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Nov 2015 01:45:56 +1100 (AEDT)
+Received: by pasz6 with SMTP id z6so129065855pas.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2015 06:45:53 -0800 (PST)
+Message-ID: <563CBD1B.1060407@gmail.com>
+Date: Fri, 06 Nov 2015 22:45:47 +0800
+From: mudongliang <mudongliangabcd@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1446804240.21859.4.camel@ellerman.id.au>
+To: benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ mudongliangabcd@gmail.com, will.deacon@arm.com, takahiro.akashi@linaro.org
+CC: linuxppc-dev@lists.ozlabs.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-api@vger.kernel.org
+Subject: [PATCH] uapi elf: delete unused macros
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,37 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 06, 2015 at 09:04:00PM +1100, Michael Ellerman wrote:
-> It's a perrenial request from our hardware PMU folks to be able to see the raw
-> values of the PMU registers.
-> 
-> I think partly it's so that they can verify that perf is doing what they want,
-> and some of it is that they're interested in some of the more obscure info that
-> isn't plumbed out through other perf interfaces.
-> 
-> We've used various internal hacks over the years to keep them happy. This is an
-> attempt to use a somewhat standard mechanism.
-> 
-> It would also be helpful for those of us working on the perf hardware backends,
-> to be able to verify that we're programming things correctly, without resorting
-> to debug printks etc.
-> 
-> Basically we want to sample regs at the time of the perf interrupt, so we
-> though PERF_SAMPLE_REGS_INTR made senes :)
-> 
-> But if you think this is the wrong mechanism within perf, then please let us
-> know.
-> 
-> I know perf's mission is to abstract as much of the arcane hardware details
-> into a generic interface and make PMUs actually useful for normal folks, and we
-> are committed to that, but it would also be useful to be able to get the raw
-> values for a different type of user.
-> 
-> Maddy's patch only exports PMC1-6 and MMCR0/1. I think we also need to export
-> some others, in particular MMCRA has a lot of stuff in it, half of which is not
-> even architected. So that would have to be exported as "POWER8_MMCRA". And then
-> there's the SIAR/SDAR/SIER which contain a bunch of info on sampled
-> instructions that is not currently plumbed out.
+>From 13f516acc709d88d3162e92bc891c8e39cc9fc1a Mon Sep 17 00:00:00 2001
+From: mudongliang <mudongliangabcd@gmail.com>
+Date: Fri, 6 Nov 2015 14:35:19 +0800
+Subject: [PATCH] unify the comment form and delete unused macros
 
-OK, no objections then. But this is useful information and should be
-included in the patch set.
+Signed-off-by: mudongliang <mudongliangabcd@gmail.com>
+---
+ arch/powerpc/boot/elf.h  | 6 ++----
+ include/uapi/linux/elf.h | 6 ++----
+ 2 files changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/boot/elf.h b/arch/powerpc/boot/elf.h
+index 1941bc5..e6e00ed 100644
+--- a/arch/powerpc/boot/elf.h
++++ b/arch/powerpc/boot/elf.h
+@@ -133,15 +133,13 @@ typedef struct elf64_phdr {
+ #define	ELFCLASSNONE	0	/* EI_CLASS */
+ #define	ELFCLASS32	1
+ #define	ELFCLASS64	2
+-#define	ELFCLASSNUM	3
+ 
+-#define ELFDATANONE	0	/* e_ident[EI_DATA] */
++#define ELFDATANONE	0	/* EI_DATA */
+ #define ELFDATA2LSB	1
+ #define ELFDATA2MSB	2
+ 
+-#define EV_NONE		0	/* e_version, EI_VERSION */
++#define EV_NONE		0	/* EI_VERSION */
+ #define EV_CURRENT	1
+-#define EV_NUM		2
+ 
+ #define ELFOSABI_NONE	0
+ #define ELFOSABI_LINUX	3
+diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
+index 71e1d0e..ff81b20 100644
+--- a/include/uapi/linux/elf.h
++++ b/include/uapi/linux/elf.h
+@@ -342,15 +342,13 @@ typedef struct elf64_shdr {
+ #define	ELFCLASSNONE	0		/* EI_CLASS */
+ #define	ELFCLASS32	1
+ #define	ELFCLASS64	2
+-#define	ELFCLASSNUM	3
+ 
+-#define ELFDATANONE	0		/* e_ident[EI_DATA] */
++#define ELFDATANONE	0		/* EI_DATA */
+ #define ELFDATA2LSB	1
+ #define ELFDATA2MSB	2
+ 
+-#define EV_NONE		0		/* e_version, EI_VERSION */
++#define EV_NONE		0		/* EI_VERSION */
+ #define EV_CURRENT	1
+-#define EV_NUM		2
+ 
+ #define ELFOSABI_NONE	0
+ #define ELFOSABI_LINUX	3
+-- 
+2.1.4
+
+
+-- 
+My best regards to you.
+
+     No System Is Safe!
+     mudongliang
