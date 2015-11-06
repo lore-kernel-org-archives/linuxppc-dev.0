@@ -1,23 +1,49 @@
-Return-Path: <mudongliangabcd@gmail.com>
-Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
- [IPv6:2607:f8b0:400e:c03::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 537621A0D49
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Nov 2015 01:45:56 +1100 (AEDT)
-Received: by pasz6 with SMTP id z6so129065855pas.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2015 06:45:53 -0800 (PST)
-Message-ID: <563CBD1B.1060407@gmail.com>
-Date: Fri, 06 Nov 2015 22:45:47 +0800
-From: mudongliang <mudongliangabcd@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D22FB1A0D49
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Nov 2015 03:14:04 +1100 (AEDT)
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Fri, 6 Nov 2015 09:14:01 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id A128519D803F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 09:01:57 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA6GAN0e7537146
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Nov 2015 09:10:23 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA6GDlWb009203
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Nov 2015 09:13:48 -0700
+Date: Fri, 6 Nov 2015 08:13:45 -0800
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Keith Busch <keith.busch@intel.com>, aik@ozlabs.ru,
+ linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
+ paulus@samba.org, sparclinux@vger.kernel.org, willy@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ david@gibson.dropbear.id.au
+Subject: Re: [PATCH 1/1 v4] drivers/nvme: default to 4k device page size
+Message-ID: <20151106161345.GB18259@linux.vnet.ibm.com>
+References: <20151027.175443.140992924519172506.davem@davemloft.net>
+ <20151028135922.GA27909@localhost.localdomain>
+ <20151029115536.GA28090@infradead.org>
+ <20151029155701.GJ7716@linux.vnet.ibm.com>
+ <20151029172043.GA8343@localhost.localdomain>
+ <20151030213511.GK7716@linux.vnet.ibm.com>
+ <20151103131824.GA12232@infradead.org>
+ <20151103134624.GG13904@localhost.localdomain>
+ <20151105170145.GB16308@linux.vnet.ibm.com>
+ <20151105195839.GB3194@infradead.org>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- mudongliangabcd@gmail.com, will.deacon@arm.com, takahiro.akashi@linaro.org
-CC: linuxppc-dev@lists.ozlabs.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-api@vger.kernel.org
-Subject: [PATCH] uapi elf: delete unused macros
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151105195839.GB3194@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,67 +53,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From 13f516acc709d88d3162e92bc891c8e39cc9fc1a Mon Sep 17 00:00:00 2001
-From: mudongliang <mudongliangabcd@gmail.com>
-Date: Fri, 6 Nov 2015 14:35:19 +0800
-Subject: [PATCH] unify the comment form and delete unused macros
+On 05.11.2015 [11:58:39 -0800], Christoph Hellwig wrote:
+> Looks fine,
+> 
+> Reviewed-by: Christoph Hellwig <hch@lst.de>
+> 
+> ... but I doubt we'll ever bother updating it.  Most architectures
+> with arger page sizes also have iommus and would need different settings
+> for different iommus vs direct mapping for very little gain.  There's a
+> reason why we never bothered for RDMA either.
 
-Signed-off-by: mudongliang <mudongliangabcd@gmail.com>
----
- arch/powerpc/boot/elf.h  | 6 ++----
- include/uapi/linux/elf.h | 6 ++----
- 2 files changed, 4 insertions(+), 8 deletions(-)
+FWIW, whose tree should this go through? The bug only appears on Power,
+afaik, but the patch is now just an NVMe change.
 
-diff --git a/arch/powerpc/boot/elf.h b/arch/powerpc/boot/elf.h
-index 1941bc5..e6e00ed 100644
---- a/arch/powerpc/boot/elf.h
-+++ b/arch/powerpc/boot/elf.h
-@@ -133,15 +133,13 @@ typedef struct elf64_phdr {
- #define	ELFCLASSNONE	0	/* EI_CLASS */
- #define	ELFCLASS32	1
- #define	ELFCLASS64	2
--#define	ELFCLASSNUM	3
- 
--#define ELFDATANONE	0	/* e_ident[EI_DATA] */
-+#define ELFDATANONE	0	/* EI_DATA */
- #define ELFDATA2LSB	1
- #define ELFDATA2MSB	2
- 
--#define EV_NONE		0	/* e_version, EI_VERSION */
-+#define EV_NONE		0	/* EI_VERSION */
- #define EV_CURRENT	1
--#define EV_NUM		2
- 
- #define ELFOSABI_NONE	0
- #define ELFOSABI_LINUX	3
-diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
-index 71e1d0e..ff81b20 100644
---- a/include/uapi/linux/elf.h
-+++ b/include/uapi/linux/elf.h
-@@ -342,15 +342,13 @@ typedef struct elf64_shdr {
- #define	ELFCLASSNONE	0		/* EI_CLASS */
- #define	ELFCLASS32	1
- #define	ELFCLASS64	2
--#define	ELFCLASSNUM	3
- 
--#define ELFDATANONE	0		/* e_ident[EI_DATA] */
-+#define ELFDATANONE	0		/* EI_DATA */
- #define ELFDATA2LSB	1
- #define ELFDATA2MSB	2
- 
--#define EV_NONE		0		/* e_version, EI_VERSION */
-+#define EV_NONE		0		/* EI_VERSION */
- #define EV_CURRENT	1
--#define EV_NUM		2
- 
- #define ELFOSABI_NONE	0
- #define ELFOSABI_LINUX	3
--- 
-2.1.4
-
-
--- 
-My best regards to you.
-
-     No System Is Safe!
-     mudongliang
+Thanks,
+Nish
