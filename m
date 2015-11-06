@@ -1,42 +1,20 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <danielwa@cisco.com>
+Received: from alln-iport-3.cisco.com (alln-iport-3.cisco.com [173.37.142.90])
+ (using TLSv1.2 with cipher DHE-RSA-SEED-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8388B1A0C3F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 10:53:21 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 6 Nov 2015 09:53:20 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4D6C42BB0051
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 10:53:16 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA5Nr2r019202204
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Nov 2015 10:53:10 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA5NqgUd013679
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Nov 2015 10:52:44 +1100
-Date: Fri, 6 Nov 2015 10:52:18 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Daniel Axtens <dja@axtens.net>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
- bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
- panto@antoniou-consulting.com, frowand.list@gmail.com
-Subject: Re: [PATCH v7 10/50] powerpc/powernv: Simplify pnv_ioda_setup_pe_seg()
-Message-ID: <20151105235218.GC30465@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-11-git-send-email-gwshan@linux.vnet.ibm.com>
- <87r3k4hx89.fsf@gamma.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87r3k4hx89.fsf@gamma.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 55A851A0D5F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 11:31:25 +1100 (AEDT)
+From: Daniel Walker <danielwa@cisco.com>
+To: Scott Wood <scottwood@freescale.com>,
+ Kumar Gala <galak@kernel.crashing.org>
+Cc: xe-kernel@external.cisco.com, dbeazley@cisco.com, dwalker@fifo99.com,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: platform: 85xx: mpc85xx ADS: remove pci exclude
+Date: Thu,  5 Nov 2015 16:31:21 -0800
+Message-Id: <1446769881-17946-1-git-send-email-danielwa@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,141 +24,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 06, 2015 at 09:56:06AM +1100, Daniel Axtens wrote:
->Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
->
->> The original implementation of pnv_ioda_setup_pe_seg() configures
->> IO and M32 segments by separate logics, which can be merged by
->> by caching @segmap, @seg_size, @win in advance. This shouldn't
->> cause any behavioural changes.
->>
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/platforms/powernv/pci-ioda.c | 62 ++++++++++++++-----------------
->>  1 file changed, 28 insertions(+), 34 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->> index 7ee7cfe..553d3f3 100644
->> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> @@ -2752,8 +2752,10 @@ static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
->>  	struct pnv_phb *phb = hose->private_data;
->>  	struct pci_bus_region region;
->>  	struct resource *res;
->> -	int i, index;
->> -	int rc;
->> +	unsigned int segsize;
->> +	int *segmap, index, i;
->> +	uint16_t win;
->> +	int64_t rc;
->
->Good catch! Opal return codes are 64 bit and that should be explicit
->in the type. However, I seem to remember that we preferred a different
->type for 64 bit ints in the kernel. I think it's s64, and there are some
->other uses of that in pci_ioda.c for return codes.
->
+This code was reworked in commit,
 
-Both int64_t and s64 are fine. I used s64 for the OPAL return value, but
-Alexey likes "int64_t", which is ok to me as well. I won't change it back
-to s64 :-)
+905e75c46dba5f3061049277e4eb7110beedba43
 
->(I'm actually surprised that's not picked up as a compiler
->warning. Maybe that's something to look at in future.)
->
+This change removed the fsl_add_bridge() which originally was above
+the addition of the pci_exclude_device function. I think the assumption was that
+the pci_exclude_device would prevent changes to the bridge PCI config after
+it's been added. It seems it wasn't fully tested on MPC85xx ADS because
+if you move the fsl_add_bridge() the pci_exclude_device is set in the machine
+description then you can never update the PCI Config since the exclude
+prevents it. This disrupts things like DMA.
 
-Indeed, I didn't see a warning from gcc.
+This issue was extensively debugged by David Beazley.
 
->The rest of the patch looks good on casual inspection - to be sure I'll
->test the entire series on a machine. (hopefully, time permitting!)
->
+Cc: xe-kernel@external.cisco.com
+Cc: dbeazley@cisco.com
+Cc: dwalker@fifo99.com
+Signed-off-by: Daniel Walker <danielwa@cisco.com>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c | 15 ---------------
+ 1 file changed, 15 deletions(-)
 
-I run scripts/checkpatch.pl on the patchset. Only one warning came from
-[PATCH 44/50], but I won't bother to change that as the warning was
-brought by original code. If you want to test this patchset, you need
-run it on Tuleta where the hotpluggable PCI slots are supported.
-
-Thanks,
-Gavin
-
->>  
->>  	/*
->>  	 * NOTE: We only care PCI bus based PE for now. For PCI
->> @@ -2770,23 +2772,9 @@ static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
->>  		if (res->flags & IORESOURCE_IO) {
->>  			region.start = res->start - phb->ioda.io_pci_base;
->>  			region.end   = res->end - phb->ioda.io_pci_base;
->> -			index = region.start / phb->ioda.io_segsize;
->> -
->> -			while (index < phb->ioda.total_pe_num &&
->> -			       region.start <= region.end) {
->> -				phb->ioda.io_segmap[index] = pe->pe_number;
->> -				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
->> -					pe->pe_number, OPAL_IO_WINDOW_TYPE, 0, index);
->> -				if (rc != OPAL_SUCCESS) {
->> -					pr_err("%s: OPAL error %d when mapping IO "
->> -					       "segment #%d to PE#%d\n",
->> -					       __func__, rc, index, pe->pe_number);
->> -					break;
->> -				}
->> -
->> -				region.start += phb->ioda.io_segsize;
->> -				index++;
->> -			}
->> +			segsize      = phb->ioda.io_segsize;
->> +			segmap       = phb->ioda.io_segmap;
->> +			win          = OPAL_IO_WINDOW_TYPE;
->>  		} else if ((res->flags & IORESOURCE_MEM) &&
->>  			   !pnv_pci_is_mem_pref_64(res->flags)) {
->>  			region.start = res->start -
->> @@ -2795,23 +2783,29 @@ static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
->>  			region.end   = res->end -
->>  				       hose->mem_offset[0] -
->>  				       phb->ioda.m32_pci_base;
->> -			index = region.start / phb->ioda.m32_segsize;
->> -
->> -			while (index < phb->ioda.total_pe_num &&
->> -			       region.start <= region.end) {
->> -				phb->ioda.m32_segmap[index] = pe->pe_number;
->> -				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
->> -					pe->pe_number, OPAL_M32_WINDOW_TYPE, 0, index);
->> -				if (rc != OPAL_SUCCESS) {
->> -					pr_err("%s: OPAL error %d when mapping M32 "
->> -					       "segment#%d to PE#%d",
->> -					       __func__, rc, index, pe->pe_number);
->> -					break;
->> -				}
->> +			segsize      = phb->ioda.m32_segsize;
->> +			segmap       = phb->ioda.m32_segmap;
->> +			win          = OPAL_M32_WINDOW_TYPE;
->> +		} else {
->> +			continue;
->> +		}
->>  
->> -				region.start += phb->ioda.m32_segsize;
->> -				index++;
->> +		index = region.start / segsize;
->> +		while (index < phb->ioda.total_pe_num &&
->> +		       region.start <= region.end) {
->> +			segmap[index] = pe->pe_number;
->> +			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
->> +					pe->pe_number, win, 0, index);
->> +			if (rc != OPAL_SUCCESS) {
->> +				pr_warn("%s: Error %lld mapping (%d) seg#%d to PHB#%d-PE#%d\n",
->> +					__func__, rc, win, index,
->> +					pe->phb->hose->global_number,
->> +					pe->pe_number);
->> +				break;
->>  			}
->> +
->> +			region.start += segsize;
->> +			index++;
->>  		}
->>  	}
->>  }
->> -- 
->> 2.1.0
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+index 7d12a19..de72a5f 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -36,17 +36,6 @@
+ 
+ #include "mpc85xx.h"
+ 
+-#ifdef CONFIG_PCI
+-static int mpc85xx_exclude_device(struct pci_controller *hose,
+-				   u_char bus, u_char devfn)
+-{
+-	if (bus == 0 && PCI_SLOT(devfn) == 0)
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	else
+-		return PCIBIOS_SUCCESSFUL;
+-}
+-#endif /* CONFIG_PCI */
+-
+ static void __init mpc85xx_ads_pic_init(void)
+ {
+ 	struct mpic *mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN,
+@@ -145,10 +134,6 @@ static void __init mpc85xx_ads_setup_arch(void)
+ 	init_ioports();
+ #endif
+ 
+-#ifdef CONFIG_PCI
+-	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+-#endif
+-
+ 	fsl_pci_assign_primary();
+ }
+ 
+-- 
+2.1.4
