@@ -1,49 +1,21 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0112.outbound.protection.outlook.com [157.56.110.112])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D22FB1A0D49
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Nov 2015 03:14:04 +1100 (AEDT)
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 6 Nov 2015 09:14:01 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id A128519D803F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 09:01:57 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA6GAN0e7537146
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Nov 2015 09:10:23 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA6GDlWb009203
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Nov 2015 09:13:48 -0700
-Date: Fri, 6 Nov 2015 08:13:45 -0800
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Keith Busch <keith.busch@intel.com>, aik@ozlabs.ru,
- linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
- paulus@samba.org, sparclinux@vger.kernel.org, willy@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- david@gibson.dropbear.id.au
-Subject: Re: [PATCH 1/1 v4] drivers/nvme: default to 4k device page size
-Message-ID: <20151106161345.GB18259@linux.vnet.ibm.com>
-References: <20151027.175443.140992924519172506.davem@davemloft.net>
- <20151028135922.GA27909@localhost.localdomain>
- <20151029115536.GA28090@infradead.org>
- <20151029155701.GJ7716@linux.vnet.ibm.com>
- <20151029172043.GA8343@localhost.localdomain>
- <20151030213511.GK7716@linux.vnet.ibm.com>
- <20151103131824.GA12232@infradead.org>
- <20151103134624.GG13904@localhost.localdomain>
- <20151105170145.GB16308@linux.vnet.ibm.com>
- <20151105195839.GB3194@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2E1841A0D6A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Nov 2015 08:10:07 +1100 (AEDT)
+Message-ID: <1446844180.11597.13.camel@freescale.com>
+Subject: Re: [PATCH] powerpc: allow cross-compilation of ppc64 kernel
+From: Scott Wood <scottwood@freescale.com>
+To: Laurent Vivier <laurent@vivier.eu>
+CC: <benh@kernel.crashing.org>, <paulus@samba.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
+Date: Fri, 6 Nov 2015 15:09:40 -0600
+In-Reply-To: <1446724029-10884-1-git-send-email-laurent@vivier.eu>
+References: <1446724029-10884-1-git-send-email-laurent@vivier.eu>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151105195839.GB3194@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,18 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05.11.2015 [11:58:39 -0800], Christoph Hellwig wrote:
-> Looks fine,
+On Thu, 2015-11-05 at 12:47 +0100, Laurent Vivier wrote:
+> When I try to cross compile a ppc64 kernel, it generally
+> fails on the VDSO stage. This is true for powerpc64 cross-
+> compiler, but also when I try to build a ppc64le kernel
+> on a ppc64 host.
 > 
-> Reviewed-by: Christoph Hellwig <hch@lst.de>
+> VDSO64L fails:
 > 
-> ... but I doubt we'll ever bother updating it.  Most architectures
-> with arger page sizes also have iommus and would need different settings
-> for different iommus vs direct mapping for very little gain.  There's a
-> reason why we never bothered for RDMA either.
+>   VDSO64L arch/powerpc/kernel/vdso64/vdso64.so.dbg
+> /usr/bin/powerpc64-linux-gnu-ld: arch/powerpc/kernel/vdso64/sigtramp.o:
+> file class ELFCLASS64 incompatible with ELFCLASS32
+> /usr/bin/powerpc64-linux-gnu-ld: final link failed: File in wrong format
+> 
+> This fails because gcc calls "collect2" with
+> "--oformat elf32-powerpcle" with ppc64 objects, without the
+> "--oformat" ld works well because it use the format of the
+> first object as output format.
+> 
+> As this case is correctly managed to build the other kernel
+> objects, this patch replaces $(GCC) by $(LD) to generate the
+> VDSO objects.
 
-FWIW, whose tree should this go through? The bug only appears on Power,
-afaik, but the patch is now just an NVMe change.
+I cross-compile ppc64 kernels and have not seen this problem.  I do need to 
+pass in -m64 as part of $(CC) if it's not the toolchain default, which is not 
+nice, but the proper fix for that is to add -m64 in the makefiles -- and if I 
+don't it fails way before VDSO.
 
-Thanks,
-Nish
+Why is GCC building ppc64 object files but telling the linker --oformat elf32-
+powerpcle?  Are different options somehow being passed to GCC in one case 
+versus the other?
+
+-Scott
