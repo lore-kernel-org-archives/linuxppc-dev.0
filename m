@@ -1,20 +1,42 @@
-Return-Path: <danielwa@cisco.com>
-Received: from alln-iport-3.cisco.com (alln-iport-3.cisco.com [173.37.142.90])
- (using TLSv1.2 with cipher DHE-RSA-SEED-SHA (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 55A851A0D5F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 11:31:25 +1100 (AEDT)
-From: Daniel Walker <danielwa@cisco.com>
-To: Scott Wood <scottwood@freescale.com>,
- Kumar Gala <galak@kernel.crashing.org>
-Cc: xe-kernel@external.cisco.com, dbeazley@cisco.com, dwalker@fifo99.com,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: platform: 85xx: mpc85xx ADS: remove pci exclude
-Date: Thu,  5 Nov 2015 16:31:21 -0800
-Message-Id: <1446769881-17946-1-git-send-email-danielwa@cisco.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0A2FA1A0DE1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 12:11:25 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 6 Nov 2015 11:11:23 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6DA97357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2015 12:11:19 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA61BArC57278648
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Nov 2015 12:11:19 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA61AjXu011012
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Nov 2015 12:10:46 +1100
+Date: Fri, 6 Nov 2015 12:09:51 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Daniel Axtens <dja@axtens.net>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ devicetree@vger.kernel.org, aik@ozlabs.ru, linux-pci@vger.kernel.org,
+ panto@antoniou-consulting.com, grant.likely@linaro.org,
+ robherring2@gmail.com, bhelgaas@google.com, frowand.list@gmail.com
+Subject: Re: [PATCH v7 04/50] powerpc/powernv: Cleanup on
+ pnv_pci_ioda_controller_ops
+Message-ID: <20151106010951.GA4601@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1446642770-4681-5-git-send-email-gwshan@linux.vnet.ibm.com>
+ <87vb9ghyij.fsf@gamma.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87vb9ghyij.fsf@gamma.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,60 +46,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This code was reworked in commit,
+On Fri, Nov 06, 2015 at 09:28:20AM +1100, Daniel Axtens wrote:
+>Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
+>
+>> This cleans up on pnv_pci_ioda_controller_ops struct to use tab
+>> instead of space indent of statement to avoid complains from
+>> scripts/checkpatch.pl. No logical changes introduced.
+>
+>Oh, that was my code :/ Sorry I missed that, thanks for cleaning it up!
+>
+>Reviewed-by: Daniel Axtens <dja@axtens.net>
+>
 
-905e75c46dba5f3061049277e4eb7110beedba43
+nah, that's fine, Daniel. You might be saying: I didn't review your code
+carefully enough, which leaves me the chance to clean it up :-)
 
-This change removed the fsl_add_bridge() which originally was above
-the addition of the pci_exclude_device function. I think the assumption was that
-the pci_exclude_device would prevent changes to the bridge PCI config after
-it's been added. It seems it wasn't fully tested on MPC85xx ADS because
-if you move the fsl_add_bridge() the pci_exclude_device is set in the machine
-description then you can never update the PCI Config since the exclude
-prevents it. This disrupts things like DMA.
+Thanks,
+Gavin
 
-This issue was extensively debugged by David Beazley.
-
-Cc: xe-kernel@external.cisco.com
-Cc: dbeazley@cisco.com
-Cc: dwalker@fifo99.com
-Signed-off-by: Daniel Walker <danielwa@cisco.com>
----
- arch/powerpc/platforms/85xx/mpc85xx_ads.c | 15 ---------------
- 1 file changed, 15 deletions(-)
-
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-index 7d12a19..de72a5f 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-@@ -36,17 +36,6 @@
- 
- #include "mpc85xx.h"
- 
--#ifdef CONFIG_PCI
--static int mpc85xx_exclude_device(struct pci_controller *hose,
--				   u_char bus, u_char devfn)
--{
--	if (bus == 0 && PCI_SLOT(devfn) == 0)
--		return PCIBIOS_DEVICE_NOT_FOUND;
--	else
--		return PCIBIOS_SUCCESSFUL;
--}
--#endif /* CONFIG_PCI */
--
- static void __init mpc85xx_ads_pic_init(void)
- {
- 	struct mpic *mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN,
-@@ -145,10 +134,6 @@ static void __init mpc85xx_ads_setup_arch(void)
- 	init_ioports();
- #endif
- 
--#ifdef CONFIG_PCI
--	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
--#endif
--
- 	fsl_pci_assign_primary();
- }
- 
--- 
-2.1.4
+>>
+>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/powernv/pci-ioda.c | 18 +++++++++---------
+>>  1 file changed, 9 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index 2e2bedb..aa3645c 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -3064,17 +3064,17 @@ static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
+>>  }
+>>  
+>>  static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
+>> -       .dma_dev_setup = pnv_pci_dma_dev_setup,
+>> +	.dma_dev_setup		= pnv_pci_dma_dev_setup,
+>>  #ifdef CONFIG_PCI_MSI
+>> -       .setup_msi_irqs = pnv_setup_msi_irqs,
+>> -       .teardown_msi_irqs = pnv_teardown_msi_irqs,
+>> +	.setup_msi_irqs		= pnv_setup_msi_irqs,
+>> +	.teardown_msi_irqs	= pnv_teardown_msi_irqs,
+>>  #endif
+>> -       .enable_device_hook = pnv_pci_enable_device_hook,
+>> -       .window_alignment = pnv_pci_window_alignment,
+>> -       .reset_secondary_bus = pnv_pci_reset_secondary_bus,
+>> -       .dma_set_mask = pnv_pci_ioda_dma_set_mask,
+>> -       .dma_get_required_mask = pnv_pci_ioda_dma_get_required_mask,
+>> -       .shutdown = pnv_pci_ioda_shutdown,
+>> +	.enable_device_hook	= pnv_pci_enable_device_hook,
+>> +	.window_alignment	= pnv_pci_window_alignment,
+>> +	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
+>> +	.dma_set_mask		= pnv_pci_ioda_dma_set_mask,
+>> +	.dma_get_required_mask	= pnv_pci_ioda_dma_get_required_mask,
+>> +	.shutdown		= pnv_pci_ioda_shutdown,
+>>  };
+>>  
+>>  static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>> -- 
+>> 2.1.0
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
