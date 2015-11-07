@@ -1,33 +1,33 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0CADC1A0BFE
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Nov 2015 10:31:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AD5F21A0C10
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Nov 2015 10:31:47 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Sun, 8 Nov 2015 05:01:40 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 8FC78394005C
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Nov 2015 05:01:38 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA7NVbs964684040
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 8 Nov 2015 05:01:37 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA7NVbQo014995
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 8 Nov 2015 05:01:37 +0530
+ Sun, 8 Nov 2015 05:01:45 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id A357FE0056
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Nov 2015 05:02:02 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA7NVfIa7536922
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 8 Nov 2015 05:01:42 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA7NVfPF010468
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 8 Nov 2015 05:01:41 +0530
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com, mpe@ellerman.id.au,
  aik@ozlabs.ru
 Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
  Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH V13 3/9] powerpc/pci: Remove VFs prior to PF
-Date: Sun,  8 Nov 2015 07:30:29 +0800
-Message-Id: <1446939035-2617-4-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V13 4/9] powerpc/eeh: Cache only BARs, not windows or IOV BARs
+Date: Sun,  8 Nov 2015 07:30:30 +0800
+Message-Id: <1446939035-2617-5-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1446939035-2617-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1446939035-2617-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,30 +39,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As commit ac205b7bb72f ("PCI: make sriov work with hotplug remove")
-indicates, VFs which is on the same PCI bus as their PF, should be removed
-before the PF. Otherwise, the PCI hot unplugging of PCI devices on the PCI
-bus would cause kernel crash.
+This restricts the EEH address cache to use only the first 7 BARs. This
+makes __eeh_addr_cache_insert_dev() ignore PCI bridge window and IOV BARs.
+As the result of this change, eeh_addr_cache_get_dev() will return VFs from
+VF's resource addresses instead of parent PFs.
 
-The patch applies the above pattern to PowerPC PCI hotplug path.
+This removes extra check for a PCI bridge as we limit
+__eeh_addr_cache_insert_dev() to 7 BARs and this effectively excludes PCI
+bridges from being cached.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/pci-hotplug.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/eeh_cache.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-index 7f9ed0c..59c4361 100644
---- a/arch/powerpc/kernel/pci-hotplug.c
-+++ b/arch/powerpc/kernel/pci-hotplug.c
-@@ -55,7 +55,7 @@ void pcibios_remove_pci_devices(struct pci_bus *bus)
- 
- 	pr_debug("PCI: Removing devices on bus %04x:%02x\n",
- 		 pci_domain_nr(bus),  bus->number);
--	list_for_each_entry_safe(dev, tmp, &bus->devices, bus_list) {
-+	list_for_each_entry_safe_reverse(dev, tmp, &bus->devices, bus_list) {
- 		pr_debug("   Removing %s...\n", pci_name(dev));
- 		pci_stop_and_remove_bus_device(dev);
+diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
+index a1e86e1..ddbcfab 100644
+--- a/arch/powerpc/kernel/eeh_cache.c
++++ b/arch/powerpc/kernel/eeh_cache.c
+@@ -195,8 +195,11 @@ static void __eeh_addr_cache_insert_dev(struct pci_dev *dev)
+ 		return;
  	}
+ 
+-	/* Walk resources on this device, poke them into the tree */
+-	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
++	/*
++	 * Walk resources on this device, poke the first 7 (6 normal BAR and 1
++	 * ROM BAR) into the tree.
++	 */
++	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+ 		resource_size_t start = pci_resource_start(dev,i);
+ 		resource_size_t end = pci_resource_end(dev,i);
+ 		unsigned long flags = pci_resource_flags(dev,i);
+@@ -222,10 +225,6 @@ void eeh_addr_cache_insert_dev(struct pci_dev *dev)
+ {
+ 	unsigned long flags;
+ 
+-	/* Ignore PCI bridges */
+-	if ((dev->class >> 16) == PCI_BASE_CLASS_BRIDGE)
+-		return;
+-
+ 	spin_lock_irqsave(&pci_io_addr_cache_root.piar_lock, flags);
+ 	__eeh_addr_cache_insert_dev(dev);
+ 	spin_unlock_irqrestore(&pci_io_addr_cache_root.piar_lock, flags);
 -- 
 2.5.0
