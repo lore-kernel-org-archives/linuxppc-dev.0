@@ -1,22 +1,30 @@
-Return-Path: <roy.qing.li@gmail.com>
-Received: from mail-qg0-x232.google.com (mail-qg0-x232.google.com
- [IPv6:2607:f8b0:400d:c04::232])
+Return-Path: <luto@amacapital.net>
+Received: from mail-oi0-x231.google.com (mail-oi0-x231.google.com
+ [IPv6:2607:f8b0:4003:c06::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 614791A0142
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Nov 2015 13:49:16 +1100 (AEDT)
-Received: by qgea14 with SMTP id a14so37718428qge.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Nov 2015 18:49:12 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2B0811A0C0B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Nov 2015 16:09:50 +1100 (AEDT)
+Received: by oiad129 with SMTP id d129so85177165oia.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Nov 2015 21:09:47 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <CAOJe8K1O1ymO1Tpq6ygEMVB7ppnO8dAOb_+uhftB1_yHf-Y=Kg@mail.gmail.com>
-References: <CAJFZqHzHQ1oH3uNeVQqLPXcff62FUeDdiz+DD2MN43xE=Qowvw@mail.gmail.com>
- <CAOJe8K1O1ymO1Tpq6ygEMVB7ppnO8dAOb_+uhftB1_yHf-Y=Kg@mail.gmail.com>
-Date: Sun, 8 Nov 2015 10:49:12 +0800
-Message-ID: <CAJFZqHzu05MKkmKckD02v92FREO3tvi_ycc=WqKkLecg2NmgyQ@mail.gmail.com>
-Subject: Re: DEBUG_LOCKS_WARN_ON(!current->hardirqs_enabled)
-From: Li RongQing <roy.qing.li@gmail.com>
-To: Denis Kirjanov <kda@linux-powerpc.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1446684640-4112-1-git-send-email-amanieu@gmail.com>
+References: <1446684640-4112-1-git-send-email-amanieu@gmail.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Sat, 7 Nov 2015 21:09:27 -0800
+Message-ID: <CALCETrWKK_REdX7TJO8X7jC=8k=YdgJH_txXpC4Pdzn-tukg5A@mail.gmail.com>
+Subject: Re: [PATCH v2 00/20] Fix handling of compat_siginfo_t
+To: "Amanieu d'Antras" <amanieu@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ sparclinux@vger.kernel.org,
+ Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ Linux API <linux-api@vger.kernel.org>, Kenton Varda <kenton@sandstorm.io>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,16 +35,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Nov 7, 2015 at 9:01 PM, Denis Kirjanov <kda@linux-powerpc.org> wrot=
-e:
->> Does Anyone see this calltrace?  I see it from 3.19 to 4.3, did not
->> test it on other older release.
->
-> http://www.gossamer-threads.com/lists/linux/kernel/2297694
+On Wed, Nov 4, 2015 at 4:50 PM, Amanieu d'Antras <amanieu@gmail.com> wrote:
+> One issue that isn't resolved in this series is sending signals between a 32-bit
+> process and 64-bit process. Sending a si_int will work correctly, but a si_ptr
+> value will likely get corrupted due to the different layouts of the 32-bit and
+> 64-bit siginfo_t structures.
 
+This is so screwed up it's not even funny.
 
-I see this calltrace on 3.19, so it should not related to patch=E2=80=9C
-[PATCH V3 0/3] perf/powerpc:Add ability to sample intr machine state
-in powerpc=E2=80=9D
+A 64-bit big-endian compat calls rt_sigqueueinfo.  It passes in (among
+other things) a sigval_t.  The kernel can choose to interpret it as a
+pointer (call it p) or an integer (call it i).  Then (unsigned long)p
+= (i<<32) | [something].  If the number was an integer to begin with
+*and* user code zeroed out the mess first, then [something] will be 0.
+Regardless, p != i unless they're both zero.
 
--R
+If the result gets delivered to a signalfd, then it's plausible that
+everything could work.  If it gets delivered to a 64-bit siginfo, then
+all is well because it's in exactly the same screwed up state it was
+in when the signal gets sent.
+
+If, however, it's delivered to a compat task, wtf is the kernel
+supposed to do?  We're effectively supposed to convert a 64-bit
+sigval_t to a 32-bit sigval_t.  On a little-endian architecture, we
+can fudge it because it doesn't really matter whether we consider the
+pointer or the int to be authoritative.  I think that, on big-endian,
+we're screwed.
+
+BTW, x86 has its own set of screwups here.  Somehow cr2 and error_code
+ended up as part of ucontext instead of siginfo, which makes
+absolutely no sense to me and bloats task_struct.
+
+--Andy
