@@ -1,31 +1,55 @@
-Return-Path: <luto@amacapital.net>
-Received: from mail-oi0-x231.google.com (mail-oi0-x231.google.com
- [IPv6:2607:f8b0:4003:c06::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2B0811A0C0B
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Nov 2015 16:09:50 +1100 (AEDT)
-Received: by oiad129 with SMTP id d129so85177165oia.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Nov 2015 21:09:47 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 61B7B1A040B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Nov 2015 09:57:30 +1100 (AEDT)
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 9 Nov 2015 08:57:27 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 076F22CE8052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Nov 2015 09:57:25 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA8MvGNp41025750
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2015 09:57:25 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA8Mupmk012046
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2015 09:56:52 +1100
+Message-ID: <563FD31B.3090807@au1.ibm.com>
+Date: Mon, 09 Nov 2015 09:56:27 +1100
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1446684640-4112-1-git-send-email-amanieu@gmail.com>
-References: <1446684640-4112-1-git-send-email-amanieu@gmail.com>
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Sat, 7 Nov 2015 21:09:27 -0800
-Message-ID: <CALCETrWKK_REdX7TJO8X7jC=8k=YdgJH_txXpC4Pdzn-tukg5A@mail.gmail.com>
-Subject: Re: [PATCH v2 00/20] Fix handling of compat_siginfo_t
-To: "Amanieu d'Antras" <amanieu@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Oleg Nesterov <oleg@redhat.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- sparclinux@vger.kernel.org,
- Linux FS Devel <linux-fsdevel@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- Linux API <linux-api@vger.kernel.org>, Kenton Varda <kenton@sandstorm.io>
-Content-Type: text/plain; charset=UTF-8
+To: SF Markus Elfring <elfring@users.sourceforge.net>,
+ Ian Munsie <imunsie@au1.ibm.com>, Michael Neuling <mikey@neuling.org>,
+ linuxppc-dev@lists.ozlabs.org
+CC: Julia Lawall <julia.lawall@lip6.fr>, kernel-janitors@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cxl: Delete an unnecessary check before the function
+ call "kfree"
+References: <5307CAA2.8060406@users.sourceforge.net>
+ <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
+ <530A086E.8010901@users.sourceforge.net>
+ <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
+ <530A72AA.3000601@users.sourceforge.net>
+ <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
+ <530B5FB6.6010207@users.sourceforge.net>
+ <alpine.DEB.2.10.1402241710370.2074@hadrien>
+ <530C5E18.1020800@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251014170.2080@hadrien>
+ <530CD2C4.4050903@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251840450.7035@hadrien>
+ <530CF8FF.8080600@users.sourceforge.net>
+ <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
+ <530DD06F.4090703@users.sourceforge.net>
+ <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
+ <5317A59D.4@users.sourceforge.net> <563C7B7A.2080403@users.sourceforge.net>
+In-Reply-To: <563C7B7A.2080403@users.sourceforge.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,35 +59,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 4, 2015 at 4:50 PM, Amanieu d'Antras <amanieu@gmail.com> wrote:
-> One issue that isn't resolved in this series is sending signals between a 32-bit
-> process and 64-bit process. Sending a si_int will work correctly, but a si_ptr
-> value will likely get corrupted due to the different layouts of the 32-bit and
-> 64-bit siginfo_t structures.
+On 06/11/15 21:05, SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Fri, 6 Nov 2015 11:00:23 +0100
+>
+> The kfree() function tests whether its argument is NULL and then
+> returns immediately. Thus the test around the call is not needed.
+>
+> This issue was detected by using the Coccinelle software.
+>
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
-This is so screwed up it's not even funny.
+Thanks for picking this up - will remember in my future patches.
 
-A 64-bit big-endian compat calls rt_sigqueueinfo.  It passes in (among
-other things) a sigval_t.  The kernel can choose to interpret it as a
-pointer (call it p) or an integer (call it i).  Then (unsigned long)p
-= (i<<32) | [something].  If the number was an integer to begin with
-*and* user code zeroed out the mess first, then [something] will be 0.
-Regardless, p != i unless they're both zero.
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-If the result gets delivered to a signalfd, then it's plausible that
-everything could work.  If it gets delivered to a 64-bit siginfo, then
-all is well because it's in exactly the same screwed up state it was
-in when the signal gets sent.
-
-If, however, it's delivered to a compat task, wtf is the kernel
-supposed to do?  We're effectively supposed to convert a 64-bit
-sigval_t to a 32-bit sigval_t.  On a little-endian architecture, we
-can fudge it because it doesn't really matter whether we consider the
-pointer or the int to be authoritative.  I think that, on big-endian,
-we're screwed.
-
-BTW, x86 has its own set of screwups here.  Somehow cr2 and error_code
-ended up as part of ucontext instead of siginfo, which makes
-absolutely no sense to me and bloats task_struct.
-
---Andy
+-- 
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
