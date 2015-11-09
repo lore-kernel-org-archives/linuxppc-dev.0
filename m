@@ -1,39 +1,55 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 27D191A03BB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Nov 2015 12:53:43 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8DBFB1A039B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Nov 2015 13:10:56 +1100 (AEDT)
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 9 Nov 2015 07:23:40 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 7D1881258019
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Nov 2015 07:23:40 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA91rTbB16646304
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2015 07:23:30 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA91rSZP028564
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2015 07:23:29 +0530
-Date: Mon, 9 Nov 2015 09:53:27 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
- bhelgaas@google.com, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org
-Subject: Re: [PATCH V13 0/9] VF EEH on Power8
-Message-ID: <20151109015327.GA1443@richards-mbp.cn.ibm.com>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1446939035-2617-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <563FE06D.4080801@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <563FE06D.4080801@ozlabs.ru>
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Mon, 9 Nov 2015 12:10:54 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 29E722CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Nov 2015 13:10:50 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tA92AZEJ11403280
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2015 13:10:43 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tA92AGVq006927
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2015 13:10:17 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: Michael Neuling <mikey@neuling.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Julia Lawall <julia.lawall@lip6.fr>,
+ kernel-janitors <kernel-janitors@vger.kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cxl: Delete an unnecessary check before the function call
+ "kfree"
+In-reply-to: <563C7B7A.2080403@users.sourceforge.net>
+References: <5307CAA2.8060406@users.sourceforge.net>
+ <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
+ <530A086E.8010901@users.sourceforge.net>
+ <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
+ <530A72AA.3000601@users.sourceforge.net>
+ <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
+ <530B5FB6.6010207@users.sourceforge.net>
+ <alpine.DEB.2.10.1402241710370.2074@hadrien>
+ <530C5E18.1020800@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251014170.2080@hadrien>
+ <530CD2C4.4050903@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251840450.7035@hadrien>
+ <530CF8FF.8080600@users.sourceforge.net>
+ <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
+ <530DD06F.4090703@users.sourceforge.net>
+ <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
+ <5317A59D.4@users.sourceforge.net> <563C7B7A.2080403@users.sourceforge.net>
+Date: Mon, 09 Nov 2015 13:09:51 +1100
+Message-Id: <1447034981-sup-9258@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,49 +59,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 09, 2015 at 10:53:17AM +1100, Alexey Kardashevskiy wrote:
->On 11/08/2015 10:30 AM, Wei Yang wrote:
->>This patchset enables EEH on SRIOV VFs. The general idea is to create proper
->>VF edev and VF PE and handle them properly.
->>
->>Different from the Bus PE, VF PE just contain one VF. This introduces the
->>difference of EEH error handling on a VF PE. Generally, it has several
->>differences.
->>
->>First, the VF's removal and re-enumerate rely on its PF. VF has a tight
->>relationship between its PF. This is not proper to enumerate a VF by usual
->>scan procedure. That's why virtfn_add/virtfn_remove are exported in this patch
->>set.
->>
->>Second, the reset/restore of a VF is done in kernel space. FW is not aware of
->>the VF, this means the usual reset function done in FW will not work. One of
->>the patch will imitate the reset/restore function in kernel space.
->>
->>Third, the VF may be removed during the PF's error_detected function. In this
->>case, the original error_detected->slot_reset->resume sequence is not proper
->>to those removed VFs, since they are re-created by PF in a fresh state. A flag
->>in eeh_dev is introduce to mark the eeh_dev is in error state. By doing so, we
->>track whether this device needs to be reset or not.
->>
->>This has been tested both on host and in guest on Power8 with latest kernel
->>version.
->
->
->This does not apply on top of neither Linus master tree
->(git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git sha1
->ce5c2d2) nor Michael's PPC next tree
->(git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git sha1
->8bdf2023). What did you base your work on?
->
-
-I didn't based this on the latest code.
-
-This is based on v4.3, commit "6a13feb Linux 4.3".
-
->
->-- 
->Alexey
-
--- 
-Richard Yang
-Help you, Help me
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
