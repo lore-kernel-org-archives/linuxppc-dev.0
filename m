@@ -1,44 +1,28 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 93DD51A018F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Nov 2015 17:46:28 +1100 (AEDT)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 60D1C1402C8
- for <linuxppc-dev@ozlabs.org>; Mon,  9 Nov 2015 17:46:28 +1100 (AEDT)
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 9 Nov 2015 16:46:27 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 187752BB0052
- for <linuxppc-dev@ozlabs.org>; Mon,  9 Nov 2015 17:46:23 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA96kG5c25690300
- for <linuxppc-dev@ozlabs.org>; Mon, 9 Nov 2015 17:46:24 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA96jnGs021387
- for <linuxppc-dev@ozlabs.org>; Mon, 9 Nov 2015 17:45:50 +1100
-Message-ID: <56404105.1010302@au1.ibm.com>
-Date: Mon, 09 Nov 2015 17:45:25 +1100
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F2D21A024B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2015 01:16:01 +1100 (AEDT)
+Date: Mon, 9 Nov 2015 16:12:04 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andy Lutomirski <luto@amacapital.net>
+Cc: "Amanieu d'Antras" <amanieu@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ sparclinux@vger.kernel.org, Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ Linux API <linux-api@vger.kernel.org>, Kenton Varda <kenton@sandstorm.io>
+Subject: Re: [PATCH v2 00/20] Fix handling of compat_siginfo_t
+Message-ID: <20151109151204.GA10760@redhat.com>
+References: <1446684640-4112-1-git-send-email-amanieu@gmail.com>
+ <CALCETrWKK_REdX7TJO8X7jC=8k=YdgJH_txXpC4Pdzn-tukg5A@mail.gmail.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, Daniel Axtens <dja@axtens.net>,
- linuxppc-dev@ozlabs.org
-CC: mikey@neuling.org, imunsie@au1.ibm.com
-Subject: Re: [PATCH] cxl: use correct operator when writing pcie config space
- values
-References: <1446603849-26796-1-git-send-email-andrew.donnellan@au1.ibm.com>
- <87oaf8hwt2.fsf@gamma.ozlabs.ibm.com>
- <1446767022.25265.2.camel@ellerman.id.au>
-In-Reply-To: <1446767022.25265.2.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CALCETrWKK_REdX7TJO8X7jC=8k=YdgJH_txXpC4Pdzn-tukg5A@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,25 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/11/15 10:43, Michael Ellerman wrote:
-> If it's unused *and* broken then we should just remove it.
+On 11/07, Andy Lutomirski wrote:
+>
+> On Wed, Nov 4, 2015 at 4:50 PM, Amanieu d'Antras <amanieu@gmail.com> wrote:
+> > One issue that isn't resolved in this series is sending signals between a 32-bit
+> > process and 64-bit process. Sending a si_int will work correctly, but a si_ptr
+> > value will likely get corrupted due to the different layouts of the 32-bit and
+> > 64-bit siginfo_t structures.
+>
+> This is so screwed up it's not even funny.
 
-Following some discussion with Ian and Vaibhav, we'd like to keep it at 
-this stage - while there are no current AFUs which write to AFU config 
-space, it would be reasonable for an AFU developer to assume that AFU 
-config space is writable, and I am led to believe there is nothing in 
-the publicly available documentation that would suggest otherwise.
+Agreed,
 
-Ian is working on obtaining a test AFU with support for this, at which 
-point we will add it to our internal test suite.
+> A 64-bit big-endian compat calls rt_sigqueueinfo.  It passes in (among
+> other things) a sigval_t.  The kernel can choose to interpret it
 
-As such I'd like to continue with the patch as is, I'm happy to drop the 
-stable Cc though.
+I always thought that the kernel should not interpret it at all. And indeed,
+copy_siginfo_to_user() does
+
+	if (from->si_code < 0)
+		return __copy_to_user(to, from, sizeof(siginfo_t))
+
+probably copy_siginfo_to_user32() should do something similar, at least
+it should not truncate ->si_code it it is less than zero.
+
+Not sure what signalfd_copyinfo() should do.
+
+But perhaps I was wrong, I failed to find man sigqueueinfo, and man
+sigqueue() documents that it passes sigval_t.
 
 
-Andrew
+> BTW, x86 has its own set of screwups here.  Somehow cr2 and error_code
+> ended up as part of ucontext instead of siginfo, which makes
+> absolutely no sense to me and bloats task_struct.
 
--- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+Yes, and probably ->ip should have been the part of siginfo too. Say,
+if you get SIGBUS you can't trust sc->ip if another signal was dequeued
+before SIGBUS, in this case sc->ip will point to the handler of that
+another signal. That is why we have SYNCHRONOUS_MASK and it helps, but
+still this doesn't look nice.
+
+Oleg.
