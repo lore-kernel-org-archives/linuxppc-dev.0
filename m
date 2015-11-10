@@ -1,37 +1,33 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 07ABD1A0232
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2015 03:35:33 +1100 (AEDT)
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 9 Nov 2015 09:35:30 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 0682D3E4003F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Nov 2015 09:35:16 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tA9GZF6756492048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2015 09:35:15 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tA9GZF0e007387
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2015 09:35:15 -0700
-Subject: Re: [PATCH v2] memory-hotplug: Fix kernel warning during memory
- hotplug on ppc64
-To: John Allen <jallen@linux.vnet.ibm.com>, gregkh@linuxfoundation.org
-References: <5638ED37.3090500@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Message-ID: <5640CB42.8000400@linux.vnet.ibm.com>
-Date: Mon, 9 Nov 2015 10:35:14 -0600
-MIME-Version: 1.0
-In-Reply-To: <5638ED37.3090500@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B8C01A0279
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2015 11:21:12 +1100 (AEDT)
+Message-ID: <1447114872.13889.2.camel@ellerman.id.au>
+Subject: Re: [RFC PATCH 0/3]perf/core: extend perf_reg and
+ perf_sample_regs_intr
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, x86@kernel.org, Thomas Gleixner
+ <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Jiri Olsa
+ <jolsa@kernel.org>,  Arnaldo Carvalho de Melo <acme@kernel.org>, Stephane
+ Eranian <eranian@gmail.com>, Russell King <linux@arm.linux.org.uk>, Catalin
+ Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Sukadev Bhattiprolu
+ <sukadev@linux.vnet.ibm.com>
+Date: Tue, 10 Nov 2015 11:21:12 +1100
+In-Reply-To: <20151106102540.GR3604@twins.programming.kicks-ass.net>
+References: <1446669978-6366-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <20151105130716.GC3604@twins.programming.kicks-ass.net>
+ <563C5655.3000605@linux.vnet.ibm.com>
+ <20151106092430.GO3604@twins.programming.kicks-ass.net>
+ <1446804240.21859.4.camel@ellerman.id.au>
+ <20151106102540.GR3604@twins.programming.kicks-ass.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,84 +37,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/03/2015 11:21 AM, John Allen wrote:
-> This patch fixes a bug where a kernel warning is triggered when performing
-> a memory hotplug on ppc64. This warning may also occur on any architecture
-> that has multiple sections per memory block.
-> 
-> [   78.300767] ------------[ cut here ]------------
-> [   78.300768] WARNING: at ../drivers/base/memory.c:210
-> [   78.300769] Modules linked in: rpadlpar_io(X) rpaphp(X) tcp_diag udp_diag inet_diag unix_diag af_packet_diag netlink_diag af_packet xfs libcrc32c ibmveth(X) rtc_generic btrfs xor raid6_pq xts gf128mul dm_crypt sd_mod sr_mod cdrom crc_t10dif ibmvscsi(X) scsi_transport_srp scsi_tgt dm_mod sg scsi_mod autofs4
-> [   78.300789] Supported: Yes, External
-> [   78.300791] CPU: 1 PID: 3090 Comm: systemd-udevd Tainted: G              X 3.12.45-1-default #1
-> [   78.300793] task: c0000004d7d1d970 ti: c0000004d7b90000 task.ti: c0000004d7b90000
-> [   78.300794] NIP: c0000000004fcff8 LR: c0000000004fda84 CTR: 0000000000000000
-> [   78.300795] REGS: c0000004d7b93930 TRAP: 0700   Tainted: G              X  (3.12.45-1-default)
-> [   78.300796] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 24088848  XER: 00000000
-> [   78.300800] CFAR: c0000000004fcf98 SOFTE: 1
-> GPR00: 0000000000000537 c0000004d7b93bb0 c000000000e7f200 0000000000053000
-> GPR04: 0000000000001000 0000000000000001 c000000000e0f200 0000000000000000
-> GPR08: 0000000000000000 0000000000000001 0000000000000537 00000000014dc000
-> GPR12: 0000000000054000 c00000000e7f0900 0000000010041040 0000000000000000
-> GPR16: 00000100206f0010 000000001003ff78 000000001006c824 00000000100410b0
-> GPR20: 000000001003ff90 000000001006c00c 000001002073cd20 00000100206f0760
-> GPR24: 00000100206f85a0 c00000000076d950 c0000004ef7c95e0 c0000004d7b93e00
-> GPR28: c0000004de601738 0000000000000001 c000000001218f80 00000000003fffff
-> [   78.300818] NIP [c0000000004fcff8] memory_block_action+0x258/0x2e0
-> [   78.300820] LR [c0000000004fda84] memory_subsys_online+0x54/0x100
-> [   78.300821] Call Trace:
-> [   78.300822] [c0000004d7b93bb0] [c000000009071ce0] 0xc000000009071ce0 (unreliable)
-> [   78.300824] [c0000004d7b93c40] [c0000000004fda84] memory_subsys_online+0x54/0x100
-> [   78.300826] [c0000004d7b93c70] [c0000000004df784] device_online+0xb4/0x120
-> [   78.300828] [c0000004d7b93cb0] [c0000000004fd738] store_mem_state+0x88/0x220
-> [   78.300830] [c0000004d7b93cf0] [c0000000004db448] dev_attr_store+0x68/0xa0
-> [   78.300833] [c0000004d7b93d30] [c00000000031f938] sysfs_write_file+0xf8/0x1d0
-> [   78.300835] [c0000004d7b93d90] [c00000000027d29c] vfs_write+0xec/0x250
-> [   78.300837] [c0000004d7b93de0] [c00000000027dfdc] SyS_write+0x6c/0xf0
-> [   78.300839] [c0000004d7b93e30] [c00000000000a17c] syscall_exit+0x0/0x7c
-> [   78.300840] Instruction dump:
-> [   78.300841] 780a0560 79482ea4 7ce94214 2fa70000 41de0014 7d09402a 396b4000 7907ffe3
-> [   78.300844] 4082ff54 3cc2fff9 8926b83a 69290001 <0b090000> 2fa90000 40de006c 3860fff0
-> [   78.300847] ---[ end trace dfec8da06ebbc762 ]---
-> 
-> The warning is triggered because there is a udev rule that automatically
-> tries to online memory after it has been added. The udev rule varies from
-> distro to distro, but will generally look something like:
-> 
-> SUBSYSTEM=="memory", ACTION=="add", ATTR{state}=="offline", ATTR{state}="online"
-> 
-> On any architecture that uses memory_probe_store to reserve memory,
-> this can interrupt the memory reservation process. This patch modifies
-> memory_probe_store to take the hotplug sysfs lock to prevent the online
-> of added memory before the completion of the probe.
-> 
-> Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
+On Fri, 2015-11-06 at 11:25 +0100, Peter Zijlstra wrote:
 
-Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> On Fri, Nov 06, 2015 at 09:04:00PM +1100, Michael Ellerman wrote:
 
-> ---
-> v2: Move call to unlock_device_hotplug under "out" label
+> > It's a perrenial request from our hardware PMU folks to be able to see the raw
+> > values of the PMU registers.
+> > 
+> > I think partly it's so that they can verify that perf is doing what they want,
+> > and some of it is that they're interested in some of the more obscure info that
+> > isn't plumbed out through other perf interfaces.
+> > 
+> > We've used various internal hacks over the years to keep them happy. This is an
+> > attempt to use a somewhat standard mechanism.
+> > 
+> > It would also be helpful for those of us working on the perf hardware backends,
+> > to be able to verify that we're programming things correctly, without resorting
+> > to debug printks etc.
+> > 
+> > Basically we want to sample regs at the time of the perf interrupt, so we
+> > though PERF_SAMPLE_REGS_INTR made senes :)
+> > 
+> > But if you think this is the wrong mechanism within perf, then please let us
+> > know.
+> > 
+> > I know perf's mission is to abstract as much of the arcane hardware details
+> > into a generic interface and make PMUs actually useful for normal folks, and we
+> > are committed to that, but it would also be useful to be able to get the raw
+> > values for a different type of user.
+> > 
+> > Maddy's patch only exports PMC1-6 and MMCR0/1. I think we also need to export
+> > some others, in particular MMCRA has a lot of stuff in it, half of which is not
+> > even architected. So that would have to be exported as "POWER8_MMCRA". And then
+> > there's the SIAR/SDAR/SIER which contain a bunch of info on sampled
+> > instructions that is not currently plumbed out.
 > 
-> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-> index bece691..7c50415 100644
-> --- a/drivers/base/memory.c
-> +++ b/drivers/base/memory.c
-> @@ -422,6 +422,10 @@ memory_probe_store(struct device *dev, struct device_attribute *attr,
->  	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
->  		return -EINVAL;
-> 
-> +	ret = lock_device_hotplug_sysfs();
-> +	if (ret)
-> +		return ret;
-> +
->  	for (i = 0; i < sections_per_block; i++) {
->  		nid = memory_add_physaddr_to_nid(phys_addr);
->  		ret = add_memory(nid, phys_addr,
-> @@ -434,6 +438,7 @@ memory_probe_store(struct device *dev, struct device_attribute *attr,
-> 
->  	ret = count;
->  out:
-> +	unlock_device_hotplug();
->  	return ret;
->  }
-> 
+> OK, no objections then. But this is useful information and should be
+> included in the patch set.
+
+Thanks, yeah definitely needs more explanation in the patch set.
+
+cheers
