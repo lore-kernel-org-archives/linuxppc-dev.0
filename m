@@ -1,23 +1,28 @@
-Return-Path: <laurent@vivier.eu>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yk0-x22f.google.com (mail-yk0-x22f.google.com
+ [IPv6:2607:f8b0:4002:c07::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3B0431A026E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2015 18:54:45 +1100 (AEDT)
-Subject: Re: [PATCH] powerpc: allow cross-compilation of ppc64 kernel
-To: Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <scottwood@freescale.com>
-References: <1446724029-10884-1-git-send-email-laurent@vivier.eu>
- <1446844180.11597.13.camel@freescale.com> <563D2813.80302@vivier.eu>
- <1446852296.11597.53.camel@freescale.com> <563DE203.6030001@vivier.eu>
- <1447115377.13889.7.camel@ellerman.id.au>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-From: Laurent Vivier <laurent@vivier.eu>
-Message-ID: <5641A2A7.9060004@vivier.eu>
-Date: Tue, 10 Nov 2015 08:54:15 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 989771A0272
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2015 19:28:59 +1100 (AEDT)
+Received: by ykdr82 with SMTP id r82so27688840ykd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2015 00:28:57 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1447115377.13889.7.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <87twp3u13i.fsf@linux.vnet.ibm.com>
+References: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <CAOJe8K1cnLmDdnV-f4XNiJjoK2w59SwEi8vNy2i6yLyOKYxCVQ@mail.gmail.com>
+ <87a8rarudb.fsf@linux.vnet.ibm.com>
+ <CAOJe8K256Kr46VVZEPnbMR1Du4cuyS1hhYEh1FmGBgmDxcixJw@mail.gmail.com>
+ <87twp3u13i.fsf@linux.vnet.ibm.com>
+Date: Tue, 10 Nov 2015 11:28:57 +0300
+Message-ID: <CAOJe8K2NhFiaHdOSUnAmEh_MxinuTp=cAcCRAcjCyFPJN3hr6g@mail.gmail.com>
+Subject: Re: [PATCH V4 00/31] powerpc/mm: Update page table format for book3s
+ 64
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Scott Wood <scottwood@freescale.com>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org, Mel Gorman <mgorman@suse.de>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,56 +32,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 10/11/2015 01:29, Michael Ellerman a écrit :
-> On Sat, 2015-11-07 at 12:35 +0100, Laurent Vivier wrote:
->> Le 07/11/2015 00:24, Scott Wood a écrit :
->>> On Fri, 2015-11-06 at 23:22 +0100, Laurent Vivier wrote:
->>>> Le 06/11/2015 22:09, Scott Wood a écrit :
->>>>> On Thu, 2015-11-05 at 12:47 +0100, Laurent Vivier wrote:
->>>>>> When I try to cross compile a ppc64 kernel, it generally
->>>>>> fails on the VDSO stage. This is true for powerpc64 cross-
->>>>>> compiler, but also when I try to build a ppc64le kernel
->>>>>> on a ppc64 host.
->>>>>>
->>>>>> VDSO64L fails:
->>>>>>
->>>>>>   VDSO64L arch/powerpc/kernel/vdso64/vdso64.so.dbg
->>>>>> /usr/bin/powerpc64-linux-gnu-ld: arch/powerpc/kernel/vdso64/sigtramp.o:
->>>>>> file class ELFCLASS64 incompatible with ELFCLASS32
->>>>>> /usr/bin/powerpc64-linux-gnu-ld: final link failed: File in wrong format
->>>>>>
->>>>>> This fails because gcc calls "collect2" with
->>>>>> "--oformat elf32-powerpcle" with ppc64 objects, without the
->>>>>> "--oformat" ld works well because it use the format of the
->>>>>> first object as output format.
->>>>>>
->>>>>> As this case is correctly managed to build the other kernel
->>>>>> objects, this patch replaces $(GCC) by $(LD) to generate the
->>>>>> VDSO objects.
+On 11/3/15, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+> Denis Kirjanov <kda@linux-powerpc.org> writes:
+>
+>> On 10/23/15, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>>> Denis Kirjanov <kda@linux-powerpc.org> writes:
 >>>
->>>> So at this point, I can:
+>>>> On 10/17/15, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>>>>> Hi All,
+>>>>>
+>>>>> This patch series attempt to update book3s 64 linux page table format
+>>>>> to
+>>>>> make it more flexible. Our current pte format is very restrictive and
+>>>>> we
+>>>>> overload multiple pte bits. This is due to the non-availability of free
+>>>>> bits
+>>>>> in pte_t. We use pte_t to track the validity of 4K subpages. This patch
+>>>>> series free up pte_t of 11 bits by moving 4K subpage tracking to the
+>>>>> lower half of PTE page. The pte format is updated such that we have a
+>>>>> better method for identifying a pte entry at pmd level. This will also
+>>>>> enable
+>>>>> us to implement hugetlb migration(not yet done in this series).
 >>>>
->>>> 1- either fix my compiler,
->>>> 2- or fix the vdso64 linker command.
+>>>> Hi, what tree does this apply to?
+>>>>
 >>>
->> Thank you Scott. With the help of the comment from Segher, I can choose
->> #1 now :)
-> 
-> What distro/toolchain did you hit this on?
+>>> linux-powerpc tree -next branch
+>>>
+>>> https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/
+>>
+>> Ok, but I'm getting the following error after applying the first patch
+>> from your series:
+>>
+>> error: patch failed: arch/powerpc/include/asm/pgalloc-64.h:166
+>> error: arch/powerpc/include/asm/pgalloc-64.h: patch does not apply
+>> error: arch/powerpc/mm/hash64_64k.c: No such file or directory
+>>
+>> kda@hydra ~/devel/linux $ git branch
+>>   master
+>> * next
+>> kda@hydra ~/devel/linux $ git remote show origin
+>> * remote origin
+>>   Fetch URL:
+>> git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
+>>   Push  URL:
+>> git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
+>>
+>> Or am I missing something?
+>
+>
+> Why not use
+>
+> The patch series can also be found at
+> https://github.com/kvaneesh/linux.git book3s-pte-format
+> https://github.com/kvaneesh/linux/commits/book3s-pte-format
 
-fedora 23.
+I've started playing with your changes.
+Also I want to run Mel Gorman's mm tests[0] but it needs some
+work to adapt them to run.
 
-> I actually wrote this same patch a while back, but from memory it broke in some
-> configurations. So I never merged it. I'll see if I can find my notes and work
-> out exactly why it didn't work, maybe we should merge it anyway, even though
-> the real bug is a toolchain bug.
+Thanks!
 
-On fedora, there is also a bug in binutils configuration where ld is not
-able to manage ppc64le binaries on ppc64 host, but I've already sent a
-fix for that and it is now in rawhide (will be in fedora 24).
-
-https://bugzilla.redhat.com/show_bug.cgi?id=1275709
-
-Laurent
+[0] https://lwn.net/Articles/454121/
+>
+>
+> -aneesh
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
