@@ -2,30 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7B8C01A0279
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2015 11:21:12 +1100 (AEDT)
-Message-ID: <1447114872.13889.2.camel@ellerman.id.au>
-Subject: Re: [RFC PATCH 0/3]perf/core: extend perf_reg and
- perf_sample_regs_intr
+ by lists.ozlabs.org (Postfix) with ESMTPS id B8E451A0286
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2015 11:29:37 +1100 (AEDT)
+Message-ID: <1447115377.13889.7.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: allow cross-compilation of ppc64 kernel
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, x86@kernel.org, Thomas Gleixner
- <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Jiri Olsa
- <jolsa@kernel.org>,  Arnaldo Carvalho de Melo <acme@kernel.org>, Stephane
- Eranian <eranian@gmail.com>, Russell King <linux@arm.linux.org.uk>, Catalin
- Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Sukadev Bhattiprolu
- <sukadev@linux.vnet.ibm.com>
-Date: Tue, 10 Nov 2015 11:21:12 +1100
-In-Reply-To: <20151106102540.GR3604@twins.programming.kicks-ass.net>
-References: <1446669978-6366-1-git-send-email-maddy@linux.vnet.ibm.com>
- <20151105130716.GC3604@twins.programming.kicks-ass.net>
- <563C5655.3000605@linux.vnet.ibm.com>
- <20151106092430.GO3604@twins.programming.kicks-ass.net>
- <1446804240.21859.4.camel@ellerman.id.au>
- <20151106102540.GR3604@twins.programming.kicks-ass.net>
+To: Laurent Vivier <laurent@vivier.eu>, Scott Wood <scottwood@freescale.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Date: Tue, 10 Nov 2015 11:29:37 +1100
+In-Reply-To: <563DE203.6030001@vivier.eu>
+References: <1446724029-10884-1-git-send-email-laurent@vivier.eu>
+ <1446844180.11597.13.camel@freescale.com> <563D2813.80302@vivier.eu>
+ <1446852296.11597.53.camel@freescale.com> <563DE203.6030001@vivier.eu>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,44 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-11-06 at 11:25 +0100, Peter Zijlstra wrote:
+On Sat, 2015-11-07 at 12:35 +0100, Laurent Vivier wrote:
+> Le 07/11/2015 00:24, Scott Wood a écrit :
+> > On Fri, 2015-11-06 at 23:22 +0100, Laurent Vivier wrote:
+> > > Le 06/11/2015 22:09, Scott Wood a écrit :
+> > > > On Thu, 2015-11-05 at 12:47 +0100, Laurent Vivier wrote:
+> > > > > When I try to cross compile a ppc64 kernel, it generally
+> > > > > fails on the VDSO stage. This is true for powerpc64 cross-
+> > > > > compiler, but also when I try to build a ppc64le kernel
+> > > > > on a ppc64 host.
+> > > > > 
+> > > > > VDSO64L fails:
+> > > > > 
+> > > > >   VDSO64L arch/powerpc/kernel/vdso64/vdso64.so.dbg
+> > > > > /usr/bin/powerpc64-linux-gnu-ld: arch/powerpc/kernel/vdso64/sigtramp.o:
+> > > > > file class ELFCLASS64 incompatible with ELFCLASS32
+> > > > > /usr/bin/powerpc64-linux-gnu-ld: final link failed: File in wrong format
+> > > > > 
+> > > > > This fails because gcc calls "collect2" with
+> > > > > "--oformat elf32-powerpcle" with ppc64 objects, without the
+> > > > > "--oformat" ld works well because it use the format of the
+> > > > > first object as output format.
+> > > > > 
+> > > > > As this case is correctly managed to build the other kernel
+> > > > > objects, this patch replaces $(GCC) by $(LD) to generate the
+> > > > > VDSO objects.
+> > 
+> > > So at this point, I can:
+> > > 
+> > > 1- either fix my compiler,
+> > > 2- or fix the vdso64 linker command.
+> > 
+> Thank you Scott. With the help of the comment from Segher, I can choose
+> #1 now :)
 
-> On Fri, Nov 06, 2015 at 09:04:00PM +1100, Michael Ellerman wrote:
+What distro/toolchain did you hit this on?
 
-> > It's a perrenial request from our hardware PMU folks to be able to see the raw
-> > values of the PMU registers.
-> > 
-> > I think partly it's so that they can verify that perf is doing what they want,
-> > and some of it is that they're interested in some of the more obscure info that
-> > isn't plumbed out through other perf interfaces.
-> > 
-> > We've used various internal hacks over the years to keep them happy. This is an
-> > attempt to use a somewhat standard mechanism.
-> > 
-> > It would also be helpful for those of us working on the perf hardware backends,
-> > to be able to verify that we're programming things correctly, without resorting
-> > to debug printks etc.
-> > 
-> > Basically we want to sample regs at the time of the perf interrupt, so we
-> > though PERF_SAMPLE_REGS_INTR made senes :)
-> > 
-> > But if you think this is the wrong mechanism within perf, then please let us
-> > know.
-> > 
-> > I know perf's mission is to abstract as much of the arcane hardware details
-> > into a generic interface and make PMUs actually useful for normal folks, and we
-> > are committed to that, but it would also be useful to be able to get the raw
-> > values for a different type of user.
-> > 
-> > Maddy's patch only exports PMC1-6 and MMCR0/1. I think we also need to export
-> > some others, in particular MMCRA has a lot of stuff in it, half of which is not
-> > even architected. So that would have to be exported as "POWER8_MMCRA". And then
-> > there's the SIAR/SDAR/SIER which contain a bunch of info on sampled
-> > instructions that is not currently plumbed out.
-> 
-> OK, no objections then. But this is useful information and should be
-> included in the patch set.
-
-Thanks, yeah definitely needs more explanation in the patch set.
+I actually wrote this same patch a while back, but from memory it broke in some
+configurations. So I never merged it. I'll see if I can find my notes and work
+out exactly why it didn't work, maybe we should merge it anyway, even though
+the real bug is a toolchain bug.
 
 cheers
