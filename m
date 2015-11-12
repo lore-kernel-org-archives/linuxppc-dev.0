@@ -1,29 +1,22 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
- [IPv6:2607:f8b0:400e:c03::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 018911A01E4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2015 14:30:46 +1100 (AEDT)
-Received: by pasz6 with SMTP id z6so52390258pas.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2015 19:30:44 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
- bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
- panto@antoniou-consulting.com, frowand.list@gmail.com,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 11/50] powerpc/powernv: IO and M32 mapping based on PCI
- device resources
-In-Reply-To: <1446642770-4681-12-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-12-git-send-email-gwshan@linux.vnet.ibm.com>
-Date: Thu, 12 Nov 2015 14:30:27 +1100
-Message-ID: <87lha3j3n0.fsf@gamma.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 637F01A01E4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2015 14:38:56 +1100 (AEDT)
+Date: Thu, 12 Nov 2015 14:34:37 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+Cc: paulus@ozlabs.org, linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org,
+ mahesh@linux.vnet.ibm.com, michaele@au1.ibm.com, agraf@suse.de,
+ kvm@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: Exit guest upon fatal machine check exception
+Message-ID: <20151112033437.GI5852@voom.redhat.com>
+References: <20151111165845.3721.98296.stgit@aravindap>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="zqjkMoGlbUJ91oFe"
+In-Reply-To: <20151111165845.3721.98296.stgit@aravindap>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,164 +26,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+
+--zqjkMoGlbUJ91oFe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Gavin,
+On Wed, Nov 11, 2015 at 10:28:46PM +0530, Aravinda Prasad wrote:
+> This patch modifies KVM to cause a guest exit with
+> KVM_EXIT_NMI instead of immediately delivering a 0x200
+> interrupt to guest upon machine check exception in
+> guest address. Exiting the guest enables QEMU to build
+> error log and deliver machine check exception to guest
+> OS (either via guest OS registered machine check
+> handler or via 0x200 guest OS interrupt vector).
+>=20
+> This approach simplifies the delivering of machine
+> check exception to guest OS compared to the earlier approach
+> of KVM directly invoking 0x200 guest interrupt vector.
+> In the earlier approach QEMU patched the 0x200 interrupt
+> vector during boot. The patched code at 0x200 issued a
+> private hcall to pass the control to QEMU to build the
+> error log.
+>=20
+> This design/approach is based on the feedback for the
+> QEMU patches to handle machine check exception. Details
+> of earlier approach of handling machine check exception
+> in QEMU and related discussions can be found at:
+>=20
+> https://lists.nongnu.org/archive/html/qemu-devel/2014-11/msg00813.html
+>=20
+> Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kvm/book3s_hv.c            |   12 +++---------
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S |   31 +++++++++++--------------=
+------
+>  2 files changed, 14 insertions(+), 29 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 2280497..1b1dff0 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -859,15 +859,9 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run=
+, struct kvm_vcpu *vcpu,
+>  		r =3D RESUME_GUEST;
+>  		break;
+>  	case BOOK3S_INTERRUPT_MACHINE_CHECK:
+> -		/*
+> -		 * Deliver a machine check interrupt to the guest.
+> -		 * We have to do this, even if the host has handled the
+> -		 * machine check, because machine checks use SRR0/1 and
+> -		 * the interrupt might have trashed guest state in them.
+> -		 */
+> -		kvmppc_book3s_queue_irqprio(vcpu,
+> -					    BOOK3S_INTERRUPT_MACHINE_CHECK);
+> -		r =3D RESUME_GUEST;
+> +		/* Exit to guest with KVM_EXIT_NMI as exit reason */
+> +		run->exit_reason =3D KVM_EXIT_NMI;
+> +		r =3D RESUME_HOST;
+>  		break;
+>  	case BOOK3S_INTERRUPT_PROGRAM:
+>  	{
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/b=
+ook3s_hv_rmhandlers.S
+> index b98889e..672b4f6 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -147,7 +147,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>  	addi	r1, r1, 112
+>  	ld	r7, HSTATE_HOST_MSR(r13)
+> =20
+> -	cmpwi	cr1, r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+>  	cmpwi	r12, BOOK3S_INTERRUPT_EXTERNAL
+>  	beq	11f
+>  	cmpwi	cr2, r12, BOOK3S_INTERRUPT_HMI
+> @@ -160,7 +159,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>  	mtmsrd	r6, 1			/* Clear RI in MSR */
+>  	mtsrr0	r8
+>  	mtsrr1	r7
+> -	beq	cr1, 13f		/* machine check */
+>  	RFI
+> =20
+>  	/* On POWER7, we have external interrupts set to use HSRR0/1 */
+> @@ -168,8 +166,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>  	mtspr	SPRN_HSRR1, r7
+>  	ba	0x500
+> =20
+> -13:	b	machine_check_fwnmi
+> -
 
-Sorry to have taken so long to resume these reviews!
-
-> Currently, the IO and M32 segments are mapped to the corresponding
-> PE based on the windows of the parent bridge of PE's primary bus.
-> It's not going to work when the windows of root port or upstream
-> port of the PCIe switch behind root port are extended to PHB's
-> aperatuses in order to support hotplug in subsequent patch.
-I'm not _entirely_ sure I understand this.
-
-I *think* you mean PHB's apertures (i.e. s/aperatuses/apertures/)?
-
-> This fixes the issue by mapping IO and M32 segments based on the
-> resources of the PCI devices included in the PE, instead of the
-> windows of the parent bridge of the PE's primary bus.
-
-This solution seems to make a lot of sense, but I don't have a very good
-understanding of PCI yet: why was it done that way and not this way
-originally? Looking at the code, it looks like the old way was simple
-but didn't support SR-IOV?
-
-There are a few comments inline as well.
-
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
-tforms/powernv/pci-ioda.c
-> index 553d3f3..4ab93f8 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -2741,71 +2741,90 @@ truncate_iov:
->  }
->  #endif /* CONFIG_PCI_IOV */
->=20=20
-> -/*
-> - * This function is supposed to be called on basis of PE from top
-> - * to bottom style. So the the I/O or MMIO segment assigned to
-> - * parent PE could be overrided by its child PEs if necessary.
-> - */
-> -static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
-> -				  struct pnv_ioda_pe *pe)
-> +static int pnv_ioda_setup_one_res(struct pnv_ioda_pe *pe,
-> +				  struct resource *res)
->  {
-> -	struct pnv_phb *phb =3D hose->private_data;
-> +	struct pnv_phb *phb =3D pe->phb;
->  	struct pci_bus_region region;
-> -	struct resource *res;
-> -	unsigned int segsize;
-> -	int *segmap, index, i;
-> +	unsigned int index, segsize;
-> +	int *segmap;
->  	uint16_t win;
->  	int64_t rc;
-
-s/int64_t/s64/;
-I think we might also want to change the uint16_t as well.
-
-> -	/*
-> -	 * NOTE: We only care PCI bus based PE for now. For PCI
-> -	 * device based PE, for example SRIOV sensitive VF should
-> -	 * be figured out later.
-> -	 */
-> -	BUG_ON(!(pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)));
-> +	if (!res->parent || !res->flags || res->start > res->end)
-> +		return 0;
->=20=20
-> -	pci_bus_for_each_resource(pe->pbus, res, i) {
-> -		if (!res || !res->flags ||
-> -		    res->start > res->end)
-> -			continue;
-> +	if (res->flags & IORESOURCE_IO) {
-> +		region.start =3D res->start - phb->ioda.io_pci_base;
-> +		region.end   =3D res->end - phb->ioda.io_pci_base;
-> +		segsize      =3D phb->ioda.io_segsize;
-> +		segmap       =3D phb->ioda.io_segmap;
-> +		win          =3D OPAL_IO_WINDOW_TYPE;
-> +	} else if ((res->flags & IORESOURCE_MEM) &&
-> +		   !pnv_pci_is_mem_pref_64(res->flags)) {
-> +		region.start =3D res->start -
-> +			       phb->hose->mem_offset[0] -
-> +			       phb->ioda.m32_pci_base;
-> +		region.end   =3D res->end -
-> +			       phb->hose->mem_offset[0] -
-> +			       phb->ioda.m32_pci_base;
-> +		segsize      =3D phb->ioda.m32_segsize;
-> +		segmap       =3D phb->ioda.m32_segmap;
-> +		win          =3D OPAL_M32_WINDOW_TYPE;
-> +	} else {
-> +		return 0;
-The return codes are currently unused, but should this get a more
-informative return code? Are there any invalid ones that should be
-flagged, or is it just safe to ignore stuff we don't recognise?
-
-> +	}
+I don't quite understand the 3 hunks above.  The rest seems to change
+the delivery of MCs as I'd expect, but the above seems to change their
+detection and the reason for that isn't obvious to me.
 
 
-> +static void pnv_ioda_setup_pe_seg(struct pnv_ioda_pe *pe)
-> +{
-> +	struct pci_dev *pdev;
-> +	struct resource *res;
-> +	int i;
-> +
-> +	/* This function only works for bus dependent PE */
-> +	WARN_ON(!(pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)));
-> +
-> +	list_for_each_entry(pdev, &pe->pbus->devices, bus_list) {
-> +		for (i =3D 0; i <=3D PCI_ROM_RESOURCE; i++) {
-> +			res =3D &pdev->resource[i];
-> +			if (pnv_ioda_setup_one_res(pe, res))
-> +				return;
-As I mentioned earlier, setup_one_res can potentially return -EIO:
-should we be trying to propagate that up?
-> +		}
-> +
-> +		/*
-> +		 * If the PE contains all subordinate PCI buses, the
-> +		 * windows of the child bridges should be mapped to
-> +		 * the PE as well.
-> +		 */
-> +		if (!(pe->flags & PNV_IODA_PE_BUS_ALL && pci_is_bridge(pdev)))
-> +			continue;
->=20=20
-> -			region.start +=3D segsize;
-> -			index++;
-> +		for (i =3D 0; i <=3D PCI_BRIDGE_RESOURCE_NUM; i++) {
-> +			res =3D &pdev->resource[PCI_BRIDGE_RESOURCES + i];
-> +			if (pnv_ioda_setup_one_res(pe, res))
-> +				return;
->  		}
->  	}
->  }
+>  14:	mtspr	SPRN_HSRR0, r8
+>  	mtspr	SPRN_HSRR1, r7
+>  	b	hmi_exception_after_realmode
+> @@ -2381,24 +2377,19 @@ machine_check_realmode:
+>  	ld	r9, HSTATE_KVM_VCPU(r13)
+>  	li	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+>  	/*
+> -	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest through
+> -	 * machine check interrupt (set HSRR0 to 0x200). And for handled
+> -	 * errors (no-fatal), just go back to guest execution with current
+> -	 * HSRR0 instead of exiting guest. This new approach will inject
+> -	 * machine check to guest for fatal error causing guest to crash.
+> -	 *
+> -	 * The old code used to return to host for unhandled errors which
+> -	 * was causing guest to hang with soft lockups inside guest and
+> -	 * makes it difficult to recover guest instance.
+> +	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest
+> +	 * by exiting the guest with KVM_EXIT_NMI exit reason (exit
+> +	 * reason set later based on trap). For handled errors
+> +	 * (no-fatal), go back to guest execution with current HSRR0
+> +	 * instead of exiting the guest. This approach will cause
+> +	 * the guest to exit in case of fatal machine check error.
+>  	 */
+> -	ld	r10, VCPU_PC(r9)
+> +	bne	2f	/* Continue guest execution? */
+> +	/* If not, exit the guest. SRR0/1 are already set */
+> +	b	mc_cont
+> +2:	ld	r10, VCPU_PC(r9)
+>  	ld	r11, VCPU_MSR(r9)
+> -	bne	2f	/* Continue guest execution. */
+> -	/* If not, deliver a machine check.  SRR0/1 are already set */
+> -	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
+> -	ld	r11, VCPU_MSR(r9)
+> -	bl	kvmppc_msr_interrupt
+> -2:	b	fast_interrupt_c_return
+> +	b	fast_interrupt_c_return
+> =20
+>  /*
+>   * Check the reason we woke from nap, and take appropriate action.
+>=20
 
-Regards,
-Daniel
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
---=-=-=
+--zqjkMoGlbUJ91oFe
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
 
-iQIcBAEBCgAGBQJWRAfTAAoJEPC3R3P2I92FtTYQAJw1vvFNRcSsXcDhZQZYAJ9X
-PpE5r9hSEthRHXanCuU4Zj90i/OxHW6OohP5+vjUNGzmyKvynUlc62YzMCKsiNN0
-udTFxeGdAzxTI8gdkVIau7mwEa21o8ZvQ0/EiEkWV3coQqm0DbupI2DDxilpNEw5
-0+68ruVsyzFuBZoLHMQO0Z7teVteQzSJ2xtmpGOdbIcd7BwHzi8HsFHgJ2qebL7H
-PdevaDa0t4O3x8SVKmwTJyePiUIidlK1AIsWVkVtvo2qvTYmva0N16yAFS8U6K21
-kPnHq+aJj8kJ36u2pqWNAEStzZq0kFXa3zrBWkkskAYpSNd2SyGcKYtvKfAwzb9p
-ITYTty/y+RKWMnBWVD1Z70Q81OHiJB6L//2ROB0NvFq5hGLQgh7e+U/ccfNQlzXP
-L37i0Ckmw+kxTQqNQlLeHgsu4D5q+OxMT10e4F+xZgxANgY6Yk3fX8GXefmL0Xu6
-SrDRSO21uQj2WSVZORfyYV9Er6BkZ0remgLaMDeDrEjBYYHdE3/qXeJ6qwtL0ytO
-Wn3dSRAZr8qg+JVK0kdpUotVFIj0cUsmp4K5k2ElRR/kW+HzBD80fbIL8m91Wx1I
-x/AlCjCt5ARF2w6oA49Dl8Jnm3EHketzZEiAn9jXgtPOtPXdODbXAwtU+00CALyo
-6uVIXZRMukbEfdBk10yw
-=L90z
+iQIcBAEBAgAGBQJWRAjNAAoJEGw4ysog2bOSmyYQAM+I+OVqGejHbCBuR3WV3RR0
+nWEcRbpXcTxTzC1LBOIfEopCU10VYbJv4RanXbZZLkbxVJOj/3kcmcAkBrS2GH0Z
+1ieiABP5fHACmafXPsRpvRkeeYTm1wsj3Kp+Skny2gG/xIm98WbI1JLkcK7Qikml
+u07m23PiXCXYMq+NI4ivqwI2QViks+XdOO1Uin5iCUZmKSwdlbrHZaSkTBfoGlze
+qrNnVRJeM4YMSmJglyijXGNkRs85JFuGQaNoaxADTNcXx+iyMqITQA8Vbum0/sKg
+s0fwv4gzRjYlGZJmUO/08GbnKwK4ZmQmO0Ebgzb3XFM+GNmhJ4yw8GcOkjbw1QHV
+I3mTXxubxy8XLUiA2KECjaTSEgHYJb/bbU7qQgtQ/ANOd7K0UNPlWT2CxTkOWO2D
+VZbHkYVMR6tLJ1Opx9rzQ4Y3YamSmUMF/x9snzEn3JxT80iCGmlGZszmflZKmt5T
+Ye/RGe6lGzdUTVjjwA8ystneW9Ha9rxxxBaab2xjzMY2v+JvhaZGGIVMtVEJBfcQ
+Hu9Fqum9zdYMLjlsa9DkKMleS/fdUiPYZIzxVVTClKHUPmcdTIr5/HTd6w4Yzq85
+JVnWZ5oeJv86KDQbEQAKSZzqshiFSyWofh5LSL/zLniHBbbKCePVWRhBNZPYzqrD
+VoDuluaB+4Gy+iWfNv0s
+=d0oD
 -----END PGP SIGNATURE-----
---=-=-=--
+
+--zqjkMoGlbUJ91oFe--
