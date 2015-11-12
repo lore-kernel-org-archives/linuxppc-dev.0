@@ -1,28 +1,32 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
- [IPv6:2607:f8b0:400e:c03::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aravinda@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D89351A01AA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2015 16:11:28 +1100 (AEDT)
-Received: by pabfh17 with SMTP id fh17so53360888pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2015 21:11:26 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
- bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
- panto@antoniou-consulting.com, frowand.list@gmail.com,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 37/50] powerpc/powernv: Simplify pnv_eeh_reset()
-In-Reply-To: <1446642770-4681-38-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-38-git-send-email-gwshan@linux.vnet.ibm.com>
-Date: Thu, 12 Nov 2015 16:11:12 +1100
-Message-ID: <877flniyz3.fsf@gamma.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E29791A0282
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2015 16:18:46 +1100 (AEDT)
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 141621413BC
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2015 16:18:45 +1100 (AEDT)
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
+ Wed, 11 Nov 2015 22:18:43 -0700
+Message-ID: <5644212A.2000804@linux.vnet.ibm.com>
+Date: Thu, 12 Nov 2015 10:48:34 +0530
+From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+To: David Gibson <david@gibson.dropbear.id.au>
+CC: paulus@ozlabs.org, linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org,
+ mahesh@linux.vnet.ibm.com, michaele@au1.ibm.com, agraf@suse.de,
+ kvm@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: Exit guest upon fatal machine check exception
+References: <20151111165845.3721.98296.stgit@aravindap>
+ <20151112033437.GI5852@voom.redhat.com>
+In-Reply-To: <20151112033437.GI5852@voom.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,51 +36,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
 
-> -			rc = opal_pci_reset(phb->opal_id,
-> -					    OPAL_RESET_PHB_ERROR,
-> -					    OPAL_ASSERT_RESET);
-> -			if (rc != OPAL_SUCCESS) {
-> -				pr_warn("%s: Failure %lld clearing "
-> -					"error injection registers\n",
-> -					__func__, rc);
 
-This is very minor, but is there a good reason to change the error
-message from the one above to the one below? I just hesitate to change
-error messages that people might be grepping the source for without a
-good reason.
+On Thursday 12 November 2015 09:04 AM, David Gibson wrote:
+> On Wed, Nov 11, 2015 at 10:28:46PM +0530, Aravinda Prasad wrote:
+>> This patch modifies KVM to cause a guest exit with
+>> KVM_EXIT_NMI instead of immediately delivering a 0x200
+>> interrupt to guest upon machine check exception in
+>> guest address. Exiting the guest enables QEMU to build
+>> error log and deliver machine check exception to guest
+>> OS (either via guest OS registered machine check
+>> handler or via 0x200 guest OS interrupt vector).
+>>
+>> This approach simplifies the delivering of machine
+>> check exception to guest OS compared to the earlier approach
+>> of KVM directly invoking 0x200 guest interrupt vector.
+>> In the earlier approach QEMU patched the 0x200 interrupt
+>> vector during boot. The patched code at 0x200 issued a
+>> private hcall to pass the control to QEMU to build the
+>> error log.
+>>
+>> This design/approach is based on the feedback for the
+>> QEMU patches to handle machine check exception. Details
+>> of earlier approach of handling machine check exception
+>> in QEMU and related discussions can be found at:
+>>
+>> https://lists.nongnu.org/archive/html/qemu-devel/2014-11/msg00813.html
+>>
+>> Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/kvm/book3s_hv.c            |   12 +++---------
+>>  arch/powerpc/kvm/book3s_hv_rmhandlers.S |   31 +++++++++++--------------------
+>>  2 files changed, 14 insertions(+), 29 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+>> index 2280497..1b1dff0 100644
+>> --- a/arch/powerpc/kvm/book3s_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_hv.c
+>> @@ -859,15 +859,9 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>>  		r = RESUME_GUEST;
+>>  		break;
+>>  	case BOOK3S_INTERRUPT_MACHINE_CHECK:
+>> -		/*
+>> -		 * Deliver a machine check interrupt to the guest.
+>> -		 * We have to do this, even if the host has handled the
+>> -		 * machine check, because machine checks use SRR0/1 and
+>> -		 * the interrupt might have trashed guest state in them.
+>> -		 */
+>> -		kvmppc_book3s_queue_irqprio(vcpu,
+>> -					    BOOK3S_INTERRUPT_MACHINE_CHECK);
+>> -		r = RESUME_GUEST;
+>> +		/* Exit to guest with KVM_EXIT_NMI as exit reason */
+>> +		run->exit_reason = KVM_EXIT_NMI;
+>> +		r = RESUME_HOST;
+>>  		break;
+>>  	case BOOK3S_INTERRUPT_PROGRAM:
+>>  	{
+>> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>> index b98889e..672b4f6 100644
+>> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>> @@ -147,7 +147,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>>  	addi	r1, r1, 112
+>>  	ld	r7, HSTATE_HOST_MSR(r13)
+>>  
+>> -	cmpwi	cr1, r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+>>  	cmpwi	r12, BOOK3S_INTERRUPT_EXTERNAL
+>>  	beq	11f
+>>  	cmpwi	cr2, r12, BOOK3S_INTERRUPT_HMI
+>> @@ -160,7 +159,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>>  	mtmsrd	r6, 1			/* Clear RI in MSR */
+>>  	mtsrr0	r8
+>>  	mtsrr1	r7
+>> -	beq	cr1, 13f		/* machine check */
+>>  	RFI
+>>  
+>>  	/* On POWER7, we have external interrupts set to use HSRR0/1 */
+>> @@ -168,8 +166,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>>  	mtspr	SPRN_HSRR1, r7
+>>  	ba	0x500
+>>  
+>> -13:	b	machine_check_fwnmi
+>> -
+> 
+> I don't quite understand the 3 hunks above.  The rest seems to change
+> the delivery of MCs as I'd expect, but the above seems to change their
+> detection and the reason for that isn't obvious to me.
 
-> +		if (rc != OPAL_SUCCESS) {
-> +			pr_warn("%s: Error %lld clearing error injection\n",
-> +				__func__, rc);
-
-Apart from that this looks good, pending me actually testing it :)
+We need to do guest exit here and hence we continue with RFI or else if
+we branch to machine_check_fwnmi then the control will flow to
+opal_recover_mce routine without causing the guest to exit with NMI exit
+code. And I think, opal_recover_mce() is used to recover from UEs in
+host user/kernel space and does not have a check for UEs belonging to
+guest. Hence if we branch to machine_check_fwnmi we end up running into
+panic() in opal_machine_check() if UE belonged to guest.
 
 Regards,
-Daniel
+Aravinda
 
+> 
+> 
+>>  14:	mtspr	SPRN_HSRR0, r8
+>>  	mtspr	SPRN_HSRR1, r7
+>>  	b	hmi_exception_after_realmode
+>> @@ -2381,24 +2377,19 @@ machine_check_realmode:
+>>  	ld	r9, HSTATE_KVM_VCPU(r13)
+>>  	li	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+>>  	/*
+>> -	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest through
+>> -	 * machine check interrupt (set HSRR0 to 0x200). And for handled
+>> -	 * errors (no-fatal), just go back to guest execution with current
+>> -	 * HSRR0 instead of exiting guest. This new approach will inject
+>> -	 * machine check to guest for fatal error causing guest to crash.
+>> -	 *
+>> -	 * The old code used to return to host for unhandled errors which
+>> -	 * was causing guest to hang with soft lockups inside guest and
+>> -	 * makes it difficult to recover guest instance.
+>> +	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest
+>> +	 * by exiting the guest with KVM_EXIT_NMI exit reason (exit
+>> +	 * reason set later based on trap). For handled errors
+>> +	 * (no-fatal), go back to guest execution with current HSRR0
+>> +	 * instead of exiting the guest. This approach will cause
+>> +	 * the guest to exit in case of fatal machine check error.
+>>  	 */
+>> -	ld	r10, VCPU_PC(r9)
+>> +	bne	2f	/* Continue guest execution? */
+>> +	/* If not, exit the guest. SRR0/1 are already set */
+>> +	b	mc_cont
+>> +2:	ld	r10, VCPU_PC(r9)
+>>  	ld	r11, VCPU_MSR(r9)
+>> -	bne	2f	/* Continue guest execution. */
+>> -	/* If not, deliver a machine check.  SRR0/1 are already set */
+>> -	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
+>> -	ld	r11, VCPU_MSR(r9)
+>> -	bl	kvmppc_msr_interrupt
+>> -2:	b	fast_interrupt_c_return
+>> +	b	fast_interrupt_c_return
+>>  
+>>  /*
+>>   * Check the reason we woke from nap, and take appropriate action.
+>>
+> 
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAEBCgAGBQJWRB9xAAoJEPC3R3P2I92F6i8P/1nXJklQO2PGRqksurbhrbzf
-hgXkRkqK4MgbbsIdw4HCRkbdWF+2pqKl1qWT6CIoyxNe+uZ+RLiq60Z8+2zok650
-c5usDrSVMJZ1y8xwQrKe//W8C3sMIfWELvxpOpBKEu50thHXTKHpARzUA576PYYW
-epxrt5fwrNckW+Emcyu83c+tEiz3C+goQGM84xBjxIUr7O0wbghinEZ53Otl8BAf
-YfU21Z6a1V+qxNb/qaVn9AYp5QR5IBPC0dBqIngWZsPMH8sivb0mgQInaVtkwjET
-n04tc2uUcyQsHRmvyKvkOp1lIRzJ7Ho5pZzotLyO+Z8LlUuok1WAVRCKjBsuEav3
-Alfv/JKc5kewmo+1+I2P/ofAQQgBHykdrNIYEg3IWJrmHh4GjPDI3csxlILthR6F
-WQJiYDZy4DmnPFi9wg5aH8WjWlCw1B9scobAAcf06gafJ6O9tUjt/iYjHUvCjKqn
-UDhp4VtBJ2cfAuxXgBNcBzGmQCbRtzCfyRAjrZSKQqAKNE4OTlCuzwSUb9pxZ/+4
-C7lFWxLHGm0Eu5rsSh7rFCROt7s7Bg1lZD6cRWNGhGfU9I5vsAtG/i4dAcnNaDZr
-zFemBfb6Fghf7gNZm0GrUrXoYdWJFmAexNFiimwQGhQQN/BVgEFgOtHJhQ/Pj6NO
-18XJnCap7rqlbJZcmG+v
-=AiNj
------END PGP SIGNATURE-----
---=-=-=--
+-- 
+Regards,
+Aravinda
