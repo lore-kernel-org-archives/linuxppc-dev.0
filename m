@@ -1,25 +1,43 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BDABD1A0337
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2015 15:42:44 +1100 (AEDT)
-Date: Thu, 12 Nov 2015 15:43:16 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-Cc: Daniel Axtens <dja@axtens.net>, kvm@vger.kernel.org,
- michaele@au1.ibm.com, mahesh@linux.vnet.ibm.com, agraf@suse.de,
- kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] KVM: PPC: Exit guest upon fatal machine check exception
-Message-ID: <20151112044316.GA4886@voom.redhat.com>
-References: <20151111165845.3721.98296.stgit@aravindap>
- <876118ymy4.fsf@gamma.ozlabs.ibm.com>
- <20151112033816.GJ5852@voom.redhat.com>
- <5644164A.40706@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BDD7C1A03F5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2015 15:56:29 +1100 (AEDT)
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 12 Nov 2015 14:56:28 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 99804357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2015 15:56:23 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAC4uFAH58327158
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2015 15:56:23 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAC4toQL016860
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2015 15:55:51 +1100
+Date: Thu, 12 Nov 2015 15:55:25 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Daniel Axtens <dja@axtens.net>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
+ bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
+ panto@antoniou-consulting.com, frowand.list@gmail.com
+Subject: Re: [PATCH v7 11/50] powerpc/powernv: IO and M32 mapping based on
+ PCI device resources
+Message-ID: <20151112045525.GA6174@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1446642770-4681-12-git-send-email-gwshan@linux.vnet.ibm.com>
+ <87lha3j3n0.fsf@gamma.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="J2SCkAp4GZ/dPZZf"
-In-Reply-To: <5644164A.40706@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87lha3j3n0.fsf@gamma.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,139 +47,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Nov 12, 2015 at 02:30:27PM +1100, Daniel Axtens wrote:
+>Hi Gavin,
+>
+>Sorry to have taken so long to resume these reviews!
+>
 
---J2SCkAp4GZ/dPZZf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks for your review, Daniel!
 
-On Thu, Nov 12, 2015 at 10:02:10AM +0530, Aravinda Prasad wrote:
->=20
->=20
-> On Thursday 12 November 2015 09:08 AM, David Gibson wrote:
-> > On Thu, Nov 12, 2015 at 01:24:19PM +1100, Daniel Axtens wrote:
-> >> Aravinda Prasad <aravinda@linux.vnet.ibm.com> writes:
-> >>
-> >>> This patch modifies KVM to cause a guest exit with
-> >>> KVM_EXIT_NMI instead of immediately delivering a 0x200
-> >>> interrupt to guest upon machine check exception in
-> >>> guest address. Exiting the guest enables QEMU to build
-> >>> error log and deliver machine check exception to guest
-> >>> OS (either via guest OS registered machine check
-> >>> handler or via 0x200 guest OS interrupt vector).
-> >>>
-> >>> This approach simplifies the delivering of machine
-> >>> check exception to guest OS compared to the earlier approach
-> >>> of KVM directly invoking 0x200 guest interrupt vector.
-> >>> In the earlier approach QEMU patched the 0x200 interrupt
-> >>> vector during boot. The patched code at 0x200 issued a
-> >>> private hcall to pass the control to QEMU to build the
-> >>> error log.
-> >>>
-> >>> This design/approach is based on the feedback for the
-> >>> QEMU patches to handle machine check exception. Details
-> >>> of earlier approach of handling machine check exception
-> >>> in QEMU and related discussions can be found at:
-> >>>
-> >>> https://lists.nongnu.org/archive/html/qemu-devel/2014-11/msg00813.html
-> >>
-> >> I've poked at the MCE code, but not the KVM MCE code, so I may be
-> >> mistaken here, but I'm not clear on how this handles errors that the
-> >> guest can recover without terminating.
-> >>
-> >> For example, a Linux guest can handle a UE in guest userspace by killi=
-ng
-> >> the guest process. A hypthetical non-linux guest with a microkernel
-> >> could even survive UEs in drivers.
-> >>
-> >> It sounds from your patch like you're changing this behaviour. Is this
-> >> right?
-> >=20
-> > So, IIUC.  Once the qemu pieces are in place as well it shouldn't
-> > change this behaviour: KVM will exit to qemu, qemu will log the error
-> > information (new), then reinject the MC to the guest which can still
-> > handle it as you describe above.
->=20
-> Yes. With KVM and QEMU both in place this will not change the behavior.
-> QEMU will inject the UE to guest and the guest handles the UE based on
-> where it occurred. For example if an UE happens in a guest process
-> address space, that process will be killed.
->=20
-> >=20
-> > But, there could be a problem if you have a new kernel with an old
-> > qemu, in that case qemu might not understand the new exit type and
-> > treat it as a fatal error, even though the guest could actually cope
-> > with it.
->=20
-> In case of new kernel and old QEMU, the guest terminates as old QEMU
-> does not understand the NMI exit reason. However, this is the case with
-> old kernel and old QEMU as they do not handle UE belonging to guest. The
-> difference is that the guest kernel terminates with different error
-> code.
+>> Currently, the IO and M32 segments are mapped to the corresponding
+>> PE based on the windows of the parent bridge of PE's primary bus.
+>> It's not going to work when the windows of root port or upstream
+>> port of the PCIe switch behind root port are extended to PHB's
+>> aperatuses in order to support hotplug in subsequent patch.
+>I'm not _entirely_ sure I understand this.
+>
+>I *think* you mean PHB's apertures (i.e. s/aperatuses/apertures/)?
+>
 
-Ok.. assuming the guest has code to handle the UE in 0x200, why would
-the guest terminate with old kernel and old qemu?  I haven't quite
-followed the logic.
+I'll fix the typo in next revision.
 
->=20
-> old kernel and old QEMU -> guest panics [1] irrespective of where UE
->                            happened in guest address space.
-> old kernel and new QEMU -> guest panics. same as above.
-> new kernel and old QEMU -> guest terminates with unhanded NMI error
->                            irrespective of where UE happened in guest
-> new kernel and new QEMU -> guest handles UEs in process address space
->                            by killing the process. guest terminates
->                            for UEs in guest kernel address space.
->=20
-> [1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-June/118329.html
->=20
-> >=20
-> > Aravinda, do we need to change this so that qemu has to explicitly
-> > enable the new NMI behaviour?  Or have I missed something that will
-> > make that case work already.
->=20
-> I think we don't need to explicitly enable the new behavior. With new
-> kernel and new QEMU this should just work. As mentioned above this is
-> already broken for old kernel/QEMU. Any thoughts?
->=20
-> Regards,
-> Aravinda
->=20
-> >=20
-> >=20
-> >=20
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
-> >=20
->=20
+>> This fixes the issue by mapping IO and M32 segments based on the
+>> resources of the PCI devices included in the PE, instead of the
+>> windows of the parent bridge of the PE's primary bus.
+>
+>This solution seems to make a lot of sense, but I don't have a very good
+>understanding of PCI yet: why was it done that way and not this way
+>originally? Looking at the code, it looks like the old way was simple
+>but didn't support SR-IOV?
+>
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+It's not related to SRIOV. Originally, the IO or M32 segments are mapped
+according to the bridge's windows. The bridge windows on root port or the
+upstream port of the switch behind that will be extended to PHB's apertures.
+If we still use bridge's windows, all IO and M32 resources are mapped/assigned
+to the PE corresponding to PCI bus#1 or PCI bus#2. That's not correct any more.
+So the correct way is to do the mapping based on IO or M32 BARs of the devices
+included in the PE.
 
---J2SCkAp4GZ/dPZZf
-Content-Type: application/pgp-signature; name="signature.asc"
+>There are a few comments inline as well.
+>
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index 553d3f3..4ab93f8 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -2741,71 +2741,90 @@ truncate_iov:
+>>  }
+>>  #endif /* CONFIG_PCI_IOV */
+>>  
+>> -/*
+>> - * This function is supposed to be called on basis of PE from top
+>> - * to bottom style. So the the I/O or MMIO segment assigned to
+>> - * parent PE could be overrided by its child PEs if necessary.
+>> - */
+>> -static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
+>> -				  struct pnv_ioda_pe *pe)
+>> +static int pnv_ioda_setup_one_res(struct pnv_ioda_pe *pe,
+>> +				  struct resource *res)
+>>  {
+>> -	struct pnv_phb *phb = hose->private_data;
+>> +	struct pnv_phb *phb = pe->phb;
+>>  	struct pci_bus_region region;
+>> -	struct resource *res;
+>> -	unsigned int segsize;
+>> -	int *segmap, index, i;
+>> +	unsigned int index, segsize;
+>> +	int *segmap;
+>>  	uint16_t win;
+>>  	int64_t rc;
+>
+>s/int64_t/s64/;
+>I think we might also want to change the uint16_t as well.
+>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+As I explained before, I changed it from s64 to int64_t and I won't change it
+back since both of them are fine. Same situation to uint16 here. If we really
+want to clean it all at once, I can do that later, but not in this patchset.
 
-iQIcBAEBAgAGBQJWRBjkAAoJEGw4ysog2bOSbNAP/A5ls49fZBzLfoht/2iMRT6c
-LR0k205oMgtDDAHYmSI/hQuoxJ0Fzo6xmCerp9IJzrxZYTxE5H142igEO5zH0LXU
-vFnAcgNEBFN12pjSowOu8KVq+aBn93Ejsk+z/1LPmibxh/ppVsWvStsuhRX41pUZ
-M78VL+JijoGCmF9Vm5iMl8LumwYoBk3okUtz2IRFWbbiV0736NM0WzMs1ddt0F4b
-Ck8H3txxFI7LWee7FUvy0hQhQeZq1kHFwc0SAWcVyQ7KPAeeWOkFUApaGEAVClkU
-S/5uHnmfkQQX1uuhN/qsMNyYvyHEi4q9hSTeOGJ2VNAsGdROY/Jhfe9qXR9bVqhT
-nNbiyHP3fW+vht8ZbXC0Saa0J9BGGmrPII1al9jFmaNCm3WBp7vNn6gtSsVNdHIO
-fBAQg4GDHL3nrV3Gbjbk7szyZSpIkdL1VA90tSgvLhndLSlaYTOke+Q1bKGfXgCM
-33K0c4poSI+s9DplnkuM3Yad4ajXPgLv2nveegtirhjsioaLQQucrhPNl0h2/2Bq
-BJe7qXIogsIQ9xkCKng/TBIvpy7dFbyWjiPixNFo5aWlpPh4sljQQnzu+7z9eDJ7
-nUfgwNInGG7px1VGjMQWc9zphGcgwe7WIo1mrvlSjvPajMtN6RbCox2gu8pU3f7r
-NCUg83M9YDmLon05f3IK
-=FsoF
------END PGP SIGNATURE-----
+>> -	/*
+>> -	 * NOTE: We only care PCI bus based PE for now. For PCI
+>> -	 * device based PE, for example SRIOV sensitive VF should
+>> -	 * be figured out later.
+>> -	 */
+>> -	BUG_ON(!(pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)));
+>> +	if (!res->parent || !res->flags || res->start > res->end)
+>> +		return 0;
+>>  
+>> -	pci_bus_for_each_resource(pe->pbus, res, i) {
+>> -		if (!res || !res->flags ||
+>> -		    res->start > res->end)
+>> -			continue;
+>> +	if (res->flags & IORESOURCE_IO) {
+>> +		region.start = res->start - phb->ioda.io_pci_base;
+>> +		region.end   = res->end - phb->ioda.io_pci_base;
+>> +		segsize      = phb->ioda.io_segsize;
+>> +		segmap       = phb->ioda.io_segmap;
+>> +		win          = OPAL_IO_WINDOW_TYPE;
+>> +	} else if ((res->flags & IORESOURCE_MEM) &&
+>> +		   !pnv_pci_is_mem_pref_64(res->flags)) {
+>> +		region.start = res->start -
+>> +			       phb->hose->mem_offset[0] -
+>> +			       phb->ioda.m32_pci_base;
+>> +		region.end   = res->end -
+>> +			       phb->hose->mem_offset[0] -
+>> +			       phb->ioda.m32_pci_base;
+>> +		segsize      = phb->ioda.m32_segsize;
+>> +		segmap       = phb->ioda.m32_segmap;
+>> +		win          = OPAL_M32_WINDOW_TYPE;
+>> +	} else {
+>> +		return 0;
+>The return codes are currently unused, but should this get a more
+>informative return code? Are there any invalid ones that should be
+>flagged, or is it just safe to ignore stuff we don't recognise?
+>
 
---J2SCkAp4GZ/dPZZf--
+It's safe to ignore M64 (64-bits prefetchable BARs) whose mapping is
+done in different path.
+
+>> +	}
+>
+>
+>> +static void pnv_ioda_setup_pe_seg(struct pnv_ioda_pe *pe)
+>> +{
+>> +	struct pci_dev *pdev;
+>> +	struct resource *res;
+>> +	int i;
+>> +
+>> +	/* This function only works for bus dependent PE */
+>> +	WARN_ON(!(pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)));
+>> +
+>> +	list_for_each_entry(pdev, &pe->pbus->devices, bus_list) {
+>> +		for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+>> +			res = &pdev->resource[i];
+>> +			if (pnv_ioda_setup_one_res(pe, res))
+>> +				return;
+>As I mentioned earlier, setup_one_res can potentially return -EIO:
+>should we be trying to propagate that up?
+
+I think it's a good idea. I'll do in next revision.
+
+>> +		}
+>> +
+>> +		/*
+>> +		 * If the PE contains all subordinate PCI buses, the
+>> +		 * windows of the child bridges should be mapped to
+>> +		 * the PE as well.
+>> +		 */
+>> +		if (!(pe->flags & PNV_IODA_PE_BUS_ALL && pci_is_bridge(pdev)))
+>> +			continue;
+>>  
+>> -			region.start += segsize;
+>> -			index++;
+>> +		for (i = 0; i <= PCI_BRIDGE_RESOURCE_NUM; i++) {
+>> +			res = &pdev->resource[PCI_BRIDGE_RESOURCES + i];
+>> +			if (pnv_ioda_setup_one_res(pe, res))
+>> +				return;
+>>  		}
+>>  	}
+>>  }
+>
+
+Thanks,
+Gavin
