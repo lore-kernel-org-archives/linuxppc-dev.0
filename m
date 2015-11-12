@@ -1,24 +1,28 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c03::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6EF331A0228
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2015 14:38:56 +1100 (AEDT)
-Date: Thu, 12 Nov 2015 14:38:16 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Daniel Axtens <dja@axtens.net>
-Cc: Aravinda Prasad <aravinda@linux.vnet.ibm.com>, paulus@ozlabs.org,
- linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org,
- mahesh@linux.vnet.ibm.com, agraf@suse.de, michaele@au1.ibm.com,
- kvm@vger.kernel.org
-Subject: Re: [PATCH] KVM: PPC: Exit guest upon fatal machine check exception
-Message-ID: <20151112033816.GJ5852@voom.redhat.com>
-References: <20151111165845.3721.98296.stgit@aravindap>
- <876118ymy4.fsf@gamma.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 450C51A028B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2015 15:18:36 +1100 (AEDT)
+Received: by padhx2 with SMTP id hx2so52005014pad.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2015 20:18:34 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
+ bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
+ panto@antoniou-consulting.com, frowand.list@gmail.com,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH v7 12/50] powerpc/powernv: Track M64 segment consumption
+In-Reply-To: <1446642770-4681-13-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1446642770-4681-13-git-send-email-gwshan@linux.vnet.ibm.com>
+Date: Thu, 12 Nov 2015 15:18:20 +1100
+Message-ID: <87io57j1f7.fsf@gamma.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="NgG1H2o5aFKkgPy/"
-In-Reply-To: <876118ymy4.fsf@gamma.ozlabs.ibm.com>
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,88 +32,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---NgG1H2o5aFKkgPy/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--=-=-=
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Nov 12, 2015 at 01:24:19PM +1100, Daniel Axtens wrote:
-> Aravinda Prasad <aravinda@linux.vnet.ibm.com> writes:
->=20
-> > This patch modifies KVM to cause a guest exit with
-> > KVM_EXIT_NMI instead of immediately delivering a 0x200
-> > interrupt to guest upon machine check exception in
-> > guest address. Exiting the guest enables QEMU to build
-> > error log and deliver machine check exception to guest
-> > OS (either via guest OS registered machine check
-> > handler or via 0x200 guest OS interrupt vector).
-> >
-> > This approach simplifies the delivering of machine
-> > check exception to guest OS compared to the earlier approach
-> > of KVM directly invoking 0x200 guest interrupt vector.
-> > In the earlier approach QEMU patched the 0x200 interrupt
-> > vector during boot. The patched code at 0x200 issued a
-> > private hcall to pass the control to QEMU to build the
-> > error log.
-> >
-> > This design/approach is based on the feedback for the
-> > QEMU patches to handle machine check exception. Details
-> > of earlier approach of handling machine check exception
-> > in QEMU and related discussions can be found at:
-> >
-> > https://lists.nongnu.org/archive/html/qemu-devel/2014-11/msg00813.html
->=20
-> I've poked at the MCE code, but not the KVM MCE code, so I may be
-> mistaken here, but I'm not clear on how this handles errors that the
-> guest can recover without terminating.
->=20
-> For example, a Linux guest can handle a UE in guest userspace by killing
-> the guest process. A hypthetical non-linux guest with a microkernel
-> could even survive UEs in drivers.
->=20
-> It sounds from your patch like you're changing this behaviour. Is this
-> right?
+Looks good.
 
-So, IIUC.  Once the qemu pieces are in place as well it shouldn't
-change this behaviour: KVM will exit to qemu, qemu will log the error
-information (new), then reinject the MC to the guest which can still
-handle it as you describe above.
+Will hold off on an official review until I can test the series.
 
-But, there could be a problem if you have a new kernel with an old
-qemu, in that case qemu might not understand the new exit type and
-treat it as a fatal error, even though the guest could actually cope
-with it.
+Regards,
+Daniel
 
-Aravinda, do we need to change this so that qemu has to explicitly
-enable the new NMI behaviour?  Or have I missed something that will
-make that case work already.
+Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> As we track M32 segment consumption, this introduces an array to
+> the PHB to track the mapping between M64 segment and PE number.
+> The information is going to be used to find M64 segment from the
+> PE number during PCI unplugging time in subsequent patches.
+>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++++++--
+>  arch/powerpc/platforms/powernv/pci.h      |  3 ++-
+>  2 files changed, 10 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
+tforms/powernv/pci-ioda.c
+> index 4ab93f8..76ce694 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -315,6 +315,7 @@ static int pnv_ioda2_pick_m64_pe(struct pci_bus *bus,=
+ bool all)
+>  		phb->ioda.total_pe_num) {
+>  		pe =3D &phb->ioda.pe_array[i];
+>=20=20
+> +		phb->ioda.m64_segmap[pe->pe_number] =3D pe->pe_number;
+>  		if (!master_pe) {
+>  			pe->flags |=3D PNV_IODA_PE_MASTER;
+>  			INIT_LIST_HEAD(&pe->slaves);
+> @@ -3018,7 +3019,7 @@ static void __init pnv_pci_init_ioda_phb(struct dev=
+ice_node *np,
+>  {
+>  	struct pci_controller *hose;
+>  	struct pnv_phb *phb;
+> -	unsigned long size, m32map_off, pemap_off, iomap_off =3D 0;
+> +	unsigned long size, m64map_off, m32map_off, pemap_off, iomap_off =3D 0;
+>  	const __be64 *prop64;
+>  	const __be32 *prop32;
+>  	int i, len;
+> @@ -3103,6 +3104,8 @@ static void __init pnv_pci_init_ioda_phb(struct dev=
+ice_node *np,
+>=20=20
+>  	/* Allocate aux data & arrays. We don't have IO ports on PHB3 */
+>  	size =3D _ALIGN_UP(phb->ioda.total_pe_num / 8, sizeof(unsigned long));
+> +	m64map_off =3D size;
+> +	size +=3D phb->ioda.total_pe_num * sizeof(phb->ioda.m64_segmap[0]);
+>  	m32map_off =3D size;
+>  	size +=3D phb->ioda.total_pe_num * sizeof(phb->ioda.m32_segmap[0]);
+>  	if (phb->type =3D=3D PNV_PHB_IODA1) {
+> @@ -3113,9 +3116,12 @@ static void __init pnv_pci_init_ioda_phb(struct de=
+vice_node *np,
+>  	size +=3D phb->ioda.total_pe_num * sizeof(struct pnv_ioda_pe);
+>  	aux =3D memblock_virt_alloc(size, 0);
+>  	phb->ioda.pe_alloc =3D aux;
+> +	phb->ioda.m64_segmap =3D aux + m64map_off;
+>  	phb->ioda.m32_segmap =3D aux + m32map_off;
+> -	for (i =3D 0; i < phb->ioda.total_pe_num; i++)
+> +	for (i =3D 0; i < phb->ioda.total_pe_num; i++) {
+> +		phb->ioda.m64_segmap[i] =3D IODA_INVALID_PE;
+>  		phb->ioda.m32_segmap[i] =3D IODA_INVALID_PE;
+> +	}
+>  	if (phb->type =3D=3D PNV_PHB_IODA1) {
+>  		phb->ioda.io_segmap =3D aux + iomap_off;
+>  		for (i =3D 0; i < phb->ioda.total_pe_num; i++)
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platform=
+s/powernv/pci.h
+> index 2e01edd..671fd13 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -147,7 +147,8 @@ struct pnv_phb {
+>  			unsigned long		*pe_alloc;
+>  			struct pnv_ioda_pe	*pe_array;
+>=20=20
+> -			/* M32 & IO segment maps */
+> +			/* M64/M32/IO segment maps */
+> +			int			*m64_segmap;
+>  			int			*m32_segmap;
+>  			int			*io_segmap;
+>=20=20
+> --=20
+> 2.1.0
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
---NgG1H2o5aFKkgPy/
+--=-=-=
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
+Comment: GPGTools - https://gpgtools.org
 
-iQIcBAEBAgAGBQJWRAmoAAoJEGw4ysog2bOSh5MP/1KX/mFZ3R0r4OiP/A9IU7rJ
-AAyge4kOd1Ec/Tg5nfCi7DhaWuPWucwpvSIrFKAKO5gwE3mryfs5syXGrwSXI61o
-kiD0RMu/roXE5sp5yXVyGvJDCW7riof1VpgTsYOLnexD+J9hdq35QeY63Ux06OFI
-uDHjfHJfODvHSP0dD3/Rbo2cQqRUO0zppwBKRax6Vwr/Tg1s2Ns+NiTFwio3AHgO
-o4lsgUhEczHxwAmrDldVMj1dj6cBOZEYd6jwpybNQ4CexetIRMTRlUGT/vDv8/4E
-hfM/R1p5zu+3MFGC/9V9aluB/Do2WsK9UELBBfjDrtFoWSx61hjiJi7Z7qaNxeAo
-e74NR8+A9DDL9atFu7rVsPaiKtf6qQ5w2my4Ct9kZ1QX7vF7UCuvuP2N5CJrBxj7
-OrGjlqXDJhpGaXvSIWFCUnBab54zg2J8IxpJUXfBLwF0FRLrs1FZumz6xbmbsoHC
-+pfSZ5wK2Zdrn1WZ9I4Wnn6hma0xR2IQQCC8JyxUAE6yR4TOeXx/NA2w1dAkLnzX
-Q6d1L3gZpEDtqy43Y+lLj1ZQI8c1fdhoifX5pIdB6Oa5P/cXfcBsagWG3wcYQMuU
-OlZLt6dEMruRL4Is8O6omHGTqpv3qG442VzffVR5ETa9sof7Bifod497ioDwxewo
-GXvNyELGAu1f82JJ8XbT
-=nEB/
+iQIcBAEBCgAGBQJWRBMNAAoJEPC3R3P2I92FVm8P/RuuqTklgw3NyjkrzxIly6Xd
+jbQV/STBvkuOtEaK7TDgYfeELKmCUkGeRxum1ZWuRRhGQmSSNtPIggmuLdwGACvI
+oMNJzbwQOodex2rBFX07qqJlsM0ywKf+slWtXdxj0jq99kfMeurnYm2Vaea6UdiP
+tNpfvUAWx//ZTQl/bIEkSHLNCVgu2szEYE1k1IsFjXPXvWgaPAG+p8fnzMb+1Sip
+zd+kjZ5WHkwP8C/QaIQa8DJQ0arV79jYf1EaxEYyC1Ja9dkI4Duf29UKEHQwUlbU
+mNU0HURvzh0loFRfjjCd9KoOjucUrpGzSKyQZbR/2fDyu8EXOD/217Xv0+uusbE3
+1sKtGqfvQNFvjNTAsc2dmulH1J6HnDO1a5NzQ1DhyqISKJHBDzStLnUUFWckYi8f
+o4h/RM3AYe5Gsn83FeweX/Fl1HFXB8uoec2eMQ9nkeL42CZuA36c0+vH23WyRZ09
+XrAgGOjogdQNPD2AoFd0uMih7XwWHHSQjrs6wFkrCiJoM30oeY1LvwPyK/Y+77sV
+CoLFh0yosI9mkQRuy4JjxsJEmH64e2VbZCTUyaxLaYOMFJZwOk/3ZcjWffWlCAub
+jn/8Jp0x5Dlwo5AJXUOdNInD1Aaw0FamaR91HpCSg2zLpVqtmmZ7g4XKMzbsh+61
+inR19LtpWxBV+XWhAzsu
+=dzip
 -----END PGP SIGNATURE-----
-
---NgG1H2o5aFKkgPy/--
+--=-=-=--
