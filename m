@@ -1,32 +1,17 @@
-Return-Path: <aravinda@linux.vnet.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E29791A0282
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2015 16:18:46 +1100 (AEDT)
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 141621413BC
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2015 16:18:45 +1100 (AEDT)
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
- Wed, 11 Nov 2015 22:18:43 -0700
-Message-ID: <5644212A.2000804@linux.vnet.ibm.com>
-Date: Thu, 12 Nov 2015 10:48:34 +0530
-From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E6E841A03F5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2015 16:44:43 +1100 (AEDT)
+Date: Thu, 12 Nov 2015 16:44:42 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Cc: Michael Neuling <mikey@neuling.org>, kvm-ppc@vger.kernel.org
+Subject: [PATCH] powerpc/64: Include KVM guest test in all interrupt vectors
+Message-ID: <20151112054442.GD22330@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-CC: paulus@ozlabs.org, linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org,
- mahesh@linux.vnet.ibm.com, michaele@au1.ibm.com, agraf@suse.de,
- kvm@vger.kernel.org
-Subject: Re: [PATCH] KVM: PPC: Exit guest upon fatal machine check exception
-References: <20151111165845.3721.98296.stgit@aravindap>
- <20151112033437.GI5852@voom.redhat.com>
-In-Reply-To: <20151112033437.GI5852@voom.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,148 +21,201 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Currently, if HV KVM is configured but PR KVM isn't, we don't include
+a test to see whether we were interrupted in KVM guest context for the
+set of interrupts which get delivered directly to the guest by hardware
+if they occur in the guest.  This includes things like program
+interrupts.
 
+However, the recent bug where userspace could set the MSR for a VCPU
+to have an illegal value in the TS field, and thus cause a TM Bad Thing
+type of program interrupt on the hrfid that enters the guest, showed that
+we can never be completely sure that these interrupts can never occur
+in the guest entry/exit code.  If one of these interrupts does happen
+and we have HV KVM configured but not PR KVM, then we end up trying to
+run the handler in the host with the MMU set to the guest MMU context,
+which generally ends badly.
 
-On Thursday 12 November 2015 09:04 AM, David Gibson wrote:
-> On Wed, Nov 11, 2015 at 10:28:46PM +0530, Aravinda Prasad wrote:
->> This patch modifies KVM to cause a guest exit with
->> KVM_EXIT_NMI instead of immediately delivering a 0x200
->> interrupt to guest upon machine check exception in
->> guest address. Exiting the guest enables QEMU to build
->> error log and deliver machine check exception to guest
->> OS (either via guest OS registered machine check
->> handler or via 0x200 guest OS interrupt vector).
->>
->> This approach simplifies the delivering of machine
->> check exception to guest OS compared to the earlier approach
->> of KVM directly invoking 0x200 guest interrupt vector.
->> In the earlier approach QEMU patched the 0x200 interrupt
->> vector during boot. The patched code at 0x200 issued a
->> private hcall to pass the control to QEMU to build the
->> error log.
->>
->> This design/approach is based on the feedback for the
->> QEMU patches to handle machine check exception. Details
->> of earlier approach of handling machine check exception
->> in QEMU and related discussions can be found at:
->>
->> https://lists.nongnu.org/archive/html/qemu-devel/2014-11/msg00813.html
->>
->> Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/kvm/book3s_hv.c            |   12 +++---------
->>  arch/powerpc/kvm/book3s_hv_rmhandlers.S |   31 +++++++++++--------------------
->>  2 files changed, 14 insertions(+), 29 deletions(-)
->>
->> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
->> index 2280497..1b1dff0 100644
->> --- a/arch/powerpc/kvm/book3s_hv.c
->> +++ b/arch/powerpc/kvm/book3s_hv.c
->> @@ -859,15 +859,9 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
->>  		r = RESUME_GUEST;
->>  		break;
->>  	case BOOK3S_INTERRUPT_MACHINE_CHECK:
->> -		/*
->> -		 * Deliver a machine check interrupt to the guest.
->> -		 * We have to do this, even if the host has handled the
->> -		 * machine check, because machine checks use SRR0/1 and
->> -		 * the interrupt might have trashed guest state in them.
->> -		 */
->> -		kvmppc_book3s_queue_irqprio(vcpu,
->> -					    BOOK3S_INTERRUPT_MACHINE_CHECK);
->> -		r = RESUME_GUEST;
->> +		/* Exit to guest with KVM_EXIT_NMI as exit reason */
->> +		run->exit_reason = KVM_EXIT_NMI;
->> +		r = RESUME_HOST;
->>  		break;
->>  	case BOOK3S_INTERRUPT_PROGRAM:
->>  	{
->> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->> index b98889e..672b4f6 100644
->> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->> @@ -147,7 +147,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
->>  	addi	r1, r1, 112
->>  	ld	r7, HSTATE_HOST_MSR(r13)
->>  
->> -	cmpwi	cr1, r12, BOOK3S_INTERRUPT_MACHINE_CHECK
->>  	cmpwi	r12, BOOK3S_INTERRUPT_EXTERNAL
->>  	beq	11f
->>  	cmpwi	cr2, r12, BOOK3S_INTERRUPT_HMI
->> @@ -160,7 +159,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
->>  	mtmsrd	r6, 1			/* Clear RI in MSR */
->>  	mtsrr0	r8
->>  	mtsrr1	r7
->> -	beq	cr1, 13f		/* machine check */
->>  	RFI
->>  
->>  	/* On POWER7, we have external interrupts set to use HSRR0/1 */
->> @@ -168,8 +166,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
->>  	mtspr	SPRN_HSRR1, r7
->>  	ba	0x500
->>  
->> -13:	b	machine_check_fwnmi
->> -
-> 
-> I don't quite understand the 3 hunks above.  The rest seems to change
-> the delivery of MCs as I'd expect, but the above seems to change their
-> detection and the reason for that isn't obvious to me.
+Thus, for robustness it is better to have the test in every interrupt
+vector, so that if some way is found to trigger some interrupt in the
+guest entry/exit path, we can handle it without immediately crashing
+the host.
 
-We need to do guest exit here and hence we continue with RFI or else if
-we branch to machine_check_fwnmi then the control will flow to
-opal_recover_mce routine without causing the guest to exit with NMI exit
-code. And I think, opal_recover_mce() is used to recover from UEs in
-host user/kernel space and does not have a check for UEs belonging to
-guest. Hence if we branch to machine_check_fwnmi we end up running into
-panic() in opal_machine_check() if UE belonged to guest.
+This means that the distinction between KVMTEST and KVMTEST_PR goes
+away.  Thus we delete KVMTEST_PR and associated macros and use KVMTEST
+everywhere that we previously used either KVMTEST_PR or KVMTEST.  It
+also means that SOFTEN_TEST_HV_201 becomes the same as SOFTEN_TEST_PR,
+so we deleted SOFTEN_TEST_HV_201 and use SOFTEN_TEST_PR instead.
 
-Regards,
-Aravinda
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/include/asm/exception-64s.h | 21 +++-----------------
+ arch/powerpc/kernel/exceptions-64s.S     | 34 ++++++++++++++++----------------
+ 2 files changed, 20 insertions(+), 35 deletions(-)
 
-> 
-> 
->>  14:	mtspr	SPRN_HSRR0, r8
->>  	mtspr	SPRN_HSRR1, r7
->>  	b	hmi_exception_after_realmode
->> @@ -2381,24 +2377,19 @@ machine_check_realmode:
->>  	ld	r9, HSTATE_KVM_VCPU(r13)
->>  	li	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
->>  	/*
->> -	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest through
->> -	 * machine check interrupt (set HSRR0 to 0x200). And for handled
->> -	 * errors (no-fatal), just go back to guest execution with current
->> -	 * HSRR0 instead of exiting guest. This new approach will inject
->> -	 * machine check to guest for fatal error causing guest to crash.
->> -	 *
->> -	 * The old code used to return to host for unhandled errors which
->> -	 * was causing guest to hang with soft lockups inside guest and
->> -	 * makes it difficult to recover guest instance.
->> +	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest
->> +	 * by exiting the guest with KVM_EXIT_NMI exit reason (exit
->> +	 * reason set later based on trap). For handled errors
->> +	 * (no-fatal), go back to guest execution with current HSRR0
->> +	 * instead of exiting the guest. This approach will cause
->> +	 * the guest to exit in case of fatal machine check error.
->>  	 */
->> -	ld	r10, VCPU_PC(r9)
->> +	bne	2f	/* Continue guest execution? */
->> +	/* If not, exit the guest. SRR0/1 are already set */
->> +	b	mc_cont
->> +2:	ld	r10, VCPU_PC(r9)
->>  	ld	r11, VCPU_MSR(r9)
->> -	bne	2f	/* Continue guest execution. */
->> -	/* If not, deliver a machine check.  SRR0/1 are already set */
->> -	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
->> -	ld	r11, VCPU_MSR(r9)
->> -	bl	kvmppc_msr_interrupt
->> -2:	b	fast_interrupt_c_return
->> +	b	fast_interrupt_c_return
->>  
->>  /*
->>   * Check the reason we woke from nap, and take appropriate action.
->>
-> 
-
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 77f52b2..9ee1078 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -263,17 +263,6 @@ do_kvm_##n:								\
+ #define KVM_HANDLER_SKIP(area, h, n)
+ #endif
+ 
+-#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+-#define KVMTEST_PR(n)			__KVMTEST(n)
+-#define KVM_HANDLER_PR(area, h, n)	__KVM_HANDLER(area, h, n)
+-#define KVM_HANDLER_PR_SKIP(area, h, n)	__KVM_HANDLER_SKIP(area, h, n)
+-
+-#else
+-#define KVMTEST_PR(n)
+-#define KVM_HANDLER_PR(area, h, n)
+-#define KVM_HANDLER_PR_SKIP(area, h, n)
+-#endif
+-
+ #define NOTEST(n)
+ 
+ /*
+@@ -360,13 +349,13 @@ label##_pSeries:					\
+ 	HMT_MEDIUM_PPR_DISCARD;				\
+ 	SET_SCRATCH0(r13);		/* save r13 */		\
+ 	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, label##_common,	\
+-				 EXC_STD, KVMTEST_PR, vec)
++				 EXC_STD, KVMTEST, vec)
+ 
+ /* Version of above for when we have to branch out-of-line */
+ #define STD_EXCEPTION_PSERIES_OOL(vec, label)			\
+ 	.globl label##_pSeries;					\
+ label##_pSeries:						\
+-	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_PR, vec);	\
++	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST, vec);	\
+ 	EXCEPTION_PROLOG_PSERIES_1(label##_common, EXC_STD)
+ 
+ #define STD_EXCEPTION_HV(loc, vec, label)		\
+@@ -436,17 +425,13 @@ label##_relon_hv:						\
+ #define _SOFTEN_TEST(h, vec)	__SOFTEN_TEST(h, vec)
+ 
+ #define SOFTEN_TEST_PR(vec)						\
+-	KVMTEST_PR(vec);						\
++	KVMTEST(vec);							\
+ 	_SOFTEN_TEST(EXC_STD, vec)
+ 
+ #define SOFTEN_TEST_HV(vec)						\
+ 	KVMTEST(vec);							\
+ 	_SOFTEN_TEST(EXC_HV, vec)
+ 
+-#define SOFTEN_TEST_HV_201(vec)						\
+-	KVMTEST(vec);							\
+-	_SOFTEN_TEST(EXC_STD, vec)
+-
+ #define SOFTEN_NOTEST_PR(vec)		_SOFTEN_TEST(EXC_STD, vec)
+ #define SOFTEN_NOTEST_HV(vec)		_SOFTEN_TEST(EXC_HV, vec)
+ 
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 0a0399c2..1a03142 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -242,7 +242,7 @@ instruction_access_slb_pSeries:
+ 	HMT_MEDIUM_PPR_DISCARD
+ 	SET_SCRATCH0(r13)
+ 	EXCEPTION_PROLOG_0(PACA_EXSLB)
+-	EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST_PR, 0x480)
++	EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST, 0x480)
+ 	std	r3,PACA_EXSLB+EX_R3(r13)
+ 	mfspr	r3,SPRN_SRR0		/* SRR0 is faulting address */
+ #ifdef __DISABLED__
+@@ -276,18 +276,18 @@ hardware_interrupt_hv:
+ 		KVM_HANDLER(PACA_EXGEN, EXC_HV, 0x502)
+ 	FTR_SECTION_ELSE
+ 		_MASKABLE_EXCEPTION_PSERIES(0x500, hardware_interrupt,
+-					    EXC_STD, SOFTEN_TEST_HV_201)
++					    EXC_STD, SOFTEN_TEST_PR)
+ 		KVM_HANDLER(PACA_EXGEN, EXC_STD, 0x500)
+ 	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+ 
+ 	STD_EXCEPTION_PSERIES(0x600, 0x600, alignment)
+-	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x600)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0x600)
+ 
+ 	STD_EXCEPTION_PSERIES(0x700, 0x700, program_check)
+-	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x700)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0x700)
+ 
+ 	STD_EXCEPTION_PSERIES(0x800, 0x800, fp_unavailable)
+-	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x800)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0x800)
+ 
+ 	. = 0x900
+ 	.globl decrementer_pSeries
+@@ -297,10 +297,10 @@ decrementer_pSeries:
+ 	STD_EXCEPTION_HV(0x980, 0x982, hdecrementer)
+ 
+ 	MASKABLE_EXCEPTION_PSERIES(0xa00, 0xa00, doorbell_super)
+-	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xa00)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xa00)
+ 
+ 	STD_EXCEPTION_PSERIES(0xb00, 0xb00, trap_0b)
+-	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xb00)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xb00)
+ 
+ 	. = 0xc00
+ 	.globl	system_call_pSeries
+@@ -332,7 +332,7 @@ system_call_pSeries:
+ 	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xc00)
+ 
+ 	STD_EXCEPTION_PSERIES(0xd00, 0xd00, single_step)
+-	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xd00)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xd00)
+ 
+ 	/* At 0xe??? we have a bunch of hypervisor exceptions, we branch
+ 	 * out of line to handle them
+@@ -408,7 +408,7 @@ hv_facility_unavailable_trampoline:
+ #endif /* CONFIG_CBE_RAS */
+ 
+ 	STD_EXCEPTION_PSERIES(0x1300, 0x1300, instruction_breakpoint)
+-	KVM_HANDLER_PR_SKIP(PACA_EXGEN, EXC_STD, 0x1300)
++	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_STD, 0x1300)
+ 
+ 	. = 0x1500
+ 	.global denorm_exception_hv
+@@ -436,7 +436,7 @@ denorm_exception_hv:
+ #endif /* CONFIG_CBE_RAS */
+ 
+ 	STD_EXCEPTION_PSERIES(0x1700, 0x1700, altivec_assist)
+-	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x1700)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0x1700)
+ 
+ #ifdef CONFIG_CBE_RAS
+ 	STD_EXCEPTION_HV(0x1800, 0x1802, cbe_thermal)
+@@ -536,9 +536,9 @@ machine_check_pSeries_0:
+ 	KVM_HANDLER_SKIP(PACA_EXMC, EXC_STD, 0x200)
+ 	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_STD, 0x300)
+ 	KVM_HANDLER_SKIP(PACA_EXSLB, EXC_STD, 0x380)
+-	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x400)
+-	KVM_HANDLER_PR(PACA_EXSLB, EXC_STD, 0x480)
+-	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x900)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0x400)
++	KVM_HANDLER(PACA_EXSLB, EXC_STD, 0x480)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0x900)
+ 	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0x982)
+ 
+ #ifdef CONFIG_PPC_DENORMALISATION
+@@ -621,13 +621,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+ 
+ 	/* moved from 0xf00 */
+ 	STD_EXCEPTION_PSERIES_OOL(0xf00, performance_monitor)
+-	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xf00)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xf00)
+ 	STD_EXCEPTION_PSERIES_OOL(0xf20, altivec_unavailable)
+-	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xf20)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xf20)
+ 	STD_EXCEPTION_PSERIES_OOL(0xf40, vsx_unavailable)
+-	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xf40)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xf40)
+ 	STD_EXCEPTION_PSERIES_OOL(0xf60, facility_unavailable)
+-	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xf60)
++	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xf60)
+ 	STD_EXCEPTION_HV_OOL(0xf82, facility_unavailable)
+ 	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xf82)
+ 
 -- 
-Regards,
-Aravinda
+2.1.4
