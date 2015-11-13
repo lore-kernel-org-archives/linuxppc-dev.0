@@ -1,39 +1,48 @@
-Return-Path: <jingoohan1@gmail.com>
-Received: from mail-io0-x22b.google.com (mail-io0-x22b.google.com
- [IPv6:2607:f8b0:4001:c06::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aravinda@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 30D061A0975
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2015 20:49:11 +1100 (AEDT)
-Received: by iouu10 with SMTP id u10so85121508iou.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2015 01:49:09 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC63E1A09D6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2015 22:25:39 +1100 (AEDT)
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 1CB7414142A
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2015 22:25:38 +1100 (AEDT)
+Received: from localhost
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
+ Fri, 13 Nov 2015 04:25:37 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 463313E4003B
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2015 04:25:34 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tADBPYwE9437648
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2015 04:25:34 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tADBPXL8021441
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2015 04:25:34 -0700
+Message-ID: <5645C8A6.4070808@linux.vnet.ibm.com>
+Date: Fri, 13 Nov 2015 16:55:26 +0530
+From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1447336125-5010-1-git-send-email-jszhang@marvell.com>
-References: <1447336125-5010-1-git-send-email-jszhang@marvell.com>
-Date: Fri, 13 Nov 2015 18:49:08 +0900
-Message-ID: <CAPOBaE5AwxQz6pscN3HfMuZjSFU61VLrkmO7DG-r5+czLFkO8w@mail.gmail.com>
-Subject: Re: [PATCH] PCI: designware: bail out if host_init failed
-From: Han Jingoo <jingoohan1@gmail.com>
-To: Jisheng Zhang <jszhang@marvell.com>
-Cc: "kishon@ti.com" <kishon@ti.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "kgene@kernel.org" <kgene@kernel.org>,
- "k.kozlowski@samsung.com" <k.kozlowski@samsung.com>,
- "Richard.Zhu@freescale.com" <Richard.Zhu@freescale.com>,
- "l.stach@pengutronix.de" <l.stach@pengutronix.de>,
- "m-karicheri2@ti.com" <m-karicheri2@ti.com>,
- "minghuan.Lian@freescale.com" <minghuan.Lian@freescale.com>,
- "mingkai.hu@freescale.com" <mingkai.hu@freescale.com>,
- "tie-fei.zang@freescale.com" <tie-fei.zang@freescale.com>,
- "pratyush.anand@gmail.com" <pratyush.anand@gmail.com>,
- "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Han Jingoo <jingoohan1@gmail.com>
-Content-Type: multipart/alternative; boundary=001a113fe6c290e147052468f8ff
+To: Thomas Huth <thuth@redhat.com>
+CC: David Gibson <david@gibson.dropbear.id.au>, kvm@vger.kernel.org,
+ michaele@au1.ibm.com, mahesh@linux.vnet.ibm.com, agraf@suse.de,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Daniel Axtens <dja@axtens.net>
+Subject: Re: [PATCH] KVM: PPC: Exit guest upon fatal machine check exception
+References: <20151111165845.3721.98296.stgit@aravindap>
+ <876118ymy4.fsf@gamma.ozlabs.ibm.com> <20151112033816.GJ5852@voom.redhat.com>
+ <5644164A.40706@linux.vnet.ibm.com> <20151112044316.GA4886@voom.redhat.com>
+ <5644D1DD.1020201@linux.vnet.ibm.com> <20151113015015.GI4886@voom.redhat.com>
+ <5645828E.1030609@linux.vnet.ibm.com> <56459360.3090400@redhat.com>
+In-Reply-To: <56459360.3090400@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,62 +52,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a113fe6c290e147052468f8ff
-Content-Type: text/plain; charset=UTF-8
-
-2015. 11. 12. Thusday, Jisheng Zhang<jszhang@marvell.com> wrote:
-
-> There's no reason to continue the initialization such as configure
-> register, scan root bus etc. if customized host_init() failed. This
-> patch tries to check the host_init result, bail out if failed.
->
-> Signed-off-by: Jisheng Zhang <jszhang@marvell.com <javascript:;>>
 
 
-Acked-by: Jingoo Han <jingoohan1@gmail.com>
+On Friday 13 November 2015 01:08 PM, Thomas Huth wrote:
+> On 13/11/15 07:26, Aravinda Prasad wrote:
+>>
+>> On Friday 13 November 2015 07:20 AM, David Gibson wrote:
+>>> On Thu, Nov 12, 2015 at 11:22:29PM +0530, Aravinda Prasad wrote:
+> [...]
+>>>> So thinking whether qemu should explicitly enable the new NMI
+>>>> behavior.
+>>>
+>>> So, I think the reasoning above tends towards having qemu control the
+>>> MC behaviour.  If qemu does nothing, MCs are delivered direct to
+>>> 0x200, if it enables the new handling, they cause a KVM exit and qemu
+>>> will deliver the MC.
+>>
+>> This essentially requires qemu to control how KVM behaves as KVM does
+>> the actual redirection of MC either to guest's 0x200 vector or to exit
+>> guest. So, if we are running new qemu, then KVM should exit guest and if
+>> we are running old qemu, KVM should redirect MC to 0x200. Is there any
+>> way to communicate this to KVM? ioctl?
+> 
+> Simply introduce a KVM capability that can be enabled by userspace.
+> See kvm_vcpu_ioctl_enable_cap() in arch/powerpc/kvm/powerpc.c.
 
----
->  drivers/pci/host/pci-dra7xx.c      |  4 +++-
->  drivers/pci/host/pci-exynos.c      |  4 +++-
->  drivers/pci/host/pci-imx6.c        |  4 +++-
->  drivers/pci/host/pci-keystone.c    |  4 +++-
->  drivers/pci/host/pci-layerscape.c  | 25 ++++++++++++++++---------
->  drivers/pci/host/pcie-designware.c |  7 +++++--
->  drivers/pci/host/pcie-designware.h |  2 +-
->  drivers/pci/host/pcie-spear13xx.c  |  4 +++-
->  8 files changed, 37 insertions(+), 17 deletions(-)
->
+Thanks. I will look at it.
 
---001a113fe6c290e147052468f8ff
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Regards,
+Aravinda
 
-2015. 11. 12.=C2=A0Thusday, Jisheng Zhang&lt;<a href=3D"mailto:jszhang@marv=
-ell.com">jszhang@marvell.com</a>&gt; wrote:<br><blockquote class=3D"gmail_q=
-uote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1e=
-x">There&#39;s no reason to continue the initialization such as configure<b=
-r>
-register, scan root bus etc. if customized host_init() failed. This<br>
-patch tries to check the host_init result, bail out if failed.<br>
-<br>
-Signed-off-by: Jisheng Zhang &lt;<a href=3D"javascript:;" onclick=3D"_e(eve=
-nt, &#39;cvml&#39;, &#39;jszhang@marvell.com&#39;)">jszhang@marvell.com</a>=
-&gt;</blockquote><div><br></div><div>Acked-by: Jingoo Han &lt;<a href=3D"ma=
-ilto:jingoohan1@gmail.com">jingoohan1@gmail.com</a>&gt;</div><div><br></div=
-><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1=
-px #ccc solid;padding-left:1ex">
----<br>
-=C2=A0drivers/pci/host/pci-dra7xx.c=C2=A0 =C2=A0 =C2=A0 |=C2=A0 4 +++-<br>
-=C2=A0drivers/pci/host/pci-exynos.c=C2=A0 =C2=A0 =C2=A0 |=C2=A0 4 +++-<br>
-=C2=A0drivers/pci/host/pci-imx6.c=C2=A0 =C2=A0 =C2=A0 =C2=A0 |=C2=A0 4 +++-=
-<br>
-=C2=A0drivers/pci/host/pci-keystone.c=C2=A0 =C2=A0 |=C2=A0 4 +++-<br>
-=C2=A0drivers/pci/host/pci-layerscape.c=C2=A0 | 25 ++++++++++++++++--------=
--<br>
-=C2=A0drivers/pci/host/pcie-designware.c |=C2=A0 7 +++++--<br>
-=C2=A0drivers/pci/host/pcie-designware.h |=C2=A0 2 +-<br>
-=C2=A0drivers/pci/host/pcie-spear13xx.c=C2=A0 |=C2=A0 4 +++-<br>
-=C2=A08 files changed, 37 insertions(+), 17 deletions(-)<br>
-</blockquote>
+> 
+>  Thomas
+> 
 
---001a113fe6c290e147052468f8ff--
+-- 
+Regards,
+Aravinda
