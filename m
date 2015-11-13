@@ -1,17 +1,17 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 062DE1A0754
+ by lists.ozlabs.org (Postfix) with ESMTPS id 38FAB1A0905
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2015 15:57:48 +1100 (AEDT)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
 Cc: mikey@neuling.org, sam.bobroff@au1.ibm.com, linuxppc-dev@ozlabs.org,
  paulus@samba.org
-Subject: [PATCH 4/5] powerpc/tm: Check for already reclaimed tasks
-Date: Fri, 13 Nov 2015 15:57:31 +1100
-Message-Id: <1447390652-28355-4-git-send-email-mikey@neuling.org>
+Subject: [PATCH 5/5] powerpc/tm: Clarify get_tm_stackpointer() by renaming it
+Date: Fri, 13 Nov 2015 15:57:32 +1100
+Message-Id: <1447390652-28355-5-git-send-email-mikey@neuling.org>
 In-Reply-To: <1447390652-28355-1-git-send-email-mikey@neuling.org>
 References: <1447390652-28355-1-git-send-email-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,69 +23,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we can hit a scenario where we'll tm_reclaim() twice.  This
-results in a TM bad thing exception because the second reclaim occurs
-when not in suspend mode.
+get_tm_stackpointer() gets the userspace stack pointer which the
+signal frame will be written from pt_regs.  To do this it performs a
+tm_reclaim to access the checkpointed stack pointer.
 
-The scenario in which this can happen is the following.  We attempt to
-deliver a signal to userspace.  To do this we need obtain the stack
-pointer to write the signal context.  To get this stack pointer we
-must tm_reclaim() in case we need to use the checkpointed stack
-pointer (see get_tm_stackpointer()).  Normally we'd then return
-directly to userspace to deliver the signal without going through
-__switch_to().
+Doing a tm_reclaim is an important operation which changes the machine
+state.  Doing this in the wrong state or an attempt to do it twice it can
+result in a TM Bad Thing exception.  Hence we should make it clearer
+that this function is making this change.
 
-Unfortunatley, if at this point we get an error (such as a bad
-userspace stack pointer), we need to exit the process.  The exit will
-result in a __switch_to().  __switch_to() will attempt to save the
-process state which results in another tm_reclaim().  This
-tm_reclaim() now causes a TM Bad Thing exception as this state has
-already been saved and the processor is no longer in TM suspend mode.
-Whee!
-
-This patch checks the state of the MSR to ensure we are TM suspended
-before we attempt the tm_reclaim().  If we've already saved the state
-away, we should no longer be in TM suspend mode.  This has the
-additional advantage of checking for a potential TM Bad Thing
-exception.
-
-Found using syscall fuzzer.
+This patch renames this function to make it clearer what's happening
+when calling this function.  No functional change.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
-Cc: stable@vger.kernel.org
 ---
- arch/powerpc/kernel/process.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/powerpc/include/asm/signal.h | 2 +-
+ arch/powerpc/kernel/process.c     | 2 +-
+ arch/powerpc/kernel/signal.c      | 2 +-
+ arch/powerpc/kernel/signal_32.c   | 6 ++++--
+ arch/powerpc/kernel/signal_64.c   | 3 ++-
+ 5 files changed, 9 insertions(+), 6 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/signal.h b/arch/powerpc/include/asm/signal.h
+index 9322c28..0139dc2 100644
+--- a/arch/powerpc/include/asm/signal.h
++++ b/arch/powerpc/include/asm/signal.h
+@@ -5,6 +5,6 @@
+ #include <uapi/asm/signal.h>
+ #include <uapi/asm/ptrace.h>
+ 
+-extern unsigned long get_tm_stackpointer(struct pt_regs *regs);
++extern unsigned long get_tm_stackpointer_and_reclaim(struct pt_regs *regs);
+ 
+ #endif /* _ASM_POWERPC_SIGNAL_H */
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 5fbe5d8..a1b41d1 100644
+index a1b41d1..264a39c 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -551,6 +551,25 @@ static void tm_reclaim_thread(struct thread_struct *thr,
- 		msr_diff &= MSR_FP | MSR_VEC | MSR_VSX | MSR_FE0 | MSR_FE1;
- 	}
+@@ -555,7 +555,7 @@ static void tm_reclaim_thread(struct thread_struct *thr,
+ 	 * Use the current MSR TM suspended bit to track if we have
+ 	 * checkpointed state outstanding.
+ 	 * On signal delivery, we'd normally reclaim the checkpointed
+-	 * state to obtain stack pointer (see:get_tm_stackpointer()).
++	 * state to obtain stack pointer (see:get_tm_stackpointer_and_reclaim()).
+ 	 * This will then directly return to userspace without going
+ 	 * through __switch_to(). However, if the stack frame is bad,
+ 	 * we need to exit this thread which calls __switch_to() which
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index cf8c7e4..b3de865 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -162,7 +162,7 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
+ 	user_enter();
+ }
  
-+	/*
-+	 * Use the current MSR TM suspended bit to track if we have
-+	 * checkpointed state outstanding.
-+	 * On signal delivery, we'd normally reclaim the checkpointed
-+	 * state to obtain stack pointer (see:get_tm_stackpointer()).
-+	 * This will then directly return to userspace without going
-+	 * through __switch_to(). However, if the stack frame is bad,
-+	 * we need to exit this thread which calls __switch_to() which
-+	 * will again attempt to reclaim the already saved tm state.
-+	 * Hence we need to check that we've not already reclaimed
-+	 * this state.
-+	 * We do this using the current MSR, rather tracking it in
-+	 * some specific bit thread_struct bit, as it has the
-+	 * additional benifit of checking for a potential TM bad thing
-+	 * exception.
-+	 */
-+	if (!MSR_TM_SUSPENDED(mfmsr()))
-+		return;
-+
- 	tm_reclaim(thr, thr->regs->msr, cause);
+-unsigned long get_tm_stackpointer(struct pt_regs *regs)
++unsigned long get_tm_stackpointer_and_reclaim(struct pt_regs *regs)
+ {
+ 	/* When in an active transaction that takes a signal, we need to be
+ 	 * careful with the stack.  It's possible that the stack has moved back
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index 5b519c7..b2c3f8c 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -1001,7 +1001,8 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
  
- 	/* Having done the reclaim, we now have the checkpointed
+ 	/* Set up Signal Frame */
+ 	/* Put a Real Time Context onto stack */
+-	rt_sf = get_sigframe(ksig, get_tm_stackpointer(regs), sizeof(*rt_sf), 1);
++	rt_sf = get_sigframe(ksig, get_tm_stackpointer_and_reclaim(regs),
++			     sizeof(*rt_sf), 1);
+ 	addr = rt_sf;
+ 	if (unlikely(rt_sf == NULL))
+ 		goto badframe;
+@@ -1424,7 +1425,8 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset, struct pt_regs *regs
+ 	unsigned long tramp;
+ 
+ 	/* Set up Signal Frame */
+-	frame = get_sigframe(ksig, get_tm_stackpointer(regs), sizeof(*frame), 1);
++	frame = get_sigframe(ksig, get_tm_stackpointer_and_reclaim(regs),
++			     sizeof(*frame), 1);
+ 	if (unlikely(frame == NULL))
+ 		goto badframe;
+ 	sc = (struct sigcontext __user *) &frame->sctx;
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index b320689..96264be 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -731,7 +731,8 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set, struct pt_regs *regs
+ 	unsigned long newsp = 0;
+ 	long err = 0;
+ 
+-	frame = get_sigframe(ksig, get_tm_stackpointer(regs), sizeof(*frame), 0);
++	frame = get_sigframe(ksig, get_tm_stackpointer_and_reclaim(regs),
++			     sizeof(*frame), 0);
+ 	if (unlikely(frame == NULL))
+ 		goto badframe;
+ 
 -- 
 2.5.0
