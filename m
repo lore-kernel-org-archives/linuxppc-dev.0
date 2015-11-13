@@ -1,19 +1,46 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <aravinda@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 38FAB1A0905
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2015 15:57:48 +1100 (AEDT)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au,
-	benh@kernel.crashing.org
-Cc: mikey@neuling.org, sam.bobroff@au1.ibm.com, linuxppc-dev@ozlabs.org,
- paulus@samba.org
-Subject: [PATCH 5/5] powerpc/tm: Clarify get_tm_stackpointer() by renaming it
-Date: Fri, 13 Nov 2015 15:57:32 +1100
-Message-Id: <1447390652-28355-5-git-send-email-mikey@neuling.org>
-In-Reply-To: <1447390652-28355-1-git-send-email-mikey@neuling.org>
-References: <1447390652-28355-1-git-send-email-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 09F501A0D2D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2015 15:59:07 +1100 (AEDT)
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 1A983140213
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2015 15:59:05 +1100 (AEDT)
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
+ Thu, 12 Nov 2015 23:59:04 -0500
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 5D93A38C8046
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2015 23:59:02 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAD4x2fQ56623226
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2015 04:59:02 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAD4x1UG013824
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2015 23:59:02 -0500
+Message-ID: <56456E0C.1040909@linux.vnet.ibm.com>
+Date: Fri, 13 Nov 2015 10:28:52 +0530
+From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Daniel Axtens <dja@axtens.net>
+CC: David Gibson <david@gibson.dropbear.id.au>, kvm@vger.kernel.org,
+ michaele@au1.ibm.com, mahesh@linux.vnet.ibm.com, agraf@suse.de,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] KVM: PPC: Exit guest upon fatal machine check exception
+References: <20151111165845.3721.98296.stgit@aravindap>
+ <876118ymy4.fsf@gamma.ozlabs.ibm.com> <20151112033816.GJ5852@voom.redhat.com>
+ <87bnazizkp.fsf@gamma.ozlabs.ibm.com> <5644CABE.3010905@linux.vnet.ibm.com>
+ <87pozezypm.fsf@gamma.ozlabs.ibm.com>
+In-Reply-To: <87pozezypm.fsf@gamma.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,102 +50,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-get_tm_stackpointer() gets the userspace stack pointer which the
-signal frame will be written from pt_regs.  To do this it performs a
-tm_reclaim to access the checkpointed stack pointer.
 
-Doing a tm_reclaim is an important operation which changes the machine
-state.  Doing this in the wrong state or an attempt to do it twice it can
-result in a TM Bad Thing exception.  Hence we should make it clearer
-that this function is making this change.
 
-This patch renames this function to make it clearer what's happening
-when calling this function.  No functional change.
+On Friday 13 November 2015 03:07 AM, Daniel Axtens wrote:
+> Aravinda Prasad <aravinda@linux.vnet.ibm.com> writes:
+> 
+>>> <puts on CAPI hat>Yeah, it would be good not to break this.</hat>
+>>
+>> I am not familiar with CAPI. Does this affect CAPI?
+> 
+> When a CAPI card experiences an EEH event, any cache lines it holds are
+> filled with SUEs (Special UEs, interpreted by the kernel the same as
+> regular UEs). When these are read, we get an MCE. Currently CAPI does
+> not support virtualisation, but that is actively being worked
+> on. There's a _very_ good chance it will then be backported to various
+> distros, which could have old qemu.
+> 
+> Therefore, I'd ideally like to make sure UEs in KVM guests work properly
+> and continue to do so in all combinations of kernel and qemu. I'm
+> following up the email from Mahesh that you linked: I'm not sure I quite
+> follow his logic so I'll try to make sense of that and then get back to
+> you.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/include/asm/signal.h | 2 +-
- arch/powerpc/kernel/process.c     | 2 +-
- arch/powerpc/kernel/signal.c      | 2 +-
- arch/powerpc/kernel/signal_32.c   | 6 ++++--
- arch/powerpc/kernel/signal_64.c   | 3 ++-
- 5 files changed, 9 insertions(+), 6 deletions(-)
+sure. Thanks.
 
-diff --git a/arch/powerpc/include/asm/signal.h b/arch/powerpc/include/asm/signal.h
-index 9322c28..0139dc2 100644
---- a/arch/powerpc/include/asm/signal.h
-+++ b/arch/powerpc/include/asm/signal.h
-@@ -5,6 +5,6 @@
- #include <uapi/asm/signal.h>
- #include <uapi/asm/ptrace.h>
- 
--extern unsigned long get_tm_stackpointer(struct pt_regs *regs);
-+extern unsigned long get_tm_stackpointer_and_reclaim(struct pt_regs *regs);
- 
- #endif /* _ASM_POWERPC_SIGNAL_H */
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index a1b41d1..264a39c 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -555,7 +555,7 @@ static void tm_reclaim_thread(struct thread_struct *thr,
- 	 * Use the current MSR TM suspended bit to track if we have
- 	 * checkpointed state outstanding.
- 	 * On signal delivery, we'd normally reclaim the checkpointed
--	 * state to obtain stack pointer (see:get_tm_stackpointer()).
-+	 * state to obtain stack pointer (see:get_tm_stackpointer_and_reclaim()).
- 	 * This will then directly return to userspace without going
- 	 * through __switch_to(). However, if the stack frame is bad,
- 	 * we need to exit this thread which calls __switch_to() which
-diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-index cf8c7e4..b3de865 100644
---- a/arch/powerpc/kernel/signal.c
-+++ b/arch/powerpc/kernel/signal.c
-@@ -162,7 +162,7 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
- 	user_enter();
- }
- 
--unsigned long get_tm_stackpointer(struct pt_regs *regs)
-+unsigned long get_tm_stackpointer_and_reclaim(struct pt_regs *regs)
- {
- 	/* When in an active transaction that takes a signal, we need to be
- 	 * careful with the stack.  It's possible that the stack has moved back
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 5b519c7..b2c3f8c 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -1001,7 +1001,8 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 
- 	/* Set up Signal Frame */
- 	/* Put a Real Time Context onto stack */
--	rt_sf = get_sigframe(ksig, get_tm_stackpointer(regs), sizeof(*rt_sf), 1);
-+	rt_sf = get_sigframe(ksig, get_tm_stackpointer_and_reclaim(regs),
-+			     sizeof(*rt_sf), 1);
- 	addr = rt_sf;
- 	if (unlikely(rt_sf == NULL))
- 		goto badframe;
-@@ -1424,7 +1425,8 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset, struct pt_regs *regs
- 	unsigned long tramp;
- 
- 	/* Set up Signal Frame */
--	frame = get_sigframe(ksig, get_tm_stackpointer(regs), sizeof(*frame), 1);
-+	frame = get_sigframe(ksig, get_tm_stackpointer_and_reclaim(regs),
-+			     sizeof(*frame), 1);
- 	if (unlikely(frame == NULL))
- 		goto badframe;
- 	sc = (struct sigcontext __user *) &frame->sctx;
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index b320689..96264be 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -731,7 +731,8 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set, struct pt_regs *regs
- 	unsigned long newsp = 0;
- 	long err = 0;
- 
--	frame = get_sigframe(ksig, get_tm_stackpointer(regs), sizeof(*frame), 0);
-+	frame = get_sigframe(ksig, get_tm_stackpointer_and_reclaim(regs),
-+			     sizeof(*frame), 0);
- 	if (unlikely(frame == NULL))
- 		goto badframe;
- 
+Regards,
+Aravinda
+
+> 
+> Regards,
+> Daniel
+> 
+
 -- 
-2.5.0
+Regards,
+Aravinda
