@@ -2,16 +2,16 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E07751A072B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2015 15:57:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E133A1A072B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2015 15:57:45 +1100 (AEDT)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
 Cc: mikey@neuling.org, sam.bobroff@au1.ibm.com, linuxppc-dev@ozlabs.org,
  paulus@samba.org
-Subject: [PATCH 2/5] selftests/powerpc: Add TM signal return selftest
-Date: Fri, 13 Nov 2015 15:57:29 +1100
-Message-Id: <1447390652-28355-2-git-send-email-mikey@neuling.org>
+Subject: [PATCH 3/5] powerpc/tm: Block signal return setting invalid MSR state
+Date: Fri, 13 Nov 2015 15:57:30 +1100
+Message-Id: <1447390652-28355-3-git-send-email-mikey@neuling.org>
 In-Reply-To: <1447390652-28355-1-git-send-email-mikey@neuling.org>
 References: <1447390652-28355-1-git-send-email-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,96 +23,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Test the kernel's signal return code to ensure that it doesn't crash
-when both the transactional and suspend MSR bits are set in the signal
-context.
+Currently we allow both the MSR T and S bits to be set by userspace on
+a signal return.  Unfortunately this is a reserved configuration and
+will cause a TM Bad Thing exception if attempted (via rfid).
+
+This patch checks for this case in both the 32 and 64bit signals code.
+If these are both set, we clear them and trigger the bad stack frame
+handling.
+
+Found using a syscall fuzzer.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
+Cc: stable@vger.kernel.org
 ---
- tools/testing/selftests/powerpc/tm/Makefile        |  2 +-
- .../selftests/powerpc/tm/tm-signal-msr-resv.c      | 64 ++++++++++++++++++++++
- 2 files changed, 65 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
+ arch/powerpc/include/asm/reg.h  |  1 +
+ arch/powerpc/kernel/signal_32.c | 16 ++++++++++------
+ arch/powerpc/kernel/signal_64.c |  6 ++++++
+ 3 files changed, 17 insertions(+), 6 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index 4bea62a..0c28db7 100644
---- a/tools/testing/selftests/powerpc/tm/Makefile
-+++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -1,4 +1,4 @@
--TEST_PROGS := tm-resched-dscr tm-syscall
-+TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index a908ada..2220f7a 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -108,6 +108,7 @@
+ #define MSR_TS_T	__MASK(MSR_TS_T_LG)	/*  Transaction Transactional */
+ #define MSR_TS_MASK	(MSR_TS_T | MSR_TS_S)   /* Transaction State bits */
+ #define MSR_TM_ACTIVE(x) (((x) & MSR_TS_MASK) != 0) /* Transaction active? */
++#define MSR_TM_RESV(x) (((x) & MSR_TS_MASK) == MSR_TS_MASK) /* Reserved */
+ #define MSR_TM_TRANSACTIONAL(x)	(((x) & MSR_TS_MASK) == MSR_TS_T)
+ #define MSR_TM_SUSPENDED(x)	(((x) & MSR_TS_MASK) == MSR_TS_S)
  
- all: $(TEST_PROGS)
- 
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c b/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
-new file mode 100644
-index 0000000..14705ae
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
-@@ -0,0 +1,64 @@
-+/*
-+ * Copyright 2015, Michael Neuling, IBM Corp.
-+ * Licensed under GPLv2.
-+ *
-+ * Test the kernel's signal return code to ensure that it doesn't
-+ * crash when both the transactional and suspend MSR bits are set in
-+ * the signal context.
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <signal.h>
-+
-+#include "utils.h"
-+
-+struct sigaction act;
-+
-+void signal_segv(int signum, siginfo_t *info, void *uc)
-+{
-+	printf("PASSED\n");
-+	exit(0);
-+}
-+
-+void signal_usr1(int signum, siginfo_t *info, void *uc)
-+{
-+	ucontext_t *ucp = uc;
-+
-+	/* link tm checkpointed context to normal context */
-+	ucp->uc_link = ucp;
-+	/* set all TM bits */
-+#ifdef __powerpc64__
-+	ucp->uc_mcontext.gp_regs[PT_MSR] |= (7ULL << 32);
-+#else
-+	ucp->uc_mcontext.regs->gpr[PT_MSR] |= (7ULL);
-+#endif
-+	/* Should segv on return becuase of invalid context */
-+	act.sa_sigaction = signal_segv;
-+	if (sigaction(SIGSEGV, &act, NULL) < 0) {
-+		perror("sigaction sigsegv");
-+		exit(1);
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index 0dbee46..5b519c7 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -874,7 +874,16 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 		       + ELF_NEVRREG))
+ 		return 1;
+ #endif /* CONFIG_SPE */
+-
++	/* Get the top half of the MSR */
++	if (__get_user(msr_hi, &tm_sr->mc_gregs[PT_MSR]))
++		return 1;
++	/* Pull in MSR TM from user context */
++	regs->msr = (regs->msr & ~MSR_TS_MASK) | ((msr_hi<<32) & MSR_TS_MASK);
++	/* Don't let the user set both TM bits */
++	if (MSR_TM_RESV(regs->msr)) {
++		regs->msr &= ~MSR_TS_MASK;
++		return 1;
 +	}
-+}
-+
-+int tm_signal_msr_resv()
-+{
-+
-+	act.sa_sigaction = signal_usr1;
-+	sigemptyset(&act.sa_mask);
-+	act.sa_flags = SA_SIGINFO;
-+	if (sigaction(SIGUSR1, &act, NULL) < 0) {
-+		perror("sigaction sigusr1");
-+		exit(1);
+ 	/* Now, recheckpoint.  This loads up all of the checkpointed (older)
+ 	 * registers, including FP and V[S]Rs.  After recheckpointing, the
+ 	 * transactional versions should be loaded.
+@@ -884,11 +893,6 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 	current->thread.tm_texasr |= TEXASR_FS;
+ 	/* This loads the checkpointed FP/VEC state, if used */
+ 	tm_recheckpoint(&current->thread, msr);
+-	/* Get the top half of the MSR */
+-	if (__get_user(msr_hi, &tm_sr->mc_gregs[PT_MSR]))
+-		return 1;
+-	/* Pull in MSR TM from user context */
+-	regs->msr = (regs->msr & ~MSR_TS_MASK) | ((msr_hi<<32) & MSR_TS_MASK);
+ 
+ 	/* This loads the speculative FP/VEC state, if used */
+ 	if (msr & MSR_FP) {
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 20756df..b320689 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -438,6 +438,12 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
+ 
+ 	/* get MSR separately, transfer the LE bit if doing signal return */
+ 	err |= __get_user(msr, &sc->gp_regs[PT_MSR]);
++	/* Don't allow reserved mode. */
++	if (MSR_TM_RESV(msr)) {
++		msr &= ~MSR_TS_MASK;
++		return -EINVAL;
 +	}
 +
-+	raise(SIGUSR1);
-+
-+	printf("FAILED\n");
-+	return 1;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(tm_signal_msr_resv, "tm_signal_msr_resv");
-+}
+ 	/* pull in MSR TM from user context */
+ 	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr & MSR_TS_MASK);
+ 
 -- 
 2.5.0
