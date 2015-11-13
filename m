@@ -1,31 +1,23 @@
-Return-Path: <thuth@redhat.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <clabbe.montjoie@gmail.com>
+Received: from mail-wm0-x232.google.com (mail-wm0-x232.google.com
+ [IPv6:2a00:1450:400c:c09::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7CA901A0C3C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2015 18:38:16 +1100 (AEDT)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E8C28141430
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2015 18:38:15 +1100 (AEDT)
-Subject: Re: [PATCH] KVM: PPC: Exit guest upon fatal machine check exception
-To: Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
-References: <20151111165845.3721.98296.stgit@aravindap>
- <876118ymy4.fsf@gamma.ozlabs.ibm.com> <20151112033816.GJ5852@voom.redhat.com>
- <5644164A.40706@linux.vnet.ibm.com> <20151112044316.GA4886@voom.redhat.com>
- <5644D1DD.1020201@linux.vnet.ibm.com> <20151113015015.GI4886@voom.redhat.com>
- <5645828E.1030609@linux.vnet.ibm.com>
-Cc: kvm@vger.kernel.org, michaele@au1.ibm.com, mahesh@linux.vnet.ibm.com,
- agraf@suse.de, kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Daniel Axtens <dja@axtens.net>
-From: Thomas Huth <thuth@redhat.com>
-Message-ID: <56459360.3090400@redhat.com>
-Date: Fri, 13 Nov 2015 08:38:08 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id A07C21A0979
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2015 19:36:05 +1100 (AEDT)
+Received: by wmec201 with SMTP id c201so20237213wme.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2015 00:36:02 -0800 (PST)
+Date: Fri, 13 Nov 2015 09:35:59 +0100
+From: LABBE Corentin <clabbe.montjoie@gmail.com>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: dmitry.torokhov@gmail.com, linux-input@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: input: i8042: build failure on powerpc
+Message-ID: <20151113083559.GA12869@Red>
+References: <20151112150145.GC3758@Red> <20151112154117.GA21686@roeck-us.net>
 MIME-Version: 1.0
-In-Reply-To: <5645828E.1030609@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151112154117.GA21686@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,26 +27,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13/11/15 07:26, Aravinda Prasad wrote:
+On Thu, Nov 12, 2015 at 07:41:17AM -0800, Guenter Roeck wrote:
+> On Thu, Nov 12, 2015 at 04:01:45PM +0100, LABBE Corentin wrote:
+> > Hello
+> > 
+> > I have made a random .config for testing my powerpc cross-compiler and I got this fail:
+> > 
 > 
-> On Friday 13 November 2015 07:20 AM, David Gibson wrote:
->> On Thu, Nov 12, 2015 at 11:22:29PM +0530, Aravinda Prasad wrote:
-[...]
->>> So thinking whether qemu should explicitly enable the new NMI
->>> behavior.
->>
->> So, I think the reasoning above tends towards having qemu control the
->> MC behaviour.  If qemu does nothing, MCs are delivered direct to
->> 0x200, if it enables the new handling, they cause a KVM exit and qemu
->> will deliver the MC.
+> In general it helps to provide the broken configuration.
 > 
-> This essentially requires qemu to control how KVM behaves as KVM does
-> the actual redirection of MC either to guest's 0x200 vector or to exit
-> guest. So, if we are running new qemu, then KVM should exit guest and if
-> we are running old qemu, KVM should redirect MC to 0x200. Is there any
-> way to communicate this to KVM? ioctl?
+> If you do some digging, you may notice that this has been broken
+> since commit 917f0af9e5a9 ("powerpc: Remove arch/ppc and include/asm-ppc"),
+> or in other words since 2008. CONFIG_INPUT is not set with walnut_defconfig,
+> which may explain why no one noticed.
+> 
+> I would suggest to just remove the offending code. Quite obviously it is dead.
+> 
 
-Simply introduce a KVM capability that can be enabled by userspace.
-See kvm_vcpu_ioctl_enable_cap() in arch/powerpc/kvm/powerpc.c.
+Just for be clear, you suggest that I make a patch for removing powerpc support of the i8042 driver ?
+I have add linuxppc-dev@lists.ozlabs.org to the discution.
 
- Thomas
+Regards
+
+> >   LD      init/built-in.o
+> > drivers/built-in.o: In function `i8042_wait_write':
+> > i8042.c:(.text+0x13d8be): undefined reference to `kb_cs'
+> > i8042.c:(.text+0x13d8c6): undefined reference to `kb_cs'
+> > i8042.c:(.text+0x13d8e6): undefined reference to `kb_cs'
+> > drivers/built-in.o: In function `i8042_kbd_write':
+> > i8042.c:(.text+0x13d9aa): undefined reference to `kb_data'
+> > i8042.c:(.text+0x13d9ae): undefined reference to `kb_data'
+> > drivers/built-in.o: In function `i8042_flush':
+> > i8042.c:(.text+0x13da56): undefined reference to `kb_cs'
+> > i8042.c:(.text+0x13da62): undefined reference to `kb_cs'
+> > i8042.c:(.text+0x13da66): undefined reference to `kb_data'
+> > i8042.c:(.text+0x13da86): undefined reference to `kb_data'
+> > drivers/built-in.o: In function `i8042_panic_blink':
+> > i8042.c:(.text+0x13db92): undefined reference to `kb_cs'
+> > i8042.c:(.text+0x13db9a): undefined reference to `kb_cs'
+> > i8042.c:(.text+0x13dc06): undefined reference to `kb_data'
+> > i8042.c:(.text+0x13dc16): undefined reference to `kb_data'
+> > i8042.c:(.text+0x13dc8a): undefined reference to `kb_data'
+> > drivers/built-in.o: In function `i8042_interrupt':
+> > i8042.c:(.text+0x13dd1a): undefined reference to `kb_cs'
+> > i8042.c:(.text+0x13dd1e): undefined reference to `kb_cs'
+> > i8042.c:(.text+0x13dd3e): undefined reference to `kb_data'
+> > i8042.c:(.text+0x13dd42): undefined reference to `kb_data'
+> > drivers/built-in.o: In function `__i8042_command':
+> > i8042.c:(.text+0x13e2b6): undefined reference to `kb_cs'
+> > i8042.c:(.text+0x13e2be): undefined reference to `kb_cs'
+> > i8042.c:(.text+0x13e2ea): undefined reference to `kb_data'
+> > i8042.c:(.text+0x13e302): undefined reference to `kb_data'
+> > i8042.c:(.text+0x13e34e): undefined reference to `kb_cs'
+> > i8042.c:(.text+0x13e362): undefined reference to `kb_cs'
+> > i8042.c:(.text+0x13e366): undefined reference to `kb_data'
+> > i8042.c:(.text+0x13e3de): undefined reference to `kb_data'
+> > drivers/built-in.o: In function `i8042_aux_test_irq':
+> > i8042.c:(.init.text+0x59a2): undefined reference to `kb_cs'
+> > i8042.c:(.init.text+0x59a6): undefined reference to `kb_cs'
+> > i8042.c:(.init.text+0x59ca): undefined reference to `kb_data'
+> > i8042.c:(.init.text+0x59ce): undefined reference to `kb_data'
+> > drivers/built-in.o: In function `i8042_probe':
+> > i8042.c:(.init.text+0x5dda): undefined reference to `kb_cs'
+> > i8042.c:(.init.text+0x5dde): undefined reference to `kb_cs'
+> > i8042.c:(.init.text+0x6366): undefined reference to `kb_data'
+> > i8042.c:(.init.text+0x6376): undefined reference to `kb_cs'
+> > i8042.c:(.init.text+0x637a): undefined reference to `kb_data'
+> > Makefile:929: recipe for target 'vmlinux' failed
+> > 
+> > it seems that kb_data and kb_cs (declared as extern in drivers/input/serio/i8042-ppcio.h) are defined anywhere.
+> > 
+> > Regards
