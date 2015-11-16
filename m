@@ -1,26 +1,27 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
+Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c03::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE6341A0C5D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 19:01:27 +1100 (AEDT)
-Received: by pacej9 with SMTP id ej9so60726627pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 00:01:26 -0800 (PST)
-Subject: Re: [PATCH v7 10/50] powerpc/powernv: Simplify pnv_ioda_setup_pe_seg()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 94EF31A081F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 19:01:52 +1100 (AEDT)
+Received: by padhx2 with SMTP id hx2so167500722pad.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 00:01:51 -0800 (PST)
+Subject: Re: [PATCH v7 11/50] powerpc/powernv: IO and M32 mapping based on PCI
+ device resources
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>
 References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-11-git-send-email-gwshan@linux.vnet.ibm.com>
- <87r3k4hx89.fsf@gamma.ozlabs.ibm.com> <20151105235218.GC30465@gwshan>
+ <1446642770-4681-12-git-send-email-gwshan@linux.vnet.ibm.com>
+ <87lha3j3n0.fsf@gamma.ozlabs.ibm.com> <20151112045525.GA6174@gwshan>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
  devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
  bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, frowand.list@gmail.com
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <56498D4E.7010009@ozlabs.ru>
-Date: Mon, 16 Nov 2015 19:01:18 +1100
+Message-ID: <56498D67.1090600@ozlabs.ru>
+Date: Mon, 16 Nov 2015 19:01:43 +1100
 MIME-Version: 1.0
-In-Reply-To: <20151105235218.GC30465@gwshan>
+In-Reply-To: <20151112045525.GA6174@gwshan>
 Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,60 +32,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/06/2015 10:52 AM, Gavin Shan wrote:
-> On Fri, Nov 06, 2015 at 09:56:06AM +1100, Daniel Axtens wrote:
->> Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
+On 11/12/2015 03:55 PM, Gavin Shan wrote:
+> On Thu, Nov 12, 2015 at 02:30:27PM +1100, Daniel Axtens wrote:
+>> Hi Gavin,
 >>
->>> The original implementation of pnv_ioda_setup_pe_seg() configures
->>> IO and M32 segments by separate logics, which can be merged by
->>> by caching @segmap, @seg_size, @win in advance. This shouldn't
->>> cause any behavioural changes.
->>>
->>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>> ---
->>>   arch/powerpc/platforms/powernv/pci-ioda.c | 62 ++++++++++++++-----------------
->>>   1 file changed, 28 insertions(+), 34 deletions(-)
->>>
+>> Sorry to have taken so long to resume these reviews!
+>>
+>
+> Thanks for your review, Daniel!
+>
+>>> Currently, the IO and M32 segments are mapped to the corresponding
+>>> PE based on the windows of the parent bridge of PE's primary bus.
+>>> It's not going to work when the windows of root port or upstream
+>>> port of the PCIe switch behind root port are extended to PHB's
+>>> aperatuses in order to support hotplug in subsequent patch.
+>> I'm not _entirely_ sure I understand this.
+>>
+>> I *think* you mean PHB's apertures (i.e. s/aperatuses/apertures/)?
+>>
+>
+> I'll fix the typo in next revision.
+>
+>>> This fixes the issue by mapping IO and M32 segments based on the
+>>> resources of the PCI devices included in the PE, instead of the
+>>> windows of the parent bridge of the PE's primary bus.
+>>
+>> This solution seems to make a lot of sense, but I don't have a very good
+>> understanding of PCI yet: why was it done that way and not this way
+>> originally? Looking at the code, it looks like the old way was simple
+>> but didn't support SR-IOV?
+>>
+>
+> It's not related to SRIOV. Originally, the IO or M32 segments are mapped
+> according to the bridge's windows.
+
+
+Sorry, I do not understand what this means...
+
+
+> The bridge windows on root port or the
+> upstream port of the switch behind that will be extended to PHB's apertures.
+
+What does "extended" mean here and why would the windows be extended anyway?
+
+
+> If we still use bridge's windows, all IO and M32 resources are mapped/assigned
+> to the PE corresponding to PCI bus#1 or PCI bus#2. That's not correct any more.
+> So the correct way is to do the mapping based on IO or M32 BARs of the devices
+> included in the PE.
+
+In this patch I see quite a lot of code movements and I fail to spot the 
+actual change here...
+
+
+It used to be a single loop:
+
+pci_bus_for_each_resource(pe->pbus, res, i) {
+	/* do stuff for each @res */
+}
+
+and now it is 2 loops inside another loop:
+
+list_for_each_entry(pdev, &pe->pbus->devices, bus_list) {
+	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+		res = &pdev->resource[i];
+		/* do stuff for each @res */
+	}
+
+	for (i = 0; i <= PCI_BRIDGE_RESOURCE_NUM; i++) {
+	        res = &pdev->resource[PCI_BRIDGE_RESOURCES + i];
+		/* do stuff for each @res */
+	}
+}
+
+
+Is that correct? If yes, why is not the patch as simple as this? If no, 
+what did I miss?
+
+
+
+>
+>> There are a few comments inline as well.
+>>
 >>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>> index 7ee7cfe..553d3f3 100644
+>>> index 553d3f3..4ab93f8 100644
 >>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 >>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>> @@ -2752,8 +2752,10 @@ static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
->>>   	struct pnv_phb *phb = hose->private_data;
+>>> @@ -2741,71 +2741,90 @@ truncate_iov:
+>>>   }
+>>>   #endif /* CONFIG_PCI_IOV */
+>>>
+>>> -/*
+>>> - * This function is supposed to be called on basis of PE from top
+>>> - * to bottom style. So the the I/O or MMIO segment assigned to
+>>> - * parent PE could be overrided by its child PEs if necessary.
+>>> - */
+>>> -static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
+>>> -				  struct pnv_ioda_pe *pe)
+>>> +static int pnv_ioda_setup_one_res(struct pnv_ioda_pe *pe,
+>>> +				  struct resource *res)
+>>>   {
+>>> -	struct pnv_phb *phb = hose->private_data;
+>>> +	struct pnv_phb *phb = pe->phb;
 >>>   	struct pci_bus_region region;
->>>   	struct resource *res;
->>> -	int i, index;
->>> -	int rc;
->>> +	unsigned int segsize;
->>> +	int *segmap, index, i;
->>> +	uint16_t win;
->>> +	int64_t rc;
+>>> -	struct resource *res;
+>>> -	unsigned int segsize;
+>>> -	int *segmap, index, i;
+>>> +	unsigned int index, segsize;
+>>> +	int *segmap;
+>>>   	uint16_t win;
+>>>   	int64_t rc;
 >>
->> Good catch! Opal return codes are 64 bit and that should be explicit
->> in the type. However, I seem to remember that we preferred a different
->> type for 64 bit ints in the kernel. I think it's s64, and there are some
->> other uses of that in pci_ioda.c for return codes.
+>> s/int64_t/s64/;
+>> I think we might also want to change the uint16_t as well.
 >>
 >
-> Both int64_t and s64 are fine. I used s64 for the OPAL return value, but
-> Alexey likes "int64_t", which is ok to me as well. I won't change it back
-> to s64 :-)
+> As I explained before, I changed it from s64 to int64_t and I won't change it
+> back since both of them are fine. Same situation to uint16 here. If we really
+> want to clean it all at once, I can do that later, but not in this patchset.
 >
->> (I'm actually surprised that's not picked up as a compiler
->> warning. Maybe that's something to look at in future.)
->>
->
-> Indeed, I didn't see a warning from gcc.
->
->> The rest of the patch looks good on casual inspection - to be sure I'll
->> test the entire series on a machine. (hopefully, time permitting!)
->>
->
-> I run scripts/checkpatch.pl on the patchset. Only one warning came from
-> [PATCH 44/50], but I won't bother to change that as the warning was
-> brought by original code.
+>>> -	/*
+>>> -	 * NOTE: We only care PCI bus based PE for now. For PCI
+>>> -	 * device based PE, for example SRIOV sensitive VF should
+>>> -	 * be figured out later.
+>>> -	 */
+>>> -	BUG_ON(!(pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)));
+>>> +	if (!res->parent || !res->flags || res->start > res->end)
+>>> +		return 0;
+>>>
+>>> -	pci_bus_for_each_resource(pe->pbus, res, i) {
+>>> -		if (!res || !res->flags ||
+>>> -		    res->start > res->end)
+>>> -			continue;
+>>> +	if (res->flags & IORESOURCE_IO) {
+>>> +		region.start = res->start - phb->ioda.io_pci_base;
+>>> +		region.end   = res->end - phb->ioda.io_pci_base;
+>>> +		segsize      = phb->ioda.io_segsize;
+>>> +		segmap       = phb->ioda.io_segmap;
+>>> +		win          = OPAL_IO_WINDOW_TYPE;
+>>> +	} else if ((res->flags & IORESOURCE_MEM) &&
+>>> +		   !pnv_pci_is_mem_pref_64(res->flags)) {
+>>> +		region.start = res->start -
+>>> +			       phb->hose->mem_offset[0] -
+>>> +			       phb->ioda.m32_pci_base;
+>>> +		region.end   = res->end -
+>>> +			       phb->hose->mem_offset[0] -
+>>> +			       phb->ioda.m32_pci_base;
+>>> +		segsize      = phb->ioda.m32_segsize;
+>>> +		segmap       = phb->ioda.m32_segmap;
+>>> +		win          = OPAL_M32_WINDOW_TYPE;
 
-None of these patches failed checkpatch.pl check, what was the error in 44/50?
+
+
+This code asks for a helper function
+
+pnv_ioda_do_setup_one_res(start, end, segsize, segmap, win)
+
+and then you won't need many local variables (region, segsize, segmap, win) ;)
+
 
 
 
