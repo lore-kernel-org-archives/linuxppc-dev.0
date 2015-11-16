@@ -1,22 +1,18 @@
-Return-Path: <mikey@neuling.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A29541A0143
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 21:21:31 +1100 (AEDT)
-Message-ID: <1447669291.17316.10.camel@neuling.org>
-Subject: Re: [PATCH 4/5] powerpc/tm: Check for already reclaimed tasks
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, Anshuman Khandual
- <khandual@linux.vnet.ibm.com>, benh@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, sam.bobroff@au1.ibm.com
-Date: Mon, 16 Nov 2015 21:21:31 +1100
-In-Reply-To: <1447666430.2191.5.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC95B1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 21:24:45 +1100 (AEDT)
+Message-ID: <1447669485.10721.2.camel@ellerman.id.au>
+Subject: Re: [PATCH 2/5] selftests/powerpc: Add TM signal return selftest
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org
+Cc: sam.bobroff@au1.ibm.com, linuxppc-dev@ozlabs.org, paulus@samba.org
+Date: Mon, 16 Nov 2015 21:24:45 +1100
+In-Reply-To: <1447390652-28355-2-git-send-email-mikey@neuling.org>
 References: <1447390652-28355-1-git-send-email-mikey@neuling.org>
- <1447390652-28355-4-git-send-email-mikey@neuling.org>
- <564983E6.6000307@linux.vnet.ibm.com>
- <1447665799.17316.2.camel@neuling.org>
- <1447666430.2191.5.camel@ellerman.id.au>
+ <1447390652-28355-2-git-send-email-mikey@neuling.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,111 +24,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-11-16 at 20:33 +1100, Michael Ellerman wrote:
-> On Mon, 2015-11-16 at 20:23 +1100, Michael Neuling wrote:
-> > On Mon, 2015-11-16 at 12:51 +0530, Anshuman Khandual wrote:
-> > > On 11/13/2015 10:27 AM, Michael Neuling wrote:
-> > > > Currently we can hit a scenario where we'll tm_reclaim() twice.
-> > > >  This
-> > > > results in a TM bad thing exception because the second reclaim
-> > > > occurs
-> > > > when not in suspend mode.
-> > > >=20
-> > > > The scenario in which this can happen is the following.  We
-> > > > attempt
-> > > > to
-> > > > deliver a signal to userspace.  To do this we need obtain the
-> > > > stack
-> > > > pointer to write the signal context.  To get this stack pointer
-> > > > we
-> > > > must tm_reclaim() in case we need to use the checkpointed stack
-> > > > pointer (see get_tm_stackpointer()).  Normally we'd then return
-> > > > directly to userspace to deliver the signal without going
-> > > > through
-> > > > __switch_to().
-> > > >=20
-> > > > Unfortunatley, if at this point we get an error (such as a bad
-> > > > userspace stack pointer), we need to exit the process.  The
-> > > > exit
-> > > > will
-> > > > result in a __switch_to().  __switch_to() will attempt to save
-> > > > the
-> > > > process state which results in another tm_reclaim().  This
-> > > > tm_reclaim() now causes a TM Bad Thing exception as this state
-> > > > has
-> > > > already been saved and the processor is no longer in TM suspend
-> > > > mode.
-> > > > Whee!
-> > > >=20
-> > > > This patch checks the state of the MSR to ensure we are TM
-> > > > suspended
-> > > > before we attempt the tm_reclaim().  If we've already saved the
-> > > > state
-> > > > away, we should no longer be in TM suspend mode.  This has the
-> > > > additional advantage of checking for a potential TM Bad Thing
-> > > > exception.
-> > >=20
-> > > Can this situation be created using a test and verified that with
-> > > this new change, the kernel can handle it successfully. I guess
-> > > the self test in the series does not cover this scenario.
-> >=20
-> > No it doesn't.  The syscall fuzzer I have does hit it but I don't
-> > have
-> > permission to post that.
->=20
-> And we don't really want a fuzzer as a selftest, because it might
-> call unlink
-> or something else bad.
->=20
-> But having found the bug with the fuzzer, can't you write a test that
-> triggers
-> the bad case?
->=20
-> > From your description it sounds like if you had a child spinning
-> > with a bad r1,
-> and then a parent sent it a signal that would trip it?
+On Fri, 2015-11-13 at 15:57 +1100, Michael Neuling wrote:
 
-You'd need to turn on TM too, but yeah... I have something like this
-working which I'll cleanup and post as a self test:
+> Test the kernel's signal return code to ensure that it doesn't crash
+> when both the transactional and suspend MSR bits are set in the signal
+> context.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+>  tools/testing/selftests/powerpc/tm/Makefile        |  2 +-
+>  .../selftests/powerpc/tm/tm-signal-msr-resv.c      | 64 ++++++++++++++++++++++
+>  2 files changed, 65 insertions(+), 1 deletion(-)
+>  create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
+> 
+> diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
+> index 4bea62a..0c28db7 100644
+> --- a/tools/testing/selftests/powerpc/tm/Makefile
+> +++ b/tools/testing/selftests/powerpc/tm/Makefile
+> @@ -1,4 +1,4 @@
+> -TEST_PROGS := tm-resched-dscr tm-syscall
+> +TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv
+>  
+>  all: $(TEST_PROGS)
+>  
+> diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c b/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
+> new file mode 100644
+> index 0000000..14705ae
+> --- /dev/null
+> +++ b/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
+> @@ -0,0 +1,64 @@
+> +/*
+> + * Copyright 2015, Michael Neuling, IBM Corp.
+> + * Licensed under GPLv2.
+> + *
+> + * Test the kernel's signal return code to ensure that it doesn't
+> + * crash when both the transactional and suspend MSR bits are set in
+> + * the signal context.
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
+That's a good start, a little blurb on how we do the test is nice too. For our
+future selves.
 
-void signal_segv(int signum)
-{
-	/* This should never actually run since stack is foobar */
-	exit(1);
-}
+eg. We send ourselves a SIGUSR1, and in the handler we write the illegal MSR
+value, then when we return from the signal the kernel should detect that and
+kill us with a SIGSEGV.
 
-int main()
-{
-	int pid;
+> + */
+> +
+> +#include <stdlib.h>
+> +#include <stdio.h>
+> +#include <signal.h>
+> +
+> +#include "utils.h"
+> +
+> +struct sigaction act;
+> +
+> +void signal_segv(int signum, siginfo_t *info, void *uc)
+> +{
+> +	printf("PASSED\n");
+> +	exit(0);
 
-	pid =3D fork();
-	if (pid < 0)
-		exit(1);
+You're not allowed to call exit() from a signal handler :D
 
-	if (pid) {
-		// Parent
-		wait(NULL);
-		printf("PASSED\n");
-		return 0;
-	}
+You can call _exit(), I guess you can't just set a flag and return like you'd
+normally do in a handler?
 
-	if (signal(SIGSEGV, signal_segv) =3D=3D SIG_ERR)
-		exit(1);
+> +}
+> +
+> +void signal_usr1(int signum, siginfo_t *info, void *uc)
+> +{
+> +	ucontext_t *ucp = uc;
+> +
+> +	/* link tm checkpointed context to normal context */
+> +	ucp->uc_link = ucp;
+> +	/* set all TM bits */
+> +#ifdef __powerpc64__
+> +	ucp->uc_mcontext.gp_regs[PT_MSR] |= (7ULL << 32);
+> +#else
+> +	ucp->uc_mcontext.regs->gpr[PT_MSR] |= (7ULL);
+> +#endif
+> +	/* Should segv on return becuase of invalid context */
 
-	asm volatile("li 1, 0 ;"
-		     "1:"
-		     ".long 0x7C00051D ;" // tbegin
-		     "beq 1b ;" // retry for ever
-		     ".long 0x7C0005DD ; ;" // tsuspend
-		     "ld 2, 0(1) ;" // trigger segv"
-		     : : : "memory");
+On return of what? This handler or sigaction() below ?
 
-	return 1;
-}
+> +	act.sa_sigaction = signal_segv;
+> +	if (sigaction(SIGSEGV, &act, NULL) < 0) {
+> +		perror("sigaction sigsegv");
+> +		exit(1);
+> +	}
+
+I'm not clear why we're setting up the handler for SEGV in the handler for
+USR1. Is that required to trip the bug? (not that I understood).
+
+> +}
+> +
+> +int tm_signal_msr_resv()
+> +{
+> +
+> +	act.sa_sigaction = signal_usr1;
+> +	sigemptyset(&act.sa_mask);
+> +	act.sa_flags = SA_SIGINFO;
+> +	if (sigaction(SIGUSR1, &act, NULL) < 0) {
+> +		perror("sigaction sigusr1");
+> +		exit(1);
+> +	}
+> +
+> +	raise(SIGUSR1);
+> +
+> +	printf("FAILED\n");
+
+The harness will print a failure message for you, so this is not really
+helpful. What is helpful is a message that says *why* it failed. eg: "Expected
+to take SEGV but didn't?" or something like that.
+
+> +	return 1;
+> +}
+> +
+> +int main(void)
+> +{
+> +	return test_harness(tm_signal_msr_resv, "tm_signal_msr_resv");
+> +}
+
+cheers
