@@ -1,20 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 721731A0273
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 02:49:06 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-serial@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- Scott Wood <scottwood@freescale.com>, Stefan Agner <stefan@agner.ch>,
- Heikki Krogerus <heikki.krogerus@linux.intel.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Benjamin Krill <ben@codiert.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/6] serial: fixes and cleanups
-Date: Mon, 16 Nov 2015 16:48:08 +0100
-Message-Id: <1447688894-2936779-1-git-send-email-arnd@arndb.de>
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id A2D9E1A025B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 04:26:17 +1100 (AEDT)
+Date: Mon, 16 Nov 2015 11:26:11 -0600
+From: Rob Herring <robh@kernel.org>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>,
+ Sudeep Holla <sudeep.holla@arm.com>
+Cc: scottwood@freescale.com, stuart.yoder@freescale.com,
+ shawnguo@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ devicetree@vger.kernel.org, jason.jin@freescale.com,
+ Chenhui Zhao <chenhui.zhao@freescale.com>,
+ Tang Yuantian <Yuantian.Tang@freescale.com>
+Subject: Re: [PATCH v4] Documentation: dt: binding: fsl: add devicetree
+ binding for describing RCPM
+Message-ID: <20151116172611.GA27814@rob-hp-laptop>
+References: <1445841852-6830-1-git-send-email-dongsheng.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1445841852-6830-1-git-send-email-dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I've had these patches sitting in my randconfig branch for a while,
-but have now gotten around to sending them. The first three are
-bug fixes for harmless problems that have shown up recently,
-so they should go into 4.4.
++Sudeep
 
-The other three are part of a cleanup that we've been meaning
-to do for a while but that is not urgent at all.
+On Mon, Oct 26, 2015 at 02:44:12PM +0800, Dongsheng Wang wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> RCPM is the Run Control and Power Management module performs all
+> device-level tasks associated with device run control and power
+> management.
+> 
+> Add this for freescale powerpc platform and layerscape platform.
 
-Arnd Bergmann (6):
-  serial: export fsl8250_handle_irq
-  serial: fsl-lpuart: move SERIAL_EARLYCON dependency to console
-  serial: mid8250: select CONFIG_RATIONAL
-  serial: remove NWP serial support
-  serial: of: CONFIG_SERIAL_8250 is always set
-  serial: 8250: move of_serial code to 8250 directory
+[...]
 
- drivers/tty/serial/8250/8250_fsl.c                 |   1 +
- drivers/tty/serial/{of_serial.c => 8250/8250_of.c} |  32 --
- drivers/tty/serial/8250/Kconfig                    |  10 +
- drivers/tty/serial/8250/Makefile                   |   1 +
- drivers/tty/serial/Kconfig                         |  29 +-
- drivers/tty/serial/Makefile                        |   2 -
- drivers/tty/serial/nwpserial.c                     | 477 ---------------------
- include/linux/nwpserial.h                          |  18 -
- include/uapi/linux/serial_core.h                   |   2 +-
- 9 files changed, 14 insertions(+), 558 deletions(-)
- rename drivers/tty/serial/{of_serial.c => 8250/8250_of.c} (92%)
- delete mode 100644 drivers/tty/serial/nwpserial.c
- delete mode 100644 include/linux/nwpserial.h
+> @@ -0,0 +1,64 @@
+> +* Run Control and Power Management
+> +-------------------------------------------
+> +The RCPM performs all device-level tasks associated with device run control
+> +and power management.
+> +
+> +Required properites:
+> +  - reg : Offset and length of the register set of the RCPM block.
+> +  - fsl,#rcpm-wakeup-cells : The number of IPPDEXPCR register cells in the
+> +	fsl,rcpm-wakeup property.
 
--- 
-2.1.0.rc2
+[...]
 
-Cc: Scott Wood <scottwood@freescale.com>
-Cc: Stefan Agner <stefan@agner.ch>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Benjamin Krill <ben@codiert.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+> +* Freescale RCPM Wakeup Source Device Tree Bindings
+> +-------------------------------------------
+> +Required fsl,rcpm-wakeup property should be added to a device node if the device
+> +can be used as a wakeup source.
+> +
+> +  - fsl,rcpm-wakeup: Consists of a pointer to the rcpm node and the IPPDEXPCR
+> +	register cells. The number of IPPDEXPCR register cells is defined in
+> +	"fsl,#rcpm-wakeup-cells" in the rcpm node. The first register cell is
+> +	the bit mask that should be set in IPPDEXPCR0, and the second register
+> +	cell is for IPPDEXPCR1, and so on.
+
+We just merged a common wakeup source binding[1]. It doesn't really work 
+in a similar way to what you have done, but I'd like to see something 
+common here. How exactly wakeup is done tends to depend on whether 
+interrupts are also wakeup signals or wake-up signally is completely 
+separate from interrupts. Depending on that, I think there are 2 options 
+here:
+
+- Use the common binding and implement a stacked irqdomain for the 
+wakeup controller.
+
+- Extend the common binding to allow a phandle+args value to point to 
+the wakeup controller.
+
+Rob
+
+[1] Documentation/devicetree/bindings/power/wakeup-source.txt
