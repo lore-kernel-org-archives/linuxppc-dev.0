@@ -3,10 +3,10 @@ Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
  [IPv6:2607:f8b0:400e:c03::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2F1591A0D94
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 19:02:12 +1100 (AEDT)
-Received: by pacdm15 with SMTP id dm15so167380534pac.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 00:02:10 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 02C841A0D94
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 19:02:28 +1100 (AEDT)
+Received: by padhx2 with SMTP id hx2so167517387pad.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 00:02:26 -0800 (PST)
 Subject: Re: [PATCH v7 14/50] powerpc/powernv: M64 support on P7IOC
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
@@ -16,8 +16,8 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, frowand.list@gmail.com
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <56498D7B.7000307@ozlabs.ru>
-Date: Mon, 16 Nov 2015 19:02:03 +1100
+Message-ID: <56498D8A.2050505@ozlabs.ru>
+Date: Mon, 16 Nov 2015 19:02:18 +1100
 MIME-Version: 1.0
 In-Reply-To: <1446642770-4681-15-git-send-email-gwshan@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=koi8-r; format=flowed
@@ -44,75 +44,16 @@ On 11/05/2015 12:12 AM, Gavin Shan wrote:
 > of them is pinned to the fixed PE# by bypassing the function of
 > M64DT. In turn, we just need different phb->init_m64() for P7IOC
 > and PHB3 to support M64.
->
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/platforms/powernv/pci-ioda.c | 86 +++++++++++++++++++++++++++++--
->   arch/powerpc/platforms/powernv/pci.h      |  3 ++
->   2 files changed, 86 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 1f7d985..bfe69f1 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -256,6 +256,64 @@ static void pnv_ioda_reserve_dev_m64_pe(struct pci_dev *pdev,
->   	}
->   }
->
-> +static int pnv_ioda1_init_m64(struct pnv_phb *phb)
-> +{
-> +	struct resource *r;
-> +	int index;
-> +
-> +	/*
-> +	 * There are 16 M64 BARs, each of which has 8 segments. So
-> +	 * there are as many M64 segments as the maximum number of
-> +	 * PEs, which is 128.
-> +	 */
-> +	for (index = 0; index < PNV_IODA1_M64_NUM; index++) {
-> +		unsigned long base, segsz = phb->ioda.m64_segsize;
-> +		int64_t rc;
-> +
-> +		base = phb->ioda.m64_base +
-> +		       index * PNV_IODA1_M64_SEGS * segsz;
-> +		rc = opal_pci_set_phb_mem_window(phb->opal_id,
-> +				OPAL_M64_WINDOW_TYPE, index, base, 0,
-> +				PNV_IODA1_M64_SEGS * segsz);
-> +		if (rc != OPAL_SUCCESS) {
-> +			pr_warn("  Error %lld setting M64 PHB#%d-BAR#%d\n",
-> +				rc, phb->hose->global_number, index);
-> +			goto fail;
-> +		}
-> +
-> +		rc = opal_pci_phb_mmio_enable(phb->opal_id,
-> +				OPAL_M64_WINDOW_TYPE, index,
-> +				OPAL_ENABLE_M64_SPLIT);
-> +		if (rc != OPAL_SUCCESS) {
-> +			pr_warn("  Error %lld enabling M64 PHB#%d-BAR#%d\n",
-> +				rc, phb->hose->global_number, index);
-> +			goto fail;
-> +		}
-> +	}
-> +
-> +	/*
-> +	 * Exclude the segment used by the reserved PE, which
-> +	 * is expected to be 0 or last supported PE#.
-> +	 */
-> +	r = &phb->hose->mem_resources[1];
 
+I thought we decided (Ben suggested?) not to push P7IOC code now (or ever) 
+as there is no user for it, has this changed?
 
-What does "1" mean here? A bridge's 64bit prefetchable window?
-
-
-> +	if (phb->ioda.reserved_pe_idx == 0)
-> +		r->start += phb->ioda.m64_segsize;
-> +	else if (phb->ioda.reserved_pe_idx == (phb->ioda.total_pe_num - 1))
-> +		r->end -= phb->ioda.m64_segsize;
-> +	else
-> +		pr_warn("  Cannot cut M64 segment for reserved PE#%d\n",
-> +			phb->ioda.reserved_pe_idx);
-> +
-
+btw please put ioda1/ioda2/p7ioc/etc to the subject line to make it easier 
+to see how much work is there about particular PHB type. You rename quite 
+many functions and I generally want to ask you to group all renaming 
+patches first but it would also make sense to keep them close to (for 
+example) p7ioc-related patches so having more descriptive subject lines may 
+help. Thanks.
 
 
 -- 
