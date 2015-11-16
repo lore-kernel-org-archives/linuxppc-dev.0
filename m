@@ -1,19 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 501761A0191
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 21:05:19 +1100 (AEDT)
-Message-ID: <1447668318.2191.10.camel@ellerman.id.au>
-Subject: Re: [PATCH 3/5] powerpc/tm: Block signal return setting invalid MSR
- state
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org
-Cc: sam.bobroff@au1.ibm.com, linuxppc-dev@ozlabs.org, paulus@samba.org
-Date: Mon, 16 Nov 2015 21:05:18 +1100
-In-Reply-To: <1447390652-28355-3-git-send-email-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A29541A0143
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 21:21:31 +1100 (AEDT)
+Message-ID: <1447669291.17316.10.camel@neuling.org>
+Subject: Re: [PATCH 4/5] powerpc/tm: Check for already reclaimed tasks
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, Anshuman Khandual
+ <khandual@linux.vnet.ibm.com>, benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, sam.bobroff@au1.ibm.com
+Date: Mon, 16 Nov 2015 21:21:31 +1100
+In-Reply-To: <1447666430.2191.5.camel@ellerman.id.au>
 References: <1447390652-28355-1-git-send-email-mikey@neuling.org>
- <1447390652-28355-3-git-send-email-mikey@neuling.org>
+ <1447390652-28355-4-git-send-email-mikey@neuling.org>
+ <564983E6.6000307@linux.vnet.ibm.com>
+ <1447665799.17316.2.camel@neuling.org>
+ <1447666430.2191.5.camel@ellerman.id.au>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,120 +28,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-11-13 at 15:57 +1100, Michael Neuling wrote:
+On Mon, 2015-11-16 at 20:33 +1100, Michael Ellerman wrote:
+> On Mon, 2015-11-16 at 20:23 +1100, Michael Neuling wrote:
+> > On Mon, 2015-11-16 at 12:51 +0530, Anshuman Khandual wrote:
+> > > On 11/13/2015 10:27 AM, Michael Neuling wrote:
+> > > > Currently we can hit a scenario where we'll tm_reclaim() twice.
+> > > >  This
+> > > > results in a TM bad thing exception because the second reclaim
+> > > > occurs
+> > > > when not in suspend mode.
+> > > >=20
+> > > > The scenario in which this can happen is the following.  We
+> > > > attempt
+> > > > to
+> > > > deliver a signal to userspace.  To do this we need obtain the
+> > > > stack
+> > > > pointer to write the signal context.  To get this stack pointer
+> > > > we
+> > > > must tm_reclaim() in case we need to use the checkpointed stack
+> > > > pointer (see get_tm_stackpointer()).  Normally we'd then return
+> > > > directly to userspace to deliver the signal without going
+> > > > through
+> > > > __switch_to().
+> > > >=20
+> > > > Unfortunatley, if at this point we get an error (such as a bad
+> > > > userspace stack pointer), we need to exit the process.  The
+> > > > exit
+> > > > will
+> > > > result in a __switch_to().  __switch_to() will attempt to save
+> > > > the
+> > > > process state which results in another tm_reclaim().  This
+> > > > tm_reclaim() now causes a TM Bad Thing exception as this state
+> > > > has
+> > > > already been saved and the processor is no longer in TM suspend
+> > > > mode.
+> > > > Whee!
+> > > >=20
+> > > > This patch checks the state of the MSR to ensure we are TM
+> > > > suspended
+> > > > before we attempt the tm_reclaim().  If we've already saved the
+> > > > state
+> > > > away, we should no longer be in TM suspend mode.  This has the
+> > > > additional advantage of checking for a potential TM Bad Thing
+> > > > exception.
+> > >=20
+> > > Can this situation be created using a test and verified that with
+> > > this new change, the kernel can handle it successfully. I guess
+> > > the self test in the series does not cover this scenario.
+> >=20
+> > No it doesn't.  The syscall fuzzer I have does hit it but I don't
+> > have
+> > permission to post that.
+>=20
+> And we don't really want a fuzzer as a selftest, because it might
+> call unlink
+> or something else bad.
+>=20
+> But having found the bug with the fuzzer, can't you write a test that
+> triggers
+> the bad case?
+>=20
+> > From your description it sounds like if you had a child spinning
+> > with a bad r1,
+> and then a parent sent it a signal that would trip it?
 
-> Currently we allow both the MSR T and S bits to be set by userspace on
-> a signal return.  Unfortunately this is a reserved configuration and
-> will cause a TM Bad Thing exception if attempted (via rfid).
-> 
-> This patch checks for this case in both the 32 and 64bit signals code.
-> If these are both set, we clear them and trigger the bad stack frame
-> handling.
-> 
-> Found using a syscall fuzzer.
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+You'd need to turn on TM too, but yeah... I have something like this
+working which I'll cleanup and post as a self test:
 
-Is this fixes line right?
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <signal.h>
 
-Fixes: 2b0a576d15e0 ("powerpc: Add new transactional memory state to the signal context")
+void signal_segv(int signum)
+{
+	/* This should never actually run since stack is foobar */
+	exit(1);
+}
 
-Which went into v3.9.
+int main()
+{
+	int pid;
 
-In which case this:
+	pid =3D fork();
+	if (pid < 0)
+		exit(1);
 
-> Cc: stable@vger.kernel.org
+	if (pid) {
+		// Parent
+		wait(NULL);
+		printf("PASSED\n");
+		return 0;
+	}
 
-Should be:
+	if (signal(SIGSEGV, signal_segv) =3D=3D SIG_ERR)
+		exit(1);
 
-Cc: stable@vger.kernel.org # v3.9+
+	asm volatile("li 1, 0 ;"
+		     "1:"
+		     ".long 0x7C00051D ;" // tbegin
+		     "beq 1b ;" // retry for ever
+		     ".long 0x7C0005DD ; ;" // tsuspend
+		     "ld 2, 0(1) ;" // trigger segv"
+		     : : : "memory");
 
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index a908ada..2220f7a 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -108,6 +108,7 @@
->  #define MSR_TS_T	__MASK(MSR_TS_T_LG)	/*  Transaction Transactional */
->  #define MSR_TS_MASK	(MSR_TS_T | MSR_TS_S)   /* Transaction State bits */
->  #define MSR_TM_ACTIVE(x) (((x) & MSR_TS_MASK) != 0) /* Transaction active? */
-> +#define MSR_TM_RESV(x) (((x) & MSR_TS_MASK) == MSR_TS_MASK) /* Reserved */
-
-Is reserved a good name? I think illegal/bad/wrong would be more helpful,
-though I haven't checked the arch to see if it uses "reserved".
-
->  #define MSR_TM_TRANSACTIONAL(x)	(((x) & MSR_TS_MASK) == MSR_TS_T)
->  #define MSR_TM_SUSPENDED(x)	(((x) & MSR_TS_MASK) == MSR_TS_S)
->  
-> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-> index 0dbee46..5b519c7 100644
-> --- a/arch/powerpc/kernel/signal_32.c
-> +++ b/arch/powerpc/kernel/signal_32.c
-> @@ -874,7 +874,16 @@ static long restore_tm_user_regs(struct pt_regs *regs,
->  		       + ELF_NEVRREG))
->  		return 1;
->  #endif /* CONFIG_SPE */
-> -
-
-I know you didn't start the rot here, but can you please use your newline key a
-bit more :D
-
-> +	/* Get the top half of the MSR */
-
-"top" scares me now that we have both kinds of endian, but you're just moving
-that code anyway, and it is sane because it's a 32-bit value that we explicitly
-put the top half of the 64-bit MSR in.
-
-> +	if (__get_user(msr_hi, &tm_sr->mc_gregs[PT_MSR]))
-> +		return 1;
-
-> +	/* Pull in MSR TM from user context */
-> +	regs->msr = (regs->msr & ~MSR_TS_MASK) | ((msr_hi<<32) & MSR_TS_MASK);
-
-Using a tmp variable would be safer.
-
-> +	/* Don't let the user set both TM bits */
-> +	if (MSR_TM_RESV(regs->msr)) {
-> +		regs->msr &= ~MSR_TS_MASK;
-
-And avoid the clear here.
-
-> +		return 1;
-> +	}
-
-At the (minor) expense of an assignment here to regs->msr.
-
-
-> @@ -884,11 +893,6 @@ static long restore_tm_user_regs(struct pt_regs *regs,
->  	current->thread.tm_texasr |= TEXASR_FS;
->  	/* This loads the checkpointed FP/VEC state, if used */
->  	tm_recheckpoint(&current->thread, msr);
-> -	/* Get the top half of the MSR */
-> -	if (__get_user(msr_hi, &tm_sr->mc_gregs[PT_MSR]))
-> -		return 1;
-> -	/* Pull in MSR TM from user context */
-> -	regs->msr = (regs->msr & ~MSR_TS_MASK) | ((msr_hi<<32) & MSR_TS_MASK);
->  
->  	/* This loads the speculative FP/VEC state, if used */
->  	if (msr & MSR_FP) {
-> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-> index 20756df..b320689 100644
-> --- a/arch/powerpc/kernel/signal_64.c
-> +++ b/arch/powerpc/kernel/signal_64.c
-> @@ -438,6 +438,12 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
->  
->  	/* get MSR separately, transfer the LE bit if doing signal return */
->  	err |= __get_user(msr, &sc->gp_regs[PT_MSR]);
-> +	/* Don't allow reserved mode. */
-> +	if (MSR_TM_RESV(msr)) {
-> +		msr &= ~MSR_TS_MASK;
-
-Why are you clearing the bits before returning, it's a local isn't it?
-
-> +		return -EINVAL;
-> +	}
-> +
->  	/* pull in MSR TM from user context */
->  	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr & MSR_TS_MASK);
->  
-
-cheers
+	return 1;
+}
