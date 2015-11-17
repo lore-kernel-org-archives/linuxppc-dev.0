@@ -1,18 +1,18 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id BBBA71A03BB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 01:02:19 +1100 (AEDT)
-Message-Id: <621c885f82c8ecd796e497fe4a0fbde9463cafa7.1446893433.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 3D8191A03C6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 01:02:20 +1100 (AEDT)
+Message-Id: <00806f0e64c8293ed12ee8662c614864afc333fe.1446893429.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1446893426.git.christophe.leroy@c-s.fr>
 References: <cover.1446893426.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 19/23] powerpc32: Remove clear_pages() and define
- clear_page() inline
+Subject: [PATCH v3 01/23] powerpc/8xx: Save r3 all the time in DTLB miss
+ handler
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 17 Nov 2015 14:32:38 +0100 (CET)
+Date: Tue, 17 Nov 2015 14:32:01 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,96 +22,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-clear_pages() is never used expect by clear_page, and PPC32 is the
-only architecture (still) having this function. Neither PPC64 nor
-any other architecture has it.
-
-This patch removes clear_pages() and moves clear_page() function
-inline (same as PPC64) as it only is a few isns
+We are spending between 40 and 160 cycles with a mean of 65 cycles in
+the DTLB handling routine (measured with mftbl) so make it more
+simple althought it adds one instruction.
+With this modification, we get three registers available at all time,
+which will help with following patch.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
 v2: no change
 v3: no change
 
- arch/powerpc/include/asm/page_32.h | 17 ++++++++++++++---
- arch/powerpc/kernel/misc_32.S      | 16 ----------------
- arch/powerpc/kernel/ppc_ksyms_32.c |  1 -
- 3 files changed, 14 insertions(+), 20 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
-index 68d73b2..6a8e179 100644
---- a/arch/powerpc/include/asm/page_32.h
-+++ b/arch/powerpc/include/asm/page_32.h
-@@ -1,6 +1,8 @@
- #ifndef _ASM_POWERPC_PAGE_32_H
- #define _ASM_POWERPC_PAGE_32_H
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 78c1eba..1557926 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -385,23 +385,20 @@ InstructionTLBMiss:
  
-+#include <asm/cache.h>
-+
- #if defined(CONFIG_PHYSICAL_ALIGN) && (CONFIG_PHYSICAL_START != 0)
- #if (CONFIG_PHYSICAL_START % CONFIG_PHYSICAL_ALIGN) != 0
- #error "CONFIG_PHYSICAL_START must be a multiple of CONFIG_PHYSICAL_ALIGN"
-@@ -36,9 +38,18 @@ typedef unsigned long long pte_basic_t;
- typedef unsigned long pte_basic_t;
- #endif
+ 	. = 0x1200
+ DataStoreTLBMiss:
+-#ifdef CONFIG_8xx_CPU6
+ 	mtspr	SPRN_SPRG_SCRATCH2, r3
+-#endif
+ 	EXCEPTION_PROLOG_0
+-	mfcr	r10
++	mfcr	r3
  
--struct page;
--extern void clear_pages(void *page, int order);
--static inline void clear_page(void *page) { clear_pages(page, 0); }
-+/*
-+ * Clear page using the dcbz instruction, which doesn't cause any
-+ * memory traffic (except to write out any cache lines which get
-+ * displaced).  This only works on cacheable memory.
-+ */
-+static inline void clear_page(void *addr)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < PAGE_SIZE / L1_CACHE_BYTES; i++, addr += L1_CACHE_BYTES)
-+		dcbz(addr);
-+}
- extern void copy_page(void *to, void *from);
+ 	/* If we are faulting a kernel address, we have to use the
+ 	 * kernel page tables.
+ 	 */
+-	mfspr	r11, SPRN_MD_EPN
+-	IS_KERNEL(r11, r11)
++	mfspr	r10, SPRN_MD_EPN
++	IS_KERNEL(r11, r10)
+ 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
+ 	BRANCH_UNLESS_KERNEL(3f)
+ 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+ 3:
+-	mtcr	r10
+-	mfspr	r10, SPRN_MD_EPN
++	mtcr	r3
  
- #include <asm-generic/getorder.h>
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 72fd7a7..ce3ca08 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -517,22 +517,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
- #endif /* CONFIG_BOOKE */
+ 	/* Insert level 1 index */
+ 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+@@ -453,9 +450,7 @@ DataStoreTLBMiss:
+ 	MTSPR_CPU6(SPRN_MD_RPN, r10, r3)	/* Update TLB entry */
  
- /*
-- * Clear pages using the dcbz instruction, which doesn't cause any
-- * memory traffic (except to write out any cache lines which get
-- * displaced).  This only works on cacheable memory.
-- *
-- * void clear_pages(void *page, int order) ;
-- */
--_GLOBAL(clear_pages)
--	li	r0,PAGE_SIZE/L1_CACHE_BYTES
--	slw	r0,r0,r4
--	mtctr	r0
--1:	dcbz	0,r3
--	addi	r3,r3,L1_CACHE_BYTES
--	bdnz	1b
--	blr
--
--/*
-  * Copy a whole page.  We use the dcbz instruction on the destination
-  * to reduce memory traffic (it eliminates the unnecessary reads of
-  * the destination into cache).  This requires that the destination
-diff --git a/arch/powerpc/kernel/ppc_ksyms_32.c b/arch/powerpc/kernel/ppc_ksyms_32.c
-index 30ddd8a..2bfaafe 100644
---- a/arch/powerpc/kernel/ppc_ksyms_32.c
-+++ b/arch/powerpc/kernel/ppc_ksyms_32.c
-@@ -10,7 +10,6 @@
- #include <asm/pgtable.h>
- #include <asm/dcr.h>
- 
--EXPORT_SYMBOL(clear_pages);
- EXPORT_SYMBOL(ISA_DMA_THRESHOLD);
- EXPORT_SYMBOL(DMA_MODE_READ);
- EXPORT_SYMBOL(DMA_MODE_WRITE);
+ 	/* Restore registers */
+-#ifdef CONFIG_8xx_CPU6
+ 	mfspr	r3, SPRN_SPRG_SCRATCH2
+-#endif
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+ 	EXCEPTION_EPILOG_0
+ 	rfi
 -- 
 2.1.0
