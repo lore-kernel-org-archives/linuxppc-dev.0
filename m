@@ -1,18 +1,16 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 0E2EA1A03BB
+ by lists.ozlabs.org (Postfix) with ESMTP id 4B4001A03C6
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 01:02:20 +1100 (AEDT)
-Message-Id: <76ff19aec8e3024f9dde57133acb64511aa115fe.1446893430.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1446893426.git.christophe.leroy@c-s.fr>
-References: <cover.1446893426.git.christophe.leroy@c-s.fr>
+Message-Id: <cover.1446893426.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 04/23] powerpc/8xx: move setup_initial_memory_limit() into
- 8xx_mmu.c
+Subject: [PATCH v3 00/23] powerpc/8xx: Use large pages for RAM and IMMR and
+ other improvments
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 17 Nov 2015 14:32:07 +0100 (CET)
+Date: Tue, 17 Nov 2015 14:31:59 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,69 +20,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now we have a 8xx specific .c file for that so put it in there
-as other powerpc variants do
+The main purpose of this patchset is to dramatically reduce the time
+spent in DTLB miss handler. This is achieved by:
+1/ Mapping RAM with 8M pages
+2/ Mapping IMMR with a fixed 512K page
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
-v2: no change
-v3: no change
+On a live running system (VoIP gateway for Air Trafic Control), over
+a 10 minutes period (with 277s idle), we get 87 millions DTLB misses
+and approximatly 35 secondes are spent in DTLB handler.
+This represents 5.8% of the overall time and even 10.8% of the
+non-idle time.
+Among those 87 millions DTLB misses, 15% are on user addresses and
+85% are on kernel addresses. And within the kernel addresses, 93%
+are on addresses from the linear address space and only 7% are on
+addresses from the virtual address space.
 
- arch/powerpc/mm/8xx_mmu.c | 17 +++++++++++++++++
- arch/powerpc/mm/init_32.c | 19 -------------------
- 2 files changed, 17 insertions(+), 19 deletions(-)
+Once the full patchset applied, the number of DTLB misses during the
+period is reduced to 11.8 millions for a duration of 5.8s, which
+represents 2% of the non-idle time.
 
-diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index be6f041..0ddcb37 100644
---- a/arch/powerpc/mm/8xx_mmu.c
-+++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -81,3 +81,20 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
- 
- 	return mapped;
- }
-+
-+void setup_initial_memory_limit(phys_addr_t first_memblock_base,
-+				phys_addr_t first_memblock_size)
-+{
-+	/* We don't currently support the first MEMBLOCK not mapping 0
-+	 * physical on those processors
-+	 */
-+	BUG_ON(first_memblock_base != 0);
-+
-+#ifdef CONFIG_PIN_TLB
-+	/* 8xx can only access 24MB at the moment */
-+	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
-+#else
-+	/* 8xx can only access 8MB at the moment */
-+	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
-+#endif
-+}
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index a10be66..1a18e4b 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -193,22 +193,3 @@ void __init MMU_init(void)
- 	/* Shortly after that, the entire linear mapping will be available */
- 	memblock_set_current_limit(lowmem_end_addr);
- }
--
--#ifdef CONFIG_8xx /* No 8xx specific .c file to put that in ... */
--void setup_initial_memory_limit(phys_addr_t first_memblock_base,
--				phys_addr_t first_memblock_size)
--{
--	/* We don't currently support the first MEMBLOCK not mapping 0
--	 * physical on those processors
--	 */
--	BUG_ON(first_memblock_base != 0);
--
--#ifdef CONFIG_PIN_TLB
--	/* 8xx can only access 24MB at the moment */
--	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
--#else
--	/* 8xx can only access 8MB at the moment */
--	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
--#endif
--}
--#endif /* CONFIG_8xx */
+This patch also includes other miscellaneous improvements:
+1/ Handling of CPU6 ERRATA directly in mtspr() C macro to reduce code
+specific to PPC8xx
+2/ Rewrite of a few non critical ASM functions in C
+3/ Removal of some unused items
+
+See related patches for details
+
+Main changes in v3:
+* Using fixmap instead of fix address for mapping IMMR
+
+Christophe Leroy (23):
+  powerpc/8xx: Save r3 all the time in DTLB miss handler
+  powerpc/8xx: Map linear kernel RAM with 8M pages
+  powerpc: Update documentation for noltlbs kernel parameter
+  powerpc/8xx: move setup_initial_memory_limit() into 8xx_mmu.c
+  powerpc32: Fix pte_offset_kernel() to return NULL for bad pages
+  powerpc32: refactor x_mapped_by_bats() and x_mapped_by_tlbcam()
+    together
+  powerpc/8xx: Fix vaddr for IMMR early remap
+  powerpc/8xx: Map IMMR area with 512k page at a fixed address
+  powerpc/8xx: CONFIG_PIN_TLB unneeded for CONFIG_PPC_EARLY_DEBUG_CPM
+  powerpc/8xx: map more RAM at startup when needed
+  powerpc32: Remove useless/wrong MMU:setio progress message
+  powerpc32: remove ioremap_base
+  powerpc/8xx: Add missing SPRN defines into reg_8xx.h
+  powerpc/8xx: Handle CPU6 ERRATA directly in mtspr() macro
+  powerpc/8xx: remove special handling of CPU6 errata in set_dec()
+  powerpc/8xx: rewrite set_context() in C
+  powerpc/8xx: rewrite flush_instruction_cache() in C
+  powerpc: add inline functions for cache related instructions
+  powerpc32: Remove clear_pages() and define clear_page() inline
+  powerpc32: move xxxxx_dcache_range() functions inline
+  powerpc: Simplify test in __dma_sync()
+  powerpc32: small optimisation in flush_icache_range()
+  powerpc32: Remove one insn in mulhdu
+
+ Documentation/kernel-parameters.txt         |   2 +-
+ arch/powerpc/Kconfig.debug                  |   1 -
+ arch/powerpc/include/asm/cache.h            |  19 +++
+ arch/powerpc/include/asm/cacheflush.h       |  52 ++++++-
+ arch/powerpc/include/asm/fixmap.h           |  14 ++
+ arch/powerpc/include/asm/mmu-8xx.h          |   4 +-
+ arch/powerpc/include/asm/page_32.h          |  17 ++-
+ arch/powerpc/include/asm/pgtable-ppc32.h    |   5 +-
+ arch/powerpc/include/asm/reg.h              |   2 +
+ arch/powerpc/include/asm/reg_8xx.h          |  93 +++++++++++++
+ arch/powerpc/include/asm/time.h             |   6 +-
+ arch/powerpc/kernel/asm-offsets.c           |   8 ++
+ arch/powerpc/kernel/head_8xx.S              | 207 +++++++++++++++++-----------
+ arch/powerpc/kernel/misc_32.S               | 107 ++------------
+ arch/powerpc/kernel/ppc_ksyms.c             |   2 +
+ arch/powerpc/kernel/ppc_ksyms_32.c          |   1 -
+ arch/powerpc/mm/8xx_mmu.c                   | 190 +++++++++++++++++++++++++
+ arch/powerpc/mm/Makefile                    |   1 +
+ arch/powerpc/mm/dma-noncoherent.c           |   2 +-
+ arch/powerpc/mm/fsl_booke_mmu.c             |   4 +-
+ arch/powerpc/mm/init_32.c                   |  23 ----
+ arch/powerpc/mm/mmu_decl.h                  |  34 +++--
+ arch/powerpc/mm/pgtable_32.c                |  47 +------
+ arch/powerpc/mm/ppc_mmu_32.c                |   4 +-
+ arch/powerpc/platforms/embedded6xx/mpc10x.h |  10 --
+ arch/powerpc/sysdev/cpm_common.c            |  15 +-
+ 26 files changed, 583 insertions(+), 287 deletions(-)
+ create mode 100644 arch/powerpc/mm/8xx_mmu.c
+
 -- 
 2.1.0
