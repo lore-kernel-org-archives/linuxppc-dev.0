@@ -1,26 +1,26 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 797511A0297
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 12:38:16 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5996A1A09E4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 12:39:15 +1100 (AEDT)
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 17 Nov 2015 11:38:16 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 50FE72CE805F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 12:38:12 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAH1bmLo34275364
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 12:37:56 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAH1bc7M020928
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 12:37:39 +1100
-Date: Tue, 17 Nov 2015 12:37:14 +1100
+ Tue, 17 Nov 2015 11:39:14 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 253002CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 12:39:11 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAH1cuLm32374916
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 12:39:04 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAH1cbLt013756
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 12:38:38 +1100
+Date: Tue, 17 Nov 2015 12:38:13 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
@@ -29,14 +29,14 @@ Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, frowand.list@gmail.com
 Subject: Re: [PATCH v7 14/50] powerpc/powernv: M64 support on P7IOC
-Message-ID: <20151117013713.GA31584@gwshan>
+Message-ID: <20151117013813.GB31584@gwshan>
 Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
  <1446642770-4681-15-git-send-email-gwshan@linux.vnet.ibm.com>
- <56498D6A.7010905@ozlabs.ru>
+ <56498D7B.7000307@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <56498D6A.7010905@ozlabs.ru>
+In-Reply-To: <56498D7B.7000307@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,7 +46,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 16, 2015 at 07:01:46PM +1100, Alexey Kardashevskiy wrote:
+On Mon, Nov 16, 2015 at 07:02:03PM +1100, Alexey Kardashevskiy wrote:
 >On 11/05/2015 12:12 AM, Gavin Shan wrote:
 >>This enables M64 window on P7IOC, which has been enabled on PHB3.
 >>Different from PHB3 where 16 M64 BARs are supported and each of
@@ -116,6 +116,14 @@ On Mon, Nov 16, 2015 at 07:01:46PM +1100, Alexey Kardashevskiy wrote:
 >>+	 * is expected to be 0 or last supported PE#.
 >>+	 */
 >>+	r = &phb->hose->mem_resources[1];
+>
+>
+>What does "1" mean here? A bridge's 64bit prefetchable window?
+>
+
+It's PHB's M64 window.
+
+>
 >>+	if (phb->ioda.reserved_pe_idx == 0)
 >>+		r->start += phb->ioda.m64_segsize;
 >>+	else if (phb->ioda.reserved_pe_idx == (phb->ioda.total_pe_num - 1))
@@ -124,95 +132,6 @@ On Mon, Nov 16, 2015 at 07:01:46PM +1100, Alexey Kardashevskiy wrote:
 >>+		pr_warn("  Cannot cut M64 segment for reserved PE#%d\n",
 >>+			phb->ioda.reserved_pe_idx);
 >>+
->>+	return 0;
->>+
->>+fail:
->>+	for ( ; index >= 0; index--)
->>+		opal_pci_phb_mmio_enable(phb->opal_id,
->>+			OPAL_M64_WINDOW_TYPE, index, OPAL_DISABLE_M64);
->>+
->>+	return -EIO;
->>+}
->>+
->>  static void pnv_ioda_reserve_m64_pe(struct pci_bus *bus,
->>  				    unsigned long *pe_bitmap,
->>  				    bool all)
->>@@ -325,6 +383,26 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->>  			pe->master = master_pe;
->>  			list_add_tail(&pe->list, &master_pe->slaves);
->>  		}
->>+
->>+		/*
->>+		 * P7IOC supports M64DT, which helps mapping M64 segment
->>+		 * to one particular PE#. However, PHB3 has fixed mapping
->>+		 * between M64 segment and PE#. In order to have same logic
->>+		 * for P7IOC and PHB3, we enforce fixed mapping between M64
->>+		 * segment and PE# on P7IOC.
->>+		 */
->>+		if (phb->type == PNV_PHB_IODA1) {
->>+			int64_t rc;
->>+
->>+			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
->>+					pe->pe_number, OPAL_M64_WINDOW_TYPE,
->>+					pe->pe_number / PNV_IODA1_M64_SEGS,
->>+					pe->pe_number % PNV_IODA1_M64_SEGS);
->>+			if (rc != OPAL_SUCCESS)
->>+				pr_warn("%s: Error %lld mapping M64 for PHB#%d-PE#%d\n",
->>+					__func__, rc, phb->hose->global_number,
->>+					pe->pe_number);
->>+		}
->>  	}
->>
->>  	kfree(pe_alloc);
->>@@ -339,8 +417,7 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
->>  	const u32 *r;
->>  	u64 pci_addr;
->>
->>-	/* FIXME: Support M64 for P7IOC */
->>-	if (phb->type != PNV_PHB_IODA2) {
->>+	if (phb->type != PNV_PHB_IODA1 && phb->type != PNV_PHB_IODA2) {
->>  		pr_info("  Not support M64 window\n");
->>  		return;
->>  	}
->>@@ -373,7 +450,10 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
->>
->>  	/* Use last M64 BAR to cover M64 window */
->>  	phb->ioda.m64_bar_idx = 15;
->>-	phb->init_m64 = pnv_ioda2_init_m64;
->>+	if (phb->type == PNV_PHB_IODA1)
->>+		phb->init_m64 = pnv_ioda1_init_m64;
->>+	else
->>+		phb->init_m64 = pnv_ioda2_init_m64;
->>  	phb->reserve_m64_pe = pnv_ioda_reserve_m64_pe;
->>  	phb->pick_m64_pe = pnv_ioda_pick_m64_pe;
->
->
->Nit: the callbacks initialization does not seem to relate to parsing any
->window :) They could all go to where pnv_ioda_parse_m64_window() is called,
->no separate patch is needed.
->
-
-Well, what's the benifit for that? I personally prefer the way I had: initialize
-all callbacks in one place, not in separate places. However, if you have good
-reason to support your suggestion, I'll change accordingly for sure.
-
->
->>  }
->>diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
->>index 671fd13..c4019ac 100644
->>--- a/arch/powerpc/platforms/powernv/pci.h
->>+++ b/arch/powerpc/platforms/powernv/pci.h
->>@@ -78,6 +78,9 @@ struct pnv_ioda_pe {
->>  	struct list_head	list;
->>  };
->>
->>+#define PNV_IODA1_M64_NUM	16	/* Number of M64 BARs   */
->>+#define PNV_IODA1_M64_SEGS	8	/* Segments per M64 BAR */
->>+
->>  #define PNV_PHB_FLAG_EEH	(1 << 0)
->>
->>  struct pnv_phb {
->>
 
 Thanks,
 Gavin
