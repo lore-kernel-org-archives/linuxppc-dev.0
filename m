@@ -1,28 +1,27 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-x235.google.com (mail-pa0-x235.google.com
+ [IPv6:2607:f8b0:400e:c03::235])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49D321A0404
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 11:31:03 +1100 (AEDT)
-Received: by pabfh17 with SMTP id fh17so194394031pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 16:31:01 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 54F7E1A02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 12:07:26 +1100 (AEDT)
+Received: by padhx2 with SMTP id hx2so192375173pad.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 17:07:24 -0800 (PST)
+Subject: Re: [PATCH v7 17/50] powerpc/powernv: Avoid calculating DMA32
+ segments on PHB3
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
- bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
- panto@antoniou-consulting.com, frowand.list@gmail.com,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 22/50] powerpc/powernv: Introduce pnv_ioda_init_pe()
-In-Reply-To: <1446642770-4681-23-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-23-git-send-email-gwshan@linux.vnet.ibm.com>
-Date: Tue, 17 Nov 2015 11:30:49 +1100
-Message-ID: <87wpthbh6u.fsf@gamma.ozlabs.ibm.com>
+ <1446642770-4681-18-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, bhelgaas@google.com,
+ grant.likely@linaro.org, robherring2@gmail.com,
+ panto@antoniou-consulting.com, frowand.list@gmail.com
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <564A7DC5.5060702@ozlabs.ru>
+Date: Tue, 17 Nov 2015 12:07:17 +1100
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+In-Reply-To: <1446642770-4681-18-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,83 +31,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On 11/05/2015 12:12 AM, Gavin Shan wrote:
+> In pnv_ioda_setup_dma(), it's unnecessary to calculate the DMA32
+> segments for PEs on PHB3 as the whole available DMA32 space can
+> be assigned to one specific PE on PHB3.
+>
+> This splits pnv_ioda_setup_dma() to pnv_pci_ioda1_setup_dma() and
+> pnv_pci_ioda2_setup_dma() in order to avoid calculating DMA32
+> segments for PEs on PHB3. No logical changes introduced.
 
-Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
 
-> This introduces pnv_ioda_init_pe() to initialize the specified PE
-> instance (phb->ioda.pe_array[x]). It's used by pnv_ioda_alloc_pe()
-> and pnv_ioda_reserve_pe(). No logical changes introduced.
+This patch is not needed as
+
+[PATCH v7 20/50] powerpc/powernv: Improve DMA32 segment calculation
+
+moves this calculation to another place (which already makes this patch 
+unnecessary) and
+
+[PATCH v7 26/50] powerpc/powernv: Create PEs at PCI hot plugging time
+
+removes just introduced pnv_pci_ioda1_setup_dma() - if you remove it, then 
+there is no point in fixing it in the first place.
+
 >
 > Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 14 ++++++++++----
->  1 file changed, 10 insertions(+), 4 deletions(-)
+>   arch/powerpc/platforms/powernv/pci-ioda.c | 41 ++++++++++++++++++-------------
+>   1 file changed, 24 insertions(+), 17 deletions(-)
 >
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
-tforms/powernv/pci-ioda.c
-> index ef93a01..488e0f8 100644
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 5a08e20..4c2e023 100644
 > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -129,6 +129,14 @@ static inline bool pnv_pci_is_mem_pref_64(unsigned l=
-ong flags)
->  		(IORESOURCE_MEM_64 | IORESOURCE_PREFETCH));
->  }
->=20=20
-> +static struct pnv_ioda_pe *pnv_ioda_init_pe(struct pnv_phb *phb, int pe_=
-no)
+> @@ -2383,7 +2383,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>   		pnv_ioda_setup_bus_dma(pe, pe->pbus);
+>   }
+>
+> -static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+> +static void pnv_pci_ioda1_setup_dma(struct pnv_phb *phb)
+>   {
+>   	struct pci_controller *hose = phb->hose;
+>   	unsigned int residual, remaining, segs, tw, base;
+> @@ -2428,26 +2428,30 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+>   				segs = remaining;
+>   		}
+>
+> -		/*
+> -		 * For IODA2 compliant PHB3, we needn't care about the weight.
+> -		 * The all available 32-bits DMA space will be assigned to
+> -		 * the specific PE.
+> -		 */
+> -		if (phb->type == PNV_PHB_IODA1) {
+> -			pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
+> -				pe->dma_weight, segs);
+> -			pnv_pci_ioda1_setup_dma_pe(phb, pe, base, segs);
+> -		} else {
+> -			pe_info(pe, "Assign DMA32 space\n");
+> -			segs = 0;
+> -			pnv_pci_ioda2_setup_dma_pe(phb, pe);
+> -		}
+> +		pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
+> +			pe->dma_weight, segs);
+> +		pnv_pci_ioda1_setup_dma_pe(phb, pe, base, segs);
+>
+>   		remaining -= segs;
+>   		base += segs;
+>   	}
+>   }
+>
+> +static void pnv_pci_ioda2_setup_dma(struct pnv_phb *phb)
 > +{
-> +	phb->ioda.pe_array[pe_no].phb =3D phb;
-> +	phb->ioda.pe_array[pe_no].pe_number =3D pe_no;
+> +	struct pnv_ioda_pe *pe;
 > +
-> +	return &phb->ioda.pe_array[pe_no];
-You have the function returning the newly initalized PE here...
-
+> +	pnv_pci_ioda_setup_opal_tce_kill(phb);
+> +
+> +	list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
+> +		if (!pe->dma_weight)
+> +			continue;
+> +
+> +		pe_info(pe, "Assign DMA32 space\n");
+> +		pnv_pci_ioda2_setup_dma_pe(phb, pe);
+> +	}
 > +}
 > +
->  static void pnv_ioda_reserve_pe(struct pnv_phb *phb, int pe_no)
->  {
->  	if (!(pe_no >=3D 0 && pe_no < phb->ioda.total_pe_num)) {
-> @@ -141,8 +149,7 @@ static void pnv_ioda_reserve_pe(struct pnv_phb *phb, =
-int pe_no)
->  		pr_debug("%s: PE %d was reserved on PHB#%x\n",
->  			 __func__, pe_no, phb->hose->global_number);
->=20=20
-> -	phb->ioda.pe_array[pe_no].phb =3D phb;
-> -	phb->ioda.pe_array[pe_no].pe_number =3D pe_no;
-> +	pnv_ioda_init_pe(phb, pe_no);
-... but then you ignore the result here and in the other function you've
-modified.
+>   #ifdef CONFIG_PCI_MSI
+>   static void pnv_ioda2_msi_eoi(struct irq_data *d)
+>   {
+> @@ -2931,10 +2935,13 @@ static void pnv_pci_ioda_setup_DMA(void)
+>   	struct pnv_phb *phb;
+>
+>   	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+> -		pnv_ioda_setup_dma(hose->private_data);
+> +		phb = hose->private_data;
+> +		if (phb->type == PNV_PHB_IODA1)
+> +			pnv_pci_ioda1_setup_dma(phb);
+> +		else
+> +			pnv_pci_ioda2_setup_dma(phb);
+>
+>   		/* Mark the PHB initialization done */
+> -		phb = hose->private_data;
+>   		phb->initialized = 1;
+>   	}
+>   }
+>
 
-It looks like you're using the result in the next patch though, so I
-wonder if you would be better to merge this patch with the next
-one. However, as I said before I'll defer to Alexey on decisions about
-how to split the patch series if he has a different opinion.
 
-Regards,
-Daniel
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAEBCgAGBQJWSnU5AAoJEPC3R3P2I92FoQYP/RyPK8sKCfwmjcdRe7vr+o+y
-aT6YLYeZ1HFfwO6tOLxwo0C8oBHbY0P5L1l5BuMB0fxW7J0n/nYhan1mEqNAlsrh
-k2YXRT6CT7UZPZ8gaHtefYA5Z78WnHYr02aFydqg7klJVj2seV3ZcBlsHj74XwJ2
-Aqdytc7aJ9YPZrZpAWz+GFol705t+f8P9TQwyurEyI6oDW8RWSEp1DBPdhQWdXnK
-ngJo3QMS1BwA3v7aeYqrykM7G2MIBsTVkWdYC8VRpZbz7v1s7fmpsl1Y8K54AsHP
-5zfJQzh7Je7EvmhbbO2uphXCWUNVVIoEtm+Wcs1nRSzJ+F9vnjte6PkQh+gIcK9y
-0tUpV4EWk8SMZngrW6dDrs38unS0sZqj+9ElqGSKdyqb65SpgAVyV5rZpMidlIJE
-FPylauU29ijvywDEYPjV3CZ/oZQ3psqKbpzPuv4xG/8McWfkPoVtldWp3N8rF+qs
-M2vQVxNVf9tXczpfhTYy53LFn4Xs/7bchlwwmGuXjgsB4n+oM2ZfSlOLbmd+RG4J
-87bRBV4xVJZL5HyZYqJwTqf5BRW1NYr44qlRv/OKjB7Y1r6mSc3G8bxySLAYhdxQ
-Zhn7qZXX7CsEKeRvUTjrdXcSdgpjz85Qb0VEvEG2LjdBHwxPQf/WovRUpLTz4Tx3
-XVFOTZ1dzEJLmU+eBp4v
-=nTkJ
------END PGP SIGNATURE-----
---=-=-=--
+-- 
+Alexey
