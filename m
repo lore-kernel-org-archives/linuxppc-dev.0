@@ -1,27 +1,17 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
- [IPv6:2607:f8b0:400e:c03::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4826D1A0352
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 18:57:29 +1100 (AEDT)
-Received: by padhx2 with SMTP id hx2so1300237pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 23:57:27 -0800 (PST)
-Subject: Re: [PATCH v7 26/50] powerpc/powernv: Create PEs at PCI hot plugging
- time
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-27-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, bhelgaas@google.com,
- grant.likely@linaro.org, robherring2@gmail.com,
- panto@antoniou-consulting.com, frowand.list@gmail.com
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <564ADDE0.8030904@ozlabs.ru>
-Date: Tue, 17 Nov 2015 18:57:20 +1100
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3F2861A036D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 19:33:07 +1100 (AEDT)
+Date: Tue, 17 Nov 2015 16:31:57 +0800
+From: kbuild test robot <fengguang.wu@intel.com>
+To: Joseph Myers <joseph@codesourcery.com>
+Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:test 7/8] include/math-emu/quad.h:72:1: error: unable to
+ emulate 'TF'
+Message-ID: <201511171656.yqpXMbFx%fengguang.wu@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <1446642770-4681-27-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+Content-Type: multipart/mixed; boundary="Kj7319i9nmIyA2yE"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,412 +21,261 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/05/2015 12:12 AM, Gavin Shan wrote:
-> Currently, the PEs and their associated resources are assigned
-> in ppc_md.pcibios_fixup() except those used by SRIOV VFs. The
-> function is called for once after PCI probing and resources
-> assignment is completed. So it isn't hotplug friendly.
->
-> This creates PEs dynamically by ppc_md.pcibios_setup_bridge(), which
-> is called on the event during system bootup and PCI hotplug: updating
-> PCI bridge's windows after resource assignment/reassignment are done.
-> For partial hotplug case, where not all PCI devices belonging to the
-> PE are unplugged and plugged again, we just need unbinding/binding
-> the affected PCI devices with the corresponding PE without creating
-> new one.
->
-> As there is no upstream bridge for root bus that needs to be covered
-> by PE,
 
+--Kj7319i9nmIyA2yE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Does "that needs" part relate to a root bus or a an upstream bridge?
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git test
+head:   e37d8480fbd6b9ad3665ac85a903098413ba67ae
+commit: 71fa67f178c6c3c338d0b99644bce808f2f0965e [7/8] sparc/math-emu: Move sparc from math-emu-old to math-emu
+config: sparc-defconfig (attached as .config)
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout 71fa67f178c6c3c338d0b99644bce808f2f0965e
+        # save the attached .config to linux build tree
+        make.cross ARCH=sparc 
 
+All errors (new ones prefixed by >>):
 
-> we have to create PE for root bus in ppc_md.pcibios_setup_bridge()
-> before any other PEs can be created, as PE for root bus is the ancestor
-> to anyone else.
->
-> On the other hand, the windows of root port or the upstream port
+   In file included from arch/sparc/math-emu/math_32.c:77:0:
+>> include/math-emu/quad.h:72:1: error: unable to emulate 'TF'
+    typedef float TFtype __attribute__ ((mode (TF)));
+    ^
 
-s/On the other hand, /Also/ ?
+vim +/TF +72 include/math-emu/quad.h
 
-> of PCIe switch behind root port are extended to be PHB's aperatuses
+1cfc9bbc Joseph Myers 2015-07-02  66  
+1cfc9bbc Joseph Myers 2015-07-02  67  #define _FP_WFRACBITS_DW_Q	(2 * _FP_WFRACBITS_Q)
+1cfc9bbc Joseph Myers 2015-07-02  68  #define _FP_WFRACXBITS_DW_Q	(_FP_FRACTBITS_DW_Q - _FP_WFRACBITS_DW_Q)
+1cfc9bbc Joseph Myers 2015-07-02  69  #define _FP_HIGHBIT_DW_Q	\
+1cfc9bbc Joseph Myers 2015-07-02  70    ((_FP_W_TYPE) 1 << (_FP_WFRACBITS_DW_Q - 1) % _FP_W_TYPE_SIZE)
+1cfc9bbc Joseph Myers 2015-07-02  71  
+1cfc9bbc Joseph Myers 2015-07-02 @72  typedef float TFtype __attribute__ ((mode (TF)));
+1cfc9bbc Joseph Myers 2015-07-02  73  
+1cfc9bbc Joseph Myers 2015-07-02  74  #if _FP_W_TYPE_SIZE < 64
+1cfc9bbc Joseph Myers 2015-07-02  75  
 
-apertures?
+:::::: The code at line 72 was first introduced by commit
+:::::: 1cfc9bbc846fd16e9522bf2b5203e696920cf2c6 math-emu: Import current glibc soft-fp as include/math-emu
 
+:::::: TO: Joseph Myers <joseph@codesourcery.com>
+:::::: CC: Michael Ellerman <mpe@ellerman.id.au>
 
-> to accommodate the additonal resources needed by newly plugged devices
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
-s/additonal/additional
+--Kj7319i9nmIyA2yE
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
 
+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
 
-> based on the fact: hotpluggable slot is behind root port or downstream
-> port of the PCIe switch behind root port. The extension for those
-> PCI brdiges' windows is done in ppc_md.pcibios_setup_bridge() as
-> well.
-
-
-I find it quite difficult to separate "cut-n-paste" changes from functional 
-changes... May be it is just me.
-I would suggest splitting this patch into several. First define the 
-setup_bridge() callback, then rework pnv_pci_ioda_setup_PEs(),
-pnv_pci_ioda_setup_seg(), pnv_pci_ioda_setup_DMA(), and then add "partial 
-hotplug" handling may be.
-
-Or just get "reviewed-by" from Ben :)
-
-
->
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/platforms/powernv/pci-ioda.c | 240 +++++++++++++++++-------------
->   arch/powerpc/platforms/powernv/pci.h      |   1 +
->   2 files changed, 138 insertions(+), 103 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 5e6745f..0bb0056 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -975,6 +975,15 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
->   				pci_name(dev));
->   			continue;
->   		}
-> +
-> +		/*
-> +		 * In partial hotplug case, the PCI device might be still
-> +		 * associated with the PE and needn't be attached to the
-> +		 * PE again.
-> +		 */
-> +		if (pdn->pe_number != IODA_INVALID_PE)
-> +			continue;
-> +
->   		pdn->pe_number = pe->pe_number;
->   		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
->   			pnv_ioda_setup_same_PE(dev->subordinate, pe);
-> @@ -992,9 +1001,26 @@ static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
->   	struct pci_controller *hose = pci_bus_to_host(bus);
->   	struct pnv_phb *phb = hose->private_data;
->   	struct pnv_ioda_pe *pe = NULL;
-> +	int pe_num;
-> +
-> +	/*
-> +	 * In partial hotplug case, the PE instance might be still alive.
-> +	 * We should reuse it instead of allocating a new one.
-> +	 */
-> +	pe_num = phb->ioda.pe_rmap[bus->number << 8];
-> +	if (pe_num != IODA_INVALID_PE) {
-> +		pe = &phb->ioda.pe_array[pe_num];
-> +		pnv_ioda_setup_same_PE(bus, pe);
-> +		return NULL;
-> +	}
-> +
-> +	/* PE number for root bus should have been reserved */
-> +	if (pci_is_root_bus(bus) &&
-> +	    phb->ioda.root_pe_idx != IODA_INVALID_PE)
-> +		pe = &phb->ioda.pe_array[phb->ioda.root_pe_idx];
->
->   	/* Check if PE is determined by M64 */
-> -	if (phb->pick_m64_pe)
-> +	if (!pe && phb->pick_m64_pe)
->   		pe = phb->pick_m64_pe(bus, all);
->
->   	/* The PE number isn't pinned by M64 */
-> @@ -1036,46 +1062,6 @@ static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
->   	return pe;
->   }
->
-> -static void pnv_ioda_setup_PEs(struct pci_bus *bus)
-> -{
-> -	struct pci_dev *dev;
-> -
-> -	pnv_ioda_setup_bus_PE(bus, false);
-> -
-> -	list_for_each_entry(dev, &bus->devices, bus_list) {
-> -		if (dev->subordinate) {
-> -			if (pci_pcie_type(dev) == PCI_EXP_TYPE_PCI_BRIDGE)
-> -				pnv_ioda_setup_bus_PE(dev->subordinate, true);
-> -			else
-> -				pnv_ioda_setup_PEs(dev->subordinate);
-> -		}
-> -	}
-> -}
-> -
-> -/*
-> - * Configure PEs so that the downstream PCI buses and devices
-> - * could have their associated PE#. Unfortunately, we didn't
-> - * figure out the way to identify the PLX bridge yet. So we
-> - * simply put the PCI bus and the subordinate behind the root
-> - * port to PE# here. The game rule here is expected to be changed
-> - * as soon as we can detected PLX bridge correctly.
-> - */
-> -static void pnv_pci_ioda_setup_PEs(void)
-> -{
-> -	struct pci_controller *hose, *tmp;
-> -	struct pnv_phb *phb;
-> -
-> -	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-> -		phb = hose->private_data;
-> -
-> -		/* M64 layout might affect PE allocation */
-> -		if (phb->reserve_m64_pe)
-> -			phb->reserve_m64_pe(hose->bus, NULL, true);
-> -
-> -		pnv_ioda_setup_PEs(hose->bus);
-> -	}
-> -}
-> -
->   #ifdef CONFIG_PCI_IOV
->   static int pnv_pci_vf_release_m64(struct pci_dev *pdev, u16 num_vfs)
->   {
-> @@ -2391,8 +2377,13 @@ static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl)
->   static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
->   				       struct pnv_ioda_pe *pe)
->   {
-> +	unsigned int weight;
->   	int64_t rc;
->
-> +	weight = pnv_pci_ioda_pe_dma_weight(pe);
-> +	if (!weight)
-> +		return;
-> +
->   	/* TVE #1 is selected by PCI address bit 59 */
->   	pe->tce_bypass_base = 1ull << 59;
->
-> @@ -2424,33 +2415,6 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
->   		pnv_ioda_setup_bus_dma(pe, pe->pbus);
->   }
->
-> -static void pnv_pci_ioda1_setup_dma(struct pnv_phb *phb)
-> -{
-> -	struct pnv_ioda_pe *pe;
-> -
-> -	pnv_pci_ioda_setup_opal_tce_kill(phb);
-> -
-> -	list_for_each_entry(pe, &phb->ioda.pe_list, list)
-> -		pnv_pci_ioda1_setup_dma_pe(phb, pe);
-> -}
-> -
-> -static void pnv_pci_ioda2_setup_dma(struct pnv_phb *phb)
-> -{
-> -	struct pnv_ioda_pe *pe;
-> -	unsigned int weight;
-> -
-> -	pnv_pci_ioda_setup_opal_tce_kill(phb);
-> -
-> -	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
-> -		weight = pnv_pci_ioda_pe_dma_weight(pe);
-> -		if (!weight)
-> -			continue;
-> -
-> -		pe_info(pe, "Assign DMA32 space\n");
-> -		pnv_pci_ioda2_setup_dma_pe(phb, pe);
-> -	}
-> -}
-> -
->   #ifdef CONFIG_PCI_MSI
->   static void pnv_ioda2_msi_eoi(struct irq_data *d)
->   {
-> @@ -2914,37 +2878,6 @@ static void pnv_ioda_setup_pe_seg(struct pnv_ioda_pe *pe)
->   	}
->   }
->
-> -static void pnv_pci_ioda_setup_seg(void)
-> -{
-> -	struct pci_controller *tmp, *hose;
-> -	struct pnv_phb *phb;
-> -	struct pnv_ioda_pe *pe;
-> -
-> -	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-> -		phb = hose->private_data;
-> -		list_for_each_entry(pe, &phb->ioda.pe_list, list) {
-> -			pnv_ioda_setup_pe_seg(pe);
-> -		}
-> -	}
-> -}
-> -
-> -static void pnv_pci_ioda_setup_DMA(void)
-> -{
-> -	struct pci_controller *hose, *tmp;
-> -	struct pnv_phb *phb;
-> -
-> -	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-> -		phb = hose->private_data;
-> -		if (phb->type == PNV_PHB_IODA1)
-> -			pnv_pci_ioda1_setup_dma(phb);
-> -		else
-> -			pnv_pci_ioda2_setup_dma(phb);
-> -
-> -		/* Mark the PHB initialization done */
-> -		phb->initialized = 1;
-> -	}
-> -}
-> -
->   static void pnv_pci_ioda_create_dbgfs(void)
->   {
->   #ifdef CONFIG_DEBUG_FS
-> @@ -2955,6 +2888,9 @@ static void pnv_pci_ioda_create_dbgfs(void)
->   	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
->   		phb = hose->private_data;
->
-> +		/* Notify initialization of PHB done */
-> +		phb->initialized = 1;
-> +
->   		sprintf(name, "PCI%04x", hose->global_number);
->   		phb->dbgfs = debugfs_create_dir(name, powerpc_debugfs_root);
->   		if (!phb->dbgfs)
-> @@ -2966,10 +2902,6 @@ static void pnv_pci_ioda_create_dbgfs(void)
->
->   static void pnv_pci_ioda_fixup(void)
->   {
-> -	pnv_pci_ioda_setup_PEs();
-> -	pnv_pci_ioda_setup_seg();
-> -	pnv_pci_ioda_setup_DMA();
-> -
->   	pnv_pci_ioda_create_dbgfs();
->
->   #ifdef CONFIG_EEH
-> @@ -3019,6 +2951,104 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
->   	return phb->ioda.io_segsize;
->   }
->
-> +/*
-> + * We are updating root port or the upstream port of the
-> + * bridge behind the root port with PHB's windows in order
-> + * to accommodate the changes on required resources during
-> + * PCI (slot) hotplug, which is connected to either root
-> + * port or the downstream ports of PCIe switch behind the
-> + * root port.
-> + */
-> +static void pnv_pci_fixup_bridge_resources(struct pci_bus *bus,
-> +					   unsigned long type)
-> +{
-> +	struct pci_controller *hose = pci_bus_to_host(bus);
-> +	struct pnv_phb *phb = hose->private_data;
-> +	struct pci_dev *bridge = bus->self;
-> +	struct resource *r, *w;
-> +	int i;
-> +
-> +	/* Check if we need apply fixup to the bridge's windows */
-> +	if (!pci_is_root_bus(bridge->bus) &&
-> +	    !pci_is_root_bus(bridge->bus->self->bus))
-> +		return;
-> +
-> +	/* Fixup the resoureces */
-
-
-s/resoureces/resources/
-
-
-> +	for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; i++) {
-> +		r = &bridge->resource[PCI_BRIDGE_RESOURCES + i];
-> +		if (!r->flags || !r->parent)
-> +			continue;
-> +
-> +		w = NULL;
-> +		if (r->flags & type & IORESOURCE_IO)
-> +			w = &hose->io_resource;
-> +		else if (pnv_pci_is_mem_pref_64(r->flags) &&
-> +			 (type & IORESOURCE_PREFETCH) &&
-> +			 phb->ioda.m64_segsize)
-> +			w = &hose->mem_resources[1];
-> +		else if (r->flags & type & IORESOURCE_MEM)
-> +			w = &hose->mem_resources[0];
-> +
-> +		r->start = w->start;
-> +		r->end = w->end;
-> +	}
-> +}
-> +
-> +static void pnv_pci_setup_bridge(struct pci_bus *bus,
-> +				 unsigned long type)
-> +{
-> +	struct pci_controller *hose = pci_bus_to_host(bus);
-> +	struct pnv_phb *phb = hose->private_data;
-> +	struct pci_dev *bridge = bus->self;
-> +	struct pnv_ioda_pe *pe;
-> +	bool all = (pci_pcie_type(bridge) == PCI_EXP_TYPE_PCI_BRIDGE);
-> +
-> +	 /* The PE for root bus should be realized before any one else */
-> +	if (!phb->ioda.root_pe_populated) {
-> +		pe = pnv_ioda_setup_bus_PE(phb->hose->bus, false);
-> +		if (pe) {
-> +			phb->ioda.root_pe_idx = pe->pe_number;
-> +			phb->ioda.root_pe_populated = true;
-> +		}
-> +	}
-> +
-> +	/* Extend bridge's windows if necessary */
-> +	pnv_pci_fixup_bridge_resources(bus, type);
-> +
-> +	/* Don't assign PE to PCI bus, which doesn't have subordinate devices */
-> +	if (list_empty(&bus->devices))
-> +		return;
-> +
-> +	/* Reserve PEs according to used M64 resources */
-> +	if (phb->reserve_m64_pe)
-> +		phb->reserve_m64_pe(bus, NULL, all);
-> +
-> +	/*
-> +	 * Assign PE. We might run here because of partial hotplug.
-> +	 * For the case, we just pick up the existing PE and should
-> +	 * not allocate resources again.
-> +	 */
-> +	pe = pnv_ioda_setup_bus_PE(bus, all);
-> +	if (!pe)
-> +		return;
-> +
-> +	/* Setup MMIO mapping */
-> +	pnv_ioda_setup_pe_seg(pe);
-> +
-> +	/* Setup DMA */
-> +	switch (phb->type) {
-> +	case PNV_PHB_IODA1:
-> +		pnv_pci_ioda1_setup_dma_pe(phb, pe);
-> +		break;
-> +	case PNV_PHB_IODA2:
-> +		pnv_pci_ioda2_setup_dma_pe(phb, pe);
-> +		break;
-> +	default:
-> +		pr_warn("%s: No DMA for PHB#%d (type %d)\n",
-> +			__func__, phb->hose->global_number, phb->type);
-> +	}
-> +}
-> +
->   #ifdef CONFIG_PCI_IOV
->   static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
->   						      int resno)
-> @@ -3095,6 +3125,7 @@ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
->   #endif
->   	.enable_device_hook	= pnv_pci_enable_device_hook,
->   	.window_alignment	= pnv_pci_window_alignment,
-> +	.setup_bridge		= pnv_pci_setup_bridge,
->   	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
->   	.dma_set_mask		= pnv_pci_ioda_dma_set_mask,
->   	.dma_get_required_mask	= pnv_pci_ioda_dma_get_required_mask,
-> @@ -3168,6 +3199,9 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
->   	if (phb->regs == NULL)
->   		pr_err("  Failed to map registers !\n");
->
-> +	/* Initialize TCE kill register */
-> +	pnv_pci_ioda_setup_opal_tce_kill(phb);
-> +
->   	/* Initialize more IODA stuff */
->   	phb->ioda.total_pe_num = 1;
->   	prop32 = of_get_property(np, "ibm,opal-num-pes", NULL);
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> index a8ba97f..ef5271a 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -121,6 +121,7 @@ struct pnv_phb {
->   			unsigned int		total_pe_num;
->   			unsigned int		reserved_pe_idx;
->   			unsigned int		root_pe_idx;
-> +			bool			root_pe_populated;
->
->   			/* 32-bit MMIO window */
->   			unsigned int		m32_size;
->
-
-
--- 
-Alexey
+--Kj7319i9nmIyA2yE--
