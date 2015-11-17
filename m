@@ -1,18 +1,17 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 027861A03C6
+ by lists.ozlabs.org (Postfix) with ESMTP id B226F1A03BB
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 01:02:17 +1100 (AEDT)
-Message-Id: <5b257251370946b58107f6d338a05fe966671934.1446893430.git.christophe.leroy@c-s.fr>
+Message-Id: <1185708af6cc237ced3ea854da49d9b149c1c6a7.1446893433.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1446893426.git.christophe.leroy@c-s.fr>
 References: <cover.1446893426.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 06/23] powerpc32: refactor x_mapped_by_bats() and
- x_mapped_by_tlbcam() together
+Subject: [PATCH v3 20/23] powerpc32: move xxxxx_dcache_range() functions inline
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 17 Nov 2015 14:32:11 +0100 (CET)
+Date: Tue, 17 Nov 2015 14:32:40 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,162 +21,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-x_mapped_by_bats() and x_mapped_by_tlbcam() serve the same kind of
-purpose, and are never defined at the same time.
-So rename them x_block_mapped() and define them in the relevant
-places
+flush/clean/invalidate _dcache_range() functions are all very
+similar and are quite short. They are mainly used in __dma_sync()
+perf_event locate them in the top 3 consumming functions during
+heavy ethernet activity
+
+They are good candidate for inlining, as __dma_sync() does
+almost nothing but calling them
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v2: no change
-v3: Functions are mutually exclusive so renamed iaw Scott comment instead of grouping into a single function
+v2: new
+v3: no change
 
- arch/powerpc/mm/fsl_booke_mmu.c |  4 ++--
- arch/powerpc/mm/mmu_decl.h      | 10 ++++++++++
- arch/powerpc/mm/pgtable_32.c    | 44 ++++++-----------------------------------
- arch/powerpc/mm/ppc_mmu_32.c    |  4 ++--
- 4 files changed, 20 insertions(+), 42 deletions(-)
+ arch/powerpc/include/asm/cacheflush.h | 52 ++++++++++++++++++++++++++--
+ arch/powerpc/kernel/misc_32.S         | 65 -----------------------------------
+ arch/powerpc/kernel/ppc_ksyms.c       |  2 ++
+ 3 files changed, 51 insertions(+), 68 deletions(-)
 
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index f3afe3d..5d45341 100644
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -75,7 +75,7 @@ unsigned long tlbcam_sz(int idx)
- /*
-  * Return PA for this VA if it is mapped by a CAM, or 0
-  */
--phys_addr_t v_mapped_by_tlbcam(unsigned long va)
-+phys_addr_t v_block_mapped(unsigned long va)
- {
- 	int b;
- 	for (b = 0; b < tlbcam_index; ++b)
-@@ -87,7 +87,7 @@ phys_addr_t v_mapped_by_tlbcam(unsigned long va)
- /*
-  * Return VA for a given PA or 0 if not mapped
-  */
--unsigned long p_mapped_by_tlbcam(phys_addr_t pa)
-+unsigned long p_block_mapped(phys_addr_t pa)
- {
- 	int b;
- 	for (b = 0; b < tlbcam_index; ++b)
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 7faeb9f..40dd5d3 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -158,3 +158,13 @@ struct tlbcam {
- 	u32	MAS7;
- };
+diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+index 6229e6b..97c9978 100644
+--- a/arch/powerpc/include/asm/cacheflush.h
++++ b/arch/powerpc/include/asm/cacheflush.h
+@@ -47,12 +47,58 @@ static inline void __flush_dcache_icache_phys(unsigned long physaddr)
+ }
  #endif
+ 
+-extern void flush_dcache_range(unsigned long start, unsigned long stop);
+ #ifdef CONFIG_PPC32
+-extern void clean_dcache_range(unsigned long start, unsigned long stop);
+-extern void invalidate_dcache_range(unsigned long start, unsigned long stop);
++/*
++ * Write any modified data cache blocks out to memory and invalidate them.
++ * Does not invalidate the corresponding instruction cache blocks.
++ */
++static inline void flush_dcache_range(unsigned long start, unsigned long stop)
++{
++	void *addr = (void *)(start & ~(L1_CACHE_BYTES - 1));
++	unsigned long size = stop - (unsigned long)addr + (L1_CACHE_BYTES - 1);
++	unsigned long i;
 +
-+#if defined(CONFIG_6xx) || defined(CONFIG_FSL_BOOKE)
-+/* 6xx have BATS */
-+/* FSL_BOOKE have TLBCAM */
-+phys_addr_t v_block_mapped(unsigned long va);
-+unsigned long p_block_mapped(phys_addr_t pa);
-+#else
-+static inline phys_addr_t v_block_mapped(unsigned long va) { return 0; }
-+static inline unsigned long p_block_mapped(phys_addr_t pa) { return 0; }
++	for (i = 0; i < size >> L1_CACHE_SHIFT; i++, addr += L1_CACHE_BYTES)
++		dcbf(addr);
++	mb();	/* sync */
++}
++
++/*
++ * Write any modified data cache blocks out to memory.
++ * Does not invalidate the corresponding cache lines (especially for
++ * any corresponding instruction cache).
++ */
++static inline void clean_dcache_range(unsigned long start, unsigned long stop)
++{
++	void *addr = (void *)(start & ~(L1_CACHE_BYTES - 1));
++	unsigned long size = stop - (unsigned long)addr + (L1_CACHE_BYTES - 1);
++	unsigned long i;
++
++	for (i = 0; i < size >> L1_CACHE_SHIFT; i++, addr += L1_CACHE_BYTES)
++		dcbst(addr);
++	mb();	/* sync */
++}
++
++/*
++ * Like above, but invalidate the D-cache.  This is used by the 8xx
++ * to invalidate the cache so the PPC core doesn't get stale data
++ * from the CPM (no cache snooping here :-).
++ */
++static inline void invalidate_dcache_range(unsigned long start,
++					   unsigned long stop)
++{
++	void *addr = (void *)(start & ~(L1_CACHE_BYTES - 1));
++	unsigned long size = stop - (unsigned long)addr + (L1_CACHE_BYTES - 1);
++	unsigned long i;
++
++	for (i = 0; i < size >> L1_CACHE_SHIFT; i++, addr += L1_CACHE_BYTES)
++		dcbi(addr);
++	mb();	/* sync */
++}
++
+ #endif /* CONFIG_PPC32 */
+ #ifdef CONFIG_PPC64
++extern void flush_dcache_range(unsigned long start, unsigned long stop);
+ extern void flush_inval_dcache_range(unsigned long start, unsigned long stop);
+ extern void flush_dcache_phys_range(unsigned long start, unsigned long stop);
+ #endif
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index ce3ca08..1728f61 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -375,71 +375,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 	isync
+ 	blr
+ /*
+- * Write any modified data cache blocks out to memory.
+- * Does not invalidate the corresponding cache lines (especially for
+- * any corresponding instruction cache).
+- *
+- * clean_dcache_range(unsigned long start, unsigned long stop)
+- */
+-_GLOBAL(clean_dcache_range)
+-	li	r5,L1_CACHE_BYTES-1
+-	andc	r3,r3,r5
+-	subf	r4,r3,r4
+-	add	r4,r4,r5
+-	srwi.	r4,r4,L1_CACHE_SHIFT
+-	beqlr
+-	mtctr	r4
+-
+-1:	dcbst	0,r3
+-	addi	r3,r3,L1_CACHE_BYTES
+-	bdnz	1b
+-	sync				/* wait for dcbst's to get to ram */
+-	blr
+-
+-/*
+- * Write any modified data cache blocks out to memory and invalidate them.
+- * Does not invalidate the corresponding instruction cache blocks.
+- *
+- * flush_dcache_range(unsigned long start, unsigned long stop)
+- */
+-_GLOBAL(flush_dcache_range)
+-	li	r5,L1_CACHE_BYTES-1
+-	andc	r3,r3,r5
+-	subf	r4,r3,r4
+-	add	r4,r4,r5
+-	srwi.	r4,r4,L1_CACHE_SHIFT
+-	beqlr
+-	mtctr	r4
+-
+-1:	dcbf	0,r3
+-	addi	r3,r3,L1_CACHE_BYTES
+-	bdnz	1b
+-	sync				/* wait for dcbst's to get to ram */
+-	blr
+-
+-/*
+- * Like above, but invalidate the D-cache.  This is used by the 8xx
+- * to invalidate the cache so the PPC core doesn't get stale data
+- * from the CPM (no cache snooping here :-).
+- *
+- * invalidate_dcache_range(unsigned long start, unsigned long stop)
+- */
+-_GLOBAL(invalidate_dcache_range)
+-	li	r5,L1_CACHE_BYTES-1
+-	andc	r3,r3,r5
+-	subf	r4,r3,r4
+-	add	r4,r4,r5
+-	srwi.	r4,r4,L1_CACHE_SHIFT
+-	beqlr
+-	mtctr	r4
+-
+-1:	dcbi	0,r3
+-	addi	r3,r3,L1_CACHE_BYTES
+-	bdnz	1b
+-	sync				/* wait for dcbi's to get to ram */
+-	blr
+-
+-/*
+  * Flush a particular page from the data cache to RAM.
+  * Note: this is necessary because the instruction cache does *not*
+  * snoop from the data cache.
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index 202963e..0546947 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -6,7 +6,9 @@
+ #include <asm/cacheflush.h>
+ #include <asm/epapr_hcalls.h>
+ 
++#ifdef CONFIG_PPC64
+ EXPORT_SYMBOL(flush_dcache_range);
 +#endif
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 7692d1b..db0d35e 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -41,32 +41,8 @@ unsigned long ioremap_base;
- unsigned long ioremap_bot;
- EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
+ EXPORT_SYMBOL(flush_icache_range);
  
--#ifdef CONFIG_6xx
--#define HAVE_BATS	1
--#endif
--
--#if defined(CONFIG_FSL_BOOKE)
--#define HAVE_TLBCAM	1
--#endif
--
- extern char etext[], _stext[];
- 
--#ifdef HAVE_BATS
--extern phys_addr_t v_mapped_by_bats(unsigned long va);
--extern unsigned long p_mapped_by_bats(phys_addr_t pa);
--#else /* !HAVE_BATS */
--#define v_mapped_by_bats(x)	(0UL)
--#define p_mapped_by_bats(x)	(0UL)
--#endif /* HAVE_BATS */
--
--#ifdef HAVE_TLBCAM
--extern phys_addr_t v_mapped_by_tlbcam(unsigned long va);
--extern unsigned long p_mapped_by_tlbcam(phys_addr_t pa);
--#else /* !HAVE_TLBCAM */
--#define v_mapped_by_tlbcam(x)	(0UL)
--#define p_mapped_by_tlbcam(x)	(0UL)
--#endif /* HAVE_TLBCAM */
--
- #define PGDIR_ORDER	(32 + PGD_T_LOG2 - PGDIR_SHIFT)
- 
- #ifndef CONFIG_PPC_4K_PAGES
-@@ -228,19 +204,10 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
- 
- 	/*
- 	 * Is it already mapped?  Perhaps overlapped by a previous
--	 * BAT mapping.  If the whole area is mapped then we're done,
--	 * otherwise remap it since we want to keep the virt addrs for
--	 * each request contiguous.
--	 *
--	 * We make the assumption here that if the bottom and top
--	 * of the range we want are mapped then it's mapped to the
--	 * same virt address (and this is contiguous).
--	 *  -- Cort
-+	 * mapping.
- 	 */
--	if ((v = p_mapped_by_bats(p)) /*&& p_mapped_by_bats(p+size-1)*/ )
--		goto out;
--
--	if ((v = p_mapped_by_tlbcam(p)))
-+	v = p_block_mapped(p);
-+	if (v)
- 		goto out;
- 
- 	if (slab_is_available()) {
-@@ -278,7 +245,8 @@ void iounmap(volatile void __iomem *addr)
- 	 * If mapped by BATs then there is nothing to do.
- 	 * Calling vfree() generates a benign warning.
- 	 */
--	if (v_mapped_by_bats((unsigned long)addr)) return;
-+	if (v_block_mapped((unsigned long)addr))
-+		return;
- 
- 	if (addr > high_memory && (unsigned long) addr < ioremap_bot)
- 		vunmap((void *) (PAGE_MASK & (unsigned long)addr));
-@@ -403,7 +371,7 @@ static int __change_page_attr(struct page *page, pgprot_t prot)
- 	BUG_ON(PageHighMem(page));
- 	address = (unsigned long)page_address(page);
- 
--	if (v_mapped_by_bats(address) || v_mapped_by_tlbcam(address))
-+	if (v_block_mapped(address))
- 		return 0;
- 	if (!get_pteptr(&init_mm, address, &kpte, &kpmd))
- 		return -EINVAL;
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 6b2f3e4..2a049fb 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -49,7 +49,7 @@ struct batrange {		/* stores address ranges mapped by BATs */
- /*
-  * Return PA for this VA if it is mapped by a BAT, or 0
-  */
--phys_addr_t v_mapped_by_bats(unsigned long va)
-+phys_addr_t v_block_mapped(unsigned long va)
- {
- 	int b;
- 	for (b = 0; b < 4; ++b)
-@@ -61,7 +61,7 @@ phys_addr_t v_mapped_by_bats(unsigned long va)
- /*
-  * Return VA for a given PA or 0 if not mapped
-  */
--unsigned long p_mapped_by_bats(phys_addr_t pa)
-+unsigned long p_block_mapped(phys_addr_t pa)
- {
- 	int b;
- 	for (b = 0; b < 4; ++b)
+ EXPORT_SYMBOL(empty_zero_page);
 -- 
 2.1.0
