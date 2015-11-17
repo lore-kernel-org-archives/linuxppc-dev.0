@@ -1,18 +1,17 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 3D8191A03C6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 01:02:20 +1100 (AEDT)
-Message-Id: <00806f0e64c8293ed12ee8662c614864afc333fe.1446893429.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id C880B1A03C2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 01:02:17 +1100 (AEDT)
+Message-Id: <7d7a6f4881ef33d7621fdbf6602bd137c49753af.1446893433.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1446893426.git.christophe.leroy@c-s.fr>
 References: <cover.1446893426.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 01/23] powerpc/8xx: Save r3 all the time in DTLB miss
- handler
+Subject: [PATCH v3 22/23] powerpc32: small optimisation in flush_icache_range()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 17 Nov 2015 14:32:01 +0100 (CET)
+Date: Tue, 17 Nov 2015 14:32:44 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,61 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We are spending between 40 and 160 cycles with a mean of 65 cycles in
-the DTLB handling routine (measured with mftbl) so make it more
-simple althought it adds one instruction.
-With this modification, we get three registers available at all time,
-which will help with following patch.
+Inlining of _dcache_range() functions has shown that the compiler
+does the same thing a bit better with one insn less
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v2: no change
+v2: new
 v3: no change
 
- arch/powerpc/kernel/head_8xx.S | 13 ++++---------
- 1 file changed, 4 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/misc_32.S | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 78c1eba..1557926 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -385,23 +385,20 @@ InstructionTLBMiss:
- 
- 	. = 0x1200
- DataStoreTLBMiss:
--#ifdef CONFIG_8xx_CPU6
- 	mtspr	SPRN_SPRG_SCRATCH2, r3
--#endif
- 	EXCEPTION_PROLOG_0
--	mfcr	r10
-+	mfcr	r3
- 
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
- 	 */
--	mfspr	r11, SPRN_MD_EPN
--	IS_KERNEL(r11, r11)
-+	mfspr	r10, SPRN_MD_EPN
-+	IS_KERNEL(r11, r10)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
- 	BRANCH_UNLESS_KERNEL(3f)
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 3:
--	mtcr	r10
--	mfspr	r10, SPRN_MD_EPN
-+	mtcr	r3
- 
- 	/* Insert level 1 index */
- 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
-@@ -453,9 +450,7 @@ DataStoreTLBMiss:
- 	MTSPR_CPU6(SPRN_MD_RPN, r10, r3)	/* Update TLB entry */
- 
- 	/* Restore registers */
--#ifdef CONFIG_8xx_CPU6
- 	mfspr	r3, SPRN_SPRG_SCRATCH2
--#endif
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
- 	EXCEPTION_EPILOG_0
- 	rfi
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 1728f61..1597424 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -348,10 +348,9 @@ BEGIN_FTR_SECTION
+ 	PURGE_PREFETCHED_INS
+ 	blr				/* for 601, do nothing */
+ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+-	li	r5,L1_CACHE_BYTES-1
+-	andc	r3,r3,r5
++	rlwinm	r3,r3,0,0,31 - L1_CACHE_SHIFT
+ 	subf	r4,r3,r4
+-	add	r4,r4,r5
++	addi	r4,r4,L1_CACHE_BYTES - 1
+ 	srwi.	r4,r4,L1_CACHE_SHIFT
+ 	beqlr
+ 	mtctr	r4
 -- 
 2.1.0
