@@ -1,50 +1,18 @@
-Return-Path: <anton.bondarenko.sama@gmail.com>
-Received: from mail-lf0-x241.google.com (mail-lf0-x241.google.com
- [IPv6:2a00:1450:4010:c07::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D792E1A025F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 21:43:33 +1100 (AEDT)
-Received: by lffu14 with SMTP id u14so360951lff.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 02:43:29 -0800 (PST)
-Subject: Re: [PATCH] [media] move media platform data to
- linux/platform_data/media
-To: Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org
-References: <4d99e49726942dc4d6a6ee1debf6665b2b47908b.1447751746.git.mchehab@osg.samsung.com>
- <7319142.Cp8MurgLWk@wuerfel>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Sergey Lapin <slapin@ossfans.org>, Timur Tabi <timur@tabi.org>,
- Jaroslav Kysela <perex@perex.cz>, Tomas Cech <sleep_walker@suse.com>,
- Shawn Guo <shawnguo@kernel.org>, Robert Jarzmik <robert.jarzmik@free.fr>,
- Markus Elfring <elfring@users.sourceforge.net>,
- Harald Welte <laforge@openezx.org>, openezx-devel@lists.openezx.org,
- Russell King <linux@arm.linux.org.uk>, Vinod Koul <vinod.koul@intel.com>,
- Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-serial@vger.kernel.org,
- Jiri Slaby <jslaby@suse.com>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Daniel Ribeiro <drwyrm@gmail.com>,
- Linux Media Mailing List <linux-media@vger.kernel.org>,
- Stefan Schmidt <stefan@openezx.org>, Sascha Hauer <kernel@pengutronix.de>,
- alsa-devel@alsa-project.org, Mauro Carvalho Chehab
- <mchehab@osg.samsung.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Haojian Zhuang <haojian.zhuang@gmail.com>,
- Mauro Carvalho Chehab <mchehab@infradead.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- linux-fbdev@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
- David Gibson <david@gibson.dropbear.id.au>,
- Fabio Estevam <fabio.estevam@freescale.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mmc@vger.kernel.org,
- Takashi Iwai <tiwai@suse.com>, linux-spi@vger.kernel.org,
- Philipp Zabel <p.zabel@pengutronix.de>, dmaengine@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Guennadi Liakhovetski
- <g.liakhovetski@gmx.de>, Daniel Mack <daniel@zonque.org>
-From: Anton Bondarenko <anton.bondarenko.sama@gmail.com>
-Message-ID: <564B04CF.1090507@gmail.com>
-Date: Tue, 17 Nov 2015 11:43:27 +0100
-MIME-Version: 1.0
-In-Reply-To: <7319142.Cp8MurgLWk@wuerfel>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id B78451A03BF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 01:02:17 +1100 (AEDT)
+Message-Id: <65466724e44c92de4296ef23a4f5591ba38ecc4c.1446893432.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1446893426.git.christophe.leroy@c-s.fr>
+References: <cover.1446893426.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v3 14/23] powerpc/8xx: Handle CPU6 ERRATA directly in mtspr()
+ macro
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ scottwood@freescale.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 17 Nov 2015 14:32:28 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,22 +22,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+MPC8xx has an ERRATA on the use of mtspr() for some registers
+This patch includes the ERRATA handling directly into mtspr() macro
+so that mtspr() users don't need to bother about that errata
 
-On 17.11.2015 10:23, Arnd Bergmann wrote:
-> On Tuesday 17 November 2015 07:15:59 Mauro Carvalho Chehab wrote:
->> Now that media has its own subdirectory inside platform_data,
->> let's move the headers that are already there to such subdir.
->>
->>
->
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
->
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+v2: no change
+v3: no change
 
-Why does dma-imx.h also moved? It's the generic file, not a media specific.
+ arch/powerpc/include/asm/reg.h     |  2 +
+ arch/powerpc/include/asm/reg_8xx.h | 82 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 84 insertions(+)
 
-BR, Anton
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index a908ada..dbe6cd5 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1202,9 +1202,11 @@
+ #define mfspr(rn)	({unsigned long rval; \
+ 			asm volatile("mfspr %0," __stringify(rn) \
+ 				: "=r" (rval)); rval;})
++#ifndef mtspr
+ #define mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" : \
+ 				     : "r" ((unsigned long)(v)) \
+ 				     : "memory")
++#endif
+ 
+ static inline unsigned long mfvtb (void)
+ {
+diff --git a/arch/powerpc/include/asm/reg_8xx.h b/arch/powerpc/include/asm/reg_8xx.h
+index 0f71c81..d41412c 100644
+--- a/arch/powerpc/include/asm/reg_8xx.h
++++ b/arch/powerpc/include/asm/reg_8xx.h
+@@ -50,4 +50,86 @@
+ #define DC_DFWT		0x40000000	/* Data cache is forced write through */
+ #define DC_LES		0x20000000	/* Caches are little endian mode */
+ 
++#ifdef CONFIG_8xx_CPU6
++#define do_mtspr_cpu6(rn, rn_addr, v)	\
++	do {								\
++		int _reg_cpu6 = rn_addr, _tmp_cpu6[1];		\
++		asm volatile("stw %0, %1;"				\
++			     "lwz %0, %1;"				\
++			     "mtspr " __stringify(rn) ",%2" :		\
++			     : "r" (_reg_cpu6), "m"(_tmp_cpu6),		\
++			       "r" ((unsigned long)(v))			\
++			     : "memory");				\
++	} while (0)
++
++#define do_mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" :	\
++				     : "r" ((unsigned long)(v))		\
++				     : "memory")
++#define mtspr(rn, v) \
++	do {								\
++		if (rn == SPRN_IMMR)					\
++			do_mtspr_cpu6(rn, 0x3d30, v);			\
++		else if (rn == SPRN_IC_CST)				\
++			do_mtspr_cpu6(rn, 0x2110, v);			\
++		else if (rn == SPRN_IC_ADR)				\
++			do_mtspr_cpu6(rn, 0x2310, v);			\
++		else if (rn == SPRN_IC_DAT)				\
++			do_mtspr_cpu6(rn, 0x2510, v);			\
++		else if (rn == SPRN_DC_CST)				\
++			do_mtspr_cpu6(rn, 0x3110, v);			\
++		else if (rn == SPRN_DC_ADR)				\
++			do_mtspr_cpu6(rn, 0x3310, v);			\
++		else if (rn == SPRN_DC_DAT)				\
++			do_mtspr_cpu6(rn, 0x3510, v);			\
++		else if (rn == SPRN_MI_CTR)				\
++			do_mtspr_cpu6(rn, 0x2180, v);			\
++		else if (rn == SPRN_MI_AP)				\
++			do_mtspr_cpu6(rn, 0x2580, v);			\
++		else if (rn == SPRN_MI_EPN)				\
++			do_mtspr_cpu6(rn, 0x2780, v);			\
++		else if (rn == SPRN_MI_TWC)				\
++			do_mtspr_cpu6(rn, 0x2b80, v);			\
++		else if (rn == SPRN_MI_RPN)				\
++			do_mtspr_cpu6(rn, 0x2d80, v);			\
++		else if (rn == SPRN_MI_CAM)				\
++			do_mtspr_cpu6(rn, 0x2190, v);			\
++		else if (rn == SPRN_MI_RAM0)				\
++			do_mtspr_cpu6(rn, 0x2390, v);			\
++		else if (rn == SPRN_MI_RAM1)				\
++			do_mtspr_cpu6(rn, 0x2590, v);			\
++		else if (rn == SPRN_MD_CTR)				\
++			do_mtspr_cpu6(rn, 0x3180, v);			\
++		else if (rn == SPRN_M_CASID)				\
++			do_mtspr_cpu6(rn, 0x3380, v);			\
++		else if (rn == SPRN_MD_AP)				\
++			do_mtspr_cpu6(rn, 0x3580, v);			\
++		else if (rn == SPRN_MD_EPN)				\
++			do_mtspr_cpu6(rn, 0x3780, v);			\
++		else if (rn == SPRN_M_TWB)				\
++			do_mtspr_cpu6(rn, 0x3980, v);			\
++		else if (rn == SPRN_MD_TWC)				\
++			do_mtspr_cpu6(rn, 0x3b80, v);			\
++		else if (rn == SPRN_MD_RPN)				\
++			do_mtspr_cpu6(rn, 0x3d80, v);			\
++		else if (rn == SPRN_M_TW)				\
++			do_mtspr_cpu6(rn, 0x3f80, v);			\
++		else if (rn == SPRN_MD_CAM)				\
++			do_mtspr_cpu6(rn, 0x3190, v);			\
++		else if (rn == SPRN_MD_RAM0)				\
++			do_mtspr_cpu6(rn, 0x3390, v);			\
++		else if (rn == SPRN_MD_RAM1)				\
++			do_mtspr_cpu6(rn, 0x3590, v);			\
++		else if (rn == SPRN_DEC)				\
++			do_mtspr_cpu6(rn, 0x2c00, v);			\
++		else if (rn == SPRN_TBWL)				\
++			do_mtspr_cpu6(rn, 0x3880, v);			\
++		else if (rn == SPRN_TBWU)				\
++			do_mtspr_cpu6(rn, 0x3a80, v);			\
++		else if (rn == SPRN_DPDR)				\
++			do_mtspr_cpu6(rn, 0x2d30, v);			\
++		else							\
++			do_mtspr(rn, v);				\
++	} while (0)
++#endif
++
+ #endif /* _ASM_POWERPC_REG_8xx_H */
+-- 
+2.1.0
