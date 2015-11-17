@@ -1,12 +1,12 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
- [IPv6:2607:f8b0:400e:c03::22d])
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B4D11A02BE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 11:28:43 +1100 (AEDT)
-Received: by pacdm15 with SMTP id dm15so191191524pac.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 16:28:41 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D75081A036D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 11:29:41 +1100 (AEDT)
+Received: by padhx2 with SMTP id hx2so191374878pad.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 16:29:40 -0800 (PST)
 From: Daniel Axtens <dja@axtens.net>
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
@@ -14,12 +14,12 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, frowand.list@gmail.com,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 19/50] powerpc/powernv: Track DMA32 segment consumption
-In-Reply-To: <1446642770-4681-20-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH v7 21/50] powerpc/powernv: Increase PE# capacity
+In-Reply-To: <1446642770-4681-22-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-20-git-send-email-gwshan@linux.vnet.ibm.com>
-Date: Tue, 17 Nov 2015 11:28:20 +1100
-Message-ID: <87ziydbhaz.fsf@gamma.ozlabs.ibm.com>
+ <1446642770-4681-22-git-send-email-gwshan@linux.vnet.ibm.com>
+Date: Tue, 17 Nov 2015 11:29:26 +1100
+Message-ID: <87y4dxbh95.fsf@gamma.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; boundary="=-=-=";
  micalg=pgp-sha512; protocol="application/pgp-signature"
@@ -38,143 +38,76 @@ Content-Transfer-Encoding: quoted-printable
 
 Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
 
-> Similar to the mechanism tracking consumed IO/M32/M64 segments,
-> this introduces an array for each PHB to track the consumed DMA32
-> segments, which are going to be released on PCI unplugging time.
-> The index of the array is the DMA32 segment number while the value
-> stored in the element is the assigned PE number.
+> Each PHB maintains an array helping to translate 2-bytes Request
+> ID (RID) to PE# with the assumption that PE# takes one byte, meaning
+> that we can't have more than 256 PEs. However, pci_dn->pe_number
+> already had 4-bytes for the PE#.
 >
+> This extends the PE# capacity so that each of them will be 4-bytes
+> long. Then we can reuse IODA_INVALID_PE to check the PE# stored in
+> phb->pe_rmap[] is valid or not.
 
+Just for clarity, could you make it clear in the commit message that
+you're increasing the PE# capacity _in the PHB_? I just found it a bit
+confusing the first time I read it.
 
-> +	/* Setup TCE32 segment mapping */
-Do you mean DMA32 rather than TCE32?
-> +	for (i =3D base; i < base + segs; i++)
-> +		phb->ioda.dma32_segmap[i] =3D pe->pe_number;
-> +
-I'm pretty sure this is right, but can you just confirm that you
-intended to index into the array starting at base and going to base + segs,
-and not going from 0 to segs? (i.e. not dma32_segmap[i - base]).
-
-Otherwise looks good.
+With that clarified I'll be happy to add my reviewed-by tag.
 
 Regards,
 Daniel
-
->  	/* Setup linux iommu table */
->  	pnv_pci_setup_iommu_table(tbl, addr, tce32_segsz * segs,
->  				  base * PNV_IODA1_DMA32_SEGSIZE,
-> @@ -2378,13 +2382,13 @@ static void pnv_pci_ioda1_setup_dma(struct pnv_ph=
-b *phb)
->  	 * then we assign at least one segment per PE, plus more based
->  	 * on the amount of devices under that PE
->  	 */
-> -	if (dma_pe_count > phb->ioda.tce32_count)
-> +	if (dma_pe_count > phb->ioda.dma32_count)
->  		residual =3D 0;
->  	else
-> -		residual =3D phb->ioda.tce32_count - dma_pe_count;
-> +		residual =3D phb->ioda.dma32_count - dma_pe_count;
+>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 6 +++++-
+>  arch/powerpc/platforms/powernv/pci.h      | 7 ++-----
+>  2 files changed, 7 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
+tforms/powernv/pci-ioda.c
+> index 0e66c4d..ef93a01 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -766,7 +766,7 @@ static int pnv_ioda_deconfigure_pe(struct pnv_phb *ph=
+b, struct pnv_ioda_pe *pe)
 >=20=20
->  	pr_info("PCI: Domain %04x has %ld available 32-bit DMA segments\n",
-> -		hose->global_number, phb->ioda.tce32_count);
-> +		hose->global_number, phb->ioda.dma32_count);
->  	pr_info("PCI: %d PE# for a total weight of %d\n",
->  		dma_pe_count, total_weight);
+>  	/* Clear the reverse map */
+>  	for (rid =3D pe->rid; rid < rid_end; rid++)
+> -		phb->ioda.pe_rmap[rid] =3D 0;
+> +		phb->ioda.pe_rmap[rid] =3D IODA_INVALID_PE;
 >=20=20
-> @@ -2394,7 +2398,7 @@ static void pnv_pci_ioda1_setup_dma(struct pnv_phb =
-*phb)
->  	 * out one base segment plus any residual segments based on
->  	 * weight
->  	 */
-> -	remaining =3D phb->ioda.tce32_count;
-> +	remaining =3D phb->ioda.dma32_count;
->  	base =3D 0;
->  	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
->  		weight =3D pnv_pci_ioda_pe_dma_weight(pe);
-> @@ -3094,7 +3098,8 @@ static void __init pnv_pci_init_ioda_phb(struct dev=
-ice_node *np,
->  {
->  	struct pci_controller *hose;
->  	struct pnv_phb *phb;
-> -	unsigned long size, m64map_off, m32map_off, pemap_off, iomap_off =3D 0;
-> +	unsigned long size, m64map_off, m32map_off, pemap_off;
-> +	unsigned long iomap_off =3D 0, dma32map_off =3D 0;
->  	const __be64 *prop64;
->  	const __be32 *prop32;
->  	int i, len;
-> @@ -3177,6 +3182,10 @@ static void __init pnv_pci_init_ioda_phb(struct de=
+>  	/* Release from all parents PELT-V */
+>  	while (parent) {
+> @@ -3164,6 +3164,10 @@ static void __init pnv_pci_init_ioda_phb(struct de=
 vice_node *np,
->  	phb->ioda.io_segsize =3D phb->ioda.io_size / phb->ioda.total_pe_num;
->  	phb->ioda.io_pci_base =3D 0; /* XXX calculate this ? */
+>  	if (prop32)
+>  		phb->ioda.reserved_pe_idx =3D be32_to_cpup(prop32);
 >=20=20
-> +	/* Calculate how many 32-bit TCE segments we have */
-> +	phb->ioda.dma32_count =3D phb->ioda.m32_pci_base /
-> +				PNV_IODA1_DMA32_SEGSIZE;
+> +	/* Invalidate RID to PE# mapping */
+> +	for (i =3D 0; i < ARRAY_SIZE(phb->ioda.pe_rmap); ++i)
+> +		phb->ioda.pe_rmap[i] =3D IODA_INVALID_PE;
 > +
->  	/* Allocate aux data & arrays. We don't have IO ports on PHB3 */
->  	size =3D _ALIGN_UP(phb->ioda.total_pe_num / 8, sizeof(unsigned long));
->  	m64map_off =3D size;
-> @@ -3186,6 +3195,9 @@ static void __init pnv_pci_init_ioda_phb(struct dev=
-ice_node *np,
->  	if (phb->type =3D=3D PNV_PHB_IODA1) {
->  		iomap_off =3D size;
->  		size +=3D phb->ioda.total_pe_num * sizeof(phb->ioda.io_segmap[0]);
-> +		dma32map_off =3D size;
-> +		size +=3D phb->ioda.dma32_count *
-> +			sizeof(phb->ioda.dma32_segmap[0]);
->  	}
->  	pemap_off =3D size;
->  	size +=3D phb->ioda.total_pe_num * sizeof(struct pnv_ioda_pe);
-> @@ -3201,6 +3213,10 @@ static void __init pnv_pci_init_ioda_phb(struct de=
-vice_node *np,
->  		phb->ioda.io_segmap =3D aux + iomap_off;
->  		for (i =3D 0; i < phb->ioda.total_pe_num; i++)
->  			phb->ioda.io_segmap[i] =3D IODA_INVALID_PE;
-> +
-> +		phb->ioda.dma32_segmap =3D aux + dma32map_off;
-> +		for (i =3D 0; i < phb->ioda.dma32_count; i++)
-> +			phb->ioda.dma32_segmap[i] =3D IODA_INVALID_PE;
->  	}
->  	phb->ioda.pe_array =3D aux + pemap_off;
->  	set_bit(phb->ioda.reserved_pe_idx, phb->ioda.pe_alloc);
-> @@ -3208,10 +3224,6 @@ static void __init pnv_pci_init_ioda_phb(struct de=
-vice_node *np,
->  	INIT_LIST_HEAD(&phb->ioda.pe_list);
->  	mutex_init(&phb->ioda.pe_list_mutex);
+>  	/* Parse 64-bit MMIO range */
+>  	pnv_ioda_parse_m64_window(phb);
 >=20=20
-> -	/* Calculate how many 32-bit TCE segments we have */
-> -	phb->ioda.tce32_count =3D phb->ioda.m32_pci_base /
-> -				PNV_IODA1_DMA32_SEGSIZE;
-> -
->  #if 0 /* We should really do that ... */
->  	rc =3D opal_pci_set_phb_mem_window(opal->phb_id,
->  					 window_type,
 > diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platform=
 s/powernv/pci.h
-> index 2038ef2..0802fcd 100644
+> index 0802fcd..5df945f 100644
 > --- a/arch/powerpc/platforms/powernv/pci.h
 > +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -148,6 +148,10 @@ struct pnv_phb {
->  			int			*m32_segmap;
->  			int			*io_segmap;
+> @@ -162,11 +162,8 @@ struct pnv_phb {
+>  			struct list_head	pe_list;
+>  			struct mutex            pe_list_mutex;
 >=20=20
-> +			/* DMA32 segment maps - IODA1 only */
-> +			unsigned long		dma32_count;
-> +			int			*dma32_segmap;
-> +
->  			/* IRQ chip */
->  			int			irq_chip_init;
->  			struct irq_chip		irq_chip;
-> @@ -164,9 +168,6 @@ struct pnv_phb {
->  			 */
->  			unsigned char		pe_rmap[0x10000];
+> -			/* Reverse map of PEs, will have to extend if
+> -			 * we are to support more than 256 PEs, indexed
+> -			 * bus { bus, devfn }
+> -			 */
+> -			unsigned char		pe_rmap[0x10000];
+> +			/* Reverse map of PEs, indexed by {bus, devfn} */
+> +			int			pe_rmap[0x10000];
 >=20=20
-> -			/* 32-bit TCE tables allocation */
-> -			unsigned long		tce32_count;
-> -
 >  			/* TCE cache invalidate registers (physical and
 >  			 * remapped)
->  			 */
 > --=20
 > 2.1.0
 >
@@ -190,18 +123,18 @@ Content-Type: application/pgp-signature; name="signature.asc"
 Version: GnuPG v1
 Comment: GPGTools - https://gpgtools.org
 
-iQIcBAEBCgAGBQJWSnSkAAoJEPC3R3P2I92FQbAQAKyQDAQYAA88PgO5qHX+0nUH
-BQLJCH8uXSaLflsgCOpnWy9lv5jMzl5MpF1phbadTYTiVO6W/aZEUq+HhQ4ZBMgP
-fdhae3yUCQXAxsdeaSCvsFMDnVRacuh0Lqg4eznwrt0OEaCvtrROjpSl2A2kpgNv
-ZkMBblBcuQp3FXdqi6WPK2FS87jLgGPS1SxQQTnhNXrfxkGKXiQqhI1FRYRU18fz
-fP5tCik9BXdLU63qXTS8zbzvdE2jpqXoZjsDCrlfUp7NZ0Jy1pfD8KOXN5zBmHmu
-kYy03HAfvQO56foy5NEjTTgTFJwnmK9p9m+Rfc9nKmqm4QYN/0dAvKIcKRbfewVb
-Y/hd/DYpje/VwJ0dZk170f4uhuRcS8tqTsFqjYriNG/uyVisQQAs3a1S4/vaxc7L
-pOXH8iXPgD55zZWVyvqHQec1/Tu+FjVaEMiDBeqv37apbDViPonoy85BSTcUG9Bl
-AJ/Lkz/uFlDaEkFQBSFCuMHi5kSDpvm57T2lLbN83pGt35fW9OFq/o+yWYa/SRbO
-jL7Ppqko06sbr17h3/2oHTkpMINx124GKlBp1m+ih2hz0P3cKSoWk+kEzzClTLvY
-BQLN/RVQiGKye5aTcoiebAHuQrXlcwU18Y9fkcHmMg5PbNCHzFUASBnvmj8A5t5k
-RMQktBepybjKYACRwG69
-=RUYs
+iQIcBAEBCgAGBQJWSnTnAAoJEPC3R3P2I92FOTUQAIPGUQDll+7Uc1lau7ToBOR2
+jvP/H0wVrZGZEOBpXRaz0rFFmiUgKythKkGFCm2w8dq0cjexn02qvh4CmQEHeJRS
+D+Si7rfSNezDahJL9QMu/MOUwUaFexFRCPJQxFFLwxrvulUGhUvlv1oB83fw2IAB
+Eq1gVqW0Hs1zceSJ7ebYjJoEhj0ZRSQFx7Jp2Yj6sWKRVlvcMYECWZ83lrn4ixn1
+DPkCC3SfVle/aANMKUK4sY1FqaGSvX8s3Fe6PXpXhvfr2xoIso6dlJmFhNMTgP8r
+AmNWyaT+s3pg9tEsFKwQTJWQvK7G/ScPg01ywfiaOk1PuIA7zQcCpILtwbHloo+q
+4okga3e17nBS7HYGAKTN3JDZgI5Jr8F7Fd2K2qO/Tkgsov3DsPP0dMT+vYSAXk4y
+WZ3oQXgYzCf/4uABQ72zl2/0L8pnUHK5omcBNex/2IQRvF0D2E8t6sRaX7NpqQjg
+AKGFBXCXed9SRuKwetYurtHrHbem1roQm1tD94x23LBbYqnp5zakhEIX4riDzwbE
+MSerG1y04jlwxyy72aEFNGuRVi18R5aO+3h0hZH/PonE+nCIWvxem6mmgC8aeTll
+juv0Dg5RPfdcTAXR534EOQqz5BV7p5TjH5Ny7q7ufbBSzyyY9cudNzD8IknviA38
+z3V6mdbW9gx4H6b4FpNJ
+=WeRL
 -----END PGP SIGNATURE-----
 --=-=-=--
