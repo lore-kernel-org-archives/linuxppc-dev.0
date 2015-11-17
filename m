@@ -1,19 +1,18 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 1FD271A0404
+ by lists.ozlabs.org (Postfix) with ESMTP id DFF951A03ED
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 01:02:20 +1100 (AEDT)
-Message-Id: <24d4ea21118fbca2ca52564993c8a7dabffba957.1446893430.git.christophe.leroy@c-s.fr>
+Message-Id: <4a508a481397cb2c71942eaf6b07afa6eb6417a2.1446893433.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1446893426.git.christophe.leroy@c-s.fr>
 References: <cover.1446893426.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 03/23] powerpc: Update documentation for noltlbs kernel
- parameter
+Subject: [PATCH v3 18/23] powerpc: add inline functions for cache related
+ instructions
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com, Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-doc@vger.kernel.org
-Date: Tue, 17 Nov 2015 14:32:05 +0100 (CET)
+ scottwood@freescale.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 17 Nov 2015 14:32:36 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,28 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now the noltlbs kernel parameter is also applicable to PPC8xx
+This patch adds inline functions to use dcbz, dcbi, dcbf, dcbst
+from C functions
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v2: no change
+v2: new
 v3: no change
 
- Documentation/kernel-parameters.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/cache.h | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index f8aae63..5461fe5 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2527,7 +2527,7 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 	nolapic_timer	[X86-32,APIC] Do not use the local APIC timer.
+diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
+index 5f8229e..ffbafbf 100644
+--- a/arch/powerpc/include/asm/cache.h
++++ b/arch/powerpc/include/asm/cache.h
+@@ -69,6 +69,25 @@ extern void _set_L3CR(unsigned long);
+ #define _set_L3CR(val)	do { } while(0)
+ #endif
  
- 	noltlbs		[PPC] Do not use large page/tlb entries for kernel
--			lowmem mapping on PPC40x.
-+			lowmem mapping on PPC40x and PPC8xx
- 
- 	nomca		[IA-64] Disable machine check abort handling
- 
++static inline void dcbz(void *addr)
++{
++	__asm__ __volatile__ ("dcbz 0, %0" : : "r"(addr) : "memory");
++}
++
++static inline void dcbi(void *addr)
++{
++	__asm__ __volatile__ ("dcbi 0, %0" : : "r"(addr) : "memory");
++}
++
++static inline void dcbf(void *addr)
++{
++	__asm__ __volatile__ ("dcbf 0, %0" : : "r"(addr) : "memory");
++}
++
++static inline void dcbst(void *addr)
++{
++	__asm__ __volatile__ ("dcbst 0, %0" : : "r"(addr) : "memory");
++}
+ #endif /* !__ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_CACHE_H */
 -- 
 2.1.0
