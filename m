@@ -1,26 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0144.outbound.protection.outlook.com [157.56.110.144])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c03::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D33AA1A0736
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 13:07:44 +1100 (AEDT)
-Message-ID: <1447726048.2262.385.camel@freescale.com>
-Subject: Re: [PATCH v4] Documentation: dt: binding: fsl: add devicetree
- binding for describing RCPM
-From: Scott Wood <scottwood@freescale.com>
-To: Rob Herring <robh@kernel.org>, Dongsheng Wang
- <dongsheng.wang@freescale.com>, Sudeep Holla <sudeep.holla@arm.com>
-CC: <stuart.yoder@freescale.com>, <shawnguo@kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
- <jason.jin@freescale.com>, Chenhui Zhao <chenhui.zhao@freescale.com>, "Tang
- Yuantian" <Yuantian.Tang@freescale.com>
-Date: Mon, 16 Nov 2015 20:07:28 -0600
-In-Reply-To: <20151116172611.GA27814@rob-hp-laptop>
-References: <1445841852-6830-1-git-send-email-dongsheng.wang@freescale.com>
- <20151116172611.GA27814@rob-hp-laptop>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id DD0CA1A113E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 13:12:04 +1100 (AEDT)
+Received: by pacdm15 with SMTP id dm15so194027215pac.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2015 18:12:02 -0800 (PST)
+Subject: Re: [PATCH v7 14/50] powerpc/powernv: M64 support on P7IOC
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1446642770-4681-15-git-send-email-gwshan@linux.vnet.ibm.com>
+ <56498D7B.7000307@ozlabs.ru> <20151117013813.GB31584@gwshan>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
+ panto@antoniou-consulting.com, frowand.list@gmail.com
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <564A8CEC.4050906@ozlabs.ru>
+Date: Tue, 17 Nov 2015 13:11:56 +1100
 MIME-Version: 1.0
+In-Reply-To: <20151117013813.GB31584@gwshan>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,76 +31,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-11-16 at 11:26 -0600, Rob Herring wrote:
-> +Sudeep
-> 
-> On Mon, Oct 26, 2015 at 02:44:12PM +0800, Dongsheng Wang wrote:
-> > From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > 
-> > RCPM is the Run Control and Power Management module performs all
-> > device-level tasks associated with device run control and power
-> > management.
-> > 
-> > Add this for freescale powerpc platform and layerscape platform.
-> 
-> [...]
-> 
-> > @@ -0,0 +1,64 @@
-> > +* Run Control and Power Management
-> > +-------------------------------------------
-> > +The RCPM performs all device-level tasks associated with device run
-> > control
-> > +and power management.
-> > +
-> > +Required properites:
-> > +  - reg : Offset and length of the register set of the RCPM block.
-> > +  - fsl,#rcpm-wakeup-cells : The number of IPPDEXPCR register cells in
-> > the
-> > +	fsl,rcpm-wakeup property.
-> 
-> [...]
-> 
-> > +* Freescale RCPM Wakeup Source Device Tree Bindings
-> > +-------------------------------------------
-> > +Required fsl,rcpm-wakeup property should be added to a device node if the
-> > device
-> > +can be used as a wakeup source.
-> > +
-> > +  - fsl,rcpm-wakeup: Consists of a pointer to the rcpm node and the
-> > IPPDEXPCR
-> > +	register cells. The number of IPPDEXPCR register cells is defined
-> > in
-> > +	"fsl,#rcpm-wakeup-cells" in the rcpm node. The first register
-> > cell is
-> > +	the bit mask that should be set in IPPDEXPCR0, and the second
-> > register
-> > +	cell is for IPPDEXPCR1, and so on.
-> 
-> We just merged a common wakeup source binding[1]. It doesn't really work 
-> in a similar way to what you have done, but I'd like to see something 
-> common here. How exactly wakeup is done tends to depend on whether 
-> interrupts are also wakeup signals or wake-up signally is completely 
-> separate from interrupts. Depending on that, I think there are 2 options 
-> here:
-> 
-> - Use the common binding and implement a stacked irqdomain for the 
-> wakeup controller.
+On 11/17/2015 12:38 PM, Gavin Shan wrote:
+> On Mon, Nov 16, 2015 at 07:02:03PM +1100, Alexey Kardashevskiy wrote:
+>> On 11/05/2015 12:12 AM, Gavin Shan wrote:
+>>> This enables M64 window on P7IOC, which has been enabled on PHB3.
+>>> Different from PHB3 where 16 M64 BARs are supported and each of
+>>> them can be owned by one particular PE# exclusively or divided
+>>> evenly to 256 segments, every P7IOC PHB has 16 M64 BARs and each
+>>> of them are divided to 8 segments. So every P7IOC PHB supports
+>>> 128 M64 segments in total. P7IOC has M64DT, which helps mapping
+>>> one particular M64 segment# to arbitrary PE#. PHB3 doesn't have
+>>> M64DT, indicating that one M64 segment can only be pinned to the
+>>> fixed PE#. In order to have same code to support M64 on P7IOC and
+>>> PHB3, we just provide 128 M64 segments on every P7IOC PHB and each
+>>> of them is pinned to the fixed PE# by bypassing the function of
+>>> M64DT. In turn, we just need different phb->init_m64() for P7IOC
+>>> and PHB3 to support M64.
+>>>
+>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>> ---
+>>>   arch/powerpc/platforms/powernv/pci-ioda.c | 86 +++++++++++++++++++++++++++++--
+>>>   arch/powerpc/platforms/powernv/pci.h      |  3 ++
+>>>   2 files changed, 86 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> index 1f7d985..bfe69f1 100644
+>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> @@ -256,6 +256,64 @@ static void pnv_ioda_reserve_dev_m64_pe(struct pci_dev *pdev,
+>>>   	}
+>>>   }
+>>>
+>>> +static int pnv_ioda1_init_m64(struct pnv_phb *phb)
+>>> +{
+>>> +	struct resource *r;
+>>> +	int index;
+>>> +
+>>> +	/*
+>>> +	 * There are 16 M64 BARs, each of which has 8 segments. So
+>>> +	 * there are as many M64 segments as the maximum number of
+>>> +	 * PEs, which is 128.
+>>> +	 */
+>>> +	for (index = 0; index < PNV_IODA1_M64_NUM; index++) {
+>>> +		unsigned long base, segsz = phb->ioda.m64_segsize;
+>>> +		int64_t rc;
+>>> +
+>>> +		base = phb->ioda.m64_base +
+>>> +		       index * PNV_IODA1_M64_SEGS * segsz;
+>>> +		rc = opal_pci_set_phb_mem_window(phb->opal_id,
+>>> +				OPAL_M64_WINDOW_TYPE, index, base, 0,
+>>> +				PNV_IODA1_M64_SEGS * segsz);
+>>> +		if (rc != OPAL_SUCCESS) {
+>>> +			pr_warn("  Error %lld setting M64 PHB#%d-BAR#%d\n",
+>>> +				rc, phb->hose->global_number, index);
+>>> +			goto fail;
+>>> +		}
+>>> +
+>>> +		rc = opal_pci_phb_mmio_enable(phb->opal_id,
+>>> +				OPAL_M64_WINDOW_TYPE, index,
+>>> +				OPAL_ENABLE_M64_SPLIT);
+>>> +		if (rc != OPAL_SUCCESS) {
+>>> +			pr_warn("  Error %lld enabling M64 PHB#%d-BAR#%d\n",
+>>> +				rc, phb->hose->global_number, index);
+>>> +			goto fail;
+>>> +		}
+>>> +	}
+>>> +
+>>> +	/*
+>>> +	 * Exclude the segment used by the reserved PE, which
+>>> +	 * is expected to be 0 or last supported PE#.
+>>> +	 */
+>>> +	r = &phb->hose->mem_resources[1];
+>>
+>>
+>> What does "1" mean here? A bridge's 64bit prefetchable window?
+>>
+>
+> It's PHB's M64 window.
 
-I'm not sure what a stacked irqdomain is, but the mechanism described here
-isn't about interrupts at all.  It's about controlling whether certain devices
-are kept awake in order to have the possibility of generating a wakeup.  I
-believe the actual wakeup comes via the ordinary device interrupt.
+mem_resources[] of a hose are not windows of the root PCI bridge?
 
-> - Extend the common binding to allow a phandle+args value to point to 
-> the wakeup controller.
 
-Possibly, but the description in the common binding would have to be fairly
-vague to make the semantics fit.
 
-The current common binding is also a bit confusing by saying that the presence
-of the property means that all of the device's interrupts can be used as
-wakeup events, but then saying that there can also be a dedicated wakeup but
-not making it clear how to represent that...  Overloading it with device power
-control might muddy things even further.
+>
+>>
+>>> +	if (phb->ioda.reserved_pe_idx == 0)
+>>> +		r->start += phb->ioda.m64_segsize;
+>>> +	else if (phb->ioda.reserved_pe_idx == (phb->ioda.total_pe_num - 1))
+>>> +		r->end -= phb->ioda.m64_segsize;
+>>> +	else
+>>> +		pr_warn("  Cannot cut M64 segment for reserved PE#%d\n",
+>>> +			phb->ioda.reserved_pe_idx);
+>>> +
+>
+> Thanks,
+> Gavin
+>
 
--Scott
+
+-- 
+Alexey
