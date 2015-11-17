@@ -1,17 +1,17 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id AAEE51A0410
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 01:02:22 +1100 (AEDT)
-Message-Id: <ddde6d4b3fb18f591259ba187375e4b4848d247b.1446893431.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 9F4391A042E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 01:02:23 +1100 (AEDT)
+Message-Id: <bd1122b0182bbf6c753a35917344f0fc491e1946.1446893432.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1446893426.git.christophe.leroy@c-s.fr>
 References: <cover.1446893426.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 07/23] powerpc/8xx: Fix vaddr for IMMR early remap
+Subject: [PATCH v3 12/23] powerpc32: remove ioremap_base
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 17 Nov 2015 14:32:13 +0100 (CET)
+Date: Tue, 17 Nov 2015 14:32:24 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,189 +21,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Memory: 124428K/131072K available (3748K kernel code, 188K rwdata,
-648K rodata, 508K init, 290K bss, 6644K reserved)
-Kernel virtual memory layout:
-  * 0xfffdf000..0xfffff000  : fixmap
-  * 0xfde00000..0xfe000000  : consistent mem
-  * 0xfddf6000..0xfde00000  : early ioremap
-  * 0xc9000000..0xfddf6000  : vmalloc & ioremap
-SLUB: HWalign=16, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
-
-Today, IMMR is mapped 1:1 at startup
-
-Mapping IMMR 1:1 is just wrong because it may overlap with another
-area. On most mpc8xx boards it is OK as IMMR is set to 0xff000000
-but for instance on EP88xC board, IMMR is at 0xfa200000 which
-overlaps with VM ioremap area
-
-This patch fixes the virtual address for remapping IMMR with the fixmap
-regardless of the value of IMMR.
-
-The size of IMMR area is 256kbytes (CPM at offset 0, security engine
-at offset 128k) so a 512k page is enough
+ioremap_base is not initialised and is nowhere used so remove it
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
 v2: no change
-v3: Using fixmap instead of fixed address
+v3: fix comment as well
 
- arch/powerpc/include/asm/fixmap.h |  7 +++++++
- arch/powerpc/kernel/asm-offsets.c |  8 ++++++++
- arch/powerpc/kernel/head_8xx.S    | 11 ++++++-----
- arch/powerpc/mm/mmu_decl.h        |  7 +++++++
- arch/powerpc/sysdev/cpm_common.c  | 15 ++++++++++++---
- 5 files changed, 40 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/pgtable-ppc32.h    |  2 +-
+ arch/powerpc/mm/mmu_decl.h                  |  1 -
+ arch/powerpc/mm/pgtable_32.c                |  3 +--
+ arch/powerpc/platforms/embedded6xx/mpc10x.h | 10 ----------
+ 4 files changed, 2 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/fixmap.h b/arch/powerpc/include/asm/fixmap.h
-index 90f604b..d7dd8fb 100644
---- a/arch/powerpc/include/asm/fixmap.h
-+++ b/arch/powerpc/include/asm/fixmap.h
-@@ -51,6 +51,13 @@ enum fixed_addresses {
- 	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
- 	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
- #endif
-+#ifdef CONFIG_PPC_8xx
-+	/* For IMMR we need an aligned 512K area */
-+	FIX_IMMR_START,
-+	FIX_IMMR_TOP = (FIX_IMMR_START - 1 + ((512 * 1024) / PAGE_SIZE)) &
-+		       ~(((512 * 1024) / PAGE_SIZE) - 1),
-+	FIX_IMMR_BASE = FIX_IMMR_TOP - 1 + ((512 * 1024) / PAGE_SIZE),
-+#endif
- 	/* FIX_PCIE_MCFG, */
- 	__end_of_fixed_addresses
- };
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 221d584..e536a35 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -68,6 +68,10 @@
- #include "../mm/mmu_decl.h"
- #endif
- 
-+#ifdef CONFIG_PPC_8xx
-+#include <asm/fixmap.h>
-+#endif
-+
- int main(void)
- {
- 	DEFINE(THREAD, offsetof(struct task_struct, thread));
-@@ -770,5 +774,9 @@ int main(void)
- 
- 	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
- 
-+#ifdef CONFIG_PPC_8xx
-+	DEFINE(VIRT_IMMR_BASE, __fix_to_virt(FIX_IMMR_BASE));
-+#endif
-+
- 	return 0;
- }
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index bcba51b..7719eb2 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -30,6 +30,7 @@
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
- #include <asm/ptrace.h>
-+#include <asm/fixmap.h>
- 
- /* Macro to make the code more readable. */
- #ifdef CONFIG_8xx_CPU6
-@@ -763,7 +764,7 @@ start_here:
-  * virtual to physical.  Also, set the cache mode since that is defined
-  * by TLB entries and perform any additional mapping (like of the IMMR).
-  * If configured to pin some TLBs, we pin the first 8 Mbytes of kernel,
-- * 24 Mbytes of data, and the 8M IMMR space.  Anything not covered by
-+ * 24 Mbytes of data, and the 512k IMMR space.  Anything not covered by
-  * these mappings is mapped by page tables.
-  */
- initial_mmu:
-@@ -812,7 +813,7 @@ initial_mmu:
- 	ori	r8, r8, MD_APG_INIT@l
- 	mtspr	SPRN_MD_AP, r8
- 
--	/* Map another 8 MByte at the IMMR to get the processor
-+	/* Map a 512k page for the IMMR to get the processor
- 	 * internal registers (among other things).
- 	 */
- #ifdef CONFIG_PIN_TLB
-@@ -820,12 +821,12 @@ initial_mmu:
- 	mtspr	SPRN_MD_CTR, r10
- #endif
- 	mfspr	r9, 638			/* Get current IMMR */
--	andis.	r9, r9, 0xff80		/* Get 8Mbyte boundary */
-+	andis.	r9, r9, 0xfff8		/* Get 512 kbytes boundary */
- 
--	mr	r8, r9			/* Create vaddr for TLB */
-+	lis	r8, VIRT_IMMR_BASE@h	/* Create vaddr for TLB */
- 	ori	r8, r8, MD_EVALID	/* Mark it valid */
- 	mtspr	SPRN_MD_EPN, r8
--	li	r8, MD_PS8MEG		/* Set 8M byte page */
-+	li	r8, MD_PS512K | MD_GUARDED	/* Set 512k byte page */
- 	ori	r8, r8, MD_SVALID	/* Make it valid */
- 	mtspr	SPRN_MD_TWC, r8
- 	mr	r8, r9			/* Create paddr for TLB */
+diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
+index 351d403..f288d06c 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc32.h
++++ b/arch/powerpc/include/asm/pgtable-ppc32.h
+@@ -86,7 +86,7 @@ extern int icache_44x_need_flush;
+  * We no longer map larger than phys RAM with the BATs so we don't have
+  * to worry about the VMALLOC_OFFSET causing problems.  We do have to worry
+  * about clashes between our early calls to ioremap() that start growing down
+- * from ioremap_base being run into the VM area allocations (growing upwards
++ * from IOREMAP_TOP being run into the VM area allocations (growing upwards
+  * from VMALLOC_START).  For this reason we have ioremap_bot to check when
+  * we actually run into our mappings setup in the early boot with the VM
+  * system.  This really does become a problem for machines with good amounts
 diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 40dd5d3..6759f81 100644
+index 50ed2e9..eb61b24 100644
 --- a/arch/powerpc/mm/mmu_decl.h
 +++ b/arch/powerpc/mm/mmu_decl.h
-@@ -107,6 +107,13 @@ struct hash_pte;
- extern struct hash_pte *Hash, *Hash_end;
- extern unsigned long Hash_size, Hash_mask;
+@@ -100,7 +100,6 @@ extern void setbat(int index, unsigned long virt, phys_addr_t phys,
  
-+#define PHYS_IMMR_BASE (mfspr(SPRN_IMMR) & 0xfff80000)
-+#if CONFIG_PPC_8xx
-+#define VIRT_IMMR_BASE (__fix_to_virt(FIX_IMMR_BASE))
-+#else
-+#define VIRT_IMMR_BASE PHYS_IMMR_BASE
-+#endif
-+
- #endif /* CONFIG_PPC32 */
+ extern int __map_without_bats;
+ extern int __allow_ioremap_reserved;
+-extern unsigned long ioremap_base;
+ extern unsigned int rtas_data, rtas_size;
  
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index e00a5ee..1fce02f1 100644
---- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -29,6 +29,7 @@
- #include <asm/io.h>
- #include <asm/rheap.h>
- #include <asm/cpm.h>
-+#include <asm/fixmap.h>
+ struct hash_pte;
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index db0d35e..815ccd7 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -37,7 +37,6 @@
  
- #include <mm/mmu_decl.h>
+ #include "mmu_decl.h"
  
-@@ -37,12 +38,16 @@
- #endif
+-unsigned long ioremap_base;
+ unsigned long ioremap_bot;
+ EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
  
- #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
--static u32 __iomem *cpm_udbg_txdesc =
--	(u32 __iomem __force *)CONFIG_PPC_EARLY_DEBUG_CPM_ADDR;
-+static u32 __iomem *cpm_udbg_txdesc;
+@@ -173,7 +172,7 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
+ 	/*
+ 	 * Choose an address to map it to.
+ 	 * Once the vmalloc system is running, we use it.
+-	 * Before then, we use space going down from ioremap_base
++	 * Before then, we use space going down from IOREMAP_TOP
+ 	 * (ioremap_bot records where we're up to).
+ 	 */
+ 	p = addr & PAGE_MASK;
+diff --git a/arch/powerpc/platforms/embedded6xx/mpc10x.h b/arch/powerpc/platforms/embedded6xx/mpc10x.h
+index b290b63..5ad1202 100644
+--- a/arch/powerpc/platforms/embedded6xx/mpc10x.h
++++ b/arch/powerpc/platforms/embedded6xx/mpc10x.h
+@@ -24,13 +24,11 @@
+  *   Processor: 0x80000000 - 0x807fffff -> PCI I/O: 0x00000000 - 0x007fffff
+  *   Processor: 0xc0000000 - 0xdfffffff -> PCI MEM: 0x00000000 - 0x1fffffff
+  *   PCI MEM:   0x80000000 -> Processor System Memory: 0x00000000
+- *   EUMB mapped to: ioremap_base - 0x00100000 (ioremap_base - 1 MB)
+  *
+  * MAP B (CHRP Map)
+  *   Processor: 0xfe000000 - 0xfebfffff -> PCI I/O: 0x00000000 - 0x00bfffff
+  *   Processor: 0x80000000 - 0xbfffffff -> PCI MEM: 0x80000000 - 0xbfffffff
+  *   PCI MEM:   0x00000000 -> Processor System Memory: 0x00000000
+- *   EUMB mapped to: ioremap_base - 0x00100000 (ioremap_base - 1 MB)
+  */
  
- static void udbg_putc_cpm(char c)
- {
--	u8 __iomem *txbuf = (u8 __iomem __force *)in_be32(&cpm_udbg_txdesc[1]);
-+	static u8 __iomem *txbuf;
-+
-+	if (unlikely(txbuf == NULL))
-+		txbuf = (u8 __iomem __force *)
-+			 (in_be32(&cpm_udbg_txdesc[1]) - PHYS_IMMR_BASE +
-+			  VIRT_IMMR_BASE);
+ /*
+@@ -138,14 +136,6 @@
+ #define MPC10X_EUMB_WP_OFFSET		0x000ff000 /* Data path diagnostic, watchpoint reg offset */
+ #define MPC10X_EUMB_WP_SIZE		0x00001000 /* Data path diagnostic, watchpoint reg size */
  
- 	if (c == '\n')
- 		udbg_putc_cpm('\r');
-@@ -56,6 +61,10 @@ static void udbg_putc_cpm(char c)
- 
- void __init udbg_init_cpm(void)
- {
-+	cpm_udbg_txdesc = (u32 __iomem __force *)
-+			  (CONFIG_PPC_EARLY_DEBUG_CPM_ADDR - PHYS_IMMR_BASE +
-+			   VIRT_IMMR_BASE);
-+
- 	if (cpm_udbg_txdesc) {
- #ifdef CONFIG_CPM2
- 		setbat(1, 0xf0000000, 0xf0000000, 1024*1024, PAGE_KERNEL_NCG);
+-/*
+- * Define some recommended places to put the EUMB regs.
+- * For both maps, recommend putting the EUMB from 0xeff00000 to 0xefffffff.
+- */
+-extern unsigned long			ioremap_base;
+-#define	MPC10X_MAPA_EUMB_BASE		(ioremap_base - MPC10X_EUMB_SIZE)
+-#define	MPC10X_MAPB_EUMB_BASE		MPC10X_MAPA_EUMB_BASE
+-
+ enum ppc_sys_devices {
+ 	MPC10X_IIC1,
+ 	MPC10X_DMA0,
 -- 
 2.1.0
