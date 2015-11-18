@@ -1,32 +1,18 @@
-Return-Path: <vipin@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D889F1A0013
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 19:43:07 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
- Wed, 18 Nov 2015 14:13:03 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3C408E0056
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 14:13:31 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAI8gsAP35061868
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 14:12:55 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAI8gqoG016755
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 14:12:52 +0530
-From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Vipin K Parashar <vipin@linux.vnet.ibm.com>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: [PATCH v5] powerpc/pseries: Limit EPOW reset event warnings
-Date: Wed, 18 Nov 2015 14:12:37 +0530
-Message-Id: <1447836157-19599-1-git-send-email-vipin@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B1D51A034F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 20:19:00 +1100 (AEDT)
+Message-ID: <1447838334.1564.2.camel@ellerman.id.au>
+Subject: kernel BUG at drivers/scsi/scsi_lib.c:1096!
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "James E. J. Bottomley" <JBottomley@odin.com>, brking <brking@us.ibm.com>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Date: Wed, 18 Nov 2015 20:18:54 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,184 +22,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kernel prints respective warnings about various EPOW events for
-user information/action after parsing EPOW interrupts. At times
-below EPOW reset event warning is seen to be flooding kernel log
-over a period of time.
+Hi folks,
 
-May 25 03:46:34 alp kernel: Non critical power or cooling issue cleared
-May 25 03:46:52 alp kernel: Non critical power or cooling issue cleared
-May 25 03:53:48 alp kernel: Non critical power or cooling issue cleared
-May 25 03:55:46 alp kernel: Non critical power or cooling issue cleared
-May 25 03:56:34 alp kernel: Non critical power or cooling issue cleared
-May 25 03:59:04 alp kernel: Non critical power or cooling issue cleared
-May 25 04:02:01 alp kernel: Non critical power or cooling issue cleared
+I'm intermittently seeing the following oops on at least one powerpc box.
 
-These EPOW reset events are spurious in nature and are triggered by
-firmware witout an actual EPOW event being reset. This patch avoids these
-multiple EPOW reset warnings by using a counter variable. This variable
-is incremented every time an EPOW event is reported. Upon receiving a EPOW
-reset event the same variable is checked to filer out spurious events and
-decremented accordingly.
+The BUG_ON() is from:
 
-This patch also improves log messages to better describe EPOW event being
-reported. Merged adjacent log messages into single one to reduce number of
-lines printed per event.
+static int scsi_init_sgtable(struct request *req, struct scsi_data_buffer *sdb)
+{
+	...
+	count = blk_rq_map_sg(req->q, req, sdb->table.sgl);
+	BUG_ON(count > sdb->table.nents);
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
----
-v5 changes:
-   - Used num_epow_events counter variable to count number of epow_events
-   - Improved log messages to better describe epow event.
-   - Merged adjacent warnings into single lines.
+Looking at the dump it looks like count was 2, I can't work out what nents was.
 
-v4 changes:
-   - Changed the approach to depth counter to match the EPOW events and
-     EPOW reset.
-   - Converted pr_err() ot pr_info() for non-critical errors.
-   - Merged adjacent warnings into single line across the file.
-   - Fixed grammar in the warnings to make is short.
+The machine's just a fairly boring bare metal setup, with a single IPR adapter:
 
-v3 changes:
-   - Limit warning printed by EPOW RESET event, by guarding it with bool flag.
-     Instead of rate limiting all the EPOW events.
+0001:08:00.0 RAID bus controller: IBM PCI-E IPR SAS Adapter (ASIC) (rev 02)
+	Subsystem: IBM PCIe3 x8 SAS RAID Internal Adapter 6Gb (57D7)
+	Flags: bus master, fast devsel, latency 0
+	Kernel driver in use: ipr
 
-v2 changes:
-   - Merged multiple adjacent pr_err/pr_emerg into single line to reduce multi-line
-     warnings, based on Michael's comments.
 
- arch/powerpc/platforms/pseries/ras.c | 54 ++++++++++++++++++++----------------
- 1 file changed, 30 insertions(+), 24 deletions(-)
+Anyone seen it before or have any ideas?
 
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 3b6647e..bbe2856 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -40,6 +40,8 @@ static int ras_check_exception_token;
- #define EPOW_SENSOR_TOKEN	9
- #define EPOW_SENSOR_INDEX	0
- 
-+static int num_epow_events;
-+
- static irqreturn_t ras_epow_interrupt(int irq, void *dev_id);
- static irqreturn_t ras_error_interrupt(int irq, void *dev_id);
- 
-@@ -82,32 +84,30 @@ static void handle_system_shutdown(char event_modifier)
- {
- 	switch (event_modifier) {
- 	case EPOW_SHUTDOWN_NORMAL:
--		pr_emerg("Firmware initiated power off");
-+		pr_emerg("Power off requested\n");
- 		orderly_poweroff(true);
- 		break;
- 
- 	case EPOW_SHUTDOWN_ON_UPS:
--		pr_emerg("Loss of power reported by firmware, system is "
--			"running on UPS/battery");
--		pr_emerg("Check RTAS error log for details");
-+		pr_emerg("Loss of system power detected. System is running on"
-+			 " UPS/battery. Check RTAS error log for details\n");
- 		orderly_poweroff(true);
- 		break;
- 
- 	case EPOW_SHUTDOWN_LOSS_OF_CRITICAL_FUNCTIONS:
--		pr_emerg("Loss of system critical functions reported by "
--			"firmware");
--		pr_emerg("Check RTAS error log for details");
-+		pr_emerg("Loss of system critical functions detected. Check"
-+			 " RTAS error log for details\n");
- 		orderly_poweroff(true);
- 		break;
- 
- 	case EPOW_SHUTDOWN_AMBIENT_TEMPERATURE_TOO_HIGH:
--		pr_emerg("Ambient temperature too high reported by firmware");
--		pr_emerg("Check RTAS error log for details");
-+		pr_emerg("High ambient temperature detected. Check RTAS"
-+			 " error log for details\n");
- 		orderly_poweroff(true);
- 		break;
- 
- 	default:
--		pr_err("Unknown power/cooling shutdown event (modifier %d)",
-+		pr_err("Unknown power/cooling shutdown event (modifier = %d)\n",
- 			event_modifier);
- 	}
- }
-@@ -145,40 +145,47 @@ static void rtas_parse_epow_errlog(struct rtas_error_log *log)
- 
- 	switch (action_code) {
- 	case EPOW_RESET:
--		pr_err("Non critical power or cooling issue cleared");
-+		if (num_epow_events) {
-+			pr_info("Non critical power/cooling issue cleared\n");
-+			num_epow_events--;
-+		}
- 		break;
- 
- 	case EPOW_WARN_COOLING:
--		pr_err("Non critical cooling issue reported by firmware");
--		pr_err("Check RTAS error log for details");
-+		pr_info("Non-critical cooling issue detected. Check RTAS error"
-+			" log for details\n");
-+		num_epow_events++;
- 		break;
- 
- 	case EPOW_WARN_POWER:
--		pr_err("Non critical power issue reported by firmware");
--		pr_err("Check RTAS error log for details");
-+		pr_info("Non-critical power issue detected. Check RTAS error"
-+			" log for details\n");
-+		num_epow_events++;
- 		break;
- 
- 	case EPOW_SYSTEM_SHUTDOWN:
- 		handle_system_shutdown(epow_log->event_modifier);
-+		num_epow_events++;
- 		break;
- 
- 	case EPOW_SYSTEM_HALT:
--		pr_emerg("Firmware initiated power off");
-+		pr_emerg("Critical power/cooling issue detected. Check RTAS"
-+			 " error log for details. Powering off.\n");
- 		orderly_poweroff(true);
- 		break;
- 
- 	case EPOW_MAIN_ENCLOSURE:
- 	case EPOW_POWER_OFF:
--		pr_emerg("Critical power/cooling issue reported by firmware");
--		pr_emerg("Check RTAS error log for details");
--		pr_emerg("Immediate power off");
-+		pr_emerg("System about to lose power. Check RTAS error log "
-+			 " for details. Powering off immediately.\n");
- 		emergency_sync();
- 		kernel_power_off();
- 		break;
- 
- 	default:
--		pr_err("Unknown power/cooling event (action code %d)",
-+		pr_err("Unknown power/cooling event (action code  = %d)\n",
- 			action_code);
-+		num_epow_events++;
- 	}
- }
- 
-@@ -249,13 +256,12 @@ static irqreturn_t ras_error_interrupt(int irq, void *dev_id)
- 	log_error(ras_log_buf, ERR_TYPE_RTAS_LOG, fatal);
- 
- 	if (fatal) {
--		pr_emerg("Fatal hardware error reported by firmware");
--		pr_emerg("Check RTAS error log for details");
--		pr_emerg("Immediate power off");
-+		pr_emerg("Fatal hardware error detected. Check RTAS error"
-+			 " log for details. Powering off immediately\n");
- 		emergency_sync();
- 		kernel_power_off();
- 	} else {
--		pr_err("Recoverable hardware error reported by firmware");
-+		pr_err("Recoverable hardware error detected\n");
- 	}
- 
- 	spin_unlock(&ras_log_buf_lock);
--- 
-1.9.3
+cheers
+
+
+systemd[1]: Starting Uncomplicated firewall...
+         Starting Uncomplicated firewall...
+------------[ cut here ]------------
+kernel BUG at drivers/scsi/scsi_lib.c:1096!
+Oops: Exception in kernel mode, sig: 5 [#1]
+SMP NR_CPUS=2048 NUMA PowerNV
+Modules linked in:
+CPU: 132 PID: 2699 Comm: kworker/132:1H Not tainted 4.4.0-rc1-54939-ge22a248-dirty #77
+Workqueue: kblockd cfq_kick_queue
+task: c000000fef147400 ti: c000000feb384000 task.ti: c000000feb384000
+NIP: c0000000005ab4a8 LR: c0000000005ab490 CTR: 0000000000000000
+REGS: c000000feb387620 TRAP: 0700   Not tainted  (4.4.0-rc1-54939-ge22a248-dirty)
+MSR: 9000000100029033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 24002228  XER: 00000000
+CFAR: c000000000464950 SOFTE: 0 
+GPR00: c0000000005ab490 c000000feb3878a0 c000000000d77d00 0000000000000002 
+GPR04: c000000ff2030158 c000000ff47a0c00 0000000000000000 0000000000001000 
+GPR08: 0000000000000000 0000000000000001 0000000000000000 fffffffffffffff7 
+GPR12: 0000000000002200 c00000000fde5200 c0000000000c8098 c000000000b39858 
+GPR16: c000000000ae12c8 c000000000b39948 0000000000000000 0000000000000000 
+GPR20: c0000000005ab9c0 c0000017f5800144 0000000000000000 c000001e551a6850 
+GPR24: c0000017f5800140 c0000007efb9c800 0000000000000000 c000001e551a6800 
+GPR28: 0000000000000000 0000000000000000 c000000ff2030158 c000000feb420240 
+NIP [c0000000005ab4a8] scsi_init_sgtable+0xa8/0x180
+LR [c0000000005ab490] scsi_init_sgtable+0x90/0x180
+Call Trace:
+[c000000feb3878a0] [c0000000005ab490] scsi_init_sgtable+0x90/0x180 (unreliable)
+[c000000feb3878e0] [c0000000005ab5d4] scsi_init_io+0x54/0x160
+[c000000feb387930] [c0000000005fb43c] sd_init_command+0x6c/0xb00
+[c000000feb3879f0] [c0000000005ac2f8] scsi_setup_cmnd+0x108/0x1a0
+[c000000feb387a30] [c0000000005ac594] scsi_prep_fn+0x104/0x1c0
+[c000000feb387a70] [c00000000045d85c] blk_peek_request+0x20c/0x390
+[c000000feb387af0] [c0000000005ad6a8] scsi_request_fn+0xb8/0x7f0
+[c000000feb387bf0] [c0000000004583b4] __blk_run_queue+0x54/0x80
+[c000000feb387c20] [c00000000047e178] cfq_kick_queue+0x38/0xc0
+[c000000feb387c50] [c0000000000c00cc] process_one_work+0x2ac/0x560
+[c000000feb387ce0] [c0000000000c0510] worker_thread+0x190/0x660
+[c000000feb387d80] [c0000000000c8198] kthread+0x108/0x130
+[c000000feb387e30] [c0000000000095b0] ret_from_kernel_thread+0x5c/0xac
+Instruction dump:
+2fa30000 409e00e4 e8bf0000 e87e0030 7fc4f378 4beb91ed 60000000 813f0008 
+78630020 7f891840 7d301026 5529effe <0b090000> 907f0008 38600000 813e005c 
+---[ end trace 3ea632a512ff48d5 ]---
