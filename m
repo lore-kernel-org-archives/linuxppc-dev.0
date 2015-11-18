@@ -2,34 +2,37 @@ Return-Path: <cyrilbur@gmail.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C39191A0374
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 14:28:41 +1100 (AEDT)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42C7C1A074D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 14:28:47 +1100 (AEDT)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DFA6B141466
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:28:38 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id EBDEB14141A
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:28:45 +1100 (AEDT)
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
- Wed, 18 Nov 2015 13:28:34 +1000
+ Wed, 18 Nov 2015 13:28:42 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3ABB13578054
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:28:32 +1100 (EST)
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1499B2CE8057
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:28:41 +1100 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAI3SNEI262442
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:28:32 +1100
+ tAI3SXpX18874554
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:28:41 +1100
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAI3RxN5001601
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:27:59 +1100
+ tAI3S8Cj001925
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:28:08 +1100
 From: Cyril Bur <cyrilbur@gmail.com>
 To: mikey@neuling.org, anton@samba.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/8] FP/VEC/VSX switching optimisations
-Date: Wed, 18 Nov 2015 14:26:47 +1100
-Message-Id: <1447817215-15804-1-git-send-email-cyrilbur@gmail.com>
+Subject: [PATCH 2/8] selftests/powerpc: Test preservation of FPU and VMX regs
+ across preemption
+Date: Wed, 18 Nov 2015 14:26:49 +1100
+Message-Id: <1447817215-15804-3-git-send-email-cyrilbur@gmail.com>
+In-Reply-To: <1447817215-15804-1-git-send-email-cyrilbur@gmail.com>
+References: <1447817215-15804-1-git-send-email-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,112 +42,367 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Loop in assembly checking the registers with many threads.
 
-These patches are an extension of the work done by Anton
-https://patchwork.ozlabs.org/patch/537621/, they'll need to be applied on
-top of them.
-
-The goal of these patches is to rework how the 'math' registers (FP, VEC
-and VSX) are context switched. Currently the kernel adopts a lazy approach,
-always switching userspace tasks with all three facilities disabled and
-loads in each set of registers upon receiving each unavailable exception.
-The kernel does try to avoid disabling the features in the syscall quick
-path but it during testing it appears that even what should be a simple
-syscall still causes the kernel to use some facilities (vectorised memcpy
-for example) for its self and therefore disable it for the user task.
-
-The lazy approach makes for a small amount of time spent restoring
-userspace state and if tasks don't use any of these facilities it is the
-correct thing to do. In recent years, new workloads and new features such
-as auto vectorisation in GCC have meant that the use of these facilities by
-userspace has increased, so much so that some workloads can have a task
-take an FP unavailable exception and a VEC unavailable exception almost
-every time slice.
-
-This series removes the general laziness in favour of a more selective
-approach. If a task uses any of the 'math' facilities the kernel will load
-the registers and enable the facilities for future time slices as the
-assumption is that the use is likely to continue for some time. This
-removes the cost of having to take an exception.
-
-These patches also adds logic to detect if a task had been using a facility
-and optimises in the case where the registers are still hot, this provides
-another speedup as not only is the cost of the exception saved but the cost
-of copying up to 64 x 128 bit registers is also removed.
-
-With these patches applied on top of Antons patches I observe a significant
-improvement with Antons context switch microbenchmark using yield():
-
-http://ozlabs.org/~anton/junkcode/context_switch2.c
-
-Using an LE kernel compiled with pseries_le_defconfig
-
-Running:
-./context_switch2 --test=yield 8 8
-and adding one of --fp, --altivec or --vector
-Gives a 5% improvement on a POWER8 CPU.
-
-./context_switch2 --test=yield --fp --altivec --vector 8 8
-Gives a 15% improvement on a POWER8 CPU.
-
-I'll take this opportunity to note that 15% can be somewhat misleading. It
-may be reasonable to assume that each of the optimisations has had a
-compounding effect, this isn't incorrect and the reason behind the apparent
-compounding reveals a lot about where the current bottleneck is.
-
-The tests always touch FP first, then VEC then VSX which is the guaranteed
-worst case for the way the kernel currently operates. This behaviour will
-trigger three subsequent unavailable exceptions. Since the kernel currently
-enables all three facilities after taking a VSX unavailable the tests can
-be modified to touch VSX->VEC->FP in this order the difference in
-performance when touching all three only 5%. There is a compounding effect
-in so far as the cost of taking multiple unavailable exception is removed.
-This testing also demonstrates that the cost of the exception is by far the
-most expensive part of the current lazy approach.
-
-Cyril Bur (8):
-  selftests/powerpc: Test the preservation of FPU and VMX regs across
-    syscall
-  selftests/powerpc: Test preservation of FPU and VMX regs across
-    preemption
-  selftests/powerpc: Test FPU and VMX regs in signal ucontext
-  powerpc: Explicitly disable math features when copying thread
-  powerpc: Restore FPU/VEC/VSX if previously used
-  powerpc: Add the ability to save FPU without giving it up
-  powerpc: Add the ability to save Altivec without giving it up
-  powerpc: Add the ability to save VSX without giving it up
-
- arch/powerpc/include/asm/processor.h               |   2 +
- arch/powerpc/include/asm/switch_to.h               |   5 +-
- arch/powerpc/kernel/asm-offsets.c                  |   2 +
- arch/powerpc/kernel/entry_64.S                     |  55 +++++-
- arch/powerpc/kernel/fpu.S                          |  25 +--
- arch/powerpc/kernel/ppc_ksyms.c                    |   4 -
- arch/powerpc/kernel/process.c                      | 144 ++++++++++++--
- arch/powerpc/kernel/vector.S                       |  45 +----
- tools/testing/selftests/powerpc/Makefile           |   3 +-
- tools/testing/selftests/powerpc/math/Makefile      |  19 ++
- tools/testing/selftests/powerpc/math/basic_asm.h   |  26 +++
- tools/testing/selftests/powerpc/math/fpu_asm.S     | 185 +++++++++++++++++
- tools/testing/selftests/powerpc/math/fpu_preempt.c |  92 +++++++++
- tools/testing/selftests/powerpc/math/fpu_signal.c  | 119 +++++++++++
- tools/testing/selftests/powerpc/math/fpu_syscall.c |  79 ++++++++
- tools/testing/selftests/powerpc/math/vmx_asm.S     | 219 +++++++++++++++++++++
- tools/testing/selftests/powerpc/math/vmx_preempt.c |  92 +++++++++
- tools/testing/selftests/powerpc/math/vmx_signal.c  | 124 ++++++++++++
- tools/testing/selftests/powerpc/math/vmx_syscall.c |  81 ++++++++
- 19 files changed, 1240 insertions(+), 81 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/math/Makefile
- create mode 100644 tools/testing/selftests/powerpc/math/basic_asm.h
- create mode 100644 tools/testing/selftests/powerpc/math/fpu_asm.S
+Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+---
+ tools/testing/selftests/powerpc/math/Makefile      |  7 +-
+ tools/testing/selftests/powerpc/math/fpu_asm.S     | 34 ++++++++
+ tools/testing/selftests/powerpc/math/fpu_preempt.c | 92 ++++++++++++++++++++++
+ tools/testing/selftests/powerpc/math/vmx_asm.S     | 44 ++++++++++-
+ tools/testing/selftests/powerpc/math/vmx_preempt.c | 92 ++++++++++++++++++++++
+ 5 files changed, 263 insertions(+), 6 deletions(-)
  create mode 100644 tools/testing/selftests/powerpc/math/fpu_preempt.c
- create mode 100644 tools/testing/selftests/powerpc/math/fpu_signal.c
- create mode 100644 tools/testing/selftests/powerpc/math/fpu_syscall.c
- create mode 100644 tools/testing/selftests/powerpc/math/vmx_asm.S
  create mode 100644 tools/testing/selftests/powerpc/math/vmx_preempt.c
- create mode 100644 tools/testing/selftests/powerpc/math/vmx_signal.c
- create mode 100644 tools/testing/selftests/powerpc/math/vmx_syscall.c
 
+diff --git a/tools/testing/selftests/powerpc/math/Makefile b/tools/testing/selftests/powerpc/math/Makefile
+index 896d9e2..9fa690f 100644
+--- a/tools/testing/selftests/powerpc/math/Makefile
++++ b/tools/testing/selftests/powerpc/math/Makefile
+@@ -1,12 +1,15 @@
+-TEST_PROGS := fpu_syscall vmx_syscall
++TEST_PROGS := fpu_syscall fpu_preempt vmx_syscall vmx_preempt
+ 
+ all: $(TEST_PROGS)
+ 
+ $(TEST_PROGS): ../harness.c
+-$(TEST_PROGS): CFLAGS += -O2 -g
++$(TEST_PROGS): CFLAGS += -O2 -g -pthread
+ 
+ fpu_syscall: fpu_asm.S
++fpu_preempt: fpu_asm.S
++
+ vmx_syscall: vmx_asm.S
++vmx_preempt: vmx_asm.S
+ 
+ include ../../lib.mk
+ 
+diff --git a/tools/testing/selftests/powerpc/math/fpu_asm.S b/tools/testing/selftests/powerpc/math/fpu_asm.S
+index d5412c1..5ff0adc 100644
+--- a/tools/testing/selftests/powerpc/math/fpu_asm.S
++++ b/tools/testing/selftests/powerpc/math/fpu_asm.S
+@@ -149,3 +149,37 @@ FUNC_START(test_fpu)
+ 	POP_BASIC_STACK(256)
+ 	blr
+ FUNC_END(test_fpu)
++
++#int preempt_fpu(double *darray, volatile int *not_ready, int *sentinal)
++#On starting will (atomically) decrement not_ready as a signal that the FPU
++#has been loaded with darray. Will proceed to check the validity of the FPU
++#registers while sentinal is not zero.
++FUNC_START(preempt_fpu)
++	PUSH_BASIC_STACK(256)
++	std r3,32(sp) #double *darray
++	std r4,40(sp) #volatile int *not_ready
++	std r5,48(sp) #int *sentinal
++	PUSH_FPU(56)
++
++	bl load_fpu
++
++	#Atomic DEC
++	ld r3,40(sp)
++1:	lwarx r4,0,r3
++	addi r4,r4,-1
++	stwcx. r4,0,r3
++	bne- 1b
++
++2:	ld r3, 32(sp)
++	bl check_fpu
++	cmpdi r3,0
++	bne 3f
++	ld r4, 48(sp)
++	ld r5, 0(r4)
++	cmpwi r5,0
++	bne 2b
++
++3:	POP_FPU(56)
++	POP_BASIC_STACK(256)
++	blr
++FUNC_END(preempt_fpu)
+diff --git a/tools/testing/selftests/powerpc/math/fpu_preempt.c b/tools/testing/selftests/powerpc/math/fpu_preempt.c
+new file mode 100644
+index 0000000..e24cf9b
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/math/fpu_preempt.c
+@@ -0,0 +1,92 @@
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/syscall.h>
++#include <sys/time.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <stdlib.h>
++#include <pthread.h>
++
++#include "utils.h"
++
++/* Time to wait for workers to get preempted (seconds) */
++#define PREEMPT_TIME 20
++/*
++ * Factor by which to multiply number of online CPUs for total number of
++ * worker threads
++ */
++#define THREAD_FACTOR 8
++
++
++__thread double darray[] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
++		     1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
++		     2.1};
++
++volatile int not_ready;
++int running;
++
++extern void preempt_fpu(double *darray, volatile int *not_ready, int *sentinal);
++
++void *preempt_fpu_c(void *p)
++{
++	int i;
++	srand(pthread_self());
++	for (i = 0; i < 21; i++)
++		darray[i] = rand();
++
++	/* Test failed if it ever returns */
++	preempt_fpu(darray, &not_ready, &running);
++
++	return p;
++}
++
++int test_preempt_fpu(void)
++{
++	int i, rc, threads;
++	pthread_t *tids;
++
++	threads = sysconf(_SC_NPROCESSORS_ONLN) * THREAD_FACTOR;
++	tids = malloc((threads) * sizeof(pthread_t));
++	FAIL_IF(!tids);
++
++	running = true;
++	not_ready = threads;
++	for (i = 0; i < threads; i++) {
++		rc = pthread_create(&tids[i], NULL, preempt_fpu_c, NULL);
++		FAIL_IF(rc);
++	}
++
++	setbuf(stdout, NULL);
++	/* Not really nessesary but nice to wait for every thread to start */
++	printf("\tWaiting for all workers to start...");
++	while(not_ready);
++	printf("done\n");
++
++	printf("\tWaiting for %d seconds to let some workers get preempted...", PREEMPT_TIME);
++	sleep(PREEMPT_TIME);
++	printf("done\n");
++
++	printf("\tKilling workers...");
++	running = 0;
++	for (i = 0; i < threads; i++) {
++		void *rc_p;
++		pthread_join(tids[i], &rc_p);
++
++		/*
++		 * Harness will say the fail was here, look at why preempt_fpu
++		 * returned
++		 */
++		if ((long) rc_p)
++			printf("oops\n");
++		FAIL_IF((long) rc_p);
++	}
++	printf("done\n");
++
++	free(tids);
++	return 0;
++}
++
++int main(int argc, char *argv[])
++{
++	return test_harness(test_preempt_fpu, "fpu_preempt");
++}
+diff --git a/tools/testing/selftests/powerpc/math/vmx_asm.S b/tools/testing/selftests/powerpc/math/vmx_asm.S
+index e642e67..23db4b3 100644
+--- a/tools/testing/selftests/powerpc/math/vmx_asm.S
++++ b/tools/testing/selftests/powerpc/math/vmx_asm.S
+@@ -1,5 +1,6 @@
+ #include "basic_asm.h"
+ 
++#POS MUST BE 16 ALIGNED!
+ #define PUSH_VMX(pos,reg) \
+ 	li	reg,pos; \
+ 	stvx	v20,reg,sp; \
+@@ -26,6 +27,7 @@
+ 	addi	reg,reg,16; \
+ 	stvx	v31,reg,sp;
+ 
++#POS MUST BE 16 ALIGNED!
+ #define POP_VMX(pos,reg) \
+ 	li	reg,pos; \
+ 	lvx	v20,reg,sp; \
+@@ -84,7 +86,7 @@ FUNC_END(load_vmx)
+ 
+ #Should be safe from C, only touches r4, r5 and v0,v1,v2
+ FUNC_START(check_vmx)
+-	PUSH_BASIC_STACK(16)
++	PUSH_BASIC_STACK(32)
+ 	mr r4,r3
+ 	li	r3,1 #assume a bad result
+ 	li	r5,0
+@@ -153,7 +155,7 @@ FUNC_START(check_vmx)
+ 	cmpdi	r0,0xffffffff
+ 	bne	1f
+ 	li	r3,0
+-1:	POP_BASIC_STACK(16)
++1:	POP_BASIC_STACK(32)
+ 	blr
+ FUNC_END(check_vmx)
+ 
+@@ -164,7 +166,7 @@ FUNC_START(test_vmx)
+ 	PUSH_BASIC_STACK(512)
+ 	std	r3,40(sp) #Address of varray
+ 	std r4,48(sp) #address of pid
+-	PUSH_VMX(56, r4)
++	PUSH_VMX(64, r4)
+ 
+ 	bl load_vmx
+ 
+@@ -177,7 +179,41 @@ FUNC_START(test_vmx)
+ 	ld r3,40(sp)
+ 	bl check_vmx
+ 
+-	POP_VMX(56,r4)
++	POP_VMX(64,r4)
+ 	POP_BASIC_STACK(512)
+ 	blr
+ FUNC_END(test_vmx)
++
++#int preempt_vmx(v4si *varray, volatile int *not_ready, int *sentinal)
++#On starting will (atomically) decrement not_ready as a signal that the FPU
++#has been loaded with varray. Will proceed to check the validity of the FPU
++#registers while sentinal is not zero.
++FUNC_START(preempt_vmx)
++	PUSH_BASIC_STACK(512)
++	std r3,32(sp) #v4si *varray
++	std r4,40(sp) #volatile int *not_ready
++	std r5,48(sp) #int *sentinal
++	PUSH_VMX(64,r4)
++
++	bl load_vmx
++
++	#Atomic DEC
++	ld r3,40(sp)
++1:	lwarx r4,0,r3
++	addi r4,r4,-1
++	stwcx. r4,0,r3
++	bne- 1b
++
++2:	ld r3,32(sp)
++	bl check_vmx
++	cmpdi r3,0
++	bne 3f
++	ld r4,48(sp)
++	ld r5,0(r4)
++	cmpwi r5,0
++	bne 2b
++
++3:	POP_VMX(64,r4)
++	POP_BASIC_STACK(512)
++	blr
++FUNC_END(preempt_vmx)
+diff --git a/tools/testing/selftests/powerpc/math/vmx_preempt.c b/tools/testing/selftests/powerpc/math/vmx_preempt.c
+new file mode 100644
+index 0000000..342db15
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/math/vmx_preempt.c
+@@ -0,0 +1,92 @@
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/syscall.h>
++#include <sys/time.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <stdlib.h>
++#include <pthread.h>
++
++#include "utils.h"
++
++/* Time to wait for workers to get preempted (seconds) */
++#define PREEMPT_TIME 20
++/*
++ * Factor by which to multiply number of online CPUs for total number of
++ * worker threads
++ */
++#define THREAD_FACTOR 8
++
++typedef int v4si __attribute__ ((vector_size (16)));
++__thread v4si varray[] = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10,11,12},
++	{13,14,15,16},{17,18,19,20},{21,22,23,24},
++	{25,26,27,28},{29,30,31,32},{33,34,35,36},
++	{37,38,39,40},{41,42,43,44},{45,46,47,48}};
++
++volatile int not_ready;
++int running;
++
++extern void preempt_vmx(v4si *varray, volatile int *not_ready, int *sentinal);
++
++void *preempt_vmx_c(void *p)
++{
++	int i, j;
++	srand(pthread_self());
++	for (i = 0; i < 12; i++)
++		for (j = 0; j < 4; j++)
++			varray[i][j] = rand();
++
++	/* Test fails if it ever returns */
++	preempt_vmx(varray, &not_ready, &running);
++	return p;
++}
++
++int test_preempt_vmx(void)
++{
++	int i, rc, threads;
++	pthread_t *tids;
++
++	threads = sysconf(_SC_NPROCESSORS_ONLN) * THREAD_FACTOR;
++	tids = malloc(threads * sizeof(pthread_t));
++	FAIL_IF(!tids);
++
++	running = true;
++	not_ready = threads;
++	for (i = 0; i < threads; i++) {
++		rc = pthread_create(&tids[i], NULL, preempt_vmx_c, NULL);
++		FAIL_IF(rc);
++	}
++
++	setbuf(stdout, NULL);
++	/* Not really nessesary but nice to wait for every thread to start */
++	printf("\tWaiting for all workers to start...");
++	while(not_ready);
++	printf("done\n");
++
++	printf("\tWaiting for %d seconds to let some workers get preempted...", PREEMPT_TIME);
++	sleep(PREEMPT_TIME);
++	printf("done\n");
++
++	printf("\tKilling workers...");
++	running = 0;
++	for (i = 0; i < threads; i++) {
++		void *rc_p;
++		pthread_join(tids[i], &rc_p);
++
++		/*
++		 * Harness will say the fail was here, look at why preempt_vmx
++		 * returned
++		 */
++		if ((long) rc_p)
++			printf("oops\n");
++		FAIL_IF((long) rc_p);
++	}
++	printf("done\n");
++
++	return 0;
++}
++
++int main(int argc, char *argv[])
++{
++	return test_harness(test_preempt_vmx, "vmx_preempt");
++}
 -- 
 2.6.2
