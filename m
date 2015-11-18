@@ -1,36 +1,36 @@
 Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C97B1A0784
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 14:29:10 +1100 (AEDT)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 817981A06F9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 14:29:17 +1100 (AEDT)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CC14314145F
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:29:09 +1100 (AEDT)
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by ozlabs.org (Postfix) with ESMTPS id 1978314145F
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:29:17 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
- Wed, 18 Nov 2015 13:29:09 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E58DC3578047
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:29:05 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAI3Svtn52101166
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:29:05 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAI3SXRD024623
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:28:33 +1100
+ Wed, 18 Nov 2015 13:29:16 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 99B6E3578054
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:29:13 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAI3T7bK35193036
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:29:15 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAI3SfSS019415
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:28:41 +1100
 From: Cyril Bur <cyrilbur@gmail.com>
 To: mikey@neuling.org, anton@samba.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/8] selftests/powerpc: Test the preservation of FPU and VMX
- regs across syscall
-Date: Wed, 18 Nov 2015 14:26:48 +1100
-Message-Id: <1447817215-15804-2-git-send-email-cyrilbur@gmail.com>
+Subject: [PATCH 3/8] selftests/powerpc: Test FPU and VMX regs in signal
+ ucontext
+Date: Wed, 18 Nov 2015 14:26:50 +1100
+Message-Id: <1447817215-15804-4-git-send-email-cyrilbur@gmail.com>
 In-Reply-To: <1447817215-15804-1-git-send-email-cyrilbur@gmail.com>
 References: <1447817215-15804-1-git-send-email-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,258 +42,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Test that the non volatile floating point and Altivec registers get
-correctly preserved across the fork() syscall.
-
-fork() works nicely for this purpose, the registers should be the same for
-both parent and child
+Load up the non volatile FPU and VMX regs and ensure that they are the
+expected value in a signal handler
 
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- tools/testing/selftests/powerpc/Makefile           |   3 +-
- tools/testing/selftests/powerpc/math/Makefile      |  14 ++
- tools/testing/selftests/powerpc/math/basic_asm.h   |  26 +++
- tools/testing/selftests/powerpc/math/fpu_asm.S     | 151 +++++++++++++++++
- tools/testing/selftests/powerpc/math/fpu_syscall.c |  79 +++++++++
- tools/testing/selftests/powerpc/math/vmx_asm.S     | 183 +++++++++++++++++++++
- tools/testing/selftests/powerpc/math/vmx_syscall.c |  81 +++++++++
- 7 files changed, 536 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/math/Makefile
- create mode 100644 tools/testing/selftests/powerpc/math/basic_asm.h
- create mode 100644 tools/testing/selftests/powerpc/math/fpu_asm.S
- create mode 100644 tools/testing/selftests/powerpc/math/fpu_syscall.c
- create mode 100644 tools/testing/selftests/powerpc/math/vmx_asm.S
- create mode 100644 tools/testing/selftests/powerpc/math/vmx_syscall.c
+ tools/testing/selftests/powerpc/math/Makefile     |   4 +-
+ tools/testing/selftests/powerpc/math/fpu_signal.c | 119 +++++++++++++++++++++
+ tools/testing/selftests/powerpc/math/vmx_signal.c | 124 ++++++++++++++++++++++
+ 3 files changed, 246 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_signal.c
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_signal.c
 
-diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
-index 0c2706b..19e8191 100644
---- a/tools/testing/selftests/powerpc/Makefile
-+++ b/tools/testing/selftests/powerpc/Makefile
-@@ -22,7 +22,8 @@ SUB_DIRS = benchmarks 		\
- 	   switch_endian	\
- 	   syscalls		\
- 	   tm			\
--	   vphn
-+	   vphn         \
-+	   math
- 
- endif
- 
 diff --git a/tools/testing/selftests/powerpc/math/Makefile b/tools/testing/selftests/powerpc/math/Makefile
-new file mode 100644
-index 0000000..896d9e2
---- /dev/null
+index 9fa690f..5ce000bf 100644
+--- a/tools/testing/selftests/powerpc/math/Makefile
 +++ b/tools/testing/selftests/powerpc/math/Makefile
-@@ -0,0 +1,14 @@
-+TEST_PROGS := fpu_syscall vmx_syscall
-+
-+all: $(TEST_PROGS)
-+
-+$(TEST_PROGS): ../harness.c
-+$(TEST_PROGS): CFLAGS += -O2 -g
-+
-+fpu_syscall: fpu_asm.S
-+vmx_syscall: vmx_asm.S
-+
-+include ../../lib.mk
-+
-+clean:
-+	rm -f $(TEST_PROGS) *.o
-diff --git a/tools/testing/selftests/powerpc/math/basic_asm.h b/tools/testing/selftests/powerpc/math/basic_asm.h
+@@ -1,4 +1,4 @@
+-TEST_PROGS := fpu_syscall fpu_preempt vmx_syscall vmx_preempt
++TEST_PROGS := fpu_syscall fpu_preempt fpu_signal vmx_syscall vmx_preempt vmx_signal
+ 
+ all: $(TEST_PROGS)
+ 
+@@ -7,9 +7,11 @@ $(TEST_PROGS): CFLAGS += -O2 -g -pthread
+ 
+ fpu_syscall: fpu_asm.S
+ fpu_preempt: fpu_asm.S
++fpu_signal:  fpu_asm.S
+ 
+ vmx_syscall: vmx_asm.S
+ vmx_preempt: vmx_asm.S
++vmx_signal: vmx_asm.S
+ 
+ include ../../lib.mk
+ 
+diff --git a/tools/testing/selftests/powerpc/math/fpu_signal.c b/tools/testing/selftests/powerpc/math/fpu_signal.c
 new file mode 100644
-index 0000000..27aca79
+index 0000000..ca61d1f
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/math/basic_asm.h
-@@ -0,0 +1,26 @@
-+#include <ppc-asm.h>
-+#include <asm/unistd.h>
-+
-+#define LOAD_REG_IMMEDIATE(reg,expr) \
-+	lis	reg,(expr)@highest;	\
-+	ori	reg,reg,(expr)@higher;	\
-+	rldicr	reg,reg,32,31;	\
-+	oris	reg,reg,(expr)@high;	\
-+	ori	reg,reg,(expr)@l;
-+
-+#define PUSH_BASIC_STACK(size) \
-+	std	2,24(sp); \
-+	mflr	r0; \
-+	std	r0,16(sp); \
-+	mfcr	r0; \
-+	stw	r0,8(sp); \
-+	stdu	sp,-size(sp);
-+
-+#define POP_BASIC_STACK(size) \
-+	addi	sp,sp,size; \
-+	ld	2,24(sp); \
-+	ld	r0,16(sp); \
-+	mtlr	r0; \
-+	lwz	r0,8(sp); \
-+	mtcr	r0; \
-+
-diff --git a/tools/testing/selftests/powerpc/math/fpu_asm.S b/tools/testing/selftests/powerpc/math/fpu_asm.S
-new file mode 100644
-index 0000000..d5412c1
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/math/fpu_asm.S
-@@ -0,0 +1,151 @@
-+#include "basic_asm.h"
-+
-+#define PUSH_FPU(pos) \
-+	stfd	f14,pos(sp); \
-+	stfd	f15,pos+8(sp); \
-+	stfd	f16,pos+16(sp); \
-+	stfd	f17,pos+24(sp); \
-+	stfd	f18,pos+32(sp); \
-+	stfd	f19,pos+40(sp); \
-+	stfd	f20,pos+48(sp); \
-+	stfd	f21,pos+56(sp); \
-+	stfd	f22,pos+64(sp); \
-+	stfd	f23,pos+72(sp); \
-+	stfd	f24,pos+80(sp); \
-+	stfd	f25,pos+88(sp); \
-+	stfd	f26,pos+96(sp); \
-+	stfd	f27,pos+104(sp); \
-+	stfd	f28,pos+112(sp); \
-+	stfd	f29,pos+120(sp); \
-+	stfd	f30,pos+128(sp); \
-+	stfd	f31,pos+136(sp);
-+
-+#define POP_FPU(pos) \
-+	lfd	f14,pos(sp); \
-+	lfd	f15,pos+8(sp); \
-+	lfd	f16,pos+16(sp); \
-+	lfd	f17,pos+24(sp); \
-+	lfd	f18,pos+32(sp); \
-+	lfd	f19,pos+40(sp); \
-+	lfd	f20,pos+48(sp); \
-+	lfd	f21,pos+56(sp); \
-+	lfd	f22,pos+64(sp); \
-+	lfd	f23,pos+72(sp); \
-+	lfd	f24,pos+80(sp); \
-+	lfd	f25,pos+88(sp); \
-+	lfd	f26,pos+96(sp); \
-+	lfd	f27,pos+104(sp); \
-+	lfd	f28,pos+112(sp); \
-+	lfd	f29,pos+120(sp); \
-+	lfd	f30,pos+128(sp); \
-+	lfd	f31,pos+136(sp);
-+
-+#Careful calling this, it will 'clobber' fpu (by design)
-+#Don't call this from C
-+FUNC_START(load_fpu)
-+	lfd	f14,0(r3)
-+	lfd	f15,8(r3)
-+	lfd	f16,16(r3)
-+	lfd	f17,24(r3)
-+	lfd	f18,32(r3)
-+	lfd	f19,40(r3)
-+	lfd	f20,48(r3)
-+	lfd	f21,56(r3)
-+	lfd	f22,64(r3)
-+	lfd	f23,72(r3)
-+	lfd	f24,80(r3)
-+	lfd	f25,88(r3)
-+	lfd	f26,96(r3)
-+	lfd	f27,104(r3)
-+	lfd	f28,112(r3)
-+	lfd	f29,120(r3)
-+	lfd	f30,128(r3)
-+	lfd	f31,136(r3)
-+	blr
-+FUNC_END(load_fpu)
-+
-+FUNC_START(check_fpu)
-+	mr r4,r3
-+	li	r3,1 #assume a bad result
-+	lfd	f0,0(r4)
-+	fcmpu	cr1,f0,f14
-+	bne	cr1,1f
-+	lfd	f0,8(r4)
-+	fcmpu	cr1,f0,f15
-+	bne	cr1,1f
-+	lfd	f0,16(r4)
-+	fcmpu	cr1,f0,f16
-+	bne	cr1,1f
-+	lfd	f0,24(r4)
-+	fcmpu	cr1,f0,f17
-+	bne	cr1,1f
-+	lfd	f0,32(r4)
-+	fcmpu	cr1,f0,f18
-+	bne	cr1,1f
-+	lfd	f0,40(r4)
-+	fcmpu	cr1,f0,f19
-+	bne	cr1,1f
-+	lfd	f0,48(r4)
-+	fcmpu	cr1,f0,f20
-+	bne	cr1,1f
-+	lfd	f0,56(r4)
-+	fcmpu	cr1,f0,f21
-+	bne	cr1,1f
-+	lfd	f0,64(r4)
-+	fcmpu	cr1,f0,f22
-+	bne	cr1,1f
-+	lfd	f0,72(r4)
-+	fcmpu	cr1,f0,f23
-+	bne	cr1,1f
-+	lfd	f0,80(r4)
-+	fcmpu	cr1,f0,f24
-+	bne	cr1,1f
-+	lfd	f0,88(r4)
-+	fcmpu	cr1,f0,f25
-+	bne	cr1,1f
-+	lfd	f0,96(r4)
-+	fcmpu	cr1,f0,f26
-+	bne	cr1,1f
-+	lfd	f0,104(r4)
-+	fcmpu	cr1,f0,f27
-+	bne	cr1,1f
-+	lfd	f0,112(r4)
-+	fcmpu	cr1,f0,f28
-+	bne	cr1,1f
-+	lfd	f0,120(r4)
-+	fcmpu	cr1,f0,f29
-+	bne	cr1,1f
-+	lfd	f0,128(r4)
-+	fcmpu	cr1,f0,f30
-+	bne	cr1,1f
-+	lfd	f0,136(r4)
-+	fcmpu	cr1,f0,f31
-+	bne	cr1,1f
-+	li	r3,0 #Sucess!!!
-+1:	blr
-+
-+FUNC_START(test_fpu)
-+	#r3 holds pointer to where to put the result of fork
-+	#f14-f31 are non volatiles
-+	PUSH_BASIC_STACK(256)
-+	std	r3,40(sp) #Address of darray
-+	std r4,48(sp) #Address of pid
-+	PUSH_FPU(56)
-+
-+	bl load_fpu
-+	nop
-+	li	r0,__NR_fork
-+	sc
-+
-+	#pass the result of the fork to the caller
-+	ld	r9,48(sp)
-+	std	r3,0(r9)
-+
-+	ld r3,40(sp)
-+	bl check_fpu
-+	nop
-+
-+	POP_FPU(56)
-+	POP_BASIC_STACK(256)
-+	blr
-+FUNC_END(test_fpu)
-diff --git a/tools/testing/selftests/powerpc/math/fpu_syscall.c b/tools/testing/selftests/powerpc/math/fpu_syscall.c
-new file mode 100644
-index 0000000..a967fd6
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/math/fpu_syscall.c
-@@ -0,0 +1,79 @@
++++ b/tools/testing/selftests/powerpc/math/fpu_signal.c
+@@ -0,0 +1,119 @@
 +#include <stdio.h>
 +#include <unistd.h>
 +#include <sys/syscall.h>
@@ -301,353 +89,247 @@ index 0000000..a967fd6
 +#include <sys/types.h>
 +#include <sys/wait.h>
 +#include <stdlib.h>
++#include <pthread.h>
 +
 +#include "utils.h"
 +
-+extern int test_fpu(double *darray, pid_t *pid);
++/* Number of times each thread should recieve the signal */
++#define ITERATIONS 10
++/*
++ * Factor by which to multiply number of online CPUs for total number of
++ * worker threads
++ */
++#define THREAD_FACTOR 8
 +
-+double darray[] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
++__thread double darray[] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
 +		     1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
 +		     2.1};
 +
-+int syscall_fpu(void)
-+{
-+	pid_t fork_pid;
-+	int i;
-+	int ret;
-+	int child_ret;
-+	for (i = 0; i < 1000; i++) {
-+		/* test_fpu will fork() */
-+		ret = test_fpu(darray, &fork_pid);
-+		if (fork_pid == -1)
-+			return -1;
-+		if (fork_pid == 0)
-+			exit(ret);
-+		waitpid(fork_pid, &child_ret, 0);
-+		if (ret || child_ret)
-+			return 1;
-+	}
++bool bad_context;
++int running;
++volatile int not_ready;
++extern long preempt_fpu(double *darray, volatile int *not_ready, int *sentinal);
 +
-+	return 0;
++void signal_fpu_sig(int sig, siginfo_t *info, void *context)
++{
++	int i;
++	ucontext_t *uc = context;
++	mcontext_t *mc = &uc->uc_mcontext;
++
++	/* Only the non volatiles were loaded up */
++	for (i = 14; i < 32; i++) {
++		if (mc->fp_regs[i] != darray[i - 14]) {
++			bad_context = true;
++			break;
++		}
++	}
 +}
 +
-+int test_syscall_fpu(void)
++void *signal_fpu_c(void *p)
 +{
-+	/*
-+	 * Setup an environment with much context switching
-+	 */
-+	pid_t pid2;
-+	pid_t pid = fork();
-+	int ret;
-+	int child_ret;
-+	FAIL_IF(pid == -1);
++	int i;
++	long rc;
++	struct sigaction act;
++	act.sa_sigaction = signal_fpu_sig;
++	act.sa_flags = SA_SIGINFO;
++	rc = sigaction(SIGUSR1, &act, NULL);
++	if (rc)
++		return p;
 +
-+	pid2 = fork();
-+	/* Can't FAIL_IF(pid2 == -1); because already forked once */
-+	if (pid2 == -1) {
-+		/*
-+		 * Couldn't fork, ensure test is a fail
-+		 */
-+		child_ret = ret = 1;
-+	} else {
-+		ret = syscall_fpu();
-+		if (pid2)
-+			waitpid(pid2, &child_ret, 0);
-+		else
-+			exit(ret);
++	srand(pthread_self());
++	for (i = 0; i < 21; i++)
++		darray[i] = rand();
++
++	rc = preempt_fpu(darray, &not_ready, &running);
++
++	return (void *) rc;
++}
++
++int test_signal_fpu(void)
++{
++	int i, j, rc, threads;
++	void *rc_p;
++	pthread_t *tids;
++
++	threads = sysconf(_SC_NPROCESSORS_ONLN) * THREAD_FACTOR;
++	tids = malloc(threads * sizeof(pthread_t));
++	FAIL_IF(!tids);
++
++	running = true;
++	not_ready = threads;
++	for (i = 0; i < threads; i++) {
++		rc = pthread_create(&tids[i], NULL, signal_fpu_c, NULL);
++		FAIL_IF(rc);
 +	}
 +
-+	ret |= child_ret;
++	setbuf(stdout, NULL);
++	printf("\tWaiting for all workers to start...");
++	while (not_ready);
++	printf("done\n");
 +
-+	if (pid)
-+		waitpid(pid, &child_ret, 0);
-+	else
-+		exit(ret);
++	printf("\tSending signals to all threads %d times...", ITERATIONS);
++	for (i = 0; i < ITERATIONS; i++) {
++		for (j = 0; j < threads; j++) {
++			pthread_kill(tids[j], SIGUSR1);
++		}
++		sleep(1);
++	}
++	printf("done\n");
 +
-+	FAIL_IF(ret || child_ret);
++	printf("\tKilling workers...");
++	running = 0;
++	for (i = 0; i < threads; i++) {
++		pthread_join(tids[i], &rc_p);
++
++		/*
++		 * Harness will say the fail was here, look at why signal_fpu
++		 * returned
++		 */
++		if ((long) rc_p || bad_context)
++			printf("oops\n");
++		if (bad_context)
++			fprintf(stderr, "\t!! bad_context is true\n");
++		FAIL_IF((long) rc_p || bad_context);
++	}
++	printf("done\n");
++
++	free(tids);
 +	return 0;
 +}
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(test_syscall_fpu, "syscall_fpu");
-+
++	return test_harness(test_signal_fpu, "fpu_signal");
 +}
-diff --git a/tools/testing/selftests/powerpc/math/vmx_asm.S b/tools/testing/selftests/powerpc/math/vmx_asm.S
+diff --git a/tools/testing/selftests/powerpc/math/vmx_signal.c b/tools/testing/selftests/powerpc/math/vmx_signal.c
 new file mode 100644
-index 0000000..e642e67
+index 0000000..007ac9e
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/math/vmx_asm.S
-@@ -0,0 +1,183 @@
-+#include "basic_asm.h"
-+
-+#define PUSH_VMX(pos,reg) \
-+	li	reg,pos; \
-+	stvx	v20,reg,sp; \
-+	addi	reg,reg,16; \
-+	stvx	v21,reg,sp; \
-+	addi	reg,reg,16; \
-+	stvx	v22,reg,sp; \
-+	addi	reg,reg,16; \
-+	stvx	v23,reg,sp; \
-+	addi	reg,reg,16; \
-+	stvx	v24,reg,sp; \
-+	addi	reg,reg,16; \
-+	stvx	v25,reg,sp; \
-+	addi	reg,reg,16; \
-+	stvx	v26,reg,sp; \
-+	addi	reg,reg,16; \
-+	stvx	v27,reg,sp; \
-+	addi	reg,reg,16; \
-+	stvx	v28,reg,sp; \
-+	addi	reg,reg,16; \
-+	stvx	v29,reg,sp; \
-+	addi	reg,reg,16; \
-+	stvx	v30,reg,sp; \
-+	addi	reg,reg,16; \
-+	stvx	v31,reg,sp;
-+
-+#define POP_VMX(pos,reg) \
-+	li	reg,pos; \
-+	lvx	v20,reg,sp; \
-+	addi	reg,reg,16; \
-+	lvx	v21,reg,sp; \
-+	addi	reg,reg,16; \
-+	lvx	v22,reg,sp; \
-+	addi	reg,reg,16; \
-+	lvx	v23,reg,sp; \
-+	addi	reg,reg,16; \
-+	lvx	v24,reg,sp; \
-+	addi	reg,reg,16; \
-+	lvx	v25,reg,sp; \
-+	addi	reg,reg,16; \
-+	lvx	v26,reg,sp; \
-+	addi	reg,reg,16; \
-+	lvx	v27,reg,sp; \
-+	addi	reg,reg,16; \
-+	lvx	v28,reg,sp; \
-+	addi	reg,reg,16; \
-+	lvx	v29,reg,sp; \
-+	addi	reg,reg,16; \
-+	lvx	v30,reg,sp; \
-+	addi	reg,reg,16; \
-+	lvx	v31,reg,sp;
-+
-+#Carefull this will 'clobber' vmx (by design)
-+#Don't call this from C
-+FUNC_START(load_vmx)
-+	li	r5,0
-+	lvx	v20,r5,r3
-+	addi	r5,r5,16
-+	lvx	v21,r5,r3
-+	addi	r5,r5,16
-+	lvx	v22,r5,r3
-+	addi	r5,r5,16
-+	lvx	v23,r5,r3
-+	addi	r5,r5,16
-+	lvx	v24,r5,r3
-+	addi	r5,r5,16
-+	lvx	v25,r5,r3
-+	addi	r5,r5,16
-+	lvx	v26,r5,r3
-+	addi	r5,r5,16
-+	lvx	v27,r5,r3
-+	addi	r5,r5,16
-+	lvx	v28,r5,r3
-+	addi	r5,r5,16
-+	lvx	v29,r5,r3
-+	addi	r5,r5,16
-+	lvx	v30,r5,r3
-+	addi	r5,r5,16
-+	lvx	v31,r5,r3
-+	blr
-+FUNC_END(load_vmx)
-+
-+#Should be safe from C, only touches r4, r5 and v0,v1,v2
-+FUNC_START(check_vmx)
-+	PUSH_BASIC_STACK(16)
-+	mr r4,r3
-+	li	r3,1 #assume a bad result
-+	li	r5,0
-+	lvx	v0,r5,r4
-+	vcmpequd.	v1,v0,v20
-+	vmr	v2,v1
-+
-+	addi	r5,r5,16
-+	lvx	v0,r5,r4
-+	vcmpequd.	v1,v0,v21
-+	vand	v2,v2,v1
-+
-+	addi	r5,r5,16
-+	lvx	v0,r5,r4
-+	vcmpequd.	v1,v0,v22
-+	vand	v2,v2,v1
-+
-+	addi	r5,r5,16
-+	lvx	v0,r5,r4
-+	vcmpequd.	v1,v0,v23
-+	vand	v2,v2,v1
-+
-+	addi	r5,r5,16
-+	lvx	v0,r5,r4
-+	vcmpequd.	v1,v0,v24
-+	vand	v2,v2,v1
-+
-+	addi	r5,r5,16
-+	lvx	v0,r5,r4
-+	vcmpequd.	v1,v0,v25
-+	vand	v2,v2,v1
-+
-+	addi	r5,r5,16
-+	lvx	v0,r5,r4
-+	vcmpequd.	v1,v0,v26
-+	vand	v2,v2,v1
-+
-+	addi	r5,r5,16
-+	lvx	v0,r5,r4
-+	vcmpequd.	v1,v0,v27
-+	vand	v2,v2,v1
-+
-+	addi	r5,r5,16
-+	lvx	v0,r5,r4
-+	vcmpequd.	v1,v0,v28
-+	vand	v2,v2,v1
-+
-+	addi	r5,r5,16
-+	lvx	v0,r5,r4
-+	vcmpequd.	v1,v0,v29
-+	vand	v2,v2,v1
-+
-+	addi	r5,r5,16
-+	lvx	v0,r5,r4
-+	vcmpequd.	v1,v0,v30
-+	vand	v2,v2,v1
-+
-+	addi	r5,r5,16
-+	lvx	v0,r5,r4
-+	vcmpequd.	v1,v0,v31
-+	vand	v2,v2,v1
-+
-+	li r5,0
-+	stvx	v2,r5,sp
-+	ldx	r0,r5,sp
-+	cmpdi	r0,0xffffffff
-+	bne	1f
-+	li	r3,0
-+1:	POP_BASIC_STACK(16)
-+	blr
-+FUNC_END(check_vmx)
-+
-+#Safe from C
-+FUNC_START(test_vmx)
-+	#r3 holds pointer to where to put the result of fork
-+	#v20-v31 are non-volatile
-+	PUSH_BASIC_STACK(512)
-+	std	r3,40(sp) #Address of varray
-+	std r4,48(sp) #address of pid
-+	PUSH_VMX(56, r4)
-+
-+	bl load_vmx
-+
-+	li	r0,__NR_fork
-+	sc
-+	#Pass the result of fork back to the caller
-+	ld	r9,48(sp)
-+	std	r3,0(r9)
-+
-+	ld r3,40(sp)
-+	bl check_vmx
-+
-+	POP_VMX(56,r4)
-+	POP_BASIC_STACK(512)
-+	blr
-+FUNC_END(test_vmx)
-diff --git a/tools/testing/selftests/powerpc/math/vmx_syscall.c b/tools/testing/selftests/powerpc/math/vmx_syscall.c
-new file mode 100644
-index 0000000..7adff05
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/math/vmx_syscall.c
-@@ -0,0 +1,81 @@
++++ b/tools/testing/selftests/powerpc/math/vmx_signal.c
+@@ -0,0 +1,124 @@
 +#include <stdio.h>
 +#include <unistd.h>
 +#include <sys/syscall.h>
 +#include <sys/time.h>
-+#include <stdlib.h>
 +#include <sys/types.h>
 +#include <sys/wait.h>
++#include <stdlib.h>
++#include <string.h>
++#include <pthread.h>
 +
 +#include "utils.h"
 +
++/* Number of times each thread should recieve the signal */
++#define ITERATIONS 10
++/*
++ * Factor by which to multiply number of online CPUs for total number of
++ * worker threads
++ */
++#define THREAD_FACTOR 8
++
 +typedef int v4si __attribute__ ((vector_size (16)));
-+v4si varray[] = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10,11,12},
++__thread v4si varray[] = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10,11,12},
 +	{13,14,15,16},{17,18,19,20},{21,22,23,24},
 +	{25,26,27,28},{29,30,31,32},{33,34,35,36},
 +	{37,38,39,40},{41,42,43,44},{45,46,47,48}};
 +
-+extern int test_vmx(v4si *varray, pid_t *pid);
++bool bad_context;
++int running;
++volatile int not_ready;
 +
-+int vmx_syscall(void)
++extern int preempt_vmx(v4si *varray, volatile int *not_ready, int *sentinal);
++
++void signal_vmx_sig(int sig, siginfo_t *info, void *context)
 +{
-+	pid_t fork_pid;
 +	int i;
-+	int ret;
-+	int child_ret;
-+	for (i = 0; i < 1000; i++) {
-+		/* test_vmx will fork() */
-+		ret = test_vmx(varray, &fork_pid);
-+		if (fork_pid == -1)
-+			return -1;
-+		if (fork_pid == 0)
-+			exit(ret);
-+		waitpid(fork_pid, &child_ret, 0);
-+		if (ret || child_ret)
-+			return 1;
-+	}
++	ucontext_t *uc = context;
++	mcontext_t *mc = &uc->uc_mcontext;
 +
-+	return 0;
++	/* Only the non volatiles were loaded up */
++	for (i = 20; i < 32; i++) {
++		if (memcmp(mc->v_regs->vrregs[i], &varray[i - 20], 16)) {
++			bad_context = true;
++			break;
++		}
++	}
 +}
 +
-+int test_vmx_syscall(void)
++void *signal_vmx_c(void *p)
 +{
-+	/*
-+	 * Setup an environment with much context switching
-+	 */
-+	pid_t pid2;
-+	pid_t pid = fork();
-+	int ret;
-+	int child_ret;
-+	FAIL_IF(pid == -1);
++	int i, j;
++	long rc;
++	struct sigaction act;
++	act.sa_sigaction = signal_vmx_sig;
++	act.sa_flags = SA_SIGINFO;
++	rc = sigaction(SIGUSR1, &act, NULL);
++	if (rc)
++		return p;
 +
-+	pid2 = fork();
-+	ret = vmx_syscall();
-+	/* Can't FAIL_IF(pid2 == -1); because we've already forked */
-+	if (pid2 == -1) {
-+		/*
-+		 * Couldn't fork, ensure child_ret is set and is a fail
-+		 */
-+		ret = child_ret = 1;
-+	} else {
-+		if (pid2)
-+			waitpid(pid2, &child_ret, 0);
-+		else
-+			exit(ret);
++	srand(pthread_self());
++	for (i = 0; i < 12; i++)
++		for (j = 0; j < 4; j++)
++			varray[i][j] = rand();
++
++	rc = preempt_vmx(varray, &not_ready, &running);
++
++	return (void *) rc;
++}
++
++int test_signal_vmx(void)
++{
++	int i, j, rc, threads;
++	void *rc_p;
++	pthread_t *tids;
++
++	threads = sysconf(_SC_NPROCESSORS_ONLN) * THREAD_FACTOR;
++	tids = malloc(threads * sizeof(pthread_t));
++	FAIL_IF(!tids);
++
++	running = true;
++	not_ready = threads;
++	for (i = 0; i < threads; i++) {
++		rc = pthread_create(&tids[i], NULL, signal_vmx_c, NULL);
++		FAIL_IF(rc);
 +	}
 +
-+	ret |= child_ret;
++	setbuf(stdout, NULL);
++	printf("\tWaiting for all workers to start...");
++	while (not_ready);
++	printf("done\n");
 +
-+	if (pid)
-+		waitpid(pid, &child_ret, 0);
-+	else
-+		exit(ret);
++	printf("\tSending signals to all threads %d times...", ITERATIONS);
++	for (i = 0; i < ITERATIONS; i++) {
++		for (j = 0; j < threads; j++) {
++			pthread_kill(tids[j], SIGUSR1);
++		}
++		sleep(1);
++	}
++	printf("done\n");
 +
-+	FAIL_IF(ret || child_ret);
++	printf("\tKilling workers...");
++	running = 0;
++	for (i = 0; i < threads; i++) {
++		pthread_join(tids[i], &rc_p);
++
++		/*
++		 * Harness will say the fail was here, look at why signal_vmx
++		 * returned
++		 */
++		if ((long) rc_p || bad_context)
++			printf("oops\n");
++		if (bad_context)
++			fprintf(stderr, "\t!! bad_context is true\n");
++		FAIL_IF((long) rc_p || bad_context);
++	}
++	printf("done\n");
++
++	free(tids);
 +	return 0;
 +}
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(test_vmx_syscall, "vmx_syscall");
-+
++	return test_harness(test_signal_vmx, "vmx_signal");
 +}
 -- 
 2.6.2
