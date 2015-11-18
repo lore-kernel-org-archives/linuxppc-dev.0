@@ -1,35 +1,29 @@
-Return-Path: <dougmill@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DDA7A1A0957
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 05:55:25 +1100 (AEDT)
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <dougmill@linux.vnet.ibm.com>;
- Wed, 18 Nov 2015 13:55:21 -0500
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 73248C9003C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 13:43:29 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAIItJrP60883148
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 18:55:19 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAIItIsJ002253
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 13:55:18 -0500
-Received: from oc5780617838.ibm.com ([9.80.96.161])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- tAIItHMq002207
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 13:55:17 -0500
-From: Douglas Miller <dougmill@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Add xmon command to dump process/task similar to ps(1)
-Date: Wed, 18 Nov 2015 12:55:14 -0600
-Message-Id: <1447872915-23552-1-git-send-email-dougmill@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A2FFD1A0736
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 10:01:25 +1100 (AEDT)
+Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c03::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 241A5141466
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2015 10:01:25 +1100 (AEDT)
+Received: by pacdm15 with SMTP id dm15so58868361pac.3
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 15:01:23 -0800 (PST)
+Date: Thu, 19 Nov 2015 10:01:13 +1100
+From: Cyril Bur <cyrilbur@gmail.com>
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: "mikey@neuling.org" <mikey@neuling.org>, "anton@samba.org"
+ <anton@samba.org>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 0/8] FP/VEC/VSX switching optimisations
+Message-ID: <20151119100113.79254289@camb691>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1CBD5633@AcuExch.aculab.com>
+References: <1447817215-15804-1-git-send-email-cyrilbur@gmail.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1CBD5633@AcuExch.aculab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,16 +33,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Request for comments
+On Wed, 18 Nov 2015 14:51:25 +0000
+David Laight <David.Laight@ACULAB.COM> wrote:
 
-Add a command to xmon that prints basic task information like
-ps(1) but includes the kernel stack pointer for use with 't'
-(traceback) command.
+> From: Cyril Bur
+> > Sent: 18 November 2015 03:27  
+> ...
+> > The goal of these patches is to rework how the 'math' registers (FP, VEC
+> > and VSX) are context switched. Currently the kernel adopts a lazy approach,
+> > always switching userspace tasks with all three facilities disabled and
+> > loads in each set of registers upon receiving each unavailable exception.
+> > The kernel does try to avoid disabling the features in the syscall quick
+> > path but it during testing it appears that even what should be a simple
+> > syscall still causes the kernel to use some facilities (vectorised memcpy
+> > for example) for its self and therefore disable it for the user task.  
+> 
 
-Adds a macro to be used to wrap memory access with setjmp code
-to protect against memory faults.
+Hi David,
 
-Is additional locking required? Any other concerns?
+> Perhaps the kernel should be avoiding using these registers?
+> I wonder if the gain from using vectorised memcpy is typically
+> enough to warrant the cost of the save and restore?
+> 
 
-Thanks,
-Doug
+Yeah, on smaller copies that might be the way to go.
+
+> There may even be scope for kernel code doing a save/restore
+> of a small number of registers onto an in-stack save area.
+
+This has been thrown up in the air, there's also the volatile/non-volatiles to
+consider and the caveat that glibc doesn't quite respect the ABI here.
+
+As it turns out (and no one is more surprised than me), despite the other
+attempts at optimising, this series really has boiled down to removing the need
+for processes to take the facility unavailable interrupts.
+
+I do plan to carry on with optimising in this area and will have a look to see
+what I can do.
+
+Cyril
+
+> It would need to be linked to the data of the thread
+> that owns the fpu registers so that a save request could
+> be honoured.
+> Pre-emption would probably need to be disabled, but nested
+> use, and use from ISR should be ok.
+> 
+> 	David
+> 
