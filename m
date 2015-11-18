@@ -1,26 +1,35 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
- [IPv6:2607:f8b0:400e:c03::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2371D1A06D5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 14:15:11 +1100 (AEDT)
-Received: by padhx2 with SMTP id hx2so29331328pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2015 19:15:08 -0800 (PST)
-Subject: Re: [PATCH v7 33/50] powerpc/pci: Export pci_traverse_device_nodes()
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-34-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, bhelgaas@google.com,
- grant.likely@linaro.org, robherring2@gmail.com,
- panto@antoniou-consulting.com, frowand.list@gmail.com
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <564BED33.6040903@ozlabs.ru>
-Date: Wed, 18 Nov 2015 14:14:59 +1100
-MIME-Version: 1.0
-In-Reply-To: <1446642770-4681-34-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id C39191A0374
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 14:28:41 +1100 (AEDT)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id DFA6B141466
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:28:38 +1100 (AEDT)
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
+ Wed, 18 Nov 2015 13:28:34 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3ABB13578054
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:28:32 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAI3SNEI262442
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:28:32 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAI3RxN5001601
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 14:27:59 +1100
+From: Cyril Bur <cyrilbur@gmail.com>
+To: mikey@neuling.org, anton@samba.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/8] FP/VEC/VSX switching optimisations
+Date: Wed, 18 Nov 2015 14:26:47 +1100
+Message-Id: <1447817215-15804-1-git-send-email-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,116 +39,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/05/2015 12:12 AM, Gavin Shan wrote:
-> This renames traverse_pci_devices() to pci_traverse_device_nodes().
+Hi,
 
-Why? pci_traverse_device_nodes() is not moved to some more generic header 
-where is would be required to have a standard prefix. And the ppc-pci.h 
-header does not use any standard prefix so the point of renaming is unclear.
+These patches are an extension of the work done by Anton
+https://patchwork.ozlabs.org/patch/537621/, they'll need to be applied on
+top of them.
 
-traverse_pci_dn() is still there and it has "traverse", "pci" and "device 
-node" (abbreviated as "dn") in it so pci_traverse_device_nodes is more 
-confusing name than traverse_pci_devices. Cannot we just get rid of one of 
-them?
+The goal of these patches is to rework how the 'math' registers (FP, VEC
+and VSX) are context switched. Currently the kernel adopts a lazy approach,
+always switching userspace tasks with all three facilities disabled and
+loads in each set of registers upon receiving each unavailable exception.
+The kernel does try to avoid disabling the features in the syscall quick
+path but it during testing it appears that even what should be a simple
+syscall still causes the kernel to use some facilities (vectorised memcpy
+for example) for its self and therefore disable it for the user task.
 
-Also the subject line says "Export" but nothing gets exported in this patch 
-- the visibility of pci_traverse_device_nodes() remains unchanged.
+The lazy approach makes for a small amount of time spent restoring
+userspace state and if tasks don't use any of these facilities it is the
+correct thing to do. In recent years, new workloads and new features such
+as auto vectorisation in GCC have meant that the use of these facilities by
+userspace has increased, so much so that some workloads can have a task
+take an FP unavailable exception and a VEC unavailable exception almost
+every time slice.
 
+This series removes the general laziness in favour of a more selective
+approach. If a task uses any of the 'math' facilities the kernel will load
+the registers and enable the facilities for future time slices as the
+assumption is that the use is likely to continue for some time. This
+removes the cost of having to take an exception.
 
-> The function traverses all subordinate device nodes of the specified
-> one. Also, below cleanup applied to the function. No logical changes
-> introduced.
->
->     * Rename "pre" to "fn".
->     * Avoid assignment in if condition reported from checkpatch.pl.
->
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/include/asm/ppc-pci.h   |  6 +++---
->   arch/powerpc/kernel/pci_dn.c         | 14 +++++++++-----
->   arch/powerpc/platforms/pseries/msi.c |  4 ++--
->   3 files changed, 14 insertions(+), 10 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-> index ca0c5bf..8753e4e 100644
-> --- a/arch/powerpc/include/asm/ppc-pci.h
-> +++ b/arch/powerpc/include/asm/ppc-pci.h
-> @@ -33,9 +33,9 @@ extern struct pci_dev *isa_bridge_pcidev;	/* may be NULL if no ISA bus */
->   struct device_node;
->   struct pci_dn;
->
-> -typedef void *(*traverse_func)(struct device_node *me, void *data);
-> -void *traverse_pci_devices(struct device_node *start, traverse_func pre,
-> -		void *data);
-> +void *pci_traverse_device_nodes(struct device_node *start,
-> +				void *(*fn)(struct device_node *, void *),
-> +				void *data);
->   void *traverse_pci_dn(struct pci_dn *root,
->   		      void *(*fn)(struct pci_dn *, void *),
->   		      void *data);
-> diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-> index 7f877a4..aa4110f 100644
-> --- a/arch/powerpc/kernel/pci_dn.c
-> +++ b/arch/powerpc/kernel/pci_dn.c
-> @@ -355,8 +355,9 @@ EXPORT_SYMBOL_GPL(pci_remove_device_node_info);
->    * one of these nodes we also assume its siblings are non-pci for
->    * performance.
->    */
-> -void *traverse_pci_devices(struct device_node *start, traverse_func pre,
-> -		void *data)
-> +void *pci_traverse_device_nodes(struct device_node *start,
-> +				void *(*fn)(struct device_node *, void *),
-> +				void *data)
->   {
->   	struct device_node *dn, *nextdn;
->   	void *ret;
-> @@ -371,8 +372,11 @@ void *traverse_pci_devices(struct device_node *start, traverse_func pre,
->   		if (classp)
->   			class = of_read_number(classp, 1);
->
-> -		if (pre && ((ret = pre(dn, data)) != NULL))
-> -			return ret;
-> +		if (fn) {
-> +			ret = fn(dn, data);
-> +			if (ret)
-> +				return ret;
-> +		}
->
->   		/* If we are a PCI bridge, go down */
->   		if (dn->child && ((class >> 8) == PCI_CLASS_BRIDGE_PCI ||
-> @@ -470,7 +474,7 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
->   	}
->
->   	/* Update dn->phb ptrs for new phb and children devices */
-> -	traverse_pci_devices(dn, add_pdn, phb);
-> +	pci_traverse_device_nodes(dn, add_pdn, phb);
->   }
->
->   /**
-> diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
-> index 272e9ec..543a638 100644
-> --- a/arch/powerpc/platforms/pseries/msi.c
-> +++ b/arch/powerpc/platforms/pseries/msi.c
-> @@ -305,7 +305,7 @@ static int msi_quota_for_device(struct pci_dev *dev, int request)
->   	memset(&counts, 0, sizeof(struct msi_counts));
->
->   	/* Work out how many devices we have below this PE */
-> -	traverse_pci_devices(pe_dn, count_non_bridge_devices, &counts);
-> +	pci_traverse_device_nodes(pe_dn, count_non_bridge_devices, &counts);
->
->   	if (counts.num_devices == 0) {
->   		pr_err("rtas_msi: found 0 devices under PE for %s\n",
-> @@ -320,7 +320,7 @@ static int msi_quota_for_device(struct pci_dev *dev, int request)
->   	/* else, we have some more calculating to do */
->   	counts.requestor = pci_device_to_OF_node(dev);
->   	counts.request = request;
-> -	traverse_pci_devices(pe_dn, count_spare_msis, &counts);
-> +	pci_traverse_device_nodes(pe_dn, count_spare_msis, &counts);
->
->   	/* If the quota isn't an integer multiple of the total, we can
->   	 * use the remainder as spare MSIs for anyone that wants them. */
->
+These patches also adds logic to detect if a task had been using a facility
+and optimises in the case where the registers are still hot, this provides
+another speedup as not only is the cost of the exception saved but the cost
+of copying up to 64 x 128 bit registers is also removed.
 
+With these patches applied on top of Antons patches I observe a significant
+improvement with Antons context switch microbenchmark using yield():
+
+http://ozlabs.org/~anton/junkcode/context_switch2.c
+
+Using an LE kernel compiled with pseries_le_defconfig
+
+Running:
+./context_switch2 --test=yield 8 8
+and adding one of --fp, --altivec or --vector
+Gives a 5% improvement on a POWER8 CPU.
+
+./context_switch2 --test=yield --fp --altivec --vector 8 8
+Gives a 15% improvement on a POWER8 CPU.
+
+I'll take this opportunity to note that 15% can be somewhat misleading. It
+may be reasonable to assume that each of the optimisations has had a
+compounding effect, this isn't incorrect and the reason behind the apparent
+compounding reveals a lot about where the current bottleneck is.
+
+The tests always touch FP first, then VEC then VSX which is the guaranteed
+worst case for the way the kernel currently operates. This behaviour will
+trigger three subsequent unavailable exceptions. Since the kernel currently
+enables all three facilities after taking a VSX unavailable the tests can
+be modified to touch VSX->VEC->FP in this order the difference in
+performance when touching all three only 5%. There is a compounding effect
+in so far as the cost of taking multiple unavailable exception is removed.
+This testing also demonstrates that the cost of the exception is by far the
+most expensive part of the current lazy approach.
+
+Cyril Bur (8):
+  selftests/powerpc: Test the preservation of FPU and VMX regs across
+    syscall
+  selftests/powerpc: Test preservation of FPU and VMX regs across
+    preemption
+  selftests/powerpc: Test FPU and VMX regs in signal ucontext
+  powerpc: Explicitly disable math features when copying thread
+  powerpc: Restore FPU/VEC/VSX if previously used
+  powerpc: Add the ability to save FPU without giving it up
+  powerpc: Add the ability to save Altivec without giving it up
+  powerpc: Add the ability to save VSX without giving it up
+
+ arch/powerpc/include/asm/processor.h               |   2 +
+ arch/powerpc/include/asm/switch_to.h               |   5 +-
+ arch/powerpc/kernel/asm-offsets.c                  |   2 +
+ arch/powerpc/kernel/entry_64.S                     |  55 +++++-
+ arch/powerpc/kernel/fpu.S                          |  25 +--
+ arch/powerpc/kernel/ppc_ksyms.c                    |   4 -
+ arch/powerpc/kernel/process.c                      | 144 ++++++++++++--
+ arch/powerpc/kernel/vector.S                       |  45 +----
+ tools/testing/selftests/powerpc/Makefile           |   3 +-
+ tools/testing/selftests/powerpc/math/Makefile      |  19 ++
+ tools/testing/selftests/powerpc/math/basic_asm.h   |  26 +++
+ tools/testing/selftests/powerpc/math/fpu_asm.S     | 185 +++++++++++++++++
+ tools/testing/selftests/powerpc/math/fpu_preempt.c |  92 +++++++++
+ tools/testing/selftests/powerpc/math/fpu_signal.c  | 119 +++++++++++
+ tools/testing/selftests/powerpc/math/fpu_syscall.c |  79 ++++++++
+ tools/testing/selftests/powerpc/math/vmx_asm.S     | 219 +++++++++++++++++++++
+ tools/testing/selftests/powerpc/math/vmx_preempt.c |  92 +++++++++
+ tools/testing/selftests/powerpc/math/vmx_signal.c  | 124 ++++++++++++
+ tools/testing/selftests/powerpc/math/vmx_syscall.c |  81 ++++++++
+ 19 files changed, 1240 insertions(+), 81 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/math/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/math/basic_asm.h
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_asm.S
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_preempt.c
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_signal.c
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_syscall.c
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_asm.S
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_preempt.c
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_signal.c
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_syscall.c
 
 -- 
-Alexey
+2.6.2
