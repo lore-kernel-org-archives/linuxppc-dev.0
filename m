@@ -1,29 +1,27 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A2FFD1A0736
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 10:01:25 +1100 (AEDT)
-Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
- [IPv6:2607:f8b0:400e:c03::22f])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
+ [IPv6:2607:f8b0:400e:c03::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 241A5141466
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2015 10:01:25 +1100 (AEDT)
-Received: by pacdm15 with SMTP id dm15so58868361pac.3
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2015 15:01:23 -0800 (PST)
-Date: Thu, 19 Nov 2015 10:01:13 +1100
-From: Cyril Bur <cyrilbur@gmail.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Cc: "mikey@neuling.org" <mikey@neuling.org>, "anton@samba.org"
- <anton@samba.org>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH 0/8] FP/VEC/VSX switching optimisations
-Message-ID: <20151119100113.79254289@camb691>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1CBD5633@AcuExch.aculab.com>
-References: <1447817215-15804-1-git-send-email-cyrilbur@gmail.com>
- <063D6719AE5E284EB5DD2968C1650D6D1CBD5633@AcuExch.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DECF51A073D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 11:10:53 +1100 (AEDT)
+Received: by pabfh17 with SMTP id fh17so62554513pab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 16:10:50 -0800 (PST)
+Subject: Re: [PATCH v7 12/50] powerpc/powernv: Track M64 segment consumption
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1446642770-4681-13-git-send-email-gwshan@linux.vnet.ibm.com>
+ <56498D77.2060101@ozlabs.ru> <20151117010446.GA26294@gwshan>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
+ panto@antoniou-consulting.com, frowand.list@gmail.com
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <564D1382.6030504@ozlabs.ru>
+Date: Thu, 19 Nov 2015 11:10:42 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20151117010446.GA26294@gwshan>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,51 +31,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 18 Nov 2015 14:51:25 +0000
-David Laight <David.Laight@ACULAB.COM> wrote:
+On 11/17/2015 12:04 PM, Gavin Shan wrote:
+> On Mon, Nov 16, 2015 at 07:01:59PM +1100, Alexey Kardashevskiy wrote:
+>> On 11/05/2015 12:12 AM, Gavin Shan wrote:
+>>> As we track M32 segment consumption, this introduces an array to
+>>> the PHB to track the mapping between M64 segment and PE number.
+>>> The information is going to be used to find M64 segment from the
+>>> PE number during PCI unplugging time in subsequent patches.
+>>
+>>
+>> It would not hurt to put a few words about how we managed to live without
+>> such a mapping for M64 before but we needed mapping for M32.
+>>
+>
+> The M32 mapping (phb->ioda.m32_segmap[]) isn't used for anything before
+> this patcheset. There're no need for M64 mapping before this patchset
+> similarly, no need to add the words.
 
-> From: Cyril Bur
-> > Sent: 18 November 2015 03:27  
-> ...
-> > The goal of these patches is to rework how the 'math' registers (FP, VEC
-> > and VSX) are context switched. Currently the kernel adopts a lazy approach,
-> > always switching userspace tasks with all three facilities disabled and
-> > loads in each set of registers upon receiving each unavailable exception.
-> > The kernel does try to avoid disabling the features in the syscall quick
-> > path but it during testing it appears that even what should be a simple
-> > syscall still causes the kernel to use some facilities (vectorised memcpy
-> > for example) for its self and therefore disable it for the user task.  
-> 
+After years I learned that reviewers ask less questions about new but yet 
+unused code when I put few words in the commit log confirming that it is 
+not used now but it will be used for <here I put what it is for> later.
 
-Hi David,
+And it is not obvious that m32_segment is not used. And m64_segmap is 
+started being used only 13 patches later in:
 
-> Perhaps the kernel should be avoiding using these registers?
-> I wonder if the gain from using vectorised memcpy is typically
-> enough to warrant the cost of the save and restore?
-> 
+[PATCH v7 27/50] powerpc/powernv: Dynamically release PEs
 
-Yeah, on smaller copies that might be the way to go.
+which is quite far, complicates reviewing. 12/50 is better be moved there 
+(to make it 26/50) or just merged into 27/50.
 
-> There may even be scope for kernel code doing a save/restore
-> of a small number of registers onto an in-stack save area.
 
-This has been thrown up in the air, there's also the volatile/non-volatiles to
-consider and the caveat that glibc doesn't quite respect the ABI here.
-
-As it turns out (and no one is more surprised than me), despite the other
-attempts at optimising, this series really has boiled down to removing the need
-for processes to take the facility unavailable interrupts.
-
-I do plan to carry on with optimising in this area and will have a look to see
-what I can do.
-
-Cyril
-
-> It would need to be linked to the data of the thread
-> that owns the fpu registers so that a save request could
-> be honoured.
-> Pre-emption would probably need to be disabled, but nested
-> use, and use from ISR should be ok.
-> 
-> 	David
-> 
+-- 
+Alexey
