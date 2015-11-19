@@ -1,27 +1,24 @@
-Return-Path: <hare@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3800D1A0A15
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2015 02:35:35 +1100 (AEDT)
-Message-ID: <564DEC41.5010600@suse.de>
-Date: Thu, 19 Nov 2015 16:35:29 +0100
-From: Hannes Reinecke <hare@suse.de>
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-CC: Mark Salter <msalter@redhat.com>,
- "James E. J. Bottomley" <JBottomley@odin.com>,
- brking <brking@us.ibm.com>, linux-scsi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-block@vger.kernel.org
-Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
-References: <1447838334.1564.2.camel@ellerman.id.au>
- <1447855399.3974.24.camel@redhat.com>
- <1447894964.15206.0.camel@ellerman.id.au>
- <20151119082325.GA11419@infradead.org>
-In-Reply-To: <20151119082325.GA11419@infradead.org>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id F00081A0BED
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2015 07:24:49 +1100 (AEDT)
+Received: from mail-lf0-x22a.google.com (mail-lf0-x22a.google.com
+ [IPv6:2a00:1450:4010:c07::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id F4151141434
+ for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2015 07:24:48 +1100 (AEDT)
+Received: by lfaz4 with SMTP id z4so56074754lfa.0
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2015 12:24:45 -0800 (PST)
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org,
+	Denis Kirjanov <kda@linux-powerpc.org>
+Subject: [PATCH] powerpc: wire up sys_mlock2
+Date: Thu, 19 Nov 2015 23:23:09 +0300
+Message-Id: <1447964589-4244-1-git-send-email-kda@linux-powerpc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,26 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/19/2015 09:23 AM, Christoph Hellwig wrote:
-> It's pretty much guaranteed a block layer bug, most likely in the
-> merge bios to request infrastucture where we don't obey the merging
-> limits properly.
-> 
-> Does either of you have a known good and first known bad kernel?
+Tested with tools/testing/selftests/vm/mlock2-tests
+both on ppc64 and ppc32
 
-Well, I have been fighting a similar issue for several months now,
-albeit with multipath enabled. Haven't had much progress with this,
-sadly.
-Seeing that this is our distro kernel it might or might not be
-related; however, as the symptoms are identical there still is a
-chance that this is actually a generic block-layer problem.
+Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+---
+ arch/powerpc/include/asm/systbl.h      | 1 +
+ arch/powerpc/include/asm/unistd.h      | 2 +-
+ arch/powerpc/include/uapi/asm/unistd.h | 1 +
+ 3 files changed, 3 insertions(+), 1 deletion(-)
 
-Cheers,
-
-Hannes
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index c9e26cb..dcce86c 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -382,3 +382,4 @@ COMPAT_SYS(shmat)
+ SYSCALL(shmdt)
+ SYSCALL(shmget)
+ COMPAT_SYS(shmctl)
++SYSCALL_SPU(mlock2)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index 6d8f802..4b6b8ac 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -12,7 +12,7 @@
+ #include <uapi/asm/unistd.h>
+ 
+ 
+-#define __NR_syscalls		378
++#define __NR_syscalls		379
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
+index 81579e9..1effea5 100644
+--- a/arch/powerpc/include/uapi/asm/unistd.h
++++ b/arch/powerpc/include/uapi/asm/unistd.h
+@@ -400,5 +400,6 @@
+ #define __NR_shmdt		375
+ #define __NR_shmget		376
+ #define __NR_shmctl		377
++#define __NR_mlock2		378
+ 
+ #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
 -- 
-Dr. Hannes Reinecke		               zSeries & Storage
-hare@suse.de			               +49 911 74053 688
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: F. Imendörffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
-HRB 21284 (AG Nürnberg)
+2.4.0
