@@ -1,23 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 443731A09CE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 21:33:54 +1100 (AEDT)
-Message-ID: <1447929223.11126.4.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Standardise on NR_syscalls rather than
- __NR_syscalls.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, Denis Kirjanov
- <kda@linux-powerpc.org>, Rashmica Gupta <rashmicy@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Thu, 19 Nov 2015 21:33:43 +1100
-In-Reply-To: <564D9D85.1090201@linux.vnet.ibm.com>
-References: <1447913093-28342-1-git-send-email-rashmicy@gmail.com>
- <CAOJe8K0yHTdymRbEo=itvK-AYiNzQLLspNgTyyzADkzpPxpzHw@mail.gmail.com>
- <564D9D85.1090201@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id A1FF81A09E6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 22:36:46 +1100 (AEDT)
+In-Reply-To: <1447817215-15804-4-git-send-email-cyrilbur@gmail.com>
+To: Cyril Bur <cyrilbur@gmail.com>, mikey@neuling.org, anton@samba.org,
+ linuxppc-dev@ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [3/8] selftests/powerpc: Test FPU and VMX regs in signal ucontext
+Message-Id: <20151119113646.695F8141498@ozlabs.org>
+Date: Thu, 19 Nov 2015 22:36:46 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +20,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-11-19 at 15:29 +0530, Anshuman Khandual wrote:
-> On 11/19/2015 02:45 PM, Denis Kirjanov wrote:
-> > On 11/19/15, Rashmica Gupta <rashmicy@gmail.com> wrote:
-> > > > Most architectures use NR_syscalls as the #define for the
-> > > > number of
-> > > > syscalls.
-> > > > 
-> > > > We use __NR_syscalls, and then define NR_syscalls as
-> > > > __NR_syscalls.
-> > > > 
-> > > > __NR_syscalls is not used outside arch code, whereas
-> > > > NR_syscalls is. So as
-> > > > NR_syscalls must be defined and __NR_syscalls does not, replace
-> > > > __NR_syscalls
-> > > > with NR_syscalls.
-> > Hi,
-> > 
-> > But what's wrong with the current code? Why do we need such change?
-> 
-> Yeah, just out of curiosity. Why we had both __NR_syscalls and
-> NR_syscalls to begin with ?
+On Wed, 2015-18-11 at 03:26:50 UTC, Cyril Bur wrote:
+> Load up the non volatile FPU and VMX regs and ensure that they are the
+> expected value in a signal handler
 
-Evolutionary remains. This is a whorthwhile and fairly simple cleanup.
+This is giving me:
 
-Cheers,
-Ben.
+  $ /usr/bin/powerpc-linux-gnu-gcc -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"v4.0-rc1-55000-g906d582"' -I/home/buildbot/buildbot/slave/selftests-ppc64-gcc-ubuntu-be/build/tools/testing/selftests/powerpc  -O2 -g -pthread    fpu_signal.c ../harness.c fpu_asm.S   -o fpu_signal
+  fpu_signal.c: In function ‘signal_fpu_sig’:
+  fpu_signal.c:33:19: error: initialization from incompatible pointer type [-Werror]
+    mcontext_t *mc = &uc->uc_mcontext;
+                     ^
+  fpu_signal.c:37:9: error: ‘mcontext_t’ has no member named ‘fp_regs’
+     if (mc->fp_regs[i] != darray[i - 14]) {
+           ^
+
+
+As well as:
+
+  $ /usr/bin/powerpc-linux-gnu-gcc -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"v4.0-rc1-55000-g906d582"' -I/home/buildbot/buildbot/slave/selftests-ppc64-gcc-ubuntu-be/build/tools/testing/selftests/powerpc  -O2 -g -pthread    vmx_syscall.c ../harness.c vmx_asm.S   -o vmx_syscall
+  vmx_asm.S: Assembler messages:
+  vmx_asm.S:61: Error: unsupported relocation against v20
+  vmx_asm.S:63: Error: unsupported relocation against v21
+
+Times infinity.
+
+And same for vmx_preempt.
+
+And:
+
+  $ /usr/bin/powerpc-linux-gnu-gcc -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"v4.0-rc1-55000-g906d582"' -I/home/buildbot/buildbot/slave/selftests-ppc64-gcc-ubuntu-be/build/tools/testing/selftests/powerpc  -O2 -g -pthread    vmx_signal.c ../harness.c vmx_asm.S   -o vmx_signal
+  make[1]: *** [vmx_preempt] Error 1
+  vmx_signal.c: In function ‘signal_vmx_sig’:
+  vmx_signal.c:37:19: error: initialization from incompatible pointer type [-Werror]
+    mcontext_t *mc = &uc->uc_mcontext;
+                     ^
+  vmx_signal.c:41:16: error: ‘mcontext_t’ has no member named ‘v_regs’
+     if (memcmp(mc->v_regs->vrregs[i], &varray[i - 20], 16)) {
+                ^
+
+
+cheers
