@@ -1,34 +1,27 @@
-Return-Path: <dougmill@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <hare@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D9EBE1A0C6B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 23:32:17 +1100 (AEDT)
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <dougmill@linux.vnet.ibm.com>;
- Thu, 19 Nov 2015 07:32:14 -0500
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 957BEC9003C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 07:20:21 -0500 (EST)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAJCWBKg51118136
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 12:32:11 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAJCUEgR032133
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 07:30:15 -0500
-From: Douglas Miller <dougmill@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Douglas Miller <dougmill@linux.vnet.ibm.com>
-Subject: [PATCH] Add xmon command to dump process/task similar to ps(1)
-Date: Thu, 19 Nov 2015 06:31:58 -0600
-Message-Id: <1447936318-18487-2-git-send-email-dougmill@linux.vnet.ibm.com>
-In-Reply-To: <1447936318-18487-1-git-send-email-dougmill@linux.vnet.ibm.com>
-References: <1447936318-18487-1-git-send-email-dougmill@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3800D1A0A15
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2015 02:35:35 +1100 (AEDT)
+Message-ID: <564DEC41.5010600@suse.de>
+Date: Thu, 19 Nov 2015 16:35:29 +0100
+From: Hannes Reinecke <hare@suse.de>
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+CC: Mark Salter <msalter@redhat.com>,
+ "James E. J. Bottomley" <JBottomley@odin.com>,
+ brking <brking@us.ibm.com>, linux-scsi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-block@vger.kernel.org
+Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
+References: <1447838334.1564.2.camel@ellerman.id.au>
+ <1447855399.3974.24.camel@redhat.com>
+ <1447894964.15206.0.camel@ellerman.id.au>
+ <20151119082325.GA11419@infradead.org>
+In-Reply-To: <20151119082325.GA11419@infradead.org>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,107 +31,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Douglas Miller <dougmill@linux.vnet.ibm.com>
----
- arch/powerpc/xmon/xmon.c |   58 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 58 insertions(+), 0 deletions(-)
+On 11/19/2015 09:23 AM, Christoph Hellwig wrote:
+> It's pretty much guaranteed a block layer bug, most likely in the
+> merge bios to request infrastucture where we don't obey the merging
+> limits properly.
+> 
+> Does either of you have a known good and first known bad kernel?
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 13c6e20..5c24f55 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -149,6 +149,7 @@ static int  cpu_cmd(void);
- static void csum(void);
- static void bootcmds(void);
- static void proccall(void);
-+static void proclist(void);
- void dump_segments(void);
- static void symbol_lookup(void);
- static void xmon_show_stack(unsigned long sp, unsigned long lr,
-@@ -191,6 +192,24 @@ extern void xmon_leave(void);
- 			 || ('A' <= (c) && (c) <= 'Z'))
- #define isspace(c)	(c == ' ' || c == '\t' || c == 10 || c == 13 || c == 0)
- 
-+/*
-+ * Wrap a statement (typically function call) in setjmp to
-+ * protect it from memory access errors. msg... are printf
-+ * fmt+args used if error is trapped.
-+ */
-+#define XMON_PROTECT(stmt, msg...) 		\
-+	if (setjmp(bus_error_jmp) != 0) {	\
-+		catch_memory_errors = 0;	\
-+		printf(msg);			\
-+	} else {				\
-+		catch_memory_errors = 1;	\
-+		sync();				\
-+		stmt;				\
-+		sync();				\
-+		__delay(200);			\
-+		catch_memory_errors = 0;	\
-+	}
-+
- static char *help_string = "\
- Commands:\n\
-   b	show breakpoints\n\
-@@ -228,6 +247,7 @@ Commands:\n\
-   mz	zero a block of memory\n\
-   mi	show information about memory allocation\n\
-   p 	call a procedure\n\
-+  P 	list processes/tasks\n\
-   r	print registers\n\
-   s	single step\n"
- #ifdef CONFIG_SPU_BASE
-@@ -947,6 +967,9 @@ cmds(struct pt_regs *excp)
- 		case 'p':
- 			proccall();
- 			break;
-+		case 'P':
-+			proclist();
-+			break;
- #ifdef CONFIG_PPC_STD_MMU
- 		case 'u':
- 			dump_segments();
-@@ -2450,6 +2473,41 @@ memzcan(void)
- 		printf("%.8x\n", a - mskip);
- }
- 
-+static void procshow(struct task_struct *tsk)
-+{
-+	char state;
-+
-+	state = (tsk->state == 0) ? 'R' :
-+		(tsk->state < 0) ? 'U' :
-+		(tsk->state & TASK_UNINTERRUPTIBLE) ? 'D' :
-+		(tsk->state & TASK_STOPPED) ? 'T' :
-+		(tsk->state & TASK_TRACED) ? 'C' :
-+		(tsk->exit_state & EXIT_ZOMBIE) ? 'Z' :
-+		(tsk->exit_state & EXIT_DEAD) ? 'E' :
-+		(tsk->state & TASK_INTERRUPTIBLE) ? 'S' : '?';
-+
-+	printf("%p %016lx %6d %6d %c %2d %s\n", tsk,
-+		tsk->thread.ksp,
-+		tsk->pid, tsk->parent->pid,
-+		state, task_thread_info(tsk)->cpu,
-+		tsk->comm);
-+}
-+
-+static void proclist(void)
-+{
-+	unsigned long tskv;
-+	struct task_struct *tsk;
-+
-+	if (scanhex(&tskv)) {
-+		tsk = (struct task_struct *)tskv;
-+		XMON_PROTECT(procshow(tsk), "*** Error dumping task %p\n", tsk);
-+	} else {
-+		for_each_process(tsk) {
-+			XMON_PROTECT(procshow(tsk), "*** Error dumping task %p\n", tsk);
-+		}
-+	}
-+}
-+
- static void proccall(void)
- {
- 	unsigned long args[8];
+Well, I have been fighting a similar issue for several months now,
+albeit with multipath enabled. Haven't had much progress with this,
+sadly.
+Seeing that this is our distro kernel it might or might not be
+related; however, as the symptoms are identical there still is a
+chance that this is actually a generic block-layer problem.
+
+Cheers,
+
+Hannes
 -- 
-1.7.1
+Dr. Hannes Reinecke		               zSeries & Storage
+hare@suse.de			               +49 911 74053 688
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: F. Imendörffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
+HRB 21284 (AG Nürnberg)
