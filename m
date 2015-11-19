@@ -1,23 +1,37 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-x233.google.com (mail-yk0-x233.google.com
- [IPv6:2607:f8b0:4002:c07::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9A1C71A09AA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 20:15:08 +1100 (AEDT)
-Received: by ykfs79 with SMTP id s79so101673017ykf.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 01:15:06 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42B8F1A09B9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 20:59:44 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 19 Nov 2015 15:29:39 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5EE921258060
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 15:29:47 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAJ9xYZS1704274
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 15:29:34 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAJ9xXF8011478
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 15:29:34 +0530
+Message-ID: <564D9D85.1090201@linux.vnet.ibm.com>
+Date: Thu, 19 Nov 2015 15:29:33 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1447913093-28342-1-git-send-email-rashmicy@gmail.com>
-References: <1447913093-28342-1-git-send-email-rashmicy@gmail.com>
-Date: Thu, 19 Nov 2015 12:15:06 +0300
-Message-ID: <CAOJe8K0yHTdymRbEo=itvK-AYiNzQLLspNgTyyzADkzpPxpzHw@mail.gmail.com>
+To: Denis Kirjanov <kda@linux-powerpc.org>, Rashmica Gupta <rashmicy@gmail.com>
+CC: linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH] powerpc: Standardise on NR_syscalls rather than
  __NR_syscalls.
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Rashmica Gupta <rashmicy@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+References: <1447913093-28342-1-git-send-email-rashmicy@gmail.com>
+ <CAOJe8K0yHTdymRbEo=itvK-AYiNzQLLspNgTyyzADkzpPxpzHw@mail.gmail.com>
+In-Reply-To: <CAOJe8K0yHTdymRbEo=itvK-AYiNzQLLspNgTyyzADkzpPxpzHw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,152 +41,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/19/15, Rashmica Gupta <rashmicy@gmail.com> wrote:
-> Most architectures use NR_syscalls as the #define for the number of
-> syscalls.
->
-> We use __NR_syscalls, and then define NR_syscalls as __NR_syscalls.
->
-> __NR_syscalls is not used outside arch code, whereas NR_syscalls is. So as
-> NR_syscalls must be defined and __NR_syscalls does not, replace
-> __NR_syscalls
-> with NR_syscalls.
-Hi,
+On 11/19/2015 02:45 PM, Denis Kirjanov wrote:
+> On 11/19/15, Rashmica Gupta <rashmicy@gmail.com> wrote:
+>> > Most architectures use NR_syscalls as the #define for the number of
+>> > syscalls.
+>> >
+>> > We use __NR_syscalls, and then define NR_syscalls as __NR_syscalls.
+>> >
+>> > __NR_syscalls is not used outside arch code, whereas NR_syscalls is. So as
+>> > NR_syscalls must be defined and __NR_syscalls does not, replace
+>> > __NR_syscalls
+>> > with NR_syscalls.
+> Hi,
+> 
+> But what's wrong with the current code? Why do we need such change?
 
-But what's wrong with the current code? Why do we need such change?
-
-Thank you.
-
->
-> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
-> ---
->  arch/powerpc/include/asm/unistd.h        | 3 +--
->  arch/powerpc/include/asm/vdso_datapage.h | 2 +-
->  arch/powerpc/kernel/systbl_chk.c         | 2 +-
->  arch/powerpc/kernel/systbl_chk.sh        | 2 +-
->  arch/powerpc/kernel/vdso.c               | 2 +-
->  arch/powerpc/kernel/vdso32/datapage.S    | 2 +-
->  arch/powerpc/kernel/vdso64/datapage.S    | 2 +-
->  arch/powerpc/platforms/cell/spufs/run.c  | 2 +-
->  8 files changed, 8 insertions(+), 9 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/unistd.h
-> b/arch/powerpc/include/asm/unistd.h
-> index 6d8f8023ac27..05bf34296144 100644
-> --- a/arch/powerpc/include/asm/unistd.h
-> +++ b/arch/powerpc/include/asm/unistd.h
-> @@ -12,10 +12,9 @@
->  #include <uapi/asm/unistd.h>
->
->
-> -#define __NR_syscalls		378
-> +#define NR_syscalls		378
->
->  #define __NR__exit __NR_exit
-> -#define NR_syscalls	__NR_syscalls
->
->  #ifndef __ASSEMBLY__
->
-> diff --git a/arch/powerpc/include/asm/vdso_datapage.h
-> b/arch/powerpc/include/asm/vdso_datapage.h
-> index b73a8199f161..1afe90ade595 100644
-> --- a/arch/powerpc/include/asm/vdso_datapage.h
-> +++ b/arch/powerpc/include/asm/vdso_datapage.h
-> @@ -41,7 +41,7 @@
->  #include <linux/unistd.h>
->  #include <linux/time.h>
->
-> -#define SYSCALL_MAP_SIZE      ((__NR_syscalls + 31) / 32)
-> +#define SYSCALL_MAP_SIZE      ((NR_syscalls + 31) / 32)
->
->  /*
->   * So here is the ppc64 backward compatible version
-> diff --git a/arch/powerpc/kernel/systbl_chk.c
-> b/arch/powerpc/kernel/systbl_chk.c
-> index 2384129f5893..55323a620cfe 100644
-> --- a/arch/powerpc/kernel/systbl_chk.c
-> +++ b/arch/powerpc/kernel/systbl_chk.c
-> @@ -57,4 +57,4 @@
->
->  START_TABLE
->  #include <asm/systbl.h>
-> -END_TABLE __NR_syscalls
-> +END_TABLE NR_syscalls
-> diff --git a/arch/powerpc/kernel/systbl_chk.sh
-> b/arch/powerpc/kernel/systbl_chk.sh
-> index 19415e7674a5..31b6e7c358ca 100644
-> --- a/arch/powerpc/kernel/systbl_chk.sh
-> +++ b/arch/powerpc/kernel/systbl_chk.sh
-> @@ -16,7 +16,7 @@ awk	'BEGIN { num = -1; }	# Ignore the beginning of the
-> file
->  	/^START_TABLE/ { num = 0; next; }
->  	/^END_TABLE/ {
->  		if (num != $2) {
-> -			printf "__NR_syscalls (%s) is not one more than the last syscall
-> (%s)\n",
-> +			printf "NR_syscalls (%s) is not one more than the last syscall (%s)\n",
->  				$2, num - 1;
->  			exit(1);
->  		}
-> diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-> index b457bfa28436..def1b8b5e6c1 100644
-> --- a/arch/powerpc/kernel/vdso.c
-> +++ b/arch/powerpc/kernel/vdso.c
-> @@ -671,7 +671,7 @@ static void __init vdso_setup_syscall_map(void)
->  	extern unsigned long sys_ni_syscall;
->
->
-> -	for (i = 0; i < __NR_syscalls; i++) {
-> +	for (i = 0; i < NR_syscalls; i++) {
->  #ifdef CONFIG_PPC64
->  		if (sys_call_table[i*2] != sys_ni_syscall)
->  			vdso_data->syscall_map_64[i >> 5] |=
-> diff --git a/arch/powerpc/kernel/vdso32/datapage.S
-> b/arch/powerpc/kernel/vdso32/datapage.S
-> index 59cf5f452879..3745113fcc65 100644
-> --- a/arch/powerpc/kernel/vdso32/datapage.S
-> +++ b/arch/powerpc/kernel/vdso32/datapage.S
-> @@ -61,7 +61,7 @@ V_FUNCTION_BEGIN(__kernel_get_syscall_map)
->  	addi	r3,r3,CFG_SYSCALL_MAP32
->  	cmpli	cr0,r4,0
->  	beqlr
-> -	li	r0,__NR_syscalls
-> +	li	r0,NR_syscalls
->  	stw	r0,0(r4)
->  	crclr	cr0*4+so
->  	blr
-> diff --git a/arch/powerpc/kernel/vdso64/datapage.S
-> b/arch/powerpc/kernel/vdso64/datapage.S
-> index 2f01c4a0d8a0..184a6ba7f283 100644
-> --- a/arch/powerpc/kernel/vdso64/datapage.S
-> +++ b/arch/powerpc/kernel/vdso64/datapage.S
-> @@ -62,7 +62,7 @@ V_FUNCTION_BEGIN(__kernel_get_syscall_map)
->  	cmpli	cr0,r4,0
->  	crclr	cr0*4+so
->  	beqlr
-> -	li	r0,__NR_syscalls
-> +	li	r0,NR_syscalls
->  	stw	r0,0(r4)
->  	blr
->    .cfi_endproc
-> diff --git a/arch/powerpc/platforms/cell/spufs/run.c
-> b/arch/powerpc/platforms/cell/spufs/run.c
-> index 4ddf769a64e5..9f79004e6d6f 100644
-> --- a/arch/powerpc/platforms/cell/spufs/run.c
-> +++ b/arch/powerpc/platforms/cell/spufs/run.c
-> @@ -326,7 +326,7 @@ static int spu_process_callback(struct spu_context *ctx)
->  	spu_ret = -ENOSYS;
->  	npc += 4;
->
-> -	if (s.nr_ret < __NR_syscalls) {
-> +	if (s.nr_ret < NR_syscalls) {
->  		spu_release(ctx);
->  		/* do actual system call from here */
->  		spu_ret = spu_sys_callback(&s);
-> --
-> 2.5.0
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Yeah, just out of curiosity. Why we had both __NR_syscalls and
+NR_syscalls to begin with ?
