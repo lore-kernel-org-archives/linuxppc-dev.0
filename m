@@ -2,17 +2,16 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA2591A0757
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 15:44:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5B60D1A0757
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 15:44:54 +1100 (AEDT)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
 Cc: mikey@neuling.org, sam.bobroff@au1.ibm.com, linuxppc-dev@ozlabs.org,
  paulus@samba.org
-Subject: [PATCH v2 1/2] powerpc/tm: Block signal return setting invalid MSR
- state
-Date: Thu, 19 Nov 2015 15:44:44 +1100
-Message-Id: <1447908285-14637-2-git-send-email-mikey@neuling.org>
+Subject: [PATCH v2 2/2] powerpc/tm: Check for already reclaimed tasks
+Date: Thu, 19 Nov 2015 15:44:45 +1100
+Message-Id: <1447908285-14637-3-git-send-email-mikey@neuling.org>
 In-Reply-To: <1447908285-14637-1-git-send-email-mikey@neuling.org>
 References: <1447908285-14637-1-git-send-email-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,81 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we allow both the MSR T and S bits to be set by userspace on
-a signal return.  Unfortunately this is a reserved configuration and
-will cause a TM Bad Thing exception if attempted (via rfid).
+Currently we can hit a scenario where we'll tm_reclaim() twice.  This
+results in a TM bad thing exception because the second reclaim occurs
+when not in suspend mode.
 
-This patch checks for this case in both the 32 and 64 bit signals
-code.  If both T and S are set, we mark the context as invalid.
+The scenario in which this can happen is the following.  We attempt to
+deliver a signal to userspace.  To do this we need obtain the stack
+pointer to write the signal context.  To get this stack pointer we
+must tm_reclaim() in case we need to use the checkpointed stack
+pointer (see get_tm_stackpointer()).  Normally we'd then return
+directly to userspace to deliver the signal without going through
+__switch_to().
 
-Found using a syscall fuzzer.
+Unfortunatley, if at this point we get an error (such as a bad
+userspace stack pointer), we need to exit the process.  The exit will
+result in a __switch_to().  __switch_to() will attempt to save the
+process state which results in another tm_reclaim().  This
+tm_reclaim() now causes a TM Bad Thing exception as this state has
+already been saved and the processor is no longer in TM suspend mode.
+Whee!
+
+This patch checks the state of the MSR to ensure we are TM suspended
+before we attempt the tm_reclaim().  If we've already saved the state
+away, we should no longer be in TM suspend mode.  This has the
+additional advantage of checking for a potential TM Bad Thing
+exception.
+
+Found using syscall fuzzer.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 Cc: stable@vger.kernel.org # v3.9+
 ---
- arch/powerpc/include/asm/reg.h  |  1 +
- arch/powerpc/kernel/signal_32.c | 14 +++++++++-----
- arch/powerpc/kernel/signal_64.c |  4 ++++
- 3 files changed, 14 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/process.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index a908ada..2220f7a 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -108,6 +108,7 @@
- #define MSR_TS_T	__MASK(MSR_TS_T_LG)	/*  Transaction Transactional */
- #define MSR_TS_MASK	(MSR_TS_T | MSR_TS_S)   /* Transaction State bits */
- #define MSR_TM_ACTIVE(x) (((x) & MSR_TS_MASK) != 0) /* Transaction active? */
-+#define MSR_TM_RESV(x) (((x) & MSR_TS_MASK) == MSR_TS_MASK) /* Reserved */
- #define MSR_TM_TRANSACTIONAL(x)	(((x) & MSR_TS_MASK) == MSR_TS_T)
- #define MSR_TM_SUSPENDED(x)	(((x) & MSR_TS_MASK) == MSR_TS_S)
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 75b6676..646bf4d 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -551,6 +551,24 @@ static void tm_reclaim_thread(struct thread_struct *thr,
+ 		msr_diff &= MSR_FP | MSR_VEC | MSR_VSX | MSR_FE0 | MSR_FE1;
+ 	}
  
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 0dbee46..ef7c24e 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -875,6 +875,15 @@ static long restore_tm_user_regs(struct pt_regs *regs,
- 		return 1;
- #endif /* CONFIG_SPE */
- 
-+	/* Get the top half of the MSR from the user context */
-+	if (__get_user(msr_hi, &tm_sr->mc_gregs[PT_MSR]))
-+		return 1;
-+	msr_hi <<= 32;
-+	/* If TM bits are set to the reserved value, it's an invalid context */
-+	if (MSR_TM_RESV(msr_hi))
-+		return 1;
-+	/* Pull in the MSR TM bits from the user context */
-+	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr_hi & MSR_TS_MASK);
- 	/* Now, recheckpoint.  This loads up all of the checkpointed (older)
- 	 * registers, including FP and V[S]Rs.  After recheckpointing, the
- 	 * transactional versions should be loaded.
-@@ -884,11 +893,6 @@ static long restore_tm_user_regs(struct pt_regs *regs,
- 	current->thread.tm_texasr |= TEXASR_FS;
- 	/* This loads the checkpointed FP/VEC state, if used */
- 	tm_recheckpoint(&current->thread, msr);
--	/* Get the top half of the MSR */
--	if (__get_user(msr_hi, &tm_sr->mc_gregs[PT_MSR]))
--		return 1;
--	/* Pull in MSR TM from user context */
--	regs->msr = (regs->msr & ~MSR_TS_MASK) | ((msr_hi<<32) & MSR_TS_MASK);
- 
- 	/* This loads the speculative FP/VEC state, if used */
- 	if (msr & MSR_FP) {
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 20756df..c676ece 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -438,6 +438,10 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
- 
- 	/* get MSR separately, transfer the LE bit if doing signal return */
- 	err |= __get_user(msr, &sc->gp_regs[PT_MSR]);
-+	/* Don't allow reserved mode. */
-+	if (MSR_TM_RESV(msr))
-+		return -EINVAL;
++	/*
++	 * Use the current MSR TM suspended bit to track if we have
++	 * checkpointed state outstanding.
++	 * On signal delivery, we'd normally reclaim the checkpointed
++	 * state to obtain stack pointer (see:get_tm_stackpointer()).
++	 * This will then directly return to userspace without going
++	 * through __switch_to(). However, if the stack frame is bad,
++	 * we need to exit this thread which calls __switch_to() which
++	 * will again attempt to reclaim the already saved tm state.
++	 * Hence we need to check that we've not already reclaimed
++	 * this state.
++	 * We do this using the current MSR, rather tracking it in
++	 * some specific thread_struct bit, as it has the additional
++	 * benifit of checking for a potential TM bad thing exception.
++	 */
++	if (!MSR_TM_SUSPENDED(mfmsr()))
++		return;
 +
- 	/* pull in MSR TM from user context */
- 	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr & MSR_TS_MASK);
+ 	tm_reclaim(thr, thr->regs->msr, cause);
  
+ 	/* Having done the reclaim, we now have the checkpointed
 -- 
 2.5.0
