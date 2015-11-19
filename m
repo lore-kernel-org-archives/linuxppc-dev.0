@@ -1,27 +1,22 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
- [IPv6:2607:f8b0:400e:c03::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BF51A0757
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 11:21:58 +1100 (AEDT)
-Received: by padhx2 with SMTP id hx2so60817719pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2015 16:21:56 -0800 (PST)
-Subject: Re: [PATCH v7 25/50] powerpc/powernv: Reserve PE for root bus
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-26-git-send-email-gwshan@linux.vnet.ibm.com>
- <564AC37A.2060701@ozlabs.ru> <20151117090653.GA20134@gwshan>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
- bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
- panto@antoniou-consulting.com, frowand.list@gmail.com
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <564D161C.3020603@ozlabs.ru>
-Date: Thu, 19 Nov 2015 11:21:48 +1100
-MIME-Version: 1.0
-In-Reply-To: <20151117090653.GA20134@gwshan>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id E77331A02A1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2015 12:02:44 +1100 (AEDT)
+Message-ID: <1447894964.15206.0.camel@ellerman.id.au>
+Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Mark Salter <msalter@redhat.com>, "James E. J. Bottomley"
+ <JBottomley@odin.com>, brking <brking@us.ibm.com>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Date: Thu, 19 Nov 2015 12:02:44 +1100
+In-Reply-To: <1447855399.3974.24.camel@redhat.com>
+References: <1447838334.1564.2.camel@ellerman.id.au>
+ <1447855399.3974.24.camel@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,26 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/17/2015 08:06 PM, Gavin Shan wrote:
-> On Tue, Nov 17, 2015 at 05:04:42PM +1100, Alexey Kardashevskiy wrote:
->> On 11/05/2015 12:12 AM, Gavin Shan wrote:
->>> We're going to reserve/assign PEs when pcibios_setup_bridge() is
->>> called. The function won't be called for root bus as it doesn't
->>> have parent bridge. However, the root bus still needs a PE to be
->>> covered.
->>>
->>> This reserves PE numbers that are adjacent to the reserved one
->>> for root buses.
->>
->>
->> Somewhere in the patchset you need to describe why you need a separate PE for
->> a root bus and why reserved_pe_idx is not enough for this.
->>
->
-> Please confirm if it's fine to add the descrption in this patch's chagelog.
+On Wed, 2015-11-18 at 09:03 -0500, Mark Salter wrote:
+> On Wed, 2015-11-18 at 20:18 +1100, Michael Ellerman wrote:
+> > Hi folks,
+> > 
+> > I'm intermittently seeing the following oops on at least one powerpc box.
+> > 
+> > The BUG_ON() is from:
+> > 
+> > static int scsi_init_sgtable(struct request *req, struct scsi_data_buffer *sdb)
+> > {
+> > 	...
+> > 	count = blk_rq_map_sg(req->q, req, sdb->table.sgl);
+> > 	BUG_ON(count > sdb->table.nents);
+> > 
+> > Looking at the dump it looks like count was 2, I can't work out what nents was.
+> > 
+> > The machine's just a fairly boring bare metal setup, with a single IPR adapter:
+> > 
+> > 0001:08:00.0 RAID bus controller: IBM PCI-E IPR SAS Adapter (ASIC) (rev 02)
+> > 	Subsystem: IBM PCIe3 x8 SAS RAID Internal Adapter 6Gb (57D7)
+> > 	Flags: bus master, fast devsel, latency 0
+> > 	Kernel driver in use: ipr
+> > 
+> > 
+> > Anyone seen it before or have any ideas?
+> 
+> I'm also seeing it on arm64 in 4.4-rc1
 
-Yes, it is fine. Thanks!
+Ah thanks, that's a good data point. I was assuming it was a driver bug, but I
+assume you're not using IPR :)
 
+> [    6.859003] Call trace:                                                                      
+> [    6.861439] [<fffffe000074345c>] scsi_init_sgtable+0x84/0x88                                 
+> [    6.867072] [<fffffe00007434ac>] scsi_init_io+0x4c/0x1ac                                     
+> [    6.872358] [<fffffe000075004c>] sd_setup_read_write_cmnd+0x44/0x844                         
+> [    6.878682] [<fffffe0000750884>] sd_init_command+0x38/0xb0                                   
+> [    6.884141] [<fffffe00007436e4>] scsi_setup_cmnd+0xd8/0x13c                                  
+> [    6.889686] [<fffffe000074397c>] scsi_prep_fn+0xc0/0x140                                     
+> [    6.894973] [<fffffe00003bd0cc>] blk_peek_request+0x148/0x24c                                
+> [    6.900692] [<fffffe0000744754>] scsi_request_fn+0x58/0x648                                  
+> [    6.906237] [<fffffe00003b8e80>] __blk_run_queue+0x40/0x58                                   
+> [    6.911696] [<fffffe00003b91a4>] blk_run_queue+0x30/0x48                                     
+> [    6.916983] [<fffffe00007422e4>] scsi_run_queue+0x204/0x294                                  
+> [    6.922528] [<fffffe000074321c>] scsi_end_request+0x13c/0x1a0                                
+> [    6.928247] [<fffffe0000744ef4>] scsi_io_completion+0xf0/0x564                               
+> [    6.934052] [<fffffe000073beb0>] scsi_finish_command+0xe4/0x144                              
+> [    6.939943] [<fffffe00007446cc>] scsi_softirq_done+0x148/0x178                               
+> [    6.945748] [<fffffe00003c39a4>] blk_done_softirq+0x7c/0x94                                  
+> [    6.951295] [<fffffe00000c8f44>] __do_softirq+0x114/0x2a0                                    
+> [    6.956667] [<fffffe00000c9340>] irq_exit+0x8c/0xe4                                          
+> [    6.961522] [<fffffe000009cf00>] handle_IPI+0x170/0x228                                      
+> [    6.966721] [<fffffe00000904e0>] gic_handle_irq+0xa0/0xb8                                    
+> [    6.972093] Exception stack(0xfffffe03dc143de0 to 0xfffffe03dc143f00)                        
 
--- 
-Alexey
+cheers
