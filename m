@@ -1,17 +1,17 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B53C01A0018
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2015 15:15:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DF3EF1A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2015 15:15:40 +1100 (AEDT)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
 Cc: mikey@neuling.org, sam.bobroff@au1.ibm.com, linuxppc-dev@ozlabs.org,
  paulus@samba.org
-Subject: [PATCH v2 1/3] powerpc: Print MSR TM bits in oops messages
-Date: Fri, 20 Nov 2015 15:15:32 +1100
-Message-Id: <1447992934-18905-2-git-send-email-mikey@neuling.org>
+Subject: [PATCH v2 2/3] selftests/powerpc: Add TM signal return test
+Date: Fri, 20 Nov 2015 15:15:33 +1100
+Message-Id: <1447992934-18905-3-git-send-email-mikey@neuling.org>
 In-Reply-To: <1447992934-18905-1-git-send-email-mikey@neuling.org>
 References: <1447992934-18905-1-git-send-email-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,106 +23,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Print MSR TM bits in oops messages.  This appends them to the end
-like this:
-
-    MSR: 8000000502823031 <SF,VEC,VSX,FP,ME,IR,DR,LE,TM[TE]>
-
-You get the TM[] only if at least one TM MSR bit is set.  Inside the
-TM[], E means Enabled (bit 32), S means Suspended (bit 33), and T
-means Transactional (bit 34)
-
-If no bits are set, you get no TM[] output.
-
-Include rework of printbits() to handle this case.
+Test the kernel's signal return code to ensure that it doesn't crash
+when both the transactional and suspend MSR bits are set in the signal
+context.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/kernel/process.c | 51 ++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 43 insertions(+), 8 deletions(-)
+ tools/testing/selftests/powerpc/tm/.gitignore      |  1 +
+ tools/testing/selftests/powerpc/tm/Makefile        |  2 +-
+ .../selftests/powerpc/tm/tm-signal-msr-resv.c      | 71 ++++++++++++++++++++++
+ 3 files changed, 73 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 646bf4d..f086e8b 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -952,10 +952,12 @@ static void show_instructions(struct pt_regs *regs)
- 	printk("\n");
- }
+diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
+index 2699635d..61c318f 100644
+--- a/tools/testing/selftests/powerpc/tm/.gitignore
++++ b/tools/testing/selftests/powerpc/tm/.gitignore
+@@ -1,2 +1,3 @@
+ tm-resched-dscr
+ tm-syscall
++tm-signal-msr-resv
+diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
+index 4bea62a..0c28db7 100644
+--- a/tools/testing/selftests/powerpc/tm/Makefile
++++ b/tools/testing/selftests/powerpc/tm/Makefile
+@@ -1,4 +1,4 @@
+-TEST_PROGS := tm-resched-dscr tm-syscall
++TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv
  
--static struct regbit {
-+struct regbit {
- 	unsigned long bit;
- 	const char *name;
--} msr_bits[] = {
-+};
-+
-+static struct regbit msr_bits[] = {
- #if defined(CONFIG_PPC64) && !defined(CONFIG_BOOKE)
- 	{MSR_SF,	"SF"},
- 	{MSR_HV,	"HV"},
-@@ -985,16 +987,49 @@ static struct regbit {
- 	{0,		NULL}
- };
+ all: $(TEST_PROGS)
  
--static void printbits(unsigned long val, struct regbit *bits)
-+static void print_bits(unsigned long val, struct regbit *bits, const char *sep)
- {
--	const char *sep = "";
-+	const char *s = "";
- 
--	printk("<");
- 	for (; bits->bit; ++bits)
- 		if (val & bits->bit) {
--			printk("%s%s", sep, bits->name);
--			sep = ",";
-+			printk("%s%s", s, bits->name);
-+			s = sep;
- 		}
-+}
-+
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+static struct regbit msr_tm_bits[] = {
-+	{MSR_TS_T,	"T"},
-+	{MSR_TS_S,	"S"},
-+	{MSR_TM,	"E"},
-+	{0,		NULL}
-+};
-+
-+static void print_tm_bits(unsigned long val)
-+{
+diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c b/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
+new file mode 100644
+index 0000000..bdad348
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
+@@ -0,0 +1,71 @@
 +/*
-+ * This only prints something if at least one of the TM bit is set.
-+ * Inside the TM[], the output means:
-+ *   E: Enabled		(bit 32)
-+ *   S: Suspended	(bit 33)
-+ *   T: Transactional	(bit 34)
++ * Copyright 2015, Michael Neuling, IBM Corp.
++ * Licensed under GPLv2.
++ *
++ * Test the kernel's signal return code to ensure that it doesn't
++ * crash when both the transactional and suspend MSR bits are set in
++ * the signal context.
++ *
++ * For this test, we send ourselves a SIGUSR1.  In the SIGUSR1 handler
++ * we modify the signal context to set both MSR TM S and T bits (which
++ * is "reserved" by the PowerISA). When we return from the signal
++ * handler (implicit sigreturn), the kernel should detect reserved MSR
++ * value and send us with a SIGSEGV.
 + */
-+	if (val & (MSR_TM | MSR_TS_S | MSR_TS_T)) {
-+		printk(",TM[");
-+		print_bits(val, msr_tm_bits, "");
-+		printk("]");
-+	}
-+}
-+#else
-+static void print_tm_bits(unsigned long val) {}
-+#endif
 +
-+static void print_msr_bits(unsigned long val)
++#include <stdlib.h>
++#include <stdio.h>
++#include <signal.h>
++#include <unistd.h>
++
++#include "utils.h"
++
++int segv_expected = 0;
++
++void signal_segv(int signum)
 +{
-+	printk("<");
-+	print_bits(val, msr_bits, ",");
-+	print_tm_bits(val);
- 	printk(">");
- }
- 
-@@ -1019,7 +1054,7 @@ void show_regs(struct pt_regs * regs)
- 	printk("REGS: %p TRAP: %04lx   %s  (%s)\n",
- 	       regs, regs->trap, print_tainted(), init_utsname()->release);
- 	printk("MSR: "REG" ", regs->msr);
--	printbits(regs->msr, msr_bits);
-+	print_msr_bits(regs->msr);
- 	printk("  CR: %08lx  XER: %08lx\n", regs->ccr, regs->xer);
- 	trap = TRAP(regs);
- 	if ((regs->trap != 0xc00) && cpu_has_feature(CPU_FTR_CFAR))
++	if (segv_expected && (signum == SIGSEGV))
++		_exit(0);
++	_exit(1);
++}
++
++void signal_usr1(int signum, siginfo_t *info, void *uc)
++{
++	ucontext_t *ucp = uc;
++
++	/* Link tm checkpointed context to normal context */
++	ucp->uc_link = ucp;
++	/* Set all TM bits so that the context is now invalid */
++#ifdef __powerpc64__
++	ucp->uc_mcontext.gp_regs[PT_MSR] |= (7ULL << 32);
++#else
++	ucp->uc_mcontext.regs->gpr[PT_MSR] |= (7ULL);
++#endif
++	/* Should segv on return becuase of invalid context */
++	segv_expected = 1;
++}
++
++int tm_signal_msr_resv()
++{
++	struct sigaction act;
++
++	act.sa_sigaction = signal_usr1;
++	sigemptyset(&act.sa_mask);
++	act.sa_flags = SA_SIGINFO;
++	if (sigaction(SIGUSR1, &act, NULL) < 0) {
++		perror("sigaction sigusr1");
++		exit(1);
++	}
++	if (signal(SIGSEGV, signal_segv) == SIG_ERR)
++		exit(1);
++
++	raise(SIGUSR1);
++
++	/* We shouldn't get here as we exit in the segv handler */
++	return 1;
++}
++
++int main(void)
++{
++	return test_harness(tm_signal_msr_resv, "tm_signal_msr_resv");
++}
 -- 
 2.5.0
