@@ -1,30 +1,28 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pa0-x235.google.com (mail-pa0-x235.google.com
- [IPv6:2607:f8b0:400e:c03::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <emilne@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9B7431A00BF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2015 09:00:31 +1100 (AEDT)
-Received: by pacej9 with SMTP id ej9so128174333pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2015 14:00:29 -0800 (PST)
-Date: Fri, 20 Nov 2015 14:00:16 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Rob Herring <robh@kernel.org>
-Cc: Shengjiu Wang <shengjiu.wang@freescale.com>, pawel.moll@arm.com,
- mark.rutland@arm.com, ijc+devicetree@hellion.org.uk,
- galak@codeaurora.org, timur@tabi.org, Xiubo.Lee@gmail.com,
- lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz,
- tiwai@suse.com, shawnguo@kernel.org, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org
-Subject: Re: [PATCH V2 3/3] ASoC: fsl_asrc: spba clock is needed by asrc device
-Message-ID: <20151120220015.GA10156@Asurada>
-References: <cover.1447997800.git.shengjiu.wang@freescale.com>
- <7b40da78c965d4152c15794ec527c75198c9e2f9.1447997800.git.shengjiu.wang@freescale.com>
- <20151120142946.GA6949@rob-hp-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151120142946.GA6949@rob-hp-laptop>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 640AB1A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2015 01:38:40 +1100 (AEDT)
+Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
+From: Ewan Milne <emilne@redhat.com>
+Reply-To: emilne@redhat.com
+To: Hannes Reinecke <hare@suse.de>
+Cc: Christoph Hellwig <hch@infradead.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Mark Salter <msalter@redhat.com>, "James E. J.
+ Bottomley" <JBottomley@odin.com>,
+ brking <brking@us.ibm.com>, linux-scsi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-block@vger.kernel.org
+In-Reply-To: <564DEC41.5010600@suse.de>
+References: <1447838334.1564.2.camel@ellerman.id.au>
+ <1447855399.3974.24.camel@redhat.com>
+ <1447894964.15206.0.camel@ellerman.id.au>
+ <20151119082325.GA11419@infradead.org>  <564DEC41.5010600@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 20 Nov 2015 09:38:36 -0500
+Message-ID: <1448030316.4067.18.camel@localhost.localdomain>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,33 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 20, 2015 at 08:29:46AM -0600, Rob Herring wrote:
-> On Fri, Nov 20, 2015 at 02:17:53PM +0800, Shengjiu Wang wrote:
-> > ASRC need to enable the spba clock, when sdma is using share peripheral
-> > script. In this case, there is two spba master port is used, if don't
-> > enable the clock, the spba bus will have arbitration issue, which may
-> > cause read/write wrong data from/to ASRC registers
+On Thu, 2015-11-19 at 16:35 +0100, Hannes Reinecke wrote:
+> On 11/19/2015 09:23 AM, Christoph Hellwig wrote:
+> > It's pretty much guaranteed a block layer bug, most likely in the
+> > merge bios to request infrastucture where we don't obey the merging
+> > limits properly.
 > > 
-> > Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
-> > ---
-> >  Documentation/devicetree/bindings/sound/fsl,asrc.txt |  2 ++
-> >  sound/soc/fsl/fsl_asrc.c                             | 10 ++++++++++
-> >  sound/soc/fsl/fsl_asrc.h                             |  1 +
-> >  3 files changed, 13 insertions(+)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/sound/fsl,asrc.txt b/Documentation/devicetree/bindings/sound/fsl,asrc.txt
-> > index b93362a..d8eeee3 100644
-> > --- a/Documentation/devicetree/bindings/sound/fsl,asrc.txt
-> > +++ b/Documentation/devicetree/bindings/sound/fsl,asrc.txt
-> > @@ -25,6 +25,8 @@ Required properties:
-> >  	"mem"		  Peripheral access clock to access registers.
-> >  	"ipg"		  Peripheral clock to driver module.
-> >  	"asrck_<0-f>"	  Clock sources for input and output clock.
-> > +	"spba"		  The spba clock is needed when two spba master port
-> > +			  is used.
+> > Does either of you have a known good and first known bad kernel?
 > 
-> I'm assuming the same comments on patch 1 apply to all 3.
+> Well, I have been fighting a similar issue for several months now,
+> albeit with multipath enabled. Haven't had much progress with this,
+> sadly.
+> Seeing that this is our distro kernel it might or might not be
+> related; however, as the symptoms are identical there still is a
+> chance that this is actually a generic block-layer problem.
+> 
+> Cheers,
+> 
+> Hannes
 
-Yes. I should have mentioned that.
+We have seen this also.  (e.g.  req->nr_phys_segments was 3, but
+blk_rq_map_sg() returned 4.)  I was suspicious of the patch:
 
-Nicolin
+bio: modify __bio_add_page() to accept pages that don't start a new segment
+
+But we put some debugging code in and didn't hit it.  We haven't
+found the problem yet, either, though.  We're still looking.
+
+As Christoph said, it would seem to be a problem with the block layer
+merging.
+
+The API for this seems defective, in that blk_rq_map_sg() should
+never be returning a value indicating that it overwrote past the
+end of the supplied SG array and depend on the caller to check it.
+(We could get data corruption on another I/O if it used adjacent
+memory for a different SG list, for example.)
+
+-Ewan
