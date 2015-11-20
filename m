@@ -3,8 +3,8 @@ Received: from mail2-relais-roc.national.inria.fr
  (mail2-relais-roc.national.inria.fr [192.134.164.83])
  (using TLSv1.2 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 203261A01E4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2015 07:56:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1CCCE1A0320
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2015 07:56:29 +1100 (AEDT)
 From: Julia Lawall <Julia.Lawall@lip6.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: kernel-janitors@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
@@ -14,9 +14,9 @@ Cc: kernel-janitors@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
  Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
  Andrew Lunn <andrew@lunn.ch>, Bjorn Helgaas <bhelgaas@google.com>,
  Jason Cooper <jason@lakedaemon.net>
-Subject: [PATCH 5/6] powerpc/btext: add missing of_node_put
-Date: Fri, 20 Nov 2015 21:33:23 +0100
-Message-Id: <1448051604-25256-6-git-send-email-Julia.Lawall@lip6.fr>
+Subject: [PATCH 4/6] powerpc/kexec: add missing of_node_put
+Date: Fri, 20 Nov 2015 21:33:22 +0100
+Message-Id: <1448051604-25256-5-git-send-email-Julia.Lawall@lip6.fr>
 In-Reply-To: <1448051604-25256-1-git-send-email-Julia.Lawall@lip6.fr>
 References: <1448051604-25256-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,44 +36,42 @@ follows (http://coccinelle.lip6.fr):
 
 // <smpl>
 @@
+expression e,e1;
 local idexpression n;
-expression e;
 @@
 
- for_each_node_by_type(n,...) {
-   ...
+ for_each_node_by_type(n, e1) {
+   ... when != of_node_put(n)
+       when != e = n
 (
-   of_node_put(n);
-|
-   e = n
+   return n;
 |
 +  of_node_put(n);
-?  break;
+?  return ...;
 )
    ...
  }
-... when != n
 // </smpl>
 
 Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
 ---
- arch/powerpc/kernel/btext.c |    4 +++-
+ arch/powerpc/kernel/machine_kexec_64.c |    4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/btext.c b/arch/powerpc/kernel/btext.c
-index 41c011c..8d05ef2 100644
---- a/arch/powerpc/kernel/btext.c
-+++ b/arch/powerpc/kernel/btext.c
-@@ -257,8 +257,10 @@ int __init btext_find_display(int allow_nonstdout)
- 			rc = btext_initialize(np);
- 			printk("result: %d\n", rc);
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index 0fbd75d..4ba61ce 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -103,8 +103,10 @@ int default_machine_kexec_prepare(struct kimage *image)
+ 			begin = image->segment[i].mem;
+ 			end = begin + image->segment[i].memsz;
+ 
+-			if ((begin < high) && (end > low))
++			if ((begin < high) && (end > low)) {
++				of_node_put(node);
+ 				return -ETXTBSY;
++			}
  		}
--		if (rc == 0)
-+		if (rc == 0) {
-+			of_node_put(np);
- 			break;
-+		}
  	}
- 	return rc;
- }
+ 
