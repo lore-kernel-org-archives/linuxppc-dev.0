@@ -1,25 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0106.outbound.protection.outlook.com [207.46.100.106])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <Julia.Lawall@lip6.fr>
+Received: from mail2-relais-roc.national.inria.fr
+ (mail2-relais-roc.national.inria.fr [192.134.164.83])
+ (using TLSv1.2 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B381B1A0066
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2015 05:58:58 +1100 (AEDT)
-Message-ID: <1448045920.27264.207.camel@freescale.com>
-Subject: Re: Recurring Oops in link_path_walk()
-From: Scott Wood <scottwood@freescale.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>, Christophe Leroy
- <christophe.leroy@c-s.fr>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>, linux-fsdevel
- <linux-fsdevel@vger.kernel.org>, BOUET Serge <serge.bouet@c-s.fr>, "BARABAN
- Luc" <luc.baraban@c-s.fr>
-Date: Fri, 20 Nov 2015 12:58:40 -0600
-In-Reply-To: <20151120175643.GM22011@ZenIV.linux.org.uk>
-References: <564F536F.9080109@c-s.fr>
- <20151120175643.GM22011@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 19C001A0066
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2015 07:56:09 +1100 (AEDT)
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: kernel-janitors@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH 0/6] add missing of_node_put
+Date: Fri, 20 Nov 2015 21:33:18 +0100
+Message-Id: <1448051604-25256-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,32 +22,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-11-20 at 17:56 +0000, Al Viro wrote:
-> On Fri, Nov 20, 2015 at 06:07:59PM +0100, Christophe Leroy wrote:
-> > Al,
-> > 
-> > We've been running Kernel 3.18 for several monthes on our embedded
-> > boards, and we have a recurring Oops in link_path_walk()
-> > It doesn't happen very often (approximatly once every month on one
-> > board among a set of 50 boards, never the same board).
-> > 
-> > Here below is the last oops I got, with kernel 3.18.22. It crashes
-> > at address 0xc00b75ac. Here below is the full desassembly of
-> > link_path_walk() so that you can see exactly the offending line.
-> > 
-> > The address it fails at is always the same (link_path_walk+0x414)
-> > but the oopsing data address is each time different. I added all
-> > Oops I got below after the disassembly (on different sub-versions of
-> > 3.18).
-> 
-> Looks like garbage in dentry->d_inode, assuming that reconstruction of
-> the mapping of line numbers to addresses is correct...  Not sure it is,
-> though; what's more, just how does LR manage to point to the insn right
-> after the call of dput(), of all things?
+The various for_each device_node iterators performs an of_node_get on each
+iteration, so a break out of the loop requires an of_node_put.
 
-When "bl dput" is executed, LR gets set to the instruction after the bl. 
- After dput returns, LR still has that value.  Presumably the call to mntput
-was skipped via the beq.  Nothing else modifies LR between the dput return and
-the faulting address.
+The complete semantic patch that fixes this problem is
+(http://coccinelle.lip6.fr):
 
--Scott
+// <smpl>
+@r@
+local idexpression n;
+expression e1,e2;
+iterator name for_each_node_by_name, for_each_node_by_type,
+for_each_compatible_node, for_each_matching_node,
+for_each_matching_node_and_match, for_each_child_of_node,
+for_each_available_child_of_node, for_each_node_with_property;
+iterator i;
+statement S;
+expression list [n1] es;
+@@
+
+(
+(
+for_each_node_by_name(n,e1) S
+|
+for_each_node_by_type(n,e1) S
+|
+for_each_compatible_node(n,e1,e2) S
+|
+for_each_matching_node(n,e1) S
+|
+for_each_matching_node_and_match(n,e1,e2) S
+|
+for_each_child_of_node(e1,n) S
+|
+for_each_available_child_of_node(e1,n) S
+|
+for_each_node_with_property(n,e1) S
+)
+&
+i(es,n,...) S
+)
+
+@@
+local idexpression r.n;
+iterator r.i;
+expression e;
+expression list [r.n1] es;
+@@
+
+ i(es,n,...) {
+   ...
+(
+   of_node_put(n);
+|
+   e = n
+|
+   return n;
+|
++  of_node_put(n);
+?  return ...;
+)
+   ...
+ }
+
+@@
+local idexpression r.n;
+iterator r.i;
+expression e;
+expression list [r.n1] es;
+@@
+
+ i(es,n,...) {
+   ...
+(
+   of_node_put(n);
+|
+   e = n
+|
++  of_node_put(n);
+?  break;
+)
+   ...
+ }
+... when != n
+
+@@
+local idexpression r.n;
+iterator r.i;
+expression e;
+identifier l;
+expression list [r.n1] es;
+@@
+
+ i(es,n,...) {
+   ...
+(
+   of_node_put(n);
+|
+   e = n
+|
++  of_node_put(n);
+?  goto l;
+)
+   ...
+ }
+...
+l: ... when != n// </smpl>
+
+---
+
+ arch/powerpc/kernel/btext.c                   |    4 +++-
+ arch/powerpc/kernel/machine_kexec_64.c        |    4 +++-
+ arch/powerpc/platforms/cell/iommu.c           |    1 +
+ arch/powerpc/platforms/embedded6xx/hlwd-pic.c |    1 +
+ arch/powerpc/platforms/powernv/opal-lpc.c     |    1 +
+ arch/powerpc/platforms/pseries/setup.c        |    3 ++-
+ 6 files changed, 11 insertions(+), 3 deletions(-)
