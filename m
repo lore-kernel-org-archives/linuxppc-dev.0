@@ -1,21 +1,20 @@
-Return-Path: <chenhui.zhao@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0128.outbound.protection.outlook.com [207.46.100.128])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6D7F81A0018
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2015 20:46:01 +1100 (AEDT)
-From: Chenhui Zhao <chenhui.zhao@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: <scottwood@freescale.com>
-Subject: [PATCH v3 5/6] powerpc/mpc85xx: Add hotplug support on E5500 and
- E500MC cores
-Date: Fri, 20 Nov 2015 17:14:01 +0800
-Message-ID: <1448010842-22345-5-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1448010842-22345-1-git-send-email-chenhui.zhao@freescale.com>
-References: <1448010842-22345-1-git-send-email-chenhui.zhao@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3D99F1A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2015 22:01:11 +1100 (AEDT)
+Message-ID: <1448017264.25731.1.camel@ellerman.id.au>
+Subject: Re: [PATCH 5/8] powerpc: Restore FPU/VEC/VSX if previously used
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Cyril Bur <cyrilbur@gmail.com>, mikey@neuling.org, anton@samba.org,
+ linuxppc-dev@ozlabs.org
+Date: Fri, 20 Nov 2015 22:01:04 +1100
+In-Reply-To: <1447817215-15804-6-git-send-email-cyrilbur@gmail.com>
+References: <1447817215-15804-1-git-send-email-cyrilbur@gmail.com>
+ <1447817215-15804-6-git-send-email-cyrilbur@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,377 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Freescale E500MC and E5500 core-based platforms, like P4080, T1040,
-support disabling/enabling CPU dynamically.
-This patch adds this feature on those platforms.
+On Wed, 2015-11-18 at 14:26 +1100, Cyril Bur wrote:
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index c8b4225..46e9869 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -210,7 +210,54 @@ system_call:			/* label this so stack traces look sane */
+>  	li	r11,-MAX_ERRNO
+>  	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+>  	bne-	syscall_exit_work
+> -	cmpld	r3,r11
+> +
+> +	/*
+> +	 * This is an assembly version of checks performed in restore_math()
+> +	 * to avoid calling C unless absolutely necessary.
+> +	 * Note: In order to simplify the assembly, if the FP or VEC registers
+> +	 * are hot (and therefore restore_math() isn't called) the
+> +	 * LOAD_{FP,VEC} thread counter doesn't get incremented.
+> +	 * This is likely the best thing to do anyway because hot regs indicate
+> +	 * that the workload is doing a lot of syscalls that can be handled
+> +	 * quickly and without the need to touch FP or VEC regs (by the kernel).
+> +	 * a) If this workload is long running then this is exactly what the
+> +	 * kernel should be doing.
+> +	 * b) If this workload isn't long running then we'll soon fall back to
+> +	 * calling into C and the counter will be incremented regularly again
+> +	 * anyway.
+> +	 */
+> +	ld	r9,PACACURRENT(r13)
+> +	andi.	r0,r8,MSR_FP
+> +	addi	r9,r9,THREAD
+> +	lbz	r5,THREAD_LOAD_FP(r9)
+> +	/*
+> +	 * Goto 2 if !r0 && r5
+> +	 * The cmpb works because r5 can only have bits set in the lowest byte
+> +	 * and r0 may or may not have bit 13 set (different byte) but will have
+> +	 * a zero low byte therefore the low bytes must differ if r5 == true
+> +	 * and the bit 13 byte must be the same if !r0
+> +	 */
+> +	cmpb	r7,r0,r5
 
-Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
-Signed-off-by: Tang Yuantian <Yuantian.Tang@feescale.com>
----
+cmpb is new since Power6, which means it doesn't exist on Cell -> Program Check :)
 
-changes for v3
-* move changes in arch/powerpc/platforms/85xx/smp.h to patch 2
-* get rid of unused primary_hw
-* check_cpu_dead() renamed to is_cpu_dead()
-* move the declaration of fsl_rcpm_init() to patch 2/5
+I'm testing a patch using crandc, but I don't like it.
 
-major changes for v2:
-* factor out smp_85xx_start_cpu()
-* move fsl_rcpm_init() into mpc85xx_smp_init() due to the init sequence
-* add hard_irq_disable() after local_irq_save(). for platforms that
-  implement lazy enabling/disabling of interrupts, call
-  hard_irq_disable() to ensure interrupts are disabled physically.
+I'm not a big fan of the logic here, it's unpleasantly complicated. Did you
+benchmark going to C to do the checks? Or I wonder if we could just check
+THREAD_LOAD_FP || THREAD_LOAD_VEC and if either is set we go to restore_math().
 
- arch/powerpc/Kconfig              |   2 +-
- arch/powerpc/include/asm/smp.h    |   3 +
- arch/powerpc/kernel/smp.c         |   7 +-
- arch/powerpc/platforms/85xx/smp.c | 198 +++++++++++++++++++++-----------------
- 4 files changed, 120 insertions(+), 90 deletions(-)
+Or on the other hand we check !MSR_FP && !MSR_VEC and if so we go to
+restore_math()?
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index db49e0d..1093143 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -391,7 +391,7 @@ config SWIOTLB
- config HOTPLUG_CPU
- 	bool "Support for enabling/disabling CPUs"
- 	depends on SMP && (PPC_PSERIES || \
--	PPC_PMAC || PPC_POWERNV || (PPC_85xx && !PPC_E500MC))
-+	PPC_PMAC || PPC_POWERNV || FSL_SOC_BOOKE)
- 	---help---
- 	  Say Y here to be able to disable and re-enable individual
- 	  CPUs at runtime on SMP machines.
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 825663c..bdb8111 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -67,6 +67,9 @@ void generic_cpu_die(unsigned int cpu);
- void generic_set_cpu_dead(unsigned int cpu);
- void generic_set_cpu_up(unsigned int cpu);
- int generic_check_cpu_restart(unsigned int cpu);
-+int is_cpu_dead(unsigned int cpu);
-+#else
-+#define generic_set_cpu_up(i)	do { } while (0)
- #endif
- 
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index ec9ec20..8575d04 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -427,7 +427,7 @@ void generic_cpu_die(unsigned int cpu)
- 
- 	for (i = 0; i < 100; i++) {
- 		smp_rmb();
--		if (per_cpu(cpu_state, cpu) == CPU_DEAD)
-+		if (is_cpu_dead(cpu))
- 			return;
- 		msleep(100);
- 	}
-@@ -454,6 +454,11 @@ int generic_check_cpu_restart(unsigned int cpu)
- 	return per_cpu(cpu_state, cpu) == CPU_UP_PREPARE;
- }
- 
-+int is_cpu_dead(unsigned int cpu)
-+{
-+	return per_cpu(cpu_state, cpu) == CPU_DEAD;
-+}
-+
- static bool secondaries_inhibited(void)
- {
- 	return kvm_hv_mode_active();
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index ab0459d..0f56dd5 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -10,6 +10,8 @@
-  * option) any later version.
-  */
- 
-+#define pr_fmt(fmt) "smp: %s: " fmt, __func__
-+
- #include <linux/stddef.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
-@@ -53,6 +55,7 @@ static void mpc85xx_give_timebase(void)
- 	unsigned long flags;
- 
- 	local_irq_save(flags);
-+	hard_irq_disable();
- 
- 	while (!tb_req)
- 		barrier();
-@@ -101,6 +104,7 @@ static void mpc85xx_take_timebase(void)
- 	unsigned long flags;
- 
- 	local_irq_save(flags);
-+	hard_irq_disable();
- 
- 	tb_req = 1;
- 	while (!tb_valid)
-@@ -136,8 +140,31 @@ static void smp_85xx_mach_cpu_die(void)
- 	while (1)
- 		;
- }
-+
-+static void qoriq_cpu_kill(unsigned int cpu)
-+{
-+	int i;
-+
-+	for (i = 0; i < 500; i++) {
-+		if (is_cpu_dead(cpu)) {
-+#ifdef CONFIG_PPC64
-+			paca[cpu].cpu_start = 0;
-+#endif
-+			return;
-+		}
-+		msleep(20);
-+	}
-+	pr_err("CPU%d didn't die...\n", cpu);
-+}
- #endif
- 
-+/*
-+ * To keep it compatible with old boot program which uses
-+ * cache-inhibit spin table, we need to flush the cache
-+ * before accessing spin table to invalidate any staled data.
-+ * We also need to flush the cache after writing to spin
-+ * table to push data out.
-+ */
- static inline void flush_spin_table(void *spin_table)
- {
- 	flush_dcache_range((ulong)spin_table,
-@@ -176,57 +203,20 @@ static void wake_hw_thread(void *info)
- }
- #endif
- 
--static int smp_85xx_kick_cpu(int nr)
-+static int smp_85xx_start_cpu(int cpu)
- {
--	unsigned long flags;
--	const u64 *cpu_rel_addr;
--	__iomem struct epapr_spin_table *spin_table;
-+	int ret = 0;
- 	struct device_node *np;
--	int hw_cpu = get_hard_smp_processor_id(nr);
-+	const u64 *cpu_rel_addr;
-+	unsigned long flags;
- 	int ioremappable;
--	int ret = 0;
--
--	WARN_ON(nr < 0 || nr >= NR_CPUS);
--	WARN_ON(hw_cpu < 0 || hw_cpu >= NR_CPUS);
--
--	pr_debug("smp_85xx_kick_cpu: kick CPU #%d\n", nr);
--
--#ifdef CONFIG_PPC64
--	/* Threads don't use the spin table */
--	if (cpu_thread_in_core(nr) != 0) {
--		int primary = cpu_first_thread_sibling(nr);
--
--		if (WARN_ON_ONCE(!cpu_has_feature(CPU_FTR_SMT)))
--			return -ENOENT;
-+	int hw_cpu = get_hard_smp_processor_id(cpu);
-+	struct epapr_spin_table __iomem *spin_table;
- 
--		if (cpu_thread_in_core(nr) != 1) {
--			pr_err("%s: cpu %d: invalid hw thread %d\n",
--			       __func__, nr, cpu_thread_in_core(nr));
--			return -ENOENT;
--		}
--
--		if (!cpu_online(primary)) {
--			pr_err("%s: cpu %d: primary %d not online\n",
--			       __func__, nr, primary);
--			return -ENOENT;
--		}
--
--		smp_call_function_single(primary, wake_hw_thread, &nr, 0);
--		return 0;
--	} else if (cpu_thread_in_core(boot_cpuid) != 0 &&
--		   cpu_first_thread_sibling(boot_cpuid) == nr) {
--		if (WARN_ON_ONCE(!cpu_has_feature(CPU_FTR_SMT)))
--			return -ENOENT;
--
--		smp_call_function_single(boot_cpuid, wake_hw_thread, &nr, 0);
--	}
--#endif
--
--	np = of_get_cpu_node(nr, NULL);
-+	np = of_get_cpu_node(cpu, NULL);
- 	cpu_rel_addr = of_get_property(np, "cpu-release-addr", NULL);
--
--	if (cpu_rel_addr == NULL) {
--		printk(KERN_ERR "No cpu-release-addr for cpu %d\n", nr);
-+	if (!cpu_rel_addr) {
-+		pr_err("No cpu-release-addr for cpu %d\n", cpu);
- 		return -ENOENT;
- 	}
- 
-@@ -246,28 +236,18 @@ static int smp_85xx_kick_cpu(int nr)
- 		spin_table = phys_to_virt(*cpu_rel_addr);
- 
- 	local_irq_save(flags);
--#ifdef CONFIG_PPC32
--#ifdef CONFIG_HOTPLUG_CPU
--	/* Corresponding to generic_set_cpu_dead() */
--	generic_set_cpu_up(nr);
-+	hard_irq_disable();
- 
--	if (system_state == SYSTEM_RUNNING) {
--		/*
--		 * To keep it compatible with old boot program which uses
--		 * cache-inhibit spin table, we need to flush the cache
--		 * before accessing spin table to invalidate any staled data.
--		 * We also need to flush the cache after writing to spin
--		 * table to push data out.
--		 */
--		flush_spin_table(spin_table);
--		out_be32(&spin_table->addr_l, 0);
--		flush_spin_table(spin_table);
-+	if (qoriq_pm_ops)
-+		qoriq_pm_ops->cpu_up_prepare(cpu);
- 
-+	/* if cpu is not spinning, reset it */
-+	if (read_spin_table_addr_l(spin_table) != 1) {
- 		/*
- 		 * We don't set the BPTR register here since it already points
- 		 * to the boot page properly.
- 		 */
--		mpic_reset_core(nr);
-+		mpic_reset_core(cpu);
- 
- 		/*
- 		 * wait until core is ready...
-@@ -277,40 +257,23 @@ static int smp_85xx_kick_cpu(int nr)
- 		if (!spin_event_timeout(
- 				read_spin_table_addr_l(spin_table) == 1,
- 				10000, 100)) {
--			pr_err("%s: timeout waiting for core %d to reset\n",
--							__func__, hw_cpu);
--			ret = -ENOENT;
--			goto out;
-+			pr_err("timeout waiting for cpu %d to reset\n",
-+				hw_cpu);
-+			ret = -EAGAIN;
-+			goto err;
- 		}
--
--		/*  clear the acknowledge status */
--		__secondary_hold_acknowledge = -1;
- 	}
--#endif
--	flush_spin_table(spin_table);
--	out_be32(&spin_table->pir, hw_cpu);
--	out_be32(&spin_table->addr_l, __pa(__early_start));
--	flush_spin_table(spin_table);
--
--	/* Wait a bit for the CPU to ack. */
--	if (!spin_event_timeout(__secondary_hold_acknowledge == hw_cpu,
--					10000, 100)) {
--		pr_err("%s: timeout waiting for core %d to ack\n",
--						__func__, hw_cpu);
--		ret = -ENOENT;
--		goto out;
--	}
--out:
--#else
--	smp_generic_kick_cpu(nr);
- 
- 	flush_spin_table(spin_table);
- 	out_be32(&spin_table->pir, hw_cpu);
-+#ifdef CONFIG_PPC64
- 	out_be64((u64 *)(&spin_table->addr_h),
- 		__pa(ppc_function_entry(generic_secondary_smp_init)));
--	flush_spin_table(spin_table);
-+#else
-+	out_be32(&spin_table->addr_l, __pa(__early_start));
- #endif
--
-+	flush_spin_table(spin_table);
-+err:
- 	local_irq_restore(flags);
- 
- 	if (ioremappable)
-@@ -319,6 +282,60 @@ out:
- 	return ret;
- }
- 
-+static int smp_85xx_kick_cpu(int nr)
-+{
-+	int ret = 0;
-+#ifdef CONFIG_PPC64
-+	int primary = nr;
-+#endif
-+
-+	WARN_ON(nr < 0 || nr >= num_possible_cpus());
-+
-+	pr_debug("kick CPU #%d\n", nr);
-+
-+#ifdef CONFIG_PPC64
-+	/* Threads don't use the spin table */
-+	if (cpu_thread_in_core(nr) != 0) {
-+		int primary = cpu_first_thread_sibling(nr);
-+
-+		if (WARN_ON_ONCE(!cpu_has_feature(CPU_FTR_SMT)))
-+			return -ENOENT;
-+
-+		if (cpu_thread_in_core(nr) != 1) {
-+			pr_err("%s: cpu %d: invalid hw thread %d\n",
-+			       __func__, nr, cpu_thread_in_core(nr));
-+			return -ENOENT;
-+		}
-+
-+		if (!cpu_online(primary)) {
-+			pr_err("%s: cpu %d: primary %d not online\n",
-+			       __func__, nr, primary);
-+			return -ENOENT;
-+		}
-+
-+		smp_call_function_single(primary, wake_hw_thread, &nr, 0);
-+		return 0;
-+	}
-+
-+	ret = smp_85xx_start_cpu(primary);
-+	if (ret)
-+		return ret;
-+
-+	paca[nr].cpu_start = 1;
-+	generic_set_cpu_up(nr);
-+
-+	return ret;
-+#else
-+	ret = smp_85xx_start_cpu(nr);
-+	if (ret)
-+		return ret;
-+
-+	generic_set_cpu_up(nr);
-+
-+	return ret;
-+#endif
-+}
-+
- struct smp_ops_t smp_85xx_ops = {
- 	.kick_cpu = smp_85xx_kick_cpu,
- 	.cpu_bootable = smp_generic_cpu_bootable,
-@@ -473,6 +490,10 @@ void __init mpc85xx_smp_init(void)
- 	}
- 
- #ifdef CONFIG_HOTPLUG_CPU
-+#ifdef CONFIG_FSL_CORENET_RCPM
-+	fsl_rcpm_init();
-+#endif
-+
- #ifdef CONFIG_FSL_PMC
- 	mpc85xx_setup_pmc();
- #endif
-@@ -480,6 +501,7 @@ void __init mpc85xx_smp_init(void)
- 		smp_85xx_ops.give_timebase = mpc85xx_give_timebase;
- 		smp_85xx_ops.take_timebase = mpc85xx_take_timebase;
- 		ppc_md.cpu_die = smp_85xx_mach_cpu_die;
-+		smp_85xx_ops.cpu_die = qoriq_cpu_kill;
- 	}
- #endif
- 	smp_ops = &smp_85xx_ops;
--- 
-1.9.1
+> +	cmpldi	r7,0xff0
+> +#ifdef CONFIG_ALTIVEC
+> +	beq	2f
+> +
+> +	lbz	r9,THREAD_LOAD_VEC(r9)
+> +	andis.	r0,r8,MSR_VEC@h
+> +	/* Skip (goto 3) if r0 || !r9 */
+> +	bne	3f
+> +	cmpldi	r9,0
+> +	beq 3f
+> +#else
+> +	bne 3f
+> +#endif
+> +2:	addi    r3,r1,STACK_FRAME_OVERHEAD
+> +	bl	restore_math
+> +	ld	r8,_MSR(r1)
+> +	ld	r3,RESULT(r1)
+> +	li	r11,-MAX_ERRNO
+> +
+> +3:	cmpld	r3,r11
+>  	ld	r5,_CCR(r1)
+>  	bge-	syscall_error
+>  .Lsyscall_error_cont:
+
+
+cheers
