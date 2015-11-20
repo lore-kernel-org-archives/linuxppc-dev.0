@@ -1,21 +1,21 @@
 Return-Path: <j.anaszewski@samsung.com>
-Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
+Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 189D81A0018
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2015 02:46:39 +1100 (AEDT)
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout2.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id A626A1A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2015 02:51:37 +1100 (AEDT)
+Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NY4034BFEHOSEA0@mailout2.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Sat, 21 Nov 2015 00:46:36 +0900 (KST)
+ with ESMTP id <0NY400P57E96FQ80@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Sat, 21 Nov 2015 00:41:30 +0900 (KST)
 From: Jacek Anaszewski <j.anaszewski@samsung.com>
-To: linux-leds@vger.kernel.org
+To: linux-leds@vger.kernel.orv
 Cc: linuxppc-dev@lists.ozlabs.org, Jacek Anaszewski <j.anaszewski@samsung.com>,
  Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 Subject: [PATCH] leds: powernv: Implement brightness_set_blocking op
-Date: Fri, 20 Nov 2015 16:46:29 +0100
-Message-id: <1448034389-19972-1-git-send-email-j.anaszewski@samsung.com>
+Date: Fri, 20 Nov 2015 16:41:06 +0100
+Message-id: <1448034066-22978-1-git-send-email-j.anaszewski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
