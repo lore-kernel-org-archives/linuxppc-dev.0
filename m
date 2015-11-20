@@ -1,28 +1,21 @@
-Return-Path: <hare@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <j.anaszewski@samsung.com>
+Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 923731A0018
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2015 01:55:20 +1100 (AEDT)
-Message-ID: <564F3453.9040603@suse.de>
-Date: Fri, 20 Nov 2015 15:55:15 +0100
-From: Hannes Reinecke <hare@suse.de>
-MIME-Version: 1.0
-To: emilne@redhat.com
-CC: Christoph Hellwig <hch@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Mark Salter <msalter@redhat.com>,
- "James E. J. Bottomley" <JBottomley@odin.com>,
- brking <brking@us.ibm.com>, linux-scsi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-block@vger.kernel.org
-Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
-References: <1447838334.1564.2.camel@ellerman.id.au>	
- <1447855399.3974.24.camel@redhat.com>	
- <1447894964.15206.0.camel@ellerman.id.au>	
- <20151119082325.GA11419@infradead.org> <564DEC41.5010600@suse.de>
- <1448030316.4067.18.camel@localhost.localdomain>
-In-Reply-To: <1448030316.4067.18.camel@localhost.localdomain>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 189D81A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2015 02:46:39 +1100 (AEDT)
+Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout2.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
+ with ESMTP id <0NY4034BFEHOSEA0@mailout2.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Sat, 21 Nov 2015 00:46:36 +0900 (KST)
+From: Jacek Anaszewski <j.anaszewski@samsung.com>
+To: linux-leds@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Jacek Anaszewski <j.anaszewski@samsung.com>,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Subject: [PATCH] leds: powernv: Implement brightness_set_blocking op
+Date: Fri, 20 Nov 2015 16:46:29 +0100
+Message-id: <1448034389-19972-1-git-send-email-j.anaszewski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,65 +25,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/20/2015 03:38 PM, Ewan Milne wrote:
-> On Thu, 2015-11-19 at 16:35 +0100, Hannes Reinecke wrote:
->> On 11/19/2015 09:23 AM, Christoph Hellwig wrote:
->>> It's pretty much guaranteed a block layer bug, most likely in the
->>> merge bios to request infrastucture where we don't obey the merging
->>> limits properly.
->>>
->>> Does either of you have a known good and first known bad kernel?
->>
->> Well, I have been fighting a similar issue for several months now,
->> albeit with multipath enabled. Haven't had much progress with this,
->> sadly.
->> Seeing that this is our distro kernel it might or might not be
->> related; however, as the symptoms are identical there still is a
->> chance that this is actually a generic block-layer problem.
->>
->> Cheers,
->>
->> Hannes
-> 
-> We have seen this also.  (e.g.  req->nr_phys_segments was 3, but
-> blk_rq_map_sg() returned 4.)  I was suspicious of the patch:
-> 
-> bio: modify __bio_add_page() to accept pages that don't start a new segment
-> 
-> But we put some debugging code in and didn't hit it.  We haven't
-> found the problem yet, either, though.  We're still looking.
-> 
-Can't we have a joint effort here?
-I've been spending a _LOT_ of time trying to debug things here, but
-none of the ideas I've come up with have been able to fix anything.
+Since brightness setting can sleep for this driver, implement
+brightness_set_blocking op, instead of brightness_set.
+It makes this driver compatible with LED triggers.
 
-I'm almost tempted to increase the count from scsi_alloc_sgtable()
-by one and be done with ...
+Signed-off-by: Jacek Anaszewski <j.anaszewski@samsung.com>
+Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+---
+ drivers/leds/leds-powernv.c |   16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
-> As Christoph said, it would seem to be a problem with the block layer
-> merging.
-> 
-> The API for this seems defective, in that blk_rq_map_sg() should
-> never be returning a value indicating that it overwrote past the
-> end of the supplied SG array and depend on the caller to check it.
-> (We could get data corruption on another I/O if it used adjacent
-> memory for a different SG list, for example.)
-> 
-Yeah, the API is bloody useless.
-By the time you hit the BUG_ON you've already caused a memory
-corruption, so no way you can recover there.
-
-At the very least we should be passing in the sg list count into
-blk_map_rq_sg(), but that's a core blocklayer API and changes here
-would require changes by quite a set of drivers. Plus it wouldn't
-help me for a distribution kernel ...
-
-Cheers,
-
-Hannes
+diff --git a/drivers/leds/leds-powernv.c b/drivers/leds/leds-powernv.c
+index 1e75e1f..dd76f34 100644
+--- a/drivers/leds/leds-powernv.c
++++ b/drivers/leds/leds-powernv.c
+@@ -77,7 +77,7 @@ static int powernv_get_led_type(const char *led_type_desc)
+  * This function is called from work queue task context when ever it gets
+  * scheduled. This function can sleep at opal_async_wait_response call.
+  */
+-static void powernv_led_set(struct powernv_led_data *powernv_led,
++static int powernv_led_set(struct powernv_led_data *powernv_led,
+ 			    enum led_brightness value)
+ {
+ 	int rc, token;
+@@ -99,7 +99,7 @@ static void powernv_led_set(struct powernv_led_data *powernv_led,
+ 		if (token != -ERESTARTSYS)
+ 			dev_err(dev, "%s: Couldn't get OPAL async token\n",
+ 				__func__);
+-		return;
++		return token;
+ 	}
+ 
+ 	rc = opal_leds_set_ind(token, powernv_led->loc_code,
+@@ -125,6 +125,7 @@ static void powernv_led_set(struct powernv_led_data *powernv_led,
+ 
+ out_token:
+ 	opal_async_release_token(token);
++	return rc;
+ }
+ 
+ /*
+@@ -173,20 +174,23 @@ static enum led_brightness powernv_led_get(struct powernv_led_data *powernv_led)
+  * LED classdev 'brightness_get' function. This schedules work
+  * to update LED state.
+  */
+-static void powernv_brightness_set(struct led_classdev *led_cdev,
++static int powernv_brightness_set(struct led_classdev *led_cdev,
+ 				   enum led_brightness value)
+ {
+ 	struct powernv_led_data *powernv_led =
+ 		container_of(led_cdev, struct powernv_led_data, cdev);
+ 	struct powernv_led_common *powernv_led_common = powernv_led->common;
++	int rc;
+ 
+ 	/* Do not modify LED in unload path */
+ 	if (powernv_led_common->led_disabled)
+-		return;
++		return 0;
+ 
+ 	mutex_lock(&powernv_led_common->lock);
+-	powernv_led_set(powernv_led, value);
++	rc = powernv_led_set(powernv_led, value);
+ 	mutex_unlock(&powernv_led_common->lock);
++
++	return rc;
+ }
+ 
+ /* LED classdev 'brightness_get' function */
+@@ -227,7 +231,7 @@ static int powernv_led_create(struct device *dev,
+ 		return -ENOMEM;
+ 	}
+ 
+-	powernv_led->cdev.brightness_set = powernv_brightness_set;
++	powernv_led->cdev.brightness_set_blocking = powernv_brightness_set;
+ 	powernv_led->cdev.brightness_get = powernv_brightness_get;
+ 	powernv_led->cdev.brightness = LED_OFF;
+ 	powernv_led->cdev.max_brightness = LED_FULL;
 -- 
-Dr. Hannes Reinecke		               zSeries & Storage
-hare@suse.de			               +49 911 74053 688
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: F. Imendörffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
-HRB 21284 (AG Nürnberg)
+1.7.9.5
