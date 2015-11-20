@@ -2,8 +2,8 @@ Return-Path: <emilne@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 640AB1A0019
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2015 01:38:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8FF661A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2015 02:28:46 +1100 (AEDT)
 Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
 From: Ewan Milne <emilne@redhat.com>
 Reply-To: emilne@redhat.com
@@ -14,14 +14,15 @@ Cc: Christoph Hellwig <hch@infradead.org>, Michael Ellerman
  brking <brking@us.ibm.com>, linux-scsi@vger.kernel.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-block@vger.kernel.org
-In-Reply-To: <564DEC41.5010600@suse.de>
+In-Reply-To: <564F3453.9040603@suse.de>
 References: <1447838334.1564.2.camel@ellerman.id.au>
  <1447855399.3974.24.camel@redhat.com>
  <1447894964.15206.0.camel@ellerman.id.au>
  <20151119082325.GA11419@infradead.org>  <564DEC41.5010600@suse.de>
+ <1448030316.4067.18.camel@localhost.localdomain> <564F3453.9040603@suse.de>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 20 Nov 2015 09:38:36 -0500
-Message-ID: <1448030316.4067.18.camel@localhost.localdomain>
+Date: Fri, 20 Nov 2015 10:28:43 -0500
+Message-ID: <1448033323.4067.24.camel@localhost.localdomain>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,40 +33,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-11-19 at 16:35 +0100, Hannes Reinecke wrote:
-> On 11/19/2015 09:23 AM, Christoph Hellwig wrote:
-> > It's pretty much guaranteed a block layer bug, most likely in the
-> > merge bios to request infrastucture where we don't obey the merging
-> > limits properly.
-> > 
-> > Does either of you have a known good and first known bad kernel?
+On Fri, 2015-11-20 at 15:55 +0100, Hannes Reinecke wrote:
+> Can't we have a joint effort here?
+> I've been spending a _LOT_ of time trying to debug things here, but
+> none of the ideas I've come up with have been able to fix anything.
+
+Yes.  I'm not the one primarily looking at it, and we don't have a
+reproducer in-house.  We just have the one dump right now.
+
 > 
-> Well, I have been fighting a similar issue for several months now,
-> albeit with multipath enabled. Haven't had much progress with this,
-> sadly.
-> Seeing that this is our distro kernel it might or might not be
-> related; however, as the symptoms are identical there still is a
-> chance that this is actually a generic block-layer problem.
+> I'm almost tempted to increase the count from scsi_alloc_sgtable()
+> by one and be done with ...
 > 
-> Cheers,
-> 
-> Hannes
 
-We have seen this also.  (e.g.  req->nr_phys_segments was 3, but
-blk_rq_map_sg() returned 4.)  I was suspicious of the patch:
-
-bio: modify __bio_add_page() to accept pages that don't start a new segment
-
-But we put some debugging code in and didn't hit it.  We haven't
-found the problem yet, either, though.  We're still looking.
-
-As Christoph said, it would seem to be a problem with the block layer
-merging.
-
-The API for this seems defective, in that blk_rq_map_sg() should
-never be returning a value indicating that it overwrote past the
-end of the supplied SG array and depend on the caller to check it.
-(We could get data corruption on another I/O if it used adjacent
-memory for a different SG list, for example.)
-
--Ewan
+That might not fix it if it is a problem with the merge code, though.
