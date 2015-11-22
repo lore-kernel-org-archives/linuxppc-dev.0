@@ -1,43 +1,21 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 70CFF1A006B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 09:58:16 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 23 Nov 2015 04:28:12 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 8762C3940057
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 04:28:10 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAMMwAi166650180
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 04:28:10 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAMMw8lb025952
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 04:28:09 +0530
-Date: Mon, 23 Nov 2015 09:52:41 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org, linux-pci@vger.kernel.org,
- panto@antoniou-consulting.com, grant.likely@linaro.org,
- robherring2@gmail.com, bhelgaas@google.com, frowand.list@gmail.com
-Subject: Re: [PATCH v7 23/50] powerpc/powernv: Use PE instead of number
- during setup and release
-Message-ID: <20151122225240.GC16159@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-24-git-send-email-gwshan@linux.vnet.ibm.com>
- <564AB64E.6060208@ozlabs.ru> <20151117090302.GD16586@gwshan>
- <564BC2C3.4060908@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <564BC2C3.4060908@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B201A1A000C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 10:07:13 +1100 (AEDT)
+Message-ID: <1448233633.15853.1.camel@ellerman.id.au>
+Subject: Re: [PATCH 5/8] powerpc: Restore FPU/VEC/VSX if previously used
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Cyril Bur <cyrilbur@gmail.com>
+Cc: mikey@neuling.org, anton@samba.org, linuxppc-dev@ozlabs.org
+Date: Mon, 23 Nov 2015 10:07:13 +1100
+In-Reply-To: <20151123091818.576d92af@camb691>
+References: <1447817215-15804-1-git-send-email-cyrilbur@gmail.com>
+ <1447817215-15804-6-git-send-email-cyrilbur@gmail.com>
+ <1448017264.25731.1.camel@ellerman.id.au> <20151123091818.576d92af@camb691>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,318 +25,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 18, 2015 at 11:13:55AM +1100, Alexey Kardashevskiy wrote:
->On 11/17/2015 08:03 PM, Gavin Shan wrote:
->>On Tue, Nov 17, 2015 at 04:08:30PM +1100, Alexey Kardashevskiy wrote:
->>>On 11/05/2015 12:12 AM, Gavin Shan wrote:
->>>>In current implementation, the PEs that are allocated or picked
->>>>from the reserved list are identified by PE number. The PE instance
->>>>has to be picked according to the PE number eventually. We have
->>>>same issue when PE is released.
->>>>
->>>>For pnv_ioda_pick_m64_pe() and pnv_ioda_alloc_pe(), this returns
->>>>PE instance so that pnv_ioda_setup_bus_PE() can use the allocated
->>>>or reserved PE instance directly. Also, pnv_ioda_setup_bus_PE()
->>>>returns the reserved/allocated PE instance to be used in subsequent
->>>>patches. On the other hand, pnv_ioda_free_pe() uses PE instance
->>>>(not number) as its argument. No logical changes introduced.
->>>>
->>>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>>---
->>>>  arch/powerpc/platforms/powernv/pci-ioda.c | 81 +++++++++++++++++--------------
->>>>  arch/powerpc/platforms/powernv/pci.h      |  2 +-
->>>>  2 files changed, 46 insertions(+), 37 deletions(-)
->>>>
->>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>index 488e0f8..ae82df1 100644
->>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>@@ -152,7 +152,7 @@ static void pnv_ioda_reserve_pe(struct pnv_phb *phb, int pe_no)
->>>>  	pnv_ioda_init_pe(phb, pe_no);
->>>>  }
->>>>
->>>>-static int pnv_ioda_alloc_pe(struct pnv_phb *phb)
->>>>+static struct pnv_ioda_pe *pnv_ioda_alloc_pe(struct pnv_phb *phb)
->>>>  {
->>>>  	unsigned long pe;
->>>>
->>>>@@ -160,19 +160,20 @@ static int pnv_ioda_alloc_pe(struct pnv_phb *phb)
->>>>  		pe = find_next_zero_bit(phb->ioda.pe_alloc,
->>>>  					phb->ioda.total_pe_num, 0);
->>>>  		if (pe >= phb->ioda.total_pe_num)
->>>>-			return IODA_INVALID_PE;
->>>>+			return NULL;
->>>>  	} while(test_and_set_bit(pe, phb->ioda.pe_alloc));
->>>>
->>>>-	pnv_ioda_init_pe(phb, pe);
->>>>-	return pe;
->>>>+	return pnv_ioda_init_pe(phb, pe);
->>>>  }
->>>>
->>>>-static void pnv_ioda_free_pe(struct pnv_phb *phb, int pe)
->>>>+static void pnv_ioda_free_pe(struct pnv_ioda_pe *pe)
->>>>  {
->>>>-	WARN_ON(phb->ioda.pe_array[pe].pdev);
->>>>+	struct pnv_phb *phb = pe->phb;
->>>>+
->>>>+	WARN_ON(pe->pdev);
->>>>
->>>>-	memset(&phb->ioda.pe_array[pe], 0, sizeof(struct pnv_ioda_pe));
->>>>-	clear_bit(pe, phb->ioda.pe_alloc);
->>>>+	memset(pe, 0, sizeof(struct pnv_ioda_pe));
->>>>+	clear_bit(pe->pe_number, phb->ioda.pe_alloc);
->>>>  }
->>>>
->>>>  /* The default M64 BAR is shared by all PEs */
->>>>@@ -332,7 +333,7 @@ static void pnv_ioda_reserve_m64_pe(struct pci_bus *bus,
->>>>  	}
->>>>  }
->>>>
->>>>-static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->>>>+static struct pnv_ioda_pe *pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->>>>  {
->>>>  	struct pci_controller *hose = pci_bus_to_host(bus);
->>>>  	struct pnv_phb *phb = hose->private_data;
->>>>@@ -342,7 +343,7 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->>>>
->>>>  	/* Root bus shouldn't use M64 */
->>>>  	if (pci_is_root_bus(bus))
->>>>-		return IODA_INVALID_PE;
->>>>+		return NULL;
->>>>
->>>>  	/* Allocate bitmap */
->>>>  	size = _ALIGN_UP(phb->ioda.total_pe_num / 8, sizeof(unsigned long));
->>>>@@ -350,7 +351,7 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->>>>  	if (!pe_alloc) {
->>>>  		pr_warn("%s: Out of memory !\n",
->>>>  			__func__);
->>>>-		return IODA_INVALID_PE;
->>>>+		return NULL;
->>>>  	}
->>>>
->>>>  	/* Figure out reserved PE numbers by the PE */
->>>>@@ -363,7 +364,7 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->>>>  	 */
->>>>  	if (bitmap_empty(pe_alloc, phb->ioda.total_pe_num)) {
->>>>  		kfree(pe_alloc);
->>>>-		return IODA_INVALID_PE;
->>>>+		return NULL;
->>>>  	}
->>>>
->>>>  	/*
->>>>@@ -409,7 +410,7 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->>>>  	}
->>>>
->>>>  	kfree(pe_alloc);
->>>>-	return master_pe->pe_number;
->>>>+	return master_pe;
->>>>  }
->>>>
->>>>  static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
->>>>@@ -988,28 +989,26 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
->>>>   * subordinate PCI devices and buses. The second type of PE is normally
->>>>   * orgiriated by PCIe-to-PCI bridge or PLX switch downstream ports.
->>>>   */
->>>>-static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
->>>>+static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
->>>>  {
->>>>  	struct pci_controller *hose = pci_bus_to_host(bus);
->>>>  	struct pnv_phb *phb = hose->private_data;
->>>>-	struct pnv_ioda_pe *pe;
->>>>-	int pe_num = IODA_INVALID_PE;
->>>>+	struct pnv_ioda_pe *pe = NULL;
->>>>
->>>>  	/* Check if PE is determined by M64 */
->>>>  	if (phb->pick_m64_pe)
->>>>-		pe_num = phb->pick_m64_pe(bus, all);
->>>>+		pe = phb->pick_m64_pe(bus, all);
->>>>
->>>>  	/* The PE number isn't pinned by M64 */
->>>>-	if (pe_num == IODA_INVALID_PE)
->>>>-		pe_num = pnv_ioda_alloc_pe(phb);
->>>>+	if (!pe)
->>>>+		pe = pnv_ioda_alloc_pe(phb);
->>>>
->>>>-	if (pe_num == IODA_INVALID_PE) {
->>>>+	if (!pe) {
->>>>  		pr_warning("%s: Not enough PE# available for PCI bus %04x:%02x\n",
->>>>  			__func__, pci_domain_nr(bus), bus->number);
->>>>-		return;
->>>>+		return NULL;
->>>>  	}
->>>>
->>>>-	pe = &phb->ioda.pe_array[pe_num];
->>>>  	pe->flags |= (all ? PNV_IODA_PE_BUS_ALL : PNV_IODA_PE_BUS);
->>>>  	pe->pbus = bus;
->>>>  	pe->pdev = NULL;
->>>>@@ -1018,17 +1017,16 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
->>>>
->>>>  	if (all)
->>>>  		pe_info(pe, "Secondary bus %d..%d associated with PE#%d\n",
->>>>-			bus->busn_res.start, bus->busn_res.end, pe_num);
->>>>+			bus->busn_res.start, bus->busn_res.end, pe->pe_number);
->>>>  	else
->>>>  		pe_info(pe, "Secondary bus %d associated with PE#%d\n",
->>>>-			bus->busn_res.start, pe_num);
->>>>+			bus->busn_res.start, pe->pe_number);
->>>>
->>>>  	if (pnv_ioda_configure_pe(phb, pe)) {
->>>>  		/* XXX What do we do here ? */
->>>>-		if (pe_num)
->>>>-			pnv_ioda_free_pe(phb, pe_num);
->>>>+		pnv_ioda_free_pe(pe);
->>>>  		pe->pbus = NULL;
->>>>-		return;
->>>>+		return NULL;
->>>>  	}
->>>>
->>>>  	/* Associate it with all child devices */
->>>>@@ -1036,6 +1034,8 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
->>>>
->>>>  	/* Put PE to the list */
->>>>  	list_add_tail(&pe->list, &phb->ioda.pe_list);
->>>>+
->>>>+	return pe;
->>>>  }
->>>>
->>>>  static void pnv_ioda_setup_PEs(struct pci_bus *bus)
->>>>@@ -1267,7 +1267,7 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
->>>>
->>>>  		pnv_ioda_deconfigure_pe(phb, pe);
->>>>
->>>>-		pnv_ioda_free_pe(phb, pe->pe_number);
->>>>+		pnv_ioda_free_pe(pe);
->>>>  	}
->>>>  }
->>>>
->>>>@@ -1276,6 +1276,7 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
->>>>  	struct pci_bus        *bus;
->>>>  	struct pci_controller *hose;
->>>>  	struct pnv_phb        *phb;
->>>>+	struct pnv_ioda_pe    *pe;
->>>>  	struct pci_dn         *pdn;
->>>>  	struct pci_sriov      *iov;
->>>>  	u16                    num_vfs, i;
->>>>@@ -1300,8 +1301,11 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
->>>>  		/* Release PE numbers */
->>>>  		if (pdn->m64_single_mode) {
->>>>  			for (i = 0; i < num_vfs; i++) {
->>>>-				if (pdn->pe_num_map[i] != IODA_INVALID_PE)
->>>>-					pnv_ioda_free_pe(phb, pdn->pe_num_map[i]);
->>>>+				if (pdn->pe_num_map[i] == IODA_INVALID_PE)
->>>>+					continue;
->>>>+
->>>>+				pe = &phb->ioda.pe_array[pdn->pe_num_map[i]];
->>>>+				pnv_ioda_free_pe(pe);
->>>>  			}
->>>>  		} else
->>>>  			bitmap_clear(phb->ioda.pe_alloc, *pdn->pe_num_map, num_vfs);
->>>>@@ -1354,9 +1358,8 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
->>>>
->>>>  		if (pnv_ioda_configure_pe(phb, pe)) {
->>>>  			/* XXX What do we do here ? */
->>>>-			if (pe_num)
->>>>-				pnv_ioda_free_pe(phb, pe_num);
->>>>  			pe->pdev = NULL;
->>>>+			pnv_ioda_free_pe(pe);
->>>
->>>
->>>
->>>pnv_ioda_free_pe() does WARN_ON(pdev). Before this patch you would free PE
->>>first and then reset pe->pdev, now you reset it first, then call
->>>pnv_ioda_free_pe(). This change is not just about "Use PE instead of number
->>>during setup and release", is/was that a bug?
->>>
->>>And I fail to see when pe->pdev could get initialized in
->>>pnv_ioda_configure_pe() as pnv_pci_dma_dev_setup() should not be called while
->>>pnv_ioda_setup_vf_PE() is working.
->>>
->>
->>It wasn't or isn't a bug as
->
->
->There is an unexplained change in behavior - after the patch pe->pdev gets
->cleaned before pnv_ioda_free_pe(), before the patch it was opposite. Your
->options are:
->- remove "No logical changes introduced" from the commit log and explain the
->change or
->- move "pe->pdev = NULL;" after pnv_ioda_free_pe().
->
+On Mon, 2015-11-23 at 09:18 +1100, Cyril Bur wrote:
+> On Fri, 20 Nov 2015 22:01:04 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > On Wed, 2015-11-18 at 14:26 +1100, Cyril Bur wrote:
+> > > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> > > index c8b4225..46e9869 100644
+> > > --- a/arch/powerpc/kernel/entry_64.S
+> > > +++ b/arch/powerpc/kernel/entry_64.S
+> > > @@ -210,7 +210,54 @@ system_call:			/* label this so stack traces look sane */
+> > >  	li	r11,-MAX_ERRNO
+> > >  	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+> > >  	bne-	syscall_exit_work
+> > > -	cmpld	r3,r11
+> > > +
+> > > +	/*
+> > > +	 * This is an assembly version of checks performed in restore_math()
+> > > +	 * to avoid calling C unless absolutely necessary.
+> > > +	 * Note: In order to simplify the assembly, if the FP or VEC registers
+> > > +	 * are hot (and therefore restore_math() isn't called) the
+> > > +	 * LOAD_{FP,VEC} thread counter doesn't get incremented.
+> > > +	 * This is likely the best thing to do anyway because hot regs indicate
+> > > +	 * that the workload is doing a lot of syscalls that can be handled
+> > > +	 * quickly and without the need to touch FP or VEC regs (by the kernel).
+> > > +	 * a) If this workload is long running then this is exactly what the
+> > > +	 * kernel should be doing.
+> > > +	 * b) If this workload isn't long running then we'll soon fall back to
+> > > +	 * calling into C and the counter will be incremented regularly again
+> > > +	 * anyway.
+> > > +	 */
+> > > +	ld	r9,PACACURRENT(r13)
+> > > +	andi.	r0,r8,MSR_FP
+> > > +	addi	r9,r9,THREAD
+> > > +	lbz	r5,THREAD_LOAD_FP(r9)
+> > > +	/*
+> > > +	 * Goto 2 if !r0 && r5
+> > > +	 * The cmpb works because r5 can only have bits set in the lowest byte
+> > > +	 * and r0 may or may not have bit 13 set (different byte) but will have
+> > > +	 * a zero low byte therefore the low bytes must differ if r5 == true
+> > > +	 * and the bit 13 byte must be the same if !r0
+> > > +	 */
+> > > +	cmpb	r7,r0,r5  
+> > 
+> > cmpb is new since Power6, which means it doesn't exist on Cell -> Program Check :)
+> > 
+> Oops, sorry.
 
-I'll take option#1: to drop this specific change in next revision.
+That's fine, there's almost no way for you to know that from reading the
+documentation.
 
->
->
->>pe->pdev is initialized in arch/powerpc/platform/powernv/pci.c::
->>pnv_pci_dma_dev_setup()
->
->So when pnv_ioda_setup_vf_PE() starts working, it is valid for pe->pdev to
->have not-NULL pointer? Because nothing in pnv_ioda_setup_vf_PE() calls
->pnv_pci_dma_dev_setup(), explicitly or implicitly.
->
+> > I'm testing a patch using crandc, but I don't like it.
+> > 
+> > I'm not a big fan of the logic here, it's unpleasantly complicated. Did you
+> > benchmark going to C to do the checks? Or I wonder if we could just check
+> > THREAD_LOAD_FP || THREAD_LOAD_VEC and if either is set we go to restore_math().
+> > 
+> 
+> I didn't benchmark going to C mostly because you wanted to avoid calling C
+> unless necessary in that path. Based off the results I got benchmarking the
+> this series I expect calling C will also be in the noise of removing the
+> exception.
 
+Yeah I figured it was probably me that said "avoid C at all costs". But I've
+changed my mind ;)
 
-Correct.
+> > Or on the other hand we check !MSR_FP && !MSR_VEC and if so we go to
+> > restore_math()?
+> 
+> That seems like the best check to leave in the assembly if you want to avoid
+> complicated assembly in there.
 
->
->
->>>
->>>>  			continue;
->>>>  		}
->>>>
->>>>@@ -1374,6 +1377,7 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
->>>>  	struct pci_bus        *bus;
->>>>  	struct pci_controller *hose;
->>>>  	struct pnv_phb        *phb;
->>>>+	struct pnv_ioda_pe    *pe;
->>>>  	struct pci_dn         *pdn;
->>>>  	int                    ret;
->>>>  	u16                    i;
->>>>@@ -1416,11 +1420,13 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
->>>>  		/* Calculate available PE for required VFs */
->>>>  		if (pdn->m64_single_mode) {
->>>>  			for (i = 0; i < num_vfs; i++) {
->>>>-				pdn->pe_num_map[i] = pnv_ioda_alloc_pe(phb);
->>>>-				if (pdn->pe_num_map[i] == IODA_INVALID_PE) {
->>>>+				pe = pnv_ioda_alloc_pe(phb);
->>>>+				if (!pe) {
->>>>  					ret = -EBUSY;
->>>>  					goto m64_failed;
->>>>  				}
->>>>+
->>>>+				pdn->pe_num_map[i] = pe->pe_number;
->>>>  			}
->>>>  		} else {
->>>>  			mutex_lock(&phb->ioda.pe_alloc_mutex);
->>>>@@ -1465,8 +1471,11 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
->>>>  m64_failed:
->>>>  	if (pdn->m64_single_mode) {
->>>>  		for (i = 0; i < num_vfs; i++) {
->>>>-			if (pdn->pe_num_map[i] != IODA_INVALID_PE)
->>>>-				pnv_ioda_free_pe(phb, pdn->pe_num_map[i]);
->>>>+			if (pdn->pe_num_map[i] == IODA_INVALID_PE)
->>>>+				continue;
->>>>+
->>>>+			pe = &phb->ioda.pe_array[pdn->pe_num_map[i]];
->>>>+			pnv_ioda_free_pe(pe);
->>>>  		}
->>>>  	} else
->>>>  		bitmap_clear(phb->ioda.pe_alloc, *pdn->pe_num_map, num_vfs);
->>>>diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
->>>>index 5df945f..e55ab0e 100644
->>>>--- a/arch/powerpc/platforms/powernv/pci.h
->>>>+++ b/arch/powerpc/platforms/powernv/pci.h
->>>>@@ -105,7 +105,7 @@ struct pnv_phb {
->>>>  	int (*init_m64)(struct pnv_phb *phb);
->>>>  	void (*reserve_m64_pe)(struct pci_bus *bus,
->>>>  			       unsigned long *pe_bitmap, bool all);
->>>>-	int (*pick_m64_pe)(struct pci_bus *bus, bool all);
->>>>+	struct pnv_ioda_pe *(*pick_m64_pe)(struct pci_bus *bus, bool all);
->>>>  	int (*get_pe_state)(struct pnv_phb *phb, int pe_no);
->>>>  	void (*freeze_pe)(struct pnv_phb *phb, int pe_no);
->>>>  	int (*unfreeze_pe)(struct pnv_phb *phb, int pe_no, int opt);
->>>>
->>
+Cool. If you can benchmark that that'd be great, mmkay.
 
-Thanks,
-Gavin
+cheers
