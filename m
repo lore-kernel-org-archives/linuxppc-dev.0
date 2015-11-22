@@ -1,29 +1,23 @@
-Return-Path: <ming.lei@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 104D11A0100
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Nov 2015 03:57:30 +1100 (AEDT)
-Date: Sun, 22 Nov 2015 00:56:35 +0800
-From: Ming Lei <ming.lei@canonical.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Christoph Hellwig
- <hch@infradead.org>, Mark Salter <msalter@redhat.com>, "James E. J.
- Bottomley" <JBottomley@odin.com>, brking <brking@us.ibm.com>,
- linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-block@vger.kernel.org,
- tom.leiming@gmail.com
-Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
-Message-ID: <20151122005635.1b9ffbe1@tom-T450>
-In-Reply-To: <565055C6.5040801@linux.vnet.ibm.com>
-References: <1447838334.1564.2.camel@ellerman.id.au>
- <1447855399.3974.24.camel@redhat.com>
- <1447894964.15206.0.camel@ellerman.id.au>
- <20151119082325.GA11419@infradead.org>
- <1448021448.14769.7.camel@ellerman.id.au>
- <565055C6.5040801@linux.vnet.ibm.com>
+Return-Path: <mru@mansr.com>
+Received: from unicorn.mansr.com (unicorn.mansr.com
+ [IPv6:2001:8b0:ca0d:8d8e::2])
+ by lists.ozlabs.org (Postfix) with ESMTP id E21EB1A0076
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 00:10:50 +1100 (AEDT)
+From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, rsarmah@amcc.com,
+ Alexey Brodkin <Alexey.Brodkin@synopsys.com>
+Subject: Re: [PATCH v1 1/2] sata_dwc_460ex: move to generic DMA driver
+References: <1425415282-3750-1-git-send-email-andriy.shevchenko@linux.intel.com>
+ <1425415282-3750-2-git-send-email-andriy.shevchenko@linux.intel.com>
+Date: Sun, 22 Nov 2015 13:03:19 +0000
+In-Reply-To: <1425415282-3750-2-git-send-email-andriy.shevchenko@linux.intel.com>
+ (Andy Shevchenko's message of "Tue, 3 Mar 2015 22:41:21 +0200")
+Message-ID: <yw1xwptab2zs.fsf@unicorn.mansr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,82 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 21 Nov 2015 12:30:14 +0100
-Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
+Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
 
-> On 20/11/2015 13:10, Michael Ellerman wrote:
-> > On Thu, 2015-11-19 at 00:23 -0800, Christoph Hellwig wrote:
-> >=20
-> >> It's pretty much guaranteed a block layer bug, most likely in the
-> >> merge bios to request infrastucture where we don't obey the merging
-> >> limits properly.
-> >>
-> >> Does either of you have a known good and first known bad kernel?
-> >=20
-> > Not me, I've only hit it one or two times. All I can say is I have hit =
-it in
-> > 4.4-rc1.
-> >=20
-> > Laurent, can you narrow it down at all?
->=20
-> It seems that the panic is triggered by the commit bdced438acd8 ("block:
-> setup bi_phys_segments after splitting") which has been pulled by the
-> merge d9734e0d1ccf ("Merge branch 'for-4.4/core' of
-> git://git.kernel.dk/linux-block").
->=20
-> My system is panicing promptly when running a kernel built at
-> d9734e0d1ccf, while reverting the commit bdced438acd8, it can run hours
-> without panicing.
->=20
-> This being said, I can't explain what's going wrong.
->=20
-> May Ming shed some light here ?
+> The SATA implementation based on two actually different devices, i.e. SAT=
+A and
+> DMA controllers.
+>
+> For Synopsys DesignWare DMA we have already a generic implementation of t=
+he
+> driver. Thus, the patch converts the code to use DMAEngine framework and
+> dw_dmac driver.
+>
+> In future it will be better to split the devices inside DTS as well like =
+it's
+> done on other platforms.
+>
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>  drivers/ata/sata_dwc_460ex.c | 736 +++++++------------------------------=
+------
+>  1 file changed, 122 insertions(+), 614 deletions(-)
+>
 
-Laurent, looks there is one bug in blk_bio_segment_split(), would you
-mind testing the following patch to see if it fixes your issue?
+[...]
 
----
-=46rom 6fc701231dcc000bc8bc4b9105583380d9aa31f4 Mon Sep 17 00:00:00 2001
-From: Ming Lei <ming.lei@canonical.com>
-Date: Sun, 22 Nov 2015 00:47:13 +0800
-Subject: [PATCH] block: fix segment split
+> @@ -1721,16 +1227,16 @@ static int sata_dwc_probe(struct platform_device =
+*ofdev)
+>  		   idr, ver[0], ver[1], ver[2]);
+>
+>  	/* Get SATA DMA interrupt number */
+> -	irq =3D irq_of_parse_and_map(np, 1);
+> -	if (irq =3D=3D NO_IRQ) {
+> +	hsdev->dma->irq =3D irq_of_parse_and_map(np, 1);
 
-Inside blk_bio_segment_split(), previous bvec pointer('bvprvp')
-always points to the iterator local variable, which is obviously
-wrong, so fix it by pointing to the local variable of 'bvprv'.
+This doesn't look like it has been more than compile-tested.  Nothing
+ever allocates hsdev->dma, so it can't possibly work.
 
-Signed-off-by: Ming Lei <ming.lei@canonical.com>
----
- block/blk-merge.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Also, has anyone given any thought to getting rid of the dependency on
+the DW DMA controller?  Presumably support for old device trees would
+need to be retained for compatibility.  Maybe checking for a "dmas"
+property and falling back on the current behaviour if it's missing.  My
+goal is to get this driver working with another chip using the same SATA
+controller but a different DMA engine.
 
-diff --git a/block/blk-merge.c b/block/blk-merge.c
-index de5716d8..f2efe8a 100644
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -98,7 +98,7 @@ static struct bio *blk_bio_segment_split(struct request_q=
-ueue *q,
-=20
- 			seg_size +=3D bv.bv_len;
- 			bvprv =3D bv;
--			bvprvp =3D &bv;
-+			bvprvp =3D &bvprv;
- 			sectors +=3D bv.bv_len >> 9;
- 			continue;
- 		}
-@@ -108,7 +108,7 @@ new_segment:
-=20
- 		nsegs++;
- 		bvprv =3D bv;
--		bvprvp =3D &bv;
-+		bvprvp =3D &bvprv;
- 		seg_size =3D bv.bv_len;
- 		sectors +=3D bv.bv_len >> 9;
- 	}
 --=20
-1.9.1
-
-
-
-Thanks,
-Ming
+M=E5ns Rullg=E5rd
+mans@mansr.com
