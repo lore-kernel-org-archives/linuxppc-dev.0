@@ -1,34 +1,35 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C75371A03BE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:23:54 +1100 (AEDT)
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2BA311A03C3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:23:56 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 23 Nov 2015 20:23:54 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4D496357805A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:23:51 +1100 (EST)
+ Mon, 23 Nov 2015 20:23:55 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id BFFB52CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:23:52 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tANANa0s28966996
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:23:44 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tANANiXC24313934
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:23:52 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tANANIC4012746
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:23:18 +1100
+ tANANJat012807
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:23:20 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Scott Wood <scottwood@freescale.com>,
  Denis Kirjanov <kda@linux-powerpc.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V5 04/31] powerpc/mm: make a separate copy for book3s (part 2)
-Date: Mon, 23 Nov 2015 15:52:13 +0530
-Message-Id: <1448274160-28446-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V5 05/31] powerpc/mm: Move hash specific pte width and other
+ defines to book3s
+Date: Mon, 23 Nov 2015 15:52:14 +0530
+Message-Id: <1448274160-28446-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,75 +41,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Keep it seperate to make rebasing easier
+This further make a copy of pte defines to book3s/64/hash*.h. This
+remove the dependency on ppc64-4k.h and ppc64-64k.h
 
 Acked-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/32/pgtable.h | 4 ++--
- arch/powerpc/include/asm/book3s/64/pgtable.h | 6 +++---
- arch/powerpc/include/asm/pgtable-ppc32.h     | 2 --
- arch/powerpc/include/asm/pgtable-ppc64.h     | 4 ----
- 4 files changed, 5 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  | 87 ++++++++++++++++++++++++++-
+ arch/powerpc/include/asm/book3s/64/hash-64k.h | 46 +++++++++++++-
+ arch/powerpc/include/asm/book3s/64/pgtable.h  |  6 +-
+ 3 files changed, 130 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index 1a58a05be99c..a7738dfbe7e5 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -1,5 +1,5 @@
--#ifndef _ASM_POWERPC_PGTABLE_PPC32_H
--#define _ASM_POWERPC_PGTABLE_PPC32_H
-+#ifndef _ASM_POWERPC_BOOK3S_32_PGTABLE_H
-+#define _ASM_POWERPC_BOOK3S_32_PGTABLE_H
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index 79750fd3eeb8..f2c51cd61f69 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -1,4 +1,51 @@
+-/* To be include by pgtable-hash64.h only */
++#ifndef _ASM_POWERPC_BOOK3S_64_HASH_4K_H
++#define _ASM_POWERPC_BOOK3S_64_HASH_4K_H
++/*
++ * Entries per page directory level.  The PTE level must use a 64b record
++ * for each page table entry.  The PMD and PGD level use a 32b record for
++ * each entry by assuming that each entry is page aligned.
++ */
++#define PTE_INDEX_SIZE  9
++#define PMD_INDEX_SIZE  7
++#define PUD_INDEX_SIZE  9
++#define PGD_INDEX_SIZE  9
++
++#ifndef __ASSEMBLY__
++#define PTE_TABLE_SIZE	(sizeof(pte_t) << PTE_INDEX_SIZE)
++#define PMD_TABLE_SIZE	(sizeof(pmd_t) << PMD_INDEX_SIZE)
++#define PUD_TABLE_SIZE	(sizeof(pud_t) << PUD_INDEX_SIZE)
++#define PGD_TABLE_SIZE	(sizeof(pgd_t) << PGD_INDEX_SIZE)
++#endif	/* __ASSEMBLY__ */
++
++#define PTRS_PER_PTE	(1 << PTE_INDEX_SIZE)
++#define PTRS_PER_PMD	(1 << PMD_INDEX_SIZE)
++#define PTRS_PER_PUD	(1 << PUD_INDEX_SIZE)
++#define PTRS_PER_PGD	(1 << PGD_INDEX_SIZE)
++
++/* PMD_SHIFT determines what a second-level page table entry can map */
++#define PMD_SHIFT	(PAGE_SHIFT + PTE_INDEX_SIZE)
++#define PMD_SIZE	(1UL << PMD_SHIFT)
++#define PMD_MASK	(~(PMD_SIZE-1))
++
++/* With 4k base page size, hugepage PTEs go at the PMD level */
++#define MIN_HUGEPTE_SHIFT	PMD_SHIFT
++
++/* PUD_SHIFT determines what a third-level page table entry can map */
++#define PUD_SHIFT	(PMD_SHIFT + PMD_INDEX_SIZE)
++#define PUD_SIZE	(1UL << PUD_SHIFT)
++#define PUD_MASK	(~(PUD_SIZE-1))
++
++/* PGDIR_SHIFT determines what a fourth-level page table entry can map */
++#define PGDIR_SHIFT	(PUD_SHIFT + PUD_INDEX_SIZE)
++#define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
++#define PGDIR_MASK	(~(PGDIR_SIZE-1))
++
++/* Bits to mask out from a PMD to get to the PTE page */
++#define PMD_MASKED_BITS		0
++/* Bits to mask out from a PUD to get to the PMD page */
++#define PUD_MASKED_BITS		0
++/* Bits to mask out from a PGD to get to the PUD page */
++#define PGD_MASKED_BITS		0
  
- #include <asm-generic/pgtable-nopmd.h>
+ /* PTE bits */
+ #define _PAGE_HASHPTE	0x0400 /* software: pte has an associated HPTE */
+@@ -14,3 +61,41 @@
  
+ /* shift to put page number into pte */
+ #define PTE_RPN_SHIFT	(17)
++
++#ifndef __ASSEMBLY__
++/*
++ * 4-level page tables related bits
++ */
++
++#define pgd_none(pgd)		(!pgd_val(pgd))
++#define pgd_bad(pgd)		(pgd_val(pgd) == 0)
++#define pgd_present(pgd)	(pgd_val(pgd) != 0)
++#define pgd_clear(pgdp)		(pgd_val(*(pgdp)) = 0)
++#define pgd_page_vaddr(pgd)	(pgd_val(pgd) & ~PGD_MASKED_BITS)
++
++static inline pte_t pgd_pte(pgd_t pgd)
++{
++	return __pte(pgd_val(pgd));
++}
++
++static inline pgd_t pte_pgd(pte_t pte)
++{
++	return __pgd(pte_val(pte));
++}
++extern struct page *pgd_page(pgd_t pgd);
++
++#define pud_offset(pgdp, addr)	\
++  (((pud_t *) pgd_page_vaddr(*(pgdp))) + \
++    (((addr) >> PUD_SHIFT) & (PTRS_PER_PUD - 1)))
++
++#define pud_ERROR(e) \
++	pr_err("%s:%d: bad pud %08lx.\n", __FILE__, __LINE__, pud_val(e))
++
++/*
++ * On all 4K setups, remap_4k_pfn() equates to remap_pfn_range() */
++#define remap_4k_pfn(vma, addr, pfn, prot)	\
++	remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE, (prot))
++
++#endif /* !__ASSEMBLY__ */
++
++#endif /* _ASM_POWERPC_BOOK3S_64_HASH_4K_H */
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index 4f4ec2ab45c9..ee073822145d 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -1,4 +1,35 @@
+-/* To be include by pgtable-hash64.h only */
++#ifndef _ASM_POWERPC_BOOK3S_64_HASH_64K_H
++#define _ASM_POWERPC_BOOK3S_64_HASH_64K_H
++
++#include <asm-generic/pgtable-nopud.h>
++
++#define PTE_INDEX_SIZE  8
++#define PMD_INDEX_SIZE  10
++#define PUD_INDEX_SIZE	0
++#define PGD_INDEX_SIZE  12
++
++#define PTRS_PER_PTE	(1 << PTE_INDEX_SIZE)
++#define PTRS_PER_PMD	(1 << PMD_INDEX_SIZE)
++#define PTRS_PER_PGD	(1 << PGD_INDEX_SIZE)
++
++/* With 4k base page size, hugepage PTEs go at the PMD level */
++#define MIN_HUGEPTE_SHIFT	PAGE_SHIFT
++
++/* PMD_SHIFT determines what a second-level page table entry can map */
++#define PMD_SHIFT	(PAGE_SHIFT + PTE_INDEX_SIZE)
++#define PMD_SIZE	(1UL << PMD_SHIFT)
++#define PMD_MASK	(~(PMD_SIZE-1))
++
++/* PGDIR_SHIFT determines what a third-level page table entry can map */
++#define PGDIR_SHIFT	(PMD_SHIFT + PMD_INDEX_SIZE)
++#define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
++#define PGDIR_MASK	(~(PGDIR_SIZE-1))
++
++/* Bits to mask out from a PMD to get to the PTE page */
++/* PMDs point to PTE table fragments which are 4K aligned.  */
++#define PMD_MASKED_BITS		0xfff
++/* Bits to mask out from a PGD/PUD to get to the PMD page */
++#define PUD_MASKED_BITS		0x1ff
+ 
+ /* Additional PTE bits (don't change without checking asm in hash_low.S) */
+ #define _PAGE_SPECIAL	0x00000400 /* software: special page */
+@@ -74,8 +105,8 @@ static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
+ #define __rpte_to_pte(r)	((r).pte)
+ #define __rpte_sub_valid(rpte, index) \
+ 	(pte_val(rpte.pte) & (_PAGE_HPTE_SUB0 >> (index)))
+-
+-/* Trick: we set __end to va + 64k, which happens works for
++/*
++ * Trick: we set __end to va + 64k, which happens works for
+  * a 16M page as well as we want only one iteration
+  */
+ #define pte_iterate_hashed_subpages(rpte, psize, vpn, index, shift)	\
+@@ -99,4 +130,13 @@ static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
+ 		remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,	\
+ 			__pgprot(pgprot_val((prot)) | _PAGE_4K_PFN)))
+ 
++#define PTE_TABLE_SIZE	(sizeof(real_pte_t) << PTE_INDEX_SIZE)
++#define PMD_TABLE_SIZE	(sizeof(pmd_t) << PMD_INDEX_SIZE)
++#define PGD_TABLE_SIZE	(sizeof(pgd_t) << PGD_INDEX_SIZE)
++
++#define pgd_pte(pgd)	(pud_pte(((pud_t){ pgd })))
++#define pte_pgd(pte)	((pgd_t)pte_pud(pte))
++
+ #endif	/* __ASSEMBLY__ */
++
++#endif /* _ASM_POWERPC_BOOK3S_64_HASH_64K_H */
 diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 4c61db6adcde..cdd5284d9eaa 100644
+index cdd5284d9eaa..2741ac6fbd3d 100644
 --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
 +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -1,5 +1,5 @@
--#ifndef _ASM_POWERPC_PGTABLE_PPC64_H_
--#define _ASM_POWERPC_PGTABLE_PPC64_H_
-+#ifndef _ASM_POWERPC_BOOK3S_64_PGTABLE_H_
-+#define _ASM_POWERPC_BOOK3S_64_PGTABLE_H_
- /*
-  * This file contains the functions and defines necessary to modify and use
+@@ -5,11 +5,7 @@
   * the ppc64 hashed page table.
-@@ -623,4 +623,4 @@ static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
- 	return true;
- }
- #endif /* __ASSEMBLY__ */
--#endif /* _ASM_POWERPC_PGTABLE_PPC64_H_ */
-+#endif /* _ASM_POWERPC_BOOK3S_64_PGTABLE_H_ */
-diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-index 1a58a05be99c..aac6547b0823 100644
---- a/arch/powerpc/include/asm/pgtable-ppc32.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-@@ -115,8 +115,6 @@ extern int icache_44x_need_flush;
- #include <asm/pte-fsl-booke.h>
- #elif defined(CONFIG_8xx)
- #include <asm/pte-8xx.h>
--#else /* CONFIG_6xx */
--#include <asm/book3s/32/hash.h>
- #endif
- 
- /* And here we include common definitions */
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index b36a932abdfb..1ef0fea32e1e 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -97,11 +97,7 @@
- /*
-  * Include the PTE bits definitions
   */
--#ifdef CONFIG_PPC_BOOK3S
--#include <asm/book3s/64/hash.h>
--#else
- #include <asm/pte-book3e.h>
--#endif
- #include <asm/pte-common.h>
  
- #ifdef CONFIG_PPC_MM_SLICES
+-#ifdef CONFIG_PPC_64K_PAGES
+-#include <asm/pgtable-ppc64-64k.h>
+-#else
+-#include <asm/pgtable-ppc64-4k.h>
+-#endif
++#include <asm/book3s/64/hash.h>
+ #include <asm/barrier.h>
+ 
+ #define FIRST_USER_ADDRESS	0UL
 -- 
 2.5.0
