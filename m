@@ -1,52 +1,25 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <linux@rasmusvillemoes.dk>
+Received: from mail-lf0-x232.google.com (mail-lf0-x232.google.com
+ [IPv6:2a00:1450:4010:c07::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 033A11A072A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 03:24:39 +1100 (AEDT)
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Mon, 23 Nov 2015 16:24:36 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 01F2717D805D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 16:24:59 +0000 (GMT)
-Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
- [9.149.37.248])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tANGOYik1376552
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 16:24:34 GMT
-Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tANGOXvJ006178
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 09:24:34 -0700
-Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
-To: Ming Lei <ming.lei@canonical.com>
-References: <1447838334.1564.2.camel@ellerman.id.au>
- <1447855399.3974.24.camel@redhat.com>
- <1447894964.15206.0.camel@ellerman.id.au>
- <20151119082325.GA11419@infradead.org>
- <1448021448.14769.7.camel@ellerman.id.au>
- <565055C6.5040801@linux.vnet.ibm.com> <20151122005635.1b9ffbe1@tom-T450>
- <1448234410.8209.3.camel@redhat.com> <56531B3F.60503@linux.vnet.ibm.com>
- <20151123151330.GA10990@dhcppc13.redhat.com>
- <56532EC7.3060000@linux.vnet.ibm.com>
- <CACVXFVMNed2Liarx9FA16CERNAepNYdNFhDpn70kb3RBt0eRuQ@mail.gmail.com>
-Cc: Pratyush Anand <panand@redhat.com>, Mark Salter <msalter@redhat.com>,
- linux-block@vger.kernel.org,
- Linux SCSI List <linux-scsi@vgneitherer.kernel.org>,
- "James E. J. Bottomley" <JBottomley@odin.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Christoph Hellwig <hch@infradead.org>, brking <brking@us.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Message-ID: <56533DC1.5070505@linux.vnet.ibm.com>
-Date: Mon, 23 Nov 2015 17:24:33 +0100
-MIME-Version: 1.0
-In-Reply-To: <CACVXFVMNed2Liarx9FA16CERNAepNYdNFhDpn70kb3RBt0eRuQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0C5761A01E3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 06:52:05 +1100 (AEDT)
+Received: by lfaz4 with SMTP id z4so117507837lfa.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 11:51:59 -0800 (PST)
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+To: Rusty Russell <rusty@rustcorp.com.au>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Oleg Nesterov <oleg@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH v2, resend 0/6] kernel/cpu.c: eliminate some indirection
+Date: Mon, 23 Nov 2015 20:51:34 +0100
+Message-Id: <1448308300-22582-1-git-send-email-linux@rasmusvillemoes.dk>
+In-Reply-To: <1444144919-25143-1-git-send-email-linux@rasmusvillemoes.dk>
+References: <1444144919-25143-1-git-send-email-linux@rasmusvillemoes.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,25 +29,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 23/11/2015 16:27, Ming Lei wrote:
-> On Mon, Nov 23, 2015 at 11:20 PM, Laurent Dufour
-> <ldufour@linux.vnet.ibm.com> wrote:
->>>
->>> Reverting above commit on top if 4.4-rc1 seems to fix the problem for me.
->>
->> That's what I mentioned earlier ;)
->>
->> Now Ming send an additional patch with seems to fix the bug introduced
->> through the commit bdced438acd8. When testing with this new patch I
->> can't get the panic anymore, but Mark reported he is still hitting it.
-> 
-> Laurent, thanks for your test on the 1st patch, and looks there are at
-> least two problems, and my 2nd patch sent just now should address
-> Mark's issue which is caused by bdced438acd83a.
-> 
-> Once the 2nd one is tested OK, I will send out the two together.
+Andrew, can I get you to take these through -mm? Noone else seems to
+want to pick them up. They're rebased on top of 4.4-rc2 (and applied
+cleanly), but otherwise identical to what I've sent previously.
 
-FWIW, I applied the 2nd patch, and my system is still running like a charm.
+=====
 
-Cheers,
-Laurent.
+v2: fix build failure on ppc, add acks.
+
+The four cpumasks cpu_{possible,online,present,active}_bits are
+exposed readonly via the corresponding const variables
+cpu_xyz_mask. But they are also accessible for arbitrary writing via
+the exposed functions set_cpu_xyz. There's quite a bit of code
+throughout the kernel which iterates over or otherwise accesses these
+bitmaps, and having the access go via the cpu_xyz_mask variables is
+nowadays [1] simply a useless indirection.
+
+It may be that any problem in CS can be solved by an extra level of
+indirection, but that doesn't mean every extra indirection solves a
+problem. In this case, it even necessitates some minor ugliness (see
+4/6).
+
+Patch 1/6 is new in v2, and fixes a build failure on ppc by renaming a
+struct member, to avoid problems when the identifier cpu_online_mask
+becomes a macro later in the series. The next four patches eliminate
+the cpu_xyz_mask variables by simply exposing the actual bitmaps,
+after renaming them to discourage direct access - that still happens
+through cpu_xyz_mask, which are now simply macros with the same type
+and value as they used to have.
+
+After that, there's no longer any reason to have the setter functions
+be out-of-line: The boolean parameter is almost always a literal true
+or false, so by making them static inlines they will usually compile
+to one or two instructions.
+
+For a defconfig build on x86_64, bloat-o-meter says we save ~3000
+bytes. We also save a little stack (stackdelta says 127 functions have
+a 16 byte smaller stack frame, while two grow by that amount). Mostly
+because, when iterating over the mask, gcc typically loads the value
+of cpu_xyz_mask into a callee-saved register and from there into %rdi
+before each find_next_bit call - now it can just load the appropriate
+immediate address into %rdi before each call.
+
+[1] See Rusty's kind explanation
+http://thread.gmane.org/gmane.linux.kernel/2047078/focus=2047722 for
+some historic context.
+
+Rasmus Villemoes (6):
+  powerpc/fadump: rename cpu_online_mask member of struct
+    fadump_crash_info_header
+  kernel/cpu.c: change type of cpu_possible_bits and friends
+  kernel/cpu.c: export __cpu_*_mask
+  drivers/base/cpu.c: use __cpu_*_mask directly
+  kernel/cpu.c: eliminate cpu_*_mask
+  kernel/cpu.c: make set_cpu_* static inlines
+
+ arch/powerpc/include/asm/fadump.h |  2 +-
+ arch/powerpc/kernel/fadump.c      |  4 +--
+ drivers/base/cpu.c                | 10 +++---
+ include/linux/cpumask.h           | 55 ++++++++++++++++++++++++++++-----
+ kernel/cpu.c                      | 64 ++++++++-------------------------------
+ 5 files changed, 68 insertions(+), 67 deletions(-)
+
+-- 
+2.6.1
