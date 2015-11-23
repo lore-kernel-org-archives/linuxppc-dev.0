@@ -1,39 +1,30 @@
-Return-Path: <ming.lei@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 83B2D1A0271
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 11:36:20 +1100 (AEDT)
-Received: from mail-io0-f176.google.com ([209.85.223.176])
- by youngberry.canonical.com with esmtpsa (TLS1.0:RSA_AES_128_CBC_SHA1:16)
- (Exim 4.76) (envelope-from <ming.lei@canonical.com>)
- id 1a0f7A-00049M-9h
- for linuxppc-dev@lists.ozlabs.org; Mon, 23 Nov 2015 00:36:16 +0000
-Received: by iofh3 with SMTP id h3so173296741iof.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Nov 2015 16:36:15 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 38AB91A0271
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 11:59:06 +1100 (AEDT)
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 57CBF1402B6
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Nov 2015 11:59:05 +1100 (AEDT)
+Received: by padhx2 with SMTP id hx2so173959233pad.1
+ for <linuxppc-dev@ozlabs.org>; Sun, 22 Nov 2015 16:59:03 -0800 (PST)
+Date: Mon, 23 Nov 2015 11:58:53 +1100
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Michael Neuling <mikey@neuling.org>
+Cc: anton@samba.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/8] selftests/powerpc: Test the preservation of FPU and
+ VMX regs across syscall
+Message-ID: <20151123115853.17185e4a@camb691>
+In-Reply-To: <1448238193.3483.104.camel@neuling.org>
+References: <1447817215-15804-1-git-send-email-cyrilbur@gmail.com>
+ <1447817215-15804-2-git-send-email-cyrilbur@gmail.com>
+ <1448238193.3483.104.camel@neuling.org>
 MIME-Version: 1.0
-In-Reply-To: <1448234410.8209.3.camel@redhat.com>
-References: <1447838334.1564.2.camel@ellerman.id.au>
- <1447855399.3974.24.camel@redhat.com>
- <1447894964.15206.0.camel@ellerman.id.au>
- <20151119082325.GA11419@infradead.org>
- <1448021448.14769.7.camel@ellerman.id.au>
- <565055C6.5040801@linux.vnet.ibm.com>
- <20151122005635.1b9ffbe1@tom-T450>
- <1448234410.8209.3.camel@redhat.com>
-Date: Mon, 23 Nov 2015 08:36:15 +0800
-Message-ID: <CACVXFVMAm1niRvXqQXjOXW=ryy41d-ne09wSNbJUq3b9o6vJ7w@mail.gmail.com>
-Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
-From: Ming Lei <ming.lei@canonical.com>
-To: Mark Salter <msalter@redhat.com>
-Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Christoph Hellwig <hch@infradead.org>,
- "James E. J. Bottomley" <JBottomley@odin.com>, brking <brking@us.ibm.com>,
- Linux SCSI List <linux-scsi@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-block@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,83 +34,648 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 23, 2015 at 7:20 AM, Mark Salter <msalter@redhat.com> wrote:
-> On Sun, 2015-11-22 at 00:56 +0800, Ming Lei wrote:
->> On Sat, 21 Nov 2015 12:30:14 +0100
->> Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
->>
->> > On 20/11/2015 13:10, Michael Ellerman wrote:
->> > > On Thu, 2015-11-19 at 00:23 -0800, Christoph Hellwig wrote:
->> > >
->> > > > It's pretty much guaranteed a block layer bug, most likely in the
->> > > > merge bios to request infrastucture where we don't obey the merging
->> > > > limits properly.
->> > > >
->> > > > Does either of you have a known good and first known bad kernel?
->> > >
->> > > Not me, I've only hit it one or two times. All I can say is I have hit it in
->> > > 4.4-rc1.
->> > >
->> > > Laurent, can you narrow it down at all?
->> >
->> > It seems that the panic is triggered by the commit bdced438acd8 ("block:
->> > setup bi_phys_segments after splitting") which has been pulled by the
->> > merge d9734e0d1ccf ("Merge branch 'for-4.4/core' of
->> > git://git.kernel.dk/linux-block").
->> >
->> > My system is panicing promptly when running a kernel built at
->> > d9734e0d1ccf, while reverting the commit bdced438acd8, it can run hours
->> > without panicing.
->> >
->> > This being said, I can't explain what's going wrong.
->> >
->> > May Ming shed some light here ?
->>
->> Laurent, looks there is one bug in blk_bio_segment_split(), would you
->> mind testing the following patch to see if it fixes your issue?
->>
->> ---
->> From 6fc701231dcc000bc8bc4b9105583380d9aa31f4 Mon Sep 17 00:00:00 2001
->> From: Ming Lei <ming.lei@canonical.com>
->> Date: Sun, 22 Nov 2015 00:47:13 +0800
->> Subject: [PATCH] block: fix segment split
->>
->> Inside blk_bio_segment_split(), previous bvec pointer('bvprvp')
->> always points to the iterator local variable, which is obviously
->> wrong, so fix it by pointing to the local variable of 'bvprv'.
->>
->> Signed-off-by: Ming Lei <ming.lei@canonical.com>
->> ---
->>  block/blk-merge.c | 4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/block/blk-merge.c b/block/blk-merge.c
->> index de5716d8..f2efe8a 100644
->> --- a/block/blk-merge.c
->> +++ b/block/blk-merge.c
->> @@ -98,7 +98,7 @@ static struct bio *blk_bio_segment_split(struct request_queue *q,
->>
->>                       seg_size += bv.bv_len;
->>                       bvprv = bv;
->> -                     bvprvp = &bv;
->> +                     bvprvp = &bvprv;
->>                       sectors += bv.bv_len >> 9;
->>                       continue;
->>               }
->> @@ -108,7 +108,7 @@ new_segment:
->>
->>               nsegs++;
->>               bvprv = bv;
->> -             bvprvp = &bv;
->> +             bvprvp = &bvprv;
->>               seg_size = bv.bv_len;
->>               sectors += bv.bv_len >> 9;
->>       }
->
-> I'm still hitting the BUG even with this patch applied on top of 4.4-rc1.
+On Mon, 23 Nov 2015 11:23:13 +1100
+Michael Neuling <mikey@neuling.org> wrote:
 
-OK, looks there are still other bugs, care to share us how to reproduce
-it on arm64?
+> On Wed, 2015-11-18 at 14:26 +1100, Cyril Bur wrote:
+> > Test that the non volatile floating point and Altivec registers get
+> > correctly preserved across the fork() syscall.  
+> 
+> Can we add a test for VSX too?  I realise it's the same registers, but
+> the enable bits in the MSR are different so it's easy to get them wrong
+> in the kernel.
 
-thanks,
-Ming
+Yeah, I'm sure I could get that wrong haha.
+
+Hmmmm this got me thinking. Today we always enable FP and Altivec when we
+enable VSX but isn't there a world where we could actually run with FP and
+Altivec disabled and VSX on? In which case, is the whole thing volatile or
+does the kernel still need to save the subset of the matrix which corresponds 
+to non-volatile FPs and non-volatile Altivec?
+> 
+> Additional comments below.
+> 
+> > fork() works nicely for this purpose, the registers should be the same for
+> > both parent and child
+> > 
+> > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+> > ---
+> >  tools/testing/selftests/powerpc/Makefile           |   3 +-
+> >  tools/testing/selftests/powerpc/math/Makefile      |  14 ++
+> >  tools/testing/selftests/powerpc/math/basic_asm.h   |  26 +++
+> >  tools/testing/selftests/powerpc/math/fpu_asm.S     | 151 +++++++++++++++++
+> >  tools/testing/selftests/powerpc/math/fpu_syscall.c |  79 +++++++++
+> >  tools/testing/selftests/powerpc/math/vmx_asm.S     | 183 +++++++++++++++++++++
+> >  tools/testing/selftests/powerpc/math/vmx_syscall.c |  81 +++++++++
+> >  7 files changed, 536 insertions(+), 1 deletion(-)
+> >  create mode 100644 tools/testing/selftests/powerpc/math/Makefile
+> >  create mode 100644 tools/testing/selftests/powerpc/math/basic_asm.h
+> >  create mode 100644 tools/testing/selftests/powerpc/math/fpu_asm.S
+> >  create mode 100644 tools/testing/selftests/powerpc/math/fpu_syscall.c
+> >  create mode 100644 tools/testing/selftests/powerpc/math/vmx_asm.S
+> >  create mode 100644 tools/testing/selftests/powerpc/math/vmx_syscall.c
+> > 
+> > diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
+> > index 0c2706b..19e8191 100644
+> > --- a/tools/testing/selftests/powerpc/Makefile
+> > +++ b/tools/testing/selftests/powerpc/Makefile
+> > @@ -22,7 +22,8 @@ SUB_DIRS = benchmarks > 	> 	> \  
+> >  > 	>    switch_endian> 	> \  
+> >  > 	>    syscalls> 	> 	> \  
+> >  > 	>    tm> 	> 	> 	> \  
+> > -> 	>    vphn
+> > +> 	>    vphn         \
+> > +> 	>    math  
+> >  
+> >  endif
+> >  
+> > diff --git a/tools/testing/selftests/powerpc/math/Makefile b/tools/testing/selftests/powerpc/math/Makefile
+> > new file mode 100644
+> > index 0000000..896d9e2
+> > --- /dev/null
+> > +++ b/tools/testing/selftests/powerpc/math/Makefile
+> > @@ -0,0 +1,14 @@
+> > +TEST_PROGS := fpu_syscall vmx_syscall  
+> 
+> 
+> Add a new .gitignore in this dirfor these new build objects.
+> 
+
+Yep
+
+> > +
+> > +all: $(TEST_PROGS)
+> > +
+> > +$(TEST_PROGS): ../harness.c
+> > +$(TEST_PROGS): CFLAGS += -O2 -g
+> > +
+> > +fpu_syscall: fpu_asm.S
+> > +vmx_syscall: vmx_asm.S
+> > +
+> > +include ../../lib.mk
+> > +
+> > +clean:  
+> > +> 	> rm -f $(TEST_PROGS) *.o  
+> > diff --git a/tools/testing/selftests/powerpc/math/basic_asm.h b/tools/testing/selftests/powerpc/math/basic_asm.h
+> > new file mode 100644
+> > index 0000000..27aca79
+> > --- /dev/null
+> > +++ b/tools/testing/selftests/powerpc/math/basic_asm.h  
+> 
+> Can you put this up a directory since it's generically useful for
+> powerpc?
+> 
+
+Sure why not.
+
+> > @@ -0,0 +1,26 @@
+> > +#include 
+> > +#include 
+> > +
+> > +#define LOAD_REG_IMMEDIATE(reg,expr) \  
+> > +> 	> lis> 	> reg,(expr)@highest;> 	> \
+> > +> 	> ori> 	> reg,reg,(expr)@higher;> 	> \
+> > +> 	> rldicr> 	> reg,reg,32,31;> 	> \
+> > +> 	> oris> 	> reg,reg,(expr)@high;> 	> \  
+> > +> 	> ori> 	> reg,reg,(expr)@l;  
+> > +
+> > +#define PUSH_BASIC_STACK(size) \  
+> > +> 	> std> 	> 2,24(sp); \
+> > +> 	> mflr> 	> r0; \
+> > +> 	> std> 	> r0,16(sp); \
+> > +> 	> mfcr> 	> r0; \
+> > +> 	> stw> 	> r0,8(sp); \
+> > +> 	> stdu> 	> sp,-size(sp);  
+> > +
+> > +#define POP_BASIC_STACK(size) \  
+> > +> 	> addi> 	> sp,sp,size; \
+> > +> 	> ld> 	> 2,24(sp); \
+> > +> 	> ld> 	> r0,16(sp); \
+> > +> 	> mtlr> 	> r0; \
+> > +> 	> lwz> 	> r0,8(sp); \
+> > +> 	> mtcr> 	> r0; \  
+> > +
+> > diff --git a/tools/testing/selftests/powerpc/math/fpu_asm.S b/tools/testing/selftests/powerpc/math/fpu_asm.S
+> > new file mode 100644
+> > index 0000000..d5412c1
+> > --- /dev/null
+> > +++ b/tools/testing/selftests/powerpc/math/fpu_asm.S
+> > @@ -0,0 +1,151 @@
+> > +#include "basic_asm.h"
+> > +
+> > +#define PUSH_FPU(pos) \  
+> > +> 	> stfd> 	> f14,pos(sp); \
+> > +> 	> stfd> 	> f15,pos+8(sp); \
+> > +> 	> stfd> 	> f16,pos+16(sp); \
+> > +> 	> stfd> 	> f17,pos+24(sp); \
+> > +> 	> stfd> 	> f18,pos+32(sp); \
+> > +> 	> stfd> 	> f19,pos+40(sp); \
+> > +> 	> stfd> 	> f20,pos+48(sp); \
+> > +> 	> stfd> 	> f21,pos+56(sp); \
+> > +> 	> stfd> 	> f22,pos+64(sp); \
+> > +> 	> stfd> 	> f23,pos+72(sp); \
+> > +> 	> stfd> 	> f24,pos+80(sp); \
+> > +> 	> stfd> 	> f25,pos+88(sp); \
+> > +> 	> stfd> 	> f26,pos+96(sp); \
+> > +> 	> stfd> 	> f27,pos+104(sp); \
+> > +> 	> stfd> 	> f28,pos+112(sp); \
+> > +> 	> stfd> 	> f29,pos+120(sp); \
+> > +> 	> stfd> 	> f30,pos+128(sp); \
+> > +> 	> stfd> 	> f31,pos+136(sp);  
+> > +
+> > +#define POP_FPU(pos) \  
+> > +> 	> lfd> 	> f14,pos(sp); \
+> > +> 	> lfd> 	> f15,pos+8(sp); \
+> > +> 	> lfd> 	> f16,pos+16(sp); \
+> > +> 	> lfd> 	> f17,pos+24(sp); \
+> > +> 	> lfd> 	> f18,pos+32(sp); \
+> > +> 	> lfd> 	> f19,pos+40(sp); \
+> > +> 	> lfd> 	> f20,pos+48(sp); \
+> > +> 	> lfd> 	> f21,pos+56(sp); \
+> > +> 	> lfd> 	> f22,pos+64(sp); \
+> > +> 	> lfd> 	> f23,pos+72(sp); \
+> > +> 	> lfd> 	> f24,pos+80(sp); \
+> > +> 	> lfd> 	> f25,pos+88(sp); \
+> > +> 	> lfd> 	> f26,pos+96(sp); \
+> > +> 	> lfd> 	> f27,pos+104(sp); \
+> > +> 	> lfd> 	> f28,pos+112(sp); \
+> > +> 	> lfd> 	> f29,pos+120(sp); \
+> > +> 	> lfd> 	> f30,pos+128(sp); \
+> > +> 	> lfd> 	> f31,pos+136(sp);  
+> > +
+> > +#Careful calling this, it will 'clobber' fpu (by design)
+> > +#Don't call this from C
+> > +FUNC_START(load_fpu)  
+> > +> 	> lfd> 	> f14,0(r3)
+> > +> 	> lfd> 	> f15,8(r3)
+> > +> 	> lfd> 	> f16,16(r3)
+> > +> 	> lfd> 	> f17,24(r3)
+> > +> 	> lfd> 	> f18,32(r3)
+> > +> 	> lfd> 	> f19,40(r3)
+> > +> 	> lfd> 	> f20,48(r3)
+> > +> 	> lfd> 	> f21,56(r3)
+> > +> 	> lfd> 	> f22,64(r3)
+> > +> 	> lfd> 	> f23,72(r3)
+> > +> 	> lfd> 	> f24,80(r3)
+> > +> 	> lfd> 	> f25,88(r3)
+> > +> 	> lfd> 	> f26,96(r3)
+> > +> 	> lfd> 	> f27,104(r3)
+> > +> 	> lfd> 	> f28,112(r3)
+> > +> 	> lfd> 	> f29,120(r3)
+> > +> 	> lfd> 	> f30,128(r3)
+> > +> 	> lfd> 	> f31,136(r3)  
+> > +> 	> blr  
+> > +FUNC_END(load_fpu)
+> > +
+> > +FUNC_START(check_fpu)  
+> > +> 	> mr r4,r3  
+> > +> 	> li> 	> r3,1 #assume a bad result
+> > +> 	> lfd> 	> f0,0(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f14
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,8(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f15
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,16(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f16
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,24(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f17
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,32(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f18
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,40(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f19
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,48(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f20
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,56(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f21
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,64(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f22
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,72(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f23
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,80(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f24
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,88(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f25
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,96(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f26
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,104(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f27
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,112(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f28
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,120(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f29
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,128(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f30
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> lfd> 	> f0,136(r4)
+> > +> 	> fcmpu> 	> cr1,f0,f31
+> > +> 	> bne> 	> cr1,1f
+> > +> 	> li> 	> r3,0 #Sucess!!!  
+> > +1:> 	> blr  
+> > +
+> > +FUNC_START(test_fpu)  
+> > +> 	> #r3 holds pointer to where to put the result of fork  
+> 
+> #r4 seems to hold a ptr to the pid
+> 
+
+Thanks
+
+> > +	#f14-f31 are non volatiles  
+> > +> 	> PUSH_BASIC_STACK(256)  
+> > +> 	> std> 	> r3,40(sp) #Address of darray  
+> > +> 	> std r4,48(sp) #Address of pid
+> > +> 	> PUSH_FPU(56)  
+> > +  
+> > +> 	> bl load_fpu
+> > +> 	> nop  
+> > +> 	> li> 	> r0,__NR_fork  
+> > +> 	> sc  
+> > +  
+> > +> 	> #pass the result of the fork to the caller  
+> > +> 	> ld> 	> r9,48(sp)
+> > +> 	> std> 	> r3,0(r9)  
+> > +  
+> > +> 	> ld r3,40(sp)
+> > +> 	> bl check_fpu
+> > +> 	> nop  
+> > +  
+> > +> 	> POP_FPU(56)
+> > +> 	> POP_BASIC_STACK(256)
+> > +> 	> blr  
+> > +FUNC_END(test_fpu)
+> > diff --git a/tools/testing/selftests/powerpc/math/fpu_syscall.c b/tools/testing/selftests/powerpc/math/fpu_syscall.c
+> > new file mode 100644
+> > index 0000000..a967fd6
+> > --- /dev/null
+> > +++ b/tools/testing/selftests/powerpc/math/fpu_syscall.c
+> > @@ -0,0 +1,79 @@
+> > +#include 
+> > +#include 
+> > +#include 
+> > +#include 
+> > +#include 
+> > +#include 
+> > +#include 
+> > +
+> > +#include "utils.h"
+> > +
+> > +extern int test_fpu(double *darray, pid_t *pid);
+> > +
+> > +double darray[] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,  
+> > +> 	> 	>      1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
+> > +> 	> 	>      2.1};  
+> > +
+> > +int syscall_fpu(void)
+> > +{  
+> > +> 	> pid_t fork_pid;
+> > +> 	> int i;
+> > +> 	> int ret;
+> > +> 	> int child_ret;
+> > +> 	> for (i = 0; i < 1000; i++) {  
+> > +> 	> 	> /* test_fpu will fork() */
+> > +> 	> 	> ret = test_fpu(darray, &fork_pid);
+> > +> 	> 	> if (fork_pid == -1)  
+> > +> 	> 	> 	> return -1;  
+> > +> 	> 	> if (fork_pid == 0)  
+> > +> 	> 	> 	> exit(ret);  
+> > +> 	> 	> waitpid(fork_pid, &child_ret, 0);
+> > +> 	> 	> if (ret || child_ret)  
+> > +> 	> 	> 	> return 1;  
+> > +> 	> }  
+> > +  
+> > +> 	> return 0;  
+> > +}
+> > +
+> > +int test_syscall_fpu(void)
+> > +{  
+> > +> 	> /*
+> > +> 	>  * Setup an environment with much context switching
+> > +> 	>  */
+> > +> 	> pid_t pid2;
+> > +> 	> pid_t pid = fork();
+> > +> 	> int ret;
+> > +> 	> int child_ret;
+> > +> 	> FAIL_IF(pid == -1);  
+> > +  
+> > +> 	> pid2 = fork();
+> > +> 	> /* Can't FAIL_IF(pid2 == -1); because already forked once */
+> > +> 	> if (pid2 == -1) {  
+> > +> 	> 	> /*
+> > +> 	> 	>  * Couldn't fork, ensure test is a fail
+> > +> 	> 	>  */
+> > +> 	> 	> child_ret = ret = 1;  
+> > +> 	> } else {  
+> > +> 	> 	> ret = syscall_fpu();
+> > +> 	> 	> if (pid2)  
+> > +> 	> 	> 	> waitpid(pid2, &child_ret, 0);  
+> > +> 	> 	> else  
+> > +> 	> 	> 	> exit(ret);  
+> > +> 	> }  
+> > +  
+> > +> 	> ret |= child_ret;  
+> > +  
+> > +> 	> if (pid)  
+> > +> 	> 	> waitpid(pid, &child_ret, 0);  
+> > +> 	> else  
+> > +> 	> 	> exit(ret);  
+> > +  
+> > +> 	> FAIL_IF(ret || child_ret);
+> > +> 	> return 0;  
+> > +}
+> > +
+> > +int main(int argc, char *argv[])
+> > +{  
+> > +> 	> return test_harness(test_syscall_fpu, "syscall_fpu");  
+> > +
+> > +}
+> > diff --git a/tools/testing/selftests/powerpc/math/vmx_asm.S b/tools/testing/selftests/powerpc/math/vmx_asm.S
+> > new file mode 100644
+> > index 0000000..e642e67
+> > --- /dev/null
+> > +++ b/tools/testing/selftests/powerpc/math/vmx_asm.S
+> > @@ -0,0 +1,183 @@
+> > +#include "basic_asm.h"
+> > +
+> > +#define PUSH_VMX(pos,reg) \  
+> > +> 	> li> 	> reg,pos; \
+> > +> 	> stvx> 	> v20,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> stvx> 	> v21,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> stvx> 	> v22,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> stvx> 	> v23,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> stvx> 	> v24,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> stvx> 	> v25,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> stvx> 	> v26,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> stvx> 	> v27,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> stvx> 	> v28,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> stvx> 	> v29,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> stvx> 	> v30,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> stvx> 	> v31,reg,sp;  
+> > +
+> > +#define POP_VMX(pos,reg) \  
+> > +> 	> li> 	> reg,pos; \
+> > +> 	> lvx> 	> v20,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> lvx> 	> v21,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> lvx> 	> v22,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> lvx> 	> v23,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> lvx> 	> v24,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> lvx> 	> v25,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> lvx> 	> v26,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> lvx> 	> v27,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> lvx> 	> v28,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> lvx> 	> v29,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> lvx> 	> v30,reg,sp; \
+> > +> 	> addi> 	> reg,reg,16; \
+> > +> 	> lvx> 	> v31,reg,sp;  
+> > +
+> > +#Carefull this will 'clobber' vmx (by design)
+> > +#Don't call this from C
+> > +FUNC_START(load_vmx)  
+> > +> 	> li> 	> r5,0
+> > +> 	> lvx> 	> v20,r5,r3
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v21,r5,r3
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v22,r5,r3
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v23,r5,r3
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v24,r5,r3
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v25,r5,r3
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v26,r5,r3
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v27,r5,r3
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v28,r5,r3
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v29,r5,r3
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v30,r5,r3
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v31,r5,r3  
+> > +> 	> blr  
+> > +FUNC_END(load_vmx)
+> > +
+> > +#Should be safe from C, only touches r4, r5 and v0,v1,v2
+> > +FUNC_START(check_vmx)  
+> > +> 	> PUSH_BASIC_STACK(16)
+> > +> 	> mr r4,r3  
+> > +> 	> li> 	> r3,1 #assume a bad result
+> > +> 	> li> 	> r5,0
+> > +> 	> lvx> 	> v0,r5,r4
+> > +> 	> vcmpequd.> 	> v1,v0,v20
+> > +> 	> vmr> 	> v2,v1  
+> > +  
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v0,r5,r4
+> > +> 	> vcmpequd.> 	> v1,v0,v21
+> > +> 	> vand> 	> v2,v2,v1  
+> > +  
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v0,r5,r4
+> > +> 	> vcmpequd.> 	> v1,v0,v22
+> > +> 	> vand> 	> v2,v2,v1  
+> > +  
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v0,r5,r4
+> > +> 	> vcmpequd.> 	> v1,v0,v23
+> > +> 	> vand> 	> v2,v2,v1  
+> > +  
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v0,r5,r4
+> > +> 	> vcmpequd.> 	> v1,v0,v24
+> > +> 	> vand> 	> v2,v2,v1  
+> > +  
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v0,r5,r4
+> > +> 	> vcmpequd.> 	> v1,v0,v25
+> > +> 	> vand> 	> v2,v2,v1  
+> > +  
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v0,r5,r4
+> > +> 	> vcmpequd.> 	> v1,v0,v26
+> > +> 	> vand> 	> v2,v2,v1  
+> > +  
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v0,r5,r4
+> > +> 	> vcmpequd.> 	> v1,v0,v27
+> > +> 	> vand> 	> v2,v2,v1  
+> > +  
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v0,r5,r4
+> > +> 	> vcmpequd.> 	> v1,v0,v28
+> > +> 	> vand> 	> v2,v2,v1  
+> > +  
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v0,r5,r4
+> > +> 	> vcmpequd.> 	> v1,v0,v29
+> > +> 	> vand> 	> v2,v2,v1  
+> > +  
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v0,r5,r4
+> > +> 	> vcmpequd.> 	> v1,v0,v30
+> > +> 	> vand> 	> v2,v2,v1  
+> > +  
+> > +> 	> addi> 	> r5,r5,16
+> > +> 	> lvx> 	> v0,r5,r4
+> > +> 	> vcmpequd.> 	> v1,v0,v31
+> > +> 	> vand> 	> v2,v2,v1  
+> > +  
+> > +> 	> li r5,0  
+> > +> 	> stvx> 	> v2,r5,sp
+> > +> 	> ldx> 	> r0,r5,sp
+> > +> 	> cmpdi> 	> r0,0xffffffff
+> > +> 	> bne> 	> 1f
+> > +> 	> li> 	> r3,0  
+> > +1:> 	> POP_BASIC_STACK(16)
+> > +> 	> blr  
+> > +FUNC_END(check_vmx)
+> > +
+> > +#Safe from C
+> > +FUNC_START(test_vmx)  
+> > +> 	> #r3 holds pointer to where to put the result of fork
+> > +> 	> #v20-v31 are non-volatile
+> > +> 	> PUSH_BASIC_STACK(512)  
+> > +> 	> std> 	> r3,40(sp) #Address of varray  
+> > +> 	> std r4,48(sp) #address of pid
+> > +> 	> PUSH_VMX(56, r4)  
+> > +  
+> > +> 	> bl load_vmx  
+> > +  
+> > +> 	> li> 	> r0,__NR_fork  
+> > +> 	> sc
+> > +> 	> #Pass the result of fork back to the caller  
+> > +> 	> ld> 	> r9,48(sp)
+> > +> 	> std> 	> r3,0(r9)  
+> > +  
+> > +> 	> ld r3,40(sp)
+> > +> 	> bl check_vmx  
+> > +  
+> > +> 	> POP_VMX(56,r4)
+> > +> 	> POP_BASIC_STACK(512)
+> > +> 	> blr  
+> > +FUNC_END(test_vmx)
+> > diff --git a/tools/testing/selftests/powerpc/math/vmx_syscall.c b/tools/testing/selftests/powerpc/math/vmx_syscall.c
+> > new file mode 100644
+> > index 0000000..7adff05
+> > --- /dev/null
+> > +++ b/tools/testing/selftests/powerpc/math/vmx_syscall.c
+> > @@ -0,0 +1,81 @@
+> > +#include 
+> > +#include 
+> > +#include 
+> > +#include 
+> > +#include 
+> > +#include 
+> > +#include 
+> > +
+> > +#include "utils.h"
+> > +
+> > +typedef int v4si __attribute__ ((vector_size (16)));
+> > +v4si varray[] = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10,11,12},  
+> > +> 	> {13,14,15,16},{17,18,19,20},{21,22,23,24},
+> > +> 	> {25,26,27,28},{29,30,31,32},{33,34,35,36},
+> > +> 	> {37,38,39,40},{41,42,43,44},{45,46,47,48}};  
+> > +
+> > +extern int test_vmx(v4si *varray, pid_t *pid);
+> > +
+> > +int vmx_syscall(void)
+> > +{  
+> > +> 	> pid_t fork_pid;
+> > +> 	> int i;
+> > +> 	> int ret;
+> > +> 	> int child_ret;
+> > +> 	> for (i = 0; i < 1000; i++) {  
+> > +> 	> 	> /* test_vmx will fork() */
+> > +> 	> 	> ret = test_vmx(varray, &fork_pid);
+> > +> 	> 	> if (fork_pid == -1)  
+> > +> 	> 	> 	> return -1;  
+> > +> 	> 	> if (fork_pid == 0)  
+> > +> 	> 	> 	> exit(ret);  
+> > +> 	> 	> waitpid(fork_pid, &child_ret, 0);
+> > +> 	> 	> if (ret || child_ret)  
+> > +> 	> 	> 	> return 1;  
+> > +> 	> }  
+> > +  
+> > +> 	> return 0;  
+> > +}
+> > +
+> > +int test_vmx_syscall(void)
+> > +{  
+> > +> 	> /*
+> > +> 	>  * Setup an environment with much context switching
+> > +> 	>  */
+> > +> 	> pid_t pid2;
+> > +> 	> pid_t pid = fork();
+> > +> 	> int ret;
+> > +> 	> int child_ret;
+> > +> 	> FAIL_IF(pid == -1);  
+> > +  
+> > +> 	> pid2 = fork();
+> > +> 	> ret = vmx_syscall();
+> > +> 	> /* Can't FAIL_IF(pid2 == -1); because we've already forked */
+> > +> 	> if (pid2 == -1) {  
+> > +> 	> 	> /*
+> > +> 	> 	>  * Couldn't fork, ensure child_ret is set and is a fail
+> > +> 	> 	>  */
+> > +> 	> 	> ret = child_ret = 1;  
+> > +> 	> } else {  
+> > +> 	> 	> if (pid2)  
+> > +> 	> 	> 	> waitpid(pid2, &child_ret, 0);  
+> > +> 	> 	> else  
+> > +> 	> 	> 	> exit(ret);  
+> > +> 	> }  
+> > +  
+> > +> 	> ret |= child_ret;  
+> > +  
+> > +> 	> if (pid)  
+> > +> 	> 	> waitpid(pid, &child_ret, 0);  
+> > +> 	> else  
+> > +> 	> 	> exit(ret);  
+> > +  
+> > +> 	> FAIL_IF(ret || child_ret);
+> > +> 	> return 0;  
+> > +}
+> > +
+> > +int main(int argc, char *argv[])
+> > +{  
+> > +> 	> return test_harness(test_vmx_syscall, "vmx_syscall");  
+> > +
+> > +}  
