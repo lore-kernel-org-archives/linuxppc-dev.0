@@ -1,24 +1,22 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-x234.google.com (mail-yk0-x234.google.com
- [IPv6:2607:f8b0:4002:c07::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F0C791A02AE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 20:45:50 +1100 (AEDT)
-Received: by ykdv3 with SMTP id v3so230759814ykd.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 01:45:48 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1448237735.18775.3.camel@ellerman.id.au>
-References: <CAOJe8K3ny5gsUjEOGA5DqmyW5HyxN8_8d2PqkxAj_JpN-nz7Cw@mail.gmail.com>
- <1448237735.18775.3.camel@ellerman.id.au>
-Date: Mon, 23 Nov 2015 12:45:48 +0300
-Message-ID: <CAOJe8K2KSL4yvkZpuJ-ZWiY7L0q8+fgkOp0rKOzCUTgGhmy5Bw@mail.gmail.com>
-Subject: Re: linuxppc patchwork queue
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <andriy.shevchenko@linux.intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by lists.ozlabs.org (Postfix) with ESMTP id E2C691A02B0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:10:37 +1100 (AEDT)
+Message-ID: <1448273441.31665.186.camel@linux.intel.com>
+Subject: Re: [PATCH v1 1/2] sata_dwc_460ex: move to generic DMA driver
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: =?ISO-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+Cc: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>,  rsarmah@amcc.com, Alexey Brodkin
+ <Alexey.Brodkin@synopsys.com>
+Date: Mon, 23 Nov 2015 12:10:41 +0200
+In-Reply-To: <yw1xwptab2zs.fsf@unicorn.mansr.com>
+References: <1425415282-3750-1-git-send-email-andriy.shevchenko@linux.intel.com>
+ <1425415282-3750-2-git-send-email-andriy.shevchenko@linux.intel.com>
+ <yw1xwptab2zs.fsf@unicorn.mansr.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/23/15, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Hi Denis,
->
-> On Fri, 2015-11-20 at 17:48 +0300, Denis Kirjanov wrote:
->> Hi guys,
->>
->> As we all know we have a great tool to track the patch queue - patchwork.
->> The sad thing is that it's maintained not good as it could be. The
->> netdev patchwork is a great example of how it can be done and I bet
->> everyone would love to see the ppc patch queue like that.
->
-> What exactly is wrong with it?
+On Sun, 2015-11-22 at 13:03 +0000, Måns Rullgård wrote:
+> Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
+> 
+> > The SATA implementation based on two actually different devices,
+> > i.e. SATA and
+> > DMA controllers.
+> > 
+> > For Synopsys DesignWare DMA we have already a generic
+> > implementation of the
+> > driver. Thus, the patch converts the code to use DMAEngine
+> > framework and
+> > dw_dmac driver.
+> > 
+> > In future it will be better to split the devices inside DTS as well
+> > like it's
+> > done on other platforms.
 
-I just wanted to point out that we have some patches without any reply like
-https://patchwork.ozlabs.org/patch/518981/ or patches since 2010.
 
->
-> I try pretty hard to keep it up to date with the state of what's happening
-> in
-> my tree. I'm fairly sure that everything I merged for 4.4 has been marked
-> accepted.
+> > @@ -1721,16 +1227,16 @@ static int sata_dwc_probe(struct
+> > platform_device *ofdev)
+> >  		   idr, ver[0], ver[1], ver[2]);
+> > 
+> >  	/* Get SATA DMA interrupt number */
+> > -	irq = irq_of_parse_and_map(np, 1);
+> > -	if (irq == NO_IRQ) {
+> > +	hsdev->dma->irq = irq_of_parse_and_map(np, 1);
+> 
+> This doesn't look like it has been more than compile-tested.
 
-Nothing personal, I see that you made a good progress with it because
-I remember how it looked like a few years ago.
+Yes, that's true, my question [1] was a crying in the wilderness.
 
->
-> There are a lot of new patches there at the moment, but that's mainly
-> because I
-> haven't started merging things for 4.5 yet.
->
->> So can we improve the current situation? I'd love to help in any way
->> possible.
->
-> You could send fewer patches ;)
+>   Nothing
+> ever allocates hsdev->dma, so it can't possibly work.
 
-I could, but I want make it better :)
+You are right.
 
-Thanks!
+> 
+> Also, has anyone given any thought to getting rid of the dependency
+> on
+> the DW DMA controller?
 
->
-> cheers
->
->
+How? Before it was even more harder link to it (embedded routines).
+
+On the other hand you may introduce dma_ops and use them like it's
+done, for example, in spi-dw*.c
+
+>   Presumably support for old device trees would
+> need to be retained for compatibility.  Maybe checking for a "dmas"
+> property and falling back on the current behaviour if it's missing.  
+
+I didn't get how DT is related to DW or any other DMAC used with this
+SATA controller.
+
+> My
+> goal is to get this driver working with another chip using the same
+> SATA
+> controller but a different DMA engine.
+
+It would be nice to eventually bring this working with generic DMA
+Engine API. Please, keep me in Cc list regarding this driver.
+
+[1] https://lkml.org/lkml/2014/12/12/547
+
+-- 
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
