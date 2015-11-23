@@ -1,35 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A7DE1A0338
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:24:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A3B9C1A038D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:24:23 +1100 (AEDT)
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 23 Nov 2015 20:24:21 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D3C9A2CE8055
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:24:18 +1100 (EST)
+ Mon, 23 Nov 2015 20:24:23 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D753A2BB003F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:24:20 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tANANsW523593138
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:24:02 +1100
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tANAOEEw36700162
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:24:22 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tANANjjZ013668
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:23:46 +1100
+ tANANlfm013701
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:23:48 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Scott Wood <scottwood@freescale.com>,
  Denis Kirjanov <kda@linux-powerpc.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V5 20/31] powerpc/mm: update __real_pte to take address as
- argument
-Date: Mon, 23 Nov 2015 15:52:29 +0530
-Message-Id: <1448274160-28446-21-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V5 21/31] powerpc/mm: make pte page hash index slot 8 bits
+Date: Mon, 23 Nov 2015 15:52:30 +0530
+Message-Id: <1448274160-28446-22-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,90 +40,187 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We will use this in the later patch to compute the right hash index
+Currently we use 4 bits for each slot and pack all the 16 slot
+information related to a 64K linux page in a 64bit value. To do this
+we use 16 bits of pte_t. Move the hash slot valid bit out of pte_t
+and place them in the second half of pte page. We also use 8 bit
+per each slot.
 
 Acked-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash-64k.h | 2 +-
- arch/powerpc/include/asm/book3s/64/pgtable.h  | 4 ++--
- arch/powerpc/include/asm/nohash/64/pgtable.h  | 4 ++--
- arch/powerpc/mm/hash64_64k.c                  | 2 +-
- arch/powerpc/mm/tlb_hash64.c                  | 2 +-
- 5 files changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash-64k.h | 48 +++++++++++++++------------
+ arch/powerpc/include/asm/book3s/64/hash.h     |  5 ---
+ arch/powerpc/include/asm/page.h               |  4 +--
+ arch/powerpc/mm/hash64_64k.c                  | 34 +++++++++++++++----
+ 4 files changed, 56 insertions(+), 35 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index ee073822145d..ced5a17a8d1a 100644
+index ced5a17a8d1a..dafc2f31c843 100644
 --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
 +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -78,7 +78,7 @@
+@@ -78,33 +78,39 @@
   * generic accessors and iterators here
   */
  #define __real_pte __real_pte
--static inline real_pte_t __real_pte(pte_t pte, pte_t *ptep)
-+static inline real_pte_t __real_pte(unsigned long addr, pte_t pte, pte_t *ptep)
+-static inline real_pte_t __real_pte(unsigned long addr, pte_t pte, pte_t *ptep)
+-{
+-	real_pte_t rpte;
+-
+-	rpte.pte = pte;
+-	rpte.hidx = 0;
+-	if (pte_val(pte) & _PAGE_COMBO) {
+-		/*
+-		 * Make sure we order the hidx load against the _PAGE_COMBO
+-		 * check. The store side ordering is done in __hash_page_4K
+-		 */
+-		smp_rmb();
+-		rpte.hidx = pte_val(*((ptep) + PTRS_PER_PTE));
+-	}
+-	return rpte;
+-}
+-
++extern real_pte_t __real_pte(unsigned long addr, pte_t pte, pte_t *ptep);
+ static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
  {
- 	real_pte_t rpte;
+ 	if ((pte_val(rpte.pte) & _PAGE_COMBO))
+-		return (rpte.hidx >> (index<<2)) & 0xf;
++		return (unsigned long) rpte.hidx[index] >> 4;
+ 	return (pte_val(rpte.pte) >> 12) & 0xf;
+ }
  
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index f2ace2cac7bb..3117f0495b74 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -44,10 +44,10 @@
- #ifndef __real_pte
+-#define __rpte_to_pte(r)	((r).pte)
+-#define __rpte_sub_valid(rpte, index) \
+-	(pte_val(rpte.pte) & (_PAGE_HPTE_SUB0 >> (index)))
++static inline pte_t __rpte_to_pte(real_pte_t rpte)
++{
++	return rpte.pte;
++}
++/*
++ * we look at the second half of the pte page to determine whether
++ * the sub 4k hpte is valid. We use 8 bits per each index, and we have
++ * 16 index mapping full 64K page. Hence for each
++ * 64K linux page we use 128 bit from the second half of pte page.
++ * The encoding in the second half of the page is as below:
++ * [ index 15 ] .........................[index 0]
++ * [bit 127 ..................................bit 0]
++ * fomat of each index
++ * bit 7 ........ bit0
++ * [one bit secondary][ 3 bit hidx][1 bit valid][000]
++ */
++static inline bool __rpte_sub_valid(real_pte_t rpte, unsigned long index)
++{
++	unsigned char index_val = rpte.hidx[index];
++
++	if ((index_val >> 3) & 0x1)
++		return true;
++	return false;
++}
++
+ /*
+  * Trick: we set __end to va + 64k, which happens works for
+  * a 16M page as well as we want only one iteration
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index e18794d5a68c..b11197965c2f 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -212,11 +212,6 @@
  
- #ifdef CONFIG_STRICT_MM_TYPECHECKS
--#define __real_pte(e,p)		((real_pte_t){(e)})
-+#define __real_pte(a,e,p)	((real_pte_t){(e)})
- #define __rpte_to_pte(r)	((r).pte)
+ #define PMD_BAD_BITS		(PTE_TABLE_SIZE-1)
+ #define PUD_BAD_BITS		(PMD_TABLE_SIZE-1)
+-/*
+- * We save the slot number & secondary bit in the second half of the
+- * PTE page. We use the 8 bytes per each pte entry.
+- */
+-#define PTE_PAGE_HIDX_OFFSET (PTRS_PER_PTE * 8)
+ 
+ #ifndef __ASSEMBLY__
+ #define	pmd_bad(pmd)		(!is_kernel_addr(pmd_val(pmd)) \
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 9d2f38e1b21d..9c3211eb487c 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -295,7 +295,7 @@ static inline pte_basic_t pte_val(pte_t x)
+  * the "second half" part of the PTE for pseudo 64k pages
+  */
+ #if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
+-typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
++typedef struct { pte_t pte; unsigned char *hidx; } real_pte_t;
  #else
--#define __real_pte(e,p)		(e)
-+#define __real_pte(a,e,p)	(e)
- #define __rpte_to_pte(r)	(__pte(r))
+ typedef struct { pte_t pte; } real_pte_t;
  #endif
- #define __rpte_to_hidx(r,index)	(pte_val(__rpte_to_pte(r)) >> 12)
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index c24e03f22655..f389f2d6789e 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -115,10 +115,10 @@
- #ifndef __real_pte
+@@ -347,7 +347,7 @@ static inline pte_basic_t pte_val(pte_t pte)
+ }
  
- #ifdef CONFIG_STRICT_MM_TYPECHECKS
--#define __real_pte(e,p)		((real_pte_t){(e)})
-+#define __real_pte(a,e,p)	((real_pte_t){(e)})
- #define __rpte_to_pte(r)	((r).pte)
+ #if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
+-typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
++typedef struct { pte_t pte; unsigned char *hidx; } real_pte_t;
  #else
--#define __real_pte(e,p)		(e)
-+#define __real_pte(a,e,p)	(e)
- #define __rpte_to_pte(r)	(__pte(r))
+ typedef pte_t real_pte_t;
  #endif
- #define __rpte_to_hidx(r,index)	(pte_val(__rpte_to_pte(r)) >> 12)
 diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
-index da133f2a51a7..456aa3bfa8f1 100644
+index 456aa3bfa8f1..c40ee12cc922 100644
 --- a/arch/powerpc/mm/hash64_64k.c
 +++ b/arch/powerpc/mm/hash64_64k.c
-@@ -90,7 +90,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+@@ -16,12 +16,32 @@
+ #include <asm/machdep.h>
+ #include <asm/mmu.h>
+ 
++real_pte_t __real_pte(unsigned long addr, pte_t pte, pte_t *ptep)
++{
++	int indx;
++	real_pte_t rpte;
++	pte_t *pte_headp;
++
++	rpte.pte = pte;
++	rpte.hidx = NULL;
++	if (pte_val(pte) & _PAGE_COMBO) {
++		indx = pte_index(addr);
++		pte_headp = ptep - indx;
++		/*
++		 * Make sure we order the hidx load against the _PAGE_COMBO
++		 * check. The store side ordering is done in __hash_page_4K
++		 */
++		smp_rmb();
++		rpte.hidx = (unsigned char *)(pte_headp + PTRS_PER_PTE) + (16 * indx);
++	}
++	return rpte;
++}
++
+ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		   pte_t *ptep, unsigned long trap, unsigned long flags,
+ 		   int ssize, int subpg_prot)
+ {
+ 	real_pte_t rpte;
+-	unsigned long *hidxp;
+ 	unsigned long hpte_group;
+ 	unsigned int subpg_index;
+ 	unsigned long shift = 12; /* 4K */
+@@ -90,7 +110,10 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
  
  	subpg_index = (ea & (PAGE_SIZE - 1)) >> shift;
  	vpn  = hpt_vpn(ea, vsid, ssize);
--	rpte = __real_pte(__pte(old_pte), ptep);
-+	rpte = __real_pte(ea, __pte(old_pte), ptep);
+-	rpte = __real_pte(ea, __pte(old_pte), ptep);
++	if (!(old_pte & _PAGE_COMBO))
++		rpte = __real_pte(ea, __pte(old_pte | _PAGE_COMBO), ptep);
++	else
++		rpte = __real_pte(ea, __pte(old_pte), ptep);
  	/*
  	 *None of the sub 4k page is hashed
  	 */
-diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
-index f7b80391bee7..dd0fd1783bcc 100644
---- a/arch/powerpc/mm/tlb_hash64.c
-+++ b/arch/powerpc/mm/tlb_hash64.c
-@@ -89,7 +89,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 	}
- 	WARN_ON(vsid == 0);
- 	vpn = hpt_vpn(addr, vsid, ssize);
--	rpte = __real_pte(__pte(pte), ptep);
-+	rpte = __real_pte(addr, __pte(pte), ptep);
- 
+@@ -188,11 +211,8 @@ repeat:
+ 	 * Since we have _PAGE_BUSY set on ptep, we can be sure
+ 	 * nobody is undating hidx.
+ 	 */
+-	hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
+-	/* __real_pte use pte_val() any idea why ? FIXME!! */
+-	rpte.hidx &= ~(0xfUL << (subpg_index << 2));
+-	*hidxp = rpte.hidx  | (slot << (subpg_index << 2));
+-	new_pte |= (_PAGE_HPTE_SUB0 >> subpg_index);
++	rpte.hidx[subpg_index] = (unsigned char)(slot << 4 | 0x1 << 3);
++	new_pte |= _PAGE_HPTE_SUB0;
  	/*
- 	 * Check if we have an active batch on this CPU. If not, just
+ 	 * check __real_pte for details on matching smp_rmb()
+ 	 */
 -- 
 2.5.0
