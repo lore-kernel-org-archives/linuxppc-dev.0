@@ -1,27 +1,43 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AEB3A1A000B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 08:57:12 +1100 (AEDT)
-Received: by padhk6 with SMTP id hk6so28578087pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 13:57:09 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Denis Kirjanov <kda@linux-powerpc.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: linuxppc patchwork queue
-In-Reply-To: <1448273552.3452.7.camel@ellerman.id.au>
-References: <CAOJe8K3ny5gsUjEOGA5DqmyW5HyxN8_8d2PqkxAj_JpN-nz7Cw@mail.gmail.com>
- <1448237735.18775.3.camel@ellerman.id.au>
- <CAOJe8K2KSL4yvkZpuJ-ZWiY7L0q8+fgkOp0rKOzCUTgGhmy5Bw@mail.gmail.com>
- <1448273552.3452.7.camel@ellerman.id.au>
-Date: Tue, 24 Nov 2015 08:56:54 +1100
-Message-ID: <87r3jgv0pl.fsf@gamma.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6D47F1A013E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 09:43:32 +1100 (AEDT)
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 24 Nov 2015 08:43:30 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8DB112BB003F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 09:43:25 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tANMhHpx64749618
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 09:43:25 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tANMgqKA001281
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 09:42:53 +1100
+Date: Tue, 24 Nov 2015 09:42:27 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, bhelgaas@google.com,
+ grant.likely@linaro.org, robherring2@gmail.com,
+ panto@antoniou-consulting.com, frowand.list@gmail.com
+Subject: Re: [PATCH v7 12/50] powerpc/powernv: Track M64 segment consumption
+Message-ID: <20151123224227.GB5375@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1446642770-4681-13-git-send-email-gwshan@linux.vnet.ibm.com>
+ <56498D77.2060101@ozlabs.ru> <20151117010446.GA26294@gwshan>
+ <564D1382.6030504@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <564D1382.6030504@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,77 +47,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
-
-> The main thing you could do, and anyone could do (!), is just review some
-> patches. Even if you don't know the area of code that well, you can usually do
-> a basic review.
+On Thu, Nov 19, 2015 at 11:10:42AM +1100, Alexey Kardashevskiy wrote:
+>On 11/17/2015 12:04 PM, Gavin Shan wrote:
+>>On Mon, Nov 16, 2015 at 07:01:59PM +1100, Alexey Kardashevskiy wrote:
+>>>On 11/05/2015 12:12 AM, Gavin Shan wrote:
+>>>>As we track M32 segment consumption, this introduces an array to
+>>>>the PHB to track the mapping between M64 segment and PE number.
+>>>>The information is going to be used to find M64 segment from the
+>>>>PE number during PCI unplugging time in subsequent patches.
+>>>
+>>>
+>>>It would not hurt to put a few words about how we managed to live without
+>>>such a mapping for M64 before but we needed mapping for M32.
+>>>
+>>
+>>The M32 mapping (phb->ioda.m32_segmap[]) isn't used for anything before
+>>this patcheset. There're no need for M64 mapping before this patchset
+>>similarly, no need to add the words.
 >
-> eg. Just the basic stuff:
->  - Is the subject correctly formatted and makes sense.
->  - Is the change log well written and describes the change well.
->  - Does the patch do one logical change.
->  - Are there any obviously bad coding style things.
->  - Can you follow the basics of the change based on the change log and some
->    reading of the code?
-
-Michael gave me the same advice earlier this year, and I found it really
-helpful. As a result, I've been trying to do reviews.
-
-I am by no means an expert, but here's what I found starting out:
-
- - Reviewing is a learned skill - you don't just start doing kernel dev
-   and get this magical sense of how to do reviews. This means it's OK
-   to start small, and that no-one expects your early reviews to be
-   amazing.
-
- - Reviewing gets much easier when you just jump in and start doing it!
-
- - A review doesn't have to focus on getting to a reviewed-by
-   tag. Asking good questions is equally if not more valuable.
-
- - It was easier to start with the 'little picture', or what Michael
-   calls the 'basic stuff'. Is it good C? Does the commit message make
-   sense? Is the spelling right? Does it do weird things without
-   explaining them? When you're starting it's OK to leave the 'big
-   picture'/architectural/design reviews to other people. I definitely
-   still do!
-
-HTH.
-Daniel
-
+>After years I learned that reviewers ask less questions about new but yet
+>unused code when I put few words in the commit log confirming that it is not
+>used now but it will be used for <here I put what it is for> later.
 >
-> Another thing I seem to spend a lot of time on is asking people if their patch
-> should go to stable or not, and if so what versions. So everyone could help out
-> there.
+>And it is not obvious that m32_segment is not used. And m64_segmap is started
+>being used only 13 patches later in:
 >
-> cheers
+>[PATCH v7 27/50] powerpc/powernv: Dynamically release PEs
 >
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>which is quite far, complicates reviewing. 12/50 is better be moved there (to
+>make it 26/50) or just merged into 27/50.
+>
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+It doesn't make sense to me. As said in PATCH[00/50], the patchset consists of
+3 separate parts: PowerNV PCI rework; Using PCI slot; Hotplug standalone driver;
+For the first part ("PowerNV PCI rework"), the patches are organized in order:
+refactor/cleanup, IO/M32/M64, DMA, PE allocation/deallocation. So I don't think
+I need move the patch around if you don't have a stronger reason.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAEBCgAGBQJWU4unAAoJEPC3R3P2I92FmjUQAI0WXlx5MxL6qOva5sbTWSjX
-Fyf5a/FfZhGjs9KQYH1knUrzFAzjiZpRfs7Y1fQqlhxCA2sP2z0XxzWapG/IhlVM
-OJdiWyENPYRN95VLqPcIV+ji1LB/+9vp1sTT0r40z88B5Qi+zVBjPsapkgbcia/E
-FraHZYOQz8Nj2Wr28t/BmR4lvJ8lqvzR74wZng9RyvllJnWuaw5YVe/RVoqCuGO6
-NagyzV/vzhMCuTyv4LOb4fh0bC9o6G2hBT3Z/t4J79Vspgj6ODbr6a+PVqy8rzbJ
-3+WuIHMSBewxEjvRrOiRK5zTdwrbLHzyJP4xmlFQdsyE5THjD+0XJCvDnw1dh22I
-S81UEWCfzCtbSj9PH/wBRQ+eB9UOI0NkKfO2UhWw5rWEsgGsRc4eNCj2iYwwS9a0
-qxbg1Oad0bjGqo62Cm9qWuIM+OmLUJupPwTLbARak7PpzFK/XYrkpqTahzFzrMw0
-WKsqSLZ+UusBAgnsHpTn3co4FC8uLK59X559DKDvToe9Mw+O8qTLKSzVBtUIqIke
-OTUU3W07Kiccv6oUgbI1PeCPcxdWT5lOvm2RrrlOWjR+MIRAwIALM1L9A676NuLo
-ONRoLVb7S8bgh4YxT4lWTgSemqIGwHNPSJPO0MVWzBFrHcraxgV+lvNyP7XAsB+d
-c7ozi/gtZpI8T3m9g6P1
-=ZM9u
------END PGP SIGNATURE-----
---=-=-=--
+Thanks,
+Gavin
