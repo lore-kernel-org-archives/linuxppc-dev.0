@@ -1,21 +1,36 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3D9061A00C5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 14:29:53 +1100 (AEDT)
-Message-ID: <1448249392.18775.12.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Standardise on NR_syscalls rather than
- __NR_syscalls.
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Denis Kirjanov <kda@linux-powerpc.org>, Rashmica Gupta <rashmicy@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 23 Nov 2015 14:29:52 +1100
-In-Reply-To: <CAOJe8K0yHTdymRbEo=itvK-AYiNzQLLspNgTyyzADkzpPxpzHw@mail.gmail.com>
-References: <1447913093-28342-1-git-send-email-rashmicy@gmail.com>
- <CAOJe8K0yHTdymRbEo=itvK-AYiNzQLLspNgTyyzADkzpPxpzHw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id E88BE1A029E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 16:49:59 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 23 Nov 2015 11:19:57 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 6D2CE125805F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 11:20:07 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAN5nsZC2752860
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 11:19:54 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAN5nr72000977
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 11:19:54 +0530
+Message-ID: <5652A900.5000404@linux.vnet.ibm.com>
+Date: Mon, 23 Nov 2015 11:19:52 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Rashmica Gupta <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: Remove unused function trace_syscall()
+References: <1447903588-610-1-git-send-email-rashmicy@gmail.com>
+ <564D4342.6050400@au1.ibm.com>
+In-Reply-To: <564D4342.6050400@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +40,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-11-19 at 12:15 +0300, Denis Kirjanov wrote:
-
-> On 11/19/15, Rashmica Gupta <rashmicy@gmail.com> wrote:
-
-> > Most architectures use NR_syscalls as the #define for the number of
-> > syscalls.
-> > 
-> > We use __NR_syscalls, and then define NR_syscalls as __NR_syscalls.
-> > 
-> > __NR_syscalls is not used outside arch code, whereas NR_syscalls is. So as
-> > NR_syscalls must be defined and __NR_syscalls does not, replace
-> > __NR_syscalls with NR_syscalls.
->
-> Hi,
+On 11/19/2015 09:04 AM, Andrew Donnellan wrote:
+> On 19/11/15 14:26, Rashmica Gupta wrote:
+>> This function has been unused since commit 14cf11af6cf6 ("powerpc:
+>> Merge enough
+>> to start building in arch/powerpc."), so remove it.
+>>
+>> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 > 
-> But what's wrong with the current code? Why do we need such change?
+> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-The change log explains it fairly well I think. Which part is not clear?
-
-cheers
+Reviewed-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
