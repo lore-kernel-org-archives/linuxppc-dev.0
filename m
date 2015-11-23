@@ -1,38 +1,27 @@
-Return-Path: <tom.leiming@gmail.com>
-Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
- [IPv6:2607:f8b0:400e:c03::22d])
+Return-Path: <dja@axtens.net>
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A5C81A1AAE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 02:21:52 +1100 (AEDT)
-Received: by padhx2 with SMTP id hx2so194063446pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 07:21:50 -0800 (PST)
-Date: Mon, 23 Nov 2015 23:21:34 +0800
-From: Ming Lei <tom.leiming@gmail.com>
-To: Mark Salter <msalter@redhat.com>
-Cc: Ming Lei <ming.lei@canonical.com>, Laurent Dufour
- <ldufour@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Christoph Hellwig <hch@infradead.org>, "James E. J. Bottomley"
- <JBottomley@odin.com>, brking <brking@us.ibm.com>, Linux SCSI List
- <linux-scsi@vger.kernel.org>, Linux Kernel Mailing List
- <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-block@vger.kernel.org, Ming Lei <tom.leiming@gmail.com>
-Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
-Message-ID: <20151123232134.4abda9a7@tom-T450>
-In-Reply-To: <CACVXFVPWBnm8H4BgQ_=V-Z-NLrkt+TE7T_RpEctNrjEwpRpJhw@mail.gmail.com>
-References: <1447838334.1564.2.camel@ellerman.id.au>
- <1447855399.3974.24.camel@redhat.com>
- <1447894964.15206.0.camel@ellerman.id.au>
- <20151119082325.GA11419@infradead.org>
- <1448021448.14769.7.camel@ellerman.id.au>
- <565055C6.5040801@linux.vnet.ibm.com>
- <20151122005635.1b9ffbe1@tom-T450>
- <1448234410.8209.3.camel@redhat.com>
- <CACVXFVMAm1niRvXqQXjOXW=ryy41d-ne09wSNbJUq3b9o6vJ7w@mail.gmail.com>
- <1448243411.8209.36.camel@redhat.com>
- <CACVXFVPWBnm8H4BgQ_=V-Z-NLrkt+TE7T_RpEctNrjEwpRpJhw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AEB3A1A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 08:57:12 +1100 (AEDT)
+Received: by padhk6 with SMTP id hk6so28578087pad.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 13:57:09 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Denis Kirjanov <kda@linux-powerpc.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linuxppc patchwork queue
+In-Reply-To: <1448273552.3452.7.camel@ellerman.id.au>
+References: <CAOJe8K3ny5gsUjEOGA5DqmyW5HyxN8_8d2PqkxAj_JpN-nz7Cw@mail.gmail.com>
+ <1448237735.18775.3.camel@ellerman.id.au>
+ <CAOJe8K2KSL4yvkZpuJ-ZWiY7L0q8+fgkOp0rKOzCUTgGhmy5Bw@mail.gmail.com>
+ <1448273552.3452.7.camel@ellerman.id.au>
+Date: Tue, 24 Nov 2015 08:56:54 +1100
+Message-ID: <87r3jgv0pl.fsf@gamma.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,217 +31,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 23 Nov 2015 10:46:20 +0800
-Ming Lei <ming.lei@canonical.com> wrote:
+--=-=-=
+Content-Type: text/plain
 
-> Hi Mark,
->=20
-> On Mon, Nov 23, 2015 at 9:50 AM, Mark Salter <msalter@redhat.com> wrote:
-> > On Mon, 2015-11-23 at 08:36 +0800, Ming Lei wrote:
-> >> On Mon, Nov 23, 2015 at 7:20 AM, Mark Salter <msalter@redhat.com> wrot=
-e:
-> >> > On Sun, 2015-11-22 at 00:56 +0800, Ming Lei wrote:
-> >> > > On Sat, 21 Nov 2015 12:30:14 +0100
-> >> > > Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
-> >> > >
-> >> > > > On 20/11/2015 13:10, Michael Ellerman wrote:
-> >> > > > > On Thu, 2015-11-19 at 00:23 -0800, Christoph Hellwig wrote:
-> >> > > > >
-> >> > > > > > It's pretty much guaranteed a block layer bug, most likely i=
-n the
-> >> > > > > > merge bios to request infrastucture where we don't obey the =
-merging
-> >> > > > > > limits properly.
-> >> > > > > >
-> >> > > > > > Does either of you have a known good and first known bad ker=
-nel?
-> >> > > > >
-> >> > > > > Not me, I've only hit it one or two times. All I can say is I =
-have hit it in
-> >> > > > > 4.4-rc1.
-> >> > > > >
-> >> > > > > Laurent, can you narrow it down at all?
-> >> > > >
-> >> > > > It seems that the panic is triggered by the commit bdced438acd8 =
-("block:
-> >> > > > setup bi_phys_segments after splitting") which has been pulled b=
-y the
-> >> > > > merge d9734e0d1ccf ("Merge branch 'for-4.4/core' of
-> >> > > > git://git.kernel.dk/linux-block").
-> >> > > >
-> >> > > > My system is panicing promptly when running a kernel built at
-> >> > > > d9734e0d1ccf, while reverting the commit bdced438acd8, it can ru=
-n hours
-> >> > > > without panicing.
-> >> > > >
-> >> > > > This being said, I can't explain what's going wrong.
-> >> > > >
-> >> > > > May Ming shed some light here ?
-> >> > >
-> >> > > Laurent, looks there is one bug in blk_bio_segment_split(), would =
-you
-> >> > > mind testing the following patch to see if it fixes your issue?
-> >> > >
-> >> > > ---
-> >> > > From 6fc701231dcc000bc8bc4b9105583380d9aa31f4 Mon Sep 17 00:00:00 =
-2001
-> >> > > From: Ming Lei <ming.lei@canonical.com>
-> >> > > Date: Sun, 22 Nov 2015 00:47:13 +0800
-> >> > > Subject: [PATCH] block: fix segment split
-> >> > >
-> >> > > Inside blk_bio_segment_split(), previous bvec pointer('bvprvp')
-> >> > > always points to the iterator local variable, which is obviously
-> >> > > wrong, so fix it by pointing to the local variable of 'bvprv'.
-> >> > >
-> >> > > Signed-off-by: Ming Lei <ming.lei@canonical.com>
-> >> > > ---
-> >> > >  block/blk-merge.c | 4 ++--
-> >> > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> >> > >
-> >> > > diff --git a/block/blk-merge.c b/block/blk-merge.c
-> >> > > index de5716d8..f2efe8a 100644
-> >> > > --- a/block/blk-merge.c
-> >> > > +++ b/block/blk-merge.c
-> >> > > @@ -98,7 +98,7 @@ static struct bio *blk_bio_segment_split(struct =
-request_queue *q,
-> >> > >
-> >> > >                       seg_size +=3D bv.bv_len;
-> >> > >                       bvprv =3D bv;
-> >> > > -                     bvprvp =3D &bv;
-> >> > > +                     bvprvp =3D &bvprv;
-> >> > >                       sectors +=3D bv.bv_len >> 9;
-> >> > >                       continue;
-> >> > >               }
-> >> > > @@ -108,7 +108,7 @@ new_segment:
-> >> > >
-> >> > >               nsegs++;
-> >> > >               bvprv =3D bv;
-> >> > > -             bvprvp =3D &bv;
-> >> > > +             bvprvp =3D &bvprv;
-> >> > >               seg_size =3D bv.bv_len;
-> >> > >               sectors +=3D bv.bv_len >> 9;
-> >> > >       }
-> >> >
-> >> > I'm still hitting the BUG even with this patch applied on top of 4.4=
--rc1.
-> >>
-> >> OK, looks there are still other bugs, care to share us how to reproduce
-> >> it on arm64?
-> >>
-> >> thanks,
-> >> Ming
-> >
-> > Unfortunately, the best reproducer I have is to boot the platform. I ha=
-ve seen the
-> > BUG a few times post-boot, but I don't have a consistant reproducer. I =
-am using
-> > upstream 4.4-rc1 with this config:
-> >
-> >   http://people.redhat.com/msalter/fh_defconfig
-> >
-> > With 4.4-rc1 on an APM Mustang platform, I see the BUG about once every=
- 6-7 boots.
-> > On an AMD Seattle platform, about every 9 boots.
->=20
-> Thanks for the input, and I will try to reproduce the issue on mustang wi=
-th
-> your kernel config.
+> The main thing you could do, and anyone could do (!), is just review some
+> patches. Even if you don't know the area of code that well, you can usually do
+> a basic review.
+>
+> eg. Just the basic stuff:
+>  - Is the subject correctly formatted and makes sense.
+>  - Is the change log well written and describes the change well.
+>  - Does the patch do one logical change.
+>  - Are there any obviously bad coding style things.
+>  - Can you follow the basics of the change based on the change log and some
+>    reading of the code?
 
-I can reproduce the issue on mustang, and looks I may understand the story =
-now.
+Michael gave me the same advice earlier this year, and I found it really
+helpful. As a result, I've been trying to do reviews.
 
-When 64K page size is used on arm64, and the default segment size of block
-is 65536, then one segment should only include one page at most.
+I am by no means an expert, but here's what I found starting out:
 
-Commit bdced438acd83a(block: setup bi_phys_segments after splitting) does n=
-ot
-compute bio->bi_seg_front_size and bio->bi_seg_back_size, then one less seg=
-ment
-may be obtained because blk_phys_contig_segment() thought the last bvec in =
-1st
-bio and the 1st bvec in the 2nd bio is in one physical segment, so cause the
-regression.
+ - Reviewing is a learned skill - you don't just start doing kernel dev
+   and get this magical sense of how to do reviews. This means it's OK
+   to start small, and that no-one expects your early reviews to be
+   amazing.
 
-Looks the following patch can fix the issue by figuring bio->bi_seg_front_s=
-ize
-and bio->bi_seg_back_size in blk_bio_segment_split().
+ - Reviewing gets much easier when you just jump in and start doing it!
 
-Mark, thanks again for providing the reproduction steps, and could you run =
-your
-test to see if it can fix your issue?
+ - A review doesn't have to focus on getting to a reviewed-by
+   tag. Asking good questions is equally if not more valuable.
 
----
-=46rom 86b5f33d48715c1150fdcfd9a76e495e7aa913aa Mon Sep 17 00:00:00 2001
-From: Ming Lei <ming.lei@canonical.com>
-Date: Mon, 23 Nov 2015 20:27:23 +0800
-Subject: [PATCH 2/2] blk-merge: fix blk_bio_segment_split
+ - It was easier to start with the 'little picture', or what Michael
+   calls the 'basic stuff'. Is it good C? Does the commit message make
+   sense? Is the spelling right? Does it do weird things without
+   explaining them? When you're starting it's OK to leave the 'big
+   picture'/architectural/design reviews to other people. I definitely
+   still do!
 
-Commit bdced438acd83a(block: setup bi_phys_segments after
-splitting) introduces function of computing bio->bi_phys_segments
-during bio splitting.
+HTH.
+Daniel
 
-Unfortunately both bio->bi_seg_front_size and bio->bi_seg_back_size
-arn't computed, so too many physical segments may be obtained
-for one request since both the two are used to check if one segment
-across two bios can be possible.
+>
+> Another thing I seem to spend a lot of time on is asking people if their patch
+> should go to stable or not, and if so what versions. So everyone could help out
+> there.
+>
+> cheers
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-This patch fixes the issue by computing the two variables in
-blk_bio_segment_split().
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-Reported-by: Mark Salter <msalter@redhat.com>
-Fixes: bdced438acd83a(block: setup bi_phys_segments after splitting)
-Signed-off-by: Ming Lei <ming.lei@canonical.com>
----
- block/blk-merge.c | 22 +++++++++++++++++++---
- 1 file changed, 19 insertions(+), 3 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: GPGTools - https://gpgtools.org
 
-diff --git a/block/blk-merge.c b/block/blk-merge.c
-index f2efe8a..50793cd 100644
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -76,6 +76,9 @@ static struct bio *blk_bio_segment_split(struct request_q=
-ueue *q,
- 	struct bio_vec bv, bvprv, *bvprvp =3D NULL;
- 	struct bvec_iter iter;
- 	unsigned seg_size =3D 0, nsegs =3D 0, sectors =3D 0;
-+	unsigned front_seg_size =3D bio->bi_seg_front_size;
-+	bool do_split =3D true;
-+	struct bio *new =3D NULL;
-=20
- 	bio_for_each_segment(bv, bio, iter) {
- 		if (sectors + (bv.bv_len >> 9) > queue_max_sectors(q))
-@@ -111,13 +114,26 @@ new_segment:
- 		bvprvp =3D &bvprv;
- 		seg_size =3D bv.bv_len;
- 		sectors +=3D bv.bv_len >> 9;
-+
-+		if (nsegs =3D=3D 1 && seg_size > front_seg_size)
-+			front_seg_size =3D seg_size;
- 	}
-=20
--	*segs =3D nsegs;
--	return NULL;
-+	do_split =3D false;
- split:
- 	*segs =3D nsegs;
--	return bio_split(bio, sectors, GFP_NOIO, bs);
-+
-+	if (do_split) {
-+		new =3D bio_split(bio, sectors, GFP_NOIO, bs);
-+		if (new)
-+			bio =3D new;
-+	}
-+
-+	bio->bi_seg_front_size =3D front_seg_size;
-+	if (seg_size > bio->bi_seg_back_size)
-+		bio->bi_seg_back_size =3D seg_size;
-+
-+	return do_split ? new : NULL;
- }
-=20
- void blk_queue_split(struct request_queue *q, struct bio **bio,
---=20
-1.9.1
-
-Thanks,
+iQIcBAEBCgAGBQJWU4unAAoJEPC3R3P2I92FmjUQAI0WXlx5MxL6qOva5sbTWSjX
+Fyf5a/FfZhGjs9KQYH1knUrzFAzjiZpRfs7Y1fQqlhxCA2sP2z0XxzWapG/IhlVM
+OJdiWyENPYRN95VLqPcIV+ji1LB/+9vp1sTT0r40z88B5Qi+zVBjPsapkgbcia/E
+FraHZYOQz8Nj2Wr28t/BmR4lvJ8lqvzR74wZng9RyvllJnWuaw5YVe/RVoqCuGO6
+NagyzV/vzhMCuTyv4LOb4fh0bC9o6G2hBT3Z/t4J79Vspgj6ODbr6a+PVqy8rzbJ
+3+WuIHMSBewxEjvRrOiRK5zTdwrbLHzyJP4xmlFQdsyE5THjD+0XJCvDnw1dh22I
+S81UEWCfzCtbSj9PH/wBRQ+eB9UOI0NkKfO2UhWw5rWEsgGsRc4eNCj2iYwwS9a0
+qxbg1Oad0bjGqo62Cm9qWuIM+OmLUJupPwTLbARak7PpzFK/XYrkpqTahzFzrMw0
+WKsqSLZ+UusBAgnsHpTn3co4FC8uLK59X559DKDvToe9Mw+O8qTLKSzVBtUIqIke
+OTUU3W07Kiccv6oUgbI1PeCPcxdWT5lOvm2RrrlOWjR+MIRAwIALM1L9A676NuLo
+ONRoLVb7S8bgh4YxT4lWTgSemqIGwHNPSJPO0MVWzBFrHcraxgV+lvNyP7XAsB+d
+c7ozi/gtZpI8T3m9g6P1
+=ZM9u
+-----END PGP SIGNATURE-----
+--=-=-=--
