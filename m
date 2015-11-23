@@ -1,35 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6913A1A0408
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:24:33 +1100 (AEDT)
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by lists.ozlabs.org (Postfix) with ESMTPS id A2C1A1A044F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:24:35 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 23 Nov 2015 20:24:33 +1000
+ Mon, 23 Nov 2015 20:24:35 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 000FE2CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:24:30 +1100 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7DA012BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:24:32 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tANAOMJ566977832
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:24:30 +1100
+ tANAOOTU1376720
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:24:32 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tANANvic014017
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:23:58 +1100
+ tANANxbP014037
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 21:24:00 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Scott Wood <scottwood@freescale.com>,
  Denis Kirjanov <kda@linux-powerpc.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V5 27/31] powerpc/mm: Add helper for converting pte bit to
- hpte bits
-Date: Mon, 23 Nov 2015 15:52:36 +0530
-Message-Id: <1448274160-28446-28-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V5 28/31] powerpc/mm: Move WIMG update to helper.
+Date: Mon, 23 Nov 2015 15:52:37 +0530
+Message-Id: <1448274160-28446-29-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,188 +40,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Instead of open coding it in multiple code paths, export the helper
-and add more documentation. Also make sure we don't make assumption
-regarding pte bit position
+Only difference here is, we apply the WIMG mapping early, so rflags
+passed to updatepp will also be changed.
 
 Acked-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash.h |  1 +
- arch/powerpc/mm/hash64_4k.c               | 13 +-----------
- arch/powerpc/mm/hash64_64k.c              | 35 +++----------------------------
- arch/powerpc/mm/hash_utils_64.c           | 22 ++++++++++++-------
- arch/powerpc/mm/hugepage-hash64.c         | 13 +-----------
- arch/powerpc/mm/hugetlbpage-hash64.c      |  4 +---
- 6 files changed, 21 insertions(+), 67 deletions(-)
+ arch/powerpc/mm/hash64_4k.c          |  5 -----
+ arch/powerpc/mm/hash64_64k.c         | 10 ----------
+ arch/powerpc/mm/hash_utils_64.c      | 13 ++++++++++++-
+ arch/powerpc/mm/hugepage-hash64.c    |  7 -------
+ arch/powerpc/mm/hugetlbpage-hash64.c |  8 --------
+ 5 files changed, 12 insertions(+), 31 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index 51d26299b3f0..0cde0004ef49 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -238,6 +238,7 @@ extern unsigned long pmd_hugepage_update(struct mm_struct *mm,
- 					 pmd_t *pmdp,
- 					 unsigned long clr,
- 					 unsigned long set);
-+extern unsigned long htab_convert_pte_flags(unsigned long pteflags);
- /* Atomic PTE updates */
- static inline unsigned long pte_update(struct mm_struct *mm,
- 				       unsigned long addr,
 diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
-index 3b49c6f18741..ee863137035a 100644
+index ee863137035a..e7c04542ba62 100644
 --- a/arch/powerpc/mm/hash64_4k.c
 +++ b/arch/powerpc/mm/hash64_4k.c
-@@ -53,18 +53,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	 * PP bits. _PAGE_USER is already PP bit 0x2, so we only
+@@ -54,11 +54,6 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
  	 * need to add in 0x1 if it's a read-only user page
  	 */
--	rflags = new_pte & _PAGE_USER;
--	if ((new_pte & _PAGE_USER) && !((new_pte & _PAGE_RW) &&
--					(new_pte & _PAGE_DIRTY)))
--		rflags |= 0x1;
+ 	rflags = htab_convert_pte_flags(new_pte);
 -	/*
--	 * _PAGE_EXEC -> HW_NO_EXEC since it's inverted
+-	 * Add in WIMG bits
 -	 */
--	rflags |= ((new_pte & _PAGE_EXEC) ? 0 : HPTE_R_N);
--	/*
--	 * Always add C and Memory coherence bit
--	 */
--	rflags |= HPTE_R_C | HPTE_R_M;
-+	rflags = htab_convert_pte_flags(new_pte);
- 	/*
- 	 * Add in WIMG bits
- 	 */
+-	rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+-				_PAGE_COHERENT | _PAGE_GUARDED));
+ 
+ 	if (!cpu_has_feature(CPU_FTR_NOEXECUTE) &&
+ 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
 diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
-index d6a98ef374f3..21d9e513e043 100644
+index 21d9e513e043..84867a1491a2 100644
 --- a/arch/powerpc/mm/hash64_64k.c
 +++ b/arch/powerpc/mm/hash64_64k.c
-@@ -76,22 +76,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	 * Handle the subpage protection bits
+@@ -77,11 +77,6 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
  	 */
  	subpg_pte = new_pte & ~subpg_prot;
+ 	rflags = htab_convert_pte_flags(subpg_pte);
 -	/*
--	 * PP bits. _PAGE_USER is already PP bit 0x2, so we only
--	 * need to add in 0x1 if it's a read-only user page
+-	 * Add in WIMG bits
 -	 */
--	rflags = subpg_pte & _PAGE_USER;
--	if ((subpg_pte & _PAGE_USER) && !((subpg_pte & _PAGE_RW) &&
--					(subpg_pte & _PAGE_DIRTY)))
--		rflags |= 0x1;
--	/*
--	 * _PAGE_EXEC -> HW_NO_EXEC since it's inverted
--	 */
--	rflags |= ((subpg_pte & _PAGE_EXEC) ? 0 : HPTE_R_N);
--	/*
--	 * Always add C and Memory coherence bit
--	 */
--	rflags |= HPTE_R_C | HPTE_R_M;
-+	rflags = htab_convert_pte_flags(subpg_pte);
- 	/*
- 	 * Add in WIMG bits
- 	 */
-@@ -262,22 +247,8 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 			new_pte |= _PAGE_DIRTY;
- 	} while (old_pte != __cmpxchg_u64((unsigned long *)ptep,
+-	rflags |= (subpg_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+-				_PAGE_COHERENT | _PAGE_GUARDED));
+ 
+ 	if (!cpu_has_feature(CPU_FTR_NOEXECUTE) &&
+ 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE)) {
+@@ -249,11 +244,6 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
  					  old_pte, new_pte));
+ 
+ 	rflags = htab_convert_pte_flags(new_pte);
 -	/*
--	 * PP bits. _PAGE_USER is already PP bit 0x2, so we only
--	 * need to add in 0x1 if it's a read-only user page
+-	 * Add in WIMG bits
 -	 */
--	rflags = new_pte & _PAGE_USER;
--	if ((new_pte & _PAGE_USER) && !((new_pte & _PAGE_RW) &&
--					(new_pte & _PAGE_DIRTY)))
--		rflags |= 0x1;
--	/*
--	 * _PAGE_EXEC -> HW_NO_EXEC since it's inverted
--	 */
--	rflags |= ((new_pte & _PAGE_EXEC) ? 0 : HPTE_R_N);
--	/*
--	 * Always add C and Memory coherence bit
--	 */
--	rflags |= HPTE_R_C | HPTE_R_M;
-+
-+	rflags = htab_convert_pte_flags(new_pte);
- 	/*
- 	 * Add in WIMG bits
- 	 */
+-	rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+-				_PAGE_COHERENT | _PAGE_GUARDED));
+ 
+ 	if (!cpu_has_feature(CPU_FTR_NOEXECUTE) &&
+ 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
 diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 04d549527eaa..3b5e547b965d 100644
+index 3b5e547b965d..3d261bc6fef8 100644
 --- a/arch/powerpc/mm/hash_utils_64.c
 +++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -159,20 +159,26 @@ static struct mmu_psize_def mmu_psize_defaults_gp[] = {
- 	},
- };
- 
--static unsigned long htab_convert_pte_flags(unsigned long pteflags)
-+unsigned long htab_convert_pte_flags(unsigned long pteflags)
- {
--	unsigned long rflags = pteflags & 0x1fa;
-+	unsigned long rflags = 0;
- 
- 	/* _PAGE_EXEC -> NOEXEC */
- 	if ((pteflags & _PAGE_EXEC) == 0)
- 		rflags |= HPTE_R_N;
--
--	/* PP bits. PAGE_USER is already PP bit 0x2, so we only
--	 * need to add in 0x1 if it's a read-only user page
-+	/*
-+	 * PP bits:
-+	 * Linux use slb key 0 for kernel and 1 for user.
-+	 * kernel areas are mapped by PP bits 00
-+	 * and and there is no kernel RO (_PAGE_KERNEL_RO).
-+	 * User area mapped by 0x2 and read only use by
-+	 * 0x3.
- 	 */
--	if ((pteflags & _PAGE_USER) && !((pteflags & _PAGE_RW) &&
--					 (pteflags & _PAGE_DIRTY)))
--		rflags |= 1;
-+	if (pteflags & _PAGE_USER) {
-+		rflags |= 0x2;
-+		if (!((pteflags & _PAGE_RW) && (pteflags & _PAGE_DIRTY)))
-+			rflags |= 0x1;
-+	}
+@@ -182,7 +182,18 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
  	/*
  	 * Always add "C" bit for perf. Memory coherence is always enabled
  	 */
+-	return rflags | HPTE_R_C | HPTE_R_M;
++	rflags |=  HPTE_R_C | HPTE_R_M;
++	/*
++	 * Add in WIG bits
++	 */
++	if (pteflags & _PAGE_WRITETHRU)
++		rflags |= HPTE_R_W;
++	if (pteflags & _PAGE_NO_CACHE)
++		rflags |= HPTE_R_I;
++	if (pteflags & _PAGE_GUARDED)
++		rflags |= HPTE_R_G;
++
++	return rflags;
+ }
+ 
+ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
 diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
-index 4d87122cf6a7..91fcac6f989d 100644
+index 91fcac6f989d..1f666de0110a 100644
 --- a/arch/powerpc/mm/hugepage-hash64.c
 +++ b/arch/powerpc/mm/hugepage-hash64.c
-@@ -54,18 +54,7 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
- 			new_pmd |= _PAGE_DIRTY;
- 	} while (old_pmd != __cmpxchg_u64((unsigned long *)pmdp,
- 					  old_pmd, new_pmd));
--	/*
--	 * PP bits. _PAGE_USER is already PP bit 0x2, so we only
--	 * need to add in 0x1 if it's a read-only user page
--	 */
--	rflags = new_pmd & _PAGE_USER;
--	if ((new_pmd & _PAGE_USER) && !((new_pmd & _PAGE_RW) &&
--					   (new_pmd & _PAGE_DIRTY)))
--		rflags |= 0x1;
--	/*
--	 * _PAGE_EXEC -> HW_NO_EXEC since it's inverted
--	 */
--	rflags |= ((new_pmd & _PAGE_EXEC) ? 0 : HPTE_R_N);
-+	rflags = htab_convert_pte_flags(new_pmd);
+@@ -120,13 +120,6 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		pa = pmd_pfn(__pmd(old_pmd)) << PAGE_SHIFT;
+ 		new_pmd |= _PAGE_HASHPTE;
  
- #if 0
- 	if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE)) {
+-		/* Add in WIMG bits */
+-		rflags |= (new_pmd & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+-				      _PAGE_GUARDED));
+-		/*
+-		 * enable the memory coherence always
+-		 */
+-		rflags |= HPTE_R_M;
+ repeat:
+ 		hpte_group = ((hash & htab_hash_mask) * HPTES_PER_GROUP) & ~0x7UL;
+ 
 diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index 7584e8445512..304c8520506e 100644
+index 304c8520506e..0734e4daffef 100644
 --- a/arch/powerpc/mm/hugetlbpage-hash64.c
 +++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -59,10 +59,8 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 			new_pte |= _PAGE_DIRTY;
- 	} while(old_pte != __cmpxchg_u64((unsigned long *)ptep,
- 					 old_pte, new_pte));
-+	rflags = htab_convert_pte_flags(new_pte);
+@@ -91,14 +91,6 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		/* clear HPTE slot informations in new PTE */
+ 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HASHPTE;
  
--	rflags = 0x2 | (!(new_pte & _PAGE_RW));
--	/* _PAGE_EXEC -> HW_NO_EXEC since it's inverted */
--	rflags |= ((new_pte & _PAGE_EXEC) ? 0 : HPTE_R_N);
- 	sz = ((1UL) << shift);
- 	if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
- 		/* No CPU has hugepages but lacks no execute, so we
+-		/* Add in WIMG bits */
+-		rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+-				      _PAGE_COHERENT | _PAGE_GUARDED));
+-		/*
+-		 * enable the memory coherence always
+-		 */
+-		rflags |= HPTE_R_M;
+-
+ 		slot = hpte_insert_repeating(hash, vpn, pa, rflags, 0,
+ 					     mmu_psize, ssize);
+ 
 -- 
 2.5.0
