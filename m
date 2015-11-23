@@ -1,25 +1,47 @@
-Return-Path: <mru@mansr.com>
-Received: from unicorn.mansr.com (unicorn.mansr.com
- [IPv6:2001:8b0:ca0d:8d8e::2])
- by lists.ozlabs.org (Postfix) with ESMTP id CE26D1A1E61
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 22:58:20 +1100 (AEDT)
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, rsarmah@amcc.com,
- Alexey Brodkin <Alexey.Brodkin@synopsys.com>
-Subject: Re: [PATCH v1 1/2] sata_dwc_460ex: move to generic DMA driver
-References: <1425415282-3750-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <1425415282-3750-2-git-send-email-andriy.shevchenko@linux.intel.com>
- <yw1xwptab2zs.fsf@unicorn.mansr.com>
- <1448273441.31665.186.camel@linux.intel.com>
-Date: Mon, 23 Nov 2015 11:58:12 +0000
-In-Reply-To: <1448273441.31665.186.camel@linux.intel.com> (Andy Shevchenko's
- message of "Mon, 23 Nov 2015 12:10:41 +0200")
-Message-ID: <yw1x610tapwr.fsf@unicorn.mansr.com>
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6ADD71A2A7C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 00:57:38 +1100 (AEDT)
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Mon, 23 Nov 2015 13:57:34 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 870BC1B0806E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 13:57:43 +0000 (GMT)
+Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
+ [9.149.37.229])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tANDvLFj8651010
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 13:57:21 GMT
+Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tANDvKWP009109
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 06:57:21 -0700
+Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
+To: Mark Salter <msalter@redhat.com>, Ming Lei <ming.lei@canonical.com>
+References: <1447838334.1564.2.camel@ellerman.id.au>
+ <1447855399.3974.24.camel@redhat.com>
+ <1447894964.15206.0.camel@ellerman.id.au>
+ <20151119082325.GA11419@infradead.org>
+ <1448021448.14769.7.camel@ellerman.id.au>
+ <565055C6.5040801@linux.vnet.ibm.com> <20151122005635.1b9ffbe1@tom-T450>
+ <1448234410.8209.3.camel@redhat.com>
+Cc: linux-block@vger.kernel.org, linux-scsi@vger.kernel.org,
+ "James E. J. Bottomley" <JBottomley@odin.com>,
+ linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+ brking <brking@us.ibm.com>, tom.leiming@gmail.com,
+ linuxppc-dev@lists.ozlabs.org
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Message-ID: <56531B3F.60503@linux.vnet.ibm.com>
+Date: Mon, 23 Nov 2015 14:57:19 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1448234410.8209.3.camel@redhat.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,81 +51,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
+On 23/11/2015 00:20, Mark Salter wrote:
+> On Sun, 2015-11-22 at 00:56 +0800, Ming Lei wrote:
+>> On Sat, 21 Nov 2015 12:30:14 +0100
+>> Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
+>>
+>>> On 20/11/2015 13:10, Michael Ellerman wrote:
+>>>> On Thu, 2015-11-19 at 00:23 -0800, Christoph Hellwig wrote:
+>>>>
+>>>>> It's pretty much guaranteed a block layer bug, most likely in the
+>>>>> merge bios to request infrastucture where we don't obey the merging
+>>>>> limits properly.
+>>>>>
+>>>>> Does either of you have a known good and first known bad kernel?
+>>>>
+>>>> Not me, I've only hit it one or two times. All I can say is I have hit it in
+>>>> 4.4-rc1.
+>>>>
+>>>> Laurent, can you narrow it down at all?
+>>>
+>>> It seems that the panic is triggered by the commit bdced438acd8 ("block:
+>>> setup bi_phys_segments after splitting") which has been pulled by the
+>>> merge d9734e0d1ccf ("Merge branch 'for-4.4/core' of
+>>> git://git.kernel.dk/linux-block").
+>>>
+>>> My system is panicing promptly when running a kernel built at
+>>> d9734e0d1ccf, while reverting the commit bdced438acd8, it can run hours
+>>> without panicing.
+>>>
+>>> This being said, I can't explain what's going wrong.
+>>>
+>>> May Ming shed some light here ?
+>>
+>> Laurent, looks there is one bug in blk_bio_segment_split(), would you
+>> mind testing the following patch to see if it fixes your issue?
+>>
+>> ---
+>> From 6fc701231dcc000bc8bc4b9105583380d9aa31f4 Mon Sep 17 00:00:00 2001
+>> From: Ming Lei <ming.lei@canonical.com>
+>> Date: Sun, 22 Nov 2015 00:47:13 +0800
+>> Subject: [PATCH] block: fix segment split
+>>
+>> Inside blk_bio_segment_split(), previous bvec pointer('bvprvp')
+>> always points to the iterator local variable, which is obviously
+>> wrong, so fix it by pointing to the local variable of 'bvprv'.
+>>
+>> Signed-off-by: Ming Lei <ming.lei@canonical.com>
+>> ---
+>>  block/blk-merge.c | 4 ++--
+>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/block/blk-merge.c b/block/blk-merge.c
+>> index de5716d8..f2efe8a 100644
+>> --- a/block/blk-merge.c
+>> +++ b/block/blk-merge.c
+>> @@ -98,7 +98,7 @@ static struct bio *blk_bio_segment_split(struct request_queue *q,
+>>  
+>>  			seg_size += bv.bv_len;
+>>  			bvprv = bv;
+>> -			bvprvp = &bv;
+>> +			bvprvp = &bvprv;
+>>  			sectors += bv.bv_len >> 9;
+>>  			continue;
+>>  		}
+>> @@ -108,7 +108,7 @@ new_segment:
+>>  
+>>  		nsegs++;
+>>  		bvprv = bv;
+>> -		bvprvp = &bv;
+>> +		bvprvp = &bvprv;
+>>  		seg_size = bv.bv_len;
+>>  		sectors += bv.bv_len >> 9;
+>>  	}
+> 
+> I'm still hitting the BUG even with this patch applied on top of 4.4-rc1.
 
-> On Sun, 2015-11-22 at 13:03 +0000, M=E5ns Rullg=E5rd wrote:
->> Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
->>=20
->> > The SATA implementation based on two actually different devices,
->> > i.e. SATA and
->> > DMA controllers.
->> >=20
->> > For Synopsys DesignWare DMA we have already a generic
->> > implementation of the
->> > driver. Thus, the patch converts the code to use DMAEngine
->> > framework and
->> > dw_dmac driver.
->> >=20
->> > In future it will be better to split the devices inside DTS as well
->> > like it's
->> > done on other platforms.
->
->> > @@ -1721,16 +1227,16 @@ static int sata_dwc_probe(struct
->> > platform_device *ofdev)
->> >  		   idr, ver[0], ver[1], ver[2]);
->> >=20
->> >  	/* Get SATA DMA interrupt number */
->> > -	irq =3D irq_of_parse_and_map(np, 1);
->> > -	if (irq =3D=3D NO_IRQ) {
->> > +	hsdev->dma->irq =3D irq_of_parse_and_map(np, 1);
->>=20
->> This doesn't look like it has been more than compile-tested.
->
-> Yes, that's true, my question [1] was a crying in the wilderness.
->
->>   Nothing
->> ever allocates hsdev->dma, so it can't possibly work.
->
-> You are right.
->
->>=20
->> Also, has anyone given any thought to getting rid of the dependency
->> on the DW DMA controller?
->
-> How? Before it was even more harder link to it (embedded routines).
-
-It already uses the dmaengine API to do the transfers.  To make it
-generic, two things need to change:
-
-1. The DMA controller should get its own DT node instead of the SATA
-   driver calling dw_dma_probe() directly.
-
-2. The SATA driver can then use dma_request_slave_channel() and a "dmas"
-   DT property instead of dma_request_channel() and filter function.
-
-The changes are easy to make as such.  The only problem is that we need
-to preserve compatibility with old device trees.
-
-> On the other hand you may introduce dma_ops and use them like it's
-> done, for example, in spi-dw*.c
->
->>   Presumably support for old device trees would
->> need to be retained for compatibility.  Maybe checking for a "dmas"
->> property and falling back on the current behaviour if it's missing.=20=20
->
-> I didn't get how DT is related to DW or any other DMAC used with this
-> SATA controller.
-
-See Documentation/devicetree/bindings/dma/dma.txt
-
->> My goal is to get this driver working with another chip using the
->> same SATA controller but a different DMA engine.
->
-> It would be nice to eventually bring this working with generic DMA
-> Engine API. Please, keep me in Cc list regarding this driver.
-
-What's your interest in this driver if you don't have the hardware?
-
---=20
-M=E5ns Rullg=E5rd
-mans@mansr.com
+On my side, with the patch applied on top of 4.4-rc1, I can't get the
+panic anymore.
