@@ -1,35 +1,28 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <hare@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 009561A029E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 17:23:18 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 23 Nov 2015 11:53:16 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 96E123940049
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 11:53:13 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAN6NA3s3146122
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 11:53:11 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAN6NA74032165
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 11:53:10 +0530
-Message-ID: <5652B0CE.40704@linux.vnet.ibm.com>
-Date: Mon, 23 Nov 2015 11:53:10 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id ACB431A02A1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 17:55:52 +1100 (AEDT)
+Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
+To: emilne@redhat.com
+References: <1447838334.1564.2.camel@ellerman.id.au>
+ <1447855399.3974.24.camel@redhat.com>
+ <1447894964.15206.0.camel@ellerman.id.au>
+ <20151119082325.GA11419@infradead.org> <564DEC41.5010600@suse.de>
+ <1448030316.4067.18.camel@localhost.localdomain> <564F3453.9040603@suse.de>
+ <1448033323.4067.24.camel@localhost.localdomain>
+Cc: Christoph Hellwig <hch@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Mark Salter <msalter@redhat.com>,
+ "James E. J. Bottomley" <JBottomley@odin.com>, brking <brking@us.ibm.com>,
+ linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-block@vger.kernel.org
+From: Hannes Reinecke <hare@suse.de>
+Message-ID: <5652B870.70302@suse.de>
+Date: Mon, 23 Nov 2015 07:55:44 +0100
 MIME-Version: 1.0
-To: Rashmica Gupta <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: Standardise on NR_syscalls rather than
- __NR_syscalls.
-References: <1447913093-28342-1-git-send-email-rashmicy@gmail.com>
-In-Reply-To: <1447913093-28342-1-git-send-email-rashmicy@gmail.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1448033323.4067.24.camel@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,39 +32,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/19/2015 11:34 AM, Rashmica Gupta wrote:
-> Most architectures use NR_syscalls as the #define for the number of syscalls.
-> 
-> We use __NR_syscalls, and then define NR_syscalls as __NR_syscalls.
-> 
-> __NR_syscalls is not used outside arch code, whereas NR_syscalls is. So as
-> NR_syscalls must be defined and __NR_syscalls does not, replace __NR_syscalls
-> with NR_syscalls.
-> 
-> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
-> ---
->  arch/powerpc/include/asm/unistd.h        | 3 +--
->  arch/powerpc/include/asm/vdso_datapage.h | 2 +-
->  arch/powerpc/kernel/systbl_chk.c         | 2 +-
->  arch/powerpc/kernel/systbl_chk.sh        | 2 +-
->  arch/powerpc/kernel/vdso.c               | 2 +-
->  arch/powerpc/kernel/vdso32/datapage.S    | 2 +-
->  arch/powerpc/kernel/vdso64/datapage.S    | 2 +-
->  arch/powerpc/platforms/cell/spufs/run.c  | 2 +-
->  8 files changed, 8 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-> index 6d8f8023ac27..05bf34296144 100644
-> --- a/arch/powerpc/include/asm/unistd.h
-> +++ b/arch/powerpc/include/asm/unistd.h
-> @@ -12,10 +12,9 @@
->  #include <uapi/asm/unistd.h>
->  
->  
-> -#define __NR_syscalls		378
-> +#define NR_syscalls		378
+On 11/20/2015 04:28 PM, Ewan Milne wrote:
+> On Fri, 2015-11-20 at 15:55 +0100, Hannes Reinecke wrote:
+>> Can't we have a joint effort here?
+>> I've been spending a _LOT_ of time trying to debug things here, but
+>> none of the ideas I've come up with have been able to fix anything.
+>
+> Yes.  I'm not the one primarily looking at it, and we don't have a
+> reproducer in-house.  We just have the one dump right now.
+>
+Oh, I got plenty of them :-(
 
-This does not apply any more because of Michael's recent mlock2() system
-call enablement commit. Please do rebase and resend.
+>>
+>> I'm almost tempted to increase the count from scsi_alloc_sgtable()
+>> by one and be done with ...
+>>
+>
+> That might not fix it if it is a problem with the merge code, though.
+>
+Of course not. But it'll be a band-aid to keep the customer happy.
 
-- Anshuman
+Cheers,
+
+Hannes
+-- 
+Dr. Hannes Reinecke		               zSeries & Storage
+hare@suse.de			               +49 911 74053 688
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: F. Imendörffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
+HRB 21284 (AG Nürnberg)
