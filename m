@@ -1,32 +1,23 @@
 Return-Path: <kda@linux-powerpc.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 931531A006B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 20:31:07 +1100 (AEDT)
-Received: from mail-yk0-x236.google.com (mail-yk0-x236.google.com
- [IPv6:2607:f8b0:4002:c07::236])
+Received: from mail-yk0-x234.google.com (mail-yk0-x234.google.com
+ [IPv6:2607:f8b0:4002:c07::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 07A5F1402B2
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Nov 2015 20:31:07 +1100 (AEDT)
-Received: by ykfs79 with SMTP id s79so231976288ykf.1
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Nov 2015 01:31:05 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F0C791A02AE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 20:45:50 +1100 (AEDT)
+Received: by ykdv3 with SMTP id v3so230759814ykd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2015 01:45:48 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1448235359.18775.1.camel@ellerman.id.au>
-References: <1446145810-5383-1-git-send-email-kda@linux-powerpc.org>
- <1446545202.2801.2.camel@ellerman.id.au>
- <CAOJe8K0=J033NMh++iznar21_p4G4epAgE0wONoxZxEyFPS9VQ@mail.gmail.com>
- <CAOJe8K1q=bO5iKfnG=9ZLNvk0sREcfqNJuHNhyspe6MG4hSfHA@mail.gmail.com>
- <1448235359.18775.1.camel@ellerman.id.au>
-Date: Mon, 23 Nov 2015 12:31:05 +0300
-Message-ID: <CAOJe8K2nDEU9B9wwFDqK0Rv5s15MV09En-OrrJh=qWmcpbyDmw@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: tracing: don't trace hcalls on offline CPUs
+In-Reply-To: <1448237735.18775.3.camel@ellerman.id.au>
+References: <CAOJe8K3ny5gsUjEOGA5DqmyW5HyxN8_8d2PqkxAj_JpN-nz7Cw@mail.gmail.com>
+ <1448237735.18775.3.camel@ellerman.id.au>
+Date: Mon, 23 Nov 2015 12:45:48 +0300
+Message-ID: <CAOJe8K2KSL4yvkZpuJ-ZWiY7L0q8+fgkOp0rKOzCUTgGhmy5Bw@mail.gmail.com>
+Subject: Re: linuxppc patchwork queue
 From: Denis Kirjanov <kda@linux-powerpc.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>, Steven Rostedt <rostedt@goodmis.org>,
- linux-kernel@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,36 +29,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 11/23/15, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> On Fri, 2015-11-20 at 15:22 +0300, Denis Kirjanov wrote:
->> On 11/3/15, Denis Kirjanov <kda@linux-powerpc.org> wrote:
->> > On 11/3/15, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> > > On Thu, 2015-10-29 at 22:10 +0300, Denis Kirjanov wrote:
->> > > > ./drmgr -c cpu -a -r gives the following warning:
->> > > >
->> > > > [ 2327.035563] RCU used illegally from offline CPU!
->> > > >
->> > > > Make the hypervisor tracepoints conditional by introducing
->> > > > TRACE_EVENT_FN_COND similar to TRACE_EVENT_FN
->> > >
->> > > We've fixed other cases like this with RCU_NONIDLE(), but I assume
->> > > that
->> > > doesn't work here because we're actually offline?
->> >
->> > Yes, in this case we're moving the complete core offline through
->> > dlpar...
->> >
+> Hi Denis,
+>
+> On Fri, 2015-11-20 at 17:48 +0300, Denis Kirjanov wrote:
+>> Hi guys,
 >>
->> Hi Michael,
->> Could you pick this patch?
+>> As we all know we have a great tool to track the patch queue - patchwork.
+>> The sad thing is that it's maintained not good as it could be. The
+>> netdev patchwork is a great example of how it can be done and I bet
+>> everyone would love to see the ppc patch queue like that.
 >
-> It's mostly a tracing patch, so I'd need an ACK from Steve at least.
->
-> It would probably be best if you split it into a "tracing: .. " patch which
-> adds the new macros and then a powerpc patch which uses them.
+> What exactly is wrong with it?
 
-Ok, sounds reasonable.
+I just wanted to point out that we have some patches without any reply like
+https://patchwork.ozlabs.org/patch/518981/ or patches since 2010.
+
+>
+> I try pretty hard to keep it up to date with the state of what's happening
+> in
+> my tree. I'm fairly sure that everything I merged for 4.4 has been marked
+> accepted.
+
+Nothing personal, I see that you made a good progress with it because
+I remember how it looked like a few years ago.
+
+>
+> There are a lot of new patches there at the moment, but that's mainly
+> because I
+> haven't started merging things for 4.5 yet.
+>
+>> So can we improve the current situation? I'd love to help in any way
+>> possible.
+>
+> You could send fewer patches ;)
+
+I could, but I want make it better :)
 
 Thanks!
+
 >
 > cheers
 >
