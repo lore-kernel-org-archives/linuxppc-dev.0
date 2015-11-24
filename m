@@ -1,26 +1,23 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-x22a.google.com (mail-yk0-x22a.google.com
- [IPv6:2607:f8b0:4002:c07::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0144.outbound.protection.outlook.com [157.56.111.144])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BCDB71A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 00:58:57 +1100 (AEDT)
-Received: by ykba77 with SMTP id a77so18835826ykb.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 05:58:55 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 011791A0014
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 01:18:33 +1100 (AEDT)
+Message-ID: <1448374697.27264.308.camel@freescale.com>
+Subject: Re: [PATCH] cpufreq: qoriq: Register cooling device based on device
+ tree
+From: Scott Wood <scottwood@freescale.com>
+To: Jia Hongtao <hongtao.jia@freescale.com>, <edubezval@gmail.com>,
+ <viresh.kumar@linaro.org>
+CC: <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <devicetree@vger.kernel.org>
+Date: Tue, 24 Nov 2015 08:18:17 -0600
+In-Reply-To: <1448348129-46675-1-git-send-email-hongtao.jia@freescale.com>
+References: <1448348129-46675-1-git-send-email-hongtao.jia@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <87io4rfxu5.fsf@linux.vnet.ibm.com>
-References: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1448274160-28446-31-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <CAOJe8K1SWE-yHrgCb5PN48mb40C-RoyGGOrYiMJu5KFZ_W4hWw@mail.gmail.com>
- <87io4rfxu5.fsf@linux.vnet.ibm.com>
-Date: Tue, 24 Nov 2015 16:58:55 +0300
-Message-ID: <CAOJe8K0RfSCRSAaia+mj8g=HeehFabHLYf73L_G+wMVWjGYiCQ@mail.gmail.com>
-Subject: Re: [PATCH V5 30/31] powerpc/mm: Move THP headers around
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,31 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/24/15, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> Denis Kirjanov <kda@linux-powerpc.org> writes:
->
->> On 11/23/15, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
->>> We support THP only with book3s_64 and 64K page size. Move
->>> THP details to hash64-64k.h to clarify the same.
-> ...
->
->>> -static inline void hpte_do_hugepage_flush(struct mm_struct *mm,
->>> -					  unsigned long addr, pmd_t *pmdp,
->>> -					  unsigned long old_pmd)
->>> -{
->>> -
->>> -	WARN(1, "%s called with THP disabled\n", __func__);
->> We can't reach this function with huge pages disabled, right?
->> Would it be better to use WARN_ON_ONCE?
->
-> Shouldn't matter, if should never get called and if we get called, them
-> something is really wrong, and mostly need a kernel fix. This will only
-> happen during devel mistakes.
+On Tue, 2015-11-24 at 14:55 +0800, Jia Hongtao wrote:
+> Register the qoriq cpufreq driver as a cooling device, based on the
+> thermal device tree framework. When temperature crosses the passive trip
+> point cpufreq is used to throttle CPUs.
+> 
+> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> Reviewed-by: Scott Wood <scottwood@freescale.com>
 
-Ok, we can put the BUG() macro then, but as I know Linus doesn't like it :)
-So WARN() is fine I think
+When did I add "Reviewed-by" to this?
 
->
-> -aneesh
->
->
+-Scott
