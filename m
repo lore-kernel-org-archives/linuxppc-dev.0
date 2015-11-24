@@ -1,14 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 13EEB1A004C
+ by lists.ozlabs.org (Postfix) with ESMTPS id A89F21A004C
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 22:26:17 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/5] powerpc/xmon: Use rtas_call_unlocked() in xmon
-Date: Tue, 24 Nov 2015 22:26:09 +1100
-Message-Id: <1448364372-28065-2-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 3/5] powerpc/pseries: Use rtas_call_unlocked() in pseries
+ hotplug
+Date: Tue, 24 Nov 2015 22:26:10 +1100
+Message-Id: <1448364372-28065-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1448364372-28065-1-git-send-email-mpe@ellerman.id.au>
 References: <1448364372-28065-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,43 +25,37 @@ Avoid open coding the logic by using rtas_call_unlocked().
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/xmon/xmon.c | 16 ++++++----------
- 1 file changed, 6 insertions(+), 10 deletions(-)
+ arch/powerpc/platforms/pseries/hotplug-cpu.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 786bf01691c9..ff31e70b81e8 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -320,6 +320,7 @@ static inline void disable_surveillance(void)
- #ifdef CONFIG_PPC_PSERIES
- 	/* Since this can't be a module, args should end up below 4GB. */
- 	static struct rtas_args args;
-+	int token;
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 62475440fd45..86d2ecacb237 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -88,13 +88,7 @@ void set_default_offline_state(int cpu)
  
- 	/*
- 	 * At this point we have got all the cpus we can into
-@@ -328,17 +329,12 @@ static inline void disable_surveillance(void)
- 	 * If we did try to take rtas.lock there would be a
- 	 * real possibility of deadlock.
- 	 */
--	args.token = rtas_token("set-indicator");
--	if (args.token == RTAS_UNKNOWN_SERVICE)
-+	token = rtas_token("set-indicator");
-+	if (token == RTAS_UNKNOWN_SERVICE)
- 		return;
--	args.token = cpu_to_be32(args.token);
--	args.nargs = cpu_to_be32(3);
--	args.nret = cpu_to_be32(1);
--	args.rets = &args.args[3];
--	args.args[0] = cpu_to_be32(SURVEILLANCE_TOKEN);
--	args.args[1] = 0;
--	args.args[2] = 0;
+ static void rtas_stop_self(void)
+ {
+-	static struct rtas_args args = {
+-		.nargs = 0,
+-		.nret = cpu_to_be32(1),
+-		.rets = &args.args[0],
+-	};
+-
+-	args.token = cpu_to_be32(rtas_stop_self_token);
++	static struct rtas_args args;
+ 
+ 	local_irq_disable();
+ 
+@@ -102,7 +96,8 @@ static void rtas_stop_self(void)
+ 
+ 	printk("cpu %u (hwid %u) Ready to die...\n",
+ 	       smp_processor_id(), hard_smp_processor_id());
 -	enter_rtas(__pa(&args));
 +
-+	rtas_call_unlocked(&args, token, 3, 1, NULL, SURVEILLANCE_TOKEN, 0, 0);
-+
- #endif /* CONFIG_PPC_PSERIES */
- }
++	rtas_call_unlocked(&args, rtas_stop_self_token, 0, 1, NULL);
  
+ 	panic("Alas, I survived.\n");
+ }
 -- 
 2.5.0
