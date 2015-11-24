@@ -1,39 +1,18 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c03::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8E5E91A02E8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 08:25:40 +1100 (AEDT)
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Tue, 24 Nov 2015 19:25:36 -0200
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 53E131DC0057
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 16:25:30 -0500 (EST)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAOLQ4V94673568
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 19:26:04 -0200
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAOLPV92030745
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 19:25:32 -0200
-Subject: Re: [PATCH] Enable MSI/MSI-X caps and disable MSI interrupts at PCI
- probe time - code move
-To: Bjorn Helgaas <helgaas@kernel.org>
-References: <1445437055-7017-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <5639F34F.5020402@linux.vnet.ibm.com> <20151124212341.GC17377@localhost>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, paulus@samba.org,
- benh@kernel.crashing.org, mst@redhat.com, shangw@linux.vnet.ibm.com
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Message-ID: <5654D5CA.4000607@linux.vnet.ibm.com>
-Date: Tue, 24 Nov 2015 19:25:30 -0200
-MIME-Version: 1.0
-In-Reply-To: <20151124212341.GC17377@localhost>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44B941A0045
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 10:16:50 +1100 (AEDT)
+Received: by pacej9 with SMTP id ej9so36307155pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 15:16:48 -0800 (PST)
+From: Rashmica Gupta <rashmicy@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: jwboyer@linux.vnet.ibm.com
+Subject: [PATCH] powerpc: Fix xmon ml command to work with 64 bit values.
+Date: Wed, 25 Nov 2015 10:16:33 +1100
+Message-Id: <1448406993-7888-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,20 +22,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/24/2015 07:23 PM, Bjorn Helgaas wrote:
-> On Wed, Nov 04, 2015 at 10:00:15AM -0200, Guilherme G. Piccoli wrote:
->> Bjorn, ping?
->
-> Sorry, Guilherme, this dropped off my radar, and I can't remember why.
-> I'll take a look at it soon.
->
-> Bjorn
->
+The ml command in xmon currently only works for 32-bit values and so fails
+to find 64-bit values on a ppc64 machine. So change to work for 64-bit
+values.
 
-Thanks very much Bjorn!
-Sorry to bother, by the way.
+This is based off a patch by Josh Boyer.
 
-Cheers,
+Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+---
 
+Based off this patch: http://patchwork.ozlabs.org/patch/90309/
 
-Guilherme
+ arch/powerpc/xmon/xmon.c | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 786bf01691c9..df05bd2fca07 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -184,6 +184,12 @@ extern void xmon_leave(void);
+ #define GETWORD(v)	(((v)[0] << 24) + ((v)[1] << 16) + ((v)[2] << 8) + (v)[3])
+ #endif
+ 
++#if BITS_PER_LONG == 64
++#define GETLONG(v)	(((unsigned long) GETWORD(v)) << 32 | GETWORD(v+4))
++#else
++#define GETLONG(v)	GETWORD(v)
++#endif
++
+ static char *help_string = "\
+ Commands:\n\
+   b	show breakpoints\n\
+@@ -2447,14 +2453,15 @@ memdiffs(unsigned char *p1, unsigned char *p2, unsigned nb, unsigned maxpr)
+ 		printf("Total of %d differences\n", prt);
+ }
+ 
+-static unsigned mend;
+-static unsigned mask;
++static unsigned long mend;
++static unsigned long mask;
+ 
+ static void
+ memlocate(void)
+ {
+-	unsigned a, n;
+-	unsigned char val[4];
++	unsigned long a, n;
++	int size = sizeof(unsigned long);
++	unsigned char val[size];
+ 
+ 	last_cmd = "ml";
+ 	scanhex((void *)&mdest);
+@@ -2470,10 +2477,10 @@ memlocate(void)
+ 		}
+ 	}
+ 	n = 0;
+-	for (a = mdest; a < mend; a += 4) {
+-		if (mread(a, val, 4) == 4
+-			&& ((GETWORD(val) ^ mval) & mask) == 0) {
+-			printf("%.16x:  %.16x\n", a, GETWORD(val));
++	for (a = mdest; a < mend; a += size) {
++		if (mread(a, val, size) == size
++			&& ((GETLONG(val) ^ mval) & mask) == 0){
++			printf("%.16lx:  %.16lx\n", a, GETLONG(val));
+ 			if (++n >= 10)
+ 				break;
+ 		}
+-- 
+2.5.0
