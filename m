@@ -1,18 +1,18 @@
 Return-Path: <hongtao.jia@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0102.outbound.protection.outlook.com [157.56.111.102])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0137.outbound.protection.outlook.com [65.55.169.137])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A4F491A1D66
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 18:15:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 18F631A2AB1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 18:17:06 +1100 (AEDT)
 From: Jia Hongtao <hongtao.jia@freescale.com>
-To: <edubezval@gmail.com>
+To: <edubezval@gmail.com>, <viresh.kumar@linaro.org>
 CC: <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <devicetree@vger.kernel.org>, <scottwood@freescale.com>,
  <hongtao.jia@freescale.com>
-Subject: [PATCH V4 0/5] TMU support for QorIQ platform
-Date: Tue, 24 Nov 2015 14:52:43 +0800
-Message-ID: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
+Subject: [PATCH] cpufreq: qoriq: Register cooling device based on device tree
+Date: Tue, 24 Nov 2015 14:55:29 +0800
+Message-ID: <1448348129-46675-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,49 +24,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset add thermal management support to QorIQ platform including:
-- T1040/T1042.
-- T1023/T1024.
-- LS1021A.
+Register the qoriq cpufreq driver as a cooling device, based on the
+thermal device tree framework. When temperature crosses the passive trip
+point cpufreq is used to throttle CPUs.
 
-The thermal driver is updated to V4 based on Linux v4.4-rc2.
+Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+Reviewed-by: Scott Wood <scottwood@freescale.com>
+---
+This patch depends on following patches from Scott Wood:
+http://patchwork.ozlabs.org/patch/519803/
+http://patchwork.ozlabs.org/patch/519804/
 
-CPU Cooling device registration is done by another patch which will send
-to both thermal and cpufreq maintainers.
+ drivers/cpufreq/qoriq-cpufreq.c | 24 +++++++++++++++++++++++-
+ 1 file changed, 23 insertions(+), 1 deletion(-)
 
-The patchset is reviewed by Scott Wood <scottwood@freescale.com>.
-
-Jia Hongtao (5):
-  dt-bindings: Add QorIQ TMU thermal bindings
-  thermal: qoriq: Add thermal management support
-  powerpc/mpc85xx: Add TMU device tree support for T1040/T1042
-  powerpc/mpc85xx: Add TMU device tree support for T1023/T1024
-  arm/ls1021a: Add TMU device tree support for LS1021A
-
- .../devicetree/bindings/thermal/qoriq-thermal.txt  |  63 +++++
- arch/arm/boot/dts/ls1021a.dtsi                     |  84 ++++++-
- arch/powerpc/boot/dts/fsl/t1023rdb.dts             |   2 +-
- arch/powerpc/boot/dts/fsl/t1023si-post.dtsi        |  86 +++++++
- arch/powerpc/boot/dts/fsl/t1024qds.dts             |   2 +-
- arch/powerpc/boot/dts/fsl/t1024rdb.dts             |   2 +-
- arch/powerpc/boot/dts/fsl/t1024si-post.dtsi        |   2 +-
- arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi         |   2 +
- arch/powerpc/boot/dts/fsl/t1040d4rdb.dts           |   2 +-
- arch/powerpc/boot/dts/fsl/t1040qds.dts             |   2 +-
- arch/powerpc/boot/dts/fsl/t1040rdb.dts             |   2 +-
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        |  94 ++++++++
- arch/powerpc/boot/dts/fsl/t1042d4rdb.dts           |   2 +-
- arch/powerpc/boot/dts/fsl/t1042qds.dts             |   2 +-
- arch/powerpc/boot/dts/fsl/t1042rdb.dts             |   2 +-
- arch/powerpc/boot/dts/fsl/t1042rdb_pi.dts          |   2 +-
- arch/powerpc/boot/dts/fsl/t1042si-post.dtsi        |   2 +-
- arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi         |   4 +
- drivers/thermal/Kconfig                            |  10 +
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/qoriq_thermal.c                    | 262 +++++++++++++++++++++
- 21 files changed, 616 insertions(+), 14 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
- create mode 100644 drivers/thermal/qoriq_thermal.c
-
+diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+index 4f53fa2..cb1bc3c 100644
+--- a/drivers/cpufreq/qoriq-cpufreq.c
++++ b/drivers/cpufreq/qoriq-cpufreq.c
+@@ -12,6 +12,7 @@
+ 
+ #include <linux/clk.h>
+ #include <linux/cpufreq.h>
++#include <linux/cpu_cooling.h>
+ #include <linux/errno.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+@@ -33,6 +34,7 @@
+ struct cpu_data {
+ 	struct clk **pclk;
+ 	struct cpufreq_frequency_table *table;
++	struct thermal_cooling_device *cdev;
+ };
+ 
+ /*
+@@ -292,7 +294,11 @@ static const struct of_device_id node_matches[] __initconst = {
+ static int __init qoriq_cpufreq_init(void)
+ {
+ 	int ret;
+-	struct device_node  *np;
++	struct device_node *np;
++	struct device_node *cpu_np;
++	unsigned int cpu_id;
++	struct cpufreq_policy cpu_policy;
++	struct cpu_data *cpud;
+ 	const struct of_device_id *match;
+ 	const struct soc_data *data;
+ 
+@@ -309,6 +315,22 @@ static int __init qoriq_cpufreq_init(void)
+ 		return -ENODEV;
+ 
+ 	ret = cpufreq_register_driver(&qoriq_cpufreq_driver);
++
++	/* Register CPU cooling device for QorIQ platform */
++	for_each_node_with_property(cpu_np, "#cooling-cells") {
++		of_property_read_u32(cpu_np, "reg", &cpu_id);
++		cpufreq_get_policy(&cpu_policy, cpu_id);
++
++		cpud = cpu_policy.driver_data;
++		cpud->cdev = of_cpufreq_cooling_register(cpu_np,
++						cpu_policy.related_cpus);
++		if (IS_ERR(cpud->cdev) && ERR_PTR(cpud->cdev) != -ENOSYS)
++			pr_err("Failed to register cooling device cpu%d: %ld\n",
++			       cpu_id, PTR_ERR(cpud->cdev));
++	}
++
++	of_node_put(cpu_np);
++
+ 	if (!ret)
+ 		pr_info("Freescale QorIQ CPU frequency scaling driver\n");
+ 
 -- 
 2.1.0.27.g96db324
