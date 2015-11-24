@@ -1,15 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C7C481A00BF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 13:05:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 078221A026E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 13:05:53 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: Michael Neuling <mikey@neuling.org>
-Subject: [PATCH 1/4] selftests/powerpc: Move get_auxv_entry() into utils.c
-Date: Tue, 24 Nov 2015 13:05:38 +1100
-Message-Id: <1448330741-4804-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/4] selftests/powerpc: Add have_hwcap2() helper
+Date: Tue, 24 Nov 2015 13:05:39 +1100
+Message-Id: <1448330741-4804-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1448330741-4804-1-git-send-email-mpe@ellerman.id.au>
+References: <1448330741-4804-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,173 +21,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This doesn't really belong in harness.c, it's a helper function. So move
-it into utils.c.
+We already do this twice and want to add another so add a helper.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/powerpc/harness.c        | 43 ------------------
- tools/testing/selftests/powerpc/pmu/Makefile     |  2 +
- tools/testing/selftests/powerpc/pmu/ebb/Makefile |  3 +-
- tools/testing/selftests/powerpc/tm/Makefile      |  2 +-
- tools/testing/selftests/powerpc/utils.c          | 58 ++++++++++++++++++++++++
- 5 files changed, 63 insertions(+), 45 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/utils.c
+ tools/testing/selftests/powerpc/pmu/ebb/ebb.c   | 3 +--
+ tools/testing/selftests/powerpc/tm/tm-syscall.c | 3 +--
+ tools/testing/selftests/powerpc/utils.h         | 6 ++++++
+ 3 files changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/harness.c b/tools/testing/selftests/powerpc/harness.c
-index f7997affd143..52f9be7f61f0 100644
---- a/tools/testing/selftests/powerpc/harness.c
-+++ b/tools/testing/selftests/powerpc/harness.c
-@@ -116,46 +116,3 @@ int test_harness(int (test_function)(void), char *name)
+diff --git a/tools/testing/selftests/powerpc/pmu/ebb/ebb.c b/tools/testing/selftests/powerpc/pmu/ebb/ebb.c
+index 9729d9f90218..e67452f1bcff 100644
+--- a/tools/testing/selftests/powerpc/pmu/ebb/ebb.c
++++ b/tools/testing/selftests/powerpc/pmu/ebb/ebb.c
+@@ -13,7 +13,6 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <sys/ioctl.h>
+-#include <linux/auxvec.h>
  
- 	return rc;
- }
--
--static char auxv[4096];
--
--void *get_auxv_entry(int type)
--{
--	ElfW(auxv_t) *p;
--	void *result;
--	ssize_t num;
--	int fd;
--
--	fd = open("/proc/self/auxv", O_RDONLY);
--	if (fd == -1) {
--		perror("open");
--		return NULL;
--	}
--
--	result = NULL;
--
--	num = read(fd, auxv, sizeof(auxv));
--	if (num < 0) {
--		perror("read");
--		goto out;
--	}
--
--	if (num > sizeof(auxv)) {
--		printf("Overflowed auxv buffer\n");
--		goto out;
--	}
--
--	p = (ElfW(auxv_t) *)auxv;
--
--	while (p->a_type != AT_NULL) {
--		if (p->a_type == type) {
--			result = (void *)p->a_un.a_val;
--			break;
--		}
--
--		p++;
--	}
--out:
--	close(fd);
--	return result;
--}
-diff --git a/tools/testing/selftests/powerpc/pmu/Makefile b/tools/testing/selftests/powerpc/pmu/Makefile
-index a9099d9f8f39..50326cbb372d 100644
---- a/tools/testing/selftests/powerpc/pmu/Makefile
-+++ b/tools/testing/selftests/powerpc/pmu/Makefile
-@@ -12,6 +12,8 @@ $(TEST_PROGS): $(EXTRA_SOURCES)
- count_instructions: loop.S count_instructions.c $(EXTRA_SOURCES)
- 	$(CC) $(CFLAGS) -m64 -o $@ $^
+ #include "trace.h"
+ #include "reg.h"
+@@ -324,7 +323,7 @@ bool ebb_is_supported(void)
+ {
+ #ifdef PPC_FEATURE2_EBB
+ 	/* EBB requires at least POWER8 */
+-	return ((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_EBB);
++	return have_hwcap2(PPC_FEATURE2_EBB);
+ #else
+ 	return false;
+ #endif
+diff --git a/tools/testing/selftests/powerpc/tm/tm-syscall.c b/tools/testing/selftests/powerpc/tm/tm-syscall.c
+index e835bf7ec7ae..d7256b79ec4c 100644
+--- a/tools/testing/selftests/powerpc/tm/tm-syscall.c
++++ b/tools/testing/selftests/powerpc/tm/tm-syscall.c
+@@ -14,7 +14,6 @@
+ #include <sys/syscall.h>
+ #include <asm/tm.h>
+ #include <asm/cputable.h>
+-#include <linux/auxvec.h>
+ #include <sys/time.h>
+ #include <stdlib.h>
  
-+per_event_excludes: ../utils.c
-+
- include ../../lib.mk
+@@ -80,7 +79,7 @@ pid_t getppid_tm(bool suspend)
+ static inline bool have_htm_nosc(void)
+ {
+ #ifdef PPC_FEATURE2_HTM_NOSC
+-	return ((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM_NOSC);
++	return have_hwcap2(PPC_FEATURE2_HTM_NOSC);
+ #else
+ 	printf("PPC_FEATURE2_HTM_NOSC not defined, can't check AT_HWCAP2\n");
+ 	return false;
+diff --git a/tools/testing/selftests/powerpc/utils.h b/tools/testing/selftests/powerpc/utils.h
+index b7d41086bb0a..fbf2bf530e50 100644
+--- a/tools/testing/selftests/powerpc/utils.h
++++ b/tools/testing/selftests/powerpc/utils.h
+@@ -8,6 +8,7 @@
  
- DEFAULT_RUN_TESTS := $(RUN_TESTS)
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/Makefile b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
-index 5cdc9dbf2b27..8d2279c4bb4b 100644
---- a/tools/testing/selftests/powerpc/pmu/ebb/Makefile
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
-@@ -18,7 +18,8 @@ TEST_PROGS := reg_access_test event_attributes_test cycles_test	\
+ #include <stdint.h>
+ #include <stdbool.h>
++#include <linux/auxvec.h>
  
- all: $(TEST_PROGS)
+ /* Avoid headaches with PRI?64 - just use %ll? always */
+ typedef unsigned long long u64;
+@@ -22,6 +23,11 @@ typedef uint8_t u8;
+ int test_harness(int (test_function)(void), char *name);
+ extern void *get_auxv_entry(int type);
  
--$(TEST_PROGS): ../../harness.c ../event.c ../lib.c ebb.c ebb_handler.S trace.c busy_loop.S
-+$(TEST_PROGS): ../../harness.c ../../utils.c ../event.c ../lib.c \
-+	       ebb.c ebb_handler.S trace.c busy_loop.S
- 
- instruction_count_test: ../loop.S
- 
-diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index 0e45c7e688b4..3e6e7aaa5312 100644
---- a/tools/testing/selftests/powerpc/tm/Makefile
-+++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -4,7 +4,7 @@ all: $(TEST_PROGS)
- 
- $(TEST_PROGS): ../harness.c
- 
--tm-syscall: tm-syscall-asm.S
-+tm-syscall: tm-syscall-asm.S ../utils.c
- tm-syscall: CFLAGS += -mhtm -I../../../../../usr/include
- 
- include ../../lib.mk
-diff --git a/tools/testing/selftests/powerpc/utils.c b/tools/testing/selftests/powerpc/utils.c
-new file mode 100644
-index 000000000000..536113add380
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/utils.c
-@@ -0,0 +1,58 @@
-+/*
-+ * Copyright 2013-2015, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#include <elf.h>
-+#include <errno.h>
-+#include <fcntl.h>
-+#include <link.h>
-+#include <stdio.h>
-+#include <sys/stat.h>
-+#include <sys/types.h>
-+#include <unistd.h>
-+
-+#include "utils.h"
-+
-+static char auxv[4096];
-+
-+void *get_auxv_entry(int type)
++static inline bool have_hwcap2(unsigned long ftr2)
 +{
-+	ElfW(auxv_t) *p;
-+	void *result;
-+	ssize_t num;
-+	int fd;
-+
-+	fd = open("/proc/self/auxv", O_RDONLY);
-+	if (fd == -1) {
-+		perror("open");
-+		return NULL;
-+	}
-+
-+	result = NULL;
-+
-+	num = read(fd, auxv, sizeof(auxv));
-+	if (num < 0) {
-+		perror("read");
-+		goto out;
-+	}
-+
-+	if (num > sizeof(auxv)) {
-+		printf("Overflowed auxv buffer\n");
-+		goto out;
-+	}
-+
-+	p = (ElfW(auxv_t) *)auxv;
-+
-+	while (p->a_type != AT_NULL) {
-+		if (p->a_type == type) {
-+			result = (void *)p->a_un.a_val;
-+			break;
-+		}
-+
-+		p++;
-+	}
-+out:
-+	close(fd);
-+	return result;
++	return ((unsigned long)get_auxv_entry(AT_HWCAP2) & ftr2) == ftr2;
 +}
++
+ /* Yes, this is evil */
+ #define FAIL_IF(x)						\
+ do {								\
 -- 
 2.5.0
