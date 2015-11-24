@@ -1,24 +1,33 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-x231.google.com (mail-yk0-x231.google.com
- [IPv6:2607:f8b0:4002:c07::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F41861A0193
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 21:16:12 +1100 (AEDT)
-Received: by ykfs79 with SMTP id s79so13128278ykf.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 02:16:10 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1448274160-28446-31-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1448274160-28446-31-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 24 Nov 2015 13:16:10 +0300
-Message-ID: <CAOJe8K1SWE-yHrgCb5PN48mb40C-RoyGGOrYiMJu5KFZ_W4hWw@mail.gmail.com>
-Subject: Re: [PATCH V5 30/31] powerpc/mm: Move THP headers around
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406821A004C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 21:57:48 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Tue, 24 Nov 2015 16:27:45 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 4A26F1258059
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 16:27:55 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAOAvO0E62914786
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 16:27:25 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAOAvNnP008646
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 16:27:23 +0530
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: imunsie@au1.ibm.com, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ Frank Haverkamp <HAVERKAM@de.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Subject: [PATCH] cxl: Fix DSI misses when the context owning task exits
+Date: Tue, 24 Nov 2015 16:26:18 +0530
+Message-Id: <1448362578-32456-1-git-send-email-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,813 +37,301 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/23/15, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> We support THP only with book3s_64 and 64K page size. Move
-> THP details to hash64-64k.h to clarify the same.
->
-> Acked-by: Scott Wood <scottwood@freescale.com>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/hash-64k.h | 126 +++++++++++++
->  arch/powerpc/include/asm/book3s/64/hash.h     | 223
-> +++++------------------
->  arch/powerpc/include/asm/nohash/64/pgtable.h  | 253
-> +-------------------------
->  arch/powerpc/mm/hash_native_64.c              |  10 +
->  arch/powerpc/mm/pgtable_64.c                  |   2 +-
->  arch/powerpc/platforms/pseries/lpar.c         |  10 +
->  6 files changed, 201 insertions(+), 423 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> index 20865ca7a179..34eab4542b85 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> @@ -170,6 +170,132 @@ static inline int hugepd_ok(hugepd_t hpd)
->
->  #endif /* CONFIG_HUGETLB_PAGE */
->
-> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-> +extern unsigned long pmd_hugepage_update(struct mm_struct *mm,
-> +					 unsigned long addr,
-> +					 pmd_t *pmdp,
-> +					 unsigned long clr,
-> +					 unsigned long set);
-> +static inline char *get_hpte_slot_array(pmd_t *pmdp)
-> +{
-> +	/*
-> +	 * The hpte hindex is stored in the pgtable whose address is in the
-> +	 * second half of the PMD
-> +	 *
-> +	 * Order this load with the test for pmd_trans_huge in the caller
-> +	 */
-> +	smp_rmb();
-> +	return *(char **)(pmdp + PTRS_PER_PMD);
-> +
-> +
-> +}
-> +/*
-> + * The linux hugepage PMD now include the pmd entries followed by the
-> address
-> + * to the stashed pgtable_t. The stashed pgtable_t contains the hpte bits.
-> + * [ 1 bit secondary | 3 bit hidx | 1 bit valid | 000]. We use one byte
-> per
-> + * each HPTE entry. With 16MB hugepage and 64K HPTE we need 256 entries
-> and
-> + * with 4K HPTE we need 4096 entries. Both will fit in a 4K pgtable_t.
-> + *
-> + * The last three bits are intentionally left to zero. This memory
-> location
-> + * are also used as normal page PTE pointers. So if we have any pointers
-> + * left around while we collapse a hugepage, we need to make sure
-> + * _PAGE_PRESENT bit of that is zero when we look at them
-> + */
-> +static inline unsigned int hpte_valid(unsigned char *hpte_slot_array, int
-> index)
-> +{
-> +	return (hpte_slot_array[index] >> 3) & 0x1;
-> +}
-> +
-> +static inline unsigned int hpte_hash_index(unsigned char *hpte_slot_array,
-> +					   int index)
-> +{
-> +	return hpte_slot_array[index] >> 4;
-> +}
-> +
-> +static inline void mark_hpte_slot_valid(unsigned char *hpte_slot_array,
-> +					unsigned int index, unsigned int hidx)
-> +{
-> +	hpte_slot_array[index] = hidx << 4 | 0x1 << 3;
-> +}
-> +
-> +/*
-> + *
-> + * For core kernel code by design pmd_trans_huge is never run on any
-> hugetlbfs
-> + * page. The hugetlbfs page table walking and mangling paths are totally
-> + * separated form the core VM paths and they're differentiated by
-> + *  VM_HUGETLB being set on vm_flags well before any pmd_trans_huge could
-> run.
-> + *
-> + * pmd_trans_huge() is defined as false at build time if
-> + * CONFIG_TRANSPARENT_HUGEPAGE=n to optimize away code blocks at build
-> + * time in such case.
-> + *
-> + * For ppc64 we need to differntiate from explicit hugepages from THP,
-> because
-> + * for THP we also track the subpage details at the pmd level. We don't do
-> + * that for explicit huge pages.
-> + *
-> + */
-> +static inline int pmd_trans_huge(pmd_t pmd)
-> +{
-> +	/*
-> +	 * leaf pte for huge page, bottom two bits != 00
-> +	 */
-> +	return (pmd_val(pmd) & 0x3) && (pmd_val(pmd) & _PAGE_THP_HUGE);
-> +}
-> +
-> +static inline int pmd_trans_splitting(pmd_t pmd)
-> +{
-> +	if (pmd_trans_huge(pmd))
-> +		return pmd_val(pmd) & _PAGE_SPLITTING;
-> +	return 0;
-> +}
-> +
-> +static inline int pmd_large(pmd_t pmd)
-> +{
-> +	/*
-> +	 * leaf pte for huge page, bottom two bits != 00
-> +	 */
-> +	return ((pmd_val(pmd) & 0x3) != 0x0);
-> +}
-> +
-> +static inline pmd_t pmd_mknotpresent(pmd_t pmd)
-> +{
-> +	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
-> +}
-> +
-> +static inline pmd_t pmd_mksplitting(pmd_t pmd)
-> +{
-> +	return __pmd(pmd_val(pmd) | _PAGE_SPLITTING);
-> +}
-> +
-> +#define __HAVE_ARCH_PMD_SAME
-> +static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)
-> +{
-> +	return (((pmd_val(pmd_a) ^ pmd_val(pmd_b)) & ~_PAGE_HPTEFLAGS) == 0);
-> +}
-> +
-> +static inline int __pmdp_test_and_clear_young(struct mm_struct *mm,
-> +					      unsigned long addr, pmd_t *pmdp)
-> +{
-> +	unsigned long old;
-> +
-> +	if ((pmd_val(*pmdp) & (_PAGE_ACCESSED | _PAGE_HASHPTE)) == 0)
-> +		return 0;
-> +	old = pmd_hugepage_update(mm, addr, pmdp, _PAGE_ACCESSED, 0);
-> +	return ((old & _PAGE_ACCESSED) != 0);
-> +}
-> +
-> +#define __HAVE_ARCH_PMDP_SET_WRPROTECT
-> +static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long
-> addr,
-> +				      pmd_t *pmdp)
-> +{
-> +
-> +	if ((pmd_val(*pmdp) & _PAGE_RW) == 0)
-> +		return;
-> +
-> +	pmd_hugepage_update(mm, addr, pmdp, _PAGE_RW, 0);
-> +}
-> +
-> +#endif /*  CONFIG_TRANSPARENT_HUGEPAGE */
->  #endif	/* __ASSEMBLY__ */
->
->  #endif /* _ASM_POWERPC_BOOK3S_64_HASH_64K_H */
-> diff --git a/arch/powerpc/include/asm/book3s/64/hash.h
-> b/arch/powerpc/include/asm/book3s/64/hash.h
-> index 0cde0004ef49..6646fd87c64f 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hash.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hash.h
-> @@ -2,6 +2,55 @@
->  #define _ASM_POWERPC_BOOK3S_64_HASH_H
->  #ifdef __KERNEL__
->
-> +/*
-> + * Common bits between 4K and 64K pages in a linux-style PTE.
-> + * These match the bits in the (hardware-defined) PowerPC PTE as closely
-> + * as possible. Additional bits may be defined in pgtable-hash64-*.h
-> + *
-> + * Note: We only support user read/write permissions. Supervisor always
-> + * have full read/write to pages above PAGE_OFFSET (pages below that
-> + * always use the user access permissions).
-> + *
-> + * We could create separate kernel read-only if we used the 3 PP bits
-> + * combinations that newer processors provide but we currently don't.
-> + */
-> +#define _PAGE_PRESENT		0x00001 /* software: pte contains a translation */
-> +#define _PAGE_USER		0x00002 /* matches one of the PP bits */
-> +#define _PAGE_BIT_SWAP_TYPE	2
-> +#define _PAGE_EXEC		0x00004 /* No execute on POWER4 and newer (we invert)
-> */
-> +#define _PAGE_GUARDED		0x00008
-> +/* We can derive Memory coherence from _PAGE_NO_CACHE */
-> +#define _PAGE_COHERENT		0x0
-> +#define _PAGE_NO_CACHE		0x00020 /* I: cache inhibit */
-> +#define _PAGE_WRITETHRU		0x00040 /* W: cache write-through */
-> +#define _PAGE_DIRTY		0x00080 /* C: page changed */
-> +#define _PAGE_ACCESSED		0x00100 /* R: page referenced */
-> +#define _PAGE_RW		0x00200 /* software: user write access allowed */
-> +#define _PAGE_HASHPTE		0x00400 /* software: pte has an associated HPTE */
-> +#define _PAGE_BUSY		0x00800 /* software: PTE & hash are busy */
-> +#define _PAGE_F_GIX		0x07000 /* full page: hidx bits */
-> +#define _PAGE_F_GIX_SHIFT	12
-> +#define _PAGE_F_SECOND		0x08000 /* Whether to use secondary hash or not */
-> +#define _PAGE_SPECIAL		0x10000 /* software: special page */
-> +
-> +/*
-> + * THP pages can't be special. So use the _PAGE_SPECIAL
-> + */
-> +#define _PAGE_SPLITTING _PAGE_SPECIAL
-> +
-> +/*
-> + * We need to differentiate between explicit huge page and THP huge
-> + * page, since THP huge page also need to track real subpage details
-> + */
-> +#define _PAGE_THP_HUGE  _PAGE_4K_PFN
-> +
-> +/*
-> + * set of bits not changed in pmd_modify.
-> + */
-> +#define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS |		\
-> +			 _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPLITTING | \
-> +			 _PAGE_THP_HUGE)
-> +
->  #ifdef CONFIG_PPC_64K_PAGES
->  #include <asm/book3s/64/hash-64k.h>
->  #else
-> @@ -57,36 +106,6 @@
->  #define HAVE_ARCH_UNMAPPED_AREA
->  #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
->  #endif /* CONFIG_PPC_MM_SLICES */
-> -/*
-> - * Common bits between 4K and 64K pages in a linux-style PTE.
-> - * These match the bits in the (hardware-defined) PowerPC PTE as closely
-> - * as possible. Additional bits may be defined in pgtable-hash64-*.h
-> - *
-> - * Note: We only support user read/write permissions. Supervisor always
-> - * have full read/write to pages above PAGE_OFFSET (pages below that
-> - * always use the user access permissions).
-> - *
-> - * We could create separate kernel read-only if we used the 3 PP bits
-> - * combinations that newer processors provide but we currently don't.
-> - */
-> -#define _PAGE_PRESENT		0x00001 /* software: pte contains a translation */
-> -#define _PAGE_USER		0x00002 /* matches one of the PP bits */
-> -#define _PAGE_BIT_SWAP_TYPE	2
-> -#define _PAGE_EXEC		0x00004 /* No execute on POWER4 and newer (we invert)
-> */
-> -#define _PAGE_GUARDED		0x00008
-> -/* We can derive Memory coherence from _PAGE_NO_CACHE */
-> -#define _PAGE_COHERENT		0x0
-> -#define _PAGE_NO_CACHE		0x00020 /* I: cache inhibit */
-> -#define _PAGE_WRITETHRU		0x00040 /* W: cache write-through */
-> -#define _PAGE_DIRTY		0x00080 /* C: page changed */
-> -#define _PAGE_ACCESSED		0x00100 /* R: page referenced */
-> -#define _PAGE_RW		0x00200 /* software: user write access allowed */
-> -#define _PAGE_HASHPTE		0x00400 /* software: pte has an associated HPTE */
-> -#define _PAGE_BUSY		0x00800 /* software: PTE & hash are busy */
-> -#define _PAGE_F_GIX		0x07000 /* full page: hidx bits */
-> -#define _PAGE_F_GIX_SHIFT	12
-> -#define _PAGE_F_SECOND		0x08000 /* Whether to use secondary hash or not */
-> -#define _PAGE_SPECIAL		0x10000 /* software: special page */
->
->  /* No separate kernel read-only */
->  #define _PAGE_KERNEL_RW		(_PAGE_RW | _PAGE_DIRTY) /* user access blocked by
-> key */
-> @@ -105,24 +124,6 @@
->
->  /* Hash table based platforms need atomic updates of the linux PTE */
->  #define PTE_ATOMIC_UPDATES	1
-> -
-> -/*
-> - * THP pages can't be special. So use the _PAGE_SPECIAL
-> - */
-> -#define _PAGE_SPLITTING _PAGE_SPECIAL
-> -
-> -/*
-> - * We need to differentiate between explicit huge page and THP huge
-> - * page, since THP huge page also need to track real subpage details
-> - */
-> -#define _PAGE_THP_HUGE  _PAGE_4K_PFN
-> -
-> -/*
-> - * set of bits not changed in pmd_modify.
-> - */
-> -#define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS |		\
-> -			 _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPLITTING | \
-> -			 _PAGE_THP_HUGE)
->  #define _PTE_NONE_MASK	_PAGE_HPTEFLAGS
->  /*
->   * The mask convered by the RPN must be a ULL on 32-bit platforms with
-> @@ -233,11 +234,6 @@
->
->  extern void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
->  			    pte_t *ptep, unsigned long pte, int huge);
-> -extern unsigned long pmd_hugepage_update(struct mm_struct *mm,
-> -					 unsigned long addr,
-> -					 pmd_t *pmdp,
-> -					 unsigned long clr,
-> -					 unsigned long set);
->  extern unsigned long htab_convert_pte_flags(unsigned long pteflags);
->  /* Atomic PTE updates */
->  static inline unsigned long pte_update(struct mm_struct *mm,
-> @@ -363,127 +359,6 @@ static inline void __ptep_set_access_flags(pte_t
-> *ptep, pte_t entry)
->  #define __HAVE_ARCH_PTE_SAME
->  #define pte_same(A,B)	(((pte_val(A) ^ pte_val(B)) & ~_PAGE_HPTEFLAGS) ==
-> 0)
->
-> -static inline char *get_hpte_slot_array(pmd_t *pmdp)
-> -{
-> -	/*
-> -	 * The hpte hindex is stored in the pgtable whose address is in the
-> -	 * second half of the PMD
-> -	 *
-> -	 * Order this load with the test for pmd_trans_huge in the caller
-> -	 */
-> -	smp_rmb();
-> -	return *(char **)(pmdp + PTRS_PER_PMD);
-> -
-> -
-> -}
-> -/*
-> - * The linux hugepage PMD now include the pmd entries followed by the
-> address
-> - * to the stashed pgtable_t. The stashed pgtable_t contains the hpte bits.
-> - * [ 1 bit secondary | 3 bit hidx | 1 bit valid | 000]. We use one byte
-> per
-> - * each HPTE entry. With 16MB hugepage and 64K HPTE we need 256 entries
-> and
-> - * with 4K HPTE we need 4096 entries. Both will fit in a 4K pgtable_t.
-> - *
-> - * The last three bits are intentionally left to zero. This memory
-> location
-> - * are also used as normal page PTE pointers. So if we have any pointers
-> - * left around while we collapse a hugepage, we need to make sure
-> - * _PAGE_PRESENT bit of that is zero when we look at them
-> - */
-> -static inline unsigned int hpte_valid(unsigned char *hpte_slot_array, int
-> index)
-> -{
-> -	return (hpte_slot_array[index] >> 3) & 0x1;
-> -}
-> -
-> -static inline unsigned int hpte_hash_index(unsigned char *hpte_slot_array,
-> -					   int index)
-> -{
-> -	return hpte_slot_array[index] >> 4;
-> -}
-> -
-> -static inline void mark_hpte_slot_valid(unsigned char *hpte_slot_array,
-> -					unsigned int index, unsigned int hidx)
-> -{
-> -	hpte_slot_array[index] = hidx << 4 | 0x1 << 3;
-> -}
-> -
-> -#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-> -/*
-> - *
-> - * For core kernel code by design pmd_trans_huge is never run on any
-> hugetlbfs
-> - * page. The hugetlbfs page table walking and mangling paths are totally
-> - * separated form the core VM paths and they're differentiated by
-> - *  VM_HUGETLB being set on vm_flags well before any pmd_trans_huge could
-> run.
-> - *
-> - * pmd_trans_huge() is defined as false at build time if
-> - * CONFIG_TRANSPARENT_HUGEPAGE=n to optimize away code blocks at build
-> - * time in such case.
-> - *
-> - * For ppc64 we need to differntiate from explicit hugepages from THP,
-> because
-> - * for THP we also track the subpage details at the pmd level. We don't do
-> - * that for explicit huge pages.
-> - *
-> - */
-> -static inline int pmd_trans_huge(pmd_t pmd)
-> -{
-> -	/*
-> -	 * leaf pte for huge page, bottom two bits != 00
-> -	 */
-> -	return (pmd_val(pmd) & 0x3) && (pmd_val(pmd) & _PAGE_THP_HUGE);
-> -}
-> -
-> -static inline int pmd_trans_splitting(pmd_t pmd)
-> -{
-> -	if (pmd_trans_huge(pmd))
-> -		return pmd_val(pmd) & _PAGE_SPLITTING;
-> -	return 0;
-> -}
-> -
-> -#endif
-> -static inline int pmd_large(pmd_t pmd)
-> -{
-> -	/*
-> -	 * leaf pte for huge page, bottom two bits != 00
-> -	 */
-> -	return ((pmd_val(pmd) & 0x3) != 0x0);
-> -}
-> -
-> -static inline pmd_t pmd_mknotpresent(pmd_t pmd)
-> -{
-> -	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
-> -}
-> -
-> -static inline pmd_t pmd_mksplitting(pmd_t pmd)
-> -{
-> -	return __pmd(pmd_val(pmd) | _PAGE_SPLITTING);
-> -}
-> -
-> -#define __HAVE_ARCH_PMD_SAME
-> -static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)
-> -{
-> -	return (((pmd_val(pmd_a) ^ pmd_val(pmd_b)) & ~_PAGE_HPTEFLAGS) == 0);
-> -}
-> -
-> -static inline int __pmdp_test_and_clear_young(struct mm_struct *mm,
-> -					      unsigned long addr, pmd_t *pmdp)
-> -{
-> -	unsigned long old;
-> -
-> -	if ((pmd_val(*pmdp) & (_PAGE_ACCESSED | _PAGE_HASHPTE)) == 0)
-> -		return 0;
-> -	old = pmd_hugepage_update(mm, addr, pmdp, _PAGE_ACCESSED, 0);
-> -	return ((old & _PAGE_ACCESSED) != 0);
-> -}
-> -
-> -#define __HAVE_ARCH_PMDP_SET_WRPROTECT
-> -static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long
-> addr,
-> -				      pmd_t *pmdp)
-> -{
-> -
-> -	if ((pmd_val(*pmdp) & _PAGE_RW) == 0)
-> -		return;
-> -
-> -	pmd_hugepage_update(mm, addr, pmdp, _PAGE_RW, 0);
-> -}
-> -
->  /* Generic accessors to PTE bits */
->  static inline int pte_write(pte_t pte)		{ return !!(pte_val(pte) &
-> _PAGE_RW);}
->  static inline int pte_dirty(pte_t pte)		{ return !!(pte_val(pte) &
-> _PAGE_DIRTY); }
-> diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h
-> b/arch/powerpc/include/asm/nohash/64/pgtable.h
-> index f389f2d6789e..c4dff4d41c26 100644
-> --- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-> +++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-> @@ -154,6 +154,11 @@ static inline void pmd_clear(pmd_t *pmdp)
->  	*pmdp = __pmd(0);
->  }
->
-> +static inline pte_t pmd_pte(pmd_t pmd)
-> +{
-> +	return __pte(pmd_val(pmd));
-> +}
-> +
->  #define pmd_none(pmd)		(!pmd_val(pmd))
->  #define	pmd_bad(pmd)		(!is_kernel_addr(pmd_val(pmd)) \
->  				 || (pmd_val(pmd) & PMD_BAD_BITS))
-> @@ -389,252 +394,4 @@ void pgtable_cache_add(unsigned shift, void
-> (*ctor)(void *));
->  void pgtable_cache_init(void);
->  #endif /* __ASSEMBLY__ */
->
-> -/*
-> - * THP pages can't be special. So use the _PAGE_SPECIAL
-> - */
-> -#define _PAGE_SPLITTING _PAGE_SPECIAL
-> -
-> -/*
-> - * We need to differentiate between explicit huge page and THP huge
-> - * page, since THP huge page also need to track real subpage details
-> - */
-> -#define _PAGE_THP_HUGE  _PAGE_4K_PFN
-> -
-> -/*
-> - * set of bits not changed in pmd_modify.
-> - */
-> -#define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS |		\
-> -			 _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPLITTING | \
-> -			 _PAGE_THP_HUGE)
-> -
-> -#ifndef __ASSEMBLY__
-> -/*
-> - * The linux hugepage PMD now include the pmd entries followed by the
-> address
-> - * to the stashed pgtable_t. The stashed pgtable_t contains the hpte bits.
-> - * [ 1 bit secondary | 3 bit hidx | 1 bit valid | 000]. We use one byte
-> per
-> - * each HPTE entry. With 16MB hugepage and 64K HPTE we need 256 entries
-> and
-> - * with 4K HPTE we need 4096 entries. Both will fit in a 4K pgtable_t.
-> - *
-> - * The last three bits are intentionally left to zero. This memory
-> location
-> - * are also used as normal page PTE pointers. So if we have any pointers
-> - * left around while we collapse a hugepage, we need to make sure
-> - * _PAGE_PRESENT bit of that is zero when we look at them
-> - */
-> -static inline unsigned int hpte_valid(unsigned char *hpte_slot_array, int
-> index)
-> -{
-> -	return (hpte_slot_array[index] >> 3) & 0x1;
-> -}
-> -
-> -static inline unsigned int hpte_hash_index(unsigned char *hpte_slot_array,
-> -					   int index)
-> -{
-> -	return hpte_slot_array[index] >> 4;
-> -}
-> -
-> -static inline void mark_hpte_slot_valid(unsigned char *hpte_slot_array,
-> -					unsigned int index, unsigned int hidx)
-> -{
-> -	hpte_slot_array[index] = hidx << 4 | 0x1 << 3;
-> -}
-> -
-> -struct page *realmode_pfn_to_page(unsigned long pfn);
-> -
-> -static inline char *get_hpte_slot_array(pmd_t *pmdp)
-> -{
-> -	/*
-> -	 * The hpte hindex is stored in the pgtable whose address is in the
-> -	 * second half of the PMD
-> -	 *
-> -	 * Order this load with the test for pmd_trans_huge in the caller
-> -	 */
-> -	smp_rmb();
-> -	return *(char **)(pmdp + PTRS_PER_PMD);
-> -
-> -
-> -}
-> -
-> -#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-> -extern void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long
-> addr,
-> -				   pmd_t *pmdp, unsigned long old_pmd);
-> -extern pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot);
-> -extern pmd_t mk_pmd(struct page *page, pgprot_t pgprot);
-> -extern pmd_t pmd_modify(pmd_t pmd, pgprot_t newprot);
-> -extern void set_pmd_at(struct mm_struct *mm, unsigned long addr,
-> -		       pmd_t *pmdp, pmd_t pmd);
-> -extern void update_mmu_cache_pmd(struct vm_area_struct *vma, unsigned long
-> addr,
-> -				 pmd_t *pmd);
-> -/*
-> - *
-> - * For core kernel code by design pmd_trans_huge is never run on any
-> hugetlbfs
-> - * page. The hugetlbfs page table walking and mangling paths are totally
-> - * separated form the core VM paths and they're differentiated by
-> - *  VM_HUGETLB being set on vm_flags well before any pmd_trans_huge could
-> run.
-> - *
-> - * pmd_trans_huge() is defined as false at build time if
-> - * CONFIG_TRANSPARENT_HUGEPAGE=n to optimize away code blocks at build
-> - * time in such case.
-> - *
-> - * For ppc64 we need to differntiate from explicit hugepages from THP,
-> because
-> - * for THP we also track the subpage details at the pmd level. We don't do
-> - * that for explicit huge pages.
-> - *
-> - */
-> -static inline int pmd_trans_huge(pmd_t pmd)
-> -{
-> -	/*
-> -	 * leaf pte for huge page, bottom two bits != 00
-> -	 */
-> -	return (pmd_val(pmd) & 0x3) && (pmd_val(pmd) & _PAGE_THP_HUGE);
-> -}
-> -
-> -static inline int pmd_trans_splitting(pmd_t pmd)
-> -{
-> -	if (pmd_trans_huge(pmd))
-> -		return pmd_val(pmd) & _PAGE_SPLITTING;
-> -	return 0;
-> -}
-> -
-> -extern int has_transparent_hugepage(void);
-> -#else
-> -static inline void hpte_do_hugepage_flush(struct mm_struct *mm,
-> -					  unsigned long addr, pmd_t *pmdp,
-> -					  unsigned long old_pmd)
-> -{
-> -
-> -	WARN(1, "%s called with THP disabled\n", __func__);
-We can't reach this function with huge pages disabled, right?
-Would it be better to use WARN_ON_ONCE?
-> -}
-> -#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
-> -
-> -static inline int pmd_large(pmd_t pmd)
-> -{
-> -	/*
-> -	 * leaf pte for huge page, bottom two bits != 00
-> -	 */
-> -	return ((pmd_val(pmd) & 0x3) != 0x0);
-> -}
-> -
-> -static inline pte_t pmd_pte(pmd_t pmd)
-> -{
-> -	return __pte(pmd_val(pmd));
-> -}
-> -
-> -static inline pmd_t pte_pmd(pte_t pte)
-> -{
-> -	return __pmd(pte_val(pte));
-> -}
-> -
-> -static inline pte_t *pmdp_ptep(pmd_t *pmd)
-> -{
-> -	return (pte_t *)pmd;
-> -}
-> -
-> -#define pmd_pfn(pmd)		pte_pfn(pmd_pte(pmd))
-> -#define pmd_dirty(pmd)		pte_dirty(pmd_pte(pmd))
-> -#define pmd_young(pmd)		pte_young(pmd_pte(pmd))
-> -#define pmd_mkold(pmd)		pte_pmd(pte_mkold(pmd_pte(pmd)))
-> -#define pmd_wrprotect(pmd)	pte_pmd(pte_wrprotect(pmd_pte(pmd)))
-> -#define pmd_mkdirty(pmd)	pte_pmd(pte_mkdirty(pmd_pte(pmd)))
-> -#define pmd_mkyoung(pmd)	pte_pmd(pte_mkyoung(pmd_pte(pmd)))
-> -#define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
-> -
-> -#define __HAVE_ARCH_PMD_WRITE
-> -#define pmd_write(pmd)		pte_write(pmd_pte(pmd))
-> -
-> -static inline pmd_t pmd_mkhuge(pmd_t pmd)
-> -{
-> -	/* Do nothing, mk_pmd() does this part.  */
-> -	return pmd;
-> -}
-> -
-> -static inline pmd_t pmd_mknotpresent(pmd_t pmd)
-> -{
-> -	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
-> -}
-> -
-> -static inline pmd_t pmd_mksplitting(pmd_t pmd)
-> -{
-> -	return __pmd(pmd_val(pmd) | _PAGE_SPLITTING);
-> -}
-> -
-> -#define __HAVE_ARCH_PMD_SAME
-> -static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)
-> -{
-> -	return (((pmd_val(pmd_a) ^ pmd_val(pmd_b)) & ~_PAGE_HPTEFLAGS) == 0);
-> -}
-> -
-> -#define __HAVE_ARCH_PMDP_SET_ACCESS_FLAGS
-> -extern int pmdp_set_access_flags(struct vm_area_struct *vma,
-> -				 unsigned long address, pmd_t *pmdp,
-> -				 pmd_t entry, int dirty);
-> -
-> -extern unsigned long pmd_hugepage_update(struct mm_struct *mm,
-> -					 unsigned long addr,
-> -					 pmd_t *pmdp,
-> -					 unsigned long clr,
-> -					 unsigned long set);
-> -
-> -static inline int __pmdp_test_and_clear_young(struct mm_struct *mm,
-> -					      unsigned long addr, pmd_t *pmdp)
-> -{
-> -	unsigned long old;
-> -
-> -	if ((pmd_val(*pmdp) & (_PAGE_ACCESSED | _PAGE_HASHPTE)) == 0)
-> -		return 0;
-> -	old = pmd_hugepage_update(mm, addr, pmdp, _PAGE_ACCESSED, 0);
-> -	return ((old & _PAGE_ACCESSED) != 0);
-> -}
-> -
-> -#define __HAVE_ARCH_PMDP_TEST_AND_CLEAR_YOUNG
-> -extern int pmdp_test_and_clear_young(struct vm_area_struct *vma,
-> -				     unsigned long address, pmd_t *pmdp);
-> -#define __HAVE_ARCH_PMDP_CLEAR_YOUNG_FLUSH
-> -extern int pmdp_clear_flush_young(struct vm_area_struct *vma,
-> -				  unsigned long address, pmd_t *pmdp);
-> -
-> -#define __HAVE_ARCH_PMDP_HUGE_GET_AND_CLEAR
-> -extern pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
-> -				     unsigned long addr, pmd_t *pmdp);
-> -
-> -#define __HAVE_ARCH_PMDP_SET_WRPROTECT
-> -static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long
-> addr,
-> -				      pmd_t *pmdp)
-> -{
-> -
-> -	if ((pmd_val(*pmdp) & _PAGE_RW) == 0)
-> -		return;
-> -
-> -	pmd_hugepage_update(mm, addr, pmdp, _PAGE_RW, 0);
-> -}
-> -
-> -#define __HAVE_ARCH_PMDP_SPLITTING_FLUSH
-> -extern void pmdp_splitting_flush(struct vm_area_struct *vma,
-> -				 unsigned long address, pmd_t *pmdp);
-> -
-> -extern pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
-> -				 unsigned long address, pmd_t *pmdp);
-> -#define pmdp_collapse_flush pmdp_collapse_flush
-> -
-> -#define __HAVE_ARCH_PGTABLE_DEPOSIT
-> -extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-> -				       pgtable_t pgtable);
-> -#define __HAVE_ARCH_PGTABLE_WITHDRAW
-> -extern pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t
-> *pmdp);
-> -
-> -#define __HAVE_ARCH_PMDP_INVALIDATE
-> -extern void pmdp_invalidate(struct vm_area_struct *vma, unsigned long
-> address,
-> -			    pmd_t *pmdp);
-> -
-> -#define pmd_move_must_withdraw pmd_move_must_withdraw
-> -struct spinlock;
-> -static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
-> -					 struct spinlock *old_pmd_ptl)
-> -{
-> -	/*
-> -	 * Archs like ppc64 use pgtable to store per pmd
-> -	 * specific information. So when we switch the pmd,
-> -	 * we should also withdraw and deposit the pgtable
-> -	 */
-> -	return true;
-> -}
-> -#endif /* __ASSEMBLY__ */
->  #endif /* _ASM_POWERPC_NOHASH_64_PGTABLE_H */
-> diff --git a/arch/powerpc/mm/hash_native_64.c
-> b/arch/powerpc/mm/hash_native_64.c
-> index c8822af10a58..8eaac81347fd 100644
-> --- a/arch/powerpc/mm/hash_native_64.c
-> +++ b/arch/powerpc/mm/hash_native_64.c
-> @@ -429,6 +429,7 @@ static void native_hpte_invalidate(unsigned long slot,
-> unsigned long vpn,
->  	local_irq_restore(flags);
->  }
->
-> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
->  static void native_hugepage_invalidate(unsigned long vsid,
->  				       unsigned long addr,
->  				       unsigned char *hpte_slot_array,
-> @@ -482,6 +483,15 @@ static void native_hugepage_invalidate(unsigned long
-> vsid,
->  	}
->  	local_irq_restore(flags);
->  }
-> +#else
-> +static void native_hugepage_invalidate(unsigned long vsid,
-> +				       unsigned long addr,
-> +				       unsigned char *hpte_slot_array,
-> +				       int psize, int ssize, int local)
-> +{
-> +	WARN(1, "%s called without THP support\n", __func__);
-ditto
-> +}
-> +#endif
->
->  static inline int __hpte_actual_psize(unsigned int lp, int psize)
->  {
-> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-> index 3967e3cce03e..d42dd289abfe 100644
-> --- a/arch/powerpc/mm/pgtable_64.c
-> +++ b/arch/powerpc/mm/pgtable_64.c
-> @@ -359,7 +359,7 @@ struct page *pud_page(pud_t pud)
->  struct page *pmd_page(pmd_t pmd)
->  {
->  	if (pmd_trans_huge(pmd) || pmd_huge(pmd))
-> -		return pfn_to_page(pmd_pfn(pmd));
-> +		return pte_page(pmd_pte(pmd));
->  	return virt_to_page(pmd_page_vaddr(pmd));
->  }
->
-> diff --git a/arch/powerpc/platforms/pseries/lpar.c
-> b/arch/powerpc/platforms/pseries/lpar.c
-> index b7a67e3d2201..6d46547871aa 100644
-> --- a/arch/powerpc/platforms/pseries/lpar.c
-> +++ b/arch/powerpc/platforms/pseries/lpar.c
-> @@ -396,6 +396,7 @@ static void pSeries_lpar_hpte_invalidate(unsigned long
-> slot, unsigned long vpn,
->  	BUG_ON(lpar_rc != H_SUCCESS);
->  }
->
-> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
->  /*
->   * Limit iterations holding pSeries_lpar_tlbie_lock to 3. We also need
->   * to make sure that we avoid bouncing the hypervisor tlbie lock.
-> @@ -494,6 +495,15 @@ static void pSeries_lpar_hugepage_invalidate(unsigned
-> long vsid,
->  		__pSeries_lpar_hugepage_invalidate(slot_array, vpn_array,
->  						   index, psize, ssize);
->  }
-> +#else
-> +static void pSeries_lpar_hugepage_invalidate(unsigned long vsid,
-> +					     unsigned long addr,
-> +					     unsigned char *hpte_slot_array,
-> +					     int psize, int ssize, int local)
-> +{
-> +	WARN(1, "%s called without THP support\n", __func__);
-ditto
-> +}
-> +#endif
->
->  static void pSeries_lpar_hpte_removebolted(unsigned long ea,
->  					   int psize, int ssize)
-> --
-> 2.5.0
->
->
+Presently when a user-space process issues CXL_IOCTL_START_WORK ioctl we
+store the pid of the current task_struct and use it to get pointer to
+the mm_struct of the process, while processing page or segment faults
+from the capi card. However this causes issues when the thread that had
+originally issued the start-work ioctl exits in which case the stored
+pid is no more valid and the cxl driver is unable to handle faults as
+the mm_struct corresponding to process is no more accessible.
+
+This patch fixes this issue by using the mm_struct of the next alive
+task in the thread group. This is done by iterating over all the tasks
+in the thread group starting from thread group leader and calling
+get_task_mm on each one of them. When a valid mm_struct is obtained the
+pid of the associated task is stored in the context replacing the
+exiting one for handling future faults.
+
+The patch introduces a new function named get_mem_context that checks if
+the current task pointed to by ctx->pid is dead? If yes it performs the
+steps described above. Also a new variable cxl_context.glpid is
+introduced which stores the pid of the thread group leader associated
+with the context owning task.
+
+Reported-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+Reported-by: Frank Haverkamp <HAVERKAM@de.ibm.com>
+Suggested-by: Ian Munsie <imunsie@au1.ibm.com>
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+---
+ drivers/misc/cxl/api.c     |   2 +-
+ drivers/misc/cxl/context.c |   6 ++-
+ drivers/misc/cxl/cxl.h     |   3 ++
+ drivers/misc/cxl/fault.c   | 129 +++++++++++++++++++++++++++++++++------------
+ drivers/misc/cxl/file.c    |   6 ++-
+ 5 files changed, 109 insertions(+), 37 deletions(-)
+
+diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+index 103baf0..befac57 100644
+--- a/drivers/misc/cxl/api.c
++++ b/drivers/misc/cxl/api.c
+@@ -176,7 +176,7 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
+ 
+ 	if (task) {
+ 		ctx->pid = get_task_pid(task, PIDTYPE_PID);
+-		get_pid(ctx->pid);
++		ctx->glpid = get_task_pid(task->group_leader, PIDTYPE_PID);
+ 		kernel = false;
+ 	}
+ 
+diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+index 2faa127..7b37ad9 100644
+--- a/drivers/misc/cxl/context.c
++++ b/drivers/misc/cxl/context.c
+@@ -42,7 +42,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master,
+ 	spin_lock_init(&ctx->sste_lock);
+ 	ctx->afu = afu;
+ 	ctx->master = master;
+-	ctx->pid = NULL; /* Set in start work ioctl */
++	ctx->pid = ctx->glpid = NULL; /* Set in start work ioctl */
+ 	mutex_init(&ctx->mapping_lock);
+ 	ctx->mapping = mapping;
+ 
+@@ -211,7 +211,11 @@ int __detach_context(struct cxl_context *ctx)
+ 	WARN_ON(cxl_detach_process(ctx) &&
+ 		cxl_adapter_link_ok(ctx->afu->adapter));
+ 	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
++
++	/* release the reference to the group leader and mm handling pid */
+ 	put_pid(ctx->pid);
++	put_pid(ctx->glpid);
++
+ 	cxl_ctx_put();
+ 	return 0;
+ }
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 0cfb9c1..a312cd4 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -433,6 +433,9 @@ struct cxl_context {
+ 	unsigned int sst_size, sst_lru;
+ 
+ 	wait_queue_head_t wq;
++	/* pid of the group leader associated with the pid */
++	struct pid *glpid;
++	/* use mm context associated with this pid for ds faults */
+ 	struct pid *pid;
+ 	spinlock_t lock; /* Protects pending_irq_mask, pending_fault and fault_addr */
+ 	/* Only used in PR mode */
+diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+index 25a5418..81c3f75 100644
+--- a/drivers/misc/cxl/fault.c
++++ b/drivers/misc/cxl/fault.c
+@@ -166,13 +166,92 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
+ 	cxl_ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
+ }
+ 
++/*
++ * Returns the mm_struct corresponding to the context ctx via ctx->pid
++ * In case the task has exited we use the task group leader accessible
++ * via ctx->glpid to find the next task in the thread group that has a
++ * valid  mm_struct associated with it. If a task with valid mm_struct
++ * is found the ctx->pid is updated to use the task struct for subsequent
++ * translations. In case no valid mm_struct is found in the task group to
++ * service the fault a NULL is returned.
++ */
++static struct mm_struct *get_mem_context(struct cxl_context *ctx)
++{
++	struct task_struct *task = NULL;
++	struct mm_struct *mm = NULL;
++	struct pid *old_pid = ctx->pid;
++
++	if (old_pid == NULL) {
++		pr_warn("%s: Invalid context for pe=%d\n",
++			 __func__, ctx->pe);
++		return NULL;
++	}
++
++	task = get_pid_task(old_pid, PIDTYPE_PID);
++
++	/*
++	 * pid_alive may look racy but this saves us from costly
++	 * get_task_mm when the task is a zombie. In worst case
++	 * we may think a task is alive, which is about to die
++	 * but get_task_mm will return NULL.
++	 */
++	if (task != NULL && pid_alive(task))
++		mm = get_task_mm(task);
++
++	/* release the task struct that was taken earlier */
++	if (task)
++		put_task_struct(task);
++	else
++		pr_devel("%s: Context owning pid=%i for pe=%i dead\n",
++			__func__, pid_nr(old_pid), ctx->pe);
++
++	/*
++	 * If we couldn't find the mm context then use the group
++	 * leader to iterate over the task group and find a task
++	 * that gives us mm_struct.
++	 */
++	if (unlikely(mm == NULL && ctx->glpid != NULL)) {
++
++		rcu_read_lock();
++		task = pid_task(ctx->glpid, PIDTYPE_PID);
++		if (task)
++			do {
++				mm = get_task_mm(task);
++				if (mm) {
++					ctx->pid = get_task_pid(task,
++								PIDTYPE_PID);
++					break;
++				}
++				task = next_thread(task);
++			} while (task && !thread_group_leader(task));
++		rcu_read_unlock();
++
++		/* check if we switched pid */
++		if (ctx->pid != old_pid) {
++			if (mm)
++				pr_devel("%s:pe=%i switch pid %i->%i\n",
++					 __func__, ctx->pe, pid_nr(old_pid),
++					 pid_nr(ctx->pid));
++			else
++				pr_devel("%s:Cannot find mm for pid=%i\n",
++					 __func__, pid_nr(old_pid));
++
++			/* drop the reference to older pid */
++			put_pid(old_pid);
++		}
++	}
++
++	return mm;
++}
++
++
++
+ void cxl_handle_fault(struct work_struct *fault_work)
+ {
+ 	struct cxl_context *ctx =
+ 		container_of(fault_work, struct cxl_context, fault_work);
+ 	u64 dsisr = ctx->dsisr;
+ 	u64 dar = ctx->dar;
+-	struct task_struct *task = NULL;
+ 	struct mm_struct *mm = NULL;
+ 
+ 	if (cxl_p2n_read(ctx->afu, CXL_PSL_DSISR_An) != dsisr ||
+@@ -195,17 +274,17 @@ void cxl_handle_fault(struct work_struct *fault_work)
+ 		"DSISR: %#llx DAR: %#llx\n", ctx->pe, dsisr, dar);
+ 
+ 	if (!ctx->kernel) {
+-		if (!(task = get_pid_task(ctx->pid, PIDTYPE_PID))) {
+-			pr_devel("cxl_handle_fault unable to get task %i\n",
+-				 pid_nr(ctx->pid));
++
++		mm = get_mem_context(ctx);
++		/* indicates all the thread in task group have exited */
++		if (mm == NULL) {
++			pr_devel("%s: unable to get mm for pe=%d pid=%i\n",
++				 __func__, ctx->pe, pid_nr(ctx->pid));
+ 			cxl_ack_ae(ctx);
+ 			return;
+-		}
+-		if (!(mm = get_task_mm(task))) {
+-			pr_devel("cxl_handle_fault unable to get mm %i\n",
+-				 pid_nr(ctx->pid));
+-			cxl_ack_ae(ctx);
+-			goto out;
++		} else {
++			pr_devel("Handling page fault for pe=%d pid=%i\n",
++				 ctx->pe, pid_nr(ctx->pid));
+ 		}
+ 	}
+ 
+@@ -218,33 +297,22 @@ void cxl_handle_fault(struct work_struct *fault_work)
+ 
+ 	if (mm)
+ 		mmput(mm);
+-out:
+-	if (task)
+-		put_task_struct(task);
+ }
+ 
+ static void cxl_prefault_one(struct cxl_context *ctx, u64 ea)
+ {
+-	int rc;
+-	struct task_struct *task;
+ 	struct mm_struct *mm;
+ 
+-	if (!(task = get_pid_task(ctx->pid, PIDTYPE_PID))) {
+-		pr_devel("cxl_prefault_one unable to get task %i\n",
+-			 pid_nr(ctx->pid));
+-		return;
+-	}
+-	if (!(mm = get_task_mm(task))) {
++	mm = get_mem_context(ctx);
++	if (mm == NULL) {
+ 		pr_devel("cxl_prefault_one unable to get mm %i\n",
+ 			 pid_nr(ctx->pid));
+-		put_task_struct(task);
+ 		return;
+ 	}
+ 
+-	rc = cxl_fault_segment(ctx, mm, ea);
++	cxl_fault_segment(ctx, mm, ea);
+ 
+ 	mmput(mm);
+-	put_task_struct(task);
+ }
+ 
+ static u64 next_segment(u64 ea, u64 vsid)
+@@ -263,18 +331,13 @@ static void cxl_prefault_vma(struct cxl_context *ctx)
+ 	struct copro_slb slb;
+ 	struct vm_area_struct *vma;
+ 	int rc;
+-	struct task_struct *task;
+ 	struct mm_struct *mm;
+ 
+-	if (!(task = get_pid_task(ctx->pid, PIDTYPE_PID))) {
+-		pr_devel("cxl_prefault_vma unable to get task %i\n",
+-			 pid_nr(ctx->pid));
+-		return;
+-	}
+-	if (!(mm = get_task_mm(task))) {
++	mm = get_mem_context(ctx);
++	if (mm == NULL) {
+ 		pr_devel("cxl_prefault_vm unable to get mm %i\n",
+ 			 pid_nr(ctx->pid));
+-		goto out1;
++		return;
+ 	}
+ 
+ 	down_read(&mm->mmap_sem);
+@@ -295,8 +358,6 @@ static void cxl_prefault_vma(struct cxl_context *ctx)
+ 	up_read(&mm->mmap_sem);
+ 
+ 	mmput(mm);
+-out1:
+-	put_task_struct(task);
+ }
+ 
+ void cxl_prefault(struct cxl_context *ctx, u64 wed)
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index 7ccd299..7305104 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -198,8 +198,12 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
+ 	 * where a process (master, some daemon, etc) has opened the chardev on
+ 	 * behalf of another process, so the AFU's mm gets bound to the process
+ 	 * that performs this ioctl and not the process that opened the file.
++	 * Also we grab the PID of the group leader so that if the task that
++	 * has performed the attach operation exits the mm context of the
++	 * process is still accessible.
+ 	 */
+-	ctx->pid = get_pid(get_task_pid(current, PIDTYPE_PID));
++	ctx->pid = get_task_pid(current, PIDTYPE_PID);
++	ctx->glpid = get_task_pid(current->group_leader, PIDTYPE_PID);
+ 
+ 	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
+ 
+-- 
+2.2.1
