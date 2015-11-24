@@ -1,35 +1,35 @@
-Return-Path: <alan@softiron.co.uk>
-Received: from mail-03.1984.is (mail-03.1984.is [93.95.224.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3FD831A02E8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 06:35:36 +1100 (AEDT)
-Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
-To: Ming Lei <tom.leiming@gmail.com>, Mark Salter <msalter@redhat.com>
-References: <1447838334.1564.2.camel@ellerman.id.au>
- <1447855399.3974.24.camel@redhat.com>
- <1447894964.15206.0.camel@ellerman.id.au>
- <20151119082325.GA11419@infradead.org>
- <1448021448.14769.7.camel@ellerman.id.au>
- <565055C6.5040801@linux.vnet.ibm.com> <20151122005635.1b9ffbe1@tom-T450>
- <1448234410.8209.3.camel@redhat.com>
- <CACVXFVMAm1niRvXqQXjOXW=ryy41d-ne09wSNbJUq3b9o6vJ7w@mail.gmail.com>
- <1448243411.8209.36.camel@redhat.com>
- <CACVXFVPWBnm8H4BgQ_=V-Z-NLrkt+TE7T_RpEctNrjEwpRpJhw@mail.gmail.com>
- <20151123232134.4abda9a7@tom-T450>
-Cc: Ming Lei <ming.lei@canonical.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Christoph Hellwig
- <hch@infradead.org>, "James E. J. Bottomley" <JBottomley@odin.com>,
- brking <brking@us.ibm.com>, Linux SCSI List <linux-scsi@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-block@vger.kernel.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-From: Alan Ott <alan@softiron.co.uk>
-Message-ID: <5654B379.30700@softiron.co.uk>
-Date: Tue, 24 Nov 2015 13:59:05 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 36A411A02E8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 08:06:09 +1100 (AEDT)
+Received: from localhost
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Tue, 24 Nov 2015 19:06:03 -0200
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 7A6B83520066
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 16:05:57 -0500 (EST)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAOL3lxO32899406
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 19:03:48 -0200
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAOL5xgA023283
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 19:05:59 -0200
+Subject: Re: [PATCH] Enable MSI/MSI-X caps and disable MSI interrupts at PCI
+ probe time - code move
+To: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <1445437055-7017-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Cc: bhelgaas@google.com, mpe@ellerman.id.au, mst@redhat.com
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Message-ID: <5654D134.5000302@linux.vnet.ibm.com>
+Date: Tue, 24 Nov 2015 19:05:56 -0200
 MIME-Version: 1.0
-In-Reply-To: <20151123232134.4abda9a7@tom-T450>
+In-Reply-To: <1445437055-7017-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -40,201 +40,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/23/2015 10:21 AM, Ming Lei wrote:
-> On Mon, 23 Nov 2015 10:46:20 +0800
-> Ming Lei <ming.lei@canonical.com> wrote:
+On 10/21/2015 12:17 PM, Guilherme G. Piccoli wrote:
+> Commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
+> doesn't support MSI") changed the location of the code that initializes
+> dev->msi_cap/msix_cap and disables MSI/MSI-X interrupts at PCI probe
+> time in devices that have this flag set. It moved the code from
+> pci_msi_init_pci_dev() to a new function named pci_msi_setup_pci_dev(),
+> called by pci_setup_device().
 >
->> Hi Mark,
->>
->> On Mon, Nov 23, 2015 at 9:50 AM, Mark Salter <msalter@redhat.com> wrote:
->>> On Mon, 2015-11-23 at 08:36 +0800, Ming Lei wrote:
->>>> On Mon, Nov 23, 2015 at 7:20 AM, Mark Salter <msalter@redhat.com> wrote:
->>>>> On Sun, 2015-11-22 at 00:56 +0800, Ming Lei wrote:
->>>>>> On Sat, 21 Nov 2015 12:30:14 +0100
->>>>>> Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
->>>>>>
->>>>>>> On 20/11/2015 13:10, Michael Ellerman wrote:
->>>>>>>> On Thu, 2015-11-19 at 00:23 -0800, Christoph Hellwig wrote:
->>>>>>>>
->>>>>>>>> It's pretty much guaranteed a block layer bug, most likely in the
->>>>>>>>> merge bios to request infrastucture where we don't obey the merging
->>>>>>>>> limits properly.
->>>>>>>>>
->>>>>>>>> Does either of you have a known good and first known bad kernel?
->>>>>>>>
->>>>>>>> Not me, I've only hit it one or two times. All I can say is I have hit it in
->>>>>>>> 4.4-rc1.
->>>>>>>>
->>>>>>>> Laurent, can you narrow it down at all?
->>>>>>>
->>>>>>> It seems that the panic is triggered by the commit bdced438acd8 ("block:
->>>>>>> setup bi_phys_segments after splitting") which has been pulled by the
->>>>>>> merge d9734e0d1ccf ("Merge branch 'for-4.4/core' of
->>>>>>> git://git.kernel.dk/linux-block").
->>>>>>>
->>>>>>> My system is panicing promptly when running a kernel built at
->>>>>>> d9734e0d1ccf, while reverting the commit bdced438acd8, it can run hours
->>>>>>> without panicing.
->>>>>>>
->>>>>>> This being said, I can't explain what's going wrong.
->>>>>>>
->>>>>>> May Ming shed some light here ?
->>>>>>
->>>>>> Laurent, looks there is one bug in blk_bio_segment_split(), would you
->>>>>> mind testing the following patch to see if it fixes your issue?
->>>>>>
->>>>>> ---
->>>>>>  From 6fc701231dcc000bc8bc4b9105583380d9aa31f4 Mon Sep 17 00:00:00 2001
->>>>>> From: Ming Lei <ming.lei@canonical.com>
->>>>>> Date: Sun, 22 Nov 2015 00:47:13 +0800
->>>>>> Subject: [PATCH] block: fix segment split
->>>>>>
->>>>>> Inside blk_bio_segment_split(), previous bvec pointer('bvprvp')
->>>>>> always points to the iterator local variable, which is obviously
->>>>>> wrong, so fix it by pointing to the local variable of 'bvprv'.
->>>>>>
->>>>>> Signed-off-by: Ming Lei <ming.lei@canonical.com>
->>>>>> ---
->>>>>>   block/blk-merge.c | 4 ++--
->>>>>>   1 file changed, 2 insertions(+), 2 deletions(-)
->>>>>>
->>>>>> diff --git a/block/blk-merge.c b/block/blk-merge.c
->>>>>> index de5716d8..f2efe8a 100644
->>>>>> --- a/block/blk-merge.c
->>>>>> +++ b/block/blk-merge.c
->>>>>> @@ -98,7 +98,7 @@ static struct bio *blk_bio_segment_split(struct request_queue *q,
->>>>>>
->>>>>>                        seg_size += bv.bv_len;
->>>>>>                        bvprv = bv;
->>>>>> -                     bvprvp = &bv;
->>>>>> +                     bvprvp = &bvprv;
->>>>>>                        sectors += bv.bv_len >> 9;
->>>>>>                        continue;
->>>>>>                }
->>>>>> @@ -108,7 +108,7 @@ new_segment:
->>>>>>
->>>>>>                nsegs++;
->>>>>>                bvprv = bv;
->>>>>> -             bvprvp = &bv;
->>>>>> +             bvprvp = &bvprv;
->>>>>>                seg_size = bv.bv_len;
->>>>>>                sectors += bv.bv_len >> 9;
->>>>>>        }
->>>>>
->>>>> I'm still hitting the BUG even with this patch applied on top of 4.4-rc1.
->>>>
->>>> OK, looks there are still other bugs, care to share us how to reproduce
->>>> it on arm64?
->>>>
->>>> thanks,
->>>> Ming
->>>
->>> Unfortunately, the best reproducer I have is to boot the platform. I have seen the
->>> BUG a few times post-boot, but I don't have a consistant reproducer. I am using
->>> upstream 4.4-rc1 with this config:
->>>
->>>    http://people.redhat.com/msalter/fh_defconfig
->>>
->>> With 4.4-rc1 on an APM Mustang platform, I see the BUG about once every 6-7 boots.
->>> On an AMD Seattle platform, about every 9 boots.
->>
->> Thanks for the input, and I will try to reproduce the issue on mustang with
->> your kernel config.
+> In Open Firmware code path (PowerPC pSeries/SPARC archs) the function
+> pci_setup_device() is not called, so MSI capabilities are never enabled,
+> leading to error messages as:
 >
-> I can reproduce the issue on mustang, and looks I may understand the story now.
+> 	bnx2x 0000:01:00.0: no msix capability found
 >
-> When 64K page size is used on arm64, and the default segment size of block
-> is 65536, then one segment should only include one page at most.
+> Commit 4d9aac397a5d ("powerpc/PCI: Disable MSI/MSI-X interrupts at PCI
+> probe time in OF case") solved the issue on PowerPC pSeries arch calling
+> manually pci_msi_setup_pci_dev() on appropriate place. However, this
+> modification does not solve the general case (SPARC arch should be
+> modified too) and duplicates a lot of code, as pointed by Bjorn Helgaas.
+> As suggested by him, worth to reorganize the code to generally solve the
+> MSI caps issue and avoid too much code duplication.
 >
-> Commit bdced438acd83a(block: setup bi_phys_segments after splitting) does not
-> compute bio->bi_seg_front_size and bio->bi_seg_back_size, then one less segment
-> may be obtained because blk_phys_contig_segment() thought the last bvec in 1st
-> bio and the 1st bvec in the 2nd bio is in one physical segment, so cause the
-> regression.
+> This patch does exactly this: we remove both the pci_msi_setup_pci_dev()
+> call from pci_setup_device() and the same call in OF code path of PowerPC
+> pSeries arch. Then, we call pci_msi_setup_pci_dev() directly from
+> pci_init_capabilities(). So, we can initialize MSI caps and disable MSI
+> interruptions during PCI probe in general fashion, avoiding code
+> duplication.
 >
-> Looks the following patch can fix the issue by figuring bio->bi_seg_front_size
-> and bio->bi_seg_back_size in blk_bio_segment_split().
+> Notice that this patch has the same practical effect of reverting
+> commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
+> doesn't support MSI") and commit 4d9aac397a5d ("powerpc/PCI: Disable
+> MSI/MSI-X interrupts at PCI probe time in OF case"). Regarding the
+> former, the author called pci_msi_setup_pci_dev() from pci_setup_device()
+> because there was an early quirk used in pci_msi_off(), which depended on
+> pci_msi_setup_pci_dev(). Since pci_msi_off() was completely removed by
+> commit c6201cd8513d ("PCI/MSI: Remove unused pci_msi_off()"), we can call
+> pci_msi_setup_pci_dev() directly from pci_init_capabilities().
 >
-> Mark, thanks again for providing the reproduction steps, and could you run your
-> test to see if it can fix your issue?
->
+> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 > ---
->  From 86b5f33d48715c1150fdcfd9a76e495e7aa913aa Mon Sep 17 00:00:00 2001
-> From: Ming Lei <ming.lei@canonical.com>
-> Date: Mon, 23 Nov 2015 20:27:23 +0800
-> Subject: [PATCH 2/2] blk-merge: fix blk_bio_segment_split
+>   arch/powerpc/kernel/pci_of_scan.c | 3 ---
+>   drivers/pci/probe.c               | 5 +++--
+>   2 files changed, 3 insertions(+), 5 deletions(-)
 >
-> Commit bdced438acd83a(block: setup bi_phys_segments after
-> splitting) introduces function of computing bio->bi_phys_segments
-> during bio splitting.
+> diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+> index 2e710c1..526ac67 100644
+> --- a/arch/powerpc/kernel/pci_of_scan.c
+> +++ b/arch/powerpc/kernel/pci_of_scan.c
+> @@ -187,9 +187,6 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
 >
-> Unfortunately both bio->bi_seg_front_size and bio->bi_seg_back_size
-> arn't computed, so too many physical segments may be obtained
-> for one request since both the two are used to check if one segment
-> across two bios can be possible.
+>   	pci_device_add(dev, bus);
 >
-> This patch fixes the issue by computing the two variables in
-> blk_bio_segment_split().
->
-> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-> Reported-by: Mark Salter <msalter@redhat.com>
-> Fixes: bdced438acd83a(block: setup bi_phys_segments after splitting)
-> Signed-off-by: Ming Lei <ming.lei@canonical.com>
-> ---
->   block/blk-merge.c | 22 +++++++++++++++++++---
->   1 file changed, 19 insertions(+), 3 deletions(-)
->
-> diff --git a/block/blk-merge.c b/block/blk-merge.c
-> index f2efe8a..50793cd 100644
-> --- a/block/blk-merge.c
-> +++ b/block/blk-merge.c
-> @@ -76,6 +76,9 @@ static struct bio *blk_bio_segment_split(struct request_queue *q,
->   	struct bio_vec bv, bvprv, *bvprvp = NULL;
->   	struct bvec_iter iter;
->   	unsigned seg_size = 0, nsegs = 0, sectors = 0;
-> +	unsigned front_seg_size = bio->bi_seg_front_size;
-> +	bool do_split = true;
-> +	struct bio *new = NULL;
->
->   	bio_for_each_segment(bv, bio, iter) {
->   		if (sectors + (bv.bv_len >> 9) > queue_max_sectors(q))
-> @@ -111,13 +114,26 @@ new_segment:
->   		bvprvp = &bvprv;
->   		seg_size = bv.bv_len;
->   		sectors += bv.bv_len >> 9;
-> +
-> +		if (nsegs == 1 && seg_size > front_seg_size)
-> +			front_seg_size = seg_size;
->   	}
->
-> -	*segs = nsegs;
-> -	return NULL;
-> +	do_split = false;
->   split:
->   	*segs = nsegs;
-> -	return bio_split(bio, sectors, GFP_NOIO, bs);
-> +
-> +	if (do_split) {
-> +		new = bio_split(bio, sectors, GFP_NOIO, bs);
-> +		if (new)
-> +			bio = new;
-> +	}
-> +
-> +	bio->bi_seg_front_size = front_seg_size;
-> +	if (seg_size > bio->bi_seg_back_size)
-> +		bio->bi_seg_back_size = seg_size;
-> +
-> +	return do_split ? new : NULL;
+> -	/* Setup MSI caps & disable MSI/MSI-X interrupts */
+> -	pci_msi_setup_pci_dev(dev);
+> -
+>   	return dev;
 >   }
+>   EXPORT_SYMBOL(of_create_pci_dev);
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index 8361d27..0aac86e 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -1209,8 +1209,6 @@ int pci_setup_device(struct pci_dev *dev)
+>   	/* "Unknown power state" */
+>   	dev->current_state = PCI_UNKNOWN;
 >
->   void blk_queue_split(struct request_queue *q, struct bio **bio,
+> -	pci_msi_setup_pci_dev(dev);
+> -
+>   	/* Early fixups, before probing the BARs */
+>   	pci_fixup_device(pci_fixup_early, dev);
+>   	/* device class may be changed after fixup */
+> @@ -1600,6 +1598,9 @@ static void pci_init_capabilities(struct pci_dev *dev)
+>   	/* MSI/MSI-X list */
+>   	pci_msi_init_pci_dev(dev);
+>
+> +	/* Setup MSI caps & disable MSI/MSI-X interrupts */
+> +	pci_msi_setup_pci_dev(dev);
+> +
+>   	/* Buffers for saving PCIe and PCI-X capabilities */
+>   	pci_allocate_cap_save_buffers(dev);
 >
 
-I applied both your patches and tested on Overdrive 3000. This fixes the 
-issue for me.
+Michael, Bjorn: any news on this one?
 
-Added linux-arm-kernel, since arm64 triggers this issue.
+Thanks,
 
-Thanks Ming and testers for your hard work on this.
 
-Tested-by: Alan Ott <alan@softiron.co.uk>
+
+Guilherme
