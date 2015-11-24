@@ -1,20 +1,18 @@
 Return-Path: <hongtao.jia@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0119.outbound.protection.outlook.com [157.56.111.119])
+ (mail-bn1bbn0102.outbound.protection.outlook.com [157.56.111.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2AD761A0464
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 18:14:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A4F491A1D66
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 18:15:55 +1100 (AEDT)
 From: Jia Hongtao <hongtao.jia@freescale.com>
 To: <edubezval@gmail.com>
 CC: <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <devicetree@vger.kernel.org>, <scottwood@freescale.com>,
  <hongtao.jia@freescale.com>
-Subject: [PATCH V4 5/5] arm/ls1021a: Add TMU device tree support for LS1021A
-Date: Tue, 24 Nov 2015 14:52:48 +0800
-Message-ID: <1448347968-37766-6-git-send-email-hongtao.jia@freescale.com>
-In-Reply-To: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
-References: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
+Subject: [PATCH V4 0/5] TMU support for QorIQ platform
+Date: Tue, 24 Nov 2015 14:52:43 +0800
+Message-ID: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,128 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Also add nodes and properties for thermal management support.
+This patchset add thermal management support to QorIQ platform including:
+- T1040/T1042.
+- T1023/T1024.
+- LS1021A.
 
-Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-Reviewed-by: Scott Wood <scottwood@freescale.com>
----
- arch/arm/boot/dts/ls1021a.dtsi | 84 +++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 82 insertions(+), 2 deletions(-)
+The thermal driver is updated to V4 based on Linux v4.4-rc2.
 
-diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
-index 9430a99..d31a811 100644
---- a/arch/arm/boot/dts/ls1021a.dtsi
-+++ b/arch/arm/boot/dts/ls1021a.dtsi
-@@ -47,6 +47,7 @@
- 
- #include "skeleton64.dtsi"
- #include <dt-bindings/interrupt-controller/arm-gic.h>
-+#include <dt-bindings/thermal/thermal.h>
- 
- / {
- 	compatible = "fsl,ls1021a";
-@@ -70,14 +71,15 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 
--		cpu@f00 {
-+		cpu0: cpu@f00 {
- 			compatible = "arm,cortex-a7";
- 			device_type = "cpu";
- 			reg = <0xf00>;
- 			clocks = <&cluster1_clk>;
-+			#cooling-cells = <2>;
- 		};
- 
--		cpu@f01 {
-+		cpu1: cpu@f01 {
- 			compatible = "arm,cortex-a7";
- 			device_type = "cpu";
- 			reg = <0xf01>;
-@@ -226,6 +228,84 @@
- 			};
- 		};
- 
-+		tmu: tmu@1f00000 {
-+			compatible = "fsl,qoriq-tmu";
-+			reg = <0x0 0x1f00000 0x0 0x10000>;
-+			interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
-+			fsl,tmu-range = <0xb0000 0xa0026 0x80048 0x30061>;
-+			fsl,tmu-calibration = <0x00000000 0x0000000f
-+					       0x00000001 0x00000017
-+					       0x00000002 0x0000001e
-+					       0x00000003 0x00000026
-+					       0x00000004 0x0000002e
-+					       0x00000005 0x00000035
-+					       0x00000006 0x0000003d
-+					       0x00000007 0x00000044
-+					       0x00000008 0x0000004c
-+					       0x00000009 0x00000053
-+					       0x0000000a 0x0000005b
-+					       0x0000000b 0x00000064
-+
-+					       0x00010000 0x00000011
-+					       0x00010001 0x0000001c
-+					       0x00010002 0x00000024
-+					       0x00010003 0x0000002b
-+					       0x00010004 0x00000034
-+					       0x00010005 0x00000039
-+					       0x00010006 0x00000042
-+					       0x00010007 0x0000004c
-+					       0x00010008 0x00000051
-+					       0x00010009 0x0000005a
-+					       0x0001000a 0x00000063
-+
-+					       0x00020000 0x00000013
-+					       0x00020001 0x00000019
-+					       0x00020002 0x00000024
-+					       0x00020003 0x0000002c
-+					       0x00020004 0x00000035
-+					       0x00020005 0x0000003d
-+					       0x00020006 0x00000046
-+					       0x00020007 0x00000050
-+					       0x00020008 0x00000059
-+
-+					       0x00030000 0x00000002
-+					       0x00030001 0x0000000d
-+					       0x00030002 0x00000019
-+					       0x00030003 0x00000024>;
-+			#thermal-sensor-cells = <0>;
-+		};
-+
-+		thermal-zones {
-+			cpu_thermal: cpu-thermal {
-+				polling-delay-passive = <1000>;
-+				polling-delay = <5000>;
-+
-+				thermal-sensors = <&tmu>;
-+
-+				trips {
-+					cpu_alert: cpu-alert {
-+						temperature = <85000>;
-+						hysteresis = <2000>;
-+						type = "passive";
-+					};
-+					cpu_crit: cpu-crit {
-+						temperature = <95000>;
-+						hysteresis = <2000>;
-+						type = "critical";
-+					};
-+				};
-+
-+				cooling-maps {
-+					map0 {
-+						trip = <&cpu_alert>;
-+						cooling-device =
-+							<&cpu0 THERMAL_NO_LIMIT
-+							THERMAL_NO_LIMIT>;
-+					};
-+				};
-+			};
-+		};
-+
- 		dspi0: dspi@2100000 {
- 			compatible = "fsl,ls1021a-v1.0-dspi";
- 			#address-cells = <1>;
+CPU Cooling device registration is done by another patch which will send
+to both thermal and cpufreq maintainers.
+
+The patchset is reviewed by Scott Wood <scottwood@freescale.com>.
+
+Jia Hongtao (5):
+  dt-bindings: Add QorIQ TMU thermal bindings
+  thermal: qoriq: Add thermal management support
+  powerpc/mpc85xx: Add TMU device tree support for T1040/T1042
+  powerpc/mpc85xx: Add TMU device tree support for T1023/T1024
+  arm/ls1021a: Add TMU device tree support for LS1021A
+
+ .../devicetree/bindings/thermal/qoriq-thermal.txt  |  63 +++++
+ arch/arm/boot/dts/ls1021a.dtsi                     |  84 ++++++-
+ arch/powerpc/boot/dts/fsl/t1023rdb.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1023si-post.dtsi        |  86 +++++++
+ arch/powerpc/boot/dts/fsl/t1024qds.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1024rdb.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1024si-post.dtsi        |   2 +-
+ arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi         |   2 +
+ arch/powerpc/boot/dts/fsl/t1040d4rdb.dts           |   2 +-
+ arch/powerpc/boot/dts/fsl/t1040qds.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1040rdb.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        |  94 ++++++++
+ arch/powerpc/boot/dts/fsl/t1042d4rdb.dts           |   2 +-
+ arch/powerpc/boot/dts/fsl/t1042qds.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1042rdb.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1042rdb_pi.dts          |   2 +-
+ arch/powerpc/boot/dts/fsl/t1042si-post.dtsi        |   2 +-
+ arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi         |   4 +
+ drivers/thermal/Kconfig                            |  10 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/qoriq_thermal.c                    | 262 +++++++++++++++++++++
+ 21 files changed, 616 insertions(+), 14 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+ create mode 100644 drivers/thermal/qoriq_thermal.c
+
 -- 
 2.1.0.27.g96db324
