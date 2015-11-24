@@ -1,18 +1,20 @@
 Return-Path: <hongtao.jia@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0137.outbound.protection.outlook.com [65.55.169.137])
+ (mail-bl2on0113.outbound.protection.outlook.com [65.55.169.113])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 18F631A2AB1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 18:17:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2E5931A03F9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 18:22:37 +1100 (AEDT)
 From: Jia Hongtao <hongtao.jia@freescale.com>
-To: <edubezval@gmail.com>, <viresh.kumar@linaro.org>
+To: <edubezval@gmail.com>
 CC: <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <devicetree@vger.kernel.org>, <scottwood@freescale.com>,
  <hongtao.jia@freescale.com>
-Subject: [PATCH] cpufreq: qoriq: Register cooling device based on device tree
-Date: Tue, 24 Nov 2015 14:55:29 +0800
-Message-ID: <1448348129-46675-1-git-send-email-hongtao.jia@freescale.com>
+Subject: [PATCH V4 1/5] dt-bindings: Add QorIQ TMU thermal bindings
+Date: Tue, 24 Nov 2015 14:52:44 +0800
+Message-ID: <1448347968-37766-2-git-send-email-hongtao.jia@freescale.com>
+In-Reply-To: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
+References: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,75 +26,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Register the qoriq cpufreq driver as a cooling device, based on the
-thermal device tree framework. When temperature crosses the passive trip
-point cpufreq is used to throttle CPUs.
+Add bindings documentation for TMU (Thermal Monitoring Unit) on QorIQ
+platform.
 
 Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
 Reviewed-by: Scott Wood <scottwood@freescale.com>
 ---
-This patch depends on following patches from Scott Wood:
-http://patchwork.ozlabs.org/patch/519803/
-http://patchwork.ozlabs.org/patch/519804/
+ .../devicetree/bindings/thermal/qoriq-thermal.txt  | 63 ++++++++++++++++++++++
+ 1 file changed, 63 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
 
- drivers/cpufreq/qoriq-cpufreq.c | 24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-index 4f53fa2..cb1bc3c 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -12,6 +12,7 @@
- 
- #include <linux/clk.h>
- #include <linux/cpufreq.h>
-+#include <linux/cpu_cooling.h>
- #include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-@@ -33,6 +34,7 @@
- struct cpu_data {
- 	struct clk **pclk;
- 	struct cpufreq_frequency_table *table;
-+	struct thermal_cooling_device *cdev;
- };
- 
- /*
-@@ -292,7 +294,11 @@ static const struct of_device_id node_matches[] __initconst = {
- static int __init qoriq_cpufreq_init(void)
- {
- 	int ret;
--	struct device_node  *np;
-+	struct device_node *np;
-+	struct device_node *cpu_np;
-+	unsigned int cpu_id;
-+	struct cpufreq_policy cpu_policy;
-+	struct cpu_data *cpud;
- 	const struct of_device_id *match;
- 	const struct soc_data *data;
- 
-@@ -309,6 +315,22 @@ static int __init qoriq_cpufreq_init(void)
- 		return -ENODEV;
- 
- 	ret = cpufreq_register_driver(&qoriq_cpufreq_driver);
+diff --git a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+new file mode 100644
+index 0000000..66223d5
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+@@ -0,0 +1,63 @@
++* Thermal Monitoring Unit (TMU) on Freescale QorIQ SoCs
 +
-+	/* Register CPU cooling device for QorIQ platform */
-+	for_each_node_with_property(cpu_np, "#cooling-cells") {
-+		of_property_read_u32(cpu_np, "reg", &cpu_id);
-+		cpufreq_get_policy(&cpu_policy, cpu_id);
++Required properties:
++- compatible : Must include "fsl,qoriq-tmu". The version of the device is
++	determined by the TMU IP Block Revision Register (IPBRR0) at
++	offset 0x0BF8.
++	Table of correspondences between IPBRR0 values and example  chips:
++		Value           Device
++		----------      -----
++		0x01900102      T1040
++- reg : Address range of TMU registers.
++- interrupts : Contains the interrupt for TMU.
++- fsl,tmu-range : The values to be programmed into TTRnCR, as specified by
++	the SoC reference manual. The first cell is TTR0CR, the second is
++	TTR1CR, etc.
++- fsl,tmu-calibration : A list of cell pairs containing temperature
++	calibration data, as specified by the SoC reference manual.
++	The first cell of each pair is the value to be written to TTCFGR,
++	and the second is the value to be written to TSCFGR.
 +
-+		cpud = cpu_policy.driver_data;
-+		cpud->cdev = of_cpufreq_cooling_register(cpu_np,
-+						cpu_policy.related_cpus);
-+		if (IS_ERR(cpud->cdev) && ERR_PTR(cpud->cdev) != -ENOSYS)
-+			pr_err("Failed to register cooling device cpu%d: %ld\n",
-+			       cpu_id, PTR_ERR(cpud->cdev));
-+	}
++Example:
 +
-+	of_node_put(cpu_np);
++tmu@f0000 {
++	compatible = "fsl,qoriq-tmu";
++	reg = <0xf0000 0x1000>;
++	interrupts = <18 2 0 0>;
++	fsl,tmu-range = <0x000a0000 0x00090026 0x0008004a 0x0001006a>;
++	fsl,tmu-calibration = <0x00000000 0x00000025
++			       0x00000001 0x00000028
++			       0x00000002 0x0000002d
++			       0x00000003 0x00000031
++			       0x00000004 0x00000036
++			       0x00000005 0x0000003a
++			       0x00000006 0x00000040
++			       0x00000007 0x00000044
++			       0x00000008 0x0000004a
++			       0x00000009 0x0000004f
++			       0x0000000a 0x00000054
 +
- 	if (!ret)
- 		pr_info("Freescale QorIQ CPU frequency scaling driver\n");
- 
++			       0x00010000 0x0000000d
++			       0x00010001 0x00000013
++			       0x00010002 0x00000019
++			       0x00010003 0x0000001f
++			       0x00010004 0x00000025
++			       0x00010005 0x0000002d
++			       0x00010006 0x00000033
++			       0x00010007 0x00000043
++			       0x00010008 0x0000004b
++			       0x00010009 0x00000053
++
++			       0x00020000 0x00000010
++			       0x00020001 0x00000017
++			       0x00020002 0x0000001f
++			       0x00020003 0x00000029
++			       0x00020004 0x00000031
++			       0x00020005 0x0000003c
++			       0x00020006 0x00000042
++			       0x00020007 0x0000004d
++			       0x00020008 0x00000056
++
++			       0x00030000 0x00000012
++			       0x00030001 0x0000001d>;
++};
 -- 
 2.1.0.27.g96db324
