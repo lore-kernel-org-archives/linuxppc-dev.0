@@ -1,39 +1,23 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <hongtao.jia@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0141.outbound.protection.outlook.com [157.56.110.141])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DF5EB1A004C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 17:49:28 +1100 (AEDT)
-Received: from localhost
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 24 Nov 2015 12:19:24 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id E8CE9E004C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 12:19:56 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAO6mwjh30736490
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 12:19:00 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAO6mvZg019796
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 12:18:58 +0530
-Message-ID: <56540859.7090306@linux.vnet.ibm.com>
-Date: Tue, 24 Nov 2015 12:18:57 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 83F931A004C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 18:00:16 +1100 (AEDT)
+From: Jia Hongtao <hongtao.jia@freescale.com>
+To: <edubezval@gmail.com>
+CC: <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <devicetree@vger.kernel.org>, <scottwood@freescale.com>,
+ <hongtao.jia@freescale.com>
+Subject: [PATCH V4 4/5] powerpc/mpc85xx: Add TMU device tree support for
+ T1023/T1024
+Date: Tue, 24 Nov 2015 14:52:47 +0800
+Message-ID: <1448347968-37766-5-git-send-email-hongtao.jia@freescale.com>
+In-Reply-To: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
+References: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Scott Wood <scottwood@freescale.com>,
- Denis Kirjanov <kda@linux-powerpc.org>
-CC: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V5 00/31] powerpc/mm: Update page table format for book3s
- 64
-References: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,42 +27,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/23/2015 03:52 PM, Aneesh Kumar K.V wrote:
-> Hi All,
-> 
-> This patch series attempt to update book3s 64 linux page table format to
-> make it more flexible. Our current pte format is very restrictive and we
-> overload multiple pte bits. This is due to the non-availability of free bits
-> in pte_t. We use pte_t to track the validity of 4K subpages. This patch
-> series free up pte_t of 11 bits by moving 4K subpage tracking to the
-> lower half of PTE page. The pte format is updated such that we have a
-> better method for identifying a pte entry at pmd level. This will also enable
-> us to implement hugetlb migration(not yet done in this series).
-> 
-> Before making the changes to the pte format, I am splitting the
-> pte header definition such that we now have the below layout for headers
-> 
-> book3s
->    32
->      hash.h pgtable.h
->    64
->      hash.h  pgtable.h hash-4k.h hash-64k.h
-> booke
->   32
->      pgtable.h pte-40x.h pte-44x.h pte-8xx.h pte-fsl-booke.h
->   64
->     pgtable-4k.h  pgtable-64k.h  pgtable.h
-> 
-> I have done the header split such that booke headers and modified to the minimum so as to avoid
-> causing breakage in booke.
-> 
-> The patch series can also be found at
-> https://github.com/kvaneesh/linux.git book3s-pte-format
+Also add nodes and properties for thermal management support. Meanwhile
+preprocessor support is needed using thermal of framework.
 
-Aneesh,
+Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+Reviewed-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/boot/dts/fsl/t1023rdb.dts      |  2 +-
+ arch/powerpc/boot/dts/fsl/t1023si-post.dtsi | 86 +++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/t1024qds.dts      |  2 +-
+ arch/powerpc/boot/dts/fsl/t1024rdb.dts      |  2 +-
+ arch/powerpc/boot/dts/fsl/t1024si-post.dtsi |  2 +-
+ arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi  |  2 +
+ 6 files changed, 92 insertions(+), 4 deletions(-)
 
-The second commit on the tree branch (faa65ca8e) does not match
-with the second patch posted as part of the series. Has the
-tree been updated with the latest v5 patches ?
-
-[02/31] powerpc/mm: move pte headers to book3s directory (part 2)
+diff --git a/arch/powerpc/boot/dts/fsl/t1023rdb.dts b/arch/powerpc/boot/dts/fsl/t1023rdb.dts
+index 2b2fff4..6bd842b 100644
+--- a/arch/powerpc/boot/dts/fsl/t1023rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t1023rdb.dts
+@@ -159,4 +159,4 @@
+ 	};
+ };
+ 
+-/include/ "t1023si-post.dtsi"
++#include "t1023si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+index 518ddaa..99e421d 100644
+--- a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+@@ -32,6 +32,8 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
++#include <dt-bindings/thermal/thermal.h>
++
+ &ifc {
+ 	#address-cells = <2>;
+ 	#size-cells = <1>;
+@@ -275,6 +277,90 @@
+ 		reg = <0xea000 0x4000>;
+ 	};
+ 
++	tmu: tmu@f0000 {
++		compatible = "fsl,qoriq-tmu";
++		reg = <0xf0000 0x1000>;
++		interrupts = <18 2 0 0>;
++		fsl,tmu-range = <0xb0000 0xa0026 0x80048 0x30061>;
++		fsl,tmu-calibration = <0x00000000 0x0000000f
++				       0x00000001 0x00000017
++				       0x00000002 0x0000001e
++				       0x00000003 0x00000026
++				       0x00000004 0x0000002e
++				       0x00000005 0x00000035
++				       0x00000006 0x0000003d
++				       0x00000007 0x00000044
++				       0x00000008 0x0000004c
++				       0x00000009 0x00000053
++				       0x0000000a 0x0000005b
++				       0x0000000b 0x00000064
++
++				       0x00010000 0x00000011
++				       0x00010001 0x0000001c
++				       0x00010002 0x00000024
++				       0x00010003 0x0000002b
++				       0x00010004 0x00000034
++				       0x00010005 0x00000039
++				       0x00010006 0x00000042
++				       0x00010007 0x0000004c
++				       0x00010008 0x00000051
++				       0x00010009 0x0000005a
++				       0x0001000a 0x00000063
++
++				       0x00020000 0x00000013
++				       0x00020001 0x00000019
++				       0x00020002 0x00000024
++				       0x00020003 0x0000002c
++				       0x00020004 0x00000035
++				       0x00020005 0x0000003d
++				       0x00020006 0x00000046
++				       0x00020007 0x00000050
++				       0x00020008 0x00000059
++
++				       0x00030000 0x00000002
++				       0x00030001 0x0000000d
++				       0x00030002 0x00000019
++				       0x00030003 0x00000024>;
++		#thermal-sensor-cells = <0>;
++	};
++
++	thermal-zones {
++		cpu_thermal: cpu-thermal {
++			polling-delay-passive = <1000>;
++			polling-delay = <5000>;
++
++			thermal-sensors = <&tmu>;
++
++			trips {
++				cpu_alert: cpu-alert {
++					temperature = <85000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++				cpu_crit: cpu-crit {
++					temperature = <95000>;
++					hysteresis = <2000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				map0 {
++					trip = <&cpu_alert>;
++					cooling-device =
++						<&cpu0 THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>;
++				};
++				map1 {
++					trip = <&cpu_alert>;
++					cooling-device =
++						<&cpu1 THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>;
++				};
++			};
++		};
++	};
++
+ 	scfg: global-utilities@fc000 {
+ 		compatible = "fsl,t1023-scfg";
+ 		reg = <0xfc000 0x1000>;
+diff --git a/arch/powerpc/boot/dts/fsl/t1024qds.dts b/arch/powerpc/boot/dts/fsl/t1024qds.dts
+index 43cd5b5..6a3581b 100644
+--- a/arch/powerpc/boot/dts/fsl/t1024qds.dts
++++ b/arch/powerpc/boot/dts/fsl/t1024qds.dts
+@@ -248,4 +248,4 @@
+ 	};
+ };
+ 
+-/include/ "t1024si-post.dtsi"
++#include "t1024si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/fsl/t1024rdb.dts b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+index 429d8c7..0ccc7d0 100644
+--- a/arch/powerpc/boot/dts/fsl/t1024rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+@@ -188,4 +188,4 @@
+ 	};
+ };
+ 
+-/include/ "t1024si-post.dtsi"
++#include "t1024si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/fsl/t1024si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1024si-post.dtsi
+index 95e3af8..bb48034 100644
+--- a/arch/powerpc/boot/dts/fsl/t1024si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t1024si-post.dtsi
+@@ -32,7 +32,7 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-/include/ "t1023si-post.dtsi"
++#include "t1023si-post.dtsi"
+ 
+ / {
+ 	aliases {
+diff --git a/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
+index 3e1528a..9d08a36 100644
+--- a/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
+@@ -76,6 +76,7 @@
+ 			reg = <0>;
+ 			clocks = <&mux0>;
+ 			next-level-cache = <&L2_1>;
++			#cooling-cells = <2>;
+ 			L2_1: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -85,6 +86,7 @@
+ 			reg = <1>;
+ 			clocks = <&mux1>;
+ 			next-level-cache = <&L2_2>;
++			#cooling-cells = <2>;
+ 			L2_2: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+-- 
+2.1.0.27.g96db324
