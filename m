@@ -1,14 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 460A01A004C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 22:26:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 13EEB1A004C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 22:26:17 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/5] powerpc/rtas: Add rtas_call_unlocked()
-Date: Tue, 24 Nov 2015 22:26:08 +1100
-Message-Id: <1448364372-28065-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/5] powerpc/xmon: Use rtas_call_unlocked() in xmon
+Date: Tue, 24 Nov 2015 22:26:09 +1100
+Message-Id: <1448364372-28065-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1448364372-28065-1-git-send-email-mpe@ellerman.id.au>
+References: <1448364372-28065-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,234 +20,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Most users of RTAS (Run-Time Abstraction Services) use rtas_call(),
-which deals with locking as well as endian handling.
-
-However we have two users outside of rtas.c that can't use rtas_call()
-because they have different locking requirements.
-
-The hotplug CPU code can't take the RTAS lock because the CPU would go
-offline with the lock held and no other CPUs would be able to call RTAS
-until the CPU came back online.
-
-The xmon code doesn't want to take the lock because it would risk dead
-locking when we are trying to recover from a crash.
-
-Both sites required multiple patches when we added little endian
-support, proving that programmers can't do endian right.
-
-Although that ship has sailed, we can still clean the code up by
-providing an unlocked version of rtas_call() which avoids the need to
-open code the logic elsewhere.
+Avoid open coding the logic by using rtas_call_unlocked().
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-commit 98bd678fc89575d0f4026a3ced3de19d90d1fe72
-Author: Michael Ellerman <mpe@ellerman.id.au>
-Date:   Fri May 15 16:40:48 2015 +1000
-
-    powerpc/rtas: Add rtas_call_unlocked(), make enter_rtas() private
-
-    Most users of RTAS (Run-Time Abstraction Services) use rtas_call(),
-    which deals with locking as well as endian handling.
-
-    However we have two users outside of rtas.c that can't use rtas_call()
-    because they have different locking requirements.
-
-    The hotplug CPU code can't take the RTAS lock because the CPU would go
-    offline with the lock held and no other CPUs would be able to call RTAS
-    until the CPU came back online.
-
-    The xmon code doesn't want to take the lock because it would risk dead
-    locking when we are trying to recover from a crash.
-
-    Both sites required multiple patches when we added little endian
-    support, proving that programmers can't do endian right.
-
-    Although that ship has sailed, we can still clean the code up by
-    providing an unlocked version of rtas_call() which avoids the need to
-    open code the logic elsewhere.
-
-    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index b77ef369c0f0..51400baa8d48 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -334,10 +334,11 @@ extern void (*rtas_flash_term_hook)(int);
-
- extern struct rtas_t rtas;
-
--extern void enter_rtas(unsigned long);
- extern int rtas_token(const char *service);
- extern int rtas_service_present(const char *service);
- extern int rtas_call(int token, int, int, int *, ...);
-+void rtas_call_unlocked(struct rtas_args *args, int token, int nargs,
-+			int nret, ...);
- extern void rtas_restart(char *cmd);
- extern void rtas_power_off(void);
- extern void rtas_halt(void);
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 5a753fae8265..dda465b62e9b 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -44,6 +44,9 @@
- #include <asm/mmu.h>
- #include <asm/topology.h>
-
-+/* This is here deliberately so it's only used in this file */
-+void enter_rtas(unsigned long);
-+
- struct rtas_t rtas = {
- 	.lock = __ARCH_SPIN_LOCK_UNLOCKED
- };
-@@ -418,6 +421,36 @@ static char *__fetch_rtas_last_error(char *altbuf)
- #define get_errorlog_buffer()		NULL
- #endif
-
-+
-+static void
-+va_rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret,
-+		      va_list list)
-+{
-+	int i;
-+
-+	args->token = cpu_to_be32(token);
-+	args->nargs = cpu_to_be32(nargs);
-+	args->nret  = cpu_to_be32(nret);
-+	args->rets  = &(args->args[nargs]);
-+
-+	for (i = 0; i < nargs; ++i)
-+		args->args[i] = cpu_to_be32(va_arg(list, __u32));
-+
-+	for (i = 0; i < nret; ++i)
-+		args->rets[i] = 0;
-+
-+	enter_rtas(__pa(args));
-+}
-+
-+void rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret, ...)
-+{
-+	va_list list;
-+
-+	va_start(list, nret);
-+	va_rtas_call_unlocked(args, token, nargs, nret, list);
-+	va_end(list);
-+}
-+
- int rtas_call(int token, int nargs, int nret, int *outputs, ...)
- {
- 	va_list list;
-@@ -431,22 +464,14 @@ int rtas_call(int token, int nargs, int nret, int *outputs, ...)
- 		return -1;
-
- 	s = lock_rtas();
-+
-+	/* We use the global rtas args buffer */
- 	rtas_args = &rtas.args;
-
--	rtas_args->token = cpu_to_be32(token);
--	rtas_args->nargs = cpu_to_be32(nargs);
--	rtas_args->nret  = cpu_to_be32(nret);
--	rtas_args->rets  = &(rtas_args->args[nargs]);
- 	va_start(list, outputs);
--	for (i = 0; i < nargs; ++i)
--		rtas_args->args[i] = cpu_to_be32(va_arg(list, __u32));
-+	va_rtas_call_unlocked(rtas_args, token, nargs, nret, list);
- 	va_end(list);
-
--	for (i = 0; i < nret; ++i)
--		rtas_args->rets[i] = 0;
--
--	enter_rtas(__pa(rtas_args));
--
- 	/* A -1 return code indicates that the last command couldn't
- 	   be completed due to a hardware error. */
- 	if (be32_to_cpu(rtas_args->rets[0]) == -1)
 ---
- arch/powerpc/include/asm/rtas.h |  2 ++
- arch/powerpc/kernel/rtas.c      | 44 ++++++++++++++++++++++++++++++-----------
- 2 files changed, 35 insertions(+), 11 deletions(-)
+ arch/powerpc/xmon/xmon.c | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index b77ef369c0f0..6db1d6977a0d 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -338,6 +338,8 @@ extern void enter_rtas(unsigned long);
- extern int rtas_token(const char *service);
- extern int rtas_service_present(const char *service);
- extern int rtas_call(int token, int, int, int *, ...);
-+void rtas_call_unlocked(struct rtas_args *args, int token, int nargs,
-+			int nret, ...);
- extern void rtas_restart(char *cmd);
- extern void rtas_power_off(void);
- extern void rtas_halt(void);
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 5a753fae8265..fcf2d653a6fe 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -418,6 +418,36 @@ static char *__fetch_rtas_last_error(char *altbuf)
- #define get_errorlog_buffer()		NULL
- #endif
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 786bf01691c9..ff31e70b81e8 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -320,6 +320,7 @@ static inline void disable_surveillance(void)
+ #ifdef CONFIG_PPC_PSERIES
+ 	/* Since this can't be a module, args should end up below 4GB. */
+ 	static struct rtas_args args;
++	int token;
  
+ 	/*
+ 	 * At this point we have got all the cpus we can into
+@@ -328,17 +329,12 @@ static inline void disable_surveillance(void)
+ 	 * If we did try to take rtas.lock there would be a
+ 	 * real possibility of deadlock.
+ 	 */
+-	args.token = rtas_token("set-indicator");
+-	if (args.token == RTAS_UNKNOWN_SERVICE)
++	token = rtas_token("set-indicator");
++	if (token == RTAS_UNKNOWN_SERVICE)
+ 		return;
+-	args.token = cpu_to_be32(args.token);
+-	args.nargs = cpu_to_be32(3);
+-	args.nret = cpu_to_be32(1);
+-	args.rets = &args.args[3];
+-	args.args[0] = cpu_to_be32(SURVEILLANCE_TOKEN);
+-	args.args[1] = 0;
+-	args.args[2] = 0;
+-	enter_rtas(__pa(&args));
 +
-+static void
-+va_rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret,
-+		      va_list list)
-+{
-+	int i;
++	rtas_call_unlocked(&args, token, 3, 1, NULL, SURVEILLANCE_TOKEN, 0, 0);
 +
-+	args->token = cpu_to_be32(token);
-+	args->nargs = cpu_to_be32(nargs);
-+	args->nret  = cpu_to_be32(nret);
-+	args->rets  = &(args->args[nargs]);
-+
-+	for (i = 0; i < nargs; ++i)
-+		args->args[i] = cpu_to_be32(va_arg(list, __u32));
-+
-+	for (i = 0; i < nret; ++i)
-+		args->rets[i] = 0;
-+
-+	enter_rtas(__pa(args));
-+}
-+
-+void rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret, ...)
-+{
-+	va_list list;
-+
-+	va_start(list, nret);
-+	va_rtas_call_unlocked(args, token, nargs, nret, list);
-+	va_end(list);
-+}
-+
- int rtas_call(int token, int nargs, int nret, int *outputs, ...)
- {
- 	va_list list;
-@@ -431,22 +461,14 @@ int rtas_call(int token, int nargs, int nret, int *outputs, ...)
- 		return -1;
+ #endif /* CONFIG_PPC_PSERIES */
+ }
  
- 	s = lock_rtas();
-+
-+	/* We use the global rtas args buffer */
- 	rtas_args = &rtas.args;
- 
--	rtas_args->token = cpu_to_be32(token);
--	rtas_args->nargs = cpu_to_be32(nargs);
--	rtas_args->nret  = cpu_to_be32(nret);
--	rtas_args->rets  = &(rtas_args->args[nargs]);
- 	va_start(list, outputs);
--	for (i = 0; i < nargs; ++i)
--		rtas_args->args[i] = cpu_to_be32(va_arg(list, __u32));
-+	va_rtas_call_unlocked(rtas_args, token, nargs, nret, list);
- 	va_end(list);
- 
--	for (i = 0; i < nret; ++i)
--		rtas_args->rets[i] = 0;
--
--	enter_rtas(__pa(rtas_args));
--
- 	/* A -1 return code indicates that the last command couldn't
- 	   be completed due to a hardware error. */
- 	if (be32_to_cpu(rtas_args->rets[0]) == -1)
 -- 
 2.5.0
