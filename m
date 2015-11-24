@@ -1,16 +1,23 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F21E31A004C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 22:26:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2EFAD1A004C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 22:58:12 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id EF8391401E7
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Nov 2015 22:58:11 +1100 (AEDT)
+Message-ID: <1448366286.32654.4.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/5] powerpc/rtas: Add rtas_call_unlocked()
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 5/5] powerpc/rtas: Make enter_rtas() private
-Date: Tue, 24 Nov 2015 22:26:12 +1100
-Message-Id: <1448364372-28065-5-git-send-email-mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Date: Tue, 24 Nov 2015 22:58:06 +1100
 In-Reply-To: <1448364372-28065-1-git-send-email-mpe@ellerman.id.au>
 References: <1448364372-28065-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,42 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are no longer any users of enter_rtas() outside of rtas.c, so make
-it "private", by moving the declaration inside rtas.c. Hopefully this
-will encourage people to use one of the wrappers which takes the sharp
-edges off the RTAS calling sequence.
+On Tue, 2015-11-24 at 22:26 +1100, Michael Ellerman wrote:
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/rtas.h | 1 -
- arch/powerpc/kernel/rtas.c      | 3 +++
- 2 files changed, 3 insertions(+), 1 deletion(-)
+> Most users of RTAS (Run-Time Abstraction Services) use rtas_call(),
+> which deals with locking as well as endian handling.
+> 
+> However we have two users outside of rtas.c that can't use rtas_call()
+> because they have different locking requirements.
+> 
+> The hotplug CPU code can't take the RTAS lock because the CPU would go
+> offline with the lock held and no other CPUs would be able to call RTAS
+> until the CPU came back online.
+> 
+> The xmon code doesn't want to take the lock because it would risk dead
+> locking when we are trying to recover from a crash.
+> 
+> Both sites required multiple patches when we added little endian
+> support, proving that programmers can't do endian right.
+> 
+> Although that ship has sailed, we can still clean the code up by
+> providing an unlocked version of rtas_call() which avoids the need to
+> open code the logic elsewhere.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> 
+> commit 98bd678fc89575d0f4026a3ced3de19d90d1fe72
+> Author: Michael Ellerman <mpe@ellerman.id.au>
+> Date:   Fri May 15 16:40:48 2015 +1000
+> 
+>     powerpc/rtas: Add rtas_call_unlocked(), make enter_rtas() private
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index 6db1d6977a0d..51400baa8d48 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -334,7 +334,6 @@ extern void (*rtas_flash_term_hook)(int);
- 
- extern struct rtas_t rtas;
- 
--extern void enter_rtas(unsigned long);
- extern int rtas_token(const char *service);
- extern int rtas_service_present(const char *service);
- extern int rtas_call(int token, int, int, int *, ...);
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index f4fa137292c4..28736ff27fea 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -44,6 +44,9 @@
- #include <asm/mmu.h>
- #include <asm/topology.h>
- 
-+/* This is here deliberately so it's only used in this file */
-+void enter_rtas(unsigned long);
-+
- struct rtas_t rtas = {
- 	.lock = __ARCH_SPIN_LOCK_UNLOCKED
- };
--- 
-2.5.0
+... wut.
+
+Obviously I fubared the commit message a bit here while rebasing.
+
+cheers
