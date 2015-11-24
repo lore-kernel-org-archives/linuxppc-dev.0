@@ -2,14 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2C93B1A00BF
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5780C1A026E
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 13:05:53 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: Michael Neuling <mikey@neuling.org>
-Subject: [PATCH 3/4] selftests/powerpc: Move TM helpers into tm.h
-Date: Tue, 24 Nov 2015 13:05:40 +1100
-Message-Id: <1448330741-4804-3-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 4/4] selftests/powerpc: Skip TM tests if we don't have TM
+Date: Tue, 24 Nov 2015 13:05:41 +1100
+Message-Id: <1448330741-4804-4-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1448330741-4804-1-git-send-email-mpe@ellerman.id.au>
 References: <1448330741-4804-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,89 +21,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move have_htm_nosc() into a new tm.h, and add a new helper, have_htm()
-which we'll use in the next patch.
+Make the newly added TM tests skip if we don't have TM available, either
+because we're running on old hardware, or the kernel doesn't have TM
+support enabled.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/powerpc/tm/tm-syscall.c | 12 +--------
- tools/testing/selftests/powerpc/tm/tm.h         | 34 +++++++++++++++++++++++++
- 2 files changed, 35 insertions(+), 11 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/tm.h
+ tools/testing/selftests/powerpc/tm/Makefile             | 8 +++++---
+ tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c | 3 +++
+ tools/testing/selftests/powerpc/tm/tm-signal-stack.c    | 3 +++
+ 3 files changed, 11 insertions(+), 3 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/tm/tm-syscall.c b/tools/testing/selftests/powerpc/tm/tm-syscall.c
-index d7256b79ec4c..60560cb20e38 100644
---- a/tools/testing/selftests/powerpc/tm/tm-syscall.c
-+++ b/tools/testing/selftests/powerpc/tm/tm-syscall.c
-@@ -13,11 +13,11 @@
+diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
+index 3e6e7aaa5312..578572a3700a 100644
+--- a/tools/testing/selftests/powerpc/tm/Makefile
++++ b/tools/testing/selftests/powerpc/tm/Makefile
+@@ -2,10 +2,12 @@ TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack
+ 
+ all: $(TEST_PROGS)
+ 
+-$(TEST_PROGS): ../harness.c
++$(TEST_PROGS): ../harness.c ../utils.c
+ 
+-tm-syscall: tm-syscall-asm.S ../utils.c
+-tm-syscall: CFLAGS += -mhtm -I../../../../../usr/include
++CFLAGS += -I../../../../../usr/include
++
++tm-syscall: tm-syscall-asm.S
++tm-syscall: CFLAGS += -mhtm
+ 
+ include ../../lib.mk
+ 
+diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c b/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
+index bdad34803c06..a6589582b780 100644
+--- a/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
++++ b/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
+@@ -18,6 +18,7 @@
+ #include <signal.h>
  #include <unistd.h>
- #include <sys/syscall.h>
- #include <asm/tm.h>
--#include <asm/cputable.h>
- #include <sys/time.h>
- #include <stdlib.h>
  
- #include "utils.h"
 +#include "tm.h"
+ #include "utils.h"
  
- extern int getppid_tm_active(void);
- extern int getppid_tm_suspended(void);
-@@ -76,16 +76,6 @@ pid_t getppid_tm(bool suspend)
- 	exit(-1);
- }
- 
--static inline bool have_htm_nosc(void)
--{
--#ifdef PPC_FEATURE2_HTM_NOSC
--	return have_hwcap2(PPC_FEATURE2_HTM_NOSC);
--#else
--	printf("PPC_FEATURE2_HTM_NOSC not defined, can't check AT_HWCAP2\n");
--	return false;
--#endif
--}
--
- int tm_syscall(void)
+ int segv_expected = 0;
+@@ -49,6 +50,8 @@ int tm_signal_msr_resv()
  {
- 	unsigned count = 0;
-diff --git a/tools/testing/selftests/powerpc/tm/tm.h b/tools/testing/selftests/powerpc/tm/tm.h
-new file mode 100644
-index 000000000000..24144b25772c
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm.h
-@@ -0,0 +1,34 @@
-+/*
-+ * Copyright 2015, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
+ 	struct sigaction act;
+ 
++	SKIP_IF(!have_htm());
 +
-+#ifndef _SELFTESTS_POWERPC_TM_TM_H
-+#define _SELFTESTS_POWERPC_TM_TM_H
+ 	act.sa_sigaction = signal_usr1;
+ 	sigemptyset(&act.sa_mask);
+ 	act.sa_flags = SA_SIGINFO;
+diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-stack.c b/tools/testing/selftests/powerpc/tm/tm-signal-stack.c
+index 62f2a5f108c6..82c29cb222dc 100644
+--- a/tools/testing/selftests/powerpc/tm/tm-signal-stack.c
++++ b/tools/testing/selftests/powerpc/tm/tm-signal-stack.c
+@@ -21,6 +21,7 @@
+ #include <stdio.h>
+ #include <signal.h>
+ 
++#include "tm.h"
+ #include "utils.h"
+ 
+ void signal_segv(int signum)
+@@ -33,6 +34,8 @@ int tm_signal_stack()
+ {
+ 	int pid;
+ 
++	SKIP_IF(!have_htm());
 +
-+#include <stdbool.h>
-+#include <asm/cputable.h>
-+
-+#include "../utils.h"
-+
-+static inline bool have_htm(void)
-+{
-+#ifdef PPC_FEATURE2_HTM
-+	return have_hwcap2(PPC_FEATURE2_HTM);
-+#else
-+	printf("PPC_FEATURE2_HTM not defined, can't check AT_HWCAP2\n");
-+	return false;
-+#endif
-+}
-+
-+static inline bool have_htm_nosc(void)
-+{
-+#ifdef PPC_FEATURE2_HTM_NOSC
-+	return have_hwcap2(PPC_FEATURE2_HTM_NOSC);
-+#else
-+	printf("PPC_FEATURE2_HTM_NOSC not defined, can't check AT_HWCAP2\n");
-+	return false;
-+#endif
-+}
-+
-+#endif /* _SELFTESTS_POWERPC_TM_TM_H */
+ 	pid = fork();
+ 	if (pid < 0)
+ 		exit(1);
 -- 
 2.5.0
