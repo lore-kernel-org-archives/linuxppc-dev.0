@@ -1,39 +1,36 @@
-Return-Path: <jallen@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <alan@softiron.co.uk>
+Received: from mail-03.1984.is (mail-03.1984.is [93.95.224.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F35051A02E8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 07:15:54 +1100 (AEDT)
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.vnet.ibm.com>;
- Tue, 24 Nov 2015 15:15:52 -0500
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id E605738C803B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 15:15:49 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAOKFnX110158186
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 20:15:49 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAOKFmwr010807
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 15:15:49 -0500
-Subject: Re: [PATCH v2] memory-hotplug: Fix kernel warning during memory
- hotplug on ppc64
-To: Michael Ellerman <mpe@ellerman.id.au>, gregkh@linuxfoundation.org
-References: <5638ED37.3090500@linux.vnet.ibm.com>
- <1447118489.13889.11.camel@ellerman.id.au>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-From: John Allen <jallen@linux.vnet.ibm.com>
-Message-ID: <5654C572.4090400@linux.vnet.ibm.com>
-Date: Tue, 24 Nov 2015 14:15:46 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3FD831A02E8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 06:35:36 +1100 (AEDT)
+Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
+To: Ming Lei <tom.leiming@gmail.com>, Mark Salter <msalter@redhat.com>
+References: <1447838334.1564.2.camel@ellerman.id.au>
+ <1447855399.3974.24.camel@redhat.com>
+ <1447894964.15206.0.camel@ellerman.id.au>
+ <20151119082325.GA11419@infradead.org>
+ <1448021448.14769.7.camel@ellerman.id.au>
+ <565055C6.5040801@linux.vnet.ibm.com> <20151122005635.1b9ffbe1@tom-T450>
+ <1448234410.8209.3.camel@redhat.com>
+ <CACVXFVMAm1niRvXqQXjOXW=ryy41d-ne09wSNbJUq3b9o6vJ7w@mail.gmail.com>
+ <1448243411.8209.36.camel@redhat.com>
+ <CACVXFVPWBnm8H4BgQ_=V-Z-NLrkt+TE7T_RpEctNrjEwpRpJhw@mail.gmail.com>
+ <20151123232134.4abda9a7@tom-T450>
+Cc: Ming Lei <ming.lei@canonical.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Christoph Hellwig
+ <hch@infradead.org>, "James E. J. Bottomley" <JBottomley@odin.com>,
+ brking <brking@us.ibm.com>, Linux SCSI List <linux-scsi@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-block@vger.kernel.org,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Alan Ott <alan@softiron.co.uk>
+Message-ID: <5654B379.30700@softiron.co.uk>
+Date: Tue, 24 Nov 2015 13:59:05 -0500
 MIME-Version: 1.0
-In-Reply-To: <1447118489.13889.11.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20151123232134.4abda9a7@tom-T450>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,173 +40,201 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-
-On 11/09/2015 07:21 PM, Michael Ellerman wrote:
-> Hi John,
-> 
-> On Tue, 2015-11-03 at 11:21 -0600, John Allen wrote:
->> This patch fixes a bug where a kernel warning is triggered when performing
->> a memory hotplug on ppc64. This warning may also occur on any architecture
->> that has multiple sections per memory block.
-> 
-> So it looks like the only arches that enable this code at all are powerpc, sh
-> and x86 (via CONFIG_ARCH_MEMORY_PROBE). And it sounds like on x86 it's just
-> there for debugging, ACPI is meant to notify you of memory hotplug by the
-> sounds.
-> 
-> Do any of sh or x86 have "multiple sections per memory block" ?
-> 
-> If not then this bug would only apply to powerpc, which would be useful to
-> know.
-
-Sorry for the delayed response. It looks like your reply got buried in my
-lkml folder instead of going straight to my inbox.
-
-My understanding is that x86 may use multiple sections per block. I
-think we would have to assume that any architecture that uses this code
-could potentially hit this issue.
-
-> 
-> And what is the actual warning? ie. what does the code look like. My line 210
-> of memory.c is a printk() not a WARN.
-
-In mainline, the warning is at line 200:
-
-	if (WARN_ON_ONCE(!pfn_valid(pfn)))
-		return false;
-
-> 
-> 
->> [   78.300767] ------------[ cut here ]------------
->> [   78.300768] WARNING: at ../drivers/base/memory.c:210
->> [   78.300769] Modules linked in: rpadlpar_io(X) rpaphp(X) tcp_diag udp_diag inet_diag unix_diag af_packet_diag netlink_diag af_packet xfs libcrc32c ibmveth(X) rtc_generic btrfs xor raid6_pq xts
->> gf128mul dm_crypt sd_mod sr_mod cdrom crc_t10dif ibmvscsi(X) scsi_transport_srp scsi_tgt dm_mod sg scsi_mod autofs4
->> [   78.300789] Supported: Yes, External
->> [   78.300791] CPU: 1 PID: 3090 Comm: systemd-udevd Tainted: G              X 3.12.45-1-default #1
->> [   78.300793] task: c0000004d7d1d970 ti: c0000004d7b90000 task.ti: c0000004d7b90000
->> [   78.300794] NIP: c0000000004fcff8 LR: c0000000004fda84 CTR: 0000000000000000
->> [   78.300795] REGS: c0000004d7b93930 TRAP: 0700   Tainted: G              X  (3.12.45-1-default)
->> [   78.300796] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 24088848  XER: 00000000
->> [   78.300800] CFAR: c0000000004fcf98 SOFTE: 1
->> GPR00: 0000000000000537 c0000004d7b93bb0 c000000000e7f200 0000000000053000
->> GPR04: 0000000000001000 0000000000000001 c000000000e0f200 0000000000000000
->> GPR08: 0000000000000000 0000000000000001 0000000000000537 00000000014dc000
->> GPR12: 0000000000054000 c00000000e7f0900 0000000010041040 0000000000000000
->> GPR16: 00000100206f0010 000000001003ff78 000000001006c824 00000000100410b0
->> GPR20: 000000001003ff90 000000001006c00c 000001002073cd20 00000100206f0760
->> GPR24: 00000100206f85a0 c00000000076d950 c0000004ef7c95e0 c0000004d7b93e00
->> GPR28: c0000004de601738 0000000000000001 c000000001218f80 00000000003fffff
->> [   78.300818] NIP [c0000000004fcff8] memory_block_action+0x258/0x2e0
->> [   78.300820] LR [c0000000004fda84] memory_subsys_online+0x54/0x100
->> [   78.300821] Call Trace:
->> [   78.300822] [c0000004d7b93bb0] [c000000009071ce0] 0xc000000009071ce0 (unreliable)
->> [   78.300824] [c0000004d7b93c40] [c0000000004fda84] memory_subsys_online+0x54/0x100
->> [   78.300826] [c0000004d7b93c70] [c0000000004df784] device_online+0xb4/0x120
->> [   78.300828] [c0000004d7b93cb0] [c0000000004fd738] store_mem_state+0x88/0x220
->> [   78.300830] [c0000004d7b93cf0] [c0000000004db448] dev_attr_store+0x68/0xa0
->> [   78.300833] [c0000004d7b93d30] [c00000000031f938] sysfs_write_file+0xf8/0x1d0
->> [   78.300835] [c0000004d7b93d90] [c00000000027d29c] vfs_write+0xec/0x250
->> [   78.300837] [c0000004d7b93de0] [c00000000027dfdc] SyS_write+0x6c/0xf0
->> [   78.300839] [c0000004d7b93e30] [c00000000000a17c] syscall_exit+0x0/0x7c
->> [   78.300840] Instruction dump:
->> [   78.300841] 780a0560 79482ea4 7ce94214 2fa70000 41de0014 7d09402a 396b4000 7907ffe3
->> [   78.300844] 4082ff54 3cc2fff9 8926b83a 69290001 <0b090000> 2fa90000 40de006c 3860fff0
->> [   78.300847] ---[ end trace dfec8da06ebbc762 ]---
-> 
-> For change logs I think it's nice to trim the oops a bit. Others probably have
-> different opinions but I'd remove the printk timestamp, the GPRs and some of
-> the other regs and the instruction dump, so more like:
-> 
->   WARNING: at ../drivers/base/memory.c:210
->   CPU: 1 PID: 3090 Comm: systemd-udevd Tainted: G              X 3.12.45-1-default #1
->   NIP [c0000000004fcff8] memory_block_action+0x258/0x2e0
->   LR [c0000000004fda84] memory_subsys_online+0x54/0x100
->   Call Trace:
->   [c0000004d7b93bb0] [c000000009071ce0] 0xc000000009071ce0 (unreliable)
->   [c0000004d7b93c40] [c0000000004fda84] memory_subsys_online+0x54/0x100
->   [c0000004d7b93c70] [c0000000004df784] device_online+0xb4/0x120
->   [c0000004d7b93cb0] [c0000000004fd738] store_mem_state+0x88/0x220
->   [c0000004d7b93cf0] [c0000000004db448] dev_attr_store+0x68/0xa0
->   [c0000004d7b93d30] [c00000000031f938] sysfs_write_file+0xf8/0x1d0
->   [c0000004d7b93d90] [c00000000027d29c] vfs_write+0xec/0x250
->   [c0000004d7b93de0] [c00000000027dfdc] SyS_write+0x6c/0xf0
->   [c0000004d7b93e30] [c00000000000a17c] syscall_exit+0x0/0x7c
-> 
-> 
-> Also looking at the trace, it's from 3.12.45-1, which is pretty old. Have you
-> also tested on mainline?
-
-All testing and debugging was done on a mainline kernel. The traces with
-the 3.12 kernel were just what was submitted in the initial bug report.
-
-> 
->> The warning is triggered because there is a udev rule that automatically
->> tries to online memory after it has been added. The udev rule varies from
->> distro to distro, but will generally look something like:
+On 11/23/2015 10:21 AM, Ming Lei wrote:
+> On Mon, 23 Nov 2015 10:46:20 +0800
+> Ming Lei <ming.lei@canonical.com> wrote:
+>
+>> Hi Mark,
 >>
->> SUBSYSTEM=="memory", ACTION=="add", ATTR{state}=="offline", ATTR{state}="online"
+>> On Mon, Nov 23, 2015 at 9:50 AM, Mark Salter <msalter@redhat.com> wrote:
+>>> On Mon, 2015-11-23 at 08:36 +0800, Ming Lei wrote:
+>>>> On Mon, Nov 23, 2015 at 7:20 AM, Mark Salter <msalter@redhat.com> wrote:
+>>>>> On Sun, 2015-11-22 at 00:56 +0800, Ming Lei wrote:
+>>>>>> On Sat, 21 Nov 2015 12:30:14 +0100
+>>>>>> Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
+>>>>>>
+>>>>>>> On 20/11/2015 13:10, Michael Ellerman wrote:
+>>>>>>>> On Thu, 2015-11-19 at 00:23 -0800, Christoph Hellwig wrote:
+>>>>>>>>
+>>>>>>>>> It's pretty much guaranteed a block layer bug, most likely in the
+>>>>>>>>> merge bios to request infrastucture where we don't obey the merging
+>>>>>>>>> limits properly.
+>>>>>>>>>
+>>>>>>>>> Does either of you have a known good and first known bad kernel?
+>>>>>>>>
+>>>>>>>> Not me, I've only hit it one or two times. All I can say is I have hit it in
+>>>>>>>> 4.4-rc1.
+>>>>>>>>
+>>>>>>>> Laurent, can you narrow it down at all?
+>>>>>>>
+>>>>>>> It seems that the panic is triggered by the commit bdced438acd8 ("block:
+>>>>>>> setup bi_phys_segments after splitting") which has been pulled by the
+>>>>>>> merge d9734e0d1ccf ("Merge branch 'for-4.4/core' of
+>>>>>>> git://git.kernel.dk/linux-block").
+>>>>>>>
+>>>>>>> My system is panicing promptly when running a kernel built at
+>>>>>>> d9734e0d1ccf, while reverting the commit bdced438acd8, it can run hours
+>>>>>>> without panicing.
+>>>>>>>
+>>>>>>> This being said, I can't explain what's going wrong.
+>>>>>>>
+>>>>>>> May Ming shed some light here ?
+>>>>>>
+>>>>>> Laurent, looks there is one bug in blk_bio_segment_split(), would you
+>>>>>> mind testing the following patch to see if it fixes your issue?
+>>>>>>
+>>>>>> ---
+>>>>>>  From 6fc701231dcc000bc8bc4b9105583380d9aa31f4 Mon Sep 17 00:00:00 2001
+>>>>>> From: Ming Lei <ming.lei@canonical.com>
+>>>>>> Date: Sun, 22 Nov 2015 00:47:13 +0800
+>>>>>> Subject: [PATCH] block: fix segment split
+>>>>>>
+>>>>>> Inside blk_bio_segment_split(), previous bvec pointer('bvprvp')
+>>>>>> always points to the iterator local variable, which is obviously
+>>>>>> wrong, so fix it by pointing to the local variable of 'bvprv'.
+>>>>>>
+>>>>>> Signed-off-by: Ming Lei <ming.lei@canonical.com>
+>>>>>> ---
+>>>>>>   block/blk-merge.c | 4 ++--
+>>>>>>   1 file changed, 2 insertions(+), 2 deletions(-)
+>>>>>>
+>>>>>> diff --git a/block/blk-merge.c b/block/blk-merge.c
+>>>>>> index de5716d8..f2efe8a 100644
+>>>>>> --- a/block/blk-merge.c
+>>>>>> +++ b/block/blk-merge.c
+>>>>>> @@ -98,7 +98,7 @@ static struct bio *blk_bio_segment_split(struct request_queue *q,
+>>>>>>
+>>>>>>                        seg_size += bv.bv_len;
+>>>>>>                        bvprv = bv;
+>>>>>> -                     bvprvp = &bv;
+>>>>>> +                     bvprvp = &bvprv;
+>>>>>>                        sectors += bv.bv_len >> 9;
+>>>>>>                        continue;
+>>>>>>                }
+>>>>>> @@ -108,7 +108,7 @@ new_segment:
+>>>>>>
+>>>>>>                nsegs++;
+>>>>>>                bvprv = bv;
+>>>>>> -             bvprvp = &bv;
+>>>>>> +             bvprvp = &bvprv;
+>>>>>>                seg_size = bv.bv_len;
+>>>>>>                sectors += bv.bv_len >> 9;
+>>>>>>        }
+>>>>>
+>>>>> I'm still hitting the BUG even with this patch applied on top of 4.4-rc1.
+>>>>
+>>>> OK, looks there are still other bugs, care to share us how to reproduce
+>>>> it on arm64?
+>>>>
+>>>> thanks,
+>>>> Ming
+>>>
+>>> Unfortunately, the best reproducer I have is to boot the platform. I have seen the
+>>> BUG a few times post-boot, but I don't have a consistant reproducer. I am using
+>>> upstream 4.4-rc1 with this config:
+>>>
+>>>    http://people.redhat.com/msalter/fh_defconfig
+>>>
+>>> With 4.4-rc1 on an APM Mustang platform, I see the BUG about once every 6-7 boots.
+>>> On an AMD Seattle platform, about every 9 boots.
 >>
->> On any architecture that uses memory_probe_store to reserve memory,
->> this can interrupt the memory reservation process. This patch modifies
->> memory_probe_store to take the hotplug sysfs lock to prevent the online
->> of added memory before the completion of the probe.
-> 
-> So presumably it's add_memory() that is causing a uevent to fire? I can't see
-> where that happens but I guess it's in there somewhere.
-> 
-> And that's a problem because we've only added one (or some) of the sections, so
-> the memory block is not fully populated, and then the add path hits the warning
-> because of that. Am I right?
+>> Thanks for the input, and I will try to reproduce the issue on mustang with
+>> your kernel config.
+>
+> I can reproduce the issue on mustang, and looks I may understand the story now.
+>
+> When 64K page size is used on arm64, and the default segment size of block
+> is 65536, then one segment should only include one page at most.
+>
+> Commit bdced438acd83a(block: setup bi_phys_segments after splitting) does not
+> compute bio->bi_seg_front_size and bio->bi_seg_back_size, then one less segment
+> may be obtained because blk_phys_contig_segment() thought the last bvec in 1st
+> bio and the 1st bvec in the 2nd bio is in one physical segment, so cause the
+> regression.
+>
+> Looks the following patch can fix the issue by figuring bio->bi_seg_front_size
+> and bio->bi_seg_back_size in blk_bio_segment_split().
+>
+> Mark, thanks again for providing the reproduction steps, and could you run your
+> test to see if it can fix your issue?
+>
+> ---
+>  From 86b5f33d48715c1150fdcfd9a76e495e7aa913aa Mon Sep 17 00:00:00 2001
+> From: Ming Lei <ming.lei@canonical.com>
+> Date: Mon, 23 Nov 2015 20:27:23 +0800
+> Subject: [PATCH 2/2] blk-merge: fix blk_bio_segment_split
+>
+> Commit bdced438acd83a(block: setup bi_phys_segments after
+> splitting) introduces function of computing bio->bi_phys_segments
+> during bio splitting.
+>
+> Unfortunately both bio->bi_seg_front_size and bio->bi_seg_back_size
+> arn't computed, so too many physical segments may be obtained
+> for one request since both the two are used to check if one segment
+> across two bios can be possible.
+>
+> This patch fixes the issue by computing the two variables in
+> blk_bio_segment_split().
+>
+> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reported-by: Mark Salter <msalter@redhat.com>
+> Fixes: bdced438acd83a(block: setup bi_phys_segments after splitting)
+> Signed-off-by: Ming Lei <ming.lei@canonical.com>
+> ---
+>   block/blk-merge.c | 22 +++++++++++++++++++---
+>   1 file changed, 19 insertions(+), 3 deletions(-)
+>
+> diff --git a/block/blk-merge.c b/block/blk-merge.c
+> index f2efe8a..50793cd 100644
+> --- a/block/blk-merge.c
+> +++ b/block/blk-merge.c
+> @@ -76,6 +76,9 @@ static struct bio *blk_bio_segment_split(struct request_queue *q,
+>   	struct bio_vec bv, bvprv, *bvprvp = NULL;
+>   	struct bvec_iter iter;
+>   	unsigned seg_size = 0, nsegs = 0, sectors = 0;
+> +	unsigned front_seg_size = bio->bi_seg_front_size;
+> +	bool do_split = true;
+> +	struct bio *new = NULL;
+>
+>   	bio_for_each_segment(bv, bio, iter) {
+>   		if (sectors + (bv.bv_len >> 9) > queue_max_sectors(q))
+> @@ -111,13 +114,26 @@ new_segment:
+>   		bvprvp = &bvprv;
+>   		seg_size = bv.bv_len;
+>   		sectors += bv.bv_len >> 9;
+> +
+> +		if (nsegs == 1 && seg_size > front_seg_size)
+> +			front_seg_size = seg_size;
+>   	}
+>
+> -	*segs = nsegs;
+> -	return NULL;
+> +	do_split = false;
+>   split:
+>   	*segs = nsegs;
+> -	return bio_split(bio, sectors, GFP_NOIO, bs);
+> +
+> +	if (do_split) {
+> +		new = bio_split(bio, sectors, GFP_NOIO, bs);
+> +		if (new)
+> +			bio = new;
+> +	}
+> +
+> +	bio->bi_seg_front_size = front_seg_size;
+> +	if (seg_size > bio->bi_seg_back_size)
+> +		bio->bi_seg_back_size = seg_size;
+> +
+> +	return do_split ? new : NULL;
+>   }
+>
+>   void blk_queue_split(struct request_queue *q, struct bio **bio,
+>
 
-Yes, that's right. While we are in the process of reserving the sections of the
-block,the uevent gets triggered and calls store_mem_state(). This then calls
-pages_correctly_reserved() which finds that the block has only been partially
-reserved, triggering the warning.
+I applied both your patches and tested on Overdrive 3000. This fixes the 
+issue for me.
 
-> 
->> Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
->> ---
->> v2: Move call to unlock_device_hotplug under "out" label
->>
->> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
->> index bece691..7c50415 100644
->> --- a/drivers/base/memory.c
->> +++ b/drivers/base/memory.c
->> @@ -422,6 +422,10 @@ memory_probe_store(struct device *dev, struct device_attribute *attr,
->>  	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
->>  		return -EINVAL;
->>
->> +	ret = lock_device_hotplug_sysfs();
->> +	if (ret)
->> +		return ret;
->> +
->>  	for (i = 0; i < sections_per_block; i++) {
->>  		nid = memory_add_physaddr_to_nid(phys_addr);
->>  		ret = add_memory(nid, phys_addr,
->> @@ -434,6 +438,7 @@ memory_probe_store(struct device *dev, struct device_attribute *attr,
->>
->>  	ret = count;
->>  out:
->> +	unlock_device_hotplug();
->>  	return ret;
->>  }
->>
-> 
-> This looks OK. What I don't know is what the locking rules in add_memory() are.
-> It takes the mem_hotplug lock, which is also a mutex. I suspect it's fine to
-> nest the mem_hotplug lock within the sysfs one, but it would be good if you can
-> try and confirm. Also if you run with lockdep enabled it should tell you if
-> you've got it wrong.
+Added linux-arm-kernel, since arm64 triggers this issue.
 
-My assumption is that nesting the locks in this way is alright. We can see this
-same nesting structure used in store_mem_state(). I never ran into any locking
-issues in my testing, but I can test with lockdep enabled if you think that's
-necessary.
+Thanks Ming and testers for your hard work on this.
 
--John
-
-> 
-> cheers
-> 
-> 
+Tested-by: Alan Ott <alan@softiron.co.uk>
