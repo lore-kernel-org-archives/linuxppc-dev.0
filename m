@@ -1,39 +1,16 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [43.229.61.17])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 093CB1A009B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 14:32:33 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 24 Nov 2015 09:02:31 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5144E125805A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 09:02:41 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAO3VLCn53084284
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 09:01:22 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAO3VJo5010379
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 09:01:21 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- mpe@ellerman.id.au, Scott Wood <scottwood@freescale.com>,
- Denis Kirjanov <kda@linux-powerpc.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V5 00/31] powerpc/mm: Update page table format for book3s
- 64
-In-Reply-To: <1448321325.4574.19.camel@kernel.crashing.org>
-References: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1448321325.4574.19.camel@kernel.crashing.org>
-Date: Tue, 24 Nov 2015 09:01:15 +0530
-Message-ID: <8737vwul8c.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 162891A0273
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 14:36:59 +1100 (AEDT)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Russell Currey <ruscur@russell.cc>
+Subject: [PATCH] powerpc/powernv: Add a kmsg_dumper that flushes console
+ output on panic
+Date: Tue, 24 Nov 2015 14:26:33 +1100
+Message-Id: <1448335593-27862-1-git-send-email-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,28 +20,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On BMC machines, console output is controlled by the OPAL firmware and is
+only flushed when its pollers are called.  When the kernel is in a panic
+state, it no longer calls these pollers and thus console output does not
+completely flush, causing some output from the panic to be lost.
 
-> On Mon, 2015-11-23 at 15:52 +0530, Aneesh Kumar K.V wrote:
->> This patch series attempt to update book3s 64 linux page table format to
->> make it more flexible. Our current pte format is very restrictive and we
->> overload multiple pte bits. This is due to the non-availability of free bits
->> in pte_t. We use pte_t to track the validity of 4K subpages. This patch
->> series free up pte_t of 11 bits by moving 4K subpage tracking to the
->> lower half of PTE page. The pte format is updated such that we have a
->> better method for identifying a pte entry at pmd level. This will also enable
->> us to implement hugetlb migration(not yet done in this series).
->> 
->> Before making the changes to the pte format, I am splitting the
->> pte header definition such that we now have the below layout for headers
->
-> This series actually completely removes the tracking of the subages,
-> right ? IE, it also halves the memory footprint of page tables, doesn't
-> it ?
->
+This patch adds a new kmsg_dumper which gets called at panic time to ensure
+panic output is not lost.  It accomplishes this by calling OPAL_CONSOLE_FLUSH
+in the OPAL API, and if that is not available, the pollers are called enough
+times to (hopefully) completely flush the buffer.
 
-No, that is done in the next series.
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+---
+A patch to add the preferred OPAL call for flushing the console buffer,
+OPAL_CONSOLE_FLUSH, was recently sent upstream to Skiboot.  You can track
+its progress here: https://patchwork.ozlabs.org/patch/547379/
+---
+ arch/powerpc/include/asm/opal-api.h            |  3 +-
+ arch/powerpc/include/asm/opal.h                |  3 ++
+ arch/powerpc/platforms/powernv/Makefile        |  1 +
+ arch/powerpc/platforms/powernv/opal-kmsg.c     | 70 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
+ arch/powerpc/platforms/powernv/opal.c          |  3 ++
+ 6 files changed, 80 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/platforms/powernv/opal-kmsg.c
 
-http://mid.gmane.org/1448274825-30289-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
-
--aneesh
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 8374afe..f8faaae 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -157,7 +157,8 @@
+ #define OPAL_LEDS_GET_INDICATOR			114
+ #define OPAL_LEDS_SET_INDICATOR			115
+ #define OPAL_CEC_REBOOT2			116
+-#define OPAL_LAST				116
++#define OPAL_CONSOLE_FLUSH			117
++#define OPAL_LAST				117
+ 
+ /* Device tree flags */
+ 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 8001159..a5fd407 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -35,6 +35,7 @@ int64_t opal_console_read(int64_t term_number, __be64 *length,
+ 			  uint8_t *buffer);
+ int64_t opal_console_write_buffer_space(int64_t term_number,
+ 					__be64 *length);
++void opal_console_flush(void);
+ int64_t opal_rtc_read(__be32 *year_month_day,
+ 		      __be64 *hour_minute_second_millisecond);
+ int64_t opal_rtc_write(uint32_t year_month_day,
+@@ -262,6 +263,8 @@ extern int opal_resync_timebase(void);
+ 
+ extern void opal_lpc_init(void);
+ 
++extern void opal_kmsg_init(void);
++
+ extern int opal_event_request(unsigned int opal_event_nr);
+ 
+ struct opal_sg_list *opal_vmalloc_to_sg_list(void *vmalloc_addr,
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index 1c8cdb6..b9de7ef 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -2,6 +2,7 @@ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o idle.o
+ obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
+ obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
+ obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
++obj-y			+= opal-kmsg.o
+ 
+ obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
+ obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
+diff --git a/arch/powerpc/platforms/powernv/opal-kmsg.c b/arch/powerpc/platforms/powernv/opal-kmsg.c
+new file mode 100644
+index 0000000..904f123
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/opal-kmsg.c
+@@ -0,0 +1,70 @@
++/*
++ * kmsg dumper that ensures the OPAL console fully flushes panic messages
++ *
++ * Author: Russell Currey <ruscur@russell.cc>
++ *
++ * Copyright 2015 IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2 of the License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/kmsg_dump.h>
++
++#include <asm/opal.h>
++#include <asm/opal-api.h>
++
++/*
++ * Console output is controlled by OPAL firmware.  The kernel regularly calls
++ * OPAL_POLL_EVENTS, which flushes some console output.  In a panic state,
++ * however, the kernel no longer calls OPAL_POLL_EVENTS and the panic message
++ * may not be completely printed.  This function does not actually dump the
++ * message, it just ensures that OPAL completely flushes the console buffer.
++ */
++static void force_opal_console_flush(struct kmsg_dumper *dumper,
++				     enum kmsg_dump_reason reason)
++{
++	int i;
++
++	/*
++	 * Outside of a panic context the pollers will continue to run,
++	 * so we don't need to do any special flushing.
++	 */
++	if (reason != KMSG_DUMP_PANIC) {
++		return;
++	}
++
++	if (opal_check_token(OPAL_CONSOLE_FLUSH)) {
++		opal_console_flush();
++	} else {
++		/*
++		 * If OPAL_CONSOLE_FLUSH is not implemented in the firmware,
++		 * the console can still be flushed by calling the polling
++		 * function enough times to flush the buffer.  We don't know
++		 * how much output still needs to be flushed, but we can be
++		 * generous since the kernel is in panic and doesn't need
++		 * to do much else.
++		 */
++		printk(KERN_NOTICE "opal: OPAL_CONSOLE_FLUSH missing.\n");
++		for (i = 0; i < 1024; i++) {
++			opal_poll_events(NULL);
++		}
++	}
++}
++
++static struct kmsg_dumper opal_kmsg_dumper = {
++	.dump = force_opal_console_flush
++};
++
++void __init opal_kmsg_init(void)
++{
++	int rc;
++
++	/* Add our dumper to the list */
++	rc = kmsg_dump_register(&opal_kmsg_dumper);
++	if (rc != 0) {
++		pr_err("opal: kmsg_dump_register failed; returned %d\n", rc);
++	}
++}
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index b7a464f..e45b88a 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -301,3 +301,4 @@ OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
+ OPAL_CALL(opal_prd_msg,				OPAL_PRD_MSG);
+ OPAL_CALL(opal_leds_get_ind,			OPAL_LEDS_GET_INDICATOR);
+ OPAL_CALL(opal_leds_set_ind,			OPAL_LEDS_SET_INDICATOR);
++OPAL_CALL(opal_console_flush,			OPAL_CONSOLE_FLUSH);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 4296d55..a94a85c 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -758,6 +758,9 @@ static int __init opal_init(void)
+ 	opal_pdev_init(opal_node, "ibm,opal-flash");
+ 	opal_pdev_init(opal_node, "ibm,opal-prd");
+ 
++	/* Initialise OPAL kmsg dumper for flushing console on panic */
++	opal_kmsg_init();
++
+ 	return 0;
+ }
+ machine_subsys_initcall(powernv, opal_init);
+-- 
+2.6.2
