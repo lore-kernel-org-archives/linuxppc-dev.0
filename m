@@ -1,38 +1,30 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <hare@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5E8331A0336
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 19:57:55 +1100 (AEDT)
-Received: from localhost
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 25 Nov 2015 08:57:49 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 4C9851B08069
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 08:58:10 +0000 (GMT)
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
- [9.149.37.216])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAP8vlDX10486078
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 08:57:47 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAP8va4U004850
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 01:57:45 -0700
-Subject: Re: [PATCH] cxl: Fix DSI misses when the context owning task exits
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1448362578-32456-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-Cc: Frank Haverkamp <HAVERKAM@de.ibm.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, imunsie@au1.ibm.com
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Message-ID: <565577FF.9020000@linux.vnet.ibm.com>
-Date: Wed, 25 Nov 2015 09:57:35 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1CBDA1A0368
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 20:04:41 +1100 (AEDT)
+Message-ID: <565579A2.4000005@suse.de>
+Date: Wed, 25 Nov 2015 10:04:34 +0100
+From: Hannes Reinecke <hare@suse.de>
 MIME-Version: 1.0
-In-Reply-To: <1448362578-32456-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+To: emilne@redhat.com
+CC: Christoph Hellwig <hch@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Mark Salter <msalter@redhat.com>,
+ "James E. J. Bottomley" <JBottomley@odin.com>,
+ brking <brking@us.ibm.com>, linux-scsi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-block@vger.kernel.org, Mike Snitzer <snitzer@redhat.com>,
+ Jun'ichi Nomura <j-nomura@ce.jp.nec.com>, Jens Axboe <axboe@fb.com>
+Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
+References: <1447838334.1564.2.camel@ellerman.id.au>	
+ <1447855399.3974.24.camel@redhat.com>	
+ <1447894964.15206.0.camel@ellerman.id.au>	
+ <20151119082325.GA11419@infradead.org> <564DEC41.5010600@suse.de>	
+ <1448030316.4067.18.camel@localhost.localdomain> <564F3453.9040603@suse.de>
+ <1448033323.4067.24.camel@localhost.localdomain>
+In-Reply-To: <1448033323.4067.24.camel@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,35 +34,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 11/20/2015 04:28 PM, Ewan Milne wrote:
+> On Fri, 2015-11-20 at 15:55 +0100, Hannes Reinecke wrote:
+>> Can't we have a joint effort here?
+>> I've been spending a _LOT_ of time trying to debug things here, but
+>> none of the ideas I've come up with have been able to fix anything.
+> 
+> Yes.  I'm not the one primarily looking at it, and we don't have a
+> reproducer in-house.  We just have the one dump right now.
+> 
+>>
+>> I'm almost tempted to increase the count from scsi_alloc_sgtable()
+>> by one and be done with ...
+>>
+> 
+> That might not fix it if it is a problem with the merge code, though.
+> 
+And indeed, it doesn't.
+Seems I finally found the culprit.
+
+What happens is this:
+We have two paths, with these seg_boundary_masks:
+
+path-1:    seg_boundary_mask = 65535,
+path-2:    seg_boundary_mask = 4294967295,
+
+consequently the DM request queue has this:
+
+md-1:    seg_boundary_mask = 65535,
+
+What happens now is that a request is being formatted, and sent
+to path 2. During submission req->nr_phys_segments is formatted
+with the limits of path 2, arriving at a count of 3.
+Now the request gets retried on path 1, but as the NOMERGE request
+flag is set req->nr_phys_segments is never updated.
+But blk_rq_map_sg() ignores all counters, and just uses the
+bi_vec directly, resulting in a count of 4 -> boom.
+
+So the culprit here is the NOMERGE flag, which is evaluated
+via
+->dm_dispatch_request()
+  ->blk_insert_cloned_request()
+    ->blk_rq_check_limits()
+
+If the above assessment is correct, the following patch should
+fix it:
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 801ced7..12cccd6 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1928,7 +1928,7 @@ EXPORT_SYMBOL(submit_bio);
+  */
+ int blk_rq_check_limits(struct request_queue *q, struct request *rq)
+ {
+-       if (!rq_mergeable(rq))
++       if (rq->cmd_type != REQ_TYPE_FS)
+                return 0;
+
+        if (blk_rq_sectors(rq) > blk_queue_get_max_sectors(q,
+rq->cmd_flags)) {
 
 
-Le 24/11/2015 11:56, Vaibhav Jain a écrit :
-> Presently when a user-space process issues CXL_IOCTL_START_WORK ioctl we
-> store the pid of the current task_struct and use it to get pointer to
-> the mm_struct of the process, while processing page or segment faults
-> from the capi card. However this causes issues when the thread that had
-> originally issued the start-work ioctl exits in which case the stored
-> pid is no more valid and the cxl driver is unable to handle faults as
-> the mm_struct corresponding to process is no more accessible.
->
-> This patch fixes this issue by using the mm_struct of the next alive
-> task in the thread group. This is done by iterating over all the tasks
-> in the thread group starting from thread group leader and calling
-> get_task_mm on each one of them. When a valid mm_struct is obtained the
-> pid of the associated task is stored in the context replacing the
-> exiting one for handling future faults.
->
-> The patch introduces a new function named get_mem_context that checks if
-> the current task pointed to by ctx->pid is dead? If yes it performs the
-> steps described above. Also a new variable cxl_context.glpid is
-> introduced which stores the pid of the thread group leader associated
-> with the context owning task.
->
-> Reported-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-> Reported-by: Frank Haverkamp <HAVERKAM@de.ibm.com>
-> Suggested-by: Ian Munsie <imunsie@au1.ibm.com>
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Mike? Jens?
+Can you comment on it?
 
-Looks good to me. Thanks!
+Cheers,
 
-Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Hannes
+-- 
+Dr. Hannes Reinecke		               zSeries & Storage
+hare@suse.de			               +49 911 74053 688
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: F. Imendörffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
+HRB 21284 (AG Nürnberg)
