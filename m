@@ -1,25 +1,22 @@
-Return-Path: <hongtao.jia@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0136.outbound.protection.outlook.com [65.55.169.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yk0-x235.google.com (mail-yk0-x235.google.com
+ [IPv6:2607:f8b0:4002:c07::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F37971A0351
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 19:00:09 +1100 (AEDT)
-From: Hongtao Jia <hongtao.jia@freescale.com>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-CC: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org"
- <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] cpufreq: qoriq: Register cooling device based on device
- tree
-Date: Wed, 25 Nov 2015 08:00:02 +0000
-Message-ID: <BLUPR03MB14927B13BAA66ABBC86F875E1050@BLUPR03MB149.namprd03.prod.outlook.com>
-References: <1448348129-46675-1-git-send-email-hongtao.jia@freescale.com>
- <20151124071121.GM5258@ubuntu>
-In-Reply-To: <20151124071121.GM5258@ubuntu>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB4F21A0352
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 19:12:57 +1100 (AEDT)
+Received: by ykfs79 with SMTP id s79so48446124ykf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 00:12:56 -0800 (PST)
 MIME-Version: 1.0
+In-Reply-To: <1448406993-7888-1-git-send-email-rashmicy@gmail.com>
+References: <1448406993-7888-1-git-send-email-rashmicy@gmail.com>
+Date: Wed, 25 Nov 2015 11:12:55 +0300
+Message-ID: <CAOJe8K2t9PAa6dh2QQ+3O2nwvXh-VKZR-UohUt=BRXaQiVzM5w@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Fix xmon ml command to work with 64 bit values.
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Rashmica Gupta <rashmicy@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, jwboyer@linux.vnet.ibm.com
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,32 +26,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-> -----Original Message-----
-> From: Viresh Kumar [mailto:viresh.kumar@linaro.org]
-> Sent: Tuesday, November 24, 2015 3:11 PM
-> To: Jia Hongtao-B38951
-> Cc: edubezval@gmail.com; linux-pm@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org; devicetree@vger.kernel.org; Wood Scott-B07421
-> Subject: Re: [PATCH] cpufreq: qoriq: Register cooling device based on
-> device tree
->=20
-> On 24-11-15, 14:55, Jia Hongtao wrote:
-> > +	/* Register CPU cooling device for QorIQ platform */
-> > +	for_each_node_with_property(cpu_np, "#cooling-cells") {
-> > +		of_property_read_u32(cpu_np, "reg", &cpu_id);
-> > +		cpufreq_get_policy(&cpu_policy, cpu_id);
->=20
-> That's not the right way to do it. You already have DT node for the CPU,
-> look at how it is done from ->ready() callback for cpufreq-dt.
->=20
+On 11/25/15, Rashmica Gupta <rashmicy@gmail.com> wrote:
+> The ml command in xmon currently only works for 32-bit values and so fails
+> to find 64-bit values on a ppc64 machine. So change to work for 64-bit
+> values.
+Please add xmon to the subject line
+>
+> This is based off a patch by Josh Boyer.
+based on
+>
+> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+> ---
+>
+> Based off this patch: http://patchwork.ozlabs.org/patch/90309/
+>
+>  arch/powerpc/xmon/xmon.c | 23 +++++++++++++++--------
+>  1 file changed, 15 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index 786bf01691c9..df05bd2fca07 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -184,6 +184,12 @@ extern void xmon_leave(void);
+>  #define GETWORD(v)	(((v)[0] << 24) + ((v)[1] << 16) + ((v)[2] << 8) +
+> (v)[3])
+>  #endif
+>
+> +#if BITS_PER_LONG == 64
+> +#define GETLONG(v)	(((unsigned long) GETWORD(v)) << 32 | GETWORD(v+4))
+> +#else
+> +#define GETLONG(v)	GETWORD(v)
+> +#endif
+> +
+>  static char *help_string = "\
+>  Commands:\n\
+>    b	show breakpoints\n\
+> @@ -2447,14 +2453,15 @@ memdiffs(unsigned char *p1, unsigned char *p2,
+> unsigned nb, unsigned maxpr)
+>  		printf("Total of %d differences\n", prt);
+>  }
+>
+> -static unsigned mend;
+> -static unsigned mask;
+> +static unsigned long mend;
+> +static unsigned long mask;
+>
+>  static void
+>  memlocate(void)
+>  {
+> -	unsigned a, n;
+> -	unsigned char val[4];
+> +	unsigned long a, n;
+> +	int size = sizeof(unsigned long);
+> +	unsigned char val[size];
+>
+>  	last_cmd = "ml";
+>  	scanhex((void *)&mdest);
+> @@ -2470,10 +2477,10 @@ memlocate(void)
+>  		}
+>  	}
+>  	n = 0;
+> -	for (a = mdest; a < mend; a += 4) {
+> -		if (mread(a, val, 4) == 4
+> -			&& ((GETWORD(val) ^ mval) & mask) == 0) {
+> -			printf("%.16x:  %.16x\n", a, GETWORD(val));
+> +	for (a = mdest; a < mend; a += size) {
+> +		if (mread(a, val, size) == size
+> +			&& ((GETLONG(val) ^ mval) & mask) == 0){
+> +			printf("%.16lx:  %.16lx\n", a, GETLONG(val));
+>  			if (++n >= 10)
+>  				break;
+>  		}
 > --
-> viresh
-
-Thanks.
-
-I made a new patch to use ->ready callback for cpu cooling registration.
-I will send V2 after test.
-
--Hongtao.
+> 2.5.0
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
