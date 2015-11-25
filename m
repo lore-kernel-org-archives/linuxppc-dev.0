@@ -1,22 +1,28 @@
-Return-Path: <rashmicy@gmail.com>
-Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
- [IPv6:2607:f8b0:400e:c03::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shengjiu.wang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0137.outbound.protection.outlook.com [207.46.100.137])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C219B1A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 10:37:54 +1100 (AEDT)
-Received: by padhx2 with SMTP id hx2so36857387pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2015 15:37:53 -0800 (PST)
-Received: from circle.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id 81sm16554254pfk.56.2015.11.24.15.37.50
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
- Tue, 24 Nov 2015 15:37:51 -0800 (PST)
-From: Rashmica Gupta <rashmicy@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Append linux_banner to exception information in xmon.
-Date: Wed, 25 Nov 2015 10:37:41 +1100
-Message-Id: <1448408261-30772-1-git-send-email-rashmicy@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B21261A0311
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 13:05:49 +1100 (AEDT)
+Date: Wed, 25 Nov 2015 10:02:32 +0800
+From: Shengjiu Wang <shengjiu.wang@freescale.com>
+To: Rob Herring <robh@kernel.org>, <broonie@kernel.org>
+CC: <pawel.moll@arm.com>, <mark.rutland@arm.com>,
+ <ijc+devicetree@hellion.org.uk>, <galak@codeaurora.org>, <timur@tabi.org>,
+ <nicoleotsuka@gmail.com>, <Xiubo.Lee@gmail.com>, <lgirdwood@gmail.com>,
+ <broonie@kernel.org>, <perex@perex.cz>, <tiwai@suse.com>,
+ <shawnguo@kernel.org>, <alsa-devel@alsa-project.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <devicetree@vger.kernel.org>
+Subject: Re: [PATCH V3 1/3] ASoC: fsl_esai: spba clock is needed by esai device
+Message-ID: <20151125020229.GA26087@shlinux2>
+References: <cover.1448348336.git.shengjiu.wang@freescale.com>
+ <37808c01df126622c41c2d413fddf838dc2aa71d.1448348336.git.shengjiu.wang@freescale.com>
+ <20151124232130.GA3400@rob-hp-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20151124232130.GA3400@rob-hp-laptop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +32,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently if you are in xmon without an oops etc. to view the kernel version you have to type "d $linux_banner" - not necessarily obvious. As this is useful information, append to the output of "e" command.
+On Tue, Nov 24, 2015 at 05:21:30PM -0600, Rob Herring wrote:
+> On Tue, Nov 24, 2015 at 03:03:28PM +0800, Shengjiu Wang wrote:
+> > ESAI need to enable the spba clock, when sdma is using share peripheral
+> > script. In this case, there is two spba master port is used, if don't
+> > enable the clock, the spba bus will have arbitration issue, which may
+> > cause read/write wrong data from/to ESAI registers.
+> > 
+> > Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
+> > ---
+> >  Documentation/devicetree/bindings/sound/fsl,esai.txt |  5 +++++
+> 
+> Acked-by: Rob Herring <robh@kernel.org>
 
-Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
----
- arch/powerpc/xmon/xmon.c | 2 ++
- 1 file changed, 2 insertions(+)
+Hi Mark, Rob
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index df05bd2fca07..6d3d9d031aea 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -1528,6 +1528,8 @@ static void excprint(struct pt_regs *fp)
- 
- 	if (trap == 0x700)
- 		print_bug_trap(fp);
-+
-+	printf(linux_banner);
- }
- 
- static void prregs(struct pt_regs *fp)
--- 
-2.5.0
+   Just a reminder. There is V4 for this patch set. I think the "Acked-by:" is
+for the V4. Thanks.
+
+best regards
+wang shengjiu
+
+> 
+> >  sound/soc/fsl/fsl_esai.c                             | 13 +++++++++++++
+> >  2 files changed, 18 insertions(+)
+> > 
+> > diff --git a/Documentation/devicetree/bindings/sound/fsl,esai.txt b/Documentation/devicetree/bindings/sound/fsl,esai.txt
+> > index d3b6b5f..cd3ee5d 100644
+> > --- a/Documentation/devicetree/bindings/sound/fsl,esai.txt
+> > +++ b/Documentation/devicetree/bindings/sound/fsl,esai.txt
+> > @@ -27,6 +27,11 @@ Required properties:
+> >  			  derive HCK, SCK and FS.
+> >  	"fsys"		  The system clock derived from ahb clock used to
+> >  			  derive HCK, SCK and FS.
+> > +	"spba"		  The spba clock is required when ESAI is placed as a
+> > +			  bus slave of the Shared Peripheral Bus and when two
+> > +			  or more bus masters (CPU, DMA or DSP) try to access
+> > +			  it. This property is optional depending on the SoC
+> > +			  design.
+> >  
+> >    - fsl,fifo-depth	: The number of elements in the transmit and receive
+> >  			  FIFOs. This number is the maximum allowed value for
+> > diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+> > index 504e731..4d7589c 100644
+> > --- a/sound/soc/fsl/fsl_esai.c
+> > +++ b/sound/soc/fsl/fsl_esai.c
+> > @@ -35,6 +35,7 @@
+> >   * @coreclk: clock source to access register
+> >   * @extalclk: esai clock source to derive HCK, SCK and FS
+> >   * @fsysclk: system clock source to derive HCK, SCK and FS
+> > + * @spbaclk: SPBA clock (optional, depending on SoC design)
+> >   * @fifo_depth: depth of tx/rx FIFO
+> >   * @slot_width: width of each DAI slot
+> >   * @slots: number of slots
+> > @@ -54,6 +55,7 @@ struct fsl_esai {
+> >  	struct clk *coreclk;
+> >  	struct clk *extalclk;
+> >  	struct clk *fsysclk;
+> > +	struct clk *spbaclk;
+> >  	u32 fifo_depth;
+> >  	u32 slot_width;
+> >  	u32 slots;
+> > @@ -469,6 +471,9 @@ static int fsl_esai_startup(struct snd_pcm_substream *substream,
+> >  	ret = clk_prepare_enable(esai_priv->coreclk);
+> >  	if (ret)
+> >  		return ret;
+> > +	ret = clk_prepare_enable(esai_priv->spbaclk);
+> > +	if (ret)
+> > +		goto err_spbaclk;
+> >  	if (!IS_ERR(esai_priv->extalclk)) {
+> >  		ret = clk_prepare_enable(esai_priv->extalclk);
+> >  		if (ret)
+> > @@ -499,6 +504,8 @@ err_fsysclk:
+> >  	if (!IS_ERR(esai_priv->extalclk))
+> >  		clk_disable_unprepare(esai_priv->extalclk);
+> >  err_extalck:
+> > +	clk_disable_unprepare(esai_priv->spbaclk);
+> > +err_spbaclk:
+> >  	clk_disable_unprepare(esai_priv->coreclk);
+> >  
+> >  	return ret;
+> > @@ -564,6 +571,7 @@ static void fsl_esai_shutdown(struct snd_pcm_substream *substream,
+> >  		clk_disable_unprepare(esai_priv->fsysclk);
+> >  	if (!IS_ERR(esai_priv->extalclk))
+> >  		clk_disable_unprepare(esai_priv->extalclk);
+> > +	clk_disable_unprepare(esai_priv->spbaclk);
+> >  	clk_disable_unprepare(esai_priv->coreclk);
+> >  }
+> >  
+> > @@ -819,6 +827,11 @@ static int fsl_esai_probe(struct platform_device *pdev)
+> >  		dev_warn(&pdev->dev, "failed to get fsys clock: %ld\n",
+> >  				PTR_ERR(esai_priv->fsysclk));
+> >  
+> > +	esai_priv->spbaclk = devm_clk_get(&pdev->dev, "spba");
+> > +	if (IS_ERR(esai_priv->spbaclk))
+> > +		dev_warn(&pdev->dev, "failed to get spba clock: %ld\n",
+> > +				PTR_ERR(esai_priv->spbaclk));
+> > +
+> >  	irq = platform_get_irq(pdev, 0);
+> >  	if (irq < 0) {
+> >  		dev_err(&pdev->dev, "no irq for node %s\n", pdev->name);
+> > -- 
+> > 1.9.1
+> > 
