@@ -1,28 +1,36 @@
-Return-Path: <shengjiu.wang@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0137.outbound.protection.outlook.com [207.46.100.137])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B21261A0311
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 13:05:49 +1100 (AEDT)
-Date: Wed, 25 Nov 2015 10:02:32 +0800
-From: Shengjiu Wang <shengjiu.wang@freescale.com>
-To: Rob Herring <robh@kernel.org>, <broonie@kernel.org>
-CC: <pawel.moll@arm.com>, <mark.rutland@arm.com>,
- <ijc+devicetree@hellion.org.uk>, <galak@codeaurora.org>, <timur@tabi.org>,
- <nicoleotsuka@gmail.com>, <Xiubo.Lee@gmail.com>, <lgirdwood@gmail.com>,
- <broonie@kernel.org>, <perex@perex.cz>, <tiwai@suse.com>,
- <shawnguo@kernel.org>, <alsa-devel@alsa-project.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <devicetree@vger.kernel.org>
-Subject: Re: [PATCH V3 1/3] ASoC: fsl_esai: spba clock is needed by esai device
-Message-ID: <20151125020229.GA26087@shlinux2>
-References: <cover.1448348336.git.shengjiu.wang@freescale.com>
- <37808c01df126622c41c2d413fddf838dc2aa71d.1448348336.git.shengjiu.wang@freescale.com>
- <20151124232130.GA3400@rob-hp-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20151124232130.GA3400@rob-hp-laptop>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 993701A0A45
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 13:06:44 +1100 (AEDT)
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Wed, 25 Nov 2015 12:06:42 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id AC6312CE8058
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 13:06:40 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAP26Y1N36700400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 13:06:42 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAP26762002105
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 13:06:08 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Frank Haverkamp <HAVERKAM@de.ibm.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cxl: Fix DSI misses when the context owning task exits
+In-reply-to: <1448362578-32456-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+References: <1448362578-32456-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+Date: Wed, 25 Nov 2015 13:05:39 +1100
+Message-Id: <1448417024-sup-3306@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,106 +40,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 24, 2015 at 05:21:30PM -0600, Rob Herring wrote:
-> On Tue, Nov 24, 2015 at 03:03:28PM +0800, Shengjiu Wang wrote:
-> > ESAI need to enable the spba clock, when sdma is using share peripheral
-> > script. In this case, there is two spba master port is used, if don't
-> > enable the clock, the spba bus will have arbitration issue, which may
-> > cause read/write wrong data from/to ESAI registers.
-> > 
-> > Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
-> > ---
-> >  Documentation/devicetree/bindings/sound/fsl,esai.txt |  5 +++++
-> 
-> Acked-by: Rob Herring <robh@kernel.org>
+Thanks Vaibhav! This should definitely help people avoid pain in this
+corner case :)
 
-Hi Mark, Rob
-
-   Just a reminder. There is V4 for this patch set. I think the "Acked-by:" is
-for the V4. Thanks.
-
-best regards
-wang shengjiu
-
-> 
-> >  sound/soc/fsl/fsl_esai.c                             | 13 +++++++++++++
-> >  2 files changed, 18 insertions(+)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/sound/fsl,esai.txt b/Documentation/devicetree/bindings/sound/fsl,esai.txt
-> > index d3b6b5f..cd3ee5d 100644
-> > --- a/Documentation/devicetree/bindings/sound/fsl,esai.txt
-> > +++ b/Documentation/devicetree/bindings/sound/fsl,esai.txt
-> > @@ -27,6 +27,11 @@ Required properties:
-> >  			  derive HCK, SCK and FS.
-> >  	"fsys"		  The system clock derived from ahb clock used to
-> >  			  derive HCK, SCK and FS.
-> > +	"spba"		  The spba clock is required when ESAI is placed as a
-> > +			  bus slave of the Shared Peripheral Bus and when two
-> > +			  or more bus masters (CPU, DMA or DSP) try to access
-> > +			  it. This property is optional depending on the SoC
-> > +			  design.
-> >  
-> >    - fsl,fifo-depth	: The number of elements in the transmit and receive
-> >  			  FIFOs. This number is the maximum allowed value for
-> > diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-> > index 504e731..4d7589c 100644
-> > --- a/sound/soc/fsl/fsl_esai.c
-> > +++ b/sound/soc/fsl/fsl_esai.c
-> > @@ -35,6 +35,7 @@
-> >   * @coreclk: clock source to access register
-> >   * @extalclk: esai clock source to derive HCK, SCK and FS
-> >   * @fsysclk: system clock source to derive HCK, SCK and FS
-> > + * @spbaclk: SPBA clock (optional, depending on SoC design)
-> >   * @fifo_depth: depth of tx/rx FIFO
-> >   * @slot_width: width of each DAI slot
-> >   * @slots: number of slots
-> > @@ -54,6 +55,7 @@ struct fsl_esai {
-> >  	struct clk *coreclk;
-> >  	struct clk *extalclk;
-> >  	struct clk *fsysclk;
-> > +	struct clk *spbaclk;
-> >  	u32 fifo_depth;
-> >  	u32 slot_width;
-> >  	u32 slots;
-> > @@ -469,6 +471,9 @@ static int fsl_esai_startup(struct snd_pcm_substream *substream,
-> >  	ret = clk_prepare_enable(esai_priv->coreclk);
-> >  	if (ret)
-> >  		return ret;
-> > +	ret = clk_prepare_enable(esai_priv->spbaclk);
-> > +	if (ret)
-> > +		goto err_spbaclk;
-> >  	if (!IS_ERR(esai_priv->extalclk)) {
-> >  		ret = clk_prepare_enable(esai_priv->extalclk);
-> >  		if (ret)
-> > @@ -499,6 +504,8 @@ err_fsysclk:
-> >  	if (!IS_ERR(esai_priv->extalclk))
-> >  		clk_disable_unprepare(esai_priv->extalclk);
-> >  err_extalck:
-> > +	clk_disable_unprepare(esai_priv->spbaclk);
-> > +err_spbaclk:
-> >  	clk_disable_unprepare(esai_priv->coreclk);
-> >  
-> >  	return ret;
-> > @@ -564,6 +571,7 @@ static void fsl_esai_shutdown(struct snd_pcm_substream *substream,
-> >  		clk_disable_unprepare(esai_priv->fsysclk);
-> >  	if (!IS_ERR(esai_priv->extalclk))
-> >  		clk_disable_unprepare(esai_priv->extalclk);
-> > +	clk_disable_unprepare(esai_priv->spbaclk);
-> >  	clk_disable_unprepare(esai_priv->coreclk);
-> >  }
-> >  
-> > @@ -819,6 +827,11 @@ static int fsl_esai_probe(struct platform_device *pdev)
-> >  		dev_warn(&pdev->dev, "failed to get fsys clock: %ld\n",
-> >  				PTR_ERR(esai_priv->fsysclk));
-> >  
-> > +	esai_priv->spbaclk = devm_clk_get(&pdev->dev, "spba");
-> > +	if (IS_ERR(esai_priv->spbaclk))
-> > +		dev_warn(&pdev->dev, "failed to get spba clock: %ld\n",
-> > +				PTR_ERR(esai_priv->spbaclk));
-> > +
-> >  	irq = platform_get_irq(pdev, 0);
-> >  	if (irq < 0) {
-> >  		dev_err(&pdev->dev, "no irq for node %s\n", pdev->name);
-> > -- 
-> > 1.9.1
-> > 
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
