@@ -1,30 +1,42 @@
-Return-Path: <hare@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <warrier@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 592FB1A0337
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 06:10:22 +1100 (AEDT)
-Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
-To: Jens Axboe <axboe@fb.com>, emilne@redhat.com
-References: <1447838334.1564.2.camel@ellerman.id.au>
- <1447855399.3974.24.camel@redhat.com>
- <1447894964.15206.0.camel@ellerman.id.au>
- <20151119082325.GA11419@infradead.org> <564DEC41.5010600@suse.de>
- <1448030316.4067.18.camel@localhost.localdomain> <564F3453.9040603@suse.de>
- <1448033323.4067.24.camel@localhost.localdomain> <565579A2.4000005@suse.de>
- <5655F635.5040805@fb.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Mark Salter <msalter@redhat.com>,
- "James E. J. Bottomley" <JBottomley@odin.com>, brking <brking@us.ibm.com>,
- linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-block@vger.kernel.org,
- Mike Snitzer <snitzer@redhat.com>, Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-From: Hannes Reinecke <hare@suse.de>
-Message-ID: <5656079A.3040805@suse.de>
-Date: Wed, 25 Nov 2015 20:10:18 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 64F101A0337
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 06:27:34 +1100 (AEDT)
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id AB3821402D4
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2015 06:27:33 +1100 (AEDT)
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
+ Wed, 25 Nov 2015 12:27:31 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id F137E19D8048
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 12:15:32 -0700 (MST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAPJRQDm30933240
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 12:27:26 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAPJRPvG010375
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 12:27:26 -0700
+Subject: Re: [2/2] powerpc/smp: Add smp_muxed_ipi_rm_message_pass
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <20151116055359.76B0314145B@ozlabs.org>
+ <564A4BF8.7070205@linux.vnet.ibm.com>
+Cc: paulus@samba.org
+From: "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>
+Message-ID: <56560B9C.5070900@linux.vnet.ibm.com>
+Date: Wed, 25 Nov 2015 13:27:24 -0600
 MIME-Version: 1.0
-In-Reply-To: <5655F635.5040805@fb.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <564A4BF8.7070205@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,95 +46,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/25/2015 06:56 PM, Jens Axboe wrote:
-> On 11/25/2015 02:04 AM, Hannes Reinecke wrote:
->> On 11/20/2015 04:28 PM, Ewan Milne wrote:
->>> On Fri, 2015-11-20 at 15:55 +0100, Hannes Reinecke wrote:
->>>> Can't we have a joint effort here?
->>>> I've been spending a _LOT_ of time trying to debug things here, but
->>>> none of the ideas I've come up with have been able to fix anything.
->>>
->>> Yes.  I'm not the one primarily looking at it, and we don't have a
->>> reproducer in-house.  We just have the one dump right now.
->>>
->>>>
->>>> I'm almost tempted to increase the count from scsi_alloc_sgtable()
->>>> by one and be done with ...
->>>>
->>>
->>> That might not fix it if it is a problem with the merge code, though.
->>>
->> And indeed, it doesn't.
->> Seems I finally found the culprit.
->>
->> What happens is this:
->> We have two paths, with these seg_boundary_masks:
->>
->> path-1:    seg_boundary_mask = 65535,
->> path-2:    seg_boundary_mask = 4294967295,
->>
->> consequently the DM request queue has this:
->>
->> md-1:    seg_boundary_mask = 65535,
->>
->> What happens now is that a request is being formatted, and sent
->> to path 2. During submission req->nr_phys_segments is formatted
->> with the limits of path 2, arriving at a count of 3.
->> Now the request gets retried on path 1, but as the NOMERGE request
->> flag is set req->nr_phys_segments is never updated.
->> But blk_rq_map_sg() ignores all counters, and just uses the
->> bi_vec directly, resulting in a count of 4 -> boom.
->>
->> So the culprit here is the NOMERGE flag, which is evaluated
->> via
->> ->dm_dispatch_request()
->>    ->blk_insert_cloned_request()
->>      ->blk_rq_check_limits()
->>
->> If the above assessment is correct, the following patch should
->> fix it:
->>
->> diff --git a/block/blk-core.c b/block/blk-core.c
->> index 801ced7..12cccd6 100644
->> --- a/block/blk-core.c
->> +++ b/block/blk-core.c
->> @@ -1928,7 +1928,7 @@ EXPORT_SYMBOL(submit_bio);
->>    */
->>   int blk_rq_check_limits(struct request_queue *q, struct request *rq)
->>   {
->> -       if (!rq_mergeable(rq))
->> +       if (rq->cmd_type != REQ_TYPE_FS)
->>                  return 0;
->>
->>          if (blk_rq_sectors(rq) > blk_queue_get_max_sectors(q,
->> rq->cmd_flags)) {
->>
->>
->> Mike? Jens?
->> Can you comment on it?
->
-> We only support merging on REQ_TYPE_FS already, so how is the above
-> making it any different? In general, NOMERGE being set or not should not
-> make a difference. It's only a hint that we need not check further if we
-> should be merging on this request, since we already tried it once, found
-> we'd exceed various limits, then set NOMERGE to reflect that.
->
-The problem is that NOMERGE does too much, as it inhibits _any_ merging.
+Hi Mike,
 
-Unfortunately, the req->nr_phys_segments value is evaluated in the final
-_driver_ context _after_ the merging happend; cf 
-scsi_lib.c:scsi_init_sgtable().
-As nr_phys_segments is inherited from the original request (and never
-recalculated with the new request queue limits) the following 
-blk_rq_map_sg() call might end up at a different calculation, especially
-after retrying a request on another path.
+After looking at this a little more, I think it would perhaps
+be better to define the real-mode function that causes IPI in 
+book3s_hv_rm_xics.c along with other real-mode functions that 
+operate on the xics.
 
-Cheers,
+Hope this is acceptable to you. If not, we can discuss when
+I re-submit the patch.
 
-Hannes
--- 
-Dr. Hannes Reinecke		               zSeries & Storage
-hare@suse.de			               +49 911 74053 688
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: F. Imendörffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
-HRB 21284 (AG Nürnberg)
+Thanks.
+-suresh
+
+
+On 11/16/2015 03:34 PM, Suresh E. Warrier wrote:
+> Hi Mike,
+> 
+> The changes you proposed look nicer than what I have here.
+> I will get that coded and tested and re=submit.
+> 
+> Thanks.
+> -suresh
+> 
+> On 11/15/2015 11:53 PM, Michael Ellerman wrote:
+>> Hi Suresh,
+>>
+>> On Thu, 2015-29-10 at 23:40:45 UTC, "Suresh E. Warrier" wrote:
+>>> This function supports IPI message passing for real
+>>> mode callers.
+>>>
+>>> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+>>> index a53a130..8c07bfad 100644
+>>> --- a/arch/powerpc/kernel/smp.c
+>>> +++ b/arch/powerpc/kernel/smp.c
+>>> @@ -235,6 +238,33 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
+>>>  	smp_ops->cause_ipi(cpu, info->data);
+>>>  }
+>>>  
+>>> +#if defined(CONFIG_KVM_XICS) && defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE)
+>>> +/*
+>>> + * Message passing code for real mode callers. It does not use the
+>>> + * smp_ops->cause_ipi function to cause an IPI, because those functions
+>>> + * access the MFFR through an ioremapped address.
+>>> + */
+>>> +void smp_muxed_ipi_rm_message_pass(int cpu, int msg)
+>>> +{
+>>> +	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
+>>> +	char *message = (char *)&info->messages;
+>>> +	unsigned long xics_phys;
+>>> +
+>>> +	/*
+>>> +	 * Order previous accesses before accesses in the IPI handler.
+>>> +	 */
+>>> +	smp_mb();
+>>> +	message[msg] = 1;
+>>> +
+>>> +	/*
+>>> +	 * cause_ipi functions are required to include a full barrier
+>>> +	 * before doing whatever causes the IPI.
+>>> +	 */
+>>> +	xics_phys = paca[cpu].kvm_hstate.xics_phys;
+>>> +	out_rm8((u8 *)(xics_phys + XICS_MFRR), IPI_PRIORITY);
+>>> +}
+>>> +#endif
+>>
+>>
+>> I'm not all that happy with this. This function does two things, one of which
+>> belongs in this file (setting message), and the other which definitely does
+>> not (the XICs part).
+>>
+>> I think the end result would be cleaner if we did something like:
+>>
+>> void smp_muxed_ipi_set_message(int cpu, int msg)
+>> {
+>> 	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
+>> 	char *message = (char *)&info->messages;
+>> 	unsigned long xics_phys;
+>>
+>> 	/*
+>> 	 * Order previous accesses before accesses in the IPI handler.
+>> 	 */
+>> 	smp_mb();
+>> 	message[msg] = 1;
+>> }
+>>
+>> Which would be exported, and could also be used by smp_muxed_ipi_message_pass().
+>>
+>> Then in icp_rm_set_vcpu_irq(), you would do something like:
+>>
+>> 	if (hcore != -1) {
+>> 		hcpu = hcore << threads_shift;
+>> 		kvmppc_host_rm_ops_hv->rm_core[hcore].rm_data = vcpu;
+>> 		smp_muxed_ipi_set_message(hcpu, PPC_MSG_RM_HOST_ACTION);
+>> 		icp_native_cause_ipi_real_mode();
+>> 	}
+>>
+>> Where icp_native_cause_ipi_real_mode() is a new hook you define in icp_native.c
+>> which does the real mode write to MFRR.
+>>
+>> cheers
+>>
