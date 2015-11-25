@@ -1,31 +1,21 @@
-Return-Path: <prvs=87712544f5=axboe@fb.com>
-Received: from mx0b-00082601.pphosted.com (mx0b-00082601.pphosted.com
- [67.231.153.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <curt@cumulusnetworks.com>
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D80411A0DB2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 05:22:28 +1100 (AEDT)
-Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
-To: Hannes Reinecke <hare@suse.de>, <emilne@redhat.com>
-References: <1447838334.1564.2.camel@ellerman.id.au>
- <1447855399.3974.24.camel@redhat.com>
- <1447894964.15206.0.camel@ellerman.id.au>
- <20151119082325.GA11419@infradead.org> <564DEC41.5010600@suse.de>
- <1448030316.4067.18.camel@localhost.localdomain> <564F3453.9040603@suse.de>
- <1448033323.4067.24.camel@localhost.localdomain> <565579A2.4000005@suse.de>
-CC: Christoph Hellwig <hch@infradead.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Mark Salter <msalter@redhat.com>, "James E. J.
- Bottomley" <JBottomley@odin.com>,
- brking <brking@us.ibm.com>, <linux-scsi@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-block@vger.kernel.org>, Mike Snitzer <snitzer@redhat.com>,
- "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-From: Jens Axboe <axboe@fb.com>
-Message-ID: <5655F635.5040805@fb.com>
-Date: Wed, 25 Nov 2015 10:56:05 -0700
-MIME-Version: 1.0
-In-Reply-To: <565579A2.4000005@suse.de>
-Content-Type: text/plain; charset="utf-8"; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 041891A0338
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 05:46:46 +1100 (AEDT)
+Received: by pacej9 with SMTP id ej9so64973221pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 10:46:44 -0800 (PST)
+From: Curt Brune <curt@cumulusnetworks.com>
+To: galak@codeaurora.org, ijc+devicetree@hellion.org.uk, mark.rutland@arm.com,
+ pawel.moll@arm.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, robh+dt@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	devicetree@vger.kernel.org
+Subject: [RFC 0/1] PowerPC legacy serial console / device tree
+Date: Wed, 25 Nov 2015 10:46:48 -0800
+Message-Id: <1448477209-22340-1-git-send-email-curt@cumulusnetworks.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,78 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/25/2015 02:04 AM, Hannes Reinecke wrote:
-> On 11/20/2015 04:28 PM, Ewan Milne wrote:
->> On Fri, 2015-11-20 at 15:55 +0100, Hannes Reinecke wrote:
->>> Can't we have a joint effort here?
->>> I've been spending a _LOT_ of time trying to debug things here, but
->>> none of the ideas I've come up with have been able to fix anything.
->>
->> Yes.  I'm not the one primarily looking at it, and we don't have a
->> reproducer in-house.  We just have the one dump right now.
->>
->>>
->>> I'm almost tempted to increase the count from scsi_alloc_sgtable()
->>> by one and be done with ...
->>>
->>
->> That might not fix it if it is a problem with the merge code, though.
->>
-> And indeed, it doesn't.
-> Seems I finally found the culprit.
->
-> What happens is this:
-> We have two paths, with these seg_boundary_masks:
->
-> path-1:    seg_boundary_mask = 65535,
-> path-2:    seg_boundary_mask = 4294967295,
->
-> consequently the DM request queue has this:
->
-> md-1:    seg_boundary_mask = 65535,
->
-> What happens now is that a request is being formatted, and sent
-> to path 2. During submission req->nr_phys_segments is formatted
-> with the limits of path 2, arriving at a count of 3.
-> Now the request gets retried on path 1, but as the NOMERGE request
-> flag is set req->nr_phys_segments is never updated.
-> But blk_rq_map_sg() ignores all counters, and just uses the
-> bi_vec directly, resulting in a count of 4 -> boom.
->
-> So the culprit here is the NOMERGE flag, which is evaluated
-> via
-> ->dm_dispatch_request()
->    ->blk_insert_cloned_request()
->      ->blk_rq_check_limits()
->
-> If the above assessment is correct, the following patch should
-> fix it:
->
-> diff --git a/block/blk-core.c b/block/blk-core.c
-> index 801ced7..12cccd6 100644
-> --- a/block/blk-core.c
-> +++ b/block/blk-core.c
-> @@ -1928,7 +1928,7 @@ EXPORT_SYMBOL(submit_bio);
->    */
->   int blk_rq_check_limits(struct request_queue *q, struct request *rq)
->   {
-> -       if (!rq_mergeable(rq))
-> +       if (rq->cmd_type != REQ_TYPE_FS)
->                  return 0;
->
->          if (blk_rq_sectors(rq) > blk_queue_get_max_sectors(q,
-> rq->cmd_flags)) {
->
->
-> Mike? Jens?
-> Can you comment on it?
+Proposing to use the 'cell-index' property to map device tree serial
+nodes to legacy serial port number.  For example this allows the
+device to explicity specify which serial device to use for ttyS0.
 
-We only support merging on REQ_TYPE_FS already, so how is the above 
-making it any different? In general, NOMERGE being set or not should not 
-make a difference. It's only a hint that we need not check further if we 
-should be merging on this request, since we already tried it once, found 
-we'd exceed various limits, then set NOMERGE to reflect that.
+The basic idea is outlined in the following patch.
 
+If this approach seems reasonable I would follow up with additional
+patches for Documentation/devicetree/ bindings and
+Documentation/powerpc/.
+
+Curt Brune (1):
+  powerpc: legacy serial port use device tree cell-index property
+
+ arch/powerpc/kernel/legacy_serial.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
 -- 
-Jens Axboe
+1.9.1
