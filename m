@@ -1,42 +1,25 @@
-Return-Path: <warrier@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 64F101A0337
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 06:27:34 +1100 (AEDT)
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AB3821402D4
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2015 06:27:33 +1100 (AEDT)
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
- Wed, 25 Nov 2015 12:27:31 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id F137E19D8048
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 12:15:32 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAPJRQDm30933240
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 12:27:26 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAPJRPvG010375
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 12:27:26 -0700
-Subject: Re: [2/2] powerpc/smp: Add smp_muxed_ipi_rm_message_pass
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <20151116055359.76B0314145B@ozlabs.org>
- <564A4BF8.7070205@linux.vnet.ibm.com>
-Cc: paulus@samba.org
-From: "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>
-Message-ID: <56560B9C.5070900@linux.vnet.ibm.com>
-Date: Wed, 25 Nov 2015 13:27:24 -0600
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 9CE911A0337
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 07:01:10 +1100 (AEDT)
+Date: Wed, 25 Nov 2015 14:01:03 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Jisheng Zhang <jszhang@marvell.com>
+Cc: kishon@ti.com, bhelgaas@google.com, jingoohan1@gmail.com,
+ kgene@kernel.org, k.kozlowski@samsung.com,
+ Richard.Zhu@freescale.com, l.stach@pengutronix.de,
+ m-karicheri2@ti.com, minghuan.Lian@freescale.com,
+ mingkai.hu@freescale.com, tie-fei.zang@freescale.com,
+ pratyush.anand@gmail.com, linux-omap@vger.kernel.org,
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] PCI: designware: bail out if host_init failed
+Message-ID: <20151125200103.GF8869@localhost>
+References: <1447336125-5010-1-git-send-email-jszhang@marvell.com>
 MIME-Version: 1.0
-In-Reply-To: <564A4BF8.7070205@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1447336125-5010-1-git-send-email-jszhang@marvell.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,104 +29,244 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mike,
+Hi Jisheng,
 
-After looking at this a little more, I think it would perhaps
-be better to define the real-mode function that causes IPI in 
-book3s_hv_rm_xics.c along with other real-mode functions that 
-operate on the xics.
+On Thu, Nov 12, 2015 at 09:48:45PM +0800, Jisheng Zhang wrote:
+> There's no reason to continue the initialization such as configure
+> register, scan root bus etc. if customized host_init() failed. This
+> patch tries to check the host_init result, bail out if failed.
 
-Hope this is acceptable to you. If not, we can discuss when
-I re-submit the patch.
+This patch changes the (*host_init) return type and adds "return 0" to
+the host_init() implementations of ten different drivers, all to
+support a possible error in one driver.
 
-Thanks.
--suresh
+Is there any way to detect and handle the error in
+ls1021_pcie_host_init() earlier, maybe by doing the syscon_regmap
+lookup in ls_pcie_probe() instead of in the host_init() function?
 
+That would be even better because you wouldn't have to touch any of
+the other drivers, and you'd detect the error even earlier, before
+we've done any of the designware setup.
 
-On 11/16/2015 03:34 PM, Suresh E. Warrier wrote:
-> Hi Mike,
+Bjorn
+
+> Signed-off-by: Jisheng Zhang <jszhang@marvell.com>
+> ---
+>  drivers/pci/host/pci-dra7xx.c      |  4 +++-
+>  drivers/pci/host/pci-exynos.c      |  4 +++-
+>  drivers/pci/host/pci-imx6.c        |  4 +++-
+>  drivers/pci/host/pci-keystone.c    |  4 +++-
+>  drivers/pci/host/pci-layerscape.c  | 25 ++++++++++++++++---------
+>  drivers/pci/host/pcie-designware.c |  7 +++++--
+>  drivers/pci/host/pcie-designware.h |  2 +-
+>  drivers/pci/host/pcie-spear13xx.c  |  4 +++-
+>  8 files changed, 37 insertions(+), 17 deletions(-)
 > 
-> The changes you proposed look nicer than what I have here.
-> I will get that coded and tested and re=submit.
+> diff --git a/drivers/pci/host/pci-dra7xx.c b/drivers/pci/host/pci-dra7xx.c
+> index 8c36880..b3160a1 100644
+> --- a/drivers/pci/host/pci-dra7xx.c
+> +++ b/drivers/pci/host/pci-dra7xx.c
+> @@ -149,7 +149,7 @@ static void dra7xx_pcie_enable_interrupts(struct pcie_port *pp)
+>  				   LEG_EP_INTERRUPTS);
+>  }
+>  
+> -static void dra7xx_pcie_host_init(struct pcie_port *pp)
+> +static int dra7xx_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	dw_pcie_setup_rc(pp);
+>  
+> @@ -162,6 +162,8 @@ static void dra7xx_pcie_host_init(struct pcie_port *pp)
+>  	if (IS_ENABLED(CONFIG_PCI_MSI))
+>  		dw_pcie_msi_init(pp);
+>  	dra7xx_pcie_enable_interrupts(pp);
+> +
+> +	return 0;
+>  }
+>  
+>  static struct pcie_host_ops dra7xx_pcie_host_ops = {
+> diff --git a/drivers/pci/host/pci-exynos.c b/drivers/pci/host/pci-exynos.c
+> index 01095e1..57f370b 100644
+> --- a/drivers/pci/host/pci-exynos.c
+> +++ b/drivers/pci/host/pci-exynos.c
+> @@ -481,10 +481,12 @@ static int exynos_pcie_link_up(struct pcie_port *pp)
+>  	return 0;
+>  }
+>  
+> -static void exynos_pcie_host_init(struct pcie_port *pp)
+> +static int exynos_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	exynos_pcie_establish_link(pp);
+>  	exynos_pcie_enable_interrupts(pp);
+> +
+> +	return 0;
+>  }
+>  
+>  static struct pcie_host_ops exynos_pcie_host_ops = {
+> diff --git a/drivers/pci/host/pci-imx6.c b/drivers/pci/host/pci-imx6.c
+> index 22e8224..9a46680 100644
+> --- a/drivers/pci/host/pci-imx6.c
+> +++ b/drivers/pci/host/pci-imx6.c
+> @@ -425,7 +425,7 @@ static int imx6_pcie_establish_link(struct pcie_port *pp)
+>  	return 0;
+>  }
+>  
+> -static void imx6_pcie_host_init(struct pcie_port *pp)
+> +static int imx6_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	imx6_pcie_assert_core_reset(pp);
+>  
+> @@ -439,6 +439,8 @@ static void imx6_pcie_host_init(struct pcie_port *pp)
+>  
+>  	if (IS_ENABLED(CONFIG_PCI_MSI))
+>  		dw_pcie_msi_init(pp);
+> +
+> +	return 0;
+>  }
+>  
+>  static void imx6_pcie_reset_phy(struct pcie_port *pp)
+> diff --git a/drivers/pci/host/pci-keystone.c b/drivers/pci/host/pci-keystone.c
+> index 0aa81bd..2604571 100644
+> --- a/drivers/pci/host/pci-keystone.c
+> +++ b/drivers/pci/host/pci-keystone.c
+> @@ -250,7 +250,7 @@ static int keystone_pcie_fault(unsigned long addr, unsigned int fsr,
+>  	return 0;
+>  }
+>  
+> -static void __init ks_pcie_host_init(struct pcie_port *pp)
+> +static int __init ks_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	struct keystone_pcie *ks_pcie = to_keystone_pcie(pp);
+>  	u32 val;
+> @@ -277,6 +277,8 @@ static void __init ks_pcie_host_init(struct pcie_port *pp)
+>  	 */
+>  	hook_fault_code(17, keystone_pcie_fault, SIGBUS, 0,
+>  			"Asynchronous external abort");
+> +
+> +	return 0;
+>  }
+>  
+>  static struct pcie_host_ops keystone_pcie_host_ops = {
+> diff --git a/drivers/pci/host/pci-layerscape.c b/drivers/pci/host/pci-layerscape.c
+> index 3923bed..a6e9070 100644
+> --- a/drivers/pci/host/pci-layerscape.c
+> +++ b/drivers/pci/host/pci-layerscape.c
+> @@ -94,8 +94,9 @@ static int ls1021_pcie_link_up(struct pcie_port *pp)
+>  	return 1;
+>  }
+>  
+> -static void ls1021_pcie_host_init(struct pcie_port *pp)
+> +static int ls1021_pcie_host_init(struct pcie_port *pp)
+>  {
+> +	int ret;
+>  	struct ls_pcie *pcie = to_ls_pcie(pp);
+>  	u32 val, index[2];
+>  
+> @@ -103,15 +104,14 @@ static void ls1021_pcie_host_init(struct pcie_port *pp)
+>  						     "fsl,pcie-scfg");
+>  	if (IS_ERR(pcie->scfg)) {
+>  		dev_err(pp->dev, "No syscfg phandle specified\n");
+> -		pcie->scfg = NULL;
+> -		return;
+> +		ret = PTR_ERR(pcie->scfg);
+> +		goto err;
+>  	}
+>  
+> -	if (of_property_read_u32_array(pp->dev->of_node,
+> -				       "fsl,pcie-scfg", index, 2)) {
+> -		pcie->scfg = NULL;
+> -		return;
+> -	}
+> +	ret = of_property_read_u32_array(pp->dev->of_node,
+> +					 "fsl,pcie-scfg", index, 2);
+> +	if (ret)
+> +		goto err;
+>  	pcie->index = index[1];
+>  
+>  	dw_pcie_setup_rc(pp);
+> @@ -123,6 +123,11 @@ static void ls1021_pcie_host_init(struct pcie_port *pp)
+>  	val = ioread32(pcie->dbi + PCIE_STRFMR1);
+>  	val &= 0xffff;
+>  	iowrite32(val, pcie->dbi + PCIE_STRFMR1);
+> +
+> +	return 0;
+> +err:
+> +	pcie->scfg = NULL;
+> +	return ret;
+>  }
+>  
+>  static int ls_pcie_link_up(struct pcie_port *pp)
+> @@ -140,7 +145,7 @@ static int ls_pcie_link_up(struct pcie_port *pp)
+>  	return 1;
+>  }
+>  
+> -static void ls_pcie_host_init(struct pcie_port *pp)
+> +static int ls_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	struct ls_pcie *pcie = to_ls_pcie(pp);
+>  
+> @@ -148,6 +153,8 @@ static void ls_pcie_host_init(struct pcie_port *pp)
+>  	ls_pcie_fix_class(pcie);
+>  	ls_pcie_clear_multifunction(pcie);
+>  	iowrite32(0, pcie->dbi + PCIE_DBI_RO_WR_EN);
+> +
+> +	return 0;
+>  }
+>  
+>  static int ls_pcie_msi_host_init(struct pcie_port *pp,
+> diff --git a/drivers/pci/host/pcie-designware.c b/drivers/pci/host/pcie-designware.c
+> index 540f077..a80a9ba 100644
+> --- a/drivers/pci/host/pcie-designware.c
+> +++ b/drivers/pci/host/pcie-designware.c
+> @@ -515,8 +515,11 @@ int dw_pcie_host_init(struct pcie_port *pp)
+>  		}
+>  	}
+>  
+> -	if (pp->ops->host_init)
+> -		pp->ops->host_init(pp);
+> +	if (pp->ops->host_init) {
+> +		ret = pp->ops->host_init(pp);
+> +		if (ret)
+> +			return ret;
+> +	}
+>  
+>  	if (!pp->ops->rd_other_conf)
+>  		dw_pcie_prog_outbound_atu(pp, PCIE_ATU_REGION_INDEX1,
+> diff --git a/drivers/pci/host/pcie-designware.h b/drivers/pci/host/pcie-designware.h
+> index 2356d29..7b5317f 100644
+> --- a/drivers/pci/host/pcie-designware.h
+> +++ b/drivers/pci/host/pcie-designware.h
+> @@ -63,7 +63,7 @@ struct pcie_host_ops {
+>  	int (*wr_other_conf)(struct pcie_port *pp, struct pci_bus *bus,
+>  			unsigned int devfn, int where, int size, u32 val);
+>  	int (*link_up)(struct pcie_port *pp);
+> -	void (*host_init)(struct pcie_port *pp);
+> +	int (*host_init)(struct pcie_port *pp);
+>  	void (*msi_set_irq)(struct pcie_port *pp, int irq);
+>  	void (*msi_clear_irq)(struct pcie_port *pp, int irq);
+>  	phys_addr_t (*get_msi_addr)(struct pcie_port *pp);
+> diff --git a/drivers/pci/host/pcie-spear13xx.c b/drivers/pci/host/pcie-spear13xx.c
+> index b95b756..50b3b31 100644
+> --- a/drivers/pci/host/pcie-spear13xx.c
+> +++ b/drivers/pci/host/pcie-spear13xx.c
+> @@ -256,10 +256,12 @@ static int spear13xx_pcie_link_up(struct pcie_port *pp)
+>  	return 0;
+>  }
+>  
+> -static void spear13xx_pcie_host_init(struct pcie_port *pp)
+> +static int spear13xx_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	spear13xx_pcie_establish_link(pp);
+>  	spear13xx_pcie_enable_interrupts(pp);
+> +
+> +	return 0;
+>  }
+>  
+>  static struct pcie_host_ops spear13xx_pcie_host_ops = {
+> -- 
+> 2.6.2
 > 
-> Thanks.
-> -suresh
-> 
-> On 11/15/2015 11:53 PM, Michael Ellerman wrote:
->> Hi Suresh,
->>
->> On Thu, 2015-29-10 at 23:40:45 UTC, "Suresh E. Warrier" wrote:
->>> This function supports IPI message passing for real
->>> mode callers.
->>>
->>> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
->>> index a53a130..8c07bfad 100644
->>> --- a/arch/powerpc/kernel/smp.c
->>> +++ b/arch/powerpc/kernel/smp.c
->>> @@ -235,6 +238,33 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
->>>  	smp_ops->cause_ipi(cpu, info->data);
->>>  }
->>>  
->>> +#if defined(CONFIG_KVM_XICS) && defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE)
->>> +/*
->>> + * Message passing code for real mode callers. It does not use the
->>> + * smp_ops->cause_ipi function to cause an IPI, because those functions
->>> + * access the MFFR through an ioremapped address.
->>> + */
->>> +void smp_muxed_ipi_rm_message_pass(int cpu, int msg)
->>> +{
->>> +	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
->>> +	char *message = (char *)&info->messages;
->>> +	unsigned long xics_phys;
->>> +
->>> +	/*
->>> +	 * Order previous accesses before accesses in the IPI handler.
->>> +	 */
->>> +	smp_mb();
->>> +	message[msg] = 1;
->>> +
->>> +	/*
->>> +	 * cause_ipi functions are required to include a full barrier
->>> +	 * before doing whatever causes the IPI.
->>> +	 */
->>> +	xics_phys = paca[cpu].kvm_hstate.xics_phys;
->>> +	out_rm8((u8 *)(xics_phys + XICS_MFRR), IPI_PRIORITY);
->>> +}
->>> +#endif
->>
->>
->> I'm not all that happy with this. This function does two things, one of which
->> belongs in this file (setting message), and the other which definitely does
->> not (the XICs part).
->>
->> I think the end result would be cleaner if we did something like:
->>
->> void smp_muxed_ipi_set_message(int cpu, int msg)
->> {
->> 	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
->> 	char *message = (char *)&info->messages;
->> 	unsigned long xics_phys;
->>
->> 	/*
->> 	 * Order previous accesses before accesses in the IPI handler.
->> 	 */
->> 	smp_mb();
->> 	message[msg] = 1;
->> }
->>
->> Which would be exported, and could also be used by smp_muxed_ipi_message_pass().
->>
->> Then in icp_rm_set_vcpu_irq(), you would do something like:
->>
->> 	if (hcore != -1) {
->> 		hcpu = hcore << threads_shift;
->> 		kvmppc_host_rm_ops_hv->rm_core[hcore].rm_data = vcpu;
->> 		smp_muxed_ipi_set_message(hcpu, PPC_MSG_RM_HOST_ACTION);
->> 		icp_native_cause_ipi_real_mode();
->> 	}
->>
->> Where icp_native_cause_ipi_real_mode() is a new hook you define in icp_native.c
->> which does the real mode write to MFRR.
->>
->> cheers
->>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
