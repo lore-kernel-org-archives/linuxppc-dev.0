@@ -1,27 +1,27 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D45D1A0343
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 17:22:43 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by lists.ozlabs.org (Postfix) with ESMTPS id AD43E1A032F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 17:36:37 +1100 (AEDT)
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 25 Nov 2015 11:52:40 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 863FB1258019
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 11:52:53 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAP6MXfS66912478
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 11:52:34 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAP6MWm5010085
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 11:52:33 +0530
-Message-ID: <565553A8.2070006@linux.vnet.ibm.com>
-Date: Wed, 25 Nov 2015 11:52:32 +0530
+ Wed, 25 Nov 2015 16:36:36 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3487B3578047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 17:36:31 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAP6aNdH58458232
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 17:36:31 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAP6ZwCe009376
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 17:35:58 +1100
+Message-ID: <565556BB.9070201@linux.vnet.ibm.com>
+Date: Wed, 25 Nov 2015 12:05:39 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
@@ -29,11 +29,10 @@ To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Scott Wood <scottwood@freescale.com>,
  Denis Kirjanov <kda@linux-powerpc.org>
 CC: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V5 11/31] powerpc/mm: Move hash64 PTE bits from
- book3s/64/pgtable.h to hash.h
+Subject: Re: [PATCH V5 14/31] powerpc/booke: Move nohash headers (part 2)
 References: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1448274160-28446-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1448274160-28446-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1448274160-28446-15-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1448274160-28446-15-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -44,45 +43,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Some sort of commit message enlisting what we copied from where and
+which all header file references have changed will be helpful here.
+
 On 11/23/2015 03:52 PM, Aneesh Kumar K.V wrote:
-> +extern struct page *pmd_page(pmd_t pmd);
->  static inline pte_t pud_pte(pud_t pud)
->  {
->  	return __pte(pud_val(pud));
-> @@ -294,15 +115,14 @@ static inline void pgd_set(pgd_t *pgdp, unsigned long val)
->   * Find an entry in a page-table-directory.  We combine the address region
->   * (the high order N bits) and the pgd portion of the address.
+> Acked-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/{pgtable-ppc32.h => nohash/32/pgtable.h} | 0
+>  arch/powerpc/include/asm/{pgtable-ppc64.h => nohash/64/pgtable.h} | 2 +-
+>  arch/powerpc/include/asm/nohash/pgtable.h                         | 8 ++++----
+>  3 files changed, 5 insertions(+), 5 deletions(-)
+>  rename arch/powerpc/include/asm/{pgtable-ppc32.h => nohash/32/pgtable.h} (100%)
+>  rename arch/powerpc/include/asm/{pgtable-ppc64.h => nohash/64/pgtable.h} (99%)
+> 
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+> similarity index 100%
+> rename from arch/powerpc/include/asm/pgtable-ppc32.h
+> rename to arch/powerpc/include/asm/nohash/32/pgtable.h
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+> similarity index 99%
+> rename from arch/powerpc/include/asm/pgtable-ppc64.h
+> rename to arch/powerpc/include/asm/nohash/64/pgtable.h
+> index 6be203d43fd1..9b4f9fcd64de 100644
+> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
+> +++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+> @@ -18,7 +18,7 @@
+>   * Size of EA range mapped by our pagetables.
 >   */
-> -#define pgd_index(address) (((address) >> (PGDIR_SHIFT)) & (PTRS_PER_PGD - 1))
+>  #define PGTABLE_EADDR_SIZE (PTE_INDEX_SIZE + PMD_INDEX_SIZE + \
+> -                	    PUD_INDEX_SIZE + PGD_INDEX_SIZE + PAGE_SHIFT)
+> +			    PUD_INDEX_SIZE + PGD_INDEX_SIZE + PAGE_SHIFT)
+>  #define PGTABLE_RANGE (ASM_CONST(1) << PGTABLE_EADDR_SIZE)
 >  
->  #define pgd_offset(mm, address)	 ((mm)->pgd + pgd_index(address))
->  
->  #define pmd_offset(pudp,addr) \
-> -  (((pmd_t *) pud_page_vaddr(*(pudp))) + (((addr) >> PMD_SHIFT) & (PTRS_PER_PMD - 1)))
-> +	(((pmd_t *) pud_page_vaddr(*(pudp))) + pmd_index(addr))
->  
->  #define pte_offset_kernel(dir,addr) \
-> -  (((pte_t *) pmd_page_vaddr(*(dir))) + (((addr) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1)))
-> +	(((pte_t *) pmd_page_vaddr(*(dir))) + pte_index(addr))
+>  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+> index 91325997ba25..c0c41a2409d2 100644
+> --- a/arch/powerpc/include/asm/nohash/pgtable.h
+> +++ b/arch/powerpc/include/asm/nohash/pgtable.h
 
-These additions of the code should have been done in a separate patch.
+This should be added at the end of the file.
 
-This has been observed in some of the previous patches as well. If the
-commit message says that PTE definitions need to be moved then the
-patch only needs to move them, not change them anyway while on the move.
-Any changes to code should be done in separate patch. That will keep
-the change log clean, logical and makes it easy to track and understand.
-
-------------------------------------------------------------------------
-powerpc/mm: Move hash64 PTE bits from book3s/64/pgtable.h to hash.h
-    
-This enables us to keep hash64 related bits together, and makes it easy
-to follow.
-    
-Acked-by: Scott Wood <scottwood@freescale.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
- arch/powerpc/include/asm/book3s/64/hash.h    | 450 ++++++++++++++++++
- arch/powerpc/include/asm/book3s/64/pgtable.h | 447 ------------------
- arch/powerpc/include/asm/pgtable.h           |   6 --
- 3 files changed, 450 insertions(+), 453 deletions(-)
+#endif /* _ASM_POWERPC_NOHASH_PGTABLE_H */
