@@ -1,16 +1,15 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [43.229.61.17])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A2B9C1A032F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 14:25:24 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 4/4] powerpc/kernel: Combine vec/loc for STD_EXCEPTION_PSERIES
-Date: Wed, 25 Nov 2015 14:25:19 +1100
-Message-Id: <1448421919-30426-4-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1448421919-30426-1-git-send-email-mpe@ellerman.id.au>
-References: <1448421919-30426-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C45D1A11B6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 14:29:24 +1100 (AEDT)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V2] powerpc/powernv: Add a kmsg_dumper that flushes console
+ output on panic
+Date: Wed, 25 Nov 2015 14:26:02 +1100
+Message-Id: <1448421962-6174-1-git-send-email-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,101 +19,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The STD_EXCEPTION_PSERIES macro takes both a vector number, and a
-location (memory address). However both are always identical, so combine
-them to save repeating ourselves.
+On BMC machines, console output is controlled by the OPAL firmware and is
+only flushed when its pollers are called.  When the kernel is in a panic
+state, it no longer calls these pollers and thus console output does not
+completely flush, causing some output from the panic to be lost.
 
-This does mean an exception handler must always exist at the location in
-memory that matches its vector number. But that's OK because this is the
-"STD" macro (standard), which does exactly that. We have other macros
-for the other cases, eg. STD_EXCEPTION_PSERIES_OOL (out of line).
+This patch adds a new kmsg_dumper which gets called at panic time to ensure
+panic output is not lost.  It accomplishes this by calling OPAL_CONSOLE_FLUSH
+in the OPAL API, and if that is not available, the pollers are called enough
+times to (hopefully) completely flush the buffer.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
- arch/powerpc/include/asm/exception-64s.h |  4 ++--
- arch/powerpc/kernel/exceptions-64s.S     | 16 ++++++++--------
- 2 files changed, 10 insertions(+), 10 deletions(-)
+V2: Fix some code style issues, no functional change
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 9b91879b7876..1609448e2583 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -344,8 +344,8 @@ do_kvm_##n:								\
- /*
-  * Exception vectors.
-  */
--#define STD_EXCEPTION_PSERIES(loc, vec, label)		\
--	. = loc;					\
-+#define STD_EXCEPTION_PSERIES(vec, label)		\
-+	. = vec;					\
- 	.globl label##_pSeries;				\
- label##_pSeries:					\
- 	SET_SCRATCH0(r13);		/* save r13 */		\
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 9035bda220f5..7ee72d47f926 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -230,7 +230,7 @@ data_access_slb_pSeries:
- 	bctr
- #endif
+A patch to add the preferred OPAL call for flushing the console buffer,
+OPAL_CONSOLE_FLUSH, was recently sent upstream to Skiboot.  You can track
+its progress here: https://patchwork.ozlabs.org/patch/547379/
+---
+ arch/powerpc/include/asm/opal-api.h            |  3 +-
+ arch/powerpc/include/asm/opal.h                |  3 ++
+ arch/powerpc/platforms/powernv/Makefile        |  1 +
+ arch/powerpc/platforms/powernv/opal-kmsg.c     | 68 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
+ arch/powerpc/platforms/powernv/opal.c          |  3 ++
+ 6 files changed, 78 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/platforms/powernv/opal-kmsg.c
+
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 8374afe..f8faaae 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -157,7 +157,8 @@
+ #define OPAL_LEDS_GET_INDICATOR			114
+ #define OPAL_LEDS_SET_INDICATOR			115
+ #define OPAL_CEC_REBOOT2			116
+-#define OPAL_LAST				116
++#define OPAL_CONSOLE_FLUSH			117
++#define OPAL_LAST				117
  
--	STD_EXCEPTION_PSERIES(0x400, 0x400, instruction_access)
-+	STD_EXCEPTION_PSERIES(0x400, instruction_access)
+ /* Device tree flags */
  
- 	. = 0x480
- 	.globl instruction_access_slb_pSeries
-@@ -274,13 +274,13 @@ hardware_interrupt_hv:
- 		KVM_HANDLER(PACA_EXGEN, EXC_STD, 0x500)
- 	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 8001159..a5fd407 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -35,6 +35,7 @@ int64_t opal_console_read(int64_t term_number, __be64 *length,
+ 			  uint8_t *buffer);
+ int64_t opal_console_write_buffer_space(int64_t term_number,
+ 					__be64 *length);
++void opal_console_flush(void);
+ int64_t opal_rtc_read(__be32 *year_month_day,
+ 		      __be64 *hour_minute_second_millisecond);
+ int64_t opal_rtc_write(uint32_t year_month_day,
+@@ -262,6 +263,8 @@ extern int opal_resync_timebase(void);
  
--	STD_EXCEPTION_PSERIES(0x600, 0x600, alignment)
-+	STD_EXCEPTION_PSERIES(0x600, alignment)
- 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x600)
+ extern void opal_lpc_init(void);
  
--	STD_EXCEPTION_PSERIES(0x700, 0x700, program_check)
-+	STD_EXCEPTION_PSERIES(0x700, program_check)
- 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x700)
++extern void opal_kmsg_init(void);
++
+ extern int opal_event_request(unsigned int opal_event_nr);
  
--	STD_EXCEPTION_PSERIES(0x800, 0x800, fp_unavailable)
-+	STD_EXCEPTION_PSERIES(0x800, fp_unavailable)
- 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x800)
+ struct opal_sg_list *opal_vmalloc_to_sg_list(void *vmalloc_addr,
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index 1c8cdb6..b9de7ef 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -2,6 +2,7 @@ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o idle.o
+ obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
+ obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
+ obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
++obj-y			+= opal-kmsg.o
  
- 	. = 0x900
-@@ -293,7 +293,7 @@ decrementer_pSeries:
- 	MASKABLE_EXCEPTION_PSERIES(0xa00, 0xa00, doorbell_super)
- 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xa00)
+ obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
+ obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
+diff --git a/arch/powerpc/platforms/powernv/opal-kmsg.c b/arch/powerpc/platforms/powernv/opal-kmsg.c
+new file mode 100644
+index 0000000..bd3b2ee
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/opal-kmsg.c
+@@ -0,0 +1,68 @@
++/*
++ * kmsg dumper that ensures the OPAL console fully flushes panic messages
++ *
++ * Author: Russell Currey <ruscur@russell.cc>
++ *
++ * Copyright 2015 IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2 of the License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/kmsg_dump.h>
++
++#include <asm/opal.h>
++#include <asm/opal-api.h>
++
++/*
++ * Console output is controlled by OPAL firmware.  The kernel regularly calls
++ * OPAL_POLL_EVENTS, which flushes some console output.  In a panic state,
++ * however, the kernel no longer calls OPAL_POLL_EVENTS and the panic message
++ * may not be completely printed.  This function does not actually dump the
++ * message, it just ensures that OPAL completely flushes the console buffer.
++ */
++static void force_opal_console_flush(struct kmsg_dumper *dumper,
++				     enum kmsg_dump_reason reason)
++{
++	int i;
++
++	/*
++	 * Outside of a panic context the pollers will continue to run,
++	 * so we don't need to do any special flushing.
++	 */
++	if (reason != KMSG_DUMP_PANIC)
++		return;
++
++	if (opal_check_token(OPAL_CONSOLE_FLUSH)) {
++		opal_console_flush();
++	} else {
++		/*
++		 * If OPAL_CONSOLE_FLUSH is not implemented in the firmware,
++		 * the console can still be flushed by calling the polling
++		 * function enough times to flush the buffer.  We don't know
++		 * how much output still needs to be flushed, but we can be
++		 * generous since the kernel is in panic and doesn't need
++		 * to do much else.
++		 */
++		printk(KERN_NOTICE "opal: OPAL_CONSOLE_FLUSH missing.\n");
++		for (i = 0; i < 1024; i++) {
++			opal_poll_events(NULL);
++		}
++	}
++}
++
++static struct kmsg_dumper opal_kmsg_dumper = {
++	.dump = force_opal_console_flush
++};
++
++void __init opal_kmsg_init(void)
++{
++	int rc;
++
++	/* Add our dumper to the list */
++	rc = kmsg_dump_register(&opal_kmsg_dumper);
++	if (rc != 0)
++		pr_err("opal: kmsg_dump_register failed; returned %d\n", rc);
++}
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index b7a464f..e45b88a 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -301,3 +301,4 @@ OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
+ OPAL_CALL(opal_prd_msg,				OPAL_PRD_MSG);
+ OPAL_CALL(opal_leds_get_ind,			OPAL_LEDS_GET_INDICATOR);
+ OPAL_CALL(opal_leds_set_ind,			OPAL_LEDS_SET_INDICATOR);
++OPAL_CALL(opal_console_flush,			OPAL_CONSOLE_FLUSH);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 4296d55..a94a85c 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -758,6 +758,9 @@ static int __init opal_init(void)
+ 	opal_pdev_init(opal_node, "ibm,opal-flash");
+ 	opal_pdev_init(opal_node, "ibm,opal-prd");
  
--	STD_EXCEPTION_PSERIES(0xb00, 0xb00, trap_0b)
-+	STD_EXCEPTION_PSERIES(0xb00, trap_0b)
- 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xb00)
- 
- 	. = 0xc00
-@@ -325,7 +325,7 @@ system_call_pSeries:
- 	SYSCALL_PSERIES_3
- 	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xc00)
- 
--	STD_EXCEPTION_PSERIES(0xd00, 0xd00, single_step)
-+	STD_EXCEPTION_PSERIES(0xd00, single_step)
- 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xd00)
- 
- 	/* At 0xe??? we have a bunch of hypervisor exceptions, we branch
-@@ -401,7 +401,7 @@ hv_facility_unavailable_trampoline:
- 	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1202)
- #endif /* CONFIG_CBE_RAS */
- 
--	STD_EXCEPTION_PSERIES(0x1300, 0x1300, instruction_breakpoint)
-+	STD_EXCEPTION_PSERIES(0x1300, instruction_breakpoint)
- 	KVM_HANDLER_PR_SKIP(PACA_EXGEN, EXC_STD, 0x1300)
- 
- 	. = 0x1500
-@@ -428,7 +428,7 @@ denorm_exception_hv:
- 	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1602)
- #endif /* CONFIG_CBE_RAS */
- 
--	STD_EXCEPTION_PSERIES(0x1700, 0x1700, altivec_assist)
-+	STD_EXCEPTION_PSERIES(0x1700, altivec_assist)
- 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x1700)
- 
- #ifdef CONFIG_CBE_RAS
++	/* Initialise OPAL kmsg dumper for flushing console on panic */
++	opal_kmsg_init();
++
+ 	return 0;
+ }
+ machine_subsys_initcall(powernv, opal_init);
 -- 
-2.5.0
+2.6.2
