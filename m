@@ -2,29 +2,29 @@ Return-Path: <hare@suse.de>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7637C1A0337
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 06:01:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 592FB1A0337
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 06:10:22 +1100 (AEDT)
 Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
-To: Mike Snitzer <snitzer@redhat.com>
+To: Jens Axboe <axboe@fb.com>, emilne@redhat.com
 References: <1447838334.1564.2.camel@ellerman.id.au>
  <1447855399.3974.24.camel@redhat.com>
  <1447894964.15206.0.camel@ellerman.id.au>
  <20151119082325.GA11419@infradead.org> <564DEC41.5010600@suse.de>
  <1448030316.4067.18.camel@localhost.localdomain> <564F3453.9040603@suse.de>
  <1448033323.4067.24.camel@localhost.localdomain> <565579A2.4000005@suse.de>
- <20151125180133.GA18839@redhat.com>
-Cc: emilne@redhat.com, Christoph Hellwig <hch@infradead.org>,
+ <5655F635.5040805@fb.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Mark Salter <msalter@redhat.com>,
  "James E. J. Bottomley" <JBottomley@odin.com>, brking <brking@us.ibm.com>,
  linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-block@vger.kernel.org,
- Jun'ichi Nomura <j-nomura@ce.jp.nec.com>, Jens Axboe <axboe@fb.com>
+ Mike Snitzer <snitzer@redhat.com>, Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 From: Hannes Reinecke <hare@suse.de>
-Message-ID: <5656059B.9010102@suse.de>
-Date: Wed, 25 Nov 2015 20:01:47 +0100
+Message-ID: <5656079A.3040805@suse.de>
+Date: Wed, 25 Nov 2015 20:10:18 +0100
 MIME-Version: 1.0
-In-Reply-To: <20151125180133.GA18839@redhat.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+In-Reply-To: <5655F635.5040805@fb.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,10 +34,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/25/2015 07:01 PM, Mike Snitzer wrote:
-> On Wed, Nov 25 2015 at  4:04am -0500,
-> Hannes Reinecke <hare@suse.de> wrote:
->
+On 11/25/2015 06:56 PM, Jens Axboe wrote:
+> On 11/25/2015 02:04 AM, Hannes Reinecke wrote:
 >> On 11/20/2015 04:28 PM, Ewan Milne wrote:
 >>> On Fri, 2015-11-20 at 15:55 +0100, Hannes Reinecke wrote:
 >>>> Can't we have a joint effort here?
@@ -55,11 +53,6 @@ On 11/25/2015 07:01 PM, Mike Snitzer wrote:
 >>> That might not fix it if it is a problem with the merge code, though.
 >>>
 >> And indeed, it doesn't.
->
-> How did you arrive at that?  Do you have a reproducer now?
->
-Not a reproducer, but several dumps for analysis.
-
 >> Seems I finally found the culprit.
 >>
 >> What happens is this:
@@ -80,21 +73,12 @@ Not a reproducer, but several dumps for analysis.
 >> But blk_rq_map_sg() ignores all counters, and just uses the
 >> bi_vec directly, resulting in a count of 4 -> boom.
 >>
->> So the culprit here is the NOMERGE flag,
->
-> NOMERGE is always set in __blk_rq_prep_clone() for cloned requests.
->
-Yes.
-
->> which is evaluated via
+>> So the culprit here is the NOMERGE flag, which is evaluated
+>> via
 >> ->dm_dispatch_request()
 >>    ->blk_insert_cloned_request()
 >>      ->blk_rq_check_limits()
->
-> blk_insert_cloned_request() is the only caller of blk_rq_check_limits();
-> anyway after reading your mail I'm still left wondering if your proposed
-> patch is correct.
->
+>>
 >> If the above assessment is correct, the following patch should
 >> fix it:
 >>
@@ -117,58 +101,28 @@ Yes.
 >> Mike? Jens?
 >> Can you comment on it?
 >
-> You're not explaining the actual change in the patch very well; I think
-> you're correct but you're leaving the justification as an exercise to
-> the reviewer:
+> We only support merging on REQ_TYPE_FS already, so how is the above
+> making it any different? In general, NOMERGE being set or not should not
+> make a difference. It's only a hint that we need not check further if we
+> should be merging on this request, since we already tried it once, found
+> we'd exceed various limits, then set NOMERGE to reflect that.
 >
-> blk_rq_check_limits() will call blk_recalc_rq_segments() after the
-> !rq_mergeable() check but you're saying for this case in question we
-> never get there -- due to the cloned request having NOMERGE set.
->
-> So in blk_rq_check_limits() you've unrolled rq_mergeable() and
-> open-coded the lone remaining check (rq->cmd_type != REQ_TYPE_FS)
->
-> I agree that the (rq->cmd_flags & REQ_NOMERGE_FLAGS) check in
-> the blk_insert_cloned_request() call-chain (via rq_mergeable()) makes no
-> sense for cloned requests that always have NOMERGE set.
->
-> So you're saying that by having blk_rq_check_limits() go on to call
-> blk_recalc_rq_segments() this bug will be fixed?
->
-That is the idea.
+The problem is that NOMERGE does too much, as it inhibits _any_ merging.
 
-I've already established that in all instances I have seen so far
-req->nr_phys_segments is _less_ than req->bio->bi_phys_segments.
-
-As it turns out, req->nr_phys_segemnts _would_ have been updated in
-blk_rq_check_limits(), but isn't due to the NOMERGE flag being set
-for the cloned request.
-So each cloned request inherits the values from the original request,
-despite the fact that req->nr_phys_segments _has_ to be evaluated in
-the final request_queue context, as the queue limits _might_ be 
-different from the original (merged) queue limits of the multipath
-request queue.
-
-> BTW, I think blk_rq_check_limits()'s export should be removed and the
-> function made static and renamed to blk_clone_rq_check_limits(), again:
-> blk_insert_cloned_request() is the only caller of blk_rq_check_limits()
->
-Actually, seeing Jens' last comment the check for REQ_TYPE_FS is 
-pointless, too, so we might as well remove the entire if-clause.
-
-> Seems prudent to make that change now to be clear that this code is only
-> used by cloned requests.
->
-Yeah, that would make sense. I'll be preparing a patch.
-With a more detailed description :-)
+Unfortunately, the req->nr_phys_segments value is evaluated in the final
+_driver_ context _after_ the merging happend; cf 
+scsi_lib.c:scsi_init_sgtable().
+As nr_phys_segments is inherited from the original request (and never
+recalculated with the new request queue limits) the following 
+blk_rq_map_sg() call might end up at a different calculation, especially
+after retrying a request on another path.
 
 Cheers,
 
 Hannes
-
 -- 
 Dr. Hannes Reinecke		               zSeries & Storage
 hare@suse.de			               +49 911 74053 688
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: F. Imendörffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
-HRB 21284 (AG Nürnberg)
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 NÃ¼rnberg
+GF: F. ImendÃ¶rffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
+HRB 21284 (AG NÃ¼rnberg)
