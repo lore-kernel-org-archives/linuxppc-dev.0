@@ -1,38 +1,39 @@
 Return-Path: <warrier@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A79131A03A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 10:45:22 +1100 (AEDT)
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9EC341A03A1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 10:45:23 +1100 (AEDT)
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CDABF140307
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2015 10:45:21 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 6E46F14030F
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2015 10:45:22 +1100 (AEDT)
 Received: from localhost
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
  Wed, 25 Nov 2015 16:45:20 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 48EB519D8040
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:33:23 -0700 (MST)
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id AB51219D803F
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:33:24 -0700 (MST)
 Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAPNjGTK23265306
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:16 -0700
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAPNjI5m29098002
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:18 -0700
 Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
  by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAPNjFEQ022943
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:16 -0700
+ tAPNjHc6023107
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:17 -0700
 From: Suresh Warrier <warrier@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
 Cc: warrier@linux.vnet.ibm.com, paulus@samba.org, agraf@suse.de,
  mpe@ellerman.id.au
-Subject: [PATCH v2 5/9] KVM: PPC: Book3S HV: Manage core host state
-Date: Wed, 25 Nov 2015 17:44:52 -0600
-Message-Id: <1448495096-24759-6-git-send-email-warrier@linux.vnet.ibm.com>
+Subject: [PATCH v2 6/9] KVM: PPC: Book3S HV: kvmppc_host_rm_ops - handle
+ offlining CPUs
+Date: Wed, 25 Nov 2015 17:44:53 -0600
+Message-Id: <1448495096-24759-7-git-send-email-warrier@linux.vnet.ibm.com>
 In-Reply-To: <1448495096-24759-1-git-send-email-warrier@linux.vnet.ibm.com>
 References: <1448495096-24759-1-git-send-email-warrier@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,83 +45,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update the core host state in kvmppc_host_rm_ops whenever
-the primary thread of the core enters the guest or returns
-back.
+The kvmppc_host_rm_ops structure keeps track of which cores are
+are in the host by maintaining a bitmask of active/runnable
+online CPUs that have not entered the guest. This patch adds
+support to manage the bitmask when a CPU is offlined or onlined
+in the host.
 
 Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
 ---
- arch/powerpc/kvm/book3s_hv.c | 44 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+ arch/powerpc/kvm/book3s_hv.c | 39 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
 
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 4042623..95a2ed3 100644
+index 95a2ed3..da2cc56 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2261,6 +2261,46 @@ static void post_guest_process(struct kvmppc_vcore *vc, bool is_master)
+@@ -3012,6 +3012,36 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
  }
  
+ #ifdef CONFIG_KVM_XICS
++static int kvmppc_cpu_notify(struct notifier_block *self, unsigned long action,
++			void *hcpu)
++{
++	unsigned long cpu = (long)hcpu;
++
++	switch (action) {
++	case CPU_UP_PREPARE:
++	case CPU_UP_PREPARE_FROZEN:
++		kvmppc_set_host_core(cpu);
++		break;
++
++#ifdef CONFIG_HOTPLUG_CPU
++	case CPU_DEAD:
++	case CPU_DEAD_FROZEN:
++	case CPU_UP_CANCELED:
++	case CPU_UP_CANCELED_FROZEN:
++		kvmppc_clear_host_core(cpu);
++		break;
++#endif
++	default:
++		break;
++	}
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block kvmppc_cpu_notifier = {
++	    .notifier_call = kvmppc_cpu_notify,
++};
++
  /*
-+ * Clear core from the list of active host cores as we are about to
-+ * enter the guest. Only do this if it is the primary thread of the
-+ * core (not if a subcore) that is entering the guest.
-+ */
-+static inline void kvmppc_clear_host_core(int cpu)
-+{
-+	int core;
-+
-+	if (!kvmppc_host_rm_ops_hv || cpu_thread_in_core(cpu))
-+		return;
-+	/*
-+	 * Memory barrier can be omitted here as we will do a smp_wmb()
-+	 * later in kvmppc_start_thread and we need ensure that state is
-+	 * visible to other CPUs only after we enter guest.
-+	 */
-+	core = cpu >> threads_shift;
-+	kvmppc_host_rm_ops_hv->rm_core[core].rm_state.in_host = 0;
-+}
-+
-+/*
-+ * Advertise this core as an active host core since we exited the guest
-+ * Only need to do this if it is the primary thread of the core that is
-+ * exiting.
-+ */
-+static inline void kvmppc_set_host_core(int cpu)
-+{
-+	int core;
-+
-+	if (!kvmppc_host_rm_ops_hv || cpu_thread_in_core(cpu))
-+		return;
-+
-+	/*
-+	 * Memory barrier can be omitted here because we do a spin_unlock
-+	 * immediately after this which provides the memory barrier.
-+	 */
-+	core = cpu >> threads_shift;
-+	kvmppc_host_rm_ops_hv->rm_core[core].rm_state.in_host = 1;
-+}
-+
-+/*
-  * Run a set of guest threads on a physical core.
-  * Called with vc->lock held.
-  */
-@@ -2372,6 +2412,8 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
- 		}
+  * Allocate a per-core structure for managing state about which cores are
+  * running in the host versus the guest and for exchanging data between
+@@ -3045,6 +3075,8 @@ void kvmppc_alloc_host_rm_ops(void)
+ 		return;
  	}
  
-+	kvmppc_clear_host_core(pcpu);
++	get_online_cpus();
 +
- 	/* Start all the threads */
- 	active = 0;
- 	for (sub = 0; sub < core_info.n_subcores; ++sub) {
-@@ -2468,6 +2510,8 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
- 			kvmppc_ipi_thread(pcpu + i);
+ 	for (cpu = 0; cpu < nr_cpu_ids; cpu += threads_per_core) {
+ 		if (!cpu_online(cpu))
+ 			continue;
+@@ -3063,14 +3095,21 @@ void kvmppc_alloc_host_rm_ops(void)
+ 	l_ops = (unsigned long) ops;
+ 
+ 	if (cmpxchg64((unsigned long *)&kvmppc_host_rm_ops_hv, 0, l_ops)) {
++		put_online_cpus();
+ 		kfree(ops->rm_core);
+ 		kfree(ops);
++		return;
  	}
- 
-+	kvmppc_set_host_core(pcpu);
 +
- 	spin_unlock(&vc->lock);
++	register_cpu_notifier(&kvmppc_cpu_notifier);
++
++	put_online_cpus();
+ }
  
- 	/* make sure updates to secondary vcpu structs are visible now */
+ void kvmppc_free_host_rm_ops(void)
+ {
+ 	if (kvmppc_host_rm_ops_hv) {
++		unregister_cpu_notifier(&kvmppc_cpu_notifier);
+ 		kfree(kvmppc_host_rm_ops_hv->rm_core);
+ 		kfree(kvmppc_host_rm_ops_hv);
+ 		kvmppc_host_rm_ops_hv = NULL;
 -- 
 1.8.3.4
