@@ -1,29 +1,38 @@
-Return-Path: <hare@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1CBDA1A0368
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 20:04:41 +1100 (AEDT)
-Message-ID: <565579A2.4000005@suse.de>
-Date: Wed, 25 Nov 2015 10:04:34 +0100
-From: Hannes Reinecke <hare@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 62D341A0014
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 20:45:57 +1100 (AEDT)
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 25 Nov 2015 19:45:54 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B4D482CE8052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 20:45:48 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAP9jeXq37421066
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 20:45:48 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAP9jFPB031491
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2015 20:45:16 +1100
+Message-ID: <56558310.50000@linux.vnet.ibm.com>
+Date: Wed, 25 Nov 2015 15:14:48 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: emilne@redhat.com
-CC: Christoph Hellwig <hch@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Mark Salter <msalter@redhat.com>,
- "James E. J. Bottomley" <JBottomley@odin.com>,
- brking <brking@us.ibm.com>, linux-scsi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-block@vger.kernel.org, Mike Snitzer <snitzer@redhat.com>,
- Jun'ichi Nomura <j-nomura@ce.jp.nec.com>, Jens Axboe <axboe@fb.com>
-Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
-References: <1447838334.1564.2.camel@ellerman.id.au>	
- <1447855399.3974.24.camel@redhat.com>	
- <1447894964.15206.0.camel@ellerman.id.au>	
- <20151119082325.GA11419@infradead.org> <564DEC41.5010600@suse.de>	
- <1448030316.4067.18.camel@localhost.localdomain> <564F3453.9040603@suse.de>
- <1448033323.4067.24.camel@localhost.localdomain>
-In-Reply-To: <1448033323.4067.24.camel@localhost.localdomain>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Scott Wood <scottwood@freescale.com>,
+ Denis Kirjanov <kda@linux-powerpc.org>
+CC: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V5 17/31] powerpc/booke: Move nohash headers (part 5)
+References: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1448274160-28446-18-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1448274160-28446-18-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,77 +43,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/20/2015 04:28 PM, Ewan Milne wrote:
-> On Fri, 2015-11-20 at 15:55 +0100, Hannes Reinecke wrote:
->> Can't we have a joint effort here?
->> I've been spending a _LOT_ of time trying to debug things here, but
->> none of the ideas I've come up with have been able to fix anything.
-> 
-> Yes.  I'm not the one primarily looking at it, and we don't have a
-> reproducer in-house.  We just have the one dump right now.
-> 
->>
->> I'm almost tempted to increase the count from scsi_alloc_sgtable()
->> by one and be done with ...
->>
-> 
-> That might not fix it if it is a problem with the merge code, though.
-> 
-And indeed, it doesn't.
-Seems I finally found the culprit.
+On 11/23/2015 03:52 PM, Aneesh Kumar K.V wrote:
+> Acked-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-What happens is this:
-We have two paths, with these seg_boundary_masks:
-
-path-1:    seg_boundary_mask = 65535,
-path-2:    seg_boundary_mask = 4294967295,
-
-consequently the DM request queue has this:
-
-md-1:    seg_boundary_mask = 65535,
-
-What happens now is that a request is being formatted, and sent
-to path 2. During submission req->nr_phys_segments is formatted
-with the limits of path 2, arriving at a count of 3.
-Now the request gets retried on path 1, but as the NOMERGE request
-flag is set req->nr_phys_segments is never updated.
-But blk_rq_map_sg() ignores all counters, and just uses the
-bi_vec directly, resulting in a count of 4 -> boom.
-
-So the culprit here is the NOMERGE flag, which is evaluated
-via
-->dm_dispatch_request()
-  ->blk_insert_cloned_request()
-    ->blk_rq_check_limits()
-
-If the above assessment is correct, the following patch should
-fix it:
-
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 801ced7..12cccd6 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -1928,7 +1928,7 @@ EXPORT_SYMBOL(submit_bio);
-  */
- int blk_rq_check_limits(struct request_queue *q, struct request *rq)
- {
--       if (!rq_mergeable(rq))
-+       if (rq->cmd_type != REQ_TYPE_FS)
-                return 0;
-
-        if (blk_rq_sectors(rq) > blk_queue_get_max_sectors(q,
-rq->cmd_flags)) {
-
-
-Mike? Jens?
-Can you comment on it?
-
-Cheers,
-
-Hannes
--- 
-Dr. Hannes Reinecke		               zSeries & Storage
-hare@suse.de			               +49 911 74053 688
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: F. Imendörffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
-HRB 21284 (AG Nürnberg)
+This and some previous patches can use some amount of description
+in the commit message to make them clear. Now these first 17 patches
+in the series are code movement and re organization of header files
+into book3s (32/64) and book3e (32/64) buckets. Patches starting
+from 18/31 till 31/31 changes the existing PTE format and related
+stuff. So first 17 patches can be reviewed as a separate series
+and considered before dealing with proposed PTE changes. In that
+scheme of things patches 09/31 and 10/31 which prevents pte_val,
+pmd_val, pud_val etc being used as lvalue should also be at the
+end of the series after all movement of headers have been completed
+not in the middle of it.
