@@ -1,41 +1,17 @@
-Return-Path: <warrier@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E942C1A036D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 10:45:34 +1100 (AEDT)
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8A7C5140306
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2015 10:45:33 +1100 (AEDT)
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
- Wed, 25 Nov 2015 16:45:31 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id CF1143E40044
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:22 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAPNjMhA28115188
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:22 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAPNjMBr023457
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:22 -0700
-From: Suresh Warrier <warrier@linux.vnet.ibm.com>
-To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
-Cc: warrier@linux.vnet.ibm.com, paulus@samba.org, agraf@suse.de,
- mpe@ellerman.id.au
-Subject: [PATCH v2 9/9] KVM: PPC: Book3S HV: Add tunable to control H_IPI
- redirection
-Date: Wed, 25 Nov 2015 17:44:56 -0600
-Message-Id: <1448495096-24759-10-git-send-email-warrier@linux.vnet.ibm.com>
-In-Reply-To: <1448495096-24759-1-git-send-email-warrier@linux.vnet.ibm.com>
-References: <1448495096-24759-1-git-send-email-warrier@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 00E471A0351
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 10:46:06 +1100 (AEDT)
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Avoid -maltivec when using clang integrated assembler
+Date: Thu, 26 Nov 2015 10:45:49 +1100
+Message-Id: <1448495149-25024-1-git-send-email-anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,77 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Redirecting the wakeup of a VCPU from the H_IPI hypercall to
-a core running in the host is usually a good idea, most workloads
-seemed to benefit. However, in one heavily interrupt-driven SMT1
-workload, some regression was observed. This patch adds a kvm_hv
-module parameter called h_ipi_redirect to control this feature.
+Check the assembler supports -maltivec by wrapping it with
+call as-option.
 
-The default value for this tunable is 1 - that is enable the feature.
-
-Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/kvm_ppc.h   |  1 +
- arch/powerpc/kvm/book3s_hv.c         | 11 +++++++++++
- arch/powerpc/kvm/book3s_hv_rm_xics.c |  5 ++++-
- 3 files changed, 16 insertions(+), 1 deletion(-)
+ arch/powerpc/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 1b93519..29d1442 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -448,6 +448,7 @@ extern int kvmppc_xics_set_icp(struct kvm_vcpu *vcpu, u64 icpval);
- extern int kvmppc_xics_connect_vcpu(struct kvm_device *dev,
- 			struct kvm_vcpu *vcpu, u32 cpu);
- extern void kvmppc_xics_ipi_action(void);
-+extern int h_ipi_redirect;
- #else
- static inline void kvmppc_alloc_host_rm_ops(void) {};
- static inline void kvmppc_free_host_rm_ops(void) {};
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index d6280ed..182ec84 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -81,6 +81,17 @@ static int target_smt_mode;
- module_param(target_smt_mode, int, S_IRUGO | S_IWUSR);
- MODULE_PARM_DESC(target_smt_mode, "Target threads per core (0 = max)");
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 96efd82..76a315d 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -206,7 +206,7 @@ KBUILD_CFLAGS		+= -mno-sched-epilog
+ endif
  
-+#ifdef CONFIG_KVM_XICS
-+static struct kernel_param_ops module_param_ops = {
-+	.set = param_set_int,
-+	.get = param_get_int,
-+};
-+
-+module_param_cb(h_ipi_redirect, &module_param_ops, &h_ipi_redirect,
-+							S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(h_ipi_redirect, "Redirect H_IPI wakeup to a free host core");
-+#endif
-+
- static void kvmppc_end_cede(struct kvm_vcpu *vcpu);
- static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu);
+ cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
+-cpu-as-$(CONFIG_ALTIVEC)	+= -Wa,-maltivec
++cpu-as-$(CONFIG_ALTIVEC)	+= $(call as-option,-Wa$(comma)-maltivec)
+ cpu-as-$(CONFIG_E200)		+= -Wa,-me200
  
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-index a8ca3ed..4c062e7 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-@@ -24,6 +24,9 @@
- 
- #define DEBUG_PASSUP
- 
-+int h_ipi_redirect = 1;
-+EXPORT_SYMBOL(h_ipi_redirect);
-+
- static void icp_rm_deliver_irq(struct kvmppc_xics *xics, struct kvmppc_icp *icp,
- 			    u32 new_irq);
- 
-@@ -134,7 +137,7 @@ static void icp_rm_set_vcpu_irq(struct kvm_vcpu *vcpu,
- 	cpu = vcpu->arch.thread_cpu;
- 	if (cpu < 0 || cpu >= nr_cpu_ids) {
- 		hcore = -1;
--		if (kvmppc_host_rm_ops_hv)
-+		if (kvmppc_host_rm_ops_hv && h_ipi_redirect)
- 			hcore = find_available_hostcore(XICS_RM_KICK_VCPU);
- 		if (hcore != -1) {
- 			hcpu = hcore << threads_shift;
+ KBUILD_AFLAGS += $(cpu-as-y)
 -- 
-1.8.3.4
+2.5.0
