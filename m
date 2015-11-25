@@ -2,17 +2,17 @@ Return-Path: <duwe@lst.de>
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BC7B41A0371
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 04:29:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A61041A03FF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 04:29:24 +1100 (AEDT)
 In-Reply-To: <20151125172608.9588569260@newverein.lst.de>
 References: <20151125172608.9588569260@newverein.lst.de>
 From: Torsten Duwe <duwe@lst.de>
-Date: Wed, 25 Nov 2015 17:37:33 +0100
-Subject: [PATCH v4 4/9] ppc64 ftrace_with_regs configuration variables
+Date: Wed, 25 Nov 2015 17:39:29 +0100
+Subject: [PATCH v4 5/9] ppc64 ftrace_with_regs: spare early boot and low level
 To: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
-Message-Id: <20151125172916.9D50269260@newverein.lst.de>
+Message-Id: <20151125172921.D1EF469260@newverein.lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,67 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  * Makefile:
-    - globally use -mprofile-kernel in case it's configured.
-  * arch/powerpc/Kconfig / kernel/trace/Kconfig:
-    - declare that ppc64le HAVE_MPROFILE_KERNEL and
-      HAVE_DYNAMIC_FTRACE_WITH_REGS, and use it.
+Using -mprofile-kernel on early boot code not only confuses the
+checker but is also useless, as the infrastructure is not yet in
+place. Proceed like with -pg (remove it from CFLAGS), equally with
+time.o and ftrace itself.
+
+  * arch/powerpc/kernel/Makefile:
+    - remove -mprofile-kernel from low level and boot code objects'
+      CFLAGS for FUNCTION_TRACER configurations.
 
 Signed-off-by: Torsten Duwe <duwe@suse.de>
 ---
- arch/powerpc/Kconfig  | 2 ++
- arch/powerpc/Makefile | 7 +++++++
- kernel/trace/Kconfig  | 5 +++++
- 3 files changed, 14 insertions(+)
+ arch/powerpc/kernel/Makefile | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9a7057e..55fd59e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -97,8 +97,10 @@ config PPC
- 	select OF_RESERVED_MEM
- 	select HAVE_FTRACE_MCOUNT_RECORD
- 	select HAVE_DYNAMIC_FTRACE
-+	select HAVE_DYNAMIC_FTRACE_WITH_REGS if PPC64 && CPU_LITTLE_ENDIAN
- 	select HAVE_FUNCTION_TRACER
- 	select HAVE_FUNCTION_GRAPH_TRACER
-+	select HAVE_MPROFILE_KERNEL if PPC64 && CPU_LITTLE_ENDIAN
- 	select SYSCTL_EXCEPTION_TRACE
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	select VIRT_TO_BUS if !PPC64
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index b9b4af2..25d0034 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -133,6 +133,13 @@ else
- CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=powerpc64
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index ba33693..0f417d5 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -16,14 +16,14 @@ endif
+ 
+ ifdef CONFIG_FUNCTION_TRACER
+ # Do not trace early boot code
+-CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog
+-CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog
+-CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog
+-CFLAGS_REMOVE_prom.o = -pg -mno-sched-epilog
++CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog -mprofile-kernel
++CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog -mprofile-kernel
++CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog -mprofile-kernel
++CFLAGS_REMOVE_prom.o = -pg -mno-sched-epilog -mprofile-kernel
+ # do not trace tracer code
+-CFLAGS_REMOVE_ftrace.o = -pg -mno-sched-epilog
++CFLAGS_REMOVE_ftrace.o = -pg -mno-sched-epilog -mprofile-kernel
+ # timers used by tracing
+-CFLAGS_REMOVE_time.o = -pg -mno-sched-epilog
++CFLAGS_REMOVE_time.o = -pg -mno-sched-epilog -mprofile-kernel
  endif
  
-+ifeq ($(CONFIG_PPC64),y)
-+ifdef CONFIG_HAVE_MPROFILE_KERNEL
-+CC_FLAGS_FTRACE	:= -pg $(call cc-option,-mprofile-kernel)
-+KBUILD_CPPFLAGS	+= -DCC_USING_MPROFILE_KERNEL
-+endif
-+endif
-+
- CFLAGS-$(CONFIG_CELL_CPU) += $(call cc-option,-mcpu=cell)
- CFLAGS-$(CONFIG_POWER4_CPU) += $(call cc-option,-mcpu=power4)
- CFLAGS-$(CONFIG_POWER5_CPU) += $(call cc-option,-mcpu=power5)
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 1153c43..dbcb635 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -52,6 +52,11 @@ config HAVE_FENTRY
- 	help
- 	  Arch supports the gcc options -pg with -mfentry
- 
-+config HAVE_MPROFILE_KERNEL
-+	bool
-+	help
-+	  Arch supports the gcc options -pg with -mprofile-kernel
-+
- config HAVE_C_RECORDMCOUNT
- 	bool
- 	help
+ obj-y				:= cputable.o ptrace.o syscalls.o \
 -- 
 1.8.5.6
