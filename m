@@ -1,23 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <warrier@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CB2C11A032F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 10:41:53 +1100 (AEDT)
-Message-ID: <1448494913.22705.3.camel@ellerman.id.au>
-Subject: Re: [PATCH] cxl: Fix build failure due to -Wunused-variable
- behaviour change
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Torsten Duwe <duwe@lst.de>, Ian Munsie <imunsie@au1.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Neuling
- <mikey@neuling.org>,  Anton Blanchard <anton@au1.ibm.com>, Michael Ellerman
- <michaele@au1.ibm.com>
-Date: Thu, 26 Nov 2015 10:41:53 +1100
-In-Reply-To: <20151125161616.GA30262@lst.de>
-References: <1442296114-16796-1-git-send-email-imunsie@au.ibm.com>
- <20151125161616.GA30262@lst.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0D9F51A032F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 10:45:15 +1100 (AEDT)
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4B4581402D6
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2015 10:45:14 +1100 (AEDT)
+Received: from localhost
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
+ Wed, 25 Nov 2015 16:45:11 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 7C9333E4003F
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:09 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAPNj9ZW16318666
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:09 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAPNj8C1022134
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:09 -0700
+From: Suresh Warrier <warrier@linux.vnet.ibm.com>
+To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: warrier@linux.vnet.ibm.com, paulus@samba.org, agraf@suse.de,
+ mpe@ellerman.id.au
+Subject: [PATCH v2 0/9] KVM: PPC: Book3S HV: Optimize wakeup VCPU from H_IPI
+Date: Wed, 25 Nov 2015 17:44:47 -0600
+Message-Id: <1448495096-24759-1-git-send-email-warrier@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,22 +42,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-11-25 at 17:16 +0100, Torsten Duwe wrote:
-> On Tue, Sep 15, 2015 at 03:48:34PM +1000, Ian Munsie wrote:
-> > --- a/drivers/misc/cxl/Makefile
-> > +++ b/drivers/misc/cxl/Makefile
-> > @@ -1,4 +1,4 @@
-> > -ccflags-y := -Werror
-> > +ccflags-y := -Werror -Wno-unused-const-variable
-> 
-> JFYI, my gcc-4.3 does not like this switch.
-> What's the minimum compiler version to build this code?
+When the VCPU target of an H_IPI hypercall is not running
+in the guest, we need to do a kick VCPU (wake the VCPU thread)
+to make it runnable. The real-mode version of the H_IPI hypercall
+cannot do this because it involves waking a sleeping thread.
+Thus the hcall returns H_TOO_HARD which forces a switch back
+to host so that the H_IPI call can be completed in virtual mode.
+This has been found to cause a slowdown for many workloads like
+YCSB MongoDB, small message networking, etc. 
 
-I build everything with gcc 4.4.4, so if it breaks with that I will notice.
+One solution is to hand off this job of waking the VCPU to a CPU
+that is running in the host by sending it a message through the 
+IPI mechanism from the hypercall.
 
-Does it work if you wrap it in cc-option? eg:
+This patch set optimizes the wakeup of the target VCPU by posting
+a free core already running in the host to do the wakeup, thus
+avoiding the switch to host and back. It requires maintaining a
+bitmask of all the available cores in the system to indicate if
+they are in the host or running in some guest. It also requires
+the H_IPI hypercall to search for a free host core and send it a
+new IPI message PPC_MSG_RM_HOST_ACTION after stashing away some
+parameters like the pointer to VCPU for the IPI handler. Locks
+are avoided by using atomic operations to save core state, to
+find and reserve a core in the host, etc.
 
-ccflags-y := -Werror $(call cc-option,-Wno-unused-const-variable)
+Note that it is possible for a guest to be destroyed and its
+VCPUs freed before the IPI handler gets to run. This case is
+handled by ensuring that any pending PPC_MSG_RM_HOST_ACTION
+IPIs are completed before proceeding with freeing the VCPUs.
 
+Currently, powerpc only support 4 IPI messages and all 4 are 
+already taken for other purposes. This patch also set increases
+the number of supported IPI messages to 8. It also provides the
+code to send an IPI from hypercall running in real-mode since
+the existing cause_ipi functions cannot be executed in real-mode.
 
-cheers
+A tunable h_ipi_redirect is also included in the patch set to
+disable the feature. 
+
+v2:
+* Complete patch set sent to both kvm and linuxppc mailing lists
+  to avoid build-breaks.
+* Broke up real mode IPI messaging function into two pieces - one
+  to set the message and one to cause the IPI. New function
+  icp_native_cause_ipi_rm added to arch/powerpc/sysdev/xics/icp-native.c
+
+Suresh Warrier (9):
+  powerpc/smp: Support more IPI messages
+  powerpc/smp: Add smp_muxed_ipi_set_message
+  powerpc/powernv: Add icp_native_cause_ipi_rm
+  KVM: PPC: Book3S HV: Host-side RM data structures
+  KVM: PPC: Book3S HV: Manage core host state
+  KVM: PPC: Book3S HV: kvmppc_host_rm_ops - handle offlining CPUs
+  KVM: PPC: Book3S HV: Host side kick VCPU when poked by real-mode KVM
+  KVM: PPC: Book3S HV: Send IPI to host core to wake VCPU
+  KVM: PPC: Book3S HV: Add tunable to control H_IPI redirection
+
+ arch/powerpc/include/asm/kvm_ppc.h    |  33 +++++++
+ arch/powerpc/include/asm/smp.h        |   4 +
+ arch/powerpc/include/asm/xics.h       |   1 +
+ arch/powerpc/kernel/smp.c             |  28 +++++-
+ arch/powerpc/kvm/book3s_hv.c          | 166 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_builtin.c  |   3 +
+ arch/powerpc/kvm/book3s_hv_rm_xics.c  | 120 +++++++++++++++++++++++-
+ arch/powerpc/kvm/powerpc.c            |  10 ++
+ arch/powerpc/sysdev/xics/icp-native.c |  19 ++++
+ 9 files changed, 376 insertions(+), 8 deletions(-)
+
+-- 
+1.8.3.4
