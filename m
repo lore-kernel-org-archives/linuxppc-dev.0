@@ -2,37 +2,39 @@ Return-Path: <warrier@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D9F51A032F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 10:45:15 +1100 (AEDT)
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 37FB41A033E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 10:45:18 +1100 (AEDT)
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4B4581402D6
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2015 10:45:14 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 7207E1402ED
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2015 10:45:17 +1100 (AEDT)
 Received: from localhost
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
- Wed, 25 Nov 2015 16:45:11 -0700
+ Wed, 25 Nov 2015 16:45:15 -0700
 Received: from b03cxnp07028.gho.boulder.ibm.com
  (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 7C9333E4003F
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:09 -0700 (MST)
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id B09911FF0041
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:33:22 -0700 (MST)
 Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
  by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAPNj9ZW16318666
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:09 -0700
+ tAPNjBcg25690318
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:11 -0700
 Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
  by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAPNj8C1022134
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:09 -0700
+ tAPNjATV022383
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2015 16:45:11 -0700
 From: Suresh Warrier <warrier@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
 Cc: warrier@linux.vnet.ibm.com, paulus@samba.org, agraf@suse.de,
  mpe@ellerman.id.au
-Subject: [PATCH v2 0/9] KVM: PPC: Book3S HV: Optimize wakeup VCPU from H_IPI
-Date: Wed, 25 Nov 2015 17:44:47 -0600
-Message-Id: <1448495096-24759-1-git-send-email-warrier@linux.vnet.ibm.com>
+Subject: [PATCH v2 1/9] powerpc/smp: Support more IPI messages
+Date: Wed, 25 Nov 2015 17:44:48 -0600
+Message-Id: <1448495096-24759-2-git-send-email-warrier@linux.vnet.ibm.com>
+In-Reply-To: <1448495096-24759-1-git-send-email-warrier@linux.vnet.ibm.com>
+References: <1448495096-24759-1-git-send-email-warrier@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,72 +44,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the VCPU target of an H_IPI hypercall is not running
-in the guest, we need to do a kick VCPU (wake the VCPU thread)
-to make it runnable. The real-mode version of the H_IPI hypercall
-cannot do this because it involves waking a sleeping thread.
-Thus the hcall returns H_TOO_HARD which forces a switch back
-to host so that the H_IPI call can be completed in virtual mode.
-This has been found to cause a slowdown for many workloads like
-YCSB MongoDB, small message networking, etc. 
+This patch increases the number of demuxed messages for a
+controller with a single ipi to 8 for 64-bit systems
 
-One solution is to hand off this job of waking the VCPU to a CPU
-that is running in the host by sending it a message through the 
-IPI mechanism from the hypercall.
+This is required because we want to use the IPI mechanism
+to send messages from a CPU running in KVM real mode in a
+guest to a CPU in the host to take some action. Currently,
+we only support 4 messages and all 4 are already taken.
 
-This patch set optimizes the wakeup of the target VCPU by posting
-a free core already running in the host to do the wakeup, thus
-avoiding the switch to host and back. It requires maintaining a
-bitmask of all the available cores in the system to indicate if
-they are in the host or running in some guest. It also requires
-the H_IPI hypercall to search for a free host core and send it a
-new IPI message PPC_MSG_RM_HOST_ACTION after stashing away some
-parameters like the pointer to VCPU for the IPI handler. Locks
-are avoided by using atomic operations to save core state, to
-find and reserve a core in the host, etc.
+Define a fifth message PPC_MSG_RM_HOST_ACTION for this
+purpose.
 
-Note that it is possible for a guest to be destroyed and its
-VCPUs freed before the IPI handler gets to run. This case is
-handled by ensuring that any pending PPC_MSG_RM_HOST_ACTION
-IPIs are completed before proceeding with freeing the VCPUs.
+Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/smp.h | 3 +++
+ arch/powerpc/kernel/smp.c      | 8 ++++----
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
-Currently, powerpc only support 4 IPI messages and all 4 are 
-already taken for other purposes. This patch also set increases
-the number of supported IPI messages to 8. It also provides the
-code to send an IPI from hypercall running in real-mode since
-the existing cause_ipi functions cannot be executed in real-mode.
-
-A tunable h_ipi_redirect is also included in the patch set to
-disable the feature. 
-
-v2:
-* Complete patch set sent to both kvm and linuxppc mailing lists
-  to avoid build-breaks.
-* Broke up real mode IPI messaging function into two pieces - one
-  to set the message and one to cause the IPI. New function
-  icp_native_cause_ipi_rm added to arch/powerpc/sysdev/xics/icp-native.c
-
-Suresh Warrier (9):
-  powerpc/smp: Support more IPI messages
-  powerpc/smp: Add smp_muxed_ipi_set_message
-  powerpc/powernv: Add icp_native_cause_ipi_rm
-  KVM: PPC: Book3S HV: Host-side RM data structures
-  KVM: PPC: Book3S HV: Manage core host state
-  KVM: PPC: Book3S HV: kvmppc_host_rm_ops - handle offlining CPUs
-  KVM: PPC: Book3S HV: Host side kick VCPU when poked by real-mode KVM
-  KVM: PPC: Book3S HV: Send IPI to host core to wake VCPU
-  KVM: PPC: Book3S HV: Add tunable to control H_IPI redirection
-
- arch/powerpc/include/asm/kvm_ppc.h    |  33 +++++++
- arch/powerpc/include/asm/smp.h        |   4 +
- arch/powerpc/include/asm/xics.h       |   1 +
- arch/powerpc/kernel/smp.c             |  28 +++++-
- arch/powerpc/kvm/book3s_hv.c          | 166 ++++++++++++++++++++++++++++++++++
- arch/powerpc/kvm/book3s_hv_builtin.c  |   3 +
- arch/powerpc/kvm/book3s_hv_rm_xics.c  | 120 +++++++++++++++++++++++-
- arch/powerpc/kvm/powerpc.c            |  10 ++
- arch/powerpc/sysdev/xics/icp-native.c |  19 ++++
- 9 files changed, 376 insertions(+), 8 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index 825663c..9ef9c37 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -114,6 +114,9 @@ extern int cpu_to_core_id(int cpu);
+ #define PPC_MSG_TICK_BROADCAST	2
+ #define PPC_MSG_DEBUGGER_BREAK  3
+ 
++/* This is only used by the powernv kernel */
++#define PPC_MSG_RM_HOST_ACTION	4
++
+ /* for irq controllers that have dedicated ipis per message (4) */
+ extern int smp_request_message_ipi(int virq, int message);
+ extern const char *smp_ipi_name[];
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index ec9ec20..a53a130 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -206,7 +206,7 @@ int smp_request_message_ipi(int virq, int msg)
+ 
+ #ifdef CONFIG_PPC_SMP_MUXED_IPI
+ struct cpu_messages {
+-	int messages;			/* current messages */
++	long messages;			/* current messages */
+ 	unsigned long data;		/* data for cause ipi */
+ };
+ static DEFINE_PER_CPU_SHARED_ALIGNED(struct cpu_messages, ipi_message);
+@@ -236,15 +236,15 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
+ }
+ 
+ #ifdef __BIG_ENDIAN__
+-#define IPI_MESSAGE(A) (1 << (24 - 8 * (A)))
++#define IPI_MESSAGE(A) (1uL << ((BITS_PER_LONG - 8) - 8 * (A)))
+ #else
+-#define IPI_MESSAGE(A) (1 << (8 * (A)))
++#define IPI_MESSAGE(A) (1uL << (8 * (A)))
+ #endif
+ 
+ irqreturn_t smp_ipi_demux(void)
+ {
+ 	struct cpu_messages *info = this_cpu_ptr(&ipi_message);
+-	unsigned int all;
++	unsigned long all;
+ 
+ 	mb();	/* order any irq clear */
+ 
 -- 
 1.8.3.4
