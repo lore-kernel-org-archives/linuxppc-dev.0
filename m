@@ -1,31 +1,43 @@
-Return-Path: <msnitzer@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <anton@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B4A521A0014
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 08:20:30 +1100 (AEDT)
-Date: Wed, 25 Nov 2015 16:20:26 -0500
-From: Mike Snitzer <snitzer@redhat.com>
-To: Jens Axboe <axboe@fb.com>
-Cc: Hannes Reinecke <hare@suse.de>, emilne@redhat.com,
- Christoph Hellwig <hch@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Mark Salter <msalter@redhat.com>,
- "James E. J. Bottomley" <JBottomley@odin.com>,
- brking <brking@us.ibm.com>, linux-scsi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-block@vger.kernel.org, "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Subject: Re: kernel BUG at drivers/scsi/scsi_lib.c:1096!
-Message-ID: <20151125212026.GA19936@redhat.com>
-References: <20151119082325.GA11419@infradead.org> <564DEC41.5010600@suse.de>
- <1448030316.4067.18.camel@localhost.localdomain>
- <564F3453.9040603@suse.de>
- <1448033323.4067.24.camel@localhost.localdomain>
- <565579A2.4000005@suse.de> <5655F635.5040805@fb.com>
- <5656079A.3040805@suse.de> <56560ADF.9060905@fb.com>
- <20151125202317.GA19657@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D78CE1A032F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 09:59:55 +1100 (AEDT)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id B0BEC1402B8
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2015 09:59:55 +1100 (AEDT)
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <anton@au1.ibm.com>;
+ Thu, 26 Nov 2015 08:59:54 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E59AA3578047
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2015 09:59:49 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAPMxPXn29491448
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2015 09:59:33 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAPMxHTj001839
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2015 09:59:17 +1100
+Date: Thu, 26 Nov 2015 09:58:18 +1100
+From: Anton Blanchard <anton@au1.ibm.com>
+To: Torsten Duwe <duwe@lst.de>
+Cc: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <michaele@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] cxl: Fix build failure due to -Wunused-variable
+ behaviour change
+Message-ID: <20151126095818.1e394395@kryten>
+In-Reply-To: <20151125161616.GA30262@lst.de>
+References: <1442296114-16796-1-git-send-email-imunsie@au.ibm.com>
+ <20151125161616.GA30262@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151125202317.GA19657@redhat.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,45 +47,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 25 2015 at  3:23pm -0500,
-Mike Snitzer <snitzer@redhat.com> wrote:
+Hi Torsten,
 
-> On Wed, Nov 25 2015 at  2:24pm -0500,
-> Jens Axboe <axboe@fb.com> wrote:
+> > -ccflags-y := -Werror
+> > +ccflags-y := -Werror -Wno-unused-const-variable
 > 
-> > On 11/25/2015 12:10 PM, Hannes Reinecke wrote:
-> > >The problem is that NOMERGE does too much, as it inhibits _any_ merging.
-> > 
-> > Right, that is the point of the flag from the block layer view,
-> > where it was originally added for the case mentioned.
-> 
-> And we really don't want _any_ merging.  The merging, if any, will have
-> already happened in upper DM-multipath's elevator.  So there should be
-> no need to have the underlying SCSI paths do any merging.
-> 
-> > >Unfortunately, the req->nr_phys_segments value is evaluated in the final
-> > >_driver_ context _after_ the merging happend; cf
-> > >scsi_lib.c:scsi_init_sgtable().
-> > >As nr_phys_segments is inherited from the original request (and never
-> > >recalculated with the new request queue limits) the following
-> > >blk_rq_map_sg() call might end up at a different calculation, especially
-> > >after retrying a request on another path.
-> > 
-> > That all sounds pretty horrible. Why is blk_rq_check_limits()
-> > checking for mergeable at all? If merging is disabled on the
-> > request, I'm assuming that's an attempt at an optimization since we
-> > know it won't change. But that should be tracked separately, like
-> > how it's done on the bio.
-> 
-> Not clear to me why it was checking for merging...
+> JFYI, my gcc-4.3 does not like this switch.
+> What's the minimum compiler version to build this code?
 
-Ewan pointed out that blk_rq_check_limits()'s call to rq_mergable() was
-introduced as part of Martin's DISCARD cleanup that prepared for
-WRITE_SAME, see: commit e2a60da74 ("block: Clean up special command handling logic")
+-Werror is such a moving target. I'm also seeing issues when building
+with clang, eg:
 
-And prior to that, blk_rq_check_limits()'s (rq->cmd_flags & REQ_DISCARD)
-check was introduced by some guy crazy doppelganger name "Ike Snitzer",
-see commit: 3383977f ("block: update request stacking methods to support discards")
+drivers/misc/cxl/native.c:223:20: warning: unused function
+'detach_spa' [-Wunused-function]
 
-So basically we probably never needed the extra check in
-blk_rq_check_limits() to begin with.. Ike was probably paranoid. ;)
+Anton
