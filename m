@@ -1,25 +1,19 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-x22a.google.com (mail-yk0-x22a.google.com
- [IPv6:2607:f8b0:4002:c07::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A8FD1A01D2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 21:12:14 +1100 (AEDT)
-Received: by ykdr82 with SMTP id r82so84821997ykd.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 02:12:12 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA8F91A01D2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 21:47:21 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/cell: Remove the Cell QPACE code.
+To: Rashmica Gupta <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <1448499587-25604-1-git-send-email-rashmicy@gmail.com>
+Cc: ben@codiert.org
+From: Thomas Huth <thuth@redhat.com>
+Message-ID: <5656E334.1060506@redhat.com>
+Date: Thu, 26 Nov 2015 11:47:16 +0100
 MIME-Version: 1.0
-In-Reply-To: <20151125172855.49E3469260@newverein.lst.de>
-References: <20151125172608.9588569260@newverein.lst.de>
- <20151125172855.49E3469260@newverein.lst.de>
-Date: Thu, 26 Nov 2015 13:12:12 +0300
-Message-ID: <CAOJe8K2o-D61zXK-TK3iLRDNu9+qc0kmmn002dA96RF_F7_2Yg@mail.gmail.com>
-Subject: Re: [PATCH v4 1/9] ppc64 (le): prepare for -mprofile-kernel
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: 1Torsten Duwe <duwe@lst.de>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1448499587-25604-1-git-send-email-rashmicy@gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,160 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/25/15, Torsten Duwe <duwe@lst.de> wrote:
-> The gcc switch -mprofile-kernel, available for ppc64 on gcc > 4.8.5,
-> allows to call _mcount very early in the function, which low-level
-> ASM code and code patching functions need to consider.
-> Especially the link register and the parameter registers are still
-> alive and not yet saved into a new stack frame.
->
-> Signed-off-by: Torsten Duwe <duwe@suse.de>
+On 26/11/15 01:59, Rashmica Gupta wrote:
+> All users of QPACE have upgraded to QPACE2 so remove the Cell QPACE code.
+> 
+> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 > ---
->  arch/powerpc/kernel/entry_64.S  | 44
-> +++++++++++++++++++++++++++++++++++++++--
->  arch/powerpc/kernel/ftrace.c    | 12 +++++++++--
->  arch/powerpc/kernel/module_64.c | 13 ++++++++++++
->  3 files changed, 65 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> index a94f155..8d56b16 100644
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -1206,7 +1206,11 @@ _GLOBAL(enter_prom)
->  #ifdef CONFIG_DYNAMIC_FTRACE
->  _GLOBAL(mcount)
->  _GLOBAL(_mcount)
-> -	blr
-> +	mflr	r0
-> +	mtctr	r0
-> +	ld	r0,LRSAVE(r1)
-> +	mtlr	r0
-> +	bctr
->
->  _GLOBAL_TOC(ftrace_caller)
->  	/* Taken from output of objdump from lib64/glibc */
-> @@ -1262,13 +1266,28 @@ _GLOBAL(ftrace_stub)
->
->  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
->  _GLOBAL(ftrace_graph_caller)
-> +#ifdef CC_USING_MPROFILE_KERNEL
-> +	// with -mprofile-kernel, parameter regs are still alive at _mcount
-> +	std	r10, 104(r1)
-> +	std	r9, 96(r1)
-> +	std	r8, 88(r1)
-> +	std	r7, 80(r1)
-> +	std	r6, 72(r1)
-> +	std	r5, 64(r1)
-> +	std	r4, 56(r1)
-> +	std	r3, 48(r1)
-> +	mfctr	r4		// ftrace_caller has moved local addr here
-> +	std	r4, 40(r1)
-> +	mflr	r3		// ftrace_caller has restored LR from stack
-> +#else
->  	/* load r4 with local address */
->  	ld	r4, 128(r1)
-> -	subi	r4, r4, MCOUNT_INSN_SIZE
->
->  	/* Grab the LR out of the caller stack frame */
->  	ld	r11, 112(r1)
->  	ld	r3, 16(r11)
-> +#endif
-> +	subi	r4, r4, MCOUNT_INSN_SIZE
->
->  	bl	prepare_ftrace_return
->  	nop
-> @@ -1277,6 +1296,26 @@ _GLOBAL(ftrace_graph_caller)
->  	 * prepare_ftrace_return gives us the address we divert to.
->  	 * Change the LR in the callers stack frame to this.
->  	 */
-> +
-> +#ifdef CC_USING_MPROFILE_KERNEL
-> +	mtlr	r3
-> +
-> +	ld	r0, 40(r1)
-> +	mtctr	r0
-> +	ld	r10, 104(r1)
-> +	ld	r9, 96(r1)
-> +	ld	r8, 88(r1)
-> +	ld	r7, 80(r1)
-> +	ld	r6, 72(r1)
-> +	ld	r5, 64(r1)
-> +	ld	r4, 56(r1)
-> +	ld	r3, 48(r1)
-> +
-> +	addi	r1, r1, 112
-> +	mflr	r0
-> +	std	r0, LRSAVE(r1)
-> +	bctr
-> +#else
->  	ld	r11, 112(r1)
->  	std	r3, 16(r11)
->
-> @@ -1284,6 +1323,7 @@ _GLOBAL(ftrace_graph_caller)
->  	mtlr	r0
->  	addi	r1, r1, 112
->  	blr
-> +#endif
->
->  _GLOBAL(return_to_handler)
->  	/* need to save return values */
-> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-> index 44d4d8e..080c525 100644
-> --- a/arch/powerpc/kernel/ftrace.c
-> +++ b/arch/powerpc/kernel/ftrace.c
-> @@ -306,11 +306,19 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned
-> long addr)
->  	 * The load offset is different depending on the ABI. For simplicity
->  	 * just mask it out when doing the compare.
->  	 */
-> +#ifndef CC_USING_MPROFILE_KERNEL
->  	if ((op[0] != 0x48000008) || ((op[1] & 0xffff0000) != 0xe8410000)) {
-> -		pr_err("Unexpected call sequence: %x %x\n", op[0], op[1]);
-> +		pr_err("Unexpected call sequence at %p: %x %x\n",
-> +		ip, op[0], op[1]);
->  		return -EINVAL;
->  	}
-> -
-> +#else
-> +	/* look for patched "NOP" on ppc64 with -mprofile-kernel */
-> +	if (op[0] != 0x60000000) {
-> +		pr_err("Unexpected call at %p: %x\n", ip, op[0]);
-> +		return -EINVAL;
-> +	}
-> +#endif
->  	/* If we never set up a trampoline to ftrace_caller, then bail */
->  	if (!rec->arch.mod->arch.tramp) {
->  		pr_err("No ftrace trampoline\n");
-> diff --git a/arch/powerpc/kernel/module_64.c
-> b/arch/powerpc/kernel/module_64.c
-> index 6838451..0819ce7 100644
-> --- a/arch/powerpc/kernel/module_64.c
-> +++ b/arch/powerpc/kernel/module_64.c
-> @@ -475,6 +475,19 @@ static unsigned long stub_for_addr(Elf64_Shdr *sechdrs,
->  static int restore_r2(u32 *instruction, struct module *me)
->  {
->  	if (*instruction != PPC_INST_NOP) {
-> +#ifdef CC_USING_MPROFILE_KERNEL
-> +		/* -mprofile_kernel sequence starting with
-> +		 * mflr r0; std r0, LRSAVE(r1)
-> +		 */
-> +		if (instruction[-3] == 0x7c0802a6 &&
-> +		    instruction[-2] == 0xf8010010) {
-> +			/* Nothing to be done here, it's an _mcount
-> +			 * call location and r2 will have to be
-> +			 * restored in the _mcount function.
-> +			 */
-> +			return 2;
-I didn't find where you check for this return value.
-> +		};
-> +#endif
->  		pr_err("%s: Expect noop after relocate, got %08x\n",
->  		       me->name, *instruction);
->  		return 0;
-> --
-> 1.8.5.6
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>  arch/powerpc/boot/Makefile                |   2 -
+>  arch/powerpc/configs/ppc64_defconfig      |   1 -
+>  arch/powerpc/platforms/cell/Kconfig       |   5 -
+>  arch/powerpc/platforms/cell/Makefile      |   3 -
+>  arch/powerpc/platforms/cell/qpace_setup.c | 148 ------------------------------
+>  5 files changed, 159 deletions(-)
+>  delete mode 100644 arch/powerpc/platforms/cell/qpace_setup.c
+
+There one more reference to qpace in the file
+ Documentation/devicetree/bindings/serial/8250.txt
+... you might want to remove that, too.
+
+ Thomas
