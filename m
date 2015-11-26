@@ -1,20 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0F36F1A01D2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9FC7B1A01D2
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 23:15:53 +1100 (AEDT)
-In-Reply-To: <1445353453-846-3-git-send-email-luisbg@osg.samsung.com>
-To: Luis de Bethencourt <luisbg@osg.samsung.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1446723094-9910-1-git-send-email-laurent@vivier.eu>
+To: Laurent Vivier <laurent@vivier.eu>, benh@kernel.crashing.org,
+ paulus@samba.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: jack@suse.cz, neilb@suse.com, axboe@fb.com, paulus@samba.org,
- matthew.r.wilcox@intel.com, Luis de Bethencourt <luis@debethencourt.com>,
- Luis de Bethencourt <luisbg@osg.samsung.com>, dan.j.williams@intel.com,
- agust@denx.de, linuxppc-dev@lists.ozlabs.org, ross.zwisler@linux.intel.com
-Subject: Re: [RESEND,
- 2/2] powerpc: axonram: Fix module autoload for OF platform driver
-Message-Id: <20151126121552.E8BD2140307@ozlabs.org>
-Date: Thu, 26 Nov 2015 23:15:52 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Laurent Vivier <laurent@vivier.eu>
+Subject: Re: powerpc/boot: allow wrapper to work on non-english system
+Message-Id: <20151126121553.8A5D0140311@ozlabs.org>
+Date: Thu, 26 Nov 2015 23:15:53 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,16 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-20-10 at 15:04:13 UTC, Luis de Bethencourt wrote:
-> From: Luis de Bethencourt <luis@debethencourt.com>
+On Thu, 2015-05-11 at 11:31:34 UTC, Laurent Vivier wrote:
+> if the language is not english objdump output is not parsed correctly
+> and format is "". Later, "ld -m $format" fails.
 > 
-> This platform driver has a OF device ID table but the OF module
-> alias information is not created so module autoloading won't work.
+> This patch adds "LANG=C" to force english output for objdump.
 > 
-> Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
+> Signed-off-by: Laurent Vivier <laurent@vivier.eu>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/b4f8144559e172f792f7fa92
+https://git.kernel.org/powerpc/c/58531b0c800fd514f04ae42b
 
 cheers
