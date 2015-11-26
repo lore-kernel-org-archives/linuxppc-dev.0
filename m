@@ -1,21 +1,24 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BC6111A1171
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 23:39:14 +1100 (AEDT)
-Subject: Re: [PATCH] powerpc/cell: Remove the Cell QPACE code.
-To: Michael Ellerman <mpe@ellerman.id.au>, Rashmica Gupta
- <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <1448499587-25604-1-git-send-email-rashmicy@gmail.com>
- <5656E334.1060506@redhat.com> <1448539743.22295.14.camel@ellerman.id.au>
-Cc: ben@codiert.org, Arnd Bergmann <arnd@arnddb.de>
-From: Thomas Huth <thuth@redhat.com>
-Message-ID: <5656FD6D.2020607@redhat.com>
-Date: Thu, 26 Nov 2015 13:39:09 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 75F6E1A1894
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 23:57:31 +1100 (AEDT)
+Date: Thu, 26 Nov 2015 13:57:27 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
+Subject: Re: [PATCH v4 1/9] ppc64 (le): prepare for -mprofile-kernel
+Message-ID: <20151126125727.GA6484@lst.de>
+References: <20151125172608.9588569260@newverein.lst.de>
+ <20151125172855.49E3469260@newverein.lst.de>
+ <CAOJe8K2o-D61zXK-TK3iLRDNu9+qc0kmmn002dA96RF_F7_2Yg@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1448539743.22295.14.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAOJe8K2o-D61zXK-TK3iLRDNu9+qc0kmmn002dA96RF_F7_2Yg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,37 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26/11/15 13:09, Michael Ellerman wrote:
-> On Thu, 2015-11-26 at 11:47 +0100, Thomas Huth wrote:
-> 
->> On 26/11/15 01:59, Rashmica Gupta wrote:
-> 
->>> All users of QPACE have upgraded to QPACE2 so remove the Cell QPACE code.
->>>
->>> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
->>> ---
->>>  arch/powerpc/boot/Makefile                |   2 -
->>>  arch/powerpc/configs/ppc64_defconfig      |   1 -
->>>  arch/powerpc/platforms/cell/Kconfig       |   5 -
->>>  arch/powerpc/platforms/cell/Makefile      |   3 -
->>>  arch/powerpc/platforms/cell/qpace_setup.c | 148 ------------------------------
->>>  5 files changed, 159 deletions(-)
->>>  delete mode 100644 arch/powerpc/platforms/cell/qpace_setup.c
->>
->> There one more reference to qpace in the file
->>  Documentation/devicetree/bindings/serial/8250.txt
->> ... you might want to remove that, too.
-> 
-> There's also one in drivers/tty/serial/of_serial.c.
-> 
-> Arnd said he already had a patch to remove those, not sure if he's sent it
-> though.
+On Thu, Nov 26, 2015 at 01:12:12PM +0300, Denis Kirjanov wrote:
+> On 11/25/15, Torsten Duwe <duwe@lst.de> wrote:
+> > +			 */
+> > +			return 2;
+> I didn't find where you check for this return value.
 
-He apparently did:
+That's a pure debugging convenience. The return test is for != 0,
+so any non-zero value will do. I've encountered situations where
+I'd really liked to know _why_ a routine failed/succeeded, visible
+in the registers in the debugger.
 
- https://lkml.org/lkml/2015/11/16/454
+This is no big thing, I have no strong opinion about this.
 
-So the change to the file in Documentation should ideally go also into
-his patch instead, I think.
-
- Thomas
+	Torsten
