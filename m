@@ -1,17 +1,17 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A69B1A01D2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 16:02:48 +1100 (AEDT)
-Message-ID: <1448514168.9839.6.camel@ellerman.id.au>
-Subject: Re: [PATCH v2 4/6] powerpc/pseries: Add CPU dlpar remove functionality
+ by lists.ozlabs.org (Postfix) with ESMTPS id 07FB91A01D2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 16:13:24 +1100 (AEDT)
+Message-ID: <1448514803.9839.9.camel@ellerman.id.au>
+Subject: Re: [PATCH v2 5/6] powerpc/pseries: Add CPU dlpar add functionality
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 26 Nov 2015 16:02:48 +1100
-In-Reply-To: <562FC1E8.9040902@linux.vnet.ibm.com>
+Date: Thu, 26 Nov 2015 16:13:23 +1100
+In-Reply-To: <562FC21F.3050907@linux.vnet.ibm.com>
 References: <562FC0C3.7000303@linux.vnet.ibm.com>
- <562FC1E8.9040902@linux.vnet.ibm.com>
+ <562FC21F.3050907@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,120 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-10-27 at 13:26 -0500, Nathan Fontenot wrote:
+On Tue, 2015-10-27 at 13:27 -0500, Nathan Fontenot wrote:
 
-> Add the ability to dlpar remove CPUs via hotplug rtas events, either by
-> specifying the drc-index of the CPU to remove or providing a count of cpus
-> to remove.
-> 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index f080e81..635f0ba 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -570,6 +571,143 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
->  	return 0;
->  }
->  
-> +static struct device_node *cpu_drc_index_to_dn(u32 drc_index)
-> +{
-> +	struct device_node *dn;
-> +	u32 my_index;
-> +	int rc;
-> +
-> +	for_each_node_by_type(dn, "cpu") {
-> +		rc = of_property_read_u32(dn, "ibm,my-drc-index", &my_index);
-> +		if (rc)
-> +			continue;
-> +
-> +		if (my_index == drc_index)
-> +			break;
-> +	}
-> +
-> +	return dn;
-> +}
-> +
-> +static int dlpar_cpu_remove_by_index(u32 drc_index)
-> +{
-> +	struct device_node *dn;
-> +	int rc;
-> +
-> +	dn = cpu_drc_index_to_dn(drc_index);
-> +	if (!dn)
-> +		return -ENODEV;
-> +
-> +	rc = dlpar_cpu_remove(dn, drc_index);
-> +	of_node_put(dn);
+> Add the ability to hotplug add cpus via rtas hotplug events by either
+> specifying the drc index of the CPU to add, or providing a count of the
+> number of CPUs to add.
 
-Does dlpar_cpu_remove() work when you still hold a reference to the dn?
+So I just tried running this on my system, without doing anything on the HMC.
 
-It looks like dlpar_detach_node() does an of_node_put() also.
+I have:
 
-> +	return rc;
-> +}
-> +
-> +static u32 *dlpar_cpus_to_remove(int cpus_to_remove)
-> +{
-> +	struct device_node *dn;
-> +	u32 *cpu_drcs;
-> +	int cpus_found = 0;
-> +	int i, rc;
-> +
-> +	cpu_drcs = kcalloc(cpus_to_remove, sizeof(*cpu_drcs), GFP_KERNEL);
-> +	if (!cpu_drcs)
-> +		return NULL;
-> +
-> +	i = 0;
-> +	for_each_node_by_type(dn, "cpu") {
-> +		cpus_found++;
-> +
-> +		if (cpus_found > cpus_to_remove) {
-> +			of_node_put(dn);
-> +			break;
-> +		}
-> +
-> +		rc = of_property_read_u32(dn, "ibm,my-drc-index",
-> +					  &cpu_drcs[i++]);
-> +		if (rc) {
-> +			of_node_put(dn);
-> +			break;
+  # lsprop /proc/device-tree/cpus/ibm,drc-indexes 
+  /proc/device-tree/cpus/ibm,drc-indexes
+  		 00000002 10000000 10000002
 
-I'm not sure about the logic here with cpus_found and i. If you break here
-cpus_found will be 1, but you found zero, which seems odd.
+So I think that says I have two cpus.
 
-If instead you delayed the increment of i:
+The first one is already added:
 
-		rc = of_property_read_u32(dn, "ibm,my-drc-index",
-					  &cpu_drcs[i]);
-		if (rc) {
-			of_node_put(dn);
-			break;
-		}
+  /proc/device-tree/cpus/PowerPC,POWER6@0/ibm,my-drc-index
+  		 10000000 (268435456)
 
-		i++;
-	}
+But can I add the second one?
 
-Then i would equal the number of cpus found at all times. If you need to count
-one more in the if below you can just do that there.
+  # echo "cpu add count 1" > dlpar 
+  RTAS: event: 34, Type: Platform Error, Severity: 2
+  pseries-hotplug-cpu: Failed to acquire DRC, rc: -5, drc index: 10000002
+  pseries-hotplug-cpu: CPU hot-add failed, removing any added CPUs
+  -bash: echo: write error: Invalid argument
 
-> +
-> +	/* We want to find cpus_to_remove + 1 CPUs to ensure we do not
-> +	 * remove the last CPU.
-> +	 */
-> +	if (cpus_found <= cpus_to_remove) {
-> +		pr_warn("Failed to find enough CPUs (%d of %d) to remove\n",
-> +			cpus_found, cpus_to_remove);
-> +		kfree(cpu_drcs);
-> +		cpu_drcs = NULL;
-> +	}
 
-On my two cpu system when I do "cpu remove count 1" this always says:
+Seems not. But I'm not clear why?
 
-  pseries-hotplug-cpu: Failed to find enough CPUs (1 of 1) to remove
+Adding by index doesn't work either:
 
-Which confuses me.
+  # echo "cpu add index 10000002" > dlpar
+  pseries-hotplug-cpu: Failed to acquire DRC, rc: -1, drc index: 989682
+  -bash: echo: write error: Invalid argument
 
-I suspect that's because I actually have one cpu *node*, which appears to Linux
-as two cpus (due to SMT). So I think it's working as expected, but it's not
-very clear from a user's perspective.
+That's a little confusing, drc index is hex obviously.
+
+  [root@p6-10-P5-E0 kernel]# echo "cpu add index 0x10000002" > dlpar 
+  RTAS: event: 35, Type: Platform Error, Severity: 2
+  pseries-hotplug-cpu: Failed to acquire DRC, rc: -5, drc index: 10000002
+  -bash: echo: write error: Invalid argument
+
+
+So that's probably all PEBKAC, but if we can make it more intutive that would be good.
 
 cheers
