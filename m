@@ -1,21 +1,21 @@
-Return-Path: <hongtao.jia@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0119.outbound.protection.outlook.com [157.56.110.119])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 83F3D1A01D2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 17:34:45 +1100 (AEDT)
-From: Jia Hongtao <hongtao.jia@freescale.com>
-To: <edubezval@gmail.com>, <viresh.kumar@linaro.org>
-CC: <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <devicetree@vger.kernel.org>, <scottwood@freescale.com>,
- <hongtao.jia@freescale.com>
-Subject: [PATCH V2] cpufreq: qoriq: Register cooling device based on device
- tree
-Date: Thu, 26 Nov 2015 14:27:29 +0800
-Message-ID: <1448519249-11449-1-git-send-email-hongtao.jia@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id ABFFC1A01D2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 17:39:27 +1100 (AEDT)
+Message-ID: <1448519967.9839.13.camel@ellerman.id.au>
+Subject: Re: [PATCH 2/2] powerpc: tracing: don't trace hcalls on offline CPUs
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Denis Kirjanov <kda@linux-powerpc.org>, Steven Rostedt
+ <rostedt@goodmis.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Date: Thu, 26 Nov 2015 17:39:27 +1100
+In-Reply-To: <1448389419-5296-2-git-send-email-kda@linux-powerpc.org>
+References: <1448389419-5296-1-git-send-email-kda@linux-powerpc.org>
+ <1448389419-5296-2-git-send-email-kda@linux-powerpc.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,76 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Register the qoriq cpufreq driver as a cooling device, based on the
-thermal device tree framework. When temperature crosses the passive trip
-point cpufreq is used to throttle CPUs.
+On Tue, 2015-11-24 at 21:23 +0300, Denis Kirjanov wrote:
 
-Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
----
-Changes for V2:
-* Using ->ready callback for cpu cooling device registering.
+> ./drmgr -c cpu -a -r gives the following warning:
+> 
+> [ 2327.035563] RCU used illegally from offline CPU!
+> rcu_scheduler_active = 1, debug_locks = 1
+> [ 2327.035564] no locks held by swapper/12/0.
+> [ 2327.035565] stack backtrace:
+> [ 2327.035567] CPU: 12 PID: 0 Comm: swapper/12 Tainted: G S >   4.3.0-rc3-00060-g353169a #5
+> [ 2327.035568] Call Trace:
+> [ 2327.035573] [c0000001d62578e0] [c0000000008977fc] .dump_stack+0x98/0xd4 (unreliable)
+> [ 2327.035577] [c0000001d6257960] [c000000000109bd8] .lockdep_rcu_suspicious+0x108/0x170
+> [ 2327.035580] [c0000001d62579f0] [c00000000006a1d0] .__trace_hcall_exit+0x2b0/0x2c0
+> [ 2327.035584] [c0000001d6257ab0] [c00000000006a2e8] plpar_hcall_norets_trace+0x70/0x8c
+> [ 2327.035588] [c0000001d6257b20] [c000000000067a14] .icp_hv_set_cpu_priority+0x54/0xc0
+> [ 2327.035592] [c0000001d6257ba0] [c000000000066c5c] .xics_teardown_cpu+0x5c/0xa0
+> [ 2327.035595] [c0000001d6257c20] [c0000000000747ac] .pseries_mach_cpu_die+0x6c/0x320
+> [ 2327.035598] [c0000001d6257cd0] [c0000000000439cc] .cpu_die+0x3c/0x60
+> [ 2327.035602] [c0000001d6257d40] [c0000000000183d8] .arch_cpu_idle_dead+0x28/0x40
+> [ 2327.035606] [c0000001d6257db0] [c0000000000ff1dc] .cpu_startup_entry+0x4fc/0x560
+> [ 2327.035610] [c0000001d6257ed0] [c000000000043728] .start_secondary+0x328/0x360
+> [ 2327.035614] [c0000001d6257f90] [c000000000008a6c] start_secondary_prolog+0x10/0x14
+> [ 2327.035620] cpu 12 (hwid 12) Ready to die...
+> [ 2327.144463] cpu 13 (hwid 13) Ready to die...
+> [ 2327.294180] cpu 14 (hwid 14) Ready to die...
+> [ 2327.403599] cpu 15 (hwid 15) Ready to die...
 
- drivers/cpufreq/qoriq-cpufreq.c | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
 
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-index 4f53fa2..a39f868 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -12,6 +12,7 @@
- 
- #include <linux/clk.h>
- #include <linux/cpufreq.h>
-+#include <linux/cpu_cooling.h>
- #include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-@@ -33,6 +34,7 @@
- struct cpu_data {
- 	struct clk **pclk;
- 	struct cpufreq_frequency_table *table;
-+	struct thermal_cooling_device *cdev;
- };
- 
- /*
-@@ -260,6 +262,30 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
- 	return clk_set_parent(policy->clk, parent);
- }
- 
-+
-+static void qoriq_cpufreq_ready(struct cpufreq_policy *policy)
-+{
-+	struct cpu_data *cpud = policy->driver_data;
-+	struct device_node *np = of_get_cpu_node(policy->cpu, NULL);
-+
-+	if (WARN_ON(!np))
-+		return;
-+
-+	if (of_find_property(np, "#cooling-cells", NULL)) {
-+		cpud->cdev = of_cpufreq_cooling_register(np,
-+							 policy->related_cpus);
-+
-+		if (IS_ERR(cpud->cdev)) {
-+			pr_err("Failed to register cooling device cpu%d: %ld\n",
-+					policy->cpu, PTR_ERR(cpud->cdev));
-+
-+			cpud->cdev = NULL;
-+		}
-+	}
-+
-+	of_node_put(np);
-+}
-+
- static struct cpufreq_driver qoriq_cpufreq_driver = {
- 	.name		= "qoriq_cpufreq",
- 	.flags		= CPUFREQ_CONST_LOOPS,
-@@ -268,6 +294,7 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= qoriq_cpufreq_target,
- 	.get		= cpufreq_generic_get,
-+	.ready		= qoriq_cpufreq_ready,
- 	.attr		= cpufreq_generic_attr,
- };
- 
--- 
-2.1.0.27.g96db324
+I can't get this to hit.
+
+I've got LOCKDEP=y, I've enabled the hcall tracepoints, and then I offline a
+cpu via sysfs.
+
+What am I missing? Or does it only hit when you use drmgr?
+
+cheers
