@@ -1,15 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C1121A040B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 23:16:00 +1100 (AEDT)
-In-Reply-To: <1447913093-28342-1-git-send-email-rashmicy@gmail.com>
-To: Rashmica Gupta <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: powerpc: Standardise on NR_syscalls rather than __NR_syscalls.
-Message-Id: <20151126121600.27D20140319@ozlabs.org>
-Date: Thu, 26 Nov 2015 23:15:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BC6111A1171
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 23:39:14 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/cell: Remove the Cell QPACE code.
+To: Michael Ellerman <mpe@ellerman.id.au>, Rashmica Gupta
+ <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <1448499587-25604-1-git-send-email-rashmicy@gmail.com>
+ <5656E334.1060506@redhat.com> <1448539743.22295.14.camel@ellerman.id.au>
+Cc: ben@codiert.org, Arnd Bergmann <arnd@arnddb.de>
+From: Thomas Huth <thuth@redhat.com>
+Message-ID: <5656FD6D.2020607@redhat.com>
+Date: Thu, 26 Nov 2015 13:39:09 +0100
+MIME-Version: 1.0
+In-Reply-To: <1448539743.22295.14.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,19 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-19-11 at 06:04:53 UTC, Rashmica Gupta wrote:
-> Most architectures use NR_syscalls as the #define for the number of syscalls.
+On 26/11/15 13:09, Michael Ellerman wrote:
+> On Thu, 2015-11-26 at 11:47 +0100, Thomas Huth wrote:
 > 
-> We use __NR_syscalls, and then define NR_syscalls as __NR_syscalls.
+>> On 26/11/15 01:59, Rashmica Gupta wrote:
 > 
-> __NR_syscalls is not used outside arch code, whereas NR_syscalls is. So as
-> NR_syscalls must be defined and __NR_syscalls does not, replace __NR_syscalls
-> with NR_syscalls.
+>>> All users of QPACE have upgraded to QPACE2 so remove the Cell QPACE code.
+>>>
+>>> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+>>> ---
+>>>  arch/powerpc/boot/Makefile                |   2 -
+>>>  arch/powerpc/configs/ppc64_defconfig      |   1 -
+>>>  arch/powerpc/platforms/cell/Kconfig       |   5 -
+>>>  arch/powerpc/platforms/cell/Makefile      |   3 -
+>>>  arch/powerpc/platforms/cell/qpace_setup.c | 148 ------------------------------
+>>>  5 files changed, 159 deletions(-)
+>>>  delete mode 100644 arch/powerpc/platforms/cell/qpace_setup.c
+>>
+>> There one more reference to qpace in the file
+>>  Documentation/devicetree/bindings/serial/8250.txt
+>> ... you might want to remove that, too.
 > 
-> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+> There's also one in drivers/tty/serial/of_serial.c.
+> 
+> Arnd said he already had a patch to remove those, not sure if he's sent it
+> though.
 
-Applied to powerpc next, thanks.
+He apparently did:
 
-https://git.kernel.org/powerpc/c/f43194e45852b0455d2a3e37
+ https://lkml.org/lkml/2015/11/16/454
 
-cheers
+So the change to the file in Documentation should ideally go also into
+his patch instead, I think.
+
+ Thomas
