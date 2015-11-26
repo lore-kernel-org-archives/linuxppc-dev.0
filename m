@@ -2,16 +2,19 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F3A21A01D2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 23:13:09 +1100 (AEDT)
-In-Reply-To: <1447908285-14637-3-git-send-email-mikey@neuling.org>
-To: Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0F36F1A01D2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 23:15:53 +1100 (AEDT)
+In-Reply-To: <1445353453-846-3-git-send-email-luisbg@osg.samsung.com>
+To: Luis de Bethencourt <luisbg@osg.samsung.com>, linux-kernel@vger.kernel.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, paulus@samba.org,
- sam.bobroff@au1.ibm.com
-Subject: Re: [v2,2/2] powerpc/tm: Check for already reclaimed tasks
-Message-Id: <20151126121309.3824D140157@ozlabs.org>
-Date: Thu, 26 Nov 2015 23:13:08 +1100 (AEDT)
+Cc: jack@suse.cz, neilb@suse.com, axboe@fb.com, paulus@samba.org,
+ matthew.r.wilcox@intel.com, Luis de Bethencourt <luis@debethencourt.com>,
+ Luis de Bethencourt <luisbg@osg.samsung.com>, dan.j.williams@intel.com,
+ agust@denx.de, linuxppc-dev@lists.ozlabs.org, ross.zwisler@linux.intel.com
+Subject: Re: [RESEND,
+ 2/2] powerpc: axonram: Fix module autoload for OF platform driver
+Message-Id: <20151126121552.E8BD2140307@ozlabs.org>
+Date: Thu, 26 Nov 2015 23:15:52 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,13 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-19-11 at 04:44:45 UTC, Michael Neuling wrote:
-> Currently we can hit a scenario where we'll tm_reclaim() twice.  This
-> results in a TM bad thing exception because the second reclaim occurs
-> when not in suspend mode.
+On Tue, 2015-20-10 at 15:04:13 UTC, Luis de Bethencourt wrote:
+> From: Luis de Bethencourt <luis@debethencourt.com>
+> 
+> This platform driver has a OF device ID table but the OF module
+> alias information is not created so module autoloading won't work.
+> 
+> Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/7f821fc9c77a9b01fe7b1d6e
+https://git.kernel.org/powerpc/c/b4f8144559e172f792f7fa92
 
 cheers
