@@ -1,39 +1,21 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <hongtao.jia@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0119.outbound.protection.outlook.com [157.56.110.119])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7429F1A0331
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 16:42:28 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 26 Nov 2015 11:12:26 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id E3576125801E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 11:12:38 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAQ5gNB556688764
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 11:12:23 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAQ5gLUI018032
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 11:12:22 +0530
-Message-ID: <56569BBD.2040600@linux.vnet.ibm.com>
-Date: Thu, 26 Nov 2015 11:12:21 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 83F3D1A01D2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 17:34:45 +1100 (AEDT)
+From: Jia Hongtao <hongtao.jia@freescale.com>
+To: <edubezval@gmail.com>, <viresh.kumar@linaro.org>
+CC: <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <devicetree@vger.kernel.org>, <scottwood@freescale.com>,
+ <hongtao.jia@freescale.com>
+Subject: [PATCH V2] cpufreq: qoriq: Register cooling device based on device
+ tree
+Date: Thu, 26 Nov 2015 14:27:29 +0800
+Message-ID: <1448519249-11449-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Scott Wood <scottwood@freescale.com>,
- Denis Kirjanov <kda@linux-powerpc.org>
-CC: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V5 23/31] powerpc/mm: Increase the width of #define
-References: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1448274160-28446-24-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1448274160-28446-24-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,11 +25,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/23/2015 03:52 PM, Aneesh Kumar K.V wrote:
-> No real change, only style changes
+Register the qoriq cpufreq driver as a cooling device, based on the
+thermal device tree framework. When temperature crosses the passive trip
+point cpufreq is used to throttle CPUs.
 
-If there are no real changes and it does not help upcoming
-patches in the series, should not it just follow patch 17
-after all the header movement has been completed before we
-get down to real changes. IMHO the sequence of patches
-matters.
+Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+---
+Changes for V2:
+* Using ->ready callback for cpu cooling device registering.
+
+ drivers/cpufreq/qoriq-cpufreq.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+index 4f53fa2..a39f868 100644
+--- a/drivers/cpufreq/qoriq-cpufreq.c
++++ b/drivers/cpufreq/qoriq-cpufreq.c
+@@ -12,6 +12,7 @@
+ 
+ #include <linux/clk.h>
+ #include <linux/cpufreq.h>
++#include <linux/cpu_cooling.h>
+ #include <linux/errno.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+@@ -33,6 +34,7 @@
+ struct cpu_data {
+ 	struct clk **pclk;
+ 	struct cpufreq_frequency_table *table;
++	struct thermal_cooling_device *cdev;
+ };
+ 
+ /*
+@@ -260,6 +262,30 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
+ 	return clk_set_parent(policy->clk, parent);
+ }
+ 
++
++static void qoriq_cpufreq_ready(struct cpufreq_policy *policy)
++{
++	struct cpu_data *cpud = policy->driver_data;
++	struct device_node *np = of_get_cpu_node(policy->cpu, NULL);
++
++	if (WARN_ON(!np))
++		return;
++
++	if (of_find_property(np, "#cooling-cells", NULL)) {
++		cpud->cdev = of_cpufreq_cooling_register(np,
++							 policy->related_cpus);
++
++		if (IS_ERR(cpud->cdev)) {
++			pr_err("Failed to register cooling device cpu%d: %ld\n",
++					policy->cpu, PTR_ERR(cpud->cdev));
++
++			cpud->cdev = NULL;
++		}
++	}
++
++	of_node_put(np);
++}
++
+ static struct cpufreq_driver qoriq_cpufreq_driver = {
+ 	.name		= "qoriq_cpufreq",
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+@@ -268,6 +294,7 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= qoriq_cpufreq_target,
+ 	.get		= cpufreq_generic_get,
++	.ready		= qoriq_cpufreq_ready,
+ 	.attr		= cpufreq_generic_attr,
+ };
+ 
+-- 
+2.1.0.27.g96db324
