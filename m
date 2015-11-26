@@ -1,23 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hongtao.jia@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0119.outbound.protection.outlook.com [157.56.111.119])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 996AE1A01D2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 20:26:41 +1100 (AEDT)
-Message-ID: <1448530000.22295.4.camel@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc: tracing: don't trace hcalls on offline CPUs
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Denis Kirjanov <kda@linux-powerpc.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org
-Date: Thu, 26 Nov 2015 20:26:40 +1100
-In-Reply-To: <CAOJe8K0ggTkoBX8=N6qo=Ftnjm5V3z50QL+R1jPnawfrC2fJ5g@mail.gmail.com>
-References: <1448389419-5296-1-git-send-email-kda@linux-powerpc.org>
- <1448389419-5296-2-git-send-email-kda@linux-powerpc.org>
- <1448519967.9839.13.camel@ellerman.id.au>
- <CAOJe8K0ggTkoBX8=N6qo=Ftnjm5V3z50QL+R1jPnawfrC2fJ5g@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id E66871A01D2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 20:28:26 +1100 (AEDT)
+From: Jia Hongtao <hongtao.jia@freescale.com>
+To: <edubezval@gmail.com>, <viresh.kumar@linaro.org>
+CC: <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <devicetree@vger.kernel.org>, <scottwood@freescale.com>,
+ <hongtao.jia@freescale.com>
+Subject: [PATCH V3] cpufreq: qoriq: Register cooling device based on device
+ tree
+Date: Thu, 26 Nov 2015 17:21:11 +0800
+Message-ID: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +25,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-11-26 at 11:15 +0300, Denis Kirjanov wrote:
-> On 11/26/15, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > On Tue, 2015-11-24 at 21:23 +0300, Denis Kirjanov wrote:
-> > I can't get this to hit.
-> > 
-> > I've got LOCKDEP=y, I've enabled the hcall tracepoints, and then I offline
-> > a cpu via sysfs.
+Register the qoriq cpufreq driver as a cooling device, based on the
+thermal device tree framework. When temperature crosses the passive trip
+point cpufreq is used to throttle CPUs.
 
-> I haven't tried it via sysfs. Could you share the command
-> so I give a try to reproduce.
+Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Changes for V3:
+* Removed unnecessary cpu node NULL check.
 
-Either manually:
+Changes for V2:
+* Using ->ready callback for cpu cooling device registering.
 
-$ echo 0 > /sys/devices/system/cpuN/online
+ drivers/cpufreq/qoriq-cpufreq.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-Or using:
-
-$ ppc64_cpu --cores-on=1
-and/or
-$ ppc64_cpu --smt=1
-
-Which uses sysfs.
-
-cheers
+diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+index 4f53fa2..cb6a62c 100644
+--- a/drivers/cpufreq/qoriq-cpufreq.c
++++ b/drivers/cpufreq/qoriq-cpufreq.c
+@@ -12,6 +12,7 @@
+ 
+ #include <linux/clk.h>
+ #include <linux/cpufreq.h>
++#include <linux/cpu_cooling.h>
+ #include <linux/errno.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+@@ -33,6 +34,7 @@
+ struct cpu_data {
+ 	struct clk **pclk;
+ 	struct cpufreq_frequency_table *table;
++	struct thermal_cooling_device *cdev;
+ };
+ 
+ /*
+@@ -260,6 +262,27 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
+ 	return clk_set_parent(policy->clk, parent);
+ }
+ 
++
++static void qoriq_cpufreq_ready(struct cpufreq_policy *policy)
++{
++	struct cpu_data *cpud = policy->driver_data;
++	struct device_node *np = of_get_cpu_node(policy->cpu, NULL);
++
++	if (of_find_property(np, "#cooling-cells", NULL)) {
++		cpud->cdev = of_cpufreq_cooling_register(np,
++							 policy->related_cpus);
++
++		if (IS_ERR(cpud->cdev)) {
++			pr_err("Failed to register cooling device cpu%d: %ld\n",
++					policy->cpu, PTR_ERR(cpud->cdev));
++
++			cpud->cdev = NULL;
++		}
++	}
++
++	of_node_put(np);
++}
++
+ static struct cpufreq_driver qoriq_cpufreq_driver = {
+ 	.name		= "qoriq_cpufreq",
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+@@ -268,6 +291,7 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= qoriq_cpufreq_target,
+ 	.get		= cpufreq_generic_get,
++	.ready		= qoriq_cpufreq_ready,
+ 	.attr		= cpufreq_generic_attr,
+ };
+ 
+-- 
+2.1.0.27.g96db324
