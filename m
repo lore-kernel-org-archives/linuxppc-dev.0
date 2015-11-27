@@ -1,35 +1,36 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2DC6F1A013E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 16:37:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 089071A0014
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 16:40:28 +1100 (AEDT)
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 27 Nov 2015 15:37:53 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2B8B12CE8055
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 16:37:50 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAR5bZjm30408914
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 16:37:43 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAR5bHxZ024547
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 16:37:17 +1100
-Message-ID: <5657EBF5.2030602@au1.ibm.com>
-Date: Fri, 27 Nov 2015 16:36:53 +1100
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Thu, 26 Nov 2015 22:40:27 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 2622119D803F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 22:28:32 -0700 (MST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAR5ePMp25755794
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 22:40:25 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAR5ePJf027616
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 22:40:25 -0700
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V2] powerpc/powernv: Add a kmsg_dumper that flushes
+ console output on panic
+In-Reply-To: <1448421962-6174-1-git-send-email-ruscur@russell.cc>
+References: <1448421962-6174-1-git-send-email-ruscur@russell.cc>
+Date: Fri, 27 Nov 2015 16:40:14 +1100
+Message-ID: <m3oaegm24h.fsf@oc8180480414.ibm.com>
 MIME-Version: 1.0
-To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/4] powerpc/powernv: panic() on OPAL < V3
-References: <1448599526-31073-1-git-send-email-stewart@linux.vnet.ibm.com>
- <1448599526-31073-2-git-send-email-stewart@linux.vnet.ibm.com>
-In-Reply-To: <1448599526-31073-2-git-send-email-stewart@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,45 +40,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27/11/15 15:45, Stewart Smith wrote:
-> The OpenPower Abstraction Layer firmware went through a couple
-> of iterations in the lab before being released. What we now know
-> as OPAL advertises itself as OPALv3.
+Russell Currey <ruscur@russell.cc> writes:
+> On BMC machines, console output is controlled by the OPAL firmware and is
+> only flushed when its pollers are called.  When the kernel is in a panic
+> state, it no longer calls these pollers and thus console output does not
+> completely flush, causing some output from the panic to be lost.
 >
-> OPALv2 and OPALv1 never made it outside the lab, and the possibility
-> of anyone at all ever building a mainline kernel today and expecting
-> it to boot on such hardware is zero.
->
-> Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> This patch adds a new kmsg_dumper which gets called at panic time to ensure
+> panic output is not lost.  It accomplishes this by calling OPAL_CONSOLE_FLUSH
+> in the OPAL API, and if that is not available, the pollers are called enough
+> times to (hopefully) completely flush the buffer.
 
-Comment below.
+You may want to add to commit message that this depends on:
+https://patchwork.ozlabs.org/patch/547379/
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+(which I'm about to go review)
 
-> ---
->   arch/powerpc/platforms/powernv/opal.c | 5 +----
->   1 file changed, 1 insertion(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 4296d55e88f3..ad691fc15309 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -103,11 +103,8 @@ int __init early_init_dt_scan_opal(unsigned long node,
->   		powerpc_firmware_features |= FW_FEATURE_OPALv2;
->   		powerpc_firmware_features |= FW_FEATURE_OPALv3;
->   		pr_info("OPAL V3 detected !\n");
-> -	} else if (of_flat_dt_is_compatible(node, "ibm,opal-v2")) {
-> -		powerpc_firmware_features |= FW_FEATURE_OPALv2;
-> -		pr_info("OPAL V2 detected !\n");
->   	} else {
-> -		pr_info("OPAL V1 detected !\n");
-> +		panic("OPAL != V3 detected, no longer supported.\n")
+Considering this does address an actual bug, should this go to stable@ ?
 
-In the event of an OPAL v4 that is for some reason not backwards 
-compatible with V3, "*no longer* supported" might not make sense. This 
-isn't a huge problem of course.
-
--- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+(Same question for the skiboot patch)
