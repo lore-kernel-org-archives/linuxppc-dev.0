@@ -1,15 +1,39 @@
-Return-Path: <ruscur@russell.cc>
-Received: from russell.cc (russell.cc [43.229.61.17])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 55CE01A0014
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 17:25:50 +1100 (AEDT)
-From: Russell Currey <ruscur@russell.cc>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V3] powerpc/powernv: Add a kmsg_dumper that flushes console
- output on panic
-Date: Fri, 27 Nov 2015 17:23:07 +1100
-Message-Id: <1448605387-2043-1-git-send-email-ruscur@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D09491A03CB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 17:53:21 +1100 (AEDT)
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 27 Nov 2015 16:53:20 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6415F3578047
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 17:53:15 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAR6r9Pu7536700
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 17:53:17 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAR6qfF0004039
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 17:52:43 +1100
+Message-ID: <5657FDA6.4000007@linux.vnet.ibm.com>
+Date: Fri, 27 Nov 2015 12:22:22 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Scott Wood <scottwood@freescale.com>,
+ Denis Kirjanov <kda@linux-powerpc.org>
+CC: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V5 21/31] powerpc/mm: make pte page hash index slot 8 bits
+References: <1448274160-28446-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1448274160-28446-22-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1448274160-28446-22-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,201 +43,223 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On BMC machines, console output is controlled by the OPAL firmware and is
-only flushed when its pollers are called.  When the kernel is in a panic
-state, it no longer calls these pollers and thus console output does not
-completely flush, causing some output from the panic to be lost.
+On 11/23/2015 03:52 PM, Aneesh Kumar K.V wrote:
+> Currently we use 4 bits for each slot and pack all the 16 slot
+> information related to a 64K linux page in a 64bit value. To do this
+> we use 16 bits of pte_t. Move the hash slot valid bit out of pte_t
 
-Output is only actually lost when the kernel is configured to not power off
-or reboot after panic (i.e. CONFIG_PANIC_TIMEOUT is set to 0) since OPAL
-flushes the console buffer as part of its power down routines.  Before this
-patch, however, only partial output would be printed during the timeout wait.
+Looking into the existing function __real_pte, rpte.hidx is stored
+in the second half of the PTE page not inside the pte_t as the
+commit message points out. Also did not get how 16 bits of pte_t
+is used to track 64 bits of subpage information tracked inside
+the second half of the PTE page.
 
-This patch adds a new kmsg_dumper which gets called at panic time to ensure
-panic output is not lost.  It accomplishes this by calling OPAL_CONSOLE_FLUSH
-in the OPAL API, and if that is not available, the pollers are called enough
-times to (hopefully) completely flush the buffer.
+	rpte.hidx = pte_val(*((ptep) + PTRS_PER_PTE));
 
-The flushing mechanism will only affect output printed at and before the
-kmsg_dump call in kernel/panic.c:panic().  As such, the "end Kernel panic"
-message may still be truncated as follows:
+With the current patch, it changes the storage requirement of the
+sub page tracking from (4 * 16 = 64 bits) into (8 * 16 = 128 bits)
+which is now made accessible as a character array (the rpte.hidx)
+instead of an unsigned long as it was happening previously before
+the change.
 
->Call Trace:
->[c000000f1f603b00] [c0000000008e9458] dump_stack+0x90/0xbc (unreliable)
->[c000000f1f603b30] [c0000000008e7e78] panic+0xf8/0x2c4
->[c000000f1f603bc0] [c000000000be4860] mount_block_root+0x288/0x33c
->[c000000f1f603c80] [c000000000be4d14] prepare_namespace+0x1f4/0x254
->[c000000f1f603d00] [c000000000be43e8] kernel_init_freeable+0x318/0x350
->[c000000f1f603dc0] [c00000000000bd74] kernel_init+0x24/0x130
->[c000000f1f603e30] [c0000000000095b0] ret_from_kernel_thread+0x5c/0xac
->---[ end Kernel panic - not
+> and place them in the second half of pte page. We also use 8 bit
+> per each slot.
+> 
+> Acked-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/hash-64k.h | 48 +++++++++++++++------------
+>  arch/powerpc/include/asm/book3s/64/hash.h     |  5 ---
+>  arch/powerpc/include/asm/page.h               |  4 +--
+>  arch/powerpc/mm/hash64_64k.c                  | 34 +++++++++++++++----
+>  4 files changed, 56 insertions(+), 35 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> index ced5a17a8d1a..dafc2f31c843 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> @@ -78,33 +78,39 @@
+>   * generic accessors and iterators here
+>   */
+>  #define __real_pte __real_pte
+> -static inline real_pte_t __real_pte(unsigned long addr, pte_t pte, pte_t *ptep)
+> -{
+> -	real_pte_t rpte;
+> -
+> -	rpte.pte = pte;
+> -	rpte.hidx = 0;
+> -	if (pte_val(pte) & _PAGE_COMBO) {
+> -		/*
+> -		 * Make sure we order the hidx load against the _PAGE_COMBO
+> -		 * check. The store side ordering is done in __hash_page_4K
+> -		 */
+> -		smp_rmb();
+> -		rpte.hidx = pte_val(*((ptep) + PTRS_PER_PTE));
 
-This functionality is implemented as a kmsg_dumper as it seems to be the
-most sensible way to introduce platform-specific functionality to the
-panic function.
+The previous function was storing it in the second half of the PTE page.
 
-Signed-off-by: Russell Currey <ruscur@russell.cc>
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
----
-V3: Added more detail to the commit message, no code change
-V2: Fix some code style issues, no functional change
+> -	}
+> -	return rpte;
+> -}
+> -
+> +extern real_pte_t __real_pte(unsigned long addr, pte_t pte, pte_t *ptep);
+>  static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
+>  {
+>  	if ((pte_val(rpte.pte) & _PAGE_COMBO))
+> -		return (rpte.hidx >> (index<<2)) & 0xf;
+> +		return (unsigned long) rpte.hidx[index] >> 4;
+>  	return (pte_val(rpte.pte) >> 12) & 0xf;
+>  }
+>  
+> -#define __rpte_to_pte(r)	((r).pte)
+> -#define __rpte_sub_valid(rpte, index) \
+> -	(pte_val(rpte.pte) & (_PAGE_HPTE_SUB0 >> (index)))
+> +static inline pte_t __rpte_to_pte(real_pte_t rpte)
+> +{
+> +	return rpte.pte;
+> +}
+> +/*
+> + * we look at the second half of the pte page to determine whether
+> + * the sub 4k hpte is valid. We use 8 bits per each index, and we have
+> + * 16 index mapping full 64K page. Hence for each
+> + * 64K linux page we use 128 bit from the second half of pte page.
+> + * The encoding in the second half of the page is as below:
+> + * [ index 15 ] .........................[index 0]
+> + * [bit 127 ..................................bit 0]
+> + * fomat of each index
+> + * bit 7 ........ bit0
+> + * [one bit secondary][ 3 bit hidx][1 bit valid][000]
+> + */
+> +static inline bool __rpte_sub_valid(real_pte_t rpte, unsigned long index)
+> +{
+> +	unsigned char index_val = rpte.hidx[index];
+> +
+> +	if ((index_val >> 3) & 0x1)
+> +		return true;
+> +	return false;
+> +}
+> +
+>  /*
+>   * Trick: we set __end to va + 64k, which happens works for
+>   * a 16M page as well as we want only one iteration
+> diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+> index e18794d5a68c..b11197965c2f 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hash.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hash.h
+> @@ -212,11 +212,6 @@
+>  
+>  #define PMD_BAD_BITS		(PTE_TABLE_SIZE-1)
+>  #define PUD_BAD_BITS		(PMD_TABLE_SIZE-1)
+> -/*
+> - * We save the slot number & secondary bit in the second half of the
+> - * PTE page. We use the 8 bytes per each pte entry.
+> - */
 
-A patch to add the preferred OPAL call for flushing the console buffer,
-OPAL_CONSOLE_FLUSH, was recently sent upstream to Skiboot.  You can track
-its progress here: https://patchwork.ozlabs.org/patch/547379/
----
- arch/powerpc/include/asm/opal-api.h            |  3 +-
- arch/powerpc/include/asm/opal.h                |  3 ++
- arch/powerpc/platforms/powernv/Makefile        |  1 +
- arch/powerpc/platforms/powernv/opal-kmsg.c     | 68 ++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
- arch/powerpc/platforms/powernv/opal.c          |  3 ++
- 6 files changed, 78 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/platforms/powernv/opal-kmsg.c
+This previous comment also talked about it. ^^^^^^^^^^^^^^^
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 8374afe..f8faaae 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -157,7 +157,8 @@
- #define OPAL_LEDS_GET_INDICATOR			114
- #define OPAL_LEDS_SET_INDICATOR			115
- #define OPAL_CEC_REBOOT2			116
--#define OPAL_LAST				116
-+#define OPAL_CONSOLE_FLUSH			117
-+#define OPAL_LAST				117
- 
- /* Device tree flags */
- 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 8001159..a5fd407 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -35,6 +35,7 @@ int64_t opal_console_read(int64_t term_number, __be64 *length,
- 			  uint8_t *buffer);
- int64_t opal_console_write_buffer_space(int64_t term_number,
- 					__be64 *length);
-+void opal_console_flush(void);
- int64_t opal_rtc_read(__be32 *year_month_day,
- 		      __be64 *hour_minute_second_millisecond);
- int64_t opal_rtc_write(uint32_t year_month_day,
-@@ -262,6 +263,8 @@ extern int opal_resync_timebase(void);
- 
- extern void opal_lpc_init(void);
- 
-+extern void opal_kmsg_init(void);
-+
- extern int opal_event_request(unsigned int opal_event_nr);
- 
- struct opal_sg_list *opal_vmalloc_to_sg_list(void *vmalloc_addr,
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index 1c8cdb6..b9de7ef 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -2,6 +2,7 @@ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o idle.o
- obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
- obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
- obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
-+obj-y			+= opal-kmsg.o
- 
- obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
- obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
-diff --git a/arch/powerpc/platforms/powernv/opal-kmsg.c b/arch/powerpc/platforms/powernv/opal-kmsg.c
-new file mode 100644
-index 0000000..bd3b2ee
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-kmsg.c
-@@ -0,0 +1,68 @@
-+/*
-+ * kmsg dumper that ensures the OPAL console fully flushes panic messages
-+ *
-+ * Author: Russell Currey <ruscur@russell.cc>
-+ *
-+ * Copyright 2015 IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; either version 2 of the License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/kmsg_dump.h>
-+
-+#include <asm/opal.h>
-+#include <asm/opal-api.h>
-+
-+/*
-+ * Console output is controlled by OPAL firmware.  The kernel regularly calls
-+ * OPAL_POLL_EVENTS, which flushes some console output.  In a panic state,
-+ * however, the kernel no longer calls OPAL_POLL_EVENTS and the panic message
-+ * may not be completely printed.  This function does not actually dump the
-+ * message, it just ensures that OPAL completely flushes the console buffer.
-+ */
-+static void force_opal_console_flush(struct kmsg_dumper *dumper,
-+				     enum kmsg_dump_reason reason)
-+{
-+	int i;
-+
-+	/*
-+	 * Outside of a panic context the pollers will continue to run,
-+	 * so we don't need to do any special flushing.
-+	 */
-+	if (reason != KMSG_DUMP_PANIC)
-+		return;
-+
-+	if (opal_check_token(OPAL_CONSOLE_FLUSH)) {
-+		opal_console_flush();
-+	} else {
-+		/*
-+		 * If OPAL_CONSOLE_FLUSH is not implemented in the firmware,
-+		 * the console can still be flushed by calling the polling
-+		 * function enough times to flush the buffer.  We don't know
-+		 * how much output still needs to be flushed, but we can be
-+		 * generous since the kernel is in panic and doesn't need
-+		 * to do much else.
-+		 */
-+		printk(KERN_NOTICE "opal: OPAL_CONSOLE_FLUSH missing.\n");
-+		for (i = 0; i < 1024; i++) {
-+			opal_poll_events(NULL);
-+		}
-+	}
-+}
-+
-+static struct kmsg_dumper opal_kmsg_dumper = {
-+	.dump = force_opal_console_flush
-+};
-+
-+void __init opal_kmsg_init(void)
-+{
-+	int rc;
-+
-+	/* Add our dumper to the list */
-+	rc = kmsg_dump_register(&opal_kmsg_dumper);
-+	if (rc != 0)
-+		pr_err("opal: kmsg_dump_register failed; returned %d\n", rc);
-+}
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index b7a464f..e45b88a 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -301,3 +301,4 @@ OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
- OPAL_CALL(opal_prd_msg,				OPAL_PRD_MSG);
- OPAL_CALL(opal_leds_get_ind,			OPAL_LEDS_GET_INDICATOR);
- OPAL_CALL(opal_leds_set_ind,			OPAL_LEDS_SET_INDICATOR);
-+OPAL_CALL(opal_console_flush,			OPAL_CONSOLE_FLUSH);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 4296d55..a94a85c 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -758,6 +758,9 @@ static int __init opal_init(void)
- 	opal_pdev_init(opal_node, "ibm,opal-flash");
- 	opal_pdev_init(opal_node, "ibm,opal-prd");
- 
-+	/* Initialise OPAL kmsg dumper for flushing console on panic */
-+	opal_kmsg_init();
-+
- 	return 0;
- }
- machine_subsys_initcall(powernv, opal_init);
--- 
-2.6.2
+> -#define PTE_PAGE_HIDX_OFFSET (PTRS_PER_PTE * 8)
+>  
+>  #ifndef __ASSEMBLY__
+>  #define	pmd_bad(pmd)		(!is_kernel_addr(pmd_val(pmd)) \
+> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+> index 9d2f38e1b21d..9c3211eb487c 100644
+> --- a/arch/powerpc/include/asm/page.h
+> +++ b/arch/powerpc/include/asm/page.h
+> @@ -295,7 +295,7 @@ static inline pte_basic_t pte_val(pte_t x)
+>   * the "second half" part of the PTE for pseudo 64k pages
+>   */
+>  #if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
+> -typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
+> +typedef struct { pte_t pte; unsigned char *hidx; } real_pte_t;
+>  #else
+>  typedef struct { pte_t pte; } real_pte_t;
+>  #endif
+> @@ -347,7 +347,7 @@ static inline pte_basic_t pte_val(pte_t pte)
+>  }
+>  
+>  #if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
+> -typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
+> +typedef struct { pte_t pte; unsigned char *hidx; } real_pte_t;
+>  #else
+>  typedef pte_t real_pte_t;
+>  #endif
+> diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
+> index 456aa3bfa8f1..c40ee12cc922 100644
+> --- a/arch/powerpc/mm/hash64_64k.c
+> +++ b/arch/powerpc/mm/hash64_64k.c
+> @@ -16,12 +16,32 @@
+>  #include <asm/machdep.h>
+>  #include <asm/mmu.h>
+>  
+> +real_pte_t __real_pte(unsigned long addr, pte_t pte, pte_t *ptep)
+> +{
+> +	int indx;
+> +	real_pte_t rpte;
+> +	pte_t *pte_headp;
+> +
+> +	rpte.pte = pte;
+> +	rpte.hidx = NULL;
+> +	if (pte_val(pte) & _PAGE_COMBO) {
+> +		indx = pte_index(addr);
+> +		pte_headp = ptep - indx;
+> +		/*
+> +		 * Make sure we order the hidx load against the _PAGE_COMBO
+> +		 * check. The store side ordering is done in __hash_page_4K
+> +		 */
+> +		smp_rmb();
+> +		rpte.hidx = (unsigned char *)(pte_headp + PTRS_PER_PTE) + (16 * indx);
+
+The new scheme here also tracks these 16 byte information in the second
+half of the PTE page.
+
+> +	}
+> +	return rpte;
+> +}
+> +
+>  int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+>  		   pte_t *ptep, unsigned long trap, unsigned long flags,
+>  		   int ssize, int subpg_prot)
+>  {
+>  	real_pte_t rpte;
+> -	unsigned long *hidxp;
+>  	unsigned long hpte_group;
+>  	unsigned int subpg_index;
+>  	unsigned long shift = 12; /* 4K */
+> @@ -90,7 +110,10 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+>  
+>  	subpg_index = (ea & (PAGE_SIZE - 1)) >> shift;
+>  	vpn  = hpt_vpn(ea, vsid, ssize);
+> -	rpte = __real_pte(ea, __pte(old_pte), ptep);
+> +	if (!(old_pte & _PAGE_COMBO))
+> +		rpte = __real_pte(ea, __pte(old_pte | _PAGE_COMBO), ptep);
+> +	else
+> +		rpte = __real_pte(ea, __pte(old_pte), ptep);
+
+The above hunk can be replaced with just the following line which
+adds _PAGE_COMBO flag no matter what.
+
+rpte = __real_pte(ea, __pte(old_pte | _PAGE_COMBO), ptep);
+
+
+>  	/*
+>  	 *None of the sub 4k page is hashed
+>  	 */
+> @@ -188,11 +211,8 @@ repeat:
+>  	 * Since we have _PAGE_BUSY set on ptep, we can be sure
+>  	 * nobody is undating hidx.
+>  	 */
+> -	hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
+> -	/* __real_pte use pte_val() any idea why ? FIXME!! */
+> -	rpte.hidx &= ~(0xfUL << (subpg_index << 2));
+> -	*hidxp = rpte.hidx  | (slot << (subpg_index << 2));
+> -	new_pte |= (_PAGE_HPTE_SUB0 >> subpg_index);
+> +	rpte.hidx[subpg_index] = (unsigned char)(slot << 4 | 0x1 << 3);
+
+Dont we need to check anything before inserting the validity bit (0x1 << 3)
+for the sub page into the 8 bit information ?
+
+> +	new_pte |= _PAGE_HPTE_SUB0;
+>  	/*
+>  	 * check __real_pte for details on matching smp_rmb()
+>  	 */
+> 
