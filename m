@@ -1,32 +1,35 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2CE491A0464
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 15:45:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A961D1A013E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 16:13:24 +1100 (AEDT)
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Thu, 26 Nov 2015 21:45:57 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id C15F919D8026
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 21:33:47 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAR4jf2i19988516
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 21:45:41 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAR4jes8016749
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2015 21:45:40 -0700
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
-Subject: [PATCH 0/4] Remove OPAL pre-v3 support
-Date: Fri, 27 Nov 2015 15:45:22 +1100
-Message-Id: <1448599526-31073-1-git-send-email-stewart@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 27 Nov 2015 15:13:23 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B8F292CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 16:13:21 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAR5DD8C23724200
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 16:13:21 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAR5Cnb2017578
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2015 16:12:49 +1100
+Message-ID: <5657E639.8050405@au1.ibm.com>
+Date: Fri, 27 Nov 2015 16:12:25 +1100
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+MIME-Version: 1.0
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V2] powerpc/powernv: Add a kmsg_dumper that flushes console
+ output on panic
+References: <1448421962-6174-1-git-send-email-ruscur@russell.cc>
+In-Reply-To: <1448421962-6174-1-git-send-email-ruscur@russell.cc>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,36 +39,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Everything that ever made it out of the lab is OPALv3.
+On 25/11/15 14:26, Russell Currey wrote:
+> On BMC machines, console output is controlled by the OPAL firmware and is
+> only flushed when its pollers are called.  When the kernel is in a panic
+> state, it no longer calls these pollers and thus console output does not
+> completely flush, causing some output from the panic to be lost.
+>
+> This patch adds a new kmsg_dumper which gets called at panic time to ensure
+> panic output is not lost.  It accomplishes this by calling OPAL_CONSOLE_FLUSH
+> in the OPAL API, and if that is not available, the pollers are called enough
+> times to (hopefully) completely flush the buffer.
 
-The number of machines in the lab even that are OPAL pre v3 is so
-likely to be zero it's not funny, and the number of people expecting
-to run mainline kernels on OPAL pre v3 is even lower than that.
+As per our off-list discussions, the commit message should explain that 
+the console is already flushed upon reboot, and thus this patch fixes a 
+problem in the case where the kernel is not set to reboot on panic, or 
+will only reboot after an extended delay. Additionally, you could still 
+miss messages printed in panic() after the dumpers are called, i.e. the 
+"end kernel panic" message.
 
-So, this patch series removes things referencing OPAL that isn't
-OPALv3 and leaves us with a simple FW_FEATURE_OPALv3 define at the
-end that we can check against.
+>
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
 
-Anyone mad enough to do an OPALv4 gets to go look at all the things
-themselves.
+The code looks reasonable.
 
-Stewart Smith (4):
-  powerpc/powernv: panic() on OPAL < V3
-  powerpc/powernv: Remove OPALv2 firmware define and references
-  powerpc/powernv: remove FW_FEATURE_OPAL and just use FW_FEATURE_OPALv3
-  powerpc/powernv: remove logic for pre-OPALv3 firmware
+With the changes I've mentioned above:
 
- arch/powerpc/include/asm/firmware.h    |  5 +--
- arch/powerpc/mm/numa.c                 |  4 +-
- arch/powerpc/platforms/powernv/opal.c  | 16 ++------
- arch/powerpc/platforms/powernv/pci.c   |  2 +-
- arch/powerpc/platforms/powernv/setup.c | 10 ++---
- arch/powerpc/platforms/powernv/smp.c   | 72 +++++++++++++++-------------------
- arch/powerpc/sysdev/xics/ics-opal.c    |  2 +-
- drivers/i2c/busses/i2c-opal.c          |  2 +-
- drivers/rtc/rtc-opal.c                 |  2 +-
- drivers/tty/hvc/hvc_opal.c             |  2 +-
- 10 files changed, 46 insertions(+), 71 deletions(-)
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 -- 
-2.1.4
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
