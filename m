@@ -1,32 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <geyslan@gmail.com>
+Received: from mail-vk0-x236.google.com (mail-vk0-x236.google.com
+ [IPv6:2607:f8b0:400c:c05::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D56A91A0316
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2015 04:09:51 +1100 (AEDT)
-Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 28 Nov 2015 22:39:48 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id E684F3940049
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2015 22:39:41 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tASH9ej366256932
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2015 22:39:41 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tASH9etb005412
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2015 22:39:40 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/mm: Fix infinite loop in hash fault with 4K page size
-Date: Sat, 28 Nov 2015 22:39:33 +0530
-Message-Id: <1448730573-11907-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C16901A07BE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 07:14:05 +1100 (AEDT)
+Received: by vkca188 with SMTP id a188so35614588vkc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2015 12:14:03 -0800 (PST)
+MIME-Version: 1.0
+Date: Sun, 29 Nov 2015 17:14:03 -0300
+Message-ID: <CAGG-pUS04iVsi3s4hkB8goWkCM3sq+QiLw7L74bbef93Z=+qwg@mail.gmail.com>
+Subject: [RFC] kvm - possible out of bounds
+From: =?UTF-8?Q?Geyslan_Greg=C3=B3rio_Bem?= <geyslan@gmail.com>
+To: Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Alexander Graf <agraf@suse.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,31 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is the same bug we fixed as part of 09567e7fd44291bfc08accfdd67ad8f467842332
-("powerpc/mm: Check paca psize is up to date for huge mappings"). Please
-check that for details. The difference here is that faults were
-happening on a 4K page at an address previously mapped by hugetlb.
+Hello,
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/hash_utils_64.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+I have found a possible out of bounds reading in
+arch/powerpc/kvm/book3s_64_mmu.c (kvmppc_mmu_book3s_64_xlate
+function). pteg[] array could be accessed twice using the i variable
+after the for iteration. What happens is that in the last iteration
+the i index is incremented to 16, checked (i<16) then confirmed
+exiting the loop.
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 3d261bc6fef8..4233dcccbaf7 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1124,9 +1124,10 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
- 		}
- 	}
- 
-+#endif /* CONFIG_PPC_64K_PAGES */
-+
- 	if (current->mm == mm)
- 		check_paca_psize(ea, mm, psize, user_region);
--#endif /* CONFIG_PPC_64K_PAGES */
- 
- #ifdef CONFIG_PPC_64K_PAGES
- 	if (psize == MMU_PAGE_64K)
+277    for (i=0; i<16; i+=2) { ...
+
+Later there are reading attempts to the pteg last elements, but using
+again the already incremented i (16).
+
+303    v = be64_to_cpu(pteg[i]);  /* pteg[16] */
+304    r = be64_to_cpu(pteg[i+1]); /* pteg[17] */
+
+I really don't know if the for lace will somehow iterate until i is
+16, anyway I think that the last readings must be using a defined max
+len/index or another more clear method.
+
+Eg.
+
+    v = be64_to_cpu(pteg[PTEG_LEN - 2]);
+    r = be64_to_cpu(pteg[PTEG_LEN - 1]);
+
+Or just.
+
+    v = be64_to_cpu(pteg[14]);
+    r = be64_to_cpu(pteg[15]);
+
+----------------------------
+
+I found in the same file a variable that is not used.
+
+380    struct kvmppc_vcpu_book3s *vcpu_book3s;
+...
+387    vcpu_book3s = to_book3s(vcpu);
+
+-----------------------------
+
+A question, the kvmppc_mmu_book3s_64_init function is accessed by
+unconventional way? Because I have not found any calling to it.
+
+If something that I wrote is correct please tell me if I could send the patch.
+
 -- 
-2.5.0
+Regards,
+
+Geyslan G. Bem
+hackingbits.com
