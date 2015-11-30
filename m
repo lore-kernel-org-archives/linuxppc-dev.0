@@ -1,21 +1,36 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::7])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <vipin@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EBBB21A0075
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 21:18:29 +1100 (AEDT)
-Subject: [P.A. Semi] Does the ethernet interface work on your Electra, Chitra,
- Nemo, and Athena board?
-To: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org
-References: <565AF986.9060106@xenosoft.de>
- <CAOJe8K1911vDjMe9m_1vY6DSGpOk0TmL96Qf1whuNFXxHJesGw@mail.gmail.com>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: linux-netdev@vger.kernel.org
-Message-ID: <565C1B55.4020207@xenosoft.de>
-Date: Mon, 30 Nov 2015 10:48:05 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 036CD1A0075
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 23:01:35 +1100 (AEDT)
+Received: from localhost
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
+ Mon, 30 Nov 2015 17:31:32 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id CE07E125805A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 17:31:44 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tAUC1Bt86750394
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 17:31:13 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tAUC1A7n017177
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 17:31:11 +0530
+From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5] powerpc/pseries: Limit EPOW reset event warnings
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+References: <1447836157-19599-1-git-send-email-vipin@linux.vnet.ibm.com>
+ <5656CEC9.4070000@linux.vnet.ibm.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Message-ID: <565C3A83.8080504@linux.vnet.ibm.com>
+Date: Mon, 30 Nov 2015 17:31:07 +0530
 MIME-Version: 1.0
-In-Reply-To: <CAOJe8K1911vDjMe9m_1vY6DSGpOk0TmL96Qf1whuNFXxHJesGw@mail.gmail.com>
+In-Reply-To: <5656CEC9.4070000@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,59 +41,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Denis,
 
-Thank you for your answer. Sorry because of my description.
 
-Yes, the driver probe function finds the device.
-
-With kernel 4.4-rc3:
-
-dmesg | grep -i eth0
-
-[ 2.297473] eth0: PA Semi GMAC: intf 5, hw addr 02:00:e0:0a:30:00
-
-dhclient eth0
-
-RTNETLINK answers: Cannot allocate memory
-
-With kernel 4.1.13:
-
-dmesg | grep -i eth0
-
-[ 2.328115] eth0: PA Semi GMAC: intf 5, hw addr 02:00:e0:0a:30:00
-[ 37.130466] eth0: Link is up at 100 Mbps, full duplex.
-
-Cheers,
-
-Christian
-
-On 30 November 2015 at 09:37 AM, Denis Kirjanov wrote:
-> On 11/29/15, Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
->> Hi All,
+On Thursday 26 November 2015 02:50 PM, Vasant Hegde wrote:
+> On 11/18/2015 02:12 PM, Vipin K Parashar wrote:
+>> Kernel prints respective warnings about various EPOW events for
+>> user information/action after parsing EPOW interrupts. At times
+>> below EPOW reset event warning is seen to be flooding kernel log
+>> over a period of time.
 >>
->> Does the ethernet interface on your Electra, Chitra, Nemo, and Athena
->> board work with the release candidates of the kernel 4.4? Unfortunately
->> the P.A. Semi ethernet doesn't work on our Nemo boards with the release
->> candidates of the kernel 4.4. We have set the following entries in the
->> kernel config:
+>> May 25 03:46:34 alp kernel: Non critical power or cooling issue cleared
+>> May 25 03:46:52 alp kernel: Non critical power or cooling issue cleared
+>> May 25 03:53:48 alp kernel: Non critical power or cooling issue cleared
+>> May 25 03:55:46 alp kernel: Non critical power or cooling issue cleared
+>> May 25 03:56:34 alp kernel: Non critical power or cooling issue cleared
+>> May 25 03:59:04 alp kernel: Non critical power or cooling issue cleared
+>> May 25 04:02:01 alp kernel: Non critical power or cooling issue cleared
 >>
->> CONFIG_NET_VENDOR_PASEMI=y
->> CONFIG_PASEMI_MAC=y
->>
->> Could you please test the P.A. Semi ethernet on your P.A. Semi boards?
-> It's not clear from your descriptions what is not working. Does the
-> driver probe function find  a device? Does the interface show up in
-> the kernel? Can it send/receive packets?
+> @Michael,
+>   I think above log is raising some concern. We have been asked by multiple
+> people on this. Hence I think we should avoid these duplicate messages.
+
+Hi Michael,
+          Please do let know if you have some suggestions with this patch.
+
 >
-> Also please CC netdev.
+>> These EPOW reset events are spurious in nature and are triggered by
+>> firmware witout an actual EPOW event being reset. This patch avoids these
+> s/witout/without/
+
+sure, will edit.
+
 >
-> Thanks.
->
->> Thanks in advance,
+>> multiple EPOW reset warnings by using a counter variable. This variable
+>> is incremented every time an EPOW event is reported. Upon receiving a EPOW
+>> reset event the same variable is checked to filer out spurious events and
+>> decremented accordingly.
 >>
->> Christian
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>> This patch also improves log messages to better describe EPOW event being
+>> reported. Merged adjacent log messages into single one to reduce number of
+>> lines printed per event.
+>>
+>> Signed-off-by: Kamalesh Babulal<kamalesh@linux.vnet.ibm.com>
+>> Signed-off-by: Vipin K Parashar<vipin@linux.vnet.ibm.com>
+>> ---
+>> v5 changes:
+>>     - Used num_epow_events counter variable to count number of epow_events
+>>     - Improved log messages to better describe epow event.
+>>     - Merged adjacent warnings into single lines.
+>>
+>> v4 changes:
+>>     - Changed the approach to depth counter to match the EPOW events and
+>>       EPOW reset.
+>>     - Converted pr_err() ot pr_info() for non-critical errors.
+>>     - Merged adjacent warnings into single line across the file.
+>>     - Fixed grammar in the warnings to make is short.
+>>
+>> v3 changes:
+>>     - Limit warning printed by EPOW RESET event, by guarding it with bool flag.
+>>       Instead of rate limiting all the EPOW events.
+>>
+>> v2 changes:
+>>     - Merged multiple adjacent pr_err/pr_emerg into single line to reduce multi-line
+>>       warnings, based on Michael's comments.
+>>
+>>   arch/powerpc/platforms/pseries/ras.c | 54 ++++++++++++++++++++----------------
+>>   1 file changed, 30 insertions(+), 24 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+>> index 3b6647e..bbe2856 100644
+>> --- a/arch/powerpc/platforms/pseries/ras.c
+>> +++ b/arch/powerpc/platforms/pseries/ras.c
+>> @@ -40,6 +40,8 @@ static int ras_check_exception_token;
+>>   #define EPOW_SENSOR_TOKEN	9
+>>   #define EPOW_SENSOR_INDEX	0
+>>   
+>> +static int num_epow_events;
+>> +
+>>   static irqreturn_t ras_epow_interrupt(int irq, void *dev_id);
+>>   static irqreturn_t ras_error_interrupt(int irq, void *dev_id);
+>>   
+>> @@ -82,32 +84,30 @@ static void handle_system_shutdown(char event_modifier)
+>>   {
+>>   	switch (event_modifier) {
+>>   	case EPOW_SHUTDOWN_NORMAL:
+>> -		pr_emerg("Firmware initiated power off");
+>> +		pr_emerg("Power off requested\n");
+> Why are you changing this  message? These are FW initiated Power off and helps
+> us to identify who initiated shutdown request.
+
+EPOW_SHUTDOWN_NORMAL event maps to DPO event in harwdare, which is received
+upon system admin requesting LPAR poweroff. I felt that using FW 
+initiated poweroff
+phrase doesn't convey that poweroff was requested by a user so changed it.
+        Please do suggest if you have something better to convey message.
+
+>>   		orderly_poweroff(true);
+>>   		break;
+>>   
+>>   	case EPOW_SHUTDOWN_ON_UPS:
+>> -		pr_emerg("Loss of power reported by firmware, system is "
+>> -			"running on UPS/battery");
+>> -		pr_emerg("Check RTAS error log for details");
+>> +		pr_emerg("Loss of system power detected. System is running on"
+>> +			 " UPS/battery. Check RTAS error log for details\n");
+>>   		orderly_poweroff(true);
+>>   		break;
+>>   
+>>   	case EPOW_SHUTDOWN_LOSS_OF_CRITICAL_FUNCTIONS:
+>> -		pr_emerg("Loss of system critical functions reported by "
+>> -			"firmware");
+>> -		pr_emerg("Check RTAS error log for details");
+>> +		pr_emerg("Loss of system critical functions detected. Check"
+>> +			 " RTAS error log for details\n");
+>>   		orderly_poweroff(true);
+>>   		break;
+>>   
+>>   	case EPOW_SHUTDOWN_AMBIENT_TEMPERATURE_TOO_HIGH:
+>> -		pr_emerg("Ambient temperature too high reported by firmware");
+>> -		pr_emerg("Check RTAS error log for details");
+>> +		pr_emerg("High ambient temperature detected. Check RTAS"
+>> +			 " error log for details\n");
+>>   		orderly_poweroff(true);
+>>   		break;
+>>   
+>>   	default:
+>> -		pr_err("Unknown power/cooling shutdown event (modifier %d)",
+>> +		pr_err("Unknown power/cooling shutdown event (modifier = %d)\n",
+>>   			event_modifier);
+>>   	}
+>>   }
+>> @@ -145,40 +145,47 @@ static void rtas_parse_epow_errlog(struct rtas_error_log *log)
+>>   
+>>   	switch (action_code) {
+>>   	case EPOW_RESET:
+>> -		pr_err("Non critical power or cooling issue cleared");
+>> +		if (num_epow_events) {
+>> +			pr_info("Non critical power/cooling issue cleared\n");
+>> +			num_epow_events--;
+>> +		}
+>>   		break;
+>>   
+>>   	case EPOW_WARN_COOLING:
+>> -		pr_err("Non critical cooling issue reported by firmware");
+>> -		pr_err("Check RTAS error log for details");
+>> +		pr_info("Non-critical cooling issue detected. Check RTAS error"
+>> +			" log for details\n");
+>> +		num_epow_events++;
+> So every switch-case you are modifying this variable. Not sure this is the best way.
+> How about adding if condition after switch to modify this variable ?
+
+yeah i thought about it but dropped the idea as the variable isn't being 
+incrementing
+for all switch cases. Its only getting incremented for cases when we 
+aren't doing system
+poweroff. Though i can send out a patch with a single increment of the 
+variable down
+below the switch case as incrementing it for poweroff cases too would 
+not no harm.
+
+> -Vasant
+>
