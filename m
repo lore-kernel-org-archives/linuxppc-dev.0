@@ -1,21 +1,22 @@
-Return-Path: <ruscur@russell.cc>
-Received: from russell.cc (russell.cc [43.229.61.17])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0135.outbound.protection.outlook.com [157.56.111.135])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C182A1A08AA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 13:09:21 +1100 (AEDT)
-Message-ID: <1448849229.1204.1.camel@russell.cc>
-Subject: Re: [PATCH V2] powerpc/powernv: Add a kmsg_dumper that flushes
- console output on panic
-From: Russell Currey <ruscur@russell.cc>
-To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 30 Nov 2015 13:07:09 +1100
-In-Reply-To: <m3fuzrnc08.fsf@oc8180480414.ibm.com>
-References: <1448421962-6174-1-git-send-email-ruscur@russell.cc>
- <m3oaegm24h.fsf@oc8180480414.ibm.com> <1448604913.1291.2.camel@russell.cc>
- <m3fuzrnc08.fsf@oc8180480414.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 11FA31A0075
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 13:56:42 +1100 (AEDT)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: <lauraa@codeaurora.org>
+CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <akpm@linux-foundation.org>, <olof@lixom.net>, <catalin.marinas@arm.com>,
+ <scottwood@freescale.com>, <X.xie@freescale.com>, Zhao Qiang
+ <qiang.zhao@freescale.com>
+Subject: [PATCH v13 1/6] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
+Date: Mon, 30 Nov 2015 10:48:52 +0800
+Message-ID: <1448851737-33125-1-git-send-email-qiang.zhao@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +26,238 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-11-27 at 18:21 +1100, Stewart Smith wrote:
-> Russell Currey <ruscur@russell.cc> writes:
-> > On Fri, 2015-11-27 at 16:40 +1100, Stewart Smith wrote:
-> > > Russell Currey <ruscur@russell.cc> writes:
-> > > > On BMC machines, console output is controlled by the OPAL firmware and
-> > > > is
-> > > > only flushed when its pollers are called.  When the kernel is in a
-> > > > panic
-> > > > state, it no longer calls these pollers and thus console output does
-> > > > not
-> > > > completely flush, causing some output from the panic to be lost.
-> > > > 
-> > > > This patch adds a new kmsg_dumper which gets called at panic time to
-> > > > ensure
-> > > > panic output is not lost.  It accomplishes this by calling
-> > > > OPAL_CONSOLE_FLUSH
-> > > > in the OPAL API, and if that is not available, the pollers are called
-> > > > enough
-> > > > times to (hopefully) completely flush the buffer.
-> > > 
-> > > You may want to add to commit message that this depends on:
-> > > https://patchwork.ozlabs.org/patch/547379/
-> > > 
-> > It doesn't *depend* on it, it's just preferred.  It still works with older
-> > Skiboot versions.  I will mention it in the actual commit message for the
-> > next revision, though.
-> 
-> More meaning that it depends on that patch being merged before, say the
-> PCI hotplug patches, which add a *different* OPAL call at the same ID -
-> and that it depends on *this* patch with *this* API rather than a
-> modified one being merged.
-> 
-> Otherwise, if, say, I merged some other new OPAL call into skiboot
-> first, this patch would likely cause all sorts of trouble.
-> 
-> It's also a handy hint to Michael to ensure the skiboot side of things
-> is merged and okay before merging kernel things in.
-> 
-That's a very good point I hadn't considered.  I'll make a note of it next
-revision, especially given there are some additional changes required on the
-Skiboot side of things.
+Bytes alignment is required to manage some special RAM,
+so add gen_pool_first_fit_align to genalloc,
+meanwhile add gen_pool_alloc_algo to pass algo in case user
+layer using more than one algo, and pass data to
+gen_pool_first_fit_align(modify gen_pool_alloc as a wrapper)
+
+Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+---
+Changes for v6:
+	- patches set v6 include a new patch because of using 
+	- genalloc to manage QE MURAM, patch 0001 is the new 
+	- patch, adding bytes alignment for allocation for use.
+Changes for v7:
+	- cpm muram also need to use genalloc to manage, it has 
+	  a function to reserve a specific region of muram,
+	  add offset to genpool_data for start addr to be allocated.
+Changes for v8:
+	- remove supporting reserving a specific region from this patch
+	  add a new patch to support it.
+Changes for v9:
+	- Nil 
+Changes for v10:
+	- Nil
+Changes for v11:
+	- Nil
+Changes for v12:
+	- Nil
+Changes for v13:
+	- add gen_pool_alloc_algo instead of gen_pool_alloc_data to pass algo and data.
+	- rebase
+
+ include/linux/genalloc.h | 27 +++++++++++++++++----
+ lib/genalloc.c           | 61 +++++++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 78 insertions(+), 10 deletions(-)
+
+diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h
+index 7ff168d..3c676ce 100644
+--- a/include/linux/genalloc.h
++++ b/include/linux/genalloc.h
+@@ -30,10 +30,12 @@
+ #ifndef __GENALLOC_H__
+ #define __GENALLOC_H__
+ 
++#include <linux/types.h>
+ #include <linux/spinlock_types.h>
+ 
+ struct device;
+ struct device_node;
++struct gen_pool;
+ 
+ /**
+  * Allocation callback function type definition
+@@ -47,7 +49,7 @@ typedef unsigned long (*genpool_algo_t)(unsigned long *map,
+ 			unsigned long size,
+ 			unsigned long start,
+ 			unsigned int nr,
+-			void *data);
++			void *data, struct gen_pool *pool);
+ 
+ /*
+  *  General purpose special memory pool descriptor.
+@@ -75,6 +77,13 @@ struct gen_pool_chunk {
+ 	unsigned long bits[0];		/* bitmap for allocating memory chunk */
+ };
+ 
++/*
++ *  gen_pool data descriptor for gen_pool_first_fit_align.
++ */
++struct genpool_data_align {
++	int align;		/* alignment by bytes for starting address */
++};
++
+ extern struct gen_pool *gen_pool_create(int, int);
+ extern phys_addr_t gen_pool_virt_to_phys(struct gen_pool *pool, unsigned long);
+ extern int gen_pool_add_virt(struct gen_pool *, unsigned long, phys_addr_t,
+@@ -98,6 +107,8 @@ static inline int gen_pool_add(struct gen_pool *pool, unsigned long addr,
+ }
+ extern void gen_pool_destroy(struct gen_pool *);
+ extern unsigned long gen_pool_alloc(struct gen_pool *, size_t);
++extern unsigned long gen_pool_alloc_algo(struct gen_pool *, size_t,
++		genpool_algo_t algo, void *data);
+ extern void *gen_pool_dma_alloc(struct gen_pool *pool, size_t size,
+ 		dma_addr_t *dma);
+ extern void gen_pool_free(struct gen_pool *, unsigned long, size_t);
+@@ -110,14 +121,22 @@ extern void gen_pool_set_algo(struct gen_pool *pool, genpool_algo_t algo,
+ 		void *data);
+ 
+ extern unsigned long gen_pool_first_fit(unsigned long *map, unsigned long size,
+-		unsigned long start, unsigned int nr, void *data);
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool);
++
++extern unsigned long gen_pool_first_fit_align(unsigned long *map,
++		unsigned long size, unsigned long start, unsigned int nr,
++		void *data, struct gen_pool *pool);
++
+ 
+ extern unsigned long gen_pool_first_fit_order_align(unsigned long *map,
+ 		unsigned long size, unsigned long start, unsigned int nr,
+-		void *data);
++		void *data, struct gen_pool *pool);
+ 
+ extern unsigned long gen_pool_best_fit(unsigned long *map, unsigned long size,
+-		unsigned long start, unsigned int nr, void *data);
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool);
++
+ 
+ extern struct gen_pool *devm_gen_pool_create(struct device *dev,
+ 		int min_alloc_order, int nid, const char *name);
+diff --git a/lib/genalloc.c b/lib/genalloc.c
+index 116a166..b8cf89d 100644
+--- a/lib/genalloc.c
++++ b/lib/genalloc.c
+@@ -270,6 +270,25 @@ EXPORT_SYMBOL(gen_pool_destroy);
+  */
+ unsigned long gen_pool_alloc(struct gen_pool *pool, size_t size)
+ {
++	return gen_pool_alloc_algo(pool, size, pool->algo, pool->data);
++}
++EXPORT_SYMBOL(gen_pool_alloc);
++
++/**
++ * gen_pool_alloc_algo - allocate special memory from the pool
++ * @pool: pool to allocate from
++ * @size: number of bytes to allocate from the pool
++ * @algo: algorithm passed from caller
++ * @data: data passed to algorithm
++ *
++ * Allocate the requested number of bytes from the specified pool.
++ * Uses the pool allocation function (with first-fit algorithm by default).
++ * Can not be used in NMI handler on architectures without
++ * NMI-safe cmpxchg implementation.
++ */
++unsigned long gen_pool_alloc_algo(struct gen_pool *pool, size_t size,
++		genpool_algo_t algo, void *data)
++{
+ 	struct gen_pool_chunk *chunk;
+ 	unsigned long addr = 0;
+ 	int order = pool->min_alloc_order;
+@@ -290,8 +309,8 @@ unsigned long gen_pool_alloc(struct gen_pool *pool, size_t size)
+ 
+ 		end_bit = chunk_size(chunk) >> order;
+ retry:
+-		start_bit = pool->algo(chunk->bits, end_bit, start_bit, nbits,
+-				pool->data);
++		start_bit = algo(chunk->bits, end_bit, start_bit,
++				 nbits, data, pool);
+ 		if (start_bit >= end_bit)
+ 			continue;
+ 		remain = bitmap_set_ll(chunk->bits, start_bit, nbits);
+@@ -310,7 +329,7 @@ retry:
+ 	rcu_read_unlock();
+ 	return addr;
+ }
+-EXPORT_SYMBOL(gen_pool_alloc);
++EXPORT_SYMBOL(gen_pool_alloc_algo);
+ 
+ /**
+  * gen_pool_dma_alloc - allocate special memory from the pool for DMA usage
+@@ -501,15 +520,42 @@ EXPORT_SYMBOL(gen_pool_set_algo);
+  * @start: The bitnumber to start searching at
+  * @nr: The number of zeroed bits we're looking for
+  * @data: additional data - unused
++ * @pool: pool to find the fit region memory from
+  */
+ unsigned long gen_pool_first_fit(unsigned long *map, unsigned long size,
+-		unsigned long start, unsigned int nr, void *data)
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool)
+ {
+ 	return bitmap_find_next_zero_area(map, size, start, nr, 0);
+ }
+ EXPORT_SYMBOL(gen_pool_first_fit);
+ 
+ /**
++ * gen_pool_first_fit_align - find the first available region
++ * of memory matching the size requirement (alignment constraint)
++ * @map: The address to base the search on
++ * @size: The bitmap size in bits
++ * @start: The bitnumber to start searching at
++ * @nr: The number of zeroed bits we're looking for
++ * @data: data for alignment
++ * @pool: pool to get order from
++ */
++unsigned long gen_pool_first_fit_align(unsigned long *map, unsigned long size,
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool)
++{
++	struct genpool_data_align *alignment;
++	unsigned long align_mask;
++	int order;
++
++	alignment = data;
++	order = pool->min_alloc_order;
++	align_mask = ((alignment->align + (1UL << order) - 1) >> order) - 1;
++	return bitmap_find_next_zero_area(map, size, start, nr, align_mask);
++}
++EXPORT_SYMBOL(gen_pool_first_fit_align);
++
++/**
+  * gen_pool_first_fit_order_align - find the first available region
+  * of memory matching the size requirement. The region will be aligned
+  * to the order of the size specified.
+@@ -518,10 +564,11 @@ EXPORT_SYMBOL(gen_pool_first_fit);
+  * @start: The bitnumber to start searching at
+  * @nr: The number of zeroed bits we're looking for
+  * @data: additional data - unused
++ * @pool: pool to find the fit region memory from
+  */
+ unsigned long gen_pool_first_fit_order_align(unsigned long *map,
+ 		unsigned long size, unsigned long start,
+-		unsigned int nr, void *data)
++		unsigned int nr, void *data, struct gen_pool *pool)
+ {
+ 	unsigned long align_mask = roundup_pow_of_two(nr) - 1;
+ 
+@@ -537,12 +584,14 @@ EXPORT_SYMBOL(gen_pool_first_fit_order_align);
+  * @start: The bitnumber to start searching at
+  * @nr: The number of zeroed bits we're looking for
+  * @data: additional data - unused
++ * @pool: pool to find the fit region memory from
+  *
+  * Iterate over the bitmap to find the smallest free region
+  * which we can allocate the memory.
+  */
+ unsigned long gen_pool_best_fit(unsigned long *map, unsigned long size,
+-		unsigned long start, unsigned int nr, void *data)
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool)
+ {
+ 	unsigned long start_bit = size;
+ 	unsigned long len = size + 1;
+-- 
+2.1.0.27.g96db324
