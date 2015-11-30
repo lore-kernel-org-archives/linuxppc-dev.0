@@ -1,36 +1,23 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE9FD1A08FC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 11:21:37 +1100 (AEDT)
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 30 Nov 2015 10:21:35 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E25AB3578052
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 11:21:33 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tAU0LRuU20447466
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 11:21:35 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tAU0L1b2016833
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 11:21:01 +1100
-Message-ID: <565B9654.2010300@au1.ibm.com>
-Date: Mon, 30 Nov 2015 11:20:36 +1100
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F05481A08AA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 13:06:24 +1100 (AEDT)
+Date: Mon, 30 Nov 2015 13:06:00 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>,
+ David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+Subject: Re: [PATCH kernel 5/9] KVM: PPC: Account TCE-containing pages in
+ locked_vm
+Message-ID: <20151130020600.GB8991@fergus.ozlabs.ibm.com>
+References: <1442314179-9706-1-git-send-email-aik@ozlabs.ru>
+ <1442314179-9706-6-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/4] powerpc/powernv: panic() on OPAL < V3
-References: <1448599526-31073-1-git-send-email-stewart@linux.vnet.ibm.com>
- <1448599526-31073-2-git-send-email-stewart@linux.vnet.ibm.com>
- <5657EBF5.2030602@au1.ibm.com>
-In-Reply-To: <5657EBF5.2030602@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1442314179-9706-6-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,18 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Sep 15, 2015 at 08:49:35PM +1000, Alexey Kardashevskiy wrote:
+> At the moment pages used for TCE tables (in addition to pages addressed
+> by TCEs) are not counted in locked_vm counter so a malicious userspace
+> tool can call ioctl(KVM_CREATE_SPAPR_TCE) as many times as RLIMIT_NOFILE and
+> lock a lot of memory.
+> 
+> This adds counting for pages used for TCE tables.
+> 
+> This counts the number of pages required for a table plus pages for
+> the kvmppc_spapr_tce_table struct (TCE table descriptor) itself.
+> 
+> This does not change the amount of (de)allocated memory.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  arch/powerpc/kvm/book3s_64_vio.c | 51 +++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 50 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+> index 9526c34..b70787d 100644
+> --- a/arch/powerpc/kvm/book3s_64_vio.c
+> +++ b/arch/powerpc/kvm/book3s_64_vio.c
+> @@ -45,13 +45,56 @@ static long kvmppc_stt_npages(unsigned long window_size)
+>  		     * sizeof(u64), PAGE_SIZE) / PAGE_SIZE;
+>  }
+>  
+> +static long kvmppc_account_memlimit(long npages, bool inc)
+> +{
+> +	long ret = 0;
+> +	const long bytes = sizeof(struct kvmppc_spapr_tce_table) +
+> +			(abs(npages) * sizeof(struct page *));
 
-On 27/11/15 16:36, Andrew Donnellan wrote:
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Why abs(npages)?  Can npages be negative?  If so, what does that mean?
 
-And withdrawing my Reviewed-by: because apparently I'm not capable of 
-spotting missing semicolons, please move the semicolon from patch 2 to 
-this patch...
-
-
-Andrew
-
--- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+Paul.
