@@ -1,23 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [43.229.61.17])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F05481A08AA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 13:06:24 +1100 (AEDT)
-Date: Mon, 30 Nov 2015 13:06:00 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-Subject: Re: [PATCH kernel 5/9] KVM: PPC: Account TCE-containing pages in
- locked_vm
-Message-ID: <20151130020600.GB8991@fergus.ozlabs.ibm.com>
-References: <1442314179-9706-1-git-send-email-aik@ozlabs.ru>
- <1442314179-9706-6-git-send-email-aik@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1442314179-9706-6-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C182A1A08AA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 13:09:21 +1100 (AEDT)
+Message-ID: <1448849229.1204.1.camel@russell.cc>
+Subject: Re: [PATCH V2] powerpc/powernv: Add a kmsg_dumper that flushes
+ console output on panic
+From: Russell Currey <ruscur@russell.cc>
+To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 30 Nov 2015 13:07:09 +1100
+In-Reply-To: <m3fuzrnc08.fsf@oc8180480414.ibm.com>
+References: <1448421962-6174-1-git-send-email-ruscur@russell.cc>
+ <m3oaegm24h.fsf@oc8180480414.ibm.com> <1448604913.1291.2.camel@russell.cc>
+ <m3fuzrnc08.fsf@oc8180480414.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,38 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 15, 2015 at 08:49:35PM +1000, Alexey Kardashevskiy wrote:
-> At the moment pages used for TCE tables (in addition to pages addressed
-> by TCEs) are not counted in locked_vm counter so a malicious userspace
-> tool can call ioctl(KVM_CREATE_SPAPR_TCE) as many times as RLIMIT_NOFILE and
-> lock a lot of memory.
+On Fri, 2015-11-27 at 18:21 +1100, Stewart Smith wrote:
+> Russell Currey <ruscur@russell.cc> writes:
+> > On Fri, 2015-11-27 at 16:40 +1100, Stewart Smith wrote:
+> > > Russell Currey <ruscur@russell.cc> writes:
+> > > > On BMC machines, console output is controlled by the OPAL firmware and
+> > > > is
+> > > > only flushed when its pollers are called.  When the kernel is in a
+> > > > panic
+> > > > state, it no longer calls these pollers and thus console output does
+> > > > not
+> > > > completely flush, causing some output from the panic to be lost.
+> > > > 
+> > > > This patch adds a new kmsg_dumper which gets called at panic time to
+> > > > ensure
+> > > > panic output is not lost.  It accomplishes this by calling
+> > > > OPAL_CONSOLE_FLUSH
+> > > > in the OPAL API, and if that is not available, the pollers are called
+> > > > enough
+> > > > times to (hopefully) completely flush the buffer.
+> > > 
+> > > You may want to add to commit message that this depends on:
+> > > https://patchwork.ozlabs.org/patch/547379/
+> > > 
+> > It doesn't *depend* on it, it's just preferred.  It still works with older
+> > Skiboot versions.  I will mention it in the actual commit message for the
+> > next revision, though.
 > 
-> This adds counting for pages used for TCE tables.
+> More meaning that it depends on that patch being merged before, say the
+> PCI hotplug patches, which add a *different* OPAL call at the same ID -
+> and that it depends on *this* patch with *this* API rather than a
+> modified one being merged.
 > 
-> This counts the number of pages required for a table plus pages for
-> the kvmppc_spapr_tce_table struct (TCE table descriptor) itself.
+> Otherwise, if, say, I merged some other new OPAL call into skiboot
+> first, this patch would likely cause all sorts of trouble.
 > 
-> This does not change the amount of (de)allocated memory.
+> It's also a handy hint to Michael to ensure the skiboot side of things
+> is merged and okay before merging kernel things in.
 > 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/kvm/book3s_64_vio.c | 51 +++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 50 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-> index 9526c34..b70787d 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio.c
-> @@ -45,13 +45,56 @@ static long kvmppc_stt_npages(unsigned long window_size)
->  		     * sizeof(u64), PAGE_SIZE) / PAGE_SIZE;
->  }
->  
-> +static long kvmppc_account_memlimit(long npages, bool inc)
-> +{
-> +	long ret = 0;
-> +	const long bytes = sizeof(struct kvmppc_spapr_tce_table) +
-> +			(abs(npages) * sizeof(struct page *));
-
-Why abs(npages)?  Can npages be negative?  If so, what does that mean?
-
-Paul.
+That's a very good point I hadn't considered.  I'll make a note of it next
+revision, especially given there are some additional changes required on the
+Skiboot side of things.
