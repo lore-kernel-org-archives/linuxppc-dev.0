@@ -1,19 +1,19 @@
 Return-Path: <qiang.zhao@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
+ (mail-bn1on0138.outbound.protection.outlook.com [157.56.110.138])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D7C251A092B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 13:56:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 470A31A094C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 13:57:02 +1100 (AEDT)
 From: Zhao Qiang <qiang.zhao@freescale.com>
 To: <lauraa@codeaurora.org>
 CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <akpm@linux-foundation.org>, <olof@lixom.net>, <catalin.marinas@arm.com>,
  <scottwood@freescale.com>, <X.xie@freescale.com>, Zhao Qiang
  <qiang.zhao@freescale.com>
-Subject: [PATCH v13 3/6] CPM/QE: use genalloc to manage CPM/QE muram
-Date: Mon, 30 Nov 2015 10:48:54 +0800
-Message-ID: <1448851737-33125-3-git-send-email-qiang.zhao@freescale.com>
+Subject: [PATCH v13 4/6] QE/CPM: move muram management functions to qe_common
+Date: Mon, 30 Nov 2015 10:48:55 +0800
+Message-ID: <1448851737-33125-4-git-send-email-qiang.zhao@freescale.com>
 In-Reply-To: <1448851737-33125-1-git-send-email-qiang.zhao@freescale.com>
 References: <1448851737-33125-1-git-send-email-qiang.zhao@freescale.com>
 MIME-Version: 1.0
@@ -27,320 +27,652 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use genalloc to manage CPM/QE muram instead of rheap.
+QE and CPM have the same muram, they use the same management
+functions. Now QE support both ARM and PowerPC, it is necessary
+to move QE to "driver/soc", so move the muram management functions
+from cpm_common to qe_common for preparing to move QE code to "driver/soc"
 
 Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
 ---
+Changes for v2:
+	- no changes
+Changes for v3:
+	- no changes
+Changes for v4:
+	- no changes
+Changes for v5:
+	- no changes
+Changes for v6:
+	- using genalloc instead rheap to manage QE MURAM
+	- remove qe_reset from platform file, using 
+	- subsys_initcall to call qe_init function.
+Changes for v7:
+	- move this patch from 3/3 to 2/3
+	- convert cpm with genalloc
+	- check for gen_pool allocation failure
+Changes for v8:
+	- rebase
+	- move BD_SC_* macro instead of copy
 Changes for v9:
-	- splitted from patch 3/5, modify cpm muram management functions.
+	- doesn't modify CPM, add a new patch to modify.
+	- rebase
 Changes for v10:
-	- modify cpm muram first, then move to qe_common
-	- modify commit.
+	- rebase
 Changes for v11:
-	- factor out the common alloc code
-	- modify min_alloc_order to zero for cpm_muram_alloc_fixed.
+	- remove renaming
+	- delete removing qe_reset and delete adding qe_init.
 Changes for v12:
-	- Nil 
+	- SPI_FSL_CPM depends on QE-MURAM, select QUICC_ENGINE for it. 
 Changes for v13:
 	- rebase
 
- arch/powerpc/include/asm/cpm.h   |   3 +
- arch/powerpc/platforms/Kconfig   |   4 +-
- arch/powerpc/sysdev/cpm_common.c | 126 +++++++++++++++++++++++++++------------
- lib/genalloc.c                   |   2 +-
- 4 files changed, 94 insertions(+), 41 deletions(-)
+ arch/powerpc/include/asm/cpm.h                     |  47 +----
+ arch/powerpc/include/asm/qe.h                      |  50 +++++
+ arch/powerpc/sysdev/Makefile                       |   1 +
+ arch/powerpc/sysdev/cpm_common.c                   | 208 +--------------------
+ arch/powerpc/sysdev/qe_lib/Makefile                |   4 +-
+ .../sysdev/{cpm_common.c => qe_lib/qe_common.c}    | 172 +----------------
+ 6 files changed, 58 insertions(+), 424 deletions(-)
+ copy arch/powerpc/sysdev/{cpm_common.c => qe_lib/qe_common.c} (60%)
 
 diff --git a/arch/powerpc/include/asm/cpm.h b/arch/powerpc/include/asm/cpm.h
-index 4398a6c..46e86b5 100644
+index 46e86b5..0958028 100644
 --- a/arch/powerpc/include/asm/cpm.h
 +++ b/arch/powerpc/include/asm/cpm.h
-@@ -2,6 +2,7 @@
+@@ -2,10 +2,10 @@
  #define __CPM_H
  
  #include <linux/compiler.h>
-+#include <linux/genalloc.h>
+-#include <linux/genalloc.h>
  #include <linux/types.h>
  #include <linux/errno.h>
  #include <linux/of.h>
-@@ -161,6 +162,8 @@ int cpm_muram_init(void);
- unsigned long cpm_muram_alloc(unsigned long size, unsigned long align);
- int cpm_muram_free(unsigned long offset);
- unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size);
++#include <asm/qe.h>
+ 
+ /*
+  * SPI Parameter RAM common to QE and CPM.
+@@ -156,51 +156,6 @@ typedef struct cpm_buf_desc {
+  */
+ #define BD_I2C_START		(0x0400)
+ 
+-int cpm_muram_init(void);
+-
+-#if defined(CONFIG_CPM) || defined(CONFIG_QUICC_ENGINE)
+-unsigned long cpm_muram_alloc(unsigned long size, unsigned long align);
+-int cpm_muram_free(unsigned long offset);
+-unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size);
+-unsigned long cpm_muram_alloc_common(unsigned long size, genpool_algo_t algo,
+-				     void *data);
+-void __iomem *cpm_muram_addr(unsigned long offset);
+-unsigned long cpm_muram_offset(void __iomem *addr);
+-dma_addr_t cpm_muram_dma(void __iomem *addr);
+-#else
+-static inline unsigned long cpm_muram_alloc(unsigned long size,
+-					    unsigned long align)
+-{
+-	return -ENOSYS;
+-}
+-
+-static inline int cpm_muram_free(unsigned long offset)
+-{
+-	return -ENOSYS;
+-}
+-
+-static inline unsigned long cpm_muram_alloc_fixed(unsigned long offset,
+-						  unsigned long size)
+-{
+-	return -ENOSYS;
+-}
+-
+-static inline void __iomem *cpm_muram_addr(unsigned long offset)
+-{
+-	return NULL;
+-}
+-
+-static inline unsigned long cpm_muram_offset(void __iomem *addr)
+-{
+-	return -ENOSYS;
+-}
+-
+-static inline dma_addr_t cpm_muram_dma(void __iomem *addr)
+-{
+-	return 0;
+-}
+-#endif /* defined(CONFIG_CPM) || defined(CONFIG_QUICC_ENGINE) */
+-
+ #ifdef CONFIG_CPM
+ int cpm_command(u32 command, u8 opcode);
+ #else
+diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
+index 32b9bfa..ceeaf91 100644
+--- a/arch/powerpc/include/asm/qe.h
++++ b/arch/powerpc/include/asm/qe.h
+@@ -16,11 +16,16 @@
+ #define _ASM_POWERPC_QE_H
+ #ifdef __KERNEL__
+ 
++#include <linux/compiler.h>
++#include <linux/genalloc.h>
+ #include <linux/spinlock.h>
+ #include <linux/errno.h>
+ #include <linux/err.h>
+ #include <asm/cpm.h>
+ #include <asm/immap_qe.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/types.h>
+ 
+ #define QE_NUM_OF_SNUM	256	/* There are 256 serial number in QE */
+ #define QE_NUM_OF_BRGS	16
+@@ -92,6 +97,51 @@ extern void qe_reset(void);
+ static inline void qe_reset(void) {}
+ #endif
+ 
++int cpm_muram_init(void);
++
++#if defined(CONFIG_CPM) || defined(CONFIG_QUICC_ENGINE)
++unsigned long cpm_muram_alloc(unsigned long size, unsigned long align);
++int cpm_muram_free(unsigned long offset);
++unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size);
 +unsigned long cpm_muram_alloc_common(unsigned long size, genpool_algo_t algo,
 +				     void *data);
- void __iomem *cpm_muram_addr(unsigned long offset);
- unsigned long cpm_muram_offset(void __iomem *addr);
- dma_addr_t cpm_muram_dma(void __iomem *addr);
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index b7f9c40..57069eb 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -275,7 +275,7 @@ config TAU_AVERAGE
- config QUICC_ENGINE
- 	bool "Freescale QUICC Engine (QE) Support"
- 	depends on FSL_SOC && PPC32
--	select PPC_LIB_RHEAP
-+	select GENERIC_ALLOCATOR
- 	select CRC32
- 	help
- 	  The QUICC Engine (QE) is a new generation of communications
-@@ -295,7 +295,6 @@ config CPM2
- 	bool "Enable support for the CPM2 (Communications Processor Module)"
- 	depends on (FSL_SOC_BOOKE && PPC32) || 8260
- 	select CPM
--	select PPC_LIB_RHEAP
- 	select PPC_PCI_CHOICE
- 	select ARCH_REQUIRE_GPIOLIB
- 	help
-@@ -325,6 +324,7 @@ config FSL_ULI1575
++void __iomem *cpm_muram_addr(unsigned long offset);
++unsigned long cpm_muram_offset(void __iomem *addr);
++dma_addr_t cpm_muram_dma(void __iomem *addr);
++#else
++static inline unsigned long cpm_muram_alloc(unsigned long size,
++					    unsigned long align)
++{
++	return -ENOSYS;
++}
++
++static inline int cpm_muram_free(unsigned long offset)
++{
++	return -ENOSYS;
++}
++
++static inline unsigned long cpm_muram_alloc_fixed(unsigned long offset,
++						  unsigned long size)
++{
++	return -ENOSYS;
++}
++
++static inline void __iomem *cpm_muram_addr(unsigned long offset)
++{
++	return NULL;
++}
++
++static inline unsigned long cpm_muram_offset(void __iomem *addr)
++{
++	return -ENOSYS;
++}
++
++static inline dma_addr_t cpm_muram_dma(void __iomem *addr)
++{
++	return 0;
++}
++#endif /* defined(CONFIG_CPM) || defined(CONFIG_QUICC_ENGINE) */
++
+ /* QE PIO */
+ #define QE_PIO_PINS 32
  
- config CPM
- 	bool
-+	select GENERIC_ALLOCATOR
- 
- config OF_RTC
- 	bool
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 5b492a6..f1d4749 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -27,6 +27,7 @@ obj-$(CONFIG_SIMPLE_GPIO)	+= simple_gpio.o
+ obj-$(CONFIG_FSL_RIO)		+= fsl_rio.o fsl_rmu.o
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
++obj-$(CONFIG_CPM)		+= qe_lib/
+ mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
+ obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o \
+ 				   mv64x60_udbg.o
 diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index e00a5ee..fcc83cd 100644
+index fcc83cd..6993aa8 100644
 --- a/arch/powerpc/sysdev/cpm_common.c
 +++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -17,6 +17,7 @@
+@@ -17,7 +17,6 @@
   * published by the Free Software Foundation.
   */
  
-+#include <linux/genalloc.h>
+-#include <linux/genalloc.h>
  #include <linux/init.h>
  #include <linux/of_device.h>
  #include <linux/spinlock.h>
-@@ -27,7 +28,6 @@
- 
+@@ -29,6 +28,7 @@
  #include <asm/udbg.h>
  #include <asm/io.h>
--#include <asm/rheap.h>
  #include <asm/cpm.h>
++#include <asm/qe.h>
  
  #include <mm/mmu_decl.h>
-@@ -65,14 +65,22 @@ void __init udbg_init_cpm(void)
+ 
+@@ -65,212 +65,6 @@ void __init udbg_init_cpm(void)
  }
  #endif
  
-+static struct gen_pool *muram_pool;
- static spinlock_t cpm_muram_lock;
--static rh_block_t cpm_boot_muram_rh_block[16];
--static rh_info_t cpm_muram_info;
- static u8 __iomem *muram_vbase;
- static phys_addr_t muram_pbase;
- 
--/* Max address size we deal with */
-+struct muram_block {
-+	struct list_head head;
-+	unsigned long start;
-+	int size;
-+};
-+
-+static LIST_HEAD(muram_block_list);
-+
-+/* max address size we deal with */
- #define OF_MAX_ADDR_CELLS	4
-+#define GENPOOL_OFFSET		(4096 * 8)
- 
- int cpm_muram_init(void)
- {
-@@ -87,50 +95,51 @@ int cpm_muram_init(void)
- 		return 0;
- 
- 	spin_lock_init(&cpm_muram_lock);
--	/* initialize the info header */
--	rh_init(&cpm_muram_info, 1,
--	        sizeof(cpm_boot_muram_rh_block) /
--	        sizeof(cpm_boot_muram_rh_block[0]),
--	        cpm_boot_muram_rh_block);
+-static struct gen_pool *muram_pool;
+-static spinlock_t cpm_muram_lock;
+-static u8 __iomem *muram_vbase;
+-static phys_addr_t muram_pbase;
 -
- 	np = of_find_compatible_node(NULL, NULL, "fsl,cpm-muram-data");
- 	if (!np) {
- 		/* try legacy bindings */
- 		np = of_find_node_by_name(NULL, "data-only");
- 		if (!np) {
--			printk(KERN_ERR "Cannot find CPM muram data node");
-+			pr_err("Cannot find CPM muram data node");
- 			ret = -ENODEV;
--			goto out;
-+			goto out_muram;
- 		}
- 	}
- 
-+	muram_pool = gen_pool_create(0, -1);
- 	muram_pbase = of_translate_address(np, zero);
- 	if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
--		printk(KERN_ERR "Cannot translate zero through CPM muram node");
-+		pr_err("Cannot translate zero through CPM muram node");
- 		ret = -ENODEV;
--		goto out;
-+		goto out_pool;
- 	}
- 
- 	while (of_address_to_resource(np, i++, &r) == 0) {
- 		if (r.end > max)
- 			max = r.end;
+-struct muram_block {
+-	struct list_head head;
+-	unsigned long start;
+-	int size;
+-};
 -
--		rh_attach_region(&cpm_muram_info, r.start - muram_pbase,
--				 resource_size(&r));
-+		ret = gen_pool_add(muram_pool, r.start - muram_pbase +
-+				   GENPOOL_OFFSET, resource_size(&r), -1);
-+		if (ret) {
-+			pr_err("QE: couldn't add muram to pool!\n");
-+			goto out_pool;
-+		}
- 	}
- 
- 	muram_vbase = ioremap(muram_pbase, max - muram_pbase + 1);
- 	if (!muram_vbase) {
--		printk(KERN_ERR "Cannot map CPM muram");
-+		pr_err("Cannot map QE muram");
- 		ret = -ENOMEM;
-+		goto out_pool;
- 	}
+-static LIST_HEAD(muram_block_list);
 -
--out:
-+	goto out_muram;
-+out_pool:
-+	gen_pool_destroy(muram_pool);
-+out_muram:
- 	of_node_put(np);
- 	return ret;
- }
- 
--/**
-+/*
-  * cpm_muram_alloc - allocate the requested size worth of multi-user ram
-  * @size: number of bytes to allocate
-  * @align: requested alignment, in bytes
-@@ -143,14 +152,13 @@ unsigned long cpm_muram_alloc(unsigned long size, unsigned long align)
- {
- 	unsigned long start;
- 	unsigned long flags;
-+	struct genpool_data_align muram_pool_data;
- 
- 	spin_lock_irqsave(&cpm_muram_lock, flags);
--	cpm_muram_info.alignment = align;
--	start = rh_alloc(&cpm_muram_info, size, "commproc");
--	if (!IS_ERR_VALUE(start))
--		memset_io(cpm_muram_addr(start), 0, size);
-+	muram_pool_data.align = align;
-+	start = cpm_muram_alloc_common(size, gen_pool_first_fit_align,
-+				       &muram_pool_data);
- 	spin_unlock_irqrestore(&cpm_muram_lock, flags);
+-/* max address size we deal with */
+-#define OF_MAX_ADDR_CELLS	4
+-#define GENPOOL_OFFSET		(4096 * 8)
 -
- 	return start;
- }
- EXPORT_SYMBOL(cpm_muram_alloc);
-@@ -161,23 +169,31 @@ EXPORT_SYMBOL(cpm_muram_alloc);
-  */
- int cpm_muram_free(unsigned long offset)
- {
--	int ret;
- 	unsigned long flags;
-+	int size;
-+	struct muram_block *tmp;
- 
-+	size = 0;
- 	spin_lock_irqsave(&cpm_muram_lock, flags);
--	ret = rh_free(&cpm_muram_info, offset);
-+	list_for_each_entry(tmp, &muram_block_list, head) {
-+		if (tmp->start == offset) {
-+			size = tmp->size;
-+			list_del(&tmp->head);
-+			kfree(tmp);
-+			break;
-+		}
-+	}
-+	gen_pool_free(muram_pool, offset + GENPOOL_OFFSET, size);
- 	spin_unlock_irqrestore(&cpm_muram_lock, flags);
+-int cpm_muram_init(void)
+-{
+-	struct device_node *np;
+-	struct resource r;
+-	u32 zero[OF_MAX_ADDR_CELLS] = {};
+-	resource_size_t max = 0;
+-	int i = 0;
+-	int ret = 0;
 -
+-	if (muram_pbase)
+-		return 0;
+-
+-	spin_lock_init(&cpm_muram_lock);
+-	np = of_find_compatible_node(NULL, NULL, "fsl,cpm-muram-data");
+-	if (!np) {
+-		/* try legacy bindings */
+-		np = of_find_node_by_name(NULL, "data-only");
+-		if (!np) {
+-			pr_err("Cannot find CPM muram data node");
+-			ret = -ENODEV;
+-			goto out_muram;
+-		}
+-	}
+-
+-	muram_pool = gen_pool_create(0, -1);
+-	muram_pbase = of_translate_address(np, zero);
+-	if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
+-		pr_err("Cannot translate zero through CPM muram node");
+-		ret = -ENODEV;
+-		goto out_pool;
+-	}
+-
+-	while (of_address_to_resource(np, i++, &r) == 0) {
+-		if (r.end > max)
+-			max = r.end;
+-		ret = gen_pool_add(muram_pool, r.start - muram_pbase +
+-				   GENPOOL_OFFSET, resource_size(&r), -1);
+-		if (ret) {
+-			pr_err("QE: couldn't add muram to pool!\n");
+-			goto out_pool;
+-		}
+-	}
+-
+-	muram_vbase = ioremap(muram_pbase, max - muram_pbase + 1);
+-	if (!muram_vbase) {
+-		pr_err("Cannot map QE muram");
+-		ret = -ENOMEM;
+-		goto out_pool;
+-	}
+-	goto out_muram;
+-out_pool:
+-	gen_pool_destroy(muram_pool);
+-out_muram:
+-	of_node_put(np);
 -	return ret;
-+	return size;
- }
- EXPORT_SYMBOL(cpm_muram_free);
- 
--/**
-+/*
-  * cpm_muram_alloc_fixed - reserve a specific region of multi-user ram
-- * @offset: the offset into the muram area to reserve
-- * @size: the number of bytes to reserve
-- *
-- * This function returns "start" on success, -ENOMEM on failure.
-+ * @offset: offset of allocation start address
-+ * @size: number of bytes to allocate
-+ * This function returns an offset into the muram area
-  * Use cpm_dpram_addr() to get the virtual address of the area.
-  * Use cpm_muram_free() to free the allocation.
-  */
-@@ -185,16 +201,50 @@ unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size)
- {
- 	unsigned long start;
- 	unsigned long flags;
-+	struct genpool_data_fixed muram_pool_data_fixed;
- 
- 	spin_lock_irqsave(&cpm_muram_lock, flags);
--	cpm_muram_info.alignment = 1;
--	start = rh_alloc_fixed(&cpm_muram_info, offset, size, "commproc");
-+	muram_pool_data_fixed.offset = offset + GENPOOL_OFFSET;
-+	start = cpm_muram_alloc_common(size, gen_pool_fixed_alloc,
-+				       &muram_pool_data_fixed);
- 	spin_unlock_irqrestore(&cpm_muram_lock, flags);
+-}
 -
- 	return start;
+-/*
+- * cpm_muram_alloc - allocate the requested size worth of multi-user ram
+- * @size: number of bytes to allocate
+- * @align: requested alignment, in bytes
+- *
+- * This function returns an offset into the muram area.
+- * Use cpm_dpram_addr() to get the virtual address of the area.
+- * Use cpm_muram_free() to free the allocation.
+- */
+-unsigned long cpm_muram_alloc(unsigned long size, unsigned long align)
+-{
+-	unsigned long start;
+-	unsigned long flags;
+-	struct genpool_data_align muram_pool_data;
+-
+-	spin_lock_irqsave(&cpm_muram_lock, flags);
+-	muram_pool_data.align = align;
+-	start = cpm_muram_alloc_common(size, gen_pool_first_fit_align,
+-				       &muram_pool_data);
+-	spin_unlock_irqrestore(&cpm_muram_lock, flags);
+-	return start;
+-}
+-EXPORT_SYMBOL(cpm_muram_alloc);
+-
+-/**
+- * cpm_muram_free - free a chunk of multi-user ram
+- * @offset: The beginning of the chunk as returned by cpm_muram_alloc().
+- */
+-int cpm_muram_free(unsigned long offset)
+-{
+-	unsigned long flags;
+-	int size;
+-	struct muram_block *tmp;
+-
+-	size = 0;
+-	spin_lock_irqsave(&cpm_muram_lock, flags);
+-	list_for_each_entry(tmp, &muram_block_list, head) {
+-		if (tmp->start == offset) {
+-			size = tmp->size;
+-			list_del(&tmp->head);
+-			kfree(tmp);
+-			break;
+-		}
+-	}
+-	gen_pool_free(muram_pool, offset + GENPOOL_OFFSET, size);
+-	spin_unlock_irqrestore(&cpm_muram_lock, flags);
+-	return size;
+-}
+-EXPORT_SYMBOL(cpm_muram_free);
+-
+-/*
+- * cpm_muram_alloc_fixed - reserve a specific region of multi-user ram
+- * @offset: offset of allocation start address
+- * @size: number of bytes to allocate
+- * This function returns an offset into the muram area
+- * Use cpm_dpram_addr() to get the virtual address of the area.
+- * Use cpm_muram_free() to free the allocation.
+- */
+-unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size)
+-{
+-	unsigned long start;
+-	unsigned long flags;
+-	struct genpool_data_fixed muram_pool_data_fixed;
+-
+-	spin_lock_irqsave(&cpm_muram_lock, flags);
+-	muram_pool_data_fixed.offset = offset + GENPOOL_OFFSET;
+-	start = cpm_muram_alloc_common(size, gen_pool_fixed_alloc,
+-				       &muram_pool_data_fixed);
+-	spin_unlock_irqrestore(&cpm_muram_lock, flags);
+-	return start;
+-}
+-EXPORT_SYMBOL(cpm_muram_alloc_fixed);
+-
+-/*
+- * cpm_muram_alloc_common - cpm_muram_alloc common code
+- * @size: number of bytes to allocate
+- * @algo: algorithm for alloc.
+- * @data: data for genalloc's algorithm.
+- *
+- * This function returns an offset into the muram area.
+- */
+-unsigned long cpm_muram_alloc_common(unsigned long size, genpool_algo_t algo,
+-				     void *data)
+-{
+-	struct muram_block *entry;
+-	unsigned long start;
+-
+-	start = gen_pool_alloc_algo(muram_pool, size, algo, data);
+-	if (!start)
+-		goto out2;
+-	start = start - GENPOOL_OFFSET;
+-	memset_io(cpm_muram_addr(start), 0, size);
+-	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
+-	if (!entry)
+-		goto out1;
+-	entry->start = start;
+-	entry->size = size;
+-	list_add(&entry->head, &muram_block_list);
+-
+-	return start;
+-out1:
+-	gen_pool_free(muram_pool, start, size);
+-out2:
+-	return (unsigned long)-ENOMEM;
+-}
+-
+-/**
+- * cpm_muram_addr - turn a muram offset into a virtual address
+- * @offset: muram offset to convert
+- */
+-void __iomem *cpm_muram_addr(unsigned long offset)
+-{
+-	return muram_vbase + offset;
+-}
+-EXPORT_SYMBOL(cpm_muram_addr);
+-
+-unsigned long cpm_muram_offset(void __iomem *addr)
+-{
+-	return addr - (void __iomem *)muram_vbase;
+-}
+-EXPORT_SYMBOL(cpm_muram_offset);
+-
+-/**
+- * cpm_muram_dma - turn a muram virtual address into a DMA address
+- * @offset: virtual address from cpm_muram_addr() to convert
+- */
+-dma_addr_t cpm_muram_dma(void __iomem *addr)
+-{
+-	return muram_pbase + ((u8 __iomem *)addr - muram_vbase);
+-}
+-EXPORT_SYMBOL(cpm_muram_dma);
+-
+ #if defined(CONFIG_CPM2) || defined(CONFIG_8xx_GPIO)
+ 
+ struct cpm2_ioports {
+diff --git a/arch/powerpc/sysdev/qe_lib/Makefile b/arch/powerpc/sysdev/qe_lib/Makefile
+index f1855c1..ffac541 100644
+--- a/arch/powerpc/sysdev/qe_lib/Makefile
++++ b/arch/powerpc/sysdev/qe_lib/Makefile
+@@ -1,8 +1,8 @@
+ #
+ # Makefile for the linux ppc-specific parts of QE
+ #
+-obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_ic.o qe_io.o
+-
++obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_ic.o qe_io.o
++obj-$(CONFIG_CPM)	+= qe_common.o
+ obj-$(CONFIG_UCC)	+= ucc.o
+ obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
+ obj-$(CONFIG_UCC_FAST)	+= ucc_fast.o
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/qe_lib/qe_common.c
+similarity index 60%
+copy from arch/powerpc/sysdev/cpm_common.c
+copy to arch/powerpc/sysdev/qe_lib/qe_common.c
+index fcc83cd..b90043f 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/qe_lib/qe_common.c
+@@ -16,54 +16,17 @@
+  * it under the terms of version 2 of the GNU General Public License as
+  * published by the Free Software Foundation.
+  */
+-
+ #include <linux/genalloc.h>
+ #include <linux/init.h>
++#include <linux/list.h>
+ #include <linux/of_device.h>
+ #include <linux/spinlock.h>
+ #include <linux/export.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/slab.h>
+-
+-#include <asm/udbg.h>
+-#include <asm/io.h>
+-#include <asm/cpm.h>
+-
+-#include <mm/mmu_decl.h>
+-
+-#if defined(CONFIG_CPM2) || defined(CONFIG_8xx_GPIO)
+-#include <linux/of_gpio.h>
+-#endif
+-
+-#ifdef CONFIG_PPC_EARLY_DEBUG_CPM
+-static u32 __iomem *cpm_udbg_txdesc =
+-	(u32 __iomem __force *)CONFIG_PPC_EARLY_DEBUG_CPM_ADDR;
+-
+-static void udbg_putc_cpm(char c)
+-{
+-	u8 __iomem *txbuf = (u8 __iomem __force *)in_be32(&cpm_udbg_txdesc[1]);
+-
+-	if (c == '\n')
+-		udbg_putc_cpm('\r');
+-
+-	while (in_be32(&cpm_udbg_txdesc[0]) & 0x80000000)
+-		;
+-
+-	out_8(txbuf, c);
+-	out_be32(&cpm_udbg_txdesc[0], 0xa0000001);
+-}
+-
+-void __init udbg_init_cpm(void)
+-{
+-	if (cpm_udbg_txdesc) {
+-#ifdef CONFIG_CPM2
+-		setbat(1, 0xf0000000, 0xf0000000, 1024*1024, PAGE_KERNEL_NCG);
+-#endif
+-		udbg_putc = udbg_putc_cpm;
+-	}
+-}
+-#endif
++#include <linux/io.h>
++#include <asm/qe.h>
+ 
+ static struct gen_pool *muram_pool;
+ static spinlock_t cpm_muram_lock;
+@@ -270,132 +233,3 @@ dma_addr_t cpm_muram_dma(void __iomem *addr)
+ 	return muram_pbase + ((u8 __iomem *)addr - muram_vbase);
  }
- EXPORT_SYMBOL(cpm_muram_alloc_fixed);
- 
-+/*
-+ * cpm_muram_alloc_common - cpm_muram_alloc common code
-+ * @size: number of bytes to allocate
-+ * @algo: algorithm for alloc.
-+ * @data: data for genalloc's algorithm.
-+ *
-+ * This function returns an offset into the muram area.
-+ */
-+unsigned long cpm_muram_alloc_common(unsigned long size, genpool_algo_t algo,
-+				     void *data)
-+{
-+	struct muram_block *entry;
-+	unsigned long start;
-+
-+	start = gen_pool_alloc_algo(muram_pool, size, algo, data);
-+	if (!start)
-+		goto out2;
-+	start = start - GENPOOL_OFFSET;
-+	memset_io(cpm_muram_addr(start), 0, size);
-+	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
-+	if (!entry)
-+		goto out1;
-+	entry->start = start;
-+	entry->size = size;
-+	list_add(&entry->head, &muram_block_list);
-+
-+	return start;
-+out1:
-+	gen_pool_free(muram_pool, start, size);
-+out2:
-+	return (unsigned long)-ENOMEM;
-+}
-+
- /**
-  * cpm_muram_addr - turn a muram offset into a virtual address
-  * @offset: muram offset to convert
-diff --git a/lib/genalloc.c b/lib/genalloc.c
-index 5ec83cd..0a11396 100644
---- a/lib/genalloc.c
-+++ b/lib/genalloc.c
-@@ -576,7 +576,7 @@ unsigned long gen_pool_fixed_alloc(unsigned long *map, unsigned long size,
- 	fixed_data = data;
- 	order = pool->min_alloc_order;
- 	offset_bit = fixed_data->offset >> order;
--	if (WARN_ON(fixed_data->offset & (1UL << order - 1)))
-+	if (WARN_ON(fixed_data->offset & ((1UL << order) - 1)))
- 		return size;
- 
- 	start_bit = bitmap_find_next_zero_area(map, size,
+ EXPORT_SYMBOL(cpm_muram_dma);
+-
+-#if defined(CONFIG_CPM2) || defined(CONFIG_8xx_GPIO)
+-
+-struct cpm2_ioports {
+-	u32 dir, par, sor, odr, dat;
+-	u32 res[3];
+-};
+-
+-struct cpm2_gpio32_chip {
+-	struct of_mm_gpio_chip mm_gc;
+-	spinlock_t lock;
+-
+-	/* shadowed data register to clear/set bits safely */
+-	u32 cpdata;
+-};
+-
+-static inline struct cpm2_gpio32_chip *
+-to_cpm2_gpio32_chip(struct of_mm_gpio_chip *mm_gc)
+-{
+-	return container_of(mm_gc, struct cpm2_gpio32_chip, mm_gc);
+-}
+-
+-static void cpm2_gpio32_save_regs(struct of_mm_gpio_chip *mm_gc)
+-{
+-	struct cpm2_gpio32_chip *cpm2_gc = to_cpm2_gpio32_chip(mm_gc);
+-	struct cpm2_ioports __iomem *iop = mm_gc->regs;
+-
+-	cpm2_gc->cpdata = in_be32(&iop->dat);
+-}
+-
+-static int cpm2_gpio32_get(struct gpio_chip *gc, unsigned int gpio)
+-{
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+-	struct cpm2_ioports __iomem *iop = mm_gc->regs;
+-	u32 pin_mask;
+-
+-	pin_mask = 1 << (31 - gpio);
+-
+-	return !!(in_be32(&iop->dat) & pin_mask);
+-}
+-
+-static void __cpm2_gpio32_set(struct of_mm_gpio_chip *mm_gc, u32 pin_mask,
+-	int value)
+-{
+-	struct cpm2_gpio32_chip *cpm2_gc = to_cpm2_gpio32_chip(mm_gc);
+-	struct cpm2_ioports __iomem *iop = mm_gc->regs;
+-
+-	if (value)
+-		cpm2_gc->cpdata |= pin_mask;
+-	else
+-		cpm2_gc->cpdata &= ~pin_mask;
+-
+-	out_be32(&iop->dat, cpm2_gc->cpdata);
+-}
+-
+-static void cpm2_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
+-{
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+-	struct cpm2_gpio32_chip *cpm2_gc = to_cpm2_gpio32_chip(mm_gc);
+-	unsigned long flags;
+-	u32 pin_mask = 1 << (31 - gpio);
+-
+-	spin_lock_irqsave(&cpm2_gc->lock, flags);
+-
+-	__cpm2_gpio32_set(mm_gc, pin_mask, value);
+-
+-	spin_unlock_irqrestore(&cpm2_gc->lock, flags);
+-}
+-
+-static int cpm2_gpio32_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+-{
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+-	struct cpm2_gpio32_chip *cpm2_gc = to_cpm2_gpio32_chip(mm_gc);
+-	struct cpm2_ioports __iomem *iop = mm_gc->regs;
+-	unsigned long flags;
+-	u32 pin_mask = 1 << (31 - gpio);
+-
+-	spin_lock_irqsave(&cpm2_gc->lock, flags);
+-
+-	setbits32(&iop->dir, pin_mask);
+-	__cpm2_gpio32_set(mm_gc, pin_mask, val);
+-
+-	spin_unlock_irqrestore(&cpm2_gc->lock, flags);
+-
+-	return 0;
+-}
+-
+-static int cpm2_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
+-{
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+-	struct cpm2_gpio32_chip *cpm2_gc = to_cpm2_gpio32_chip(mm_gc);
+-	struct cpm2_ioports __iomem *iop = mm_gc->regs;
+-	unsigned long flags;
+-	u32 pin_mask = 1 << (31 - gpio);
+-
+-	spin_lock_irqsave(&cpm2_gc->lock, flags);
+-
+-	clrbits32(&iop->dir, pin_mask);
+-
+-	spin_unlock_irqrestore(&cpm2_gc->lock, flags);
+-
+-	return 0;
+-}
+-
+-int cpm2_gpiochip_add32(struct device_node *np)
+-{
+-	struct cpm2_gpio32_chip *cpm2_gc;
+-	struct of_mm_gpio_chip *mm_gc;
+-	struct gpio_chip *gc;
+-
+-	cpm2_gc = kzalloc(sizeof(*cpm2_gc), GFP_KERNEL);
+-	if (!cpm2_gc)
+-		return -ENOMEM;
+-
+-	spin_lock_init(&cpm2_gc->lock);
+-
+-	mm_gc = &cpm2_gc->mm_gc;
+-	gc = &mm_gc->gc;
+-
+-	mm_gc->save_regs = cpm2_gpio32_save_regs;
+-	gc->ngpio = 32;
+-	gc->direction_input = cpm2_gpio32_dir_in;
+-	gc->direction_output = cpm2_gpio32_dir_out;
+-	gc->get = cpm2_gpio32_get;
+-	gc->set = cpm2_gpio32_set;
+-
+-	return of_mm_gpiochip_add(np, mm_gc);
+-}
+-#endif /* CONFIG_CPM2 || CONFIG_8xx_GPIO */
 -- 
 2.1.0.27.g96db324
