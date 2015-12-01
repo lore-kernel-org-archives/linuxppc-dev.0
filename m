@@ -1,25 +1,23 @@
-Return-Path: <rashmicy@gmail.com>
-Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
- [IPv6:2607:f8b0:400e:c03::231])
+Return-Path: <geyslan@gmail.com>
+Received: from mail-qg0-x243.google.com (mail-qg0-x243.google.com
+ [IPv6:2607:f8b0:400d:c04::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 17A571A0286
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 10:31:09 +1100 (AEDT)
-Received: by pacej9 with SMTP id ej9so20047564pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Dec 2015 15:31:06 -0800 (PST)
-Subject: Re: [PATCH 2/3] selftests/powerpc: Add test for forking inside
- transaction
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <1448946504-11653-1-git-send-email-rashmicy@gmail.com>
- <1448946504-11653-3-git-send-email-rashmicy@gmail.com>
- <565D563F.3010709@linux.vnet.ibm.com>
-From: Rashmica <rashmicy@gmail.com>
-Message-ID: <565E2DB4.4030908@gmail.com>
-Date: Wed, 2 Dec 2015 10:31:00 +1100
-MIME-Version: 1.0
-In-Reply-To: <565D563F.3010709@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 210731A0BC2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 10:43:53 +1100 (AEDT)
+Received: by qgea14 with SMTP id a14so1948367qge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Dec 2015 15:43:50 -0800 (PST)
+From: "Geyslan G. Bem" <geyslan@gmail.com>
+To: 
+Cc: "Geyslan G. Bem" <geyslan@gmail.com>, Alexander Graf <agraf@suse.com>,
+ Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] kvm: remove unused variable 'vcpu_book3s'
+Date: Tue,  1 Dec 2015 20:42:10 -0300
+Message-Id: <1449013410-19103-1-git-send-email-geyslan@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,28 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As far as I'm aware, the kernel used to crash when forking inside a 
-transaction (see powerpc/tm: Fix crash when forking inside a 
-transaction). So this is to check that the transaction aborts rather 
-than your whole kernel crashing.
+The vcpu_book3s struct is assigned but never used. So remove it.
 
-On 01/12/15 19:11, Anshuman Khandual wrote:
-> On 12/01/2015 10:38 AM, Rashmica Gupta wrote:
->> +int test_fork(void)
->> +{
->> +	SKIP_IF(!have_htm());
->> +
->> +	asm __volatile__(
->> +		"tbegin.;"
->> +		"blt    1f; "
->> +		"li     0, 2;"  /* fork syscall */
->> +		"sc  ;"
->> +		"tend.;"
->> +		"1: ;"
->> +		: : : "memory", "r0");
->> +	/* If we reach here, we've passed.  Otherwise we've probably crashed
->> +	 * the kernel */
-> The transaction inside the parent process will abort. What
-> is expected inside the child process ? Why should the kernel
-> crash ?
->
+Signed-off-by: Geyslan G. Bem <geyslan@gmail.com>
+---
+ arch/powerpc/kvm/book3s_64_mmu.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
+index 774a253..9bf7031 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu.c
++++ b/arch/powerpc/kvm/book3s_64_mmu.c
+@@ -377,15 +377,12 @@ no_seg_found:
+ 
+ static void kvmppc_mmu_book3s_64_slbmte(struct kvm_vcpu *vcpu, u64 rs, u64 rb)
+ {
+-	struct kvmppc_vcpu_book3s *vcpu_book3s;
+ 	u64 esid, esid_1t;
+ 	int slb_nr;
+ 	struct kvmppc_slb *slbe;
+ 
+ 	dprintk("KVM MMU: slbmte(0x%llx, 0x%llx)\n", rs, rb);
+ 
+-	vcpu_book3s = to_book3s(vcpu);
+-
+ 	esid = GET_ESID(rb);
+ 	esid_1t = GET_ESID_1T(rb);
+ 	slb_nr = rb & 0xfff;
+-- 
+2.6.2
