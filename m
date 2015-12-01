@@ -1,20 +1,37 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id D7D1C1A0295
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 12:35:45 +1100 (AEDT)
-Date: Mon, 30 Nov 2015 19:35:41 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- bhelgaas@google.com, mpe@ellerman.id.au, paulus@samba.org,
- benh@kernel.crashing.org, mst@redhat.com, shangw@linux.vnet.ibm.com
-Subject: Re: [PATCH] Enable MSI/MSI-X caps and disable MSI interrupts at PCI
- probe time - code move
-Message-ID: <20151201013540.GB9306@localhost>
-References: <1445437055-7017-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1445437055-7017-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 68BC51A0707
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 13:57:27 +1100 (AEDT)
+Received: from localhost
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Mon, 30 Nov 2015 19:57:25 -0700
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 1FF35C90058
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 21:45:32 -0500 (EST)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tB12vM5016449576
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 02:57:22 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tB12vLqq006323
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 21:57:22 -0500
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: mingo@redhat.com, ak@linux.intel.com,
+ Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: namhyung@kernel.org, maddy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
+Subject: [PATCH v19 01/19] perf, tools: Add jsmn `jasmine' JSON parser
+Date: Mon, 30 Nov 2015 18:56:56 -0800
+Message-Id: <1448938635-29176-2-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1448938635-29176-1-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1448938635-29176-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,148 +41,653 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 21, 2015 at 12:17:35PM -0200, Guilherme G. Piccoli wrote:
-> Commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
-> doesn't support MSI") changed the location of the code that initializes
-> dev->msi_cap/msix_cap and disables MSI/MSI-X interrupts at PCI probe
-> time in devices that have this flag set. It moved the code from
-> pci_msi_init_pci_dev() to a new function named pci_msi_setup_pci_dev(),
-> called by pci_setup_device().
-> 
-> In Open Firmware code path (PowerPC pSeries/SPARC archs) the function
-> pci_setup_device() is not called, so MSI capabilities are never enabled,
-> leading to error messages as:
-> 
-> 	bnx2x 0000:01:00.0: no msix capability found
-> 
-> Commit 4d9aac397a5d ("powerpc/PCI: Disable MSI/MSI-X interrupts at PCI
-> probe time in OF case") solved the issue on PowerPC pSeries arch calling
-> manually pci_msi_setup_pci_dev() on appropriate place. However, this
-> modification does not solve the general case (SPARC arch should be
-> modified too) and duplicates a lot of code, as pointed by Bjorn Helgaas.
-> As suggested by him, worth to reorganize the code to generally solve the
-> MSI caps issue and avoid too much code duplication.
-> 
-> This patch does exactly this: we remove both the pci_msi_setup_pci_dev()
-> call from pci_setup_device() and the same call in OF code path of PowerPC
-> pSeries arch. Then, we call pci_msi_setup_pci_dev() directly from
-> pci_init_capabilities(). So, we can initialize MSI caps and disable MSI
-> interruptions during PCI probe in general fashion, avoiding code
-> duplication.
-> 
-> Notice that this patch has the same practical effect of reverting
-> commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
-> doesn't support MSI") and commit 4d9aac397a5d ("powerpc/PCI: Disable
-> MSI/MSI-X interrupts at PCI probe time in OF case"). Regarding the
-> former, the author called pci_msi_setup_pci_dev() from pci_setup_device()
-> because there was an early quirk used in pci_msi_off(), which depended on
-> pci_msi_setup_pci_dev(). Since pci_msi_off() was completely removed by
-> commit c6201cd8513d ("PCI/MSI: Remove unused pci_msi_off()"), we can call
-> pci_msi_setup_pci_dev() directly from pci_init_capabilities().
-> 
-> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+From: Andi Kleen <ak@linux.intel.com>
 
-Thanks for your patience, Guilherme.
+I need a JSON parser. This adds the simplest JSON
+parser I could find -- Serge Zaitsev's jsmn `jasmine' --
+to the perf library. I merely converted it to (mostly)
+Linux style and added support for non 0 terminated input.
 
-I applied this to pci/msi for v4.5.  I reworked the changelog and made
-pci_msi_setup_pci_dev() static, since I think it's now only called
-from drivers/pci/probe.c.
+The parser is quite straight forward and does not
+copy any data, just returns tokens with offsets
+into the input buffer. So it's relatively efficient
+and simple to use.
 
-I didn't quite follow the last paragraph about reverting 1851617cd2da.
-1851617cd2da moved the MSI init (dev->msi_cap init and MSI disable)
-from pci/msi.c (where it was only done when CONFIG_PCI_MSI=y) to
-pci/probe.c (where we did it for all non-OF arches, regardless of
-CONFIG_PCI_MSI).  So I would characterize this patch as doing the MSI
-init for *all* arches, regardless of CONFIG_PCI_MSI.
+The code is not fully checkpatch clean, but I didn't
+want to completely fork the upstream code.
 
-While looking at this, I noticed that pci_msi_init_pci_dev() is now
-always empty, so I'll remove that in a separate patch.
+Original source: http://zserge.bitbucket.org/jsmn.html
 
-Please let me know if this doesn't make sense:
+In addition I added a simple wrapper that mmaps a json
+file and provides some straight forward access functions.
 
+Used in follow-on patches to parse event files.
 
-commit e80e7edc55ba711f3fe23975061b3f1c336ceb95
-Author: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-Date:   Wed Oct 21 12:17:35 2015 -0200
+Acked-by: Namhyung Kim <namhyung@kernel.org>
+Acked-by: Jiri Olsa <jolsa@redhat.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+v2: Address review feedback.
+v3: Minor checkpatch fixes.
+v4 (by Sukadev Bhattiprolu)
+	- Rebase to 4.0 and fix minor conflicts in tools/perf/Makefile.perf
+	- Report error if specified events file is invalid.
+v5 (Sukadev Bhattiprolu)
+	- Move files to tools/perf/pmu-events/ since parsing of JSON file
+	now occurs when _building_ rather than running perf.
+---
+ tools/perf/pmu-events/jsmn.c | 313 +++++++++++++++++++++++++++++++++++++++++++
+ tools/perf/pmu-events/jsmn.h |  67 +++++++++
+ tools/perf/pmu-events/json.c | 162 ++++++++++++++++++++++
+ tools/perf/pmu-events/json.h |  36 +++++
+ 4 files changed, 578 insertions(+)
+ create mode 100644 tools/perf/pmu-events/jsmn.c
+ create mode 100644 tools/perf/pmu-events/jsmn.h
+ create mode 100644 tools/perf/pmu-events/json.c
+ create mode 100644 tools/perf/pmu-events/json.h
 
-    PCI/MSI: Initialize MSI capability for all architectures
-    
-    1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel doesn't
-    support MSI") moved dev->msi_cap and dev->msix_cap initialization from the
-    pci_init_capabilities() path (used on all architectures) to the
-    pci_setup_device() path (not used on Open Firmware architectures).
-    
-    This broke MSI or MSI-X on Open Firmware machines.  4d9aac397a5d
-    ("powerpc/PCI: Disable MSI/MSI-X interrupts at PCI probe time in OF case")
-    fixed it for PowerPC but not for SPARC.
-    
-    Set up MSI and MSI-X (initialize msi_cap and msix_cap and disable MSI and
-    MSI-X) in pci_init_capabilities() so all architectures do it the same way.
-    
-    This reverts 4d9aac397a5d since this patch fixes the problem generically
-    for both PowerPC and SPARC.
-    
-    [bhelgaas: changelog, make pci_msi_setup_pci_dev() static]
-    Fixes: 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel doesn't support MSI")
-    Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index 2e710c1..526ac67 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -187,9 +187,6 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
- 
- 	pci_device_add(dev, bus);
- 
--	/* Setup MSI caps & disable MSI/MSI-X interrupts */
--	pci_msi_setup_pci_dev(dev);
--
- 	return dev;
- }
- EXPORT_SYMBOL(of_create_pci_dev);
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index edb1984..cd94737 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -1145,7 +1145,7 @@ int pci_cfg_space_size(struct pci_dev *dev)
- 
- #define LEGACY_IO_RESOURCE	(IORESOURCE_IO | IORESOURCE_PCI_FIXED)
- 
--void pci_msi_setup_pci_dev(struct pci_dev *dev)
-+static void pci_msi_setup_pci_dev(struct pci_dev *dev)
- {
- 	/*
- 	 * Disable the MSI hardware to avoid screaming interrupts
-@@ -1212,8 +1212,6 @@ int pci_setup_device(struct pci_dev *dev)
- 	/* "Unknown power state" */
- 	dev->current_state = PCI_UNKNOWN;
- 
--	pci_msi_setup_pci_dev(dev);
--
- 	/* Early fixups, before probing the BARs */
- 	pci_fixup_device(pci_fixup_early, dev);
- 	/* device class may be changed after fixup */
-@@ -1606,6 +1604,9 @@ static void pci_init_capabilities(struct pci_dev *dev)
- 	/* MSI/MSI-X list */
- 	pci_msi_init_pci_dev(dev);
- 
-+	/* Setup MSI caps & disable MSI/MSI-X interrupts */
-+	pci_msi_setup_pci_dev(dev);
+diff --git a/tools/perf/pmu-events/jsmn.c b/tools/perf/pmu-events/jsmn.c
+new file mode 100644
+index 0000000..11d1fa1
+--- /dev/null
++++ b/tools/perf/pmu-events/jsmn.c
+@@ -0,0 +1,313 @@
++/*
++ * Copyright (c) 2010 Serge A. Zaitsev
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this software and associated documentation files (the "Software"), to deal
++ * in the Software without restriction, including without limitation the rights
++ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++ * copies of the Software, and to permit persons to whom the Software is
++ * furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++ * THE SOFTWARE.
++ *
++ * Slightly modified by AK to not assume 0 terminated input.
++ */
 +
- 	/* Buffers for saving PCIe and PCI-X capabilities */
- 	pci_allocate_cap_save_buffers(dev);
- 
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index e828e7b..f9f79ad 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1248,8 +1248,6 @@ struct msix_entry {
- 	u16	entry;	/* driver uses to specify entry, OS writes */
- };
- 
--void pci_msi_setup_pci_dev(struct pci_dev *dev);
--
- #ifdef CONFIG_PCI_MSI
- int pci_msi_vec_count(struct pci_dev *dev);
- void pci_msi_shutdown(struct pci_dev *dev);
++#include <stdlib.h>
++#include "jsmn.h"
++
++/*
++ * Allocates a fresh unused token from the token pool.
++ */
++static jsmntok_t *jsmn_alloc_token(jsmn_parser *parser,
++				   jsmntok_t *tokens, size_t num_tokens)
++{
++	jsmntok_t *tok;
++
++	if ((unsigned)parser->toknext >= num_tokens)
++		return NULL;
++	tok = &tokens[parser->toknext++];
++	tok->start = tok->end = -1;
++	tok->size = 0;
++	return tok;
++}
++
++/*
++ * Fills token type and boundaries.
++ */
++static void jsmn_fill_token(jsmntok_t *token, jsmntype_t type,
++			    int start, int end)
++{
++	token->type = type;
++	token->start = start;
++	token->end = end;
++	token->size = 0;
++}
++
++/*
++ * Fills next available token with JSON primitive.
++ */
++static jsmnerr_t jsmn_parse_primitive(jsmn_parser *parser, const char *js,
++				      size_t len,
++				      jsmntok_t *tokens, size_t num_tokens)
++{
++	jsmntok_t *token;
++	int start;
++
++	start = parser->pos;
++
++	for (; parser->pos < len; parser->pos++) {
++		switch (js[parser->pos]) {
++#ifndef JSMN_STRICT
++		/*
++		 * In strict mode primitive must be followed by ","
++		 * or "}" or "]"
++		 */
++		case ':':
++#endif
++		case '\t':
++		case '\r':
++		case '\n':
++		case ' ':
++		case ',':
++		case ']':
++		case '}':
++			goto found;
++		default:
++			break;
++		}
++		if (js[parser->pos] < 32 || js[parser->pos] >= 127) {
++			parser->pos = start;
++			return JSMN_ERROR_INVAL;
++		}
++	}
++#ifdef JSMN_STRICT
++	/*
++	 * In strict mode primitive must be followed by a
++	 * comma/object/array.
++	 */
++	parser->pos = start;
++	return JSMN_ERROR_PART;
++#endif
++
++found:
++	token = jsmn_alloc_token(parser, tokens, num_tokens);
++	if (token == NULL) {
++		parser->pos = start;
++		return JSMN_ERROR_NOMEM;
++	}
++	jsmn_fill_token(token, JSMN_PRIMITIVE, start, parser->pos);
++	parser->pos--; /* parent sees closing brackets */
++	return JSMN_SUCCESS;
++}
++
++/*
++ * Fills next token with JSON string.
++ */
++static jsmnerr_t jsmn_parse_string(jsmn_parser *parser, const char *js,
++				   size_t len,
++				   jsmntok_t *tokens, size_t num_tokens)
++{
++	jsmntok_t *token;
++	int start = parser->pos;
++
++	/* Skip starting quote */
++	parser->pos++;
++
++	for (; parser->pos < len; parser->pos++) {
++		char c = js[parser->pos];
++
++		/* Quote: end of string */
++		if (c == '\"') {
++			token = jsmn_alloc_token(parser, tokens, num_tokens);
++			if (token == NULL) {
++				parser->pos = start;
++				return JSMN_ERROR_NOMEM;
++			}
++			jsmn_fill_token(token, JSMN_STRING, start+1,
++					parser->pos);
++			return JSMN_SUCCESS;
++		}
++
++		/* Backslash: Quoted symbol expected */
++		if (c == '\\') {
++			parser->pos++;
++			switch (js[parser->pos]) {
++				/* Allowed escaped symbols */
++			case '\"':
++			case '/':
++			case '\\':
++			case 'b':
++			case 'f':
++			case 'r':
++			case 'n':
++			case 't':
++				break;
++				/* Allows escaped symbol \uXXXX */
++			case 'u':
++				/* TODO */
++				break;
++				/* Unexpected symbol */
++			default:
++				parser->pos = start;
++				return JSMN_ERROR_INVAL;
++			}
++		}
++	}
++	parser->pos = start;
++	return JSMN_ERROR_PART;
++}
++
++/*
++ * Parse JSON string and fill tokens.
++ */
++jsmnerr_t jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
++		     jsmntok_t *tokens, unsigned int num_tokens)
++{
++	jsmnerr_t r;
++	int i;
++	jsmntok_t *token;
++
++	for (; parser->pos < len; parser->pos++) {
++		char c;
++		jsmntype_t type;
++
++		c = js[parser->pos];
++		switch (c) {
++		case '{':
++		case '[':
++			token = jsmn_alloc_token(parser, tokens, num_tokens);
++			if (token == NULL)
++				return JSMN_ERROR_NOMEM;
++			if (parser->toksuper != -1)
++				tokens[parser->toksuper].size++;
++			token->type = (c == '{' ? JSMN_OBJECT : JSMN_ARRAY);
++			token->start = parser->pos;
++			parser->toksuper = parser->toknext - 1;
++			break;
++		case '}':
++		case ']':
++			type = (c == '}' ? JSMN_OBJECT : JSMN_ARRAY);
++			for (i = parser->toknext - 1; i >= 0; i--) {
++				token = &tokens[i];
++				if (token->start != -1 && token->end == -1) {
++					if (token->type != type)
++						return JSMN_ERROR_INVAL;
++					parser->toksuper = -1;
++					token->end = parser->pos + 1;
++					break;
++				}
++			}
++			/* Error if unmatched closing bracket */
++			if (i == -1)
++				return JSMN_ERROR_INVAL;
++			for (; i >= 0; i--) {
++				token = &tokens[i];
++				if (token->start != -1 && token->end == -1) {
++					parser->toksuper = i;
++					break;
++				}
++			}
++			break;
++		case '\"':
++			r = jsmn_parse_string(parser, js, len, tokens,
++					      num_tokens);
++			if (r < 0)
++				return r;
++			if (parser->toksuper != -1)
++				tokens[parser->toksuper].size++;
++			break;
++		case '\t':
++		case '\r':
++		case '\n':
++		case ':':
++		case ',':
++		case ' ':
++			break;
++#ifdef JSMN_STRICT
++			/*
++			 * In strict mode primitives are:
++			 * numbers and booleans.
++			 */
++		case '-':
++		case '0':
++		case '1':
++		case '2':
++		case '3':
++		case '4':
++		case '5':
++		case '6':
++		case '7':
++		case '8':
++		case '9':
++		case 't':
++		case 'f':
++		case 'n':
++#else
++			/*
++			 * In non-strict mode every unquoted value
++			 * is a primitive.
++			 */
++			/*FALL THROUGH */
++		default:
++#endif
++			r = jsmn_parse_primitive(parser, js, len, tokens,
++						 num_tokens);
++			if (r < 0)
++				return r;
++			if (parser->toksuper != -1)
++				tokens[parser->toksuper].size++;
++			break;
++
++#ifdef JSMN_STRICT
++			/* Unexpected char in strict mode */
++		default:
++			return JSMN_ERROR_INVAL;
++#endif
++		}
++	}
++
++	for (i = parser->toknext - 1; i >= 0; i--) {
++		/* Unmatched opened object or array */
++		if (tokens[i].start != -1 && tokens[i].end == -1)
++			return JSMN_ERROR_PART;
++	}
++
++	return JSMN_SUCCESS;
++}
++
++/*
++ * Creates a new parser based over a given  buffer with an array of tokens
++ * available.
++ */
++void jsmn_init(jsmn_parser *parser)
++{
++	parser->pos = 0;
++	parser->toknext = 0;
++	parser->toksuper = -1;
++}
++
++const char *jsmn_strerror(jsmnerr_t err)
++{
++	switch (err) {
++	case JSMN_ERROR_NOMEM:
++		return "No enough tokens";
++	case JSMN_ERROR_INVAL:
++		return "Invalid character inside JSON string";
++	case JSMN_ERROR_PART:
++		return "The string is not a full JSON packet, more bytes expected";
++	case JSMN_SUCCESS:
++		return "Success";
++	default:
++		return "Unknown json error";
++	}
++}
+diff --git a/tools/perf/pmu-events/jsmn.h b/tools/perf/pmu-events/jsmn.h
+new file mode 100644
+index 0000000..d666b10
+--- /dev/null
++++ b/tools/perf/pmu-events/jsmn.h
+@@ -0,0 +1,67 @@
++#ifndef __JSMN_H_
++#define __JSMN_H_
++
++/*
++ * JSON type identifier. Basic types are:
++ *	o Object
++ *	o Array
++ *	o String
++ *	o Other primitive: number, boolean (true/false) or null
++ */
++typedef enum {
++	JSMN_PRIMITIVE = 0,
++	JSMN_OBJECT = 1,
++	JSMN_ARRAY = 2,
++	JSMN_STRING = 3
++} jsmntype_t;
++
++typedef enum {
++	/* Not enough tokens were provided */
++	JSMN_ERROR_NOMEM = -1,
++	/* Invalid character inside JSON string */
++	JSMN_ERROR_INVAL = -2,
++	/* The string is not a full JSON packet, more bytes expected */
++	JSMN_ERROR_PART = -3,
++	/* Everything was fine */
++	JSMN_SUCCESS = 0
++} jsmnerr_t;
++
++/*
++ * JSON token description.
++ * @param		type	type (object, array, string etc.)
++ * @param		start	start position in JSON data string
++ * @param		end		end position in JSON data string
++ */
++typedef struct {
++	jsmntype_t type;
++	int start;
++	int end;
++	int size;
++} jsmntok_t;
++
++/*
++ * JSON parser. Contains an array of token blocks available. Also stores
++ * the string being parsed now and current position in that string
++ */
++typedef struct {
++	unsigned int pos; /* offset in the JSON string */
++	int toknext; /* next token to allocate */
++	int toksuper; /* superior token node, e.g parent object or array */
++} jsmn_parser;
++
++/*
++ * Create JSON parser over an array of tokens
++ */
++void jsmn_init(jsmn_parser *parser);
++
++/*
++ * Run JSON parser. It parses a JSON data string into and array of tokens,
++ * each describing a single JSON object.
++ */
++jsmnerr_t jsmn_parse(jsmn_parser *parser, const char *js,
++		     size_t len,
++		     jsmntok_t *tokens, unsigned int num_tokens);
++
++const char *jsmn_strerror(jsmnerr_t err);
++
++#endif /* __JSMN_H_ */
+diff --git a/tools/perf/pmu-events/json.c b/tools/perf/pmu-events/json.c
+new file mode 100644
+index 0000000..87f0c4b
+--- /dev/null
++++ b/tools/perf/pmu-events/json.c
+@@ -0,0 +1,162 @@
++/* Parse JSON files using the JSMN parser. */
++
++/*
++ * Copyright (c) 2014, Intel Corporation
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *
++ * 1. Redistributions of source code must retain the above copyright notice,
++ * this list of conditions and the following disclaimer.
++ *
++ * 2. Redistributions in binary form must reproduce the above copyright
++ * notice, this list of conditions and the following disclaimer in the
++ * documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
++ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
++ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
++ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
++ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
++ * OF THE POSSIBILITY OF SUCH DAMAGE.
++*/
++
++#include <stdlib.h>
++#include <string.h>
++#include <sys/mman.h>
++#include <sys/stat.h>
++#include <sys/fcntl.h>
++#include <stdio.h>
++#include <errno.h>
++#include <unistd.h>
++#include "jsmn.h"
++#include "json.h"
++#include <linux/kernel.h>
++
++
++static char *mapfile(const char *fn, size_t *size)
++{
++	unsigned ps = sysconf(_SC_PAGESIZE);
++	struct stat st;
++	char *map = NULL;
++	int err;
++	int fd = open(fn, O_RDONLY);
++
++	if (fd < 0 && verbose && fn) {
++		pr_err("Error opening events file '%s': %s\n", fn,
++				strerror(errno));
++	}
++
++	if (fd < 0)
++		return NULL;
++	err = fstat(fd, &st);
++	if (err < 0)
++		goto out;
++	*size = st.st_size;
++	map = mmap(NULL,
++		   (st.st_size + ps - 1) & ~(ps - 1),
++		   PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
++	if (map == MAP_FAILED)
++		map = NULL;
++out:
++	close(fd);
++	return map;
++}
++
++static void unmapfile(char *map, size_t size)
++{
++	unsigned ps = sysconf(_SC_PAGESIZE);
++	munmap(map, roundup(size, ps));
++}
++
++/*
++ * Parse json file using jsmn. Return array of tokens,
++ * and mapped file. Caller needs to free array.
++ */
++jsmntok_t *parse_json(const char *fn, char **map, size_t *size, int *len)
++{
++	jsmn_parser parser;
++	jsmntok_t *tokens;
++	jsmnerr_t res;
++	unsigned sz;
++
++	*map = mapfile(fn, size);
++	if (!*map)
++		return NULL;
++	/* Heuristic */
++	sz = *size * 16;
++	tokens = malloc(sz);
++	if (!tokens)
++		goto error;
++	jsmn_init(&parser);
++	res = jsmn_parse(&parser, *map, *size, tokens,
++			 sz / sizeof(jsmntok_t));
++	if (res != JSMN_SUCCESS) {
++		pr_err("%s: json error %s\n", fn, jsmn_strerror(res));
++		goto error_free;
++	}
++	if (len)
++		*len = parser.toknext;
++	return tokens;
++error_free:
++	free(tokens);
++error:
++	unmapfile(*map, *size);
++	return NULL;
++}
++
++void free_json(char *map, size_t size, jsmntok_t *tokens)
++{
++	free(tokens);
++	unmapfile(map, size);
++}
++
++static int countchar(char *map, char c, int end)
++{
++	int i;
++	int count = 0;
++	for (i = 0; i < end; i++)
++		if (map[i] == c)
++			count++;
++	return count;
++}
++
++/* Return line number of a jsmn token */
++int json_line(char *map, jsmntok_t *t)
++{
++	return countchar(map, '\n', t->start) + 1;
++}
++
++static const char * const jsmn_types[] = {
++	[JSMN_PRIMITIVE] = "primitive",
++	[JSMN_ARRAY] = "array",
++	[JSMN_OBJECT] = "object",
++	[JSMN_STRING] = "string"
++};
++
++#define LOOKUP(a, i) ((i) < (sizeof(a)/sizeof(*(a))) ? ((a)[i]) : "?")
++
++/* Return type name of a jsmn token */
++const char *json_name(jsmntok_t *t)
++{
++	return LOOKUP(jsmn_types, t->type);
++}
++
++int json_len(jsmntok_t *t)
++{
++	return t->end - t->start;
++}
++
++/* Is string t equal to s? */
++int json_streq(char *map, jsmntok_t *t, const char *s)
++{
++	unsigned len = json_len(t);
++	return len == strlen(s) && !strncasecmp(map + t->start, s, len);
++}
+diff --git a/tools/perf/pmu-events/json.h b/tools/perf/pmu-events/json.h
+new file mode 100644
+index 0000000..6b8337e
+--- /dev/null
++++ b/tools/perf/pmu-events/json.h
+@@ -0,0 +1,36 @@
++#ifndef JSON_H
++#define JSON_H 1
++
++#include "jsmn.h"
++
++jsmntok_t *parse_json(const char *fn, char **map, size_t *size, int *len);
++void free_json(char *map, size_t size, jsmntok_t *tokens);
++int json_line(char *map, jsmntok_t *t);
++const char *json_name(jsmntok_t *t);
++int json_streq(char *map, jsmntok_t *t, const char *s);
++int json_len(jsmntok_t *t);
++
++extern int verbose;
++
++typedef unsigned int bool;
++
++#ifndef true
++#define	true 1
++#endif
++
++extern int eprintf(int level, int var, const char *fmt, ...);
++#define pr_fmt(fmt)	fmt
++
++#define pr_err(fmt, ...) \
++	eprintf(0, verbose, pr_fmt(fmt), ##__VA_ARGS__)
++
++#ifndef roundup
++#define roundup(x, y) (                                \
++{                                                      \
++        const typeof(y) __y = y;                       \
++        (((x) + (__y - 1)) / __y) * __y;               \
++}                                                      \
++)
++#endif
++
++#endif
+-- 
+1.8.3.1
