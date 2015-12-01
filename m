@@ -1,36 +1,21 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EEB901A1AD8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 14:37:25 +1100 (AEDT)
-Received: from localhost
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 1 Dec 2015 09:07:22 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 96907E0056
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 09:08:00 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB13bIqG60883138
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:18 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB13bGPb022560
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:18 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Scott Wood <scottwood@freescale.com>,
- Denis Kirjanov <kda@linux-powerpc.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V6 33/35] powerpc/nohash: we don't use real_pte_t for nohash
-Date: Tue,  1 Dec 2015 09:06:58 +0530
-Message-Id: <1448941020-15168-34-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1448941020-15168-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1448941020-15168-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E2EAD1A3177
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 14:46:25 +1100 (AEDT)
+Message-ID: <1448941585.9027.4.camel@ellerman.id.au>
+Subject: Re: [PATCH v5] powerpc/pseries: Limit EPOW reset event warnings
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Vipin K Parashar <vipin@linux.vnet.ibm.com>, Vasant Hegde
+ <hegdevasant@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Date: Tue, 01 Dec 2015 14:46:25 +1100
+In-Reply-To: <565C3A83.8080504@linux.vnet.ibm.com>
+References: <1447836157-19599-1-git-send-email-vipin@linux.vnet.ibm.com>
+ <5656CEC9.4070000@linux.vnet.ibm.com> <565C3A83.8080504@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,56 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the related functions and #defines
+On Mon, 2015-11-30 at 17:31 +0530, Vipin K Parashar wrote:
+> On Thursday 26 November 2015 02:50 PM, Vasant Hegde wrote:
+> > On 11/18/2015 02:12 PM, Vipin K Parashar wrote:
+> > > Kernel prints respective warnings about various EPOW events for
+> > > user information/action after parsing EPOW interrupts. At times
+> > > below EPOW reset event warning is seen to be flooding kernel log
+> > > over a period of time.
+> > > 
+> > > May 25 03:46:34 alp kernel: Non critical power or cooling issue cleared
+> > > May 25 03:46:52 alp kernel: Non critical power or cooling issue cleared
+> > > May 25 03:53:48 alp kernel: Non critical power or cooling issue cleared
+> > > May 25 03:55:46 alp kernel: Non critical power or cooling issue cleared
+> > > May 25 03:56:34 alp kernel: Non critical power or cooling issue cleared
+> > > May 25 03:59:04 alp kernel: Non critical power or cooling issue cleared
+> > > May 25 04:02:01 alp kernel: Non critical power or cooling issue cleared
+> > > 
+> > @Michael,
+> >   I think above log is raising some concern. We have been asked by multiple
+> > people on this. Hence I think we should avoid these duplicate messages.
+> 
+> Hi Michael,
+>           Please do let know if you have some suggestions with this patch.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/nohash/64/pgtable.h | 33 ----------------------------
- 1 file changed, 33 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index 03c226965b46..b9f734dd5b81 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -106,39 +106,6 @@
- #endif /* CONFIG_PPC_MM_SLICES */
- 
- #ifndef __ASSEMBLY__
--
--/*
-- * This is the default implementation of various PTE accessors, it's
-- * used in all cases except Book3S with 64K pages where we have a
-- * concept of sub-pages
-- */
--#ifndef __real_pte
--
--#ifdef CONFIG_STRICT_MM_TYPECHECKS
--#define __real_pte(e,p)		((real_pte_t){(e)})
--#define __rpte_to_pte(r)	((r).pte)
--#else
--#define __real_pte(e,p)		(e)
--#define __rpte_to_pte(r)	(__pte(r))
--#endif
--#define __rpte_to_hidx(r,index)	(pte_val(__rpte_to_pte(r)) >> _PAGE_F_GIX_SHIFT)
--
--#define pte_iterate_hashed_subpages(rpte, psize, va, index, shift)       \
--	do {							         \
--		index = 0;					         \
--		shift = mmu_psize_defs[psize].shift;		         \
--
--#define pte_iterate_hashed_end() } while(0)
--
--/*
-- * We expect this to be called only for user addresses or kernel virtual
-- * addresses other than the linear mapping.
-- */
--#define pte_pagesize_index(mm, addr, pte)	MMU_PAGE_4K
--
--#endif /* __real_pte */
--
--
- /* pte_clear moved to later in this file */
- 
- #define PMD_BAD_BITS		(PTE_TABLE_SIZE-1)
--- 
-2.5.0
+It seems OK to me. I actually had it in my testing tree and was about to merge
+it when Vasant replied with comments.
+
+So if you two can agree on a final patch I'll merge it.
+
+cheers
