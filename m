@@ -1,34 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DD3E91A1AC9
+ by lists.ozlabs.org (Postfix) with ESMTPS id 137271A1AB5
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 14:37:22 +1100 (AEDT)
 Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Tue, 1 Dec 2015 09:07:20 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id F1F4A125805D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 09:07:36 +0530 (IST)
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 9530B125805C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 09:07:34 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB13bIQO55902248
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:18 +0530
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tB13bGw463701188
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:16 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB13bHGi022577
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:18 +0530
+ tB13bE4l022286
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:15 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Scott Wood <scottwood@freescale.com>,
  Denis Kirjanov <kda@linux-powerpc.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V6 34/35] powerpc/mm: Use H_READ with H_READ_4
-Date: Tue,  1 Dec 2015 09:06:59 +0530
-Message-Id: <1448941020-15168-35-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V6 24/35] powerpc/mm: Convert 4k insert from asm to C
+Date: Tue,  1 Dec 2015 09:06:49 +0530
+Message-Id: <1448941020-15168-25-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1448941020-15168-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1448941020-15168-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,121 +40,563 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This will bulk read 4 hash pte slot entries and should reduce the loop
+This is similar to 64K insert. May be we want to consolidate
 
+Acked-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/plpar_wrappers.h | 17 ++++++++++
- arch/powerpc/platforms/pseries/lpar.c     | 54 +++++++++++++++----------------
- 2 files changed, 44 insertions(+), 27 deletions(-)
+ arch/powerpc/mm/Makefile        |   6 +-
+ arch/powerpc/mm/hash64_4k.c     | 139 +++++++++++++++++
+ arch/powerpc/mm/hash_low_64.S   | 331 ----------------------------------------
+ arch/powerpc/mm/hash_utils_64.c |  26 ----
+ 4 files changed, 142 insertions(+), 360 deletions(-)
+ create mode 100644 arch/powerpc/mm/hash64_4k.c
+ delete mode 100644 arch/powerpc/mm/hash_low_64.S
 
-diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
-index 67859edbf8fd..1b394247afc2 100644
---- a/arch/powerpc/include/asm/plpar_wrappers.h
-+++ b/arch/powerpc/include/asm/plpar_wrappers.h
-@@ -202,6 +202,23 @@ static inline long plpar_pte_read_raw(unsigned long flags, unsigned long ptex,
- }
- 
- /*
-+ * ptes must be 8*sizeof(unsigned long)
-+ */
-+static inline long plpar_pte_read_4(unsigned long flags, unsigned long ptex,
-+				    unsigned long *ptes)
-+
-+{
-+	long rc;
-+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
-+
-+	rc = plpar_hcall9(H_READ, retbuf, flags | H_READ_4, ptex);
-+
-+	memcpy(ptes, retbuf, 8*sizeof(unsigned long));
-+
-+	return rc;
-+}
-+
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index f80ad1a76cc8..1ffeda85c086 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -14,11 +14,11 @@ obj-$(CONFIG_PPC_MMU_NOHASH)	+= mmu_context_nohash.o tlb_nohash.o \
+ obj-$(CONFIG_PPC_BOOK3E)	+= tlb_low_$(CONFIG_WORD_SIZE)e.o
+ hash64-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
+ obj-$(CONFIG_PPC_STD_MMU_64)	+= hash_utils_64.o slb_low.o slb.o $(hash64-y)
+-obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o
+-obj-$(CONFIG_PPC_STD_MMU)	+= hash_low_$(CONFIG_WORD_SIZE).o \
+-				   tlb_hash$(CONFIG_WORD_SIZE).o \
++obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o hash_low_32.o
++obj-$(CONFIG_PPC_STD_MMU)	+= tlb_hash$(CONFIG_WORD_SIZE).o \
+ 				   mmu_context_hash$(CONFIG_WORD_SIZE).o
+ ifeq ($(CONFIG_PPC_STD_MMU_64),y)
++obj-$(CONFIG_PPC_4K_PAGES)	+= hash64_4k.o
+ obj-$(CONFIG_PPC_64K_PAGES)	+= hash64_64k.o
+ endif
+ obj-$(CONFIG_PPC_ICSWX)		+= icswx.o
+diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
+new file mode 100644
+index 000000000000..3b49c6f18741
+--- /dev/null
++++ b/arch/powerpc/mm/hash64_4k.c
+@@ -0,0 +1,139 @@
 +/*
-  * plpar_pte_read_4_raw can be called in real mode.
-  * ptes must be 8*sizeof(unsigned long)
-  */
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 6d46547871aa..477290ad855e 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -315,48 +315,48 @@ static long pSeries_lpar_hpte_updatepp(unsigned long slot,
- 	return 0;
- }
- 
--static unsigned long pSeries_lpar_hpte_getword0(unsigned long slot)
-+static long __pSeries_lpar_hpte_find(unsigned long want_v, unsigned long hpte_group)
- {
--	unsigned long dword0;
--	unsigned long lpar_rc;
--	unsigned long dummy_word1;
--	unsigned long flags;
-+	long lpar_rc;
-+	unsigned long i, j;
-+	struct {
-+		unsigned long pteh;
-+		unsigned long ptel;
-+	} ptes[4];
- 
--	/* Read 1 pte at a time                        */
--	/* Do not need RPN to logical page translation */
--	/* No cross CEC PFT access                     */
--	flags = 0;
-+	for (i = 0; i < HPTES_PER_GROUP; i += 4, hpte_group += 4) {
- 
--	lpar_rc = plpar_pte_read(flags, slot, &dword0, &dummy_word1);
-+		lpar_rc = plpar_pte_read_4(0, hpte_group, (void *)ptes);
-+		if (lpar_rc != H_SUCCESS)
-+			continue;
- 
--	BUG_ON(lpar_rc != H_SUCCESS);
-+		for (j = 0; j < 4; j++) {
-+			if (HPTE_V_COMPARE(ptes[j].pteh, want_v) &&
-+			    (ptes[j].pteh & HPTE_V_VALID))
-+				return i + j;
-+		}
-+	}
- 
--	return dword0;
-+	return -1;
- }
- 
- static long pSeries_lpar_hpte_find(unsigned long vpn, int psize, int ssize)
- {
--	unsigned long hash;
--	unsigned long i;
- 	long slot;
--	unsigned long want_v, hpte_v;
-+	unsigned long hash;
-+	unsigned long want_v;
++ * Copyright IBM Corporation, 2015
++ * Author Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of version 2 of the GNU Lesser General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it would be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++ *
++ */
++
++#include <linux/mm.h>
++#include <asm/machdep.h>
++#include <asm/mmu.h>
++
++int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
++		   pte_t *ptep, unsigned long trap, unsigned long flags,
++		   int ssize, int subpg_prot)
++{
 +	unsigned long hpte_group;
- 
- 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
- 	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 
- 	/* Bolted entries are always in the primary group */
--	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
--	for (i = 0; i < HPTES_PER_GROUP; i++) {
--		hpte_v = pSeries_lpar_hpte_getword0(slot);
--
--		if (HPTE_V_COMPARE(hpte_v, want_v) && (hpte_v & HPTE_V_VALID))
--			/* HPTE matches */
--			return slot;
--		++slot;
--	}
--
--	return -1;
--} 
-+	hpte_group = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-+	slot = __pSeries_lpar_hpte_find(want_v, hpte_group);
-+	if (slot < 0)
-+		return -1;
-+	return hpte_group + slot;
++	unsigned long rflags, pa;
++	unsigned long old_pte, new_pte;
++	unsigned long vpn, hash, slot;
++	unsigned long shift = mmu_psize_defs[MMU_PAGE_4K].shift;
++
++	/*
++	 * atomically mark the linux large page PTE busy and dirty
++	 */
++	do {
++		pte_t pte = READ_ONCE(*ptep);
++
++		old_pte = pte_val(pte);
++		/* If PTE busy, retry the access */
++		if (unlikely(old_pte & _PAGE_BUSY))
++			return 0;
++		/* If PTE permissions don't match, take page fault */
++		if (unlikely(access & ~old_pte))
++			return 1;
++		/*
++		 * Try to lock the PTE, add ACCESSED and DIRTY if it was
++		 * a write access. Since this is 4K insert of 64K page size
++		 * also add _PAGE_COMBO
++		 */
++		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED | _PAGE_HASHPTE;
++		if (access & _PAGE_RW)
++			new_pte |= _PAGE_DIRTY;
++	} while (old_pte != __cmpxchg_u64((unsigned long *)ptep,
++					  old_pte, new_pte));
++	/*
++	 * PP bits. _PAGE_USER is already PP bit 0x2, so we only
++	 * need to add in 0x1 if it's a read-only user page
++	 */
++	rflags = new_pte & _PAGE_USER;
++	if ((new_pte & _PAGE_USER) && !((new_pte & _PAGE_RW) &&
++					(new_pte & _PAGE_DIRTY)))
++		rflags |= 0x1;
++	/*
++	 * _PAGE_EXEC -> HW_NO_EXEC since it's inverted
++	 */
++	rflags |= ((new_pte & _PAGE_EXEC) ? 0 : HPTE_R_N);
++	/*
++	 * Always add C and Memory coherence bit
++	 */
++	rflags |= HPTE_R_C | HPTE_R_M;
++	/*
++	 * Add in WIMG bits
++	 */
++	rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
++				_PAGE_COHERENT | _PAGE_GUARDED));
++
++	if (!cpu_has_feature(CPU_FTR_NOEXECUTE) &&
++	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
++		rflags = hash_page_do_lazy_icache(rflags, __pte(old_pte), trap);
++
++	vpn  = hpt_vpn(ea, vsid, ssize);
++	if (unlikely(old_pte & _PAGE_HASHPTE)) {
++		/*
++		 * There MIGHT be an HPTE for this pte
++		 */
++		hash = hpt_hash(vpn, shift, ssize);
++		if (old_pte & _PAGE_F_SECOND)
++			hash = ~hash;
++		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
++		slot += (old_pte & _PAGE_F_GIX) >> _PAGE_F_GIX_SHIFT;
++
++		if (ppc_md.hpte_updatepp(slot, rflags, vpn, MMU_PAGE_4K,
++					 MMU_PAGE_4K, ssize, flags) == -1)
++			old_pte &= ~_PAGE_HPTEFLAGS;
++	}
++
++	if (likely(!(old_pte & _PAGE_HASHPTE))) {
++
++		pa = pte_pfn(__pte(old_pte)) << PAGE_SHIFT;
++		hash = hpt_hash(vpn, shift, ssize);
++
++repeat:
++		hpte_group = ((hash & htab_hash_mask) * HPTES_PER_GROUP) & ~0x7UL;
++
++		/* Insert into the hash table, primary slot */
++		slot = ppc_md.hpte_insert(hpte_group, vpn, pa, rflags, 0,
++				  MMU_PAGE_4K, MMU_PAGE_4K, ssize);
++		/*
++		 * Primary is full, try the secondary
++		 */
++		if (unlikely(slot == -1)) {
++			hpte_group = ((~hash & htab_hash_mask) * HPTES_PER_GROUP) & ~0x7UL;
++			slot = ppc_md.hpte_insert(hpte_group, vpn, pa,
++						  rflags, HPTE_V_SECONDARY,
++						  MMU_PAGE_4K, MMU_PAGE_4K, ssize);
++			if (slot == -1) {
++				if (mftb() & 0x1)
++					hpte_group = ((hash & htab_hash_mask) *
++						      HPTES_PER_GROUP) & ~0x7UL;
++				ppc_md.hpte_remove(hpte_group);
++				/*
++				 * FIXME!! Should be try the group from which we removed ?
++				 */
++				goto repeat;
++			}
++		}
++		/*
++		 * Hypervisor failure. Restore old pmd and return -1
++		 * similar to __hash_page_*
++		 */
++		if (unlikely(slot == -2)) {
++			*ptep = __pte(old_pte);
++			hash_failure_debug(ea, access, vsid, trap, ssize,
++					   MMU_PAGE_4K, MMU_PAGE_4K, old_pte);
++			return -1;
++		}
++		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HASHPTE;
++		new_pte |= (slot << _PAGE_F_GIX_SHIFT) & (_PAGE_F_SECOND | _PAGE_F_GIX);
++	}
++	*ptep = __pte(new_pte & ~_PAGE_BUSY);
++	return 0;
 +}
+diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
+deleted file mode 100644
+index f7d49cf0ccb7..000000000000
+--- a/arch/powerpc/mm/hash_low_64.S
++++ /dev/null
+@@ -1,331 +0,0 @@
+-/*
+- * ppc64 MMU hashtable management routines
+- *
+- * (c) Copyright IBM Corp. 2003, 2005
+- *
+- * Maintained by: Benjamin Herrenschmidt
+- *                <benh@kernel.crashing.org>
+- *
+- * This file is covered by the GNU Public Licence v2 as
+- * described in the kernel's COPYING file.
+- */
+-
+-#include <asm/reg.h>
+-#include <asm/pgtable.h>
+-#include <asm/mmu.h>
+-#include <asm/page.h>
+-#include <asm/types.h>
+-#include <asm/ppc_asm.h>
+-#include <asm/asm-offsets.h>
+-#include <asm/cputable.h>
+-
+-	.text
+-
+-/*
+- * Stackframe:
+- *		
+- *         +-> Back chain			(SP + 256)
+- *         |   General register save area	(SP + 112)
+- *         |   Parameter save area		(SP + 48)
+- *         |   TOC save area			(SP + 40)
+- *         |   link editor doubleword		(SP + 32)
+- *         |   compiler doubleword		(SP + 24)
+- *         |   LR save area			(SP + 16)
+- *         |   CR save area			(SP + 8)
+- * SP ---> +-- Back chain			(SP + 0)
+- */
+-
+-#ifndef CONFIG_PPC_64K_PAGES
+-
+-/*****************************************************************************
+- *                                                                           *
+- *           4K SW & 4K HW pages implementation                              *
+- *                                                                           *
+- *****************************************************************************/
+-
+-
+-/*
+- * _hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+- *		 pte_t *ptep, unsigned long trap, unsigned long flags,
+- *		 int ssize)
+- *
+- * Adds a 4K page to the hash table in a segment of 4K pages only
+- */
+-
+-_GLOBAL(__hash_page_4K)
+-	mflr	r0
+-	std	r0,16(r1)
+-	stdu	r1,-STACKFRAMESIZE(r1)
+-	/* Save all params that we need after a function call */
+-	std	r6,STK_PARAM(R6)(r1)
+-	std	r8,STK_PARAM(R8)(r1)
+-	std	r9,STK_PARAM(R9)(r1)
+-	
+-	/* Save non-volatile registers.
+-	 * r31 will hold "old PTE"
+-	 * r30 is "new PTE"
+-	 * r29 is vpn
+-	 * r28 is a hash value
+-	 * r27 is hashtab mask (maybe dynamic patched instead ?)
+-	 */
+-	std	r27,STK_REG(R27)(r1)
+-	std	r28,STK_REG(R28)(r1)
+-	std	r29,STK_REG(R29)(r1)
+-	std	r30,STK_REG(R30)(r1)
+-	std	r31,STK_REG(R31)(r1)
+-	
+-	/* Step 1:
+-	 *
+-	 * Check permissions, atomically mark the linux PTE busy
+-	 * and hashed.
+-	 */ 
+-1:
+-	ldarx	r31,0,r6
+-	/* Check access rights (access & ~(pte_val(*ptep))) */
+-	andc.	r0,r4,r31
+-	bne-	htab_wrong_access
+-	/* Check if PTE is busy */
+-	andi.	r0,r31,_PAGE_BUSY
+-	/* If so, just bail out and refault if needed. Someone else
+-	 * is changing this PTE anyway and might hash it.
+-	 */
+-	bne-	htab_bail_ok
+-
+-	/* Prepare new PTE value (turn access RW into DIRTY, then
+-	 * add BUSY,HASHPTE and ACCESSED)
+-	 */
+-	rlwinm	r30,r4,32-9+7,31-7,31-7	/* _PAGE_RW -> _PAGE_DIRTY */
+-	or	r30,r30,r31
+-	ori	r30,r30,_PAGE_BUSY | _PAGE_ACCESSED | _PAGE_HASHPTE
+-	/* Write the linux PTE atomically (setting busy) */
+-	stdcx.	r30,0,r6
+-	bne-	1b
+-	isync
+-
+-	/* Step 2:
+-	 *
+-	 * Insert/Update the HPTE in the hash table. At this point,
+-	 * r4 (access) is re-useable, we use it for the new HPTE flags
+-	 */
+-
+-BEGIN_FTR_SECTION
+-	cmpdi	r9,0			/* check segment size */
+-	bne	3f
+-END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+-	/* Calc vpn and put it in r29 */
+-	sldi	r29,r5,SID_SHIFT - VPN_SHIFT
+-	rldicl  r28,r3,64 - VPN_SHIFT,64 - (SID_SHIFT - VPN_SHIFT)
+-	or	r29,r28,r29
+-	/*
+-	 * Calculate hash value for primary slot and store it in r28
+-	 * r3 = va, r5 = vsid
+-	 * r0 = (va >> 12) & ((1ul << (28 - 12)) -1)
+-	 */
+-	rldicl	r0,r3,64-12,48
+-	xor	r28,r5,r0		/* hash */
+-	b	4f
+-
+-3:	/* Calc vpn and put it in r29 */
+-	sldi	r29,r5,SID_SHIFT_1T - VPN_SHIFT
+-	rldicl  r28,r3,64 - VPN_SHIFT,64 - (SID_SHIFT_1T - VPN_SHIFT)
+-	or	r29,r28,r29
+-
+-	/*
+-	 * calculate hash value for primary slot and
+-	 * store it in r28 for 1T segment
+-	 * r3 = va, r5 = vsid
+-	 */
+-	sldi	r28,r5,25		/* vsid << 25 */
+-	/* r0 =  (va >> 12) & ((1ul << (40 - 12)) -1) */
+-	rldicl	r0,r3,64-12,36
+-	xor	r28,r28,r5		/* vsid ^ ( vsid << 25) */
+-	xor	r28,r28,r0		/* hash */
+-
+-	/* Convert linux PTE bits into HW equivalents */
+-4:	andi.	r3,r30,0x1fe		/* Get basic set of flags */
+-	xori	r3,r3,HPTE_R_N		/* _PAGE_EXEC -> NOEXEC */
+-	rlwinm	r0,r30,32-9+1,30,30	/* _PAGE_RW -> _PAGE_USER (r0) */
+-	rlwinm	r4,r30,32-7+1,30,30	/* _PAGE_DIRTY -> _PAGE_USER (r4) */
+-	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
+-	andc	r0,r30,r0		/* r0 = pte & ~r0 */
+-	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
+-	/*
+-	 * Always add "C" bit for perf. Memory coherence is always enabled
+-	 */
+-	ori	r3,r3,HPTE_R_C | HPTE_R_M
+-
+-	/* We eventually do the icache sync here (maybe inline that
+-	 * code rather than call a C function...) 
+-	 */
+-BEGIN_FTR_SECTION
+-	mr	r4,r30
+-	mr	r5,r7
+-	bl	hash_page_do_lazy_icache
+-END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FTR_COHERENT_ICACHE, CPU_FTR_NOEXECUTE)
+-
+-	/* At this point, r3 contains new PP bits, save them in
+-	 * place of "access" in the param area (sic)
+-	 */
+-	std	r3,STK_PARAM(R4)(r1)
+-
+-	/* Get htab_hash_mask */
+-	ld	r4,htab_hash_mask@got(2)
+-	ld	r27,0(r4)	/* htab_hash_mask -> r27 */
+-
+-	/* Check if we may already be in the hashtable, in this case, we
+-	 * go to out-of-line code to try to modify the HPTE
+-	 */
+-	andi.	r0,r31,_PAGE_HASHPTE
+-	bne	htab_modify_pte
+-
+-htab_insert_pte:
+-	/* Clear hpte bits in new pte (we also clear BUSY btw) and
+-	 * add _PAGE_HASHPTE
+-	 */
+-	lis	r0,_PAGE_HPTEFLAGS@h
+-	ori	r0,r0,_PAGE_HPTEFLAGS@l
+-	andc	r30,r30,r0
+-	ori	r30,r30,_PAGE_HASHPTE
+-
+-	/* physical address r5 */
+-	rldicl	r5,r31,64-PTE_RPN_SHIFT,PTE_RPN_SHIFT
+-	sldi	r5,r5,PAGE_SHIFT
+-
+-	/* Calculate primary group hash */
+-	and	r0,r28,r27
+-	rldicr	r3,r0,3,63-3		/* r3 = (hash & mask) << 3 */
+-
+-	/* Call ppc_md.hpte_insert */
+-	ld	r6,STK_PARAM(R4)(r1)	/* Retrieve new pp bits */
+-	mr	r4,r29			/* Retrieve vpn */
+-	li	r7,0			/* !bolted, !secondary */
+-	li	r8,MMU_PAGE_4K		/* page size */
+-	li	r9,MMU_PAGE_4K		/* actual page size */
+-	ld	r10,STK_PARAM(R9)(r1)	/* segment size */
+-.globl htab_call_hpte_insert1
+-htab_call_hpte_insert1:
+-	bl	.			/* Patched by htab_finish_init() */
+-	cmpdi	0,r3,0
+-	bge	htab_pte_insert_ok	/* Insertion successful */
+-	cmpdi	0,r3,-2			/* Critical failure */
+-	beq-	htab_pte_insert_failure
+-
+-	/* Now try secondary slot */
+-	
+-	/* physical address r5 */
+-	rldicl	r5,r31,64-PTE_RPN_SHIFT,PTE_RPN_SHIFT
+-	sldi	r5,r5,PAGE_SHIFT
+-
+-	/* Calculate secondary group hash */
+-	andc	r0,r27,r28
+-	rldicr	r3,r0,3,63-3	/* r0 = (~hash & mask) << 3 */
+-	
+-	/* Call ppc_md.hpte_insert */
+-	ld	r6,STK_PARAM(R4)(r1)	/* Retrieve new pp bits */
+-	mr	r4,r29			/* Retrieve vpn */
+-	li	r7,HPTE_V_SECONDARY	/* !bolted, secondary */
+-	li	r8,MMU_PAGE_4K		/* page size */
+-	li	r9,MMU_PAGE_4K		/* actual page size */
+-	ld	r10,STK_PARAM(R9)(r1)	/* segment size */
+-.globl htab_call_hpte_insert2
+-htab_call_hpte_insert2:
+-	bl	.			/* Patched by htab_finish_init() */
+-	cmpdi	0,r3,0
+-	bge+	htab_pte_insert_ok	/* Insertion successful */
+-	cmpdi	0,r3,-2			/* Critical failure */
+-	beq-	htab_pte_insert_failure
+-
+-	/* Both are full, we need to evict something */
+-	mftb	r0
+-	/* Pick a random group based on TB */
+-	andi.	r0,r0,1
+-	mr	r5,r28
+-	bne	2f
+-	not	r5,r5
+-2:	and	r0,r5,r27
+-	rldicr	r3,r0,3,63-3	/* r0 = (hash & mask) << 3 */	
+-	/* Call ppc_md.hpte_remove */
+-.globl htab_call_hpte_remove
+-htab_call_hpte_remove:
+-	bl	.			/* Patched by htab_finish_init() */
+-
+-	/* Try all again */
+-	b	htab_insert_pte	
+-
+-htab_bail_ok:
+-	li	r3,0
+-	b	htab_bail
+-
+-htab_pte_insert_ok:
+-	/* Insert slot number & secondary bit in PTE */
+-	rldimi	r30,r3,12,63-15
+-		
+-	/* Write out the PTE with a normal write
+-	 * (maybe add eieio may be good still ?)
+-	 */
+-htab_write_out_pte:
+-	ld	r6,STK_PARAM(R6)(r1)
+-	std	r30,0(r6)
+-	li	r3, 0
+-htab_bail:
+-	ld	r27,STK_REG(R27)(r1)
+-	ld	r28,STK_REG(R28)(r1)
+-	ld	r29,STK_REG(R29)(r1)
+-	ld      r30,STK_REG(R30)(r1)
+-	ld      r31,STK_REG(R31)(r1)
+-	addi    r1,r1,STACKFRAMESIZE
+-	ld      r0,16(r1)
+-	mtlr    r0
+-	blr
+-
+-htab_modify_pte:
+-	/* Keep PP bits in r4 and slot idx from the PTE around in r3 */
+-	mr	r4,r3
+-	rlwinm	r3,r31,32-12,29,31
+-
+-	/* Secondary group ? if yes, get a inverted hash value */
+-	mr	r5,r28
+-	andi.	r0,r31,_PAGE_F_SECOND
+-	beq	1f
+-	not	r5,r5
+-1:
+-	/* Calculate proper slot value for ppc_md.hpte_updatepp */
+-	and	r0,r5,r27
+-	rldicr	r0,r0,3,63-3	/* r0 = (hash & mask) << 3 */
+-	add	r3,r0,r3	/* add slot idx */
+-
+-	/* Call ppc_md.hpte_updatepp */
+-	mr	r5,r29			/* vpn */
+-	li	r6,MMU_PAGE_4K		/* base page size */
+-	li	r7,MMU_PAGE_4K		/* actual page size */
+-	ld	r8,STK_PARAM(R9)(r1)	/* segment size */
+-	ld	r9,STK_PARAM(R8)(r1)	/* get "flags" param */
+-.globl htab_call_hpte_updatepp
+-htab_call_hpte_updatepp:
+-	bl	.			/* Patched by htab_finish_init() */
+-
+-	/* if we failed because typically the HPTE wasn't really here
+-	 * we try an insertion. 
+-	 */
+-	cmpdi	0,r3,-1
+-	beq-	htab_insert_pte
+-
+-	/* Clear the BUSY bit and Write out the PTE */
+-	li	r0,_PAGE_BUSY
+-	andc	r30,r30,r0
+-	b	htab_write_out_pte
+-
+-htab_wrong_access:
+-	/* Bail out clearing reservation */
+-	stdcx.	r31,0,r6
+-	li	r3,1
+-	b	htab_bail
+-
+-htab_pte_insert_failure:
+-	/* Bail out restoring old PTE */
+-	ld	r6,STK_PARAM(R6)(r1)
+-	std	r31,0(r6)
+-	li	r3,-1
+-	b	htab_bail
+-
+-#endif
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 60ad15d76052..04d549527eaa 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -629,31 +629,6 @@ int remove_section_mapping(unsigned long start, unsigned long end)
+ }
+ #endif /* CONFIG_MEMORY_HOTPLUG */
  
- static void pSeries_lpar_hpte_updateboltedpp(unsigned long newpp,
- 					     unsigned long ea,
+-extern u32 htab_call_hpte_insert1[];
+-extern u32 htab_call_hpte_insert2[];
+-extern u32 htab_call_hpte_remove[];
+-extern u32 htab_call_hpte_updatepp[];
+-
+-static void __init htab_finish_init(void)
+-{
+-
+-#ifdef CONFIG_PPC_4K_PAGES
+-	patch_branch(htab_call_hpte_insert1,
+-		ppc_function_entry(ppc_md.hpte_insert),
+-		BRANCH_SET_LINK);
+-	patch_branch(htab_call_hpte_insert2,
+-		ppc_function_entry(ppc_md.hpte_insert),
+-		BRANCH_SET_LINK);
+-	patch_branch(htab_call_hpte_remove,
+-		ppc_function_entry(ppc_md.hpte_remove),
+-		BRANCH_SET_LINK);
+-	patch_branch(htab_call_hpte_updatepp,
+-		ppc_function_entry(ppc_md.hpte_updatepp),
+-		BRANCH_SET_LINK);
+-#endif
+-
+-}
+-
+ static void __init htab_initialize(void)
+ {
+ 	unsigned long table;
+@@ -800,7 +775,6 @@ static void __init htab_initialize(void)
+ 					 mmu_linear_psize, mmu_kernel_ssize));
+ 	}
+ 
+-	htab_finish_init();
+ 
+ 	DBG(" <- htab_initialize()\n");
+ }
 -- 
 2.5.0
