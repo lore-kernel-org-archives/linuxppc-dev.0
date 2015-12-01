@@ -1,38 +1,22 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E08861A09AE
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 13:57:49 +1100 (AEDT)
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 30 Nov 2015 21:57:47 -0500
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 3320F38C8039
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 21:57:44 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB12visj20250858
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 02:57:44 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB12vhl8007437
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 21:57:43 -0500
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: mingo@redhat.com, ak@linux.intel.com,
- Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: namhyung@kernel.org, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v19 19/19] perf, tools,
- pmu-events: Add Skylake frontend MSR support
-Date: Mon, 30 Nov 2015 18:57:14 -0800
-Message-Id: <1448938635-29176-20-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1448938635-29176-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1448938635-29176-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 18ECA1A0CAC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 14:35:35 +1100 (AEDT)
+Message-ID: <1448940934.9027.2.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/cell: Remove the Cell QPACE code.
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thomas Huth <thuth@redhat.com>, Rashmica Gupta <rashmicy@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: ben@codiert.org, Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 01 Dec 2015 14:35:34 +1100
+In-Reply-To: <5656FD6D.2020607@redhat.com>
+References: <1448499587-25604-1-git-send-email-rashmicy@gmail.com>
+ <5656E334.1060506@redhat.com> <1448539743.22295.14.camel@ellerman.id.au>
+ <5656FD6D.2020607@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,27 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andi Kleen <ak@linux.intel.com>
+On Thu, 2015-11-26 at 13:39 +0100, Thomas Huth wrote:
+> On 26/11/15 13:09, Michael Ellerman wrote:
+> > On Thu, 2015-11-26 at 11:47 +0100, Thomas Huth wrote:
+> > > On 26/11/15 01:59, Rashmica Gupta wrote:
+> > > > All users of QPACE have upgraded to QPACE2 so remove the Cell QPACE code.
+> > > > 
+> > > > Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+> > > > ---
+> > > >  arch/powerpc/boot/Makefile                |   2 -
+> > > >  arch/powerpc/configs/ppc64_defconfig      |   1 -
+> > > >  arch/powerpc/platforms/cell/Kconfig       |   5 -
+> > > >  arch/powerpc/platforms/cell/Makefile      |   3 -
+> > > >  arch/powerpc/platforms/cell/qpace_setup.c | 148 ------------------------------
+> > > >  5 files changed, 159 deletions(-)
+> > > >  delete mode 100644 arch/powerpc/platforms/cell/qpace_setup.c
+> > > 
+> > > There one more reference to qpace in the file
+> > >  Documentation/devicetree/bindings/serial/8250.txt
+> > > ... you might want to remove that, too.
+> > 
+> > There's also one in drivers/tty/serial/of_serial.c.
+> > 
+> > Arnd said he already had a patch to remove those, not sure if he's sent it
+> > though.
+> 
+> He apparently did:
+> 
+>  https://lkml.org/lkml/2015/11/16/454
+> 
+> So the change to the file in Documentation should ideally go also into
+> his patch instead, I think.
 
-Add support for the "frontend" extra MSR on Skylake in the JSON
-conversion.
+Ah thanks for checking.
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
----
- tools/perf/pmu-events/jevents.c | 1 +
- 1 file changed, 1 insertion(+)
+OK agreed.
 
-diff --git a/tools/perf/pmu-events/jevents.c b/tools/perf/pmu-events/jevents.c
-index 5a28baf..042bc3b 100644
---- a/tools/perf/pmu-events/jevents.c
-+++ b/tools/perf/pmu-events/jevents.c
-@@ -126,6 +126,7 @@ static struct msrmap {
- 	{ "0x3F6", "ldlat=" },
- 	{ "0x1A6", "offcore_rsp=" },
- 	{ "0x1A7", "offcore_rsp=" },
-+	{ "0x3F7", "frontend=" },
- 	{ NULL, NULL }
- };
- 
--- 
-1.8.3.1
+Rashmica can you send a v2 with the reference in Documentation removed, thanks.
+
+cheers
