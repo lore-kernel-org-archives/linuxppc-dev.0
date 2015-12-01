@@ -1,35 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 656B61A1ABB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 15BA81A1AB4
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 14:37:20 +1100 (AEDT)
 Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Tue, 1 Dec 2015 09:07:18 +0530
 Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id A566A1258065
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 09:07:33 +0530 (IST)
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 26D1C1258059
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 09:07:35 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
  by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB13bE3p9896432
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:14 +0530
+ tB13bGxE44236980
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:16 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB13bD25022156
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:14 +0530
+ tB13bEU0022340
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:16 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Scott Wood <scottwood@freescale.com>,
  Denis Kirjanov <kda@linux-powerpc.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V6 19/35] powerpc/mm: Remove the dependency on pte bit
- position in asm code
-Date: Tue,  1 Dec 2015 09:06:44 +0530
-Message-Id: <1448941020-15168-20-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V6 26/35] powerpc/mm: Move WIMG update to helper.
+Date: Tue,  1 Dec 2015 09:06:51 +0530
+Message-Id: <1448941020-15168-27-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1448941020-15168-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1448941020-15168-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,93 +40,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We should not expect pte bit position in asm code. Simply
-by moving part of that to C
+Only difference here is, we apply the WIMG mapping early, so rflags
+passed to updatepp will also be changed.
 
 Acked-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 18 ++++--------------
- arch/powerpc/mm/hash_utils_64.c      | 29 +++++++++++++++++++++++++++++
- 2 files changed, 33 insertions(+), 14 deletions(-)
+ arch/powerpc/mm/hash64_4k.c          |  5 -----
+ arch/powerpc/mm/hash64_64k.c         | 10 ----------
+ arch/powerpc/mm/hash_utils_64.c      | 13 ++++++++++++-
+ arch/powerpc/mm/hugepage-hash64.c    |  7 -------
+ arch/powerpc/mm/hugetlbpage-hash64.c |  8 --------
+ 5 files changed, 12 insertions(+), 31 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 0a0399c2af11..7f82c8e170b6 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1556,29 +1556,19 @@ do_hash_page:
- 	lwz	r0,TI_PREEMPT(r11)	/* If we're in an "NMI" */
- 	andis.	r0,r0,NMI_MASK@h	/* (i.e. an irq when soft-disabled) */
- 	bne	77f			/* then don't call hash_page now */
--	/*
--	 * We need to set the _PAGE_USER bit if MSR_PR is set or if we are
--	 * accessing a userspace segment (even from the kernel). We assume
--	 * kernel addresses always have the high bit set.
--	 */
--	rlwinm	r4,r4,32-25+9,31-9,31-9	/* DSISR_STORE -> _PAGE_RW */
--	rotldi	r0,r3,15		/* Move high bit into MSR_PR posn */
--	orc	r0,r12,r0		/* MSR_PR | ~high_bit */
--	rlwimi	r4,r0,32-13,30,30	/* becomes _PAGE_USER access bit */
--	ori	r4,r4,1			/* add _PAGE_PRESENT */
--	rlwimi	r4,r5,22+2,31-2,31-2	/* Set _PAGE_EXEC if trap is 0x400 */
- 
- 	/*
- 	 * r3 contains the faulting address
--	 * r4 contains the required access permissions
-+	 * r4 msr
- 	 * r5 contains the trap number
- 	 * r6 contains dsisr
- 	 *
- 	 * at return r3 = 0 for success, 1 for page fault, negative for error
+diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
+index ee863137035a..e7c04542ba62 100644
+--- a/arch/powerpc/mm/hash64_4k.c
++++ b/arch/powerpc/mm/hash64_4k.c
+@@ -54,11 +54,6 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 	 * need to add in 0x1 if it's a read-only user page
  	 */
-+        mr 	r4,r12
- 	ld      r6,_DSISR(r1)
--	bl	hash_page		/* build HPTE if possible */
--	cmpdi	r3,0			/* see if hash_page succeeded */
-+	bl	__hash_page		/* build HPTE if possible */
-+        cmpdi	r3,0			/* see if __hash_page succeeded */
+ 	rflags = htab_convert_pte_flags(new_pte);
+-	/*
+-	 * Add in WIMG bits
+-	 */
+-	rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+-				_PAGE_COHERENT | _PAGE_GUARDED));
  
- 	/* Success */
- 	beq	fast_exc_return_irq	/* Return from exception on success */
+ 	if (!cpu_has_feature(CPU_FTR_NOEXECUTE) &&
+ 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
+diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
+index b14280e9d850..0762c1e08c88 100644
+--- a/arch/powerpc/mm/hash64_64k.c
++++ b/arch/powerpc/mm/hash64_64k.c
+@@ -86,11 +86,6 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 	 */
+ 	subpg_pte = new_pte & ~subpg_prot;
+ 	rflags = htab_convert_pte_flags(subpg_pte);
+-	/*
+-	 * Add in WIMG bits
+-	 */
+-	rflags |= (subpg_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+-				_PAGE_COHERENT | _PAGE_GUARDED));
+ 
+ 	if (!cpu_has_feature(CPU_FTR_NOEXECUTE) &&
+ 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE)) {
+@@ -258,11 +253,6 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
+ 					  old_pte, new_pte));
+ 
+ 	rflags = htab_convert_pte_flags(new_pte);
+-	/*
+-	 * Add in WIMG bits
+-	 */
+-	rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+-				_PAGE_COHERENT | _PAGE_GUARDED));
+ 
+ 	if (!cpu_has_feature(CPU_FTR_NOEXECUTE) &&
+ 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
 diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 9fcad40c16e9..12eff232840b 100644
+index 3b5e547b965d..3d261bc6fef8 100644
 --- a/arch/powerpc/mm/hash_utils_64.c
 +++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1205,6 +1205,35 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap,
- }
- EXPORT_SYMBOL_GPL(hash_page);
- 
-+int __hash_page(unsigned long ea, unsigned long msr, unsigned long trap,
-+		unsigned long dsisr)
-+{
-+	unsigned long access = _PAGE_PRESENT;
-+	unsigned long flags = 0;
-+	struct mm_struct *mm = current->mm;
-+
-+	if (REGION_ID(ea) == VMALLOC_REGION_ID)
-+		mm = &init_mm;
-+
-+	if (dsisr & DSISR_NOHPTE)
-+		flags |= HPTE_NOHPTE_UPDATE;
-+
-+	if (dsisr & DSISR_ISSTORE)
-+		access |= _PAGE_RW;
+@@ -182,7 +182,18 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
+ 	/*
+ 	 * Always add "C" bit for perf. Memory coherence is always enabled
+ 	 */
+-	return rflags | HPTE_R_C | HPTE_R_M;
++	rflags |=  HPTE_R_C | HPTE_R_M;
 +	/*
-+	 * We need to set the _PAGE_USER bit if MSR_PR is set or if we are
-+	 * accessing a userspace segment (even from the kernel). We assume
-+	 * kernel addresses always have the high bit set.
++	 * Add in WIG bits
 +	 */
-+	if ((msr & MSR_PR) || (REGION_ID(ea) == USER_REGION_ID))
-+		access |= _PAGE_USER;
++	if (pteflags & _PAGE_WRITETHRU)
++		rflags |= HPTE_R_W;
++	if (pteflags & _PAGE_NO_CACHE)
++		rflags |= HPTE_R_I;
++	if (pteflags & _PAGE_GUARDED)
++		rflags |= HPTE_R_G;
 +
-+	if (trap == 0x400)
-+		access |= _PAGE_EXEC;
-+
-+	return hash_page_mm(mm, ea, access, trap, flags);
-+}
-+
- void hash_preload(struct mm_struct *mm, unsigned long ea,
- 		  unsigned long access, unsigned long trap)
- {
++	return rflags;
+ }
+ 
+ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
+diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
+index 91fcac6f989d..1f666de0110a 100644
+--- a/arch/powerpc/mm/hugepage-hash64.c
++++ b/arch/powerpc/mm/hugepage-hash64.c
+@@ -120,13 +120,6 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		pa = pmd_pfn(__pmd(old_pmd)) << PAGE_SHIFT;
+ 		new_pmd |= _PAGE_HASHPTE;
+ 
+-		/* Add in WIMG bits */
+-		rflags |= (new_pmd & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+-				      _PAGE_GUARDED));
+-		/*
+-		 * enable the memory coherence always
+-		 */
+-		rflags |= HPTE_R_M;
+ repeat:
+ 		hpte_group = ((hash & htab_hash_mask) * HPTES_PER_GROUP) & ~0x7UL;
+ 
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index 304c8520506e..0734e4daffef 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -91,14 +91,6 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		/* clear HPTE slot informations in new PTE */
+ 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HASHPTE;
+ 
+-		/* Add in WIMG bits */
+-		rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+-				      _PAGE_COHERENT | _PAGE_GUARDED));
+-		/*
+-		 * enable the memory coherence always
+-		 */
+-		rflags |= HPTE_R_M;
+-
+ 		slot = hpte_insert_repeating(hash, vpn, pa, rflags, 0,
+ 					     mmu_psize, ssize);
+ 
 -- 
 2.5.0
