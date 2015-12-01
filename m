@@ -1,35 +1,36 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A51EA1A0B0D
+ by lists.ozlabs.org (Postfix) with ESMTPS id A131B1A0A84
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 13:57:37 +1100 (AEDT)
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
  Mon, 30 Nov 2015 21:57:35 -0500
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id D3B936E8040
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 21:45:43 -0500 (EST)
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 428BDC9003C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 21:45:42 -0500 (EST)
 Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB12vYoG23724238
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 02:57:34 GMT
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tB12vWN118612384
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 02:57:32 GMT
 Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
  by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB12vXpP006830
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 21:57:33 -0500
+ tB12vVZu006783
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 21:57:32 -0500
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: mingo@redhat.com, ak@linux.intel.com,
  Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>
 Cc: namhyung@kernel.org, maddy@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v19 11/19] perf, tools: Add alias support for long descriptions
-Date: Mon, 30 Nov 2015 18:57:06 -0800
-Message-Id: <1448938635-29176-12-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v19 10/19] perf, tools,
+ jevents: Add support for long descriptions
+Date: Mon, 30 Nov 2015 18:57:05 -0800
+Message-Id: <1448938635-29176-11-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1448938635-29176-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1448938635-29176-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,10 +42,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Previously we were dropping the useful longer descriptions that some
-events have in the event list completely. Now that jevents provides
-support for longer descriptions (see previous patch), add support for
-parsing the long descriptions
+Implement support in jevents to parse long descriptions for events
+that may have them in the JSON files. A follow on patch will make this
+long description available to user through the 'perf list' command.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
@@ -55,131 +55,132 @@ Changelog[v14]
 	- [Jiri Olsa] Break up independent parts of the patch into
 	  separate patches.
 ---
- tools/perf/util/parse-events.c |  5 +++--
- tools/perf/util/parse-events.h |  3 ++-
- tools/perf/util/pmu.c          | 15 ++++++++++-----
- tools/perf/util/pmu.h          |  4 +++-
- 4 files changed, 18 insertions(+), 9 deletions(-)
+ tools/perf/pmu-events/jevents.c    | 32 ++++++++++++++++++++++++--------
+ tools/perf/pmu-events/jevents.h    |  3 ++-
+ tools/perf/pmu-events/pmu-events.h |  1 +
+ 3 files changed, 27 insertions(+), 9 deletions(-)
 
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 0aa1ad8..1db6adf 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -1939,7 +1939,8 @@ out_enomem:
- /*
-  * Print the help text for the event symbols:
-  */
--void print_events(const char *event_glob, bool name_only, bool quiet_flag)
-+void print_events(const char *event_glob, bool name_only, bool quiet_flag,
-+			bool long_desc)
- {
- 	print_symbol_events(event_glob, PERF_TYPE_HARDWARE,
- 			    event_symbols_hw, PERF_COUNT_HW_MAX, name_only);
-@@ -1949,7 +1950,7 @@ void print_events(const char *event_glob, bool name_only, bool quiet_flag)
- 
- 	print_hwcache_events(event_glob, name_only);
- 
--	print_pmu_events(event_glob, name_only, quiet_flag);
-+	print_pmu_events(event_glob, name_only, quiet_flag, long_desc);
- 
- 	if (event_glob != NULL)
- 		return;
-diff --git a/tools/perf/util/parse-events.h b/tools/perf/util/parse-events.h
-index f0bab92..092c1f9 100644
---- a/tools/perf/util/parse-events.h
-+++ b/tools/perf/util/parse-events.h
-@@ -151,7 +151,8 @@ void parse_events_update_lists(struct list_head *list_event,
- void parse_events_evlist_error(struct parse_events_evlist *data,
- 			       int idx, const char *str);
- 
--void print_events(const char *event_glob, bool name_only, bool quiet);
-+void print_events(const char *event_glob, bool name_only, bool quiet,
-+		  bool long_desc);
- 
- struct event_symbol {
- 	const char	*symbol;
-diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-index c455ed9..10db7c9 100644
---- a/tools/perf/util/pmu.c
-+++ b/tools/perf/util/pmu.c
-@@ -210,7 +210,7 @@ static int perf_pmu__parse_snapshot(struct perf_pmu_alias *alias,
+diff --git a/tools/perf/pmu-events/jevents.c b/tools/perf/pmu-events/jevents.c
+index 72e519d..7ee1507 100644
+--- a/tools/perf/pmu-events/jevents.c
++++ b/tools/perf/pmu-events/jevents.c
+@@ -203,7 +203,7 @@ static void print_events_table_prefix(FILE *fp, const char *tblname)
  }
  
- static int __perf_pmu__new_alias(struct list_head *list, char *dir, char *name,
--				 char *desc, char *val)
-+				 char *desc, char *val, char *long_desc)
+ static int print_events_table_entry(void *data, char *name, char *event,
+-				    char *desc)
++				    char *desc, char *long_desc)
  {
- 	struct perf_pmu_alias *alias;
- 	int ret;
-@@ -243,6 +243,8 @@ static int __perf_pmu__new_alias(struct list_head *list, char *dir, char *name,
- 	}
+ 	FILE *outfp = data;
+ 	/*
+@@ -215,6 +215,8 @@ static int print_events_table_entry(void *data, char *name, char *event,
+ 	fprintf(outfp, "\t.name = \"%s\",\n", name);
+ 	fprintf(outfp, "\t.event = \"%s\",\n", event);
+ 	fprintf(outfp, "\t.desc = \"%s\",\n", desc);
++	if (long_desc && long_desc[0])
++		fprintf(outfp, "\t.long_desc = \"%s\",\n", long_desc);
  
- 	alias->desc = desc ? strdup(desc) : NULL;
-+	alias->long_desc = long_desc ? strdup(long_desc) :
-+				desc ? strdup(desc) : NULL;
+ 	fprintf(outfp, "},\n");
  
- 	list_add_tail(&alias->list, list);
+@@ -235,7 +237,8 @@ static void print_events_table_suffix(FILE *outfp)
  
-@@ -260,7 +262,7 @@ static int perf_pmu__new_alias(struct list_head *list, char *dir, char *name, FI
- 
- 	buf[ret] = 0;
- 
--	return __perf_pmu__new_alias(list, dir, name, NULL, buf);
-+	return __perf_pmu__new_alias(list, dir, name, NULL, buf, NULL);
- }
- 
- static inline bool pmu_alias_info_file(char *name)
-@@ -508,7 +510,8 @@ static int pmu_add_cpu_aliases(struct list_head *head)
- 
- 		/* need type casts to override 'const' */
- 		__perf_pmu__new_alias(head, NULL, (char *)pe->name,
--				(char *)pe->desc, (char *)pe->event);
-+				(char *)pe->desc, (char *)pe->event,
-+				(char *)pe->long_desc);
- 	}
- 
- out:
-@@ -1068,7 +1071,8 @@ static void wordwrap(char *s, int start, int max, int corr)
- 	}
- }
- 
--void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag)
-+void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag,
-+			bool long_desc)
+ /* Call func with each event in the json file */
+ int json_events(const char *fn,
+-	  int (*func)(void *data, char *name, char *event, char *desc),
++	  int (*func)(void *data, char *name, char *event, char *desc,
++		      char *long_desc),
+ 	  void *data)
  {
- 	struct perf_pmu *pmu;
- 	struct perf_pmu_alias *alias;
-@@ -1116,7 +1120,8 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag)
- 			if (!aliases[j].name)
- 				goto out_enomem;
- 
--			aliases[j].desc = alias->desc;
-+			aliases[j].desc = long_desc ? alias->long_desc :
-+						alias->desc;
- 			j++;
+ 	int err = -EIO;
+@@ -254,6 +257,8 @@ int json_events(const char *fn,
+ 	tok = tokens + 1;
+ 	for (i = 0; i < tokens->size; i++) {
+ 		char *event = NULL, *desc = NULL, *name = NULL;
++		char *long_desc = NULL;
++		char *extra_desc = NULL;
+ 		struct msrmap *msr = NULL;
+ 		jsmntok_t *msrval = NULL;
+ 		jsmntok_t *precise = NULL;
+@@ -279,6 +284,10 @@ int json_events(const char *fn,
+ 			} else if (json_streq(map, field, "BriefDescription")) {
+ 				addfield(map, &desc, "", "", val);
+ 				fixdesc(desc);
++			} else if (json_streq(map, field,
++					     "PublicDescription")) {
++				addfield(map, &long_desc, "", "", val);
++				fixdesc(long_desc);
+ 			} else if (json_streq(map, field, "PEBS") && nz) {
+ 				precise = val;
+ 			} else if (json_streq(map, field, "MSRIndex") && nz) {
+@@ -287,10 +296,10 @@ int json_events(const char *fn,
+ 				msrval = val;
+ 			} else if (json_streq(map, field, "Errata") &&
+ 				   !json_streq(map, val, "null")) {
+-				addfield(map, &desc, ". ",
++				addfield(map, &extra_desc, ". ",
+ 					" Spec update: ", val);
+ 			} else if (json_streq(map, field, "Data_LA") && nz) {
+-				addfield(map, &desc, ". ",
++				addfield(map, &extra_desc, ". ",
+ 					" Supports address when precise",
+ 					NULL);
+ 			}
+@@ -298,19 +307,26 @@ int json_events(const char *fn,
  		}
- 		if (pmu->selectable &&
-diff --git a/tools/perf/util/pmu.h b/tools/perf/util/pmu.h
-index 42999c7..1aa614e 100644
---- a/tools/perf/util/pmu.h
-+++ b/tools/perf/util/pmu.h
-@@ -39,6 +39,7 @@ struct perf_pmu_info {
- struct perf_pmu_alias {
- 	char *name;
- 	char *desc;
-+	char *long_desc;
- 	struct list_head terms; /* HEAD struct parse_events_term -> list */
- 	struct list_head list;  /* ELEM */
- 	char unit[UNIT_MAX_LEN+1];
-@@ -70,7 +71,8 @@ int perf_pmu__format_parse(char *dir, struct list_head *head);
+ 		if (precise && !strstr(desc, "(Precise Event)")) {
+ 			if (json_streq(map, precise, "2"))
+-				addfield(map, &desc, " ", "(Must be precise)",
+-						NULL);
++				addfield(map, &extra_desc, " ",
++						"(Must be precise)", NULL);
+ 			else
+-				addfield(map, &desc, " ",
++				addfield(map, &extra_desc, " ",
+ 						"(Precise event)", NULL);
+ 		}
++		if (desc && extra_desc)
++			addfield(map, &desc, " ", extra_desc, NULL);
++		if (long_desc && extra_desc)
++			addfield(map, &long_desc, " ", extra_desc, NULL);
+ 		if (msr != NULL)
+ 			addfield(map, &event, ",", msr->pname, msrval);
+ 		fixname(name);
+-		err = func(data, name, event, desc);
++
++		err = func(data, name, event, desc, long_desc);
+ 		free(event);
+ 		free(desc);
+ 		free(name);
++		free(long_desc);
++		free(extra_desc);
+ 		if (err)
+ 			break;
+ 		tok += j;
+diff --git a/tools/perf/pmu-events/jevents.h b/tools/perf/pmu-events/jevents.h
+index 996601f..b0eb274 100644
+--- a/tools/perf/pmu-events/jevents.h
++++ b/tools/perf/pmu-events/jevents.h
+@@ -2,7 +2,8 @@
+ #define JEVENTS_H 1
  
- struct perf_pmu *perf_pmu__scan(struct perf_pmu *pmu);
+ int json_events(const char *fn,
+-		int (*func)(void *data, char *name, char *event, char *desc),
++		int (*func)(void *data, char *name, char *event, char *desc,
++				char *long_desc),
+ 		void *data);
+ char *get_cpu_str(void);
  
--void print_pmu_events(const char *event_glob, bool name_only, bool quiet);
-+void print_pmu_events(const char *event_glob, bool name_only, bool quiet,
-+		      bool long_desc);
- bool pmu_have_event(const char *pname, const char *name);
+diff --git a/tools/perf/pmu-events/pmu-events.h b/tools/perf/pmu-events/pmu-events.h
+index 39fec04..711f049 100644
+--- a/tools/perf/pmu-events/pmu-events.h
++++ b/tools/perf/pmu-events/pmu-events.h
+@@ -8,6 +8,7 @@ struct pmu_event {
+ 	const char *name;
+ 	const char *event;
+ 	const char *desc;
++	const char *long_desc;
+ };
  
- int perf_pmu__scan_file(struct perf_pmu *pmu, const char *name, const char *fmt,
+ /*
 -- 
 1.8.3.1
