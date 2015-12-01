@@ -1,23 +1,24 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id 2A60C1A0B84
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 08:28:15 +1100 (AEDT)
-Date: Tue, 01 Dec 2015 16:28:10 -0500 (EST)
-Message-Id: <20151201.162810.1750455760429212300.davem@davemloft.net>
-To: igal.liberman@freescale.com
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, scottwood@freescale.com,
- madalin.bucur@freescale.com, pebolle@tiscali.nl,
- joakim.tjernlund@transmode.se, ppc@mindchasers.com,
- stephen@networkplumber.org
-Subject: Re: [v8, 2/6] fsl/fman: Add FMan support
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1448886062-16962-3-git-send-email-igal.liberman@freescale.com>
-References: <1448886062-16962-1-git-send-email-igal.liberman@freescale.com>
- <1448886062-16962-3-git-send-email-igal.liberman@freescale.com>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9467F1A0286
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 09:18:05 +1100 (AEDT)
+Message-ID: <1449008285.12022.0.camel@ellerman.id.au>
+Subject: Re: [PATCH v4 2/9] ppc64le FTRACE_WITH_REGS implementation
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Torsten Duwe <duwe@lst.de>, Denis Kirjanov <kda@linux-powerpc.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Jiri Kosina <jkosina@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org
+Date: Wed, 02 Dec 2015 09:18:05 +1100
+In-Reply-To: <20151201172914.GB5509@lst.de>
+References: <20151125172608.9588569260@newverein.lst.de>
+ <20151125172902.82C6C69260@newverein.lst.de>
+ <CAOJe8K34bA=LytXouWhjfkgqsR2cTLimMJc-S88RC56dj3x-=Q@mail.gmail.com>
+ <20151201172914.GB5509@lst.de>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,36 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: <igal.liberman@freescale.com>
-Date: Mon, 30 Nov 2015 14:20:58 +0200
+On Tue, 2015-12-01 at 18:29 +0100, Torsten Duwe wrote:
+> On Thu, Nov 26, 2015 at 01:04:19PM +0300, Denis Kirjanov wrote:
+> > > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> > > index 8d56b16..3309dd8 100644
+> > > --- a/arch/powerpc/kernel/entry_64.S
+> > > +++ b/arch/powerpc/kernel/entry_64.S
+> > Linux style for comments is the C89. Please update entry_64.S
+> 
+> Any other (planned) remarks or comments on the patch set?
+> If not I'll make a 5th, hopefully final version.
 
-> +typedef irqreturn_t (fman_exceptions_cb)(struct fman *fman,
-> +					 enum fman_exceptions exception);
+I (still) haven't had a chance to have a good look at it, but I won't this week
+anyway. So post v5 and hopefully I can review that and it will be perfect :)
 
-Function and function pointer declarations and definitions should be
-indented such that the second and subsequent lines begin precisely
-at the first column after the openning parenthesis of the first line.
-
-Please audit this and fix it in your entire submission, almost ever
-new such case is done incorrectly.
-
-> +	fman->state->exceptions = (EX_DMA_BUS_ERROR                 |
-> +					EX_DMA_READ_ECC              |
-> +					EX_DMA_SYSTEM_WRITE_ECC      |
-> +					EX_DMA_FM_WRITE_ECC          |
-> +					EX_FPM_STALL_ON_TASKS        |
-> +					EX_FPM_SINGLE_ECC            |
-> +					EX_FPM_DOUBLE_ECC            |
-> +					EX_QMI_DEQ_FROM_UNKNOWN_PORTID |
-> +					EX_BMI_LIST_RAM_ECC          |
-> +					EX_BMI_STORAGE_PROFILE_ECC   |
-> +					EX_BMI_STATISTICS_RAM_ECC    |
-> +					EX_MURAM_ECC                 |
-> +					EX_BMI_DISPATCH_RAM_ECC      |
-> +					EX_QMI_DOUBLE_ECC            |
-> +					EX_QMI_SINGLE_ECC);
-
-The same applies to multi-line parenthesized expressions like this
-one.  Again, please audit and fix this in your entire submission.
-
-Thanks.
+cheers
