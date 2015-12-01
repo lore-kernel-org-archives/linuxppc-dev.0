@@ -1,20 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
+ [IPv6:2607:f8b0:400e:c03::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF9751A2D87
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 14:56:24 +1100 (AEDT)
-Message-ID: <1448942184.9027.7.camel@ellerman.id.au>
-Subject: Re: [PATCH 3/4] powerpc/powernv: remove FW_FEATURE_OPAL and just
- use FW_FEATURE_OPALv3
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 01 Dec 2015 14:56:24 +1100
-In-Reply-To: <1448599526-31073-4-git-send-email-stewart@linux.vnet.ibm.com>
-References: <1448599526-31073-1-git-send-email-stewart@linux.vnet.ibm.com>
- <1448599526-31073-4-git-send-email-stewart@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id EA2C71A1A2E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 16:08:39 +1100 (AEDT)
+Received: by pacej9 with SMTP id ej9so208985051pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 21:08:37 -0800 (PST)
+Received: from circle.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id ux3sm55304740pac.18.2015.11.30.21.08.35
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+ Mon, 30 Nov 2015 21:08:36 -0800 (PST)
+From: Rashmica Gupta <rashmicy@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/3] selftests/powerpc: Transactional Memory
+Date: Tue,  1 Dec 2015 16:08:21 +1100
+Message-Id: <1448946504-11653-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,19 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-11-27 at 15:45 +1100, Stewart Smith wrote:
+This is reliant on the following patch series:
+- selftests/powerpc by Michael Ellerman 
+- selftests/powerpc by Michael Neuling 
+- powerpc/tm by Michael Neuling 
 
-> Long ago, only in the lab, there was OPALv1 and OPALv2. Now there is
-> just OPALv3, with nobody ever expecting anything on pre-OPALv3 to
-> be cared about or supported by mainline kernels.
-> 
-> So, let's remove FW_FEATURE_OPAL and instead use FW_FEATURE_OPALv3
-> exclusively.
+Rashmica Gupta (3):
+  selftests/powerpc: Standardise TM calls
+  selftests/powerpc: Add test for forking inside transaction
+  selftests/powerpc: Add in check for TM
 
-It would be less churn if we did the reverse, ie. removed v3 and just used
-FW_FEATURE_OPAL. It would also read better as v3 is the one and only version we
-care about, so having it called out everywhere is superfluous.
+ tools/testing/selftests/powerpc/tm/.gitignore      |  1 +
+ tools/testing/selftests/powerpc/tm/Makefile        |  2 +-
+ tools/testing/selftests/powerpc/tm/tm-fork.c       | 41 ++++++++++++++++++++++
+ .../testing/selftests/powerpc/tm/tm-resched-dscr.c | 18 +++++-----
+ .../testing/selftests/powerpc/tm/tm-signal-stack.c |  4 +--
+ 5 files changed, 53 insertions(+), 13 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-fork.c
 
-Or is there a good reason I missed?
-
-cheers
+-- 
+2.5.0
