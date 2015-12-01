@@ -1,22 +1,28 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id 396DF1A0295
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 01:39:09 +1100 (AEDT)
-Date: Tue, 1 Dec 2015 08:39:05 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- bhelgaas@google.com, mpe@ellerman.id.au, paulus@samba.org,
- benh@kernel.crashing.org, mst@redhat.com, shangw@linux.vnet.ibm.com
-Subject: Re: [PATCH] Enable MSI/MSI-X caps and disable MSI interrupts at PCI
- probe time - code move
-Message-ID: <20151201143905.GA9473@localhost>
-References: <1445437055-7017-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <20151201013540.GB9306@localhost>
- <565D9586.4050605@linux.vnet.ibm.com>
+Return-Path: <duwe@lst.de>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9D7671A0295
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 01:47:45 +1100 (AEDT)
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 2A113140216
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Dec 2015 01:47:45 +1100 (AEDT)
+Date: Tue, 1 Dec 2015 15:47:41 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Ian Munsie <imunsie@au1.ibm.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Neuling <mikey@neuling.org>, Anton Blanchard <anton@au1.ibm.com>,
+ Michael Ellerman <michaele@au1.ibm.com>
+Subject: Re: [PATCH] cxl: Fix build failure due to -Wunused-variable
+ behaviour change
+Message-ID: <20151201144741.GA5509@lst.de>
+References: <1442296114-16796-1-git-send-email-imunsie@au.ibm.com>
+ <20151125161616.GA30262@lst.de> <1448494913.22705.3.camel@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <565D9586.4050605@linux.vnet.ibm.com>
+In-Reply-To: <1448494913.22705.3.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 01, 2015 at 10:41:42AM -0200, Guilherme G. Piccoli wrote:
-> On 11/30/2015 11:35 PM, Bjorn Helgaas wrote:
-> >Thanks for your patience, Guilherme.
+On Thu, Nov 26, 2015 at 10:41:53AM +1100, Michael Ellerman wrote:
+> On Wed, 2015-11-25 at 17:16 +0100, Torsten Duwe wrote:
+> > On Tue, Sep 15, 2015 at 03:48:34PM +1000, Ian Munsie wrote:
+> > > --- a/drivers/misc/cxl/Makefile
+> > > +++ b/drivers/misc/cxl/Makefile
+> > > @@ -1,4 +1,4 @@
+> > > -ccflags-y := -Werror
+> > > +ccflags-y := -Werror -Wno-unused-const-variable
+> > 
+> > JFYI, my gcc-4.3 does not like this switch.
+> > What's the minimum compiler version to build this code?
 > 
-> Hello Bjorn, thank you for the very deep review of my patch. Much
-> appreciated!
+> I build everything with gcc 4.4.4, so if it breaks with that I will notice.
 > 
+> Does it work if you wrap it in cc-option? eg:
 > 
-> >I applied this to pci/msi for v4.5.  I reworked the changelog and made
-> >pci_msi_setup_pci_dev() static, since I think it's now only called
-> >from drivers/pci/probe.c.
-> 
-> Thanks. Regarding pci_msi_setup_pci_dev(), it really should be
-> static. I changed it because PowerPC arch was calling this since my
-> last patch, but this patch remove the call from PowerPC arch, so
-> it's great to see this function static again.
-> 
-> 
-> >I didn't quite follow the last paragraph about reverting 1851617cd2da.
-> >1851617cd2da moved the MSI init (dev->msi_cap init and MSI disable)
-> >from pci/msi.c (where it was only done when CONFIG_PCI_MSI=y) to
-> >pci/probe.c (where we did it for all non-OF arches, regardless of
-> >CONFIG_PCI_MSI).  So I would characterize this patch as doing the MSI
-> >init for *all* arches, regardless of CONFIG_PCI_MSI.
-> 
-> Well, my English skills aren't so good, so I possibly I wrote
-> confusing text. What I meant is that, from practical viewpoint, what
-> we did here has the same effect of reverting those patches (in the
-> sense of initializing MSI caps). But you can ignore my statement,
-> and I appreciate that you removed it from the commit message if it
-> was confusing heh
+> ccflags-y := -Werror $(call cc-option,-Wno-unused-const-variable)
 
-No problem, just making sure I wasn't missing something.  It's not a
-literal revert, but it certainly does touch the same code.
+Yes, now it builds. It also looks cleaner to me: compilers which check
+for "unused-const-variable"s should have this switch and the check is disabled.
+All other (known :) warnings error out.
 
-Bjorn
+	Torsten
