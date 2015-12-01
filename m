@@ -1,22 +1,22 @@
 Return-Path: <rashmicy@gmail.com>
-Received: from mail-pa0-x235.google.com (mail-pa0-x235.google.com
- [IPv6:2607:f8b0:400e:c03::235])
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 751BC1A1DDD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 16:08:45 +1100 (AEDT)
-Received: by pabfh17 with SMTP id fh17so215236787pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 21:08:43 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5A6541A1E66
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 16:08:49 +1100 (AEDT)
+Received: by pacdm15 with SMTP id dm15so209061813pac.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Nov 2015 21:08:47 -0800 (PST)
 Received: from circle.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id ux3sm55304740pac.18.2015.11.30.21.08.41
+ by smtp.gmail.com with ESMTPSA id ux3sm55304740pac.18.2015.11.30.21.08.46
  for <linuxppc-dev@lists.ozlabs.org>
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
- Mon, 30 Nov 2015 21:08:42 -0800 (PST)
+ Mon, 30 Nov 2015 21:08:47 -0800 (PST)
 From: Rashmica Gupta <rashmicy@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/3] selftests/powerpc: Standardise TM calls
-Date: Tue,  1 Dec 2015 16:08:22 +1100
-Message-Id: <1448946504-11653-2-git-send-email-rashmicy@gmail.com>
+Subject: [PATCH 2/3] selftests/powerpc: Add test for forking inside transaction
+Date: Tue,  1 Dec 2015 16:08:23 +1100
+Message-Id: <1448946504-11653-3-git-send-email-rashmicy@gmail.com>
 In-Reply-To: <1448946504-11653-1-git-send-email-rashmicy@gmail.com>
 References: <1448946504-11653-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,76 +28,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently tbegin, tend etc are written as opcodes or asm instructions. So
-standardise these to asm instructions.
+This test does a fork syscall inside a transaction. Basic sniff test to see
+if we can enter the kernel during a transaction.
 
 Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 ---
- tools/testing/selftests/powerpc/tm/tm-resched-dscr.c | 16 ++++++----------
- tools/testing/selftests/powerpc/tm/tm-signal-stack.c |  4 ++--
- 2 files changed, 8 insertions(+), 12 deletions(-)
+ tools/testing/selftests/powerpc/tm/.gitignore |  1 +
+ tools/testing/selftests/powerpc/tm/Makefile   |  2 +-
+ tools/testing/selftests/powerpc/tm/tm-fork.c  | 41 +++++++++++++++++++++++++++
+ 3 files changed, 43 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-fork.c
 
-diff --git a/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c b/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-index 42d4c8caad81..88c46481e59b 100644
---- a/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-+++ b/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-@@ -29,12 +29,8 @@
- #include <asm/tm.h>
+diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
+index e6668217ccd0..d0c7c97e9b13 100644
+--- a/tools/testing/selftests/powerpc/tm/.gitignore
++++ b/tools/testing/selftests/powerpc/tm/.gitignore
+@@ -2,3 +2,4 @@ tm-resched-dscr
+ tm-syscall
+ tm-signal-msr-resv
+ tm-signal-stack
++tm-fork
+diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
+index 578572a3700a..f7d4727662aa 100644
+--- a/tools/testing/selftests/powerpc/tm/Makefile
++++ b/tools/testing/selftests/powerpc/tm/Makefile
+@@ -1,4 +1,4 @@
+-TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack
++TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-fork
  
- #include "utils.h"
+ all: $(TEST_PROGS)
+ 
+diff --git a/tools/testing/selftests/powerpc/tm/tm-fork.c b/tools/testing/selftests/powerpc/tm/tm-fork.c
+new file mode 100644
+index 000000000000..f571a48a59a0
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/tm/tm-fork.c
+@@ -0,0 +1,41 @@
++/*
++ * Copyright 2015, Michael Neuling, IBM Corp.
++ * Licensed under GPLv2.
++ *
++ * Edited: Rashmica Gupta, Nov 2015
++ *
++ * Fork inside a transaction
++ */
++
++#include <errno.h>
++#include <inttypes.h>
++#include <pthread.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++
++#include "utils.h"
 +#include "tm.h"
- 
--#define TBEGIN          ".long 0x7C00051D ;"
--#define TEND            ".long 0x7C00055D ;"
--#define TCHECK          ".long 0x7C00059C ;"
--#define TSUSPEND        ".long 0x7C0005DD ;"
--#define TRESUME         ".long 0x7C2005DD ;"
- #define SPRN_TEXASR     0x82
- #define SPRN_DSCR       0x03
- 
-@@ -52,13 +48,13 @@ int test_body(void)
- 			"mtspr   %[sprn_dscr], 3;"
- 
- 			/* start and suspend a transaction */
--			TBEGIN
-+			"tbegin.;"
- 			"beq     1f;"
--			TSUSPEND
-+			"tsuspend.;"
- 
- 			/* hard loop until the transaction becomes doomed */
- 			"2: ;"
--			TCHECK
-+			"tcheck 0;"
- 			"bc      4, 0, 2b;"
- 
- 			/* record DSCR and TEXASR */
-@@ -67,8 +63,8 @@ int test_body(void)
- 			"mfspr   3, %[sprn_texasr];"
- 			"std     3, %[texasr];"
- 
--			TRESUME
--			TEND
-+			"tresume.;"
-+			"tend.;"
- 			"li      %[rv], 0;"
- 			"1: ;"
- 			: [rv]"=r"(rv), [dscr2]"=m"(dscr2), [texasr]"=m"(texasr)
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-stack.c b/tools/testing/selftests/powerpc/tm/tm-signal-stack.c
-index 82c29cb222dc..8ffd5cee7271 100644
---- a/tools/testing/selftests/powerpc/tm/tm-signal-stack.c
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-stack.c
-@@ -60,9 +60,9 @@ int tm_signal_stack()
- 		exit(1);
- 	asm volatile("li 1, 0 ;"		/* stack ptr == NULL */
- 		     "1:"
--		     ".long 0x7C00051D ;"	/* tbegin */
-+		     "tbegin.;"
- 		     "beq 1b ;"			/* retry forever */
--		     ".long 0x7C0005DD ; ;"	/* tsuspend */
-+		     "tsuspend.;"	
- 		     "ld 2, 0(1) ;"		/* trigger segv" */
- 		     : : : "memory");
- 
++
++int test_fork(void)
++{
++	SKIP_IF(!have_htm());
++
++	asm __volatile__(
++		"tbegin.;"
++		"blt    1f; "
++		"li     0, 2;"  /* fork syscall */
++		"sc  ;"
++		"tend.;"
++		"1: ;"
++		: : : "memory", "r0");
++	/* If we reach here, we've passed.  Otherwise we've probably crashed
++	 * the kernel */
++
++	return 0;
++}
++
++int main(int argc, char *argv[])
++{
++	return test_harness(test_fork, "tm_fork");
++}
 -- 
 2.5.0
