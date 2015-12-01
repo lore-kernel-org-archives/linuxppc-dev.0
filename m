@@ -1,23 +1,34 @@
-Return-Path: <geyslan@gmail.com>
-Received: from mail-qg0-x243.google.com (mail-qg0-x243.google.com
- [IPv6:2607:f8b0:400d:c04::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 210731A0BC2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 10:43:53 +1100 (AEDT)
-Received: by qgea14 with SMTP id a14so1948367qge.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Dec 2015 15:43:50 -0800 (PST)
-From: "Geyslan G. Bem" <geyslan@gmail.com>
-To: 
-Cc: "Geyslan G. Bem" <geyslan@gmail.com>, Alexander Graf <agraf@suse.com>,
- Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] kvm: remove unused variable 'vcpu_book3s'
-Date: Tue,  1 Dec 2015 20:42:10 -0300
-Message-Id: <1449013410-19103-1-git-send-email-geyslan@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491EB1A0C7B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 10:45:27 +1100 (AEDT)
+Date: Tue, 1 Dec 2015 23:44:37 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Petr Mladek <pmladek@suse.cz>
+Subject: Re: [PATCH v2 3/5] printk/nmi: Try hard to print Oops message in NMI
+ context
+Message-ID: <20151201234437.GA8644@n2100.arm.linux.org.uk>
+References: <1448622572-16900-1-git-send-email-pmladek@suse.com>
+ <1448622572-16900-4-git-send-email-pmladek@suse.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1448622572-16900-4-git-send-email-pmladek@suse.com>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +38,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The vcpu_book3s struct is assigned but never used. So remove it.
+On Fri, Nov 27, 2015 at 12:09:30PM +0100, Petr Mladek wrote:
+> What we can do, though, is to zap all printk locks. We already do this
+> when a printk recursion is detected. This should be safe because
+> the system is crashing and there shouldn't be any printk caller
+> that would cause the deadlock.
 
-Signed-off-by: Geyslan G. Bem <geyslan@gmail.com>
----
- arch/powerpc/kvm/book3s_64_mmu.c | 3 ---
- 1 file changed, 3 deletions(-)
+What about serial consoles which may call out to subsystems like the
+clk subsystem to enable a clock, which would want to take their own
+spinlocks in addition to the serial console driver?
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
-index 774a253..9bf7031 100644
---- a/arch/powerpc/kvm/book3s_64_mmu.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu.c
-@@ -377,15 +377,12 @@ no_seg_found:
- 
- static void kvmppc_mmu_book3s_64_slbmte(struct kvm_vcpu *vcpu, u64 rs, u64 rb)
- {
--	struct kvmppc_vcpu_book3s *vcpu_book3s;
- 	u64 esid, esid_1t;
- 	int slb_nr;
- 	struct kvmppc_slb *slbe;
- 
- 	dprintk("KVM MMU: slbmte(0x%llx, 0x%llx)\n", rs, rb);
- 
--	vcpu_book3s = to_book3s(vcpu);
--
- 	esid = GET_ESID(rb);
- 	esid_1t = GET_ESID_1T(rb);
- 	slb_nr = rb & 0xfff;
+I don't see bust_spinlocks() dealing with any of these locks, so IMHO
+trying to make this work in NMI context strikes me as making the
+existing solution more unreliable on ARM systems.
+
 -- 
-2.6.2
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
