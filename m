@@ -1,34 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AD2A71A1AAD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 602AC1A19C8
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 14:37:24 +1100 (AEDT)
 Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Tue, 1 Dec 2015 09:07:22 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id AAF59125805B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 09:07:36 +0530 (IST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4D03B3940049
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 09:07:20 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB13bHZH3604922
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:18 +0530
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tB13bGku59441406
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:16 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB13bGe7022493
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:17 +0530
+ tB13bEJu022381
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:16 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Scott Wood <scottwood@freescale.com>,
  Denis Kirjanov <kda@linux-powerpc.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V6 30/35] powerpc/mm: Don't hardcode page table size
-Date: Tue,  1 Dec 2015 09:06:55 +0530
-Message-Id: <1448941020-15168-31-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V6 27/35] powerpc/mm: Move hugetlb related headers
+Date: Tue,  1 Dec 2015 09:06:52 +0530
+Message-Id: <1448941020-15168-28-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1448941020-15168-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1448941020-15168-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,150 +40,323 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pte and pmd table size are dependent on config items. Don't
-hard code the same. This make sure we use the right value
-when masking pmd entries and also while checking pmd_bad
+W.r.t hugetlb, we support two format for pmd. With book3s_64 and
+64K linux page size, we can have pte at the pmd level. Hence we
+don't need to support hugepd there. For everything else hugepd
+is supported and pmd_huge is (0).
 
+Acked-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash-64k.h    | 30 ++++++++++++++++++------
- arch/powerpc/include/asm/nohash/64/pgtable-64k.h | 21 +++++++++++++----
- arch/powerpc/include/asm/pgalloc-64.h            | 10 --------
- arch/powerpc/mm/init_64.c                        |  4 ----
- 4 files changed, 40 insertions(+), 25 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  | 31 ++++++++++++
+ arch/powerpc/include/asm/book3s/64/hash-64k.h | 51 +++++++++++++++++++
+ arch/powerpc/include/asm/nohash/pgtable.h     | 25 ++++++++++
+ arch/powerpc/include/asm/page.h               | 42 ++--------------
+ arch/powerpc/mm/hugetlbpage-hash64.c          | 18 +++++++
+ arch/powerpc/mm/hugetlbpage.c                 | 72 ---------------------------
+ 6 files changed, 129 insertions(+), 110 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index 75e8b9326e4b..b4d25529d179 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -93,6 +93,37 @@ extern struct page *pgd_page(pgd_t pgd);
+ #define remap_4k_pfn(vma, addr, pfn, prot)	\
+ 	remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE, (prot))
+ 
++#ifdef CONFIG_HUGETLB_PAGE
++/*
++ * For 4k page size, we support explicit hugepage via hugepd
++ */
++static inline int pmd_huge(pmd_t pmd)
++{
++	return 0;
++}
++
++static inline int pud_huge(pud_t pud)
++{
++	return 0;
++}
++
++static inline int pgd_huge(pgd_t pgd)
++{
++	return 0;
++}
++#define pgd_huge pgd_huge
++
++static inline int hugepd_ok(hugepd_t hpd)
++{
++	/*
++	 * hugepd pointer, bottom two bits == 00 and next 4 bits
++	 * indicate size of table
++	 */
++	return (((hpd.pd & 0x3) == 0x0) && ((hpd.pd & HUGEPD_SHIFT_MASK) != 0));
++}
++#define is_hugepd(hpd)		(hugepd_ok(hpd))
++#endif
++
+ #endif /* !__ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_BOOK3S_64_HASH_4K_H */
 diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index 52110d7af659..cca050aa1aa8 100644
+index 46b5d0ab11de..1857d19de18e 100644
 --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
 +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -25,12 +25,6 @@
- #define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
- #define PGDIR_MASK	(~(PGDIR_SIZE-1))
- 
--/* Bits to mask out from a PMD to get to the PTE page */
--/* PMDs point to PTE table fragments which are 4K aligned.  */
--#define PMD_MASKED_BITS		0xfff
--/* Bits to mask out from a PGD/PUD to get to the PMD page */
--#define PUD_MASKED_BITS		0x1ff
--
- #define _PAGE_COMBO	0x00020000 /* this is a combo 4k page */
- #define _PAGE_4K_PFN	0x00040000 /* PFN is for a single 4k page */
- /*
-@@ -49,6 +43,24 @@
-  * of addressable physical space, or 46 bits for the special 4k PFNs.
-  */
- #define PTE_RPN_SHIFT	(30)
-+/*
-+ * we support 16 fragments per PTE page of 64K size.
-+ */
-+#define PTE_FRAG_NR	16
-+/*
-+ * We use a 2K PTE page fragment and another 2K for storing
-+ * real_pte_t hash index
-+ */
-+#define PTE_FRAG_SIZE_SHIFT  12
-+#define PTE_FRAG_SIZE (1UL << PTE_FRAG_SIZE_SHIFT)
-+
-+/*
-+ * Bits to mask out from a PMD to get to the PTE page
-+ * PMDs point to PTE table fragments which are PTE_FRAG_SIZE aligned.
-+ */
-+#define PMD_MASKED_BITS		(PTE_FRAG_SIZE - 1)
-+/* Bits to mask out from a PGD/PUD to get to the PMD page */
-+#define PUD_MASKED_BITS		0x1ff
- 
- #ifndef __ASSEMBLY__
- 
-@@ -112,8 +124,12 @@ extern bool __rpte_sub_valid(real_pte_t rpte, unsigned long index);
- 		remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,	\
- 			__pgprot(pgprot_val((prot)) | _PAGE_4K_PFN)))
- 
--#define PTE_TABLE_SIZE	(sizeof(real_pte_t) << PTE_INDEX_SIZE)
-+#define PTE_TABLE_SIZE	PTE_FRAG_SIZE
-+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-+#define PMD_TABLE_SIZE	((sizeof(pmd_t) << PMD_INDEX_SIZE) + (sizeof(unsigned long) << PMD_INDEX_SIZE))
-+#else
- #define PMD_TABLE_SIZE	(sizeof(pmd_t) << PMD_INDEX_SIZE)
-+#endif
- #define PGD_TABLE_SIZE	(sizeof(pgd_t) << PGD_INDEX_SIZE)
- 
+@@ -119,6 +119,57 @@ extern bool __rpte_sub_valid(real_pte_t rpte, unsigned long index);
  #define pgd_pte(pgd)	(pud_pte(((pud_t){ pgd })))
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable-64k.h b/arch/powerpc/include/asm/nohash/64/pgtable-64k.h
-index a44660d76096..2217de6454d6 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable-64k.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable-64k.h
-@@ -9,8 +9,19 @@
- #define PUD_INDEX_SIZE	0
- #define PGD_INDEX_SIZE  12
+ #define pte_pgd(pte)	((pgd_t)pte_pud(pte))
  
++#ifdef CONFIG_HUGETLB_PAGE
 +/*
-+ * we support 16 fragments per PTE page of 64K size.
++ * We have PGD_INDEX_SIZ = 12 and PTE_INDEX_SIZE = 8, so that we can have
++ * 16GB hugepage pte in PGD and 16MB hugepage pte at PMD;
++ *
++ * Defined in such a way that we can optimize away code block at build time
++ * if CONFIG_HUGETLB_PAGE=n.
 + */
-+#define PTE_FRAG_NR	16
-+/*
-+ * We use a 2K PTE page fragment and another 2K for storing
-+ * real_pte_t hash index
-+ */
-+#define PTE_FRAG_SIZE_SHIFT  12
-+#define PTE_FRAG_SIZE (1UL << PTE_FRAG_SIZE_SHIFT)
++static inline int pmd_huge(pmd_t pmd)
++{
++	/*
++	 * leaf pte for huge page, bottom two bits != 00
++	 */
++	return ((pmd_val(pmd) & 0x3) != 0x0);
++}
 +
- #ifndef __ASSEMBLY__
--#define PTE_TABLE_SIZE	(sizeof(real_pte_t) << PTE_INDEX_SIZE)
-+#define PTE_TABLE_SIZE	PTE_FRAG_SIZE
- #define PMD_TABLE_SIZE	(sizeof(pmd_t) << PMD_INDEX_SIZE)
- #define PGD_TABLE_SIZE	(sizeof(pgd_t) << PGD_INDEX_SIZE)
- #endif	/* __ASSEMBLY__ */
-@@ -32,9 +43,11 @@
- #define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
- #define PGDIR_MASK	(~(PGDIR_SIZE-1))
- 
--/* Bits to mask out from a PMD to get to the PTE page */
--/* PMDs point to PTE table fragments which are 4K aligned.  */
--#define PMD_MASKED_BITS		0xfff
++static inline int pud_huge(pud_t pud)
++{
++	/*
++	 * leaf pte for huge page, bottom two bits != 00
++	 */
++	return ((pud_val(pud) & 0x3) != 0x0);
++}
++
++static inline int pgd_huge(pgd_t pgd)
++{
++	/*
++	 * leaf pte for huge page, bottom two bits != 00
++	 */
++	return ((pgd_val(pgd) & 0x3) != 0x0);
++}
++#define pgd_huge pgd_huge
++
++#ifdef CONFIG_DEBUG_VM
++extern int hugepd_ok(hugepd_t hpd);
++#define is_hugepd(hpd)               (hugepd_ok(hpd))
++#else
 +/*
-+ * Bits to mask out from a PMD to get to the PTE page
-+ * PMDs point to PTE table fragments which are PTE_FRAG_SIZE aligned.
++ * With 64k page size, we have hugepage ptes in the pgd and pmd entries. We don't
++ * need to setup hugepage directory for them. Our pte and page directory format
++ * enable us to have this enabled.
 + */
-+#define PMD_MASKED_BITS		(PTE_FRAG_SIZE - 1)
- /* Bits to mask out from a PGD/PUD to get to the PMD page */
- #define PUD_MASKED_BITS		0x1ff
++static inline int hugepd_ok(hugepd_t hpd)
++{
++	return 0;
++}
++#define is_hugepd(pdep)			0
++#endif /* CONFIG_DEBUG_VM */
++
++#endif /* CONFIG_HUGETLB_PAGE */
++
+ #endif	/* __ASSEMBLY__ */
  
-diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
-index d8cde71f6734..69ef28a81733 100644
---- a/arch/powerpc/include/asm/pgalloc-64.h
-+++ b/arch/powerpc/include/asm/pgalloc-64.h
-@@ -163,16 +163,6 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- }
+ #endif /* _ASM_POWERPC_BOOK3S_64_HASH_64K_H */
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index c0c41a2409d2..1263c22d60d8 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -223,5 +223,30 @@ extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 				     unsigned long size, pgprot_t vma_prot);
+ #define __HAVE_PHYS_MEM_ACCESS_PROT
  
- #else /* if CONFIG_PPC_64K_PAGES */
++#ifdef CONFIG_HUGETLB_PAGE
++static inline int hugepd_ok(hugepd_t hpd)
++{
++	return (hpd.pd > 0);
++}
++
++static inline int pmd_huge(pmd_t pmd)
++{
++	return 0;
++}
++
++static inline int pud_huge(pud_t pud)
++{
++	return 0;
++}
++
++static inline int pgd_huge(pgd_t pgd)
++{
++	return 0;
++}
++#define pgd_huge		pgd_huge
++
++#define is_hugepd(hpd)		(hugepd_ok(hpd))
++#endif
++
+ #endif /* __ASSEMBLY__ */
+ #endif
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 9d2f38e1b21d..3e4002364aba 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -386,45 +386,11 @@ typedef unsigned long pgprot_t;
+ 
+ typedef struct { signed long pd; } hugepd_t;
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
+-#ifdef CONFIG_PPC_BOOK3S_64
+-#ifdef CONFIG_PPC_64K_PAGES
 -/*
-- * we support 16 fragments per PTE page.
+- * With 64k page size, we have hugepage ptes in the pgd and pmd entries. We don't
+- * need to setup hugepage directory for them. Our pte and page directory format
+- * enable us to have this enabled. But to avoid errors when implementing new
+- * features disable hugepd for 64K. We enable a debug version here, So we catch
+- * wrong usage.
 - */
--#define PTE_FRAG_NR	16
--/*
-- * We use a 2K PTE page fragment and another 2K for storing
-- * real_pte_t hash index
-- */
--#define PTE_FRAG_SIZE_SHIFT  12
--#define PTE_FRAG_SIZE (2 * PTRS_PER_PTE * sizeof(pte_t))
- 
- extern pte_t *page_table_alloc(struct mm_struct *, unsigned long, int);
- extern void page_table_free(struct mm_struct *, unsigned long *, int);
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index d747dd7bc90b..379a6a90644b 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -87,11 +87,7 @@ static void pgd_ctor(void *addr)
- 
- static void pmd_ctor(void *addr)
- {
--#ifdef CONFIG_TRANSPARENT_HUGEPAGE
--	memset(addr, 0, PMD_TABLE_SIZE * 2);
+-#ifdef CONFIG_DEBUG_VM
+-extern int hugepd_ok(hugepd_t hpd);
 -#else
- 	memset(addr, 0, PMD_TABLE_SIZE);
+-#define hugepd_ok(x)	(0)
 -#endif
- }
+-#else
+-static inline int hugepd_ok(hugepd_t hpd)
+-{
+-	/*
+-	 * hugepd pointer, bottom two bits == 00 and next 4 bits
+-	 * indicate size of table
+-	 */
+-	return (((hpd.pd & 0x3) == 0x0) && ((hpd.pd & HUGEPD_SHIFT_MASK) != 0));
+-}
+-#endif
+-#else
+-static inline int hugepd_ok(hugepd_t hpd)
+-{
+-	return (hpd.pd > 0);
+-}
+-#endif
+-
+-#define is_hugepd(hpd)               (hugepd_ok(hpd))
+-#define pgd_huge pgd_huge
+-int pgd_huge(pgd_t pgd);
+-#else /* CONFIG_HUGETLB_PAGE */
+-#define is_hugepd(pdep)			0
+-#define pgd_huge(pgd)			0
++#ifndef CONFIG_HUGETLB_PAGE
++#define is_hugepd(pdep)		(0)
++#define pgd_huge(pgd)		(0)
+ #endif /* CONFIG_HUGETLB_PAGE */
++
+ #define __hugepd(x) ((hugepd_t) { (x) })
  
- struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
+ struct page;
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index 0734e4daffef..e2138c7ae70f 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -114,3 +114,21 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 	*ptep = __pte(new_pte & ~_PAGE_BUSY);
+ 	return 0;
+ }
++
++#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_DEBUG_VM)
++/*
++ * This enables us to catch the wrong page directory format
++ * Moved here so that we can use WARN() in the call.
++ */
++int hugepd_ok(hugepd_t hpd)
++{
++	bool is_hugepd;
++
++	/*
++	 * We should not find this format in page directory, warn otherwise.
++	 */
++	is_hugepd = (((hpd.pd & 0x3) == 0x0) && ((hpd.pd & HUGEPD_SHIFT_MASK) != 0));
++	WARN(is_hugepd, "Found wrong page directory format\n");
++	return 0;
++}
++#endif
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 9833fee493ec..bc72e542a83e 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -53,78 +53,6 @@ static unsigned nr_gpages;
+ 
+ #define hugepd_none(hpd)	((hpd).pd == 0)
+ 
+-#ifdef CONFIG_PPC_BOOK3S_64
+-/*
+- * At this point we do the placement change only for BOOK3S 64. This would
+- * possibly work on other subarchs.
+- */
+-
+-/*
+- * We have PGD_INDEX_SIZ = 12 and PTE_INDEX_SIZE = 8, so that we can have
+- * 16GB hugepage pte in PGD and 16MB hugepage pte at PMD;
+- *
+- * Defined in such a way that we can optimize away code block at build time
+- * if CONFIG_HUGETLB_PAGE=n.
+- */
+-int pmd_huge(pmd_t pmd)
+-{
+-	/*
+-	 * leaf pte for huge page, bottom two bits != 00
+-	 */
+-	return ((pmd_val(pmd) & 0x3) != 0x0);
+-}
+-
+-int pud_huge(pud_t pud)
+-{
+-	/*
+-	 * leaf pte for huge page, bottom two bits != 00
+-	 */
+-	return ((pud_val(pud) & 0x3) != 0x0);
+-}
+-
+-int pgd_huge(pgd_t pgd)
+-{
+-	/*
+-	 * leaf pte for huge page, bottom two bits != 00
+-	 */
+-	return ((pgd_val(pgd) & 0x3) != 0x0);
+-}
+-
+-#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_DEBUG_VM)
+-/*
+- * This enables us to catch the wrong page directory format
+- * Moved here so that we can use WARN() in the call.
+- */
+-int hugepd_ok(hugepd_t hpd)
+-{
+-	bool is_hugepd;
+-
+-	/*
+-	 * We should not find this format in page directory, warn otherwise.
+-	 */
+-	is_hugepd = (((hpd.pd & 0x3) == 0x0) && ((hpd.pd & HUGEPD_SHIFT_MASK) != 0));
+-	WARN(is_hugepd, "Found wrong page directory format\n");
+-	return 0;
+-}
+-#endif
+-
+-#else
+-int pmd_huge(pmd_t pmd)
+-{
+-	return 0;
+-}
+-
+-int pud_huge(pud_t pud)
+-{
+-	return 0;
+-}
+-
+-int pgd_huge(pgd_t pgd)
+-{
+-	return 0;
+-}
+-#endif
+-
+ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
+ {
+ 	/* Only called for hugetlbfs pages, hence can ignore THP */
 -- 
 2.5.0
