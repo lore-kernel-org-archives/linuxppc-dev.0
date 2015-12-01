@@ -1,34 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 72F071A0CAC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9F33E1A0E35
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 14:37:16 +1100 (AEDT)
 Received: from localhost
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Tue, 1 Dec 2015 09:07:14 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 0FE2BE0063
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 09:07:52 +0530 (IST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 48621125805F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 09:07:30 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB13bAxk66650218
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:10 +0530
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tB13bBV756754178
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:11 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB13b9hK021852
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:10 +0530
+ tB13bA23021905
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 09:07:11 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Scott Wood <scottwood@freescale.com>,
  Denis Kirjanov <kda@linux-powerpc.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V6 06/35] powerpc/mm: Delete booke bits from book3s
-Date: Tue,  1 Dec 2015 09:06:31 +0530
-Message-Id: <1448941020-15168-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V6 08/35] powerpc/mm: Drop pte-common.h from BOOK3S 64
+Date: Tue,  1 Dec 2015 09:06:33 +0530
+Message-Id: <1448941020-15168-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1448941020-15168-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1448941020-15168-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,382 +40,205 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We also move __ASSEMBLY__ towards the end of header. This avoid
-having #ifndef __ASSEMBLY___ all over the header
+We copy only needed PTE bits define from pte-common.h to respective
+hash related header. This should greatly simply later patches in which
+we are going to change the pte format for hash config
 
 Acked-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/32/pgtable.h | 93 +++++++---------------------
- arch/powerpc/include/asm/book3s/64/pgtable.h | 86 +++++++------------------
- arch/powerpc/include/asm/book3s/pgtable.h    |  1 +
- 3 files changed, 49 insertions(+), 131 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash-4k.h |   1 +
+ arch/powerpc/include/asm/book3s/64/hash.h    |   2 +
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 104 ++++++++++++++++++++++++++-
+ arch/powerpc/include/asm/book3s/pgtable.h    |  16 ++---
+ 4 files changed, 111 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index 418d2fa3ac7d..5438c0b6aeec 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -3,18 +3,10 @@
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index f2c51cd61f69..15518b620f5a 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -62,6 +62,7 @@
+ /* shift to put page number into pte */
+ #define PTE_RPN_SHIFT	(17)
  
- #include <asm-generic/pgtable-nopmd.h>
- 
--#ifndef __ASSEMBLY__
--#include <linux/sched.h>
--#include <linux/threads.h>
--#include <asm/io.h>			/* For sub-arch specific PPC_PIN_SIZE */
--
--extern unsigned long ioremap_bot;
--
--#ifdef CONFIG_44x
--extern int icache_44x_need_flush;
--#endif
-+#include <asm/book3s/32/hash.h>
- 
--#endif /* __ASSEMBLY__ */
-+/* And here we include common definitions */
-+#include <asm/pte-common.h>
- 
++#define _PAGE_4K_PFN		0
+ #ifndef __ASSEMBLY__
  /*
-  * The normal case is that PTEs are 32-bits and we have a 1-page
-@@ -31,28 +23,11 @@ extern int icache_44x_need_flush;
- #define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
- #define PGDIR_MASK	(~(PGDIR_SIZE-1))
+  * 4-level page tables related bits
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index 8e60d4fa434d..7deb5063ff8c 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -20,6 +20,7 @@
+ #define _PAGE_EXEC		0x0004 /* No execute on POWER4 and newer (we invert) */
+ #define _PAGE_GUARDED		0x0008
+ /* We can derive Memory coherence from _PAGE_NO_CACHE */
++#define _PAGE_COHERENT		0x0
+ #define _PAGE_NO_CACHE		0x0020 /* I: cache inhibit */
+ #define _PAGE_WRITETHRU		0x0040 /* W: cache write-through */
+ #define _PAGE_DIRTY		0x0080 /* C: page changed */
+@@ -30,6 +31,7 @@
+ /* No separate kernel read-only */
+ #define _PAGE_KERNEL_RW		(_PAGE_RW | _PAGE_DIRTY) /* user access blocked by key */
+ #define _PAGE_KERNEL_RO		 _PAGE_KERNEL_RW
++#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW | _PAGE_EXEC)
  
--/*
-- * entries per page directory level: our page-table tree is two-level, so
-- * we don't really have any PMD directory.
-- */
--#ifndef __ASSEMBLY__
--#define PTE_TABLE_SIZE	(sizeof(pte_t) << PTE_SHIFT)
--#define PGD_TABLE_SIZE	(sizeof(pgd_t) << (32 - PGDIR_SHIFT))
--#endif	/* __ASSEMBLY__ */
--
- #define PTRS_PER_PTE	(1 << PTE_SHIFT)
- #define PTRS_PER_PMD	1
- #define PTRS_PER_PGD	(1 << (32 - PGDIR_SHIFT))
- 
- #define USER_PTRS_PER_PGD	(TASK_SIZE / PGDIR_SIZE)
--#define FIRST_USER_ADDRESS	0UL
--
--#define pte_ERROR(e) \
--	pr_err("%s:%d: bad pte %llx.\n", __FILE__, __LINE__, \
--		(unsigned long long)pte_val(e))
--#define pgd_ERROR(e) \
--	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
--
- /*
-  * This is the bottom of the PKMAP area with HIGHMEM or an arbitrary
-  * value (for now) on others, from where we can start layout kernel
-@@ -100,30 +75,30 @@ extern int icache_44x_need_flush;
- #endif
- #define VMALLOC_END	ioremap_bot
- 
-+#ifndef __ASSEMBLY__
-+#include <linux/sched.h>
-+#include <linux/threads.h>
-+#include <asm/io.h>			/* For sub-arch specific PPC_PIN_SIZE */
-+
-+extern unsigned long ioremap_bot;
-+
-+/*
-+ * entries per page directory level: our page-table tree is two-level, so
-+ * we don't really have any PMD directory.
-+ */
-+#define PTE_TABLE_SIZE	(sizeof(pte_t) << PTE_SHIFT)
-+#define PGD_TABLE_SIZE	(sizeof(pgd_t) << (32 - PGDIR_SHIFT))
-+
-+#define pte_ERROR(e) \
-+	pr_err("%s:%d: bad pte %llx.\n", __FILE__, __LINE__, \
-+		(unsigned long long)pte_val(e))
-+#define pgd_ERROR(e) \
-+	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
- /*
-  * Bits in a linux-style PTE.  These match the bits in the
-  * (hardware-defined) PowerPC PTE as closely as possible.
-  */
- 
--#if defined(CONFIG_40x)
--#include <asm/pte-40x.h>
--#elif defined(CONFIG_44x)
--#include <asm/pte-44x.h>
--#elif defined(CONFIG_FSL_BOOKE) && defined(CONFIG_PTE_64BIT)
--#include <asm/pte-book3e.h>
--#elif defined(CONFIG_FSL_BOOKE)
--#include <asm/pte-fsl-booke.h>
--#elif defined(CONFIG_8xx)
--#include <asm/pte-8xx.h>
--#else /* CONFIG_6xx */
--#include <asm/book3s/32/hash.h>
--#endif
--
--/* And here we include common definitions */
--#include <asm/pte-common.h>
--
--#ifndef __ASSEMBLY__
--
- #define pte_clear(mm, addr, ptep) \
- 	do { pte_update(ptep, ~_PAGE_HASHPTE, 0); } while (0)
- 
-@@ -167,7 +142,6 @@ static inline unsigned long pte_update(pte_t *p,
- 				       unsigned long clr,
- 				       unsigned long set)
- {
--#ifdef PTE_ATOMIC_UPDATES
- 	unsigned long old, tmp;
- 
- 	__asm__ __volatile__("\
-@@ -180,15 +154,7 @@ static inline unsigned long pte_update(pte_t *p,
- 	: "=&r" (old), "=&r" (tmp), "=m" (*p)
- 	: "r" (p), "r" (clr), "r" (set), "m" (*p)
- 	: "cc" );
--#else /* PTE_ATOMIC_UPDATES */
--	unsigned long old = pte_val(*p);
--	*p = __pte((old & ~clr) | set);
--#endif /* !PTE_ATOMIC_UPDATES */
--
--#ifdef CONFIG_44x
--	if ((old & _PAGE_USER) && (old & _PAGE_EXEC))
--		icache_44x_need_flush = 1;
--#endif
-+
- 	return old;
- }
- #else /* CONFIG_PTE_64BIT */
-@@ -196,7 +162,6 @@ static inline unsigned long long pte_update(pte_t *p,
- 					    unsigned long clr,
- 					    unsigned long set)
- {
--#ifdef PTE_ATOMIC_UPDATES
- 	unsigned long long old;
- 	unsigned long tmp;
- 
-@@ -211,15 +176,7 @@ static inline unsigned long long pte_update(pte_t *p,
- 	: "=&r" (old), "=&r" (tmp), "=m" (*p)
- 	: "r" (p), "r" ((unsigned long)(p) + 4), "r" (clr), "r" (set), "m" (*p)
- 	: "cc" );
--#else /* PTE_ATOMIC_UPDATES */
--	unsigned long long old = pte_val(*p);
--	*p = __pte((old & ~(unsigned long long)clr) | set);
--#endif /* !PTE_ATOMIC_UPDATES */
--
--#ifdef CONFIG_44x
--	if ((old & _PAGE_USER) && (old & _PAGE_EXEC))
--		icache_44x_need_flush = 1;
--#endif
-+
- 	return old;
- }
- #endif /* CONFIG_PTE_64BIT */
-@@ -233,12 +190,10 @@ static inline int __ptep_test_and_clear_young(unsigned int context, unsigned lon
- {
- 	unsigned long old;
- 	old = pte_update(ptep, _PAGE_ACCESSED, 0);
--#if _PAGE_HASHPTE != 0
- 	if (old & _PAGE_HASHPTE) {
- 		unsigned long ptephys = __pa(ptep) & PAGE_MASK;
- 		flush_hash_pages(context, addr, ptephys, 1);
- 	}
--#endif
- 	return (old & _PAGE_ACCESSED) != 0;
- }
- #define ptep_test_and_clear_young(__vma, __addr, __ptep) \
+ /* Strong Access Ordering */
+ #define _PAGE_SAO		(_PAGE_WRITETHRU | _PAGE_NO_CACHE | _PAGE_COHERENT)
 diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 2741ac6fbd3d..ddc08bf22709 100644
+index ddc08bf22709..f942b27e9c5f 100644
 --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
 +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -8,7 +8,6 @@
- #include <asm/book3s/64/hash.h>
- #include <asm/barrier.h>
- 
--#define FIRST_USER_ADDRESS	0UL
- 
+@@ -94,11 +94,109 @@
+ #define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS |		\
+ 			 _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPLITTING | \
+ 			 _PAGE_THP_HUGE)
++#define _PTE_NONE_MASK	_PAGE_HPTEFLAGS
  /*
-  * Size of EA range mapped by our pagetables.
-@@ -25,27 +24,16 @@
- /*
-  * Define the address range of the kernel non-linear virtual area
+- * Default defines for things which we don't use.
+- * We should get this removed.
++ * The mask convered by the RPN must be a ULL on 32-bit platforms with
++ * 64-bit PTEs
   */
--
--#ifdef CONFIG_PPC_BOOK3E
--#define KERN_VIRT_START ASM_CONST(0x8000000000000000)
--#else
- #define KERN_VIRT_START ASM_CONST(0xD000000000000000)
--#endif
- #define KERN_VIRT_SIZE	ASM_CONST(0x0000100000000000)
--
- /*
-  * The vmalloc space starts at the beginning of that region, and
-  * occupies half of it on hash CPUs and a quarter of it on Book3E
-  * (we keep a quarter for the virtual memmap)
-  */
- #define VMALLOC_START	KERN_VIRT_START
--#ifdef CONFIG_PPC_BOOK3E
--#define VMALLOC_SIZE	(KERN_VIRT_SIZE >> 2)
--#else
- #define VMALLOC_SIZE	(KERN_VIRT_SIZE >> 1)
--#endif
- #define VMALLOC_END	(VMALLOC_START + VMALLOC_SIZE)
--
- /*
-  * The second half of the kernel virtual space is used for IO mappings,
-  * it's itself carved into the PIO region (ISA and PHB IO space) and
-@@ -64,7 +52,6 @@
- #define IOREMAP_BASE	(PHB_IO_END)
- #define IOREMAP_END	(KERN_VIRT_START + KERN_VIRT_SIZE)
- 
--
- /*
-  * Region IDs
-  */
-@@ -79,32 +66,39 @@
- 
- /*
-  * Defines the address of the vmemap area, in its own region on
-- * hash table CPUs and after the vmalloc space on Book3E
-+ * hash table CPUs.
-  */
--#ifdef CONFIG_PPC_BOOK3E
--#define VMEMMAP_BASE		VMALLOC_END
--#define VMEMMAP_END		KERN_IO_START
--#else
- #define VMEMMAP_BASE		(VMEMMAP_REGION_ID << REGION_SHIFT)
--#endif
- #define vmemmap			((struct page *)VMEMMAP_BASE)
- 
- 
--/*
-- * Include the PTE bits definitions
-- */
--#ifdef CONFIG_PPC_BOOK3S
--#include <asm/book3s/64/hash.h>
--#else
--#include <asm/pte-book3e.h>
--#endif
 -#include <asm/pte-common.h>
--
- #ifdef CONFIG_PPC_MM_SLICES
- #define HAVE_ARCH_UNMAPPED_AREA
- #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
- #endif /* CONFIG_PPC_MM_SLICES */
- 
++#define PTE_RPN_MASK	(~((1UL << PTE_RPN_SHIFT) - 1))
 +/*
-+ * THP pages can't be special. So use the _PAGE_SPECIAL
++ * _PAGE_CHG_MASK masks of bits that are to be preserved across
++ * pgprot changes
 + */
-+#define _PAGE_SPLITTING _PAGE_SPECIAL
++#define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_HPTEFLAGS | _PAGE_DIRTY | \
++			 _PAGE_ACCESSED | _PAGE_SPECIAL)
++/*
++ * Mask of bits returned by pte_pgprot()
++ */
++#define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
++			 _PAGE_WRITETHRU | _PAGE_4K_PFN | \
++			 _PAGE_USER | _PAGE_ACCESSED |  \
++			 _PAGE_RW |  _PAGE_DIRTY | _PAGE_EXEC)
++/*
++ * We define 2 sets of base prot bits, one for basic pages (ie,
++ * cacheable kernel and user pages) and one for non cacheable
++ * pages. We always set _PAGE_COHERENT when SMP is enabled or
++ * the processor might need it for DMA coherency.
++ */
++#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_PSIZE)
++#define _PAGE_BASE	(_PAGE_BASE_NC | _PAGE_COHERENT)
++
++/* Permission masks used to generate the __P and __S table,
++ *
++ * Note:__pgprot is defined in arch/powerpc/include/asm/page.h
++ *
++ * Write permissions imply read permissions for now (we could make write-only
++ * pages on BookE but we don't bother for now). Execute permission control is
++ * possible on platforms that define _PAGE_EXEC
++ *
++ * Note due to the way vm flags are laid out, the bits are XWR
++ */
++#define PAGE_NONE	__pgprot(_PAGE_BASE)
++#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
++#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | \
++				 _PAGE_EXEC)
++#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER )
++#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
++#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER )
++#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
++
++#define __P000	PAGE_NONE
++#define __P001	PAGE_READONLY
++#define __P010	PAGE_COPY
++#define __P011	PAGE_COPY
++#define __P100	PAGE_READONLY_X
++#define __P101	PAGE_READONLY_X
++#define __P110	PAGE_COPY_X
++#define __P111	PAGE_COPY_X
++
++#define __S000	PAGE_NONE
++#define __S001	PAGE_READONLY
++#define __S010	PAGE_SHARED
++#define __S011	PAGE_SHARED
++#define __S100	PAGE_READONLY_X
++#define __S101	PAGE_READONLY_X
++#define __S110	PAGE_SHARED_X
++#define __S111	PAGE_SHARED_X
++
++/* Permission masks used for kernel mappings */
++#define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
++#define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
++				 _PAGE_NO_CACHE)
++#define PAGE_KERNEL_NCG	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
++				 _PAGE_NO_CACHE | _PAGE_GUARDED)
++#define PAGE_KERNEL_X	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RWX)
++#define PAGE_KERNEL_RO	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RO)
++#define PAGE_KERNEL_ROX	__pgprot(_PAGE_BASE | _PAGE_KERNEL_ROX)
++
++/* Protection used for kernel text. We want the debuggers to be able to
++ * set breakpoints anywhere, so don't write protect the kernel text
++ * on platforms where such control is possible.
++ */
++#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
++	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
++#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
++#else
++#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
++#endif
++
++/* Make modules code happy. We don't set RO yet */
++#define PAGE_KERNEL_EXEC	PAGE_KERNEL_X
 +
 +/*
-+ * We need to differentiate between explicit huge page and THP huge
-+ * page, since THP huge page also need to track real subpage details
++ * Don't just check for any non zero bits in __PAGE_USER, since for book3e
++ * and PTE_64BIT, PAGE_KERNEL_X contains _PAGE_BAP_SR which is also in
++ * _PAGE_USER.  Need to explicitly match _PAGE_BAP_UR bit in that case too.
 + */
-+#define _PAGE_THP_HUGE  _PAGE_4K_PFN
++#define pte_user(val)		((val & _PAGE_USER) == _PAGE_USER)
 +
-+/*
-+ * set of bits not changed in pmd_modify.
-+ */
-+#define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS |		\
-+			 _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPLITTING | \
-+			 _PAGE_THP_HUGE)
-+/*
-+ * Default defines for things which we don't use.
-+ * We should get this removed.
-+ */
-+#include <asm/pte-common.h>
++/* Advertise special mapping type for AGP */
++#define PAGE_AGP		(PAGE_KERNEL_NC)
++#define HAVE_PAGE_AGP
++
++/* Advertise support for _PAGE_SPECIAL */
++#define __HAVE_ARCH_PTE_SPECIAL
++
  #ifndef __ASSEMBLY__
  
  /*
-@@ -144,7 +138,7 @@
- #define PMD_BAD_BITS		(PTE_TABLE_SIZE-1)
- #define PUD_BAD_BITS		(PMD_TABLE_SIZE-1)
- 
--#define pmd_set(pmdp, pmdval) 	(pmd_val(*(pmdp)) = (pmdval))
-+#define pmd_set(pmdp, pmdval)	(pmd_val(*(pmdp)) = (pmdval))
- #define pmd_none(pmd)		(!pmd_val(pmd))
- #define	pmd_bad(pmd)		(!is_kernel_addr(pmd_val(pmd)) \
- 				 || (pmd_val(pmd) & PMD_BAD_BITS))
-@@ -206,7 +200,6 @@ static inline unsigned long pte_update(struct mm_struct *mm,
- 				       unsigned long set,
- 				       int huge)
- {
--#ifdef PTE_ATOMIC_UPDATES
- 	unsigned long old, tmp;
- 
- 	__asm__ __volatile__(
-@@ -220,18 +213,12 @@ static inline unsigned long pte_update(struct mm_struct *mm,
- 	: "=&r" (old), "=&r" (tmp), "=m" (*ptep)
- 	: "r" (ptep), "r" (clr), "m" (*ptep), "i" (_PAGE_BUSY), "r" (set)
- 	: "cc" );
--#else
--	unsigned long old = pte_val(*ptep);
--	*ptep = __pte((old & ~clr) | set);
--#endif
- 	/* huge pages use the old page table lock */
- 	if (!huge)
- 		assert_pte_locked(mm, addr);
- 
--#ifdef CONFIG_PPC_STD_MMU_64
- 	if (old & _PAGE_HASHPTE)
- 		hpte_need_flush(mm, addr, ptep, old, huge);
--#endif
- 
- 	return old;
- }
-@@ -313,7 +300,6 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- 	unsigned long bits = pte_val(entry) &
- 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
- 
--#ifdef PTE_ATOMIC_UPDATES
- 	unsigned long old, tmp;
- 
- 	__asm__ __volatile__(
-@@ -326,10 +312,6 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- 	:"=&r" (old), "=&r" (tmp), "=m" (*ptep)
- 	:"r" (bits), "r" (ptep), "m" (*ptep), "i" (_PAGE_BUSY)
- 	:"cc");
--#else
--	unsigned long old = pte_val(*ptep);
--	*ptep = __pte(old | bits);
--#endif
- }
- 
- #define __HAVE_ARCH_PTE_SAME
-@@ -367,28 +349,8 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- 
- void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
- void pgtable_cache_init(void);
--#endif /* __ASSEMBLY__ */
- 
- /*
-- * THP pages can't be special. So use the _PAGE_SPECIAL
-- */
--#define _PAGE_SPLITTING _PAGE_SPECIAL
--
--/*
-- * We need to differentiate between explicit huge page and THP huge
-- * page, since THP huge page also need to track real subpage details
-- */
--#define _PAGE_THP_HUGE  _PAGE_4K_PFN
--
--/*
-- * set of bits not changed in pmd_modify.
-- */
--#define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS |		\
--			 _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPLITTING | \
--			 _PAGE_THP_HUGE)
--
--#ifndef __ASSEMBLY__
--/*
-  * The linux hugepage PMD now include the pmd entries followed by the address
-  * to the stashed pgtable_t. The stashed pgtable_t contains the hpte bits.
-  * [ 1 bit secondary | 3 bit hidx | 1 bit valid | 000]. We use one byte per
 diff --git a/arch/powerpc/include/asm/book3s/pgtable.h b/arch/powerpc/include/asm/book3s/pgtable.h
-index a8d8e5152bd4..3818cc7bc9b7 100644
+index fa270cfcf30a..87333618af3b 100644
 --- a/arch/powerpc/include/asm/book3s/pgtable.h
 +++ b/arch/powerpc/include/asm/book3s/pgtable.h
-@@ -7,4 +7,5 @@
- #include <asm/book3s/32/pgtable.h>
- #endif
+@@ -11,10 +11,7 @@
+ #ifndef __ASSEMBLY__
  
-+#define FIRST_USER_ADDRESS	0UL
- #endif
+ /* Generic accessors to PTE bits */
+-static inline int pte_write(pte_t pte)
+-{
+-	return (pte_val(pte) & (_PAGE_RW | _PAGE_RO)) != _PAGE_RO;
+-}
++static inline int pte_write(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_RW);}
+ static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
+ static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
+ static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
+@@ -57,15 +54,16 @@ static inline unsigned long pte_pfn(pte_t pte)	{
+ 	return pte_val(pte) >> PTE_RPN_SHIFT; }
+ 
+ /* Generic modifiers for PTE bits */
+-static inline pte_t pte_wrprotect(pte_t pte) {
+-	pte_val(pte) &= ~(_PAGE_RW | _PAGE_HWWRITE);
+-	pte_val(pte) |= _PAGE_RO; return pte; }
++static inline pte_t pte_wrprotect(pte_t pte)
++{
++	pte_val(pte) &= ~_PAGE_RW;
++	return pte;
++}
+ static inline pte_t pte_mkclean(pte_t pte) {
+-	pte_val(pte) &= ~(_PAGE_DIRTY | _PAGE_HWWRITE); return pte; }
++	pte_val(pte) &= ~_PAGE_DIRTY; return pte; }
+ static inline pte_t pte_mkold(pte_t pte) {
+ 	pte_val(pte) &= ~_PAGE_ACCESSED; return pte; }
+ static inline pte_t pte_mkwrite(pte_t pte) {
+-	pte_val(pte) &= ~_PAGE_RO;
+ 	pte_val(pte) |= _PAGE_RW; return pte; }
+ static inline pte_t pte_mkdirty(pte_t pte) {
+ 	pte_val(pte) |= _PAGE_DIRTY; return pte; }
 -- 
 2.5.0
