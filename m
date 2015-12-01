@@ -1,22 +1,15 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 371171A0295
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 22:23:01 +1100 (AEDT)
-Message-ID: <1448968980.18781.3.camel@ellerman.id.au>
-Subject: Re: [PATCH 07/19] powerpc: Create mtmsrd_isync()
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anton Blanchard <anton@samba.org>, benh@kernel.crashing.org,
- paulus@samba.org, mikey@neuling.org, cyrilbur@gmail.com,
- scottwood@freescale.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Tue, 01 Dec 2015 22:23:00 +1100
-In-Reply-To: <1446079451-8774-8-git-send-email-anton@samba.org>
-References: <1446079451-8774-1-git-send-email-anton@samba.org>
- <1446079451-8774-8-git-send-email-anton@samba.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 0EAD41A017D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 22:44:20 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] crypto: talitos - add new crypto modes
+To: Kim Phillips <kim.phillips@freescale.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, David S Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org
+Message-Id: <20151201114415.97E331A2438@localhost.localdomain>
+Date: Tue,  1 Dec 2015 12:44:15 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,44 +19,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-10-29 at 11:43 +1100, Anton Blanchard wrote:
+This patch adds the following algorithms to the talitos driver:
+* ecb(aes)
+* ctr(aes)
+* ecb(des)
+* cbc(des)
+* ecb(des3_ede)
 
-> mtmsrd_isync() will do an mtmsrd followed by an isync on older
-> processors. On newer processors we avoid the isync via a feature fixup.
-> 
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index ef64219..5bf8ec2 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -130,7 +130,10 @@ void enable_kernel_fp(void)
->  		check_if_tm_restore_required(current);
->  		giveup_fpu(current);
->  	} else {
-> -		giveup_fpu(NULL);	/* just enables FP for kernel */
-> +		u64 oldmsr = mfmsr();
-> +
-> +		if (!(oldmsr & MSR_FP))
-> +			mtmsr_isync(oldmsr | MSR_FP);
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/crypto/talitos.c | 83 ++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/crypto/talitos.h |  1 +
+ 2 files changed, 84 insertions(+)
 
-You seem to do this pattern at all call sites.
-
-So should we instead have a helper that makes sure an MSR bit(s) is/are set?
-
-Maybe:
-
-static inline void msr_enable(unsigned long enable_bits)
-{
-	u64 val, msr = mfmsr();
-
-	if (msr & enable_bits)
-		return;
-
-	val = msr | enable_bits;
-	asm volatile(__MTMSR " %0; " ASM_FTR_IFCLR("isync", "nop", %1) : :
-			"r" (val), "i" (CPU_FTR_ARCH_206) : "memory");
-}
-
-
-Thoughts?
-
-cheers
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index ab33898..a0d4a08 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -2324,6 +2324,22 @@ static struct talitos_alg_template driver_algs[] = {
+ 	/* ABLKCIPHER algorithms. */
+ 	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
+ 		.alg.crypto = {
++			.cra_name = "ecb(aes)",
++			.cra_driver_name = "ecb-aes-talitos",
++			.cra_blocksize = AES_BLOCK_SIZE,
++			.cra_flags = CRYPTO_ALG_TYPE_ABLKCIPHER |
++				     CRYPTO_ALG_ASYNC,
++			.cra_ablkcipher = {
++				.min_keysize = AES_MIN_KEY_SIZE,
++				.max_keysize = AES_MAX_KEY_SIZE,
++				.ivsize = AES_BLOCK_SIZE,
++			}
++		},
++		.desc_hdr_template = DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU |
++				     DESC_HDR_SEL0_AESU,
++	},
++	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
++		.alg.crypto = {
+ 			.cra_name = "cbc(aes)",
+ 			.cra_driver_name = "cbc-aes-talitos",
+ 			.cra_blocksize = AES_BLOCK_SIZE,
+@@ -2341,6 +2357,73 @@ static struct talitos_alg_template driver_algs[] = {
+ 	},
+ 	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
+ 		.alg.crypto = {
++			.cra_name = "ctr(aes)",
++			.cra_driver_name = "ctr-aes-talitos",
++			.cra_blocksize = AES_BLOCK_SIZE,
++			.cra_flags = CRYPTO_ALG_TYPE_ABLKCIPHER |
++				     CRYPTO_ALG_ASYNC,
++			.cra_ablkcipher = {
++				.min_keysize = AES_MIN_KEY_SIZE,
++				.max_keysize = AES_MAX_KEY_SIZE,
++				.ivsize = AES_BLOCK_SIZE,
++			}
++		},
++		.desc_hdr_template = DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU |
++				     DESC_HDR_SEL0_AESU |
++				     DESC_HDR_MODE0_AESU_CTR,
++	},
++	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
++		.alg.crypto = {
++			.cra_name = "ecb(des)",
++			.cra_driver_name = "ecb-des-talitos",
++			.cra_blocksize = DES_BLOCK_SIZE,
++			.cra_flags = CRYPTO_ALG_TYPE_ABLKCIPHER |
++				     CRYPTO_ALG_ASYNC,
++			.cra_ablkcipher = {
++				.min_keysize = DES_KEY_SIZE,
++				.max_keysize = DES_KEY_SIZE,
++				.ivsize = DES_BLOCK_SIZE,
++			}
++		},
++		.desc_hdr_template = DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU |
++				     DESC_HDR_SEL0_DEU,
++	},
++	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
++		.alg.crypto = {
++			.cra_name = "cbc(des)",
++			.cra_driver_name = "cbc-des-talitos",
++			.cra_blocksize = DES_BLOCK_SIZE,
++			.cra_flags = CRYPTO_ALG_TYPE_ABLKCIPHER |
++				     CRYPTO_ALG_ASYNC,
++			.cra_ablkcipher = {
++				.min_keysize = DES_KEY_SIZE,
++				.max_keysize = DES_KEY_SIZE,
++				.ivsize = DES_BLOCK_SIZE,
++			}
++		},
++		.desc_hdr_template = DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU |
++				     DESC_HDR_SEL0_DEU |
++				     DESC_HDR_MODE0_DEU_CBC,
++	},
++	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
++		.alg.crypto = {
++			.cra_name = "ecb(des3_ede)",
++			.cra_driver_name = "ecb-3des-talitos",
++			.cra_blocksize = DES3_EDE_BLOCK_SIZE,
++			.cra_flags = CRYPTO_ALG_TYPE_ABLKCIPHER |
++				     CRYPTO_ALG_ASYNC,
++			.cra_ablkcipher = {
++				.min_keysize = DES3_EDE_KEY_SIZE,
++				.max_keysize = DES3_EDE_KEY_SIZE,
++				.ivsize = DES3_EDE_BLOCK_SIZE,
++			}
++		},
++		.desc_hdr_template = DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU |
++				     DESC_HDR_SEL0_DEU |
++				     DESC_HDR_MODE0_DEU_3DES,
++	},
++	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
++		.alg.crypto = {
+ 			.cra_name = "cbc(des3_ede)",
+ 			.cra_driver_name = "cbc-3des-talitos",
+ 			.cra_blocksize = DES3_EDE_BLOCK_SIZE,
+diff --git a/drivers/crypto/talitos.h b/drivers/crypto/talitos.h
+index 0090f32..8dd8f40 100644
+--- a/drivers/crypto/talitos.h
++++ b/drivers/crypto/talitos.h
+@@ -345,6 +345,7 @@ static inline bool has_ftr_sec1(struct talitos_private *priv)
+ /* primary execution unit mode (MODE0) and derivatives */
+ #define	DESC_HDR_MODE0_ENCRYPT		cpu_to_be32(0x00100000)
+ #define	DESC_HDR_MODE0_AESU_CBC		cpu_to_be32(0x00200000)
++#define	DESC_HDR_MODE0_AESU_CTR		cpu_to_be32(0x00600000)
+ #define	DESC_HDR_MODE0_DEU_CBC		cpu_to_be32(0x00400000)
+ #define	DESC_HDR_MODE0_DEU_3DES		cpu_to_be32(0x00200000)
+ #define	DESC_HDR_MODE0_MDEU_CONT	cpu_to_be32(0x08000000)
+-- 
+2.1.0
