@@ -1,15 +1,39 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 0EAD41A017D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 22:44:20 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] crypto: talitos - add new crypto modes
-To: Kim Phillips <kim.phillips@freescale.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, David S Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org
-Message-Id: <20151201114415.97E331A2438@localhost.localdomain>
-Date: Tue,  1 Dec 2015 12:44:15 +0100 (CET)
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 54FB91A01DF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 23:41:53 +1100 (AEDT)
+Received: from localhost
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Tue, 1 Dec 2015 10:41:47 -0200
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 1FA371DC006D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Dec 2015 07:41:42 -0500 (EST)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tB1CdUfp26018266
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 10:39:30 -0200
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tB1CfhQD020183
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Dec 2015 07:41:43 -0500
+Subject: Re: [PATCH] Enable MSI/MSI-X caps and disable MSI interrupts at PCI
+ probe time - code move
+To: Bjorn Helgaas <helgaas@kernel.org>
+References: <1445437055-7017-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <20151201013540.GB9306@localhost>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bhelgaas@google.com, mpe@ellerman.id.au, paulus@samba.org,
+ benh@kernel.crashing.org, mst@redhat.com, shangw@linux.vnet.ibm.com
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Message-ID: <565D9586.4050605@linux.vnet.ibm.com>
+Date: Tue, 1 Dec 2015 10:41:42 -0200
+MIME-Version: 1.0
+In-Reply-To: <20151201013540.GB9306@localhost>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,131 +43,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the following algorithms to the talitos driver:
-* ecb(aes)
-* ctr(aes)
-* ecb(des)
-* cbc(des)
-* ecb(des3_ede)
+On 11/30/2015 11:35 PM, Bjorn Helgaas wrote:
+> Thanks for your patience, Guilherme.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- drivers/crypto/talitos.c | 83 ++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/crypto/talitos.h |  1 +
- 2 files changed, 84 insertions(+)
+Hello Bjorn, thank you for the very deep review of my patch. Much 
+appreciated!
 
-diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index ab33898..a0d4a08 100644
---- a/drivers/crypto/talitos.c
-+++ b/drivers/crypto/talitos.c
-@@ -2324,6 +2324,22 @@ static struct talitos_alg_template driver_algs[] = {
- 	/* ABLKCIPHER algorithms. */
- 	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
- 		.alg.crypto = {
-+			.cra_name = "ecb(aes)",
-+			.cra_driver_name = "ecb-aes-talitos",
-+			.cra_blocksize = AES_BLOCK_SIZE,
-+			.cra_flags = CRYPTO_ALG_TYPE_ABLKCIPHER |
-+				     CRYPTO_ALG_ASYNC,
-+			.cra_ablkcipher = {
-+				.min_keysize = AES_MIN_KEY_SIZE,
-+				.max_keysize = AES_MAX_KEY_SIZE,
-+				.ivsize = AES_BLOCK_SIZE,
-+			}
-+		},
-+		.desc_hdr_template = DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU |
-+				     DESC_HDR_SEL0_AESU,
-+	},
-+	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
-+		.alg.crypto = {
- 			.cra_name = "cbc(aes)",
- 			.cra_driver_name = "cbc-aes-talitos",
- 			.cra_blocksize = AES_BLOCK_SIZE,
-@@ -2341,6 +2357,73 @@ static struct talitos_alg_template driver_algs[] = {
- 	},
- 	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
- 		.alg.crypto = {
-+			.cra_name = "ctr(aes)",
-+			.cra_driver_name = "ctr-aes-talitos",
-+			.cra_blocksize = AES_BLOCK_SIZE,
-+			.cra_flags = CRYPTO_ALG_TYPE_ABLKCIPHER |
-+				     CRYPTO_ALG_ASYNC,
-+			.cra_ablkcipher = {
-+				.min_keysize = AES_MIN_KEY_SIZE,
-+				.max_keysize = AES_MAX_KEY_SIZE,
-+				.ivsize = AES_BLOCK_SIZE,
-+			}
-+		},
-+		.desc_hdr_template = DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU |
-+				     DESC_HDR_SEL0_AESU |
-+				     DESC_HDR_MODE0_AESU_CTR,
-+	},
-+	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
-+		.alg.crypto = {
-+			.cra_name = "ecb(des)",
-+			.cra_driver_name = "ecb-des-talitos",
-+			.cra_blocksize = DES_BLOCK_SIZE,
-+			.cra_flags = CRYPTO_ALG_TYPE_ABLKCIPHER |
-+				     CRYPTO_ALG_ASYNC,
-+			.cra_ablkcipher = {
-+				.min_keysize = DES_KEY_SIZE,
-+				.max_keysize = DES_KEY_SIZE,
-+				.ivsize = DES_BLOCK_SIZE,
-+			}
-+		},
-+		.desc_hdr_template = DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU |
-+				     DESC_HDR_SEL0_DEU,
-+	},
-+	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
-+		.alg.crypto = {
-+			.cra_name = "cbc(des)",
-+			.cra_driver_name = "cbc-des-talitos",
-+			.cra_blocksize = DES_BLOCK_SIZE,
-+			.cra_flags = CRYPTO_ALG_TYPE_ABLKCIPHER |
-+				     CRYPTO_ALG_ASYNC,
-+			.cra_ablkcipher = {
-+				.min_keysize = DES_KEY_SIZE,
-+				.max_keysize = DES_KEY_SIZE,
-+				.ivsize = DES_BLOCK_SIZE,
-+			}
-+		},
-+		.desc_hdr_template = DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU |
-+				     DESC_HDR_SEL0_DEU |
-+				     DESC_HDR_MODE0_DEU_CBC,
-+	},
-+	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
-+		.alg.crypto = {
-+			.cra_name = "ecb(des3_ede)",
-+			.cra_driver_name = "ecb-3des-talitos",
-+			.cra_blocksize = DES3_EDE_BLOCK_SIZE,
-+			.cra_flags = CRYPTO_ALG_TYPE_ABLKCIPHER |
-+				     CRYPTO_ALG_ASYNC,
-+			.cra_ablkcipher = {
-+				.min_keysize = DES3_EDE_KEY_SIZE,
-+				.max_keysize = DES3_EDE_KEY_SIZE,
-+				.ivsize = DES3_EDE_BLOCK_SIZE,
-+			}
-+		},
-+		.desc_hdr_template = DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU |
-+				     DESC_HDR_SEL0_DEU |
-+				     DESC_HDR_MODE0_DEU_3DES,
-+	},
-+	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
-+		.alg.crypto = {
- 			.cra_name = "cbc(des3_ede)",
- 			.cra_driver_name = "cbc-3des-talitos",
- 			.cra_blocksize = DES3_EDE_BLOCK_SIZE,
-diff --git a/drivers/crypto/talitos.h b/drivers/crypto/talitos.h
-index 0090f32..8dd8f40 100644
---- a/drivers/crypto/talitos.h
-+++ b/drivers/crypto/talitos.h
-@@ -345,6 +345,7 @@ static inline bool has_ftr_sec1(struct talitos_private *priv)
- /* primary execution unit mode (MODE0) and derivatives */
- #define	DESC_HDR_MODE0_ENCRYPT		cpu_to_be32(0x00100000)
- #define	DESC_HDR_MODE0_AESU_CBC		cpu_to_be32(0x00200000)
-+#define	DESC_HDR_MODE0_AESU_CTR		cpu_to_be32(0x00600000)
- #define	DESC_HDR_MODE0_DEU_CBC		cpu_to_be32(0x00400000)
- #define	DESC_HDR_MODE0_DEU_3DES		cpu_to_be32(0x00200000)
- #define	DESC_HDR_MODE0_MDEU_CONT	cpu_to_be32(0x08000000)
--- 
-2.1.0
+
+> I applied this to pci/msi for v4.5.  I reworked the changelog and made
+> pci_msi_setup_pci_dev() static, since I think it's now only called
+> from drivers/pci/probe.c.
+
+Thanks. Regarding pci_msi_setup_pci_dev(), it really should be static. I 
+changed it because PowerPC arch was calling this since my last patch, 
+but this patch remove the call from PowerPC arch, so it's great to see 
+this function static again.
+
+
+> I didn't quite follow the last paragraph about reverting 1851617cd2da.
+> 1851617cd2da moved the MSI init (dev->msi_cap init and MSI disable)
+> from pci/msi.c (where it was only done when CONFIG_PCI_MSI=y) to
+> pci/probe.c (where we did it for all non-OF arches, regardless of
+> CONFIG_PCI_MSI).  So I would characterize this patch as doing the MSI
+> init for *all* arches, regardless of CONFIG_PCI_MSI.
+
+Well, my English skills aren't so good, so I possibly I wrote confusing 
+text. What I meant is that, from practical viewpoint, what we did here 
+has the same effect of reverting those patches (in the sense of 
+initializing MSI caps). But you can ignore my statement, and I 
+appreciate that you removed it from the commit message if it was 
+confusing heh
+
+
+> While looking at this, I noticed that pci_msi_init_pci_dev() is now
+> always empty, so I'll remove that in a separate patch.
+>
+> Please let me know if this doesn't make sense:
+
+The patch below is great, thanks for the modifications and for removing 
+pci_msi_init_pci_dev() in a separated patch.
+
+
+> commit e80e7edc55ba711f3fe23975061b3f1c336ceb95
+> Author: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+> Date:   Wed Oct 21 12:17:35 2015 -0200
+>
+>      PCI/MSI: Initialize MSI capability for all architectures
+>
+>      1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel doesn't
+>      support MSI") moved dev->msi_cap and dev->msix_cap initialization from the
+>      pci_init_capabilities() path (used on all architectures) to the
+>      pci_setup_device() path (not used on Open Firmware architectures).
+>
+>      This broke MSI or MSI-X on Open Firmware machines.  4d9aac397a5d
+>      ("powerpc/PCI: Disable MSI/MSI-X interrupts at PCI probe time in OF case")
+>      fixed it for PowerPC but not for SPARC.
+>
+>      Set up MSI and MSI-X (initialize msi_cap and msix_cap and disable MSI and
+>      MSI-X) in pci_init_capabilities() so all architectures do it the same way.
+>
+>      This reverts 4d9aac397a5d since this patch fixes the problem generically
+>      for both PowerPC and SPARC.
+>
+>      [bhelgaas: changelog, make pci_msi_setup_pci_dev() static]
+>      Fixes: 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel doesn't support MSI")
+>      Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+>      Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+>
+> diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+> index 2e710c1..526ac67 100644
+> --- a/arch/powerpc/kernel/pci_of_scan.c
+> +++ b/arch/powerpc/kernel/pci_of_scan.c
+> @@ -187,9 +187,6 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
+>
+>   	pci_device_add(dev, bus);
+>
+> -	/* Setup MSI caps & disable MSI/MSI-X interrupts */
+> -	pci_msi_setup_pci_dev(dev);
+> -
+>   	return dev;
+>   }
+>   EXPORT_SYMBOL(of_create_pci_dev);
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index edb1984..cd94737 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -1145,7 +1145,7 @@ int pci_cfg_space_size(struct pci_dev *dev)
+>
+>   #define LEGACY_IO_RESOURCE	(IORESOURCE_IO | IORESOURCE_PCI_FIXED)
+>
+> -void pci_msi_setup_pci_dev(struct pci_dev *dev)
+> +static void pci_msi_setup_pci_dev(struct pci_dev *dev)
+>   {
+>   	/*
+>   	 * Disable the MSI hardware to avoid screaming interrupts
+> @@ -1212,8 +1212,6 @@ int pci_setup_device(struct pci_dev *dev)
+>   	/* "Unknown power state" */
+>   	dev->current_state = PCI_UNKNOWN;
+>
+> -	pci_msi_setup_pci_dev(dev);
+> -
+>   	/* Early fixups, before probing the BARs */
+>   	pci_fixup_device(pci_fixup_early, dev);
+>   	/* device class may be changed after fixup */
+> @@ -1606,6 +1604,9 @@ static void pci_init_capabilities(struct pci_dev *dev)
+>   	/* MSI/MSI-X list */
+>   	pci_msi_init_pci_dev(dev);
+>
+> +	/* Setup MSI caps & disable MSI/MSI-X interrupts */
+> +	pci_msi_setup_pci_dev(dev);
+> +
+>   	/* Buffers for saving PCIe and PCI-X capabilities */
+>   	pci_allocate_cap_save_buffers(dev);
+>
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index e828e7b..f9f79ad 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -1248,8 +1248,6 @@ struct msix_entry {
+>   	u16	entry;	/* driver uses to specify entry, OS writes */
+>   };
+>
+> -void pci_msi_setup_pci_dev(struct pci_dev *dev);
+> -
+>   #ifdef CONFIG_PCI_MSI
+>   int pci_msi_vec_count(struct pci_dev *dev);
+>   void pci_msi_shutdown(struct pci_dev *dev);
+>
+
+Cheers,
+
+
+Guilherme Piccoli
