@@ -1,23 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CD5631A0286
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 10:25:19 +1100 (AEDT)
-Message-ID: <1449012319.22406.1.camel@ellerman.id.au>
-Subject: Re: [PATCH 07/19] powerpc: Create mtmsrd_isync()
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anton Blanchard <anton@samba.org>, benh@kernel.crashing.org,
- paulus@samba.org, mikey@neuling.org, cyrilbur@gmail.com,
- scottwood@freescale.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 02 Dec 2015 10:25:19 +1100
-In-Reply-To: <1448968980.18781.3.camel@ellerman.id.au>
-References: <1446079451-8774-1-git-send-email-anton@samba.org>
- <1446079451-8774-8-git-send-email-anton@samba.org>
- <1448968980.18781.3.camel@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 17A571A0286
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 10:31:09 +1100 (AEDT)
+Received: by pacej9 with SMTP id ej9so20047564pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Dec 2015 15:31:06 -0800 (PST)
+Subject: Re: [PATCH 2/3] selftests/powerpc: Add test for forking inside
+ transaction
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1448946504-11653-1-git-send-email-rashmicy@gmail.com>
+ <1448946504-11653-3-git-send-email-rashmicy@gmail.com>
+ <565D563F.3010709@linux.vnet.ibm.com>
+From: Rashmica <rashmicy@gmail.com>
+Message-ID: <565E2DB4.4030908@gmail.com>
+Date: Wed, 2 Dec 2015 10:31:00 +1100
+MIME-Version: 1.0
+In-Reply-To: <565D563F.3010709@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-12-01 at 22:23 +1100, Michael Ellerman wrote:
+As far as I'm aware, the kernel used to crash when forking inside a 
+transaction (see powerpc/tm: Fix crash when forking inside a 
+transaction). So this is to check that the transaction aborts rather 
+than your whole kernel crashing.
 
-> On Thu, 2015-10-29 at 11:43 +1100, Anton Blanchard wrote:
-> 
-
-> > mtmsrd_isync() will do an mtmsrd followed by an isync on older
-> > processors. On newer processors we avoid the isync via a feature fixup.
-> > 
-> > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> > index ef64219..5bf8ec2 100644
-> > --- a/arch/powerpc/kernel/process.c
-> > +++ b/arch/powerpc/kernel/process.c
-> > @@ -130,7 +130,10 @@ void enable_kernel_fp(void)
-> >  		check_if_tm_restore_required(current);
-> >  		giveup_fpu(current);
-> >  	} else {
-> > -		giveup_fpu(NULL);	/* just enables FP for kernel */
-> > +		u64 oldmsr = mfmsr();
-> > +
-> > +		if (!(oldmsr & MSR_FP))
-> > +			mtmsr_isync(oldmsr | MSR_FP);
-> 
-> You seem to do this pattern at all call sites.
-> 
-> So should we instead have a helper that makes sure an MSR bit(s) is/are set?
-> 
-> Maybe:
-> 
-> static inline void msr_enable(unsigned long enable_bits)
-> {
-> 	u64 val, msr = mfmsr();
-> 
-> 	if (msr & enable_bits)
-> 		return;
-> 
-> 	val = msr | enable_bits;
-> 	asm volatile(__MTMSR " %0; " ASM_FTR_IFCLR("isync", "nop", %1) : :
-> 			"r" (val), "i" (CPU_FTR_ARCH_206) : "memory");
-> }
-
-Ugh, should have read the whole series. You do more or less this in patch 12.
-
-cheers
+On 01/12/15 19:11, Anshuman Khandual wrote:
+> On 12/01/2015 10:38 AM, Rashmica Gupta wrote:
+>> +int test_fork(void)
+>> +{
+>> +	SKIP_IF(!have_htm());
+>> +
+>> +	asm __volatile__(
+>> +		"tbegin.;"
+>> +		"blt    1f; "
+>> +		"li     0, 2;"  /* fork syscall */
+>> +		"sc  ;"
+>> +		"tend.;"
+>> +		"1: ;"
+>> +		: : : "memory", "r0");
+>> +	/* If we reach here, we've passed.  Otherwise we've probably crashed
+>> +	 * the kernel */
+> The transaction inside the parent process will abort. What
+> is expected inside the child process ? Why should the kernel
+> crash ?
+>
