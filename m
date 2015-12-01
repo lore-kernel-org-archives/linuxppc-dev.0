@@ -1,19 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7CB481A0286
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 09:29:00 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 5BF7014029E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 09:29:00 +1100 (AEDT)
-Message-ID: <1449008940.12022.3.camel@ellerman.id.au>
-Subject: next is open, send your patches now!
+ by lists.ozlabs.org (Postfix) with ESMTPS id CD5631A0286
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 10:25:19 +1100 (AEDT)
+Message-ID: <1449012319.22406.1.camel@ellerman.id.au>
+Subject: Re: [PATCH 07/19] powerpc: Create mtmsrd_isync()
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 02 Dec 2015 09:29:00 +1100
+To: Anton Blanchard <anton@samba.org>, benh@kernel.crashing.org,
+ paulus@samba.org, mikey@neuling.org, cyrilbur@gmail.com,
+ scottwood@freescale.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Wed, 02 Dec 2015 10:25:19 +1100
+In-Reply-To: <1448968980.18781.3.camel@ellerman.id.au>
+References: <1446079451-8774-1-git-send-email-anton@samba.org>
+ <1446079451-8774-8-git-send-email-anton@samba.org>
+ <1448968980.18781.3.camel@ellerman.id.au>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,9 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi folks,
+On Tue, 2015-12-01 at 22:23 +1100, Michael Ellerman wrote:
 
-The powerpc next branch is open, if you haven't already, please send your
-patches for 4.5 now.
+> On Thu, 2015-10-29 at 11:43 +1100, Anton Blanchard wrote:
+> 
+
+> > mtmsrd_isync() will do an mtmsrd followed by an isync on older
+> > processors. On newer processors we avoid the isync via a feature fixup.
+> > 
+> > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> > index ef64219..5bf8ec2 100644
+> > --- a/arch/powerpc/kernel/process.c
+> > +++ b/arch/powerpc/kernel/process.c
+> > @@ -130,7 +130,10 @@ void enable_kernel_fp(void)
+> >  		check_if_tm_restore_required(current);
+> >  		giveup_fpu(current);
+> >  	} else {
+> > -		giveup_fpu(NULL);	/* just enables FP for kernel */
+> > +		u64 oldmsr = mfmsr();
+> > +
+> > +		if (!(oldmsr & MSR_FP))
+> > +			mtmsr_isync(oldmsr | MSR_FP);
+> 
+> You seem to do this pattern at all call sites.
+> 
+> So should we instead have a helper that makes sure an MSR bit(s) is/are set?
+> 
+> Maybe:
+> 
+> static inline void msr_enable(unsigned long enable_bits)
+> {
+> 	u64 val, msr = mfmsr();
+> 
+> 	if (msr & enable_bits)
+> 		return;
+> 
+> 	val = msr | enable_bits;
+> 	asm volatile(__MTMSR " %0; " ASM_FTR_IFCLR("isync", "nop", %1) : :
+> 			"r" (val), "i" (CPU_FTR_ARCH_206) : "memory");
+> }
+
+Ugh, should have read the whole series. You do more or less this in patch 12.
 
 cheers
