@@ -1,23 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B09891A0286
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 19:14:33 +1100 (AEDT)
-Message-ID: <1449044072.24750.3.camel@ellerman.id.au>
-Subject: Re: [P.A. Semi] Does the ethernet interface work on your Electra,
- Chitra,  Nemo, and Athena board?
+ by lists.ozlabs.org (Postfix) with ESMTPS id 096CC1A0286
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 19:24:03 +1100 (AEDT)
+Message-ID: <1449044642.24750.4.camel@ellerman.id.au>
+Subject: Re: [PATCH 16/19] powerpc: create giveup_all()
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>, Gabriel Paubert
- <paubert@iram.es>, netdev@vger.kernel.org, Denis Kirjanov
- <kda@linux-powerpc.org>,  linuxppc-dev@lists.ozlabs.org
-Date: Wed, 02 Dec 2015 19:14:32 +1100
-In-Reply-To: <565E7A9E.4000909@xenosoft.de>
-References: <565AF986.9060106@xenosoft.de>
- <CAOJe8K1911vDjMe9m_1vY6DSGpOk0TmL96Qf1whuNFXxHJesGw@mail.gmail.com>
- <565C1B55.4020207@xenosoft.de> <565C8287.7090209@xenosoft.de>
- <20151130181217.GA15921@visitor2.iram.es> <565DB2FE.1010706@xenosoft.de>
- <565E7A9E.4000909@xenosoft.de>
+To: Anton Blanchard <anton@samba.org>, benh@kernel.crashing.org,
+ paulus@samba.org, mikey@neuling.org, cyrilbur@gmail.com,
+ scottwood@freescale.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Wed, 02 Dec 2015 19:24:02 +1100
+In-Reply-To: <1446079451-8774-17-git-send-email-anton@samba.org>
+References: <1446079451-8774-1-git-send-email-anton@samba.org>
+ <1446079451-8774-17-git-send-email-anton@samba.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,33 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-12-02 at 05:59 +0100, Christian Zigotzky wrote:
-> Hi all,
+On Thu, 2015-10-29 at 11:44 +1100, Anton Blanchard wrote:
+
+> Create a single function that gives everything up (FP, VMX, VSX, SPE).
+> Doing this all at once means we only do one MSR write.
 > 
-> We tested some 4.3 kernels on a P.A. Semi reference board. Ultimately, 
-> ethernet does not work, though on the reference board, the interface is 
-> detected, gets link, but will not pass any packets/traffic.
+> A context switch microbenchmark using yield():
 > 
-> Somewhere in the source code of the commit "'powerpc-4.3-1' of 
-> git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux (2015-09-03 
-> 23:41:38 (GMT)" is the problem.
+> http://ozlabs.org/~anton/junkcode/context_switch2.c
 > 
-> Could you please help us to solve the problem?
+> ./context_switch2 --test=yield --fp --altivec --vector 0 0
+> 
+> shows an improvement of 3% on POWER8.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>  arch/powerpc/include/asm/switch_to.h |  1 +
+>  arch/powerpc/kernel/process.c        | 75 ++++++++++++++++++++++++++++--------
+>  arch/powerpc/kvm/book3s_pr.c         | 17 +-------
 
-Hi Christian,
+books3s_pr.c can be a module, so we need giveup_all() to be EXPORT_SYMBOL.
 
-Unfortunately there is no source code in that commit, it's just a merge. And
-your bisect run found that the very first commit in that merge was OK:
-
-> > [390fd5929f52bdfb9dfcc03820041ba556780f4a] cxl: Set up and enable PSL 
-> > git bisect good
-
-So I'm not convinced your bisect run was correct, sorry.
-
-My pasemi is booting OK, but I haven't had time to test the network. If you
-remind me next week I will make sure network is working on my board.
-
-Are you testing your board with your additional patch as well? Or just vanilla
-mainline?
+I'll fix it up on my end.
 
 cheers
