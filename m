@@ -1,26 +1,25 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0137.outbound.protection.outlook.com [207.46.100.137])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 57C221A0286
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 08:11:42 +1100 (AEDT)
-Subject: [P.A. Semi] Does the ethernet interface work on your Electra, Chitra,
- Nemo, and Athena board?
-To: Michael Ellerman <mpe@ellerman.id.au>, Gabriel Paubert <paubert@iram.es>,
- netdev@vger.kernel.org, Denis Kirjanov <kda@linux-powerpc.org>,
- linuxppc-dev@lists.ozlabs.org
-References: <565AF986.9060106@xenosoft.de>
- <CAOJe8K1911vDjMe9m_1vY6DSGpOk0TmL96Qf1whuNFXxHJesGw@mail.gmail.com>
- <565C1B55.4020207@xenosoft.de> <565C8287.7090209@xenosoft.de>
- <20151130181217.GA15921@visitor2.iram.es> <565DB2FE.1010706@xenosoft.de>
- <565E7A9E.4000909@xenosoft.de> <1449044072.24750.3.camel@ellerman.id.au>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <565F5E7C.9040207@xenosoft.de>
-Date: Wed, 2 Dec 2015 22:11:24 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5DC281A0286
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 08:40:48 +1100 (AEDT)
+Message-ID: <1449092431.29246.156.camel@freescale.com>
+Subject: Re: [net-next v4 4/8] dpaa_eth: add driver's Tx queue selection
+From: Scott Wood <scottwood@freescale.com>
+To: <madalin.bucur@freescale.com>, <netdev@vger.kernel.org>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <davem@davemloft.net>, <igal.liberman@freescale.com>,
+ <roy.pledge@freescale.com>, <ppc@mindchasers.com>, <joe@perches.com>,
+ <pebolle@tiscali.nl>, <joakim.tjernlund@transmode.se>,
+ <gregkh@linuxfoundation.org>
+Date: Wed, 2 Dec 2015 15:40:31 -0600
+In-Reply-To: <1446485500-9782-5-git-send-email-madalin.bucur@freescale.com>
+References: <1446485500-9782-1-git-send-email-madalin.bucur@freescale.com>
+ <1446485500-9782-5-git-send-email-madalin.bucur@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <1449044072.24750.3.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,49 +29,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+On Mon, 2015-11-02 at 19:31 +0200, Madalin Bucur wrote:
+> Allow the selection of the transmission queue based on the CPU id.
 
-Thanks a lot for your answer. We tested some vanilla mainline 4.3 
-kernels on an Electra reference board. Additionally we tested some 
-patched 4.3 kernels on our Nemo boards.
+Explain why.
 
-It would be really fantastic, if you could fix the problem.
+> 
+> Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
+> ---
+>  drivers/net/ethernet/freescale/dpaa/Kconfig           | 10 ++++++++++
+>  drivers/net/ethernet/freescale/dpaa/dpaa_eth.c        |  3 +++
+>  drivers/net/ethernet/freescale/dpaa/dpaa_eth.h        |  6 ++++++
+>  drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c |  8 ++++++++
+>  drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h |  4 ++++
+>  5 files changed, 31 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/freescale/dpaa/Kconfig
+> b/drivers/net/ethernet/freescale/dpaa/Kconfig
+> index 022d5aa..2577aac 100644
+> --- a/drivers/net/ethernet/freescale/dpaa/Kconfig
+> +++ b/drivers/net/ethernet/freescale/dpaa/Kconfig
+> @@ -11,6 +11,16 @@ menuconfig FSL_DPAA_ETH
+>  
+>  if FSL_DPAA_ETH
+>  
+> +config FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
+> +	bool "Use driver's Tx queue selection mechanism"
+> +	default y
+> +	---help---
+> +	  The DPAA Ethernet driver defines a ndo_select_queue() callback
+> for optimal selection
+> +	  of the egress FQ. That will override the XPS support for this
+> netdevice.
+> +	  If for whatever reason you want to be in control of the egress FQ
+> -to-CPU selection and mapping,
+> +	  or simply don't want to use the driver's ndo_select_queue()
+> callback, then unselect this
+> +	  and use the standard XPS support instead.
 
-Cheers,
+Is there a use case for needing this to be configurable?
 
-Christian
+> diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+> b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+> index 31d55b4..894f1a7 100644
+> --- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+> +++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+> @@ -390,6 +390,9 @@ static const struct net_device_ops dpa_private_ops = {
+>  	.ndo_get_stats64 = dpa_get_stats64,
+>  	.ndo_set_mac_address = dpa_set_mac_address,
+>  	.ndo_validate_addr = eth_validate_addr,
+> +#ifdef CONFIG_FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
+> +	.ndo_select_queue = dpa_select_queue,
+> +#endif
+>  	.ndo_change_mtu = dpa_change_mtu,
+>  	.ndo_set_rx_mode = dpa_set_rx_mode,
+>  	.ndo_init = dpa_ndo_init,
+> diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+> b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+> index 1ba6617..87577cf 100644
+> --- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+> +++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+> @@ -420,9 +420,15 @@ static inline void _dpa_assign_wq(struct dpa_fq *fq)
+>  	}
+>  }
+>  
+> +#ifdef CONFIG_FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
+> +/* Use in lieu of skb_get_queue_mapping() */
+> +#define dpa_get_queue_mapping(skb) \
+> +	raw_smp_processor_id()
+> +#else
+>  /* Use the queue selected by XPS */
+>  #define dpa_get_queue_mapping(skb) \
+>  	skb_get_queue_mapping(skb)
+> +#endif
 
-On 02 December 2015 at 09:14 AM, Michael Ellerman wrote:
-> On Wed, 2015-12-02 at 05:59 +0100, Christian Zigotzky wrote:
->> Hi all,
->>
->> We tested some 4.3 kernels on a P.A. Semi reference board. Ultimately,
->> ethernet does not work, though on the reference board, the interface is
->> detected, gets link, but will not pass any packets/traffic.
->>
->> Somewhere in the source code of the commit "'powerpc-4.3-1' of
->> git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux (2015-09-03
->> 23:41:38 (GMT)" is the problem.
->>
->> Could you please help us to solve the problem?
-> Hi Christian,
->
-> Unfortunately there is no source code in that commit, it's just a merge. And
-> your bisect run found that the very first commit in that merge was OK:
->
->>> [390fd5929f52bdfb9dfcc03820041ba556780f4a] cxl: Set up and enable PSL
->>> git bisect good
-> So I'm not convinced your bisect run was correct, sorry.
->
-> My pasemi is booting OK, but I haven't had time to test the network. If you
-> remind me next week I will make sure network is working on my board.
->
-> Are you testing your board with your additional patch as well? Or just vanilla
-> mainline?
->
-> cheers
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Why is this necessary?  Shouldn't providing a custom .ndo_select_queue() be
+sufficient to ensure that skb_get_queue_mapping() returns the same thing?
+
+And if this goes away, it's just a matter of a function pointer, so if it does
+need to be configurable it could be a runtime option.
+
+-Scott
