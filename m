@@ -1,18 +1,18 @@
 Return-Path: <rashmicy@gmail.com>
-Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
- [IPv6:2607:f8b0:400e:c03::22d])
+Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c03::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EC7061A0910
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 16:41:03 +1100 (AEDT)
-Received: by pacej9 with SMTP id ej9so29663251pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Dec 2015 21:41:02 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 202B31A0910
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 16:53:09 +1100 (AEDT)
+Received: by pabfh17 with SMTP id fh17so30877442pab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Dec 2015 21:53:07 -0800 (PST)
 From: Rashmica Gupta <rashmicy@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mikey@neuling.org
-Subject: [v3] selftests/powerpc: Add test to check if TAR is corrupted
-Date: Wed,  2 Dec 2015 16:40:46 +1100
-Message-Id: <1449034846-10033-1-git-send-email-rashmicy@gmail.com>
+Subject: [v2] selftests/powerpc: Add test to check is DSCR is corrupted.
+Date: Wed,  2 Dec 2015 16:52:58 +1100
+Message-Id: <1449035578-10920-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,58 +22,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the transaction is aborted, the TAR should be rolled back to the
+If the transaction is aborted, the DSCR should be rolled back to the
 checkpointed value before the transaction began. The value written to the
-TAR when the transaction is suspended should only remain there if the
-transaction completes successfully.
+DSCR when transaction was suspended should only persist if the transaction
+is successful.
 
 Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 ---
-Added more explanation and fixed up styling issue. No functional
-changes.
+No functional changes. Fixed whitespace and styling issues.
 
  tools/testing/selftests/powerpc/tm/.gitignore |  1 +
  tools/testing/selftests/powerpc/tm/Makefile   |  2 +-
- tools/testing/selftests/powerpc/tm/tm-tar.c   | 92 +++++++++++++++++++++++++++
- 3 files changed, 94 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-tar.c
+ tools/testing/selftests/powerpc/tm/tm-dscr.c  | 95 +++++++++++++++++++++++++++
+ 3 files changed, 97 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-dscr.c
 
 diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
-index 76eae258feeb..9bf6749550e3 100644
+index d0c7c97e9b13..76eae258feeb 100644
 --- a/tools/testing/selftests/powerpc/tm/.gitignore
 +++ b/tools/testing/selftests/powerpc/tm/.gitignore
-@@ -4,3 +4,4 @@ tm-signal-msr-resv
+@@ -3,3 +3,4 @@ tm-syscall
+ tm-signal-msr-resv
  tm-signal-stack
  tm-fork
- tm-dscr
-+tm-tar
++tm-dscr
 diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index 59eec240339d..ab2992f69b4c 100644
+index f7d4727662aa..59eec240339d 100644
 --- a/tools/testing/selftests/powerpc/tm/Makefile
 +++ b/tools/testing/selftests/powerpc/tm/Makefile
 @@ -1,4 +1,4 @@
--TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-fork tm-dscr
-+TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-fork tm-dscr tm-tar
+-TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-fork
++TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-fork tm-dscr
  
  all: $(TEST_PROGS)
  
-diff --git a/tools/testing/selftests/powerpc/tm/tm-tar.c b/tools/testing/selftests/powerpc/tm/tm-tar.c
+diff --git a/tools/testing/selftests/powerpc/tm/tm-dscr.c b/tools/testing/selftests/powerpc/tm/tm-dscr.c
 new file mode 100644
-index 000000000000..732f518c95cf
+index 000000000000..b18360895496
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-tar.c
-@@ -0,0 +1,92 @@
++++ b/tools/testing/selftests/powerpc/tm/tm-dscr.c
+@@ -0,0 +1,95 @@
 +/*
 + * Copyright 2015, Michael Neuling, IBM Corp.
 + * Licensed under GPLv2.
 + * Original: Michael Neuling 19/7/2013
 + * Edited: Rashmica Gupta 01/12/2015
 + *
-+ * Do some transactions, see if the tar is corrupted.
-+ * If the transaction is aborted, the TAR should be rolled back to the
-+ * checkpointed value before the transaction began. The value written to
-+ * TAR in suspended mode should only remain in TAR if the transaction
-+ * completes.
++ * Do some transactions, see if the DSCR is corrupted.
++ * If the transaction is aborted, the DSCR should be rolled back to the
++ * checkpointed value before the transaction began. The value set to DSCR
++ * while the transaction was suspended should only remain there if the
++ * transaction succeeds.
++ *
 + */
 +
 +#include <stdio.h>
@@ -84,11 +84,11 @@ index 000000000000..732f518c95cf
 +#include "tm.h"
 +#include "utils.h"
 +
-+#define SPRN_TAR	0x32f
++#define SPRN_DSCR	0x3
 +
 +int	num_loops	= 10000;
 +
-+int test_tar(void)
++int test_dscr(void)
 +{
 +	int i;
 +
@@ -99,47 +99,49 @@ index 000000000000..732f518c95cf
 +		uint64_t result = 0;
 +		asm __volatile__(
 +			"li	7, 1;"
-+			"mtspr	%[tar], 7;"	/* tar = 1 */
++			"mtspr	%[dscr], 7;"	/* dscr = 1 */
 +			"tbegin.;"
-+			"beq	3f;"
++			"beq	3f ;"
 +			"li	4, 0x7000;"	/* Loop lots, to use time */
-+			"2:;"			/* Start loop */
++			"2:;"		     	/* Start loop */
 +			"li	7, 2;"
-+			"mtspr	%[tar], 7;"	/* tar = 2 */
++			"mtspr	%[dscr], 7;"	/* dscr = 2 */
 +			"tsuspend.;"
 +			"li	7, 3;"
-+			"mtspr	%[tar], 7;"	/* tar = 3 */
++			"mtspr	%[dscr], 7;"	/* dscr = 3 */
 +			"tresume.;"
 +			"subi	4, 4, 1;"
 +			"cmpdi	4, 0;"
 +			"bne	2b;"
 +			"tend.;"
 +
-+			/* Transaction sucess! TAR should be 3 */
-+			"mfspr  7, %[tar];"
-+			"ori	%[res], 7, 4;"  // res = 3|4 = 7
++			/* Transaction sucess! DSCR should be 3 */
++			"mfspr  7, %[dscr];"
++			"ori	%[res], 7, 4;"	/* res = 3|4 = 7 */
 +			"b	4f;"
 +
-+			/* Abort handler. TAR should be rolled back to 1 */
++			/* Abort handler.DSCR should be rolled back to 1 */
 +			"3:;"
-+			"mfspr  7, %[tar];"
-+			"ori	%[res], 7, 8;"	// res = 1|8 = 9
++			"mfspr  7, %[dscr];"
++			"ori	%[res], 7, 8;"	/* res = 1|8 = 9 */
 +			"4:;"
 +
 +			: [res]"=r"(result)
-+			: [tar]"i"(SPRN_TAR)
-+			   : "memory", "r0", "r4", "r7");
++			: [dscr]"i"(SPRN_DSCR)
++			: "memory", "r0", "r4", "r7");
 +
-+		/* If result is anything else other than 7 or 9, the tar
-+		 * value must have been corrupted. */
++		/* If result is anything else other than 7 or 9, the dscr
++		* value must have been corrupted. */
 +		if ((result != 7) && (result != 9))
 +			return 1;
++
 +	}
 +	return 0;
 +}
 +
 +int main(int argc, char *argv[])
 +{
++
 +	/* A low number of iterations (eg 100) can cause a false pass */
 +	if (argc > 1) {
 +		if (strcmp(argv[1], "-h") == 0) {
@@ -153,7 +155,7 @@ index 000000000000..732f518c95cf
 +
 +	printf("Starting, %d loops\n", num_loops);
 +
-+	test_harness(test_tar, "tm_tar");
++	test_harness(test_dscr, "tm_dscr");
 +}
 -- 
 2.5.0
