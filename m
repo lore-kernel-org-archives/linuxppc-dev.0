@@ -1,25 +1,15 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-x22b.google.com (mail-yk0-x22b.google.com
- [IPv6:2607:f8b0:4002:c07::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D99A1A01E7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 19:54:06 +1100 (AEDT)
-Received: by ykdr82 with SMTP id r82so38871118ykd.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Dec 2015 00:54:02 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <565C8287.7090209@xenosoft.de>
-References: <565AF986.9060106@xenosoft.de>
- <CAOJe8K1911vDjMe9m_1vY6DSGpOk0TmL96Qf1whuNFXxHJesGw@mail.gmail.com>
- <565C1B55.4020207@xenosoft.de> <565C8287.7090209@xenosoft.de>
-Date: Wed, 2 Dec 2015 11:54:01 +0300
-Message-ID: <CAOJe8K1RHDfqSX9v2ksSHUG8H9+CMyo9WFWw-ufimEmdU+mdpA@mail.gmail.com>
-Subject: Re: [P.A. Semi] Does the ethernet interface work on your Electra,
- Chitra, Nemo, and Athena board?
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9FC781A000C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 20:44:15 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: Anton Blanchard <anton@samba.org>
+Subject: [PATCH 1/4] selftests/powerpc: Move pick_online_cpu() up into utils.c
+Date: Wed,  2 Dec 2015 20:44:08 +1100
+Message-Id: <1449049451-31373-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,106 +19,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/30/15, Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
-> Hi All,
->
-> I have tested the PA Semi Ethernet with the kernels 4.2.3 and 4.3.0
-> today. With the kernel 4.2.3 it works but with the kernel 4.3.0 final it
-> doesn't work.
+We want to use this in another test, so make it available at the top of
+the powerpc selftests tree.
 
-Looking at the changes in pasemi I don't see any significant
-changes to the driver so the best thing you can try is to bisect the
-bad commit.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ tools/testing/selftests/powerpc/pmu/Makefile     |  2 +-
+ tools/testing/selftests/powerpc/pmu/ebb/Makefile |  3 ++-
+ tools/testing/selftests/powerpc/pmu/lib.c        | 26 ------------------------
+ tools/testing/selftests/powerpc/pmu/lib.h        |  1 -
+ tools/testing/selftests/powerpc/utils.h          |  1 +
+ 5 files changed, 4 insertions(+), 29 deletions(-)
 
->
-> After that I tested some git kernels and release candidates of 4.3.
->
-> Kernel 4.3 git from Tue Sep 01, 2015 -> PA Semi Ethernet works
-> Kernel 4.3 git from Wed Sep 02, 2015 -> PA Semi Ethernet works
-> Kernel 4.3 git from Thu Sep 03, 2015 -> PA Semi Ethernet works
-> Kernel 4.3 git from Fri Sep 04, 2015 -> PA Semi Ethernet doesn't work
-> (Merge tag 'powerpc-4.3-1':
-> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=ff474e8ca8547d09cb82ebab56d4c96f9eea01ce)
-> Kernel 4.3 git from Sat Sep 05, 2015 -> PA Semi Ethernet doesn't work
-> Kernel 4.3 git from Mon Sep 07, 2015 -> PA Semi Ethernet doesn't work
-> Kernel 4.3 git from Wed Sep 09, 2015 -> PA Semi Ethernet doesn't work
-> Kernel 4.3 git from Fri Sep 11, 2015 -> PA Semi Ethernet doesn't work
-> Kernel 4.3 RC1 from Sun Sep 13, 2015 -> PA Semi Ethernet doesn't work
-> Kernel 4.3 RC2 from Mon Sep 21, 2015 -> PA Semi Ethernet doesn't work
->
-> The problematic commit must be between Thu Sep 03, 2015 at 09:37 AM (UTC
-> +2) and Fri Sep 04, 2015 at 7:38 PM (UTC +2) in the linux git.
->
-> Linux git: Between
-> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/log/?ofs=15500
->
-> and
-> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/log/?ofs=15200.
->
-> Maybe
-> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=ff474e8ca8547d09cb82ebab56d4c96f9eea01ce.
->
-> Cheers,
->
-> Christian
->
-> On 30 November 2015 at 10:48 AM, Christian Zigotzky wrote:
->> Hi Denis,
->>
->> Thank you for your answer. Sorry because of my description.
->>
->> Yes, the driver probe function finds the device.
->>
->> With kernel 4.4-rc3:
->>
->> dmesg | grep -i eth0
->>
->> [ 2.297473] eth0: PA Semi GMAC: intf 5, hw addr 02:00:e0:0a:30:00
->>
->> dhclient eth0
->>
->> RTNETLINK answers: Cannot allocate memory
->>
->> With kernel 4.1.13:
->>
->> dmesg | grep -i eth0
->>
->> [ 2.328115] eth0: PA Semi GMAC: intf 5, hw addr 02:00:e0:0a:30:00
->> [ 37.130466] eth0: Link is up at 100 Mbps, full duplex.
->>
->> Cheers,
->>
->> Christian
->>
->> On 30 November 2015 at 09:37 AM, Denis Kirjanov wrote:
->>> On 11/29/15, Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
->>>> Hi All,
->>>>
->>>> Does the ethernet interface on your Electra, Chitra, Nemo, and Athena
->>>> board work with the release candidates of the kernel 4.4? Unfortunately
->>>> the P.A. Semi ethernet doesn't work on our Nemo boards with the release
->>>> candidates of the kernel 4.4. We have set the following entries in the
->>>> kernel config:
->>>>
->>>> CONFIG_NET_VENDOR_PASEMI=y
->>>> CONFIG_PASEMI_MAC=y
->>>>
->>>> Could you please test the P.A. Semi ethernet on your P.A. Semi boards?
->>> It's not clear from your descriptions what is not working. Does the
->>> driver probe function find  a device? Does the interface show up in
->>> the kernel? Can it send/receive packets?
->>>
->>> Also please CC netdev.
->>>
->>> Thanks.
->>>
->>>> Thanks in advance,
->>>>
->>>> Christian
->>>> _______________________________________________
->>>> Linuxppc-dev mailing list
->>>> Linuxppc-dev@lists.ozlabs.org
->>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>
->
->
+diff --git a/tools/testing/selftests/powerpc/pmu/Makefile b/tools/testing/selftests/powerpc/pmu/Makefile
+index a9099d9f8f39..15cbd6d5a463 100644
+--- a/tools/testing/selftests/powerpc/pmu/Makefile
++++ b/tools/testing/selftests/powerpc/pmu/Makefile
+@@ -2,7 +2,7 @@ noarg:
+ 	$(MAKE) -C ../
+ 
+ TEST_PROGS := count_instructions l3_bank_test per_event_excludes
+-EXTRA_SOURCES := ../harness.c event.c lib.c
++EXTRA_SOURCES := ../harness.c event.c lib.c ../utils.c
+ 
+ all: $(TEST_PROGS) ebb
+ 
+diff --git a/tools/testing/selftests/powerpc/pmu/ebb/Makefile b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
+index 5cdc9dbf2b27..c18285e9a7b6 100644
+--- a/tools/testing/selftests/powerpc/pmu/ebb/Makefile
++++ b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
+@@ -18,7 +18,8 @@ TEST_PROGS := reg_access_test event_attributes_test cycles_test	\
+ 
+ all: $(TEST_PROGS)
+ 
+-$(TEST_PROGS): ../../harness.c ../event.c ../lib.c ebb.c ebb_handler.S trace.c busy_loop.S
++$(TEST_PROGS): ../../harness.c ../event.c ../lib.c ../../utils.c \
++               ebb.c ebb_handler.S trace.c busy_loop.S
+ 
+ instruction_count_test: ../loop.S
+ 
+diff --git a/tools/testing/selftests/powerpc/pmu/lib.c b/tools/testing/selftests/powerpc/pmu/lib.c
+index a07104c2afe6..a361ad3334ce 100644
+--- a/tools/testing/selftests/powerpc/pmu/lib.c
++++ b/tools/testing/selftests/powerpc/pmu/lib.c
+@@ -15,32 +15,6 @@
+ #include "lib.h"
+ 
+ 
+-int pick_online_cpu(void)
+-{
+-	cpu_set_t mask;
+-	int cpu;
+-
+-	CPU_ZERO(&mask);
+-
+-	if (sched_getaffinity(0, sizeof(mask), &mask)) {
+-		perror("sched_getaffinity");
+-		return -1;
+-	}
+-
+-	/* We prefer a primary thread, but skip 0 */
+-	for (cpu = 8; cpu < CPU_SETSIZE; cpu += 8)
+-		if (CPU_ISSET(cpu, &mask))
+-			return cpu;
+-
+-	/* Search for anything, but in reverse */
+-	for (cpu = CPU_SETSIZE - 1; cpu >= 0; cpu--)
+-		if (CPU_ISSET(cpu, &mask))
+-			return cpu;
+-
+-	printf("No cpus in affinity mask?!\n");
+-	return -1;
+-}
+-
+ int bind_to_cpu(int cpu)
+ {
+ 	cpu_set_t mask;
+diff --git a/tools/testing/selftests/powerpc/pmu/lib.h b/tools/testing/selftests/powerpc/pmu/lib.h
+index ca5d72ae3be6..0213af4ff332 100644
+--- a/tools/testing/selftests/powerpc/pmu/lib.h
++++ b/tools/testing/selftests/powerpc/pmu/lib.h
+@@ -19,7 +19,6 @@ union pipe {
+ 	int fds[2];
+ };
+ 
+-extern int pick_online_cpu(void);
+ extern int bind_to_cpu(int cpu);
+ extern int kill_child_and_wait(pid_t child_pid);
+ extern int wait_for_child(pid_t child_pid);
+diff --git a/tools/testing/selftests/powerpc/utils.h b/tools/testing/selftests/powerpc/utils.h
+index b7d41086bb0a..7dd75c39d610 100644
+--- a/tools/testing/selftests/powerpc/utils.h
++++ b/tools/testing/selftests/powerpc/utils.h
+@@ -21,6 +21,7 @@ typedef uint8_t u8;
+ 
+ int test_harness(int (test_function)(void), char *name);
+ extern void *get_auxv_entry(int type);
++int pick_online_cpu(void);
+ 
+ /* Yes, this is evil */
+ #define FAIL_IF(x)						\
+-- 
+2.5.0
