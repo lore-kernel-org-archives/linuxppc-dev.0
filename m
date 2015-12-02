@@ -1,34 +1,22 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491EB1A0C7B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 10:45:27 +1100 (AEDT)
-Date: Tue, 1 Dec 2015 23:44:37 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Petr Mladek <pmladek@suse.cz>
-Subject: Re: [PATCH v2 3/5] printk/nmi: Try hard to print Oops message in NMI
- context
-Message-ID: <20151201234437.GA8644@n2100.arm.linux.org.uk>
-References: <1448622572-16900-1-git-send-email-pmladek@suse.com>
- <1448622572-16900-4-git-send-email-pmladek@suse.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1448622572-16900-4-git-send-email-pmladek@suse.com>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EABD11A0BC8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 11:03:02 +1100 (AEDT)
+Received: by padhx2 with SMTP id hx2so20843770pad.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Dec 2015 16:03:00 -0800 (PST)
+Received: from circle.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id jj5sm200814pac.4.2015.12.01.16.02.58
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+ Tue, 01 Dec 2015 16:03:00 -0800 (PST)
+From: Rashmica Gupta <rashmicy@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] selftests/powerpc: Add test to check is DSCR is corrupted.
+Date: Wed,  2 Dec 2015 11:02:49 +1100
+Message-Id: <1449014569-4403-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,20 +26,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 27, 2015 at 12:09:30PM +0100, Petr Mladek wrote:
-> What we can do, though, is to zap all printk locks. We already do this
-> when a printk recursion is detected. This should be safe because
-> the system is crashing and there shouldn't be any printk caller
-> that would cause the deadlock.
+If the transaction is aborted, the DSCR should be rolled back to the
+checkpointed value before the transaction began.
 
-What about serial consoles which may call out to subsystems like the
-clk subsystem to enable a clock, which would want to take their own
-spinlocks in addition to the serial console driver?
+Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+---
+To check this yourself, undo the changes from the patch "powerpc/tm: Fix
+context switching TAR, PPR and DSCR SPRs".
 
-I don't see bust_spinlocks() dealing with any of these locks, so IMHO
-trying to make this work in NMI context strikes me as making the
-existing solution more unreliable on ARM systems.
+ tools/testing/selftests/powerpc/tm/.gitignore |  1 +
+ tools/testing/selftests/powerpc/tm/Makefile   |  2 +-
+ tools/testing/selftests/powerpc/tm/tm-dscr.c  | 91 +++++++++++++++++++++++++++
+ 3 files changed, 93 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-dscr.c
 
+diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
+index d0c7c97e9b13..76eae258feeb 100644
+--- a/tools/testing/selftests/powerpc/tm/.gitignore
++++ b/tools/testing/selftests/powerpc/tm/.gitignore
+@@ -3,3 +3,4 @@ tm-syscall
+ tm-signal-msr-resv
+ tm-signal-stack
+ tm-fork
++tm-dscr
+diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
+index f7d4727662aa..59eec240339d 100644
+--- a/tools/testing/selftests/powerpc/tm/Makefile
++++ b/tools/testing/selftests/powerpc/tm/Makefile
+@@ -1,4 +1,4 @@
+-TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-fork
++TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-fork tm-dscr
+ 
+ all: $(TEST_PROGS)
+ 
+diff --git a/tools/testing/selftests/powerpc/tm/tm-dscr.c b/tools/testing/selftests/powerpc/tm/tm-dscr.c
+new file mode 100644
+index 000000000000..ac44e259c86d
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/tm/tm-dscr.c
+@@ -0,0 +1,91 @@
++/*
++ * Copyright 2015, Michael Neuling, IBM Corp. 
++ * Licensed under GPLv2.
++ * Original: Michael Neuling 19/7/2013
++ * Edited: Rashmica Gupta 01/12/2015
++ *
++ * Do some transactions, see if the dscr is corrupted. 
++ *
++ */
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <string.h>
++
++#include "tm.h"
++#include "utils.h"
++
++#define SPRN_DSCR	0x3
++
++int	num_loops	= 10000;
++
++int test_dscr(void)
++{
++	int i;
++
++	SKIP_IF(!have_htm());
++
++	for (i = 0; i < num_loops; i++)
++	{
++		uint64_t result = 0;
++		asm __volatile__(
++			"li	7, 1;"
++			"mtspr	%[dscr], 7;"	// dscr = 1
++			"tbegin.;"
++			"beq	3f ;"
++			"li	4, 0x7000;"	// Loop lots, to use time
++			"2: ;"		     	// Start loop
++			"li	7, 2;"
++			"mtspr	%[dscr], 7;"	// dscr = 2
++			"tsuspend.;"
++			"li	7, 3;"		
++			"mtspr	%[dscr], 7;"	// dscr = 3
++			"tresume.;"		
++			"subi	4, 4, 1;"
++			"cmpdi	4, 0;"
++			"bne	2b;"
++			"tend.;"
++
++			// Transaction sucess! DSCR should be 3.
++			"mfspr  7, %[dscr];" 
++			"ori	%[res], 7, 4;"	// res = 3|4 = 7
++			"b	4f;"
++			
++			// Abort handler. DSCR should be rolled back to 1.
++			"3:;" 			
++			"mfspr  7, %[dscr];" 	
++			"ori	%[res], 7, 8;"	// res = 1|8 = 9
++			"4:;"
++
++			: [res]"=r"(result)
++			: [dscr]"i"(SPRN_DSCR)
++			: "memory", "r0", "r4", "r7");
++
++		// If result is anything else other than 7 or 9, the dscr
++		// value must have been corrupted.
++		if ((result != 7) && (result != 9))
++			return 1;
++		
++	}
++	return 0;
++}
++
++int main(int argc, char *argv[])
++{
++	
++	// A low number of iterations (eg 100) can cause a false pass.
++	if (argc > 1) {
++		if (strcmp(argv[1], "-h") == 0) {
++			printf("Syntax:\n\t%s [<num loops>]\n",
++			       argv[0]);
++			return 0;
++		} else {
++			num_loops = atoi(argv[1]);
++		}
++	}
++
++	printf("Starting, %d loops\n", num_loops);
++
++	test_harness(test_dscr, "tm_dscr");
++}
 -- 
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+2.5.0
