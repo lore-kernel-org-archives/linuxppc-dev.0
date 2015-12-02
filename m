@@ -1,36 +1,26 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.188])
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 20D1D1A0BC0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 04:17:16 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'yalin wang' <yalin.wang2010@gmail.com>, Petr Mladek <pmladek@suse.com>
-CC: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>, Daniel Thompson
- <daniel.thompson@linaro.org>, Jiri Kosina <jkosina@suse.com>,
- "linux-cris-kernel@axis.com" <linux-cris-kernel@axis.com>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Peter Zijlstra
- <peterz@infradead.org>, "x86@kernel.org" <x86@kernel.org>, linux-kernel
- <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- "adi-buildroot-devel@lists.sourceforge.net"
- <adi-buildroot-devel@lists.sourceforge.net>, Ingo Molnar <mingo@redhat.com>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, Russell King
- <rmk+kernel@arm.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Thomas
- Gleixner" <tglx@linutronix.de>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>
-Subject: RE: [PATCH v2 5/5] printk/nmi: Increase the size of the temporary
- buffer
-Date: Wed, 2 Dec 2015 16:20:41 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CBE1231@AcuExch.aculab.com>
-References: <1448622572-16900-1-git-send-email-pmladek@suse.com>
- <1448622572-16900-6-git-send-email-pmladek@suse.com>
- <81211733-2484-40A9-9D4A-644AA27FBC73@gmail.com>
-In-Reply-To: <81211733-2484-40A9-9D4A-644AA27FBC73@gmail.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 57C221A0286
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 08:11:42 +1100 (AEDT)
+Subject: [P.A. Semi] Does the ethernet interface work on your Electra, Chitra,
+ Nemo, and Athena board?
+To: Michael Ellerman <mpe@ellerman.id.au>, Gabriel Paubert <paubert@iram.es>,
+ netdev@vger.kernel.org, Denis Kirjanov <kda@linux-powerpc.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <565AF986.9060106@xenosoft.de>
+ <CAOJe8K1911vDjMe9m_1vY6DSGpOk0TmL96Qf1whuNFXxHJesGw@mail.gmail.com>
+ <565C1B55.4020207@xenosoft.de> <565C8287.7090209@xenosoft.de>
+ <20151130181217.GA15921@visitor2.iram.es> <565DB2FE.1010706@xenosoft.de>
+ <565E7A9E.4000909@xenosoft.de> <1449044072.24750.3.camel@ellerman.id.au>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <565F5E7C.9040207@xenosoft.de>
+Date: Wed, 2 Dec 2015 22:11:24 +0100
 MIME-Version: 1.0
+In-Reply-To: <1449044072.24750.3.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,12 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogeWFsaW4gd2FuZw0KPiBTZW50OiAzMCBOb3ZlbWJlciAyMDE1IDE2OjQyDQo+ID4gT24g
-Tm92IDI3LCAyMDE1LCBhdCAxOTowOSwgUGV0ciBNbGFkZWsgPHBtbGFkZWtAc3VzZS5jb20+IHdy
-b3RlOg0KPiA+DQo+ID4gVGVzdGluZyBoYXMgc2hvd24gdGhhdCB0aGUgYmFja3RyYWNlIHNvbWV0
-aW1lcyBkb2VzIG5vdCBmaXQNCj4gPiBpbnRvIHRoZSA0a0IgdGVtcG9yYXJ5IGJ1ZmZlciB0aGF0
-IGlzIHVzZWQgaW4gTk1JIGNvbnRleHQuDQo+ID4NCj4gPiBUaGUgd2FybmluZ3MgYXJlIGdvbmUg
-d2hlbiBJIGRvdWJsZSB0aGUgdGVtcG9yYXJ5IGJ1ZmZlciBzaXplLg0KDQpZb3UgYXJlIHdhc3Rp
-bmcgYSBsb3Qgb2YgbWVtb3J5IGZvciBzb21ldGhpbmcgdGhhdCBpcyBpbmZyZXF1ZW50bHkgdXNl
-ZC4NClRoZXJlIG91Z2h0IHRvIGJlIHNvbWUgd2F5IG9mIGNvcHlpbmcgcGFydGlhbCB0cmFjZWJh
-Y2tzIGludG8gdGhlDQptYWluIGJ1ZmZlci4NCg0KCURhdmlkDQoNCg==
+Hi Michael,
+
+Thanks a lot for your answer. We tested some vanilla mainline 4.3 
+kernels on an Electra reference board. Additionally we tested some 
+patched 4.3 kernels on our Nemo boards.
+
+It would be really fantastic, if you could fix the problem.
+
+Cheers,
+
+Christian
+
+On 02 December 2015 at 09:14 AM, Michael Ellerman wrote:
+> On Wed, 2015-12-02 at 05:59 +0100, Christian Zigotzky wrote:
+>> Hi all,
+>>
+>> We tested some 4.3 kernels on a P.A. Semi reference board. Ultimately,
+>> ethernet does not work, though on the reference board, the interface is
+>> detected, gets link, but will not pass any packets/traffic.
+>>
+>> Somewhere in the source code of the commit "'powerpc-4.3-1' of
+>> git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux (2015-09-03
+>> 23:41:38 (GMT)" is the problem.
+>>
+>> Could you please help us to solve the problem?
+> Hi Christian,
+>
+> Unfortunately there is no source code in that commit, it's just a merge. And
+> your bisect run found that the very first commit in that merge was OK:
+>
+>>> [390fd5929f52bdfb9dfcc03820041ba556780f4a] cxl: Set up and enable PSL
+>>> git bisect good
+> So I'm not convinced your bisect run was correct, sorry.
+>
+> My pasemi is booting OK, but I haven't had time to test the network. If you
+> remind me next week I will make sure network is working on my board.
+>
+> Are you testing your board with your additional patch as well? Or just vanilla
+> mainline?
+>
+> cheers
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
