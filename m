@@ -1,22 +1,27 @@
-Return-Path: <rashmicy@gmail.com>
-Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
- [IPv6:2607:f8b0:400e:c03::229])
+Return-Path: <dja@axtens.net>
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EABD11A0BC8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 11:03:02 +1100 (AEDT)
-Received: by padhx2 with SMTP id hx2so20843770pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Dec 2015 16:03:00 -0800 (PST)
-Received: from circle.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id jj5sm200814pac.4.2015.12.01.16.02.58
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
- Tue, 01 Dec 2015 16:03:00 -0800 (PST)
-From: Rashmica Gupta <rashmicy@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] selftests/powerpc: Add test to check is DSCR is corrupted.
-Date: Wed,  2 Dec 2015 11:02:49 +1100
-Message-Id: <1449014569-4403-1-git-send-email-rashmicy@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0DCD11A0BCB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 11:34:38 +1100 (AEDT)
+Received: by pacfl14 with SMTP id fl14so2806234pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Dec 2015 16:34:36 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: "Geyslan G. Bem" <geyslan@gmail.com>
+Cc: "Geyslan G. Bem" <geyslan@gmail.com>, kvm@vger.kernel.org,
+ Gleb Natapov <gleb@kernel.org>, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ Alexander Graf <agraf@suse.com>
+Subject: Re: [PATCH] kvm: remove unused variable 'vcpu_book3s'
+In-Reply-To: <1449013410-19103-1-git-send-email-geyslan@gmail.com>
+References: <1449013410-19103-1-git-send-email-geyslan@gmail.com>
+Date: Wed, 02 Dec 2015 11:34:21 +1100
+Message-ID: <878u5dk7si.fsf@gamma.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,135 +31,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the transaction is aborted, the DSCR should be rolled back to the
-checkpointed value before the transaction began.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
----
-To check this yourself, undo the changes from the patch "powerpc/tm: Fix
-context switching TAR, PPR and DSCR SPRs".
+"Geyslan G. Bem" <geyslan@gmail.com> writes:
 
- tools/testing/selftests/powerpc/tm/.gitignore |  1 +
- tools/testing/selftests/powerpc/tm/Makefile   |  2 +-
- tools/testing/selftests/powerpc/tm/tm-dscr.c  | 91 +++++++++++++++++++++++++++
- 3 files changed, 93 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-dscr.c
+> The vcpu_book3s struct is assigned but never used. So remove it.
 
-diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
-index d0c7c97e9b13..76eae258feeb 100644
---- a/tools/testing/selftests/powerpc/tm/.gitignore
-+++ b/tools/testing/selftests/powerpc/tm/.gitignore
-@@ -3,3 +3,4 @@ tm-syscall
- tm-signal-msr-resv
- tm-signal-stack
- tm-fork
-+tm-dscr
-diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index f7d4727662aa..59eec240339d 100644
---- a/tools/testing/selftests/powerpc/tm/Makefile
-+++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -1,4 +1,4 @@
--TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-fork
-+TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-fork tm-dscr
- 
- all: $(TEST_PROGS)
- 
-diff --git a/tools/testing/selftests/powerpc/tm/tm-dscr.c b/tools/testing/selftests/powerpc/tm/tm-dscr.c
-new file mode 100644
-index 000000000000..ac44e259c86d
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-dscr.c
-@@ -0,0 +1,91 @@
-+/*
-+ * Copyright 2015, Michael Neuling, IBM Corp. 
-+ * Licensed under GPLv2.
-+ * Original: Michael Neuling 19/7/2013
-+ * Edited: Rashmica Gupta 01/12/2015
-+ *
-+ * Do some transactions, see if the dscr is corrupted. 
-+ *
-+ */
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <string.h>
-+
-+#include "tm.h"
-+#include "utils.h"
-+
-+#define SPRN_DSCR	0x3
-+
-+int	num_loops	= 10000;
-+
-+int test_dscr(void)
-+{
-+	int i;
-+
-+	SKIP_IF(!have_htm());
-+
-+	for (i = 0; i < num_loops; i++)
-+	{
-+		uint64_t result = 0;
-+		asm __volatile__(
-+			"li	7, 1;"
-+			"mtspr	%[dscr], 7;"	// dscr = 1
-+			"tbegin.;"
-+			"beq	3f ;"
-+			"li	4, 0x7000;"	// Loop lots, to use time
-+			"2: ;"		     	// Start loop
-+			"li	7, 2;"
-+			"mtspr	%[dscr], 7;"	// dscr = 2
-+			"tsuspend.;"
-+			"li	7, 3;"		
-+			"mtspr	%[dscr], 7;"	// dscr = 3
-+			"tresume.;"		
-+			"subi	4, 4, 1;"
-+			"cmpdi	4, 0;"
-+			"bne	2b;"
-+			"tend.;"
-+
-+			// Transaction sucess! DSCR should be 3.
-+			"mfspr  7, %[dscr];" 
-+			"ori	%[res], 7, 4;"	// res = 3|4 = 7
-+			"b	4f;"
-+			
-+			// Abort handler. DSCR should be rolled back to 1.
-+			"3:;" 			
-+			"mfspr  7, %[dscr];" 	
-+			"ori	%[res], 7, 8;"	// res = 1|8 = 9
-+			"4:;"
-+
-+			: [res]"=r"(result)
-+			: [dscr]"i"(SPRN_DSCR)
-+			: "memory", "r0", "r4", "r7");
-+
-+		// If result is anything else other than 7 or 9, the dscr
-+		// value must have been corrupted.
-+		if ((result != 7) && (result != 9))
-+			return 1;
-+		
-+	}
-+	return 0;
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	
-+	// A low number of iterations (eg 100) can cause a false pass.
-+	if (argc > 1) {
-+		if (strcmp(argv[1], "-h") == 0) {
-+			printf("Syntax:\n\t%s [<num loops>]\n",
-+			       argv[0]);
-+			return 0;
-+		} else {
-+			num_loops = atoi(argv[1]);
-+		}
-+	}
-+
-+	printf("Starting, %d loops\n", num_loops);
-+
-+	test_harness(test_dscr, "tm_dscr");
-+}
--- 
-2.5.0
+Just out of interest, how did you find this? Compiler warning? Static
+analysis? Manual inspection?
+
+Thanks in advance!
+
+Regards,
+Daniel
+
+>
+> Signed-off-by: Geyslan G. Bem <geyslan@gmail.com>
+> ---
+>  arch/powerpc/kvm/book3s_64_mmu.c | 3 ---
+>  1 file changed, 3 deletions(-)
+>
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_6=
+4_mmu.c
+> index 774a253..9bf7031 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu.c
+> @@ -377,15 +377,12 @@ no_seg_found:
+>=20=20
+>  static void kvmppc_mmu_book3s_64_slbmte(struct kvm_vcpu *vcpu, u64 rs, u=
+64 rb)
+>  {
+> -	struct kvmppc_vcpu_book3s *vcpu_book3s;
+>  	u64 esid, esid_1t;
+>  	int slb_nr;
+>  	struct kvmppc_slb *slbe;
+>=20=20
+>  	dprintk("KVM MMU: slbmte(0x%llx, 0x%llx)\n", rs, rb);
+>=20=20
+> -	vcpu_book3s =3D to_book3s(vcpu);
+> -
+>  	esid =3D GET_ESID(rb);
+>  	esid_1t =3D GET_ESID_1T(rb);
+>  	slb_nr =3D rb & 0xfff;
+> --=20
+> 2.6.2
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAEBCgAGBQJWXjyNAAoJEPC3R3P2I92FLaoP/itNYf+NtoxK9Ifo3ID3MOgY
+9+M7yve7xA7sHet2ZWFtK+PZL3jO9V2QQW7CcTTVOI6eDK+a+wgWcd4lDGFm5z5h
+RntWdUwqFGUiiHKULPE0RWwt4N8EVyN91b4Kkbk4L14RsABMIMj7ewHW2jv1NsEB
+UCnZwTZUK4npU7JNu1s0n7bFzWU4H5X9nPgetzK6Fn7De8zfQbmJQmFuB2k2YNQn
+zWZwoO7eoCnaCx3r70E09AuU5ZkKpT4y8v5M7EtsCNkzgsgV/YpjqoXTausi3Cxi
+2WWV9FI85hfQ5XC0e5+7Bfr+4Rfkt7tQsr6Fi2rAVuqK2dKqNf903yz9mYZgqB3q
+fdGa/SVDmqXxSaKaoHf+w1qOA6IV7cPA6JXpHHLJV9NQHG0WOTTnYYdf3SBO7b4e
+ZwBiXFure8873QCK4WuV/J/BfoOlVxYEQES2GZY9dtw2v2bMK4raSodwTJ32MyMQ
+ryib1ASVGaeYVhPv0aplu+o3ODhrT9R7/NSeyP7pDmwzPAiiDAcZouJ3CBzZvGSY
+e688iurOzDV/5XTsjqA36onMKvE/VB62v4BlQM638If2Qo1kRPnqjlFODW6OJqMQ
+haVluf4CPlwGQsGqVmvNzqxCR+cGMoKvkKbh6miJZkrr7NDM5V/KkKjdjtEr6FPO
+yfo9DsapjLIRbBQvAYkg
+=imx/
+-----END PGP SIGNATURE-----
+--=-=-=--
