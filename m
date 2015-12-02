@@ -1,24 +1,35 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 71F0F1A0286
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 15:59:28 +1100 (AEDT)
-Subject: [P.A. Semi] Does the ethernet interface work on your Electra, Chitra,
- Nemo, and Athena board?
-To: Gabriel Paubert <paubert@iram.es>, netdev@vger.kernel.org,
- Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org
-References: <565AF986.9060106@xenosoft.de>
- <CAOJe8K1911vDjMe9m_1vY6DSGpOk0TmL96Qf1whuNFXxHJesGw@mail.gmail.com>
- <565C1B55.4020207@xenosoft.de> <565C8287.7090209@xenosoft.de>
- <20151130181217.GA15921@visitor2.iram.es> <565DB2FE.1010706@xenosoft.de>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <565E7A9E.4000909@xenosoft.de>
-Date: Wed, 2 Dec 2015 05:59:10 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 880521A0286
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 16:12:43 +1100 (AEDT)
+Received: from localhost
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 2 Dec 2015 10:42:40 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 8D0393940019
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 10:42:39 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tB25CcLU7668046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Dec 2015 10:42:39 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tB25CciY018440
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Dec 2015 10:42:38 +0530
+Message-ID: <565E7DC6.4080306@linux.vnet.ibm.com>
+Date: Wed, 02 Dec 2015 10:42:38 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <565DB2FE.1010706@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+To: Rashmica Gupta <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org
+CC: mikey@neuling.org
+Subject: Re: [PATCH] selftests/powerpc: Add test to check if TAR is corrupted
+References: <1449026569-30094-1-git-send-email-rashmicy@gmail.com>
+In-Reply-To: <1449026569-30094-1-git-send-email-rashmicy@gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,264 +39,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+On 12/02/2015 08:52 AM, Rashmica Gupta wrote:
+> If the transaction is aborted, the TAR should be rolled back to the
+> checkpointed value before the transaction began.
 
-We tested some 4.3 kernels on a P.A. Semi reference board. Ultimately, 
-ethernet does not work, though on the reference board, the interface is 
-detected, gets link, but will not pass any packets/traffic.
+And if it does not abort, it should continue to hold the changed
+(inside the transaction) TAR value after the transaction finishes.
+The test here does check for both these cases and hence the commit
+message should reflect that as well. This test can also accommodate
+checks for PPR and DSCR register in one go.
 
-Somewhere in the source code of the commit "'powerpc-4.3-1' of 
-git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux (2015-09-03 
-23:41:38 (GMT)" is the problem.
+In the TM ptrace patch series (https://lkml.org/lkml/2015/10/8/522)
+which is still under review, there are couple of tests related
+to (TAR, PPR, DSCR) registers with (TM running & TM suspended) and
+without TM. There, the values are being checked using ptrace interface
+instead. Can you please check them and just make sure that we are not
+duplicating anything here.
 
-Could you please help us to solve the problem?
+> 
+> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+> ---
+> To check this yourself, undo the changes from the patch "powerpc/tm: Fix
+> context switching TAR, PPR and DSCR SPRs".
+> 
+>  tools/testing/selftests/powerpc/tm/.gitignore |  1 +
+>  tools/testing/selftests/powerpc/tm/Makefile   |  2 +-
+>  tools/testing/selftests/powerpc/tm/tm-tar.c   | 90 +++++++++++++++++++++++++++
+>  3 files changed, 92 insertions(+), 1 deletion(-)
+>  create mode 100644 tools/testing/selftests/powerpc/tm/tm-tar.c
+> 
+> diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
+> index 76eae258feeb..9bf6749550e3 100644
+> --- a/tools/testing/selftests/powerpc/tm/.gitignore
+> +++ b/tools/testing/selftests/powerpc/tm/.gitignore
+> @@ -4,3 +4,4 @@ tm-signal-msr-resv
+>  tm-signal-stack
+>  tm-fork
+>  tm-dscr
+> +tm-tar
+> diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
+> index 59eec240339d..ab2992f69b4c 100644
+> --- a/tools/testing/selftests/powerpc/tm/Makefile
+> +++ b/tools/testing/selftests/powerpc/tm/Makefile
+> @@ -1,4 +1,4 @@
+> -TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-fork tm-dscr
+> +TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-fork tm-dscr tm-tar
+>  
+>  all: $(TEST_PROGS)
+>  
+> diff --git a/tools/testing/selftests/powerpc/tm/tm-tar.c b/tools/testing/selftests/powerpc/tm/tm-tar.c
+> new file mode 100644
+> index 000000000000..22a0c3485412
+> --- /dev/null
+> +++ b/tools/testing/selftests/powerpc/tm/tm-tar.c
+> @@ -0,0 +1,90 @@
+> +/* 
+> + * Copyright 2015, Michael Neuling, IBM Corp. 
+> + * Licensed under GPLv2.
+> + * Original: Michael Neuling 19/7/2013
+> + * Edited: Rashmica Gupta 01/12/2015
+> + *
+> + * Do some transactions, see if the tar is corrupted.
 
-Thanks in advance,
+It can use a better explanation here.
 
-Christian Zigotzky
+> + *
+> + */
+> +
+> +#include <stdio.h>
+> +#include <stdlib.h>
+> +#include <unistd.h>
+> +#include <string.h>
+> +
+> +#include "tm.h"
+> +#include "utils.h"
+> +
+> +#define SPRN_TAR	0x32f
+> +
+> +int	num_loops	= 10000;
+> +
+> +int test_tar(void)
+> +{
+> +	int i;
+> +
+> +	SKIP_IF(!have_htm());
+> +
+> +	for (i = 0; i < num_loops; i++)
+> +	{
+> +		uint64_t result = 0;
+> +		asm __volatile__(
+> +			"li	7, 1;"
+> +			"mtspr	%[tar], 7;"	// tar = 1
 
-On 01 December 2015 at 3:47 PM, Christian Zigotzky wrote:
-> Hi All,
->
-> I compiled a lot of kernels for some git bisects and I have a result.
->
-> Test log
->
-> Kernel 4.3 git from Tue Sep 01, 2015 -> PA Semi Ethernet works
-> Kernel 4.3 git from Wed Sep 02, 2015 -> PA Semi Ethernet works
-> Kernel 4.3 git from Thu Sep 03, 2015 -> PA Semi Ethernet works
-> Kernel 4.3 git from Fri Sep 04, 2015 -> PA Semi Ethernet doesn't work
-> Kernel 4.3 git from Sat Sep 05, 2015 -> PA Semi Ethernet doesn't work
-> Kernel 4.3 git from Mon Sep 07, 2015 -> PA Semi Ethernet doesn't work
-> Kernel 4.3 git from Wed Sep 09, 2015 -> PA Semi Ethernet doesn't work
-> Kernel 4.3 git from Fri Sep 11, 2015 -> PA Semi Ethernet doesn't work
-> Kernel 4.3 RC1 from Sun Sep 13, 2015 -> PA Semi Ethernet doesn't work
-> Kernel 4.3 RC2 from Mon Sep 21, 2015 -> PA Semi Ethernet doesn't work
->
-> git clone 
-> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 
-> linux-git
->
-> git bisect start
->
-> git bisect good ac0e137ab0da80e8fc0db2027598e2f7f82a5a02 2015-09-03 
-> 00:07:10 (GMT)
->
-> git bisect bad 559ec2f8fd50981821621f52db5e1a8ffcf8d792 2015-09-04 
-> 23:54:41 (GMT)
->
-> Output:
->
-> Bisecting: a merge base must be tested
-> [ba30011577330b7e29ecb5916d89c6db9fbc5b3d] clk: s5pv210: add missing 
-> call to samsung_clk_of_add_provider()
->
-> ---
->
-> git bisect good
->
-> Output:
->
-> Bisecting: 4381 revisions left to test after this (roughly 12 steps)
-> [3959df1dfb9538498ec3372a2d390bc7fbdbfac2] Merge branch 
-> 'ras-core-for-linus' of 
-> git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
->
-> ---
->
-> git bisect good
->
-> Output:
->
-> Bisecting: 2561 revisions left to test after this (roughly 11 steps)
-> [1e1a4e8f439113b7820bc7150569f685e1cc2b43] Merge tag 'dm-4.3-changes' 
-> of git://git.kernel.org/pub/scm/linux/kernel/git/device-mapper/linux-dm
->
-> ---
->
-> git bisect good
->
-> Output:
->
-> Bisecting: 1280 revisions left to test after this (roughly 10 steps)
-> [94c10f0ea303473884f69edd6bbb0cedcf570105] ah4: Fix error return in 
-> ah_input().
->
-> ---
->
-> git bisect good
->
-> Output:
->
-> Bisecting: 697 revisions left to test after this (roughly 9 steps)
-> [4c92b5bb14226faa16d29a1df5752baf1ff22b53] Merge branch 'pcmcia' of 
-> git://ftp.arm.linux.org.uk/~rmk/linux-arm (2015-09-03 23:36:33 (GMT))
->
-> ---
->
-> git bisect good
->
-> Output:
->
-> Bisecting: 310 revisions left to test after this (roughly 9 steps)
-> [a4fdb2a46f617b8b2cd47acec026ec16532edbc6] Merge tag 'arm64-upstream' 
-> of git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux 
-> (2015-09-04 14:18:09 (GMT))
->
-> ---
->
-> git bisect bad
->
-> Output:
->
-> Bisecting: 237 revisions left to test after this (roughly 8 steps)
-> [2db97045aa40da4312f7321845bc52b136c8603a] Merge branch '4.2-fixes' 
-> into mips-for-linux-next (2015-09-03 12:06:33 (GMT))
->
-> ---
->
-> git bisect good
->
-> Output:
->
-> Bisecting: 132 revisions left to test after this (roughly 7 steps)
-> [d690740f22f6520873f96e66aae7119ec2215755] powerpc/powernv: Enable 
-> LEDS support (2015-08-27 10:08:44 (GMT))
->
-> ---
->
-> git bisect good
->
-> Output:
->
-> Bisecting: 66 revisions left to test after this (roughly 6 steps)
-> [662ba3dbceca3ca284885a464ecb8c936f417003] arm64: mm: add __init 
-> section marker to free_initrd_mem (2015-07-27 17:29:18 (GMT))
->
-> ---
->
-> git bisect good
->
-> Output:
->
-> Bisecting: 33 revisions left to test after this (roughly 5 steps)
-> [259800135c654a098d9f0adfdd3d1f20eef1f231] powerpc/eeh: Fix fenced PHB 
-> caused by eeh_slot_error_detail() (2015-08-28 03:26:31 (GMT))
->
-> ---
->
-> git bisect good
->
-> Output:
->
-> Bisecting: 16 revisions left to test after this (roughly 4 steps)
-> [04b8637be92f284409651088f3856f4290a931d8] arm64: alternatives: ensure 
-> secondary CPUs execute ISB after patching (2015-08-04 17:52:09 (GMT))
->
-> ---
->
-> git bisect good
->
-> Output:
->
-> Bisecting: 8 revisions left to test after this (roughly 3 steps)
-> [8eafeb48022816513abc4f440bdad4c350fe81a3] of/fdt: make memblock 
-> maximum physical address arch configurable (2015-08-24 09:23:13 (GMT))
->
-> ---
->
-> git bisect good
->
-> Output:
->
-> Bisecting: 4 revisions left to test after this (roughly 2 steps)
-> [ff474e8ca8547d09cb82ebab56d4c96f9eea01ce] Merge tag 'powerpc-4.3-1' 
-> of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux 
-> (2015-09-03 23:41:38 (GMT))
->
-> ---
->
-> git bisect bad
->
-> Output:
->
-> Bisecting: 1 revision left to test after this (roughly 1 step)
-> [55e07668fbba9466e6a9ef7650718356cda38406] cxl: Fix force unmapping 
-> mmaps of contexts allocated through the kernel api (2015-08-30 
-> 08:47:26 (GMT))
->
-> ---
->
-> git bisect good
->
-> Output:
->
-> Bisecting: 0 revisions left to test after this (roughly 0 steps)
-> [390fd5929f52bdfb9dfcc03820041ba556780f4a] cxl: Set up and enable PSL 
-> Timebase (2015-08-30 08:56:34 (GMT))
->
-> ---
->
-> git bisect good
->
-> Output:
->
-> ff474e8ca8547d09cb82ebab56d4c96f9eea01ce is the first bad commit 
-> (Merge tag 'powerpc-4.3-1' of 
-> git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux 
-> (2015-09-03 23:41:38 (GMT))
->
-> ---
->
-> Cheers,
->
-> Christian
->
-> On 30 November 2015 7:12 PM, Gabriel Paubert wrote:
->> On Mon, Nov 30, 2015 at 06:08:23PM +0100, Christian Zigotzky wrote:
->>> Hi All,
->>>
->>> I have tested the PA Semi Ethernet with the kernels 4.2.3 and 4.3.0
->>> today. With the kernel 4.2.3 it works but with the kernel 4.3.0
->>> final it doesn't work.
->>>
->>> After that I tested some git kernels and release candidates of 4.3.
->>>
->>> Kernel 4.3 git from Tue Sep 01, 2015 -> PA Semi Ethernet works
->>> Kernel 4.3 git from Wed Sep 02, 2015 -> PA Semi Ethernet works
->>> Kernel 4.3 git from Thu Sep 03, 2015 -> PA Semi Ethernet works
->>> Kernel 4.3 git from Fri Sep 04, 2015 -> PA Semi Ethernet doesn't
->>> work (Merge tag 'powerpc-4.3-1': 
->>> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=ff474e8ca8547d09cb82ebab56d4c96f9eea01ce)
->>> Kernel 4.3 git from Sat Sep 05, 2015 -> PA Semi Ethernet doesn't work
->>> Kernel 4.3 git from Mon Sep 07, 2015 -> PA Semi Ethernet doesn't work
->>> Kernel 4.3 git from Wed Sep 09, 2015 -> PA Semi Ethernet doesn't work
->>> Kernel 4.3 git from Fri Sep 11, 2015 -> PA Semi Ethernet doesn't work
->>> Kernel 4.3 RC1 from Sun Sep 13, 2015 -> PA Semi Ethernet doesn't work
->>> Kernel 4.3 RC2 from Mon Sep 21, 2015 -> PA Semi Ethernet doesn't work
->>>
->>> The problematic commit must be between Thu Sep 03, 2015 at 09:37 AM
->>> (UTC +2) and Fri Sep 04, 2015 at 7:38 PM (UTC +2) in the linux git.
->>>
->>> Linux git: Between 
->>> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/log/?ofs=15500
->>> and 
->>> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/log/?ofs=15200.
->>>
->>> Maybe 
->>> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=ff474e8ca8547d09cb82ebab56d4c96f9eea01ce.
->> Unless I miss something, that's the kind of regression that "git 
->> bisect" is
->> designed to find.
->>
->>      Cheers,
->>      Gabriel
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Please use /* */ kind of comment sections not //.
+
+> +			"tbegin.;"	
+> +			"beq	3f;"
+> +			"li	4, 0x7000;"	// Loop lots, to use time
+> +			"2:;"			// Start loop
+
+Here as well.
+
+> +			"li	7, 2;"
+> +			"mtspr	%[tar], 7;"	// tar = 2
+> +			"tsuspend.;"
+> +			"li	7, 3;"
+> +			"mtspr	%[tar], 7;"	// tar = 3
+> +			"tresume.;"
+> +			"subi	4, 4, 1;"
+> +			"cmpdi	4, 0;"
+> +			"bne	2b;"
+> +			"tend.;"
+> +
+> +			// Transaction sucess! TAR should be 3.
+> +			"mfspr  7, %[tar];"
+> +			"ori	%[res], 7, 4;"  // res = 3|4 = 7
+> +			"b	4f;"
+> +
+> +			// Abort handler. TAR should be rolled back to 1.
+> +			"3:;"
+> +			"mfspr  7, %[tar];"
+> +			"ori	%[res], 7, 8;"	// res = 1|8 = 9
+> +			"4:;"
+> +
+> +			: [res]"=r"(result)
+> +			: [tar]"i"(SPRN_TAR)
+> +			   : "memory", "r0", "r4", "r7");
+> +
+> +		// If result is anything else other than 7 or 9, the tar
+> +		// value must have been corrupted.
+
+Here as well.
+
+> +		if ((result != 7) && (result != 9)) 
+> +			return 1;
+> +		
+> +	}
+> +	return 0;
+> +}
+> +
+> +int main(int argc, char *argv[])
+> +
+> +	// A low number of iterations (eg 100) can cause a false pass.
+
+Here as well.
+
+> +	if (argc > 1) {
+> +		if (strcmp(argv[1], "-h") == 0) {
+> +			printf("Syntax:\n\t%s [<num loops>]\n",
+> +			       argv[0]);
+> +			return 0;
+> +		} else {
+> +			num_loops = atoi(argv[1]);
+> +		}
+> +	}
+> +
+> +	printf("Starting, %d loops\n", num_loops);
+> +
+> +	test_harness(test_tar, "tm_tar");
+> +}
+> 
