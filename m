@@ -1,35 +1,31 @@
-Return-Path: <jikos@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E85351A0286
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 10:25:00 +1100 (AEDT)
-Date: Wed, 2 Dec 2015 00:24:49 +0100 (CET)
-From: Jiri Kosina <jikos@kernel.org>
-To: Petr Mladek <pmladek@suse.com>
-cc: kbuild test robot <lkp@intel.com>, kbuild-all@01.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Russell King <rmk+kernel@arm.linux.org.uk>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-kernel@vger.kernel.org, x86@kernel.org,
- linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-cris-kernel@axis.com,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, David Howells <dhowells@redhat.com>,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linux-am33-list@redhat.com
-Subject: Re: [PATCH v2 1/5] printk/nmi: Generic solution for safe printk in NMI
-In-Reply-To: <20151127153804.GC2648@pathway.suse.cz>
-Message-ID: <alpine.LNX.2.00.1512020022460.32500@pobox.suse.cz>
-References: <1448622572-16900-2-git-send-email-pmladek@suse.com>
- <201511271919.aEZuZKNe%fengguang.wu@intel.com>
- <20151127153804.GC2648@pathway.suse.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1BF0B1A0BC0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 16:25:44 +1100 (AEDT)
+Received: from localhost
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 2 Dec 2015 10:55:42 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id D1534125805B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 10:55:56 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tB25Pau454526068
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Dec 2015 10:55:37 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tB25Pahc010869
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Dec 2015 10:55:36 +0530
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/eeh: Fix PE location code
+Date: Wed,  2 Dec 2015 16:25:32 +1100
+Message-Id: <1449033932-27307-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,23 +35,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 27 Nov 2015, Petr Mladek wrote:
+In eeh_pe_loc_get(), the PE location code is retrieved from the
+"ibm,loc-code" property of the device node for the bridge of the
+PE's primary bus. It's not correct because the property indicates
+the parent PE's location code.
 
-> MN10300 has its own implementation for entering and exiting NMI 
-> handlers. It does not call nmi_enter() and nmi_exit(). Please, find 
-> below an updated patch that adds printk_nmi_enter() and 
-> printk_nmi_exit() to the custom entry points. Then we could add HAVE_NMI 
-> to arch/mn10300/Kconfig and avoid the above warning.
+This reads the correct PE location code from "ibm,io-base-loc-code"
+or "ibm,slot-location-code" property of PE parent bus's device node.
 
-Hmm, so what exactly would go wrong if MN10300 (whatever that architecture 
-is) would call nmi_enter() and nmi_exit() at the places where it's 
-starting and finishing NMI handler?
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/eeh_pe.c | 33 +++++++++++++++------------------
+ 1 file changed, 15 insertions(+), 18 deletions(-)
 
->From a cursory look, it seems like most (if not all) of the things called 
-from nmi_{enter,exit}() would be nops there anyway.
-
-Thanks,
-
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index 8654cb1..ca9e537 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -883,32 +883,29 @@ void eeh_pe_restore_bars(struct eeh_pe *pe)
+ const char *eeh_pe_loc_get(struct eeh_pe *pe)
+ {
+ 	struct pci_bus *bus = eeh_pe_bus_get(pe);
+-	struct device_node *dn = pci_bus_to_OF_node(bus);
++	struct device_node *dn;
+ 	const char *loc = NULL;
+ 
+-	if (!dn)
+-		goto out;
++	while (bus) {
++		dn = pci_bus_to_OF_node(bus);
++		if (!dn) {
++			bus = bus->parent;
++			continue;
++		}
+ 
+-	/* PHB PE or root PE ? */
+-	if (pci_is_root_bus(bus)) {
+-		loc = of_get_property(dn, "ibm,loc-code", NULL);
+-		if (!loc)
++		if (pci_is_root_bus(bus))
+ 			loc = of_get_property(dn, "ibm,io-base-loc-code", NULL);
++		else
++			loc = of_get_property(dn, "ibm,slot-location-code",
++					      NULL);
++
+ 		if (loc)
+-			goto out;
++			return loc;
+ 
+-		/* Check the root port */
+-		dn = dn->child;
+-		if (!dn)
+-			goto out;
++		bus = bus->parent;
+ 	}
+ 
+-	loc = of_get_property(dn, "ibm,loc-code", NULL);
+-	if (!loc)
+-		loc = of_get_property(dn, "ibm,slot-location-code", NULL);
+-
+-out:
+-	return loc ? loc : "N/A";
++	return "N/A";
+ }
+ 
+ /**
 -- 
-Jiri Kosina
-SUSE Labs
+2.1.0
