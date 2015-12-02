@@ -1,31 +1,18 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1BF0B1A0BC0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 16:25:44 +1100 (AEDT)
-Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 2 Dec 2015 10:55:42 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id D1534125805B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 10:55:56 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB25Pau454526068
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Dec 2015 10:55:37 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB25Pahc010869
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Dec 2015 10:55:36 +0530
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC7061A0910
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 16:41:03 +1100 (AEDT)
+Received: by pacej9 with SMTP id ej9so29663251pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Dec 2015 21:41:02 -0800 (PST)
+From: Rashmica Gupta <rashmicy@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/eeh: Fix PE location code
-Date: Wed,  2 Dec 2015 16:25:32 +1100
-Message-Id: <1449033932-27307-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: mikey@neuling.org
+Subject: [v3] selftests/powerpc: Add test to check if TAR is corrupted
+Date: Wed,  2 Dec 2015 16:40:46 +1100
+Message-Id: <1449034846-10033-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,70 +22,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In eeh_pe_loc_get(), the PE location code is retrieved from the
-"ibm,loc-code" property of the device node for the bridge of the
-PE's primary bus. It's not correct because the property indicates
-the parent PE's location code.
+If the transaction is aborted, the TAR should be rolled back to the
+checkpointed value before the transaction began. The value written to the
+TAR when the transaction is suspended should only remain there if the
+transaction completes successfully.
 
-This reads the correct PE location code from "ibm,io-base-loc-code"
-or "ibm,slot-location-code" property of PE parent bus's device node.
-
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 ---
- arch/powerpc/kernel/eeh_pe.c | 33 +++++++++++++++------------------
- 1 file changed, 15 insertions(+), 18 deletions(-)
+Added more explanation and fixed up styling issue. No functional
+changes.
 
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index 8654cb1..ca9e537 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -883,32 +883,29 @@ void eeh_pe_restore_bars(struct eeh_pe *pe)
- const char *eeh_pe_loc_get(struct eeh_pe *pe)
- {
- 	struct pci_bus *bus = eeh_pe_bus_get(pe);
--	struct device_node *dn = pci_bus_to_OF_node(bus);
-+	struct device_node *dn;
- 	const char *loc = NULL;
+ tools/testing/selftests/powerpc/tm/.gitignore |  1 +
+ tools/testing/selftests/powerpc/tm/Makefile   |  2 +-
+ tools/testing/selftests/powerpc/tm/tm-tar.c   | 92 +++++++++++++++++++++++++++
+ 3 files changed, 94 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-tar.c
+
+diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
+index 76eae258feeb..9bf6749550e3 100644
+--- a/tools/testing/selftests/powerpc/tm/.gitignore
++++ b/tools/testing/selftests/powerpc/tm/.gitignore
+@@ -4,3 +4,4 @@ tm-signal-msr-resv
+ tm-signal-stack
+ tm-fork
+ tm-dscr
++tm-tar
+diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
+index 59eec240339d..ab2992f69b4c 100644
+--- a/tools/testing/selftests/powerpc/tm/Makefile
++++ b/tools/testing/selftests/powerpc/tm/Makefile
+@@ -1,4 +1,4 @@
+-TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-fork tm-dscr
++TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-fork tm-dscr tm-tar
  
--	if (!dn)
--		goto out;
-+	while (bus) {
-+		dn = pci_bus_to_OF_node(bus);
-+		if (!dn) {
-+			bus = bus->parent;
-+			continue;
-+		}
+ all: $(TEST_PROGS)
  
--	/* PHB PE or root PE ? */
--	if (pci_is_root_bus(bus)) {
--		loc = of_get_property(dn, "ibm,loc-code", NULL);
--		if (!loc)
-+		if (pci_is_root_bus(bus))
- 			loc = of_get_property(dn, "ibm,io-base-loc-code", NULL);
-+		else
-+			loc = of_get_property(dn, "ibm,slot-location-code",
-+					      NULL);
+diff --git a/tools/testing/selftests/powerpc/tm/tm-tar.c b/tools/testing/selftests/powerpc/tm/tm-tar.c
+new file mode 100644
+index 000000000000..732f518c95cf
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/tm/tm-tar.c
+@@ -0,0 +1,92 @@
++/*
++ * Copyright 2015, Michael Neuling, IBM Corp.
++ * Licensed under GPLv2.
++ * Original: Michael Neuling 19/7/2013
++ * Edited: Rashmica Gupta 01/12/2015
++ *
++ * Do some transactions, see if the tar is corrupted.
++ * If the transaction is aborted, the TAR should be rolled back to the
++ * checkpointed value before the transaction began. The value written to
++ * TAR in suspended mode should only remain in TAR if the transaction
++ * completes.
++ */
 +
- 		if (loc)
--			goto out;
-+			return loc;
- 
--		/* Check the root port */
--		dn = dn->child;
--		if (!dn)
--			goto out;
-+		bus = bus->parent;
- 	}
- 
--	loc = of_get_property(dn, "ibm,loc-code", NULL);
--	if (!loc)
--		loc = of_get_property(dn, "ibm,slot-location-code", NULL);
--
--out:
--	return loc ? loc : "N/A";
-+	return "N/A";
- }
- 
- /**
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <string.h>
++
++#include "tm.h"
++#include "utils.h"
++
++#define SPRN_TAR	0x32f
++
++int	num_loops	= 10000;
++
++int test_tar(void)
++{
++	int i;
++
++	SKIP_IF(!have_htm());
++
++	for (i = 0; i < num_loops; i++)
++	{
++		uint64_t result = 0;
++		asm __volatile__(
++			"li	7, 1;"
++			"mtspr	%[tar], 7;"	/* tar = 1 */
++			"tbegin.;"
++			"beq	3f;"
++			"li	4, 0x7000;"	/* Loop lots, to use time */
++			"2:;"			/* Start loop */
++			"li	7, 2;"
++			"mtspr	%[tar], 7;"	/* tar = 2 */
++			"tsuspend.;"
++			"li	7, 3;"
++			"mtspr	%[tar], 7;"	/* tar = 3 */
++			"tresume.;"
++			"subi	4, 4, 1;"
++			"cmpdi	4, 0;"
++			"bne	2b;"
++			"tend.;"
++
++			/* Transaction sucess! TAR should be 3 */
++			"mfspr  7, %[tar];"
++			"ori	%[res], 7, 4;"  // res = 3|4 = 7
++			"b	4f;"
++
++			/* Abort handler. TAR should be rolled back to 1 */
++			"3:;"
++			"mfspr  7, %[tar];"
++			"ori	%[res], 7, 8;"	// res = 1|8 = 9
++			"4:;"
++
++			: [res]"=r"(result)
++			: [tar]"i"(SPRN_TAR)
++			   : "memory", "r0", "r4", "r7");
++
++		/* If result is anything else other than 7 or 9, the tar
++		 * value must have been corrupted. */
++		if ((result != 7) && (result != 9))
++			return 1;
++	}
++	return 0;
++}
++
++int main(int argc, char *argv[])
++{
++	/* A low number of iterations (eg 100) can cause a false pass */
++	if (argc > 1) {
++		if (strcmp(argv[1], "-h") == 0) {
++			printf("Syntax:\n\t%s [<num loops>]\n",
++			       argv[0]);
++			return 0;
++		} else {
++			num_loops = atoi(argv[1]);
++		}
++	}
++
++	printf("Starting, %d loops\n", num_loops);
++
++	test_harness(test_tar, "tm_tar");
++}
 -- 
-2.1.0
+2.5.0
