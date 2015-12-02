@@ -1,18 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chenhui.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0135.outbound.protection.outlook.com [157.56.111.135])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D36E1A000C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 20:44:17 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: Anton Blanchard <anton@samba.org>
-Subject: [PATCH 4/4] selftests/powerpc: Make context_switch touch
- FP/altivec/vector by default
-Date: Wed,  2 Dec 2015 20:44:11 +1100
-Message-Id: <1449049451-31373-4-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1449049451-31373-1-git-send-email-mpe@ellerman.id.au>
-References: <1449049451-31373-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 531381A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 22:04:09 +1100 (AEDT)
+Date: Wed, 2 Dec 2015 19:04:03 +0800
+From: Chenhui Zhao <chenhui.zhao@freescale.com>
+Subject: Re: [PATCH v3 1/6] powerpc/mm: any thread in one core can be the
+ first to setup TLB1
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+Message-ID: <1449054243.8383.0@remotesmtp.freescale.net>
+In-Reply-To: <1448010842-22345-1-git-send-email-chenhui.zhao@freescale.com>
+References: <1448010842-22345-1-git-send-email-chenhui.zhao@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,52 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Simply because it touches more code paths that way, and therefore tests
-more things.
+Hi Scott,
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Acked-by: Anton Blanchard <anton@samba.org>
----
- tools/testing/selftests/powerpc/benchmarks/context_switch.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+Any comment on these pathes?
 
-diff --git a/tools/testing/selftests/powerpc/benchmarks/context_switch.c b/tools/testing/selftests/powerpc/benchmarks/context_switch.c
-index d8b6d10f36a6..7b785941adec 100644
---- a/tools/testing/selftests/powerpc/benchmarks/context_switch.c
-+++ b/tools/testing/selftests/powerpc/benchmarks/context_switch.c
-@@ -33,15 +33,15 @@ static unsigned int timeout = 30;
- static int touch_vdso;
- struct timeval tv;
- 
--static int touch_fp;
-+static int touch_fp = 1;
- double fp;
- 
--static int touch_vector;
-+static int touch_vector = 1;
- typedef int v4si __attribute__ ((vector_size (16)));
- v4si a, b, c;
- 
- #ifdef __powerpc__
--static int touch_altivec;
-+static int touch_altivec = 1;
- 
- static void __attribute__((__target__("no-vsx"))) altivec_touch_fn(void)
- {
-@@ -354,11 +354,11 @@ static struct option options[] = {
- 	{ "process", no_argument, &processes, 1 },
- 	{ "timeout", required_argument, 0, 's' },
- 	{ "vdso", no_argument, &touch_vdso, 1 },
--	{ "fp", no_argument, &touch_fp, 1 },
-+	{ "no-fp", no_argument, &touch_fp, 0 },
- #ifdef __powerpc__
--	{ "altivec", no_argument, &touch_altivec, 1 },
-+	{ "no-altivec", no_argument, &touch_altivec, 0 },
- #endif
--	{ "vector", no_argument, &touch_vector, 1 },
-+	{ "no-vector", no_argument, &touch_vector, 0 },
- 	{ 0, },
- };
- 
--- 
-2.5.0
+Thanks,
+Chenhui
+
+
+On Fri, Nov 20, 2015 at 5:13 PM, Chenhui Zhao 
+<chenhui.zhao@freescale.com> wrote:
+> On e6500, in the case of cpu hotplug, either thread in one core
+> may be the first thread initilzing the TLB1. The subsequent threads
+> must not setup it again.
+> 
+> The code is derived from the comment of Scott Wood.
+> 
+> Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+> ---
+>  arch/powerpc/include/asm/cputhreads.h | 7 +++++++
+>  arch/powerpc/mm/tlb_nohash.c          | 4 +---
+>  2 files changed, 8 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/cputhreads.h 
+> b/arch/powerpc/include/asm/cputhreads.h
+> index ba42e46..b56cece 100644
+> --- a/arch/powerpc/include/asm/cputhreads.h
+> +++ b/arch/powerpc/include/asm/cputhreads.h
+> @@ -94,6 +94,13 @@ static inline int cpu_last_thread_sibling(int cpu)
+>  	return cpu | (threads_per_core - 1);
+>  }
+> 
+> +static inline u32 get_tensr(void)
+> +{
+> +	if (cpu_has_feature(CPU_FTR_SMT))
+> +		return mfspr(SPRN_TENSR);
+> +	else
+> +		return 1;
+> +}
+> 
+> 
+>  #endif /* _ASM_POWERPC_CPUTHREADS_H */
+> diff --git a/arch/powerpc/mm/tlb_nohash.c 
+> b/arch/powerpc/mm/tlb_nohash.c
+> index bb04e4d..f466848 100644
+> --- a/arch/powerpc/mm/tlb_nohash.c
+> +++ b/arch/powerpc/mm/tlb_nohash.c
+> @@ -640,9 +640,7 @@ static void early_init_this_mmu(void)
+>  		 * transient mapping would cause problems.
+>  		 */
+>  #ifdef CONFIG_SMP
+> -		if (cpu != boot_cpuid &&
+> -		    (cpu != cpu_first_thread_sibling(cpu) ||
+> -		     cpu == cpu_first_thread_sibling(boot_cpuid)))
+> +		if (hweight32(get_tensr()) > 1)
+>  			map = false;
+>  #endif
+> 
+> --
+> 1.9.1
+> 
