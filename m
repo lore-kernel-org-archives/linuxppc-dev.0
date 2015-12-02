@@ -1,22 +1,21 @@
 Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-x22d.google.com (mail-yk0-x22d.google.com
- [IPv6:2607:f8b0:4002:c07::22d])
+Received: from mail-yk0-x232.google.com (mail-yk0-x232.google.com
+ [IPv6:2607:f8b0:4002:c07::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41B451A017D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Dec 2015 23:12:07 +1100 (AEDT)
-Received: by ykdv3 with SMTP id v3so43683223ykd.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Dec 2015 04:12:05 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 167AC1A0286
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 00:09:57 +1100 (AEDT)
+Received: by ykba77 with SMTP id a77so45193589ykb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Dec 2015 05:09:53 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1448010842-22345-1-git-send-email-chenhui.zhao@freescale.com>
-References: <1448010842-22345-1-git-send-email-chenhui.zhao@freescale.com>
-Date: Wed, 2 Dec 2015 15:12:05 +0300
-Message-ID: <CAOJe8K1_S1EwfjO1qW6mBKA+ighFBKbuKCW6-Q5B_og4-NuzFg@mail.gmail.com>
-Subject: Re: [PATCH v3 1/6] powerpc/mm: any thread in one core can be the
- first to setup TLB1
+In-Reply-To: <1449035578-10920-1-git-send-email-rashmicy@gmail.com>
+References: <1449035578-10920-1-git-send-email-rashmicy@gmail.com>
+Date: Wed, 2 Dec 2015 16:09:53 +0300
+Message-ID: <CAOJe8K2B9nKBZa5zcK_bwN2gAwtfeV8bZupYTWF6H+qQsn5qSg@mail.gmail.com>
+Subject: Re: [v2] selftests/powerpc: Add test to check is DSCR is corrupted.
 From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Chenhui Zhao <chenhui.zhao@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, scottwood@freescale.com
+To: Rashmica Gupta <rashmicy@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,59 +26,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/20/15, Chenhui Zhao <chenhui.zhao@freescale.com> wrote:
-> On e6500, in the case of cpu hotplug, either thread in one core
-> may be the first thread initilzing the TLB1. The subsequent threads
-> must not setup it again.
+On 12/2/15, Rashmica Gupta <rashmicy@gmail.com> wrote:
+> If the transaction is aborted, the DSCR should be rolled back to the
+> checkpointed value before the transaction began. The value written to the
+> DSCR when transaction was suspended should only persist if the transaction
+> is successful.
 >
-> The code is derived from the comment of Scott Wood.
->
-> Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 > ---
->  arch/powerpc/include/asm/cputhreads.h | 7 +++++++
->  arch/powerpc/mm/tlb_nohash.c          | 4 +---
->  2 files changed, 8 insertions(+), 3 deletions(-)
+> No functional changes. Fixed whitespace and styling issues.
 >
-> diff --git a/arch/powerpc/include/asm/cputhreads.h
-> b/arch/powerpc/include/asm/cputhreads.h
-> index ba42e46..b56cece 100644
-> --- a/arch/powerpc/include/asm/cputhreads.h
-> +++ b/arch/powerpc/include/asm/cputhreads.h
-> @@ -94,6 +94,13 @@ static inline int cpu_last_thread_sibling(int cpu)
->  	return cpu | (threads_per_core - 1);
->  }
+>  tools/testing/selftests/powerpc/tm/.gitignore |  1 +
+>  tools/testing/selftests/powerpc/tm/Makefile   |  2 +-
+>  tools/testing/selftests/powerpc/tm/tm-dscr.c  | 95
+> +++++++++++++++++++++++++++
+>  3 files changed, 97 insertions(+), 1 deletion(-)
+>  create mode 100644 tools/testing/selftests/powerpc/tm/tm-dscr.c
 >
-> +static inline u32 get_tensr(void)
+> diff --git a/tools/testing/selftests/powerpc/tm/.gitignore
+> b/tools/testing/selftests/powerpc/tm/.gitignore
+> index d0c7c97e9b13..76eae258feeb 100644
+> --- a/tools/testing/selftests/powerpc/tm/.gitignore
+> +++ b/tools/testing/selftests/powerpc/tm/.gitignore
+> @@ -3,3 +3,4 @@ tm-syscall
+>  tm-signal-msr-resv
+>  tm-signal-stack
+>  tm-fork
+> +tm-dscr
+> diff --git a/tools/testing/selftests/powerpc/tm/Makefile
+> b/tools/testing/selftests/powerpc/tm/Makefile
+> index f7d4727662aa..59eec240339d 100644
+> --- a/tools/testing/selftests/powerpc/tm/Makefile
+> +++ b/tools/testing/selftests/powerpc/tm/Makefile
+> @@ -1,4 +1,4 @@
+> -TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack
+> tm-fork
+> +TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack
+> tm-fork tm-dscr
+>
+>  all: $(TEST_PROGS)
+>
+> diff --git a/tools/testing/selftests/powerpc/tm/tm-dscr.c
+> b/tools/testing/selftests/powerpc/tm/tm-dscr.c
+> new file mode 100644
+> index 000000000000..b18360895496
+> --- /dev/null
+> +++ b/tools/testing/selftests/powerpc/tm/tm-dscr.c
+> @@ -0,0 +1,95 @@
+> +/*
+> + * Copyright 2015, Michael Neuling, IBM Corp.
+> + * Licensed under GPLv2.
+> + * Original: Michael Neuling 19/7/2013
+> + * Edited: Rashmica Gupta 01/12/2015
+> + *
+> + * Do some transactions, see if the DSCR is corrupted.
+> + * If the transaction is aborted, the DSCR should be rolled back to the
+> + * checkpointed value before the transaction began. The value set to DSCR
+> + * while the transaction was suspended should only remain there if the
+> + * transaction succeeds.
+> + *
+> + */
+> +
+> +#include <stdio.h>
+> +#include <stdlib.h>
+> +#include <unistd.h>
+> +#include <string.h>
+> +
+> +#include "tm.h"
+> +#include "utils.h"
+> +
+> +#define SPRN_DSCR	0x3
+> +
+> +int	num_loops	= 10000;
+> +
+> +int test_dscr(void)
 > +{
-> +	if (cpu_has_feature(CPU_FTR_SMT))
-> +		return mfspr(SPRN_TENSR);
-> +	else
-> +		return 1;
+> +	int i;
+> +
+> +	SKIP_IF(!have_htm());
+> +
+> +	for (i = 0; i < num_loops; i++)
+> +	{
+> +		uint64_t result = 0;
+> +		asm __volatile__(
+> +			"li	7, 1;"
+> +			"mtspr	%[dscr], 7;"	/* dscr = 1 */
+> +			"tbegin.;"
+> +			"beq	3f ;"
+> +			"li	4, 0x7000;"	/* Loop lots, to use time */
+> +			"2:;"		     	/* Start loop */
+> +			"li	7, 2;"
+> +			"mtspr	%[dscr], 7;"	/* dscr = 2 */
+> +			"tsuspend.;"
+> +			"li	7, 3;"
+> +			"mtspr	%[dscr], 7;"	/* dscr = 3 */
+> +			"tresume.;"
+> +			"subi	4, 4, 1;"
+> +			"cmpdi	4, 0;"
+> +			"bne	2b;"
+> +			"tend.;"
+> +
+> +			/* Transaction sucess! DSCR should be 3 */
+> +			"mfspr  7, %[dscr];"
+> +			"ori	%[res], 7, 4;"	/* res = 3|4 = 7 */
+> +			"b	4f;"
+> +
+> +			/* Abort handler.DSCR should be rolled back to 1 */
+> +			"3:;"
+> +			"mfspr  7, %[dscr];"
+> +			"ori	%[res], 7, 8;"	/* res = 1|8 = 9 */
+> +			"4:;"
+> +
+> +			: [res]"=r"(result)
+> +			: [dscr]"i"(SPRN_DSCR)
+> +			: "memory", "r0", "r4", "r7");
+> +
+> +		/* If result is anything else other than 7 or 9, the dscr
+> +		* value must have been corrupted. */
+> +		if ((result != 7) && (result != 9))
+> +			return 1;
+> +
+> +	}
+> +	return 0;
 > +}
-If i get it right, SPRN_TENSR used in the code only if CONFIG_PPC64
-is defined. Then we can make it noop on ppc32.
-
-Thanks!
-
->
->  #endif /* _ASM_POWERPC_CPUTHREADS_H */
-> diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
-> index bb04e4d..f466848 100644
-> --- a/arch/powerpc/mm/tlb_nohash.c
-> +++ b/arch/powerpc/mm/tlb_nohash.c
-> @@ -640,9 +640,7 @@ static void early_init_this_mmu(void)
->  		 * transient mapping would cause problems.
->  		 */
->  #ifdef CONFIG_SMP
-> -		if (cpu != boot_cpuid &&
-> -		    (cpu != cpu_first_thread_sibling(cpu) ||
-> -		     cpu == cpu_first_thread_sibling(boot_cpuid)))
-> +		if (hweight32(get_tensr()) > 1)
->  			map = false;
->  #endif
->
+> +
+> +int main(int argc, char *argv[])
+> +{
+> +
+> +	/* A low number of iterations (eg 100) can cause a false pass */
+> +	if (argc > 1) {
+> +		if (strcmp(argv[1], "-h") == 0) {
+> +			printf("Syntax:\n\t%s [<num loops>]\n",
+> +			       argv[0]);
+> +			return 0;
+return 1?
+> +		} else {
+> +			num_loops = atoi(argv[1]);
+> +		}
+> +	}
+> +
+> +	printf("Starting, %d loops\n", num_loops);
+> +
+> +	test_harness(test_dscr, "tm_dscr");
+return test_harness(test_dscr, "tm_dscr");
+> +}
 > --
-> 1.9.1
+> 2.5.0
 >
 > _______________________________________________
 > Linuxppc-dev mailing list
