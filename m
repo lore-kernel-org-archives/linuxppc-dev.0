@@ -1,36 +1,23 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
+Return-Path: <michael@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 495AB1A078B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 18:17:19 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 24A111402D2
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Dec 2015 18:17:18 +1100 (AEDT)
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 3 Dec 2015 17:17:18 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3325D3578047
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Dec 2015 18:17:16 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB37H88b27328672
- for <linuxppc-dev@ozlabs.org>; Thu, 3 Dec 2015 18:17:16 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB37Gh4s010085
- for <linuxppc-dev@ozlabs.org>; Thu, 3 Dec 2015 18:16:43 +1100
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: gwshan@linux.vnet.ibm.com, imunsie@au1.ibm.com
-Subject: [PATCH] Revert "powerpc/eeh: Don't unfreeze PHB PE after reset"
-Date: Thu,  3 Dec 2015 18:16:12 +1100
-Message-Id: <1449126972-25400-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7ACFB1A017D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 19:56:05 +1100 (AEDT)
+In-Reply-To: <874mg0gj78.fsf@linux.vnet.ibm.com>
+References: <1448599526-31073-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <1448599526-31073-4-git-send-email-stewart@linux.vnet.ibm.com>
+ <1448942184.9027.7.camel@ellerman.id.au> <874mg0gj78.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+ charset=UTF-8
+Subject: Re: [PATCH 3/4] powerpc/powernv: remove FW_FEATURE_OPAL and just use
+ FW_FEATURE_OPALv3
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 03 Dec 2015 19:25:59 +1030
+To: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Message-ID: <42CAC831-3C07-433D-9921-A7E302A26BE2@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,55 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reverts commit 527d10ef3a315d3cb9dc098dacd61889a6c26439.
 
-The reverted commit breaks cxlflash devices following an EEH reset.
-Attempting to load the cxlflash driver after a reset results in a call to
-pci_read_vpd() returning -ENODEV, causing driver initialisation to fail.
 
-At this stage, we don't fully understand why this is happening, and we
-also haven't tested whether this occurs for other cxl devices. In the
-meantime, though, revert the commit, especially as it was intended to be a
-non-functional change.
+On 3 December 2015 4:36:03 pm ACDT, Stewart Smith <stewart@linux.vnet.ibm.com> wrote:
+>Michael Ellerman <mpe@ellerman.id.au> writes:
+>
+>> On Fri, 2015-11-27 at 15:45 +1100, Stewart Smith wrote:
+>>
+>>> Long ago, only in the lab, there was OPALv1 and OPALv2. Now there is
+>>> just OPALv3, with nobody ever expecting anything on pre-OPALv3 to
+>>> be cared about or supported by mainline kernels.
+>>> 
+>>> So, let's remove FW_FEATURE_OPAL and instead use FW_FEATURE_OPALv3
+>>> exclusively.
+>>
+>> It would be less churn if we did the reverse, ie. removed v3 and just
+>used
+>> FW_FEATURE_OPAL. It would also read better as v3 is the one and only
+>version we
+>> care about, so having it called out everywhere is superfluous.
+>>
+>> Or is there a good reason I missed?
+>
+>excessive caution?
 
-Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Yeah fair enough.
 
----
+>I'll send a V2 patchset doing the reverse, leaving FW_FEATURE_OPAL.
 
-This issue was identified by bisection following breakage observed in
-4.4-rc1. I'm continuing to investigate the root cause (and testing on cxl
-devices other than cxlflash), as the commit in question shouldn't have
-caused problems.
----
- arch/powerpc/kernel/eeh_driver.c | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+Thanks.
 
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 80dfe89..8d14feb 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -590,16 +590,10 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 	eeh_ops->configure_bridge(pe);
- 	eeh_pe_restore_bars(pe);
- 
--	/*
--	 * If it's PHB PE, the frozen state on all available PEs should have
--	 * been cleared by the PHB reset. Otherwise, we unfreeze the PE and its
--	 * child PEs because they might be in frozen state.
--	 */
--	if (!(pe->type & EEH_PE_PHB)) {
--		rc = eeh_clear_pe_frozen_state(pe, false);
--		if (rc)
--			return rc;
--	}
-+	/* Clear frozen state */
-+	rc = eeh_clear_pe_frozen_state(pe, false);
-+	if (rc)
-+		return rc;
- 
- 	/* Give the system 5 seconds to finish running the user-space
- 	 * hotplug shutdown scripts, e.g. ifdown for ethernet.  Yes,
+cheers
+
 -- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+Sent from my Android phone with K-9 Mail. Please excuse my brevity.
