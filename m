@@ -1,23 +1,23 @@
-Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0101.outbound.protection.outlook.com [207.46.100.101])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE1F81A078B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2015 00:07:09 +1100 (AEDT)
-From: Madalin Bucur <madalin.bucur@freescale.com>
-To: <netdev@vger.kernel.org>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <davem@davemloft.net>, <scottwood@freescale.com>,
- <igal.liberman@freescale.com>, <ppc@mindchasers.com>, <joe@perches.com>,
- <pebolle@tiscali.nl>, <joakim.tjernlund@transmode.se>,
- <gregkh@linuxfoundation.org>, Madalin Bucur <madalin.bucur@freescale.com>
-Subject: [net-next v5 0/8] dpaa_eth: Add the Freescale DPAA Ethernet driver
-Date: Thu, 3 Dec 2015 15:49:41 +0200
-Message-ID: <1449150589-26253-1-git-send-email-madalin.bucur@freescale.com>
-Reply-To: <madalin.bucur@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C8BFF1A0688
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2015 03:00:09 +1100 (AEDT)
+Date: Thu, 3 Dec 2015 17:00:04 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Torsten Duwe <duwe@lst.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
+Subject: Re: [PATCH v4 0/9] ftrace with regs + live patching for ppc64 LE
+ (ABI v2)
+Message-ID: <20151203160004.GE8047@pathway.suse.cz>
+References: <20151125172608.9588569260@newverein.lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151125172608.9588569260@newverein.lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,168 +27,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series adds the Ethernet driver for the Freescale
-QorIQ Data Path Acceleration Architecture (DPAA).
+On Wed 2015-11-25 17:53:17, Torsten Duwe wrote:
+> Torsten Duwe (9):
+>   ppc64 (le): prepare for -mprofile-kernel
+>   ppc64le FTRACE_WITH_REGS implementation
+>   ppc use ftrace_modify_all_code default
+>   ppc64 ftrace_with_regs configuration variables
+>   ppc64 ftrace_with_regs: spare early boot and low level
+>   ppc64 ftrace: disable profiling for some functions
+>   ppc64 ftrace: disable profiling for some files
+>   Implement kernel live patching for ppc64le (ABIv2)
+>   Enable LIVEPATCH to be configured on ppc64le and add livepatch.o if it
+>     is selected.
 
-This version includes changes following the feedback received
-on previous versions from Eric Dumazet, Bob Cochran, Joe Perches,
-Paul Bolle, Joakim Tjernlund, Scott Wood, David Miller - thank you.
+I had to add the patch below to get LivePatching working.
 
-Together with the driver a managed version of alloc_percpu
-is provided that simplifies the release of per-CPU memory.
+I tested it the following way:
 
-The Freescale DPAA architecture consists in a series of hardware
-blocks that support the Ethernet connectivity. The Ethernet driver
-depends upon the following drivers that are currently in the Linux
-kernel or in review (the underlying drivers are not inter-dependent):
- - Peripheral Access Memory Unit (PAMU)
-    drivers/iommu/fsl_*
- - Frame Manager (FMan)
-    drivers/net/ethernet/freescale/fman
- - Queue Manager (QMan), Buffer Manager (BMan)
-    drivers/soc/fsl/qbman
+# livepatching sample
+CONFIG_SAMPLES=y
+CONFIG_SAMPLE_LIVEPATCH=m
 
-dpaa_eth interfaces mapping to FMan MACs:
+# booted the compiled kernel and printed the default cmdline
+$> cat /proc/cmdline
+BOOT_IMAGE=/boot/vmlinuz-4.4.0-rc3-11-default+ root=UUID=...
 
-  dpaa_eth       /eth0\     ...       /ethN\
-  driver        |      |             |      |
-  -------------   ----   -----------   ----   -------------
-       -Ports  / Tx  Rx \    ...    / Tx  Rx \
-  FMan        |          |         |          |
-       -MACs  |   MAC0   |         |   MACN   |
-             /   dtsec0   \  ...  /   dtsecN   \ (or tgec)
-            /              \     /              \(or memac)
-  ---------  --------------  ---  --------------  ---------
-      FMan, FMan Port, FMan SP, FMan MURAM drivers
-  ---------------------------------------------------------
-      FMan HW blocks: MURAM, MACs, Ports, SP
-  ---------------------------------------------------------
+# loaded the patch and printed the patch cmdline
+$> modprobe livepatch-sample
+$> cat /proc/cmdline
+this has been live patched
 
-dpaa_eth relation to QMan, FMan:
-              ________________________________
-  dpaa_eth   /            eth0                \
-  driver    /                                  \
-  ---------   -^-   -^-   -^-   ---    ---------
-  QMan driver / \   / \   / \  \   /  | BMan    |
-             |Rx | |Rx | |Tx | |Tx |  | driver  |
-  ---------  |Dfl| |Err| |Cnf| |FQs|  |         |
-  QMan HW    |FQ | |FQ | |FQ | |   |  |         |
-             /   \ /   \ /   \  \ /   |         |
-  ---------   ---   ---   ---   -v-    ---------
-            |        FMan QMI         |         |
-            | FMan HW       FMan BMI  | BMan HW |
-              -----------------------   --------
+# tried to disable and enable the patch
+$> echo 0 > /sys/kernel/livepatch/livepatch_sample/enabled
+$> cat /proc/cmdline
+BOOT_IMAGE=/boot/vmlinuz-4.4.0-rc3-11-default+ root=UUID=...
+$> echo 1 > /sys/kernel/livepatch/livepatch_sample/enabled
+$> cat /proc/cmdline
+this has been live patched
 
-where the acronyms used above (and in the code) are:
-DPAA = Data Path Acceleration Architecture
-FMan = DPAA Frame Manager
-QMan = DPAA Queue Manager
-BMan = DPAA Buffers Manager
-QMI = QMan interface in FMan
-BMI = BMan interface in FMan
-FMan SP = FMan Storage Profiles
-MURAM = Multi-user RAM in FMan
-FQ = QMan Frame Queue
-Rx Dfl FQ = default reception FQ
-Rx Err FQ = Rx error frames FQ
-Tx Cnf FQ = Tx confirmation FQ
-Tx FQs = transmission frame queues
-dtsec = datapath three speed Ethernet controller (10/100/1000 Mbps)
-tgec = ten gigabit Ethernet controller (10 Gbps)
-memac = multirate Ethernet MAC (10/100/1000/10000)
+# also checked messages
+$> dmesg | tail -n 4
+[   33.673057] livepatch: tainting kernel with TAINT_LIVEPATCH
+[   33.673068] livepatch: enabling patch 'livepatch_sample'
+[ 1997.098257] livepatch: disabling patch 'livepatch_sample'
+[ 2079.696277] livepatch: enabling patch 'livepatch_sample'
 
-The latest FMan driver patches were submitted by Igal Liberman:
-https://patchwork.ozlabs.org/project/netdev/list/?submitter=64715&state=*
 
-The latest Q/BMan drivers were submitted by Roy Pledge:
-https://patchwork.ozlabs.org/project/linuxppc-dev/list/?submitter=66331&state=*
+Here is the patch:
 
-Resent, the first attempt had the From: line misinterpreted.
+>From 7eb6f9453c81a996b0f5ffcb8725facadd9ec718 Mon Sep 17 00:00:00 2001
+From: Petr Mladek <pmladek@suse.com>
+Date: Thu, 3 Dec 2015 13:28:19 +0100
+Subject: [PATCH] livepatch: Support ftrace location with an offset
 
-Changes from v4:
- - addressed feedback from Scott Wood and Joe Perches
- - fixed spelling
- - fixed leak of uninitialized stack to userspace
- - fix prints
- - replace raw_cpu_ptr() with this_cpu_ptr()
- - remove _s from the end of structure names
- - remove underscores at start of functions, goto labels
- - remove likely in error paths
- - use container_of() instead of open casts
- - remove priv from the driver name
- - move return type on same line with function name
- - drop DPA_READ_SKB_PTR/DPA_WRITE_SKB_PTR
+ftrace_set_filter_ip() function requires the exact ftrace location
+as a parameter. It is the same as the function address on x86 and s390.
+But it is after the TOC load and LR save on powerpc.
 
-Changes from v3:
- - removed bogus delay and comment in .ndo_stop implementation
- - addressed minor issues reported by David Miller
+This patch adds klp_ftrace_location() arch-specific function that
+will compute the ftrace location from the function address.
 
-Changes from v2:
- - removed debugfs, moved exports to ethtool statistics
- - removed congestion groups Kconfig params
+I thought about handling this with a constant (define) but I
+am not sure if it always would be a constant. I also thought
+about a weak function. But this seems to be a good compromise.
+We are ready for complications and the compiler still might
+optimize it.
 
-Changes from v1:
- - bpool level Kconfig options removed
- - print format using pr_fmt, cleaned up prints
- - __hot/__cold removed
- - gratuitous unlikely() removed
- - code style aligned, consistent spacing for declarations
- - comment formatting
+I made it livepatch-specific to keep it simple. Ftrace supports
+more locations of the handler, e.g. Mcount on x86. But livepatching
+does not support most of them. Also ftrace does not know the offset
+easily because it gets the ftrace locations from __mcount_loc
+object section.
 
-The complete patch set based on the latest net-next/master kernel
-can be found in the public git at:
-http://git.freescale.com/git/cgit.cgi/ppc/upstream/linux.git
-under the tag ldup_public_git_20151202:
-http://git.freescale.com/git/cgit.cgi/ppc/upstream/linux.git/tag/?h=ldup_public_git_20151202
+Signed-off-by: Petr Mladek <pmladek@suse.com>
+---
+ arch/powerpc/include/asm/livepatch.h | 10 ++++++++++
+ arch/s390/include/asm/livepatch.h    |  9 +++++++++
+ arch/x86/include/asm/livepatch.h     | 10 ++++++++++
+ kernel/livepatch/core.c              | 10 +++++++---
+ 4 files changed, 36 insertions(+), 3 deletions(-)
 
-There is one u-boot patch that one needs to make sure it's applied
-to align u-boot to the latest device tree binding document specification
-used by the FMan driver. Please make sure your u-boot includes this patch:
-
-        commit 97a8d010e029111e5711a45264a726bedbeb24c4
-        Author: Igal Liberman <igal.liberman@freescale.com>
-        Date:   Tue Aug 18 14:47:05 2015 +0300
-
-            net/fman: Support both new and legacy FMan Compatibles
-
-The patch was included in u-boot in v2015.10-rc3.
-
-Madalin Bucur (8):
-  devres: add devm_alloc_percpu()
-  dpaa_eth: add support for DPAA Ethernet
-  dpaa_eth: add support for S/G frames
-  dpaa_eth: add driver's Tx queue selection mechanism
-  dpaa_eth: add ethtool functionality
-  dpaa_eth: add ethtool statistics
-  dpaa_eth: add sysfs exports
-  dpaa_eth: add trace points
-
- Documentation/driver-model/devres.txt              |    4 +
- drivers/base/devres.c                              |   64 +
- drivers/net/ethernet/freescale/Kconfig             |    2 +
- drivers/net/ethernet/freescale/Makefile            |    1 +
- drivers/net/ethernet/freescale/dpaa/Kconfig        |   32 +
- drivers/net/ethernet/freescale/dpaa/Makefile       |   12 +
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |  788 +++++++++++
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |  464 +++++++
- .../net/ethernet/freescale/dpaa/dpaa_eth_common.c  | 1416 ++++++++++++++++++++
- .../net/ethernet/freescale/dpaa/dpaa_eth_common.h  |  108 ++
- drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c  |  686 ++++++++++
- .../net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c   |  167 +++
- .../net/ethernet/freescale/dpaa/dpaa_eth_trace.h   |  141 ++
- drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c |  414 ++++++
- include/linux/device.h                             |   19 +
- 15 files changed, 4318 insertions(+)
- create mode 100644 drivers/net/ethernet/freescale/dpaa/Kconfig
- create mode 100644 drivers/net/ethernet/freescale/dpaa/Makefile
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-
+diff --git a/arch/powerpc/include/asm/livepatch.h b/arch/powerpc/include/asm/livepatch.h
+index 3200c1152122..aa7e15dae58c 100644
+--- a/arch/powerpc/include/asm/livepatch.h
++++ b/arch/powerpc/include/asm/livepatch.h
+@@ -34,6 +34,16 @@ static inline int klp_check_compiler_support(void)
+ extern int klp_write_module_reloc(struct module *mod, unsigned long type,
+ 				   unsigned long loc, unsigned long value);
+ 
++/*
++ * LivePatching works on PPC only when the kernel is compiled with
++ * -mprofile-kernel. The ftrace handler is called after the TOC load
++ * and LR save (16 bytes).
++ */
++static inline unsigned long klp_ftrace_location(unsigned long faddr)
++{
++	return faddr + 16;
++}
++
+ static inline void klp_arch_set_pc(struct pt_regs *regs, unsigned long ip)
+ {
+ 	regs->nip = ip;
+diff --git a/arch/s390/include/asm/livepatch.h b/arch/s390/include/asm/livepatch.h
+index 7aa799134a11..b853a1e48d04 100644
+--- a/arch/s390/include/asm/livepatch.h
++++ b/arch/s390/include/asm/livepatch.h
+@@ -32,6 +32,15 @@ static inline int klp_write_module_reloc(struct module *mod, unsigned long
+ 	return -ENOSYS;
+ }
+ 
++/*
++ * LivePatching works only when the ftrace handler is called from the first
++ * instruction of the patched function on s390.
++ */
++static inline unsigned long klp_ftrace_location(unsigned long faddr)
++{
++	return faddr;
++}
++
+ static inline void klp_arch_set_pc(struct pt_regs *regs, unsigned long ip)
+ {
+ 	regs->psw.addr = ip;
+diff --git a/arch/x86/include/asm/livepatch.h b/arch/x86/include/asm/livepatch.h
+index 19c099afa861..9a8c84d3fae2 100644
+--- a/arch/x86/include/asm/livepatch.h
++++ b/arch/x86/include/asm/livepatch.h
+@@ -36,6 +36,16 @@ static inline int klp_check_compiler_support(void)
+ int klp_write_module_reloc(struct module *mod, unsigned long type,
+ 			   unsigned long loc, unsigned long value);
+ 
++
++/*
++ * LivePatching works only when ftrace uses fentry on x86. Therefore
++ * the ftrace location is the same as the address of the function.
++ */
++static inline unsigned long klp_ftrace_location(unsigned long faddr)
++{
++	return faddr;
++}
++
+ static inline void klp_arch_set_pc(struct pt_regs *regs, unsigned long ip)
+ {
+ 	regs->ip = ip;
+diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
+index db545cbcdb89..f9dc8889e1f1 100644
+--- a/kernel/livepatch/core.c
++++ b/kernel/livepatch/core.c
+@@ -364,8 +364,10 @@ static void klp_disable_func(struct klp_func *func)
+ 		return;
+ 
+ 	if (list_is_singular(&ops->func_stack)) {
++		unsigned long ftrace_loc = klp_ftrace_location(func->old_addr);
++
+ 		WARN_ON(unregister_ftrace_function(&ops->fops));
+-		WARN_ON(ftrace_set_filter_ip(&ops->fops, func->old_addr, 1, 0));
++		WARN_ON(ftrace_set_filter_ip(&ops->fops, ftrace_loc, 1, 0));
+ 
+ 		list_del_rcu(&func->stack_node);
+ 		list_del(&ops->node);
+@@ -390,6 +392,8 @@ static int klp_enable_func(struct klp_func *func)
+ 
+ 	ops = klp_find_ops(func->old_addr);
+ 	if (!ops) {
++		unsigned long ftrace_loc = klp_ftrace_location(func->old_addr);
++
+ 		ops = kzalloc(sizeof(*ops), GFP_KERNEL);
+ 		if (!ops)
+ 			return -ENOMEM;
+@@ -404,7 +408,7 @@ static int klp_enable_func(struct klp_func *func)
+ 		INIT_LIST_HEAD(&ops->func_stack);
+ 		list_add_rcu(&func->stack_node, &ops->func_stack);
+ 
+-		ret = ftrace_set_filter_ip(&ops->fops, func->old_addr, 0, 0);
++		ret = ftrace_set_filter_ip(&ops->fops, ftrace_loc, 0, 0);
+ 		if (ret) {
+ 			pr_err("failed to set ftrace filter for function '%s' (%d)\n",
+ 			       func->old_name, ret);
+@@ -415,7 +419,7 @@ static int klp_enable_func(struct klp_func *func)
+ 		if (ret) {
+ 			pr_err("failed to register ftrace handler for function '%s' (%d)\n",
+ 			       func->old_name, ret);
+-			ftrace_set_filter_ip(&ops->fops, func->old_addr, 1, 0);
++			ftrace_set_filter_ip(&ops->fops, ftrace_loc, 1, 0);
+ 			goto err;
+ 		}
+ 
 -- 
-1.7.11.7
+1.8.5.6
