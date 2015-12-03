@@ -1,18 +1,18 @@
 Return-Path: <rashmicy@gmail.com>
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DD1421A01DF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 11:46:45 +1100 (AEDT)
-Received: by padhx2 with SMTP id hx2so55397924pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Dec 2015 16:46:43 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2F7051A0CD1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 11:47:42 +1100 (AEDT)
+Received: by pabfh17 with SMTP id fh17so56995019pab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Dec 2015 16:47:39 -0800 (PST)
 From: Rashmica Gupta <rashmicy@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mikey@neuling.org
-Subject: [v3] selftests/powerpc: Add test for forking inside transaction
-Date: Thu,  3 Dec 2015 11:46:30 +1100
-Message-Id: <1449103590-28282-1-git-send-email-rashmicy@gmail.com>
+Subject: [v3] selftests/powerpc: Add test to check is DSCR is corrupted.
+Date: Thu,  3 Dec 2015 11:47:27 +1100
+Message-Id: <1449103647-28415-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,86 +22,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This test does a fork syscall inside a transaction. Basic sniff test to see
-if we can enter the kernel during a transaction.
+If the transaction is aborted, the DSCR should be rolled back to the
+checkpointed value before the transaction began. The value written to the
+DSCR when transaction was suspended should only persist if the transaction
+is successful.
 
 Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 ---
+
 This must be run before tm-signal-stack as after this test is run a reboot
 is required -- changed the order of the tests in the Makefile.
 
  tools/testing/selftests/powerpc/tm/.gitignore |  1 +
  tools/testing/selftests/powerpc/tm/Makefile   |  2 +-
- tools/testing/selftests/powerpc/tm/tm-fork.c  | 42 +++++++++++++++++++++++++++
- 3 files changed, 44 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-fork.c
+ tools/testing/selftests/powerpc/tm/tm-dscr.c  | 95 +++++++++++++++++++++++++++
+ 3 files changed, 97 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-dscr.c
 
 diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
-index e6668217ccd0..d0c7c97e9b13 100644
+index d0c7c97e9b13..76eae258feeb 100644
 --- a/tools/testing/selftests/powerpc/tm/.gitignore
 +++ b/tools/testing/selftests/powerpc/tm/.gitignore
-@@ -2,3 +2,4 @@ tm-resched-dscr
- tm-syscall
+@@ -3,3 +3,4 @@ tm-syscall
  tm-signal-msr-resv
  tm-signal-stack
-+tm-fork
+ tm-fork
++tm-dscr
 diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index 578572a3700a..56cbb3c839a1 100644
+index 56cbb3c839a1..dc368f789afa 100644
 --- a/tools/testing/selftests/powerpc/tm/Makefile
 +++ b/tools/testing/selftests/powerpc/tm/Makefile
 @@ -1,4 +1,4 @@
--TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack
-+TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-fork tm-signal-stack
+-TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-fork tm-signal-stack
++TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-fork tm-dscr tm-signal-stack
  
  all: $(TEST_PROGS)
  
-diff --git a/tools/testing/selftests/powerpc/tm/tm-fork.c b/tools/testing/selftests/powerpc/tm/tm-fork.c
+diff --git a/tools/testing/selftests/powerpc/tm/tm-dscr.c b/tools/testing/selftests/powerpc/tm/tm-dscr.c
 new file mode 100644
-index 000000000000..8d48579b7778
+index 000000000000..b4fc44945a4f
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-fork.c
-@@ -0,0 +1,42 @@
++++ b/tools/testing/selftests/powerpc/tm/tm-dscr.c
+@@ -0,0 +1,95 @@
 +/*
 + * Copyright 2015, Michael Neuling, IBM Corp.
 + * Licensed under GPLv2.
++ * Original: Michael Neuling 19/7/2013
++ * Edited: Rashmica Gupta 01/12/2015
 + *
-+ * Edited: Rashmica Gupta, Nov 2015
++ * Do some transactions, see if the dscr is corrupted.
++ * If the transaction is aborted, the DSCR should be rolled back to the
++ * checkpointed value from before the transaction began. The value set to
++ * DSCR while the transaction was suspended should persist if the
++ * transaction succeeds.
 + *
-+ * This test does a fork syscall inside a transaction. Basic sniff test
-+ * to see if we can enter the kernel during a transaction.
 + */
 +
-+#include <errno.h>
-+#include <inttypes.h>
-+#include <pthread.h>
 +#include <stdio.h>
 +#include <stdlib.h>
 +#include <unistd.h>
++#include <string.h>
 +
-+#include "utils.h"
 +#include "tm.h"
++#include "utils.h"
 +
-+int test_fork(void)
++#define SPRN_DSCR	0x3
++
++int	num_loops	= 10000;
++
++int test_dscr(void)
 +{
++	int i;
++
 +	SKIP_IF(!have_htm());
 +
-+	asm __volatile__(
-+		"tbegin.;"
-+		"blt    1f; "
-+		"li     0, 2;"  /* fork syscall */
-+		"sc  ;"
-+		"tend.;"
-+		"1: ;"
-+		: : : "memory", "r0");
-+	/* If we reach here, we've passed.  Otherwise we've probably crashed
-+	 * the kernel */
++	for (i = 0; i < num_loops; i++)
++	{
++		uint64_t result = 0;
++		asm __volatile__(
++			"li	7, 1;"
++			"mtspr	%[dscr], 7;"	/* dscr = 1 */
++			"tbegin.;"
++			"beq	3f;"
++			"li	4, 0x7000;"	/* Loop lots, to use time */
++			"2:;"		     	/* Start loop */
++			"li	7, 2;"
++			"mtspr	%[dscr], 7;"	/* dscr = 2 */
++			"tsuspend.;"
++			"li	7, 3;"
++			"mtspr	%[dscr], 7;"	/* dscr = 3 */
++			"tresume.;"
++			"subi	4, 4, 1;"
++			"cmpdi	4, 0;"
++			"bne	2b;"
++			"tend.;"
 +
++			/* Transaction sucess! DSCR should be 3 */
++			"mfspr  7, %[dscr];"
++			"ori	%[res], 7, 4;"	/* res = 3|4 = 7 */
++			"b	4f;"
++
++			/* Abort handler.DSCR should be rolled back to 1 */
++			"3:;"
++			"mfspr  7, %[dscr];"
++			"ori	%[res], 7, 8;"	/* res = 1|8 = 9 */
++			"4:;"
++
++			: [res]"=r"(result)
++			: [dscr]"i"(SPRN_DSCR)
++			: "memory", "r0", "r4", "r7");
++
++		/* If result is anything else other than 7 or 9, the dscr
++		 * value must have been corrupted. */
++		if ((result != 7) && (result != 9))
++			return 1;
++
++	}
 +	return 0;
 +}
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(test_fork, "tm_fork");
++
++	/* A low number of iterations (eg 100) can cause a false pass. */
++	if (argc > 1) {
++		if (strcmp(argv[1], "-h") == 0) {
++			printf("Syntax:\n\t%s [<num loops>]\n",
++			       argv[0]);
++			return 1;
++		} else {
++			num_loops = atoi(argv[1]);
++		}
++	}
++
++	printf("Starting, %d loops\n", num_loops);
++
++	return test_harness(test_dscr, "tm_dscr");
 +}
 -- 
 2.5.0
