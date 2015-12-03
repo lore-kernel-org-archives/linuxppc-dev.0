@@ -1,27 +1,25 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::11])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <madalin.bucur@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0102.outbound.protection.outlook.com [157.56.111.102])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A91F81A0688
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 23:37:55 +1100 (AEDT)
-Subject: [P.A. Semi] Does the ethernet interface work on your Electra, Chitra,
- Nemo, and Athena board?
-To: Michael Ellerman <mpe@ellerman.id.au>, Gabriel Paubert <paubert@iram.es>,
- netdev@vger.kernel.org, Denis Kirjanov <kda@linux-powerpc.org>,
- linuxppc-dev@lists.ozlabs.org
-References: <565AF986.9060106@xenosoft.de>
- <CAOJe8K1911vDjMe9m_1vY6DSGpOk0TmL96Qf1whuNFXxHJesGw@mail.gmail.com>
- <565C1B55.4020207@xenosoft.de> <565C8287.7090209@xenosoft.de>
- <20151130181217.GA15921@visitor2.iram.es> <565DB2FE.1010706@xenosoft.de>
- <565E7A9E.4000909@xenosoft.de> <1449044072.24750.3.camel@ellerman.id.au>
- <565F5E7C.9040207@xenosoft.de>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <56603787.3000802@xenosoft.de>
-Date: Thu, 3 Dec 2015 13:37:27 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id F3F361A0688
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 23:52:20 +1100 (AEDT)
+From: Madalin Bucur <madalin.bucur@freescale.com>
+To: <netdev@vger.kernel.org>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <davem@davemloft.net>, <scottwood@freescale.com>,
+ <igal.liberman@freescale.com>, <ppc@mindchasers.com>, <joe@perches.com>,
+ <pebolle@tiscali.nl>, <joakim.tjernlund@transmode.se>,
+ <gregkh@linuxfoundation.org>, Madalin Bucur <madalin.bucur@freescale.com>
+Subject: [net-next v5 1/8] devres: add devm_alloc_percpu()
+Date: Thu, 3 Dec 2015 15:49:42 +0200
+Message-ID: <1449150589-26253-2-git-send-email-madalin.bucur@freescale.com>
+In-Reply-To: <1449150589-26253-1-git-send-email-madalin.bucur@freescale.com>
+References: <1449150589-26253-1-git-send-email-madalin.bucur@freescale.com>
+Reply-To: <madalin.bucur@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <565F5E7C.9040207@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,135 +29,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+Introduce managed counterparts for alloc_percpu() and free_percpu().
+Add devm_alloc_percpu() and devm_free_percpu() into the managed
+interfaces list.
 
-I checked out the Linux git till the commit 'powerpc-4.3-1'
-
-git checkout ff474e8ca8547d09cb82ebab56d4c96f9eea01ce
-
-Output:
-
-Checking out files: 100% (13843/13843), done.
-Note: checking out 'ff474e8ca8547d09cb82ebab56d4c96f9eea01ce'.
-
-You are in 'detached HEAD' state. You can look around, make experimental
-changes and commit them, and you can discard any commits you make in this
-state without impacting any branches by performing another checkout.
-
-If you want to create a new branch to retain commits you create, you may
-do so (now or later) by using -b with the checkout command again. Example:
-
-   git checkout -b new_branch_name
-
-HEAD ist jetzt bei ff474e8... Merge tag 'powerpc-4.3-1' of 
-git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux
-
+Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
+Tested-by: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
 ---
+ Documentation/driver-model/devres.txt |  4 +++
+ drivers/base/devres.c                 | 64 +++++++++++++++++++++++++++++++++++
+ include/linux/device.h                | 19 +++++++++++
+ 3 files changed, 87 insertions(+)
 
-The P.A. Semi Ethernet doesn't work with the powerpc-4.3-1 merge. I 
-reverted this merge with:
-
-git revert ff474e8ca8547d09cb82ebab56d4c96f9eea01ce -m 1
-
-Output:
-
-  Committer: christian <christian@AmigaoneX1000.lan>
-Ihr Name und E-Mail Adresse wurden automatisch auf Basis
-Ihres Benutzer- und Rechnernamens konfiguriert. Bitte prüfen Sie, dass
-diese zutreffend sind. Sie können diese Meldung unterdrücken, indem Sie
-diese explizit setzen:
-
-     git config --global user.name "Ihr Name"
-     git config --global user.email ihre@emailadresse.de
-
-Nachdem Sie das getan hast, können Sie Ihre Identität für diesen Commit 
-ändern mit:
-
-     git commit --amend --reset-author
-
-  146 files changed, 2047 insertions(+), 3609 deletions(-)
-  delete mode 100644 Documentation/devicetree/bindings/leds/leds-powernv.txt
-  delete mode 100644 Documentation/devicetree/bindings/powerpc/fsl/scfg.txt
-  delete mode 100644 arch/powerpc/boot/dts/t1040d4rdb.dts
-  delete mode 100644 arch/powerpc/boot/dts/t1042d4rdb.dts
-  delete mode 100644 arch/powerpc/boot/dts/t104xd4rdb.dtsi
-  delete mode 100644 arch/powerpc/configs/85xx-32bit.config
-  delete mode 100644 arch/powerpc/configs/85xx-64bit.config
-  delete mode 100644 arch/powerpc/configs/85xx-hw.config
-  delete mode 100644 arch/powerpc/configs/85xx-smp.config
-  delete mode 100644 arch/powerpc/configs/altivec.config
-  create mode 100644 arch/powerpc/configs/corenet32_smp_defconfig
-  rename arch/powerpc/configs/{fsl-emb-nonhw.config => 
-corenet64_smp_defconfig} (50%)
-  delete mode 100644 arch/powerpc/configs/corenet_basic_defconfig
-  delete mode 100644 arch/powerpc/configs/mpc85xx_basic_defconfig
-  create mode 100644 arch/powerpc/configs/mpc85xx_defconfig
-  create mode 100644 arch/powerpc/configs/mpc85xx_smp_defconfig
-  delete mode 100644 arch/powerpc/include/asm/trace_clock.h
-  delete mode 100644 arch/powerpc/kernel/trace_clock.c
-  rewrite arch/powerpc/platforms/powernv/opal-power.c (76%)
-  delete mode 100644 drivers/leds/leds-powernv.c
-
----
-
-After that the P.A. Semi Ethernet works without any problems.
-
-Cheers,
-
-Christian
-
-On 02 December 2015 at 10:11 PM, Christian Zigotzky wrote:
-> Hi Michael,
->
-> Thanks a lot for your answer. We tested some vanilla mainline 4.3 
-> kernels on an Electra reference board. Additionally we tested some 
-> patched 4.3 kernels on our Nemo boards.
->
-> It would be really fantastic, if you could fix the problem.
->
-> Cheers,
->
-> Christian
->
-> On 02 December 2015 at 09:14 AM, Michael Ellerman wrote:
->> On Wed, 2015-12-02 at 05:59 +0100, Christian Zigotzky wrote:
->>> Hi all,
->>>
->>> We tested some 4.3 kernels on a P.A. Semi reference board. Ultimately,
->>> ethernet does not work, though on the reference board, the interface is
->>> detected, gets link, but will not pass any packets/traffic.
->>>
->>> Somewhere in the source code of the commit "'powerpc-4.3-1' of
->>> git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux (2015-09-03
->>> 23:41:38 (GMT)" is the problem.
->>>
->>> Could you please help us to solve the problem?
->> Hi Christian,
->>
->> Unfortunately there is no source code in that commit, it's just a 
->> merge. And
->> your bisect run found that the very first commit in that merge was OK:
->>
->>>> [390fd5929f52bdfb9dfcc03820041ba556780f4a] cxl: Set up and enable PSL
->>>> git bisect good
->> So I'm not convinced your bisect run was correct, sorry.
->>
->> My pasemi is booting OK, but I haven't had time to test the network. 
->> If you
->> remind me next week I will make sure network is working on my board.
->>
->> Are you testing your board with your additional patch as well? Or 
->> just vanilla
->> mainline?
->>
->> cheers
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff --git a/Documentation/driver-model/devres.txt b/Documentation/driver-model/devres.txt
+index 831a536..595fd1b 100644
+--- a/Documentation/driver-model/devres.txt
++++ b/Documentation/driver-model/devres.txt
+@@ -312,6 +312,10 @@ MEM
+   devm_kvasprintf()
+   devm_kzalloc()
+ 
++PER-CPU MEM
++  devm_alloc_percpu()
++  devm_free_percpu()
++
+ PCI
+   pcim_enable_device()	: after success, all PCI ops become managed
+   pcim_pin_device()	: keep PCI device enabled after release
+diff --git a/drivers/base/devres.c b/drivers/base/devres.c
+index 8fc654f..77e658f 100644
+--- a/drivers/base/devres.c
++++ b/drivers/base/devres.c
+@@ -10,6 +10,7 @@
+ #include <linux/device.h>
+ #include <linux/module.h>
+ #include <linux/slab.h>
++#include <linux/percpu.h>
+ 
+ #include "base.h"
+ 
+@@ -985,3 +986,66 @@ void devm_free_pages(struct device *dev, unsigned long addr)
+ 			       &devres));
+ }
+ EXPORT_SYMBOL_GPL(devm_free_pages);
++
++static void devm_percpu_release(struct device *dev, void *pdata)
++{
++	void __percpu *p;
++
++	p = *(void __percpu **)pdata;
++	free_percpu(p);
++}
++
++static int devm_percpu_match(struct device *dev, void *data, void *p)
++{
++	struct devres *devr = container_of(data, struct devres, data);
++
++	return *(void **)devr->data == p;
++}
++
++/**
++ * __devm_alloc_percpu - Resource-managed alloc_percpu
++ * @dev: Device to allocate per-cpu memory for
++ * @size: Size of per-cpu memory to allocate
++ * @align: Alignment of per-cpu memory to allocate
++ *
++ * Managed alloc_percpu. Per-cpu memory allocated with this function is
++ * automatically freed on driver detach.
++ *
++ * RETURNS:
++ * Pointer to allocated memory on success, NULL on failure.
++ */
++void __percpu *__devm_alloc_percpu(struct device *dev, size_t size,
++		size_t align)
++{
++	void *p;
++	void __percpu *pcpu;
++
++	pcpu = __alloc_percpu(size, align);
++	if (!pcpu)
++		return NULL;
++
++	p = devres_alloc(devm_percpu_release, sizeof(void *), GFP_KERNEL);
++	if (!p)
++		return NULL;
++
++	*(void __percpu **)p = pcpu;
++
++	devres_add(dev, p);
++
++	return pcpu;
++}
++EXPORT_SYMBOL_GPL(__devm_alloc_percpu);
++
++/**
++ * devm_free_percpu - Resource-managed free_percpu
++ * @dev: Device this memory belongs to
++ * @pdata: Per-cpu memory to free
++ *
++ * Free memory allocated with devm_alloc_percpu().
++ */
++void devm_free_percpu(struct device *dev, void __percpu *pdata)
++{
++	WARN_ON(devres_destroy(dev, devm_percpu_release, devm_percpu_match,
++			       (void *)pdata));
++}
++EXPORT_SYMBOL_GPL(devm_free_percpu);
+diff --git a/include/linux/device.h b/include/linux/device.h
+index b8f411b..ef9a86a 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -681,6 +681,25 @@ void __iomem *devm_ioremap_resource(struct device *dev, struct resource *res);
+ int devm_add_action(struct device *dev, void (*action)(void *), void *data);
+ void devm_remove_action(struct device *dev, void (*action)(void *), void *data);
+ 
++/**
++ * devm_alloc_percpu - Resource-managed alloc_percpu
++ * @dev: Device to allocate per-cpu memory for
++ * @type: Type to allocate per-cpu memory for
++ *
++ * Managed alloc_percpu. Per-cpu memory allocated with this function is
++ * automatically freed on driver detach.
++ *
++ * RETURNS:
++ * Pointer to allocated memory on success, NULL on failure.
++ */
++#define devm_alloc_percpu(dev, type)      \
++	(typeof(type) __percpu *)__devm_alloc_percpu(dev, sizeof(type), \
++						     __alignof__(type))
++
++void __percpu *__devm_alloc_percpu(struct device *dev, size_t size,
++				   size_t align);
++void devm_free_percpu(struct device *dev, void __percpu *pdata);
++
+ struct device_dma_parameters {
+ 	/*
+ 	 * a low level driver may set these to teach IOMMU code about
+-- 
+1.7.11.7
