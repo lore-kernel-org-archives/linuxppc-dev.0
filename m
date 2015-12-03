@@ -1,31 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0115.outbound.protection.outlook.com [65.55.169.115])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6A83A1A04EB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2015 06:37:20 +1100 (AEDT)
-Message-ID: <1449171424.15946.17.camel@freescale.com>
-Subject: Re: [net-next v4 4/8] dpaa_eth: add driver's Tx queue selection
-From: Scott Wood <scottwood@freescale.com>
-To: Bucur Madalin-Cristian-B32716 <madalin.bucur@freescale.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "davem@davemloft.net" <davem@davemloft.net>, Liberman Igal-B31950
- <Igal.Liberman@freescale.com>, Pledge Roy-R01356 <roy.pledge@freescale.com>,
- "ppc@mindchasers.com" <ppc@mindchasers.com>, "joe@perches.com"
- <joe@perches.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>,
- "joakim.tjernlund@transmode.se" <joakim.tjernlund@transmode.se>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-Date: Thu, 3 Dec 2015 13:37:04 -0600
-In-Reply-To: <DM2PR0301MB07689A2F03A375C248DDA817E60D0@DM2PR0301MB0768.namprd03.prod.outlook.com>
-References: <1446485500-9782-1-git-send-email-madalin.bucur@freescale.com>
- <1446485500-9782-5-git-send-email-madalin.bucur@freescale.com>
- <1449092431.29246.156.camel@freescale.com>
- <DM2PR0301MB07689A2F03A375C248DDA817E60D0@DM2PR0301MB0768.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id 98E5A1A04EB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Dec 2015 07:23:49 +1100 (AEDT)
+Date: Thu, 03 Dec 2015 15:23:42 -0500 (EST)
+Message-Id: <20151203.152342.830757781812463540.davem@davemloft.net>
+To: igal.liberman@freescale.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, scottwood@freescale.com,
+ madalin.bucur@freescale.com, pebolle@tiscali.nl,
+ joakim.tjernlund@transmode.se, ppc@mindchasers.com,
+ stephen@networkplumber.org
+Subject: Re: [v9, 3/6] fsl/fman: Add FMan MAC support
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1449127157-9400-4-git-send-email-igal.liberman@freescale.com>
+References: <1449127157-9400-1-git-send-email-igal.liberman@freescale.com>
+ <1449127157-9400-4-git-send-email-igal.liberman@freescale.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,124 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-12-03 at 04:02 -0600, Bucur Madalin-Cristian-B32716 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, December 02, 2015 11:41 PM
-> > 
-> > On Mon, 2015-11-02 at 19:31 +0200, Madalin Bucur wrote:
-> > > Allow the selection of the transmission queue based on the CPU id.
-> > 
-> > Explain why.
-> 
-> I'll add more details in the commit log. This is a customer generated
-> feature. Bypassing the standard XPS can increase performance by making use
-> of the DPAA HW particularities.
-> 
-> > > 
-> > > Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
-> > > ---
-> > >  drivers/net/ethernet/freescale/dpaa/Kconfig           | 10 ++++++++++
-> > >  drivers/net/ethernet/freescale/dpaa/dpaa_eth.c        |  3 +++
-> > >  drivers/net/ethernet/freescale/dpaa/dpaa_eth.h        |  6 ++++++
-> > >  drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c |  8 ++++++++
-> > >  drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h |  4 ++++
-> > >  5 files changed, 31 insertions(+)
-> > > 
-> > > diff --git a/drivers/net/ethernet/freescale/dpaa/Kconfig
-> > > b/drivers/net/ethernet/freescale/dpaa/Kconfig
-> > > index 022d5aa..2577aac 100644
-> > > --- a/drivers/net/ethernet/freescale/dpaa/Kconfig
-> > > +++ b/drivers/net/ethernet/freescale/dpaa/Kconfig
-> > > @@ -11,6 +11,16 @@ menuconfig FSL_DPAA_ETH
-> > > 
-> > >  if FSL_DPAA_ETH
-> > > 
-> > > +config FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
-> > > +	bool "Use driver's Tx queue selection mechanism"
-> > > +	default y
-> > > +	---help---
-> > > +	  The DPAA Ethernet driver defines a ndo_select_queue()
-> > > callback
-> > > for optimal selection
-> > > +	  of the egress FQ. That will override the XPS support for this
-> > > netdevice.
-> > > +	  If for whatever reason you want to be in control of the
-> > > egress FQ
-> > > -to-CPU selection and mapping,
-> > > +	  or simply don't want to use the driver's ndo_select_queue()
-> > > callback, then unselect this
-> > > +	  and use the standard XPS support instead.
-> > 
-> > Is there a use case for needing this to be configurable?
-> 
-> If the standard XPS is desired, the Kconfig option allows the driver user to
-> select that.
+From: <igal.liberman@freescale.com>
+Date: Thu, 3 Dec 2015 09:19:14 +0200
 
-Under what circumstances does it make sense to desire this?  Could you put the
-answer to that in the help text?
+> +static u32 crc_table[256] = {
 
-> > > diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-> > > b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-> > > index 31d55b4..894f1a7 100644
-> > > --- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-> > > +++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-> > > @@ -390,6 +390,9 @@ static const struct net_device_ops dpa_private_ops =
-> > {
-> > >  	.ndo_get_stats64 = dpa_get_stats64,
-> > >  	.ndo_set_mac_address = dpa_set_mac_address,
-> > >  	.ndo_validate_addr = eth_validate_addr,
-> > > +#ifdef CONFIG_FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
-> > > +	.ndo_select_queue = dpa_select_queue,
-> > > +#endif
-> > >  	.ndo_change_mtu = dpa_change_mtu,
-> > >  	.ndo_set_rx_mode = dpa_set_rx_mode,
-> > >  	.ndo_init = dpa_ndo_init,
-> > > diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-> > > b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-> > > index 1ba6617..87577cf 100644
-> > > --- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-> > > +++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-> > > @@ -420,9 +420,15 @@ static inline void _dpa_assign_wq(struct dpa_fq
-> > *fq)
-> > >  	}
-> > >  }
-> > > 
-> > > +#ifdef CONFIG_FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
-> > > +/* Use in lieu of skb_get_queue_mapping() */
-> > > +#define dpa_get_queue_mapping(skb) \
-> > > +	raw_smp_processor_id()
-> > > +#else
-> > >  /* Use the queue selected by XPS */
-> > >  #define dpa_get_queue_mapping(skb) \
-> > >  	skb_get_queue_mapping(skb)
-> > > +#endif
-> > 
-> > Why is this necessary?  Shouldn't providing a custom .ndo_select_queue()
-> > be
-> > sufficient to ensure that skb_get_queue_mapping() returns the same thing?
-> 
-> dpa_get_queue_mapping() is used in more than one place, the ndo function
-> cannot
-> be used directly in all places, the current setup is justified.
+No way.
 
-It's called in two places that I see.  For the call in dpa_tx(), when will
-skb_get_queue_mapping() not return the correct answer?  For the call in
-dpa_select_queue(), that's already called via function pointer so it would not
-be a new indirection layer.
-
-> > And if this goes away, it's just a matter of a function pointer, so if it
-> > does
-> > need to be configurable it could be a runtime option.
-> > 
-> > -Scott
-> 
-> It's used on the hot path, adding an extra indirection layer to make it
-> selectable
-> at runtime would defeat the purpose...
-
-"if this goes away"
-
-I wasn't asking for a new indirection layer.
-
--Scott
+We have every conceivable implementation of CRC calculations in the
+kernel already.  Use them.
