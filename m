@@ -1,30 +1,35 @@
-Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0130.outbound.protection.outlook.com [207.46.100.130])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp06.uk.ibm.com (e06smtp06.uk.ibm.com [195.75.94.102])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9339A1A0688
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 21:02:59 +1100 (AEDT)
-From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "davem@davemloft.net" <davem@davemloft.net>, Liberman Igal
- <Igal.Liberman@freescale.com>, Roy Pledge <roy.pledge@freescale.com>,
- "ppc@mindchasers.com" <ppc@mindchasers.com>, "joe@perches.com"
- <joe@perches.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>,
- "joakim.tjernlund@transmode.se" <joakim.tjernlund@transmode.se>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-Subject: RE: [net-next v4 4/8] dpaa_eth: add driver's Tx queue selection
-Date: Thu, 3 Dec 2015 10:02:53 +0000
-Message-ID: <DM2PR0301MB07689A2F03A375C248DDA817E60D0@DM2PR0301MB0768.namprd03.prod.outlook.com>
-References: <1446485500-9782-1-git-send-email-madalin.bucur@freescale.com>
- <1446485500-9782-5-git-send-email-madalin.bucur@freescale.com>
- <1449092431.29246.156.camel@freescale.com>
-In-Reply-To: <1449092431.29246.156.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C4FB1A0688
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 21:29:27 +1100 (AEDT)
+Received: from localhost
+ by e06smtp06.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Thu, 3 Dec 2015 10:29:23 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 47676219004D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 10:29:14 +0000 (GMT)
+Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
+ [9.149.37.252])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tB3ATLYA61800578
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Dec 2015 10:29:21 GMT
+Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tB3ATKdS011968
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Dec 2015 03:29:21 -0700
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, paulus@samba.org,
+ aneesh.kumar@linux.vnet.ibm.com, kda@linux-powerpc.org
+Cc: xemul@parallels.com
+Subject: [PATCH v5] powerpc/mm: Add page soft dirty tracking
+Date: Thu,  3 Dec 2015 11:29:19 +0100
+Message-Id: <1449138559-10205-1-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,74 +39,227 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
-PiBTZW50OiBXZWRuZXNkYXksIERlY2VtYmVyIDAyLCAyMDE1IDExOjQxIFBNDQo+IA0KPiBPbiBN
-b24sIDIwMTUtMTEtMDIgYXQgMTk6MzEgKzAyMDAsIE1hZGFsaW4gQnVjdXIgd3JvdGU6DQo+ID4g
-QWxsb3cgdGhlIHNlbGVjdGlvbiBvZiB0aGUgdHJhbnNtaXNzaW9uIHF1ZXVlIGJhc2VkIG9uIHRo
-ZSBDUFUgaWQuDQo+IA0KPiBFeHBsYWluIHdoeS4NCg0KSSdsbCBhZGQgbW9yZSBkZXRhaWxzIGlu
-IHRoZSBjb21taXQgbG9nLiBUaGlzIGlzIGEgY3VzdG9tZXIgZ2VuZXJhdGVkDQpmZWF0dXJlLiBC
-eXBhc3NpbmcgdGhlIHN0YW5kYXJkIFhQUyBjYW4gaW5jcmVhc2UgcGVyZm9ybWFuY2UgYnkgbWFr
-aW5nIHVzZQ0Kb2YgdGhlIERQQUEgSFcgcGFydGljdWxhcml0aWVzLg0KDQo+ID4NCj4gPiBTaWdu
-ZWQtb2ZmLWJ5OiBNYWRhbGluIEJ1Y3VyIDxtYWRhbGluLmJ1Y3VyQGZyZWVzY2FsZS5jb20+DQo+
-ID4gLS0tDQo+ID4gIGRyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9kcGFhL0tjb25maWcg
-ICAgICAgICAgIHwgMTAgKysrKysrKysrKw0KPiA+ICBkcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVl
-c2NhbGUvZHBhYS9kcGFhX2V0aC5jICAgICAgICB8ICAzICsrKw0KPiA+ICBkcml2ZXJzL25ldC9l
-dGhlcm5ldC9mcmVlc2NhbGUvZHBhYS9kcGFhX2V0aC5oICAgICAgICB8ICA2ICsrKysrKw0KPiA+
-ICBkcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUvZHBhYS9kcGFhX2V0aF9jb21tb24uYyB8
-ICA4ICsrKysrKysrDQo+ID4gIGRyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9kcGFhL2Rw
-YWFfZXRoX2NvbW1vbi5oIHwgIDQgKysrKw0KPiA+ICA1IGZpbGVzIGNoYW5nZWQsIDMxIGluc2Vy
-dGlvbnMoKykNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVl
-c2NhbGUvZHBhYS9LY29uZmlnDQo+ID4gYi9kcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUv
-ZHBhYS9LY29uZmlnDQo+ID4gaW5kZXggMDIyZDVhYS4uMjU3N2FhYyAxMDA2NDQNCj4gPiAtLS0g
-YS9kcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUvZHBhYS9LY29uZmlnDQo+ID4gKysrIGIv
-ZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2RwYWEvS2NvbmZpZw0KPiA+IEBAIC0xMSw2
-ICsxMSwxNiBAQCBtZW51Y29uZmlnIEZTTF9EUEFBX0VUSA0KPiA+DQo+ID4gIGlmIEZTTF9EUEFB
-X0VUSA0KPiA+DQo+ID4gK2NvbmZpZyBGU0xfRFBBQV9FVEhfVVNFX05ET19TRUxFQ1RfUVVFVUUN
-Cj4gPiArCWJvb2wgIlVzZSBkcml2ZXIncyBUeCBxdWV1ZSBzZWxlY3Rpb24gbWVjaGFuaXNtIg0K
-PiA+ICsJZGVmYXVsdCB5DQo+ID4gKwktLS1oZWxwLS0tDQo+ID4gKwkgIFRoZSBEUEFBIEV0aGVy
-bmV0IGRyaXZlciBkZWZpbmVzIGEgbmRvX3NlbGVjdF9xdWV1ZSgpIGNhbGxiYWNrDQo+ID4gZm9y
-IG9wdGltYWwgc2VsZWN0aW9uDQo+ID4gKwkgIG9mIHRoZSBlZ3Jlc3MgRlEuIFRoYXQgd2lsbCBv
-dmVycmlkZSB0aGUgWFBTIHN1cHBvcnQgZm9yIHRoaXMNCj4gPiBuZXRkZXZpY2UuDQo+ID4gKwkg
-IElmIGZvciB3aGF0ZXZlciByZWFzb24geW91IHdhbnQgdG8gYmUgaW4gY29udHJvbCBvZiB0aGUg
-ZWdyZXNzIEZRDQo+ID4gLXRvLUNQVSBzZWxlY3Rpb24gYW5kIG1hcHBpbmcsDQo+ID4gKwkgIG9y
-IHNpbXBseSBkb24ndCB3YW50IHRvIHVzZSB0aGUgZHJpdmVyJ3MgbmRvX3NlbGVjdF9xdWV1ZSgp
-DQo+ID4gY2FsbGJhY2ssIHRoZW4gdW5zZWxlY3QgdGhpcw0KPiA+ICsJICBhbmQgdXNlIHRoZSBz
-dGFuZGFyZCBYUFMgc3VwcG9ydCBpbnN0ZWFkLg0KPiANCj4gSXMgdGhlcmUgYSB1c2UgY2FzZSBm
-b3IgbmVlZGluZyB0aGlzIHRvIGJlIGNvbmZpZ3VyYWJsZT8NCg0KSWYgdGhlIHN0YW5kYXJkIFhQ
-UyBpcyBkZXNpcmVkLCB0aGUgS2NvbmZpZyBvcHRpb24gYWxsb3dzIHRoZSBkcml2ZXIgdXNlciB0
-bw0Kc2VsZWN0IHRoYXQuDQoNCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQv
-ZnJlZXNjYWxlL2RwYWEvZHBhYV9ldGguYw0KPiA+IGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJl
-ZXNjYWxlL2RwYWEvZHBhYV9ldGguYw0KPiA+IGluZGV4IDMxZDU1YjQuLjg5NGYxYTcgMTAwNjQ0
-DQo+ID4gLS0tIGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2RwYWEvZHBhYV9ldGgu
-Yw0KPiA+ICsrKyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9kcGFhL2RwYWFfZXRo
-LmMNCj4gPiBAQCAtMzkwLDYgKzM5MCw5IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3QgbmV0X2Rldmlj
-ZV9vcHMgZHBhX3ByaXZhdGVfb3BzID0NCj4gew0KPiA+ICAJLm5kb19nZXRfc3RhdHM2NCA9IGRw
-YV9nZXRfc3RhdHM2NCwNCj4gPiAgCS5uZG9fc2V0X21hY19hZGRyZXNzID0gZHBhX3NldF9tYWNf
-YWRkcmVzcywNCj4gPiAgCS5uZG9fdmFsaWRhdGVfYWRkciA9IGV0aF92YWxpZGF0ZV9hZGRyLA0K
-PiA+ICsjaWZkZWYgQ09ORklHX0ZTTF9EUEFBX0VUSF9VU0VfTkRPX1NFTEVDVF9RVUVVRQ0KPiA+
-ICsJLm5kb19zZWxlY3RfcXVldWUgPSBkcGFfc2VsZWN0X3F1ZXVlLA0KPiA+ICsjZW5kaWYNCj4g
-PiAgCS5uZG9fY2hhbmdlX210dSA9IGRwYV9jaGFuZ2VfbXR1LA0KPiA+ICAJLm5kb19zZXRfcnhf
-bW9kZSA9IGRwYV9zZXRfcnhfbW9kZSwNCj4gPiAgCS5uZG9faW5pdCA9IGRwYV9uZG9faW5pdCwN
-Cj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2RwYWEvZHBh
-YV9ldGguaA0KPiA+IGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2RwYWEvZHBhYV9l
-dGguaA0KPiA+IGluZGV4IDFiYTY2MTcuLjg3NTc3Y2YgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVy
-cy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2RwYWEvZHBhYV9ldGguaA0KPiA+ICsrKyBiL2RyaXZl
-cnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9kcGFhL2RwYWFfZXRoLmgNCj4gPiBAQCAtNDIwLDkg
-KzQyMCwxNSBAQCBzdGF0aWMgaW5saW5lIHZvaWQgX2RwYV9hc3NpZ25fd3Eoc3RydWN0IGRwYV9m
-cQ0KPiAqZnEpDQo+ID4gIAl9DQo+ID4gIH0NCj4gPg0KPiA+ICsjaWZkZWYgQ09ORklHX0ZTTF9E
-UEFBX0VUSF9VU0VfTkRPX1NFTEVDVF9RVUVVRQ0KPiA+ICsvKiBVc2UgaW4gbGlldSBvZiBza2Jf
-Z2V0X3F1ZXVlX21hcHBpbmcoKSAqLw0KPiA+ICsjZGVmaW5lIGRwYV9nZXRfcXVldWVfbWFwcGlu
-Zyhza2IpIFwNCj4gPiArCXJhd19zbXBfcHJvY2Vzc29yX2lkKCkNCj4gPiArI2Vsc2UNCj4gPiAg
-LyogVXNlIHRoZSBxdWV1ZSBzZWxlY3RlZCBieSBYUFMgKi8NCj4gPiAgI2RlZmluZSBkcGFfZ2V0
-X3F1ZXVlX21hcHBpbmcoc2tiKSBcDQo+ID4gIAlza2JfZ2V0X3F1ZXVlX21hcHBpbmcoc2tiKQ0K
-PiA+ICsjZW5kaWYNCj4gDQo+IFdoeSBpcyB0aGlzIG5lY2Vzc2FyeT8gIFNob3VsZG4ndCBwcm92
-aWRpbmcgYSBjdXN0b20gLm5kb19zZWxlY3RfcXVldWUoKQ0KPiBiZQ0KPiBzdWZmaWNpZW50IHRv
-IGVuc3VyZSB0aGF0IHNrYl9nZXRfcXVldWVfbWFwcGluZygpIHJldHVybnMgdGhlIHNhbWUgdGhp
-bmc/DQoNCmRwYV9nZXRfcXVldWVfbWFwcGluZygpIGlzIHVzZWQgaW4gbW9yZSB0aGFuIG9uZSBw
-bGFjZSwgdGhlIG5kbyBmdW5jdGlvbiBjYW5ub3QNCmJlIHVzZWQgZGlyZWN0bHkgaW4gYWxsIHBs
-YWNlcywgdGhlIGN1cnJlbnQgc2V0dXAgaXMganVzdGlmaWVkLg0KDQo+IEFuZCBpZiB0aGlzIGdv
-ZXMgYXdheSwgaXQncyBqdXN0IGEgbWF0dGVyIG9mIGEgZnVuY3Rpb24gcG9pbnRlciwgc28gaWYg
-aXQNCj4gZG9lcw0KPiBuZWVkIHRvIGJlIGNvbmZpZ3VyYWJsZSBpdCBjb3VsZCBiZSBhIHJ1bnRp
-bWUgb3B0aW9uLg0KPiANCj4gLVNjb3R0DQoNCkl0J3MgdXNlZCBvbiB0aGUgaG90IHBhdGgsIGFk
-ZGluZyBhbiBleHRyYSBpbmRpcmVjdGlvbiBsYXllciB0byBtYWtlIGl0IHNlbGVjdGFibGUNCmF0
-IHJ1bnRpbWUgd291bGQgZGVmZWF0IHRoZSBwdXJwb3NlLi4uDQoNCk1hZGFsaW4NCg==
+User space checkpoint and restart tool (CRIU) needs the page's change
+to be soft tracked. This allows to do a pre checkpoint and then dump
+only touched pages.
+
+This is done by using a newly assigned PTE bit (_PAGE_SOFT_DIRTY) when
+the page is backed in memory, and a new _PAGE_SWP_SOFT_DIRTY bit when
+the page is swapped out.
+
+To introduce a new PTE _PAGE_SOFT_DIRTY bit value common to hash 4k
+and hash 64k pte, the bits already defined in hash-*4k.h should be
+shifted left by one.
+
+The _PAGE_SWP_SOFT_DIRTY bit is dynamically put after the swap type in
+the swap pte. A check is added to ensure that the bit is not
+overwritten by _PAGE_HPTEFLAGS.
+
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+CC: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+
+This patch should to be applied on top of the Aneesh's series titled
+"[PATCH V6 00/35]  powerpc/mm: Update page table format for book3s 64"
+
+v5:
+- Use boolean type as reported by Denis Kirjanov
+v4:
+- updated to match Aneesh's v6 series.
+V3:
+- updated to match Aneesh's changes in the pte handling
+- updated to match commit a7b761749317 ("mm: add architecture
+  primitives for software dirty bit clearing")
+V2:
+- Fix allnoconfig build
+
+ arch/powerpc/Kconfig                          |  2 ++
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  |  2 +-
+ arch/powerpc/include/asm/book3s/64/hash-64k.h |  4 ++--
+ arch/powerpc/include/asm/book3s/64/hash.h     | 30 ++++++++++++++++++++++-----
+ arch/powerpc/include/asm/book3s/64/pgtable.h  | 26 +++++++++++++++++++++++
+ 5 files changed, 56 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index db49e0d796b1..6e03f85b11cd 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -559,6 +559,7 @@ choice
+ 
+ config PPC_4K_PAGES
+ 	bool "4k page size"
++	select HAVE_ARCH_SOFT_DIRTY if CHECKPOINT_RESTORE && PPC_BOOK3S
+ 
+ config PPC_16K_PAGES
+ 	bool "16k page size"
+@@ -567,6 +568,7 @@ config PPC_16K_PAGES
+ config PPC_64K_PAGES
+ 	bool "64k page size"
+ 	depends on !PPC_FSL_BOOK3E && (44x || PPC_STD_MMU_64 || PPC_BOOK3E_64)
++	select HAVE_ARCH_SOFT_DIRTY if CHECKPOINT_RESTORE && PPC_BOOK3S
+ 
+ config PPC_256K_PAGES
+ 	bool "256k page size"
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index e59832c94609..ea0414d6659e 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -52,7 +52,7 @@
+ 			 _PAGE_F_SECOND | _PAGE_F_GIX)
+ 
+ /* shift to put page number into pte */
+-#define PTE_RPN_SHIFT	(17)
++#define PTE_RPN_SHIFT	(18)
+ 
+ #define _PAGE_4K_PFN		0
+ #ifndef __ASSEMBLY__
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index 9f9942998587..9e55e3b1fef0 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -25,8 +25,8 @@
+ #define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
+ #define PGDIR_MASK	(~(PGDIR_SIZE-1))
+ 
+-#define _PAGE_COMBO	0x00020000 /* this is a combo 4k page */
+-#define _PAGE_4K_PFN	0x00040000 /* PFN is for a single 4k page */
++#define _PAGE_COMBO	0x00040000 /* this is a combo 4k page */
++#define _PAGE_4K_PFN	0x00080000 /* PFN is for a single 4k page */
+ /*
+  * Used to track subpage group valid if _PAGE_COMBO is set
+  * This overloads _PAGE_F_GIX and _PAGE_F_SECOND
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index 8b929e531758..9e861b4378bd 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -33,6 +33,7 @@
+ #define _PAGE_F_GIX_SHIFT	12
+ #define _PAGE_F_SECOND		0x08000 /* Whether to use secondary hash or not */
+ #define _PAGE_SPECIAL		0x10000 /* software: special page */
++#define _PAGE_SOFT_DIRTY	0x20000 /* software: software dirty tracking */
+ 
+ /*
+  * THP pages can't be special. So use the _PAGE_SPECIAL
+@@ -50,7 +51,7 @@
+  */
+ #define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS |		\
+ 			 _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPLITTING | \
+-			 _PAGE_THP_HUGE | _PAGE_PTE)
++			 _PAGE_THP_HUGE | _PAGE_PTE | _PAGE_SOFT_DIRTY)
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+ #include <asm/book3s/64/hash-64k.h>
+@@ -136,14 +137,16 @@
+  * pgprot changes
+  */
+ #define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_HPTEFLAGS | _PAGE_DIRTY | \
+-			 _PAGE_ACCESSED | _PAGE_SPECIAL | _PAGE_PTE)
++			 _PAGE_ACCESSED | _PAGE_SPECIAL | _PAGE_PTE | \
++			 _PAGE_SOFT_DIRTY)
+ /*
+  * Mask of bits returned by pte_pgprot()
+  */
+ #define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
+ 			 _PAGE_WRITETHRU | _PAGE_4K_PFN | \
+ 			 _PAGE_USER | _PAGE_ACCESSED |  \
+-			 _PAGE_RW |  _PAGE_DIRTY | _PAGE_EXEC)
++			 _PAGE_RW |  _PAGE_DIRTY | _PAGE_EXEC | \
++			 _PAGE_SOFT_DIRTY)
+ /*
+  * We define 2 sets of base prot bits, one for basic pages (ie,
+  * cacheable kernel and user pages) and one for non cacheable
+@@ -339,7 +342,8 @@ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
+ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+ {
+ 	unsigned long bits = pte_val(entry) &
+-		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
++		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC |
++		 _PAGE_SOFT_DIRTY);
+ 
+ 	unsigned long old, tmp;
+ 
+@@ -366,6 +370,22 @@ static inline int pte_special(pte_t pte)	{ return !!(pte_val(pte) & _PAGE_SPECIA
+ static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
+ static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
+ 
++#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
++static inline bool pte_soft_dirty(pte_t pte)
++{
++	return !!(pte_val(pte) & _PAGE_SOFT_DIRTY);
++}
++static inline pte_t pte_mksoft_dirty(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_SOFT_DIRTY);
++}
++
++static inline pte_t pte_clear_soft_dirty(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~_PAGE_SOFT_DIRTY);
++}
++#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
++
+ #ifdef CONFIG_NUMA_BALANCING
+ /*
+  * These work without NUMA balancing but the kernel does not care. See the
+@@ -424,7 +444,7 @@ static inline pte_t pte_mkwrite(pte_t pte)
+ 
+ static inline pte_t pte_mkdirty(pte_t pte)
+ {
+-	return __pte(pte_val(pte) | _PAGE_DIRTY);
++	return __pte(pte_val(pte) | _PAGE_DIRTY | _PAGE_SOFT_DIRTY);
+ }
+ 
+ static inline pte_t pte_mkyoung(pte_t pte)
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index a2d4e0e37067..03c1a5a21c0c 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -146,6 +146,7 @@ static inline void pgd_set(pgd_t *pgdp, unsigned long val)
+ 	 * We filter HPTEFLAGS on set_pte.			\
+ 	 */							\
+ 	BUILD_BUG_ON(_PAGE_HPTEFLAGS & (0x1f << _PAGE_BIT_SWAP_TYPE)); \
++	BUILD_BUG_ON(_PAGE_HPTEFLAGS & _PAGE_SWP_SOFT_DIRTY);	\
+ 	} while (0)
+ /*
+  * on pte we don't need handle RADIX_TREE_EXCEPTIONAL_SHIFT;
+@@ -161,6 +162,24 @@ static inline void pgd_set(pgd_t *pgdp, unsigned long val)
+ #define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
+ #define __swp_entry_to_pte(x)		__pte((x).val)
+ 
++#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
++#define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
++static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_SWP_SOFT_DIRTY);
++}
++static inline bool pte_swp_soft_dirty(pte_t pte)
++{
++	return !!(pte_val(pte) & _PAGE_SWP_SOFT_DIRTY);
++}
++static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~_PAGE_SWP_SOFT_DIRTY);
++}
++#else
++#define _PAGE_SWP_SOFT_DIRTY	0
++#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
++
+ void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
+ void pgtable_cache_init(void);
+ 
+@@ -201,6 +220,13 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
+ #define pmd_mkdirty(pmd)	pte_pmd(pte_mkdirty(pmd_pte(pmd)))
+ #define pmd_mkyoung(pmd)	pte_pmd(pte_mkyoung(pmd_pte(pmd)))
+ #define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
++
++#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
++#define pmd_soft_dirty(pmd)    pte_soft_dirty(pmd_pte(pmd))
++#define pmd_mksoft_dirty(pmd)  pte_pmd(pte_mksoft_dirty(pmd_pte(pmd)))
++#define pmd_clear_soft_dirty(pmd) pte_pmd(pte_clear_soft_dirty(pmd_pte(pmd)))
++#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
++
+ #ifdef CONFIG_NUMA_BALANCING
+ static inline int pmd_protnone(pmd_t pmd)
+ {
+-- 
+1.9.1
