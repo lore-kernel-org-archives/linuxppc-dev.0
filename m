@@ -1,35 +1,25 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from e06smtp06.uk.ibm.com (e06smtp06.uk.ibm.com [195.75.94.102])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0108.outbound.protection.outlook.com [157.56.111.108])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1C4FB1A0688
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 21:29:27 +1100 (AEDT)
-Received: from localhost
- by e06smtp06.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 3 Dec 2015 10:29:23 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 47676219004D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 10:29:14 +0000 (GMT)
-Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
- [9.149.37.252])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB3ATLYA61800578
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Dec 2015 10:29:21 GMT
-Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB3ATKdS011968
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Dec 2015 03:29:21 -0700
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- benh@kernel.crashing.org, paulus@samba.org,
- aneesh.kumar@linux.vnet.ibm.com, kda@linux-powerpc.org
-Cc: xemul@parallels.com
-Subject: [PATCH v5] powerpc/mm: Add page soft dirty tracking
-Date: Thu,  3 Dec 2015 11:29:19 +0100
-Message-Id: <1449138559-10205-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2542F1A0688
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 22:09:47 +1100 (AEDT)
+From: <igal.liberman@freescale.com>
+To: <netdev@vger.kernel.org>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <scottwood@freescale.com>, <madalin.bucur@freescale.com>,
+ <pebolle@tiscali.nl>, <joakim.tjernlund@transmode.se>, <ppc@mindchasers.com>,
+ <stephen@networkplumber.org>, <davem@davemloft.net>, Igal Liberman
+ <Igal.Liberman@freescale.com>
+Subject: [v9, 1/6] fsl/fman: Add FMan MURAM support
+Date: Thu, 3 Dec 2015 09:19:12 +0200
+Message-ID: <1449127157-9400-2-git-send-email-igal.liberman@freescale.com>
+In-Reply-To: <1449127157-9400-1-git-send-email-igal.liberman@freescale.com>
+References: <1449127157-9400-1-git-send-email-igal.liberman@freescale.com>
+Reply-To: <igal.liberman@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,227 +29,298 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-User space checkpoint and restart tool (CRIU) needs the page's change
-to be soft tracked. This allows to do a pre checkpoint and then dump
-only touched pages.
+From: Igal Liberman <Igal.Liberman@freescale.com>
 
-This is done by using a newly assigned PTE bit (_PAGE_SOFT_DIRTY) when
-the page is backed in memory, and a new _PAGE_SWP_SOFT_DIRTY bit when
-the page is swapped out.
+Add Frame Manager Multi-User RAM support.
+This internal FMan memory block is used by the
+FMan hardware modules, the management being made
+through the generic allocator.
 
-To introduce a new PTE _PAGE_SOFT_DIRTY bit value common to hash 4k
-and hash 64k pte, the bits already defined in hash-*4k.h should be
-shifted left by one.
+The FMan Internal memory, for example, is used for
+allocating transmit and receive FIFOs.
 
-The _PAGE_SWP_SOFT_DIRTY bit is dynamically put after the swap type in
-the swap pte. A check is added to ensure that the bit is not
-overwritten by _PAGE_HPTEFLAGS.
-
-Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-CC: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
 ---
+ drivers/net/ethernet/freescale/Kconfig           |    1 +
+ drivers/net/ethernet/freescale/Makefile          |    2 +
+ drivers/net/ethernet/freescale/fman/Kconfig      |    8 ++
+ drivers/net/ethernet/freescale/fman/Makefile     |    5 +
+ drivers/net/ethernet/freescale/fman/fman_muram.c |  159 ++++++++++++++++++++++
+ drivers/net/ethernet/freescale/fman/fman_muram.h |   51 +++++++
+ 6 files changed, 226 insertions(+)
+ create mode 100644 drivers/net/ethernet/freescale/fman/Kconfig
+ create mode 100644 drivers/net/ethernet/freescale/fman/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/fman/fman_muram.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/fman_muram.h
 
-This patch should to be applied on top of the Aneesh's series titled
-"[PATCH V6 00/35]  powerpc/mm: Update page table format for book3s 64"
-
-v5:
-- Use boolean type as reported by Denis Kirjanov
-v4:
-- updated to match Aneesh's v6 series.
-V3:
-- updated to match Aneesh's changes in the pte handling
-- updated to match commit a7b761749317 ("mm: add architecture
-  primitives for software dirty bit clearing")
-V2:
-- Fix allnoconfig build
-
- arch/powerpc/Kconfig                          |  2 ++
- arch/powerpc/include/asm/book3s/64/hash-4k.h  |  2 +-
- arch/powerpc/include/asm/book3s/64/hash-64k.h |  4 ++--
- arch/powerpc/include/asm/book3s/64/hash.h     | 30 ++++++++++++++++++++++-----
- arch/powerpc/include/asm/book3s/64/pgtable.h  | 26 +++++++++++++++++++++++
- 5 files changed, 56 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index db49e0d796b1..6e03f85b11cd 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -559,6 +559,7 @@ choice
+diff --git a/drivers/net/ethernet/freescale/Kconfig b/drivers/net/ethernet/freescale/Kconfig
+index ff76d4e..f3f89cc 100644
+--- a/drivers/net/ethernet/freescale/Kconfig
++++ b/drivers/net/ethernet/freescale/Kconfig
+@@ -53,6 +53,7 @@ config FEC_MPC52xx_MDIO
+ 	  If compiled as module, it will be called fec_mpc52xx_phy.
  
- config PPC_4K_PAGES
- 	bool "4k page size"
-+	select HAVE_ARCH_SOFT_DIRTY if CHECKPOINT_RESTORE && PPC_BOOK3S
+ source "drivers/net/ethernet/freescale/fs_enet/Kconfig"
++source "drivers/net/ethernet/freescale/fman/Kconfig"
  
- config PPC_16K_PAGES
- 	bool "16k page size"
-@@ -567,6 +568,7 @@ config PPC_16K_PAGES
- config PPC_64K_PAGES
- 	bool "64k page size"
- 	depends on !PPC_FSL_BOOK3E && (44x || PPC_STD_MMU_64 || PPC_BOOK3E_64)
-+	select HAVE_ARCH_SOFT_DIRTY if CHECKPOINT_RESTORE && PPC_BOOK3S
- 
- config PPC_256K_PAGES
- 	bool "256k page size"
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-index e59832c94609..ea0414d6659e 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-@@ -52,7 +52,7 @@
- 			 _PAGE_F_SECOND | _PAGE_F_GIX)
- 
- /* shift to put page number into pte */
--#define PTE_RPN_SHIFT	(17)
-+#define PTE_RPN_SHIFT	(18)
- 
- #define _PAGE_4K_PFN		0
- #ifndef __ASSEMBLY__
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index 9f9942998587..9e55e3b1fef0 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -25,8 +25,8 @@
- #define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
- #define PGDIR_MASK	(~(PGDIR_SIZE-1))
- 
--#define _PAGE_COMBO	0x00020000 /* this is a combo 4k page */
--#define _PAGE_4K_PFN	0x00040000 /* PFN is for a single 4k page */
-+#define _PAGE_COMBO	0x00040000 /* this is a combo 4k page */
-+#define _PAGE_4K_PFN	0x00080000 /* PFN is for a single 4k page */
- /*
-  * Used to track subpage group valid if _PAGE_COMBO is set
-  * This overloads _PAGE_F_GIX and _PAGE_F_SECOND
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index 8b929e531758..9e861b4378bd 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -33,6 +33,7 @@
- #define _PAGE_F_GIX_SHIFT	12
- #define _PAGE_F_SECOND		0x08000 /* Whether to use secondary hash or not */
- #define _PAGE_SPECIAL		0x10000 /* software: special page */
-+#define _PAGE_SOFT_DIRTY	0x20000 /* software: software dirty tracking */
- 
- /*
-  * THP pages can't be special. So use the _PAGE_SPECIAL
-@@ -50,7 +51,7 @@
-  */
- #define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS |		\
- 			 _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPLITTING | \
--			 _PAGE_THP_HUGE | _PAGE_PTE)
-+			 _PAGE_THP_HUGE | _PAGE_PTE | _PAGE_SOFT_DIRTY)
- 
- #ifdef CONFIG_PPC_64K_PAGES
- #include <asm/book3s/64/hash-64k.h>
-@@ -136,14 +137,16 @@
-  * pgprot changes
-  */
- #define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_HPTEFLAGS | _PAGE_DIRTY | \
--			 _PAGE_ACCESSED | _PAGE_SPECIAL | _PAGE_PTE)
-+			 _PAGE_ACCESSED | _PAGE_SPECIAL | _PAGE_PTE | \
-+			 _PAGE_SOFT_DIRTY)
- /*
-  * Mask of bits returned by pte_pgprot()
-  */
- #define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
- 			 _PAGE_WRITETHRU | _PAGE_4K_PFN | \
- 			 _PAGE_USER | _PAGE_ACCESSED |  \
--			 _PAGE_RW |  _PAGE_DIRTY | _PAGE_EXEC)
-+			 _PAGE_RW |  _PAGE_DIRTY | _PAGE_EXEC | \
-+			 _PAGE_SOFT_DIRTY)
- /*
-  * We define 2 sets of base prot bits, one for basic pages (ie,
-  * cacheable kernel and user pages) and one for non cacheable
-@@ -339,7 +342,8 @@ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
- static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- {
- 	unsigned long bits = pte_val(entry) &
--		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
-+		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC |
-+		 _PAGE_SOFT_DIRTY);
- 
- 	unsigned long old, tmp;
- 
-@@ -366,6 +370,22 @@ static inline int pte_special(pte_t pte)	{ return !!(pte_val(pte) & _PAGE_SPECIA
- static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
- static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
- 
-+#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
-+static inline bool pte_soft_dirty(pte_t pte)
+ config FSL_PQ_MDIO
+ 	tristate "Freescale PQ MDIO"
+diff --git a/drivers/net/ethernet/freescale/Makefile b/drivers/net/ethernet/freescale/Makefile
+index 71debd1..4097c58 100644
+--- a/drivers/net/ethernet/freescale/Makefile
++++ b/drivers/net/ethernet/freescale/Makefile
+@@ -17,3 +17,5 @@ gianfar_driver-objs := gianfar.o \
+ 		gianfar_ethtool.o
+ obj-$(CONFIG_UCC_GETH) += ucc_geth_driver.o
+ ucc_geth_driver-objs := ucc_geth.o ucc_geth_ethtool.o
++
++obj-$(CONFIG_FSL_FMAN) += fman/
+diff --git a/drivers/net/ethernet/freescale/fman/Kconfig b/drivers/net/ethernet/freescale/fman/Kconfig
+new file mode 100644
+index 0000000..66b7296
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/Kconfig
+@@ -0,0 +1,8 @@
++config FSL_FMAN
++	bool "FMan support"
++	depends on FSL_SOC || COMPILE_TEST
++	select GENERIC_ALLOCATOR
++	default n
++	help
++		Freescale Data-Path Acceleration Architecture Frame Manager
++		(FMan) support
+diff --git a/drivers/net/ethernet/freescale/fman/Makefile b/drivers/net/ethernet/freescale/fman/Makefile
+new file mode 100644
+index 0000000..fc2e194
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/Makefile
+@@ -0,0 +1,5 @@
++subdir-ccflags-y +=  -I$(srctree)/drivers/net/ethernet/freescale/fman
++
++obj-y		+= fsl_fman.o
++
++fsl_fman-objs	:= fman_muram.o
+diff --git a/drivers/net/ethernet/freescale/fman/fman_muram.c b/drivers/net/ethernet/freescale/fman/fman_muram.c
+new file mode 100644
+index 0000000..35d4a50
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/fman_muram.c
+@@ -0,0 +1,159 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include "fman_muram.h"
++
++#include <linux/io.h>
++#include <linux/slab.h>
++#include <linux/genalloc.h>
++
++struct muram_info {
++	struct gen_pool *pool;
++	void __iomem *vbase;
++	size_t size;
++	phys_addr_t pbase;
++};
++
++static unsigned long fman_muram_vbase_to_offset(struct muram_info *muram,
++						unsigned long vaddr)
 +{
-+	return !!(pte_val(pte) & _PAGE_SOFT_DIRTY);
-+}
-+static inline pte_t pte_mksoft_dirty(pte_t pte)
-+{
-+	return __pte(pte_val(pte) | _PAGE_SOFT_DIRTY);
++	return vaddr - (unsigned long)muram->vbase;
 +}
 +
-+static inline pte_t pte_clear_soft_dirty(pte_t pte)
++/**
++ * fman_muram_init
++ * @base:	Pointer to base of memory mapped FM-MURAM.
++ * @size:	Size of the FM-MURAM partition.
++ *
++ * Creates partition in the MURAM.
++ * The routine returns a pointer to the MURAM partition.
++ * This pointer must be passed as to all other FM-MURAM function calls.
++ * No actual initialization or configuration of FM_MURAM hardware is done by
++ * this routine.
++ *
++ * Return: pointer to FM-MURAM object, or NULL for Failure.
++ */
++struct muram_info *fman_muram_init(phys_addr_t base, size_t size)
 +{
-+	return __pte(pte_val(pte) & ~_PAGE_SOFT_DIRTY);
-+}
-+#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
++	struct muram_info *muram;
++	void __iomem *vaddr;
++	int ret;
 +
- #ifdef CONFIG_NUMA_BALANCING
- /*
-  * These work without NUMA balancing but the kernel does not care. See the
-@@ -424,7 +444,7 @@ static inline pte_t pte_mkwrite(pte_t pte)
- 
- static inline pte_t pte_mkdirty(pte_t pte)
- {
--	return __pte(pte_val(pte) | _PAGE_DIRTY);
-+	return __pte(pte_val(pte) | _PAGE_DIRTY | _PAGE_SOFT_DIRTY);
- }
- 
- static inline pte_t pte_mkyoung(pte_t pte)
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index a2d4e0e37067..03c1a5a21c0c 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -146,6 +146,7 @@ static inline void pgd_set(pgd_t *pgdp, unsigned long val)
- 	 * We filter HPTEFLAGS on set_pte.			\
- 	 */							\
- 	BUILD_BUG_ON(_PAGE_HPTEFLAGS & (0x1f << _PAGE_BIT_SWAP_TYPE)); \
-+	BUILD_BUG_ON(_PAGE_HPTEFLAGS & _PAGE_SWP_SOFT_DIRTY);	\
- 	} while (0)
- /*
-  * on pte we don't need handle RADIX_TREE_EXCEPTIONAL_SHIFT;
-@@ -161,6 +162,24 @@ static inline void pgd_set(pgd_t *pgdp, unsigned long val)
- #define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
- #define __swp_entry_to_pte(x)		__pte((x).val)
- 
-+#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
-+#define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
-+static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
++	muram = kzalloc(sizeof(*muram), GFP_KERNEL);
++	if (!muram)
++		return NULL;
++
++	muram->pool = gen_pool_create(ilog2(64), -1);
++	if (!muram->pool) {
++		pr_err("%s(): MURAM pool create failed\n", __func__);
++		goto  muram_free;
++	}
++
++	vaddr = ioremap(base, size);
++	if (!vaddr) {
++		pr_err("%s(): MURAM ioremap failed\n", __func__);
++		goto pool_destroy;
++	}
++
++	ret = gen_pool_add_virt(muram->pool, (unsigned long)vaddr,
++				base, size, -1);
++	if (ret < 0) {
++		pr_err("%s(): MURAM pool add failed\n", __func__);
++		iounmap(vaddr);
++		goto pool_destroy;
++	}
++
++	memset_io(vaddr, 0, (int)size);
++
++	muram->vbase = vaddr;
++	muram->pbase = base;
++	return muram;
++
++pool_destroy:
++	gen_pool_destroy(muram->pool);
++muram_free:
++	kfree(muram);
++	return NULL;
++}
++
++/**
++ * fman_muram_offset_to_vbase
++ * @muram:	FM-MURAM module pointer.
++ * @offset:	the offset of the memory block
++ *
++ * Gives the address of the memory region from specific offset
++ *
++ * Return: The address of the memory block
++ */
++unsigned long fman_muram_offset_to_vbase(struct muram_info *muram,
++					 unsigned long offset)
 +{
-+	return __pte(pte_val(pte) | _PAGE_SWP_SOFT_DIRTY);
++	return offset + (unsigned long)muram->vbase;
 +}
-+static inline bool pte_swp_soft_dirty(pte_t pte)
++
++/**
++ * fman_muram_alloc
++ * @muram:	FM-MURAM module pointer.
++ * @size:	Size of the memory to be allocated.
++ *
++ * Allocate some memory from FM-MURAM partition.
++ *
++ * Return: address of the allocated memory; NULL otherwise.
++ */
++int fman_muram_alloc(struct muram_info *muram, size_t size)
 +{
-+	return !!(pte_val(pte) & _PAGE_SWP_SOFT_DIRTY);
++	unsigned long vaddr;
++
++	vaddr = gen_pool_alloc(muram->pool, size);
++	if (!vaddr)
++		return -ENOMEM;
++
++	memset_io((void __iomem *)vaddr, 0, size);
++
++	return fman_muram_vbase_to_offset(muram, vaddr);
 +}
-+static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
++
++/**
++ * fman_muram_free_mem
++ * muram:	FM-MURAM module pointer.
++ * offset:	offset of the memory region to be freed.
++ * size:	size of the memory to be freed.
++ *
++ * Free an allocated memory from FM-MURAM partition.
++ */
++void fman_muram_free_mem(struct muram_info *muram, u32 offset, size_t size)
 +{
-+	return __pte(pte_val(pte) & ~_PAGE_SWP_SOFT_DIRTY);
++	unsigned long addr = fman_muram_offset_to_vbase(muram, offset);
++
++	gen_pool_free(muram->pool, addr, size);
 +}
-+#else
-+#define _PAGE_SWP_SOFT_DIRTY	0
-+#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
 +
- void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
- void pgtable_cache_init(void);
- 
-@@ -201,6 +220,13 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
- #define pmd_mkdirty(pmd)	pte_pmd(pte_mkdirty(pmd_pte(pmd)))
- #define pmd_mkyoung(pmd)	pte_pmd(pte_mkyoung(pmd_pte(pmd)))
- #define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
+diff --git a/drivers/net/ethernet/freescale/fman/fman_muram.h b/drivers/net/ethernet/freescale/fman/fman_muram.h
+new file mode 100644
+index 0000000..dbf0af9
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/fman_muram.h
+@@ -0,0 +1,51 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++#ifndef __FM_MURAM_EXT
++#define __FM_MURAM_EXT
 +
-+#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
-+#define pmd_soft_dirty(pmd)    pte_soft_dirty(pmd_pte(pmd))
-+#define pmd_mksoft_dirty(pmd)  pte_pmd(pte_mksoft_dirty(pmd_pte(pmd)))
-+#define pmd_clear_soft_dirty(pmd) pte_pmd(pte_clear_soft_dirty(pmd_pte(pmd)))
-+#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
++#include <linux/types.h>
 +
- #ifdef CONFIG_NUMA_BALANCING
- static inline int pmd_protnone(pmd_t pmd)
- {
++#define FM_MURAM_INVALID_ALLOCATION	-1
++
++/* Structure for FM MURAM information */
++struct muram_info;
++
++struct muram_info *fman_muram_init(phys_addr_t base, size_t size);
++
++unsigned long fman_muram_offset_to_vbase(struct muram_info *muram,
++					 unsigned long offset);
++
++int fman_muram_alloc(struct muram_info *muram, size_t size);
++
++void fman_muram_free_mem(struct muram_info *muram, u32 offset, size_t size);
++
++#endif /* __FM_MURAM_EXT */
 -- 
-1.9.1
+1.7.9.5
