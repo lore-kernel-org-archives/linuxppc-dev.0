@@ -1,23 +1,30 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <madalin.bucur@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0130.outbound.protection.outlook.com [207.46.100.130])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7ACFB1A017D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 19:56:05 +1100 (AEDT)
-In-Reply-To: <874mg0gj78.fsf@linux.vnet.ibm.com>
-References: <1448599526-31073-1-git-send-email-stewart@linux.vnet.ibm.com>
- <1448599526-31073-4-git-send-email-stewart@linux.vnet.ibm.com>
- <1448942184.9027.7.camel@ellerman.id.au> <874mg0gj78.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9339A1A0688
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Dec 2015 21:02:59 +1100 (AEDT)
+From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "davem@davemloft.net" <davem@davemloft.net>, Liberman Igal
+ <Igal.Liberman@freescale.com>, Roy Pledge <roy.pledge@freescale.com>,
+ "ppc@mindchasers.com" <ppc@mindchasers.com>, "joe@perches.com"
+ <joe@perches.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>,
+ "joakim.tjernlund@transmode.se" <joakim.tjernlund@transmode.se>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
+Subject: RE: [net-next v4 4/8] dpaa_eth: add driver's Tx queue selection
+Date: Thu, 3 Dec 2015 10:02:53 +0000
+Message-ID: <DM2PR0301MB07689A2F03A375C248DDA817E60D0@DM2PR0301MB0768.namprd03.prod.outlook.com>
+References: <1446485500-9782-1-git-send-email-madalin.bucur@freescale.com>
+ <1446485500-9782-5-git-send-email-madalin.bucur@freescale.com>
+ <1449092431.29246.156.camel@freescale.com>
+In-Reply-To: <1449092431.29246.156.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=UTF-8
-Subject: Re: [PATCH 3/4] powerpc/powernv: remove FW_FEATURE_OPAL and just use
- FW_FEATURE_OPALv3
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Thu, 03 Dec 2015 19:25:59 +1030
-To: Stewart Smith <stewart@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Message-ID: <42CAC831-3C07-433D-9921-A7E302A26BE2@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +34,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 3 December 2015 4:36:03 pm ACDT, Stewart Smith <stewart@linux.vnet.ibm.com> wrote:
->Michael Ellerman <mpe@ellerman.id.au> writes:
->
->> On Fri, 2015-11-27 at 15:45 +1100, Stewart Smith wrote:
->>
->>> Long ago, only in the lab, there was OPALv1 and OPALv2. Now there is
->>> just OPALv3, with nobody ever expecting anything on pre-OPALv3 to
->>> be cared about or supported by mainline kernels.
->>> 
->>> So, let's remove FW_FEATURE_OPAL and instead use FW_FEATURE_OPALv3
->>> exclusively.
->>
->> It would be less churn if we did the reverse, ie. removed v3 and just
->used
->> FW_FEATURE_OPAL. It would also read better as v3 is the one and only
->version we
->> care about, so having it called out everywhere is superfluous.
->>
->> Or is there a good reason I missed?
->
->excessive caution?
-
-Yeah fair enough.
-
->I'll send a V2 patchset doing the reverse, leaving FW_FEATURE_OPAL.
-
-Thanks.
-
-cheers
-
--- 
-Sent from my Android phone with K-9 Mail. Please excuse my brevity.
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiBXZWRuZXNkYXksIERlY2VtYmVyIDAyLCAyMDE1IDExOjQxIFBNDQo+IA0KPiBPbiBN
+b24sIDIwMTUtMTEtMDIgYXQgMTk6MzEgKzAyMDAsIE1hZGFsaW4gQnVjdXIgd3JvdGU6DQo+ID4g
+QWxsb3cgdGhlIHNlbGVjdGlvbiBvZiB0aGUgdHJhbnNtaXNzaW9uIHF1ZXVlIGJhc2VkIG9uIHRo
+ZSBDUFUgaWQuDQo+IA0KPiBFeHBsYWluIHdoeS4NCg0KSSdsbCBhZGQgbW9yZSBkZXRhaWxzIGlu
+IHRoZSBjb21taXQgbG9nLiBUaGlzIGlzIGEgY3VzdG9tZXIgZ2VuZXJhdGVkDQpmZWF0dXJlLiBC
+eXBhc3NpbmcgdGhlIHN0YW5kYXJkIFhQUyBjYW4gaW5jcmVhc2UgcGVyZm9ybWFuY2UgYnkgbWFr
+aW5nIHVzZQ0Kb2YgdGhlIERQQUEgSFcgcGFydGljdWxhcml0aWVzLg0KDQo+ID4NCj4gPiBTaWdu
+ZWQtb2ZmLWJ5OiBNYWRhbGluIEJ1Y3VyIDxtYWRhbGluLmJ1Y3VyQGZyZWVzY2FsZS5jb20+DQo+
+ID4gLS0tDQo+ID4gIGRyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9kcGFhL0tjb25maWcg
+ICAgICAgICAgIHwgMTAgKysrKysrKysrKw0KPiA+ICBkcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVl
+c2NhbGUvZHBhYS9kcGFhX2V0aC5jICAgICAgICB8ICAzICsrKw0KPiA+ICBkcml2ZXJzL25ldC9l
+dGhlcm5ldC9mcmVlc2NhbGUvZHBhYS9kcGFhX2V0aC5oICAgICAgICB8ICA2ICsrKysrKw0KPiA+
+ICBkcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUvZHBhYS9kcGFhX2V0aF9jb21tb24uYyB8
+ICA4ICsrKysrKysrDQo+ID4gIGRyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9kcGFhL2Rw
+YWFfZXRoX2NvbW1vbi5oIHwgIDQgKysrKw0KPiA+ICA1IGZpbGVzIGNoYW5nZWQsIDMxIGluc2Vy
+dGlvbnMoKykNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVl
+c2NhbGUvZHBhYS9LY29uZmlnDQo+ID4gYi9kcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUv
+ZHBhYS9LY29uZmlnDQo+ID4gaW5kZXggMDIyZDVhYS4uMjU3N2FhYyAxMDA2NDQNCj4gPiAtLS0g
+YS9kcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUvZHBhYS9LY29uZmlnDQo+ID4gKysrIGIv
+ZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2RwYWEvS2NvbmZpZw0KPiA+IEBAIC0xMSw2
+ICsxMSwxNiBAQCBtZW51Y29uZmlnIEZTTF9EUEFBX0VUSA0KPiA+DQo+ID4gIGlmIEZTTF9EUEFB
+X0VUSA0KPiA+DQo+ID4gK2NvbmZpZyBGU0xfRFBBQV9FVEhfVVNFX05ET19TRUxFQ1RfUVVFVUUN
+Cj4gPiArCWJvb2wgIlVzZSBkcml2ZXIncyBUeCBxdWV1ZSBzZWxlY3Rpb24gbWVjaGFuaXNtIg0K
+PiA+ICsJZGVmYXVsdCB5DQo+ID4gKwktLS1oZWxwLS0tDQo+ID4gKwkgIFRoZSBEUEFBIEV0aGVy
+bmV0IGRyaXZlciBkZWZpbmVzIGEgbmRvX3NlbGVjdF9xdWV1ZSgpIGNhbGxiYWNrDQo+ID4gZm9y
+IG9wdGltYWwgc2VsZWN0aW9uDQo+ID4gKwkgIG9mIHRoZSBlZ3Jlc3MgRlEuIFRoYXQgd2lsbCBv
+dmVycmlkZSB0aGUgWFBTIHN1cHBvcnQgZm9yIHRoaXMNCj4gPiBuZXRkZXZpY2UuDQo+ID4gKwkg
+IElmIGZvciB3aGF0ZXZlciByZWFzb24geW91IHdhbnQgdG8gYmUgaW4gY29udHJvbCBvZiB0aGUg
+ZWdyZXNzIEZRDQo+ID4gLXRvLUNQVSBzZWxlY3Rpb24gYW5kIG1hcHBpbmcsDQo+ID4gKwkgIG9y
+IHNpbXBseSBkb24ndCB3YW50IHRvIHVzZSB0aGUgZHJpdmVyJ3MgbmRvX3NlbGVjdF9xdWV1ZSgp
+DQo+ID4gY2FsbGJhY2ssIHRoZW4gdW5zZWxlY3QgdGhpcw0KPiA+ICsJICBhbmQgdXNlIHRoZSBz
+dGFuZGFyZCBYUFMgc3VwcG9ydCBpbnN0ZWFkLg0KPiANCj4gSXMgdGhlcmUgYSB1c2UgY2FzZSBm
+b3IgbmVlZGluZyB0aGlzIHRvIGJlIGNvbmZpZ3VyYWJsZT8NCg0KSWYgdGhlIHN0YW5kYXJkIFhQ
+UyBpcyBkZXNpcmVkLCB0aGUgS2NvbmZpZyBvcHRpb24gYWxsb3dzIHRoZSBkcml2ZXIgdXNlciB0
+bw0Kc2VsZWN0IHRoYXQuDQoNCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQv
+ZnJlZXNjYWxlL2RwYWEvZHBhYV9ldGguYw0KPiA+IGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJl
+ZXNjYWxlL2RwYWEvZHBhYV9ldGguYw0KPiA+IGluZGV4IDMxZDU1YjQuLjg5NGYxYTcgMTAwNjQ0
+DQo+ID4gLS0tIGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2RwYWEvZHBhYV9ldGgu
+Yw0KPiA+ICsrKyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9kcGFhL2RwYWFfZXRo
+LmMNCj4gPiBAQCAtMzkwLDYgKzM5MCw5IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3QgbmV0X2Rldmlj
+ZV9vcHMgZHBhX3ByaXZhdGVfb3BzID0NCj4gew0KPiA+ICAJLm5kb19nZXRfc3RhdHM2NCA9IGRw
+YV9nZXRfc3RhdHM2NCwNCj4gPiAgCS5uZG9fc2V0X21hY19hZGRyZXNzID0gZHBhX3NldF9tYWNf
+YWRkcmVzcywNCj4gPiAgCS5uZG9fdmFsaWRhdGVfYWRkciA9IGV0aF92YWxpZGF0ZV9hZGRyLA0K
+PiA+ICsjaWZkZWYgQ09ORklHX0ZTTF9EUEFBX0VUSF9VU0VfTkRPX1NFTEVDVF9RVUVVRQ0KPiA+
+ICsJLm5kb19zZWxlY3RfcXVldWUgPSBkcGFfc2VsZWN0X3F1ZXVlLA0KPiA+ICsjZW5kaWYNCj4g
+PiAgCS5uZG9fY2hhbmdlX210dSA9IGRwYV9jaGFuZ2VfbXR1LA0KPiA+ICAJLm5kb19zZXRfcnhf
+bW9kZSA9IGRwYV9zZXRfcnhfbW9kZSwNCj4gPiAgCS5uZG9faW5pdCA9IGRwYV9uZG9faW5pdCwN
+Cj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2RwYWEvZHBh
+YV9ldGguaA0KPiA+IGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2RwYWEvZHBhYV9l
+dGguaA0KPiA+IGluZGV4IDFiYTY2MTcuLjg3NTc3Y2YgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVy
+cy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2RwYWEvZHBhYV9ldGguaA0KPiA+ICsrKyBiL2RyaXZl
+cnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9kcGFhL2RwYWFfZXRoLmgNCj4gPiBAQCAtNDIwLDkg
+KzQyMCwxNSBAQCBzdGF0aWMgaW5saW5lIHZvaWQgX2RwYV9hc3NpZ25fd3Eoc3RydWN0IGRwYV9m
+cQ0KPiAqZnEpDQo+ID4gIAl9DQo+ID4gIH0NCj4gPg0KPiA+ICsjaWZkZWYgQ09ORklHX0ZTTF9E
+UEFBX0VUSF9VU0VfTkRPX1NFTEVDVF9RVUVVRQ0KPiA+ICsvKiBVc2UgaW4gbGlldSBvZiBza2Jf
+Z2V0X3F1ZXVlX21hcHBpbmcoKSAqLw0KPiA+ICsjZGVmaW5lIGRwYV9nZXRfcXVldWVfbWFwcGlu
+Zyhza2IpIFwNCj4gPiArCXJhd19zbXBfcHJvY2Vzc29yX2lkKCkNCj4gPiArI2Vsc2UNCj4gPiAg
+LyogVXNlIHRoZSBxdWV1ZSBzZWxlY3RlZCBieSBYUFMgKi8NCj4gPiAgI2RlZmluZSBkcGFfZ2V0
+X3F1ZXVlX21hcHBpbmcoc2tiKSBcDQo+ID4gIAlza2JfZ2V0X3F1ZXVlX21hcHBpbmcoc2tiKQ0K
+PiA+ICsjZW5kaWYNCj4gDQo+IFdoeSBpcyB0aGlzIG5lY2Vzc2FyeT8gIFNob3VsZG4ndCBwcm92
+aWRpbmcgYSBjdXN0b20gLm5kb19zZWxlY3RfcXVldWUoKQ0KPiBiZQ0KPiBzdWZmaWNpZW50IHRv
+IGVuc3VyZSB0aGF0IHNrYl9nZXRfcXVldWVfbWFwcGluZygpIHJldHVybnMgdGhlIHNhbWUgdGhp
+bmc/DQoNCmRwYV9nZXRfcXVldWVfbWFwcGluZygpIGlzIHVzZWQgaW4gbW9yZSB0aGFuIG9uZSBw
+bGFjZSwgdGhlIG5kbyBmdW5jdGlvbiBjYW5ub3QNCmJlIHVzZWQgZGlyZWN0bHkgaW4gYWxsIHBs
+YWNlcywgdGhlIGN1cnJlbnQgc2V0dXAgaXMganVzdGlmaWVkLg0KDQo+IEFuZCBpZiB0aGlzIGdv
+ZXMgYXdheSwgaXQncyBqdXN0IGEgbWF0dGVyIG9mIGEgZnVuY3Rpb24gcG9pbnRlciwgc28gaWYg
+aXQNCj4gZG9lcw0KPiBuZWVkIHRvIGJlIGNvbmZpZ3VyYWJsZSBpdCBjb3VsZCBiZSBhIHJ1bnRp
+bWUgb3B0aW9uLg0KPiANCj4gLVNjb3R0DQoNCkl0J3MgdXNlZCBvbiB0aGUgaG90IHBhdGgsIGFk
+ZGluZyBhbiBleHRyYSBpbmRpcmVjdGlvbiBsYXllciB0byBtYWtlIGl0IHNlbGVjdGFibGUNCmF0
+IHJ1bnRpbWUgd291bGQgZGVmZWF0IHRoZSBwdXJwb3NlLi4uDQoNCk1hZGFsaW4NCg==
