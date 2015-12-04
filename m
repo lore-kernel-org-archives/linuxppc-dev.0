@@ -1,16 +1,16 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0112.outbound.protection.outlook.com [157.56.110.112])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0139.outbound.protection.outlook.com [65.55.169.139])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7671A1A0519
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2015 09:06:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EF0311A0519
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2015 09:31:38 +1100 (AEDT)
 From: Scott Wood <scottwood@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: Scott Wood <scottwood@freescale.com>
-Subject: [PATCH] powerpc/e6500: add locking to hugetlb
-Date: Fri, 4 Dec 2015 16:05:59 -0600
-Message-ID: <1449266759-3418-1-git-send-email-scottwood@freescale.com>
+Subject: [PATCH v2] powerpc/e6500: add locking to hugetlb
+Date: Fri, 4 Dec 2015 16:31:13 -0600
+Message-ID: <1449268273-8643-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,6 +28,8 @@ handlers take, to ensure that the tlbsx and tlbwe are atomic.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
+v2: Fix trailing whitespace
+
  arch/powerpc/mm/hugetlbpage-book3e.c | 46 ++++++++++++++++++++++++++++++++++++
  1 file changed, 46 insertions(+)
 
@@ -58,7 +60,7 @@ index ba47aaf..180707e 100644
 +		     "cmpwi %0, 0;"
 +		     "bne 2b;"
 +		     "b 1b;"
-+		     "3:" 
++		     "3:"
 +		     : "=&r" (tmp)
 +		     : "r" (&paca->tcd_ptr->lock), "r" (token)
 +		     : "memory");
