@@ -1,32 +1,19 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2C8881A000B
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2015 02:27:16 +1100 (AEDT)
-Date: Fri, 4 Dec 2015 16:27:09 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: [PATCH v2 3/5] printk/nmi: Try hard to print Oops message in NMI
- context
-Message-ID: <20151204152709.GA20935@pathway.suse.cz>
-References: <1448622572-16900-1-git-send-email-pmladek@suse.com>
- <1448622572-16900-4-git-send-email-pmladek@suse.com>
- <20151201234437.GA8644@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151201234437.GA8644@n2100.arm.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8DFAA1A0E61
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2015 02:28:20 +1100 (AEDT)
+In-Reply-To: <20151204152419.28E0D691D2@newverein.lst.de>
+References: <20151204152419.28E0D691D2@newverein.lst.de>
+From: Torsten Duwe <duwe@lst.de>
+Date: Fri, 4 Dec 2015 14:36:43 +0100
+Subject: [PATCH v5 1/9] ppc64 (le): prepare for -mprofile-kernel
+To: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Jiri Kosina <jkosina@suse.cz>, Denis Kirjanov <kda@linux-powerpc.org>,
+ Petr Mladek <pmladek@suse.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
+Message-Id: <20151204152817.67ED1691D2@newverein.lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,32 +23,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue 2015-12-01 23:44:37, Russell King - ARM Linux wrote:
-> On Fri, Nov 27, 2015 at 12:09:30PM +0100, Petr Mladek wrote:
-> > What we can do, though, is to zap all printk locks. We already do this
-> > when a printk recursion is detected. This should be safe because
-> > the system is crashing and there shouldn't be any printk caller
-> > that would cause the deadlock.
-> 
-> What about serial consoles which may call out to subsystems like the
-> clk subsystem to enable a clock, which would want to take their own
-> spinlocks in addition to the serial console driver?
+The gcc switch -mprofile-kernel, available for ppc64 on gcc > 4.8.5,
+allows to call _mcount very early in the function, which low-level
+ASM code and code patching functions need to consider.
+Especially the link register and the parameter registers are still
+alive and not yet saved into a new stack frame.
 
-Yes, there might be more locks used by the serial console but I do
-not know how to handle them all easily. IMHO, this patch is just better
-than nothing.
+Signed-off-by: Torsten Duwe <duwe@suse.de>
+---
+ arch/powerpc/kernel/entry_64.S  | 44 +++++++++++++++++++++++++++++++++++++++--
+ arch/powerpc/kernel/ftrace.c    | 12 +++++++++--
+ arch/powerpc/kernel/module_64.c | 13 ++++++++++++
+ 3 files changed, 65 insertions(+), 4 deletions(-)
 
-> I don't see bust_spinlocks() dealing with any of these locks, so IMHO
-> trying to make this work in NMI context strikes me as making the
-> existing solution more unreliable on ARM systems.
-
-bust_spinlocks() calls printk_nmi_flush() that would call printk()
-that would zap "lockbuf_lock" and "console_sem" when in Oops and NMI.
-Yes, there might be more locks blocked but we try to break at least
-the first two walls. Also zapping is allowed only once per 30 seconds,
-see zap_locks(). Why do you think that it might make things more
-unreliable, please?
-
-
-Thanks for looking,
-Petr
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index a94f155..c3b2e75 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -1206,7 +1206,11 @@ _GLOBAL(enter_prom)
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ _GLOBAL(mcount)
+ _GLOBAL(_mcount)
+-	blr
++	mflr	r0
++	mtctr	r0
++	ld	r0,LRSAVE(r1)
++	mtlr	r0
++	bctr
+ 
+ _GLOBAL_TOC(ftrace_caller)
+ 	/* Taken from output of objdump from lib64/glibc */
+@@ -1262,13 +1266,28 @@ _GLOBAL(ftrace_stub)
+ 
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ _GLOBAL(ftrace_graph_caller)
++#ifdef CC_USING_MPROFILE_KERNEL
++	/* with -mprofile-kernel, parameter regs are still alive at _mcount */
++	std	r10, 104(r1)
++	std	r9, 96(r1)
++	std	r8, 88(r1)
++	std	r7, 80(r1)
++	std	r6, 72(r1)
++	std	r5, 64(r1)
++	std	r4, 56(r1)
++	std	r3, 48(r1)
++	mfctr	r4		/* ftrace_caller has moved local addr here */
++	std	r4, 40(r1)
++	mflr	r3		/* ftrace_caller has restored LR from stack */
++#else
+ 	/* load r4 with local address */
+ 	ld	r4, 128(r1)
+-	subi	r4, r4, MCOUNT_INSN_SIZE
+ 
+ 	/* Grab the LR out of the caller stack frame */
+ 	ld	r11, 112(r1)
+ 	ld	r3, 16(r11)
++#endif
++	subi	r4, r4, MCOUNT_INSN_SIZE
+ 
+ 	bl	prepare_ftrace_return
+ 	nop
+@@ -1277,6 +1296,26 @@ _GLOBAL(ftrace_graph_caller)
+ 	 * prepare_ftrace_return gives us the address we divert to.
+ 	 * Change the LR in the callers stack frame to this.
+ 	 */
++
++#ifdef CC_USING_MPROFILE_KERNEL
++	mtlr	r3
++
++	ld	r0, 40(r1)
++	mtctr	r0
++	ld	r10, 104(r1)
++	ld	r9, 96(r1)
++	ld	r8, 88(r1)
++	ld	r7, 80(r1)
++	ld	r6, 72(r1)
++	ld	r5, 64(r1)
++	ld	r4, 56(r1)
++	ld	r3, 48(r1)
++
++	addi	r1, r1, 112
++	mflr	r0
++	std	r0, LRSAVE(r1)
++	bctr
++#else
+ 	ld	r11, 112(r1)
+ 	std	r3, 16(r11)
+ 
+@@ -1284,6 +1323,7 @@ _GLOBAL(ftrace_graph_caller)
+ 	mtlr	r0
+ 	addi	r1, r1, 112
+ 	blr
++#endif
+ 
+ _GLOBAL(return_to_handler)
+ 	/* need to save return values */
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 44d4d8e..080c525 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -306,11 +306,19 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 	 * The load offset is different depending on the ABI. For simplicity
+ 	 * just mask it out when doing the compare.
+ 	 */
++#ifndef CC_USING_MPROFILE_KERNEL
+ 	if ((op[0] != 0x48000008) || ((op[1] & 0xffff0000) != 0xe8410000)) {
+-		pr_err("Unexpected call sequence: %x %x\n", op[0], op[1]);
++		pr_err("Unexpected call sequence at %p: %x %x\n",
++		ip, op[0], op[1]);
+ 		return -EINVAL;
+ 	}
+-
++#else
++	/* look for patched "NOP" on ppc64 with -mprofile-kernel */
++	if (op[0] != 0x60000000) {
++		pr_err("Unexpected call at %p: %x\n", ip, op[0]);
++		return -EINVAL;
++	}
++#endif
+ 	/* If we never set up a trampoline to ftrace_caller, then bail */
+ 	if (!rec->arch.mod->arch.tramp) {
+ 		pr_err("No ftrace trampoline\n");
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 6838451..5312cd4 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -475,6 +475,19 @@ static unsigned long stub_for_addr(Elf64_Shdr *sechdrs,
+ static int restore_r2(u32 *instruction, struct module *me)
+ {
+ 	if (*instruction != PPC_INST_NOP) {
++#ifdef CC_USING_MPROFILE_KERNEL
++		/* -mprofile_kernel sequence starting with
++		 * mflr r0; std r0, LRSAVE(r1)
++		 */
++		if (instruction[-3] == 0x7c0802a6 &&
++		    instruction[-2] == 0xf8010010) {
++			/* Nothing to be done here, it's an _mcount
++			 * call location and r2 will have to be
++			 * restored in the _mcount function.
++			 */
++			return 1;
++		};
++#endif
+ 		pr_err("%s: Expect noop after relocate, got %08x\n",
+ 		       me->name, *instruction);
+ 		return 0;
+-- 
+1.8.5.6
