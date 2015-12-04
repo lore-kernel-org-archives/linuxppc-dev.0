@@ -1,21 +1,24 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [IPv6:2002:c35c:fd02::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C98C11A0CCC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2015 02:18:36 +1100 (AEDT)
-Date: Fri, 4 Dec 2015 22:42:10 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Kim Phillips <kim.phillips@freescale.com>,
- David S Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] crypto: talitos - add new crypto modes
-Message-ID: <20151204144210.GF17703@gondor.apana.org.au>
-References: <20151201114415.97E331A2438@localhost.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5B25D1A0CCE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2015 02:21:39 +1100 (AEDT)
+Date: Fri, 4 Dec 2015 15:21:33 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: more POLL... fun
+Message-ID: <20151204152133.GI22011@ZenIV.linux.org.uk>
+References: <20151127050026.GX22011@ZenIV.linux.org.uk>
+ <20151130030427.GY22011@ZenIV.linux.org.uk>
+ <20151204063825.GH22011@ZenIV.linux.org.uk>
+ <3199712.spOmaGJUoN@wuerfel>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151201114415.97E331A2438@localhost.localdomain>
+In-Reply-To: <3199712.spOmaGJUoN@wuerfel>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,18 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 01, 2015 at 12:44:15PM +0100, Christophe Leroy wrote:
-> This patch adds the following algorithms to the talitos driver:
-> * ecb(aes)
-> * ctr(aes)
-> * ecb(des)
-> * cbc(des)
-> * ecb(des3_ede)
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+On Fri, Dec 04, 2015 at 10:16:50AM +0100, Arnd Bergmann wrote:
 
-Patch applied.  Thanks.
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> I don't remember why we put in fasync support, but I have checked the libspe
+> implementation and found that it doesn't use it (not a big surprise there).
+> It always uses epoll() to get notifications from spufs, and based on your
+> explanation I assume everything else (there may have been one or two users
+> that used the low-level interfaces rather than libspe) did too.
+
+OK...  So should we just rip ->{mfc,ibox,wbox}_fasync out, along with all
+three kill_fasync() and ->fasync() instances in there?  We obviously need to
+leave spufs_{mfc,ibox,wbox}_callback() in place for the sake of those
+wake_up_all(&ctx->{mfc,ibox,wbox}_wq); in them...
+
+I mean, fasync in there obviously never been used at all - it never delivered
+a single SIGIO, and the first user to try would get the BUG_ON() in fcntl.c
+instead.  Since nobody complained in more than 10 years...
