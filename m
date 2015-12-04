@@ -1,24 +1,18 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id 502091A0B74
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2015 07:08:21 +1100 (AEDT)
-Date: Fri, 04 Dec 2015 15:08:17 -0500 (EST)
-Message-Id: <20151204.150817.532736454345962933.davem@davemloft.net>
-To: joe@perches.com
-Cc: madalin.bucur@freescale.com, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- scottwood@freescale.com, igal.liberman@freescale.com, ppc@mindchasers.com,
- pebolle@tiscali.nl, joakim.tjernlund@transmode.se,
- gregkh@linuxfoundation.org
-Subject: Re: [net-next v5 2/8] dpaa_eth: add support for DPAA Ethernet
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1449259235.8611.19.camel@perches.com>
-References: <1449150589-26253-3-git-send-email-madalin.bucur@freescale.com>
- <20151204.145549.859527220803940077.davem@davemloft.net>
- <1449259235.8611.19.camel@perches.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0112.outbound.protection.outlook.com [157.56.110.112])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7671A1A0519
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2015 09:06:17 +1100 (AEDT)
+From: Scott Wood <scottwood@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+CC: Scott Wood <scottwood@freescale.com>
+Subject: [PATCH] powerpc/e6500: add locking to hugetlb
+Date: Fri, 4 Dec 2015 16:05:59 -0600
+Message-ID: <1449266759-3418-1-git-send-email-scottwood@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +22,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Joe Perches <joe@perches.com>
-Date: Fri, 04 Dec 2015 12:00:35 -0800
+e6500 has threads but does not have TLB write conditional.  Thus,
+the hugetlb code needs to take the same lock that the normal TLB miss
+handlers take, to ensure that the tlbsx and tlbwe are atomic.
 
-> On Fri, 2015-12-04 at 14:55 -0500, David Miller wrote:
->> From: Madalin Bucur <madalin.bucur@freescale.com>
->> Date: Thu, 3 Dec 2015 15:49:43 +0200
->> =
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/mm/hugetlbpage-book3e.c | 46 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
 
->> > @@ -0,0 +1,22 @@
->> > +menuconfig FSL_DPAA_ETH
->> > +=A0=A0=A0=A0=A0tristate "DPAA Ethernet"
->> > +=A0=A0=A0=A0=A0depends on FSL_SOC && FSL_BMAN && FSL_QMAN && FSL_=
-FMAN
->> > +=A0=A0=A0=A0=A0select PHYLIB
->> > +=A0=A0=A0=A0=A0select FSL_FMAN_MAC
->> =
-
->> I do not see the FSL_FMAN_MAC Kconfig symbol defined anywhere in the=
-
->> tree.
-> =
-
-> I believe this patch series is dependent on two
-> other patch series mentioned in the cover letter.
-
-Then this shouldn't have been submitted.
-
-The dependent series has been through a lot of changes and still needs
-lots of work, and is very far from being applied.
-
-Posting patches depending upon it is therefore wholly inapproprate.
-That time and effort should be spent putting the dependent series
-into proper shape.
-
-Since I see what is happening here, I am going to simply ignore all
-future submissions of dpaa_eth, until the dependencies are worked
-out properly so don't bother posting this stuff again until that
-happens.
-
-Thanks.
+diff --git a/arch/powerpc/mm/hugetlbpage-book3e.c b/arch/powerpc/mm/hugetlbpage-book3e.c
+index ba47aaf..180707e 100644
+--- a/arch/powerpc/mm/hugetlbpage-book3e.c
++++ b/arch/powerpc/mm/hugetlbpage-book3e.c
+@@ -51,6 +51,48 @@ static inline int mmu_get_tsize(int psize)
+ 	return mmu_psize_defs[psize].enc;
+ }
+ 
++#if defined(CONFIG_PPC_FSL_BOOK3E) && defined(CONFIG_PPC64)
++#include <asm/paca.h>
++
++static inline void book3e_tlb_lock(void)
++{
++	struct paca_struct *paca = get_paca();
++	unsigned long tmp;
++	int token = smp_processor_id() + 1;
++
++	asm volatile("1: lbarx %0, 0, %1;"
++		     "cmpwi %0, 0;"
++		     "bne 2f;"
++		     "stbcx. %2, 0, %1;"
++		     "bne 1b;"
++		     "b 3f;"
++		     "2: lbzx %0, 0, %1;"
++		     "cmpwi %0, 0;"
++		     "bne 2b;"
++		     "b 1b;"
++		     "3:" 
++		     : "=&r" (tmp)
++		     : "r" (&paca->tcd_ptr->lock), "r" (token)
++		     : "memory");
++}
++
++static inline void book3e_tlb_unlock(void)
++{
++	struct paca_struct *paca = get_paca();
++
++	isync();
++	paca->tcd_ptr->lock = 0;
++}
++#else
++static inline void book3e_tlb_lock(void)
++{
++}
++
++static inline void book3e_tlb_unlock(void)
++{
++}
++#endif
++
+ static inline int book3e_tlb_exists(unsigned long ea, unsigned long pid)
+ {
+ 	int found = 0;
+@@ -109,7 +151,10 @@ void book3e_hugetlb_preload(struct vm_area_struct *vma, unsigned long ea,
+ 	 */
+ 	local_irq_save(flags);
+ 
++	book3e_tlb_lock();
++
+ 	if (unlikely(book3e_tlb_exists(ea, mm->context.id))) {
++		book3e_tlb_unlock();
+ 		local_irq_restore(flags);
+ 		return;
+ 	}
+@@ -141,6 +186,7 @@ void book3e_hugetlb_preload(struct vm_area_struct *vma, unsigned long ea,
+ 
+ 	asm volatile ("tlbwe");
+ 
++	book3e_tlb_unlock();
+ 	local_irq_restore(flags);
+ }
+ 
+-- 
+2.5.0
