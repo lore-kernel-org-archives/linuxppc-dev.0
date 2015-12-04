@@ -1,17 +1,32 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49BE01A000B
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2015 02:24:23 +1100 (AEDT)
-From: Torsten Duwe <duwe@lst.de>
-Date: Fri, 4 Dec 2015 15:45:29 +0100
-Subject: [PATCH v5 0/9] ftrace with regs + live patching for ppc64 LE (ABI v2)
-To: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Jiri Kosina <jkosina@suse.cz>, Denis Kirjanov <kda@linux-powerpc.org>,
- Petr Mladek <pmladek@suse.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
-Message-Id: <20151204152419.28E0D691D2@newverein.lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2C8881A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2015 02:27:16 +1100 (AEDT)
+Date: Fri, 4 Dec 2015 16:27:09 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: [PATCH v2 3/5] printk/nmi: Try hard to print Oops message in NMI
+ context
+Message-ID: <20151204152709.GA20935@pathway.suse.cz>
+References: <1448622572-16900-1-git-send-email-pmladek@suse.com>
+ <1448622572-16900-4-git-send-email-pmladek@suse.com>
+ <20151201234437.GA8644@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151201234437.GA8644@n2100.arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,61 +36,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changes since v4:
-  * change comment style in entry_64.S to C89
-    (nobody is using assembler syntax comments there).
-  * the bool function restore_r2 shouldn't return 2,
-    that's a little confusing.
-  * Test whether the compiler supports -mprofile-kernel
-    and only then define CC_USING_MPROFILE_KERNEL
-  * also make the return value of klp_check_compiler_support
-    depend on that.
+On Tue 2015-12-01 23:44:37, Russell King - ARM Linux wrote:
+> On Fri, Nov 27, 2015 at 12:09:30PM +0100, Petr Mladek wrote:
+> > What we can do, though, is to zap all printk locks. We already do this
+> > when a printk recursion is detected. This should be safe because
+> > the system is crashing and there shouldn't be any printk caller
+> > that would cause the deadlock.
+> 
+> What about serial consoles which may call out to subsystems like the
+> clk subsystem to enable a clock, which would want to take their own
+> spinlocks in addition to the serial console driver?
 
-Major changes since v3:
-  * the graph tracer works now.
-    It turned out the stack frame it tried to manipulate does not
-    exist at that point.
-  * changes only needed in order to support -mprofile-kernel are now
-    in a separate patch, prepended.
-  * Kconfig cleanup so this is only selectable on ppc64le.
+Yes, there might be more locks used by the serial console but I do
+not know how to handle them all easily. IMHO, this patch is just better
+than nothing.
+
+> I don't see bust_spinlocks() dealing with any of these locks, so IMHO
+> trying to make this work in NMI context strikes me as making the
+> existing solution more unreliable on ARM systems.
+
+bust_spinlocks() calls printk_nmi_flush() that would call printk()
+that would zap "lockbuf_lock" and "console_sem" when in Oops and NMI.
+Yes, there might be more locks blocked but we try to break at least
+the first two walls. Also zapping is allowed only once per 30 seconds,
+see zap_locks(). Why do you think that it might make things more
+unreliable, please?
 
 
-
-Torsten Duwe (9):
-  ppc64 (le): prepare for -mprofile-kernel
-  ppc64le FTRACE_WITH_REGS implementation
-  ppc use ftrace_modify_all_code default
-  ppc64 ftrace_with_regs configuration variables
-  ppc64 ftrace_with_regs: spare early boot and low level
-  ppc64 ftrace: disable profiling for some functions
-  ppc64 ftrace: disable profiling for some files
-  Implement kernel live patching for ppc64le (ABIv2)
-  Enable LIVEPATCH to be configured on ppc64le and add livepatch.o if it
-    is selected.
-
- arch/powerpc/Kconfig                 |   7 ++
- arch/powerpc/Makefile                |  10 +++
- arch/powerpc/include/asm/ftrace.h    |   5 ++
- arch/powerpc/include/asm/livepatch.h |  45 ++++++++++
- arch/powerpc/kernel/Makefile         |  13 +--
- arch/powerpc/kernel/entry_64.S       | 164 ++++++++++++++++++++++++++++++++++-
- arch/powerpc/kernel/ftrace.c         |  88 ++++++++++++++-----
- arch/powerpc/kernel/livepatch.c      |  38 ++++++++
- arch/powerpc/kernel/module_64.c      |  38 +++++++-
- arch/powerpc/kernel/process.c        |   2 +-
- arch/powerpc/lib/Makefile            |   4 +-
- arch/powerpc/mm/fault.c              |   2 +-
- arch/powerpc/mm/hash_utils_64.c      |  18 ++--
- arch/powerpc/mm/hugetlbpage-hash64.c |   2 +-
- arch/powerpc/mm/hugetlbpage.c        |   4 +-
- arch/powerpc/mm/mem.c                |   2 +-
- arch/powerpc/mm/pgtable_64.c         |   2 +-
- arch/powerpc/mm/slb.c                |   6 +-
- arch/powerpc/mm/slice.c              |   8 +-
- kernel/trace/Kconfig                 |   5 ++
- 20 files changed, 409 insertions(+), 54 deletions(-)
- create mode 100644 arch/powerpc/include/asm/livepatch.h
- create mode 100644 arch/powerpc/kernel/livepatch.c
-
--- 
-1.8.5.6
+Thanks for looking,
+Petr
