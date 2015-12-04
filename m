@@ -1,20 +1,31 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 335331A0E82
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2015 02:29:01 +1100 (AEDT)
-In-Reply-To: <20151204152419.28E0D691D2@newverein.lst.de>
-References: <20151204152419.28E0D691D2@newverein.lst.de>
-From: Torsten Duwe <duwe@lst.de>
-Date: Fri, 4 Dec 2015 15:13:44 +0100
-Subject: [PATCH v5 9/9] Enable LIVEPATCH to be configured on ppc64le and add
- livepatch.o if it is selected.
-To: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Jiri Kosina <jkosina@suse.cz>, Denis Kirjanov <kda@linux-powerpc.org>,
- Petr Mladek <pmladek@suse.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
-Message-Id: <20151204152858.2EE5C691D2@newverein.lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 844D91A1149
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Dec 2015 02:29:28 +1100 (AEDT)
+Date: Fri, 4 Dec 2015 16:29:24 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mips@linux-mips.org,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, linux-cris-kernel@axis.com,
+ linux-s390@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ x86@kernel.org, linux-kernel@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>,
+ adi-buildroot-devel@lists.sourceforge.net,
+ Ingo Molnar <mingo@redhat.com>, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, Russell King <rmk+kernel@arm.linux.org.uk>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2 1/5] printk/nmi: Generic solution for safe printk in NMI
+Message-ID: <20151204152924.GB20935@pathway.suse.cz>
+References: <1448622572-16900-1-git-send-email-pmladek@suse.com>
+ <1448622572-16900-2-git-send-email-pmladek@suse.com>
+ <1449024316.11810.6.camel@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1449024316.11810.6.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +35,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Torsten Duwe <duwe@suse.de>
----
- arch/powerpc/Kconfig         | 5 +++++
- arch/powerpc/kernel/Makefile | 1 +
- 2 files changed, 6 insertions(+)
+On Wed 2015-12-02 13:45:16, Michael Ellerman wrote:
+> On Fri, 2015-11-27 at 12:09 +0100, Petr Mladek wrote:
+> 
+> > printk() takes some locks and could not be used a safe way in NMI
+> > context.
+> > 
+> > The chance of a deadlock is real especially when printing
+> > stacks from all CPUs. This particular problem has been addressed
+> > on x86 by the commit a9edc8809328 ("x86/nmi: Perform a safe NMI stack
+> > trace on all CPUs").
+> 
+> ...
+> 
+> > diff --git a/kernel/printk/nmi.c b/kernel/printk/nmi.c
+> > new file mode 100644
+> > index 000000000000..3989e13a0021
+> > --- /dev/null
+> > +++ b/kernel/printk/nmi.c
+> > @@ -0,0 +1,200 @@
+> 
+> ...
+> 
+> > +
+> > +struct nmi_seq_buf {
+> > +	atomic_t		len;	/* length of written data */
+> > +	struct irq_work		work;	/* IRQ work that flushes the buffer */
+> > +	unsigned char		buffer[PAGE_SIZE - sizeof(atomic_t) -
+> > +				       sizeof(struct irq_work)];
+> > +};
+> > +static DEFINE_PER_CPU(struct nmi_seq_buf, nmi_print_seq);
+> 
+> 
+> PAGE_SIZE isn't always 4K.
+> 
+> On typical powerpc systems this will give you 128K, and on some 512K, which is
+> probably not what we wanted.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 89b1a2a..62a3f54 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -163,6 +163,9 @@ config PPC
- 	select ARCH_HAS_DMA_SET_COHERENT_MASK
- 	select HAVE_ARCH_SECCOMP_FILTER
- 
-+config HAVE_LIVEPATCH
-+       def_bool PPC64 && CPU_LITTLE_ENDIAN
-+
- config GENERIC_CSUM
- 	def_bool CPU_LITTLE_ENDIAN
- 
-@@ -1095,3 +1098,5 @@ config PPC_LIB_RHEAP
- 	bool
- 
- source "arch/powerpc/kvm/Kconfig"
-+
-+source "kernel/livepatch/Kconfig"
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 0f417d5..f9a2925 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -119,6 +119,7 @@ obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
- obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
- obj-$(CONFIG_FTRACE_SYSCALLS)	+= ftrace.o
- obj-$(CONFIG_TRACING)		+= trace_clock.o
-+obj-$(CONFIG_LIVEPATCH)		+= livepatch.o
- 
- ifneq ($(CONFIG_PPC_INDIRECT_PIO),y)
- obj-y				+= iomap.o
--- 
-1.8.5.6
+Good point!
+
+> The existing code just did:
+> 
+> #define NMI_BUF_SIZE           4096
+
+I will change this to 8192. The 4kB were not enough in some cases.
+
+Best Regards,
+Petr
