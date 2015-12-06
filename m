@@ -1,25 +1,20 @@
-Return-Path: <huawei.libin@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [58.251.152.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7497B1A0D8C
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Dec 2015 13:09:04 +1100 (AEDT)
-From: Li Bin <huawei.libin@huawei.com>
-To: <rostedt@goodmis.org>, <mingo@redhat.com>
-CC: <linux-kernel@vger.kernel.org>, Li Bin <huawei.libin@huawei.com>, "Tony
- Luck" <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- <linux-ia64@vger.kernel.org>, James Hogan <james.hogan@imgtec.com>,
- <linux-metag@vger.kernel.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
- Ellerman" <mpe@ellerman.id.au>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-sh@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, <x86@kernel.org>
-Subject: [PATCH v2 0/5] ftrace: fix ftrace misleading comments for arch using
- it
-Date: Sun, 6 Dec 2015 10:02:53 +0800
-Message-ID: <1449367378-29430-1-git-send-email-huawei.libin@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id 6CCE01A017D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Dec 2015 14:25:58 +1100 (AEDT)
+Date: Sat, 05 Dec 2015 22:25:51 -0500 (EST)
+Message-Id: <20151205.222551.512793392902323297.davem@davemloft.net>
+To: tlfalcon@linux.vnet.ibm.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ nfont@linux.vnet.ibm.com, brking@linux.vnet.ibm.com, nguyendo@us.ibm.com,
+ jallen@linux.vnet.ibm.com
+Subject: Re: [PATCH net-next] Driver for IBM System i/p VNIC protocol
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1449251386-13476-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+References: <1449251386-13476-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,41 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix the following similar misleading comments of ftrace for arch
-ia64/metag/powerpc/sh/x86:
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Date: Fri,  4 Dec 2015 11:49:46 -0600
 
-Note: Due to modules and __init, code can
- disappear and change, we need to protect against faulting
- as well as code changing. We do this by using the
- probe_kernel_* functions.
+> +static int ibmvnic_buffs_per_pool = IBMVNIC_BUFFS_PER_POOL;
+> +module_param(ibmvnic_buffs_per_pool, int, S_IRUGO);
+> +MODULE_PARM_DESC(ibmvnic_buffs_per_pool,
+> +		 "IBMVNIC number of buffers per rx pool");
 
-No real locking needed, this code is run through
-kstop_machine, or before SMP starts.
+Please do not use module parameters for settings that effect
+the basic operation of the driver.
 
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: linux-ia64@vger.kernel.org
-Cc: James Hogan <james.hogan@imgtec.com>
-Cc: linux-metag@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au> 
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-sh@vger.kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>
-"Cc: H. Peter Anvin" <hpa@zytor.com>
-Cc: x86@kernel.org
+Instead use facilities that are generic and provide the same
+user interface for all networking drivers, such as ethtool.
 
-Li Bin (5):
-  ia64: ftrace: fix the comments for ftrace_modify_code
-  metag: ftrace: fix the comments for ftrace_modify_code
-  powerpc: ftrace: fix the comments for ftrace_modify_code
-  sh: ftrace: fix the comments for ftrace_modify_code
-  x86: ftrace: fix the comments for ftrace_modify_code_direct
-
- arch/ia64/kernel/ftrace.c    |   12 +++++-------
- arch/metag/kernel/ftrace.c   |   11 +++++------
- arch/powerpc/kernel/ftrace.c |   12 +++++-------
- arch/sh/kernel/ftrace.c      |   12 +++++-------
- arch/x86/kernel/ftrace.c     |   12 +++++-------
- 5 files changed, 25 insertions(+), 34 deletions(-)
+Otherwise users would need to learn a different way to configure the
+same thing on different devices, which is not acceptable.
