@@ -1,29 +1,25 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c03::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B69811A065B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 08:49:38 +1100 (AEDT)
-Subject: Re: [PATCH v7 45/50] drivers/of: Avoid recursively calling
- unflatten_dt_node()
-To: Rob Herring <robherring2@gmail.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-46-git-send-email-gwshan@linux.vnet.ibm.com>
- <CAL_Jsq+BnPEKkRgQX4+e0MA9dKLVLhy8rVF25Fr9yXL2jp+WLA@mail.gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, aik@ozlabs.ru,
- Bjorn Helgaas <bhelgaas@google.com>, Grant Likely <grant.likely@linaro.org>,
- Pantelis Antoniou <panto@antoniou-consulting.com>,
- Frank Rowand <frowand.list@gmail.com>
-From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <5664AD69.6050702@roeck-us.net>
-Date: Sun, 6 Dec 2015 13:49:29 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5A7141A01DF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 09:57:30 +1100 (AEDT)
+Received: by pabfh17 with SMTP id fh17so117599269pab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Dec 2015 14:57:27 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Haren Myneni <haren@linux.vnet.ibm.com>, herbert@gondor.apana.org.au,
+ davem@davemloft.net, ddstreet@ieee.org, mpe@ellerman.id.au, pair@us.ibm.com,
+ linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: crypto/nx842: Ignore queue overflow informative error
+In-Reply-To: <1449388004.2096.12.camel@hbabu-laptop>
+References: <1449388004.2096.12.camel@hbabu-laptop>
+Date: Mon, 07 Dec 2015 09:57:14 +1100
+Message-ID: <87bna36v91.fsf@gamma.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAL_Jsq+BnPEKkRgQX4+e0MA9dKLVLhy8rVF25Fr9yXL2jp+WLA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,36 +29,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/06/2015 12:28 PM, Rob Herring wrote:
-> +Guenter
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+Haren Myneni <haren@linux.vnet.ibm.com> writes:
+
+> NX842 coprocessor sets bit 3 if queue is overflow. It is just for
+> information to the user. So the driver prints this informative message
+> and ignores it.
+
+What queue, and what happens when the queue overflows? It seems like
+*something* would need to be done, somewhere, by someone?
+
+I realise that as a piece of IBM hardware this is probably an incredibly
+optimistic question, but is this behaviour documented publically anywhere?
+(As a distant second best, is it documented internally anywhere that I
+can read?)
+
+> --- a/drivers/crypto/nx/nx-842-powernv.c
+> +++ b/drivers/crypto/nx/nx-842-powernv.c
+> @@ -442,6 +442,15 @@ static int nx842_powernv_function(const unsigned cha=
+r *in, unsigned int inlen,
+>  			     (unsigned int)ccw,
+>  			     (unsigned int)be32_to_cpu(crb->ccw));
+>=20=20
+> +	/*
+> +	 * NX842 coprocessor uses 3rd bit to report queue overflow which is
+> +	 * not an error, just for information to user. So, ignore this bit.
+> +	 */
+> +	if (ret & ICSWX_BIT3) {
+> +		pr_info_ratelimited("842 coprocessor queue overflow\n");
+It doesn't look like this is done anywhere else in the file, but should
+this be prefixed with something? Something like "nx-842: Coprocessor
+queue overflow"?
+
+Regards,
+Daniel
+
+> +		ret &=3D ~ICSWX_BIT3;
+> +	}
+> +
+>  	switch (ret) {
+>  	case ICSWX_INITIATED:
+>  		ret =3D wait_for_csb(wmem, csb);
 >
-> On Wed, Nov 4, 2015 at 7:12 AM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
->> In current implementation, unflatten_dt_node() is called recursively
->> to unflatten device nodes in FDT blob. It's stress to limited stack
->> capacity.
->>
->> This avoids calling the function recursively, meaning the device
->> nodes are unflattened in one call on unflatten_dt_node(): two arrays
->> are introduced to track the parent path size and the device node of
->> current level of depth, which will be used by the device node on next
->> level of depth to be unflattened. Also, the parameter "poffset" and
->> "fpsize" are unused and dropped.
 >
-> Do you plan to respin the OF parts at least soon? There's another
-> problem Guenter found that of_fdt_unflatten_tree is not re-entrant due
-> to "depth" being static and this series fixes that. So I'd rather
-> apply this and avoid adding a mutex if possible.
->
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-Hi Rob,
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-We see this problem in 4.1, so whatever patch you accept should be
-back-ported to at least that release.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: GPGTools - https://gpgtools.org
 
-Any idea when this patch will be accepted ? We actively see the problem
-in our kernel, so I'll need a solution soon. Otherwise I'll have to apply
-my patch to our kernel and revert it as soon as the 'real' patch has been
-back-ported.
-
-Thanks,
-Guenter
+iQIcBAEBCgAGBQJWZL1KAAoJEPC3R3P2I92F4sgQAJsF4q1l/tqt8V9ck5rZnjfZ
+yLWbpa/N0IfSpzxsbmXz5kApiQnnkq5A8GLK89nvP23CIrGJEIny1LGJdM7FunDu
+OEk+KW5pflVVSybWIAajgpH6zn8gX/c9miiQH8qxbEqDDhg19mWjEfyjDs9riAny
+8evdLJnD9Tq7TuUSZgLGr/Hlb7pnNF9u4/pX09FEBvcy3enna0lcymKXiirHFS/h
+waJDBs7/LGXd9eTiDqvvz75lcBfufk8F6XAq8WxOp4AtbnFB+UP/cTjEuIXry+Pc
+6+PAj4JIlYHQBtzGsBPzP1HSKz98d8SpjrfRqKzTezrR/Pqp+g3BEAilDuJLuuB1
+EMlLL/DTixpHqkjcs045N/QGVSmcNuNTrLAHvfeAWKNC9u3xSyKcS3ci9dUH/q/q
+ZkTHmk6QjBy1K5VMGVj9hZNRY3XnZe2JaXOX8bRkFodX6J6jeOmn9M6z483Zh9kb
+ZP+bjZNFApPHJV5doZuInsnJfXImGIhiCp17yS69E/C99TusQgW/nNFEyLVTXc1i
+6SszCiicWp+Iov9DJcAZ+3hnAX6Xc+nkIk0LwPnMB5oQaB+stv13sYvgFHtmpRqu
+UY4RzUB+NDeiQaVZuV3feAbnAz17uJMeswE8S8ruq+RjDnb5XODUIkTny5RcoSii
+pyl7G4JsSvSZnPo/TnMV
+=eGI3
+-----END PGP SIGNATURE-----
+--=-=-=--
