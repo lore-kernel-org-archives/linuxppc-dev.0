@@ -1,35 +1,31 @@
-Return-Path: <haren@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-yk0-x235.google.com (mail-yk0-x235.google.com
+ [IPv6:2607:f8b0:4002:c07::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 24B961A017D
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Dec 2015 18:47:01 +1100 (AEDT)
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Sun, 6 Dec 2015 00:46:59 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id CE1F03E4003B
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Dec 2015 00:46:48 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB67kmP525821238
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 6 Dec 2015 00:46:48 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB67klbb025217
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 6 Dec 2015 00:46:48 -0700
-Subject: crypto/nx842: Ignore queue overflow informative error
-From: Haren Myneni <haren@linux.vnet.ibm.com>
-To: herbert@gondor.apana.org.au, davem@davemloft.net, ddstreet@ieee.org,
- mpe@ellerman.id.au, pair@us.ibm.com, linux-crypto@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 05 Dec 2015 23:46:44 -0800
-Message-ID: <1449388004.2096.12.camel@hbabu-laptop>
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2C1571A065B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 07:28:53 +1100 (AEDT)
+Received: by ykfs79 with SMTP id s79so175923793ykf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Dec 2015 12:28:50 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1446642770-4681-46-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1446642770-4681-46-git-send-email-gwshan@linux.vnet.ibm.com>
+From: Rob Herring <robherring2@gmail.com>
+Date: Sun, 6 Dec 2015 14:28:30 -0600
+Message-ID: <CAL_Jsq+BnPEKkRgQX4+e0MA9dKLVLhy8rVF25Fr9yXL2jp+WLA@mail.gmail.com>
+Subject: Re: [PATCH v7 45/50] drivers/of: Avoid recursively calling
+ unflatten_dt_node()
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, aik@ozlabs.ru,
+ Bjorn Helgaas <bhelgaas@google.com>, Grant Likely <grant.likely@linaro.org>,
+ Pantelis Antoniou <panto@antoniou-consulting.com>,
+ Frank Rowand <frowand.list@gmail.com>, Guenter Roeck <linux@roeck-us.net>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,42 +35,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
++Guenter
 
-NX842 coprocessor sets bit 3 if queue is overflow. It is just for
-information to the user. So the driver prints this informative message
-and ignores it.
-    
-Signed-off-by: Haren Myneni <haren@us.ibm.com>
+On Wed, Nov 4, 2015 at 7:12 AM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
+> In current implementation, unflatten_dt_node() is called recursively
+> to unflatten device nodes in FDT blob. It's stress to limited stack
+> capacity.
+>
+> This avoids calling the function recursively, meaning the device
+> nodes are unflattened in one call on unflatten_dt_node(): two arrays
+> are introduced to track the parent path size and the device node of
+> current level of depth, which will be used by the device node on next
+> level of depth to be unflattened. Also, the parameter "poffset" and
+> "fpsize" are unused and dropped.
 
-diff --git a/arch/powerpc/include/asm/icswx.h b/arch/powerpc/include/asm/icswx.h
-index 9f8402b..d1a2a2d 100644
---- a/arch/powerpc/include/asm/icswx.h
-+++ b/arch/powerpc/include/asm/icswx.h
-@@ -164,6 +164,7 @@ struct coprocessor_request_block {
- #define ICSWX_INITIATED		(0x8)
- #define ICSWX_BUSY		(0x4)
- #define ICSWX_REJECTED		(0x2)
-+#define ICSWX_BIT3		(0x1)	/* undefined or set from XERSO. */
- 
- static inline int icswx(__be32 ccw, struct coprocessor_request_block *crb)
- {
-diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
-index 9ef51fa..321b8e8 100644
---- a/drivers/crypto/nx/nx-842-powernv.c
-+++ b/drivers/crypto/nx/nx-842-powernv.c
-@@ -442,6 +442,15 @@ static int nx842_powernv_function(const unsigned char *in, unsigned int inlen,
- 			     (unsigned int)ccw,
- 			     (unsigned int)be32_to_cpu(crb->ccw));
- 
-+	/*
-+	 * NX842 coprocessor uses 3rd bit to report queue overflow which is
-+	 * not an error, just for information to user. So, ignore this bit.
-+	 */
-+	if (ret & ICSWX_BIT3) {
-+		pr_info_ratelimited("842 coprocessor queue overflow\n");
-+		ret &= ~ICSWX_BIT3;
-+	}
-+
- 	switch (ret) {
- 	case ICSWX_INITIATED:
- 		ret = wait_for_csb(wmem, csb);
+Do you plan to respin the OF parts at least soon? There's another
+problem Guenter found that of_fdt_unflatten_tree is not re-entrant due
+to "depth" being static and this series fixes that. So I'd rather
+apply this and avoid adding a mutex if possible.
+
+Rob
+
+>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> ---
+>  drivers/of/fdt.c | 94 +++++++++++++++++++++++++++++++++-----------------------
+>  1 file changed, 56 insertions(+), 38 deletions(-)
+>
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index 173b036..f4793d0 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -355,61 +355,82 @@ static unsigned long populate_node(const void *blob,
+>         return fpsize;
+>  }
+>
+> +static void reverse_nodes(struct device_node *parent)
+> +{
+> +       struct device_node *child, *next;
+> +
+> +       /* In-depth first */
+> +       child = parent->child;
+> +       while (child) {
+> +               reverse_nodes(child);
+> +
+> +               child = child->sibling;
+> +       }
+> +
+> +       /* Reverse the nodes in the child list */
+> +       child = parent->child;
+> +       parent->child = NULL;
+> +       while (child) {
+> +               next = child->sibling;
+> +
+> +               child->sibling = parent->child;
+> +               parent->child = child;
+> +               child = next;
+> +       }
+> +}
+> +
+>  /**
+>   * unflatten_dt_node - Alloc and populate a device_node from the flat tree
+>   * @blob: The parent device tree blob
+>   * @mem: Memory chunk to use for allocating device nodes and properties
+> - * @poffset: pointer to node in flat tree
+>   * @dad: Parent struct device_node
+>   * @nodepp: The device_node tree created by the call
+> - * @fpsize: Size of the node path up at the current depth.
+>   * @dryrun: If true, do not allocate device nodes but still calculate needed
+>   * memory size
+>   */
+>  static void *unflatten_dt_node(const void *blob,
+>                                void *mem,
+> -                              int *poffset,
+>                                struct device_node *dad,
+>                                struct device_node **nodepp,
+> -                              unsigned long fpsize,
+>                                bool dryrun)
+>  {
+> -       struct device_node *np;
+> -       static int depth;
+> -       int old_depth;
+> -
+> -       fpsize = populate_node(blob, *poffset, &mem, dad, fpsize, &np, dryrun);
+> -       if (!fpsize)
+> -               return mem;
+> +       struct device_node *root;
+> +       int offset = 0, depth = 0;
+> +       unsigned long fpsizes[64];
+> +       struct device_node *nps[64];
+>
+> -       old_depth = depth;
+> -       *poffset = fdt_next_node(blob, *poffset, &depth);
+> -       if (depth < 0)
+> -               depth = 0;
+> -       while (*poffset > 0 && depth > old_depth)
+> -               mem = unflatten_dt_node(blob, mem, poffset, np, NULL,
+> -                                       fpsize, dryrun);
+> +       if (nodepp)
+> +               *nodepp = NULL;
+> +
+> +       root = dad;
+> +       fpsizes[depth] = dad ? strlen(of_node_full_name(dad)) : 0;
+> +       nps[depth++] = dad;
+> +       while (offset >= 0 && depth < 64) {
+> +               fpsizes[depth] = populate_node(blob, offset, &mem,
+> +                                              nps[depth - 1],
+> +                                              fpsizes[depth - 1],
+> +                                              &nps[depth], dryrun);
+> +               if (!fpsizes[depth])
+> +                       return mem;
+> +
+> +               if (!dryrun && nodepp && !*nodepp)
+> +                       *nodepp = nps[depth];
+> +               if (!dryrun && !root)
+> +                       root = nps[depth];
+> +
+> +               offset = fdt_next_node(blob, offset, &depth);
+> +       }
+>
+> -       if (*poffset < 0 && *poffset != -FDT_ERR_NOTFOUND)
+> -               pr_err("unflatten: error %d processing FDT\n", *poffset);
+> +       if (offset < 0 && offset != -FDT_ERR_NOTFOUND)
+> +               pr_err("%s: Error %d processing FDT\n",
+> +                      __func__, offset);
+>
+>         /*
+>          * Reverse the child list. Some drivers assumes node order matches .dts
+>          * node order
+>          */
+> -       if (!dryrun && np->child) {
+> -               struct device_node *child = np->child;
+> -               np->child = NULL;
+> -               while (child) {
+> -                       struct device_node *next = child->sibling;
+> -                       child->sibling = np->child;
+> -                       np->child = child;
+> -                       child = next;
+> -               }
+> -       }
+> -
+> -       if (nodepp)
+> -               *nodepp = np;
+> +       if (!dryrun)
+> +               reverse_nodes(root);
+>
+>         return mem;
+>  }
+> @@ -431,7 +452,6 @@ static void __unflatten_device_tree(const void *blob,
+>                              void * (*dt_alloc)(u64 size, u64 align))
+>  {
+>         unsigned long size;
+> -       int start;
+>         void *mem;
+>
+>         pr_debug(" -> unflatten_device_tree()\n");
+> @@ -452,8 +472,7 @@ static void __unflatten_device_tree(const void *blob,
+>         }
+>
+>         /* First pass, scan for size */
+> -       start = 0;
+> -       size = (unsigned long)unflatten_dt_node(blob, NULL, &start, NULL, NULL, 0, true);
+> +       size = (unsigned long)unflatten_dt_node(blob, NULL, NULL, NULL, true);
+>         size = ALIGN(size, 4);
+>
+>         pr_debug("  size is %lx, allocating...\n", size);
+> @@ -467,8 +486,7 @@ static void __unflatten_device_tree(const void *blob,
+>         pr_debug("  unflattening %p...\n", mem);
+>
+>         /* Second pass, do actual unflattening */
+> -       start = 0;
+> -       unflatten_dt_node(blob, mem, &start, NULL, mynodes, 0, false);
+> +       unflatten_dt_node(blob, mem, NULL, mynodes, false);
+>         if (be32_to_cpup(mem + size) != 0xdeadbeef)
+>                 pr_warning("End of tree marker overwritten: %08x\n",
+>                            be32_to_cpup(mem + size));
+> --
+> 2.1.0
+>
