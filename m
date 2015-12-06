@@ -1,26 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A55E1A01DF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 10:33:46 +1100 (AEDT)
-Message-ID: <1449444825.23526.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] of: Fix comparison of reserved memory regions
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Rob Herring <robh+dt@kernel.org>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Frank Rowand
- <frowand.list@gmail.com>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Grant Likely <grant.likely@linaro.org>, Mitchel Humpherys
- <mitchelh@codeaurora.org>
-Date: Mon, 07 Dec 2015 10:33:45 +1100
-In-Reply-To: <CAL_Jsq+PBXGwJC36Hio5KRU7rPSb-FRDZv-rAozg-sL8iCgWHA@mail.gmail.com>
-References: <1447843598-9355-1-git-send-email-mpe@ellerman.id.au>
- <vnkwk2oum9b8.fsf@codeaurora.org>
- <5CD6EBAA-D0D6-434A-B9EA-B144C05711BC@ellerman.id.au>
- <CAL_Jsq+PBXGwJC36Hio5KRU7rPSb-FRDZv-rAozg-sL8iCgWHA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id E41FF1A01DF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 10:51:10 +1100 (AEDT)
+Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c03::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D731E1402DE
+ for <linuxppc-dev@ozlabs.org>; Mon,  7 Dec 2015 10:51:08 +1100 (AEDT)
+Received: by pabfh17 with SMTP id fh17so118080135pab.0
+ for <linuxppc-dev@ozlabs.org>; Sun, 06 Dec 2015 15:51:07 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org,
+ Daniel Axtens <dja@axtens.net>,
+ Mahesh J Salgaonkar <mahesh.salgaonkar@in.ibm.com>
+Subject: [PATCH v2] selftests/powerpc: Add script to test HMI functionality
+Date: Mon,  7 Dec 2015 10:50:51 +1100
+Message-Id: <1449445851-6822-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,28 +29,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-12-06 at 14:31 -0600, Rob Herring wrote:
-> On Sat, Dec 5, 2015 at 5:43 AM, Michael Ellerman <michael@ellerman.id.au> wrote:
-> > On 5 December 2015 04:07:39 GMT+11:00, Mitchel Humpherys <mitchelh@codeaurora.org> wrote:
-> > > On Wed, Nov 18 2015 at 09:46:38 PM, Michael Ellerman
-> > > <mpe@ellerman.id.au> wrote:
-> > > > Fix it by just doing the standard double if and return 0 logic.
-> > > > 
-> > > > Fixes: ae1add247bf8 ("of: Check for overlap in reserved memory
-> > > regions")
-> > > 
-> > > Woops, thanks.
-> > > 
-> > > Tested-by: Mitchel Humpherys <mitchelh@codeaurora.org>
-> > 
-> > Thanks for testing.
-> > 
-> > Rob, can we get this merged for 4.4 please?
-> 
-> Yes. I meant to last week, but was waiting on getting another issue
-> sorted out. I should get it to Linus in the next couple of days.
+HMIs (Hypervisor Management|Maintenance Interrupts) are a class of interrupt
+on POWER systems.
 
-Sure thing. No great rush but would be nice for it to be fixed before 4.4
-releases.
+HMI support has traditionally been exceptionally difficult to test, however
+Skiboot ships a tool that, with the correct magic numbers, will inject them.
 
-cheers
+This, therefore, is a first pass at a script to inject HMIs and monitor
+Linux's response. It injects an HMI on each core on every chip in turn
+It then watches dmesg to see if it's acknowledged by Linux.
+
+On a Tuletta, I observed that we see 8 (or sometimes 9 or more) events per
+injection, regardless of SMT setting, so we wait for 8 before progressing.
+
+It sits in a new scripts/ directory in selftests/powerpc, because it's not
+designed to be run as part of the regular make selftests process. In
+particular, it is quite possibly going to end up garding lots of your CPUs,
+so it should only be run if you know how to undo that.
+
+CC: Mahesh J Salgaonkar <mahesh.salgaonkar@in.ibm.com>
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+
+---
+v2: added copyright header
+---
+ tools/testing/selftests/powerpc/scripts/hmi.sh | 89 ++++++++++++++++++++++++++
+ 1 file changed, 89 insertions(+)
+ create mode 100755 tools/testing/selftests/powerpc/scripts/hmi.sh
+
+diff --git a/tools/testing/selftests/powerpc/scripts/hmi.sh b/tools/testing/selftests/powerpc/scripts/hmi.sh
+new file mode 100755
+index 000000000000..83fb253ae3bd
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/scripts/hmi.sh
+@@ -0,0 +1,89 @@
++#!/bin/sh
++#
++# Copyright 2015, Daniel Axtens, IBM Corporation
++#
++# This program is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++#  the Free Software Foundation; version 2 of the License.
++#
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++# GNU General Public License for more details.
++
++
++# do we have ./getscom, ./putscom?
++if [ -x ./getscom ] && [ -x ./putscom ]; then
++	GETSCOM=./getscom
++	PUTSCOM=./putscom
++elif which getscom > /dev/null; then
++	GETSCOM=$(which getscom)
++	PUTSCOM=$(which putscom)
++else
++	cat <<EOF
++Can't find getscom/putscom in . or \$PATH.
++See https://github.com/open-power/skiboot.
++The tool is in external/xscom-utils
++EOF
++	exit 1
++fi
++
++# We will get 8 HMI events per injection
++# todo: deal with things being offline
++expected_hmis=8
++COUNT_HMIS() {
++    dmesg | grep -c 'Harmless Hypervisor Maintenance interrupt'
++}
++
++# massively expand snooze delay, allowing injection on all cores
++ppc64_cpu --smt-snooze-delay=1000000000
++
++# when we exit, restore it
++trap "ppc64_cpu --smt-snooze-delay=100" 0 1
++
++# for each chip+core combination
++# todo - less fragile parsing
++egrep -o 'OCC: Chip [0-9a-f]+ Core [0-9a-f]' < /sys/firmware/opal/msglog |
++while read chipcore; do
++	chip=$(echo "$chipcore"|awk '{print $3}')
++	core=$(echo "$chipcore"|awk '{print $5}')
++	fir="0x1${core}013100"
++
++	# verify that Core FIR is zero as expected
++	if [ "$($GETSCOM -c 0x${chip} $fir)" != 0 ]; then
++		echo "FIR was not zero before injection for chip $chip, core $core. Aborting!"
++		echo "Result of $GETSCOM -c 0x${chip} $fir:"
++		$GETSCOM -c 0x${chip} $fir
++		echo "If you get a -5 error, the core may be in idle state. Try stress-ng."
++		echo "Otherwise, try $PUTSCOM -c 0x${chip} $fir 0"
++		exit 1
++	fi
++
++	# keep track of the number of HMIs handled
++	old_hmis=$(COUNT_HMIS)
++
++	# do injection, adding a marker to dmesg for clarity
++	echo "Injecting HMI on core $core, chip $chip" | tee /dev/kmsg
++	# inject a RegFile recoverable error
++	if ! $PUTSCOM -c 0x${chip} $fir 2000000000000000 > /dev/null; then
++		echo "Error injecting. Aborting!"
++		exit 1
++	fi
++
++	# now we want to wait for all the HMIs to be processed
++	# we expect one per thread on the core
++	i=0;
++	new_hmis=$(COUNT_HMIS)
++	while [ $new_hmis -lt $((old_hmis + expected_hmis)) ] && [ $i -lt 12 ]; do
++	    echo "Seen $((new_hmis - old_hmis)) HMI(s) out of $expected_hmis expected, sleeping"
++	    sleep 5;
++	    i=$((i + 1))
++	    new_hmis=$(COUNT_HMIS)
++	done
++	if [ $i = 12 ]; then
++	    echo "Haven't seen expected $expected_hmis recoveries after 1 min. Aborting."
++	    exit 1
++	fi
++	echo "Processed $expected_hmis events; presumed success. Check dmesg."
++	echo ""
++done
+-- 
+2.6.2
