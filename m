@@ -1,25 +1,26 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5A7141A01DF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 09:57:30 +1100 (AEDT)
-Received: by pabfh17 with SMTP id fh17so117599269pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Dec 2015 14:57:27 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Haren Myneni <haren@linux.vnet.ibm.com>, herbert@gondor.apana.org.au,
- davem@davemloft.net, ddstreet@ieee.org, mpe@ellerman.id.au, pair@us.ibm.com,
- linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: crypto/nx842: Ignore queue overflow informative error
-In-Reply-To: <1449388004.2096.12.camel@hbabu-laptop>
-References: <1449388004.2096.12.camel@hbabu-laptop>
-Date: Mon, 07 Dec 2015 09:57:14 +1100
-Message-ID: <87bna36v91.fsf@gamma.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A55E1A01DF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 10:33:46 +1100 (AEDT)
+Message-ID: <1449444825.23526.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] of: Fix comparison of reserved memory regions
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Rob Herring <robh+dt@kernel.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Frank Rowand
+ <frowand.list@gmail.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Grant Likely <grant.likely@linaro.org>, Mitchel Humpherys
+ <mitchelh@codeaurora.org>
+Date: Mon, 07 Dec 2015 10:33:45 +1100
+In-Reply-To: <CAL_Jsq+PBXGwJC36Hio5KRU7rPSb-FRDZv-rAozg-sL8iCgWHA@mail.gmail.com>
+References: <1447843598-9355-1-git-send-email-mpe@ellerman.id.au>
+ <vnkwk2oum9b8.fsf@codeaurora.org>
+ <5CD6EBAA-D0D6-434A-B9EA-B144C05711BC@ellerman.id.au>
+ <CAL_Jsq+PBXGwJC36Hio5KRU7rPSb-FRDZv-rAozg-sL8iCgWHA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,76 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Sun, 2015-12-06 at 14:31 -0600, Rob Herring wrote:
+> On Sat, Dec 5, 2015 at 5:43 AM, Michael Ellerman <michael@ellerman.id.au> wrote:
+> > On 5 December 2015 04:07:39 GMT+11:00, Mitchel Humpherys <mitchelh@codeaurora.org> wrote:
+> > > On Wed, Nov 18 2015 at 09:46:38 PM, Michael Ellerman
+> > > <mpe@ellerman.id.au> wrote:
+> > > > Fix it by just doing the standard double if and return 0 logic.
+> > > > 
+> > > > Fixes: ae1add247bf8 ("of: Check for overlap in reserved memory
+> > > regions")
+> > > 
+> > > Woops, thanks.
+> > > 
+> > > Tested-by: Mitchel Humpherys <mitchelh@codeaurora.org>
+> > 
+> > Thanks for testing.
+> > 
+> > Rob, can we get this merged for 4.4 please?
+> 
+> Yes. I meant to last week, but was waiting on getting another issue
+> sorted out. I should get it to Linus in the next couple of days.
 
-Haren Myneni <haren@linux.vnet.ibm.com> writes:
+Sure thing. No great rush but would be nice for it to be fixed before 4.4
+releases.
 
-> NX842 coprocessor sets bit 3 if queue is overflow. It is just for
-> information to the user. So the driver prints this informative message
-> and ignores it.
-
-What queue, and what happens when the queue overflows? It seems like
-*something* would need to be done, somewhere, by someone?
-
-I realise that as a piece of IBM hardware this is probably an incredibly
-optimistic question, but is this behaviour documented publically anywhere?
-(As a distant second best, is it documented internally anywhere that I
-can read?)
-
-> --- a/drivers/crypto/nx/nx-842-powernv.c
-> +++ b/drivers/crypto/nx/nx-842-powernv.c
-> @@ -442,6 +442,15 @@ static int nx842_powernv_function(const unsigned cha=
-r *in, unsigned int inlen,
->  			     (unsigned int)ccw,
->  			     (unsigned int)be32_to_cpu(crb->ccw));
->=20=20
-> +	/*
-> +	 * NX842 coprocessor uses 3rd bit to report queue overflow which is
-> +	 * not an error, just for information to user. So, ignore this bit.
-> +	 */
-> +	if (ret & ICSWX_BIT3) {
-> +		pr_info_ratelimited("842 coprocessor queue overflow\n");
-It doesn't look like this is done anywhere else in the file, but should
-this be prefixed with something? Something like "nx-842: Coprocessor
-queue overflow"?
-
-Regards,
-Daniel
-
-> +		ret &=3D ~ICSWX_BIT3;
-> +	}
-> +
->  	switch (ret) {
->  	case ICSWX_INITIATED:
->  		ret =3D wait_for_csb(wmem, csb);
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAEBCgAGBQJWZL1KAAoJEPC3R3P2I92F4sgQAJsF4q1l/tqt8V9ck5rZnjfZ
-yLWbpa/N0IfSpzxsbmXz5kApiQnnkq5A8GLK89nvP23CIrGJEIny1LGJdM7FunDu
-OEk+KW5pflVVSybWIAajgpH6zn8gX/c9miiQH8qxbEqDDhg19mWjEfyjDs9riAny
-8evdLJnD9Tq7TuUSZgLGr/Hlb7pnNF9u4/pX09FEBvcy3enna0lcymKXiirHFS/h
-waJDBs7/LGXd9eTiDqvvz75lcBfufk8F6XAq8WxOp4AtbnFB+UP/cTjEuIXry+Pc
-6+PAj4JIlYHQBtzGsBPzP1HSKz98d8SpjrfRqKzTezrR/Pqp+g3BEAilDuJLuuB1
-EMlLL/DTixpHqkjcs045N/QGVSmcNuNTrLAHvfeAWKNC9u3xSyKcS3ci9dUH/q/q
-ZkTHmk6QjBy1K5VMGVj9hZNRY3XnZe2JaXOX8bRkFodX6J6jeOmn9M6z483Zh9kb
-ZP+bjZNFApPHJV5doZuInsnJfXImGIhiCp17yS69E/C99TusQgW/nNFEyLVTXc1i
-6SszCiicWp+Iov9DJcAZ+3hnAX6Xc+nkIk0LwPnMB5oQaB+stv13sYvgFHtmpRqu
-UY4RzUB+NDeiQaVZuV3feAbnAz17uJMeswE8S8ruq+RjDnb5XODUIkTny5RcoSii
-pyl7G4JsSvSZnPo/TnMV
-=eGI3
------END PGP SIGNATURE-----
---=-=-=--
+cheers
