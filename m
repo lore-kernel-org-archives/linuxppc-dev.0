@@ -1,30 +1,38 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-yk0-x235.google.com (mail-yk0-x235.google.com
- [IPv6:2607:f8b0:4002:c07::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <robh+dt@kernel.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2C1571A065B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 07:28:53 +1100 (AEDT)
-Received: by ykfs79 with SMTP id s79so175923793ykf.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Dec 2015 12:28:50 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2AC1A065B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 07:31:37 +1100 (AEDT)
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by ozlabs.org (Postfix) with ESMTP id 00EC41402DE
+ for <linuxppc-dev@ozlabs.org>; Mon,  7 Dec 2015 07:31:35 +1100 (AEDT)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id 95ECF203F4
+ for <linuxppc-dev@ozlabs.org>; Sun,  6 Dec 2015 20:31:33 +0000 (UTC)
+Received: from mail-yk0-f176.google.com (mail-yk0-f176.google.com
+ [209.85.160.176])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 7552E203E3
+ for <linuxppc-dev@ozlabs.org>; Sun,  6 Dec 2015 20:31:32 +0000 (UTC)
+Received: by ykdv3 with SMTP id v3so174770676ykd.0
+ for <linuxppc-dev@ozlabs.org>; Sun, 06 Dec 2015 12:31:31 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1446642770-4681-46-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1446642770-4681-46-git-send-email-gwshan@linux.vnet.ibm.com>
-From: Rob Herring <robherring2@gmail.com>
-Date: Sun, 6 Dec 2015 14:28:30 -0600
-Message-ID: <CAL_Jsq+BnPEKkRgQX4+e0MA9dKLVLhy8rVF25Fr9yXL2jp+WLA@mail.gmail.com>
-Subject: Re: [PATCH v7 45/50] drivers/of: Avoid recursively calling
- unflatten_dt_node()
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+In-Reply-To: <5CD6EBAA-D0D6-434A-B9EA-B144C05711BC@ellerman.id.au>
+References: <1447843598-9355-1-git-send-email-mpe@ellerman.id.au>
+ <vnkwk2oum9b8.fsf@codeaurora.org>
+ <5CD6EBAA-D0D6-434A-B9EA-B144C05711BC@ellerman.id.au>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Sun, 6 Dec 2015 14:31:12 -0600
+Message-ID: <CAL_Jsq+PBXGwJC36Hio5KRU7rPSb-FRDZv-rAozg-sL8iCgWHA@mail.gmail.com>
+Subject: Re: [PATCH] of: Fix comparison of reserved memory regions
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: Mitchel Humpherys <mitchelh@codeaurora.org>,
  "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, aik@ozlabs.ru,
- Bjorn Helgaas <bhelgaas@google.com>, Grant Likely <grant.likely@linaro.org>,
- Pantelis Antoniou <panto@antoniou-consulting.com>,
- Frank Rowand <frowand.list@gmail.com>, Guenter Roeck <linux@roeck-us.net>
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,181 +43,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-+Guenter
-
-On Wed, Nov 4, 2015 at 7:12 AM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
-> In current implementation, unflatten_dt_node() is called recursively
-> to unflatten device nodes in FDT blob. It's stress to limited stack
-> capacity.
+On Sat, Dec 5, 2015 at 5:43 AM, Michael Ellerman <michael@ellerman.id.au> wrote:
 >
-> This avoids calling the function recursively, meaning the device
-> nodes are unflattened in one call on unflatten_dt_node(): two arrays
-> are introduced to track the parent path size and the device node of
-> current level of depth, which will be used by the device node on next
-> level of depth to be unflattened. Also, the parameter "poffset" and
-> "fpsize" are unused and dropped.
+>
+> On 5 December 2015 04:07:39 GMT+11:00, Mitchel Humpherys <mitchelh@codeaurora.org> wrote:
+>>On Wed, Nov 18 2015 at 09:46:38 PM, Michael Ellerman
+>><mpe@ellerman.id.au> wrote:
+>>> In order to check for overlapping reserved memory regions, we first
+>>need
+>>> to sort the array of memory regions. This is implemented using
+>>sort(),
+>>> and a custom comparison function __rmem_cmp().
+>>>
+>>> Unfortunatley __rmem_cmp() doesn't work in all cases. Because the two
+>>> base values are phys_addr_t, they may be u64 on some platforms, in
+>>which
+>>> case subtracting one from the other and then (implicitly) casting to
+>>int
+>>> does not give us the -ve/0/+ve value we need.
+>>>
+>>> This leads to incorrect reports about overlaps, eg:
+>>>
+>>>   ibm,slw-image@1ffe600000 (0x0000001ffe600000--0x0000001ffe700000)
+>>overlaps with
+>>>   ibm,firmware-allocs-memory@1000000000
+>>(0x0000001000000000--0x0000001000dc0200)
+>>>
+>>> Fix it by just doing the standard double if and return 0 logic.
+>>>
+>>> Fixes: ae1add247bf8 ("of: Check for overlap in reserved memory
+>>regions")
+>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>>> ---
+>>>  drivers/of/of_reserved_mem.c | 8 +++++++-
+>>>  1 file changed, 7 insertions(+), 1 deletion(-)
+>>
+>>Woops, thanks.
+>>
+>>Tested-by: Mitchel Humpherys <mitchelh@codeaurora.org>
+>
+> Thanks for testing.
+>
+> Rob, can we get this merged for 4.4 please?
 
-Do you plan to respin the OF parts at least soon? There's another
-problem Guenter found that of_fdt_unflatten_tree is not re-entrant due
-to "depth" being static and this series fixes that. So I'd rather
-apply this and avoid adding a mutex if possible.
+Yes. I meant to last week, but was waiting on getting another issue
+sorted out. I should get it to Linus in the next couple of days.
 
 Rob
-
->
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->  drivers/of/fdt.c | 94 +++++++++++++++++++++++++++++++++-----------------------
->  1 file changed, 56 insertions(+), 38 deletions(-)
->
-> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-> index 173b036..f4793d0 100644
-> --- a/drivers/of/fdt.c
-> +++ b/drivers/of/fdt.c
-> @@ -355,61 +355,82 @@ static unsigned long populate_node(const void *blob,
->         return fpsize;
->  }
->
-> +static void reverse_nodes(struct device_node *parent)
-> +{
-> +       struct device_node *child, *next;
-> +
-> +       /* In-depth first */
-> +       child = parent->child;
-> +       while (child) {
-> +               reverse_nodes(child);
-> +
-> +               child = child->sibling;
-> +       }
-> +
-> +       /* Reverse the nodes in the child list */
-> +       child = parent->child;
-> +       parent->child = NULL;
-> +       while (child) {
-> +               next = child->sibling;
-> +
-> +               child->sibling = parent->child;
-> +               parent->child = child;
-> +               child = next;
-> +       }
-> +}
-> +
->  /**
->   * unflatten_dt_node - Alloc and populate a device_node from the flat tree
->   * @blob: The parent device tree blob
->   * @mem: Memory chunk to use for allocating device nodes and properties
-> - * @poffset: pointer to node in flat tree
->   * @dad: Parent struct device_node
->   * @nodepp: The device_node tree created by the call
-> - * @fpsize: Size of the node path up at the current depth.
->   * @dryrun: If true, do not allocate device nodes but still calculate needed
->   * memory size
->   */
->  static void *unflatten_dt_node(const void *blob,
->                                void *mem,
-> -                              int *poffset,
->                                struct device_node *dad,
->                                struct device_node **nodepp,
-> -                              unsigned long fpsize,
->                                bool dryrun)
->  {
-> -       struct device_node *np;
-> -       static int depth;
-> -       int old_depth;
-> -
-> -       fpsize = populate_node(blob, *poffset, &mem, dad, fpsize, &np, dryrun);
-> -       if (!fpsize)
-> -               return mem;
-> +       struct device_node *root;
-> +       int offset = 0, depth = 0;
-> +       unsigned long fpsizes[64];
-> +       struct device_node *nps[64];
->
-> -       old_depth = depth;
-> -       *poffset = fdt_next_node(blob, *poffset, &depth);
-> -       if (depth < 0)
-> -               depth = 0;
-> -       while (*poffset > 0 && depth > old_depth)
-> -               mem = unflatten_dt_node(blob, mem, poffset, np, NULL,
-> -                                       fpsize, dryrun);
-> +       if (nodepp)
-> +               *nodepp = NULL;
-> +
-> +       root = dad;
-> +       fpsizes[depth] = dad ? strlen(of_node_full_name(dad)) : 0;
-> +       nps[depth++] = dad;
-> +       while (offset >= 0 && depth < 64) {
-> +               fpsizes[depth] = populate_node(blob, offset, &mem,
-> +                                              nps[depth - 1],
-> +                                              fpsizes[depth - 1],
-> +                                              &nps[depth], dryrun);
-> +               if (!fpsizes[depth])
-> +                       return mem;
-> +
-> +               if (!dryrun && nodepp && !*nodepp)
-> +                       *nodepp = nps[depth];
-> +               if (!dryrun && !root)
-> +                       root = nps[depth];
-> +
-> +               offset = fdt_next_node(blob, offset, &depth);
-> +       }
->
-> -       if (*poffset < 0 && *poffset != -FDT_ERR_NOTFOUND)
-> -               pr_err("unflatten: error %d processing FDT\n", *poffset);
-> +       if (offset < 0 && offset != -FDT_ERR_NOTFOUND)
-> +               pr_err("%s: Error %d processing FDT\n",
-> +                      __func__, offset);
->
->         /*
->          * Reverse the child list. Some drivers assumes node order matches .dts
->          * node order
->          */
-> -       if (!dryrun && np->child) {
-> -               struct device_node *child = np->child;
-> -               np->child = NULL;
-> -               while (child) {
-> -                       struct device_node *next = child->sibling;
-> -                       child->sibling = np->child;
-> -                       np->child = child;
-> -                       child = next;
-> -               }
-> -       }
-> -
-> -       if (nodepp)
-> -               *nodepp = np;
-> +       if (!dryrun)
-> +               reverse_nodes(root);
->
->         return mem;
->  }
-> @@ -431,7 +452,6 @@ static void __unflatten_device_tree(const void *blob,
->                              void * (*dt_alloc)(u64 size, u64 align))
->  {
->         unsigned long size;
-> -       int start;
->         void *mem;
->
->         pr_debug(" -> unflatten_device_tree()\n");
-> @@ -452,8 +472,7 @@ static void __unflatten_device_tree(const void *blob,
->         }
->
->         /* First pass, scan for size */
-> -       start = 0;
-> -       size = (unsigned long)unflatten_dt_node(blob, NULL, &start, NULL, NULL, 0, true);
-> +       size = (unsigned long)unflatten_dt_node(blob, NULL, NULL, NULL, true);
->         size = ALIGN(size, 4);
->
->         pr_debug("  size is %lx, allocating...\n", size);
-> @@ -467,8 +486,7 @@ static void __unflatten_device_tree(const void *blob,
->         pr_debug("  unflattening %p...\n", mem);
->
->         /* Second pass, do actual unflattening */
-> -       start = 0;
-> -       unflatten_dt_node(blob, mem, &start, NULL, mynodes, 0, false);
-> +       unflatten_dt_node(blob, mem, NULL, mynodes, false);
->         if (be32_to_cpup(mem + size) != 0xdeadbeef)
->                 pr_warning("End of tree marker overwritten: %08x\n",
->                            be32_to_cpup(mem + size));
-> --
-> 2.1.0
->
