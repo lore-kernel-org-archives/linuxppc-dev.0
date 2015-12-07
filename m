@@ -1,30 +1,17 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id BC69F1A0E57
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 08:54:07 +1100 (AEDT)
-Date: Mon, 7 Dec 2015 15:53:56 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Yijing Wang <wangyijing@huawei.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Russell King <linux@arm.linux.org.uk>, dja@axtens.net,
- linux-xtensa@linux-xtensa.org, x86@kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-mips@linux-mips.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Rusty Russell <rusty@rustcorp.com.au>,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, linux-alpha@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
- Liviu Dudau <liviu@dudau.co.uk>, Arnd Bergmann <arnd@arndb.de>,
- Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH part3 v12 00/10] Cleanup platform pci_domain_nr()
-Message-ID: <20151207215356.GD14429@localhost>
-References: <1437393678-4077-1-git-send-email-wangyijing@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1437393678-4077-1-git-send-email-wangyijing@huawei.com>
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 52BA21A0E5A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 09:10:20 +1100 (AEDT)
+In-Reply-To: <1449448108-9867-1-git-send-email-alistair@popple.id.au>
+To: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: dllehr@us.ibm.com, mikey@neuling.org, stable@vger.kernel.org,
+ Alistair Popple <alistair@popple.id.au>
+Subject: Re: powernv/opal-irqchip: Fix double endian conversion
+Message-Id: <20151207221020.11FC91402A9@ozlabs.org>
+Date: Tue,  8 Dec 2015 09:10:19 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,91 +21,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 20, 2015 at 08:01:08PM +0800, Yijing Wang wrote:
-> This series is splitted out from previous patchset
-> "Refine PCI scan interfaces and make generic pci host bridge".
-> It try to clean up all platform pci_domain_nr(), save domain
-> in pci_host_bridge, so we could get domain number from the
-> common interface. 
-> 
-> v11->v12:
->   Introduce wrap function pci_create_root_bus_generic()
->   and pci_create_root_bus_generic() for arm/arm64 which
->   enable CONFIG_PCI_DOMAINS_GENERIC.
->   Rebased this series based 4.2-rc1
-> 
-> Yijing Wang (10):
->   PCI: Save domain in pci_host_bridge
->   PCI: Move pci_bus_assign_domain_nr() declaration into
->     drivers/pci/pci.h
->   PCI: Remove declaration for pci_get_new_domain_nr()
->   PCI: Introduce pci_host_assign_domain_nr() to assign domain
->   powerpc/PCI: Rename pcibios_root_bridge_prepare() to
->     pcibios_root_bus_prepare()
->   PCI: Make pci_host_bridge hold sysdata in drvdata
->   PCI: Create pci host bridge prior to root bus
->   PCI: Introduce common pci_domain_nr() and remove platform specific
->     code
->   PCI: Remove pci_bus_assign_domain_nr()
->   IA64/PCI: Fix build warning found by kbuild test
-> 
->  arch/alpha/include/asm/pci.h             |    2 -
->  arch/alpha/kernel/pci.c                  |    4 +-
->  arch/alpha/kernel/sys_nautilus.c         |    2 +-
->  arch/arm/kernel/bios32.c                 |    2 +-
->  arch/arm/mach-dove/pcie.c                |    2 +-
->  arch/arm/mach-iop13xx/pci.c              |    4 +-
->  arch/arm/mach-mv78xx0/pcie.c             |    2 +-
->  arch/arm/mach-orion5x/pci.c              |    4 +-
->  arch/frv/mb93090-mb00/pci-vdk.c          |    3 +-
->  arch/ia64/include/asm/pci.h              |    1 -
->  arch/ia64/pci/pci.c                      |    6 +-
->  arch/ia64/sn/kernel/io_acpi_init.c       |    6 +-
->  arch/ia64/sn/kernel/io_init.c            |    6 +-
->  arch/m68k/coldfire/pci.c                 |    2 +-
->  arch/microblaze/include/asm/pci.h        |    2 -
->  arch/microblaze/pci/pci-common.c         |   15 +----
->  arch/mips/include/asm/pci.h              |    2 -
->  arch/mips/pci/pci.c                      |    4 +-
->  arch/mn10300/unit-asb2305/pci.c          |    3 +-
->  arch/powerpc/include/asm/machdep.h       |    2 +-
->  arch/powerpc/include/asm/pci.h           |    2 -
->  arch/powerpc/kernel/pci-common.c         |   21 ++-----
->  arch/powerpc/platforms/pseries/pci.c     |    2 +-
->  arch/powerpc/platforms/pseries/pseries.h |    2 +-
->  arch/powerpc/platforms/pseries/setup.c   |    2 +-
->  arch/s390/include/asm/pci.h              |    1 -
->  arch/s390/pci/pci.c                      |   10 +---
->  arch/sh/drivers/pci/pci.c                |    4 +-
->  arch/sh/include/asm/pci.h                |    2 -
->  arch/sparc/include/asm/pci_64.h          |    1 -
->  arch/sparc/kernel/leon_pci.c             |    2 +-
->  arch/sparc/kernel/pci.c                  |   21 +------
->  arch/sparc/kernel/pcic.c                 |    2 +-
->  arch/tile/include/asm/pci.h              |    2 -
->  arch/tile/kernel/pci.c                   |    4 +-
->  arch/tile/kernel/pci_gx.c                |    4 +-
->  arch/unicore32/kernel/pci.c              |    2 +-
->  arch/x86/include/asm/pci.h               |    6 --
->  arch/x86/pci/acpi.c                      |    6 +-
->  arch/x86/pci/common.c                    |    2 +-
->  arch/xtensa/kernel/pci.c                 |    2 +-
->  drivers/parisc/dino.c                    |    2 +-
->  drivers/parisc/lba_pci.c                 |    2 +-
->  drivers/pci/host/pci-versatile.c         |    3 +-
->  drivers/pci/host/pci-xgene.c             |    2 +-
->  drivers/pci/host/pcie-designware.c       |    2 +-
->  drivers/pci/host/pcie-iproc.c            |    2 +-
->  drivers/pci/host/pcie-xilinx.c           |    2 +-
->  drivers/pci/hotplug/ibmphp_core.c        |    2 +-
->  drivers/pci/pci.c                        |   31 ++++++++--
->  drivers/pci/pci.h                        |    1 +
->  drivers/pci/probe.c                      |   92 +++++++++++++++++-------------
->  drivers/pci/xen-pcifront.c               |    2 +-
->  include/linux/pci.h                      |   39 ++++++-------
->  54 files changed, 161 insertions(+), 195 deletions(-)
+Subject should start "powerpc/", so probably "powerpc/opal-irqchip:", I can fix
+it up here.
 
-Doesn't apply to v4.4-rc2.  Please refresh and repost if this is still
-relevant.
+On Mon, 2015-07-12 at 00:28:28 UTC, Alistair Popple wrote:
+> The OPAL event calls return a mask of events that are active in big
+> endian format. This is checked when unmasking the events in the
+> irqchip by comparison with a cached value. The cached value was stored
+> in big endian format but should've been converted to CPU endian
+> first. This bug leads to OPAL event delivery being delayed or dropped
+> on some systems.
+> 
+> The bug is fixed by calling opal_handle_events(...) instead of
+> duplicating code in opal_event_unmask(...).
+> 
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+> Reported-by: Douglas L Lehr <dllehr@us.ibm.com>
+> Cc: stable@vger.kernel.org
 
-Bjorn
+Which commit does it fix? Looks like:
+
+Fixes: 9f0fd0499d30 ("powerpc/powernv: Add a virtual irqchip for opal events")
+
+> diff --git a/arch/powerpc/platforms/powernv/opal-irqchip.c b/arch/powerpc/platforms/powernv/opal-irqchip.c
+> index 2c91ee7..a387d18 100644
+> --- a/arch/powerpc/platforms/powernv/opal-irqchip.c
+> +++ b/arch/powerpc/platforms/powernv/opal-irqchip.c
+> @@ -43,11 +43,34 @@ static unsigned int opal_irq_count;
+>  static unsigned int *opal_irqs;
+>  
+>  static void opal_handle_irq_work(struct irq_work *work);
+> -static __be64 last_outstanding_events;
+> +static u64 last_outstanding_events;
+>  static struct irq_work opal_event_irq_work = {
+>  	.func = opal_handle_irq_work,
+>  };
+>  
+> +void opal_handle_events(uint64_t events)
+> +{
+> +	int virq, hwirq = 0;
+> +	u64 mask = opal_event_irqchip.mask;
+> +
+> +	if (!in_irq() && (events & mask)) {
+> +		last_outstanding_events = events;
+> +		irq_work_queue(&opal_event_irq_work);
+> +		return;
+> +	}
+> +
+> +	while (events & mask) {
+> +		hwirq = fls64(events) - 1;
+> +		if (BIT_ULL(hwirq) & mask) {
+> +			virq = irq_find_mapping(opal_event_irqchip.domain,
+> +						hwirq);
+> +			if (virq)
+> +				generic_handle_irq(virq);
+> +		}
+> +		events &= ~BIT_ULL(hwirq);
+> +	}
+> +}
+
+So this is 100% just a move of the code from down below right?
+
+> @@ -55,12 +78,12 @@ static void opal_event_mask(struct irq_data *d)
+>  
+>  static void opal_event_unmask(struct irq_data *d)
+>  {
+> +	__be64 events;
+> +
+>  	set_bit(d->hwirq, &opal_event_irqchip.mask);
+>  
+> -	opal_poll_events(&last_outstanding_events);
+> -	if (last_outstanding_events & opal_event_irqchip.mask)
+> -		/* Need to retrigger the interrupt */
+> -		irq_work_queue(&opal_event_irq_work);
+> +	opal_poll_events(&events);
+> +	opal_handle_events(be64_to_cpu(events));
+>  }
+>  
+>  static int opal_event_set_type(struct irq_data *d, unsigned int flow_type)
+> @@ -96,29 +119,6 @@ static int opal_event_map(struct irq_domain *d, unsigned int irq,
+>  	return 0;
+>  }
+>  
+> -void opal_handle_events(uint64_t events)
+> -{
+> -	int virq, hwirq = 0;
+> -	u64 mask = opal_event_irqchip.mask;
+> -
+> -	if (!in_irq() && (events & mask)) {
+> -		last_outstanding_events = events;
+> -		irq_work_queue(&opal_event_irq_work);
+> -		return;
+> -	}
+> -
+> -	while (events & mask) {
+> -		hwirq = fls64(events) - 1;
+> -		if (BIT_ULL(hwirq) & mask) {
+> -			virq = irq_find_mapping(opal_event_irqchip.domain,
+> -						hwirq);
+> -			if (virq)
+> -				generic_handle_irq(virq);
+> -		}
+> -		events &= ~BIT_ULL(hwirq);
+> -	}
+> -}
+> -
+>  static irqreturn_t opal_interrupt(int irq, void *data)
+>  {
+>  	__be64 events;
+> @@ -131,7 +131,7 @@ static irqreturn_t opal_interrupt(int irq, void *data)
+>  
+>  static void opal_handle_irq_work(struct irq_work *work)
+>  {
+> -	opal_handle_events(be64_to_cpu(last_outstanding_events));
+> +	opal_handle_events(last_outstanding_events);
+>  }
+>  
+>  static int opal_event_match(struct irq_domain *h, struct device_node *node,
+
+
+cheers
