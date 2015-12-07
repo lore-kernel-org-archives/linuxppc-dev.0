@@ -1,38 +1,39 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.192])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <tlfalcon@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 89A581A0D92
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 02:50:24 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Russell King - ARM Linux' <linux@arm.linux.org.uk>, Petr Mladek
- <pmladek@suse.com>
-CC: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>, Daniel Thompson
- <daniel.thompson@linaro.org>, Jiri Kosina <jkosina@suse.com>,
- "linux-cris-kernel@axis.com" <linux-cris-kernel@axis.com>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Peter Zijlstra
- <peterz@infradead.org>, "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Steven Rostedt
- <rostedt@goodmis.org>, "adi-buildroot-devel@lists.sourceforge.net"
- <adi-buildroot-devel@lists.sourceforge.net>, Ingo Molnar <mingo@redhat.com>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, Andrew Morton
- <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Subject: RE: [PATCH v2 3/5] printk/nmi: Try hard to print Oops message in
- NMI context
-Date: Mon, 7 Dec 2015 15:48:33 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CBE68C7@AcuExch.aculab.com>
-References: <1448622572-16900-1-git-send-email-pmladek@suse.com>
- <1448622572-16900-4-git-send-email-pmladek@suse.com>
- <20151201234437.GA8644@n2100.arm.linux.org.uk>
- <20151204152709.GA20935@pathway.suse.cz>
- <20151204171255.GZ8644@n2100.arm.linux.org.uk>
-In-Reply-To: <20151204171255.GZ8644@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1EEED1A0D9F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 05:50:08 +1100 (AEDT)
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
+ Mon, 7 Dec 2015 11:50:05 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0785F19D8026
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 11:38:09 -0700 (MST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tB7Io3NI19726502
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2015 11:50:03 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tB7Io2UH032104
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2015 11:50:03 -0700
+Subject: Re: [PATCH net-next] Driver for IBM System i/p VNIC protocol
+To: David Miller <davem@davemloft.net>
+References: <1449251386-13476-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+ <20151205.222551.512793392902323297.davem@davemloft.net>
+Cc: netdev@vger.kernel.org, nguyendo@us.ibm.com, jallen@linux.vnet.ibm.com,
+ brking@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Message-ID: <5665D4D8.7010206@linux.vnet.ibm.com>
+Date: Mon, 7 Dec 2015 12:50:00 -0600
 MIME-Version: 1.0
+In-Reply-To: <20151205.222551.512793392902323297.davem@davemloft.net>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,30 +43,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogUnVzc2VsbCBLaW5nIC0gQVJNIExpbnV4DQo+IFNlbnQ6IDA0IERlY2VtYmVyIDIwMTUg
-MTc6MTMNCi4uLg0KPiBJIGhhdmUgYSBzbGlnaHRseSBkaWZmZXJlbnQgdmlldy4uLg0KPiANCj4g
-PiA+IEkgZG9uJ3Qgc2VlIGJ1c3Rfc3BpbmxvY2tzKCkgZGVhbGluZyB3aXRoIGFueSBvZiB0aGVz
-ZSBsb2Nrcywgc28gSU1ITw0KPiA+ID4gdHJ5aW5nIHRvIG1ha2UgdGhpcyB3b3JrIGluIE5NSSBj
-b250ZXh0IHN0cmlrZXMgbWUgYXMgbWFraW5nIHRoZQ0KPiA+ID4gZXhpc3Rpbmcgc29sdXRpb24g
-bW9yZSB1bnJlbGlhYmxlIG9uIEFSTSBzeXN0ZW1zLg0KPiA+DQo+ID4gYnVzdF9zcGlubG9ja3Mo
-KSBjYWxscyBwcmludGtfbm1pX2ZsdXNoKCkgdGhhdCB3b3VsZCBjYWxsIHByaW50aygpDQo+ID4g
-dGhhdCB3b3VsZCB6YXAgImxvY2tidWZfbG9jayIgYW5kICJjb25zb2xlX3NlbSIgd2hlbiBpbiBP
-b3BzIGFuZCBOTUkuDQo+ID4gWWVzLCB0aGVyZSBtaWdodCBiZSBtb3JlIGxvY2tzIGJsb2NrZWQg
-YnV0IHdlIHRyeSB0byBicmVhayBhdCBsZWFzdA0KPiA+IHRoZSBmaXJzdCB0d28gd2FsbHMuIEFs
-c28gemFwcGluZyBpcyBhbGxvd2VkIG9ubHkgb25jZSBwZXIgMzAgc2Vjb25kcywNCj4gPiBzZWUg
-emFwX2xvY2tzKCkuIFdoeSBkbyB5b3UgdGhpbmsgdGhhdCBpdCBtaWdodCBtYWtlIHRoaW5ncyBt
-b3JlDQo+ID4gdW5yZWxpYWJsZSwgcGxlYXNlPw0KPiANCj4gVGFrZSB0aGUgc2NlbmFyaW8gd2hl
-cmUgQ1BVMSBpcyBpbiB0aGUgbWlkZGxlIG9mIGEgcHJpbnRrKCksIGFuZCBpcw0KPiBob2xkaW5n
-IGl0cyBsb2NrLg0KPiANCj4gQ1BVMCBjb21lcyBhbG9uZyBhbmQgZGVjaWRlcyB0byB0cmlnZ2Vy
-IGEgTk1JIGJhY2t0cmFjZS4gIFRoaXMgc2VuZHMNCj4gYSBOTUkgdG8gQ1BVMSwgd2hpY2ggdGFr
-ZXMgaXQgaW4gdGhlIG1pZGRsZSBvZiB0aGUgc2VyaWFsIGNvbnNvbGUNCj4gb3V0cHV0Lg0KPiAN
-Cj4gV2l0aCB0aGUgZXhpc3Rpbmcgc29sdXRpb24sIHRoZSBOTUkgb3V0cHV0IHdpbGwgYmUgd3Jp
-dHRlbiB0byB0aGUNCj4gdGVtcG9yYXJ5IGJ1ZmZlciwgYW5kIENQVTEgaGFzIGZpbmlzaGVkIGhh
-bmRsaW5nIHRoZSBOTUkgaXQgcmVzdW1lcw0KPiB0aGUgc2VyaWFsIGNvbnNvbGUgb3V0cHV0LCBl
-dmVudHVhbGx5IGRyb3BwaW5nIHRoZSBsb2NrLiAgVGhhdCB0aGVuDQo+IGFsbG93cyBDUFUwIHRv
-IHByaW50IHRoZSBjb250ZW50cyBvZiBhbGwgYnVmZmVycywgYW5kIHdlIGdldCBOTUkNCj4gcHJp
-bnRrIG91dHB1dC4NCg0KSXMgdGhlIHRyYWNlYmFjayBmcm9tIGluc2lkZSBwcmludGsoKSBvciBz
-ZXJpYWwgY29uc29sZSBjb2RlDQpsaWtlbHkgdG8gYmUgdXNlZnVsPw0KSWYgbm90IHRoZW4gd2h5
-IG5vdCBnZXQgdGhlIHN0YWNrdHJhY2UgZ2VuZXJhdGVkIHdoZW4gdGhlIHJlbGV2YW50DQpsb2Nr
-IGlzIHJlbGVhc2VkPw0KVGhhdCBzaG91bGQgc2F2ZSBhbnkgZmFmZmluZyB3aXRoIGEgc3BlY2lh
-bCBidWZmZXIuDQoNCglEYXZpZA0KDQo=
+On 12/05/2015 09:25 PM, David Miller wrote:
+> From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+> Date: Fri,  4 Dec 2015 11:49:46 -0600
+>
+>> +static int ibmvnic_buffs_per_pool = IBMVNIC_BUFFS_PER_POOL;
+>> +module_param(ibmvnic_buffs_per_pool, int, S_IRUGO);
+>> +MODULE_PARM_DESC(ibmvnic_buffs_per_pool,
+>> +		 "IBMVNIC number of buffers per rx pool");
+> Please do not use module parameters for settings that effect
+> the basic operation of the driver.
+
+Hi. Thanks for you feedback.  Could you clarify on what constitutes basic operation?  I just want to be sure if we should remove the other module parameters or just this one in particular?
+
+>
+> Instead use facilities that are generic and provide the same
+> user interface for all networking drivers, such as ethtool.
+
+Is it possible to change driver settings like this with ethtool? Would adding an interface in sysfs to change this setting be acceptable?
+
+>
+> Otherwise users would need to learn a different way to configure the
+> same thing on different devices, which is not acceptable.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
