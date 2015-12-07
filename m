@@ -1,28 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0114.outbound.protection.outlook.com [157.56.111.114])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <rostedt@goodmis.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EA4B81A0851
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 07:45:01 +1100 (AEDT)
-Message-ID: <1449521078.15946.91.camel@freescale.com>
-Subject: Re: [PATCH v3 4/5] clk: Add consumer APIs for discovering possible
- parent clocks
-From: Scott Wood <scottwood@freescale.com>
-To: Russell King <linux@arm.linux.org.uk>
-CC: Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette
- <mturquette@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Viresh
- Kumar" <viresh.kumar@linaro.org>, <linux-clk@vger.kernel.org>,
- <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@lists.infradead.org>, Tang Yuantian
- <Yuantian.Tang@freescale.com>
-Date: Mon, 7 Dec 2015 14:44:38 -0600
-In-Reply-To: <1444939412.5185.267.camel@freescale.com>
-References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
- <1442723397-26329-5-git-send-email-scottwood@freescale.com>
- <1444939412.5185.267.camel@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id C4BAD1A0851
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 07:52:31 +1100 (AEDT)
+Received: from smtprelay.hostedemail.com (smtprelay0004.hostedemail.com
+ [216.40.44.4])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 22D6E1402C9
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2015 07:52:31 +1100 (AEDT)
+Date: Mon, 7 Dec 2015 15:52:24 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+ linux-kernel@vger.kernel.org, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] powerpc: tracing: don't trace hcalls on offline CPUs
+Message-ID: <20151207155224.2a8d71dd@gandalf.local.home>
+In-Reply-To: <1448389419-5296-2-git-send-email-kda@linux-powerpc.org>
+References: <1448389419-5296-1-git-send-email-kda@linux-powerpc.org>
+ <1448389419-5296-2-git-send-email-kda@linux-powerpc.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,121 +32,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-10-15 at 15:03 -0500, Scott Wood wrote:
-> On Sat, 2015-09-19 at 23:29 -0500, Scott Wood wrote:
-> > Commit fc4a05d4b0eb ("clk: Remove unused provider APIs") removed
-> > __clk_get_num_parents() and clk_hw_get_parent_by_index(), leaving only
-> > true provider API versions that operate on struct clk_hw.
-> > 
-> > qoriq-cpufreq needs these functions in order to determine the options
-> > it has for calling clk_set_parent() and thus populate the cpufreq
-> > table, so revive them as legitimate consumer APIs.
-> > 
-> > Signed-off-by: Scott Wood <scottwood@freescale.com>
-> > ---
-> > v3: new patch
-> > 
-> >  drivers/clk/clk.c   | 19 +++++++++++++++++++
-> >  include/linux/clk.h | 31 +++++++++++++++++++++++++++++++
-> >  2 files changed, 50 insertions(+)
-> 
-> Russell, could you ACK this if there are no objections?
-> 
-> Thanks,
-> Scott
 
-ping?
+I can take this series through my tree, but I need a acked-by from a
+PPC maintainer for this patch.
 
--Scott
+-- Steve
 
+
+On Tue, 24 Nov 2015 21:23:39 +0300
+Denis Kirjanov <kda@linux-powerpc.org> wrote:
+
+> ./drmgr -c cpu -a -r gives the following warning:
 > 
-> > 
-> > diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-> > index 43e2c3a..9436356 100644
-> > --- a/drivers/clk/clk.c
-> > +++ b/drivers/clk/clk.c
-> > @@ -290,6 +290,12 @@ struct clk_hw *__clk_get_hw(struct clk *clk)
-> >  }
-> >  EXPORT_SYMBOL_GPL(__clk_get_hw);
-> >  
-> > +unsigned int clk_get_num_parents(struct clk *clk)
-> > +{
-> > +     return !clk ? 0 : clk->core->num_parents;
-> > +}
-> > +EXPORT_SYMBOL_GPL(clk_get_num_parents);
-> > +
-> >  unsigned int clk_hw_get_num_parents(const struct clk_hw *hw)
-> >  {
-> >       return hw->core->num_parents;
-> > @@ -359,6 +365,19 @@ static struct clk_core 
-> > *clk_core_get_parent_by_index(struct clk_core *core,
-> >               return core->parents[index];
-> >  }
-> >  
-> > +struct clk *clk_get_parent_by_index(struct clk *clk, unsigned int index)
-> > +{
-> > +     struct clk_core *parent;
-> > +
-> > +     if (!clk)
-> > +             return NULL;
-> > +
-> > +     parent = clk_core_get_parent_by_index(clk->core, index);
-> > +
-> > +     return !parent ? NULL : parent->hw->clk;
-> > +}
-> > +EXPORT_SYMBOL_GPL(clk_get_parent_by_index);
-> > +
-> >  struct clk_hw *
-> >  clk_hw_get_parent_by_index(const struct clk_hw *hw, unsigned int index)
-> >  {
-> > diff --git a/include/linux/clk.h b/include/linux/clk.h
-> > index 0df4a51..937de0e 100644
-> > --- a/include/linux/clk.h
-> > +++ b/include/linux/clk.h
-> > @@ -392,6 +392,26 @@ int clk_set_parent(struct clk *clk, struct clk 
-> > *parent);
-> >  struct clk *clk_get_parent(struct clk *clk);
-> >  
-> >  /**
-> > + * clk_get_parent_by_index - get a possible parent clock by index
-> > + * @clk: clock source
-> > + * @index: index into the array of possible parents of this clock
-> > + *
-> > + * Returns struct clk corresponding to the requested possible
-> > + * parent clock source, or NULL.
-> > + */
-> > +struct clk *clk_get_parent_by_index(struct clk *clk,
-> > +                                 unsigned int index);
-> > +
-> > +/**
-> > + * clk_get_num_parents - get number of possible parents
-> > + * @clk: clock source
-> > + *
-> > + * Returns the number of possible parents of this clock,
-> > + * which can then be enumerated using clk_get_parent_by_index().
-> > + */
-> > +unsigned int clk_get_num_parents(struct clk *clk);
-> > +
-> > +/**
-> >   * clk_get_sys - get a clock based upon the device name
-> >   * @dev_id: device name
-> >   * @con_id: connection ID
-> > @@ -461,6 +481,17 @@ static inline struct clk *clk_get_parent(struct clk 
-> > *clk)
-> >       return NULL;
-> >  }
-> >  
-> > +struct clk *clk_get_parent_by_index(struct clk *clk,
-> > +                                 unsigned int index)
-> > +{
-> > +     return NULL;
-> > +}
-> > +
-> > +unsigned int clk_get_num_parents(struct clk *clk)
-> > +{
-> > +     return 0;
-> > +}
-> > +
-> >  #endif
-> >  
-> >  /* clk_prepare_enable helps cases using clk_enable in non-atomic context.
+> [ 2327.035563]
+> RCU used illegally from offline CPU!
+> rcu_scheduler_active = 1, debug_locks = 1
+> [ 2327.035564] no locks held by swapper/12/0.
+> [ 2327.035565]
+> stack backtrace:
+> [ 2327.035567] CPU: 12 PID: 0 Comm: swapper/12 Tainted: G S
+>   4.3.0-rc3-00060-g353169a #5
+>   [ 2327.035568] Call Trace:
+>   [ 2327.035573] [c0000001d62578e0] [c0000000008977fc]
+>   .dump_stack+0x98/0xd4 (unreliable)
+>   [ 2327.035577] [c0000001d6257960] [c000000000109bd8]
+>   .lockdep_rcu_suspicious+0x108/0x170
+>   [ 2327.035580] [c0000001d62579f0] [c00000000006a1d0]
+>   .__trace_hcall_exit+0x2b0/0x2c0
+>   [ 2327.035584] [c0000001d6257ab0] [c00000000006a2e8]
+>   plpar_hcall_norets_trace+0x70/0x8c
+>   [ 2327.035588] [c0000001d6257b20] [c000000000067a14]
+>   .icp_hv_set_cpu_priority+0x54/0xc0
+>   [ 2327.035592] [c0000001d6257ba0] [c000000000066c5c]
+>   .xics_teardown_cpu+0x5c/0xa0
+>   [ 2327.035595] [c0000001d6257c20] [c0000000000747ac]
+>   .pseries_mach_cpu_die+0x6c/0x320
+>   [ 2327.035598] [c0000001d6257cd0] [c0000000000439cc]
+>   .cpu_die+0x3c/0x60
+>   [ 2327.035602] [c0000001d6257d40] [c0000000000183d8]
+>   .arch_cpu_idle_dead+0x28/0x40
+>   [ 2327.035606] [c0000001d6257db0] [c0000000000ff1dc]
+>   .cpu_startup_entry+0x4fc/0x560
+>   [ 2327.035610] [c0000001d6257ed0] [c000000000043728]
+>   .start_secondary+0x328/0x360
+>   [ 2327.035614] [c0000001d6257f90] [c000000000008a6c]
+>   start_secondary_prolog+0x10/0x14
+>   [ 2327.035620] cpu 12 (hwid 12) Ready to die...
+>   [ 2327.144463] cpu 13 (hwid 13) Ready to die...
+>   [ 2327.294180] cpu 14 (hwid 14) Ready to die...
+>   [ 2327.403599] cpu 15 (hwid 15) Ready to die...
+> 
+>   Make the hypervisor tracepoints conditional by using
+>   TRACE_EVENT_FN_COND
+> 
+> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+> ---
+>  arch/powerpc/include/asm/trace.h | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/trace.h b/arch/powerpc/include/asm/trace.h
+> index 8e86b48..3dc5803 100644
+> --- a/arch/powerpc/include/asm/trace.h
+> +++ b/arch/powerpc/include/asm/trace.h
+> @@ -57,12 +57,14 @@ DEFINE_EVENT(ppc64_interrupt_class, timer_interrupt_exit,
+>  extern void hcall_tracepoint_regfunc(void);
+>  extern void hcall_tracepoint_unregfunc(void);
+>  
+> -TRACE_EVENT_FN(hcall_entry,
+> +TRACE_EVENT_FN_COND(hcall_entry,
+>  
+>  	TP_PROTO(unsigned long opcode, unsigned long *args),
+>  
+>  	TP_ARGS(opcode, args),
+>  
+> +	TP_CONDITION(cpu_online(smp_processor_id())),
+> +
+>  	TP_STRUCT__entry(
+>  		__field(unsigned long, opcode)
+>  	),
+> @@ -76,13 +78,15 @@ TRACE_EVENT_FN(hcall_entry,
+>  	hcall_tracepoint_regfunc, hcall_tracepoint_unregfunc
+>  );
+>  
+> -TRACE_EVENT_FN(hcall_exit,
+> +TRACE_EVENT_FN_COND(hcall_exit,
+>  
+>  	TP_PROTO(unsigned long opcode, unsigned long retval,
+>  		unsigned long *retbuf),
+>  
+>  	TP_ARGS(opcode, retval, retbuf),
+>  
+> +	TP_CONDITION(cpu_online(smp_processor_id())),
+> +
+>  	TP_STRUCT__entry(
+>  		__field(unsigned long, opcode)
+>  		__field(unsigned long, retval)
