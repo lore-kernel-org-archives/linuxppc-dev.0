@@ -1,16 +1,30 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linux@roeck-us.net>
+Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 299301A01DF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 11:33:08 +1100 (AEDT)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: dllehr@us.ibm.com, mpe@ellerman.id.au, mikey@neuling.org,
- Alistair Popple <alistair@popple.id.au>, stable@vger.kernel.org
-Subject: [PATCH] powernv/opal-irqchip: Fix double endian conversion
-Date: Mon,  7 Dec 2015 11:28:28 +1100
-Message-Id: <1449448108-9867-1-git-send-email-alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49FAE1A0175
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 13:21:10 +1100 (AEDT)
+Subject: Re: [PATCH v7 45/50] drivers/of: Avoid recursively calling
+ unflatten_dt_node()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Rob Herring <robherring2@gmail.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1446642770-4681-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1446642770-4681-46-git-send-email-gwshan@linux.vnet.ibm.com>
+ <CAL_Jsq+BnPEKkRgQX4+e0MA9dKLVLhy8rVF25Fr9yXL2jp+WLA@mail.gmail.com>
+ <1449446087.21036.1.camel@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, aik@ozlabs.ru,
+ Bjorn Helgaas <bhelgaas@google.com>, Grant Likely <grant.likely@linaro.org>,
+ Pantelis Antoniou <panto@antoniou-consulting.com>,
+ Frank Rowand <frowand.list@gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <5664ED0C.6060706@roeck-us.net>
+Date: Sun, 6 Dec 2015 18:21:00 -0800
+MIME-Version: 1.0
+In-Reply-To: <1449446087.21036.1.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,118 +34,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The OPAL event calls return a mask of events that are active in big
-endian format. This is checked when unmasking the events in the
-irqchip by comparison with a cached value. The cached value was stored
-in big endian format but should've been converted to CPU endian
-first. This bug leads to OPAL event delivery being delayed or dropped
-on some systems.
+On 12/06/2015 03:54 PM, Benjamin Herrenschmidt wrote:
+> On Sun, 2015-12-06 at 14:28 -0600, Rob Herring wrote:
+>>
+>> Do you plan to respin the OF parts at least soon? There's another
+>> problem Guenter found that of_fdt_unflatten_tree is not re-entrant due
+>> to "depth" being static and this series fixes that. So I'd rather
+>> apply this and avoid adding a mutex if possible.
+>
+> Gavin is on vacation until next year.
+>
 
-The bug is fixed by calling opal_handle_events(...) instead of
-duplicating code in opal_event_unmask(...).
+That is a bit more than the timeline I am looking for.
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
-Reported-by: Douglas L Lehr <dllehr@us.ibm.com>
-Cc: stable@vger.kernel.org
----
- arch/powerpc/platforms/powernv/opal-irqchip.c | 58 +++++++++++++--------------
- 1 file changed, 29 insertions(+), 29 deletions(-)
+Rob, any chance to accept my patch for now ? After all, it can be
+reverted after the rework is complete, and it would be easier
+to apply to earlier kernels.
 
-diff --git a/arch/powerpc/platforms/powernv/opal-irqchip.c b/arch/powerpc/platforms/powernv/opal-irqchip.c
-index 2c91ee7..a387d18 100644
---- a/arch/powerpc/platforms/powernv/opal-irqchip.c
-+++ b/arch/powerpc/platforms/powernv/opal-irqchip.c
-@@ -43,11 +43,34 @@ static unsigned int opal_irq_count;
- static unsigned int *opal_irqs;
- 
- static void opal_handle_irq_work(struct irq_work *work);
--static __be64 last_outstanding_events;
-+static u64 last_outstanding_events;
- static struct irq_work opal_event_irq_work = {
- 	.func = opal_handle_irq_work,
- };
- 
-+void opal_handle_events(uint64_t events)
-+{
-+	int virq, hwirq = 0;
-+	u64 mask = opal_event_irqchip.mask;
-+
-+	if (!in_irq() && (events & mask)) {
-+		last_outstanding_events = events;
-+		irq_work_queue(&opal_event_irq_work);
-+		return;
-+	}
-+
-+	while (events & mask) {
-+		hwirq = fls64(events) - 1;
-+		if (BIT_ULL(hwirq) & mask) {
-+			virq = irq_find_mapping(opal_event_irqchip.domain,
-+						hwirq);
-+			if (virq)
-+				generic_handle_irq(virq);
-+		}
-+		events &= ~BIT_ULL(hwirq);
-+	}
-+}
-+
- static void opal_event_mask(struct irq_data *d)
- {
- 	clear_bit(d->hwirq, &opal_event_irqchip.mask);
-@@ -55,12 +78,12 @@ static void opal_event_mask(struct irq_data *d)
- 
- static void opal_event_unmask(struct irq_data *d)
- {
-+	__be64 events;
-+
- 	set_bit(d->hwirq, &opal_event_irqchip.mask);
- 
--	opal_poll_events(&last_outstanding_events);
--	if (last_outstanding_events & opal_event_irqchip.mask)
--		/* Need to retrigger the interrupt */
--		irq_work_queue(&opal_event_irq_work);
-+	opal_poll_events(&events);
-+	opal_handle_events(be64_to_cpu(events));
- }
- 
- static int opal_event_set_type(struct irq_data *d, unsigned int flow_type)
-@@ -96,29 +119,6 @@ static int opal_event_map(struct irq_domain *d, unsigned int irq,
- 	return 0;
- }
- 
--void opal_handle_events(uint64_t events)
--{
--	int virq, hwirq = 0;
--	u64 mask = opal_event_irqchip.mask;
--
--	if (!in_irq() && (events & mask)) {
--		last_outstanding_events = events;
--		irq_work_queue(&opal_event_irq_work);
--		return;
--	}
--
--	while (events & mask) {
--		hwirq = fls64(events) - 1;
--		if (BIT_ULL(hwirq) & mask) {
--			virq = irq_find_mapping(opal_event_irqchip.domain,
--						hwirq);
--			if (virq)
--				generic_handle_irq(virq);
--		}
--		events &= ~BIT_ULL(hwirq);
--	}
--}
--
- static irqreturn_t opal_interrupt(int irq, void *data)
- {
- 	__be64 events;
-@@ -131,7 +131,7 @@ static irqreturn_t opal_interrupt(int irq, void *data)
- 
- static void opal_handle_irq_work(struct irq_work *work)
- {
--	opal_handle_events(be64_to_cpu(last_outstanding_events));
-+	opal_handle_events(last_outstanding_events);
- }
- 
- static int opal_event_match(struct irq_domain *h, struct device_node *node,
--- 
-2.1.4
+Thanks,
+Guenter
