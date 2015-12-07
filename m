@@ -1,17 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <madalin.bucur@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0110.outbound.protection.outlook.com [207.46.100.110])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B3D5B1A0175
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 17:38:18 +1100 (AEDT)
-In-Reply-To: <1448495096-24759-4-git-send-email-warrier@linux.vnet.ibm.com>
-To: "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>, kvm@vger.kernel.org,
- linuxppc-dev@ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: warrier@linux.vnet.ibm.com, paulus@samba.org, agraf@suse.de
-Subject: Re: [v2,3/9] powerpc/powernv: Add icp_native_cause_ipi_rm
-Message-Id: <20151207063818.69F79140319@ozlabs.org>
-Date: Mon,  7 Dec 2015 17:38:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0FA6A1A0D8C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 20:33:24 +1100 (AEDT)
+From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+To: Timur Tabi <timur@codeaurora.org>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, lkml
+ <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
+Subject: Re: [net-next v5 0/8] dpaa_eth: Add the Freescale DPAA Ethernet driver
+Date: Mon, 7 Dec 2015 09:18:12 +0000
+Message-ID: <DM2PR0301MB0768DF6B97C90CB85E895BB9E6090@DM2PR0301MB0768.namprd03.prod.outlook.com>
+References: <1449144546-25438-1-git-send-email-madalin.bucur@freescale.com>,
+ <CAOZdJXU6CJe-9NsxhnS6ECfXd=KrY_6e+MJZZbJOa8+p5-4jxA@mail.gmail.com>
+In-Reply-To: <CAOZdJXU6CJe-9NsxhnS6ECfXd=KrY_6e+MJZZbJOa8+p5-4jxA@mail.gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,47 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Subject would be better as "powerpc/xics".
 
-On Wed, 2015-25-11 at 23:44:50 UTC, "Suresh E. Warrier" wrote:
-> Function to cause an IPI. Requires kvm_hstate.xics_phys
-> to be initialized with physical address of XICS.
+Hi Timur,
 
-Please expand the change log a bit, this is a bit terse.
+I've managed somehow to make got send-email to move the From: line in the b=
+ody instead of the header, probably typed something wrong when asked to con=
+firm the sender. I've resent the series.
 
-> diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
-> index eae3265..e39b18a 100644
-> --- a/arch/powerpc/sysdev/xics/icp-native.c
-> +++ b/arch/powerpc/sysdev/xics/icp-native.c
-> @@ -159,6 +159,25 @@ static void icp_native_cause_ipi(int cpu, unsigned long data)
->  	icp_native_set_qirr(cpu, IPI_PRIORITY);
->  }
->  
-> +void icp_native_cause_ipi_rm(int cpu)
-> +{
-> +	/*
-> +	 * Currently not used to send IPIs to another CPU
-> +	 * on the same core. Only caller is KVM real mode.
-> +	 * Need the physical address of the XICS to be
-> +	 * previously saved in kvm_hstate in the paca.
-> +	 */
-> +	unsigned long xics_phys;
-> +
-> +	/*
-> +	 * Just like the cause_ipi functions, it is required to
-> +	 * include a full barrier (out8 includes a sync) before
-> +	 * causing the IPI.
-> +	 */
-> +	xics_phys = paca[cpu].kvm_hstate.xics_phys;
-> +	out_rm8((u8 *)(xics_phys + XICS_MFRR), IPI_PRIORITY);
-> +}
+Regards,
+Madalin
+________________________________________
+From: Timur Tabi <timur@codeaurora.org>
+Sent: Saturday, December 5, 2015 6:40:11 AM
+To: Bucur Madalin-Cristian-B32716
+Cc: netdev@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; lkml; David Mill=
+er; Wood Scott-B07421; Liberman Igal-B31950; ppc@mindchasers.com; Joe Perch=
+es; pebolle@tiscali.nl; Joakim Tjernlund; Greg Kroah-Hartman
+Subject: Re: [net-next v5 0/8] dpaa_eth: Add the Freescale DPAA Ethernet dr=
+iver
 
-This doesn't build without KVM:
+On Thu, Dec 3, 2015 at 6:08 AM,  <> wrote:
+> From: Madalin Bucur <madalin.bucur@freescale.com>
+>
+> This patch series adds the Ethernet driver for the Freescale
+> QorIQ Data Path Acceleration Architecture (DPAA).
 
-  arch/powerpc/sysdev/xics/icp-native.c:177:23: error: 'struct paca_struct' has no member named 'kvm_hstate'
+Please fix your git-send-email configuration, so that your emails are
+formatted properly.  This is the From: header:
 
+        From: <>
 
-Probably the whole function should be #ifdef CONFIG_KVM_BOOK3S_64_HV or
-something.
-
-cheers
+--
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project.
