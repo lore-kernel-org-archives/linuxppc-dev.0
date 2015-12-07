@@ -1,28 +1,34 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::4])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9A3921A0E5A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 01:13:33 +1100 (AEDT)
-Subject: [P.A. Semi] Does the ethernet interface work on your Electra, Chitra,
- Nemo, and Athena board?
-To: Michael Ellerman <mpe@ellerman.id.au>, Gabriel Paubert <paubert@iram.es>,
- netdev@vger.kernel.org, Denis Kirjanov <kda@linux-powerpc.org>,
- linuxppc-dev@lists.ozlabs.org
-References: <565AF986.9060106@xenosoft.de>
- <CAOJe8K1911vDjMe9m_1vY6DSGpOk0TmL96Qf1whuNFXxHJesGw@mail.gmail.com>
- <565C1B55.4020207@xenosoft.de> <565C8287.7090209@xenosoft.de>
- <20151130181217.GA15921@visitor2.iram.es> <565DB2FE.1010706@xenosoft.de>
- <565E7A9E.4000909@xenosoft.de> <1449044072.24750.3.camel@ellerman.id.au>
- <565F5E7C.9040207@xenosoft.de> <56603787.3000802@xenosoft.de>
- <566576E8.2060300@xenosoft.de>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <566593B8.3070904@xenosoft.de>
-Date: Mon, 7 Dec 2015 15:12:08 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B2E11A0E5A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 01:16:53 +1100 (AEDT)
+Date: Mon, 7 Dec 2015 15:16:46 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: yalin wang <yalin.wang2010@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ linux-kernel <linux-kernel@vger.kernel.org>, x86@kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: [PATCH v2 5/5] printk/nmi: Increase the size of the temporary
+ buffer
+Message-ID: <20151207141646.GF20935@pathway.suse.cz>
+References: <1448622572-16900-1-git-send-email-pmladek@suse.com>
+ <1448622572-16900-6-git-send-email-pmladek@suse.com>
+ <81211733-2484-40A9-9D4A-644AA27FBC73@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <566576E8.2060300@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <81211733-2484-40A9-9D4A-644AA27FBC73@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,34 +38,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+On Mon 2015-11-30 08:42:04, yalin wang wrote:
+> 
+> > On Nov 27, 2015, at 19:09, Petr Mladek <pmladek@suse.com> wrote:
+> > 
+> > Testing has shown that the backtrace sometimes does not fit
+> > into the 4kB temporary buffer that is used in NMI context.
+> > 
+> > The warnings are gone when I double the temporary buffer size.
+> > 
+> > Note that this problem existed even in the x86-specific
+> > implementation that was added by the commit a9edc8809328
+> > ("x86/nmi: Perform a safe NMI stack trace on all CPUs").
+> > Nobody noticed it because it did not print any warnings.
+> > 
+> > Signed-off-by: Petr Mladek <pmladek@suse.com>
+> > ---
+> > kernel/printk/nmi.c | 2 +-
+> > 1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/kernel/printk/nmi.c b/kernel/printk/nmi.c
+> > index 8af1e4016719..6111644d5f01 100644
+> > --- a/kernel/printk/nmi.c
+> > +++ b/kernel/printk/nmi.c
+> > @@ -42,7 +42,7 @@ atomic_t nmi_message_lost;
+> > struct nmi_seq_buf {
+> > 	atomic_t		len;	/* length of written data */
+> > 	struct irq_work		work;	/* IRQ work that flushes the buffer */
+> > -	unsigned char		buffer[PAGE_SIZE - sizeof(atomic_t) -
+> > +	unsigned char		buffer[2 * PAGE_SIZE - sizeof(atomic_t) -
+> > 				       sizeof(struct irq_work)];
+> > };
+> > 
+> 
+> why not define like this:
+> 
+> union {
+> struct {atomic_t		len;	
+> 	struct irq_work		work;
+> }
+> unsigned char		buffer[PAGE_SIZE * 2] ;
+> }
+> 
+> we can make sure the union is 2 PAGE_SIZE .
 
-I have some good news for you. I was able to fix the issue with the P.A. 
-Semi Ethernet. It was a problem with the new DMA handling. The patch ' 
-[RFC/PATCH,v2] powerpc/iommu: Support "hybrid" iommu/direct DMA ops for 
-coherent_mask < dma_mask (https://patchwork.ozlabs.org/patch/472535/)' 
-is the problem.
+IMHO, this would add more confusion. It would just move the
+computation somewhere else. The union will have 2*PAGE_SIZE
+but the beginning of "buffer" will be shared with "len"
+and "work". Therefore, we would need to skip the beginning
+of the buffer when storing the data. By other words, we still
+will be able to use only (sizeof(buffer) - sizeof(atomic_t) -
+sizeof(struct irq_work)] of the "buffer".
 
-I had patched the following files before I compiled a kernel.
+Or did I miss something, please?
 
-arch/powerpc/Kconfig
-arch/powerpc/include/asm/device.h
-arch/powerpc/include/asm/dma-mapping.h
-arch/powerpc/include/asm/iommu.h
-arch/powerpc/kernel/dma-iommu.c
-arch/powerpc/kernel/dma-swiotlb.c
-arch/powerpc/kernel/dma.c
-arch/powerpc/platforms/powernv/pci-ioda.c
-arch/powerpc/platforms/pseries/iommu.c
-arch/powerpc/sysdev/dart_iommu.c
-include/asm-generic/dma-mapping-common.h
-
-The P.A. Semi Ethernet works again with the patched kernel.
-
-I am happy. :-)
-
-Please fix the issue in the kernel source code.
-
-Thanks in advance,
-
-Christian
+Best Regards,
+Petr
