@@ -1,22 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <alistair@popple.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9318E1A01DF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 10:58:24 +1100 (AEDT)
-Message-ID: <1449446304.23526.2.camel@ellerman.id.au>
-Subject: Re: more POLL... fun
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Al Viro <viro@ZenIV.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
-Date: Mon, 07 Dec 2015 10:58:24 +1100
-In-Reply-To: <20151204173031.GJ22011@ZenIV.linux.org.uk>
-References: <20151127050026.GX22011@ZenIV.linux.org.uk>
- <3199712.spOmaGJUoN@wuerfel> <20151204152133.GI22011@ZenIV.linux.org.uk>
- <2220761.5EzR0eY4bg@wuerfel> <20151204173031.GJ22011@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 299301A01DF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 11:33:08 +1100 (AEDT)
+From: Alistair Popple <alistair@popple.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: dllehr@us.ibm.com, mpe@ellerman.id.au, mikey@neuling.org,
+ Alistair Popple <alistair@popple.id.au>, stable@vger.kernel.org
+Subject: [PATCH] powernv/opal-irqchip: Fix double endian conversion
+Date: Mon,  7 Dec 2015 11:28:28 +1100
+Message-Id: <1449448108-9867-1-git-send-email-alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +20,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-12-04 at 17:30 +0000, Al Viro wrote:
-> On Fri, Dec 04, 2015 at 06:13:54PM +0100, Arnd Bergmann wrote:
-> > Yes, I think that would be best. Do you want me to send that patch, or do
-> > you prefer to do it yourself? In theory that patch should also go into stable
-> > kernels, but I suspect nobody who still owns a machine that is able to run
-> > this code will ever upgrade to a stable release, so we probably don't need
-> > that.
-> 
-> Probably better if it goes through ppc tree - the only relationship it has
-> to VFS is broken calls of kill_fasync() in now-removed code...  Something
-> like this, perhaps?
+The OPAL event calls return a mask of events that are active in big
+endian format. This is checked when unmasking the events in the
+irqchip by comparison with a cached value. The cached value was stored
+in big endian format but should've been converted to CPU endian
+first. This bug leads to OPAL event delivery being delayed or dropped
+on some systems.
 
-Yeah that looks fine to me. I'll take it into powerpc#next for 4.5.
+The bug is fixed by calling opal_handle_events(...) instead of
+duplicating code in opal_event_unmask(...).
 
-cheers
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+Reported-by: Douglas L Lehr <dllehr@us.ibm.com>
+Cc: stable@vger.kernel.org
+---
+ arch/powerpc/platforms/powernv/opal-irqchip.c | 58 +++++++++++++--------------
+ 1 file changed, 29 insertions(+), 29 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/opal-irqchip.c b/arch/powerpc/platforms/powernv/opal-irqchip.c
+index 2c91ee7..a387d18 100644
+--- a/arch/powerpc/platforms/powernv/opal-irqchip.c
++++ b/arch/powerpc/platforms/powernv/opal-irqchip.c
+@@ -43,11 +43,34 @@ static unsigned int opal_irq_count;
+ static unsigned int *opal_irqs;
+ 
+ static void opal_handle_irq_work(struct irq_work *work);
+-static __be64 last_outstanding_events;
++static u64 last_outstanding_events;
+ static struct irq_work opal_event_irq_work = {
+ 	.func = opal_handle_irq_work,
+ };
+ 
++void opal_handle_events(uint64_t events)
++{
++	int virq, hwirq = 0;
++	u64 mask = opal_event_irqchip.mask;
++
++	if (!in_irq() && (events & mask)) {
++		last_outstanding_events = events;
++		irq_work_queue(&opal_event_irq_work);
++		return;
++	}
++
++	while (events & mask) {
++		hwirq = fls64(events) - 1;
++		if (BIT_ULL(hwirq) & mask) {
++			virq = irq_find_mapping(opal_event_irqchip.domain,
++						hwirq);
++			if (virq)
++				generic_handle_irq(virq);
++		}
++		events &= ~BIT_ULL(hwirq);
++	}
++}
++
+ static void opal_event_mask(struct irq_data *d)
+ {
+ 	clear_bit(d->hwirq, &opal_event_irqchip.mask);
+@@ -55,12 +78,12 @@ static void opal_event_mask(struct irq_data *d)
+ 
+ static void opal_event_unmask(struct irq_data *d)
+ {
++	__be64 events;
++
+ 	set_bit(d->hwirq, &opal_event_irqchip.mask);
+ 
+-	opal_poll_events(&last_outstanding_events);
+-	if (last_outstanding_events & opal_event_irqchip.mask)
+-		/* Need to retrigger the interrupt */
+-		irq_work_queue(&opal_event_irq_work);
++	opal_poll_events(&events);
++	opal_handle_events(be64_to_cpu(events));
+ }
+ 
+ static int opal_event_set_type(struct irq_data *d, unsigned int flow_type)
+@@ -96,29 +119,6 @@ static int opal_event_map(struct irq_domain *d, unsigned int irq,
+ 	return 0;
+ }
+ 
+-void opal_handle_events(uint64_t events)
+-{
+-	int virq, hwirq = 0;
+-	u64 mask = opal_event_irqchip.mask;
+-
+-	if (!in_irq() && (events & mask)) {
+-		last_outstanding_events = events;
+-		irq_work_queue(&opal_event_irq_work);
+-		return;
+-	}
+-
+-	while (events & mask) {
+-		hwirq = fls64(events) - 1;
+-		if (BIT_ULL(hwirq) & mask) {
+-			virq = irq_find_mapping(opal_event_irqchip.domain,
+-						hwirq);
+-			if (virq)
+-				generic_handle_irq(virq);
+-		}
+-		events &= ~BIT_ULL(hwirq);
+-	}
+-}
+-
+ static irqreturn_t opal_interrupt(int irq, void *data)
+ {
+ 	__be64 events;
+@@ -131,7 +131,7 @@ static irqreturn_t opal_interrupt(int irq, void *data)
+ 
+ static void opal_handle_irq_work(struct irq_work *work)
+ {
+-	opal_handle_events(be64_to_cpu(last_outstanding_events));
++	opal_handle_events(last_outstanding_events);
+ }
+ 
+ static int opal_event_match(struct irq_domain *h, struct device_node *node,
+-- 
+2.1.4
