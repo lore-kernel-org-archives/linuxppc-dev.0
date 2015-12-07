@@ -1,34 +1,28 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::4])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C458C1A0D8C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 00:35:01 +1100 (AEDT)
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 7 Dec 2015 13:34:57 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id C34961B0805F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 13:35:22 +0000 (GMT)
-Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
- [9.149.37.249])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB7DYsoQ7602684
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2015 13:34:54 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB7DYr69031106
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2015 06:34:54 -0700
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: imunsie@au1.ibm.com, mpe@ellerman.id.au, mikey@neuling.org,
- <stable@vger.kernel.org>
-Subject: [PATCH] cxl: Set endianess of kernel contexts
-Date: Mon,  7 Dec 2015 14:34:40 +0100
-Message-Id: <1449495280-18819-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A3921A0E5A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 01:13:33 +1100 (AEDT)
+Subject: [P.A. Semi] Does the ethernet interface work on your Electra, Chitra,
+ Nemo, and Athena board?
+To: Michael Ellerman <mpe@ellerman.id.au>, Gabriel Paubert <paubert@iram.es>,
+ netdev@vger.kernel.org, Denis Kirjanov <kda@linux-powerpc.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <565AF986.9060106@xenosoft.de>
+ <CAOJe8K1911vDjMe9m_1vY6DSGpOk0TmL96Qf1whuNFXxHJesGw@mail.gmail.com>
+ <565C1B55.4020207@xenosoft.de> <565C8287.7090209@xenosoft.de>
+ <20151130181217.GA15921@visitor2.iram.es> <565DB2FE.1010706@xenosoft.de>
+ <565E7A9E.4000909@xenosoft.de> <1449044072.24750.3.camel@ellerman.id.au>
+ <565F5E7C.9040207@xenosoft.de> <56603787.3000802@xenosoft.de>
+ <566576E8.2060300@xenosoft.de>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <566593B8.3070904@xenosoft.de>
+Date: Mon, 7 Dec 2015 15:12:08 +0100
+MIME-Version: 1.0
+In-Reply-To: <566576E8.2060300@xenosoft.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,41 +32,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A process element (defined in CAIA) keeps track of the endianess of
-contexts through the Little Endian (LE) bit of the State Register. It
-is currently set for user contexts, but was somehow forgotten for
-kernel contexts, so this patch fixes it.
-It could lead to erratic behavior from an AFU when the context is
-attached through the kernel API.
+Hi all,
 
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Suggested-by: Michael Neuling <mikey@neuling.org>
-Cc: <stable@vger.kernel.org> # 4.3+
----
-cxl kernel API is supported starting with 4.3 (for cxlflash)
+I have some good news for you. I was able to fix the issue with the P.A. 
+Semi Ethernet. It was a problem with the new DMA handling. The patch ' 
+[RFC/PATCH,v2] powerpc/iommu: Support "hybrid" iommu/direct DMA ops for 
+coherent_mask < dma_mask (https://patchwork.ozlabs.org/patch/472535/)' 
+is the problem.
 
- drivers/misc/cxl/native.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I had patched the following files before I compiled a kernel.
 
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index d2e75c8..f409097 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -497,6 +497,7 @@ static u64 calculate_sr(struct cxl_context *ctx)
- {
- 	u64 sr = 0;
- 
-+	set_endian(sr);
- 	if (ctx->master)
- 		sr |= CXL_PSL_SR_An_MP;
- 	if (mfspr(SPRN_LPCR) & LPCR_TC)
-@@ -506,7 +507,6 @@ static u64 calculate_sr(struct cxl_context *ctx)
- 		sr |= CXL_PSL_SR_An_HV;
- 	} else {
- 		sr |= CXL_PSL_SR_An_PR | CXL_PSL_SR_An_R;
--		set_endian(sr);
- 		sr &= ~(CXL_PSL_SR_An_HV);
- 		if (!test_tsk_thread_flag(current, TIF_32BIT))
- 			sr |= CXL_PSL_SR_An_SF;
--- 
-1.9.1
+arch/powerpc/Kconfig
+arch/powerpc/include/asm/device.h
+arch/powerpc/include/asm/dma-mapping.h
+arch/powerpc/include/asm/iommu.h
+arch/powerpc/kernel/dma-iommu.c
+arch/powerpc/kernel/dma-swiotlb.c
+arch/powerpc/kernel/dma.c
+arch/powerpc/platforms/powernv/pci-ioda.c
+arch/powerpc/platforms/pseries/iommu.c
+arch/powerpc/sysdev/dart_iommu.c
+include/asm-generic/dma-mapping-common.h
+
+The P.A. Semi Ethernet works again with the patched kernel.
+
+I am happy. :-)
+
+Please fix the issue in the kernel source code.
+
+Thanks in advance,
+
+Christian
