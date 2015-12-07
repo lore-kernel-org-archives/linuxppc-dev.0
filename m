@@ -1,39 +1,29 @@
-Return-Path: <tlfalcon@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <ddstreet@gmail.com>
+Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
+ [IPv6:2607:f8b0:4001:c06::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1EEED1A0D9F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 05:50:08 +1100 (AEDT)
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
- Mon, 7 Dec 2015 11:50:05 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0785F19D8026
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 11:38:09 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB7Io3NI19726502
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2015 11:50:03 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB7Io2UH032104
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2015 11:50:03 -0700
-Subject: Re: [PATCH net-next] Driver for IBM System i/p VNIC protocol
-To: David Miller <davem@davemloft.net>
-References: <1449251386-13476-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
- <20151205.222551.512793392902323297.davem@davemloft.net>
-Cc: netdev@vger.kernel.org, nguyendo@us.ibm.com, jallen@linux.vnet.ibm.com,
- brking@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Message-ID: <5665D4D8.7010206@linux.vnet.ibm.com>
-Date: Mon, 7 Dec 2015 12:50:00 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id A33CE1A05EB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 06:35:08 +1100 (AEDT)
+Received: by iofh3 with SMTP id h3so809750iof.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Dec 2015 11:35:06 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20151205.222551.512793392902323297.davem@davemloft.net>
-Content-Type: text/plain; charset=utf-8
+Sender: ddstreet@gmail.com
+In-Reply-To: <1449388004.2096.12.camel@hbabu-laptop>
+References: <1449388004.2096.12.camel@hbabu-laptop>
+From: Dan Streetman <ddstreet@ieee.org>
+Date: Mon, 7 Dec 2015 14:34:26 -0500
+Message-ID: <CALZtONCw9+wvSQ+vwsvSWa_itR-G9ZBkuXftzNHV9oTd8YZFaw@mail.gmail.com>
+Subject: Re: crypto/nx842: Ignore queue overflow informative error
+To: Haren Myneni <haren@linux.vnet.ibm.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ Michael Ellerman <mpe@ellerman.id.au>, pair@us.ibm.com,
+ Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Haren Myneni <hbabu@us.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,29 +33,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/05/2015 09:25 PM, David Miller wrote:
-> From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-> Date: Fri,  4 Dec 2015 11:49:46 -0600
+On Sun, Dec 6, 2015 at 2:46 AM, Haren Myneni <haren@linux.vnet.ibm.com> wrote:
 >
->> +static int ibmvnic_buffs_per_pool = IBMVNIC_BUFFS_PER_POOL;
->> +module_param(ibmvnic_buffs_per_pool, int, S_IRUGO);
->> +MODULE_PARM_DESC(ibmvnic_buffs_per_pool,
->> +		 "IBMVNIC number of buffers per rx pool");
-> Please do not use module parameters for settings that effect
-> the basic operation of the driver.
+> NX842 coprocessor sets bit 3 if queue is overflow. It is just for
+> information to the user. So the driver prints this informative message
+> and ignores it.
+>
+> Signed-off-by: Haren Myneni <haren@us.ibm.com>
+>
+> diff --git a/arch/powerpc/include/asm/icswx.h b/arch/powerpc/include/asm/icswx.h
+> index 9f8402b..d1a2a2d 100644
+> --- a/arch/powerpc/include/asm/icswx.h
+> +++ b/arch/powerpc/include/asm/icswx.h
+> @@ -164,6 +164,7 @@ struct coprocessor_request_block {
+>  #define ICSWX_INITIATED                (0x8)
+>  #define ICSWX_BUSY             (0x4)
+>  #define ICSWX_REJECTED         (0x2)
+> +#define ICSWX_BIT3             (0x1)   /* undefined or set from XERSO. */
 
-Hi. Thanks for you feedback.  Could you clarify on what constitutes basic operation?  I just want to be sure if we should remove the other module parameters or just this one in particular?
+Since this isn't defined by the icswx rfc workbook, it probably
+shouldn't go here, it would make more sense to put it into nx-842.h
+and call it something like "ICSWX_NX_QUEUE_OVERFLOW" or similar
+NX-specific meaningful name.
 
 >
-> Instead use facilities that are generic and provide the same
-> user interface for all networking drivers, such as ethtool.
-
-Is it possible to change driver settings like this with ethtool? Would adding an interface in sysfs to change this setting be acceptable?
-
+>  static inline int icswx(__be32 ccw, struct coprocessor_request_block *crb)
+>  {
+> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+> index 9ef51fa..321b8e8 100644
+> --- a/drivers/crypto/nx/nx-842-powernv.c
+> +++ b/drivers/crypto/nx/nx-842-powernv.c
+> @@ -442,6 +442,15 @@ static int nx842_powernv_function(const unsigned char *in, unsigned int inlen,
+>                              (unsigned int)ccw,
+>                              (unsigned int)be32_to_cpu(crb->ccw));
 >
-> Otherwise users would need to learn a different way to configure the
-> same thing on different devices, which is not acceptable.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> +       /*
+> +        * NX842 coprocessor uses 3rd bit to report queue overflow which is
+> +        * not an error, just for information to user. So, ignore this bit.
+> +        */
+
+a meaningfully named bit define means you don't need to explain it
+with a comment :-)
+
+However, I suggest that you do explain *why* a queue overflow isn't an
+error - either here or (probably better) at the #define of the bit -
+because that isn't obvious.
+
+> +       if (ret & ICSWX_BIT3) {
+> +               pr_info_ratelimited("842 coprocessor queue overflow\n");
+
+if it's not an error, should this be pr_debug_ratelimited instead?
+What is an end user expected to do if they see this msg in the log?
+
+> +               ret &= ~ICSWX_BIT3;
+> +       }
+> +
+>         switch (ret) {
+>         case ICSWX_INITIATED:
+>                 ret = wait_for_csb(wmem, csb);
+>
+>
