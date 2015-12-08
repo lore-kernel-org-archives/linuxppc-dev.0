@@ -1,23 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
+Return-Path: <scottwood@freescale.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE6891A0F25
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 13:45:05 +1100 (AEDT)
-Date: Tue, 8 Dec 2015 13:35:55 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Alexander Graf <agraf@suse.com>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-Subject: Re: [PATCH kernel 4/9] KVM: PPC: Use RCU for arch.spapr_tce_tables
-Message-ID: <20151208023555.GJ20139@voom.fritz.box>
-References: <1442314179-9706-1-git-send-email-aik@ozlabs.ru>
- <1442314179-9706-5-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2B9D71A05F4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 14:02:42 +1100 (AEDT)
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0124.outbound.protection.outlook.com [207.46.100.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 686681402C4
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2015 14:02:40 +1100 (AEDT)
+Message-ID: <1449538150.15946.114.camel@freescale.com>
+Subject: Re: FCC driver for Motorola MPC82xx - an error found
+From: Scott Wood <scottwood@freescale.com>
+To: Martin Roth <martin.roth@motorolasolutions.com>, <linuxppc-dev@ozlabs.org>
+Date: Mon, 7 Dec 2015 19:29:10 -0600
+In-Reply-To: <1448367591225-101297.post@n7.nabble.com>
+References: <1448367591225-101297.post@n7.nabble.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="lYetfuAxy9ic4HK3"
-In-Reply-To: <1442314179-9706-5-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,50 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2015-11-24 at 05:19 -0700, Martin Roth wrote:
+> I was looking for an error on MPC8270 processor 100 Mbps Ethernet FCC port. 
+> The port may become locked if it is set to AUTO, while the peer is forced to
+> 100 Mbs full duplex (non AUTO).
+> I was looking for an error in the area of collision handling of the driver.
+> It looks like I found the problem.
+> 
+> The error is at line 555:
+> http://lxr.free-electrons.com/source/drivers/net/ethernet/freescale/fs_enet/
+> mac-fcc.c#L555
+> 
+> The problem is that the last descriptor address is not calculated correctly.
+> 
+> Instead of
+>    last_tx_bd = fep->tx_bd_base + (fpi->tx_ring * sizeof(cbd_t)); 
+> The fix should be:
+>    last_tx_bd = fep->tx_bd_base + ((fpi->tx_ring-1)* sizeof(cbd_t));
+> 
+> Is it a bug? 
+> Thanks,
+> Martin Roth
 
---lYetfuAxy9ic4HK3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, it looks like a bug.  Could you send a patch to the netdev list and
+maintainer?
 
-On Tue, Sep 15, 2015 at 08:49:34PM +1000, Alexey Kardashevskiy wrote:
-> At the moment spapr_tce_tables is not protected against races. This makes
-> use of RCU-variants of list helpers. As some bits are executed in real
-> mode, this makes use of just introduced list_for_each_entry_rcu_notrace().
->=20
-> This converts release_spapr_tce_table() to a RCU scheduled handler.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-Looks correct on my limited knowledge of RCU
-
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---lYetfuAxy9ic4HK3
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJWZkILAAoJEGw4ysog2bOSdDwQAJaVViLHnUu1TS63+Yi7G+l1
-Enir8Lltq94k/Bm/+j8xq03nu3R8jxeQByEnoS3mPHS/CMK8TkqTVwlw8UR7ebd2
-eSlY2Wb22rFCIgernYj6trKQZqykPRDXc0qfuEuIeDk524ibfRynWsLRC6sJ/JlO
-HHqMmchkphFwZ4NGYhSYBevQ42D9hagS+jrgbgGwuASHa+nzrJn1QReysmJqj3hO
-lUqzXDipFTtwXko2/WyPSALyVTWQ6/dSlhVmFnESh35+9pJ35wNWP0TX48JiNt0K
-8EQBFpLev/svoOQuGAAjUR2VU56g4WeH+8odkDrPZEhg7eIqq/8iE7hTO52dx3dP
-R6pg+6Xg/dgdIz9YHvb91ZBCl8ARuj5xwRCjol4t8TzL3kozpfhtlV44l7+lEHww
-00baIPSCGiBJaIBVPacJopyEoV31rO+ZIQOsqCmegJLhK4jj0inkbLdIwDYaNkl+
-O3GS16ShJuUNQzBjjPyI5zoRTed85zNoH6mrKo/N1uGTBZO7EJb6/+8Vyt2ObEBq
-LTn45BliWFLUeRpjzywmmaCnY7CXCUpeYkzV/H4tLCXTIIdR57BhhNv6YOGCWV91
-OZ5CeE5Ai3bG13UWBZA0u4pqHvDdWRCGUjZg2JGf/z22VACyg4qsiXHAgbVClEI3
-YRnO0THZmXtaAZnn/SJf
-=hSyI
------END PGP SIGNATURE-----
-
---lYetfuAxy9ic4HK3--
+-Scott
