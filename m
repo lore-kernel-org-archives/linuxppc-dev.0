@@ -1,22 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 262011A0E61
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 14:46:18 +1100 (AEDT)
-Message-ID: <1449546377.12218.9.camel@ellerman.id.au>
-Subject: Re: [PATCH v2 3/3] ppc64: Add a flag to tell the kernel it's
- booting from kexec
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <scottwood@freescale.com>, Simon Horman <horms@verge.net.au>
-Cc: kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 08 Dec 2015 14:46:17 +1100
-In-Reply-To: <1449520948.15946.89.camel@freescale.com>
-References: <1444172150-29493-1-git-send-email-scottwood@freescale.com>
- <1444172150-29493-3-git-send-email-scottwood@freescale.com>
- <1449520948.15946.89.camel@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id BBDFB1A0EE1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 15:00:37 +1100 (AEDT)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+CC: Paul Gortmaker <paul.gortmaker@windriver.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc: warn on spurious irq events (but ratelimited)
+Date: Mon, 7 Dec 2015 20:38:27 -0500
+Message-ID: <1449538707-7867-1-git-send-email-paul.gortmaker@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-12-07 at 14:42 -0600, Scott Wood wrote:
-> On Tue, 2015-10-06 at 17:55 -0500, Scott Wood wrote:
-> > It needs to know this because the SMP release mechanism for Freescale
-> > book3e is different from when booting with normal hardware.  In theory
-> > we could simulate the normal spin table mechanism, but not (easily) at
-> > the addresses U-Boot put in the device tree -- so there'd need to be
-> > even more communication between the kernel and kexec to set that up.
-> > 
-> > Signed-off-by: Scott Wood <scottwood@freescale.com>
-> > ---
-> > v2: Use a device tree property rather than setting a flag in the kernel
-> > image, as requested by Michael Ellerman.
-> 
-> ping?
-> 
-> Michael, can you review this?  Simon is waiting for another PPC person to
-> review it.
+It might be worth warning on spurious IRQ events; they might
+point someone at a bogus DTS value or similar.
 
-Oh sorry I thought it'd been merged already, but I see now only 1 & 2 went in.
+But ratelimit them to ensure we aren't too spammy about it.
 
-Horms this looks fine to me:
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ arch/powerpc/kernel/irq.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-
-cheers
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 290559df1e8b..5c777e3a4c04 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -497,10 +497,12 @@ void __do_irq(struct pt_regs *regs)
+ 	may_hard_irq_enable();
+ 
+ 	/* And finally process it */
+-	if (unlikely(irq == NO_IRQ))
++	if (unlikely(irq == NO_IRQ)) {
++		printk_ratelimited(KERN_WARNING "spurious irq on %d\n", irq);
+ 		__this_cpu_inc(irq_stat.spurious_irqs);
+-	else
++	} else {
+ 		generic_handle_irq(irq);
++	}
+ 
+ 	trace_irq_exit(regs);
+ 
+-- 
+2.6.1
