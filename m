@@ -1,27 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0146.outbound.protection.outlook.com [65.55.169.146])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 00FE71A0FE3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2015 09:44:57 +1100 (AEDT)
-Message-ID: <1449614678.15946.152.camel@freescale.com>
-Subject: Re: [v9, 6/6] fsl/fman: Add FMan MAC driver
-From: Scott Wood <scottwood@freescale.com>
-To: Andy Fleming <afleming@gmail.com>, <igal.liberman@freescale.com>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- <madalin.bucur@freescale.com>, <pebolle@tiscali.nl>, Joakim Tjernlund
- <joakim.tjernlund@transmode.se>, <ppc@mindchasers.com>,
- <stephen@networkplumber.org>, David Miller <davem@davemloft.net>
-Date: Tue, 8 Dec 2015 16:44:38 -0600
-In-Reply-To: <CAKWjMd7EDx8OnYGu-QJXM++fy=W5i2E74Fe4r9zNjUV_giyUKw@mail.gmail.com>
-References: <1449127157-9400-1-git-send-email-igal.liberman@freescale.com>
- <1449127157-9400-7-git-send-email-igal.liberman@freescale.com>
- <CAKWjMd7EDx8OnYGu-QJXM++fy=W5i2E74Fe4r9zNjUV_giyUKw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB6911A1043
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2015 10:39:11 +1100 (AEDT)
+Message-ID: <1449617926.21036.42.camel@kernel.crashing.org>
+Subject: Re: [P.A. Semi] Does the ethernet interface work on your Electra,
+ Chitra,  Nemo, and Athena board?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>, Michael Ellerman
+ <mpe@ellerman.id.au>,
+ Gabriel Paubert <paubert@iram.es>, netdev@vger.kernel.org,
+ Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 09 Dec 2015 10:38:46 +1100
+In-Reply-To: <566593B8.3070904@xenosoft.de>
+References: <565AF986.9060106@xenosoft.de>
+ <CAOJe8K1911vDjMe9m_1vY6DSGpOk0TmL96Qf1whuNFXxHJesGw@mail.gmail.com>
+ <565C1B55.4020207@xenosoft.de> <565C8287.7090209@xenosoft.de>
+ <20151130181217.GA15921@visitor2.iram.es> <565DB2FE.1010706@xenosoft.de>
+ <565E7A9E.4000909@xenosoft.de> <1449044072.24750.3.camel@ellerman.id.au>
+ <565F5E7C.9040207@xenosoft.de> <56603787.3000802@xenosoft.de>
+ <566576E8.2060300@xenosoft.de> <566593B8.3070904@xenosoft.de>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,29 +32,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-12-08 at 14:18 -0600, Andy Fleming wrote:
-> On Thu, Dec 3, 2015 at 1:19 AM,  <igal.liberman@freescale.com> wrote:
-> > From: Igal Liberman <igal.liberman@freescale.com>
-> > 
-> > This patch adds the Ethernet MAC driver supporting the three
-> > different types of MACs: dTSEC, tGEC and mEMAC.
-> > 
-> > Signed-off-by: Igal Liberman <igal.liberman@freescale.com>
+On Mon, 2015-12-07 at 15:12 +0100, Christian Zigotzky wrote:
+> Hi all,
 > 
-> [...]
-> 
-> > +
-> > +MODULE_LICENSE("Dual BSD/GPL");
-> > +
-> > +MODULE_AUTHOR("Emil Medve <Emilian.Medve@Freescale.com>");
-> 
-> I imagine this email address doesn't exist anymore, or won't soon.
-> This is also an issue in the ethernet driver (with my old address).
-> I'm not sure what the right approach is, but we shouldn't be putting
-> obsolete email addresses in the kernel.
+> I have some good news for you. I was able to fix the issue with the
+> P.A. 
+> Semi Ethernet. It was a problem with the new DMA handling. The patch
+> ' 
+> [RFC/PATCH,v2] powerpc/iommu: Support "hybrid" iommu/direct DMA ops
+> for 
+> coherent_mask < dma_mask (https://patchwork.ozlabs.org/patch/472535/)
+> ' 
+> is the problem.
 
-I don't think a MODULE_AUTHOR tag makes sense for drivers like this that had a
-lot of people work on them.  git history is better for giving credit in such
-cases.
+Send me your .config and the full dmesg output. I can't seem to
+reproduce here.
 
--Scott
+Cheers,
+Ben.
+
+> I had patched the following files before I compiled a kernel.
+> 
+> arch/powerpc/Kconfig
+> arch/powerpc/include/asm/device.h
+> arch/powerpc/include/asm/dma-mapping.h
+> arch/powerpc/include/asm/iommu.h
+> arch/powerpc/kernel/dma-iommu.c
+> arch/powerpc/kernel/dma-swiotlb.c
+> arch/powerpc/kernel/dma.c
+> arch/powerpc/platforms/powernv/pci-ioda.c
+> arch/powerpc/platforms/pseries/iommu.c
+> arch/powerpc/sysdev/dart_iommu.c
+> include/asm-generic/dma-mapping-common.h
+> 
+> The P.A. Semi Ethernet works again with the patched kernel.
+> 
+> I am happy. :-)
+> 
+> Please fix the issue in the kernel source code.
+> 
+> Thanks in advance,
+> 
+> Christian
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
