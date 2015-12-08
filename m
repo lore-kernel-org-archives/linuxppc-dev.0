@@ -1,38 +1,32 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D79E31A0809
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 10:05:36 +1100 (AEDT)
-Received: from localhost
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Mon, 7 Dec 2015 16:05:34 -0700
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 1F255C90043
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Dec 2015 17:53:41 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB7N5Vjq22085754
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2015 23:05:31 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB7N5VBr031552
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2015 18:05:31 -0500
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
-Subject: Re: [PATCH] cxl: Enable PCI device ID for future IBM CXL adapter
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <1449525812-46752-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Date: Mon, 7 Dec 2015 17:05:29 -0600
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Message-Id: <AEB3B865-49CB-4915-9ECE-DCC1E9C70FC9@linux.vnet.ibm.com>
-References: <1449525812-46752-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 183F21A0E80
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 12:27:44 +1100 (AEDT)
+Subject: Re: [PATCH part3 v12 00/10] Cleanup platform pci_domain_nr()
+To: Bjorn Helgaas <helgaas@kernel.org>
+References: <1437393678-4077-1-git-send-email-wangyijing@huawei.com>
+ <20151207215356.GD14429@localhost>
+CC: Bjorn Helgaas <bhelgaas@google.com>, <linux-pci@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ Russell King <linux@arm.linux.org.uk>, <dja@axtens.net>,
+ <linux-xtensa@linux-xtensa.org>, <x86@kernel.org>, Thomas Gleixner
+ <tglx@linutronix.de>, <linux-mips@linux-mips.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>,
+ Rusty Russell <rusty@rustcorp.com.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-s390@vger.kernel.org>, Tony Luck <tony.luck@intel.com>,
+ <linux-ia64@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, <linux-alpha@vger.kernel.org>,
+ <linux-m68k@lists.linux-m68k.org>, <linux-am33-list@redhat.com>,
+ Liviu Dudau <liviu@dudau.co.uk>, Arnd Bergmann <arnd@arndb.de>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+From: wangyijing <wangyijing@huawei.com>
+Message-ID: <56662FCE.40807@huawei.com>
+Date: Tue, 8 Dec 2015 09:18:06 +0800
+MIME-Version: 1.0
+In-Reply-To: <20151207215356.GD14429@localhost>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,4 +36,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+> 
+> Doesn't apply to v4.4-rc2.  Please refresh and repost if this is still
+> relevant.
+
+Hi Bjorn, this is still relevant, I will refresh it and post the new version soon.
+
+Thanks!
+Yijing.
+
+
+> 
+> .
+> 
