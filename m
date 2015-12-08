@@ -1,41 +1,32 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-qk0-x234.google.com (mail-qk0-x234.google.com
+ [IPv6:2607:f8b0:400d:c09::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 96ABB1A0EE1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 17:31:18 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 66BA7140291
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2015 17:31:18 +1100 (AEDT)
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 8 Dec 2015 16:31:18 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 151362BB003F
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2015 17:31:16 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tB86V7LS57082074
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Dec 2015 17:31:15 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tB86UgaU020346
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Dec 2015 17:30:43 +1100
-Subject: Re: [PATCH] cxl: sparse: add __iomem annotations in vphb.c
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <1446002979-29728-1-git-send-email-andrew.donnellan@au1.ibm.com>
- <1446541751.23081.1.camel@ellerman.id.au> <5639A307.7060503@au1.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, imunsie@au1.ibm.com, dja@axtens.net
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Message-ID: <566678FA.5030400@au1.ibm.com>
-Date: Tue, 8 Dec 2015 17:30:18 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 64ADC1A0F00
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Dec 2015 18:33:01 +1100 (AEDT)
+Received: by qkdp187 with SMTP id p187so17586777qkd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Dec 2015 23:32:58 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <5639A307.7060503@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <566593B8.3070904@xenosoft.de>
+References: <565AF986.9060106@xenosoft.de>
+ <CAOJe8K1911vDjMe9m_1vY6DSGpOk0TmL96Qf1whuNFXxHJesGw@mail.gmail.com>
+ <565C1B55.4020207@xenosoft.de> <565C8287.7090209@xenosoft.de>
+ <20151130181217.GA15921@visitor2.iram.es>
+ <565DB2FE.1010706@xenosoft.de> <565E7A9E.4000909@xenosoft.de>
+ <1449044072.24750.3.camel@ellerman.id.au>
+ <565F5E7C.9040207@xenosoft.de> <56603787.3000802@xenosoft.de>
+ <566576E8.2060300@xenosoft.de> <566593B8.3070904@xenosoft.de>
+Date: Tue, 8 Dec 2015 10:32:57 +0300
+Message-ID: <CAOJe8K0FQOM=ea3qa=g4eOVbhCpyi5OQRWF8Mh1NZ8-mpUWJjw@mail.gmail.com>
+Subject: Re: [P.A. Semi] Does the ethernet interface work on your Electra,
+ Chitra, Nemo, and Athena board?
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Gabriel Paubert <paubert@iram.es>,
+ Christian Zigotzky <chzigotzky@xenosoft.de>, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,27 +36,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Finally looking at this patch again for the first time in a couple of 
-months...
-
-On 04/11/15 17:17, Andrew Donnellan wrote:
-> On 03/11/15 20:09, Michael Ellerman wrote:
->> Part of your problem is you're storing afu->crs_len which is not
->> __iomem in
->> cfg_data which is, and so that's leading to some of your casts.
->>
->> I don't really see why you're using cfg_data like that, you have the
->> afu in
->> phb->private_data. But maybe cfg_data needs to hold that value for
->> some other
->> code I'm not seeing.
+On 12/7/15, Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
+> Hi all,
 >
-> I can't see any obvious reason why we need to use cfg_data either.
+> I have some good news for you. I was able to fix the issue with the P.A.
+> Semi Ethernet. It was a problem with the new DMA handling. The patch '
+> [RFC/PATCH,v2] powerpc/iommu: Support "hybrid" iommu/direct DMA ops for
+> coherent_mask < dma_mask (https://patchwork.ozlabs.org/patch/472535/)'
+> is the problem.
+>
+> I had patched the following files before I compiled a kernel.
+>
+> arch/powerpc/Kconfig
+> arch/powerpc/include/asm/device.h
+> arch/powerpc/include/asm/dma-mapping.h
+> arch/powerpc/include/asm/iommu.h
+> arch/powerpc/kernel/dma-iommu.c
+> arch/powerpc/kernel/dma-swiotlb.c
+> arch/powerpc/kernel/dma.c
+> arch/powerpc/platforms/powernv/pci-ioda.c
+> arch/powerpc/platforms/pseries/iommu.c
+> arch/powerpc/sysdev/dart_iommu.c
+> include/asm-generic/dma-mapping-common.h
+>
+> The P.A. Semi Ethernet works again with the patched kernel.
 
-Ian/Mikey - do you happen to know why we're using cfg_data? I've taken 
-another look and I can't see anything obvious.
+Hi Ben,
 
--- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+Could you please take a look..
+
+Thanks!
+
+>
+> I am happy. :-)
+>
+> Please fix the issue in the kernel source code.
+>
+> Thanks in advance,
+>
+> Christian
+>
+>
+>
