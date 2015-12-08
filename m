@@ -1,22 +1,19 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from smtprelay.hostedemail.com (smtprelay0006.hostedemail.com
- [216.40.44.6])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DFDFD1A1043
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2015 11:28:48 +1100 (AEDT)
-Date: Tue, 8 Dec 2015 19:28:44 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- chuhu@redhat.com
-Subject: Re: [RFC][PATCH] ppc: Implement save_stack_trace_regs()
-Message-ID: <20151208192844.70fb33e6@gandalf.local.home>
-In-Reply-To: <1449620422.6028.6.camel@ellerman.id.au>
-References: <20151208135056.718b7668@gandalf.local.home>
- <1449620422.6028.6.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1056D1A1043
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2015 11:42:12 +1100 (AEDT)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+CC: <netdev@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Paul Gortmaker
+ <paul.gortmaker@windriver.com>, Andrew Lunn <andrew@lunn.ch>
+Subject: [PATCH] sbc8641: drop bogus PHY IRQ entries from DTS file
+Date: Tue, 8 Dec 2015 17:44:02 -0500
+Message-ID: <1449614642-8161-1-git-send-email-paul.gortmaker@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 09 Dec 2015 11:20:22 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+This file was originally cloned off of the MPC8641D-HPCN reference
+platform, which actually had a PHY IRQ line connected.  However
+this board does not.  The bogus entry was largely inert and went
+undetected until commit 321beec5047af83db90c88114b7e664b156f49fe
+("net: phy: Use interrupts when available in NOLINK state") was
+added to the tree.
 
-> On Tue, 2015-12-08 at 13:50 -0500, Steven Rostedt wrote:
-> 
-> > It has come to my attention that kprobe event stack tracing does not
-> > work on powerpc.  
-> 
-> Yep looks like you're right. I didn't realise it was separate from the regular
-> stack trace stuff.
-> 
-> > diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-> > index ea43a347a104..0142c86801ba 100644
-> > --- a/arch/powerpc/kernel/stacktrace.c
-> > +++ b/arch/powerpc/kernel/stacktrace.c
-> > @@ -61,3 +61,10 @@ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
-> >  	save_context_stack(trace, tsk->thread.ksp, tsk, 0);
-> >  }
-> >  EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
-> > +
-> > +void
-> > +save_stack_trace_regs(struct pt_regs *regs, struct stack_trace *trace)
-> > +{
-> > +	save_context_stack(trace, regs->gpr[PT_R1], current, 0);  
-> 
-> In the kernel we would normally use just '1' here rather than 'PT_R1', but it's
-> not a huge deal.
-> 
-> Should I take this via powerpc or do you want it to go in via tracing?
-> 
+With the above commit, the board fails to NFS boot since it sits
+waiting for a PHY IRQ event that of course never arrives.  Removing
+the bogus entries from the DTS file fixes the issue.
 
-You can take it. And you can replace the PT_R1 if you want. I just
-noticed that it was defined, and I try to use macro names instead of
-hard coded numbers. I was actually looking for a "PT_SP" :-)
+Cc: Andrew Lunn <andrew@lunn.ch>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ arch/powerpc/boot/dts/sbc8641d.dts | 8 --------
+ 1 file changed, 8 deletions(-)
 
--- Steve
+diff --git a/arch/powerpc/boot/dts/sbc8641d.dts b/arch/powerpc/boot/dts/sbc8641d.dts
+index 631ede72e226..68f0ed7626bd 100644
+--- a/arch/powerpc/boot/dts/sbc8641d.dts
++++ b/arch/powerpc/boot/dts/sbc8641d.dts
+@@ -227,23 +227,15 @@
+ 				reg = <0x520 0x20>;
+ 
+ 				phy0: ethernet-phy@1f {
+-					interrupt-parent = <&mpic>;
+-					interrupts = <10 1>;
+ 					reg = <0x1f>;
+ 				};
+ 				phy1: ethernet-phy@0 {
+-					interrupt-parent = <&mpic>;
+-					interrupts = <10 1>;
+ 					reg = <0>;
+ 				};
+ 				phy2: ethernet-phy@1 {
+-					interrupt-parent = <&mpic>;
+-					interrupts = <10 1>;
+ 					reg = <1>;
+ 				};
+ 				phy3: ethernet-phy@2 {
+-					interrupt-parent = <&mpic>;
+-					interrupts = <10 1>;
+ 					reg = <2>;
+ 				};
+ 				tbi0: tbi-phy@11 {
+-- 
+2.6.1
