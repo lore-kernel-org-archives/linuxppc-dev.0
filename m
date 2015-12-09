@@ -1,20 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1EE001A000B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2015 12:03:06 +1100 (AEDT)
-Message-ID: <1449622985.6028.8.camel@ellerman.id.au>
-Subject: Re: [RFC][PATCH] ppc: Implement save_stack_trace_regs()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A9B91A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2015 12:06:51 +1100 (AEDT)
+Message-ID: <1449623211.6028.10.camel@ellerman.id.au>
+Subject: Re: [PATCH] cxl: sparse: add __iomem annotations in vphb.c
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- chuhu@redhat.com
-Date: Wed, 09 Dec 2015 12:03:05 +1100
-In-Reply-To: <20151208192844.70fb33e6@gandalf.local.home>
-References: <20151208135056.718b7668@gandalf.local.home>
- <1449620422.6028.6.camel@ellerman.id.au>
- <20151208192844.70fb33e6@gandalf.local.home>
+To: Michael Neuling <mikey@neuling.org>, Andrew Donnellan
+ <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org
+Cc: imunsie@au1.ibm.com, dja@axtens.net, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Date: Wed, 09 Dec 2015 12:06:51 +1100
+In-Reply-To: <1449622825.8861.4.camel@neuling.org>
+References: <1446002979-29728-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ <1446541751.23081.1.camel@ellerman.id.au> <5639A307.7060503@au1.ibm.com>
+ <566678FA.5030400@au1.ibm.com> <1449622825.8861.4.camel@neuling.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,43 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-12-08 at 19:28 -0500, Steven Rostedt wrote:
-> On Wed, 09 Dec 2015 11:20:22 +1100
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > On Tue, 2015-12-08 at 13:50 -0500, Steven Rostedt wrote:
-> > > It has come to my attention that kprobe event stack tracing does not
-> > > work on powerpc.  
-
-> > > diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-> > > index ea43a347a104..0142c86801ba 100644
-> > > --- a/arch/powerpc/kernel/stacktrace.c
-> > > +++ b/arch/powerpc/kernel/stacktrace.c
-> > > @@ -61,3 +61,10 @@ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
-> > >  	save_context_stack(trace, tsk->thread.ksp, tsk, 0);
-> > >  }
-> > >  EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
-> > > +
-> > > +void
-> > > +save_stack_trace_regs(struct pt_regs *regs, struct stack_trace *trace)
-> > > +{
-> > > +	save_context_stack(trace, regs->gpr[PT_R1], current, 0);  
+On Wed, 2015-12-09 at 12:00 +1100, Michael Neuling wrote:
+> On Tue, 2015-12-08 at 17:30 +1100, Andrew Donnellan wrote:
+> > Finally looking at this patch again for the first time in a couple of
+> > months...
 > > 
-> > In the kernel we would normally use just '1' here rather than 'PT_R1', but it's
-> > not a huge deal.
+> > On 04/11/15 17:17, Andrew Donnellan wrote:
+> > > On 03/11/15 20:09, Michael Ellerman wrote:
+> > > > Part of your problem is you're storing afu->crs_len which is not __iomem in
+> > > > cfg_data which is, and so that's leading to some of your casts.
+> > > > 
+> > > > I don't really see why you're using cfg_data like that, you have the
+> > > > afu in phb->private_data. But maybe cfg_data needs to hold that value
+> > > > for some other code I'm not seeing.
+> > > 
+> > > I can't see any obvious reason why we need to use cfg_data either.
 > > 
-> > Should I take this via powerpc or do you want it to go in via tracing?
+> > Ian/Mikey - do you happen to know why we're using cfg_data? I've
+> > taken another look and I can't see anything obvious.
 > 
-> You can take it. And you can replace the PT_R1 if you want. I just
-> noticed that it was defined, and I try to use macro names instead of
-> hard coded numbers. I was actually looking for a "PT_SP" :-)
+> IIRC, when I coded this up, benh just said these (cfg_addr/data) are
+> just private data and we can stick whatever we like in there.
+> 
+> We could store it in the AFU struct but it's (was just) convenient to
+> just store it here.
 
-OK thanks.
+You're storing afu->crs_len in there, so it is in the AFU struct. Unless
+there's a different "AFU struct", in which case meh.
 
-Looks like we actually have:
-
-  #define kernel_stack_pointer(regs) ((regs)->gpr[1])
-
-So that would be the most self documenting way to do it I guess, though I've
-never actually seen that macro used anywhere before :)
+Please send me a patch to clean it up Andrew.
 
 cheers
