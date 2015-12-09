@@ -1,19 +1,19 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <wen.pu@powercore.com.cn>
+Received: from smtpproxy21.qq.com (smtpbg297.qq.com [184.105.67.100])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C5C281A1047
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2015 20:12:41 +1100 (AEDT)
-Date: Wed, 9 Dec 2015 20:11:47 +1100
-From: Anton Blanchard <anton@samba.org>
-To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
- cyrilbur@gmail.com, scottwood@freescale.com, mikey@neuling.org,
- khandual@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Fix DSCR inheritance over fork()
-Message-ID: <20151209201147.032e28c3@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0E2DE1A1047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2015 20:00:38 +1100 (AEDT)
+From: "=?utf-8?B?6JKy5paH?=" <wen.pu@powercore.com.cn>
+To: "=?utf-8?B?TWljaGFlbCBFbGxlcm1hbg==?=" <mpe@ellerman.id.au>,
+ "=?utf-8?B?bGludXhwcGMtZGV2?=" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] powerpc/opal: add warning for unimplemented OPAL message
+ type
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="----=_NextPart_5667EC65_0A5193F0_16903F29"
+Date: Wed, 9 Dec 2015 16:55:01 +0800
+Message-ID: <tencent_1097DF836527EECD6BF4E6AA@qq.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,77 +23,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Two DSCR tests have a hack in them:
+This is a multi-part message in MIME format.
 
-	/*
-	 * XXX: Force a context switch out so that DSCR
-	 * current value is copied into the thread struct
-	 * which is required for the child to inherit the
-	 * changed value.
-	 */
-	sleep(1);
+------=_NextPart_5667EC65_0A5193F0_16903F29
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: base64
 
-We should not be working around this in the testcase, it is a kernel bug.
-Fix it by copying the current DSCR to the child, instead of what we
-had in the thread struct at last context switch.
+SGkgTWljaGFlbCwNCg0KT24gV2VkbmVzZGF5LCBEZWNlbWJlciAwOSwgMjAxNSAxMToxNzox
+MiBBTSBNaWNoYWVsIEVsbGVybWFuIHdyb3RlOg0KPiBIaSBXZW4sDQo+IA0KPiBUaGFua3Mg
+Zm9yIHRoZSBwYXRjaC4NCj4gDQo+IE9uIFR1ZSwgMjAxNS0xMi0wOCBhdCAxNTozMCArMDgw
+MCwgd2VuLnB1QHBvd2VyY29yZS5jb20uY24gd3JvdGU6DQo+ID4gSSBmb3VuZCB0aGF0IHRo
+ZXJlIGFyZSB1bmltcGxlbWVudGVkIE9QQUwgbWVzc2FnZSB0eXBlcyAiT1BBTF9NU0dfRVBP
+VyINCj4gPiBhbmQNCj4gPiAiT1BBTF9NU0dfRFBPIiBpbiBQb3dlck5WIFBsYXRmb3JtLiBJ
+ZiBza2lib290IHNlbmQgc3VjaCBtZXNzYWdlcyB0bw0KPiA+IGtlcm5lbCwgbm90aGluZyB3
+aWxsIGhhcHBlbihub3RpZmllcl9jYWxsX2NoYWluKCkgd2lsbCBzaWxlbnRseSBkcm9wIGl0
+KS4NCj4gPiBTbyBJIGFkZCBhIHdhcm5pbmcgdG8gaW5mb3JtIHdoYXQgaGFzIGhhcHBlbmVk
+LCBpcyBpdCBuZWNlc3Nhcnk/DQo+IA0KPiBXaGF0IGtlcm5lbCB2ZXJzaW9uIGFyZSB5b3Ug
+dXNpbmc/DQpUaGUga2VybmVsIHZlcnNpb24gaXMgdjQuMi4xLW9wZW5wb3dlcjIsIGZyb20g
+dGhlIG5ld2VzdCB2ZXJzaW9uIGF0IA0KaHR0cHM6Ly9naXRodWIuY29tL29wZW4tcG93ZXIv
+bGludXguDQoNCj4gDQo+IExvb2tpbmcgYXQgbWFpbmxpbmUgKDQuNC1yYzQpLCBJIGRvIHNl
+ZSBoYW5kbGVycyByZWdpc3RlcmVkIGZvciBFUE9XIGFuZA0KPiBEUE86DQo+IA0KPiAgDQo+
+IGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvY2dpdC9saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRz
+L2xpbnV4LmdpdC90cmVlL2FyY2gvcA0KPiBvd2VycGMvcGxhdGZvcm1zL3Bvd2VybnYvb3Bh
+bC1wb3dlci5jPyNuODINCj4gDQo+IFRoYXQgY29kZSB3YXMgbWVyZ2VkIGluIDQuMy4NCkkg
+ZG8gZmluZCB0aGF0IEVQT1cgYW5kIERQTyBhcmUgcmVnaXN0ZXJlZCBpbiBrZXJuZWwgNC4z
+LiBTbyBtYXliZSBpbiB0aGUgbmVhciANCmZ1dHVyZSBpdCB3aWxsIGJlIG1lcmdlZCBpbnRv
+IG9wZW4tcG93ZXIvbGludXguDQoNCj4gDQo+IA0KPiBJbiBnZW5lcmFsIEkgZG9uJ3QgdGhp
+bmsgd2Ugd2FudCB0byB3YXJuIGZvciB1bmhhbmRsZWQgbWVzc2FnZSB0eXBlcywNCj4gYmVj
+YXVzZSB3ZSBzdXBwb3J0IG9sZCBrZXJuZWxzIHJ1bm5pbmcgb24gbmV3IHNraWJvb3QuIElu
+IHRoYXQgY2FzZSBpZiB3ZQ0KPiB3YXJuZWQgb24gZXZlcnkgdW5oYW5kbGVkIG1lc3NhZ2Ug
+d2UnZCBwb3RlbnRpYWxseSBzcGFtIHRoZSBjb25zb2xlIHdpdGgNCj4gd2FybmluZ3MuDQo+
+IA0KPiBCdXQgcGVyaGFwcyB3ZSBjYW4gY29tZSB1cCB3aXRoIHNvbWV0aGluZyBzbWFydGVy
+LCB0aGF0IG9ubHkgd2FybnMgb25jZSBmb3INCj4gZWFjaCB1bmhhbmRsZWQgbWVzc2FnZSB0
+eXBlLCBvciBzb21ldGhpbmcgbGlrZSB0aGF0PyBEaWQgeW91IGhhdmUgYSBidWcgdGhhdA0K
+PiB3b3VsZCBoYXZlIGJlZW4gZWFzaWVyIHRvIGRlYnVnIHdpdGggYSB3YXJuaW5nIGhlcmU/
+DQpZZXMsIEkgdGhpbmsgaXQgaXMgYSBnb29kIGlkZWEgdGhhdCBvbmx5IHdhcm5zIG9uY2Us
+IG9yIHdhcm5zIGV2ZXJ5IGEgZmV3IA0Kc2Vjb25kcy4gDQpJIGZvdW5kIHRoYXQgRVBPVyBh
+bmQgRFBPIG9ubHkgdXNlZCBpbiBJQk0gRlNQIHBsYXRmb3JtLCBub3QgaW4gSGFiYW5lcm8g
+DQpwbGF0Zm9ybSB0aGF0IEkgaGFkLiBTbyBJIG1vZGlmaWVkIHRoZSBza2lib290IGNvZGUg
+YW5kIHNlbnQgYSBFUE9XL0RQTyBtZXNzYWdlIA0KdG8ga2VybmVsLCBhbmQgZm91bmQgdGhh
+dCBrZXJuZWwgd2FybiBub3RoaW5nLiBJIGhhdmUgbm8gYnVnIHdpdGggYSB3YXJuaW5nIA0K
+aGVyZSwgYW5kIGp1c3QgZ2V0IGEgbG9nIG1lc3NhZ2UgdmlhIGRtZXNnLg0KDQo+IA0KPiBj
+aGVlcnMNCg0KVGhhbmtzIQ0KV2VuIFB1
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/kernel/process.c                                 | 2 +-
- tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c | 8 --------
- tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c      | 8 --------
- 3 files changed, 1 insertion(+), 17 deletions(-)
+------=_NextPart_5667EC65_0A5193F0_16903F29
+Content-Type: text/html;
+	charset="utf-8"
+Content-Transfer-Encoding: base64
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index ec10250..fffc2d2 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1282,7 +1282,7 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
- #ifdef CONFIG_PPC64 
- 	if (cpu_has_feature(CPU_FTR_DSCR)) {
- 		p->thread.dscr_inherit = current->thread.dscr_inherit;
--		p->thread.dscr = current->thread.dscr;
-+		p->thread.dscr = mfspr(SPRN_DSCR);
- 	}
- 	if (cpu_has_feature(CPU_FTR_HAS_PPR))
- 		p->thread.ppr = INIT_PPR;
-diff --git a/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
-index 8265504..08a8b95 100644
---- a/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
-+++ b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
-@@ -60,14 +60,6 @@ int dscr_inherit_exec(void)
- 		else
- 			set_dscr(dscr);
- 
--		/*
--		 * XXX: Force a context switch out so that DSCR
--		 * current value is copied into the thread struct
--		 * which is required for the child to inherit the
--		 * changed value.
--		 */
--		sleep(1);
--
- 		pid = fork();
- 		if (pid == -1) {
- 			perror("fork() failed");
-diff --git a/tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c b/tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c
-index 4e414ca..3e5a6d1 100644
---- a/tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c
-+++ b/tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c
-@@ -40,14 +40,6 @@ int dscr_inherit(void)
- 		else
- 			set_dscr(dscr);
- 
--		/*
--		 * XXX: Force a context switch out so that DSCR
--		 * current value is copied into the thread struct
--		 * which is required for the child to inherit the
--		 * changed value.
--		 */
--		sleep(1);
--
- 		pid = fork();
- 		if (pid == -1) {
- 			perror("fork() failed");
--- 
-2.5.0
+SGkgTWljaGFlbCw8YnI+PGJyPk9uIFdlZG5lc2RheSwgRGVjZW1iZXIgMDksIDIwMTUgMTE6
+MTc6MTIgQU0gTWljaGFlbCBFbGxlcm1hbiB3cm90ZTo8YnI+Jmd0OyBIaSBXZW4sPGJyPiZn
+dDsgPGJyPiZndDsgVGhhbmtzIGZvciB0aGUgcGF0Y2guPGJyPiZndDsgPGJyPiZndDsgT24g
+VHVlLCAyMDE1LTEyLTA4IGF0IDE1OjMwICswODAwLCB3ZW4ucHVAcG93ZXJjb3JlLmNvbS5j
+biB3cm90ZTo8YnI+Jmd0OyAmZ3Q7IEkgZm91bmQgdGhhdCB0aGVyZSBhcmUgdW5pbXBsZW1l
+bnRlZCBPUEFMIG1lc3NhZ2UgdHlwZXMgIk9QQUxfTVNHX0VQT1ciPGJyPiZndDsgJmd0OyBh
+bmQ8YnI+Jmd0OyAmZ3Q7ICJPUEFMX01TR19EUE8iIGluIFBvd2VyTlYgUGxhdGZvcm0uIElm
+IHNraWJvb3Qgc2VuZCBzdWNoIG1lc3NhZ2VzIHRvPGJyPiZndDsgJmd0OyBrZXJuZWwsIG5v
+dGhpbmcgd2lsbCBoYXBwZW4obm90aWZpZXJfY2FsbF9jaGFpbigpIHdpbGwgc2lsZW50bHkg
+ZHJvcCBpdCkuPGJyPiZndDsgJmd0OyBTbyBJIGFkZCBhIHdhcm5pbmcgdG8gaW5mb3JtIHdo
+YXQgaGFzIGhhcHBlbmVkLCBpcyBpdCBuZWNlc3Nhcnk/PGJyPiZndDsgPGJyPiZndDsgV2hh
+dCBrZXJuZWwgdmVyc2lvbiBhcmUgeW91IHVzaW5nPzxicj5UaGUga2VybmVsIHZlcnNpb24g
+aXMgdjQuMi4xLW9wZW5wb3dlcjIsIGZyb20gdGhlIG5ld2VzdCB2ZXJzaW9uIGF0IDxicj5o
+dHRwczovL2dpdGh1Yi5jb20vb3Blbi1wb3dlci9saW51eC48YnI+PGJyPiZndDsgPGJyPiZn
+dDsgTG9va2luZyBhdCBtYWlubGluZSAoNC40LXJjNCksIEkgZG8gc2VlIGhhbmRsZXJzIHJl
+Z2lzdGVyZWQgZm9yIEVQT1cgYW5kPGJyPiZndDsgRFBPOjxicj4mZ3Q7IDxicj4mZ3Q7Jm5i
+c3A7IDxicj4mZ3Q7IGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvY2dpdC9saW51eC9rZXJuZWwv
+Z2l0L3RvcnZhbGRzL2xpbnV4LmdpdC90cmVlL2FyY2gvcDxicj4mZ3Q7IG93ZXJwYy9wbGF0
+Zm9ybXMvcG93ZXJudi9vcGFsLXBvd2VyLmM/I244Mjxicj4mZ3Q7IDxicj4mZ3Q7IFRoYXQg
+Y29kZSB3YXMgbWVyZ2VkIGluIDQuMy48YnI+SSBkbyBmaW5kIHRoYXQgRVBPVyBhbmQgRFBP
+IGFyZSByZWdpc3RlcmVkIGluIGtlcm5lbCA0LjMuIFNvIG1heWJlIGluIHRoZSBuZWFyIDxi
+cj5mdXR1cmUgaXQgd2lsbCBiZSBtZXJnZWQgaW50byBvcGVuLXBvd2VyL2xpbnV4Ljxicj48
+YnI+Jmd0OyA8YnI+Jmd0OyA8YnI+Jmd0OyBJbiBnZW5lcmFsIEkgZG9uJ3QgdGhpbmsgd2Ug
+d2FudCB0byB3YXJuIGZvciB1bmhhbmRsZWQgbWVzc2FnZSB0eXBlcyw8YnI+Jmd0OyBiZWNh
+dXNlIHdlIHN1cHBvcnQgb2xkIGtlcm5lbHMgcnVubmluZyBvbiBuZXcgc2tpYm9vdC4gSW4g
+dGhhdCBjYXNlIGlmIHdlPGJyPiZndDsgd2FybmVkIG9uIGV2ZXJ5IHVuaGFuZGxlZCBtZXNz
+YWdlIHdlJ2QgcG90ZW50aWFsbHkgc3BhbSB0aGUgY29uc29sZSB3aXRoPGJyPiZndDsgd2Fy
+bmluZ3MuPGJyPiZndDsgPGJyPiZndDsgQnV0IHBlcmhhcHMgd2UgY2FuIGNvbWUgdXAgd2l0
+aCBzb21ldGhpbmcgc21hcnRlciwgdGhhdCBvbmx5IHdhcm5zIG9uY2UgZm9yPGJyPiZndDsg
+ZWFjaCB1bmhhbmRsZWQgbWVzc2FnZSB0eXBlLCBvciBzb21ldGhpbmcgbGlrZSB0aGF0PyBE
+aWQgeW91IGhhdmUgYSBidWcgdGhhdDxicj4mZ3Q7IHdvdWxkIGhhdmUgYmVlbiBlYXNpZXIg
+dG8gZGVidWcgd2l0aCBhIHdhcm5pbmcgaGVyZT88YnI+WWVzLCBJIHRoaW5rIGl0IGlzIGEg
+Z29vZCBpZGVhIHRoYXQgb25seSB3YXJucyBvbmNlLCBvciB3YXJucyBldmVyeSBhIGZldyA8
+YnI+c2Vjb25kcy4gPGJyPkkgZm91bmQgdGhhdCBFUE9XIGFuZCBEUE8gb25seSB1c2VkIGlu
+IElCTSBGU1AgcGxhdGZvcm0sIG5vdCBpbiBIYWJhbmVybyA8YnI+cGxhdGZvcm0gdGhhdCBJ
+IGhhZC4gU28gSSBtb2RpZmllZCB0aGUgc2tpYm9vdCBjb2RlIGFuZCBzZW50IGEgRVBPVy9E
+UE8gbWVzc2FnZSA8YnI+dG8ga2VybmVsLCBhbmQgZm91bmQgdGhhdCBrZXJuZWwgd2FybiBu
+b3RoaW5nLiBJIGhhdmUgbm8gYnVnIHdpdGggYSB3YXJuaW5nIDxicj5oZXJlLCBhbmQganVz
+dCBnZXQgYSBsb2cgbWVzc2FnZSB2aWEgZG1lc2cuPGJyPjxicj4mZ3Q7IDxicj4mZ3Q7IGNo
+ZWVyczxicj48YnI+VGhhbmtzITxicj5XZW4gUHU8IS0tPCFbZW5kaWZdLS0+
+
+------=_NextPart_5667EC65_0A5193F0_16903F29--
