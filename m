@@ -1,19 +1,23 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1056D1A1043
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2015 11:42:12 +1100 (AEDT)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-CC: <netdev@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Paul Gortmaker
- <paul.gortmaker@windriver.com>, Andrew Lunn <andrew@lunn.ch>
-Subject: [PATCH] sbc8641: drop bogus PHY IRQ entries from DTS file
-Date: Tue, 8 Dec 2015 17:44:02 -0500
-Message-ID: <1449614642-8161-1-git-send-email-paul.gortmaker@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 38ED21A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2015 12:00:26 +1100 (AEDT)
+Message-ID: <1449622825.8861.4.camel@neuling.org>
+Subject: Re: [PATCH] cxl: sparse: add __iomem annotations in vphb.c
+From: Michael Neuling <mikey@neuling.org>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: imunsie@au1.ibm.com, dja@axtens.net, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Date: Wed, 09 Dec 2015 12:00:25 +1100
+In-Reply-To: <566678FA.5030400@au1.ibm.com>
+References: <1446002979-29728-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ <1446541751.23081.1.camel@ellerman.id.au> <5639A307.7060503@au1.ibm.com>
+ <566678FA.5030400@au1.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,50 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This file was originally cloned off of the MPC8641D-HPCN reference
-platform, which actually had a PHY IRQ line connected.  However
-this board does not.  The bogus entry was largely inert and went
-undetected until commit 321beec5047af83db90c88114b7e664b156f49fe
-("net: phy: Use interrupts when available in NOLINK state") was
-added to the tree.
+On Tue, 2015-12-08 at 17:30 +1100, Andrew Donnellan wrote:
+> Finally looking at this patch again for the first time in a couple of
+> months...
+>=20
+> On 04/11/15 17:17, Andrew Donnellan wrote:
+> > On 03/11/15 20:09, Michael Ellerman wrote:
+> > > Part of your problem is you're storing afu->crs_len which is not
+> > > __iomem in
+> > > cfg_data which is, and so that's leading to some of your casts.
+> > >=20
+> > > I don't really see why you're using cfg_data like that, you have
+> > > the
+> > > afu in
+> > > phb->private_data. But maybe cfg_data needs to hold that value
+> > > for
+> > > some other
+> > > code I'm not seeing.
+> >=20
+> > I can't see any obvious reason why we need to use cfg_data either.
+>=20
+> Ian/Mikey - do you happen to know why we're using cfg_data? I've
+> taken=20
+> another look and I can't see anything obvious.
+>=20
 
-With the above commit, the board fails to NFS boot since it sits
-waiting for a PHY IRQ event that of course never arrives.  Removing
-the bogus entries from the DTS file fixes the issue.
+IIRC, when I coded this up, benh just said these (cfg_addr/data) are
+just private data and we can stick whatever we like in there.
 
-Cc: Andrew Lunn <andrew@lunn.ch>
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- arch/powerpc/boot/dts/sbc8641d.dts | 8 --------
- 1 file changed, 8 deletions(-)
+We could store it in the AFU struct but it's (was just) convenient to
+just store it here.
 
-diff --git a/arch/powerpc/boot/dts/sbc8641d.dts b/arch/powerpc/boot/dts/sbc8641d.dts
-index 631ede72e226..68f0ed7626bd 100644
---- a/arch/powerpc/boot/dts/sbc8641d.dts
-+++ b/arch/powerpc/boot/dts/sbc8641d.dts
-@@ -227,23 +227,15 @@
- 				reg = <0x520 0x20>;
- 
- 				phy0: ethernet-phy@1f {
--					interrupt-parent = <&mpic>;
--					interrupts = <10 1>;
- 					reg = <0x1f>;
- 				};
- 				phy1: ethernet-phy@0 {
--					interrupt-parent = <&mpic>;
--					interrupts = <10 1>;
- 					reg = <0>;
- 				};
- 				phy2: ethernet-phy@1 {
--					interrupt-parent = <&mpic>;
--					interrupts = <10 1>;
- 					reg = <1>;
- 				};
- 				phy3: ethernet-phy@2 {
--					interrupt-parent = <&mpic>;
--					interrupts = <10 1>;
- 					reg = <2>;
- 				};
- 				tbi0: tbi-phy@11 {
--- 
-2.6.1
+Mikey
