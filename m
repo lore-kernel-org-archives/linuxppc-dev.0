@@ -1,21 +1,30 @@
-Return-Path: <yang.shi@linaro.org>
-Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
- [IPv6:2607:f8b0:400e:c03::233])
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 116191A05F4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 10:37:54 +1100 (AEDT)
+Received: from mail-pf0-x22b.google.com (mail-pf0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c00::22b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A58581A05F3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 10:03:54 +1100 (AEDT)
-Received: by pabur14 with SMTP id ur14so36865532pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Dec 2015 15:03:51 -0800 (PST)
-From: Yang Shi <yang.shi@linaro.org>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linaro-kernel@lists.linaro.org, yang.shi@linaro.org
-Subject: [PATCH] ppc64: select HAVE_CONTEXT_TRACKING by default
-Date: Wed,  9 Dec 2015 14:43:54 -0800
-Message-Id: <1449701034-5444-1-git-send-email-yang.shi@linaro.org>
+ by ozlabs.org (Postfix) with ESMTPS id D33AD140DA8
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2015 10:37:51 +1100 (AEDT)
+Received: by pfdd184 with SMTP id d184so37485562pfd.3
+ for <linuxppc-dev@ozlabs.org>; Wed, 09 Dec 2015 15:37:50 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: linuxppc-dev@ozlabs.org, Mahesh J Salgaonkar <mahesh.salgaonkar@in.ibm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] selftests/powerpc: Add script to test HMI functionality
+In-Reply-To: <CAOJe8K3xJ_Difk5aLJT=Jpz-f8tJfQx=9GE6=78FjRiqw4qHvA@mail.gmail.com>
+References: <1447821827-17876-1-git-send-email-dja@axtens.net>
+ <CAOJe8K3xJ_Difk5aLJT=Jpz-f8tJfQx=9GE6=78FjRiqw4qHvA@mail.gmail.com>
+Date: Thu, 10 Dec 2015 10:37:35 +1100
+Message-ID: <87h9jrxkg0.fsf@gamma.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,63 +34,216 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The functionality of context tracking has been implemented by PPC64 and
-HAVE_CONTEXT_TRACKING was selected by pseries by default.
-Actually, it is applicale to all PPC64 platforms, so select it in PPC64
-generic Kconfig.
+--=-=-=
+Content-Type: text/plain
 
-NO_HZ_FULL depends on it, with this change NO_HZ_FULL could be enabled
-for all PPC64 machines.
+I just realised I sent my reply to Denis not the list - apologies. This
+info goes for v2 as well.
 
-Signed-off-by: Yang Shi <yang.shi@linaro.org>
----
-Following the instruction in Documentation/timers/NO_HZ.txt, I tested full nohz
-on my FSL T2080 target, the below trace log shows it works well.
+  > Could you explain why it's useful, and what it's useful for. Moreover,
+  > it's POWER8 feature, right?
 
-       user_loop-574   [001] d..1   137.044892: tick_stop: success=yes msg=
-       user_loop-574   [001] d.h1   138.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=137796002092
-       user_loop-574   [001] d.h1   139.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=138796002129
-       user_loop-574   [001] d.h1   140.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=139796002219
-       user_loop-574   [001] d.h1   141.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=140796002229
-       user_loop-574   [001] d.h1   142.044879: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=141796002159
-       user_loop-574   [001] d.h1   143.044879: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=142796002142
-       user_loop-574   [001] d.h1   144.044878: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=143796002046
-       user_loop-574   [001] d.h1   145.044878: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=144796002189
-       user_loop-574   [001] d.h1   146.044878: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=145796002199
-       user_loop-574   [001] d.h1   147.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=146796003836
+  I'm not sure whether you're asking about the script or HMIs. Explaining
+  HMIs helps make sense of the script, so I'll start there.
 
-It shows the timer tick just comes in every second.
+  HMIs are a class of interrupt or exception that, broadly speaking,
+  require the hypervisor to intervene to 'do something'. They are (very
+  lightly) documented in the POWER ISA, which is available on the
+  OpenPOWER website. That file doesn't do a particuarly good job of
+  explaining what can trigger an HMI, because that's a Book IV question.
 
-It should be low risk to have problem on other PPC64 targets, although they are
-not tested. 
+  So, while I can't point you to documentation about what might cause an
+  HMI, I can point you to some source code. Here goes:
 
- arch/powerpc/platforms/Kconfig.cputype | 1 +
- arch/powerpc/platforms/pseries/Kconfig | 1 -
- 2 files changed, 1 insertion(+), 1 deletion(-)
+  An HMI will (per the ISA) cause execution to jump to
+  0x0000 0000 0000 0E60. Through some asm and C you end up calling
+  ppc_md.hmi_exception_early() and then possibly
+  ppc_md.handle_hmi_expection(). This is only defined on PowerNV, where
+  they point to opal_hmi_exception_early() and
+  opal_handle_hmi_exception() respectively.
 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 142dff5..7b25dd1 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -3,6 +3,7 @@ config PPC64
- 	default n
- 	select HAVE_VIRT_CPU_ACCOUNTING
- 	select ZLIB_DEFLATE
-+	select HAVE_CONTEXT_TRACKING
- 	help
- 	  This option selects whether a 32-bit or a 64-bit kernel
- 	  will be built.
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index bec90fb..6853148 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -17,7 +17,6 @@ config PPC_PSERIES
- 	select PPC_UDBG_16550
- 	select PPC_NATIVE
- 	select PPC_DOORBELL
--	select HAVE_CONTEXT_TRACKING
- 	select HOTPLUG_CPU if SMP
- 	select ARCH_RANDOM
- 	select PPC_DOORBELL
--- 
-2.0.2
+  The early exception calls into opal through opal_handle_hmi, which is an
+  OPAL call (OPAL_HANDLE_HMI). skiboot/core/hmi.c lists the contents of
+  the HMER (Hypervisor Maintenance Exception Register), which identifies
+  the actual cause of the HMI. You can find the list in the skiboot repo
+  on github, including the action that will be taken:
+  https://github.com/open-power/skiboot/blob/master/core/hmi.c
+  The rest of the file fleshes out the mechanics of HMIs: for example,
+  where they are caused by the failure of a POWER8 co-processor such as
+  CAPI or NX.
+
+  Some HMIs are relayed by Skiboot to Linux by sending an OPAL_MSG_HMI_EVT
+  to Linux. This triggers off some further processing which causes a
+  message to be printed in dmesg. The relevant file here is
+  platforms/powernv/opal-hmi.c
+
+  The script, therefore, is useful because:
+   - HMIs are an exceptional/error condition that is not hit in normal
+     operation. Indeed, without the xscom commands in this script
+     (or a CAPI card), it's almost impossible to hit them.
+   - HMIs involve communications between Skiboot and Linux, involve
+     touching the PACA, and generally work in an area that is prone to
+     bugs, so testing them is especially valuable.
+   - The script is carefully calibrated to send HMIs that trigger a
+     message in dmesg but which don't checkstop the machine.
+
+  To answer your final question, I'm not entirely sure if HMIs are POWER8
+  specific. I suspect they've been around for a lot longer, but maybe
+  someone who's been around IBM chips for longer than me could clarify this.
+
+  Regards,
+  Daniel
+
+
+Denis Kirjanov <kda@linux-powerpc.org> writes:
+
+> On 11/18/15, Daniel Axtens <dja@axtens.net> wrote:
+>> HMIs (Hypervisor Management|Maintenance Interrupts) are a class of interrupt
+>> on POWER systems.
+>>
+>> HMI support has traditionally been exceptionally difficult to test. However
+>> Skiboot ships a tool that, with the correct magic numbers, will inject them.
+>>
+>> This, therefore, is a first pass at a script to inject HMIs and monitor
+>> Linux's response. It injects an HMI on each core on every chip in turn.
+>> It then watches dmesg to see if it's acknowledged by Linux.
+>>
+>> On a Tuletta, I observed that we see 8 (or sometimes 9 or more) events per
+>> injection, regardless of SMT setting, so we wait for 8 before progressing.
+>>
+>> It sits in a new scripts/ directory in selftests/powerpc, because it's not
+>> designed to be run as part of the regular make selftests process. In
+>> particular, it is quite possibly going to end up garding lots of your CPUs,
+>> so it should only be run if you know how to undo that.
+>
+> Hi Daniel,
+>
+> Could you explain why it's useful, and what it's useful for. Moreover,
+> it's POWER8 feature, right?
+>>
+>> CC: Mahesh J Salgaonkar <mahesh.salgaonkar@in.ibm.com>
+>> Signed-off-by: Daniel Axtens <dja@axtens.net>
+>> ---
+>>  tools/testing/selftests/powerpc/scripts/hmi.sh | 77
+>> ++++++++++++++++++++++++++
+>>  1 file changed, 77 insertions(+)
+>>  create mode 100755 tools/testing/selftests/powerpc/scripts/hmi.sh
+>>
+>> diff --git a/tools/testing/selftests/powerpc/scripts/hmi.sh
+>> b/tools/testing/selftests/powerpc/scripts/hmi.sh
+>> new file mode 100755
+>> index 000000000000..ebce03933784
+>> --- /dev/null
+>> +++ b/tools/testing/selftests/powerpc/scripts/hmi.sh
+>> @@ -0,0 +1,77 @@
+>> +#!/bin/sh
+>> +
+>> +# do we have ./getscom, ./putscom?
+>> +if [ -x ./getscom ] && [ -x ./putscom ]; then
+>> +	GETSCOM=./getscom
+>> +	PUTSCOM=./putscom
+>> +elif which getscom > /dev/null; then
+>> +	GETSCOM=$(which getscom)
+>> +	PUTSCOM=$(which putscom)
+>> +else
+>> +	cat <<EOF
+>> +Can't find getscom/putscom in . or \$PATH.
+>> +See https://github.com/open-power/skiboot.
+>> +The tool is in external/xscom-utils
+>> +EOF
+>> +	exit 1
+>> +fi
+>> +
+>> +# We will get 8 HMI events per injection
+>> +# todo: deal with things being offline
+>> +expected_hmis=8
+>> +COUNT_HMIS() {
+>> +    dmesg | grep -c 'Harmless Hypervisor Maintenance interrupt'
+>> +}
+>> +
+>> +# massively expand snooze delay, allowing injection on all cores
+>> +ppc64_cpu --smt-snooze-delay=1000000000
+>> +
+>> +# when we exit, restore it
+>> +trap "ppc64_cpu --smt-snooze-delay=100" 0 1
+>> +
+>> +# for each chip+core combination
+>> +# todo - less fragile parsing
+>> +egrep -o 'OCC: Chip [0-9a-f]+ Core [0-9a-f]' < /sys/firmware/opal/msglog |
+>> +while read chipcore; do
+>> +	chip=$(echo "$chipcore"|awk '{print $3}')
+>> +	core=$(echo "$chipcore"|awk '{print $5}')
+>> +	fir="0x1${core}013100"
+>> +
+>> +	# verify that Core FIR is zero as expected
+>> +	if [ "$($GETSCOM -c 0x${chip} $fir)" != 0 ]; then
+>> +		echo "FIR was not zero before injection for chip $chip, core $core.
+>> Aborting!"
+>> +		echo "Result of $GETSCOM -c 0x${chip} $fir:"
+>> +		$GETSCOM -c 0x${chip} $fir
+>> +		echo "If you get a -5 error, the core may be in idle state. Try
+>> stress-ng."
+>> +		echo "Otherwise, try $PUTSCOM -c 0x${chip} $fir 0"
+>> +		exit 1
+>> +	fi
+>> +
+>> +	# keep track of the number of HMIs handled
+>> +	old_hmis=$(COUNT_HMIS)
+>> +
+>> +	# do injection, adding a marker to dmesg for clarity
+>> +	echo "Injecting HMI on core $core, chip $chip" | tee /dev/kmsg
+>> +	# inject a RegFile recoverable error
+>> +	if ! $PUTSCOM -c 0x${chip} $fir 2000000000000000 > /dev/null; then
+>> +		echo "Error injecting. Aborting!"
+>> +		exit 1
+>> +	fi
+>> +
+>> +	# now we want to wait for all the HMIs to be processed
+>> +	# we expect one per thread on the core
+>> +	i=0;
+>> +	new_hmis=$(COUNT_HMIS)
+>> +	while [ $new_hmis -lt $((old_hmis + expected_hmis)) ] && [ $i -lt 12 ]; do
+>> +	    echo "Seen $((new_hmis - old_hmis)) HMI(s) out of $expected_hmis
+>> expected, sleeping"
+>> +	    sleep 5;
+>> +	    i=$((i + 1))
+>> +	    new_hmis=$(COUNT_HMIS)
+>> +	done
+>> +	if [ $i = 12 ]; then
+>> +	    echo "Haven't seen expected $expected_hmis recoveries after 1 min.
+>> Aborting."
+>> +	    exit 1
+>> +	fi
+>> +	echo "Processed $expected_hmis events; presumed success. Check dmesg."
+>> +	echo ""
+>> +done
+>> --
+>> 2.6.2
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAEBCgAGBQJWaLs/AAoJEPC3R3P2I92FlgcQAIWL0YFRYSZXoentIIA7Yu1v
+kGAZIDKHlEgeSk5yMbcEd2Wy76Q1Xs2uILzycF86zyzqAshCv2aK/moEAxIjXMWJ
+M7aZ3N/adWNObzQ7C7aVhhxIu7ZdsTuHCAfLp0zpYPKH8JYXgmLbxaX/J+yo/V1e
+Mrs3/dzWjyFEZJujt/n6q8JfxmM/Ddi7oFQly/bOZeDfNzljW6ccT8AwIDSSTpmq
+T8urPFGYJ3rEDGb9Bd40TNz/JlPy+ULr1EXksPLhvCXim6LnoD/v1JOaV46+oso2
+No3K8Qi2nN5cSvzDCGekFg7ZPD0vt+ytr6DSwAx4ZBRDPnL6Xuw9Fa9vNg3kSJgS
+eqWm8Pz+xKCe4fVv89iLdsM7f3gHELPKTRPlQ0GoB14lmfLJi/zGgh/m11q69plM
+PD7KNR+SiVTPh4+HjaOm0rpaZkZVRO07GeAm3lZAVntMOc7pUCiozo0GRLTmdsO0
+RTZqZ533zuW4KegZjT3ME9C9R/r2nc+UdHOU06Hec7zYDQubdqa502kphywZwASl
+Ne2swfvmZld1fhvX/u+1ut87aQuRSHht90ETMZvPzSQpkdWuQYzgnBGlpwvxHVeB
+vdIzQ/9ktdFYWqNh6s3byTTgCFVBY033mv9eKeeZ0X435D5uD5V2Auq9oRR+zv/s
+HAdqyR9LnrTDyTdDmpaD
+=9/Te
+-----END PGP SIGNATURE-----
+--=-=-=--
