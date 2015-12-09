@@ -1,28 +1,23 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail5.wrs.com (mail5.windriver.com [192.103.53.11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB3651A1165
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 00:21:40 +1100 (AEDT)
-From: Petr Mladek <pmladek@suse.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Russell King <rmk+kernel@arm.linux.org.uk>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-cris-kernel@axis.com,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, Petr Mladek <pmladek@suse.com>
-Subject: [PATCH v3 4/4] printk/nmi: Increase the size of NMI buffer and make
- it configurable
-Date: Wed,  9 Dec 2015 14:21:05 +0100
-Message-Id: <1449667265-17525-5-git-send-email-pmladek@suse.com>
-In-Reply-To: <1449667265-17525-1-git-send-email-pmladek@suse.com>
-References: <1449667265-17525-1-git-send-email-pmladek@suse.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5310E1A00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 01:40:04 +1100 (AEDT)
+Date: Wed, 9 Dec 2015 09:39:51 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Andrew Lunn <andrew@lunn.ch>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, <netdev@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] sbc8641: drop bogus PHY IRQ entries from DTS file
+Message-ID: <20151209143951.GM22885@windriver.com>
+References: <1449614642-8161-1-git-send-email-paul.gortmaker@windriver.com>
+ <20151209030729.GA2093@lunn.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20151209030729.GA2093@lunn.ch>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,69 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Testing has shown that the backtrace sometimes does not fit
-into the 4kB temporary buffer that is used in NMI context.
-The warnings are gone when I double the temporary buffer size.
+[Re: [PATCH] sbc8641: drop bogus PHY IRQ entries from DTS file] On 09/12/2015 (Wed 04:07) Andrew Lunn wrote:
 
-This patch doubles the buffer size and makes it configurable.
+> On Tue, Dec 08, 2015 at 05:44:02PM -0500, Paul Gortmaker wrote:
+> > This file was originally cloned off of the MPC8641D-HPCN reference
+> > platform, which actually had a PHY IRQ line connected.  However
+> > this board does not.  The bogus entry was largely inert and went
+> > undetected until commit 321beec5047af83db90c88114b7e664b156f49fe
+> > ("net: phy: Use interrupts when available in NOLINK state") was
+> > added to the tree.
+> > 
+> > With the above commit, the board fails to NFS boot since it sits
+> > waiting for a PHY IRQ event that of course never arrives.  Removing
+> > the bogus entries from the DTS file fixes the issue.
+> 
+> Hi Paul
+> 
+> Originally the interrupt is used for detecting the link has gone
+> down. That would of also been bogus before. Have you tried this?  If
 
-Note that this problem existed even in the x86-specific
-implementation that was added by the commit a9edc8809328
-("x86/nmi: Perform a safe NMI stack trace on all CPUs").
-Nobody noticed it because it did not print any warnings.
+Haven't tried it, but chances are you are right.
 
-Signed-off-by: Petr Mladek <pmladek@suse.com>
----
- init/Kconfig        | 22 ++++++++++++++++++++++
- kernel/printk/nmi.c |  3 ++-
- 2 files changed, 24 insertions(+), 1 deletion(-)
+> that is also broken, maybe you need to add a fixes: tag so that it
+> gets back ported?
 
-diff --git a/init/Kconfig b/init/Kconfig
-index c1c0b6a2d712..efcff25a112d 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -866,6 +866,28 @@ config LOG_CPU_MAX_BUF_SHIFT
- 		     13 =>   8 KB for each CPU
- 		     12 =>   4 KB for each CPU
- 
-+config NMI_LOG_BUF_SHIFT
-+	int "Temporary per-CPU NMI log buffer size (12 => 4KB, 13 => 8KB)"
-+	range 10 21
-+	default 13
-+	depends on PRINTK && HAVE_NMI
-+	help
-+	  Select the size of a per-CPU buffer where NMI messages are temporary
-+	  stored. They are copied to the main log buffer in a safe context
-+	  to avoid a deadlock. The value defines the size as a power of 2.
-+
-+	  NMI messages are rare and limited. The largest one is when
-+	  a backtrace is printed. It usually fits into 4KB. Select
-+	  8KB if you want to be on the safe side.
-+
-+	  Examples:
-+		     17 => 128 KB for each CPU
-+		     16 =>  64 KB for each CPU
-+		     15 =>  32 KB for each CPU
-+		     14 =>  16 KB for each CPU
-+		     13 =>   8 KB for each CPU
-+		     12 =>   4 KB for each CPU
-+
- #
- # Architectures with an unreliable sched_clock() should select this:
- #
-diff --git a/kernel/printk/nmi.c b/kernel/printk/nmi.c
-index 5465230b75ec..78c07d441b4e 100644
---- a/kernel/printk/nmi.c
-+++ b/kernel/printk/nmi.c
-@@ -41,7 +41,8 @@ DEFINE_PER_CPU(printk_func_t, printk_func) = vprintk_default;
- static int printk_nmi_irq_ready;
- atomic_t nmi_message_lost;
- 
--#define NMI_LOG_BUF_LEN (4096 - sizeof(atomic_t) - sizeof(struct irq_work))
-+#define NMI_LOG_BUF_LEN ((1 << CONFIG_NMI_LOG_BUF_SHIFT) -		\
-+			 sizeof(atomic_t) - sizeof(struct irq_work))
- 
- struct nmi_seq_buf {
- 	atomic_t		len;	/* length of written data */
--- 
-1.8.5.6
+Nobody noticed in the past ~7 years or so, but I guess I can point Greg
+at it once it is present in mainline.  The main reason I'd Cc'd netdev
+is just to possibly save anyone else the investigation if they ran into
+the same issue on a different board -which seems highly probable IMHO.
+
+Paul.
+--
+
+> 
+>      Andrew
