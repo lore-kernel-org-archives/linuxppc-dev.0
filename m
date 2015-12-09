@@ -1,24 +1,24 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from smtprelay.hostedemail.com (smtprelay0054.hostedemail.com
- [216.40.44.54])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 38FAF1A0E61
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2015 12:21:16 +1100 (AEDT)
-Date: Tue, 8 Dec 2015 20:21:11 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- chuhu@redhat.com
-Subject: Re: [RFC][PATCH] ppc: Implement save_stack_trace_regs()
-Message-ID: <20151208202111.79d60550@gandalf.local.home>
-In-Reply-To: <1449622985.6028.8.camel@ellerman.id.au>
-References: <20151208135056.718b7668@gandalf.local.home>
- <1449620422.6028.6.camel@ellerman.id.au>
- <20151208192844.70fb33e6@gandalf.local.home>
- <1449622985.6028.8.camel@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id 333591A0E80
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2015 13:17:22 +1100 (AEDT)
+Date: Tue, 08 Dec 2015 21:17:15 -0500 (EST)
+Message-Id: <20151208.211715.790899872740551674.davem@davemloft.net>
+To: scottwood@freescale.com
+Cc: afleming@gmail.com, igal.liberman@freescale.com,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, madalin.bucur@freescale.com,
+ pebolle@tiscali.nl, joakim.tjernlund@transmode.se, ppc@mindchasers.com,
+ stephen@networkplumber.org
+Subject: Re: [v9, 6/6] fsl/fman: Add FMan MAC driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1449614678.15946.152.camel@freescale.com>
+References: <1449127157-9400-7-git-send-email-igal.liberman@freescale.com>
+ <CAKWjMd7EDx8OnYGu-QJXM++fy=W5i2E74Fe4r9zNjUV_giyUKw@mail.gmail.com>
+ <1449614678.15946.152.camel@freescale.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,17 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 09 Dec 2015 12:03:05 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+From: Scott Wood <scottwood@freescale.com>
+Date: Tue, 8 Dec 2015 16:44:38 -0600
 
-
-> Looks like we actually have:
+> On Tue, 2015-12-08 at 14:18 -0600, Andy Fleming wrote:
+>> On Thu, Dec 3, 2015 at 1:19 AM,  <igal.liberman@freescale.com> wrote:
+>> > From: Igal Liberman <igal.liberman@freescale.com>
+>> > 
+>> > This patch adds the Ethernet MAC driver supporting the three
+>> > different types of MACs: dTSEC, tGEC and mEMAC.
+>> > 
+>> > Signed-off-by: Igal Liberman <igal.liberman@freescale.com>
+>> 
+>> [...]
+>> 
+>> > +
+>> > +MODULE_LICENSE("Dual BSD/GPL");
+>> > +
+>> > +MODULE_AUTHOR("Emil Medve <Emilian.Medve@Freescale.com>");
+>> 
+>> I imagine this email address doesn't exist anymore, or won't soon.
+>> This is also an issue in the ethernet driver (with my old address).
+>> I'm not sure what the right approach is, but we shouldn't be putting
+>> obsolete email addresses in the kernel.
 > 
->   #define kernel_stack_pointer(regs) ((regs)->gpr[1])
-> 
-> So that would be the most self documenting way to do it I guess, though I've
-> never actually seen that macro used anywhere before :)
+> I don't think a MODULE_AUTHOR tag makes sense for drivers like this that had a
+> lot of people work on them.  git history is better for giving credit in such
+> cases.
 
-Cool, throw that in, and then it will be the first for you ;-)
-
--- Steve
+Agreed.
