@@ -2,8 +2,8 @@ Return-Path: <pmladek@suse.com>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1FDFF1A1160
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 00:21:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB3651A1165
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 00:21:40 +1100 (AEDT)
 From: Petr Mladek <pmladek@suse.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Peter Zijlstra <peterz@infradead.org>,
@@ -17,10 +17,10 @@ Cc: Peter Zijlstra <peterz@infradead.org>,
  linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org, Petr Mladek <pmladek@suse.com>
-Subject: [PATCH v3 3/4] printk/nmi: Warn when some message has been lost in
- NMI context
-Date: Wed,  9 Dec 2015 14:21:04 +0100
-Message-Id: <1449667265-17525-4-git-send-email-pmladek@suse.com>
+Subject: [PATCH v3 4/4] printk/nmi: Increase the size of NMI buffer and make
+ it configurable
+Date: Wed,  9 Dec 2015 14:21:05 +0100
+Message-Id: <1449667265-17525-5-git-send-email-pmladek@suse.com>
 In-Reply-To: <1449667265-17525-1-git-send-email-pmladek@suse.com>
 References: <1449667265-17525-1-git-send-email-pmladek@suse.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,98 +32,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We could not resize the temporary buffer in NMI context. Let's warn
-if a message is lost.
+Testing has shown that the backtrace sometimes does not fit
+into the 4kB temporary buffer that is used in NMI context.
+The warnings are gone when I double the temporary buffer size.
 
-This is rather theoretical. printk() should not be used in NMI.
-The only sensible use is when we want to print backtrace from all
-CPUs. The current buffer should be enough for this purpose.
+This patch doubles the buffer size and makes it configurable.
+
+Note that this problem existed even in the x86-specific
+implementation that was added by the commit a9edc8809328
+("x86/nmi: Perform a safe NMI stack trace on all CPUs").
+Nobody noticed it because it did not print any warnings.
 
 Signed-off-by: Petr Mladek <pmladek@suse.com>
 ---
- kernel/printk/nmi.c    |  5 ++++-
- kernel/printk/printk.c | 10 ++++++++++
- kernel/printk/printk.h | 11 +++++++++++
- 3 files changed, 25 insertions(+), 1 deletion(-)
+ init/Kconfig        | 22 ++++++++++++++++++++++
+ kernel/printk/nmi.c |  3 ++-
+ 2 files changed, 24 insertions(+), 1 deletion(-)
 
+diff --git a/init/Kconfig b/init/Kconfig
+index c1c0b6a2d712..efcff25a112d 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -866,6 +866,28 @@ config LOG_CPU_MAX_BUF_SHIFT
+ 		     13 =>   8 KB for each CPU
+ 		     12 =>   4 KB for each CPU
+ 
++config NMI_LOG_BUF_SHIFT
++	int "Temporary per-CPU NMI log buffer size (12 => 4KB, 13 => 8KB)"
++	range 10 21
++	default 13
++	depends on PRINTK && HAVE_NMI
++	help
++	  Select the size of a per-CPU buffer where NMI messages are temporary
++	  stored. They are copied to the main log buffer in a safe context
++	  to avoid a deadlock. The value defines the size as a power of 2.
++
++	  NMI messages are rare and limited. The largest one is when
++	  a backtrace is printed. It usually fits into 4KB. Select
++	  8KB if you want to be on the safe side.
++
++	  Examples:
++		     17 => 128 KB for each CPU
++		     16 =>  64 KB for each CPU
++		     15 =>  32 KB for each CPU
++		     14 =>  16 KB for each CPU
++		     13 =>   8 KB for each CPU
++		     12 =>   4 KB for each CPU
++
+ #
+ # Architectures with an unreliable sched_clock() should select this:
+ #
 diff --git a/kernel/printk/nmi.c b/kernel/printk/nmi.c
-index 29a498586465..5465230b75ec 100644
+index 5465230b75ec..78c07d441b4e 100644
 --- a/kernel/printk/nmi.c
 +++ b/kernel/printk/nmi.c
-@@ -39,6 +39,7 @@
-  */
- DEFINE_PER_CPU(printk_func_t, printk_func) = vprintk_default;
+@@ -41,7 +41,8 @@ DEFINE_PER_CPU(printk_func_t, printk_func) = vprintk_default;
  static int printk_nmi_irq_ready;
-+atomic_t nmi_message_lost;
+ atomic_t nmi_message_lost;
  
- #define NMI_LOG_BUF_LEN (4096 - sizeof(atomic_t) - sizeof(struct irq_work))
+-#define NMI_LOG_BUF_LEN (4096 - sizeof(atomic_t) - sizeof(struct irq_work))
++#define NMI_LOG_BUF_LEN ((1 << CONFIG_NMI_LOG_BUF_SHIFT) -		\
++			 sizeof(atomic_t) - sizeof(struct irq_work))
  
-@@ -63,8 +64,10 @@ static int vprintk_nmi(const char *fmt, va_list args)
- again:
- 	len = atomic_read(&s->len);
- 
--	if (len >=  sizeof(s->buffer))
-+	if (len >=  sizeof(s->buffer)) {
-+		atomic_inc(&nmi_message_lost);
- 		return 0;
-+	}
- 
- 	/*
- 	 * Make sure that all old data have been read before the buffer was
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 88641c74163d..a6bb0b0838f3 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -1669,6 +1669,7 @@ asmlinkage int vprintk_emit(int facility, int level,
- 	unsigned long flags;
- 	int this_cpu;
- 	int printed_len = 0;
-+	int nmi_message_lost;
- 	bool in_sched = false;
- 	/* cpu currently holding logbuf_lock in this function */
- 	static unsigned int logbuf_cpu = UINT_MAX;
-@@ -1719,6 +1720,15 @@ asmlinkage int vprintk_emit(int facility, int level,
- 					 strlen(recursion_msg));
- 	}
- 
-+	nmi_message_lost = get_nmi_message_lost();
-+	if (unlikely(nmi_message_lost)) {
-+		text_len = scnprintf(textbuf, sizeof(textbuf),
-+				     "BAD LUCK: lost %d message(s) from NMI context!",
-+				     nmi_message_lost);
-+		printed_len += log_store(0, 2, LOG_PREFIX|LOG_NEWLINE, 0,
-+					 NULL, 0, textbuf, text_len);
-+	}
-+
- 	/*
- 	 * The printf needs to come first; we need the syslog
- 	 * prefix which might be passed-in as a parameter.
-diff --git a/kernel/printk/printk.h b/kernel/printk/printk.h
-index dc97c1c4d53b..7f778b609492 100644
---- a/kernel/printk/printk.h
-+++ b/kernel/printk/printk.h
-@@ -34,6 +34,12 @@ static inline __printf(1, 0) int vprintk_func(const char *fmt, va_list args)
- 	return this_cpu_read(printk_func)(fmt, args);
- }
- 
-+extern atomic_t nmi_message_lost;
-+static inline int get_nmi_message_lost(void)
-+{
-+	return atomic_xchg(&nmi_message_lost, 0);
-+}
-+
- #else /* CONFIG_PRINTK_NMI */
- 
- static inline __printf(1, 0) int vprintk_func(const char *fmt, va_list args)
-@@ -41,4 +47,9 @@ static inline __printf(1, 0) int vprintk_func(const char *fmt, va_list args)
- 	return vprintk_default(fmt, args);
- }
- 
-+static inline int get_nmi_message_lost(void)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_PRINTK_NMI */
+ struct nmi_seq_buf {
+ 	atomic_t		len;	/* length of written data */
 -- 
 1.8.5.6
