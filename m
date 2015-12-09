@@ -1,20 +1,41 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0114.outbound.protection.outlook.com [207.46.100.114])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <xinhui@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1D5F31A05C8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 11:03:14 +1100 (AEDT)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-edac@vger.kernel.org>
-CC: Scott Wood <scottwood@freescale.com>, Jia Hongtao <B38951@freescale.com>,
- Borislav Petkov <bp@suse.de>, Johannes Thumshirn <jthumshirn@suse.de>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2] EDAC, mpc85xx: Make mpc85xx-pci-edac a platform device
-Date: Wed, 9 Dec 2015 18:02:54 -0600
-Message-ID: <1449705774-12811-1-git-send-email-scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E5F5F1A050B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 10:52:19 +1100 (AEDT)
+Received: from localhost
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xinhui@linux.vnet.ibm.com>;
+ Thu, 10 Dec 2015 05:22:16 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id E1BD0394005A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 05:22:14 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tB9NqECX38994022
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 05:22:14 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tB9NqEVP008564
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 05:22:14 +0530
+Subject: Re: [PATCH] powerpc/nvram: Fix a memory leak in err path
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ xinhui <xinhui.pan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <5667FBD5.2050206@linux.vnet.ibm.com>
+ <566846F5.2020507@linux.vnet.ibm.com>
+Cc: Andrzej Hajda <a.hajda@samsung.com>,
+ Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>
+From: xinhui <xinhui@linux.vnet.ibm.com>
+Message-ID: <5668BEA5.1000002@linux.vnet.ibm.com>
+Date: Thu, 10 Dec 2015 07:52:05 +0800
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <566846F5.2020507@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,226 +45,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Originally the mpc85xx-pci-edac driver bound directly to the PCI
-controller node.
 
-Commit 905e75c46dba5f30 ("powerpc/fsl-pci: Unify pci/pcie
-initialization code") turned the PCI controller code into a platform
-device.  Since we can't have two drivers binding to the same device,
-the edac code was changed to be called into as a library-style
-submodule.  However, this doesn't work if the edac driver is built as a
-module.
+On 2015/12/9 23:21, Nathan Fontenot wrote:
+> On 12/09/2015 04:00 AM, xinhui wrote:
+>>
+>> If kmemdup fails, We need kfree *buff* first then return -ENOMEM.
+>> Otherwise there is a memory leak.
+>>
+>> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+>
+> Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+>
 
-Commit 8d8fcba6d1eab ("EDAC: Rip out the edac_subsys reference
-counting") exposed another problem with this approach --
-mpc85xx_pci_err_probe() was being called in the same early boot phase
-that the PCI controller is initialized, rather than in the
-device_initcall phase that the EDAC layer expects.  This caused a crash
-on boot.
+Hi Nathan,
+	thank you for doing that :)
 
-To fix this, the PCI controller code now creates a child platform
-device specifically for EDAC, which the mpc85xx-pci-edac driver binds
-to.
+thanks
+xinhui
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Cc: Jia Hongtao <B38951@freescale.com>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Johannes Thumshirn <jthumshirn@suse.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
----
-v2: Make mpc85xx_pci_err_probe() static again.
-
- arch/powerpc/sysdev/fsl_pci.c | 28 +++++++++++++++++++++++++++-
- arch/powerpc/sysdev/fsl_pci.h |  9 ---------
- drivers/edac/mpc85xx_edac.c   | 36 +++++++++++++++++++++++++++++++-----
- include/linux/fsl/edac.h      |  8 ++++++++
- 4 files changed, 66 insertions(+), 15 deletions(-)
- create mode 100644 include/linux/fsl/edac.h
-
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 610f472..a1ac80b 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -21,10 +21,12 @@
- #include <linux/pci.h>
- #include <linux/delay.h>
- #include <linux/string.h>
-+#include <linux/fsl/edac.h>
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/memblock.h>
- #include <linux/log2.h>
-+#include <linux/platform_device.h>
- #include <linux/slab.h>
- #include <linux/suspend.h>
- #include <linux/syscore_ops.h>
-@@ -1255,6 +1257,25 @@ void fsl_pcibios_fixup_phb(struct pci_controller *phb)
- #endif
- }
- 
-+static int add_err_dev(struct platform_device *pdev)
-+{
-+	struct platform_device *errdev;
-+	struct mpc85xx_edac_pci_plat_data pd = {
-+		.of_node = pdev->dev.of_node
-+	};
-+
-+	errdev = platform_device_register_resndata(&pdev->dev,
-+						   "mpc85xx-pci-edac",
-+						   PLATFORM_DEVID_AUTO,
-+						   pdev->resource,
-+						   pdev->num_resources,
-+						   &pd, sizeof(pd));
-+	if (IS_ERR(errdev))
-+		return PTR_ERR(errdev);
-+
-+	return 0;
-+}
-+
- static int fsl_pci_probe(struct platform_device *pdev)
- {
- 	struct device_node *node;
-@@ -1262,8 +1283,13 @@ static int fsl_pci_probe(struct platform_device *pdev)
- 
- 	node = pdev->dev.of_node;
- 	ret = fsl_add_bridge(pdev, fsl_pci_primary == node);
-+	if (ret)
-+		return ret;
- 
--	mpc85xx_pci_err_probe(pdev);
-+	ret = add_err_dev(pdev);
-+	if (ret)
-+		dev_err(&pdev->dev, "couldn't register error device: %d\n",
-+			ret);
- 
- 	return 0;
- }
-diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
-index c1cec77..1515885 100644
---- a/arch/powerpc/sysdev/fsl_pci.h
-+++ b/arch/powerpc/sysdev/fsl_pci.h
-@@ -130,15 +130,6 @@ void fsl_pci_assign_primary(void);
- static inline void fsl_pci_assign_primary(void) {}
- #endif
- 
--#ifdef CONFIG_EDAC_MPC85XX
--int mpc85xx_pci_err_probe(struct platform_device *op);
--#else
--static inline int mpc85xx_pci_err_probe(struct platform_device *op)
--{
--	return -ENOTSUPP;
--}
--#endif
--
- #ifdef CONFIG_FSL_PCI
- extern int fsl_pci_mcheck_exception(struct pt_regs *);
- #else
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 3eab063..406d75a 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -20,6 +20,7 @@
- #include <linux/edac.h>
- #include <linux/smp.h>
- #include <linux/gfp.h>
-+#include <linux/fsl/edac.h>
- 
- #include <linux/of_platform.h>
- #include <linux/of_device.h>
-@@ -238,10 +239,12 @@ static irqreturn_t mpc85xx_pci_isr(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--int mpc85xx_pci_err_probe(struct platform_device *op)
-+static int mpc85xx_pci_err_probe(struct platform_device *op)
- {
- 	struct edac_pci_ctl_info *pci;
- 	struct mpc85xx_pci_pdata *pdata;
-+	struct mpc85xx_edac_pci_plat_data *plat_data;
-+	struct device_node *of_node;
- 	struct resource r;
- 	int res = 0;
- 
-@@ -266,7 +269,15 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
- 	pdata->name = "mpc85xx_pci_err";
- 	pdata->irq = NO_IRQ;
- 
--	if (mpc85xx_pcie_find_capability(op->dev.of_node) > 0)
-+	plat_data = op->dev.platform_data;
-+	if (!plat_data) {
-+		dev_err(&op->dev, "no platform data");
-+		res = -ENXIO;
-+		goto err;
-+	}
-+	of_node = plat_data->of_node;
-+
-+	if (mpc85xx_pcie_find_capability(of_node) > 0)
- 		pdata->is_pcie = true;
- 
- 	dev_set_drvdata(&op->dev, pci);
-@@ -284,7 +295,7 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
- 
- 	pdata->edac_idx = edac_pci_idx++;
- 
--	res = of_address_to_resource(op->dev.of_node, 0, &r);
-+	res = of_address_to_resource(of_node, 0, &r);
- 	if (res) {
- 		printk(KERN_ERR "%s: Unable to get resource for "
- 		       "PCI err regs\n", __func__);
-@@ -339,7 +350,7 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
- 	}
- 
- 	if (edac_op_state == EDAC_OPSTATE_INT) {
--		pdata->irq = irq_of_parse_and_map(op->dev.of_node, 0);
-+		pdata->irq = irq_of_parse_and_map(of_node, 0);
- 		res = devm_request_irq(&op->dev, pdata->irq,
- 				       mpc85xx_pci_isr,
- 				       IRQF_SHARED,
-@@ -386,8 +397,22 @@ err:
- 	devres_release_group(&op->dev, mpc85xx_pci_err_probe);
- 	return res;
- }
--EXPORT_SYMBOL(mpc85xx_pci_err_probe);
- 
-+static const struct platform_device_id mpc85xx_pci_err_match[] = {
-+	{
-+		.name = "mpc85xx-pci-edac"
-+	},
-+	{}
-+};
-+
-+static struct platform_driver mpc85xx_pci_err_driver = {
-+	.probe = mpc85xx_pci_err_probe,
-+	.id_table = mpc85xx_pci_err_match,
-+	.driver = {
-+		.name = "mpc85xx_pci_err",
-+		.suppress_bind_attrs = true,
-+	},
-+};
- #endif				/* CONFIG_PCI */
- 
- /**************************** L2 Err device ***************************/
-@@ -1211,6 +1236,7 @@ static void __init mpc85xx_mc_clear_rfxe(void *data)
- static struct platform_driver * const drivers[] = {
- 	&mpc85xx_mc_err_driver,
- 	&mpc85xx_l2_err_driver,
-+	&mpc85xx_pci_err_driver,
- };
- 
- static int __init mpc85xx_mc_init(void)
-diff --git a/include/linux/fsl/edac.h b/include/linux/fsl/edac.h
-new file mode 100644
-index 0000000..90d64d4
---- /dev/null
-+++ b/include/linux/fsl/edac.h
-@@ -0,0 +1,8 @@
-+#ifndef FSL_EDAC_H
-+#define FSL_EDAC_H
-+
-+struct mpc85xx_edac_pci_plat_data {
-+	struct device_node *of_node;
-+};
-+
-+#endif
--- 
-2.5.0
+>> ---
+>>   arch/powerpc/kernel/nvram_64.c | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+>> index 32e2652..21a278b7 100644
+>> --- a/arch/powerpc/kernel/nvram_64.c
+>> +++ b/arch/powerpc/kernel/nvram_64.c
+>> @@ -542,9 +542,9 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
+>>   			time->tv_nsec = 0;
+>>   		}
+>>   		*buf = kmemdup(buff + hdr_size, length, GFP_KERNEL);
+>> +		kfree(buff);
+>>   		if (*buf == NULL)
+>>   			return -ENOMEM;
+>> -		kfree(buff);
+>>
+>>   		if (err_type == ERR_TYPE_KERNEL_PANIC_GZ)
+>>   			*compressed = true;
+>>
