@@ -1,27 +1,25 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CD7791A05EB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Dec 2015 23:17:38 +1100 (AEDT)
-Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4396814030D
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2015 23:17:38 +1100 (AEDT)
-Date: Wed, 9 Dec 2015 23:17:18 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Michael Neuling <mikey@neuling.org>
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
- Cyril Bur <cyrilbur@gmail.com>
-Subject: Re: [PATCH 2/2] powerpc: Copy only required pieces of the
- mm_context_t to the paca
-Message-ID: <20151209231718.272afe94@kryten>
-In-Reply-To: <1446008047-2393-2-git-send-email-mikey@neuling.org>
-References: <1446008047-2393-1-git-send-email-mikey@neuling.org>
- <1446008047-2393-2-git-send-email-mikey@neuling.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2D7121A07C3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 00:21:31 +1100 (AEDT)
+From: Petr Mladek <pmladek@suse.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-cris-kernel@axis.com,
+ linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, Petr Mladek <pmladek@suse.com>
+Subject: [PATCH v3 0/4] Cleaning printk stuff in NMI context
+Date: Wed,  9 Dec 2015 14:21:01 +0100
+Message-Id: <1449667265-17525-1-git-send-email-pmladek@suse.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,120 +29,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Currently we copy the whole mm_context_t to the paca but only access a
-> few bits of it.  This is wasteful of space paca and also takes quite
-> some time in the hot path of context switching.
-> 
-> This patch pulls in only the required bits from the mm_context_t to
-> the paca and on context switch, copies only those.
-> 
-> Benchmarking this (On top of Anton's recent MSR context switching
-> changes [1]) using processes and yield shows an improvement of almost
-> 3% on POWER8:
-> 
->   http://ozlabs.org/~anton/junkcode/context_switch2.c
->   ./context_switch2 --test=yield --process 0 0
+This patch set generalizes the already existing solution for
+printing NMI messages. The main idea comes from Peter Zijlstra.
 
-Now the context switch series is in, I tested this against powerpc-next
-and still see a ~3% improvement.
+Changes against v2:
 
-Anton
+  + fixed compilation problems reported by 0-day build robot
 
-> 1.
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-October/135700.html
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
->  arch/powerpc/include/asm/paca.h   | 17 +++++++++++++++--
->  arch/powerpc/kernel/asm-offsets.c |  8 ++++----
->  arch/powerpc/mm/hash_utils_64.c   |  4 ++--
->  3 files changed, 21 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/paca.h
-> b/arch/powerpc/include/asm/paca.h index 1cc6e08..1c0d9f4 100644
-> --- a/arch/powerpc/include/asm/paca.h
-> +++ b/arch/powerpc/include/asm/paca.h
-> @@ -132,7 +132,13 @@ struct paca_struct {
->  #endif /* CONFIG_PPC_BOOK3E */
->  
->  #ifdef CONFIG_PPC_BOOK3S
-> -	mm_context_t context;
-> +	mm_context_id_t context_id;
-> +#ifdef CONFIG_PPC_MM_SLICES
-> +	u64 context_low_slices_psize;
-> +	unsigned char context_high_slices_psize[SLICE_ARRAY_SIZE];
-> +#else
-> +	u16 context_sllp;
-> +#endif
->  #endif
->  
->  	/*
-> @@ -199,7 +205,14 @@ struct paca_struct {
->  #ifdef CONFIG_PPC_BOOK3S
->  static inline void copy_mm_to_paca(mm_context_t *context)
->  {
-> -	get_paca()->context = *context;
-> +	get_paca()->context_id = context->id;
-> +#ifdef CONFIG_PPC_MM_SLICES
-> +	get_paca()->context_low_slices_psize =
-> context->low_slices_psize;
-> +	memcpy(&get_paca()->context_high_slices_psize,
-> +	       &context->high_slices_psize, SLICE_ARRAY_SIZE);
-> +#else
-> +	get_paca()->context_sllp = context->sllp;
-> +#endif
->  }
->  #else
->  static inline void copy_mm_to_paca(mm_context_t *context){}
-> diff --git a/arch/powerpc/kernel/asm-offsets.c
-> b/arch/powerpc/kernel/asm-offsets.c index 9db7be2..d5903a9 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -186,12 +186,12 @@ int main(void)
->  	DEFINE(PACASOFTIRQEN, offsetof(struct paca_struct,
-> soft_enabled)); DEFINE(PACAIRQHAPPENED, offsetof(struct paca_struct,
-> irq_happened)); #ifdef CONFIG_PPC_BOOK3S
-> -	DEFINE(PACACONTEXTID, offsetof(struct paca_struct,
-> context.id));
-> +	DEFINE(PACACONTEXTID, offsetof(struct paca_struct,
-> context_id)); #ifdef CONFIG_PPC_MM_SLICES
->  	DEFINE(PACALOWSLICESPSIZE, offsetof(struct paca_struct,
-> -
-> context.low_slices_psize));
-> +
-> context_low_slices_psize)); DEFINE(PACAHIGHSLICEPSIZE,
-> offsetof(struct paca_struct,
-> -
-> context.high_slices_psize));
-> +
-> context_high_slices_psize)); DEFINE(MMUPSIZEDEFSIZE, sizeof(struct
-> mmu_psize_def)); #endif /* CONFIG_PPC_MM_SLICES */
->  #endif
-> @@ -224,7 +224,7 @@ int main(void)
->  #ifdef CONFIG_PPC_MM_SLICES
->  	DEFINE(MMUPSIZESLLP, offsetof(struct mmu_psize_def, sllp));
->  #else
-> -	DEFINE(PACACONTEXTSLLP, offsetof(struct paca_struct,
-> context.sllp));
-> +	DEFINE(PACACONTEXTSLLP, offsetof(struct paca_struct,
-> context_sllp)); #endif /* CONFIG_PPC_MM_SLICES */
->  	DEFINE(PACA_EXGEN, offsetof(struct paca_struct, exgen));
->  	DEFINE(PACA_EXMC, offsetof(struct paca_struct, exmc));
-> diff --git a/arch/powerpc/mm/hash_utils_64.c
-> b/arch/powerpc/mm/hash_utils_64.c index fa62eb0..0e087e4 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -877,11 +877,11 @@ static unsigned int get_paca_psize(unsigned
-> long addr) unsigned long index, mask_index;
->  
->  	if (addr < SLICE_LOW_TOP) {
-> -		lpsizes = get_paca()->context.low_slices_psize;
-> +		lpsizes = get_paca()->context_low_slices_psize;
->  		index = GET_LOW_SLICE_INDEX(addr);
->  		return (lpsizes >> (index * 4)) & 0xF;
->  	}
-> -	hpsizes = get_paca()->context.high_slices_psize;
-> +	hpsizes = get_paca()->context_high_slices_psize;
->  	index = GET_HIGH_SLICE_INDEX(addr);
->  	mask_index = index & 0x1;
->  	return (hpsizes[index >> 1] >> (mask_index * 4)) & 0xF;
+  + MN10300 and Xtensa architectures will get handled separately
+
+  + dropped the patch that printed NMI messages directly when Oops
+    in progress; it made the solution less reliable
+
+  + made the size of the buffer configurable; use real numbers
+    instead of PAGE_SIZE
+
+
+Changes against v1:
+
+  + rebased on top of 4.4-rc2; there the old implementation was
+    moved to lib/nmi_backtrace.c and used also on arm; I hope that
+    I got the arm side correctly; I was not able to test on arm :-(
+
+  + defined HAVE_NMI on arm for !CPU_V7M instead of !CPU_V7;
+    handle_fiq_as_nmi() is called from entry-armv.S that
+    is compiled when !CPU_V7M
+
+  + defined HAVE_NMI also on mips; it calls nmi_enter() and
+    seems to have real NMIs (or am I wrong?)
+
+  + serialized backtraces when printing directly
+    (oops_in_progress)
+
+
+Petr Mladek (4):
+  printk/nmi: Generic solution for safe printk in NMI
+  printk/nmi: Use IRQ work only when ready
+  printk/nmi: Warn when some message has been lost in NMI context
+  printk/nmi: Increase the size of NMI buffer and make it configurable
+
+ arch/Kconfig                  |   7 ++
+ arch/arm/Kconfig              |   2 +
+ arch/arm/kernel/smp.c         |   2 +
+ arch/avr32/Kconfig            |   1 +
+ arch/blackfin/Kconfig         |   1 +
+ arch/cris/Kconfig             |   1 +
+ arch/mips/Kconfig             |   1 +
+ arch/powerpc/Kconfig          |   1 +
+ arch/s390/Kconfig             |   1 +
+ arch/sh/Kconfig               |   1 +
+ arch/sparc/Kconfig            |   1 +
+ arch/tile/Kconfig             |   1 +
+ arch/x86/Kconfig              |   1 +
+ arch/x86/kernel/apic/hw_nmi.c |   1 -
+ include/linux/hardirq.h       |   2 +
+ include/linux/percpu.h        |   3 -
+ include/linux/printk.h        |  12 ++-
+ init/Kconfig                  |  27 ++++++
+ init/main.c                   |   1 +
+ kernel/printk/Makefile        |   1 +
+ kernel/printk/nmi.c           | 218 ++++++++++++++++++++++++++++++++++++++++++
+ kernel/printk/printk.c        |  29 +++---
+ kernel/printk/printk.h        |  55 +++++++++++
+ lib/nmi_backtrace.c           |  89 +----------------
+ 24 files changed, 352 insertions(+), 107 deletions(-)
+ create mode 100644 kernel/printk/nmi.c
+ create mode 100644 kernel/printk/printk.h
+
+-- 
+1.8.5.6
