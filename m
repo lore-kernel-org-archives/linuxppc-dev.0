@@ -1,20 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0118.outbound.protection.outlook.com [157.56.110.118])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3AB721A087B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2015 06:07:30 +1100 (AEDT)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-edac@vger.kernel.org>
-CC: Scott Wood <scottwood@freescale.com>, Jia Hongtao <B38951@freescale.com>,
- Borislav Petkov <bp@suse.de>, Johannes Thumshirn <jthumshirn@suse.de>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3] EDAC, mpc85xx: Make mpc85xx-pci-edac a platform device
-Date: Thu, 10 Dec 2015 13:07:12 -0600
-Message-ID: <1449774432-18593-1-git-send-email-scottwood@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id D71061A05EF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2015 09:34:42 +1100 (AEDT)
+Message-ID: <1449786882.29188.32.camel@neuling.org>
+Subject: [PATCH v3 2/2] powerpc: Copy only required pieces of the
+ mm_context_t to the paca
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, anton@samba.org, Cyril Bur <cyrilbur@gmail.com>
+Date: Fri, 11 Dec 2015 09:34:42 +1100
+In-Reply-To: <1449741623.7156.3.camel@ellerman.id.au>
+References: <1446008047-2393-1-git-send-email-mikey@neuling.org>
+ <1446008047-2393-2-git-send-email-mikey@neuling.org>
+ <1449719211.29188.5.camel@neuling.org>
+ <1449741623.7156.3.camel@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,228 +27,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Originally the mpc85xx-pci-edac driver bound directly to the PCI
-controller node.
+Currently we copy the whole mm_context_t to the paca but only access a
+few bits of it.  This is wasteful of space paca and also takes quite
+some time in the hot path of context switching.
 
-Commit 905e75c46dba5f30 ("powerpc/fsl-pci: Unify pci/pcie
-initialization code") turned the PCI controller code into a platform
-device.  Since we can't have two drivers binding to the same device,
-the edac code was changed to be called into as a library-style
-submodule.  However, this doesn't work if the edac driver is built as a
-module.
+This patch pulls in only the required bits from the mm_context_t to
+the paca and on context switch, copies only those.
 
-Commit 8d8fcba6d1eab ("EDAC: Rip out the edac_subsys reference
-counting") exposed another problem with this approach --
-mpc85xx_pci_err_probe() was being called in the same early boot phase
-that the PCI controller is initialized, rather than in the
-device_initcall phase that the EDAC layer expects.  This caused a crash
-on boot.
+Benchmarking this (On top of Anton's recent MSR context switching
+changes [1]) using processes and yield shows an improvement of almost
+3% on POWER8:
 
-To fix this, the PCI controller code now creates a child platform
-device specifically for EDAC, which the mpc85xx-pci-edac driver binds
-to.
+  http://ozlabs.org/~anton/junkcode/context_switch2.c
+  ./context_switch2 --test=3Dyield --process 0 0
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Cc: Jia Hongtao <B38951@freescale.com>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Johannes Thumshirn <jthumshirn@suse.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
----
-v3: Fix build with CONFIG_PCI disabled
+1. https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-October/135700.html
 
- arch/powerpc/sysdev/fsl_pci.c | 28 +++++++++++++++++++++++++++-
- arch/powerpc/sysdev/fsl_pci.h |  9 ---------
- drivers/edac/mpc85xx_edac.c   | 38 +++++++++++++++++++++++++++++++++-----
- include/linux/fsl/edac.h      |  8 ++++++++
- 4 files changed, 68 insertions(+), 15 deletions(-)
- create mode 100644 include/linux/fsl/edac.h
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+--
+v3:
+  Fix line wrapping (WTF sorry!?!)
+v2:
+  Added missing include which broke allmodconfig (noticed by anton)
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 610f472..a1ac80b 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -21,10 +21,12 @@
- #include <linux/pci.h>
- #include <linux/delay.h>
- #include <linux/string.h>
-+#include <linux/fsl/edac.h>
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/memblock.h>
- #include <linux/log2.h>
-+#include <linux/platform_device.h>
- #include <linux/slab.h>
- #include <linux/suspend.h>
- #include <linux/syscore_ops.h>
-@@ -1255,6 +1257,25 @@ void fsl_pcibios_fixup_phb(struct pci_controller *phb)
+
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/pac=
+a.h
+index 1cc6e08..06cdaee 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -16,6 +16,7 @@
+=20
+ #ifdef CONFIG_PPC64
+=20
++#include <linux/string.h>
+ #include <asm/types.h>
+ #include <asm/lppaca.h>
+ #include <asm/mmu.h>
+@@ -132,7 +133,13 @@ struct paca_struct {
+ #endif /* CONFIG_PPC_BOOK3E */
+=20
+ #ifdef CONFIG_PPC_BOOK3S
+-	mm_context_t context;
++	mm_context_id_t context_id;
++#ifdef CONFIG_PPC_MM_SLICES
++	u64 context_low_slices_psize;
++	unsigned char context_high_slices_psize[SLICE_ARRAY_SIZE];
++#else
++	u16 context_sllp;
++#endif
  #endif
- }
- 
-+static int add_err_dev(struct platform_device *pdev)
-+{
-+	struct platform_device *errdev;
-+	struct mpc85xx_edac_pci_plat_data pd = {
-+		.of_node = pdev->dev.of_node
-+	};
-+
-+	errdev = platform_device_register_resndata(&pdev->dev,
-+						   "mpc85xx-pci-edac",
-+						   PLATFORM_DEVID_AUTO,
-+						   pdev->resource,
-+						   pdev->num_resources,
-+						   &pd, sizeof(pd));
-+	if (IS_ERR(errdev))
-+		return PTR_ERR(errdev);
-+
-+	return 0;
-+}
-+
- static int fsl_pci_probe(struct platform_device *pdev)
+=20
+ 	/*
+@@ -199,7 +206,14 @@ struct paca_struct {
+ #ifdef CONFIG_PPC_BOOK3S
+ static inline void copy_mm_to_paca(mm_context_t *context)
  {
- 	struct device_node *node;
-@@ -1262,8 +1283,13 @@ static int fsl_pci_probe(struct platform_device *pdev)
- 
- 	node = pdev->dev.of_node;
- 	ret = fsl_add_bridge(pdev, fsl_pci_primary == node);
-+	if (ret)
-+		return ret;
- 
--	mpc85xx_pci_err_probe(pdev);
-+	ret = add_err_dev(pdev);
-+	if (ret)
-+		dev_err(&pdev->dev, "couldn't register error device: %d\n",
-+			ret);
- 
- 	return 0;
+-	get_paca()->context =3D *context;
++	get_paca()->context_id =3D context->id;
++#ifdef CONFIG_PPC_MM_SLICES
++	get_paca()->context_low_slices_psize =3D context->low_slices_psize;
++	memcpy(&get_paca()->context_high_slices_psize,
++	       &context->high_slices_psize, SLICE_ARRAY_SIZE);
++#else
++	get_paca()->context_sllp =3D context->sllp;
++#endif
  }
-diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
-index c1cec77..1515885 100644
---- a/arch/powerpc/sysdev/fsl_pci.h
-+++ b/arch/powerpc/sysdev/fsl_pci.h
-@@ -130,15 +130,6 @@ void fsl_pci_assign_primary(void);
- static inline void fsl_pci_assign_primary(void) {}
- #endif
- 
--#ifdef CONFIG_EDAC_MPC85XX
--int mpc85xx_pci_err_probe(struct platform_device *op);
--#else
--static inline int mpc85xx_pci_err_probe(struct platform_device *op)
--{
--	return -ENOTSUPP;
--}
--#endif
--
- #ifdef CONFIG_FSL_PCI
- extern int fsl_pci_mcheck_exception(struct pt_regs *);
  #else
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 3eab063..b7139c1 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -20,6 +20,7 @@
- #include <linux/edac.h>
- #include <linux/smp.h>
- #include <linux/gfp.h>
-+#include <linux/fsl/edac.h>
- 
- #include <linux/of_platform.h>
- #include <linux/of_device.h>
-@@ -238,10 +239,12 @@ static irqreturn_t mpc85xx_pci_isr(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--int mpc85xx_pci_err_probe(struct platform_device *op)
-+static int mpc85xx_pci_err_probe(struct platform_device *op)
- {
- 	struct edac_pci_ctl_info *pci;
- 	struct mpc85xx_pci_pdata *pdata;
-+	struct mpc85xx_edac_pci_plat_data *plat_data;
-+	struct device_node *of_node;
- 	struct resource r;
- 	int res = 0;
- 
-@@ -266,7 +269,15 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
- 	pdata->name = "mpc85xx_pci_err";
- 	pdata->irq = NO_IRQ;
- 
--	if (mpc85xx_pcie_find_capability(op->dev.of_node) > 0)
-+	plat_data = op->dev.platform_data;
-+	if (!plat_data) {
-+		dev_err(&op->dev, "no platform data");
-+		res = -ENXIO;
-+		goto err;
-+	}
-+	of_node = plat_data->of_node;
-+
-+	if (mpc85xx_pcie_find_capability(of_node) > 0)
- 		pdata->is_pcie = true;
- 
- 	dev_set_drvdata(&op->dev, pci);
-@@ -284,7 +295,7 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
- 
- 	pdata->edac_idx = edac_pci_idx++;
- 
--	res = of_address_to_resource(op->dev.of_node, 0, &r);
-+	res = of_address_to_resource(of_node, 0, &r);
- 	if (res) {
- 		printk(KERN_ERR "%s: Unable to get resource for "
- 		       "PCI err regs\n", __func__);
-@@ -339,7 +350,7 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
+ static inline void copy_mm_to_paca(mm_context_t *context){}
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-of=
+fsets.c
+index 9db7be2..d5903a9 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -186,12 +186,12 @@ int main(void)
+ 	DEFINE(PACASOFTIRQEN, offsetof(struct paca_struct, soft_enabled));
+ 	DEFINE(PACAIRQHAPPENED, offsetof(struct paca_struct, irq_happened));
+ #ifdef CONFIG_PPC_BOOK3S
+-	DEFINE(PACACONTEXTID, offsetof(struct paca_struct, context.id));
++	DEFINE(PACACONTEXTID, offsetof(struct paca_struct, context_id));
+ #ifdef CONFIG_PPC_MM_SLICES
+ 	DEFINE(PACALOWSLICESPSIZE, offsetof(struct paca_struct,
+-					    context.low_slices_psize));
++					    context_low_slices_psize));
+ 	DEFINE(PACAHIGHSLICEPSIZE, offsetof(struct paca_struct,
+-					    context.high_slices_psize));
++					    context_high_slices_psize));
+ 	DEFINE(MMUPSIZEDEFSIZE, sizeof(struct mmu_psize_def));
+ #endif /* CONFIG_PPC_MM_SLICES */
+ #endif
+@@ -224,7 +224,7 @@ int main(void)
+ #ifdef CONFIG_PPC_MM_SLICES
+ 	DEFINE(MMUPSIZESLLP, offsetof(struct mmu_psize_def, sllp));
+ #else
+-	DEFINE(PACACONTEXTSLLP, offsetof(struct paca_struct, context.sllp));
++	DEFINE(PACACONTEXTSLLP, offsetof(struct paca_struct, context_sllp));
+ #endif /* CONFIG_PPC_MM_SLICES */
+ 	DEFINE(PACA_EXGEN, offsetof(struct paca_struct, exgen));
+ 	DEFINE(PACA_EXMC, offsetof(struct paca_struct, exmc));
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_6=
+4.c
+index 0aa526e..ae98d58 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -877,11 +877,11 @@ static unsigned int get_paca_psize(unsigned long addr=
+)
+ 	unsigned long index, mask_index;
+=20
+ 	if (addr < SLICE_LOW_TOP) {
+-		lpsizes =3D get_paca()->context.low_slices_psize;
++		lpsizes =3D get_paca()->context_low_slices_psize;
+ 		index =3D GET_LOW_SLICE_INDEX(addr);
+ 		return (lpsizes >> (index * 4)) & 0xF;
  	}
- 
- 	if (edac_op_state == EDAC_OPSTATE_INT) {
--		pdata->irq = irq_of_parse_and_map(op->dev.of_node, 0);
-+		pdata->irq = irq_of_parse_and_map(of_node, 0);
- 		res = devm_request_irq(&op->dev, pdata->irq,
- 				       mpc85xx_pci_isr,
- 				       IRQF_SHARED,
-@@ -386,8 +397,22 @@ err:
- 	devres_release_group(&op->dev, mpc85xx_pci_err_probe);
- 	return res;
- }
--EXPORT_SYMBOL(mpc85xx_pci_err_probe);
- 
-+static const struct platform_device_id mpc85xx_pci_err_match[] = {
-+	{
-+		.name = "mpc85xx-pci-edac"
-+	},
-+	{}
-+};
-+
-+static struct platform_driver mpc85xx_pci_err_driver = {
-+	.probe = mpc85xx_pci_err_probe,
-+	.id_table = mpc85xx_pci_err_match,
-+	.driver = {
-+		.name = "mpc85xx_pci_err",
-+		.suppress_bind_attrs = true,
-+	},
-+};
- #endif				/* CONFIG_PCI */
- 
- /**************************** L2 Err device ***************************/
-@@ -1211,6 +1236,9 @@ static void __init mpc85xx_mc_clear_rfxe(void *data)
- static struct platform_driver * const drivers[] = {
- 	&mpc85xx_mc_err_driver,
- 	&mpc85xx_l2_err_driver,
-+#ifdef CONFIG_PCI
-+	&mpc85xx_pci_err_driver,
-+#endif
- };
- 
- static int __init mpc85xx_mc_init(void)
-diff --git a/include/linux/fsl/edac.h b/include/linux/fsl/edac.h
-new file mode 100644
-index 0000000..90d64d4
---- /dev/null
-+++ b/include/linux/fsl/edac.h
-@@ -0,0 +1,8 @@
-+#ifndef FSL_EDAC_H
-+#define FSL_EDAC_H
-+
-+struct mpc85xx_edac_pci_plat_data {
-+	struct device_node *of_node;
-+};
-+
-+#endif
--- 
-2.5.0
+-	hpsizes =3D get_paca()->context.high_slices_psize;
++	hpsizes =3D get_paca()->context_high_slices_psize;
+ 	index =3D GET_HIGH_SLICE_INDEX(addr);
+ 	mask_index =3D index & 0x1;
+ 	return (hpsizes[index >> 1] >> (mask_index * 4)) & 0xF;
