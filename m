@@ -1,31 +1,20 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0118.outbound.protection.outlook.com [157.56.110.118])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 399151A065B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2015 02:26:13 +1100 (AEDT)
-Date: Thu, 10 Dec 2015 16:26:06 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Russell King <rmk+kernel@arm.linux.org.uk>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: [PATCH v3 1/4] printk/nmi: Generic solution for safe printk in NMI
-Message-ID: <20151210152606.GD2946@pathway.suse.cz>
-References: <1449667265-17525-1-git-send-email-pmladek@suse.com>
- <1449667265-17525-2-git-send-email-pmladek@suse.com>
- <20151209155007.cab2f1afd7e76878a1733033@linux-foundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3AB721A087B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2015 06:07:30 +1100 (AEDT)
+From: Scott Wood <scottwood@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-edac@vger.kernel.org>
+CC: Scott Wood <scottwood@freescale.com>, Jia Hongtao <B38951@freescale.com>,
+ Borislav Petkov <bp@suse.de>, Johannes Thumshirn <jthumshirn@suse.de>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v3] EDAC, mpc85xx: Make mpc85xx-pci-edac a platform device
+Date: Thu, 10 Dec 2015 13:07:12 -0600
+Message-ID: <1449774432-18593-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151209155007.cab2f1afd7e76878a1733033@linux-foundation.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,114 +24,228 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 2015-12-09 15:50:07, Andrew Morton wrote:
-> On Wed,  9 Dec 2015 14:21:02 +0100 Petr Mladek <pmladek@suse.com> wrote:
-> 
-> > printk() takes some locks and could not be used a safe way in NMI
-> > context.
-> > 
-> > The chance of a deadlock is real especially when printing
-> > stacks from all CPUs. This particular problem has been addressed
-> > on x86 by the commit a9edc8809328 ("x86/nmi: Perform a safe NMI stack
-> > trace on all CPUs").
-> > 
-> > This patch reuses most of the code and makes it generic. It is
-> > useful for all messages and architectures that support NMI.
-> > 
-> > The patch is heavily based on the draft from Peter Zijlstra,
-> > see https://lkml.org/lkml/2015/6/10/327
-> > 
-> 
-> I guess this code is useful even on CONFIG_SMP=n: to avoid corruption
-> of the printk internal structures whcih the problematic locking
-> protects.
+Originally the mpc85xx-pci-edac driver bound directly to the PCI
+controller node.
 
-Yup and it is used even on CONFIG_SMP=n if I am not missing
-something. At least, CONFIG_PRINTK_NMI stays enabled here.
+Commit 905e75c46dba5f30 ("powerpc/fsl-pci: Unify pci/pcie
+initialization code") turned the PCI controller code into a platform
+device.  Since we can't have two drivers binding to the same device,
+the edac code was changed to be called into as a library-style
+submodule.  However, this doesn't work if the edac driver is built as a
+module.
 
+Commit 8d8fcba6d1eab ("EDAC: Rip out the edac_subsys reference
+counting") exposed another problem with this approach --
+mpc85xx_pci_err_probe() was being called in the same early boot phase
+that the PCI controller is initialized, rather than in the
+device_initcall phase that the EDAC layer expects.  This caused a crash
+on boot.
 
-> > +#define NMI_LOG_BUF_LEN (4096 - sizeof(atomic_t) - sizeof(struct irq_work))
-> > +
-> > +struct nmi_seq_buf {
-> > +	atomic_t		len;	/* length of written data */
-> > +	struct irq_work		work;	/* IRQ work that flushes the buffer */
-> > +	unsigned char		buffer[NMI_LOG_BUF_LEN];
-> 
-> When this buffer overflows, which characters get lost?  Most recent or
-> least recent?
+To fix this, the PCI controller code now creates a child platform
+device specifically for EDAC, which the mpc85xx-pci-edac driver binds
+to.
 
-The most recent messages are lost when the buffer overflows. The other
-way would require to use a ring-buffer instead the seq_buf. We would need
-a lock-less synchronization for both, begin and end, pointers. It
-would add quite some complications.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+Cc: Jia Hongtao <B38951@freescale.com>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Johannes Thumshirn <jthumshirn@suse.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+---
+v3: Fix build with CONFIG_PCI disabled
 
+ arch/powerpc/sysdev/fsl_pci.c | 28 +++++++++++++++++++++++++++-
+ arch/powerpc/sysdev/fsl_pci.h |  9 ---------
+ drivers/edac/mpc85xx_edac.c   | 38 +++++++++++++++++++++++++++++++++-----
+ include/linux/fsl/edac.h      |  8 ++++++++
+ 4 files changed, 68 insertions(+), 15 deletions(-)
+ create mode 100644 include/linux/fsl/edac.h
 
-> I'm not sure which is best, really.  For an oops trace you probably
-> want to preserve the least recent output: the stuff at the start of the
-> output.
-
-I agree. Fortunately, this is easier and it works this way.
-
-
-> > +static void __printk_nmi_flush(struct irq_work *work)
-> > +{
-> > +	static raw_spinlock_t read_lock =
-> > +		__RAW_SPIN_LOCK_INITIALIZER(read_lock);
-> > +	struct nmi_seq_buf *s = container_of(work, struct nmi_seq_buf, work);
-> > +	int len, size, i, last_i;
-> > +
-> > +	/*
-> > +	 * The lock has two functions. First, one reader has to flush all
-> > +	 * available message to make the lockless synchronization with
-> > +	 * writers easier. Second, we do not want to mix messages from
-> > +	 * different CPUs. This is especially important when printing
-> > +	 * a backtrace.
-> > +	 */
-> > +	raw_spin_lock(&read_lock);
-> > +
-> > +	i = 0;
-> > +more:
-> > +	len = atomic_read(&s->len);
-> > +
-> > +	/*
-> > +	 * This is just a paranoid check that nobody has manipulated
-> > +	 * the buffer an unexpected way. If we printed something then
-> > +	 * @len must only increase.
-> > +	 */
-> > +	WARN_ON(i && i >= len);
-> 
-> hm, dumping a big backtrace in this context seems a poor idea.  Oh
-> well, shouldn't happen.
-
-I see and the backtrace probably would not help much because "len"
-might be manipulated also from NMI context. I am going to change
-this to:
-
-	if (i && i >= len)
-		pr_err("printk_nmi_flush: internal error: i=%d >=
-		len=%d)\n", i, len);
-
-
-
-> > +	if (!len)
-> > +		goto out; /* Someone else has already flushed the buffer. */
-> > +
-> > +	/* Make sure that data has been written up to the @len */
-> > +	smp_rmb();
-> > +
-> > +	size = min_t(int, len, sizeof(s->buffer));
-> 
-> len and size should have type size_t.
-
-OK
-
-> > --- /dev/null
-> > +++ b/kernel/printk/printk.h
-> 
-> I find it a bit irritating to have duplicated filenames.  We could
-> follow convention and call this "internal.h".
-
-No problem. I am going to send an updated patchset soon.
-
-Thanks a lot for review,
-Petr
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 610f472..a1ac80b 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -21,10 +21,12 @@
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+ #include <linux/string.h>
++#include <linux/fsl/edac.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/memblock.h>
+ #include <linux/log2.h>
++#include <linux/platform_device.h>
+ #include <linux/slab.h>
+ #include <linux/suspend.h>
+ #include <linux/syscore_ops.h>
+@@ -1255,6 +1257,25 @@ void fsl_pcibios_fixup_phb(struct pci_controller *phb)
+ #endif
+ }
+ 
++static int add_err_dev(struct platform_device *pdev)
++{
++	struct platform_device *errdev;
++	struct mpc85xx_edac_pci_plat_data pd = {
++		.of_node = pdev->dev.of_node
++	};
++
++	errdev = platform_device_register_resndata(&pdev->dev,
++						   "mpc85xx-pci-edac",
++						   PLATFORM_DEVID_AUTO,
++						   pdev->resource,
++						   pdev->num_resources,
++						   &pd, sizeof(pd));
++	if (IS_ERR(errdev))
++		return PTR_ERR(errdev);
++
++	return 0;
++}
++
+ static int fsl_pci_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *node;
+@@ -1262,8 +1283,13 @@ static int fsl_pci_probe(struct platform_device *pdev)
+ 
+ 	node = pdev->dev.of_node;
+ 	ret = fsl_add_bridge(pdev, fsl_pci_primary == node);
++	if (ret)
++		return ret;
+ 
+-	mpc85xx_pci_err_probe(pdev);
++	ret = add_err_dev(pdev);
++	if (ret)
++		dev_err(&pdev->dev, "couldn't register error device: %d\n",
++			ret);
+ 
+ 	return 0;
+ }
+diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+index c1cec77..1515885 100644
+--- a/arch/powerpc/sysdev/fsl_pci.h
++++ b/arch/powerpc/sysdev/fsl_pci.h
+@@ -130,15 +130,6 @@ void fsl_pci_assign_primary(void);
+ static inline void fsl_pci_assign_primary(void) {}
+ #endif
+ 
+-#ifdef CONFIG_EDAC_MPC85XX
+-int mpc85xx_pci_err_probe(struct platform_device *op);
+-#else
+-static inline int mpc85xx_pci_err_probe(struct platform_device *op)
+-{
+-	return -ENOTSUPP;
+-}
+-#endif
+-
+ #ifdef CONFIG_FSL_PCI
+ extern int fsl_pci_mcheck_exception(struct pt_regs *);
+ #else
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index 3eab063..b7139c1 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -20,6 +20,7 @@
+ #include <linux/edac.h>
+ #include <linux/smp.h>
+ #include <linux/gfp.h>
++#include <linux/fsl/edac.h>
+ 
+ #include <linux/of_platform.h>
+ #include <linux/of_device.h>
+@@ -238,10 +239,12 @@ static irqreturn_t mpc85xx_pci_isr(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
+-int mpc85xx_pci_err_probe(struct platform_device *op)
++static int mpc85xx_pci_err_probe(struct platform_device *op)
+ {
+ 	struct edac_pci_ctl_info *pci;
+ 	struct mpc85xx_pci_pdata *pdata;
++	struct mpc85xx_edac_pci_plat_data *plat_data;
++	struct device_node *of_node;
+ 	struct resource r;
+ 	int res = 0;
+ 
+@@ -266,7 +269,15 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
+ 	pdata->name = "mpc85xx_pci_err";
+ 	pdata->irq = NO_IRQ;
+ 
+-	if (mpc85xx_pcie_find_capability(op->dev.of_node) > 0)
++	plat_data = op->dev.platform_data;
++	if (!plat_data) {
++		dev_err(&op->dev, "no platform data");
++		res = -ENXIO;
++		goto err;
++	}
++	of_node = plat_data->of_node;
++
++	if (mpc85xx_pcie_find_capability(of_node) > 0)
+ 		pdata->is_pcie = true;
+ 
+ 	dev_set_drvdata(&op->dev, pci);
+@@ -284,7 +295,7 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
+ 
+ 	pdata->edac_idx = edac_pci_idx++;
+ 
+-	res = of_address_to_resource(op->dev.of_node, 0, &r);
++	res = of_address_to_resource(of_node, 0, &r);
+ 	if (res) {
+ 		printk(KERN_ERR "%s: Unable to get resource for "
+ 		       "PCI err regs\n", __func__);
+@@ -339,7 +350,7 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
+ 	}
+ 
+ 	if (edac_op_state == EDAC_OPSTATE_INT) {
+-		pdata->irq = irq_of_parse_and_map(op->dev.of_node, 0);
++		pdata->irq = irq_of_parse_and_map(of_node, 0);
+ 		res = devm_request_irq(&op->dev, pdata->irq,
+ 				       mpc85xx_pci_isr,
+ 				       IRQF_SHARED,
+@@ -386,8 +397,22 @@ err:
+ 	devres_release_group(&op->dev, mpc85xx_pci_err_probe);
+ 	return res;
+ }
+-EXPORT_SYMBOL(mpc85xx_pci_err_probe);
+ 
++static const struct platform_device_id mpc85xx_pci_err_match[] = {
++	{
++		.name = "mpc85xx-pci-edac"
++	},
++	{}
++};
++
++static struct platform_driver mpc85xx_pci_err_driver = {
++	.probe = mpc85xx_pci_err_probe,
++	.id_table = mpc85xx_pci_err_match,
++	.driver = {
++		.name = "mpc85xx_pci_err",
++		.suppress_bind_attrs = true,
++	},
++};
+ #endif				/* CONFIG_PCI */
+ 
+ /**************************** L2 Err device ***************************/
+@@ -1211,6 +1236,9 @@ static void __init mpc85xx_mc_clear_rfxe(void *data)
+ static struct platform_driver * const drivers[] = {
+ 	&mpc85xx_mc_err_driver,
+ 	&mpc85xx_l2_err_driver,
++#ifdef CONFIG_PCI
++	&mpc85xx_pci_err_driver,
++#endif
+ };
+ 
+ static int __init mpc85xx_mc_init(void)
+diff --git a/include/linux/fsl/edac.h b/include/linux/fsl/edac.h
+new file mode 100644
+index 0000000..90d64d4
+--- /dev/null
++++ b/include/linux/fsl/edac.h
+@@ -0,0 +1,8 @@
++#ifndef FSL_EDAC_H
++#define FSL_EDAC_H
++
++struct mpc85xx_edac_pci_plat_data {
++	struct device_node *of_node;
++};
++
++#endif
+-- 
+2.5.0
