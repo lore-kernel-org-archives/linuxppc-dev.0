@@ -1,18 +1,22 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8CD711A115A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 20:45:06 +1100 (AEDT)
-Date: Thu, 10 Dec 2015 20:44:39 +1100
-From: Anton Blanchard <anton@samba.org>
-To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
- cyrilbur@gmail.com, scottwood@freescale.com, mikey@neuling.org,
- linuxppc-dev@lists.ozlabs.org, Rashmica <rashmicy@gmail.com>
-Subject: [PATCH v2] powerpc: Call restore_sprs() before _switch()
-Message-ID: <20151210204439.393ce017@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 299CD1A116C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 21:00:30 +1100 (AEDT)
+Message-ID: <1449741623.7156.3.camel@ellerman.id.au>
+Subject: Re: [PATCH v2 2/2] powerpc: Copy only required pieces of the
+ mm_context_t to the paca
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, anton@samba.org, Cyril Bur <cyrilbur@gmail.com>
+Date: Thu, 10 Dec 2015 21:00:23 +1100
+In-Reply-To: <1449719211.29188.5.camel@neuling.org>
+References: <1446008047-2393-1-git-send-email-mikey@neuling.org>
+ <1446008047-2393-2-git-send-email-mikey@neuling.org>
+ <1449719211.29188.5.camel@neuling.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,51 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit 152d523e6307 ("powerpc: Create context switch helpers save_sprs()
-and restore_sprs()") moved the restore of SPRs after the call to _switch().
+On Thu, 2015-12-10 at 14:46 +1100, Michael Neuling wrote:
 
-There is an issue with this approach - new tasks do not return through
-_switch(), they are set up by copy_thread() to directly return through
-ret_from_fork() or ret_from_kernel_thread(). This means restore_sprs() is
-not getting called for new tasks.
+> Currently we copy the whole mm_context_t to the paca but only access a
+> few bits of it.  This is wasteful of space paca and also takes quite
+> some time in the hot path of context switching.
+> 
+> diff --git a/arch/powerpc/include/asm/paca.h
+> b/arch/powerpc/include/asm/paca.h
+> index 1cc6e08..06cdaee 100644
+> --- a/arch/powerpc/include/asm/paca.h
+> +++ b/arch/powerpc/include/asm/paca.h
+> @@ -199,7 +206,14 @@ struct paca_struct {
+>  #ifdef CONFIG_PPC_BOOK3S
+>  static inline void copy_mm_to_paca(mm_context_t *context)
+>  {
+> -	get_paca()->context = *context;
+> +	get_paca()->context_id = context->id;
+> +#ifdef CONFIG_PPC_MM_SLICES
+> +	get_paca()->context_low_slices_psize = context
+> ->low_slices_psize;
 
-Fix this by moving restore_sprs() before _switch().
+Patch is wrapped ^
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Fixes: 152d523e6307 ("powerpc: Create context switch helpers save_sprs() and restore_sprs()")
+And so on.
 
-fold
----
- arch/powerpc/kernel/process.c | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 58194c3..6f5c392 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -964,14 +964,17 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 
- 	tm_recheckpoint_new_task(new);
- 
--	last = _switch(old_thread, new_thread);
--
--	/* Need to recalculate these after calling _switch() */
--	old_thread = &last->thread;
--	new_thread = &current->thread;
--
-+	/*
-+	 * Call restore_sprs() before calling _switch(). If we move it after
-+	 * _switch() then we miss out on calling it for new tasks. The reason
-+	 * for this is we manually create a stack frame for new tasks that
-+	 * directly returns through ret_from_fork() or
-+	 * ret_from_kernel_thread(). See copy_thread() for details.
-+	 */
- 	restore_sprs(old_thread, new_thread);
- 
-+	last = _switch(old_thread, new_thread);
-+
- #ifdef CONFIG_PPC_BOOK3S_64
- 	if (current_thread_info()->local_flags & _TLF_LAZY_MMU) {
- 		current_thread_info()->local_flags &= ~_TLF_LAZY_MMU;
--- 
-2.5.0
+cheers
