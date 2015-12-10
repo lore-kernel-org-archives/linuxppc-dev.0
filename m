@@ -1,21 +1,38 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <xinhui.pan@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E972E1A0F5E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 14:46:51 +1100 (AEDT)
-Message-ID: <1449719211.29188.5.camel@neuling.org>
-Subject: [PATCH v2 2/2] powerpc: Copy only required pieces of the
- mm_context_t to the paca
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au, benh@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org, Cyril Bur <cyrilbur@gmail.com>
-Date: Thu, 10 Dec 2015 14:46:51 +1100
-In-Reply-To: <1446008047-2393-2-git-send-email-mikey@neuling.org>
-References: <1446008047-2393-1-git-send-email-mikey@neuling.org>
- <1446008047-2393-2-git-send-email-mikey@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 395141A1044
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 18:32:17 +1100 (AEDT)
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
+ Thu, 10 Dec 2015 17:32:14 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id AF74C2BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 18:31:12 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBA7UknA27000834
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 18:30:54 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBA7Ud7q008549
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 18:30:40 +1100
+Message-ID: <566929FA.2050409@linux.vnet.ibm.com>
+Date: Thu, 10 Dec 2015 15:30:02 +0800
+From: xinhui <xinhui.pan@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
+ Andrzej Hajda <a.hajda@samsung.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, tglx@linutronix.de
+Subject: [PATCH] powerpc/nvram: Fix an incorrect partition merge
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,135 +42,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we copy the whole mm_context_t to the paca but only access a
-few bits of it.  This is wasteful of space paca and also takes quite
-some time in the hot path of context switching.
+From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 
-This patch pulls in only the required bits from the mm_context_t to
-the paca and on context switch, copies only those.
+When we merge two contiguous partitions whose signatures are marked
+NVRAM_SIG_FREE, We need update prev's length and checksum, then write it
+to nvram, not cur's. So lets fix this mistake now.
 
-Benchmarking this (On top of Anton's recent MSR context switching
-changes [1]) using processes and yield shows an improvement of almost
-3% on POWER8:
+Also use memset instead of strncpy to set the partition's name. It's
+more readable if we want to fill up with duplicate chars .
 
-  http://ozlabs.org/~anton/junkcode/context_switch2.c
-  ./context_switch2 --test=3Dyield --process 0 0
-
-1. https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-October/135700.
-html
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 ---
-v2:
-  Added missing include which broke allmodconfig (noticed by anton)
+ arch/powerpc/kernel/nvram_64.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
- include/asm/paca.h   |   18 ++++++++++++++++--
- kernel/asm-offsets.c |    8 ++++----
- mm/hash_utils_64.c   |    4 ++--
- 3 files changed, 22 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/paca.h
-b/arch/powerpc/include/asm/paca.h
-index 1cc6e08..06cdaee 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -16,6 +16,7 @@
-=20
- #ifdef CONFIG_PPC64
-=20
-+#include <linux/string.h>
- #include <asm/types.h>
- #include <asm/lppaca.h>
- #include <asm/mmu.h>
-@@ -132,7 +133,13 @@ struct paca_struct {
- #endif /* CONFIG_PPC_BOOK3E */
-=20
- #ifdef CONFIG_PPC_BOOK3S
--	mm_context_t context;
-+	mm_context_id_t context_id;
-+#ifdef CONFIG_PPC_MM_SLICES
-+	u64 context_low_slices_psize;
-+	unsigned char context_high_slices_psize[SLICE_ARRAY_SIZE];
-+#else
-+	u16 context_sllp;
-+#endif
- #endif
-=20
- 	/*
-@@ -199,7 +206,14 @@ struct paca_struct {
- #ifdef CONFIG_PPC_BOOK3S
- static inline void copy_mm_to_paca(mm_context_t *context)
- {
--	get_paca()->context =3D *context;
-+	get_paca()->context_id =3D context->id;
-+#ifdef CONFIG_PPC_MM_SLICES
-+	get_paca()->context_low_slices_psize =3D context
-->low_slices_psize;
-+	memcpy(&get_paca()->context_high_slices_psize,
-+	       &context->high_slices_psize, SLICE_ARRAY_SIZE);
-+#else
-+	get_paca()->context_sllp =3D context->sllp;
-+#endif
- }
- #else
- static inline void copy_mm_to_paca(mm_context_t *context){}
-diff --git a/arch/powerpc/kernel/asm-offsets.c
-b/arch/powerpc/kernel/asm-offsets.c
-index 9db7be2..d5903a9 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -186,12 +186,12 @@ int main(void)
- 	DEFINE(PACASOFTIRQEN, offsetof(struct paca_struct,
-soft_enabled));
- 	DEFINE(PACAIRQHAPPENED, offsetof(struct paca_struct,
-irq_happened));
- #ifdef CONFIG_PPC_BOOK3S
--	DEFINE(PACACONTEXTID, offsetof(struct paca_struct,
-context.id));
-+	DEFINE(PACACONTEXTID, offsetof(struct paca_struct,
-context_id));
- #ifdef CONFIG_PPC_MM_SLICES
- 	DEFINE(PACALOWSLICESPSIZE, offsetof(struct paca_struct,
--					  =20
- context.low_slices_psize));
-+					  =20
- context_low_slices_psize));
- 	DEFINE(PACAHIGHSLICEPSIZE, offsetof(struct paca_struct,
--					  =20
- context.high_slices_psize));
-+					  =20
- context_high_slices_psize));
- 	DEFINE(MMUPSIZEDEFSIZE, sizeof(struct mmu_psize_def));
- #endif /* CONFIG_PPC_MM_SLICES */
- #endif
-@@ -224,7 +224,7 @@ int main(void)
- #ifdef CONFIG_PPC_MM_SLICES
- 	DEFINE(MMUPSIZESLLP, offsetof(struct mmu_psize_def, sllp));
- #else
--	DEFINE(PACACONTEXTSLLP, offsetof(struct paca_struct,
-context.sllp));
-+	DEFINE(PACACONTEXTSLLP, offsetof(struct paca_struct,
-context_sllp));
- #endif /* CONFIG_PPC_MM_SLICES */
- 	DEFINE(PACA_EXGEN, offsetof(struct paca_struct, exgen));
- 	DEFINE(PACA_EXMC, offsetof(struct paca_struct, exmc));
-diff --git a/arch/powerpc/mm/hash_utils_64.c
-b/arch/powerpc/mm/hash_utils_64.c
-index 0aa526e..ae98d58 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -877,11 +877,11 @@ static unsigned int get_paca_psize(unsigned long
-addr)
- 	unsigned long index, mask_index;
-=20
- 	if (addr < SLICE_LOW_TOP) {
--		lpsizes =3D get_paca()->context.low_slices_psize;
-+		lpsizes =3D get_paca()->context_low_slices_psize;
- 		index =3D GET_LOW_SLICE_INDEX(addr);
- 		return (lpsizes >> (index * 4)) & 0xF;
- 	}
--	hpsizes =3D get_paca()->context.high_slices_psize;
-+	hpsizes =3D get_paca()->context_high_slices_psize;
- 	index =3D GET_HIGH_SLICE_INDEX(addr);
- 	mask_index =3D index & 0x1;
- 	return (hpsizes[index >> 1] >> (mask_index * 4)) & 0xF;
+diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+index 21a278b7..40e80ca 100644
+--- a/arch/powerpc/kernel/nvram_64.c
++++ b/arch/powerpc/kernel/nvram_64.c
+@@ -969,7 +969,7 @@ int __init nvram_remove_partition(const char *name, int sig,
+ 
+ 		/* Make partition a free partition */
+ 		part->header.signature = NVRAM_SIG_FREE;
+-		strncpy(part->header.name, "wwwwwwwwwwww", 12);
++		memset(part->header.name, 'w', 12);
+ 		part->header.checksum = nvram_checksum(&part->header);
+ 		rc = nvram_write_header(part);
+ 		if (rc <= 0) {
+@@ -987,8 +987,8 @@ int __init nvram_remove_partition(const char *name, int sig,
+ 		}
+ 		if (prev) {
+ 			prev->header.length += part->header.length;
+-			prev->header.checksum = nvram_checksum(&part->header);
+-			rc = nvram_write_header(part);
++			prev->header.checksum = nvram_checksum(&prev->header);
++			rc = nvram_write_header(prev);
+ 			if (rc <= 0) {
+ 				printk(KERN_ERR "nvram_remove_partition: nvram_write failed (%d)\n", rc);
+ 				return rc;
+-- 
+2.5.0
