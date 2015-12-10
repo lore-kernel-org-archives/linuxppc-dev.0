@@ -2,17 +2,15 @@ Return-Path: <anton@samba.org>
 Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 840C31A113E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 20:04:36 +1100 (AEDT)
-Date: Thu, 10 Dec 2015 20:04:05 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8CD711A115A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 20:45:06 +1100 (AEDT)
+Date: Thu, 10 Dec 2015 20:44:39 +1100
 From: Anton Blanchard <anton@samba.org>
-To: Rashmica <rashmicy@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org,
- paulus@samba.org, cyrilbur@gmail.com, scottwood@freescale.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Call check_if_tm_restore_required() in
- enable_kernel_*()
-Message-ID: <20151210200405.4779b7df@kryten>
+To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+ cyrilbur@gmail.com, scottwood@freescale.com, mikey@neuling.org,
+ linuxppc-dev@lists.ozlabs.org, Rashmica <rashmicy@gmail.com>
+Subject: [PATCH v2] powerpc: Call restore_sprs() before _switch()
+Message-ID: <20151210204439.393ce017@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,64 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit a0e72cf12b1a ("powerpc: Create msr_check_and_{set,clear}()")
-removed a call to check_if_tm_restore_required() in the
-enable_kernel_*() functions. Add them back in.
+commit 152d523e6307 ("powerpc: Create context switch helpers save_sprs()
+and restore_sprs()") moved the restore of SPRs after the call to _switch().
 
-Fixes: a0e72cf12b1a ("powerpc: Create msr_check_and_{set,clear}()")
-Reported-by: Rashmica Gupta <rashmicy@gmail.com>
+There is an issue with this approach - new tasks do not return through
+_switch(), they are set up by copy_thread() to directly return through
+ret_from_fork() or ret_from_kernel_thread(). This means restore_sprs() is
+not getting called for new tasks.
+
+Fix this by moving restore_sprs() before _switch().
+
 Signed-off-by: Anton Blanchard <anton@samba.org>
+Fixes: 152d523e6307 ("powerpc: Create context switch helpers save_sprs() and restore_sprs()")
+
+fold
 ---
- arch/powerpc/kernel/process.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/process.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index fffc2d2..0cffb2c 100644
+index 58194c3..6f5c392 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -181,8 +181,10 @@ void enable_kernel_fp(void)
+@@ -964,14 +964,17 @@ struct task_struct *__switch_to(struct task_struct *prev,
  
- 	msr_check_and_set(MSR_FP);
+ 	tm_recheckpoint_new_task(new);
  
--	if (current->thread.regs && (current->thread.regs->msr & MSR_FP))
-+	if (current->thread.regs && (current->thread.regs->msr & MSR_FP)) {
-+		check_if_tm_restore_required(current);
- 		__giveup_fpu(current);
-+	}
- }
- EXPORT_SYMBOL(enable_kernel_fp);
- #endif /* CONFIG_PPC_FPU */
-@@ -204,8 +206,10 @@ void enable_kernel_altivec(void)
+-	last = _switch(old_thread, new_thread);
+-
+-	/* Need to recalculate these after calling _switch() */
+-	old_thread = &last->thread;
+-	new_thread = &current->thread;
+-
++	/*
++	 * Call restore_sprs() before calling _switch(). If we move it after
++	 * _switch() then we miss out on calling it for new tasks. The reason
++	 * for this is we manually create a stack frame for new tasks that
++	 * directly returns through ret_from_fork() or
++	 * ret_from_kernel_thread(). See copy_thread() for details.
++	 */
+ 	restore_sprs(old_thread, new_thread);
  
- 	msr_check_and_set(MSR_VEC);
- 
--	if (current->thread.regs && (current->thread.regs->msr & MSR_VEC))
-+	if (current->thread.regs && (current->thread.regs->msr & MSR_VEC)) {
-+		check_if_tm_restore_required(current);
- 		__giveup_altivec(current);
-+	}
- }
- EXPORT_SYMBOL(enable_kernel_altivec);
- 
-@@ -249,6 +253,7 @@ void enable_kernel_vsx(void)
- 	msr_check_and_set(MSR_FP|MSR_VEC|MSR_VSX);
- 
- 	if (current->thread.regs && (current->thread.regs->msr & MSR_VSX)) {
-+		check_if_tm_restore_required(current);
- 		if (current->thread.regs->msr & MSR_FP)
- 			__giveup_fpu(current);
- 		if (current->thread.regs->msr & MSR_VEC)
-@@ -289,8 +294,10 @@ void enable_kernel_spe(void)
- 
- 	msr_check_and_set(MSR_SPE);
- 
--	if (current->thread.regs && (current->thread.regs->msr & MSR_SPE))
-+	if (current->thread.regs && (current->thread.regs->msr & MSR_SPE)) {
-+		check_if_tm_restore_required(current);
- 		__giveup_spe(current);
-+	}
- }
- EXPORT_SYMBOL(enable_kernel_spe);
- 
++	last = _switch(old_thread, new_thread);
++
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	if (current_thread_info()->local_flags & _TLF_LAZY_MMU) {
+ 		current_thread_info()->local_flags &= ~_TLF_LAZY_MMU;
 -- 
 2.5.0
