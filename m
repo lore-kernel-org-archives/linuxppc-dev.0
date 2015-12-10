@@ -1,25 +1,21 @@
-Return-Path: <dja@axtens.net>
+Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 857E11A00A3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 11:42:25 +1100 (AEDT)
-Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
- [IPv6:2607:f8b0:400e:c00::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8726B140FDA
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2015 11:42:23 +1100 (AEDT)
-Received: by pfnn128 with SMTP id n128so38301018pfn.0
- for <linuxppc-dev@ozlabs.org>; Wed, 09 Dec 2015 16:42:22 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, linux-kernel@vger.kernel.org,
- akpm@linux-foundation.org, Daniel Axtens <dja@axtens.net>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>
-Subject: [RFC] powerpc: Enable UBSAN support
-Date: Thu, 10 Dec 2015 11:42:03 +1100
-Message-Id: <1449708123-7340-1-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E972E1A0F5E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 14:46:51 +1100 (AEDT)
+Message-ID: <1449719211.29188.5.camel@neuling.org>
+Subject: [PATCH v2 2/2] powerpc: Copy only required pieces of the
+ mm_context_t to the paca
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au, benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, anton@samba.org, Cyril Bur <cyrilbur@gmail.com>
+Date: Thu, 10 Dec 2015 14:46:51 +1100
+In-Reply-To: <1446008047-2393-2-git-send-email-mikey@neuling.org>
+References: <1446008047-2393-1-git-send-email-mikey@neuling.org>
+ <1446008047-2393-2-git-send-email-mikey@neuling.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,110 +25,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This hooks up UBSAN support for PowerPC.
+Currently we copy the whole mm_context_t to the paca but only access a
+few bits of it.  This is wasteful of space paca and also takes quite
+some time in the hot path of context switching.
 
-So far it's found some interesting cases where we don't properly sanitise
-input to shifts, including one in our futex handling. Nothing critical,
-but interesting and worth fixing.
+This patch pulls in only the required bits from the mm_context_t to
+the paca and on context switch, copies only those.
 
-CC: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Benchmarking this (On top of Anton's recent MSR context switching
+changes [1]) using processes and yield shows an improvement of almost
+3% on POWER8:
+
+  http://ozlabs.org/~anton/junkcode/context_switch2.c
+  ./context_switch2 --test=3Dyield --process 0 0
+
+1. https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-October/135700.
+html
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
+v2:
+  Added missing include which broke allmodconfig (noticed by anton)
 
-This to be applied on top of next with Andrey's patches:
- 1) https://patchwork.kernel.org/patch/7761341/
- 2) https://patchwork.kernel.org/patch/7761351/
- 3) https://patchwork.kernel.org/patch/7761361/
- 4) https://patchwork.kernel.org/patch/7785791/
+ include/asm/paca.h   |   18 ++++++++++++++++--
+ kernel/asm-offsets.c |    8 ++++----
+ mm/hash_utils_64.c   |    4 ++--
+ 3 files changed, 22 insertions(+), 8 deletions(-)
 
-This is RFC for a couple of reasons:
-
- - I'd like the original patches to
-   s/ARCH_HAS_UBSAN_SANTIZE_ALL/ARCH_HAS_UBSAN_SAN*I*TIZE_ALL/
-   (I'm about to send an email about that)
-
- - I've only tested on LE pseries so far - I want to test on powernv,
-   and on BE.
-
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- arch/powerpc/Kconfig                | 1 +
- arch/powerpc/kernel/Makefile        | 8 +++++++-
- arch/powerpc/kernel/vdso32/Makefile | 1 +
- arch/powerpc/kernel/vdso64/Makefile | 1 +
- arch/powerpc/xmon/Makefile          | 1 +
- 5 files changed, 11 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 25283796a02e..e197de45d517 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -156,6 +156,7 @@ config PPC
- 	select EDAC_ATOMIC_SCRUB
- 	select ARCH_HAS_DMA_SET_COHERENT_MASK
- 	select HAVE_ARCH_SECCOMP_FILTER
-+	select ARCH_HAS_UBSAN_SANTIZE_ALL
- 
- config GENERIC_CSUM
- 	def_bool CPU_LITTLE_ENDIAN
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index ba336930d448..794f22adf99d 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -136,12 +136,18 @@ endif
- obj-$(CONFIG_EPAPR_PARAVIRT)	+= epapr_paravirt.o epapr_hcalls.o
- obj-$(CONFIG_KVM_GUEST)		+= kvm.o kvm_emul.o
- 
--# Disable GCOV in odd or sensitive code
-+# Disable GCOV & sanitizers in odd or sensitive code
- GCOV_PROFILE_prom_init.o := n
-+UBSAN_SANITIZE_prom_init.o := n
- GCOV_PROFILE_ftrace.o := n
-+UBSAN_SANITIZE_ftrace.o := n
- GCOV_PROFILE_machine_kexec_64.o := n
-+UBSAN_SANITIZE_machine_kexec_64.o := n
- GCOV_PROFILE_machine_kexec_32.o := n
-+UBSAN_SANITIZE_machine_kexec_32.o := n
- GCOV_PROFILE_kprobes.o := n
-+UBSAN_SANITIZE_kprobes.o := n
-+UBSAN_SANITIZE_vdso.o := n
- 
- extra-$(CONFIG_PPC_FPU)		+= fpu.o
- extra-$(CONFIG_ALTIVEC)		+= vector.o
-diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/vdso32/Makefile
-index 6abffb7a8cd9..cbabd143acae 100644
---- a/arch/powerpc/kernel/vdso32/Makefile
-+++ b/arch/powerpc/kernel/vdso32/Makefile
-@@ -15,6 +15,7 @@ targets := $(obj-vdso32) vdso32.so vdso32.so.dbg
- obj-vdso32 := $(addprefix $(obj)/, $(obj-vdso32))
- 
- GCOV_PROFILE := n
-+UBSAN_SANITIZE := n
- 
- ccflags-y := -shared -fno-common -fno-builtin
- ccflags-y += -nostdlib -Wl,-soname=linux-vdso32.so.1 \
-diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
-index 8c8f2ae43935..c710802b8fb6 100644
---- a/arch/powerpc/kernel/vdso64/Makefile
-+++ b/arch/powerpc/kernel/vdso64/Makefile
-@@ -8,6 +8,7 @@ targets := $(obj-vdso64) vdso64.so vdso64.so.dbg
- obj-vdso64 := $(addprefix $(obj)/, $(obj-vdso64))
- 
- GCOV_PROFILE := n
-+UBSAN_SANITIZE := n
- 
- ccflags-y := -shared -fno-common -fno-builtin
- ccflags-y += -nostdlib -Wl,-soname=linux-vdso64.so.1 \
-diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
-index 1278788d96e3..436062dbb6e2 100644
---- a/arch/powerpc/xmon/Makefile
-+++ b/arch/powerpc/xmon/Makefile
-@@ -3,6 +3,7 @@
- subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
- 
- GCOV_PROFILE := n
-+UBSAN_SANITIZE := n
- 
- ccflags-$(CONFIG_PPC64) := $(NO_MINIMAL_TOC)
- 
--- 
-2.6.2
+diff --git a/arch/powerpc/include/asm/paca.h
+b/arch/powerpc/include/asm/paca.h
+index 1cc6e08..06cdaee 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -16,6 +16,7 @@
+=20
+ #ifdef CONFIG_PPC64
+=20
++#include <linux/string.h>
+ #include <asm/types.h>
+ #include <asm/lppaca.h>
+ #include <asm/mmu.h>
+@@ -132,7 +133,13 @@ struct paca_struct {
+ #endif /* CONFIG_PPC_BOOK3E */
+=20
+ #ifdef CONFIG_PPC_BOOK3S
+-	mm_context_t context;
++	mm_context_id_t context_id;
++#ifdef CONFIG_PPC_MM_SLICES
++	u64 context_low_slices_psize;
++	unsigned char context_high_slices_psize[SLICE_ARRAY_SIZE];
++#else
++	u16 context_sllp;
++#endif
+ #endif
+=20
+ 	/*
+@@ -199,7 +206,14 @@ struct paca_struct {
+ #ifdef CONFIG_PPC_BOOK3S
+ static inline void copy_mm_to_paca(mm_context_t *context)
+ {
+-	get_paca()->context =3D *context;
++	get_paca()->context_id =3D context->id;
++#ifdef CONFIG_PPC_MM_SLICES
++	get_paca()->context_low_slices_psize =3D context
+->low_slices_psize;
++	memcpy(&get_paca()->context_high_slices_psize,
++	       &context->high_slices_psize, SLICE_ARRAY_SIZE);
++#else
++	get_paca()->context_sllp =3D context->sllp;
++#endif
+ }
+ #else
+ static inline void copy_mm_to_paca(mm_context_t *context){}
+diff --git a/arch/powerpc/kernel/asm-offsets.c
+b/arch/powerpc/kernel/asm-offsets.c
+index 9db7be2..d5903a9 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -186,12 +186,12 @@ int main(void)
+ 	DEFINE(PACASOFTIRQEN, offsetof(struct paca_struct,
+soft_enabled));
+ 	DEFINE(PACAIRQHAPPENED, offsetof(struct paca_struct,
+irq_happened));
+ #ifdef CONFIG_PPC_BOOK3S
+-	DEFINE(PACACONTEXTID, offsetof(struct paca_struct,
+context.id));
++	DEFINE(PACACONTEXTID, offsetof(struct paca_struct,
+context_id));
+ #ifdef CONFIG_PPC_MM_SLICES
+ 	DEFINE(PACALOWSLICESPSIZE, offsetof(struct paca_struct,
+-					  =20
+ context.low_slices_psize));
++					  =20
+ context_low_slices_psize));
+ 	DEFINE(PACAHIGHSLICEPSIZE, offsetof(struct paca_struct,
+-					  =20
+ context.high_slices_psize));
++					  =20
+ context_high_slices_psize));
+ 	DEFINE(MMUPSIZEDEFSIZE, sizeof(struct mmu_psize_def));
+ #endif /* CONFIG_PPC_MM_SLICES */
+ #endif
+@@ -224,7 +224,7 @@ int main(void)
+ #ifdef CONFIG_PPC_MM_SLICES
+ 	DEFINE(MMUPSIZESLLP, offsetof(struct mmu_psize_def, sllp));
+ #else
+-	DEFINE(PACACONTEXTSLLP, offsetof(struct paca_struct,
+context.sllp));
++	DEFINE(PACACONTEXTSLLP, offsetof(struct paca_struct,
+context_sllp));
+ #endif /* CONFIG_PPC_MM_SLICES */
+ 	DEFINE(PACA_EXGEN, offsetof(struct paca_struct, exgen));
+ 	DEFINE(PACA_EXMC, offsetof(struct paca_struct, exmc));
+diff --git a/arch/powerpc/mm/hash_utils_64.c
+b/arch/powerpc/mm/hash_utils_64.c
+index 0aa526e..ae98d58 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -877,11 +877,11 @@ static unsigned int get_paca_psize(unsigned long
+addr)
+ 	unsigned long index, mask_index;
+=20
+ 	if (addr < SLICE_LOW_TOP) {
+-		lpsizes =3D get_paca()->context.low_slices_psize;
++		lpsizes =3D get_paca()->context_low_slices_psize;
+ 		index =3D GET_LOW_SLICE_INDEX(addr);
+ 		return (lpsizes >> (index * 4)) & 0xF;
+ 	}
+-	hpsizes =3D get_paca()->context.high_slices_psize;
++	hpsizes =3D get_paca()->context_high_slices_psize;
+ 	index =3D GET_HIGH_SLICE_INDEX(addr);
+ 	mask_index =3D index & 0x1;
+ 	return (hpsizes[index >> 1] >> (mask_index * 4)) & 0xF;
