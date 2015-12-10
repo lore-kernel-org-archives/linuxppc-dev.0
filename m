@@ -1,18 +1,18 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0106.outbound.protection.outlook.com [157.56.111.106])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0114.outbound.protection.outlook.com [207.46.100.114])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B27941A05C8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 11:00:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1D5F31A05C8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 11:03:14 +1100 (AEDT)
 From: Scott Wood <scottwood@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <linux-edac@vger.kernel.org>
 CC: Scott Wood <scottwood@freescale.com>, Jia Hongtao <B38951@freescale.com>,
  Borislav Petkov <bp@suse.de>, Johannes Thumshirn <jthumshirn@suse.de>,
  Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] EDAC, mpc85xx: Make mpc85xx-pci-edac a platform device
-Date: Wed, 9 Dec 2015 18:00:03 -0600
-Message-ID: <1449705603-8342-1-git-send-email-scottwood@freescale.com>
+Subject: [PATCH v2] EDAC, mpc85xx: Make mpc85xx-pci-edac a platform device
+Date: Wed, 9 Dec 2015 18:02:54 -0600
+Message-ID: <1449705774-12811-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -51,11 +51,13 @@ Cc: Borislav Petkov <bp@suse.de>
 Cc: Johannes Thumshirn <jthumshirn@suse.de>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 ---
+v2: Make mpc85xx_pci_err_probe() static again.
+
  arch/powerpc/sysdev/fsl_pci.c | 28 +++++++++++++++++++++++++++-
  arch/powerpc/sysdev/fsl_pci.h |  9 ---------
- drivers/edac/mpc85xx_edac.c   | 34 ++++++++++++++++++++++++++++++----
+ drivers/edac/mpc85xx_edac.c   | 36 +++++++++++++++++++++++++++++++-----
  include/linux/fsl/edac.h      |  8 ++++++++
- 4 files changed, 65 insertions(+), 14 deletions(-)
+ 4 files changed, 66 insertions(+), 15 deletions(-)
  create mode 100644 include/linux/fsl/edac.h
 
 diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
@@ -137,7 +139,7 @@ index c1cec77..1515885 100644
  extern int fsl_pci_mcheck_exception(struct pt_regs *);
  #else
 diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 3eab063..cbc740f 100644
+index 3eab063..406d75a 100644
 --- a/drivers/edac/mpc85xx_edac.c
 +++ b/drivers/edac/mpc85xx_edac.c
 @@ -20,6 +20,7 @@
@@ -148,7 +150,12 @@ index 3eab063..cbc740f 100644
  
  #include <linux/of_platform.h>
  #include <linux/of_device.h>
-@@ -242,6 +243,8 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
+@@ -238,10 +239,12 @@ static irqreturn_t mpc85xx_pci_isr(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
+-int mpc85xx_pci_err_probe(struct platform_device *op)
++static int mpc85xx_pci_err_probe(struct platform_device *op)
  {
  	struct edac_pci_ctl_info *pci;
  	struct mpc85xx_pci_pdata *pdata;
