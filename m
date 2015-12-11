@@ -1,20 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id 72A1D1A1053
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Dec 2015 11:54:05 +1100 (AEDT)
-Date: Fri, 11 Dec 2015 19:53:58 -0500 (EST)
-Message-Id: <20151211.195358.1764064794354600517.davem@davemloft.net>
-To: tlfalcon@linux.vnet.ibm.com
-Cc: netdev@vger.kernel.org, brking@linux.vnet.ibm.com,
- nfont@linux.vnet.ibm.com, nguyendo@us.ibm.com, formosa@us.ibm.com,
- linuxppc-dev@lists.ozlabs.org, jallen@linux.vnet.ibm.com
-Subject: Re: [PATCH net-next v2] Driver for IBM System i/p VNIC protocol
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1449597139-8338-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-References: <1449597139-8338-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <bp@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CB631A05F4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Dec 2015 02:56:13 +1100 (AEDT)
+Date: Fri, 11 Dec 2015 16:56:07 +0100
+From: Borislav Petkov <bp@suse.de>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-edac@vger.kernel.org,
+ Jia Hongtao <B38951@freescale.com>,
+ Johannes Thumshirn <jthumshirn@suse.de>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v3] EDAC, mpc85xx: Make mpc85xx-pci-edac a platform device
+Message-ID: <20151211155607.GA5461@pd.tnic>
+References: <1449774432-18593-1-git-send-email-scottwood@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1449774432-18593-1-git-send-email-scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,103 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Date: Tue,  8 Dec 2015 11:52:19 -0600
+On Thu, Dec 10, 2015 at 01:07:12PM -0600, Scott Wood wrote:
+> Originally the mpc85xx-pci-edac driver bound directly to the PCI
+> controller node.
+> 
+> Commit 905e75c46dba5f30 ("powerpc/fsl-pci: Unify pci/pcie
+> initialization code") turned the PCI controller code into a platform
+> device.  Since we can't have two drivers binding to the same device,
+> the edac code was changed to be called into as a library-style
+> submodule.  However, this doesn't work if the edac driver is built as a
+> module.
+> 
+> Commit 8d8fcba6d1eab ("EDAC: Rip out the edac_subsys reference
+> counting") exposed another problem with this approach --
+> mpc85xx_pci_err_probe() was being called in the same early boot phase
+> that the PCI controller is initialized, rather than in the
+> device_initcall phase that the EDAC layer expects.  This caused a crash
+> on boot.
+> 
+> To fix this, the PCI controller code now creates a child platform
+> device specifically for EDAC, which the mpc85xx-pci-edac driver binds
+> to.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> Cc: Jia Hongtao <B38951@freescale.com>
+> Cc: Borislav Petkov <bp@suse.de>
+> Cc: Johannes Thumshirn <jthumshirn@suse.de>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+> v3: Fix build with CONFIG_PCI disabled
+> 
+>  arch/powerpc/sysdev/fsl_pci.c | 28 +++++++++++++++++++++++++++-
+>  arch/powerpc/sysdev/fsl_pci.h |  9 ---------
+>  drivers/edac/mpc85xx_edac.c   | 38 +++++++++++++++++++++++++++++++++-----
+>  include/linux/fsl/edac.h      |  8 ++++++++
+>  4 files changed, 68 insertions(+), 15 deletions(-)
+>  create mode 100644 include/linux/fsl/edac.h
 
-> +static long h_reg_sub_crq(unsigned long unit_address, unsigned long token,
-> +			  unsigned long length, unsigned long *number,
-> +			  unsigned long *irq)
-> +{
-> +	long rc;
-> +	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+Applied and rebased the tree so that this fix comes before the
+rip-out-reference counting patch so that there's no hole during
+bisection.
 
-Please declare local variables from longest to shortest line, otherwise
-known as "reverse christmas tree" order.
+Thanks guys.
 
-Audit this in your entire driver.
+-- 
+Regards/Gruss,
+    Boris.
 
-> +	pool->rx_buff = kcalloc(pool->size, sizeof(struct ibmvnic_rx_buff),
-> +				GFP_KERNEL);
-
-Allocation failures not checked until much later in this function, where
-several other resources have been allocated meanwhile.  That doesn't
-make any sense at all.
-
-> +	adapter->closing = 1;
-
-Please use type 'bool' and values 'true' and 'false' for boolean
-values.
-
-Audit this in your entire driver.
-
-> +	if (ip_hdr(skb)->version == 4)
-> +		tx_crq.v1.flags1 |= IBMVNIC_TX_PROT_IPV4;
-> +	else if (ip_hdr(skb)->version == 6)
-> +		tx_crq.v1.flags1 |= IBMVNIC_TX_PROT_IPV6;
-> +
-
-You cannot dereference the protocol header of the SKB without
-first checking the skb->protocol value, otherwise you're looking
-at garbage.
-
-> +static int ibmvnic_set_mac(struct net_device *netdev, void *p)
-> +{
-> +	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
-> +	struct sockaddr *addr = p;
-> +	union ibmvnic_crq crq;
-> +
-> +	if (!is_valid_ether_addr(addr->sa_data))
-> +		return -EADDRNOTAVAIL;
-> +
-> +	memset(&crq, 0, sizeof(crq));
-> +	crq.change_mac_addr.first = IBMVNIC_CRQ_CMD;
-> +	crq.change_mac_addr.cmd = CHANGE_MAC_ADDR;
-> +	ether_addr_copy(&crq.change_mac_addr.mac_addr[0], addr->sa_data);
-> +	ibmvnic_send_crq(adapter, &crq);
-> +
-> +	return 0;
-> +}
-
-You are responsible for copying the new MAC address into dev->dev_addr
-on success.
-
-> +static int ibmvnic_mii_ioctl(struct net_device *netdev, struct ifreq *ifr,
-> +			     int cmd)
-> +{
- ...
-> +	return 0;
-> +}
-> +
-> +static int ibmvnic_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
-> +{
-> +	switch (cmd) {
-> +	case SIOCGMIIPHY:
-> +	case SIOCGMIIREG:
-> +	case SIOCSMIIREG:
-> +		return ibmvnic_mii_ioctl(netdev, ifr, cmd);
-> +	default:
-> +		return -EOPNOTSUPP;
-> +	}
-> +}
-
-This really doesn't make any sense.  Please just delete this.  You
-don't support MII reads or writes because they logically don't make
-sense on this device.
-
-> +static struct net_device_stats *ibmvnic_get_stats(struct net_device *dev)
-> +{
-> +	struct ibmvnic_adapter *adapter = netdev_priv(dev);
-> +
-> +	/* only return the current stats */
-> +	return &adapter->net_stats;
-> +}
-
-The default method does this for you as long as you properly use
-net_device's embedded stats, therefore you don't need to provide this
-at all.
-
-That's all I have any energy for, and as you can see nobody else wants
-to even try to review this driver.
-
-It's going to take a lot of respins and time before this driver is
-ready for upstream inclusion.
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+-- 
