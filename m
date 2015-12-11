@@ -1,37 +1,32 @@
 Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F1AD1A0809
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2015 11:51:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7C86F1A05F8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2015 12:08:42 +1100 (AEDT)
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Thu, 10 Dec 2015 19:51:41 -0500
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id F04806E803C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 19:39:48 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBB0pd8e28639312
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2015 00:51:39 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBB0pdtR006019
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 19:51:39 -0500
+ Thu, 10 Dec 2015 18:08:39 -0700
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id BDE721FF002D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 17:56:47 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id tBB18akK31260794
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 18:08:36 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBB18agP013371
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 18:08:36 -0700
 From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: =?utf-8?B?6JKy5paH?= <wen.pu@powercore.com.cn>, Michael Ellerman
- <mpe@ellerman.id.au>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] powerpc/opal: add warning for unimplemented OPAL message
- type
-In-Reply-To: <tencent_1097DF836527EECD6BF4E6AA@qq.com>
-References: <tencent_1097DF836527EECD6BF4E6AA@qq.com>
-Date: Fri, 11 Dec 2015 11:51:23 +1100
-Message-ID: <8737v9byes.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+To: linuxppc-dev@lists.ozlabs.org
+Cc: =?UTF-8?q?=E8=92=B2=E6=96=87?= <wen.pu@powercore.com.cn>
+Subject: [PATCH] powerpc/powernv: pr_warn_once on unsupported OPAL_MSG type
+Date: Fri, 11 Dec 2015 12:08:23 +1100
+Message-Id: <1449796103-7700-1-git-send-email-stewart@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,59 +36,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=E8=92=B2=E6=96=87 <wen.pu@powercore.com.cn> writes:
-> On Wednesday, December 09, 2015 11:17:12 AM Michael Ellerman wrote:
->> On Tue, 2015-12-08 at 15:30 +0800, wen.pu@powercore.com.cn wrote:
->> > I found that there are unimplemented OPAL message types "OPAL_MSG_EPOW"
->> > and
->> > "OPAL_MSG_DPO" in PowerNV Platform. If skiboot send such messages to
->> > kernel, nothing will happen(notifier_call_chain() will silently drop i=
-t).
->> > So I add a warning to inform what has happened, is it necessary?
->>=20
->> What kernel version are you using?
-> The kernel version is v4.2.1-openpower2, from the newest version at=20
-> https://github.com/open-power/linux.
->
->>=20
->> Looking at mainline (4.4-rc4), I do see handlers registered for EPOW and
->> DPO:
->>=20
->>=20=20
->> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arc=
-h/p
->> owerpc/platforms/powernv/opal-power.c?#n82
->>=20
->> That code was merged in 4.3.
-> I do find that EPOW and DPO are registered in kernel 4.3. So maybe in the=
- near=20
-> future it will be merged into open-power/linux.
+When running on newer OPAL firmware that supports sending extra
+OPAL_MSG types, we would print a warning on *every* message received.
 
-Way back in 24366360035a9e0a9870ed7208aa2ba1948f844d where the opal_msg
-code was introduced there was a warning added for opal messages that
-were unknown... arguably this is actually a bad thing to have these
-days... I'll submit a patch to print it *once*.
+This could be a problem for kernels that don't support OPAL_MSG_OCC
+on machines that are running real close to thermal limits and the
+OCC is throttling the chip. For a kernel that is paying attention to
+the message queue, we could get these notifications quite often.
 
->> In general I don't think we want to warn for unhandled message types,
->> because we support old kernels running on new skiboot. In that case if we
->> warned on every unhandled message we'd potentially spam the console with
->> warnings.
->>=20
->> But perhaps we can come up with something smarter, that only warns once =
-for
->> each unhandled message type, or something like that? Did you have a bug =
-that
->> would have been easier to debug with a warning here?
-> Yes, I think it is a good idea that only warns once, or warns every a few=
-=20
-> seconds.=20
-> I found that EPOW and DPO only used in IBM FSP platform, not in Habanero=
-=20
-> platform that I had. So I modified the skiboot code and sent a EPOW/DPO m=
-essage=20
-> to kernel, and found that kernel warn nothing. I have no bug with a warni=
-ng=20
-> here, and just get a log message via dmesg.
+Conceivably, future message types could also come fairly often,
+and printing that we didn't understand them 10,000 times provides
+no further information than printing them once.
 
-Currently only FSP platform, yes. No real reason why a BMC based
-platform couldn't emit those though.
+Cc: stable@vger.kernel.org
+Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/opal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 4296d55e88f3..57cffb80bc36 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -278,7 +278,7 @@ static void opal_handle_message(void)
+ 
+ 	/* Sanity check */
+ 	if (type >= OPAL_MSG_TYPE_MAX) {
+-		pr_warning("%s: Unknown message type: %u\n", __func__, type);
++		pr_warn_once("%s: Unknown message type: %u\n", __func__, type);
+ 		return;
+ 	}
+ 	opal_message_do_notify(type, (void *)&msg);
+-- 
+2.1.4
