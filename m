@@ -1,30 +1,37 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B915B1A0809
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2015 11:36:06 +1100 (AEDT)
-Received: by pacdm15 with SMTP id dm15so55778656pac.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 16:36:04 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Subject: Re: [PATCH 3/6] cxlflash: Updated date of the driver
-In-Reply-To: <1449788043-23131-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-References: <1449787867-23015-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1449788043-23131-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Date: Fri, 11 Dec 2015 11:35:50 +1100
-Message-ID: <87d1udkejd.fsf@gamma.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F1AD1A0809
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2015 11:51:44 +1100 (AEDT)
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Thu, 10 Dec 2015 19:51:41 -0500
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id F04806E803C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 19:39:48 -0500 (EST)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBB0pd8e28639312
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Dec 2015 00:51:39 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBB0pdtR006019
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2015 19:51:39 -0500
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: =?utf-8?B?6JKy5paH?= <wen.pu@powercore.com.cn>, Michael Ellerman
+ <mpe@ellerman.id.au>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] powerpc/opal: add warning for unimplemented OPAL message
+ type
+In-Reply-To: <tencent_1097DF836527EECD6BF4E6AA@qq.com>
+References: <tencent_1097DF836527EECD6BF4E6AA@qq.com>
+Date: Fri, 11 Dec 2015 11:51:23 +1100
+Message-ID: <8737v9byes.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,38 +41,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+=E8=92=B2=E6=96=87 <wen.pu@powercore.com.cn> writes:
+> On Wednesday, December 09, 2015 11:17:12 AM Michael Ellerman wrote:
+>> On Tue, 2015-12-08 at 15:30 +0800, wen.pu@powercore.com.cn wrote:
+>> > I found that there are unimplemented OPAL message types "OPAL_MSG_EPOW"
+>> > and
+>> > "OPAL_MSG_DPO" in PowerNV Platform. If skiboot send such messages to
+>> > kernel, nothing will happen(notifier_call_chain() will silently drop i=
+t).
+>> > So I add a warning to inform what has happened, is it necessary?
+>>=20
+>> What kernel version are you using?
+> The kernel version is v4.2.1-openpower2, from the newest version at=20
+> https://github.com/open-power/linux.
+>
+>>=20
+>> Looking at mainline (4.4-rc4), I do see handlers registered for EPOW and
+>> DPO:
+>>=20
+>>=20=20
+>> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arc=
+h/p
+>> owerpc/platforms/powernv/opal-power.c?#n82
+>>=20
+>> That code was merged in 4.3.
+> I do find that EPOW and DPO are registered in kernel 4.3. So maybe in the=
+ near=20
+> future it will be merged into open-power/linux.
 
-Hi Uma,
+Way back in 24366360035a9e0a9870ed7208aa2ba1948f844d where the opal_msg
+code was introduced there was a warning added for opal messages that
+were unknown... arguably this is actually a bad thing to have these
+days... I'll submit a patch to print it *once*.
 
-It looks like CXLFLASH_DRIVER_DATE is only used once, on init, and it's
-just printed. Is it necessary? It looks like having it will require
-sending a patch to update it quite often.
+>> In general I don't think we want to warn for unhandled message types,
+>> because we support old kernels running on new skiboot. In that case if we
+>> warned on every unhandled message we'd potentially spam the console with
+>> warnings.
+>>=20
+>> But perhaps we can come up with something smarter, that only warns once =
+for
+>> each unhandled message type, or something like that? Did you have a bug =
+that
+>> would have been easier to debug with a warning here?
+> Yes, I think it is a good idea that only warns once, or warns every a few=
+=20
+> seconds.=20
+> I found that EPOW and DPO only used in IBM FSP platform, not in Habanero=
+=20
+> platform that I had. So I modified the skiboot code and sent a EPOW/DPO m=
+essage=20
+> to kernel, and found that kernel warn nothing. I have no bug with a warni=
+ng=20
+> here, and just get a log message via dmesg.
 
-Regards,
-Daniel
-
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAEBCgAGBQJWahpmAAoJEPC3R3P2I92FSigQAJseIBcAEP73RbpOzdj/PJDe
-zYoI/hKZI/hrQhw0i44r/VeVFsVW8WxPq4oCjuer2CiNZ4T6HPSVNVL9UIUXm/LX
-DeO6oRdYV+S9ccKiVmWcw5A3POUuDNK5E0Nsd1+mUjZ3ZMIUaFCxZviKSuzfgrpt
-RIlmjz+pxX+BhRD2jkydHhMFwfndQ60jAlZooV3NI3OU7XBrFogfSVgRqISK7U2g
-PtmU1K632tKworo6Vk0Y885mjvi2o0KxdhMN66z2c43CzOwIh15FIfUUjozqiTxD
-8anDt880vn/CsUzgatVa1jC3D9SUrrRvJ9iZFM6wZMV7TaBkNNYXtgZ7Z3rQ0mBP
-nn/gxdEEUi+EidZPkP4EEjv7drrLKnVzJOig/sSw7UcFE3ZFhvVhWIYio9kXNKoe
-PzfwRzOKRt/MtPY4GSbl0SDHTdPzcf0XOAqjG2uguCo7rQAa1At7oI0de7mp2wHQ
-k5j9gIRRuKA/7I236s2OAwIS8Ntj71Q6fy8hFem41G2wWtgNsEHBCGxGq3s+iG1l
-nCainAaft41JkCK++fhHvLazpBxDXO4+jhWZrrmTbm+8YcnOwKz6MSsa4oF1Heyu
-R1k578PSdH6hOYezJM8+s0ri7XO59reUWjIHS8xEk0oiE3xAeUTxSwdZvHUVLUCa
-FL9BhChbWeg0xhxD3LA+
-=puNN
------END PGP SIGNATURE-----
---=-=-=--
+Currently only FSP platform, yes. No real reason why a BMC based
+platform couldn't emit those though.
