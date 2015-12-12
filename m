@@ -1,21 +1,39 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <haren@linux.vnet.ibm.com>
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4EE371A0024
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Dec 2015 08:19:41 +1100 (AEDT)
-Message-ID: <1449955171.23425.1.camel@ellerman.id.au>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.4-4 tag
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: alistair@popple.id.au, andrew.donnellan@au1.ibm.com,
- fbarrat@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, paul.gortmaker@windriver.com
-Date: Sun, 13 Dec 2015 08:19:31 +1100
-Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature";
- boundary="=-gisW/KtYqLXmvc0gJ29Z"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id D48E71A0065
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Dec 2015 10:01:45 +1100 (AEDT)
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
+ Sat, 12 Dec 2015 18:01:41 -0500
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 5533DC90043
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Dec 2015 17:49:47 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBCN1cGt25428004
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Dec 2015 23:01:38 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBCN1b1l030303
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Dec 2015 18:01:38 -0500
+Message-ID: <566CA746.1090001@linux.vnet.ibm.com>
+Date: Sat, 12 Dec 2015 15:01:26 -0800
+From: Haren Myneni <haren@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+CC: herbert@gondor.apana.org.au, ddstreet@ieee.org, davem@davemloft.net,
+ mpe@ellerman.id.au, pair@us.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Crypto/nx842: Ignore invalid XER[S0] return error
+References: <1449891029.19568.5.camel@hbabu-laptop>
+ <20151212084348.GA26552@gate.crashing.org>
+In-Reply-To: <20151212084348.GA26552@gate.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,80 +43,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 12/12/2015 12:43 AM, Segher Boessenkool wrote:
+> On Fri, Dec 11, 2015 at 07:30:29PM -0800, Haren Myneni wrote:
+>> NX842 coprocessor sets 3rd bit in CR register with XER[S0] which is
+>> nothing to do with NX request. On powerpc, XER[S0] will be set if
+>> overflow in FPU and stays until another floating point operation is
+>> executed. Since this bit can be set with other valuable return status,
+>> ignore this XER[S0] value.
+> 
+> XER[SO] is the *integer* summary overflow bit.  It is set by OE=1
+> instructions ("addo" and the like), and can only be cleared explicitly
+> (using "mtxer").
 
---=-gisW/KtYqLXmvc0gJ29Z
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Thanks for the correct description. I was told XER[S0] is floating overflow from FPU.
 
-Hi Linus,
+> 
+> The floating point overflow bit is FPSCR[OX].
+> 
+>> +	/*
+>> +	 * NX842 coprocessor sets 3rd bit in CR register with XER[S0].
+>> +	 * Setting XER[S0] happens if overflow in FPU and stays until
+>> +	 * other floating operation is executed. XER[S0] value is nothing
+>> +	 * to NX and no use to user. Since this bit can be set with other
+>> +	 * return values, ignore this error.
+>> +	 */
+>> +	if (ret & ICSWX_XERS0)
+>> +		ret &= ~ICSWX_XERS0;
+> 
+> You can just always clear it, there is no need to check if it is set first.
 
-Please pull some more powerpc fixes for 4.4:
+Do you mean reset this before calling NX? I believe NX coprocessor should not set CR bit as XER[S0] nothing to do with NX request and it is no use. NX is copying this CR bit with XER. But reset XER[S0] has to be done before NX request. We can not do this in icswx since this instruction can be used by other coprocessors in future. But I am not comfortable clearing as we are not touching this XER in the driver or result of NX operation. So I am proposing this patch to fix this not proper NX behaviour - ignores CR bit. 
 
-The following changes since commit 7f821fc9c77a9b01fe7b1d6e72717b33d8d64142=
-:
+If you are OK, I can repost the patch with proper description.
 
-  powerpc/tm: Check for already reclaimed tasks (2015-11-23 20:18:03 +1100)
+Thanks
+Haren 
 
-are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powe=
-rpc-4.4-4
-
-for you to fetch changes up to dc9c41bd9ece090b54eb8f1bbdfb1930e10d3ae7:
-
-  Revert "powerpc/eeh: Don't unfreeze PHB PE after reset" (2015-12-09 14:05=
-:10 +1100)
-
-----------------------------------------------------------------
-powerpc fixes for 4.4 #3
-
- - opal-irqchip: Fix double endian conversion from Alistair Popple
- - cxl: Set endianess of kernel contexts from Frederic Barrat
- - sbc8641: drop bogus PHY IRQ entries from DTS file from Paul Gortmaker
- - Revert "powerpc/eeh: Don't unfreeze PHB PE after reset" from Andrew Donn=
-ellan
-
-----------------------------------------------------------------
-Alistair Popple (1):
-      powerpc/opal-irqchip: Fix double endian conversion
-
-Andrew Donnellan (1):
-      Revert "powerpc/eeh: Don't unfreeze PHB PE after reset"
-
-Frederic Barrat (1):
-      cxl: Set endianess of kernel contexts
-
-Paul Gortmaker (1):
-      powerpc/sbc8641: drop bogus PHY IRQ entries from DTS file
-
- arch/powerpc/boot/dts/sbc8641d.dts            |  8 ----
- arch/powerpc/kernel/eeh_driver.c              | 14 ++-----
- arch/powerpc/platforms/powernv/opal-irqchip.c | 58 +++++++++++++----------=
-----
- drivers/misc/cxl/native.c                     |  2 +-
- 4 files changed, 34 insertions(+), 48 deletions(-)
-
---=-gisW/KtYqLXmvc0gJ29Z
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAABAgAGBQJWbI9jAAoJEFHr6jzI4aWABF4P/2k7jkS+168jqIaLEqy8mOhk
-j0LwXQuRbYv+8z/DesRO+N/NGrs8+z7xpOupgDu8o1MFBcM+PxhWKQbbdhfJY5RE
-tnHNHFoz+aRIndrjyZqz0ta3UgKb7L8t2GCiGbvzDTw/iqbs5mAjmvas/kr3e4DU
-aq1AB/6Mc/r0w0NHO0AviueIW1D2I6DEPjdt4mR9RER40J7xRd+y740fvO8IGWB3
-hVcwhM9iIVRWS2u4I00i7NkK7qzabL5PehWp4oGnIWVXK6F298iBwl+FYJVnvpJd
-lOFqUeZCbed3IpeEJii2fTpGOVKk0ennPI9jwHwwMxlBDloAdULvvA1GQdpxkyKT
-7pPi6sM45cpCEuZMRh0JTsMTzAjnn65iYYj5Q7op8zzbpGRtiRrUn76mmaOXI9YD
-FaLfCNv9LravddU0hd1b3TYRJkznCvWi4nv/QILkXXtfK0u381ej6WOqcGXL5Wy6
-bfL2JED0sFLOJ7m20Dsk4icruKWRZFjdctYGg5+j0WkQDBfwZpdkFNSq07xy3dlS
-kgN9lmkwALHm7SNmJWaSByVCJzeA9ZcZeD5Kfjq6xKlN6JGwneWyS9sALM6edwHD
-2bbjLLGWkOiQweksdJf3lqG7JEAadG7c40hSK7iUknSmx6yRC53BceEB0/IXo/37
-lJylT0GA4//D9Ro/0W+X
-=Si5b
------END PGP SIGNATURE-----
-
---=-gisW/KtYqLXmvc0gJ29Z--
+  
+> 
+> 
+> Segher
+> 
