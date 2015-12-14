@@ -1,18 +1,25 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2B8781A0C5A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 20:47:51 +1100 (AEDT)
-In-Reply-To: <20151209201147.032e28c3@kryten>
-To: Anton Blanchard <anton@samba.org>, benh@kernel.crashing.org,
- paulus@samba.org, cyrilbur@gmail.com, scottwood@freescale.com,
- mikey@neuling.org, khandual@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 558961A1149
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 21:00:47 +1100 (AEDT)
+Message-ID: <1450087241.9595.0.camel@ellerman.id.au>
+Subject: Re: [PATCH 2/2] powerpc: tracing: don't trace hcalls on offline CPUs
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc: Fix DSCR inheritance over fork()
-Message-Id: <20151214094750.F0DA4140556@ozlabs.org>
-Date: Mon, 14 Dec 2015 20:47:50 +1100 (AEDT)
+To: Steven Rostedt <rostedt@goodmis.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Cc: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@ozlabs.org,
+ linux-kernel@vger.kernel.org
+Date: Mon, 14 Dec 2015 21:00:41 +1100
+In-Reply-To: <20151207163343.0ea2f1bb@gandalf.local.home>
+References: <1448389419-5296-1-git-send-email-kda@linux-powerpc.org>
+ <1448389419-5296-2-git-send-email-kda@linux-powerpc.org>
+ <20151207155224.2a8d71dd@gandalf.local.home>
+ <1449522135.21036.11.camel@kernel.crashing.org>
+ <20151207163343.0ea2f1bb@gandalf.local.home>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,25 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-09-12 at 09:11:47 UTC, Anton Blanchard wrote:
-> Two DSCR tests have a hack in them:
+On Mon, 2015-12-07 at 16:33 -0500, Steven Rostedt wrote:
+> On Tue, 08 Dec 2015 08:02:15 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > On Mon, 2015-12-07 at 15:52 -0500, Steven Rostedt wrote:
+> > > > +     TP_CONDITION(cpu_online(smp_processor_id())),
+> > > > +  
+> > 
+> > This should probably be some kind of __raw version though, hcalls can
+> > be called in contexts where the debug stuff in smp_processor_id() isn't
+> > safe (or preempt enabled).
+> > 
 > 
-> 	/*
-> 	 * XXX: Force a context switch out so that DSCR
-> 	 * current value is copied into the thread struct
-> 	 * which is required for the child to inherit the
-> 	 * changed value.
-> 	 */
-> 	sleep(1);
-> 
-> We should not be working around this in the testcase, it is a kernel bug.
-> Fix it by copying the current DSCR to the child, instead of what we
-> had in the thread struct at last context switch.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+> OK, then that needs to be updated.
 
-Applied to powerpc next, thanks.
-
-https://git.kernel.org/powerpc/c/db1231dcdb4dc6cdcbdef0ba
+Denis, please respin with raw_smp_processor_id().
 
 cheers
