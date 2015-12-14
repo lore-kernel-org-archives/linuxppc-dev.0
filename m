@@ -1,17 +1,41 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A206F1A010A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 14:36:21 +1100 (AEDT)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@ozlabs.org,
-	mpe@ellerman.id.au
-Cc: ivan@ru.ibm.com,
-	Alistair Popple <alistair@popple.id.au>
-Subject: [PATCH] powerpc/476fpe: Add support for kexec
-Date: Mon, 14 Dec 2015 14:31:24 +1100
-Message-Id: <1450063884-19728-1-git-send-email-alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 625481A010A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 14:49:03 +1100 (AEDT)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 14 Dec 2015 13:49:01 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 86E302CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 14:48:55 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBE3mSUo3342412
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 14:48:36 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBE3mM8F018399
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 14:48:23 +1100
+Subject: Re: [PATCH 6/6] cxlflash: Enable device id for future IBM CXL adapter
+To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>
+References: <1449787867-23015-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1449788087-23282-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-ID: <566E3BEE.9070307@au1.ibm.com>
+Date: Mon, 14 Dec 2015 14:47:58 +1100
+MIME-Version: 1.0
+In-Reply-To: <1449788087-23282-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,52 +45,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PPC476FPE has a different PVR from previous PPC476 processors. The
-kexec code checks the PVR in order to correctly setup the MMU. When
-the initial support for 476FPE processors was added the corresponding
-change in the kexec code was missed. This patch simply adds the check
-and solves the following bug on kexec:
+On 11/12/15 09:54, Uma Krishnan wrote:
+> From: Manoj Kumar <manoj@linux.vnet.ibm.com>
+>
+> This drop enables a future card with a device id
+> of 0x0600 to be recognized by the cxlflash driver.
+> No card specific programming has been added. These
+> card specific changes will be staged in later.
+>
+> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 
-kexec: Starting new kernel
-Bye!
-Unable to handle kernel paging request for instruction fetch
-Faulting instruction address: 0xee9a50f8
-cpu 0x0: Vector: 400 (Instruction Access) at [ee9d7d20]
-    pc: ee9a50f8
-    lr: ee9a50e4
-    sp: ee9d7dd0
-    msr: 21020
-    current = 0xee40f000
-    pid   = 960, comm = kexec
-enter ? for help
-[link register   ] ee9a50e4
-[ee9d7dd0] c0013748 default_machine_kexec+0x58/0x70 (unreliable)
-[ee9d7df0] c0012f04 machine_kexec+0x34/0x40
-[ee9d7e00] c00aa1ec kernel_kexec+0x9c/0xb0
-[ee9d7e20] c005d704 SyS_reboot+0x1f4/0x220
-[ee9d7f40] c000db68 ret_from_syscall+0x0/0x3c
---- Exception: c01 (System Call) at b77b69f4
-SP (bfc4a670) is in userspace
-0:mon>
+Without the card-specific code, how does the driver behave if the new 
+card is plugged in?
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
-Reported-by: Ivan Mikhaylov <ivan@ru.ibm.com>
----
- arch/powerpc/kernel/misc_32.S | 2 ++
- 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index ed3ab50..be8edd6 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -743,6 +743,8 @@ relocate_new_kernel:
- 	/* Check for 47x cores */
- 	mfspr	r3,SPRN_PVR
- 	srwi	r3,r3,16
-+	cmplwi	cr0,r3,PVR_476FPE@h
-+	beq	setup_map_47x
- 	cmplwi	cr0,r3,PVR_476@h
- 	beq	setup_map_47x
- 	cmplwi	cr0,r3,PVR_476_ISS@h
+Andrew
+
 -- 
-2.1.4
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
