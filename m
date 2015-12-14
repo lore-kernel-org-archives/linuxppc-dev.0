@@ -1,44 +1,22 @@
-Return-Path: <daniel.thompson@linaro.org>
-Received: from mail-wm0-x234.google.com (mail-wm0-x234.google.com
- [IPv6:2a00:1450:400c:c09::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <wangnan0@huawei.com>
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B42EB1A10A3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 21:28:54 +1100 (AEDT)
-Received: by mail-wm0-x234.google.com with SMTP id p66so54970345wmp.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 02:28:54 -0800 (PST)
-Subject: Re: [PATCH v3 4/4] printk/nmi: Increase the size of NMI buffer and
- make it configurable
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>,
- Andrew Morton <akpm@linux-foundation.org>
-References: <1449667265-17525-1-git-send-email-pmladek@suse.com>
- <1449667265-17525-5-git-send-email-pmladek@suse.com>
- <CAMuHMdXVgr58YjoePGrRbMyMncQ27f85prL7G5SpeHeNxoYrXQ@mail.gmail.com>
- <20151211124159.GB3729@pathway.suse.cz>
- <20151211145725.b0e81bb4bb18fcd72ef5f557@linux-foundation.org>
- <20151211232113.GZ8644@n2100.arm.linux.org.uk>
-Cc: Petr Mladek <pmladek@suse.com>, Geert Uytterhoeven
- <geert@linux-m68k.org>, Peter Zijlstra <peterz@infradead.org>,
- Steven Rostedt <rostedt@goodmis.org>, Jiri Kosina <jkosina@suse.com>,
- Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- the arch/x86 maintainers <x86@kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "adi-buildroot-devel@lists.sourceforge.net"
- <adi-buildroot-devel@lists.sourceforge.net>,
- Cris <linux-cris-kernel@axis.com>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- sparclinux <sparclinux@vger.kernel.org>
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Message-ID: <566E99DF.6050008@linaro.org>
-Date: Mon, 14 Dec 2015 10:28:47 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5687C1A0C57
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 23:03:57 +1100 (AEDT)
+Message-ID: <566EADD1.6000609@huawei.com>
+Date: Mon, 14 Dec 2015 19:53:53 +0800
+From: "Wangnan (F)" <wangnan0@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <20151211232113.GZ8644@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, "Arnaldo Carvalho de
+ Melo" <acme@kernel.org>
+CC: Alexei Starovoitov <alexei.starovoitov@gmail.com>, Jiri Olsa
+ <jolsa@redhat.com>, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] perf: bpf: Fix build breakage due to libbpf
+References: <1450090232-11437-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <1450090232-11437-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,39 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/12/15 23:21, Russell King - ARM Linux wrote:
-> As I explained when I did that work, the vast majority of ARM platforms
-> are unable to trigger anything like a NMI - the FIQ is something that's
-> generally a property of the secure monitor, and is not accessible to
-> Linux.  However, there are platforms where it is accessible.
+Hi Naveen,
+
+On 2015/12/14 18:50, Naveen N. Rao wrote:
+> perf build is currently (v4.4-rc5) broken on powerpc:
 >
-> The work to add the FIQ-based variant never happened (I've no idea what
-> happened to that part, Daniel seems to have lost interest in working on
-> it.)  So, what we have is the IRQ-based variant merged in mainline, which
-> would be the fallback for the "FIQ not available" cases, and I carry a
-> local hack in my tree which provides the FIQ-based version - but if it
-> were to trigger, it takes out all interrupts (hence why I've not merged
-> my hack.)
+> bpf.c:28:4: error: #error __NR_bpf not defined. libbpf does not support
+> your arch.
+>   #  error __NR_bpf not defined. libbpf does not support your arch.
+>      ^
 >
-> I think the reason that the FIQ-based variant has never really happened
-> is that hooking into the interrupt controller code to clear down the FIQ
-> creates such a horrid layering violation, and also a locking mess that
-> I suspect it's just been given up with.
+> Fix this by including tools/perf/config/Makefile.arch for the proper
+> $ARCH macro. While at it, remove redundant LP64 macro definition.
+>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>   tools/lib/bpf/Makefile | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/tools/lib/bpf/Makefile b/tools/lib/bpf/Makefile
+> index 636e3dd..050e0e8 100644
+> --- a/tools/lib/bpf/Makefile
+> +++ b/tools/lib/bpf/Makefile
+> @@ -31,7 +31,8 @@ INSTALL = install
+>   DESTDIR ?=
+>   DESTDIR_SQ = '$(subst ','\'',$(DESTDIR))'
+>   
+> -LP64 := $(shell echo __LP64__ | ${CC} ${CFLAGS} -E -x c - | tail -n 1)
+> +include $(srctree)/tools/perf/config/Makefile.arch
+> +
+>   ifeq ($(LP64), 1)
+>     libdir_relative = lib64
+>   else
 
-I haven't quite given up; I'm still looking into this stuff. However 
-you're certainly right that connecting the FIQ handler to the GIC code 
-in an elegant way is tough.
+Are you doing cross compiling? In this case you should provide an 'ARCH' 
+to make
+through cmdline. For example, this is how yocto help me build perf on
+aarch64:
 
-I've been working in parallel on an arm64 implementation with the result 
-that I'm now two lumps of code that are almost, but not quite, ready.
+  $ make -C /patch/to/kernel/tools/perf O=/path/to/output \
+           CROSS_COMPILE=aarch64-oe-linux- ARCH=arm64 \
+           CC=aarch64-oe-linux-gcc  --sysroot=... 
+AR=aarch64-oe-linux-ar  ...
 
-Right now I hope to share latest arm code fairly late in the this 
-devcycle (for review rather than merge) followed up with a new version 
-very early in v4.6. Even now I think the code needs a long soak in -next 
-just in case there are any lurking regressions on particular platforms.
+If you include Makefile.arch, I think you are seeking for a 'uname -m' 
+result,
+then you are not doing cross compiling, right? In this case what you 
+need is providing
+a __NR_bpf entry for your platform, because in some cases that value is 
+overrided because
+we have
 
-I don't expect anyone to base decisions on my aspirations above but 
-would like to reassure Russell that I haven't given up on it.
+$ find ./tools/ -name "unistd*"
+./tools/perf/util/include/asm/unistd_64.h
+./tools/perf/util/include/asm/unistd_32.h
 
+You can find the reason of these two files through: 
+eae7a755ee81129370c8f555b0d5672e6673735d
 
-Daniel.
+I posted a patch by replying this mail. I think you can find it through 
+[1] soon.
+I don't have PPC environment to check it. Could you please help me check 
+this patch
+in your environment?
+
+[1] 
+http://lkml.kernel.org/g/1450092932-123588-1-git-send-email-wangnan0@huawei.com 
