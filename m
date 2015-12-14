@@ -1,40 +1,44 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+Return-Path: <manoj@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D9E0D1A010A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 02:44:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 57B661A0724
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 04:18:39 +1100 (AEDT)
 Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Mon, 14 Dec 2015 21:14:13 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 8DC47125805D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 21:14:35 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBEFi7B957147604
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 21:14:07 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBEFi6Xc018715
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 21:14:07 +0530
-Date: Mon, 14 Dec 2015 21:13:26 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Wang Nan <wangnan0@huawei.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Jiri Olsa <jolsa@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>
-Subject: Re: [PATCH v2] tools lib bpf: Support libbpf on PowerPC
-Message-ID: <20151214154326.GE23726@naverao1-tp.in.ibm.com>
-References: <1450090232-11437-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
- <1450094259-123844-1-git-send-email-wangnan0@huawei.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
+ Mon, 14 Dec 2015 10:18:34 -0700
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 548E71FF004F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 10:06:41 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBEHIUUq29753526
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 10:18:30 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBEHITbD014545
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 10:18:29 -0700
+Reply-To: manoj@linux.vnet.ibm.com
+Subject: Re: [PATCH 6/6] cxlflash: Enable device id for future IBM CXL adapter
+References: <1449787867-23015-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1449788087-23282-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <566E3BEE.9070307@au1.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
+From: Manoj Kumar <manoj@linux.vnet.ibm.com>
+Message-ID: <566EF9EF.8020800@linux.vnet.ibm.com>
+Date: Mon, 14 Dec 2015 11:18:39 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1450094259-123844-1-git-send-email-wangnan0@huawei.com>
+In-Reply-To: <566E3BEE.9070307@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,111 +48,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015/12/14 11:57AM, Wang Nan wrote:
-> Support basic PowerPC compiling.
-> 
-> Checks BPF syscall number, turn off libbpf building on platform doesn't
-> support sys_bpf instead of blocking compiling.
-> 
-> Reported-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> Signed-off-by: Wang Nan <wangnan0@huawei.com>
-> Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-> Cc: Alexei Starovoitov <alexei.starovoitov@gmail.com>
-> Cc: Jiri Olsa <jolsa@redhat.com>
-> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
-> 
-> v1 -> v2: __powerpc64__ -> __powerpc__. Code is from
->           ./tools/perf/perf-sys.h, but not tested yet.
-> 
-> Naveen, please help me try this patch on PPC.
+On 12/13/2015 9:47 PM, Andrew Donnellan wrote:
+> On 11/12/15 09:54, Uma Krishnan wrote:
+>> From: Manoj Kumar <manoj@linux.vnet.ibm.com>
+>>
+>> This drop enables a future card with a device id
+>> of 0x0600 to be recognized by the cxlflash driver.
+>> No card specific programming has been added. These
+>> card specific changes will be staged in later.
+>>
+>> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
+>
+> Without the card-specific code, how does the driver behave if the new
+> card is plugged in?
 
-Thanks, this works. However...
+Andrew:
 
-> 	  
-> Thank you.
-> 
-> ---
->  tools/build/feature/test-bpf.c | 23 ++++++++++++++++++++++-
->  tools/lib/bpf/bpf.c            |  6 ++++--
->  2 files changed, 26 insertions(+), 3 deletions(-)
-> 
-> diff --git a/tools/build/feature/test-bpf.c b/tools/build/feature/test-bpf.c
-> index 062bac8..19497f7 100644
-> --- a/tools/build/feature/test-bpf.c
-> +++ b/tools/build/feature/test-bpf.c
-> @@ -1,9 +1,26 @@
-> +#include <asm/unistd.h>
->  #include <linux/bpf.h>
-> +#include <unistd.h>
-> +
-> +#ifndef __NR_bpf
-> +# if defined(__i386__)
-> +#  define __NR_bpf 357
-> +# elif defined(__x86_64__)
-> +#  define __NR_bpf 321
-> +# elif defined(__aarch64__)
-> +#  define __NR_bpf 280
-> +# elif defined(__powerpc__)
-> +#  define __NR_bpf 361
+As per the design, the Accelerator Function Unit (AFU)
+for this new IBM CXL Flash Adapater retains the same host
+interface as the previous generation. For the early prototypes
+of the new card, the driver with this change behaves exactly as
+the driver prior to this behaved with the earlier generation
+card. i.e. No card specific changes are required. However, I
+left the staging comment in there, in case later versions of the
+card deviate from the prototype.
 
-I think we should drop __aarch64__ and __powerpc__ here since this 
-builds fine on ppc without these hunks.
-
-> +# else
-> +#  error __NR_bpf not defined. libbpf does not support your arch.
-> +# endif
-> +#endif
->  
->  int main(void)
->  {
->  	union bpf_attr attr;
->  
-> +	/* Check fields in attr */
->  	attr.prog_type = BPF_PROG_TYPE_KPROBE;
->  	attr.insn_cnt = 0;
->  	attr.insns = 0;
-> @@ -14,5 +31,9 @@ int main(void)
->  	attr.kern_version = 0;
->  
->  	attr = attr;
-> -	return 0;
-> +	/*
-> +	 * Test existance of __NR_bpf and BPF_PROG_LOAD.
-
-Nit... 'for existence'.
-
-> +	 * This call should fail if we run the testcase.
-> +	 */
-> +	return syscall(__NR_bpf, BPF_PROG_LOAD, attr, sizeof(attr));
->  }
-> diff --git a/tools/lib/bpf/bpf.c b/tools/lib/bpf/bpf.c
-> index 5bdc6ea..fd25c58 100644
-> --- a/tools/lib/bpf/bpf.c
-> +++ b/tools/lib/bpf/bpf.c
-> @@ -14,8 +14,8 @@
->  #include "bpf.h"
->  
->  /*
-> - * When building perf, unistd.h is override. Define __NR_bpf is
-> - * required to be defined.
-> + * When building perf, unistd.h is overrided. __NR_bpf is
-> + * required to be defined explicitly.
->   */
->  #ifndef __NR_bpf
->  # if defined(__i386__)
-> @@ -24,6 +24,8 @@
->  #  define __NR_bpf 321
->  # elif defined(__aarch64__)
->  #  define __NR_bpf 280
-> +# elif defined(__powerpc__)
-> +#  define __NR_bpf 361
-
-And, I think we should drop this hunk, but include the patch I sent.  
-That ensures that the proper headers from the kernel source tree are 
-included, so there won't be a need to explicitly define __NR_bpf for 
-each architecture.
-
-
-Regards,
-Naveen
+- Manoj
