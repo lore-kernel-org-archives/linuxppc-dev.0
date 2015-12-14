@@ -1,20 +1,44 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id 2E04E1A011D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 10:35:00 +1100 (AEDT)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Jia Hongtao <hongtao.jia@freescale.com>
-Cc: edubezval@gmail.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
- scottwood@freescale.com
-Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
- device tree
-Date: Tue, 15 Dec 2015 00:58:26 +0100
-Message-ID: <1697588.dLcbZBRWO4@vostro.rjw.lan>
-In-Reply-To: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
-References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <mrochs@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C8B41A011D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 10:45:54 +1100 (AEDT)
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Mon, 14 Dec 2015 16:45:52 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 59E4819D8026
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 16:33:54 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id tBENjnEn29229118
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 16:45:49 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBENjlbT008710
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 16:45:49 -0700
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
+Subject: Re: [PATCH v2 3/6] cxlflash: Removed driver date print
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1450127193-48109-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Date: Mon, 14 Dec 2015 17:45:44 -0600
+Cc: linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Daniel Axtens <dja@ozlabs.au.ibm.com>
+Message-Id: <44F7E7E3-AF93-463A-8E5E-85A2D9E045DB@linux.vnet.ibm.com>
+References: <1450126293-47440-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1450127193-48109-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,14 +48,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, November 26, 2015 05:21:11 PM Jia Hongtao wrote:
-> Register the qoriq cpufreq driver as a cooling device, based on the
-> thermal device tree framework. When temperature crosses the passive trip
-> point cpufreq is used to throttle CPUs.
-> 
-> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Applied, thanks!
-
-Rafael
+Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
