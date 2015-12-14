@@ -1,26 +1,39 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 922751A1166
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 07:20:31 +1100 (AEDT)
-Received: from mail-lb0-x22f.google.com (mail-lb0-x22f.google.com
- [IPv6:2a00:1450:4010:c04::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 936E61401CA
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2015 07:20:30 +1100 (AEDT)
-Received: by lbbkw15 with SMTP id kw15so114031419lbb.0
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2015 12:20:28 -0800 (PST)
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- Denis Kirjanov <kda@linux-powerpc.org>
-Subject: [PATCH v3 2/2] powerpc: tracing: don't trace hcalls on offline CPUs
-Date: Mon, 14 Dec 2015 23:18:06 +0300
-Message-Id: <1450124286-4822-2-git-send-email-kda@linux-powerpc.org>
-In-Reply-To: <1450124286-4822-1-git-send-email-kda@linux-powerpc.org>
-References: <1450124286-4822-1-git-send-email-kda@linux-powerpc.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 749C81A01B2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 07:52:34 +1100 (AEDT)
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Mon, 14 Dec 2015 15:52:30 -0500
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id C021C6E8045
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 15:40:35 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBEKqPAe28180558
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 20:52:26 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBEKqP7G005500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 15:52:25 -0500
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Daniel Axtens <dja@ozlabs.au.ibm.com>
+Subject: [PATCH v2 0/6] cxlflash: Miscellaneous fixes and updates
+Date: Mon, 14 Dec 2015 14:51:33 -0600
+Message-Id: <1450126293-47440-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,85 +43,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-./drmgr -c cpu -a -r gives the following warning:
+This patch set contains miscellaneous fixes and adds support for
+a future IBM CXL adapter. This series is intended for 4.5 and is
+bisectable. Please reference the changelog below for details on
+what has been altered from previous versions of this patch set.
 
-[ 2327.035563]
-RCU used illegally from offline CPU!
-rcu_scheduler_active = 1, debug_locks = 1
-[ 2327.035564] no locks held by swapper/12/0.
-[ 2327.035565]
-stack backtrace:
-[ 2327.035567] CPU: 12 PID: 0 Comm: swapper/12 Tainted: G S
-4.3.0-rc3-00060-g353169a #5
-[ 2327.035568] Call Trace:
-[ 2327.035573] [c0000001d62578e0] [c0000000008977fc] .dump_stack+0x98/0xd4 (unreliable)
-[ 2327.035577] [c0000001d6257960] [c000000000109bd8] .lockdep_rcu_suspicious+0x108/0x170
-[ 2327.035580] [c0000001d62579f0] [c00000000006a1d0] .__trace_hcall_exit+0x2b0/0x2c0
-[ 2327.035584] [c0000001d6257ab0] [c00000000006a2e8] plpar_hcall_norets_trace+0x70/0x8c
-[ 2327.035588] [c0000001d6257b20] [c000000000067a14] .icp_hv_set_cpu_priority+0x54/0xc0
-[ 2327.035592] [c0000001d6257ba0] [c000000000066c5c] .xics_teardown_cpu+0x5c/0xa0
-[ 2327.035595] [c0000001d6257c20] [c0000000000747ac] .pseries_mach_cpu_die+0x6c/0x320
-[ 2327.035598] [c0000001d6257cd0] [c0000000000439cc] .cpu_die+0x3c/0x60
-[ 2327.035602] [c0000001d6257d40] [c0000000000183d8] .arch_cpu_idle_dead+0x28/0x40
-[ 2327.035606] [c0000001d6257db0] [c0000000000ff1dc] .cpu_startup_entry+0x4fc/0x560
-[ 2327.035610] [c0000001d6257ed0] [c000000000043728] .start_secondary+0x328/0x360
-[ 2327.035614] [c0000001d6257f90] [c000000000008a6c] start_secondary_prolog+0x10/0x14
-[ 2327.035620] cpu 12 (hwid 12) Ready to die...
-[ 2327.144463] cpu 13 (hwid 13) Ready to die...
-[ 2327.294180] cpu 14 (hwid 14) Ready to die...
-[ 2327.403599] cpu 15 (hwid 15) Ready to die...
+v2 Changes:
+- Incorporate comments from Daniel Axtens
+- Incorporate comments from Andrew Donnellan
+- Removed driver date and simplified driver load print
+- Clarified driver behavior for the future adapter
 
-Make the hypervisor tracepoints conditional
-by using TRACE_EVENT_FN_COND
+Manoj Kumar (4):
+  cxlflash: Fix to escalate LINK_RESET also on port 1
+  cxlflash: Fix to resolve cmd leak after host reset
+  cxlflash: Resolve oops in wait_port_offline
+  cxlflash: Enable device id for future IBM CXL adapter
 
-Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+Matthew R. Ochs (1):
+  cxlflash: Fix to avoid virtual LUN failover failure
 
-v2 changes:
- - Use raw_smp_processor_id as suggested by BenH
- since since hcalls can be called from preemptable sections
+Uma Krishnan (1):
+  cxlflash: Removed driver date print
 
-v3 changes:
- - Fix the subject line
----
- arch/powerpc/include/asm/trace.h | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/scsi/cxlflash/common.h     |  2 ++
+ drivers/scsi/cxlflash/main.c       | 54 ++++++++++++++++++++++++++++++++------
+ drivers/scsi/cxlflash/main.h       |  5 ++--
+ drivers/scsi/cxlflash/vlun.c       |  2 ++
+ include/uapi/scsi/cxlflash_ioctl.h | 10 +++++++
+ 5 files changed, 62 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/trace.h b/arch/powerpc/include/asm/trace.h
-index 8e86b48..32e36b1 100644
---- a/arch/powerpc/include/asm/trace.h
-+++ b/arch/powerpc/include/asm/trace.h
-@@ -57,12 +57,14 @@ DEFINE_EVENT(ppc64_interrupt_class, timer_interrupt_exit,
- extern void hcall_tracepoint_regfunc(void);
- extern void hcall_tracepoint_unregfunc(void);
- 
--TRACE_EVENT_FN(hcall_entry,
-+TRACE_EVENT_FN_COND(hcall_entry,
- 
- 	TP_PROTO(unsigned long opcode, unsigned long *args),
- 
- 	TP_ARGS(opcode, args),
- 
-+	TP_CONDITION(cpu_online(raw_smp_processor_id())),
-+
- 	TP_STRUCT__entry(
- 		__field(unsigned long, opcode)
- 	),
-@@ -76,13 +78,15 @@ TRACE_EVENT_FN(hcall_entry,
- 	hcall_tracepoint_regfunc, hcall_tracepoint_unregfunc
- );
- 
--TRACE_EVENT_FN(hcall_exit,
-+TRACE_EVENT_FN_COND(hcall_exit,
- 
- 	TP_PROTO(unsigned long opcode, unsigned long retval,
- 		unsigned long *retbuf),
- 
- 	TP_ARGS(opcode, retval, retbuf),
- 
-+	TP_CONDITION(cpu_online(raw_smp_processor_id())),
-+
- 	TP_STRUCT__entry(
- 		__field(unsigned long, opcode)
- 		__field(unsigned long, retval)
 -- 
-2.4.0
+2.1.0
