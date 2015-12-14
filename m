@@ -2,16 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1EDE41A010A
+ by lists.ozlabs.org (Postfix) with ESMTPS id A499A1A010A
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 20:46:38 +1100 (AEDT)
-In-Reply-To: <1449554365-22036-1-git-send-email-andrew.donnellan@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org
+In-Reply-To: <1449614642-8161-1-git-send-email-paul.gortmaker@windriver.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Daniel Axtens <dja@axtens.net>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [v2] Revert "powerpc/eeh: Don't unfreeze PHB PE after reset"
-Message-Id: <20151214094637.C6B3F140556@ozlabs.org>
-Date: Mon, 14 Dec 2015 20:46:37 +1100 (AEDT)
+Cc: Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: sbc8641: drop bogus PHY IRQ entries from DTS file
+Message-Id: <20151214094638.87145140557@ozlabs.org>
+Date: Mon, 14 Dec 2015 20:46:38 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,23 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-08-12 at 05:59:25 UTC, Andrew Donnellan wrote:
-> This reverts commit 527d10ef3a315d3cb9dc098dacd61889a6c26439.
+On Tue, 2015-08-12 at 22:44:02 UTC, Paul Gortmaker wrote:
+> This file was originally cloned off of the MPC8641D-HPCN reference
+> platform, which actually had a PHY IRQ line connected.  However
+> this board does not.  The bogus entry was largely inert and went
+> undetected until commit 321beec5047af83db90c88114b7e664b156f49fe
+> ("net: phy: Use interrupts when available in NOLINK state") was
+> added to the tree.
 > 
-> The reverted commit breaks cxlflash devices following an EEH reset (and
-> possibly other cxl devices, however this has not been tested).
-...
+> With the above commit, the board fails to NFS boot since it sits
+> waiting for a PHY IRQ event that of course never arrives.  Removing
+> the bogus entries from the DTS file fixes the issue.
 > 
-> In the meantime, revert the commit, especially as it was intended to be a
-> non-functional change.
-> 
-> Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Cc: Ian Munsie <imunsie@au1.ibm.com>
-> Cc: Daniel Axtens <dja@axtens.net>
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Cc: Andrew Lunn <andrew@lunn.ch>
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/dc9c41bd9ece090b54eb8f1b
+https://git.kernel.org/powerpc/c/5b01310cfc8d2302dcca1d8d
 
 cheers
