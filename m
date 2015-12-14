@@ -1,26 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0144.outbound.protection.outlook.com [157.56.110.144])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B923F1A0026
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 09:20:31 +1100 (AEDT)
-Message-ID: <1450131605.15946.396.camel@freescale.com>
-Subject: Re: [POWERPC] bootwrapper: One check less in fsl_get_immr() after
- error detection
-From: Scott Wood <scottwood@freescale.com>
-To: SF Markus Elfring <elfring@users.sourceforge.net>, "Benjamin
- Herrenschmidt" <benh@kernel.crashing.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- <linuxppc-dev@lists.ozlabs.org>
-CC: LKML <linux-kernel@vger.kernel.org>, <kernel-janitors@vger.kernel.org>,
- Julia Lawall <julia.lawall@lip6.fr>
-Date: Mon, 14 Dec 2015 16:20:05 -0600
-In-Reply-To: <566F3E49.2010506@users.sourceforge.net>
-References: <566ABCD9.1060404@users.sourceforge.net>
- <566F3E49.2010506@users.sourceforge.net>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by lists.ozlabs.org (Postfix) with SMTP id 2E04E1A011D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 10:35:00 +1100 (AEDT)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Jia Hongtao <hongtao.jia@freescale.com>
+Cc: edubezval@gmail.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
+ scottwood@freescale.com
+Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
+ device tree
+Date: Tue, 15 Dec 2015 00:58:26 +0100
+Message-ID: <1697588.dLcbZBRWO4@vostro.rjw.lan>
+In-Reply-To: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
+References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,17 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-12-14 at 23:10 +0100, SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Mon, 14 Dec 2015 23:01:32 +0100
+On Thursday, November 26, 2015 05:21:11 PM Jia Hongtao wrote:
+> Register the qoriq cpufreq driver as a cooling device, based on the
+> thermal device tree framework. When temperature crosses the passive trip
+> point cpufreq is used to throttle CPUs.
 > 
-> A status check was performed by the fsl_get_immr() function even if it
-> was known already that a system setting did not fit to the expectations.
-> 
-> This implementation detail could be improved by an adjustment for
-> a jump label according to the Linux coding style convention.
+> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-What is the actual problem you're trying to solve?  Cluttering the code to
-micro-optimize an error path is not an improvement.
+Applied, thanks!
 
--Scott
+Rafael
