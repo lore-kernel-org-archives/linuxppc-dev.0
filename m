@@ -1,26 +1,26 @@
 Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49DE71A11C0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 07:56:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A56431A029B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 07:57:05 +1100 (AEDT)
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Mon, 14 Dec 2015 15:56:24 -0500
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id A8952C9003E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 15:44:30 -0500 (EST)
+ Mon, 14 Dec 2015 15:57:03 -0500
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id B58D338C8051
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 15:56:58 -0500 (EST)
 Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBEKuLLv27001006
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 20:56:21 GMT
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBEKuwlk30015730
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 20:56:58 GMT
 Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
  by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBEKuLas021605
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 15:56:21 -0500
+ tBEKuwwR024660
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 15:56:58 -0500
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -31,11 +31,12 @@ To: linux-scsi@vger.kernel.org,
 Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Daniel Axtens <dja@ozlabs.au.ibm.com>
-Subject: [PATCH v2 0/6] cxlflash: Miscellaneous fixes and updates
-Date: Mon, 14 Dec 2015 14:55:43 -0600
-Message-Id: <1450126544-47592-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-In-Reply-To: <1450126293-47440-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Subject: [PATCH v2 2/6] cxlflash: Fix to avoid virtual LUN failover failure
+Date: Mon, 14 Dec 2015 14:55:44 -0600
+Message-Id: <1450126544-47592-2-git-send-email-ukrishn@linux.vnet.ibm.com>
+In-Reply-To: <1450126544-47592-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1450126293-47440-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1450126544-47592-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,35 +46,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch set contains miscellaneous fixes and adds support for
-a future IBM CXL adapter. This series is intended for 4.5 and is
-bisectable. Please reference the changelog below for details on
-what has been altered from previous versions of this patch set.
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 
-v2 Changes:
-- Incorporate comments from Daniel Axtens
-- Incorporate comments from Andrew Donnellan
-- Removed driver date and simplified driver load print
-- Clarified driver behavior for the future adapter
+Applications which use virtual LUN's that are backed by a physical LUN
+over both adapter ports may experience an I/O failure in the event of
+a link loss (e.g. cable pull).
 
-Manoj Kumar (4):
-  cxlflash: Fix to escalate LINK_RESET also on port 1
-  cxlflash: Fix to resolve cmd leak after host reset
-  cxlflash: Resolve oops in wait_port_offline
-  cxlflash: Enable device id for future IBM CXL adapter
+Virtual LUNs may be accessed through one or both ports of the adapter.
+This access is encoded in the translation entries that comprise the
+virtual LUN and used by the AFU for load-balancing I/O and handling
+failover scenarios. In a link loss scenario, even though the AFU is
+able to maintain connectivity to the LUN, it is up to the application
+to retry the failed I/O. When applications are unaware of the virtual
+LUN's underlying topology, they are unable to make a sound decision of
+when to retry an I/O and therefore are forced to make their reaction to
+a failed I/O absolute. The result is either a failure to retry I/O or
+increased latency for scenarios where a retry is pointless.
 
-Matthew R. Ochs (1):
-  cxlflash: Fix to avoid virtual LUN failover failure
+To remedy this scenario, provide feedback back to the application on
+virtual LUN creation as to which ports the LUN may be accessed. LUN's
+spanning both ports are candidates for a retry in a presence of an I/O
+failure.
 
-Uma Krishnan (1):
-  cxlflash: Removed driver date print
-
- drivers/scsi/cxlflash/common.h     |  2 ++
- drivers/scsi/cxlflash/main.c       | 54 ++++++++++++++++++++++++++++++++------
- drivers/scsi/cxlflash/main.h       |  5 ++--
+Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+Acked-by: Manoj Kumar <manoj@linux.vnet.ibm.com>
+---
  drivers/scsi/cxlflash/vlun.c       |  2 ++
- include/uapi/scsi/cxlflash_ioctl.h | 10 +++++++
- 5 files changed, 62 insertions(+), 11 deletions(-)
+ include/uapi/scsi/cxlflash_ioctl.h | 10 ++++++++++
+ 2 files changed, 12 insertions(+)
 
+diff --git a/drivers/scsi/cxlflash/vlun.c b/drivers/scsi/cxlflash/vlun.c
+index a53f583..50f8e93 100644
+--- a/drivers/scsi/cxlflash/vlun.c
++++ b/drivers/scsi/cxlflash/vlun.c
+@@ -1008,6 +1008,8 @@ int cxlflash_disk_virtual_open(struct scsi_device *sdev, void *arg)
+ 	virt->last_lba = last_lba;
+ 	virt->rsrc_handle = rsrc_handle;
+ 
++	if (lli->port_sel == BOTH_PORTS)
++		virt->hdr.return_flags |= DK_CXLFLASH_ALL_PORTS_ACTIVE;
+ out:
+ 	if (likely(ctxi))
+ 		put_context(ctxi);
+diff --git a/include/uapi/scsi/cxlflash_ioctl.h b/include/uapi/scsi/cxlflash_ioctl.h
+index 831351b..2302f3c 100644
+--- a/include/uapi/scsi/cxlflash_ioctl.h
++++ b/include/uapi/scsi/cxlflash_ioctl.h
+@@ -31,6 +31,16 @@ struct dk_cxlflash_hdr {
+ };
+ 
+ /*
++ * Return flag definitions available to all ioctls
++ *
++ * Similar to the input flags, these are grown from the bottom-up with the
++ * intention that ioctl-specific return flag definitions would grow from the
++ * top-down, allowing the two sets to co-exist. While not required/enforced
++ * at this time, this provides future flexibility.
++ */
++#define DK_CXLFLASH_ALL_PORTS_ACTIVE	0x0000000000000001ULL
++
++/*
+  * Notes:
+  * -----
+  * The 'context_id' field of all ioctl structures contains the context
 -- 
 2.1.0
