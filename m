@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3939F1A15ED
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 20:47:50 +1100 (AEDT)
-In-Reply-To: <20151210204439.393ce017@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2B8781A0C5A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 20:47:51 +1100 (AEDT)
+In-Reply-To: <20151209201147.032e28c3@kryten>
 To: Anton Blanchard <anton@samba.org>, benh@kernel.crashing.org,
  paulus@samba.org, cyrilbur@gmail.com, scottwood@freescale.com,
- mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
- Rashmica <rashmicy@gmail.com>
+ mikey@neuling.org, khandual@linux.vnet.ibm.com
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v2] powerpc: Call restore_sprs() before _switch()
-Message-Id: <20151214094750.1E3C5140323@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc: Fix DSCR inheritance over fork()
+Message-Id: <20151214094750.F0DA4140556@ozlabs.org>
 Date: Mon, 14 Dec 2015 20:47:50 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,22 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-10-12 at 09:44:39 UTC, Anton Blanchard wrote:
-> commit 152d523e6307 ("powerpc: Create context switch helpers save_sprs()
-> and restore_sprs()") moved the restore of SPRs after the call to _switch().
+On Wed, 2015-09-12 at 09:11:47 UTC, Anton Blanchard wrote:
+> Two DSCR tests have a hack in them:
 > 
-> There is an issue with this approach - new tasks do not return through
-> _switch(), they are set up by copy_thread() to directly return through
-> ret_from_fork() or ret_from_kernel_thread(). This means restore_sprs() is
-> not getting called for new tasks.
+> 	/*
+> 	 * XXX: Force a context switch out so that DSCR
+> 	 * current value is copied into the thread struct
+> 	 * which is required for the child to inherit the
+> 	 * changed value.
+> 	 */
+> 	sleep(1);
 > 
-> Fix this by moving restore_sprs() before _switch().
+> We should not be working around this in the testcase, it is a kernel bug.
+> Fix it by copying the current DSCR to the child, instead of what we
+> had in the thread struct at last context switch.
 > 
 > Signed-off-by: Anton Blanchard <anton@samba.org>
-> Fixes: 152d523e6307 ("powerpc: Create context switch helpers save_sprs() and restore_sprs()")
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/20dbe67062062c2a790832f0
+https://git.kernel.org/powerpc/c/db1231dcdb4dc6cdcbdef0ba
 
 cheers
