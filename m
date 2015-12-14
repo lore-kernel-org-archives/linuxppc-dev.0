@@ -1,30 +1,36 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
- [IPv6:2607:f8b0:400e:c00::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9AC471A010A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 16:00:43 +1100 (AEDT)
-Received: by pfbo64 with SMTP id o64so20609889pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Dec 2015 21:00:40 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Subject: Re: [PATCH 2/6] cxlflash: Fix to avoid virtual LUN failover failure
-In-Reply-To: <1449788029-23093-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-References: <1449787867-23015-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1449788029-23093-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Date: Mon, 14 Dec 2015 16:00:25 +1100
-Message-ID: <87h9jl7hg6.fsf@gamma.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 081E21A011D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 16:18:13 +1100 (AEDT)
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Mon, 14 Dec 2015 15:18:10 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8F59C2BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 16:18:09 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBE5Hr2V22347954
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 16:18:01 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBE5HaDC029336
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 16:17:36 +1100
+From: Anju T <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: khandual@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sukadev@linux.vnet.ibm.com,
+ acme@redhat.com, maddy@linux.vnet.ibm.com, dsahern@gmail.com,
+ jolsa@redhat.com, anju@linux.vnet.ibm.com, hemant@linux.vnet.ibm.com,
+ naveen.n.rao@linux.vnet.ibm.com
+Subject: [PATCH V6 0/4] perf/powerpc: Add ability to sample intr machine state
+ in powerpc
+Date: Mon, 14 Dec 2015 10:47:12 +0530
+Message-Id: <1450070236-3461-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,111 +40,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This short patch series adds the ability to sample the interrupted
+machine state for each hardware sample.
+
+To test this patchset,
+Eg:
+
+$ perf record -I?	# list supported registers 
+
+output:
+
+available registers: gpr0 gpr1 gpr2 gpr3 gpr4 gpr5 gpr6 gpr7 gpr8 gpr9 gpr10 gpr11 gpr12 gpr13 gpr14 gpr15 gpr16 gpr17 gpr18 gpr19 gpr20 gpr21 gpr22 gpr23 gpr24 gpr25 gpr26 gpr27 gpr28 gpr29 gpr30 gpr31 nip msr orig_r3 ctr link xer ccr trap dar dsisr
+usage: perf record [<options>] [<command>]
+or: perf record [<options>] -- <command> [<options>]
+ -I, --intr-regs[=<any register>]
+sample selected machine registers on interrupt, use -I ? to list register names
 
 
-> Virtual LUNs may be accessed through one or both ports of the adapter.
+$ perf record -I ls   # record machine state at interrupt
+$ perf script -D      # read the perf.data file
 
-Is it possible that there might ever be adapters with a number of ports
-other than 2? In particular, is it possible for 3 or 4 port adapters to
-exist?
+Samplfdoutput obtained for this patchset/ output looks like as follows:
 
-If so, do you need something with a bit more fidelity?
+178329381464 0x138 [0x180]: PERF_RECORD_SAMPLE(IP, 0x1): 7803/7803: 0xc00000000000fd9c period: 1 addr: 0
+... intr regs: mask 0x3ffffffffff ABI 64-bit
+.... gpr0  0xc0000000001a6420
+.... gpr1  0xc000001e4df039b0
+.... gpr2  0xc000000000cdd100
+.... gpr3  0x1
+.... gpr4  0xc000001e4a96d000
+.... gpr5  0x29854255ba
+.... gpr6  0xc000000ffa3050b8
+.... gpr7  0x0
+.... gpr8  0x0
+.... gpr9  0x0
+.... gpr10 0x0
+.... gpr11 0x0
+.... gpr12 0x24022822
+.... gpr13 0xc00000000fe03000
+.... gpr14 0x0
+.... gpr15 0xc000000000d763f8
+.... gpr16 0x0
+.... gpr17 0xc000001e4ddcf000
+.... gpr18 0x0
+.... gpr19 0xc000000ffa305000
+.... gpr20 0xc000001e4df038c0
+.... gpr21 0xc000001e40ed7a00
+.... gpr22 0xc0000000000aa28c
+.... gpr23 0xc000000000cdd100
+.... gpr24 0x0
+.... gpr25 0xc000000000cdd100
+.... gpr26 0xc000001e4df038b0
+.... gpr27 0xfffffffffffffeae
+.... gpr28 0xc000001e4df03880
+.... gpr29 0xc000000000dce900
+.... gpr30 0xc000001e4df03890
+.... gpr31 0xc000001e355c7a30
+.... nip   0xc0000000001a62d8
+.... msr   0x9000000000009032
+.... orig_r3 0xc0000000001a6320
+.... ctr   0xc0000000000a7be0
+.... lnk   0xc0000000001a6428
+.... xer   0x0
+.... ccr   0x24022888
+.... trap  0xf01
+.... dar   0xc000001e40ed7a00
+.... dsisr 0x3000c0060000004
+ ... thread: :7803:7803
+ ...... dso: /root/.debug/.build-id/d0/eb47b06c0d294143af13c50616f638c2d88658
+           :7803  7803   178.329381:          1 cycles:  c00000000000fd9c .arch_local_irq_restore (/boot/vmlinux)
 
-If not, this is a good approach.
 
-Regards,
-Daniel
+Changes from V5:
 
-> This access is encoded in the translation entries that comprise the
-> virtual LUN and used by the AFU for load-balancing I/O and handling
-> failover scenarios. In a link loss scenario, even though the AFU is
-> able to maintain connectivity to the LUN, it is up to the application
-> to retry the failed I/O. When applications are unaware of the virtual
-> LUN's underlying topology, they are unable to make a sound decision of
-> when to retry an I/O and therefore are forced to make their reaction to
-> a failed I/O absolute. The result is either a failure to retry I/O or
-> increased latency for scenarios where a retry is pointless.
->
-> To remedy this scenario, provide feedback back to the application on
-> virtual LUN creation as to which ports the LUN may be accessed. LUN's
-> spanning both ports are candidates for a retry in a presence of an I/O
-> failure.
->
-> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-> ---
->  drivers/scsi/cxlflash/vlun.c       |  2 ++
->  include/uapi/scsi/cxlflash_ioctl.h | 10 ++++++++++
->  2 files changed, 12 insertions(+)
->
-> diff --git a/drivers/scsi/cxlflash/vlun.c b/drivers/scsi/cxlflash/vlun.c
-> index a53f583..50f8e93 100644
-> --- a/drivers/scsi/cxlflash/vlun.c
-> +++ b/drivers/scsi/cxlflash/vlun.c
-> @@ -1008,6 +1008,8 @@ int cxlflash_disk_virtual_open(struct scsi_device *=
-sdev, void *arg)
->  	virt->last_lba =3D last_lba;
->  	virt->rsrc_handle =3D rsrc_handle;
->=20=20
-> +	if (lli->port_sel =3D=3D BOTH_PORTS)
-> +		virt->hdr.return_flags |=3D DK_CXLFLASH_ALL_PORTS_ACTIVE;
->  out:
->  	if (likely(ctxi))
->  		put_context(ctxi);
-> diff --git a/include/uapi/scsi/cxlflash_ioctl.h b/include/uapi/scsi/cxlfl=
-ash_ioctl.h
-> index 831351b..2302f3c 100644
-> --- a/include/uapi/scsi/cxlflash_ioctl.h
-> +++ b/include/uapi/scsi/cxlflash_ioctl.h
-> @@ -31,6 +31,16 @@ struct dk_cxlflash_hdr {
->  };
->=20=20
->  /*
-> + * Return flag definitions available to all ioctls
-> + *
-> + * Similar to the input flags, these are grown from the bottom-up with t=
-he
-> + * intention that ioctl-specific return flag definitions would grow from=
- the
-> + * top-down, allowing the two sets to co-exist. While not required/enfor=
-ced
-> + * at this time, this provides future flexibility.
-> + */
-> +#define DK_CXLFLASH_ALL_PORTS_ACTIVE	0x0000000000000001ULL
-> +
-> +/*
->   * Notes:
->   * -----
->   * The 'context_id' field of all ioctl structures contains the context
-> --=20
-> 2.1.0
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+- Enabled perf_sample_regs_user also in this patch set.Functions added in 
+   arch/powerpc/perf/perf_regs.c
+- Added Maddy's patch to this patchset for enabling -I? option which will
+  list the supported register names.
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
+Changes from V4:
 
-iQIcBAEBCgAGBQJWbkzqAAoJEPC3R3P2I92FFWYQAKTRjNuDkCGuxUGEN7jhxTrK
-syYnjbFhR3IQd1d+EQos/B3/pbxVUOH6yG+ksHECxDNMaH7hp0KfWhifIlYHSxlX
-OK2N/4CQTpfRmEKGLGMS6VkGuJDK6w1RJeQgsKwpGuqYXazj7RcXdSAaLTC4/LOX
-G1mO4QIBAhnKs5uBkEnX9pE5mJFrmceZeCtOWtHYtuoBHKeVESf/DMYZpUFST5wQ
-gOiEkBL0DQV1GBhVRKdgCFVN4HVsR/oEQG0rMjMDih1wc5oXUyu4fEjMg4vqjYOa
-Q68LIH1E4lUO4ARj7hQeJE+2eTr64mxYnZIw1Q2cpUiUVvVoDaCpjk5zZv8JwBNu
-N1pRXjd/E5yrlyX+FDU3wVw7HWKzOH5QzE/UzCPq1p67KVVISY8sO0yWpEtj3gmw
-S8MjSsieOwGh9EDW5ihw1bUpArJDU6XNlGarDcbrbM0j7SyRINWKs6S6FFuAYc2t
-0Li5IW4FuoYyvZrd2O3aPq3g3Gso+hJFBrkIFtuFjQ8p5BPl3NeGvpxGGUuGRoEP
-Gadhvd58vlv0wioItUZzW0HSmrP9pjWBHkluyCk99NZ8UukdxmjdLyujYd9tDSRT
-rxz2x7+mc6OW2ag739X5Cw46ALg6iIYgWMVRK9Sm8/ajqm+0fyjrQrMeQNl89FhQ
-5eTbElazyYepFIFuyYrO
-=y1+S
------END PGP SIGNATURE-----
---=-=-=--
+- Removed the softe and MQ from all patches
+- Switch case is replaced with an array in the 3rd patch
+
+Changes from V3:
+
+- Addressed the comments by Sukadev regarding the nits in the descriptions.
+- Modified the subject of first patch.
+- Included the sample output in the 3rd patch also.
+
+Changes from V2:
+
+- tools/perf/config/Makefile is moved to the patch tools/perf.
+- The patchset is reordered.
+- perf_regs_load() function is used for the dwarf unwind test.Since it is not required here,
+  it is removed from tools/perf/arch/powerpc/include/perf_regs.h
+- PERF_REGS_POWERPC_RESULT is removed.
+
+Changes from V1:
+
+- Solved the name missmatch issue in the from and signed-off field of the patch series.
+- Added necessary comments in the 3rd patch ie perf/powerpc ,as suggested by Maddy.
+
+
+Anju T (3):
+  perf/powerpc: assign an id to each powerpc register
+  perf/powerpc: add support for sampling intr machine state
+  tools/perf: Map the ID values with register names
+
+Madhavan Srinivasan (1):
+  tool/perf: Add sample_reg_mask to include all perf_regs regs
+
+ arch/powerpc/Kconfig                        |  1 +
+ arch/powerpc/include/uapi/asm/perf_regs.h   | 49 +++++++++++++++++
+ arch/powerpc/perf/Makefile                  |  1 +
+ arch/powerpc/perf/perf_regs.c               | 85 +++++++++++++++++++++++++++++
+ tools/perf/arch/powerpc/include/perf_regs.h | 65 ++++++++++++++++++++++
+ tools/perf/arch/powerpc/util/Build          |  1 +
+ tools/perf/arch/powerpc/util/perf_regs.c    | 48 ++++++++++++++++
+ tools/perf/config/Makefile                  |  5 ++
+ 8 files changed, 255 insertions(+)
+ create mode 100644 arch/powerpc/include/uapi/asm/perf_regs.h
+ create mode 100644 arch/powerpc/perf/perf_regs.c
+ create mode 100644 tools/perf/arch/powerpc/include/perf_regs.h
+ create mode 100644 tools/perf/arch/powerpc/util/perf_regs.c
+
+-- 
+2.1.0
