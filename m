@@ -2,25 +2,25 @@ Return-Path: <ukrishn@linux.vnet.ibm.com>
 Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4699C1A11AC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 07:56:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49DE71A11C0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 07:56:26 +1100 (AEDT)
 Received: from localhost
  by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Mon, 14 Dec 2015 15:56:08 -0500
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 2B239C90045
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 15:44:15 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBEKu6RX28442712
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 20:56:06 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBEKu5ms010082
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 15:56:05 -0500
+ Mon, 14 Dec 2015 15:56:24 -0500
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id A8952C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 15:44:30 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBEKuLLv27001006
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 20:56:21 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBEKuLas021605
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2015 15:56:21 -0500
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -31,12 +31,11 @@ To: linux-scsi@vger.kernel.org,
 Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Daniel Axtens <dja@ozlabs.au.ibm.com>
-Subject: [PATCH v2 1/6] cxlflash: Fix to escalate LINK_RESET also on port 1
-Date: Mon, 14 Dec 2015 14:55:09 -0600
-Message-Id: <1450126509-47557-2-git-send-email-ukrishn@linux.vnet.ibm.com>
-In-Reply-To: <1450126509-47557-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/6] cxlflash: Miscellaneous fixes and updates
+Date: Mon, 14 Dec 2015 14:55:43 -0600
+Message-Id: <1450126544-47592-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+In-Reply-To: <1450126293-47440-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1450126293-47440-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1450126509-47557-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,31 +45,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Manoj Kumar <manoj@linux.vnet.ibm.com>
+This patch set contains miscellaneous fixes and adds support for
+a future IBM CXL adapter. This series is intended for 4.5 and is
+bisectable. Please reference the changelog below for details on
+what has been altered from previous versions of this patch set.
 
-The original fix to escalate a 'login timed out' error
-to a LINK_RESET was only made for one of the two ports
-on the card. This fix resolves the same issue for
-the second port (port 1).
+v2 Changes:
+- Incorporate comments from Daniel Axtens
+- Incorporate comments from Andrew Donnellan
+- Removed driver date and simplified driver load print
+- Clarified driver behavior for the future adapter
 
-Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
-Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
----
- drivers/scsi/cxlflash/main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Manoj Kumar (4):
+  cxlflash: Fix to escalate LINK_RESET also on port 1
+  cxlflash: Fix to resolve cmd leak after host reset
+  cxlflash: Resolve oops in wait_port_offline
+  cxlflash: Enable device id for future IBM CXL adapter
 
-diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index 1e5bf0c..09fe252 100644
---- a/drivers/scsi/cxlflash/main.c
-+++ b/drivers/scsi/cxlflash/main.c
-@@ -1108,7 +1108,7 @@ static const struct asyc_intr_info ainfo[] = {
- 	{SISL_ASTATUS_FC1_OTHER, "other error", 1, CLR_FC_ERROR | LINK_RESET},
- 	{SISL_ASTATUS_FC1_LOGO, "target initiated LOGO", 1, 0},
- 	{SISL_ASTATUS_FC1_CRC_T, "CRC threshold exceeded", 1, LINK_RESET},
--	{SISL_ASTATUS_FC1_LOGI_R, "login timed out, retrying", 1, 0},
-+	{SISL_ASTATUS_FC1_LOGI_R, "login timed out, retrying", 1, LINK_RESET},
- 	{SISL_ASTATUS_FC1_LOGI_F, "login failed", 1, CLR_FC_ERROR},
- 	{SISL_ASTATUS_FC1_LOGI_S, "login succeeded", 1, SCAN_HOST},
- 	{SISL_ASTATUS_FC1_LINK_DN, "link down", 1, 0},
+Matthew R. Ochs (1):
+  cxlflash: Fix to avoid virtual LUN failover failure
+
+Uma Krishnan (1):
+  cxlflash: Removed driver date print
+
+ drivers/scsi/cxlflash/common.h     |  2 ++
+ drivers/scsi/cxlflash/main.c       | 54 ++++++++++++++++++++++++++++++++------
+ drivers/scsi/cxlflash/main.h       |  5 ++--
+ drivers/scsi/cxlflash/vlun.c       |  2 ++
+ include/uapi/scsi/cxlflash_ioctl.h | 10 +++++++
+ 5 files changed, 62 insertions(+), 11 deletions(-)
+
 -- 
 2.1.0
