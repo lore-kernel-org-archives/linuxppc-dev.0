@@ -1,20 +1,24 @@
-Return-Path: <wangnan0@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <alexandre.belloni@free-electrons.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 963751A0246
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 19:51:47 +1100 (AEDT)
-From: Wang Nan <wangnan0@huawei.com>
-To: <acme@kernel.org>, <naveen.n.rao@linux.vnet.ibm.com>, <jolsa@redhat.com>
-CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <wangnan0@huawei.com>, <sukadev@linux.vnet.ibm.com>
-Subject: [PATCH v4] perf: bpf: Fix build breakage due to libbpf
-Date: Tue, 15 Dec 2015 08:51:13 +0000
-Message-ID: <1450169473-137129-1-git-send-email-wangnan0@huawei.com>
-In-Reply-To: <1450150557-127942-4-git-send-email-wangnan0@huawei.com>
-References: <1450150557-127942-4-git-send-email-wangnan0@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C6351A0271
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 20:01:58 +1100 (AEDT)
+Received: from mail.free-electrons.com (down.free-electrons.com
+ [37.187.137.238]) by ozlabs.org (Postfix) with ESMTP id A969A1402ED
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2015 20:01:57 +1100 (AEDT)
+Date: Tue, 15 Dec 2015 09:53:32 +0100
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+To: Daniel Axtens <dja@axtens.net>
+Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, akpm@linux-foundation.org,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com
+Subject: Re: [PATCH] powerpc: Remove broken GregorianDay()
+Message-ID: <20151215085332.GH11209@piout.net>
+References: <1450163354-16894-1-git-send-email-dja@axtens.net>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1450163354-16894-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,61 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+On 15/12/2015 at 18:09:14 +1100, Daniel Axtens wrote :
+> GregorianDay() is supposed to calculate the day of the week
+> (tm->tm_wday) for a given day/month/year. In that calcuation it
+> indexed into an array called MonthOffset using tm->tm_mon-1. However
+> tm_mon is zero-based, not one-based, so this is off-by-one. It also
+> means that every January, GregoiranDay() will access element -1 of
+> the MonthOffset array.
+> 
+> It also doesn't appear to be a correct algorithm either: see in
+> contrast kernel/time/timeconv.c's time_to_tm function.
+> 
+> It's been broken forever, which suggests no-one in userland uses
+> this. It looks like no-one in the kernel uses tm->tm_wday either
+> (see e.g. drivers/rtc/rtc-ds1305.c:319).
+> 
+> tm->tm_wday is conventionally set to -1 when not available in
+> hardware so we can simply set it to -1 and drop the function.
+> (There are over a dozen other drivers in drivers/rtc that do
+> this.)
+> 
+> Found using UBSAN.
+> 
+> Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org> # as an example of what UBSan finds.
+> Cc: Alessandro Zummo <a.zummo@towertech.it>
+> Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> Cc: rtc-linux@googlegroups.com
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> 
+Acked-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 
-perf build is currently (v4.4-rc5) broken on powerpc:
+> ---
+> This is almost entirely a powerpc patch, but it also touches
+> the OPAL rtc driver. Alessandro, Alexandre, RTC folk, would
+> you be OK with mpe taking this through the powerpc tree?
+> 
 
-bpf.c:28:4: error: #error __NR_bpf not defined. libbpf does not support
-your arch.
- #  error __NR_bpf not defined. libbpf does not support your arch.
-    ^
+Sure.
 
-Fix this by including tools/scripts/Makefile.arch for the proper
-$ARCH macro. While at it, remove redundant LP64 macro definition.
+I have a plan to actually correct tm_wday before sending it to user
+space when it is -1.
+I may as well calculate it every time but I'm not sure the extra
+calculation is actually worth it because as you mention it, it is not
+used by anybody.
 
-Also, since libbpf require $(srctree) now, detect the path of
-srctree like perf.
-
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-Signed-off-by: Wang Nan <wangnan0@huawei.com>
-Acked-by: Jiri Olsa <jolsa@kernel.org>
-Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
-
-v3 -> v4: Add srctree detector code so directly run 'make' in libbpf
-          directory would not cause error.
-
----
- tools/lib/bpf/Makefile | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/tools/lib/bpf/Makefile b/tools/lib/bpf/Makefile
-index 636e3dd..0b6e013 100644
---- a/tools/lib/bpf/Makefile
-+++ b/tools/lib/bpf/Makefile
-@@ -6,6 +6,12 @@ BPF_EXTRAVERSION = 1
- 
- MAKEFLAGS += --no-print-directory
- 
-+ifeq ($(srctree),)
-+srctree := $(patsubst %/,%,$(dir $(shell pwd)))
-+srctree := $(patsubst %/,%,$(dir $(srctree)))
-+srctree := $(patsubst %/,%,$(dir $(srctree)))
-+#$(info Determined 'srctree' to be $(srctree))
-+endif
- 
- # Makefiles suck: This macro sets a default value of $(2) for the
- # variable named by $(1), unless the variable has been set by
-@@ -31,7 +37,8 @@ INSTALL = install
- DESTDIR ?=
- DESTDIR_SQ = '$(subst ','\'',$(DESTDIR))'
- 
--LP64 := $(shell echo __LP64__ | ${CC} ${CFLAGS} -E -x c - | tail -n 1)
-+include $(srctree)/tools/scripts/Makefile.arch
-+
- ifeq ($(LP64), 1)
-   libdir_relative = lib64
- else
 -- 
-1.8.3.4
+Alexandre Belloni, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
