@@ -1,37 +1,29 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0133.outbound.protection.outlook.com [65.55.169.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CDF691A2DED
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 22:41:35 +1100 (AEDT)
-Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 15 Dec 2015 17:11:32 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 88271E0054
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 17:12:22 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBFBfSMh58589274
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 17:11:28 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBFBfSUC005296
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 17:11:28 +0530
-Date: Tue, 15 Dec 2015 17:10:46 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Wang Nan <wangnan0@huawei.com>
-Cc: acme@kernel.org, jolsa@redhat.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sukadev@linux.vnet.ibm.com
-Subject: Re: [PATCH v4] perf: bpf: Fix build breakage due to libbpf
-Message-ID: <20151215114046.GG23726@naverao1-tp.in.ibm.com>
-References: <1450150557-127942-4-git-send-email-wangnan0@huawei.com>
- <1450169473-137129-1-git-send-email-wangnan0@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B5D1B1A0556
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 22:56:06 +1100 (AEDT)
+From: Liberman Igal <Igal.Liberman@freescale.com>
+To: Andy Fleming <afleming@gmail.com>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Scott Wood
+ <scottwood@freescale.com>, Madalin-Cristian Bucur
+ <madalin.bucur@freescale.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>,
+ Joakim Tjernlund <joakim.tjernlund@transmode.se>, "ppc@mindchasers.com"
+ <ppc@mindchasers.com>, "stephen@networkplumber.org"
+ <stephen@networkplumber.org>, David Miller <davem@davemloft.net>
+Subject: RE: [v9, 6/6] fsl/fman: Add FMan MAC driver
+Date: Tue, 15 Dec 2015 11:55:57 +0000
+Message-ID: <DM2PR03MB50969DA7ABC7D4641BCF1C7E6EE0@DM2PR03MB509.namprd03.prod.outlook.com>
+References: <1449127157-9400-1-git-send-email-igal.liberman@freescale.com>
+ <1449127157-9400-7-git-send-email-igal.liberman@freescale.com>
+ <CAKWjMd7EDx8OnYGu-QJXM++fy=W5i2E74Fe4r9zNjUV_giyUKw@mail.gmail.com>
+In-Reply-To: <CAKWjMd7EDx8OnYGu-QJXM++fy=W5i2E74Fe4r9zNjUV_giyUKw@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1450169473-137129-1-git-send-email-wangnan0@huawei.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,69 +33,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015/12/15 08:51AM, Wang Nan wrote:
-> From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-> 
-> perf build is currently (v4.4-rc5) broken on powerpc:
-> 
-> bpf.c:28:4: error: #error __NR_bpf not defined. libbpf does not support
-> your arch.
->  #  error __NR_bpf not defined. libbpf does not support your arch.
->     ^
-> 
-> Fix this by including tools/scripts/Makefile.arch for the proper
-> $ARCH macro. While at it, remove redundant LP64 macro definition.
-> 
-> Also, since libbpf require $(srctree) now, detect the path of
-> srctree like perf.
-> 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> Signed-off-by: Wang Nan <wangnan0@huawei.com>
-> Acked-by: Jiri Olsa <jolsa@kernel.org>
-> Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
-> 
-> v3 -> v4: Add srctree detector code so directly run 'make' in libbpf
->           directory would not cause error.
-
-Good catch!
-
-Tested-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-
-
-> 
-> ---
->  tools/lib/bpf/Makefile | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-> diff --git a/tools/lib/bpf/Makefile b/tools/lib/bpf/Makefile
-> index 636e3dd..0b6e013 100644
-> --- a/tools/lib/bpf/Makefile
-> +++ b/tools/lib/bpf/Makefile
-> @@ -6,6 +6,12 @@ BPF_EXTRAVERSION = 1
-> 
->  MAKEFLAGS += --no-print-directory
-> 
-> +ifeq ($(srctree),)
-> +srctree := $(patsubst %/,%,$(dir $(shell pwd)))
-> +srctree := $(patsubst %/,%,$(dir $(srctree)))
-> +srctree := $(patsubst %/,%,$(dir $(srctree)))
-> +#$(info Determined 'srctree' to be $(srctree))
-> +endif
-> 
->  # Makefiles suck: This macro sets a default value of $(2) for the
->  # variable named by $(1), unless the variable has been set by
-> @@ -31,7 +37,8 @@ INSTALL = install
->  DESTDIR ?=
->  DESTDIR_SQ = '$(subst ','\'',$(DESTDIR))'
-> 
-> -LP64 := $(shell echo __LP64__ | ${CC} ${CFLAGS} -E -x c - | tail -n 1)
-> +include $(srctree)/tools/scripts/Makefile.arch
-> +
->  ifeq ($(LP64), 1)
->    libdir_relative = lib64
->  else
-> -- 
-> 1.8.3.4
-> 
+SGVsbG8gQW5keSwNClRoYW5rIHlvdSBmb3IgeW91ciBmZWVkYmFjay4gU29tZSBpbmxpbmUgYW5z
+d2Vycy4NCg0KUmVnYXJkcywNCklnYWwgTGliZXJtYW4NCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3Nh
+Z2UtLS0tLQ0KPiBGcm9tOiBBbmR5IEZsZW1pbmcgW21haWx0bzphZmxlbWluZ0BnbWFpbC5jb21d
+DQo+IFNlbnQ6IFR1ZXNkYXksIERlY2VtYmVyIDA4LCAyMDE1IDEwOjE4IFBNDQo+IFRvOiBMaWJl
+cm1hbiBJZ2FsLUIzMTk1MCA8SWdhbC5MaWJlcm1hbkBmcmVlc2NhbGUuY29tPg0KPiBDYzogbmV0
+ZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4
+LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBXb29kIFNjb3R0LUIwNzQyMSA8c2NvdHR3b29k
+QGZyZWVzY2FsZS5jb20+Ow0KPiBCdWN1ciBNYWRhbGluLUNyaXN0aWFuLUIzMjcxNiA8bWFkYWxp
+bi5idWN1ckBmcmVlc2NhbGUuY29tPjsNCj4gcGVib2xsZUB0aXNjYWxpLm5sOyBKb2FraW0gVGpl
+cm5sdW5kIDxqb2FraW0udGplcm5sdW5kQHRyYW5zbW9kZS5zZT47DQo+IHBwY0BtaW5kY2hhc2Vy
+cy5jb207IHN0ZXBoZW5AbmV0d29ya3BsdW1iZXIub3JnOyBEYXZpZCBNaWxsZXINCj4gPGRhdmVt
+QGRhdmVtbG9mdC5uZXQ+DQo+IFN1YmplY3Q6IFJlOiBbdjksIDYvNl0gZnNsL2ZtYW46IEFkZCBG
+TWFuIE1BQyBkcml2ZXINCj4gDQo+IE9uIFRodSwgRGVjIDMsIDIwMTUgYXQgMToxOSBBTSwgIDxp
+Z2FsLmxpYmVybWFuQGZyZWVzY2FsZS5jb20+IHdyb3RlOg0KPiA+IEZyb206IElnYWwgTGliZXJt
+YW4gPGlnYWwubGliZXJtYW5AZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IFRoaXMgcGF0Y2ggYWRk
+cyB0aGUgRXRoZXJuZXQgTUFDIGRyaXZlciBzdXBwb3J0aW5nIHRoZSB0aHJlZSBkaWZmZXJlbnQN
+Cj4gPiB0eXBlcyBvZiBNQUNzOiBkVFNFQywgdEdFQyBhbmQgbUVNQUMuDQo+ID4NCj4gPiBTaWdu
+ZWQtb2ZmLWJ5OiBJZ2FsIExpYmVybWFuIDxpZ2FsLmxpYmVybWFuQGZyZWVzY2FsZS5jb20+DQo+
+IA0KPiBbLi4uXQ0KPiANCj4gPiArDQo+ID4gK01PRFVMRV9MSUNFTlNFKCJEdWFsIEJTRC9HUEwi
+KTsNCj4gPiArDQo+ID4gK01PRFVMRV9BVVRIT1IoIkVtaWwgTWVkdmUgPEVtaWxpYW4uTWVkdmVA
+RnJlZXNjYWxlLmNvbT4iKTsNCj4gDQo+IEkgaW1hZ2luZSB0aGlzIGVtYWlsIGFkZHJlc3MgZG9l
+c24ndCBleGlzdCBhbnltb3JlLCBvciB3b24ndCBzb29uLg0KPiBUaGlzIGlzIGFsc28gYW4gaXNz
+dWUgaW4gdGhlIGV0aGVybmV0IGRyaXZlciAod2l0aCBteSBvbGQgYWRkcmVzcykuDQo+IEknbSBu
+b3Qgc3VyZSB3aGF0IHRoZSByaWdodCBhcHByb2FjaCBpcywgYnV0IHdlIHNob3VsZG4ndCBiZSBw
+dXR0aW5nIG9ic29sZXRlDQo+IGVtYWlsIGFkZHJlc3NlcyBpbiB0aGUga2VybmVsLg0KPiANCj4g
+Wy4uLl0NCj4gDQoNCkkgcmVtb3ZlZCBNT0RVTEVfQVVUSE9SIGFzIHBlciBTY290dCdzIHJlcXVl
+c3QuDQpXZSdsbCBjaGFuZ2UgdGhlIHdheSB3ZSBub3RlIGNvbnRyaWJ1dG9ycy4NCg0KPiA+ICtz
+dGF0aWMgdm9pZCBtYWNfZXhjZXB0aW9uKHZvaWQgKl9tYWNfZGV2LCBlbnVtIGZtYW5fbWFjX2V4
+Y2VwdGlvbnMNCj4gPiArZXgpIHsNCj4gPiArICAgICAgIHN0cnVjdCBtYWNfZGV2aWNlICAgICAg
+ICptYWNfZGV2Ow0KPiA+ICsgICAgICAgc3RydWN0IG1hY19wcml2X3MgICAgICAgKnByaXY7DQo+
+ID4gKw0KPiA+ICsgICAgICAgbWFjX2RldiA9IChzdHJ1Y3QgbWFjX2RldmljZSAqKV9tYWNfZGV2
+Ow0KPiANCj4gDQo+IERvbid0IGNhc3QgYSB2b2lkICoNCj4gDQoNCk9LLCByZW1vdmVkLg0KDQo+
+IFsuLi5dDQo+IA0KPiA+ICtzdGF0aWMgaW50IG1hY19wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2
+aWNlICpfb2ZfZGV2KSB7DQo+ID4gKyAgICAgICBpbnQgICAgICAgICAgICAgICAgICAgICAgZXJy
+LCBpLCBsZW5wLCBucGg7DQo+ID4gKyAgICAgICBzdHJ1Y3QgZGV2aWNlICAgICAgICAgICAqZGV2
+Ow0KPiA+ICsgICAgICAgc3RydWN0IGRldmljZV9ub2RlICAgICAgKm1hY19ub2RlLCAqZGV2X25v
+ZGUsICp0Ymlfbm9kZTsNCj4gPiArICAgICAgIHN0cnVjdCBtYWNfZGV2aWNlICAgICAgICptYWNf
+ZGV2Ow0KPiA+ICsgICAgICAgc3RydWN0IHBsYXRmb3JtX2RldmljZSAgKm9mX2RldjsNCj4gPiAr
+ICAgICAgIHN0cnVjdCByZXNvdXJjZSAgICAgICAgICByZXM7DQo+ID4gKyAgICAgICBzdHJ1Y3Qg
+bWFjX3ByaXZfcyAgICAgICAqcHJpdjsNCj4gPiArICAgICAgIGNvbnN0IHU4ICAgICAgICAgICAg
+ICAgICptYWNfYWRkcjsNCj4gPiArICAgICAgIGNvbnN0IGNoYXIgICAgICAgICAgICAgICpjaGFy
+X3Byb3A7DQo+IA0KPiBbLi4uXQ0KPiANCj4gPiArICAgICAgIC8qIEdldCB0aGUgUEhZIGNvbm5l
+Y3Rpb24gdHlwZSAqLw0KPiA+ICsgICAgICAgY2hhcl9wcm9wID0gKGNvbnN0IGNoYXIgKilvZl9n
+ZXRfcHJvcGVydHkobWFjX25vZGUsDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgInBoeS1jb25uZWN0aW9uLXR5cGUiLCBOVUxMKTsNCj4gPiArICAg
+ICAgIGlmICghY2hhcl9wcm9wKSB7DQo+ID4gKyAgICAgICAgICAgICAgIGRldl93YXJuKGRldiwN
+Cj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgIm9mX2dldF9wcm9wZXJ0eSglcywgcGh5LWNv
+bm5lY3Rpb24tdHlwZSkgZmFpbGVkLiBEZWZhdWx0aW5nDQo+IHRvIE1JSVxuIiwNCj4gPiArICAg
+ICAgICAgICAgICAgICAgICAgICAgbWFjX25vZGUtPmZ1bGxfbmFtZSk7DQo+ID4gKyAgICAgICAg
+ICAgICAgIHByaXYtPnBoeV9pZiA9IFBIWV9JTlRFUkZBQ0VfTU9ERV9NSUk7DQo+ID4gKyAgICAg
+ICB9IGVsc2Ugew0KPiA+ICsgICAgICAgICAgICAgICBwcml2LT5waHlfaWYgPSBzdHIycGh5KGNo
+YXJfcHJvcCk7DQo+ID4gKyAgICAgICB9DQo+ID4gKw0KPiA+ICsgICAgICAgcHJpdi0+c3BlZWQg
+ICAgICAgICAgICAgPSBwaHkyc3BlZWRbcHJpdi0+cGh5X2lmXTsNCj4gPiArICAgICAgIHByaXYt
+Pm1heF9zcGVlZCAgICAgICAgID0gcHJpdi0+c3BlZWQ7DQo+ID4gKyAgICAgICBtYWNfZGV2LT5p
+Zl9zdXBwb3J0ICAgICA9IERUU0VDX1NVUFBPUlRFRDsNCj4gPiArICAgICAgIC8qIFdlIGRvbid0
+IHN1cHBvcnQgaGFsZi1kdXBsZXggaW4gU0dNSUkgbW9kZSAqLw0KPiA+ICsgICAgICAgaWYgKHN0
+cnN0cihjaGFyX3Byb3AsICJzZ21paSIpKQ0KPiANCj4gVGhpcyBjYXVzZXMgYSBjcmFzaCBpZiB0
+aGUgZGV2aWNlIHRyZWUgZG9lcyBub3QgaGF2ZSBhICJwaHktY29ubmVjdGlvbi10eXBlIg0KPiBm
+b3IgdGhpcyBub2RlLiBBbHNvLCB5b3UgYWxyZWFkeSBoYXZlIHBhcnNlZCB0aGUgcHJvcGVydHks
+IGFuZCBwdXQgdGhlIHJlc3VsdA0KPiBpbiBwcml2LT5waHlfaWYuIFdoeSBub3QgdXNlIHRoaXMg
+dG8gZG8gYWxsIG9mIHRoZXNlIGRldGVybWluYXRpb25zPw0KPiANCg0KQWdyZWUsIGNoYW5nZWQg
+dGhlIGRyaXZlciB0byB1c2UgcHJpdi0+cGh5X2lmIGluc3RlYWQgb2Ygc3Ryc3RyIGluIGJvdGgg
+cGxhY2VzLg0KSW4gYm90aCANCg0KPiANCj4gPiArICAgICAgICAgICAgICAgbWFjX2Rldi0+aWZf
+c3VwcG9ydCAmPSB+KFNVUFBPUlRFRF8xMGJhc2VUX0hhbGYgfA0KPiA+ICsgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICBTVVBQT1JURURfMTAwYmFzZVRfSGFsZik7DQo+ID4g
+Kw0KPiA+ICsgICAgICAgLyogR2lnYWJpdCBzdXBwb3J0IChubyBoYWxmLWR1cGxleCkgKi8NCj4g
+PiArICAgICAgIGlmIChwcml2LT5tYXhfc3BlZWQgPT0gMTAwMCkNCj4gPiArICAgICAgICAgICAg
+ICAgbWFjX2Rldi0+aWZfc3VwcG9ydCB8PSBTVVBQT1JURURfMTAwMGJhc2VUX0Z1bGw7DQo+ID4g
+Kw0KPiA+ICsgICAgICAgLyogVGhlIDEwRyBpbnRlcmZhY2Ugb25seSBzdXBwb3J0cyBvbmUgbW9k
+ZSAqLw0KPiA+ICsgICAgICAgaWYgKHN0cnN0cihjaGFyX3Byb3AsICJ4Z21paSIpKQ0KPiA+ICsg
+ICAgICAgICAgICAgICBtYWNfZGV2LT5pZl9zdXBwb3J0ID0gU1VQUE9SVEVEXzEwMDAwYmFzZVRf
+RnVsbDsNCj4gDQo+IEhlcmUsIHRvby4NCj4gDQo+IA0KPiBbLi4uXQ0KPiANCj4gPiArICAgICAg
+IGVyciA9IG1hY19kZXYtPmluaXQobWFjX2Rldik7DQo+ID4gKyAgICAgICBpZiAoZXJyIDwgMCkg
+ew0KPiA+ICsgICAgICAgICAgICAgICBkZXZfZXJyKGRldiwgIm1hY19kZXYtPmluaXQoKSA9ICVk
+XG4iLCBlcnIpOw0KPiA+ICsgICAgICAgICAgICAgICBvZl9ub2RlX3B1dChwcml2LT5waHlfbm9k
+ZSk7DQo+ID4gKyAgICAgICAgICAgICAgIGdvdG8gX3JldHVybl9kZXZfc2V0X2RydmRhdGE7DQo+
+ID4gKyAgICAgICB9DQo+ID4gKw0KPiA+ICsgICAgICAgLyogcGF1c2UgZnJhbWUgYXV0b25lZ290
+aWF0aW9uIGVuYWJsZWQgKi8NCj4gPiArICAgICAgIG1hY19kZXYtPmF1dG9uZWdfcGF1c2UgPSB0
+cnVlOw0KPiA+ICsNCj4gPiArICAgICAgIC8qIGJ5IGludGlhbGl6aW5nIHRoZSB2YWx1ZXMgdG8g
+ZmFsc2UsIGZvcmNlIEZNRCB0byBlbmFibGUgUEFVU0UgZnJhbWVzDQo+ID4gKyAgICAgICAgKiBv
+biBSWCBhbmQgVFgNCj4gPiArICAgICAgICAqLw0KPiANCj4gTWlub3IgY29tbWVudCBmb3JtYXQg
+aXNzdWUgKGxlYXZlIGJsYW5rIGxpbmUgYXQgdG9wIG9mIGJsb2NrIGNvbW1lbnQpDQo+IA0KDQpB
+Y2NvcmRpbmcgdG8gaHR0cHM6Ly93d3cua2VybmVsLm9yZy9kb2MvRG9jdW1lbnRhdGlvbi9Db2Rp
+bmdTdHlsZToNCg0KVGhlIHByZWZlcnJlZCBzdHlsZSBmb3IgbG9uZyAobXVsdGktbGluZSkgY29t
+bWVudHMgaXM6DQoNCgkvKg0KCSAqIFRoaXMgaXMgdGhlIHByZWZlcnJlZCBzdHlsZSBmb3IgbXVs
+dGktbGluZQ0KCSAqIGNvbW1lbnRzIGluIHRoZSBMaW51eCBrZXJuZWwgc291cmNlIGNvZGUuDQoJ
+ICogUGxlYXNlIHVzZSBpdCBjb25zaXN0ZW50bHkuDQoJICoNCgkgKiBEZXNjcmlwdGlvbjogIEEg
+Y29sdW1uIG9mIGFzdGVyaXNrcyBvbiB0aGUgbGVmdCBzaWRlLA0KCSAqIHdpdGggYmVnaW5uaW5n
+IGFuZCBlbmRpbmcgYWxtb3N0LWJsYW5rIGxpbmVzLg0KCSAqLw0KDQpGb3IgZmlsZXMgaW4gbmV0
+LyBhbmQgZHJpdmVycy9uZXQvIHRoZSBwcmVmZXJyZWQgc3R5bGUgZm9yIGxvbmcgKG11bHRpLWxp
+bmUpDQpjb21tZW50cyBpcyBhIGxpdHRsZSBkaWZmZXJlbnQuDQoNCgkvKiBUaGUgcHJlZmVycmVk
+IGNvbW1lbnQgc3R5bGUgZm9yIGZpbGVzIGluIG5ldC8gYW5kIGRyaXZlcnMvbmV0DQoJICogbG9v
+a3MgbGlrZSB0aGlzLg0KCSAqDQoJICogSXQgaXMgbmVhcmx5IHRoZSBzYW1lIGFzIHRoZSBnZW5l
+cmFsbHkgcHJlZmVycmVkIGNvbW1lbnQgc3R5bGUsDQoJICogYnV0IHRoZXJlIGlzIG5vIGluaXRp
+YWwgYWxtb3N0LWJsYW5rIGxpbmUuDQoJICovDQoNCj4gQW5keQ0K
