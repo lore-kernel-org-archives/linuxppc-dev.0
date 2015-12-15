@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6BC861A033F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 22:27:09 +1100 (AEDT)
-In-Reply-To: <1447992934-18905-4-git-send-email-mikey@neuling.org>
-To: Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45EDD1A0394
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 22:27:10 +1100 (AEDT)
+In-Reply-To: <1448330741-4804-3-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, paulus@samba.org,
- sam.bobroff@au1.ibm.com
-Subject: Re: [v2, 3/3] selftests/powerpc: Add TM signal with invalid stack test
-Message-Id: <20151215112709.1A1AF1402ED@ozlabs.org>
-Date: Tue, 15 Dec 2015 22:27:08 +1100 (AEDT)
+Cc: Michael Neuling <mikey@neuling.org>
+Subject: Re: [3/4] selftests/powerpc: Move TM helpers into tm.h
+Message-Id: <20151215112709.BB80614032F@ozlabs.org>
+Date: Tue, 15 Dec 2015 22:27:09 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,15 +20,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-20-11 at 04:15:34 UTC, Michael Neuling wrote:
-> Test the kernels signal generation code to ensure it can handle an
-> invalid stack pointer when transactional.
+On Tue, 2015-24-11 at 02:05:40 UTC, Michael Ellerman wrote:
+> Move have_htm_nosc() into a new tm.h, and add a new helper, have_htm()
+> which we'll use in the next patch.
 > 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Tested-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/a26f415bf71640f0141e5e94
+https://git.kernel.org/powerpc/c/34dc8b279dc5dd3ce8632980
 
 cheers
