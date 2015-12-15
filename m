@@ -1,12 +1,12 @@
 Return-Path: <boqun.feng@gmail.com>
-Received: from mail-ob0-x235.google.com (mail-ob0-x235.google.com
- [IPv6:2607:f8b0:4003:c01::235])
+Received: from mail-ob0-x243.google.com (mail-ob0-x243.google.com
+ [IPv6:2607:f8b0:4003:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 279241A010A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Dec 2015 01:24:55 +1100 (AEDT)
-Received: by mail-ob0-x235.google.com with SMTP id sd4so7628490obb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 06:24:55 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DCB7F1A0B50
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Dec 2015 01:25:00 +1100 (AEDT)
+Received: by mail-ob0-x243.google.com with SMTP id ny9so722045obb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 06:25:00 -0800 (PST)
 From: Boqun Feng <boqun.feng@gmail.com>
 To: linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
@@ -17,10 +17,12 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
  "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
  Boqun Feng <boqun.feng@gmail.com>
-Subject: [PATCH powerpc/next v6 0/4] atomics: powerpc: Implement
- relaxed/acquire/release variants
-Date: Tue, 15 Dec 2015 22:24:13 +0800
-Message-Id: <1450189457-10589-1-git-send-email-boqun.feng@gmail.com>
+Subject: [PATCH v6 1/4] atomics: Allow architectures to define their own
+ __atomic_op_* helpers
+Date: Tue, 15 Dec 2015 22:24:14 +0800
+Message-Id: <1450189457-10589-2-git-send-email-boqun.feng@gmail.com>
+In-Reply-To: <1450189457-10589-1-git-send-email-boqun.feng@gmail.com>
+References: <1450189457-10589-1-git-send-email-boqun.feng@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,75 +32,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+Some architectures may have their special barriers for acquire, release
+and fence semantics, so that general memory barriers(smp_mb__*_atomic())
+in the default __atomic_op_*() may be too strong, so allow architectures
+to define their own helpers which can overwrite the default helpers.
 
-This is v6 of the series.
+Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
+---
+ include/linux/atomic.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-Link for v1: https://lkml.org/lkml/2015/8/27/798
-Link for v2: https://lkml.org/lkml/2015/9/16/527
-Link for v3: https://lkml.org/lkml/2015/10/12/368
-Link for v4: https://lkml.org/lkml/2015/10/14/670
-Link for v5: https://lkml.org/lkml/2015/10/26/141
-
-
-Changes since v5:
-
-*	rebase on the next branch of powerpc.
-
-*	pull two fix and one testcase patches out, which are already
-	sent separately
-
-*	some clean up or code format fixing.
-
-
-Paul, Peter and Will, thank you for your comments and suggestions in the review
-of previous versions. From this version on, This series is against the next
-branch of powerpc tree, because most of the code touch arch/powerpc/*.
-
-
-Relaxed/acquire/release variants of atomic operations {add,sub}_return and
-{cmp,}xchg are introduced by commit:
-
-"atomics: add acquire/release/relaxed variants of some atomic operations"
-
-and {inc,dec}_return has been introduced by commit:
-
-"locking/asm-generic: Add _{relaxed|acquire|release}() variants for inc/dec
-atomics"
-
-By default, the generic code will implement a relaxed variant as a full ordered
-atomic operation and release/acquire a variant as a relaxed variant with a
-necessary general barrier before or after.
-
-On PPC, which has a weak memory order model, a relaxed variant can be
-implemented more lightweightly than a full ordered one. Further more, release
-and acquire variants can be implemented with arch-specific lightweight
-barriers.
-
-Therefore this patchset implements the relaxed/acquire/release variants based
-on PPC memory model and specific barriers.
-
-The patchset consists of 4 parts:
-
-1.	Allow architectures to define their own __atomic_op_*() helpers
-	to build other variants based on relaxed.
-
-2.	Implement atomic{,64}_{add,sub,inc,dec}_return_* variants
-
-3.	Implement xchg_* and atomic{,64}_xchg_* variants
-
-4.	Implement cmpxchg_* atomic{,64}_cmpxchg_* variants
-
-
-This patchset is against:
-	
-	git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-	commit 5f337e3e5b04b32793fd51adab438d46df99c933 
-
-and has been tested by 0day. I also have run build and boot tests of this in
-both guest(pseries) and host(powernv) environments.
-
-Looking forward to any suggestion, question and comment ;-)
-
-Regards,
-Boqun
+diff --git a/include/linux/atomic.h b/include/linux/atomic.h
+index 301de78..5f3ee5a 100644
+--- a/include/linux/atomic.h
++++ b/include/linux/atomic.h
+@@ -34,20 +34,29 @@
+  * The idea here is to build acquire/release variants by adding explicit
+  * barriers on top of the relaxed variant. In the case where the relaxed
+  * variant is already fully ordered, no additional barriers are needed.
++ *
++ * Besides, if an arch has a special barrier for acquire/release, it could
++ * implement its own __atomic_op_* and use the same framework for building
++ * variants
+  */
++#ifndef __atomic_op_acquire
+ #define __atomic_op_acquire(op, args...)				\
+ ({									\
+ 	typeof(op##_relaxed(args)) __ret  = op##_relaxed(args);		\
+ 	smp_mb__after_atomic();						\
+ 	__ret;								\
+ })
++#endif
+ 
++#ifndef __atomic_op_release
+ #define __atomic_op_release(op, args...)				\
+ ({									\
+ 	smp_mb__before_atomic();					\
+ 	op##_relaxed(args);						\
+ })
++#endif
+ 
++#ifndef __atomic_op_fence
+ #define __atomic_op_fence(op, args...)					\
+ ({									\
+ 	typeof(op##_relaxed(args)) __ret;				\
+@@ -56,6 +65,7 @@
+ 	smp_mb__after_atomic();						\
+ 	__ret;								\
+ })
++#endif
+ 
+ /* atomic_add_return_relaxed */
+ #ifndef atomic_add_return_relaxed
+-- 
+2.6.4
