@@ -1,17 +1,22 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 085481A0502
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 22:27:11 +1100 (AEDT)
-In-Reply-To: <1448968422-32178-1-git-send-email-vipin@linux.vnet.ibm.com>
-To: Vipin K Parashar <vipin@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 05E121A05AA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 22:27:12 +1100 (AEDT)
+In-Reply-To: <1446427832-8742-2-git-send-email-boqun.feng@gmail.com>
+To: Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Vipin K Parashar <vipin@linux.vnet.ibm.com>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [v6] powerpc/pseries: Limit EPOW reset event warnings
-Message-Id: <20151215112710.C57C9140AEB@ozlabs.org>
-Date: Tue, 15 Dec 2015 22:27:10 +1100 (AEDT)
+Cc: Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>,
+ Will Deacon <will.deacon@arm.com>, stable@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>
+Subject: Re: [powerpc/next,
+ 2/2] powerpc: Make {cmp}xchg* and their atomic_ versions fully ordered
+Message-Id: <20151215112711.94D37140B04@ozlabs.org>
+Date: Tue, 15 Dec 2015 22:27:11 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,36 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-01-12 at 11:13:42 UTC, Vipin K Parashar wrote:
-> Kernel prints respective warnings about various EPOW events for
-> user information/action after parsing EPOW interrupts. At times
-> below EPOW reset event warning is seen to be flooding kernel log
-> over a period of time.
+On Mon, 2015-02-11 at 01:30:32 UTC, Boqun Feng wrote:
+> According to memory-barriers.txt, xchg*, cmpxchg* and their atomic_
+> versions all need to be fully ordered, however they are now just
+> RELEASE+ACQUIRE, which are not fully ordered.
 > 
-> May 25 03:46:34 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:46:52 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:53:48 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:55:46 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:56:34 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:59:04 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:02:01 alp kernel: Non critical power or cooling issue cleared
+> So also replace PPC_RELEASE_BARRIER and PPC_ACQUIRE_BARRIER with
+> PPC_ATOMIC_ENTRY_BARRIER and PPC_ATOMIC_EXIT_BARRIER in
+> __{cmp,}xchg_{u32,u64} respectively to guarantee fully ordered semantics
+> of atomic{,64}_{cmp,}xchg() and {cmp,}xchg(), as a complement of commit
+> b97021f85517 ("powerpc: Fix atomic_xxx_return barrier semantics")
 > 
-> These EPOW reset events are spurious in nature and are triggered by
-> firmware without an actual EPOW event being reset. This patch avoids these
-> multiple EPOW reset warnings by using a counter variable. This variable
-> is incremented every time an EPOW event is reported. Upon receiving a EPOW
-> reset event the same variable is checked to filter out spurious events and
-> decremented accordingly.
+> This patch depends on patch "powerpc: Make value-returning atomics fully
+> ordered" for PPC_ATOMIC_ENTRY_BARRIER definition.
 > 
-> This patch also improves log messages to better describe EPOW event being
-> reported. Merged adjacent log messages into single one to reduce number of
-> lines printed per event.
-> 
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+> Cc: <stable@vger.kernel.org> # 3.4+
+> Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
+> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/b4af279a7cba5cc1f665485e
+https://git.kernel.org/powerpc/c/81d7a3294de7e9828310bbf9
 
 cheers
