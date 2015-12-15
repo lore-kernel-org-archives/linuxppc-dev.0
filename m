@@ -2,15 +2,16 @@ Return-Path: <wangnan0@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 898011A0248
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 14:36:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 86D1B1A114E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 14:36:38 +1100 (AEDT)
 From: Wang Nan <wangnan0@huawei.com>
 To: <naveen.n.rao@linux.vnet.ibm.com>, <acme@kernel.org>, <jolsa@redhat.com>
 CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Wang Nan
  <wangnan0@huawei.com>, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: [PATCH v3 1/3] perf tools: Fix PowerPC native building
-Date: Tue, 15 Dec 2015 03:35:55 +0000
-Message-ID: <1450150557-127942-2-git-send-email-wangnan0@huawei.com>
+Subject: [PATCH v3 2/3] tools: Move Makefile.arch from perf/config to
+ tools/scripts
+Date: Tue, 15 Dec 2015 03:35:56 +0000
+Message-ID: <1450150557-127942-3-git-send-email-wangnan0@huawei.com>
 In-Reply-To: <1450150557-127942-1-git-send-email-wangnan0@huawei.com>
 References: <1450090232-11437-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
  <1450150557-127942-1-git-send-email-wangnan0@huawei.com>
@@ -25,72 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Checks BPF syscall number, turn off libbpf building on platform doesn't
-correctly support sys_bpf instead of blocking compiling.
+After this patch other directories can use this architecture detector
+without directly including it from perf's directory. Libbpf would
+utilize it to get proper $(ARCH) so it can receive correct uapi include
+directory.
 
-Reported-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 Signed-off-by: Wang Nan <wangnan0@huawei.com>
 Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 Cc: Jiri Olsa <jolsa@redhat.com>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- tools/build/feature/test-bpf.c | 20 +++++++++++++++++++-
- tools/lib/bpf/bpf.c            |  4 ++--
- 2 files changed, 21 insertions(+), 3 deletions(-)
+ tools/perf/config/Makefile                   | 2 +-
+ tools/perf/tests/make                        | 2 +-
+ tools/{perf/config => scripts}/Makefile.arch | 0
+ 3 files changed, 2 insertions(+), 2 deletions(-)
+ rename tools/{perf/config => scripts}/Makefile.arch (100%)
 
-diff --git a/tools/build/feature/test-bpf.c b/tools/build/feature/test-bpf.c
-index 062bac8..b389026 100644
---- a/tools/build/feature/test-bpf.c
-+++ b/tools/build/feature/test-bpf.c
-@@ -1,9 +1,23 @@
-+#include <asm/unistd.h>
- #include <linux/bpf.h>
-+#include <unistd.h>
-+
-+#ifndef __NR_bpf
-+# if defined(__i386__)
-+#  define __NR_bpf 357
-+# elif defined(__x86_64__)
-+#  define __NR_bpf 321
-+# elif defined(__aarch64__)
-+#  define __NR_bpf 280
-+#  error __NR_bpf not defined. libbpf does not support your arch.
-+# endif
-+#endif
+diff --git a/tools/perf/config/Makefile b/tools/perf/config/Makefile
+index a552417..34717e4 100644
+--- a/tools/perf/config/Makefile
++++ b/tools/perf/config/Makefile
+@@ -17,7 +17,7 @@ detected_var = $(shell echo "$(1)=$($(1))" >> $(OUTPUT).config-detected)
  
- int main(void)
- {
- 	union bpf_attr attr;
+ CFLAGS := $(EXTRA_CFLAGS) $(EXTRA_WARNINGS)
  
-+	/* Check fields in attr */
- 	attr.prog_type = BPF_PROG_TYPE_KPROBE;
- 	attr.insn_cnt = 0;
- 	attr.insns = 0;
-@@ -14,5 +28,9 @@ int main(void)
- 	attr.kern_version = 0;
+-include $(src-perf)/config/Makefile.arch
++include $(srctree)/tools/scripts/Makefile.arch
  
- 	attr = attr;
--	return 0;
-+	/*
-+	 * Test existence of __NR_bpf and BPF_PROG_LOAD.
-+	 * This call should fail if we run the testcase.
-+	 */
-+	return syscall(__NR_bpf, BPF_PROG_LOAD, attr, sizeof(attr));
- }
-diff --git a/tools/lib/bpf/bpf.c b/tools/lib/bpf/bpf.c
-index 5bdc6ea..1f91cc9 100644
---- a/tools/lib/bpf/bpf.c
-+++ b/tools/lib/bpf/bpf.c
-@@ -14,8 +14,8 @@
- #include "bpf.h"
+ $(call detected_var,ARCH)
  
- /*
-- * When building perf, unistd.h is override. Define __NR_bpf is
-- * required to be defined.
-+ * When building perf, unistd.h is overrided. __NR_bpf is
-+ * required to be defined explicitly.
-  */
- #ifndef __NR_bpf
- # if defined(__i386__)
+diff --git a/tools/perf/tests/make b/tools/perf/tests/make
+index 8ea3dff..cd9c3ce 100644
+--- a/tools/perf/tests/make
++++ b/tools/perf/tests/make
+@@ -12,7 +12,7 @@ endif
+ else
+ PERF := .
+ 
+-include config/Makefile.arch
++include $(srctree)/scripts/Makefile.arch
+ 
+ # FIXME looks like x86 is the only arch running tests ;-)
+ # we need some IS_(32/64) flag to make this generic
+diff --git a/tools/perf/config/Makefile.arch b/tools/scripts/Makefile.arch
+similarity index 100%
+rename from tools/perf/config/Makefile.arch
+rename to tools/scripts/Makefile.arch
 -- 
 1.8.3.4
