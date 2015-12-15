@@ -1,21 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 827741A05AA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 22:27:12 +1100 (AEDT)
-In-Reply-To: <1446427832-8742-1-git-send-email-boqun.feng@gmail.com>
-To: Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3AEC61A0B12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 22:27:13 +1100 (AEDT)
+In-Reply-To: <1448419585-5181-1-git-send-email-rashmicy@gmail.com>
+To: Rashmica Gupta <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>,
- Will Deacon <will.deacon@arm.com>, stable@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>
-Subject: Re: [powerpc/next,
- 1/2] powerpc: Make value-returning atomics fully ordered
-Message-Id: <20151215112712.6089E14031E@ozlabs.org>
+Subject: Re: [v2] powerpc: Append linux_banner to exception information in
+ xmon.
+Message-Id: <20151215112712.E210A140B93@ozlabs.org>
 Date: Tue, 15 Dec 2015 22:27:12 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,35 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-02-11 at 01:30:31 UTC, Boqun Feng wrote:
-> According to memory-barriers.txt:
+On Wed, 2015-25-11 at 02:46:25 UTC, Rashmica Gupta wrote:
+> Currently if you are in xmon without an oops etc. to view the kernel
+> version you have to type "d $linux_banner" - not necessarily obvious. As
+> this is useful information, append to the output of "e" command.
 > 
-> > Any atomic operation that modifies some state in memory and returns
-> > information about the state (old or new) implies an SMP-conditional
-> > general memory barrier (smp_mb()) on each side of the actual
-> > operation ...
+> Example output:
+> $mon> e
+> cpu 0x1: Vector: 0  at [c0000000f879ba80]
+>     pc: c000000000081718: sysrq_handle_xmon+0x68/0x80
+>     lr: c000000000081718: sysrq_handle_xmon+0x68/0x80
+>     sp: c0000000f879bbe0
+>    msr: 8000000000009033
+>   current = 0xc0000000f604d5c0
+>   paca    = 0xc00000000fdc0480	 softe: 0	 irq_happened: 0x01
+>     pid   = 2467, comm = bash
+> Linux version 4.4.0-rc2-00008-gc51af91c3ab3-dirty (rashmica@circle) (gcc
+> version 5.1.1 20150629 (GCC) ) #45 SMP Wed Nov 25 10:25:12 AEDT 2015
 > 
-> Which mean these operations should be fully ordered. However on PPC,
-> PPC_ATOMIC_ENTRY_BARRIER is the barrier before the actual operation,
-> which is currently "lwsync" if SMP=y. The leading "lwsync" can not
-> guarantee fully ordered atomics, according to Paul Mckenney:
-> 
-> https://lkml.org/lkml/2015/10/14/970
-> 
-> To fix this, we define PPC_ATOMIC_ENTRY_BARRIER as "sync" to guarantee
-> the fully-ordered semantics.
-> 
-> This also makes futex atomics fully ordered, which can avoid possible
-> memory ordering problems if userspace code relies on futex system call
-> for fully ordered semantics.
-> 
-> Cc: <stable@vger.kernel.org> # 3.4+
-> Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
-> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/49e9cf3f0c04bf76ffa59242
+https://git.kernel.org/powerpc/c/eb925d64604991095b6e9476
 
 cheers
