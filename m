@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424551A033D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 22:27:06 +1100 (AEDT)
-In-Reply-To: <1447992934-18905-2-git-send-email-mikey@neuling.org>
-To: Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 62F3B1A033D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 22:27:07 +1100 (AEDT)
+In-Reply-To: <1448330741-4804-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, paulus@samba.org,
- sam.bobroff@au1.ibm.com
-Subject: Re: [v2,1/3] powerpc: Print MSR TM bits in oops messages
-Message-Id: <20151215112706.0880B140323@ozlabs.org>
-Date: Tue, 15 Dec 2015 22:27:05 +1100 (AEDT)
+Cc: Michael Neuling <mikey@neuling.org>
+Subject: Re: [1/4] selftests/powerpc: Move get_auxv_entry() into utils.c
+Message-Id: <20151215112706.AA931140556@ozlabs.org>
+Date: Tue, 15 Dec 2015 22:27:06 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,24 +20,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-20-11 at 04:15:32 UTC, Michael Neuling wrote:
-> Print MSR TM bits in oops messages.  This appends them to the end
-> like this:
+On Tue, 2015-24-11 at 02:05:38 UTC, Michael Ellerman wrote:
+> This doesn't really belong in harness.c, it's a helper function. So move
+> it into utils.c.
 > 
->     MSR: 8000000502823031 <SF,VEC,VSX,FP,ME,IR,DR,LE,TM[TE]>
-> 
-> You get the TM[] only if at least one TM MSR bit is set.  Inside the
-> TM[], E means Enabled (bit 32), S means Suspended (bit 33), and T
-> means Transactional (bit 34)
-> 
-> If no bits are set, you get no TM[] output.
-> 
-> Include rework of printbits() to handle this case.
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/801c0b2c4db3a33d56b3e192
+https://git.kernel.org/powerpc/c/fcb45ec074725baeb3aaa1b1
 
 cheers
