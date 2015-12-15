@@ -1,41 +1,42 @@
 Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8BEAF1A0246
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 13:42:08 +1100 (AEDT)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5A1211402ED
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2015 13:42:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F352F1A0246
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 13:46:46 +1100 (AEDT)
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 15 Dec 2015 12:42:06 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id CBE9A357804F
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2015 13:41:53 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBF2fjL152428850
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2015 13:41:53 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBF2fL9Z029587
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2015 13:41:21 +1100
-Subject: Re: [RFC] powerpc: Enable UBSAN support
-To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
-References: <1449708123-7340-1-git-send-email-dja@axtens.net>
-Cc: akpm@linux-foundation.org, Andrey Ryabinin <aryabinin@virtuozzo.com>,
- linux-kernel@vger.kernel.org
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 15 Dec 2015 12:46:45 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8543B3578054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 13:46:38 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBF2kBgX30212106
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 13:46:19 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBF2k5dx025998
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 13:46:06 +1100
+Subject: Re: [PATCH v2 4/6] cxlflash: Fix to resolve cmd leak after host reset
+To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>
+References: <1450126293-47440-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1450127222-48145-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+ Daniel Axtens <dja@ozlabs.au.ibm.com>
 From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Message-ID: <566F7D9A.4050806@au1.ibm.com>
-Date: Tue, 15 Dec 2015 13:40:26 +1100
+Message-ID: <566F7EB6.7030005@au1.ibm.com>
+Date: Tue, 15 Dec 2015 13:45:10 +1100
 MIME-Version: 1.0
-In-Reply-To: <1449708123-7340-1-git-send-email-dja@axtens.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <1450127222-48145-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,38 +46,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/12/15 11:42, Daniel Axtens wrote:
-> This hooks up UBSAN support for PowerPC.
+On 15/12/15 08:07, Uma Krishnan wrote:
+> From: Manoj Kumar <manoj@linux.vnet.ibm.com>
 >
-> So far it's found some interesting cases where we don't properly sanitise
-> input to shifts, including one in our futex handling. Nothing critical,
-> but interesting and worth fixing.
+> After a few iterations of resetting the card, either during EEH
+> recovery, or a host_reset the following is seen in the logs.
+> cxlflash 0008:00: cxlflash_queuecommand: could not get a free command
 >
-> CC: Andrey Ryabinin <aryabinin@virtuozzo.com>
-> ---
+> At every reset of the card, the commands that are outstanding are
+> being leaked.  No effort is being made to reap these commands.  A few
+> more resets later, the above error message floods the logs and the
+> card is rendered totally unusable as no free commands are available.
 >
-> This to be applied on top of next with Andrey's patches:
->   1) https://patchwork.kernel.org/patch/7761341/
->   2) https://patchwork.kernel.org/patch/7761351/
->   3) https://patchwork.kernel.org/patch/7761361/
->   4) https://patchwork.kernel.org/patch/7785791/
+> Iterated through the 'cmd' queue and printed out the 'free' counter
+> and found that on each reset certain commands were in-use and
+> stayed in-use through subsequent resets.
 >
-> This is RFC for a couple of reasons:
+> To resolve this issue, when the card is reset, reap all the commands
+> that are active/outstanding.
 >
->   - I'd like the original patches to
->     s/ARCH_HAS_UBSAN_SANTIZE_ALL/ARCH_HAS_UBSAN_SAN*I*TIZE_ALL/
->     (I'm about to send an email about that)
->
->   - I've only tested on LE pseries so far - I want to test on powernv,
->     and on BE.
->
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
+> Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 
-I tested this patch as found in linux-next, along with the SANITIZE_ALL 
-typo fix, on a big-endian BML system, with gcc 5.2.1. It successfully 
-picked up one of the shift input issues that Daniel found, so therefore...
+Looks reasonable.
 
-Tested-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 -- 
 Andrew Donnellan              Software Engineer, OzLabs
