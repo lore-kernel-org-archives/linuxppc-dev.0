@@ -1,17 +1,28 @@
-Return-Path: <hellozzy1988@126.com>
-Received: from m15-113.126.com (m15-113.126.com [220.181.15.113])
- by lists.ozlabs.org (Postfix) with ESMTP id 5E1A11A06B3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Dec 2015 16:15:15 +1100 (AEDT)
-From: Zhang Zhuoyu <hellozzy1988@126.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- tglx@linutronix.de, jiang.liu@linux.intel.com,
- zhangzhuoyu@cmss.chinamobile.com
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] powerpc/irq: tidy up inconsistent context in
- migrate_irqs()
-Date: Wed, 16 Dec 2015 00:14:56 -0500
-Message-Id: <1450242896-8322-1-git-send-email-hellozzy1988@126.com>
+Return-Path: <aravinda@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 210411A09C5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Dec 2015 16:56:22 +1100 (AEDT)
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4C7631402EC
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2015 16:56:20 +1100 (AEDT)
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
+ Wed, 16 Dec 2015 00:56:18 -0500
+Subject: [PATCH v2] KVM: PPC: Exit guest upon fatal machine check exception
+To: paulus@ozlabs.org, linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
+From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+Cc: mahesh@linux.vnet.ibm.com, michaele@au1.ibm.com, agraf@suse.de,
+ kvm@vger.kernel.org, david@gibson.dropbear.id.au
+Date: Wed, 16 Dec 2015 11:26:12 +0530
+Message-ID: <20151216055612.10203.28496.stgit@aravindap>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,27 +32,210 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Zhang Zhuoyu <zhangzhuoyu@cmss.chinamobile.com>
+This patch modifies KVM to cause a guest exit with
+KVM_EXIT_NMI instead of immediately delivering a 0x200
+interrupt to guest upon machine check exception in
+guest address. Exiting the guest enables QEMU to build
+error log and deliver machine check exception to guest
+OS (either via guest OS registered machine check
+handler or via 0x200 guest OS interrupt vector).
 
-Remove paradoxical and unnecessary lines before disable local interrupt.
+This approach simplifies the delivering of machine
+check exception to guest OS compared to the earlier approach
+of KVM directly invoking 0x200 guest interrupt vector.
+In the earlier approach QEMU patched the 0x200 interrupt
+vector during boot. The patched code at 0x200 issued a
+private hcall to pass the control to QEMU to build the
+error log.
 
-Signed-off-by: Zhang Zhuoyu <zhangzhuoyu@cmss.chinamobile.com>
+This design/approach is based on the feedback for the
+QEMU patches to handle machine check exception. Details
+of earlier approach of handling machine check exception
+in QEMU and related discussions can be found at:
+
+https://lists.nongnu.org/archive/html/qemu-devel/2014-11/msg00813.html
+
+This patch also introduces a new KVM capability to
+control how KVM behaves on machine check exception.
+Without this capability, KVM redirects machine check
+exceptions to guest's 0x200 vector if the address in
+error belongs to guest. With this capability KVM
+causes a guest exit with NMI exit reason.
+
+This is required to avoid problems if a new kernel/KVM
+is used with an old QEMU for guests that don't issue
+"ibm,nmi-register". As old QEMU does not understand the
+NMI exit type, it treats it as a fatal error. However,
+the guest could have handled the machine check error
+if the exception was delivered to guest's 0x200 interrupt
+vector instead of NMI exit in case of old QEMU.
+
+Change Log v2:
+  - Added KVM capability
+
+Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/irq.c | 2 --
- 1 file changed, 2 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h     |    1 +
+ arch/powerpc/kernel/asm-offsets.c       |    1 +
+ arch/powerpc/kvm/book3s_hv.c            |   12 +++-------
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |   37 +++++++++++++++----------------
+ arch/powerpc/kvm/powerpc.c              |    7 ++++++
+ include/uapi/linux/kvm.h                |    1 +
+ 6 files changed, 31 insertions(+), 28 deletions(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 290559d..03fa686 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -454,8 +454,6 @@ void migrate_irqs(void)
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 827a38d..8a652ba 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -243,6 +243,7 @@ struct kvm_arch {
+ 	int hpt_cma_alloc;
+ 	struct dentry *debugfs_dir;
+ 	struct dentry *htab_dentry;
++	u8 fwnmi_enabled;
+ #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
+ #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+ 	struct mutex hpt_mutex;
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 221d584..6a4e81a 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -506,6 +506,7 @@ int main(void)
+ 	DEFINE(KVM_ENABLED_HCALLS, offsetof(struct kvm, arch.enabled_hcalls));
+ 	DEFINE(KVM_LPCR, offsetof(struct kvm, arch.lpcr));
+ 	DEFINE(KVM_VRMA_SLB_V, offsetof(struct kvm, arch.vrma_slb_v));
++	DEFINE(KVM_FWNMI, offsetof(struct kvm, arch.fwnmi_enabled));
+ 	DEFINE(VCPU_DSISR, offsetof(struct kvm_vcpu, arch.shregs.dsisr));
+ 	DEFINE(VCPU_DAR, offsetof(struct kvm_vcpu, arch.shregs.dar));
+ 	DEFINE(VCPU_VPA, offsetof(struct kvm_vcpu, arch.vpa.pinned_addr));
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 2280497..1b1dff0 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -859,15 +859,9 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		r = RESUME_GUEST;
+ 		break;
+ 	case BOOK3S_INTERRUPT_MACHINE_CHECK:
+-		/*
+-		 * Deliver a machine check interrupt to the guest.
+-		 * We have to do this, even if the host has handled the
+-		 * machine check, because machine checks use SRR0/1 and
+-		 * the interrupt might have trashed guest state in them.
+-		 */
+-		kvmppc_book3s_queue_irqprio(vcpu,
+-					    BOOK3S_INTERRUPT_MACHINE_CHECK);
+-		r = RESUME_GUEST;
++		/* Exit to guest with KVM_EXIT_NMI as exit reason */
++		run->exit_reason = KVM_EXIT_NMI;
++		r = RESUME_HOST;
+ 		break;
+ 	case BOOK3S_INTERRUPT_PROGRAM:
+ 	{
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index b98889e..f43c124 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -147,7 +147,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	addi	r1, r1, 112
+ 	ld	r7, HSTATE_HOST_MSR(r13)
  
- 	free_cpumask_var(mask);
+-	cmpwi	cr1, r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+ 	cmpwi	r12, BOOK3S_INTERRUPT_EXTERNAL
+ 	beq	11f
+ 	cmpwi	cr2, r12, BOOK3S_INTERRUPT_HMI
+@@ -160,7 +159,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	mtmsrd	r6, 1			/* Clear RI in MSR */
+ 	mtsrr0	r8
+ 	mtsrr1	r7
+-	beq	cr1, 13f		/* machine check */
+ 	RFI
  
--	local_irq_enable();
--	mdelay(1);
- 	local_irq_disable();
- }
+ 	/* On POWER7, we have external interrupts set to use HSRR0/1 */
+@@ -168,8 +166,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	mtspr	SPRN_HSRR1, r7
+ 	ba	0x500
+ 
+-13:	b	machine_check_fwnmi
+-
+ 14:	mtspr	SPRN_HSRR0, r8
+ 	mtspr	SPRN_HSRR1, r7
+ 	b	hmi_exception_after_realmode
+@@ -2381,24 +2377,27 @@ machine_check_realmode:
+ 	ld	r9, HSTATE_KVM_VCPU(r13)
+ 	li	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+ 	/*
+-	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest through
+-	 * machine check interrupt (set HSRR0 to 0x200). And for handled
+-	 * errors (no-fatal), just go back to guest execution with current
+-	 * HSRR0 instead of exiting guest. This new approach will inject
+-	 * machine check to guest for fatal error causing guest to crash.
+-	 *
+-	 * The old code used to return to host for unhandled errors which
+-	 * was causing guest to hang with soft lockups inside guest and
+-	 * makes it difficult to recover guest instance.
++	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest
++	 * by exiting the guest with KVM_EXIT_NMI exit reason (exit
++	 * reason set later based on trap). For handled errors
++	 * (no-fatal), go back to guest execution with current HSRR0
++	 * instead of exiting the guest. This approach will cause
++	 * the guest to exit in case of fatal machine check error.
+ 	 */
+-	ld	r10, VCPU_PC(r9)
+-	ld	r11, VCPU_MSR(r9)
+-	bne	2f	/* Continue guest execution. */
+-	/* If not, deliver a machine check.  SRR0/1 are already set */
+-	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
++	bne	2f	/* Continue guest execution? */
++	/* If not, check if guest is capable of handling NMI exit */
++	ld	r3, VCPU_KVM(r9)
++	ld	r3, KVM_FWNMI(r3)
++	cmpdi	r3, 1		/* FWNMI capable? */
++	bne	1f	/* Deliver machine check via guest's 0x200 vector */
++	b	mc_cont
++1:	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
+ 	ld	r11, VCPU_MSR(r9)
+ 	bl	kvmppc_msr_interrupt
+-2:	b	fast_interrupt_c_return
++	b	fast_interrupt_c_return
++2:	ld	r10, VCPU_PC(r9)
++	ld	r11, VCPU_MSR(r9)
++	b	fast_interrupt_c_return
+ 
+ /*
+  * Check the reason we woke from nap, and take appropriate action.
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 2e51289..3e57636 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -567,6 +567,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 		r = 1;
+ 		break;
  #endif
--- 
-1.8.3.1
++	case KVM_CAP_PPC_FWNMI:
++		r = 1;
++		break;
+ 	default:
+ 		r = 0;
+ 		break;
+@@ -1129,6 +1132,10 @@ static int kvm_vcpu_ioctl_enable_cap(struct kvm_vcpu *vcpu,
+ 		break;
+ 	}
+ #endif /* CONFIG_KVM_XICS */
++	case KVM_CAP_PPC_FWNMI:
++		r = 0;
++		vcpu->kvm->arch.fwnmi_enabled = true;
++		break;
+ 	default:
+ 		r = -EINVAL;
+ 		break;
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index a9256f0..2daf4b4 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -824,6 +824,7 @@ struct kvm_ppc_smmu_info {
+ #define KVM_CAP_MULTI_ADDRESS_SPACE 118
+ #define KVM_CAP_GUEST_DEBUG_HW_BPS 119
+ #define KVM_CAP_GUEST_DEBUG_HW_WPS 120
++#define KVM_CAP_PPC_FWNMI 121
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
