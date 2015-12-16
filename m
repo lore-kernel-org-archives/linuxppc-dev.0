@@ -1,28 +1,18 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
+ [IPv6:2607:f8b0:400e:c03::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CE6911A0024
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Dec 2015 09:30:36 +1100 (AEDT)
-Date: Tue, 15 Dec 2015 17:29:50 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-CC: <linux-kernel@vger.kernel.org>, Andy Gross <agross@codeaurora.org>, Anton
- Blanchard <anton@samba.org>,
- David Brown <davidb@codeaurora.org>, Jiri Slaby <jslaby@suse.com>,
- Kumar Gala <galak@codeaurora.org>, Matthias Brugger
- <matthias.bgg@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicolas
- Ferre <nicolas.ferre@atmel.com>, <linux-arm-kernel@lists.infradead.org>,
- <linux-arm-msm@vger.kernel.org>, <linux-mediatek@lists.infradead.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-serial@vger.kernel.org>,
- <linux-soc@vger.kernel.org>
-Subject: Re: [PATCH 0/5] drivers/tty: make more bool drivers explicitly
- non-modular
-Message-ID: <20151215222950.GH2772@windriver.com>
-References: <1445206878-12455-1-git-send-email-paul.gortmaker@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1445206878-12455-1-git-send-email-paul.gortmaker@windriver.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CF5A71A0065
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Dec 2015 16:03:15 +1100 (AEDT)
+Received: by mail-pa0-x233.google.com with SMTP id wq6so17257308pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2015 21:03:15 -0800 (PST)
+From: Rashmica Gupta <rashmicy@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org
+Subject: [PATCH] selftests/powerpc: Add test to check if TM SPRs are corrupted
+Date: Wed, 16 Dec 2015 16:03:04 +1100
+Message-Id: <1450242184-3261-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,44 +22,208 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[[PATCH 0/5] drivers/tty: make more bool drivers explicitly non-modular] On 18/10/2015 (Sun 18:21) Paul Gortmaker wrote:
+Just testing that things are behaving the way they should. Uses more
+threads than cpus to see if the following values persist with context
+switching:
+- the FS (failure summary) flag in TEXASR
+- TFIAR and TFHAR
 
-> This next set of patches to drivers/tty fixes up more drivers that would
-> perhaps appear modular when looking at the code, but are controlled by
-> a bool Kconfig.  We make sure they don't look modular and get rid
-> of module related code in the drivers that would never be used.
+Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+---
+ tools/testing/selftests/powerpc/tm/.gitignore |   1 +
+ tools/testing/selftests/powerpc/tm/Makefile   |   6 +-
+ tools/testing/selftests/powerpc/tm/tm-tmspr.c | 154 ++++++++++++++++++++++++++
+ 3 files changed, 159 insertions(+), 2 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-tmspr.c
 
-[...]
-
-> Paul Gortmaker (5):
->   drivers/tty: make hvc/hvc_vio.c explicitly non-modular
->   drivers/tty: make ehv_bytechan.c explicitly non-modular
->   drivers/tty/serial: make serial/atmel_serial.c explicitly non-modular
->   drivers/tty/serial: make msm_serial.c explicitly non-modular
->   drivers/tty/serial: make 8250/8250_mtk.c explicitly non-modular
-
-Hi Greg,
-
-You've merged the #3 atmel patch and #5 the 8250_mtk patch; the msm_serial
-patch (#4) is no longer applicable since the authors changed it to tristate.
-
-That leaves the top two patches; both for PPC hardware.  Did you skip
-those because you wanted them pushed through the powerpc tree?
-
-If so, that is fine, I can do that.  Just let me know.
-
-Thanks,
-Paul.
---
-
-> 
->  drivers/tty/ehv_bytechan.c         | 40 +++------------------------------
->  drivers/tty/hvc/hvc_vio.c          | 29 ++++--------------------
->  drivers/tty/serial/8250/8250_mtk.c | 35 ++++++-----------------------
->  drivers/tty/serial/atmel_serial.c  | 45 ++++----------------------------------
->  drivers/tty/serial/msm_serial.c    | 30 ++++---------------------
->  5 files changed, 22 insertions(+), 157 deletions(-)
-> 
-> -- 
-> 2.6.1
-> 
+diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
+index c4667790d01d..42a6467afe93 100644
+--- a/tools/testing/selftests/powerpc/tm/.gitignore
++++ b/tools/testing/selftests/powerpc/tm/.gitignore
+@@ -3,3 +3,4 @@ tm-syscall
+ tm-signal-msr-resv
+ tm-signal-stack 
+ tm-vmxcopy
++tm-tmspr
+diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
+index d013447fb6d9..21435399e8e9 100644
+--- a/tools/testing/selftests/powerpc/tm/Makefile
++++ b/tools/testing/selftests/powerpc/tm/Makefile
+@@ -1,11 +1,13 @@
+-TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-vmxcopy
++TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-vmxcopy tm-tmspr
+ 
+ all: $(TEST_PROGS)
+ 
+ $(TEST_PROGS): ../harness.c ../utils.c
+ 
+ tm-syscall: tm-syscall-asm.S
+-	tm-syscall: CFLAGS += -mhtm -I../../../../../usr/include
++tm-syscall: CFLAGS += -mhtm -I../../../../../usr/include
++
++tm-tmspr: CFLAGS += -pthread
+ 
+ include ../../lib.mk
+ 
+diff --git a/tools/testing/selftests/powerpc/tm/tm-tmspr.c b/tools/testing/selftests/powerpc/tm/tm-tmspr.c
+new file mode 100644
+index 000000000000..6b317b8d7067
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/tm/tm-tmspr.c
+@@ -0,0 +1,154 @@
++/*
++ * Copyright 2015, Michael Neuling, IBM Corp.
++ * Licensed under GPLv2.
++ *
++ * Original: Michael Neuling 3/4/2014
++ * Modified: Rashmica Gupta 8/12/2015
++ *
++ * Check if any of the Transaction Memory SPRs get corrupted.
++ * - TFIAR  - stores address of location of transaction failure
++ * - TFHAR  - stores address of software failure handler (if transaction
++ *   fails)
++ * - TEXASR - lots of info about the transacion(s)
++ *
++ * (1) create more threads than cpus
++ * (2) in each thread:
++ * 	(a) set TFIAR and TFHAR a unique value
++ * 	(b) loop for awhile, continually checking to see if
++ * 	either register has been corrupted.
++ *
++ * (3) Loop:
++ * 	(a) begin transaction
++ *    	(b) abort transaction
++ *	(c) check TEXASR to see if FS has been corrupted
++ *
++ */
++
++#define _GNU_SOURCE
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <pthread.h>
++#include <string.h>
++
++#include "utils.h"
++
++
++#define __stringify_1(x)	#x
++#define __stringify(x)		__stringify_1(x)
++#define mfspr(rn)	({unsigned long rval; \
++			asm volatile("mfspr %0," __stringify(rn) \
++				: "=r" (rval)); rval; })
++#define mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" : \
++				     : "r" ((unsigned long)(v)) \
++				     : "memory")
++#define SPRN_TEXASR     0x82
++#define TEXASR_FS       0x08000000
++#define SPRN_TFIAR	0x81	/* Transaction Failure Inst Addr    */
++#define SPRN_TFHAR	0x80	/* Transaction Failure Handler Addr */
++
++int	num_loops	= 10000;
++int	passed = 1;
++
++void tfiar_tfhar(void *in)
++{
++	int i, cpu;
++	unsigned long tfhar, tfhar_rd, tfiar, tfiar_rd;
++	cpu_set_t cpuset;
++
++	CPU_ZERO(&cpuset);
++	cpu = (unsigned long)in >> 1;
++	CPU_SET(cpu, &cpuset);
++	sched_setaffinity(0, sizeof(cpuset), &cpuset);
++
++	/* TFIAR: Last bit has to be high so userspace can read register */
++	tfiar = ((unsigned long)in) + 1;
++	tfiar += 2;
++	mtspr(SPRN_TFIAR, tfiar);
++
++	/* TFHAR: Last two bits are reserved */
++	tfhar = ((unsigned long)in);
++	tfhar &= ~0x3UL;
++	tfhar += 4;
++	mtspr(SPRN_TFHAR, tfhar);
++
++	for (i = 0; i < num_loops; i++)	{
++		tfhar_rd = mfspr(SPRN_TFHAR);
++		tfiar_rd = mfspr(SPRN_TFIAR);
++		if ( (tfhar != tfhar_rd) || (tfiar != tfiar_rd) ) {
++			passed = 0;
++			return;
++		}
++	}
++	return;
++}
++
++void texasr(void *in)
++{
++	unsigned long i;
++	uint64_t result = 0;
++
++	for (i = 0; i < num_loops; i++) {
++		asm __volatile__(
++			"tbegin.;"
++			"beq    3f ;"
++			"tabort. 0 ;"
++			"tend.;"
++
++			/* Abort handler */
++			"3: ;"
++			::: "memory");
++
++                /* Check the TEXASR */
++                result = mfspr(SPRN_TEXASR);
++		if ((result & TEXASR_FS) == 0) {
++			passed = 0;
++			return;
++		}
++	}
++	return;
++}
++
++int test_tmspr()
++{
++	pthread_t 	thread;
++	int	   	thread_num;
++	unsigned long	i;
++
++	/* To cause some context switching */
++	thread_num = 10 * sysconf(_SC_NPROCESSORS_ONLN);
++
++	/* Test TFIAR and TFHAR */
++	for (i = 0 ; i < thread_num ; i += 2){
++		if (pthread_create(&thread, NULL, (void*)tfiar_tfhar, (void *)i))
++			return EXIT_FAILURE;
++	}
++	if (pthread_join(thread, NULL) != 0)
++		return EXIT_FAILURE;
++
++	/* Test TEXASR */
++	for (i = 0 ; i < thread_num ; i++){
++		if (pthread_create(&thread, NULL, (void*)texasr, (void *)i))
++			return EXIT_FAILURE;
++	}
++	if (pthread_join(thread, NULL) != 0)
++		return EXIT_FAILURE;
++
++	if (passed)
++		return 0;
++	else
++		return 1;
++}
++
++int main(int argc, char *argv[])
++{
++	if (argc > 1) {
++		if (strcmp(argv[1], "-h") == 0) {
++			printf("Syntax:\t [<num loops>]\n");
++			return 0;
++		} else {
++			num_loops = atoi(argv[1]);
++		}
++	}
++	return test_harness(test_tmspr, "tm_tmspr");
++}
+-- 
+2.5.0
