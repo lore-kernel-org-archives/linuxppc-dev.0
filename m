@@ -1,21 +1,25 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id 405E71A0066
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 06:42:41 +1100 (AEDT)
-Date: Wed, 16 Dec 2015 16:42:34 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Wang Nan <wangnan0@huawei.com>, jolsa@redhat.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sukadev@linux.vnet.ibm.com
-Subject: Re: [PATCH v4] perf: bpf: Fix build breakage due to libbpf
-Message-ID: <20151216194234.GA19926@kernel.org>
-References: <1450150557-127942-4-git-send-email-wangnan0@huawei.com>
- <1450169473-137129-1-git-send-email-wangnan0@huawei.com>
- <20151215114046.GG23726@naverao1-tp.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151215114046.GG23726@naverao1-tp.in.ibm.com>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9D0DA1A0244
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 07:04:43 +1100 (AEDT)
+Message-ID: <1450296276.2674.55.camel@redhat.com>
+Subject: Re: [RFC PATCH 2/3] vfio-pci: Allow to mmap sub-page MMIO BARs if
+ all MMIO BARs are page aligned
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Yongji Xie <xyjxie@linux.vnet.ibm.com>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: aik@ozlabs.ru, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
+ zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com
+Date: Wed, 16 Dec 2015 13:04:36 -0700
+In-Reply-To: <1449823994-3356-3-git-send-email-xyjxie@linux.vnet.ibm.com>
+References: <1449823994-3356-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1449823994-3356-3-git-send-email-xyjxie@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +29,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Tue, Dec 15, 2015 at 05:10:46PM +0530, Naveen N. Rao escreveu:
-> On 2015/12/15 08:51AM, Wang Nan wrote:
-> > From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-> > 
-> > perf build is currently (v4.4-rc5) broken on powerpc:
-> > 
-> > bpf.c:28:4: error: #error __NR_bpf not defined. libbpf does not support
-> > your arch.
-> >  #  error __NR_bpf not defined. libbpf does not support your arch.
-> >     ^
-> > 
-> > Fix this by including tools/scripts/Makefile.arch for the proper
-> > $ARCH macro. While at it, remove redundant LP64 macro definition.
-> > 
-> > Also, since libbpf require $(srctree) now, detect the path of
-> > srctree like perf.
-> > 
-> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > Signed-off-by: Wang Nan <wangnan0@huawei.com>
-> > Acked-by: Jiri Olsa <jolsa@kernel.org>
-> > Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-> > Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> > ---
-> > 
-> > v3 -> v4: Add srctree detector code so directly run 'make' in libbpf
-> >           directory would not cause error.
+On Fri, 2015-12-11 at 16:53 +0800, Yongji Xie wrote:
+> Current vfio-pci implementation disallows to mmap
+> sub-page(size < PAGE_SIZE) MMIO BARs because these BARs' mmio page
+> may be shared with other BARs.
 > 
-> Good catch!
+> But we should allow to mmap these sub-page MMIO BARs if all MMIO BARs
+> are page aligned which leads the BARs' mmio page would not be shared
+> with other BARs.
 > 
-> Tested-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> This patch adds support for this case and we also add a
+> VFIO_DEVICE_FLAGS_PCI_PAGE_ALIGNED flag to notify userspace that
+> platform supports all MMIO BARs to be page aligned.
+> 
+> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+> ---
+>  drivers/vfio/pci/vfio_pci.c         |   10 +++++++++-
+>  drivers/vfio/pci/vfio_pci_private.h |    5 +++++
+>  include/uapi/linux/vfio.h           |    2 ++
+>  3 files changed, 16 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/vfio/pci/vfio_pci.c
+> b/drivers/vfio/pci/vfio_pci.c
+> index 32b88bd..dbcad99 100644
+> --- a/drivers/vfio/pci/vfio_pci.c
+> +++ b/drivers/vfio/pci/vfio_pci.c
+> @@ -443,6 +443,9 @@ static long vfio_pci_ioctl(void *device_data,
+>  		if (vdev->reset_works)
+>  			info.flags |= VFIO_DEVICE_FLAGS_RESET;
+>  
+> +		if (vfio_pci_bar_page_aligned())
+> +			info.flags |=
+> VFIO_DEVICE_FLAGS_PCI_PAGE_ALIGNED;
+> +
+>  		info.num_regions = VFIO_PCI_NUM_REGIONS;
+>  		info.num_irqs = VFIO_PCI_NUM_IRQS;
+>  
+> @@ -479,7 +482,8 @@ static long vfio_pci_ioctl(void *device_data,
+>  				     VFIO_REGION_INFO_FLAG_WRITE;
+>  			if (IS_ENABLED(CONFIG_VFIO_PCI_MMAP) &&
+>  			    pci_resource_flags(pdev, info.index) &
+> -			    IORESOURCE_MEM && info.size >=
+> PAGE_SIZE)
+> +			    IORESOURCE_MEM && (info.size >=
+> PAGE_SIZE ||
+> +			    vfio_pci_bar_page_aligned()))
+>  				info.flags |=
+> VFIO_REGION_INFO_FLAG_MMAP;
+>  			break;
+>  		case VFIO_PCI_ROM_REGION_INDEX:
+> @@ -855,6 +859,10 @@ static int vfio_pci_mmap(void *device_data,
+> struct vm_area_struct *vma)
+>  		return -EINVAL;
+>  
+>  	phys_len = pci_resource_len(pdev, index);
+> +
+> +	if (vfio_pci_bar_page_aligned())
+> +		phys_len = PAGE_ALIGN(phys_len);
+> +
+>  	req_len = vma->vm_end - vma->vm_start;
+>  	pgoff = vma->vm_pgoff &
+>  		((1U << (VFIO_PCI_OFFSET_SHIFT - PAGE_SHIFT)) - 1);
+> diff --git a/drivers/vfio/pci/vfio_pci_private.h
+> b/drivers/vfio/pci/vfio_pci_private.h
+> index 0e7394f..319352a 100644
+> --- a/drivers/vfio/pci/vfio_pci_private.h
+> +++ b/drivers/vfio/pci/vfio_pci_private.h
+> @@ -69,6 +69,11 @@ struct vfio_pci_device {
+>  #define is_irq_none(vdev) (!(is_intx(vdev) || is_msi(vdev) ||
+> is_msix(vdev)))
+>  #define irq_is(vdev, type) (vdev->irq_type == type)
+>  
+> +static inline bool vfio_pci_bar_page_aligned(void)
+> +{
+> +	return IS_ENABLED(CONFIG_PPC64);
+> +}
 
-Trying to apply the patchkit:
+I really dislike this.  This is a problem for any architecture that
+runs on larger pages, and even an annoyance on 4k hosts.  Why are we
+only solving it for PPC64?  Can't we do something similar in the core
+PCI code and detect it?
 
-[acme@zoo linux]$ make -C tools clean > /dev/null 2>&1
-[acme@zoo linux]$ make -C tools/perf build-test
-make: Entering directory '/home/git/linux/tools/perf'
-Testing Makefile
-tests/make:15: /scripts/Makefile.arch: No such file or directory
-make[2]: *** No rule to make target '/scripts/Makefile.arch'.  Stop.
-tests/make:5: recipe for target 'all' failed
-make[1]: *** [all] Error 2
-Makefile:81: recipe for target 'build-test' failed
-make: *** [build-test] Error 2
-make: Leaving directory '/home/git/linux/tools/perf'
-[acme@zoo linux]$
+> +
+>  extern void vfio_pci_intx_mask(struct vfio_pci_device *vdev);
+>  extern void vfio_pci_intx_unmask(struct vfio_pci_device *vdev);
+>  
+> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+> index 751b69f..1fc8066 100644
+> --- a/include/uapi/linux/vfio.h
+> +++ b/include/uapi/linux/vfio.h
+> @@ -171,6 +171,8 @@ struct vfio_device_info {
+>  #define VFIO_DEVICE_FLAGS_PCI	(1 << 1)	/* vfio-pci
+> device */
+>  #define VFIO_DEVICE_FLAGS_PLATFORM (1 << 2)	/* vfio-platform
+> device */
+>  #define VFIO_DEVICE_FLAGS_AMBA  (1 << 3)	/* vfio-amba device
+> */
+> +/* Platform support all PCI MMIO BARs to be page aligned */
+> +#define VFIO_DEVICE_FLAGS_PCI_PAGE_ALIGNED	(1 << 4)
+>  	__u32	num_regions;	/* Max region index + 1 */
+>  	__u32	num_irqs;	/* Max IRQ index + 1 */
+>  };
 
-What am I doing wrong?
+Why is this on the device info, shouldn't it be per region?  Do we even
+need a flag or can we just set the existing mmap flag with the
+clarification that sub-host page size regions can mmap an entire host-
+page aligned, sized area in the documentation?  Thanks,
 
-- Arnaldo
+Alex
