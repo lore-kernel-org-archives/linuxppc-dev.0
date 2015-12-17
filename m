@@ -1,42 +1,28 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A60321A0B4F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 09:39:01 +1100 (AEDT)
-Date: Thu, 17 Dec 2015 14:38:58 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Geert Uytterhoeven
- <geert@linux-m68k.org>, Peter Zijlstra <peterz@infradead.org>, Steven
- Rostedt <rostedt@goodmis.org>, Daniel Thompson
- <daniel.thompson@linaro.org>, Jiri Kosina <jkosina@suse.com>, Ingo Molnar
- <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, the arch/x86
- maintainers <x86@kernel.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "adi-buildroot-devel@lists.sourceforge.net"
- <adi-buildroot-devel@lists.sourceforge.net>, Cris
- <linux-cris-kernel@axis.com>, Linux MIPS Mailing List
- <linux-mips@linux-mips.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, linux-s390 <linux-s390@vger.kernel.org>,
- Linux-sh list <linux-sh@vger.kernel.org>, sparclinux
- <sparclinux@vger.kernel.org>
-Subject: Re: [PATCH v3 4/4] printk/nmi: Increase the size of NMI buffer and
- make it configurable
-Message-Id: <20151217143858.447b5fe79aaa5ed7b2328d67@linux-foundation.org>
-In-Reply-To: <20151215142621.GE3729@pathway.suse.cz>
-References: <1449667265-17525-1-git-send-email-pmladek@suse.com>
- <1449667265-17525-5-git-send-email-pmladek@suse.com>
- <CAMuHMdXVgr58YjoePGrRbMyMncQ27f85prL7G5SpeHeNxoYrXQ@mail.gmail.com>
- <20151211124159.GB3729@pathway.suse.cz>
- <20151211145725.b0e81bb4bb18fcd72ef5f557@linux-foundation.org>
- <20151211232113.GZ8644@n2100.arm.linux.org.uk>
- <20151211153054.48da5d4139b93dd4ed438f4c@linux-foundation.org>
- <20151215142621.GE3729@pathway.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 69DB41A11B7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 09:48:37 +1100 (AEDT)
+Message-ID: <1450392501.5445.11.camel@kernel.crashing.org>
+Subject: Re: [RFC PATCH 3/3] vfio-pci: Allow to mmap MSI-X table if EEH is
+ supported
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alex Williamson <alex.williamson@redhat.com>, yongji xie
+ <xyjxie@linux.vnet.ibm.com>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: aik@ozlabs.ru, paulus@samba.org, mpe@ellerman.id.au,
+ warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com
+Date: Fri, 18 Dec 2015 09:48:21 +1100
+In-Reply-To: <1450388499.2674.153.camel@redhat.com>
+References: <1449823994-3356-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1449823994-3356-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1450296869.2674.62.camel@redhat.com> <5672906C.5010708@linux.vnet.ibm.com>
+ <1450388499.2674.153.camel@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,62 +32,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 15 Dec 2015 15:26:21 +0100 Petr Mladek <pmladek@suse.com> wrote:
+On Thu, 2015-12-17 at 14:41 -0700, Alex Williamson wrote:
+> > So I think it is safe to mmap/passthrough MSI-X table on PPC64
+> > platform.
+> > And I'm not sure whether other architectures can ensure these two 
+> > points. 
+> 
+> There is another consideration, which is the API exposed to the user.
+>  vfio currently enforces interrupt setup through ioctls by making the
+> PCI mechanisms for interrupt programming inaccessible through the
+> device regions.  Ignoring that you are only focused on PPC64 with QEMU,
+> does it make sense for the vfio API to allow a user to manipulate
+> interrupt programming in a way that not only will not work, but in a
+> way that we expect to fail and require error isolation to recover from?
+>  I can't say I'm fully convinced that a footnote in the documentation
+> is sufficient for that.  Thanks,
 
-> > OK, thanks.  So "not needed at present, might be needed in the future,
-> > useful for out-of-tree debug code"?
-> 
-> It is possible that I got it a wrong way on arm. The NMI buffer is
-> usable there on two locations.
-> 
-> First, the temporary is currently used to handle IPI_CPU_BACKTRACE.
-> It seems that it is not a real NMI. But it seems to be available
-> (compiled) on all arm system. This is why I introduced NEED_PRINTK_NMI
-> Kconfig flag to avoid confusion with a real NMI.
-> 
-> Second, there is the FIQ "NMI" handler that is called from
-> /arch/arm/kernel/entry-armv.S. It is compiled only if _not_
-> defined $(CONFIG_CPU_V7M). It calls nmi_enter() and nmi_stop().
-> It looks like a real NMI handler. This is why I defined HAVE_NMI
-> if (!CPU_V7M).
-> 
-> A solution would be to define HAVE_NMI on all Arm systems and get rid
-> of NEED_PRINTK_NMI. If you think that it would cause less confusion...
+Well, one could argue that the "isolation" provided by qemu here is
+fairly weak anyway ;-)
 
-So does this mean that the patch will be updated?
+I mean. .. how do you know the device doesn't have a backdoor path into
+that table via some other MMIO registers anyway ?
 
-> 
-> > > there's this effort to apply further cleanups - to me, the changelogs
-> > > don't seem to make that much sense, unless we want to start using
-> > > printk() extensively in NMI functions - using the generic nmi backtrace
-> > > code surely gets us something that works across all architectures...
-> > 
-> > Yes, I was scratching my head over that.  The patchset takes an nmi-safe
-> > all-cpu-backtrace and generalises that into an nmi-safe printk.  That
-> > *sounds* like a good thing to do but yes, some additional justification
-> > would be helpful.  What real-world value does this patchset really
-> > bring to real-world users?
-> 
-> The patchset brings two big advantages. First, it makes the NMI
-> backtraces safe on all architectures for free. Second, it makes
-> all NMI messages almost[*] safe on all architectures.
-> 
-> Note that there already are several messages printed in NMI context.
-> See the mail from Jiri Kosina. They are not easy to avoid.
-> 
-> [*] The temporary buffer is limited. We still should keep
-> the number of messages in NMI context at minimum.
+In any case, the HW isolation on platforms like pseries means that the
+worst the guest can do si shoot itself in the foot. Big deal. On the
+other hand, not bothering with intercepting the table has benefits,
+such as reducing the memory region clutter, but also removing all the
+massive performacne problems we see because adapters have critical
+registers in the same 64K page as the MSI-X table.
 
-This is important info - in fact a paragraph which starts with "The
-patchset brings two big advantages" is *the most* important info.  I
-added the below text to the [1/n] changelog:
+So I don't think there is any question here that we *need* that
+functionality in power. The filtering of the table by Qemu doesn't
+provide any practical benefit, it just gets in the way.
 
-: The patchset brings two big advantages.  First, it makes the NMI
-: backtraces safe on all architectures for free.  Second, it makes all NMI
-: messages almost safe on all architectures (the temporary buffer is
-: limited.  We still should keep the number of messages in NMI context at
-: minimum).
-: 
-: Note that there already are several messages printed in NMI context:
-: WARN_ON(in_nmi()), BUG_ON(in_nmi()), anything being printed out from MCE
-: handlers.  These are not easy to avoid.
+Cheers,
+Ben.
