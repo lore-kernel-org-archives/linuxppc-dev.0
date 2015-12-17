@@ -2,16 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3C7321A119C
+ by lists.ozlabs.org (Postfix) with ESMTPS id D95931A119C
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 21:19:12 +1100 (AEDT)
-In-Reply-To: <1450263209-11217-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1449796103-7700-1-git-send-email-stewart@linux.vnet.ibm.com>
+To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Arnd Bergmann <arnd@arndb.de>, tuliom@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, murphyp@linux.vnet.ibm.com,
- schwab@linux-m68k.org, sam.bobroff@au1.ibm.com
-Subject: Re: Partial revert of "powerpc: Individual System V IPC system calls"
-Message-Id: <20151217101912.1BF371402C9@ozlabs.org>
+Cc: =?UTF-8?q?=E8=92=B2=E6=96=87?= <wen.pu@powercore.com.cn>
+Subject: Re: powerpc/powernv: pr_warn_once on unsupported OPAL_MSG type
+Message-Id: <20151217101912.B369A1402EC@ozlabs.org>
 Date: Thu, 17 Dec 2015 21:19:12 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,32 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-16-12 at 10:53:29 UTC, Michael Ellerman wrote:
-> This partially reverts commit a34236155afb1cc41945e58388ac988431bcb0b8.
+On Fri, 2015-11-12 at 01:08:23 UTC, Stewart Smith wrote:
+> When running on newer OPAL firmware that supports sending extra
+> OPAL_MSG types, we would print a warning on *every* message received.
 > 
-> While reviewing the glibc patch to exploit the individual IPC calls,
-> Arnd & Andreas noticed that we were still requiring userspace to pass
-> IPC_64 in order to get the new style IPC API.
+> This could be a problem for kernels that don't support OPAL_MSG_OCC
+> on machines that are running real close to thermal limits and the
+> OCC is throttling the chip. For a kernel that is paying attention to
+> the message queue, we could get these notifications quite often.
 > 
-> With a bit of cleanup in the kernel we can drop that requirement, and
-> instead only provide the new style API, which will simplify things for
-> userspace.
+> Conceivably, future message types could also come fairly often,
+> and printing that we didn't understand them 10,000 times provides
+> no further information than printing them once.
 > 
-> Rather than try and sneak that patch into 4.4, instead we will drop the
-> individual IPC calls for powerpc, and merge them again in 4.5 once the
-> cleanup patch has gone in.
-> 
-> Because we've already added sys_mlock2() as syscall #378, we don't do a
-> full revert of the IPC calls. Instead we drop the __NR #defines, and
-> send those now undefined syscall numbers to sys_ni_syscall(). This
-> leaves a gap in the syscall numbers, but we'll reuse them when we merge
-> the individual IPC calls.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
-Applied to powerpc fixes.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/2475c362134a0fa5309c7b0f
+https://git.kernel.org/powerpc/c/98da62b716a3b24ab8e77453
 
 cheers
