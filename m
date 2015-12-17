@@ -1,40 +1,30 @@
-Return-Path: <warrier@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1BB9E1A1A24
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 07:59:49 +1100 (AEDT)
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 209BB140B9A
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2015 07:59:47 +1100 (AEDT)
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
- Thu, 17 Dec 2015 13:59:46 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 54D103E4003E
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:26 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBHKxQYj27787408
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:26 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBHKxPcq014627
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:26 -0700
-From: Suresh Warrier <warrier@linux.vnet.ibm.com>
-To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
-Cc: warrier@linux.vnet.ibm.com, paulus@samba.org, agraf@suse.de,
- mpe@ellerman.id.au
-Subject: [PATCH v3 2/9] powerpc/smp: Add smp_muxed_ipi_set_message
-Date: Thu, 17 Dec 2015 14:59:04 -0600
-Message-Id: <1450385951-25128-3-git-send-email-warrier@linux.vnet.ibm.com>
-In-Reply-To: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
-References: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 09D711A1BA4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 08:06:57 +1100 (AEDT)
+Message-ID: <1450386414.2674.129.camel@redhat.com>
+Subject: Re: [RFC PATCH 3/3] vfio-pci: Allow to mmap MSI-X table if EEH is
+ supported
+From: Alex Williamson <alex.williamson@redhat.com>
+To: David Laight <David.Laight@ACULAB.COM>, Yongji Xie
+ <xyjxie@linux.vnet.ibm.com>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "nikunj@linux.vnet.ibm.com" <nikunj@linux.vnet.ibm.com>,
+ "zhong@linux.vnet.ibm.com" <zhong@linux.vnet.ibm.com>, "aik@ozlabs.ru"
+ <aik@ozlabs.ru>, "paulus@samba.org" <paulus@samba.org>,
+ "warrier@linux.vnet.ibm.com" <warrier@linux.vnet.ibm.com>
+Date: Thu, 17 Dec 2015 14:06:54 -0700
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1CBEF1BC@AcuExch.aculab.com>
+References: <1449823994-3356-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1449823994-3356-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1450296869.2674.62.camel@redhat.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1CBEF1BC@AcuExch.aculab.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,66 +34,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-smp_muxed_ipi_message_pass() invokes smp_ops->cause_ipi, which
-uses an ioremapped address to access registers on the XICS
-interrupt controller to cause the IPI. Because of this real
-mode callers cannot call smp_muxed_ipi_message_pass() for IPI
-messaging.
+On Thu, 2015-12-17 at 10:08 +0000, David Laight wrote:
+> > The MSI-X table is paravirtualized on vfio in general and interrupt
+> > remapping theoretically protects against errant interrupts, so why
+> > is
+> > this PPC64 specific? We have the same safeguards on x86 if we want
+> > to
+> > decide they're sufficient. Offhand, the only way I can think that a
+> > device can touch the MSI-X table is via backdoors or p2p DMA with
+> > another device.
+> 
+> Is this all related to the statements in the PCI(e) spec that the
+> MSI-X table and Pending bit array should in their own BARs?
+> (ISTR it even suggests a BAR each.)
+> 
+> Since the MSI-X table exists in device memory/registers there is
+> nothing to stop the device modifying the table contents (or even
+> ignoring the contents and writing address+data pairs that are known
+> to reference the CPUs MSI-X interrupt generation logic).
+> 
+> We've an fpga based PCIe slave that has some additional PCIe slaves
+> (associated with the interrupt generation logic) that are currently
+> next to the PBA (which is 8k from the MSI-X table).
+> If we can't map the PBA we can't actually raise any interrupts.
+> The same would be true if page size is 64k and mapping the MSI-X
+> table banned.
+> 
+> Do we need to change our PCIe slave address map so we don't need
+> to access anything in the same page (which might be 64k were we to
+> target large ppc - which we don't at the moment) as both the
+> MSI-X table and the PBA?
+> 
+> I'd also note that being able to read the MSI-X table is a useful
+> diagnostic that the relevant interrupts are enabled properly.
 
-This patch creates a separate function smp_muxed_ipi_set_message
-just to set the IPI message without the cause_ipi routine.
-After calling this function to set the IPI message, real
-mode callers must cause the IPI by writing to the XICS registers
-directly.
+Yes, the spec requirement is that MSI-X structures must reside in a 4k
+aligned area that doesn't overlap with other configuration registers
+for the device.  It's only an advisement to put them into their own
+BAR, and 4k clearly wasn't as forward looking as we'd hope.  Vfio
+doesn't particularly care about the PBA, but if it resides in the same
+host PAGE_SIZE area as the MSI-X vector table, you currently won't be
+able to get to it.  Most devices are not at all dependent on the PBA
+for any sort of functionality.
 
-As part of this, we also change smp_muxed_ipi_message_pass
-to call smp_muxed_ipi_set_message to set the message instead
-of doing it directly inside the routine.
+It's really more correct to say that both the vector table and PBA are
+emulated by QEMU than paravirtualized.  Only PPC64 has the guest OS
+taking a paravirtual path to program the vector table, everyone else
+attempts to read/write to the device MMIO space, which gets trapped and
+emulated in QEMU.  This is why the QEMU side patch has further ugly
+hacks to mess with the ordering of MemoryRegions since even if we can
+access and mmap the MSI-X vector table, we'll still trap into QEMU for
+emulation.
 
-Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/smp.h | 1 +
- arch/powerpc/kernel/smp.c      | 9 ++++++++-
- 2 files changed, 9 insertions(+), 1 deletion(-)
+How exactly does the ability to map the PBA affect your ability to
+raise an interrupt?  I can only think that maybe you're writing PBA
+bits to clear them, but the spec indicates that software should never
+write to the PBA, only read, and that writes are undefined.  So that
+would be very non-standard, QEMU drops writes, they don't even make it
+to the hardware.  Thanks,
 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 9ef9c37..78083ed 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -124,6 +124,7 @@ extern const char *smp_ipi_name[];
- /* for irq controllers with only a single ipi */
- extern void smp_muxed_ipi_set_data(int cpu, unsigned long data);
- extern void smp_muxed_ipi_message_pass(int cpu, int msg);
-+extern void smp_muxed_ipi_set_message(int cpu, int msg);
- extern irqreturn_t smp_ipi_demux(void);
- 
- void smp_init_pSeries(void);
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index a53a130..e222efc 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -218,7 +218,7 @@ void smp_muxed_ipi_set_data(int cpu, unsigned long data)
- 	info->data = data;
- }
- 
--void smp_muxed_ipi_message_pass(int cpu, int msg)
-+void smp_muxed_ipi_set_message(int cpu, int msg)
- {
- 	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
- 	char *message = (char *)&info->messages;
-@@ -228,6 +228,13 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
- 	 */
- 	smp_mb();
- 	message[msg] = 1;
-+}
-+
-+void smp_muxed_ipi_message_pass(int cpu, int msg)
-+{
-+	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
-+
-+	smp_muxed_ipi_set_message(cpu, msg);
- 	/*
- 	 * cause_ipi functions are required to include a full barrier
- 	 * before doing whatever causes the IPI.
--- 
-1.8.3.4
+Alex
