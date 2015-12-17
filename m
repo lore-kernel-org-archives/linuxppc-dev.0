@@ -2,15 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6140D1A127F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 22:57:34 +1100 (AEDT)
-In-Reply-To: <1445475788-30348-1-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 139E31A127F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 22:57:35 +1100 (AEDT)
+In-Reply-To: <1450163354-16894-1-git-send-email-dja@axtens.net>
+To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: powerpc/powernv: Fix M64 resource name in /proc/iomem
-Message-Id: <20151217115733.D9CEE1402F0@ozlabs.org>
-Date: Thu, 17 Dec 2015 22:57:33 +1100 (AEDT)
+Cc: Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com,
+ Alexandre Belloni <alexandre.belloni@free-electrons.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>, akpm@linux-foundation.org,
+ Daniel Axtens <dja@axtens.net>
+Subject: Re: powerpc: Remove broken GregorianDay()
+Message-Id: <20151217115734.A5AAB14030D@ozlabs.org>
+Date: Thu, 17 Dec 2015 22:57:34 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,26 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-22-10 at 01:03:08 UTC, Gavin Shan wrote:
-> The name of PCI root bus's M64 resource isn't initialized properly.
-> When dumping "/proc/iomem", "<BAD>" is seen for those M64 resources
-> on PCI root buses.
+On Tue, 2015-15-12 at 07:09:14 UTC, Daniel Axtens wrote:
+> GregorianDay() is supposed to calculate the day of the week
+> (tm->tm_wday) for a given day/month/year. In that calcuation it
+> indexed into an array called MonthOffset using tm->tm_mon-1. However
+> tm_mon is zero-based, not one-based, so this is off-by-one. It also
+> means that every January, GregoiranDay() will access element -1 of
+> the MonthOffset array.
 > 
->    ~# cat /proc/iomem | grep -e "BAD"
->    3b0000000000-3b0fefffffff : <BAD>
->    3b1000000000-3b1fefffffff : <BAD>
->    3c0000000000-3c0fefffffff : <BAD>
->    3c1000000000-3c1fefffffff : <BAD>
->    3c2000000000-3c2fefffffff : <BAD>
+> It also doesn't appear to be a correct algorithm either: see in
+> contrast kernel/time/timeconv.c's time_to_tm function.
 > 
-> This fixes the issue by setting the name of PCI root bus's M64
-> resource to that of PHB's device node full name. With the patch,
-> no "<BAD>" is seen from "/proc/iomem".
+> It's been broken forever, which suggests no-one in userland uses
+> this. It looks like no-one in the kernel uses tm->tm_wday either
+> (see e.g. drivers/rtc/rtc-ds1305.c:319).
 > 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> tm->tm_wday is conventionally set to -1 when not available in
+> hardware so we can simply set it to -1 and drop the function.
+> (There are over a dozen other drivers in drivers/rtc that do
+> this.)
+> 
+> Found using UBSAN.
+> 
+> Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org> # as an example of what UBSan finds.
+> Cc: Alessandro Zummo <a.zummo@towertech.it>
+> Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> Cc: rtc-linux@googlegroups.com
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> Acked-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/e80c4e7ca5aed7d2fa766191bc
+https://git.kernel.org/powerpc/c/00b912b0c88e690b1662067497
 
 cheers
