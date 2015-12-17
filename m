@@ -2,37 +2,37 @@ Return-Path: <warrier@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE7441A1684
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 07:59:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D76ED1A1684
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 07:59:34 +1100 (AEDT)
 Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 494781409A0
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2015 07:59:30 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 115441401CD
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2015 07:59:33 +1100 (AEDT)
 Received: from localhost
  by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
- Thu, 17 Dec 2015 13:59:28 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 555CE19D8040
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:47:29 -0700 (MST)
+ Thu, 17 Dec 2015 13:59:32 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 189F4C40001
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:47:41 -0700 (MST)
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBHKxOgZ25296926
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:24 -0700
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBHKxUB028049630
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:30 -0700
 Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
  by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBHKxOpY014557
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:24 -0700
+ tBHKxTd2014914
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:29 -0700
 From: Suresh Warrier <warrier@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
 Cc: warrier@linux.vnet.ibm.com, paulus@samba.org, agraf@suse.de,
  mpe@ellerman.id.au
-Subject: [PATCH v3 1/9] powerpc/smp: Support more IPI messages
-Date: Thu, 17 Dec 2015 14:59:03 -0600
-Message-Id: <1450385951-25128-2-git-send-email-warrier@linux.vnet.ibm.com>
+Subject: [PATCH v3 4/9] KVM: PPC: Book3S HV: Host-side RM data structures
+Date: Thu, 17 Dec 2015 14:59:06 -0600
+Message-Id: <1450385951-25128-5-git-send-email-warrier@linux.vnet.ibm.com>
 In-Reply-To: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
 References: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,68 +44,208 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch increases the number of demuxed messages for a
-controller with a single ipi to 8 for 64-bit systems
+This patch defines the data structures to support the setting up
+of host side operations while running in real mode in the guest,
+and also the functions to allocate and free it.
 
-This is required because we want to use the IPI mechanism
-to send messages from a CPU running in KVM real mode in a
-guest to a CPU in the host to take some action. Currently,
-we only support 4 messages and all 4 are already taken.
+The operations are for now limited to virtual XICS operations.
+Currently, we have only defined one operation in the data
+structure:
+         - Wake up a VCPU sleeping in the host when it
+           receives a virtual interrupt
 
-Define a fifth message PPC_MSG_RM_HOST_ACTION for this
-purpose.
+The operations are assigned at the core level because PowerKVM
+requires that the host run in SMT off mode. For each core,
+we will need to manage its state atomically - where the state
+is defined by:
+1. Is the core running in the host?
+2. Is there a Real Mode (RM) operation pending on the host?
+
+Currently, core state is only managed at the whole-core level
+even when the system is in split-core mode. This just limits
+the number of free or "available" cores in the host to perform
+any host-side operations.
+
+The kvmppc_host_rm_core.rm_data allows any data to be passed by
+KVM in real mode to the host core along with the operation to
+be performed.
+
+The kvmppc_host_rm_ops structure is allocated the very first time
+a guest VM is started. Initial core state is also set - all online
+cores are in the host. This structure is never deleted, not even
+when there are no active guests. However, it needs to be freed
+when the module is unloaded because the kvmppc_host_rm_ops_hv
+can contain function pointers to kvm-hv.ko functions for the
+different supported host operations.
 
 Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/smp.h | 3 +++
- arch/powerpc/kernel/smp.c      | 8 ++++----
- 2 files changed, 7 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h   | 31 ++++++++++++++++
+ arch/powerpc/kvm/book3s_hv.c         | 70 ++++++++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_builtin.c |  3 ++
+ 3 files changed, 104 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 825663c..9ef9c37 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -114,6 +114,9 @@ extern int cpu_to_core_id(int cpu);
- #define PPC_MSG_TICK_BROADCAST	2
- #define PPC_MSG_DEBUGGER_BREAK  3
- 
-+/* This is only used by the powernv kernel */
-+#define PPC_MSG_RM_HOST_ACTION	4
-+
- /* for irq controllers that have dedicated ipis per message (4) */
- extern int smp_request_message_ipi(int virq, int message);
- extern const char *smp_ipi_name[];
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index ec9ec20..a53a130 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -206,7 +206,7 @@ int smp_request_message_ipi(int virq, int msg)
- 
- #ifdef CONFIG_PPC_SMP_MUXED_IPI
- struct cpu_messages {
--	int messages;			/* current messages */
-+	long messages;			/* current messages */
- 	unsigned long data;		/* data for cause ipi */
- };
- static DEFINE_PER_CPU_SHARED_ALIGNED(struct cpu_messages, ipi_message);
-@@ -236,15 +236,15 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index c6ef05b..47cd441 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -437,6 +437,8 @@ static inline int kvmppc_xics_enabled(struct kvm_vcpu *vcpu)
+ {
+ 	return vcpu->arch.irq_type == KVMPPC_IRQ_XICS;
  }
- 
- #ifdef __BIG_ENDIAN__
--#define IPI_MESSAGE(A) (1 << (24 - 8 * (A)))
-+#define IPI_MESSAGE(A) (1uL << ((BITS_PER_LONG - 8) - 8 * (A)))
++extern void kvmppc_alloc_host_rm_ops(void);
++extern void kvmppc_free_host_rm_ops(void);
+ extern void kvmppc_xics_free_icp(struct kvm_vcpu *vcpu);
+ extern int kvmppc_xics_create_icp(struct kvm_vcpu *vcpu, unsigned long server);
+ extern int kvm_vm_ioctl_xics_irq(struct kvm *kvm, struct kvm_irq_level *args);
+@@ -446,6 +448,8 @@ extern int kvmppc_xics_set_icp(struct kvm_vcpu *vcpu, u64 icpval);
+ extern int kvmppc_xics_connect_vcpu(struct kvm_device *dev,
+ 			struct kvm_vcpu *vcpu, u32 cpu);
  #else
--#define IPI_MESSAGE(A) (1 << (8 * (A)))
-+#define IPI_MESSAGE(A) (1uL << (8 * (A)))
++static inline void kvmppc_alloc_host_rm_ops(void) {};
++static inline void kvmppc_free_host_rm_ops(void) {};
+ static inline int kvmppc_xics_enabled(struct kvm_vcpu *vcpu)
+ 	{ return 0; }
+ static inline void kvmppc_xics_free_icp(struct kvm_vcpu *vcpu) { }
+@@ -459,6 +463,33 @@ static inline int kvmppc_xics_hcall(struct kvm_vcpu *vcpu, u32 cmd)
+ 	{ return 0; }
  #endif
  
- irqreturn_t smp_ipi_demux(void)
++/*
++ * Host-side operations we want to set up while running in real
++ * mode in the guest operating on the xics.
++ * Currently only VCPU wakeup is supported.
++ */
++
++union kvmppc_rm_state {
++	unsigned long raw;
++	struct {
++		u32 in_host;
++		u32 rm_action;
++	};
++};
++
++struct kvmppc_host_rm_core {
++	union kvmppc_rm_state rm_state;
++	void *rm_data;
++	char pad[112];
++};
++
++struct kvmppc_host_rm_ops {
++	struct kvmppc_host_rm_core	*rm_core;
++	void		(*vcpu_kick)(struct kvm_vcpu *vcpu);
++};
++
++extern struct kvmppc_host_rm_ops *kvmppc_host_rm_ops_hv;
++
+ static inline unsigned long kvmppc_get_epr(struct kvm_vcpu *vcpu)
  {
- 	struct cpu_messages *info = this_cpu_ptr(&ipi_message);
--	unsigned int all;
-+	unsigned long all;
+ #ifdef CONFIG_KVM_BOOKE_HV
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 54b45b7..4042623 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -2967,6 +2967,73 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
+ 	goto out_srcu;
+ }
  
- 	mb();	/* order any irq clear */
++#ifdef CONFIG_KVM_XICS
++/*
++ * Allocate a per-core structure for managing state about which cores are
++ * running in the host versus the guest and for exchanging data between
++ * real mode KVM and CPU running in the host.
++ * This is only done for the first VM.
++ * The allocated structure stays even if all VMs have stopped.
++ * It is only freed when the kvm-hv module is unloaded.
++ * It's OK for this routine to fail, we just don't support host
++ * core operations like redirecting H_IPI wakeups.
++ */
++void kvmppc_alloc_host_rm_ops(void)
++{
++	struct kvmppc_host_rm_ops *ops;
++	unsigned long l_ops;
++	int cpu, core;
++	int size;
++
++	/* Not the first time here ? */
++	if (kvmppc_host_rm_ops_hv != NULL)
++		return;
++
++	ops = kzalloc(sizeof(struct kvmppc_host_rm_ops), GFP_KERNEL);
++	if (!ops)
++		return;
++
++	size = cpu_nr_cores() * sizeof(struct kvmppc_host_rm_core);
++	ops->rm_core = kzalloc(size, GFP_KERNEL);
++
++	if (!ops->rm_core) {
++		kfree(ops);
++		return;
++	}
++
++	for (cpu = 0; cpu < nr_cpu_ids; cpu += threads_per_core) {
++		if (!cpu_online(cpu))
++			continue;
++
++		core = cpu >> threads_shift;
++		ops->rm_core[core].rm_state.in_host = 1;
++	}
++
++	/*
++	 * Make the contents of the kvmppc_host_rm_ops structure visible
++	 * to other CPUs before we assign it to the global variable.
++	 * Do an atomic assignment (no locks used here), but if someone
++	 * beats us to it, just free our copy and return.
++	 */
++	smp_wmb();
++	l_ops = (unsigned long) ops;
++
++	if (cmpxchg64((unsigned long *)&kvmppc_host_rm_ops_hv, 0, l_ops)) {
++		kfree(ops->rm_core);
++		kfree(ops);
++	}
++}
++
++void kvmppc_free_host_rm_ops(void)
++{
++	if (kvmppc_host_rm_ops_hv) {
++		kfree(kvmppc_host_rm_ops_hv->rm_core);
++		kfree(kvmppc_host_rm_ops_hv);
++		kvmppc_host_rm_ops_hv = NULL;
++	}
++}
++#endif
++
+ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+ {
+ 	unsigned long lpcr, lpid;
+@@ -2979,6 +3046,8 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+ 		return -ENOMEM;
+ 	kvm->arch.lpid = lpid;
  
++	kvmppc_alloc_host_rm_ops();
++
+ 	/*
+ 	 * Since we don't flush the TLB when tearing down a VM,
+ 	 * and this lpid might have previously been used,
+@@ -3212,6 +3281,7 @@ static int kvmppc_book3s_init_hv(void)
+ 
+ static void kvmppc_book3s_exit_hv(void)
+ {
++	kvmppc_free_host_rm_ops();
+ 	kvmppc_hv_ops = NULL;
+ }
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
+index fd7006b..5f0380d 100644
+--- a/arch/powerpc/kvm/book3s_hv_builtin.c
++++ b/arch/powerpc/kvm/book3s_hv_builtin.c
+@@ -283,3 +283,6 @@ void kvmhv_commence_exit(int trap)
+ 			kvmhv_interrupt_vcore(vc, ee);
+ 	}
+ }
++
++struct kvmppc_host_rm_ops *kvmppc_host_rm_ops_hv;
++EXPORT_SYMBOL_GPL(kvmppc_host_rm_ops_hv);
 -- 
 1.8.3.4
