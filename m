@@ -1,16 +1,19 @@
 Return-Path: <alistair@popple.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406A61A106E
+ by lists.ozlabs.org (Postfix) with ESMTPS id 683AD1A106F
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 13:48:16 +1100 (AEDT)
 From: Alistair Popple <alistair@popple.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: mpe@ellerman.id.au, gwshan@linux.vnet.ibm.com,
  Alistair Popple <alistair@popple.id.au>
-Subject: [PATCH v3 0/3] Add support for NVLink
-Date: Thu, 17 Dec 2015 13:43:10 +1100
-Message-Id: <1450320193-20116-1-git-send-email-alistair@popple.id.au>
+Subject: [PATCH v3 1/3] Revert "powerpc/pci: Remove unused struct
+ pci_dn.pcidev field"
+Date: Thu, 17 Dec 2015 13:43:11 +1100
+Message-Id: <1450320193-20116-2-git-send-email-alistair@popple.id.au>
+In-Reply-To: <1450320193-20116-1-git-send-email-alistair@popple.id.au>
+References: <1450320193-20116-1-git-send-email-alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,31 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series adds support for NVLink, a high speed interconnect that is
-used in conjunction with PCI-E to create a high bandwidth interface
-between GPU and CPU.
+This commit removed the pcidev field from struct pci_dn as it was no
+longer in use by the kernel. However to support finding the
+association of Nvlink devices to GPU devices from the device-tree this
+field is required.
 
-As the NVLink hardware interface is similar to IBM's existing PCIe
-host bridges no major new kernel or user interfaces are added by this
-patch series. Instead the links are treated as standard PCIe devices
-sitting under a NVLink specific PHB type. This allows existing kernel
-interfaces to be used for the management and control of the links.
+This reverts commit 250c7b277c65 ("powerpc/pci: Remove unused struct
+pci_dn.pcidev field").
 
-Alistair Popple (3):
-  Revert "powerpc/pci: Remove unused struct pci_dn.pcidev field"
-  powerpc: Add __raw_rm_writeq() function
-  platforms/powernv: Add support for Nvlink NPUs
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+---
+ arch/powerpc/include/asm/pci-bridge.h     | 1 +
+ arch/powerpc/platforms/powernv/pci-ioda.c | 1 +
+ 2 files changed, 2 insertions(+)
 
- arch/powerpc/include/asm/io.h             |  11 +
- arch/powerpc/include/asm/pci-bridge.h     |   1 +
- arch/powerpc/include/asm/pci.h            |   4 +
- arch/powerpc/platforms/powernv/Makefile   |   2 +-
- arch/powerpc/platforms/powernv/npu-dma.c  | 348 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/pci-ioda.c | 149 +++++++++++--
- arch/powerpc/platforms/powernv/pci.c      |   4 +
- arch/powerpc/platforms/powernv/pci.h      |  19 ++
- 8 files changed, 515 insertions(+), 23 deletions(-)
- create mode 100644 arch/powerpc/platforms/powernv/npu-dma.c
-
---
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 37fc535..54843ca 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -205,6 +205,7 @@ struct pci_dn {
+ 
+ 	int	pci_ext_config_space;	/* for pci devices */
+ 
++	struct	pci_dev *pcidev;	/* back-pointer to the pci device */
+ #ifdef CONFIG_EEH
+ 	struct eeh_dev *edev;		/* eeh device */
+ #endif
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 414fd1a..42b4bb2 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1007,6 +1007,7 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
+ 				pci_name(dev));
+ 			continue;
+ 		}
++		pdn->pcidev = dev;
+ 		pdn->pe_number = pe->pe_number;
+ 		pe->dma_weight += pnv_ioda_dma_weight(dev);
+ 		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
+-- 
 2.1.4
