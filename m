@@ -1,24 +1,21 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 574351A1262
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 19:41:23 +1100 (AEDT)
-Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
- [IPv6:2607:f8b0:400e:c00::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 659FF1402EC
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 19:41:22 +1100 (AEDT)
-Received: by mail-pf0-x230.google.com with SMTP id 68so27121611pfc.1
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 00:41:22 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au,
-	Daniel Axtens <dja@axtens.net>
-Subject: [PATCH] powerpc: add va_end()
-Date: Thu, 17 Dec 2015 19:41:00 +1100
-Message-Id: <1450341660-31305-1-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 371851A1262
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 19:46:17 +1100 (AEDT)
+Date: Thu, 17 Dec 2015 16:45:55 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Haren Myneni <haren@linux.vnet.ibm.com>
+Cc: segher@kernel.crashing.org, ddstreet@ieee.org, davem@davemloft.net,
+ pair@us.ibm.com, mpe@ellerman.id.au, linux-crypto@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] crypto/nx842: Mask XERS0 bit in return value
+Message-ID: <20151217084555.GA9239@gondor.apana.org.au>
+References: <1450006242.19568.11.camel@hbabu-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1450006242.19568.11.camel@hbabu-laptop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-cppcheck picked up that there were a couple of missing va_end()
-calls in functions using va_start().
+On Sun, Dec 13, 2015 at 03:30:41AM -0800, Haren Myneni wrote:
+> 
+> NX842 coprocessor sets 3rd bit in CR register with XER[S0] which is
+> nothing to do with NX request. Since this bit can be set with other
+> valuable return status, mast this bit.
+> 
+> One of other bits (INITIATED, BUSY or REJECTED) will be returned for
+> any given NX request.
+> 
+> Signed-off-by: Haren Myneni <haren@us.ibm.com>
 
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- arch/powerpc/kernel/prom_init.c              | 1 +
- arch/powerpc/platforms/powermac/bootx_init.c | 1 +
- 2 files changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 92dea8df6b26..da5192590c44 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -389,6 +389,7 @@ static void __init prom_printf(const char *format, ...)
- 			break;
- 		}
- 	}
-+	va_end(args);
- }
- 
- 
-diff --git a/arch/powerpc/platforms/powermac/bootx_init.c b/arch/powerpc/platforms/powermac/bootx_init.c
-index 76f5013c35e5..c3c9bbb3573a 100644
---- a/arch/powerpc/platforms/powermac/bootx_init.c
-+++ b/arch/powerpc/platforms/powermac/bootx_init.c
-@@ -84,6 +84,7 @@ static void __init bootx_printf(const char *format, ...)
- 			break;
- 		}
- 	}
-+	va_end(args);
- }
- #else /* CONFIG_BOOTX_TEXT */
- static void __init bootx_printf(const char *format, ...) {}
+Patch applied.  Thanks.
 -- 
-2.6.2
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
