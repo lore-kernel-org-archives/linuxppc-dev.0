@@ -2,37 +2,38 @@ Return-Path: <warrier@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 548141A1735
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 07:59:36 +1100 (AEDT)
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 26A531A1A0D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 07:59:37 +1100 (AEDT)
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8B3CD1409A0
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2015 07:59:35 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 646D3140BA4
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2015 07:59:36 +1100 (AEDT)
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
- Thu, 17 Dec 2015 13:59:33 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C51BE3E40030
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:29 -0700 (MST)
+ Thu, 17 Dec 2015 13:59:34 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C432A3E4003F
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:32 -0700 (MST)
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBHKxTgT27328588
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:29 -0700
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBHKxW6R25428118
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:32 -0700
 Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
  by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBHKxRLB014763
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:29 -0700
+ tBHKxWCV015269
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:32 -0700
 From: Suresh Warrier <warrier@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
 Cc: warrier@linux.vnet.ibm.com, paulus@samba.org, agraf@suse.de,
  mpe@ellerman.id.au
-Subject: [PATCH v3 3/9] powerpc/xics: Add icp_native_cause_ipi_rm
-Date: Thu, 17 Dec 2015 14:59:05 -0600
-Message-Id: <1450385951-25128-4-git-send-email-warrier@linux.vnet.ibm.com>
+Subject: [PATCH v3 6/9] KVM: PPC: Book3S HV: kvmppc_host_rm_ops - handle
+ offlining CPUs
+Date: Thu, 17 Dec 2015 14:59:08 -0600
+Message-Id: <1450385951-25128-7-git-send-email-warrier@linux.vnet.ibm.com>
 In-Reply-To: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
 References: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,67 +45,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Function to cause an IPI by directly updating the MFFR register
-in the XICS. The function is meant for real-mode callers since
-they cannot use the smp_ops->cause_ipi function which uses an
-ioremapped address.
-
-Normal usage is for the the KVM real mode code to set the IPI message
-using smp_muxed_ipi_message_pass and then invoke icp_native_cause_ipi_rm
-to cause the actual IPI.
-
-The function requires kvm_hstate.xics_phys to have been initialized
-with the physical address of XICS.
+The kvmppc_host_rm_ops structure keeps track of which cores are
+are in the host by maintaining a bitmask of active/runnable
+online CPUs that have not entered the guest. This patch adds
+support to manage the bitmask when a CPU is offlined or onlined
+in the host.
 
 Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/xics.h       |  1 +
- arch/powerpc/sysdev/xics/icp-native.c | 21 +++++++++++++++++++++
- 2 files changed, 22 insertions(+)
+ arch/powerpc/kvm/book3s_hv.c | 39 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/xics.h b/arch/powerpc/include/asm/xics.h
-index 0e25bdb..2546048 100644
---- a/arch/powerpc/include/asm/xics.h
-+++ b/arch/powerpc/include/asm/xics.h
-@@ -30,6 +30,7 @@
- #ifdef CONFIG_PPC_ICP_NATIVE
- extern int icp_native_init(void);
- extern void icp_native_flush_interrupt(void);
-+extern void icp_native_cause_ipi_rm(int cpu);
- #else
- static inline int icp_native_init(void) { return -ENODEV; }
- #endif
-diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
-index eae3265..afdf62f 100644
---- a/arch/powerpc/sysdev/xics/icp-native.c
-+++ b/arch/powerpc/sysdev/xics/icp-native.c
-@@ -159,6 +159,27 @@ static void icp_native_cause_ipi(int cpu, unsigned long data)
- 	icp_native_set_qirr(cpu, IPI_PRIORITY);
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 95a2ed3..da2cc56 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -3012,6 +3012,36 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
  }
  
-+#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+void icp_native_cause_ipi_rm(int cpu)
+ #ifdef CONFIG_KVM_XICS
++static int kvmppc_cpu_notify(struct notifier_block *self, unsigned long action,
++			void *hcpu)
 +{
-+	/*
-+	 * Currently not used to send IPIs to another CPU
-+	 * on the same core. Only caller is KVM real mode.
-+	 * Need the physical address of the XICS to be
-+	 * previously saved in kvm_hstate in the paca.
-+	 */
-+	unsigned long xics_phys;
++	unsigned long cpu = (long)hcpu;
 +
-+	/*
-+	 * Just like the cause_ipi functions, it is required to
-+	 * include a full barrier (out8 includes a sync) before
-+	 * causing the IPI.
-+	 */
-+	xics_phys = paca[cpu].kvm_hstate.xics_phys;
-+	out_rm8((u8 *)(xics_phys + XICS_MFRR), IPI_PRIORITY);
-+}
++	switch (action) {
++	case CPU_UP_PREPARE:
++	case CPU_UP_PREPARE_FROZEN:
++		kvmppc_set_host_core(cpu);
++		break;
++
++#ifdef CONFIG_HOTPLUG_CPU
++	case CPU_DEAD:
++	case CPU_DEAD_FROZEN:
++	case CPU_UP_CANCELED:
++	case CPU_UP_CANCELED_FROZEN:
++		kvmppc_clear_host_core(cpu);
++		break;
 +#endif
++	default:
++		break;
++	}
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block kvmppc_cpu_notifier = {
++	    .notifier_call = kvmppc_cpu_notify,
++};
 +
  /*
-  * Called when an interrupt is received on an off-line CPU to
-  * clear the interrupt, so that the CPU can go back to nap mode.
+  * Allocate a per-core structure for managing state about which cores are
+  * running in the host versus the guest and for exchanging data between
+@@ -3045,6 +3075,8 @@ void kvmppc_alloc_host_rm_ops(void)
+ 		return;
+ 	}
+ 
++	get_online_cpus();
++
+ 	for (cpu = 0; cpu < nr_cpu_ids; cpu += threads_per_core) {
+ 		if (!cpu_online(cpu))
+ 			continue;
+@@ -3063,14 +3095,21 @@ void kvmppc_alloc_host_rm_ops(void)
+ 	l_ops = (unsigned long) ops;
+ 
+ 	if (cmpxchg64((unsigned long *)&kvmppc_host_rm_ops_hv, 0, l_ops)) {
++		put_online_cpus();
+ 		kfree(ops->rm_core);
+ 		kfree(ops);
++		return;
+ 	}
++
++	register_cpu_notifier(&kvmppc_cpu_notifier);
++
++	put_online_cpus();
+ }
+ 
+ void kvmppc_free_host_rm_ops(void)
+ {
+ 	if (kvmppc_host_rm_ops_hv) {
++		unregister_cpu_notifier(&kvmppc_cpu_notifier);
+ 		kfree(kvmppc_host_rm_ops_hv->rm_core);
+ 		kfree(kvmppc_host_rm_ops_hv);
+ 		kvmppc_host_rm_ops_hv = NULL;
 -- 
 1.8.3.4
