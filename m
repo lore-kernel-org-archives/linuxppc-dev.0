@@ -1,30 +1,18 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.184])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 986031A127D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 21:09:30 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Alex Williamson' <alex.williamson@redhat.com>, Yongji Xie
- <xyjxie@linux.vnet.ibm.com>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-CC: "nikunj@linux.vnet.ibm.com" <nikunj@linux.vnet.ibm.com>,
- "zhong@linux.vnet.ibm.com" <zhong@linux.vnet.ibm.com>, "aik@ozlabs.ru"
- <aik@ozlabs.ru>, "paulus@samba.org" <paulus@samba.org>,
- "warrier@linux.vnet.ibm.com" <warrier@linux.vnet.ibm.com>
-Subject: RE: [RFC PATCH 3/3] vfio-pci: Allow to mmap MSI-X table if EEH is
- supported
-Date: Thu, 17 Dec 2015 10:08:04 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CBEF1BC@AcuExch.aculab.com>
-References: <1449823994-3356-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1449823994-3356-4-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1450296869.2674.62.camel@redhat.com>
-In-Reply-To: <1450296869.2674.62.camel@redhat.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C7321A119C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 21:19:12 +1100 (AEDT)
+In-Reply-To: <1450263209-11217-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Arnd Bergmann <arnd@arndb.de>, tuliom@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, murphyp@linux.vnet.ibm.com,
+ schwab@linux-m68k.org, sam.bobroff@au1.ibm.com
+Subject: Re: Partial revert of "powerpc: Individual System V IPC system calls"
+Message-Id: <20151217101912.1BF371402C9@ozlabs.org>
+Date: Thu, 17 Dec 2015 21:19:12 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiBUaGUgTVNJLVggdGFibGUgaXMgcGFyYXZpcnR1YWxpemVkIG9uIHZmaW8gaW4gZ2VuZXJhbCBh
-bmQgaW50ZXJydXB0DQo+IHJlbWFwcGluZyB0aGVvcmV0aWNhbGx5IHByb3RlY3RzIGFnYWluc3Qg
-ZXJyYW50IGludGVycnVwdHMsIHNvIHdoeSBpcw0KPiB0aGlzIFBQQzY0IHNwZWNpZmljPyBXZSBo
-YXZlIHRoZSBzYW1lIHNhZmVndWFyZHMgb24geDg2IGlmIHdlIHdhbnQgdG8NCj4gZGVjaWRlIHRo
-ZXkncmUgc3VmZmljaWVudC4gT2ZmaGFuZCwgdGhlIG9ubHkgd2F5IEkgY2FuIHRoaW5rIHRoYXQg
-YQ0KPiBkZXZpY2UgY2FuIHRvdWNoIHRoZSBNU0ktWCB0YWJsZSBpcyB2aWEgYmFja2Rvb3JzIG9y
-IHAycCBETUEgd2l0aA0KPiBhbm90aGVyIGRldmljZS4NCg0KSXMgdGhpcyBhbGwgcmVsYXRlZCB0
-byB0aGUgc3RhdGVtZW50cyBpbiB0aGUgUENJKGUpIHNwZWMgdGhhdCB0aGUNCk1TSS1YIHRhYmxl
-IGFuZCBQZW5kaW5nIGJpdCBhcnJheSBzaG91bGQgaW4gdGhlaXIgb3duIEJBUnM/DQooSVNUUiBp
-dCBldmVuIHN1Z2dlc3RzIGEgQkFSIGVhY2guKQ0KDQpTaW5jZSB0aGUgTVNJLVggdGFibGUgZXhp
-c3RzIGluIGRldmljZSBtZW1vcnkvcmVnaXN0ZXJzIHRoZXJlIGlzDQpub3RoaW5nIHRvIHN0b3Ag
-dGhlIGRldmljZSBtb2RpZnlpbmcgdGhlIHRhYmxlIGNvbnRlbnRzIChvciBldmVuDQppZ25vcmlu
-ZyB0aGUgY29udGVudHMgYW5kIHdyaXRpbmcgYWRkcmVzcytkYXRhIHBhaXJzIHRoYXQgYXJlIGtu
-b3duDQp0byByZWZlcmVuY2UgdGhlIENQVXMgTVNJLVggaW50ZXJydXB0IGdlbmVyYXRpb24gbG9n
-aWMpLg0KDQpXZSd2ZSBhbiBmcGdhIGJhc2VkIFBDSWUgc2xhdmUgdGhhdCBoYXMgc29tZSBhZGRp
-dGlvbmFsIFBDSWUgc2xhdmVzDQooYXNzb2NpYXRlZCB3aXRoIHRoZSBpbnRlcnJ1cHQgZ2VuZXJh
-dGlvbiBsb2dpYykgdGhhdCBhcmUgY3VycmVudGx5DQpuZXh0IHRvIHRoZSBQQkEgKHdoaWNoIGlz
-IDhrIGZyb20gdGhlIE1TSS1YIHRhYmxlKS4NCklmIHdlIGNhbid0IG1hcCB0aGUgUEJBIHdlIGNh
-bid0IGFjdHVhbGx5IHJhaXNlIGFueSBpbnRlcnJ1cHRzLg0KVGhlIHNhbWUgd291bGQgYmUgdHJ1
-ZSBpZiBwYWdlIHNpemUgaXMgNjRrIGFuZCBtYXBwaW5nIHRoZSBNU0ktWA0KdGFibGUgYmFubmVk
-Lg0KDQpEbyB3ZSBuZWVkIHRvIGNoYW5nZSBvdXIgUENJZSBzbGF2ZSBhZGRyZXNzIG1hcCBzbyB3
-ZSBkb24ndCBuZWVkDQp0byBhY2Nlc3MgYW55dGhpbmcgaW4gdGhlIHNhbWUgcGFnZSAod2hpY2gg
-bWlnaHQgYmUgNjRrIHdlcmUgd2UgdG8NCnRhcmdldCBsYXJnZSBwcGMgLSB3aGljaCB3ZSBkb24n
-dCBhdCB0aGUgbW9tZW50KSBhcyBib3RoIHRoZQ0KTVNJLVggdGFibGUgYW5kIHRoZSBQQkE/DQoN
-CkknZCBhbHNvIG5vdGUgdGhhdCBiZWluZyBhYmxlIHRvIHJlYWQgdGhlIE1TSS1YIHRhYmxlIGlz
-IGEgdXNlZnVsDQpkaWFnbm9zdGljIHRoYXQgdGhlIHJlbGV2YW50IGludGVycnVwdHMgYXJlIGVu
-YWJsZWQgcHJvcGVybHkuDQoNCglEYXZpZA0KDQo=
+On Wed, 2015-16-12 at 10:53:29 UTC, Michael Ellerman wrote:
+> This partially reverts commit a34236155afb1cc41945e58388ac988431bcb0b8.
+> 
+> While reviewing the glibc patch to exploit the individual IPC calls,
+> Arnd & Andreas noticed that we were still requiring userspace to pass
+> IPC_64 in order to get the new style IPC API.
+> 
+> With a bit of cleanup in the kernel we can drop that requirement, and
+> instead only provide the new style API, which will simplify things for
+> userspace.
+> 
+> Rather than try and sneak that patch into 4.4, instead we will drop the
+> individual IPC calls for powerpc, and merge them again in 4.5 once the
+> cleanup patch has gone in.
+> 
+> Because we've already added sys_mlock2() as syscall #378, we don't do a
+> full revert of the IPC calls. Instead we drop the __NR #defines, and
+> send those now undefined syscall numbers to sys_ni_syscall(). This
+> leaves a gap in the syscall numbers, but we'll reuse them when we merge
+> the individual IPC calls.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
+
+Applied to powerpc fixes.
+
+https://git.kernel.org/powerpc/c/2475c362134a0fa5309c7b0f
+
+cheers
