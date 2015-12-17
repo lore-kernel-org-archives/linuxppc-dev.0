@@ -2,11 +2,11 @@ Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 077811A1AC1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 08:41:43 +1100 (AEDT)
-Message-ID: <1450388499.2674.153.camel@redhat.com>
-Subject: Re: [RFC PATCH 3/3] vfio-pci: Allow to mmap MSI-X table if EEH is
- supported
+ by lists.ozlabs.org (Postfix) with ESMTPS id 68BAC1A1AC9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 08:46:47 +1100 (AEDT)
+Message-ID: <1450388804.2674.158.camel@redhat.com>
+Subject: Re: [RFC PATCH 2/3] vfio-pci: Allow to mmap sub-page MMIO BARs if
+ all MMIO BARs are page aligned
 From: Alex Williamson <alex.williamson@redhat.com>
 To: yongji xie <xyjxie@linux.vnet.ibm.com>, kvm@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
@@ -14,11 +14,11 @@ To: yongji xie <xyjxie@linux.vnet.ibm.com>, kvm@vger.kernel.org,
 Cc: aik@ozlabs.ru, benh@kernel.crashing.org, paulus@samba.org,
  mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
  zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com
-Date: Thu, 17 Dec 2015 14:41:39 -0700
-In-Reply-To: <5672906C.5010708@linux.vnet.ibm.com>
+Date: Thu, 17 Dec 2015 14:46:44 -0700
+In-Reply-To: <56728DC8.20803@linux.vnet.ibm.com>
 References: <1449823994-3356-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1449823994-3356-4-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1450296869.2674.62.camel@redhat.com> <5672906C.5010708@linux.vnet.ibm.com>
+ <1449823994-3356-3-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1450296276.2674.55.camel@redhat.com> <56728DC8.20803@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,60 +30,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-12-17 at 18:37 +0800, yongji xie wrote:
+On Thu, 2015-12-17 at 18:26 +0800, yongji xie wrote:
 > 
-> On 2015/12/17 4:14, Alex Williamson wrote:
+> On 2015/12/17 4:04, Alex Williamson wrote:
 > > On Fri, 2015-12-11 at 16:53 +0800, Yongji Xie wrote:
-> > > Current vfio-pci implementation disallows to mmap MSI-X table in
-> > > case that user get to touch this directly.
+> > > Current vfio-pci implementation disallows to mmap
+> > > sub-page(size < PAGE_SIZE) MMIO BARs because these BARs' mmio
+> > > page
+> > > may be shared with other BARs.
 > > > 
-> > > However, EEH mechanism could ensure that a given pci device
-> > > can only shoot the MSIs assigned for its PE and guest kernel also
-> > > would not write to MSI-X table in pci_enable_msix() because
-> > > para-virtualization on PPC64 platform. So MSI-X table is safe to
-> > > access directly from the guest with EEH mechanism enabled.
-> > The MSI-X table is paravirtualized on vfio in general and interrupt
-> > remapping theoretically protects against errant interrupts, so why
-> > is
-> > this PPC64 specific?  We have the same safeguards on x86 if we want
-> > to
-> > decide they're sufficient.  Offhand, the only way I can think that
-> > a
-> > device can touch the MSI-X table is via backdoors or p2p DMA with
-> > another device.
-> Maybe I didn't make my point clear. The reasons why we can mmap MSI-X
-> table on PPC64 are：
+> > > But we should allow to mmap these sub-page MMIO BARs if all MMIO
+> > > BARs
+> > > are page aligned which leads the BARs' mmio page would not be
+> > > shared
+> > > with other BARs.
+> > > 
+> > > This patch adds support for this case and we also add a
+> > > VFIO_DEVICE_FLAGS_PCI_PAGE_ALIGNED flag to notify userspace that
+> > > platform supports all MMIO BARs to be page aligned.
+> > > 
+> > > Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+> > > ---
+> > >   drivers/vfio/pci/vfio_pci.c         |   10 +++++++++-
+> > >   drivers/vfio/pci/vfio_pci_private.h |    5 +++++
+> > >   include/uapi/linux/vfio.h           |    2 ++
+> > >   3 files changed, 16 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/vfio/pci/vfio_pci.c
+> > > b/drivers/vfio/pci/vfio_pci.c
+> > > index 32b88bd..dbcad99 100644
+> > > --- a/drivers/vfio/pci/vfio_pci.c
+> > > +++ b/drivers/vfio/pci/vfio_pci.c
+> > > @@ -443,6 +443,9 @@ static long vfio_pci_ioctl(void *device_data,
+> > >   		if (vdev->reset_works)
+> > >   			info.flags |= VFIO_DEVICE_FLAGS_RESET;
+> > >   
+> > > +		if (vfio_pci_bar_page_aligned())
+> > > +			info.flags |=
+> > > VFIO_DEVICE_FLAGS_PCI_PAGE_ALIGNED;
+> > > +
+> > >   		info.num_regions = VFIO_PCI_NUM_REGIONS;
+> > >   		info.num_irqs = VFIO_PCI_NUM_IRQS;
+> > >   
+> > > @@ -479,7 +482,8 @@ static long vfio_pci_ioctl(void *device_data,
+> > >   				     VFIO_REGION_INFO_FLAG_WRIT
+> > > E;
+> > >   			if (IS_ENABLED(CONFIG_VFIO_PCI_MMAP) &&
+> > >   			    pci_resource_flags(pdev,
+> > > info.index) &
+> > > -			    IORESOURCE_MEM && info.size >=
+> > > PAGE_SIZE)
+> > > +			    IORESOURCE_MEM && (info.size >=
+> > > PAGE_SIZE ||
+> > > +			    vfio_pci_bar_page_aligned()))
+> > >   				info.flags |=
+> > > VFIO_REGION_INFO_FLAG_MMAP;
+> > >   			break;
+> > >   		case VFIO_PCI_ROM_REGION_INDEX:
+> > > @@ -855,6 +859,10 @@ static int vfio_pci_mmap(void *device_data,
+> > > struct vm_area_struct *vma)
+> > >   		return -EINVAL;
+> > >   
+> > >   	phys_len = pci_resource_len(pdev, index);
+> > > +
+> > > +	if (vfio_pci_bar_page_aligned())
+> > > +		phys_len = PAGE_ALIGN(phys_len);
+> > > +
+> > >   	req_len = vma->vm_end - vma->vm_start;
+> > >   	pgoff = vma->vm_pgoff &
+> > >   		((1U << (VFIO_PCI_OFFSET_SHIFT - PAGE_SHIFT)) -
+> > > 1);
+> > > diff --git a/drivers/vfio/pci/vfio_pci_private.h
+> > > b/drivers/vfio/pci/vfio_pci_private.h
+> > > index 0e7394f..319352a 100644
+> > > --- a/drivers/vfio/pci/vfio_pci_private.h
+> > > +++ b/drivers/vfio/pci/vfio_pci_private.h
+> > > @@ -69,6 +69,11 @@ struct vfio_pci_device {
+> > >   #define is_irq_none(vdev) (!(is_intx(vdev) || is_msi(vdev) ||
+> > > is_msix(vdev)))
+> > >   #define irq_is(vdev, type) (vdev->irq_type == type)
+> > >   
+> > > +static inline bool vfio_pci_bar_page_aligned(void)
+> > > +{
+> > > +	return IS_ENABLED(CONFIG_PPC64);
+> > > +}
+> > I really dislike this.  This is a problem for any architecture that
+> > runs on larger pages, and even an annoyance on 4k hosts.  Why are
+> > we
+> > only solving it for PPC64?
+> Yes, I know it's a problem for other architectures. But I'm not sure
+> if 
+> other archs prefer
+> to enforce the alignment of all BARs to be at least PAGE_SIZE which 
+> would result in
+> some waste of address space.
 > 
-> 1. EEH mechanism could ensure that a given pci device can only shoot
-> the MSIs assigned for its PE. So it would not do harm to other memory
-> space when the guest write a garbage MSI-X address/data to the vector
-> table
-> if we passthough MSI-X tables to guest.
+> So I just propose a prototype and add PPC64 support here. And other 
+> archs could decide
+> to use it or not by themselves.
+> > Can't we do something similar in the core PCI code and detect it?
+> So you mean we can do it like this:
+> 
+> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> index d390fc1..f46c04d 100644
+> --- a/drivers/pci/pci.h
+> +++ b/drivers/pci/pci.h
+> @@ -320,6 +320,11 @@ static inline resource_size_t 
+> pci_resource_alignment(struct pci_dev *dev,
+>          return resource_alignment(res);
+>   }
+> 
+> +static inline bool pci_bar_page_aligned(void)
+> +{
+> +       return IS_ENABLED(CONFIG_PPC64);
+> +}
+> +
+>   void pci_enable_acs(struct pci_dev *dev);
+> 
+>   struct pci_dev_reset_methods {
+> 
+> or add a config option to indicate that PCI MMIO BARs should be page 
+> aligned? 
 
-Interrupt remapping does the same on x86.
-
-> 2. The guest kernel would not write to MSI-X table on PPC64 platform
-> when device drivers call pci_enable_msix() to initialize MSI-X
-> interrupts.
-
-This is irrelevant to the vfio API.  vfio is a userspace driver
-interface, QEMU is just one possible consumer of the interface.  Even
-in the case of PPC64 & QEMU, the guest is still capable of writing to
-the vector table, it just probably won't.
-
-> So I think it is safe to mmap/passthrough MSI-X table on PPC64
-> platform.
-> And I'm not sure whether other architectures can ensure these two 
-> points. 
-
-There is another consideration, which is the API exposed to the user.
- vfio currently enforces interrupt setup through ioctls by making the
-PCI mechanisms for interrupt programming inaccessible through the
-device regions.  Ignoring that you are only focused on PPC64 with QEMU,
-does it make sense for the vfio API to allow a user to manipulate
-interrupt programming in a way that not only will not work, but in a
-way that we expect to fail and require error isolation to recover from?
- I can't say I'm fully convinced that a footnote in the documentation
-is sufficient for that.  Thanks,
+Yes, I'm thinking of a boot commandline option, maybe one that PPC64
+can default to enabled if it chooses to.  The problem is not unique to
+PPC64 and the solution should not be unique either.  I don't want to
+need to revisit this for ARM, which we know is going to be similarly
+afflicted.  Thanks,
 
 Alex
