@@ -2,16 +2,17 @@ Return-Path: <wangnan0@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 132171A119C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 12:44:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3DC741A1628
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 12:44:28 +1100 (AEDT)
 From: Wang Nan <wangnan0@huawei.com>
 To: <acme@kernel.org>, <naveen.n.rao@linux.vnet.ibm.com>, <jolsa@redhat.com>
 CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <wangnan0@huawei.com>, <sukadev@linux.vnet.ibm.com>
-Subject: [RESEND PATCH v4 0/3] perf build: PowerPC: Fix build breakage due to
- libbpf
-Date: Thu, 17 Dec 2015 01:43:49 +0000
-Message-ID: <1450316632-152513-1-git-send-email-wangnan0@huawei.com>
+Subject: [RESEND PATCH v4 3/3] perf: bpf: Fix build breakage due to libbpf
+Date: Thu, 17 Dec 2015 01:43:52 +0000
+Message-ID: <1450316632-152513-4-git-send-email-wangnan0@huawei.com>
+In-Reply-To: <1450316632-152513-1-git-send-email-wangnan0@huawei.com>
+References: <1450316632-152513-1-git-send-email-wangnan0@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,36 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix PowerPC build breakage found by Naveen.
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 
-Perf building should not be blocked if BPF syscall is broken in some
-platform.
+perf build is currently (v4.4-rc5) broken on powerpc:
 
-In v3 a problem in 3/3 is found and fixed, but I only sent v4 of 3/3.
-Send all 3 patches together again.
+bpf.c:28:4: error: #error __NR_bpf not defined. libbpf does not support
+your arch.
+ #  error __NR_bpf not defined. libbpf does not support your arch.
+    ^
 
+Fix this by including tools/scripts/Makefile.arch for the proper
+$ARCH macro. While at it, remove redundant LP64 macro definition.
+
+Also, since libbpf require $(srctree) now, detect the path of
+srctree like perf.
+
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Signed-off-by: Wang Nan <wangnan0@huawei.com>
+[Use tools/scripts/Makefile.arch]
+Acked-by: Jiri Olsa <jolsa@kernel.org>
 Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Jiri Olsa <jolsa@redhat.com>
-Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ tools/lib/bpf/Makefile | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-Naveen N. Rao (1):
-  perf: bpf: Fix build breakage due to libbpf
-
-Wang Nan (2):
-  perf tools: Fix PowerPC native building
-  tools: Move Makefile.arch from perf/config to tools/scripts
-
- tools/build/feature/test-bpf.c  | 20 +++++++++++++++++++-
- tools/lib/bpf/Makefile          |  9 ++++++++-
- tools/lib/bpf/bpf.c             |  4 ++--
- tools/perf/config/Makefile      |  2 +-
- tools/perf/config/Makefile.arch | 18 ------------------
- tools/perf/tests/make           |  2 +-
- tools/scripts/Makefile.arch     | 18 ++++++++++++++++++
- 7 files changed, 49 insertions(+), 24 deletions(-)
- delete mode 100644 tools/perf/config/Makefile.arch
- create mode 100644 tools/scripts/Makefile.arch
-
+diff --git a/tools/lib/bpf/Makefile b/tools/lib/bpf/Makefile
+index 636e3dd..0b6e013 100644
+--- a/tools/lib/bpf/Makefile
++++ b/tools/lib/bpf/Makefile
+@@ -6,6 +6,12 @@ BPF_EXTRAVERSION = 1
+ 
+ MAKEFLAGS += --no-print-directory
+ 
++ifeq ($(srctree),)
++srctree := $(patsubst %/,%,$(dir $(shell pwd)))
++srctree := $(patsubst %/,%,$(dir $(srctree)))
++srctree := $(patsubst %/,%,$(dir $(srctree)))
++#$(info Determined 'srctree' to be $(srctree))
++endif
+ 
+ # Makefiles suck: This macro sets a default value of $(2) for the
+ # variable named by $(1), unless the variable has been set by
+@@ -31,7 +37,8 @@ INSTALL = install
+ DESTDIR ?=
+ DESTDIR_SQ = '$(subst ','\'',$(DESTDIR))'
+ 
+-LP64 := $(shell echo __LP64__ | ${CC} ${CFLAGS} -E -x c - | tail -n 1)
++include $(srctree)/tools/scripts/Makefile.arch
++
+ ifeq ($(LP64), 1)
+   libdir_relative = lib64
+ else
 -- 
 1.8.3.4
