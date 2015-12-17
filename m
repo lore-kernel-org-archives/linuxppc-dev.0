@@ -1,23 +1,24 @@
-Return-Path: <wangnan0@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [58.251.152.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AC9301A11B7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 17:02:40 +1100 (AEDT)
-Message-ID: <56724FD7.8050804@huawei.com>
-Date: Thu, 17 Dec 2015 14:01:59 +0800
-From: "Wangnan (F)" <wangnan0@huawei.com>
-MIME-Version: 1.0
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-CC: <acme@kernel.org>, <jolsa@redhat.com>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <sukadev@linux.vnet.ibm.com>
-Subject: Re: [RESEND PATCH v4 2/3] tools: Move Makefile.arch from perf/config
- to tools/scripts
-References: <1450316632-152513-1-git-send-email-wangnan0@huawei.com>
- <1450316632-152513-3-git-send-email-wangnan0@huawei.com>
- <20151217051028.GC21524@naverao1-tp.ibm.com>
-In-Reply-To: <20151217051028.GC21524@naverao1-tp.ibm.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 574351A1262
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 19:41:23 +1100 (AEDT)
+Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
+ [IPv6:2607:f8b0:400e:c00::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 659FF1402EC
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 19:41:22 +1100 (AEDT)
+Received: by mail-pf0-x230.google.com with SMTP id 68so27121611pfc.1
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 00:41:22 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au,
+	Daniel Axtens <dja@axtens.net>
+Subject: [PATCH] powerpc: add va_end()
+Date: Thu, 17 Dec 2015 19:41:00 +1100
+Message-Id: <1450341660-31305-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+cppcheck picked up that there were a couple of missing va_end()
+calls in functions using va_start().
 
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+---
+ arch/powerpc/kernel/prom_init.c              | 1 +
+ arch/powerpc/platforms/powermac/bootx_init.c | 1 +
+ 2 files changed, 2 insertions(+)
 
-On 2015/12/17 13:10, Naveen N. Rao wrote:
-> On 2015/12/17 01:43AM, Wang Nan wrote:
->> After this patch other directories can use this architecture detector
->> without directly including it from perf's directory. Libbpf would
->> utilize it to get proper $(ARCH) so it can receive correct uapi include
->> directory.
->>
->> Signed-off-by: Wang Nan <wangnan0@huawei.com>
->> Acked-by: Jiri Olsa <jolsa@kernel.org>
->> Tested-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
->> Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
->> Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
->> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
->> ---
->>   tools/perf/config/Makefile      |  2 +-
->>   tools/perf/config/Makefile.arch | 18 ------------------
->>   tools/perf/tests/make           |  2 +-
->>   tools/scripts/Makefile.arch     | 18 ++++++++++++++++++
->>   4 files changed, 20 insertions(+), 20 deletions(-)
->>   delete mode 100644 tools/perf/config/Makefile.arch
->>   create mode 100644 tools/scripts/Makefile.arch
->     ^^^^^^
-> This is different from your previous version. This should be a file
-> rename.
-
-Forget to use git format -M. The content is identical. Should I send it 
-again?
-
-Thank you.
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 92dea8df6b26..da5192590c44 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -389,6 +389,7 @@ static void __init prom_printf(const char *format, ...)
+ 			break;
+ 		}
+ 	}
++	va_end(args);
+ }
+ 
+ 
+diff --git a/arch/powerpc/platforms/powermac/bootx_init.c b/arch/powerpc/platforms/powermac/bootx_init.c
+index 76f5013c35e5..c3c9bbb3573a 100644
+--- a/arch/powerpc/platforms/powermac/bootx_init.c
++++ b/arch/powerpc/platforms/powermac/bootx_init.c
+@@ -84,6 +84,7 @@ static void __init bootx_printf(const char *format, ...)
+ 			break;
+ 		}
+ 	}
++	va_end(args);
+ }
+ #else /* CONFIG_BOOTX_TEXT */
+ static void __init bootx_printf(const char *format, ...) {}
+-- 
+2.6.2
