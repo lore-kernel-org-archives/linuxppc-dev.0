@@ -1,43 +1,42 @@
-Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 02F871A00C8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 09:30:16 +1100 (AEDT)
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Thu, 17 Dec 2015 15:30:14 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id DE2D419D804A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 15:18:15 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBHMUBEN14942284
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 15:30:11 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBHMUAEt005799
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Dec 2015 15:30:11 -0700
-Subject: Re: [PATCH 5/6] cxlflash: Resolve oops in wait_port_offline
-To: linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>
-References: <1449787867-23015-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1449788074-23208-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Message-ID: <5673377F.5060304@linux.vnet.ibm.com>
-Date: Thu, 17 Dec 2015 16:30:23 -0600
-MIME-Version: 1.0
-In-Reply-To: <1449788074-23208-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id A60321A0B4F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 09:39:01 +1100 (AEDT)
+Date: Thu, 17 Dec 2015 14:38:58 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Geert Uytterhoeven
+ <geert@linux-m68k.org>, Peter Zijlstra <peterz@infradead.org>, Steven
+ Rostedt <rostedt@goodmis.org>, Daniel Thompson
+ <daniel.thompson@linaro.org>, Jiri Kosina <jkosina@suse.com>, Ingo Molnar
+ <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, the arch/x86
+ maintainers <x86@kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>,
+ "adi-buildroot-devel@lists.sourceforge.net"
+ <adi-buildroot-devel@lists.sourceforge.net>, Cris
+ <linux-cris-kernel@axis.com>, Linux MIPS Mailing List
+ <linux-mips@linux-mips.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, linux-s390 <linux-s390@vger.kernel.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>, sparclinux
+ <sparclinux@vger.kernel.org>
+Subject: Re: [PATCH v3 4/4] printk/nmi: Increase the size of NMI buffer and
+ make it configurable
+Message-Id: <20151217143858.447b5fe79aaa5ed7b2328d67@linux-foundation.org>
+In-Reply-To: <20151215142621.GE3729@pathway.suse.cz>
+References: <1449667265-17525-1-git-send-email-pmladek@suse.com>
+ <1449667265-17525-5-git-send-email-pmladek@suse.com>
+ <CAMuHMdXVgr58YjoePGrRbMyMncQ27f85prL7G5SpeHeNxoYrXQ@mail.gmail.com>
+ <20151211124159.GB3729@pathway.suse.cz>
+ <20151211145725.b0e81bb4bb18fcd72ef5f557@linux-foundation.org>
+ <20151211232113.GZ8644@n2100.arm.linux.org.uk>
+ <20151211153054.48da5d4139b93dd4ed438f4c@linux-foundation.org>
+ <20151215142621.GE3729@pathway.suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,36 +46,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/10/2015 4:54 PM, Uma Krishnan wrote:
-> From: Manoj Kumar <manoj@linux.vnet.ibm.com>
->
-> If an async error interrupt is generated, and the error requires the FC
-> link to be reset, it cannot be performed in the interrupt context. So
-> a work element is scheduled to complete the link reset in a process
-> context. If either an EEH event or an escalation occurs in between
-> when the interrupt is generated and the scheduled work is started, the
-> MMIO space may no longer be available. This will cause an oops in the
-> worker thread.
->
-> [  606.806583] NIP kthread_data+0x28/0x40
-> [  606.806633] LR wq_worker_sleeping+0x30/0x100
-> [  606.806694] Call Trace:
-> [  606.806721] 0x50 (unreliable)
-> [  606.806796] wq_worker_sleeping+0x30/0x100
-> [  606.806884] __schedule+0x69c/0x8a0
-> [  606.806959] schedule+0x44/0xc0
-> [  606.807034] do_exit+0x770/0xb90
-> [  606.807109] die+0x300/0x460
-> [  606.807185] bad_page_fault+0xd8/0x150
-> [  606.807259] handle_page_fault+0x2c/0x30
-> [  606.807338] wait_port_offline.constprop.12+0x60/0x130 [cxlflash]
->
-> To prevent the problem space area from being unmapped, when there is
-> pending work, a mapcount (using the kref mechanism) is held.  The mapcount
-> is released only when the work is completed.  The last reference release
-> is tied to the unmapping service.
->
-> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
-> ---
+On Tue, 15 Dec 2015 15:26:21 +0100 Petr Mladek <pmladek@suse.com> wrote:
 
-Reviewed-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+> > OK, thanks.  So "not needed at present, might be needed in the future,
+> > useful for out-of-tree debug code"?
+> 
+> It is possible that I got it a wrong way on arm. The NMI buffer is
+> usable there on two locations.
+> 
+> First, the temporary is currently used to handle IPI_CPU_BACKTRACE.
+> It seems that it is not a real NMI. But it seems to be available
+> (compiled) on all arm system. This is why I introduced NEED_PRINTK_NMI
+> Kconfig flag to avoid confusion with a real NMI.
+> 
+> Second, there is the FIQ "NMI" handler that is called from
+> /arch/arm/kernel/entry-armv.S. It is compiled only if _not_
+> defined $(CONFIG_CPU_V7M). It calls nmi_enter() and nmi_stop().
+> It looks like a real NMI handler. This is why I defined HAVE_NMI
+> if (!CPU_V7M).
+> 
+> A solution would be to define HAVE_NMI on all Arm systems and get rid
+> of NEED_PRINTK_NMI. If you think that it would cause less confusion...
+
+So does this mean that the patch will be updated?
+
+> 
+> > > there's this effort to apply further cleanups - to me, the changelogs
+> > > don't seem to make that much sense, unless we want to start using
+> > > printk() extensively in NMI functions - using the generic nmi backtrace
+> > > code surely gets us something that works across all architectures...
+> > 
+> > Yes, I was scratching my head over that.  The patchset takes an nmi-safe
+> > all-cpu-backtrace and generalises that into an nmi-safe printk.  That
+> > *sounds* like a good thing to do but yes, some additional justification
+> > would be helpful.  What real-world value does this patchset really
+> > bring to real-world users?
+> 
+> The patchset brings two big advantages. First, it makes the NMI
+> backtraces safe on all architectures for free. Second, it makes
+> all NMI messages almost[*] safe on all architectures.
+> 
+> Note that there already are several messages printed in NMI context.
+> See the mail from Jiri Kosina. They are not easy to avoid.
+> 
+> [*] The temporary buffer is limited. We still should keep
+> the number of messages in NMI context at minimum.
+
+This is important info - in fact a paragraph which starts with "The
+patchset brings two big advantages" is *the most* important info.  I
+added the below text to the [1/n] changelog:
+
+: The patchset brings two big advantages.  First, it makes the NMI
+: backtraces safe on all architectures for free.  Second, it makes all NMI
+: messages almost safe on all architectures (the temporary buffer is
+: limited.  We still should keep the number of messages in NMI context at
+: minimum).
+: 
+: Note that there already are several messages printed in NMI context:
+: WARN_ON(in_nmi()), BUG_ON(in_nmi()), anything being printed out from MCE
+: handlers.  These are not easy to avoid.
