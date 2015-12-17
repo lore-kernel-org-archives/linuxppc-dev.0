@@ -1,38 +1,40 @@
 Return-Path: <warrier@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 146EB1A170C
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1BB9E1A1A24
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 07:59:49 +1100 (AEDT)
 Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A1D42140BA4
+ by ozlabs.org (Postfix) with ESMTPS id 209BB140B9A
  for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2015 07:59:47 +1100 (AEDT)
 Received: from localhost
  by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
- Thu, 17 Dec 2015 13:59:45 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id BB089C40001
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:47:34 -0700 (MST)
+ Thu, 17 Dec 2015 13:59:46 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 54D103E4003E
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:26 -0700 (MST)
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBHKxNgt28573774
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:23 -0700
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBHKxQYj27787408
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:26 -0700
 Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
  by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBHKxNTc014462
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:23 -0700
+ tBHKxPcq014627
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:26 -0700
 From: Suresh Warrier <warrier@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
 Cc: warrier@linux.vnet.ibm.com, paulus@samba.org, agraf@suse.de,
  mpe@ellerman.id.au
-Subject: [PATCH v3 0/9] KVM: PPC: Book3S HV: Optimize wakeup VCPU from H_IPI
-Date: Thu, 17 Dec 2015 14:59:02 -0600
-Message-Id: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
+Subject: [PATCH v3 2/9] powerpc/smp: Add smp_muxed_ipi_set_message
+Date: Thu, 17 Dec 2015 14:59:04 -0600
+Message-Id: <1450385951-25128-3-git-send-email-warrier@linux.vnet.ibm.com>
+In-Reply-To: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
+References: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,77 +44,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the VCPU target of an H_IPI hypercall is not running
-in the guest, we need to do a kick VCPU (wake the VCPU thread)
-to make it runnable. The real-mode version of the H_IPI hypercall
-cannot do this because it involves waking a sleeping thread.
-Thus the hcall returns H_TOO_HARD which forces a switch back
-to host so that the H_IPI call can be completed in virtual mode.
-This has been found to cause a slowdown for many workloads like
-YCSB MongoDB, small message networking, etc. 
+smp_muxed_ipi_message_pass() invokes smp_ops->cause_ipi, which
+uses an ioremapped address to access registers on the XICS
+interrupt controller to cause the IPI. Because of this real
+mode callers cannot call smp_muxed_ipi_message_pass() for IPI
+messaging.
 
-One solution is to hand off this job of waking the VCPU to a CPU
-that is running in the host by sending it a message through the 
-IPI mechanism from the hypercall.
+This patch creates a separate function smp_muxed_ipi_set_message
+just to set the IPI message without the cause_ipi routine.
+After calling this function to set the IPI message, real
+mode callers must cause the IPI by writing to the XICS registers
+directly.
 
-This patch set optimizes the wakeup of the target VCPU by posting
-a free core already running in the host to do the wakeup, thus
-avoiding the switch to host and back. It requires maintaining a
-bitmask of all the available cores in the system to indicate if
-they are in the host or running in some guest. It also requires
-the H_IPI hypercall to search for a free host core and send it a
-new IPI message PPC_MSG_RM_HOST_ACTION after stashing away some
-parameters like the pointer to VCPU for the IPI handler. Locks
-are avoided by using atomic operations to save core state, to
-find and reserve a core in the host, etc.
+As part of this, we also change smp_muxed_ipi_message_pass
+to call smp_muxed_ipi_set_message to set the message instead
+of doing it directly inside the routine.
 
-Note that it is possible for a guest to be destroyed and its
-VCPUs freed before the IPI handler gets to run. This case is
-handled by ensuring that any pending PPC_MSG_RM_HOST_ACTION
-IPIs are completed before proceeding with freeing the VCPUs.
+Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/smp.h | 1 +
+ arch/powerpc/kernel/smp.c      | 9 ++++++++-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
-Currently, powerpc only support 4 IPI messages and all 4 are 
-already taken for other purposes. This patch also set increases
-the number of supported IPI messages to 8. It also provides the
-code to send an IPI from hypercall running in real-mode since
-the existing cause_ipi functions cannot be executed in real-mode.
-
-A tunable h_ipi_redirect is also included in the patch set to
-disable the feature. 
-
-v3:
-* Updated/clarified commit logs.
-* Fix build break when building without KVM.
-
-v2:
-* Complete patch set sent to both kvm and linuxppc mailing lists
-  to avoid build-breaks.
-* Broke up real mode IPI messaging function into two pieces - one
-  to set the message and one to cause the IPI. New function
-  icp_native_cause_ipi_rm added to arch/powerpc/sysdev/xics/icp-native.c
-
-
-Suresh Warrier (9):
-  powerpc/smp: Support more IPI messages
-  powerpc/smp: Add smp_muxed_ipi_set_message
-  powerpc/xics: Add icp_native_cause_ipi_rm
-  KVM: PPC: Book3S HV: Host-side RM data structures
-  KVM: PPC: Book3S HV: Manage core host state
-  KVM: PPC: Book3S HV: kvmppc_host_rm_ops - handle offlining CPUs
-  KVM: PPC: Book3S HV: Host side kick VCPU when poked by real-mode KVM
-  KVM: PPC: Book3S HV: Send IPI to host core to wake VCPU
-  KVM: PPC: Book3S HV: Add tunable to control H_IPI redirection
-
- arch/powerpc/include/asm/kvm_ppc.h    |  33 +++++++
- arch/powerpc/include/asm/smp.h        |   4 +
- arch/powerpc/include/asm/xics.h       |   1 +
- arch/powerpc/kernel/smp.c             |  28 +++++-
- arch/powerpc/kvm/book3s_hv.c          | 166 ++++++++++++++++++++++++++++++++++
- arch/powerpc/kvm/book3s_hv_builtin.c  |   3 +
- arch/powerpc/kvm/book3s_hv_rm_xics.c  | 120 +++++++++++++++++++++++-
- arch/powerpc/kvm/powerpc.c            |  10 ++
- arch/powerpc/sysdev/xics/icp-native.c |  21 +++++
- 9 files changed, 378 insertions(+), 8 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index 9ef9c37..78083ed 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -124,6 +124,7 @@ extern const char *smp_ipi_name[];
+ /* for irq controllers with only a single ipi */
+ extern void smp_muxed_ipi_set_data(int cpu, unsigned long data);
+ extern void smp_muxed_ipi_message_pass(int cpu, int msg);
++extern void smp_muxed_ipi_set_message(int cpu, int msg);
+ extern irqreturn_t smp_ipi_demux(void);
+ 
+ void smp_init_pSeries(void);
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index a53a130..e222efc 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -218,7 +218,7 @@ void smp_muxed_ipi_set_data(int cpu, unsigned long data)
+ 	info->data = data;
+ }
+ 
+-void smp_muxed_ipi_message_pass(int cpu, int msg)
++void smp_muxed_ipi_set_message(int cpu, int msg)
+ {
+ 	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
+ 	char *message = (char *)&info->messages;
+@@ -228,6 +228,13 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
+ 	 */
+ 	smp_mb();
+ 	message[msg] = 1;
++}
++
++void smp_muxed_ipi_message_pass(int cpu, int msg)
++{
++	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
++
++	smp_muxed_ipi_set_message(cpu, msg);
+ 	/*
+ 	 * cause_ipi functions are required to include a full barrier
+ 	 * before doing whatever causes the IPI.
 -- 
 1.8.3.4
