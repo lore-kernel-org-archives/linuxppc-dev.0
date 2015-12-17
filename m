@@ -1,40 +1,38 @@
 Return-Path: <warrier@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 147E71A1A1A
+ by lists.ozlabs.org (Postfix) with ESMTPS id 146EB1A170C
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 07:59:49 +1100 (AEDT)
 Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 23812140BA8
+ by ozlabs.org (Postfix) with ESMTPS id A1D42140BA4
  for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2015 07:59:47 +1100 (AEDT)
 Received: from localhost
  by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
- Thu, 17 Dec 2015 13:59:46 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id D49AEC40004
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:47:42 -0700 (MST)
+ Thu, 17 Dec 2015 13:59:45 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id BB089C40001
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:47:34 -0700 (MST)
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBHKxV2B25428028
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:31 -0700
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBHKxNgt28573774
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:23 -0700
 Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
  by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBHKxUG3015150
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:31 -0700
+ tBHKxNTc014462
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:23 -0700
 From: Suresh Warrier <warrier@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
 Cc: warrier@linux.vnet.ibm.com, paulus@samba.org, agraf@suse.de,
  mpe@ellerman.id.au
-Subject: [PATCH v3 5/9] KVM: PPC: Book3S HV: Manage core host state
-Date: Thu, 17 Dec 2015 14:59:07 -0600
-Message-Id: <1450385951-25128-6-git-send-email-warrier@linux.vnet.ibm.com>
-In-Reply-To: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
-References: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
+Subject: [PATCH v3 0/9] KVM: PPC: Book3S HV: Optimize wakeup VCPU from H_IPI
+Date: Thu, 17 Dec 2015 14:59:02 -0600
+Message-Id: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,83 +42,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update the core host state in kvmppc_host_rm_ops whenever
-the primary thread of the core enters the guest or returns
-back.
+When the VCPU target of an H_IPI hypercall is not running
+in the guest, we need to do a kick VCPU (wake the VCPU thread)
+to make it runnable. The real-mode version of the H_IPI hypercall
+cannot do this because it involves waking a sleeping thread.
+Thus the hcall returns H_TOO_HARD which forces a switch back
+to host so that the H_IPI call can be completed in virtual mode.
+This has been found to cause a slowdown for many workloads like
+YCSB MongoDB, small message networking, etc. 
 
-Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
----
- arch/powerpc/kvm/book3s_hv.c | 44 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+One solution is to hand off this job of waking the VCPU to a CPU
+that is running in the host by sending it a message through the 
+IPI mechanism from the hypercall.
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 4042623..95a2ed3 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2261,6 +2261,46 @@ static void post_guest_process(struct kvmppc_vcore *vc, bool is_master)
- }
- 
- /*
-+ * Clear core from the list of active host cores as we are about to
-+ * enter the guest. Only do this if it is the primary thread of the
-+ * core (not if a subcore) that is entering the guest.
-+ */
-+static inline void kvmppc_clear_host_core(int cpu)
-+{
-+	int core;
-+
-+	if (!kvmppc_host_rm_ops_hv || cpu_thread_in_core(cpu))
-+		return;
-+	/*
-+	 * Memory barrier can be omitted here as we will do a smp_wmb()
-+	 * later in kvmppc_start_thread and we need ensure that state is
-+	 * visible to other CPUs only after we enter guest.
-+	 */
-+	core = cpu >> threads_shift;
-+	kvmppc_host_rm_ops_hv->rm_core[core].rm_state.in_host = 0;
-+}
-+
-+/*
-+ * Advertise this core as an active host core since we exited the guest
-+ * Only need to do this if it is the primary thread of the core that is
-+ * exiting.
-+ */
-+static inline void kvmppc_set_host_core(int cpu)
-+{
-+	int core;
-+
-+	if (!kvmppc_host_rm_ops_hv || cpu_thread_in_core(cpu))
-+		return;
-+
-+	/*
-+	 * Memory barrier can be omitted here because we do a spin_unlock
-+	 * immediately after this which provides the memory barrier.
-+	 */
-+	core = cpu >> threads_shift;
-+	kvmppc_host_rm_ops_hv->rm_core[core].rm_state.in_host = 1;
-+}
-+
-+/*
-  * Run a set of guest threads on a physical core.
-  * Called with vc->lock held.
-  */
-@@ -2372,6 +2412,8 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
- 		}
- 	}
- 
-+	kvmppc_clear_host_core(pcpu);
-+
- 	/* Start all the threads */
- 	active = 0;
- 	for (sub = 0; sub < core_info.n_subcores; ++sub) {
-@@ -2468,6 +2510,8 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
- 			kvmppc_ipi_thread(pcpu + i);
- 	}
- 
-+	kvmppc_set_host_core(pcpu);
-+
- 	spin_unlock(&vc->lock);
- 
- 	/* make sure updates to secondary vcpu structs are visible now */
+This patch set optimizes the wakeup of the target VCPU by posting
+a free core already running in the host to do the wakeup, thus
+avoiding the switch to host and back. It requires maintaining a
+bitmask of all the available cores in the system to indicate if
+they are in the host or running in some guest. It also requires
+the H_IPI hypercall to search for a free host core and send it a
+new IPI message PPC_MSG_RM_HOST_ACTION after stashing away some
+parameters like the pointer to VCPU for the IPI handler. Locks
+are avoided by using atomic operations to save core state, to
+find and reserve a core in the host, etc.
+
+Note that it is possible for a guest to be destroyed and its
+VCPUs freed before the IPI handler gets to run. This case is
+handled by ensuring that any pending PPC_MSG_RM_HOST_ACTION
+IPIs are completed before proceeding with freeing the VCPUs.
+
+Currently, powerpc only support 4 IPI messages and all 4 are 
+already taken for other purposes. This patch also set increases
+the number of supported IPI messages to 8. It also provides the
+code to send an IPI from hypercall running in real-mode since
+the existing cause_ipi functions cannot be executed in real-mode.
+
+A tunable h_ipi_redirect is also included in the patch set to
+disable the feature. 
+
+v3:
+* Updated/clarified commit logs.
+* Fix build break when building without KVM.
+
+v2:
+* Complete patch set sent to both kvm and linuxppc mailing lists
+  to avoid build-breaks.
+* Broke up real mode IPI messaging function into two pieces - one
+  to set the message and one to cause the IPI. New function
+  icp_native_cause_ipi_rm added to arch/powerpc/sysdev/xics/icp-native.c
+
+
+Suresh Warrier (9):
+  powerpc/smp: Support more IPI messages
+  powerpc/smp: Add smp_muxed_ipi_set_message
+  powerpc/xics: Add icp_native_cause_ipi_rm
+  KVM: PPC: Book3S HV: Host-side RM data structures
+  KVM: PPC: Book3S HV: Manage core host state
+  KVM: PPC: Book3S HV: kvmppc_host_rm_ops - handle offlining CPUs
+  KVM: PPC: Book3S HV: Host side kick VCPU when poked by real-mode KVM
+  KVM: PPC: Book3S HV: Send IPI to host core to wake VCPU
+  KVM: PPC: Book3S HV: Add tunable to control H_IPI redirection
+
+ arch/powerpc/include/asm/kvm_ppc.h    |  33 +++++++
+ arch/powerpc/include/asm/smp.h        |   4 +
+ arch/powerpc/include/asm/xics.h       |   1 +
+ arch/powerpc/kernel/smp.c             |  28 +++++-
+ arch/powerpc/kvm/book3s_hv.c          | 166 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_builtin.c  |   3 +
+ arch/powerpc/kvm/book3s_hv_rm_xics.c  | 120 +++++++++++++++++++++++-
+ arch/powerpc/kvm/powerpc.c            |  10 ++
+ arch/powerpc/sysdev/xics/icp-native.c |  21 +++++
+ 9 files changed, 378 insertions(+), 8 deletions(-)
+
 -- 
 1.8.3.4
