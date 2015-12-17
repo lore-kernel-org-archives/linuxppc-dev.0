@@ -1,39 +1,39 @@
 Return-Path: <warrier@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 26A531A1A0D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 07:59:37 +1100 (AEDT)
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 344A31A1A1A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 07:59:39 +1100 (AEDT)
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 646D3140BA4
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2015 07:59:36 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 4FE2214090A
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2015 07:59:38 +1100 (AEDT)
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
- Thu, 17 Dec 2015 13:59:34 -0700
+ Thu, 17 Dec 2015 13:59:36 -0700
 Received: from b03cxnp07029.gho.boulder.ibm.com
  (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C432A3E4003F
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:32 -0700 (MST)
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id B0B7E19D803F
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:47:38 -0700 (MST)
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
  by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBHKxW6R25428118
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:32 -0700
+ tBHKxYpj21364968
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:34 -0700
 Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
  by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBHKxWCV015269
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:32 -0700
+ tBHKxX8p015353
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2015 13:59:34 -0700
 From: Suresh Warrier <warrier@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
 Cc: warrier@linux.vnet.ibm.com, paulus@samba.org, agraf@suse.de,
  mpe@ellerman.id.au
-Subject: [PATCH v3 6/9] KVM: PPC: Book3S HV: kvmppc_host_rm_ops - handle
- offlining CPUs
-Date: Thu, 17 Dec 2015 14:59:08 -0600
-Message-Id: <1450385951-25128-7-git-send-email-warrier@linux.vnet.ibm.com>
+Subject: [PATCH v3 7/9] KVM: PPC: Book3S HV: Host side kick VCPU when poked by
+ real-mode KVM
+Date: Thu, 17 Dec 2015 14:59:09 -0600
+Message-Id: <1450385951-25128-8-git-send-email-warrier@linux.vnet.ibm.com>
 In-Reply-To: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
 References: <1450385951-25128-1-git-send-email-warrier@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,88 +45,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The kvmppc_host_rm_ops structure keeps track of which cores are
-are in the host by maintaining a bitmask of active/runnable
-online CPUs that have not entered the guest. This patch adds
-support to manage the bitmask when a CPU is offlined or onlined
-in the host.
+This patch adds the support for the kick VCPU operation for
+kvmppc_host_rm_ops. The kvmppc_xics_ipi_action() function
+provides the function to be invoked for a host side operation
+when poked by the real mode KVM. This is initiated by KVM by
+sending an IPI to any free host core.
+
+KVM real mode must set the rm_action to XICS_RM_KICK_VCPU and
+rm_data to point to the VCPU to be woken up before sending the IPI.
+Note that we have allocated one kvmppc_host_rm_core structure
+per core. The above values need to be set in the structure
+corresponding to the core to which the IPI will be sent.
 
 Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
 ---
- arch/powerpc/kvm/book3s_hv.c | 39 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 39 insertions(+)
+ arch/powerpc/include/asm/kvm_ppc.h   |  1 +
+ arch/powerpc/kvm/book3s_hv.c         |  2 ++
+ arch/powerpc/kvm/book3s_hv_rm_xics.c | 36 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 39 insertions(+)
 
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 47cd441..1b93519 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -447,6 +447,7 @@ extern u64 kvmppc_xics_get_icp(struct kvm_vcpu *vcpu);
+ extern int kvmppc_xics_set_icp(struct kvm_vcpu *vcpu, u64 icpval);
+ extern int kvmppc_xics_connect_vcpu(struct kvm_device *dev,
+ 			struct kvm_vcpu *vcpu, u32 cpu);
++extern void kvmppc_xics_ipi_action(void);
+ #else
+ static inline void kvmppc_alloc_host_rm_ops(void) {};
+ static inline void kvmppc_free_host_rm_ops(void) {};
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 95a2ed3..da2cc56 100644
+index da2cc56..d6280ed 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3012,6 +3012,36 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
- }
+@@ -3085,6 +3085,8 @@ void kvmppc_alloc_host_rm_ops(void)
+ 		ops->rm_core[core].rm_state.in_host = 1;
+ 	}
  
- #ifdef CONFIG_KVM_XICS
-+static int kvmppc_cpu_notify(struct notifier_block *self, unsigned long action,
-+			void *hcpu)
++	ops->vcpu_kick = kvmppc_fast_vcpu_kick_hv;
++
+ 	/*
+ 	 * Make the contents of the kvmppc_host_rm_ops structure visible
+ 	 * to other CPUs before we assign it to the global variable.
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+index 24f5807..43ffbfe 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+@@ -17,6 +17,7 @@
+ #include <asm/xics.h>
+ #include <asm/debug.h>
+ #include <asm/synch.h>
++#include <asm/cputhreads.h>
+ #include <asm/ppc-opcode.h>
+ 
+ #include "book3s_xics.h"
+@@ -623,3 +624,38 @@ int kvmppc_rm_h_eoi(struct kvm_vcpu *vcpu, unsigned long xirr)
+  bail:
+ 	return check_too_hard(xics, icp);
+ }
++
++/*  --- Non-real mode XICS-related built-in routines ---  */
++
++/**
++ * Host Operations poked by RM KVM
++ */
++static void rm_host_ipi_action(int action, void *data)
 +{
-+	unsigned long cpu = (long)hcpu;
-+
 +	switch (action) {
-+	case CPU_UP_PREPARE:
-+	case CPU_UP_PREPARE_FROZEN:
-+		kvmppc_set_host_core(cpu);
++	case XICS_RM_KICK_VCPU:
++		kvmppc_host_rm_ops_hv->vcpu_kick(data);
 +		break;
-+
-+#ifdef CONFIG_HOTPLUG_CPU
-+	case CPU_DEAD:
-+	case CPU_DEAD_FROZEN:
-+	case CPU_UP_CANCELED:
-+	case CPU_UP_CANCELED_FROZEN:
-+		kvmppc_clear_host_core(cpu);
-+		break;
-+#endif
 +	default:
++		WARN(1, "Unexpected rm_action=%d data=%p\n", action, data);
 +		break;
 +	}
 +
-+	return NOTIFY_OK;
 +}
 +
-+static struct notifier_block kvmppc_cpu_notifier = {
-+	    .notifier_call = kvmppc_cpu_notify,
-+};
++void kvmppc_xics_ipi_action(void)
++{
++	int core;
++	unsigned int cpu = smp_processor_id();
++	struct kvmppc_host_rm_core *rm_corep;
 +
- /*
-  * Allocate a per-core structure for managing state about which cores are
-  * running in the host versus the guest and for exchanging data between
-@@ -3045,6 +3075,8 @@ void kvmppc_alloc_host_rm_ops(void)
- 		return;
- 	}
- 
-+	get_online_cpus();
++	core = cpu >> threads_shift;
++	rm_corep = &kvmppc_host_rm_ops_hv->rm_core[core];
 +
- 	for (cpu = 0; cpu < nr_cpu_ids; cpu += threads_per_core) {
- 		if (!cpu_online(cpu))
- 			continue;
-@@ -3063,14 +3095,21 @@ void kvmppc_alloc_host_rm_ops(void)
- 	l_ops = (unsigned long) ops;
- 
- 	if (cmpxchg64((unsigned long *)&kvmppc_host_rm_ops_hv, 0, l_ops)) {
-+		put_online_cpus();
- 		kfree(ops->rm_core);
- 		kfree(ops);
-+		return;
- 	}
-+
-+	register_cpu_notifier(&kvmppc_cpu_notifier);
-+
-+	put_online_cpus();
- }
- 
- void kvmppc_free_host_rm_ops(void)
- {
- 	if (kvmppc_host_rm_ops_hv) {
-+		unregister_cpu_notifier(&kvmppc_cpu_notifier);
- 		kfree(kvmppc_host_rm_ops_hv->rm_core);
- 		kfree(kvmppc_host_rm_ops_hv);
- 		kvmppc_host_rm_ops_hv = NULL;
++	if (rm_corep->rm_data) {
++		rm_host_ipi_action(rm_corep->rm_state.rm_action,
++							rm_corep->rm_data);
++		rm_corep->rm_data = NULL;
++		rm_corep->rm_state.rm_action = 0;
++	}
++}
 -- 
 1.8.3.4
