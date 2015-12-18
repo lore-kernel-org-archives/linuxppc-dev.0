@@ -1,19 +1,44 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E54D61A1A2B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 21:46:04 +1100 (AEDT)
-Message-ID: <1450435564.2791.98.camel@neuling.org>
-Subject: [PATCH] powerpc/powernv: Only delay opal_rtc_read() retry when
- necessary
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, benh <benh@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Stewart Smith
- <sesmith@au1.ibm.com>, Anton Blanchard <anton@samba.org>
-Date: Fri, 18 Dec 2015 21:46:04 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 67A281A1A2E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 22:29:16 +1100 (AEDT)
+Date: Fri, 18 Dec 2015 12:29:02 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Jiri Kosina <jikos@kernel.org>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ Andrew Morton <akpm@linux-foundation.org>, Petr Mladek <pmladek@suse.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "adi-buildroot-devel@lists.sourceforge.net"
+ <adi-buildroot-devel@lists.sourceforge.net>,
+ Cris <linux-cris-kernel@axis.com>,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ sparclinux <sparclinux@vger.kernel.org>
+Subject: Re: [PATCH v3 4/4] printk/nmi: Increase the size of NMI buffer and
+ make it configurable
+Message-ID: <20151218112902.GO6344@twins.programming.kicks-ass.net>
+References: <1449667265-17525-1-git-send-email-pmladek@suse.com>
+ <1449667265-17525-5-git-send-email-pmladek@suse.com>
+ <CAMuHMdXVgr58YjoePGrRbMyMncQ27f85prL7G5SpeHeNxoYrXQ@mail.gmail.com>
+ <20151211124159.GB3729@pathway.suse.cz>
+ <20151211145725.b0e81bb4bb18fcd72ef5f557@linux-foundation.org>
+ <20151211232113.GZ8644@n2100.arm.linux.org.uk>
+ <alpine.LNX.2.00.1512120024370.9922@cbobk.fhfr.pm>
+ <5673DD60.7080302@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5673DD60.7080302@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,25 +48,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Only delay opal_rtc_read() when busy and are going to retry.
+On Fri, Dec 18, 2015 at 10:18:08AM +0000, Daniel Thompson wrote:
+> I'm not entirely sure that this is an improvement.
 
-This has the advantage of possibly saving a massive 10ms off booting!
+What I do these days is delete everything in vprintk_emit() and simply
+call early_printk().
 
-Kudos to Stewart for noticing.
+Kill the useless kmsg buffer crap and locking, just pound bytes to the
+UART registers without anything in between.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+The other semi usable solution is redirecting to trace_printk() and
+recovering the trace buffers from your kdump. But I've found that
+typically kdump doesn't work anymore if you properly wedge the machine.
+So this is very much a second rate solution.
 
-diff --git a/arch/powerpc/platforms/powernv/opal-rtc.c b/arch/powerpc/platf=
-orms/powernv/opal-rtc.c
-index 37dbee1..06511f3 100644
---- a/arch/powerpc/platforms/powernv/opal-rtc.c
-+++ b/arch/powerpc/platforms/powernv/opal-rtc.c
-@@ -51,7 +51,7 @@ unsigned long __init opal_get_boot_time(void)
- 		rc =3D opal_rtc_read(&__y_m_d, &__h_m_s_ms);
- 		if (rc =3D=3D OPAL_BUSY_EVENT)
- 			opal_poll_events(NULL);
--		else
-+		else if (rc =3D=3D OPAL_BUSY)
- 			mdelay(10);
- 	}
- 	if (rc !=3D OPAL_SUCCESS)
+But this globally locked buffer, calling out to console drivers that do
+locking and even scheduling, is an unreliable unfixable trainwreck that
+I've given up on.
