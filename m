@@ -1,26 +1,24 @@
-Return-Path: <dave@stgolabs.net>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C345B1A1A40
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2015 04:13:18 +1100 (AEDT)
-Date: Fri, 18 Dec 2015 09:12:50 -0800
-From: Davidlohr Bueso <dave@stgolabs.net>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Waiman Long <waiman.long@hp.com>
-Subject: Re: [PATCH powerpc/next v6 0/4] atomics: powerpc: Implement
- relaxed/acquire/release variants
-Message-ID: <20151218171250.GE17386@linux-uzut.site>
-References: <1450189457-10589-1-git-send-email-boqun.feng@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 08ABC1A1A14
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2015 09:32:52 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Jia Hongtao <hongtao.jia@freescale.com>, edubezval@gmail.com,
+ viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
+ scottwood@freescale.com
+Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
+ device tree
+Date: Fri, 18 Dec 2015 23:32:33 +0100
+Message-ID: <3550740.QzZi28fbXg@wuerfel>
+In-Reply-To: <1697588.dLcbZBRWO4@vostro.rjw.lan>
+References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
+ <1697588.dLcbZBRWO4@vostro.rjw.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <1450189457-10589-1-git-send-email-boqun.feng@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,5 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I've left this series testing overnight on a power7 box and so far so good,
-nothing has broken.
+On Tuesday 15 December 2015 00:58:26 Rafael J. Wysocki wrote:
+> On Thursday, November 26, 2015 05:21:11 PM Jia Hongtao wrote:
+> > Register the qoriq cpufreq driver as a cooling device, based on the
+> > thermal device tree framework. When temperature crosses the passive trip
+> > point cpufreq is used to throttle CPUs.
+> > 
+> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> > Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Applied, thanks!
+> 
+
+I got a randconfig build error today:
+
+drivers/built-in.o: In function `qoriq_cpufreq_ready':
+debugfs.c:(.text+0x1f4688): undefined reference to `of_cpufreq_cooling_register'
+
+CONFIG_OF=y
+CONFIG_QORIQ_CPUFREQ=y
+CONFIG_THERMAL=m
+CONFIG_THERMAL_OF=y
+
+I think you need a 'depends on THERMAL' to prevent the driver from
+being built-in when THERMAL=m.
+
+	Arnd
