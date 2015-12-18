@@ -1,45 +1,32 @@
-Return-Path: <daniel.thompson@linaro.org>
-Received: from mail-wm0-x233.google.com (mail-wm0-x233.google.com
- [IPv6:2a00:1450:400c:c09::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.194])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 161A51A1A19
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 21:18:13 +1100 (AEDT)
-Received: by mail-wm0-x233.google.com with SMTP id l126so58474670wml.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 02:18:13 -0800 (PST)
-Subject: Re: [PATCH v3 4/4] printk/nmi: Increase the size of NMI buffer and
- make it configurable
-To: Jiri Kosina <jikos@kernel.org>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>
-References: <1449667265-17525-1-git-send-email-pmladek@suse.com>
- <1449667265-17525-5-git-send-email-pmladek@suse.com>
- <CAMuHMdXVgr58YjoePGrRbMyMncQ27f85prL7G5SpeHeNxoYrXQ@mail.gmail.com>
- <20151211124159.GB3729@pathway.suse.cz>
- <20151211145725.b0e81bb4bb18fcd72ef5f557@linux-foundation.org>
- <20151211232113.GZ8644@n2100.arm.linux.org.uk>
- <alpine.LNX.2.00.1512120024370.9922@cbobk.fhfr.pm>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Petr Mladek
- <pmladek@suse.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>,
- Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 725E31A1A1A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2015 21:23:12 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Alex Williamson' <alex.williamson@redhat.com>, Yongji Xie
+ <xyjxie@linux.vnet.ibm.com>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- the arch/x86 maintainers <x86@kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "adi-buildroot-devel@lists.sourceforge.net"
- <adi-buildroot-devel@lists.sourceforge.net>,
- Cris <linux-cris-kernel@axis.com>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- sparclinux <sparclinux@vger.kernel.org>
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Message-ID: <5673DD60.7080302@linaro.org>
-Date: Fri, 18 Dec 2015 10:18:08 +0000
+ "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+CC: "nikunj@linux.vnet.ibm.com" <nikunj@linux.vnet.ibm.com>,
+ "zhong@linux.vnet.ibm.com" <zhong@linux.vnet.ibm.com>, "aik@ozlabs.ru"
+ <aik@ozlabs.ru>, "paulus@samba.org" <paulus@samba.org>,
+ "warrier@linux.vnet.ibm.com" <warrier@linux.vnet.ibm.com>
+Subject: RE: [RFC PATCH 3/3] vfio-pci: Allow to mmap MSI-X table if EEH is
+ supported
+Date: Fri, 18 Dec 2015 10:15:33 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CBEFE3E@AcuExch.aculab.com>
+References: <1449823994-3356-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1449823994-3356-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1450296869.2674.62.camel@redhat.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1CBEF1BC@AcuExch.aculab.com>
+ <1450386414.2674.129.camel@redhat.com>
+In-Reply-To: <1450386414.2674.129.camel@redhat.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <alpine.LNX.2.00.1512120024370.9922@cbobk.fhfr.pm>
-Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,41 +36,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/12/15 23:26, Jiri Kosina wrote:
-> On Fri, 11 Dec 2015, Russell King - ARM Linux wrote:
->
->> I'm personally happy with the existing code, and I've been wondering why
->> there's this effort to apply further cleanups - to me, the changelogs
->> don't seem to make that much sense, unless we want to start using
->> printk() extensively in NMI functions - using the generic nmi backtrace
->> code surely gets us something that works across all architectures...
->
-> It is already being used extensively, and not only for all-CPU backtraces.
-> For starters, please consider
->
-> - WARN_ON(in_nmi())
-> - BUG_ON(in_nmi())
-
-Sorry to join in so late but...
-
-Today we risk deadlock when we try to issue these diagnostic errors 
-directly from NMI context.
-
-After this change we will still risk deadlock, because that's what the 
-diagnostic code is trying to tell us, *and* we delay actually reporting 
-the error until, and only if, the NMI handler completes.
-
-I'm not entirely sure that this is an improvement.
-
-
-> - anything being printed out from MCE handlers
-
-The MCE handlers should only call printk() when they decide to panic and 
-*after* busting the spinlocks. At this point deferring printk() until it 
-is safe is not very helpful.
-
-When we bust the spinlocks we should probably restore the normal 
-printk() function to give best chance of the failure messages making it out.
-
-
-Daniel.
+RnJvbTogQWxleCBXaWxsaWFtc29uDQo+IFNlbnQ6IDE3IERlY2VtYmVyIDIwMTUgMjE6MDcNCi4u
+Lg0KPiA+IElzIHRoaXMgYWxsIHJlbGF0ZWQgdG8gdGhlIHN0YXRlbWVudHMgaW4gdGhlIFBDSShl
+KSBzcGVjIHRoYXQgdGhlDQo+ID4gTVNJLVggdGFibGUgYW5kIFBlbmRpbmcgYml0IGFycmF5IHNo
+b3VsZCBpbiB0aGVpciBvd24gQkFScz8NCj4gPiAoSVNUUiBpdCBldmVuIHN1Z2dlc3RzIGEgQkFS
+IGVhY2guKQ0KPiA+DQo+ID4gU2luY2UgdGhlIE1TSS1YIHRhYmxlIGV4aXN0cyBpbiBkZXZpY2Ug
+bWVtb3J5L3JlZ2lzdGVycyB0aGVyZSBpcw0KPiA+IG5vdGhpbmcgdG8gc3RvcCB0aGUgZGV2aWNl
+IG1vZGlmeWluZyB0aGUgdGFibGUgY29udGVudHMgKG9yIGV2ZW4NCj4gPiBpZ25vcmluZyB0aGUg
+Y29udGVudHMgYW5kIHdyaXRpbmcgYWRkcmVzcytkYXRhIHBhaXJzIHRoYXQgYXJlIGtub3duDQo+
+ID4gdG8gcmVmZXJlbmNlIHRoZSBDUFVzIE1TSS1YIGludGVycnVwdCBnZW5lcmF0aW9uIGxvZ2lj
+KS4NCj4gPg0KPiA+IFdlJ3ZlIGFuIGZwZ2EgYmFzZWQgUENJZSBzbGF2ZSB0aGF0IGhhcyBzb21l
+IGFkZGl0aW9uYWwgUENJZSBzbGF2ZXMNCj4gPiAoYXNzb2NpYXRlZCB3aXRoIHRoZSBpbnRlcnJ1
+cHQgZ2VuZXJhdGlvbiBsb2dpYykgdGhhdCBhcmUgY3VycmVudGx5DQo+ID4gbmV4dCB0byB0aGUg
+UEJBICh3aGljaCBpcyA4ayBmcm9tIHRoZSBNU0ktWCB0YWJsZSkuDQo+ID4gSWYgd2UgY2FuJ3Qg
+bWFwIHRoZSBQQkEgd2UgY2FuJ3QgYWN0dWFsbHkgcmFpc2UgYW55IGludGVycnVwdHMuDQo+ID4g
+VGhlIHNhbWUgd291bGQgYmUgdHJ1ZSBpZiBwYWdlIHNpemUgaXMgNjRrIGFuZCBtYXBwaW5nIHRo
+ZSBNU0ktWA0KPiA+IHRhYmxlIGJhbm5lZC4NCj4gPg0KPiA+IERvIHdlIG5lZWQgdG8gY2hhbmdl
+IG91ciBQQ0llIHNsYXZlIGFkZHJlc3MgbWFwIHNvIHdlIGRvbid0IG5lZWQNCj4gPiB0byBhY2Nl
+c3MgYW55dGhpbmcgaW4gdGhlIHNhbWUgcGFnZSAod2hpY2ggbWlnaHQgYmUgNjRrIHdlcmUgd2Ug
+dG8NCj4gPiB0YXJnZXQgbGFyZ2UgcHBjIC0gd2hpY2ggd2UgZG9uJ3QgYXQgdGhlIG1vbWVudCkg
+YXMgYm90aCB0aGUNCj4gPiBNU0ktWCB0YWJsZSBhbmQgdGhlIFBCQT8NCj4gPg0KPiA+IEknZCBh
+bHNvIG5vdGUgdGhhdCBiZWluZyBhYmxlIHRvIHJlYWQgdGhlIE1TSS1YIHRhYmxlIGlzIGEgdXNl
+ZnVsDQo+ID4gZGlhZ25vc3RpYyB0aGF0IHRoZSByZWxldmFudCBpbnRlcnJ1cHRzIGFyZSBlbmFi
+bGVkIHByb3Blcmx5Lg0KPiANCj4gWWVzLCB0aGUgc3BlYyByZXF1aXJlbWVudCBpcyB0aGF0IE1T
+SS1YIHN0cnVjdHVyZXMgbXVzdCByZXNpZGUgaW4gYSA0aw0KPiBhbGlnbmVkIGFyZWEgdGhhdCBk
+b2Vzbid0IG92ZXJsYXAgd2l0aCBvdGhlciBjb25maWd1cmF0aW9uIHJlZ2lzdGVycw0KPiBmb3Ig
+dGhlIGRldmljZS4gwqBJdCdzIG9ubHkgYW4gYWR2aXNlbWVudCB0byBwdXQgdGhlbSBpbnRvIHRo
+ZWlyIG93bg0KPiBCQVIsIGFuZCA0ayBjbGVhcmx5IHdhc24ndCBhcyBmb3J3YXJkIGxvb2tpbmcg
+YXMgd2UnZCBob3BlLiDCoFZmaW8NCj4gZG9lc24ndCBwYXJ0aWN1bGFybHkgY2FyZSBhYm91dCB0
+aGUgUEJBLCBidXQgaWYgaXQgcmVzaWRlcyBpbiB0aGUgc2FtZQ0KPiBob3N0IFBBR0VfU0laRSBh
+cmVhIGFzIHRoZSBNU0ktWCB2ZWN0b3IgdGFibGUsIHlvdSBjdXJyZW50bHkgd29uJ3QgYmUNCj4g
+YWJsZSB0byBnZXQgdG8gaXQuIMKgTW9zdCBkZXZpY2VzIGFyZSBub3QgYXQgYWxsIGRlcGVuZGVu
+dCBvbiB0aGUgUEJBDQo+IGZvciBhbnkgc29ydCBvZiBmdW5jdGlvbmFsaXR5Lg0KDQpIYXZpbmcg
+c29tZSBoaW50IGluIHRoZSBzcGVjIGFzIHRvIHdoeSB0aGVzZSBtYXBwaW5nIHJ1bGVzIG1pZ2h0
+IGJlDQpuZWVkZWQgd291bGQgaGF2ZSBiZWVuIHVzZWZ1bC4NCg0KPiBJdCdzIHJlYWxseSBtb3Jl
+IGNvcnJlY3QgdG8gc2F5IHRoYXQgYm90aCB0aGUgdmVjdG9yIHRhYmxlIGFuZCBQQkEgYXJlDQo+
+IGVtdWxhdGVkIGJ5IFFFTVUgdGhhbiBwYXJhdmlydHVhbGl6ZWQuIMKgT25seSBQUEM2NCBoYXMg
+dGhlIGd1ZXN0IE9TDQo+IHRha2luZyBhIHBhcmF2aXJ0dWFsIHBhdGggdG8gcHJvZ3JhbSB0aGUg
+dmVjdG9yIHRhYmxlLCBldmVyeW9uZSBlbHNlDQo+IGF0dGVtcHRzIHRvIHJlYWQvd3JpdGUgdG8g
+dGhlIGRldmljZSBNTUlPIHNwYWNlLCB3aGljaCBnZXRzIHRyYXBwZWQgYW5kDQo+IGVtdWxhdGVk
+IGluIFFFTVUuIMKgVGhpcyBpcyB3aHkgdGhlIFFFTVUgc2lkZSBwYXRjaCBoYXMgZnVydGhlciB1
+Z2x5DQo+IGhhY2tzIHRvIG1lc3Mgd2l0aCB0aGUgb3JkZXJpbmcgb2YgTWVtb3J5UmVnaW9ucyBz
+aW5jZSBldmVuIGlmIHdlIGNhbg0KPiBhY2Nlc3MgYW5kIG1tYXAgdGhlIE1TSS1YIHZlY3RvciB0
+YWJsZSwgd2UnbGwgc3RpbGwgdHJhcCBpbnRvIFFFTVUgZm9yDQo+IGVtdWxhdGlvbi4NCg0KVGhh
+bmtzIGZvciB0aGF0IGV4cGxhbmF0aW9uLg0KDQo+IEhvdyBleGFjdGx5IGRvZXMgdGhlIGFiaWxp
+dHkgdG8gbWFwIHRoZSBQQkEgYWZmZWN0IHlvdXIgYWJpbGl0eSB0bw0KPiByYWlzZSBhbiBpbnRl
+cnJ1cHQ/DQoNClRoZXJlIGFyZSBvdGhlciByZWdpc3RlcnMgZm9yIHRoZSBsb2dpYyBibG9jayB0
+aGF0IGNvbnZlcnRzIGludGVybmFsDQppbnRlcnJ1cHQgcmVxdWVzdHMgaW50byB0aGUgUENJZSB3
+cml0ZXMgaW4gdGhlIGxvY2F0aW9ucyBmb2xsb3dpbmcgdGhlIFBCQS4NClRoZXNlIGluY2x1ZGUg
+aW50ZXJydXB0IGVuYWJsZSBiaXRzLCBhbmQgdGhlIGFiaWxpdHkgdG8gcmVtb3ZlIHBlbmRpbmcN
+CmludGVycnVwdCByZXF1ZXN0cyAoYW5kIG90aGVyIHN0dWZmIGZvciB0ZXN0aW5nIHRoZSBpbnRl
+cnJ1cHQgYmxvY2spLg0KWWVzIEkga25vdyBJIHByb2JhYmx5IHNob3VsZG4ndCBoYXZlIGRvbmUg
+dGhhdCwgYnV0IGl0IGFsbCB3b3JrZWQuDQoNCkF0IGxlYXN0IGl0IGlzIGJldHRlciB0aGFuIHRo
+ZSBwcmV2aW91cyB2ZXJzaW9uIG9mIHRoZSBoYXJkd2FyZSB0aGF0DQpyZXF1aXJlZCB0aGUgZHJp
+dmVyIHJlYWQgYmFjayB0aGUgTVNJLVggdGFibGUgZW50cmllcyBpbiBvcmRlciB0bw0Kc2V0IHVw
+IGFuIG9uLWJvYXJkIFBURSB0byBjb252ZXJ0IGEgMzJiaXQgb24tYm9hcmQgYWRkcmVzcyB0byB0
+aGUNCjY0Yml0IFBDSWUgYWRkcmVzcyBuZWVkZWQgZm9yIHRoZSBNU0ktWC4NCg0KSSdsbCAnZml4
+JyBvdXIgYm9hcmQgYnkgbWFraW5nIGJvdGggdGhlIE1TSS1YIHRhYmxlIGFuZCBQQkEgYXJlYQ0K
+YWNjZXNzaWJsZSB0aHJvdWdoIG9uZSBvZiB0aGUgb3RoZXIgQkFScy4gKEFubm95aW5nbHkgdGhp
+cyB3aWxsDQpiZSBjb25mdXNpbmcgYmVjYXVzZSB0aGUgQkFSIG9mZnNldHMgd2lsbCBoYXZlIHRv
+IGRpZmZlci4pDQpOb3RlIHRoYXQgdGhpcyBtYWtlcyBhIGNvbXBsZXRlIG1vY2tlcnkgb2YgZGlz
+YWxsb3dpbmcgdGhlIG1hcHBpbmcNCmluIHRoZSBmaXJzdCBwbGFjZS4NCg0KCURhdmlkDQoNCg0K
