@@ -1,31 +1,18 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-ig0-x236.google.com (mail-ig0-x236.google.com
- [IPv6:2607:f8b0:4001:c05::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Julia.Lawall@lip6.fr>
+Received: from mail2-relais-roc.national.inria.fr
+ (mail2-relais-roc.national.inria.fr [192.134.164.83])
+ (using TLSv1.2 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7D0C21A170E
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Dec 2015 18:16:26 +1100 (AEDT)
-Received: by mail-ig0-x236.google.com with SMTP id to4so18613842igc.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Dec 2015 23:16:26 -0800 (PST)
-Date: Sun, 20 Dec 2015 15:15:46 +0800
-From: Boqun Feng <boqun.feng@gmail.com>
-To: Davidlohr Bueso <dave@stgolabs.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Waiman Long <waiman.long@hp.com>
-Subject: Re: [PATCH powerpc/next v6 0/4] atomics: powerpc: Implement
- relaxed/acquire/release variants
-Message-ID: <20151220071546.GA1270@fixme-laptop.cn.ibm.com>
-References: <1450189457-10589-1-git-send-email-boqun.feng@gmail.com>
- <20151218171250.GE17386@linux-uzut.site>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="jRHKVT23PllUwdXP"
-In-Reply-To: <20151218171250.GE17386@linux-uzut.site>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EB26C1A1A0C
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Dec 2015 22:28:37 +1100 (AEDT)
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+To: linux-s390@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+ linux-omap@vger.kernel.org
+Subject: [PATCH 0/4] add NULL test
+Date: Sun, 20 Dec 2015 12:15:49 +0100
+Message-Id: <1450610153-7746-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,33 +22,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add NULL tests on various calls to kzalloc and devm_kzalloc.
 
---jRHKVT23PllUwdXP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The semantic match that finds these problems is as follows:
+(http://coccinelle.lip6.fr/)
 
-On Fri, Dec 18, 2015 at 09:12:50AM -0800, Davidlohr Bueso wrote:
-> I've left this series testing overnight on a power7 box and so far so good,
-> nothing has broken.
+// <smpl>
+@@
+expression x,y;
+identifier fld;
+@@
 
-Davidlohr, thank you for your testing!
+(
+x = \(vmalloc\|kmalloc\|kzalloc\|kcalloc\|kmem_cache_alloc\|krealloc\|
+        kmemdup\|kstrdup\|
+	devm_kzalloc\|devm_kmalloc\|devm_kcalloc\|devm_kasprintf\|
+	kmalloc_array\)(...,<+... __GFP_NOFAIL ...+>,...);
+|
+* x = \(vmalloc\|kmalloc\|kzalloc\|kcalloc\|kmem_cache_alloc\|krealloc\|
+        kmemdup\|kstrdup\|
+	devm_kzalloc\|devm_kmalloc\|devm_kcalloc\|devm_kasprintf\|
+	kmalloc_array\)(...);
+)
+  ... when != (x) == NULL
+      when != (x) != NULL
+      when != (x) == 0
+      when != (x) != 0
+      when != x = y
+(
+  x->fld
+|
+  *x
+|
+  x[...]
+)
+// </smpl>
 
-Regards,
-Boqun
+---
 
---jRHKVT23PllUwdXP
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWdlWdAAoJEEl56MO1B/q4ybwH/3OBKVidEOyXPWgIop2x7DnJ
-j+nH9UlhiOY/JoN1XdUc/Wk3f7C4zp3zWKC4BdGU7ncznUA5tZe6bD24hgxUtzIi
-bVv5ajmy6BEYTWTy39zSlS/7rdD8dolZMyvZONme4QFE5A5gJGDMm4xAYiW8mRyg
-Zg0xpN8fyBAfFRS3B9cY2S6YU7mTkSzBqEdWsvpL8XAjaIR4ZDMOLEj+HriwIIQk
-z0IyD+omYBPvPK/+vg4dPGZC+a0X/QP37B7vPbBrT7qY9OfcNQhtLTvrWPMiA62Y
-315FpeVZW6FsYlv2D9GYZNrwNIquxpjvvVtYA8XEJMkMs81hl57s0gzfkbG3jXI=
-=OmNM
------END PGP SIGNATURE-----
-
---jRHKVT23PllUwdXP--
+ drivers/s390/char/con3215.c                 |    2 ++
+ drivers/s390/char/raw3270.c                 |    2 ++
+ sound/soc/fsl/imx-pcm-dma.c                 |    2 ++
+ sound/soc/intel/baytrail/sst-baytrail-pcm.c |    2 ++
+ sound/soc/omap/omap-hdmi-audio.c            |    2 ++
+ 5 files changed, 10 insertions(+)
