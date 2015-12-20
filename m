@@ -1,22 +1,23 @@
-Return-Path: <Julia.Lawall@lip6.fr>
-Received: from mail2-relais-roc.national.inria.fr
- (mail2-relais-roc.national.inria.fr [192.134.164.83])
- (using TLSv1.2 with cipher RC4-SHA (128/128 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 794311A1A0C
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Dec 2015 22:28:40 +1100 (AEDT)
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-To: Timur Tabi <timur@tabi.org>
-Cc: kernel-janitors@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] ASoC: imx-pcm-dma: add NULL test
-Date: Sun, 20 Dec 2015 12:15:50 +0100
-Message-Id: <1450610153-7746-2-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1450610153-7746-1-git-send-email-Julia.Lawall@lip6.fr>
-References: <1450610153-7746-1-git-send-email-Julia.Lawall@lip6.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8DFD61A1A14
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2015 02:06:42 +1100 (AEDT)
+Date: Sun, 20 Dec 2015 09:02:25 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Curt Brune <curt@cumulusnetworks.com>
+Cc: galak@codeaurora.org, ijc+devicetree@hellion.org.uk, mark.rutland@arm.com,
+ pawel.moll@arm.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, robh+dt@kernel.org, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC 1/1] powerpc: legacy serial port use device tree cell-index
+ property
+Message-ID: <20151220150225.GA27380@gate.crashing.org>
+References: <1448477209-22340-2-git-send-email-curt@cumulusnetworks.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1448477209-22340-2-git-send-email-curt@cumulusnetworks.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add NULL test on call to devm_kzalloc.
+On Wed, Nov 25, 2015 at 10:46:49AM -0800, Curt Brune wrote:
+> +	/* Check if the ports have an ordering, defined by 'cell-index' */
+> +	if (((indexp = (u32*)of_get_property(np, "cell-index", &len)) != NULL) &&
+> +	    (len == sizeof(u32)))
+> +		index = *indexp;
+> +
+>  	/* Add port, irq will be dealt with later. We passed a translated
+>  	 * IO port value. It will be fixed up later along with the irq
+>  	 */
+>  	if (tsi && !strcmp(tsi->type, "tsi-bridge"))
+> -		return add_legacy_port(np, -1, UPIO_TSI, addr, addr,
+> +		return add_legacy_port(np, index, UPIO_TSI, addr, addr,
+>  				       NO_IRQ, legacy_port_flags, 0);
+>  	else
+> -		return add_legacy_port(np, -1, UPIO_MEM, addr, addr,
+> +		return add_legacy_port(np, index, UPIO_MEM, addr, addr,
+>  				       NO_IRQ, legacy_port_flags, 0);
 
-The semantic match that finds this problem is as follows:
-(http://coccinelle.lip6.fr/)
+What does this do if the value in cell-index is a duplicate. or the port
+with that number is already created some other way?  Are the numbers in
+cell-index global anyway, or relative to some parent device (I couldn't
+find the documentation for this).
 
-// <smpl>
-@@
-expression x;
-@@
 
-* x = devm_kzalloc(...);
-  ... when != x == NULL
-  *x
-// </smpl>
-
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
----
- sound/soc/fsl/imx-pcm-dma.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/sound/soc/fsl/imx-pcm-dma.c b/sound/soc/fsl/imx-pcm-dma.c
-index 1fc01ed..f3d3d1f 100644
---- a/sound/soc/fsl/imx-pcm-dma.c
-+++ b/sound/soc/fsl/imx-pcm-dma.c
-@@ -62,6 +62,8 @@ int imx_pcm_dma_init(struct platform_device *pdev, size_t size)
- 
- 	config = devm_kzalloc(&pdev->dev,
- 			sizeof(struct snd_dmaengine_pcm_config), GFP_KERNEL);
-+	if (!config)
-+		return -ENOMEM;
- 	*config = imx_dmaengine_pcm_config;
- 	if (size)
- 		config->prealloc_buffer_size = size;
+Segher
