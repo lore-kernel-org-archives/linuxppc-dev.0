@@ -1,23 +1,22 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8DFD61A1A14
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2015 02:06:42 +1100 (AEDT)
-Date: Sun, 20 Dec 2015 09:02:25 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Curt Brune <curt@cumulusnetworks.com>
-Cc: galak@codeaurora.org, ijc+devicetree@hellion.org.uk, mark.rutland@arm.com,
- pawel.moll@arm.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, robh+dt@kernel.org, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC 1/1] powerpc: legacy serial port use device tree cell-index
- property
-Message-ID: <20151220150225.GA27380@gate.crashing.org>
-References: <1448477209-22340-2-git-send-email-curt@cumulusnetworks.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1448477209-22340-2-git-send-email-curt@cumulusnetworks.com>
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vi37-28-154-113.vibiznes.pl [37.28.154.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 80D6D1A15E8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2015 08:00:01 +1100 (AEDT)
+Message-ID: <56771034.5080702@maciej.szmigiero.name>
+Date: Sun, 20 Dec 2015 21:31:48 +0100
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+MIME-Version: 1.0
+To: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
+CC: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Fabio Estevam <festevam@gmail.com>
+Subject: [PATCH 2/3] ASoC: fsl_ssi: mark some registers precious
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 25, 2015 at 10:46:49AM -0800, Curt Brune wrote:
-> +	/* Check if the ports have an ordering, defined by 'cell-index' */
-> +	if (((indexp = (u32*)of_get_property(np, "cell-index", &len)) != NULL) &&
-> +	    (len == sizeof(u32)))
-> +		index = *indexp;
-> +
->  	/* Add port, irq will be dealt with later. We passed a translated
->  	 * IO port value. It will be fixed up later along with the irq
->  	 */
->  	if (tsi && !strcmp(tsi->type, "tsi-bridge"))
-> -		return add_legacy_port(np, -1, UPIO_TSI, addr, addr,
-> +		return add_legacy_port(np, index, UPIO_TSI, addr, addr,
->  				       NO_IRQ, legacy_port_flags, 0);
->  	else
-> -		return add_legacy_port(np, -1, UPIO_MEM, addr, addr,
-> +		return add_legacy_port(np, index, UPIO_MEM, addr, addr,
->  				       NO_IRQ, legacy_port_flags, 0);
+Mark some registers precious since their
+reads have side effects (like clearing flags).
 
-What does this do if the value in cell-index is a duplicate. or the port
-with that number is already created some other way?  Are the numbers in
-cell-index global anyway, or relative to some parent device (I couldn't
-find the documentation for this).
+Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+---
+ sound/soc/fsl/fsl_ssi.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-
-Segher
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index cc22354d7758..40dfd8a36484 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -157,6 +157,21 @@ static bool fsl_ssi_volatile_reg(struct device *dev, unsigned int reg)
+ 	}
+ }
+ 
++static bool fsl_ssi_precious_reg(struct device *dev, unsigned int reg)
++{
++	switch (reg) {
++	case CCSR_SSI_SRX0:
++	case CCSR_SSI_SRX1:
++	case CCSR_SSI_SISR:
++	case CCSR_SSI_SACADD:
++	case CCSR_SSI_SACDAT:
++	case CCSR_SSI_SATAG:
++		return true;
++	default:
++		return false;
++	}
++}
++
+ static bool fsl_ssi_writeable_reg(struct device *dev, unsigned int reg)
+ {
+ 	switch (reg) {
+@@ -179,6 +194,7 @@ static const struct regmap_config fsl_ssi_regconfig = {
+ 	.num_reg_defaults = ARRAY_SIZE(fsl_ssi_reg_defaults),
+ 	.readable_reg = fsl_ssi_readable_reg,
+ 	.volatile_reg = fsl_ssi_volatile_reg,
++	.precious_reg = fsl_ssi_precious_reg,
+ 	.writeable_reg = fsl_ssi_writeable_reg,
+ 	.cache_type = REGCACHE_RBTREE,
+ };
