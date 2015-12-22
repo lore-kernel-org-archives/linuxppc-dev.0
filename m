@@ -1,23 +1,23 @@
 Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0130.outbound.protection.outlook.com [157.56.111.130])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0119.outbound.protection.outlook.com [65.55.169.119])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8E7381A11C6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Dec 2015 19:52:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0880C1A11C6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Dec 2015 19:53:28 +1100 (AEDT)
 From: Liberman Igal <Igal.Liberman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, "devicetree@vger.kernel.org"
+To: Shaohui Xie <shaohui.xie@nxp.com>, "devicetree@vger.kernel.org"
  <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
  <linuxppc-dev@lists.ozlabs.org>
-CC: Madalin-Cristian Bucur <madalin.bucur@freescale.com>, Shaohui Xie
- <Shaohui.Xie@freescale.com>
+CC: Scott Wood <scottwood@freescale.com>, Madalin-Cristian Bucur
+ <madalin.bucur@freescale.com>, Shaohui Xie <Shaohui.Xie@freescale.com>
 Subject: RE: [PATCH] powerpc/mpc85xx: Add pcsphy nodes to FManV3 device tree
-Date: Tue, 22 Dec 2015 08:51:55 +0000
-Message-ID: <DM2PR03MB509CAE5558807F9E327DCBDE6E50@DM2PR03MB509.namprd03.prod.outlook.com>
+Date: Tue, 22 Dec 2015 08:53:21 +0000
+Message-ID: <DM2PR03MB509BC216FC7290C255B94CBE6E50@DM2PR03MB509.namprd03.prod.outlook.com>
 References: <1450655851-6556-1-git-send-email-igal.liberman@freescale.com>
- <1450708833.18314.35.camel@freescale.com>
-In-Reply-To: <1450708833.18314.35.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ <VI1PR04MB1664BA0097C2C574F084F544E8E50@VI1PR04MB1664.eurprd04.prod.outlook.com>
+In-Reply-To: <VI1PR04MB1664BA0097C2C574F084F544E8E50@VI1PR04MB1664.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,41 +28,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0t
-LS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2VudDogTW9uZGF5LCBEZWNlbWJlciAy
-MSwgMjAxNSA0OjQxIFBNDQo+IFRvOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MCA8SWdhbC5MaWJlcm1h
-bkBmcmVlc2NhbGUuY29tPjsNCj4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBj
-LWRldkBsaXN0cy5vemxhYnMub3JnDQo+IENjOiBCdWN1ciBNYWRhbGluLUNyaXN0aWFuLUIzMjcx
-NiA8bWFkYWxpbi5idWN1ckBmcmVlc2NhbGUuY29tPjsgWGllDQo+IFNoYW9odWktQjIxOTg5IDxT
-aGFvaHVpLlhpZUBmcmVlc2NhbGUuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBwb3dlcnBj
-L21wYzg1eHg6IEFkZCBwY3NwaHkgbm9kZXMgdG8gRk1hblYzDQo+IGRldmljZSB0cmVlDQo+IA0K
-PiBPbiBNb24sIDIwMTUtMTItMjEgYXQgMDE6NTcgKzAyMDAsIGlnYWwubGliZXJtYW5AZnJlZXNj
-YWxlLmNvbSB3cm90ZToNCj4gPiBGcm9tOiBJZ2FsIExpYmVybWFuIDxpZ2FsLmxpYmVybWFuQGZy
-ZWVzY2FsZS5jb20+DQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBJZ2FsIExpYmVybWFuIDxpZ2Fs
-LmxpYmVybWFuQGZyZWVzY2FsZS5jb20+DQo+ID4NCj4gPiBUaGlzIHBhdGNoIGFkZHMgcGNzcGh5
-IG5vZGUgdG8gRk1hblYzIGRldmljZSB0cmVlLg0KPiA+IEJhc2VkIG9uOiBodHRwczovL3BhdGNo
-d29yay5vemxhYnMub3JnL3BhdGNoLzUwMzkyMS8NCj4gPiAtLS0NCj4gPiAgLi4uL2R0cy9mc2wv
-cW9yaXEtZm1hbjMtMC0xMGctMC1iZXN0LWVmZm9ydC5kdHNpICAgfCAgICA1ICsrKysrDQo+ID4g
-IGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcW9yaXEtZm1hbjMtMC0xMGctMC5kdHNpIHwgICAg
-NSArKysrKw0KPiA+ICAuLi4vZHRzL2ZzbC9xb3JpcS1mbWFuMy0wLTEwZy0xLWJlc3QtZWZmb3J0
-LmR0c2kgICB8ICAgIDUgKysrKysNCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3Jp
-cS1mbWFuMy0wLTEwZy0xLmR0c2kgfCAgICA1ICsrKysrDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290
-L2R0cy9mc2wvcW9yaXEtZm1hbjMtMC0xZy0wLmR0c2kgIHwgICAgNSArKysrKw0KPiA+ICBhcmNo
-L3Bvd2VycGMvYm9vdC9kdHMvZnNsL3FvcmlxLWZtYW4zLTAtMWctMS5kdHNpICB8ICAgIDUgKysr
-KysNCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3JpcS1mbWFuMy0wLTFnLTIuZHRz
-aSAgfCAgICA1ICsrKysrDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcW9yaXEtZm1h
-bjMtMC0xZy0zLmR0c2kgIHwgICAgNSArKysrKw0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMv
-ZnNsL3FvcmlxLWZtYW4zLTAtMWctNC5kdHNpICB8ICAgIDUgKysrKysNCj4gPiAgYXJjaC9wb3dl
-cnBjL2Jvb3QvZHRzL2ZzbC9xb3JpcS1mbWFuMy0wLTFnLTUuZHRzaSAgfCAgICA1ICsrKysrDQo+
-ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcW9yaXEtZm1hbjMtMS0xMGctMC5kdHNpIHwg
-ICAgNSArKysrKw0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3FvcmlxLWZtYW4zLTEt
-MTBnLTEuZHRzaSB8ICAgIDUgKysrKysNCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9x
-b3JpcS1mbWFuMy0xLTFnLTAuZHRzaSAgfCAgICA1ICsrKysrDQo+ID4gIGFyY2gvcG93ZXJwYy9i
-b290L2R0cy9mc2wvcW9yaXEtZm1hbjMtMS0xZy0xLmR0c2kgIHwgICAgNSArKysrKw0KPiA+ICBh
-cmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3FvcmlxLWZtYW4zLTEtMWctMi5kdHNpICB8ICAgIDUg
-KysrKysNCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3JpcS1mbWFuMy0xLTFnLTMu
-ZHRzaSAgfCAgICA1ICsrKysrDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcW9yaXEt
-Zm1hbjMtMS0xZy00LmR0c2kgIHwgICAgNSArKysrKw0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9k
-dHMvZnNsL3FvcmlxLWZtYW4zLTEtMWctNS5kdHNpICB8ICAgIDUgKysrKysNCj4gPiAgMTggZmls
-ZXMgY2hhbmdlZCwgOTAgaW5zZXJ0aW9ucygrKQ0KPiANCj4gQmluZGluZz8NCj4gDQoNCldvcmtp
-bmcgb24gdGhhdCwgSSdsbCBzdWJtaXQgQVNBUC4gDQoNCklnYWwNCg0KPiAtU2NvdHQNCg==
+
+
+Regards,
+Igal Liberman
+
+> -----Original Message-----
+> From: Shaohui Xie [mailto:shaohui.xie@nxp.com]
+> Sent: Tuesday, December 22, 2015 8:27 AM
+> To: Liberman Igal-B31950 <Igal.Liberman@freescale.com>;
+> devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> Cc: Wood Scott-B07421 <scottwood@freescale.com>; Bucur Madalin-
+> Cristian-B32716 <madalin.bucur@freescale.com>; Xie Shaohui-B21989
+> <Shaohui.Xie@freescale.com>
+> Subject: RE: [PATCH] powerpc/mpc85xx: Add pcsphy nodes to FManV3
+> device tree
+>=20
+> > @@ -55,6 +55,7 @@ fman@400000 {
+> >  		reg =3D <0xe0000 0x1000>;
+> >  		fsl,fman-ports =3D <&fman0_rx_0x08 &fman0_tx_0x28>;
+> >  		ptp-timer =3D <&ptp_timer0>;
+> > +		pcsphy-handle =3D <&pcsphy0>;
+> >  	};
+> >
+> >  	mdio@e1000 {
+> > @@ -62,5 +63,9 @@ fman@400000 {
+> >  		#size-cells =3D <0>;
+> >  		compatible =3D "fsl,fman-memac-mdio", "fsl,fman-xmdio";
+> >  		reg =3D <0xe1000 0x1000>;
+> > +
+> > +		pcsphy0: ethernet-phy@0 {
+> > +			reg =3D <0x0>;
+> > +		};
+> >  	};
+> >  };
+>=20
+> [S.H] snip.
+>=20
+> >  	mdio@e1000 {
+> > @@ -58,5 +59,9 @@ fman@400000 {
+> >  		#size-cells =3D <0>;
+> >  		compatible =3D "fsl,fman-memac-mdio", "fsl,fman-xmdio";
+> >  		reg =3D <0xe1000 0x1000>;
+> > +
+> > +		pcsphy0: pcs-phy@0 {
+> > +			reg =3D <0x0>;
+> > +		};
+> >  	};
+> [S.H] Should use 'ethernet-phy', same as above.
+>=20
+
+I'll resubmit and fix this (pcs-phy ---> ethernet-phy).
+
+Thank you,
+Igal
+
+> Thanks,
+> Shaohui
