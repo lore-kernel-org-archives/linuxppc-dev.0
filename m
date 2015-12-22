@@ -1,24 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0128.outbound.protection.outlook.com [207.46.100.128])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 756711A11B3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Dec 2015 14:42:23 +1100 (AEDT)
-Message-ID: <1450755731.18314.76.camel@freescale.com>
-Subject: Re: [RFC 1/1] powerpc: legacy serial port use device tree
- cell-index property
-From: Scott Wood <scottwood@freescale.com>
-To: Curt Brune <curt@cumulusnetworks.com>, <galak@codeaurora.org>,
- <ijc+devicetree@hellion.org.uk>, <mark.rutland@arm.com>,
- <pawel.moll@arm.com>, <benh@kernel.crashing.org>, <paulus@samba.org>,
- <mpe@ellerman.id.au>, <robh+dt@kernel.org>
-CC: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>
-Date: Mon, 21 Dec 2015 21:42:11 -0600
-In-Reply-To: <1448477209-22340-2-git-send-email-curt@cumulusnetworks.com>
-References: <1448477209-22340-2-git-send-email-curt@cumulusnetworks.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1E9F41A11B4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Dec 2015 16:14:15 +1100 (AEDT)
+From: David Gibson <david@gibson.dropbear.id.au>
+To: paulus@samba.org,
+	benh@kernel.crashing.org,
+	bharata@linux.vnet.ibm.com
+Cc: thuth@redhat.com, lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: [RFC 0/3] Prototype PAPR hash page table resizing (guest side)
+Date: Tue, 22 Dec 2015 16:14:55 +1100
+Message-Id: <1450761298-12172-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,54 +22,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-11-25 at 10:46 -0800, Curt Brune wrote:
-> Currently for PowerPC systems using device tree, the legacy serial
-> ports are allocated in the order by which they are found in the device
-> tree structure.
-> 
-> This can cause problems in cases where the device tree nodes are
-> sysnthesized by an external program (kexec for example), which may not
-> preserve the original order of the device tree nodes.  This in turn
-> can result in the serial console changing from ttyS0 to ttyS1
-> unexpectedly.
-> 
-> This patch uses the 'cell-index' property (if present) to map UART
-> device tree nodes to legacy serial port number.  The cell-index
-> property is widely used in all the Freescale .dts files for PowerPC.
-> 
-> Signed-off-by: Curt Brune <curt@cumulusnetworks.com>
-> ---
->  arch/powerpc/kernel/legacy_serial.c | 11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/legacy_serial.c
-> b/arch/powerpc/kernel/legacy_serial.c
-> index 7b750c4..b717133 100644
-> --- a/arch/powerpc/kernel/legacy_serial.c
-> +++ b/arch/powerpc/kernel/legacy_serial.c
-> @@ -164,6 +164,8 @@ static int __init add_legacy_soc_port(struct device_node
-> *np,
->  	u64 addr;
->  	const __be32 *addrp;
->  	struct device_node *tsi = of_get_parent(np);
-> +	int index = -1, len;
-> +	u32 *indexp;
->  
->  	/* We only support ports that have a clock frequency properly
->  	 * encoded in the device-tree.
-> @@ -188,14 +190,19 @@ static int __init add_legacy_soc_port(struct
-> device_node *np,
->  	if (addr == OF_BAD_ADDR)
->  		return -1;
->  
-> +	/* Check if the ports have an ordering, defined by 'cell-index' */
-> +	if (((indexp = (u32*)of_get_property(np, "cell-index", &len)) !=
-> NULL) &&
-> +	    (len == sizeof(u32)))
-> +		index = *indexp;
+I've discussed with Paul and Ben previously the possibility of
+extending PAPR to allow changing the size of a running guest's hash
+page table (HPT).  This would allow for much more flexible memory
+hotplug, since the HPT wouldn't have to be sized in advance for the
+maximum possible memory size of the guest.
 
-const u32 *
+This is a draft / prototype implementation of the guest side of this.
+Or rather, the guest side of the core code for switching HPTs.  We'd
+also need notification handling and CAS support for a complete
+implementation, but I haven't gotten to writing that yet.
 
-Or better, use of_read_number() or similar.
+Obviously, for now it uses vendor specific hypercalls rather than
+official PAPR ones.  I have a draft implementation of these in qemu
+for TCG guests which I hope to post in the reasonably near future.
 
--Scott
+The design assumes that the HPT change happens in two phases:
+
+   1) The "prepare" phase may be slow but can run asynchronously while
+      the guest runs normally
+
+   2) The "commit" phase switches to a previously prepared HPT, and
+      must be run with no concurrent updates to the HPT - in practice
+      that means stop_machine() for a Linux guest.
+
+To go with that there are two (proposed) hcalls:
+
+H_RESIZE_HPT_PREPARE:
+    This starts (1) for a new HPT of a given size.  It will typically
+    return H_LONG_DELAY_* and the guest must call it in a (sleeping)
+    loop until it completes.
+
+    Calling PREPARE with a different size from one already in progress
+    will cancel the in-progress preparation (freeing the potential HPT
+    if already allocated) and start a new one for the given size.
+
+    As a special case calling PREPARE with shift == 0 will cancel any
+    in-progress preparation and not start a new one, instead reverting
+    to the existing HPT.
+
+H_RESIZE_HPT_COMMIT:
+    Switches to an HPT of the given size.  It will fail if there isn't
+    a fully prepared HPT of the given size ready to go.  No HPT updats
+    (H_ENTER etc.) may be run on *any* guest CPU while this is called.
+
+    Once COMMIT returns H_SUCCESS, the guest will be operating on the
+    new HPT.  On any other return it is still running on the old HPT.
+
+    The hypervisor could cancel a prospective HPT for its own reasons
+    - e.g. it could time out if the guest waits too long between
+    PREPARE and COMMIT, or it could "forget" about an in-progress
+    preparation due to live migration.  In that case COMMIT will fail,
+    which the guest should be prepared to handle.
+
+Both hypercalls take a flags parameter for extensibility, but I
+haven't defined any flags so far.
+
+I have two possible implementations in mind for the host side, both of
+which should work with the same guest interface:
+
+A) During the prepare phase we just allocate and clear the HPT (and
+   install VRMA HPTEs for KVM).  During the commit phase we translate
+   all bolted entries from the old HPT to the new then continue.
+
+   This approach is relatively simple to implement, but could lead to
+   a substantial delay during the commit phase.  Initial rough
+   measurements suggest it will be around ~200ms on a POWER8 for a 1G
+   HPT (128G guest).  Since typical live migration downtimes are
+   300-500ms, that's probably still good enough to be useful.
+
+B) During the prepare phase H_ENTER etc. calls are mirrored to both
+   the current HPT and the prospective HPT.  Existing HPTEs are
+   migrated to the new HPT in the background.  The prepare phase
+   completes once the old and new HPTs are in sync.  The commit phase
+   simply pivots to the new HPT.
+
+
+Please comment on the proposed new PAPR interface and this
+implementation.  Any information on what the next step would be in
+proposing this as a formal PAPR update would be useful too.    
+
+David Gibson (3):
+  pseries: Add hypercall wrappers for hash page table resizing
+  pseries: Add support for hash table resizing
+  pseries: sysfs hack to trigger a hash page table resize
+
+ arch/powerpc/include/asm/hvcall.h         |   2 +
+ arch/powerpc/include/asm/plpar_wrappers.h |  12 +++
+ arch/powerpc/platforms/pseries/lpar.c     | 150 ++++++++++++++++++++++++++++++
+ 3 files changed, 164 insertions(+)
+
+-- 
+2.5.0
