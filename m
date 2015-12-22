@@ -1,22 +1,24 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0128.outbound.protection.outlook.com [207.46.100.128])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 422D01A127D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Dec 2015 11:22:04 +1100 (AEDT)
-Date: Mon, 21 Dec 2015 19:21:56 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-CC: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras
- <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: warn on spurious irq events (but ratelimited)
-Message-ID: <20151222002156.GB12458@windriver.com>
-References: <1449538707-7867-1-git-send-email-paul.gortmaker@windriver.com>
- <CAP=VYLq_JQuPwAze73mFYco=9pK=rvYKabsvUewnoPdNVzCXXw@mail.gmail.com>
- <1450743048.27983.1.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 756711A11B3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Dec 2015 14:42:23 +1100 (AEDT)
+Message-ID: <1450755731.18314.76.camel@freescale.com>
+Subject: Re: [RFC 1/1] powerpc: legacy serial port use device tree
+ cell-index property
+From: Scott Wood <scottwood@freescale.com>
+To: Curt Brune <curt@cumulusnetworks.com>, <galak@codeaurora.org>,
+ <ijc+devicetree@hellion.org.uk>, <mark.rutland@arm.com>,
+ <pawel.moll@arm.com>, <benh@kernel.crashing.org>, <paulus@samba.org>,
+ <mpe@ellerman.id.au>, <robh+dt@kernel.org>
+CC: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>
+Date: Mon, 21 Dec 2015 21:42:11 -0600
+In-Reply-To: <1448477209-22340-2-git-send-email-curt@cumulusnetworks.com>
+References: <1448477209-22340-2-git-send-email-curt@cumulusnetworks.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1450743048.27983.1.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,34 +28,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[Re: [PATCH] powerpc: warn on spurious irq events (but ratelimited)] On 22/12/2015 (Tue 11:10) Michael Ellerman wrote:
-
-> On Mon, 2015-12-21 at 18:18 -0500, Paul Gortmaker wrote:
-> > On Mon, Dec 7, 2015 at 8:38 PM, Paul Gortmaker
-> > <paul.gortmaker@windriver.com> wrote:
-> > > It might be worth warning on spurious IRQ events; they might
-> > > point someone at a bogus DTS value or similar.
-> > > 
-
-[...]
-
-> > 
-> > If we did decide we cared about this patch, then no need for "irq" above, as
-> > we already know it is equal to NO_IRQ.
+On Wed, 2015-11-25 at 10:46 -0800, Curt Brune wrote:
+> Currently for PowerPC systems using device tree, the legacy serial
+> ports are allocated in the order by which they are found in the device
+> tree structure.
 > 
-> I'm not convinced it's worth printing, we already have a counter in proc.
+> This can cause problems in cases where the device tree nodes are
+> sysnthesized by an external program (kexec for example), which may not
+> preserve the original order of the device tree nodes.  This in turn
+> can result in the serial console changing from ttyS0 to ttyS1
+> unexpectedly.
 > 
-> I think it's more likely to just lead to console spam.
+> This patch uses the 'cell-index' property (if present) to map UART
+> device tree nodes to legacy serial port number.  The cell-index
+> property is widely used in all the Freescale .dts files for PowerPC.
 > 
-> But maybe I'm wrong and you can convince me otherwise :)
-
-I'm not sure I can even convince myself, let alone others.   :)
-
-Feel free to bin it.
-
-Paul.
---
-
+> Signed-off-by: Curt Brune <curt@cumulusnetworks.com>
+> ---
+>  arch/powerpc/kernel/legacy_serial.c | 11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
 > 
-> cheers
-> 
+> diff --git a/arch/powerpc/kernel/legacy_serial.c
+> b/arch/powerpc/kernel/legacy_serial.c
+> index 7b750c4..b717133 100644
+> --- a/arch/powerpc/kernel/legacy_serial.c
+> +++ b/arch/powerpc/kernel/legacy_serial.c
+> @@ -164,6 +164,8 @@ static int __init add_legacy_soc_port(struct device_node
+> *np,
+>  	u64 addr;
+>  	const __be32 *addrp;
+>  	struct device_node *tsi = of_get_parent(np);
+> +	int index = -1, len;
+> +	u32 *indexp;
+>  
+>  	/* We only support ports that have a clock frequency properly
+>  	 * encoded in the device-tree.
+> @@ -188,14 +190,19 @@ static int __init add_legacy_soc_port(struct
+> device_node *np,
+>  	if (addr == OF_BAD_ADDR)
+>  		return -1;
+>  
+> +	/* Check if the ports have an ordering, defined by 'cell-index' */
+> +	if (((indexp = (u32*)of_get_property(np, "cell-index", &len)) !=
+> NULL) &&
+> +	    (len == sizeof(u32)))
+> +		index = *indexp;
+
+const u32 *
+
+Or better, use of_read_number() or similar.
+
+-Scott
