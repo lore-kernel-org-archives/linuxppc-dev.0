@@ -2,7 +2,7 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1E9F41A11B4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 341D41A11B5
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Dec 2015 16:14:15 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
@@ -10,9 +10,11 @@ To: paulus@samba.org,
 	bharata@linux.vnet.ibm.com
 Cc: thuth@redhat.com, lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFC 0/3] Prototype PAPR hash page table resizing (guest side)
-Date: Tue, 22 Dec 2015 16:14:55 +1100
-Message-Id: <1450761298-12172-1-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFC 1/3] pseries: Add hypercall wrappers for hash page table resizing
+Date: Tue, 22 Dec 2015 16:14:56 +1100
+Message-Id: <1450761298-12172-2-git-send-email-david@gibson.dropbear.id.au>
+In-Reply-To: <1450761298-12172-1-git-send-email-david@gibson.dropbear.id.au>
+References: <1450761298-12172-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,95 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I've discussed with Paul and Ben previously the possibility of
-extending PAPR to allow changing the size of a running guest's hash
-page table (HPT).  This would allow for much more flexible memory
-hotplug, since the HPT wouldn't have to be sized in advance for the
-maximum possible memory size of the guest.
+This adds the hypercall numbers and wrapper functions for the hash page
+table resizing hypercalls.
 
-This is a draft / prototype implementation of the guest side of this.
-Or rather, the guest side of the core code for switching HPTs.  We'd
-also need notification handling and CAS support for a complete
-implementation, but I haven't gotten to writing that yet.
+These are experimental "platform specific" values for now, until we have a
+formal PAPR update.
 
-Obviously, for now it uses vendor specific hypercalls rather than
-official PAPR ones.  I have a draft implementation of these in qemu
-for TCG guests which I hope to post in the reasonably near future.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/include/asm/hvcall.h         |  2 ++
+ arch/powerpc/include/asm/plpar_wrappers.h | 12 ++++++++++++
+ 2 files changed, 14 insertions(+)
 
-The design assumes that the HPT change happens in two phases:
-
-   1) The "prepare" phase may be slow but can run asynchronously while
-      the guest runs normally
-
-   2) The "commit" phase switches to a previously prepared HPT, and
-      must be run with no concurrent updates to the HPT - in practice
-      that means stop_machine() for a Linux guest.
-
-To go with that there are two (proposed) hcalls:
-
-H_RESIZE_HPT_PREPARE:
-    This starts (1) for a new HPT of a given size.  It will typically
-    return H_LONG_DELAY_* and the guest must call it in a (sleeping)
-    loop until it completes.
-
-    Calling PREPARE with a different size from one already in progress
-    will cancel the in-progress preparation (freeing the potential HPT
-    if already allocated) and start a new one for the given size.
-
-    As a special case calling PREPARE with shift == 0 will cancel any
-    in-progress preparation and not start a new one, instead reverting
-    to the existing HPT.
-
-H_RESIZE_HPT_COMMIT:
-    Switches to an HPT of the given size.  It will fail if there isn't
-    a fully prepared HPT of the given size ready to go.  No HPT updats
-    (H_ENTER etc.) may be run on *any* guest CPU while this is called.
-
-    Once COMMIT returns H_SUCCESS, the guest will be operating on the
-    new HPT.  On any other return it is still running on the old HPT.
-
-    The hypervisor could cancel a prospective HPT for its own reasons
-    - e.g. it could time out if the guest waits too long between
-    PREPARE and COMMIT, or it could "forget" about an in-progress
-    preparation due to live migration.  In that case COMMIT will fail,
-    which the guest should be prepared to handle.
-
-Both hypercalls take a flags parameter for extensibility, but I
-haven't defined any flags so far.
-
-I have two possible implementations in mind for the host side, both of
-which should work with the same guest interface:
-
-A) During the prepare phase we just allocate and clear the HPT (and
-   install VRMA HPTEs for KVM).  During the commit phase we translate
-   all bolted entries from the old HPT to the new then continue.
-
-   This approach is relatively simple to implement, but could lead to
-   a substantial delay during the commit phase.  Initial rough
-   measurements suggest it will be around ~200ms on a POWER8 for a 1G
-   HPT (128G guest).  Since typical live migration downtimes are
-   300-500ms, that's probably still good enough to be useful.
-
-B) During the prepare phase H_ENTER etc. calls are mirrored to both
-   the current HPT and the prospective HPT.  Existing HPTEs are
-   migrated to the new HPT in the background.  The prepare phase
-   completes once the old and new HPTs are in sync.  The commit phase
-   simply pivots to the new HPT.
-
-
-Please comment on the proposed new PAPR interface and this
-implementation.  Any information on what the next step would be in
-proposing this as a formal PAPR update would be useful too.    
-
-David Gibson (3):
-  pseries: Add hypercall wrappers for hash page table resizing
-  pseries: Add support for hash table resizing
-  pseries: sysfs hack to trigger a hash page table resize
-
- arch/powerpc/include/asm/hvcall.h         |   2 +
- arch/powerpc/include/asm/plpar_wrappers.h |  12 +++
- arch/powerpc/platforms/pseries/lpar.c     | 150 ++++++++++++++++++++++++++++++
- 3 files changed, 164 insertions(+)
-
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 85bc8c0..ae1fcb7 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -273,6 +273,8 @@
+ 
+ /* Platform specific hcalls, used by KVM */
+ #define H_RTAS			0xf000
++#define H_RESIZE_HPT_PREPARE	0xf003
++#define H_RESIZE_HPT_COMMIT	0xf004
+ 
+ /* "Platform specific hcalls", provided by PHYP */
+ #define H_GET_24X7_CATALOG_PAGE	0xF078
+diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+index 67859ed..8f1d8fe 100644
+--- a/arch/powerpc/include/asm/plpar_wrappers.h
++++ b/arch/powerpc/include/asm/plpar_wrappers.h
+@@ -225,6 +225,18 @@ static inline long plpar_pte_protect(unsigned long flags, unsigned long ptex,
+ 	return plpar_hcall_norets(H_PROTECT, flags, ptex, avpn);
+ }
+ 
++static inline long plpar_resize_hpt_prepare(unsigned long flags,
++					    unsigned long shift)
++{
++	return plpar_hcall_norets(H_RESIZE_HPT_PREPARE, flags, shift);
++}
++
++static inline long plpar_resize_hpt_commit(unsigned long flags,
++					   unsigned long shift)
++{
++	return plpar_hcall_norets(H_RESIZE_HPT_COMMIT, flags, shift);
++}
++
+ static inline long plpar_tce_get(unsigned long liobn, unsigned long ioba,
+ 		unsigned long *tce_ret)
+ {
 -- 
 2.5.0
