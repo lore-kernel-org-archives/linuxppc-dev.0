@@ -1,31 +1,24 @@
-Return-Path: <zhiqiang.hou@nxp.com>
-Received: from emea01-db3-obe.outbound.protection.outlook.com
- (mail-db3on0077.outbound.protection.outlook.com [157.55.234.77])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yk0-x232.google.com (mail-yk0-x232.google.com
+ [IPv6:2607:f8b0:4002:c07::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 708771A11B7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Dec 2015 21:01:37 +1100 (AEDT)
-From: Zhiqiang Hou <zhiqiang.hou@nxp.com>
-To: Zhiqiang Hou <Zhiqiang.Hou@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Scott Wood <scottwood@freescale.com>,
- "galak@kernel.crashing.org" <galak@kernel.crashing.org>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
- <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>, "pawel.moll@arm.com"
- <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "Harninder
- Rai" <harninder.rai@freescale.com>
-CC: Minghuan Lian <Minghuan.Lian@freescale.com>, Mingkai Hu
- <Mingkai.Hu@freescale.com>, Zhiqiang Hou <B48286@freescale.com>
-Subject: RE: [PATCH V4 1/2] powerpc/fsl: Add PCI node in device tree of
- bsc9132qds
-Date: Tue, 22 Dec 2015 09:28:28 +0000
-Message-ID: <HE1PR04MB0906A35F4F48C8DACF5CD16D84E50@HE1PR04MB0906.eurprd04.prod.outlook.com>
-References: <1446693360-1578-1-git-send-email-Zhiqiang.Hou@freescale.com>
-In-Reply-To: <1446693360-1578-1-git-send-email-Zhiqiang.Hou@freescale.com>
-Content-Type: text/plain; charset="gb2312"
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB34A1A11AE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Dec 2015 22:19:24 +1100 (AEDT)
+Received: by mail-yk0-x232.google.com with SMTP id p130so160273357yka.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Dec 2015 03:19:24 -0800 (PST)
 MIME-Version: 1.0
+In-Reply-To: <1450761298-12172-4-git-send-email-david@gibson.dropbear.id.au>
+References: <1450761298-12172-1-git-send-email-david@gibson.dropbear.id.au>
+ <1450761298-12172-4-git-send-email-david@gibson.dropbear.id.au>
+Date: Tue, 22 Dec 2015 14:19:20 +0300
+Message-ID: <CAOJe8K3U-wF-kMXWwXnR=fPf0UCVfaLnqLOBfXCJFHEcpoXy5A@mail.gmail.com>
+Subject: Re: [RFC 3/3] pseries: sysfs hack to trigger a hash page table resize
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: paulus@samba.org, benh@kernel.crashing.org, bharata@linux.vnet.ibm.com,
+ lvivier@redhat.com, thuth@redhat.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,66 +28,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgUm9iLA0KDQpDb3VsZCB5b3UgcGxlYXNlIHRha2UgdGhpcyBwYXRjaCBpbnRvIGFjY291bnQ/
-DQoNClRoYW5rcywNClpoaXFpYW5nDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4g
-RnJvbTogWmhpcWlhbmcgSG91IFttYWlsdG86WmhpcWlhbmcuSG91QGZyZWVzY2FsZS5jb21dDQo+
-IFNlbnQ6IDIwMTXE6jEx1MI1yNUgMTE6MTYNCj4gVG86IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
-YnMub3JnOyBTY290dCBXb29kOyBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiBiZW5oQGtl
-cm5lbC5jcmFzaGluZy5vcmc7IHBhdWx1c0BzYW1iYS5vcmc7IG1wZUBlbGxlcm1hbi5pZC5hdTsN
-Cj4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IHJvYmgrZHRAa2VybmVsLm9yZzsgcGF3ZWwu
-bW9sbEBhcm0uY29tOw0KPiBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsgaWpjK2RldmljZXRyZWVAaGVs
-bGlvbi5vcmcudWs7IEhhcm5pbmRlciBSYWkNCj4gQ2M6IE1pbmdodWFuIExpYW47IE1pbmdrYWkg
-SHU7IFpoaXFpYW5nIEhvdQ0KPiBTdWJqZWN0OiBbUEFUQ0ggVjQgMS8yXSBwb3dlcnBjL2ZzbDog
-QWRkIFBDSSBub2RlIGluIGRldmljZSB0cmVlIG9mDQo+IGJzYzkxMzJxZHMNCj4gDQo+IEZyb206
-IEhhcm5pbmRlciBSYWkgPGhhcm5pbmRlci5yYWlAZnJlZXNjYWxlLmNvbT4NCj4gDQo+IFNpZ25l
-ZC1vZmYtYnk6IEhhcm5pbmRlciBSYWkgPGhhcm5pbmRlci5yYWlAZnJlZXNjYWxlLmNvbT4NCj4g
-U2lnbmVkLW9mZi1ieTogTWluZ2h1YW4gTGlhbiA8TWluZ2h1YW4uTGlhbkBmcmVlc2NhbGUuY29t
-Pg0KPiBTaWduZWQtb2ZmLWJ5OiBIb3UgWmhpcWlhbmcgPEI0ODI4NkBmcmVlc2NhbGUuY29tPg0K
-PiAtLS0NCj4gVjQ6IFYzOg0KPiAgLSBSZW1vdmUgZ2Vycml0IHN0dWZmLg0KPiBWMjoNCj4gIC0g
-UmVtb3ZlIHByb3BlcnR5IGNsb2NrLWZyZXF1ZW5jeS4NCj4gDQo+ICBhcmNoL3Bvd2VycGMvYm9v
-dC9kdHMvYnNjOTEzMnFkcy5kdHMgICAgICAgICAgfCAxNSArKysrKysrKysrKysrKw0KPiAgYXJj
-aC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9ic2M5MTMyc2ktcG9zdC5kdHNpIHwgMjgNCj4gKysrKysr
-KysrKysrKysrKysrKysrKysrKysrICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL2JzYzkxMzJz
-aS1wcmUuZHRzaQ0KPiB8ICAxICsNCj4gIDMgZmlsZXMgY2hhbmdlZCwgNDQgaW5zZXJ0aW9ucygr
-KQ0KPiANCj4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9ic2M5MTMycWRzLmR0
-cw0KPiBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9ic2M5MTMycWRzLmR0cw0KPiBpbmRleCA2Y2Fi
-MTA2Li45NDBkNzE5IDEwMDY0NA0KPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvYnNjOTEz
-MnFkcy5kdHMNCj4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2JzYzkxMzJxZHMuZHRzDQo+
-IEBAIC0yOSw2ICsyOSwyMSBAQA0KPiAgCXNvYzogc29jQGZmNzAwMDAwIHsNCj4gIAkJcmFuZ2Vz
-ID0gPDB4MCAweDAgMHhmZjcwMDAwMCAweDEwMDAwMD47DQo+ICAJfTsNCj4gKw0KPiArCXBjaTA6
-IHBjaWVAZmY3MGEwMDAgew0KPiArCQlyZWcgPSA8MCAweGZmNzBhMDAwIDAgMHgxMDAwPjsNCj4g
-KwkJcmFuZ2VzID0gPDB4MjAwMDAwMCAweDAgMHg5MDAwMDAwMCAwIDB4OTAwMDAwMDAgMHgwDQo+
-IDB4MjAwMDAwMDANCj4gKwkJCSAgMHgxMDAwMDAwIDB4MCAweDAwMDAwMDAwIDAgMHhjMDAxMDAw
-MCAweDAgMHgxMDAwMD47DQo+ICsJCXBjaWVAMCB7DQo+ICsJCQlyYW5nZXMgPSA8MHgyMDAwMDAw
-IDB4MCAweDkwMDAwMDAwDQo+ICsJCQkJICAweDIwMDAwMDAgMHgwIDB4OTAwMDAwMDANCj4gKwkJ
-CQkgIDB4MCAweDIwMDAwMDAwDQo+ICsNCj4gKwkJCQkgIDB4MTAwMDAwMCAweDAgMHgwDQo+ICsJ
-CQkJICAweDEwMDAwMDAgMHgwIDB4MA0KPiArCQkJCSAgMHgwIDB4MTAwMDAwPjsNCj4gKwkJfTsN
-Cj4gKwl9Ow0KPiAgfTsNCj4gDQo+ICAvaW5jbHVkZS8gImJzYzkxMzJxZHMuZHRzaSINCj4gZGlm
-ZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvYnNjOTEzMnNpLXBvc3QuZHRzaQ0K
-PiBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvYnNjOTEzMnNpLXBvc3QuZHRzaQ0KPiBpbmRl
-eCBjNzIzMDcxLi5iNWYwNzE1IDEwMDY0NA0KPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMv
-ZnNsL2JzYzkxMzJzaS1wb3N0LmR0c2kNCj4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2Zz
-bC9ic2M5MTMyc2ktcG9zdC5kdHNpDQo+IEBAIC00MCw2ICs0MCwzNCBAQA0KPiAgCWludGVycnVw
-dHMgPSA8MTYgMiAwIDAgMjAgMiAwIDA+Ow0KPiAgfTsNCj4gDQo+ICsvKiBjb250cm9sbGVyIGF0
-IDB4YTAwMCAqLw0KPiArJnBjaTAgew0KPiArCWNvbXBhdGlibGUgPSAiZnNsLGJzYzkxMzItcGNp
-ZSIsICJmc2wscW9yaXEtcGNpZS12Mi4yIjsNCj4gKwlkZXZpY2VfdHlwZSA9ICJwY2kiOw0KPiAr
-CSNzaXplLWNlbGxzID0gPDI+Ow0KPiArCSNhZGRyZXNzLWNlbGxzID0gPDM+Ow0KPiArCWJ1cy1y
-YW5nZSA9IDwwIDI1NT47DQo+ICsJaW50ZXJydXB0cyA9IDwxNiAyIDAgMD47DQo+ICsNCj4gKwlw
-Y2llQDAgew0KPiArCQlyZWcgPSA8MCAwIDAgMCAwPjsNCj4gKwkJI2ludGVycnVwdC1jZWxscyA9
-IDwxPjsNCj4gKwkJI3NpemUtY2VsbHMgPSA8Mj47DQo+ICsJCSNhZGRyZXNzLWNlbGxzID0gPDM+
-Ow0KPiArCQlkZXZpY2VfdHlwZSA9ICJwY2kiOw0KPiArCQlpbnRlcnJ1cHRzID0gPDE2IDIgMCAw
-PjsNCj4gKwkJaW50ZXJydXB0LW1hcC1tYXNrID0gPDB4ZjgwMCAwIDAgNz47DQo+ICsNCj4gKwkJ
-aW50ZXJydXB0LW1hcCA9IDwNCj4gKwkJCS8qIElEU0VMIDB4MCAqLw0KPiArCQkJMDAwMCAweDAg
-MHgwIDB4MSAmbXBpYyAweDAgMHgyIDB4MCAweDANCj4gKwkJCTAwMDAgMHgwIDB4MCAweDIgJm1w
-aWMgMHgxIDB4MiAweDAgMHgwDQo+ICsJCQkwMDAwIDB4MCAweDAgMHgzICZtcGljIDB4MiAweDIg
-MHgwIDB4MA0KPiArCQkJMDAwMCAweDAgMHgwIDB4NCAmbXBpYyAweDMgMHgyIDB4MCAweDANCj4g
-KwkJCT47DQo+ICsJfTsNCj4gK307DQo+ICsNCj4gICZzb2Mgew0KPiAgCSNhZGRyZXNzLWNlbGxz
-ID0gPDE+Ow0KPiAgCSNzaXplLWNlbGxzID0gPDE+Ow0KPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dl
-cnBjL2Jvb3QvZHRzL2ZzbC9ic2M5MTMyc2ktcHJlLmR0c2kNCj4gYi9hcmNoL3Bvd2VycGMvYm9v
-dC9kdHMvZnNsL2JzYzkxMzJzaS1wcmUuZHRzaQ0KPiBpbmRleCAzMDFhOWRiLi45MGY3OTQ5IDEw
-MDY0NA0KPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL2JzYzkxMzJzaS1wcmUuZHRz
-aQ0KPiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL2JzYzkxMzJzaS1wcmUuZHRzaQ0K
-PiBAQCAtNDUsNiArNDUsNyBAQA0KPiAgCQlzZXJpYWwwID0gJnNlcmlhbDA7DQo+ICAJCWV0aGVy
-bmV0MCA9ICZlbmV0MDsNCj4gIAkJZXRoZXJuZXQxID0gJmVuZXQxOw0KPiArCQlwY2kwID0gJnBj
-aTA7DQo+ICAJfTsNCj4gDQo+ICAJY3B1cyB7DQo+IC0tDQo+IDIuMS4wLjI3Lmc5NmRiMzI0DQoN
-Cg==
+On 12/22/15, David Gibson <david@gibson.dropbear.id.au> wrote:
+> This patch adds a special file in /sys/kernel/mm which can be used to view
+> the current size of the hash page table (as a bit shift) and to trigger
+> a resize of the hash table on PAPR guests.
+>
+> Logically this would make more sense as a debugfs file, but that doesn't
+> see to provide an obvious way to have a "store" function that has an effect
+> other than updating a variable.
+>
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> ---
+>  arch/powerpc/platforms/pseries/lpar.c | 41
+> +++++++++++++++++++++++++++++++++++
+>  1 file changed, 41 insertions(+)
+>
+> diff --git a/arch/powerpc/platforms/pseries/lpar.c
+> b/arch/powerpc/platforms/pseries/lpar.c
+> index aadb242..2759767 100644
+> --- a/arch/powerpc/platforms/pseries/lpar.c
+> +++ b/arch/powerpc/platforms/pseries/lpar.c
+> @@ -903,3 +903,44 @@ int pSeries_lpar_resize_hpt(unsigned long shift)
+>
+>  	return 0;
+>  }
+> +
+> +static ssize_t ppc64_pft_size_show(struct kobject *kobj,
+> +				   struct kobj_attribute *attr, char *buf)
+> +{
+> +	return sprintf(buf, "%llu\n", (unsigned long long)ppc64_pft_size);
+> +}
+> +
+> +static ssize_t ppc64_pft_size_store(struct kobject *kobj,
+> +				    struct kobj_attribute *attr,
+> +				    const char *buf, size_t count)
+> +{
+> +	unsigned long new_shift;
+> +	int rc;
+> +
+> +	pr_err("lpar: ppc64_pft_size_store() count=%zd\n", count);
+Why pr_err?
+> +
+> +	if (kstrtoul(buf, 0, &new_shift))
+> +		return -EINVAL;
+> +
+> +	rc = pSeries_lpar_resize_hpt(new_shift);
+> +	if (rc < 0)
+> +		return rc;
+> +
+> +	return count;
+> +}
+> +
+> +static struct kobj_attribute ppc64_pft_size_attr =
+> +	__ATTR(ppc64_pft_size, 0600, ppc64_pft_size_show, ppc64_pft_size_store);
+> +
+> +static int __init pseries_lpar_sysfs(void)
+> +{
+> +	int rc;
+> +
+> +	rc = sysfs_create_file(mm_kobj, &ppc64_pft_size_attr.attr);
+> +	if (rc)
+> +		pr_err("lpar: unable to create ppc64_pft_size sysfs file (%d)\n",
+> +		       rc);
+> +
+> +	return 0;
+I think that we need to return rc value, right?
+> +}
+> +machine_device_initcall(pseries, pseries_lpar_sysfs);
+> --
+> 2.5.0
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
