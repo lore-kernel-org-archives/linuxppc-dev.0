@@ -3,18 +3,18 @@ Received: from mail-pf0-x232.google.com (mail-pf0-x232.google.com
  [IPv6:2607:f8b0:400e:c00::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5E9951A0E58
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2015 16:50:32 +1100 (AEDT)
-Received: by mail-pf0-x232.google.com with SMTP id 78so44772133pfw.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Dec 2015 21:50:32 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6396D1A0E74
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2015 16:50:34 +1100 (AEDT)
+Received: by mail-pf0-x232.google.com with SMTP id 78so44772645pfw.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Dec 2015 21:50:34 -0800 (PST)
 From: Rashmica Gupta <rashmicy@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mikey@neuling.org,
 	mpe@ellermen.id.au
-Subject: [PATCH 4/5] selftests/powerpc: Add TM test to check if TAR is
+Subject: [PATCH 5/5] selftests/powerpc: Add test to check if TM SPRs are
  corrupted
-Date: Wed, 23 Dec 2015 16:49:53 +1100
-Message-Id: <1450849794-23174-5-git-send-email-rashmicy@gmail.com>
+Date: Wed, 23 Dec 2015 16:49:54 +1100
+Message-Id: <1450849794-23174-6-git-send-email-rashmicy@gmail.com>
 In-Reply-To: <1450849794-23174-1-git-send-email-rashmicy@gmail.com>
 References: <1450849794-23174-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,133 +26,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the transaction is aborted, the TAR should be rolled back to the
-checkpointed value before the transaction began. The value written to the
-TAR when the transaction is suspended should only remain there if the
-transaction completes successfully.
+Testing that the TM SPRs are behaving the way they should. Uses more
+threads than cpus to see if the following register values persist with
+context switching:
+- the FS (failure summary) flag in TEXASR
+- TFIAR and TFHAR
 
 Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 ---
- tools/testing/selftests/powerpc/tm/.gitignore |  1 +
- tools/testing/selftests/powerpc/tm/Makefile   |  2 +-
- tools/testing/selftests/powerpc/tm/tm-tar.c   | 90 +++++++++++++++++++++++++++
- 3 files changed, 92 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-tar.c
+ tools/testing/selftests/powerpc/tm/.gitignore |   1 +
+ tools/testing/selftests/powerpc/tm/Makefile   |   3 +-
+ tools/testing/selftests/powerpc/tm/tm-tmspr.c | 143 ++++++++++++++++++++++++++
+ 3 files changed, 146 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-tmspr.c
 
 diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
-index d216eddcd493..2ac376410c70 100644
+index 2ac376410c70..bb942db845bf 100644
 --- a/tools/testing/selftests/powerpc/tm/.gitignore
 +++ b/tools/testing/selftests/powerpc/tm/.gitignore
-@@ -4,3 +4,4 @@ tm-signal-msr-resv
- tm-signal-stack
+@@ -5,3 +5,4 @@ tm-signal-stack
  tm-vmxcopy
  tm-fork
-+tm-tar
+ tm-tar
++tm-tmspr
 diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index 2db475b12720..cb4b3bf57a4d 100644
+index cb4b3bf57a4d..d0505dbd22d5 100644
 --- a/tools/testing/selftests/powerpc/tm/Makefile
 +++ b/tools/testing/selftests/powerpc/tm/Makefile
 @@ -1,4 +1,4 @@
--TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-vmxcopy tm-fork
-+TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-vmxcopy tm-fork tm-tar
+-TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-vmxcopy tm-fork tm-tar
++TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-vmxcopy tm-fork tm-tar tm-tmspr
  
  all: $(TEST_PROGS)
  
-diff --git a/tools/testing/selftests/powerpc/tm/tm-tar.c b/tools/testing/selftests/powerpc/tm/tm-tar.c
+@@ -6,6 +6,7 @@ $(TEST_PROGS): ../harness.c ../utils.c
+ 
+ tm-syscall: tm-syscall-asm.S
+ tm-syscall: CFLAGS += -mhtm -I../../../../../usr/include
++tm-tmspr: CFLAGS += -pthread
+ 
+ include ../../lib.mk
+ 
+diff --git a/tools/testing/selftests/powerpc/tm/tm-tmspr.c b/tools/testing/selftests/powerpc/tm/tm-tmspr.c
 new file mode 100644
-index 000000000000..2d2fcc2b7a60
+index 000000000000..2bda81c7bf23
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-tar.c
-@@ -0,0 +1,90 @@
++++ b/tools/testing/selftests/powerpc/tm/tm-tmspr.c
+@@ -0,0 +1,143 @@
 +/*
 + * Copyright 2015, Michael Neuling, IBM Corp.
 + * Licensed under GPLv2.
-+ * Original: Michael Neuling 19/7/2013
-+ * Edited: Rashmica Gupta 01/12/2015
 + *
-+ * Do some transactions, see if the tar is corrupted.
-+ * If the transaction is aborted, the TAR should be rolled back to the
-+ * checkpointed value before the transaction began. The value written to
-+ * TAR in suspended mode should only remain in TAR if the transaction
-+ * completes.
++ * Original: Michael Neuling 3/4/2014
++ * Modified: Rashmica Gupta 8/12/2015
++ *
++ * Check if any of the Transaction Memory SPRs get corrupted.
++ * - TFIAR  - stores address of location of transaction failure
++ * - TFHAR  - stores address of software failure handler (if transaction
++ *   fails)
++ * - TEXASR - lots of info about the transacion(s)
++ *
++ * (1) create more threads than cpus
++ * (2) in each thread:
++ * 	(a) set TFIAR and TFHAR a unique value
++ * 	(b) loop for awhile, continually checking to see if
++ * 	either register has been corrupted.
++ *
++ * (3) Loop:
++ * 	(a) begin transaction
++ *    	(b) abort transaction
++ *	(c) check TEXASR to see if FS has been corrupted
++ *
 + */
 +
++#define _GNU_SOURCE
 +#include <stdio.h>
 +#include <stdlib.h>
 +#include <unistd.h>
++#include <pthread.h>
 +#include <string.h>
 +
-+#include "tm.h"
 +#include "utils.h"
++#include "tm.h"
 +
 +int	num_loops	= 10000;
++int	passed = 1;
 +
-+int test_tar(void)
++void tfiar_tfhar(void *in)
 +{
-+	int i;
++	int i, cpu;
++	unsigned long tfhar, tfhar_rd, tfiar, tfiar_rd;
++	cpu_set_t cpuset;
++
++	CPU_ZERO(&cpuset);
++	cpu = (unsigned long)in >> 1;
++	CPU_SET(cpu, &cpuset);
++	sched_setaffinity(0, sizeof(cpuset), &cpuset);
++
++	/* TFIAR: Last bit has to be high so userspace can read register */
++	tfiar = ((unsigned long)in) + 1;
++	tfiar += 2;
++	mtspr(SPRN_TFIAR, tfiar);
++
++	/* TFHAR: Last two bits are reserved */
++	tfhar = ((unsigned long)in);
++	tfhar &= ~0x3UL;
++	tfhar += 4;
++	mtspr(SPRN_TFHAR, tfhar);
++
++	for (i = 0; i < num_loops; i++)	{
++		tfhar_rd = mfspr(SPRN_TFHAR);
++		tfiar_rd = mfspr(SPRN_TFIAR);
++		if ( (tfhar != tfhar_rd) || (tfiar != tfiar_rd) ) {
++			passed = 0;
++			return;
++		}
++	}
++	return;
++}
++
++void texasr(void *in)
++{
++	unsigned long i;
++	uint64_t result = 0;
++
++	for (i = 0; i < num_loops; i++) {
++		asm __volatile__(
++			"tbegin.;"
++			"beq    3f ;"
++			"tabort. 0 ;"
++			"tend.;"
++
++			/* Abort handler */
++			"3: ;"
++			::: "memory");
++
++                /* Check the TEXASR */
++                result = mfspr(SPRN_TEXASR);
++		if ((result & TEXASR_FS) == 0) {
++			passed = 0;
++			return;
++		}
++	}
++	return;
++}
++
++int test_tmspr()
++{
++	pthread_t 	thread;
++	int	   	thread_num;
++	unsigned long	i;
 +
 +	SKIP_IF(!have_htm());
 +
-+	for (i = 0; i < num_loops; i++)
-+	{
-+		uint64_t result = 0;
-+		asm __volatile__(
-+			"li	7, 1;"
-+			"mtspr	%[tar], 7;"	/* tar = 1 */
-+			"tbegin.;"
-+			"beq	3f;"
-+			"li	4, 0x7000;"	/* Loop lots, to use time */
-+			"2:;"			/* Start loop */
-+			"li	7, 2;"
-+			"mtspr	%[tar], 7;"	/* tar = 2 */
-+			"tsuspend.;"
-+			"li	7, 3;"
-+			"mtspr	%[tar], 7;"	/* tar = 3 */
-+			"tresume.;"
-+			"subi	4, 4, 1;"
-+			"cmpdi	4, 0;"
-+			"bne	2b;"
-+			"tend.;"
++	/* To cause some context switching */
++	thread_num = 10 * sysconf(_SC_NPROCESSORS_ONLN);
 +
-+			/* Transaction sucess! TAR should be 3 */
-+			"mfspr  7, %[tar];"
-+			"ori	%[res], 7, 4;"  // res = 3|4 = 7
-+			"b	4f;"
-+
-+			/* Abort handler. TAR should be rolled back to 1 */
-+			"3:;"
-+			"mfspr  7, %[tar];"
-+			"ori	%[res], 7, 8;"	// res = 1|8 = 9
-+			"4:;"
-+
-+			: [res]"=r"(result)
-+			: [tar]"i"(SPRN_TAR)
-+			   : "memory", "r0", "r4", "r7");
-+
-+		/* If result is anything else other than 7 or 9, the tar
-+		 * value must have been corrupted. */
-+		if ((result != 7) && (result != 9))
-+			return 1;
++	/* Test TFIAR and TFHAR */
++	for (i = 0 ; i < thread_num ; i += 2){
++		if (pthread_create(&thread, NULL, (void*)tfiar_tfhar, (void *)i))
++			return EXIT_FAILURE;
 +	}
-+	return 0;
++	if (pthread_join(thread, NULL) != 0)
++		return EXIT_FAILURE;
++
++	/* Test TEXASR */
++	for (i = 0 ; i < thread_num ; i++){
++		if (pthread_create(&thread, NULL, (void*)texasr, (void *)i))
++			return EXIT_FAILURE;
++	}
++	if (pthread_join(thread, NULL) != 0)
++		return EXIT_FAILURE;
++
++	if (passed)
++		return 0;
++	else
++		return 1;
 +}
 +
 +int main(int argc, char *argv[])
 +{
-+	/* A low number of iterations (eg 100) can cause a false pass */
 +	if (argc > 1) {
 +		if (strcmp(argv[1], "-h") == 0) {
-+			printf("Syntax:\n\t%s [<num loops>]\n",
-+			       argv[0]);
-+			return 1;
++			printf("Syntax:\t [<num loops>]\n");
++			return 0;
 +		} else {
 +			num_loops = atoi(argv[1]);
 +		}
 +	}
-+
-+	printf("Starting, %d loops\n", num_loops);
-+
-+	return test_harness(test_tar, "tm_tar");
++	return test_harness(test_tmspr, "tm_tmspr");
 +}
 -- 
 2.5.0
