@@ -1,30 +1,17 @@
-Return-Path: <dave@stgolabs.net>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 634C61A001B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2015 23:18:44 +1100 (AEDT)
-Date: Wed, 23 Dec 2015 04:18:26 -0800
-From: Davidlohr Bueso <dave@stgolabs.net>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will.deacon@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Waiman Long <waiman.long@hp.com>
-Subject: Re: [PATCH powerpc/next v6 0/4] atomics: powerpc: Implement
- relaxed/acquire/release variants
-Message-ID: <20151223121826.GO17386@linux-uzut.site>
-References: <1450189457-10589-1-git-send-email-boqun.feng@gmail.com>
- <1450838405.5036.6.camel@ellerman.id.au>
- <20151223105410.GA18401@fixme-laptop.cn.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="C7zPtVaVf+AK4Oqc"
-In-Reply-To: <20151223105410.GA18401@fixme-laptop.cn.ibm.com>
+Return-Path: <geliangtang@163.com>
+Received: from m50-134.163.com (m50-134.163.com [123.125.50.134])
+ by lists.ozlabs.org (Postfix) with ESMTP id BC0831A0BD7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Dec 2015 00:03:57 +1100 (AEDT)
+From: Geliang Tang <geliangtang@163.com>
+To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Geliang Tang <geliangtang@163.com>, alsa-devel@alsa-project.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] ASoC: twl6040, fsl: use to_platform_device
+Date: Wed, 23 Dec 2015 21:03:39 +0800
+Message-Id: <e0497ed266c5f2013268cca6c02fd2b161339c07.1450875641.git.geliangtang@163.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,41 +21,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Use to_platform_device() instead of open-coding it.
 
---C7zPtVaVf+AK4Oqc
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
+Signed-off-by: Geliang Tang <geliangtang@163.com>
+---
+ sound/soc/codecs/twl6040.c   | 3 +--
+ sound/soc/fsl/mpc8610_hpcd.c | 3 +--
+ sound/soc/fsl/p1022_ds.c     | 3 +--
+ sound/soc/fsl/p1022_rdk.c    | 3 +--
+ 4 files changed, 4 insertions(+), 8 deletions(-)
 
-On Wed, 23 Dec 2015, Boqun Feng wrote:
->There is one thing we should be aware of, that is the bug:
->
->http://lkml.kernel.org/r/5669D5F2.5050004@caviumnetworks.com
->
->which though has been fixed by:
->
->http://lkml.kernel.org/r/20151217160549.GH6344@twins.programming.kicks-ass.net
-
-Right, and fwiw the testing I did included this fix.
---C7zPtVaVf+AK4Oqc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBAgAGBQJWepESAAoJEF08bMdqyvoCTXsQAJ8hpQ5y4SGUDoO8Wzyn5Uct
-Zc9n6bF8fm1NrWTcwLnr0d5jjF6WMokWhXenfFosA2pACV0GhoUF7WyT29bO+pzd
-Bz8ZDo9OaVmdyB0Kr8JXCwD9bsjReNsKCcJMQvZ5ls1Jdbx9nNbB3mwiDwNHG6V0
-c4/l3vzBqUONlvpyP4C7a2NFM7l2LDf0Q6bV+B5PqxcHrY8w7iymvPDiRM6EzKD+
-H/U0ykU7nzRkKK9Q5P5mPbOWDk0jnNka7tiI3VQvX/hmHc1fMHgv3WSwij5NNi95
-d6PlaXLqclaukDdFNJnN6rtNiQEx7pJka0kplSwfrekFxfd7D5n2e9aBZ1D5BQrE
-YuiiyyYUgxnGvJlAgJvhUykpH+R6X2oWKs7yxF9NNz+Kogu4zKnSwAHfISrGYNgE
-JPEOTWc4SP8Qe4d0hHp//3IJgpz1f7H+3PkOCQY3pcY9IJK4PbQ7dSugmbxsib/r
-B2kz2A1LWRpINNgP2DBa5OAiXt/EbJZcRKA+05ohn0opiBL2ckSsWdvIG78j4iW/
-oP4AUsrAzKcTuLe/Jv4mXToZWrp9ZWqkCgQYie79oFZKb7cuUeltvYT0voWoTspQ
-x5FM0JC03BVv3rB6SJXJxtCoKjRKFW6Zz0BAVBv8eu29OO2IaYhRTga1dM3eGPYN
-wUfZNM3IDTM0kALK62lG
-=2wjc
------END PGP SIGNATURE-----
-
---C7zPtVaVf+AK4Oqc--
+diff --git a/sound/soc/codecs/twl6040.c b/sound/soc/codecs/twl6040.c
+index 4cad892..bc3de2e 100644
+--- a/sound/soc/codecs/twl6040.c
++++ b/sound/soc/codecs/twl6040.c
+@@ -1097,8 +1097,7 @@ static int twl6040_probe(struct snd_soc_codec *codec)
+ {
+ 	struct twl6040_data *priv;
+ 	struct twl6040 *twl6040 = dev_get_drvdata(codec->dev->parent);
+-	struct platform_device *pdev = container_of(codec->dev,
+-						   struct platform_device, dev);
++	struct platform_device *pdev = to_platform_device(codec->dev);
+ 	int ret = 0;
+ 
+ 	priv = devm_kzalloc(codec->dev, sizeof(*priv), GFP_KERNEL);
+diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
+index 6f236f1..ddf49f3 100644
+--- a/sound/soc/fsl/mpc8610_hpcd.c
++++ b/sound/soc/fsl/mpc8610_hpcd.c
+@@ -189,8 +189,7 @@ static int mpc8610_hpcd_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = pdev->dev.parent;
+ 	/* ssi_pdev is the platform device for the SSI node that probed us */
+-	struct platform_device *ssi_pdev =
+-		container_of(dev, struct platform_device, dev);
++	struct platform_device *ssi_pdev = to_platform_device(dev);
+ 	struct device_node *np = ssi_pdev->dev.of_node;
+ 	struct device_node *codec_np = NULL;
+ 	struct mpc8610_hpcd_data *machine_data;
+diff --git a/sound/soc/fsl/p1022_ds.c b/sound/soc/fsl/p1022_ds.c
+index 747aab0..a1f780e 100644
+--- a/sound/soc/fsl/p1022_ds.c
++++ b/sound/soc/fsl/p1022_ds.c
+@@ -199,8 +199,7 @@ static int p1022_ds_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = pdev->dev.parent;
+ 	/* ssi_pdev is the platform device for the SSI node that probed us */
+-	struct platform_device *ssi_pdev =
+-		container_of(dev, struct platform_device, dev);
++	struct platform_device *ssi_pdev = to_platform_device(dev);
+ 	struct device_node *np = ssi_pdev->dev.of_node;
+ 	struct device_node *codec_np = NULL;
+ 	struct machine_data *mdata;
+diff --git a/sound/soc/fsl/p1022_rdk.c b/sound/soc/fsl/p1022_rdk.c
+index 1dd49e5..d4d88a8 100644
+--- a/sound/soc/fsl/p1022_rdk.c
++++ b/sound/soc/fsl/p1022_rdk.c
+@@ -203,8 +203,7 @@ static int p1022_rdk_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = pdev->dev.parent;
+ 	/* ssi_pdev is the platform device for the SSI node that probed us */
+-	struct platform_device *ssi_pdev =
+-		container_of(dev, struct platform_device, dev);
++	struct platform_device *ssi_pdev = to_platform_device(dev);
+ 	struct device_node *np = ssi_pdev->dev.of_node;
+ 	struct device_node *codec_np = NULL;
+ 	struct machine_data *mdata;
+-- 
+2.5.0
