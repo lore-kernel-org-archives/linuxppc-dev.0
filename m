@@ -1,26 +1,30 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-x22b.google.com (mail-yk0-x22b.google.com
- [IPv6:2607:f8b0:4002:c07::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dave@stgolabs.net>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B390C1A0AB3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2015 23:16:41 +1100 (AEDT)
-Received: by mail-yk0-x22b.google.com with SMTP id x184so193965516yka.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2015 04:16:41 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 634C61A001B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2015 23:18:44 +1100 (AEDT)
+Date: Wed, 23 Dec 2015 04:18:26 -0800
+From: Davidlohr Bueso <dave@stgolabs.net>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hp.com>
+Subject: Re: [PATCH powerpc/next v6 0/4] atomics: powerpc: Implement
+ relaxed/acquire/release variants
+Message-ID: <20151223121826.GO17386@linux-uzut.site>
+References: <1450189457-10589-1-git-send-email-boqun.feng@gmail.com>
+ <1450838405.5036.6.camel@ellerman.id.au>
+ <20151223105410.GA18401@fixme-laptop.cn.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20151223084548.GW3011@voom.redhat.com>
-References: <1450761298-12172-1-git-send-email-david@gibson.dropbear.id.au>
- <1450761298-12172-4-git-send-email-david@gibson.dropbear.id.au>
- <CAOJe8K3U-wF-kMXWwXnR=fPf0UCVfaLnqLOBfXCJFHEcpoXy5A@mail.gmail.com>
- <20151223084548.GW3011@voom.redhat.com>
-Date: Wed, 23 Dec 2015 15:16:39 +0300
-Message-ID: <CAOJe8K26k9+iAw1RM2oVCn=gYMCDgfWNhbGJT+kQ=VwM2kXz=A@mail.gmail.com>
-Subject: Re: [RFC 3/3] pseries: sysfs hack to trigger a hash page table resize
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: paulus@samba.org, benh@kernel.crashing.org, bharata@linux.vnet.ibm.com,
- lvivier@redhat.com, thuth@redhat.com, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="C7zPtVaVf+AK4Oqc"
+In-Reply-To: <20151223105410.GA18401@fixme-laptop.cn.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,97 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/23/15, David Gibson <david@gibson.dropbear.id.au> wrote:
-> On Tue, Dec 22, 2015 at 02:19:20PM +0300, Denis Kirjanov wrote:
->> On 12/22/15, David Gibson <david@gibson.dropbear.id.au> wrote:
->> > This patch adds a special file in /sys/kernel/mm which can be used to
->> > view
->> > the current size of the hash page table (as a bit shift) and to trigger
->> > a resize of the hash table on PAPR guests.
->> >
->> > Logically this would make more sense as a debugfs file, but that
->> > doesn't
->> > see to provide an obvious way to have a "store" function that has an
->> > effect
->> > other than updating a variable.
->> >
->> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
->> > ---
->> >  arch/powerpc/platforms/pseries/lpar.c | 41
->> > +++++++++++++++++++++++++++++++++++
->> >  1 file changed, 41 insertions(+)
->> >
->> > diff --git a/arch/powerpc/platforms/pseries/lpar.c
->> > b/arch/powerpc/platforms/pseries/lpar.c
->> > index aadb242..2759767 100644
->> > --- a/arch/powerpc/platforms/pseries/lpar.c
->> > +++ b/arch/powerpc/platforms/pseries/lpar.c
->> > @@ -903,3 +903,44 @@ int pSeries_lpar_resize_hpt(unsigned long shift)
->> >
->> >  	return 0;
->> >  }
->> > +
->> > +static ssize_t ppc64_pft_size_show(struct kobject *kobj,
->> > +				   struct kobj_attribute *attr, char *buf)
->> > +{
->> > +	return sprintf(buf, "%llu\n", (unsigned long long)ppc64_pft_size);
->> > +}
->> > +
->> > +static ssize_t ppc64_pft_size_store(struct kobject *kobj,
->> > +				    struct kobj_attribute *attr,
->> > +				    const char *buf, size_t count)
->> > +{
->> > +	unsigned long new_shift;
->> > +	int rc;
->> > +
->> > +	pr_err("lpar: ppc64_pft_size_store() count=%zd\n", count);
->> Why pr_err?
+
+--C7zPtVaVf+AK4Oqc
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+
+On Wed, 23 Dec 2015, Boqun Feng wrote:
+>There is one thing we should be aware of, that is the bug:
 >
-> Uh.. good question.  That's a not particularly useful debug comment I
-> should just remove anyway.
+>http://lkml.kernel.org/r/5669D5F2.5050004@caviumnetworks.com
 >
->> > +
->> > +	if (kstrtoul(buf, 0, &new_shift))
->> > +		return -EINVAL;
->> > +
->> > +	rc = pSeries_lpar_resize_hpt(new_shift);
->> > +	if (rc < 0)
->> > +		return rc;
->> > +
->> > +	return count;
->> > +}
->> > +
->> > +static struct kobj_attribute ppc64_pft_size_attr =
->> > +	__ATTR(ppc64_pft_size, 0600, ppc64_pft_size_show,
->> > ppc64_pft_size_store);
->> > +
->> > +static int __init pseries_lpar_sysfs(void)
->> > +{
->> > +	int rc;
->> > +
->> > +	rc = sysfs_create_file(mm_kobj, &ppc64_pft_size_attr.attr);
->> > +	if (rc)
->> > +		pr_err("lpar: unable to create ppc64_pft_size sysfs file (%d)\n",
->> > +		       rc);
->> > +
->> > +	return 0;
->> I think that we need to return rc value, right?
+>which though has been fixed by:
 >
-> No.  Failing to register this sysfs file shouldn't cause the boot to fail.
-Then we don't need rc at all ;)
->
->> > +}
->> > +machine_device_initcall(pseries, pseries_lpar_sysfs);
->> >
->> > _______________________________________________
->> > Linuxppc-dev mailing list
->> > Linuxppc-dev@lists.ozlabs.org
->> > https://lists.ozlabs.org/listinfo/linuxppc-dev
->>
->
-> --
-> David Gibson			| I'll have my music baroque, and my code
-> david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-> 				| _way_ _around_!
-> http://www.ozlabs.org/~dgibson
->
+>http://lkml.kernel.org/r/20151217160549.GH6344@twins.programming.kicks-ass.net
+
+Right, and fwiw the testing I did included this fix.
+--C7zPtVaVf+AK4Oqc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJWepESAAoJEF08bMdqyvoCTXsQAJ8hpQ5y4SGUDoO8Wzyn5Uct
+Zc9n6bF8fm1NrWTcwLnr0d5jjF6WMokWhXenfFosA2pACV0GhoUF7WyT29bO+pzd
+Bz8ZDo9OaVmdyB0Kr8JXCwD9bsjReNsKCcJMQvZ5ls1Jdbx9nNbB3mwiDwNHG6V0
+c4/l3vzBqUONlvpyP4C7a2NFM7l2LDf0Q6bV+B5PqxcHrY8w7iymvPDiRM6EzKD+
+H/U0ykU7nzRkKK9Q5P5mPbOWDk0jnNka7tiI3VQvX/hmHc1fMHgv3WSwij5NNi95
+d6PlaXLqclaukDdFNJnN6rtNiQEx7pJka0kplSwfrekFxfd7D5n2e9aBZ1D5BQrE
+YuiiyyYUgxnGvJlAgJvhUykpH+R6X2oWKs7yxF9NNz+Kogu4zKnSwAHfISrGYNgE
+JPEOTWc4SP8Qe4d0hHp//3IJgpz1f7H+3PkOCQY3pcY9IJK4PbQ7dSugmbxsib/r
+B2kz2A1LWRpINNgP2DBa5OAiXt/EbJZcRKA+05ohn0opiBL2ckSsWdvIG78j4iW/
+oP4AUsrAzKcTuLe/Jv4mXToZWrp9ZWqkCgQYie79oFZKb7cuUeltvYT0voWoTspQ
+x5FM0JC03BVv3rB6SJXJxtCoKjRKFW6Zz0BAVBv8eu29OO2IaYhRTga1dM3eGPYN
+wUfZNM3IDTM0kALK62lG
+=2wjc
+-----END PGP SIGNATURE-----
+
+--C7zPtVaVf+AK4Oqc--
