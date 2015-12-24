@@ -1,36 +1,22 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E7AC81A01DC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Dec 2015 20:23:53 +1100 (AEDT)
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 24 Dec 2015 19:23:51 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id E37782BB0051
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Dec 2015 20:23:44 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBO9NZBH2293988
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Dec 2015 20:23:44 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBO9NBYX032715
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Dec 2015 20:23:11 +1100
-Message-ID: <567BB96D.6050504@linux.vnet.ibm.com>
-Date: Thu, 24 Dec 2015 14:52:53 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>, paulus@samba.org,
- benh@kernel.crashing.org, bharata@linux.vnet.ibm.com
-CC: lvivier@redhat.com, thuth@redhat.com, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5A2141A01EB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Dec 2015 22:20:18 +1100 (AEDT)
+Date: Thu, 24 Dec 2015 21:38:44 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: paulus@samba.org, benh@kernel.crashing.org, bharata@linux.vnet.ibm.com,
+ lvivier@redhat.com, thuth@redhat.com, linuxppc-dev@lists.ozlabs.org
 Subject: Re: [RFC 0/3] Prototype PAPR hash page table resizing (guest side)
+Message-ID: <20151224103844.GB3011@voom.redhat.com>
 References: <1450761298-12172-1-git-send-email-david@gibson.dropbear.id.au>
-In-Reply-To: <1450761298-12172-1-git-send-email-david@gibson.dropbear.id.au>
-Content-Type: text/plain; charset=utf-8
+ <567BB96D.6050504@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="+5G7L20VUoXZHCOn"
+In-Reply-To: <567BB96D.6050504@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,11 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/22/2015 10:44 AM, David Gibson wrote:
-> I've discussed with Paul and Ben previously the possibility of
-> extending PAPR to allow changing the size of a running guest's hash
-> page table (HPT).  This would allow for much more flexible memory
-> hotplug, since the HPT wouldn't have to be sized in advance for the
-> maximum possible memory size of the guest.
 
-Does it include reducing the size of HPT as well ?
+--+5G7L20VUoXZHCOn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, Dec 24, 2015 at 02:52:53PM +0530, Anshuman Khandual wrote:
+> On 12/22/2015 10:44 AM, David Gibson wrote:
+> > I've discussed with Paul and Ben previously the possibility of
+> > extending PAPR to allow changing the size of a running guest's hash
+> > page table (HPT).  This would allow for much more flexible memory
+> > hotplug, since the HPT wouldn't have to be sized in advance for the
+> > maximum possible memory size of the guest.
+>=20
+> Does it include reducing the size of HPT as well ?
+
+It does, but that could fail with H_PTEG_FULL if there's a collision
+between bolted entries in the reduced table.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--+5G7L20VUoXZHCOn
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJWe8s0AAoJEGw4ysog2bOS+JcP/AodNGZgUqkyhuY2DqDP7ayM
+ANREasYPfXTFokSCrzgDdpD71lzYVpcye1nA8FfKuMQRCFKAN9T5vSWAvSUKDKk1
+Zg3242FDkj8XBnvkeu1SxqUKoGXJq4dGMB2n0qirrJkRRuCYsKlnU1/ZWGWUZjBw
+/ZV4nNZReyqfJOx3IZuvTlhB7n6tkOSVUG9wSTBs0NrJy1pd7EGtBt3geXH680lQ
+WlCEtgrfnaEJ/bj1Ajx0Vt+X/t3nTMX/Nxk/gxsZa9/qhSClg6Db9m6UTJeRRsCw
+olfrubyorNDkJjWpUB45y4WgWSIPPkM4NYxOzPFyx7xfNGkXmk0H94kn4BV4ZNVm
+1EMpp2c7GflpvZmHsNJQXcnzFmFO3yhYVg3uxBDS+JW++k9SSoeJnDPIsjzRX2gp
+BVz3vZo2atXQ6It09KRIjd90PxxEFrb6VHhmaXooNg4Cf2mf/QAnY0RlQPjuK1n/
+t79AhuVy1k9RmdWsUekVLlYLestcK27/ualUHlB8hq4N1H8r0NDHRMBRgTux5p7B
+SuxDzvE9tMTsJGAUR9IsIjYuzbOB27LCwVAnlaqUJ9Cyo7o9PFYwUjLqinnGBU10
+bx+ZnqcQN3iaBbw9gqkYw81CIpcG4qvuwA+xvswwgQ93C5qhRTq/WHT8MuqdULsi
+q1+Emjv2vti4DpLz8vMW
+=Yd1F
+-----END PGP SIGNATURE-----
+
+--+5G7L20VUoXZHCOn--
