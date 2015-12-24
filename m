@@ -1,23 +1,25 @@
-Return-Path: <prabhakar@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0130.outbound.protection.outlook.com [65.55.169.130])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 98CFA1A01DC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Dec 2015 16:36:45 +1100 (AEDT)
-From: Kushwaha Prabhakar <prabhakar@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, Dogra Raghav <raghav@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [1/2] mpc85xx/lbc: modify suspend/resume entry sequence
-Date: Thu, 24 Dec 2015 05:22:14 +0000
-Message-ID: <DM2PR0301MB06703BB1F35BA35A0FD9B865A9E70@DM2PR0301MB0670.namprd03.prod.outlook.com>
-References: <1446186299-2921-1-git-send-email-raghav@freescale.com>
- <20151224041924.GA18543@home.buserror.net>
- <DM2PR0301MB06702E55727D2B36887B6E2DA9E70@DM2PR0301MB0670.namprd03.prod.outlook.com>
- <1450932555.18314.121.camel@freescale.com>
-In-Reply-To: <1450932555.18314.121.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id E26B61A01DC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Dec 2015 17:58:04 +1100 (AEDT)
+Date: Thu, 24 Dec 2015 17:37:35 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: paulus@samba.org, benh@kernel.crashing.org, bharata@linux.vnet.ibm.com,
+ lvivier@redhat.com, thuth@redhat.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC 3/3] pseries: sysfs hack to trigger a hash page table resize
+Message-ID: <20151224063734.GX3011@voom.redhat.com>
+References: <1450761298-12172-1-git-send-email-david@gibson.dropbear.id.au>
+ <1450761298-12172-4-git-send-email-david@gibson.dropbear.id.au>
+ <CAOJe8K3U-wF-kMXWwXnR=fPf0UCVfaLnqLOBfXCJFHEcpoXy5A@mail.gmail.com>
+ <20151223084548.GW3011@voom.redhat.com>
+ <CAOJe8K26k9+iAw1RM2oVCn=gYMCDgfWNhbGJT+kQ=VwM2kXz=A@mail.gmail.com>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="LvnU4bbuCGLV8PtK"
+In-Reply-To: <CAOJe8K26k9+iAw1RM2oVCn=gYMCDgfWNhbGJT+kQ=VwM2kXz=A@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,52 +29,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
-DQo+IFNlbnQ6IFRodXJzZGF5LCBEZWNlbWJlciAyNCwgMjAxNSAxMDoxOSBBTQ0KPiBUbzogS3Vz
-aHdhaGEgUHJhYmhha2FyLUIzMjU3OSA8cHJhYmhha2FyQGZyZWVzY2FsZS5jb20+OyBEb2dyYQ0K
-PiBSYWdoYXYtQjQ2MTg0IDxyYWdoYXZAZnJlZXNjYWxlLmNvbT4NCj4gQ2M6IGxpbnV4cHBjLWRl
-dkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbMS8yXSBtcGM4NXh4L2xiYzogbW9k
-aWZ5IHN1c3BlbmQvcmVzdW1lIGVudHJ5IHNlcXVlbmNlDQo+IA0KPiBPbiBXZWQsIDIwMTUtMTIt
-MjMgYXQgMjI6MzggLTA2MDAsIEt1c2h3YWhhIFByYWJoYWthci1CMzI1Nzkgd3JvdGU6DQo+ID4g
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gPiA+IFNlbnQ6IFRodXJzZGF5LCBEZWNlbWJlciAyNCwgMjAxNSA5OjQ5IEFNDQo+ID4g
-PiBUbzogRG9ncmEgUmFnaGF2LUI0NjE4NCA8cmFnaGF2QGZyZWVzY2FsZS5jb20+DQo+ID4gPiBD
-YzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IEt1c2h3YWhhIFByYWJoYWthci1CMzI1
-NzkNCj4gPiA+IDxwcmFiaGFrYXJAZnJlZXNjYWxlLmNvbT4NCj4gPiA+IFN1YmplY3Q6IFJlOiBb
-MS8yXSBtcGM4NXh4L2xiYzogbW9kaWZ5IHN1c3BlbmQvcmVzdW1lIGVudHJ5IHNlcXVlbmNlDQo+
-ID4gPg0KPiA+ID4gT24gRnJpLCBPY3QgMzAsIDIwMTUgYXQgMTE6NTQ6NTlBTSArMDUzMCwgUmFn
-aGF2IERvZ3JhIHdyb3RlOg0KPiA+ID4gPiAgLyogcmVzdG9yZSBsYmMgcmVnaXN0ZXJzICovDQo+
-ID4gPiA+IC1zdGF0aWMgaW50IGZzbF9sYmNfcmVzdW1lKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2Ug
-KnBkZXYpDQo+ID4gPiA+ICtzdGF0aWMgaW50IGZzbF9sYmNfc3lzY29yZV9yZXN1bWUodm9pZCkN
-Cj4gPiA+ID4gIHsNCj4gPiA+ID4gLQlzdHJ1Y3QgZnNsX2xiY19jdHJsICpjdHJsID0gZGV2X2dl
-dF9kcnZkYXRhKCZwZGV2LT5kZXYpOw0KPiA+ID4gPiAtCXN0cnVjdCBmc2xfbGJjX3JlZ3MgX19p
-b21lbSAqbGJjID0gY3RybC0+cmVnczsNCj4gPiA+ID4gKwlzdHJ1Y3QgZnNsX2xiY19jdHJsICpj
-dHJsOw0KPiA+ID4gPiArCXN0cnVjdCBmc2xfbGJjX3JlZ3MgX19pb21lbSAqbGJjOw0KPiA+ID4g
-PiArDQo+ID4gPiA+ICsJY3RybCA9IGZzbF9sYmNfY3RybF9kZXY7DQo+ID4gPiA+ICsJaWYgKCFj
-dHJsKQ0KPiA+ID4gPiArCQlnb3RvIG91dDsNCj4gPiA+ID4gKw0KPiA+ID4gPiArCWxiYyA9IGN0
-cmwtPnJlZ3M7DQo+ID4gPiA+ICsJaWYgKCFsYmMpDQo+ID4gPiA+ICsJCWdvdG8gb3V0Ow0KPiA+
-ID4gPg0KPiA+ID4gPiAgCWlmIChjdHJsLT5zYXZlZF9yZWdzKSB7DQo+ID4gPiA+ICAJCV9tZW1j
-cHlfdG9pbyhsYmMsIGN0cmwtPnNhdmVkX3JlZ3MsIEBAIC0zNzksNyArMzk4LDkgQEANCj4gPiA+
-IHN0YXRpYyBpbnQNCj4gPiA+ID4gZnNsX2xiY19yZXN1bWUoc3RydWN0IHBsYXRmb3JtX2Rldmlj
-ZSAqcGRldikNCj4gPiA+ID4gIAkJa2ZyZWUoY3RybC0+c2F2ZWRfcmVncyk7DQo+ID4gPiA+ICAJ
-CWN0cmwtPnNhdmVkX3JlZ3MgPSBOVUxMOw0KPiA+ID4gPiAgCX0NCj4gPiA+ID4gLQlyZXR1cm4g
-MDsNCj4gPiA+ID4gKw0KPiA+ID4gPiArb3V0Og0KPiA+ID4gPiArCXJldHVybjsNCj4gPiA+ID4g
-IH0NCj4gPiA+DQo+ID4gPiBhcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9sYmMuYzo0MDE6MjogZXJy
-b3I6DQo+ID4gPiAncmV0dXJuJyB3aXRoIG5vIHZhbHVlLCBpbiBmdW5jdGlvbiByZXR1cm5pbmcg
-bm9uLXZvaWQNCj4gPiA+IFstV2Vycm9yPXJldHVybiAtdHlwZV0NCj4gPiA+DQo+ID4gPg0KPiA+
-ID4gPiAgI2VuZGlmIC8qIENPTkZJR19TVVNQRU5EICovDQo+ID4gPiA+DQo+ID4gPiA+IEBAIC0z
-OTEsMjAgKzQxMiwyNiBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZA0KPiA+ID4g
-PiBmc2xfbGJjX21hdGNoW10gPQ0KPiA+ID4gew0KPiA+ID4gPiAgCXt9LA0KPiA+ID4gPiAgfTsN
-Cj4gPiA+ID4NCj4gPiA+ID4gKyNpZmRlZiBDT05GSUdfU1VTUEVORA0KPiA+ID4gPiArc3RhdGlj
-IHN0cnVjdCBzeXNjb3JlX29wcyBsYmNfc3lzY29yZV9wbV9vcHMgPSB7DQo+ID4gPiA+ICsJLnN1
-c3BlbmQgPSBmc2xfbGJjX3N5c2NvcmVfc3VzcGVuZCwNCj4gPiA+ID4gKwkucmVzdW1lID0gZnNs
-X2xiY19zeXNjb3JlX3Jlc3VtZSwgfTsgI2VuZGlmDQo+ID4gPg0KPiA+ID4gYXJjaC9wb3dlcnBj
-L3N5c2Rldi9mc2xfbGJjLmM6NDE2OjI6IGVycm9yOg0KPiA+ID4gaW5pdGlhbGl6YXRpb24gZnJv
-bSBpbmNvbXBhdGlibGUgcG9pbnRlciB0eXBlIFstV2Vycm9yXQ0KPiA+ID4gYXJjaC9wb3dlcnBj
-L3N5c2Rldi9mc2xfbGJjLmM6NDE2OjI6IGVycm9yOg0KPiA+ID4gKG5lYXIgaW5pdGlhbGl6YXRp
-b24gZm9yICdsYmNfc3lzY29yZV9wbV9vcHMucmVzdW1lJykgWy1XZXJyb3JdDQo+ID4gPg0KPiA+
-DQo+ID4gQ2FuIHlvdSBwbGVhc2UgaGVscCB1cyB3aXRoIHRoZSB0b29sLWNoYWluIHVzZWQgZm9y
-IGNvbXBpbGluZy4NCj4gDQo+IEl0IGRvZXNuJ3QgbWF0dGVyLiAgVGhlIHBhdGNoIGlzIGNsZWFy
-bHkgd3JvbmcgYmFzZWQgb24gaW5zcGVjdGlvbi4NCj4gDQoNCkNhbiB5b3UgcGxlYXNlIGhlbHAg
-bWUgd2l0aCB0aGUgdGhpbmdzIHdoaWNoIG5lZWRzIHRvIGJlIHVwZGF0ZWQNCk9yIA0KQ29tcGxl
-dGUgcGF0Y2ggaXMgd3JvbmcuDQoNCi0tcHJhYmhha2FyDQoNCg==
+
+--LvnU4bbuCGLV8PtK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Dec 23, 2015 at 03:16:39PM +0300, Denis Kirjanov wrote:
+> On 12/23/15, David Gibson <david@gibson.dropbear.id.au> wrote:
+> > On Tue, Dec 22, 2015 at 02:19:20PM +0300, Denis Kirjanov wrote:
+> >> On 12/22/15, David Gibson <david@gibson.dropbear.id.au> wrote:
+> >> > This patch adds a special file in /sys/kernel/mm which can be used to
+> >> > view
+> >> > the current size of the hash page table (as a bit shift) and to trig=
+ger
+> >> > a resize of the hash table on PAPR guests.
+> >> >
+> >> > Logically this would make more sense as a debugfs file, but that
+> >> > doesn't
+> >> > see to provide an obvious way to have a "store" function that has an
+> >> > effect
+> >> > other than updating a variable.
+> >> >
+> >> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> >> > ---
+> >> >  arch/powerpc/platforms/pseries/lpar.c | 41
+> >> > +++++++++++++++++++++++++++++++++++
+> >> >  1 file changed, 41 insertions(+)
+> >> >
+> >> > diff --git a/arch/powerpc/platforms/pseries/lpar.c
+> >> > b/arch/powerpc/platforms/pseries/lpar.c
+> >> > index aadb242..2759767 100644
+> >> > --- a/arch/powerpc/platforms/pseries/lpar.c
+> >> > +++ b/arch/powerpc/platforms/pseries/lpar.c
+> >> > @@ -903,3 +903,44 @@ int pSeries_lpar_resize_hpt(unsigned long shift)
+> >> >
+> >> >  	return 0;
+> >> >  }
+> >> > +
+> >> > +static ssize_t ppc64_pft_size_show(struct kobject *kobj,
+> >> > +				   struct kobj_attribute *attr, char *buf)
+> >> > +{
+> >> > +	return sprintf(buf, "%llu\n", (unsigned long long)ppc64_pft_size);
+> >> > +}
+> >> > +
+> >> > +static ssize_t ppc64_pft_size_store(struct kobject *kobj,
+> >> > +				    struct kobj_attribute *attr,
+> >> > +				    const char *buf, size_t count)
+> >> > +{
+> >> > +	unsigned long new_shift;
+> >> > +	int rc;
+> >> > +
+> >> > +	pr_err("lpar: ppc64_pft_size_store() count=3D%zd\n", count);
+> >> Why pr_err?
+> >
+> > Uh.. good question.  That's a not particularly useful debug comment I
+> > should just remove anyway.
+> >
+> >> > +
+> >> > +	if (kstrtoul(buf, 0, &new_shift))
+> >> > +		return -EINVAL;
+> >> > +
+> >> > +	rc =3D pSeries_lpar_resize_hpt(new_shift);
+> >> > +	if (rc < 0)
+> >> > +		return rc;
+> >> > +
+> >> > +	return count;
+> >> > +}
+> >> > +
+> >> > +static struct kobj_attribute ppc64_pft_size_attr =3D
+> >> > +	__ATTR(ppc64_pft_size, 0600, ppc64_pft_size_show,
+> >> > ppc64_pft_size_store);
+> >> > +
+> >> > +static int __init pseries_lpar_sysfs(void)
+> >> > +{
+> >> > +	int rc;
+> >> > +
+> >> > +	rc =3D sysfs_create_file(mm_kobj, &ppc64_pft_size_attr.attr);
+> >> > +	if (rc)
+> >> > +		pr_err("lpar: unable to create ppc64_pft_size sysfs file (%d)\n",
+> >> > +		       rc);
+> >> > +
+> >> > +	return 0;
+> >> I think that we need to return rc value, right?
+> >
+> > No.  Failing to register this sysfs file shouldn't cause the boot to fa=
+il.
+> Then we don't need rc at all ;)
+
+Except to report the error code in the message, which is useful.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--LvnU4bbuCGLV8PtK
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJWe5KuAAoJEGw4ysog2bOSl8UP/Rj11sv+lZ3k8sTan9x+hU9+
+6pbfH2kVgYEGrJeJPx2ewQ6ILNUuQpYjRKgZ/l9wKC1qqu6kpOzheMr21nB3W0e5
+vf3gPv6HNRvtnKeq38axFgzvfOdhiwEJoPGKaKTdMVnZ+RjNBZAJuMLkWCwNmSDo
+BZar8VqsXfbLXSeaxIkIhNd5TiPpOCC/66kXzGbyJCg3HBwKfKFCt2de07rC7L2t
+yb7Vdxg1o0uHs9i54ZjWSF4XRDxkyL4GikhqYNZJnf1yRJ17dr+sUx5Tp0JpHBhK
+DxijOFeOyGTrtu5bPd5fTLwlzM02S0pDOrui0WDwvVm9Y7tYJYOCqaqmkGescSSu
+F4kaNWvsKC147a3/z+S8kqDZMXFfLJXUPmLveBE/NgcaAlpk2nSYDcgbKYebGd0T
+JN99v8YenTKxq/f6zub3COYH1BYbdsVCd+UsjNOaG6bmd004qDQj/6tFaJMoMpTw
+mXbex2bXpDM/VQNcpEDEEDerRDdaoKUu8YCKHhRdIONvtQDRliYzf+svBU18QuRX
+LPA7lMD3T4pVby2v7cSGL1uXUPd4YLgHuxbm/BuaD3esJCSVTse+OSvx1STloTtT
+AgCcSYhzlqe4V965UfakvRZ0Ay/p/F4inqKwZABbbSUg/ng+7br1vkT2fK/HI8AQ
+tLaeCfUyT20+GBvuwfz3
+=0NvC
+-----END PGP SIGNATURE-----
+
+--LvnU4bbuCGLV8PtK--
