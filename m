@@ -1,20 +1,22 @@
 Return-Path: <prabhakar@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0135.outbound.protection.outlook.com [157.56.110.135])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0130.outbound.protection.outlook.com [65.55.169.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 907FA1A01C9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Dec 2015 16:11:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 98CFA1A01DC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Dec 2015 16:36:45 +1100 (AEDT)
 From: Kushwaha Prabhakar <prabhakar@freescale.com>
 To: Scott Wood <scottwood@freescale.com>, Dogra Raghav <raghav@freescale.com>
 CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Subject: RE: [1/2] mpc85xx/lbc: modify suspend/resume entry sequence
-Date: Thu, 24 Dec 2015 04:38:11 +0000
-Message-ID: <DM2PR0301MB06702E55727D2B36887B6E2DA9E70@DM2PR0301MB0670.namprd03.prod.outlook.com>
+Date: Thu, 24 Dec 2015 05:22:14 +0000
+Message-ID: <DM2PR0301MB06703BB1F35BA35A0FD9B865A9E70@DM2PR0301MB0670.namprd03.prod.outlook.com>
 References: <1446186299-2921-1-git-send-email-raghav@freescale.com>
  <20151224041924.GA18543@home.buserror.net>
-In-Reply-To: <20151224041924.GA18543@home.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
+ <DM2PR0301MB06702E55727D2B36887B6E2DA9E70@DM2PR0301MB0670.namprd03.prod.outlook.com>
+ <1450932555.18314.121.camel@freescale.com>
+In-Reply-To: <1450932555.18314.121.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,71 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Thursday, December 24, 2015 9:49 AM
-> To: Dogra Raghav-B46184 <raghav@freescale.com>
-> Cc: linuxppc-dev@lists.ozlabs.org; Kushwaha Prabhakar-B32579
-> <prabhakar@freescale.com>
-> Subject: Re: [1/2] mpc85xx/lbc: modify suspend/resume entry sequence
->=20
-> On Fri, Oct 30, 2015 at 11:54:59AM +0530, Raghav Dogra wrote:
-> >  /* restore lbc registers */
-> > -static int fsl_lbc_resume(struct platform_device *pdev)
-> > +static int fsl_lbc_syscore_resume(void)
-> >  {
-> > -	struct fsl_lbc_ctrl *ctrl =3D dev_get_drvdata(&pdev->dev);
-> > -	struct fsl_lbc_regs __iomem *lbc =3D ctrl->regs;
-> > +	struct fsl_lbc_ctrl *ctrl;
-> > +	struct fsl_lbc_regs __iomem *lbc;
-> > +
-> > +	ctrl =3D fsl_lbc_ctrl_dev;
-> > +	if (!ctrl)
-> > +		goto out;
-> > +
-> > +	lbc =3D ctrl->regs;
-> > +	if (!lbc)
-> > +		goto out;
-> >
-> >  	if (ctrl->saved_regs) {
-> >  		_memcpy_toio(lbc, ctrl->saved_regs, @@ -379,7 +398,9 @@
-> static int
-> > fsl_lbc_resume(struct platform_device *pdev)
-> >  		kfree(ctrl->saved_regs);
-> >  		ctrl->saved_regs =3D NULL;
-> >  	}
-> > -	return 0;
-> > +
-> > +out:
-> > +	return;
-> >  }
->=20
-> arch/powerpc/sysdev/fsl_lbc.c:401:2: error:
-> 'return' with no value, in function returning non-void [-Werror=3Dreturn-=
-type]
->=20
->=20
-> >  #endif /* CONFIG_SUSPEND */
-> >
-> > @@ -391,20 +412,26 @@ static const struct of_device_id fsl_lbc_match[] =
-=3D
-> {
-> >  	{},
-> >  };
-> >
-> > +#ifdef CONFIG_SUSPEND
-> > +static struct syscore_ops lbc_syscore_pm_ops =3D {
-> > +	.suspend =3D fsl_lbc_syscore_suspend,
-> > +	.resume =3D fsl_lbc_syscore_resume,
-> > +};
-> > +#endif
->=20
-> arch/powerpc/sysdev/fsl_lbc.c:416:2: error:
-> initialization from incompatible pointer type [-Werror]
-> arch/powerpc/sysdev/fsl_lbc.c:416:2: error:
-> (near initialization for 'lbc_syscore_pm_ops.resume') [-Werror]
->=20
-
-Can you please help us with the tool-chain used for compiling.
-
---prabhakar
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
+DQo+IFNlbnQ6IFRodXJzZGF5LCBEZWNlbWJlciAyNCwgMjAxNSAxMDoxOSBBTQ0KPiBUbzogS3Vz
+aHdhaGEgUHJhYmhha2FyLUIzMjU3OSA8cHJhYmhha2FyQGZyZWVzY2FsZS5jb20+OyBEb2dyYQ0K
+PiBSYWdoYXYtQjQ2MTg0IDxyYWdoYXZAZnJlZXNjYWxlLmNvbT4NCj4gQ2M6IGxpbnV4cHBjLWRl
+dkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbMS8yXSBtcGM4NXh4L2xiYzogbW9k
+aWZ5IHN1c3BlbmQvcmVzdW1lIGVudHJ5IHNlcXVlbmNlDQo+IA0KPiBPbiBXZWQsIDIwMTUtMTIt
+MjMgYXQgMjI6MzggLTA2MDAsIEt1c2h3YWhhIFByYWJoYWthci1CMzI1Nzkgd3JvdGU6DQo+ID4g
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gPiA+IFNlbnQ6IFRodXJzZGF5LCBEZWNlbWJlciAyNCwgMjAxNSA5OjQ5IEFNDQo+ID4g
+PiBUbzogRG9ncmEgUmFnaGF2LUI0NjE4NCA8cmFnaGF2QGZyZWVzY2FsZS5jb20+DQo+ID4gPiBD
+YzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IEt1c2h3YWhhIFByYWJoYWthci1CMzI1
+NzkNCj4gPiA+IDxwcmFiaGFrYXJAZnJlZXNjYWxlLmNvbT4NCj4gPiA+IFN1YmplY3Q6IFJlOiBb
+MS8yXSBtcGM4NXh4L2xiYzogbW9kaWZ5IHN1c3BlbmQvcmVzdW1lIGVudHJ5IHNlcXVlbmNlDQo+
+ID4gPg0KPiA+ID4gT24gRnJpLCBPY3QgMzAsIDIwMTUgYXQgMTE6NTQ6NTlBTSArMDUzMCwgUmFn
+aGF2IERvZ3JhIHdyb3RlOg0KPiA+ID4gPiAgLyogcmVzdG9yZSBsYmMgcmVnaXN0ZXJzICovDQo+
+ID4gPiA+IC1zdGF0aWMgaW50IGZzbF9sYmNfcmVzdW1lKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2Ug
+KnBkZXYpDQo+ID4gPiA+ICtzdGF0aWMgaW50IGZzbF9sYmNfc3lzY29yZV9yZXN1bWUodm9pZCkN
+Cj4gPiA+ID4gIHsNCj4gPiA+ID4gLQlzdHJ1Y3QgZnNsX2xiY19jdHJsICpjdHJsID0gZGV2X2dl
+dF9kcnZkYXRhKCZwZGV2LT5kZXYpOw0KPiA+ID4gPiAtCXN0cnVjdCBmc2xfbGJjX3JlZ3MgX19p
+b21lbSAqbGJjID0gY3RybC0+cmVnczsNCj4gPiA+ID4gKwlzdHJ1Y3QgZnNsX2xiY19jdHJsICpj
+dHJsOw0KPiA+ID4gPiArCXN0cnVjdCBmc2xfbGJjX3JlZ3MgX19pb21lbSAqbGJjOw0KPiA+ID4g
+PiArDQo+ID4gPiA+ICsJY3RybCA9IGZzbF9sYmNfY3RybF9kZXY7DQo+ID4gPiA+ICsJaWYgKCFj
+dHJsKQ0KPiA+ID4gPiArCQlnb3RvIG91dDsNCj4gPiA+ID4gKw0KPiA+ID4gPiArCWxiYyA9IGN0
+cmwtPnJlZ3M7DQo+ID4gPiA+ICsJaWYgKCFsYmMpDQo+ID4gPiA+ICsJCWdvdG8gb3V0Ow0KPiA+
+ID4gPg0KPiA+ID4gPiAgCWlmIChjdHJsLT5zYXZlZF9yZWdzKSB7DQo+ID4gPiA+ICAJCV9tZW1j
+cHlfdG9pbyhsYmMsIGN0cmwtPnNhdmVkX3JlZ3MsIEBAIC0zNzksNyArMzk4LDkgQEANCj4gPiA+
+IHN0YXRpYyBpbnQNCj4gPiA+ID4gZnNsX2xiY19yZXN1bWUoc3RydWN0IHBsYXRmb3JtX2Rldmlj
+ZSAqcGRldikNCj4gPiA+ID4gIAkJa2ZyZWUoY3RybC0+c2F2ZWRfcmVncyk7DQo+ID4gPiA+ICAJ
+CWN0cmwtPnNhdmVkX3JlZ3MgPSBOVUxMOw0KPiA+ID4gPiAgCX0NCj4gPiA+ID4gLQlyZXR1cm4g
+MDsNCj4gPiA+ID4gKw0KPiA+ID4gPiArb3V0Og0KPiA+ID4gPiArCXJldHVybjsNCj4gPiA+ID4g
+IH0NCj4gPiA+DQo+ID4gPiBhcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9sYmMuYzo0MDE6MjogZXJy
+b3I6DQo+ID4gPiAncmV0dXJuJyB3aXRoIG5vIHZhbHVlLCBpbiBmdW5jdGlvbiByZXR1cm5pbmcg
+bm9uLXZvaWQNCj4gPiA+IFstV2Vycm9yPXJldHVybiAtdHlwZV0NCj4gPiA+DQo+ID4gPg0KPiA+
+ID4gPiAgI2VuZGlmIC8qIENPTkZJR19TVVNQRU5EICovDQo+ID4gPiA+DQo+ID4gPiA+IEBAIC0z
+OTEsMjAgKzQxMiwyNiBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZA0KPiA+ID4g
+PiBmc2xfbGJjX21hdGNoW10gPQ0KPiA+ID4gew0KPiA+ID4gPiAgCXt9LA0KPiA+ID4gPiAgfTsN
+Cj4gPiA+ID4NCj4gPiA+ID4gKyNpZmRlZiBDT05GSUdfU1VTUEVORA0KPiA+ID4gPiArc3RhdGlj
+IHN0cnVjdCBzeXNjb3JlX29wcyBsYmNfc3lzY29yZV9wbV9vcHMgPSB7DQo+ID4gPiA+ICsJLnN1
+c3BlbmQgPSBmc2xfbGJjX3N5c2NvcmVfc3VzcGVuZCwNCj4gPiA+ID4gKwkucmVzdW1lID0gZnNs
+X2xiY19zeXNjb3JlX3Jlc3VtZSwgfTsgI2VuZGlmDQo+ID4gPg0KPiA+ID4gYXJjaC9wb3dlcnBj
+L3N5c2Rldi9mc2xfbGJjLmM6NDE2OjI6IGVycm9yOg0KPiA+ID4gaW5pdGlhbGl6YXRpb24gZnJv
+bSBpbmNvbXBhdGlibGUgcG9pbnRlciB0eXBlIFstV2Vycm9yXQ0KPiA+ID4gYXJjaC9wb3dlcnBj
+L3N5c2Rldi9mc2xfbGJjLmM6NDE2OjI6IGVycm9yOg0KPiA+ID4gKG5lYXIgaW5pdGlhbGl6YXRp
+b24gZm9yICdsYmNfc3lzY29yZV9wbV9vcHMucmVzdW1lJykgWy1XZXJyb3JdDQo+ID4gPg0KPiA+
+DQo+ID4gQ2FuIHlvdSBwbGVhc2UgaGVscCB1cyB3aXRoIHRoZSB0b29sLWNoYWluIHVzZWQgZm9y
+IGNvbXBpbGluZy4NCj4gDQo+IEl0IGRvZXNuJ3QgbWF0dGVyLiAgVGhlIHBhdGNoIGlzIGNsZWFy
+bHkgd3JvbmcgYmFzZWQgb24gaW5zcGVjdGlvbi4NCj4gDQoNCkNhbiB5b3UgcGxlYXNlIGhlbHAg
+bWUgd2l0aCB0aGUgdGhpbmdzIHdoaWNoIG5lZWRzIHRvIGJlIHVwZGF0ZWQNCk9yIA0KQ29tcGxl
+dGUgcGF0Y2ggaXMgd3JvbmcuDQoNCi0tcHJhYmhha2FyDQoNCg==
