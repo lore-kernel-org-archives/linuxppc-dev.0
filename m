@@ -1,19 +1,37 @@
-Return-Path: <shh.xie@gmail.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0062.outbound.protection.outlook.com [207.46.100.62])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BD0D81A0024
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Dec 2015 15:28:32 +1100 (AEDT)
-From: <shh.xie@gmail.com>
-To: <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-CC: <scottwood@freescale.com>, <igal.liberman@freescale.com>, Shaohui Xie
- <Shaohui.Xie@freescale.com>
-Subject: [PATCH] powerpc: fsl: update fman dt binding for PCS PHY
-Date: Mon, 28 Dec 2015 11:47:34 +0800
-Message-ID: <1451274454-26091-1-git-send-email-shh.xie@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9DA781A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Dec 2015 15:40:56 +1100 (AEDT)
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 28 Dec 2015 14:40:54 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D8FD42CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Dec 2015 15:40:43 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBS4eFNE31916176
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Dec 2015 15:40:23 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBS4eB8T012284
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Dec 2015 15:40:11 +1100
+Message-ID: <5680BD18.1070408@linux.vnet.ibm.com>
+Date: Mon, 28 Dec 2015 10:09:52 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: David Gibson <david@gibson.dropbear.id.au>
+CC: lvivier@redhat.com, thuth@redhat.com, paulus@samba.org,
+ bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC 0/3] Prototype PAPR hash page table resizing (guest side)
+References: <1450761298-12172-1-git-send-email-david@gibson.dropbear.id.au>
+ <567BB96D.6050504@linux.vnet.ibm.com> <20151224103844.GB3011@voom.redhat.com>
+In-Reply-To: <20151224103844.GB3011@voom.redhat.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,52 +41,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
+On 12/24/2015 04:08 PM, David Gibson wrote:
+> On Thu, Dec 24, 2015 at 02:52:53PM +0530, Anshuman Khandual wrote:
+>> > On 12/22/2015 10:44 AM, David Gibson wrote:
+>>> > > I've discussed with Paul and Ben previously the possibility of
+>>> > > extending PAPR to allow changing the size of a running guest's hash
+>>> > > page table (HPT).  This would allow for much more flexible memory
+>>> > > hotplug, since the HPT wouldn't have to be sized in advance for the
+>>> > > maximum possible memory size of the guest.
+>> > 
+>> > Does it include reducing the size of HPT as well ?
+> It does, but that could fail with H_PTEG_FULL if there's a collision
+> between bolted entries in the reduced table.
 
-PCS PHY can support backplane (1000BASE-KX and 10GBASE-KR), this needs
-to change corresponding serdes lane settings, so a reference is needed
-for serdes lane. This patch describes properties needed for PCS PHY to
-support backplane.
-
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
----
-based on: http://patchwork.ozlabs.org/patch/560936/
-
- Documentation/devicetree/bindings/powerpc/fsl/fman.txt | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-index 55c2c03..b38e727 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-@@ -432,6 +432,16 @@ example of how to define a PHY (Internal PHY has no interrupt line).
- - For "fsl,fman-mdio" compatible internal mdio bus, the PHY is TBI PHY.
- - For "fsl,fman-memac-mdio" compatible internal mdio bus, the PHY is PCS PHY,
-   PCS PHY addr must be '0'.
-+  PCS PHY can support backplane (1000BASE-KX and 10GBASE-KR), this needs to
-+  change the corresponding serdes lane settings.
-+
-+  PCS PHY node properties required for backplane:
-+
-+  - compatible: must be "ethernet-phy-ieee802.3-c45".
-+  - phy-mode: string, operation mode of the PHY interface; must be "1000base-kx"
-+    for 1000BASE-KX, or "10gbase-kr" for 10GBASE-KR.
-+  - lane-handle: phandle, specifies a reference to a node representing a Serdes.
-+  - lane-range: offset and length of the register set for the serdes lane.
- 
- EXAMPLE
- 
-@@ -464,7 +474,11 @@ mdio@f1000 {
- 	fsl,fman-internal-mdio;
- 
- 	pcsphy6: ethernet-phy@0 {
-+		compatible = "ethernet-phy-ieee802.3-c45";
-+		phy-mode = "10gbase-kr";
- 		reg = <0x0>;
-+		lane-handle = <&serdes>;
-+		lane-range = <0x18c0 0x40>;
- 	};
- };
- 
--- 
-2.1.0.27.g96db324
+So in the case when we request for a reduced size HPT table, as mentioned
+in the second implementation method, will we allocate the required smaller
+HPT table to shadow the original or we just reduce the original HPT in
+size without allocating a new one ?
