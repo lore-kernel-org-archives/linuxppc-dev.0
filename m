@@ -1,24 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CB5C1A0156
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Dec 2015 16:35:10 +1100 (AEDT)
-Date: Tue, 29 Dec 2015 15:09:29 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: lvivier@redhat.com, thuth@redhat.com, paulus@samba.org,
- bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC 0/3] Prototype PAPR hash page table resizing (guest side)
-Message-ID: <20151229040929.GA3707@voom.BigPond>
-References: <1450761298-12172-1-git-send-email-david@gibson.dropbear.id.au>
- <567BB96D.6050504@linux.vnet.ibm.com>
- <20151224103844.GB3011@voom.redhat.com>
- <5680BD18.1070408@linux.vnet.ibm.com>
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 742D11A0E67
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Dec 2015 05:34:42 +1100 (AEDT)
+Date: Tue, 29 Dec 2015 12:34:36 -0600
+From: Rob Herring <robh@kernel.org>
+To: shh.xie@gmail.com
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ scottwood@freescale.com, igal.liberman@freescale.com,
+ Shaohui Xie <Shaohui.Xie@freescale.com>
+Subject: Re: [PATCH] powerpc: fsl: update fman dt binding for PCS PHY
+Message-ID: <20151229183436.GB12450@rob-hp-laptop>
+References: <1451274454-26091-1-git-send-email-shh.xie@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="ibTvN161/egqYuK8"
-In-Reply-To: <5680BD18.1070408@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1451274454-26091-1-git-send-email-shh.xie@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,63 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Dec 28, 2015 at 11:47:34AM +0800, shh.xie@gmail.com wrote:
+> From: Shaohui Xie <Shaohui.Xie@freescale.com>
+> 
+> PCS PHY can support backplane (1000BASE-KX and 10GBASE-KR), this needs
+> to change corresponding serdes lane settings, so a reference is needed
+> for serdes lane. This patch describes properties needed for PCS PHY to
+> support backplane.
+> 
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+> ---
+> based on: http://patchwork.ozlabs.org/patch/560936/
+> 
+>  Documentation/devicetree/bindings/powerpc/fsl/fman.txt | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> index 55c2c03..b38e727 100644
+> --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> @@ -432,6 +432,16 @@ example of how to define a PHY (Internal PHY has no interrupt line).
+>  - For "fsl,fman-mdio" compatible internal mdio bus, the PHY is TBI PHY.
+>  - For "fsl,fman-memac-mdio" compatible internal mdio bus, the PHY is PCS PHY,
+>    PCS PHY addr must be '0'.
+> +  PCS PHY can support backplane (1000BASE-KX and 10GBASE-KR), this needs to
+> +  change the corresponding serdes lane settings.
+> +
+> +  PCS PHY node properties required for backplane:
+> +
+> +  - compatible: must be "ethernet-phy-ieee802.3-c45".
+> +  - phy-mode: string, operation mode of the PHY interface; must be "1000base-kx"
+> +    for 1000BASE-KX, or "10gbase-kr" for 10GBASE-KR.
 
---ibTvN161/egqYuK8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Seems like these should be in common ethernet phy binding.
 
-On Mon, Dec 28, 2015 at 10:09:52AM +0530, Anshuman Khandual wrote:
-> On 12/24/2015 04:08 PM, David Gibson wrote:
-> > On Thu, Dec 24, 2015 at 02:52:53PM +0530, Anshuman Khandual wrote:
-> >> > On 12/22/2015 10:44 AM, David Gibson wrote:
-> >>> > > I've discussed with Paul and Ben previously the possibility of
-> >>> > > extending PAPR to allow changing the size of a running guest's ha=
-sh
-> >>> > > page table (HPT).  This would allow for much more flexible memory
-> >>> > > hotplug, since the HPT wouldn't have to be sized in advance for t=
-he
-> >>> > > maximum possible memory size of the guest.
-> >> >=20
-> >> > Does it include reducing the size of HPT as well ?
-> > It does, but that could fail with H_PTEG_FULL if there's a collision
-> > between bolted entries in the reduced table.
->=20
-> So in the case when we request for a reduced size HPT table, as mentioned
-> in the second implementation method, will we allocate the required smaller
-> HPT table to shadow the original or we just reduce the original HPT in
-> size without allocating a new one ?
+> +  - lane-handle: phandle, specifies a reference to a node representing a Serdes.
+> +  - lane-range: offset and length of the register set for the serdes lane.
 
-The current implementation will allocate a new HPT and free the
-original one once the transition is complete.  It might be possible to
-avoid that and reduce the HPT in place, but doing a rollback in case
-of collision will be a lot hairier.
+These seem pretty FSL specific, so add vendor prefix.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---ibTvN161/egqYuK8
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJWggd5AAoJEGw4ysog2bOSQUkP/AoevEbiyEsHyl6jvyexmnba
-4R7SOi5jb8ODlKqKnq48imIsf7U4DaGvZMxeUR1pcGlo9d2hipJIFOSO56bM4Xpp
-QkHBTxF0iHaSWYBiDb4X0RB+55Ny32LAGaCLN8cV9O8qcWHBP6HNtZHKK/lrlkzM
-Gk+3cqXsBqs+mZ3j/EARhdvv99RsyHERF2f0KN/jCwFpTDaKSwa7ZQUQYwr09FI7
-0jey1+FK1MXRkfCWg4aYxiU+Ww+YSRYiiiyOFwCorkwcwdPZbvz2s0zwwba1ykgL
-CUGLucArMUr/TcsM+6tx44DL9jv0ZMpmpzPOb67ukbJwg+5Ug6F/DQDZc0jDdz7t
-9MqmXTItqeKaQSuTSAGZNdUgcc2gxznYXMnu4Mx6jT5Y2SEaVopICZihqTm5Nkz/
-2m5sekDLatLQ7QjS1xLTxOT/nFQFaTRIYfedqKbAt3oVCx1/2mkhWpwSvWpOoINf
-D7Fp4ibno7vCmEU6LG4nlddp7Q+R7mxQwlJCViFCs5gwq2EgdGFzgzxjEH0yCtFO
-d8mCDQ/0PIaHqXMgT6Sq6X9T3wLHVi/S/l4Ud/V0n8z+CnFTU4OLdEXPJ8zfNCfE
-nlcbLOW1FfvfvDspMceFzGMECxyIOwrehBx/udyMaFks+N1eqXP40KxbbNANifA3
-1jeM7icEip9xTxUbFHZi
-=YSZo
------END PGP SIGNATURE-----
-
---ibTvN161/egqYuK8--
+Rob
