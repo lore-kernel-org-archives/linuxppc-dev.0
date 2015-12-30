@@ -1,27 +1,35 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id B2CA21A02EF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 02:14:48 +1100 (AEDT)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id BED50202FE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Dec 2015 15:14:45 +0000 (UTC)
+Received: from mail-yk0-f176.google.com (mail-yk0-f176.google.com
+ [209.85.160.176])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6038B1A0EF6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 00:25:29 +1100 (AEDT)
-Date: Wed, 30 Dec 2015 15:25:23 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
- linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@kernel.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Andrey Konovalov <andreyknvl@google.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 16/34] powerpc: define __smp_XXX
-Message-ID: <1451473761-30019-17-git-send-email-mst@redhat.com>
-References: <1451473761-30019-1-git-send-email-mst@redhat.com>
+ by mail.kernel.org (Postfix) with ESMTPSA id 491F6202E9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Dec 2015 15:14:43 +0000 (UTC)
+Received: by mail-yk0-f176.google.com with SMTP id a85so80129062ykb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Dec 2015 07:14:43 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1451473761-30019-1-git-send-email-mst@redhat.com>
+In-Reply-To: <VI1PR04MB1664E34FC9467506BEC5D815E8FD0@VI1PR04MB1664.eurprd04.prod.outlook.com>
+References: <1451274454-26091-1-git-send-email-shh.xie@gmail.com>
+ <20151229183436.GB12450@rob-hp-laptop>
+ <VI1PR04MB1664E34FC9467506BEC5D815E8FD0@VI1PR04MB1664.eurprd04.prod.outlook.com>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 30 Dec 2015 09:14:23 -0600
+Message-ID: <CAL_JsqLaFj2uC8dZRhvAi=fdr=JySd4+zp62z3FosePOp7Dqjw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: fsl: update fman dt binding for PCS PHY
+To: Shaohui Xie <shaohui.xie@nxp.com>
+Cc: "shh.xie@gmail.com" <shh.xie@gmail.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Scott Wood <scottwood@freescale.com>,
+ Igal Liberman <Igal.Liberman@freescale.com>,
+ Shaohui Xie <Shaohui.Xie@freescale.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,69 +39,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This defines __smp_XXX barriers for powerpc
-for use by virtualization.
+On Tue, Dec 29, 2015 at 9:41 PM, Shaohui Xie <shaohui.xie@nxp.com> wrote:
+>> Subject: Re: [PATCH] powerpc: fsl: update fman dt binding for PCS PHY
+>>
+>> On Mon, Dec 28, 2015 at 11:47:34AM +0800, shh.xie@gmail.com wrote:
+>> > From: Shaohui Xie <Shaohui.Xie@freescale.com>
+>> >
+>> > PCS PHY can support backplane (1000BASE-KX and 10GBASE-KR), this needs
+>> > to change corresponding serdes lane settings, so a reference is needed
+>> > for serdes lane. This patch describes properties needed for PCS PHY to
+>> > support backplane.
+>> >
+>> > Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+>> > ---
+>> > based on: http://patchwork.ozlabs.org/patch/560936/
+>> >
+>> >  Documentation/devicetree/bindings/powerpc/fsl/fman.txt | 14
+>> > ++++++++++++++
+>> >  1 file changed, 14 insertions(+)
+>> >
+>> > diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+>> > b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+>> > index 55c2c03..b38e727 100644
+>> > --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+>> > +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+>> > @@ -432,6 +432,16 @@ example of how to define a PHY (Internal PHY has no
+>> interrupt line).
+>> >  - For "fsl,fman-mdio" compatible internal mdio bus, the PHY is TBI PHY.
+>> >  - For "fsl,fman-memac-mdio" compatible internal mdio bus, the PHY is PCS PHY,
+>> >    PCS PHY addr must be '0'.
+>> > +  PCS PHY can support backplane (1000BASE-KX and 10GBASE-KR), this
+>> > + needs to  change the corresponding serdes lane settings.
+>> > +
+>> > +  PCS PHY node properties required for backplane:
+>> > +
+>> > +  - compatible: must be "ethernet-phy-ieee802.3-c45".
+>> > +  - phy-mode: string, operation mode of the PHY interface; must be "1000base-
+>> kx"
+>> > +    for 1000BASE-KX, or "10gbase-kr" for 10GBASE-KR.
+>>
+>> Seems like these should be in common ethernet phy binding.
+> [S.H] 'compatible' and 'phy-mode' are standard properties already in common Ethernet
+> phy binding, I can update 'phy-mode' with "1000base-kx" and "10gbase-kr", how
+> about I still list the two properties here for the requirement of PCS PHY to support
+> backplane?
 
-smp_XXX barriers are removed as they are
-defined correctly by asm-generic/barriers.h
+Yes. The common binding should list all possible values and this
+binding should list allowed values.
 
-This reduces the amount of arch-specific boiler-plate code.
-
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
----
- arch/powerpc/include/asm/barrier.h | 24 ++++++++----------------
- 1 file changed, 8 insertions(+), 16 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-index 980ad0c..c0deafc 100644
---- a/arch/powerpc/include/asm/barrier.h
-+++ b/arch/powerpc/include/asm/barrier.h
-@@ -44,19 +44,11 @@
- #define dma_rmb()	__lwsync()
- #define dma_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
- 
--#ifdef CONFIG_SMP
--#define smp_lwsync()	__lwsync()
-+#define __smp_lwsync()	__lwsync()
- 
--#define smp_mb()	mb()
--#define smp_rmb()	__lwsync()
--#define smp_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
--#else
--#define smp_lwsync()	barrier()
--
--#define smp_mb()	barrier()
--#define smp_rmb()	barrier()
--#define smp_wmb()	barrier()
--#endif /* CONFIG_SMP */
-+#define __smp_mb()	mb()
-+#define __smp_rmb()	__lwsync()
-+#define __smp_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
- 
- /*
-  * This is a barrier which prevents following instructions from being
-@@ -67,18 +59,18 @@
- #define data_barrier(x)	\
- 	asm volatile("twi 0,%0,0; isync" : : "r" (x) : "memory");
- 
--#define smp_store_release(p, v)						\
-+#define __smp_store_release(p, v)						\
- do {									\
- 	compiletime_assert_atomic_type(*p);				\
--	smp_lwsync();							\
-+	__smp_lwsync();							\
- 	WRITE_ONCE(*p, v);						\
- } while (0)
- 
--#define smp_load_acquire(p)						\
-+#define __smp_load_acquire(p)						\
- ({									\
- 	typeof(*p) ___p1 = READ_ONCE(*p);				\
- 	compiletime_assert_atomic_type(*p);				\
--	smp_lwsync();							\
-+	__smp_lwsync();							\
- 	___p1;								\
- })
- 
--- 
-MST
+Rob
