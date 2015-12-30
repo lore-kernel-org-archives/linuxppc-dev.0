@@ -1,24 +1,17 @@
-Return-Path: <shaohui.xie@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0060.outbound.protection.outlook.com [157.56.112.60])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <Julia.Lawall@lip6.fr>
+Received: from mail2-relais-roc.national.inria.fr
+ (mail2-relais-roc.national.inria.fr [192.134.164.83])
+ (using TLSv1.2 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EBAB51A0021
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Dec 2015 14:41:25 +1100 (AEDT)
-From: Shaohui Xie <shaohui.xie@nxp.com>
-To: Rob Herring <robh@kernel.org>, "shh.xie@gmail.com" <shh.xie@gmail.com>
-CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott Wood
- <scottwood@freescale.com>, Igal Liberman <Igal.Liberman@freescale.com>,
- Shaohui Xie <Shaohui.Xie@freescale.com>
-Subject: RE: [PATCH] powerpc: fsl: update fman dt binding for PCS PHY
-Date: Wed, 30 Dec 2015 03:41:16 +0000
-Message-ID: <VI1PR04MB1664E34FC9467506BEC5D815E8FD0@VI1PR04MB1664.eurprd04.prod.outlook.com>
-References: <1451274454-26091-1-git-send-email-shh.xie@gmail.com>
- <20151229183436.GB12450@rob-hp-laptop>
-In-Reply-To: <20151229183436.GB12450@rob-hp-laptop>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC6701A0CDB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Dec 2015 21:40:46 +1100 (AEDT)
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: kernel-janitors@vger.kernel.org, Jiri Slaby <jslaby@suse.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] xen/hvc: constify hv_ops structures
+Date: Wed, 30 Dec 2015 11:28:02 +0100
+Message-Id: <1451471282-5548-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,67 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Subject: Re: [PATCH] powerpc: fsl: update fman dt binding for PCS PHY
->=20
-> On Mon, Dec 28, 2015 at 11:47:34AM +0800, shh.xie@gmail.com wrote:
-> > From: Shaohui Xie <Shaohui.Xie@freescale.com>
-> >
-> > PCS PHY can support backplane (1000BASE-KX and 10GBASE-KR), this needs
-> > to change corresponding serdes lane settings, so a reference is needed
-> > for serdes lane. This patch describes properties needed for PCS PHY to
-> > support backplane.
-> >
-> > Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-> > ---
-> > based on: http://patchwork.ozlabs.org/patch/560936/
-> >
-> >  Documentation/devicetree/bindings/powerpc/fsl/fman.txt | 14
-> > ++++++++++++++
-> >  1 file changed, 14 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> > b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> > index 55c2c03..b38e727 100644
-> > --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> > +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> > @@ -432,6 +432,16 @@ example of how to define a PHY (Internal PHY has n=
-o
-> interrupt line).
-> >  - For "fsl,fman-mdio" compatible internal mdio bus, the PHY is TBI PHY=
-.
-> >  - For "fsl,fman-memac-mdio" compatible internal mdio bus, the PHY is P=
-CS PHY,
-> >    PCS PHY addr must be '0'.
-> > +  PCS PHY can support backplane (1000BASE-KX and 10GBASE-KR), this
-> > + needs to  change the corresponding serdes lane settings.
-> > +
-> > +  PCS PHY node properties required for backplane:
-> > +
-> > +  - compatible: must be "ethernet-phy-ieee802.3-c45".
-> > +  - phy-mode: string, operation mode of the PHY interface; must be "10=
-00base-
-> kx"
-> > +    for 1000BASE-KX, or "10gbase-kr" for 10GBASE-KR.
->=20
-> Seems like these should be in common ethernet phy binding.
-[S.H] 'compatible' and 'phy-mode' are standard properties already in common=
- Ethernet
-phy binding, I can update 'phy-mode' with "1000base-kx" and "10gbase-kr", h=
-ow
-about I still list the two properties here for the requirement of PCS PHY t=
-o support
-backplane?
+These hv_ops structures are never modified, so declare them as const.  Most
+were const already.
 
->=20
-> > +  - lane-handle: phandle, specifies a reference to a node representing=
- a
-> Serdes.
-> > +  - lane-range: offset and length of the register set for the serdes l=
-ane.
->=20
-> These seem pretty FSL specific, so add vendor prefix.
-[S.H] OK. will add fsl prefix.
+Done with the help of Coccinelle.
 
-Thank you for reviewing the patch!
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Shaohui
+---
+ drivers/tty/hvc/hvc_xen.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
+index fa816b7..1505056 100644
+--- a/drivers/tty/hvc/hvc_xen.c
++++ b/drivers/tty/hvc/hvc_xen.c
+@@ -162,7 +162,7 @@ static int domU_read_console(uint32_t vtermno, char *buf, int len)
+ 	return recv;
+ }
+ 
+-static struct hv_ops domU_hvc_ops = {
++static const struct hv_ops domU_hvc_ops = {
+ 	.get_chars = domU_read_console,
+ 	.put_chars = domU_write_console,
+ 	.notifier_add = notifier_add_irq,
+@@ -188,7 +188,7 @@ static int dom0_write_console(uint32_t vtermno, const char *str, int len)
+ 	return len;
+ }
+ 
+-static struct hv_ops dom0_hvc_ops = {
++static const struct hv_ops dom0_hvc_ops = {
+ 	.get_chars = dom0_read_console,
+ 	.put_chars = dom0_write_console,
+ 	.notifier_add = notifier_add_irq,
