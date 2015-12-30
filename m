@@ -1,17 +1,27 @@
-Return-Path: <Julia.Lawall@lip6.fr>
-Received: from mail2-relais-roc.national.inria.fr
- (mail2-relais-roc.national.inria.fr [192.134.164.83])
- (using TLSv1.2 with cipher RC4-SHA (128/128 bits))
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CC6701A0CDB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Dec 2015 21:40:46 +1100 (AEDT)
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: kernel-janitors@vger.kernel.org, Jiri Slaby <jslaby@suse.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] xen/hvc: constify hv_ops structures
-Date: Wed, 30 Dec 2015 11:28:02 +0100
-Message-Id: <1451471282-5548-1-git-send-email-Julia.Lawall@lip6.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7EB981A02EF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 00:24:40 +1100 (AEDT)
+Date: Wed, 30 Dec 2015 15:24:32 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+ linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@kernel.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Andrey Konovalov <andreyknvl@google.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 05/34] powerpc: reuse asm-generic/barrier.h
+Message-ID: <1451473761-30019-6-git-send-email-mst@redhat.com>
+References: <1451473761-30019-1-git-send-email-mst@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1451473761-30019-1-git-send-email-mst@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,36 +31,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These hv_ops structures are never modified, so declare them as const.  Most
-were const already.
+On powerpc read_barrier_depends, smp_read_barrier_depends
+smp_store_mb(), smp_mb__before_atomic and smp_mb__after_atomic match the
+asm-generic variants exactly. Drop the local definitions and pull in
+asm-generic/barrier.h instead.
 
-Done with the help of Coccinelle.
+This is in preparation to refactoring this code area.
 
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 ---
- drivers/tty/hvc/hvc_xen.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/barrier.h | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
-index fa816b7..1505056 100644
---- a/drivers/tty/hvc/hvc_xen.c
-+++ b/drivers/tty/hvc/hvc_xen.c
-@@ -162,7 +162,7 @@ static int domU_read_console(uint32_t vtermno, char *buf, int len)
- 	return recv;
- }
+diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+index 0eca6ef..980ad0c 100644
+--- a/arch/powerpc/include/asm/barrier.h
++++ b/arch/powerpc/include/asm/barrier.h
+@@ -34,8 +34,6 @@
+ #define rmb()  __asm__ __volatile__ ("sync" : : : "memory")
+ #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
  
--static struct hv_ops domU_hvc_ops = {
-+static const struct hv_ops domU_hvc_ops = {
- 	.get_chars = domU_read_console,
- 	.put_chars = domU_write_console,
- 	.notifier_add = notifier_add_irq,
-@@ -188,7 +188,7 @@ static int dom0_write_console(uint32_t vtermno, const char *str, int len)
- 	return len;
- }
+-#define smp_store_mb(var, value)	do { WRITE_ONCE(var, value); mb(); } while (0)
+-
+ #ifdef __SUBARCH_HAS_LWSYNC
+ #    define SMPWMB      LWSYNC
+ #else
+@@ -60,9 +58,6 @@
+ #define smp_wmb()	barrier()
+ #endif /* CONFIG_SMP */
  
--static struct hv_ops dom0_hvc_ops = {
-+static const struct hv_ops dom0_hvc_ops = {
- 	.get_chars = dom0_read_console,
- 	.put_chars = dom0_write_console,
- 	.notifier_add = notifier_add_irq,
+-#define read_barrier_depends()		do { } while (0)
+-#define smp_read_barrier_depends()	do { } while (0)
+-
+ /*
+  * This is a barrier which prevents following instructions from being
+  * started until the value of the argument x is known.  For example, if
+@@ -87,8 +82,8 @@ do {									\
+ 	___p1;								\
+ })
+ 
+-#define smp_mb__before_atomic()     smp_mb()
+-#define smp_mb__after_atomic()      smp_mb()
+ #define smp_mb__before_spinlock()   smp_mb()
+ 
++#include <asm-generic/barrier.h>
++
+ #endif /* _ASM_POWERPC_BARRIER_H */
+-- 
+MST
