@@ -1,27 +1,38 @@
-Return-Path: <shaohui.xie@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0077.outbound.protection.outlook.com [157.56.112.77])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A79A91A00EE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 16:22:07 +1100 (AEDT)
-From: Shaohui Xie <shaohui.xie@nxp.com>
-To: Rob Herring <robh@kernel.org>
-CC: "shh.xie@gmail.com" <shh.xie@gmail.com>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Scott Wood <scottwood@freescale.com>, "Igal
- Liberman" <Igal.Liberman@freescale.com>, Shaohui Xie
- <Shaohui.Xie@freescale.com>
-Subject: RE: [PATCH] powerpc: fsl: update fman dt binding for PCS PHY
-Date: Thu, 31 Dec 2015 05:21:57 +0000
-Message-ID: <VI1PR04MB1664D662E6EB17B0572697D7E8FE0@VI1PR04MB1664.eurprd04.prod.outlook.com>
-References: <1451274454-26091-1-git-send-email-shh.xie@gmail.com>
- <20151229183436.GB12450@rob-hp-laptop>
- <VI1PR04MB1664E34FC9467506BEC5D815E8FD0@VI1PR04MB1664.eurprd04.prod.outlook.com>
- <CAL_JsqLaFj2uC8dZRhvAi=fdr=JySd4+zp62z3FosePOp7Dqjw@mail.gmail.com>
-In-Reply-To: <CAL_JsqLaFj2uC8dZRhvAi=fdr=JySd4+zp62z3FosePOp7Dqjw@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id A21601A02E9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 19:52:13 +1100 (AEDT)
+Received: from localhost
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Thu, 31 Dec 2015 14:22:10 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 8DA313940062
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 14:22:06 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ tBV8q5Av11206946
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 14:22:06 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBV8q4VM008685
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 14:22:05 +0530
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-doc@vger.kernel.org
+Cc: bhelgaas@google.com, corbet@lwn.net, aik@ozlabs.ru,
+ alex.williamson@redhat.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
+ zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Subject: [RFC PATCH v2 0/3] vfio-pci: Allow to mmap sub-page MMIO BARs and
+ MSI-X table on PPC64 platform
+Date: Thu, 31 Dec 2015 16:50:41 +0800
+Message-Id: <1451551844-11732-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,11 +42,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiA+IFtTLkhdICdjb21wYXRpYmxlJyBhbmQgJ3BoeS1tb2RlJyBhcmUgc3RhbmRhcmQgcHJvcGVy
-dGllcyBhbHJlYWR5IGluDQo+ID4gY29tbW9uIEV0aGVybmV0IHBoeSBiaW5kaW5nLCBJIGNhbiB1
-cGRhdGUgJ3BoeS1tb2RlJyB3aXRoDQo+ID4gIjEwMDBiYXNlLWt4IiBhbmQgIjEwZ2Jhc2Uta3Ii
-LCBob3cgYWJvdXQgSSBzdGlsbCBsaXN0IHRoZSB0d28NCj4gPiBwcm9wZXJ0aWVzIGhlcmUgZm9y
-IHRoZSByZXF1aXJlbWVudCBvZiBQQ1MgUEhZIHRvIHN1cHBvcnQgYmFja3BsYW5lPw0KPiANCj4g
-WWVzLiBUaGUgY29tbW9uIGJpbmRpbmcgc2hvdWxkIGxpc3QgYWxsIHBvc3NpYmxlIHZhbHVlcyBh
-bmQgdGhpcyBiaW5kaW5nIHNob3VsZA0KPiBsaXN0IGFsbG93ZWQgdmFsdWVzLg0KR290IGl0Lg0K
-VGhhbmsgeW91IQ0KDQpTaGFvaHVpDQoNCg==
+Current vfio-pci implementation disallows to mmap
+sub-page(size < PAGE_SIZE) MMIO BARs and MSI-X table. This is because
+sub-page BARs' mmio page may be shared with other BARs and MSI-X table
+should not be accessed directly from the guest for security reasons.
+
+But these will easily cause some performance issues for mmio accesses
+in guest when vfio passthrough sub-page BARs or BARs containing MSI-X
+table on PPC64 platform. This is because PAGE_SIZE is 64KB by default
+on PPC64 platform and the big page may easily hit the sub-page MMIO
+BARs' unmmapping and cause the unmmaping of the mmio page which
+MSI-X table locate in, which lead to mmio emulation in host.
+
+For sub-page MMIO BARs' unmmapping, this patchset adds a kernel
+parameter for PCI resource allocator to enforce the alignment of all
+MMIO BARs to be at least PAGE_SZIE and make it enabled by default on
+PPC64 platform so that sub-page BAR's mmio page will not be shared
+with other BARs. Then we can mmap sub-page MMIO BARs in vfio-pci driver
+with this parameter enabled.
+
+For MSI-X table's unmmapping, we think MSI-X table is safe to access
+directly from userspace with EEH mechanism enabled which can ensure that
+a given pci device can only shoot the MSIs assigned for its PE. So
+we add a Kconfig option to support for mmapping MSI-X table in vfio-pci
+driver if EEH is supported.
+
+With this patchset applied, we can get almost 100% improvement on
+performance for mmio accesses when we passthrough sub-page BARs to guest
+in our test.
+
+The last two patches are based on the proposed patchset[1].
+
+Changelog v2:
+- Rebase on v4.4-rc6 with the patchset[1] applied.
+- Use kernel parameter to enforce all MMIO BARs to be page aligned
+  on PCI core code instead of doing it on PPC64 arch code.
+- Remove flags: VFIO_DEVICE_FLAGS_PCI_PAGE_ALIGNED
+                VFIO_DEVICE_FLAGS_PCI_MSIX_MMAP
+- Add a Kconfig option to support for mmapping MSI-X table.
+
+[1] https://lkml.org/lkml/2015/11/23/748
+
+Yongji Xie (3):
+  PCI: Add support for enforcing all MMIO BARs to be page aligned
+  vfio-pci: Allow to mmap sub-page MMIO BARs if all MMIO BARs are page aligned
+  vfio-pci: Allow to mmap MSI-X table if EEH is supported
+
+ Documentation/kernel-parameters.txt |    4 ++++
+ arch/powerpc/include/asm/pci.h      |   11 +++++++++++
+ drivers/pci/pci.c                   |   17 +++++++++++++++++
+ drivers/pci/pci.h                   |    7 ++++++-
+ drivers/vfio/pci/Kconfig            |    4 ++++
+ drivers/vfio/pci/vfio_pci.c         |   13 ++++++++++---
+ include/linux/pci.h                 |    2 ++
+ 7 files changed, 54 insertions(+), 4 deletions(-)
+
+-- 
+1.7.9.5
