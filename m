@@ -2,7 +2,7 @@ Return-Path: <xyjxie@linux.vnet.ibm.com>
 Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A21601A02E9
+ by lists.ozlabs.org (Postfix) with ESMTPS id A21871A02ED
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 19:52:13 +1100 (AEDT)
 Received: from localhost
  by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
@@ -10,16 +10,16 @@ Received: from localhost
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
  Thu, 31 Dec 2015 14:22:10 +0530
 Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 8DA313940062
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 14:22:06 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id DC4121258061
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 14:22:46 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
  by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- tBV8q5Av11206946
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 14:22:06 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- tBV8q4VM008685
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 14:22:05 +0530
+ tBV8q77t9306546
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 14:22:07 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ tBV8q6oN027061
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 14:22:07 +0530
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -29,10 +29,12 @@ Cc: bhelgaas@google.com, corbet@lwn.net, aik@ozlabs.ru,
  mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
  zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
  Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Subject: [RFC PATCH v2 0/3] vfio-pci: Allow to mmap sub-page MMIO BARs and
- MSI-X table on PPC64 platform
-Date: Thu, 31 Dec 2015 16:50:41 +0800
-Message-Id: <1451551844-11732-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+Subject: [RFC PATCH v2 1/3] PCI: Add support for enforcing all MMIO BARs to be
+ page aligned
+Date: Thu, 31 Dec 2015 16:50:42 +0800
+Message-Id: <1451551844-11732-2-git-send-email-xyjxie@linux.vnet.ibm.com>
+In-Reply-To: <1451551844-11732-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+References: <1451551844-11732-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,60 +44,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current vfio-pci implementation disallows to mmap
-sub-page(size < PAGE_SIZE) MMIO BARs and MSI-X table. This is because
-sub-page BARs' mmio page may be shared with other BARs and MSI-X table
-should not be accessed directly from the guest for security reasons.
+When vfio passthrough a PCI device of which MMIO BARs
+are smaller than PAGE_SIZE, guest will not handle the
+mmio accesses to the BARs which leads to mmio emulations
+in host.
 
-But these will easily cause some performance issues for mmio accesses
-in guest when vfio passthrough sub-page BARs or BARs containing MSI-X
-table on PPC64 platform. This is because PAGE_SIZE is 64KB by default
-on PPC64 platform and the big page may easily hit the sub-page MMIO
-BARs' unmmapping and cause the unmmaping of the mmio page which
-MSI-X table locate in, which lead to mmio emulation in host.
+This is because vfio will not allow to passthrough one
+BAR's mmio page which may be shared with other BARs.
 
-For sub-page MMIO BARs' unmmapping, this patchset adds a kernel
-parameter for PCI resource allocator to enforce the alignment of all
-MMIO BARs to be at least PAGE_SZIE and make it enabled by default on
-PPC64 platform so that sub-page BAR's mmio page will not be shared
-with other BARs. Then we can mmap sub-page MMIO BARs in vfio-pci driver
-with this parameter enabled.
+To solve this performance issue, this patch adds a kernel
+parameter "pci=resource_page_aligned=on" to enforce
+the alignments of all MMIO BARs to be at least PAGE_SIZE,
+so that one BAR's mmio page would not be shared with other
+BARs. We can also disable it through kernel parameter
+"pci=resource_page_aligned=off".
 
-For MSI-X table's unmmapping, we think MSI-X table is safe to access
-directly from userspace with EEH mechanism enabled which can ensure that
-a given pci device can only shoot the MSIs assigned for its PE. So
-we add a Kconfig option to support for mmapping MSI-X table in vfio-pci
-driver if EEH is supported.
+For the default value of this parameter, we think it should be
+arch-independent, so we add a macro PCI_RESOURCE_PAGE_ALIGNED
+to change it. And we define this macro to enable this parameter
+by default on PPC64 platform which can easily hit this
+performance issue because its PAGE_SIZE is 64KB.
 
-With this patchset applied, we can get almost 100% improvement on
-performance for mmio accesses when we passthrough sub-page BARs to guest
-in our test.
-
-The last two patches are based on the proposed patchset[1].
-
-Changelog v2:
-- Rebase on v4.4-rc6 with the patchset[1] applied.
-- Use kernel parameter to enforce all MMIO BARs to be page aligned
-  on PCI core code instead of doing it on PPC64 arch code.
-- Remove flags: VFIO_DEVICE_FLAGS_PCI_PAGE_ALIGNED
-                VFIO_DEVICE_FLAGS_PCI_MSIX_MMAP
-- Add a Kconfig option to support for mmapping MSI-X table.
-
-[1] https://lkml.org/lkml/2015/11/23/748
-
-Yongji Xie (3):
-  PCI: Add support for enforcing all MMIO BARs to be page aligned
-  vfio-pci: Allow to mmap sub-page MMIO BARs if all MMIO BARs are page aligned
-  vfio-pci: Allow to mmap MSI-X table if EEH is supported
-
+Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+---
  Documentation/kernel-parameters.txt |    4 ++++
  arch/powerpc/include/asm/pci.h      |   11 +++++++++++
  drivers/pci/pci.c                   |   17 +++++++++++++++++
  drivers/pci/pci.h                   |    7 ++++++-
- drivers/vfio/pci/Kconfig            |    4 ++++
- drivers/vfio/pci/vfio_pci.c         |   13 ++++++++++---
  include/linux/pci.h                 |    2 ++
- 7 files changed, 54 insertions(+), 4 deletions(-)
+ 5 files changed, 40 insertions(+), 1 deletion(-)
 
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 742f69d..a53aaee 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2857,6 +2857,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 				PAGE_SIZE is used as alignment.
+ 				PCI-PCI bridge can be specified, if resource
+ 				windows need to be expanded.
++		resource_page_aligned=	Enable/disable enforcing the alignment
++				of all PCI devices' memory resources to be
++				at least PAGE_SIZE.
++				Format: { "on" | "off" }
+ 		ecrc=		Enable/disable PCIe ECRC (transaction layer
+ 				end-to-end CRC checking).
+ 				bios: Use BIOS/firmware settings. This is the
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index 3453bd8..27bff59 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -136,6 +136,17 @@ extern pgprot_t	pci_phys_mem_access_prot(struct file *file,
+ 					 unsigned long pfn,
+ 					 unsigned long size,
+ 					 pgprot_t prot);
++#ifdef CONFIG_PPC64
++
++/* For PPC64, We enforce all PCI MMIO BARs to be page aligned
++ * by default. This would be helpful to improve performance
++ * when we passthrough a PCI device of which BARs are smaller
++ * than PAGE_SIZE(64KB). And we can use bootcmd
++ * "pci=resource_page_aligned=off" to disable it.
++ */
++#define PCI_ENABLE_RESOURCE_PAGE_ALIGNED
++
++#endif
+ 
+ #define HAVE_ARCH_PCI_RESOURCE_TO_USER
+ extern void pci_resource_to_user(const struct pci_dev *dev, int bar,
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 314db8c..9f14ba5 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -99,6 +99,13 @@ u8 pci_cache_line_size;
+  */
+ unsigned int pcibios_max_latency = 255;
+ 
++#ifdef PCI_ENABLE_RESOURCE_PAGE_ALIGNED
++bool pci_resource_page_aligned = true;
++#else
++bool pci_resource_page_aligned;
++#endif
++EXPORT_SYMBOL(pci_resource_page_aligned);
++
+ /* If set, the PCIe ARI capability will not be used. */
+ static bool pcie_ari_disabled;
+ 
+@@ -4746,6 +4753,14 @@ static ssize_t pci_resource_alignment_store(struct bus_type *bus,
+ BUS_ATTR(resource_alignment, 0644, pci_resource_alignment_show,
+ 					pci_resource_alignment_store);
+ 
++static void pci_resource_get_page_aligned(char *str)
++{
++	if (!strncmp(str, "off", 3))
++		pci_resource_page_aligned = false;
++	else if (!strncmp(str, "on", 2))
++		pci_resource_page_aligned = true;
++}
++
+ static int __init pci_resource_alignment_sysfs_init(void)
+ {
+ 	return bus_create_file(&pci_bus_type,
+@@ -4859,6 +4874,8 @@ static int __init pci_setup(char *str)
+ 			} else if (!strncmp(str, "resource_alignment=", 19)) {
+ 				pci_set_resource_alignment_param(str + 19,
+ 							strlen(str + 19));
++			} else if (!strncmp(str, "resource_page_aligned=", 22)) {
++				pci_resource_get_page_aligned(str + 22);
+ 			} else if (!strncmp(str, "ecrc=", 5)) {
+ 				pcie_ecrc_get_policy(str + 5);
+ 			} else if (!strncmp(str, "hpiosize=", 9)) {
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index d390fc1..e16e48c 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -312,11 +312,16 @@ static inline resource_size_t pci_resource_alignment(struct pci_dev *dev,
+ #ifdef CONFIG_PCI_IOV
+ 	int resno = res - dev->resource;
+ 
+-	if (resno >= PCI_IOV_RESOURCES && resno <= PCI_IOV_RESOURCE_END)
++	if (resno >= PCI_IOV_RESOURCES && resno <= PCI_IOV_RESOURCE_END) {
++		if (pci_resource_page_aligned && res->flags & IORESOURCE_MEM)
++			return PAGE_ALIGN(pci_sriov_resource_alignment(dev, resno));
+ 		return pci_sriov_resource_alignment(dev, resno);
++	}
+ #endif
+ 	if (dev->class >> 8  == PCI_CLASS_BRIDGE_CARDBUS)
+ 		return pci_cardbus_resource_alignment(res);
++	if (pci_resource_page_aligned && res->flags & IORESOURCE_MEM)
++		return PAGE_ALIGN(resource_alignment(res));
+ 	return resource_alignment(res);
+ }
+ 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 6ae25aa..0ca57f1 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1517,6 +1517,8 @@ static inline int pci_get_new_domain_nr(void) { return -ENOSYS; }
+ 
+ #include <asm/pci.h>
+ 
++extern bool pci_resource_page_aligned;
++
+ /* these helpers provide future and backwards compatibility
+  * for accessing popular PCI BAR info */
+ #define pci_resource_start(dev, bar)	((dev)->resource[(bar)].start)
 -- 
 1.7.9.5
