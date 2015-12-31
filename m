@@ -2,9 +2,9 @@ Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2CB001A0F8F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jan 2016 06:07:29 +1100 (AEDT)
-Date: Thu, 31 Dec 2015 21:07:18 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 289BE1A0F48
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jan 2016 06:07:37 +1100 (AEDT)
+Date: Thu, 31 Dec 2015 21:07:27 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -20,12 +20,10 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
  user-mode-linux-devel@lists.sourceforge.net,
  adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Jeff Dike <jdike@addtoit.com>, Richard Weinberger <richard@nod.at>,
  Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>,
- Andy Lutomirski <luto@kernel.org>,
- user-mode-linux-user@lists.sourceforge.net
-Subject: [PATCH v2 12/32] x86/um: reuse asm-generic/barrier.h
-Message-ID: <1451572003-2440-13-git-send-email-mst@redhat.com>
+ Andy Lutomirski <luto@kernel.org>, Andrey Konovalov <andreyknvl@google.com>
+Subject: [PATCH v2 13/32] x86: reuse asm-generic/barrier.h
+Message-ID: <1451572003-2440-14-git-send-email-mst@redhat.com>
 References: <1451572003-2440-1-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -39,36 +37,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On x86/um CONFIG_SMP is never defined.  As a result, several macros
-match the asm-generic variant exactly. Drop the local definitions and
-pull in asm-generic/barrier.h instead.
+As on most architectures, on x86 read_barrier_depends and
+smp_read_barrier_depends are empty.  Drop the local definitions and pull
+the generic ones from asm-generic/barrier.h instead: they are identical.
 
 This is in preparation to refactoring this code area.
 
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/x86/um/asm/barrier.h | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ arch/x86/include/asm/barrier.h | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/um/asm/barrier.h b/arch/x86/um/asm/barrier.h
-index 755481f..174781a 100644
---- a/arch/x86/um/asm/barrier.h
-+++ b/arch/x86/um/asm/barrier.h
-@@ -36,13 +36,6 @@
- #endif /* CONFIG_X86_PPRO_FENCE */
- #define dma_wmb()	barrier()
+diff --git a/arch/x86/include/asm/barrier.h b/arch/x86/include/asm/barrier.h
+index 0681d25..cc4c2a7 100644
+--- a/arch/x86/include/asm/barrier.h
++++ b/arch/x86/include/asm/barrier.h
+@@ -43,9 +43,6 @@
+ #define smp_store_mb(var, value) do { WRITE_ONCE(var, value); barrier(); } while (0)
+ #endif /* SMP */
  
--#define smp_mb()	barrier()
--#define smp_rmb()	barrier()
--#define smp_wmb()	barrier()
--
--#define smp_store_mb(var, value) do { WRITE_ONCE(var, value); barrier(); } while (0)
--
 -#define read_barrier_depends()		do { } while (0)
 -#define smp_read_barrier_depends()	do { } while (0)
-+#include <asm-generic/barrier.h>
+-
+ #if defined(CONFIG_X86_PPRO_FENCE)
  
- #endif
+ /*
+@@ -91,4 +88,6 @@ do {									\
+ #define smp_mb__before_atomic()	barrier()
+ #define smp_mb__after_atomic()	barrier()
+ 
++#include <asm-generic/barrier.h>
++
+ #endif /* _ASM_X86_BARRIER_H */
 -- 
 MST
