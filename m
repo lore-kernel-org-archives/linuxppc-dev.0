@@ -1,19 +1,29 @@
-Return-Path: <raghav@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0124.outbound.protection.outlook.com [65.55.169.124])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4764E1A00EE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Dec 2015 20:34:27 +1100 (AEDT)
-From: Raghav Dogra <raghav@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: <prabhakar@freescale.com>, <scottwood@freescale.com>, Raghav Dogra
- <raghav@freescale.com>
-Subject: [PATCH][v2] mpc85xx/lbc: modify suspend/resume entry sequence
-Date: Thu, 31 Dec 2015 11:30:32 +0530
-Message-ID: <1451541632-23541-1-git-send-email-raghav@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DE58E1A0EC5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jan 2016 06:05:48 +1100 (AEDT)
+Date: Thu, 31 Dec 2015 21:05:36 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+ linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
+ linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-metag@vger.kernel.org,
+ linux-mips@linux-mips.org, x86@kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org
+Subject: [PATCH v2 00/34] arch: barrier cleanup + barriers for virt
+Message-ID: <1451572003-2440-1-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,135 +33,204 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Modify platform driver suspend/resume to syscore
-suspend/resume. This is because p1022ds needs to use
-localbus when entering the PCIE resume.
+Changes since v1:
+	- replaced my asm-generic patch with an equivalent patch already in tip
+	- add wrappers with virt_ prefix for better code annotation,
+	  as suggested by David Miller
+	- dropped XXX in patch names as this makes vger choke, Cc all relevant
+	  mailing lists on all patches (not personal email, as the list becomes
+	  too long then)
 
-Signed-off-by: Raghav Dogra <raghav@freescale.com>
----
-changes for v2: return type correction
+I parked this in vhost tree for now, but the inclusion of patch 1 from tip
+creates a merge conflict (even though it's easy to resolve).
+Would tip maintainers prefer merging it through tip tree instead
+(including the virtio patches)?
+Or should I just merge it all through my tree, including the
+duplicate patch, and assume conflict will be resolved?
+If the second, acks will be appreciated.
 
- arch/powerpc/sysdev/Makefile  |  2 +-
- arch/powerpc/sysdev/fsl_lbc.c | 49 +++++++++++++++++++++++++++++++++----------
- 2 files changed, 39 insertions(+), 12 deletions(-)
+Thanks!
 
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 5b492a6..3687e39 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -18,9 +18,9 @@ obj-$(CONFIG_PPC_PMI)		+= pmi.o
- obj-$(CONFIG_U3_DART)		+= dart_iommu.o
- obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o fsl_mpic_err.o
-+obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
- obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
- obj-$(CONFIG_FSL_PMC)		+= fsl_pmc.o
--obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
- obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
- obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+= fsl_85xx_l2ctlr.o fsl_85xx_cache_sram.o
- obj-$(CONFIG_SIMPLE_GPIO)	+= simple_gpio.o
-diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
-index 38138cf..b8aebb3 100644
---- a/arch/powerpc/sysdev/fsl_lbc.c
-+++ b/arch/powerpc/sysdev/fsl_lbc.c
-@@ -27,6 +27,7 @@
- #include <linux/platform_device.h>
- #include <linux/interrupt.h>
- #include <linux/mod_devicetable.h>
-+#include <linux/syscore_ops.h>
- #include <asm/prom.h>
- #include <asm/fsl_lbc.h>
- 
-@@ -354,24 +355,42 @@ err:
- #ifdef CONFIG_SUSPEND
- 
- /* save lbc registers */
--static int fsl_lbc_suspend(struct platform_device *pdev, pm_message_t state)
-+static int fsl_lbc_syscore_suspend(void)
- {
--	struct fsl_lbc_ctrl *ctrl = dev_get_drvdata(&pdev->dev);
--	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-+	struct fsl_lbc_ctrl *ctrl;
-+	struct fsl_lbc_regs __iomem *lbc;
-+
-+	ctrl = fsl_lbc_ctrl_dev;
-+	if (!ctrl)
-+		goto out;
-+
-+	lbc = ctrl->regs;
-+	if (!lbc)
-+		goto out;
- 
- 	ctrl->saved_regs = kmalloc(sizeof(struct fsl_lbc_regs), GFP_KERNEL);
- 	if (!ctrl->saved_regs)
- 		return -ENOMEM;
- 
- 	_memcpy_fromio(ctrl->saved_regs, lbc, sizeof(struct fsl_lbc_regs));
-+
-+out:
- 	return 0;
- }
- 
- /* restore lbc registers */
--static int fsl_lbc_resume(struct platform_device *pdev)
-+static void fsl_lbc_syscore_resume(void)
- {
--	struct fsl_lbc_ctrl *ctrl = dev_get_drvdata(&pdev->dev);
--	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-+	struct fsl_lbc_ctrl *ctrl;
-+	struct fsl_lbc_regs __iomem *lbc;
-+
-+	ctrl = fsl_lbc_ctrl_dev;
-+	if (!ctrl)
-+		goto out;
-+
-+	lbc = ctrl->regs;
-+	if (!lbc)
-+		goto out;
- 
- 	if (ctrl->saved_regs) {
- 		_memcpy_toio(lbc, ctrl->saved_regs,
-@@ -379,7 +398,9 @@ static int fsl_lbc_resume(struct platform_device *pdev)
- 		kfree(ctrl->saved_regs);
- 		ctrl->saved_regs = NULL;
- 	}
--	return 0;
-+
-+out:
-+	return;
- }
- #endif /* CONFIG_SUSPEND */
- 
-@@ -391,20 +412,26 @@ static const struct of_device_id fsl_lbc_match[] = {
- 	{},
- };
- 
-+#ifdef CONFIG_SUSPEND
-+static struct syscore_ops lbc_syscore_pm_ops = {
-+	.suspend = fsl_lbc_syscore_suspend,
-+	.resume = fsl_lbc_syscore_resume,
-+};
-+#endif
-+
- static struct platform_driver fsl_lbc_ctrl_driver = {
- 	.driver = {
- 		.name = "fsl-lbc",
- 		.of_match_table = fsl_lbc_match,
- 	},
- 	.probe = fsl_lbc_ctrl_probe,
--#ifdef CONFIG_SUSPEND
--	.suspend     = fsl_lbc_suspend,
--	.resume      = fsl_lbc_resume,
--#endif
- };
- 
- static int __init fsl_lbc_init(void)
- {
-+#ifdef CONFIG_SUSPEND
-+	register_syscore_ops(&lbc_syscore_pm_ops);
-+#endif
- 	return platform_driver_register(&fsl_lbc_ctrl_driver);
- }
- subsys_initcall(fsl_lbc_init);
+This is really trying to cleanup some virt code, as suggested by Peter, who
+said
+> You could of course go fix that instead of mutilating things into
+> sort-of functional state.
+
+This work is needed for virtio, so it's probably easiest to
+merge it through my tree - is this fine by everyone?
+Arnd, if you agree, could you ack this please?
+
+Note to arch maintainers: please don't cherry-pick patches out of this patchset
+as it's been structured in this order to avoid breaking bisect.
+Please send acks instead!
+
+Sometimes, virtualization is weird. For example, virtio does this (conceptually):
+
+#ifdef CONFIG_SMP
+                smp_mb();
+#else
+                mb();
+#endif
+
+Similarly, Xen calls mb() when it's not doing any MMIO at all.
+
+Of course it's wrong in the sense that it's suboptimal. What we would really
+like is to have, on UP, exactly the same barrier as on SMP.  This is because a
+UP guest can run on an SMP host.
+
+But Linux doesn't provide this ability: if CONFIG_SMP is not defined is
+optimizes most barriers out to a compiler barrier.
+
+Consider for example x86: what we want is xchg (NOT mfence - there's no real IO
+going on here - just switching out of the VM - more like a function call
+really) but if built without CONFIG_SMP smp_store_mb does not include this.
+
+Virt in general is probably the only use-case, because this really is an
+artifact of interfacing with an SMP host while running an UP kernel,
+but since we have (at least) two users, it seems to make sense to
+put these APIs in a central place.
+
+In fact, smp_ barriers are stubs on !SMP, so they can be defined as follows:
+
+arch/XXX/include/asm/barrier.h:
+
+#define __smp_mb() DOSOMETHING
+
+include/asm-generic/barrier.h:
+
+#ifdef CONFIG_SMP
+#define smp_mb() __smp_mb()
+#else
+#define smp_mb() barrier()
+#endif
+
+This has the benefit of cleaning out a bunch of duplicated
+ifdefs on a bunch of architectures - this patchset brings
+about a net reduction in LOC, even with new barriers and extra documentation :)
+
+Then virt can use __smp_XXX when talking to an SMP host.
+To make those users explicit, this patchset adds virt_xxx wrappers
+for them.
+
+Touching all archs is a tad tedious, but its fairly straight forward.
+
+The rest of the patchset is structured as follows:
+
+
+-. Patch 1 fixes a bug in asm-generic.
+   It is already in tip, included here for completeness.
+
+-. Patches 2-12 make sure barrier.h on all remaining
+   architectures includes asm-generic/barrier.h:
+   after the change in Patch 1, code there matches
+   asm-generic/barrier.h almost verbatim.
+   Minor code tweaks were required in a couple of places.
+   Macros duplicated from asm-generic/barrier.h are dropped
+   in the process.
+
+After all that preparatory work, we are getting to the actual change.
+
+-. Patches 13 adds generic smp_XXX wrappers in asm-generic
+   these select __smp_XXX or barrier() depending on CONFIG_SMP
+
+-. Patches 14-27 change all architectures to
+   define __smp_XXX macros; the generic code in asm-generic/barrier.h
+   then defines smp_XXX macros
+
+   I compiled the affected arches before and after the changes,
+   dumped the .text section (using objdump -O binary) and
+   made sure that the object code is exactly identical
+   before and after the change.
+   I couldn't fully build sh,tile,xtensa but I did this test
+   kernel/rcu/tree.o kernel/sched/wait.o and
+   kernel/futex.o and tested these instead.
+
+Unfortunately, I don't have a metag cross-build toolset ready.
+Hoping for some acks on this architecture.
+
+Finally, the following patches put the __smp_xxx APIs to work for virt:
+
+-. Patch 28 adds virt_ wrappers for __smp_, and documents them.
+   After all this work, this requires very few lines of code in
+   the generic header.
+
+-. Patches 29,30,33,34 convert virtio xen drivers to use the virt_xxx APIs
+
+   xen patches are untested
+   virtio ones have been tested on x86
+
+-. Patches 31-32 teach virtio to use virt_store_mb
+   sh architecture was missing a 2-byte smp_store_mb,
+   the fix is trivial although my code is not optimal:
+   if anyone cares, pls send me a patch to apply on top.
+   I didn't build this architecture, but intel's 0-day
+   infrastructure builds it.
+
+   tested on x86
+
+
+Davidlohr Bueso (1):
+  lcoking/barriers, arch: Use smp barriers in smp_store_release()
+
+Michael S. Tsirkin (33):
+  asm-generic: guard smp_store_release/load_acquire
+  ia64: rename nop->iosapic_nop
+  ia64: reuse asm-generic/barrier.h
+  powerpc: reuse asm-generic/barrier.h
+  s390: reuse asm-generic/barrier.h
+  sparc: reuse asm-generic/barrier.h
+  arm: reuse asm-generic/barrier.h
+  arm64: reuse asm-generic/barrier.h
+  metag: reuse asm-generic/barrier.h
+  mips: reuse asm-generic/barrier.h
+  x86/um: reuse asm-generic/barrier.h
+  x86: reuse asm-generic/barrier.h
+  asm-generic: add __smp_xxx wrappers
+  powerpc: define __smp_xxx
+  arm64: define __smp_xxx
+  arm: define __smp_xxx
+  blackfin: define __smp_xxx
+  ia64: define __smp_xxx
+  metag: define __smp_xxx
+  mips: define __smp_xxx
+  s390: define __smp_xxx
+  sh: define __smp_xxx, fix smp_store_mb for !SMP
+  sparc: define __smp_xxx
+  tile: define __smp_xxx
+  xtensa: define __smp_xxx
+  x86: define __smp_xxx
+  asm-generic: implement virt_xxx memory barriers
+  Revert "virtio_ring: Update weak barriers to use dma_wmb/rmb"
+  virtio_ring: update weak barriers to use __smp_XXX
+  sh: support a 2-byte smp_store_mb
+  virtio_ring: use virt_store_mb
+  xenbus: use virt_xxx barriers
+  xen/io: use virt_xxx barriers
+
+ arch/arm/include/asm/barrier.h      |  35 ++-----------
+ arch/arm64/include/asm/barrier.h    |  19 +++----
+ arch/blackfin/include/asm/barrier.h |   4 +-
+ arch/ia64/include/asm/barrier.h     |  24 +++------
+ arch/metag/include/asm/barrier.h    |  55 ++++++-------------
+ arch/mips/include/asm/barrier.h     |  51 ++++++------------
+ arch/powerpc/include/asm/barrier.h  |  33 ++++--------
+ arch/s390/include/asm/barrier.h     |  25 ++++-----
+ arch/sh/include/asm/barrier.h       |  11 +++-
+ arch/sparc/include/asm/barrier_32.h |   1 -
+ arch/sparc/include/asm/barrier_64.h |  29 +++-------
+ arch/sparc/include/asm/processor.h  |   3 --
+ arch/tile/include/asm/barrier.h     |   9 ++--
+ arch/x86/include/asm/barrier.h      |  36 +++++--------
+ arch/x86/um/asm/barrier.h           |   9 +---
+ arch/xtensa/include/asm/barrier.h   |   4 +-
+ include/asm-generic/barrier.h       | 102 ++++++++++++++++++++++++++++++++----
+ include/linux/virtio_ring.h         |  22 +++++---
+ include/xen/interface/io/ring.h     |  16 +++---
+ arch/ia64/kernel/iosapic.c          |   6 +--
+ drivers/virtio/virtio_ring.c        |  15 +++---
+ drivers/xen/xenbus/xenbus_comms.c   |   8 +--
+ Documentation/memory-barriers.txt   |  28 ++++++++--
+ 23 files changed, 266 insertions(+), 279 deletions(-)
+
 -- 
-1.9.1
+MST
