@@ -2,9 +2,9 @@ Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C4071A0F70
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jan 2016 06:06:56 +1100 (AEDT)
-Date: Thu, 31 Dec 2015 21:06:46 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F1521A0F54
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jan 2016 06:07:04 +1100 (AEDT)
+Date: Thu, 31 Dec 2015 21:06:54 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -20,10 +20,12 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
  user-mode-linux-devel@lists.sourceforge.net,
  adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Russell King <linux@arm.linux.org.uk>, Ingo Molnar <mingo@kernel.org>,
- Tony Lindgren <tony@atomide.com>, Andrey Konovalov <andreyknvl@google.com>
-Subject: [PATCH v2 08/32] arm: reuse asm-generic/barrier.h
-Message-ID: <1451572003-2440-9-git-send-email-mst@redhat.com>
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Ingo Molnar <mingo@kernel.org>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Andrey Konovalov <andreyknvl@google.com>
+Subject: [PATCH v2 09/32] arm64: reuse asm-generic/barrier.h
+Message-ID: <1451572003-2440-10-git-send-email-mst@redhat.com>
 References: <1451572003-2440-1-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -37,52 +39,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On arm smp_store_mb, read_barrier_depends, smp_read_barrier_depends,
-smp_store_release, smp_load_acquire, smp_mb__before_atomic and
-smp_mb__after_atomic match the asm-generic variants exactly. Drop the
-local definitions and pull in asm-generic/barrier.h instead.
+On arm64 nop, read_barrier_depends, smp_read_barrier_depends
+smp_store_mb(), smp_mb__before_atomic and smp_mb__after_atomic match the
+asm-generic variants exactly. Drop the local definitions and pull in
+asm-generic/barrier.h instead.
 
 This is in preparation to refactoring this code area.
 
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/include/asm/barrier.h | 23 +----------------------
- 1 file changed, 1 insertion(+), 22 deletions(-)
+ arch/arm64/include/asm/barrier.h | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/arch/arm/include/asm/barrier.h b/arch/arm/include/asm/barrier.h
-index 3ff5642..31152e8 100644
---- a/arch/arm/include/asm/barrier.h
-+++ b/arch/arm/include/asm/barrier.h
-@@ -70,28 +70,7 @@ extern void arm_heavy_mb(void);
- #define smp_wmb()	dmb(ishst)
- #endif
+diff --git a/arch/arm64/include/asm/barrier.h b/arch/arm64/include/asm/barrier.h
+index 9622eb4..91a43f4 100644
+--- a/arch/arm64/include/asm/barrier.h
++++ b/arch/arm64/include/asm/barrier.h
+@@ -91,14 +91,7 @@ do {									\
+ 	__u.__val;							\
+ })
  
--#define smp_store_release(p, v)						\
--do {									\
--	compiletime_assert_atomic_type(*p);				\
--	smp_mb();							\
--	WRITE_ONCE(*p, v);						\
--} while (0)
--
--#define smp_load_acquire(p)						\
--({									\
--	typeof(*p) ___p1 = READ_ONCE(*p);				\
--	compiletime_assert_atomic_type(*p);				\
--	smp_mb();							\
--	___p1;								\
--})
--
 -#define read_barrier_depends()		do { } while(0)
 -#define smp_read_barrier_depends()	do { } while(0)
 -
 -#define smp_store_mb(var, value)	do { WRITE_ONCE(var, value); smp_mb(); } while (0)
+-#define nop()		asm volatile("nop");
 -
 -#define smp_mb__before_atomic()	smp_mb()
 -#define smp_mb__after_atomic()	smp_mb()
 +#include <asm-generic/barrier.h>
  
- #endif /* !__ASSEMBLY__ */
- #endif /* __ASM_BARRIER_H */
+ #endif	/* __ASSEMBLY__ */
+ 
 -- 
 MST
