@@ -2,9 +2,9 @@ Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB5251A0F54
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jan 2016 06:08:15 +1100 (AEDT)
-Date: Thu, 31 Dec 2015 21:08:07 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 16FFB1A0F78
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jan 2016 06:08:24 +1100 (AEDT)
+Date: Thu, 31 Dec 2015 21:08:14 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -20,9 +20,11 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
  user-mode-linux-devel@lists.sourceforge.net,
  adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Steven Miao <realmz6@gmail.com>
-Subject: [PATCH v2 18/32] blackfin: define __smp_xxx
-Message-ID: <1451572003-2440-19-git-send-email-mst@redhat.com>
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Ingo Molnar <mingo@kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ Andrey Konovalov <andreyknvl@google.com>
+Subject: [PATCH v2 19/32] ia64: define __smp_xxx
+Message-ID: <1451572003-2440-20-git-send-email-mst@redhat.com>
 References: <1451572003-2440-1-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -36,32 +38,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This defines __smp_xxx barriers for blackfin,
+This defines __smp_xxx barriers for ia64,
 for use by virtualization.
 
 smp_xxx barriers are removed as they are
 defined correctly by asm-generic/barriers.h
 
+This reduces the amount of arch-specific boiler-plate code.
+
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+Acked-by: Tony Luck <tony.luck@intel.com>
 Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/blackfin/include/asm/barrier.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/ia64/include/asm/barrier.h | 14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
 
-diff --git a/arch/blackfin/include/asm/barrier.h b/arch/blackfin/include/asm/barrier.h
-index dfb66fe..7cca51c 100644
---- a/arch/blackfin/include/asm/barrier.h
-+++ b/arch/blackfin/include/asm/barrier.h
-@@ -78,8 +78,8 @@
+diff --git a/arch/ia64/include/asm/barrier.h b/arch/ia64/include/asm/barrier.h
+index 2f93348..588f161 100644
+--- a/arch/ia64/include/asm/barrier.h
++++ b/arch/ia64/include/asm/barrier.h
+@@ -42,28 +42,24 @@
+ #define dma_rmb()	mb()
+ #define dma_wmb()	mb()
  
- #endif /* !CONFIG_SMP */
+-#ifdef CONFIG_SMP
+-# define smp_mb()	mb()
+-#else
+-# define smp_mb()	barrier()
+-#endif
++# define __smp_mb()	mb()
  
 -#define smp_mb__before_atomic()	barrier()
 -#define smp_mb__after_atomic()	barrier()
 +#define __smp_mb__before_atomic()	barrier()
 +#define __smp_mb__after_atomic()	barrier()
  
- #include <asm-generic/barrier.h>
+ /*
+  * IA64 GCC turns volatile stores into st.rel and volatile loads into ld.acq no
+  * need for asm trickery!
+  */
  
+-#define smp_store_release(p, v)						\
++#define __smp_store_release(p, v)						\
+ do {									\
+ 	compiletime_assert_atomic_type(*p);				\
+ 	barrier();							\
+ 	WRITE_ONCE(*p, v);						\
+ } while (0)
+ 
+-#define smp_load_acquire(p)						\
++#define __smp_load_acquire(p)						\
+ ({									\
+ 	typeof(*p) ___p1 = READ_ONCE(*p);				\
+ 	compiletime_assert_atomic_type(*p);				\
 -- 
 MST
