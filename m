@@ -1,15 +1,34 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE3B81A3CF7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jan 2016 06:49:20 +1100 (AEDT)
-From: Scott Wood <oss@buserror.net>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Scott Wood <oss@buserror.net>
-Date: Thu, 31 Dec 2015 13:18:28 -0600
-Message-Id: <1451589508-13424-1-git-send-email-oss@buserror.net>
-Subject: [PATCH] MAINTAINERS: Update Scott Wood's e-mail address
+ by lists.ozlabs.org (Postfix) with ESMTPS id 278D11A0549
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jan 2016 21:22:02 +1100 (AEDT)
+Date: Fri, 1 Jan 2016 12:21:52 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+ linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
+ linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-metag@vger.kernel.org,
+ linux-mips@linux-mips.org, x86@kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
+ Alexander Duyck <alexander.duyck@gmail.com>
+Subject: Re: [PATCH v2 30/32] virtio_ring: update weak barriers to use
+ __smp_xxx
+Message-ID: <20160101122115-mutt-send-email-mst@redhat.com>
+References: <1451572003-2440-1-git-send-email-mst@redhat.com>
+ <1451572003-2440-31-git-send-email-mst@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1451572003-2440-31-git-send-email-mst@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,26 +38,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Freescale is now NXP.  I still work there, but I won't be using their
-mail system for Linux development.
+On Fri, Jan 01, 2016 at 11:39:40AM +0200, Michael S. Tsirkin wrote:
+> virtio ring uses smp_wmb on SMP and wmb on !SMP,
+> the reason for the later being that it might be
+> talking to another kernel on the same SMP machine.
+> 
+> This is exactly what __smp_XXX barriers do,
+> so switch to these instead of homegrown ifdef hacks.
+> 
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Alexander Duyck <alexander.duyck@gmail.com>
+> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 
-Signed-off-by: Scott Wood <oss@buserror.net>
----
- MAINTAINERS | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The subject and commit log should say
+virt_xxx and not __smp_xxx - I fixed this up in
+my tree.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8099527..124dd37 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6429,7 +6429,7 @@ S:	Maintained
- F:	arch/powerpc/platforms/8xx/
- 
- LINUX FOR POWERPC EMBEDDED PPC83XX AND PPC85XX
--M:	Scott Wood <scottwood@freescale.com>
-+M:	Scott Wood <oss@buserror.net>
- M:	Kumar Gala <galak@kernel.crashing.org>
- W:	http://www.penguinppc.org/
- L:	linuxppc-dev@lists.ozlabs.org
--- 
-2.5.0
+> ---
+>  include/linux/virtio_ring.h | 25 ++++---------------------
+>  1 file changed, 4 insertions(+), 21 deletions(-)
+> 
+> diff --git a/include/linux/virtio_ring.h b/include/linux/virtio_ring.h
+> index 67e06fe..f3fa55b 100644
+> --- a/include/linux/virtio_ring.h
+> +++ b/include/linux/virtio_ring.h
+> @@ -12,7 +12,7 @@
+>   * anyone care?
+>   *
+>   * For virtio_pci on SMP, we don't need to order with respect to MMIO
+> - * accesses through relaxed memory I/O windows, so smp_mb() et al are
+> + * accesses through relaxed memory I/O windows, so virt_mb() et al are
+>   * sufficient.
+>   *
+>   * For using virtio to talk to real devices (eg. other heterogeneous
+> @@ -21,11 +21,10 @@
+>   * actually quite cheap.
+>   */
+>  
+> -#ifdef CONFIG_SMP
+>  static inline void virtio_mb(bool weak_barriers)
+>  {
+>  	if (weak_barriers)
+> -		smp_mb();
+> +		virt_mb();
+>  	else
+>  		mb();
+>  }
+> @@ -33,7 +32,7 @@ static inline void virtio_mb(bool weak_barriers)
+>  static inline void virtio_rmb(bool weak_barriers)
+>  {
+>  	if (weak_barriers)
+> -		smp_rmb();
+> +		virt_rmb();
+>  	else
+>  		rmb();
+>  }
+> @@ -41,26 +40,10 @@ static inline void virtio_rmb(bool weak_barriers)
+>  static inline void virtio_wmb(bool weak_barriers)
+>  {
+>  	if (weak_barriers)
+> -		smp_wmb();
+> +		virt_wmb();
+>  	else
+>  		wmb();
+>  }
+> -#else
+> -static inline void virtio_mb(bool weak_barriers)
+> -{
+> -	mb();
+> -}
+> -
+> -static inline void virtio_rmb(bool weak_barriers)
+> -{
+> -	rmb();
+> -}
+> -
+> -static inline void virtio_wmb(bool weak_barriers)
+> -{
+> -	wmb();
+> -}
+> -#endif
+>  
+>  struct virtio_device;
+>  struct virtqueue;
+> -- 
+> MST
