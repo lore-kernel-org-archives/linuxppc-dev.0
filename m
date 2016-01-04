@@ -2,9 +2,9 @@ Return-Path: <James.Hogan@imgtec.com>
 Received: from imgpgp01.kl.imgtec.org (mailapp01.imgtec.com [195.59.15.196])
  (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 890C11A0045
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 02:59:28 +1100 (AEDT)
-Date: Mon, 4 Jan 2016 15:25:58 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 585B51A0045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 03:04:59 +1100 (AEDT)
+Date: Mon, 4 Jan 2016 16:04:55 +0000
 From: James Hogan <james.hogan@imgtec.com>
 To: Peter Zijlstra <peterz@infradead.org>
 CC: "Michael S. Tsirkin" <mst@redhat.com>, <linux-kernel@vger.kernel.org>,
@@ -23,14 +23,16 @@ CC: "Michael S. Tsirkin" <mst@redhat.com>, <linux-kernel@vger.kernel.org>,
  Molnar" <mingo@kernel.org>, Davidlohr Bueso <dbueso@suse.de>, Andrey
  Konovalov <andreyknvl@google.com>
 Subject: Re: [PATCH v2 20/32] metag: define __smp_xxx
-Message-ID: <20160104152558.GD17861@jhogan-linux.le.imgtec.org>
+Message-ID: <20160104160455.GE17861@jhogan-linux.le.imgtec.org>
 References: <1451572003-2440-1-git-send-email-mst@redhat.com>
  <1451572003-2440-21-git-send-email-mst@redhat.com>
  <20160104134128.GZ6344@twins.programming.kicks-ass.net>
+ <20160104152558.GD17861@jhogan-linux.le.imgtec.org>
+ <20160104153036.GG6344@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="AbQceqfdZEv+FvjW"
-In-Reply-To: <20160104134128.GZ6344@twins.programming.kicks-ass.net>
+ protocol="application/pgp-signature"; boundary="PGNNI9BzQDUtgA2J"
+In-Reply-To: <20160104153036.GG6344@twins.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,74 +42,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---AbQceqfdZEv+FvjW
+--PGNNI9BzQDUtgA2J
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Peter,
-
-On Mon, Jan 04, 2016 at 02:41:28PM +0100, Peter Zijlstra wrote:
-> On Thu, Dec 31, 2015 at 09:08:22PM +0200, Michael S. Tsirkin wrote:
-> > +#ifdef CONFIG_SMP
-> > +#define fence() metag_fence()
-> > +#else
-> > +#define fence()		do { } while (0)
-> >  #endif
+On Mon, Jan 04, 2016 at 04:30:36PM +0100, Peter Zijlstra wrote:
+> On Mon, Jan 04, 2016 at 03:25:58PM +0000, James Hogan wrote:
+> > It is used along with the metag specific __global_lock1() (global
+> > voluntary lock between hw threads) whenever a write is performed, and by
+> > smp_mb/smp_rmb to try to catch other cases, but I've never been
+> > confident this fixes every single corner case, since there could be
+> > other places where multiple CPUs perform unsynchronised writes to the
+> > same memory location, and expect cache not to become incoherent at that
+> > location.
 >=20
-> James, it strikes me as odd that fence() is a no-op instead of a
-> barrier() for UP, can you verify/explain?
+> Ah, yuck, I thought blackfin was the only one attempting !coherent SMP.
+> And yes, this is bound to break in lots of places in subtle ways. We
+> very much assume cache coherency for SMP in generic code.
 
-fence() is an unfortunate workaround for a specific issue on a certain
-SoC, where writes from different hw threads get reordered outside of the
-core, resulting in incoherency between RAM and cache. It has slightly
-different semantics to the normal SMP barriers, since I was assured it
-is required before a write rather than after it.
+Well, its usually completely coherent, its just a bit dodgy in a
+particular hardware corner case, which was pretty hard to hit, even
+without these workarounds.
 
-Here's the comment:
+>=20
+> > It seemed to be sufficient to achieve stability however, and SMP on Meta
+> > Linux never made it into a product anyway, since the other hw thread
+> > tended to be used for RTOS stuff, so it didn't seem worth extending the
+> > generic barrier API for it.
+>=20
+> *phew*, should we take it out then, just to be sure nobody accidentally
+> tries to use it then?
 
-> This is needed before a write to shared memory in a critical section,
-> to prevent external reordering of writes before the fence on other
-> threads with writes after the fence on this thread (and to prevent the
-> ensuing cache-memory incoherence). It is therefore ineffective if used
-> after and on the same thread as a write.
-
-It is used along with the metag specific __global_lock1() (global
-voluntary lock between hw threads) whenever a write is performed, and by
-smp_mb/smp_rmb to try to catch other cases, but I've never been
-confident this fixes every single corner case, since there could be
-other places where multiple CPUs perform unsynchronised writes to the
-same memory location, and expect cache not to become incoherent at that
-location.
-
-It seemed to be sufficient to achieve stability however, and SMP on Meta
-Linux never made it into a product anyway, since the other hw thread
-tended to be used for RTOS stuff, so it didn't seem worth extending the
-generic barrier API for it.
+SMP support on this SoC you mean? I doubt it'll be a problem tbh, and
+it'd work fine in QEMU when emulating this SoC, so I'd prefer to keep it
+in.
 
 Cheers
 James
 
---AbQceqfdZEv+FvjW
+--PGNNI9BzQDUtgA2J
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJWio8GAAoJEGwLaZPeOHZ6kOoP+gOsyqboWQ/oGC0ratnoDEIb
-8xoc8nrYKBUdTxDNOzrQq8QCFJh9Ny+0mi+wyagv652qsjpNwx+2zQXqrCjWyilJ
-nT/AcO2SYPLA+jgjBAbFmf6gxnCH1e2kgjY5G+kP3NryiDAgty0QxQm6EXyhG4PC
-R1GaURw7SmgfxsXp7PrtqMiXwJWQEmMjacD3iBVgmC+9IHNqtQDY+VXRZzirqs+B
-kg7rzEFBqlZu2g0DVAVDT5PufMCTAet0kl2gTBA1xOO4L64ZO23UA0hozsef2jKk
-jOJwgqGSjih8aMMLFF/OFWlnq7sbewh6W8BYDqetU1LxwB4lCb26grymp2NF3igS
-FayGpj+0G1tPCTlLhjJ6B+LCvEVr3xtGXOprs3kXCOSogmAxG4dugi+NqLeYMY9t
-e3zM9CT9vJgBo2VN1rZodUgrUJW/L/g9O5LdCjQfaa+jwESekXAYxz/GDXK7f7oP
-50tUwaF4v0QMgbkd/9qAcAFeM2v1+UprgZ0YtS50oKkpGPk9qb6d/SUXc2ol2jJZ
-OsBbptZATrfFNz3YU3IHs5kms7puRW9xyRV/U98x+ePJ2Ygd1L2X1uO692XMKc8w
-T8cd/kO7fJO8GbQp5K4CGoLO9xN0kqjK9A2fUxx6y8WAEd3oFL7b9KFrQFDurF/W
-7bYT38qvPdm2XTOsW1GB
-=XuZ5
+iQIcBAEBCAAGBQJWipgnAAoJEGwLaZPeOHZ6H00QAJCE8+tFVrOY06765tPTdzed
+wYC0LFfKDLv/TtsEAy4zBhWYEwJ0R1gQOTjCKsdaJMINDcpCy+1mWV4b1X1B+ptV
+QD5oOYZy7Fln8VYYvzWp+2Tz/iAoBSnBV1S8rG9eIxwWmJ9NQmhRl7I+GaFO5kgS
++0p+z0sJ6Fvv8jmFdzGF4AIAgm4hFY2O2ojy2jtGArgkFmuSdrrrS2//Uls6z3ZC
+thEMVwEapQUjh0JZXDxkImzKXDfMcDi7Sse8Pdz+hXn0Q8J1u2tlhNwL7mqlY5lz
+JpV/L050BZ94Vpop0JXLmQRkqaO7dDgmi+zGXSvSqSUL7/qWHk3h6gE6tTShr4Qp
+rccA+QoreW9oQmUaAERc/DlB7I8SFYZE08YTLLVh+6bqPPK2sZOSa1/XfRC3UC35
++/exm7MjSr4Emmfo9D5xxRAf4e+nYIuYjmf0rik9Hz5CUYqgbc6yoN570p0omqnL
+7WaRZWn+KESjhPrBrEcEbHFqV3OYsRgCPcoiSL5MVXXE0PlRXQtkDG9ach9jmtyZ
+gz103rjyp1FdqUVG3yYfmCsTNfWwiOJRX1IXLkuTJ0Spjmmk9KtFFO5sUxMV/2l6
+aJ+ehCqr/o58IZf71tqQvLQPeJCvUZ6y8mqAjBAdx1b+FBxUlu2kZ+opl3tI96dK
+DUA3rNDlPNmeqf8XVgY8
+=bXcF
 -----END PGP SIGNATURE-----
 
---AbQceqfdZEv+FvjW--
+--PGNNI9BzQDUtgA2J--
