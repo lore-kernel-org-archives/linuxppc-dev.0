@@ -1,16 +1,16 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 52ED91A0045
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 00:54:35 +1100 (AEDT)
-Date: Mon, 4 Jan 2016 14:54:20 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
- linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id B5A2B1A0101
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 01:00:23 +1100 (AEDT)
+Date: Mon, 4 Jan 2016 13:59:34 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
  virtualization@lists.linux-foundation.org,
  Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
@@ -25,15 +25,17 @@ Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
  Ingo Molnar <mingo@kernel.org>, Tony Lindgren <tony@atomide.com>,
  Andrey Konovalov <andreyknvl@google.com>
 Subject: Re: [PATCH v2 17/32] arm: define __smp_xxx
-Message-ID: <20160104135420.GS6373@twins.programming.kicks-ass.net>
+Message-ID: <20160104135934.GE19062@n2100.arm.linux.org.uk>
 References: <1451572003-2440-1-git-send-email-mst@redhat.com>
  <1451572003-2440-18-git-send-email-mst@redhat.com>
  <20160102112438.GU8644@n2100.arm.linux.org.uk>
  <20160103110158-mutt-send-email-mst@redhat.com>
  <20160104133658.GY6344@twins.programming.kicks-ass.net>
+ <20160104135420.GS6373@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160104133658.GY6344@twins.programming.kicks-ass.net>
+In-Reply-To: <20160104135420.GS6373@twins.programming.kicks-ass.net>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,30 +45,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 04, 2016 at 02:36:58PM +0100, Peter Zijlstra wrote:
-> On Sun, Jan 03, 2016 at 11:12:44AM +0200, Michael S. Tsirkin wrote:
-> > On Sat, Jan 02, 2016 at 11:24:38AM +0000, Russell King - ARM Linux wrote:
-> 
-> > > My only concern is that it gives people an additional handle onto a
-> > > "new" set of barriers - just because they're prefixed with __*
-> > > unfortunately doesn't stop anyone from using it (been there with
-> > > other arch stuff before.)
+On Mon, Jan 04, 2016 at 02:54:20PM +0100, Peter Zijlstra wrote:
+> On Mon, Jan 04, 2016 at 02:36:58PM +0100, Peter Zijlstra wrote:
+> > On Sun, Jan 03, 2016 at 11:12:44AM +0200, Michael S. Tsirkin wrote:
+> > > On Sat, Jan 02, 2016 at 11:24:38AM +0000, Russell King - ARM Linux wrote:
+> > 
+> > > > My only concern is that it gives people an additional handle onto a
+> > > > "new" set of barriers - just because they're prefixed with __*
+> > > > unfortunately doesn't stop anyone from using it (been there with
+> > > > other arch stuff before.)
+> > > > 
+> > > > I wonder whether we should consider making the smp memory barriers
+> > > > inline functions, so these __smp_xxx() variants can be undef'd
+> > > > afterwards, thereby preventing drivers getting their hands on these
+> > > > new macros?
 > > > 
-> > > I wonder whether we should consider making the smp memory barriers
-> > > inline functions, so these __smp_xxx() variants can be undef'd
-> > > afterwards, thereby preventing drivers getting their hands on these
-> > > new macros?
+> > > That'd be tricky to do cleanly since asm-generic depends on
+> > > ifndef to add generic variants where needed.
+> > > 
+> > > But it would be possible to add a checkpatch test for this.
 > > 
-> > That'd be tricky to do cleanly since asm-generic depends on
-> > ifndef to add generic variants where needed.
-> > 
-> > But it would be possible to add a checkpatch test for this.
+> > Wasn't the whole purpose of these things for 'drivers' (namely
+> > virtio/xen hypervisor interaction) to use these?
 > 
-> Wasn't the whole purpose of these things for 'drivers' (namely
-> virtio/xen hypervisor interaction) to use these?
+> Ah, I see, you add virt_*mb() stuff later on for that use case.
+> 
+> So, assuming everybody does include asm-generic/barrier.h, you could
+> simply #undef the __smp version at the end of that, once we've generated
+> all the regular primitives from it, no?
 
-Ah, I see, you add virt_*mb() stuff later on for that use case.
+Not so simple - that's why I mentioned using inline functions.
 
-So, assuming everybody does include asm-generic/barrier.h, you could
-simply #undef the __smp version at the end of that, once we've generated
-all the regular primitives from it, no?
+The new smp_* _macros_ are:
+
++#define smp_mb()       __smp_mb()
+
+which means if we simply #undef __smp_mb(), smp_mb() then points at
+something which is no longer available, and we'll end up with errors
+saying that __smp_mb() doesn't exist.
+
+My suggestion was to change:
+
+#ifndef smp_mb
+#define smp_mb()	__smp_mb()
+#endif
+
+to:
+
+#ifndef smp_mb
+static inline void smp_mb(void)
+{
+	__smp_mb();
+}
+#endif
+
+which then means __smp_mb() and friends can be #undef'd afterwards.
+
+-- 
+RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
