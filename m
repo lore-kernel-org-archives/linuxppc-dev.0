@@ -1,16 +1,15 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B5A2B1A0101
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 01:00:23 +1100 (AEDT)
-Date: Mon, 4 Jan 2016 13:59:34 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 353791A0045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 01:05:17 +1100 (AEDT)
+Date: Mon, 4 Jan 2016 15:05:09 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
  virtualization@lists.linux-foundation.org,
  Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
@@ -22,20 +21,14 @@ Cc: "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
  x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
  adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ingo Molnar <mingo@kernel.org>, Tony Lindgren <tony@atomide.com>,
- Andrey Konovalov <andreyknvl@google.com>
-Subject: Re: [PATCH v2 17/32] arm: define __smp_xxx
-Message-ID: <20160104135934.GE19062@n2100.arm.linux.org.uk>
+ Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v2 31/32] sh: support a 2-byte smp_store_mb
+Message-ID: <20160104140509.GB6344@twins.programming.kicks-ass.net>
 References: <1451572003-2440-1-git-send-email-mst@redhat.com>
- <1451572003-2440-18-git-send-email-mst@redhat.com>
- <20160102112438.GU8644@n2100.arm.linux.org.uk>
- <20160103110158-mutt-send-email-mst@redhat.com>
- <20160104133658.GY6344@twins.programming.kicks-ass.net>
- <20160104135420.GS6373@twins.programming.kicks-ass.net>
+ <1451572003-2440-32-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160104135420.GS6373@twins.programming.kicks-ass.net>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+In-Reply-To: <1451572003-2440-32-git-send-email-mst@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,63 +38,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 04, 2016 at 02:54:20PM +0100, Peter Zijlstra wrote:
-> On Mon, Jan 04, 2016 at 02:36:58PM +0100, Peter Zijlstra wrote:
-> > On Sun, Jan 03, 2016 at 11:12:44AM +0200, Michael S. Tsirkin wrote:
-> > > On Sat, Jan 02, 2016 at 11:24:38AM +0000, Russell King - ARM Linux wrote:
-> > 
-> > > > My only concern is that it gives people an additional handle onto a
-> > > > "new" set of barriers - just because they're prefixed with __*
-> > > > unfortunately doesn't stop anyone from using it (been there with
-> > > > other arch stuff before.)
-> > > > 
-> > > > I wonder whether we should consider making the smp memory barriers
-> > > > inline functions, so these __smp_xxx() variants can be undef'd
-> > > > afterwards, thereby preventing drivers getting their hands on these
-> > > > new macros?
-> > > 
-> > > That'd be tricky to do cleanly since asm-generic depends on
-> > > ifndef to add generic variants where needed.
-> > > 
-> > > But it would be possible to add a checkpatch test for this.
-> > 
-> > Wasn't the whole purpose of these things for 'drivers' (namely
-> > virtio/xen hypervisor interaction) to use these?
+On Thu, Dec 31, 2015 at 09:09:47PM +0200, Michael S. Tsirkin wrote:
+> At the moment, xchg on sh only supports 4 and 1 byte values, so using it
+> from smp_store_mb means attempts to store a 2 byte value using this
+> macro fail.
 > 
-> Ah, I see, you add virt_*mb() stuff later on for that use case.
+> And happens to be exactly what virtio drivers want to do.
 > 
-> So, assuming everybody does include asm-generic/barrier.h, you could
-> simply #undef the __smp version at the end of that, once we've generated
-> all the regular primitives from it, no?
+> Check size and fall back to a slower, but safe, WRITE_ONCE+smp_mb.
+> 
+> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> ---
+>  arch/sh/include/asm/barrier.h | 10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/sh/include/asm/barrier.h b/arch/sh/include/asm/barrier.h
+> index f887c64..0cc5735 100644
+> --- a/arch/sh/include/asm/barrier.h
+> +++ b/arch/sh/include/asm/barrier.h
+> @@ -32,7 +32,15 @@
+>  #define ctrl_barrier()	__asm__ __volatile__ ("nop;nop;nop;nop;nop;nop;nop;nop")
+>  #endif
+>  
+> -#define __smp_store_mb(var, value) do { (void)xchg(&var, value); } while (0)
+> +#define __smp_store_mb(var, value) do { \
+> +	if (sizeof(var) != 4 && sizeof(var) != 1) { \
+> +		 WRITE_ONCE(var, value); \
+> +		__smp_mb(); \
+> +	} else { \
+> +		(void)xchg(&var, value);  \
+> +	} \
+> +} while (0)
 
-Not so simple - that's why I mentioned using inline functions.
+So SH is an orphaned arch, which is also why I did not comment on using
+xchg() for the UP smp_store_mb() thing.
 
-The new smp_* _macros_ are:
-
-+#define smp_mb()       __smp_mb()
-
-which means if we simply #undef __smp_mb(), smp_mb() then points at
-something which is no longer available, and we'll end up with errors
-saying that __smp_mb() doesn't exist.
-
-My suggestion was to change:
-
-#ifndef smp_mb
-#define smp_mb()	__smp_mb()
-#endif
-
-to:
-
-#ifndef smp_mb
-static inline void smp_mb(void)
-{
-	__smp_mb();
-}
-#endif
-
-which then means __smp_mb() and friends can be #undef'd afterwards.
-
--- 
-RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+But I really think we should try fixing the xchg() implementation
+instead of this duct-tape.
