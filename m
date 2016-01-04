@@ -2,13 +2,12 @@ Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CC70A1A0297
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 07:13:01 +1100 (AEDT)
-Date: Mon, 4 Jan 2016 22:12:47 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 74CFA1A0297
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 07:19:08 +1100 (AEDT)
+Date: Mon, 4 Jan 2016 22:18:58 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
- linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
  linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
  virtualization@lists.linux-foundation.org,
  Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
@@ -21,18 +20,19 @@ Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
  user-mode-linux-devel@lists.sourceforge.net,
  adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ingo Molnar <mingo@kernel.org>, Tony Lindgren <tony@atomide.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
  Andrey Konovalov <andreyknvl@google.com>
-Subject: Re: [PATCH v2 17/32] arm: define __smp_xxx
-Message-ID: <20160104220938-mutt-send-email-mst@redhat.com>
+Subject: Re: [PATCH v2 22/32] s390: define __smp_xxx
+Message-ID: <20160104221323-mutt-send-email-mst@redhat.com>
 References: <1451572003-2440-1-git-send-email-mst@redhat.com>
- <1451572003-2440-18-git-send-email-mst@redhat.com>
- <20160102112438.GU8644@n2100.arm.linux.org.uk>
- <20160103110158-mutt-send-email-mst@redhat.com>
- <20160104133658.GY6344@twins.programming.kicks-ass.net>
+ <1451572003-2440-23-git-send-email-mst@redhat.com>
+ <20160104134525.GA6344@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160104133658.GY6344@twins.programming.kicks-ass.net>
+In-Reply-To: <20160104134525.GA6344@twins.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,41 +42,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 04, 2016 at 02:36:58PM +0100, Peter Zijlstra wrote:
-> On Sun, Jan 03, 2016 at 11:12:44AM +0200, Michael S. Tsirkin wrote:
-> > On Sat, Jan 02, 2016 at 11:24:38AM +0000, Russell King - ARM Linux wrote:
-> 
-> > > My only concern is that it gives people an additional handle onto a
-> > > "new" set of barriers - just because they're prefixed with __*
-> > > unfortunately doesn't stop anyone from using it (been there with
-> > > other arch stuff before.)
-> > > 
-> > > I wonder whether we should consider making the smp memory barriers
-> > > inline functions, so these __smp_xxx() variants can be undef'd
-> > > afterwards, thereby preventing drivers getting their hands on these
-> > > new macros?
+On Mon, Jan 04, 2016 at 02:45:25PM +0100, Peter Zijlstra wrote:
+> On Thu, Dec 31, 2015 at 09:08:38PM +0200, Michael S. Tsirkin wrote:
+> > This defines __smp_xxx barriers for s390,
+> > for use by virtualization.
 > > 
-> > That'd be tricky to do cleanly since asm-generic depends on
-> > ifndef to add generic variants where needed.
+> > Some smp_xxx barriers are removed as they are
+> > defined correctly by asm-generic/barriers.h
 > > 
-> > But it would be possible to add a checkpatch test for this.
+> > Note: smp_mb, smp_rmb and smp_wmb are defined as full barriers
+> > unconditionally on this architecture.
+> > 
+> > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> > Acked-by: Arnd Bergmann <arnd@arndb.de>
+> > ---
+> >  arch/s390/include/asm/barrier.h | 15 +++++++++------
+> >  1 file changed, 9 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/arch/s390/include/asm/barrier.h b/arch/s390/include/asm/barrier.h
+> > index c358c31..fbd25b2 100644
+> > --- a/arch/s390/include/asm/barrier.h
+> > +++ b/arch/s390/include/asm/barrier.h
+> > @@ -26,18 +26,21 @@
+> >  #define wmb()				barrier()
+> >  #define dma_rmb()			mb()
+> >  #define dma_wmb()			mb()
+> > -#define smp_mb()			mb()
+> > -#define smp_rmb()			rmb()
+> > -#define smp_wmb()			wmb()
+> > -
+> > -#define smp_store_release(p, v)						\
+> > +#define __smp_mb()			mb()
+> > +#define __smp_rmb()			rmb()
+> > +#define __smp_wmb()			wmb()
+> > +#define smp_mb()			__smp_mb()
+> > +#define smp_rmb()			__smp_rmb()
+> > +#define smp_wmb()			__smp_wmb()
 > 
-> Wasn't the whole purpose of these things for 'drivers' (namely
-> virtio/xen hypervisor interaction) to use these?
+> Why define the smp_*mb() primitives here? Would not the inclusion of
+> asm-generic/barrier.h do this?
 
-My take out from discussion with you was that virtualization is probably
-the only valid use-case.  So at David Miller's suggestion there's a
-patch later in the series that adds virt_xxxx wrappers and these are
-then used by virtio xen and later maybe others.
+No because the generic one is a nop on !SMP, this one isn't.
 
-> And I suppose most of virtio would actually be modules, so you cannot do
-> what I did with preempt_enable_no_resched() either.
-> 
-> But yes, it would be good to limit the use of these things.
+Pls note this patch is just reordering code without making
+functional changes.
+And at the moment, on s390 smp_xxx barriers are always non empty.
 
-Right so the trick is checkpatch warns about use of
-__smp_xxx and hopefully people are not crazy enough
-to use virt_xxx variants for non-virtual drivers.
+Some of this could be sub-optimal, but
+since on s390 Linux always runs on a hypervisor,
+I am not sure it's safe to use the generic version -
+in other words, it just might be that for s390 smp_ and virt_
+barriers must be equivalent.
+
+If in fact this turns out to be wrong, I can pick up
+a patch to change this, but I'd rather make this
+a patch on top so that my patches are testable
+just by compiling and comparing the binary.
 
 -- 
 MST
