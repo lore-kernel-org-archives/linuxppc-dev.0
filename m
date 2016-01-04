@@ -1,23 +1,35 @@
-Return-Path: <yang.shi@linaro.org>
-Received: from mail-pf0-x232.google.com (mail-pf0-x232.google.com
- [IPv6:2607:f8b0:400e:c00::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <James.Hogan@imgtec.com>
+Received: from imgpgp01.kl.imgtec.org (mailapp01.imgtec.com [195.59.15.196])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D6EFB1A01D2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 09:19:26 +1100 (AEDT)
-Received: by mail-pf0-x232.google.com with SMTP id 65so163594122pff.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jan 2016 14:19:26 -0800 (PST)
-Subject: Re: [PATCH] ppc64: select HAVE_CONTEXT_TRACKING by default
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1449701034-5444-1-git-send-email-yang.shi@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linaro-kernel@lists.linaro.org
-From: "Shi, Yang" <yang.shi@linaro.org>
-Message-ID: <568AEFEA.4080400@linaro.org>
-Date: Mon, 4 Jan 2016 14:19:22 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7C3021A01D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 10:24:10 +1100 (AEDT)
+Date: Mon, 4 Jan 2016 23:24:04 +0000
+From: James Hogan <james.hogan@imgtec.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Arnd Bergmann <arnd@arndb.de>, <linux-arch@vger.kernel.org>, Andrew Cooper
+ <andrew.cooper3@citrix.com>, <virtualization@lists.linux-foundation.org>,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin"
+ <hpa@zytor.com>, David Miller <davem@davemloft.net>,
+ <linux-ia64@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-s390@vger.kernel.org>, <sparclinux@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-metag@vger.kernel.org>,
+ <linux-mips@linux-mips.org>, <x86@kernel.org>,
+ <user-mode-linux-devel@lists.sourceforge.net>,
+ <adi-buildroot-devel@lists.sourceforge.net>, <linux-sh@vger.kernel.org>,
+ <linux-xtensa@linux-xtensa.org>, <xen-devel@lists.xenproject.org>, "Ingo
+ Molnar" <mingo@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, "Andrey
+ Konovalov" <andreyknvl@google.com>
+Subject: Re: [PATCH v2 10/32] metag: reuse asm-generic/barrier.h
+Message-ID: <20160104232404.GL17861@jhogan-linux.le.imgtec.org>
+References: <1451572003-2440-1-git-send-email-mst@redhat.com>
+ <1451572003-2440-11-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <1449701034-5444-1-git-send-email-yang.shi@linaro.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="2OzUYMsT4j3Kc+NU"
+In-Reply-To: <1451572003-2440-11-git-send-email-mst@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,71 +39,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi folks,
+--2OzUYMsT4j3Kc+NU
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Any comment on this is appreciated.
+On Thu, Dec 31, 2015 at 09:07:02PM +0200, Michael S. Tsirkin wrote:
+> On metag dma_rmb, dma_wmb, smp_store_mb, read_barrier_depends,
+> smp_read_barrier_depends, smp_store_release and smp_load_acquire  match
+> the asm-generic variants exactly. Drop the local definitions and pull in
+> asm-generic/barrier.h instead.
+>=20
+> This is in preparation to refactoring this code area.
+>=20
+> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-Thanks,
-Yang
+Looks good, and confirmed no text change (once patch 1 is applied that
+is).
 
+Acked-by: James Hogan <james.hogan@imgtec.com>
 
-On 12/9/2015 2:43 PM, Yang Shi wrote:
-> The functionality of context tracking has been implemented by PPC64 and
-> HAVE_CONTEXT_TRACKING was selected by pseries by default.
-> Actually, it is applicale to all PPC64 platforms, so select it in PPC64
-> generic Kconfig.
->
-> NO_HZ_FULL depends on it, with this change NO_HZ_FULL could be enabled
-> for all PPC64 machines.
->
-> Signed-off-by: Yang Shi <yang.shi@linaro.org>
+Thanks
+James
+
 > ---
-> Following the instruction in Documentation/timers/NO_HZ.txt, I tested full nohz
-> on my FSL T2080 target, the below trace log shows it works well.
->
->         user_loop-574   [001] d..1   137.044892: tick_stop: success=yes msg=
->         user_loop-574   [001] d.h1   138.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=137796002092
->         user_loop-574   [001] d.h1   139.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=138796002129
->         user_loop-574   [001] d.h1   140.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=139796002219
->         user_loop-574   [001] d.h1   141.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=140796002229
->         user_loop-574   [001] d.h1   142.044879: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=141796002159
->         user_loop-574   [001] d.h1   143.044879: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=142796002142
->         user_loop-574   [001] d.h1   144.044878: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=143796002046
->         user_loop-574   [001] d.h1   145.044878: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=144796002189
->         user_loop-574   [001] d.h1   146.044878: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=145796002199
->         user_loop-574   [001] d.h1   147.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=146796003836
->
-> It shows the timer tick just comes in every second.
->
-> It should be low risk to have problem on other PPC64 targets, although they are
-> not tested.
->
->   arch/powerpc/platforms/Kconfig.cputype | 1 +
->   arch/powerpc/platforms/pseries/Kconfig | 1 -
->   2 files changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> index 142dff5..7b25dd1 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -3,6 +3,7 @@ config PPC64
->   	default n
->   	select HAVE_VIRT_CPU_ACCOUNTING
->   	select ZLIB_DEFLATE
-> +	select HAVE_CONTEXT_TRACKING
->   	help
->   	  This option selects whether a 32-bit or a 64-bit kernel
->   	  will be built.
-> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-> index bec90fb..6853148 100644
-> --- a/arch/powerpc/platforms/pseries/Kconfig
-> +++ b/arch/powerpc/platforms/pseries/Kconfig
-> @@ -17,7 +17,6 @@ config PPC_PSERIES
->   	select PPC_UDBG_16550
->   	select PPC_NATIVE
->   	select PPC_DOORBELL
-> -	select HAVE_CONTEXT_TRACKING
->   	select HOTPLUG_CPU if SMP
->   	select ARCH_RANDOM
->   	select PPC_DOORBELL
->
+>  arch/metag/include/asm/barrier.h | 25 ++-----------------------
+>  1 file changed, 2 insertions(+), 23 deletions(-)
+>=20
+> diff --git a/arch/metag/include/asm/barrier.h b/arch/metag/include/asm/ba=
+rrier.h
+> index 172b7e5..b5b778b 100644
+> --- a/arch/metag/include/asm/barrier.h
+> +++ b/arch/metag/include/asm/barrier.h
+> @@ -44,9 +44,6 @@ static inline void wr_fence(void)
+>  #define rmb()		barrier()
+>  #define wmb()		mb()
+> =20
+> -#define dma_rmb()	rmb()
+> -#define dma_wmb()	wmb()
+> -
+>  #ifndef CONFIG_SMP
+>  #define fence()		do { } while (0)
+>  #define smp_mb()        barrier()
+> @@ -81,27 +78,9 @@ static inline void fence(void)
+>  #endif
+>  #endif
+> =20
+> -#define read_barrier_depends()		do { } while (0)
+> -#define smp_read_barrier_depends()	do { } while (0)
+> -
+> -#define smp_store_mb(var, value) do { WRITE_ONCE(var, value); smp_mb(); =
+} while (0)
+> -
+> -#define smp_store_release(p, v)						\
+> -do {									\
+> -	compiletime_assert_atomic_type(*p);				\
+> -	smp_mb();							\
+> -	WRITE_ONCE(*p, v);						\
+> -} while (0)
+> -
+> -#define smp_load_acquire(p)						\
+> -({									\
+> -	typeof(*p) ___p1 =3D READ_ONCE(*p);				\
+> -	compiletime_assert_atomic_type(*p);				\
+> -	smp_mb();							\
+> -	___p1;								\
+> -})
+> -
+>  #define smp_mb__before_atomic()	barrier()
+>  #define smp_mb__after_atomic()	barrier()
+> =20
+> +#include <asm-generic/barrier.h>
+> +
+>  #endif /* _ASM_METAG_BARRIER_H */
+> --=20
+> MST
+>=20
+
+--2OzUYMsT4j3Kc+NU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWiv8UAAoJEGwLaZPeOHZ6hSwQAJCVQc5QdNomZOnrxJp5uv9r
+iT+zYpXRNC4k29ENp5iDq29d07OM1zooI0szDvvKi351dsFwfOXrEBIcoKJjLRcm
+VGVtFCCI0IffzBGaMa2u16xywqgCogk+uMnlOmyk2cSM6lx0BdWIb6sL4fzkocfT
+a1sTWJnh45/sQG+VQQUUFokjUM0UFCXOV+77I556Khe9tS5qgZnObEsAIk+lrY/3
+lRo2nd2wbZsybzqlQVKp3nKYbFNUpoCGT/myPpj8A3NQ/FBUOs6LtpZvD0i06CJh
+E01ASo6Cr5SvTyOAYsty+zcZvFGZPB+2i9jyv/7vGDBgdiCwLEX25gXxz9aS8GB6
+2Oa2E/5z/uCltUZyM3y3Yz/K8XwnhORh3PMpZR/b2Ze5MnguCLy2zWrcKWdZhCJ+
+UkNkLe3rcbdLSfCcK6kCSAwHoqj78IeHmBG+96vEwePwsQh7YkAKIoKSMxbx88BU
+gD/yn8y+dc7wSJGYgHM4eBw35H3o7HTB6bPRZsw8/ak1nG8ClOMtWkoLB7a+9wOA
+J5tM/aHE0ixB02QphdN8lkvqMA+U9EKmq6hBHZeiyIxNx/mCAm+6dcGv484Hh2UF
+tvsj4erVkGZa9EJ3KL49xvAJx23RTZcR+a2djcLUlzeLr32UDWh3zuVzSoNc+ZKD
+Cnc7cQMIdlTlucxbu/OU
+=IkXd
+-----END PGP SIGNATURE-----
+
+--2OzUYMsT4j3Kc+NU--
