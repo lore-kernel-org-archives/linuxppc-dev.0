@@ -1,35 +1,34 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <prvs=8047ed68d=david.vrabel@citrix.com>
+Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5EE231A1188
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jan 2016 22:37:18 +1100 (AEDT)
-Date: Mon, 4 Jan 2016 13:37:08 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: "Cc : Andy Whitcroft" <apw@canonical.com>, Joe Perches <joe@perches.com>,
- Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
- linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
- linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-metag@vger.kernel.org,
- linux-mips@linux-mips.org, x86@kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ingo Molnar <mingo@kernel.org>, Tony Lindgren <tony@atomide.com>,
- Andrey Konovalov <andreyknvl@google.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: [PATCH 3/3] checkpatch: add virt barriers
-Message-ID: <1451907395-15978-4-git-send-email-mst@redhat.com>
-References: <1451907395-15978-1-git-send-email-mst@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A90751A0045
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jan 2016 22:43:00 +1100 (AEDT)
+Message-ID: <568A584C.2070501@citrix.com>
+Date: Mon, 4 Jan 2016 11:32:28 +0000
+From: David Vrabel <david.vrabel@citrix.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1451907395-15978-1-git-send-email-mst@redhat.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>, <linux-kernel@vger.kernel.org>
+CC: <linux-mips@linux-mips.org>, <linux-ia64@vger.kernel.org>,
+ <linux-sh@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ <virtualization@lists.linux-foundation.org>, "H. Peter Anvin"
+ <hpa@zytor.com>, <sparclinux@vger.kernel.org>, Boris Ostrovsky
+ <boris.ostrovsky@oracle.com>, <linux-arch@vger.kernel.org>,
+ <linux-s390@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ <x86@kernel.org>, <xen-devel@lists.xenproject.org>, Ingo Molnar
+ <mingo@elte.hu>, <linux-xtensa@linux-xtensa.org>,
+ <user-mode-linux-devel@lists.sourceforge.net>, Stefano Stabellini
+ <stefano.stabellini@eu.citrix.com>,
+ <adi-buildroot-devel@lists.sourceforge.net>, Thomas Gleixner
+ <tglx@linutronix.de>, <linux-metag@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, Andrew Cooper
+ <andrew.cooper3@citrix.com>, David Vrabel <david.vrabel@citrix.com>,
+ <linuxppc-dev@lists.ozlabs.org>, David Miller <davem@davemloft.net>
+Subject: Re: [Xen-devel] [PATCH v2 34/34] xen/io: use virt_xxx barriers
+References: <1451572003-2440-1-git-send-email-mst@redhat.com>
+ <1451572003-2440-35-git-send-email-mst@redhat.com>
+In-Reply-To: <1451572003-2440-35-git-send-email-mst@redhat.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,27 +38,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add virt_ barriers to list of barriers to check for
-presence of a comment.
+On 31/12/15 19:10, Michael S. Tsirkin wrote:
+> include/xen/interface/io/ring.h uses
+> full memory barriers to communicate with the other side.
+> 
+> For guests compiled with CONFIG_SMP, smp_wmb and smp_mb
+> would be sufficient, so mb() and wmb() here are only needed if
+> a non-SMP guest runs on an SMP host.
+> 
+> Switch to virt_xxx barriers which serve this exact purpose.
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
----
- scripts/checkpatch.pl | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Acked-by: David Vrabel <david.vrabel@citrix.com>
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index e3f9ad9..5fb6ef7 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -5121,7 +5121,8 @@ sub process {
- 		my @smp_barriers = ('smp_store_release', 'smp_load_acquire', 'smp_store_mb');
- 
- 		@smp_barriers = (@smp_barriers, map {"smp_" . $_} @barriers);
--		my $all_barriers = join('|', (@barriers, @smp_barriers));
-+		my @virt_barriers = map {my $l = $_; $l =~ s/smp_/virt_/; $l} @smp_barriers;
-+		my $all_barriers = join('|', (@barriers, @smp_barriers, @virt_barriers));
- 
- 		if ($line =~ /\b($all_barriers)\(/) {
- 			if (!ctx_has_comment($first_line, $linenr)) {
--- 
-MST
+David
