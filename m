@@ -1,37 +1,23 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0026.hostedemail.com
- [216.40.44.26])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <yang.shi@linaro.org>
+Received: from mail-pf0-x232.google.com (mail-pf0-x232.google.com
+ [IPv6:2607:f8b0:400e:c00::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 270691A01D2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 09:15:59 +1100 (AEDT)
-Message-ID: <1451945750.4334.111.camel@perches.com>
-Subject: Re: [PATCH 1/3] checkpatch.pl: add missing memory barriers
-From: Joe Perches <joe@perches.com>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: linux-kernel@vger.kernel.org, "Cc : Andy Whitcroft" <apw@canonical.com>,
- Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
- linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
- virtualization@lists.linux-foundation.org,  Stefano Stabellini
- <stefano.stabellini@eu.citrix.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@elte.hu>,  "H. Peter Anvin" <hpa@zytor.com>, David
- Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org, x86@kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org, Ingo Molnar
- <mingo@kernel.org>, Tony Lindgren <tony@atomide.com>, Andrey Konovalov
- <andreyknvl@google.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Mon, 04 Jan 2016 14:15:50 -0800
-In-Reply-To: <20160104224415-mutt-send-email-mst@redhat.com>
-References: <1451907395-15978-1-git-send-email-mst@redhat.com>
- <1451907395-15978-2-git-send-email-mst@redhat.com>
- <1451923660.4334.83.camel@perches.com>
- <20160104224415-mutt-send-email-mst@redhat.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id D6EFB1A01D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 09:19:26 +1100 (AEDT)
+Received: by mail-pf0-x232.google.com with SMTP id 65so163594122pff.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jan 2016 14:19:26 -0800 (PST)
+Subject: Re: [PATCH] ppc64: select HAVE_CONTEXT_TRACKING by default
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+References: <1449701034-5444-1-git-send-email-yang.shi@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linaro-kernel@lists.linaro.org
+From: "Shi, Yang" <yang.shi@linaro.org>
+Message-ID: <568AEFEA.4080400@linaro.org>
+Date: Mon, 4 Jan 2016 14:19:22 -0800
+MIME-Version: 1.0
+In-Reply-To: <1449701034-5444-1-git-send-email-yang.shi@linaro.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,40 +27,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-01-04 at 22:45 +0200, Michael S. Tsirkin wrote:
-> On Mon, Jan 04, 2016 at 08:07:40AM -0800, Joe Perches wrote:
-> > On Mon, 2016-01-04 at 13:36 +0200, Michael S. Tsirkin wrote:
-> > > SMP-only barriers were missing in checkpatch.pl
-> > > 
-> > > Refactor code slightly to make adding more variants easier.
-> > > 
-> > > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> > > ---
-> > >  scripts/checkpatch.pl | 9 ++++++++-
-> > >  1 file changed, 8 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> > > index 2b3c228..0245bbe 100755
-> > > --- a/scripts/checkpatch.pl
-> > > +++ b/scripts/checkpatch.pl
-> > > @@ -5116,7 +5116,14 @@ sub process {
-> > >  			}
-> > >  		}
-> > >  # check for memory barriers without a comment.
-> > > -		if ($line =~ /\b(mb|rmb|wmb|read_barrier_depends|smp_mb|smp_rmb|smp_wmb|smp_read_barrier_depends)\(/) {
-> > > +
-> > > +		my @barriers = ('mb', 'rmb', 'wmb', 'read_barrier_depends');
-> > > +		my @smp_barriers = ('smp_store_release', 'smp_load_acquire', 'smp_store_mb');
-> > > +
-> > > +		@smp_barriers = (@smp_barriers, map {"smp_" . $_} @barriers);
-> > 
-> > I think using map, which so far checkpatch doesn't use,
-> > makes smp_barriers harder to understand and it'd be
-> > better to enumerate them.
-> 
-> Okay - I'll rewrite using foreach.
-> 
+Hi folks,
 
-I think using the qr form (like 'our $Attribute' and
-a bunch of others) is the general style that should
-be used for checkpatch.
+Any comment on this is appreciated.
+
+Thanks,
+Yang
+
+
+On 12/9/2015 2:43 PM, Yang Shi wrote:
+> The functionality of context tracking has been implemented by PPC64 and
+> HAVE_CONTEXT_TRACKING was selected by pseries by default.
+> Actually, it is applicale to all PPC64 platforms, so select it in PPC64
+> generic Kconfig.
+>
+> NO_HZ_FULL depends on it, with this change NO_HZ_FULL could be enabled
+> for all PPC64 machines.
+>
+> Signed-off-by: Yang Shi <yang.shi@linaro.org>
+> ---
+> Following the instruction in Documentation/timers/NO_HZ.txt, I tested full nohz
+> on my FSL T2080 target, the below trace log shows it works well.
+>
+>         user_loop-574   [001] d..1   137.044892: tick_stop: success=yes msg=
+>         user_loop-574   [001] d.h1   138.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=137796002092
+>         user_loop-574   [001] d.h1   139.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=138796002129
+>         user_loop-574   [001] d.h1   140.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=139796002219
+>         user_loop-574   [001] d.h1   141.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=140796002229
+>         user_loop-574   [001] d.h1   142.044879: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=141796002159
+>         user_loop-574   [001] d.h1   143.044879: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=142796002142
+>         user_loop-574   [001] d.h1   144.044878: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=143796002046
+>         user_loop-574   [001] d.h1   145.044878: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=144796002189
+>         user_loop-574   [001] d.h1   146.044878: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=145796002199
+>         user_loop-574   [001] d.h1   147.044880: hrtimer_expire_entry: hrtimer=c00000007fd22d10 function=.tick_sched_timer now=146796003836
+>
+> It shows the timer tick just comes in every second.
+>
+> It should be low risk to have problem on other PPC64 targets, although they are
+> not tested.
+>
+>   arch/powerpc/platforms/Kconfig.cputype | 1 +
+>   arch/powerpc/platforms/pseries/Kconfig | 1 -
+>   2 files changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+> index 142dff5..7b25dd1 100644
+> --- a/arch/powerpc/platforms/Kconfig.cputype
+> +++ b/arch/powerpc/platforms/Kconfig.cputype
+> @@ -3,6 +3,7 @@ config PPC64
+>   	default n
+>   	select HAVE_VIRT_CPU_ACCOUNTING
+>   	select ZLIB_DEFLATE
+> +	select HAVE_CONTEXT_TRACKING
+>   	help
+>   	  This option selects whether a 32-bit or a 64-bit kernel
+>   	  will be built.
+> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+> index bec90fb..6853148 100644
+> --- a/arch/powerpc/platforms/pseries/Kconfig
+> +++ b/arch/powerpc/platforms/pseries/Kconfig
+> @@ -17,7 +17,6 @@ config PPC_PSERIES
+>   	select PPC_UDBG_16550
+>   	select PPC_NATIVE
+>   	select PPC_DOORBELL
+> -	select HAVE_CONTEXT_TRACKING
+>   	select HOTPLUG_CPU if SMP
+>   	select ARCH_RANDOM
+>   	select PPC_DOORBELL
+>
