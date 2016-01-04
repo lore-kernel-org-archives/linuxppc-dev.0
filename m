@@ -2,12 +2,13 @@ Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D6ABF1A0023
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 07:35:09 +1100 (AEDT)
-Date: Mon, 4 Jan 2016 22:34:57 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8C6A01A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 07:39:29 +1100 (AEDT)
+Date: Mon, 4 Jan 2016 22:39:19 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
  linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
  virtualization@lists.linux-foundation.org,
  Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
@@ -20,20 +21,19 @@ Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
  user-mode-linux-devel@lists.sourceforge.net,
  adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Ingo Molnar <mingo@kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
- Andrey Konovalov <andreyknvl@google.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 06/32] s390: reuse asm-generic/barrier.h
-Message-ID: <20160104221924-mutt-send-email-mst@redhat.com>
+ Ingo Molnar <mingo@kernel.org>, Tony Lindgren <tony@atomide.com>,
+ Andrey Konovalov <andreyknvl@google.com>
+Subject: Re: [PATCH v2 17/32] arm: define __smp_xxx
+Message-ID: <20160104223529-mutt-send-email-mst@redhat.com>
 References: <1451572003-2440-1-git-send-email-mst@redhat.com>
- <1451572003-2440-7-git-send-email-mst@redhat.com>
- <20160104132042.GW6344@twins.programming.kicks-ass.net>
+ <1451572003-2440-18-git-send-email-mst@redhat.com>
+ <20160102112438.GU8644@n2100.arm.linux.org.uk>
+ <20160103110158-mutt-send-email-mst@redhat.com>
+ <20160104133658.GY6344@twins.programming.kicks-ass.net>
+ <20160104135420.GS6373@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160104132042.GW6344@twins.programming.kicks-ass.net>
+In-Reply-To: <20160104135420.GS6373@twins.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,51 +43,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 04, 2016 at 02:20:42PM +0100, Peter Zijlstra wrote:
-> On Thu, Dec 31, 2015 at 09:06:30PM +0200, Michael S. Tsirkin wrote:
-> > On s390 read_barrier_depends, smp_read_barrier_depends
-> > smp_store_mb(), smp_mb__before_atomic and smp_mb__after_atomic match the
-> > asm-generic variants exactly. Drop the local definitions and pull in
-> > asm-generic/barrier.h instead.
+On Mon, Jan 04, 2016 at 02:54:20PM +0100, Peter Zijlstra wrote:
+> On Mon, Jan 04, 2016 at 02:36:58PM +0100, Peter Zijlstra wrote:
+> > On Sun, Jan 03, 2016 at 11:12:44AM +0200, Michael S. Tsirkin wrote:
+> > > On Sat, Jan 02, 2016 at 11:24:38AM +0000, Russell King - ARM Linux wrote:
 > > 
-> > This is in preparation to refactoring this code area.
+> > > > My only concern is that it gives people an additional handle onto a
+> > > > "new" set of barriers - just because they're prefixed with __*
+> > > > unfortunately doesn't stop anyone from using it (been there with
+> > > > other arch stuff before.)
+> > > > 
+> > > > I wonder whether we should consider making the smp memory barriers
+> > > > inline functions, so these __smp_xxx() variants can be undef'd
+> > > > afterwards, thereby preventing drivers getting their hands on these
+> > > > new macros?
+> > > 
+> > > That'd be tricky to do cleanly since asm-generic depends on
+> > > ifndef to add generic variants where needed.
+> > > 
+> > > But it would be possible to add a checkpatch test for this.
 > > 
-> > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> > Acked-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> >  arch/s390/include/asm/barrier.h | 10 ++--------
-> >  1 file changed, 2 insertions(+), 8 deletions(-)
-> > 
-> > diff --git a/arch/s390/include/asm/barrier.h b/arch/s390/include/asm/barrier.h
-> > index 7ffd0b1..c358c31 100644
-> > --- a/arch/s390/include/asm/barrier.h
-> > +++ b/arch/s390/include/asm/barrier.h
-> > @@ -30,14 +30,6 @@
-> >  #define smp_rmb()			rmb()
-> >  #define smp_wmb()			wmb()
-> >  
-> > -#define read_barrier_depends()		do { } while (0)
-> > -#define smp_read_barrier_depends()	do { } while (0)
-> > -
-> > -#define smp_mb__before_atomic()		smp_mb()
-> > -#define smp_mb__after_atomic()		smp_mb()
+> > Wasn't the whole purpose of these things for 'drivers' (namely
+> > virtio/xen hypervisor interaction) to use these?
 > 
-> As per:
+> Ah, I see, you add virt_*mb() stuff later on for that use case.
 > 
->   lkml.kernel.org/r/20150921112252.3c2937e1@mschwide
-> 
-> s390 should change this to barrier() instead of smp_mb() and hence
-> should not use the generic versions.
+> So, assuming everybody does include asm-generic/barrier.h, you could
+> simply #undef the __smp version at the end of that, once we've generated
+> all the regular primitives from it, no?
 
-Thanks Peter!
+Maybe I misunderstand, but I don't think so:
 
-OK so I will just rename this to __smp_mb__before_atomic and
-__smp_mb__after_atomic but keep them around.
+------>
+#define __smp_xxx FOO
+#define smp_xxx __smp_xxx
+#undef __smp_xxx
 
-I'm not changing these - that's best left to s390 maintainers.
+smp_xxx
+<------
 
-Should I add a TODO comment to change them to barrier so
-we don't forget?
+resolves to __smp_xxx, not FOO.
+
+That's why I went the checkpatch way.
+
 
 -- 
 MST
