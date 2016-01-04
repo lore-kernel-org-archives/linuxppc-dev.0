@@ -1,12 +1,12 @@
 Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0104.hostedemail.com
- [216.40.44.104])
+Received: from smtprelay.hostedemail.com (smtprelay0026.hostedemail.com
+ [216.40.44.26])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 394241A01D2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 09:11:48 +1100 (AEDT)
-Message-ID: <1451945497.4334.107.camel@perches.com>
-Subject: Re: [PATCH 3/3] checkpatch: add virt barriers
+ by lists.ozlabs.org (Postfix) with ESMTPS id 270691A01D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 09:15:59 +1100 (AEDT)
+Message-ID: <1451945750.4334.111.camel@perches.com>
+Subject: Re: [PATCH 1/3] checkpatch.pl: add missing memory barriers
 From: Joe Perches <joe@perches.com>
 To: "Michael S. Tsirkin" <mst@redhat.com>
 Cc: linux-kernel@vger.kernel.org, "Cc : Andy Whitcroft" <apw@canonical.com>,
@@ -24,12 +24,12 @@ Cc: linux-kernel@vger.kernel.org, "Cc : Andy Whitcroft" <apw@canonical.com>,
  linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org, Ingo Molnar
  <mingo@kernel.org>, Tony Lindgren <tony@atomide.com>, Andrey Konovalov
  <andreyknvl@google.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Mon, 04 Jan 2016 14:11:37 -0800
-In-Reply-To: <20160104230528-mutt-send-email-mst@redhat.com>
+Date: Mon, 04 Jan 2016 14:15:50 -0800
+In-Reply-To: <20160104224415-mutt-send-email-mst@redhat.com>
 References: <1451907395-15978-1-git-send-email-mst@redhat.com>
- <1451907395-15978-4-git-send-email-mst@redhat.com>
- <1451926073.4334.90.camel@perches.com>
- <20160104230528-mutt-send-email-mst@redhat.com>
+ <1451907395-15978-2-git-send-email-mst@redhat.com>
+ <1451923660.4334.83.camel@perches.com>
+ <20160104224415-mutt-send-email-mst@redhat.com>
 Content-Type: text/plain; charset="ISO-8859-1"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,23 +41,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-01-04 at 23:07 +0200, Michael S. Tsirkin wrote:
-> On Mon, Jan 04, 2016 at 08:47:53AM -0800, Joe Perches wrote:
-> > On Mon, 2016-01-04 at 13:37 +0200, Michael S. Tsirkin wrote:
-> > > Add virt_ barriers to list of barriers to check for
-> > > presence of a comment.
+On Mon, 2016-01-04 at 22:45 +0200, Michael S. Tsirkin wrote:
+> On Mon, Jan 04, 2016 at 08:07:40AM -0800, Joe Perches wrote:
+> > On Mon, 2016-01-04 at 13:36 +0200, Michael S. Tsirkin wrote:
+> > > SMP-only barriers were missing in checkpatch.pl
+> > > 
+> > > Refactor code slightly to make adding more variants easier.
+> > > 
+> > > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> > > ---
+> > >  scripts/checkpatch.pl | 9 ++++++++-
+> > >  1 file changed, 8 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+> > > index 2b3c228..0245bbe 100755
+> > > --- a/scripts/checkpatch.pl
+> > > +++ b/scripts/checkpatch.pl
+> > > @@ -5116,7 +5116,14 @@ sub process {
+> > >  			}
+> > >  		}
+> > >  # check for memory barriers without a comment.
+> > > -		if ($line =~ /\b(mb|rmb|wmb|read_barrier_depends|smp_mb|smp_rmb|smp_wmb|smp_read_barrier_depends)\(/) {
+> > > +
+> > > +		my @barriers = ('mb', 'rmb', 'wmb', 'read_barrier_depends');
+> > > +		my @smp_barriers = ('smp_store_release', 'smp_load_acquire', 'smp_store_mb');
+> > > +
+> > > +		@smp_barriers = (@smp_barriers, map {"smp_" . $_} @barriers);
 > > 
-> > Are these virt_ barriers used anywhere?
-> > 
-> > I see some virtio_ barrier like uses.
+> > I think using map, which so far checkpatch doesn't use,
+> > makes smp_barriers harder to understand and it'd be
+> > better to enumerate them.
 > 
-> They will be :) They are added and used by patchset
-> 	        arch: barrier cleanup + barriers for virt
+> Okay - I'll rewrite using foreach.
 > 
-> See
-> http://article.gmane.org/gmane.linux.kernel.virtualization/26555
 
-Ah, OK, thanks.
-
-Are the virtio_ barriers going away?
-If not, maybe those should be added too.
+I think using the qr form (like 'our $Attribute' and
+a bunch of others) is the general style that should
+be used for checkpatch.
