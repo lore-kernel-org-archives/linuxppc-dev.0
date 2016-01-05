@@ -1,42 +1,24 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <daniel@iogearbox.net>
+Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D7EE11A115F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jan 2016 03:17:04 +1100 (AEDT)
-Date: Tue, 5 Jan 2016 18:16:48 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
- linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-metag@vger.kernel.org,
- linux-mips@linux-mips.org, x86@kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@kernel.org>,
- Davidlohr Bueso <dave@stgolabs.net>,
- Andrey Konovalov <andreyknvl@google.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 15/32] powerpc: define __smp_xxx
-Message-ID: <20160105180938-mutt-send-email-mst@redhat.com>
-References: <1451572003-2440-1-git-send-email-mst@redhat.com>
- <1451572003-2440-16-git-send-email-mst@redhat.com>
- <20160105013648.GA1256@fixme-laptop.cn.ibm.com>
- <20160105085117.GA11858@redhat.com>
- <20160105095341.GA5321@fixme-laptop.cn.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49E0C1A1171
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jan 2016 04:06:33 +1100 (AEDT)
+Message-ID: <568BF162.7030008@iogearbox.net>
+Date: Tue, 05 Jan 2016 17:37:54 +0100
+From: Daniel Borkmann <daniel@iogearbox.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160105095341.GA5321@fixme-laptop.cn.ibm.com>
+To: Rabin Vincent <rabin@rab.in>, Eric Dumazet <eric.dumazet@gmail.com>
+CC: davem@davemloft.net, netdev@vger.kernel.org, ast@kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: filter: make JITs zero A for SKF_AD_ALU_XOR_X
+References: <1452007387-626-1-git-send-email-rabin@rab.in>
+ <1452009645.8255.96.camel@edumazet-glaptop2.roam.corp.google.com>
+ <20160105160345.GA3951@debian>
+In-Reply-To: <20160105160345.GA3951@debian>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,165 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 05, 2016 at 05:53:41PM +0800, Boqun Feng wrote:
-> On Tue, Jan 05, 2016 at 10:51:17AM +0200, Michael S. Tsirkin wrote:
-> > On Tue, Jan 05, 2016 at 09:36:55AM +0800, Boqun Feng wrote:
-> > > Hi Michael,
-> > > 
-> > > On Thu, Dec 31, 2015 at 09:07:42PM +0200, Michael S. Tsirkin wrote:
-> > > > This defines __smp_xxx barriers for powerpc
-> > > > for use by virtualization.
-> > > > 
-> > > > smp_xxx barriers are removed as they are
-> > > > defined correctly by asm-generic/barriers.h
-> > 
-> > I think this is the part that was missed in review.
-> > 
-> 
-> Yes, I realized my mistake after reread the series. But smp_lwsync() is
-> not defined in asm-generic/barriers.h, right?
+On 01/05/2016 05:03 PM, Rabin Vincent wrote:
+> On Tue, Jan 05, 2016 at 08:00:45AM -0800, Eric Dumazet wrote:
+>> On Tue, 2016-01-05 at 16:23 +0100, Rabin Vincent wrote:
+>>> The SKF_AD_ALU_XOR_X ancillary is not like the other ancillary data
+>>> instructions since it XORs A with X while all the others replace A with
+>>> some loaded value.  All the BPF JITs fail to clear A if this is used as
+>>> the first instruction in a filter.
+>>
+>> Is x86_64 part of this 'All' subset ? ;)
+>
+> No, because it's an eBPF JIT.
 
-It isn't because as far as I could tell it is not used
-outside arch/powerpc/include/asm/barrier.h
-smp_store_release and smp_load_acquire.
-
-And these are now gone.
-
-Instead there are __smp_store_release and __smp_load_acquire
-which call __smp_lwsync.
-These are only used for virt and on SMP.
-UP variants are generic - they just call barrier().
-
-
-> > > > This reduces the amount of arch-specific boiler-plate code.
-> > > > 
-> > > > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> > > > Acked-by: Arnd Bergmann <arnd@arndb.de>
-> > > > ---
-> > > >  arch/powerpc/include/asm/barrier.h | 24 ++++++++----------------
-> > > >  1 file changed, 8 insertions(+), 16 deletions(-)
-> > > > 
-> > > > diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-> > > > index 980ad0c..c0deafc 100644
-> > > > --- a/arch/powerpc/include/asm/barrier.h
-> > > > +++ b/arch/powerpc/include/asm/barrier.h
-> > > > @@ -44,19 +44,11 @@
-> > > >  #define dma_rmb()	__lwsync()
-> > > >  #define dma_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
-> > > >  
-> > > > -#ifdef CONFIG_SMP
-> > > > -#define smp_lwsync()	__lwsync()
-> > > > +#define __smp_lwsync()	__lwsync()
-> > > >  
-> > > 
-> > > so __smp_lwsync() is always mapped to lwsync, right?
-> > 
-> > Yes.
-> > 
-> > > > -#define smp_mb()	mb()
-> > > > -#define smp_rmb()	__lwsync()
-> > > > -#define smp_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
-> > > > -#else
-> > > > -#define smp_lwsync()	barrier()
-> > > > -
-> > > > -#define smp_mb()	barrier()
-> > > > -#define smp_rmb()	barrier()
-> > > > -#define smp_wmb()	barrier()
-> > > > -#endif /* CONFIG_SMP */
-> > > > +#define __smp_mb()	mb()
-> > > > +#define __smp_rmb()	__lwsync()
-> > > > +#define __smp_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
-> > > >  
-> > > >  /*
-> > > >   * This is a barrier which prevents following instructions from being
-> > > > @@ -67,18 +59,18 @@
-> > > >  #define data_barrier(x)	\
-> > > >  	asm volatile("twi 0,%0,0; isync" : : "r" (x) : "memory");
-> > > >  
-> > > > -#define smp_store_release(p, v)						\
-> > > > +#define __smp_store_release(p, v)						\
-> > > >  do {									\
-> > > >  	compiletime_assert_atomic_type(*p);				\
-> > > > -	smp_lwsync();							\
-> > > > +	__smp_lwsync();							\
-> > > 
-> > > , therefore this will emit an lwsync no matter SMP or UP.
-> > 
-> > Absolutely. But smp_store_release (without __) will not.
-> > 
-> > Please note I did test this: for ppc code before and after
-> > this patch generates exactly the same binary on SMP and UP.
-> > 
-> 
-> Yes, you're right, sorry for my mistake...
-> 
-> > 
-> > > Another thing is that smp_lwsync() may have a third user(other than
-> > > smp_load_acquire() and smp_store_release()):
-> > > 
-> > > http://article.gmane.org/gmane.linux.ports.ppc.embedded/89877
-> > > 
-> > > I'm OK to change my patch accordingly, but do we really want
-> > > smp_lwsync() get involved in this cleanup? If I understand you
-> > > correctly, this cleanup focuses on external API like smp_{r,w,}mb(),
-> > > while smp_lwsync() is internal to PPC.
-> > > 
-> > > Regards,
-> > > Boqun
-> > 
-> > I think you missed the leading ___ :)
-> > 
-> 
-> What I mean here was smp_lwsync() was originally internal to PPC, but
-> never mind ;-)
-> 
-> > smp_store_release is external and it needs __smp_lwsync as
-> > defined here.
-> > 
-> > I can duplicate some code and have smp_lwsync *not* call __smp_lwsync
-> 
-> You mean bringing smp_lwsync() back? because I haven't seen you defining
-> in asm-generic/barriers.h in previous patches and you just delete it in
-> this patch.
-> 
-> > but why do this? Still, if you prefer it this way,
-> > please let me know.
-> > 
-> 
-> I think deleting smp_lwsync() is fine, though I need to change atomic
-> variants patches on PPC because of it ;-/
-> 
-> Regards,
-> Boqun
-
-Sorry, I don't understand - why do you have to do anything?
-I changed all users of smp_lwsync so they
-use __smp_lwsync on SMP and barrier() on !SMP.
-
-This is exactly the current behaviour, I also tested that
-generated code does not change at all.
-
-Is there a patch in your tree that conflicts with this?
-
-
-> > > >  	WRITE_ONCE(*p, v);						\
-> > > >  } while (0)
-> > > >  
-> > > > -#define smp_load_acquire(p)						\
-> > > > +#define __smp_load_acquire(p)						\
-> > > >  ({									\
-> > > >  	typeof(*p) ___p1 = READ_ONCE(*p);				\
-> > > >  	compiletime_assert_atomic_type(*p);				\
-> > > > -	smp_lwsync();							\
-> > > > +	__smp_lwsync();							\
-> > > >  	___p1;								\
-> > > >  })
-> > > >  
-> > > > -- 
-> > > > MST
-> > > > 
-> > > > --
-> > > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > > the body of a message to majordomo@vger.kernel.org
-> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > > Please read the FAQ at  http://www.tux.org/lkml/
+Correct, filter conversion to eBPF clears it already.
