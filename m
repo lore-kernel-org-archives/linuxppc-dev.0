@@ -1,25 +1,25 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <eric.dumazet@gmail.com>
+Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c03::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F2CB01A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jan 2016 02:59:03 +1100 (AEDT)
-Date: Tue, 5 Jan 2016 16:58:58 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Denis Kirjanov <kda@linux-powerpc.org>,
- Steven Rostedt <rostedt@goodmis.org>, Jiri Kosina <jkosina@suse.cz>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org
-Subject: Re: [PATCH v4 2/9] ppc64le FTRACE_WITH_REGS implementation
-Message-ID: <20160105155857.GA2699@lst.de>
-References: <20151125172608.9588569260@newverein.lst.de>
- <20151125172902.82C6C69260@newverein.lst.de>
- <CAOJe8K34bA=LytXouWhjfkgqsR2cTLimMJc-S88RC56dj3x-=Q@mail.gmail.com>
- <20151201172914.GB5509@lst.de> <1449008285.12022.0.camel@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1449008285.12022.0.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 485631A115C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jan 2016 03:00:49 +1100 (AEDT)
+Received: by mail-pa0-x22b.google.com with SMTP id ho8so779462pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jan 2016 08:00:49 -0800 (PST)
+Message-ID: <1452009645.8255.96.camel@edumazet-glaptop2.roam.corp.google.com>
+Subject: Re: [PATCH] net: filter: make JITs zero A for SKF_AD_ALU_XOR_X
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Rabin Vincent <rabin@rab.in>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, daniel@iogearbox.net,
+ ast@kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-mips@linux-mips.org,  linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org,  linux-kernel@vger.kernel.org
+Date: Tue, 05 Jan 2016 08:00:45 -0800
+In-Reply-To: <1452007387-626-1-git-send-email-rabin@rab.in>
+References: <1452007387-626-1-git-send-email-rabin@rab.in>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,12 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 02, 2015 at 09:18:05AM +1100, Michael Ellerman wrote:
+On Tue, 2016-01-05 at 16:23 +0100, Rabin Vincent wrote:
+> The SKF_AD_ALU_XOR_X ancillary is not like the other ancillary data
+> instructions since it XORs A with X while all the others replace A with
+> some loaded value.  All the BPF JITs fail to clear A if this is used as
+> the first instruction in a filter.
+
+Is x86_64 part of this 'All' subset ? ;)
+
+>   This was found using american fuzzy
+> lop.
 > 
-> I (still) haven't had a chance to have a good look at it, but I won't this week
-> anyway. So post v5 and hopefully I can review that and it will be perfect :)
-
-The perfect v5 is there now, for 4 weeks minus the holiday season, and no further
-problems arose. Independently verified by Petr Mladek -- don't forget his high-level fix.
-
-	Torsten
+> Add a helper to determine if A needs to be cleared given the first
+> instruction in a filter, and use this in the JITs.  Except for ARM, the
+> rest have only been compile-tested.
+> 
+> Fixes: 3480593131e0 ("net: filter: get rid of BPF_S_* enum")
+> Signed-off-by: Rabin Vincent <rabin@rab.in>
+> ---
