@@ -1,40 +1,30 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <festevam@gmail.com>
+Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
+ [IPv6:2607:f8b0:4001:c06::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 297191A1147
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jan 2016 01:39:06 +1100 (AEDT)
-Date: Tue, 5 Jan 2016 16:38:54 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
- linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-metag@vger.kernel.org,
- linux-mips@linux-mips.org, x86@kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ingo Molnar <mingo@kernel.org>, Tony Lindgren <tony@atomide.com>,
- Andrey Konovalov <andreyknvl@google.com>
-Subject: Re: [PATCH v2 17/32] arm: define __smp_xxx
-Message-ID: <20160105163429-mutt-send-email-mst@redhat.com>
-References: <1451572003-2440-1-git-send-email-mst@redhat.com>
- <1451572003-2440-18-git-send-email-mst@redhat.com>
- <20160102112438.GU8644@n2100.arm.linux.org.uk>
- <20160103110158-mutt-send-email-mst@redhat.com>
- <20160104133658.GY6344@twins.programming.kicks-ass.net>
- <20160104135420.GS6373@twins.programming.kicks-ass.net>
- <20160104135934.GE19062@n2100.arm.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id ABC8A1A114D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jan 2016 01:57:29 +1100 (AEDT)
+Received: by mail-io0-x229.google.com with SMTP id o67so468097370iof.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jan 2016 06:57:29 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160104135934.GE19062@n2100.arm.linux.org.uk>
+In-Reply-To: <CAOZdJXVK-_j+pF+dXsnWd0AQZWD3p9+=ziS3Byw5e2ED1W_W=g@mail.gmail.com>
+References: <56770FE1.4060202@maciej.szmigiero.name>
+ <CAOZdJXVK-_j+pF+dXsnWd0AQZWD3p9+=ziS3Byw5e2ED1W_W=g@mail.gmail.com>
+Date: Tue, 5 Jan 2016 12:57:27 -0200
+Message-ID: <CAOMZO5CQ_jeEQTri9eFsib1yPDLCCRDkvk8+7Y=S==8VMOpA9g@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH 1/3] ASoC: fsl_ssi: mark SACNT register
+ volatile
+From: Fabio Estevam <festevam@gmail.com>
+To: Timur Tabi <timur@tabi.org>
+Cc: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Liam Girdwood <lgirdwood@gmail.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,94 +34,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 04, 2016 at 01:59:34PM +0000, Russell King - ARM Linux wrote:
-> On Mon, Jan 04, 2016 at 02:54:20PM +0100, Peter Zijlstra wrote:
-> > On Mon, Jan 04, 2016 at 02:36:58PM +0100, Peter Zijlstra wrote:
-> > > On Sun, Jan 03, 2016 at 11:12:44AM +0200, Michael S. Tsirkin wrote:
-> > > > On Sat, Jan 02, 2016 at 11:24:38AM +0000, Russell King - ARM Linux wrote:
-> > > 
-> > > > > My only concern is that it gives people an additional handle onto a
-> > > > > "new" set of barriers - just because they're prefixed with __*
-> > > > > unfortunately doesn't stop anyone from using it (been there with
-> > > > > other arch stuff before.)
-> > > > > 
-> > > > > I wonder whether we should consider making the smp memory barriers
-> > > > > inline functions, so these __smp_xxx() variants can be undef'd
-> > > > > afterwards, thereby preventing drivers getting their hands on these
-> > > > > new macros?
-> > > > 
-> > > > That'd be tricky to do cleanly since asm-generic depends on
-> > > > ifndef to add generic variants where needed.
-> > > > 
-> > > > But it would be possible to add a checkpatch test for this.
-> > > 
-> > > Wasn't the whole purpose of these things for 'drivers' (namely
-> > > virtio/xen hypervisor interaction) to use these?
-> > 
-> > Ah, I see, you add virt_*mb() stuff later on for that use case.
-> > 
-> > So, assuming everybody does include asm-generic/barrier.h, you could
-> > simply #undef the __smp version at the end of that, once we've generated
-> > all the regular primitives from it, no?
-> 
-> Not so simple - that's why I mentioned using inline functions.
-> 
-> The new smp_* _macros_ are:
-> 
-> +#define smp_mb()       __smp_mb()
-> 
-> which means if we simply #undef __smp_mb(), smp_mb() then points at
-> something which is no longer available, and we'll end up with errors
-> saying that __smp_mb() doesn't exist.
-> 
-> My suggestion was to change:
-> 
-> #ifndef smp_mb
-> #define smp_mb()	__smp_mb()
-> #endif
-> 
-> to:
-> 
-> #ifndef smp_mb
-> static inline void smp_mb(void)
-> {
-> 	__smp_mb();
-> }
-> #endif
-> 
-> which then means __smp_mb() and friends can be #undef'd afterwards.
+Timur,
 
-Absolutely, I got it.
-The issue is that e.g. tile has:
-#define __smp_mb__after_atomic()        do { } while (0)
+On Thu, Dec 24, 2015 at 2:12 PM, Timur Tabi <timur@tabi.org> wrote:
+> On Sun, Dec 20, 2015 at 2:30 PM, Maciej S. Szmigiero
+> <mail@maciej.szmigiero.name> wrote:
+>> SACNT register should be marked volatile since
+>> its WR and RD bits are cleared by SSI after
+>> completing the relevant operation.
+>> This unbreaks AC'97 register access.
+>>
+>> Fixes: 05cf237972fe ("ASoC: fsl_ssi: Add driver suspend and resume to support MEGA Fast")
+>>
+>> Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+>
+> These patches seem okay, but can we hold off merging them until I get
+> back from vacation and have a chance to review them?
 
-and this is cheaper than barrier().
-
-For this reason I left
-#define smp_mb__after_atomic()  __smp_mb__after_atomic()
-in place there.
-
-Now, of course I can do (in asm-generic):
-
-#ifndef smp_mb__after_atomic
-static inline void smp_mb__after_atomic(void)
-{
-...
-}
-#endif
-
-but this seems ugly: architectures do defines, generic
-version does inline.
-
-
-And that is not all: APIs like smp_store_mb can take
-a variety of types as arguments so they pretty much
-must be implemented as macros.
-
-Teaching checkpatch.pl to complain about it seems like the cleanest
-approach.
-
-> -- 
-> RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
-> FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-> according to speedtest.net.
+Have you had a chance to review these patches?
