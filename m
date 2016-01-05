@@ -1,27 +1,35 @@
-Return-Path: <rabin.vincent@gmail.com>
-Received: from mail-wm0-x232.google.com (mail-wm0-x232.google.com
- [IPv6:2a00:1450:400c:c09::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <richard@nod.at>
+Received: from radon.swed.at (a.ns.miles-group.at [95.130.255.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F313B1A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jan 2016 03:03:53 +1100 (AEDT)
-Received: by mail-wm0-x232.google.com with SMTP id f206so28593075wmf.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jan 2016 08:03:53 -0800 (PST)
-Sender: Rabin Vincent <rabin.vincent@gmail.com>
-Date: Tue, 5 Jan 2016 17:03:45 +0100
-From: Rabin Vincent <rabin@rab.in>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, daniel@iogearbox.net,
- ast@kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: filter: make JITs zero A for SKF_AD_ALU_XOR_X
-Message-ID: <20160105160345.GA3951@debian>
-References: <1452007387-626-1-git-send-email-rabin@rab.in>
- <1452009645.8255.96.camel@edumazet-glaptop2.roam.corp.google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B4A91A0B02
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jan 2016 10:19:35 +1100 (AEDT)
+Subject: Re: [PATCH v2 12/32] x86/um: reuse asm-generic/barrier.h
+To: "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org
+References: <1451572003-2440-1-git-send-email-mst@redhat.com>
+ <1451572003-2440-13-git-send-email-mst@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+ linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
+ linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-metag@vger.kernel.org,
+ linux-mips@linux-mips.org, x86@kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
+ Jeff Dike <jdike@addtoit.com>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>,
+ user-mode-linux-user@lists.sourceforge.net
+From: Richard Weinberger <richard@nod.at>
+Message-ID: <568C4DEA.5070601@nod.at>
+Date: Wed, 6 Jan 2016 00:12:42 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1452009645.8255.96.camel@edumazet-glaptop2.roam.corp.google.com>
+In-Reply-To: <1451572003-2440-13-git-send-email-mst@redhat.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,13 +39,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 05, 2016 at 08:00:45AM -0800, Eric Dumazet wrote:
-> On Tue, 2016-01-05 at 16:23 +0100, Rabin Vincent wrote:
-> > The SKF_AD_ALU_XOR_X ancillary is not like the other ancillary data
-> > instructions since it XORs A with X while all the others replace A with
-> > some loaded value.  All the BPF JITs fail to clear A if this is used as
-> > the first instruction in a filter.
+Am 31.12.2015 um 20:07 schrieb Michael S. Tsirkin:
+> On x86/um CONFIG_SMP is never defined.  As a result, several macros
+> match the asm-generic variant exactly. Drop the local definitions and
+> pull in asm-generic/barrier.h instead.
 > 
-> Is x86_64 part of this 'All' subset ? ;)
+> This is in preparation to refactoring this code area.
+> 
+> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-No, because it's an eBPF JIT.
+Acked-by: Richard Weinberger <richard@nod.at>
+
+Thanks,
+//richard
