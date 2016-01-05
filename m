@@ -1,43 +1,59 @@
-Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
+Return-Path: <schwidefsky@de.ibm.com>
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A41561A00E9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 22:05:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8E27F1A00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 23:09:03 +1100 (AEDT)
 Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Tue, 5 Jan 2016 16:35:08 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 10E8A1258060
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 16:35:48 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u05B4YEK17498208
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jan 2016 16:34:37 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u05B4WSW031696
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jan 2016 16:34:34 +0530
-Subject: Re: [RFC PATCH v2 1/3] PCI: Add support for enforcing all MMIO BARs
- to be page aligned
-To: Alex Williamson <alex.williamson@redhat.com>, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org
-References: <1451551844-11732-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1451551844-11732-2-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1451940460.6585.6.camel@redhat.com>
-Cc: bhelgaas@google.com, corbet@lwn.net, aik@ozlabs.ru,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Message-ID: <568BA348.6030707@linux.vnet.ibm.com>
-Date: Tue, 5 Jan 2016 19:04:40 +0800
+ for <linuxppc-dev@lists.ozlabs.org> from <schwidefsky@de.ibm.com>;
+ Tue, 5 Jan 2016 12:08:59 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 91BCB219004D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jan 2016 12:08:46 +0000 (GMT)
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+ [9.149.37.228])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u05C8uNJ12779878
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jan 2016 12:08:56 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u05C8s0J025885
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jan 2016 05:08:56 -0700
+Date: Tue, 5 Jan 2016 13:08:52 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org, Andrew Cooper
+ <andrew.cooper3@citrix.com>, virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin"
+ <hpa@zytor.com>, David Miller <davem@davemloft.net>,
+ linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-metag@vger.kernel.org,
+ linux-mips@linux-mips.org, x86@kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org, Heiko
+ Carstens <heiko.carstens@de.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Andrey Konovalov <andreyknvl@google.com>, Carsten Otte <cotte@de.ibm.com>,
+ Christian Ehrhardt <ehrhardt@de.ibm.com>
+Subject: Re: [PATCH v2 22/32] s390: define __smp_xxx
+Message-ID: <20160105130852.11148a7f@mschwide>
+In-Reply-To: <20160105105335-mutt-send-email-mst@redhat.com>
+References: <1451572003-2440-1-git-send-email-mst@redhat.com>
+ <1451572003-2440-23-git-send-email-mst@redhat.com>
+ <20160104134525.GA6344@twins.programming.kicks-ass.net>
+ <20160104221323-mutt-send-email-mst@redhat.com>
+ <20160105091319.59ddefc7@mschwide>
+ <20160105105335-mutt-send-email-mst@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <1451940460.6585.6.camel@redhat.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,186 +63,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/1/5 4:47, Alex Williamson wrote:
-> On Thu, 2015-12-31 at 16:50 +0800, Yongji Xie wrote:
->> When vfio passthrough a PCI device of which MMIO BARs
->> are smaller than PAGE_SIZE, guest will not handle the
->> mmio accesses to the BARs which leads to mmio emulations
->> in host.
->>
->> This is because vfio will not allow to passthrough one
->> BAR's mmio page which may be shared with other BARs.
->>
->> To solve this performance issue, this patch adds a kernel
->> parameter "pci=resource_page_aligned=on" to enforce
->> the alignments of all MMIO BARs to be at least PAGE_SIZE,
->> so that one BAR's mmio page would not be shared with other
->> BARs. We can also disable it through kernel parameter
->> "pci=resource_page_aligned=off".
-> Shouldn't this somehow be associated with the realloc option?  I don't
-> think PCI code will attempt to reprogram anything unless it needs to
-> otherwise.
+On Tue, 5 Jan 2016 11:30:19 +0200
+"Michael S. Tsirkin" <mst@redhat.com> wrote:
 
-So you mean we need to ignore firmware setup and force re-assigning all
-resources if we want to use the option "pci=resource_page_aligned=on"?
+> On Tue, Jan 05, 2016 at 09:13:19AM +0100, Martin Schwidefsky wrote:
+> > On Mon, 4 Jan 2016 22:18:58 +0200
+> > "Michael S. Tsirkin" <mst@redhat.com> wrote:
+> > 
+> > > On Mon, Jan 04, 2016 at 02:45:25PM +0100, Peter Zijlstra wrote:
+> > > > On Thu, Dec 31, 2015 at 09:08:38PM +0200, Michael S. Tsirkin wrote:
+> > > > > This defines __smp_xxx barriers for s390,
+> > > > > for use by virtualization.
+> > > > > 
+> > > > > Some smp_xxx barriers are removed as they are
+> > > > > defined correctly by asm-generic/barriers.h
+> > > > > 
+> > > > > Note: smp_mb, smp_rmb and smp_wmb are defined as full barriers
+> > > > > unconditionally on this architecture.
+> > > > > 
+> > > > > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> > > > > Acked-by: Arnd Bergmann <arnd@arndb.de>
+> > > > > ---
+> > > > >  arch/s390/include/asm/barrier.h | 15 +++++++++------
+> > > > >  1 file changed, 9 insertions(+), 6 deletions(-)
+> > > > > 
+> > > > > diff --git a/arch/s390/include/asm/barrier.h b/arch/s390/include/asm/barrier.h
+> > > > > index c358c31..fbd25b2 100644
+> > > > > --- a/arch/s390/include/asm/barrier.h
+> > > > > +++ b/arch/s390/include/asm/barrier.h
+> > > > > @@ -26,18 +26,21 @@
+> > > > >  #define wmb()				barrier()
+> > > > >  #define dma_rmb()			mb()
+> > > > >  #define dma_wmb()			mb()
+> > > > > -#define smp_mb()			mb()
+> > > > > -#define smp_rmb()			rmb()
+> > > > > -#define smp_wmb()			wmb()
+> > > > > -
+> > > > > -#define smp_store_release(p, v)						\
+> > > > > +#define __smp_mb()			mb()
+> > > > > +#define __smp_rmb()			rmb()
+> > > > > +#define __smp_wmb()			wmb()
+> > > > > +#define smp_mb()			__smp_mb()
+> > > > > +#define smp_rmb()			__smp_rmb()
+> > > > > +#define smp_wmb()			__smp_wmb()
+> > > > 
+> > > > Why define the smp_*mb() primitives here? Would not the inclusion of
+> > > > asm-generic/barrier.h do this?
+> > > 
+> > > No because the generic one is a nop on !SMP, this one isn't.
+> > > 
+> > > Pls note this patch is just reordering code without making
+> > > functional changes.
+> > > And at the moment, on s390 smp_xxx barriers are always non empty.
+> > 
+> > The s390 kernel is SMP to 99.99%, we just didn't bother with a
+> > non-smp variant for the memory-barriers. If the generic header
+> > is used we'd get the non-smp version for free. It will save a
+> > small amount of text space for CONFIG_SMP=n. 
+> 
+> OK, so I'll queue a patch to do this then?
 
->> For the default value of this parameter, we think it should be
->> arch-independent, so we add a macro PCI_RESOURCE_PAGE_ALIGNED
->> to change it. And we define this macro to enable this parameter
->> by default on PPC64 platform which can easily hit this
->> performance issue because its PAGE_SIZE is 64KB.
->>
->> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
->> ---
->>   Documentation/kernel-parameters.txt |    4 ++++
->>   arch/powerpc/include/asm/pci.h      |   11 +++++++++++
->>   drivers/pci/pci.c                   |   17 +++++++++++++++++
->>   drivers/pci/pci.h                   |    7 ++++++-
->>   include/linux/pci.h                 |    2 ++
->>   5 files changed, 40 insertions(+), 1 deletion(-)
->>
->> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
->> index 742f69d..a53aaee 100644
->> --- a/Documentation/kernel-parameters.txt
->> +++ b/Documentation/kernel-parameters.txt
->> @@ -2857,6 +2857,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->>   				PAGE_SIZE is used as alignment.
->>   				PCI-PCI bridge can be specified, if resource
->>   				windows need to be expanded.
->> +		resource_page_aligned=	Enable/disable enforcing the alignment
->> +				of all PCI devices' memory resources to be
->> +				at least PAGE_SIZE.
->> +				Format: { "on" | "off" }
->>   		ecrc=		Enable/disable PCIe ECRC (transaction layer
->>   				end-to-end CRC checking).
->>   				bios: Use BIOS/firmware settings. This is the
->> diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
->> index 3453bd8..27bff59 100644
->> --- a/arch/powerpc/include/asm/pci.h
->> +++ b/arch/powerpc/include/asm/pci.h
->> @@ -136,6 +136,17 @@ extern pgprot_t	pci_phys_mem_access_prot(struct file *file,
->>   					 unsigned long pfn,
->>   					 unsigned long size,
->>   					 pgprot_t prot);
->> +#ifdef CONFIG_PPC64
->> +
->> +/* For PPC64, We enforce all PCI MMIO BARs to be page aligned
->> + * by default. This would be helpful to improve performance
->> + * when we passthrough a PCI device of which BARs are smaller
->> + * than PAGE_SIZE(64KB). And we can use bootcmd
->> + * "pci=resource_page_aligned=off" to disable it.
->> + */
->> +#define PCI_ENABLE_RESOURCE_PAGE_ALIGNED
->> +
->> +#endif
-> This should be done with something like HAVE_PCI_DEFAULT_RESOURCE_PAGE_
-> ALIGNED in arch/powerpc/include/asm
+Yes please.
+ 
+> Just to make sure: the question would be, are smp_xxx barriers ever used
+> in s390 arch specific code to flush in/out memory accesses for
+> synchronization with the hypervisor?
+> 
+> I went over s390 arch code and it seems to me the answer is no
+> (except of course for virtio).
 
-OK, I will fix it in next version.
+Correct. Guest to host communication either uses instructions which
+imply a memory barrier or QDIO which uses atomics.
 
->>   #define HAVE_ARCH_PCI_RESOURCE_TO_USER
->>   extern void pci_resource_to_user(const struct pci_dev *dev, int bar,
->> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
->> index 314db8c..9f14ba5 100644
->> --- a/drivers/pci/pci.c
->> +++ b/drivers/pci/pci.c
->> @@ -99,6 +99,13 @@ u8 pci_cache_line_size;
->>    */
->>   unsigned int pcibios_max_latency = 255;
->>   
->> +#ifdef PCI_ENABLE_RESOURCE_PAGE_ALIGNED
->> +bool pci_resource_page_aligned = true;
->> +#else
->> +bool pci_resource_page_aligned;
->> +#endif
->> +EXPORT_SYMBOL(pci_resource_page_aligned);
-> Couldn't this be done in a single line with IS_ENABLED() macro?
+> But I also see a lot of weirdness on this architecture.
 
-I'm not sure whether IS_ENABLED() macro should be used there because
-it is always used for CONFIG_ options.
+Mostly historical, s390 actually is one of the easiest architectures in
+regard to memory barriers.
 
-> Should this symbol be GPL-only?
+> I found these calls:
+> 
+> arch/s390/include/asm/bitops.h: smp_mb__before_atomic();
+> arch/s390/include/asm/bitops.h: smp_mb();
+> 
+> Not used in arch specific code so this is likely OK.
 
-Yes, it will be fixed in next version.
+This has been introduced with git commit 5402ea6af11dc5a9, the smp_mb
+and smp_mb__before_atomic are used in clear_bit_unlock and
+__clear_bit_unlock which are 1:1 copies from the code in
+include/asm-generic/bitops/lock.h. Only test_and_set_bit_lock differs
+from the generic implementation.
 
->> +
->>   /* If set, the PCIe ARI capability will not be used. */
->>   static bool pcie_ari_disabled;
->>   
->> @@ -4746,6 +4753,14 @@ static ssize_t pci_resource_alignment_store(struct bus_type *bus,
->>   BUS_ATTR(resource_alignment, 0644, pci_resource_alignment_show,
->>   					pci_resource_alignment_store);
->>   
->> +static void pci_resource_get_page_aligned(char *str)
->> +{
->> +	if (!strncmp(str, "off", 3))
->> +		pci_resource_page_aligned = false;
->> +	else if (!strncmp(str, "on", 2))
->> +		pci_resource_page_aligned = true;
->> +}
->> +
->>   static int __init pci_resource_alignment_sysfs_init(void)
->>   {
->>   	return bus_create_file(&pci_bus_type,
->> @@ -4859,6 +4874,8 @@ static int __init pci_setup(char *str)
->>   			} else if (!strncmp(str, "resource_alignment=", 19)) {
->>   				pci_set_resource_alignment_param(str + 19,
->>   							strlen(str + 19));
->> +			} else if (!strncmp(str, "resource_page_aligned=", 22)) {
->> +				pci_resource_get_page_aligned(str + 22);
->>   			} else if (!strncmp(str, "ecrc=", 5)) {
->>   				pcie_ecrc_get_policy(str + 5);
->>   			} else if (!strncmp(str, "hpiosize=", 9)) {
->> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
->> index d390fc1..e16e48c 100644
->> --- a/drivers/pci/pci.h
->> +++ b/drivers/pci/pci.h
->> @@ -312,11 +312,16 @@ static inline resource_size_t pci_resource_alignment(struct pci_dev *dev,
->>   #ifdef CONFIG_PCI_IOV
->>   	int resno = res - dev->resource;
->>   
->> -	if (resno >= PCI_IOV_RESOURCES && resno <= PCI_IOV_RESOURCE_END)
->> +	if (resno >= PCI_IOV_RESOURCES && resno <= PCI_IOV_RESOURCE_END) {
->> +		if (pci_resource_page_aligned && res->flags & IORESOURCE_MEM)
->> +			return PAGE_ALIGN(pci_sriov_resource_alignment(dev, resno));
->>   		return pci_sriov_resource_alignment(dev, resno);
->> +	}
->>   #endif
->>   	if (dev->class >> 8  == PCI_CLASS_BRIDGE_CARDBUS)
->>   		return pci_cardbus_resource_alignment(res);
->> +	if (pci_resource_page_aligned && res->flags & IORESOURCE_MEM)
->> +		return PAGE_ALIGN(resource_alignment(res));
->>   	return resource_alignment(res);
->>   }
-> Why are we calling resource_alignment() and then doing another
-> alignment on top of that?  Shouldn't this alignment be done there?
+> arch/s390/kernel/vdso.c:        smp_mb();
+> 
+> Looking at
+> 	Author: Christian Borntraeger <borntraeger@de.ibm.com>
+> 	Date:   Fri Sep 11 16:23:06 2015 +0200
+> 
+> 	    s390/vdso: use correct memory barrier
+> 
+> 	    By definition smp_wmb only orders writes against writes. (Finish all
+> 	    previous writes, and do not start any future write). To protect the
+> 	    vdso init code against early reads on other CPUs, let's use a full
+> 	    smp_mb at the end of vdso init. As right now smp_wmb is implemented
+> 	    as full serialization, this needs no stable backport, but this change
+> 	    will be necessary if we reimplement smp_wmb.
+> 
+> ok from hypervisor point of view, but it's also strange:
+> 1. why isn't this paired with another mb somewhere?
+>    this seems to violate barrier pairing rules.
+> 2. how does smp_mb protect against early reads on other CPUs?
+>    It normally does not: it orders reads from this CPU versus writes
+>    from same CPU. But init code does not appear to read anything.
+>    Maybe this is some s390 specific trick?
+> 
+> I could not figure out the above commit.
 
-We doing the alignment in pci_resource_alignment() because this is a
-PCI specific feature. And I don't think pci_resource_page_aligned should
-be used in resource_alignment().
+That smp_mb can be removed. The initial s390 vdso code is heavily influenced
+by the powerpc version which does have a smp_wmb in vdso_init right before
+the vdso_ready=1 assignment. s390 has no need for that.
+ 
+> 
+> arch/s390/kvm/kvm-s390.c:       smp_mb();
+> 
+> Does not appear to be paired with anything.
 
-> I still don't really understand if this is enough to produce a
-> reallocation if the alignment is not sufficient, vfio would need to
-> know if pci_resource_page_aligned has any loopholes.
+This one does not make sense to me. Imho can be removed as well. 
+ 
+> arch/s390/lib/spinlock.c:               smp_mb();
+> arch/s390/lib/spinlock.c:                       smp_mb();
+> 
+> Seems ok, and appears paired properly.
+> Just to make sure - spinlock is not paravirtualized on s390, is it?
 
-Do you mean doing this in pci_resource_alignment() may not
-be enough to make sure the alignments of all PCI resources are page
-aligned? Thanks.
+s390 just uses the compare-and-swap instruction for the basic lock/unlock
+operation, this implies the memory barrier. We do call the hypervisor for
+contended locks if the lock can not be acquired after a number of retries.
 
-Regards
-Yongji Xie
+A while ago we did play with ticket spinlocks but they behaved badly in
+out usual virtualized environments. If we find the time we might take a
+closer look at the para-virtualized queued spinlocks.
 
->>   
->> diff --git a/include/linux/pci.h b/include/linux/pci.h
->> index 6ae25aa..0ca57f1 100644
->> --- a/include/linux/pci.h
->> +++ b/include/linux/pci.h
->> @@ -1517,6 +1517,8 @@ static inline int pci_get_new_domain_nr(void) { return -ENOSYS; }
->>   
->>   #include
->>   
->> +extern bool pci_resource_page_aligned;
->> +
->>   /* these helpers provide future and backwards compatibility
->>    * for accessing popular PCI BAR info */
->>   #define pci_resource_start(dev, bar)	((dev)->resource[(bar)].start)
+> rch/s390/kernel/time.c:        smp_wmb();
+> arch/s390/kernel/time.c:        smp_wmb();
+> arch/s390/kernel/time.c:        smp_wmb();
+> arch/s390/kernel/time.c:        smp_wmb();
+> 
+> It's all around vdso, so I'm guessing userspace is using this,
+> this is why there's no pairing.
+
+Correct, this is the update count mechanics with the vdso user space code.
+
+> > > Some of this could be sub-optimal, but
+> > > since on s390 Linux always runs on a hypervisor,
+> > > I am not sure it's safe to use the generic version -
+> > > in other words, it just might be that for s390 smp_ and virt_
+> > > barriers must be equivalent.
+> > 
+> > The definition of the memory barriers is independent from the fact
+> > if the system is running on an hypervisor or not.
+> > Is there really
+> > an architecture where you need special virt_xxx barriers?!? 
+> 
+> It is whenever host and guest or two guests access memory at
+> the same time.
+> 
+> The optimization where smp_xxx barriers are compiled out when
+> CONFIG_SMP is cleared means that two UP guests running
+> on an SMP host can not use smp_xxx barriers for communication.
+> 
+> See explanation here:
+> http://thread.gmane.org/gmane.linux.kernel.virtualization/26555
+
+Got it, makes sense.
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
