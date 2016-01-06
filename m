@@ -1,44 +1,37 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jallen@linux.vnet.ibm.com>
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D2691A0023
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jan 2016 07:24:07 +1100 (AEDT)
-Date: Wed, 6 Jan 2016 22:23:51 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
- linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-metag@vger.kernel.org,
- linux-mips@linux-mips.org, x86@kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@kernel.org>,
- Davidlohr Bueso <dave@stgolabs.net>,
- Andrey Konovalov <andreyknvl@google.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 15/32] powerpc: define __smp_xxx
-Message-ID: <20160106222337-mutt-send-email-mst@redhat.com>
-References: <1451572003-2440-1-git-send-email-mst@redhat.com>
- <1451572003-2440-16-git-send-email-mst@redhat.com>
- <20160105013648.GA1256@fixme-laptop.cn.ibm.com>
- <20160105085117.GA11858@redhat.com>
- <20160105095341.GA5321@fixme-laptop.cn.ibm.com>
- <20160105180938-mutt-send-email-mst@redhat.com>
- <20160106015152.GA14605@fixme-laptop.cn.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 38D331A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jan 2016 08:35:42 +1100 (AEDT)
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.vnet.ibm.com>;
+ Wed, 6 Jan 2016 16:35:39 -0500
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id CA8B8C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jan 2016 16:35:36 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u06LZbnk28704908
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jan 2016 21:35:37 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u06LZalE017967
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jan 2016 16:35:37 -0500
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, akpm@linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>
+From: John Allen <jallen@linux.vnet.ibm.com>
+Subject: [PATCH v3] memory-hotplug: Fix kernel warning during memory hotplug
+ on ppc64
+To: gregkh@linuxfoundation.org
+Message-ID: <568D88A7.7050307@linux.vnet.ibm.com>
+Date: Wed, 6 Jan 2016 15:35:35 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160106015152.GA14605@fixme-laptop.cn.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,98 +41,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 06, 2016 at 09:51:52AM +0800, Boqun Feng wrote:
-> On Tue, Jan 05, 2016 at 06:16:48PM +0200, Michael S. Tsirkin wrote:
-> [snip]
-> > > > > Another thing is that smp_lwsync() may have a third user(other than
-> > > > > smp_load_acquire() and smp_store_release()):
-> > > > > 
-> > > > > http://article.gmane.org/gmane.linux.ports.ppc.embedded/89877
-> > > > > 
-> > > > > I'm OK to change my patch accordingly, but do we really want
-> > > > > smp_lwsync() get involved in this cleanup? If I understand you
-> > > > > correctly, this cleanup focuses on external API like smp_{r,w,}mb(),
-> > > > > while smp_lwsync() is internal to PPC.
-> > > > > 
-> > > > > Regards,
-> > > > > Boqun
-> > > > 
-> > > > I think you missed the leading ___ :)
-> > > > 
-> > > 
-> > > What I mean here was smp_lwsync() was originally internal to PPC, but
-> > > never mind ;-)
-> > > 
-> > > > smp_store_release is external and it needs __smp_lwsync as
-> > > > defined here.
-> > > > 
-> > > > I can duplicate some code and have smp_lwsync *not* call __smp_lwsync
-> > > 
-> > > You mean bringing smp_lwsync() back? because I haven't seen you defining
-> > > in asm-generic/barriers.h in previous patches and you just delete it in
-> > > this patch.
-> > > 
-> > > > but why do this? Still, if you prefer it this way,
-> > > > please let me know.
-> > > > 
-> > > 
-> > > I think deleting smp_lwsync() is fine, though I need to change atomic
-> > > variants patches on PPC because of it ;-/
-> > > 
-> > > Regards,
-> > > Boqun
-> > 
-> > Sorry, I don't understand - why do you have to do anything?
-> > I changed all users of smp_lwsync so they
-> > use __smp_lwsync on SMP and barrier() on !SMP.
-> > 
-> > This is exactly the current behaviour, I also tested that
-> > generated code does not change at all.
-> > 
-> > Is there a patch in your tree that conflicts with this?
-> > 
-> 
-> Because in a patchset which implements atomic relaxed/acquire/release
-> variants on PPC I use smp_lwsync(), this makes it have another user,
-> please see this mail:
-> 
-> http://article.gmane.org/gmane.linux.ports.ppc.embedded/89877
-> 
-> in definition of PPC's __atomic_op_release().
-> 
-> 
-> But I think removing smp_lwsync() is a good idea and actually I think we
-> can go further to remove __smp_lwsync() and let __smp_load_acquire and
-> __smp_store_release call __lwsync() directly, but that is another thing.
-> 
-> Anyway, I will modify my patch.
-> 
-> Regards,
-> Boqun
+This patch fixes a bug where a kernel warning is triggered when performing
+a memory hotplug on ppc64. This warning may also occur on any architecture
+that uses the memory_probe_store interface.
 
+WARNING: at drivers/base/memory.c:200
+CPU: 9 PID: 13042 Comm: systemd-udevd Not tainted 4.4.0-rc4-00113-g0bd0f1e-dirty #7
+NIP [c00000000055e034] pages_correctly_reserved+0x134/0x1b0
+LR [c00000000055e7f8] memory_subsys_online+0x68/0x140
+Call Trace:
+[c0000000fa9e7b50] [c0000000fa9e7b90] 0xc0000000fa9e7b90 (unreliable)
+[c0000000fa9e7bb0] [c00000000055e7f8] memory_subsys_online+0x68/0x140
+[c0000000fa9e7bf0] [c000000000540064] device_online+0xb4/0x120
+[c0000000fa9e7c30] [c00000000055e6c0] store_mem_state+0xb0/0x180
+[c0000000fa9e7c70] [c00000000053c5e4] dev_attr_store+0x34/0x60
+[c0000000fa9e7c90] [c0000000002db0a4] sysfs_kf_write+0x64/0xa0
+[c0000000fa9e7cb0] [c0000000002da0cc] kernfs_fop_write+0x17c/0x1e0
+[c0000000fa9e7d00] [c0000000002481b0] __vfs_write+0x40/0x160
+[c0000000fa9e7d90] [c000000000248ce8] vfs_write+0xb8/0x200
+[c0000000fa9e7de0] [c000000000249b40] SyS_write+0x60/0x110
+[c0000000fa9e7e30] [c000000000009260] system_call+0x38/0xd0
 
-Thanks!
-Could you send an ack then please?
+The warning is triggered because there is a udev rule that automatically
+tries to online memory after it has been added. The udev rule varies from
+distro to distro, but will generally look something like:
 
-> > 
-> > > > > >  	WRITE_ONCE(*p, v);						\
-> > > > > >  } while (0)
-> > > > > >  
-> > > > > > -#define smp_load_acquire(p)						\
-> > > > > > +#define __smp_load_acquire(p)						\
-> > > > > >  ({									\
-> > > > > >  	typeof(*p) ___p1 = READ_ONCE(*p);				\
-> > > > > >  	compiletime_assert_atomic_type(*p);				\
-> > > > > > -	smp_lwsync();							\
-> > > > > > +	__smp_lwsync();							\
-> > > > > >  	___p1;								\
-> > > > > >  })
-> > > > > >  
-> > > > > > -- 
-> > > > > > MST
-> > > > > > 
-> > > > > > --
-> > > > > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > > > > the body of a message to majordomo@vger.kernel.org
-> > > > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > > > > Please read the FAQ at  http://www.tux.org/lkml/
+SUBSYSTEM=="memory", ACTION=="add", ATTR{state}=="offline", ATTR{state}="online"
+
+On any architecture that uses memory_probe_store to reserve memory, the
+udev rule will be triggered after the first section of the block is
+reserved and will subsequently attempt to online the entire block,
+interrupting the memory reservation process and causing the warning.
+This patch modifies memory_probe_store to add a block of memory with
+a single call to add_memory as opposed to looping through and adding
+each section individually. A single call to add_memory is protected by
+the mem_hotplug mutex which will prevent the udev rule from onlining
+memory until the reservation of the entire block is complete.
+
+Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
+---
+v2: -Move call to unlock_device_hotplug under "out" label
+v3: -Update changelog with trimmed traces from newer kernel
+    -After further testing and reviewing the original purpose of
+     the lock_device_hotplug_sysfs mutex, modified solution to
+     fix the issue by replacing loop that adds memory section
+     by section with a single call to add_memory.
+
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+index 25425d3..e15ddb65 100644
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -461,15 +461,12 @@ memory_probe_store(struct device *dev, struct device_attribute *attr,
+ 	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
+ 		return -EINVAL;
+
+-	for (i = 0; i < sections_per_block; i++) {
+-		nid = memory_add_physaddr_to_nid(phys_addr);
+-		ret = add_memory(nid, phys_addr,
+-				 PAGES_PER_SECTION << PAGE_SHIFT);
+-		if (ret)
+-			goto out;
++	nid = memory_add_physaddr_to_nid(phys_addr);
++	ret = add_memory(nid, phys_addr,
++			 MIN_MEMORY_BLOCK_SIZE * sections_per_block);
+
+-		phys_addr += MIN_MEMORY_BLOCK_SIZE;
+-	}
++	if (ret)
++		goto out;
+
+ 	ret = count;
+ out:
