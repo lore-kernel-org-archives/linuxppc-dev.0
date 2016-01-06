@@ -1,28 +1,40 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
- [IPv6:2607:f8b0:4003:c06::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8598F1A1755
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jan 2016 13:09:11 +1100 (AEDT)
-Received: by mail-oi0-x241.google.com with SMTP id o124so26563130oia.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jan 2016 18:09:11 -0800 (PST)
-From: Boqun Feng <boqun.feng@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
- "Michael S. Tsirkin" <mst@redhat.com>, Boqun Feng <boqun.feng@gmail.com>
-Subject: [PATCH RESEND v6 2/4] powerpc: atomic: Implement atomic{,
- 64}_*_return_* variants
-Date: Wed,  6 Jan 2016 10:08:25 +0800
-Message-Id: <1452046105-24111-1-git-send-email-boqun.feng@gmail.com>
-In-Reply-To: <1450189457-10589-3-git-send-email-boqun.feng@gmail.com>
-References: <1450189457-10589-3-git-send-email-boqun.feng@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 99DA01A1766
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jan 2016 13:09:58 +1100 (AEDT)
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 6CDD4140297
+ for <linuxppc-dev@ozlabs.org>; Wed,  6 Jan 2016 13:09:58 +1100 (AEDT)
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 6 Jan 2016 12:09:57 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B21292CE8054
+ for <linuxppc-dev@ozlabs.org>; Wed,  6 Jan 2016 13:09:48 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0629JIH37748990
+ for <linuxppc-dev@ozlabs.org>; Wed, 6 Jan 2016 13:09:27 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0629F2V019307
+ for <linuxppc-dev@ozlabs.org>; Wed, 6 Jan 2016 13:09:16 +1100
+Subject: Re: [PATCH 1/2] powerpc: sparse: static-ify some things
+To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
+References: <1452041151-2387-1-git-send-email-dja@axtens.net>
+Cc: mikey@neuling.org
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-ID: <568C7732.5020505@au1.ibm.com>
+Date: Wed, 6 Jan 2016 13:08:50 +1100
+MIME-Version: 1.0
+In-Reply-To: <1452041151-2387-1-git-send-email-dja@axtens.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,292 +44,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powerpc, acquire and release semantics can be achieved with
-lightweight barriers("lwsync" and "ctrl+isync"), which can be used to
-implement __atomic_op_{acquire,release}.
+On 06/01/16 11:45, Daniel Axtens wrote:
+> As sparse suggests, these should be made static.
+>
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
 
-For release semantics, since we only need to ensure all memory accesses
-that issue before must take effects before the -store- part of the
-atomics, "lwsync" is what we only need. On the platform without
-"lwsync", "sync" should be used. Therefore in __atomic_op_release() we
-use PPC_RELEASE_BARRIER.
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-For acquire semantics, "lwsync" is what we only need for the similar
-reason.  However on the platform without "lwsync", we can use "isync"
-rather than "sync" as an acquire barrier. Therefore in
-__atomic_op_acquire() we use PPC_ACQUIRE_BARRIER, which is barrier() on
-UP, "lwsync" if available and "isync" otherwise.
-
-Implement atomic{,64}_{add,sub,inc,dec}_return_relaxed, and build other
-variants with these helpers.
-
-Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
----
- arch/powerpc/include/asm/atomic.h | 147 ++++++++++++++++++++++----------------
- 1 file changed, 85 insertions(+), 62 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
-index 55f106e..a35c277 100644
---- a/arch/powerpc/include/asm/atomic.h
-+++ b/arch/powerpc/include/asm/atomic.h
-@@ -12,6 +12,24 @@
- 
- #define ATOMIC_INIT(i)		{ (i) }
- 
-+/*
-+ * Since *_return_relaxed and {cmp}xchg_relaxed are implemented with
-+ * a "bne-" instruction at the end, so an isync is enough as a acquire barrier
-+ * on the platform without lwsync.
-+ */
-+#define __atomic_op_acquire(op, args...)				\
-+({									\
-+	typeof(op##_relaxed(args)) __ret  = op##_relaxed(args);		\
-+	__asm__ __volatile__(PPC_ACQUIRE_BARRIER "" : : : "memory");	\
-+	__ret;								\
-+})
-+
-+#define __atomic_op_release(op, args...)				\
-+({									\
-+	__asm__ __volatile__(PPC_RELEASE_BARRIER "" : : : "memory");	\
-+	op##_relaxed(args);						\
-+})
-+
- static __inline__ int atomic_read(const atomic_t *v)
- {
- 	int t;
-@@ -42,27 +60,27 @@ static __inline__ void atomic_##op(int a, atomic_t *v)			\
- 	: "cc");							\
- }									\
- 
--#define ATOMIC_OP_RETURN(op, asm_op)					\
--static __inline__ int atomic_##op##_return(int a, atomic_t *v)		\
-+#define ATOMIC_OP_RETURN_RELAXED(op, asm_op)				\
-+static inline int atomic_##op##_return_relaxed(int a, atomic_t *v)	\
- {									\
- 	int t;								\
- 									\
- 	__asm__ __volatile__(						\
--	PPC_ATOMIC_ENTRY_BARRIER					\
--"1:	lwarx	%0,0,%2		# atomic_" #op "_return\n"		\
--	#asm_op " %0,%1,%0\n"						\
--	PPC405_ERR77(0,%2)						\
--"	stwcx.	%0,0,%2 \n"						\
-+"1:	lwarx	%0,0,%3		# atomic_" #op "_return_relaxed\n"	\
-+	#asm_op " %0,%2,%0\n"						\
-+	PPC405_ERR77(0, %3)						\
-+"	stwcx.	%0,0,%3\n"						\
- "	bne-	1b\n"							\
--	PPC_ATOMIC_EXIT_BARRIER						\
--	: "=&r" (t)							\
-+	: "=&r" (t), "+m" (v->counter)					\
- 	: "r" (a), "r" (&v->counter)					\
--	: "cc", "memory");						\
-+	: "cc");							\
- 									\
- 	return t;							\
- }
- 
--#define ATOMIC_OPS(op, asm_op) ATOMIC_OP(op, asm_op) ATOMIC_OP_RETURN(op, asm_op)
-+#define ATOMIC_OPS(op, asm_op)						\
-+	ATOMIC_OP(op, asm_op)						\
-+	ATOMIC_OP_RETURN_RELAXED(op, asm_op)
- 
- ATOMIC_OPS(add, add)
- ATOMIC_OPS(sub, subf)
-@@ -71,8 +89,11 @@ ATOMIC_OP(and, and)
- ATOMIC_OP(or, or)
- ATOMIC_OP(xor, xor)
- 
-+#define atomic_add_return_relaxed atomic_add_return_relaxed
-+#define atomic_sub_return_relaxed atomic_sub_return_relaxed
-+
- #undef ATOMIC_OPS
--#undef ATOMIC_OP_RETURN
-+#undef ATOMIC_OP_RETURN_RELAXED
- #undef ATOMIC_OP
- 
- #define atomic_add_negative(a, v)	(atomic_add_return((a), (v)) < 0)
-@@ -92,21 +113,19 @@ static __inline__ void atomic_inc(atomic_t *v)
- 	: "cc", "xer");
- }
- 
--static __inline__ int atomic_inc_return(atomic_t *v)
-+static __inline__ int atomic_inc_return_relaxed(atomic_t *v)
- {
- 	int t;
- 
- 	__asm__ __volatile__(
--	PPC_ATOMIC_ENTRY_BARRIER
--"1:	lwarx	%0,0,%1		# atomic_inc_return\n\
--	addic	%0,%0,1\n"
--	PPC405_ERR77(0,%1)
--"	stwcx.	%0,0,%1 \n\
--	bne-	1b"
--	PPC_ATOMIC_EXIT_BARRIER
--	: "=&r" (t)
-+"1:	lwarx	%0,0,%2		# atomic_inc_return_relaxed\n"
-+"	addic	%0,%0,1\n"
-+	PPC405_ERR77(0, %2)
-+"	stwcx.	%0,0,%2\n"
-+"	bne-	1b"
-+	: "=&r" (t), "+m" (v->counter)
- 	: "r" (&v->counter)
--	: "cc", "xer", "memory");
-+	: "cc", "xer");
- 
- 	return t;
- }
-@@ -136,25 +155,26 @@ static __inline__ void atomic_dec(atomic_t *v)
- 	: "cc", "xer");
- }
- 
--static __inline__ int atomic_dec_return(atomic_t *v)
-+static __inline__ int atomic_dec_return_relaxed(atomic_t *v)
- {
- 	int t;
- 
- 	__asm__ __volatile__(
--	PPC_ATOMIC_ENTRY_BARRIER
--"1:	lwarx	%0,0,%1		# atomic_dec_return\n\
--	addic	%0,%0,-1\n"
--	PPC405_ERR77(0,%1)
--"	stwcx.	%0,0,%1\n\
--	bne-	1b"
--	PPC_ATOMIC_EXIT_BARRIER
--	: "=&r" (t)
-+"1:	lwarx	%0,0,%2		# atomic_dec_return_relaxed\n"
-+"	addic	%0,%0,-1\n"
-+	PPC405_ERR77(0, %2)
-+"	stwcx.	%0,0,%2\n"
-+"	bne-	1b"
-+	: "=&r" (t), "+m" (v->counter)
- 	: "r" (&v->counter)
--	: "cc", "xer", "memory");
-+	: "cc", "xer");
- 
- 	return t;
- }
- 
-+#define atomic_inc_return_relaxed atomic_inc_return_relaxed
-+#define atomic_dec_return_relaxed atomic_dec_return_relaxed
-+
- #define atomic_cmpxchg(v, o, n) (cmpxchg(&((v)->counter), (o), (n)))
- #define atomic_xchg(v, new) (xchg(&((v)->counter), new))
- 
-@@ -285,26 +305,27 @@ static __inline__ void atomic64_##op(long a, atomic64_t *v)		\
- 	: "cc");							\
- }
- 
--#define ATOMIC64_OP_RETURN(op, asm_op)					\
--static __inline__ long atomic64_##op##_return(long a, atomic64_t *v)	\
-+#define ATOMIC64_OP_RETURN_RELAXED(op, asm_op)				\
-+static inline long							\
-+atomic64_##op##_return_relaxed(long a, atomic64_t *v)			\
- {									\
- 	long t;								\
- 									\
- 	__asm__ __volatile__(						\
--	PPC_ATOMIC_ENTRY_BARRIER					\
--"1:	ldarx	%0,0,%2		# atomic64_" #op "_return\n"		\
--	#asm_op " %0,%1,%0\n"						\
--"	stdcx.	%0,0,%2 \n"						\
-+"1:	ldarx	%0,0,%3		# atomic64_" #op "_return_relaxed\n"	\
-+	#asm_op " %0,%2,%0\n"						\
-+"	stdcx.	%0,0,%3\n"						\
- "	bne-	1b\n"							\
--	PPC_ATOMIC_EXIT_BARRIER						\
--	: "=&r" (t)							\
-+	: "=&r" (t), "+m" (v->counter)					\
- 	: "r" (a), "r" (&v->counter)					\
--	: "cc", "memory");						\
-+	: "cc");							\
- 									\
- 	return t;							\
- }
- 
--#define ATOMIC64_OPS(op, asm_op) ATOMIC64_OP(op, asm_op) ATOMIC64_OP_RETURN(op, asm_op)
-+#define ATOMIC64_OPS(op, asm_op)					\
-+	ATOMIC64_OP(op, asm_op)						\
-+	ATOMIC64_OP_RETURN_RELAXED(op, asm_op)
- 
- ATOMIC64_OPS(add, add)
- ATOMIC64_OPS(sub, subf)
-@@ -312,8 +333,11 @@ ATOMIC64_OP(and, and)
- ATOMIC64_OP(or, or)
- ATOMIC64_OP(xor, xor)
- 
--#undef ATOMIC64_OPS
--#undef ATOMIC64_OP_RETURN
-+#define atomic64_add_return_relaxed atomic64_add_return_relaxed
-+#define atomic64_sub_return_relaxed atomic64_sub_return_relaxed
-+
-+#undef ATOPIC64_OPS
-+#undef ATOMIC64_OP_RETURN_RELAXED
- #undef ATOMIC64_OP
- 
- #define atomic64_add_negative(a, v)	(atomic64_add_return((a), (v)) < 0)
-@@ -332,20 +356,18 @@ static __inline__ void atomic64_inc(atomic64_t *v)
- 	: "cc", "xer");
- }
- 
--static __inline__ long atomic64_inc_return(atomic64_t *v)
-+static __inline__ long atomic64_inc_return_relaxed(atomic64_t *v)
- {
- 	long t;
- 
- 	__asm__ __volatile__(
--	PPC_ATOMIC_ENTRY_BARRIER
--"1:	ldarx	%0,0,%1		# atomic64_inc_return\n\
--	addic	%0,%0,1\n\
--	stdcx.	%0,0,%1 \n\
--	bne-	1b"
--	PPC_ATOMIC_EXIT_BARRIER
--	: "=&r" (t)
-+"1:	ldarx	%0,0,%2		# atomic64_inc_return_relaxed\n"
-+"	addic	%0,%0,1\n"
-+"	stdcx.	%0,0,%2\n"
-+"	bne-	1b"
-+	: "=&r" (t), "+m" (v->counter)
- 	: "r" (&v->counter)
--	: "cc", "xer", "memory");
-+	: "cc", "xer");
- 
- 	return t;
- }
-@@ -374,24 +396,25 @@ static __inline__ void atomic64_dec(atomic64_t *v)
- 	: "cc", "xer");
- }
- 
--static __inline__ long atomic64_dec_return(atomic64_t *v)
-+static __inline__ long atomic64_dec_return_relaxed(atomic64_t *v)
- {
- 	long t;
- 
- 	__asm__ __volatile__(
--	PPC_ATOMIC_ENTRY_BARRIER
--"1:	ldarx	%0,0,%1		# atomic64_dec_return\n\
--	addic	%0,%0,-1\n\
--	stdcx.	%0,0,%1\n\
--	bne-	1b"
--	PPC_ATOMIC_EXIT_BARRIER
--	: "=&r" (t)
-+"1:	ldarx	%0,0,%2		# atomic64_dec_return_relaxed\n"
-+"	addic	%0,%0,-1\n"
-+"	stdcx.	%0,0,%2\n"
-+"	bne-	1b"
-+	: "=&r" (t), "+m" (v->counter)
- 	: "r" (&v->counter)
--	: "cc", "xer", "memory");
-+	: "cc", "xer");
- 
- 	return t;
- }
- 
-+#define atomic64_inc_return_relaxed atomic64_inc_return_relaxed
-+#define atomic64_dec_return_relaxed atomic64_dec_return_relaxed
-+
- #define atomic64_sub_and_test(a, v)	(atomic64_sub_return((a), (v)) == 0)
- #define atomic64_dec_and_test(v)	(atomic64_dec_return((v)) == 0)
- 
 -- 
-2.6.4
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
