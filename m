@@ -1,24 +1,44 @@
-Return-Path: <jolsa@redhat.com>
+Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 371731A127F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jan 2016 04:44:59 +1100 (AEDT)
-Date: Wed, 6 Jan 2016 18:44:53 +0100
-From: Jiri Olsa <jolsa@redhat.com>
-To: Anju T <anju@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, khandual@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- maddy@linux.vnet.ibm.com, dsahern@gmail.com, hemant@linux.vnet.ibm.com,
- naveen.n.rao@linux.vnet.ibm.com, acme@redhat.com,
- sukadev@linux.vnet.ibm.com
-Subject: Re: [PATCH V7 3/4] tools/perf: Map the ID values with register names
-Message-ID: <20160106174453.GB30771@krava.brq.redhat.com>
-References: <1452073551-13737-1-git-send-email-anju@linux.vnet.ibm.com>
- <1452073551-13737-4-git-send-email-anju@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D2691A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jan 2016 07:24:07 +1100 (AEDT)
+Date: Wed, 6 Jan 2016 22:23:51 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
+ linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-metag@vger.kernel.org,
+ linux-mips@linux-mips.org, x86@kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@kernel.org>,
+ Davidlohr Bueso <dave@stgolabs.net>,
+ Andrey Konovalov <andreyknvl@google.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 15/32] powerpc: define __smp_xxx
+Message-ID: <20160106222337-mutt-send-email-mst@redhat.com>
+References: <1451572003-2440-1-git-send-email-mst@redhat.com>
+ <1451572003-2440-16-git-send-email-mst@redhat.com>
+ <20160105013648.GA1256@fixme-laptop.cn.ibm.com>
+ <20160105085117.GA11858@redhat.com>
+ <20160105095341.GA5321@fixme-laptop.cn.ibm.com>
+ <20160105180938-mutt-send-email-mst@redhat.com>
+ <20160106015152.GA14605@fixme-laptop.cn.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1452073551-13737-4-git-send-email-anju@linux.vnet.ibm.com>
+In-Reply-To: <20160106015152.GA14605@fixme-laptop.cn.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +48,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 06, 2016 at 03:15:50PM +0530, Anju T wrote:
+On Wed, Jan 06, 2016 at 09:51:52AM +0800, Boqun Feng wrote:
+> On Tue, Jan 05, 2016 at 06:16:48PM +0200, Michael S. Tsirkin wrote:
+> [snip]
+> > > > > Another thing is that smp_lwsync() may have a third user(other than
+> > > > > smp_load_acquire() and smp_store_release()):
+> > > > > 
+> > > > > http://article.gmane.org/gmane.linux.ports.ppc.embedded/89877
+> > > > > 
+> > > > > I'm OK to change my patch accordingly, but do we really want
+> > > > > smp_lwsync() get involved in this cleanup? If I understand you
+> > > > > correctly, this cleanup focuses on external API like smp_{r,w,}mb(),
+> > > > > while smp_lwsync() is internal to PPC.
+> > > > > 
+> > > > > Regards,
+> > > > > Boqun
+> > > > 
+> > > > I think you missed the leading ___ :)
+> > > > 
+> > > 
+> > > What I mean here was smp_lwsync() was originally internal to PPC, but
+> > > never mind ;-)
+> > > 
+> > > > smp_store_release is external and it needs __smp_lwsync as
+> > > > defined here.
+> > > > 
+> > > > I can duplicate some code and have smp_lwsync *not* call __smp_lwsync
+> > > 
+> > > You mean bringing smp_lwsync() back? because I haven't seen you defining
+> > > in asm-generic/barriers.h in previous patches and you just delete it in
+> > > this patch.
+> > > 
+> > > > but why do this? Still, if you prefer it this way,
+> > > > please let me know.
+> > > > 
+> > > 
+> > > I think deleting smp_lwsync() is fine, though I need to change atomic
+> > > variants patches on PPC because of it ;-/
+> > > 
+> > > Regards,
+> > > Boqun
+> > 
+> > Sorry, I don't understand - why do you have to do anything?
+> > I changed all users of smp_lwsync so they
+> > use __smp_lwsync on SMP and barrier() on !SMP.
+> > 
+> > This is exactly the current behaviour, I also tested that
+> > generated code does not change at all.
+> > 
+> > Is there a patch in your tree that conflicts with this?
+> > 
+> 
+> Because in a patchset which implements atomic relaxed/acquire/release
+> variants on PPC I use smp_lwsync(), this makes it have another user,
+> please see this mail:
+> 
+> http://article.gmane.org/gmane.linux.ports.ppc.embedded/89877
+> 
+> in definition of PPC's __atomic_op_release().
+> 
+> 
+> But I think removing smp_lwsync() is a good idea and actually I think we
+> can go further to remove __smp_lwsync() and let __smp_load_acquire and
+> __smp_store_release call __lwsync() directly, but that is another thing.
+> 
+> Anyway, I will modify my patch.
+> 
+> Regards,
+> Boqun
 
-SNIP
 
-> +	[PERF_REG_POWERPC_GPR28] = "gpr28",
-> +	[PERF_REG_POWERPC_GPR29] = "gpr29",
-> +	[PERF_REG_POWERPC_GPR30] = "gpr30",
-> +	[PERF_REG_POWERPC_GPR31] = "gpr31",
-> +	[PERF_REG_POWERPC_NIP] = "nip",
-> +	[PERF_REG_POWERPC_MSR] = "msr",
-> +	[PERF_REG_POWERPC_ORIG_R3] = "orig_r3",
-> +	[PERF_REG_POWERPC_CTR] = "ctr",
-> +	[PERF_REG_POWERPC_LNK] = "lnk",
-> +	[PERF_REG_POWERPC_XER] = "xer",
-> +	[PERF_REG_POWERPC_CCR] = "ccr",
-> +	[PERF_REG_POWERPC_TRAP] = "trap",
-> +	[PERF_REG_POWERPC_DAR] = "dar",
-> +	[PERF_REG_POWERPC_DSISR] = "dsisr"
-> +};
-> +
-> +static inline const char *perf_reg_name(int id)
-> +{
-> +
+Thanks!
+Could you send an ack then please?
 
-extra line ^^^ ;-)
-
-> +	return reg_names[id];
-> +}
-> +#endif /* ARCH_PERF_REGS_H */
-> diff --git a/tools/perf/config/Makefile b/tools/perf/config/Makefile
-
-jirka
+> > 
+> > > > > >  	WRITE_ONCE(*p, v);						\
+> > > > > >  } while (0)
+> > > > > >  
+> > > > > > -#define smp_load_acquire(p)						\
+> > > > > > +#define __smp_load_acquire(p)						\
+> > > > > >  ({									\
+> > > > > >  	typeof(*p) ___p1 = READ_ONCE(*p);				\
+> > > > > >  	compiletime_assert_atomic_type(*p);				\
+> > > > > > -	smp_lwsync();							\
+> > > > > > +	__smp_lwsync();							\
+> > > > > >  	___p1;								\
+> > > > > >  })
+> > > > > >  
+> > > > > > -- 
+> > > > > > MST
+> > > > > > 
+> > > > > > --
+> > > > > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > > > > > the body of a message to majordomo@vger.kernel.org
+> > > > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > > > > Please read the FAQ at  http://www.tux.org/lkml/
