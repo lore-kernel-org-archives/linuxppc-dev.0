@@ -1,25 +1,26 @@
-Return-Path: <computersforpeace@gmail.com>
-Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
- [IPv6:2607:f8b0:400e:c03::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D72D51A0202
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 07:45:24 +1100 (AEDT)
-Received: by mail-pa0-x22e.google.com with SMTP id cy9so267280621pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jan 2016 12:45:24 -0800 (PST)
-Date: Thu, 7 Jan 2016 12:45:20 -0800
-From: Brian Norris <computersforpeace@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
-Subject: Re: [PATCH] mtd: nand: add FSL_SOC dependency to drivers using FSL_LBC
-Message-ID: <20160107204520.GK109450@google.com>
-References: <1452194501-115280-1-git-send-email-computersforpeace@gmail.com>
- <1452196053.19133.23.camel@freescale.com>
- <20160107203418.GJ109450@google.com>
- <1452199237.19133.26.camel@freescale.com>
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 07C261A02D2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 08:23:10 +1100 (AEDT)
+Date: Thu, 7 Jan 2016 18:23:03 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Jiri Olsa <jolsa@kernel.org>
+Cc: "Wangnan (F)" <wangnan0@huawei.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sukadev@linux.vnet.ibm.com
+Subject: Re: [PATCH v4] perf: bpf: Fix build breakage due to libbpf
+Message-ID: <20160107212303.GI18457@kernel.org>
+References: <1450150557-127942-4-git-send-email-wangnan0@huawei.com>
+ <1450169473-137129-1-git-send-email-wangnan0@huawei.com>
+ <20151215114046.GG23726@naverao1-tp.in.ibm.com>
+ <20151216194234.GA19926@kernel.org> <56720FFB.5060407@huawei.com>
+ <20151217050714.GB21524@naverao1-tp.ibm.com>
+ <20151217121939.GH19926@kernel.org>
+ <20160107065709.GA2459@naverao1-tp.ibm.com>
+ <20160107203957.GG18457@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1452199237.19133.26.camel@freescale.com>
+In-Reply-To: <20160107203957.GG18457@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +30,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+Em Thu, Jan 07, 2016 at 05:39:57PM -0300, Arnaldo Carvalho de Melo escreveu:
+> Em Thu, Jan 07, 2016 at 12:28:15PM +0530, Naveen N. Rao escreveu:
+> > Can you please push at least the initial 3 patches of this for v4.4?  
+> > Wang Nan has posted v6 here:
+> > http://thread.gmane.org/gmane.linux.kernel/2110626
+ 
+> So I tried it again today, from the v6, the latest patch with that
+> subject line in my inbox, and I get this, after applying the first three
+> patches:
+ 
+> [acme@zoo linux]$ make -C tools clean > /dev/null
+> [acme@zoo linux]$ make -C tools/perf build-test
+> make: Entering directory '/home/git/linux/tools/perf'
+> Testing Makefile
+> tests/make:15: /scripts/Makefile.arch: No such file or directory
+> make[2]: *** No rule to make target '/scripts/Makefile.arch'.  Stop.
+> tests/make:5: recipe for target 'all' failed
+> make[1]: *** [all] Error 2
+> Makefile:81: recipe for target 'build-test' failed
+> make: *** [build-test] Error 2
+> make: Leaving directory '/home/git/linux/tools/perf'
+> [acme@zoo linux]$
 
-On Thu, Jan 07, 2016 at 02:40:37PM -0600, Scott Wood wrote:
-> On Thu, 2016-01-07 at 12:34 -0800, Brian Norris wrote:
-> > On Thu, Jan 07, 2016 at 01:47:33PM -0600, Scott Wood wrote:
-> > > On Thu, 2016-01-07 at 11:21 -0800, Brian Norris wrote:
-> > > > I've managed to construct .config files (for ppc64) that come across
-> > > > this Kconfig warning:
-> > > > 
-> > > >   warning: (MPC836x_RDK && MTD_NAND_FSL_ELBC && MTD_NAND_FSL_UPM)
-> > > > selects
-> > > > FSL_LBC which has unmet direct dependencies (FSL_SOC)
-> > > > 
-> > > > Let's add the FSL_SOC dependency to the NAND drivers. AFAICT, they are
-> > > > only supported on PPC32 FSL SoCs anyway.
-> > > 
-> > > There are other problems, if you can enable an 83xx board on ppc64. 
-> > >  PPC_83xx
-> > > does select FSL_SOC so I don't know why it's unmet.
-> > 
-> > I don't have an 83xx board enabled. I just have MTD_NAND_FSL_ELBC
-> > enabled; it only depends on PPC right now. Attaching the current test
-> > .config, for clarity.
-> 
-> Where did MPC836x_RDK come from above?
+> Trying to figure this out...
 
-I believe that Kconfig warning is misleading. Seems like it should be
-saying '||' instead of '&&'. I did not have MPC836x_RDK or
-MTD_NAND_FSL_UPM in my .config; only MTD_NAND_FSL_ELBC=y. (Check the
-attachment from my previous mail to be sure.)
+So, this doesn't seem to have been tessted, this part, specifically:
 
-Regards,
-Brian
+diff --git a/tools/perf/tests/make b/tools/perf/tests/make
+index 8ea3dffc5065..cd9c3ce1a5c2 100644
+--- a/tools/perf/tests/make
++++ b/tools/perf/tests/make
+@@ -12,7 +12,7 @@ endif
+ else
+ PERF := .
+ 
+-include config/Makefile.arch
++include $(srctree)/scripts/Makefile.arch
+ 
+ # FIXME looks like x86 is the only arch running tests ;-)
+ # we need some IS_(32/64) flag to make this generic
+
+
+----------------------------------------------------
+
+Because $(srctree) is not set at that point, I copied the needed bits from
+tools/perf/Makefile.perf and got the patch below, which makes:L
+
+  make -C tools/perf build-test
+
+Work for me again.
+
+This should wrap up the day nicely, making me think of Jens Axboe recent
+cool reaction to an untested patch:
+
+http://lkml.kernel.org/r/5661C2BC.9030007@kernel.dk
+
+:-)
+
+Jiri, are you ok with the patch below, on top of the second patch in
+Wang's series, that you acked?
+
+- Arnaldo
+
+diff --git a/tools/perf/tests/make b/tools/perf/tests/make
+index cd9c3ce1a5c2..377654f862ec 100644
+--- a/tools/perf/tests/make
++++ b/tools/perf/tests/make
+@@ -1,3 +1,5 @@
++include ../scripts/Makefile.include
++
+ ifndef MK
+ ifeq ($(MAKECMDGOALS),)
+ # no target specified, trigger the whole suite
+@@ -12,7 +14,19 @@ endif
+ else
+ PERF := .
+ 
+-include $(srctree)/scripts/Makefile.arch
++# As per kernel Makefile, avoid funny character set dependencies
++unexport LC_ALL
++LC_COLLATE=C
++LC_NUMERIC=C
++export LC_COLLATE LC_NUMERIC
++
++ifeq ($(srctree),)
++srctree := $(patsubst %/,%,$(dir $(shell pwd)))
++srctree := $(patsubst %/,%,$(dir $(srctree)))
++#$(info Determined 'srctree' to be $(srctree))
++endif
++
++include $(srctree)/tools/scripts/Makefile.arch
+ 
+ # FIXME looks like x86 is the only arch running tests ;-)
+ # we need some IS_(32/64) flag to make this generic
