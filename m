@@ -1,24 +1,26 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c03::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EBF8A1A0202
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 09:47:45 +1100 (AEDT)
-Date: Thu, 7 Jan 2016 14:47:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: John Allen <jallen@linux.vnet.ibm.com>
-Cc: gregkh@linuxfoundation.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, Dave Hansen
- <dave.hansen@intel.com>
-Subject: Re: [PATCH v4] memory-hotplug: Fix kernel warning during memory
- hotplug on ppc64
-Message-Id: <20160107144743.452a52299965027a27d7f66c@linux-foundation.org>
-In-Reply-To: <568D9568.1010808@linux.vnet.ibm.com>
-References: <568D9568.1010808@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 781251A0202
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 09:52:00 +1100 (AEDT)
+Received: by mail-pa0-x22e.google.com with SMTP id cy9so270588232pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jan 2016 14:52:00 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
+Cc: Brian Norris <computersforpeace@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Michal Marek <mmarek@suse.com>, Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: Build failure: -Wno-unused-const-variable DNE on old GCC
+In-Reply-To: <10821353.mAlCTdTQBC@wuerfel>
+References: <20160107185406.GA65420@google.com> <10821353.mAlCTdTQBC@wuerfel>
+Date: Fri, 08 Jan 2016 09:51:35 +1100
+Message-ID: <87oacx6m14.fsf@gamma.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,100 +30,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 6 Jan 2016 16:30:00 -0600 John Allen <jallen@linux.vnet.ibm.com> wrote:
+--=-=-=
+Content-Type: text/plain
 
-> This patch fixes a bug where a kernel warning is triggered when performing
-> a memory hotplug on ppc64. This warning may also occur on any architecture
-> that uses the memory_probe_store interface.
+Hi Arnd,
 
-(cc's added).
+Thanks for your patch.
+Acked-by: Daniel Axtens <dja@axtens.net>
 
-Dave, could you please review this?  Thanks.
+> Alternatively, remove the -Werror. We occasionally get people that add this
+> flag to a Makefile, but it tends to cause more trouble whenever a new
+> gcc version arrives.
 
+Speaking up as the person who added -Werror to cxl, I'd really rather
+it stayed. There are a number of reasons I think this. Here's the first
+three that came to mind.
 
-From: John Allen <jallen@linux.vnet.ibm.com>
-Subject: drivers/base/memory.c: fix kernel warning during memory hotplug on ppc64
+ - cxl is powerpc specific (and always will be for deep seated hardware
+   reasons), and is handled through the powerpc tree. arch/powerpc
+   compiles with -Werror, and as part of the powerpc ecosystem, cxl
+   should too.
 
-Fix a bug where a kernel warning is triggered when performing a memory
-hotplug on ppc64.  This warning may also occur on any architecture that
-uses the memory_probe_store interface.
+ - It forces cxl developers to a higher standard. cxl has already had
+   more than it's fair share of incredibly difficult to debug issues,
+   so any way we can reduce the risk of errors going in makes our lives
+   (and our end-users lives) better.
 
-WARNING: at drivers/base/memory.c:200
-CPU: 9 PID: 13042 Comm: systemd-udevd Not tainted 4.4.0-rc4-00113-g0bd0f1e-dirty #7
-NIP [c00000000055e034] pages_correctly_reserved+0x134/0x1b0
-LR [c00000000055e7f8] memory_subsys_online+0x68/0x140
-Call Trace:
-[c0000000fa9e7b50] [c0000000fa9e7b90] 0xc0000000fa9e7b90 (unreliable)
-[c0000000fa9e7bb0] [c00000000055e7f8] memory_subsys_online+0x68/0x140
-[c0000000fa9e7bf0] [c000000000540064] device_online+0xb4/0x120
-[c0000000fa9e7c30] [c00000000055e6c0] store_mem_state+0xb0/0x180
-[c0000000fa9e7c70] [c00000000053c5e4] dev_attr_store+0x34/0x60
-[c0000000fa9e7c90] [c0000000002db0a4] sysfs_kf_write+0x64/0xa0
-[c0000000fa9e7cb0] [c0000000002da0cc] kernfs_fop_write+0x17c/0x1e0
-[c0000000fa9e7d00] [c0000000002481b0] __vfs_write+0x40/0x160
-[c0000000fa9e7d90] [c000000000248ce8] vfs_write+0xb8/0x200
-[c0000000fa9e7de0] [c000000000249b40] SyS_write+0x60/0x110
-[c0000000fa9e7e30] [c000000000009260] system_call+0x38/0xd0
+ - I am (and I'm quite confident the other cxl people are) quite happy to
+   send patches to fix build-breaking issues such as this. Indeed, I
+   would have, except you sent it during the Australian night :)
 
-The warning is triggered because there is a udev rule that automatically
-tries to online memory after it has been added.  The udev rule varies from
-distro to distro, but will generally look something like:
+If it's really super-duper important we can consider putting it behind a
+config guard, but I'd really rather not.
 
-SUBSYSTEM=="memory", ACTION=="add", ATTR{state}=="offline", ATTR{state}="online"
+Regards,
+Daniel
 
-On any architecture that uses memory_probe_store to reserve memory, the
-udev rule will be triggered after the first section of the block is
-reserved and will subsequently attempt to online the entire block,
-interrupting the memory reservation process and causing the warning.  This
-patch modifies memory_probe_store to add a block of memory with a single
-call to add_memory as opposed to looping through and adding each section
-individually.  A single call to add_memory is protected by the mem_hotplug
-mutex which will prevent the udev rule from onlining memory until the
-reservation of the entire block is complete.
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Dave Hansen <dave.hansen@intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: GPGTools - https://gpgtools.org
 
- drivers/base/memory.c |   16 ++++++----------
- 1 file changed, 6 insertions(+), 10 deletions(-)
-
-diff -puN drivers/base/memory.c~memory-hotplug-fix-kernel-warning-during-memory-hotplug-on-ppc64 drivers/base/memory.c
---- a/drivers/base/memory.c~memory-hotplug-fix-kernel-warning-during-memory-hotplug-on-ppc64
-+++ a/drivers/base/memory.c
-@@ -450,8 +450,7 @@ memory_probe_store(struct device *dev, s
- 		   const char *buf, size_t count)
- {
- 	u64 phys_addr;
--	int nid;
--	int i, ret;
-+	int nid, ret;
- 	unsigned long pages_per_block = PAGES_PER_SECTION * sections_per_block;
- 
- 	ret = kstrtoull(buf, 0, &phys_addr);
-@@ -461,15 +460,12 @@ memory_probe_store(struct device *dev, s
- 	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
- 		return -EINVAL;
- 
--	for (i = 0; i < sections_per_block; i++) {
--		nid = memory_add_physaddr_to_nid(phys_addr);
--		ret = add_memory(nid, phys_addr,
--				 PAGES_PER_SECTION << PAGE_SHIFT);
--		if (ret)
--			goto out;
-+	nid = memory_add_physaddr_to_nid(phys_addr);
-+	ret = add_memory(nid, phys_addr,
-+			 MIN_MEMORY_BLOCK_SIZE * sections_per_block);
- 
--		phys_addr += MIN_MEMORY_BLOCK_SIZE;
--	}
-+	if (ret)
-+		goto out;
- 
- 	ret = count;
- out:
-_
+iQIcBAEBCgAGBQJWjuv5AAoJEPC3R3P2I92FkEUQAKJlmQyzcyuOit3ezRC5c7iC
+dAbOw8D/5Z29bN3GV1IQe5PykF3jKC/u8EVZXTt08xOHyoUW2LxZ2mWpySX/Oc1d
+JBzTIJ5lBwMbV1ilwmSfXHFqqeeoPLEjuQKjCZGaPNclUUZWPJmequGIYdtvwqDD
+T9Kvv6ly2OMF2Cc41kjbXdiGwjgtbxHjoYFCq+saezlc1dPbWl+JB50Du9rkL6HN
+VmU6IHiTA7EIzBHcjTw7FXFfVPCDjKndLymw81WFa6541NEdEej3tYxKeLgHSkd9
+9xz89J2hbD4UQ9jQyDLEPA0jJ5XODtI4rJyV//LxL/HEVqXl4hyPtpNoSx7izsHY
+zfSbZvtDer/Yx0EIRSSQfbiR2rfzHks1+bbP/Li8kzyhvKVf9VNT5Q+ncmDPdtk6
+9RZc/MpDR5qJQ+Joq3tiLTsbJxctObQt/aNTmf0FWZLZiU3eu4KwXEHCDcWLLz4z
+YqxztssilW7WumMGf13N3WwB5bxitm4il51UzzdiWSPvVW+1FVbfydgNP/1VUWJm
+kuYQHjJy9mA5TZMM5kWev3LEGQXwKYwj5bXd5B7tpz3wcD+HsFy64T/3OQTEupy+
+VVf/PNQWztrXZj2qkTCCB+2uY3+ebIq6zMuVCZ2SJrFgWUGgjoMr/RYqTwNIPsbj
+aPZpFUeroq+sKwEQ6dPq
+=4hn7
+-----END PGP SIGNATURE-----
+--=-=-=--
