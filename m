@@ -1,21 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CC63F1A00E9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jan 2016 21:30:57 +1100 (AEDT)
-Message-ID: <1452162650.5826.2.camel@ellerman.id.au>
-Subject: Re: linux-next: build failure after merge of the powerpc tree
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Michael
- Neuling <mikey@neuling.org>
-Date: Thu, 07 Jan 2016 21:30:50 +1100
-In-Reply-To: <20160107191613.0228560b@canb.auug.org.au>
-References: <20160107191613.0228560b@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 1554A1A00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 03:08:12 +1100 (AEDT)
+Date: Thu, 7 Jan 2016 13:08:07 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: "Wangnan (F)" <wangnan0@huawei.com>, jolsa@redhat.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sukadev@linux.vnet.ibm.com
+Subject: Re: [PATCH v4] perf: bpf: Fix build breakage due to libbpf
+Message-ID: <20160107160807.GC18457@kernel.org>
+References: <1450150557-127942-4-git-send-email-wangnan0@huawei.com>
+ <1450169473-137129-1-git-send-email-wangnan0@huawei.com>
+ <20151215114046.GG23726@naverao1-tp.in.ibm.com>
+ <20151216194234.GA19926@kernel.org> <56720FFB.5060407@huawei.com>
+ <20151217050714.GB21524@naverao1-tp.ibm.com>
+ <20151217121939.GH19926@kernel.org>
+ <20160107065709.GA2459@naverao1-tp.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160107065709.GA2459@naverao1-tp.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,34 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-01-07 at 19:16 +1100, Stephen Rothwell wrote:
-> Hi all,
+Em Thu, Jan 07, 2016 at 12:28:15PM +0530, Naveen N. Rao escreveu:
+> On 2015/12/17 09:19AM, Arnaldo Carvalho de Melo wrote:
+> > Em Thu, Dec 17, 2015 at 10:37:14AM +0530, Naveen N. Rao escreveu:
+> > > On 2015/12/17 09:29AM, Wang Nan wrote:
+> > > > The whole thread is:
+> > > > 
+> > > > [PATCH v3 0/3] perf build: PowerPC: Fix build breakage due to libbpf:
+> > > > http://lkml.kernel.org/g/1450150557-127942-1-git-send-email-wangnan0@huawei.com
+> > > > 
+> > > > [PATCH v3 1/3] perf tools: Fix PowerPC native building
+> > > > http://lkml.kernel.org/g/1450150557-127942-2-git-send-email-wangnan0@huawei.com
+> > > > 
+> > > > [PATCH v3 2/3] tools: Move Makefile.arch from perf/config to tools/scripts
+> > > > http://lkml.kernel.org/g/1450150557-127942-3-git-send-email-wangnan0@huawei.com
+> > > > 
+> > > > [PATCH v3 3/3] perf: bpf: Fix build breakage due to libbpf
+> > > > http://lkml.kernel.org/g/1450150557-127942-4-git-send-email-wangnan0@huawei.com
+> > > > 
+> > > > and [PATCH v3 3/3] breaks local building because the usage of "srctree", and
+> > 	     ^^
+> > > You mean v4 here.
+> > 
+> > > Anyway, now that you've sent v4, it should be much clearer.
+> > 
+> > Right, I should've read it more thoroughly, but anyway, I'll process it
+> > today.
 > 
-> After merging the powerpc tree, today's linux-next build (powerpc64
-> allnoconfig) failed like this:
+> Bump.
 > 
-> arch/powerpc/mm/hash_utils_64.c: In function 'get_paca_psize':
-> arch/powerpc/mm/hash_utils_64.c:869:19: error: 'struct paca_struct' has no member named 'context'
->   return get_paca()->context.user_psize;
->                    ^
-> arch/powerpc/mm/hash_utils_64.c:870:1: error: control reaches end of non-void function [-Werror=return-type]
->  }
->  ^
+> Arnaldo,
+> Can you please push at least the initial 3 patches of this for v4.4?  
+
+Sure, I'll try to do that now.
+
+> Wang Nan has posted v6 here:
+> http://thread.gmane.org/gmane.linux.kernel/2110626
+
+And process the other patches in this series, in perf/core.
+
 > 
-> Caused by commit
 > 
->   2fc251a8dda5 ("powerpc: Copy only required pieces of the mm_context_t to the paca")
-
-Well that's rather embarrassing, for Mikey ;D
-
-> This build has CONFIG_PPC_MM_SLICES not set ...
-
-Ugh, but it would seem none of our defconfigs do :/
-
-> I have applied the following patch for today:
-
-Thanks.
-
-I'll merge it or something similar once I get a chance to test it.
-
-cheers
+> Thanks,
+> Naveen
