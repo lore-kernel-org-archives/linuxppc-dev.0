@@ -1,37 +1,48 @@
-Return-Path: <jallen@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c03::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F6471A029B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jan 2016 09:30:35 +1100 (AEDT)
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.vnet.ibm.com>;
- Wed, 6 Jan 2016 15:30:31 -0700
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 7773C3E40044
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jan 2016 15:30:04 -0700 (MST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u06MU4KH25493504
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jan 2016 22:30:04 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u06MU3gj025322
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jan 2016 17:30:03 -0500
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, akpm@linux-foundation.org,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-From: John Allen <jallen@linux.vnet.ibm.com>
-Subject: [PATCH v4] memory-hotplug: Fix kernel warning during memory hotplug
- on ppc64
-To: gregkh@linuxfoundation.org
-Message-ID: <568D9568.1010808@linux.vnet.ibm.com>
-Date: Wed, 6 Jan 2016 16:30:00 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 72B3B1A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jan 2016 11:44:34 +1100 (AEDT)
+Received: by mail-pa0-x22b.google.com with SMTP id uo6so225480527pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jan 2016 16:44:34 -0800 (PST)
+Date: Thu, 7 Jan 2016 08:43:56 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
+ x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Ingo Molnar <mingo@kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ Andrey Konovalov <andreyknvl@google.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 15/32] powerpc: define __smp_xxx
+Message-ID: <20160107004356.GB14605@fixme-laptop.cn.ibm.com>
+References: <1451572003-2440-1-git-send-email-mst@redhat.com>
+ <1451572003-2440-16-git-send-email-mst@redhat.com>
+ <20160105013648.GA1256@fixme-laptop.cn.ibm.com>
+ <20160105085117.GA11858@redhat.com>
+ <20160105095341.GA5321@fixme-laptop.cn.ibm.com>
+ <20160105180938-mutt-send-email-mst@redhat.com>
+ <20160106015152.GA14605@fixme-laptop.cn.ibm.com>
+ <20160106222337-mutt-send-email-mst@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="/04w6evG8XlLl3ft"
+In-Reply-To: <20160106222337-mutt-send-email-mst@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,85 +52,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes a bug where a kernel warning is triggered when performing
-a memory hotplug on ppc64. This warning may also occur on any architecture
-that uses the memory_probe_store interface.
 
-WARNING: at drivers/base/memory.c:200
-CPU: 9 PID: 13042 Comm: systemd-udevd Not tainted 4.4.0-rc4-00113-g0bd0f1e-dirty #7
-NIP [c00000000055e034] pages_correctly_reserved+0x134/0x1b0
-LR [c00000000055e7f8] memory_subsys_online+0x68/0x140
-Call Trace:
-[c0000000fa9e7b50] [c0000000fa9e7b90] 0xc0000000fa9e7b90 (unreliable)
-[c0000000fa9e7bb0] [c00000000055e7f8] memory_subsys_online+0x68/0x140
-[c0000000fa9e7bf0] [c000000000540064] device_online+0xb4/0x120
-[c0000000fa9e7c30] [c00000000055e6c0] store_mem_state+0xb0/0x180
-[c0000000fa9e7c70] [c00000000053c5e4] dev_attr_store+0x34/0x60
-[c0000000fa9e7c90] [c0000000002db0a4] sysfs_kf_write+0x64/0xa0
-[c0000000fa9e7cb0] [c0000000002da0cc] kernfs_fop_write+0x17c/0x1e0
-[c0000000fa9e7d00] [c0000000002481b0] __vfs_write+0x40/0x160
-[c0000000fa9e7d90] [c000000000248ce8] vfs_write+0xb8/0x200
-[c0000000fa9e7de0] [c000000000249b40] SyS_write+0x60/0x110
-[c0000000fa9e7e30] [c000000000009260] system_call+0x38/0xd0
+--/04w6evG8XlLl3ft
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The warning is triggered because there is a udev rule that automatically
-tries to online memory after it has been added. The udev rule varies from
-distro to distro, but will generally look something like:
+On Wed, Jan 06, 2016 at 10:23:51PM +0200, Michael S. Tsirkin wrote:
+[...]
+> > >=20
+> > > Sorry, I don't understand - why do you have to do anything?
+> > > I changed all users of smp_lwsync so they
+> > > use __smp_lwsync on SMP and barrier() on !SMP.
+> > >=20
+> > > This is exactly the current behaviour, I also tested that
+> > > generated code does not change at all.
+> > >=20
+> > > Is there a patch in your tree that conflicts with this?
+> > >=20
+> >=20
+> > Because in a patchset which implements atomic relaxed/acquire/release
+> > variants on PPC I use smp_lwsync(), this makes it have another user,
+> > please see this mail:
+> >=20
+> > http://article.gmane.org/gmane.linux.ports.ppc.embedded/89877
+> >=20
+> > in definition of PPC's __atomic_op_release().
+> >=20
+> >=20
+> > But I think removing smp_lwsync() is a good idea and actually I think we
+> > can go further to remove __smp_lwsync() and let __smp_load_acquire and
+> > __smp_store_release call __lwsync() directly, but that is another thing.
+> >=20
+> > Anyway, I will modify my patch.
+> >=20
+> > Regards,
+> > Boqun
+>=20
+>=20
+> Thanks!
+> Could you send an ack then please?
+>=20
 
-SUBSYSTEM=="memory", ACTION=="add", ATTR{state}=="offline", ATTR{state}="online"
+Sure, if you need one from me, feel free to add my ack for this patch:
 
-On any architecture that uses memory_probe_store to reserve memory, the
-udev rule will be triggered after the first section of the block is
-reserved and will subsequently attempt to online the entire block,
-interrupting the memory reservation process and causing the warning.
-This patch modifies memory_probe_store to add a block of memory with
-a single call to add_memory as opposed to looping through and adding
-each section individually. A single call to add_memory is protected by
-the mem_hotplug mutex which will prevent the udev rule from onlining
-memory until the reservation of the entire block is complete.
+Acked-by: Boqun Feng <boqun.feng@gmail.com>
 
-Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
----
-v2: -Move call to unlock_device_hotplug under "out" label
-v3: -Update changelog with trimmed traces from newer kernel
-    -After further testing and reviewing the original purpose of
-     the lock_device_hotplug_sysfs mutex, modified solution to
-     fix the issue by replacing loop that adds memory section
-     by section with a single call to add_memory.
-v4: -Remove unused variable 'i'
+Regards,
+Boqun
 
-diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-index 25425d3..e5c6ff0 100644
---- a/drivers/base/memory.c
-+++ b/drivers/base/memory.c
-@@ -450,8 +450,7 @@ memory_probe_store(struct device *dev, struct device_attribute *attr,
- 		   const char *buf, size_t count)
- {
- 	u64 phys_addr;
--	int nid;
--	int i, ret;
-+	int nid, ret;
- 	unsigned long pages_per_block = PAGES_PER_SECTION * sections_per_block;
+--/04w6evG8XlLl3ft
+Content-Type: application/pgp-signature; name="signature.asc"
 
- 	ret = kstrtoull(buf, 0, &phys_addr);
-@@ -461,15 +460,12 @@ memory_probe_store(struct device *dev, struct device_attribute *attr,
- 	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
- 		return -EINVAL;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
--	for (i = 0; i < sections_per_block; i++) {
--		nid = memory_add_physaddr_to_nid(phys_addr);
--		ret = add_memory(nid, phys_addr,
--				 PAGES_PER_SECTION << PAGE_SHIFT);
--		if (ret)
--			goto out;
-+	nid = memory_add_physaddr_to_nid(phys_addr);
-+	ret = add_memory(nid, phys_addr,
-+			 MIN_MEMORY_BLOCK_SIZE * sections_per_block);
+iQEcBAABCAAGBQJWjbTIAAoJEEl56MO1B/q4Xf8H/A0lM6gsUPNqUU24iHbc5O4j
+qN+FbAuVULCXdZfNW9uS+HG4Oq9VqZZc4rv5QdX6IHzcYKTYAv7+8rEMHmrxV8A/
+mMKfwU07krXlG0IRFhiMpuCzvjAfa0CgPOUHBzGJU5mdrAiM8ymtpa1ofde/uitO
+UaRheer5STPZ2kUzrA0r2hYbtWczy6X7yIxioQbXKeR88AuE8X12Me7X+zl9YoPP
+NnwnzDhEkvj7wzQVgWTyA4fwu051dOtRENtv0k6UugV2bW45SsuLQ9Co3BUh/iK+
+KF/57kaJ9BfOGYF1HAHH10GSkwTyyAsc8SGAQKg6PY/lJsHBDFluEtr98U1ssCA=
+=FLp9
+-----END PGP SIGNATURE-----
 
--		phys_addr += MIN_MEMORY_BLOCK_SIZE;
--	}
-+	if (ret)
-+		goto out;
-
- 	ret = count;
- out:
+--/04w6evG8XlLl3ft--
