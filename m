@@ -1,20 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0116.outbound.protection.outlook.com [157.56.111.116])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4172A1A0202
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 06:47:48 +1100 (AEDT)
-Message-ID: <1452196053.19133.23.camel@freescale.com>
-Subject: Re: [PATCH] mtd: nand: add FSL_SOC dependency to drivers using FSL_LBC
-From: Scott Wood <scottwood@freescale.com>
-To: Brian Norris <computersforpeace@gmail.com>, <linux-mtd@lists.infradead.org>
-CC: <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 7 Jan 2016 13:47:33 -0600
-In-Reply-To: <1452194501-115280-1-git-send-email-computersforpeace@gmail.com>
-References: <1452194501-115280-1-git-send-email-computersforpeace@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id C287E1A0202
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 07:26:22 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Brian Norris <computersforpeace@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Michal Marek <mmarek@suse.com>, Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: Build failure: -Wno-unused-const-variable DNE on old GCC
+Date: Thu, 07 Jan 2016 21:25:51 +0100
+Message-ID: <10821353.mAlCTdTQBC@wuerfel>
+In-Reply-To: <20160107185406.GA65420@google.com>
+References: <20160107185406.GA65420@google.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-01-07 at 11:21 -0800, Brian Norris wrote:
-> I've managed to construct .config files (for ppc64) that come across
-> this Kconfig warning:
+On Thursday 07 January 2016 10:54:06 Brian Norris wrote:
 > 
->   warning: (MPC836x_RDK && MTD_NAND_FSL_ELBC && MTD_NAND_FSL_UPM) selects
-> FSL_LBC which has unmet direct dependencies (FSL_SOC)
+> I'm using a GCC 4.6.3 compiler for some compile tests, and I noticed
+> that commit 2cd55c68c0a4 ("cxl: Fix build failure due to -Wunused-variable
+> behaviour change") breaks my builds, because the
+> -Wno-unused-const-variable doesn't exist on GCC 4.6.3.
 > 
-> Let's add the FSL_SOC dependency to the NAND drivers. AFAICT, they are
-> only supported on PPC32 FSL SoCs anyway.
+>   drivers/misc/cxl/base.c: At top level:
+>   cc1: error: unrecognized command line option "-Wno-unused-const-variable" [-Werror]
+> 
+> Any thoughts on how to best fix this? I'd like not to have to scrounge
+> up a new cross compiler just for build tests.
+> 
 
-There are other problems, if you can enable an 83xx board on ppc64.  PPC_83xx
-does select FSL_SOC so I don't know why it's unmet.
+This should do:
 
-FWIW, I think we should instead drop the FSL_SOC dependency from FSL_LBC.  It
-doesn't use anything that I can see from fsl_soc.c.  It's been commonly abused
-as a means for hiding the option on builds for other platforms, but that has
-to stop anyway now that many of these devices are also on ARM-based chips. 
- eLBC isn't, since it was obsoleted by IFC, but it shouldn't be unnecessarily
-different from IFC.  IFC currently depends on FSL_SOC but that needs to go
-away.
+diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
+index 6982f603fadc..add2cc17ed91 100644
+--- a/drivers/misc/cxl/Makefile
++++ b/drivers/misc/cxl/Makefile
+@@ -1,4 +1,4 @@
+-ccflags-y := -Werror -Wno-unused-const-variable
++ccflags-y := -Werror $(call cc-disable-warning,unused-const-variable)
+ 
+ cxl-y				+= main.o file.o irq.o fault.o native.o
+ cxl-y				+= context.o sysfs.o debugfs.o pci.o trace.o
 
--Scott
+
+Alternatively, remove the -Werror. We occasionally get people that add this
+flag to a Makefile, but it tends to cause more trouble whenever a new
+gcc version arrives.
+
+	Arnd
