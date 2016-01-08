@@ -1,24 +1,24 @@
 Return-Path: <anju@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 724D71A01E3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 22:14:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id ECBFD1A09F5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 22:14:19 +1100 (AEDT)
 Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Fri, 8 Jan 2016 16:44:08 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 2953B394005A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 16:44:06 +0530 (IST)
+ Fri, 8 Jan 2016 16:44:17 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id B91EBE0054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 16:45:28 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u08BE4PG2097416
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jan 2016 16:44:05 +0530
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u08BE4cT65994980
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jan 2016 16:44:06 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u08BE3nO006314
+ u08BE3xl006294
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jan 2016 16:44:04 +0530
 From: Anju T <anju@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
@@ -27,11 +27,10 @@ Cc: khandual@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
  hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
  anju@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V9 3/4] tools/perf: Map the ID values with register names
-Date: Fri,  8 Jan 2016 16:44:02 +0530
-Message-Id: <1452251643-17769-4-git-send-email-anju@linux.vnet.ibm.com>
-In-Reply-To: <1452251643-17769-1-git-send-email-anju@linux.vnet.ibm.com>
-References: <1452251643-17769-1-git-send-email-anju@linux.vnet.ibm.com>
+Subject: [PATCH V9 0/4] perf/powerpc: Add ability to sample intr machine state
+ in powerpc
+Date: Fri,  8 Jan 2016 16:43:59 +0530
+Message-Id: <1452251643-17769-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,17 +40,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Map ID values with corresponding register names. These names are then
-displayed when user issues perf record with the -I option
-followed by perf report/script with -D option.
+This short patch series adds the ability to sample the interrupted
+machine state for each hardware sample.
 
 To test this patchset,
 Eg:
 
+$ perf record -I?       # list supported registers
+
+output:
+
+available registers: gpr0 gpr1 gpr2 gpr3 gpr4 gpr5 gpr6 gpr7 gpr8 gpr9 gpr10 gpr11 gpr12 gpr13 gpr14 gpr15 gpr16 gpr17 gpr18 gpr19 gpr20 gpr21 gpr22 gpr23 gpr24 gpr25 gpr26 gpr27 gpr28 gpr29 gpr30 gpr31 nip msr orig_r3 ctr link xer ccr trap dar dsisr
+usage: perf record [<options>] [<command>]
+or: perf record [<options>] -- <command> [<options>]
+ -I, --intr-regs[=<any register>]
+sample selected machine registers on interrupt, use -I ? to list register names
+
+
 $ perf record -I ls   # record machine state at interrupt
 $ perf script -D      # read the perf.data file
 
-Sample output obtained for this patch / output looks like as follows:
+Samplfdoutput obtained for this patchset/ output looks like as follows:
 
 178329381464 0x138 [0x180]: PERF_RECORD_SAMPLE(IP, 0x1): 7803/7803: 0xc00000000000fd9c period: 1 addr: 0
 ... intr regs: mask 0x3ffffffffff ABI 64-bit
@@ -101,100 +110,75 @@ Sample output obtained for this patch / output looks like as follows:
  ...... dso: /root/.debug/.build-id/d0/eb47b06c0d294143af13c50616f638c2d88658
            :7803  7803   178.329381:          1 cycles:  c00000000000fd9c .arch_local_irq_restore (/boot/vmlinux)
 
+changes from V8:
 
-Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
-Reviewed-by  : Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- tools/perf/arch/powerpc/include/perf_regs.h | 64 +++++++++++++++++++++++++++++
- tools/perf/config/Makefile                  |  5 +++
- 2 files changed, 69 insertions(+)
+- Corrected the indentation issue in the Makefile mentioned in 3rd patch
+
+Changes from V7:
+
+- Addressed the new line issue in 3rd patch.
+
+Changes from V6:
+
+- Corrected the typo in patch  tools/perf: Map the ID values with register names.
+  ie #define PERF_REG_SP  PERF_REG_POWERPC_R1 should be #define PERF_REG_SP   PERF_REG_POWERPC_GPR1
+
+
+Changes from V5:
+
+- Enabled perf_sample_regs_user also in this patch set.Functions added in 
+   arch/powerpc/perf/perf_regs.c
+- Added Maddy's patch to this patchset for enabling -I? option which will
+  list the supported register names.
+
+
+Changes from V4:
+
+- Removed the softe and MQ from all patches
+- Switch case is replaced with an array in the 3rd patch
+
+Changes from V3:
+
+- Addressed the comments by Sukadev regarding the nits in the descriptions.
+- Modified the subject of first patch.
+- Included the sample output in the 3rd patch also.
+
+Changes from V2:
+
+- tools/perf/config/Makefile is moved to the patch tools/perf.
+- The patchset is reordered.
+- perf_regs_load() function is used for the dwarf unwind test.Since it is not required here,
+  it is removed from tools/perf/arch/powerpc/include/perf_regs.h
+- PERF_REGS_POWERPC_RESULT is removed.
+
+Changes from V1:
+
+- Solved the name missmatch issue in the from and signed-off field of the patch series.
+- Added necessary comments in the 3rd patch ie perf/powerpc ,as suggested by Maddy.
+
+
+
+Anju T (3):
+  perf/powerpc: assign an id to each powerpc register
+  perf/powerpc: add support for sampling intr machine state
+  tools/perf: Map the ID values with register names
+
+Madhavan Srinivasan (1):
+  tool/perf: Add sample_reg_mask to include all perf_regs regs
+
+ arch/powerpc/Kconfig                        |  1 +
+ arch/powerpc/include/uapi/asm/perf_regs.h   | 49 +++++++++++++++++
+ arch/powerpc/perf/Makefile                  |  1 +
+ arch/powerpc/perf/perf_regs.c               | 85 +++++++++++++++++++++++++++++
+ tools/perf/arch/powerpc/include/perf_regs.h | 64 ++++++++++++++++++++++
+ tools/perf/arch/powerpc/util/Build          |  1 +
+ tools/perf/arch/powerpc/util/perf_regs.c    | 48 ++++++++++++++++
+ tools/perf/config/Makefile                  |  5 ++
+ 8 files changed, 254 insertions(+)
+ create mode 100644 arch/powerpc/include/uapi/asm/perf_regs.h
+ create mode 100644 arch/powerpc/perf/perf_regs.c
  create mode 100644 tools/perf/arch/powerpc/include/perf_regs.h
+ create mode 100644 tools/perf/arch/powerpc/util/perf_regs.c
 
-diff --git a/tools/perf/arch/powerpc/include/perf_regs.h b/tools/perf/arch/powerpc/include/perf_regs.h
-new file mode 100644
-index 0000000..c725834
---- /dev/null
-+++ b/tools/perf/arch/powerpc/include/perf_regs.h
-@@ -0,0 +1,64 @@
-+#ifndef ARCH_PERF_REGS_H
-+#define ARCH_PERF_REGS_H
-+
-+#include <stdlib.h>
-+#include <linux/types.h>
-+#include <asm/perf_regs.h>
-+
-+#define PERF_REGS_MASK  ((1ULL << PERF_REG_POWERPC_MAX) - 1)
-+#define PERF_REGS_MAX   PERF_REG_POWERPC_MAX
-+#define PERF_SAMPLE_REGS_ABI   PERF_SAMPLE_REGS_ABI_64
-+
-+#define PERF_REG_IP     PERF_REG_POWERPC_NIP
-+#define PERF_REG_SP     PERF_REG_POWERPC_GPR1
-+
-+static const char *reg_names[] = {
-+	[PERF_REG_POWERPC_GPR0] = "gpr0",
-+	[PERF_REG_POWERPC_GPR1] = "gpr1",
-+	[PERF_REG_POWERPC_GPR2] = "gpr2",
-+	[PERF_REG_POWERPC_GPR3] = "gpr3",
-+	[PERF_REG_POWERPC_GPR4] = "gpr4",
-+	[PERF_REG_POWERPC_GPR5] = "gpr5",
-+	[PERF_REG_POWERPC_GPR6] = "gpr6",
-+	[PERF_REG_POWERPC_GPR7] = "gpr7",
-+	[PERF_REG_POWERPC_GPR8] = "gpr8",
-+	[PERF_REG_POWERPC_GPR9] = "gpr9",
-+	[PERF_REG_POWERPC_GPR10] = "gpr10",
-+	[PERF_REG_POWERPC_GPR11] = "gpr11",
-+	[PERF_REG_POWERPC_GPR12] = "gpr12",
-+	[PERF_REG_POWERPC_GPR13] = "gpr13",
-+	[PERF_REG_POWERPC_GPR14] = "gpr14",
-+	[PERF_REG_POWERPC_GPR15] = "gpr15",
-+	[PERF_REG_POWERPC_GPR16] = "gpr16",
-+	[PERF_REG_POWERPC_GPR17] = "gpr17",
-+	[PERF_REG_POWERPC_GPR18] = "gpr18",
-+	[PERF_REG_POWERPC_GPR19] = "gpr19",
-+	[PERF_REG_POWERPC_GPR20] = "gpr20",
-+	[PERF_REG_POWERPC_GPR21] = "gpr21",
-+	[PERF_REG_POWERPC_GPR22] = "gpr22",
-+	[PERF_REG_POWERPC_GPR23] = "gpr23",
-+	[PERF_REG_POWERPC_GPR24] = "gpr24",
-+	[PERF_REG_POWERPC_GPR25] = "gpr25",
-+	[PERF_REG_POWERPC_GPR26] = "gpr26",
-+	[PERF_REG_POWERPC_GPR27] = "gpr27",
-+	[PERF_REG_POWERPC_GPR28] = "gpr28",
-+	[PERF_REG_POWERPC_GPR29] = "gpr29",
-+	[PERF_REG_POWERPC_GPR30] = "gpr30",
-+	[PERF_REG_POWERPC_GPR31] = "gpr31",
-+	[PERF_REG_POWERPC_NIP] = "nip",
-+	[PERF_REG_POWERPC_MSR] = "msr",
-+	[PERF_REG_POWERPC_ORIG_R3] = "orig_r3",
-+	[PERF_REG_POWERPC_CTR] = "ctr",
-+	[PERF_REG_POWERPC_LNK] = "lnk",
-+	[PERF_REG_POWERPC_XER] = "xer",
-+	[PERF_REG_POWERPC_CCR] = "ccr",
-+	[PERF_REG_POWERPC_TRAP] = "trap",
-+	[PERF_REG_POWERPC_DAR] = "dar",
-+	[PERF_REG_POWERPC_DSISR] = "dsisr"
-+};
-+
-+static inline const char *perf_reg_name(int id)
-+{
-+	return reg_names[id];
-+}
-+#endif /* ARCH_PERF_REGS_H */
-diff --git a/tools/perf/config/Makefile b/tools/perf/config/Makefile
-index 38a0853..62a2f2d 100644
---- a/tools/perf/config/Makefile
-+++ b/tools/perf/config/Makefile
-@@ -23,6 +23,11 @@ $(call detected_var,ARCH)
- 
- NO_PERF_REGS := 1
- 
-+# Additional ARCH settings for ppc64
-+ifeq ($(ARCH),powerpc)
-+  NO_PERF_REGS := 0
-+endif
-+
- # Additional ARCH settings for x86
- ifeq ($(ARCH),x86)
-   $(call detected,CONFIG_X86)
 -- 
 2.1.0
