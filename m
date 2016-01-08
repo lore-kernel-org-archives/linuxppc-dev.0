@@ -1,38 +1,23 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 67D311A09D5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 20:03:38 +1100 (AEDT)
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Fri, 8 Jan 2016 19:03:38 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 938742BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 20:03:35 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0893RS850069562
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jan 2016 20:03:35 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u08932Ft017998
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jan 2016 20:03:03 +1100
-From: Anju T <anju@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: khandual@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 71BDD1A01E3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 20:28:23 +1100 (AEDT)
+Date: Fri, 8 Jan 2016 10:28:18 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Anju T <anju@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, khandual@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
  dsahern@gmail.com, acme@redhat.com, sukadev@linux.vnet.ibm.com,
  hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- anju@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V1 4/4] tool/perf: Add sample_reg_mask to include all
- perf_regs regs
-Date: Fri,  8 Jan 2016 14:32:31 +0530
-Message-Id: <1452243751-382-5-git-send-email-anju@linux.vnet.ibm.com>
-In-Reply-To: <1452243751-382-1-git-send-email-anju@linux.vnet.ibm.com>
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V8 3/4] tools/perf: Map the ID values with register names
+Message-ID: <20160108092818.GB18339@krava.brq.redhat.com>
 References: <1452243751-382-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1452243751-382-4-git-send-email-anju@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1452243751-382-4-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,82 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+On Fri, Jan 08, 2016 at 02:32:30PM +0530, Anju T wrote:
 
-Add sample_reg_mask array with pt_regs registers.
-This is needed for printing supported regs ( -I? option).
+SNIP
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- tools/perf/arch/powerpc/util/Build       |  1 +
- tools/perf/arch/powerpc/util/perf_regs.c | 48 ++++++++++++++++++++++++++++++++
- 2 files changed, 49 insertions(+)
- create mode 100644 tools/perf/arch/powerpc/util/perf_regs.c
+> +#endif /* ARCH_PERF_REGS_H */
+> diff --git a/tools/perf/config/Makefile b/tools/perf/config/Makefile
+> index 38a0853..acf0302 100644
+> --- a/tools/perf/config/Makefile
+> +++ b/tools/perf/config/Makefile
+> @@ -23,6 +23,11 @@ $(call detected_var,ARCH)
+>  
+>  NO_PERF_REGS := 1
+>  
+> +# Additional ARCH settings for ppc64
+> +ifeq ($(ARCH),powerpc)
+> +	NO_PERF_REGS := 0
+> +endif
 
-diff --git a/tools/perf/arch/powerpc/util/Build b/tools/perf/arch/powerpc/util/Build
-index 7b8b0d1..3deb1bc 100644
---- a/tools/perf/arch/powerpc/util/Build
-+++ b/tools/perf/arch/powerpc/util/Build
-@@ -1,5 +1,6 @@
- libperf-y += header.o
- libperf-y += sym-handling.o
-+libperf-y += perf_regs.o
- 
- libperf-$(CONFIG_DWARF) += dwarf-regs.o
- libperf-$(CONFIG_DWARF) += skip-callchain-idx.o
-diff --git a/tools/perf/arch/powerpc/util/perf_regs.c b/tools/perf/arch/powerpc/util/perf_regs.c
-new file mode 100644
-index 0000000..0b0ec65
---- /dev/null
-+++ b/tools/perf/arch/powerpc/util/perf_regs.c
-@@ -0,0 +1,48 @@
-+#include "../../perf.h"
-+#include "../../util/perf_regs.h"
-+
-+const struct sample_reg sample_reg_masks[] = {
-+	SMPL_REG(gpr0, PERF_REG_POWERPC_GPR0),
-+	SMPL_REG(gpr1, PERF_REG_POWERPC_GPR1),
-+	SMPL_REG(gpr2, PERF_REG_POWERPC_GPR2),
-+	SMPL_REG(gpr3, PERF_REG_POWERPC_GPR3),
-+	SMPL_REG(gpr4, PERF_REG_POWERPC_GPR4),
-+	SMPL_REG(gpr5, PERF_REG_POWERPC_GPR5),
-+	SMPL_REG(gpr6, PERF_REG_POWERPC_GPR6),
-+	SMPL_REG(gpr7, PERF_REG_POWERPC_GPR7),
-+	SMPL_REG(gpr8, PERF_REG_POWERPC_GPR8),
-+	SMPL_REG(gpr9, PERF_REG_POWERPC_GPR9),
-+	SMPL_REG(gpr10, PERF_REG_POWERPC_GPR10),
-+	SMPL_REG(gpr11, PERF_REG_POWERPC_GPR11),
-+	SMPL_REG(gpr12, PERF_REG_POWERPC_GPR12),
-+	SMPL_REG(gpr13, PERF_REG_POWERPC_GPR13),
-+	SMPL_REG(gpr14, PERF_REG_POWERPC_GPR14),
-+	SMPL_REG(gpr15, PERF_REG_POWERPC_GPR15),
-+	SMPL_REG(gpr16, PERF_REG_POWERPC_GPR16),
-+	SMPL_REG(gpr17, PERF_REG_POWERPC_GPR17),
-+	SMPL_REG(gpr18, PERF_REG_POWERPC_GPR18),
-+	SMPL_REG(gpr19, PERF_REG_POWERPC_GPR19),
-+	SMPL_REG(gpr20, PERF_REG_POWERPC_GPR20),
-+	SMPL_REG(gpr21, PERF_REG_POWERPC_GPR21),
-+	SMPL_REG(gpr22, PERF_REG_POWERPC_GPR22),
-+	SMPL_REG(gpr23, PERF_REG_POWERPC_GPR23),
-+	SMPL_REG(gpr24, PERF_REG_POWERPC_GPR24),
-+	SMPL_REG(gpr25, PERF_REG_POWERPC_GPR25),
-+	SMPL_REG(gpr26, PERF_REG_POWERPC_GPR26),
-+	SMPL_REG(gpr27, PERF_REG_POWERPC_GPR27),
-+	SMPL_REG(gpr28, PERF_REG_POWERPC_GPR28),
-+	SMPL_REG(gpr29, PERF_REG_POWERPC_GPR29),
-+	SMPL_REG(gpr30, PERF_REG_POWERPC_GPR30),
-+	SMPL_REG(gpr31, PERF_REG_POWERPC_GPR31),
-+	SMPL_REG(nip, PERF_REG_POWERPC_NIP),
-+	SMPL_REG(msr, PERF_REG_POWERPC_MSR),
-+	SMPL_REG(orig_r3, PERF_REG_POWERPC_ORIG_R3),
-+	SMPL_REG(ctr, PERF_REG_POWERPC_CTR),
-+	SMPL_REG(link, PERF_REG_POWERPC_LNK),
-+	SMPL_REG(xer, PERF_REG_POWERPC_XER),
-+	SMPL_REG(ccr, PERF_REG_POWERPC_CCR),
-+	SMPL_REG(trap, PERF_REG_POWERPC_TRAP),
-+	SMPL_REG(dar, PERF_REG_POWERPC_DAR),
-+	SMPL_REG(dsisr, PERF_REG_POWERPC_DSISR),
-+	SMPL_REG_END
-+};
--- 
-2.1.0
+please use space for indent in makefiles.. the line might get
+switched for rule one day and it's hard to find ;-)
+
+thanks,
+jirka
