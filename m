@@ -1,27 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0058.outbound.protection.outlook.com [157.56.111.58])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A8C81A01E3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 13:16:30 +1100 (AEDT)
-Message-ID: <1452219390.18702.2.camel@ellerman.id.au>
-Subject: Re: Build failure: -Wno-unused-const-variable DNE on old GCC
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Brian Norris <computersforpeace@gmail.com>, Ian Munsie
- <imunsie@au1.ibm.com>
-Cc: Daniel Axtens <dja@axtens.net>, Arnd Bergmann <arnd@arndb.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Michael Neuling
- <mikey@neuling.org>, Anton Blanchard <anton@au1.ibm.com>, linux-kernel
- <linux-kernel@vger.kernel.org>, Michal Marek <mmarek@suse.com>
-Date: Fri, 08 Jan 2016 13:16:30 +1100
-In-Reply-To: <20160108020743.GA118336@google.com>
-References: <20160107185406.GA65420@google.com>
- <10821353.mAlCTdTQBC@wuerfel> <87oacx6m14.fsf@gamma.ozlabs.ibm.com>
- <20160107230225.GA126548@google.com>
- <1452216163-sup-7558@delenn.ozlabs.ibm.com>
- <20160108020743.GA118336@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id A24F91A01E3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 13:40:56 +1100 (AEDT)
+From: Zhao Qiang <qiang.zhao@nxp.com>
+To: <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+CC: <Priyanka.Jain@freescale.com>, <oss@buserror.net>, Zhao Qiang
+ <qiang.zhao@nxp.com>
+Subject: [PATCH 6/6] T104xQDS: Add qe node to t104xqds
+Date: Fri, 8 Jan 2016 10:18:14 +0800
+Message-ID: <1452219494-31947-6-git-send-email-qiang.zhao@nxp.com>
+In-Reply-To: <1452219494-31947-1-git-send-email-qiang.zhao@nxp.com>
+References: <1452219494-31947-1-git-send-email-qiang.zhao@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,49 +26,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-01-07 at 18:07 -0800, Brian Norris wrote:
-> On Fri, Jan 08, 2016 at 12:31:54PM +1100, Ian Munsie wrote:
-> > Excerpts from Brian Norris's message of 2016-01-08 10:02:25 +1100:
-> > > >  - It forces cxl developers to a higher standard. cxl has already had
-> > > >    more than it's fair share of incredibly difficult to debug issues,
-> > > >    so any way we can reduce the risk of errors going in makes our lives
-> > > >    (and our end-users lives) better.
-> > > 
-> > > One problem with this point: not all warnings are under the purview of
-> > > cxl developers. For instance, if I turn up warning verbosity (W=1), then
-> 
-> (BTW, I think most of these files are currently clean with W=1, but not W=2)
+add qe node to t104xqds.dtsi
 
-> > > the *header* files start producing plenty of warnings. Should this break
-> > > the build? Your code didn't change, and you can't fix those errors.
-> > 
-> > That's a good point, but the specific warnings that we suppressed in the
-> > new compiler are in drivers/misc/cxl/cxl.h, which is an internal header
-> > that should only ever be included by the cxl driver. We do have some
-> > headers elsewhere which are included by other drivers, the generic ppc
-> > architecture code and userspace, but these are all warning free and
-> > won't be affected by the -Werror when included from elsewhere.
-> 
-> I was referring to when extra warnings are turned on, not just the
-> default. So this fails spectacularly:
-> 
->   $ export ARCH=powerpc
->   $ make ppc64_defconfig
->   $ make drivers/misc/cxl/api.o W=2
->     CC [M]  drivers/misc/cxl/api.o
->   In file included from include/linux/bitops.h:36:0,
->                    from include/linux/kernel.h:10,
->                    from include/linux/list.h:8,
->                    from include/linux/pci.h:25,
->                    from drivers/misc/cxl/api.c:10:
->   ./arch/powerpc/include/asm/bitops.h:226:94: error: declaration of 'ffs' shadows a built-in function [-Werror=shadow]
+Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+---
+ arch/powerpc/boot/dts/fsl/t104xqds.dtsi | 44 +++++++++++++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
 
->
-> I doubt you plan to fix all those. So making -Werror configurable seems like
-> the only way forward, then. (Glad you agreed!)
-
-Yep, I'm happy to make Werror configurable.
-
-cxl can probably just use the existing PPC_WERROR.
-
-cheers
+diff --git a/arch/powerpc/boot/dts/fsl/t104xqds.dtsi b/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
+index 1498d1e..8ebd574 100644
+--- a/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
+@@ -190,4 +190,48 @@
+ 				  0 0x00010000>;
+ 		};
+ 	};
++
++	qe: qe@ffe140000 {
++		ranges = <0x0 0xf 0xfe140000 0x40000>;
++		reg = <0xf 0xfe140000 0 0x480>;
++		brg-frequency = <0>;
++		bus-frequency = <0>;
++
++		si1: si@700 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,qe-si";
++			reg = <0x700 0x80>;
++		};
++
++		siram1: siram@1000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,qe-siram";
++			reg = <0x1000 0x800>;
++		};
++
++		ucc_hdlc: ucc@2000 {
++			compatible = "fsl,ucc_hdlc";
++			rx-clock-name = "clk8";
++			tx-clock-name = "clk9";
++			fsl,rx-sync-clock = "rsync_pin";
++			fsl,tx-sync-clock = "tsync_pin";
++			fsl,tx-timeslot = <0xfffffffe>;
++			fsl,rx-timeslot = <0xfffffffe>;
++			fsl,tdm-framer-type = "e1";
++			fsl,tdm-mode = "normal";
++			fsl,tdm-id = <0>;
++			fsl,siram-entry-id = <0>;
++			fsl,tdm-interface;
++		};
++
++		ucc_serial: ucc@2200 {
++			device_type = "serial";
++			compatible = "ucc_uart";
++			port-number = <1>;
++			rx-clock-name = "brg2";
++			tx-clock-name = "brg2";
++		};
++	};
+ };
+-- 
+2.1.0.27.g96db324
