@@ -1,38 +1,35 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0050.hostedemail.com
- [216.40.44.50])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 89BBA1A0007
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 09:52:26 +1100 (AEDT)
-Message-ID: <1452466336.7773.46.camel@perches.com>
-Subject: Re: [PATCH v3 3/3] checkpatch: add virt barriers
-From: Joe Perches <joe@perches.com>
-To: Julian Calaby <julian.calaby@gmail.com>, "Michael S. Tsirkin"
- <mst@redhat.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andy
- Whitcroft <apw@canonical.com>, Peter Zijlstra <peterz@infradead.org>, Arnd
- Bergmann <arnd@arndb.de>,  linux-arch@vger.kernel.org, Andrew Cooper
- <andrew.cooper3@citrix.com>,  virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Thomas Gleixner
- <tglx@linutronix.de>,  Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin"
- <hpa@zytor.com>, David Miller <davem@davemloft.net>,
- linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux <sparclinux@vger.kernel.org>,
- "Mailing List, Arm" <linux-arm-kernel@lists.infradead.org>,
- linux-metag@vger.kernel.org,  linux-mips@linux-mips.org, x86@kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org, Ingo Molnar
- <mingo@kernel.org>, Tony Lindgren <tony@atomide.com>, Andrey Konovalov
- <andreyknvl@google.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Sun, 10 Jan 2016 14:52:16 -0800
-In-Reply-To: <CAGRGNgXQANbKD=VA0Qx4Wp1+MpZUVV7by8RrKxF9o=qu=vUQqA@mail.gmail.com>
-References: <1452454200-8844-1-git-send-email-mst@redhat.com>
- <1452454200-8844-4-git-send-email-mst@redhat.com>
- <CAGRGNgXQANbKD=VA0Qx4Wp1+MpZUVV7by8RrKxF9o=qu=vUQqA@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 813341A02D7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 10:10:02 +1100 (AEDT)
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Sun, 10 Jan 2016 16:10:00 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id AEAE61FF0021
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jan 2016 15:58:07 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0AN9vdL21037116
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jan 2016 16:09:57 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0AN9uew005022
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jan 2016 16:09:56 -0700
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/powernv: Remove misleading comment in pci.c
+In-Reply-To: <1452230207-26253-1-git-send-email-ruscur@russell.cc>
+References: <1452230207-26253-1-git-send-email-ruscur@russell.cc>
+Date: Fri, 08 Jan 2016 17:28:20 +1100
+Message-ID: <87oacwfuuz.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,36 +39,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-01-11 at 09:13 +1100, Julian Calaby wrote:
-> On Mon, Jan 11, 2016 at 6:31 AM, Michael S. Tsirkin <mst@redhat.com> wrote:
-> > Add virt_ barriers to list of barriers to check for
-> > presence of a comment.
-[]
-> > diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-[]
-> > @@ -5133,7 +5133,8 @@ sub process {
-> >                 }x;
-> >                 my $all_barriers = qr{
-> >                         $barriers|
-> > -                       smp_(?:$smp_barrier_stems)
-> > +                       smp_(?:$smp_barrier_stems)|
-> > +                       virt_(?:$smp_barrier_stems)
-> 
-> Sorry I'm late to the party here, but would it make sense to write this as:
-> 
-> (?:smp|virt)_(?:$smp_barrier_stems)
+Russell Currey <ruscur@russell.cc> writes:
+> PCI in powernv now supports quite a bit more than p5ioc2, so remove the
+> outdated comment.
+>
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
 
-Yes.  Perhaps the name might be better as barrier_stems.
+Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
-Also, ideally this would be longest match first or use \b
-after the matches so that $all_barriers could work
-successfully without a following \s*\(
-
-my $all_barriers = qr{
-	(?:smp|virt)_(?:barrier_stems)|
-	$barriers)
-}x;
-
-or maybe add separate $smp_barriers and $virt_barriers
-
-<shrug>  it doesn't matter much in any case
+-- 
+Stewart Smith
+OPAL Architect, IBM.
