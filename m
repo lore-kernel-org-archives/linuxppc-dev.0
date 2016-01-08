@@ -1,22 +1,14 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0056.outbound.protection.outlook.com [157.56.111.56])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DF24E1A0007
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 14:58:15 +1100 (AEDT)
-From: Zhao Qiang <qiang.zhao@nxp.com>
-To: <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>
-CC: <Priyanka.Jain@freescale.com>, <oss@buserror.net>, Zhao Qiang
- <qiang.zhao@nxp.com>
-Subject: [PATCH 3/6] QE: Add uqe_serial document to bindings
-Date: Fri, 8 Jan 2016 10:18:11 +0800
-Message-ID: <1452219494-31947-3-git-send-email-qiang.zhao@nxp.com>
-In-Reply-To: <1452219494-31947-1-git-send-email-qiang.zhao@nxp.com>
-References: <1452219494-31947-1-git-send-email-qiang.zhao@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 27F471A01E3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 16:24:18 +1100 (AEDT)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/powernv: Remove misleading comment in pci.c
+Date: Fri,  8 Jan 2016 16:16:47 +1100
+Message-Id: <1452230207-26253-1-git-send-email-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +18,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add uqe_serial document to
-Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
+PCI in powernv now supports quite a bit more than p5ioc2, so remove the
+outdated comment.
 
-Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
- .../bindings/powerpc/fsl/cpm_qe/uqe_serial.txt       | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
+ arch/powerpc/platforms/powernv/pci.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
-new file mode 100644
-index 0000000..e677599
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
-@@ -0,0 +1,20 @@
-+* Serial
-+
-+Currently defined compatibles:
-+- ucc_uart
-+
-+Properties for ucc_uart:
-+device_type : which type the device is
-+port-number : port number of UCC-UART
-+rx-clock-name : which clock QE use for RX
-+tx-clock-name : which clock QE use for TX
-+
-+Example:
-+
-+	serial: ucc@2200 {
-+		device_type = "serial";
-+		compatible = "ucc_uart";
-+		port-number = <1>;
-+		rx-clock-name = "brg2";
-+		tx-clock-name = "brg2";
-+	};
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index f2dd772..fcedc57 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -1,8 +1,6 @@
+ /*
+  * Support PCI/PCIe on PowerNV platforms
+  *
+- * Currently supports only P5IOC2
+- *
+  * Copyright 2011 Benjamin Herrenschmidt, IBM Corp.
+  *
+  * This program is free software; you can redistribute it and/or
 -- 
-2.1.0.27.g96db324
+2.7.0
