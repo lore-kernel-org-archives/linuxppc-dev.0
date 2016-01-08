@@ -1,22 +1,20 @@
-Return-Path: <computersforpeace@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 545831A01E3
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jan 2016 05:30:23 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id 65so1005775pff.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Jan 2016 10:30:23 -0800 (PST)
-From: Brian Norris <computersforpeace@gmail.com>
-To: Ian Munsie <imunsie@au1.ibm.com>,
-	Michael Neuling <mikey@neuling.org>
-Cc: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- Brian Norris <computersforpeace@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
- Joe Perches <joe@perches.com>, Michal Marek <mmarek@suse.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@au1.ibm.com>
-Subject: [PATCH v2 1/2] cxl: fix build for GCC 4.6.x
-Date: Fri,  8 Jan 2016 10:30:09 -0800
-Message-Id: <1452277810-98195-1-git-send-email-computersforpeace@gmail.com>
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id C28211A0033
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jan 2016 07:10:23 +1100 (AEDT)
+Date: Fri, 8 Jan 2016 14:10:17 -0600
+From: Rob Herring <robh@kernel.org>
+To: Zhao Qiang <qiang.zhao@nxp.com>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Priyanka.Jain@freescale.com,
+ oss@buserror.net
+Subject: Re: [PATCH 2/6] QE: Add ucc hdlc document to bindings
+Message-ID: <20160108201017.GA26581@rob-hp-laptop>
+References: <1452219494-31947-1-git-send-email-qiang.zhao@nxp.com>
+ <1452219494-31947-2-git-send-email-qiang.zhao@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1452219494-31947-2-git-send-email-qiang.zhao@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +24,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-GCC 4.6.3 does not support -Wno-unused-const-variable. Instead, use the
-kbuild infrastructure that checks if this options exists.
+On Fri, Jan 08, 2016 at 10:18:10AM +0800, Zhao Qiang wrote:
+> Add ucc hdlc document to
+> Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/network.txt
+> 
+> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> ---
+>  .../bindings/powerpc/fsl/cpm_qe/network.txt        | 35 ++++++++++++++++++++++
+>  1 file changed, 35 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/network.txt b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/network.txt
+> index 29b28b8..017cbf7 100644
+> --- a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/network.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/network.txt
+> @@ -41,3 +41,38 @@ Example:
+>  		fsl,mdio-pin = <12>;
+>  		fsl,mdc-pin = <13>;
+>  	};
+> +
+> +* HDLC
+> +
+> +Currently defined compatibles:
+> +- fsl,ucc_hdlc
 
-Fixes: 2cd55c68c0a4 ("cxl: Fix build failure due to -Wunused-variable behaviour change")
-Suggested-by: Michal Marek <mmarek@suse.com>
-Suggested-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Brian Norris <computersforpeace@gmail.com>
----
-v2: don't remove -Werror
+Don't use _.
 
- drivers/misc/cxl/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> +
+> +Properties for fsl,ucc_hdlc:
+> +rx-clock-name : which clock QE use for RX
+> +tx-clock-name : which clock QE use for TX
+> +fsl,rx-sync-clock : which pin QE use for RX sync
+> +fsl,tx-sync-clock : which pin QE use for TX sync
+> +fsl,tx-timeslot : tx timeslot
+> +fsl,rx-timeslot : rx timeslot
+> +fsl,tdm-framer-type : tdm framer type
+> +fsl,tdm-mode : tdm mode, normal or internal-loopback
+> +fsl,tdm-id : tdm ID
+> +fsl,siram-entry-id : SI RAM entry ID for the TDM
+> +fsl,tdm-interface : hdlc based on tdm-interface
 
-diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
-index 6982f603fadc..ab6f392d3504 100644
---- a/drivers/misc/cxl/Makefile
-+++ b/drivers/misc/cxl/Makefile
-@@ -1,4 +1,4 @@
--ccflags-y := -Werror -Wno-unused-const-variable
-+ccflags-y := -Werror $(call cc-disable-warning, unused-const-variable)
- 
- cxl-y				+= main.o file.o irq.o fault.o native.o
- cxl-y				+= context.o sysfs.o debugfs.o pci.o trace.o
--- 
-2.6.0.rc2.230.g3dd15c0
+It is not clear what any of these properties do. For example, what are 
+allowed/valid values. Provide enough information to validate the 
+example.
+
+Rob
+
+> +
+> +Example:
+> +
+> +	ucc@2000 {
+> +		compatible = "fsl,ucc_hdlc";
+> +		rx-clock-name = "clk8";
+> +		tx-clock-name = "clk9";
+> +		fsl,rx-sync-clock = "rsync_pin";
+> +		fsl,tx-sync-clock = "tsync_pin";
+> +		fsl,tx-timeslot = <0xfffffffe>;
+> +		fsl,rx-timeslot = <0xfffffffe>;
+> +		fsl,tdm-framer-type = "e1";
+> +		fsl,tdm-mode = "normal";
+> +		fsl,tdm-id = <0>;
+> +		fsl,siram-entry-id = <0>;
+> +		fsl,tdm-interface;
+> +	};
+> -- 
+> 2.1.0.27.g96db324
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
