@@ -1,20 +1,18 @@
 Return-Path: <qiang.zhao@nxp.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0055.outbound.protection.outlook.com [157.56.111.55])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0081.outbound.protection.outlook.com [65.55.169.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C0E911A09F3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 13:41:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0B3781A01E3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 13:55:02 +1100 (AEDT)
 From: Zhao Qiang <qiang.zhao@nxp.com>
 To: <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>
-CC: <Priyanka.Jain@freescale.com>, <oss@buserror.net>, Zhao Qiang
- <qiang.zhao@nxp.com>
-Subject: [PATCH 5/6] T104xRDB: Add qe node to t104xrdb
-Date: Fri, 8 Jan 2016 10:18:13 +0800
-Message-ID: <1452219494-31947-5-git-send-email-qiang.zhao@nxp.com>
-In-Reply-To: <1452219494-31947-1-git-send-email-qiang.zhao@nxp.com>
-References: <1452219494-31947-1-git-send-email-qiang.zhao@nxp.com>
+CC: <robh+dt@kernel.org>, <Priyanka.Jain@freescale.com>,
+ <scottwood@freescale.com>, Zhao Qiang <qiang.zhao@nxp.com>
+Subject: [PATCH 1/3] TDM: Add maxim ds26522 document to bindings
+Date: Fri, 8 Jan 2016 10:46:53 +0800
+Message-ID: <1452221215-12681-1-git-send-email-qiang.zhao@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,65 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-add qe node to t104xrdb.dtsi
+Add maxim ds26522 document to
+Documentation/devicetree/bindings/tdm/maxim,ds26522.txt
 
 Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
 ---
- arch/powerpc/boot/dts/fsl/t104xrdb.dtsi | 44 +++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+ Documentation/devicetree/bindings/tdm/maxim,ds26522.txt | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/tdm/maxim,ds26522.txt
 
-diff --git a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-index 830ea48..63649fa 100644
---- a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-@@ -186,4 +186,48 @@
- 				  0 0x00010000>;
- 		};
- 	};
+diff --git a/Documentation/devicetree/bindings/tdm/maxim,ds26522.txt b/Documentation/devicetree/bindings/tdm/maxim,ds26522.txt
+new file mode 100644
+index 0000000..3548c51
+--- /dev/null
++++ b/Documentation/devicetree/bindings/tdm/maxim,ds26522.txt
+@@ -0,0 +1,13 @@
++* Maxim (Dallas) DS26522 Octal T1/E1/J1 Transceiver
 +
-+	qe: qe@ffe140000 {
-+		ranges = <0x0 0xf 0xfe140000 0x40000>;
-+		reg = <0xf 0xfe140000 0 0x480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <0>;
++Required properties:
++- compatible: Should contain "maxim,ds26522".
++- reg: SPI CS
++- spi-max-frequency: SPI bus max frequency.
 +
-+		si1: si@700 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,qe-si";
-+			reg = <0x700 0x80>;
-+		};
-+
-+		siram1: siram@1000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,qe-siram";
-+			reg = <0x1000 0x800>;
-+		};
-+
-+		ucc_hdlc: ucc@2000 {
-+			compatible = "fsl,ucc_hdlc";
-+			rx-clock-name = "clk8";
-+			tx-clock-name = "clk9";
-+			fsl,rx-sync-clock = "rsync_pin";
-+			fsl,tx-sync-clock = "tsync_pin";
-+			fsl,tx-timeslot = <0xfffffffe>;
-+			fsl,rx-timeslot = <0xfffffffe>;
-+			fsl,tdm-framer-type = "e1";
-+			fsl,tdm-mode = "normal";
-+			fsl,tdm-id = <0>;
-+			fsl,siram-entry-id = <0>;
-+			fsl,tdm-interface;
-+		};
-+
-+		ucc_serial: ucc@2200 {
-+			device_type = "serial";
-+			compatible = "ucc_uart";
-+			port-number = <1>;
-+			rx-clock-name = "brg2";
-+			tx-clock-name = "brg2";
-+		};
++Example:
++	slic@2 {
++		compatible = "maxim,ds26522";
++		reg = <2>;
++		spi-max-frequency = <2000000>;
 +	};
- };
 -- 
 2.1.0.27.g96db324
