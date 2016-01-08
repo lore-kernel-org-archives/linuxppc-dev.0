@@ -1,29 +1,37 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.189])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9D7271A01E3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 21:17:41 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Michael Ellerman' <mpe@ellerman.id.au>, Brian Norris
- <computersforpeace@gmail.com>, Ian Munsie <imunsie@au1.ibm.com>
-CC: Michael Neuling <mikey@neuling.org>, Arnd Bergmann <arnd@arndb.de>,
- "Anton Blanchard" <anton@au1.ibm.com>, linux-kernel
- <linux-kernel@vger.kernel.org>, Michal Marek <mmarek@suse.com>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, Daniel Axtens <dja@axtens.net>
-Subject: RE: Build failure: -Wno-unused-const-variable DNE on old GCC
-Date: Fri, 8 Jan 2016 10:14:52 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CCC0040@AcuExch.aculab.com>
-References: <20160107185406.GA65420@google.com>
- <10821353.mAlCTdTQBC@wuerfel> <87oacx6m14.fsf@gamma.ozlabs.ibm.com>
- <20160107230225.GA126548@google.com>
- <1452216163-sup-7558@delenn.ozlabs.ibm.com>
- <20160108020743.GA118336@google.com>
- <1452219390.18702.2.camel@ellerman.id.au>
-In-Reply-To: <1452219390.18702.2.camel@ellerman.id.au>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 724D71A01E3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 22:14:12 +1100 (AEDT)
+Received: from localhost
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Fri, 8 Jan 2016 16:44:08 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 2953B394005A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jan 2016 16:44:06 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u08BE4PG2097416
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jan 2016 16:44:05 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u08BE3nO006314
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jan 2016 16:44:04 +0530
+From: Anju T <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: khandual@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
+ dsahern@gmail.com, acme@redhat.com, sukadev@linux.vnet.ibm.com,
+ hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ anju@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V9 3/4] tools/perf: Map the ID values with register names
+Date: Fri,  8 Jan 2016 16:44:02 +0530
+Message-Id: <1452251643-17769-4-git-send-email-anju@linux.vnet.ibm.com>
+In-Reply-To: <1452251643-17769-1-git-send-email-anju@linux.vnet.ibm.com>
+References: <1452251643-17769-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,17 +41,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogTWljaGFlbCBFbGxlcm1hbg0KPiBTZW50OiAwOCBKYW51YXJ5IDIwMTYgMDI6MTcNCj4g
-PiBJIGRvdWJ0IHlvdSBwbGFuIHRvIGZpeCBhbGwgdGhvc2UuIFNvIG1ha2luZyAtV2Vycm9yIGNv
-bmZpZ3VyYWJsZSBzZWVtcyBsaWtlDQo+ID4gdGhlIG9ubHkgd2F5IGZvcndhcmQsIHRoZW4uIChH
-bGFkIHlvdSBhZ3JlZWQhKQ0KPiANCj4gWWVwLCBJJ20gaGFwcHkgdG8gbWFrZSBXZXJyb3IgY29u
-ZmlndXJhYmxlLg0KPiANCj4gY3hsIGNhbiBwcm9iYWJseSBqdXN0IHVzZSB0aGUgZXhpc3Rpbmcg
-UFBDX1dFUlJPUi4NCg0KUGVyc29uYWxseSBJIHRoaW5rIHRoZSBkZXZlbG9wbWVudCBidWlsZHMg
-c2hvdWxkIGJlIGRvbmUgd2l0aA0KYm90aCBlcnJvciAtV2Vycm9yIGFuZCBoaWdoZXIgbGV2ZWxz
-IG9mIHdhcm5pbmdzLCBldmVuIGlmIHRoZQ0Kb25lcyB0aGF0IHVzZXJzIHRlbmQgdG8gZG8gaWdu
-b3JlIG1vcmUgd2FybmluZ3MuDQoNCkNsZWFybHkgc29tZSB3YXJuaW5ncyB0aGF0IHNvbWUgdmVy
-c2lvbnMgb2YgZ2NjIGhhdmUgaW5jbHVkZWQNCmluIC1XYWxsIGFyZSBqdXN0IGEgUElUQSAobGlr
-ZSB3YXJuaW5nIGZvciBfX0RBVEVfXyBhbmQgX19USU1FX18pLg0KDQpUaGUga2VybmVsIGhlYWRl
-cnMgZG8gbmVlZCBmaXhpbmcgc28gdGhhdCB0aGV5IHBhc3MgY29tcGlsYXRpb24NCndpdGggb3B0
-aW9ucyBsaWtlIC1Xd3JpdGUtc3RyaW5ncyAobGludXgvbW0uaCBkb2Vzbid0KS4NCg0KCURhdmlk
-DQoNCg==
+Map ID values with corresponding register names. These names are then
+displayed when user issues perf record with the -I option
+followed by perf report/script with -D option.
+
+To test this patchset,
+Eg:
+
+$ perf record -I ls   # record machine state at interrupt
+$ perf script -D      # read the perf.data file
+
+Sample output obtained for this patch / output looks like as follows:
+
+178329381464 0x138 [0x180]: PERF_RECORD_SAMPLE(IP, 0x1): 7803/7803: 0xc00000000000fd9c period: 1 addr: 0
+... intr regs: mask 0x3ffffffffff ABI 64-bit
+.... gpr0  0xc0000000001a6420
+.... gpr1  0xc000001e4df039b0
+.... gpr2  0xc000000000cdd100
+.... gpr3  0x1
+.... gpr4  0xc000001e4a96d000
+.... gpr5  0x29854255ba
+.... gpr6  0xc000000ffa3050b8
+.... gpr7  0x0
+.... gpr8  0x0
+.... gpr9  0x0
+.... gpr10 0x0
+.... gpr11 0x0
+.... gpr12 0x24022822
+.... gpr13 0xc00000000fe03000
+.... gpr14 0x0
+.... gpr15 0xc000000000d763f8
+.... gpr16 0x0
+.... gpr17 0xc000001e4ddcf000
+.... gpr18 0x0
+.... gpr19 0xc000000ffa305000
+.... gpr20 0xc000001e4df038c0
+.... gpr21 0xc000001e40ed7a00
+.... gpr22 0xc0000000000aa28c
+.... gpr23 0xc000000000cdd100
+.... gpr24 0x0
+.... gpr25 0xc000000000cdd100
+.... gpr26 0xc000001e4df038b0
+.... gpr27 0xfffffffffffffeae
+.... gpr28 0xc000001e4df03880
+.... gpr29 0xc000000000dce900
+.... gpr30 0xc000001e4df03890
+.... gpr31 0xc000001e355c7a30
+.... nip   0xc0000000001a62d8
+.... msr   0x9000000000009032
+.... orig_r3 0xc0000000001a6320
+.... ctr   0xc0000000000a7be0
+.... lnk   0xc0000000001a6428
+.... xer   0x0
+.... ccr   0x24022888
+.... trap  0xf01
+.... dar   0xc000001e40ed7a00
+.... dsisr 0x3000c0060000004
+ ... thread: :7803:7803
+ ...... dso: /root/.debug/.build-id/d0/eb47b06c0d294143af13c50616f638c2d88658
+           :7803  7803   178.329381:          1 cycles:  c00000000000fd9c .arch_local_irq_restore (/boot/vmlinux)
+
+
+Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
+Reviewed-by  : Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ tools/perf/arch/powerpc/include/perf_regs.h | 64 +++++++++++++++++++++++++++++
+ tools/perf/config/Makefile                  |  5 +++
+ 2 files changed, 69 insertions(+)
+ create mode 100644 tools/perf/arch/powerpc/include/perf_regs.h
+
+diff --git a/tools/perf/arch/powerpc/include/perf_regs.h b/tools/perf/arch/powerpc/include/perf_regs.h
+new file mode 100644
+index 0000000..c725834
+--- /dev/null
++++ b/tools/perf/arch/powerpc/include/perf_regs.h
+@@ -0,0 +1,64 @@
++#ifndef ARCH_PERF_REGS_H
++#define ARCH_PERF_REGS_H
++
++#include <stdlib.h>
++#include <linux/types.h>
++#include <asm/perf_regs.h>
++
++#define PERF_REGS_MASK  ((1ULL << PERF_REG_POWERPC_MAX) - 1)
++#define PERF_REGS_MAX   PERF_REG_POWERPC_MAX
++#define PERF_SAMPLE_REGS_ABI   PERF_SAMPLE_REGS_ABI_64
++
++#define PERF_REG_IP     PERF_REG_POWERPC_NIP
++#define PERF_REG_SP     PERF_REG_POWERPC_GPR1
++
++static const char *reg_names[] = {
++	[PERF_REG_POWERPC_GPR0] = "gpr0",
++	[PERF_REG_POWERPC_GPR1] = "gpr1",
++	[PERF_REG_POWERPC_GPR2] = "gpr2",
++	[PERF_REG_POWERPC_GPR3] = "gpr3",
++	[PERF_REG_POWERPC_GPR4] = "gpr4",
++	[PERF_REG_POWERPC_GPR5] = "gpr5",
++	[PERF_REG_POWERPC_GPR6] = "gpr6",
++	[PERF_REG_POWERPC_GPR7] = "gpr7",
++	[PERF_REG_POWERPC_GPR8] = "gpr8",
++	[PERF_REG_POWERPC_GPR9] = "gpr9",
++	[PERF_REG_POWERPC_GPR10] = "gpr10",
++	[PERF_REG_POWERPC_GPR11] = "gpr11",
++	[PERF_REG_POWERPC_GPR12] = "gpr12",
++	[PERF_REG_POWERPC_GPR13] = "gpr13",
++	[PERF_REG_POWERPC_GPR14] = "gpr14",
++	[PERF_REG_POWERPC_GPR15] = "gpr15",
++	[PERF_REG_POWERPC_GPR16] = "gpr16",
++	[PERF_REG_POWERPC_GPR17] = "gpr17",
++	[PERF_REG_POWERPC_GPR18] = "gpr18",
++	[PERF_REG_POWERPC_GPR19] = "gpr19",
++	[PERF_REG_POWERPC_GPR20] = "gpr20",
++	[PERF_REG_POWERPC_GPR21] = "gpr21",
++	[PERF_REG_POWERPC_GPR22] = "gpr22",
++	[PERF_REG_POWERPC_GPR23] = "gpr23",
++	[PERF_REG_POWERPC_GPR24] = "gpr24",
++	[PERF_REG_POWERPC_GPR25] = "gpr25",
++	[PERF_REG_POWERPC_GPR26] = "gpr26",
++	[PERF_REG_POWERPC_GPR27] = "gpr27",
++	[PERF_REG_POWERPC_GPR28] = "gpr28",
++	[PERF_REG_POWERPC_GPR29] = "gpr29",
++	[PERF_REG_POWERPC_GPR30] = "gpr30",
++	[PERF_REG_POWERPC_GPR31] = "gpr31",
++	[PERF_REG_POWERPC_NIP] = "nip",
++	[PERF_REG_POWERPC_MSR] = "msr",
++	[PERF_REG_POWERPC_ORIG_R3] = "orig_r3",
++	[PERF_REG_POWERPC_CTR] = "ctr",
++	[PERF_REG_POWERPC_LNK] = "lnk",
++	[PERF_REG_POWERPC_XER] = "xer",
++	[PERF_REG_POWERPC_CCR] = "ccr",
++	[PERF_REG_POWERPC_TRAP] = "trap",
++	[PERF_REG_POWERPC_DAR] = "dar",
++	[PERF_REG_POWERPC_DSISR] = "dsisr"
++};
++
++static inline const char *perf_reg_name(int id)
++{
++	return reg_names[id];
++}
++#endif /* ARCH_PERF_REGS_H */
+diff --git a/tools/perf/config/Makefile b/tools/perf/config/Makefile
+index 38a0853..62a2f2d 100644
+--- a/tools/perf/config/Makefile
++++ b/tools/perf/config/Makefile
+@@ -23,6 +23,11 @@ $(call detected_var,ARCH)
+ 
+ NO_PERF_REGS := 1
+ 
++# Additional ARCH settings for ppc64
++ifeq ($(ARCH),powerpc)
++  NO_PERF_REGS := 0
++endif
++
+ # Additional ARCH settings for x86
+ ifeq ($(ARCH),x86)
+   $(call detected,CONFIG_X86)
+-- 
+2.1.0
