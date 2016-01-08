@@ -1,19 +1,30 @@
-Return-Path: <raghav@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0137.outbound.protection.outlook.com [157.56.110.137])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1F6571A01E3
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jan 2016 00:52:30 +1100 (AEDT)
-From: Raghav Dogra <raghav@freescale.com>
-To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-CC: <oss@buserror.net>, <prabhakar.kushwaha@nxp.com>, Raghav Dogra
- <raghav@freescale.com>, Prabhakar Kushwaha <prabhakar@freescale.com>
-Subject: [PATCH][v2] drivers/memory: Add deep sleep support for IFC
-Date: Fri, 8 Jan 2016 16:48:49 +0530
-Message-ID: <1452251929-18368-1-git-send-email-raghav@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B75F71A01E3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jan 2016 02:52:08 +1100 (AEDT)
+Date: Fri, 8 Jan 2016 16:52:03 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Jiri Olsa <jolsa@kernel.org>, "Wangnan (F)" <wangnan0@huawei.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sukadev@linux.vnet.ibm.com
+Subject: Re: [PATCH v4] perf: bpf: Fix build breakage due to libbpf
+Message-ID: <20160108155203.GA28533@krava.brq.redhat.com>
+References: <1450150557-127942-4-git-send-email-wangnan0@huawei.com>
+ <1450169473-137129-1-git-send-email-wangnan0@huawei.com>
+ <20151215114046.GG23726@naverao1-tp.in.ibm.com>
+ <20151216194234.GA19926@kernel.org> <56720FFB.5060407@huawei.com>
+ <20151217050714.GB21524@naverao1-tp.ibm.com>
+ <20151217121939.GH19926@kernel.org>
+ <20160107065709.GA2459@naverao1-tp.ibm.com>
+ <20160107203957.GG18457@kernel.org>
+ <20160107212303.GI18457@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160107212303.GI18457@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,242 +34,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support of suspend, resume function to support deep sleep.
-Also make sure of SRAM initialization  during resume.
+On Thu, Jan 07, 2016 at 06:23:03PM -0300, Arnaldo Carvalho de Melo wrote:
+> Em Thu, Jan 07, 2016 at 05:39:57PM -0300, Arnaldo Carvalho de Melo escreveu:
+> > Em Thu, Jan 07, 2016 at 12:28:15PM +0530, Naveen N. Rao escreveu:
+> > > Can you please push at least the initial 3 patches of this for v4.4?  
+> > > Wang Nan has posted v6 here:
+> > > http://thread.gmane.org/gmane.linux.kernel/2110626
+>  
+> > So I tried it again today, from the v6, the latest patch with that
+> > subject line in my inbox, and I get this, after applying the first three
+> > patches:
+>  
+> > [acme@zoo linux]$ make -C tools clean > /dev/null
+> > [acme@zoo linux]$ make -C tools/perf build-test
+> > make: Entering directory '/home/git/linux/tools/perf'
+> > Testing Makefile
+> > tests/make:15: /scripts/Makefile.arch: No such file or directory
+> > make[2]: *** No rule to make target '/scripts/Makefile.arch'.  Stop.
+> > tests/make:5: recipe for target 'all' failed
+> > make[1]: *** [all] Error 2
+> > Makefile:81: recipe for target 'build-test' failed
+> > make: *** [build-test] Error 2
+> > make: Leaving directory '/home/git/linux/tools/perf'
+> > [acme@zoo linux]$
+> 
+> > Trying to figure this out...
+> 
+> So, this doesn't seem to have been tessted, this part, specifically:
+> 
+> diff --git a/tools/perf/tests/make b/tools/perf/tests/make
+> index 8ea3dffc5065..cd9c3ce1a5c2 100644
+> --- a/tools/perf/tests/make
+> +++ b/tools/perf/tests/make
+> @@ -12,7 +12,7 @@ endif
+>  else
+>  PERF := .
+>  
+> -include config/Makefile.arch
+> +include $(srctree)/scripts/Makefile.arch
+>  
+>  # FIXME looks like x86 is the only arch running tests ;-)
+>  # we need some IS_(32/64) flag to make this generic
+> 
+> 
+> ----------------------------------------------------
+> 
+> Because $(srctree) is not set at that point, I copied the needed bits from
+> tools/perf/Makefile.perf and got the patch below, which makes:L
+> 
+>   make -C tools/perf build-test
+> 
+> Work for me again.
+> 
+> This should wrap up the day nicely, making me think of Jens Axboe recent
+> cool reaction to an untested patch:
+> 
+> http://lkml.kernel.org/r/5661C2BC.9030007@kernel.dk
+> 
+> :-)
+> 
+> Jiri, are you ok with the patch below, on top of the second patch in
+> Wang's series, that you acked?
 
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-Signed-off-by: Raghav Dogra <raghav@freescale.com>
----
-Changes for v2: Copying only the correct registers while resume.
-Based on git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
-branch "next"
+yep, looks good to me
 
- drivers/memory/fsl_ifc.c | 163 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fsl_ifc.h  |   6 ++
- 2 files changed, 169 insertions(+)
-
-diff --git a/drivers/memory/fsl_ifc.c b/drivers/memory/fsl_ifc.c
-index e87459f..f5186fa 100644
---- a/drivers/memory/fsl_ifc.c
-+++ b/drivers/memory/fsl_ifc.c
-@@ -23,6 +23,7 @@
- #include <linux/kernel.h>
- #include <linux/compiler.h>
- #include <linux/spinlock.h>
-+#include <linux/delay.h>
- #include <linux/types.h>
- #include <linux/slab.h>
- #include <linux/io.h>
-@@ -34,6 +35,8 @@
- 
- struct fsl_ifc_ctrl *fsl_ifc_ctrl_dev;
- EXPORT_SYMBOL(fsl_ifc_ctrl_dev);
-+#define FSL_IFC_V1_3_0	0x01030000
-+#define IFC_TIMEOUT_MSECS	100000 /* 100ms */
- 
- /*
-  * convert_ifc_address - convert the base address
-@@ -308,6 +311,161 @@ err:
- 	return ret;
- }
- 
-+#ifdef CONFIG_PM_SLEEP
-+/* save ifc registers */
-+static int fsl_ifc_suspend(struct device *dev)
-+{
-+	struct fsl_ifc_ctrl *ctrl = dev_get_drvdata(dev);
-+	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	__be32 nand_evter_intr_en, cm_evter_intr_en, nor_evter_intr_en,
-+							 gpcm_evter_intr_en;
-+
-+	ctrl->saved_regs = kzalloc(sizeof(struct fsl_ifc_regs), GFP_KERNEL);
-+	if (!ctrl->saved_regs)
-+		return -ENOMEM;
-+
-+	cm_evter_intr_en = ifc_in32(&ifc->cm_evter_intr_en);
-+	nand_evter_intr_en = ifc_in32(&ifc->ifc_nand.nand_evter_intr_en);
-+	nor_evter_intr_en = ifc_in32(&ifc->ifc_nor.nor_evter_intr_en);
-+	gpcm_evter_intr_en = ifc_in32(&ifc->ifc_gpcm.gpcm_evter_intr_en);
-+
-+/* IFC interrupts disabled */
-+
-+	ifc_out32(0x0, &ifc->cm_evter_intr_en);
-+	ifc_out32(0x0, &ifc->ifc_nand.nand_evter_intr_en);
-+	ifc_out32(0x0, &ifc->ifc_nor.nor_evter_intr_en);
-+	ifc_out32(0x0, &ifc->ifc_gpcm.gpcm_evter_intr_en);
-+
-+	memcpy_fromio(ctrl->saved_regs, ifc, sizeof(struct fsl_ifc_regs));
-+
-+/* save the interrupt values */
-+	ctrl->saved_regs->cm_evter_intr_en = cm_evter_intr_en;
-+	ctrl->saved_regs->ifc_nand.nand_evter_intr_en = nand_evter_intr_en;
-+	ctrl->saved_regs->ifc_nor.nor_evter_intr_en = nor_evter_intr_en;
-+	ctrl->saved_regs->ifc_gpcm.gpcm_evter_intr_en = gpcm_evter_intr_en;
-+
-+	return 0;
-+}
-+
-+/* restore ifc registers */
-+static int fsl_ifc_resume(struct device *dev)
-+{
-+	struct fsl_ifc_ctrl *ctrl = dev_get_drvdata(dev);
-+	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	struct fsl_ifc_regs *savd_regs = ctrl->saved_regs;
-+	uint32_t ver = 0, ncfgr, status, ifc_bank, i;
-+
-+/*
-+ * IFC interrupts disabled
-+ */
-+	ifc_out32(0x0, &ifc->cm_evter_intr_en);
-+	ifc_out32(0x0, &ifc->ifc_nand.nand_evter_intr_en);
-+	ifc_out32(0x0, &ifc->ifc_nor.nor_evter_intr_en);
-+	ifc_out32(0x0, &ifc->ifc_gpcm.gpcm_evter_intr_en);
-+
-+
-+	if (ctrl->saved_regs) {
-+		for (ifc_bank = 0; ifc_bank < FSL_IFC_BANK_COUNT; ifc_bank++) {
-+			ifc_out32(savd_regs->cspr_cs[ifc_bank].cspr_ext,
-+					&ifc->cspr_cs[ifc_bank].cspr_ext);
-+			ifc_out32(savd_regs->cspr_cs[ifc_bank].cspr,
-+					&ifc->cspr_cs[ifc_bank].cspr);
-+			ifc_out32(savd_regs->amask_cs[ifc_bank].amask,
-+					&ifc->amask_cs[ifc_bank].amask);
-+			ifc_out32(savd_regs->csor_cs[ifc_bank].csor_ext,
-+					&ifc->csor_cs[ifc_bank].csor_ext);
-+			ifc_out32(savd_regs->csor_cs[ifc_bank].csor,
-+					&ifc->csor_cs[ifc_bank].csor);
-+			for (i = 0; i < 4; i++) {
-+				ifc_out32(savd_regs->ftim_cs[ifc_bank].ftim[i],
-+					&ifc->ftim_cs[ifc_bank].ftim[i]);
-+			}
-+		}
-+		ifc_out32(savd_regs->ifc_gcr, &ifc->ifc_gcr);
-+		ifc_out32(savd_regs->cm_evter_en, &ifc->cm_evter_en);
-+
-+/*
-+* IFC controller NAND machine registers
-+*/
-+		ifc_out32(savd_regs->ifc_nand.ncfgr, &ifc->ifc_nand.ncfgr);
-+		ifc_out32(savd_regs->ifc_nand.nand_fcr0,
-+						&ifc->ifc_nand.nand_fcr0);
-+		ifc_out32(savd_regs->ifc_nand.nand_fcr1,
-+						&ifc->ifc_nand.nand_fcr1);
-+		ifc_out32(savd_regs->ifc_nand.row0, &ifc->ifc_nand.row0);
-+		ifc_out32(savd_regs->ifc_nand.row1, &ifc->ifc_nand.row1);
-+		ifc_out32(savd_regs->ifc_nand.col0, &ifc->ifc_nand.col0);
-+		ifc_out32(savd_regs->ifc_nand.col1, &ifc->ifc_nand.col1);
-+		ifc_out32(savd_regs->ifc_nand.row2, &ifc->ifc_nand.row2);
-+		ifc_out32(savd_regs->ifc_nand.col2, &ifc->ifc_nand.col2);
-+		ifc_out32(savd_regs->ifc_nand.row3, &ifc->ifc_nand.row3);
-+		ifc_out32(savd_regs->ifc_nand.col3, &ifc->ifc_nand.col3);
-+		ifc_out32(savd_regs->ifc_nand.nand_fbcr,
-+						&ifc->ifc_nand.nand_fbcr);
-+		ifc_out32(savd_regs->ifc_nand.nand_fir0,
-+						&ifc->ifc_nand.nand_fir0);
-+		ifc_out32(savd_regs->ifc_nand.nand_fir1,
-+						&ifc->ifc_nand.nand_fir1);
-+		ifc_out32(savd_regs->ifc_nand.nand_fir2,
-+						&ifc->ifc_nand.nand_fir2);
-+		ifc_out32(savd_regs->ifc_nand.nand_csel,
-+						&ifc->ifc_nand.nand_csel);
-+		ifc_out32(savd_regs->ifc_nand.nandseq_strt,
-+						&ifc->ifc_nand.nandseq_strt);
-+		ifc_out32(savd_regs->ifc_nand.nand_evter_en,
-+						&ifc->ifc_nand.nand_evter_en);
-+		ifc_out32(savd_regs->ifc_nand.nanndcr, &ifc->ifc_nand.nanndcr);
-+
-+/*
-+* IFC controller NOR machine registers
-+*/
-+		ifc_out32(savd_regs->ifc_nor.nor_evter_en,
-+					&ifc->ifc_nor.nor_evter_en);
-+		ifc_out32(savd_regs->ifc_nor.norcr, &ifc->ifc_nor.norcr);
-+
-+/*
-+ * IFC controller GPCM Machine registers
-+ */
-+		ifc_out32(savd_regs->ifc_gpcm.gpcm_evter_en,
-+					&ifc->ifc_gpcm.gpcm_evter_en);
-+
-+
-+
-+/*
-+ * IFC interrupts enabled
-+ */
-+	ifc_out32(ctrl->saved_regs->cm_evter_intr_en, &ifc->cm_evter_intr_en);
-+	ifc_out32(ctrl->saved_regs->ifc_nand.nand_evter_intr_en,
-+					&ifc->ifc_nand.nand_evter_intr_en);
-+	ifc_out32(ctrl->saved_regs->ifc_nor.nor_evter_intr_en,
-+					&ifc->ifc_nor.nor_evter_intr_en);
-+	ifc_out32(ctrl->saved_regs->ifc_gpcm.gpcm_evter_intr_en,
-+					&ifc->ifc_gpcm.gpcm_evter_intr_en);
-+
-+		kfree(ctrl->saved_regs);
-+		ctrl->saved_regs = NULL;
-+	}
-+
-+	ver = ifc_in32(&ctrl->regs->ifc_rev);
-+	ncfgr = ifc_in32(&ifc->ifc_nand.ncfgr);
-+	if (ver >= FSL_IFC_V1_3_0) {
-+
-+		ifc_out32(ncfgr | IFC_NAND_SRAM_INIT_EN,
-+					&ifc->ifc_nand.ncfgr);
-+		/* wait for  SRAM_INIT bit to be clear or timeout */
-+		status = spin_event_timeout(
-+					!(ifc_in32(&ifc->ifc_nand.ncfgr)
-+					& IFC_NAND_SRAM_INIT_EN),
-+					IFC_TIMEOUT_MSECS, 0);
-+
-+		if (!status)
-+			dev_err(ctrl->dev, "Timeout waiting for IFC SRAM INIT");
-+	}
-+
-+	return 0;
-+}
-+#endif /* CONFIG_PM_SLEEP */
-+
- static const struct of_device_id fsl_ifc_match[] = {
- 	{
- 		.compatible = "fsl,ifc",
-@@ -315,10 +473,15 @@ static const struct of_device_id fsl_ifc_match[] = {
- 	{},
- };
- 
-+static const struct dev_pm_ops ifc_pm_ops = {
-+	SET_SYSTEM_SLEEP_PM_OPS(fsl_ifc_suspend, fsl_ifc_resume)
-+};
-+
- static struct platform_driver fsl_ifc_ctrl_driver = {
- 	.driver = {
- 		.name	= "fsl-ifc",
- 		.of_match_table = fsl_ifc_match,
-+		.pm = &ifc_pm_ops,
- 	},
- 	.probe       = fsl_ifc_ctrl_probe,
- 	.remove      = fsl_ifc_ctrl_remove,
-diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
-index 0023088..850481a 100644
---- a/include/linux/fsl_ifc.h
-+++ b/include/linux/fsl_ifc.h
-@@ -270,6 +270,8 @@
-  */
- /* Auto Boot Mode */
- #define IFC_NAND_NCFGR_BOOT		0x80000000
-+/* SRAM INIT EN */
-+#define IFC_NAND_SRAM_INIT_EN		0x20000000
- /* Addressing Mode-ROW0+n/COL0 */
- #define IFC_NAND_NCFGR_ADDR_MODE_RC0	0x00000000
- /* Addressing Mode-ROW0+n/COL0+n */
-@@ -842,6 +844,10 @@ struct fsl_ifc_ctrl {
- 	u32 nand_stat;
- 	wait_queue_head_t nand_wait;
- 	bool little_endian;
-+#ifdef CONFIG_PM_SLEEP
-+	/* save regs when system go to deep-sleep */
-+	struct fsl_ifc_regs		*saved_regs;
-+#endif
- };
- 
- extern struct fsl_ifc_ctrl *fsl_ifc_ctrl_dev;
--- 
-1.9.1
+thanks,
+jirka
