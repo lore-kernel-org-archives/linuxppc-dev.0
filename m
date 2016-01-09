@@ -1,25 +1,28 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from smtprelay.hostedemail.com (smtprelay0161.hostedemail.com
- [216.40.44.161])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C0C31A0007
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jan 2016 09:51:01 +1100 (AEDT)
-Date: Fri, 8 Jan 2016 17:50:53 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- chuhu@redhat.com
-Subject: Re: [RFC][PATCH] ppc: Implement save_stack_trace_regs()
-Message-ID: <20160108175053.04e4296f@gandalf.local.home>
-In-Reply-To: <20151216122419.385f1306@gandalf.local.home>
-References: <20151208135056.718b7668@gandalf.local.home>
- <1449620422.6028.6.camel@ellerman.id.au>
- <20151208192844.70fb33e6@gandalf.local.home>
- <1449622985.6028.8.camel@ellerman.id.au>
- <20151216122419.385f1306@gandalf.local.home>
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by lists.ozlabs.org (Postfix) with ESMTP id 803631A06BC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jan 2016 13:03:37 +1100 (AEDT)
+Date: Sat, 9 Jan 2016 10:03:20 +0800
+From: Fengguang Wu <fengguang.wu@intel.com>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: "Wangnan (F)" <wangnan0@huawei.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Jiri Olsa <jolsa@kernel.org>,
+ linux-kernel@vger.kernel.org, sukadev@linux.vnet.ibm.com,
+ Philip Li <philip.li@intel.com>
+Subject: Re: [PATCH v4] perf: bpf: Fix build breakage due to libbpf
+Message-ID: <20160109020320.GB20684@wfg-t540p.sh.intel.com>
+References: <20151216194234.GA19926@kernel.org> <56720FFB.5060407@huawei.com>
+ <20151217050714.GB21524@naverao1-tp.ibm.com>
+ <20151217121939.GH19926@kernel.org>
+ <20160107065709.GA2459@naverao1-tp.ibm.com>
+ <20160107203957.GG18457@kernel.org>
+ <20160108053854.GB2459@naverao1-tp.ibm.com>
+ <20160108125157.GC19314@kernel.org> <568FBA42.3030006@huawei.com>
+ <20160108134608.GF19314@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160108134608.GF19314@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 16 Dec 2015 12:24:19 -0500
-Steven Rostedt <rostedt@goodmis.org> wrote:
+Hi Arnaldo,
 
-> On Wed, 09 Dec 2015 12:03:05 +1100
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Fri, Jan 08, 2016 at 10:46:08AM -0300, Arnaldo Carvalho de Melo wrote:
+> Em Fri, Jan 08, 2016 at 09:31:46PM +0800, Wangnan (F) escreveu:
+> > On 2016/1/8 20:51, Arnaldo Carvalho de Melo wrote:
+> > >Em Fri, Jan 08, 2016 at 11:09:35AM +0530, Naveen N. Rao escreveu:
+> > >>On 2016/01/07 05:39PM, Arnaldo Carvalho de Melo wrote:
+> > >>>Em Thu, Jan 07, 2016 at 12:28:15PM +0530, Naveen N. Rao escreveu:
+> > >>>>On 2015/12/17 09:19AM, Arnaldo Carvalho de Melo wrote:
+> > >>>>>Em Thu, Dec 17, 2015 at 10:37:14AM +0530, Naveen N. Rao escreveu:
+> > >>>>Arnaldo,
+> > >>>>Can you please push at least the initial 3 patches of this for v4.4?
+> > >>>>Wang Nan has posted v6 here:
+> > >>>>http://thread.gmane.org/gmane.linux.kernel/2110626
+> > >>>So I tried it again today, from the v6, the latest patch with that
+> > >>>subject line in my inbox, and I get this, after applying the first three
+> > >>>patches:
 > 
-> > > > Should I take this via powerpc or do you want it to go in via tracing?    
-> > > 
-> > > You can take it. And you can replace the PT_R1 if you want. I just
-> > > noticed that it was defined, and I try to use macro names instead of
-> > > hard coded numbers. I was actually looking for a "PT_SP" :-)    
-> > 
-> > OK thanks.
-> > 
-> > Looks like we actually have:
-> > 
-> >   #define kernel_stack_pointer(regs) ((regs)->gpr[1])
-> > 
-> > So that would be the most self documenting way to do it I guess, though I've
-> > never actually seen that macro used anywhere before :)  
+> > >>>$ make -C tools clean > /dev/null
+> > >>>$ make -C tools/perf build-test
+> > >>Thanks, and sorry for the slip-up there - I should've caught that.
+> > >The important thing is that it gets caught before getting to Ingo, let
+> > >alone Linus, but if you get it before me, I'd appreciate as well 8-)
+>  
+> > Is it possible to ask Fengguang Wu to help us adding perf building test
+> > in his kbuild testing system?
 > 
-> Hi,
+> I was thinking about this yesterday, when, IIRC, a change made by Kan
+> Liang (IIRC) to a kernel/events/ file, in the kernel proper, triggered a
+> warning about some casts and I got a warning, since I was in the commig
+> log CC list.
 > 
-> Are you going to take this, or do you want me to?
-> 
-> -- Steve
+> Since perf is in the kernel sources, and since we have the 'make -C
+> tools/perf build-test' harness, that would be really great to have it
+> hooked into the 0day bot...
 
-Ping?
+Yes it should be handy to do so.
+CC Philip, he's now maintaining the 0day system.
 
--- Steve
+Thanks,
+Fengguang
