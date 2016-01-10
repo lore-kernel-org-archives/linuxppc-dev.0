@@ -2,9 +2,9 @@ Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C21C1A17C6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 01:17:37 +1100 (AEDT)
-Date: Sun, 10 Jan 2016 16:17:27 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id E28FA1A0BED
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 01:17:45 +1100 (AEDT)
+Date: Sun, 10 Jan 2016 16:17:35 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -21,9 +21,10 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
  user-mode-linux-devel@lists.sourceforge.net,
  adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ingo Molnar <mingo@kernel.org>
-Subject: [PATCH v3 07/41] sparc: reuse asm-generic/barrier.h
-Message-ID: <1452426622-4471-8-git-send-email-mst@redhat.com>
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Ingo Molnar <mingo@kernel.org>, Richard Woodruff <r-woodruff2@ti.com>
+Subject: [PATCH v3 08/41] arm: reuse asm-generic/barrier.h
+Message-ID: <1452426622-4471-9-git-send-email-mst@redhat.com>
 References: <1452426622-4471-1-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -37,88 +38,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On sparc 64 bit dma_rmb, dma_wmb, smp_store_mb, smp_mb, smp_rmb,
-smp_wmb, read_barrier_depends and smp_read_barrier_depends match the
-asm-generic variants exactly. Drop the local definitions and pull in
-asm-generic/barrier.h instead.
-
-nop uses __asm__ __volatile but is otherwise identical to
-the generic version, drop that as well.
+On arm smp_store_mb, read_barrier_depends, smp_read_barrier_depends,
+smp_store_release, smp_load_acquire, smp_mb__before_atomic and
+smp_mb__after_atomic match the asm-generic variants exactly. Drop the
+local definitions and pull in asm-generic/barrier.h instead.
 
 This is in preparation to refactoring this code area.
 
-Note: nop() was in processor.h and not in barrier.h as on other
-architectures. Nothing seems to depend on it being there though.
-
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 Acked-by: Arnd Bergmann <arnd@arndb.de>
-Acked-by: David S. Miller <davem@davemloft.net>
+Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- arch/sparc/include/asm/barrier_32.h |  1 -
- arch/sparc/include/asm/barrier_64.h | 21 ++-------------------
- arch/sparc/include/asm/processor.h  |  3 ---
- 3 files changed, 2 insertions(+), 23 deletions(-)
+ arch/arm/include/asm/barrier.h | 23 +----------------------
+ 1 file changed, 1 insertion(+), 22 deletions(-)
 
-diff --git a/arch/sparc/include/asm/barrier_32.h b/arch/sparc/include/asm/barrier_32.h
-index ae69eda..8059130 100644
---- a/arch/sparc/include/asm/barrier_32.h
-+++ b/arch/sparc/include/asm/barrier_32.h
-@@ -1,7 +1,6 @@
- #ifndef __SPARC_BARRIER_H
- #define __SPARC_BARRIER_H
+diff --git a/arch/arm/include/asm/barrier.h b/arch/arm/include/asm/barrier.h
+index 3ff5642..31152e8 100644
+--- a/arch/arm/include/asm/barrier.h
++++ b/arch/arm/include/asm/barrier.h
+@@ -70,28 +70,7 @@ extern void arm_heavy_mb(void);
+ #define smp_wmb()	dmb(ishst)
+ #endif
  
--#include <asm/processor.h> /* for nop() */
- #include <asm-generic/barrier.h>
- 
- #endif /* !(__SPARC_BARRIER_H) */
-diff --git a/arch/sparc/include/asm/barrier_64.h b/arch/sparc/include/asm/barrier_64.h
-index 14a9286..26c3f72 100644
---- a/arch/sparc/include/asm/barrier_64.h
-+++ b/arch/sparc/include/asm/barrier_64.h
-@@ -37,25 +37,6 @@ do {	__asm__ __volatile__("ba,pt	%%xcc, 1f\n\t" \
- #define rmb()	__asm__ __volatile__("":::"memory")
- #define wmb()	__asm__ __volatile__("":::"memory")
- 
--#define dma_rmb()	rmb()
--#define dma_wmb()	wmb()
+-#define smp_store_release(p, v)						\
+-do {									\
+-	compiletime_assert_atomic_type(*p);				\
+-	smp_mb();							\
+-	WRITE_ONCE(*p, v);						\
+-} while (0)
 -
--#define smp_store_mb(__var, __value) \
--	do { WRITE_ONCE(__var, __value); membar_safe("#StoreLoad"); } while(0)
+-#define smp_load_acquire(p)						\
+-({									\
+-	typeof(*p) ___p1 = READ_ONCE(*p);				\
+-	compiletime_assert_atomic_type(*p);				\
+-	smp_mb();							\
+-	___p1;								\
+-})
 -
--#ifdef CONFIG_SMP
--#define smp_mb()	mb()
--#define smp_rmb()	rmb()
--#define smp_wmb()	wmb()
--#else
--#define smp_mb()	__asm__ __volatile__("":::"memory")
--#define smp_rmb()	__asm__ __volatile__("":::"memory")
--#define smp_wmb()	__asm__ __volatile__("":::"memory")
--#endif
+-#define read_barrier_depends()		do { } while(0)
+-#define smp_read_barrier_depends()	do { } while(0)
 -
--#define read_barrier_depends()		do { } while (0)
--#define smp_read_barrier_depends()	do { } while (0)
+-#define smp_store_mb(var, value)	do { WRITE_ONCE(var, value); smp_mb(); } while (0)
 -
- #define smp_store_release(p, v)						\
- do {									\
- 	compiletime_assert_atomic_type(*p);				\
-@@ -74,4 +55,6 @@ do {									\
- #define smp_mb__before_atomic()	barrier()
- #define smp_mb__after_atomic()	barrier()
- 
+-#define smp_mb__before_atomic()	smp_mb()
+-#define smp_mb__after_atomic()	smp_mb()
 +#include <asm-generic/barrier.h>
-+
- #endif /* !(__SPARC64_BARRIER_H) */
-diff --git a/arch/sparc/include/asm/processor.h b/arch/sparc/include/asm/processor.h
-index 2fe99e6..9da9646 100644
---- a/arch/sparc/include/asm/processor.h
-+++ b/arch/sparc/include/asm/processor.h
-@@ -5,7 +5,4 @@
- #else
- #include <asm/processor_32.h>
- #endif
--
--#define nop() 		__asm__ __volatile__ ("nop")
--
- #endif
+ 
+ #endif /* !__ASSEMBLY__ */
+ #endif /* __ASM_BARRIER_H */
 -- 
 MST
