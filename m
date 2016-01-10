@@ -1,27 +1,32 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
- [IPv6:2607:f8b0:400e:c03::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 51DBA1A0908
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jan 2016 11:59:48 +1100 (AEDT)
-Received: by mail-pa0-x22d.google.com with SMTP id yy13so209749568pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 09 Jan 2016 16:59:48 -0800 (PST)
-Date: Sat, 9 Jan 2016 16:59:42 -0800 (PST)
-From: Hugh Dickins <hughd@google.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Cyrill Gorcunov <gorcunov@gmail.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org
-Subject: [PATCH next] mm: make swapoff more robust against soft dirty
-In-Reply-To: <alpine.LSU.2.11.1601091651130.9808@eggly.anvils>
-Message-ID: <alpine.LSU.2.11.1601091656491.9808@eggly.anvils>
-References: <alpine.LSU.2.11.1601091651130.9808@eggly.anvils>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7E33B1A0908
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jan 2016 14:08:35 +1100 (AEDT)
+Received: from localhost
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Sun, 10 Jan 2016 01:08:29 -0200
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id F0A701DC0060
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jan 2016 22:08:22 -0500 (EST)
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0A35wUK29884750
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jan 2016 01:05:59 -0200
+Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
+ by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0A38P9Q008429
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jan 2016 01:08:25 -0200
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au, gwshan@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, gpiccoli@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/eeh: Validate arch in eeh_add_device_early()
+Date: Sun, 10 Jan 2016 01:08:15 -0200
+Message-Id: <1452395295-1759-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,66 +36,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Both s390 and powerpc have hit the issue of swapoff hanging, when
-CONFIG_HAVE_ARCH_SOFT_DIRTY and CONFIG_MEM_SOFT_DIRTY ifdefs were
-not quite as x86_64 had them.  I think it would be much clearer if
-HAVE_ARCH_SOFT_DIRTY was just a Kconfig option set by architectures
-to determine whether the MEM_SOFT_DIRTY option should be offered,
-and the actual code depend upon CONFIG_MEM_SOFT_DIRTY alone.
+Commit 89a51df5ab1d ("powerpc/eeh: Fix crash in eeh_add_device_early() on Cell")
+added a check on function eeh_add_device_early(): since in Cell arch eeh_ops
+is NULL, that code used to crash on Cell. The commit's approach was validate
+if EEH was available by checking the result of function eeh_enabled().
 
-But won't embark on that change myself: instead make swapoff more
-robust, by using pte_swp_clear_soft_dirty() on each pte it encounters,
-without an explicit #ifdef CONFIG_MEM_SOFT_DIRTY.  That being a no-op,
-whether the bit in question is defined as 0 or the asm-generic fallback
-is used, unless soft dirty is fully turned on.
+Since the function eeh_add_device_early() is used to perform EEH
+initialization in devices added later on the system, like in hotplug/DLPAR
+scenarios, we might reach a case in which no PCI devices are present on boot
+and so EEH is not initialized. Then, if a device is added via DLPAR for
+example, eeh_add_device_early() fails because eeh_enabled() is false.
 
-Why "maybe" in maybe_same_pte()?  Rename it pte_same_as_swp().
+We can hit a kernel oops on pSeries arch if eeh_add_device_early() fails:
+if we have no PCI devices on machine at boot time, and then we add a PCI device
+via DLPAR operation, the function query_ddw() triggers the oops on NULL pointer
+dereference in the line "cfg_addr = edev->config_addr;". It happens because
+config_addr in edev is NULL, since the function eeh_add_device_early() was not
+completed successfully.
 
-Signed-off-by: Hugh Dickins <hughd@google.com>
+This patch just changes the way the arch checking is done in function
+eeh_add_device_early(): we use no more eeh_enabled(), but instead we check the
+running architecture by using the macro machine_is(). If we are running on
+pSeries or PowerNV, the EEH mechanism can be enabled; otherwise, we bail out
+the function. This way, we don't enable EEH on Cell and we don't hit the oops
+on DLPAR either.
+
+Fixes: 89a51df5ab1d ("powerpc/eeh: Fix crash in eeh_add_device_early() on Cell")
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 ---
+ arch/powerpc/kernel/eeh.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
- mm/swapfile.c |   18 ++++--------------
- 1 file changed, 4 insertions(+), 14 deletions(-)
-
---- 4.4-next/mm/swapfile.c	2016-01-06 11:54:46.327006983 -0800
-+++ linux/mm/swapfile.c	2016-01-09 13:39:19.632872694 -0800
-@@ -1109,19 +1109,9 @@ unsigned int count_swap_pages(int type,
- }
- #endif /* CONFIG_HIBERNATION */
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 40e4d4a..81e2d3e 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -1072,7 +1072,13 @@ void eeh_add_device_early(struct pci_dn *pdn)
+ 	struct pci_controller *phb;
+ 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
  
--static inline int maybe_same_pte(pte_t pte, pte_t swp_pte)
-+static inline int pte_same_as_swp(pte_t pte, pte_t swp_pte)
- {
--#ifdef CONFIG_MEM_SOFT_DIRTY
--	/*
--	 * When pte keeps soft dirty bit the pte generated
--	 * from swap entry does not has it, still it's same
--	 * pte from logical point of view.
--	 */
--	pte_t swp_pte_dirty = pte_swp_mksoft_dirty(swp_pte);
--	return pte_same(pte, swp_pte) || pte_same(pte, swp_pte_dirty);
--#else
--	return pte_same(pte, swp_pte);
--#endif
-+	return pte_same(pte_swp_clear_soft_dirty(pte), swp_pte);
- }
+-	if (!edev || !eeh_enabled())
++	if (!edev)
++		return;
++
++	/* Some platforms (like Cell) don't have EEH capabilities, so we
++	 * need to abort here. In case of pseries or powernv, we have EEH
++	 * so we can continue. */
++	if (!machine_is(pseries) && !machine_is(powernv))
+ 		return;
  
- /*
-@@ -1150,7 +1140,7 @@ static int unuse_pte(struct vm_area_stru
- 	}
- 
- 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
--	if (unlikely(!maybe_same_pte(*pte, swp_entry_to_pte(entry)))) {
-+	if (unlikely(!pte_same_as_swp(*pte, swp_entry_to_pte(entry)))) {
- 		mem_cgroup_cancel_charge(page, memcg, false);
- 		ret = 0;
- 		goto out;
-@@ -1208,7 +1198,7 @@ static int unuse_pte_range(struct vm_are
- 		 * swapoff spends a _lot_ of time in this loop!
- 		 * Test inline before going to call unuse_pte.
- 		 */
--		if (unlikely(maybe_same_pte(*pte, swp_pte))) {
-+		if (unlikely(pte_same_as_swp(*pte, swp_pte))) {
- 			pte_unmap(pte);
- 			ret = unuse_pte(vma, pmd, addr, entry, page);
- 			if (ret)
+ 	if (!eeh_has_flag(EEH_PROBE_MODE_DEVTREE))
+-- 
+2.1.0
