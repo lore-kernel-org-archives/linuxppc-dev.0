@@ -2,9 +2,9 @@ Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 22C071A0D05
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 01:19:04 +1100 (AEDT)
-Date: Sun, 10 Jan 2016 16:18:54 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0D6F61A18FA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 01:19:12 +1100 (AEDT)
+Date: Sun, 10 Jan 2016 16:19:02 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -21,10 +21,9 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
  user-mode-linux-devel@lists.sourceforge.net,
  adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Russell King <rmk+kernel@arm.linux.org.uk>,
- Ingo Molnar <mingo@kernel.org>, Richard Woodruff <r-woodruff2@ti.com>
-Subject: [PATCH v3 17/41] arm: define __smp_xxx
-Message-ID: <1452426622-4471-18-git-send-email-mst@redhat.com>
+ Steven Miao <realmz6@gmail.com>
+Subject: [PATCH v3 18/41] blackfin: define __smp_xxx
+Message-ID: <1452426622-4471-19-git-send-email-mst@redhat.com>
 References: <1452426622-4471-1-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -38,41 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This defines __smp_xxx barriers for arm,
+This defines __smp_xxx barriers for blackfin,
 for use by virtualization.
 
 smp_xxx barriers are removed as they are
 defined correctly by asm-generic/barriers.h
 
-This reduces the amount of arch-specific boiler-plate code.
-
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 Acked-by: Arnd Bergmann <arnd@arndb.de>
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- arch/arm/include/asm/barrier.h | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+ arch/blackfin/include/asm/barrier.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/include/asm/barrier.h b/arch/arm/include/asm/barrier.h
-index 31152e8..112cc1a 100644
---- a/arch/arm/include/asm/barrier.h
-+++ b/arch/arm/include/asm/barrier.h
-@@ -60,15 +60,9 @@ extern void arm_heavy_mb(void);
- #define dma_wmb()	barrier()
- #endif
+diff --git a/arch/blackfin/include/asm/barrier.h b/arch/blackfin/include/asm/barrier.h
+index dfb66fe..7cca51c 100644
+--- a/arch/blackfin/include/asm/barrier.h
++++ b/arch/blackfin/include/asm/barrier.h
+@@ -78,8 +78,8 @@
  
--#ifndef CONFIG_SMP
--#define smp_mb()	barrier()
--#define smp_rmb()	barrier()
--#define smp_wmb()	barrier()
--#else
--#define smp_mb()	dmb(ish)
--#define smp_rmb()	smp_mb()
--#define smp_wmb()	dmb(ishst)
--#endif
-+#define __smp_mb()	dmb(ish)
-+#define __smp_rmb()	__smp_mb()
-+#define __smp_wmb()	dmb(ishst)
+ #endif /* !CONFIG_SMP */
+ 
+-#define smp_mb__before_atomic()	barrier()
+-#define smp_mb__after_atomic()	barrier()
++#define __smp_mb__before_atomic()	barrier()
++#define __smp_mb__after_atomic()	barrier()
  
  #include <asm-generic/barrier.h>
  
