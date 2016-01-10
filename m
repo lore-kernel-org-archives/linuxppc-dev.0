@@ -1,35 +1,27 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gorcunov@gmail.com>
+Received: from mail-lb0-x243.google.com (mail-lb0-x243.google.com
+ [IPv6:2a00:1450:4010:c04::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A079A1A0C63
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jan 2016 22:57:27 +1100 (AEDT)
-Date: Sun, 10 Jan 2016 13:57:17 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andy Whitcroft <apw@canonical.com>, Joe Perches <joe@perches.com>,
- Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
- linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
- linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-metag@vger.kernel.org,
- linux-mips@linux-mips.org, x86@kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ingo Molnar <mingo@kernel.org>, Tony Lindgren <tony@atomide.com>,
- Andrey Konovalov <andreyknvl@google.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: [PATCH v2 3/3] checkpatch: add virt barriers
-Message-ID: <1452427000-4520-4-git-send-email-mst@redhat.com>
-References: <1452427000-4520-1-git-send-email-mst@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8B4C41A09C0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 01:07:47 +1100 (AEDT)
+Received: by mail-lb0-x243.google.com with SMTP id bc4so16257586lbc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jan 2016 06:07:47 -0800 (PST)
+Date: Sun, 10 Jan 2016 17:07:40 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Hugh Dickins <hughd@google.com>
+Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Subject: Re: [PATCH next] powerpc/mm: fix _PAGE_SWP_SOFT_DIRTY breaking swapoff
+Message-ID: <20160110140740.GB4306@uranus>
+References: <alpine.LSU.2.11.1601091651130.9808@eggly.anvils>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1452427000-4520-1-git-send-email-mst@redhat.com>
+In-Reply-To: <alpine.LSU.2.11.1601091651130.9808@eggly.anvils>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,27 +31,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add virt_ barriers to list of barriers to check for
-presence of a comment.
+On Sat, Jan 09, 2016 at 04:54:59PM -0800, Hugh Dickins wrote:
+> Swapoff after swapping hangs on the G5, when CONFIG_CHECKPOINT_RESTORE=y
+> but CONFIG_MEM_SOFT_DIRTY is not set.  That's because the non-zero
+> _PAGE_SWP_SOFT_DIRTY bit, added by CONFIG_HAVE_ARCH_SOFT_DIRTY=y, is not
+> discounted when CONFIG_MEM_SOFT_DIRTY is not set: so swap ptes cannot be
+> recognized.
+> 
+> (I suspect that the peculiar dependence of HAVE_ARCH_SOFT_DIRTY on
+> CHECKPOINT_RESTORE in arch/powerpc/Kconfig comes from an incomplete
+> attempt to solve this problem.)
+> 
+> It's true that the relationship between CONFIG_HAVE_ARCH_SOFT_DIRTY and
+> and CONFIG_MEM_SOFT_DIRTY is too confusing, and it's true that swapoff
+> should be made more robust; but nevertheless, fix up the powerpc ifdefs
+> as x86_64 and s390 (which met the same problem) have them, defining the
+> bits as 0 if CONFIG_MEM_SOFT_DIRTY is not set.
+> 
+> Signed-off-by: Hugh Dickins <hughd@google.com>
+Reviewed-by: Cyrill Gorcunov <gorcunov@openvz.org>
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
----
- scripts/checkpatch.pl | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index a96adcb..5ca272b 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -5131,7 +5131,8 @@ sub process {
- 		}x;
- 		my $all_barriers = qr{
- 			$barriers|
--			smp_($smp_barriers)
-+			smp_($smp_barriers)|
-+			virt_($smp_barriers)
- 		}x;
- 
- 		if ($line =~ /\b($all_barriers)\s*\(/) {
--- 
-MST
+Thank you, Hugh!
