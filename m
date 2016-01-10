@@ -2,9 +2,9 @@ Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 63C321A18BC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 01:18:47 +1100 (AEDT)
-Date: Sun, 10 Jan 2016 16:18:36 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id C3F741A117A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 01:18:55 +1100 (AEDT)
+Date: Sun, 10 Jan 2016 16:18:45 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -21,14 +21,11 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
  user-mode-linux-devel@lists.sourceforge.net,
  adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Boqun Feng <boqun.feng@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@kernel.org>,
- Davidlohr Bueso <dave@stgolabs.net>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH v3 15/41] powerpc: define __smp_xxx
-Message-ID: <1452426622-4471-16-git-send-email-mst@redhat.com>
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Ingo Molnar <mingo@kernel.org>,
+ Andre Przywara <andre.przywara@arm.com>
+Subject: [PATCH v3 16/41] arm64: define __smp_xxx
+Message-ID: <1452426622-4471-17-git-send-email-mst@redhat.com>
 References: <1452426622-4471-1-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -42,71 +39,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This defines __smp_xxx barriers for powerpc
+This defines __smp_xxx barriers for arm64,
 for use by virtualization.
 
 smp_xxx barriers are removed as they are
 defined correctly by asm-generic/barriers.h
 
-This reduces the amount of arch-specific boiler-plate code.
+Note: arm64 does not support !SMP config,
+so smp_xxx and __smp_xxx are always equivalent.
 
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 Acked-by: Arnd Bergmann <arnd@arndb.de>
-Acked-by: Boqun Feng <boqun.feng@gmail.com>
 ---
- arch/powerpc/include/asm/barrier.h | 24 ++++++++----------------
- 1 file changed, 8 insertions(+), 16 deletions(-)
+ arch/arm64/include/asm/barrier.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-index 980ad0c..c0deafc 100644
---- a/arch/powerpc/include/asm/barrier.h
-+++ b/arch/powerpc/include/asm/barrier.h
-@@ -44,19 +44,11 @@
- #define dma_rmb()	__lwsync()
- #define dma_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
+diff --git a/arch/arm64/include/asm/barrier.h b/arch/arm64/include/asm/barrier.h
+index 91a43f4..dae5c49 100644
+--- a/arch/arm64/include/asm/barrier.h
++++ b/arch/arm64/include/asm/barrier.h
+@@ -35,11 +35,11 @@
+ #define dma_rmb()	dmb(oshld)
+ #define dma_wmb()	dmb(oshst)
  
--#ifdef CONFIG_SMP
--#define smp_lwsync()	__lwsync()
-+#define __smp_lwsync()	__lwsync()
- 
--#define smp_mb()	mb()
--#define smp_rmb()	__lwsync()
--#define smp_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
--#else
--#define smp_lwsync()	barrier()
--
--#define smp_mb()	barrier()
--#define smp_rmb()	barrier()
--#define smp_wmb()	barrier()
--#endif /* CONFIG_SMP */
-+#define __smp_mb()	mb()
-+#define __smp_rmb()	__lwsync()
-+#define __smp_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
- 
- /*
-  * This is a barrier which prevents following instructions from being
-@@ -67,18 +59,18 @@
- #define data_barrier(x)	\
- 	asm volatile("twi 0,%0,0; isync" : : "r" (x) : "memory");
+-#define smp_mb()	dmb(ish)
+-#define smp_rmb()	dmb(ishld)
+-#define smp_wmb()	dmb(ishst)
++#define __smp_mb()	dmb(ish)
++#define __smp_rmb()	dmb(ishld)
++#define __smp_wmb()	dmb(ishst)
  
 -#define smp_store_release(p, v)						\
 +#define __smp_store_release(p, v)						\
  do {									\
  	compiletime_assert_atomic_type(*p);				\
--	smp_lwsync();							\
-+	__smp_lwsync();							\
- 	WRITE_ONCE(*p, v);						\
+ 	switch (sizeof(*p)) {						\
+@@ -62,7 +62,7 @@ do {									\
+ 	}								\
  } while (0)
  
 -#define smp_load_acquire(p)						\
 +#define __smp_load_acquire(p)						\
  ({									\
- 	typeof(*p) ___p1 = READ_ONCE(*p);				\
+ 	union { typeof(*p) __val; char __c[1]; } __u;			\
  	compiletime_assert_atomic_type(*p);				\
--	smp_lwsync();							\
-+	__smp_lwsync();							\
- 	___p1;								\
- })
- 
 -- 
 MST
