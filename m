@@ -2,9 +2,9 @@ Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E38D11A0DC6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 01:21:40 +1100 (AEDT)
-Date: Sun, 10 Jan 2016 16:21:31 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 925A81A0C4E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 01:21:49 +1100 (AEDT)
+Date: Sun, 10 Jan 2016 16:21:39 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -21,9 +21,11 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
  user-mode-linux-devel@lists.sourceforge.net,
  adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Andy Whitcroft <apw@canonical.com>
-Subject: [PATCH v3 36/41] checkpatch: add virt barriers
-Message-ID: <1452426622-4471-37-git-send-email-mst@redhat.com>
+ David Vrabel <david.vrabel@citrix.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Subject: [PATCH v3 37/41] xenbus: use virt_xxx barriers
+Message-ID: <1452426622-4471-38-git-send-email-mst@redhat.com>
 References: <1452426622-4471-1-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -37,27 +39,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add virt_ barriers to list of barriers to check for
-presence of a comment.
+drivers/xen/xenbus/xenbus_comms.c uses
+full memory barriers to communicate with the other side.
+
+For guests compiled with CONFIG_SMP, smp_wmb and smp_mb
+would be sufficient, so mb() and wmb() here are only needed if
+a non-SMP guest runs on an SMP host.
+
+Switch to virt_xxx barriers which serve this exact purpose.
 
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+Acked-by: David Vrabel <david.vrabel@citrix.com>
 ---
- scripts/checkpatch.pl | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/xen/xenbus/xenbus_comms.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index a96adcb..5ca272b 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -5131,7 +5131,8 @@ sub process {
- 		}x;
- 		my $all_barriers = qr{
- 			$barriers|
--			smp_($smp_barriers)
-+			smp_($smp_barriers)|
-+			virt_($smp_barriers)
- 		}x;
+diff --git a/drivers/xen/xenbus/xenbus_comms.c b/drivers/xen/xenbus/xenbus_comms.c
+index fdb0f33..ecdecce 100644
+--- a/drivers/xen/xenbus/xenbus_comms.c
++++ b/drivers/xen/xenbus/xenbus_comms.c
+@@ -123,14 +123,14 @@ int xb_write(const void *data, unsigned len)
+ 			avail = len;
  
- 		if ($line =~ /\b($all_barriers)\s*\(/) {
+ 		/* Must write data /after/ reading the consumer index. */
+-		mb();
++		virt_mb();
+ 
+ 		memcpy(dst, data, avail);
+ 		data += avail;
+ 		len -= avail;
+ 
+ 		/* Other side must not see new producer until data is there. */
+-		wmb();
++		virt_wmb();
+ 		intf->req_prod += avail;
+ 
+ 		/* Implies mb(): other side will see the updated producer. */
+@@ -180,14 +180,14 @@ int xb_read(void *data, unsigned len)
+ 			avail = len;
+ 
+ 		/* Must read data /after/ reading the producer index. */
+-		rmb();
++		virt_rmb();
+ 
+ 		memcpy(data, src, avail);
+ 		data += avail;
+ 		len -= avail;
+ 
+ 		/* Other side must not see free space until we've copied out */
+-		mb();
++		virt_mb();
+ 		intf->rsp_cons += avail;
+ 
+ 		pr_debug("Finished read of %i bytes (%i to go)\n", avail, len);
 -- 
 MST
