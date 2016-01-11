@@ -1,26 +1,19 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 673F91A0B57
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:45:57 +1100 (AEDT)
-Received: by mail-pa0-x22c.google.com with SMTP id ho8so55125526pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jan 2016 21:45:57 -0800 (PST)
-Date: Sun, 10 Jan 2016 21:45:45 -0800 (PST)
-From: Hugh Dickins <hughd@google.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-cc: Hugh Dickins <hughd@google.com>, Andrew Morton <akpm@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org
-Subject: Re: [PATCH next] powerpc/mm: fix _PAGE_PTE breaking swapoff
-In-Reply-To: <87si24u32t.fsf@linux.vnet.ibm.com>
-Message-ID: <alpine.LSU.2.11.1601102122280.1485@eggly.anvils>
-References: <alpine.LSU.2.11.1601091643060.9808@eggly.anvils>
- <87si24u32t.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 303921A0BF1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:51:41 +1100 (AEDT)
+From: David Gibson <david@gibson.dropbear.id.au>
+To: paulus@samba.org, benh@kernel.crashing.org, michael@ellerman.id.au,
+ bharata@linux.vnet.ibm.com
+Cc: thuth@redhat.com, lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: [RFCv2 2/4] pseries: Add support for hash table resizing
+Date: Mon, 11 Jan 2016 16:52:31 +1100
+Message-Id: <1452491553-26153-3-git-send-email-david@gibson.dropbear.id.au>
+In-Reply-To: <1452491553-26153-1-git-send-email-david@gibson.dropbear.id.au>
+References: <1452491553-26153-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,53 +23,147 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 11 Jan 2016, Aneesh Kumar K.V wrote:
-> Hugh Dickins <hughd@google.com> writes:
-> 
-> > Swapoff after swapping hangs on the G5.  That's because the _PAGE_PTE
-> > bit, added by set_pte_at(), is not expected by swapoff: so swap ptes
-> > cannot be recognized.
-> >
-> > I'm not sure whether a swap pte should or should not have _PAGE_PTE set:
-> > this patch assumes not, and fixes set_pte_at() to set _PAGE_PTE only on
-> > present entries.
-> 
-> One of the reason we added _PAGE_PTE is to enable HUGETLB migration. So
-> we want migratio ptes to have _PAGE_PTE set.
+This adds support for using experimental hypercalls to change the size
+of the main hash page table while running as a PAPR guest.  For now these
+hypercalls are only in experimental qemu versions.
 
-Okay, I won't pretend to understand the role of _PAGE_PTE in that;
-but if it helps you to have _PAGE_PTE set in (swap and) migration entries,
-that's very easily done with the alternative I suggested for pgtable.h:
+The interface is two part: first H_RESIZE_HPT_PREPARE is used to allocate
+and prepare the new hash table.  This may be slow, but can be done
+asynchronously.  Then, H_RESIZE_HPT_COMMIT is used to switch to the new
+hash table.  This requires that no CPUs be concurrently updating the HPT,
+and so must be run under stop_machine().
 
--#define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
--#define __swp_entry_to_pte(x)		__pte((x).val)
-+#define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val(pte) & ~_PAGE_PTE })
-+#define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
+This patch only supplies a function to execute the hash table change,
+nothing yet calls it.
 
-I did test that variant (with set_pte_at() restored to how you have it);
-but not understanding _PAGE_PTE, I thought it odd to have in a swap entry.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/platforms/pseries/lpar.c | 109 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 109 insertions(+)
 
-> 
-> >
-> > But if that's wrong, a reasonable alternative would be to
-> > #define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val(pte) & ~_PAGE_PTE })
-> > #define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
-> >
-> 
-> We do clear _PAGE_PTE bits, when converting swp_entry_t to type and
-> offset. Can you share the stack trace for the hang, which will help me
-> understand this more ? . 
-
-The stack trace can be anywhere below try_to_unuse() in mm/swapfile.c,
-since swapoff is circling around and around that function, reading from
-each used swap block into a page, then trying to find where that page
-belongs, looking at every non-file pte of every mm that ever swapped.
-
-The code to look at is unuse_pte_range(), which at the top does
-	pte_t swp_pte = swp_entry_to_pte(entry)
-to get the form it hopes to find in the page table; then scans doing
-		if (unlikely(maybe_same_pte(*pte, swp_pte))) {
-on each pte slot.  Ignoring the MEM_SOFT_DIRTY complication (which
-had its own independent bug) maybe_same_pte() just does pte_same().
-
-Hugh
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index b7a67e3..f6e7af5 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -27,6 +27,8 @@
+ #include <linux/console.h>
+ #include <linux/export.h>
+ #include <linux/jump_label.h>
++#include <linux/delay.h>
++#include <linux/stop_machine.h>
+ #include <asm/processor.h>
+ #include <asm/mmu.h>
+ #include <asm/page.h>
+@@ -794,3 +796,110 @@ int h_get_mpp_x(struct hvcall_mpp_x_data *mpp_x_data)
+ 
+ 	return rc;
+ }
++
++#define HPT_RESIZE_TIMEOUT	10000 /* ms */
++
++struct hpt_resize_state {
++	unsigned long shift;
++	int commit_rc;
++};
++
++static int pseries_lpar_resize_hpt_commit(void *data)
++{
++	struct hpt_resize_state *state = data;
++
++	state->commit_rc = plpar_resize_hpt_commit(0, state->shift);
++	if (state->commit_rc != H_SUCCESS)
++		return -EIO;
++
++	/* Hypervisor has transitioned the HTAB, update our globals */
++	ppc64_pft_size = state->shift;
++	htab_size_bytes = 1UL << ppc64_pft_size;
++	htab_hash_mask = (htab_size_bytes >> 7) - 1;
++
++	return 0;
++}
++
++/* Must be called in user context */
++int pseries_lpar_resize_hpt(unsigned long shift)
++{
++	struct hpt_resize_state state = {
++		.shift = shift,
++		.commit_rc = H_FUNCTION,
++	};
++	unsigned int delay, total_delay = 0;
++	int rc;
++	ktime_t t0, t1, t2;
++
++	might_sleep();
++
++	if (!firmware_has_feature(FW_FEATURE_HPT_RESIZE))
++		return -ENODEV;
++
++	printk(KERN_INFO "lpar: Attempting to resize HPT to shift %lu\n",
++	       shift);
++
++	t0 = ktime_get();
++
++	rc = plpar_resize_hpt_prepare(0, shift);
++	while (H_IS_LONG_BUSY(rc)) {
++		delay = get_longbusy_msecs(rc);
++		total_delay += delay;
++		if (total_delay > HPT_RESIZE_TIMEOUT) {
++			/* prepare call with shift==0 cancels an
++			 * in-progress resize */
++			rc = plpar_resize_hpt_prepare(0, 0);
++			if (rc != H_SUCCESS)
++				printk(KERN_WARNING
++				       "lpar: Unexpected error %d cancelling timed out HPT resize\n",
++				       rc);
++			return -ETIMEDOUT;
++		}
++		msleep(delay);
++		rc = plpar_resize_hpt_prepare(0, shift);
++	};
++
++	switch (rc) {
++	case H_SUCCESS:
++		/* Continue on */
++		break;
++
++	case H_PARAMETER:
++		return -EINVAL;
++	case H_RESOURCE:
++		return -EPERM;
++	default:
++		printk(KERN_WARNING
++		       "lpar: Unexpected error %d from H_RESIZE_HPT_PREPARE\n",
++		       rc);
++		return -EIO;
++	}
++
++	t1 = ktime_get();
++
++	rc = stop_machine(pseries_lpar_resize_hpt_commit, &state, NULL);
++
++	t2 = ktime_get();
++
++	if (rc != 0) {
++		switch (state.commit_rc) {
++		case H_PTEG_FULL:
++			printk(KERN_WARNING
++			       "lpar: Hash collision while resizing HPT\n");
++			return -ENOSPC;
++
++		default:
++			printk(KERN_WARNING
++			       "lpar: Unexpected error %d from H_RESIZE_HPT_COMMIT\n",
++			       state.commit_rc);
++			return -EIO;
++		};
++	}
++
++	printk(KERN_INFO
++	       "lpar: HPT resize to shift %lu complete (%lld ms / %lld ms)\n",
++	       shift, (long long) ktime_ms_delta(t1, t0),
++	       (long long) ktime_ms_delta(t2, t1));
++
++	return 0;
++}
+-- 
+2.5.0
