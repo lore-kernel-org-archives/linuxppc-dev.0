@@ -1,34 +1,37 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BBDFA1A0202
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:07:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 583151A0202
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:29:21 +1100 (AEDT)
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 11 Jan 2016 20:07:05 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id B40FA2CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:07:00 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0BA6cER23003156
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:06:51 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0BA6MqZ010132
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:06:23 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Hugh Dickins <hughd@google.com>, Andrew Morton <akpm@linux-foundation.org>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] mm/powerpc: Fix _PAGE_PTE breaking swapoff
-Date: Mon, 11 Jan 2016 15:35:50 +0530
-Message-Id: <1452506750-2355-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Mon, 11 Jan 2016 20:29:20 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id E94B22BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:29:18 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0BASnip31457448
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:28:57 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0BASkPT021494
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:28:46 +1100
+From: Anju T <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: khandual@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
+ dsahern@gmail.com, acme@redhat.com, sukadev@linux.vnet.ibm.com,
+ hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ anju@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V10 1/4] perf/powerpc: assign an id to each powerpc register
+Date: Mon, 11 Jan 2016 15:58:21 +0530
+Message-Id: <1452508104-16507-2-git-send-email-anju@linux.vnet.ibm.com>
+In-Reply-To: <1452508104-16507-1-git-send-email-anju@linux.vnet.ibm.com>
+References: <1452508104-16507-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,45 +41,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When converting a swp_entry_t to pte, we need to add _PAGE_PTE,
-because we later compare the pte with linux page table entries to
-find a matching pte. We do set _PAGE_PTE on pte entries on linux page
-table even if it is a swap entry. So add them when converting
-swp_entry_t to pte_t
+The enum definition assigns an 'id' to each register in "struct pt_regs"
+of arch/powerpc. The order of these values in the enum definition are
+based on the corresponding macros in arch/powerpc/include/uapi/asm/ptrace.h.
 
-The stack trace can be anywhere below try_to_unuse() in mm/swapfile.c,
-since swapoff is circling around and around that function, reading from
-each used swap block into a page, then trying to find where that page
-belongs, looking at every non-file pte of every mm that ever swapped.
-
-Reported-by: Hugh Dickins <hughd@google.com>
-Suggested-by: Hugh Dickins <hughd@google.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
+Reviewed-by  : Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/pgtable.h | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ arch/powerpc/include/uapi/asm/perf_regs.h | 49 +++++++++++++++++++++++++++++++
+ 1 file changed, 49 insertions(+)
+ create mode 100644 arch/powerpc/include/uapi/asm/perf_regs.h
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 03c1a5a21c0c..48edcd8fbc4f 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -158,9 +158,14 @@ static inline void pgd_set(pgd_t *pgdp, unsigned long val)
- #define __swp_entry(type, offset)	((swp_entry_t) { \
- 					((type) << _PAGE_BIT_SWAP_TYPE) \
- 					| ((offset) << PTE_RPN_SHIFT) })
--
--#define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
--#define __swp_entry_to_pte(x)		__pte((x).val)
-+/*
-+ * swp_entry_t should be arch independent. We build a swp_entry_t from
-+ * swap type and offset we get from swap and convert that to pte to
-+ * find a matching pte in linux page table.
-+ * Clear bits not found in swap entries here
-+ */
-+#define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val((pte)) & ~_PAGE_PTE })
-+#define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
- 
- #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
- #define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
+diff --git a/arch/powerpc/include/uapi/asm/perf_regs.h b/arch/powerpc/include/uapi/asm/perf_regs.h
+new file mode 100644
+index 0000000..cfbd068
+--- /dev/null
++++ b/arch/powerpc/include/uapi/asm/perf_regs.h
+@@ -0,0 +1,49 @@
++#ifndef _ASM_POWERPC_PERF_REGS_H
++#define _ASM_POWERPC_PERF_REGS_H
++
++enum perf_event_powerpc_regs {
++	PERF_REG_POWERPC_GPR0,
++	PERF_REG_POWERPC_GPR1,
++	PERF_REG_POWERPC_GPR2,
++	PERF_REG_POWERPC_GPR3,
++	PERF_REG_POWERPC_GPR4,
++	PERF_REG_POWERPC_GPR5,
++	PERF_REG_POWERPC_GPR6,
++	PERF_REG_POWERPC_GPR7,
++	PERF_REG_POWERPC_GPR8,
++	PERF_REG_POWERPC_GPR9,
++	PERF_REG_POWERPC_GPR10,
++	PERF_REG_POWERPC_GPR11,
++	PERF_REG_POWERPC_GPR12,
++	PERF_REG_POWERPC_GPR13,
++	PERF_REG_POWERPC_GPR14,
++	PERF_REG_POWERPC_GPR15,
++	PERF_REG_POWERPC_GPR16,
++	PERF_REG_POWERPC_GPR17,
++	PERF_REG_POWERPC_GPR18,
++	PERF_REG_POWERPC_GPR19,
++	PERF_REG_POWERPC_GPR20,
++	PERF_REG_POWERPC_GPR21,
++	PERF_REG_POWERPC_GPR22,
++	PERF_REG_POWERPC_GPR23,
++	PERF_REG_POWERPC_GPR24,
++	PERF_REG_POWERPC_GPR25,
++	PERF_REG_POWERPC_GPR26,
++	PERF_REG_POWERPC_GPR27,
++	PERF_REG_POWERPC_GPR28,
++	PERF_REG_POWERPC_GPR29,
++	PERF_REG_POWERPC_GPR30,
++	PERF_REG_POWERPC_GPR31,
++	PERF_REG_POWERPC_NIP,
++	PERF_REG_POWERPC_MSR,
++	PERF_REG_POWERPC_ORIG_R3,
++	PERF_REG_POWERPC_CTR,
++	PERF_REG_POWERPC_LNK,
++	PERF_REG_POWERPC_XER,
++	PERF_REG_POWERPC_CCR,
++	PERF_REG_POWERPC_TRAP,
++	PERF_REG_POWERPC_DAR,
++	PERF_REG_POWERPC_DSISR,
++	PERF_REG_POWERPC_MAX,
++};
++#endif /* _ASM_POWERPC_PERF_REGS_H */
 -- 
-2.5.0
+2.1.0
