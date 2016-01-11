@@ -1,25 +1,25 @@
 Return-Path: <anju@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6AE1F1A0D10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:29:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B8BC91A0D26
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:29:30 +1100 (AEDT)
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Mon, 11 Jan 2016 20:29:28 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id C18CF2BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:29:24 +1100 (EST)
+ Mon, 11 Jan 2016 20:29:29 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 5A7BC2CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:29:27 +1100 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0BATGTL59572364
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:29:24 +1100
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0BAT9jL31195270
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:29:17 +1100
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0BASqT9021609
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:28:52 +1100
+ u0BASsa0021687
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 21:28:55 +1100
 From: Anju T <anju@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: khandual@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
@@ -27,9 +27,10 @@ Cc: khandual@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
  hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
  anju@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v10 3/4] tools/perf: Map the ID values with register names
-Date: Mon, 11 Jan 2016 15:58:23 +0530
-Message-Id: <1452508104-16507-4-git-send-email-anju@linux.vnet.ibm.com>
+Subject: [PATCH V1 4/4] tool/perf: Add sample_reg_mask to include all
+ perf_regs regs
+Date: Mon, 11 Jan 2016 15:58:24 +0530
+Message-Id: <1452508104-16507-5-git-send-email-anju@linux.vnet.ibm.com>
 In-Reply-To: <1452508104-16507-1-git-send-email-anju@linux.vnet.ibm.com>
 References: <1452508104-16507-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,160 +42,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Map ID values with corresponding register names. These names are then
-displayed when user issues perf record with the -I option
-followed by perf report/script with -D option.
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
-To test this patchset,
-Eg:
+Add sample_reg_mask array with pt_regs registers.
+This is needed for printing supported regs ( -I? option).
 
-$ perf record -I ls   # record machine state at interrupt
-$ perf script -D      # read the perf.data file
-
-Sample output obtained for this patch / output looks like as follows:
-
-178329381464 0x138 [0x180]: PERF_RECORD_SAMPLE(IP, 0x1): 7803/7803: 0xc00000000000fd9c period: 1 addr: 0
-... intr regs: mask 0x3ffffffffff ABI 64-bit
-.... gpr0  0xc0000000001a6420
-.... gpr1  0xc000001e4df039b0
-.... gpr2  0xc000000000cdd100
-.... gpr3  0x1
-.... gpr4  0xc000001e4a96d000
-.... gpr5  0x29854255ba
-.... gpr6  0xc000000ffa3050b8
-.... gpr7  0x0
-.... gpr8  0x0
-.... gpr9  0x0
-.... gpr10 0x0
-.... gpr11 0x0
-.... gpr12 0x24022822
-.... gpr13 0xc00000000fe03000
-.... gpr14 0x0
-.... gpr15 0xc000000000d763f8
-.... gpr16 0x0
-.... gpr17 0xc000001e4ddcf000
-.... gpr18 0x0
-.... gpr19 0xc000000ffa305000
-.... gpr20 0xc000001e4df038c0
-.... gpr21 0xc000001e40ed7a00
-.... gpr22 0xc0000000000aa28c
-.... gpr23 0xc000000000cdd100
-.... gpr24 0x0
-.... gpr25 0xc000000000cdd100
-.... gpr26 0xc000001e4df038b0
-.... gpr27 0xfffffffffffffeae
-.... gpr28 0xc000001e4df03880
-.... gpr29 0xc000000000dce900
-.... gpr30 0xc000001e4df03890
-.... gpr31 0xc000001e355c7a30
-.... nip   0xc0000000001a62d8
-.... msr   0x9000000000009032
-.... orig_r3 0xc0000000001a6320
-.... ctr   0xc0000000000a7be0
-.... link   0xc0000000001a6428
-.... xer   0x0
-.... ccr   0x24022888
-.... trap  0xf01
-.... dar   0xc000001e40ed7a00
-.... dsisr 0x3000c0060000004
- ... thread: :7803:7803
- ...... dso: /root/.debug/.build-id/d0/eb47b06c0d294143af13c50616f638c2d88658
-           :7803  7803   178.329381:          1 cycles:  c00000000000fd9c .arch_local_irq_restore (/boot/vmlinux)
-
-
-Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
-Reviewed-by  : Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- tools/perf/arch/powerpc/include/perf_regs.h | 64 +++++++++++++++++++++++++++++
- tools/perf/config/Makefile                  |  5 +++
- 2 files changed, 69 insertions(+)
- create mode 100644 tools/perf/arch/powerpc/include/perf_regs.h
+ tools/perf/arch/powerpc/util/Build       |  1 +
+ tools/perf/arch/powerpc/util/perf_regs.c | 48 ++++++++++++++++++++++++++++++++
+ 2 files changed, 49 insertions(+)
+ create mode 100644 tools/perf/arch/powerpc/util/perf_regs.c
 
-diff --git a/tools/perf/arch/powerpc/include/perf_regs.h b/tools/perf/arch/powerpc/include/perf_regs.h
+diff --git a/tools/perf/arch/powerpc/util/Build b/tools/perf/arch/powerpc/util/Build
+index 7b8b0d1..3deb1bc 100644
+--- a/tools/perf/arch/powerpc/util/Build
++++ b/tools/perf/arch/powerpc/util/Build
+@@ -1,5 +1,6 @@
+ libperf-y += header.o
+ libperf-y += sym-handling.o
++libperf-y += perf_regs.o
+ 
+ libperf-$(CONFIG_DWARF) += dwarf-regs.o
+ libperf-$(CONFIG_DWARF) += skip-callchain-idx.o
+diff --git a/tools/perf/arch/powerpc/util/perf_regs.c b/tools/perf/arch/powerpc/util/perf_regs.c
 new file mode 100644
-index 0000000..93080f5
+index 0000000..0b0ec65
 --- /dev/null
-+++ b/tools/perf/arch/powerpc/include/perf_regs.h
-@@ -0,0 +1,64 @@
-+#ifndef ARCH_PERF_REGS_H
-+#define ARCH_PERF_REGS_H
++++ b/tools/perf/arch/powerpc/util/perf_regs.c
+@@ -0,0 +1,48 @@
++#include "../../perf.h"
++#include "../../util/perf_regs.h"
 +
-+#include <stdlib.h>
-+#include <linux/types.h>
-+#include <asm/perf_regs.h>
-+
-+#define PERF_REGS_MASK  ((1ULL << PERF_REG_POWERPC_MAX) - 1)
-+#define PERF_REGS_MAX   PERF_REG_POWERPC_MAX
-+#define PERF_SAMPLE_REGS_ABI   PERF_SAMPLE_REGS_ABI_64
-+
-+#define PERF_REG_IP     PERF_REG_POWERPC_NIP
-+#define PERF_REG_SP     PERF_REG_POWERPC_GPR1
-+
-+static const char *reg_names[] = {
-+	[PERF_REG_POWERPC_GPR0] = "gpr0",
-+	[PERF_REG_POWERPC_GPR1] = "gpr1",
-+	[PERF_REG_POWERPC_GPR2] = "gpr2",
-+	[PERF_REG_POWERPC_GPR3] = "gpr3",
-+	[PERF_REG_POWERPC_GPR4] = "gpr4",
-+	[PERF_REG_POWERPC_GPR5] = "gpr5",
-+	[PERF_REG_POWERPC_GPR6] = "gpr6",
-+	[PERF_REG_POWERPC_GPR7] = "gpr7",
-+	[PERF_REG_POWERPC_GPR8] = "gpr8",
-+	[PERF_REG_POWERPC_GPR9] = "gpr9",
-+	[PERF_REG_POWERPC_GPR10] = "gpr10",
-+	[PERF_REG_POWERPC_GPR11] = "gpr11",
-+	[PERF_REG_POWERPC_GPR12] = "gpr12",
-+	[PERF_REG_POWERPC_GPR13] = "gpr13",
-+	[PERF_REG_POWERPC_GPR14] = "gpr14",
-+	[PERF_REG_POWERPC_GPR15] = "gpr15",
-+	[PERF_REG_POWERPC_GPR16] = "gpr16",
-+	[PERF_REG_POWERPC_GPR17] = "gpr17",
-+	[PERF_REG_POWERPC_GPR18] = "gpr18",
-+	[PERF_REG_POWERPC_GPR19] = "gpr19",
-+	[PERF_REG_POWERPC_GPR20] = "gpr20",
-+	[PERF_REG_POWERPC_GPR21] = "gpr21",
-+	[PERF_REG_POWERPC_GPR22] = "gpr22",
-+	[PERF_REG_POWERPC_GPR23] = "gpr23",
-+	[PERF_REG_POWERPC_GPR24] = "gpr24",
-+	[PERF_REG_POWERPC_GPR25] = "gpr25",
-+	[PERF_REG_POWERPC_GPR26] = "gpr26",
-+	[PERF_REG_POWERPC_GPR27] = "gpr27",
-+	[PERF_REG_POWERPC_GPR28] = "gpr28",
-+	[PERF_REG_POWERPC_GPR29] = "gpr29",
-+	[PERF_REG_POWERPC_GPR30] = "gpr30",
-+	[PERF_REG_POWERPC_GPR31] = "gpr31",
-+	[PERF_REG_POWERPC_NIP] = "nip",
-+	[PERF_REG_POWERPC_MSR] = "msr",
-+	[PERF_REG_POWERPC_ORIG_R3] = "orig_r3",
-+	[PERF_REG_POWERPC_CTR] = "ctr",
-+	[PERF_REG_POWERPC_LNK] = "link",
-+	[PERF_REG_POWERPC_XER] = "xer",
-+	[PERF_REG_POWERPC_CCR] = "ccr",
-+	[PERF_REG_POWERPC_TRAP] = "trap",
-+	[PERF_REG_POWERPC_DAR] = "dar",
-+	[PERF_REG_POWERPC_DSISR] = "dsisr"
++const struct sample_reg sample_reg_masks[] = {
++	SMPL_REG(gpr0, PERF_REG_POWERPC_GPR0),
++	SMPL_REG(gpr1, PERF_REG_POWERPC_GPR1),
++	SMPL_REG(gpr2, PERF_REG_POWERPC_GPR2),
++	SMPL_REG(gpr3, PERF_REG_POWERPC_GPR3),
++	SMPL_REG(gpr4, PERF_REG_POWERPC_GPR4),
++	SMPL_REG(gpr5, PERF_REG_POWERPC_GPR5),
++	SMPL_REG(gpr6, PERF_REG_POWERPC_GPR6),
++	SMPL_REG(gpr7, PERF_REG_POWERPC_GPR7),
++	SMPL_REG(gpr8, PERF_REG_POWERPC_GPR8),
++	SMPL_REG(gpr9, PERF_REG_POWERPC_GPR9),
++	SMPL_REG(gpr10, PERF_REG_POWERPC_GPR10),
++	SMPL_REG(gpr11, PERF_REG_POWERPC_GPR11),
++	SMPL_REG(gpr12, PERF_REG_POWERPC_GPR12),
++	SMPL_REG(gpr13, PERF_REG_POWERPC_GPR13),
++	SMPL_REG(gpr14, PERF_REG_POWERPC_GPR14),
++	SMPL_REG(gpr15, PERF_REG_POWERPC_GPR15),
++	SMPL_REG(gpr16, PERF_REG_POWERPC_GPR16),
++	SMPL_REG(gpr17, PERF_REG_POWERPC_GPR17),
++	SMPL_REG(gpr18, PERF_REG_POWERPC_GPR18),
++	SMPL_REG(gpr19, PERF_REG_POWERPC_GPR19),
++	SMPL_REG(gpr20, PERF_REG_POWERPC_GPR20),
++	SMPL_REG(gpr21, PERF_REG_POWERPC_GPR21),
++	SMPL_REG(gpr22, PERF_REG_POWERPC_GPR22),
++	SMPL_REG(gpr23, PERF_REG_POWERPC_GPR23),
++	SMPL_REG(gpr24, PERF_REG_POWERPC_GPR24),
++	SMPL_REG(gpr25, PERF_REG_POWERPC_GPR25),
++	SMPL_REG(gpr26, PERF_REG_POWERPC_GPR26),
++	SMPL_REG(gpr27, PERF_REG_POWERPC_GPR27),
++	SMPL_REG(gpr28, PERF_REG_POWERPC_GPR28),
++	SMPL_REG(gpr29, PERF_REG_POWERPC_GPR29),
++	SMPL_REG(gpr30, PERF_REG_POWERPC_GPR30),
++	SMPL_REG(gpr31, PERF_REG_POWERPC_GPR31),
++	SMPL_REG(nip, PERF_REG_POWERPC_NIP),
++	SMPL_REG(msr, PERF_REG_POWERPC_MSR),
++	SMPL_REG(orig_r3, PERF_REG_POWERPC_ORIG_R3),
++	SMPL_REG(ctr, PERF_REG_POWERPC_CTR),
++	SMPL_REG(link, PERF_REG_POWERPC_LNK),
++	SMPL_REG(xer, PERF_REG_POWERPC_XER),
++	SMPL_REG(ccr, PERF_REG_POWERPC_CCR),
++	SMPL_REG(trap, PERF_REG_POWERPC_TRAP),
++	SMPL_REG(dar, PERF_REG_POWERPC_DAR),
++	SMPL_REG(dsisr, PERF_REG_POWERPC_DSISR),
++	SMPL_REG_END
 +};
-+
-+static inline const char *perf_reg_name(int id)
-+{
-+	return reg_names[id];
-+}
-+#endif /* ARCH_PERF_REGS_H */
-diff --git a/tools/perf/config/Makefile b/tools/perf/config/Makefile
-index 38a0853..62a2f2d 100644
---- a/tools/perf/config/Makefile
-+++ b/tools/perf/config/Makefile
-@@ -23,6 +23,11 @@ $(call detected_var,ARCH)
- 
- NO_PERF_REGS := 1
- 
-+# Additional ARCH settings for ppc64
-+ifeq ($(ARCH),powerpc)
-+  NO_PERF_REGS := 0
-+endif
-+
- # Additional ARCH settings for x86
- ifeq ($(ARCH),x86)
-   $(call detected,CONFIG_X86)
 -- 
 2.1.0
