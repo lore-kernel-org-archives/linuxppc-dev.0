@@ -2,17 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9018E1A0B57
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 20:14:05 +1100 (AEDT)
-In-Reply-To: <1450435564.2791.98.camel@neuling.org>
-To: Michael Neuling <mikey@neuling.org>, benh <benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 691761A0B57
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 20:14:06 +1100 (AEDT)
+In-Reply-To: <1450341660-31305-1-git-send-email-dja@axtens.net>
+To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Stewart Smith <sesmith@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>
-Subject: Re: powerpc/powernv: Only delay opal_rtc_read() retry when necessary
-Message-Id: <20160111091404.DB373140772@ozlabs.org>
-Date: Mon, 11 Jan 2016 20:14:04 +1100 (AEDT)
+Cc: Daniel Axtens <dja@axtens.net>
+Subject: Re: powerpc: add va_end()
+Message-Id: <20160111091405.D56BE14099F@ozlabs.org>
+Date: Mon, 11 Jan 2016 20:14:05 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,18 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-18-12 at 10:46:04 UTC, Michael Neuling wrote:
-> Only delay opal_rtc_read() when busy and are going to retry.
+On Thu, 2015-17-12 at 08:41:00 UTC, Daniel Axtens wrote:
+> cppcheck picked up that there were a couple of missing va_end()
+> calls in functions using va_start().
 > 
-> This has the advantage of possibly saving a massive 10ms off booting!
-> 
-> Kudos to Stewart for noticing.
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Reviewed-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> Reviewed-by: Russell Currey <ruscur@russell.cc>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/57a9039052aadf5833c40ab494
+https://git.kernel.org/powerpc/c/1b855e167b90fcb353977c0893
 
 cheers
