@@ -1,19 +1,39 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C1EE21A0BC0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:51:41 +1100 (AEDT)
-From: David Gibson <david@gibson.dropbear.id.au>
-To: paulus@samba.org, benh@kernel.crashing.org, michael@ellerman.id.au,
- bharata@linux.vnet.ibm.com
-Cc: thuth@redhat.com, lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv2 4/4] pseries: Advertise HPT resizing support via CAS
-Date: Mon, 11 Jan 2016 16:52:33 +1100
-Message-Id: <1452491553-26153-5-git-send-email-david@gibson.dropbear.id.au>
-In-Reply-To: <1452491553-26153-1-git-send-email-david@gibson.dropbear.id.au>
-References: <1452491553-26153-1-git-send-email-david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0E5051A1AF6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:57:02 +1100 (AEDT)
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 11 Jan 2016 15:57:01 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4C4303578052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:56:59 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0B5ur0534930700
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:57:01 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0B5uPkf028998
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:56:26 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Hugh Dickins <hughd@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Subject: Re: [PATCH next] powerpc/mm: fix _PAGE_PTE breaking swapoff
+In-Reply-To: <87si24u32t.fsf@linux.vnet.ibm.com>
+References: <alpine.LSU.2.11.1601091643060.9808@eggly.anvils>
+ <87si24u32t.fsf@linux.vnet.ibm.com>
+Date: Mon, 11 Jan 2016 11:25:59 +0530
+Message-ID: <87k2ngu0b4.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,52 +43,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The hypervisor needs to know a guest is capable of using the HPT resizing
-PAPR extension in order to make full advantage of it for memory hotplug.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-If the hypervisor knows the guest is HPT resize aware, it can size the
-initial HPT based on the initial guest RAM size, relying on the guest to
-resize the HPT when more memory is hot-added.  Without this, the hypervisor
-must size the HPT for the maximum possible guest RAM, which can lead to
-a huge waste of space if the guest never actually expends to that maximum
-size.
+> Hugh Dickins <hughd@google.com> writes:
+>
+>> Swapoff after swapping hangs on the G5.  That's because the _PAGE_PTE
+>> bit, added by set_pte_at(), is not expected by swapoff: so swap ptes
+>> cannot be recognized.
+>>
+>> I'm not sure whether a swap pte should or should not have _PAGE_PTE set:
+>> this patch assumes not, and fixes set_pte_at() to set _PAGE_PTE only on
+>> present entries.
+>
+> One of the reason we added _PAGE_PTE is to enable HUGETLB migration. So
+> we want migratio ptes to have _PAGE_PTE set.
+>
+>>
+>> But if that's wrong, a reasonable alternative would be to
+>> #define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val(pte) & ~_PAGE_PTE })
+>> #define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
+>>
 
-This patch advertises the guest's support for HPT resizing via the
-ibm,client-architecture-support OF interface.  Obviously, the actual
-encoding in the CAS vector is tentative until the extension is officially
-incorporated into PAPR.  For now we use bit 0 of (previously unused) byte 8
-of option vector 5.
+You other email w.r.t soft dirty bits explained this. What I missed was
+the fact that core kernel expect swp_entry_t to be of an arch neutral
+format.  The confusing part was "arch_entry"
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
----
- arch/powerpc/include/asm/prom.h | 1 +
- arch/powerpc/kernel/prom_init.c | 2 +-
- 2 files changed, 2 insertions(+), 1 deletion(-)
+static inline pte_t swp_entry_to_pte(swp_entry_t entry)
+{
+	swp_entry_t arch_entry;
+.....
+}
+	
+IMHO we should use the alternative you suggested above. I can write a
+patch with additional comments around that if you want me to do that.
 
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index 7f436ba..7a57b77 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -151,6 +151,7 @@ struct of_drconf_cell {
- #define OV5_XCMO		0x0440	/* Page Coalescing */
- #define OV5_TYPE1_AFFINITY	0x0580	/* Type 1 NUMA affinity */
- #define OV5_PRRN		0x0540	/* Platform Resource Reassignment */
-+#define OV5_HPT_RESIZE		0x880	/* Hash Page Table resizing */
- #define OV5_PFO_HW_RNG		0x0E80	/* PFO Random Number Generator */
- #define OV5_PFO_HW_842		0x0E40	/* PFO Compression Accelerator */
- #define OV5_PFO_HW_ENCR		0x0E20	/* PFO Encryption Accelerator */
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 92dea8d..d82b883 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -712,7 +712,7 @@ unsigned char ibm_architecture_vec[] = {
- 	OV5_FEAT(OV5_TYPE1_AFFINITY) | OV5_FEAT(OV5_PRRN),
- 	0,
- 	0,
--	0,
-+	OV5_FEAT(OV5_HPT_RESIZE),
- 	/* WARNING: The offset of the "number of cores" field below
- 	 * must match by the macro below. Update the definition if
- 	 * the structure layout changes.
--- 
-2.5.0
+-aneesh
