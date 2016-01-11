@@ -1,16 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 077A41A0202
+ by lists.ozlabs.org (Postfix) with ESMTPS id CA6191A0202
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 20:14:03 +1100 (AEDT)
-In-Reply-To: <1448605387-2043-1-git-send-email-ruscur@russell.cc>
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1448362578-32456-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [V3] powerpc/powernv: Add a kmsg_dumper that flushes console
- output on panic
-Message-Id: <20160111091402.BDBAB1402DE@ozlabs.org>
-Date: Mon, 11 Jan 2016 20:14:02 +1100 (AEDT)
+Cc: Frank Haverkamp <HAVERKAM@de.ibm.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Subject: Re: cxl: Fix DSI misses when the context owning task exits
+Message-Id: <20160111091403.79FBE140323@ozlabs.org>
+Date: Mon, 11 Jan 2016 20:14:03 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,45 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-27-11 at 06:23:07 UTC, Russell Currey wrote:
-> On BMC machines, console output is controlled by the OPAL firmware and is
-> only flushed when its pollers are called.  When the kernel is in a panic
-> state, it no longer calls these pollers and thus console output does not
-> completely flush, causing some output from the panic to be lost.
+On Tue, 2015-24-11 at 10:56:18 UTC, Vaibhav Jain wrote:
+> Presently when a user-space process issues CXL_IOCTL_START_WORK ioctl we
+> store the pid of the current task_struct and use it to get pointer to
+> the mm_struct of the process, while processing page or segment faults
+> from the capi card. However this causes issues when the thread that had
+> originally issued the start-work ioctl exits in which case the stored
+> pid is no more valid and the cxl driver is unable to handle faults as
+> the mm_struct corresponding to process is no more accessible.
 > 
-> Output is only actually lost when the kernel is configured to not power off
-> or reboot after panic (i.e. CONFIG_PANIC_TIMEOUT is set to 0) since OPAL
-> flushes the console buffer as part of its power down routines.  Before this
-> patch, however, only partial output would be printed during the timeout wait.
+> This patch fixes this issue by using the mm_struct of the next alive
+> task in the thread group. This is done by iterating over all the tasks
+> in the thread group starting from thread group leader and calling
+> get_task_mm on each one of them. When a valid mm_struct is obtained the
+> pid of the associated task is stored in the context replacing the
+> exiting one for handling future faults.
 > 
-> This patch adds a new kmsg_dumper which gets called at panic time to ensure
-> panic output is not lost.  It accomplishes this by calling OPAL_CONSOLE_FLUSH
-> in the OPAL API, and if that is not available, the pollers are called enough
-> times to (hopefully) completely flush the buffer.
+> The patch introduces a new function named get_mem_context that checks if
+> the current task pointed to by ctx->pid is dead? If yes it performs the
+> steps described above. Also a new variable cxl_context.glpid is
+> introduced which stores the pid of the thread group leader associated
+> with the context owning task.
 > 
-> The flushing mechanism will only affect output printed at and before the
-> kmsg_dump call in kernel/panic.c:panic().  As such, the "end Kernel panic"
-> message may still be truncated as follows:
-> 
-> >Call Trace:
-> >[c000000f1f603b00] [c0000000008e9458] dump_stack+0x90/0xbc (unreliable)
-> >[c000000f1f603b30] [c0000000008e7e78] panic+0xf8/0x2c4
-> >[c000000f1f603bc0] [c000000000be4860] mount_block_root+0x288/0x33c
-> >[c000000f1f603c80] [c000000000be4d14] prepare_namespace+0x1f4/0x254
-> >[c000000f1f603d00] [c000000000be43e8] kernel_init_freeable+0x318/0x350
-> >[c000000f1f603dc0] [c00000000000bd74] kernel_init+0x24/0x130
-> >[c000000f1f603e30] [c0000000000095b0] ret_from_kernel_thread+0x5c/0xac
-> >---[ end Kernel panic - not
-> 
-> This functionality is implemented as a kmsg_dumper as it seems to be the
-> most sensible way to introduce platform-specific functionality to the
-> panic function.
-> 
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Reported-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+> Reported-by: Frank Haverkamp <HAVERKAM@de.ibm.com>
+> Suggested-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/affddff69c55eb68969448f35f
+https://git.kernel.org/powerpc/c/7b8ad495d59280b634a7b546f4
 
 cheers
