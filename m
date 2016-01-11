@@ -1,25 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A1CAE1A08BB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 14:30:31 +1100 (AEDT)
-Message-ID: <1452483031.31943.6.camel@ellerman.id.au>
-Subject: Re: [RFC][PATCH] ppc: Implement save_stack_trace_regs()
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- chuhu@redhat.com
-Date: Mon, 11 Jan 2016 14:30:31 +1100
-In-Reply-To: <20160108175053.04e4296f@gandalf.local.home>
-References: <20151208135056.718b7668@gandalf.local.home>
- <1449620422.6028.6.camel@ellerman.id.au>
- <20151208192844.70fb33e6@gandalf.local.home>
- <1449622985.6028.8.camel@ellerman.id.au>
- <20151216122419.385f1306@gandalf.local.home>
- <20160108175053.04e4296f@gandalf.local.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 695581A0AC3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 15:56:27 +1100 (AEDT)
+Received: from localhost
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 11 Jan 2016 10:26:24 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 34651E005F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 10:27:38 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0B4uKaw41156762
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 10:26:20 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0B4uEdU031315
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 10:26:19 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Hugh Dickins <hughd@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Subject: Re: [PATCH next] powerpc/mm: fix _PAGE_PTE breaking swapoff
+In-Reply-To: <alpine.LSU.2.11.1601091643060.9808@eggly.anvils>
+References: <alpine.LSU.2.11.1601091643060.9808@eggly.anvils>
+Date: Mon, 11 Jan 2016 10:26:10 +0530
+Message-ID: <87si24u32t.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,75 +42,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-01-08 at 17:50 -0500, Steven Rostedt wrote:
-> On Wed, 16 Dec 2015 12:24:19 -0500
-> Steven Rostedt <rostedt@goodmis.org> wrote:
-> > On Wed, 09 Dec 2015 12:03:05 +1100
-> > Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > > > > Should I take this via powerpc or do you want it to go in via tracing?
-> > > >
-> > > > You can take it. And you can replace the PT_R1 if you want. I just
-> > > > noticed that it was defined, and I try to use macro names instead of
-> > > > hard coded numbers. I was actually looking for a "PT_SP" :-)
-> > >
-> > > OK thanks.
-> > >
-> > > Looks like we actually have:
-> > >
-> > >   #define kernel_stack_pointer(regs) ((regs)->gpr[1])
-> > >
-> > > So that would be the most self documenting way to do it I guess, though I've
-> > > never actually seen that macro used anywhere before :)
-> >
-> > Hi,
-> >
-> > Are you going to take this, or do you want me to?
+Hugh Dickins <hughd@google.com> writes:
 
-Sorry, yep I'll take it.
+> Swapoff after swapping hangs on the G5.  That's because the _PAGE_PTE
+> bit, added by set_pte_at(), is not expected by swapoff: so swap ptes
+> cannot be recognized.
+>
+> I'm not sure whether a swap pte should or should not have _PAGE_PTE set:
+> this patch assumes not, and fixes set_pte_at() to set _PAGE_PTE only on
+> present entries.
 
-I trimmed the change log a bit, final version below.
+One of the reason we added _PAGE_PTE is to enable HUGETLB migration. So
+we want migratio ptes to have _PAGE_PTE set.
 
-cheers
+>
+> But if that's wrong, a reasonable alternative would be to
+> #define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val(pte) & ~_PAGE_PTE })
+> #define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
+>
 
+We do clear _PAGE_PTE bits, when converting swp_entry_t to type and
+offset. Can you share the stack trace for the hang, which will help me
+understand this more ? . 
 
-powerpc: Implement save_stack_trace_regs() to enable kprobe stack tracing
+> Signed-off-by: Hugh Dickins <hughd@google.com>
+> ---
+>
+>  arch/powerpc/mm/pgtable.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>
+> --- 4.4-next/arch/powerpc/mm/pgtable.c	2016-01-06 11:54:01.477512251 -0800
+> +++ linux/arch/powerpc/mm/pgtable.c	2016-01-09 13:51:15.793485717 -0800
+> @@ -180,9 +180,10 @@ void set_pte_at(struct mm_struct *mm, un
+>  	VM_WARN_ON((pte_val(*ptep) & (_PAGE_PRESENT | _PAGE_USER)) ==
+>  		(_PAGE_PRESENT | _PAGE_USER));
+>  	/*
+> -	 * Add the pte bit when tryint set a pte
+> +	 * Add the pte bit when setting a pte (not a swap entry)
+>  	 */
+> -	pte = __pte(pte_val(pte) | _PAGE_PTE);
+> +	if (pte_val(pte) & _PAGE_PRESENT)
+> +		pte = __pte(pte_val(pte) | _PAGE_PTE);
+>
+>  	/* Note: mm->context.id might not yet have been assigned as
+>  	 * this context might not have been activated yet when this
 
-It has come to my attention that kprobe event stack tracing does not
-work on powerpc. You can see with the following:
-
-  # cd /sys/kernel/debug/tracing
-  # echo stacktrace > trace_options
-  # echo 'p kfree' > kprobe_events
-  # echo 1 > events/kprobes/enable
-
-Will print the following warning:
-  save_stack_trace_regs() not implemented yet.
-
-Although save_stack_trace() (which normal event stack traces use) is
-implemented, save_stack_trace_regs() which kprobe events use is not.
-This is a cheap attempt to implement that function.
-
-Note, This may have issues if a task tries to get a stack trace from
-another task with its regs, because it just passes in "current" to
-save_context_stack(). But this does solve the issue with stack tracing
-kprobe events.
-
-Reported-by: Chunyu Hu <chuhu@redhat.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-index ea43a347a104..4f24606afc3f 100644
---- a/arch/powerpc/kernel/stacktrace.c
-+++ b/arch/powerpc/kernel/stacktrace.c
-@@ -61,3 +61,10 @@ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
- 	save_context_stack(trace, tsk->thread.ksp, tsk, 0);
- }
- EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
-+
-+void
-+save_stack_trace_regs(struct pt_regs *regs, struct stack_trace *trace)
-+{
-+	save_context_stack(trace, regs->gpr[1], current, 0);
-+}
-+EXPORT_SYMBOL_GPL(save_stack_trace_regs);
+-aneesh
