@@ -1,29 +1,34 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0018.hostedemail.com
+ [216.40.44.18])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 649501A0D35
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 08:19:04 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Scott Wood <scott.wood@nxp.com>, Hongtao Jia <hongtao.jia@nxp.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Scott Wood <oss@buserror.net>,
- "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
- Hongtao Jia <hongtao.jia@freescale.com>,
- "edubezval@gmail.com" <edubezval@gmail.com>
-Subject: Re: =?UTF-8?B?562U5aSNOg==?= [PATCH V3] cpufreq: qoriq: Register
- cooling device based on device tree
-Date: Mon, 11 Jan 2016 22:13:06 +0100
-Message-ID: <13735438.Yvdu0suV1m@wuerfel>
-In-Reply-To: <AM3PR04MB530F71205574CA86CADE93191C90@AM3PR04MB530.eurprd04.prod.outlook.com>
-References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
- <AM3PR04MB3376CC754973BD535CF3F99EBC90@AM3PR04MB337.eurprd04.prod.outlook.com>
- <AM3PR04MB530F71205574CA86CADE93191C90@AM3PR04MB530.eurprd04.prod.outlook.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6813A1A0D35
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 08:45:21 +1100 (AEDT)
+Message-ID: <1452548708.7773.57.camel@perches.com>
+Subject: Re: [PATCH v4 0/3] checkpatch: handling of memory barriers
+From: Joe Perches <joe@perches.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org
+Cc: Andy Whitcroft <apw@canonical.com>, Peter Zijlstra
+ <peterz@infradead.org>,  Arnd Bergmann <arnd@arndb.de>,
+ linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
+ virtualization@lists.linux-foundation.org,  Stefano Stabellini
+ <stefano.stabellini@eu.citrix.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@elte.hu>,  "H. Peter Anvin" <hpa@zytor.com>, David
+ Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org, x86@kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org, Ingo Molnar
+ <mingo@kernel.org>, Tony Lindgren <tony@atomide.com>, Julian Calaby
+ <julian.calaby@gmail.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Mon, 11 Jan 2016 13:45:08 -0800
+In-Reply-To: <1452509968-19778-1-git-send-email-mst@redhat.com>
+References: <1452509968-19778-1-git-send-email-mst@redhat.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,28 +38,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 11 January 2016 17:34:52 Scott Wood wrote:
-> >>
-> >> I think you need a 'depends on THERMAL' to prevent the driver from being
-> >> built-in when THERMAL=m.
-> >>
-> >> Arnd
-> > 
-> > Correct. I need to add following lines to the Kconfig file:
-> > depends on !CPU_THERMAL || THERMAL=y
-> > 
-> > Hi Rafael,
-> > Should I send a new patch include this fix or send a fix patch?
-> 
-> Why THERMAL=y and not just THERMAL, which would allow building this
-> driver as a module?
+On Mon, 2016-01-11 at 13:00 +0200, Michael S. Tsirkin wrote:
+> As part of memory barrier cleanup, this patchset
+> extends checkpatch to make it easier to stop
+> incorrect memory barrier usage.
 
-Right, that would be better, and it is what all other drivers do.
+Thanks Michael.
 
-For some reason, some drivers depend on !CPU_THERMAL and others
-depend on !THERMAL_OF here, and I think the result is the same, but
-we are a bit inconsistent here. CPU_THERMAL cannot be set if THERMAL_OF
-is disabled, and the header file only uses the 'extern' declaration
-if both are set.
-
-	Arnd
+Acked-by: Joe Perches <joe@perches.com>
