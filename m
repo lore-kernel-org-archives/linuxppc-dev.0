@@ -1,34 +1,24 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6B8751A08BB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 02:50:42 +1100 (AEDT)
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 12 Jan 2016 01:50:41 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id BF3673578052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 02:50:29 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0BFoCVU36503802
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 02:50:20 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0BFnuOi022239
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 02:49:57 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Hugh Dickins <hughd@google.com>, Andrew Morton <akpm@linux-foundation.org>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2] mm/powerpc: Fix _PAGE_PTE breaking swapoff
-Date: Mon, 11 Jan 2016 21:19:34 +0530
-Message-Id: <1452527374-4886-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vi37-28-154-113.vibiznes.pl [37.28.154.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BC32F1A08BB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 02:52:34 +1100 (AEDT)
+Message-ID: <5693CFB2.3090301@maciej.szmigiero.name>
+Date: Mon, 11 Jan 2016 16:52:18 +0100
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+MIME-Version: 1.0
+To: Timur Tabi <timur@tabi.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
+CC: Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Fabio Estevam <festevam@gmail.com>, Zidan Wang <zidan.wang@freescale.com>
+Subject: Re: [PATCH 1/3] ASoC: fsl_ssi: mark SACNT register volatile
+References: <56770FE1.4060202@maciej.szmigiero.name> <5692CE43.20708@tabi.org>
+In-Reply-To: <5692CE43.20708@tabi.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,49 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Core kernel expect swp_entry_t to be consisting of
-only swap type and swap offset. We should not leak pte bits to
-swp_entry_t. This breaks swapoff which use the swap type and offset
-to build a swp_entry_t and later compare that to the swp_entry_t
-obtained from linux page table pte. Leaking pte bits to swp_entry_t
-breaks that comparison and results in us looping in try_to_unuse.
+Hi Timur,
 
-The stack trace can be anywhere below try_to_unuse() in mm/swapfile.c,
-since swapoff is circling around and around that function, reading from
-each used swap block into a page, then trying to find where that page
-belongs, looking at every non-file pte of every mm that ever swapped.
+Thanks for review.
 
-Reported-by: Hugh Dickins <hughd@google.com>
-Suggested-by: Hugh Dickins <hughd@google.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
-Changes from V1:
-* improve change log and code comment
+On 10.01.2016 22:33, Timur Tabi wrote:
+> Maciej S. Szmigiero wrote:
+>> +    regmap_write(regs, CCSR_SSI_SACNT,
+>> +            ssi_private->regcache_sacnt);
+> 
+> So I'm not familiar with all of the regcache features, but I understand this patch.
+> I was wondering if it makes sense to write the same exact value that was read previously.
+> Isn't it possible for the WR or RD bits to change between fsl_ssi_suspend() and fsl_ssi_resume()?
 
- arch/powerpc/include/asm/book3s/64/pgtable.h | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+These bits are only set in fsl_ssi_ac97_{read,write} which then wait 100usecs
+before returning. This should be enough for SSI core to finish the relevant
+operation and clear the bits again, so theoretically they shouldn't be set
+outside these functions.
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 03c1a5a21c0c..cecb971674a8 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -158,9 +158,14 @@ static inline void pgd_set(pgd_t *pgdp, unsigned long val)
- #define __swp_entry(type, offset)	((swp_entry_t) { \
- 					((type) << _PAGE_BIT_SWAP_TYPE) \
- 					| ((offset) << PTE_RPN_SHIFT) })
--
--#define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
--#define __swp_entry_to_pte(x)		__pte((x).val)
-+/*
-+ * swp_entry_t should be independent of pte bits. We build a swp_entry_t from
-+ * swap type and offset we get from swap and convert that to pte to
-+ * find a matching pte in linux page table.
-+ * Clear bits not found in swap entries here
-+ */
-+#define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val((pte)) & ~_PAGE_PTE })
-+#define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
- 
- #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
- #define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
--- 
-2.5.0
+However, if AC'97 register access is done concurrently with suspend or resume
+the read / written reg data might be corrupted.
+
+It looks to me this is indeed possible since SSI PM callbacks are set in its
+platform driver struct but ASoC core only calls PM callbacks in snd_soc_dai_driver
+(which SSI driver don't set).
+
+If I am correct with this reasoning then these callbacks need to be added to
+snd_soc_dai_driver but platform driver ones should still be provided in case
+the driver is loaded but the sound card is not yet registered.
+
+I've CCed Zidan since he originally added PM support to this driver.
+
+> That is, should we be doing this instead?
+> 
+> u32 temp;
+> regmap_read(regs, CCSR_SSI_SACNT, &temp);
+> temp &= 0x18; // preserve WR and RD
+> regmap_write(regs, CCSR_SSI_SACNT, (ssi_private->regcache_sacnt & ~0x18) | temp);
+> 
+
+Maciej
