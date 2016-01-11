@@ -1,26 +1,43 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pf0-x22f.google.com (mail-pf0-x22f.google.com
- [IPv6:2607:f8b0:400e:c00::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF79E1A2C4D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 17:09:15 +1100 (AEDT)
-Received: by mail-pf0-x22f.google.com with SMTP id e65so39861175pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jan 2016 22:09:15 -0800 (PST)
-Date: Sun, 10 Jan 2016 22:09:04 -0800 (PST)
-From: Hugh Dickins <hughd@google.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-cc: Hugh Dickins <hughd@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 708F91A19DA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 17:31:39 +1100 (AEDT)
+Received: from localhost
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 11 Jan 2016 12:01:35 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 80250E005E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 12:02:50 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0B6VW1T53739724
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 12:01:32 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0B6VRO7020346
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 12:01:31 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Hugh Dickins <hughd@google.com>
+Cc: Hugh Dickins <hughd@google.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
  Michael Ellerman <mpe@ellerman.id.au>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org
-Subject: Re: [PATCH next] powerpc/mm: fix _PAGE_PTE breaking swapoff
-In-Reply-To: <87k2ngu0b4.fsf@linux.vnet.ibm.com>
-Message-ID: <alpine.LSU.2.11.1601102208040.1701@eggly.anvils>
-References: <alpine.LSU.2.11.1601091643060.9808@eggly.anvils>
- <87si24u32t.fsf@linux.vnet.ibm.com> <87k2ngu0b4.fsf@linux.vnet.ibm.com>
+ Cyrill Gorcunov <gorcunov@gmail.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Subject: Re: [PATCH next] powerpc/mm: fix _PAGE_SWP_SOFT_DIRTY breaking swapoff
+In-Reply-To: <alpine.LSU.2.11.1601102149300.1634@eggly.anvils>
+References: <alpine.LSU.2.11.1601091651130.9808@eggly.anvils>
+ <87mvscu0ve.fsf@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1601102149300.1634@eggly.anvils>
+Date: Mon, 11 Jan 2016 12:01:19 +0530
+Message-ID: <87h9iktyo8.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +47,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 11 Jan 2016, Aneesh Kumar K.V wrote:
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-> > Hugh Dickins <hughd@google.com> writes:
-> >
-> >> Swapoff after swapping hangs on the G5.  That's because the _PAGE_PTE
-> >> bit, added by set_pte_at(), is not expected by swapoff: so swap ptes
-> >> cannot be recognized.
-> >>
-> >> I'm not sure whether a swap pte should or should not have _PAGE_PTE set:
-> >> this patch assumes not, and fixes set_pte_at() to set _PAGE_PTE only on
-> >> present entries.
-> >
-> > One of the reason we added _PAGE_PTE is to enable HUGETLB migration. So
-> > we want migratio ptes to have _PAGE_PTE set.
-> >
-> >>
-> >> But if that's wrong, a reasonable alternative would be to
-> >> #define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val(pte) & ~_PAGE_PTE })
-> >> #define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
-> >>
-> 
-> You other email w.r.t soft dirty bits explained this. What I missed was
-> the fact that core kernel expect swp_entry_t to be of an arch neutral
-> format.  The confusing part was "arch_entry"
-> 
-> static inline pte_t swp_entry_to_pte(swp_entry_t entry)
-> {
-> 	swp_entry_t arch_entry;
-> .....
-> }
-> 	
-> IMHO we should use the alternative you suggested above. I can write a
-> patch with additional comments around that if you want me to do that.
+Hugh Dickins <hughd@google.com> writes:
 
-Sure, please go ahead - thanks.
+> On Mon, 11 Jan 2016, Aneesh Kumar K.V wrote:
+>> Hugh Dickins <hughd@google.com> writes:
+>> 
+>> > Swapoff after swapping hangs on the G5, when CONFIG_CHECKPOINT_RESTORE=y
+>> > but CONFIG_MEM_SOFT_DIRTY is not set.  That's because the non-zero
+>> > _PAGE_SWP_SOFT_DIRTY bit, added by CONFIG_HAVE_ARCH_SOFT_DIRTY=y, is not
+>> > discounted when CONFIG_MEM_SOFT_DIRTY is not set: so swap ptes cannot be
+>> > recognized.
+>> >
+>> > (I suspect that the peculiar dependence of HAVE_ARCH_SOFT_DIRTY on
+>> > CHECKPOINT_RESTORE in arch/powerpc/Kconfig comes from an incomplete
+>> > attempt to solve this problem.)
+>> >
+>> > It's true that the relationship between CONFIG_HAVE_ARCH_SOFT_DIRTY and
+>> > and CONFIG_MEM_SOFT_DIRTY is too confusing, and it's true that swapoff
+>> > should be made more robust; but nevertheless, fix up the powerpc ifdefs
+>> > as x86_64 and s390 (which met the same problem) have them, defining the
+>> > bits as 0 if CONFIG_MEM_SOFT_DIRTY is not set.
+>> 
+>> Do we need this patch, if we make the maybe_same_pte() more robust. The
+>> #ifdef with pte bits is always a confusing one and IMHO, we should avoid
+>> that if we can ?
+>
+> If maybe_same_pte() were more robust (as in the pte_same_as_swp() patch),
+> this patch here becomes an optimization rather than a correctness patch:
+> without this patch here, pte_same_as_swp() will perform an unnecessary 
+> transformation (masking out _PAGE_SWP_SOFT_DIRTY) from every one of the
+> millions of ptes it has to examine, on configs where it couldn't be set.
+> Or perhaps the processor gets that all nicely lined up without any actual
+> delay, I don't know.
 
-Hugh
+But we have
+#ifndef CONFIG_HAVE_ARCH_SOFT_DIRTY
+static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
+{
+	return pte;
+}
+#endif 
+
+If we fix the CONFIG_HAVE_ARCH_SOFT_DIRTY correctly, we can do the same
+optmization without the #ifdef of pte bits right ?
+
+>
+> I've already agreed that the way SOFT_DIRTY is currently config'ed is
+> too confusing; but until that's improved, I strongly recommend that you
+> follow the same way of handling this as x86_64 and s390 are doing - going
+> off and doing it differently is liable to lead to error, as we have seen.
+>
+> So I recommend using the patch below too, whether or not you care for
+> the optimization.
+>
+> Hugh
+
+
+-aneesh
