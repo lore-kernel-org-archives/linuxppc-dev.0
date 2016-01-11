@@ -1,38 +1,29 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <hughd@google.com>
+Received: from mail-ob0-x236.google.com (mail-ob0-x236.google.com
+ [IPv6:2607:f8b0:4003:c01::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9BA591A1DAF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 17:00:11 +1100 (AEDT)
-Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Mon, 11 Jan 2016 11:30:09 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 50DE5E005E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 11:30:53 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0B5xYhI5964266
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 11:29:34 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0B5xXtp020027
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 11:29:34 +0530
-From: Anju T <anju@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: khandual@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
- dsahern@gmail.com, acme@redhat.com, sukadev@linux.vnet.ibm.com,
- hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- anju@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V10 2/4] perf/powerpc: add support for sampling intr machine
- state
-Date: Mon, 11 Jan 2016 11:29:29 +0530
-Message-Id: <1452491971-13754-3-git-send-email-anju@linux.vnet.ibm.com>
-In-Reply-To: <1452491971-13754-1-git-send-email-anju@linux.vnet.ibm.com>
-References: <1452491971-13754-1-git-send-email-anju@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 785031A2D2B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 17:05:37 +1100 (AEDT)
+Received: by mail-ob0-x236.google.com with SMTP id py5so23195501obc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jan 2016 22:05:37 -0800 (PST)
+Date: Sun, 10 Jan 2016 22:05:25 -0800 (PST)
+From: Hugh Dickins <hughd@google.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+cc: Hugh Dickins <hughd@google.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Cyrill Gorcunov <gorcunov@gmail.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org
+Subject: Re: [PATCH next] powerpc/mm: fix _PAGE_SWP_SOFT_DIRTY breaking swapoff
+In-Reply-To: <87mvscu0ve.fsf@linux.vnet.ibm.com>
+Message-ID: <alpine.LSU.2.11.1601102149300.1634@eggly.anvils>
+References: <alpine.LSU.2.11.1601091651130.9808@eggly.anvils>
+ <87mvscu0ve.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,136 +33,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The perf infrastructure uses a bit mask to find out valid
-registers to display. Define a register mask for supported
-registers defined in asm/perf_regs.h. The bit positions also
-correspond to register IDs which is used by perf infrastructure
-to fetch the register values. CONFIG_HAVE_PERF_REGS enables
-sampling of the interrupted machine state.
+On Mon, 11 Jan 2016, Aneesh Kumar K.V wrote:
+> Hugh Dickins <hughd@google.com> writes:
+> 
+> > Swapoff after swapping hangs on the G5, when CONFIG_CHECKPOINT_RESTORE=y
+> > but CONFIG_MEM_SOFT_DIRTY is not set.  That's because the non-zero
+> > _PAGE_SWP_SOFT_DIRTY bit, added by CONFIG_HAVE_ARCH_SOFT_DIRTY=y, is not
+> > discounted when CONFIG_MEM_SOFT_DIRTY is not set: so swap ptes cannot be
+> > recognized.
+> >
+> > (I suspect that the peculiar dependence of HAVE_ARCH_SOFT_DIRTY on
+> > CHECKPOINT_RESTORE in arch/powerpc/Kconfig comes from an incomplete
+> > attempt to solve this problem.)
+> >
+> > It's true that the relationship between CONFIG_HAVE_ARCH_SOFT_DIRTY and
+> > and CONFIG_MEM_SOFT_DIRTY is too confusing, and it's true that swapoff
+> > should be made more robust; but nevertheless, fix up the powerpc ifdefs
+> > as x86_64 and s390 (which met the same problem) have them, defining the
+> > bits as 0 if CONFIG_MEM_SOFT_DIRTY is not set.
+> 
+> Do we need this patch, if we make the maybe_same_pte() more robust. The
+> #ifdef with pte bits is always a confusing one and IMHO, we should avoid
+> that if we can ?
 
-Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
-Reviewed-by  : Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/Kconfig          |  1 +
- arch/powerpc/perf/Makefile    |  1 +
- arch/powerpc/perf/perf_regs.c | 85 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 87 insertions(+)
- create mode 100644 arch/powerpc/perf/perf_regs.c
+If maybe_same_pte() were more robust (as in the pte_same_as_swp() patch),
+this patch here becomes an optimization rather than a correctness patch:
+without this patch here, pte_same_as_swp() will perform an unnecessary 
+transformation (masking out _PAGE_SWP_SOFT_DIRTY) from every one of the
+millions of ptes it has to examine, on configs where it couldn't be set.
+Or perhaps the processor gets that all nicely lined up without any actual
+delay, I don't know.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9a7057e..c4ce60d 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -119,6 +119,7 @@ config PPC
- 	select GENERIC_ATOMIC64 if PPC32
- 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
- 	select HAVE_PERF_EVENTS
-+	select HAVE_PERF_REGS
- 	select HAVE_REGS_AND_STACK_ACCESS_API
- 	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
- 	select ARCH_WANT_IPC_PARSE_VERSION
-diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
-index f9c083a..2f2d3d2 100644
---- a/arch/powerpc/perf/Makefile
-+++ b/arch/powerpc/perf/Makefile
-@@ -8,6 +8,7 @@ obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
- 				   power8-pmu.o
- obj32-$(CONFIG_PPC_PERF_CTRS)	+= mpc7450-pmu.o
- 
-+obj-$(CONFIG_PERF_EVENTS)	+= perf_regs.o
- obj-$(CONFIG_FSL_EMB_PERF_EVENT) += core-fsl-emb.o
- obj-$(CONFIG_FSL_EMB_PERF_EVENT_E500) += e500-pmu.o e6500-pmu.o
- 
-diff --git a/arch/powerpc/perf/perf_regs.c b/arch/powerpc/perf/perf_regs.c
-new file mode 100644
-index 0000000..d32581763
---- /dev/null
-+++ b/arch/powerpc/perf/perf_regs.c
-@@ -0,0 +1,85 @@
-+#include <linux/errno.h>
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/perf_event.h>
-+#include <linux/bug.h>
-+#include <linux/stddef.h>
-+#include <asm/ptrace.h>
-+#include <asm/perf_regs.h>
-+
-+#define PT_REGS_OFFSET(id, r) [id] = offsetof(struct pt_regs, r)
-+
-+#define REG_RESERVED (~((1ULL << PERF_REG_POWERPC_MAX) - 1))
-+
-+static unsigned int pt_regs_offset[PERF_REG_POWERPC_MAX] = {
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR0, gpr[0]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR1, gpr[1]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR2, gpr[2]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR3, gpr[3]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR4, gpr[4]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR5, gpr[5]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR6, gpr[6]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR7, gpr[7]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR8, gpr[8]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR9, gpr[9]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR10, gpr[10]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR11, gpr[11]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR12, gpr[12]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR13, gpr[13]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR14, gpr[14]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR15, gpr[15]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR16, gpr[16]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR17, gpr[17]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR18, gpr[18]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR19, gpr[19]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR20, gpr[20]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR21, gpr[21]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR22, gpr[22]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR23, gpr[23]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR24, gpr[24]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR25, gpr[25]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR26, gpr[26]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR27, gpr[27]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR28, gpr[28]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR29, gpr[29]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR30, gpr[30]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_GPR31, gpr[31]),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_NIP, nip),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_MSR, msr),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_ORIG_R3, orig_gpr3),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_CTR, ctr),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_LNK, link),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_XER, xer),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_CCR, ccr),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_TRAP, trap),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_DAR, dar),
-+	PT_REGS_OFFSET(PERF_REG_POWERPC_DSISR, dsisr),
-+};
-+
-+u64 perf_reg_value(struct pt_regs *regs, int idx)
-+{
-+	if (WARN_ON_ONCE(idx >= PERF_REG_POWERPC_MAX))
-+		return 0;
-+
-+	return regs_get_register(regs, pt_regs_offset[idx]);
-+}
-+
-+int perf_reg_validate(u64 mask)
-+{
-+	if (!mask || mask & REG_RESERVED)
-+		return -EINVAL;
-+	return 0;
-+}
-+
-+u64 perf_reg_abi(struct task_struct *task)
-+{
-+	return PERF_SAMPLE_REGS_ABI_64;
-+}
-+
-+void perf_get_regs_user(struct perf_regs *regs_user,
-+			struct pt_regs *regs,
-+			struct pt_regs *regs_user_copy)
-+{
-+	regs_user->regs = task_pt_regs(current);
-+	regs_user->abi  = perf_reg_abi(current);
-+}
--- 
-2.1.0
+I've already agreed that the way SOFT_DIRTY is currently config'ed is
+too confusing; but until that's improved, I strongly recommend that you
+follow the same way of handling this as x86_64 and s390 are doing - going
+off and doing it differently is liable to lead to error, as we have seen.
+
+So I recommend using the patch below too, whether or not you care for
+the optimization.
+
+Hugh
+
+> 
+> >
+> > Signed-off-by: Hugh Dickins <hughd@google.com>
+> > ---
+> >
+> >  arch/powerpc/include/asm/book3s/64/hash.h    |    5 +++++
+> >  arch/powerpc/include/asm/book3s/64/pgtable.h |    9 ++++++---
+> >  2 files changed, 11 insertions(+), 3 deletions(-)
+> >
+> > --- 4.4-next/arch/powerpc/include/asm/book3s/64/hash.h	2016-01-06 11:54:01.377508976 -0800
+> > +++ linux/arch/powerpc/include/asm/book3s/64/hash.h	2016-01-09 13:54:24.410893347 -0800
+> > @@ -33,7 +33,12 @@
+> >  #define _PAGE_F_GIX_SHIFT	12
+> >  #define _PAGE_F_SECOND		0x08000 /* Whether to use secondary hash or not */
+> >  #define _PAGE_SPECIAL		0x10000 /* software: special page */
+> > +
+> > +#ifdef CONFIG_MEM_SOFT_DIRTY
+> >  #define _PAGE_SOFT_DIRTY	0x20000 /* software: software dirty tracking */
+> > +#else
+> > +#define _PAGE_SOFT_DIRTY	0x00000
+> > +#endif
+> >
+> >  /*
+> >   * We need to differentiate between explicit huge page and THP huge
+> > --- 4.4-next/arch/powerpc/include/asm/book3s/64/pgtable.h	2016-01-06 11:54:01.377508976 -0800
+> > +++ linux/arch/powerpc/include/asm/book3s/64/pgtable.h	2016-01-09 13:54:24.410893347 -0800
+> > @@ -162,8 +162,13 @@ static inline void pgd_set(pgd_t *pgdp,
+> >  #define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
+> >  #define __swp_entry_to_pte(x)		__pte((x).val)
+> >
+> > -#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
+> > +#ifdef CONFIG_MEM_SOFT_DIRTY
+> >  #define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
+> > +#else
+> > +#define _PAGE_SWP_SOFT_DIRTY	0UL
+> > +#endif /* CONFIG_MEM_SOFT_DIRTY */
+> > +
+> > +#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
+> >  static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
+> >  {
+> >  	return __pte(pte_val(pte) | _PAGE_SWP_SOFT_DIRTY);
+> > @@ -176,8 +181,6 @@ static inline pte_t pte_swp_clear_soft_d
+> >  {
+> >  	return __pte(pte_val(pte) & ~_PAGE_SWP_SOFT_DIRTY);
+> >  }
+> > -#else
+> > -#define _PAGE_SWP_SOFT_DIRTY	0
+> >  #endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
+> >
+> >  void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
