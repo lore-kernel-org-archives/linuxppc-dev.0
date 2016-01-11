@@ -1,24 +1,42 @@
-Return-Path: <mail@maciej.szmigiero.name>
-Received: from vps-vb.mhejs.net (vi37-28-154-113.vibiznes.pl [37.28.154.113])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BC32F1A08BB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 02:52:34 +1100 (AEDT)
-Message-ID: <5693CFB2.3090301@maciej.szmigiero.name>
-Date: Mon, 11 Jan 2016 16:52:18 +0100
-From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 201201A08BB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 03:04:44 +1100 (AEDT)
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Mon, 11 Jan 2016 16:04:41 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 74ACE1B08067
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:04:38 +0000 (GMT)
+Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
+ [9.149.37.248])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0BG4b6U5046714
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:04:37 GMT
+Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0BG4aSt007713
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 11:04:37 -0500
+Subject: Re: [PATCH next] powerpc/mm: fix _PAGE_SWP_SOFT_DIRTY breaking swapoff
+To: Hugh Dickins <hughd@google.com>
+References: <alpine.LSU.2.11.1601091651130.9808@eggly.anvils>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Cyrill Gorcunov <gorcunov@gmail.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Message-ID: <5693D292.7020603@linux.vnet.ibm.com>
+Date: Mon, 11 Jan 2016 17:04:34 +0100
 MIME-Version: 1.0
-To: Timur Tabi <timur@tabi.org>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
-CC: Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Fabio Estevam <festevam@gmail.com>, Zidan Wang <zidan.wang@freescale.com>
-Subject: Re: [PATCH 1/3] ASoC: fsl_ssi: mark SACNT register volatile
-References: <56770FE1.4060202@maciej.szmigiero.name> <5692CE43.20708@tabi.org>
-In-Reply-To: <5692CE43.20708@tabi.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <alpine.LSU.2.11.1601091651130.9808@eggly.anvils>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +46,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Timur,
-
-Thanks for review.
-
-On 10.01.2016 22:33, Timur Tabi wrote:
-> Maciej S. Szmigiero wrote:
->> +    regmap_write(regs, CCSR_SSI_SACNT,
->> +            ssi_private->regcache_sacnt);
+On 10/01/2016 01:54, Hugh Dickins wrote:
+> Swapoff after swapping hangs on the G5, when CONFIG_CHECKPOINT_RESTORE=y
+> but CONFIG_MEM_SOFT_DIRTY is not set.  That's because the non-zero
+> _PAGE_SWP_SOFT_DIRTY bit, added by CONFIG_HAVE_ARCH_SOFT_DIRTY=y, is not
+> discounted when CONFIG_MEM_SOFT_DIRTY is not set: so swap ptes cannot be
+> recognized.
 > 
-> So I'm not familiar with all of the regcache features, but I understand this patch.
-> I was wondering if it makes sense to write the same exact value that was read previously.
-> Isn't it possible for the WR or RD bits to change between fsl_ssi_suspend() and fsl_ssi_resume()?
-
-These bits are only set in fsl_ssi_ac97_{read,write} which then wait 100usecs
-before returning. This should be enough for SSI core to finish the relevant
-operation and clear the bits again, so theoretically they shouldn't be set
-outside these functions.
-
-However, if AC'97 register access is done concurrently with suspend or resume
-the read / written reg data might be corrupted.
-
-It looks to me this is indeed possible since SSI PM callbacks are set in its
-platform driver struct but ASoC core only calls PM callbacks in snd_soc_dai_driver
-(which SSI driver don't set).
-
-If I am correct with this reasoning then these callbacks need to be added to
-snd_soc_dai_driver but platform driver ones should still be provided in case
-the driver is loaded but the sound card is not yet registered.
-
-I've CCed Zidan since he originally added PM support to this driver.
-
-> That is, should we be doing this instead?
+> (I suspect that the peculiar dependence of HAVE_ARCH_SOFT_DIRTY on
+> CHECKPOINT_RESTORE in arch/powerpc/Kconfig comes from an incomplete
+> attempt to solve this problem.)
 > 
-> u32 temp;
-> regmap_read(regs, CCSR_SSI_SACNT, &temp);
-> temp &= 0x18; // preserve WR and RD
-> regmap_write(regs, CCSR_SSI_SACNT, (ssi_private->regcache_sacnt & ~0x18) | temp);
+> It's true that the relationship between CONFIG_HAVE_ARCH_SOFT_DIRTY and
+> and CONFIG_MEM_SOFT_DIRTY is too confusing, and it's true that swapoff
+> should be made more robust; but nevertheless, fix up the powerpc ifdefs
+> as x86_64 and s390 (which met the same problem) have them, defining the
+> bits as 0 if CONFIG_MEM_SOFT_DIRTY is not set.
 > 
+> Signed-off-by: Hugh Dickins <hughd@google.com>
 
-Maciej
+Acked-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+
+Thanks, Hugh!
