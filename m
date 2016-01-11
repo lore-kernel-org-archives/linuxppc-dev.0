@@ -1,37 +1,42 @@
-Return-Path: <prvs=81176a5d5=david.vrabel@citrix.com>
-Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <raghavendra.kt@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 50F361A19EA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 22:12:15 +1100 (AEDT)
-Message-ID: <56938E06.9050702@citrix.com>
-Date: Mon, 11 Jan 2016 11:12:06 +0000
-From: David Vrabel <david.vrabel@citrix.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C88091A0202
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 22:52:43 +1100 (AEDT)
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <raghavendra.kt@linux.vnet.ibm.com>;
+ Mon, 11 Jan 2016 04:52:41 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 610C93E40041
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 04:52:39 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0BBqd0R25035000
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 04:52:39 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0BBqcEp000596
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 04:52:39 -0700
+Message-ID: <5693978F.2040507@linux.vnet.ibm.com>
+Date: Mon, 11 Jan 2016 17:22:47 +0530
+From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>, <linux-kernel@vger.kernel.org>
-CC: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
- <linux-arch@vger.kernel.org>, Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- <virtualization@lists.linux-foundation.org>, Stefano Stabellini
- <stefano.stabellini@eu.citrix.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>, Joe Perches
- <joe@perches.com>, David Miller <davem@davemloft.net>,
- <linux-ia64@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-s390@vger.kernel.org>, <sparclinux@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, <linux-metag@vger.kernel.org>,
- <linux-mips@linux-mips.org>, <x86@kernel.org>,
- <user-mode-linux-devel@lists.sourceforge.net>,
- <adi-buildroot-devel@lists.sourceforge.net>, <linux-sh@vger.kernel.org>,
- <linux-xtensa@linux-xtensa.org>, <xen-devel@lists.xenproject.org>, "Konrad
- Rzeszutek Wilk" <konrad.wilk@oracle.com>, Boris Ostrovsky
- <boris.ostrovsky@oracle.com>, Julien Grall <julien.grall@citrix.com>, "Ross
- Lagerwall" <ross.lagerwall@citrix.com>, Stefano Stabellini
- <stefano.stabellini@citrix.com>, Wei Liu <wei.liu2@citrix.com>
-Subject: Re: [PATCH v3 39/41] xen/events: use virt_xxx barriers
-References: <1452426622-4471-1-git-send-email-mst@redhat.com>
- <1452426622-4471-40-git-send-email-mst@redhat.com>
-In-Reply-To: <1452426622-4471-40-git-send-email-mst@redhat.com>
-Content-Type: text/plain; charset="windows-1252"
+To: Jan Stancek <jstancek@redhat.com>
+CC: linuxppc-dev@lists.ozlabs.org, vdavydov@parallels.com,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ anton@samba.org, nacc@linux.vnet.ibm.com, gkurz@linux.vnet.ibm.com,
+ grant.likely@linaro.org, nikunj@linux.vnet.ibm.com,
+ Steve Best <sbest@redhat.com>, Gustavo Duarte <gduarte@redhat.com>,
+ Thomas Huth <thuth@redhat.com>
+Subject: Re: [BUG] PowerNV crash with 4.4.0-rc8 at sched_init_numa (related
+ to commit c118baf80256)
+References: <1258383100.6297154.1452380635681.JavaMail.zimbra@redhat.com>
+In-Reply-To: <1258383100.6297154.1452380635681.JavaMail.zimbra@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,20 +46,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/01/16 14:21, Michael S. Tsirkin wrote:
-> drivers/xen/events/events_fifo.c uses rmb() to communicate with the
-> other side.
-> 
-> For guests compiled with CONFIG_SMP, smp_rmb would be sufficient, so
-> rmb() here is only needed if a non-SMP guest runs on an SMP host.
-> 
-> Switch to the virt_rmb barrier which serves this exact purpose.
-> 
-> Pull in asm/barrier.h here to make sure the file is self-contained.
-> 
-> Suggested-by: David Vrabel <david.vrabel@citrix.com>
-> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+On 01/10/2016 04:33 AM, Jan Stancek wrote:
+> Hi,
+>
+> I'm seeing bare metal ppc64le system crashing early during boot
+> with latest upstream kernel (4.4.0-rc8):
+>
 
-Acked-by: David Vrabel <david.vrabel@citrix.com>
-
-David
+Jan,
+Do you mind sharing the .config you used for the kernel.
+Not able to reproduce with the one that I have :(
