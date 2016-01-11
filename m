@@ -2,17 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4AC911A0202
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 20:14:02 +1100 (AEDT)
-In-Reply-To: <1449786882.29188.32.camel@neuling.org>
-To: Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 077A41A0202
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 20:14:03 +1100 (AEDT)
+In-Reply-To: <1448605387-2043-1-git-send-email-ruscur@russell.cc>
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org, Cyril Bur <cyrilbur@gmail.com>
-Subject: Re: [v3,
- 2/2] powerpc: Copy only required pieces of the mm_context_t to the
- paca
-Message-Id: <20160111091402.01723140320@ozlabs.org>
-Date: Mon, 11 Jan 2016 20:14:01 +1100 (AEDT)
+Subject: Re: [V3] powerpc/powernv: Add a kmsg_dumper that flushes console
+ output on panic
+Message-Id: <20160111091402.BDBAB1402DE@ozlabs.org>
+Date: Mon, 11 Jan 2016 20:14:02 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +20,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-10-12 at 22:34:42 UTC, Michael Neuling wrote:
-> Currently we copy the whole mm_context_t to the paca but only access a
-> few bits of it.  This is wasteful of space paca and also takes quite
-> some time in the hot path of context switching.
+On Fri, 2015-27-11 at 06:23:07 UTC, Russell Currey wrote:
+> On BMC machines, console output is controlled by the OPAL firmware and is
+> only flushed when its pollers are called.  When the kernel is in a panic
+> state, it no longer calls these pollers and thus console output does not
+> completely flush, causing some output from the panic to be lost.
 > 
-> This patch pulls in only the required bits from the mm_context_t to
-> the paca and on context switch, copies only those.
+> Output is only actually lost when the kernel is configured to not power off
+> or reboot after panic (i.e. CONFIG_PANIC_TIMEOUT is set to 0) since OPAL
+> flushes the console buffer as part of its power down routines.  Before this
+> patch, however, only partial output would be printed during the timeout wait.
 > 
-> Benchmarking this (On top of Anton's recent MSR context switching
-> changes [1]) using processes and yield shows an improvement of almost
-> 3% on POWER8:
+> This patch adds a new kmsg_dumper which gets called at panic time to ensure
+> panic output is not lost.  It accomplishes this by calling OPAL_CONSOLE_FLUSH
+> in the OPAL API, and if that is not available, the pollers are called enough
+> times to (hopefully) completely flush the buffer.
 > 
->   http://ozlabs.org/~anton/junkcode/context_switch2.c
->   ./context_switch2 --test=yield --process 0 0
+> The flushing mechanism will only affect output printed at and before the
+> kmsg_dump call in kernel/panic.c:panic().  As such, the "end Kernel panic"
+> message may still be truncated as follows:
 > 
-> 1. https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-October/135700.html
+> >Call Trace:
+> >[c000000f1f603b00] [c0000000008e9458] dump_stack+0x90/0xbc (unreliable)
+> >[c000000f1f603b30] [c0000000008e7e78] panic+0xf8/0x2c4
+> >[c000000f1f603bc0] [c000000000be4860] mount_block_root+0x288/0x33c
+> >[c000000f1f603c80] [c000000000be4d14] prepare_namespace+0x1f4/0x254
+> >[c000000f1f603d00] [c000000000be43e8] kernel_init_freeable+0x318/0x350
+> >[c000000f1f603dc0] [c00000000000bd74] kernel_init+0x24/0x130
+> >[c000000f1f603e30] [c0000000000095b0] ret_from_kernel_thread+0x5c/0xac
+> >---[ end Kernel panic - not
 > 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> This functionality is implemented as a kmsg_dumper as it seems to be the
+> most sensible way to introduce platform-specific functionality to the
+> panic function.
+> 
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/2fc251a8dda56b71ec491bee4c
+https://git.kernel.org/powerpc/c/affddff69c55eb68969448f35f
 
 cheers
