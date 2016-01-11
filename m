@@ -1,36 +1,38 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 695581A0AC3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 15:56:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401C31A0AC6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:40:56 +1100 (AEDT)
 Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 11 Jan 2016 10:26:24 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 34651E005F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 10:27:38 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0B4uKaw41156762
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 10:26:20 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0B4uEdU031315
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 10:26:19 +0530
+ Mon, 11 Jan 2016 15:40:54 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3E88A2BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:40:49 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0B5eJE035913970
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:40:27 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0B5eGWn003149
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:40:17 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Hugh Dickins <hughd@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
+To: Hugh Dickins <hughd@google.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
  Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Subject: Re: [PATCH next] powerpc/mm: fix _PAGE_PTE breaking swapoff
-In-Reply-To: <alpine.LSU.2.11.1601091643060.9808@eggly.anvils>
-References: <alpine.LSU.2.11.1601091643060.9808@eggly.anvils>
-Date: Mon, 11 Jan 2016 10:26:10 +0530
-Message-ID: <87si24u32t.fsf@linux.vnet.ibm.com>
+Subject: Re: [PATCH next] mm: make swapoff more robust against soft dirty
+In-Reply-To: <alpine.LSU.2.11.1601091656491.9808@eggly.anvils>
+References: <alpine.LSU.2.11.1601091651130.9808@eggly.anvils>
+ <alpine.LSU.2.11.1601091656491.9808@eggly.anvils>
+Date: Mon, 11 Jan 2016 11:09:49 +0530
+Message-ID: <87pox8u122.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,47 +46,72 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hugh Dickins <hughd@google.com> writes:
 
-> Swapoff after swapping hangs on the G5.  That's because the _PAGE_PTE
-> bit, added by set_pte_at(), is not expected by swapoff: so swap ptes
-> cannot be recognized.
+> Both s390 and powerpc have hit the issue of swapoff hanging, when
+> CONFIG_HAVE_ARCH_SOFT_DIRTY and CONFIG_MEM_SOFT_DIRTY ifdefs were
+> not quite as x86_64 had them.  I think it would be much clearer if
+> HAVE_ARCH_SOFT_DIRTY was just a Kconfig option set by architectures
+> to determine whether the MEM_SOFT_DIRTY option should be offered,
+> and the actual code depend upon CONFIG_MEM_SOFT_DIRTY alone.
 >
-> I'm not sure whether a swap pte should or should not have _PAGE_PTE set:
-> this patch assumes not, and fixes set_pte_at() to set _PAGE_PTE only on
-> present entries.
-
-One of the reason we added _PAGE_PTE is to enable HUGETLB migration. So
-we want migratio ptes to have _PAGE_PTE set.
-
+> But won't embark on that change myself: instead make swapoff more
+> robust, by using pte_swp_clear_soft_dirty() on each pte it encounters,
+> without an explicit #ifdef CONFIG_MEM_SOFT_DIRTY.  That being a no-op,
+> whether the bit in question is defined as 0 or the asm-generic fallback
+> is used, unless soft dirty is fully turned on.
 >
-> But if that's wrong, a reasonable alternative would be to
-> #define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val(pte) & ~_PAGE_PTE })
-> #define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
+> Why "maybe" in maybe_same_pte()?  Rename it pte_same_as_swp().
 >
 
-We do clear _PAGE_PTE bits, when converting swp_entry_t to type and
-offset. Can you share the stack trace for the hang, which will help me
-understand this more ? . 
+Ok this also explains, the _PAGE_PTE issue on powerpc you mentioned in the other
+email.
+
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 > Signed-off-by: Hugh Dickins <hughd@google.com>
 > ---
 >
->  arch/powerpc/mm/pgtable.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+>  mm/swapfile.c |   18 ++++--------------
+>  1 file changed, 4 insertions(+), 14 deletions(-)
 >
-> --- 4.4-next/arch/powerpc/mm/pgtable.c	2016-01-06 11:54:01.477512251 -0800
-> +++ linux/arch/powerpc/mm/pgtable.c	2016-01-09 13:51:15.793485717 -0800
-> @@ -180,9 +180,10 @@ void set_pte_at(struct mm_struct *mm, un
->  	VM_WARN_ON((pte_val(*ptep) & (_PAGE_PRESENT | _PAGE_USER)) ==
->  		(_PAGE_PRESENT | _PAGE_USER));
->  	/*
-> -	 * Add the pte bit when tryint set a pte
-> +	 * Add the pte bit when setting a pte (not a swap entry)
->  	 */
-> -	pte = __pte(pte_val(pte) | _PAGE_PTE);
-> +	if (pte_val(pte) & _PAGE_PRESENT)
-> +		pte = __pte(pte_val(pte) | _PAGE_PTE);
+> --- 4.4-next/mm/swapfile.c	2016-01-06 11:54:46.327006983 -0800
+> +++ linux/mm/swapfile.c	2016-01-09 13:39:19.632872694 -0800
+> @@ -1109,19 +1109,9 @@ unsigned int count_swap_pages(int type,
+>  }
+>  #endif /* CONFIG_HIBERNATION */
 >
->  	/* Note: mm->context.id might not yet have been assigned as
->  	 * this context might not have been activated yet when this
-
--aneesh
+> -static inline int maybe_same_pte(pte_t pte, pte_t swp_pte)
+> +static inline int pte_same_as_swp(pte_t pte, pte_t swp_pte)
+>  {
+> -#ifdef CONFIG_MEM_SOFT_DIRTY
+> -	/*
+> -	 * When pte keeps soft dirty bit the pte generated
+> -	 * from swap entry does not has it, still it's same
+> -	 * pte from logical point of view.
+> -	 */
+> -	pte_t swp_pte_dirty = pte_swp_mksoft_dirty(swp_pte);
+> -	return pte_same(pte, swp_pte) || pte_same(pte, swp_pte_dirty);
+> -#else
+> -	return pte_same(pte, swp_pte);
+> -#endif
+> +	return pte_same(pte_swp_clear_soft_dirty(pte), swp_pte);
+>  }
+>
+>  /*
+> @@ -1150,7 +1140,7 @@ static int unuse_pte(struct vm_area_stru
+>  	}
+>
+>  	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+> -	if (unlikely(!maybe_same_pte(*pte, swp_entry_to_pte(entry)))) {
+> +	if (unlikely(!pte_same_as_swp(*pte, swp_entry_to_pte(entry)))) {
+>  		mem_cgroup_cancel_charge(page, memcg, false);
+>  		ret = 0;
+>  		goto out;
+> @@ -1208,7 +1198,7 @@ static int unuse_pte_range(struct vm_are
+>  		 * swapoff spends a _lot_ of time in this loop!
+>  		 * Test inline before going to call unuse_pte.
+>  		 */
+> -		if (unlikely(maybe_same_pte(*pte, swp_pte))) {
+> +		if (unlikely(pte_same_as_swp(*pte, swp_pte))) {
+>  			pte_unmap(pte);
+>  			ret = unuse_pte(vma, pmd, addr, entry, page);
+>  			if (ret)
