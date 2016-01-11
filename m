@@ -1,36 +1,25 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <igal.liberman@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0066.outbound.protection.outlook.com [157.56.112.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A3941A08BB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 22:11:06 +1100 (AEDT)
-Date: Mon, 11 Jan 2016 13:10:54 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: James Hogan <james.hogan@imgtec.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
- linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-metag@vger.kernel.org,
- linux-mips@linux-mips.org, x86@kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ingo Molnar <mingo@kernel.org>, Davidlohr Bueso <dbueso@suse.de>,
- Andrey Konovalov <andreyknvl@google.com>
-Subject: Re: [PATCH v2 20/32] metag: define __smp_xxx
-Message-ID: <20160111131001-mutt-send-email-mst@redhat.com>
-References: <1451572003-2440-1-git-send-email-mst@redhat.com>
- <1451572003-2440-21-git-send-email-mst@redhat.com>
- <20160105000929.GM17861@jhogan-linux.le.imgtec.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3BF311A0202
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 20:39:25 +1100 (AEDT)
+From: Igal Liberman <igal.liberman@nxp.com>
+To: Rob Herring <robh@kernel.org>, Igal Liberman <Igal.Liberman@freescale.com>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott Wood
+ <scottwood@freescale.com>, Madalin-Cristian Bucur
+ <madalin.bucur@freescale.com>, "shaohui.xie@freescale.com"
+ <shaohui.xie@freescale.com>
+Subject: RE: [v2] powerpc/fsl: Update fman dt binding with pcs-phy and tbi-phy
+Date: Mon, 11 Jan 2016 09:23:59 +0000
+Message-ID: <AMXPR04MB248CB84E0F389149CA964BBECC90@AMXPR04MB248.eurprd04.prod.outlook.com>
+References: <1450921331-25309-1-git-send-email-igal.liberman@freescale.com>
+ <20151230162733.GA2518@rob-hp-laptop>
+In-Reply-To: <20151230162733.GA2518@rob-hp-laptop>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160105000929.GM17861@jhogan-linux.le.imgtec.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,114 +29,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 05, 2016 at 12:09:30AM +0000, James Hogan wrote:
-> Hi Michael,
-> 
-> On Thu, Dec 31, 2015 at 09:08:22PM +0200, Michael S. Tsirkin wrote:
-> > This defines __smp_xxx barriers for metag,
-> > for use by virtualization.
-> > 
-> > smp_xxx barriers are removed as they are
-> > defined correctly by asm-generic/barriers.h
-> > 
-> > Note: as __smp_XX macros should not depend on CONFIG_SMP, they can not
-> > use the existing fence() macro since that is defined differently between
-> > SMP and !SMP.  For this reason, this patch introduces a wrapper
-> > metag_fence() that doesn't depend on CONFIG_SMP.
-> > fence() is then defined using that, depending on CONFIG_SMP.
-> 
-> I'm not a fan of the inconsistent commit message wrapping. I wrap to 72
-> columns (although I now notice SubmittingPatches says to use 75...).
-> 
-> > 
-> > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> > Acked-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> >  arch/metag/include/asm/barrier.h | 32 +++++++++++++++-----------------
-> >  1 file changed, 15 insertions(+), 17 deletions(-)
-> > 
-> > diff --git a/arch/metag/include/asm/barrier.h b/arch/metag/include/asm/barrier.h
-> > index b5b778b..84880c9 100644
-> > --- a/arch/metag/include/asm/barrier.h
-> > +++ b/arch/metag/include/asm/barrier.h
-> > @@ -44,13 +44,6 @@ static inline void wr_fence(void)
-> >  #define rmb()		barrier()
-> >  #define wmb()		mb()
-> >  
-> > -#ifndef CONFIG_SMP
-> > -#define fence()		do { } while (0)
-> > -#define smp_mb()        barrier()
-> > -#define smp_rmb()       barrier()
-> > -#define smp_wmb()       barrier()
-> > -#else
-> 
-> !SMP kernel text differs, but only because of new presence of unused
-> metag_fence() inline function. If I #if 0 that out, then it matches, so
-> thats fine.
-> 
-> > -
-> >  #ifdef CONFIG_METAG_SMP_WRITE_REORDERING
-> >  /*
-> >   * Write to the atomic memory unlock system event register (command 0). This is
-> > @@ -60,26 +53,31 @@ static inline void wr_fence(void)
-> >   * incoherence). It is therefore ineffective if used after and on the same
-> >   * thread as a write.
-> >   */
-> > -static inline void fence(void)
-> > +static inline void metag_fence(void)
-> >  {
-> >  	volatile int *flushptr = (volatile int *) LINSYSEVENT_WR_ATOMIC_UNLOCK;
-> >  	barrier();
-> >  	*flushptr = 0;
-> >  	barrier();
-> >  }
-> > -#define smp_mb()        fence()
-> > -#define smp_rmb()       fence()
-> > -#define smp_wmb()       barrier()
-> > +#define __smp_mb()        metag_fence()
-> > +#define __smp_rmb()       metag_fence()
-> > +#define __smp_wmb()       barrier()
-> >  #else
-> > -#define fence()		do { } while (0)
-> > -#define smp_mb()        barrier()
-> > -#define smp_rmb()       barrier()
-> > -#define smp_wmb()       barrier()
-> > +#define metag_fence()		do { } while (0)
-> > +#define __smp_mb()        barrier()
-> > +#define __smp_rmb()       barrier()
-> > +#define __smp_wmb()       barrier()
-> 
-> Whitespace is now messed up. Admitedly its already inconsistent
-> tabs/spaces, but it'd be nice if the definitions at least still all
-> lined up. You're touching all the definitions which use spaces anyway,
-> so feel free to convert them to tabs while you're at it.
-> 
-> Other than those niggles, it looks sensible to me:
-> Acked-by: James Hogan <james.hogan@imgtec.com>
-> 
-> Cheers
-> James
+Hi Rob,
 
-Thanks!
+> -----Original Message-----
+> From: Rob Herring [mailto:robh@kernel.org]
+> Sent: Wednesday, December 30, 2015 6:28 PM
+> To: Igal Liberman <Igal.Liberman@freescale.com>
+> Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Scott Wood
+> <scottwood@freescale.com>; Madalin-Cristian Bucur
+> <madalin.bucur@freescale.com>; shaohui.xie@freescale.com
+> Subject: Re: [v2] powerpc/fsl: Update fman dt binding with pcs-phy and tb=
+i-
+> phy
+>=20
+> On Thu, Dec 24, 2015 at 03:42:11AM +0200, igal.liberman@freescale.com
+> wrote:
+> > From: Igal Liberman <igal.liberman@freescale.com>
+> >
+> > The FMan contains internal PHY devices used for SGMII connections to
+> > external PHYs. When these PHYs are in use a reference is needed for
+> > both the external PHY and the internal one. For the external PHY
+> > phy-handle provides the reference. For the internal PHY a new handle
+> > is required.
+> > In dTSEC, the internal PHY is a TBI (Ten Bit Interface) PHY, the
+> > handle used will be tbi-handle.
+> > In mEMAC, the internal PHY is a PCS (Physical Coding Sublayer) PHY,
+> > the handle used will be pcsphy-handle.
+>=20
+> This is fairly commom for 10G eth I think. Can't you use the common PHY
+> binding here in the case without internal MDIO bus? Just because you use =
+it
+> that doesn't mean you have to use the generic phy subsystem in the kernel=
+.
+>=20
 
-I did this in my tree (replaced spaces with tabs in the new
-definitions); not reposting just because of this change.
+mEMAC and dTSEC always have internal MDIO bus.
+I was requested to use generic PHY API for internal PHY configuration by ne=
+tdev, this part was accepted.=20
 
-> >  #endif
+> Perhaps phy-handle should be deprecated in favor of doing something like
+> this if you need a phandle to both:
+>=20
+> phys =3D <&internal-phy>, <&external-phy>;
+>=20
+
+I think that pcsphy-handle and tbi-handle represent the hardware in a good =
+way.
+This is the actual name of the hardware.
+
+> > diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> > b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> > index 1fc5328..55c2c03 100644
+> > --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> > +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> > @@ -315,6 +315,16 @@ PROPERTIES
+> >  		Value type: <phandle>
+> >  		Definition: A phandle for 1EEE1588 timer.
+> >
+> > +- pcsphy-handle
+> > +		Usage required for "fsl,fman-memac" MACs
+> > +		Value type: <phandle>
+> > +		Definition: A phandle for pcsphy.
 > > +
-> > +#ifdef CONFIG_SMP
-> > +#define fence() metag_fence()
-> > +#else
-> > +#define fence()		do { } while (0)
-> >  #endif
-> >  
-> > -#define smp_mb__before_atomic()	barrier()
-> > -#define smp_mb__after_atomic()	barrier()
-> > +#define __smp_mb__before_atomic()	barrier()
-> > +#define __smp_mb__after_atomic()	barrier()
-> >  
-> >  #include <asm-generic/barrier.h>
-> >  
-> > -- 
-> > MST
-> > 
+> > +- tbi-handle
+> > +		Usage required for "fsl,fman-dtsec" MACs
+> > +		Value type: <phandle>
+> > +		Definition: A phandle for tbiphy.
+> > +
+> >  EXAMPLE
+> >
+> >  fman1_tx28: port@a8000 {
+> > @@ -340,6 +350,7 @@ ethernet@e0000 {
+> >  	reg =3D <0xe0000 0x1000>;
+> >  	fsl,fman-ports =3D <&fman1_rx8 &fman1_tx28>;
+> >  	ptp-timer =3D <&ptp-timer>;
+> > +	tbi-handle =3D <&tbi0>;
+>=20
+> What does the tbi0 node contain? It should be present in the example.
+>=20
+
+There is an example in under MDIO section:
+
+mdio@e3120 {
+	compatible =3D "fsl,fman-mdio";
+	reg =3D <0xe3120 0xee0>;
+	fsl,fman-internal-mdio;
+
+	tbi1: tbi-phy@8 {
+		reg =3D <0x8>;
+		device_type =3D "tbi-phy";
+	};
+};
+
+I used different indexes to make sure that it's aligned to the other exampl=
+es in the binding document.
+
+> Rob
+
+Thank you for your feedback,=20
+Igal
