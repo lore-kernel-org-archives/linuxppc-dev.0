@@ -1,25 +1,37 @@
-Return-Path: <igal.liberman@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0066.outbound.protection.outlook.com [157.56.112.66])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <prvs=81176a5d5=david.vrabel@citrix.com>
+Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3BF311A0202
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 20:39:25 +1100 (AEDT)
-From: Igal Liberman <igal.liberman@nxp.com>
-To: Rob Herring <robh@kernel.org>, Igal Liberman <Igal.Liberman@freescale.com>
-CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott Wood
- <scottwood@freescale.com>, Madalin-Cristian Bucur
- <madalin.bucur@freescale.com>, "shaohui.xie@freescale.com"
- <shaohui.xie@freescale.com>
-Subject: RE: [v2] powerpc/fsl: Update fman dt binding with pcs-phy and tbi-phy
-Date: Mon, 11 Jan 2016 09:23:59 +0000
-Message-ID: <AMXPR04MB248CB84E0F389149CA964BBECC90@AMXPR04MB248.eurprd04.prod.outlook.com>
-References: <1450921331-25309-1-git-send-email-igal.liberman@freescale.com>
- <20151230162733.GA2518@rob-hp-laptop>
-In-Reply-To: <20151230162733.GA2518@rob-hp-laptop>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 50F361A19EA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 22:12:15 +1100 (AEDT)
+Message-ID: <56938E06.9050702@citrix.com>
+Date: Mon, 11 Jan 2016 11:12:06 +0000
+From: David Vrabel <david.vrabel@citrix.com>
 MIME-Version: 1.0
+To: "Michael S. Tsirkin" <mst@redhat.com>, <linux-kernel@vger.kernel.org>
+CC: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+ <linux-arch@vger.kernel.org>, Andrew Cooper <andrew.cooper3@citrix.com>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ <virtualization@lists.linux-foundation.org>, Stefano Stabellini
+ <stefano.stabellini@eu.citrix.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>, Joe Perches
+ <joe@perches.com>, David Miller <davem@davemloft.net>,
+ <linux-ia64@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-s390@vger.kernel.org>, <sparclinux@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-metag@vger.kernel.org>,
+ <linux-mips@linux-mips.org>, <x86@kernel.org>,
+ <user-mode-linux-devel@lists.sourceforge.net>,
+ <adi-buildroot-devel@lists.sourceforge.net>, <linux-sh@vger.kernel.org>,
+ <linux-xtensa@linux-xtensa.org>, <xen-devel@lists.xenproject.org>, "Konrad
+ Rzeszutek Wilk" <konrad.wilk@oracle.com>, Boris Ostrovsky
+ <boris.ostrovsky@oracle.com>, Julien Grall <julien.grall@citrix.com>, "Ross
+ Lagerwall" <ross.lagerwall@citrix.com>, Stefano Stabellini
+ <stefano.stabellini@citrix.com>, Wei Liu <wei.liu2@citrix.com>
+Subject: Re: [PATCH v3 39/41] xen/events: use virt_xxx barriers
+References: <1452426622-4471-1-git-send-email-mst@redhat.com>
+ <1452426622-4471-40-git-send-email-mst@redhat.com>
+In-Reply-To: <1452426622-4471-40-git-send-email-mst@redhat.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,102 +41,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Rob,
+On 10/01/16 14:21, Michael S. Tsirkin wrote:
+> drivers/xen/events/events_fifo.c uses rmb() to communicate with the
+> other side.
+> 
+> For guests compiled with CONFIG_SMP, smp_rmb would be sufficient, so
+> rmb() here is only needed if a non-SMP guest runs on an SMP host.
+> 
+> Switch to the virt_rmb barrier which serves this exact purpose.
+> 
+> Pull in asm/barrier.h here to make sure the file is self-contained.
+> 
+> Suggested-by: David Vrabel <david.vrabel@citrix.com>
+> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 
-> -----Original Message-----
-> From: Rob Herring [mailto:robh@kernel.org]
-> Sent: Wednesday, December 30, 2015 6:28 PM
-> To: Igal Liberman <Igal.Liberman@freescale.com>
-> Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Scott Wood
-> <scottwood@freescale.com>; Madalin-Cristian Bucur
-> <madalin.bucur@freescale.com>; shaohui.xie@freescale.com
-> Subject: Re: [v2] powerpc/fsl: Update fman dt binding with pcs-phy and tb=
-i-
-> phy
->=20
-> On Thu, Dec 24, 2015 at 03:42:11AM +0200, igal.liberman@freescale.com
-> wrote:
-> > From: Igal Liberman <igal.liberman@freescale.com>
-> >
-> > The FMan contains internal PHY devices used for SGMII connections to
-> > external PHYs. When these PHYs are in use a reference is needed for
-> > both the external PHY and the internal one. For the external PHY
-> > phy-handle provides the reference. For the internal PHY a new handle
-> > is required.
-> > In dTSEC, the internal PHY is a TBI (Ten Bit Interface) PHY, the
-> > handle used will be tbi-handle.
-> > In mEMAC, the internal PHY is a PCS (Physical Coding Sublayer) PHY,
-> > the handle used will be pcsphy-handle.
->=20
-> This is fairly commom for 10G eth I think. Can't you use the common PHY
-> binding here in the case without internal MDIO bus? Just because you use =
-it
-> that doesn't mean you have to use the generic phy subsystem in the kernel=
-.
->=20
+Acked-by: David Vrabel <david.vrabel@citrix.com>
 
-mEMAC and dTSEC always have internal MDIO bus.
-I was requested to use generic PHY API for internal PHY configuration by ne=
-tdev, this part was accepted.=20
-
-> Perhaps phy-handle should be deprecated in favor of doing something like
-> this if you need a phandle to both:
->=20
-> phys =3D <&internal-phy>, <&external-phy>;
->=20
-
-I think that pcsphy-handle and tbi-handle represent the hardware in a good =
-way.
-This is the actual name of the hardware.
-
-> > diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> > b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> > index 1fc5328..55c2c03 100644
-> > --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> > +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> > @@ -315,6 +315,16 @@ PROPERTIES
-> >  		Value type: <phandle>
-> >  		Definition: A phandle for 1EEE1588 timer.
-> >
-> > +- pcsphy-handle
-> > +		Usage required for "fsl,fman-memac" MACs
-> > +		Value type: <phandle>
-> > +		Definition: A phandle for pcsphy.
-> > +
-> > +- tbi-handle
-> > +		Usage required for "fsl,fman-dtsec" MACs
-> > +		Value type: <phandle>
-> > +		Definition: A phandle for tbiphy.
-> > +
-> >  EXAMPLE
-> >
-> >  fman1_tx28: port@a8000 {
-> > @@ -340,6 +350,7 @@ ethernet@e0000 {
-> >  	reg =3D <0xe0000 0x1000>;
-> >  	fsl,fman-ports =3D <&fman1_rx8 &fman1_tx28>;
-> >  	ptp-timer =3D <&ptp-timer>;
-> > +	tbi-handle =3D <&tbi0>;
->=20
-> What does the tbi0 node contain? It should be present in the example.
->=20
-
-There is an example in under MDIO section:
-
-mdio@e3120 {
-	compatible =3D "fsl,fman-mdio";
-	reg =3D <0xe3120 0xee0>;
-	fsl,fman-internal-mdio;
-
-	tbi1: tbi-phy@8 {
-		reg =3D <0x8>;
-		device_type =3D "tbi-phy";
-	};
-};
-
-I used different indexes to make sure that it's aligned to the other exampl=
-es in the binding document.
-
-> Rob
-
-Thank you for your feedback,=20
-Igal
+David
