@@ -2,16 +2,16 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D2D51A0AC6
+ by lists.ozlabs.org (Postfix) with ESMTPS id C1EE21A0BC0
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 16:51:41 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org, benh@kernel.crashing.org, michael@ellerman.id.au,
  bharata@linux.vnet.ibm.com
 Cc: thuth@redhat.com, lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv2 3/4] pseries: debugfs hook to trigger a hash page table resize
-Date: Mon, 11 Jan 2016 16:52:32 +1100
-Message-Id: <1452491553-26153-4-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFCv2 4/4] pseries: Advertise HPT resizing support via CAS
+Date: Mon, 11 Jan 2016 16:52:33 +1100
+Message-Id: <1452491553-26153-5-git-send-email-david@gibson.dropbear.id.au>
 In-Reply-To: <1452491553-26153-1-git-send-email-david@gibson.dropbear.id.au>
 References: <1452491553-26153-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,55 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a special file /sys/kernel/debug/powerpc/pft-size
-which can be used to view the current size of the hash page table (as
-a bit shift) and to trigger a resize of the hash table on PAPR guests.
+The hypervisor needs to know a guest is capable of using the HPT resizing
+PAPR extension in order to make full advantage of it for memory hotplug.
+
+If the hypervisor knows the guest is HPT resize aware, it can size the
+initial HPT based on the initial guest RAM size, relying on the guest to
+resize the HPT when more memory is hot-added.  Without this, the hypervisor
+must size the HPT for the maximum possible guest RAM, which can lead to
+a huge waste of space if the guest never actually expends to that maximum
+size.
+
+This patch advertises the guest's support for HPT resizing via the
+ibm,client-architecture-support OF interface.  Obviously, the actual
+encoding in the CAS vector is tentative until the extension is officially
+incorporated into PAPR.  For now we use bit 0 of (previously unused) byte 8
+of option vector 5.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/platforms/pseries/lpar.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ arch/powerpc/include/asm/prom.h | 1 +
+ arch/powerpc/kernel/prom_init.c | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index f6e7af5..dba9644 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -29,6 +29,7 @@
- #include <linux/jump_label.h>
- #include <linux/delay.h>
- #include <linux/stop_machine.h>
-+#include <linux/debugfs.h>
- #include <asm/processor.h>
- #include <asm/mmu.h>
- #include <asm/page.h>
-@@ -903,3 +904,28 @@ int pseries_lpar_resize_hpt(unsigned long shift)
- 
- 	return 0;
- }
-+
-+static int ppc64_pft_size_get(void *data, u64 *val)
-+{
-+	*val = ppc64_pft_size;
-+	return 0;
-+}
-+
-+static int ppc64_pft_size_set(void *data, u64 val)
-+{
-+	return  pseries_lpar_resize_hpt(val);
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_ppc64_pft_size,
-+			ppc64_pft_size_get, ppc64_pft_size_set,	"%llu\n");
-+
-+static int __init pseries_lpar_debugfs(void)
-+{
-+	if (!debugfs_create_file("pft-size", 0600, powerpc_debugfs_root,
-+				 NULL, &fops_ppc64_pft_size)) {
-+		pr_err("lpar: unable to create ppc64_pft_size debugsfs file\n");
-+	}
-+
-+	return 0;
-+}
-+machine_device_initcall(pseries, pseries_lpar_debugfs);
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 7f436ba..7a57b77 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -151,6 +151,7 @@ struct of_drconf_cell {
+ #define OV5_XCMO		0x0440	/* Page Coalescing */
+ #define OV5_TYPE1_AFFINITY	0x0580	/* Type 1 NUMA affinity */
+ #define OV5_PRRN		0x0540	/* Platform Resource Reassignment */
++#define OV5_HPT_RESIZE		0x880	/* Hash Page Table resizing */
+ #define OV5_PFO_HW_RNG		0x0E80	/* PFO Random Number Generator */
+ #define OV5_PFO_HW_842		0x0E40	/* PFO Compression Accelerator */
+ #define OV5_PFO_HW_ENCR		0x0E20	/* PFO Encryption Accelerator */
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 92dea8d..d82b883 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -712,7 +712,7 @@ unsigned char ibm_architecture_vec[] = {
+ 	OV5_FEAT(OV5_TYPE1_AFFINITY) | OV5_FEAT(OV5_PRRN),
+ 	0,
+ 	0,
+-	0,
++	OV5_FEAT(OV5_HPT_RESIZE),
+ 	/* WARNING: The offset of the "number of cores" field below
+ 	 * must match by the macro below. Update the definition if
+ 	 * the structure layout changes.
 -- 
 2.5.0
