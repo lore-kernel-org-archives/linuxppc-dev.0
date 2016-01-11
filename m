@@ -1,25 +1,27 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
- [IPv6:2607:f8b0:400e:c00::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hongtao.jia@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0070.outbound.protection.outlook.com [157.56.112.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 257D41A0D35
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 07:09:34 +1100 (AEDT)
-Received: by mail-pf0-x22a.google.com with SMTP id 65so49675659pff.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 12:09:34 -0800 (PST)
-Date: Mon, 11 Jan 2016 12:09:24 -0800 (PST)
-From: Hugh Dickins <hughd@google.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Hugh Dickins <hughd@google.com>, Andrew Morton <akpm@linux-foundation.org>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org
-Subject: Re: [PATCH V2] mm/powerpc: Fix _PAGE_PTE breaking swapoff
-In-Reply-To: <1452527374-4886-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-ID: <alpine.LSU.2.11.1601111130480.3993@eggly.anvils>
-References: <1452527374-4886-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB90F1A08BB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 02:08:55 +1100 (AEDT)
+From: Hongtao Jia <hongtao.jia@nxp.com>
+To: Arnd Bergmann <arnd@arndb.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+CC: Jia Hongtao <hongtao.jia@freescale.com>, "edubezval@gmail.com"
+ <edubezval@gmail.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Scott Wood
+ <scottwood@freescale.com>
+Subject: =?gb2312?B?tPC4tDogW1BBVENIIFYzXSBjcHVmcmVxOiBxb3JpcTogUmVnaXN0ZXIgY29v?=
+ =?gb2312?Q?ling_device_based_on_device_tree?=
+Date: Mon, 11 Jan 2016 14:54:14 +0000
+Message-ID: <AM3PR04MB3376CC754973BD535CF3F99EBC90@AM3PR04MB337.eurprd04.prod.outlook.com>
+References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
+ <1697588.dLcbZBRWO4@vostro.rjw.lan> <3550740.QzZi28fbXg@wuerfel>
+In-Reply-To: <3550740.QzZi28fbXg@wuerfel>
+Content-Type: text/plain; charset="gb2312"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,59 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 11 Jan 2016, Aneesh Kumar K.V wrote:
-
-> Core kernel expect swp_entry_t to be consisting of
-> only swap type and swap offset. We should not leak pte bits to
-> swp_entry_t. This breaks swapoff which use the swap type and offset
-> to build a swp_entry_t and later compare that to the swp_entry_t
-> obtained from linux page table pte. Leaking pte bits to swp_entry_t
-> breaks that comparison and results in us looping in try_to_unuse.
-> 
-> The stack trace can be anywhere below try_to_unuse() in mm/swapfile.c,
-> since swapoff is circling around and around that function, reading from
-> each used swap block into a page, then trying to find where that page
-> belongs, looking at every non-file pte of every mm that ever swapped.
-> 
-> Reported-by: Hugh Dickins <hughd@google.com>
-> Suggested-by: Hugh Dickins <hughd@google.com>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-I think we've seen enough of my name above, but if it helps further
-Acked-by: Hugh Dickins <hughd@google.com>
-
-Though I don't find the code comment below on swp_entry_t enlightening -
-your commit description above is much more helpful.  If I were writing it,
-I might say... hmm, it's too hard: given all the convolutions, I gave up.
-
-> ---
-> Changes from V1:
-> * improve change log and code comment
-> 
->  arch/powerpc/include/asm/book3s/64/pgtable.h | 11 ++++++++---
->  1 file changed, 8 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> index 03c1a5a21c0c..cecb971674a8 100644
-> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> @@ -158,9 +158,14 @@ static inline void pgd_set(pgd_t *pgdp, unsigned long val)
->  #define __swp_entry(type, offset)	((swp_entry_t) { \
->  					((type) << _PAGE_BIT_SWAP_TYPE) \
->  					| ((offset) << PTE_RPN_SHIFT) })
-> -
-> -#define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
-> -#define __swp_entry_to_pte(x)		__pte((x).val)
-> +/*
-> + * swp_entry_t should be independent of pte bits. We build a swp_entry_t from
-> + * swap type and offset we get from swap and convert that to pte to
-> + * find a matching pte in linux page table.
-> + * Clear bits not found in swap entries here
-> + */
-> +#define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val((pte)) & ~_PAGE_PTE })
-> +#define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
->  
->  #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
->  #define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
-> -- 
-> 2.5.0
+U29ycnkgZm9yIHRoZSBsYXRlIHJlc3BvbnNlLiBJIGdvdCBhIGtuZWUgc3VyZ2VyeSB0byBkby4N
+ClNlZSBjb21tZW50cyBhdCB0aGUgZW5kLg0KDQo+IC0tLS0t08q8/tStvP4tLS0tLQ0KPiC3orz+
+yMs6IEFybmQgQmVyZ21hbm4gW21haWx0bzphcm5kQGFybmRiLmRlXQ0KPiC3osvNyrG85DogU2F0
+dXJkYXksIERlY2VtYmVyIDE5LCAyMDE1IDY6MzMgQU0NCj4gytW8/sjLOiBSYWZhZWwgSi4gV3lz
+b2NraSA8cmp3QHJqd3lzb2NraS5uZXQ+DQo+ILOty806IEppYSBIb25ndGFvIDxob25ndGFvLmpp
+YUBmcmVlc2NhbGUuY29tPjsgZWR1YmV6dmFsQGdtYWlsLmNvbTsNCj4gdmlyZXNoLmt1bWFyQGxp
+bmFyby5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0
+cy5vemxhYnMub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgU2NvdHQgV29vZA0KPiA8
+c2NvdHR3b29kQGZyZWVzY2FsZS5jb20+DQo+INb3zOI6IFJlOiBbUEFUQ0ggVjNdIGNwdWZyZXE6
+IHFvcmlxOiBSZWdpc3RlciBjb29saW5nIGRldmljZSBiYXNlZCBvbiBkZXZpY2UNCj4gdHJlZQ0K
+PiANCj4gT24gVHVlc2RheSAxNSBEZWNlbWJlciAyMDE1IDAwOjU4OjI2IFJhZmFlbCBKLiBXeXNv
+Y2tpIHdyb3RlOg0KPiA+IE9uIFRodXJzZGF5LCBOb3ZlbWJlciAyNiwgMjAxNSAwNToyMToxMSBQ
+TSBKaWEgSG9uZ3RhbyB3cm90ZToNCj4gPiA+IFJlZ2lzdGVyIHRoZSBxb3JpcSBjcHVmcmVxIGRy
+aXZlciBhcyBhIGNvb2xpbmcgZGV2aWNlLCBiYXNlZCBvbiB0aGUNCj4gPiA+IHRoZXJtYWwgZGV2
+aWNlIHRyZWUgZnJhbWV3b3JrLiBXaGVuIHRlbXBlcmF0dXJlIGNyb3NzZXMgdGhlIHBhc3NpdmUN
+Cj4gPiA+IHRyaXAgcG9pbnQgY3B1ZnJlcSBpcyB1c2VkIHRvIHRocm90dGxlIENQVXMuDQo+ID4g
+Pg0KPiA+ID4gU2lnbmVkLW9mZi1ieTogSmlhIEhvbmd0YW8gPGhvbmd0YW8uamlhQGZyZWVzY2Fs
+ZS5jb20+DQo+ID4gPiBSZXZpZXdlZC1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGlu
+YXJvLm9yZz4NCj4gPg0KPiA+IEFwcGxpZWQsIHRoYW5rcyENCj4gPg0KPiANCj4gSSBnb3QgYSBy
+YW5kY29uZmlnIGJ1aWxkIGVycm9yIHRvZGF5Og0KPiANCj4gZHJpdmVycy9idWlsdC1pbi5vOiBJ
+biBmdW5jdGlvbiBgcW9yaXFfY3B1ZnJlcV9yZWFkeSc6DQo+IGRlYnVnZnMuYzooLnRleHQrMHgx
+ZjQ2ODgpOiB1bmRlZmluZWQgcmVmZXJlbmNlIHRvDQo+IGBvZl9jcHVmcmVxX2Nvb2xpbmdfcmVn
+aXN0ZXInDQo+IA0KPiBDT05GSUdfT0Y9eQ0KPiBDT05GSUdfUU9SSVFfQ1BVRlJFUT15DQo+IENP
+TkZJR19USEVSTUFMPW0NCj4gQ09ORklHX1RIRVJNQUxfT0Y9eQ0KPiANCj4gSSB0aGluayB5b3Ug
+bmVlZCBhICdkZXBlbmRzIG9uIFRIRVJNQUwnIHRvIHByZXZlbnQgdGhlIGRyaXZlciBmcm9tIGJl
+aW5nDQo+IGJ1aWx0LWluIHdoZW4gVEhFUk1BTD1tLg0KPiANCj4gCUFybmQNCg0KQ29ycmVjdC4g
+SSBuZWVkIHRvIGFkZCBmb2xsb3dpbmcgbGluZXMgdG8gdGhlIEtjb25maWcgZmlsZToNCmRlcGVu
+ZHMgb24gIUNQVV9USEVSTUFMIHx8IFRIRVJNQUw9eQ0KDQpIaSBSYWZhZWwsDQpTaG91bGQgSSBz
+ZW5kIGEgbmV3IHBhdGNoIGluY2x1ZGUgdGhpcyBmaXggb3Igc2VuZCBhIGZpeCBwYXRjaD8NCg0K
+VGhhbmtzLg0KLUhvbmd0YW8uDQo=
