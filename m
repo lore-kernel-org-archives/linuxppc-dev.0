@@ -1,33 +1,31 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 818551A0D59
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 13:32:30 +1100 (AEDT)
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DE4F61402DE
- for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 13:32:29 +1100 (AEDT)
-Received: by mail-pf0-x231.google.com with SMTP id 65so54389549pff.2
- for <linuxppc-dev@ozlabs.org>; Mon, 11 Jan 2016 18:32:29 -0800 (PST)
-Date: Tue, 12 Jan 2016 08:02:23 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- rjw@rjwysocki.net, linux-pm@vger.kernel.org, pc@us.ibm.com,
- anton@samba.org, ego@linux.vnet.ibm.com, stable@vger.kernel.org
-Subject: Re: [PATCH v4 0/4] cpufreq: powernv: Redesign the presentation of
- throttle notification
-Message-ID: <20160112023223.GF1084@ubuntu>
-References: <1451899527-14359-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1452545680-11976-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20160111222312.GA3967@kroah.com>
+Return-Path: <Leonid.Yegoshin@imgtec.com>
+Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
+ by lists.ozlabs.org (Postfix) with ESMTP id 1C27F1A06BB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:30:32 +1100 (AEDT)
+Message-ID: <56945366.2090504@imgtec.com>
+Date: Mon, 11 Jan 2016 17:14:14 -0800
+From: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160111222312.GA3967@kroah.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>, <linux-kernel@vger.kernel.org>
+CC: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+ <linux-arch@vger.kernel.org>, Andrew Cooper <andrew.cooper3@citrix.com>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ <virtualization@lists.linux-foundation.org>, Stefano Stabellini
+ <stefano.stabellini@eu.citrix.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>, Joe Perches
+ <joe@perches.com>, David Miller <davem@davemloft.net>,
+ <linux-ia64@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-s390@vger.kernel.org>, <sparclinux@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-metag@vger.kernel.org>,
+ <linux-mips@linux-mips.org>, <x86@kernel.org>,
+ <user-mode-linux-devel@lists.sourceforge.net>,
+ <adi-buildroot-devel@lists.sourceforge.net>, <linux-sh@vger.kernel.org>,
+ <linux-xtensa@linux-xtensa.org>, <xen-devel@lists.xenproject.org>, "Ralf
+ Baechle" <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>
+Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
+References: <1452426622-4471-12-git-send-email-mst@redhat.com>
+In-Reply-To: <1452426622-4471-12-git-send-email-mst@redhat.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,32 +35,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11-01-16, 14:23, Greg KH wrote:
-> On Mon, Jan 11, 2016 at 02:54:36PM -0600, Shilpasri G Bhat wrote:
-> > In POWER8, OCC(On-Chip-Controller) can throttle the frequency of the
-> > CPU when the chip crosses its thermal and power limits. Currently,
-> > powernv-cpufreq driver detects and reports this event as a console
-> > message. Some machines may not sustain the max turbo frequency in all
-> > conditions and can be throttled frequently. This can lead to the
-> > flooding of console with throttle messages. So this patchset aims to
-> > redesign the presentation of this event via sysfs counters and
-> > tracepoints. 
-> > 
-> > Patches [2] to [4] will add a perf trace point "power:powernv_throttle" and
-> > sysfs throttle counter stats in /sys/devices/system/cpu/cpufreq/chipN.
-> > Patch [1] solves a bug in powernv_cpufreq_throttle_check(), which calls in to
-> > cpu_to_chip_id() in hot path which reads DT every time to find the chip id.
-> 
-> <formletter>
-> 
-> This is not the correct way to submit patches for inclusion in the
-> stable kernel tree.  Please read Documentation/stable_kernel_rules.txt
-> for how to do this properly.
-> 
-> </formletter>
+On 01/10/2016 06:18 AM, Michael S. Tsirkin wrote:
+> On mips dma_rmb, dma_wmb, smp_store_mb, read_barrier_depends,
+> smp_read_barrier_depends, smp_store_release and smp_load_acquire  match
+> the asm-generic variants exactly. Drop the local definitions and pull in
+> asm-generic/barrier.h instead.
+>
+This statement doesn't fit MIPS barriers variations. Moreover, there is 
+a reason to extend that even more specific, at least for 
+smp_store_release and smp_load_acquire, look into
 
-Also you shouldn't use --in-reply-to for the new versions of a
-multiple patch series. Just use a new thread.
+     http://patchwork.linux-mips.org/patch/10506/
 
--- 
-viresh
+- Leonid.
