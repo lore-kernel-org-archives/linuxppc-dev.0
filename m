@@ -1,34 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D770D1A17C1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 18:16:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 902101A17BF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 18:16:48 +1100 (AEDT)
 Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 12 Jan 2016 12:46:43 +0530
+ Tue, 12 Jan 2016 12:46:45 +0530
 Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id CB82EE0073
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:48:00 +0530 (IST)
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 320083940069
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:43 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0C7GSol8782232
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:29 +0530
+ u0C7GVJ136438238
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:31 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0C7GRs6013502
+ u0C7GRKP013473
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:27 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Michael Neuling <mikey@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH V1 14/33] powerpc/mm: Use helper for finding pte bits
- mapping I/O area
-Date: Tue, 12 Jan 2016 12:45:49 +0530
-Message-Id: <1452582968-22669-15-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH V1 07/33] mm: arch hook for vm_get_page_prot
+Date: Tue, 12 Jan 2016 12:45:42 +0530
+Message-Id: <1452582968-22669-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,113 +39,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We will have different values for hash and radix. Hence we
-cannot use #define constants. Add helper
+With radix, we will have to dynamically switch between different
+protection map. Hence override vm_get_page_prot instead of using
+arch_vm_get_page_prot.We could also drop arch_vm_get_page_prot since
+only powerpc define it. But then matching arch_calc_vm_prot_bits also
+need to be changed. So for now keep it.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/32/pgtable.h | 5 +++++
- arch/powerpc/include/asm/book3s/64/hash.h    | 5 +++++
- arch/powerpc/include/asm/nohash/pgtable.h    | 5 +++++
- arch/powerpc/kernel/isa-bridge.c             | 4 ++--
- arch/powerpc/kernel/pci_64.c                 | 2 +-
- arch/powerpc/mm/pgtable_64.c                 | 2 +-
- 6 files changed, 19 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash.h |  3 +++
+ arch/powerpc/include/asm/mman.h           |  6 ------
+ arch/powerpc/mm/hash_utils_64.c           | 19 +++++++++++++++++++
+ mm/mmap.c                                 |  5 +++++
+ 4 files changed, 27 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index 3ed3303c1295..77adada2f3b4 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -478,6 +478,11 @@ static inline pgprot_t pgprot_writecombine(pgprot_t prot)
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index 9ff1e056acef..37a152428c99 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -533,6 +533,9 @@ static inline pgprot_t pgprot_writecombine(pgprot_t prot)
  	return pgprot_noncached_wc(prot);
  }
  
-+static inline unsigned long pte_io_cache_bits(void)
-+{
-+	return _PAGE_NO_CACHE | _PAGE_GUARDED;
-+}
-+
- #endif /* !__ASSEMBLY__ */
- 
- #endif /*  _ASM_POWERPC_BOOK3S_32_PGTABLE_H */
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index ced3aed63af2..1b27c0c8effa 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -578,6 +578,11 @@ static inline pgprot_t pgprot_writecombine(pgprot_t prot)
- extern pgprot_t vm_get_page_prot(unsigned long vm_flags);
- #define vm_get_page_prot vm_get_page_prot
- 
-+static inline unsigned long pte_io_cache_bits(void)
-+{
-+	return _PAGE_NO_CACHE | _PAGE_GUARDED;
-+}
++extern pgprot_t vm_get_page_prot(unsigned long vm_flags);
++#define vm_get_page_prot vm_get_page_prot
 +
  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
  extern void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
  				   pmd_t *pmdp, unsigned long old_pmd);
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index 11e3767216c0..8c4bb8fda0de 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -224,6 +224,11 @@ extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
- 				     unsigned long size, pgprot_t vma_prot);
- #define __HAVE_PHYS_MEM_ACCESS_PROT
- 
-+static inline unsigned long pte_io_cache_bits(void)
-+{
-+	return _PAGE_NO_CACHE | _PAGE_GUARDED;
-+}
-+
- #ifdef CONFIG_HUGETLB_PAGE
- static inline int hugepd_ok(hugepd_t hpd)
- {
-diff --git a/arch/powerpc/kernel/isa-bridge.c b/arch/powerpc/kernel/isa-bridge.c
-index 0f1997097960..d81185f025fa 100644
---- a/arch/powerpc/kernel/isa-bridge.c
-+++ b/arch/powerpc/kernel/isa-bridge.c
-@@ -109,14 +109,14 @@ static void pci_process_ISA_OF_ranges(struct device_node *isa_node,
- 		size = 0x10000;
- 
- 	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
--		     size, _PAGE_NO_CACHE|_PAGE_GUARDED);
-+		     size, pte_io_cache_bits());
- 	return;
- 
- inval_range:
- 	printk(KERN_ERR "no ISA IO ranges or unexpected isa range, "
- 	       "mapping 64k\n");
- 	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
--		     0x10000, _PAGE_NO_CACHE|_PAGE_GUARDED);
-+		     0x10000, pte_io_cache_bits());
+diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
+index 8565c254151a..9f48698af024 100644
+--- a/arch/powerpc/include/asm/mman.h
++++ b/arch/powerpc/include/asm/mman.h
+@@ -24,12 +24,6 @@ static inline unsigned long arch_calc_vm_prot_bits(unsigned long prot)
  }
+ #define arch_calc_vm_prot_bits(prot) arch_calc_vm_prot_bits(prot)
  
- 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 60bb187cb46a..7fe1dfd214a1 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -159,7 +159,7 @@ static int pcibios_map_phb_io_space(struct pci_controller *hose)
- 
- 	/* Establish the mapping */
- 	if (__ioremap_at(phys_page, area->addr, size_page,
--			 _PAGE_NO_CACHE | _PAGE_GUARDED) == NULL)
-+			 pte_io_cache_bits()) == NULL)
- 		return -ENOMEM;
- 
- 	/* Fixup hose IO resource */
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index e5f600d19326..6d161cec2e32 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -253,7 +253,7 @@ void __iomem * __ioremap(phys_addr_t addr, unsigned long size,
- 
- void __iomem * ioremap(phys_addr_t addr, unsigned long size)
+-static inline pgprot_t arch_vm_get_page_prot(unsigned long vm_flags)
+-{
+-	return (vm_flags & VM_SAO) ? __pgprot(_PAGE_SAO) : __pgprot(0);
+-}
+-#define arch_vm_get_page_prot(vm_flags) arch_vm_get_page_prot(vm_flags)
+-
+ static inline int arch_validate_prot(unsigned long prot)
  {
--	unsigned long flags = _PAGE_NO_CACHE | _PAGE_GUARDED;
-+	unsigned long flags = pte_io_cache_bits();
- 	void *caller = __builtin_return_address(0);
+ 	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM | PROT_SAO))
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 4233dcccbaf7..6ad84eb5fe56 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1563,3 +1563,22 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	/* Finally limit subsequent allocations */
+ 	memblock_set_current_limit(ppc64_rma_size);
+ }
++
++static pgprot_t hash_protection_map[16] = {
++	__P000, __P001, __P010, __P011, __P100,
++	__P101, __P110, __P111, __S000, __S001,
++	__S010, __S011, __S100, __S101, __S110, __S111
++};
++
++pgprot_t vm_get_page_prot(unsigned long vm_flags)
++{
++	pgprot_t prot_soa = __pgprot(0);
++
++	if (vm_flags & VM_SAO)
++		prot_soa = __pgprot(_PAGE_SAO);
++
++	return __pgprot(pgprot_val(hash_protection_map[vm_flags &
++				(VM_READ|VM_WRITE|VM_EXEC|VM_SHARED)]) |
++			pgprot_val(prot_soa));
++}
++EXPORT_SYMBOL(vm_get_page_prot);
+diff --git a/mm/mmap.c b/mm/mmap.c
+index f32b84ad621a..bdde0252ba0c 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -89,6 +89,10 @@ static void unmap_region(struct mm_struct *mm,
+  *		x: (no) no	x: (no) yes	x: (no) yes	x: (yes) yes
+  *
+  */
++/*
++ * Give arch an option to override the below in dynamic matter
++ */
++#ifndef vm_get_page_prot
+ pgprot_t protection_map[16] = {
+ 	__P000, __P001, __P010, __P011, __P100, __P101, __P110, __P111,
+ 	__S000, __S001, __S010, __S011, __S100, __S101, __S110, __S111
+@@ -101,6 +105,7 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags)
+ 			pgprot_val(arch_vm_get_page_prot(vm_flags)));
+ }
+ EXPORT_SYMBOL(vm_get_page_prot);
++#endif
  
- 	if (ppc_md.ioremap)
+ static pgprot_t vm_pgprot_modify(pgprot_t oldprot, unsigned long vm_flags)
+ {
 -- 
 2.5.0
