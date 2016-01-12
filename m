@@ -1,46 +1,40 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7C0E31A0D83
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 22:13:11 +1100 (AEDT)
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C921A1402C0
- for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 22:13:10 +1100 (AEDT)
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Tue, 12 Jan 2016 04:13:08 -0700
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2495B1FF0046
- for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 04:01:17 -0700 (MST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0CBD6gF23134292
- for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 11:13:06 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0CBD46W006905
- for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 06:13:05 -0500
-Date: Tue, 12 Jan 2016 16:43:01 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net,
- viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com,
- anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com
-Subject: Re: [PATCH RESEND v4 4/4] cpufreq: powernv: Add sysfs attributes to
- show throttle stats
-Message-ID: <20160112111301.GB4187@in.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
-References: <1452594267-12844-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1452594267-12844-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id B37FE1A0D83
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 22:41:17 +1100 (AEDT)
+Date: Tue, 12 Jan 2016 11:41:11 +0000
+From: Will Deacon <will.deacon@arm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
+ "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
+ David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
+ x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
+ Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
+ ddaney.cavm@gmail.com, james.hogan@imgtec.com,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
+Message-ID: <20160112114111.GB15737@arm.com>
+References: <1452426622-4471-12-git-send-email-mst@redhat.com>
+ <56945366.2090504@imgtec.com>
+ <20160112092711.GP6344@twins.programming.kicks-ass.net>
+ <20160112102555.GV6373@twins.programming.kicks-ass.net>
+ <20160112104012.GW6373@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1452594267-12844-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+In-Reply-To: <20160112104012.GW6373@twins.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,57 +44,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Shilpa,
+On Tue, Jan 12, 2016 at 11:40:12AM +0100, Peter Zijlstra wrote:
+> On Tue, Jan 12, 2016 at 11:25:55AM +0100, Peter Zijlstra wrote:
+> > On Tue, Jan 12, 2016 at 10:27:11AM +0100, Peter Zijlstra wrote:
+> > > 2) the changelog _completely_ fails to explain the sync 0x11 and sync
+> > > 0x12 semantics nor does it provide a publicly accessible link to
+> > > documentation that does.
+> > 
+> > Ralf pointed me at: https://imgtec.com/mips/architectures/mips64/
+> > 
+> > > 3) it really should have explained what you did with
+> > > smp_llsc_mb/smp_mb__before_llsc() in _detail_.
+> > 
+> > And reading the MIPS64 v6.04 instruction set manual, I think 0x11/0x12
+> > are _NOT_ transitive and therefore cannot be used to implement the
+> > smp_mb__{before,after} stuff.
+> > 
+> > That is, in MIPS speak, those SYNC types are Ordering Barriers, not
+> > Completion Barriers. They need not be globally performed.
+> 
+> Which if true; and I know Will has some questions here; would also mean
+> that you 'cannot' use the ACQUIRE/RELEASE barriers for your locks as was
+> recently suggested by David Daney.
 
-On Tue, Jan 12, 2016 at 04:24:27AM -0600, Shilpasri G Bhat wrote:
-
-> +static inline int get_chip_index(struct kobject *kobj)
-
-Probably have "get_chip_index(int id)". See the reason below.
-> +{
-> +	int i, id;
-> +
-> +	i = kstrtoint(kobj->name + 4, 0, &id);
-> +	if (i)
-> +		return i;
-> +
-> +	for (i = 0; i < nr_chips; i++)
-> +		if (chips[i].id == id)
-> +			return i;
-
-This pattern to obtain a chip index from the chip id is repeated in
-multiple place inside this file. Might be worthwhile to move this to a
-helper function, i.e get_chip_index(id)!
-
-> +	return -EINVAL;
-> +}
-> +
-> +static ssize_t throttle_freq_show(struct kobject *kobj,
-> +				  struct kobj_attribute *attr, char *buf)
-> +{
-> +	int i, count = 0, id;
-> + 
-        We obtain the id from kobj here and then obtain the index from
-	id via the function below.
-	
-
-> +	id = get_chip_index(kobj);
+The issue I have with the SYNC description in the text above is that it
+describes the single CPU (program order) and the dual-CPU (confusingly
+named global order) cases, but then doesn't generalise any further. That
+means we can't sensibly reason about transitivity properties when a third
+agent is involved. For example, the WRC+sync+addr test:
 
 
-> +	if (id < 0)
-> +		return id;
-> +
-> +	for (i = 0; i < powernv_pstate_info.nr_pstates; i++)
-> +		count += sprintf(&buf[count], "%d %d\n",
-> +			       powernv_freqs[i].frequency,
-> +			       chips[id].pstate_stat[i]);
-> +
-> +	return count;
-> +}
-> +
-> +static struct kobj_attribute attr_throttle_frequencies =
-> +__ATTR(throttle_frequencies, 0444, throttle_freq_show, NULL);
-> +
---
-Thanks and Regards
-gautham.
+P0:
+Wx = 1
+
+P1:
+Rx == 1
+SYNC
+Wy = 1
+
+P2:
+Ry == 1
+<address dep>
+Rx = 0
+
+
+I can't find anything to forbid that, given the text. The main problem
+is having the SYNC on P1 affect the write by P0.
+
+> That is, currently all architectures -- with exception of PPC -- have
+> RCsc locks, but using these non-transitive things will get you RCpc
+> locks.
+> 
+> So yes, MIPS can go RCpc for its locks and share the burden of pain with
+> PPC, but that needs to be a very concious decision.
+
+I think it's much worse than RCpc, given my interpretation of the wording.
+
+Will
