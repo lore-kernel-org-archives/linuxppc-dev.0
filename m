@@ -1,34 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A793B1A17C1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 20B781A17CA
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 18:16:44 +1100 (AEDT)
 Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Tue, 12 Jan 2016 12:46:42 +0530
 Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 163F5125801E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:47:27 +0530 (IST)
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id B7114E0069
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:47:59 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0C7GTva53936238
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:29 +0530
+ u0C7GW3m14417928
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:33 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0C7GQfs013463
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:27 +0530
+ u0C7GRY5013653
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:28 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Michael Neuling <mikey@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH V1 18/33] powerpc/mm: Add helper for update page flags
- during ioremap
-Date: Tue, 12 Jan 2016 12:45:53 +0530
-Message-Id: <1452582968-22669-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH V1 23/33] powerpc/mm: Create a new headers for tlbflush
+ for hash64
+Date: Tue, 12 Jan 2016 12:45:58 +0530
+Message-Id: <1452582968-22669-24-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,117 +40,215 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-They differ between radix and hash. Hence we need a helper
-
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/32/pgtable.h | 11 +++++++++++
- arch/powerpc/include/asm/book3s/64/hash.h    | 11 +++++++++++
- arch/powerpc/include/asm/nohash/pgtable.h    | 20 ++++++++++++++++++++
- arch/powerpc/mm/pgtable_64.c                 | 16 +---------------
- 4 files changed, 43 insertions(+), 15 deletions(-)
+ arch/powerpc/include/asm/book3s/64/tlbflush-hash.h | 94 ++++++++++++++++++++++
+ arch/powerpc/include/asm/tlbflush.h                | 92 +--------------------
+ 2 files changed, 95 insertions(+), 91 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index c0898e26ed4a..b53d7504d6f6 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -491,6 +491,17 @@ static inline unsigned long gup_pte_filter(int write)
- 		mask |= _PAGE_RW;
- 	return mask;
- }
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
+new file mode 100644
+index 000000000000..1b753f96b374
+--- /dev/null
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
+@@ -0,0 +1,94 @@
++#ifndef _ASM_POWERPC_BOOK3S_64_TLBFLUSH_HASH_H
++#define _ASM_POWERPC_BOOK3S_64_TLBFLUSH_HASH_H
 +
-+static inline unsigned long ioremap_prot_flags(unsigned long flags)
++#define MMU_NO_CONTEXT		0
++
++/*
++ * TLB flushing for 64-bit hash-MMU CPUs
++ */
++
++#include <linux/percpu.h>
++#include <asm/page.h>
++
++#define PPC64_TLB_BATCH_NR 192
++
++struct ppc64_tlb_batch {
++	int			active;
++	unsigned long		index;
++	struct mm_struct	*mm;
++	real_pte_t		pte[PPC64_TLB_BATCH_NR];
++	unsigned long		vpn[PPC64_TLB_BATCH_NR];
++	unsigned int		psize;
++	int			ssize;
++};
++DECLARE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
++
++extern void __flush_tlb_pending(struct ppc64_tlb_batch *batch);
++
++#define __HAVE_ARCH_ENTER_LAZY_MMU_MODE
++
++static inline void arch_enter_lazy_mmu_mode(void)
 +{
-+	/* writeable implies dirty for kernel addresses */
-+	if (flags & _PAGE_RW)
-+		flags |= _PAGE_DIRTY;
++	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
 +
-+	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
-+	flags &= ~(_PAGE_USER | _PAGE_EXEC);
-+	return flags;
-+}
- #endif /* !__ASSEMBLY__ */
- 
- #endif /*  _ASM_POWERPC_BOOK3S_32_PGTABLE_H */
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index d51709dad729..4f0fdb9a5d19 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -592,6 +592,17 @@ static inline unsigned long gup_pte_filter(int write)
- 	return mask;
- }
- 
-+static inline unsigned long ioremap_prot_flags(unsigned long flags)
-+{
-+	/* writeable implies dirty for kernel addresses */
-+	if (flags & _PAGE_RW)
-+		flags |= _PAGE_DIRTY;
-+
-+	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
-+	flags &= ~(_PAGE_USER | _PAGE_EXEC);
-+	return flags;
-+}
-+
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- extern void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
- 				   pmd_t *pmdp, unsigned long old_pmd);
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index e4173cb06e5b..8861ec146985 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -238,6 +238,26 @@ static inline unsigned long gup_pte_filter(int write)
- 	return mask;
- }
- 
-+static inline unsigned long ioremap_prot_flags(unsigned long flags)
-+{
-+	/* writeable implies dirty for kernel addresses */
-+	if (flags & _PAGE_RW)
-+		flags |= _PAGE_DIRTY;
-+
-+	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
-+	flags &= ~(_PAGE_USER | _PAGE_EXEC);
-+
-+#ifdef _PAGE_BAP_SR
-+	/* _PAGE_USER contains _PAGE_BAP_SR on BookE using the new PTE format
-+	 * which means that we just cleared supervisor access... oops ;-) This
-+	 * restores it
-+	 */
-+	flags |= _PAGE_BAP_SR;
-+#endif
-+
-+	return flags;
++	batch->active = 1;
 +}
 +
- #ifdef CONFIG_HUGETLB_PAGE
- static inline int hugepd_ok(hugepd_t hpd)
- {
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 21a9a171c267..aa8ff4c74563 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -188,21 +188,7 @@ void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
- {
- 	void *caller = __builtin_return_address(0);
++static inline void arch_leave_lazy_mmu_mode(void)
++{
++	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
++
++	if (batch->index)
++		__flush_tlb_pending(batch);
++	batch->active = 0;
++}
++
++#define arch_flush_lazy_mmu_mode()      do {} while (0)
++
++
++extern void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize,
++			    int ssize, unsigned long flags);
++extern void flush_hash_range(unsigned long number, int local);
++extern void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
++				pmd_t *pmdp, unsigned int psize, int ssize,
++				unsigned long flags);
++
++static inline void local_flush_tlb_mm(struct mm_struct *mm)
++{
++}
++
++static inline void flush_tlb_mm(struct mm_struct *mm)
++{
++}
++
++static inline void local_flush_tlb_page(struct vm_area_struct *vma,
++					unsigned long vmaddr)
++{
++}
++
++static inline void flush_tlb_page(struct vm_area_struct *vma,
++				  unsigned long vmaddr)
++{
++}
++
++static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
++					 unsigned long vmaddr)
++{
++}
++
++static inline void flush_tlb_range(struct vm_area_struct *vma,
++				   unsigned long start, unsigned long end)
++{
++}
++
++static inline void flush_tlb_kernel_range(unsigned long start,
++					  unsigned long end)
++{
++}
++
++/* Private function for use by PCI IO mapping code */
++extern void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
++				     unsigned long end);
++extern void flush_tlb_pmd_range(struct mm_struct *mm, pmd_t *pmd,
++				unsigned long addr);
++#endif /*  _ASM_POWERPC_BOOK3S_64_TLBFLUSH_HASH_H */
+diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
+index 23d351ca0303..9f77f85e3e99 100644
+--- a/arch/powerpc/include/asm/tlbflush.h
++++ b/arch/powerpc/include/asm/tlbflush.h
+@@ -78,97 +78,7 @@ static inline void local_flush_tlb_mm(struct mm_struct *mm)
+ }
  
--	/* writeable implies dirty for kernel addresses */
--	if (flags & _PAGE_RW)
--		flags |= _PAGE_DIRTY;
+ #elif defined(CONFIG_PPC_STD_MMU_64)
 -
--	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
--	flags &= ~(_PAGE_USER | _PAGE_EXEC);
+-#define MMU_NO_CONTEXT		0
 -
--#ifdef _PAGE_BAP_SR
--	/* _PAGE_USER contains _PAGE_BAP_SR on BookE using the new PTE format
--	 * which means that we just cleared supervisor access... oops ;-) This
--	 * restores it
--	 */
--	flags |= _PAGE_BAP_SR;
--#endif
+-/*
+- * TLB flushing for 64-bit hash-MMU CPUs
+- */
 -
-+	flags = ioremap_prot_flags(flags);
- 	if (ppc_md.ioremap)
- 		return ppc_md.ioremap(addr, size, flags, caller);
- 	return __ioremap_caller(addr, size, flags, caller);
+-#include <linux/percpu.h>
+-#include <asm/page.h>
+-
+-#define PPC64_TLB_BATCH_NR 192
+-
+-struct ppc64_tlb_batch {
+-	int			active;
+-	unsigned long		index;
+-	struct mm_struct	*mm;
+-	real_pte_t		pte[PPC64_TLB_BATCH_NR];
+-	unsigned long		vpn[PPC64_TLB_BATCH_NR];
+-	unsigned int		psize;
+-	int			ssize;
+-};
+-DECLARE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
+-
+-extern void __flush_tlb_pending(struct ppc64_tlb_batch *batch);
+-
+-#define __HAVE_ARCH_ENTER_LAZY_MMU_MODE
+-
+-static inline void arch_enter_lazy_mmu_mode(void)
+-{
+-	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
+-
+-	batch->active = 1;
+-}
+-
+-static inline void arch_leave_lazy_mmu_mode(void)
+-{
+-	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
+-
+-	if (batch->index)
+-		__flush_tlb_pending(batch);
+-	batch->active = 0;
+-}
+-
+-#define arch_flush_lazy_mmu_mode()      do {} while (0)
+-
+-
+-extern void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize,
+-			    int ssize, unsigned long flags);
+-extern void flush_hash_range(unsigned long number, int local);
+-extern void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
+-				pmd_t *pmdp, unsigned int psize, int ssize,
+-				unsigned long flags);
+-
+-static inline void local_flush_tlb_mm(struct mm_struct *mm)
+-{
+-}
+-
+-static inline void flush_tlb_mm(struct mm_struct *mm)
+-{
+-}
+-
+-static inline void local_flush_tlb_page(struct vm_area_struct *vma,
+-					unsigned long vmaddr)
+-{
+-}
+-
+-static inline void flush_tlb_page(struct vm_area_struct *vma,
+-				  unsigned long vmaddr)
+-{
+-}
+-
+-static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
+-					 unsigned long vmaddr)
+-{
+-}
+-
+-static inline void flush_tlb_range(struct vm_area_struct *vma,
+-				   unsigned long start, unsigned long end)
+-{
+-}
+-
+-static inline void flush_tlb_kernel_range(unsigned long start,
+-					  unsigned long end)
+-{
+-}
+-
+-/* Private function for use by PCI IO mapping code */
+-extern void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
+-				     unsigned long end);
+-extern void flush_tlb_pmd_range(struct mm_struct *mm, pmd_t *pmd,
+-				unsigned long addr);
++#include <asm/book3s/64/tlbflush-hash.h>
+ #else
+ #error Unsupported MMU type
+ #endif
 -- 
 2.5.0
