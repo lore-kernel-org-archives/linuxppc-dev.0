@@ -1,22 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <oss@buserror.net>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6A3891A0050
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 11:03:42 +1100 (AEDT)
-Message-ID: <1452557022.23317.7.camel@ellerman.id.au>
-Subject: Re: [PATCH V2] mm/powerpc: Fix _PAGE_PTE breaking swapoff
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, Hugh Dickins
- <hughd@google.com>,  Andrew Morton <akpm@linux-foundation.org>, Laurent
- Dufour <ldufour@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Date: Tue, 12 Jan 2016 11:03:42 +1100
-In-Reply-To: <1452527374-4886-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1452527374-4886-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 681FD1A0050
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 11:55:21 +1100 (AEDT)
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 153ED1402BC
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 11:55:20 +1100 (AEDT)
+Message-ID: <1452558297.19133.47.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Lakshmi <lucky.veeramallu@gmail.com>, linuxppc-dev@ozlabs.org
+Date: Mon, 11 Jan 2016 18:24:57 -0600
+In-Reply-To: <loom.20160106T083706-822@post.gmane.org>
+References: <loom.20160106T083706-822@post.gmane.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Subject: Re: p4080ds IRQ vector number for he External IRQ4 and IRQ5
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-01-11 at 21:19 +0530, Aneesh Kumar K.V wrote:
-
-> Core kernel expect swp_entry_t to be consisting of
-> only swap type and swap offset. We should not leak pte bits to
-> swp_entry_t. This breaks swapoff which use the swap type and offset
-> to build a swp_entry_t and later compare that to the swp_entry_t
-> obtained from linux page table pte. Leaking pte bits to swp_entry_t
-> breaks that comparison and results in us looping in try_to_unuse.
+On Wed, 2016-01-06 at 08:40 +0000, Lakshmi wrote:
+> I have been trying to figure out what is the vector number used for external
+> IRQ4 and IRQ5 in P4080ds.
 > 
-> The stack trace can be anywhere below try_to_unuse() in mm/swapfile.c,
-> since swapoff is circling around and around that function, reading from
-> each used swap block into a page, then trying to find where that page
-> belongs, looking at every non-file pte of every mm that ever swapped.
+> According to board document xpedite5470-p4080 
+> IRQ4: VPX GP Input 0 (GPI0)
+> IRQ5 VPX GP Input 1 (GPI1)
 > 
-> Reported-by: Hugh Dickins <hughd@google.com>
-> Suggested-by: Hugh Dickins <hughd@google.com>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> In p4080 user guide OpenPIC interrupt connection its mentioned as
+> 
+> IRQ4_B: SLOT4 Sideband connector (SGMII riser does not connect, XAUI riser
+> can use or inband)
+> 
+> IRQ5_B: MIC2076 USB Power FLAG for over current at USB connector
+> 
+> But in code i am unable to find any info related to IRQ4 and IRQ5.
+> 
+> How can i find??
 
-Thanks. I slightly edited the wording in the change log and added:
+Are you asking what to put in the device tree for these interrupts?  External
+IRQ4 is <4 ls 0 0> and IRQ5 is <5 ls 0 0>, with ls being the level/sense info.
 
-Fixes: 6a119eae942c ("powerpc/mm: Add a _PAGE_PTE bit")
+See Documentation/devicetree/bindings/powerpc/fsl/mpic.txt for details.
 
-cheers
+-Scott
