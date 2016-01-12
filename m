@@ -1,40 +1,26 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id B37FE1A0D83
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 22:41:17 +1100 (AEDT)
-Date: Tue, 12 Jan 2016 11:41:11 +0000
-From: Will Deacon <will.deacon@arm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
- "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
- David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- ddaney.cavm@gmail.com, james.hogan@imgtec.com,
- Michael Ellerman <mpe@ellerman.id.au>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
-Message-ID: <20160112114111.GB15737@arm.com>
-References: <1452426622-4471-12-git-send-email-mst@redhat.com>
- <56945366.2090504@imgtec.com>
- <20160112092711.GP6344@twins.programming.kicks-ass.net>
- <20160112102555.GV6373@twins.programming.kicks-ass.net>
- <20160112104012.GW6373@twins.programming.kicks-ass.net>
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mailxx.hitachi.co.jp (fallback.hitachi.co.jp [133.145.228.50])
+ by lists.ozlabs.org (Postfix) with ESMTP id EECF11A0D83
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 22:43:02 +1100 (AEDT)
+Received: from mail4.hitachi.co.jp (mail4.hitachi.co.jp [133.145.228.5])
+ by mailxx.hitachi.co.jp (Postfix) with ESMTP id 4FF8F177033B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 20:04:35 +0900 (JST)
+From: =?utf-8?B?5bmz5p2+6ZuF5bezIC8gSElSQU1BVFXvvIxNQVNBTUk=?=
+ <masami.hiramatsu.pt@hitachi.com>
+To: "'Hemant Kumar'" <hemant@linux.vnet.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "mjw@redhat.com" <mjw@redhat.com>, "sukadev@linux.vnet.ibm.com"
+ <sukadev@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "srikar@linux.vnet.ibm.com"
+ <srikar@linux.vnet.ibm.com>, "acme@kernel.org" <acme@kernel.org>
+Subject: RE: [PATCH v2] perf/probe: Search both .eh_frame and .debug_frame
+ sections for probe location
+Date: Tue, 12 Jan 2016 11:04:30 +0000
+Message-ID: <50399556C9727B4D88A595C8584AAB37526926A9@GSjpTKYDCembx32.service.hitachi.net>
+References: <1451900918-6710-1-git-send-email-hemant@linux.vnet.ibm.com>
+In-Reply-To: <1451900918-6710-1-git-send-email-hemant@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160112104012.GW6373@twins.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,60 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 12, 2016 at 11:40:12AM +0100, Peter Zijlstra wrote:
-> On Tue, Jan 12, 2016 at 11:25:55AM +0100, Peter Zijlstra wrote:
-> > On Tue, Jan 12, 2016 at 10:27:11AM +0100, Peter Zijlstra wrote:
-> > > 2) the changelog _completely_ fails to explain the sync 0x11 and sync
-> > > 0x12 semantics nor does it provide a publicly accessible link to
-> > > documentation that does.
-> > 
-> > Ralf pointed me at: https://imgtec.com/mips/architectures/mips64/
-> > 
-> > > 3) it really should have explained what you did with
-> > > smp_llsc_mb/smp_mb__before_llsc() in _detail_.
-> > 
-> > And reading the MIPS64 v6.04 instruction set manual, I think 0x11/0x12
-> > are _NOT_ transitive and therefore cannot be used to implement the
-> > smp_mb__{before,after} stuff.
-> > 
-> > That is, in MIPS speak, those SYNC types are Ordering Barriers, not
-> > Completion Barriers. They need not be globally performed.
-> 
-> Which if true; and I know Will has some questions here; would also mean
-> that you 'cannot' use the ACQUIRE/RELEASE barriers for your locks as was
-> recently suggested by David Daney.
-
-The issue I have with the SYNC description in the text above is that it
-describes the single CPU (program order) and the dual-CPU (confusingly
-named global order) cases, but then doesn't generalise any further. That
-means we can't sensibly reason about transitivity properties when a third
-agent is involved. For example, the WRC+sync+addr test:
-
-
-P0:
-Wx = 1
-
-P1:
-Rx == 1
-SYNC
-Wy = 1
-
-P2:
-Ry == 1
-<address dep>
-Rx = 0
-
-
-I can't find anything to forbid that, given the text. The main problem
-is having the SYNC on P1 affect the write by P0.
-
-> That is, currently all architectures -- with exception of PPC -- have
-> RCsc locks, but using these non-transitive things will get you RCpc
-> locks.
-> 
-> So yes, MIPS can go RCpc for its locks and share the burden of pain with
-> PPC, but that needs to be a very concious decision.
-
-I think it's much worse than RCpc, given my interpretation of the wording.
-
-Will
+SGkgSGVtYW50LA0KDQo+RnJvbTogSGVtYW50IEt1bWFyIFttYWlsdG86aGVtYW50QGxpbnV4LnZu
+ZXQuaWJtLmNvbV0NCj4NCj5wZXJmIHByb2JlIHRocm91Z2ggZGVidWdpbmZvX19maW5kX3Byb2Jl
+cygpIGluIHV0aWwvcHJvYmUtZmluZGVyLmMNCj5jaGVja3MgZm9yIHRoZSBmdW5jdGlvbnMnIGZy
+YW1lIGRlc2NyaXB0aW9ucyBpbiBlaXRoZXIgLmVoX2ZyYW1lIHNlY3Rpb24NCj5vZiBhbiBFTEYg
+b3IgdGhlIC5kZWJ1Z19mcmFtZS4gVGhlIGNoZWNrIGlzIGJhc2VkIG9uIHdoZXRoZXIgZWl0aGVy
+IG9uZQ0KPm9mIHRoZXNlIHNlY3Rpb25zIGlzIHByZXNlbnQuIERlcGVuZGluZyBvbiBkaXN0cm8s
+IHRvb2xjaGFpbiBkZWZhdWx0cywNCj5hcmNoaXRldGN1dHJlLCBidWlsZCBmbGFncywgZXRjLiwg
+Q0ZJIG1pZ2h0IGJlIGZvdW5kIGluIGVpdGhlciAuZWhfZnJhbWUNCj5hbmQvb3IgLmRlYnVnX2Zy
+YW1lLiBTb21ldGltZXMsIGl0IG1heSBoYXBwZW4gdGhhdCwgLmVoX2ZyYW1lLCBldmVuIGlmDQo+
+cHJlc2VudCwgbWF5IG5vdCBiZSBjb21wbGV0ZSBhbmQgbWF5IG1pc3Mgc29tZSBkZXNjcmlwdGlv
+bnMuIFRoZXJlZm9yZSwNCj50byBiZSBzdXJlLCB0byBmaW5kIHRoZSBDRkkgY292ZXJpbmcgYW4g
+YWRkcmVzcyB3ZSB3aWxsIGFsd2F5cyBoYXZlIHRvDQo+aW52ZXN0aWdhdGUgYm90aCBpZiBhdmFp
+bGFibGUuDQoNCk9LLCBzbyB3ZSdkIGJldHRlciBjaGVjayBib3RoIGNmaSdzLg0KIFsuLi5dDQo+
+Ky8qIEZpbmQgcHJvYmUgcG9pbnRzIGZyb20gZGVidWdpbmZvICovDQo+K3N0YXRpYyBpbnQgZGVi
+dWdpbmZvX19maW5kX3Byb2JlcyhzdHJ1Y3QgZGVidWdpbmZvICpkYmcsDQo+KwkJCQkgIHN0cnVj
+dCBwcm9iZV9maW5kZXIgKnBmKQ0KPit7DQo+KwlpbnQgcmV0ID0gMDsNCj4rDQo+KyNpZiBfRUxG
+VVRJTFNfUFJFUkVRKDAsIDE0MikNCj4rCUVsZiAqZWxmOw0KPisJR0VsZl9FaGRyIGVoZHI7DQo+
+KwlHRWxmX1NoZHIgc2hkcjsNCj4rDQo+KwlpZiAocGYtPmNmaV9laCB8fCBwZi0+Y2ZpX2RiZykN
+Cj4rCQlyZXR1cm4gZGVidWdpbmZvX19maW5kX3Byb2JlX2xvY2F0aW9uKGRiZywgcGYpOw0KPisN
+Cj4rCS8qIEdldCB0aGUgY2FsbCBmcmFtZSBpbmZvcm1hdGlvbiBmcm9tIHRoaXMgZHdhcmYgKi8N
+Cj4rCWVsZiA9IGR3YXJmX2dldGVsZihkYmctPmRiZyk7DQo+KwlpZiAoZWxmID09IE5VTEwpDQo+
+KwkJcmV0dXJuIC1FSU5WQUw7DQo+Kw0KPisJaWYgKGdlbGZfZ2V0ZWhkcihlbGYsICZlaGRyKSA9
+PSBOVUxMKQ0KPisJCXJldHVybiAtRUlOVkFMOw0KPisNCj4rCWlmIChlbGZfc2VjdGlvbl9ieV9u
+YW1lKGVsZiwgJmVoZHIsICZzaGRyLCAiLmVoX2ZyYW1lIiwgTlVMTCkgJiYNCj4rCSAgICBzaGRy
+LnNoX3R5cGUgPT0gU0hUX1BST0dCSVRTKSB7DQo+KwkJcGYtPmNmaV9laCA9IGR3YXJmX2dldGNm
+aV9lbGYoZWxmKTsNCj4rCX0gZWxzZSB7DQo+KwkJcGYtPmNmaV9kYmcgPSBkd2FyZl9nZXRjZmko
+ZGJnLT5kYmcpOw0KPisJfQ0KDQpIbW0sIGlmIHlvdSB3YW50IHRvIGNoZWNrIGJvdGggb2YgdGhv
+c2UgY2ZpJ3MsIGRvbid0IHdlIGhhdmUgdG8gZG8gYmVsb3c/DQoNCglpZiAoZWxmX3NlY3Rpb25f
+YnlfbmFtZShlbGYsICZlaGRyLCAmc2hkciwgIi5laF9mcmFtZSIsIE5VTEwpICYmDQoJICAgIHNo
+ZHIuc2hfdHlwZSA9PSBTSFRfUFJPR0JJVFMpDQoJCXBmLT5jZmlfZWggPSBkd2FyZl9nZXRjZmlf
+ZWxmKGVsZik7DQoNCglwZi0+Y2ZpX2RiZyA9IGR3YXJmX2dldGNmaShkYmctPmRiZyk7DQoNClRo
+ZW4sIGJvdGggb2YgcGYtPmNmaV8qIHdpbGwgYmUgZmlsbGVkIChpZiB0aGUgZWxmIGhhcyAiLmVo
+X2ZyYW1lIikuDQoNClRoYW5rcyENCg0KDQoNCg==
