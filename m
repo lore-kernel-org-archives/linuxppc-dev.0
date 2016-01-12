@@ -1,34 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 74CB81A17C0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4916D1A17BD
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 18:17:13 +1100 (AEDT)
 Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 12 Jan 2016 12:47:11 +0530
+ Tue, 12 Jan 2016 12:47:10 +0530
 Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id BE7C43940065
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:47:06 +0530 (IST)
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id AEBB2394006B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:47:07 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0C7GTL119923172
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:30 +0530
+ u0C7GTO24063580
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:29 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0C7GT0Y014035
+ u0C7GSja013880
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:29 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Michael Neuling <mikey@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH V1 33/33] powerpc/mm: Hash linux abstraction for pte swap
- encoding
-Date: Tue, 12 Jan 2016 12:46:08 +0530
-Message-Id: <1452582968-22669-34-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH V1 31/33] powerpc/mm: Hash linux abstraction for page
+ table allocator
+Date: Tue, 12 Jan 2016 12:46:06 +0530
+Message-Id: <1452582968-22669-32-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,162 +42,386 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash.h    | 44 +++++++++----------------
- arch/powerpc/include/asm/book3s/64/pgtable.h | 49 ++++++++++++++++++++++++++++
- arch/powerpc/mm/slb.c                        |  1 -
- 3 files changed, 64 insertions(+), 30 deletions(-)
+ .../include/asm/book3s/64/pgalloc-hash-4k.h        |  26 ++---
+ .../include/asm/book3s/64/pgalloc-hash-64k.h       |  23 ++--
+ arch/powerpc/include/asm/book3s/64/pgalloc-hash.h  |  36 +++++--
+ arch/powerpc/include/asm/book3s/64/pgalloc.h       | 118 +++++++++++++++++----
+ 4 files changed, 148 insertions(+), 55 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index f43b26c4d319..13926dbfb687 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -41,6 +41,7 @@
-  */
- #define H_PAGE_THP_HUGE  H_PAGE_4K_PFN
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc-hash-4k.h b/arch/powerpc/include/asm/book3s/64/pgalloc-hash-4k.h
+index d1d67e585ad4..ae6480e2111b 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc-hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc-hash-4k.h
+@@ -1,30 +1,30 @@
+ #ifndef _ASM_POWERPC_BOOK3S_64_PGALLOC_HASH_4K_H
+ #define _ASM_POWERPC_BOOK3S_64_PGALLOC_HASH_4K_H
  
-+#define H_PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + H_PAGE_BIT_SWAP_TYPE))
- /*
-  * set of bits not changed in pmd_modify.
-  */
-@@ -230,46 +231,31 @@
- #define hlpmd_index(address) (((address) >> (H_PMD_SHIFT)) & (H_PTRS_PER_PMD - 1))
- #define hlpte_index(address) (((address) >> (PAGE_SHIFT)) & (H_PTRS_PER_PTE - 1))
+-static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
++static inline void hlpmd_populate(struct mm_struct *mm, pmd_t *pmd,
+ 				pgtable_t pte_page)
+ {
+ 	pmd_set(pmd, (unsigned long)page_address(pte_page));
+ }
  
--/* Encode and de-code a swap entry */
--#define MAX_SWAPFILES_CHECK() do { \
--	BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS); \
--	/*							\
--	 * Don't have overlapping bits with _PAGE_HPTEFLAGS	\
--	 * We filter HPTEFLAGS on set_pte.			\
--	 */							\
--	BUILD_BUG_ON(H_PAGE_HPTEFLAGS & (0x1f << H_PAGE_BIT_SWAP_TYPE)); \
--	BUILD_BUG_ON(H_PAGE_HPTEFLAGS & H_PAGE_SWP_SOFT_DIRTY);	\
--	} while (0)
- /*
-  * on pte we don't need handle RADIX_TREE_EXCEPTIONAL_SHIFT;
-+ * We encode swap type in the lower part of pte, skipping the lowest two bits.
-+ * Offset is encoded as pfn.
-  */
--#define SWP_TYPE_BITS 5
--#define __swp_type(x)		(((x).val >> H_PAGE_BIT_SWAP_TYPE) \
--				& ((1UL << SWP_TYPE_BITS) - 1))
--#define __swp_offset(x)		((x).val >> H_PTE_RPN_SHIFT)
--#define __swp_entry(type, offset)	((swp_entry_t) { \
--					((type) << H_PAGE_BIT_SWAP_TYPE) \
--					| ((offset) << H_PTE_RPN_SHIFT) })
+-static inline pgtable_t pmd_pgtable(pmd_t pmd)
++static inline pgtable_t hlpmd_pgtable(pmd_t pmd)
+ {
+ 	return pmd_page(pmd);
+ }
+ 
+-static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
+-					  unsigned long address)
++static inline pte_t *hlpte_alloc_one_kernel(struct mm_struct *mm,
++					    unsigned long address)
+ {
+ 	return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO);
+ }
+ 
+-static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
+-				      unsigned long address)
++static inline pgtable_t hlpte_alloc_one(struct mm_struct *mm,
++					unsigned long address)
+ {
+ 	struct page *page;
+ 	pte_t *pte;
+ 
+-	pte = pte_alloc_one_kernel(mm, address);
++	pte = hlpte_alloc_one_kernel(mm, address);
+ 	if (!pte)
+ 		return NULL;
+ 	page = virt_to_page(pte);
+@@ -35,12 +35,12 @@ static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
+ 	return page;
+ }
+ 
+-static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
++static inline void hlpte_free_kernel(struct mm_struct *mm, pte_t *pte)
+ {
+ 	free_page((unsigned long)pte);
+ }
+ 
+-static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
++static inline void hlpte_free(struct mm_struct *mm, pgtable_t ptepage)
+ {
+ 	pgtable_page_dtor(ptepage);
+ 	__free_page(ptepage);
+@@ -58,7 +58,7 @@ static inline void pgtable_free(void *table, unsigned index_size)
+ 
+ #ifdef CONFIG_SMP
+ static inline void pgtable_free_tlb(struct mmu_gather *tlb,
+-				    void *table, int shift)
++				      void *table, int shift)
+ {
+ 	unsigned long pgf = (unsigned long)table;
+ 	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
+@@ -75,14 +75,14 @@ static inline void __tlb_remove_table(void *_table)
+ }
+ #else /* !CONFIG_SMP */
+ static inline void pgtable_free_tlb(struct mmu_gather *tlb,
+-				    void *table, int shift)
++				      void *table, int shift)
+ {
+ 	pgtable_free(table, shift);
+ }
+ #endif /* CONFIG_SMP */
+ 
+-static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+-				  unsigned long address)
++static inline void __hlpte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
++				    unsigned long address)
+ {
+ 	tlb_flush_pgtable(tlb, address);
+ 	pgtable_page_dtor(table);
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc-hash-64k.h b/arch/powerpc/include/asm/book3s/64/pgalloc-hash-64k.h
+index e2dab4f64316..cb382773397f 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc-hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc-hash-64k.h
+@@ -4,45 +4,42 @@
+ extern pte_t *page_table_alloc(struct mm_struct *, unsigned long, int);
+ extern void page_table_free(struct mm_struct *, unsigned long *, int);
+ extern void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift);
+-#ifdef CONFIG_SMP
+-extern void __tlb_remove_table(void *_table);
+-#endif
+ 
+-static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
+-				pgtable_t pte_page)
++static inline void hlpmd_populate(struct mm_struct *mm, pmd_t *pmd,
++				  pgtable_t pte_page)
+ {
+ 	pmd_set(pmd, (unsigned long)pte_page);
+ }
+ 
+-static inline pgtable_t pmd_pgtable(pmd_t pmd)
++static inline pgtable_t hlpmd_pgtable(pmd_t pmd)
+ {
+ 	return (pgtable_t)pmd_page_vaddr(pmd);
+ }
+ 
+-static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
+-					  unsigned long address)
++static inline pte_t *hlpte_alloc_one_kernel(struct mm_struct *mm,
++					    unsigned long address)
+ {
+ 	return (pte_t *)page_table_alloc(mm, address, 1);
+ }
+ 
+-static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
++static inline pgtable_t hlpte_alloc_one(struct mm_struct *mm,
+ 					unsigned long address)
+ {
+ 	return (pgtable_t)page_table_alloc(mm, address, 0);
+ }
+ 
+-static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
++static inline void hlpte_free_kernel(struct mm_struct *mm, pte_t *pte)
+ {
+ 	page_table_free(mm, (unsigned long *)pte, 1);
+ }
+ 
+-static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
++static inline void hlpte_free(struct mm_struct *mm, pgtable_t ptepage)
+ {
+ 	page_table_free(mm, (unsigned long *)ptepage, 0);
+ }
+ 
+-static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+-				  unsigned long address)
++static inline void __hlpte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
++				    unsigned long address)
+ {
+ 	tlb_flush_pgtable(tlb, address);
+ 	pgtable_free_tlb(tlb, table, 0);
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc-hash.h b/arch/powerpc/include/asm/book3s/64/pgalloc-hash.h
+index 1dcfe7b75f06..7c5bdc558786 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc-hash.h
+@@ -13,46 +13,62 @@
+ #include <asm/book3s/64/pgalloc-hash-4k.h>
+ #endif
+ 
+-static inline pgd_t *pgd_alloc(struct mm_struct *mm)
++static inline pgd_t *hlpgd_alloc(struct mm_struct *mm)
+ {
+ 	return kmem_cache_alloc(PGT_CACHE(H_PGD_INDEX_SIZE), GFP_KERNEL);
+ }
+ 
+-static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
++static inline void hlpgd_populate(struct mm_struct *mm, pgd_t *pgd, pud_t *pud)
++{
++	*pgd = __pgd((unsigned long)pud);
++}
++
++static inline void hlpgd_free(struct mm_struct *mm, pgd_t *pgd)
+ {
+ 	kmem_cache_free(PGT_CACHE(H_PGD_INDEX_SIZE), pgd);
+ }
+ 
+-static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
++static inline pud_t *hlpud_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+ 	return kmem_cache_alloc(PGT_CACHE(H_PUD_INDEX_SIZE),
+ 				GFP_KERNEL|__GFP_REPEAT);
+ }
+ 
+-static inline void pud_free(struct mm_struct *mm, pud_t *pud)
++static inline void hlpud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
++{
++	*pud = __pud((unsigned long)pmd);
++}
++
++static inline void hlpud_free(struct mm_struct *mm, pud_t *pud)
+ {
+ 	kmem_cache_free(PGT_CACHE(H_PUD_INDEX_SIZE), pud);
+ }
+ 
+-static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
++static inline pmd_t *hlpmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+ 	return kmem_cache_alloc(PGT_CACHE(H_PMD_CACHE_INDEX),
+ 				GFP_KERNEL|__GFP_REPEAT);
+ }
+ 
+-static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
++static inline void hlpmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
++					 pte_t *pte)
++{
++	*pmd = __pmd((unsigned long)pte);
++}
++
++static inline void hlpmd_free(struct mm_struct *mm, pmd_t *pmd)
+ {
+ 	kmem_cache_free(PGT_CACHE(H_PMD_CACHE_INDEX), pmd);
+ }
+ 
+-static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
+-				unsigned long address)
++static inline void __hlpmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
++				    unsigned long address)
+ {
+ 	return pgtable_free_tlb(tlb, pmd, H_PMD_CACHE_INDEX);
+ }
+ 
+-static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
+-				unsigned long address)
++static inline void __hlpud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
++				    unsigned long address)
+ {
+ 	pgtable_free_tlb(tlb, pud, H_PUD_INDEX_SIZE);
+ }
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+index fa2ddda14b3d..c16d5ad414b8 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+@@ -11,18 +11,6 @@
+ #include <linux/cpumask.h>
+ #include <linux/percpu.h>
+ 
+-struct vmemmap_backing {
+-	struct vmemmap_backing *list;
+-	unsigned long phys;
+-	unsigned long virt_addr;
+-};
+-extern struct vmemmap_backing *vmemmap_list;
 -
--#define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
--#define __swp_entry_to_pte(x)		__pte((x).val)
-+#define hl_swp_type(x)		(((x).val >> H_PAGE_BIT_SWAP_TYPE)	\
-+				 & ((1UL << SWP_TYPE_BITS) - 1))
-+#define hl_swp_offset(x)	((x).val >> H_PTE_RPN_SHIFT)
-+#define hl_swp_entry(type, offset)	((swp_entry_t) {		\
-+				((type) << H_PAGE_BIT_SWAP_TYPE)	\
-+				| ((offset) << H_PTE_RPN_SHIFT) })
+-static inline void check_pgt_cache(void)
+-{
+-
+-}
+-
+ /*
+  * Functions that deal with pagetables that could be at any level of
+  * the table need to be passed an "index_size" so they know how to
+@@ -46,26 +34,37 @@ extern struct kmem_cache *pgtable_cache[];
+ 			pgtable_cache[(shift) - 1];	\
+ 		})
  
- #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
--#define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
--static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
-+static inline pte_t hl_pte_swp_mksoft_dirty(pte_t pte)
- {
--	return __pte(pte_val(pte) | _PAGE_SWP_SOFT_DIRTY);
-+	return __pte(pte_val(pte) | H_PAGE_SWP_SOFT_DIRTY);
- }
--static inline bool pte_swp_soft_dirty(pte_t pte)
-+static inline bool hl_pte_swp_soft_dirty(pte_t pte)
- {
--	return !!(pte_val(pte) & _PAGE_SWP_SOFT_DIRTY);
-+	return !!(pte_val(pte) & H_PAGE_SWP_SOFT_DIRTY);
- }
--static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
-+static inline pte_t hl_pte_swp_clear_soft_dirty(pte_t pte)
- {
--	return __pte(pte_val(pte) & ~_PAGE_SWP_SOFT_DIRTY);
-+	return __pte(pte_val(pte) & ~H_PAGE_SWP_SOFT_DIRTY);
- }
--#else
--#define _PAGE_SWP_SOFT_DIRTY	0
- #endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
- 
- extern void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index ff7dda649ee3..bf5598628e34 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -5,6 +5,7 @@
-  * the ppc64 hashed page table.
-  */
- 
-+#define SWP_TYPE_BITS 5
- #include <asm/book3s/64/hash.h>
- #include <asm/barrier.h>
- 
-@@ -322,6 +323,54 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
- {
- 	return set_hlpte_at(mm, addr, ptep, pte);
- }
-+/*
-+ * Swap definitions
-+ */
++#include <asm/book3s/64/pgalloc-hash.h>
 +
-+/* Encode and de-code a swap entry */
-+#define MAX_SWAPFILES_CHECK() do {					\
-+		BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS);	\
-+		/*							\
-+		 * Don't have overlapping bits with _PAGE_HPTEFLAGS	\
-+		 * We filter HPTEFLAGS on set_pte.			\
-+		 */							\
-+		BUILD_BUG_ON(H_PAGE_HPTEFLAGS & (0x1f << H_PAGE_BIT_SWAP_TYPE)); \
-+		BUILD_BUG_ON(H_PAGE_HPTEFLAGS & H_PAGE_SWP_SOFT_DIRTY);	\
-+	} while (0)
-+/*
-+ * on pte we don't need handle RADIX_TREE_EXCEPTIONAL_SHIFT;
-+ */
-+#define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
-+#define __swp_entry_to_pte(x)		__pte((x).val)
-+static inline unsigned long __swp_type(swp_entry_t entry)
++struct vmemmap_backing {
++	struct vmemmap_backing *list;
++	unsigned long phys;
++	unsigned long virt_addr;
++};
++extern struct vmemmap_backing *vmemmap_list;
++extern void __tlb_remove_table(void *table);
++
++static inline void check_pgt_cache(void)
 +{
-+	return hl_swp_type(entry);
++
 +}
 +
-+static inline pgoff_t __swp_offset(swp_entry_t entry)
-+{
-+	return hl_swp_offset(entry);
-+}
-+
-+static inline swp_entry_t __swp_entry(unsigned long type, pgoff_t offset)
-+{
-+	return hl_swp_entry(type, offset);
-+}
-+
-+#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
-+static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
-+{
-+	return hl_pte_swp_mksoft_dirty(pte);
-+}
-+static inline bool pte_swp_soft_dirty(pte_t pte)
-+{
-+	return hl_pte_swp_soft_dirty(pte);
-+}
-+static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
-+{
-+	return hl_pte_swp_clear_soft_dirty(pte);
-+}
-+#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
- 
- static inline void pmd_set(pmd_t *pmdp, unsigned long val)
+ static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pud_t *pud)
  {
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 6ec8f49822d1..11c132f4cb35 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -14,7 +14,6 @@
-  *      2 of the License, or (at your option) any later version.
-  */
+-	pgd_set(pgd, (unsigned long)pud);
++	return hlpgd_populate(mm, pgd, pud);
+ }
  
--#include <asm/pgtable.h>
- #include <asm/mmu.h>
- #include <asm/mmu_context.h>
- #include <asm/paca.h>
+ static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
+ {
+-	pud_set(pud, (unsigned long)pmd);
++	return hlpud_populate(mm, pud, pmd);
+ }
+ 
+ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
+ 				       pte_t *pte)
+ {
+-	pmd_set(pmd, (unsigned long)pte);
++	hlpmd_populate_kernel(mm, pmd, pte);
+ }
+ 
+-#ifdef CONFIG_PPC_STD_MMU_64
+-#include <asm/book3s/64/pgalloc-hash.h>
+-#endif
+-
+ #ifdef CONFIG_HUGETLB_PAGE
+ static inline void hugetlb_free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
+ 					  unsigned long end, unsigned long floor,
+@@ -75,4 +74,85 @@ static inline void hugetlb_free_pgd_range(struct mmu_gather *tlb, unsigned long
+ }
+ #endif
+ 
++static inline pgd_t *pgd_alloc(struct mm_struct *mm)
++{
++	return hlpgd_alloc(mm);
++}
++
++static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
++{
++	return hlpgd_free(mm, pgd);
++}
++
++static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
++{
++	return hlpud_alloc_one(mm, addr);
++}
++
++static inline void pud_free(struct mm_struct *mm, pud_t *pud)
++{
++	return hlpud_free(mm, pud);
++}
++
++static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
++{
++	return hlpmd_alloc_one(mm, addr);
++}
++
++static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
++{
++	return hlpmd_free(mm, pmd);
++}
++
++static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
++				  unsigned long address)
++{
++	return __hlpmd_free_tlb(tlb, pmd, address);
++}
++
++static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
++				  unsigned long address)
++{
++	return __hlpud_free_tlb(tlb, pud, address);
++}
++
++static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
++				pgtable_t pte_page)
++{
++	return hlpmd_populate(mm, pmd, pte_page);
++}
++
++static inline pgtable_t pmd_pgtable(pmd_t pmd)
++{
++	return hlpmd_pgtable(pmd);
++}
++
++static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
++					  unsigned long address)
++{
++	return hlpte_alloc_one_kernel(mm, address);
++}
++
++static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
++				      unsigned long address)
++{
++	return hlpte_alloc_one(mm, address);
++}
++
++static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
++{
++	return hlpte_free_kernel(mm, pte);
++}
++
++static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
++{
++	return hlpte_free(mm, ptepage);
++}
++
++static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
++				  unsigned long address)
++{
++	return __hlpte_free_tlb(tlb, table, address);
++}
++
+ #endif /* __ASM_POWERPC_BOOK3S_64_PGALLOC_H */
 -- 
 2.5.0
