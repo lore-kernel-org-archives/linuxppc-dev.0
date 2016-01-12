@@ -1,34 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BCB971A0D83
+ by lists.ozlabs.org (Postfix) with ESMTPS id AD4401A1716
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 18:16:48 +1100 (AEDT)
 Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Tue, 12 Jan 2016 12:46:46 +0530
 Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 2B5DF394006E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:44 +0530 (IST)
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 2B8501258062
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:47:30 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0C7GSAr31064214
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:29 +0530
+ u0C7GU4k30736422
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:31 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0C7GRL1013585
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:27 +0530
+ u0C7GTL0014044
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:29 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Michael Neuling <mikey@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH V1 16/33] powerpc/mm: Move hash page table related
- functions to pgtable-hash64.c
-Date: Tue, 12 Jan 2016 12:45:51 +0530
-Message-Id: <1452582968-22669-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH V1 30/33] powerpc/mm: Hash linux abstraction for HugeTLB
+Date: Tue, 12 Jan 2016 12:46:05 +0530
+Message-Id: <1452582968-22669-31-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,886 +41,285 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash.h    |   1 +
- arch/powerpc/include/asm/nohash/64/pgtable.h |   2 +
- arch/powerpc/mm/Makefile                     |   3 +-
- arch/powerpc/mm/init_64.c                    | 114 +------------
- arch/powerpc/mm/mem.c                        |  29 +---
- arch/powerpc/mm/mmu_decl.h                   |   4 -
- arch/powerpc/mm/pgtable-book3e.c             | 163 ++++++++++++++++++
- arch/powerpc/mm/pgtable-hash64.c             | 246 +++++++++++++++++++++++++++
- arch/powerpc/mm/pgtable.c                    |   9 +
- arch/powerpc/mm/pgtable_64.c                 |  88 ----------
- arch/powerpc/mm/ppc_mmu_32.c                 |  30 ++++
- 11 files changed, 461 insertions(+), 228 deletions(-)
- create mode 100644 arch/powerpc/mm/pgtable-book3e.c
- create mode 100644 arch/powerpc/mm/pgtable-hash64.c
+ arch/powerpc/include/asm/book3s/64/hash-4k.h      | 10 ++++----
+ arch/powerpc/include/asm/book3s/64/hash-64k.h     | 14 +++++------
+ arch/powerpc/include/asm/book3s/64/pgalloc-hash.h |  7 ++++++
+ arch/powerpc/include/asm/book3s/64/pgalloc.h      |  9 +++++++
+ arch/powerpc/include/asm/book3s/64/pgtable.h      | 30 +++++++++++++++++++++++
+ arch/powerpc/include/asm/hugetlb.h                |  4 ---
+ arch/powerpc/include/asm/nohash/pgalloc.h         |  7 ++++++
+ arch/powerpc/mm/hugetlbpage-hash64.c              | 11 ++++-----
+ arch/powerpc/mm/hugetlbpage.c                     | 16 ++++++++++++
+ 9 files changed, 86 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index ee8dd7e561b0..d51709dad729 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -604,6 +604,7 @@ static inline void hpte_do_hugepage_flush(struct mm_struct *mm,
- }
- #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
- 
-+extern int map_kernel_page(unsigned long ea, unsigned long pa, int flags);
- #endif /* !__ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_BOOK3S_64_HASH_H */
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index b9f734dd5b81..a68e809d7739 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -359,6 +359,8 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- 
- void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
- void pgtable_cache_init(void);
-+extern int map_kernel_page(unsigned long ea, unsigned long pa, int flags);
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /* _ASM_POWERPC_NOHASH_64_PGTABLE_H */
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index 1ffeda85c086..6b5cc805c7ba 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -13,7 +13,8 @@ obj-$(CONFIG_PPC_MMU_NOHASH)	+= mmu_context_nohash.o tlb_nohash.o \
- 				   tlb_nohash_low.o
- obj-$(CONFIG_PPC_BOOK3E)	+= tlb_low_$(CONFIG_WORD_SIZE)e.o
- hash64-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
--obj-$(CONFIG_PPC_STD_MMU_64)	+= hash_utils_64.o slb_low.o slb.o $(hash64-y)
-+obj-$(CONFIG_PPC_BOOK3E_64)   += pgtable-book3e.o
-+obj-$(CONFIG_PPC_STD_MMU_64)	+= pgtable-hash64.o hash_utils_64.o slb_low.o slb.o $(hash64-y)
- obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o hash_low_32.o
- obj-$(CONFIG_PPC_STD_MMU)	+= tlb_hash$(CONFIG_WORD_SIZE).o \
- 				   mmu_context_hash$(CONFIG_WORD_SIZE).o
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 8ce1ec24d573..05b025a0efe6 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -65,38 +65,10 @@
- 
- #include "mmu_decl.h"
- 
--#ifdef CONFIG_PPC_STD_MMU_64
--#if PGTABLE_RANGE > USER_VSID_RANGE
--#warning Limited user VSID range means pagetable space is wasted
--#endif
--
--#if (TASK_SIZE_USER64 < PGTABLE_RANGE) && (TASK_SIZE_USER64 < USER_VSID_RANGE)
--#warning TASK_SIZE is smaller than it needs to be.
--#endif
--#endif /* CONFIG_PPC_STD_MMU_64 */
--
- phys_addr_t memstart_addr = ~0;
- EXPORT_SYMBOL_GPL(memstart_addr);
- phys_addr_t kernstart_addr;
- EXPORT_SYMBOL_GPL(kernstart_addr);
--
--static void pgd_ctor(void *addr)
--{
--	memset(addr, 0, PGD_TABLE_SIZE);
--}
--
--static void pud_ctor(void *addr)
--{
--	memset(addr, 0, PUD_TABLE_SIZE);
--}
--
--static void pmd_ctor(void *addr)
--{
--	memset(addr, 0, PMD_TABLE_SIZE);
--}
--
--struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
--
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index 1ef4b39f96fd..5fc9e4e1db5f 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -66,23 +66,23 @@
  /*
-  * Create a kmem_cache() for pagetables.  This is not used for PTE
-  * pages - they're linked to struct page, come from the normal free
-@@ -104,6 +76,7 @@ struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
-  * everything else.  Caches created by this function are used for all
-  * the higher level pagetables, and for hugepage pagetables.
+  * For 4k page size, we support explicit hugepage via hugepd
   */
-+struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
- void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
+-static inline int pmd_huge(pmd_t pmd)
++static inline int hlpmd_huge(pmd_t pmd)
  {
- 	char *name;
-@@ -138,25 +111,6 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
- 	pr_debug("Allocated pgtable cache for order %d\n", shift);
- }
- 
--
--void pgtable_cache_init(void)
--{
--	pgtable_cache_add(PGD_INDEX_SIZE, pgd_ctor);
--	pgtable_cache_add(PMD_CACHE_INDEX, pmd_ctor);
--	/*
--	 * In all current configs, when the PUD index exists it's the
--	 * same size as either the pgd or pmd index except with THP enabled
--	 * on book3s 64
--	 */
--	if (PUD_INDEX_SIZE && !PGT_CACHE(PUD_INDEX_SIZE))
--		pgtable_cache_add(PUD_INDEX_SIZE, pud_ctor);
--
--	if (!PGT_CACHE(PGD_INDEX_SIZE) || !PGT_CACHE(PMD_CACHE_INDEX))
--		panic("Couldn't allocate pgtable caches");
--	if (PUD_INDEX_SIZE && !PGT_CACHE(PUD_INDEX_SIZE))
--		panic("Couldn't allocate pud pgtable caches");
--}
--
- #ifdef CONFIG_SPARSEMEM_VMEMMAP
- /*
-  * Given an address within the vmemmap, determine the pfn of the page that
-@@ -189,67 +143,6 @@ static int __meminit vmemmap_populated(unsigned long start, int page_size)
  	return 0;
  }
  
--/* On hash-based CPUs, the vmemmap is bolted in the hash table.
-- *
-- * On Book3E CPUs, the vmemmap is currently mapped in the top half of
-- * the vmalloc space using normal page tables, though the size of
-- * pages encoded in the PTEs can be different
-- */
--
--#ifdef CONFIG_PPC_BOOK3E
--static void __meminit vmemmap_create_mapping(unsigned long start,
--					     unsigned long page_size,
--					     unsigned long phys)
--{
--	/* Create a PTE encoding without page size */
--	unsigned long i, flags = _PAGE_PRESENT | _PAGE_ACCESSED |
--		_PAGE_KERNEL_RW;
--
--	/* PTEs only contain page size encodings up to 32M */
--	BUG_ON(mmu_psize_defs[mmu_vmemmap_psize].enc > 0xf);
--
--	/* Encode the size in the PTE */
--	flags |= mmu_psize_defs[mmu_vmemmap_psize].enc << 8;
--
--	/* For each PTE for that area, map things. Note that we don't
--	 * increment phys because all PTEs are of the large size and
--	 * thus must have the low bits clear
--	 */
--	for (i = 0; i < page_size; i += PAGE_SIZE)
--		BUG_ON(map_kernel_page(start + i, phys, flags));
--}
--
--#ifdef CONFIG_MEMORY_HOTPLUG
--static void vmemmap_remove_mapping(unsigned long start,
--				   unsigned long page_size)
--{
--}
--#endif
--#else /* CONFIG_PPC_BOOK3E */
--static void __meminit vmemmap_create_mapping(unsigned long start,
--					     unsigned long page_size,
--					     unsigned long phys)
--{
--	int  mapped = htab_bolt_mapping(start, start + page_size, phys,
--					pgprot_val(PAGE_KERNEL),
--					mmu_vmemmap_psize,
--					mmu_kernel_ssize);
--	BUG_ON(mapped < 0);
--}
--
--#ifdef CONFIG_MEMORY_HOTPLUG
--static void vmemmap_remove_mapping(unsigned long start,
--				   unsigned long page_size)
--{
--	int mapped = htab_remove_mapping(start, start + page_size,
--					 mmu_vmemmap_psize,
--					 mmu_kernel_ssize);
--	BUG_ON(mapped < 0);
--}
--#endif
--
--#endif /* CONFIG_PPC_BOOK3E */
--
- struct vmemmap_backing *vmemmap_list;
- static struct vmemmap_backing *next;
- static int num_left;
-@@ -301,6 +194,9 @@ static __meminit void vmemmap_list_populate(unsigned long phys,
- 	vmemmap_list = vmem_back;
+-static inline int pud_huge(pud_t pud)
++static inline int hlpud_huge(pud_t pud)
+ {
+ 	return 0;
  }
  
-+extern void __meminit vmemmap_create_mapping(unsigned long start,
-+					     unsigned long page_size,
-+					     unsigned long phys);
- int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
+-static inline int pgd_huge(pgd_t pgd)
++static inline int hlpgd_huge(pgd_t pgd)
  {
- 	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
-@@ -332,6 +228,8 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
+ 	return 0;
  }
+ #define pgd_huge pgd_huge
  
- #ifdef CONFIG_MEMORY_HOTPLUG
-+extern void vmemmap_remove_mapping(unsigned long start,
-+				   unsigned long page_size);
- static unsigned long vmemmap_list_free(unsigned long start)
+-static inline int hugepd_ok(hugepd_t hpd)
++static inline int hlhugepd_ok(hugepd_t hpd)
  {
- 	struct vmemmap_backing *vmem_back, *vmem_back_prev;
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 22d94c3e6fc4..b9cab99fb303 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -476,6 +476,7 @@ void flush_icache_user_range(struct vm_area_struct *vma, struct page *page,
+ 	/*
+ 	 * if it is not a pte and have hugepd shift mask
+@@ -93,7 +93,7 @@ static inline int hugepd_ok(hugepd_t hpd)
+ 		return true;
+ 	return false;
  }
- EXPORT_SYMBOL(flush_icache_user_range);
- 
-+#ifndef CONFIG_PPC_STD_MMU
- /*
-  * This is called at the end of handling a user page fault, when the
-  * fault has been handled by updating a PTE in the linux page tables.
-@@ -487,39 +488,13 @@ EXPORT_SYMBOL(flush_icache_user_range);
- void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
- 		      pte_t *ptep)
- {
--#ifdef CONFIG_PPC_STD_MMU
--	/*
--	 * We don't need to worry about _PAGE_PRESENT here because we are
--	 * called with either mm->page_table_lock held or ptl lock held
--	 */
--	unsigned long access = 0, trap;
--
--	/* We only want HPTEs for linux PTEs that have _PAGE_ACCESSED set */
--	if (!pte_young(*ptep) || address >= TASK_SIZE)
--		return;
--
--	/* We try to figure out if we are coming from an instruction
--	 * access fault and pass that down to __hash_page so we avoid
--	 * double-faulting on execution of fresh text. We have to test
--	 * for regs NULL since init will get here first thing at boot
--	 *
--	 * We also avoid filling the hash if not coming from a fault
--	 */
--	if (current->thread.regs == NULL)
--		return;
--	trap = TRAP(current->thread.regs);
--	if (trap == 0x400)
--		access |= _PAGE_EXEC;
--	else if (trap != 0x300)
--		return;
--	hash_preload(vma->vm_mm, address, access, trap);
--#endif /* CONFIG_PPC_STD_MMU */
- #if (defined(CONFIG_PPC_BOOK3E_64) || defined(CONFIG_PPC_FSL_BOOK3E)) \
- 	&& defined(CONFIG_HUGETLB_PAGE)
- 	if (is_vm_hugetlb_page(vma))
- 		book3e_hugetlb_preload(vma, address, *ptep);
+-#define is_hugepd(hpd)		(hugepd_ok(hpd))
++#define is_hlhugepd(hpd)	(hlhugepd_ok(hpd))
  #endif
- }
-+#endif /* !CONFIG_PPC_STD_MMU */
  
- /*
-  * System memory should not be in /proc/iomem but various tools expect it
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 9f58ff44a075..6360f54ef2d0 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -109,10 +109,6 @@ extern unsigned long Hash_size, Hash_mask;
- 
- #endif /* CONFIG_PPC32 */
- 
--#ifdef CONFIG_PPC64
--extern int map_kernel_page(unsigned long ea, unsigned long pa, int flags);
--#endif /* CONFIG_PPC64 */
--
- extern unsigned long ioremap_bot;
- extern unsigned long __max_low_memory;
- extern phys_addr_t __initial_memory_limit_addr;
-diff --git a/arch/powerpc/mm/pgtable-book3e.c b/arch/powerpc/mm/pgtable-book3e.c
-new file mode 100644
-index 000000000000..cfea44b66eac
---- /dev/null
-+++ b/arch/powerpc/mm/pgtable-book3e.c
-@@ -0,0 +1,163 @@
-+
-+/*
-+ * Copyright IBM Corporation, 2015
-+ * Author Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of version 2 of the GNU Lesser General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it would be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+ *
-+ */
-+
-+/*
-+ * PPC64 THP Support for hash based MMUs
-+ */
-+#include <linux/sched.h>
-+#include <linux/memblock.h>
-+#include <asm/pgalloc.h>
-+#include <asm/tlb.h>
-+#include <asm/dma.h>
-+
-+#include "mmu_decl.h"
-+
-+#if (TASK_SIZE_USER64 > PGTABLE_RANGE)
-+#warning TASK_SIZE is larger than page table range
-+#endif
-+
-+static void pgd_ctor(void *addr)
-+{
-+	memset(addr, 0, PGD_TABLE_SIZE);
-+}
-+
-+static void pud_ctor(void *addr)
-+{
-+	memset(addr, 0, PUD_TABLE_SIZE);
-+}
-+
-+static void pmd_ctor(void *addr)
-+{
-+	memset(addr, 0, PMD_TABLE_SIZE);
-+}
-+
-+void pgtable_cache_init(void)
-+{
-+	pgtable_cache_add(PGD_INDEX_SIZE, pgd_ctor);
-+	pgtable_cache_add(PMD_CACHE_INDEX, pmd_ctor);
-+	/*
-+	 * In all current configs, when the PUD index exists it's the
-+	 * same size as either the pgd or pmd index except with THP enabled
-+	 * on book3s 64
-+	 */
-+	if (PUD_INDEX_SIZE && !PGT_CACHE(PUD_INDEX_SIZE))
-+		pgtable_cache_add(PUD_INDEX_SIZE, pud_ctor);
-+
-+	if (!PGT_CACHE(PGD_INDEX_SIZE) || !PGT_CACHE(PMD_CACHE_INDEX))
-+		panic("Couldn't allocate pgtable caches");
-+	if (PUD_INDEX_SIZE && !PGT_CACHE(PUD_INDEX_SIZE))
-+		panic("Couldn't allocate pud pgtable caches");
-+}
-+
-+#ifdef CONFIG_SPARSEMEM_VMEMMAP
-+/*
-+ * On Book3E CPUs, the vmemmap is currently mapped in the top half of
-+ * the vmalloc space using normal page tables, though the size of
-+ * pages encoded in the PTEs can be different
-+ */
-+void __meminit vmemmap_create_mapping(unsigned long start,
-+                                      unsigned long page_size,
-+                                      unsigned long phys)
-+{
-+	/* Create a PTE encoding without page size */
-+	unsigned long i, flags = _PAGE_PRESENT | _PAGE_ACCESSED |
-+		_PAGE_KERNEL_RW;
-+
-+	/* PTEs only contain page size encodings up to 32M */
-+	BUG_ON(mmu_psize_defs[mmu_vmemmap_psize].enc > 0xf);
-+
-+	/* Encode the size in the PTE */
-+	flags |= mmu_psize_defs[mmu_vmemmap_psize].enc << 8;
-+
-+	/* For each PTE for that area, map things. Note that we don't
-+	 * increment phys because all PTEs are of the large size and
-+	 * thus must have the low bits clear
-+	 */
-+	for (i = 0; i < page_size; i += PAGE_SIZE)
-+		BUG_ON(map_kernel_page(start + i, phys, flags));
-+}
-+
-+#ifdef CONFIG_MEMORY_HOTPLUG
-+void vmemmap_remove_mapping(unsigned long start,
-+                            unsigned long page_size)
-+{
-+}
-+#endif
-+#endif /* CONFIG_SPARSEMEM_VMEMMAP */
-+
-+static __ref void *early_alloc_pgtable(unsigned long size)
-+{
-+	void *pt;
-+
-+	pt = __va(memblock_alloc_base(size, size, __pa(MAX_DMA_ADDRESS)));
-+	memset(pt, 0, size);
-+
-+	return pt;
-+}
-+
-+/*
-+ * map_kernel_page currently only called by __ioremap
-+ * map_kernel_page adds an entry to the ioremap page table
-+ * and adds an entry to the HPT, possibly bolting it
-+ */
-+int map_kernel_page(unsigned long ea, unsigned long pa, int flags)
-+{
-+	pgd_t *pgdp;
-+	pud_t *pudp;
-+	pmd_t *pmdp;
-+	pte_t *ptep;
-+
-+	if (slab_is_available()) {
-+		pgdp = pgd_offset_k(ea);
-+		pudp = pud_alloc(&init_mm, pgdp, ea);
-+		if (!pudp)
-+			return -ENOMEM;
-+		pmdp = pmd_alloc(&init_mm, pudp, ea);
-+		if (!pmdp)
-+			return -ENOMEM;
-+		ptep = pte_alloc_kernel(pmdp, ea);
-+		if (!ptep)
-+			return -ENOMEM;
-+		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
-+							  __pgprot(flags)));
-+	} else {
-+		pgdp = pgd_offset_k(ea);
-+#ifndef __PAGETABLE_PUD_FOLDED
-+		if (pgd_none(*pgdp)) {
-+			pudp = early_alloc_pgtable(PUD_TABLE_SIZE);
-+			BUG_ON(pudp == NULL);
-+			pgd_populate(&init_mm, pgdp, pudp);
-+		}
-+#endif /* !__PAGETABLE_PUD_FOLDED */
-+		pudp = pud_offset(pgdp, ea);
-+		if (pud_none(*pudp)) {
-+			pmdp = early_alloc_pgtable(PMD_TABLE_SIZE);
-+			BUG_ON(pmdp == NULL);
-+			pud_populate(&init_mm, pudp, pmdp);
-+		}
-+		pmdp = pmd_offset(pudp, ea);
-+		if (!pmd_present(*pmdp)) {
-+			ptep = early_alloc_pgtable(PAGE_SIZE);
-+			BUG_ON(ptep == NULL);
-+			pmd_populate_kernel(&init_mm, pmdp, ptep);
-+		}
-+		ptep = pte_offset_kernel(pmdp, ea);
-+		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
-+							  __pgprot(flags)));
-+	}
-+
-+	smp_wmb();
-+	return 0;
-+}
-diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
-new file mode 100644
-index 000000000000..1ab62bd102c7
---- /dev/null
-+++ b/arch/powerpc/mm/pgtable-hash64.c
-@@ -0,0 +1,246 @@
-+/*
-+ * Copyright IBM Corporation, 2015
-+ * Author Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of version 2 of the GNU Lesser General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it would be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+ *
-+ */
-+
-+/*
-+ * PPC64 THP Support for hash based MMUs
-+ */
-+#include <linux/sched.h>
-+#include <asm/pgalloc.h>
-+#include <asm/tlb.h>
-+
-+#include "mmu_decl.h"
-+
-+#if PGTABLE_RANGE > USER_VSID_RANGE
-+#warning Limited user VSID range means pagetable space is wasted
-+#endif
-+
-+#if (TASK_SIZE_USER64 < PGTABLE_RANGE) && (TASK_SIZE_USER64 < USER_VSID_RANGE)
-+#warning TASK_SIZE is smaller than it needs to be.
-+#endif
-+
-+#if (TASK_SIZE_USER64 > PGTABLE_RANGE)
-+#warning TASK_SIZE is larger than page table range
-+#endif
-+
-+static void pgd_ctor(void *addr)
-+{
-+	memset(addr, 0, PGD_TABLE_SIZE);
-+}
-+
-+static void pud_ctor(void *addr)
-+{
-+	memset(addr, 0, PUD_TABLE_SIZE);
-+}
-+
-+static void pmd_ctor(void *addr)
-+{
-+	memset(addr, 0, PMD_TABLE_SIZE);
-+}
-+
-+
-+void pgtable_cache_init(void)
-+{
-+	pgtable_cache_add(PGD_INDEX_SIZE, pgd_ctor);
-+	pgtable_cache_add(PMD_CACHE_INDEX, pmd_ctor);
-+	/*
-+	 * In all current configs, when the PUD index exists it's the
-+	 * same size as either the pgd or pmd index except with THP enabled
-+	 * on book3s 64
-+	 */
-+	if (PUD_INDEX_SIZE && !PGT_CACHE(PUD_INDEX_SIZE))
-+		pgtable_cache_add(PUD_INDEX_SIZE, pud_ctor);
-+
-+	if (!PGT_CACHE(PGD_INDEX_SIZE) || !PGT_CACHE(PMD_CACHE_INDEX))
-+		panic("Couldn't allocate pgtable caches");
-+	if (PUD_INDEX_SIZE && !PGT_CACHE(PUD_INDEX_SIZE))
-+		panic("Couldn't allocate pud pgtable caches");
-+}
-+
-+#ifdef CONFIG_SPARSEMEM_VMEMMAP
-+/*
-+ * On hash-based CPUs, the vmemmap is bolted in the hash table.
-+ *
-+ */
-+void __meminit vmemmap_create_mapping(unsigned long start,
-+				      unsigned long page_size,
-+				      unsigned long phys)
-+{
-+	int  mapped = htab_bolt_mapping(start, start + page_size, phys,
-+					pgprot_val(PAGE_KERNEL),
-+					mmu_vmemmap_psize,
-+					mmu_kernel_ssize);
-+	BUG_ON(mapped < 0);
-+}
-+
-+#ifdef CONFIG_MEMORY_HOTPLUG
-+void vmemmap_remove_mapping(unsigned long start,
-+			    unsigned long page_size)
-+{
-+	int mapped = htab_remove_mapping(start, start + page_size,
-+					 mmu_vmemmap_psize,
-+					 mmu_kernel_ssize);
-+	BUG_ON(mapped < 0);
-+}
-+#endif
-+#endif /* CONFIG_SPARSEMEM_VMEMMAP */
-+
-+void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
-+		      pte_t *ptep)
-+{
-+	/*
-+	 * We don't need to worry about _PAGE_PRESENT here because we are
-+	 * called with either mm->page_table_lock held or ptl lock held
-+	 */
-+	unsigned long access = 0, trap;
-+
-+	/* We only want HPTEs for linux PTEs that have _PAGE_ACCESSED set */
-+	if (!pte_young(*ptep) || address >= TASK_SIZE)
-+		return;
-+
-+	/* We try to figure out if we are coming from an instruction
-+	 * access fault and pass that down to __hash_page so we avoid
-+	 * double-faulting on execution of fresh text. We have to test
-+	 * for regs NULL since init will get here first thing at boot
-+	 *
-+	 * We also avoid filling the hash if not coming from a fault
-+	 */
-+	if (current->thread.regs == NULL)
-+		return;
-+	trap = TRAP(current->thread.regs);
-+	if (trap == 0x400)
-+		access |= _PAGE_EXEC;
-+	else if (trap != 0x300)
-+		return;
-+	hash_preload(vma->vm_mm, address, access, trap);
-+}
-+
-+/*
-+ * map_kernel_page currently only called by __ioremap
-+ * map_kernel_page adds an entry to the ioremap page table
-+ * and adds an entry to the HPT, possibly bolting it
-+ */
-+int map_kernel_page(unsigned long ea, unsigned long pa, int flags)
-+{
-+	pgd_t *pgdp;
-+	pud_t *pudp;
-+	pmd_t *pmdp;
-+	pte_t *ptep;
-+
-+	if (slab_is_available()) {
-+		pgdp = pgd_offset_k(ea);
-+		pudp = pud_alloc(&init_mm, pgdp, ea);
-+		if (!pudp)
-+			return -ENOMEM;
-+		pmdp = pmd_alloc(&init_mm, pudp, ea);
-+		if (!pmdp)
-+			return -ENOMEM;
-+		ptep = pte_alloc_kernel(pmdp, ea);
-+		if (!ptep)
-+			return -ENOMEM;
-+		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
-+							  __pgprot(flags)));
-+	} else {
-+		/*
-+		 * If the mm subsystem is not fully up, we cannot create a
-+		 * linux page table entry for this mapping.  Simply bolt an
-+		 * entry in the hardware page table.
-+		 *
-+		 */
-+		if (htab_bolt_mapping(ea, ea + PAGE_SIZE, pa, flags,
-+				      mmu_io_psize, mmu_kernel_ssize)) {
-+			printk(KERN_ERR "Failed to do bolted mapping IO "
-+			       "memory at %016lx !\n", pa);
-+			return -ENOMEM;
-+		}
-+	}
-+
-+	smp_wmb();
-+	return 0;
-+}
-+
-+/*
-+ * We only try to do i/d cache coherency on stuff that looks like
-+ * reasonably "normal" PTEs. We currently require a PTE to be present
-+ * and we avoid _PAGE_SPECIAL and _PAGE_NO_CACHE. We also only do that
-+ * on userspace PTEs
-+ */
-+static inline int pte_looks_normal(pte_t pte)
-+{
-+	return (pte_val(pte) &
-+	    (_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE | _PAGE_USER)) ==
-+	    (_PAGE_PRESENT | _PAGE_USER);
-+}
-+
-+static struct page *maybe_pte_to_page(pte_t pte)
-+{
-+	unsigned long pfn = pte_pfn(pte);
-+	struct page *page;
-+
-+	if (unlikely(!pfn_valid(pfn)))
-+		return NULL;
-+	page = pfn_to_page(pfn);
-+	if (PageReserved(page))
-+		return NULL;
-+	return page;
-+}
-+
-+/* Server-style MMU handles coherency when hashing if HW exec permission
-+ * is supposed per page (currently 64-bit only). If not, then, we always
-+ * flush the cache for valid PTEs in set_pte. Embedded CPU without HW exec
-+ * support falls into the same category.
-+ */
-+static pte_t set_pte_filter(pte_t pte)
-+{
-+	pte = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
-+	if (pte_looks_normal(pte) && !(cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
-+				       cpu_has_feature(CPU_FTR_NOEXECUTE))) {
-+		struct page *pg = maybe_pte_to_page(pte);
-+		if (!pg)
-+			return pte;
-+		if (!test_bit(PG_arch_1, &pg->flags)) {
-+			flush_dcache_icache_page(pg);
-+			set_bit(PG_arch_1, &pg->flags);
-+		}
-+	}
-+	return pte;
-+}
-+
-+/*
-+ * set_pte stores a linux PTE into the linux page table.
-+ */
-+void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
-+		pte_t pte)
-+{
-+	/*
-+	 * When handling numa faults, we already have the pte marked
-+	 * _PAGE_PRESENT, but we can be sure that it is not in hpte.
-+	 * Hence we can use set_pte_at for them.
-+	 */
-+	VM_WARN_ON((pte_val(*ptep) & (_PAGE_PRESENT | _PAGE_USER)) ==
-+		(_PAGE_PRESENT | _PAGE_USER));
-+
-+	/*
-+	 * Add the pte bit when tryint set a pte
-+	 */
-+	pte = __pte(pte_val(pte) | _PAGE_PTE);
-+
-+	/* Note: mm->context.id might not yet have been assigned as
-+	 * this context might not have been activated yet when this
-+	 * is called.
-+	 */
-+	pte = set_pte_filter(pte);
-+
-+	/* Perform the setting of the PTE */
-+	__set_pte_at(mm, addr, ptep, pte, 0);
-+}
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index 83dfd7925c72..c73f8017bf7d 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -31,6 +31,8 @@
- #include <asm/tlbflush.h>
- #include <asm/tlb.h>
- 
-+#ifndef CONFIG_PPC_BOOK3S_64
-+/* We have alternate definition for the below in pgtable-hash64.c */
- static inline int is_exec_fault(void)
- {
- 	return current->thread.regs && TRAP(current->thread.regs) == 0x400;
-@@ -193,6 +195,13 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
- 	/* Perform the setting of the PTE */
- 	__set_pte_at(mm, addr, ptep, pte, 0);
- }
-+#else
-+static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
-+                                     int dirty)
-+{
-+        return pte;
-+}
-+#endif /* !CONFIG_PPC_BOOK3S_64 */
- 
- /*
-  * This is called when relaxing access to a PTE. It's also called in the page
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 6d161cec2e32..21a9a171c267 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -58,11 +58,6 @@
- #define CREATE_TRACE_POINTS
- #include <trace/events/thp.h>
- 
--/* Some sanity checking */
--#if TASK_SIZE_USER64 > PGTABLE_RANGE
--#error TASK_SIZE_USER64 exceeds pagetable range
--#endif
--
- #ifdef CONFIG_PPC_STD_MMU_64
- #if TASK_SIZE_USER64 > (1UL << (ESID_BITS + SID_SHIFT))
- #error TASK_SIZE_USER64 exceeds user VSID range
-@@ -71,89 +66,6 @@
- 
- unsigned long ioremap_bot = IOREMAP_BASE;
- 
--#ifdef CONFIG_PPC_MMU_NOHASH
--static __ref void *early_alloc_pgtable(unsigned long size)
--{
--	void *pt;
--
--	pt = __va(memblock_alloc_base(size, size, __pa(MAX_DMA_ADDRESS)));
--	memset(pt, 0, size);
--
--	return pt;
--}
--#endif /* CONFIG_PPC_MMU_NOHASH */
--
--/*
-- * map_kernel_page currently only called by __ioremap
-- * map_kernel_page adds an entry to the ioremap page table
-- * and adds an entry to the HPT, possibly bolting it
-- */
--int map_kernel_page(unsigned long ea, unsigned long pa, int flags)
--{
--	pgd_t *pgdp;
--	pud_t *pudp;
--	pmd_t *pmdp;
--	pte_t *ptep;
--
--	if (slab_is_available()) {
--		pgdp = pgd_offset_k(ea);
--		pudp = pud_alloc(&init_mm, pgdp, ea);
--		if (!pudp)
--			return -ENOMEM;
--		pmdp = pmd_alloc(&init_mm, pudp, ea);
--		if (!pmdp)
--			return -ENOMEM;
--		ptep = pte_alloc_kernel(pmdp, ea);
--		if (!ptep)
--			return -ENOMEM;
--		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
--							  __pgprot(flags)));
--	} else {
--#ifdef CONFIG_PPC_MMU_NOHASH
--		pgdp = pgd_offset_k(ea);
--#ifdef PUD_TABLE_SIZE
--		if (pgd_none(*pgdp)) {
--			pudp = early_alloc_pgtable(PUD_TABLE_SIZE);
--			BUG_ON(pudp == NULL);
--			pgd_populate(&init_mm, pgdp, pudp);
--		}
--#endif /* PUD_TABLE_SIZE */
--		pudp = pud_offset(pgdp, ea);
--		if (pud_none(*pudp)) {
--			pmdp = early_alloc_pgtable(PMD_TABLE_SIZE);
--			BUG_ON(pmdp == NULL);
--			pud_populate(&init_mm, pudp, pmdp);
--		}
--		pmdp = pmd_offset(pudp, ea);
--		if (!pmd_present(*pmdp)) {
--			ptep = early_alloc_pgtable(PAGE_SIZE);
--			BUG_ON(ptep == NULL);
--			pmd_populate_kernel(&init_mm, pmdp, ptep);
--		}
--		ptep = pte_offset_kernel(pmdp, ea);
--		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
--							  __pgprot(flags)));
--#else /* CONFIG_PPC_MMU_NOHASH */
--		/*
--		 * If the mm subsystem is not fully up, we cannot create a
--		 * linux page table entry for this mapping.  Simply bolt an
--		 * entry in the hardware page table.
--		 *
--		 */
--		if (htab_bolt_mapping(ea, ea + PAGE_SIZE, pa, flags,
--				      mmu_io_psize, mmu_kernel_ssize)) {
--			printk(KERN_ERR "Failed to do bolted mapping IO "
--			       "memory at %016lx !\n", pa);
--			return -ENOMEM;
--		}
--#endif /* !CONFIG_PPC_MMU_NOHASH */
--	}
--
--	smp_wmb();
--	return 0;
--}
--
--
- /**
-  * __ioremap_at - Low level function to establish the page tables
-  *                for an IO mapping
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 6b2f3e457171..51ffa60001f2 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -174,6 +174,36 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
- 		add_hash_page(mm->context.id, ea, pmd_val(*pmd));
- }
- 
-+void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
-+                      pte_t *ptep)
-+{
-+        /*
-+         * We don't need to worry about _PAGE_PRESENT here because we are
-+         * called with either mm->page_table_lock held or ptl lock held
-+         */
-+        unsigned long access = 0, trap;
-+
-+        /* We only want HPTEs for linux PTEs that have _PAGE_ACCESSED set */
-+        if (!pte_young(*ptep) || address >= TASK_SIZE)
-+                return;
-+
-+        /* We try to figure out if we are coming from an instruction
-+         * access fault and pass that down to __hash_page so we avoid
-+         * double-faulting on execution of fresh text. We have to test
-+         * for regs NULL since init will get here first thing at boot
-+         *
-+         * We also avoid filling the hash if not coming from a fault
-+         */
-+        if (current->thread.regs == NULL)
-+                return;
-+        trap = TRAP(current->thread.regs);
-+        if (trap == 0x400)
-+                access |= _PAGE_EXEC;
-+        else if (trap != 0x300)
-+                return;
-+        hash_preload(vma->vm_mm, address, access, trap);
-+}
-+
- /*
-  * Initialize the hash table and patch the instructions in hashtable.S.
+ #endif /* !__ASSEMBLY__ */
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index e697fc528c0a..4fff8b12ba0f 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -146,7 +146,7 @@ extern bool __rpte_sub_valid(real_pte_t rpte, unsigned long index);
+  * Defined in such a way that we can optimize away code block at build time
+  * if CONFIG_HUGETLB_PAGE=n.
   */
+-static inline int pmd_huge(pmd_t pmd)
++static inline int hlpmd_huge(pmd_t pmd)
+ {
+ 	/*
+ 	 * leaf pte for huge page
+@@ -154,7 +154,7 @@ static inline int pmd_huge(pmd_t pmd)
+ 	return !!(pmd_val(pmd) & H_PAGE_PTE);
+ }
+ 
+-static inline int pud_huge(pud_t pud)
++static inline int hlpud_huge(pud_t pud)
+ {
+ 	/*
+ 	 * leaf pte for huge page
+@@ -162,7 +162,7 @@ static inline int pud_huge(pud_t pud)
+ 	return !!(pud_val(pud) & H_PAGE_PTE);
+ }
+ 
+-static inline int pgd_huge(pgd_t pgd)
++static inline int hlpgd_huge(pgd_t pgd)
+ {
+ 	/*
+ 	 * leaf pte for huge page
+@@ -172,19 +172,19 @@ static inline int pgd_huge(pgd_t pgd)
+ #define pgd_huge pgd_huge
+ 
+ #ifdef CONFIG_DEBUG_VM
+-extern int hugepd_ok(hugepd_t hpd);
+-#define is_hugepd(hpd)               (hugepd_ok(hpd))
++extern int hlhugepd_ok(hugepd_t hpd);
++#define is_hlhugepd(hpd)               (hlhugepd_ok(hpd))
+ #else
+ /*
+  * With 64k page size, we have hugepage ptes in the pgd and pmd entries. We don't
+  * need to setup hugepage directory for them. Our pte and page directory format
+  * enable us to have this enabled.
+  */
+-static inline int hugepd_ok(hugepd_t hpd)
++static inline int hlhugepd_ok(hugepd_t hpd)
+ {
+ 	return 0;
+ }
+-#define is_hugepd(pdep)			0
++#define is_hlhugepd(pdep)			0
+ #endif /* CONFIG_DEBUG_VM */
+ 
+ #endif /* CONFIG_HUGETLB_PAGE */
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc-hash.h b/arch/powerpc/include/asm/book3s/64/pgalloc-hash.h
+index dbf680970c12..1dcfe7b75f06 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc-hash.h
+@@ -56,4 +56,11 @@ static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
+ {
+ 	pgtable_free_tlb(tlb, pud, H_PUD_INDEX_SIZE);
+ }
++
++extern pte_t *huge_hlpte_alloc(struct mm_struct *mm, unsigned long addr,
++			       unsigned long sz);
++extern void hugetlb_free_hlpgd_range(struct mmu_gather *tlb, unsigned long addr,
++				     unsigned long end, unsigned long floor,
++				     unsigned long ceiling);
++
+ #endif /* _ASM_POWERPC_BOOK3S_64_PGALLOC_HASH_H */
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+index ff3c0e36fe3d..fa2ddda14b3d 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+@@ -66,4 +66,13 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
+ #include <asm/book3s/64/pgalloc-hash.h>
+ #endif
+ 
++#ifdef CONFIG_HUGETLB_PAGE
++static inline void hugetlb_free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
++					  unsigned long end, unsigned long floor,
++					  unsigned long ceiling)
++{
++	return hugetlb_free_hlpgd_range(tlb, addr, end, floor, ceiling);
++}
++#endif
++
+ #endif /* __ASM_POWERPC_BOOK3S_64_PGALLOC_H */
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 5c5e03ed618f..ff7dda649ee3 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -709,6 +709,36 @@ static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
+ 	return true;
+ }
+ 
++#ifdef CONFIG_HUGETLB_PAGE
++
++static inline int pmd_huge(pmd_t pmd)
++{
++	return hlpmd_huge(pmd);
++}
++
++static inline int pud_huge(pud_t pud)
++{
++	return hlpud_huge(pud);
++}
++
++static inline int pgd_huge(pgd_t pgd)
++{
++	return hlpgd_huge(pgd);
++}
++
++static inline bool hugepd_ok(hugepd_t hpd)
++{
++	return hlhugepd_ok(hpd);
++}
++
++static inline bool is_hugepd(hugepd_t hpd)
++{
++	return is_hlhugepd(hpd);
++}
++#define is_hugepd is_hugepd
++
++#endif /* CONFIG_HUGETLB_PAGE */
++
+ #define pgprot_noncached pgprot_noncached
+ static inline pgprot_t pgprot_noncached(pgprot_t prot)
+ {
+diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+index 0525f1c29afb..c938150c440c 100644
+--- a/arch/powerpc/include/asm/hugetlb.h
++++ b/arch/powerpc/include/asm/hugetlb.h
+@@ -88,10 +88,6 @@ void book3e_hugetlb_preload(struct vm_area_struct *vma, unsigned long ea,
+ 			    pte_t pte);
+ void flush_hugetlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
+ 
+-void hugetlb_free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
+-			    unsigned long end, unsigned long floor,
+-			    unsigned long ceiling);
+-
+ /*
+  * The version of vma_mmu_pagesize() in arch/powerpc/mm/hugetlbpage.c needs
+  * to override the version in mm/hugetlb.c
+diff --git a/arch/powerpc/include/asm/nohash/pgalloc.h b/arch/powerpc/include/asm/nohash/pgalloc.h
+index b39ec956d71e..9c45a7ea4001 100644
+--- a/arch/powerpc/include/asm/nohash/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/pgalloc.h
+@@ -20,4 +20,11 @@ static inline void tlb_flush_pgtable(struct mmu_gather *tlb,
+ #else
+ #include <asm/nohash/32/pgalloc.h>
+ #endif
++
++#ifdef CONFIG_HUGETLB_PAGE
++void hugetlb_free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
++			    unsigned long end, unsigned long floor,
++                            unsigned long ceiling);
++#endif
++
+ #endif /* _ASM_POWERPC_NOHASH_PGALLOC_H */
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index 0126900c696e..84dd590b4a93 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -132,7 +132,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+  * This enables us to catch the wrong page directory format
+  * Moved here so that we can use WARN() in the call.
+  */
+-int hugepd_ok(hugepd_t hpd)
++int hlhugepd_ok(hugepd_t hpd)
+ {
+ 	bool is_hugepd;
+ 
+@@ -176,7 +176,7 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+  * At this point we do the placement change only for BOOK3S 64. This would
+  * possibly work on other subarchs.
+  */
+-pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz)
++pte_t *huge_hlpte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz)
+ {
+ 	pgd_t *pg;
+ 	pud_t *pu;
+@@ -335,9 +335,9 @@ static void hugetlb_free_pud_range(struct mmu_gather *tlb, pgd_t *pgd,
+ /*
+  * This function frees user-level page tables of a process.
+  */
+-void hugetlb_free_pgd_range(struct mmu_gather *tlb,
+-			    unsigned long addr, unsigned long end,
+-			    unsigned long floor, unsigned long ceiling)
++void hugetlb_free_hlpgd_range(struct mmu_gather *tlb,
++			      unsigned long addr, unsigned long end,
++			      unsigned long floor, unsigned long ceiling)
+ {
+ 	pgd_t *pgd;
+ 	unsigned long next;
+@@ -373,7 +373,6 @@ void hugetlb_free_pgd_range(struct mmu_gather *tlb,
+ 	} while (addr = next, addr != end);
+ }
+ 
+-
+ /* Build list of addresses of gigantic pages.  This function is used in early
+  * boot before the buddy allocator is setup.
+  */
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 4e970f58f8d9..0c5a8c10661c 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -451,3 +451,19 @@ int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
+ 
+ 	return 1;
+ }
++
++#ifdef CONFIG_PPC_BOOK3S_64
++/*
++ * Generic book3s code. We didn't want to create a seperate header just for this
++ * ideally we want this static inline. But that require larger changes
++ */
++pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz)
++{
++#ifdef CONFIG_HUGETLB_PAGE
++	return huge_hlpte_alloc(mm, addr, sz);
++#else
++	WARN(1, "%s called with HUGETLB disabled\n", __func__);
++	return NULL;
++#endif
++}
++#endif
 -- 
 2.5.0
