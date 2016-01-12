@@ -1,33 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3362E1A17C6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0AB881A17C4
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 18:16:48 +1100 (AEDT)
 Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 12 Jan 2016 12:46:46 +0530
+ Tue, 12 Jan 2016 12:46:47 +0530
 Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C107B1258065
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:47:31 +0530 (IST)
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 57F4F125801E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:47:30 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0C7GQtm62849134
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:26 +0530
+ u0C7GSTr55443544
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:29 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0C7GPNl013341
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:26 +0530
+ u0C7GR0K013493
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:27 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Michael Neuling <mikey@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH V1 01/33] powerpc/mm: add _PAGE_HASHPTE similar to 4K hash
-Date: Tue, 12 Jan 2016 12:45:36 +0530
-Message-Id: <1452582968-22669-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH V1 13/33] powerpc/mm: Move swap related definition ot
+ hash64 header
+Date: Tue, 12 Jan 2016 12:45:48 +0530
+Message-Id: <1452582968-22669-14-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,65 +40,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Not really needed. But this brings it back to as it was before
-
-Check this
-41743a4e34f0777f51c1cf0675b91508ba143050
+They are dependent on hash pte bits, so move them to hash64 header
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/hash64_64k.c         | 4 ++--
- arch/powerpc/mm/hugepage-hash64.c    | 2 +-
- arch/powerpc/mm/hugetlbpage-hash64.c | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash.h    | 42 ++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 42 ----------------------------
+ 2 files changed, 42 insertions(+), 42 deletions(-)
 
-diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
-index 0762c1e08c88..3c417f9099f9 100644
---- a/arch/powerpc/mm/hash64_64k.c
-+++ b/arch/powerpc/mm/hash64_64k.c
-@@ -76,7 +76,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 		 * a write access. Since this is 4K insert of 64K page size
- 		 * also add _PAGE_COMBO
- 		 */
--		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED | _PAGE_COMBO;
-+		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED | _PAGE_COMBO | _PAGE_HASHPTE;
- 		if (access & _PAGE_RW)
- 			new_pte |= _PAGE_DIRTY;
- 	} while (old_pte != __cmpxchg_u64((unsigned long *)ptep,
-@@ -246,7 +246,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 		 * a write access. Since this is 4K insert of 64K page size
- 		 * also add _PAGE_COMBO
- 		 */
--		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
-+		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED | _PAGE_HASHPTE;
- 		if (access & _PAGE_RW)
- 			new_pte |= _PAGE_DIRTY;
- 	} while (old_pte != __cmpxchg_u64((unsigned long *)ptep,
-diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
-index 49b152b0f926..3c4bd4c0ade9 100644
---- a/arch/powerpc/mm/hugepage-hash64.c
-+++ b/arch/powerpc/mm/hugepage-hash64.c
-@@ -46,7 +46,7 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
- 		 * Try to lock the PTE, add ACCESSED and DIRTY if it was
- 		 * a write access
- 		 */
--		new_pmd = old_pmd | _PAGE_BUSY | _PAGE_ACCESSED;
-+		new_pmd = old_pmd | _PAGE_BUSY | _PAGE_ACCESSED | _PAGE_HASHPTE;
- 		if (access & _PAGE_RW)
- 			new_pmd |= _PAGE_DIRTY;
- 	} while (old_pmd != __cmpxchg_u64((unsigned long *)pmdp,
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index e2138c7ae70f..9c224b012d62 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -54,7 +54,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 			return 1;
- 		/* Try to lock the PTE, add ACCESSED and DIRTY if it was
- 		 * a write access */
--		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
-+		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED | _PAGE_HASHPTE;
- 		if (access & _PAGE_RW)
- 			new_pte |= _PAGE_DIRTY;
- 	} while(old_pte != __cmpxchg_u64((unsigned long *)ptep,
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index 37a152428c99..ced3aed63af2 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -230,6 +230,48 @@
+ #define pmd_index(address) (((address) >> (PMD_SHIFT)) & (PTRS_PER_PMD - 1))
+ #define pte_index(address) (((address) >> (PAGE_SHIFT)) & (PTRS_PER_PTE - 1))
+ 
++/* Encode and de-code a swap entry */
++#define MAX_SWAPFILES_CHECK() do { \
++	BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS); \
++	/*							\
++	 * Don't have overlapping bits with _PAGE_HPTEFLAGS	\
++	 * We filter HPTEFLAGS on set_pte.			\
++	 */							\
++	BUILD_BUG_ON(_PAGE_HPTEFLAGS & (0x1f << _PAGE_BIT_SWAP_TYPE)); \
++	BUILD_BUG_ON(_PAGE_HPTEFLAGS & _PAGE_SWP_SOFT_DIRTY);	\
++	} while (0)
++/*
++ * on pte we don't need handle RADIX_TREE_EXCEPTIONAL_SHIFT;
++ */
++#define SWP_TYPE_BITS 5
++#define __swp_type(x)		(((x).val >> _PAGE_BIT_SWAP_TYPE) \
++				& ((1UL << SWP_TYPE_BITS) - 1))
++#define __swp_offset(x)		((x).val >> PTE_RPN_SHIFT)
++#define __swp_entry(type, offset)	((swp_entry_t) { \
++					((type) << _PAGE_BIT_SWAP_TYPE) \
++					| ((offset) << PTE_RPN_SHIFT) })
++
++#define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
++#define __swp_entry_to_pte(x)		__pte((x).val)
++
++#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
++#define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
++static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_SWP_SOFT_DIRTY);
++}
++static inline bool pte_swp_soft_dirty(pte_t pte)
++{
++	return !!(pte_val(pte) & _PAGE_SWP_SOFT_DIRTY);
++}
++static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~_PAGE_SWP_SOFT_DIRTY);
++}
++#else
++#define _PAGE_SWP_SOFT_DIRTY	0
++#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
++
+ extern void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
+ 			    pte_t *ptep, unsigned long pte, int huge);
+ extern unsigned long htab_convert_pte_flags(unsigned long pteflags);
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 8f639401c7ba..2613b3b436c9 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -161,48 +161,6 @@ extern struct page *pgd_page(pgd_t pgd);
+ #define pgd_ERROR(e) \
+ 	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
+ 
+-/* Encode and de-code a swap entry */
+-#define MAX_SWAPFILES_CHECK() do { \
+-	BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS); \
+-	/*							\
+-	 * Don't have overlapping bits with _PAGE_HPTEFLAGS	\
+-	 * We filter HPTEFLAGS on set_pte.			\
+-	 */							\
+-	BUILD_BUG_ON(_PAGE_HPTEFLAGS & (0x1f << _PAGE_BIT_SWAP_TYPE)); \
+-	BUILD_BUG_ON(_PAGE_HPTEFLAGS & _PAGE_SWP_SOFT_DIRTY);	\
+-	} while (0)
+-/*
+- * on pte we don't need handle RADIX_TREE_EXCEPTIONAL_SHIFT;
+- */
+-#define SWP_TYPE_BITS 5
+-#define __swp_type(x)		(((x).val >> _PAGE_BIT_SWAP_TYPE) \
+-				& ((1UL << SWP_TYPE_BITS) - 1))
+-#define __swp_offset(x)		((x).val >> PTE_RPN_SHIFT)
+-#define __swp_entry(type, offset)	((swp_entry_t) { \
+-					((type) << _PAGE_BIT_SWAP_TYPE) \
+-					| ((offset) << PTE_RPN_SHIFT) })
+-
+-#define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
+-#define __swp_entry_to_pte(x)		__pte((x).val)
+-
+-#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
+-#define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
+-static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
+-{
+-	return __pte(pte_val(pte) | _PAGE_SWP_SOFT_DIRTY);
+-}
+-static inline bool pte_swp_soft_dirty(pte_t pte)
+-{
+-	return !!(pte_val(pte) & _PAGE_SWP_SOFT_DIRTY);
+-}
+-static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
+-{
+-	return __pte(pte_val(pte) & ~_PAGE_SWP_SOFT_DIRTY);
+-}
+-#else
+-#define _PAGE_SWP_SOFT_DIRTY	0
+-#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
+-
+ void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
+ void pgtable_cache_init(void);
+ 
 -- 
 2.5.0
