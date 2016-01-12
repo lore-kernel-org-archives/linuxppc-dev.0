@@ -1,25 +1,33 @@
-Return-Path: <carlos@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <LW@KARO-electronics.de>
+Received: from mail.karo-electronics.de (mail.karo-electronics.de
+ [81.173.242.67]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 27E881A17E0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 04:45:40 +1100 (AEDT)
-Subject: Re: [PATCH] Add hwcap2 bits for POWER9
-To: munroesj@linux.vnet.ibm.com
-References: <568C272D.6000705@linux.vnet.ibm.com>
- <87egdsi4om.fsf@totoro.br.ibm.com> <1452267366.5201.12.camel@vnet.ibm.com>
- <568FE3D0.7080008@linaro.org> <87wprgdu3u.fsf@totoro.br.ibm.com>
- <5693C861.9030308@redhat.com> <87bn8revra.fsf@totoro.br.ibm.com>
- <56941532.9030800@redhat.com> <1452616757.29488.10.camel@oc7878010663>
-Cc: Tulio Magno Quites Machado Filho <tuliom@linux.vnet.ibm.com>,
- Adhemerval Zanella <adhemerval.zanella@linaro.org>,
- libc-alpha@sourceware.org, linuxppc-dev@lists.ozlabs.org
-From: "Carlos O'Donell" <carlos@redhat.com>
-Message-ID: <56953BC1.7050705@redhat.com>
-Date: Tue, 12 Jan 2016 12:45:37 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ACBF1A17E0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 04:48:07 +1100 (AEDT)
+From: =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW@KARO-electronics.de>
+To: Anson Huang <b20788@freescale.com>, Arnd Bergmann <arnd@arndb.de>,
+ Bai Ping <b51503@freescale.com>,
+ Fabio Estevam <fabio.estevam@freescale.com>,
+ Frank Li <Frank.Li@freescale.com>, Fugang Duan <B38611@freescale.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Jaroslav Kysela <perex@perex.cz>, Kumar Gala <galak@codeaurora.org>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Pawel Moll <pawel.moll@arm.com>,
+ Rob Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>,
+ Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>,
+ Stephen Boyd <sboyd@codeaurora.org>, Takashi Iwai <tiwai@suse.com>,
+ Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ alsa-devel@alsa-project.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW@KARO-electronics.de>
+Subject: [PATCH 0/2] clk: imx6: add kpp clock for i.MX6UL
+Date: Tue, 12 Jan 2016 18:29:17 +0100
+Message-Id: <1452619759-14474-1-git-send-email-LW@KARO-electronics.de>
 MIME-Version: 1.0
-In-Reply-To: <1452616757.29488.10.camel@oc7878010663>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,42 +37,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/12/2016 11:39 AM, Steven Munroe wrote:
->> That's the rule. There are no other discussions to be had.
->>
-> Well is was posted to to powerpc next:
-> https://git.kernel.org/powerpc/c/e708c24cd01ce80b1609d8bacc
-> 
-> We have agreement between the kernel and GLIBC (and the ABI). 
-> 
-> The issue is just coordination across communities and individuals that
-> may not being paying attention to other communities dead lines.
-> 
-> Have you ever tried to push a string, up hill. That is open source
-> development in nutshell. ;)
-
-I know exactly what this is like.
-
-> So it is in flight and glibc is soft/slush freeze. I would hate to
-> revert this one day just to add it back to the next. Especially if those
-> days straddle the hard freeze ...
-> 
-> So can we let this ride a day or too?
-
-Sure. I'm not an unreasonable person.
-
-My goal as a glibc steward is to remind IBM that our best practice is that
-we *wait* until it goes into mainline before committing to glibc master.
-
-There really isn't any reason to check this in to glibc master right now.
-It could wait.
-
-Adhemerval as a release manager is also not an unreasonable person.
-I have already discussed with Tulio that he should have just waited to
-commit these changes, but gotten an exception from Adhemerval to checkin
-the fairly low-risk patches late in the freeze. That's exactly the purpose
-of a release managers job, to grant you exceptions as we approach release,
-particularly when schedules don't quite line up.
-
-Cheers,
-Carlos.
+This patchset adds the clock which is necessary to operate the KPP
+unit on i.MX6UL.
+The first patch removes bogus whitespace before TABs in indentation.
+The second patch adds the clock definition.
