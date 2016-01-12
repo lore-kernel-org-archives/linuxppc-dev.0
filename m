@@ -2,19 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE42E1A0DBE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 23:32:49 +1100 (AEDT)
-In-Reply-To: <alpine.LSU.2.11.1601091651130.9808@eggly.anvils>
-To: Hugh Dickins <hughd@google.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C9BD41A0EBB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 23:32:50 +1100 (AEDT)
+In-Reply-To: <1452213309-27592-1-git-send-email-alistair@popple.id.au>
+To: Alistair Popple <alistair@popple.id.au>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, linux-mm@kvack.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [next] powerpc/mm: fix _PAGE_SWP_SOFT_DIRTY breaking swapoff
-Message-Id: <20160112123249.98EBF140A98@ozlabs.org>
-Date: Tue, 12 Jan 2016 23:32:49 +1100 (AEDT)
+Cc: linuxppc-dev@ozlabs.org, Alistair Popple <alistair@popple.id.au>,
+ gwshan@linux.vnet.ibm.com
+Subject: Re: platforms/powernv: Fix update of NVLink DMA mask
+Message-Id: <20160112123250.61E0E140779@ozlabs.org>
+Date: Tue, 12 Jan 2016 23:32:50 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2016-10-01 at 00:54:59 UTC, Hugh Dickins wrote:
-> Swapoff after swapping hangs on the G5, when CONFIG_CHECKPOINT_RESTORE=y
-> but CONFIG_MEM_SOFT_DIRTY is not set.  That's because the non-zero
-> _PAGE_SWP_SOFT_DIRTY bit, added by CONFIG_HAVE_ARCH_SOFT_DIRTY=y, is not
-> discounted when CONFIG_MEM_SOFT_DIRTY is not set: so swap ptes cannot be
-> recognized.
+On Fri, 2016-08-01 at 00:35:09 UTC, Alistair Popple wrote:
+> The emulated NVLink PCI devices share the same IODA2 TCE tables but
+> only support a single TVT (instead of the normal two for PCI
+> devices). This requires the kernel to manually replace windows with
+> either the bypass or non-bypass window depending on what the driver
+> has requested.
 > 
-> (I suspect that the peculiar dependence of HAVE_ARCH_SOFT_DIRTY on
-> CHECKPOINT_RESTORE in arch/powerpc/Kconfig comes from an incomplete
-> attempt to solve this problem.)
+> Unfortunately an incorrect optimisation was made in
+> pnv_pci_ioda_dma_set_mask() which caused updating of some NPU device
+> PEs to be skipped in certain configurations due to an incorrect
+> assumption that a NULL peer PE in the array indicated there were no
+> more peers present. This patch fixes the problem by ensuring all peer
+> PEs are updated.
 > 
-> It's true that the relationship between CONFIG_HAVE_ARCH_SOFT_DIRTY and
-> and CONFIG_MEM_SOFT_DIRTY is too confusing, and it's true that swapoff
-> should be made more robust; but nevertheless, fix up the powerpc ifdefs
-> as x86_64 and s390 (which met the same problem) have them, defining the
-> bits as 0 if CONFIG_MEM_SOFT_DIRTY is not set.
-> 
-> Signed-off-by: Hugh Dickins <hughd@google.com>
-> Reviewed-by: Cyrill Gorcunov <gorcunov@openvz.org>
-> Acked-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/2f10f1a7884e97a68e52c4b6f7
+https://git.kernel.org/powerpc/c/419dbd5e1ff0e45a6e1d28c1f7
 
 cheers
