@@ -1,26 +1,22 @@
-Return-Path: <masami.hiramatsu.pt@hitachi.com>
-Received: from mailxx.hitachi.co.jp (fallback.hitachi.co.jp [133.145.228.50])
- by lists.ozlabs.org (Postfix) with ESMTP id EECF11A0D83
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 22:43:02 +1100 (AEDT)
-Received: from mail4.hitachi.co.jp (mail4.hitachi.co.jp [133.145.228.5])
- by mailxx.hitachi.co.jp (Postfix) with ESMTP id 4FF8F177033B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 20:04:35 +0900 (JST)
-From: =?utf-8?B?5bmz5p2+6ZuF5bezIC8gSElSQU1BVFXvvIxNQVNBTUk=?=
- <masami.hiramatsu.pt@hitachi.com>
-To: "'Hemant Kumar'" <hemant@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "mjw@redhat.com" <mjw@redhat.com>, "sukadev@linux.vnet.ibm.com"
- <sukadev@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "srikar@linux.vnet.ibm.com"
- <srikar@linux.vnet.ibm.com>, "acme@kernel.org" <acme@kernel.org>
-Subject: RE: [PATCH v2] perf/probe: Search both .eh_frame and .debug_frame
- sections for probe location
-Date: Tue, 12 Jan 2016 11:04:30 +0000
-Message-ID: <50399556C9727B4D88A595C8584AAB37526926A9@GSjpTKYDCembx32.service.hitachi.net>
-References: <1451900918-6710-1-git-send-email-hemant@linux.vnet.ibm.com>
-In-Reply-To: <1451900918-6710-1-git-send-email-hemant@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 770A91A0D83
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 22:53:42 +1100 (AEDT)
+Message-ID: <1452599615.20985.2.camel@ellerman.id.au>
+Subject: Re: [PATCH v3 2/2] powerpc: tracing: don't trace hcalls on offline
+ CPUs
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Denis Kirjanov <kda@linux-powerpc.org>, Steven Rostedt
+ <rostedt@goodmis.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Date: Tue, 12 Jan 2016 22:53:35 +1100
+In-Reply-To: <1450124286-4822-2-git-send-email-kda@linux-powerpc.org>
+References: <1450124286-4822-1-git-send-email-kda@linux-powerpc.org>
+ <1450124286-4822-2-git-send-email-kda@linux-powerpc.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,36 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgSGVtYW50LA0KDQo+RnJvbTogSGVtYW50IEt1bWFyIFttYWlsdG86aGVtYW50QGxpbnV4LnZu
-ZXQuaWJtLmNvbV0NCj4NCj5wZXJmIHByb2JlIHRocm91Z2ggZGVidWdpbmZvX19maW5kX3Byb2Jl
-cygpIGluIHV0aWwvcHJvYmUtZmluZGVyLmMNCj5jaGVja3MgZm9yIHRoZSBmdW5jdGlvbnMnIGZy
-YW1lIGRlc2NyaXB0aW9ucyBpbiBlaXRoZXIgLmVoX2ZyYW1lIHNlY3Rpb24NCj5vZiBhbiBFTEYg
-b3IgdGhlIC5kZWJ1Z19mcmFtZS4gVGhlIGNoZWNrIGlzIGJhc2VkIG9uIHdoZXRoZXIgZWl0aGVy
-IG9uZQ0KPm9mIHRoZXNlIHNlY3Rpb25zIGlzIHByZXNlbnQuIERlcGVuZGluZyBvbiBkaXN0cm8s
-IHRvb2xjaGFpbiBkZWZhdWx0cywNCj5hcmNoaXRldGN1dHJlLCBidWlsZCBmbGFncywgZXRjLiwg
-Q0ZJIG1pZ2h0IGJlIGZvdW5kIGluIGVpdGhlciAuZWhfZnJhbWUNCj5hbmQvb3IgLmRlYnVnX2Zy
-YW1lLiBTb21ldGltZXMsIGl0IG1heSBoYXBwZW4gdGhhdCwgLmVoX2ZyYW1lLCBldmVuIGlmDQo+
-cHJlc2VudCwgbWF5IG5vdCBiZSBjb21wbGV0ZSBhbmQgbWF5IG1pc3Mgc29tZSBkZXNjcmlwdGlv
-bnMuIFRoZXJlZm9yZSwNCj50byBiZSBzdXJlLCB0byBmaW5kIHRoZSBDRkkgY292ZXJpbmcgYW4g
-YWRkcmVzcyB3ZSB3aWxsIGFsd2F5cyBoYXZlIHRvDQo+aW52ZXN0aWdhdGUgYm90aCBpZiBhdmFp
-bGFibGUuDQoNCk9LLCBzbyB3ZSdkIGJldHRlciBjaGVjayBib3RoIGNmaSdzLg0KIFsuLi5dDQo+
-Ky8qIEZpbmQgcHJvYmUgcG9pbnRzIGZyb20gZGVidWdpbmZvICovDQo+K3N0YXRpYyBpbnQgZGVi
-dWdpbmZvX19maW5kX3Byb2JlcyhzdHJ1Y3QgZGVidWdpbmZvICpkYmcsDQo+KwkJCQkgIHN0cnVj
-dCBwcm9iZV9maW5kZXIgKnBmKQ0KPit7DQo+KwlpbnQgcmV0ID0gMDsNCj4rDQo+KyNpZiBfRUxG
-VVRJTFNfUFJFUkVRKDAsIDE0MikNCj4rCUVsZiAqZWxmOw0KPisJR0VsZl9FaGRyIGVoZHI7DQo+
-KwlHRWxmX1NoZHIgc2hkcjsNCj4rDQo+KwlpZiAocGYtPmNmaV9laCB8fCBwZi0+Y2ZpX2RiZykN
-Cj4rCQlyZXR1cm4gZGVidWdpbmZvX19maW5kX3Byb2JlX2xvY2F0aW9uKGRiZywgcGYpOw0KPisN
-Cj4rCS8qIEdldCB0aGUgY2FsbCBmcmFtZSBpbmZvcm1hdGlvbiBmcm9tIHRoaXMgZHdhcmYgKi8N
-Cj4rCWVsZiA9IGR3YXJmX2dldGVsZihkYmctPmRiZyk7DQo+KwlpZiAoZWxmID09IE5VTEwpDQo+
-KwkJcmV0dXJuIC1FSU5WQUw7DQo+Kw0KPisJaWYgKGdlbGZfZ2V0ZWhkcihlbGYsICZlaGRyKSA9
-PSBOVUxMKQ0KPisJCXJldHVybiAtRUlOVkFMOw0KPisNCj4rCWlmIChlbGZfc2VjdGlvbl9ieV9u
-YW1lKGVsZiwgJmVoZHIsICZzaGRyLCAiLmVoX2ZyYW1lIiwgTlVMTCkgJiYNCj4rCSAgICBzaGRy
-LnNoX3R5cGUgPT0gU0hUX1BST0dCSVRTKSB7DQo+KwkJcGYtPmNmaV9laCA9IGR3YXJmX2dldGNm
-aV9lbGYoZWxmKTsNCj4rCX0gZWxzZSB7DQo+KwkJcGYtPmNmaV9kYmcgPSBkd2FyZl9nZXRjZmko
-ZGJnLT5kYmcpOw0KPisJfQ0KDQpIbW0sIGlmIHlvdSB3YW50IHRvIGNoZWNrIGJvdGggb2YgdGhv
-c2UgY2ZpJ3MsIGRvbid0IHdlIGhhdmUgdG8gZG8gYmVsb3c/DQoNCglpZiAoZWxmX3NlY3Rpb25f
-YnlfbmFtZShlbGYsICZlaGRyLCAmc2hkciwgIi5laF9mcmFtZSIsIE5VTEwpICYmDQoJICAgIHNo
-ZHIuc2hfdHlwZSA9PSBTSFRfUFJPR0JJVFMpDQoJCXBmLT5jZmlfZWggPSBkd2FyZl9nZXRjZmlf
-ZWxmKGVsZik7DQoNCglwZi0+Y2ZpX2RiZyA9IGR3YXJmX2dldGNmaShkYmctPmRiZyk7DQoNClRo
-ZW4sIGJvdGggb2YgcGYtPmNmaV8qIHdpbGwgYmUgZmlsbGVkIChpZiB0aGUgZWxmIGhhcyAiLmVo
-X2ZyYW1lIikuDQoNClRoYW5rcyENCg0KDQoNCg==
+On Mon, 2015-12-14 at 23:18 +0300, Denis Kirjanov wrote:
+
+> ./drmgr -c cpu -a -r gives the following warning:
+> 
+> [ 2327.035563]
+> RCU used illegally from offline CPU!
+> rcu_scheduler_active = 1, debug_locks = 1
+> [ 2327.035564] no locks held by swapper/12/0.
+> [ 2327.035565]
+> stack backtrace:
+> [ 2327.035567] CPU: 12 PID: 0 Comm: swapper/12 Tainted: G S
+> 4.3.0-rc3-00060-g353169a #5
+> [ 2327.035568] Call Trace:
+> [ 2327.035573] [c0000001d62578e0] [c0000000008977fc] .dump_stack+0x98/0xd4 (unreliable)
+> [ 2327.035577] [c0000001d6257960] [c000000000109bd8] .lockdep_rcu_suspicious+0x108/0x170
+> [ 2327.035580] [c0000001d62579f0] [c00000000006a1d0] .__trace_hcall_exit+0x2b0/0x2c0
+> [ 2327.035584] [c0000001d6257ab0] [c00000000006a2e8] plpar_hcall_norets_trace+0x70/0x8c
+> [ 2327.035588] [c0000001d6257b20] [c000000000067a14] .icp_hv_set_cpu_priority+0x54/0xc0
+> [ 2327.035592] [c0000001d6257ba0] [c000000000066c5c] .xics_teardown_cpu+0x5c/0xa0
+> [ 2327.035595] [c0000001d6257c20] [c0000000000747ac] .pseries_mach_cpu_die+0x6c/0x320
+> [ 2327.035598] [c0000001d6257cd0] [c0000000000439cc] .cpu_die+0x3c/0x60
+> [ 2327.035602] [c0000001d6257d40] [c0000000000183d8] .arch_cpu_idle_dead+0x28/0x40
+> [ 2327.035606] [c0000001d6257db0] [c0000000000ff1dc] .cpu_startup_entry+0x4fc/0x560
+> [ 2327.035610] [c0000001d6257ed0] [c000000000043728] .start_secondary+0x328/0x360
+> [ 2327.035614] [c0000001d6257f90] [c000000000008a6c] start_secondary_prolog+0x10/0x14
+> [ 2327.035620] cpu 12 (hwid 12) Ready to die...
+> [ 2327.144463] cpu 13 (hwid 13) Ready to die...
+> [ 2327.294180] cpu 14 (hwid 14) Ready to die...
+> [ 2327.403599] cpu 15 (hwid 15) Ready to die...
+> 
+> Make the hypervisor tracepoints conditional
+> by using TRACE_EVENT_FN_COND
+> 
+> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+
+cheers
