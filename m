@@ -1,31 +1,46 @@
-Return-Path: <kda@linux-powerpc.org>
+Return-Path: <ego@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7AAC71A0D9D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 21:53:41 +1100 (AEDT)
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 171BB1A0D83
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 21:55:47 +1100 (AEDT)
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8BBBC140A98
- for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 21:53:39 +1100 (AEDT)
-Received: by mail-qk0-x243.google.com with SMTP id f10so18574733qke.1
- for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 02:53:39 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 5E8041402D9
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 21:55:46 +1100 (AEDT)
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Tue, 12 Jan 2016 03:55:44 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 85C3E1FF0021
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 03:43:53 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id u0CAthDH25559202
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 03:55:43 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0CAtgGW017820
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 03:55:42 -0700
+Date: Tue, 12 Jan 2016 16:25:38 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net,
+ viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com,
+ anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com
+Subject: Re: [PATCH RESEND v4 3/4] cpufreq: powernv: Add a trace print for
+ the throttle event
+Message-ID: <20160112105538.GA4187@in.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
+References: <1452594267-12844-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1452594267-12844-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20151223111228.10f25239@gandalf.local.home>
-References: <1450124286-4822-1-git-send-email-kda@linux-powerpc.org>
- <1450124286-4822-2-git-send-email-kda@linux-powerpc.org>
- <20151223111228.10f25239@gandalf.local.home>
-Date: Tue, 12 Jan 2016 13:53:38 +0300
-Message-ID: <CAOJe8K3wVseSUr8S8dv0kSuNYhweK=28C-X5pLjjewJDXzbX9g@mail.gmail.com>
-Subject: Re: [PATCH v3 2/2] powerpc: tracing: don't trace hcalls on offline
- CPUs
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1452594267-12844-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,116 +50,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/23/15, Steven Rostedt <rostedt@goodmis.org> wrote:
-> On Mon, 14 Dec 2015 23:18:06 +0300
-> Denis Kirjanov <kda@linux-powerpc.org> wrote:
->
->> ./drmgr -c cpu -a -r gives the following warning:
->>
->> [ 2327.035563]
->> RCU used illegally from offline CPU!
->> rcu_scheduler_active = 1, debug_locks = 1
->> [ 2327.035564] no locks held by swapper/12/0.
->> [ 2327.035565]
->> stack backtrace:
->> [ 2327.035567] CPU: 12 PID: 0 Comm: swapper/12 Tainted: G S
->> 4.3.0-rc3-00060-g353169a #5
->> [ 2327.035568] Call Trace:
->> [ 2327.035573] [c0000001d62578e0] [c0000000008977fc] .dump_stack+0x98/0xd4
->> (unreliable)
->> [ 2327.035577] [c0000001d6257960] [c000000000109bd8]
->> .lockdep_rcu_suspicious+0x108/0x170
->> [ 2327.035580] [c0000001d62579f0] [c00000000006a1d0]
->> .__trace_hcall_exit+0x2b0/0x2c0
->> [ 2327.035584] [c0000001d6257ab0] [c00000000006a2e8]
->> plpar_hcall_norets_trace+0x70/0x8c
->> [ 2327.035588] [c0000001d6257b20] [c000000000067a14]
->> .icp_hv_set_cpu_priority+0x54/0xc0
->> [ 2327.035592] [c0000001d6257ba0] [c000000000066c5c]
->> .xics_teardown_cpu+0x5c/0xa0
->> [ 2327.035595] [c0000001d6257c20] [c0000000000747ac]
->> .pseries_mach_cpu_die+0x6c/0x320
->> [ 2327.035598] [c0000001d6257cd0] [c0000000000439cc] .cpu_die+0x3c/0x60
->> [ 2327.035602] [c0000001d6257d40] [c0000000000183d8]
->> .arch_cpu_idle_dead+0x28/0x40
->> [ 2327.035606] [c0000001d6257db0] [c0000000000ff1dc]
->> .cpu_startup_entry+0x4fc/0x560
->> [ 2327.035610] [c0000001d6257ed0] [c000000000043728]
->> .start_secondary+0x328/0x360
->> [ 2327.035614] [c0000001d6257f90] [c000000000008a6c]
->> start_secondary_prolog+0x10/0x14
->> [ 2327.035620] cpu 12 (hwid 12) Ready to die...
->> [ 2327.144463] cpu 13 (hwid 13) Ready to die...
->> [ 2327.294180] cpu 14 (hwid 14) Ready to die...
->> [ 2327.403599] cpu 15 (hwid 15) Ready to die...
->>
->> Make the hypervisor tracepoints conditional
->> by using TRACE_EVENT_FN_COND
->>
->> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
->
-> I applied the first patch, but I need Acks from the powerpc maintainers
-> to take this one.
->
+Hi Shilpa,
 
-Hi Michael,
+Just saw this resend!
 
-Could you please put your ack to the second patch.
+On Tue, Jan 12, 2016 at 04:24:26AM -0600, Shilpasri G Bhat wrote:
+> Record the throttle event with a trace print replacing the printk,
+> except for events like throttling below nominal and occ reset
+> event which print a warning message.
+> 
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> ---
 
-Thanks!
+[..snip..]
 
-> -- Steve
->
->
->>
->> v2 changes:
->>  - Use raw_smp_processor_id as suggested by BenH
->>  since since hcalls can be called from preemptable sections
->>
->> v3 changes:
->>  - Fix the subject line
->> ---
->>  arch/powerpc/include/asm/trace.h | 8 ++++++--
->>  1 file changed, 6 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/trace.h
->> b/arch/powerpc/include/asm/trace.h
->> index 8e86b48..32e36b1 100644
->> --- a/arch/powerpc/include/asm/trace.h
->> +++ b/arch/powerpc/include/asm/trace.h
->> @@ -57,12 +57,14 @@ DEFINE_EVENT(ppc64_interrupt_class,
->> timer_interrupt_exit,
->>  extern void hcall_tracepoint_regfunc(void);
->>  extern void hcall_tracepoint_unregfunc(void);
->>
->> -TRACE_EVENT_FN(hcall_entry,
->> +TRACE_EVENT_FN_COND(hcall_entry,
->>
->>  	TP_PROTO(unsigned long opcode, unsigned long *args),
->>
->>  	TP_ARGS(opcode, args),
->>
->> +	TP_CONDITION(cpu_online(raw_smp_processor_id())),
->> +
->>  	TP_STRUCT__entry(
->>  		__field(unsigned long, opcode)
->>  	),
->> @@ -76,13 +78,15 @@ TRACE_EVENT_FN(hcall_entry,
->>  	hcall_tracepoint_regfunc, hcall_tracepoint_unregfunc
->>  );
->>
->> -TRACE_EVENT_FN(hcall_exit,
->> +TRACE_EVENT_FN_COND(hcall_exit,
->>
->>  	TP_PROTO(unsigned long opcode, unsigned long retval,
->>  		unsigned long *retbuf),
->>
->>  	TP_ARGS(opcode, retval, retbuf),
->>
->> +	TP_CONDITION(cpu_online(raw_smp_processor_id())),
->> +
->>  	TP_STRUCT__entry(
->>  		__field(unsigned long, opcode)
->>  		__field(unsigned long, retval)
->
->
+> 
+> -static void powernv_cpufreq_throttle_check(void *data)
+> +static void powernv_cpufreq_check_pmax(void)
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This function only contains code moved from
+powernv_cpufreq_throttle_check with pr_crit/pr_warns replaced by
+trace_powernv_throttle. Furthermore, it is not called from any other
+place. Given that the original function was ~60 lines do we really
+need to split it into two separate functions ? If yes, could it be an
+inline function ?
+
+>  {
+>  	unsigned int cpu = smp_processor_id();
+>  	unsigned int chip_id = pir_to_chip_id(hard_smp_processor_id());
+> -	unsigned long pmsr;
+>  	int pmsr_pmax, i;
+> 
+> -	pmsr = get_pmspr(SPRN_PMSR);
+> +	pmsr_pmax = (s8)PMSR_MAX(get_pmspr(SPRN_PMSR));
+> 
+>  	for (i = 0; i < nr_chips; i++)
+>  		if (chips[i].id == chip_id)
+>  			break;
+> 
+> -	/* Check for Pmax Capping */
+> -	pmsr_pmax = (s8)PMSR_MAX(pmsr);
+>  	if (pmsr_pmax != powernv_pstate_info.max) {
+>  		if (chips[i].throttled)
+> -			goto next;
+> +			return;
+> +
+>  		chips[i].throttled = true;
+>  		if (pmsr_pmax < powernv_pstate_info.nominal)
+> -			pr_crit("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
+> -				cpu, chips[i].id, pmsr_pmax,
+> -				powernv_pstate_info.nominal);
+> -		else
+> -			pr_info("CPU %d on Chip %u has Pmax reduced below turbo frequency (%d < %d)\n",
+> -				cpu, chips[i].id, pmsr_pmax,
+> -				powernv_pstate_info.max);
+> +			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
+> +				     cpu, chips[i].id, pmsr_pmax,
+> +				     powernv_pstate_info.nominal);
+> +
+> +		trace_powernv_throttle(chips[i].id,
+> +				       throttle_reason[chips[i].throt_reason],
+> +				       pmsr_pmax);
+>  	} else if (chips[i].throttled) {
+>  		chips[i].throttled = false;
+> -		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
+> -			chips[i].id, pmsr_pmax);
+> +		trace_powernv_throttle(chips[i].id,
+> +				       throttle_reason[chips[i].throt_reason],
+> +				       pmsr_pmax);
+>  }
+> +}
+> +
+> +static void powernv_cpufreq_throttle_check(void *data)
+> +{
+> +	unsigned long pmsr;
+> +
+> +	pmsr = get_pmspr(SPRN_PMSR);
+> +
+> +	/* Check for Pmax Capping */
+> +	powernv_cpufreq_check_pmax();
+  
+If you want to retain this function, you could pass pmsr as an
+argument instead of computing it afresh in
+powernv_cpufreq_check_pmax()
+
+>  	/* Check if Psafe_mode_active is set in PMSR. */
+> -next:
+>  	if (pmsr & PMSR_PSAFE_ENABLE) {
+>  		throttled = true;
+>  		pr_info("Pstate set to safe frequency\n");
+
+--
+Thanks and Regards
+gautham.
