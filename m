@@ -1,34 +1,36 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EC9921A0D9D
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0C0971A0DAF
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 18:16:35 +1100 (AEDT)
 Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 12 Jan 2016 12:46:33 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2A977E0063
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:47:50 +0530 (IST)
+ Tue, 12 Jan 2016 12:46:32 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 73660394005C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:29 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0C7GQkF11862184
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:26 +0530
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0C7GSnd3277172
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:28 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0C7GPFu013272
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:26 +0530
+ u0C7GRQZ013479
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:27 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Michael Neuling <mikey@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH V1 00/33] Book3s abstraction in preparation for new MMU
- model
-Date: Tue, 12 Jan 2016 12:45:35 +0530
-Message-Id: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH V1 10/33] powerpc/mm: free_hugepd_range split to hash and
+ nonhash
+Date: Tue, 12 Jan 2016 12:45:45 +0530
+Message-Id: <1452582968-22669-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,198 +40,580 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+We strictly don't need to do this. But enables us to not depend on
+pgtable_free_tlb for radix.
 
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/hugetlbpage-book3e.c | 187 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/mm/hugetlbpage-hash64.c | 150 ++++++++++++++++++++++++++++
+ arch/powerpc/mm/hugetlbpage.c        | 188 -----------------------------------
+ 3 files changed, 337 insertions(+), 188 deletions(-)
 
-Hello,
-
-This is a large series, mostly consisting of code movement. No new features
-are done in this series. The changes are done to accomodate the upcoming new memory
-model in future powerpc chips. The details of the new MMU model can be found at
-
- http://ibm.biz/power-isa3 (Needs registration). I am including a summary of the changes below.
-
-ISA 3.0 adds support for the radix tree style of MMU with full
-virtualization and related control mechanisms that manage its
-coexistence with the HPT. Radix-using operating systems will
-manage their own translation tables instead of relying on hcalls.
-
-Radix style MMU model requires us to do a 4 level page table
-with 64K and 4K page size. The table index size different page size
-is listed below
-
-PGD -> 13 bits
-PUD -> 9 (1G hugepage)
-PMD -> 9 (2M huge page)
-PTE -> 5 (for 64k), 9 (for 4k)
-
-We also require the page table to be in big endian format.
-
-The changes proposed in this series enables us to support both
-hash page table and radix tree style MMU using a single kernel
-with limited impact. The idea is to change core page table
-accessors to static inline functions and later hotpatch them
-to switch to hash or radix tree functions. For ex:
-
-static inline int pte_write(pte_t pte)
-{
-       if (radix_enabled())
-               return rpte_write(pte);
-        return hlpte_write(pte);
-}
-
-On boot we will hotpatch the code so as to avoid conditional operation.
-
-The other two major change propsed in this series is to switch hash
-linux page table to a 4 level table in big endian format. This is
-done so that functions like pte_val(), pud_populate() doesn't need
-hotpatching and thereby helps in limiting runtime impact of the changes.
-
-I didn't included the radix related changes in this series. You can
-find them at https://github.com/kvaneesh/linux/commits/radix-mmu-v1
-
-Aneesh Kumar K.V (33):
-  powerpc/mm: add _PAGE_HASHPTE similar to 4K hash
-  powerpc/mm: Split pgtable types to separate header
-  powerpc/mm: Switch book3s 64 with 64K page size to 4 level page table
-  powerpc/mm: Copy pgalloc (part 1)
-  powerpc/mm: Copy pgalloc (part 2)
-  powerpc/mm: Copy pgalloc (part 3)
-  mm: arch hook for vm_get_page_prot
-  mm: Some arch may want to use HPAGE_PMD related values as variables
-  powerpc/mm: Hugetlbfs is book3s_64 and fsl_book3e (32 or 64)
-  powerpc/mm: free_hugepd_range split to hash and nonhash
-  powerpc/mm: Use helper instead of opencoding
-  powerpc/mm: Move hash64 specific defintions to seperate header
-  powerpc/mm: Move swap related definition ot hash64 header
-  powerpc/mm: Use helper for finding pte bits mapping I/O area
-  powerpc/mm: Use helper for finding pte filter mask for gup
-  powerpc/mm: Move hash page table related functions to pgtable-hash64.c
-  mm: Change pmd_huge_pte type in mm_struct
-  powerpc/mm: Add helper for update page flags during ioremap
-  powerpc/mm: Rename hash specific page table bits (_PAGE* -> H_PAGE*)
-  powerpc/mm: Use flush_tlb_page in ptep_clear_flush_young
-  powerpc/mm: THP is only available on hash64 as of now
-  powerpc/mm: Use generic version of pmdp_clear_flush_young
-  powerpc/mm: Create a new headers for tlbflush for hash64
-  powerpc/mm: Hash linux abstraction for page table accessors
-  powerpc/mm: Hash linux abstraction for functions in pgtable-hash.c
-  powerpc/mm: Hash linux abstraction for mmu context handling code
-  powerpc/mm: Move hash related mmu-*.h headers to book3s/
-  powerpc/mm: Hash linux abstractions for early init routines
-  powerpc/mm: Hash linux abstraction for THP
-  powerpc/mm: Hash linux abstraction for HugeTLB
-  powerpc/mm: Hash linux abstraction for page table allocator
-  powerpc/mm: Hash linux abstraction for tlbflush routines
-  powerpc/mm: Hash linux abstraction for pte swap encoding
-
- arch/arm/include/asm/pgtable-3level.h              |   8 +
- arch/arm64/include/asm/pgtable.h                   |   7 +
- arch/mips/include/asm/pgtable.h                    |   8 +
- arch/powerpc/Kconfig                               |   1 +
- .../asm/{mmu-hash32.h => book3s/32/mmu-hash.h}     |   6 +-
- arch/powerpc/include/asm/book3s/32/pgalloc.h       | 109 ++++
- arch/powerpc/include/asm/book3s/32/pgtable.h       |  39 ++
- arch/powerpc/include/asm/book3s/64/hash-4k.h       | 103 ++-
- arch/powerpc/include/asm/book3s/64/hash-64k.h      | 165 ++---
- arch/powerpc/include/asm/book3s/64/hash.h          | 524 +++++++++-------
- .../asm/{mmu-hash64.h => book3s/64/mmu-hash.h}     |  67 +-
- arch/powerpc/include/asm/book3s/64/mmu.h           |  93 +++
- .../include/asm/book3s/64/pgalloc-hash-4k.h        |  92 +++
- .../include/asm/book3s/64/pgalloc-hash-64k.h       |  48 ++
- arch/powerpc/include/asm/book3s/64/pgalloc-hash.h  |  82 +++
- arch/powerpc/include/asm/book3s/64/pgalloc.h       | 158 +++++
- arch/powerpc/include/asm/book3s/64/pgtable.h       | 693 +++++++++++++++++++--
- arch/powerpc/include/asm/book3s/64/tlbflush-hash.h |  96 +++
- arch/powerpc/include/asm/book3s/64/tlbflush.h      |  56 ++
- arch/powerpc/include/asm/book3s/pgalloc.h          |  19 +
- arch/powerpc/include/asm/book3s/pgtable.h          |   4 -
- arch/powerpc/include/asm/hugetlb.h                 |   5 +-
- arch/powerpc/include/asm/kvm_book3s_64.h           |  10 +-
- arch/powerpc/include/asm/mman.h                    |   6 -
- arch/powerpc/include/asm/mmu.h                     |  27 +-
- arch/powerpc/include/asm/mmu_context.h             |  63 +-
- .../asm/{pgalloc-32.h => nohash/32/pgalloc.h}      |   0
- .../asm/{pgalloc-64.h => nohash/64/pgalloc.h}      |  24 +-
- arch/powerpc/include/asm/nohash/64/pgtable.h       |   4 +
- arch/powerpc/include/asm/nohash/pgalloc.h          |  30 +
- arch/powerpc/include/asm/nohash/pgtable.h          |  45 ++
- arch/powerpc/include/asm/page.h                    | 104 +---
- arch/powerpc/include/asm/page_64.h                 |   2 +-
- arch/powerpc/include/asm/pgalloc.h                 |  19 +-
- arch/powerpc/include/asm/pgtable-types.h           | 103 +++
- arch/powerpc/include/asm/pgtable.h                 |  13 -
- arch/powerpc/include/asm/pte-common.h              |   3 +
- arch/powerpc/include/asm/tlbflush.h                |  92 +--
- arch/powerpc/kernel/asm-offsets.c                  |   9 +-
- arch/powerpc/kernel/idle_power7.S                  |   2 +-
- arch/powerpc/kernel/isa-bridge.c                   |   4 +-
- arch/powerpc/kernel/pci_64.c                       |   5 +-
- arch/powerpc/kernel/swsusp.c                       |   2 +-
- arch/powerpc/kvm/book3s_32_mmu_host.c              |   2 +-
- arch/powerpc/kvm/book3s_64_mmu.c                   |   2 +-
- arch/powerpc/kvm/book3s_64_mmu_host.c              |   4 +-
- arch/powerpc/kvm/book3s_64_mmu_hv.c                |   2 +-
- arch/powerpc/kvm/book3s_64_vio.c                   |   2 +-
- arch/powerpc/kvm/book3s_64_vio_hv.c                |   2 +-
- arch/powerpc/kvm/book3s_hv_rm_mmu.c                |   2 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S            |   2 +-
- arch/powerpc/mm/Makefile                           |   3 +-
- arch/powerpc/mm/copro_fault.c                      |   8 +-
- arch/powerpc/mm/hash64_4k.c                        |  25 +-
- arch/powerpc/mm/hash64_64k.c                       |  61 +-
- arch/powerpc/mm/hash_native_64.c                   |  10 +-
- arch/powerpc/mm/hash_utils_64.c                    | 110 +++-
- arch/powerpc/mm/hugepage-hash64.c                  |  22 +-
- arch/powerpc/mm/hugetlbpage-book3e.c               | 480 ++++++++++++++
- arch/powerpc/mm/hugetlbpage-hash64.c               | 296 ++++++++-
- arch/powerpc/mm/hugetlbpage.c                      | 608 +-----------------
- arch/powerpc/mm/init_64.c                          | 102 +--
- arch/powerpc/mm/mem.c                              |  29 +-
- arch/powerpc/mm/mmu_context_hash64.c               |  20 +-
- arch/powerpc/mm/mmu_context_nohash.c               |   3 +-
- arch/powerpc/mm/mmu_decl.h                         |   4 -
- arch/powerpc/mm/pgtable-book3e.c                   | 163 +++++
- arch/powerpc/mm/pgtable-hash64.c                   | 581 +++++++++++++++++
- arch/powerpc/mm/pgtable.c                          |   9 +
- arch/powerpc/mm/pgtable_64.c                       | 490 ++-------------
- arch/powerpc/mm/ppc_mmu_32.c                       |  30 +
- arch/powerpc/mm/slb.c                              |   9 +-
- arch/powerpc/mm/slb_low.S                          |   4 +-
- arch/powerpc/mm/slice.c                            |   2 +-
- arch/powerpc/mm/tlb_hash64.c                       |  10 +-
- arch/powerpc/platforms/cell/spu_base.c             |   6 +-
- arch/powerpc/platforms/cell/spufs/fault.c          |   4 +-
- arch/powerpc/platforms/ps3/spu.c                   |   2 +-
- arch/powerpc/platforms/pseries/lpar.c              |  12 +-
- arch/s390/include/asm/pgtable.h                    |   8 +
- arch/sparc/include/asm/pgtable_64.h                |   7 +
- arch/tile/include/asm/pgtable.h                    |   9 +
- arch/x86/include/asm/pgtable.h                     |   7 +
- drivers/cpufreq/pmac32-cpufreq.c                   |   2 +-
- drivers/macintosh/via-pmu.c                        |   4 +-
- drivers/misc/cxl/fault.c                           |   6 +-
- include/linux/huge_mm.h                            |   3 -
- include/linux/mm_types.h                           |   2 +-
- mm/huge_memory.c                                   |  11 +-
- mm/mmap.c                                          |   5 +
- 90 files changed, 4020 insertions(+), 2115 deletions(-)
- rename arch/powerpc/include/asm/{mmu-hash32.h => book3s/32/mmu-hash.h} (94%)
- create mode 100644 arch/powerpc/include/asm/book3s/32/pgalloc.h
- rename arch/powerpc/include/asm/{mmu-hash64.h => book3s/64/mmu-hash.h} (90%)
- create mode 100644 arch/powerpc/include/asm/book3s/64/mmu.h
- create mode 100644 arch/powerpc/include/asm/book3s/64/pgalloc-hash-4k.h
- create mode 100644 arch/powerpc/include/asm/book3s/64/pgalloc-hash-64k.h
- create mode 100644 arch/powerpc/include/asm/book3s/64/pgalloc-hash.h
- create mode 100644 arch/powerpc/include/asm/book3s/64/pgalloc.h
- create mode 100644 arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
- create mode 100644 arch/powerpc/include/asm/book3s/64/tlbflush.h
- create mode 100644 arch/powerpc/include/asm/book3s/pgalloc.h
- rename arch/powerpc/include/asm/{pgalloc-32.h => nohash/32/pgalloc.h} (100%)
- rename arch/powerpc/include/asm/{pgalloc-64.h => nohash/64/pgalloc.h} (91%)
- create mode 100644 arch/powerpc/include/asm/nohash/pgalloc.h
- create mode 100644 arch/powerpc/include/asm/pgtable-types.h
- create mode 100644 arch/powerpc/mm/pgtable-book3e.c
- create mode 100644 arch/powerpc/mm/pgtable-hash64.c
-
+diff --git a/arch/powerpc/mm/hugetlbpage-book3e.c b/arch/powerpc/mm/hugetlbpage-book3e.c
+index e6339ac45f0f..94be03c58c60 100644
+--- a/arch/powerpc/mm/hugetlbpage-book3e.c
++++ b/arch/powerpc/mm/hugetlbpage-book3e.c
+@@ -265,6 +265,193 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
+ 	return hugepte_offset(*hpdp, addr, pdshift);
+ }
+ 
++extern void hugepd_free(struct mmu_gather *tlb, void *hugepte);
++static void free_hugepd_range(struct mmu_gather *tlb, hugepd_t *hpdp, int pdshift,
++			      unsigned long start, unsigned long end,
++			      unsigned long floor, unsigned long ceiling)
++{
++	pte_t *hugepte = hugepd_page(*hpdp);
++	int i;
++
++	unsigned long pdmask = ~((1UL << pdshift) - 1);
++	unsigned int num_hugepd = 1;
++
++#ifdef CONFIG_PPC_FSL_BOOK3E
++	/* Note: On fsl the hpdp may be the first of several */
++	num_hugepd = (1 << (hugepd_shift(*hpdp) - pdshift));
++#else
++	unsigned int shift = hugepd_shift(*hpdp);
++#endif
++
++	start &= pdmask;
++	if (start < floor)
++		return;
++	if (ceiling) {
++		ceiling &= pdmask;
++		if (! ceiling)
++			return;
++	}
++	if (end - 1 > ceiling - 1)
++		return;
++
++	for (i = 0; i < num_hugepd; i++, hpdp++)
++		hpdp->pd = 0;
++
++#ifdef CONFIG_PPC_FSL_BOOK3E
++	hugepd_free(tlb, hugepte);
++#else
++	pgtable_free_tlb(tlb, hugepte, pdshift - shift);
++#endif
++}
++
++static void hugetlb_free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
++				   unsigned long addr, unsigned long end,
++				   unsigned long floor, unsigned long ceiling)
++{
++	pmd_t *pmd;
++	unsigned long next;
++	unsigned long start;
++
++	start = addr;
++	do {
++		pmd = pmd_offset(pud, addr);
++		next = pmd_addr_end(addr, end);
++		if (!is_hugepd(__hugepd(pmd_val(*pmd)))) {
++			/*
++			 * if it is not hugepd pointer, we should already find
++			 * it cleared.
++			 */
++			WARN_ON(!pmd_none_or_clear_bad(pmd));
++			continue;
++		}
++#ifdef CONFIG_PPC_FSL_BOOK3E
++		/*
++		 * Increment next by the size of the huge mapping since
++		 * there may be more than one entry at this level for a
++		 * single hugepage, but all of them point to
++		 * the same kmem cache that holds the hugepte.
++		 */
++		next = addr + (1 << hugepd_shift(*(hugepd_t *)pmd));
++#endif
++		free_hugepd_range(tlb, (hugepd_t *)pmd, PMD_SHIFT,
++				  addr, next, floor, ceiling);
++	} while (addr = next, addr != end);
++
++	start &= PUD_MASK;
++	if (start < floor)
++		return;
++	if (ceiling) {
++		ceiling &= PUD_MASK;
++		if (!ceiling)
++			return;
++	}
++	if (end - 1 > ceiling - 1)
++		return;
++
++	pmd = pmd_offset(pud, start);
++	pud_clear(pud);
++	pmd_free_tlb(tlb, pmd, start);
++	mm_dec_nr_pmds(tlb->mm);
++}
++
++static void hugetlb_free_pud_range(struct mmu_gather *tlb, pgd_t *pgd,
++				   unsigned long addr, unsigned long end,
++				   unsigned long floor, unsigned long ceiling)
++{
++	pud_t *pud;
++	unsigned long next;
++	unsigned long start;
++
++	start = addr;
++	do {
++		pud = pud_offset(pgd, addr);
++		next = pud_addr_end(addr, end);
++		if (!is_hugepd(__hugepd(pud_val(*pud)))) {
++			if (pud_none_or_clear_bad(pud))
++				continue;
++			hugetlb_free_pmd_range(tlb, pud, addr, next, floor,
++					       ceiling);
++		} else {
++#ifdef CONFIG_PPC_FSL_BOOK3E
++			/*
++			 * Increment next by the size of the huge mapping since
++			 * there may be more than one entry at this level for a
++			 * single hugepage, but all of them point to
++			 * the same kmem cache that holds the hugepte.
++			 */
++			next = addr + (1 << hugepd_shift(*(hugepd_t *)pud));
++#endif
++			free_hugepd_range(tlb, (hugepd_t *)pud, PUD_SHIFT,
++					  addr, next, floor, ceiling);
++		}
++	} while (addr = next, addr != end);
++
++	start &= PGDIR_MASK;
++	if (start < floor)
++		return;
++	if (ceiling) {
++		ceiling &= PGDIR_MASK;
++		if (!ceiling)
++			return;
++	}
++	if (end - 1 > ceiling - 1)
++		return;
++
++	pud = pud_offset(pgd, start);
++	pgd_clear(pgd);
++	pud_free_tlb(tlb, pud, start);
++}
++
++/*
++ * This function frees user-level page tables of a process.
++ */
++void hugetlb_free_pgd_range(struct mmu_gather *tlb,
++			    unsigned long addr, unsigned long end,
++			    unsigned long floor, unsigned long ceiling)
++{
++	pgd_t *pgd;
++	unsigned long next;
++
++	/*
++	 * Because there are a number of different possible pagetable
++	 * layouts for hugepage ranges, we limit knowledge of how
++	 * things should be laid out to the allocation path
++	 * (huge_pte_alloc(), above).  Everything else works out the
++	 * structure as it goes from information in the hugepd
++	 * pointers.  That means that we can't here use the
++	 * optimization used in the normal page free_pgd_range(), of
++	 * checking whether we're actually covering a large enough
++	 * range to have to do anything at the top level of the walk
++	 * instead of at the bottom.
++	 *
++	 * To make sense of this, you should probably go read the big
++	 * block comment at the top of the normal free_pgd_range(),
++	 * too.
++	 */
++
++	do {
++		next = pgd_addr_end(addr, end);
++		pgd = pgd_offset(tlb->mm, addr);
++		if (!is_hugepd(__hugepd(pgd_val(*pgd)))) {
++			if (pgd_none_or_clear_bad(pgd))
++				continue;
++			hugetlb_free_pud_range(tlb, pgd, addr, next, floor, ceiling);
++		} else {
++#ifdef CONFIG_PPC_FSL_BOOK3E
++			/*
++			 * Increment next by the size of the huge mapping since
++			 * there may be more than one entry at the pgd level
++			 * for a single hugepage, but all of them point to the
++			 * same kmem cache that holds the hugepte.
++			 */
++			next = addr + (1 << hugepd_shift(*(hugepd_t *)pgd));
++#endif
++			free_hugepd_range(tlb, (hugepd_t *)pgd, PGDIR_SHIFT,
++					  addr, next, floor, ceiling);
++		}
++	} while (addr = next, addr != end);
++}
++
+ #ifdef CONFIG_PPC_FSL_BOOK3E
+ /* Build list of addresses of gigantic pages.  This function is used in early
+  * boot before the buddy allocator is setup.
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index 9e457c83626b..068ac0e8d07d 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -13,6 +13,7 @@
+ #include <asm/pgalloc.h>
+ #include <asm/cacheflush.h>
+ #include <asm/machdep.h>
++#include <asm/tlb.h>
+ 
+ /*
+  * Tracks gpages after the device tree is scanned and before the
+@@ -223,6 +224,155 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
+ 	return hugepte_offset(*hpdp, addr, pdshift);
+ }
+ 
++static void free_hugepd_range(struct mmu_gather *tlb, hugepd_t *hpdp, int pdshift,
++			      unsigned long start, unsigned long end,
++			      unsigned long floor, unsigned long ceiling)
++{
++
++	int i;
++	pte_t *hugepte = hugepd_page(*hpdp);
++	unsigned long pdmask = ~((1UL << pdshift) - 1);
++	unsigned int num_hugepd = 1;
++	unsigned int shift = hugepd_shift(*hpdp);
++
++	start &= pdmask;
++	if (start < floor)
++		return;
++	if (ceiling) {
++		ceiling &= pdmask;
++		if (! ceiling)
++			return;
++	}
++	if (end - 1 > ceiling - 1)
++		return;
++
++	for (i = 0; i < num_hugepd; i++, hpdp++)
++		hpdp->pd = 0;
++
++	pgtable_free_tlb(tlb, hugepte, pdshift - shift);
++}
++
++static void hugetlb_free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
++				   unsigned long addr, unsigned long end,
++				   unsigned long floor, unsigned long ceiling)
++{
++	pmd_t *pmd;
++	unsigned long next;
++	unsigned long start;
++
++	start = addr;
++	do {
++		pmd = pmd_offset(pud, addr);
++		next = pmd_addr_end(addr, end);
++		if (!is_hugepd(__hugepd(pmd_val(*pmd)))) {
++			/*
++			 * if it is not hugepd pointer, we should already find
++			 * it cleared.
++			 */
++			WARN_ON(!pmd_none_or_clear_bad(pmd));
++			continue;
++		}
++		free_hugepd_range(tlb, (hugepd_t *)pmd, PMD_SHIFT,
++				  addr, next, floor, ceiling);
++	} while (addr = next, addr != end);
++
++	start &= PUD_MASK;
++	if (start < floor)
++		return;
++	if (ceiling) {
++		ceiling &= PUD_MASK;
++		if (!ceiling)
++			return;
++	}
++	if (end - 1 > ceiling - 1)
++		return;
++
++	pmd = pmd_offset(pud, start);
++	pud_clear(pud);
++	pmd_free_tlb(tlb, pmd, start);
++	mm_dec_nr_pmds(tlb->mm);
++}
++
++static void hugetlb_free_pud_range(struct mmu_gather *tlb, pgd_t *pgd,
++				   unsigned long addr, unsigned long end,
++				   unsigned long floor, unsigned long ceiling)
++{
++	pud_t *pud;
++	unsigned long next;
++	unsigned long start;
++
++	start = addr;
++	do {
++		pud = pud_offset(pgd, addr);
++		next = pud_addr_end(addr, end);
++		if (!is_hugepd(__hugepd(pud_val(*pud)))) {
++			if (pud_none_or_clear_bad(pud))
++				continue;
++			hugetlb_free_pmd_range(tlb, pud, addr, next, floor,
++					       ceiling);
++		} else {
++			free_hugepd_range(tlb, (hugepd_t *)pud, PUD_SHIFT,
++					  addr, next, floor, ceiling);
++		}
++	} while (addr = next, addr != end);
++
++	start &= PGDIR_MASK;
++	if (start < floor)
++		return;
++	if (ceiling) {
++		ceiling &= PGDIR_MASK;
++		if (!ceiling)
++			return;
++	}
++	if (end - 1 > ceiling - 1)
++		return;
++
++	pud = pud_offset(pgd, start);
++	pgd_clear(pgd);
++	pud_free_tlb(tlb, pud, start);
++}
++
++/*
++ * This function frees user-level page tables of a process.
++ */
++void hugetlb_free_pgd_range(struct mmu_gather *tlb,
++			    unsigned long addr, unsigned long end,
++			    unsigned long floor, unsigned long ceiling)
++{
++	pgd_t *pgd;
++	unsigned long next;
++
++	/*
++	 * Because there are a number of different possible pagetable
++	 * layouts for hugepage ranges, we limit knowledge of how
++	 * things should be laid out to the allocation path
++	 * (huge_pte_alloc(), above).  Everything else works out the
++	 * structure as it goes from information in the hugepd
++	 * pointers.  That means that we can't here use the
++	 * optimization used in the normal page free_pgd_range(), of
++	 * checking whether we're actually covering a large enough
++	 * range to have to do anything at the top level of the walk
++	 * instead of at the bottom.
++	 *
++	 * To make sense of this, you should probably go read the big
++	 * block comment at the top of the normal free_pgd_range(),
++	 * too.
++	 */
++
++	do {
++		next = pgd_addr_end(addr, end);
++		pgd = pgd_offset(tlb->mm, addr);
++		if (!is_hugepd(__hugepd(pgd_val(*pgd)))) {
++			if (pgd_none_or_clear_bad(pgd))
++				continue;
++			hugetlb_free_pud_range(tlb, pgd, addr, next, floor, ceiling);
++		} else {
++			free_hugepd_range(tlb, (hugepd_t *)pgd, PGDIR_SHIFT,
++					  addr, next, floor, ceiling);
++		}
++	} while (addr = next, addr != end);
++}
++
+ 
+ /* Build list of addresses of gigantic pages.  This function is used in early
+  * boot before the buddy allocator is setup.
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index c94502899e94..26fb814f289f 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -37,194 +37,6 @@ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
+ 	return __find_linux_pte_or_hugepte(mm->pgd, addr, NULL, NULL);
+ }
+ 
+-
+-extern void hugepd_free(struct mmu_gather *tlb, void *hugepte);
+-static void free_hugepd_range(struct mmu_gather *tlb, hugepd_t *hpdp, int pdshift,
+-			      unsigned long start, unsigned long end,
+-			      unsigned long floor, unsigned long ceiling)
+-{
+-	pte_t *hugepte = hugepd_page(*hpdp);
+-	int i;
+-
+-	unsigned long pdmask = ~((1UL << pdshift) - 1);
+-	unsigned int num_hugepd = 1;
+-
+-#ifdef CONFIG_PPC_FSL_BOOK3E
+-	/* Note: On fsl the hpdp may be the first of several */
+-	num_hugepd = (1 << (hugepd_shift(*hpdp) - pdshift));
+-#else
+-	unsigned int shift = hugepd_shift(*hpdp);
+-#endif
+-
+-	start &= pdmask;
+-	if (start < floor)
+-		return;
+-	if (ceiling) {
+-		ceiling &= pdmask;
+-		if (! ceiling)
+-			return;
+-	}
+-	if (end - 1 > ceiling - 1)
+-		return;
+-
+-	for (i = 0; i < num_hugepd; i++, hpdp++)
+-		hpdp->pd = 0;
+-
+-#ifdef CONFIG_PPC_FSL_BOOK3E
+-	hugepd_free(tlb, hugepte);
+-#else
+-	pgtable_free_tlb(tlb, hugepte, pdshift - shift);
+-#endif
+-}
+-
+-static void hugetlb_free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
+-				   unsigned long addr, unsigned long end,
+-				   unsigned long floor, unsigned long ceiling)
+-{
+-	pmd_t *pmd;
+-	unsigned long next;
+-	unsigned long start;
+-
+-	start = addr;
+-	do {
+-		pmd = pmd_offset(pud, addr);
+-		next = pmd_addr_end(addr, end);
+-		if (!is_hugepd(__hugepd(pmd_val(*pmd)))) {
+-			/*
+-			 * if it is not hugepd pointer, we should already find
+-			 * it cleared.
+-			 */
+-			WARN_ON(!pmd_none_or_clear_bad(pmd));
+-			continue;
+-		}
+-#ifdef CONFIG_PPC_FSL_BOOK3E
+-		/*
+-		 * Increment next by the size of the huge mapping since
+-		 * there may be more than one entry at this level for a
+-		 * single hugepage, but all of them point to
+-		 * the same kmem cache that holds the hugepte.
+-		 */
+-		next = addr + (1 << hugepd_shift(*(hugepd_t *)pmd));
+-#endif
+-		free_hugepd_range(tlb, (hugepd_t *)pmd, PMD_SHIFT,
+-				  addr, next, floor, ceiling);
+-	} while (addr = next, addr != end);
+-
+-	start &= PUD_MASK;
+-	if (start < floor)
+-		return;
+-	if (ceiling) {
+-		ceiling &= PUD_MASK;
+-		if (!ceiling)
+-			return;
+-	}
+-	if (end - 1 > ceiling - 1)
+-		return;
+-
+-	pmd = pmd_offset(pud, start);
+-	pud_clear(pud);
+-	pmd_free_tlb(tlb, pmd, start);
+-	mm_dec_nr_pmds(tlb->mm);
+-}
+-
+-static void hugetlb_free_pud_range(struct mmu_gather *tlb, pgd_t *pgd,
+-				   unsigned long addr, unsigned long end,
+-				   unsigned long floor, unsigned long ceiling)
+-{
+-	pud_t *pud;
+-	unsigned long next;
+-	unsigned long start;
+-
+-	start = addr;
+-	do {
+-		pud = pud_offset(pgd, addr);
+-		next = pud_addr_end(addr, end);
+-		if (!is_hugepd(__hugepd(pud_val(*pud)))) {
+-			if (pud_none_or_clear_bad(pud))
+-				continue;
+-			hugetlb_free_pmd_range(tlb, pud, addr, next, floor,
+-					       ceiling);
+-		} else {
+-#ifdef CONFIG_PPC_FSL_BOOK3E
+-			/*
+-			 * Increment next by the size of the huge mapping since
+-			 * there may be more than one entry at this level for a
+-			 * single hugepage, but all of them point to
+-			 * the same kmem cache that holds the hugepte.
+-			 */
+-			next = addr + (1 << hugepd_shift(*(hugepd_t *)pud));
+-#endif
+-			free_hugepd_range(tlb, (hugepd_t *)pud, PUD_SHIFT,
+-					  addr, next, floor, ceiling);
+-		}
+-	} while (addr = next, addr != end);
+-
+-	start &= PGDIR_MASK;
+-	if (start < floor)
+-		return;
+-	if (ceiling) {
+-		ceiling &= PGDIR_MASK;
+-		if (!ceiling)
+-			return;
+-	}
+-	if (end - 1 > ceiling - 1)
+-		return;
+-
+-	pud = pud_offset(pgd, start);
+-	pgd_clear(pgd);
+-	pud_free_tlb(tlb, pud, start);
+-}
+-
+-/*
+- * This function frees user-level page tables of a process.
+- */
+-void hugetlb_free_pgd_range(struct mmu_gather *tlb,
+-			    unsigned long addr, unsigned long end,
+-			    unsigned long floor, unsigned long ceiling)
+-{
+-	pgd_t *pgd;
+-	unsigned long next;
+-
+-	/*
+-	 * Because there are a number of different possible pagetable
+-	 * layouts for hugepage ranges, we limit knowledge of how
+-	 * things should be laid out to the allocation path
+-	 * (huge_pte_alloc(), above).  Everything else works out the
+-	 * structure as it goes from information in the hugepd
+-	 * pointers.  That means that we can't here use the
+-	 * optimization used in the normal page free_pgd_range(), of
+-	 * checking whether we're actually covering a large enough
+-	 * range to have to do anything at the top level of the walk
+-	 * instead of at the bottom.
+-	 *
+-	 * To make sense of this, you should probably go read the big
+-	 * block comment at the top of the normal free_pgd_range(),
+-	 * too.
+-	 */
+-
+-	do {
+-		next = pgd_addr_end(addr, end);
+-		pgd = pgd_offset(tlb->mm, addr);
+-		if (!is_hugepd(__hugepd(pgd_val(*pgd)))) {
+-			if (pgd_none_or_clear_bad(pgd))
+-				continue;
+-			hugetlb_free_pud_range(tlb, pgd, addr, next, floor, ceiling);
+-		} else {
+-#ifdef CONFIG_PPC_FSL_BOOK3E
+-			/*
+-			 * Increment next by the size of the huge mapping since
+-			 * there may be more than one entry at the pgd level
+-			 * for a single hugepage, but all of them point to the
+-			 * same kmem cache that holds the hugepte.
+-			 */
+-			next = addr + (1 << hugepd_shift(*(hugepd_t *)pgd));
+-#endif
+-			free_hugepd_range(tlb, (hugepd_t *)pgd, PGDIR_SHIFT,
+-					  addr, next, floor, ceiling);
+-		}
+-	} while (addr = next, addr != end);
+-}
+-
+ /*
+  * We are holding mmap_sem, so a parallel huge page collapse cannot run.
+  * To prevent hugepage split, disable irq.
 -- 
 2.5.0
