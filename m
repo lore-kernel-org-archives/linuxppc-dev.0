@@ -1,27 +1,46 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47EC41A17E0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 05:28:59 +1100 (AEDT)
-Subject: Re: [PATCH 2/2] ASoC: fsl: select SND_SOC_FSL_SAI or SND_SOC_FSL_SSI
- depending on SoC type
-To: =?UTF-8?Q?Lothar_Wa=c3=9fmann?= <LW@KARO-electronics.de>,
- Arnd Bergmann <arnd@arndb.de>, Fabio Estevam <fabio.estevam@freescale.com>,
- Jaroslav Kysela <perex@perex.cz>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Takashi Iwai <tiwai@suse.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
- alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <1452622411-16674-1-git-send-email-LW@KARO-electronics.de>
- <1452622411-16674-2-git-send-email-LW@KARO-electronics.de>
- <1452622411-16674-3-git-send-email-LW@KARO-electronics.de>
-From: Timur Tabi <timur@tabi.org>
-Message-ID: <569545EB.4080307@tabi.org>
-Date: Tue, 12 Jan 2016 12:28:59 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 676E51A17E0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 05:41:08 +1100 (AEDT)
+Date: Tue, 12 Jan 2016 20:40:48 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
+ David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org, x86@kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
+ Davidlohr Bueso <dave@stgolabs.net>, Davidlohr Bueso <dbueso@suse.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: [PATCH v3 01/41] lcoking/barriers, arch: Use smp barriers in
+ smp_store_release()
+Message-ID: <20160112203857-mutt-send-email-mst@redhat.com>
+References: <1452426622-4471-1-git-send-email-mst@redhat.com>
+ <1452426622-4471-2-git-send-email-mst@redhat.com>
+ <20160112162844.GD3818@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1452622411-16674-3-git-send-email-LW@KARO-electronics.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160112162844.GD3818@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,9 +50,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Lothar Waßmann wrote:
-> -	select SND_SOC_FSL_SSI
-> +	select SND_SOC_FSL_SAI if SOC_IMX6UL
-> +	select SND_SOC_FSL_SSI if SOC_IMX6Q || SOC_IMX6SL || SOC_IMX6SX
+On Tue, Jan 12, 2016 at 08:28:44AM -0800, Paul E. McKenney wrote:
+> On Sun, Jan 10, 2016 at 04:16:32PM +0200, Michael S. Tsirkin wrote:
+> > From: Davidlohr Bueso <dave@stgolabs.net>
+> > 
+> > With commit b92b8b35a2e ("locking/arch: Rename set_mb() to smp_store_mb()")
+> > it was made clear that the context of this call (and thus set_mb)
+> > is strictly for CPU ordering, as opposed to IO. As such all archs
+> > should use the smp variant of mb(), respecting the semantics and
+> > saving a mandatory barrier on UP.
+> > 
+> > Signed-off-by: Davidlohr Bueso <dbueso@suse.de>
+> > Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> > Cc: <linux-arch@vger.kernel.org>
+> > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> > Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Cc: Thomas Gleixner <tglx@linutronix.de>
+> > Cc: Tony Luck <tony.luck@intel.com>
+> > Cc: dave@stgolabs.net
+> > Link: http://lkml.kernel.org/r/1445975631-17047-3-git-send-email-dave@stgolabs.net
+> > Signed-off-by: Ingo Molnar <mingo@kernel.org>
+> 
+> Aside from a need for s/lcoking/locking/ in the subject line:
+> 
+> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-I don't think this is compatible with a multiarch kernel.
+Thanks!
+Though Ingo already put this in tip tree like this,
+and I need a copy in my tree to avoid breaking bisect,
+so I will probably keep it exactly the same to avoid confusion.
+
+> > ---
+> >  arch/ia64/include/asm/barrier.h    | 2 +-
+> >  arch/powerpc/include/asm/barrier.h | 2 +-
+> >  arch/s390/include/asm/barrier.h    | 2 +-
+> >  include/asm-generic/barrier.h      | 2 +-
+> >  4 files changed, 4 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/arch/ia64/include/asm/barrier.h b/arch/ia64/include/asm/barrier.h
+> > index df896a1..209c4b8 100644
+> > --- a/arch/ia64/include/asm/barrier.h
+> > +++ b/arch/ia64/include/asm/barrier.h
+> > @@ -77,7 +77,7 @@ do {									\
+> >  	___p1;								\
+> >  })
+> > 
+> > -#define smp_store_mb(var, value)	do { WRITE_ONCE(var, value); mb(); } while (0)
+> > +#define smp_store_mb(var, value) do { WRITE_ONCE(var, value); smp_mb(); } while (0)
+> > 
+> >  /*
+> >   * The group barrier in front of the rsm & ssm are necessary to ensure
+> > diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+> > index 0eca6ef..a7af5fb 100644
+> > --- a/arch/powerpc/include/asm/barrier.h
+> > +++ b/arch/powerpc/include/asm/barrier.h
+> > @@ -34,7 +34,7 @@
+> >  #define rmb()  __asm__ __volatile__ ("sync" : : : "memory")
+> >  #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
+> > 
+> > -#define smp_store_mb(var, value)	do { WRITE_ONCE(var, value); mb(); } while (0)
+> > +#define smp_store_mb(var, value) do { WRITE_ONCE(var, value); smp_mb(); } while (0)
+> > 
+> >  #ifdef __SUBARCH_HAS_LWSYNC
+> >  #    define SMPWMB      LWSYNC
+> > diff --git a/arch/s390/include/asm/barrier.h b/arch/s390/include/asm/barrier.h
+> > index d68e11e..7ffd0b1 100644
+> > --- a/arch/s390/include/asm/barrier.h
+> > +++ b/arch/s390/include/asm/barrier.h
+> > @@ -36,7 +36,7 @@
+> >  #define smp_mb__before_atomic()		smp_mb()
+> >  #define smp_mb__after_atomic()		smp_mb()
+> > 
+> > -#define smp_store_mb(var, value)		do { WRITE_ONCE(var, value); mb(); } while (0)
+> > +#define smp_store_mb(var, value)	do { WRITE_ONCE(var, value); smp_mb(); } while (0)
+> > 
+> >  #define smp_store_release(p, v)						\
+> >  do {									\
+> > diff --git a/include/asm-generic/barrier.h b/include/asm-generic/barrier.h
+> > index b42afad..0f45f93 100644
+> > --- a/include/asm-generic/barrier.h
+> > +++ b/include/asm-generic/barrier.h
+> > @@ -93,7 +93,7 @@
+> >  #endif	/* CONFIG_SMP */
+> > 
+> >  #ifndef smp_store_mb
+> > -#define smp_store_mb(var, value)  do { WRITE_ONCE(var, value); mb(); } while (0)
+> > +#define smp_store_mb(var, value)  do { WRITE_ONCE(var, value); smp_mb(); } while (0)
+> >  #endif
+> > 
+> >  #ifndef smp_mb__before_atomic
+> > -- 
+> > MST
+> > 
