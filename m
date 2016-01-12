@@ -1,33 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 600EB1A0EBB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 782671A17BF
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 18:16:49 +1100 (AEDT)
 Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Tue, 12 Jan 2016 12:46:47 +0530
 Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id D64F0E0062
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:48:02 +0530 (IST)
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id F3E98125806B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:47:30 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0C7GSk62883934
+ u0C7GSDE11207002
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:29 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0C7GR5w013472
+ u0C7GQai013448
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:27 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Michael Neuling <mikey@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH V1 06/33] powerpc/mm: Copy pgalloc (part 3)
-Date: Tue, 12 Jan 2016 12:45:41 +0530
-Message-Id: <1452582968-22669-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH V1 02/33] powerpc/mm: Split pgtable types to separate
+ header
+Date: Tue, 12 Jan 2016 12:45:37 +0530
+Message-Id: <1452582968-22669-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,101 +40,235 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-64bit book3s now always have 4 level page table irrespective of linux
-page size. Move the related code out of #ifdef
+No code changes. We will later add a radix variant that is big endian
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/pgalloc.h | 55 +++++++++-------------------
- 1 file changed, 18 insertions(+), 37 deletions(-)
+ arch/powerpc/include/asm/page.h          | 104 +------------------------------
+ arch/powerpc/include/asm/pgtable-types.h | 100 +++++++++++++++++++++++++++++
+ 2 files changed, 101 insertions(+), 103 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/pgtable-types.h
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-index 5bb6852fa771..f06ad7354d68 100644
---- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-@@ -51,7 +51,6 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
- 	kmem_cache_free(PGT_CACHE(PGD_INDEX_SIZE), pgd);
- }
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index e34124f6fbf2..3a3f073f7222 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -281,109 +281,7 @@ extern long long virt_phys_offset;
  
--#ifndef CONFIG_PPC_64K_PAGES
- static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pud_t *pud)
- {
- 	pgd_set(pgd, (unsigned long)pud);
-@@ -79,6 +78,14 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
- 	pmd_set(pmd, (unsigned long)pte);
- }
+ #ifndef __ASSEMBLY__
  
-+/*
-+ * FIXME!!
-+ * Between 4K and 64K pages, we differ in what is stored in pmd. ie.
-+ * typedef pte_t *pgtable_t; -> 64K
-+ * typedef struct page *pgtable_t; -> 4k
-+ */
-+#ifndef CONFIG_PPC_64K_PAGES
-+
- static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
- 				pgtable_t pte_page)
- {
-@@ -176,36 +183,6 @@ extern void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift);
- extern void __tlb_remove_table(void *_table);
- #endif
- 
--#ifndef __PAGETABLE_PUD_FOLDED
--/* book3s 64 is 4 level page table */
--static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pud_t *pud)
+-#ifdef CONFIG_STRICT_MM_TYPECHECKS
+-/* These are used to make use of C type-checking. */
+-
+-/* PTE level */
+-typedef struct { pte_basic_t pte; } pte_t;
+-#define __pte(x)	((pte_t) { (x) })
+-static inline pte_basic_t pte_val(pte_t x)
 -{
--	pgd_set(pgd, (unsigned long)pud);
+-	return x.pte;
 -}
 -
--static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
--{
--	return kmem_cache_alloc(PGT_CACHE(PUD_INDEX_SIZE),
--				GFP_KERNEL|__GFP_REPEAT);
--}
--
--static inline void pud_free(struct mm_struct *mm, pud_t *pud)
--{
--	kmem_cache_free(PGT_CACHE(PUD_INDEX_SIZE), pud);
--}
+-/* 64k pages additionally define a bigger "real PTE" type that gathers
+- * the "second half" part of the PTE for pseudo 64k pages
+- */
+-#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
+-typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
+-#else
+-typedef struct { pte_t pte; } real_pte_t;
 -#endif
 -
--static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
+-/* PMD level */
+-#ifdef CONFIG_PPC64
+-typedef struct { unsigned long pmd; } pmd_t;
+-#define __pmd(x)	((pmd_t) { (x) })
+-static inline unsigned long pmd_val(pmd_t x)
 -{
--	pud_set(pud, (unsigned long)pmd);
+-	return x.pmd;
 -}
 -
--static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
--				       pte_t *pte)
+-/* PUD level exusts only on 4k pages */
+-#ifndef CONFIG_PPC_64K_PAGES
+-typedef struct { unsigned long pud; } pud_t;
+-#define __pud(x)	((pud_t) { (x) })
+-static inline unsigned long pud_val(pud_t x)
 -{
--	pmd_set(pmd, (unsigned long)pte);
+-	return x.pud;
+-}
+-#endif /* !CONFIG_PPC_64K_PAGES */
+-#endif /* CONFIG_PPC64 */
+-
+-/* PGD level */
+-typedef struct { unsigned long pgd; } pgd_t;
+-#define __pgd(x)	((pgd_t) { (x) })
+-static inline unsigned long pgd_val(pgd_t x)
+-{
+-	return x.pgd;
 -}
 -
- static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
- 				pgtable_t pte_page)
- {
-@@ -258,13 +235,17 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
- 	kmem_cache_free(PGT_CACHE(PMD_CACHE_INDEX), pmd);
- }
+-/* Page protection bits */
+-typedef struct { unsigned long pgprot; } pgprot_t;
+-#define pgprot_val(x)	((x).pgprot)
+-#define __pgprot(x)	((pgprot_t) { (x) })
+-
+-#else
+-
+-/*
+- * .. while these make it easier on the compiler
+- */
+-
+-typedef pte_basic_t pte_t;
+-#define __pte(x)	(x)
+-static inline pte_basic_t pte_val(pte_t pte)
+-{
+-	return pte;
+-}
+-
+-#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
+-typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
+-#else
+-typedef pte_t real_pte_t;
+-#endif
+-
+-
+-#ifdef CONFIG_PPC64
+-typedef unsigned long pmd_t;
+-#define __pmd(x)	(x)
+-static inline unsigned long pmd_val(pmd_t pmd)
+-{
+-	return pmd;
+-}
+-
+-#ifndef CONFIG_PPC_64K_PAGES
+-typedef unsigned long pud_t;
+-#define __pud(x)	(x)
+-static inline unsigned long pud_val(pud_t pud)
+-{
+-	return pud;
+-}
+-#endif /* !CONFIG_PPC_64K_PAGES */
+-#endif /* CONFIG_PPC64 */
+-
+-typedef unsigned long pgd_t;
+-#define __pgd(x)	(x)
+-static inline unsigned long pgd_val(pgd_t pgd)
+-{
+-	return pgd;
+-}
+-
+-typedef unsigned long pgprot_t;
+-#define pgprot_val(x)	(x)
+-#define __pgprot(x)	(x)
+-
+-#endif
++#include <asm/pgtable-types.h>
  
--#define __pmd_free_tlb(tlb, pmd, addr)		      \
--	pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX)
--#ifndef __PAGETABLE_PUD_FOLDED
--#define __pud_free_tlb(tlb, pud, addr)		      \
--	pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE)
-+static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
-+                                  unsigned long address)
+ typedef struct { signed long pd; } hugepd_t;
+ 
+diff --git a/arch/powerpc/include/asm/pgtable-types.h b/arch/powerpc/include/asm/pgtable-types.h
+new file mode 100644
+index 000000000000..71487e1ca638
+--- /dev/null
++++ b/arch/powerpc/include/asm/pgtable-types.h
+@@ -0,0 +1,100 @@
++#ifndef _ASM_POWERPC_PGTABLE_TYPES_H
++#define _ASM_POWERPC_PGTABLE_TYPES_H
++
++#ifdef CONFIG_STRICT_MM_TYPECHECKS
++/* These are used to make use of C type-checking. */
++
++/* PTE level */
++typedef struct { pte_basic_t pte; } pte_t;
++#define __pte(x)	((pte_t) { (x) })
++static inline pte_basic_t pte_val(pte_t x)
 +{
-+        return pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX);
++	return x.pte;
 +}
- 
--#endif /* __PAGETABLE_PUD_FOLDED */
-+static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
-+                                  unsigned long address)
++
++/* PMD level */
++#ifdef CONFIG_PPC64
++typedef struct { unsigned long pmd; } pmd_t;
++#define __pmd(x)	((pmd_t) { (x) })
++static inline unsigned long pmd_val(pmd_t x)
 +{
-+        pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE);
++	return x.pmd;
 +}
- 
- #define check_pgt_cache()	do { } while (0)
- 
++
++/* PUD level exusts only on 4k pages */
++#ifndef CONFIG_PPC_64K_PAGES
++typedef struct { unsigned long pud; } pud_t;
++#define __pud(x)	((pud_t) { (x) })
++static inline unsigned long pud_val(pud_t x)
++{
++	return x.pud;
++}
++#endif /* !CONFIG_PPC_64K_PAGES */
++#endif /* CONFIG_PPC64 */
++
++/* PGD level */
++typedef struct { unsigned long pgd; } pgd_t;
++#define __pgd(x)	((pgd_t) { (x) })
++static inline unsigned long pgd_val(pgd_t x)
++{
++	return x.pgd;
++}
++
++/* Page protection bits */
++typedef struct { unsigned long pgprot; } pgprot_t;
++#define pgprot_val(x)	((x).pgprot)
++#define __pgprot(x)	((pgprot_t) { (x) })
++
++#else
++
++/*
++ * .. while these make it easier on the compiler
++ */
++
++typedef pte_basic_t pte_t;
++#define __pte(x)	(x)
++static inline pte_basic_t pte_val(pte_t pte)
++{
++	return pte;
++}
++
++#ifdef CONFIG_PPC64
++typedef unsigned long pmd_t;
++#define __pmd(x)	(x)
++static inline unsigned long pmd_val(pmd_t pmd)
++{
++	return pmd;
++}
++
++#ifndef CONFIG_PPC_64K_PAGES
++typedef unsigned long pud_t;
++#define __pud(x)	(x)
++static inline unsigned long pud_val(pud_t pud)
++{
++	return pud;
++}
++#endif /* !CONFIG_PPC_64K_PAGES */
++#endif /* CONFIG_PPC64 */
++
++typedef unsigned long pgd_t;
++#define __pgd(x)	(x)
++static inline unsigned long pgd_val(pgd_t pgd)
++{
++	return pgd;
++}
++
++typedef unsigned long pgprot_t;
++#define pgprot_val(x)	(x)
++#define __pgprot(x)	(x)
++
++#endif /* CONFIG_STRICT_MM_TYPECHECKS */
++/*
++ * With hash config 64k pages additionally define a bigger "real PTE" type that
++ * gathers the "second half" part of the PTE for pseudo 64k pages
++ */
++#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
++typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
++#else
++typedef struct { pte_t pte; } real_pte_t;
++#endif
++#endif /* _ASM_POWERPC_PGTABLE_TYPES_H */
 -- 
 2.5.0
