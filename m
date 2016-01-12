@@ -1,63 +1,43 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <munroesj@linux.vnet.ibm.com>
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2B99F1A0D83
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 03:29:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 97D131A0D9B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 03:39:24 +1100 (AEDT)
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Tue, 12 Jan 2016 09:29:02 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 81B693E40062
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 09:28:59 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id u0CGSxTe30671062
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 09:28:59 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0CGSiuP011545
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 09:28:58 -0700
-Date: Tue, 12 Jan 2016 08:28:44 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
- David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org, x86@kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Davidlohr Bueso <dave@stgolabs.net>, Davidlohr Bueso <dbueso@suse.de>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@kernel.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: Re: [PATCH v3 01/41] lcoking/barriers, arch: Use smp barriers in
- smp_store_release()
-Message-ID: <20160112162844.GD3818@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1452426622-4471-1-git-send-email-mst@redhat.com>
- <1452426622-4471-2-git-send-email-mst@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1452426622-4471-2-git-send-email-mst@redhat.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <munroesj@linux.vnet.ibm.com>;
+ Tue, 12 Jan 2016 11:39:21 -0500
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 08E0F38C8041
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 11:39:20 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0CGdJ1f30736614
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 16:39:19 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0CGdJfP012492
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 11:39:19 -0500
+Subject: Re: [PATCH] Add hwcap2 bits for POWER9
+From: Steven Munroe <munroesj@linux.vnet.ibm.com>
+Reply-To: munroesj@linux.vnet.ibm.com
+To: "Carlos O'Donell" <carlos@redhat.com>
+Cc: Tulio Magno Quites Machado Filho <tuliom@linux.vnet.ibm.com>,
+ Adhemerval Zanella <adhemerval.zanella@linaro.org>,
+ libc-alpha@sourceware.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <56941532.9030800@redhat.com>
+References: <568C272D.6000705@linux.vnet.ibm.com>
+ <87egdsi4om.fsf@totoro.br.ibm.com> <1452267366.5201.12.camel@vnet.ibm.com>
+ <568FE3D0.7080008@linaro.org> <87wprgdu3u.fsf@totoro.br.ibm.com>
+ <5693C861.9030308@redhat.com> <87bn8revra.fsf@totoro.br.ibm.com>
+ <56941532.9030800@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 12 Jan 2016 10:39:17 -0600
+Message-ID: <1452616757.29488.10.camel@oc7878010663>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -67,93 +47,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jan 10, 2016 at 04:16:32PM +0200, Michael S. Tsirkin wrote:
-> From: Davidlohr Bueso <dave@stgolabs.net>
+On Mon, 2016-01-11 at 15:48 -0500, Carlos O'Donell wrote:
+> On 01/11/2016 02:55 PM, Tulio Magno Quites Machado Filho wrote:
+> > "Carlos O'Donell" <carlos@redhat.com> writes:
+> > 
+> >> On 01/11/2016 10:16 AM, Tulio Magno Quites Machado Filho wrote:
+> >>> Adhemerval Zanella <adhemerval.zanella@linaro.org> writes:
+> >>>
+> >>>> On 08-01-2016 13:36, Peter Bergner wrote:
+> >>>>> On Fri, 2016-01-08 at 11:25 -0200, Tulio Magno Quites Machado Filho wrote:
+> >>>>>> Peter, this solves the issue you reported previously [1].
+> >>>>>>
+> >>>>>> [1] https://sourceware.org/ml/libc-alpha/2015-12/msg00522.html
+> >>>>>
+> >>>>> Agreed, thanks.  I'll also add the POWER9 support to the GCC side
+> >>>>> of the patch now that the glibc code is upstream.
+> >>>>
+> >>>> I do not see these bits being added in kernel side yet and GLIBC usual
+> >>>> only sync these kind of bits *after* they are included in kernel side.
+> >>>> So I would advise to either get these pieces (kernel support and hwcap
+> >>>> advertise) in kernel before 2.23 release, otherwise revert the patches.
+> >>>
+> >>> Ack.
+> >>> It has just been sent to the correspondent Linux mailing list:
+> >>> https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-January/137763.html
+> >>
+> >> Please revert the changes from glibc until you checkin support to linux
+> >> kernel mainline.
+> >>
+> >> Leaving these bits in increases the risk that someone uses to deploy a glibc
+> >> that then may have the wrong value.
+> > 
+> > Could you clarify this statement, please?
+> > I fail to see how they could have the wrong value.
 > 
-> With commit b92b8b35a2e ("locking/arch: Rename set_mb() to smp_store_mb()")
-> it was made clear that the context of this call (and thus set_mb)
-> is strictly for CPU ordering, as opposed to IO. As such all archs
-> should use the smp variant of mb(), respecting the semantics and
-> saving a mandatory barrier on UP.
+> Until it is checked into the mainline kernel it is not canonical.
 > 
-> Signed-off-by: Davidlohr Bueso <dbueso@suse.de>
-> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> Cc: <linux-arch@vger.kernel.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Tony Luck <tony.luck@intel.com>
-> Cc: dave@stgolabs.net
-> Link: http://lkml.kernel.org/r/1445975631-17047-3-git-send-email-dave@stgolabs.net
-> Signed-off-by: Ingo Molnar <mingo@kernel.org>
+> That's the rule. There are no other discussions to be had.
+> 
+Well is was posted to to powerpc next:
+https://git.kernel.org/powerpc/c/e708c24cd01ce80b1609d8bacc
 
-Aside from a need for s/lcoking/locking/ in the subject line:
+We have agreement between the kernel and GLIBC (and the ABI). 
 
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+The issue is just coordination across communities and individuals that
+may not being paying attention to other communities dead lines.
 
-> ---
->  arch/ia64/include/asm/barrier.h    | 2 +-
->  arch/powerpc/include/asm/barrier.h | 2 +-
->  arch/s390/include/asm/barrier.h    | 2 +-
->  include/asm-generic/barrier.h      | 2 +-
->  4 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/ia64/include/asm/barrier.h b/arch/ia64/include/asm/barrier.h
-> index df896a1..209c4b8 100644
-> --- a/arch/ia64/include/asm/barrier.h
-> +++ b/arch/ia64/include/asm/barrier.h
-> @@ -77,7 +77,7 @@ do {									\
->  	___p1;								\
->  })
-> 
-> -#define smp_store_mb(var, value)	do { WRITE_ONCE(var, value); mb(); } while (0)
-> +#define smp_store_mb(var, value) do { WRITE_ONCE(var, value); smp_mb(); } while (0)
-> 
->  /*
->   * The group barrier in front of the rsm & ssm are necessary to ensure
-> diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-> index 0eca6ef..a7af5fb 100644
-> --- a/arch/powerpc/include/asm/barrier.h
-> +++ b/arch/powerpc/include/asm/barrier.h
-> @@ -34,7 +34,7 @@
->  #define rmb()  __asm__ __volatile__ ("sync" : : : "memory")
->  #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
-> 
-> -#define smp_store_mb(var, value)	do { WRITE_ONCE(var, value); mb(); } while (0)
-> +#define smp_store_mb(var, value) do { WRITE_ONCE(var, value); smp_mb(); } while (0)
-> 
->  #ifdef __SUBARCH_HAS_LWSYNC
->  #    define SMPWMB      LWSYNC
-> diff --git a/arch/s390/include/asm/barrier.h b/arch/s390/include/asm/barrier.h
-> index d68e11e..7ffd0b1 100644
-> --- a/arch/s390/include/asm/barrier.h
-> +++ b/arch/s390/include/asm/barrier.h
-> @@ -36,7 +36,7 @@
->  #define smp_mb__before_atomic()		smp_mb()
->  #define smp_mb__after_atomic()		smp_mb()
-> 
-> -#define smp_store_mb(var, value)		do { WRITE_ONCE(var, value); mb(); } while (0)
-> +#define smp_store_mb(var, value)	do { WRITE_ONCE(var, value); smp_mb(); } while (0)
-> 
->  #define smp_store_release(p, v)						\
->  do {									\
-> diff --git a/include/asm-generic/barrier.h b/include/asm-generic/barrier.h
-> index b42afad..0f45f93 100644
-> --- a/include/asm-generic/barrier.h
-> +++ b/include/asm-generic/barrier.h
-> @@ -93,7 +93,7 @@
->  #endif	/* CONFIG_SMP */
-> 
->  #ifndef smp_store_mb
-> -#define smp_store_mb(var, value)  do { WRITE_ONCE(var, value); mb(); } while (0)
-> +#define smp_store_mb(var, value)  do { WRITE_ONCE(var, value); smp_mb(); } while (0)
->  #endif
-> 
->  #ifndef smp_mb__before_atomic
-> -- 
-> MST
+Have you ever tried to push a string, up hill. That is open source
+development in nutshell. ;)
+
+So it is in flight and glibc is soft/slush freeze. I would hate to
+revert this one day just to add it back to the next. Especially if those
+days straddle the hard freeze ...
+
+So can we let this ride a day or too?
+
+> The single rule avoids discussions like "it can never be wrong because that's
+> what our ABI says it is."
 > 
