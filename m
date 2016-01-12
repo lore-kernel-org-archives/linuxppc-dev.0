@@ -2,33 +2,32 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 858A71A118A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 18:16:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A4B1A1A0D9D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 18:17:03 +1100 (AEDT)
 Received: from localhost
  by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 12 Jan 2016 12:46:51 +0530
+ Tue, 12 Jan 2016 12:47:01 +0530
 Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 2DA47125805B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:47:35 +0530 (IST)
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5B57F125805B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:47:46 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0C7GXoK44564722
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:33 +0530
+ u0C7Gx6K39845930
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:59 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0C7GTVL013991
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:29 +0530
+ u0C7GQhq013455
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 12:46:27 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Michael Neuling <mikey@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH V1 28/33] powerpc/mm: Hash linux abstractions for early
- init routines
-Date: Tue, 12 Jan 2016 12:46:03 +0530
-Message-Id: <1452582968-22669-29-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH V1 04/33] powerpc/mm: Copy pgalloc (part 1)
+Date: Tue, 12 Jan 2016 12:45:39 +0530
+Message-Id: <1452582968-22669-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,300 +39,399 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+cp pgalloc-32.h book3s/32/pgalloc.h
+cp pgalloc-64.h book3s/64/pgalloc.h
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/32/mmu-hash.h |  6 +-
- arch/powerpc/include/asm/book3s/64/mmu-hash.h | 61 +-----------------
- arch/powerpc/include/asm/book3s/64/mmu.h      | 93 +++++++++++++++++++++++++++
- arch/powerpc/include/asm/mmu.h                | 25 +++----
- arch/powerpc/mm/hash_utils_64.c               |  6 +-
- 5 files changed, 116 insertions(+), 75 deletions(-)
- create mode 100644 arch/powerpc/include/asm/book3s/64/mmu.h
+ arch/powerpc/include/asm/book3s/32/pgalloc.h | 109 +++++++++++
+ arch/powerpc/include/asm/book3s/64/pgalloc.h | 262 +++++++++++++++++++++++++++
+ 2 files changed, 371 insertions(+)
+ create mode 100644 arch/powerpc/include/asm/book3s/32/pgalloc.h
+ create mode 100644 arch/powerpc/include/asm/book3s/64/pgalloc.h
 
-diff --git a/arch/powerpc/include/asm/book3s/32/mmu-hash.h b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-index 16f513e5cbd7..b82e063494dd 100644
---- a/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-@@ -1,5 +1,5 @@
--#ifndef _ASM_POWERPC_MMU_HASH32_H_
--#define _ASM_POWERPC_MMU_HASH32_H_
-+#ifndef _ASM_POWERPC_BOOK3S_32_MMU_HASH_H_
-+#define _ASM_POWERPC_BOOK3S_32_MMU_HASH_H_
- /*
-  * 32-bit hash table MMU support
-  */
-@@ -90,4 +90,4 @@ typedef struct {
- #define mmu_virtual_psize	MMU_PAGE_4K
- #define mmu_linear_psize	MMU_PAGE_256M
- 
--#endif /* _ASM_POWERPC_MMU_HASH32_H_ */
-+#endif /* _ASM_POWERPC_BOOK3S_32_MMU_HASH_H_ */
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index 95ee27564804..ee929cb1a150 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -1,5 +1,5 @@
--#ifndef _ASM_POWERPC_MMU_HASH64_H_
--#define _ASM_POWERPC_MMU_HASH64_H_
-+#ifndef _ASM_POWERPC_BOOK3S_64_MMU_HASH_H_
-+#define _ASM_POWERPC_BOOK3S_64_MMU_HASH_H_
- /*
-  * PowerPC64 memory management structures
-  *
-@@ -126,24 +126,6 @@ extern struct hash_pte *htab_address;
- extern unsigned long htab_size_bytes;
- extern unsigned long htab_hash_mask;
- 
--/*
-- * Page size definition
-- *
-- *    shift : is the "PAGE_SHIFT" value for that page size
-- *    sllp  : is a bit mask with the value of SLB L || LP to be or'ed
-- *            directly to a slbmte "vsid" value
-- *    penc  : is the HPTE encoding mask for the "LP" field:
-- *
-- */
--struct mmu_psize_def
--{
--	unsigned int	shift;	/* number of bits */
--	int		penc[MMU_PAGE_COUNT];	/* HPTE encoding */
--	unsigned int	tlbiel;	/* tlbiel supported for that page size */
--	unsigned long	avpnm;	/* bits to mask out in AVPN in the HPTE */
--	unsigned long	sllp;	/* SLB L||LP (exact mask to use in slbmte) */
--};
--extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
- 
- static inline int shift_to_mmu_psize(unsigned int shift)
- {
-@@ -209,11 +191,6 @@ static inline int segment_shift(int ssize)
- /*
-  * The current system page and segment sizes
-  */
--extern int mmu_linear_psize;
--extern int mmu_virtual_psize;
--extern int mmu_vmalloc_psize;
--extern int mmu_vmemmap_psize;
--extern int mmu_io_psize;
- extern int mmu_kernel_ssize;
- extern int mmu_highuser_ssize;
- extern u16 mmu_slb_size;
-@@ -511,38 +488,6 @@ static inline void subpage_prot_free(struct mm_struct *mm) {}
- static inline void subpage_prot_init_new_context(struct mm_struct *mm) { }
- #endif /* CONFIG_PPC_SUBPAGE_PROT */
- 
--typedef unsigned long mm_context_id_t;
--struct spinlock;
--
--typedef struct {
--	mm_context_id_t id;
--	u16 user_psize;		/* page size index */
--
--#ifdef CONFIG_PPC_MM_SLICES
--	u64 low_slices_psize;	/* SLB page size encodings */
--	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
--#else
--	u16 sllp;		/* SLB page size encoding */
--#endif
--	unsigned long vdso_base;
--#ifdef CONFIG_PPC_SUBPAGE_PROT
--	struct subpage_prot_table spt;
--#endif /* CONFIG_PPC_SUBPAGE_PROT */
--#ifdef CONFIG_PPC_ICSWX
--	struct spinlock *cop_lockp; /* guard acop and cop_pid */
--	unsigned long acop;	/* mask of enabled coprocessor types */
--	unsigned int cop_pid;	/* pid value used with coprocessors */
--#endif /* CONFIG_PPC_ICSWX */
--#ifdef CONFIG_PPC_64K_PAGES
--	/* for 4K PTE fragment support */
--	void *pte_frag;
--#endif
--#ifdef CONFIG_SPAPR_TCE_IOMMU
--	struct list_head iommu_group_mem_list;
--#endif
--} mm_context_t;
--
--
- #if 0
- /*
-  * The code below is equivalent to this function for arguments
-@@ -609,4 +554,4 @@ static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
- }
- #endif /* __ASSEMBLY__ */
- 
--#endif /* _ASM_POWERPC_MMU_HASH64_H_ */
-+#endif /* _ASM_POWERPC_BOOK3S_64_MMU_HASH_H_ */
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
 new file mode 100644
-index 000000000000..a2274ad0afee
+index 000000000000..76d6b9e0c8a9
 --- /dev/null
-+++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -0,0 +1,93 @@
-+#ifndef _ASM_POWERPC_BOOK3S_64_MMU_H_
-+#define _ASM_POWERPC_BOOK3S_64_MMU_H_
++++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+@@ -0,0 +1,109 @@
++#ifndef _ASM_POWERPC_PGALLOC_32_H
++#define _ASM_POWERPC_PGALLOC_32_H
 +
-+#ifndef __ASSEMBLY__
++#include <linux/threads.h>
++
++/* For 32-bit, all levels of page tables are just drawn from get_free_page() */
++#define MAX_PGTABLE_INDEX_SIZE	0
++
++extern void __bad_pte(pmd_t *pmd);
++
++extern pgd_t *pgd_alloc(struct mm_struct *mm);
++extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
++
 +/*
-+ * Page size definition
-+ *
-+ *    shift : is the "PAGE_SHIFT" value for that page size
-+ *    sllp  : is a bit mask with the value of SLB L || LP to be or'ed
-+ *            directly to a slbmte "vsid" value
-+ *    penc  : is the HPTE encoding mask for the "LP" field:
-+ *
++ * We don't have any real pmd's, and this code never triggers because
++ * the pgd will always be present..
 + */
-+struct mmu_psize_def
++/* #define pmd_alloc_one(mm,address)       ({ BUG(); ((pmd_t *)2); }) */
++#define pmd_free(mm, x) 		do { } while (0)
++#define __pmd_free_tlb(tlb,x,a)		do { } while (0)
++/* #define pgd_populate(mm, pmd, pte)      BUG() */
++
++#ifndef CONFIG_BOOKE
++
++static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmdp,
++				       pte_t *pte)
 +{
-+	unsigned int	shift;	/* number of bits */
-+	int		penc[MMU_PAGE_COUNT];	/* HPTE encoding */
-+	unsigned int	tlbiel;	/* tlbiel supported for that page size */
-+	unsigned long	avpnm;	/* bits to mask out in AVPN in the HPTE */
-+	unsigned long	sllp;	/* SLB L||LP (exact mask to use in slbmte) */
-+};
-+extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
-+#endif /* __ASSEMBLY__ */
++	*pmdp = __pmd(__pa(pte) | _PMD_PRESENT);
++}
 +
-+#ifdef CONFIG_PPC_STD_MMU_64
-+/* 64-bit classic hash table MMU */
-+#include <asm/book3s/64/mmu-hash.h>
-+#endif
++static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
++				pgtable_t pte_page)
++{
++	*pmdp = __pmd((page_to_pfn(pte_page) << PAGE_SHIFT) | _PMD_PRESENT);
++}
 +
-+#ifndef __ASSEMBLY__
-+
-+typedef unsigned long mm_context_id_t;
-+struct spinlock;
-+
-+typedef struct {
-+	mm_context_id_t id;
-+	u16 user_psize;		/* page size index */
-+
-+#ifdef CONFIG_PPC_MM_SLICES
-+	u64 low_slices_psize;	/* SLB page size encodings */
-+	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
++#define pmd_pgtable(pmd) pmd_page(pmd)
 +#else
-+	u16 sllp;		/* SLB page size encoding */
++
++static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmdp,
++				       pte_t *pte)
++{
++	*pmdp = __pmd((unsigned long)pte | _PMD_PRESENT);
++}
++
++static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
++				pgtable_t pte_page)
++{
++	*pmdp = __pmd((unsigned long)lowmem_page_address(pte_page) | _PMD_PRESENT);
++}
++
++#define pmd_pgtable(pmd) pmd_page(pmd)
 +#endif
-+	unsigned long vdso_base;
-+#ifdef CONFIG_PPC_SUBPAGE_PROT
-+	struct subpage_prot_table spt;
-+#endif /* CONFIG_PPC_SUBPAGE_PROT */
-+#ifdef CONFIG_PPC_ICSWX
-+	struct spinlock *cop_lockp; /* guard acop and cop_pid */
-+	unsigned long acop;	/* mask of enabled coprocessor types */
-+	unsigned int cop_pid;	/* pid value used with coprocessors */
-+#endif /* CONFIG_PPC_ICSWX */
-+#ifdef CONFIG_PPC_64K_PAGES
-+	/* for 4K PTE fragment support */
-+	void *pte_frag;
++
++extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
++extern pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long addr);
++
++static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
++{
++	free_page((unsigned long)pte);
++}
++
++static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
++{
++	pgtable_page_dtor(ptepage);
++	__free_page(ptepage);
++}
++
++static inline void pgtable_free(void *table, unsigned index_size)
++{
++	BUG_ON(index_size); /* 32-bit doesn't use this */
++	free_page((unsigned long)table);
++}
++
++#define check_pgt_cache()	do { } while (0)
++
++#ifdef CONFIG_SMP
++static inline void pgtable_free_tlb(struct mmu_gather *tlb,
++				    void *table, int shift)
++{
++	unsigned long pgf = (unsigned long)table;
++	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
++	pgf |= shift;
++	tlb_remove_table(tlb, (void *)pgf);
++}
++
++static inline void __tlb_remove_table(void *_table)
++{
++	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
++	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
++
++	pgtable_free(table, shift);
++}
++#else
++static inline void pgtable_free_tlb(struct mmu_gather *tlb,
++				    void *table, int shift)
++{
++	pgtable_free(table, shift);
++}
 +#endif
-+#ifdef CONFIG_SPAPR_TCE_IOMMU
-+	struct list_head iommu_group_mem_list;
-+#endif
-+} mm_context_t;
++
++static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
++				  unsigned long address)
++{
++	tlb_flush_pgtable(tlb, address);
++	pgtable_page_dtor(table);
++	pgtable_free_tlb(tlb, page_address(table), 0);
++}
++#endif /* _ASM_POWERPC_PGALLOC_32_H */
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+new file mode 100644
+index 000000000000..014489a619d0
+--- /dev/null
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+@@ -0,0 +1,262 @@
++#ifndef _ASM_POWERPC_PGALLOC_64_H
++#define _ASM_POWERPC_PGALLOC_64_H
++/*
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/slab.h>
++#include <linux/cpumask.h>
++#include <linux/percpu.h>
++
++struct vmemmap_backing {
++	struct vmemmap_backing *list;
++	unsigned long phys;
++	unsigned long virt_addr;
++};
++extern struct vmemmap_backing *vmemmap_list;
 +
 +/*
-+ * The current system page and segment sizes
++ * Functions that deal with pagetables that could be at any level of
++ * the table need to be passed an "index_size" so they know how to
++ * handle allocation.  For PTE pages (which are linked to a struct
++ * page for now, and drawn from the main get_free_pages() pool), the
++ * allocation size will be (2^index_size * sizeof(pointer)) and
++ * allocations are drawn from the kmem_cache in PGT_CACHE(index_size).
++ *
++ * The maximum index size needs to be big enough to allow any
++ * pagetable sizes we need, but small enough to fit in the low bits of
++ * any page table pointer.  In other words all pagetables, even tiny
++ * ones, must be aligned to allow at least enough low 0 bits to
++ * contain this value.  This value is also used as a mask, so it must
++ * be one less than a power of two.
 + */
-+extern int mmu_linear_psize;
-+extern int mmu_virtual_psize;
-+extern int mmu_vmalloc_psize;
-+extern int mmu_vmemmap_psize;
-+extern int mmu_io_psize;
++#define MAX_PGTABLE_INDEX_SIZE	0xf
 +
-+/* MMU initialization */
-+extern void hlearly_init_mmu(void);
-+static inline void early_init_mmu(void)
++extern struct kmem_cache *pgtable_cache[];
++#define PGT_CACHE(shift) ({				\
++			BUG_ON(!(shift));		\
++			pgtable_cache[(shift) - 1];	\
++		})
++
++static inline pgd_t *pgd_alloc(struct mm_struct *mm)
 +{
-+	return hlearly_init_mmu();
-+}
-+extern void hlearly_init_mmu_secondary(void);
-+static inline void early_init_mmu_secondary(void)
-+{
-+	return hlearly_init_mmu_secondary();
++	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE), GFP_KERNEL);
 +}
 +
-+extern void hlsetup_initial_memory_limit(phys_addr_t first_memblock_base,
-+					 phys_addr_t first_memblock_size);
-+static inline void setup_initial_memory_limit(phys_addr_t first_memblock_base,
-+					      phys_addr_t first_memblock_size)
++static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 +{
-+	return hlsetup_initial_memory_limit(first_memblock_base,
-+					   first_memblock_size);
++	kmem_cache_free(PGT_CACHE(PGD_INDEX_SIZE), pgd);
 +}
-+#endif /* __ASSEMBLY__ */
-+#endif /* _ASM_POWERPC_BOOK3S_64_MMU_H_ */
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 18a1b7dbf5fb..028f933fe74e 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -121,13 +121,6 @@ static inline void mmu_clear_feature(unsigned long feature)
- 
- extern unsigned int __start___mmu_ftr_fixup, __stop___mmu_ftr_fixup;
- 
--/* MMU initialization */
--extern void early_init_mmu(void);
--extern void early_init_mmu_secondary(void);
--
--extern void setup_initial_memory_limit(phys_addr_t first_memblock_base,
--				       phys_addr_t first_memblock_size);
--
- #ifdef CONFIG_PPC64
- /* This is our real memory area size on ppc64 server, on embedded, we
-  * make it match the size our of bolted TLB area
-@@ -180,10 +173,20 @@ static inline void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
- 
- #define MMU_PAGE_COUNT	15
- 
--#if defined(CONFIG_PPC_STD_MMU_64)
--/* 64-bit classic hash table MMU */
--#include <asm/book3s/64/mmu-hash.h>
--#elif defined(CONFIG_PPC_STD_MMU_32)
-+#ifdef CONFIG_PPC_BOOK3S_64
-+#include <asm/book3s/64/mmu.h>
-+#else /* CONFIG_PPC_BOOK3S_64 */
 +
-+#ifndef __ASSEMBLY__
-+/* MMU initialization */
-+extern void early_init_mmu(void);
-+extern void early_init_mmu_secondary(void);
-+extern void setup_initial_memory_limit(phys_addr_t first_memblock_base,
-+                                       phys_addr_t first_memblock_size);
-+#endif /* __ASSEMBLY__ */
++#ifndef CONFIG_PPC_64K_PAGES
++
++#define pgd_populate(MM, PGD, PUD)	pgd_set(PGD, (unsigned long)PUD)
++
++static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
++{
++	return kmem_cache_alloc(PGT_CACHE(PUD_INDEX_SIZE),
++				GFP_KERNEL|__GFP_REPEAT);
++}
++
++static inline void pud_free(struct mm_struct *mm, pud_t *pud)
++{
++	kmem_cache_free(PGT_CACHE(PUD_INDEX_SIZE), pud);
++}
++
++static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
++{
++	pud_set(pud, (unsigned long)pmd);
++}
++
++static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
++				       pte_t *pte)
++{
++	pmd_set(pmd, (unsigned long)pte);
++}
++
++static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
++				pgtable_t pte_page)
++{
++	pmd_set(pmd, (unsigned long)page_address(pte_page));
++}
++
++#define pmd_pgtable(pmd) pmd_page(pmd)
++
++static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
++					  unsigned long address)
++{
++	return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO);
++}
++
++static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
++				      unsigned long address)
++{
++	struct page *page;
++	pte_t *pte;
++
++	pte = pte_alloc_one_kernel(mm, address);
++	if (!pte)
++		return NULL;
++	page = virt_to_page(pte);
++	if (!pgtable_page_ctor(page)) {
++		__free_page(page);
++		return NULL;
++	}
++	return page;
++}
++
++static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
++{
++	free_page((unsigned long)pte);
++}
++
++static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
++{
++	pgtable_page_dtor(ptepage);
++	__free_page(ptepage);
++}
++
++static inline void pgtable_free(void *table, unsigned index_size)
++{
++	if (!index_size)
++		free_page((unsigned long)table);
++	else {
++		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
++		kmem_cache_free(PGT_CACHE(index_size), table);
++	}
++}
++
++#ifdef CONFIG_SMP
++static inline void pgtable_free_tlb(struct mmu_gather *tlb,
++				    void *table, int shift)
++{
++	unsigned long pgf = (unsigned long)table;
++	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
++	pgf |= shift;
++	tlb_remove_table(tlb, (void *)pgf);
++}
++
++static inline void __tlb_remove_table(void *_table)
++{
++	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
++	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
++
++	pgtable_free(table, shift);
++}
++#else /* !CONFIG_SMP */
++static inline void pgtable_free_tlb(struct mmu_gather *tlb,
++				    void *table, int shift)
++{
++	pgtable_free(table, shift);
++}
++#endif /* CONFIG_SMP */
++
++static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
++				  unsigned long address)
++{
++	tlb_flush_pgtable(tlb, address);
++	pgtable_page_dtor(table);
++	pgtable_free_tlb(tlb, page_address(table), 0);
++}
++
++#else /* if CONFIG_PPC_64K_PAGES */
++
++extern pte_t *page_table_alloc(struct mm_struct *, unsigned long, int);
++extern void page_table_free(struct mm_struct *, unsigned long *, int);
++extern void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift);
++#ifdef CONFIG_SMP
++extern void __tlb_remove_table(void *_table);
 +#endif
 +
-+#if defined(CONFIG_PPC_STD_MMU_32)
- /* 32-bit classic hash table MMU */
- #include <asm/book3s/32/mmu-hash.h>
- #elif defined(CONFIG_40x)
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index a963a26b2d9d..2527c4bce871 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -798,7 +798,7 @@ static void __init htab_initialize(void)
- #undef KB
- #undef MB
- 
--void __init early_init_mmu(void)
-+void __init hlearly_init_mmu(void)
- {
- 	/*
- 	 * initialize global variables
-@@ -836,7 +836,7 @@ void __init early_init_mmu(void)
- }
- 
- #ifdef CONFIG_SMP
--void early_init_mmu_secondary(void)
-+void hlearly_init_mmu_secondary(void)
- {
- 	/* Initialize hash table for that CPU */
- 	if (!firmware_has_feature(FW_FEATURE_LPAR))
-@@ -1569,7 +1569,7 @@ void __kernel_map_pages(struct page *page, int numpages, int enable)
- }
- #endif /* CONFIG_DEBUG_PAGEALLOC */
- 
--void setup_initial_memory_limit(phys_addr_t first_memblock_base,
-+void hlsetup_initial_memory_limit(phys_addr_t first_memblock_base,
- 				phys_addr_t first_memblock_size)
- {
- 	/* We don't currently support the first MEMBLOCK not mapping 0
++#ifndef __PAGETABLE_PUD_FOLDED
++/* book3s 64 is 4 level page table */
++#define pgd_populate(MM, PGD, PUD)	pgd_set(PGD, PUD)
++static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
++{
++	return kmem_cache_alloc(PGT_CACHE(PUD_INDEX_SIZE),
++				GFP_KERNEL|__GFP_REPEAT);
++}
++
++static inline void pud_free(struct mm_struct *mm, pud_t *pud)
++{
++	kmem_cache_free(PGT_CACHE(PUD_INDEX_SIZE), pud);
++}
++#endif
++
++static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
++{
++	pud_set(pud, (unsigned long)pmd);
++}
++
++static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
++				       pte_t *pte)
++{
++	pmd_set(pmd, (unsigned long)pte);
++}
++
++static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
++				pgtable_t pte_page)
++{
++	pmd_set(pmd, (unsigned long)pte_page);
++}
++
++static inline pgtable_t pmd_pgtable(pmd_t pmd)
++{
++	return (pgtable_t)(pmd_val(pmd) & ~PMD_MASKED_BITS);
++}
++
++static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
++					  unsigned long address)
++{
++	return (pte_t *)page_table_alloc(mm, address, 1);
++}
++
++static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
++					unsigned long address)
++{
++	return (pgtable_t)page_table_alloc(mm, address, 0);
++}
++
++static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
++{
++	page_table_free(mm, (unsigned long *)pte, 1);
++}
++
++static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
++{
++	page_table_free(mm, (unsigned long *)ptepage, 0);
++}
++
++static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
++				  unsigned long address)
++{
++	tlb_flush_pgtable(tlb, address);
++	pgtable_free_tlb(tlb, table, 0);
++}
++#endif /* CONFIG_PPC_64K_PAGES */
++
++static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
++{
++	return kmem_cache_alloc(PGT_CACHE(PMD_CACHE_INDEX),
++				GFP_KERNEL|__GFP_REPEAT);
++}
++
++static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
++{
++	kmem_cache_free(PGT_CACHE(PMD_CACHE_INDEX), pmd);
++}
++
++#define __pmd_free_tlb(tlb, pmd, addr)		      \
++	pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX)
++#ifndef __PAGETABLE_PUD_FOLDED
++#define __pud_free_tlb(tlb, pud, addr)		      \
++	pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE)
++
++#endif /* __PAGETABLE_PUD_FOLDED */
++
++#define check_pgt_cache()	do { } while (0)
++
++#endif /* _ASM_POWERPC_PGALLOC_64_H */
 -- 
 2.5.0
