@@ -3,18 +3,18 @@ Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
  [IPv6:2607:f8b0:400d:c09::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 540631A1947
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 18:42:35 +1100 (AEDT)
-Received: by mail-qk0-x242.google.com with SMTP id f10so18149698qke.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 23:42:35 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 787B71A1D2D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 18:45:53 +1100 (AEDT)
+Received: by mail-qk0-x242.google.com with SMTP id p186so21876955qke.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jan 2016 23:45:53 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1452582968-22669-15-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1452582968-22669-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1452582968-22669-15-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 12 Jan 2016 10:42:32 +0300
-Message-ID: <CAOJe8K0sgNvOA5pP8jUt7rpfstW2d-hqOOjSXszihLDkpT4JXQ@mail.gmail.com>
-Subject: Re: [RFC PATCH V1 14/33] powerpc/mm: Use helper for finding pte bits
- mapping I/O area
+ <1452582968-22669-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 12 Jan 2016 10:45:51 +0300
+Message-ID: <CAOJe8K35iNhwi2DQLDM0K5D0OBv91VMVmrdAyn31PQ4rMhxWEA@mail.gmail.com>
+Subject: Re: [RFC PATCH V1 18/33] powerpc/mm: Add helper for update page flags
+ during ioremap
 From: Denis Kirjanov <kda@linux-powerpc.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
@@ -30,51 +30,58 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 1/12/16, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> We will have different values for hash and radix. Hence we
-> cannot use #define constants. Add helper
+> They differ between radix and hash. Hence we need a helper
 >
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/book3s/32/pgtable.h | 5 +++++
->  arch/powerpc/include/asm/book3s/64/hash.h    | 5 +++++
->  arch/powerpc/include/asm/nohash/pgtable.h    | 5 +++++
->  arch/powerpc/kernel/isa-bridge.c             | 4 ++--
->  arch/powerpc/kernel/pci_64.c                 | 2 +-
->  arch/powerpc/mm/pgtable_64.c                 | 2 +-
->  6 files changed, 19 insertions(+), 4 deletions(-)
+>  arch/powerpc/include/asm/book3s/32/pgtable.h | 11 +++++++++++
+>  arch/powerpc/include/asm/book3s/64/hash.h    | 11 +++++++++++
+>  arch/powerpc/include/asm/nohash/pgtable.h    | 20 ++++++++++++++++++++
+>  arch/powerpc/mm/pgtable_64.c                 | 16 +---------------
+>  4 files changed, 43 insertions(+), 15 deletions(-)
+Can we put it alone in some common header file?
 >
 > diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h
 > b/arch/powerpc/include/asm/book3s/32/pgtable.h
-> index 3ed3303c1295..77adada2f3b4 100644
+> index c0898e26ed4a..b53d7504d6f6 100644
 > --- a/arch/powerpc/include/asm/book3s/32/pgtable.h
 > +++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-> @@ -478,6 +478,11 @@ static inline pgprot_t pgprot_writecombine(pgprot_t
-> prot)
->  	return pgprot_noncached_wc(prot);
+> @@ -491,6 +491,17 @@ static inline unsigned long gup_pte_filter(int write)
+>  		mask |= _PAGE_RW;
+>  	return mask;
 >  }
->
-> +static inline unsigned long pte_io_cache_bits(void)
-> +{
-> +	return _PAGE_NO_CACHE | _PAGE_GUARDED;
-> +}
-This could be just plain #define
 > +
+> +static inline unsigned long ioremap_prot_flags(unsigned long flags)
+> +{
+> +	/* writeable implies dirty for kernel addresses */
+> +	if (flags & _PAGE_RW)
+> +		flags |= _PAGE_DIRTY;
+> +
+> +	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
+> +	flags &= ~(_PAGE_USER | _PAGE_EXEC);
+> +	return flags;
+> +}
 >  #endif /* !__ASSEMBLY__ */
 >
 >  #endif /*  _ASM_POWERPC_BOOK3S_32_PGTABLE_H */
 > diff --git a/arch/powerpc/include/asm/book3s/64/hash.h
 > b/arch/powerpc/include/asm/book3s/64/hash.h
-> index ced3aed63af2..1b27c0c8effa 100644
+> index d51709dad729..4f0fdb9a5d19 100644
 > --- a/arch/powerpc/include/asm/book3s/64/hash.h
 > +++ b/arch/powerpc/include/asm/book3s/64/hash.h
-> @@ -578,6 +578,11 @@ static inline pgprot_t pgprot_writecombine(pgprot_t
-> prot)
->  extern pgprot_t vm_get_page_prot(unsigned long vm_flags);
->  #define vm_get_page_prot vm_get_page_prot
+> @@ -592,6 +592,17 @@ static inline unsigned long gup_pte_filter(int write)
+>  	return mask;
+>  }
 >
-> +static inline unsigned long pte_io_cache_bits(void)
+> +static inline unsigned long ioremap_prot_flags(unsigned long flags)
 > +{
-> +	return _PAGE_NO_CACHE | _PAGE_GUARDED;
+> +	/* writeable implies dirty for kernel addresses */
+> +	if (flags & _PAGE_RW)
+> +		flags |= _PAGE_DIRTY;
+> +
+> +	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
+> +	flags &= ~(_PAGE_USER | _PAGE_EXEC);
+> +	return flags;
 > +}
 > +
 >  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
@@ -83,73 +90,64 @@ This could be just plain #define
 >  				   pmd_t *pmdp, unsigned long old_pmd);
 > diff --git a/arch/powerpc/include/asm/nohash/pgtable.h
 > b/arch/powerpc/include/asm/nohash/pgtable.h
-> index 11e3767216c0..8c4bb8fda0de 100644
+> index e4173cb06e5b..8861ec146985 100644
 > --- a/arch/powerpc/include/asm/nohash/pgtable.h
 > +++ b/arch/powerpc/include/asm/nohash/pgtable.h
-> @@ -224,6 +224,11 @@ extern pgprot_t phys_mem_access_prot(struct file *file,
-> unsigned long pfn,
->  				     unsigned long size, pgprot_t vma_prot);
->  #define __HAVE_PHYS_MEM_ACCESS_PROT
+> @@ -238,6 +238,26 @@ static inline unsigned long gup_pte_filter(int write)
+>  	return mask;
+>  }
 >
-> +static inline unsigned long pte_io_cache_bits(void)
+> +static inline unsigned long ioremap_prot_flags(unsigned long flags)
 > +{
-> +	return _PAGE_NO_CACHE | _PAGE_GUARDED;
+> +	/* writeable implies dirty for kernel addresses */
+> +	if (flags & _PAGE_RW)
+> +		flags |= _PAGE_DIRTY;
+> +
+> +	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
+> +	flags &= ~(_PAGE_USER | _PAGE_EXEC);
+> +
+> +#ifdef _PAGE_BAP_SR
+> +	/* _PAGE_USER contains _PAGE_BAP_SR on BookE using the new PTE format
+> +	 * which means that we just cleared supervisor access... oops ;-) This
+> +	 * restores it
+> +	 */
+> +	flags |= _PAGE_BAP_SR;
+> +#endif
+> +
+> +	return flags;
 > +}
 > +
 >  #ifdef CONFIG_HUGETLB_PAGE
 >  static inline int hugepd_ok(hugepd_t hpd)
 >  {
-> diff --git a/arch/powerpc/kernel/isa-bridge.c
-> b/arch/powerpc/kernel/isa-bridge.c
-> index 0f1997097960..d81185f025fa 100644
-> --- a/arch/powerpc/kernel/isa-bridge.c
-> +++ b/arch/powerpc/kernel/isa-bridge.c
-> @@ -109,14 +109,14 @@ static void pci_process_ISA_OF_ranges(struct
-> device_node *isa_node,
->  		size = 0x10000;
->
->  	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
-> -		     size, _PAGE_NO_CACHE|_PAGE_GUARDED);
-> +		     size, pte_io_cache_bits());
->  	return;
->
->  inval_range:
->  	printk(KERN_ERR "no ISA IO ranges or unexpected isa range, "
->  	       "mapping 64k\n");
->  	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
-> -		     0x10000, _PAGE_NO_CACHE|_PAGE_GUARDED);
-> +		     0x10000, pte_io_cache_bits());
->  }
->
->
-> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-> index 60bb187cb46a..7fe1dfd214a1 100644
-> --- a/arch/powerpc/kernel/pci_64.c
-> +++ b/arch/powerpc/kernel/pci_64.c
-> @@ -159,7 +159,7 @@ static int pcibios_map_phb_io_space(struct
-> pci_controller *hose)
->
->  	/* Establish the mapping */
->  	if (__ioremap_at(phys_page, area->addr, size_page,
-> -			 _PAGE_NO_CACHE | _PAGE_GUARDED) == NULL)
-> +			 pte_io_cache_bits()) == NULL)
->  		return -ENOMEM;
->
->  	/* Fixup hose IO resource */
 > diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-> index e5f600d19326..6d161cec2e32 100644
+> index 21a9a171c267..aa8ff4c74563 100644
 > --- a/arch/powerpc/mm/pgtable_64.c
 > +++ b/arch/powerpc/mm/pgtable_64.c
-> @@ -253,7 +253,7 @@ void __iomem * __ioremap(phys_addr_t addr, unsigned long
-> size,
->
->  void __iomem * ioremap(phys_addr_t addr, unsigned long size)
+> @@ -188,21 +188,7 @@ void __iomem * ioremap_prot(phys_addr_t addr, unsigned
+> long size,
 >  {
-> -	unsigned long flags = _PAGE_NO_CACHE | _PAGE_GUARDED;
-> +	unsigned long flags = pte_io_cache_bits();
 >  	void *caller = __builtin_return_address(0);
 >
+> -	/* writeable implies dirty for kernel addresses */
+> -	if (flags & _PAGE_RW)
+> -		flags |= _PAGE_DIRTY;
+> -
+> -	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
+> -	flags &= ~(_PAGE_USER | _PAGE_EXEC);
+> -
+> -#ifdef _PAGE_BAP_SR
+> -	/* _PAGE_USER contains _PAGE_BAP_SR on BookE using the new PTE format
+> -	 * which means that we just cleared supervisor access... oops ;-) This
+> -	 * restores it
+> -	 */
+> -	flags |= _PAGE_BAP_SR;
+> -#endif
+> -
+> +	flags = ioremap_prot_flags(flags);
 >  	if (ppc_md.ioremap)
+>  		return ppc_md.ioremap(addr, size, flags, caller);
+>  	return __ioremap_caller(addr, size, flags, caller);
 > --
 > 2.5.0
 >
