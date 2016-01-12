@@ -1,41 +1,31 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
+Return-Path: <kda@linux-powerpc.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7AAC71A0D9D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 21:53:41 +1100 (AEDT)
+Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
+ [IPv6:2607:f8b0:400d:c09::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 98A711A0D83
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 21:40:25 +1100 (AEDT)
-Date: Tue, 12 Jan 2016 11:40:12 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
- David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- ddaney.cavm@gmail.com, will.deacon@arm.com, james.hogan@imgtec.com,
- Michael Ellerman <mpe@ellerman.id.au>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
-Message-ID: <20160112104012.GW6373@twins.programming.kicks-ass.net>
-References: <1452426622-4471-12-git-send-email-mst@redhat.com>
- <56945366.2090504@imgtec.com>
- <20160112092711.GP6344@twins.programming.kicks-ass.net>
- <20160112102555.GV6373@twins.programming.kicks-ass.net>
+ by ozlabs.org (Postfix) with ESMTPS id 8BBBC140A98
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 21:53:39 +1100 (AEDT)
+Received: by mail-qk0-x243.google.com with SMTP id f10so18574733qke.1
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2016 02:53:39 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160112102555.GV6373@twins.programming.kicks-ass.net>
+In-Reply-To: <20151223111228.10f25239@gandalf.local.home>
+References: <1450124286-4822-1-git-send-email-kda@linux-powerpc.org>
+ <1450124286-4822-2-git-send-email-kda@linux-powerpc.org>
+ <20151223111228.10f25239@gandalf.local.home>
+Date: Tue, 12 Jan 2016 13:53:38 +0300
+Message-ID: <CAOJe8K3wVseSUr8S8dv0kSuNYhweK=28C-X5pLjjewJDXzbX9g@mail.gmail.com>
+Subject: Re: [PATCH v3 2/2] powerpc: tracing: don't trace hcalls on offline
+ CPUs
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,31 +35,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 12, 2016 at 11:25:55AM +0100, Peter Zijlstra wrote:
-> On Tue, Jan 12, 2016 at 10:27:11AM +0100, Peter Zijlstra wrote:
-> > 2) the changelog _completely_ fails to explain the sync 0x11 and sync
-> > 0x12 semantics nor does it provide a publicly accessible link to
-> > documentation that does.
-> 
-> Ralf pointed me at: https://imgtec.com/mips/architectures/mips64/
-> 
-> > 3) it really should have explained what you did with
-> > smp_llsc_mb/smp_mb__before_llsc() in _detail_.
-> 
-> And reading the MIPS64 v6.04 instruction set manual, I think 0x11/0x12
-> are _NOT_ transitive and therefore cannot be used to implement the
-> smp_mb__{before,after} stuff.
-> 
-> That is, in MIPS speak, those SYNC types are Ordering Barriers, not
-> Completion Barriers. They need not be globally performed.
+On 12/23/15, Steven Rostedt <rostedt@goodmis.org> wrote:
+> On Mon, 14 Dec 2015 23:18:06 +0300
+> Denis Kirjanov <kda@linux-powerpc.org> wrote:
+>
+>> ./drmgr -c cpu -a -r gives the following warning:
+>>
+>> [ 2327.035563]
+>> RCU used illegally from offline CPU!
+>> rcu_scheduler_active = 1, debug_locks = 1
+>> [ 2327.035564] no locks held by swapper/12/0.
+>> [ 2327.035565]
+>> stack backtrace:
+>> [ 2327.035567] CPU: 12 PID: 0 Comm: swapper/12 Tainted: G S
+>> 4.3.0-rc3-00060-g353169a #5
+>> [ 2327.035568] Call Trace:
+>> [ 2327.035573] [c0000001d62578e0] [c0000000008977fc] .dump_stack+0x98/0xd4
+>> (unreliable)
+>> [ 2327.035577] [c0000001d6257960] [c000000000109bd8]
+>> .lockdep_rcu_suspicious+0x108/0x170
+>> [ 2327.035580] [c0000001d62579f0] [c00000000006a1d0]
+>> .__trace_hcall_exit+0x2b0/0x2c0
+>> [ 2327.035584] [c0000001d6257ab0] [c00000000006a2e8]
+>> plpar_hcall_norets_trace+0x70/0x8c
+>> [ 2327.035588] [c0000001d6257b20] [c000000000067a14]
+>> .icp_hv_set_cpu_priority+0x54/0xc0
+>> [ 2327.035592] [c0000001d6257ba0] [c000000000066c5c]
+>> .xics_teardown_cpu+0x5c/0xa0
+>> [ 2327.035595] [c0000001d6257c20] [c0000000000747ac]
+>> .pseries_mach_cpu_die+0x6c/0x320
+>> [ 2327.035598] [c0000001d6257cd0] [c0000000000439cc] .cpu_die+0x3c/0x60
+>> [ 2327.035602] [c0000001d6257d40] [c0000000000183d8]
+>> .arch_cpu_idle_dead+0x28/0x40
+>> [ 2327.035606] [c0000001d6257db0] [c0000000000ff1dc]
+>> .cpu_startup_entry+0x4fc/0x560
+>> [ 2327.035610] [c0000001d6257ed0] [c000000000043728]
+>> .start_secondary+0x328/0x360
+>> [ 2327.035614] [c0000001d6257f90] [c000000000008a6c]
+>> start_secondary_prolog+0x10/0x14
+>> [ 2327.035620] cpu 12 (hwid 12) Ready to die...
+>> [ 2327.144463] cpu 13 (hwid 13) Ready to die...
+>> [ 2327.294180] cpu 14 (hwid 14) Ready to die...
+>> [ 2327.403599] cpu 15 (hwid 15) Ready to die...
+>>
+>> Make the hypervisor tracepoints conditional
+>> by using TRACE_EVENT_FN_COND
+>>
+>> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+>
+> I applied the first patch, but I need Acks from the powerpc maintainers
+> to take this one.
+>
 
-Which if true; and I know Will has some questions here; would also mean
-that you 'cannot' use the ACQUIRE/RELEASE barriers for your locks as was
-recently suggested by David Daney.
+Hi Michael,
 
-That is, currently all architectures -- with exception of PPC -- have
-RCsc locks, but using these non-transitive things will get you RCpc
-locks.
+Could you please put your ack to the second patch.
 
-So yes, MIPS can go RCpc for its locks and share the burden of pain with
-PPC, but that needs to be a very concious decision.
+Thanks!
+
+> -- Steve
+>
+>
+>>
+>> v2 changes:
+>>  - Use raw_smp_processor_id as suggested by BenH
+>>  since since hcalls can be called from preemptable sections
+>>
+>> v3 changes:
+>>  - Fix the subject line
+>> ---
+>>  arch/powerpc/include/asm/trace.h | 8 ++++++--
+>>  1 file changed, 6 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/trace.h
+>> b/arch/powerpc/include/asm/trace.h
+>> index 8e86b48..32e36b1 100644
+>> --- a/arch/powerpc/include/asm/trace.h
+>> +++ b/arch/powerpc/include/asm/trace.h
+>> @@ -57,12 +57,14 @@ DEFINE_EVENT(ppc64_interrupt_class,
+>> timer_interrupt_exit,
+>>  extern void hcall_tracepoint_regfunc(void);
+>>  extern void hcall_tracepoint_unregfunc(void);
+>>
+>> -TRACE_EVENT_FN(hcall_entry,
+>> +TRACE_EVENT_FN_COND(hcall_entry,
+>>
+>>  	TP_PROTO(unsigned long opcode, unsigned long *args),
+>>
+>>  	TP_ARGS(opcode, args),
+>>
+>> +	TP_CONDITION(cpu_online(raw_smp_processor_id())),
+>> +
+>>  	TP_STRUCT__entry(
+>>  		__field(unsigned long, opcode)
+>>  	),
+>> @@ -76,13 +78,15 @@ TRACE_EVENT_FN(hcall_entry,
+>>  	hcall_tracepoint_regfunc, hcall_tracepoint_unregfunc
+>>  );
+>>
+>> -TRACE_EVENT_FN(hcall_exit,
+>> +TRACE_EVENT_FN_COND(hcall_exit,
+>>
+>>  	TP_PROTO(unsigned long opcode, unsigned long retval,
+>>  		unsigned long *retbuf),
+>>
+>>  	TP_ARGS(opcode, retval, retbuf),
+>>
+>> +	TP_CONDITION(cpu_online(raw_smp_processor_id())),
+>> +
+>>  	TP_STRUCT__entry(
+>>  		__field(unsigned long, opcode)
+>>  		__field(unsigned long, retval)
+>
+>
