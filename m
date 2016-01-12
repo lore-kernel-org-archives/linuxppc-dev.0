@@ -1,27 +1,63 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B0F281A0D83
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 02:42:29 +1100 (AEDT)
-Received: from smtprelay.hostedemail.com (smtprelay0135.hostedemail.com
- [216.40.44.135])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 57532140297
- for <linuxppc-dev@ozlabs.org>; Wed, 13 Jan 2016 02:42:28 +1100 (AEDT)
-Date: Tue, 12 Jan 2016 10:42:23 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
- amodra@gmail.com, ulrich.weigand@de.ibm.com
-Subject: Re: [PATCH 1/2] scripts/recordmcount.pl: support data in text
- section on powerpc
-Message-ID: <20160112104223.4317df9c@gandalf.local.home>
-In-Reply-To: <1452600863-6294-1-git-send-email-mpe@ellerman.id.au>
-References: <1452600863-6294-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2B99F1A0D83
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 03:29:04 +1100 (AEDT)
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Tue, 12 Jan 2016 09:29:02 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 81B693E40062
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 09:28:59 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id u0CGSxTe30671062
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 09:28:59 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0CGSiuP011545
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jan 2016 09:28:58 -0700
+Date: Tue, 12 Jan 2016 08:28:44 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
+ David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org, x86@kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
+ Davidlohr Bueso <dave@stgolabs.net>, Davidlohr Bueso <dbueso@suse.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: [PATCH v3 01/41] lcoking/barriers, arch: Use smp barriers in
+ smp_store_release()
+Message-ID: <20160112162844.GD3818@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1452426622-4471-1-git-send-email-mst@redhat.com>
+ <1452426622-4471-2-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1452426622-4471-2-git-send-email-mst@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,50 +67,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 12 Jan 2016 23:14:22 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Sun, Jan 10, 2016 at 04:16:32PM +0200, Michael S. Tsirkin wrote:
+> From: Davidlohr Bueso <dave@stgolabs.net>
+> 
+> With commit b92b8b35a2e ("locking/arch: Rename set_mb() to smp_store_mb()")
+> it was made clear that the context of this call (and thus set_mb)
+> is strictly for CPU ordering, as opposed to IO. As such all archs
+> should use the smp variant of mb(), respecting the semantics and
+> saving a mandatory barrier on UP.
+> 
+> Signed-off-by: Davidlohr Bueso <dbueso@suse.de>
+> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> Cc: <linux-arch@vger.kernel.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Tony Luck <tony.luck@intel.com>
+> Cc: dave@stgolabs.net
+> Link: http://lkml.kernel.org/r/1445975631-17047-3-git-send-email-dave@stgolabs.net
+> Signed-off-by: Ingo Molnar <mingo@kernel.org>
 
-> From: Ulrich Weigand <ulrich.weigand@de.ibm.com>
-> 
-> If a text section starts out with a data blob before the first
-> function start label, disassembly parsing doing in recordmcount.pl
-> gets confused on powerpc, leading to creation of corrupted module
-> objects.
-> 
-> This was not a problem so far since the compiler would never create
-> such text sections.  However, this has changed with a recent change
-> in GCC 6 to support distances of > 2GB between a function and its
-> assoicated TOC in the ELFv2 ABI, exposing this problem.
-> 
-> There is already code in recordmcount.pl to handle such data blobs
-> on the sparc64 platform.  This patch uses the same method to handle
-> those on powerpc as well.
-> 
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Ulrich Weigand <ulrich.weigand@de.ibm.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Aside from a need for s/lcoking/locking/ in the subject line:
+
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
 > ---
->  scripts/recordmcount.pl | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  arch/ia64/include/asm/barrier.h    | 2 +-
+>  arch/powerpc/include/asm/barrier.h | 2 +-
+>  arch/s390/include/asm/barrier.h    | 2 +-
+>  include/asm-generic/barrier.h      | 2 +-
+>  4 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> Steve can we get an ack for this one, to go via powerpc? cheers
-
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-
--- Steve
-
+> diff --git a/arch/ia64/include/asm/barrier.h b/arch/ia64/include/asm/barrier.h
+> index df896a1..209c4b8 100644
+> --- a/arch/ia64/include/asm/barrier.h
+> +++ b/arch/ia64/include/asm/barrier.h
+> @@ -77,7 +77,7 @@ do {									\
+>  	___p1;								\
+>  })
 > 
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 826470d7f000..96e2486a6fc4 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -263,7 +263,8 @@ if ($arch eq "x86_64") {
->  
->  } elsif ($arch eq "powerpc") {
->      $local_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\.?\\S+)";
-> -    $function_regex = "^([0-9a-fA-F]+)\\s+<(\\.?.*?)>:";
-> +    # See comment in the sparc64 section for why we use '\w'.
-> +    $function_regex = "^([0-9a-fA-F]+)\\s+<(\\.?\\w*?)>:";
->      $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s\\.?_mcount\$";
->  
->      if ($bits == 64) {
+> -#define smp_store_mb(var, value)	do { WRITE_ONCE(var, value); mb(); } while (0)
+> +#define smp_store_mb(var, value) do { WRITE_ONCE(var, value); smp_mb(); } while (0)
+> 
+>  /*
+>   * The group barrier in front of the rsm & ssm are necessary to ensure
+> diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+> index 0eca6ef..a7af5fb 100644
+> --- a/arch/powerpc/include/asm/barrier.h
+> +++ b/arch/powerpc/include/asm/barrier.h
+> @@ -34,7 +34,7 @@
+>  #define rmb()  __asm__ __volatile__ ("sync" : : : "memory")
+>  #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
+> 
+> -#define smp_store_mb(var, value)	do { WRITE_ONCE(var, value); mb(); } while (0)
+> +#define smp_store_mb(var, value) do { WRITE_ONCE(var, value); smp_mb(); } while (0)
+> 
+>  #ifdef __SUBARCH_HAS_LWSYNC
+>  #    define SMPWMB      LWSYNC
+> diff --git a/arch/s390/include/asm/barrier.h b/arch/s390/include/asm/barrier.h
+> index d68e11e..7ffd0b1 100644
+> --- a/arch/s390/include/asm/barrier.h
+> +++ b/arch/s390/include/asm/barrier.h
+> @@ -36,7 +36,7 @@
+>  #define smp_mb__before_atomic()		smp_mb()
+>  #define smp_mb__after_atomic()		smp_mb()
+> 
+> -#define smp_store_mb(var, value)		do { WRITE_ONCE(var, value); mb(); } while (0)
+> +#define smp_store_mb(var, value)	do { WRITE_ONCE(var, value); smp_mb(); } while (0)
+> 
+>  #define smp_store_release(p, v)						\
+>  do {									\
+> diff --git a/include/asm-generic/barrier.h b/include/asm-generic/barrier.h
+> index b42afad..0f45f93 100644
+> --- a/include/asm-generic/barrier.h
+> +++ b/include/asm-generic/barrier.h
+> @@ -93,7 +93,7 @@
+>  #endif	/* CONFIG_SMP */
+> 
+>  #ifndef smp_store_mb
+> -#define smp_store_mb(var, value)  do { WRITE_ONCE(var, value); mb(); } while (0)
+> +#define smp_store_mb(var, value)  do { WRITE_ONCE(var, value); smp_mb(); } while (0)
+>  #endif
+> 
+>  #ifndef smp_mb__before_atomic
+> -- 
+> MST
+> 
