@@ -1,32 +1,18 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8DC951A08A4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 00:08:48 +1100 (AEDT)
-Received: by mail-io0-x243.google.com with SMTP id f81so15151539iof.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 05:08:48 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1452622411-16674-3-git-send-email-LW@KARO-electronics.de>
-References: <1452622411-16674-1-git-send-email-LW@KARO-electronics.de>
- <1452622411-16674-2-git-send-email-LW@KARO-electronics.de>
- <1452622411-16674-3-git-send-email-LW@KARO-electronics.de>
-Date: Wed, 13 Jan 2016 11:08:46 -0200
-Message-ID: <CAOMZO5BifUkzSkPCf08TSQ3B8AHiXuVhBzy+tMsnMtA8t-AvJg@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH 2/2] ASoC: fsl: select SND_SOC_FSL_SAI or
- SND_SOC_FSL_SSI depending on SoC type
-From: Fabio Estevam <festevam@gmail.com>
-To: =?UTF-8?Q?Lothar_Wa=C3=9Fmann?= <LW@karo-electronics.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Fabio Estevam <fabio.estevam@freescale.com>,
- Jaroslav Kysela <perex@perex.cz>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Takashi Iwai <tiwai@suse.com>,
- Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 93BC81A0BE4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 00:09:25 +1100 (AEDT)
+In-Reply-To: <1452600863-6294-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: ulrich.weigand@de.ibm.com, Anton Blanchard <anton@samba.org>,
+ rostedt@goodmis.org, amodra@gmail.com
+Subject: Re: [1/2] scripts/recordmcount.pl: support data in text section on
+ powerpc
+Message-Id: <20160113130925.4CCC814076E@ozlabs.org>
+Date: Thu, 14 Jan 2016 00:09:25 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,19 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 12, 2016 at 4:13 PM, Lothar Wa=C3=9Fmann <LW@karo-electronics.d=
-e> wrote:
+On Tue, 2016-12-01 at 12:14:22 UTC, Michael Ellerman wrote:
+> From: Ulrich Weigand <ulrich.weigand@de.ibm.com>
+> 
+> If a text section starts out with a data blob before the first
+> function start label, disassembly parsing doing in recordmcount.pl
+> gets confused on powerpc, leading to creation of corrupted module
+> objects.
+> 
+> This was not a problem so far since the compiler would never create
+> such text sections.  However, this has changed with a recent change
+> in GCC 6 to support distances of > 2GB between a function and its
+> assoicated TOC in the ELFv2 ABI, exposing this problem.
+> 
+> There is already code in recordmcount.pl to handle such data blobs
+> on the sparc64 platform.  This patch uses the same method to handle
+> those on powerpc as well.
+> 
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Ulrich Weigand <ulrich.weigand@de.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-> diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-> index 14dfdee..c128823 100644
-> --- a/sound/soc/fsl/Kconfig
-> +++ b/sound/soc/fsl/Kconfig
-> @@ -258,7 +258,8 @@ config SND_SOC_IMX_SGTL5000
->         select SND_SOC_SGTL5000
->         select SND_SOC_IMX_PCM_DMA
->         select SND_SOC_IMX_AUDMUX
-> -       select SND_SOC_FSL_SSI
-> +       select SND_SOC_FSL_SAI if SOC_IMX6UL
-> +       select SND_SOC_FSL_SSI if SOC_IMX6Q || SOC_IMX6SL || SOC_IMX6SX
+Applied to powerpc next.
 
-MX6SX has SSI and SAI interfaces.
+https://git.kernel.org/powerpc/c/2e50c4bef77511b42cc226865d
+
+cheers
