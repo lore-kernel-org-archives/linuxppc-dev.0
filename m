@@ -1,39 +1,20 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ECE0B1A028D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 17:04:08 +1100 (AEDT)
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 13 Jan 2016 16:04:07 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 459D02CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 17:03:53 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0D63jZr59506806
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 17:03:53 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0D63KsL005962
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 17:03:20 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH V1 01/33] powerpc/mm: add _PAGE_HASHPTE similar to 4K
- hash
-In-Reply-To: <20160113134821.41d4e006@cotter.ozlabs.ibm.com>
-References: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1452582968-22669-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20160113134821.41d4e006@cotter.ozlabs.ibm.com>
-Date: Wed, 13 Jan 2016 11:32:53 +0530
-Message-ID: <87si22c8z6.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id DAE141A0C96
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 17:04:51 +1100 (AEDT)
+Message-ID: <1452665080.2403.21.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/eeh: Validate arch in eeh_add_device_early()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>, mpe@ellerman.id.au,
+ gwshan@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: paulus@samba.org
+Date: Wed, 13 Jan 2016 17:04:40 +1100
+In-Reply-To: <1452395295-1759-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+References: <1452395295-1759-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,26 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
+On Sun, 2016-01-10 at 01:08 -0200, Guilherme G. Piccoli wrote:weust changes the way the arch checking is done in function
+> 
+> This patch jeeh_add_device_early(): we use no more eeh_enabled(), but instead we check therunning architecture by using the macro machine_is(). If we are running on
+> pSeries or PowerNV, the EEH mechanism can be enabled; otherwise, we bail out
+> the function. This way, we don't enable EEH on Cell and we don't hit the oops
+> on DLPAR either.
 
-> On Tue, 12 Jan 2016 12:45:36 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
->
->> Not really needed. But this brings it back to as it was before
->> 
->
-> Could you expand on not really needed. Could the changelog describe how
-> the bits will be used in the follow on patches.
->
+Can't we just check for eeh_ops being NULL ?
 
-What confused me in the beginning was difference between 4k and 64k
-page size. I was trying to find out whether we miss a hpte flush in any
-scenario because of this. ie, a pte update on a linux pte, for which we
-are doing a parallel hash pte insert. After looking at it closer my
-understanding is this won't happen because pte update also look at
-_PAGE_BUSY and we will wait for hash pte insert to finish before going
-ahead with the pte update. But to avoid further confusion I was wondering
-whether we should keep this closer to what we have with __hash_page_4k.
-Hence the statement "Not really needed".
+Cheers,
+Ben.
 
--aneesh
+> Fixes: 89a51df5ab1d ("powerpc/eeh: Fix crash in eeh_add_device_early() on Cell")
+> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/eeh.c | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> index 40e4d4a..81e2d3e 100644
+> --- a/arch/powerpc/kernel/eeh.c
+> +++ b/arch/powerpc/kernel/eeh.c
+> @@ -1072,7 +1072,13 @@ void eeh_add_device_early(struct pci_dn *pdn)
+>  	struct pci_controller *phb;
+>  	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+>  
+> -	if (!edev || !eeh_enabled())
+> +	if (!edev)
+> +		return;
+> +
+> +	/* Some platforms (like Cell) don't have EEH capabilities, so we
+> +	 * need to abort here. In case of pseries or powernv, we have EEH
+> +	 * so we can continue. */
+> +	if (!machine_is(pseries) && !machine_is(powernv))
+>  		return;
+>  
+>  	if (!eeh_has_flag(EEH_PROBE_MODE_DEVTREE))
