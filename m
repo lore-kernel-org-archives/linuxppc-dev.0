@@ -1,36 +1,36 @@
 Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 646501A06CD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 22:56:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5E92C1A07F0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 23:08:42 +1100 (AEDT)
 Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Wed, 13 Jan 2016 09:56:08 -0200
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 74DFC1DC006A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 06:56:01 -0500 (EST)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0DBrsBZ8389058
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 09:53:55 -0200
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0DBu3oY002818
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 09:56:04 -0200
+ Wed, 13 Jan 2016 10:08:36 -0200
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id E8C8D3520072
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 07:08:27 -0500 (EST)
+Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0DC9AhV3465304
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 10:09:10 -0200
+Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
+ by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0DC8W62014770
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 10:08:33 -0200
 Subject: Re: [PATCH] powerpc/eeh: Validate arch in eeh_add_device_early()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
 References: <1452395295-1759-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1452665080.2403.21.camel@kernel.crashing.org>
-Cc: mpe@ellerman.id.au, gwshan@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+ <1452681487.7404.6.camel@ellerman.id.au>
+Cc: gwshan@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Message-ID: <56963B53.8050505@linux.vnet.ibm.com>
-Date: Wed, 13 Jan 2016 09:56:03 -0200
+Message-ID: <56963E40.8070702@linux.vnet.ibm.com>
+Date: Wed, 13 Jan 2016 10:08:32 -0200
 MIME-Version: 1.0
-In-Reply-To: <1452665080.2403.21.camel@kernel.crashing.org>
+In-Reply-To: <1452681487.7404.6.camel@ellerman.id.au>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -41,25 +41,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/13/2016 04:04 AM, Benjamin Herrenschmidt wrote:
-> On Sun, 2016-01-10 at 01:08 -0200, Guilherme G. Piccoli wrote:weust changes the way the arch checking is done in function
->>
->> This patch jeeh_add_device_early(): we use no more eeh_enabled(), but instead we check the running architecture by using the macro machine_is(). If we are running on
->> pSeries or PowerNV, the EEH mechanism can be enabled; otherwise, we bail out
->> the function. This way, we don't enable EEH on Cell and we don't hit the oops
->> on DLPAR either.
->
-> Can't we just check for eeh_ops being NULL ?
->
-> Cheers,
-> Ben.
+On 01/13/2016 08:38 AM, Michael Ellerman wrote:
+> But eeh_enabled() is still false? That seems like it's liable to cause breakage
+> elsewhere.
 
-Sure, we can. I prefer the arch checking just because I think it's more 
-"logical", so it's easier to understand why it's there. The "cost" is 
-the same in practice, since the arch checking is just a macro that 
-checks a struct member.
+Yes, eeh_enabled() is false as expected. Notice that eeh_enabled() is 
+telling if EEH is enabled or not, and since it's not (because there's no 
+PCI adapters on machine yet!), makes sense it returns false.
 
-What do you think it's better? Thanks for the review.
+At the end of runs of eeh_add_device_early(), the devices are probed and 
+EEH is enabled, so the function will reflect this. Notice that the 
+problem addressed by this patch is the use of eeh_enabled() in hotplug 
+operations only, which in my opinion is not correct. I checked every 
+other use of eeh_enable() in the code, and they all seems appropriate, 
+so I expect no errors at all.
+
+
+> Shouldn't the PCI hotplug code instead be taught to initialise EEH correctly
+> when the first device is added?
+
+Well, for sure there are other ways to achieve this patch's goal, like 
+refactor PCI hotplug code in lots of places. But notice although the 
+proposed solution is simple, it solves the issue because 
+eeh_add_device_early() is ultimately the function used by PCI hotplug 
+mechanism (no matter if pseries/cell/etc or the type of hotplug) to 
+initialize EEH by probing the devices at the moment they are added to 
+the system. In my opinion, this is exactly the location we want to 
+change code to address this issue.
+
+What do you think? Thanks very much for the review.
 
 Cheers,
 
