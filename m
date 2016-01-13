@@ -1,20 +1,41 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45D7D1A06C9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 21:38:14 +1100 (AEDT)
-Message-ID: <1452681487.7404.6.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/eeh: Validate arch in eeh_add_device_early()
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
- gwshan@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@samba.org
-Date: Wed, 13 Jan 2016 21:38:07 +1100
-In-Reply-To: <1452395295-1759-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-References: <1452395295-1759-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 448531A06C9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 21:45:21 +1100 (AEDT)
+Date: Wed, 13 Jan 2016 10:45:17 +0000
+From: Will Deacon <will.deacon@arm.com>
+To: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
+ David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
+ x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
+ Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
+ ddaney.cavm@gmail.com, james.hogan@imgtec.com,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
+Message-ID: <20160113104516.GE25458@arm.com>
+References: <1452426622-4471-12-git-send-email-mst@redhat.com>
+ <56945366.2090504@imgtec.com>
+ <20160112092711.GP6344@twins.programming.kicks-ass.net>
+ <20160112102555.GV6373@twins.programming.kicks-ass.net>
+ <20160112104012.GW6373@twins.programming.kicks-ass.net>
+ <20160112114111.GB15737@arm.com> <569565DA.2010903@imgtec.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <569565DA.2010903@imgtec.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +45,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2016-01-10 at 01:08 -0200, Guilherme G. Piccoli wrote:
-
-> Commit 89a51df5ab1d ("powerpc/eeh: Fix crash in eeh_add_device_early() on Cell")
-> added a check on function eeh_add_device_early(): since in Cell arch eeh_ops
-> is NULL, that code used to crash on Cell. The commit's approach was validate
-> if EEH was available by checking the result of function eeh_enabled().
+On Tue, Jan 12, 2016 at 12:45:14PM -0800, Leonid Yegoshin wrote:
+> >The issue I have with the SYNC description in the text above is that it
+> >describes the single CPU (program order) and the dual-CPU (confusingly
+> >named global order) cases, but then doesn't generalise any further. That
+> >means we can't sensibly reason about transitivity properties when a third
+> >agent is involved. For example, the WRC+sync+addr test:
+> >
+> >
+> >P0:
+> >Wx = 1
+> >
+> >P1:
+> >Rx == 1
+> >SYNC
+> >Wy = 1
+> >
+> >P2:
+> >Ry == 1
+> ><address dep>
+> >Rx = 0
+> >
+> >
+> >I can't find anything to forbid that, given the text. The main problem
+> >is having the SYNC on P1 affect the write by P0.
 > 
-> Since the function eeh_add_device_early() is used to perform EEH
-> initialization in devices added later on the system, like in hotplug/DLPAR
-> scenarios, we might reach a case in which no PCI devices are present on boot
-> and so EEH is not initialized. Then, if a device is added via DLPAR for
-> example, eeh_add_device_early() fails because eeh_enabled() is false.
-> 
-> We can hit a kernel oops on pSeries arch if eeh_add_device_early() fails:
-> if we have no PCI devices on machine at boot time, and then we add a PCI device
-> via DLPAR operation, the function query_ddw() triggers the oops on NULL pointer
-> dereference in the line "cfg_addr = edev->config_addr;". It happens because
-> config_addr in edev is NULL, since the function eeh_add_device_early() was not
-> completed successfully.
-> 
-> This patch just changes the way the arch checking is done in function
-> eeh_add_device_early(): we use no more eeh_enabled(), but instead we check the
-> running architecture by using the macro machine_is(). If we are running on
-> pSeries or PowerNV, the EEH mechanism can be enabled; otherwise, we bail out
-> the function. This way, we don't enable EEH on Cell and we don't hit the oops
-> on DLPAR either.
+> As I understand that test, the visibility of P0: W[x] = 1 is identical to P1
+> and P2 here. If P1 got X before SYNC and write to Y after SYNC then
+> instruction source register dependency tracking in P2 prevents a speculative
+> load of X before P2 obtains Y from the same place as P0/P1 and calculate
+> address of X. If some load of X in P2 happens before address dependency
+> calculation it's result is discarded.
 
-But eeh_enabled() is still false? That seems like it's liable to cause breakage
-elsewhere.
+I don't think the address dependency is enough on its own. By that
+reasoning, the following variant (WRC+addr+addr) would work too:
 
-Shouldn't the PCI hotplug code instead be taught to initialise EEH correctly
-when the first device is added?
 
-cheers
+P0:
+Wx = 1
+
+P1:
+Rx == 1
+<address dep>
+Wy = 1
+
+P2:
+Ry == 1
+<address dep>
+Rx = 0
+
+
+So are you saying that this is also forbidden?
+Imagine that P0 and P1 are two threads that share a store buffer. What
+then?
+
+> Yes, you can't find that in MIPS SYNC instruction description, it is more
+> likely in CM (Coherence Manager) area. I just pointed our arch team member
+> responsible for documents and he will think how to explain that.
+
+I tried grepping the linked documents for "coherence manager" but couldn't
+find anything. Is the description you refer to available anywhere?
+
+Will
