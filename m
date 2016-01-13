@@ -1,41 +1,27 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 448531A06C9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 21:45:21 +1100 (AEDT)
-Date: Wed, 13 Jan 2016 10:45:17 +0000
-From: Will Deacon <will.deacon@arm.com>
-To: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
- David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- ddaney.cavm@gmail.com, james.hogan@imgtec.com,
- Michael Ellerman <mpe@ellerman.id.au>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
-Message-ID: <20160113104516.GE25458@arm.com>
-References: <1452426622-4471-12-git-send-email-mst@redhat.com>
- <56945366.2090504@imgtec.com>
- <20160112092711.GP6344@twins.programming.kicks-ass.net>
- <20160112102555.GV6373@twins.programming.kicks-ass.net>
- <20160112104012.GW6373@twins.programming.kicks-ass.net>
- <20160112114111.GB15737@arm.com> <569565DA.2010903@imgtec.com>
+Return-Path: <LW@KARO-electronics.de>
+Received: from mail.karo-electronics.de (mail.karo-electronics.de
+ [81.173.242.67]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 391991A06CD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 22:11:58 +1100 (AEDT)
+Date: Wed, 13 Jan 2016 12:11:35 +0100
+From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
+To: Mark Brown <broonie@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Fabio Estevam
+ <fabio.estevam@freescale.com>, Jaroslav Kysela <perex@perex.cz>, Liam
+ Girdwood <lgirdwood@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Takashi Iwai <tiwai@suse.com>, Timur Tabi <timur@tabi.org>, Xiubo Li
+ <Xiubo.Lee@gmail.com>, alsa-devel@alsa-project.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] ASoC: fsl: imx-sgtl5000: make audmux optional for
+ imx sound driver
+Message-ID: <20160113121135.5c18f4ee@ipc1.ka-ro>
+In-Reply-To: <20160112182253.GD6588@sirena.org.uk>
+References: <1452622411-16674-1-git-send-email-LW@KARO-electronics.de>
+ <1452622411-16674-2-git-send-email-LW@KARO-electronics.de>
+ <20160112182253.GD6588@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <569565DA.2010903@imgtec.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,65 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 12, 2016 at 12:45:14PM -0800, Leonid Yegoshin wrote:
-> >The issue I have with the SYNC description in the text above is that it
-> >describes the single CPU (program order) and the dual-CPU (confusingly
-> >named global order) cases, but then doesn't generalise any further. That
-> >means we can't sensibly reason about transitivity properties when a third
-> >agent is involved. For example, the WRC+sync+addr test:
-> >
-> >
-> >P0:
-> >Wx = 1
-> >
-> >P1:
-> >Rx == 1
-> >SYNC
-> >Wy = 1
-> >
-> >P2:
-> >Ry == 1
-> ><address dep>
-> >Rx = 0
-> >
-> >
-> >I can't find anything to forbid that, given the text. The main problem
-> >is having the SYNC on P1 affect the write by P0.
-> 
-> As I understand that test, the visibility of P0: W[x] = 1 is identical to P1
-> and P2 here. If P1 got X before SYNC and write to Y after SYNC then
-> instruction source register dependency tracking in P2 prevents a speculative
-> load of X before P2 obtains Y from the same place as P0/P1 and calculate
-> address of X. If some load of X in P2 happens before address dependency
-> calculation it's result is discarded.
+Hi,
 
-I don't think the address dependency is enough on its own. By that
-reasoning, the following variant (WRC+addr+addr) would work too:
+> On Tue, Jan 12, 2016 at 07:13:30PM +0100, Lothar Wa=C3=9Fmann wrote:
+>=20
+> > i.MX6UL does not have the audio multiplexer (AUDMUX) like e.g. i.MX6Q,
+> > but apart from that can use the same audio driver. Make audmux
+> > optional for the imx-sgtl5000 driver, so it can be used on i.MX6UL
+> > too. Also i.MX6UL requires use of the SAI interface rather than SSI.
+>=20
+> If it doesn't have the audmux can you use simple-card?
+>
+I'll have a look at it. Thanks for the hint.
 
 
-P0:
-Wx = 1
-
-P1:
-Rx == 1
-<address dep>
-Wy = 1
-
-P2:
-Ry == 1
-<address dep>
-Rx = 0
-
-
-So are you saying that this is also forbidden?
-Imagine that P0 and P1 are two threads that share a store buffer. What
-then?
-
-> Yes, you can't find that in MIPS SYNC instruction description, it is more
-> likely in CM (Coherence Manager) area. I just pointed our arch team member
-> responsible for documents and he will think how to explain that.
-
-I tried grepping the linked documents for "coherence manager" but couldn't
-find anything. Is the description you refer to available anywhere?
-
-Will
+Lothar Wa=C3=9Fmann
