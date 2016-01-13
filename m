@@ -1,31 +1,40 @@
-Return-Path: <chandan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 79D291A099E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 03:51:43 +1100 (AEDT)
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <chandan@linux.vnet.ibm.com>;
- Thu, 14 Jan 2016 02:51:42 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 03BA12BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 03:51:38 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0DGpTYp29032594
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 03:51:37 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0DGp4Q7021917
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 03:51:05 +1100
-From: Chandan Rajendra <chandan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Chandan Rajendra <chandan@linux.vnet.ibm.com>, chandan@mykolab.com
-Subject: [PATCH] powerpc: Wire up copy_file_range() syscall
-Date: Wed, 13 Jan 2016 22:20:22 +0530
-Message-Id: <1452703822-29844-1-git-send-email-chandan@linux.vnet.ibm.com>
+Return-Path: <Leonid.Yegoshin@imgtec.com>
+Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
+ by lists.ozlabs.org (Postfix) with ESMTP id 8404D1A098F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 06:02:41 +1100 (AEDT)
+Message-ID: <56969F4B.7070001@imgtec.com>
+Date: Wed, 13 Jan 2016 11:02:35 -0800
+From: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>
+MIME-Version: 1.0
+To: Will Deacon <will.deacon@arm.com>
+CC: Peter Zijlstra <peterz@infradead.org>, "Michael S. Tsirkin"
+ <mst@redhat.com>, <linux-kernel@vger.kernel.org>, Arnd Bergmann
+ <arnd@arndb.de>, <linux-arch@vger.kernel.org>, Andrew Cooper
+ <andrew.cooper3@citrix.com>, Russell King - ARM Linux
+ <linux@arm.linux.org.uk>, <virtualization@lists.linux-foundation.org>,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin"
+ <hpa@zytor.com>, Joe Perches <joe@perches.com>, David Miller
+ <davem@davemloft.net>, <linux-ia64@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-s390@vger.kernel.org>,
+ <sparclinux@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-metag@vger.kernel.org>, <linux-mips@linux-mips.org>, <x86@kernel.org>,
+ <user-mode-linux-devel@lists.sourceforge.net>,
+ <adi-buildroot-devel@lists.sourceforge.net>, <linux-sh@vger.kernel.org>,
+ <linux-xtensa@linux-xtensa.org>, <xen-devel@lists.xenproject.org>, "Ralf
+ Baechle" <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
+ <ddaney.cavm@gmail.com>, <james.hogan@imgtec.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
+References: <1452426622-4471-12-git-send-email-mst@redhat.com>
+ <56945366.2090504@imgtec.com>
+ <20160112092711.GP6344@twins.programming.kicks-ass.net>
+ <20160112102555.GV6373@twins.programming.kicks-ass.net>
+ <20160112104012.GW6373@twins.programming.kicks-ass.net>
+ <20160112114111.GB15737@arm.com> <569565DA.2010903@imgtec.com>
+ <20160113104516.GE25458@arm.com>
+In-Reply-To: <20160113104516.GE25458@arm.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,55 +44,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Test runs on a ppc64 BE guest succeeded.
+On 01/13/2016 02:45 AM, Will Deacon wrote:
+> On Tue, Jan 12, 2016 at 12:45:14PM -0800, Leonid Yegoshin wrote:
+>>
+> I don't think the address dependency is enough on its own. By that
+> reasoning, the following variant (WRC+addr+addr) would work too:
+>
+>
+> P0:
+> Wx = 1
+>
+> P1:
+> Rx == 1
+> <address dep>
+> Wy = 1
+>
+> P2:
+> Ry == 1
+> <address dep>
+> Rx = 0
+>
+>
+> So are you saying that this is also forbidden?
+> Imagine that P0 and P1 are two threads that share a store buffer. What
+> then?
+>
 
-Signed-off-by: Chandan Rajendra <chandan@linux.vnet.ibm.com>
----
-The "yet to be upstreamed" fstests test
-(https://github.com/chandanr/xfstests/commit/c2ce6196711e02792b434448e29f45b5f9a955f6)
-was used to test the syscall. The test in turn depends on the usage of xfs_io's
-copy_file_range command.
-(https://github.com/chandanr/xfsprogs-dev/commit/9222b48a3d03fb9d690323b460d882e559bd1080)
-I will post these patches to the respective mailing lists once this patch is
-mainlined.
+I ask HW team about it but I have a question - has it any relationship 
+with replacing MIPS SYNC with lightweight SYNCs (SYNC_WMB etc)? You use 
+any barrier or do not use it and I just voice an intention to use a more 
+efficient instruction instead of bold hummer (SYNC instruction). If you 
+don't use any barrier here then it is a different issue.
 
- arch/powerpc/include/asm/systbl.h      | 1 +
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+May be it has sense to return back to original issue?
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 5654ece..3fa9df7 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -383,3 +383,4 @@ SYSCALL(ni_syscall)
- SYSCALL(ni_syscall)
- SYSCALL(ni_syscall)
- SYSCALL(mlock2)
-+SYSCALL(copy_file_range)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 6a5ace5..1f2594d 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
- 
- 
--#define NR_syscalls		379
-+#define NR_syscalls		380
- 
- #define __NR__exit __NR_exit
- 
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 12a0565..940290d 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -389,5 +389,6 @@
- #define __NR_userfaultfd	364
- #define __NR_membarrier		365
- #define __NR_mlock2		378
-+#define __NR_copy_file_range	379
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
--- 
-2.1.0
+- Leonid
