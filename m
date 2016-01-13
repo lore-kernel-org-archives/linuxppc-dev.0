@@ -1,24 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3632E1A028D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 18:18:21 +1100 (AEDT)
-Message-ID: <1452669487.2403.25.camel@kernel.crashing.org>
-Subject: Re: [RFC PATCH V1 14/33] powerpc/mm: Use helper for finding pte
- bits mapping I/O area
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Denis Kirjanov
- <kda@linux-powerpc.org>
-Cc: paulus@samba.org, mpe@ellerman.id.au, Michael Neuling <mikey@neuling.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id A92991A028C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 18:44:40 +1100 (AEDT)
+Message-ID: <1452671073.7404.1.camel@ellerman.id.au>
+Subject: Re: linux-next: build failure after merge of the powerpc tree
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Stephen Rothwell
+ <sfr@canb.auug.org.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org
-Date: Wed, 13 Jan 2016 18:18:07 +1100
-In-Reply-To: <87pox6c8qq.fsf@linux.vnet.ibm.com>
-References: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1452582968-22669-15-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <CAOJe8K0sgNvOA5pP8jUt7rpfstW2d-hqOOjSXszihLDkpT4JXQ@mail.gmail.com>
- <1452657437.2403.17.camel@kernel.crashing.org>
- <87pox6c8qq.fsf@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, linux-next@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Date: Wed, 13 Jan 2016 18:44:33 +1100
+In-Reply-To: <87vb6yc9r1.fsf@linux.vnet.ibm.com>
+References: <20160107191613.0228560b@canb.auug.org.au>
+ <1452162650.5826.2.camel@ellerman.id.au>
+ <87vb6yc9r1.fsf@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,28 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-01-13 at 11:37 +0530, Aneesh Kumar K.V wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > On Tue, 2016-01-12 at 10:42 +0300, Denis Kirjanov wrote:
-> > > > +static inline unsigned long pte_io_cache_bits(void)
-> > > > +{
-> > > > +     return _PAGE_NO_CACHE | _PAGE_GUARDED;
-> > > > +}
-> > > This could be just plain #define
+On Wed, 2016-01-13 at 11:16 +0530, Aneesh Kumar K.V wrote:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+> > On Thu, 2016-01-07 at 19:16 +1100, Stephen Rothwell wrote:
+> > > After merging the powerpc tree, today's linux-next build (powerpc64
+> > > allnoconfig) failed like this:
+> > > 
+> > > arch/powerpc/mm/hash_utils_64.c: In function 'get_paca_psize':
+> > > arch/powerpc/mm/hash_utils_64.c:869:19: error: 'struct paca_struct' has no member named 'context'
+> > >   return get_paca()->context.user_psize;
+> > >                    ^
+> > > arch/powerpc/mm/hash_utils_64.c:870:1: error: control reaches end of non-void function [-Werror=return-type]
+> > >  }
+> > >  ^
+> > > 
+> > > Caused by commit
+> > > 
+> > >   2fc251a8dda5 ("powerpc: Copy only required pieces of the mm_context_t to the paca")
 > > 
-> > Or just use pgprot_noncached()
+> > Well that's rather embarrassing, for Mikey ;D
+
+> > > This build has CONFIG_PPC_MM_SLICES not set ...
 > > 
-> #define pgprot_noncached(prot)	  (__pgprot((pgprot_val(prot) &
-> ~_PAGE_CACHE_CTL) | \
-> 				            _PAGE_NO_CACHE |
-> _PAGE_GUARDED))
+> > Ugh, but it would seem none of our defconfigs do :/
 > 
-> 
-> That will return me a pgprot_t.  I can fix that by using
-> pgprot_val(pgprot_noncached(0)). Is that what you are suggesting ?
+> 4K page size with hugetlb disabled will get that 
 
-Shouln't ioremap just use pgprot_noncached(PAGE_KERNEL) or similar ?
+Yeah, but none of our defconfigs do that.
 
-Cheers,
-Ben.
+I've got a kisskb target for it now:
+
+  http://kisskb.ellerman.id.au/kisskb/target/28577/
+
+cheers
