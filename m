@@ -1,24 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yk0-x241.google.com (mail-yk0-x241.google.com
+ [IPv6:2607:f8b0:4002:c07::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A92991A028C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 18:44:40 +1100 (AEDT)
-Message-ID: <1452671073.7404.1.camel@ellerman.id.au>
-Subject: Re: linux-next: build failure after merge of the powerpc tree
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Stephen Rothwell
- <sfr@canb.auug.org.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Michael Neuling <mikey@neuling.org>, linux-next@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Date: Wed, 13 Jan 2016 18:44:33 +1100
-In-Reply-To: <87vb6yc9r1.fsf@linux.vnet.ibm.com>
-References: <20160107191613.0228560b@canb.auug.org.au>
- <1452162650.5826.2.camel@ellerman.id.au>
- <87vb6yc9r1.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D3CF1A02A5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 19:13:39 +1100 (AEDT)
+Received: by mail-yk0-x241.google.com with SMTP id y10so28196609ykf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 00:13:39 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1452582968-22669-16-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1452582968-22669-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1452582968-22669-16-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 13 Jan 2016 11:13:37 +0300
+Message-ID: <CAOJe8K26-ATFQC+42xB4EgtKe10OXDdVhEjEm3qq_5GQTFpT4w@mail.gmail.com>
+Subject: Re: [RFC PATCH V1 15/33] powerpc/mm: Use helper for finding pte
+ filter mask for gup
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +29,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-01-13 at 11:16 +0530, Aneesh Kumar K.V wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
-> > On Thu, 2016-01-07 at 19:16 +1100, Stephen Rothwell wrote:
-> > > After merging the powerpc tree, today's linux-next build (powerpc64
-> > > allnoconfig) failed like this:
-> > > 
-> > > arch/powerpc/mm/hash_utils_64.c: In function 'get_paca_psize':
-> > > arch/powerpc/mm/hash_utils_64.c:869:19: error: 'struct paca_struct' has no member named 'context'
-> > >   return get_paca()->context.user_psize;
-> > >                    ^
-> > > arch/powerpc/mm/hash_utils_64.c:870:1: error: control reaches end of non-void function [-Werror=return-type]
-> > >  }
-> > >  ^
-> > > 
-> > > Caused by commit
-> > > 
-> > >   2fc251a8dda5 ("powerpc: Copy only required pieces of the mm_context_t to the paca")
-> > 
-> > Well that's rather embarrassing, for Mikey ;D
+On 1/12/16, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/32/pgtable.h | 8 ++++++++
+>  arch/powerpc/include/asm/book3s/64/hash.h    | 9 +++++++++
+>  arch/powerpc/include/asm/nohash/pgtable.h    | 9 +++++++++
+>  arch/powerpc/mm/hugetlbpage.c                | 5 +----
+>  4 files changed, 27 insertions(+), 4 deletions(-)
 
-> > > This build has CONFIG_PPC_MM_SLICES not set ...
-> > 
-> > Ugh, but it would seem none of our defconfigs do :/
-> 
-> 4K page size with hugetlb disabled will get that 
+This can be also placed to some common header to avoid code duplication
 
-Yeah, but none of our defconfigs do that.
-
-I've got a kisskb target for it now:
-
-  http://kisskb.ellerman.id.au/kisskb/target/28577/
-
-cheers
+>
+> diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h
+> b/arch/powerpc/include/asm/book3s/32/pgtable.h
+> index 77adada2f3b4..c0898e26ed4a 100644
+> --- a/arch/powerpc/include/asm/book3s/32/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+> @@ -483,6 +483,14 @@ static inline unsigned long pte_io_cache_bits(void)
+>  	return _PAGE_NO_CACHE | _PAGE_GUARDED;
+>  }
+>
+> +static inline unsigned long gup_pte_filter(int write)
+> +{
+> +	unsigned long mask;
+> +	mask = _PAGE_PRESENT | _PAGE_USER;
+> +	if (write)
+> +		mask |= _PAGE_RW;
+> +	return mask;
+> +}
+>  #endif /* !__ASSEMBLY__ */
+>
+>  #endif /*  _ASM_POWERPC_BOOK3S_32_PGTABLE_H */
+> diff --git a/arch/powerpc/include/asm/book3s/64/hash.h
+> b/arch/powerpc/include/asm/book3s/64/hash.h
+> index 1b27c0c8effa..ee8dd7e561b0 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hash.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hash.h
+> @@ -583,6 +583,15 @@ static inline unsigned long pte_io_cache_bits(void)
+>  	return _PAGE_NO_CACHE | _PAGE_GUARDED;
+>  }
+>
+> +static inline unsigned long gup_pte_filter(int write)
+> +{
+> +	unsigned long mask;
+> +	mask = _PAGE_PRESENT | _PAGE_USER;
+> +	if (write)
+> +		mask |= _PAGE_RW;
+> +	return mask;
+> +}
+> +
+>  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+>  extern void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long
+> addr,
+>  				   pmd_t *pmdp, unsigned long old_pmd);
+> diff --git a/arch/powerpc/include/asm/nohash/pgtable.h
+> b/arch/powerpc/include/asm/nohash/pgtable.h
+> index 8c4bb8fda0de..e4173cb06e5b 100644
+> --- a/arch/powerpc/include/asm/nohash/pgtable.h
+> +++ b/arch/powerpc/include/asm/nohash/pgtable.h
+> @@ -229,6 +229,15 @@ static inline unsigned long pte_io_cache_bits(void)
+>  	return _PAGE_NO_CACHE | _PAGE_GUARDED;
+>  }
+>
+> +static inline unsigned long gup_pte_filter(int write)
+> +{
+> +	unsigned long mask;
+> +	mask = _PAGE_PRESENT | _PAGE_USER;
+> +	if (write)
+> +		mask |= _PAGE_RW;
+> +	return mask;
+> +}
+> +
+>  #ifdef CONFIG_HUGETLB_PAGE
+>  static inline int hugepd_ok(hugepd_t hpd)
+>  {
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index 26fb814f289f..4e970f58f8d9 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -417,10 +417,7 @@ int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned
+> long addr,
+>  		end = pte_end;
+>
+>  	pte = READ_ONCE(*ptep);
+> -	mask = _PAGE_PRESENT | _PAGE_USER;
+> -	if (write)
+> -		mask |= _PAGE_RW;
+> -
+> +	mask = gup_pte_filter(write);
+>  	if ((pte_val(pte) & mask) != mask)
+>  		return 0;
+>
+> --
+> 2.5.0
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
