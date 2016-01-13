@@ -1,28 +1,16 @@
-Return-Path: <LW@KARO-electronics.de>
-Received: from mail.karo-electronics.de (mail.karo-electronics.de
- [81.173.242.67]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 97F731A0754
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 23:38:32 +1100 (AEDT)
-Date: Wed, 13 Jan 2016 13:38:10 +0100
-From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
-To: Timur Tabi <timur@tabi.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Fabio Estevam
- <fabio.estevam@freescale.com>, Jaroslav Kysela <perex@perex.cz>, Liam
- Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Nicolin
- Chen <nicoleotsuka@gmail.com>, Takashi Iwai <tiwai@suse.com>, Xiubo Li
- <Xiubo.Lee@gmail.com>, alsa-devel@alsa-project.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] ASoC: fsl: select SND_SOC_FSL_SAI or
- SND_SOC_FSL_SSI depending on SoC type
-Message-ID: <20160113133810.167d2dbb@ipc1.ka-ro>
-In-Reply-To: <569545EB.4080307@tabi.org>
-References: <1452622411-16674-1-git-send-email-LW@KARO-electronics.de>
- <1452622411-16674-2-git-send-email-LW@KARO-electronics.de>
- <1452622411-16674-3-git-send-email-LW@KARO-electronics.de>
- <569545EB.4080307@tabi.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5BB5A1A07F0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 23:55:03 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk, zab@redhat.com,
+ Anna.Schumaker@Netapp.com, hch@lst.de
+Subject: [PATCH] powerpc: Wire up sys_copy_file_range()
+Date: Wed, 13 Jan 2016 23:54:49 +1100
+Message-Id: <1452689689-344-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,17 +20,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Lightly tested on 64 bit little endian.
 
-> Lothar Wa=C3=9Fmann wrote:
-> > -	select SND_SOC_FSL_SSI
-> > +	select SND_SOC_FSL_SAI if SOC_IMX6UL
-> > +	select SND_SOC_FSL_SSI if SOC_IMX6Q || SOC_IMX6SL || SOC_IMX6SX
->=20
-> I don't think this is compatible with a multiarch kernel.
->
-Why? If more than one of the IMX6 SoCs are selected, both interfaces
-may be selected at the same time without any harm.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/systbl.h      | 1 +
+ arch/powerpc/include/asm/unistd.h      | 2 +-
+ arch/powerpc/include/uapi/asm/unistd.h | 1 +
+ 3 files changed, 3 insertions(+), 1 deletion(-)
 
-
-Lothar Wa=C3=9Fmann
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index 5654ece02c0d..3fa9df70aa20 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -383,3 +383,4 @@ SYSCALL(ni_syscall)
+ SYSCALL(ni_syscall)
+ SYSCALL(ni_syscall)
+ SYSCALL(mlock2)
++SYSCALL(copy_file_range)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index 4b6b8ace18e0..2f9cd737b529 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -12,7 +12,7 @@
+ #include <uapi/asm/unistd.h>
+ 
+ 
+-#define __NR_syscalls		379
++#define __NR_syscalls		380
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
+index 12a05652377a..940290d45b08 100644
+--- a/arch/powerpc/include/uapi/asm/unistd.h
++++ b/arch/powerpc/include/uapi/asm/unistd.h
+@@ -389,5 +389,6 @@
+ #define __NR_userfaultfd	364
+ #define __NR_membarrier		365
+ #define __NR_mlock2		378
++#define __NR_copy_file_range	379
+ 
+ #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+-- 
+2.5.0
