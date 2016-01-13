@@ -1,34 +1,32 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-yk0-x22a.google.com (mail-yk0-x22a.google.com
+ [IPv6:2607:f8b0:4002:c07::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 64DAC1A0915
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 10:06:10 +1100 (AEDT)
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 14 Jan 2016 09:06:08 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id E07452BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 10:06:04 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0DN5wsH36503706
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 10:06:06 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0DN5WH0018136
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 10:05:32 +1100
-Subject: Re: [PATCH V2] powerpc/powernv: Remove support for p5ioc2
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-References: <1452668681-19458-1-git-send-email-ruscur@russell.cc>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Message-ID: <5696D823.4030307@au1.ibm.com>
-Date: Thu, 14 Jan 2016 10:05:07 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id E5AC91A0C86
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 10:54:14 +1100 (AEDT)
+Received: by mail-yk0-x22a.google.com with SMTP id x67so509258240ykd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jan 2016 15:54:14 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1452668681-19458-1-git-send-email-ruscur@russell.cc>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20160113212008.GC3881@katana>
+References: <1446642770-4681-50-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20160113135426.GA29030@katana> <1452719886.8203.1.camel@ellerman.id.au>
+ <20160113212008.GC3881@katana>
+From: Rob Herring <robherring2@gmail.com>
+Date: Wed, 13 Jan 2016 17:53:53 -0600
+Message-ID: <CAL_JsqLaCMYMGLu_2aoXopgMHmT09xU1CSO4NZokMVUOZTPSJg@mail.gmail.com>
+Subject: Re: [v7,49/50] drivers/of: Export OF changeset functions
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>, aik@ozlabs.ru,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Pantelis Antoniou <panto@antoniou-consulting.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,26 +36,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13/01/16 18:04, Russell Currey wrote:
-> "p5ioc2 is used by approximately 2 machines in the world, and has never
-> ever been a supported configuration."
+On Wed, Jan 13, 2016 at 3:20 PM, Wolfram Sang <wsa@the-dreams.de> wrote:
+> On Thu, Jan 14, 2016 at 08:18:06AM +1100, Michael Ellerman wrote:
+>> On Wed, 2016-01-13 at 14:54 +0100, Wolfram Sang wrote:
+>> > On Thu, Nov 05, 2015 at 12:12:49AM +1100, Gavin Shan wrote:
+>> > > The PowerNV PCI hotplug driver is going to use the OF changeset
+>> > > to manage the changed device sub-tree. This exports those OF
+>> > > changeset functions for that.
+>> > >
+>> > > Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> > > Acked-by: Rob Herring <robh@kernel.org>
+>> >
+>> > I needed something like this, too [1] and rebased my series on top of
+>> > this patch. So:
+>> >
+>> > Acked-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+>> > Tested-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+>>
+>> OK. This series is kind of in limbo, it might hit 4.6, but it might not. So if
+>> you need this patch before then you should probably pull it in to your series,
+>> or ask Rob to merge it pre-emptively.
 >
-> The code for p5ioc2 is essentially unused and complicates what is already
-> a very complicated codebase.  Its removal is essentially a "free win" in
-> the effort to simplify the powernv PCI code.
->
-> In addition, support for p5ioc2 has been dropped from skiboot.  There's no
-> reason to keep it around in the kernel.
->
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
-> ---
-> V2: Remove pointless union and rebase on -next
+> Yup, this is what I had in mind, too.
 
-Thanks for the changes.
+Given this has been on the list some time and still works, I've
+applied this for 4.5. That should simplify dependencies for 4.6.
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-
--- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+Rob
