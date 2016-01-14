@@ -1,24 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D2C71A0C86
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 11:05:23 +1100 (AEDT)
-Date: Thu, 14 Jan 2016 11:06:14 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-Cc: gleb@kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- paulus@ozlabs.org, linuxppc-dev@ozlabs.org, pbonzini@redhat.com,
- mahesh@linux.vnet.ibm.com, kvm@vger.kernel.org, mpe@ellerman.id.au
-Subject: Re: [PATCH v3 2/2] KVM: PPC: Exit guest upon MCE when FWNMI
- capability is enabled
-Message-ID: <20160114000614.GD22925@voom.redhat.com>
-References: <20160113070759.20248.86252.stgit@aravindap>
- <20160113070809.20248.80811.stgit@aravindap>
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mail9.hitachi.co.jp (mail9.hitachi.co.jp [133.145.228.44])
+ by lists.ozlabs.org (Postfix) with ESMTP id 667271A0C98
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 12:32:28 +1100 (AEDT)
+From: =?utf-8?B?5bmz5p2+6ZuF5bezIC8gSElSQU1BVFXvvIxNQVNBTUk=?=
+ <masami.hiramatsu.pt@hitachi.com>
+To: "'Hemant Kumar'" <hemant@linux.vnet.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "srikar@linux.vnet.ibm.com" <srikar@linux.vnet.ibm.com>, "acme@kernel.org"
+ <acme@kernel.org>, "mjw@redhat.com" <mjw@redhat.com>
+Subject: RE: [PATCH v3] perf/probe: Search both .eh_frame and .debug_frame
+ sections for probe location
+Date: Thu, 14 Jan 2016 01:32:23 +0000
+Message-ID: <50399556C9727B4D88A595C8584AAB3752695FB5@GSjpTKYDCembx32.service.hitachi.net>
+References: <1452678985-23516-1-git-send-email-hemant@linux.vnet.ibm.com>
+In-Reply-To: <1452678985-23516-1-git-send-email-hemant@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="8WKGInOJRMBXYFEc"
-In-Reply-To: <20160113070809.20248.80811.stgit@aravindap>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,192 +26,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---8WKGInOJRMBXYFEc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Jan 13, 2016 at 12:38:09PM +0530, Aravinda Prasad wrote:
-> Enhance KVM to cause a guest exit with KVM_EXIT_NMI
-> exit reasons upon a machine check exception (MCE) in
-> the guest address space if the KVM_CAP_PPC_FWNMI
-> capability is enabled (instead of delivering 0x200
-> interrupt to guest). This enables QEMU to build error
-> log and deliver machine check exception to guest via
-> guest registered machine check handler.
->=20
-> This approach simplifies the delivering of machine
-> check exception to guest OS compared to the earlier
-> approach of KVM directly invoking 0x200 guest interrupt
-> vector. In the earlier approach QEMU was enhanced to
-> patch the 0x200 interrupt vector during boot. The
-> patched code at 0x200 issued a private hcall to pass
-> the control to QEMU to build the error log.
->=20
-> This design/approach is based on the feedback for the
-> QEMU patches to handle machine check exception. Details
-> of earlier approach of handling machine check exception
-> in QEMU and related discussions can be found at:
->=20
-> https://lists.nongnu.org/archive/html/qemu-devel/2014-11/msg00813.html
->=20
-> Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
-> ---
->  arch/powerpc/kvm/book3s_hv.c            |   12 ++------
->  arch/powerpc/kvm/book3s_hv_rmhandlers.S |   48 +++++++++++++++----------=
-------
->  2 files changed, 26 insertions(+), 34 deletions(-)
->=20
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index a7352b5..4fa03d0 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -858,15 +858,9 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run=
-, struct kvm_vcpu *vcpu,
->  		r =3D RESUME_GUEST;
->  		break;
->  	case BOOK3S_INTERRUPT_MACHINE_CHECK:
-> -		/*
-> -		 * Deliver a machine check interrupt to the guest.
-> -		 * We have to do this, even if the host has handled the
-> -		 * machine check, because machine checks use SRR0/1 and
-> -		 * the interrupt might have trashed guest state in them.
-> -		 */
-> -		kvmppc_book3s_queue_irqprio(vcpu,
-> -					    BOOK3S_INTERRUPT_MACHINE_CHECK);
-> -		r =3D RESUME_GUEST;
-> +		/* Exit to guest with KVM_EXIT_NMI as exit reason */
-> +		run->exit_reason =3D KVM_EXIT_NMI;
-> +		r =3D RESUME_HOST;
->  		break;
->  	case BOOK3S_INTERRUPT_PROGRAM:
->  	{
-> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/b=
-ook3s_hv_rmhandlers.S
-> index 3c6badc..84e32a3 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -133,21 +133,18 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
->  	stb	r0, HSTATE_HWTHREAD_REQ(r13)
-> =20
->  	/*
-> -	 * For external and machine check interrupts, we need
-> -	 * to call the Linux handler to process the interrupt.
-> -	 * We do that by jumping to absolute address 0x500 for
-> -	 * external interrupts, or the machine_check_fwnmi label
-> -	 * for machine checks (since firmware might have patched
-> -	 * the vector area at 0x200).  The [h]rfid at the end of the
-> -	 * handler will return to the book3s_hv_interrupts.S code.
-> -	 * For other interrupts we do the rfid to get back
-> -	 * to the book3s_hv_interrupts.S code here.
-> +	 * For external interrupts we need to call the Linux
-> +	 * handler to process the interrupt. We do that by jumping
-> +	 * to absolute address 0x500 for external interrupts.
-> +	 * The [h]rfid at the end of the handler will return to
-> +	 * the book3s_hv_interrupts.S code. For other interrupts
-> +	 * we do the rfid to get back to the book3s_hv_interrupts.S
-> +	 * code here.
->  	 */
->  	ld	r8, 112+PPC_LR_STKOFF(r1)
->  	addi	r1, r1, 112
->  	ld	r7, HSTATE_HOST_MSR(r13)
-> =20
-> -	cmpwi	cr1, r12, BOOK3S_INTERRUPT_MACHINE_CHECK
->  	cmpwi	r12, BOOK3S_INTERRUPT_EXTERNAL
->  	beq	11f
->  	cmpwi	r12, BOOK3S_INTERRUPT_H_DOORBELL
-> @@ -162,7 +159,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
->  	mtmsrd	r6, 1			/* Clear RI in MSR */
->  	mtsrr0	r8
->  	mtsrr1	r7
-> -	beq	cr1, 13f		/* machine check */
->  	RFI
-> =20
->  	/* On POWER7, we have external interrupts set to use HSRR0/1 */
-> @@ -170,8 +166,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
->  	mtspr	SPRN_HSRR1, r7
->  	ba	0x500
-> =20
-> -13:	b	machine_check_fwnmi
-> -
->  14:	mtspr	SPRN_HSRR0, r8
->  	mtspr	SPRN_HSRR1, r7
->  	b	hmi_exception_after_realmode
-> @@ -2390,15 +2384,13 @@ machine_check_realmode:
->  	ld	r9, HSTATE_KVM_VCPU(r13)
->  	li	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
->  	/*
-> -	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest through
-> -	 * machine check interrupt (set HSRR0 to 0x200). And for handled
-> -	 * errors (no-fatal), just go back to guest execution with current
-> -	 * HSRR0 instead of exiting guest. This new approach will inject
-> -	 * machine check to guest for fatal error causing guest to crash.
-> -	 *
-> -	 * The old code used to return to host for unhandled errors which
-> -	 * was causing guest to hang with soft lockups inside guest and
-> -	 * makes it difficult to recover guest instance.
-> +	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest either
-> +	 * through machine check interrupt (set HSRR0 to 0x200) or by
-> +	 * exiting the guest with KVM_EXIT_NMI exit reason if guest is
-> +	 * FWNMI capable. For handled errors (no-fatal), just go back
-> +	 * to guest execution with current HSRR0. This new approach
-> +	 * injects machine check errors in guest address space to guest
-> +	 * enabling guest kernel to suitably handle such errors.
->  	 *
->  	 * if we receive machine check with MSR(RI=3D0) then deliver it to
->  	 * guest as machine check causing guest to crash.
-> @@ -2408,11 +2400,17 @@ machine_check_realmode:
->  	beq	1f			/* Deliver a machine check to guest */
->  	ld	r10, VCPU_PC(r9)
->  	cmpdi	r3, 0		/* Did we handle MCE ? */
-> -	bne	2f	/* Continue guest execution. */
-> +	bne	3f	/* Continue guest execution. */
->  	/* If not, deliver a machine check.  SRR0/1 are already set */
-> -1:	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
-> +1:  /* Check if guest is capable of handling NMI exit */
-> +	ld  r3, VCPU_KVM(r9)
-> +	lbz  r3, KVM_FWNMI(r3)
-> +	cmpdi   r3, 1       /* FWNMI capable? */
-> +	bne 2f
-> +	b   mc_cont
-> +2:	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
->  	bl	kvmppc_msr_interrupt
-> -2:	b	fast_interrupt_c_return
-> +3:	b	fast_interrupt_c_return
-> =20
->  /*
->   * Check the reason we woke from nap, and take appropriate action.
->=20
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---8WKGInOJRMBXYFEc
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJWluZ2AAoJEGw4ysog2bOSBxQP/RN8PkuE1fabiqxnjIe662WU
-nKbwECGhiW0JI/zt9CM7KnaRmXG2/w/+aT+lZOIONP6muWIY+8lu9t+glFQcucW9
-p4mUODCy6AAbB+FL2MyyuT2wi1uV5o1tQwih94HFIHBFYe2kg7Bp8GpuOwCd7Suk
-z0QdWa5oWb7Mhv3wnKDWnTHKSzFeCFmHeVdIpCf8qyMvNSgUA1dqpKPKORx43UTj
-BC6xAs5ByLDKaz+M9b+EfV9SPzubvY9gAheSwj4zz6oWeW+TiR+uBCuokUTcf8dc
-5RF0uUzOU2ctbS21vA6xYnlSdWOa7oz/fxuPXskyv4lTxXfVuz138sZd48txGTjx
-kZC5VQKwZM8pH5Qc7PoOF4yiue2KJDpZXRRIcOEuPiUsJcKYChuj9p/mKEAPvTay
-Sv3T+577u7WhvGwcOgyXMkFkPcl4VNL5gWPShiC+jkN4d7WZH2sxaRSnIN2io/IB
-iCcavk5jK3YO0wQhwg+ams3Omsx0DhZiURp5Ua0wjweQx+3kVCm4wKBok5TtO5Du
-IwsyCVehMgruK5wVtakzUZTqiBd3i7Bne0Pe5yw9ApMC/33abnRCxZ11tol+qmor
-plTMMCpHCX4i53VnmnqEB+R9Yl+cWOhx1pUUHV6krl5LxMutrTkYamk9DheEhPTA
-Aoj7kq7hWe6qRDywjlBW
-=38Xd
------END PGP SIGNATURE-----
-
---8WKGInOJRMBXYFEc--
+RnJvbTogSGVtYW50IEt1bWFyIFttYWlsdG86aGVtYW50QGxpbnV4LnZuZXQuaWJtLmNvbV0NCj4N
+Cj5wZXJmIHByb2JlIHRocm91Z2ggZGVidWdpbmZvX19maW5kX3Byb2JlcygpIGluIHV0aWwvcHJv
+YmUtZmluZGVyLmMNCj5jaGVja3MgZm9yIHRoZSBmdW5jdGlvbnMnIGZyYW1lIGRlc2NyaXB0aW9u
+cyBpbiBlaXRoZXIgLmVoX2ZyYW1lIHNlY3Rpb24NCj5vZiBhbiBFTEYgb3IgdGhlIC5kZWJ1Z19m
+cmFtZS4gVGhlIGNoZWNrIGlzIGJhc2VkIG9uIHdoZXRoZXIgZWl0aGVyIG9uZQ0KPm9mIHRoZXNl
+IHNlY3Rpb25zIGlzIHByZXNlbnQuIERlcGVuZGluZyBvbiBkaXN0cm8sIHRvb2xjaGFpbiBkZWZh
+dWx0cywNCj5hcmNoaXRldGN1dHJlLCBidWlsZCBmbGFncywgZXRjLiwgQ0ZJIG1pZ2h0IGJlIGZv
+dW5kIGluIGVpdGhlciAuZWhfZnJhbWUNCj5hbmQvb3IgLmRlYnVnX2ZyYW1lLiBTb21ldGltZXMs
+IGl0IG1heSBoYXBwZW4gdGhhdCwgLmVoX2ZyYW1lLCBldmVuIGlmDQo+cHJlc2VudCwgbWF5IG5v
+dCBiZSBjb21wbGV0ZSBhbmQgbWF5IG1pc3Mgc29tZSBkZXNjcmlwdGlvbnMuIFRoZXJlZm9yZSwN
+Cj50byBiZSBzdXJlLCB0byBmaW5kIHRoZSBDRkkgY292ZXJpbmcgYW4gYWRkcmVzcyB3ZSB3aWxs
+IGFsd2F5cyBoYXZlIHRvDQo+aW52ZXN0aWdhdGUgYm90aCBpZiBhdmFpbGFibGUuDQo+DQo+Rm9y
+IGUuZy4sIGluIHBvd2VycGMsIHRoaXMgbWF5IGhhcHBlbiA6DQo+ICQgZ2NjIC1nIGJpbi5jIC1v
+IGJpbg0KPg0KPiAkIG9iamR1bXAgLS1kd2FyZiAuL2Jpbg0KPiA8MT48MTQ1PjogQWJicmV2IE51
+bWJlcjogNyAoRFdfVEFHX3N1YnByb2dyYW0pDQo+ICAgIDwxNDY+ICAgRFdfQVRfZXh0ZXJuYWwg
+ICAgOiAxDQo+ICAgIDwxNDY+ICAgRFdfQVRfbmFtZSAgICAgICAgOiAoaW5kaXJlY3Qgc3RyaW5n
+LCBvZmZzZXQ6IDB4OWUpOiBtYWluDQo+ICAgIDwxNGE+ICAgRFdfQVRfZGVjbF9maWxlICAgOiAx
+DQo+ICAgIDwxNGI+ICAgRFdfQVRfZGVjbF9saW5lICAgOiAzOQ0KPiAgICA8MTRjPiAgIERXX0FU
+X3Byb3RvdHlwZWQgIDogMQ0KPiAgICA8MTRjPiAgIERXX0FUX3R5cGUgICAgICAgIDogPDB4NTc+
+DQo+ICAgIDwxNTA+ICAgRFdfQVRfbG93X3BjICAgICAgOiAweDEwMDAwN2I4DQo+DQo+SWYgdGhl
+IC5laF9mcmFtZSBhbmQgLmRlYnVnX2ZyYW1lIGFyZSBjaGVja2VkIGZvciB0aGUgc2FtZSBiaW5h
+cnksIHdlDQo+d2lsbCBmaW5kIHRoYXQsIC5laF9mcmFtZSAoYWx0aG91Z2ggcHJlc2VudCkgZG9l
+c24ndCBjb250YWluIGENCj5kZXNjcmlwdGlvbiBmb3IgIm1haW4iIGZ1bmN0aW9uLg0KPkJ1dCwg
+LmRlYnVnX2ZyYW1lIGhhcyBhIGRlc2NyaXB0aW9uIDoNCj4NCj4wMDAwMDBkOCAwMDAwMDAyNCAw
+MDAwMDAwMCBGREUgY2llPTAwMDAwMDAwIHBjPTEwMDAwN2I4Li4xMDAwMDgzOA0KPiAgRFdfQ0ZB
+X2FkdmFuY2VfbG9jOiAxNiB0byAxMDAwMDdjOA0KPiAgRFdfQ0ZBX2RlZl9jZmFfb2Zmc2V0OiAx
+NDQNCj4gIERXX0NGQV9vZmZzZXRfZXh0ZW5kZWRfc2Y6IHI2NSBhdCBjZmErMTYNCj4uLi4NCj4N
+Cj5EdWUgdG8gdGhpcyAoc2luY2UsIHBlcmYgY2hlY2tzIHdoZXRoZXIgLmVoX2ZyYW1lIGlzIHBy
+ZXNlbnQgYW5kIGdvZXMgb24NCj5zZWFyY2hpbmcgZm9yIHRoYXQgYWRkcmVzcyBpbnNpZGUgdGhh
+dCBmcmFtZSksIHBlcmYgaXMgdW5hYmxlIHRvIHByb2Nlc3MNCj50aGUgcHJvYmVzIDoNCj4gIyBw
+ZXJmIHByb2JlIC14IC4vYmluIG1haW4NCj5GYWlsZWQgdG8gZ2V0IGNhbGwgZnJhbWUgb24gMHgx
+MDAwMDdiOA0KPiAgRXJyb3I6IEZhaWxlZCB0byBhZGQgZXZlbnRzLg0KPg0KPlRvIGF2b2lkIHRo
+aXMgaXNzdWUsIHdlIG5lZWQgdG8gY2hlY2sgYm90aCB0aGUgc2VjdGlvbnMgKC5laF9mcmFtZSBh
+bmQNCj4uZGVidWdfZnJhbWUpLCB3aGljaCBpcyBkb25lIGluIHRoaXMgcGF0Y2guDQo+DQo+Tm90
+ZSB0aGF0LCB3ZSBjYW4gYWx3YXlzIGZvcmNlIGV2ZXJ5dGhpbmcgaW50byBib3RoIC5laF9mcmFt
+ZSBhbmQNCj4uZGVidWdfZnJhbWUgYnkgOg0KPiAkIGdjYyBiaW4uYyAtZmFzeW5jaHJvbm91cy11
+bndpbmQtdGFibGVzICAtZm5vLWR3YXJmMi1jZmktYXNtIC1nIC1vIGJpbg0KPg0KPlNpZ25lZC1v
+ZmYtYnk6IEhlbWFudCBLdW1hciA8aGVtYW50QGxpbnV4LnZuZXQuaWJtLmNvbT4NCg0KTG9va3Mg
+Z29vZCB0byBtZTopDQoNCkFja2VkLWJ5OiBNYXNhbWkgSGlyYW1hdHN1IDxtYXNhbWkuaGlyYW1h
+dHN1LnB0QGhpdGFjaGkuY29tPg0KDQpUaGFua3MhDQoNCj4tLS0NCj5DaGFuZ2VzIHNpbmNlIHYy
+Og0KPi0gRml4ZWQgYW4gaXNzdWUgcmVsYXRlZCB0byBmaWxsaW5nIHVwIGJvdGggdGhlIENGSXMg
+KFN1Z2dlc3RlZCBieSBNYXNhbWkpLg0KPg0KPkNoYW5nZXMgc2luY2UgdjE6DQo+LSBwZi0+Y2Zp
+IGlzIG5vdyBjYWNoZWQgYXMgcGYtPmNmaV9laCBhbmQgcGYtPmNmaV9kYmcgZGVwZW5kaW5nIG9u
+IHRoZSBzb3VyY2Ugb2YgQ0ZJDQo+ICAoU3VnZ2VzdGVkIGJ5IE1hcmsgV2llbGFyZCkuDQo+DQo+
+IHRvb2xzL3BlcmYvdXRpbC9wcm9iZS1maW5kZXIuYyB8IDYyICsrKysrKysrKysrKysrKysrKysr
+KysrKystLS0tLS0tLS0tLS0tLS0tLQ0KPiB0b29scy9wZXJmL3V0aWwvcHJvYmUtZmluZGVyLmgg
+fCAgNSArKystDQo+IDIgZmlsZXMgY2hhbmdlZCwgNDEgaW5zZXJ0aW9ucygrKSwgMjYgZGVsZXRp
+b25zKC0pDQo+DQo+ZGlmZiAtLWdpdCBhL3Rvb2xzL3BlcmYvdXRpbC9wcm9iZS1maW5kZXIuYyBi
+L3Rvb2xzL3BlcmYvdXRpbC9wcm9iZS1maW5kZXIuYw0KPmluZGV4IDA1MDEyYmIuLmU0ZDA0OTgg
+MTAwNjQ0DQo+LS0tIGEvdG9vbHMvcGVyZi91dGlsL3Byb2JlLWZpbmRlci5jDQo+KysrIGIvdG9v
+bHMvcGVyZi91dGlsL3Byb2JlLWZpbmRlci5jDQo+QEAgLTY4NSw5ICs2ODUsMTAgQEAgc3RhdGlj
+IGludCBjYWxsX3Byb2JlX2ZpbmRlcihEd2FyZl9EaWUgKnNjX2RpZSwgc3RydWN0IHByb2JlX2Zp
+bmRlciAqcGYpDQo+IAkJcGYtPmZiX29wcyA9IE5VTEw7DQo+ICNpZiBfRUxGVVRJTFNfUFJFUkVR
+KDAsIDE0MikNCj4gCX0gZWxzZSBpZiAobm9wcyA9PSAxICYmIHBmLT5mYl9vcHNbMF0uYXRvbSA9
+PSBEV19PUF9jYWxsX2ZyYW1lX2NmYSAmJg0KPi0JCSAgIHBmLT5jZmkgIT0gTlVMTCkgew0KPisJ
+CSAgIChwZi0+Y2ZpX2VoICE9IE5VTEwgfHwgcGYtPmNmaV9kYmcgIT0gTlVMTCkpIHsNCj4gCQlE
+d2FyZl9GcmFtZSAqZnJhbWU7DQo+LQkJaWYgKGR3YXJmX2NmaV9hZGRyZnJhbWUocGYtPmNmaSwg
+cGYtPmFkZHIsICZmcmFtZSkgIT0gMCB8fA0KPisJCWlmICgoZHdhcmZfY2ZpX2FkZHJmcmFtZShw
+Zi0+Y2ZpX2VoLCBwZi0+YWRkciwgJmZyYW1lKSAhPSAwICYmDQo+KwkJICAgICAoZHdhcmZfY2Zp
+X2FkZHJmcmFtZShwZi0+Y2ZpX2RiZywgcGYtPmFkZHIsICZmcmFtZSkgIT0gMCkpIHx8DQo+IAkJ
+ICAgIGR3YXJmX2ZyYW1lX2NmYShmcmFtZSwgJnBmLT5mYl9vcHMsICZub3BzKSAhPSAwKSB7DQo+
+IAkJCXByX3dhcm5pbmcoIkZhaWxlZCB0byBnZXQgY2FsbCBmcmFtZSBvbiAweCVqeFxuIiwNCj4g
+CQkJCSAgICh1aW50bWF4X3QpcGYtPmFkZHIpOw0KPkBAIC0xMDEzLDggKzEwMTQsNyBAQCBzdGF0
+aWMgaW50IHB1Ym5hbWVfc2VhcmNoX2NiKER3YXJmICpkYmcsIER3YXJmX0dsb2JhbCAqZ2wsIHZv
+aWQgKmRhdGEpDQo+IAlyZXR1cm4gRFdBUkZfQ0JfT0s7DQo+IH0NCj4NCj4tLyogRmluZCBwcm9i
+ZSBwb2ludHMgZnJvbSBkZWJ1Z2luZm8gKi8NCj4tc3RhdGljIGludCBkZWJ1Z2luZm9fX2ZpbmRf
+cHJvYmVzKHN0cnVjdCBkZWJ1Z2luZm8gKmRiZywNCj4rc3RhdGljIGludCBkZWJ1Z2luZm9fX2Zp
+bmRfcHJvYmVfbG9jYXRpb24oc3RydWN0IGRlYnVnaW5mbyAqZGJnLA0KPiAJCQkJICBzdHJ1Y3Qg
+cHJvYmVfZmluZGVyICpwZikNCj4gew0KPiAJc3RydWN0IHBlcmZfcHJvYmVfcG9pbnQgKnBwID0g
+JnBmLT5wZXYtPnBvaW50Ow0KPkBAIC0xMDIzLDI3ICsxMDIzLDYgQEAgc3RhdGljIGludCBkZWJ1
+Z2luZm9fX2ZpbmRfcHJvYmVzKHN0cnVjdCBkZWJ1Z2luZm8gKmRiZywNCj4gCUR3YXJmX0RpZSAq
+ZGllcDsNCj4gCWludCByZXQgPSAwOw0KPg0KPi0jaWYgX0VMRlVUSUxTX1BSRVJFUSgwLCAxNDIp
+DQo+LQlFbGYgKmVsZjsNCj4tCUdFbGZfRWhkciBlaGRyOw0KPi0JR0VsZl9TaGRyIHNoZHI7DQo+
+LQ0KPi0JLyogR2V0IHRoZSBjYWxsIGZyYW1lIGluZm9ybWF0aW9uIGZyb20gdGhpcyBkd2FyZiAq
+Lw0KPi0JZWxmID0gZHdhcmZfZ2V0ZWxmKGRiZy0+ZGJnKTsNCj4tCWlmIChlbGYgPT0gTlVMTCkN
+Cj4tCQlyZXR1cm4gLUVJTlZBTDsNCj4tDQo+LQlpZiAoZ2VsZl9nZXRlaGRyKGVsZiwgJmVoZHIp
+ID09IE5VTEwpDQo+LQkJcmV0dXJuIC1FSU5WQUw7DQo+LQ0KPi0JaWYgKGVsZl9zZWN0aW9uX2J5
+X25hbWUoZWxmLCAmZWhkciwgJnNoZHIsICIuZWhfZnJhbWUiLCBOVUxMKSAmJg0KPi0JICAgIHNo
+ZHIuc2hfdHlwZSA9PSBTSFRfUFJPR0JJVFMpIHsNCj4tCQlwZi0+Y2ZpID0gZHdhcmZfZ2V0Y2Zp
+X2VsZihlbGYpOw0KPi0JfSBlbHNlIHsNCj4tCQlwZi0+Y2ZpID0gZHdhcmZfZ2V0Y2ZpKGRiZy0+
+ZGJnKTsNCj4tCX0NCj4tI2VuZGlmDQo+LQ0KPiAJb2ZmID0gMDsNCj4gCXBmLT5sY2FjaGUgPSBp
+bnRsaXN0X19uZXcoTlVMTCk7DQo+IAlpZiAoIXBmLT5sY2FjaGUpDQo+QEAgLTExMDYsNiArMTA4
+NSwzOSBAQCBmb3VuZDoNCj4gCXJldHVybiByZXQ7DQo+IH0NCj4NCj4rLyogRmluZCBwcm9iZSBw
+b2ludHMgZnJvbSBkZWJ1Z2luZm8gKi8NCj4rc3RhdGljIGludCBkZWJ1Z2luZm9fX2ZpbmRfcHJv
+YmVzKHN0cnVjdCBkZWJ1Z2luZm8gKmRiZywNCj4rCQkJCSAgc3RydWN0IHByb2JlX2ZpbmRlciAq
+cGYpDQo+K3sNCj4rCWludCByZXQgPSAwOw0KPisNCj4rI2lmIF9FTEZVVElMU19QUkVSRVEoMCwg
+MTQyKQ0KPisJRWxmICplbGY7DQo+KwlHRWxmX0VoZHIgZWhkcjsNCj4rCUdFbGZfU2hkciBzaGRy
+Ow0KPisNCj4rCWlmIChwZi0+Y2ZpX2VoIHx8IHBmLT5jZmlfZGJnKQ0KPisJCXJldHVybiBkZWJ1
+Z2luZm9fX2ZpbmRfcHJvYmVfbG9jYXRpb24oZGJnLCBwZik7DQo+Kw0KPisJLyogR2V0IHRoZSBj
+YWxsIGZyYW1lIGluZm9ybWF0aW9uIGZyb20gdGhpcyBkd2FyZiAqLw0KPisJZWxmID0gZHdhcmZf
+Z2V0ZWxmKGRiZy0+ZGJnKTsNCj4rCWlmIChlbGYgPT0gTlVMTCkNCj4rCQlyZXR1cm4gLUVJTlZB
+TDsNCj4rDQo+KwlpZiAoZ2VsZl9nZXRlaGRyKGVsZiwgJmVoZHIpID09IE5VTEwpDQo+KwkJcmV0
+dXJuIC1FSU5WQUw7DQo+Kw0KPisJaWYgKGVsZl9zZWN0aW9uX2J5X25hbWUoZWxmLCAmZWhkciwg
+JnNoZHIsICIuZWhfZnJhbWUiLCBOVUxMKSAmJg0KPisJICAgIHNoZHIuc2hfdHlwZSA9PSBTSFRf
+UFJPR0JJVFMpDQo+KwkJcGYtPmNmaV9laCA9IGR3YXJmX2dldGNmaV9lbGYoZWxmKTsNCj4rDQo+
+KwlwZi0+Y2ZpX2RiZyA9IGR3YXJmX2dldGNmaShkYmctPmRiZyk7DQo+KyNlbmRpZg0KPisNCj4r
+CXJldCA9IGRlYnVnaW5mb19fZmluZF9wcm9iZV9sb2NhdGlvbihkYmcsIHBmKTsNCj4rCXJldHVy
+biByZXQ7DQo+K30NCj4rDQo+IHN0cnVjdCBsb2NhbF92YXJzX2ZpbmRlciB7DQo+IAlzdHJ1Y3Qg
+cHJvYmVfZmluZGVyICpwZjsNCj4gCXN0cnVjdCBwZXJmX3Byb2JlX2FyZyAqYXJnczsNCj5kaWZm
+IC0tZ2l0IGEvdG9vbHMvcGVyZi91dGlsL3Byb2JlLWZpbmRlci5oIGIvdG9vbHMvcGVyZi91dGls
+L3Byb2JlLWZpbmRlci5oDQo+aW5kZXggYmVkODI3MS4uMGFlYzc3MCAxMDA2NDQNCj4tLS0gYS90
+b29scy9wZXJmL3V0aWwvcHJvYmUtZmluZGVyLmgNCj4rKysgYi90b29scy9wZXJmL3V0aWwvcHJv
+YmUtZmluZGVyLmgNCj5AQCAtNzYsNyArNzYsMTAgQEAgc3RydWN0IHByb2JlX2ZpbmRlciB7DQo+
+DQo+IAkvKiBGb3IgdmFyaWFibGUgc2VhcmNoaW5nICovDQo+ICNpZiBfRUxGVVRJTFNfUFJFUkVR
+KDAsIDE0MikNCj4tCUR3YXJmX0NGSQkJKmNmaTsJCS8qIENhbGwgRnJhbWUgSW5mb3JtYXRpb24g
+Ki8NCj4rCS8qIENhbGwgRnJhbWUgSW5mb3JtYXRpb24gZnJvbSAuZWhfZnJhbWUgKi8NCj4rCUR3
+YXJmX0NGSQkJKmNmaV9laDsNCj4rCS8qIENhbGwgRnJhbWUgSW5mb3JtYXRpb24gZnJvbSAuZGVi
+dWdfZnJhbWUgKi8NCj4rCUR3YXJmX0NGSQkJKmNmaV9kYmc7DQo+ICNlbmRpZg0KPiAJRHdhcmZf
+T3AJCSpmYl9vcHM7CS8qIEZyYW1lIGJhc2UgYXR0cmlidXRlICovDQo+IAlzdHJ1Y3QgcGVyZl9w
+cm9iZV9hcmcJKnB2YXI7CQkvKiBDdXJyZW50IHRhcmdldCB2YXJpYWJsZSAqLw0KPi0tDQo+MS45
+LjMNCg0K
