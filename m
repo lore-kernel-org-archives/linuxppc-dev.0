@@ -1,42 +1,33 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D8C51A1834
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 14:16:26 +1100 (AEDT)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <chandan@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EADD014031E
- for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2016 14:16:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AD5541A0C98
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 15:10:22 +1100 (AEDT)
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 14 Jan 2016 13:16:24 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C28082CE8054
- for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2016 14:16:19 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0E3G1d722478926
- for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2016 14:16:10 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0E3FkR8018606
- for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2016 14:15:47 +1100
-Subject: [PATCH 3/3] KVM: PPC: Book3S HV: Fix soft lockups in KVM on HMI for
- time base errors
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: KVM-PPC <kvm-ppc@vger.kernel.org>, KVM <kvm@vger.kernel.org>
-Date: Thu, 14 Jan 2016 08:45:28 +0530
-Message-ID: <20160114031528.1287.7326.stgit@mars>
-In-Reply-To: <20160114031457.1287.32132.stgit@mars>
-References: <20160114031457.1287.32132.stgit@mars>
+ for <linuxppc-dev@lists.ozlabs.org> from <chandan@linux.vnet.ibm.com>;
+ Thu, 14 Jan 2016 09:40:19 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0E4AHMM41680930
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 09:40:17 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0E4AGVH028718
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 09:40:16 +0530
+From: Chandan Rajendra <chandan@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, chandan@mykolab.com
+Subject: Re: [PATCH] powerpc: Wire up copy_file_range() syscall
+Date: Thu, 14 Jan 2016 09:40:12 +0530
+Message-ID: <13991128.X3BmdRKRSb@localhost.localdomain>
+In-Reply-To: <1452725611.14028.0.camel@ellerman.id.au>
+References: <1452703822-29844-1-git-send-email-chandan@linux.vnet.ibm.com>
+ <1452725611.14028.0.camel@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,37 +37,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Thursday 14 Jan 2016 09:53:31 Michael Ellerman wrote:
+> On Wed, 2016-01-13 at 22:20 +0530, Chandan Rajendra wrote:
+> > Test runs on a ppc64 BE guest succeeded.
+> 
+> Were the tests built 64-bit or 32-bit?
+> 
 
-When secondaries are napping in kvm_unsplit_nap() with hwthread_req = 1,
-the HMI goes ignored even though subcores are already exited the guest.
-Hence HMI keeps waking up secondaries from nap in a loop and secondaries
-always go back to nap since no vcore is assigned to them. This makes
-impossible for primary thread to get hold of secondary threads resulting
-into a soft lockup in KVM path.
+The test tool (xfs_io to be precise) was built as a 64-bit binary.
 
-This patch fixes this by adding a HMI check just before the thread goes
-to unsplit nap.
-
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index e8a456e..c5d43b9 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -440,6 +440,12 @@ kvm_no_guest:
-  * whole-core mode, so we need to nap.
-  */
- kvm_unsplit_nap:
-+	/* Before we head down to nap, check if HMI is pending and handle it */
-+	cmpwi	r12, BOOK3S_INTERRUPT_HMI
-+	bne	55f
-+	li	r3, 0			/* NULL argument */
-+	bl	hmi_exception_realmode
-+55:
- 	/*
- 	 * Ensure that secondary doesn't nap when it has
- 	 * its vcore pointer set.
+-- 
+chandan
