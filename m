@@ -1,38 +1,41 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6BEEB1A0036
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 06:59:29 +1100 (AEDT)
-Received: from localhost
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Thu, 14 Jan 2016 17:59:23 -0200
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 38B891DC006A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 14:59:17 -0500 (EST)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0EJupcW28967234
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 17:56:52 -0200
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0EJxJZB020257
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 17:59:20 -0200
-Subject: Re: [PATCH] powerpc/eeh: Validate arch in eeh_add_device_early()
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <1452395295-1759-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1452681487.7404.6.camel@ellerman.id.au>
- <56963E40.8070702@linux.vnet.ibm.com>
- <1452720339.8203.4.camel@ellerman.id.au>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Message-ID: <5697FE17.4070605@linux.vnet.ibm.com>
-Date: Thu, 14 Jan 2016 17:59:19 -0200
+Return-Path: <Leonid.Yegoshin@imgtec.com>
+Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
+ by lists.ozlabs.org (Postfix) with ESMTP id 6BB611A0036
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 07:12:59 +1100 (AEDT)
+Message-ID: <56980145.5030901@imgtec.com>
+Date: Thu, 14 Jan 2016 12:12:53 -0800
+From: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>
 MIME-Version: 1.0
-In-Reply-To: <1452720339.8203.4.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+To: Will Deacon <will.deacon@arm.com>
+CC: Peter Zijlstra <peterz@infradead.org>, "Michael S. Tsirkin"
+ <mst@redhat.com>, <linux-kernel@vger.kernel.org>, Arnd Bergmann
+ <arnd@arndb.de>, <linux-arch@vger.kernel.org>, Andrew Cooper
+ <andrew.cooper3@citrix.com>, Russell King - ARM Linux
+ <linux@arm.linux.org.uk>, <virtualization@lists.linux-foundation.org>,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin"
+ <hpa@zytor.com>, Joe Perches <joe@perches.com>, David Miller
+ <davem@davemloft.net>, <linux-ia64@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-s390@vger.kernel.org>,
+ <sparclinux@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-metag@vger.kernel.org>, <linux-mips@linux-mips.org>, <x86@kernel.org>,
+ <user-mode-linux-devel@lists.sourceforge.net>,
+ <adi-buildroot-devel@lists.sourceforge.net>, <linux-sh@vger.kernel.org>,
+ <linux-xtensa@linux-xtensa.org>, <xen-devel@lists.xenproject.org>, "Ralf
+ Baechle" <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
+ <ddaney.cavm@gmail.com>, <james.hogan@imgtec.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
+References: <56945366.2090504@imgtec.com>
+ <20160112092711.GP6344@twins.programming.kicks-ass.net>
+ <20160112102555.GV6373@twins.programming.kicks-ass.net>
+ <20160112104012.GW6373@twins.programming.kicks-ass.net>
+ <20160112114111.GB15737@arm.com> <569565DA.2010903@imgtec.com>
+ <20160113104516.GE25458@arm.com> <56969F4B.7070001@imgtec.com>
+ <20160113204844.GV6357@twins.programming.kicks-ass.net>
+ <5696BA6E.4070508@imgtec.com> <20160114120445.GB15828@arm.com>
+In-Reply-To: <20160114120445.GB15828@arm.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,21 +45,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/13/2016 07:25 PM, Michael Ellerman wrote:
-> But for example what happens if the user boots with eeh=off on the command
-> line, and then hotplugs a device. It looks like because you're not using
-> eeh_enabled() you will incorrectly initialise EEH anyway?
+On 01/14/2016 04:04 AM, Will Deacon wrote:
+> Consequently, it's important that the architecture back-ends implement 
+> these portable primitives (e.g. smp_mb()) in a way that satisfies the 
+> kernel memory model so that core code doesn't need to worry about the 
+> underlying architecture for synchronisation purposes.
 
-Thanks very much for this catch Michael! I didn't think in this 
-possibility; I just tested and it fails with the kernel oops.
+It seems you don't listen me. I said multiple times - MIPS 
+implementation of SYNC_RMB/SYNC_WMB/SYNC_MB/SYNC_ACQUIRE/SYNC_RELEASE 
+instructions matches the description of 
+smp_rmb/smp_wmb/smp_mb/sync_acquire/sync_release from 
+Documentation/memory-barriers.txt file.
 
-So, since my patch does not cover this case, I think would be more 
-interesting "unlink" the DDW mechanism from the EEH. It seems easy, I'll 
-try to send you a patch soon.
+What else do you want from me - RTL or microArch design for that?
 
-Do you think it is a good approach?
-
-Cheers,
-
-
-Guilherme
+- Leonid.
