@@ -1,41 +1,44 @@
-Return-Path: <Leonid.Yegoshin@imgtec.com>
-Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
- by lists.ozlabs.org (Postfix) with ESMTP id 6BB611A0036
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 07:12:59 +1100 (AEDT)
-Message-ID: <56980145.5030901@imgtec.com>
-Date: Thu, 14 Jan 2016 12:12:53 -0800
-From: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>
-MIME-Version: 1.0
-To: Will Deacon <will.deacon@arm.com>
-CC: Peter Zijlstra <peterz@infradead.org>, "Michael S. Tsirkin"
- <mst@redhat.com>, <linux-kernel@vger.kernel.org>, Arnd Bergmann
- <arnd@arndb.de>, <linux-arch@vger.kernel.org>, Andrew Cooper
- <andrew.cooper3@citrix.com>, Russell King - ARM Linux
- <linux@arm.linux.org.uk>, <virtualization@lists.linux-foundation.org>,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Thomas Gleixner
- <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin"
- <hpa@zytor.com>, Joe Perches <joe@perches.com>, David Miller
- <davem@davemloft.net>, <linux-ia64@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-s390@vger.kernel.org>,
- <sparclinux@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <linux-metag@vger.kernel.org>, <linux-mips@linux-mips.org>, <x86@kernel.org>,
- <user-mode-linux-devel@lists.sourceforge.net>,
- <adi-buildroot-devel@lists.sourceforge.net>, <linux-sh@vger.kernel.org>,
- <linux-xtensa@linux-xtensa.org>, <xen-devel@lists.xenproject.org>, "Ralf
- Baechle" <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- <ddaney.cavm@gmail.com>, <james.hogan@imgtec.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Paul McKenney <paulmck@linux.vnet.ibm.com>
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 391C91A004E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 07:15:42 +1100 (AEDT)
+Date: Thu, 14 Jan 2016 21:15:13 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>
+Cc: paulmck@linux.vnet.ibm.com, Will Deacon <will.deacon@arm.com>,
+ "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
+ David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
+ x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
+ Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
+ ddaney.cavm@gmail.com, james.hogan@imgtec.com,
+ Michael Ellerman <mpe@ellerman.id.au>
 Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
-References: <56945366.2090504@imgtec.com>
- <20160112092711.GP6344@twins.programming.kicks-ass.net>
- <20160112102555.GV6373@twins.programming.kicks-ass.net>
- <20160112104012.GW6373@twins.programming.kicks-ass.net>
+Message-ID: <20160114201513.GI6357@twins.programming.kicks-ass.net>
+References: <20160112104012.GW6373@twins.programming.kicks-ass.net>
  <20160112114111.GB15737@arm.com> <569565DA.2010903@imgtec.com>
  <20160113104516.GE25458@arm.com> <56969F4B.7070001@imgtec.com>
  <20160113204844.GV6357@twins.programming.kicks-ass.net>
  <5696BA6E.4070508@imgtec.com> <20160114120445.GB15828@arm.com>
-In-Reply-To: <20160114120445.GB15828@arm.com>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+ <20160114161604.GT3818@linux.vnet.ibm.com>
+ <5697FA0A.6040601@imgtec.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5697FA0A.6040601@imgtec.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,18 +48,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/14/2016 04:04 AM, Will Deacon wrote:
-> Consequently, it's important that the architecture back-ends implement 
-> these portable primitives (e.g. smp_mb()) in a way that satisfies the 
-> kernel memory model so that core code doesn't need to worry about the 
-> underlying architecture for synchronisation purposes.
+On Thu, Jan 14, 2016 at 11:42:02AM -0800, Leonid Yegoshin wrote:
+> An the only point - please use an appropriate SYNC_* barriers instead of
+> heavy bold hammer. That stuff was design explicitly to support the
+> requirements of Documentation/memory-barriers.txt
 
-It seems you don't listen me. I said multiple times - MIPS 
-implementation of SYNC_RMB/SYNC_WMB/SYNC_MB/SYNC_ACQUIRE/SYNC_RELEASE 
-instructions matches the description of 
-smp_rmb/smp_wmb/smp_mb/sync_acquire/sync_release from 
-Documentation/memory-barriers.txt file.
+That's madness. That document changes from version to version as to what
+we _think_ the actual hardware does. It is _NOT_ a specification.
 
-What else do you want from me - RTL or microArch design for that?
+You cannot design hardware from that. Its incomplete and fails to
+specify a bunch of things. It not a mathematically sound definition of a
+memory model.
 
-- Leonid.
+Please stop referring to that document for what a particular barrier
+_should_ do.  Explain what MIPS does, so we can attempt to integrate
+this knowledge with our knowledge of PPC/ARM/Alpha/x86/etc. and improve
+upon our understanding of hardware and improve the Linux memory model.
