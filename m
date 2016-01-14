@@ -1,19 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew@lunn.ch>
+Received: from vps0.lunn.ch (vps0.lunn.ch [178.209.37.122])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8C3EB1A00E5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 00:05:11 +1100 (AEDT)
-Message-ID: <1452776705.13006.1.camel@ellerman.id.au>
-Subject: Re: Pull request: scottwood/linux.git next
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <oss@buserror.net>, benh@kernel.crashing.org
-Cc: linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.org
-Date: Fri, 15 Jan 2016 00:05:05 +1100
-In-Reply-To: <20160104213855.GA19111@home.buserror.net>
-References: <20160104213855.GA19111@home.buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5B70B1A0036
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 04:25:40 +1100 (AEDT)
+Date: Thu, 14 Jan 2016 17:44:18 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: shh.xie@gmail.com
+Cc: devicetree@vger.kernel.org, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, f.fainelli@gmail.com,
+ davem@davemloft.net, Shaohui Xie <Shaohui.Xie@freescale.com>
+Subject: Re: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
+Message-ID: <20160114164418.GD19773@lunn.ch>
+References: <1452759839-9874-1-git-send-email-shh.xie@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1452759839-9874-1-git-send-email-shh.xie@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,20 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-01-04 at 15:38 -0600, Scott Wood wrote:
-
-> Highlights include moving QE code out of arch/powerpc (to be shared with
-> arm), device tree updates, and minor fixes.
+On Thu, Jan 14, 2016 at 04:23:59PM +0800, shh.xie@gmail.com wrote:
+> From: Shaohui Xie <Shaohui.Xie@freescale.com>
 > 
-> Sorry for sending this in so late and not getting to everything in my
-> queue -- in addition to the holidays I've been slowed down by email
-> troubles and a broken arm.
+> This commit adds necessary definitions for the PHY layer to recognize
+> backplane Ethernet 1000BASE-KX and 10GBASE-KR as valid PHY interfaces,
+> "1000base-kx" for 1000BASE-KX, "10gbase-kr" for 10GBASE-KR.
+> 
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+> ---
+> changes in v2:
+> new patch.
+> 
+>  Documentation/devicetree/bindings/net/ethernet.txt | 4 ++--
+>  include/linux/phy.h                                | 6 ++++++
+>  2 files changed, 8 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/net/ethernet.txt b/Documentation/devicetree/bindings/net/ethernet.txt
+> index 5d88f37..1166a5c 100644
+> --- a/Documentation/devicetree/bindings/net/ethernet.txt
+> +++ b/Documentation/devicetree/bindings/net/ethernet.txt
+> @@ -11,8 +11,8 @@ The following properties are common to the Ethernet controllers:
+>    the maximum frame size (there's contradiction in ePAPR).
+>  - phy-mode: string, operation mode of the PHY interface; supported values are
+>    "mii", "gmii", "sgmii", "qsgmii", "tbi", "rev-mii", "rmii", "rgmii", "rgmii-id",
+> -  "rgmii-rxid", "rgmii-txid", "rtbi", "smii", "xgmii"; this is now a de-facto
+> -  standard property;
+> +  "rgmii-rxid", "rgmii-txid", "rtbi", "smii", "xgmii", "1000base-kx", "10gbase-kr";
+> +  this is now a de-facto standard property;
 
-No worries, I'm a bit behind this cycle owing to the break over Christmas.
+I know very little about this, so i'm just asking a question. None of
+the other interface modes contain a bit rate. So is the bit rate
+needed for your two new modes?
 
-Hope the arm is healing! I minced one of my fingers last year, I know how
-annoying it is to try and type with one hand :)
+With a bit of googling, K means copper backplane, X means 4B/5B and R
+means 64B/66B. Could there be a 10Gbps KX? a 1GBps KR? Do we actually
+need the speed here, or is kx and kr sufficient?
 
-I've merged this and pushed for tomorrow's linux-next.
-
-cheers
+     Thanks
+	Andrew
