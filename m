@@ -1,22 +1,36 @@
-Return-Path: <masami.hiramatsu.pt@hitachi.com>
-Received: from mail9.hitachi.co.jp (mail9.hitachi.co.jp [133.145.228.44])
- by lists.ozlabs.org (Postfix) with ESMTP id 667271A0C98
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 12:32:28 +1100 (AEDT)
-From: =?utf-8?B?5bmz5p2+6ZuF5bezIC8gSElSQU1BVFXvvIxNQVNBTUk=?=
- <masami.hiramatsu.pt@hitachi.com>
-To: "'Hemant Kumar'" <hemant@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "srikar@linux.vnet.ibm.com" <srikar@linux.vnet.ibm.com>, "acme@kernel.org"
- <acme@kernel.org>, "mjw@redhat.com" <mjw@redhat.com>
-Subject: RE: [PATCH v3] perf/probe: Search both .eh_frame and .debug_frame
- sections for probe location
-Date: Thu, 14 Jan 2016 01:32:23 +0000
-Message-ID: <50399556C9727B4D88A595C8584AAB3752695FB5@GSjpTKYDCembx32.service.hitachi.net>
-References: <1452678985-23516-1-git-send-email-hemant@linux.vnet.ibm.com>
-In-Reply-To: <1452678985-23516-1-git-send-email-hemant@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7D41A1A0C9A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 14:15:04 +1100 (AEDT)
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C6841140180
+ for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2016 14:15:03 +1100 (AEDT)
+Received: from localhost
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 14 Jan 2016 08:45:01 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0E3ExWx12059126
+ for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2016 08:44:59 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0E3Ewid032397
+ for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2016 08:44:59 +0530
+Subject: [PATCH 1/3] Powernv: Remove the usage of PACAR1 from opal wrappers
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: KVM-PPC <kvm-ppc@vger.kernel.org>, KVM <kvm@vger.kernel.org>
+Date: Thu, 14 Jan 2016 08:44:58 +0530
+Message-ID: <20160114031457.1287.32132.stgit@mars>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,114 +40,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogSGVtYW50IEt1bWFyIFttYWlsdG86aGVtYW50QGxpbnV4LnZuZXQuaWJtLmNvbV0NCj4N
-Cj5wZXJmIHByb2JlIHRocm91Z2ggZGVidWdpbmZvX19maW5kX3Byb2JlcygpIGluIHV0aWwvcHJv
-YmUtZmluZGVyLmMNCj5jaGVja3MgZm9yIHRoZSBmdW5jdGlvbnMnIGZyYW1lIGRlc2NyaXB0aW9u
-cyBpbiBlaXRoZXIgLmVoX2ZyYW1lIHNlY3Rpb24NCj5vZiBhbiBFTEYgb3IgdGhlIC5kZWJ1Z19m
-cmFtZS4gVGhlIGNoZWNrIGlzIGJhc2VkIG9uIHdoZXRoZXIgZWl0aGVyIG9uZQ0KPm9mIHRoZXNl
-IHNlY3Rpb25zIGlzIHByZXNlbnQuIERlcGVuZGluZyBvbiBkaXN0cm8sIHRvb2xjaGFpbiBkZWZh
-dWx0cywNCj5hcmNoaXRldGN1dHJlLCBidWlsZCBmbGFncywgZXRjLiwgQ0ZJIG1pZ2h0IGJlIGZv
-dW5kIGluIGVpdGhlciAuZWhfZnJhbWUNCj5hbmQvb3IgLmRlYnVnX2ZyYW1lLiBTb21ldGltZXMs
-IGl0IG1heSBoYXBwZW4gdGhhdCwgLmVoX2ZyYW1lLCBldmVuIGlmDQo+cHJlc2VudCwgbWF5IG5v
-dCBiZSBjb21wbGV0ZSBhbmQgbWF5IG1pc3Mgc29tZSBkZXNjcmlwdGlvbnMuIFRoZXJlZm9yZSwN
-Cj50byBiZSBzdXJlLCB0byBmaW5kIHRoZSBDRkkgY292ZXJpbmcgYW4gYWRkcmVzcyB3ZSB3aWxs
-IGFsd2F5cyBoYXZlIHRvDQo+aW52ZXN0aWdhdGUgYm90aCBpZiBhdmFpbGFibGUuDQo+DQo+Rm9y
-IGUuZy4sIGluIHBvd2VycGMsIHRoaXMgbWF5IGhhcHBlbiA6DQo+ICQgZ2NjIC1nIGJpbi5jIC1v
-IGJpbg0KPg0KPiAkIG9iamR1bXAgLS1kd2FyZiAuL2Jpbg0KPiA8MT48MTQ1PjogQWJicmV2IE51
-bWJlcjogNyAoRFdfVEFHX3N1YnByb2dyYW0pDQo+ICAgIDwxNDY+ICAgRFdfQVRfZXh0ZXJuYWwg
-ICAgOiAxDQo+ICAgIDwxNDY+ICAgRFdfQVRfbmFtZSAgICAgICAgOiAoaW5kaXJlY3Qgc3RyaW5n
-LCBvZmZzZXQ6IDB4OWUpOiBtYWluDQo+ICAgIDwxNGE+ICAgRFdfQVRfZGVjbF9maWxlICAgOiAx
-DQo+ICAgIDwxNGI+ICAgRFdfQVRfZGVjbF9saW5lICAgOiAzOQ0KPiAgICA8MTRjPiAgIERXX0FU
-X3Byb3RvdHlwZWQgIDogMQ0KPiAgICA8MTRjPiAgIERXX0FUX3R5cGUgICAgICAgIDogPDB4NTc+
-DQo+ICAgIDwxNTA+ICAgRFdfQVRfbG93X3BjICAgICAgOiAweDEwMDAwN2I4DQo+DQo+SWYgdGhl
-IC5laF9mcmFtZSBhbmQgLmRlYnVnX2ZyYW1lIGFyZSBjaGVja2VkIGZvciB0aGUgc2FtZSBiaW5h
-cnksIHdlDQo+d2lsbCBmaW5kIHRoYXQsIC5laF9mcmFtZSAoYWx0aG91Z2ggcHJlc2VudCkgZG9l
-c24ndCBjb250YWluIGENCj5kZXNjcmlwdGlvbiBmb3IgIm1haW4iIGZ1bmN0aW9uLg0KPkJ1dCwg
-LmRlYnVnX2ZyYW1lIGhhcyBhIGRlc2NyaXB0aW9uIDoNCj4NCj4wMDAwMDBkOCAwMDAwMDAyNCAw
-MDAwMDAwMCBGREUgY2llPTAwMDAwMDAwIHBjPTEwMDAwN2I4Li4xMDAwMDgzOA0KPiAgRFdfQ0ZB
-X2FkdmFuY2VfbG9jOiAxNiB0byAxMDAwMDdjOA0KPiAgRFdfQ0ZBX2RlZl9jZmFfb2Zmc2V0OiAx
-NDQNCj4gIERXX0NGQV9vZmZzZXRfZXh0ZW5kZWRfc2Y6IHI2NSBhdCBjZmErMTYNCj4uLi4NCj4N
-Cj5EdWUgdG8gdGhpcyAoc2luY2UsIHBlcmYgY2hlY2tzIHdoZXRoZXIgLmVoX2ZyYW1lIGlzIHBy
-ZXNlbnQgYW5kIGdvZXMgb24NCj5zZWFyY2hpbmcgZm9yIHRoYXQgYWRkcmVzcyBpbnNpZGUgdGhh
-dCBmcmFtZSksIHBlcmYgaXMgdW5hYmxlIHRvIHByb2Nlc3MNCj50aGUgcHJvYmVzIDoNCj4gIyBw
-ZXJmIHByb2JlIC14IC4vYmluIG1haW4NCj5GYWlsZWQgdG8gZ2V0IGNhbGwgZnJhbWUgb24gMHgx
-MDAwMDdiOA0KPiAgRXJyb3I6IEZhaWxlZCB0byBhZGQgZXZlbnRzLg0KPg0KPlRvIGF2b2lkIHRo
-aXMgaXNzdWUsIHdlIG5lZWQgdG8gY2hlY2sgYm90aCB0aGUgc2VjdGlvbnMgKC5laF9mcmFtZSBh
-bmQNCj4uZGVidWdfZnJhbWUpLCB3aGljaCBpcyBkb25lIGluIHRoaXMgcGF0Y2guDQo+DQo+Tm90
-ZSB0aGF0LCB3ZSBjYW4gYWx3YXlzIGZvcmNlIGV2ZXJ5dGhpbmcgaW50byBib3RoIC5laF9mcmFt
-ZSBhbmQNCj4uZGVidWdfZnJhbWUgYnkgOg0KPiAkIGdjYyBiaW4uYyAtZmFzeW5jaHJvbm91cy11
-bndpbmQtdGFibGVzICAtZm5vLWR3YXJmMi1jZmktYXNtIC1nIC1vIGJpbg0KPg0KPlNpZ25lZC1v
-ZmYtYnk6IEhlbWFudCBLdW1hciA8aGVtYW50QGxpbnV4LnZuZXQuaWJtLmNvbT4NCg0KTG9va3Mg
-Z29vZCB0byBtZTopDQoNCkFja2VkLWJ5OiBNYXNhbWkgSGlyYW1hdHN1IDxtYXNhbWkuaGlyYW1h
-dHN1LnB0QGhpdGFjaGkuY29tPg0KDQpUaGFua3MhDQoNCj4tLS0NCj5DaGFuZ2VzIHNpbmNlIHYy
-Og0KPi0gRml4ZWQgYW4gaXNzdWUgcmVsYXRlZCB0byBmaWxsaW5nIHVwIGJvdGggdGhlIENGSXMg
-KFN1Z2dlc3RlZCBieSBNYXNhbWkpLg0KPg0KPkNoYW5nZXMgc2luY2UgdjE6DQo+LSBwZi0+Y2Zp
-IGlzIG5vdyBjYWNoZWQgYXMgcGYtPmNmaV9laCBhbmQgcGYtPmNmaV9kYmcgZGVwZW5kaW5nIG9u
-IHRoZSBzb3VyY2Ugb2YgQ0ZJDQo+ICAoU3VnZ2VzdGVkIGJ5IE1hcmsgV2llbGFyZCkuDQo+DQo+
-IHRvb2xzL3BlcmYvdXRpbC9wcm9iZS1maW5kZXIuYyB8IDYyICsrKysrKysrKysrKysrKysrKysr
-KysrKystLS0tLS0tLS0tLS0tLS0tLQ0KPiB0b29scy9wZXJmL3V0aWwvcHJvYmUtZmluZGVyLmgg
-fCAgNSArKystDQo+IDIgZmlsZXMgY2hhbmdlZCwgNDEgaW5zZXJ0aW9ucygrKSwgMjYgZGVsZXRp
-b25zKC0pDQo+DQo+ZGlmZiAtLWdpdCBhL3Rvb2xzL3BlcmYvdXRpbC9wcm9iZS1maW5kZXIuYyBi
-L3Rvb2xzL3BlcmYvdXRpbC9wcm9iZS1maW5kZXIuYw0KPmluZGV4IDA1MDEyYmIuLmU0ZDA0OTgg
-MTAwNjQ0DQo+LS0tIGEvdG9vbHMvcGVyZi91dGlsL3Byb2JlLWZpbmRlci5jDQo+KysrIGIvdG9v
-bHMvcGVyZi91dGlsL3Byb2JlLWZpbmRlci5jDQo+QEAgLTY4NSw5ICs2ODUsMTAgQEAgc3RhdGlj
-IGludCBjYWxsX3Byb2JlX2ZpbmRlcihEd2FyZl9EaWUgKnNjX2RpZSwgc3RydWN0IHByb2JlX2Zp
-bmRlciAqcGYpDQo+IAkJcGYtPmZiX29wcyA9IE5VTEw7DQo+ICNpZiBfRUxGVVRJTFNfUFJFUkVR
-KDAsIDE0MikNCj4gCX0gZWxzZSBpZiAobm9wcyA9PSAxICYmIHBmLT5mYl9vcHNbMF0uYXRvbSA9
-PSBEV19PUF9jYWxsX2ZyYW1lX2NmYSAmJg0KPi0JCSAgIHBmLT5jZmkgIT0gTlVMTCkgew0KPisJ
-CSAgIChwZi0+Y2ZpX2VoICE9IE5VTEwgfHwgcGYtPmNmaV9kYmcgIT0gTlVMTCkpIHsNCj4gCQlE
-d2FyZl9GcmFtZSAqZnJhbWU7DQo+LQkJaWYgKGR3YXJmX2NmaV9hZGRyZnJhbWUocGYtPmNmaSwg
-cGYtPmFkZHIsICZmcmFtZSkgIT0gMCB8fA0KPisJCWlmICgoZHdhcmZfY2ZpX2FkZHJmcmFtZShw
-Zi0+Y2ZpX2VoLCBwZi0+YWRkciwgJmZyYW1lKSAhPSAwICYmDQo+KwkJICAgICAoZHdhcmZfY2Zp
-X2FkZHJmcmFtZShwZi0+Y2ZpX2RiZywgcGYtPmFkZHIsICZmcmFtZSkgIT0gMCkpIHx8DQo+IAkJ
-ICAgIGR3YXJmX2ZyYW1lX2NmYShmcmFtZSwgJnBmLT5mYl9vcHMsICZub3BzKSAhPSAwKSB7DQo+
-IAkJCXByX3dhcm5pbmcoIkZhaWxlZCB0byBnZXQgY2FsbCBmcmFtZSBvbiAweCVqeFxuIiwNCj4g
-CQkJCSAgICh1aW50bWF4X3QpcGYtPmFkZHIpOw0KPkBAIC0xMDEzLDggKzEwMTQsNyBAQCBzdGF0
-aWMgaW50IHB1Ym5hbWVfc2VhcmNoX2NiKER3YXJmICpkYmcsIER3YXJmX0dsb2JhbCAqZ2wsIHZv
-aWQgKmRhdGEpDQo+IAlyZXR1cm4gRFdBUkZfQ0JfT0s7DQo+IH0NCj4NCj4tLyogRmluZCBwcm9i
-ZSBwb2ludHMgZnJvbSBkZWJ1Z2luZm8gKi8NCj4tc3RhdGljIGludCBkZWJ1Z2luZm9fX2ZpbmRf
-cHJvYmVzKHN0cnVjdCBkZWJ1Z2luZm8gKmRiZywNCj4rc3RhdGljIGludCBkZWJ1Z2luZm9fX2Zp
-bmRfcHJvYmVfbG9jYXRpb24oc3RydWN0IGRlYnVnaW5mbyAqZGJnLA0KPiAJCQkJICBzdHJ1Y3Qg
-cHJvYmVfZmluZGVyICpwZikNCj4gew0KPiAJc3RydWN0IHBlcmZfcHJvYmVfcG9pbnQgKnBwID0g
-JnBmLT5wZXYtPnBvaW50Ow0KPkBAIC0xMDIzLDI3ICsxMDIzLDYgQEAgc3RhdGljIGludCBkZWJ1
-Z2luZm9fX2ZpbmRfcHJvYmVzKHN0cnVjdCBkZWJ1Z2luZm8gKmRiZywNCj4gCUR3YXJmX0RpZSAq
-ZGllcDsNCj4gCWludCByZXQgPSAwOw0KPg0KPi0jaWYgX0VMRlVUSUxTX1BSRVJFUSgwLCAxNDIp
-DQo+LQlFbGYgKmVsZjsNCj4tCUdFbGZfRWhkciBlaGRyOw0KPi0JR0VsZl9TaGRyIHNoZHI7DQo+
-LQ0KPi0JLyogR2V0IHRoZSBjYWxsIGZyYW1lIGluZm9ybWF0aW9uIGZyb20gdGhpcyBkd2FyZiAq
-Lw0KPi0JZWxmID0gZHdhcmZfZ2V0ZWxmKGRiZy0+ZGJnKTsNCj4tCWlmIChlbGYgPT0gTlVMTCkN
-Cj4tCQlyZXR1cm4gLUVJTlZBTDsNCj4tDQo+LQlpZiAoZ2VsZl9nZXRlaGRyKGVsZiwgJmVoZHIp
-ID09IE5VTEwpDQo+LQkJcmV0dXJuIC1FSU5WQUw7DQo+LQ0KPi0JaWYgKGVsZl9zZWN0aW9uX2J5
-X25hbWUoZWxmLCAmZWhkciwgJnNoZHIsICIuZWhfZnJhbWUiLCBOVUxMKSAmJg0KPi0JICAgIHNo
-ZHIuc2hfdHlwZSA9PSBTSFRfUFJPR0JJVFMpIHsNCj4tCQlwZi0+Y2ZpID0gZHdhcmZfZ2V0Y2Zp
-X2VsZihlbGYpOw0KPi0JfSBlbHNlIHsNCj4tCQlwZi0+Y2ZpID0gZHdhcmZfZ2V0Y2ZpKGRiZy0+
-ZGJnKTsNCj4tCX0NCj4tI2VuZGlmDQo+LQ0KPiAJb2ZmID0gMDsNCj4gCXBmLT5sY2FjaGUgPSBp
-bnRsaXN0X19uZXcoTlVMTCk7DQo+IAlpZiAoIXBmLT5sY2FjaGUpDQo+QEAgLTExMDYsNiArMTA4
-NSwzOSBAQCBmb3VuZDoNCj4gCXJldHVybiByZXQ7DQo+IH0NCj4NCj4rLyogRmluZCBwcm9iZSBw
-b2ludHMgZnJvbSBkZWJ1Z2luZm8gKi8NCj4rc3RhdGljIGludCBkZWJ1Z2luZm9fX2ZpbmRfcHJv
-YmVzKHN0cnVjdCBkZWJ1Z2luZm8gKmRiZywNCj4rCQkJCSAgc3RydWN0IHByb2JlX2ZpbmRlciAq
-cGYpDQo+K3sNCj4rCWludCByZXQgPSAwOw0KPisNCj4rI2lmIF9FTEZVVElMU19QUkVSRVEoMCwg
-MTQyKQ0KPisJRWxmICplbGY7DQo+KwlHRWxmX0VoZHIgZWhkcjsNCj4rCUdFbGZfU2hkciBzaGRy
-Ow0KPisNCj4rCWlmIChwZi0+Y2ZpX2VoIHx8IHBmLT5jZmlfZGJnKQ0KPisJCXJldHVybiBkZWJ1
-Z2luZm9fX2ZpbmRfcHJvYmVfbG9jYXRpb24oZGJnLCBwZik7DQo+Kw0KPisJLyogR2V0IHRoZSBj
-YWxsIGZyYW1lIGluZm9ybWF0aW9uIGZyb20gdGhpcyBkd2FyZiAqLw0KPisJZWxmID0gZHdhcmZf
-Z2V0ZWxmKGRiZy0+ZGJnKTsNCj4rCWlmIChlbGYgPT0gTlVMTCkNCj4rCQlyZXR1cm4gLUVJTlZB
-TDsNCj4rDQo+KwlpZiAoZ2VsZl9nZXRlaGRyKGVsZiwgJmVoZHIpID09IE5VTEwpDQo+KwkJcmV0
-dXJuIC1FSU5WQUw7DQo+Kw0KPisJaWYgKGVsZl9zZWN0aW9uX2J5X25hbWUoZWxmLCAmZWhkciwg
-JnNoZHIsICIuZWhfZnJhbWUiLCBOVUxMKSAmJg0KPisJICAgIHNoZHIuc2hfdHlwZSA9PSBTSFRf
-UFJPR0JJVFMpDQo+KwkJcGYtPmNmaV9laCA9IGR3YXJmX2dldGNmaV9lbGYoZWxmKTsNCj4rDQo+
-KwlwZi0+Y2ZpX2RiZyA9IGR3YXJmX2dldGNmaShkYmctPmRiZyk7DQo+KyNlbmRpZg0KPisNCj4r
-CXJldCA9IGRlYnVnaW5mb19fZmluZF9wcm9iZV9sb2NhdGlvbihkYmcsIHBmKTsNCj4rCXJldHVy
-biByZXQ7DQo+K30NCj4rDQo+IHN0cnVjdCBsb2NhbF92YXJzX2ZpbmRlciB7DQo+IAlzdHJ1Y3Qg
-cHJvYmVfZmluZGVyICpwZjsNCj4gCXN0cnVjdCBwZXJmX3Byb2JlX2FyZyAqYXJnczsNCj5kaWZm
-IC0tZ2l0IGEvdG9vbHMvcGVyZi91dGlsL3Byb2JlLWZpbmRlci5oIGIvdG9vbHMvcGVyZi91dGls
-L3Byb2JlLWZpbmRlci5oDQo+aW5kZXggYmVkODI3MS4uMGFlYzc3MCAxMDA2NDQNCj4tLS0gYS90
-b29scy9wZXJmL3V0aWwvcHJvYmUtZmluZGVyLmgNCj4rKysgYi90b29scy9wZXJmL3V0aWwvcHJv
-YmUtZmluZGVyLmgNCj5AQCAtNzYsNyArNzYsMTAgQEAgc3RydWN0IHByb2JlX2ZpbmRlciB7DQo+
-DQo+IAkvKiBGb3IgdmFyaWFibGUgc2VhcmNoaW5nICovDQo+ICNpZiBfRUxGVVRJTFNfUFJFUkVR
-KDAsIDE0MikNCj4tCUR3YXJmX0NGSQkJKmNmaTsJCS8qIENhbGwgRnJhbWUgSW5mb3JtYXRpb24g
-Ki8NCj4rCS8qIENhbGwgRnJhbWUgSW5mb3JtYXRpb24gZnJvbSAuZWhfZnJhbWUgKi8NCj4rCUR3
-YXJmX0NGSQkJKmNmaV9laDsNCj4rCS8qIENhbGwgRnJhbWUgSW5mb3JtYXRpb24gZnJvbSAuZGVi
-dWdfZnJhbWUgKi8NCj4rCUR3YXJmX0NGSQkJKmNmaV9kYmc7DQo+ICNlbmRpZg0KPiAJRHdhcmZf
-T3AJCSpmYl9vcHM7CS8qIEZyYW1lIGJhc2UgYXR0cmlidXRlICovDQo+IAlzdHJ1Y3QgcGVyZl9w
-cm9iZV9hcmcJKnB2YXI7CQkvKiBDdXJyZW50IHRhcmdldCB2YXJpYWJsZSAqLw0KPi0tDQo+MS45
-LjMNCg0K
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+
+OPAL_CALL wrapper code sticks the r1 (stack pointer) into PACAR1 purely
+for debugging purpose only. The power7_wakeup* functions relies on stack
+pointer saved in PACAR1. Any opal call made using opal wrapper (directly
+or in-directly) before we fall through power7_wakeup*, then it ends up
+replacing r1 in PACAR1(r13) leading to kernel panic. So far we don't see
+any issues because we have never made any opal calls using OPAL wrapper
+before power7_wakeup*. But the subsequent HMI patch would need to invoke
+C calls during cpu wakeup/idle path that in-directly makes opal call using
+opal wrapper. This patch facilitates the subsequent HMI patch by removing
+usage of PACAR1 from opal call wrapper.
+
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index b7a464f..62fe496 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -64,7 +64,6 @@ END_FTR_SECTION(0, 1);						\
+ 	OPAL_BRANCH(opal_tracepoint_entry) \
+ 	mfcr	r12;			\
+ 	stw	r12,8(r1);		\
+-	std	r1,PACAR1(r13);		\
+ 	li	r11,0;			\
+ 	mfmsr	r12;			\
+ 	ori	r11,r11,MSR_EE;		\
+@@ -127,7 +126,6 @@ opal_tracepoint_entry:
+ 	mfcr	r12
+ 	std	r11,16(r1)
+ 	stw	r12,8(r1)
+-	std	r1,PACAR1(r13)
+ 	li	r11,0
+ 	mfmsr	r12
+ 	ori	r11,r11,MSR_EE
