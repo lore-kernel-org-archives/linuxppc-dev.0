@@ -1,43 +1,26 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.188])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0E3A81A0023
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 20:24:15 +1100 (AEDT)
-Date: Thu, 14 Jan 2016 11:24:01 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>
-Cc: Will Deacon <will.deacon@arm.com>, Peter Zijlstra <peterz@infradead.org>,
- linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
- David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org, x86@kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- ddaney.cavm@gmail.com, james.hogan@imgtec.com,
- Michael Ellerman <mpe@ellerman.id.au>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
-Message-ID: <20160114111632-mutt-send-email-mst@redhat.com>
-References: <1452426622-4471-12-git-send-email-mst@redhat.com>
- <56945366.2090504@imgtec.com>
- <20160112092711.GP6344@twins.programming.kicks-ass.net>
- <20160112102555.GV6373@twins.programming.kicks-ass.net>
- <20160112104012.GW6373@twins.programming.kicks-ass.net>
- <20160112114111.GB15737@arm.com> <569565DA.2010903@imgtec.com>
- <20160113104516.GE25458@arm.com> <5696CF08.8080700@imgtec.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2102A1A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 21:14:24 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Vaibhav Jain' <vaibhav@linux.vnet.ibm.com>, 'Michael Ellerman'
+ <mpe@ellerman.id.au>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+CC: Frank Haverkamp <HAVERKAM@de.ibm.com>, "Matthew R. Ochs"
+ <mrochs@linux.vnet.ibm.com>, "imunsie@au1.ibm.com" <imunsie@au1.ibm.com>
+Subject: RE: cxl: Fix DSI misses when the context owning task exits
+Date: Thu, 14 Jan 2016 10:11:16 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CCC5B73@AcuExch.aculab.com>
+References: <1448362578-32456-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+ <20160111091403.79FBE140323@ozlabs.org>
+ <063D6719AE5E284EB5DD2968C1650D6D1CCC4462@AcuExch.aculab.com>
+ <87fuy0fvkw.fsf@vajain21.in.ibm.com>
+In-Reply-To: <87fuy0fvkw.fsf@vajain21.in.ibm.com>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5696CF08.8080700@imgtec.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,20 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 13, 2016 at 02:26:16PM -0800, Leonid Yegoshin wrote:
-> And all that is out-of-topic here in my mind. I just want to be sure that
-> this patchset still provides a use of a specific lightweight SYNCs on MIPS
-> vs bold and heavy generalized "SYNC 0" in any case.
-> 
-> - Leonid.
+From: Vaibhav Jain
+> Sent: 14 January 2016 07:51
+> David Laight <David.Laight@ACULAB.COM> writes:
+>=20
+> > I don't even claim to understand the linux model for handling process
+> > address maps, nor what the cxl driver is doing, but the above looks
+> > more than dodgy.
+> >
+> > 	David
+>=20
+> Thanks for reviewing the patch.
+>=20
+> Yes, It does look dodgy but is needed to handle a very corner case wherei=
+n
+> the task_struct that had originally allocated the cxl context exit
+> without freeing it. In case of a multi threaded user-space process this
+> context can still be used by other threads.
 
-Of course it does. All this patchset does is rename smp_mb/rmb/wmb
-to __smp_mb()/__smp_rmb()/__smp_wmb()
-and then asm-generic does #define smp_mb __smp_mb
-or #define smp_mb barrier depending on CONFIG_SMP.
+Right, and a non-threaded process might have done a fork+exit
+with the fd open (etc).
 
-Why is that needed? So we can implement
-[PATCH v3 28/41] asm-generic: implement virt_xxx memory barriers
+> A cxl_context holds pid of the task that allocated it since we need
+> access to the mm_struct associated with the task to handle storage
+> faults reported by the capi accelerator. Now in case of a MT process if
+> the thread that allocated the context exits the pid becomes invalid and
+> we are no more able to handle faults from the accelerator even though
+> the process is still alive.
+>=20
+> In such a case the patch tries to use the task group leader pid to find
+> the next alive task in the task group which can be used to handle the
+> storage fault.
 
--- 
-MST
+Unless you are extremely careful whatever you are using for the 'pid'
+can get reallocated.
+=20
+> We could have instead used only the task group leader for handling the
+> faults but there is a possibility that even the task group leader has
+> exited in which case the mm_struct associated with it will also be NULL.
+
+It looks like you should be using mmap() to get the user pages accessible
+to the driver - then you don't have a problem.
+
+	David
