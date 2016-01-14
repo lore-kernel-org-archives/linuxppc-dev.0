@@ -1,39 +1,17 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <shh.xie@gmail.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0089.outbound.protection.outlook.com [65.55.169.89])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B658E1A0D12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 18:51:54 +1100 (AEDT)
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Thu, 14 Jan 2016 17:51:54 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 95E662CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 18:51:50 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0E7phEo30998740
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 18:51:52 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0E7pGUp023844
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 18:51:17 +1100
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: David Laight <David.Laight@ACULAB.COM>,
- "'Michael Ellerman'" <mpe@ellerman.id.au>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Cc: Frank Haverkamp <HAVERKAM@de.ibm.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "imunsie\@au1.ibm.com" <imunsie@au1.ibm.com>, vaibhav@linux.vnet.ibm.com
-Subject: RE: cxl: Fix DSI misses when the context owning task exits
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1CCC4462@AcuExch.aculab.com>
-References: <1448362578-32456-1-git-send-email-vaibhav@linux.vnet.ibm.com>
- <20160111091403.79FBE140323@ozlabs.org>
- <063D6719AE5E284EB5DD2968C1650D6D1CCC4462@AcuExch.aculab.com>
-Date: Thu, 14 Jan 2016 13:20:55 +0530
-Message-ID: <87fuy0fvkw.fsf@vajain21.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F4611A01DC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 19:48:38 +1100 (AEDT)
+From: <shh.xie@gmail.com>
+To: <devicetree@vger.kernel.org>, <netdev@vger.kernel.org>
+CC: <linuxppc-dev@lists.ozlabs.org>, <f.fainelli@gmail.com>,
+ <davem@davemloft.net>, Shaohui Xie <Shaohui.Xie@freescale.com>
+Subject: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
+Date: Thu, 14 Jan 2016 16:23:59 +0800
+Message-ID: <1452759839-9874-1-git-send-email-shh.xie@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,41 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
 
-Hi David,
+This commit adds necessary definitions for the PHY layer to recognize
+backplane Ethernet 1000BASE-KX and 10GBASE-KR as valid PHY interfaces,
+"1000base-kx" for 1000BASE-KX, "10gbase-kr" for 10GBASE-KR.
 
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+---
+changes in v2:
+new patch.
 
-David Laight <David.Laight@ACULAB.COM> writes:
+ Documentation/devicetree/bindings/net/ethernet.txt | 4 ++--
+ include/linux/phy.h                                | 6 ++++++
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-> I don't even claim to understand the linux model for handling process
-> address maps, nor what the cxl driver is doing, but the above looks
-> more than dodgy.
->
-> 	David
-
-Thanks for reviewing the patch.
-
-Yes, It does look dodgy but is needed to handle a very corner case wherein
-the task_struct that had originally allocated the cxl context exit
-without freeing it. In case of a multi threaded user-space process this
-context can still be used by other threads.
-
-A cxl_context holds pid of the task that allocated it since we need
-access to the mm_struct associated with the task to handle storage
-faults reported by the capi accelerator. Now in case of a MT process if
-the thread that allocated the context exits the pid becomes invalid and
-we are no more able to handle faults from the accelerator even though
-the process is still alive.
-
-In such a case the patch tries to use the task group leader pid to find
-the next alive task in the task group which can be used to handle the
-storage fault.
-
-We could have instead used only the task group leader for handling the
-faults but there is a possibility that even the task group leader has
-exited in which case the mm_struct associated with it will also be NULL.
-
-Hope this clarifies things,
-
-Cheers,
-~ Vaibhav
+diff --git a/Documentation/devicetree/bindings/net/ethernet.txt b/Documentation/devicetree/bindings/net/ethernet.txt
+index 5d88f37..1166a5c 100644
+--- a/Documentation/devicetree/bindings/net/ethernet.txt
++++ b/Documentation/devicetree/bindings/net/ethernet.txt
+@@ -11,8 +11,8 @@ The following properties are common to the Ethernet controllers:
+   the maximum frame size (there's contradiction in ePAPR).
+ - phy-mode: string, operation mode of the PHY interface; supported values are
+   "mii", "gmii", "sgmii", "qsgmii", "tbi", "rev-mii", "rmii", "rgmii", "rgmii-id",
+-  "rgmii-rxid", "rgmii-txid", "rtbi", "smii", "xgmii"; this is now a de-facto
+-  standard property;
++  "rgmii-rxid", "rgmii-txid", "rtbi", "smii", "xgmii", "1000base-kx", "10gbase-kr";
++  this is now a de-facto standard property;
+ - phy-connection-type: the same as "phy-mode" property but described in ePAPR;
+ - phy-handle: phandle, specifies a reference to a node representing a PHY
+   device; this property is described in ePAPR and so preferred;
+diff --git a/include/linux/phy.h b/include/linux/phy.h
+index d6f3641..7acecf7 100644
+--- a/include/linux/phy.h
++++ b/include/linux/phy.h
+@@ -80,6 +80,8 @@ typedef enum {
+ 	PHY_INTERFACE_MODE_XGMII,
+ 	PHY_INTERFACE_MODE_MOCA,
+ 	PHY_INTERFACE_MODE_QSGMII,
++	PHY_INTERFACE_MODE_1000BASE_KX,
++	PHY_INTERFACE_MODE_10GBASE_KR,
+ 	PHY_INTERFACE_MODE_MAX,
+ } phy_interface_t;
+ 
+@@ -123,6 +125,10 @@ static inline const char *phy_modes(phy_interface_t interface)
+ 		return "moca";
+ 	case PHY_INTERFACE_MODE_QSGMII:
+ 		return "qsgmii";
++	case PHY_INTERFACE_MODE_1000BASE_KX:
++		return "1000base-kx";
++	case PHY_INTERFACE_MODE_10GBASE_KR:
++		return "10gbase-kr";
+ 	default:
+ 		return "unknown";
+ 	}
+-- 
+2.1.0.27.g96db324
