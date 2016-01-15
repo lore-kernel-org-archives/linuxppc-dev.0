@@ -1,45 +1,44 @@
 Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 261D81A0D58
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2602E1A07E3
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 16:06:01 +1100 (AEDT)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 93E09140BFA
+ by ozlabs.org (Postfix) with ESMTPS id 6F349140BF9
  for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2016 16:06:00 +1100 (AEDT)
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
- Fri, 15 Jan 2016 15:06:00 +1000
+ Fri, 15 Jan 2016 15:05:59 +1000
 Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3B2343578054
- for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2016 16:05:58 +1100 (EST)
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C1CFA3578052
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2016 16:05:56 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0F55oWc62521448
- for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2016 16:05:58 +1100
+ u0F55mq730015662
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2016 16:05:56 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0F55P3O030966
- for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2016 16:05:25 +1100
+ u0F55OkT030926
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2016 16:05:24 +1100
 Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- u0F55PBX030410
- for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2016 16:05:25 +1100
+ u0F55ODH030323
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2016 16:05:24 +1100
 Received: from camb691.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 43ABAA02C3
- for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2016 16:04:39 +1100 (AEDT)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 4F746A02A1
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2016 16:04:38 +1100 (AEDT)
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH V2 7/8] powerpc: Add the ability to save Altivec without
- giving it up
-Date: Fri, 15 Jan 2016 16:04:13 +1100
-Message-Id: <1452834254-22078-8-git-send-email-cyrilbur@gmail.com>
+Subject: [PATCH V2 5/8] powerpc: Restore FPU/VEC/VSX if previously used
+Date: Fri, 15 Jan 2016 16:04:11 +1100
+Message-Id: <1452834254-22078-6-git-send-email-cyrilbur@gmail.com>
 In-Reply-To: <1452834254-22078-1-git-send-email-cyrilbur@gmail.com>
 References: <1452834254-22078-1-git-send-email-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -51,107 +50,248 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the ability to be able to save the VEC registers to the
-thread struct without giving up (disabling the facility) next time the
-process returns to userspace.
+Currently the FPU, VEC and VSX facilities are lazily loaded. This is not a
+problem unless a process is using these facilities.
 
-This patch builds on a previous optimisation for the FPU registers in the
-thread copy path to avoid a possibly pointless reload of VEC state.
+Modern versions of GCC are very good at automatically vectorising code, new
+and modernised workloads make use of floating point and vector facilities,
+even the kernel makes use of vectorised memcpy.
+
+All this combined greatly increases the cost of a syscall since the kernel
+uses the facilities sometimes even in syscall fast-path making it
+increasingly common for a thread to take an *_unavailable exception soon
+after a syscall, not to mention potentially taking all three.
+
+The obvious overcompensation to this problem is to simply always load all
+the facilities on every exit to userspace. Loading up all FPU, VEC and VSX
+registers every time can be expensive and if a workload does avoid using
+them, it should not be forced to incur this penalty.
+
+An 8bit counter is used to detect if the registers have been used in the
+past and the registers are always loaded until the value wraps to back to
+zero.
+
+Several versions of the assembly in entry_64.S. 1. Always calling C, 2.
+Performing a common case check and then calling C and 3. A complex check in
+asm. After some benchmarking it was determined that avoiding C in the
+common case is a performance benefit. The full check in asm greatly
+complicated that codepath for a negligible performance gain and the
+trade-off was deemed not worth it.
 
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- arch/powerpc/include/asm/switch_to.h |  2 +-
- arch/powerpc/kernel/process.c        | 12 +++++++++++-
- arch/powerpc/kernel/vector.S         | 24 ++++--------------------
- 3 files changed, 16 insertions(+), 22 deletions(-)
+ arch/powerpc/include/asm/processor.h |  2 ++
+ arch/powerpc/kernel/asm-offsets.c    |  2 ++
+ arch/powerpc/kernel/entry_64.S       | 21 ++++++++++--
+ arch/powerpc/kernel/fpu.S            |  4 +++
+ arch/powerpc/kernel/process.c        | 66 ++++++++++++++++++++++++++++++------
+ arch/powerpc/kernel/vector.S         |  4 +++
+ 6 files changed, 85 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index c4d50e9..29dda9d 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -41,7 +41,7 @@ static inline void flush_fp_to_thread(struct task_struct *t) { }
- extern void enable_kernel_altivec(void);
- extern void flush_altivec_to_thread(struct task_struct *);
- extern void giveup_altivec(struct task_struct *);
--extern void __giveup_altivec(struct task_struct *);
-+extern void save_altivec(struct task_struct *);
- static inline void disable_kernel_altivec(void)
- {
- 	msr_check_and_clear(MSR_VEC);
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index ac23308..dcab21f 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -236,11 +236,13 @@ struct thread_struct {
+ #endif
+ 	struct arch_hw_breakpoint hw_brk; /* info on the hardware breakpoint */
+ 	unsigned long	trap_nr;	/* last trap # on this thread */
++	u8 load_fp;
+ #ifdef CONFIG_ALTIVEC
+ 	struct thread_vr_state vr_state;
+ 	struct thread_vr_state *vr_save_area;
+ 	unsigned long	vrsave;
+ 	int		used_vr;	/* set if process has used altivec */
++	u8 load_vec;
+ #endif /* CONFIG_ALTIVEC */
+ #ifdef CONFIG_VSX
+ 	/* VSR status */
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 07cebc3..10d5eab 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -95,12 +95,14 @@ int main(void)
+ 	DEFINE(THREAD_FPSTATE, offsetof(struct thread_struct, fp_state));
+ 	DEFINE(THREAD_FPSAVEAREA, offsetof(struct thread_struct, fp_save_area));
+ 	DEFINE(FPSTATE_FPSCR, offsetof(struct thread_fp_state, fpscr));
++	DEFINE(THREAD_LOAD_FP, offsetof(struct thread_struct, load_fp));
+ #ifdef CONFIG_ALTIVEC
+ 	DEFINE(THREAD_VRSTATE, offsetof(struct thread_struct, vr_state));
+ 	DEFINE(THREAD_VRSAVEAREA, offsetof(struct thread_struct, vr_save_area));
+ 	DEFINE(THREAD_VRSAVE, offsetof(struct thread_struct, vrsave));
+ 	DEFINE(THREAD_USED_VR, offsetof(struct thread_struct, used_vr));
+ 	DEFINE(VRSTATE_VSCR, offsetof(struct thread_vr_state, vscr));
++	DEFINE(THREAD_LOAD_VEC, offsetof(struct thread_struct, load_vec));
+ #endif /* CONFIG_ALTIVEC */
+ #ifdef CONFIG_VSX
+ 	DEFINE(THREAD_USED_VSR, offsetof(struct thread_struct, used_vsr));
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 0d525ce..038e0a1 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -210,7 +210,20 @@ system_call:			/* label this so stack traces look sane */
+ 	li	r11,-MAX_ERRNO
+ 	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+ 	bne-	syscall_exit_work
+-	cmpld	r3,r11
++
++	andi.	r0,r8,MSR_FP
++	beq 2f
++#ifdef CONFIG_ALTIVEC
++	andis.	r0,r8,MSR_VEC@h
++	bne	3f
++#endif
++2:	addi    r3,r1,STACK_FRAME_OVERHEAD
++	bl	restore_math
++	ld	r8,_MSR(r1)
++	ld	r3,RESULT(r1)
++	li	r11,-MAX_ERRNO
++
++3:	cmpld	r3,r11
+ 	ld	r5,_CCR(r1)
+ 	bge-	syscall_error
+ .Lsyscall_error_cont:
+@@ -602,8 +615,8 @@ _GLOBAL(ret_from_except_lite)
+ 
+ 	/* Check current_thread_info()->flags */
+ 	andi.	r0,r4,_TIF_USER_WORK_MASK
+-#ifdef CONFIG_PPC_BOOK3E
+ 	bne	1f
++#ifdef CONFIG_PPC_BOOK3E
+ 	/*
+ 	 * Check to see if the dbcr0 register is set up to debug.
+ 	 * Use the internal debug mode bit to do this.
+@@ -618,7 +631,9 @@ _GLOBAL(ret_from_except_lite)
+ 	mtspr	SPRN_DBSR,r10
+ 	b	restore
+ #else
+-	beq	restore
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	restore_math
++	b	restore
+ #endif
+ 1:	andi.	r0,r4,_TIF_NEED_RESCHED
+ 	beq	2f
+diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
+index 2117eac..b063524 100644
+--- a/arch/powerpc/kernel/fpu.S
++++ b/arch/powerpc/kernel/fpu.S
+@@ -130,6 +130,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ 	or	r12,r12,r4
+ 	std	r12,_MSR(r1)
+ #endif
++	/* Don't care if r4 overflows, this is desired behaviour */
++	lbz	r4,THREAD_LOAD_FP(r5)
++	addi	r4,r4,1
++	stb	r4,THREAD_LOAD_FP(r5)
+ 	addi	r10,r5,THREAD_FPSTATE
+ 	lfd	fr0,FPSTATE_FPSCR(r10)
+ 	MTFSF_L(fr0)
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 8a96e4f..5566c32 100644
+index e0c3d2d..ec53468 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -200,6 +200,16 @@ EXPORT_SYMBOL(enable_kernel_fp);
- #endif /* CONFIG_PPC_FPU */
+@@ -374,6 +374,53 @@ void giveup_all(struct task_struct *tsk)
+ }
+ EXPORT_SYMBOL(giveup_all);
  
- #ifdef CONFIG_ALTIVEC
-+void __giveup_altivec(struct task_struct *tsk)
++void restore_math(struct pt_regs *regs)
 +{
-+	save_altivec(tsk);
-+	tsk->thread.regs->msr &= ~MSR_VEC;
-+#ifdef CONFIG_VSX
-+	if (cpu_has_feature(CPU_FTR_VSX))
-+		tsk->thread.regs->msr &= ~MSR_VSX;
++	unsigned long msr;
++
++	if (!current->thread.load_fp
++#ifdef CONFIG_ALTIVEC
++		&& !current->thread.load_vec)
++#else
++		)
 +#endif
++		return;
++
++	msr = regs->msr;
++	msr_check_and_set(msr_all_available);
++
++	/*
++	 * Only reload if the bit is not set in the user MSR, the bit BEING set
++	 * indicates that the registers are hot
++	 */
++#ifdef CONFIG_PPC_FPU
++	if (current->thread.load_fp && !(msr & MSR_FP)) {
++		load_fp_state(&current->thread.fp_state);
++		msr |= MSR_FP | current->thread.fpexc_mode;
++		current->thread.load_fp++;
++	}
++#endif
++#ifdef CONFIG_ALTIVEC
++	if (current->thread.load_vec && !(msr & MSR_VEC) &&
++			cpu_has_feature(CPU_FTR_ALTIVEC)) {
++		load_vr_state(&current->thread.vr_state);
++		current->thread.used_vr = 1;
++		msr |= MSR_VEC;
++		current->thread.load_vec++;
++	}
++#endif
++#ifdef CONFIG_VSX
++	if (!(msr & MSR_VSX) && (msr & (MSR_FP | MSR_VEC)) == (MSR_FP | MSR_VEC)) {
++		current->thread.used_vsr = 1;
++		msr |= MSR_VSX;
++	}
++#endif
++
++	msr_check_and_clear(msr_all_available);
++
++	regs->msr = msr;
 +}
 +
- void giveup_altivec(struct task_struct *tsk)
+ void flush_all_to_thread(struct task_struct *tsk)
  {
- 	check_if_tm_restore_required(tsk);
-@@ -451,7 +461,7 @@ void save_all(struct task_struct *tsk)
- #endif
- #ifdef CONFIG_ALTIVEC
- 	if (usermsr & MSR_VEC)
--		__giveup_altivec(tsk);
-+		save_altivec(tsk);
- #endif
- #ifdef CONFIG_VSX
- 	if (usermsr & MSR_VSX)
+ 	if (tsk->thread.regs) {
+@@ -832,17 +879,9 @@ void restore_tm_state(struct pt_regs *regs)
+ 
+ 	msr_diff = current->thread.ckpt_regs.msr & ~regs->msr;
+ 	msr_diff &= MSR_FP | MSR_VEC | MSR_VSX;
+-	if (msr_diff & MSR_FP) {
+-		msr_check_and_set(MSR_FP);
+-		load_fp_state(&current->thread.fp_state);
+-		msr_check_and_clear(MSR_FP);
+-		regs->msr |= current->thread.fpexc_mode;
+-	}
+-	if (msr_diff & MSR_VEC) {
+-		msr_check_and_set(MSR_VEC);
+-		load_vr_state(&current->thread.vr_state);
+-		msr_check_and_clear(MSR_VEC);
+-	}
++
++	restore_math(regs);
++
+ 	regs->msr |= msr_diff;
+ }
+ 
+@@ -1006,6 +1045,11 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 		batch = this_cpu_ptr(&ppc64_tlb_batch);
+ 		batch->active = 1;
+ 	}
++
++	/* Don't do this on a kernel thread */
++	if (current_thread_info()->task->thread.regs)
++		restore_math(current_thread_info()->task->thread.regs);
++
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ 
+ 	return last;
 diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-index 038cff8..51b0c17 100644
+index 162d0f7..038cff8 100644
 --- a/arch/powerpc/kernel/vector.S
 +++ b/arch/powerpc/kernel/vector.S
-@@ -106,36 +106,20 @@ _GLOBAL(load_up_altivec)
- 	blr
- 
- /*
-- * __giveup_altivec(tsk)
-- * Disable VMX for the task given as the argument,
-- * and save the vector registers in its thread_struct.
-+ * save_altivec(tsk)
-+ * Save the vector registers to its thread_struct
-  */
--_GLOBAL(__giveup_altivec)
-+_GLOBAL(save_altivec)
- 	addi	r3,r3,THREAD		/* want THREAD of task */
- 	PPC_LL	r7,THREAD_VRSAVEAREA(r3)
- 	PPC_LL	r5,PT_REGS(r3)
- 	PPC_LCMPI	0,r7,0
- 	bne	2f
- 	addi	r7,r3,THREAD_VRSTATE
--2:	PPC_LCMPI	0,r5,0
--	SAVE_32VRS(0,r4,r7)
-+2:	SAVE_32VRS(0,r4,r7)
- 	mfvscr	v0
- 	li	r4,VRSTATE_VSCR
- 	stvx	v0,r4,r7
--	beq	1f
--	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
--#ifdef CONFIG_VSX
--BEGIN_FTR_SECTION
--	lis	r3,(MSR_VEC|MSR_VSX)@h
--FTR_SECTION_ELSE
--	lis	r3,MSR_VEC@h
--ALT_FTR_SECTION_END_IFSET(CPU_FTR_VSX)
--#else
--	lis	r3,MSR_VEC@h
--#endif
--	andc	r4,r4,r3		/* disable FP for previous task */
--	PPC_STL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
--1:
- 	blr
- 
- #ifdef CONFIG_VSX
+@@ -91,6 +91,10 @@ _GLOBAL(load_up_altivec)
+ 	oris	r12,r12,MSR_VEC@h
+ 	std	r12,_MSR(r1)
+ #endif
++	/* Don't care if r4 overflows, this is desired behaviour */
++	lbz	r4,THREAD_LOAD_VEC(r5)
++	addi	r4,r4,1
++	stb	r4,THREAD_LOAD_VEC(r5)
+ 	addi	r6,r5,THREAD_VRSTATE
+ 	li	r4,1
+ 	li	r10,VRSTATE_VSCR
 -- 
 2.7.0
