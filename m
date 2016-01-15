@@ -1,38 +1,64 @@
-Return-Path: <raghavendra.kt@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A41781A08A6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jan 2016 06:06:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9DAEC1A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jan 2016 06:29:00 +1100 (AEDT)
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <raghavendra.kt@linux.vnet.ibm.com>;
- Fri, 15 Jan 2016 14:06:06 -0500
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 06905C90042
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 14:06:01 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0FJ61f627721800
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 19:06:01 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0FJ5ql9027944
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 14:06:01 -0500
-From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-To: <mingo@redhat.com>, <peterz@infradead.org>, <benh@kernel.crashing.org>,
- <paulus@samba.org>, <mpe@ellerman.id.au>, <anton@samba.org>,
- <akpm@linux-foundation.org>
-Cc: <jstancek@redhat.com>, <gkurz@linux.vnet.ibm.com>,
- <grant.likely@linaro.org>, <nikunj@linux.vnet.ibm.com>,
- <vdavydov@parallels.com>, <raghavendra.kt@linux.vnet.ibm.com>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <linux-mm@kvack.org>
-Subject: [PATCH] Fix: PowerNV crash with 4.4.0-rc8 at sched_init_numa
-Date: Sat, 16 Jan 2016 00:31:23 +0530
-Message-Id: <1452884483-11676-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Fri, 15 Jan 2016 12:28:58 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 986A4C40001
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 12:17:05 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id u0FJStda27000934
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 12:28:55 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0FJSh67009533
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 12:28:54 -0700
+Date: Fri, 15 Jan 2016 11:28:45 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Will Deacon <will.deacon@arm.com>
+Cc: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
+ David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org, x86@kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
+ Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
+ ddaney.cavm@gmail.com, james.hogan@imgtec.com,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
+Message-ID: <20160115192845.GA12510@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <5696CF08.8080700@imgtec.com> <20160114121449.GC15828@arm.com>
+ <5697F6D2.60409@imgtec.com>
+ <20160114203430.GC3818@linux.vnet.ibm.com>
+ <56980C91.1010403@imgtec.com>
+ <20160114212913.GF3818@linux.vnet.ibm.com>
+ <569814F2.50801@imgtec.com>
+ <20160114225510.GJ3818@linux.vnet.ibm.com>
+ <20160115102431.GB2131@arm.com>
+ <20160115175401.GW3818@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160115175401.GW3818@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,34 +68,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit c118baf80256 ("arch/powerpc/mm/numa.c: do not allocate bootmem
-memory for non existing nodes") avoided bootmem memory allocation for
-non existent nodes.
+On Fri, Jan 15, 2016 at 09:54:01AM -0800, Paul E. McKenney wrote:
+> On Fri, Jan 15, 2016 at 10:24:32AM +0000, Will Deacon wrote:
+> > On Thu, Jan 14, 2016 at 02:55:10PM -0800, Paul E. McKenney wrote:
+> > > On Thu, Jan 14, 2016 at 01:36:50PM -0800, Leonid Yegoshin wrote:
+> > > > On 01/14/2016 01:29 PM, Paul E. McKenney wrote:
+> > > > >
+> > > > >>On 01/14/2016 12:34 PM, Paul E. McKenney wrote:
+> > > > >>>
+> > > > >>>The WRC+addr+addr is OK because data dependencies are not required to be
+> > > > >>>transitive, in other words, they are not required to flow from one CPU to
+> > > > >>>another without the help of an explicit memory barrier.
+> > > > >>I don't see any reliable way to fit WRC+addr+addr into "DATA
+> > > > >>DEPENDENCY BARRIERS" section recommendation to have data dependency
+> > > > >>barrier between read of a shared pointer/index and read the shared
+> > > > >>data based on that pointer. If you have this two reads, it doesn't
+> > > > >>matter the rest of scenario, you should put the dependency barrier
+> > > > >>in code anyway. If you don't do it in WRC+addr+addr scenario then
+> > > > >>after years it can be easily changed to different scenario which
+> > > > >>fits some of scenario in "DATA DEPENDENCY BARRIERS" section and
+> > > > >>fails.
+> > > > >The trick is that lockless_dereference() contains an
+> > > > >smp_read_barrier_depends():
+> > > > >
+> > > > >#define lockless_dereference(p) \
+> > > > >({ \
+> > > > >	typeof(p) _________p1 = READ_ONCE(p); \
+> > > > >	smp_read_barrier_depends(); /* Dependency order vs. p above. */ \
+> > > > >	(_________p1); \
+> > > > >})
+> > > > >
+> > > > >Or am I missing your point?
+> > > > 
+> > > > WRC+addr+addr has no any barrier. lockless_dereference() has a
+> > > > barrier. I don't see a common points between this and that in your
+> > > > answer, sorry.
+> > > 
+> > > Me, I am wondering what WRC+addr+addr has to do with anything at all.
+> > 
+> > See my earlier reply [1] (but also, your WRC Linux example looks more
+> > like a variant on WWC and I couldn't really follow it).
+> 
+> I will revisit my WRC Linux example.  And yes, creating litmus tests
+> that use non-fake dependencies is still a bit of an undertaking.  :-/
+> I am sure that it will seem more natural with time and experience...
 
-When DEBUG_PER_CPU_MAPS enabled, powerNV system failed to boot because
-in sched_init_numa, cpumask_or operation was done on unallocated nodes.
-Fix that by making cpumask_or operation only on existing nodes.
+Hmmm...  You are quite right, I did do WWC.  I need to change cpu2()'s
+last access from a store to a load to get WRC.  Plus the levels of
+indirection definitely didn't match up, did they?
 
-[ Tested with and w/o DEBUG_PER_CPU_MAPS on x86 and powerpc ]
+	struct foo {
+		struct foo *next;
+	};
+	struct foo a;
+	struct foo b;
+	struct foo c = { &a };
+	struct foo d = { &b };
+	struct foo x = { &c };
+	struct foo y = { &d };
+	struct foo *r1, *r2, *r3;
 
-Reported-by: Jan Stancek <jstancek@redhat.com>
-Signed-off-by: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
----
- kernel/sched/core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+	void cpu0(void)
+	{
+		WRITE_ONCE(x.next, &y);
+	}
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 44253ad..474658b 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -6840,7 +6840,7 @@ static void sched_init_numa(void)
- 
- 			sched_domains_numa_masks[i][j] = mask;
- 
--			for (k = 0; k < nr_node_ids; k++) {
-+			for_each_node(k) {
- 				if (node_distance(j, k) > sched_domains_numa_distance[i])
- 					continue;
- 
--- 
-1.7.11.7
+	void cpu1(void)
+	{
+		r1 = lockless_dereference(x.next);
+		WRITE_ONCE(r1->next, &x);
+	}
+
+	void cpu2(void)
+	{
+		r2 = lockless_dereference(y.next);
+		r3 = READ_ONCE(r2->next);
+	}
+
+In this case, it is legal to end the run with:
+
+	r1 == &y && r2 == &x && r3 == &c
+
+Please see below for a ppcmem litmus test.
+
+So, did I get it right this time?  ;-)
+
+							Thanx, Paul
+
+PS.  And yes, working through this does help me understand the
+     benefits of fake dependencies.  Why do you ask?  ;-)
+
+------------------------------------------------------------------------
+
+PPC WRCnf+addrs
+""
+{
+0:r2=x; 0:r3=y;
+1:r2=x; 1:r3=y;
+2:r2=x; 2:r3=y;
+c=a; d=b; x=c; y=d;
+}
+ P0           | P1            | P2            ;
+ stw r3,0(r2) | lwz r8,0(r2)  | lwz r8,0(r3)  ;
+              | stw r2,0(r3)  | lwz r9,0(r8)  ;
+exists
+(1:r8=y /\ 2:r8=x /\ 2:r9=c)
