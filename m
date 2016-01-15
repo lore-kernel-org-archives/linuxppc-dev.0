@@ -1,20 +1,38 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3F7201A0050
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 17:25:27 +1100 (AEDT)
-Message-ID: <1452839126.25634.43.camel@neuling.org>
-Subject: Re: [PATCH V2 8/8] powerpc: Add the ability to save VSX without
- giving it up
-From: Michael Neuling <mikey@neuling.org>
-To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@ozlabs.org
-Date: Fri, 15 Jan 2016 17:25:26 +1100
-In-Reply-To: <1452834254-22078-9-git-send-email-cyrilbur@gmail.com>
-References: <1452834254-22078-1-git-send-email-cyrilbur@gmail.com>
- <1452834254-22078-9-git-send-email-cyrilbur@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B53F1A0050
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 18:07:50 +1100 (AEDT)
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Fri, 15 Jan 2016 17:07:49 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7C4882BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 18:07:46 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0F77dfF6619372
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 18:07:48 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0F77DLl024587
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 18:07:13 +1100
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-doc@vger.kernel.org
+Cc: bhelgaas@google.com, corbet@lwn.net, aik@ozlabs.ru,
+ alex.williamson@redhat.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
+ zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Subject: [RFC PATCH v3 0/5] vfio-pci: Allow to mmap sub-page MMIO BARs and
+ MSI-X table on PPC64 platform
+Date: Fri, 15 Jan 2016 15:06:09 +0800
+Message-Id: <1452841574-2781-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,146 +42,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-01-15 at 16:04 +1100, Cyril Bur wrote:
-> This patch adds the ability to be able to save the VSX registers to
-> the
-> thread struct without giving up (disabling the facility) next time
-> the
-> process returns to userspace.
->=20
-> This patch builds on a previous optimisation for the FPU and VEC
-> registers
-> in the thread copy path to avoid a possibly pointless reload of VSX
-> state.
->=20
-> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> ---
->  arch/powerpc/include/asm/switch_to.h |  1 -
->  arch/powerpc/kernel/ppc_ksyms.c      |  4 ----
->  arch/powerpc/kernel/process.c        | 23 ++++++++++++++++++-----
->  arch/powerpc/kernel/vector.S         | 17 -----------------
->  4 files changed, 18 insertions(+), 27 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/switch_to.h
-> b/arch/powerpc/include/asm/switch_to.h
-> index 29dda9d..4dfcd3e 100644
-> --- a/arch/powerpc/include/asm/switch_to.h
-> +++ b/arch/powerpc/include/asm/switch_to.h
-> @@ -52,7 +52,6 @@ static inline void disable_kernel_altivec(void)
->  extern void enable_kernel_vsx(void);
->  extern void flush_vsx_to_thread(struct task_struct *);
->  extern void giveup_vsx(struct task_struct *);
-> -extern void __giveup_vsx(struct task_struct *);
->  static inline void disable_kernel_vsx(void)
->  {
->  	msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
-> diff --git a/arch/powerpc/kernel/ppc_ksyms.c
-> b/arch/powerpc/kernel/ppc_ksyms.c
-> index 41e1607..ef7024da 100644
-> --- a/arch/powerpc/kernel/ppc_ksyms.c
-> +++ b/arch/powerpc/kernel/ppc_ksyms.c
-> @@ -28,10 +28,6 @@ EXPORT_SYMBOL(load_vr_state);
->  EXPORT_SYMBOL(store_vr_state);
->  #endif
-> =20
-> -#ifdef CONFIG_VSX
-> -EXPORT_SYMBOL_GPL(__giveup_vsx);
-> -#endif
-> -
->  #ifdef CONFIG_EPAPR_PARAVIRT
->  EXPORT_SYMBOL(epapr_hypercall_start);
->  #endif
-> diff --git a/arch/powerpc/kernel/process.c
-> b/arch/powerpc/kernel/process.c
-> index 5566c32..3d907b8 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -252,20 +252,33 @@ EXPORT_SYMBOL_GPL(flush_altivec_to_thread);
->  #endif /* CONFIG_ALTIVEC */
-> =20
->  #ifdef CONFIG_VSX
-> -void giveup_vsx(struct task_struct *tsk)
-> +void __giveup_vsx(struct task_struct *tsk)
->  {
-> -	check_if_tm_restore_required(tsk);
-> -
-> -	msr_check_and_set(MSR_FP|MSR_VEC|MSR_VSX);
->  	if (tsk->thread.regs->msr & MSR_FP)
->  		__giveup_fpu(tsk);
->  	if (tsk->thread.regs->msr & MSR_VEC)
->  		__giveup_altivec(tsk);
-> +	tsk->thread.regs->msr &=3D ~MSR_VSX;
-> +}
-> +
-> +void giveup_vsx(struct task_struct *tsk)
-> +{
-> +	check_if_tm_restore_required(tsk);
-> +
-> +	msr_check_and_set(MSR_FP|MSR_VEC|MSR_VSX);
->  	__giveup_vsx(tsk);
->  	msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
->  }
->  EXPORT_SYMBOL(giveup_vsx);
-> =20
-> +void save_vsx(struct task_struct *tsk)
-> +{
-> +	if (tsk->thread.regs->msr & MSR_FP)
-> +		save_fpu(tsk);
-> +	if (tsk->thread.regs->msr & MSR_VEC)
-> +		save_altivec(tsk);
-> +}
-> +
->  void enable_kernel_vsx(void)
->  {
->  	WARN_ON(preemptible());
-> @@ -465,7 +478,7 @@ void save_all(struct task_struct *tsk)
->  #endif
->  #ifdef CONFIG_VSX
->  	if (usermsr & MSR_VSX)
-> -		__giveup_vsx(tsk);
-> +		save_vsx(tsk);
+Current vfio-pci implementation disallows to mmap
+sub-page(size < PAGE_SIZE) MMIO BARs and MSI-X table. This is because
+sub-page BARs' mmio page may be shared with other BARs and MSI-X table
+should not be accessed directly from the guest for security reasons.
 
-This seems suboptimal.  save_vsx() will call save_fpu() and
-save_altivec() again, which you just called earlier in save_all().
+But these will easily cause some performance issues for mmio accesses
+in guest when vfio passthrough sub-page BARs or BARs containing MSI-X
+table on PPC64 platform. This is because PAGE_SIZE is 64KB by default
+on PPC64 platform and the big page may easily hit the sub-page MMIO
+BARs' unmmapping and cause the unmmaping of the mmio page which
+MSI-X table locate in, which lead to mmio emulation in host.
 
-save_vsx() is only used here, so could be static.=20
+For sub-page MMIO BARs' unmmapping, this patchset adds a kernel
+parameter for PCI resource allocator to enforce the alignment of all
+MMIO BARs to be at least PAGE_SZIE and make it enabled by default on
+PPC64 platform so that sub-page BAR's mmio page will not be shared
+with other BARs. Then we can mmap sub-page MMIO BARs in vfio-pci driver
+with this parameter enabled.
 
-Also, put the #ifdef junk as part of the function so that the caller
-doesn't have to deal with it.=20
+For MSI-X table's unmmapping, we think MSI-X table is safe to access
+directly from userspace if PCI host bridge support filtering of MSIs
+which can ensure that a given pci device can only shoot the MSIs
+assigned for it. So we add a pci_host_bridge attribute to indicate
+if this PCI host bridge supports filtering of MSIs. Then we can mmap
+MSI-X table with this attribute set.
 
-Mikey
+With this patchset applied, we can get almost 100% improvement on
+performance for mmio accesses when we passthrough sub-page BARs to guest
+in our test.
 
->  #endif
->  #ifdef CONFIG_SPE
->  	if (usermsr & MSR_SPE)
-> diff --git a/arch/powerpc/kernel/vector.S
-> b/arch/powerpc/kernel/vector.S
-> index 51b0c17..1c2e7a3 100644
-> --- a/arch/powerpc/kernel/vector.S
-> +++ b/arch/powerpc/kernel/vector.S
-> @@ -151,23 +151,6 @@ _GLOBAL(load_up_vsx)
->  	std	r12,_MSR(r1)
->  	b	fast_exception_return
-> =20
-> -/*
-> - * __giveup_vsx(tsk)
-> - * Disable VSX for the task given as the argument.
-> - * Does NOT save vsx registers.
-> - */
-> -_GLOBAL(__giveup_vsx)
-> -	addi	r3,r3,THREAD		/* want THREAD of
-> task */
-> -	ld	r5,PT_REGS(r3)
-> -	cmpdi	0,r5,0
-> -	beq	1f
-> -	ld	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
-> -	lis	r3,MSR_VSX@h
-> -	andc	r4,r4,r3		/* disable VSX for
-> previous task */
-> -	std	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
-> -1:
-> -	blr
-> -
->  #endif /* CONFIG_VSX */
-> =20
-> =20
+The two vfio related patches(patch 2 and patch 5) are based on the
+proposed patchset[1].
+
+Changelog v3: 
+- Rebase on new linux kernel mainline with the patchset[1] applied.
+- Add a function to check whether PCI BARs'mmio page is shared with
+  other BARs.
+- Add a host bridge attribute to indicate PCI host bridge support
+  filtering of MSIs.
+- Use the new host bridge attribute to check if MSI-X table can
+  be mmapped instead of CONFIG_EEH.
+- Remove Kconfig option VFIO_PCI_MMAP_MSIX
+
+Changelog v2:
+- Rebase on v4.4-rc6 with the patchset[1] applied.
+- Use kernel parameter to enforce all MMIO BARs to be page aligned
+  on PCI core code instead of doing it on PPC64 arch code.
+- Remove flags: VFIO_DEVICE_FLAGS_PCI_PAGE_ALIGNED
+                VFIO_DEVICE_FLAGS_PCI_MSIX_MMAP
+- Add a Kconfig option to support for mmapping MSI-X table.
+
+[1] https://lkml.org/lkml/2015/11/23/748
+
+Yongji Xie (5):
+  PCI: Add support for enforcing all MMIO BARs to be page aligned
+  vfio-pci: Allow to mmap sub-page MMIO BARs if the mmio page is exclusive
+  PCI: Add host bridge attribute to indicate filtering of MSIs is supported
+  powerpc/powernv/pci-ioda: Enable msi_filtered bit for any IODA host bridge
+  vfio-pci: Allow to mmap MSI-X table if host bridge supports filtering of MSIs
+
+ Documentation/kernel-parameters.txt       |    5 +++++
+ arch/powerpc/include/asm/pci.h            |   11 +++++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c |    6 +++++
+ drivers/pci/host-bridge.c                 |    6 +++++
+ drivers/pci/pci.c                         |   35 +++++++++++++++++++++++++++++
+ drivers/pci/pci.h                         |    8 ++++++-
+ drivers/vfio/pci/vfio_pci.c               |   13 ++++++++---
+ include/linux/pci.h                       |    7 ++++++
+ 8 files changed, 87 insertions(+), 4 deletions(-)
+
+-- 
+1.7.9.5
