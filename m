@@ -1,29 +1,41 @@
-Return-Path: <sebastian.hesselbarth@gmail.com>
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <cseo@linux.vnet.ibm.com>
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48F5D1A003F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jan 2016 09:57:28 +1100 (AEDT)
-Received: by mail-wm0-x244.google.com with SMTP id u188so5150884wmu.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 14:57:28 -0800 (PST)
-Subject: Re: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
-To: Shaohui Xie <shaohui.xie@nxp.com>, Andrew Lunn <andrew@lunn.ch>,
- "shh.xie@gmail.com" <shh.xie@gmail.com>
-References: <1452759839-9874-1-git-send-email-shh.xie@gmail.com>
- <20160114164418.GD19773@lunn.ch>
- <VI1PR04MB166491DEBB439EB72742201DE8CD0@VI1PR04MB1664.eurprd04.prod.outlook.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "f.fainelli@gmail.com" <f.fainelli@gmail.com>,
- "davem@davemloft.net" <davem@davemloft.net>,
- Shaohui Xie <Shaohui.Xie@freescale.com>
-From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Message-ID: <56997951.90304@gmail.com>
-Date: Fri, 15 Jan 2016 23:57:21 +0100
-In-Reply-To: <VI1PR04MB166491DEBB439EB72742201DE8CD0@VI1PR04MB1664.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id DF5EA1A003F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jan 2016 09:30:58 +1100 (AEDT)
+Received: from localhost
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cseo@linux.vnet.ibm.com>;
+ Fri, 15 Jan 2016 20:30:52 -0200
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 5199F352006E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 17:30:44 -0500 (EST)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0FMSdpZ63832244
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 20:28:39 -0200
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0FMUntd001053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 17:30:49 -0500
+Subject: Re: [PATCH] Add hwcap2 bits for POWER9
+To: Tulio Magno Quites Machado Filho <tuliom@linux.vnet.ibm.com>,
+ "Carlos O'Donell" <carlos@redhat.com>
+References: <568C272D.6000705@linux.vnet.ibm.com>
+ <87egdsi4om.fsf@totoro.br.ibm.com> <1452267366.5201.12.camel@vnet.ibm.com>
+ <568FE3D0.7080008@linaro.org> <87wprgdu3u.fsf@totoro.br.ibm.com>
+ <5693C861.9030308@redhat.com> <87bn8revra.fsf@totoro.br.ibm.com>
+Cc: Adhemerval Zanella <adhemerval.zanella@linaro.org>,
+ libc-alpha@sourceware.org, linuxppc-dev@lists.ozlabs.org,
+ Steve Munroe <munroesj@linux.vnet.ibm.com>
+From: Carlos Eduardo Seo <cseo@linux.vnet.ibm.com>
+Message-ID: <56997314.9060102@linux.vnet.ibm.com>
+Date: Fri, 15 Jan 2016 20:30:44 -0200
+MIME-Version: 1.0
+In-Reply-To: <87bn8revra.fsf@totoro.br.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,70 +45,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15.01.2016 05:01, Shaohui Xie wrote:
->> -----Original Message-----
->> From: Andrew Lunn [mailto:andrew@lunn.ch]
->> Sent: Friday, January 15, 2016 12:44 AM
->> To: shh.xie@gmail.com
->> Cc: devicetree@vger.kernel.org; netdev@vger.kernel.org; linuxppc-
->> dev@lists.ozlabs.org; f.fainelli@gmail.com; davem@davemloft.net; Shaohui Xie
->> Subject: Re: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
->>
->> On Thu, Jan 14, 2016 at 04:23:59PM +0800, shh.xie@gmail.com wrote:
->>> From: Shaohui Xie <Shaohui.Xie@freescale.com>
->>>
->>> This commit adds necessary definitions for the PHY layer to recognize
->>> backplane Ethernet 1000BASE-KX and 10GBASE-KR as valid PHY interfaces,
->>> "1000base-kx" for 1000BASE-KX, "10gbase-kr" for 10GBASE-KR.
->>>
->>> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
->>> ---
->>> changes in v2:
->>> new patch.
 
-Shaohui,
 
-it would be more useful to describe _what_ is new here compared to v1.
+On 1/11/16 5:55 PM, Tulio Magno Quites Machado Filho wrote:
+>
+> However, I do agree with the concerns raised by Peter and Adhemerval: glibc
+> should be in sync with the kernel by the time of the release in order to
+> guarantee both bits are reserved for the exact same goal and we should have
+> both AT_HWCAP and AT_PLATFORM supporting the new processor.
+> With that said, I was planning to revert both commits d2de9ef7 and b1f19b8e
+> if we don't get the kernel patch accepted into the powerpc tree in time for
+> the release 2.23.
+>
 
-Anyway:
+Kernel patch is in, commit f689b742f217b2ffe7925f8a6521b208ee995309
 
->>>  Documentation/devicetree/bindings/net/ethernet.txt | 4 ++--
->>>  include/linux/phy.h                                | 6 ++++++
->>>  2 files changed, 8 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/Documentation/devicetree/bindings/net/ethernet.txt
->>> b/Documentation/devicetree/bindings/net/ethernet.txt
->>> index 5d88f37..1166a5c 100644
->>> --- a/Documentation/devicetree/bindings/net/ethernet.txt
->>> +++ b/Documentation/devicetree/bindings/net/ethernet.txt
->>> @@ -11,8 +11,8 @@ The following properties are common to the Ethernet
->> controllers:
->>>    the maximum frame size (there's contradiction in ePAPR).
->>>  - phy-mode: string, operation mode of the PHY interface; supported values are
->>>    "mii", "gmii", "sgmii", "qsgmii", "tbi", "rev-mii", "rmii",
->>> "rgmii", "rgmii-id",
->>> -  "rgmii-rxid", "rgmii-txid", "rtbi", "smii", "xgmii"; this is now a
->>> de-facto
->>> -  standard property;
->>> +  "rgmii-rxid", "rgmii-txid", "rtbi", "smii", "xgmii", "1000base-kx",
->>> + "10gbase-kr";  this is now a de-facto standard property;
->>
->> I know very little about this, so i'm just asking a question. None of the other
->> interface modes contain a bit rate. So is the bit rate needed for your two new
->> modes?
-> 
-> 1000BASE-KX and 10GBASE-KR are terms in IEEE802.3, so as XGMII and GMII. 
-> There are interfaces could be different bit rates but same types, 
-> e.g. 100BASE-LX10 and 1000BASE-LX10, or 40GBASE-KR4 and 100GBASE-KR4, 
-> having bit rate is clear to represent hardware.
-> 
+Regards,
 
-If you look at the list of possible values for "phy-mode" you'd see that
-none of it describes a PHY-to-PHY connection but all are for MAC-to-PHY
-connections. Also, names above suggest it already: MII is short for
-media _independent_ interface.
-
-I copy Andrew's concerns and think that neither 10000base-kx nor
-10gbase-kr belong in the list of phy-mode properties.
-
-Sebastian
+-- 
+Carlos Eduardo Seo
+Software Engineer - Linux on Power Toolchain
+cseo@linux.vnet.ibm.com
