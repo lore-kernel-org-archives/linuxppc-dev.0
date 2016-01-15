@@ -1,35 +1,19 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CBEFE1A0050
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 12:40:39 +1100 (AEDT)
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Thu, 14 Jan 2016 20:40:36 -0500
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 0845D38C8039
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 20:40:34 -0500 (EST)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0F1eXCG28966954
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 01:40:33 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0F1a9h6005987
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jan 2016 20:36:09 -0500
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2] powerpc/powernv: Remove support for p5ioc2
-In-Reply-To: <1452668681-19458-1-git-send-email-ruscur@russell.cc>
-References: <1452668681-19458-1-git-send-email-ruscur@russell.cc>
-Date: Fri, 15 Jan 2016 12:40:23 +1100
-Message-ID: <878u3raad4.fsf@linux.vnet.ibm.com>
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id DAAC81A02A5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 13:53:47 +1100 (AEDT)
+Date: Thu, 14 Jan 2016 20:53:41 -0600
+From: Rob Herring <robh@kernel.org>
+To: shh.xie@gmail.com
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, f.fainelli@gmail.com, davem@davemloft.net,
+ Shaohui Xie <Shaohui.Xie@freescale.com>
+Subject: Re: [PATCH 2/3] [v2] powerpc: fsl: update fman dt binding for PCS PHY
+Message-ID: <20160115025341.GA13316@rob-hp-laptop>
+References: <1452760038-12442-1-git-send-email-shh.xie@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1452760038-12442-1-git-send-email-shh.xie@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,28 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Russell Currey <ruscur@russell.cc> writes:
-> "p5ioc2 is used by approximately 2 machines in the world, and has never
-> ever been a supported configuration."
->
-> The code for p5ioc2 is essentially unused and complicates what is already
-> a very complicated codebase.  Its removal is essentially a "free win" in
-> the effort to simplify the powernv PCI code.
->
-> In addition, support for p5ioc2 has been dropped from skiboot.  There's no
-> reason to keep it around in the kernel.
->
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
+On Thu, Jan 14, 2016 at 04:27:18PM +0800, shh.xie@gmail.com wrote:
+> From: Shaohui Xie <Shaohui.Xie@freescale.com>
+> 
+> PCS PHY can support backplane (1000BASE-KX and 10GBASE-KR), this needs
+> to change corresponding serdes lane settings, so a reference is needed
+> for serdes lane. This patch describes properties needed for PCS PHY to
+> support backplane.
+> 
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
 > ---
-> V2: Remove pointless union and rebase on -next
->
-> Tested on a P7IOC machine and a PHB3 machine.
->
-> Skiboot p5ioc2 removal patch:
-> https://patchwork.ozlabs.org/patch/544898/
+> changes in v2:
+> addressed Rob's comments.
+> based on http://patchwork.ozlabs.org/patch/560936/
+> 
+>  Documentation/devicetree/bindings/powerpc/fsl/fman.txt | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> index 55c2c03..5ca909a 100644
+> --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> @@ -432,6 +432,16 @@ example of how to define a PHY (Internal PHY has no interrupt line).
+>  - For "fsl,fman-mdio" compatible internal mdio bus, the PHY is TBI PHY.
+>  - For "fsl,fman-memac-mdio" compatible internal mdio bus, the PHY is PCS PHY,
+>    PCS PHY addr must be '0'.
+> +  PCS PHY can support backplane (1000BASE-KX and 10GBASE-KR), this needs to
+> +  change the corresponding serdes lane settings.
+> +
+> +  PCS PHY node properties required for backplane:
+> +
+> +  - compatible: must be "ethernet-phy-ieee802.3-c45".
+> +  - phy-mode: string, operation mode of the PHY interface; must be "1000base-kx"
+> +    for 1000BASE-KX, or "10gbase-kr" for 10GBASE-KR.
+> +  - fsl-lane-handle: phandle, specifies a reference to a node representing a Serdes.
+> +  - fsl-lane-reg: offset and length of the register set for the serdes lane.
 
-Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+These should be fsl,... not fsl-...
 
--- 
-Stewart Smith
-OPAL Architect, IBM.
+Rob
