@@ -1,45 +1,21 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Zhiqiang.Hou@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0122.outbound.protection.outlook.com [65.55.169.122])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2BEBF1A0050
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 20:14:01 +1100 (AEDT)
-Date: Fri, 15 Jan 2016 10:13:48 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
- Will Deacon <will.deacon@arm.com>,
- "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
- David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- ddaney.cavm@gmail.com, james.hogan@imgtec.com,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
-Message-ID: <20160115091348.GA27936@worktop>
-References: <20160112114111.GB15737@arm.com> <569565DA.2010903@imgtec.com>
- <20160113104516.GE25458@arm.com> <5696CF08.8080700@imgtec.com>
- <20160114121449.GC15828@arm.com> <5697F6D2.60409@imgtec.com>
- <20160114203430.GC3818@linux.vnet.ibm.com>
- <56980C91.1010403@imgtec.com>
- <20160114212913.GF3818@linux.vnet.ibm.com>
- <20160115085554.GF3421@worktop>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 861091A0050
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 20:46:46 +1100 (AEDT)
+From: Zhiqiang Hou <Zhiqiang.Hou@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <benh@kernel.crashing.org>,
+ <paulus@samba.org>, <mpe@ellerman.id.au>
+CC: <scottwood@freescale.com>, <Minghuan.Lian@freescale.com>,
+ <chenhui.zhao@freescale.com>, <Mingkai.Hu@freescale.com>, Zhiqiang Hou
+ <Zhiqiang.Hou@freescale.com>
+Subject: [PATCH] powerpc/fsl-pci: Add a workaround for PCI 5 errata
+Date: Fri, 15 Jan 2016 17:38:20 +0800
+Message-ID: <1452850700-39442-1-git-send-email-Zhiqiang.Hou@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160115085554.GF3421@worktop>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,33 +25,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 15, 2016 at 09:55:54AM +0100, Peter Zijlstra wrote:
-> On Thu, Jan 14, 2016 at 01:29:13PM -0800, Paul E. McKenney wrote:
-> > So smp_mb() provides transitivity, as do pairs of smp_store_release()
-> > and smp_read_acquire(), 
-> 
-> But they provide different grades of transitivity, which is where all
-> the confusion lays.
-> 
-> smp_mb() is strongly/globally transitive, all CPUs will agree on the order.
-> 
-> Whereas the RCpc release+acquire is weakly so, only the two cpus
-> involved in the handover will agree on the order.
+From: chenhui zhao <chenhui.zhao@freescale.com>
 
-And the stuff we're confused about is how best to express the difference
-and guarantees of these two forms of transitivity and how exactly they
-interact.
+Issue:
+As a master, the PCI IP block can combine a memory write to the last PCI
+double word (4 bytes) of a cacheline with a 4 byte memory write to the
+first PCI double word of the subsequent cacheline. This affects 32-bit
+PCI target devices that blindly assert STOP on memory-write transactions,
+without detecting that the data beat being transferred is the last data
+beat of the transaction. It can cause a hang. PCI-X operation is not
+affected by this erratum.
 
-And smp_load_acquire()/smp_store_release() are RCpc because TSO archs
-and PPC. the atomic*_{acquire,release}() are RCpc because PPC and
-LOCK,UNLOCK are similarly RCpc because of PPC.
+Workaround:
+Setting the bit MDS in the PCI Bus Function Register will disable the
+combining of crossing cacheline boundary requests into one burst
+transaction. Therefore, it can prevent the errata scenario from
+occurring.
 
-Now we'd like PPC to stick a SYNC in either LOCK or UNLOCK so at least
-the locks are RCsc again, but they resist for performance reasons but
-waver because they don't want to be the ones finding all the nasty bugs
-because they're the only one.
+This errata exists in MPC8543, MPC8543E, MPC8545, MPC8545E, MPC8547,
+MPC8547E, MPC8548 and MPC8548E. Refer to PCI 5 in MPC8548 errata
+document.
 
-Now the thing I worry about, and still have not had an answer to is if
-weakly ordered MIPS will end up being RCsc or RCpc for their locks if
-they get implemented with SYNC_ACQUIRE and SYNC_RELEASE instead of the
-current SYNC.
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+Signed-off-by: Zhiqiang Hou <Zhiqiang.Hou@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_pci.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index c69e88e..33e50f3 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -37,6 +37,7 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/ppc-pci.h>
+ #include <asm/machdep.h>
++#include <asm/mpc85xx.h>
+ #include <asm/disassemble.h>
+ #include <asm/ppc-opcode.h>
+ #include <sysdev/fsl_soc.h>
+@@ -527,6 +528,8 @@ int fsl_add_bridge(struct platform_device *pdev, int is_primary)
+ 	u8 hdr_type, progif;
+ 	struct device_node *dev;
+ 	struct ccsr_pci __iomem *pci;
++	u16 temp;
++	u32 svr = mfspr(SPRN_SVR);
+ 
+ 	dev = pdev->dev.of_node;
+ 
+@@ -596,6 +599,27 @@ int fsl_add_bridge(struct platform_device *pdev, int is_primary)
+ 			PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS;
+ 		if (fsl_pcie_check_link(hose))
+ 			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
++	} else {
++		/*
++		 * Set PBFR(PCI Bus Function Register)[10] = 1 to
++		 * disable the combining of crossing cacheline
++		 * boundary requests into one burst transaction.
++		 * PCI-X operation is not affected.
++		 * Fix erratum PCI 5 on MPC8548
++		 */
++#define PCI_BUS_FUNCTION 0x44
++#define PCI_BUS_FUNCTION_MDS 0x400	/* Master disable streaming */
++		if (((SVR_SOC_VER(svr) == SVR_8543) ||
++			(SVR_SOC_VER(svr) == SVR_8545) ||
++			(SVR_SOC_VER(svr) == SVR_8547) ||
++			(SVR_SOC_VER(svr) == SVR_8548)) &&
++			!early_find_capability(hose, 0, 0, PCI_CAP_ID_PCIX)) {
++			early_read_config_word(hose, 0, 0,
++					PCI_BUS_FUNCTION, &temp);
++			temp |= PCI_BUS_FUNCTION_MDS;
++			early_write_config_word(hose, 0, 0,
++					PCI_BUS_FUNCTION, temp);
++		}
+ 	}
+ 
+ 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
+-- 
+2.1.0.27.g96db324
