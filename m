@@ -1,25 +1,25 @@
 Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F11651A0CE1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 18:09:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A54441A0D21
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 18:09:37 +1100 (AEDT)
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Fri, 15 Jan 2016 17:09:10 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 74D8B2BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 18:09:08 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0F790jt9502960
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 18:09:08 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0F78ZIS024778
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 18:08:36 +1100
+ Fri, 15 Jan 2016 17:09:36 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 044EC2BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 18:09:34 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0F79RQu27721736
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 18:09:35 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0F790OX012801
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jan 2016 18:09:01 +1100
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -29,10 +29,10 @@ Cc: bhelgaas@google.com, corbet@lwn.net, aik@ozlabs.ru,
  mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
  zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
  Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Subject: [RFC PATCH v3 4/5] powerpc/powernv/pci-ioda: Enable msi_filtered bit
- for any IODA host bridge
-Date: Fri, 15 Jan 2016 15:06:13 +0800
-Message-Id: <1452841574-2781-5-git-send-email-xyjxie@linux.vnet.ibm.com>
+Subject: [RFC PATCH v3 5/5] vfio-pci: Allow to mmap MSI-X table if host bridge
+ supports filtering of MSIs
+Date: Fri, 15 Jan 2016 15:06:14 +0800
+Message-Id: <1452841574-2781-6-git-send-email-xyjxie@linux.vnet.ibm.com>
 In-Reply-To: <1452841574-2781-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 References: <1452841574-2781-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,36 +44,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables msi_filtered bit for any IODA host bridge.
+Current vfio-pci implementation disallows to mmap MSI-X
+table in case that user get to touch this directly.
+
+But we should allow to mmap these MSI-X tables if the PCI
+host bridge supports filtering of MSIs.
 
 Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/vfio/pci/vfio_pci.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 414fd1a..689f0dc 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2934,6 +2934,11 @@ static void pnv_pci_ioda_fixup(void)
- #endif
- }
+diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+index 11fd0f0..4d68f6a 100644
+--- a/drivers/vfio/pci/vfio_pci.c
++++ b/drivers/vfio/pci/vfio_pci.c
+@@ -555,7 +555,8 @@ static long vfio_pci_ioctl(void *device_data,
+ 			    IORESOURCE_MEM && !pci_resources_share_page(pdev,
+ 			    info.index)) {
+ 				info.flags |= VFIO_REGION_INFO_FLAG_MMAP;
+-				if (info.index == vdev->msix_bar) {
++				if (!pci_host_bridge_msi_filtered_enabled(pdev) &&
++				    info.index == vdev->msix_bar) {
+ 					ret = msix_sparse_mmap_cap(vdev, &caps);
+ 					if (ret)
+ 						return ret;
+@@ -967,7 +968,8 @@ static int vfio_pci_mmap(void *device_data, struct vm_area_struct *vma)
+ 	if (phys_len < PAGE_SIZE || req_start + req_len > phys_len)
+ 		return -EINVAL;
  
-+static void pnv_pci_ioda_fixup_phb(struct pci_controller *hose)
-+{
-+	to_pci_host_bridge(hose->bus->bridge)->msi_filtered = 1;
-+}
-+
- /*
-  * Returns the alignment for I/O or memory windows for P2P
-  * bridges. That actually depends on how PEs are segmented.
-@@ -3201,6 +3206,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	 * the child P2P bridges) can form individual PE.
- 	 */
- 	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
-+	ppc_md.pcibios_fixup_phb = pnv_pci_ioda_fixup_phb;
- 	hose->controller_ops = pnv_pci_ioda_controller_ops;
- 
- #ifdef CONFIG_PCI_IOV
+-	if (index == vdev->msix_bar) {
++	if (!pci_host_bridge_msi_filtered_enabled(pdev) &&
++	    index == vdev->msix_bar) {
+ 		/*
+ 		 * Disallow mmaps overlapping the MSI-X table; users don't
+ 		 * get to touch this directly.  We could find somewhere
 -- 
 1.7.9.5
