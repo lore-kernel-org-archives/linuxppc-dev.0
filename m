@@ -1,22 +1,29 @@
 Return-Path: <caleb@crome.org>
-Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
- [IPv6:2607:f8b0:400e:c03::229])
+Received: from mail-ig0-x230.google.com (mail-ig0-x230.google.com
+ [IPv6:2607:f8b0:4001:c05::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0E80A1A0CC1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 05:37:45 +1100 (AEDT)
-Received: by mail-pa0-x229.google.com with SMTP id uo6so423559848pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 10:37:45 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9827F1A0CC2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 06:25:55 +1100 (AEDT)
+Received: by mail-ig0-x230.google.com with SMTP id z14so62119013igp.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 11:25:55 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <201601190245.2gbScBue%fengguang.wu@intel.com>
+References: <1453142205-83135-1-git-send-email-caleb@crome.org>
+ <201601190245.2gbScBue%fengguang.wu@intel.com>
 From: Caleb Crome <caleb@crome.org>
-To: timur@tabi.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: Caleb Crome <caleb@crome.org>
-Subject: [PATCH] ASoC: fsl_ssi: Set watermark and maxburst settings to
+Date: Mon, 18 Jan 2016 11:25:32 -0800
+Message-ID: <CAG5mAdyz4zsJugj4LcG+a_g=QmTZsvXvk9Bm+k0SwxpZbYsGZQ@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_ssi: Set watermark and maxburst settings to
  eliminate DMA xruns on imx processors
-Date: Mon, 18 Jan 2016 10:36:45 -0800
-Message-Id: <1453142205-83135-1-git-send-email-caleb@crome.org>
+To: kbuild test robot <lkp@intel.com>
+Cc: kbuild-all@01.org, Timur Tabi <timur@tabi.org>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,123 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Change watermark settings for imx processors.  The previous setting
-was fifo_depth-2, which causes silent but deadly xruns when using more
-than 2 channels.  This patch sets the watermark & maxburst
-settings to
+On Mon, Jan 18, 2016 at 10:59 AM, kbuild test robot <lkp@intel.com> wrote:
+> Hi Caleb,
+>
+> [auto build test ERROR on asoc/for-next]
+> [also build test ERROR on v4.4 next-20160118]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improving the system]
+>
+> url:    https://github.com/0day-ci/linux/commits/Caleb-Crome/ASoC-fsl_ssi-Set-watermark-and-maxburst-settings-to-eliminate-DMA-xruns-on-imx-processors/20160119-024143
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+> config: x86_64-randconfig-x019-01180513 (attached as .config)
+> reproduce:
 
-DMA, imx processors: 4
-DMA, mpc8610       : fifo_depth - 2
-FIQ, all           : fifo_depth
 
-This leaves mpc8610 with identically the same settings as before this
-patch, and changes the IMX processors to have a watermark setting of
-4, meaning when there are 4 or more empty spaces in the TX FIFO, to
-start a DMA burst. And similarly, when there are 4 or more
-filled spaces in the RX fifo, to start a DMA burst.
+Doh, sorry sent the wrong patch file.  Will re-submit shortly.
 
-The tradeoff with this patch is that on IMX processors, the DMA will
-be more reliable (not have DMA slips), epseically when running more
-than 2 channels, at the expense of more DMA transactions.  Interrupt
-frequency is unaffected.
-
-Signed-off-by: Caleb Crome <caleb@crome.org>
----
- sound/soc/fsl/fsl_ssi.c | 54 ++++++++++++++++++++++++++++++-------------------
- 1 file changed, 33 insertions(+), 21 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 95d2392..5080c29 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -220,6 +220,10 @@ struct fsl_ssi_soc_data {
-  * @dbg_stats: Debugging statistics
-  *
-  * @soc: SoC specific data
-+ *
-+ * @fifo_watermark:  the fifo level to signal the DMA for more words
-+ * @dma_maxburst:    the maximum number of words to send to the fifo
-+ *                   in a DMA burst
-  */
- struct fsl_ssi_private {
- 	struct regmap *regs;
-@@ -257,6 +261,9 @@ struct fsl_ssi_private {
- 	struct fsl_ssi_dbg dbg_stats;
- 
- 	const struct fsl_ssi_soc_data *soc;
-+
-+	u32 fifo_watermark;
-+	u32 dma_maxburst;
- };
- 
- /*
-@@ -985,21 +992,7 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
- 	regmap_write(regs, CCSR_SSI_SRCR, srcr);
- 	regmap_write(regs, CCSR_SSI_SCR, scr);
- 
--	/*
--	 * Set the watermark for transmit FIFI 0 and receive FIFO 0. We don't
--	 * use FIFO 1. We program the transmit water to signal a DMA transfer
--	 * if there are only two (or fewer) elements left in the FIFO. Two
--	 * elements equals one frame (left channel, right channel). This value,
--	 * however, depends on the depth of the transmit buffer.
--	 *
--	 * We set the watermark on the same level as the DMA burstsize.  For
--	 * fiq it is probably better to use the biggest possible watermark
--	 * size.
--	 */
--	if (ssi_private->use_dma)
--		wm = ssi_private->fifo_depth - 2;
--	else
--		wm = ssi_private->fifo_depth;
-+	wm = ssi_private->soc.fifo_watermark;
- 
- 	regmap_write(regs, CCSR_SSI_SFCSR,
- 			CCSR_SSI_SFCSR_TFWM0(wm) | CCSR_SSI_SFCSR_RFWM0(wm) |
-@@ -1307,12 +1300,8 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
- 		dev_dbg(&pdev->dev, "could not get baud clock: %ld\n",
- 			 PTR_ERR(ssi_private->baudclk));
- 
--	/*
--	 * We have burstsize be "fifo_depth - 2" to match the SSI
--	 * watermark setting in fsl_ssi_startup().
--	 */
--	ssi_private->dma_params_tx.maxburst = ssi_private->fifo_depth - 2;
--	ssi_private->dma_params_rx.maxburst = ssi_private->fifo_depth - 2;
-+	ssi_private->dma_params_tx.maxburst = ssi_private->dma_maxburst;
-+	ssi_private->dma_params_rx.maxburst = ssi_private->dma_maxburst;
- 	ssi_private->dma_params_tx.addr = ssi_private->ssi_phys + CCSR_SSI_STX0;
- 	ssi_private->dma_params_rx.addr = ssi_private->ssi_phys + CCSR_SSI_SRX0;
- 
-@@ -1465,6 +1454,29 @@ static int fsl_ssi_probe(struct platform_device *pdev)
-                 /* Older 8610 DTs didn't have the fifo-depth property */
- 		ssi_private->fifo_depth = 8;
- 
-+	if (ssi_private->use_dma) {
-+		/*
-+		 * using DMA, set both watermark & maxburst
-+		 * imx parts need a value of 4 to keep up with the
-+		 * fastest data rates.
-+		 * older non-imx parts keep the old values of
-+		 * fifo_depth-2.
-+		 * maxburst must be <= fifo_watermark;
-+		 * and must be even if dual fifo is used.
-+		 */
-+		if (ssi_private->soc->imx) {
-+			ssi_private->fifo_watermark = 4;
-+			ssi_private->dma_maxburst = 4;
-+		} else {
-+			ssi_private->fifo_watermark =
-+				ssi_private->fifo_depth - 2;
-+			ssi_private->dma_maxburst =
-+				ssi_private->fifo_depth - 2;
-+		}
-+	} else
-+		/* using FIQ.  Keep settings what they were originally */
-+		ssi_private->fifo_watermark = ssi_private->fifo_depth;
-+
- 	dev_set_drvdata(&pdev->dev, ssi_private);
- 
- 	if (ssi_private->soc->imx) {
--- 
-2.1.4
+-Caleb
