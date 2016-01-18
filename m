@@ -1,27 +1,25 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-ig0-x235.google.com (mail-ig0-x235.google.com
- [IPv6:2607:f8b0:4001:c05::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jikos@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B32C1A0023
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 09:14:27 +1100 (AEDT)
-Received: by mail-ig0-x235.google.com with SMTP id z14so64665963igp.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 14:14:27 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5327D1A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 09:22:39 +1100 (AEDT)
+Date: Mon, 18 Jan 2016 23:22:33 +0100 (CET)
+From: Jiri Kosina <jikos@kernel.org>
+To: Torsten Duwe <duwe@lst.de>, Michael Ellerman <mpe@ellerman.id.au>,
+ Steven Rostedt <rostedt@goodmis.org>
+cc: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
+Subject: Re: [PATCH v4 2/9] ppc64le FTRACE_WITH_REGS implementation
+In-Reply-To: <20160105155857.GA2699@lst.de>
+Message-ID: <alpine.LNX.2.00.1601182321230.21446@cbobk.fhfr.pm>
+References: <20151125172608.9588569260@newverein.lst.de>
+ <20151125172902.82C6C69260@newverein.lst.de>
+ <CAOJe8K34bA=LytXouWhjfkgqsR2cTLimMJc-S88RC56dj3x-=Q@mail.gmail.com>
+ <20151201172914.GB5509@lst.de> <1449008285.12022.0.camel@ellerman.id.au>
+ <20160105155857.GA2699@lst.de>
 MIME-Version: 1.0
-In-Reply-To: <569D3800.2040801@maciej.szmigiero.name>
-References: <569D3800.2040801@maciej.szmigiero.name>
-Date: Mon, 18 Jan 2016 20:14:24 -0200
-Message-ID: <CAOMZO5Dgcw-5hv4=H5LcJ2NVobz+4YW7Gu=Y8y88465CYLZ+=w@mail.gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_ssi: remove explicit register defaults
-From: Fabio Estevam <festevam@gmail.com>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Timur Tabi <timur@tabi.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,27 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 18, 2016 at 5:07 PM, Maciej S. Szmigiero
-<mail@maciej.szmigiero.name> wrote:
-> There is no guarantee that on fsl_ssi module load
-> SSI registers will have their power-on-reset values.
->
-> In fact, if the driver is reloaded the values in
-> registers will be whatever they were set to previously.
->
-> However, the cache needs to be fully populated at probe
-> time to avoid non-atomic allocations during register
-> access.
->
-> Special case here is imx21-class SSI, since
-> according to datasheet it don't have SACC{ST,EN,DIS}
-> regs.
->
-> This fixes hard lockup on fsl_ssi module reload,
-> at least in AC'97 mode.
->
-> Fixes: 05cf237972fe ("ASoC: fsl_ssi: Add driver suspend and resume to support MEGA Fast")
->
-> Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+On Tue, 5 Jan 2016, Torsten Duwe wrote:
 
-Tested-by: Fabio Estevam <fabio.estevam@nxp.com>
+> > I (still) haven't had a chance to have a good look at it, but I won't this week
+> > anyway. So post v5 and hopefully I can review that and it will be perfect :)
+> 
+> The perfect v5 is there now, for 4 weeks minus the holiday season, and 
+> no further problems arose. Independently verified by Petr Mladek -- 
+> don't forget his high-level fix.
+
+Hi everybody,
+
+so what are the current plans with this one, please? Is this going through 
+ppc tree, ftrace tree, or does it have issues that need to be worked on 
+before merging?
+
+Thanks!
+
+-- 
+Jiri Kosina
+SUSE Labs
