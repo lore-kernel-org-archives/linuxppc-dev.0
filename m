@@ -1,28 +1,26 @@
-Return-Path: <caleb@crome.org>
-Received: from mail-ig0-x230.google.com (mail-ig0-x230.google.com
- [IPv6:2607:f8b0:4001:c05::230])
+Return-Path: <festevam@gmail.com>
+Received: from mail-ig0-x235.google.com (mail-ig0-x235.google.com
+ [IPv6:2607:f8b0:4001:c05::235])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9827F1A0CC2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 06:25:55 +1100 (AEDT)
-Received: by mail-ig0-x230.google.com with SMTP id z14so62119013igp.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 11:25:55 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5B32C1A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 09:14:27 +1100 (AEDT)
+Received: by mail-ig0-x235.google.com with SMTP id z14so64665963igp.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 14:14:27 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <201601190245.2gbScBue%fengguang.wu@intel.com>
-References: <1453142205-83135-1-git-send-email-caleb@crome.org>
- <201601190245.2gbScBue%fengguang.wu@intel.com>
-From: Caleb Crome <caleb@crome.org>
-Date: Mon, 18 Jan 2016 11:25:32 -0800
-Message-ID: <CAG5mAdyz4zsJugj4LcG+a_g=QmTZsvXvk9Bm+k0SwxpZbYsGZQ@mail.gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_ssi: Set watermark and maxburst settings to
- eliminate DMA xruns on imx processors
-To: kbuild test robot <lkp@intel.com>
-Cc: kbuild-all@01.org, Timur Tabi <timur@tabi.org>,
+In-Reply-To: <569D3800.2040801@maciej.szmigiero.name>
+References: <569D3800.2040801@maciej.szmigiero.name>
+Date: Mon, 18 Jan 2016 20:14:24 -0200
+Message-ID: <CAOMZO5Dgcw-5hv4=H5LcJ2NVobz+4YW7Gu=Y8y88465CYLZ+=w@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_ssi: remove explicit register defaults
+From: Fabio Estevam <festevam@gmail.com>
+To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@tabi.org>,
  Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
  Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,19 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 18, 2016 at 10:59 AM, kbuild test robot <lkp@intel.com> wrote:
-> Hi Caleb,
+On Mon, Jan 18, 2016 at 5:07 PM, Maciej S. Szmigiero
+<mail@maciej.szmigiero.name> wrote:
+> There is no guarantee that on fsl_ssi module load
+> SSI registers will have their power-on-reset values.
 >
-> [auto build test ERROR on asoc/for-next]
-> [also build test ERROR on v4.4 next-20160118]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improving the system]
+> In fact, if the driver is reloaded the values in
+> registers will be whatever they were set to previously.
 >
-> url:    https://github.com/0day-ci/linux/commits/Caleb-Crome/ASoC-fsl_ssi-Set-watermark-and-maxburst-settings-to-eliminate-DMA-xruns-on-imx-processors/20160119-024143
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
-> config: x86_64-randconfig-x019-01180513 (attached as .config)
-> reproduce:
+> However, the cache needs to be fully populated at probe
+> time to avoid non-atomic allocations during register
+> access.
+>
+> Special case here is imx21-class SSI, since
+> according to datasheet it don't have SACC{ST,EN,DIS}
+> regs.
+>
+> This fixes hard lockup on fsl_ssi module reload,
+> at least in AC'97 mode.
+>
+> Fixes: 05cf237972fe ("ASoC: fsl_ssi: Add driver suspend and resume to support MEGA Fast")
+>
+> Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 
-
-Doh, sorry sent the wrong patch file.  Will re-submit shortly.
-
--Caleb
+Tested-by: Fabio Estevam <fabio.estevam@nxp.com>
