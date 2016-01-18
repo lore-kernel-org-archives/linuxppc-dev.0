@@ -1,24 +1,40 @@
-Return-Path: <jstancek@redhat.com>
-Received: from mx5-phx2.redhat.com (mx5-phx2.redhat.com [209.132.183.37])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <festevam@gmail.com>
+Received: from mail-io0-x230.google.com (mail-io0-x230.google.com
+ [IPv6:2607:f8b0:4001:c06::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 66C031A000B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 22:49:56 +1100 (AEDT)
-Date: Mon, 18 Jan 2016 06:06:22 -0500 (EST)
-From: Jan Stancek <jstancek@redhat.com>
-To: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-Cc: mingo@redhat.com, peterz@infradead.org, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, anton@samba.org,
- akpm@linux-foundation.org, gkurz@linux.vnet.ibm.com,
- grant likely <grant.likely@linaro.org>, nikunj@linux.vnet.ibm.com,
- vdavydov@parallels.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Message-ID: <969916137.9009700.1453115182823.JavaMail.zimbra@redhat.com>
-In-Reply-To: <1452884483-11676-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
-References: <1452884483-11676-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Fix: PowerNV crash with 4.4.0-rc8 at sched_init_numa
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9824C1A011E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 23:51:54 +1100 (AEDT)
+Received: by mail-io0-x230.google.com with SMTP id 77so516805353ioc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 04:51:54 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <569C0F86.2020509@maciej.szmigiero.name>
+References: <5677107C.60904@maciej.szmigiero.name>
+ <CAOMZO5C+32Nn6+Nv9KeVrd_Qeso-wEZZNU45G8h+e6LHdMoQYw@mail.gmail.com>
+ <CAOMZO5BE7=EdmEyMOq5WH=qv_0H3AGcyyDMJFoemLRJ=O5YLNw@mail.gmail.com>
+ <5693B4C1.4060400@maciej.szmigiero.name>
+ <CAOMZO5DVKrnufV_PLD_+7FgA=ePhn1DSpzYDQPy5FZvHyGOJ-g@mail.gmail.com>
+ <569AD8A7.7080803@maciej.szmigiero.name>
+ <569ADC0D.2000807@tabi.org>
+ <569AE7D1.6050607@maciej.szmigiero.name>
+ <569B23A8.3010006@tabi.org>
+ <569BA225.8070509@maciej.szmigiero.name>
+ <569BA786.4020305@maciej.szmigiero.name>
+ <569BDFB3.1080401@tabi.org>
+ <569C0F86.2020509@maciej.szmigiero.name>
+Date: Mon, 18 Jan 2016 10:51:51 -0200
+Message-ID: <CAOMZO5BpwoJAPxtHRu6wH+SS=yqszgqt42u+V2N7K3r_Neh_Ww@mail.gmail.com>
+Subject: Re: [PATCH 3/3] ASoC: fsl_ssi: remove register defaults
+From: Fabio Estevam <festevam@gmail.com>
+To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Cc: Timur Tabi <timur@tabi.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,60 +44,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Maciej,
 
+On Sun, Jan 17, 2016 at 8:02 PM, Maciej S. Szmigiero
+<mail@maciej.szmigiero.name> wrote:
 
+> Patch updated according to Timur's suggestions (needs regmap fix):
+> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
 
+Tested your patch against linux-next and it did not give me any warnings:
 
------ Original Message -----
-> From: "Raghavendra K T" <raghavendra.kt@linux.vnet.ibm.com>
-> To: mingo@redhat.com, peterz@infradead.org, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
-> anton@samba.org, akpm@linux-foundation.org
-> Cc: jstancek@redhat.com, gkurz@linux.vnet.ibm.com, "grant likely" <grant.likely@linaro.org>,
-> nikunj@linux.vnet.ibm.com, vdavydov@parallels.com, "raghavendra kt" <raghavendra.kt@linux.vnet.ibm.com>,
-> linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-> Sent: Friday, 15 January, 2016 8:01:23 PM
-> Subject: [PATCH] Fix: PowerNV crash with 4.4.0-rc8 at sched_init_numa
-> 
-> Commit c118baf80256 ("arch/powerpc/mm/numa.c: do not allocate bootmem
-> memory for non existing nodes") avoided bootmem memory allocation for
-> non existent nodes.
-> 
-> When DEBUG_PER_CPU_MAPS enabled, powerNV system failed to boot because
-> in sched_init_numa, cpumask_or operation was done on unallocated nodes.
-> Fix that by making cpumask_or operation only on existing nodes.
-> 
-> [ Tested with and w/o DEBUG_PER_CPU_MAPS on x86 and powerpc ]
-> 
-> Reported-by: Jan Stancek <jstancek@redhat.com>
-
-Tested-by: Jan Stancek <jstancek@redhat.com>
-
-I also verified with my setup, that this made the crash go away.
-Report mail thread for reference:
-  https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-January/137691.html
-
-Regards,
-Jan
-
-> Signed-off-by: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-> ---
->  kernel/sched/core.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 44253ad..474658b 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -6840,7 +6840,7 @@ static void sched_init_numa(void)
->  
->  			sched_domains_numa_masks[i][j] = mask;
->  
-> -			for (k = 0; k < nr_node_ids; k++) {
-> +			for_each_node(k) {
->  				if (node_distance(j, k) > sched_domains_numa_distance[i])
->  					continue;
->  
-> --
-> 1.7.11.7
-> 
-> 
+Tested-by: Fabio Estevam <fabio.estevam@nxp.com>
