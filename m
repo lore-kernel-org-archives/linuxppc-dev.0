@@ -1,34 +1,22 @@
-Return-Path: <Ganapatrao.Kulkarni@caviumnetworks.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0097.outbound.protection.outlook.com [65.55.169.97])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <caleb@crome.org>
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D65D1A000B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 04:11:50 +1100 (AEDT)
-From: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
-To: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
- <linux-ia64@vger.kernel.org>, <linux-metag@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-s390@vger.kernel.org>,
- <linux-sh@vger.kernel.org>, <linux-arch@vger.kernel.org>,
- <Will.Deacon@arm.com>, <catalin.marinas@arm.com>, <grant.likely@linaro.org>,
- <leif.lindholm@linaro.org>, <rfranz@cavium.com>, <ard.biesheuvel@linaro.org>,
- <msalter@redhat.com>, <robh+dt@kernel.org>, <steve.capper@linaro.org>,
- <hanjun.guo@linaro.org>, <al.stone@linaro.org>, <arnd@arndb.de>,
- <pawel.moll@arm.com>, <mark.rutland@arm.com>,
- <ijc+devicetree@hellion.org.uk>, <galak@codeaurora.org>, <rjw@rjwysocki.net>,
- <lenb@kernel.org>, <marc.zyngier@arm.com>, <lorenzo.pieralisi@arm.com>,
- <bhelgaas@google.com>, <tony.luck@intel.com>, <fenghua.yu@intel.com>,
- <james.hogan@imgtec.com>, <benh@kernel.crashing.org>, <tglx@linutronix.de>,
- <mingo@redhat.com>, <hpa@zytor.com>, <x86@kernel.org>,
- <jonathan@jonmasters.org>, <rrichter@cavium.com>,
- <Prasun.Kapoor@caviumnetworks.com>
-CC: <gpkulkarni@gmail.com>
-Subject: [PATCH v9 0/6] arm64, numa: Add numa support for arm64 platforms
-Date: Mon, 18 Jan 2016 22:05:59 +0530
-Message-ID: <1453134965-6125-1-git-send-email-gkulkarni@caviumnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0E80A1A0CC1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 05:37:45 +1100 (AEDT)
+Received: by mail-pa0-x229.google.com with SMTP id uo6so423559848pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 10:37:45 -0800 (PST)
+From: Caleb Crome <caleb@crome.org>
+To: timur@tabi.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: Caleb Crome <caleb@crome.org>
+Subject: [PATCH] ASoC: fsl_ssi: Set watermark and maxburst settings to
+ eliminate DMA xruns on imx processors
+Date: Mon, 18 Jan 2016 10:36:45 -0800
+Message-Id: <1453142205-83135-1-git-send-email-caleb@crome.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,99 +26,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-v9:	- Added cleanup patch to reuse and avoid redefinition of cpumask_of_pcibus
-	  as suggested from Will Deacon and Bjorn Helgaas.
-	- Including patch to Make pci-host-generic driver numa aware.
-	- Incorporated comment from Shannon Zhao.
+Change watermark settings for imx processors.  The previous setting
+was fifo_depth-2, which causes silent but deadly xruns when using more
+than 2 channels.  This patch sets the watermark & maxburst
+settings to
 
-v8:
-	- Incorporated review comments of Mark Rutland and Will Deacon.
-	- Added pci helper function and macro for numa.
+DMA, imx processors: 4
+DMA, mpc8610       : fifo_depth - 2
+FIQ, all           : fifo_depth
 
-v7:
-	- managing numa memory mapping using memblock.
-	- Incorporated review comments of Mark Rutland.
+This leaves mpc8610 with identically the same settings as before this
+patch, and changes the IMX processors to have a watermark setting of
+4, meaning when there are 4 or more empty spaces in the TX FIFO, to
+start a DMA burst. And similarly, when there are 4 or more
+filled spaces in the RX fifo, to start a DMA burst.
 
-v6:
-	- defined and implemented the numa dt binding using
-	node property proximity and device node distance-map.
-	- renamed dt_numa to of_numa
+The tradeoff with this patch is that on IMX processors, the DMA will
+be more reliable (not have DMA slips), epseically when running more
+than 2 channels, at the expense of more DMA transactions.  Interrupt
+frequency is unaffected.
 
-v5:
-        - created base verion of numa.c which creates dummy numa without using dt
-          on single socket platforms. Then added patches for dt support.
-        - Incorporated review comments from Hanjun Guo.
+Signed-off-by: Caleb Crome <caleb@crome.org>
+---
+ sound/soc/fsl/fsl_ssi.c | 54 ++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 33 insertions(+), 21 deletions(-)
 
-v4:
-done changes as per Arnd review comments.
-
-v3:
-Added changes to support numa on arm64 based platforms.
-Tested these patches on cavium's multinode(2 node topology) platform.
-In this patchset, defined and implemented dt bindings for numa mapping
-for core and memory using device node property arm,associativity.
-
-v2:
-Defined and implemented numa map for memory, cores to node and
-proximity distance matrix of nodes.
-
-v1:
-Initial patchset to support numa on arm64 platforms.
-
-Note:
-        1. This patchset is tested for numa with dt on
-           thunderx single socket and dual socket boards.
-        2. Numa DT booting needs the dt memory nodes, which are deleted in current efi-stub,
-        hence to try numa with dt, you need to rebase with ard's patchset.
-        http://git.linaro.org/people/ard.biesheuvel/linux-arm.git/shortlog/refs/heads/arm64-uefi-early-fdt-handling
-	3. PATCH 6 is not tested for other architectures.
-
-Ganapatrao Kulkarni (6):
-  arm64, numa: adding numa support for arm64 platforms.
-  Documentation, dt, arm64/arm: dt bindings for numa.
-  arm64/arm, numa, dt: adding numa dt binding implementation for arm64
-    platforms.
-  arm64, dt, thunderx: Add initial dts for Cavium Thunderx in 2 node
-    topology.
-  PCI: generic: Make pci-host-generic driver numa aware
-  topology, cleanup: Avoid redefinition of cpumask_of_pcibus in asm
-    header files.
-
- Documentation/devicetree/bindings/arm/numa.txt  | 272 ++++++++
- arch/arm64/Kconfig                              |  35 +
- arch/arm64/boot/dts/cavium/Makefile             |   2 +-
- arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts  |  83 +++
- arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi | 806 ++++++++++++++++++++++++
- arch/arm64/include/asm/mmzone.h                 |  18 +
- arch/arm64/include/asm/numa.h                   |  50 ++
- arch/arm64/include/asm/topology.h               |   7 +
- arch/arm64/kernel/Makefile                      |   1 +
- arch/arm64/kernel/of_numa.c                     | 257 ++++++++
- arch/arm64/kernel/pci.c                         |   8 +
- arch/arm64/kernel/setup.c                       |   4 +
- arch/arm64/kernel/smp.c                         |   4 +
- arch/arm64/mm/Makefile                          |   1 +
- arch/arm64/mm/init.c                            |  31 +-
- arch/arm64/mm/mmu.c                             |   1 +
- arch/arm64/mm/numa.c                            | 395 ++++++++++++
- arch/ia64/include/asm/topology.h                |   4 -
- arch/metag/include/asm/topology.h               |   3 -
- arch/powerpc/include/asm/topology.h             |   4 -
- arch/s390/include/asm/pci.h                     |   2 +-
- arch/s390/include/asm/topology.h                |   1 +
- arch/sh/include/asm/topology.h                  |   3 -
- arch/x86/include/asm/pci.h                      |   2 +-
- arch/x86/include/asm/topology.h                 |   1 +
- drivers/pci/host/pci-host-generic.c             |   9 +-
- include/asm-generic/topology.h                  |   4 +-
- 27 files changed, 1981 insertions(+), 27 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/arm/numa.txt
- create mode 100644 arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts
- create mode 100644 arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi
- create mode 100644 arch/arm64/include/asm/mmzone.h
- create mode 100644 arch/arm64/include/asm/numa.h
- create mode 100644 arch/arm64/kernel/of_numa.c
- create mode 100644 arch/arm64/mm/numa.c
-
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 95d2392..5080c29 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -220,6 +220,10 @@ struct fsl_ssi_soc_data {
+  * @dbg_stats: Debugging statistics
+  *
+  * @soc: SoC specific data
++ *
++ * @fifo_watermark:  the fifo level to signal the DMA for more words
++ * @dma_maxburst:    the maximum number of words to send to the fifo
++ *                   in a DMA burst
+  */
+ struct fsl_ssi_private {
+ 	struct regmap *regs;
+@@ -257,6 +261,9 @@ struct fsl_ssi_private {
+ 	struct fsl_ssi_dbg dbg_stats;
+ 
+ 	const struct fsl_ssi_soc_data *soc;
++
++	u32 fifo_watermark;
++	u32 dma_maxburst;
+ };
+ 
+ /*
+@@ -985,21 +992,7 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 	regmap_write(regs, CCSR_SSI_SRCR, srcr);
+ 	regmap_write(regs, CCSR_SSI_SCR, scr);
+ 
+-	/*
+-	 * Set the watermark for transmit FIFI 0 and receive FIFO 0. We don't
+-	 * use FIFO 1. We program the transmit water to signal a DMA transfer
+-	 * if there are only two (or fewer) elements left in the FIFO. Two
+-	 * elements equals one frame (left channel, right channel). This value,
+-	 * however, depends on the depth of the transmit buffer.
+-	 *
+-	 * We set the watermark on the same level as the DMA burstsize.  For
+-	 * fiq it is probably better to use the biggest possible watermark
+-	 * size.
+-	 */
+-	if (ssi_private->use_dma)
+-		wm = ssi_private->fifo_depth - 2;
+-	else
+-		wm = ssi_private->fifo_depth;
++	wm = ssi_private->soc.fifo_watermark;
+ 
+ 	regmap_write(regs, CCSR_SSI_SFCSR,
+ 			CCSR_SSI_SFCSR_TFWM0(wm) | CCSR_SSI_SFCSR_RFWM0(wm) |
+@@ -1307,12 +1300,8 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 		dev_dbg(&pdev->dev, "could not get baud clock: %ld\n",
+ 			 PTR_ERR(ssi_private->baudclk));
+ 
+-	/*
+-	 * We have burstsize be "fifo_depth - 2" to match the SSI
+-	 * watermark setting in fsl_ssi_startup().
+-	 */
+-	ssi_private->dma_params_tx.maxburst = ssi_private->fifo_depth - 2;
+-	ssi_private->dma_params_rx.maxburst = ssi_private->fifo_depth - 2;
++	ssi_private->dma_params_tx.maxburst = ssi_private->dma_maxburst;
++	ssi_private->dma_params_rx.maxburst = ssi_private->dma_maxburst;
+ 	ssi_private->dma_params_tx.addr = ssi_private->ssi_phys + CCSR_SSI_STX0;
+ 	ssi_private->dma_params_rx.addr = ssi_private->ssi_phys + CCSR_SSI_SRX0;
+ 
+@@ -1465,6 +1454,29 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+                 /* Older 8610 DTs didn't have the fifo-depth property */
+ 		ssi_private->fifo_depth = 8;
+ 
++	if (ssi_private->use_dma) {
++		/*
++		 * using DMA, set both watermark & maxburst
++		 * imx parts need a value of 4 to keep up with the
++		 * fastest data rates.
++		 * older non-imx parts keep the old values of
++		 * fifo_depth-2.
++		 * maxburst must be <= fifo_watermark;
++		 * and must be even if dual fifo is used.
++		 */
++		if (ssi_private->soc->imx) {
++			ssi_private->fifo_watermark = 4;
++			ssi_private->dma_maxburst = 4;
++		} else {
++			ssi_private->fifo_watermark =
++				ssi_private->fifo_depth - 2;
++			ssi_private->dma_maxburst =
++				ssi_private->fifo_depth - 2;
++		}
++	} else
++		/* using FIQ.  Keep settings what they were originally */
++		ssi_private->fifo_watermark = ssi_private->fifo_depth;
++
+ 	dev_set_drvdata(&pdev->dev, ssi_private);
+ 
+ 	if (ssi_private->soc->imx) {
 -- 
-1.8.1.4
+2.1.4
