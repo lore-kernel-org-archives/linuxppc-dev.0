@@ -1,32 +1,17 @@
-Return-Path: <mail@maciej.szmigiero.name>
-Received: from vps-vb.mhejs.net (vi37-28-154-113.vibiznes.pl [37.28.154.113])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BD6FD1A0030
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 09:03:05 +1100 (AEDT)
-Message-ID: <569C0F86.2020509@maciej.szmigiero.name>
-Date: Sun, 17 Jan 2016 23:02:46 +0100
-From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-MIME-Version: 1.0
-To: Timur Tabi <timur@tabi.org>, Fabio Estevam <festevam@gmail.com>
-CC: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] ASoC: fsl_ssi: remove register defaults
-References: <5677107C.60904@maciej.szmigiero.name>
- <CAOMZO5C+32Nn6+Nv9KeVrd_Qeso-wEZZNU45G8h+e6LHdMoQYw@mail.gmail.com>
- <CAOMZO5BE7=EdmEyMOq5WH=qv_0H3AGcyyDMJFoemLRJ=O5YLNw@mail.gmail.com>
- <5693B4C1.4060400@maciej.szmigiero.name>
- <CAOMZO5DVKrnufV_PLD_+7FgA=ePhn1DSpzYDQPy5FZvHyGOJ-g@mail.gmail.com>
- <569AD8A7.7080803@maciej.szmigiero.name> <569ADC0D.2000807@tabi.org>
- <569AE7D1.6050607@maciej.szmigiero.name> <569B23A8.3010006@tabi.org>
- <569BA225.8070509@maciej.szmigiero.name>
- <569BA786.4020305@maciej.szmigiero.name> <569BDFB3.1080401@tabi.org>
-In-Reply-To: <569BDFB3.1080401@tabi.org>
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BA49B1A0030
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 11:44:37 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: amodra@gmail.com, Anton Blanchard <anton@samba.org>, rusty@rustcorp.com.au,
+ quentin.casasnovas@oracle.com, paul.gortmaker@windriver.com,
+ <linux-kernel@vger.kernel.org>
+Subject: [PATCH] powerpc: Simplify module TOC handling
+Date: Mon, 18 Jan 2016 11:44:27 +1100
+Message-Id: <1453077867-23873-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,137 +21,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17.01.2016 19:38, Timur Tabi wrote:
-> Maciej S. Szmigiero wrote:
->> On 17.01.2016 15:16, Maciej S. Szmigiero wrote:
->>> On 17.01.2016 06:16, Timur Tabi wrote:
->>>> Maciej S. Szmigiero wrote:
->>>>> This is because (at least according to the datasheet) imx21-class SSI
->>>>> registers end at CCSR_SSI_SRMSK (no SACC{ST,EN,DIS} regs), so
->>>>> reading them for cache initialization may not be safe.
->>>>>
->>>>> Also, a "MXC 91221 only" comment before these regs in FSL tree
->>>>> (drivers/mxc/ssi/registers.h) seems to confirm that these registers
->>>>> aren't present at least on some SSI (or SoC) models.
->>>>
->>>> Can't we just mark them as precious or something, so that we don't have to have two structures?
->>>
->>> Looks like it can be done with just one static regmap config struct
->>> used then as template - I will post updated patch.
+From: Alan Modra <amodra@gmail.com>
 
-Patch updated according to Timur's suggestions (needs regmap fix):
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 40dfd8a36484..ed8de1035cda 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -112,20 +112,6 @@ struct fsl_ssi_rxtx_reg_val {
- 	struct fsl_ssi_reg_val tx;
- };
- 
--static const struct reg_default fsl_ssi_reg_defaults[] = {
--	{CCSR_SSI_SCR,     0x00000000},
--	{CCSR_SSI_SIER,    0x00003003},
--	{CCSR_SSI_STCR,    0x00000200},
--	{CCSR_SSI_SRCR,    0x00000200},
--	{CCSR_SSI_STCCR,   0x00040000},
--	{CCSR_SSI_SRCCR,   0x00040000},
--	{CCSR_SSI_SACNT,   0x00000000},
--	{CCSR_SSI_STMSK,   0x00000000},
--	{CCSR_SSI_SRMSK,   0x00000000},
--	{CCSR_SSI_SACCEN,  0x00000000},
--	{CCSR_SSI_SACCDIS, 0x00000000},
--};
+PowerPC64 uses the symbol .TOC. much as other targets use
+_GLOBAL_OFFSET_TABLE_. It identifies the value of the GOT pointer (or in
+powerpc parlance, the TOC pointer). Global offset tables are generally
+local to an executable or shared library, or in the kernel, module. Thus
+it does not make sense for a module to resolve a relocation against
+.TOC. to the kernel's .TOC. value. A module has its own .TOC., and
+indeed the powerpc64 module relocation processing ignores the kernel
+value of .TOC. and instead calculates a module-local value.
+
+This patch removes code involved in exporting the kernel .TOC., tweaks
+modpost to ignore an undefined .TOC., and the module loader to twiddle
+the section symbol so that .TOC. isn't seen as undefined.
+
+Note that if the kernel was compiled with -msingle-pic-base then ELFv2
+would not have function global entry code setting up r2. In that case
+the module call stubs would need to be modified to set up r2 using the
+kernel .TOC. value, requiring some of this code to be reinstated.
+
+mpe: Furthermore a change in binutils master (not yet released) causes
+the current way we handle the TOC to no longer work when building with
+MODVERSIONS=y and RELOCATABLE=n. The symptom is that modules can not be
+loaded due to there being no version found for TOC.
+
+Cc: stable@vger.kernel.org # 3.16+
+Signed-off-by: Alan Modra <amodra@gmail.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/misc_64.S   | 28 ----------------------------
+ arch/powerpc/kernel/module_64.c | 12 +++++++++---
+ scripts/mod/modpost.c           |  3 ++-
+ 3 files changed, 11 insertions(+), 32 deletions(-)
+
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index db475d41b57a..f28754c497e5 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -701,31 +701,3 @@ _GLOBAL(kexec_sequence)
+ 	li	r5,0
+ 	blr	/* image->start(physid, image->start, 0); */
+ #endif /* CONFIG_KEXEC */
 -
- static bool fsl_ssi_readable_reg(struct device *dev, unsigned int reg)
+-#ifdef CONFIG_MODULES
+-#if defined(_CALL_ELF) && _CALL_ELF == 2
+-
+-#ifdef CONFIG_MODVERSIONS
+-.weak __crc_TOC.
+-.section "___kcrctab+TOC.","a"
+-.globl __kcrctab_TOC.
+-__kcrctab_TOC.:
+-	.llong	__crc_TOC.
+-#endif
+-
+-/*
+- * Export a fake .TOC. since both modpost and depmod will complain otherwise.
+- * Both modpost and depmod strip the leading . so we do the same here.
+- */
+-.section "__ksymtab_strings","a"
+-__kstrtab_TOC.:
+-	.asciz "TOC."
+-
+-.section "___ksymtab+TOC.","a"
+-/* This symbol name is important: it's used by modpost to find exported syms */
+-.globl __ksymtab_TOC.
+-__ksymtab_TOC.:
+-	.llong 0 /* .value */
+-	.llong __kstrtab_TOC.
+-#endif /* ELFv2 */
+-#endif /* MODULES */
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 59663af9315f..ac64ffdb52c8 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -326,7 +326,10 @@ static void dedotify_versions(struct modversion_info *vers,
+ 		}
+ }
+ 
+-/* Undefined symbols which refer to .funcname, hack to funcname (or .TOC.) */
++/*
++ * Undefined symbols which refer to .funcname, hack to funcname. Make .TOC.
++ * seem to be defined (value set later).
++ */
+ static void dedotify(Elf64_Sym *syms, unsigned int numsyms, char *strtab)
  {
- 	switch (reg) {
-@@ -190,8 +176,7 @@ static const struct regmap_config fsl_ssi_regconfig = {
- 	.val_bits = 32,
- 	.reg_stride = 4,
- 	.val_format_endian = REGMAP_ENDIAN_NATIVE,
--	.reg_defaults = fsl_ssi_reg_defaults,
--	.num_reg_defaults = ARRAY_SIZE(fsl_ssi_reg_defaults),
-+	.num_reg_defaults_raw = CCSR_SSI_SACCDIS / sizeof(uint32_t) + 1,
- 	.readable_reg = fsl_ssi_readable_reg,
- 	.volatile_reg = fsl_ssi_volatile_reg,
- 	.precious_reg = fsl_ssi_precious_reg,
-@@ -201,6 +186,7 @@ static const struct regmap_config fsl_ssi_regconfig = {
- 
- struct fsl_ssi_soc_data {
- 	bool imx;
-+	bool imx21regs; /* imx21-class SSI - no SACC{ST,EN,DIS} regs */
- 	bool offline_config;
- 	u32 sisr_write_mask;
- };
-@@ -303,6 +289,7 @@ static struct fsl_ssi_soc_data fsl_ssi_mpc8610 = {
- 
- static struct fsl_ssi_soc_data fsl_ssi_imx21 = {
- 	.imx = true,
-+	.imx21regs = true,
- 	.offline_config = true,
- 	.sisr_write_mask = 0,
- };
-@@ -586,8 +573,12 @@ static void fsl_ssi_setup_ac97(struct fsl_ssi_private *ssi_private)
- 	 */
- 	regmap_write(regs, CCSR_SSI_SACNT,
- 			CCSR_SSI_SACNT_AC97EN | CCSR_SSI_SACNT_FV);
--	regmap_write(regs, CCSR_SSI_SACCDIS, 0xff);
--	regmap_write(regs, CCSR_SSI_SACCEN, 0x300);
-+
-+	/* no SACC{ST,EN,DIS} regs on imx21-class SSI */
-+	if (!ssi_private->soc->imx21regs) {
-+		regmap_write(regs, CCSR_SSI_SACCDIS, 0xff);
-+		regmap_write(regs, CCSR_SSI_SACCEN, 0x300);
-+	}
- 
- 	/*
- 	 * Enable SSI, Transmit and Receive. AC97 has to communicate with the
-@@ -1397,6 +1388,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 	struct resource *res;
- 	void __iomem *iomem;
- 	char name[64];
-+	struct regmap_config regconfig = fsl_ssi_regconfig;
- 
- 	of_id = of_match_device(fsl_ssi_ids, &pdev->dev);
- 	if (!of_id || !of_id->data)
-@@ -1444,15 +1436,25 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 		return PTR_ERR(iomem);
- 	ssi_private->ssi_phys = res->start;
- 
-+	if (ssi_private->soc->imx21regs) {
-+		/*
-+		 * According to datasheet imx21-class SSI
-+		 * don't have SACC{ST,EN,DIS} regs.
-+		 */
-+		regconfig.max_register = CCSR_SSI_SRMSK;
-+		regconfig.num_reg_defaults_raw =
-+			CCSR_SSI_SRMSK / sizeof(uint32_t) + 1;
-+	}
-+
- 	ret = of_property_match_string(np, "clock-names", "ipg");
- 	if (ret < 0) {
- 		ssi_private->has_ipg_clk_name = false;
- 		ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
--			&fsl_ssi_regconfig);
-+			&regconfig);
- 	} else {
- 		ssi_private->has_ipg_clk_name = true;
- 		ssi_private->regs = devm_regmap_init_mmio_clk(&pdev->dev,
--			"ipg", iomem, &fsl_ssi_regconfig);
-+			"ipg", iomem, &regconfig);
+ 	unsigned int i;
+@@ -334,8 +337,11 @@ static void dedotify(Elf64_Sym *syms, unsigned int numsyms, char *strtab)
+ 	for (i = 1; i < numsyms; i++) {
+ 		if (syms[i].st_shndx == SHN_UNDEF) {
+ 			char *name = strtab + syms[i].st_name;
+-			if (name[0] == '.')
++			if (name[0] == '.') {
++				if (strcmp(name+1, "TOC.") == 0)
++					syms[i].st_shndx = SHN_ABS;
+ 				memmove(name, name+1, strlen(name));
++			}
+ 		}
  	}
- 	if (IS_ERR(ssi_private->regs)) {
- 		dev_err(&pdev->dev, "Failed to init register map\n");
-
-
-> However, I wonder if this patch is necessary at all.
-> If the regs don't exist on an i.MX 21, does it really matter if we write to them?
-
-At least i.MX6 datasheet SSI description has the following information:
-"Transfer bus errors are generated upon response to the following:
-* Write transfer to a read-only register.
-* Read or write access to a register space beyond the last populated register of the SSI
-in its memory map (up until the end of the allocated memory address range of the
-SSI)."
-
-Maciej Szmigiero
+ }
+@@ -351,7 +357,7 @@ static Elf64_Sym *find_dot_toc(Elf64_Shdr *sechdrs,
+ 	numsyms = sechdrs[symindex].sh_size / sizeof(Elf64_Sym);
+ 
+ 	for (i = 1; i < numsyms; i++) {
+-		if (syms[i].st_shndx == SHN_UNDEF
++		if (syms[i].st_shndx == SHN_ABS
+ 		    && strcmp(strtab + syms[i].st_name, "TOC.") == 0)
+ 			return &syms[i];
+ 	}
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index e080746e1a6b..48958d3cec9e 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -594,7 +594,8 @@ static int ignore_undef_symbol(struct elf_info *info, const char *symname)
+ 		if (strncmp(symname, "_restgpr0_", sizeof("_restgpr0_") - 1) == 0 ||
+ 		    strncmp(symname, "_savegpr0_", sizeof("_savegpr0_") - 1) == 0 ||
+ 		    strncmp(symname, "_restvr_", sizeof("_restvr_") - 1) == 0 ||
+-		    strncmp(symname, "_savevr_", sizeof("_savevr_") - 1) == 0)
++		    strncmp(symname, "_savevr_", sizeof("_savevr_") - 1) == 0 ||
++		    strcmp(symname, ".TOC.") == 0)
+ 			return 1;
+ 	/* Do not ignore this symbol */
+ 	return 0;
+-- 
+2.5.0
