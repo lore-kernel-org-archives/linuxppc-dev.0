@@ -3,8 +3,8 @@ Received: from na01-bl2-obe.outbound.protection.outlook.com
  (mail-bl2on0090.outbound.protection.outlook.com [65.55.169.90])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D5831A000B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 04:09:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B22FD1A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 04:09:52 +1100 (AEDT)
 From: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
 To: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
@@ -24,10 +24,9 @@ To: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
  <jonathan@jonmasters.org>, <rrichter@cavium.com>,
  <Prasun.Kapoor@caviumnetworks.com>
 CC: <gpkulkarni@gmail.com>
-Subject: [PATCH v9 4/6] arm64, dt,
- thunderx: Add initial dts for Cavium Thunderx in 2 node topology.
-Date: Mon, 18 Jan 2016 22:06:03 +0530
-Message-ID: <1453134965-6125-5-git-send-email-gkulkarni@caviumnetworks.com>
+Subject: [PATCH v9 1/6] arm64, numa: adding numa support for arm64 platforms.
+Date: Mon, 18 Jan 2016 22:06:00 +0530
+Message-ID: <1453134965-6125-2-git-send-email-gkulkarni@caviumnetworks.com>
 In-Reply-To: <1453134965-6125-1-git-send-email-gkulkarni@caviumnetworks.com>
 References: <1453134965-6125-1-git-send-email-gkulkarni@caviumnetworks.com>
 MIME-Version: 1.0
@@ -41,927 +40,727 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adding dt file for Cavium's Thunderx dual socket platform.
+Adding numa support for arm64 based platforms.
+This patch adds by default the dummy numa node and
+maps all memory and cpus to node 0.
+using this patch, numa can be simulated on single node arm64 platforms.
 
+Tested-by: Shannon Zhao <shannon.zhao@linaro.org>
+Reviewed-by: Robert Richter <rrichter@cavium.com>
 Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
 ---
- arch/arm64/boot/dts/cavium/Makefile             |   2 +-
- arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts  |  83 +++
- arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi | 806 ++++++++++++++++++++++++
- 3 files changed, 890 insertions(+), 1 deletion(-)
- create mode 100644 arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts
- create mode 100644 arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi
+ arch/arm64/Kconfig                |  25 +++
+ arch/arm64/include/asm/mmzone.h   |  18 ++
+ arch/arm64/include/asm/numa.h     |  40 ++++
+ arch/arm64/include/asm/topology.h |  10 +
+ arch/arm64/kernel/pci.c           |   8 +
+ arch/arm64/kernel/setup.c         |   4 +
+ arch/arm64/kernel/smp.c           |   2 +
+ arch/arm64/mm/Makefile            |   1 +
+ arch/arm64/mm/init.c              |  31 ++-
+ arch/arm64/mm/mmu.c               |   1 +
+ arch/arm64/mm/numa.c              | 387 ++++++++++++++++++++++++++++++++++++++
+ 11 files changed, 522 insertions(+), 5 deletions(-)
+ create mode 100644 arch/arm64/include/asm/mmzone.h
+ create mode 100644 arch/arm64/include/asm/numa.h
+ create mode 100644 arch/arm64/mm/numa.c
 
-diff --git a/arch/arm64/boot/dts/cavium/Makefile b/arch/arm64/boot/dts/cavium/Makefile
-index e34f89d..7fe7067 100644
---- a/arch/arm64/boot/dts/cavium/Makefile
-+++ b/arch/arm64/boot/dts/cavium/Makefile
-@@ -1,4 +1,4 @@
--dtb-$(CONFIG_ARCH_THUNDER) += thunder-88xx.dtb
-+dtb-$(CONFIG_ARCH_THUNDER) += thunder-88xx.dtb thunder-88xx-2n.dtb
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 871f217..74f5d73 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -71,6 +71,7 @@ config ARM64
+ 	select HAVE_GENERIC_DMA_COHERENT
+ 	select HAVE_HW_BREAKPOINT if PERF_EVENTS
+ 	select HAVE_MEMBLOCK
++	select HAVE_MEMBLOCK_NODE_MAP if NUMA
+ 	select HAVE_PATA_PLATFORM
+ 	select HAVE_PERF_EVENTS
+ 	select HAVE_PERF_REGS
+@@ -503,6 +504,30 @@ config HOTPLUG_CPU
+ 	  Say Y here to experiment with turning CPUs off and on.  CPUs
+ 	  can be controlled through /sys/devices/system/cpu.
  
- always		:= $(dtb-y)
- subdir-y	:= $(dts-dirs)
-diff --git a/arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts b/arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts
++# Common NUMA Features
++config NUMA
++	bool "Numa Memory Allocation and Scheduler Support"
++	depends on SMP
++	help
++	  Enable NUMA (Non Uniform Memory Access) support.
++
++	  The kernel will try to allocate memory used by a CPU on the
++	  local memory of the CPU and add some more
++	  NUMA awareness to the kernel.
++
++config NODES_SHIFT
++	int "Maximum NUMA Nodes (as a power of 2)"
++	range 1 10
++	default "2"
++	depends on NEED_MULTIPLE_NODES
++	help
++	  Specify the maximum number of NUMA Nodes available on the target
++	  system.  Increases memory reserved to accommodate various tables.
++
++config USE_PERCPU_NUMA_NODE_ID
++	def_bool y
++	depends on NUMA
++
+ source kernel/Kconfig.preempt
+ source kernel/Kconfig.hz
+ 
+diff --git a/arch/arm64/include/asm/mmzone.h b/arch/arm64/include/asm/mmzone.h
 new file mode 100644
-index 0000000..5601e87
+index 0000000..2cd804d
 --- /dev/null
-+++ b/arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts
-@@ -0,0 +1,83 @@
++++ b/arch/arm64/include/asm/mmzone.h
+@@ -0,0 +1,18 @@
++#ifndef __ASM_MMZONE_H
++#define __ASM_MMZONE_H
++
++#ifdef CONFIG_NUMA
++
++#include <linux/mmdebug.h>
++#include <linux/types.h>
++
++#include <asm/smp.h>
++#include <asm/numa.h>
++
++extern struct pglist_data *node_data[];
++
++#define NODE_DATA(nid)		(node_data[(nid)])
++
++#endif /* CONFIG_NUMA */
++
++#endif /* __ASM_MMZONE_H */
+diff --git a/arch/arm64/include/asm/numa.h b/arch/arm64/include/asm/numa.h
+new file mode 100644
+index 0000000..f28f15b0
+--- /dev/null
++++ b/arch/arm64/include/asm/numa.h
+@@ -0,0 +1,40 @@
++#ifndef __ASM_NUMA_H
++#define __ASM_NUMA_H
++
++#include <linux/nodemask.h>
++#include <asm/topology.h>
++
++#ifdef CONFIG_NUMA
++
++/* currently, arm64 implements flat NUMA topology */
++#define parent_node(node)	(node)
++
++extern int __node_distance(int from, int to);
++#define node_distance(a, b) __node_distance(a, b)
++
++extern int cpu_to_node_map[NR_CPUS];
++extern nodemask_t numa_nodes_parsed __initdata;
++
++/* Mappings between node number and cpus on that node. */
++extern cpumask_var_t node_to_cpumask_map[MAX_NUMNODES];
++extern void numa_clear_node(unsigned int cpu);
++#ifdef CONFIG_DEBUG_PER_CPU_MAPS
++extern const struct cpumask *cpumask_of_node(int node);
++#else
++/* Returns a pointer to the cpumask of CPUs on Node 'node'. */
++static inline const struct cpumask *cpumask_of_node(int node)
++{
++	return node_to_cpumask_map[node];
++}
++#endif
++
++void __init arm64_numa_init(void);
++int __init numa_add_memblk(int nodeid, u64 start, u64 end);
++void __init numa_set_distance(int from, int to, int distance);
++void __init numa_reset_distance(void);
++void numa_store_cpu_info(unsigned int cpu);
++#else	/* CONFIG_NUMA */
++static inline void numa_store_cpu_info(unsigned int cpu)		{ }
++static inline void arm64_numa_init(void)		{ }
++#endif	/* CONFIG_NUMA */
++#endif	/* __ASM_NUMA_H */
+diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
+index a3e9d6f..8b57339 100644
+--- a/arch/arm64/include/asm/topology.h
++++ b/arch/arm64/include/asm/topology.h
+@@ -22,6 +22,16 @@ void init_cpu_topology(void);
+ void store_cpu_topology(unsigned int cpuid);
+ const struct cpumask *cpu_coregroup_mask(int cpu);
+ 
++#ifdef CONFIG_NUMA
++
++struct pci_bus;
++int pcibus_to_node(struct pci_bus *bus);
++#define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ?		\
++				 cpu_all_mask :				\
++				 cpumask_of_node(pcibus_to_node(bus)))
++
++#endif /* CONFIG_NUMA */
++
+ #include <asm-generic/topology.h>
+ 
+ #endif /* _ASM_ARM_TOPOLOGY_H */
+diff --git a/arch/arm64/kernel/pci.c b/arch/arm64/kernel/pci.c
+index b3d098b..37fd8ef 100644
+--- a/arch/arm64/kernel/pci.c
++++ b/arch/arm64/kernel/pci.c
+@@ -76,6 +76,14 @@ int raw_pci_write(unsigned int domain, unsigned int bus,
+ 	return -ENXIO;
+ }
+ 
++#ifdef CONFIG_NUMA
++int pcibus_to_node(struct pci_bus *bus)
++{
++	return dev_to_node(&bus->dev);
++}
++EXPORT_SYMBOL(pcibus_to_node);
++#endif
++
+ #ifdef CONFIG_ACPI
+ /* Root bridge scanning */
+ struct pci_bus *pci_acpi_scan_root(struct acpi_pci_root *root)
+diff --git a/arch/arm64/kernel/setup.c b/arch/arm64/kernel/setup.c
+index 8119479..d9b9761 100644
+--- a/arch/arm64/kernel/setup.c
++++ b/arch/arm64/kernel/setup.c
+@@ -53,6 +53,7 @@
+ #include <asm/cpufeature.h>
+ #include <asm/cpu_ops.h>
+ #include <asm/kasan.h>
++#include <asm/numa.h>
+ #include <asm/sections.h>
+ #include <asm/setup.h>
+ #include <asm/smp_plat.h>
+@@ -372,6 +373,9 @@ static int __init topology_init(void)
+ {
+ 	int i;
+ 
++	for_each_online_node(i)
++		register_one_node(i);
++
+ 	for_each_possible_cpu(i) {
+ 		struct cpu *cpu = &per_cpu(cpu_data.cpu, i);
+ 		cpu->hotpluggable = 1;
+diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
+index b1adc51..d6e7d6a 100644
+--- a/arch/arm64/kernel/smp.c
++++ b/arch/arm64/kernel/smp.c
+@@ -45,6 +45,7 @@
+ #include <asm/cputype.h>
+ #include <asm/cpu_ops.h>
+ #include <asm/mmu_context.h>
++#include <asm/numa.h>
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+ #include <asm/processor.h>
+@@ -125,6 +126,7 @@ int __cpu_up(unsigned int cpu, struct task_struct *idle)
+ static void smp_store_cpu_info(unsigned int cpuid)
+ {
+ 	store_cpu_topology(cpuid);
++	numa_store_cpu_info(cpuid);
+ }
+ 
+ /*
+diff --git a/arch/arm64/mm/Makefile b/arch/arm64/mm/Makefile
+index 57f57fd..54bb209 100644
+--- a/arch/arm64/mm/Makefile
++++ b/arch/arm64/mm/Makefile
+@@ -4,6 +4,7 @@ obj-y				:= dma-mapping.o extable.o fault.o init.o \
+ 				   context.o proc.o pageattr.o
+ obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
+ obj-$(CONFIG_ARM64_PTDUMP)	+= dump.o
++obj-$(CONFIG_NUMA)		+= numa.o
+ 
+ obj-$(CONFIG_KASAN)		+= kasan_init.o
+ KASAN_SANITIZE_kasan_init.o	:= n
+diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+index 17bf39a..2954599 100644
+--- a/arch/arm64/mm/init.c
++++ b/arch/arm64/mm/init.c
+@@ -37,6 +37,7 @@
+ 
+ #include <asm/fixmap.h>
+ #include <asm/memory.h>
++#include <asm/numa.h>
+ #include <asm/sections.h>
+ #include <asm/setup.h>
+ #include <asm/sizes.h>
+@@ -77,6 +78,19 @@ static phys_addr_t max_zone_dma_phys(void)
+ 	return min(offset + (1ULL << 32), memblock_end_of_DRAM());
+ }
+ 
++#ifdef CONFIG_NUMA
++static void __init zone_sizes_init(unsigned long min, unsigned long max)
++{
++	unsigned long max_zone_pfns[MAX_NR_ZONES]  = {0};
++
++	if (IS_ENABLED(CONFIG_ZONE_DMA))
++		max_zone_pfns[ZONE_DMA] = PFN_DOWN(max_zone_dma_phys());
++	max_zone_pfns[ZONE_NORMAL] = max;
++
++	free_area_init_nodes(max_zone_pfns);
++}
++
++#else
+ static void __init zone_sizes_init(unsigned long min, unsigned long max)
+ {
+ 	struct memblock_region *reg;
+@@ -116,6 +130,7 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max)
+ 
+ 	free_area_init_node(0, zone_size, min, zhole_size);
+ }
++#endif /* CONFIG_NUMA */
+ 
+ #ifdef CONFIG_HAVE_ARCH_PFN_VALID
+ int pfn_valid(unsigned long pfn)
+@@ -133,10 +148,15 @@ static void arm64_memory_present(void)
+ static void arm64_memory_present(void)
+ {
+ 	struct memblock_region *reg;
++	int nid = 0;
+ 
+-	for_each_memblock(memory, reg)
+-		memory_present(0, memblock_region_memory_base_pfn(reg),
+-			       memblock_region_memory_end_pfn(reg));
++	for_each_memblock(memory, reg) {
++#ifdef CONFIG_NUMA
++		nid = reg->nid;
++#endif
++		memory_present(nid, memblock_region_memory_base_pfn(reg),
++				memblock_region_memory_end_pfn(reg));
++	}
+ }
+ #endif
+ 
+@@ -181,7 +201,6 @@ void __init arm64_memblock_init(void)
+ 	dma_contiguous_reserve(arm64_dma_phys_limit);
+ 
+ 	memblock_allow_resize();
+-	memblock_dump_all();
+ }
+ 
+ void __init bootmem_init(void)
+@@ -193,6 +212,9 @@ void __init bootmem_init(void)
+ 
+ 	early_memtest(min << PAGE_SHIFT, max << PAGE_SHIFT);
+ 
++	max_pfn = max_low_pfn = max;
++
++	arm64_numa_init();
+ 	/*
+ 	 * Sparsemem tries to allocate bootmem in memory_present(), so must be
+ 	 * done after the fixed reservations.
+@@ -203,7 +225,6 @@ void __init bootmem_init(void)
+ 	zone_sizes_init(min, max);
+ 
+ 	high_memory = __va((max << PAGE_SHIFT) - 1) + 1;
+-	max_pfn = max_low_pfn = max;
+ }
+ 
+ #ifndef CONFIG_SPARSEMEM_VMEMMAP
+diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+index 873e363..6f68075 100644
+--- a/arch/arm64/mm/mmu.c
++++ b/arch/arm64/mm/mmu.c
+@@ -453,6 +453,7 @@ void __init paging_init(void)
+ 	zero_page = early_alloc(PAGE_SIZE);
+ 
+ 	bootmem_init();
++	memblock_dump_all();
+ 
+ 	empty_zero_page = virt_to_page(zero_page);
+ 
+diff --git a/arch/arm64/mm/numa.c b/arch/arm64/mm/numa.c
+new file mode 100644
+index 0000000..050b083
+--- /dev/null
++++ b/arch/arm64/mm/numa.c
+@@ -0,0 +1,387 @@
 +/*
-+ * Cavium Thunder DTS file - Thunder board description
++ * NUMA support, based on the x86 implementation.
 + *
-+ * Copyright (C) 2014, Cavium Inc.
++ * Copyright (C) 2015 Cavium Inc.
++ * Author: Ganapatrao Kulkarni <gkulkarni@cavium.com>
 + *
-+ * This file is dual-licensed: you can use it either under the terms
-+ * of the GPL or the X11 license, at your option. Note that this dual
-+ * licensing only applies to this file, and not this project as a
-+ * whole.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + *
-+ *  a) This library is free software; you can redistribute it and/or
-+ *     modify it under the terms of the GNU General Public License as
-+ *     published by the Free Software Foundation; either version 2 of the
-+ *     License, or (at your option) any later version.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + *
-+ *     This library is distributed in the hope that it will be useful,
-+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *     GNU General Public License for more details.
-+ *
-+ *     You should have received a copy of the GNU General Public
-+ *     License along with this library; if not, write to the Free
-+ *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-+ *     MA 02110-1301 USA
-+ *
-+ * Or, alternatively,
-+ *
-+ *  b) Permission is hereby granted, free of charge, to any person
-+ *     obtaining a copy of this software and associated documentation
-+ *     files (the "Software"), to deal in the Software without
-+ *     restriction, including without limitation the rights to use,
-+ *     copy, modify, merge, publish, distribute, sublicense, and/or
-+ *     sell copies of the Software, and to permit persons to whom the
-+ *     Software is furnished to do so, subject to the following
-+ *     conditions:
-+ *
-+ *     The above copyright notice and this permission notice shall be
-+ *     included in all copies or substantial portions of the Software.
-+ *
-+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-+ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-+ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-+ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-+ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-+ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-+ *     OTHER DEALINGS IN THE SOFTWARE.
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 + */
 +
-+/dts-v1/;
++#include <linux/bootmem.h>
++#include <linux/ctype.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/memblock.h>
++#include <linux/module.h>
++#include <linux/mmzone.h>
++#include <linux/nodemask.h>
++#include <linux/sched.h>
++#include <linux/string.h>
++#include <linux/topology.h>
 +
-+/include/ "thunder-88xx-2n.dtsi"
++#include <asm/smp_plat.h>
 +
-+/ {
-+	model = "Cavium ThunderX CN88XX board";
-+	compatible = "cavium,thunder-88xx";
++struct pglist_data *node_data[MAX_NUMNODES] __read_mostly;
++EXPORT_SYMBOL(node_data);
++nodemask_t numa_nodes_parsed __initdata;
++int cpu_to_node_map[NR_CPUS] = { [0 ... NR_CPUS-1] = NUMA_NO_NODE };
 +
-+	aliases {
-+		serial0 = &uaa0;
-+		serial1 = &uaa1;
-+	};
++static int numa_off;
++static int numa_distance_cnt;
++static u8 *numa_distance;
 +
-+	memory@00000000 {
-+		device_type = "memory";
-+		reg = <0x0 0x01400000 0x3 0xFEC00000>;
-+		/* socket 0 */
-+		numa-node-id = <0>;
-+	};
++static __init int numa_parse_early_param(char *opt)
++{
++	if (!opt)
++		return -EINVAL;
++	if (!strncmp(opt, "off", 3)) {
++		pr_info("%s\n", "NUMA turned off");
++		numa_off = 1;
++	}
++	return 0;
++}
++early_param("numa", numa_parse_early_param);
 +
-+	memory@10000000000 {
-+		device_type = "memory";
-+		reg = <0x100 0x00400000 0x3 0xFFC00000>;
-+		 /* socket 1 */
-+		numa-node-id = <1>;
-+	};
++cpumask_var_t node_to_cpumask_map[MAX_NUMNODES];
++EXPORT_SYMBOL(node_to_cpumask_map);
 +
-+	distance-map {
-+		compatible = "numa-distance-map-v1";
-+		distance-matrix = <0 0  10>,
-+				  <0 1  20>,
-+				  <1 1  10>;
-+	};
-+};
-diff --git a/arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi b/arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi
-new file mode 100644
-index 0000000..b58e5c7
---- /dev/null
-+++ b/arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi
-@@ -0,0 +1,806 @@
++#ifdef CONFIG_DEBUG_PER_CPU_MAPS
 +/*
-+ * Cavium Thunder DTS file - Thunder SoC description
-+ *
-+ * Copyright (C) 2014, Cavium Inc.
-+ *
-+ * This file is dual-licensed: you can use it either under the terms
-+ * of the GPL or the X11 license, at your option. Note that this dual
-+ * licensing only applies to this file, and not this project as a
-+ * whole.
-+ *
-+ *  a) This library is free software; you can redistribute it and/or
-+ *     modify it under the terms of the GNU General Public License as
-+ *     published by the Free Software Foundation; either version 2 of the
-+ *     License, or (at your option) any later version.
-+ *
-+ *     This library is distributed in the hope that it will be useful,
-+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *     GNU General Public License for more details.
-+ *
-+ *     You should have received a copy of the GNU General Public
-+ *     License along with this library; if not, write to the Free
-+ *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-+ *     MA 02110-1301 USA
-+ *
-+ * Or, alternatively,
-+ *
-+ *  b) Permission is hereby granted, free of charge, to any person
-+ *     obtaining a copy of this software and associated documentation
-+ *     files (the "Software"), to deal in the Software without
-+ *     restriction, including without limitation the rights to use,
-+ *     copy, modify, merge, publish, distribute, sublicense, and/or
-+ *     sell copies of the Software, and to permit persons to whom the
-+ *     Software is furnished to do so, subject to the following
-+ *     conditions:
-+ *
-+ *     The above copyright notice and this permission notice shall be
-+ *     included in all copies or substantial portions of the Software.
-+ *
-+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-+ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-+ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-+ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-+ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-+ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-+ *     OTHER DEALINGS IN THE SOFTWARE.
++ * Returns a pointer to the bitmask of CPUs on Node 'node'.
 + */
++const struct cpumask *cpumask_of_node(int node)
++{
 +
-+/ {
-+	compatible = "cavium,thunder-88xx";
-+	interrupt-parent = <&gic0>;
-+	#address-cells = <2>;
-+	#size-cells = <2>;
++	if (WARN_ON(node >= nr_node_ids))
++		return cpu_none_mask;
 +
-+	psci {
-+		compatible = "arm,psci-0.2";
-+		method = "smc";
-+	};
++	if (WARN_ON(node_to_cpumask_map[node] == NULL))
++		return cpu_online_mask;
 +
-+	cpus {
-+		#address-cells = <2>;
-+		#size-cells = <0>;
++	return node_to_cpumask_map[node];
++}
++EXPORT_SYMBOL(cpumask_of_node);
++#endif
 +
-+		cpu@000 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x000>;
-+			enable-method = "psci";
-+			/* socket 0 */
-+			numa-node-id = <0>;
-+		};
-+		cpu@001 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x001>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@002 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x002>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@003 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x003>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@004 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x004>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@005 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x005>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@006 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x006>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@007 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x007>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@008 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x008>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@009 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x009>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@00a {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x00a>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@00b {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x00b>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@00c {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x00c>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@00d {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x00d>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@00e {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x00e>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@00f {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x00f>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@100 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x100>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@101 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x101>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@102 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x102>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@103 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x103>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@104 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x104>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@105 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x105>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@106 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x106>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@107 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x107>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@108 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x108>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@109 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x109>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@10a {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10a>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@10b {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10b>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@10c {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10c>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@10d {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10d>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@10e {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10e>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@10f {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10f>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@200 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x200>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@201 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x201>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@202 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x202>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@203 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x203>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@204 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x204>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@205 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x205>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@206 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x206>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@207 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x207>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@208 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x208>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@209 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x209>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@20a {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x20a>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@20b {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x20b>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@20c {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x20c>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@20d {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x20d>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@20e {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x20e>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@20f {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x20f>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@10000 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10000>;
-+			enable-method = "psci";
-+			/* socket 1 */
-+			numa-node-id = <1>;
-+		};
-+		cpu@10001 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10001>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10002 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10002>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10003 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10003>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10004 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10004>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10005 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10005>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10006 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10006>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10007 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10007>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10008 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10008>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10009 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10009>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1000a {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1000a>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1000b {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1000b>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1000c {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1000c>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1000d {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1000d>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1000e {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1000e>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1000f {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1000f>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10100 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10100>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10101 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10101>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10102 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10102>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10103 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10103>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10104 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10104>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10105 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10105>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10106 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10106>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10107 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10107>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10108 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10108>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10109 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10109>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1010a {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1010a>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1010b {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1010b>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1010c {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1010c>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1010d {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1010d>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1010e {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1010e>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1010f {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1010f>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10200 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10200>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10201 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10201>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10202 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10202>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10203 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10203>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10204 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10204>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10205 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10205>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10206 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10206>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10207 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10207>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10208 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10208>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@10209 {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x10209>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1020a {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1020a>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1020b {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1020b>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1020c {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1020c>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1020d {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1020d>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1020e {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1020e>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+		cpu@1020f {
-+			device_type = "cpu";
-+			compatible = "cavium,thunder", "arm,armv8";
-+			reg = <0x0 0x1020f>;
-+			enable-method = "psci";
-+			numa-node-id = <1>;
-+		};
-+	};
++static void map_cpu_to_node(unsigned int cpu, int nid)
++{
++	set_cpu_numa_node(cpu, nid);
++	if (nid >= 0)
++		cpumask_set_cpu(cpu, node_to_cpumask_map[nid]);
++}
 +
-+	timer {
-+		compatible = "arm,armv8-timer";
-+		interrupts = <1 13 0xff01>,
-+		             <1 14 0xff01>,
-+		             <1 11 0xff01>,
-+		             <1 10 0xff01>;
-+	};
++static void unmap_cpu_to_node(unsigned int cpu)
++{
++	int nid = cpu_to_node(cpu);
 +
-+	soc {
-+		compatible = "simple-bus";
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
++	if (nid >= 0)
++		cpumask_clear_cpu(cpu, node_to_cpumask_map[nid]);
++	set_cpu_numa_node(cpu, NUMA_NO_NODE);
++}
 +
-+		refclk50mhz: refclk50mhz {
-+			compatible = "fixed-clock";
-+			#clock-cells = <0>;
-+			clock-frequency = <50000000>;
-+			clock-output-names = "refclk50mhz";
-+		};
++void numa_clear_node(unsigned int cpu)
++{
++	unmap_cpu_to_node(cpu);
++}
 +
-+		gic0: interrupt-controller@8010,00000000 {
-+			compatible = "arm,gic-v3";
-+			#interrupt-cells = <3>;
-+			#address-cells = <2>;
-+			#size-cells = <2>;
-+			#redistributor-regions = <2>;
-+			ranges;
-+			interrupt-controller;
-+			reg = <0x8010 0x00000000 0x0 0x010000>, /* GICD */
-+			      <0x8010 0x80000000 0x0 0x600000>, /* GICR Node 0 */
-+			      <0x9010 0x80000000 0x0 0x600000>; /* GICR Node 1 */
-+			interrupts = <1 9 0xf04>;
++/*
++ * Allocate node_to_cpumask_map based on number of available nodes
++ * Requires node_possible_map to be valid.
++ *
++ * Note: cpumask_of_node() is not valid until after this is done.
++ * (Use CONFIG_DEBUG_PER_CPU_MAPS to check this.)
++ */
++static void __init setup_node_to_cpumask_map(void)
++{
++	unsigned int cpu;
++	int node;
 +
-+			its: gic-its@8010,00020000 {
-+				compatible = "arm,gic-v3-its";
-+				msi-controller;
-+				reg = <0x8010 0x20000 0x0 0x200000>;
-+				numa-node-id = <0>;
-+			};
++	/* setup nr_node_ids if not done yet */
++	if (nr_node_ids == MAX_NUMNODES)
++		setup_nr_node_ids();
 +
-+			its1: gic-its@9010,00020000 {
-+				compatible = "arm,gic-v3-its";
-+				msi-controller;
-+				reg = <0x9010 0x20000 0x0 0x200000>;
-+				numa-node-id = <1>;
-+			};
-+		};
++	/* allocate and clear the mapping */
++	for (node = 0; node < nr_node_ids; node++) {
++		alloc_bootmem_cpumask_var(&node_to_cpumask_map[node]);
++		cpumask_clear(node_to_cpumask_map[node]);
++	}
 +
-+		uaa0: serial@87e0,24000000 {
-+			compatible = "arm,pl011", "arm,primecell";
-+			reg = <0x87e0 0x24000000 0x0 0x1000>;
-+			interrupts = <1 21 4>;
-+			clocks = <&refclk50mhz>;
-+			clock-names = "apb_pclk";
-+		};
++	for_each_possible_cpu(cpu)
++		set_cpu_numa_node(cpu, NUMA_NO_NODE);
 +
-+		uaa1: serial@87e0,25000000 {
-+			compatible = "arm,pl011", "arm,primecell";
-+			reg = <0x87e0 0x25000000 0x0 0x1000>;
-+			interrupts = <1 22 4>;
-+			clocks = <&refclk50mhz>;
-+			clock-names = "apb_pclk";
-+		};
-+	};
-+};
++	/* cpumask_of_node() will now work */
++	pr_debug("Node to cpumask map for %d nodes\n", nr_node_ids);
++}
++
++/*
++ *  Set the cpu to node and mem mapping
++ */
++void numa_store_cpu_info(unsigned int cpu)
++{
++	map_cpu_to_node(cpu, numa_off ? 0 : cpu_to_node_map[cpu]);
++}
++
++/**
++ * numa_add_memblk - Set node id to memblk
++ * @nid: NUMA node ID of the new memblk
++ * @start: Start address of the new memblk
++ * @size:  Size of the new memblk
++ *
++ * RETURNS:
++ * 0 on success, -errno on failure.
++ */
++int __init numa_add_memblk(int nid, u64 start, u64 size)
++{
++	int ret;
++
++	ret = memblock_set_node(start, size, &memblock.memory, nid);
++	if (ret < 0) {
++		pr_err("NUMA: memblock [0x%llx - 0x%llx] failed to add on node %d\n",
++			start, (start + size - 1), nid);
++		return ret;
++	}
++
++	node_set(nid, numa_nodes_parsed);
++	pr_info("NUMA: Adding memblock [0x%llx - 0x%llx] on node %d\n",
++			start, (start + size - 1), nid);
++	return ret;
++}
++EXPORT_SYMBOL(numa_add_memblk);
++
++/* Initialize NODE_DATA for a node on the local memory */
++static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
++{
++	const size_t nd_size = roundup(sizeof(pg_data_t), SMP_CACHE_BYTES);
++	u64 nd_pa;
++	void *nd;
++	int tnid;
++
++	pr_info("Initmem setup node %d [mem %#010Lx-%#010Lx]\n",
++			nid, start_pfn << PAGE_SHIFT,
++			(end_pfn << PAGE_SHIFT) - 1);
++
++	nd_pa = memblock_alloc_try_nid(nd_size, SMP_CACHE_BYTES, nid);
++	nd = __va(nd_pa);
++
++	/* report and initialize */
++	pr_info("  NODE_DATA [mem %#010Lx-%#010Lx]\n",
++		nd_pa, nd_pa + nd_size - 1);
++	tnid = early_pfn_to_nid(nd_pa >> PAGE_SHIFT);
++	if (tnid != nid)
++		pr_info("    NODE_DATA(%d) on node %d\n", nid, tnid);
++
++	node_data[nid] = nd;
++	memset(NODE_DATA(nid), 0, sizeof(pg_data_t));
++	NODE_DATA(nid)->node_id = nid;
++	NODE_DATA(nid)->node_start_pfn = start_pfn;
++	NODE_DATA(nid)->node_spanned_pages = end_pfn - start_pfn;
++}
++
++/**
++ * numa_reset_distance - Reset NUMA distance table
++ *
++ * The current table is freed.
++ * The next numa_set_distance() call will create a new one.
++ */
++void __init numa_reset_distance(void)
++{
++	size_t size;
++
++	if (!numa_distance)
++		return;
++
++	size = numa_distance_cnt * numa_distance_cnt *
++		sizeof(numa_distance[0]);
++
++	memblock_free(__pa(numa_distance), size);
++	numa_distance_cnt = 0;
++	numa_distance = NULL;
++}
++
++static int __init numa_alloc_distance(void)
++{
++	size_t size;
++	u64 phys;
++	int i, j;
++
++	size = nr_node_ids * nr_node_ids * sizeof(numa_distance[0]);
++	phys = memblock_find_in_range(0, PFN_PHYS(max_pfn),
++				      size, PAGE_SIZE);
++	if (WARN_ON(!phys))
++		return -ENOMEM;
++
++	memblock_reserve(phys, size);
++
++	numa_distance = __va(phys);
++	numa_distance_cnt = nr_node_ids;
++
++	/* fill with the default distances */
++	for (i = 0; i < numa_distance_cnt; i++)
++		for (j = 0; j < numa_distance_cnt; j++)
++			numa_distance[i * numa_distance_cnt + j] = i == j ?
++				LOCAL_DISTANCE : REMOTE_DISTANCE;
++
++	pr_debug("NUMA: Initialized distance table, cnt=%d\n",
++			numa_distance_cnt);
++
++	return 0;
++}
++
++/**
++ * numa_set_distance - Set NUMA distance from one NUMA to another
++ * @from: the 'from' node to set distance
++ * @to: the 'to'  node to set distance
++ * @distance: NUMA distance
++ *
++ * Set the distance from node @from to @to to @distance.  If distance table
++ * doesn't exist, one which is large enough to accommodate all the currently
++ * known nodes will be created.
++ *
++ * If such table cannot be allocated, a warning is printed and further
++ * calls are ignored until the distance table is reset with
++ * numa_reset_distance().
++ *
++ * If @from or @to is higher than the highest known node or lower than zero
++ * at the time of table creation or @distance doesn't make sense, the call
++ * is ignored.
++ * This is to allow simplification of specific NUMA config implementations.
++ */
++void __init numa_set_distance(int from, int to, int distance)
++{
++	if (!numa_distance)
++		return;
++
++	if (from >= numa_distance_cnt || to >= numa_distance_cnt ||
++			from < 0 || to < 0) {
++		pr_warn_once("NUMA: Warning: node ids are out of bound, from=%d to=%d distance=%d\n",
++			    from, to, distance);
++		return;
++	}
++
++	if ((u8)distance != distance ||
++	    (from == to && distance != LOCAL_DISTANCE)) {
++		pr_warn_once("NUMA: Warning: invalid distance parameter, from=%d to=%d distance=%d\n",
++			     from, to, distance);
++		return;
++	}
++
++	numa_distance[from * numa_distance_cnt + to] = distance;
++}
++EXPORT_SYMBOL(numa_set_distance);
++
++int __node_distance(int from, int to)
++{
++	if (from >= numa_distance_cnt || to >= numa_distance_cnt)
++		return from == to ? LOCAL_DISTANCE : REMOTE_DISTANCE;
++	return numa_distance[from * numa_distance_cnt + to];
++}
++EXPORT_SYMBOL(__node_distance);
++
++static int __init numa_register_nodes(void)
++{
++	int nid;
++	struct memblock_region *mblk;
++
++	/* Check that valid nid is set to memblks */
++	for_each_memblock(memory, mblk)
++		if (mblk->nid == NUMA_NO_NODE || mblk->nid >= MAX_NUMNODES)
++			return -EINVAL;
++
++	/* Finally register nodes. */
++	for_each_node_mask(nid, numa_nodes_parsed) {
++		unsigned long start_pfn, end_pfn;
++
++		get_pfn_range_for_nid(nid, &start_pfn, &end_pfn);
++		setup_node_data(nid, start_pfn, end_pfn);
++		node_set_online(nid);
++	}
++
++	/* Setup online nodes to actual nodes*/
++	node_possible_map = numa_nodes_parsed;
++
++	return 0;
++}
++
++static int __init numa_init(int (*init_func)(void))
++{
++	int ret;
++
++	nodes_clear(numa_nodes_parsed);
++	nodes_clear(node_possible_map);
++	nodes_clear(node_online_map);
++	numa_reset_distance();
++
++	ret = init_func();
++	if (ret < 0)
++		return ret;
++
++	if (nodes_empty(numa_nodes_parsed))
++		return -EINVAL;
++
++	ret = numa_register_nodes();
++	if (ret < 0)
++		return ret;
++
++	ret = numa_alloc_distance();
++	if (ret < 0)
++		return ret;
++
++	setup_node_to_cpumask_map();
++
++	/* init boot processor */
++	cpu_to_node_map[0] = 0;
++	map_cpu_to_node(0, 0);
++
++	return 0;
++}
++
++/**
++ * dummy_numa_init - Fallback dummy NUMA init
++ *
++ * Used if there's no underlying NUMA architecture, NUMA initialization
++ * fails, or NUMA is disabled on the command line.
++ *
++ * Must online at least one node (node 0) and add memory blocks that cover all
++ * allowed memory. It is unlikely that this function fails.
++ */
++static int __init dummy_numa_init(void)
++{
++	int ret;
++	struct memblock_region *mblk;
++
++	pr_info("%s\n", "No NUMA configuration found");
++	pr_info("Faking a node at [mem %#018Lx-%#018Lx]\n",
++	       0LLU, PFN_PHYS(max_pfn) - 1);
++
++	for_each_memblock(memory, mblk) {
++		ret = numa_add_memblk(0, mblk->base, mblk->size);
++		if (unlikely(ret < 0))
++			return ret;
++	}
++
++	numa_off = 1;
++	return 0;
++}
++
++/**
++ * arm64_numa_init - Initialize NUMA
++ *
++ * Try each configured NUMA initialization method until one succeeds.  The
++ * last fallback is dummy single node config encomapssing whole memory and
++ * never fails.
++ */
++void __init arm64_numa_init(void)
++{
++	numa_init(dummy_numa_init);
++}
 -- 
 1.8.1.4
