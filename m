@@ -1,40 +1,32 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-io0-x230.google.com (mail-io0-x230.google.com
- [IPv6:2607:f8b0:4001:c06::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew@lunn.ch>
+Received: from vps0.lunn.ch (vps0.lunn.ch [178.209.37.122])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9824C1A011E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 23:51:54 +1100 (AEDT)
-Received: by mail-io0-x230.google.com with SMTP id 77so516805353ioc.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 04:51:54 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <569C0F86.2020509@maciej.szmigiero.name>
-References: <5677107C.60904@maciej.szmigiero.name>
- <CAOMZO5C+32Nn6+Nv9KeVrd_Qeso-wEZZNU45G8h+e6LHdMoQYw@mail.gmail.com>
- <CAOMZO5BE7=EdmEyMOq5WH=qv_0H3AGcyyDMJFoemLRJ=O5YLNw@mail.gmail.com>
- <5693B4C1.4060400@maciej.szmigiero.name>
- <CAOMZO5DVKrnufV_PLD_+7FgA=ePhn1DSpzYDQPy5FZvHyGOJ-g@mail.gmail.com>
- <569AD8A7.7080803@maciej.szmigiero.name>
- <569ADC0D.2000807@tabi.org>
- <569AE7D1.6050607@maciej.szmigiero.name>
- <569B23A8.3010006@tabi.org>
- <569BA225.8070509@maciej.szmigiero.name>
- <569BA786.4020305@maciej.szmigiero.name>
- <569BDFB3.1080401@tabi.org>
- <569C0F86.2020509@maciej.szmigiero.name>
-Date: Mon, 18 Jan 2016 10:51:51 -0200
-Message-ID: <CAOMZO5BpwoJAPxtHRu6wH+SS=yqszgqt42u+V2N7K3r_Neh_Ww@mail.gmail.com>
-Subject: Re: [PATCH 3/3] ASoC: fsl_ssi: remove register defaults
-From: Fabio Estevam <festevam@gmail.com>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc: Timur Tabi <timur@tabi.org>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id BDC7F1A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 02:15:08 +1100 (AEDT)
+Date: Mon, 18 Jan 2016 16:15:00 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Shaohui Xie <shaohui.xie@nxp.com>
+Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ "shh.xie@gmail.com" <shh.xie@gmail.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+ "davem@davemloft.net" <davem@davemloft.net>,
+ Shaohui Xie <Shaohui.Xie@freescale.com>
+Subject: Re: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
+Message-ID: <20160118151500.GD923@lunn.ch>
+References: <1452759839-9874-1-git-send-email-shh.xie@gmail.com>
+ <20160114164418.GD19773@lunn.ch>
+ <VI1PR04MB166491DEBB439EB72742201DE8CD0@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <56997951.90304@gmail.com> <5699B211.5070602@gmail.com>
+ <VI1PR04MB16645A2F24DB515D86136BE2E8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <569C9CD2.10301@gmail.com>
+ <VI1PR04MB1664AB0E483F01F1641059FFE8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <VI1PR04MB1664AB0E483F01F1641059FFE8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,14 +36,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Maciej,
+> [S.H] the fsl backplane, e.g. 10GBASE-KR, needs software to handle link training,
+> It's to train link partner, and trained by link partner parallel.
+> 
+> But if media type is not copper, e.g. optical module, we won't need this.
 
-On Sun, Jan 17, 2016 at 8:02 PM, Maciej S. Szmigiero
-<mail@maciej.szmigiero.name> wrote:
+So what we actually need to know is copper vs fibre?
 
-> Patch updated according to Timur's suggestions (needs regmap fix):
-> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-
-Tested your patch against linux-next and it did not give me any warnings:
-
-Tested-by: Fabio Estevam <fabio.estevam@nxp.com>
+   Andrew
