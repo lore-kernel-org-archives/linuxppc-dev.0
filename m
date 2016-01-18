@@ -1,31 +1,26 @@
-Return-Path: <shaohui.xie@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0094.outbound.protection.outlook.com [157.56.112.94])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 09C741A004E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 20:05:42 +1100 (AEDT)
-From: Shaohui Xie <shaohui.xie@nxp.com>
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Florian Fainelli
- <f.fainelli@gmail.com>, Andrew Lunn <andrew@lunn.ch>, "shh.xie@gmail.com"
- <shh.xie@gmail.com>
-CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>, Shaohui Xie
- <Shaohui.Xie@freescale.com>
-Subject: RE: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
-Date: Mon, 18 Jan 2016 08:50:18 +0000
-Message-ID: <VI1PR04MB1664AB0E483F01F1641059FFE8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
-References: <1452759839-9874-1-git-send-email-shh.xie@gmail.com>
- <20160114164418.GD19773@lunn.ch>
- <VI1PR04MB166491DEBB439EB72742201DE8CD0@VI1PR04MB1664.eurprd04.prod.outlook.com>
- <56997951.90304@gmail.com> <5699B211.5070602@gmail.com>
- <VI1PR04MB16645A2F24DB515D86136BE2E8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
- <569C9CD2.10301@gmail.com>
-In-Reply-To: <569C9CD2.10301@gmail.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6751D1A004E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 20:10:07 +1100 (AEDT)
+Received: by mail-wm0-x243.google.com with SMTP id l65so15252517wmf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 01:10:07 -0800 (PST)
 MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <1452219494-31947-3-git-send-email-qiang.zhao@nxp.com>
+References: <1452219494-31947-1-git-send-email-qiang.zhao@nxp.com>
+ <1452219494-31947-3-git-send-email-qiang.zhao@nxp.com>
+Date: Mon, 18 Jan 2016 17:10:00 +0800
+Message-ID: <CADRPPNS3qT+=zz60UKRSYwxpaphcE7e04SntOQ==RjoOfhQ68Q@mail.gmail.com>
+Subject: Re: [PATCH 3/6] QE: Add uqe_serial document to bindings
+From: Li Yang <leoli@freescale.com>
+To: Zhao Qiang <qiang.zhao@nxp.com>
+Cc: devicetree@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Priyanka.Jain@freescale.com,
+ oss@buserror.net
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,39 +30,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTZWJhc3RpYW4gSGVzc2VsYmFy
-dGggW21haWx0bzpzZWJhc3RpYW4uaGVzc2VsYmFydGhAZ21haWwuY29tXQ0KPiBTZW50OiBNb25k
-YXksIEphbnVhcnkgMTgsIDIwMTYgNDowNiBQTQ0KPiBUbzogU2hhb2h1aSBYaWU7IEZsb3JpYW4g
-RmFpbmVsbGk7IEFuZHJldyBMdW5uOyBzaGgueGllQGdtYWlsLmNvbQ0KPiBDYzogZGV2aWNldHJl
-ZUB2Z2VyLmtlcm5lbC5vcmc7IG5ldGRldkB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLQ0KPiBk
-ZXZAbGlzdHMub3psYWJzLm9yZzsgZGF2ZW1AZGF2ZW1sb2Z0Lm5ldDsgU2hhb2h1aSBYaWUNCj4g
-U3ViamVjdDogUmU6IFtQQVRDSCAxLzNdW3YyXSBuZXQ6IHBoeTogaW50cm9kdWNlIDEwMDBCQVNF
-LUtYIGFuZCAxMEdCQVNFLUtSDQo+IA0KPiBPbiAxOC4wMS4yMDE2IDA4OjIzLCBTaGFvaHVpIFhp
-ZSB3cm90ZToNCj4gPj4+IElmIHlvdSBsb29rIGF0IHRoZSBsaXN0IG9mIHBvc3NpYmxlIHZhbHVl
-cyBmb3IgInBoeS1tb2RlIiB5b3UnZCBzZWUNCj4gPj4+IHRoYXQgbm9uZSBvZiBpdCBkZXNjcmli
-ZXMgYSBQSFktdG8tUEhZIGNvbm5lY3Rpb24gYnV0IGFsbCBhcmUgZm9yDQo+ID4+PiBNQUMtdG8t
-UEhZIGNvbm5lY3Rpb25zLiBBbHNvLCBuYW1lcyBhYm92ZSBzdWdnZXN0IGl0IGFscmVhZHk6IE1J
-SSBpcw0KPiA+Pj4gc2hvcnQgZm9yIG1lZGlhIF9pbmRlcGVuZGVudF8gaW50ZXJmYWNlLg0KPiA+
-Pj4NCj4gPj4+IEkgY29weSBBbmRyZXcncyBjb25jZXJucyBhbmQgdGhpbmsgdGhhdCBuZWl0aGVy
-IDEwMDAwYmFzZS1reCBub3INCj4gPj4+IDEwZ2Jhc2Uta3IgYmVsb25nIGluIHRoZSBsaXN0IG9m
-IHBoeS1tb2RlIHByb3BlcnRpZXMuDQo+ID4+DQo+ID4+IEkgY29uY3VyIHdpdGggdGhhdCBhcyB3
-ZWxsLCBpZiB0aGUgcGh5IGNvbm5lY3Rpb24gZG9lcyBub3QgcmVhbGx5DQo+ID4+IG1hdHRlciBo
-ZXJlLCBvciBkb2VzIG5vdCBzZWVtIGxpa2UgYSBnb29kIGZpdCwgbWF5YmUgd2Ugc2hvdWxkIGhh
-dmUgYQ0KPiA+PiBkaWZmZXJlbnQgcHJvcGVydHksIG9yIGp1c3QgZGVmaW5lIHRoZSBoYXJkd2Fy
-ZSBpbnRlcmZhY2UgYSBsaXR0bGUNCj4gZGlmZmVyZW50bHk/DQo+ID4gUmlnaHQsICdwaHktbW9k
-ZScgaXMgbm90IGEgZ29vZCBmaXQgZm9yIGJhY2twbGFuZXMsIGhvdyBhYm91dCBhIG5ldw0KPiA+
-IHByb3BlcnR5IGxpa2UgJ2JhY2twbGFuZS1tb2RlJyBvciBzb21ldGhpbmcsIGxpa2UgYmVsb3c6
-DQo+IA0KPiBIbW0uIFdlIGFscmVhZHkgaGF2ZSBhIHNwZWVkIHByb3BlcnR5IGZvciB0aGF0IHlv
-dSBjYW4gdXNlIGZvciAxMDAwLCAxMDAwMCwNCj4gNDAwMDAuIExlYXZlcyB0aGUgbWVkaWEtdHlw
-ZSwgZS5nLiBjb3BwZXIgb3Igd2hhdGV2ZXIuDQpbUy5IXSBZb3UgbWVhbiB0aGUgcHJvcGVydHkg
-J21heC1zcGVlZCc/IHRoZSBwcm9ibGVtIGlzIHRoZSBtZWRpYS10eXBlIG1hdHRlcnMuDQpQbGVh
-c2Ugc2VlIGJlbG93Lg0KDQo+IA0KPiBDdXJyZW50bHksIHlvdSBmYWlsIHRvIGNvbnZpbmNlIG1l
-IHRoYXQgaXQgaXMgcmVxdWlyZWQgdG8gZGVzY3JpYmUgdGhlIG1lZGlhDQo+IHR5cGUgYXQgYWxs
-LiBXZSBoYXZlIGNvbWUgYSBsb25nIHdheSB3aXRoIGRpZmZlcmVudCBtZWRpYSB3aXRob3V0IGRl
-c2NyaWJpbmcgdGhlDQo+IFBIWS10by1QSFkgbWVkaWEgdHlwZS4NCj4gDQo+IFdoYXQgbWFrZXMg
-dGhlIGJhY2twbGFuZSBzZXR1cCBzbyBzcGVjaWFsPw0KW1MuSF0gdGhlIGZzbCBiYWNrcGxhbmUs
-IGUuZy4gMTBHQkFTRS1LUiwgbmVlZHMgc29mdHdhcmUgdG8gaGFuZGxlIGxpbmsgdHJhaW5pbmcs
-DQpJdCdzIHRvIHRyYWluIGxpbmsgcGFydG5lciwgYW5kIHRyYWluZWQgYnkgbGluayBwYXJ0bmVy
-IHBhcmFsbGVsLg0KDQpCdXQgaWYgbWVkaWEgdHlwZSBpcyBub3QgY29wcGVyLCBlLmcuIG9wdGlj
-YWwgbW9kdWxlLCB3ZSB3b24ndCBuZWVkIHRoaXMuDQoNClRoYW5rIHlvdSENCg0KU2hhb2h1aSAN
-Cg==
+On Fri, Jan 8, 2016 at 10:18 AM, Zhao Qiang <qiang.zhao@nxp.com> wrote:
+> Add uqe_serial document to
+> Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
+
+As you have submitted patch to move QE code from arch/powerpc into
+drivers/soc/fsl for the reuse of ARM and powerpc,  you should also
+move the binding documents out of the powerpc folder into a more
+common place and add new bindings in the new location.
+
+Regards,
+Leo
