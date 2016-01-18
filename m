@@ -1,17 +1,29 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <cyrilbur@gmail.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA49B1A0030
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 11:44:37 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: amodra@gmail.com, Anton Blanchard <anton@samba.org>, rusty@rustcorp.com.au,
- quentin.casasnovas@oracle.com, paul.gortmaker@windriver.com,
- <linux-kernel@vger.kernel.org>
-Subject: [PATCH] powerpc: Simplify module TOC handling
-Date: Mon, 18 Jan 2016 11:44:27 +1100
-Message-Id: <1453077867-23873-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A78131A003F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 13:05:28 +1100 (AEDT)
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E98741402DE
+ for <linuxppc-dev@ozlabs.org>; Mon, 18 Jan 2016 13:05:27 +1100 (AEDT)
+Received: by mail-pa0-x244.google.com with SMTP id pv5so32985250pac.0
+ for <linuxppc-dev@ozlabs.org>; Sun, 17 Jan 2016 18:05:27 -0800 (PST)
+Date: Mon, 18 Jan 2016 13:05:17 +1100
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH V2 5/8] powerpc: Restore FPU/VEC/VSX if previously used
+Message-ID: <20160118130517.1e4c67b4@camb691>
+In-Reply-To: <1452837761.25634.36.camel@neuling.org>
+References: <1452834254-22078-1-git-send-email-cyrilbur@gmail.com>
+ <1452834254-22078-6-git-send-email-cyrilbur@gmail.com>
+ <1452837761.25634.36.camel@neuling.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,127 +33,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Alan Modra <amodra@gmail.com>
+On Fri, 15 Jan 2016 17:02:41 +1100
+Michael Neuling <mikey@neuling.org> wrote:
 
-PowerPC64 uses the symbol .TOC. much as other targets use
-_GLOBAL_OFFSET_TABLE_. It identifies the value of the GOT pointer (or in
-powerpc parlance, the TOC pointer). Global offset tables are generally
-local to an executable or shared library, or in the kernel, module. Thus
-it does not make sense for a module to resolve a relocation against
-.TOC. to the kernel's .TOC. value. A module has its own .TOC., and
-indeed the powerpc64 module relocation processing ignores the kernel
-value of .TOC. and instead calculates a module-local value.
+Hey Mikey,
 
-This patch removes code involved in exporting the kernel .TOC., tweaks
-modpost to ignore an undefined .TOC., and the module loader to twiddle
-the section symbol so that .TOC. isn't seen as undefined.
+Thanks for the review, as always you're correct :).
 
-Note that if the kernel was compiled with -msingle-pic-base then ELFv2
-would not have function global entry code setting up r2. In that case
-the module call stubs would need to be modified to set up r2 using the
-kernel .TOC. value, requiring some of this code to be reinstated.
+> 
+> Can you make the inline code easier to read?  Something like
+> 
+> #ifdef CONFIG_ALTIVEC
+> #define loadvec(thr) ((thr).load_vec)
+> #else
+> #define loadvec(thr) 0
+> #endif
+> 
+> void restore_math(struct pt_regs *regs)
+> {
+>        unsigned long msr;
+> 
+>        if (!current->thread.load_fp && !loadvec(current->thread)
+> 		return;
+> 
+> > +
+> > +       msr = regs->msr;
+> > +       msr_check_and_set(msr_all_available);
+> > +
+> > +       /*
+> > +        * Only reload if the bit is not set in the user MSR, the bit BEING set
+> > +        * indicates that the registers are hot
+> > +        */
+> > +#ifdef CONFIG_PPC_FPU
+> > +       if (current->thread.load_fp && !(msr & MSR_FP)) {
+> > +               load_fp_state(&current->thread.fp_state);
+> > +               msr |= MSR_FP | current->thread.fpexc_mode;
+> > +               current->thread.load_fp++;
+> > +       }
+> > +#endif
+> > +#ifdef CONFIG_ALTIVEC
+> > +       if (current->thread.load_vec && !(msr & MSR_VEC) &&
+> > +                       cpu_has_feature(CPU_FTR_ALTIVEC)) {
+> > +               load_vr_state(&current->thread.vr_state);
+> > +               current->thread.used_vr = 1;
+> > +               msr |= MSR_VEC;
+> > +               current->thread.load_vec++;
+> > +       }
+> > +#endif
+> > +#ifdef CONFIG_VSX
+> > +       if (!(msr & MSR_VSX) && (msr & (MSR_FP | MSR_VEC)) == (MSR_FP | MSR_VEC)) {  
+> 
+> What are you trying to hit with this if statement?
+> 
+> Seems you are turning on VSX if VSX is not already on but FP and VEC
+> is.  Why do you need the check MSR_VSX is not used?  That seems redundant.
+> 
+> > +               current->thread.used_vsr = 1;
+> > +               msr |= MSR_VSX;
+> > +       }
+> > +#endif
+> > +
+> > +       msr_check_and_clear(msr_all_available);  
+> 
+> Why are you doing this?  Why all, and not just the ones you've enabled above?
+> 
 
-mpe: Furthermore a change in binutils master (not yet released) causes
-the current way we handle the TOC to no longer work when building with
-MODVERSIONS=y and RELOCATABLE=n. The symptom is that modules can not be
-loaded due to there being no version found for TOC.
+This is part of the batching of MSR reads and writes. We turned everything on
+at the start of restore_math() because it means only one write, the MSR
+reads/writes are where the performance hit, not the number of bits changed.
+Obviously we subsequently we turn everything off again because it also means
+only one write (and we had unconditionally turned everything on).
 
-Cc: stable@vger.kernel.org # 3.16+
-Signed-off-by: Alan Modra <amodra@gmail.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/misc_64.S   | 28 ----------------------------
- arch/powerpc/kernel/module_64.c | 12 +++++++++---
- scripts/mod/modpost.c           |  3 ++-
- 3 files changed, 11 insertions(+), 32 deletions(-)
+The check at the start of restore_math() and in entry_64.S should mean that we
+don't the msr_check_and_set()/msr_check_and_clear() block with nothing to do.
 
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index db475d41b57a..f28754c497e5 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -701,31 +701,3 @@ _GLOBAL(kexec_sequence)
- 	li	r5,0
- 	blr	/* image->start(physid, image->start, 0); */
- #endif /* CONFIG_KEXEC */
--
--#ifdef CONFIG_MODULES
--#if defined(_CALL_ELF) && _CALL_ELF == 2
--
--#ifdef CONFIG_MODVERSIONS
--.weak __crc_TOC.
--.section "___kcrctab+TOC.","a"
--.globl __kcrctab_TOC.
--__kcrctab_TOC.:
--	.llong	__crc_TOC.
--#endif
--
--/*
-- * Export a fake .TOC. since both modpost and depmod will complain otherwise.
-- * Both modpost and depmod strip the leading . so we do the same here.
-- */
--.section "__ksymtab_strings","a"
--__kstrtab_TOC.:
--	.asciz "TOC."
--
--.section "___ksymtab+TOC.","a"
--/* This symbol name is important: it's used by modpost to find exported syms */
--.globl __ksymtab_TOC.
--__ksymtab_TOC.:
--	.llong 0 /* .value */
--	.llong __kstrtab_TOC.
--#endif /* ELFv2 */
--#endif /* MODULES */
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 59663af9315f..ac64ffdb52c8 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -326,7 +326,10 @@ static void dedotify_versions(struct modversion_info *vers,
- 		}
- }
- 
--/* Undefined symbols which refer to .funcname, hack to funcname (or .TOC.) */
-+/*
-+ * Undefined symbols which refer to .funcname, hack to funcname. Make .TOC.
-+ * seem to be defined (value set later).
-+ */
- static void dedotify(Elf64_Sym *syms, unsigned int numsyms, char *strtab)
- {
- 	unsigned int i;
-@@ -334,8 +337,11 @@ static void dedotify(Elf64_Sym *syms, unsigned int numsyms, char *strtab)
- 	for (i = 1; i < numsyms; i++) {
- 		if (syms[i].st_shndx == SHN_UNDEF) {
- 			char *name = strtab + syms[i].st_name;
--			if (name[0] == '.')
-+			if (name[0] == '.') {
-+				if (strcmp(name+1, "TOC.") == 0)
-+					syms[i].st_shndx = SHN_ABS;
- 				memmove(name, name+1, strlen(name));
-+			}
- 		}
- 	}
- }
-@@ -351,7 +357,7 @@ static Elf64_Sym *find_dot_toc(Elf64_Shdr *sechdrs,
- 	numsyms = sechdrs[symindex].sh_size / sizeof(Elf64_Sym);
- 
- 	for (i = 1; i < numsyms; i++) {
--		if (syms[i].st_shndx == SHN_UNDEF
-+		if (syms[i].st_shndx == SHN_ABS
- 		    && strcmp(strtab + syms[i].st_name, "TOC.") == 0)
- 			return &syms[i];
- 	}
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index e080746e1a6b..48958d3cec9e 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -594,7 +594,8 @@ static int ignore_undef_symbol(struct elf_info *info, const char *symname)
- 		if (strncmp(symname, "_restgpr0_", sizeof("_restgpr0_") - 1) == 0 ||
- 		    strncmp(symname, "_savegpr0_", sizeof("_savegpr0_") - 1) == 0 ||
- 		    strncmp(symname, "_restvr_", sizeof("_restvr_") - 1) == 0 ||
--		    strncmp(symname, "_savevr_", sizeof("_savevr_") - 1) == 0)
-+		    strncmp(symname, "_savevr_", sizeof("_savevr_") - 1) == 0 ||
-+		    strcmp(symname, ".TOC.") == 0)
- 			return 1;
- 	/* Do not ignore this symbol */
- 	return 0;
--- 
-2.5.0
+> > +
+> > +       regs->msr = msr;
+> > +}
+> > +
+> >  void flush_all_to_thread(struct task_struct *tsk)
+> >  {
+> >         if (tsk->thread.regs) {
+> > @@ -832,17 +879,9 @@ void restore_tm_state(struct pt_regs *regs)  
+>  
+> >         msr_diff = current->thread.ckpt_regs.msr & ~regs->msr;
+> >         msr_diff &= MSR_FP | MSR_VEC | MSR_VSX;
+> > -       if (msr_diff & MSR_FP) {
+> > -               msr_check_and_set(MSR_FP);
+> > -               load_fp_state(&current->thread.fp_state);
+> > -               msr_check_and_clear(MSR_FP);
+> > -               regs->msr |= current->thread.fpexc_mode;
+> > -       }
+> > -       if (msr_diff & MSR_VEC) {
+> > -               msr_check_and_set(MSR_VEC);
+> > -               load_vr_state(&current->thread.vr_state);
+> > -               msr_check_and_clear(MSR_VEC);
+> > -       }
+> > +
+> > +       restore_math(regs);
+> > +
+> >         regs->msr |= msr_diff;
+> >  }  
+>  
+> > @@ -1006,6 +1045,11 @@ struct task_struct *__switch_to(struct task_struct *prev,
+> >                 batch = this_cpu_ptr(&ppc64_tlb_batch);
+> >                 batch->active = 1;
+> >         }
+> > +
+> > +       /* Don't do this on a kernel thread */  
+> 
+> Why not?
+> 
+> > +       if (current_thread_info()->task->thread.regs)
+> > +               restore_math(current_thread_info()->task->thread.regs);
+> > +
+> >  #endif /* CONFIG_PPC_BOOK3S_64 */  
+>  
+> >         return last;
+> > diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
+> > index 162d0f7..038cff8 100644
+> > --- a/arch/powerpc/kernel/vector.S
+> > +++ b/arch/powerpc/kernel/vector.S
+> > @@ -91,6 +91,10 @@ _GLOBAL(load_up_altivec)
+> >         oris    r12,r12,MSR_VEC@h
+> >         std     r12,_MSR(r1)
+> >  #endif
+> > +       /* Don't care if r4 overflows, this is desired behaviour */
+> > +       lbz     r4,THREAD_LOAD_VEC(r5)
+> > +       addi    r4,r4,1
+> > +       stb     r4,THREAD_LOAD_VEC(r5)
+> >         addi    r6,r5,THREAD_VRSTATE
+> >         li      r4,1
+> >         li      r10,VRSTATE_VSCR
+> > -- 
+> > 2.7.0  
+> 
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-devOn Fri, 2016-01-15 at 16:04 +1100, Cyril Bur wrote:  
