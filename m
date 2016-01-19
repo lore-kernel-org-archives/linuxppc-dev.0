@@ -1,34 +1,34 @@
 Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 26E841A001D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 07:18:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DF7A31A0D56
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 07:18:32 +1100 (AEDT)
 Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Tue, 19 Jan 2016 18:18:25 -0200
+ Tue, 19 Jan 2016 18:18:29 -0200
 Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 7ACA1352006C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 15:18:17 -0500 (EST)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 196B41DC0074
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 15:18:21 -0500 (EST)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
  by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0JKGBgn3735978
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 18:16:12 -0200
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0JKINZY008928
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 15:18:23 -0500
+ u0JKGDNI2097640
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 18:16:13 -0200
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0JKIO29000575
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 18:18:24 -0200
 From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
 Cc: gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org,
  nfont@linux.vnet.ibm.com, paulus@samba.org,
  "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Subject: [PATCH 1/2] powerpc/eeh: Check for EEH availability in
- eeh_add_device_early()
-Date: Tue, 19 Jan 2016 18:18:19 -0200
-Message-Id: <1453234700-27593-2-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Subject: [PATCH 2/2] powerpc/pseries: Check if EEH is enabled on DDW mechanism
+ code
+Date: Tue, 19 Jan 2016 18:18:20 -0200
+Message-Id: <1453234700-27593-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
 In-Reply-To: <1453234700-27593-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 References: <1453234700-27593-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,74 +40,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The function eeh_add_device_early() is used to perform EEH initialization in
-devices added later on the system, like in hotplug/DLPAR scenarios. Since the
-commit 89a51df5ab1d ("powerpc/eeh: Fix crash in eeh_add_device_early() on Cell")
-a new check was introduced in this function - Cell has no EEH capabilities
-which led to kernel oops if hotplug was performed, so checking for
-eeh_enabled() was introduced to avoid the issue.
+The Dynamic DMA Window (DDW) mechanism relies on EEH to obtain the
+configuration address of devices. For example, the functions query_ddw()
+and create_ddw() make use of eeh_dev struct. So, the dependency is
+intrinsic - DDW mechanism will fail if EEH is not enabled.
 
-However, in architectures that EEH is present like pSeries or PowerNV, we might
-reach a case in which no PCI devices are present on boot and so EEH is not
-initialized. Then, if a device is added via DLPAR for example,
-eeh_add_device_early() fails because eeh_enabled() is false.
+Despite this dependency, no check for EEH availability is performed in DDW
+code. This patch adds a check based on eeh_enabled() function, so if EEH is
+not enabled before eeh_dev struct use, DDW will fallback to default iommu
+mechanism and won't fail.
 
-Also, we can hit a kernel oops on pSeries arch if eeh_add_device_early() fails:
-if we have no PCI devices on machine at boot time, and then we add a PCI device
-via DLPAR operation, the function query_ddw() triggers the oops on NULL pointer
-dereference in the line "cfg_addr = edev->config_addr;". It happens because
-config_addr in edev is NULL, since the function eeh_add_device_early() was not
-completed successfully.
+One use case for this patch is when we disable EEH globally via kernel
+command-line ("eeh=off") - without the patch, a device probe can hit a kernel
+oops because EEH is disabled but DDW will try to use it.
 
-This patch just changes the way the arch checking is done in function
-eeh_add_device_early(): we don't use eeh_enabled() anymore, but instead we
-introduce the function eeh_available() that checks the running architecture
-by using the macro machine_is(). If we are running on pSeries or PowerNV, the
-EEH mechanism is available (even if not initialized yet). This way, we don't
-try to enable EEH on Cell and we don't hit the oops on DLPAR either.
-
-Fixes: 89a51df5ab1d ("powerpc/eeh: Fix crash in eeh_add_device_early() on Cell")
 Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/iommu.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 40e4d4a..69031d7 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1056,6 +1056,23 @@ int eeh_init(void)
- core_initcall_sync(eeh_init);
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index bd98ce2..1ff55cc 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -1224,8 +1224,10 @@ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
  
- /**
-+ * eeh_available - Checks for the availability of EEH based on running
-+ * architecture.
-+ *
-+ * This routine should be used in case we need to check if EEH is
-+ * available in some situation, regardless if EEH is enabled or not.
-+ * For example, if we hotplug-add a PCI device on a machine with no
-+ * other PCI device, EEH won't be enabled, yet it's available if the
-+ * arch supports it.
-+ */
-+static inline bool eeh_available(void)
-+{
-+	if (machine_is(pseries) || machine_is(powernv))
-+		return true;
-+	return false;
-+}
-+
-+/**
-  * eeh_add_device_early - Enable EEH for the indicated device node
-  * @pdn: PCI device node for which to set up EEH
-  *
-@@ -1072,7 +1089,7 @@ void eeh_add_device_early(struct pci_dn *pdn)
- 	struct pci_controller *phb;
- 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+ 	pdev = to_pci_dev(dev);
  
--	if (!edev || !eeh_enabled())
-+	if (!edev || !eeh_available())
- 		return;
+-	/* only attempt to use a new window if 64-bit DMA is requested */
+-	if (!disable_ddw && dma_mask == DMA_BIT_MASK(64)) {
++	/* We should check if EEH is enabled here, since DDW mechanism has
++	 * an intrinsic dependency of EEH config addr information. Also, we
++	 * only attempt to use a new window if 64-bit DMA is requested */
++	if (eeh_enabled() && !disable_ddw && dma_mask == DMA_BIT_MASK(64)) {
+ 		dn = pci_device_to_OF_node(pdev);
+ 		dev_dbg(dev, "node is %s\n", dn->full_name);
  
- 	if (!eeh_has_flag(EEH_PROBE_MODE_DEVTREE))
 -- 
 2.1.0
