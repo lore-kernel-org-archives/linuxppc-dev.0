@@ -1,53 +1,32 @@
-Return-Path: <gpkulkarni@gmail.com>
-Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
- [IPv6:2a00:1450:400c:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tipbot@zytor.com>
+Received: from terminus.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8E44B1A0CDD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 23:32:16 +1100 (AEDT)
-Received: by mail-wm0-x243.google.com with SMTP id l65so22942217wmf.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 04:32:16 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6398F1A0CD7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 00:39:08 +1100 (AEDT)
+Date: Tue, 19 Jan 2016 05:38:13 -0800
+Sender: tip tree robot <tipbot@zytor.com>
+From: tip-bot for Raghavendra K T <tipbot@zytor.com>
+Message-ID: <tip-9c03ee147193645be4c186d3688232fa438c57c7@git.kernel.org>
+Cc: linux-kernel@vger.kernel.org, gkurz@linux.vnet.ibm.com,
+ raghavendra.kt@linux.vnet.ibm.com, vdavydov@parallels.com,
+ mpe@ellerman.id.au, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ peterz@infradead.org, hpa@zytor.com, nikunj@linux.vnet.ibm.com,
+ tglx@linutronix.de, mingo@kernel.org, paulus@samba.org,
+ grant.likely@linaro.org, jstancek@redhat.com, benh@kernel.crashing.org,
+ anton@samba.org
+Reply-To: tglx@linutronix.de, mingo@kernel.org, linux-mm@kvack.org,
+ mpe@ellerman.id.au, hpa@zytor.com, nikunj@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, peterz@infradead.org,
+ vdavydov@parallels.com, gkurz@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, raghavendra.kt@linux.vnet.ibm.com,
+ jstancek@redhat.com, benh@kernel.crashing.org, anton@samba.org,
+ grant.likely@linaro.org, paulus@samba.org
+In-Reply-To: <1452884483-11676-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
+References: <1452884483-11676-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/urgent] sched: Fix crash in sched_init_numa()
 MIME-Version: 1.0
-In-Reply-To: <20160119094150.GA4991@red-moon>
-References: <1453134965-6125-1-git-send-email-gkulkarni@caviumnetworks.com>
- <1453134965-6125-6-git-send-email-gkulkarni@caviumnetworks.com>
- <569D23AF.9050503@gmail.com>
- <CAFpQJXXESn1EA5kotVOH2oLbRUSpOLf6+MeWG1pY_GhUP+4vVQ@mail.gmail.com>
- <20160119094150.GA4991@red-moon>
-Date: Tue, 19 Jan 2016 18:02:13 +0530
-Message-ID: <CAFpQJXV_5mryP5ZT5ezE7N9Csj97g7029D_9Fj_fNJ8+5n6O2w@mail.gmail.com>
-Subject: Re: [PATCH v9 5/6] PCI: generic: Make pci-host-generic driver numa
- aware
-From: Ganapatrao Kulkarni <gpkulkarni@gmail.com>
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: David Daney <ddaney.cavm@gmail.com>, Will Deacon <Will.Deacon@arm.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
- Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-pci@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-arch@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Grant Likely <grant.likely@linaro.org>,
- Leif Lindholm <leif.lindholm@linaro.org>, rfranz@cavium.com,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- "msalter@redhat.com" <msalter@redhat.com>,
- Rob Herring <robh+dt@kernel.org>, Steve Capper <steve.capper@linaro.org>,
- Hanjun Guo <hanjun.guo@linaro.org>, Al Stone <al.stone@linaro.org>,
- Arnd Bergmann <arnd@arndb.de>, Pawel Moll <pawel.moll@arm.com>,
- Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>,
- Marc Zyngier <marc.zyngier@arm.com>,
- tony.luck@intel.com, fenghua.yu@intel.com, james.hogan@imgtec.com,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "tglx@linutronix.de" <tglx@linutronix.de>, mingo@redhat.com,
- hpa@zytor.com, x86@kernel.org, Jon Masters <jonathan@jonmasters.org>,
- Robert Richter <rrichter@cavium.com>,
- Prasun Kapoor <Prasun.Kapoor@caviumnetworks.com>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -58,70 +37,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 19, 2016 at 3:11 PM, Lorenzo Pieralisi
-<lorenzo.pieralisi@arm.com> wrote:
-> On Tue, Jan 19, 2016 at 11:28:56AM +0530, Ganapatrao Kulkarni wrote:
->> On Mon, Jan 18, 2016 at 11:11 PM, David Daney <ddaney.cavm@gmail.com> wrote:
->> > On 01/18/2016 08:36 AM, Ganapatrao Kulkarni wrote:
->> >>
->> >> update numa_node of device associated with pci bus.
->> >> moved down devm_kzalloc to allocate from node memory.
->> >>
->> >> Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
->> >> ---
->> >>   drivers/pci/host/pci-host-generic.c | 9 ++++++---
->> >>   1 file changed, 6 insertions(+), 3 deletions(-)
->> >>
->> >> diff --git a/drivers/pci/host/pci-host-generic.c
->> >> b/drivers/pci/host/pci-host-generic.c
->> >> index 5434c90..0e1ce06 100644
->> >> --- a/drivers/pci/host/pci-host-generic.c
->> >> +++ b/drivers/pci/host/pci-host-generic.c
->> >> @@ -215,11 +215,9 @@ static int gen_pci_probe(struct platform_device
->> >> *pdev)
->> >>         const struct of_device_id *of_id;
->> >>         struct device *dev = &pdev->dev;
->> >>         struct device_node *np = dev->of_node;
->> >> -       struct gen_pci *pci = devm_kzalloc(dev, sizeof(*pci), GFP_KERNEL);
->> >> +       struct gen_pci *pci;
->> >>         struct pci_bus *bus, *child;
->> >>
->> >> -       if (!pci)
->> >> -               return -ENOMEM;
->> >>
->> >>         type = of_get_property(np, "device_type", NULL);
->> >>         if (!type || strcmp(type, "pci")) {
->> >> @@ -230,6 +228,11 @@ static int gen_pci_probe(struct platform_device
->> >> *pdev)
->> >>         of_pci_check_probe_only();
->> >>
->> >>         of_id = of_match_node(gen_pci_of_match, np);
->> >> +       set_dev_node(dev, of_node_to_nid(np));
->> >
->> >
->> > This shouldn't be done in individual platform_drivers, but instead in the
->> > device probing code.
->> >
->> > There is code that does this in drivers/of/platform.c and
->> > drivers/of/device.c  Is that not being called for the pci-host-gweneric
->> > devices?  If not, we should figure out why, and perhaps attempt to fix it
->> > rather than doing it here.
->> is it more appropriate to call of_platform_device_create ?
->
-> That's already done to create the platform device by OF core when
-> populating devices from DT, what David suggested is that you should
-> add set_dev_node() to core OF code instead of adding it specifically
-> to the PCI host generic code.
-This patch was worked on 4.2(inherited to 4.4) to have correct
-numa_node populated on sysfs.
-however, on 4.4, OF  is fixed to set numa_node(fixed by
-56f2de81e020c537f7e35550d13840143cb765cd)
+Commit-ID:  9c03ee147193645be4c186d3688232fa438c57c7
+Gitweb:     http://git.kernel.org/tip/9c03ee147193645be4c186d3688232fa438c57c7
+Author:     Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
+AuthorDate: Sat, 16 Jan 2016 00:31:23 +0530
+Committer:  Ingo Molnar <mingo@kernel.org>
+CommitDate: Tue, 19 Jan 2016 08:42:20 +0100
 
-This patch (patch #5) is not required and will be dropped.
-thanks for your comments.
+sched: Fix crash in sched_init_numa()
 
+The following PowerPC commit:
 
->
-> Lorenzo
-thanks
-Ganapat
+  c118baf80256 ("arch/powerpc/mm/numa.c: do not allocate bootmem memory for non existing nodes")
+
+avoids allocating bootmem memory for non existent nodes.
+
+But when DEBUG_PER_CPU_MAPS=y is enabled, my powerNV system failed to boot
+because in sched_init_numa(), cpumask_or() operation was done on
+unallocated nodes.
+
+Fix that by making cpumask_or() operation only on existing nodes.
+
+[ Tested with and w/o DEBUG_PER_CPU_MAPS=y on x86 and PowerPC. ]
+
+Reported-by: Jan Stancek <jstancek@redhat.com>
+Tested-by: Jan Stancek <jstancek@redhat.com>
+Signed-off-by: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
+Cc: <gkurz@linux.vnet.ibm.com>
+Cc: <grant.likely@linaro.org>
+Cc: <nikunj@linux.vnet.ibm.com>
+Cc: <vdavydov@parallels.com>
+Cc: <linuxppc-dev@lists.ozlabs.org>
+Cc: <linux-mm@kvack.org>
+Cc: <peterz@infradead.org>
+Cc: <benh@kernel.crashing.org>
+Cc: <paulus@samba.org>
+Cc: <mpe@ellerman.id.au>
+Cc: <anton@samba.org>
+Link: http://lkml.kernel.org/r/1452884483-11676-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+---
+ kernel/sched/core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 44253ad..474658b 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6840,7 +6840,7 @@ static void sched_init_numa(void)
+ 
+ 			sched_domains_numa_masks[i][j] = mask;
+ 
+-			for (k = 0; k < nr_node_ids; k++) {
++			for_each_node(k) {
+ 				if (node_distance(j, k) > sched_domains_numa_distance[i])
+ 					continue;
+ 
