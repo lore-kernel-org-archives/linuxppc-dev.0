@@ -1,47 +1,31 @@
-Return-Path: <lorenzo.pieralisi@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 1D96B1A0CD7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 20:40:15 +1100 (AEDT)
-Date: Tue, 19 Jan 2016 09:41:50 +0000
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-To: Ganapatrao Kulkarni <gpkulkarni@gmail.com>
-Cc: David Daney <ddaney.cavm@gmail.com>, Will Deacon <Will.Deacon@arm.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
- Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-pci@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-metag@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-arch@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
- Grant Likely <grant.likely@linaro.org>,
- Leif Lindholm <leif.lindholm@linaro.org>, rfranz@cavium.com,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- "msalter@redhat.com" <msalter@redhat.com>,
- Rob Herring <robh+dt@kernel.org>, Steve Capper <steve.capper@linaro.org>,
- Hanjun Guo <hanjun.guo@linaro.org>, Al Stone <al.stone@linaro.org>,
- Arnd Bergmann <arnd@arndb.de>, Pawel Moll <pawel.moll@arm.com>,
- Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Len Brown <lenb@kernel.org>, Marc Zyngier <marc.zyngier@arm.com>,
- tony.luck@intel.com, fenghua.yu@intel.com, james.hogan@imgtec.com,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "tglx@linutronix.de" <tglx@linutronix.de>, mingo@redhat.com,
- hpa@zytor.com, x86@kernel.org, Jon Masters <jonathan@jonmasters.org>,
- Robert Richter <rrichter@cavium.com>,
- Prasun Kapoor <Prasun.Kapoor@caviumnetworks.com>
-Subject: Re: [PATCH v9 5/6] PCI: generic: Make pci-host-generic driver numa
- aware
-Message-ID: <20160119094150.GA4991@red-moon>
-References: <1453134965-6125-1-git-send-email-gkulkarni@caviumnetworks.com>
- <1453134965-6125-6-git-send-email-gkulkarni@caviumnetworks.com>
- <569D23AF.9050503@gmail.com>
- <CAFpQJXXESn1EA5kotVOH2oLbRUSpOLf6+MeWG1pY_GhUP+4vVQ@mail.gmail.com>
+Return-Path: <kda@linux-powerpc.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 102D91A0CD7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 22:53:55 +1100 (AEDT)
+Received: from mail-yk0-x242.google.com (mail-yk0-x242.google.com
+ [IPv6:2607:f8b0:4002:c07::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 0AC4A14032B
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 Jan 2016 22:53:54 +1100 (AEDT)
+Received: by mail-yk0-x242.google.com with SMTP id v14so40625593ykd.1
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 Jan 2016 03:53:53 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAFpQJXXESn1EA5kotVOH2oLbRUSpOLf6+MeWG1pY_GhUP+4vVQ@mail.gmail.com>
+In-Reply-To: <1452599615.20985.2.camel@ellerman.id.au>
+References: <1450124286-4822-1-git-send-email-kda@linux-powerpc.org>
+ <1450124286-4822-2-git-send-email-kda@linux-powerpc.org>
+ <1452599615.20985.2.camel@ellerman.id.au>
+Date: Tue, 19 Jan 2016 14:53:51 +0300
+Message-ID: <CAOJe8K2iVOy9=Ds09_ePct3xR6qCH0U4XoKW-qP_TNEMe8GAmQ@mail.gmail.com>
+Subject: Re: [PATCH v3 2/2] powerpc: tracing: don't trace hcalls on offline
+ CPUs
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,57 +35,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 19, 2016 at 11:28:56AM +0530, Ganapatrao Kulkarni wrote:
-> On Mon, Jan 18, 2016 at 11:11 PM, David Daney <ddaney.cavm@gmail.com> wrote:
-> > On 01/18/2016 08:36 AM, Ganapatrao Kulkarni wrote:
-> >>
-> >> update numa_node of device associated with pci bus.
-> >> moved down devm_kzalloc to allocate from node memory.
-> >>
-> >> Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
-> >> ---
-> >>   drivers/pci/host/pci-host-generic.c | 9 ++++++---
-> >>   1 file changed, 6 insertions(+), 3 deletions(-)
-> >>
-> >> diff --git a/drivers/pci/host/pci-host-generic.c
-> >> b/drivers/pci/host/pci-host-generic.c
-> >> index 5434c90..0e1ce06 100644
-> >> --- a/drivers/pci/host/pci-host-generic.c
-> >> +++ b/drivers/pci/host/pci-host-generic.c
-> >> @@ -215,11 +215,9 @@ static int gen_pci_probe(struct platform_device
-> >> *pdev)
-> >>         const struct of_device_id *of_id;
-> >>         struct device *dev = &pdev->dev;
-> >>         struct device_node *np = dev->of_node;
-> >> -       struct gen_pci *pci = devm_kzalloc(dev, sizeof(*pci), GFP_KERNEL);
-> >> +       struct gen_pci *pci;
-> >>         struct pci_bus *bus, *child;
-> >>
-> >> -       if (!pci)
-> >> -               return -ENOMEM;
-> >>
-> >>         type = of_get_property(np, "device_type", NULL);
-> >>         if (!type || strcmp(type, "pci")) {
-> >> @@ -230,6 +228,11 @@ static int gen_pci_probe(struct platform_device
-> >> *pdev)
-> >>         of_pci_check_probe_only();
-> >>
-> >>         of_id = of_match_node(gen_pci_of_match, np);
-> >> +       set_dev_node(dev, of_node_to_nid(np));
-> >
-> >
-> > This shouldn't be done in individual platform_drivers, but instead in the
-> > device probing code.
-> >
-> > There is code that does this in drivers/of/platform.c and
-> > drivers/of/device.c  Is that not being called for the pci-host-gweneric
-> > devices?  If not, we should figure out why, and perhaps attempt to fix it
-> > rather than doing it here.
-> is it more appropriate to call of_platform_device_create ?
+On 1/12/16, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> On Mon, 2015-12-14 at 23:18 +0300, Denis Kirjanov wrote:
+>
+>> ./drmgr -c cpu -a -r gives the following warning:
+>>
+>> [ 2327.035563]
+>> RCU used illegally from offline CPU!
+>> rcu_scheduler_active = 1, debug_locks = 1
+>> [ 2327.035564] no locks held by swapper/12/0.
+>> [ 2327.035565]
+>> stack backtrace:
+>> [ 2327.035567] CPU: 12 PID: 0 Comm: swapper/12 Tainted: G S
+>> 4.3.0-rc3-00060-g353169a #5
+>> [ 2327.035568] Call Trace:
+>> [ 2327.035573] [c0000001d62578e0] [c0000000008977fc] .dump_stack+0x98/0xd4
+>> (unreliable)
+>> [ 2327.035577] [c0000001d6257960] [c000000000109bd8]
+>> .lockdep_rcu_suspicious+0x108/0x170
+>> [ 2327.035580] [c0000001d62579f0] [c00000000006a1d0]
+>> .__trace_hcall_exit+0x2b0/0x2c0
+>> [ 2327.035584] [c0000001d6257ab0] [c00000000006a2e8]
+>> plpar_hcall_norets_trace+0x70/0x8c
+>> [ 2327.035588] [c0000001d6257b20] [c000000000067a14]
+>> .icp_hv_set_cpu_priority+0x54/0xc0
+>> [ 2327.035592] [c0000001d6257ba0] [c000000000066c5c]
+>> .xics_teardown_cpu+0x5c/0xa0
+>> [ 2327.035595] [c0000001d6257c20] [c0000000000747ac]
+>> .pseries_mach_cpu_die+0x6c/0x320
+>> [ 2327.035598] [c0000001d6257cd0] [c0000000000439cc] .cpu_die+0x3c/0x60
+>> [ 2327.035602] [c0000001d6257d40] [c0000000000183d8]
+>> .arch_cpu_idle_dead+0x28/0x40
+>> [ 2327.035606] [c0000001d6257db0] [c0000000000ff1dc]
+>> .cpu_startup_entry+0x4fc/0x560
+>> [ 2327.035610] [c0000001d6257ed0] [c000000000043728]
+>> .start_secondary+0x328/0x360
+>> [ 2327.035614] [c0000001d6257f90] [c000000000008a6c]
+>> start_secondary_prolog+0x10/0x14
+>> [ 2327.035620] cpu 12 (hwid 12) Ready to die...
+>> [ 2327.144463] cpu 13 (hwid 13) Ready to die...
+>> [ 2327.294180] cpu 14 (hwid 14) Ready to die...
+>> [ 2327.403599] cpu 15 (hwid 15) Ready to die...
+>>
+>> Make the hypervisor tracepoints conditional
+>> by using TRACE_EVENT_FN_COND
+>>
+>> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
 
-That's already done to create the platform device by OF core when
-populating devices from DT, what David suggested is that you should
-add set_dev_node() to core OF code instead of adding it specifically
-to the PCI host generic code.
+Hi Steven,
 
-Lorenzo
+please apply with Michael's acked-by tag.
+
+Thanks!
+>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+>
+> cheers
+>
+>
