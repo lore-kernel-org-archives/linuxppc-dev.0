@@ -1,37 +1,39 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9F74E1A0CD7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 04:15:04 +1100 (AEDT)
-Received: from e06smtp08.uk.ibm.com (e06smtp08.uk.ibm.com [195.75.94.104])
+Return-Path: <dougmill@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5F136140307
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2016 04:15:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 17D3C1A0D32
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 06:01:29 +1100 (AEDT)
 Received: from localhost
- by e06smtp08.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Tue, 19 Jan 2016 17:14:59 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 047962190023
- for <linuxppc-dev@ozlabs.org>; Tue, 19 Jan 2016 17:14:44 +0000 (GMT)
-Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
- [9.149.37.252])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0JHEt8k10879248
- for <linuxppc-dev@ozlabs.org>; Tue, 19 Jan 2016 17:14:55 GMT
-Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0JHEtVR014459
- for <linuxppc-dev@ozlabs.org>; Tue, 19 Jan 2016 10:14:55 -0700
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com, linuxppc-dev@ozlabs.org
-Subject: [PATCH] cxl: Add cxl_read_adapter_vpd() to the kernel API
-Date: Tue, 19 Jan 2016 18:14:54 +0100
-Message-Id: <1453223694-5190-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <dougmill@linux.vnet.ibm.com>;
+ Tue, 19 Jan 2016 14:01:24 -0500
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 657736E803F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 13:48:14 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0JJ1LoW25493722
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 19:01:21 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0JJ1KQx002945
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 14:01:21 -0500
+Subject: Re: [RFC PATCH kernel] powerpc/ioda: Set "read" permission when
+ "write" is set
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1452573620-17979-1-git-send-email-aik@ozlabs.ru>
+ <1452640054.3262.11.camel@kernel.crashing.org>
+ <5695B542.5010001@linux.vnet.ibm.com> <569DB2F3.1070901@ozlabs.ru>
+From: Douglas Miller <dougmill@linux.vnet.ibm.com>
+Message-ID: <569E87F8.1030907@linux.vnet.ibm.com>
+Date: Tue, 19 Jan 2016 13:01:12 -0600
+MIME-Version: 1.0
+In-Reply-To: <569DB2F3.1070901@ozlabs.ru>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,48 +43,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce a new API to read the VPD of the adapter. In bare-metal, a
-kernel driver can find out the adapter pci_dev behind the AFU device
-and call pci_read_vpd() directly, but it won't work in a (powerVM)
-guest.
-Current implementation is a stub to allow existing drivers (cxlflash)
-to start using it.
 
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
----
- drivers/misc/cxl/api.c | 8 ++++++++
- include/misc/cxl.h     | 5 +++++
- 2 files changed, 13 insertions(+)
 
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index ea3eeb7..c73aa3a 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -363,3 +363,11 @@ void cxl_perst_reloads_same_image(struct cxl_afu *afu,
- 	afu->adapter->perst_same_image = perst_reloads_same_image;
- }
- EXPORT_SYMBOL_GPL(cxl_perst_reloads_same_image);
-+
-+ssize_t cxl_read_adapter_vpd(struct pci_dev *afu_dev, void *buf, size_t count)
-+{
-+	struct device *parent = cxl_get_phys_dev(afu_dev);
-+
-+	return pci_read_vpd(to_pci_dev(parent), 0, count, buf);
-+}
-+EXPORT_SYMBOL_GPL(cxl_read_adapter_vpd);
-diff --git a/include/misc/cxl.h b/include/misc/cxl.h
-index f2ffe5b..3f9e84f 100644
---- a/include/misc/cxl.h
-+++ b/include/misc/cxl.h
-@@ -210,4 +210,9 @@ ssize_t cxl_fd_read(struct file *file, char __user *buf, size_t count,
- void cxl_perst_reloads_same_image(struct cxl_afu *afu,
- 				  bool perst_reloads_same_image);
- 
-+/*
-+ * Read the VPD of the adapter where the AFU pci dev resides
-+ */
-+ssize_t cxl_read_adapter_vpd(struct pci_dev *afu_dev, void *buf, size_t count);
-+
- #endif /* _MISC_CXL_H */
--- 
-1.9.1
+On 01/18/2016 09:52 PM, Alexey Kardashevskiy wrote:
+> On 01/13/2016 01:24 PM, Douglas Miller wrote:
+>>
+>>
+>> On 01/12/2016 05:07 PM, Benjamin Herrenschmidt wrote:
+>>> On Tue, 2016-01-12 at 15:40 +1100, Alexey Kardashevskiy wrote:
+>>>> Quite often drivers set only "write" permission assuming that this
+>>>> includes "read" permission as well and this works on plenty
+>>>> platforms.
+>>>> However IODA2 is strict about this and produces an EEH when "read"
+>>>> permission is not and reading happens.
+>>>>
+>>>> This adds a workaround in IODA code to always add the "read" bit when
+>>>> the "write" bit is set.
+>>>>
+>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>> ---
+>>>>
+>>>>
+>>>> Ben, what was the driver which did not set "read" and caused EEH?
+>>> aacraid
+>>>
+>>> Cheers,
+>>> Ben.
+>> Just to be precise, the driver wasn't responsible for setting READ. The
+>> driver called scsi_dma_map() and the scsicmd was set (by scsi layer) as
+>> DMA_FROM_DEVICE so the current code would set the permissions to
+>> WRITE-ONLY. Previously, and in other architectures, this scsicmd 
+>> would have
+>> resulted in READ+WRITE permissions on the DMA map.
+>
+>
+> Does the patch fix the issue? Thanks.
+>
+>
+>
+>>>
+>>>> ---
+>>>>   arch/powerpc/platforms/powernv/pci.c | 6 ++++++
+>>>>   1 file changed, 6 insertions(+)
+>>>>
+>>>> diff --git a/arch/powerpc/platforms/powernv/pci.c
+>>>> b/arch/powerpc/platforms/powernv/pci.c
+>>>> index f2dd772..c7dcae5 100644
+>>>> --- a/arch/powerpc/platforms/powernv/pci.c
+>>>> +++ b/arch/powerpc/platforms/powernv/pci.c
+>>>> @@ -601,6 +601,9 @@ int pnv_tce_build(struct iommu_table *tbl, long
+>>>> index, long npages,
+>>>>       u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
+>>>>       long i;
+>>>> +    if (proto_tce & TCE_PCI_WRITE)
+>>>> +        proto_tce |= TCE_PCI_READ;
+>>>> +
+>>>>       for (i = 0; i < npages; i++) {
+>>>>           unsigned long newtce = proto_tce |
+>>>>               ((rpn + i) << tbl->it_page_shift);
+>>>> @@ -622,6 +625,9 @@ int pnv_tce_xchg(struct iommu_table *tbl, long
+>>>> index,
+>>>>       BUG_ON(*hpa & ~IOMMU_PAGE_MASK(tbl));
+>>>> +    if (newtce & TCE_PCI_WRITE)
+>>>> +        newtce |= TCE_PCI_READ;
+>>>> +
+>>>>       oldtce = xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce));
+>>>>       *hpa = be64_to_cpu(oldtce) & ~(TCE_PCI_READ |
+>>>> TCE_PCI_WRITE);
+>>>>       *direction = iommu_tce_direction(oldtce);
+>>> _______________________________________________
+>>> Linuxppc-dev mailing list
+>>> Linuxppc-dev@lists.ozlabs.org
+>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+>
+I am still working on getting a machine to try this on. From code 
+inspection, it looks like it should work. The problem is shortage of 
+machines and machines tied-up by Test.
+
+Thanks,
+Doug
