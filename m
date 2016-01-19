@@ -1,39 +1,40 @@
-Return-Path: <dougmill@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 17D3C1A0D32
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 06:01:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C198E1A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 07:11:34 +1100 (AEDT)
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <dougmill@linux.vnet.ibm.com>;
- Tue, 19 Jan 2016 14:01:24 -0500
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 657736E803F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 13:48:14 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0JJ1LoW25493722
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 19:01:21 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0JJ1KQx002945
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 14:01:21 -0500
-Subject: Re: [RFC PATCH kernel] powerpc/ioda: Set "read" permission when
- "write" is set
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <1452573620-17979-1-git-send-email-aik@ozlabs.ru>
- <1452640054.3262.11.camel@kernel.crashing.org>
- <5695B542.5010001@linux.vnet.ibm.com> <569DB2F3.1070901@ozlabs.ru>
-From: Douglas Miller <dougmill@linux.vnet.ibm.com>
-Message-ID: <569E87F8.1030907@linux.vnet.ibm.com>
-Date: Tue, 19 Jan 2016 13:01:12 -0600
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Tue, 19 Jan 2016 18:11:29 -0200
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id DE1B03520068
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 15:11:19 -0500 (EST)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0JKC2ST2642168
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 18:12:04 -0200
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0JKBOHf002934
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 18:11:24 -0200
+Subject: Re: [PATCH] powerpc/eeh: Validate arch in eeh_add_device_early()
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <1452395295-1759-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <1452681487.7404.6.camel@ellerman.id.au>
+ <56963E40.8070702@linux.vnet.ibm.com>
+ <1452720339.8203.4.camel@ellerman.id.au>
+ <5697FE17.4070605@linux.vnet.ibm.com>
+ <1452814633.19265.1.camel@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, gwshan@linux.vnet.ibm.com
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Message-ID: <569E986B.3000506@linux.vnet.ibm.com>
+Date: Tue, 19 Jan 2016 18:11:23 -0200
 MIME-Version: 1.0
-In-Reply-To: <569DB2F3.1070901@ozlabs.ru>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+In-Reply-To: <1452814633.19265.1.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,89 +44,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 01/14/2016 09:37 PM, Michael Ellerman wrote:
+>> So, since my patch does not cover this case, I think would be more
+>> interesting "unlink" the DDW mechanism from the EEH. It seems easy, I'll
+>> try to send you a patch soon.
+>>
+>> Do you think it is a good approach?
+>
+> It sounds good, but I don't know off hand whether it will work. See how it goes
+> and send us the patch.
+
+You are right (again!). It's kind of complicated to unlink DDW from EEH 
+since it relies on EEH to get the config. address of devices.
+
+Instead of try to unlink it, I've inserted an EEH check to avoid issues 
+in case DDW can't count on EEH being enabled. Will sent the patches to 
+the list.
+
+Thanks very much for your help and comments,
 
 
-On 01/18/2016 09:52 PM, Alexey Kardashevskiy wrote:
-> On 01/13/2016 01:24 PM, Douglas Miller wrote:
->>
->>
->> On 01/12/2016 05:07 PM, Benjamin Herrenschmidt wrote:
->>> On Tue, 2016-01-12 at 15:40 +1100, Alexey Kardashevskiy wrote:
->>>> Quite often drivers set only "write" permission assuming that this
->>>> includes "read" permission as well and this works on plenty
->>>> platforms.
->>>> However IODA2 is strict about this and produces an EEH when "read"
->>>> permission is not and reading happens.
->>>>
->>>> This adds a workaround in IODA code to always add the "read" bit when
->>>> the "write" bit is set.
->>>>
->>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>> ---
->>>>
->>>>
->>>> Ben, what was the driver which did not set "read" and caused EEH?
->>> aacraid
->>>
->>> Cheers,
->>> Ben.
->> Just to be precise, the driver wasn't responsible for setting READ. The
->> driver called scsi_dma_map() and the scsicmd was set (by scsi layer) as
->> DMA_FROM_DEVICE so the current code would set the permissions to
->> WRITE-ONLY. Previously, and in other architectures, this scsicmd 
->> would have
->> resulted in READ+WRITE permissions on the DMA map.
->
->
-> Does the patch fix the issue? Thanks.
->
->
->
->>>
->>>> ---
->>>>   arch/powerpc/platforms/powernv/pci.c | 6 ++++++
->>>>   1 file changed, 6 insertions(+)
->>>>
->>>> diff --git a/arch/powerpc/platforms/powernv/pci.c
->>>> b/arch/powerpc/platforms/powernv/pci.c
->>>> index f2dd772..c7dcae5 100644
->>>> --- a/arch/powerpc/platforms/powernv/pci.c
->>>> +++ b/arch/powerpc/platforms/powernv/pci.c
->>>> @@ -601,6 +601,9 @@ int pnv_tce_build(struct iommu_table *tbl, long
->>>> index, long npages,
->>>>       u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
->>>>       long i;
->>>> +    if (proto_tce & TCE_PCI_WRITE)
->>>> +        proto_tce |= TCE_PCI_READ;
->>>> +
->>>>       for (i = 0; i < npages; i++) {
->>>>           unsigned long newtce = proto_tce |
->>>>               ((rpn + i) << tbl->it_page_shift);
->>>> @@ -622,6 +625,9 @@ int pnv_tce_xchg(struct iommu_table *tbl, long
->>>> index,
->>>>       BUG_ON(*hpa & ~IOMMU_PAGE_MASK(tbl));
->>>> +    if (newtce & TCE_PCI_WRITE)
->>>> +        newtce |= TCE_PCI_READ;
->>>> +
->>>>       oldtce = xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce));
->>>>       *hpa = be64_to_cpu(oldtce) & ~(TCE_PCI_READ |
->>>> TCE_PCI_WRITE);
->>>>       *direction = iommu_tce_direction(oldtce);
->>> _______________________________________________
->>> Linuxppc-dev mailing list
->>> Linuxppc-dev@lists.ozlabs.org
->>> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
->
-I am still working on getting a machine to try this on. From code 
-inspection, it looks like it should work. The problem is shortage of 
-machines and machines tied-up by Test.
 
-Thanks,
-Doug
+Guilherme
