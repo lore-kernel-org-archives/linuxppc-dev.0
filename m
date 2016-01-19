@@ -1,26 +1,33 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shaohui.xie@nxp.com>
+Received: from emea01-db3-obe.outbound.protection.outlook.com
+ (mail-db3on0096.outbound.protection.outlook.com [157.55.234.96])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 346921A0037
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 14:52:25 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id 65so12545348pfd.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2016 19:52:25 -0800 (PST)
-Subject: Re: [RFC PATCH kernel] powerpc/ioda: Set "read" permission when
- "write" is set
-To: Douglas Miller <dougmill@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <1452573620-17979-1-git-send-email-aik@ozlabs.ru>
- <1452640054.3262.11.camel@kernel.crashing.org>
- <5695B542.5010001@linux.vnet.ibm.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <569DB2F3.1070901@ozlabs.ru>
-Date: Tue, 19 Jan 2016 14:52:19 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9FA1B1A0037
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jan 2016 16:00:44 +1100 (AEDT)
+From: Shaohui Xie <shaohui.xie@nxp.com>
+To: Andrew Lunn <andrew@lunn.ch>
+CC: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Florian Fainelli
+ <f.fainelli@gmail.com>, "shh.xie@gmail.com" <shh.xie@gmail.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>, Shaohui Xie
+ <Shaohui.Xie@freescale.com>
+Subject: RE: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
+Date: Tue, 19 Jan 2016 05:00:35 +0000
+Message-ID: <VI1PR04MB1664DFBC53F08C5CE7EBF22AE8C10@VI1PR04MB1664.eurprd04.prod.outlook.com>
+References: <1452759839-9874-1-git-send-email-shh.xie@gmail.com>
+ <20160114164418.GD19773@lunn.ch>
+ <VI1PR04MB166491DEBB439EB72742201DE8CD0@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <56997951.90304@gmail.com> <5699B211.5070602@gmail.com>
+ <VI1PR04MB16645A2F24DB515D86136BE2E8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <569C9CD2.10301@gmail.com>
+ <VI1PR04MB1664AB0E483F01F1641059FFE8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <20160118151500.GD923@lunn.ch>
+In-Reply-To: <20160118151500.GD923@lunn.ch>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <5695B542.5010001@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,81 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/13/2016 01:24 PM, Douglas Miller wrote:
->
->
-> On 01/12/2016 05:07 PM, Benjamin Herrenschmidt wrote:
->> On Tue, 2016-01-12 at 15:40 +1100, Alexey Kardashevskiy wrote:
->>> Quite often drivers set only "write" permission assuming that this
->>> includes "read" permission as well and this works on plenty
->>> platforms.
->>> However IODA2 is strict about this and produces an EEH when "read"
->>> permission is not and reading happens.
->>>
->>> This adds a workaround in IODA code to always add the "read" bit when
->>> the "write" bit is set.
->>>
->>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>> ---
->>>
->>>
->>> Ben, what was the driver which did not set "read" and caused EEH?
->> aacraid
->>
->> Cheers,
->> Ben.
-> Just to be precise, the driver wasn't responsible for setting READ. The
-> driver called scsi_dma_map() and the scsicmd was set (by scsi layer) as
-> DMA_FROM_DEVICE so the current code would set the permissions to
-> WRITE-ONLY. Previously, and in other architectures, this scsicmd would have
-> resulted in READ+WRITE permissions on the DMA map.
+> -----Original Message-----
+> From: Andrew Lunn [mailto:andrew@lunn.ch]
+> Sent: Monday, January 18, 2016 11:15 PM
+> To: Shaohui Xie
+> Cc: Sebastian Hesselbarth; Florian Fainelli; shh.xie@gmail.com;
+> devicetree@vger.kernel.org; netdev@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; davem@davemloft.net; Shaohui Xie
+> Subject: Re: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-=
+KR
+>=20
+> > [S.H] the fsl backplane, e.g. 10GBASE-KR, needs software to handle
+> > link training, It's to train link partner, and trained by link partner
+> parallel.
+> >
+> > But if media type is not copper, e.g. optical module, we won't need thi=
+s.
+>=20
+> So what we actually need to know is copper vs fibre?
+Copper is not enough to indicate backplane, since backplane is always coppe=
+r,
+ but copper is not always backplane.
 
-
-Does the patch fix the issue? Thanks.
-
-
-
->>
->>> ---
->>>   arch/powerpc/platforms/powernv/pci.c | 6 ++++++
->>>   1 file changed, 6 insertions(+)
->>>
->>> diff --git a/arch/powerpc/platforms/powernv/pci.c
->>> b/arch/powerpc/platforms/powernv/pci.c
->>> index f2dd772..c7dcae5 100644
->>> --- a/arch/powerpc/platforms/powernv/pci.c
->>> +++ b/arch/powerpc/platforms/powernv/pci.c
->>> @@ -601,6 +601,9 @@ int pnv_tce_build(struct iommu_table *tbl, long
->>> index, long npages,
->>>       u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
->>>       long i;
->>> +    if (proto_tce & TCE_PCI_WRITE)
->>> +        proto_tce |= TCE_PCI_READ;
->>> +
->>>       for (i = 0; i < npages; i++) {
->>>           unsigned long newtce = proto_tce |
->>>               ((rpn + i) << tbl->it_page_shift);
->>> @@ -622,6 +625,9 @@ int pnv_tce_xchg(struct iommu_table *tbl, long
->>> index,
->>>       BUG_ON(*hpa & ~IOMMU_PAGE_MASK(tbl));
->>> +    if (newtce & TCE_PCI_WRITE)
->>> +        newtce |= TCE_PCI_READ;
->>> +
->>>       oldtce = xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce));
->>>       *hpa = be64_to_cpu(oldtce) & ~(TCE_PCI_READ |
->>> TCE_PCI_WRITE);
->>>       *direction = iommu_tce_direction(oldtce);
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
-
--- 
-Alexey
+Thank you!
+Shaohui
