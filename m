@@ -1,41 +1,22 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-wm0-x235.google.com (mail-wm0-x235.google.com
+ [IPv6:2a00:1450:400c:c09::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1D2591A0E70
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 18:16:15 +1100 (AEDT)
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 20 Jan 2016 17:16:14 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id DC9993578058
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 18:16:12 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0K7G4uP43516152
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 18:16:12 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0K7FevR031496
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 18:15:40 +1100
-Subject: Re: [PATCH 03/13] irq_poll: fold irq_poll_sched_prep into
- irq_poll_sched
-To: Christoph Hellwig <hch@lst.de>,
- Bart Van Assche <bart.vanassche@sandisk.com>
-References: <1449521512-22921-1-git-send-email-hch@lst.de>
- <1449521512-22921-4-git-send-email-hch@lst.de> <5682584A.5030708@sandisk.com>
- <20151230094253.GB12904@lst.de> <569F3106.7000205@au1.ibm.com>
-Cc: linux-rdma@vger.kernel.org, sagig@dev.mellanox.co.il, axboe@fb.com,
- linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Message-ID: <569F3403.10309@au1.ibm.com>
-Date: Wed, 20 Jan 2016 18:15:15 +1100
-MIME-Version: 1.0
-In-Reply-To: <569F3106.7000205@au1.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id BCFEC1A0E76
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 20:05:54 +1100 (AEDT)
+Received: by mail-wm0-x235.google.com with SMTP id r129so122102356wmr.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 01:05:54 -0800 (PST)
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org, keescook@chromium.org,
+ akpm@linux-foundation.org, mingo@kernel.org, hpa@zytor.com,
+ heiko.carstens@de.ibm.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ mmarek@suse.cz, rusty@rustcorp.com.au
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Subject: [PATCH 0/4] support for text-relative kallsyms table
+Date: Wed, 20 Jan 2016 10:05:34 +0100
+Message-Id: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,16 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20/01/16 18:02, Andrew Donnellan wrote:
-> I'm hitting an issue on a ppc64le box running linux-next, which
-> according to git bisect is caused by this patch.
+This implements text-relative kallsyms address tables. This was developed
+as part of my series to implement KASLR/CONFIG_RELOCATABLE for arm64, but
+I think it may be beneficial to other architectures as well, so I am
+presenting it as a separate series.
 
-Whoops, that should be linuxppc*-dev*@lists.ozlabs.org in the Cc.
+The idea is that on 64-bit builds, it is rather wasteful to use absolute
+addressing for kernel symbols since they are all within a couple of MBs
+of each other. On top of that, the absolute addressing implies that, when
+the kernel is relocated at runtime, each address in the table needs to be
+fixed up individually.
 
+Since all section-relative addresses are already emitted relative to _text,
+it is quite straight-forward to record only the offset, and add the absolute
+address of _text at runtime when referring to the address table.
 
-Andrew
+The reduction ranges from around 250 KB uncompressed vmlinux size and 10 KB
+compressed size (s390) to 3 MB/500 KB for ppc64 (although, in the latter case,
+the reduction in uncompressed size is primarily __init data)
+
+Kees Cook was so kind to test these against x86_64, and confirmed that KASLR
+still operates as expected.
+
+Ard Biesheuvel (4):
+  kallsyms: add support for relative offsets in kallsyms address table
+  powerpc: enable text relative kallsyms for ppc64
+  s390: enable text relative kallsyms for 64-bit targets
+  x86_64: enable text relative kallsyms for 64-bit targets
+
+ arch/powerpc/Kconfig    |  1 +
+ arch/s390/Kconfig       |  1 +
+ arch/x86/Kconfig        |  1 +
+ init/Kconfig            | 14 ++++++++
+ kernel/kallsyms.c       | 35 +++++++++++++-----
+ scripts/kallsyms.c      | 38 +++++++++++++++++---
+ scripts/link-vmlinux.sh |  4 +++
+ scripts/namespace.pl    |  1 +
+ 8 files changed, 82 insertions(+), 13 deletions(-)
 
 -- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+2.5.0
