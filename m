@@ -1,24 +1,25 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-wm0-x231.google.com (mail-wm0-x231.google.com
- [IPv6:2a00:1450:400c:c09::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0A19D1A180C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 20:06:02 +1100 (AEDT)
-Received: by mail-wm0-x231.google.com with SMTP id r129so122107251wmr.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 01:06:01 -0800 (PST)
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org, keescook@chromium.org,
- akpm@linux-foundation.org, mingo@kernel.org, hpa@zytor.com,
- heiko.carstens@de.ibm.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
- mmarek@suse.cz, rusty@rustcorp.com.au
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Subject: [PATCH 4/4] x86_64: enable text relative kallsyms for 64-bit targets
-Date: Wed, 20 Jan 2016 10:05:38 +0100
-Message-Id: <1453280738-18721-5-git-send-email-ard.biesheuvel@linaro.org>
-In-Reply-To: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
-References: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0C7A81A18CC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 20:07:18 +1100 (AEDT)
+Date: Wed, 20 Jan 2016 10:07:14 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Jiri Kosina <jkosina@suse.cz>, Denis Kirjanov <kda@linux-powerpc.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org
+Subject: Re: [PATCH v5 0/9] ftrace with regs + live patching for ppc64 LE
+ (ABI v2)
+Message-ID: <20160120090714.GA7031@lst.de>
+References: <20151204152419.28E0D691D2@newverein.lst.de>
+ <20160106141730.GL3178@pathway.suse.cz>
+ <1453269803.14751.10.camel@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1453269803.14751.10.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,76 +29,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This enables the newly introduced text-relative kallsyms support when
-building 64-bit targets. This cuts the size of the kallsyms address
-table in half, reducing the memory footprint of the kernel .rodata
-section by about 400 KB for a KALLSYMS_ALL build, and about 100 KB
-reduction in compressed size. (with CONFIG_RELOCATABLE=y)
+On Wed, Jan 20, 2016 at 05:03:23PM +1100, Michael Ellerman wrote:
+> On Wed, 2016-01-06 at 15:17 +0100, Petr Mladek wrote:
+> > On Fri 2015-12-04 15:45:29, Torsten Duwe wrote:
+> > > Changes since v4:
+> > >   * change comment style in entry_64.S to C89
+> > >     (nobody is using assembler syntax comments there).
+> > >   * the bool function restore_r2 shouldn't return 2,
+> > >     that's a little confusing.
+> > >   * Test whether the compiler supports -mprofile-kernel
+> > >     and only then define CC_USING_MPROFILE_KERNEL
+> > >   * also make the return value of klp_check_compiler_support
+> > >     depend on that.
+> >
+> > Note that there is still needed the extra patch from
+> > http://thread.gmane.org/gmane.linux.kernel/2093867/focus=2099603
+> > to get the livepatching working.
+> 
+> Sorry which extra patch?
+Message-ID: <20151203160004.GE8047@pathway.suse.cz>
+By Petr Mladek, "Re: [PATCH v4 0/9] ftrace with regs + live patching..."
+2015-12-03. It is further up in the function call hierarchy and basically
+tells the arch-independent KLP to call the normal entry point on ppc64le, and
+that the _mcount call site is 16 bytes further.
 
-Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
----
-I tested this with my Ubuntu Wily box's config-4.2.0-23-generic, and
-got the following results:
 
-BEFORE:
-=======
-$ size vmlinux
-   text	   data	    bss	    dec	    hex	filename
-12972949	2213240	1482752	16668941	 fe590d	vmlinux
+> > Both ftrace with regs and live patching works for me with this patch
+> > set and the extra patch. So. for the whole patchset:
+> >
+> > Tested-by: Petr Mladek <pmladek@suse.com>
+> 
+> Can you give me some more info on how you're testing it? What config options,
+> toolchain etc.?
+> 
+> For me the series doesn't even boot, even with livepatching disabled.
 
-$ readelf -S .tmp_kallsyms2.o |less
-There are 9 section headers, starting at offset 0x3e0788:
+May indeed be a toolchain issue. I had to fix gcc-4.8.5 to get "notrace" working
+for -mprofile-kernel. That's a gcc bug.
 
-Section Headers:
-  [Nr] Name              Type             Address           Offset
-       Size              EntSize          Flags  Link  Info  Align
-  ...
-  [ 4] .rodata           PROGBITS         0000000000000000  00000040
-       00000000001c7738  0000000000000000   A       0     0     8
-  [ 5] .rela.rodata      RELA             0000000000000000  001c7950
-       0000000000218e38  0000000000000018   I       7     4     8
-  [ 6] .shstrtab         STRTAB           0000000000000000  001c7778
-       0000000000000039  0000000000000000           0     0     1
+What are you using?
 
-$ ls -l arch/x86/boot/bzImage
--rw-rw-r-- 1 ard ard 6893168 Jan 20 09:36 arch/x86/boot/bzImage
+The config in the v5 patch series should be waterproof, especially with KLP disabled
+ftrace with regs must work (all self-tests succeeded). If you send me your config
+(via PM I suggest, spare the lists) I can verify it with the toolchain here.
+Petr made a suggestion to reshuffle the config options to have it cleaner;
+I suggest to patch that separately.
 
-AFTER:
-======
-$ size vmlinux
-   text	   data	    bss	    dec	    hex	filename
-12604501	2213240	1482752	16300493	 f8b9cd	vmlinux
-
-$ readelf -S .tmp_kallsyms2.o |less
-There are 8 section headers, starting at offset 0x16dd10:
-
-Section Headers:
-  [Nr] Name              Type             Address           Offset
-       Size              EntSize          Flags  Link  Info  Align
-  ...
-  [ 4] .rodata           PROGBITS         0000000000000000  00000040
-       000000000016db20  0000000000000000   A       0     0     8
-  [ 5] .shstrtab         STRTAB           0000000000000000  0016db60
-       0000000000000034  0000000000000000           0     0     1
-  ...
-
-$ ls -l arch/x86/boot/bzImage
--rw-rw-r-- 1 ard ard 6790224 Jan 19 22:24 arch/x86/boot/bzImage
----
- arch/x86/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 4a10ba9e95da..180a94bda8d4 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -142,6 +142,7 @@ config X86
- 	select HAVE_UNSTABLE_SCHED_CLOCK
- 	select HAVE_USER_RETURN_NOTIFIER
- 	select IRQ_FORCED_THREADING
-+	select KALLSYMS_TEXT_RELATIVE		if X86_64
- 	select MODULES_USE_ELF_RELA		if X86_64
- 	select MODULES_USE_ELF_REL		if X86_32
- 	select OLD_SIGACTION			if X86_32
--- 
-2.5.0
+	Torsten
