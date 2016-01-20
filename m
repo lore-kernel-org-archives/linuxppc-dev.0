@@ -1,23 +1,34 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 999A91A1856
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 22:58:21 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Ingo Molnar <mingo@kernel.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- mmarek@suse.cz, linux-s390@vger.kernel.org, rusty@rustcorp.com.au,
- keescook@chromium.org, x86@kernel.org, heiko.carstens@de.ibm.com,
- linux-kernel@vger.kernel.org, hpa@zytor.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 0/4] support for text-relative kallsyms table
-Date: Wed, 20 Jan 2016 12:50:52 +0100
-Message-ID: <50119924.p1gpv2Aolf@wuerfel>
-In-Reply-To: <20160120103325.GA20197@gmail.com>
-References: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
- <20160120103325.GA20197@gmail.com>
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id AD7AF1A1856
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 01:18:14 +1100 (AEDT)
+Date: Wed, 20 Jan 2016 08:18:06 -0600
+From: Rob Herring <robh@kernel.org>
+To: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-arch@vger.kernel.org,
+ Will.Deacon@arm.com, catalin.marinas@arm.com,
+ grant.likely@linaro.org, leif.lindholm@linaro.org,
+ rfranz@cavium.com, ard.biesheuvel@linaro.org, msalter@redhat.com,
+ steve.capper@linaro.org, hanjun.guo@linaro.org, al.stone@linaro.org,
+ arnd@arndb.de, pawel.moll@arm.com, mark.rutland@arm.com,
+ ijc+devicetree@hellion.org.uk, galak@codeaurora.org,
+ rjw@rjwysocki.net, lenb@kernel.org, marc.zyngier@arm.com,
+ lorenzo.pieralisi@arm.com, bhelgaas@google.com, tony.luck@intel.com,
+ fenghua.yu@intel.com, james.hogan@imgtec.com,
+ benh@kernel.crashing.org, tglx@linutronix.de, mingo@redhat.com,
+ hpa@zytor.com, x86@kernel.org, jonathan@jonmasters.org,
+ rrichter@cavium.com, Prasun.Kapoor@caviumnetworks.com, gpkulkarni@gmail.com
+Subject: Re: [PATCH v9 2/6] Documentation, dt, arm64/arm: dt bindings for numa.
+Message-ID: <20160120141806.GA8434@rob-hp-laptop>
+References: <1453134965-6125-1-git-send-email-gkulkarni@caviumnetworks.com>
+ <1453134965-6125-3-git-send-email-gkulkarni@caviumnetworks.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1453134965-6125-3-git-send-email-gkulkarni@caviumnetworks.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,23 +38,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 20 January 2016 11:33:25 Ingo Molnar wrote:
-> > The reduction ranges from around 250 KB uncompressed vmlinux size and 10 KB 
-> > compressed size (s390) to 3 MB/500 KB for ppc64 (although, in the latter case, 
-> > the reduction in uncompressed size is primarily __init data)
+On Mon, Jan 18, 2016 at 10:06:01PM +0530, Ganapatrao Kulkarni wrote:
+> DT bindings for numa mapping of memory, cores and IOs.
 > 
-> So since kallsyms is in unswappable kernel RAM, the uncompressed size reduction is 
-> what we care about mostly. How much bootloader load times are impacted is a third 
-> order concern.
+> Reviewed-by: Robert Richter <rrichter@cavium.com>
+> Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
+> ---
+>  Documentation/devicetree/bindings/arm/numa.txt | 272 +++++++++++++++++++++++++
+>  1 file changed, 272 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/arm/numa.txt
+
+This is looks okay to me, but some cosmetic things on the example.
+
+> +==============================================================================
+> +4 - Example dts
+> +==============================================================================
+> +
+> +2 sockets system consists of 2 boards connected through ccn bus and
+> +each board having one socket/soc of 8 cpus, memory and pci bus.
+> +
+> +	memory@00c00000 {
+
+Drop the leading 0s on unit addresses.
+
+> +		device_type = "memory";
+> +		reg = <0x0 0x00c00000 0x0 0x80000000>;
+> +		/* node 0 */
+> +		numa-node-id = <0>;
+> +	};
+> +
+> +	memory@10000000000 {
+> +		device_type = "memory";
+> +		reg = <0x100 0x00000000 0x0 0x80000000>;
+> +		/* node 1 */
+> +		numa-node-id = <1>;
+> +	};
+> +
+> +	cpus {
+> +		#address-cells = <2>;
+> +		#size-cells = <0>;
+> +
+> +		cpu@000 {
+
+Same here (leaving one of course).
+
+> +			device_type = "cpu";
+> +			compatible =  "arm,armv8";
+> +			reg = <0x0 0x000>;
+> +			enable-method = "psci";
+> +			/* node 0 */
+> +			numa-node-id = <0>;
+> +		};
+> +		cpu@001 {
+
+and so on...
+
+> +			device_type = "cpu";
+> +			compatible =  "arm,armv8";
+> +			reg = <0x0 0x001>;
+
+Either all leading 0s or none.
+
+> +			reg = <0x0 0x008>;
+> +			enable-method = "psci";
+> +			/* node 1 */
+
+Kind of a pointless comment.
+
+Wouldn't each cluster of cpus for a given numa node be in a different 
+cpu affinity? Certainly not required by the architecture, but the common 
+case at least.
+
+> +			numa-node-id = <1>;
+> +		};
+
+[...]
+
+> +	pcie0: pcie0@0x8480,00000000 {
+
+Drop the 0x and the comma.
+
+> +		compatible = "arm,armv8";
+> +		device_type = "pci";
+> +		bus-range = <0 255>;
+> +		#size-cells = <2>;
+> +		#address-cells = <3>;
+> +		reg = <0x8480 0x00000000 0 0x10000000>;  /* Configuration space */
+> +		ranges = <0x03000000 0x8010 0x00000000 0x8010 0x00000000 0x70 0x00000000>;
+> +		/* node 0 */
+> +		numa-node-id = <0>;
+> +        };
+> +
+> +	pcie1: pcie1@0x9480,00000000 {
+
+ditto
+
+> +		compatible = "arm,armv8";
+> +		device_type = "pci";
+> +		bus-range = <0 255>;
+> +		#size-cells = <2>;
+> +		#address-cells = <3>;
+> +		reg = <0x9480 0x00000000 0 0x10000000>;  /* Configuration space */
+> +		ranges = <0x03000000 0x9010 0x00000000 0x9010 0x00000000 0x70 0x00000000>;
+> +		/* node 1 */
+> +		numa-node-id = <1>;
+> +        };
+> +
+> +	distance-map {
+> +		compatible = "numa-distance-map-v1";
+> +		distance-matrix = <0 0 10>,
+> +				  <0 1 20>,
+> +				  <1 1 10>;
+> +	};
+> -- 
+> 1.8.1.4
 > 
-> IOW a nice change!
-
-I think some people care a lot about the compressed size as well:
-
-http://git.openwrt.org/?p=openwrt.git;a=blob;f=target/linux/generic/patches-4.4/203-kallsyms_uncompressed.patch;h=cf8a447bbcd5b1621d4edc36a69fe0ad384fe53f;hb=HEAD
-
-This has been in openwrt.git for ages, because a lot of the target devices
-are much more limited on flash memory size (4MB typically) than they are
-on RAM size (at least 32MB).
-
-	Arnd
+> --
+> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
