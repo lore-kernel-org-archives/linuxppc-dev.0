@@ -1,42 +1,25 @@
-Return-Path: <heiko.carstens@de.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0852D1A1A0C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 20:43:37 +1100 (AEDT)
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <heiko.carstens@de.ibm.com>;
- Wed, 20 Jan 2016 09:43:33 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id A46441B0804B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 09:43:35 +0000 (GMT)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0K9hV0P62849062
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 09:43:31 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0K9hSAK030434
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 02:43:30 -0700
-Date: Wed, 20 Jan 2016 10:43:26 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org, keescook@chromium.org,
- akpm@linux-foundation.org, mingo@kernel.org, hpa@zytor.com,
- benh@kernel.crashing.org, mpe@ellerman.id.au, mmarek@suse.cz,
- rusty@rustcorp.com.au
-Subject: Re: [PATCH 3/4] s390: enable text relative kallsyms for 64-bit targets
-Message-ID: <20160120094326.GD3395@osiris>
-References: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
- <1453280738-18721-4-git-send-email-ard.biesheuvel@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 56A7D1A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 20:48:35 +1100 (AEDT)
+Date: Wed, 20 Jan 2016 10:48:30 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Torsten Duwe <duwe@lst.de>, Steven Rostedt <rostedt@goodmis.org>,
+ Jiri Kosina <jkosina@suse.cz>, Denis Kirjanov <kda@linux-powerpc.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org
+Subject: Re: [PATCH v5 0/9] ftrace with regs + live patching for ppc64 LE
+ (ABI v2)
+Message-ID: <20160120094830.GA3178@pathway.suse.cz>
+References: <20151204152419.28E0D691D2@newverein.lst.de>
+ <20160106141730.GL3178@pathway.suse.cz>
+ <1453269803.14751.10.camel@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1453280738-18721-4-git-send-email-ard.biesheuvel@linaro.org>
+In-Reply-To: <1453269803.14751.10.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,26 +29,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 20, 2016 at 10:05:37AM +0100, Ard Biesheuvel wrote:
-> This enables the newly introduced text-relative kallsyms support when
-> building 64-bit targets. This cuts the size of the kallsyms address
-> table in half, reducing the memory footprint of the kernel .rodata
-> section by about 250 KB for a defconfig build.
+On Wed 2016-01-20 17:03:23, Michael Ellerman wrote:
+> On Wed, 2016-01-06 at 15:17 +0100, Petr Mladek wrote:
+> > On Fri 2015-12-04 15:45:29, Torsten Duwe wrote:
+> > > Changes since v4:
+> > >   * change comment style in entry_64.S to C89
+> > >     (nobody is using assembler syntax comments there).
+> > >   * the bool function restore_r2 shouldn't return 2,
+> > >     that's a little confusing.
+> > >   * Test whether the compiler supports -mprofile-kernel
+> > >     and only then define CC_USING_MPROFILE_KERNEL
+> > >   * also make the return value of klp_check_compiler_support
+> > >     depend on that.
+> >
+> > Note that there is still needed the extra patch from
+> > http://thread.gmane.org/gmane.linux.kernel/2093867/focus=2099603
+> > to get the livepatching working.
 > 
-> Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-> ---
+> Sorry which extra patch?
+
+It was in an older reply and can be found at
+http://thread.gmane.org/gmane.linux.kernel/2093867/focus=2099603
+
+
+> > Both ftrace with regs and live patching works for me with this patch
+> > set and the extra patch. So. for the whole patchset:
+> >
+> > Tested-by: Petr Mladek <pmladek@suse.com>
 > 
-> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-> index dbeeb3a049f2..588160fd1db0 100644
-> --- a/arch/s390/Kconfig
-> +++ b/arch/s390/Kconfig
-> @@ -149,6 +149,7 @@ config S390
->  	select HAVE_REGS_AND_STACK_ACCESS_API
->  	select HAVE_SYSCALL_TRACEPOINTS
->  	select HAVE_VIRT_CPU_ACCOUNTING
-> +	select KALLSYMS_TEXT_RELATIVE if 64BIT
+> Can you give me some more info on how you're testing it? What config options,
+> toolchain etc.?
 
-Please remove the "if 64BIT" since s390 is always 64BIT in the meantime.
-Tested on s390 and everything seems still to work ;)
+You need to fulfill all dependencies for CONFIG_LIVEPATCH, see
+kernel/livepatch/Kconfig. Please, find attached the config that
+that I used.
 
-Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+I did the testing on PPC64LE with a kernel based on 4.4.0-rc8
+using the attached config. I used the following stuff:
+
+$> gcc --version
+gcc (SUSE Linux) 4.8.5
+Copyright (C) 2015 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+$> rpm -q binutils
+binutils-2.25.0-13.1.ppc64le
+
+
+I tested it the following way:
+
+# booted the compiled kernel and printed the default cmdline
+$> cat /proc/cmdline
+BOOT_IMAGE=/boot/vmlinuz-4.4.0-rc3-11-default+ root=UUID=...
+
+# tried function_graph tracer to check ftrace with regs
+echo function_graph >/sys/kernel/debug/tracing/current_tracer ; \
+echo 1 >/sys/kernel/debug/tracing/tracing_on ; \
+sleep 1 ; \
+/usr/bin/ls /proc ; \
+echo 0 >/sys/kernel/debug/tracing/tracing_on ; \
+less /sys/kernel/debug/tracing/trace
+
+# loaded the patch and printed the patch cmdline
+$> modprobe livepatch-sample
+$> cat /proc/cmdline
+this has been live patched
+
+# tried to disable and enable the patch
+$> echo 0 > /sys/kernel/livepatch/livepatch_sample/enabled
+$> cat /proc/cmdline
+BOOT_IMAGE=/boot/vmlinuz-4.4.0-rc3-11-default+ root=UUID=...
+$> echo 1 > /sys/kernel/livepatch/livepatch_sample/enabled
+$> cat /proc/cmdline
+this has been live patched
+
+# also checked messages
+$> dmesg | tail -n 4
+[   33.673057] livepatch: tainting kernel with TAINT_LIVEPATCH
+[   33.673068] livepatch: enabling patch 'livepatch_sample'
+[ 1997.098257] livepatch: disabling patch 'livepatch_sample'
+[ 2079.696277] livepatch: enabling patch 'livepatch_sample'
+
+
+> For me the series doesn't even boot, even with livepatching disabled.
+
+I wonder if you have enabled CONFIG_FTRACE_STARTUP_TEST and if
+the ftrace with regs fails on your setup.
+
+Best Regards,
+Petr
