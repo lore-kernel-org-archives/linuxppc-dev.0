@@ -1,23 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1784D1A0E06
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 21:46:17 +1100 (AEDT)
-Message-ID: <1453286775.14751.21.camel@ellerman.id.au>
-Subject: Re: [PATCH v10 3/4] tools/perf: Map the ID values with register names
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anju T <anju@linux.vnet.ibm.com>
-Cc: khandual@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
- dsahern@gmail.com, acme@redhat.com, sukadev@linux.vnet.ibm.com,
- hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 20 Jan 2016 21:46:15 +1100
-In-Reply-To: <1452508104-16507-4-git-send-email-anju@linux.vnet.ibm.com>
-References: <1452508104-16507-1-git-send-email-anju@linux.vnet.ibm.com>
- <1452508104-16507-4-git-send-email-anju@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 999A91A1856
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 22:58:21 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Ingo Molnar <mingo@kernel.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ mmarek@suse.cz, linux-s390@vger.kernel.org, rusty@rustcorp.com.au,
+ keescook@chromium.org, x86@kernel.org, heiko.carstens@de.ibm.com,
+ linux-kernel@vger.kernel.org, hpa@zytor.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 0/4] support for text-relative kallsyms table
+Date: Wed, 20 Jan 2016 12:50:52 +0100
+Message-ID: <50119924.p1gpv2Aolf@wuerfel>
+In-Reply-To: <20160120103325.GA20197@gmail.com>
+References: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
+ <20160120103325.GA20197@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,100 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-01-11 at 15:58 +0530, Anju T wrote:
-> diff --git a/tools/perf/arch/powerpc/include/perf_regs.h b/tools/perf/arch/powerpc/include/perf_regs.h
-> new file mode 100644
-> index 0000000..93080f5
-> --- /dev/null
-> +++ b/tools/perf/arch/powerpc/include/perf_regs.h
-> @@ -0,0 +1,64 @@
-> +#ifndef ARCH_PERF_REGS_H
-> +#define ARCH_PERF_REGS_H
-> +
-> +#include <stdlib.h>
-> +#include <linux/types.h>
-> +#include <asm/perf_regs.h>
-> +
-> +#define PERF_REGS_MASK  ((1ULL << PERF_REG_POWERPC_MAX) - 1)
-> +#define PERF_REGS_MAX   PERF_REG_POWERPC_MAX
-> +#define PERF_SAMPLE_REGS_ABI   PERF_SAMPLE_REGS_ABI_64
+On Wednesday 20 January 2016 11:33:25 Ingo Molnar wrote:
+> > The reduction ranges from around 250 KB uncompressed vmlinux size and 10 KB 
+> > compressed size (s390) to 3 MB/500 KB for ppc64 (although, in the latter case, 
+> > the reduction in uncompressed size is primarily __init data)
+> 
+> So since kallsyms is in unswappable kernel RAM, the uncompressed size reduction is 
+> what we care about mostly. How much bootloader load times are impacted is a third 
+> order concern.
+> 
+> IOW a nice change!
 
-That looks wrong if perf is built 32-bit ?
+I think some people care a lot about the compressed size as well:
 
-> +#define PERF_REG_IP     PERF_REG_POWERPC_NIP
-> +#define PERF_REG_SP     PERF_REG_POWERPC_GPR1
-> +
-> +static const char *reg_names[] = {
-> +	[PERF_REG_POWERPC_GPR0] = "gpr0",
+http://git.openwrt.org/?p=openwrt.git;a=blob;f=target/linux/generic/patches-4.4/203-kallsyms_uncompressed.patch;h=cf8a447bbcd5b1621d4edc36a69fe0ad384fe53f;hb=HEAD
 
-Can you instead call them "r0" etc.
+This has been in openwrt.git for ages, because a lot of the target devices
+are much more limited on flash memory size (4MB typically) than they are
+on RAM size (at least 32MB).
 
-That is much more common on powerpc than "gpr0".
-
-> +	[PERF_REG_POWERPC_GPR1] = "gpr1",
-> +	[PERF_REG_POWERPC_GPR2] = "gpr2",
-> +	[PERF_REG_POWERPC_GPR3] = "gpr3",
-> +	[PERF_REG_POWERPC_GPR4] = "gpr4",
-> +	[PERF_REG_POWERPC_GPR5] = "gpr5",
-> +	[PERF_REG_POWERPC_GPR6] = "gpr6",
-> +	[PERF_REG_POWERPC_GPR7] = "gpr7",
-> +	[PERF_REG_POWERPC_GPR8] = "gpr8",
-> +	[PERF_REG_POWERPC_GPR9] = "gpr9",
-> +	[PERF_REG_POWERPC_GPR10] = "gpr10",
-> +	[PERF_REG_POWERPC_GPR11] = "gpr11",
-> +	[PERF_REG_POWERPC_GPR12] = "gpr12",
-> +	[PERF_REG_POWERPC_GPR13] = "gpr13",
-> +	[PERF_REG_POWERPC_GPR14] = "gpr14",
-> +	[PERF_REG_POWERPC_GPR15] = "gpr15",
-> +	[PERF_REG_POWERPC_GPR16] = "gpr16",
-> +	[PERF_REG_POWERPC_GPR17] = "gpr17",
-> +	[PERF_REG_POWERPC_GPR18] = "gpr18",
-> +	[PERF_REG_POWERPC_GPR19] = "gpr19",
-> +	[PERF_REG_POWERPC_GPR20] = "gpr20",
-> +	[PERF_REG_POWERPC_GPR21] = "gpr21",
-> +	[PERF_REG_POWERPC_GPR22] = "gpr22",
-> +	[PERF_REG_POWERPC_GPR23] = "gpr23",
-> +	[PERF_REG_POWERPC_GPR24] = "gpr24",
-> +	[PERF_REG_POWERPC_GPR25] = "gpr25",
-> +	[PERF_REG_POWERPC_GPR26] = "gpr26",
-> +	[PERF_REG_POWERPC_GPR27] = "gpr27",
-> +	[PERF_REG_POWERPC_GPR28] = "gpr28",
-> +	[PERF_REG_POWERPC_GPR29] = "gpr29",
-> +	[PERF_REG_POWERPC_GPR30] = "gpr30",
-> +	[PERF_REG_POWERPC_GPR31] = "gpr31",
-> +	[PERF_REG_POWERPC_NIP] = "nip",
-> +	[PERF_REG_POWERPC_MSR] = "msr",
-> +	[PERF_REG_POWERPC_ORIG_R3] = "orig_r3",
-> +	[PERF_REG_POWERPC_CTR] = "ctr",
-> +	[PERF_REG_POWERPC_LNK] = "link",
-> +	[PERF_REG_POWERPC_XER] = "xer",
-> +	[PERF_REG_POWERPC_CCR] = "ccr",
-> +	[PERF_REG_POWERPC_TRAP] = "trap",
-> +	[PERF_REG_POWERPC_DAR] = "dar",
-> +	[PERF_REG_POWERPC_DSISR] = "dsisr"
-> +};
-> +
-> +static inline const char *perf_reg_name(int id)
-> +{
-> +	return reg_names[id];
-> +}
-> +#endif /* ARCH_PERF_REGS_H */
-> diff --git a/tools/perf/config/Makefile b/tools/perf/config/Makefile
-> index 38a0853..62a2f2d 100644
-> --- a/tools/perf/config/Makefile
-> +++ b/tools/perf/config/Makefile
-> @@ -23,6 +23,11 @@ $(call detected_var,ARCH)
->  
->  NO_PERF_REGS := 1
->  
-> +# Additional ARCH settings for ppc64
-> +ifeq ($(ARCH),powerpc)
-
-powerpc also includes ppc, ie. 32-bit, so the comment is wrong.
-
-> +  NO_PERF_REGS := 0
-> +endif
-> +
->  # Additional ARCH settings for x86
->  ifeq ($(ARCH),x86)
->    $(call detected,CONFIG_X86)
+	Arnd
