@@ -1,24 +1,32 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-ig0-x230.google.com (mail-ig0-x230.google.com
- [IPv6:2607:f8b0:4001:c05::230])
+Return-Path: <keescook@google.com>
+Received: from mail-ig0-x22d.google.com (mail-ig0-x22d.google.com
+ [IPv6:2607:f8b0:4001:c05::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A0A351A1867
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 05:21:35 +1100 (AEDT)
-Received: by mail-ig0-x230.google.com with SMTP id ik10so106578863igb.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 10:21:35 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3B95B1A186B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 06:12:42 +1100 (AEDT)
+Received: by mail-ig0-x22d.google.com with SMTP id mw1so18706307igb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 11:12:41 -0800 (PST)
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <1453268061.14751.8.camel@ellerman.id.au>
-References: <569EA155.5070602@br.ibm.com>
- <1453268061.14751.8.camel@ellerman.id.au>
-Date: Wed, 20 Jan 2016 10:21:33 -0800
-Message-ID: <CA+55aFwOdSvUpH=o-t0uaGsammKxydGBLcaWcJ_bRsr8P1zWtA@mail.gmail.com>
-Subject: Re: Different SIGSEGV codes (x86 and ppc64le)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Breno Leitao <brenohl@br.ibm.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Gustavo Bueno Romero <gromero@br.ibm.com>
+Sender: keescook@google.com
+In-Reply-To: <1453280738-18721-5-git-send-email-ard.biesheuvel@linaro.org>
+References: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
+ <1453280738-18721-5-git-send-email-ard.biesheuvel@linaro.org>
+Date: Wed, 20 Jan 2016 11:12:39 -0800
+Message-ID: <CAGXu5jJbgAJ32BVLe+nKrdjS1Xi=FZGbw8aNhHq9WinsE=t5og@mail.gmail.com>
+Subject: Re: [PATCH 4/4] x86_64: enable text relative kallsyms for 64-bit
+ targets
+From: Kees Cook <keescook@chromium.org>
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Michal Marek <mmarek@suse.cz>, Rusty Russell <rusty@rustcorp.com.au>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,31 +37,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 19, 2016 at 9:34 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Wed, Jan 20, 2016 at 1:05 AM, Ard Biesheuvel
+<ard.biesheuvel@linaro.org> wrote:
+> This enables the newly introduced text-relative kallsyms support when
+> building 64-bit targets. This cuts the size of the kallsyms address
+> table in half, reducing the memory footprint of the kernel .rodata
+> section by about 400 KB for a KALLSYMS_ALL build, and about 100 KB
+> reduction in compressed size. (with CONFIG_RELOCATABLE=y)
 >
-> The kernel describes those error codes as:
+> Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+
+Tested-by: Kees Cook <keescook@chromium.org>
+
+-Kees
+
+> ---
+> I tested this with my Ubuntu Wily box's config-4.2.0-23-generic, and
+> got the following results:
 >
->   #define SEGV_MAPERR   (__SI_FAULT|1)  /* address not mapped to object */
->   #define SEGV_ACCERR   (__SI_FAULT|2)  /* invalid permissions for mapped object */
+> BEFORE:
+> =======
+> $ size vmlinux
+>    text    data     bss     dec     hex filename
+> 12972949        2213240 1482752 16668941         fe590d vmlinux
 >
-> Which one is correct in this case isn't entirely clear. There is a stack
-> mapping, but you're not allowed to use it because of the stack ulimit, so
-> arguably ACCERR is more accurate.
+> $ readelf -S .tmp_kallsyms2.o |less
+> There are 9 section headers, starting at offset 0x3e0788:
 >
-> However that's only true because of the stack guard page, which is supposed to
-> be somewhat invisible to userspace. If I disable the stack guard page logic,
-> userspace sees SEGV_MAPERR, so it seems that historically that's what is
-> expected.
+> Section Headers:
+>   [Nr] Name              Type             Address           Offset
+>        Size              EntSize          Flags  Link  Info  Align
+>   ...
+>   [ 4] .rodata           PROGBITS         0000000000000000  00000040
+>        00000000001c7738  0000000000000000   A       0     0     8
+>   [ 5] .rela.rodata      RELA             0000000000000000  001c7950
+>        0000000000218e38  0000000000000018   I       7     4     8
+>   [ 6] .shstrtab         STRTAB           0000000000000000  001c7778
+>        0000000000000039  0000000000000000           0     0     1
+>
+> $ ls -l arch/x86/boot/bzImage
+> -rw-rw-r-- 1 ard ard 6893168 Jan 20 09:36 arch/x86/boot/bzImage
+>
+> AFTER:
+> ======
+> $ size vmlinux
+>    text    data     bss     dec     hex filename
+> 12604501        2213240 1482752 16300493         f8b9cd vmlinux
+>
+> $ readelf -S .tmp_kallsyms2.o |less
+> There are 8 section headers, starting at offset 0x16dd10:
+>
+> Section Headers:
+>   [Nr] Name              Type             Address           Offset
+>        Size              EntSize          Flags  Link  Info  Align
+>   ...
+>   [ 4] .rodata           PROGBITS         0000000000000000  00000040
+>        000000000016db20  0000000000000000   A       0     0     8
+>   [ 5] .shstrtab         STRTAB           0000000000000000  0016db60
+>        0000000000000034  0000000000000000           0     0     1
+>   ...
+>
+> $ ls -l arch/x86/boot/bzImage
+> -rw-rw-r-- 1 ard ard 6790224 Jan 19 22:24 arch/x86/boot/bzImage
+> ---
+>  arch/x86/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 4a10ba9e95da..180a94bda8d4 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -142,6 +142,7 @@ config X86
+>         select HAVE_UNSTABLE_SCHED_CLOCK
+>         select HAVE_USER_RETURN_NOTIFIER
+>         select IRQ_FORCED_THREADING
+> +       select KALLSYMS_TEXT_RELATIVE           if X86_64
+>         select MODULES_USE_ELF_RELA             if X86_64
+>         select MODULES_USE_ELF_REL              if X86_32
+>         select OLD_SIGACTION                    if X86_32
+> --
+> 2.5.0
+>
 
-I think MAPERR is likely the right thing for a guard page access.
 
-That said, I'd also warn people from caring too mucbh about the
-details of si_code. We've not traditionally been very good at filling
-it in. So any program that uses it for any actual semantic behavior is
-likely just broken. Print it it in debuggers by all means, but relying
-on it in any other way is just crazy. It's just not historically
-reliable enough.
 
-So I wouldn't worry about it excessively.
-
-              Linus
+-- 
+Kees Cook
+Chrome OS & Brillo Security
