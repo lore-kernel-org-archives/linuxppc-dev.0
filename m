@@ -1,25 +1,49 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0C7A81A18CC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 20:07:18 +1100 (AEDT)
-Date: Wed, 20 Jan 2016 10:07:14 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
- Jiri Kosina <jkosina@suse.cz>, Denis Kirjanov <kda@linux-powerpc.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org
-Subject: Re: [PATCH v5 0/9] ftrace with regs + live patching for ppc64 LE
- (ABI v2)
-Message-ID: <20160120090714.GA7031@lst.de>
-References: <20151204152419.28E0D691D2@newverein.lst.de>
- <20160106141730.GL3178@pathway.suse.cz>
- <1453269803.14751.10.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6F9FA1A1832
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 20:42:34 +1100 (AEDT)
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Wed, 20 Jan 2016 19:42:32 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1C0743578057
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 20:42:22 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0K9gE7c60686588
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 20:42:22 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0K9fnGO012195
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 20:41:49 +1100
+Subject: Re: [RFC PATCH v3 3/5] PCI: Add host bridge attribute to indicate
+ filtering of MSIs is supported
+To: David Laight <David.Laight@ACULAB.COM>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
+References: <1452841574-2781-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1452841574-2781-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1CCC6833@AcuExch.aculab.com>
+Cc: "nikunj@linux.vnet.ibm.com" <nikunj@linux.vnet.ibm.com>,
+ "zhong@linux.vnet.ibm.com" <zhong@linux.vnet.ibm.com>,
+ "corbet@lwn.net" <corbet@lwn.net>, "aik@ozlabs.ru" <aik@ozlabs.ru>,
+ "warrier@linux.vnet.ibm.com" <warrier@linux.vnet.ibm.com>,
+ "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "bhelgaas@google.com" <bhelgaas@google.com>
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Message-ID: <569F5636.30701@linux.vnet.ibm.com>
+Date: Wed, 20 Jan 2016 17:41:10 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1453269803.14751.10.camel@ellerman.id.au>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1CCC6833@AcuExch.aculab.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,50 +53,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 20, 2016 at 05:03:23PM +1100, Michael Ellerman wrote:
-> On Wed, 2016-01-06 at 15:17 +0100, Petr Mladek wrote:
-> > On Fri 2015-12-04 15:45:29, Torsten Duwe wrote:
-> > > Changes since v4:
-> > >   * change comment style in entry_64.S to C89
-> > >     (nobody is using assembler syntax comments there).
-> > >   * the bool function restore_r2 shouldn't return 2,
-> > >     that's a little confusing.
-> > >   * Test whether the compiler supports -mprofile-kernel
-> > >     and only then define CC_USING_MPROFILE_KERNEL
-> > >   * also make the return value of klp_check_compiler_support
-> > >     depend on that.
-> >
-> > Note that there is still needed the extra patch from
-> > http://thread.gmane.org/gmane.linux.kernel/2093867/focus=2099603
-> > to get the livepatching working.
-> 
-> Sorry which extra patch?
-Message-ID: <20151203160004.GE8047@pathway.suse.cz>
-By Petr Mladek, "Re: [PATCH v4 0/9] ftrace with regs + live patching..."
-2015-12-03. It is further up in the function call hierarchy and basically
-tells the arch-independent KLP to call the normal entry point on ppc64le, and
-that the _mcount call site is 16 bytes further.
+On 2016/1/16 1:24, David Laight wrote:
+> From: Yongji Xie
+>> Sent: 15 January 2016 07:06
+>>
+>> MSI-X tables are not allowed to be mmapped in vfio-pci
+>> driver in case that user get to touch this directly.
+>> This will cause some performance issues when when PCI
+>> adapters have critical registers in the same page as
+>> the MSI-X table.
+> ...
+> If the driver wants to generate an incorrect MSI-X interrupt
+> it can do so by requesting the device do a normal memory transfer
+> to the target address area that raises MSI-X interrupts.
 
+IOMMUs supporting interrupt remapping can prevent this case.
 
-> > Both ftrace with regs and live patching works for me with this patch
-> > set and the extra patch. So. for the whole patchset:
-> >
-> > Tested-by: Petr Mladek <pmladek@suse.com>
-> 
-> Can you give me some more info on how you're testing it? What config options,
-> toolchain etc.?
-> 
-> For me the series doesn't even boot, even with livepatching disabled.
+> So disabling writes to the MSI-X table (and pending bit array)
+> areas only raises the bar very slightly.
+> A device may also give the driver write access to the MSI-X
+> table through other addresses.
+>
+> This seems to make disallowing the mapping of the MSI-X table
+> rather pointless.
 
-May indeed be a toolchain issue. I had to fix gcc-4.8.5 to get "notrace" working
-for -mprofile-kernel. That's a gcc bug.
+If we allow the mapping of the MSI-X table, it seems the guest
+kernels of some architectures can write invalid data to MSI-X table
+when device drivers initialize MSI-X interrupts.
 
-What are you using?
+Regards,
+Yongji Xie
 
-The config in the v5 patch series should be waterproof, especially with KLP disabled
-ftrace with regs must work (all self-tests succeeded). If you send me your config
-(via PM I suggest, spare the lists) I can verify it with the toolchain here.
-Petr made a suggestion to reshuffle the config options to have it cleaner;
-I suggest to patch that separately.
-
-	Torsten
+> I've also dumped out the MSI-X table (during development) to
+> check that the values are being written there correctly.
+>
+> 	David
+>
