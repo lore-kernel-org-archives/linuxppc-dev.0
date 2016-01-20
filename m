@@ -1,27 +1,24 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 33D931A184E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 21:33:33 +1100 (AEDT)
-Received: by mail-wm0-x244.google.com with SMTP id l65so3126421wmf.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 02:33:33 -0800 (PST)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Wed, 20 Jan 2016 11:33:25 +0100
-From: Ingo Molnar <mingo@kernel.org>
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
- keescook@chromium.org, akpm@linux-foundation.org, hpa@zytor.com,
- heiko.carstens@de.ibm.com, benh@kernel.crashing.org,
- mpe@ellerman.id.au, mmarek@suse.cz, rusty@rustcorp.com.au
-Subject: Re: [PATCH 0/4] support for text-relative kallsyms table
-Message-ID: <20160120103325.GA20197@gmail.com>
-References: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 593561A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 21:38:54 +1100 (AEDT)
+Message-ID: <1453286327.14751.17.camel@ellerman.id.au>
+Subject: Re: [PATCH V10 1/4] perf/powerpc: assign an id to each powerpc
+ register
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Anju T <anju@linux.vnet.ibm.com>
+Cc: khandual@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
+ dsahern@gmail.com, acme@redhat.com, sukadev@linux.vnet.ibm.com,
+ hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 20 Jan 2016 21:38:47 +1100
+In-Reply-To: <1452508104-16507-2-git-send-email-anju@linux.vnet.ibm.com>
+References: <1452508104-16507-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1452508104-16507-2-git-send-email-anju@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,34 +28,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Anju,
 
-* Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
+On Mon, 2016-01-11 at 15:58 +0530, Anju T wrote:
 
-> This implements text-relative kallsyms address tables. This was developed as 
-> part of my series to implement KASLR/CONFIG_RELOCATABLE for arm64, but I think 
-> it may be beneficial to other architectures as well, so I am presenting it as a 
-> separate series.
-> 
-> The idea is that on 64-bit builds, it is rather wasteful to use absolute 
-> addressing for kernel symbols since they are all within a couple of MBs of each 
-> other. On top of that, the absolute addressing implies that, when the kernel is 
-> relocated at runtime, each address in the table needs to be fixed up 
-> individually.
-> 
-> Since all section-relative addresses are already emitted relative to _text, it 
-> is quite straight-forward to record only the offset, and add the absolute 
-> address of _text at runtime when referring to the address table.
-> 
-> The reduction ranges from around 250 KB uncompressed vmlinux size and 10 KB 
-> compressed size (s390) to 3 MB/500 KB for ppc64 (although, in the latter case, 
-> the reduction in uncompressed size is primarily __init data)
+> The enum definition assigns an 'id' to each register in "struct pt_regs"
+> of arch/powerpc. The order of these values in the enum definition are
+> based on the corresponding macros in arch/powerpc/include/uapi/asm/ptrace.h.
 
-So since kallsyms is in unswappable kernel RAM, the uncompressed size reduction is 
-what we care about mostly. How much bootloader load times are impacted is a third 
-order concern.
+Sorry one thing ...
 
-IOW a nice change!
+> diff --git a/arch/powerpc/include/uapi/asm/perf_regs.h b/arch/powerpc/include/uapi/asm/perf_regs.h
+> new file mode 100644
+> index 0000000..cfbd068
+> --- /dev/null
+> +++ b/arch/powerpc/include/uapi/asm/perf_regs.h
+> @@ -0,0 +1,49 @@
+> +#ifndef _ASM_POWERPC_PERF_REGS_H
+> +#define _ASM_POWERPC_PERF_REGS_H
+> +
+> +enum perf_event_powerpc_regs {
+> +	PERF_REG_POWERPC_GPR0,
+> +	PERF_REG_POWERPC_GPR1,
+> +	PERF_REG_POWERPC_GPR2,
+> +	PERF_REG_POWERPC_GPR3,
+> +	PERF_REG_POWERPC_GPR4,
+> +	PERF_REG_POWERPC_GPR5,
+> +	PERF_REG_POWERPC_GPR6,
+> +	PERF_REG_POWERPC_GPR7,
+> +	PERF_REG_POWERPC_GPR8,
+> +	PERF_REG_POWERPC_GPR9,
+> +	PERF_REG_POWERPC_GPR10,
+> +	PERF_REG_POWERPC_GPR11,
+> +	PERF_REG_POWERPC_GPR12,
+> +	PERF_REG_POWERPC_GPR13,
+> +	PERF_REG_POWERPC_GPR14,
+> +	PERF_REG_POWERPC_GPR15,
+> +	PERF_REG_POWERPC_GPR16,
+> +	PERF_REG_POWERPC_GPR17,
+> +	PERF_REG_POWERPC_GPR18,
+> +	PERF_REG_POWERPC_GPR19,
+> +	PERF_REG_POWERPC_GPR20,
+> +	PERF_REG_POWERPC_GPR21,
+> +	PERF_REG_POWERPC_GPR22,
+> +	PERF_REG_POWERPC_GPR23,
+> +	PERF_REG_POWERPC_GPR24,
+> +	PERF_REG_POWERPC_GPR25,
+> +	PERF_REG_POWERPC_GPR26,
+> +	PERF_REG_POWERPC_GPR27,
+> +	PERF_REG_POWERPC_GPR28,
+> +	PERF_REG_POWERPC_GPR29,
+> +	PERF_REG_POWERPC_GPR30,
+> +	PERF_REG_POWERPC_GPR31,
+> +	PERF_REG_POWERPC_NIP,
+> +	PERF_REG_POWERPC_MSR,
+> +	PERF_REG_POWERPC_ORIG_R3,
+> +	PERF_REG_POWERPC_CTR,
+> +	PERF_REG_POWERPC_LNK,
+> +	PERF_REG_POWERPC_XER,
+> +	PERF_REG_POWERPC_CCR,
 
-Thanks,
+You skipped SOFTE here at my suggestion, because it's called MQ on 32-bit.
 
-	Ingo
+But I've changed my mind, I think we *should* define SOFTE, and ignore MQ,
+because MQ is unused. So just add:
+
+  +	PERF_REG_POWERPC_SOFTE,
+
+
+> +	PERF_REG_POWERPC_TRAP,
+> +	PERF_REG_POWERPC_DAR,
+> +	PERF_REG_POWERPC_DSISR,
+> +	PERF_REG_POWERPC_MAX,
+> +};
+> +#endif /* _ASM_POWERPC_PERF_REGS_H */
+
+cheers
