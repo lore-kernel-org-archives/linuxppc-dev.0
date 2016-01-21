@@ -1,30 +1,33 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-ig0-x22e.google.com (mail-ig0-x22e.google.com
- [IPv6:2607:f8b0:4001:c05::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D20B21A001D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 17:45:52 +1100 (AEDT)
-Received: by mail-ig0-x22e.google.com with SMTP id t15so119249021igr.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 22:45:52 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <878u3jy0te.fsf@rustcorp.com.au>
-References: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
- <878u3jy0te.fsf@rustcorp.com.au>
-Date: Thu, 21 Jan 2016 07:45:50 +0100
-Message-ID: <CAKv+Gu95c84Pq=5FEAMkpym7HjmVpeGqy1B_RgWwd8eBe6b0qQ@mail.gmail.com>
-Subject: Re: [PATCH 0/4] support for text-relative kallsyms table
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-s390@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "x86@kernel.org" <x86@kernel.org>,
- Kees Cook <keescook@chromium.org>, Andrew Morton <akpm@linux-foundation.org>,
- Ingo Molnar <mingo@kernel.org>, "hpa@zytor.com" <hpa@zytor.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, mpe@ellerman.id.au,
- Michal Marek <mmarek@suse.cz>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id F0BF91A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:36:16 +1100 (AEDT)
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Thu, 21 Jan 2016 17:36:16 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0187F2BB004D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:36:11 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0L7ZauY40829054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:35:48 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0L7ZYvv016458
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:35:35 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH kernel] powerpc: Make vmalloc_to_phys() public
+Date: Thu, 21 Jan 2016 18:35:08 +1100
+Message-Id: <1453361708-19422-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,84 +37,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 21 January 2016 at 06:10, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> Ard Biesheuvel <ard.biesheuvel@linaro.org> writes:
->> This implements text-relative kallsyms address tables. This was developed
->> as part of my series to implement KASLR/CONFIG_RELOCATABLE for arm64, but
->> I think it may be beneficial to other architectures as well, so I am
->> presenting it as a separate series.
->
-> Nice work!
->
+This makes vmalloc_to_phys() public as there will be another user
+(in-kernel VFIO acceleration) for it soon.
 
-Thanks
+As a part of future little optimization, this changes the helper to call
+vmalloc_to_pfn() instead of vmalloc_to_page() as the size of the
+struct page may not be power-of-two aligned which will make gcc use
+multiply instructions instead of shifts.
 
-> AFAICT this should work for every arch, as long as they start with _text
-> (esp: data and init must be > _text).  In addition, it's not harmful on
-> 32 bit archs.
->
-> IOW, I'd like to turn it on for everyone and discard some code.  But
-> it's easier to roll in like you've done first.
->
-> Should we enable it by default for every arch for now, and see what
-> happens?
->
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
 
-As you say, this only works if every symbol >= _text, which is
-obviously not the case per the conditional in scripts/kallsyms.c,
-which emits _text + n or _text - n depending on whether the symbol
-precedes or follows _text. The git log tells me for which arch this
-was originally implemented, but it does not tell me which other archs
-have come to rely on it in the meantime.
+A couple of notes:
 
-On top of that, ia64 fails to build with this option, since it has
-some whitelisted absolute symbols that look suspiciously like they
-could be emitted as _text relative (and it does not even matter in the
-absence of CONFIG_RELOCATABLE on ia64, afaict) but I don't know
-whether we can just override their types as T, since it would also
-change the type in the contents of /proc/kallsyms. So some guidance
-would be appreciated here.
+1. real_vmalloc_addr() will be reworked later by Paul separately;
 
-So I agree that it would be preferred to have a single code path, but
-I would need some help validating it on architectures I don't have
-access to.
+2. the optimization note it not valid at the moment as
+vmalloc_to_pfn() calls vmalloc_to_page() which does the actual
+search; these helpers functionality will be swapped later
+(also, by Paul).
 
-Thanks,
-Ard.
+---
+ arch/powerpc/include/asm/pgtable.h | 3 +++
+ arch/powerpc/mm/pgtable.c          | 8 ++++++++
+ arch/powerpc/perf/hv-24x7.c        | 8 --------
+ 3 files changed, 11 insertions(+), 8 deletions(-)
 
-
->> The idea is that on 64-bit builds, it is rather wasteful to use absolute
->> addressing for kernel symbols since they are all within a couple of MBs
->> of each other. On top of that, the absolute addressing implies that, when
->> the kernel is relocated at runtime, each address in the table needs to be
->> fixed up individually.
->>
->> Since all section-relative addresses are already emitted relative to _text,
->> it is quite straight-forward to record only the offset, and add the absolute
->> address of _text at runtime when referring to the address table.
->>
->> The reduction ranges from around 250 KB uncompressed vmlinux size and 10 KB
->> compressed size (s390) to 3 MB/500 KB for ppc64 (although, in the latter case,
->> the reduction in uncompressed size is primarily __init data)
->>
->> Kees Cook was so kind to test these against x86_64, and confirmed that KASLR
->> still operates as expected.
->>
->> Ard Biesheuvel (4):
->>   kallsyms: add support for relative offsets in kallsyms address table
->>   powerpc: enable text relative kallsyms for ppc64
->>   s390: enable text relative kallsyms for 64-bit targets
->>   x86_64: enable text relative kallsyms for 64-bit targets
->>
->>  arch/powerpc/Kconfig    |  1 +
->>  arch/s390/Kconfig       |  1 +
->>  arch/x86/Kconfig        |  1 +
->>  init/Kconfig            | 14 ++++++++
->>  kernel/kallsyms.c       | 35 +++++++++++++-----
->>  scripts/kallsyms.c      | 38 +++++++++++++++++---
->>  scripts/link-vmlinux.sh |  4 +++
->>  scripts/namespace.pl    |  1 +
->>  8 files changed, 82 insertions(+), 13 deletions(-)
->>
->> --
->> 2.5.0
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index ac9fb11..47897a3 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -78,6 +78,9 @@ static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
+ 	}
+ 	return __find_linux_pte_or_hugepte(pgdir, ea, is_thp, shift);
+ }
++
++unsigned long vmalloc_to_phys(void *vmalloc_addr);
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_PGTABLE_H */
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 83dfd79..de37ff4 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -243,3 +243,11 @@ void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
+ }
+ #endif /* CONFIG_DEBUG_VM */
+ 
++unsigned long vmalloc_to_phys(void *va)
++{
++	unsigned long pfn = vmalloc_to_pfn(va);
++
++	BUG_ON(!pfn);
++	return __pa(pfn_to_kaddr(pfn)) + offset_in_page(va);
++}
++EXPORT_SYMBOL_GPL(vmalloc_to_phys);
+diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+index 9f9dfda..3b09ecf 100644
+--- a/arch/powerpc/perf/hv-24x7.c
++++ b/arch/powerpc/perf/hv-24x7.c
+@@ -493,14 +493,6 @@ static size_t event_to_attr_ct(struct hv_24x7_event_data *event)
+ 	}
+ }
+ 
+-static unsigned long vmalloc_to_phys(void *v)
+-{
+-	struct page *p = vmalloc_to_page(v);
+-
+-	BUG_ON(!p);
+-	return page_to_phys(p) + offset_in_page(v);
+-}
+-
+ /* */
+ struct event_uniq {
+ 	struct rb_node node;
+-- 
+2.5.0.rc3
