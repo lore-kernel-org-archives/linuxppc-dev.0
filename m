@@ -1,19 +1,19 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0067.outbound.protection.outlook.com [157.56.110.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 592D01A0E9C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 12:14:33 +1100 (AEDT)
-From: Zhao Qiang <qiang.zhao@nxp.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-CC: <tglx@linutronix.de>, <leoyang.li@nxp.com>, <oss@buserror.net>,
- <xiaobo.xie@nxp.com>, Zhao Qiang <qiang.zhao@nxp.com>
-Subject: [PATCH] qe_ic: fix a buffer overflow error and add check elsewhere
-Date: Thu, 21 Jan 2016 09:06:04 +0800
-Message-ID: <1453338364-45129-1-git-send-email-qiang.zhao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6FA181A1825
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 13:05:20 +1100 (AEDT)
+Date: Thu, 21 Jan 2016 13:05:20 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Cc: <linuxppc-dev@lists.ozlabs.org>, Minchan Kim <minchan@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] powerpc: remove newly added extra definition of pmd_dirty
+Message-ID: <20160121130520.6dce1564@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,50 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-127 is the theoretical up boundary of QEIC number,
-in fact there only be 44 qe_ic_info now.
-add check to overflow for qe_ic_info
+Commit d5d6a443b243 ("arch/powerpc/include/asm/pgtable-ppc64.h:
+add pmd_[dirty|mkclean] for THP") added a new identical definition
+of pdm_dirty.  Remove it again.
 
-Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+Cc: Minchan Kim <minchan@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/soc/fsl/qe/qe_ic.c | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/soc/fsl/qe/qe_ic.c
-index 5419527..90c00b7 100644
---- a/drivers/soc/fsl/qe/qe_ic.c
-+++ b/drivers/soc/fsl/qe/qe_ic.c
-@@ -261,6 +261,11 @@ static int qe_ic_host_map(struct irq_domain *h, unsigned int virq,
- 	struct qe_ic *qe_ic = h->host_data;
- 	struct irq_chip *chip;
- 
-+	if (hw >= ARRAY_SIZE(qe_ic_info)) {
-+		pr_err("%s: Invalid hw irq number for QEIC\n", __func__);
-+		return -EINVAL;
-+	}
-+
- 	if (qe_ic_info[hw].mask == 0) {
- 		printk(KERN_ERR "Can't map reserved IRQ\n");
- 		return -EINVAL;
-@@ -409,7 +414,8 @@ int qe_ic_set_priority(unsigned int virq, unsigned int priority)
- 
- 	if (priority > 8 || priority == 0)
- 		return -EINVAL;
--	if (src > 127)
-+	if (WARN_ONCE(src >= ARRAY_SIZE(qe_ic_info),
-+		      "%s: Invalid hw irq number for QEIC\n", __func__))
- 		return -EINVAL;
- 	if (qe_ic_info[src].pri_reg == 0)
- 		return -EINVAL;
-@@ -438,6 +444,9 @@ int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high)
- 
- 	if (priority > 2 || priority == 0)
- 		return -EINVAL;
-+	if (WARN_ONCE(src >= ARRAY_SIZE(qe_ic_info),
-+		      "%s: Invalid hw irq number for QEIC\n", __func__))
-+		return -EINVAL;
- 
- 	switch (qe_ic_info[src].pri_reg) {
- 	case QEIC_CIPZCC:
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 8204b0c393aa..8d1c41d28318 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -223,7 +223,6 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
+ #define pmd_pfn(pmd)		pte_pfn(pmd_pte(pmd))
+ #define pmd_dirty(pmd)		pte_dirty(pmd_pte(pmd))
+ #define pmd_young(pmd)		pte_young(pmd_pte(pmd))
+-#define pmd_dirty(pmd)		pte_dirty(pmd_pte(pmd))
+ #define pmd_mkold(pmd)		pte_pmd(pte_mkold(pmd_pte(pmd)))
+ #define pmd_wrprotect(pmd)	pte_pmd(pte_wrprotect(pmd_pte(pmd)))
+ #define pmd_mkdirty(pmd)	pte_pmd(pte_mkdirty(pmd_pte(pmd)))
 -- 
-2.1.0.27.g96db324
+2.7.0.rc3
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
