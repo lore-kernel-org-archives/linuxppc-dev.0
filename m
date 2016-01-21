@@ -1,31 +1,42 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-io0-x236.google.com (mail-io0-x236.google.com
- [IPv6:2607:f8b0:4001:c06::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C5AF31A001D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 19:32:18 +1100 (AEDT)
-Received: by mail-io0-x236.google.com with SMTP id 77so46882910ioc.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 00:32:17 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B75181A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 19:46:24 +1100 (AEDT)
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Thu, 21 Jan 2016 01:46:22 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id C642019D8026
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 01:34:21 -0700 (MST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0L8kLDk31195202
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 01:46:21 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0L8kKJJ030200
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 01:46:20 -0700
+Subject: Re: [PATCH V10 1/4] perf/powerpc: assign an id to each powerpc
+ register
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <1452508104-16507-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1452508104-16507-2-git-send-email-anju@linux.vnet.ibm.com>
+ <1453286327.14751.17.camel@ellerman.id.au>
+Cc: khandual@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
+ dsahern@gmail.com, acme@redhat.com, sukadev@linux.vnet.ibm.com,
+ hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Anju T <anju@linux.vnet.ibm.com>
+Message-ID: <56A09AD7.3030801@linux.vnet.ibm.com>
+Date: Thu, 21 Jan 2016 14:16:15 +0530
 MIME-Version: 1.0
-In-Reply-To: <CAKv+Gu95c84Pq=5FEAMkpym7HjmVpeGqy1B_RgWwd8eBe6b0qQ@mail.gmail.com>
-References: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
- <878u3jy0te.fsf@rustcorp.com.au>
- <CAKv+Gu95c84Pq=5FEAMkpym7HjmVpeGqy1B_RgWwd8eBe6b0qQ@mail.gmail.com>
-Date: Thu, 21 Jan 2016 09:32:15 +0100
-Message-ID: <CAKv+Gu8Pzjt3e_CH0xiCqTk8b6kWV=7Wbiy2YsX99g0SQTW8Tg@mail.gmail.com>
-Subject: Re: [PATCH 0/4] support for text-relative kallsyms table
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-s390@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "x86@kernel.org" <x86@kernel.org>,
- Kees Cook <keescook@chromium.org>, Andrew Morton <akpm@linux-foundation.org>,
- Ingo Molnar <mingo@kernel.org>, "hpa@zytor.com" <hpa@zytor.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, mpe@ellerman.id.au,
- Michal Marek <mmarek@suse.cz>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1453286327.14751.17.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,105 +46,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 21 January 2016 at 07:45, Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
-> On 21 January 2016 at 06:10, Rusty Russell <rusty@rustcorp.com.au> wrote:
->> Ard Biesheuvel <ard.biesheuvel@linaro.org> writes:
->>> This implements text-relative kallsyms address tables. This was developed
->>> as part of my series to implement KASLR/CONFIG_RELOCATABLE for arm64, but
->>> I think it may be beneficial to other architectures as well, so I am
->>> presenting it as a separate series.
->>
->> Nice work!
->>
+On Wednesday 20 January 2016 04:08 PM, Michael Ellerman wrote:
+> Hi Anju,
 >
-> Thanks
+> On Mon, 2016-01-11 at 15:58 +0530, Anju T wrote:
 >
->> AFAICT this should work for every arch, as long as they start with _text
->> (esp: data and init must be > _text).  In addition, it's not harmful on
->> 32 bit archs.
->>
->> IOW, I'd like to turn it on for everyone and discard some code.  But
->> it's easier to roll in like you've done first.
->>
->> Should we enable it by default for every arch for now, and see what
->> happens?
->>
+>> The enum definition assigns an 'id' to each register in "struct pt_regs"
+>> of arch/powerpc. The order of these values in the enum definition are
+>> based on the corresponding macros in arch/powerpc/include/uapi/asm/ptrace.h.
+> Sorry one thing ...
 >
-> As you say, this only works if every symbol >= _text, which is
-> obviously not the case per the conditional in scripts/kallsyms.c,
-> which emits _text + n or _text - n depending on whether the symbol
-> precedes or follows _text. The git log tells me for which arch this
-> was originally implemented, but it does not tell me which other archs
-> have come to rely on it in the meantime.
+>> diff --git a/arch/powerpc/include/uapi/asm/perf_regs.h b/arch/powerpc/include/uapi/asm/perf_regs.h
+>> new file mode 100644
+>> index 0000000..cfbd068
+>> --- /dev/null
+>> +++ b/arch/powerpc/include/uapi/asm/perf_regs.h
+>> @@ -0,0 +1,49 @@
+>> +#ifndef _ASM_POWERPC_PERF_REGS_H
+>> +#define _ASM_POWERPC_PERF_REGS_H
+>> +
+>> +enum perf_event_powerpc_regs {
+>> +	PERF_REG_POWERPC_GPR0,
+>> +	PERF_REG_POWERPC_GPR1,
+>> +	PERF_REG_POWERPC_GPR2,
+>> +	PERF_REG_POWERPC_GPR3,
+>> +	PERF_REG_POWERPC_GPR4,
+>> +	PERF_REG_POWERPC_GPR5,
+>> +	PERF_REG_POWERPC_GPR6,
+>> +	PERF_REG_POWERPC_GPR7,
+>> +	PERF_REG_POWERPC_GPR8,
+>> +	PERF_REG_POWERPC_GPR9,
+>> +	PERF_REG_POWERPC_GPR10,
+>> +	PERF_REG_POWERPC_GPR11,
+>> +	PERF_REG_POWERPC_GPR12,
+>> +	PERF_REG_POWERPC_GPR13,
+>> +	PERF_REG_POWERPC_GPR14,
+>> +	PERF_REG_POWERPC_GPR15,
+>> +	PERF_REG_POWERPC_GPR16,
+>> +	PERF_REG_POWERPC_GPR17,
+>> +	PERF_REG_POWERPC_GPR18,
+>> +	PERF_REG_POWERPC_GPR19,
+>> +	PERF_REG_POWERPC_GPR20,
+>> +	PERF_REG_POWERPC_GPR21,
+>> +	PERF_REG_POWERPC_GPR22,
+>> +	PERF_REG_POWERPC_GPR23,
+>> +	PERF_REG_POWERPC_GPR24,
+>> +	PERF_REG_POWERPC_GPR25,
+>> +	PERF_REG_POWERPC_GPR26,
+>> +	PERF_REG_POWERPC_GPR27,
+>> +	PERF_REG_POWERPC_GPR28,
+>> +	PERF_REG_POWERPC_GPR29,
+>> +	PERF_REG_POWERPC_GPR30,
+>> +	PERF_REG_POWERPC_GPR31,
+>> +	PERF_REG_POWERPC_NIP,
+>> +	PERF_REG_POWERPC_MSR,
+>> +	PERF_REG_POWERPC_ORIG_R3,
+>> +	PERF_REG_POWERPC_CTR,
+>> +	PERF_REG_POWERPC_LNK,
+>> +	PERF_REG_POWERPC_XER,
+>> +	PERF_REG_POWERPC_CCR,
+> You skipped SOFTE here at my suggestion, because it's called MQ on 32-bit.
 >
-> On top of that, ia64 fails to build with this option, since it has
-> some whitelisted absolute symbols that look suspiciously like they
-> could be emitted as _text relative (and it does not even matter in the
-> absence of CONFIG_RELOCATABLE on ia64, afaict) but I don't know
-> whether we can just override their types as T, since it would also
-> change the type in the contents of /proc/kallsyms. So some guidance
-> would be appreciated here.
+> But I've changed my mind, I think we *should* define SOFTE, and ignore MQ,
+> because MQ is unused. So just add:
 >
+>    +	PERF_REG_POWERPC_SOFTE,
 
-Digging a little deeper, it appears that it would be non-trivial to
-port this to ia64:
 
-...
-a000000000040720 A __kernel_syscall_via_break
-a000000000040740 A __kernel_sigtramp
-a000000000040a00 A __kernel_syscall_via_epc
-a000000100000000 T ia64_ivt
-a000000100000000 T __start_ivt_text
-a000000100000000 T _stext
-a000000100000000 T _text
-...
+Thank you for reviewing the patch.
 
-The top three symbols are the absolute symbols that are explicitly
-whitelisted by scripts/kallsyms.c, and they are too far from 0 and too
-far from _text to be representable in 32 bits
+Yes here we can add SOFTE.
 
 
+Thanks
 
-> So I agree that it would be preferred to have a single code path, but
-> I would need some help validating it on architectures I don't have
-> access to.
->
-> Thanks,
-> Ard.
+Anju
 >
 >
->>> The idea is that on 64-bit builds, it is rather wasteful to use absolute
->>> addressing for kernel symbols since they are all within a couple of MBs
->>> of each other. On top of that, the absolute addressing implies that, when
->>> the kernel is relocated at runtime, each address in the table needs to be
->>> fixed up individually.
->>>
->>> Since all section-relative addresses are already emitted relative to _text,
->>> it is quite straight-forward to record only the offset, and add the absolute
->>> address of _text at runtime when referring to the address table.
->>>
->>> The reduction ranges from around 250 KB uncompressed vmlinux size and 10 KB
->>> compressed size (s390) to 3 MB/500 KB for ppc64 (although, in the latter case,
->>> the reduction in uncompressed size is primarily __init data)
->>>
->>> Kees Cook was so kind to test these against x86_64, and confirmed that KASLR
->>> still operates as expected.
->>>
->>> Ard Biesheuvel (4):
->>>   kallsyms: add support for relative offsets in kallsyms address table
->>>   powerpc: enable text relative kallsyms for ppc64
->>>   s390: enable text relative kallsyms for 64-bit targets
->>>   x86_64: enable text relative kallsyms for 64-bit targets
->>>
->>>  arch/powerpc/Kconfig    |  1 +
->>>  arch/s390/Kconfig       |  1 +
->>>  arch/x86/Kconfig        |  1 +
->>>  init/Kconfig            | 14 ++++++++
->>>  kernel/kallsyms.c       | 35 +++++++++++++-----
->>>  scripts/kallsyms.c      | 38 +++++++++++++++++---
->>>  scripts/link-vmlinux.sh |  4 +++
->>>  scripts/namespace.pl    |  1 +
->>>  8 files changed, 82 insertions(+), 13 deletions(-)
->>>
->>> --
->>> 2.5.0
+>> +	PERF_REG_POWERPC_TRAP,
+>> +	PERF_REG_POWERPC_DAR,
+>> +	PERF_REG_POWERPC_DSISR,
+>> +	PERF_REG_POWERPC_MAX,
+>> +};
+>> +#endif /* _ASM_POWERPC_PERF_REGS_H */
+> cheers
+>
