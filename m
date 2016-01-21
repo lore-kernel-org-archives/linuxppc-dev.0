@@ -1,28 +1,29 @@
-Return-Path: <jikos@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2C3051A001D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 08:29:19 +1100 (AEDT)
-Date: Thu, 21 Jan 2016 22:29:13 +0100 (CET)
-From: Jiri Kosina <jikos@kernel.org>
-To: Torsten Duwe <duwe@lst.de>
-cc: Michael Ellerman <mpe@ellerman.id.au>, Petr Mladek <pmladek@suse.com>,
- Denis Kirjanov <kda@linux-powerpc.org>, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>, live-patching@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E2F801A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 08:56:42 +1100 (AEDT)
+Date: Thu, 21 Jan 2016 22:56:38 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Jiri Kosina <jikos@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Petr Mladek <pmladek@suse.com>,
+ Denis Kirjanov <kda@linux-powerpc.org>,
+ linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+ live-patching@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH v5 0/9] ftrace with regs + live patching for ppc64 LE
  (ABI v2)
-In-Reply-To: <20160121151213.GB12374@lst.de>
-Message-ID: <alpine.LNX.2.00.1601212227200.21446@cbobk.fhfr.pm>
+Message-ID: <20160121215638.GA5033@lst.de>
 References: <20151204152419.28E0D691D2@newverein.lst.de>
  <20160106141730.GL3178@pathway.suse.cz>
  <1453269803.14751.10.camel@ellerman.id.au>
  <alpine.LNX.2.00.1601211032430.21446@cbobk.fhfr.pm>
  <1453380891.28627.3.camel@ellerman.id.au> <20160121150633.GA12374@lst.de>
  <20160121151213.GB12374@lst.de>
+ <alpine.LNX.2.00.1601212227200.21446@cbobk.fhfr.pm>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LNX.2.00.1601212227200.21446@cbobk.fhfr.pm>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,25 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 21 Jan 2016, Torsten Duwe wrote:
-
-> > mcount call sites looks normal on first sight...
+On Thu, Jan 21, 2016 at 10:29:13PM +0100, Jiri Kosina wrote:
+> On Thu, 21 Jan 2016, Torsten Duwe wrote:
 > 
-> Not quite.
-> LR is not saved on the stack before the call.
-> Argh!
+> > > mcount call sites looks normal on first sight...
+> > 
+> > Not quite.
+> > LR is not saved on the stack before the call.
+> > Argh!
+> > 
+> > Petr, this looks like 12 bytes offset for gcc-6.
+> > I think I can work around the rest.
 > 
-> Petr, this looks like 12 bytes offset for gcc-6.
-> I think I can work around the rest.
+> Are we sure that gcc is doing the right thing here?
+> 
+> I am far from claiming understanding of ppc64 ABI, but from what Vojtech 
+> told me I understood that saving link register is necessary for (at least) 
+> graph tracer to work properly.
 
-Are we sure that gcc is doing the right thing here?
+It is held in R0 only, and saved right after _mcount. Thus, _mcount just
+must not clobber R0 or save it the same way as it's done afterwards or
+like gcc4 does it.
 
-I am far from claiming understanding of ppc64 ABI, but from what Vojtech 
-told me I understood that saving link register is necessary for (at least) 
-graph tracer to work properly.
+I'll make a v6 that's compiler agnostic. It's a few lines to change
+for the kernel proper, and I'll have to have a look at the trampolines
+for modules.
 
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+	Torsten
