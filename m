@@ -1,34 +1,34 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5F75A1A1903
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:41:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D84B1A18C9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:41:33 +1100 (AEDT)
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Thu, 21 Jan 2016 17:41:08 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 18E022CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:41:06 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0L7ev1C13762630
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:41:05 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0L7eXnl026496
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:40:33 +1100
+ Thu, 21 Jan 2016 17:41:31 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 116863578052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:41:30 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0L7ex2G46989422
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:41:07 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0L7evWK014690
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:40:57 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
  David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v2 3/6] KVM: PPC: Account TCE-containing pages in
- locked_vm
-Date: Thu, 21 Jan 2016 18:39:34 +1100
-Message-Id: <1453361977-19589-4-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v2 5/6] KVM: PPC: Move reusable bits of H_PUT_TCE
+ handler to helpers
+Date: Thu, 21 Jan 2016 18:39:36 +1100
+Message-Id: <1453361977-19589-6-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1453361977-19589-1-git-send-email-aik@ozlabs.ru>
 References: <1453361977-19589-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,129 +40,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment pages used for TCE tables (in addition to pages addressed
-by TCEs) are not counted in locked_vm counter so a malicious userspace
-tool can call ioctl(KVM_CREATE_SPAPR_TCE) as many times as RLIMIT_NOFILE and
-lock a lot of memory.
+Upcoming multi-tce support (H_PUT_TCE_INDIRECT/H_STUFF_TCE hypercalls)
+will validate TCE (not to have unexpected bits) and IO address
+(to be within the DMA window boundaries).
 
-This adds counting for pages used for TCE tables.
-
-This counts the number of pages required for a table plus pages for
-the kvmppc_spapr_tce_table struct (TCE table descriptor) itself.
-
-This changes release_spapr_tce_table() to store @npages on stack to
-avoid calling kvmppc_stt_npages() in the loop (tiny optimization,
-probably).
-
-This does not change the amount of (de)allocated memory.
+This introduces helpers to validate TCE and IO address. The helpers are
+exported as they compile into vmlinux (to work in realmode) and will be
+used later by KVM kernel module in virtual mode.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
 Changes:
 v2:
-* switched from long to unsigned long types
-* added WARN_ON_ONCE() in locked_vm decrement case
+* added note to the commit log about why new helpers are exported
+* did not add a note that xxx_validate() validate TCEs for KVM (not for
+host kernel DMA) as the helper names and file location tell what are
+they for
 ---
- arch/powerpc/kvm/book3s_64_vio.c | 55 +++++++++++++++++++++++++++++++++++++---
- 1 file changed, 52 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h  |  4 ++
+ arch/powerpc/kvm/book3s_64_vio_hv.c | 92 ++++++++++++++++++++++++++++++++-----
+ 2 files changed, 84 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 9526c34..ea498b4 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -39,19 +39,62 @@
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 2241d53..9513911 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -166,6 +166,10 @@ extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
+ 
+ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 				struct kvm_create_spapr_tce *args);
++extern long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
++		unsigned long ioba, unsigned long npages);
++extern long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *tt,
++		unsigned long tce);
+ extern long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 			     unsigned long ioba, unsigned long tce);
+ extern long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index e142171..8cd3a95 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -36,6 +36,7 @@
+ #include <asm/kvm_host.h>
+ #include <asm/udbg.h>
+ #include <asm/iommu.h>
++#include <asm/tce.h>
  
  #define TCES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
  
--static long kvmppc_stt_npages(unsigned long window_size)
-+static unsigned long kvmppc_stt_npages(unsigned long window_size)
+@@ -64,18 +65,90 @@ static struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm_vcpu *vcpu,
+  * WARNING: This will be called in real-mode on HV KVM and virtual
+  *          mode on PR KVM
+  */
+-static long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
++long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+ 		unsigned long ioba, unsigned long npages)
  {
- 	return ALIGN((window_size >> SPAPR_TCE_SHIFT)
- 		     * sizeof(u64), PAGE_SIZE) / PAGE_SIZE;
- }
+-	unsigned long mask = (1ULL << IOMMU_PAGE_SHIFT_4K) - 1;
++	unsigned long mask = IOMMU_PAGE_MASK_4K;
+ 	unsigned long idx = ioba >> IOMMU_PAGE_SHIFT_4K;
+ 	unsigned long size = stt->window_size >> IOMMU_PAGE_SHIFT_4K;
  
-+static long kvmppc_account_memlimit(unsigned long npages, bool inc)
+-	if ((ioba & mask) || (idx + npages > size))
++	if ((ioba & ~mask) || (idx + npages > size))
+ 		return H_PARAMETER;
+ 
+ 	return H_SUCCESS;
+ }
++EXPORT_SYMBOL_GPL(kvmppc_ioba_validate);
++
++/*
++ * Validates TCE address.
++ * At the moment flags and page mask are validated.
++ * As the host kernel does not access those addresses (just puts them
++ * to the table and user space is supposed to process them), we can skip
++ * checking other things (such as TCE is a guest RAM address or the page
++ * was actually allocated).
++ *
++ * WARNING: This will be called in real-mode on HV KVM and virtual
++ *          mode on PR KVM
++ */
++long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *stt, unsigned long tce)
 +{
-+	long ret = 0;
-+	const unsigned long bytes = sizeof(struct kvmppc_spapr_tce_table) +
-+			(npages * sizeof(struct page *));
-+	const unsigned long stt_pages = ALIGN(bytes, PAGE_SIZE) / PAGE_SIZE;
++	unsigned long mask = IOMMU_PAGE_MASK_4K | TCE_PCI_WRITE | TCE_PCI_READ;
 +
-+	if (!current || !current->mm)
-+		return ret; /* process exited */
++	if (tce & ~mask)
++		return H_PARAMETER;
 +
-+	npages += stt_pages;
++	return H_SUCCESS;
++}
++EXPORT_SYMBOL_GPL(kvmppc_tce_validate);
 +
-+	down_write(&current->mm->mmap_sem);
-+
-+	if (inc) {
-+		unsigned long locked, lock_limit;
-+
-+		locked = current->mm->locked_vm + npages;
-+		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-+		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-+			ret = -ENOMEM;
-+		else
-+			current->mm->locked_vm += npages;
-+	} else {
-+		if (WARN_ON_ONCE(npages > current->mm->locked_vm))
-+			npages = current->mm->locked_vm;
-+
-+		current->mm->locked_vm -= npages;
-+	}
-+
-+	pr_debug("[%d] RLIMIT_MEMLOCK KVM %c%ld %ld/%ld%s\n", current->pid,
-+			inc ? '+' : '-',
-+			npages << PAGE_SHIFT,
-+			current->mm->locked_vm << PAGE_SHIFT,
-+			rlimit(RLIMIT_MEMLOCK),
-+			ret ? " - exceeded" : "");
-+
-+	up_write(&current->mm->mmap_sem);
-+
-+	return ret;
++/* Note on the use of page_address() in real mode,
++ *
++ * It is safe to use page_address() in real mode on ppc64 because
++ * page_address() is always defined as lowmem_page_address()
++ * which returns __va(PFN_PHYS(page_to_pfn(page))) which is arithmetial
++ * operation and does not access page struct.
++ *
++ * Theoretically page_address() could be defined different
++ * but either WANT_PAGE_VIRTUAL or HASHED_PAGE_VIRTUAL
++ * should be enabled.
++ * WANT_PAGE_VIRTUAL is never enabled on ppc32/ppc64,
++ * HASHED_PAGE_VIRTUAL could be enabled for ppc32 only and only
++ * if CONFIG_HIGHMEM is defined. As CONFIG_SPARSEMEM_VMEMMAP
++ * is not expected to be enabled on ppc32, page_address()
++ * is safe for ppc32 as well.
++ *
++ * WARNING: This will be called in real-mode on HV KVM and virtual
++ *          mode on PR KVM
++ */
++static u64 *kvmppc_page_address(struct page *page)
++{
++#if defined(HASHED_PAGE_VIRTUAL) || defined(WANT_PAGE_VIRTUAL)
++#error TODO: fix to avoid page_address() here
++#endif
++	return (u64 *) page_address(page);
 +}
 +
- static void release_spapr_tce_table(struct rcu_head *head)
++/*
++ * Handles TCE requests for emulated devices.
++ * Puts guest TCE values to the table and expects user space to convert them.
++ * Called in both real and virtual modes.
++ * Cannot fail so kvmppc_tce_validate must be called before it.
++ *
++ * WARNING: This will be called in real-mode on HV KVM and virtual
++ *          mode on PR KVM
++ */
++void kvmppc_tce_put(struct kvmppc_spapr_tce_table *stt,
++		unsigned long idx, unsigned long tce)
++{
++	struct page *page;
++	u64 *tbl;
++
++	page = stt->pages[idx / TCES_PER_PAGE];
++	tbl = kvmppc_page_address(page);
++
++	tbl[idx % TCES_PER_PAGE] = tce;
++}
++EXPORT_SYMBOL_GPL(kvmppc_tce_put);
+ 
+ /* WARNING: This will be called in real-mode on HV KVM and virtual
+  *          mode on PR KVM
+@@ -85,9 +158,6 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
  {
- 	struct kvmppc_spapr_tce_table *stt = container_of(head,
- 			struct kvmppc_spapr_tce_table, rcu);
- 	int i;
-+	unsigned long npages = kvmppc_stt_npages(stt->window_size);
+ 	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
+ 	long ret;
+-	unsigned long idx;
+-	struct page *page;
+-	u64 *tbl;
  
--	for (i = 0; i < kvmppc_stt_npages(stt->window_size); i++)
-+	for (i = 0; i < npages; i++)
- 		__free_page(stt->pages[i]);
+ 	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
+ 	/* 	    liobn, ioba, tce); */
+@@ -99,13 +169,11 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 	if (ret != H_SUCCESS)
+ 		return ret;
  
- 	kfree(stt);
-@@ -89,6 +132,7 @@ static int kvm_spapr_tce_release(struct inode *inode, struct file *filp)
+-	idx = ioba >> IOMMU_PAGE_SHIFT_4K;
+-	page = stt->pages[idx / TCES_PER_PAGE];
+-	tbl = (u64 *)page_address(page);
++	ret = kvmppc_tce_validate(stt, tce);
++	if (ret != H_SUCCESS)
++		return ret;
  
- 	kvm_put_kvm(stt->kvm);
+-	/* FIXME: Need to validate the TCE itself */
+-	/* udbg_printf("tce @ %p\n", &tbl[idx % TCES_PER_PAGE]); */
+-	tbl[idx % TCES_PER_PAGE] = tce;
++	kvmppc_tce_put(stt, ioba >> IOMMU_PAGE_SHIFT_4K, tce);
  
-+	kvmppc_account_memlimit(kvmppc_stt_npages(stt->window_size), false);
- 	call_rcu(&stt->rcu, release_spapr_tce_table);
- 
- 	return 0;
-@@ -103,7 +147,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 				   struct kvm_create_spapr_tce *args)
- {
- 	struct kvmppc_spapr_tce_table *stt = NULL;
--	long npages;
-+	unsigned long npages;
- 	int ret = -ENOMEM;
- 	int i;
- 
-@@ -114,6 +158,11 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 	}
- 
- 	npages = kvmppc_stt_npages(args->window_size);
-+	ret = kvmppc_account_memlimit(npages, true);
-+	if (ret) {
-+		stt = NULL;
-+		goto fail;
-+	}
- 
- 	stt = kzalloc(sizeof(*stt) + npages * sizeof(struct page *),
- 		      GFP_KERNEL);
+ 	return H_SUCCESS;
+ }
 -- 
 2.5.0.rc3
