@@ -1,39 +1,30 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-ig0-x22e.google.com (mail-ig0-x22e.google.com
+ [IPv6:2607:f8b0:4001:c05::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 429601A001D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 16:59:35 +1100 (AEDT)
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Thu, 21 Jan 2016 00:59:33 -0500
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id B4034C90027
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 00:59:29 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0L5xUfT12713984
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 05:59:30 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0L5xT7i007130
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 00:59:30 -0500
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Sam Mendoza-Jonas <sam@mendozajonas.com>,
- Russell Currey <ruscur@russell.cc>
-Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/eeh: Fix PE location code
-In-Reply-To: <20160121000842.GB10361@localhost.localdomain>
-References: <1449033932-27307-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1453262173.1201.2.camel@russell.cc>
- <20160121000842.GB10361@localhost.localdomain>
-Date: Thu, 21 Jan 2016 16:59:17 +1100
-Message-ID: <87twm75v7u.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D20B21A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 17:45:52 +1100 (AEDT)
+Received: by mail-ig0-x22e.google.com with SMTP id t15so119249021igr.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2016 22:45:52 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <878u3jy0te.fsf@rustcorp.com.au>
+References: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
+ <878u3jy0te.fsf@rustcorp.com.au>
+Date: Thu, 21 Jan 2016 07:45:50 +0100
+Message-ID: <CAKv+Gu95c84Pq=5FEAMkpym7HjmVpeGqy1B_RgWwd8eBe6b0qQ@mail.gmail.com>
+Subject: Re: [PATCH 0/4] support for text-relative kallsyms table
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-s390@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "x86@kernel.org" <x86@kernel.org>,
+ Kees Cook <keescook@chromium.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Ingo Molnar <mingo@kernel.org>, "hpa@zytor.com" <hpa@zytor.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, mpe@ellerman.id.au,
+ Michal Marek <mmarek@suse.cz>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,32 +34,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sam Mendoza-Jonas <sam@mendozajonas.com> writes:
-> On Wed, Jan 20, 2016 at 02:56:13PM +1100, Russell Currey wrote:
->> On Wed, 2015-12-02 at 16:25 +1100, Gavin Shan wrote:
->> > In eeh_pe_loc_get(), the PE location code is retrieved from the
->> > "ibm,loc-code" property of the device node for the bridge of the
->> > PE's primary bus. It's not correct because the property indicates
->> > the parent PE's location code.
->> > 
->> > This reads the correct PE location code from "ibm,io-base-loc-code"
->> > or "ibm,slot-location-code" property of PE parent bus's device node.
->> > 
->> > Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> > ---
->> 
->> Tested-by: Russell Currey <ruscur@russell.cc>
+On 21 January 2016 at 06:10, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> Ard Biesheuvel <ard.biesheuvel@linaro.org> writes:
+>> This implements text-relative kallsyms address tables. This was developed
+>> as part of my series to implement KASLR/CONFIG_RELOCATABLE for arm64, but
+>> I think it may be beneficial to other architectures as well, so I am
+>> presenting it as a separate series.
 >
-> Thanks Russell!
+> Nice work!
 >
-> W.R.T including this in stable, I don't believe anything actively breaks
-> without the patch, but in the event of an EEH freeze the wrong slot for
-> the device will be identified, making troubleshooting more difficult.
 
-As someone who's likely going to have to deal with the bug reports for
-such things, I like the idea of this going to stable as *maybe* I'll get
-fewer of them that I have to close pointing to this commit...
+Thanks
 
--- 
-Stewart Smith
-OPAL Architect, IBM.
+> AFAICT this should work for every arch, as long as they start with _text
+> (esp: data and init must be > _text).  In addition, it's not harmful on
+> 32 bit archs.
+>
+> IOW, I'd like to turn it on for everyone and discard some code.  But
+> it's easier to roll in like you've done first.
+>
+> Should we enable it by default for every arch for now, and see what
+> happens?
+>
+
+As you say, this only works if every symbol >= _text, which is
+obviously not the case per the conditional in scripts/kallsyms.c,
+which emits _text + n or _text - n depending on whether the symbol
+precedes or follows _text. The git log tells me for which arch this
+was originally implemented, but it does not tell me which other archs
+have come to rely on it in the meantime.
+
+On top of that, ia64 fails to build with this option, since it has
+some whitelisted absolute symbols that look suspiciously like they
+could be emitted as _text relative (and it does not even matter in the
+absence of CONFIG_RELOCATABLE on ia64, afaict) but I don't know
+whether we can just override their types as T, since it would also
+change the type in the contents of /proc/kallsyms. So some guidance
+would be appreciated here.
+
+So I agree that it would be preferred to have a single code path, but
+I would need some help validating it on architectures I don't have
+access to.
+
+Thanks,
+Ard.
+
+
+>> The idea is that on 64-bit builds, it is rather wasteful to use absolute
+>> addressing for kernel symbols since they are all within a couple of MBs
+>> of each other. On top of that, the absolute addressing implies that, when
+>> the kernel is relocated at runtime, each address in the table needs to be
+>> fixed up individually.
+>>
+>> Since all section-relative addresses are already emitted relative to _text,
+>> it is quite straight-forward to record only the offset, and add the absolute
+>> address of _text at runtime when referring to the address table.
+>>
+>> The reduction ranges from around 250 KB uncompressed vmlinux size and 10 KB
+>> compressed size (s390) to 3 MB/500 KB for ppc64 (although, in the latter case,
+>> the reduction in uncompressed size is primarily __init data)
+>>
+>> Kees Cook was so kind to test these against x86_64, and confirmed that KASLR
+>> still operates as expected.
+>>
+>> Ard Biesheuvel (4):
+>>   kallsyms: add support for relative offsets in kallsyms address table
+>>   powerpc: enable text relative kallsyms for ppc64
+>>   s390: enable text relative kallsyms for 64-bit targets
+>>   x86_64: enable text relative kallsyms for 64-bit targets
+>>
+>>  arch/powerpc/Kconfig    |  1 +
+>>  arch/s390/Kconfig       |  1 +
+>>  arch/x86/Kconfig        |  1 +
+>>  init/Kconfig            | 14 ++++++++
+>>  kernel/kallsyms.c       | 35 +++++++++++++-----
+>>  scripts/kallsyms.c      | 38 +++++++++++++++++---
+>>  scripts/link-vmlinux.sh |  4 +++
+>>  scripts/namespace.pl    |  1 +
+>>  8 files changed, 82 insertions(+), 13 deletions(-)
+>>
+>> --
+>> 2.5.0
