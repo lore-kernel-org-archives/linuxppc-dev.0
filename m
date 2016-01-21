@@ -1,42 +1,25 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <jikos@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B75181A0019
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 19:46:24 +1100 (AEDT)
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Thu, 21 Jan 2016 01:46:22 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id C642019D8026
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 01:34:21 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0L8kLDk31195202
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 01:46:21 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0L8kKJJ030200
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 01:46:20 -0700
-Subject: Re: [PATCH V10 1/4] perf/powerpc: assign an id to each powerpc
- register
+ by lists.ozlabs.org (Postfix) with ESMTPS id E41511A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 20:33:19 +1100 (AEDT)
+Date: Thu, 21 Jan 2016 10:33:03 +0100 (CET)
+From: Jiri Kosina <jikos@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-References: <1452508104-16507-1-git-send-email-anju@linux.vnet.ibm.com>
- <1452508104-16507-2-git-send-email-anju@linux.vnet.ibm.com>
- <1453286327.14751.17.camel@ellerman.id.au>
-Cc: khandual@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
- dsahern@gmail.com, acme@redhat.com, sukadev@linux.vnet.ibm.com,
- hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-From: Anju T <anju@linux.vnet.ibm.com>
-Message-ID: <56A09AD7.3030801@linux.vnet.ibm.com>
-Date: Thu, 21 Jan 2016 14:16:15 +0530
+cc: Petr Mladek <pmladek@suse.com>, Torsten Duwe <duwe@lst.de>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
+Subject: Re: [PATCH v5 0/9] ftrace with regs + live patching for ppc64 LE
+ (ABI v2)
+In-Reply-To: <1453269803.14751.10.camel@ellerman.id.au>
+Message-ID: <alpine.LNX.2.00.1601211032430.21446@cbobk.fhfr.pm>
+References: <20151204152419.28E0D691D2@newverein.lst.de>
+ <20160106141730.GL3178@pathway.suse.cz>
+ <1453269803.14751.10.camel@ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1453286327.14751.17.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,88 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 20 January 2016 04:08 PM, Michael Ellerman wrote:
-> Hi Anju,
->
-> On Mon, 2016-01-11 at 15:58 +0530, Anju T wrote:
->
->> The enum definition assigns an 'id' to each register in "struct pt_regs"
->> of arch/powerpc. The order of these values in the enum definition are
->> based on the corresponding macros in arch/powerpc/include/uapi/asm/ptrace.h.
-> Sorry one thing ...
->
->> diff --git a/arch/powerpc/include/uapi/asm/perf_regs.h b/arch/powerpc/include/uapi/asm/perf_regs.h
->> new file mode 100644
->> index 0000000..cfbd068
->> --- /dev/null
->> +++ b/arch/powerpc/include/uapi/asm/perf_regs.h
->> @@ -0,0 +1,49 @@
->> +#ifndef _ASM_POWERPC_PERF_REGS_H
->> +#define _ASM_POWERPC_PERF_REGS_H
->> +
->> +enum perf_event_powerpc_regs {
->> +	PERF_REG_POWERPC_GPR0,
->> +	PERF_REG_POWERPC_GPR1,
->> +	PERF_REG_POWERPC_GPR2,
->> +	PERF_REG_POWERPC_GPR3,
->> +	PERF_REG_POWERPC_GPR4,
->> +	PERF_REG_POWERPC_GPR5,
->> +	PERF_REG_POWERPC_GPR6,
->> +	PERF_REG_POWERPC_GPR7,
->> +	PERF_REG_POWERPC_GPR8,
->> +	PERF_REG_POWERPC_GPR9,
->> +	PERF_REG_POWERPC_GPR10,
->> +	PERF_REG_POWERPC_GPR11,
->> +	PERF_REG_POWERPC_GPR12,
->> +	PERF_REG_POWERPC_GPR13,
->> +	PERF_REG_POWERPC_GPR14,
->> +	PERF_REG_POWERPC_GPR15,
->> +	PERF_REG_POWERPC_GPR16,
->> +	PERF_REG_POWERPC_GPR17,
->> +	PERF_REG_POWERPC_GPR18,
->> +	PERF_REG_POWERPC_GPR19,
->> +	PERF_REG_POWERPC_GPR20,
->> +	PERF_REG_POWERPC_GPR21,
->> +	PERF_REG_POWERPC_GPR22,
->> +	PERF_REG_POWERPC_GPR23,
->> +	PERF_REG_POWERPC_GPR24,
->> +	PERF_REG_POWERPC_GPR25,
->> +	PERF_REG_POWERPC_GPR26,
->> +	PERF_REG_POWERPC_GPR27,
->> +	PERF_REG_POWERPC_GPR28,
->> +	PERF_REG_POWERPC_GPR29,
->> +	PERF_REG_POWERPC_GPR30,
->> +	PERF_REG_POWERPC_GPR31,
->> +	PERF_REG_POWERPC_NIP,
->> +	PERF_REG_POWERPC_MSR,
->> +	PERF_REG_POWERPC_ORIG_R3,
->> +	PERF_REG_POWERPC_CTR,
->> +	PERF_REG_POWERPC_LNK,
->> +	PERF_REG_POWERPC_XER,
->> +	PERF_REG_POWERPC_CCR,
-> You skipped SOFTE here at my suggestion, because it's called MQ on 32-bit.
->
-> But I've changed my mind, I think we *should* define SOFTE, and ignore MQ,
-> because MQ is unused. So just add:
->
->    +	PERF_REG_POWERPC_SOFTE,
+On Wed, 20 Jan 2016, Michael Ellerman wrote:
 
+> For me the series doesn't even boot, even with livepatching disabled.
 
-Thank you for reviewing the patch.
+Could you please post config and dmesg from that non-booting kernel?
 
-Yes here we can add SOFTE.
+Thanks,
 
-
-Thanks
-
-Anju
->
->
->> +	PERF_REG_POWERPC_TRAP,
->> +	PERF_REG_POWERPC_DAR,
->> +	PERF_REG_POWERPC_DSISR,
->> +	PERF_REG_POWERPC_MAX,
->> +};
->> +#endif /* _ASM_POWERPC_PERF_REGS_H */
-> cheers
->
+-- 
+Jiri Kosina
+SUSE Labs
