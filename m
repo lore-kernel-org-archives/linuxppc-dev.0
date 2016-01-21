@@ -1,37 +1,37 @@
 Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 207FE1A18B0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 11:58:22 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8C32B1A18E6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 11:58:23 +1100 (AEDT)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B4EC2140BA2
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Jan 2016 11:58:21 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 2AB61140B8C
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Jan 2016 11:58:23 +1100 (AEDT)
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
- Thu, 21 Jan 2016 10:58:21 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 18EA72BB005A
+ Thu, 21 Jan 2016 10:58:22 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3DA093578053
  for <linuxppc-dev@ozlabs.org>; Thu, 21 Jan 2016 11:58:19 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0L0vmst31523038
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Jan 2016 11:57:56 +1100
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0L0wD7342336408
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Jan 2016 11:58:21 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0L0vk58017173
+ u0L0vk6s017154
  for <linuxppc-dev@ozlabs.org>; Thu, 21 Jan 2016 11:57:46 +1100
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@ozlabs.org
 Cc: mikey@neuling.org, anton@samba.org
-Subject: [PATCH v3 9/9] powerpc: Add the ability to save VSX without giving it
- up
-Date: Thu, 21 Jan 2016 11:55:49 +1100
-Message-Id: <1453337749-15506-10-git-send-email-cyrilbur@gmail.com>
+Subject: [PATCH v3 8/9] powerpc: Add the ability to save Altivec without
+ giving it up
+Date: Thu, 21 Jan 2016 11:55:48 +1100
+Message-Id: <1453337749-15506-9-git-send-email-cyrilbur@gmail.com>
 In-Reply-To: <1453337749-15506-1-git-send-email-cyrilbur@gmail.com>
 References: <1453337749-15506-1-git-send-email-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,158 +43,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the ability to be able to save the VSX registers to the
+This patch adds the ability to be able to save the VEC registers to the
 thread struct without giving up (disabling the facility) next time the
 process returns to userspace.
 
-This patch builds on a previous optimisation for the FPU and VEC registers
-in the thread copy path to avoid a possibly pointless reload of VSX state.
+This patch builds on a previous optimisation for the FPU registers in the
+thread copy path to avoid a possibly pointless reload of VEC state.
 
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- arch/powerpc/include/asm/switch_to.h |  4 ----
- arch/powerpc/kernel/ppc_ksyms.c      |  4 ----
- arch/powerpc/kernel/process.c        | 42 +++++++++++++++++++++++++-----------
- arch/powerpc/kernel/vector.S         | 17 ---------------
- 4 files changed, 30 insertions(+), 37 deletions(-)
+ arch/powerpc/include/asm/switch_to.h |  3 ++-
+ arch/powerpc/kernel/process.c        | 12 +++++++++++-
+ arch/powerpc/kernel/vector.S         | 24 ++++--------------------
+ 3 files changed, 17 insertions(+), 22 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 9028822..17c8380 100644
+index 6a201e8..9028822 100644
 --- a/arch/powerpc/include/asm/switch_to.h
 +++ b/arch/powerpc/include/asm/switch_to.h
-@@ -56,14 +56,10 @@ static inline void __giveup_altivec(struct task_struct *t) { }
- #ifdef CONFIG_VSX
- extern void enable_kernel_vsx(void);
- extern void flush_vsx_to_thread(struct task_struct *);
--extern void giveup_vsx(struct task_struct *);
--extern void __giveup_vsx(struct task_struct *);
- static inline void disable_kernel_vsx(void)
+@@ -43,12 +43,13 @@ static inline void flush_fp_to_thread(struct task_struct *t) { }
+ extern void enable_kernel_altivec(void);
+ extern void flush_altivec_to_thread(struct task_struct *);
+ extern void giveup_altivec(struct task_struct *);
+-extern void __giveup_altivec(struct task_struct *);
++extern void save_altivec(struct task_struct *);
+ static inline void disable_kernel_altivec(void)
  {
- 	msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
- }
--#else
--static inline void __giveup_vsx(struct task_struct *t) { }
- #endif
- 
- #ifdef CONFIG_SPE
-diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
-index 41e1607..ef7024da 100644
---- a/arch/powerpc/kernel/ppc_ksyms.c
-+++ b/arch/powerpc/kernel/ppc_ksyms.c
-@@ -28,10 +28,6 @@ EXPORT_SYMBOL(load_vr_state);
- EXPORT_SYMBOL(store_vr_state);
- #endif
- 
--#ifdef CONFIG_VSX
--EXPORT_SYMBOL_GPL(__giveup_vsx);
--#endif
--
- #ifdef CONFIG_EPAPR_PARAVIRT
- EXPORT_SYMBOL(epapr_hypercall_start);
- #endif
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index fef5b7d..7c3dd30 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -280,19 +280,31 @@ static inline int restore_altivec(struct task_struct *tsk) { return 0; }
- #endif /* CONFIG_ALTIVEC */
- 
- #ifdef CONFIG_VSX
--void giveup_vsx(struct task_struct *tsk)
-+static void __giveup_vsx(struct task_struct *tsk)
- {
--	check_if_tm_restore_required(tsk);
--
--	msr_check_and_set(MSR_FP|MSR_VEC|MSR_VSX);
- 	if (tsk->thread.regs->msr & MSR_FP)
- 		__giveup_fpu(tsk);
- 	if (tsk->thread.regs->msr & MSR_VEC)
- 		__giveup_altivec(tsk);
-+	tsk->thread.regs->msr &= ~MSR_VSX;
-+}
-+
-+static void giveup_vsx(struct task_struct *tsk)
-+{
-+	check_if_tm_restore_required(tsk);
-+
-+	msr_check_and_set(MSR_FP|MSR_VEC|MSR_VSX);
- 	__giveup_vsx(tsk);
- 	msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
- }
--EXPORT_SYMBOL(giveup_vsx);
-+
-+static void save_vsx(struct task_struct *tsk)
-+{
-+	if (tsk->thread.regs->msr & MSR_FP)
-+		save_fpu(tsk);
-+	if (tsk->thread.regs->msr & MSR_VEC)
-+		save_altivec(tsk);
-+}
- 
- void enable_kernel_vsx(void)
- {
-@@ -331,6 +343,7 @@ static int restore_vsx(struct task_struct *tsk)
+ 	msr_check_and_clear(MSR_VEC);
  }
  #else
- static inline int restore_vsx(struct task_struct *tsk) { return 0; }
-+static inline void save_vsx(struct task_struct *tsk) { }
- #endif /* CONFIG_VSX */
++static inline void save_altivec(struct task_struct *t) { }
+ static inline void __giveup_altivec(struct task_struct *t) { }
+ #endif
  
- #ifdef CONFIG_SPE
-@@ -482,14 +495,19 @@ void save_all(struct task_struct *tsk)
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index a3411ce..fef5b7d 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -213,6 +213,16 @@ static int restore_fp(struct task_struct *tsk) { return 0; }
+ #ifdef CONFIG_ALTIVEC
+ #define loadvec(thr) ((thr).load_vec)
  
- 	msr_check_and_set(msr_all_available);
++static void __giveup_altivec(struct task_struct *tsk)
++{
++	save_altivec(tsk);
++	tsk->thread.regs->msr &= ~MSR_VEC;
++#ifdef CONFIG_VSX
++	if (cpu_has_feature(CPU_FTR_VSX))
++		tsk->thread.regs->msr &= ~MSR_VSX;
++#endif
++}
++
+ void giveup_altivec(struct task_struct *tsk)
+ {
+ 	check_if_tm_restore_required(tsk);
+@@ -476,7 +486,7 @@ void save_all(struct task_struct *tsk)
+ 		save_fpu(tsk);
  
--	if (usermsr & MSR_FP)
--		save_fpu(tsk);
--
--	if (usermsr & MSR_VEC)
--		save_altivec(tsk);
-+	/*
-+	 * Saving the way the register space is in hardware, save_vsx boils
-+	 * down to a save_fpu() and save_altivec()
-+	 */
-+	if (usermsr & MSR_VSX) {
-+		save_vsx(tsk);
-+	} else {
-+		if (usermsr & MSR_FP)
-+			save_fpu(tsk);
+ 	if (usermsr & MSR_VEC)
+-		__giveup_altivec(tsk);
++		save_altivec(tsk);
  
--	if (usermsr & MSR_VSX)
--		__giveup_vsx(tsk);
-+		if (usermsr & MSR_VEC)
-+			save_altivec(tsk);
-+	}
- 
- 	if (usermsr & MSR_SPE)
- 		__giveup_spe(tsk);
+ 	if (usermsr & MSR_VSX)
+ 		__giveup_vsx(tsk);
 diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-index 51b0c17..1c2e7a3 100644
+index 038cff8..51b0c17 100644
 --- a/arch/powerpc/kernel/vector.S
 +++ b/arch/powerpc/kernel/vector.S
-@@ -151,23 +151,6 @@ _GLOBAL(load_up_vsx)
- 	std	r12,_MSR(r1)
- 	b	fast_exception_return
+@@ -106,36 +106,20 @@ _GLOBAL(load_up_altivec)
+ 	blr
  
--/*
-- * __giveup_vsx(tsk)
-- * Disable VSX for the task given as the argument.
-- * Does NOT save vsx registers.
-- */
--_GLOBAL(__giveup_vsx)
--	addi	r3,r3,THREAD		/* want THREAD of task */
--	ld	r5,PT_REGS(r3)
--	cmpdi	0,r5,0
+ /*
+- * __giveup_altivec(tsk)
+- * Disable VMX for the task given as the argument,
+- * and save the vector registers in its thread_struct.
++ * save_altivec(tsk)
++ * Save the vector registers to its thread_struct
+  */
+-_GLOBAL(__giveup_altivec)
++_GLOBAL(save_altivec)
+ 	addi	r3,r3,THREAD		/* want THREAD of task */
+ 	PPC_LL	r7,THREAD_VRSAVEAREA(r3)
+ 	PPC_LL	r5,PT_REGS(r3)
+ 	PPC_LCMPI	0,r7,0
+ 	bne	2f
+ 	addi	r7,r3,THREAD_VRSTATE
+-2:	PPC_LCMPI	0,r5,0
+-	SAVE_32VRS(0,r4,r7)
++2:	SAVE_32VRS(0,r4,r7)
+ 	mfvscr	v0
+ 	li	r4,VRSTATE_VSCR
+ 	stvx	v0,r4,r7
 -	beq	1f
--	ld	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
--	lis	r3,MSR_VSX@h
--	andc	r4,r4,r3		/* disable VSX for previous task */
--	std	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+-	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+-#ifdef CONFIG_VSX
+-BEGIN_FTR_SECTION
+-	lis	r3,(MSR_VEC|MSR_VSX)@h
+-FTR_SECTION_ELSE
+-	lis	r3,MSR_VEC@h
+-ALT_FTR_SECTION_END_IFSET(CPU_FTR_VSX)
+-#else
+-	lis	r3,MSR_VEC@h
+-#endif
+-	andc	r4,r4,r3		/* disable FP for previous task */
+-	PPC_STL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
 -1:
--	blr
--
- #endif /* CONFIG_VSX */
+ 	blr
  
- 
+ #ifdef CONFIG_VSX
 -- 
 2.7.0
