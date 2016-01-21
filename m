@@ -1,33 +1,34 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 679E11A076C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:40:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F75A1A1903
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:41:10 +1100 (AEDT)
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Thu, 21 Jan 2016 17:40:42 +1000
+ Thu, 21 Jan 2016 17:41:08 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 37F062CE802D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:40:39 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 18E022CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:41:06 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0L7eRXj50462840
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:40:39 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0L7e3hq012514
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:40:03 +1100
+ u0L7ev1C13762630
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:41:05 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0L7eXnl026496
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 18:40:33 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
  David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v2 2/6] KVM: PPC: Use RCU for arch.spapr_tce_tables
-Date: Thu, 21 Jan 2016 18:39:33 +1100
-Message-Id: <1453361977-19589-3-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v2 3/6] KVM: PPC: Account TCE-containing pages in
+ locked_vm
+Date: Thu, 21 Jan 2016 18:39:34 +1100
+Message-Id: <1453361977-19589-4-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1453361977-19589-1-git-send-email-aik@ozlabs.ru>
 References: <1453361977-19589-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,95 +40,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment spapr_tce_tables is not protected against races. This makes
-use of RCU-variants of list helpers. As some bits are executed in real
-mode, this makes use of just introduced list_for_each_entry_rcu_notrace().
+At the moment pages used for TCE tables (in addition to pages addressed
+by TCEs) are not counted in locked_vm counter so a malicious userspace
+tool can call ioctl(KVM_CREATE_SPAPR_TCE) as many times as RLIMIT_NOFILE and
+lock a lot of memory.
 
-This converts release_spapr_tce_table() to a RCU scheduled handler.
+This adds counting for pages used for TCE tables.
+
+This counts the number of pages required for a table plus pages for
+the kvmppc_spapr_tce_table struct (TCE table descriptor) itself.
+
+This changes release_spapr_tce_table() to store @npages on stack to
+avoid calling kvmppc_stt_npages() in the loop (tiny optimization,
+probably).
+
+This does not change the amount of (de)allocated memory.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/kvm_host.h |  1 +
- arch/powerpc/kvm/book3s.c           |  2 +-
- arch/powerpc/kvm/book3s_64_vio.c    | 20 +++++++++++---------
- 3 files changed, 13 insertions(+), 10 deletions(-)
+Changes:
+v2:
+* switched from long to unsigned long types
+* added WARN_ON_ONCE() in locked_vm decrement case
+---
+ arch/powerpc/kvm/book3s_64_vio.c | 55 +++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 52 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 271fefb..c7ee696 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -184,6 +184,7 @@ struct kvmppc_spapr_tce_table {
- 	struct kvm *kvm;
- 	u64 liobn;
- 	u32 window_size;
-+	struct rcu_head rcu;
- 	struct page *pages[0];
- };
- 
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 638c6d9..b34220d 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -807,7 +807,7 @@ int kvmppc_core_init_vm(struct kvm *kvm)
- {
- 
- #ifdef CONFIG_PPC64
--	INIT_LIST_HEAD(&kvm->arch.spapr_tce_tables);
-+	INIT_LIST_HEAD_RCU(&kvm->arch.spapr_tce_tables);
- 	INIT_LIST_HEAD(&kvm->arch.rtas_tokens);
- #endif
- 
 diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 54cf9bc..9526c34 100644
+index 9526c34..ea498b4 100644
 --- a/arch/powerpc/kvm/book3s_64_vio.c
 +++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -45,19 +45,16 @@ static long kvmppc_stt_npages(unsigned long window_size)
+@@ -39,19 +39,62 @@
+ 
+ #define TCES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
+ 
+-static long kvmppc_stt_npages(unsigned long window_size)
++static unsigned long kvmppc_stt_npages(unsigned long window_size)
+ {
+ 	return ALIGN((window_size >> SPAPR_TCE_SHIFT)
  		     * sizeof(u64), PAGE_SIZE) / PAGE_SIZE;
  }
  
--static void release_spapr_tce_table(struct kvmppc_spapr_tce_table *stt)
-+static void release_spapr_tce_table(struct rcu_head *head)
++static long kvmppc_account_memlimit(unsigned long npages, bool inc)
++{
++	long ret = 0;
++	const unsigned long bytes = sizeof(struct kvmppc_spapr_tce_table) +
++			(npages * sizeof(struct page *));
++	const unsigned long stt_pages = ALIGN(bytes, PAGE_SIZE) / PAGE_SIZE;
++
++	if (!current || !current->mm)
++		return ret; /* process exited */
++
++	npages += stt_pages;
++
++	down_write(&current->mm->mmap_sem);
++
++	if (inc) {
++		unsigned long locked, lock_limit;
++
++		locked = current->mm->locked_vm + npages;
++		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
++		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
++			ret = -ENOMEM;
++		else
++			current->mm->locked_vm += npages;
++	} else {
++		if (WARN_ON_ONCE(npages > current->mm->locked_vm))
++			npages = current->mm->locked_vm;
++
++		current->mm->locked_vm -= npages;
++	}
++
++	pr_debug("[%d] RLIMIT_MEMLOCK KVM %c%ld %ld/%ld%s\n", current->pid,
++			inc ? '+' : '-',
++			npages << PAGE_SHIFT,
++			current->mm->locked_vm << PAGE_SHIFT,
++			rlimit(RLIMIT_MEMLOCK),
++			ret ? " - exceeded" : "");
++
++	up_write(&current->mm->mmap_sem);
++
++	return ret;
++}
++
+ static void release_spapr_tce_table(struct rcu_head *head)
  {
--	struct kvm *kvm = stt->kvm;
-+	struct kvmppc_spapr_tce_table *stt = container_of(head,
-+			struct kvmppc_spapr_tce_table, rcu);
+ 	struct kvmppc_spapr_tce_table *stt = container_of(head,
+ 			struct kvmppc_spapr_tce_table, rcu);
+ 	int i;
++	unsigned long npages = kvmppc_stt_npages(stt->window_size);
+ 
+-	for (i = 0; i < kvmppc_stt_npages(stt->window_size); i++)
++	for (i = 0; i < npages; i++)
+ 		__free_page(stt->pages[i]);
+ 
+ 	kfree(stt);
+@@ -89,6 +132,7 @@ static int kvm_spapr_tce_release(struct inode *inode, struct file *filp)
+ 
+ 	kvm_put_kvm(stt->kvm);
+ 
++	kvmppc_account_memlimit(kvmppc_stt_npages(stt->window_size), false);
+ 	call_rcu(&stt->rcu, release_spapr_tce_table);
+ 
+ 	return 0;
+@@ -103,7 +147,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 				   struct kvm_create_spapr_tce *args)
+ {
+ 	struct kvmppc_spapr_tce_table *stt = NULL;
+-	long npages;
++	unsigned long npages;
+ 	int ret = -ENOMEM;
  	int i;
  
--	mutex_lock(&kvm->lock);
--	list_del(&stt->list);
- 	for (i = 0; i < kvmppc_stt_npages(stt->window_size); i++)
- 		__free_page(stt->pages[i]);
-+
- 	kfree(stt);
--	mutex_unlock(&kvm->lock);
--
--	kvm_put_kvm(kvm);
- }
+@@ -114,6 +158,11 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 	}
  
- static int kvm_spapr_tce_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
-@@ -88,7 +85,12 @@ static int kvm_spapr_tce_release(struct inode *inode, struct file *filp)
- {
- 	struct kvmppc_spapr_tce_table *stt = filp->private_data;
+ 	npages = kvmppc_stt_npages(args->window_size);
++	ret = kvmppc_account_memlimit(npages, true);
++	if (ret) {
++		stt = NULL;
++		goto fail;
++	}
  
--	release_spapr_tce_table(stt);
-+	list_del_rcu(&stt->list);
-+
-+	kvm_put_kvm(stt->kvm);
-+
-+	call_rcu(&stt->rcu, release_spapr_tce_table);
-+
- 	return 0;
- }
- 
-@@ -131,7 +133,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 	kvm_get_kvm(kvm);
- 
- 	mutex_lock(&kvm->lock);
--	list_add(&stt->list, &kvm->arch.spapr_tce_tables);
-+	list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
- 
- 	mutex_unlock(&kvm->lock);
- 
+ 	stt = kzalloc(sizeof(*stt) + npages * sizeof(struct page *),
+ 		      GFP_KERNEL);
 -- 
 2.5.0.rc3
