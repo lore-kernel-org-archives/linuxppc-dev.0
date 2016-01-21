@@ -1,41 +1,43 @@
 Return-Path: <anju@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C34071A001D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 21:02:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DC3FC1A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 20:57:50 +1100 (AEDT)
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Thu, 21 Jan 2016 03:02:37 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 5CEF81FF0049
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 02:50:44 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0LA2Ylq27394250
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 03:02:34 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0LA2UUm010036
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 03:02:33 -0700
-Subject: Re: [PATCH v10 3/4] tools/perf: Map the ID values with register names
+ Thu, 21 Jan 2016 02:57:48 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 4EE253E40041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 02:57:43 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0L9vhgv23789740
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 02:57:43 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0L9vgKW030034
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 02:57:43 -0700
+Subject: Re: [PATCH V10 2/4] perf/powerpc: add support for sampling intr
+ machine state
 To: Michael Ellerman <mpe@ellerman.id.au>
 References: <1452508104-16507-1-git-send-email-anju@linux.vnet.ibm.com>
- <1452508104-16507-4-git-send-email-anju@linux.vnet.ibm.com>
- <1453286775.14751.21.camel@ellerman.id.au>
+ <1452508104-16507-3-git-send-email-anju@linux.vnet.ibm.com>
+ <1453286426.14751.19.camel@ellerman.id.au>
 Cc: khandual@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
  dsahern@gmail.com, acme@redhat.com, sukadev@linux.vnet.ibm.com,
  hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 From: Anju T <anju@linux.vnet.ibm.com>
-Message-ID: <56A0ACB1.5060500@linux.vnet.ibm.com>
-Date: Thu, 21 Jan 2016 15:32:25 +0530
+Message-ID: <56A0AB91.6070104@linux.vnet.ibm.com>
+Date: Thu, 21 Jan 2016 15:27:37 +0530
 MIME-Version: 1.0
-In-Reply-To: <1453286775.14751.21.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <1453286426.14751.19.camel@ellerman.id.au>
+Content-Type: multipart/alternative;
+ boundary="------------020204030007030200040404"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,111 +47,239 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------020204030007030200040404
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
 Hi mpe,
-On Wednesday 20 January 2016 04:16 PM, Michael Ellerman wrote:
+On Wednesday 20 January 2016 04:10 PM, Michael Ellerman wrote:
 > On Mon, 2016-01-11 at 15:58 +0530, Anju T wrote:
->> diff --git a/tools/perf/arch/powerpc/include/perf_regs.h b/tools/perf/arch/powerpc/include/perf_regs.h
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index 9a7057e..c4ce60d 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -119,6 +119,7 @@ config PPC
+>>   	select GENERIC_ATOMIC64 if PPC32
+>>   	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+>>   	select HAVE_PERF_EVENTS
+>> +	select HAVE_PERF_REGS
+>>   	select HAVE_REGS_AND_STACK_ACCESS_API
+>>   	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
+>>   	select ARCH_WANT_IPC_PARSE_VERSION
+>> diff --git a/arch/powerpc/perf/perf_regs.c b/arch/powerpc/perf/perf_regs.c
 >> new file mode 100644
->> index 0000000..93080f5
+>> index 0000000..d32581763
 >> --- /dev/null
->> +++ b/tools/perf/arch/powerpc/include/perf_regs.h
->> @@ -0,0 +1,64 @@
->> +#ifndef ARCH_PERF_REGS_H
->> +#define ARCH_PERF_REGS_H
+>> +++ b/arch/powerpc/perf/perf_regs.c
+> ...
 >> +
->> +#include <stdlib.h>
->> +#include <linux/types.h>
->> +#include <asm/perf_regs.h>
->> +
->> +#define PERF_REGS_MASK  ((1ULL << PERF_REG_POWERPC_MAX) - 1)
->> +#define PERF_REGS_MAX   PERF_REG_POWERPC_MAX
->> +#define PERF_SAMPLE_REGS_ABI   PERF_SAMPLE_REGS_ABI_64
-> That looks wrong if perf is built 32-bit ?
-
-
-Yes. You are right. The ABI differs for 32 bit.
-
-
->> +#define PERF_REG_IP     PERF_REG_POWERPC_NIP
->> +#define PERF_REG_SP     PERF_REG_POWERPC_GPR1
->> +
->> +static const char *reg_names[] = {
->> +	[PERF_REG_POWERPC_GPR0] = "gpr0",
-> Can you instead call them "r0" etc.
->
-> That is much more common on powerpc than "gpr0".
->
->> +	[PERF_REG_POWERPC_GPR1] = "gpr1",
->> +	[PERF_REG_POWERPC_GPR2] = "gpr2",
->> +	[PERF_REG_POWERPC_GPR3] = "gpr3",
->> +	[PERF_REG_POWERPC_GPR4] = "gpr4",
->> +	[PERF_REG_POWERPC_GPR5] = "gpr5",
->> +	[PERF_REG_POWERPC_GPR6] = "gpr6",
->> +	[PERF_REG_POWERPC_GPR7] = "gpr7",
->> +	[PERF_REG_POWERPC_GPR8] = "gpr8",
->> +	[PERF_REG_POWERPC_GPR9] = "gpr9",
->> +	[PERF_REG_POWERPC_GPR10] = "gpr10",
->> +	[PERF_REG_POWERPC_GPR11] = "gpr11",
->> +	[PERF_REG_POWERPC_GPR12] = "gpr12",
->> +	[PERF_REG_POWERPC_GPR13] = "gpr13",
->> +	[PERF_REG_POWERPC_GPR14] = "gpr14",
->> +	[PERF_REG_POWERPC_GPR15] = "gpr15",
->> +	[PERF_REG_POWERPC_GPR16] = "gpr16",
->> +	[PERF_REG_POWERPC_GPR17] = "gpr17",
->> +	[PERF_REG_POWERPC_GPR18] = "gpr18",
->> +	[PERF_REG_POWERPC_GPR19] = "gpr19",
->> +	[PERF_REG_POWERPC_GPR20] = "gpr20",
->> +	[PERF_REG_POWERPC_GPR21] = "gpr21",
->> +	[PERF_REG_POWERPC_GPR22] = "gpr22",
->> +	[PERF_REG_POWERPC_GPR23] = "gpr23",
->> +	[PERF_REG_POWERPC_GPR24] = "gpr24",
->> +	[PERF_REG_POWERPC_GPR25] = "gpr25",
->> +	[PERF_REG_POWERPC_GPR26] = "gpr26",
->> +	[PERF_REG_POWERPC_GPR27] = "gpr27",
->> +	[PERF_REG_POWERPC_GPR28] = "gpr28",
->> +	[PERF_REG_POWERPC_GPR29] = "gpr29",
->> +	[PERF_REG_POWERPC_GPR30] = "gpr30",
->> +	[PERF_REG_POWERPC_GPR31] = "gpr31",
->> +	[PERF_REG_POWERPC_NIP] = "nip",
->> +	[PERF_REG_POWERPC_MSR] = "msr",
->> +	[PERF_REG_POWERPC_ORIG_R3] = "orig_r3",
->> +	[PERF_REG_POWERPC_CTR] = "ctr",
->> +	[PERF_REG_POWERPC_LNK] = "link",
->> +	[PERF_REG_POWERPC_XER] = "xer",
->> +	[PERF_REG_POWERPC_CCR] = "ccr",
->> +	[PERF_REG_POWERPC_TRAP] = "trap",
->> +	[PERF_REG_POWERPC_DAR] = "dar",
->> +	[PERF_REG_POWERPC_DSISR] = "dsisr"
->> +};
->> +
->> +static inline const char *perf_reg_name(int id)
+>> +u64 perf_reg_abi(struct task_struct *task)
 >> +{
->> +	return reg_names[id];
->> +}
->> +#endif /* ARCH_PERF_REGS_H */
->> diff --git a/tools/perf/config/Makefile b/tools/perf/config/Makefile
->> index 38a0853..62a2f2d 100644
->> --- a/tools/perf/config/Makefile
->> +++ b/tools/perf/config/Makefile
->> @@ -23,6 +23,11 @@ $(call detected_var,ARCH)
->>   
->>   NO_PERF_REGS := 1
->>   
->> +# Additional ARCH settings for ppc64
->> +ifeq ($(ARCH),powerpc)
-> powerpc also includes ppc, ie. 32-bit, so the comment is wrong.
-
-
-I will update the comment here  in the next patch. :)
+>> +	return PERF_SAMPLE_REGS_ABI_64;
+> What is this value used for exactly?
 >
->> +  NO_PERF_REGS := 0
->> +endif
->> +
->>   # Additional ARCH settings for x86
->>   ifeq ($(ARCH),x86)
->>     $(call detected,CONFIG_X86)
+> It seems like on 32-bit kernels we should be returning PERF_SAMPLE_REGS_ABI_32.
+
+
+Values to determine ABI of the registers dump.
+
+enum perf_sample_regs_abi {
+
+PERF_SAMPLE_REGS_ABI_NONE = 0,
+
+PERF_SAMPLE_REGS_ABI_32 = 1,
+
+PERF_SAMPLE_REGS_ABI_64 = 2,
+
+};
+
+
+Initially the ABI is set as NONE. So when we enable 
+PERF_SAMPLE_REGS_INTR we need to get the correspodning ABI. This in turn 
+required for ..
+
+void perf_output_sample(struct perf_output_handle *handle,
+         if (sample_type & PERF_SAMPLE_TRANSACTION)
+                 perf_output_put(handle, data->txn);
+
+        if (sample_type & PERF_SAMPLE_REGS_INTR) {
+                u64 abi = data->regs_intr.abi;
+                /*
+                 * If there are no regs to dump, notice it through
+                 * first u64 being zero (PERF_SAMPLE_REGS_ABI_NONE).
+                 */
+                perf_output_put(handle, abi);
+
+                if (abi) {
+                        u64 mask = event->attr.sample_regs_intr;
+
+                        perf_output_sample_regs(handle,
+data->regs_intr.regs,
+                                                mask);
+                }
+        }
+
+
+
+Here as you suggested we may need to pass the right ABI for 64 and 32 bit.
 
 
 Thanks and Regards
 
 Anju
+
+
+
+
+>
+>> +}
+>> +
+>> +void perf_get_regs_user(struct perf_regs *regs_user,
+>> +			struct pt_regs *regs,
+>> +			struct pt_regs *regs_user_copy)
+>> +{
+>> +	regs_user->regs = task_pt_regs(current);
+>> +	regs_user->abi  = perf_reg_abi(current);
+>> +}
+> cheers
+>
+
+
+--------------020204030007030200040404
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    <div class="moz-cite-prefix">Hi mpe,<br>
+      On Wednesday 20 January 2016 04:10 PM, Michael Ellerman wrote:<br>
+    </div>
+    <blockquote cite="mid:1453286426.14751.19.camel@ellerman.id.au"
+      type="cite">
+      <pre wrap="">On Mon, 2016-01-11 at 15:58 +0530, Anju T wrote:
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9a7057e..c4ce60d 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -119,6 +119,7 @@ config PPC
+ 	select GENERIC_ATOMIC64 if PPC32
+ 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select HAVE_PERF_EVENTS
++	select HAVE_PERF_REGS
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+ 	select HAVE_HW_BREAKPOINT if PERF_EVENTS &amp;&amp; PPC_BOOK3S_64
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+diff --git a/arch/powerpc/perf/perf_regs.c b/arch/powerpc/perf/perf_regs.c
+new file mode 100644
+index 0000000..d32581763
+--- /dev/null
++++ b/arch/powerpc/perf/perf_regs.c
+</pre>
+      </blockquote>
+      <pre wrap="">...
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">+
++u64 perf_reg_abi(struct task_struct *task)
++{
++	return PERF_SAMPLE_REGS_ABI_64;
+</pre>
+      </blockquote>
+      <pre wrap="">
+What is this value used for exactly?
+
+It seems like on 32-bit kernels we should be returning PERF_SAMPLE_REGS_ABI_32.</pre>
+    </blockquote>
+    <br>
+    <br>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <p style="margin-bottom: 0cm; line-height: 100%">Values to determine
+      ABI of the registers dump.</p>
+    <p style="margin-bottom: 0cm; line-height: 100%"> </p>
+    <p style="margin-bottom: 0cm; line-height: 100%">enum
+      perf_sample_regs_abi {</p>
+    <p style="margin-bottom: 0cm; line-height: 100%">
+      PERF_SAMPLE_REGS_ABI_NONE = 0,</p>
+    <p style="margin-bottom: 0cm; line-height: 100%">
+      PERF_SAMPLE_REGS_ABI_32 = 1,</p>
+    <p style="margin-bottom: 0cm; line-height: 100%">
+      PERF_SAMPLE_REGS_ABI_64 = 2,</p>
+    <p style="margin-bottom: 0cm; line-height: 100%">};</p>
+    <p style="margin-bottom: 0cm; line-height: 100%"><br>
+    </p>
+    <title></title>
+    <meta name="generator" content="LibreOffice 4.3.7.2 (Linux)">
+    <style type="text/css">
+		@page { margin: 2cm }
+		p { margin-bottom: 0.25cm; line-height: 120% } </style>Initially the
+    ABI is set as NONE. So when we enable PERF_SAMPLE_REGS_INTR we need
+    to get the correspodning ABI. This in turn required for ..<br>
+    <br>
+    void perf_output_sample(struct perf_output_handle *handle,<br>
+            if (sample_type &amp; PERF_SAMPLE_TRANSACTION)<br>
+                    perf_output_put(handle, data-&gt;txn);<br>
+     <br>
+           if (sample_type &amp; PERF_SAMPLE_REGS_INTR) {<br>
+                   u64 abi = data-&gt;regs_intr.abi;<br>
+                   /*<br>
+                    * If there are no regs to dump, notice it through<br>
+                    * first u64 being zero (PERF_SAMPLE_REGS_ABI_NONE).<br>
+                    */<br>
+                   perf_output_put(handle, abi);<br>
+    <br>
+                   if (abi) {<br>
+                           u64 mask = event-&gt;attr.sample_regs_intr;<br>
+    <br>
+                           perf_output_sample_regs(handle,<br>
+                                                  
+    data-&gt;regs_intr.regs,<br>
+                                                   mask);<br>
+                   }<br>
+           }<br>
+    <br>
+    <br>
+    <br>
+    Here as you suggested we may need to pass the right ABI for 64 and
+    32 bit.<br>
+    <br>
+    <br>
+    Thanks and Regards<br>
+    <br>
+    Anju<br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <blockquote cite="mid:1453286426.14751.19.camel@ellerman.id.au"
+      type="cite">
+      <pre wrap="">
+
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">+}
++
++void perf_get_regs_user(struct perf_regs *regs_user,
++			struct pt_regs *regs,
++			struct pt_regs *regs_user_copy)
++{
++	regs_user-&gt;regs = task_pt_regs(current);
++	regs_user-&gt;abi  = perf_reg_abi(current);
++}
+</pre>
+      </blockquote>
+      <pre wrap="">
+cheers
+
+</pre>
+    </blockquote>
+    <br>
+  </body>
+</html>
+
+--------------020204030007030200040404--
