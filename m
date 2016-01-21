@@ -1,33 +1,31 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-io0-x236.google.com (mail-io0-x236.google.com
+ [IPv6:2607:f8b0:4001:c06::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 761521A0DC2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 19:16:57 +1100 (AEDT)
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Thu, 21 Jan 2016 18:16:57 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id DCF073578053
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 19:16:54 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0L8GakO47579334
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 19:16:44 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0L8GMcO011649
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 19:16:22 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-Subject: [PATCH kernel 0/4] KVM: PPC: Add in-kernel acceleration for 64bit DMA
-Date: Thu, 21 Jan 2016 19:15:22 +1100
-Message-Id: <1453364126-22527-1-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C5AF31A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 19:32:18 +1100 (AEDT)
+Received: by mail-io0-x236.google.com with SMTP id 77so46882910ioc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 00:32:17 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <CAKv+Gu95c84Pq=5FEAMkpym7HjmVpeGqy1B_RgWwd8eBe6b0qQ@mail.gmail.com>
+References: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
+ <878u3jy0te.fsf@rustcorp.com.au>
+ <CAKv+Gu95c84Pq=5FEAMkpym7HjmVpeGqy1B_RgWwd8eBe6b0qQ@mail.gmail.com>
+Date: Thu, 21 Jan 2016 09:32:15 +0100
+Message-ID: <CAKv+Gu8Pzjt3e_CH0xiCqTk8b6kWV=7Wbiy2YsX99g0SQTW8Tg@mail.gmail.com>
+Subject: Re: [PATCH 0/4] support for text-relative kallsyms table
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-s390@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "x86@kernel.org" <x86@kernel.org>,
+ Kees Cook <keescook@chromium.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Ingo Molnar <mingo@kernel.org>, "hpa@zytor.com" <hpa@zytor.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, mpe@ellerman.id.au,
+ Michal Marek <mmarek@suse.cz>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,38 +35,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This extends the existing H_PUT_TCE/etc in-kernel acceleration to 64bit
-DMA windows mapped at addresses other than zero. This accelerates huge
-DMA windows which pseries guests create using Dynamic DMA window (DDW) API.
+On 21 January 2016 at 07:45, Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
+> On 21 January 2016 at 06:10, Rusty Russell <rusty@rustcorp.com.au> wrote:
+>> Ard Biesheuvel <ard.biesheuvel@linaro.org> writes:
+>>> This implements text-relative kallsyms address tables. This was developed
+>>> as part of my series to implement KASLR/CONFIG_RELOCATABLE for arm64, but
+>>> I think it may be beneficial to other architectures as well, so I am
+>>> presenting it as a separate series.
+>>
+>> Nice work!
+>>
+>
+> Thanks
+>
+>> AFAICT this should work for every arch, as long as they start with _text
+>> (esp: data and init must be > _text).  In addition, it's not harmful on
+>> 32 bit archs.
+>>
+>> IOW, I'd like to turn it on for everyone and discard some code.  But
+>> it's easier to roll in like you've done first.
+>>
+>> Should we enable it by default for every arch for now, and see what
+>> happens?
+>>
+>
+> As you say, this only works if every symbol >= _text, which is
+> obviously not the case per the conditional in scripts/kallsyms.c,
+> which emits _text + n or _text - n depending on whether the symbol
+> precedes or follows _text. The git log tells me for which arch this
+> was originally implemented, but it does not tell me which other archs
+> have come to rely on it in the meantime.
+>
+> On top of that, ia64 fails to build with this option, since it has
+> some whitelisted absolute symbols that look suspiciously like they
+> could be emitted as _text relative (and it does not even matter in the
+> absence of CONFIG_RELOCATABLE on ia64, afaict) but I don't know
+> whether we can just override their types as T, since it would also
+> change the type in the contents of /proc/kallsyms. So some guidance
+> would be appreciated here.
+>
 
-This does not affect VFIO yet.
+Digging a little deeper, it appears that it would be non-trivial to
+port this to ia64:
 
-This depends on:
+...
+a000000000040720 A __kernel_syscall_via_break
+a000000000040740 A __kernel_sigtramp
+a000000000040a00 A __kernel_syscall_via_epc
+a000000100000000 T ia64_ivt
+a000000100000000 T __start_ivt_text
+a000000100000000 T _stext
+a000000100000000 T _text
+...
 
-69b907297f4e list: Add lockless list traversal primitives
-and recently posted:
-powerpc: Make vmalloc_to_phys() public
-KVM: PPC: Add in-kernel multitce handling
+The top three symbols are the absolute symbols that are explicitly
+whitelisted by scripts/kallsyms.c, and they are too far from 0 and too
+far from _text to be representable in 32 bits
 
 
-Please comment. Thanks!
 
-
-Alexey Kardashevskiy (4):
-  KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_64 capability number
-  KVM: PPC: Add @page_shift to kvmppc_spapr_tce_table
-  KVM: PPC: Add @offset to kvmppc_spapr_tce_table
-  KVM: PPC: Add support for 64bit TCE windows
-
- Documentation/virtual/kvm/api.txt   | 32 ++++++++++++++++++++++++++++++++
- arch/powerpc/include/asm/kvm_host.h |  4 +++-
- arch/powerpc/include/asm/kvm_ppc.h  |  2 +-
- arch/powerpc/include/uapi/asm/kvm.h |  9 +++++++++
- arch/powerpc/kvm/book3s_64_vio.c    | 35 ++++++++++++++++++++---------------
- arch/powerpc/kvm/book3s_64_vio_hv.c | 22 ++++++++++++----------
- arch/powerpc/kvm/powerpc.c          | 25 ++++++++++++++++++++++++-
- include/uapi/linux/kvm.h            |  3 +++
- 8 files changed, 104 insertions(+), 28 deletions(-)
-
--- 
-2.5.0.rc3
+> So I agree that it would be preferred to have a single code path, but
+> I would need some help validating it on architectures I don't have
+> access to.
+>
+> Thanks,
+> Ard.
+>
+>
+>>> The idea is that on 64-bit builds, it is rather wasteful to use absolute
+>>> addressing for kernel symbols since they are all within a couple of MBs
+>>> of each other. On top of that, the absolute addressing implies that, when
+>>> the kernel is relocated at runtime, each address in the table needs to be
+>>> fixed up individually.
+>>>
+>>> Since all section-relative addresses are already emitted relative to _text,
+>>> it is quite straight-forward to record only the offset, and add the absolute
+>>> address of _text at runtime when referring to the address table.
+>>>
+>>> The reduction ranges from around 250 KB uncompressed vmlinux size and 10 KB
+>>> compressed size (s390) to 3 MB/500 KB for ppc64 (although, in the latter case,
+>>> the reduction in uncompressed size is primarily __init data)
+>>>
+>>> Kees Cook was so kind to test these against x86_64, and confirmed that KASLR
+>>> still operates as expected.
+>>>
+>>> Ard Biesheuvel (4):
+>>>   kallsyms: add support for relative offsets in kallsyms address table
+>>>   powerpc: enable text relative kallsyms for ppc64
+>>>   s390: enable text relative kallsyms for 64-bit targets
+>>>   x86_64: enable text relative kallsyms for 64-bit targets
+>>>
+>>>  arch/powerpc/Kconfig    |  1 +
+>>>  arch/s390/Kconfig       |  1 +
+>>>  arch/x86/Kconfig        |  1 +
+>>>  init/Kconfig            | 14 ++++++++
+>>>  kernel/kallsyms.c       | 35 +++++++++++++-----
+>>>  scripts/kallsyms.c      | 38 +++++++++++++++++---
+>>>  scripts/link-vmlinux.sh |  4 +++
+>>>  scripts/namespace.pl    |  1 +
+>>>  8 files changed, 82 insertions(+), 13 deletions(-)
+>>>
+>>> --
+>>> 2.5.0
