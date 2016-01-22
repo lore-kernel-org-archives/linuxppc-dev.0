@@ -1,38 +1,24 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-io0-x236.google.com (mail-io0-x236.google.com
- [IPv6:2607:f8b0:4001:c06::236])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D9271A060B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 17:44:49 +1100 (AEDT)
-Received: by mail-io0-x236.google.com with SMTP id q21so79266813iod.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 22:44:48 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 099C61A060B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 17:48:35 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id 65so2866382pff.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 22:48:35 -0800 (PST)
+Subject: Re: [PATCH kernel] vfio: Only check for bus IOMMU when NOIOMMU is
+ selected
+To: linuxppc-dev@lists.ozlabs.org
+References: <1453444494-46900-1-git-send-email-aik@ozlabs.ru>
+Cc: Alex Williamson <alex.williamson@redhat.com>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <56A1D0BC.6030405@ozlabs.ru>
+Date: Fri, 22 Jan 2016 17:48:28 +1100
 MIME-Version: 1.0
-In-Reply-To: <1453434282.21683.2.camel@ellerman.id.au>
-References: <1453373299-28181-1-git-send-email-ard.biesheuvel@linaro.org>
- <1453396783-21591-1-git-send-email-ard.biesheuvel@linaro.org>
- <20160121145008.746fc62fbe3fbc685869da57@linux-foundation.org>
- <CAGXu5j+yNZRC99BonVwdawqQTBDQWMKu4gw9TTnA8nOU+fqSMg@mail.gmail.com>
- <1453434282.21683.2.camel@ellerman.id.au>
-Date: Fri, 22 Jan 2016 07:44:46 +0100
-Message-ID: <CAKv+Gu8nrwv1Q2CALUSJ3CjWOO3O6mW81yCiT33e+DLCT5wEhA@mail.gmail.com>
-Subject: Re: [PATCH v3] kallsyms: add support for relative offsets in kallsyms
- address table
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Kees Cook <keescook@chromium.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- LKML <linux-kernel@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "x86@kernel.org" <x86@kernel.org>,
- Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Michal Marek <mmarek@suse.cz>,
- Rusty Russell <rusty@rustcorp.com.au>, Arnd Bergmann <arnd@arndb.de>,
- linux-arch <linux-arch@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1453444494-46900-1-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,56 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22 January 2016 at 04:44, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> On Thu, 2016-01-21 at 14:55 -0800, Kees Cook wrote:
->> On Thu, Jan 21, 2016 at 2:50 PM, Andrew Morton
->> <akpm@linux-foundation.org> wrote:
->> > On Thu, 21 Jan 2016 18:19:43 +0100 Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
->> >
->> > > Similar to how relative extables are implemented, it is possible to emit
->> > > the kallsyms table in such a way that it contains offsets relative to some
->> > > anchor point in the kernel image rather than absolute addresses. The benefit
->> > > is that such table entries are no longer subject to dynamic relocation when
->> > > the build time and runtime offsets of the kernel image are different. Also,
->> > > on 64-bit architectures, it essentially cuts the size of the address table
->> > > in half since offsets can typically be expressed in 32 bits.
->> > >
->> > > Since it is useful for some architectures (like x86) to retain the ability
->> > > to emit absolute values as well, this patch adds support for both, by
->> > > emitting absolute addresses as positive 32-bit values, and addresses
->> > > relative to the lowest encountered relative symbol as negative values, which
->> > > are subtracted from the runtime address of this base symbol to produce the
->> > > actual address.
->> > >
->> > > Support for the above is enabled by default for all architectures except
->> > > IA-64, whose symbols are too far apart to capture in this manner.
->> >
->> > I'm not really understanding the benefits of this.  A smaller address
->> > table is nice, but why is it desirable that "such table entries are no
->> > longer subject to dynamic relocation when the build time and runtime
->> > offsets of the kernel image are different"?
->>
->> IIUC, this means that the relocation work done after decompression now
->> doesn't have to do relocation updates for all these values, which
->> means a smaller relocation table as well.
+On 01/22/2016 05:34 PM, Alexey Kardashevskiy wrote:
+> Recent change 03a76b60 "vfio: Include No-IOMMU mode" disabled VFIO
+> on systems which do not implement iommu_ops for the PCI bus even though
+> there is an VFIO IOMMU driver for it such as SPAPR TCE driver for
+> PPC64/powernv platform.
 >
-> Yep. If I remember the figures rightly it saves ~250K of relocations for the
-> powerpc build.
+> This moves iommu_present() call under #ifdef CONFIG_VFIO_NOIOMMU as
+> it is done in the rest of the file to re-enable VFIO on powernv.
+>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>   drivers/vfio/vfio.c | 5 ++++-
+>   1 file changed, 4 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
+> index 82f25cc..3f8060e 100644
+> --- a/drivers/vfio/vfio.c
+> +++ b/drivers/vfio/vfio.c
+> @@ -343,7 +343,6 @@ static struct vfio_group *vfio_create_group(struct iommu_group *iommu_group,
+>   	atomic_set(&group->opened, 0);
+>   	group->iommu_group = iommu_group;
+>   	group->noiommu = !iommu_present;
+> -
+
+
+Agrh. Unrelated change, repost?
+
+
+>   	group->nb.notifier_call = vfio_iommu_group_notifier;
+>
+>   	/*
+> @@ -767,7 +766,11 @@ int vfio_add_group_dev(struct device *dev,
+>
+>   	group = vfio_group_get_from_iommu(iommu_group);
+>   	if (!group) {
+> +#ifdef CONFIG_VFIO_NOIOMMU
+>   		group = vfio_create_group(iommu_group, iommu_present(dev->bus));
+> +#else
+> +		group = vfio_create_group(iommu_group, true);
+> +#endif
+>   		if (IS_ERR(group)) {
+>   			iommu_group_put(iommu_group);
+>   			return PTR_ERR(group);
 >
 
-For ppc64_defconfig (which has CONFIG_RELOCATABLE=y, i.e., it has a
-dynamic relocation section containing a 24-byte RELA entry per
-relocated quantity), I got the following numbers
 
-101740 kallsyms entries
-397 KB saved in permanent .rodata
-2.4 MB saved in __init rela.dyn section
-~500 KB saved in compressed image
-
-For arm64, we don't have a compressed image, which is the reason I
-need this for my arm64 implementation of CONFIG_RELOCATABLE (for
-KASLR), since the RELA overhead goes straight into the distributed
-image.
-
-Thanks,
-Ard.
+-- 
+Alexey
