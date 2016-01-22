@@ -1,20 +1,36 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-ig0-x22b.google.com (mail-ig0-x22b.google.com
+ [IPv6:2607:f8b0:4001:c05::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 530891A0018
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 19:12:33 +1100 (AEDT)
-Date: Fri, 22 Jan 2016 02:08:57 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Enable VMX copy on PPC970 (G5)
-Message-ID: <20160122080857.GA11095@gate.crashing.org>
-References: <1453335927-17419-1-git-send-email-mpe@ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1453335927-17419-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 782041A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 19:20:43 +1100 (AEDT)
+Received: by mail-ig0-x22b.google.com with SMTP id ik10so6153277igb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 00:20:42 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20160121152045.82639ae577d816198607d650@linux-foundation.org>
+References: <1453373299-28181-1-git-send-email-ard.biesheuvel@linaro.org>
+ <1453396783-21591-1-git-send-email-ard.biesheuvel@linaro.org>
+ <20160121145008.746fc62fbe3fbc685869da57@linux-foundation.org>
+ <CAGXu5j+yNZRC99BonVwdawqQTBDQWMKu4gw9TTnA8nOU+fqSMg@mail.gmail.com>
+ <20160121152045.82639ae577d816198607d650@linux-foundation.org>
+Date: Fri, 22 Jan 2016 09:20:41 +0100
+Message-ID: <CAKv+Gu8QvECRJ9DhEd=k-oTy=xVVFJSMaW0EOCxMMPsWsF2RMQ@mail.gmail.com>
+Subject: Re: [PATCH v3] kallsyms: add support for relative offsets in kallsyms
+ address table
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kees Cook <keescook@chromium.org>, LKML <linux-kernel@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Michal Marek <mmarek@suse.cz>, Rusty Russell <rusty@rustcorp.com.au>,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch <linux-arch@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,11 +40,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 21, 2016 at 11:25:27AM +1100, Michael Ellerman wrote:
-> There's no reason I'm aware of that the VMX copy loop shouldn't work on
-> PPC970. And in fact it seems to boot and generally be happy.
+On 22 January 2016 at 00:20, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Thu, 21 Jan 2016 14:55:00 -0800 Kees Cook <keescook@chromium.org> wrote:
+>
+>> IIUC, this means that the relocation work done after decompression now
+>> doesn't have to do relocation updates for all these values, which
+>> means a smaller relocation table as well.
+>
+> Makes sense, thanks.  I altered the changelog
+>
+> : Similar to how relative extables are implemented, it is possible to
+> : emit the kallsyms table in such a way that it contains offsets relative
+> : to some anchor point in the kernel image rather than absolute
+> : addresses.
+> :
 
-But is it faster?
+Thanks for taking the patch, but the bit below does not make sense anymore:
 
+"""
+> : The benefit is that such table entries are no longer subject to dynamic
+> : relocation when the build time so the relocation work done after
+> : decompression now doesn't have to do relocation updates for all these
+> : values, which means a smaller relocation table as well.
+> :
+> : Also, the runtime offsets of the kernel image are different.  Also, on
+> : 64-bit architectures, it essentially cuts the size of the address table
+> : in half since offsets can typically be expressed in 32 bits.
+> :
+"""
 
-Segher
+In addition to fixing the broken grammar, would it make sense to
+mention that dynamic relocation only occurs under
+CONFIG_RELOCATABLE=y? I.e., something like
+
+"""
+On 64-bit architectures, it cuts the size of the kallsyms address
+table in half, since offsets between kernel symbols can typically be
+expressed in 32 bits. This saves several hundreds of kilobytes of
+permanent .rodata on average. In addition, the kallsyms address table
+is no longer subject to dynamic relocation when CONFIG_RELOCATABLE is
+in effect, so the relocation work done after decompression now doesn't
+have to do relocation updates for all these values. This saves up to
+24 bytes (i.e., the size of a ELF64 RELA relocation table entry) per
+table entry, which easily adds up to a couple of megabytes of
+uncompressed __init data on ppc64 or arm64. Even if these relocation
+entries typically compress well, the combined size reduction of 2.8 MB
+uncompressed for a ppc64_defconfig build (of which 2.4 MB is __init
+data) results in a ~500 KB space saving in the compressed image.
+"""
+
+Thanks,
+Ard.
