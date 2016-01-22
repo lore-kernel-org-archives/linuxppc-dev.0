@@ -1,36 +1,23 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-ig0-x22b.google.com (mail-ig0-x22b.google.com
- [IPv6:2607:f8b0:4001:c05::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 782041A0018
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 19:20:43 +1100 (AEDT)
-Received: by mail-ig0-x22b.google.com with SMTP id ik10so6153277igb.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 00:20:42 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20160121152045.82639ae577d816198607d650@linux-foundation.org>
-References: <1453373299-28181-1-git-send-email-ard.biesheuvel@linaro.org>
- <1453396783-21591-1-git-send-email-ard.biesheuvel@linaro.org>
- <20160121145008.746fc62fbe3fbc685869da57@linux-foundation.org>
- <CAGXu5j+yNZRC99BonVwdawqQTBDQWMKu4gw9TTnA8nOU+fqSMg@mail.gmail.com>
- <20160121152045.82639ae577d816198607d650@linux-foundation.org>
-Date: Fri, 22 Jan 2016 09:20:41 +0100
-Message-ID: <CAKv+Gu8QvECRJ9DhEd=k-oTy=xVVFJSMaW0EOCxMMPsWsF2RMQ@mail.gmail.com>
-Subject: Re: [PATCH v3] kallsyms: add support for relative offsets in kallsyms
- address table
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kees Cook <keescook@chromium.org>, LKML <linux-kernel@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "x86@kernel.org" <x86@kernel.org>,
- Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Michal Marek <mmarek@suse.cz>, Rusty Russell <rusty@rustcorp.com.au>,
- Arnd Bergmann <arnd@arndb.de>, linux-arch <linux-arch@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id E33E41A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 19:35:44 +1100 (AEDT)
+Message-ID: <1453451744.24910.4.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/mm: Allow user space to map rtas_rmo_buf
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Dan Williams <dan.j.williams@intel.com>, Nathan Fontenot
+ <nfont@linux.vnet.ibm.com>
+Date: Fri, 22 Jan 2016 19:35:44 +1100
+In-Reply-To: <56A1CC1C.3000009@linux.vnet.ibm.com>
+References: <1453392931-20707-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <1453440564.21683.8.camel@ellerman.id.au>
+ <56A1CC1C.3000009@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,54 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22 January 2016 at 00:20, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Thu, 21 Jan 2016 14:55:00 -0800 Kees Cook <keescook@chromium.org> wrote:
->
->> IIUC, this means that the relocation work done after decompression now
->> doesn't have to do relocation updates for all these values, which
->> means a smaller relocation table as well.
->
-> Makes sense, thanks.  I altered the changelog
->
-> : Similar to how relative extables are implemented, it is possible to
-> : emit the kallsyms table in such a way that it contains offsets relative
-> : to some anchor point in the kernel image rather than absolute
-> : addresses.
-> :
+On Fri, 2016-01-22 at 11:58 +0530, Vasant Hegde wrote:
+> On 01/22/2016 10:59 AM, Michael Ellerman wrote:
+> > On Thu, 2016-01-21 at 21:45 +0530, Vasant Hegde wrote:
+> > 
+> > > With commit 90a545e9 (restrict /dev/mem to idle io memory ranges) mapping
+> > > rtas_rmo_buf from user space is failing. Hence we are not able to make
+> > > RTAS syscall.
+> > 
+> > Having said that, why the <expletive deleted> is librtas mapping /dev/mem in
+> > the first place? Unless there is a very good reason, and probably even if there
+> > is, we should fix that to use a sane API.
+> 
+> We use rtas system call. We use /dev/mem interface to map the RTAS memory region
+> (allocated by kernel and information is passed to user space via procfs) so that
+> we can read/write to RTAS memory.
+> 
+> I do not have historical information. May be Nathan has more information on this.
 
-Thanks for taking the patch, but the bit below does not make sense anymore:
+Yeah, we need to dig into what it's actually doing and why. I had a quick look
+but it wasn't obvious.
 
-"""
-> : The benefit is that such table entries are no longer subject to dynamic
-> : relocation when the build time so the relocation work done after
-> : decompression now doesn't have to do relocation updates for all these
-> : values, which means a smaller relocation table as well.
-> :
-> : Also, the runtime offsets of the kernel image are different.  Also, on
-> : 64-bit architectures, it essentially cuts the size of the address table
-> : in half since offsets can typically be expressed in 32 bits.
-> :
-"""
+We should not need 1) a system call, 2) a proc interface, and 3) a mmap of
+/dev/mem.
 
-In addition to fixing the broken grammar, would it make sense to
-mention that dynamic relocation only occurs under
-CONFIG_RELOCATABLE=y? I.e., something like
+If the syscall's not sufficient and we really need to mmap, we should create a
+device which can then be mmapped in a more standard way.
 
-"""
-On 64-bit architectures, it cuts the size of the kallsyms address
-table in half, since offsets between kernel symbols can typically be
-expressed in 32 bits. This saves several hundreds of kilobytes of
-permanent .rodata on average. In addition, the kallsyms address table
-is no longer subject to dynamic relocation when CONFIG_RELOCATABLE is
-in effect, so the relocation work done after decompression now doesn't
-have to do relocation updates for all these values. This saves up to
-24 bytes (i.e., the size of a ELF64 RELA relocation table entry) per
-table entry, which easily adds up to a couple of megabytes of
-uncompressed __init data on ppc64 or arm64. Even if these relocation
-entries typically compress well, the combined size reduction of 2.8 MB
-uncompressed for a ppc64_defconfig build (of which 2.4 MB is __init
-data) results in a ~500 KB space saving in the compressed image.
-"""
+Having said that, Nathan's been moving more of the hotplug logic into the
+kernel, so I'm also not clear on how much of the existing API we will need in
+the future. So yep hopefully Nathan can chime in.
 
-Thanks,
-Ard.
+cheers
