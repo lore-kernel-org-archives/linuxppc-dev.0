@@ -1,20 +1,34 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 278241A184E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jan 2016 04:24:22 +1100 (AEDT)
-Message-ID: <1453483460.32741.420.camel@redhat.com>
-Subject: Re: [PATCH kernel] vfio: Only check for bus IOMMU when NOIOMMU is
- selected
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Fri, 22 Jan 2016 10:24:20 -0700
-In-Reply-To: <1453444494-46900-1-git-send-email-aik@ozlabs.ru>
-References: <1453444494-46900-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB0E41A0331
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jan 2016 08:07:20 +1100 (AEDT)
+Date: Fri, 22 Jan 2016 13:07:18 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: Kees Cook <keescook@chromium.org>, LKML <linux-kernel@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "x86@kernel.org" <x86@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Heiko Carstens
+ <heiko.carstens@de.ibm.com>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, Michal
+ Marek <mmarek@suse.cz>, Rusty Russell <rusty@rustcorp.com.au>, Arnd
+ Bergmann <arnd@arndb.de>, linux-arch <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH v3] kallsyms: add support for relative offsets in
+ kallsyms address table
+Message-Id: <20160122130718.8313ec9aefa654f33bd17792@linux-foundation.org>
+In-Reply-To: <CAKv+Gu8QvECRJ9DhEd=k-oTy=xVVFJSMaW0EOCxMMPsWsF2RMQ@mail.gmail.com>
+References: <1453373299-28181-1-git-send-email-ard.biesheuvel@linaro.org>
+ <1453396783-21591-1-git-send-email-ard.biesheuvel@linaro.org>
+ <20160121145008.746fc62fbe3fbc685869da57@linux-foundation.org>
+ <CAGXu5j+yNZRC99BonVwdawqQTBDQWMKu4gw9TTnA8nOU+fqSMg@mail.gmail.com>
+ <20160121152045.82639ae577d816198607d650@linux-foundation.org>
+ <CAKv+Gu8QvECRJ9DhEd=k-oTy=xVVFJSMaW0EOCxMMPsWsF2RMQ@mail.gmail.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +38,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-01-22 at 17:34 +1100, Alexey Kardashevskiy wrote:
-> Recent change 03a76b60 "vfio: Include No-IOMMU mode" disabled VFIO
-> on systems which do not implement iommu_ops for the PCI bus even
-> though
-> there is an VFIO IOMMU driver for it such as SPAPR TCE driver for
-> PPC64/powernv platform.
-> 
-> This moves iommu_present() call under #ifdef CONFIG_VFIO_NOIOMMU as
-> it is done in the rest of the file to re-enable VFIO on powernv.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  drivers/vfio/vfio.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
-> index 82f25cc..3f8060e 100644
-> --- a/drivers/vfio/vfio.c
-> +++ b/drivers/vfio/vfio.c
-> @@ -343,7 +343,6 @@ static struct vfio_group
-> *vfio_create_group(struct iommu_group *iommu_group,
->  	atomic_set(&group->opened, 0);
->  	group->iommu_group = iommu_group;
->  	group->noiommu = !iommu_present;
-> -
->  	group->nb.notifier_call = vfio_iommu_group_notifier;
->  
->  	/*
-> @@ -767,7 +766,11 @@ int vfio_add_group_dev(struct device *dev,
->  
->  	group = vfio_group_get_from_iommu(iommu_group);
->  	if (!group) {
-> +#ifdef CONFIG_VFIO_NOIOMMU
->  		group = vfio_create_group(iommu_group,
-> iommu_present(dev->bus));
-> +#else
-> +		group = vfio_create_group(iommu_group, true);
-> +#endif
->  		if (IS_ERR(group)) {
->  			iommu_group_put(iommu_group);
->  			return PTR_ERR(group);
+On Fri, 22 Jan 2016 09:20:41 +0100 Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
 
+> > : in half since offsets can typically be expressed in 32 bits.
+> > :
+> """
+> 
+> In addition to fixing the broken grammar, would it make sense to
+> mention that dynamic relocation only occurs under
+> CONFIG_RELOCATABLE=y? I.e., something like
+> 
+> """
+> On 64-bit architectures, it cuts the size of the kallsyms address
+> table in half, since offsets between kernel symbols can typically be
+> expressed in 32 bits. This saves several hundreds of kilobytes of
+> permanent .rodata on average. In addition, the kallsyms address table
+> is no longer subject to dynamic relocation when CONFIG_RELOCATABLE is
+> in effect, so the relocation work done after decompression now doesn't
+> have to do relocation updates for all these values. This saves up to
+> 24 bytes (i.e., the size of a ELF64 RELA relocation table entry) per
+> table entry, which easily adds up to a couple of megabytes of
+> uncompressed __init data on ppc64 or arm64. Even if these relocation
+> entries typically compress well, the combined size reduction of 2.8 MB
+> uncompressed for a ppc64_defconfig build (of which 2.4 MB is __init
+> data) results in a ~500 KB space saving in the compressed image.
+> """
 
-A serious problem indeed, but this isn't the right solution.  I've
-copied you on a patch that I think fixes it.  Please verify.  Thanks,
+Yes, that sounds very good.  I'd buy one :)
 
-Alex
+Can you please send along a complete new changelog sometime?
