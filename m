@@ -1,18 +1,37 @@
-Return-Path: <dongsheng.wang@nxp.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0059.outbound.protection.outlook.com [157.56.111.59])
+Return-Path: <shaohui.xie@nxp.com>
+Received: from emea01-db3-obe.outbound.protection.outlook.com
+ (mail-db3on0082.outbound.protection.outlook.com [157.55.234.82])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6BF721A0019
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 19:43:29 +1100 (AEDT)
-From: Dongsheng Wang <dongsheng.wang@nxp.com>
-To: <oss@buserror.net>
-CC: <linuxppc-dev@lists.ozlabs.org>, Wang Dongsheng <dongsheng.wang@nxp.com>
-Subject: [PATCH] powerpc: p1022: add two functions for reset pci slot
-Date: Fri, 22 Jan 2016 16:19:07 +0800
-Message-ID: <1453450747-12147-1-git-send-email-dongsheng.wang@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C966F1A065A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 21:05:15 +1100 (AEDT)
+From: Shaohui Xie <shaohui.xie@nxp.com>
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn
+ <andrew@lunn.ch>
+CC: Florian Fainelli <f.fainelli@gmail.com>, "shh.xie@gmail.com"
+ <shh.xie@gmail.com>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "davem@davemloft.net" <davem@davemloft.net>,
+ Shaohui Xie <Shaohui.Xie@freescale.com>
+Subject: Re: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
+Date: Fri, 22 Jan 2016 10:05:04 +0000
+Message-ID: <VI1PR04MB1664AD70D26C452F5A33595AE8C40@VI1PR04MB1664.eurprd04.prod.outlook.com>
+References: <1452759839-9874-1-git-send-email-shh.xie@gmail.com>
+ <20160114164418.GD19773@lunn.ch>
+ <VI1PR04MB166491DEBB439EB72742201DE8CD0@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <56997951.90304@gmail.com> <5699B211.5070602@gmail.com>
+ <VI1PR04MB16645A2F24DB515D86136BE2E8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <569C9CD2.10301@gmail.com>
+ <VI1PR04MB1664AB0E483F01F1641059FFE8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <20160118151500.GD923@lunn.ch>
+ <VI1PR04MB1664DFBC53F08C5CE7EBF22AE8C10@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <20160121211250.GK9991@lunn.ch>
+ <VI1PR04MB1664BAFB4EE494CB14830BCCE8C40@VI1PR04MB1664.eurprd04.prod.outlook.com>,
+ <56A1F5AB.6090606@gmail.com>
+In-Reply-To: <56A1F5AB.6090606@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,291 +41,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wang Dongsheng <dongsheng.wang@nxp.com>
+>> Looking at fsl_backplane_config_aneg() you expect phydev->speed to be
+>> set, and from the speed you then kick of either KR autoneg or KX
+>> autoneg. Could you also start the training at this point? Use the
+>> speed to indicate if training is needed?
+>
+>   [S.H]The training cannot be started at this point, yet, because it's ba=
+sed on
+> autoneg result, only when both sides autoneg-ed to 10G-KR, then to start
+> the training.
 
-When the DIU enable, only through the way of indirect access
-to read/write pixis register. So add direct and indirect for
-pci slot reset.
+Shaohui,
 
-Signed-off-by: Wang Dongsheng <dongsheng.wang@nxp.com>
+look, we want you to convince us why to have a generic backplane
+property in the phy binding. You had a bad start by adding new
+property values to a property that does not relate to your use
+case at all. Your job now really is to give strong reasons _why_
+and _what_ a phy driver needs to know about the backplane setup.
 
-diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index 371df82..5c8894c 100644
---- a/arch/powerpc/platforms/85xx/p1022_ds.c
-+++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -53,23 +53,6 @@
- #define CLKDVDR_PXCKDLY		0x06000000
- #define CLKDVDR_PXCLK_MASK	0x00FF0000
- 
--/* Some ngPIXIS register definitions */
--#define PX_CTL		3
--#define PX_BRDCFG0	8
--#define PX_BRDCFG1	9
--
--#define PX_BRDCFG0_ELBC_SPI_MASK	0xc0
--#define PX_BRDCFG0_ELBC_SPI_ELBC	0x00
--#define PX_BRDCFG0_ELBC_SPI_NULL	0xc0
--#define PX_BRDCFG0_ELBC_DIU		0x02
--
--#define PX_BRDCFG1_DVIEN	0x80
--#define PX_BRDCFG1_DFPEN	0x40
--#define PX_BRDCFG1_BACKLIGHT	0x20
--#define PX_BRDCFG1_DDCEN	0x10
--
--#define PX_CTL_ALTACC		0x80
--
- /*
-  * DIU Area Descriptor
-  *
-@@ -106,6 +89,28 @@
- 	(c2 << AD_COMP_2_SHIFT) | (c1 << AD_COMP_1_SHIFT) | \
- 	(c0 << AD_COMP_0_SHIFT) | (size << AD_PIXEL_S_SHIFT))
- 
-+#endif
-+
-+/* Some ngPIXIS register definitions */
-+#define PX_CTL		3
-+#define PX_BRDCFG0	8
-+#define PX_BRDCFG1	9
-+
-+#define PX_RST		0x4
-+#define PX_RST_PCIE	0x8
-+
-+#define PX_BRDCFG0_ELBC_SPI_MASK	0xc0
-+#define PX_BRDCFG0_ELBC_SPI_ELBC	0x00
-+#define PX_BRDCFG0_ELBC_SPI_NULL	0xc0
-+#define PX_BRDCFG0_ELBC_DIU		0x02
-+
-+#define PX_BRDCFG1_DVIEN	0x80
-+#define PX_BRDCFG1_DFPEN	0x40
-+#define PX_BRDCFG1_BACKLIGHT	0x20
-+#define PX_BRDCFG1_DDCEN	0x10
-+
-+#define PX_CTL_ALTACC		0x80
-+
- struct fsl_law {
- 	u32	lawbar;
- 	u32	reserved1;
-@@ -125,6 +130,8 @@ struct fsl_law {
- 
- #define BR_BA		0xFFFF8000
- 
-+static int px_ctl_altacc_flag;
-+
- /*
-  * Map a BRx value to a physical address
-  *
-@@ -157,48 +164,40 @@ static phys_addr_t lbc_br_to_phys(const void *ecm, unsigned int count, u32 br)
- #endif
- }
- 
--/**
-- * p1022ds_set_monitor_port: switch the output to a different monitor port
-- */
--static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
-+static u8 __iomem *lbc_lcs0_ba;
-+static u8 __iomem *lbc_lcs1_ba;
-+
-+static inline bool verify_pixis_indirect_access_address(void)
- {
--	struct device_node *guts_node;
--	struct device_node *lbc_node = NULL;
--	struct device_node *law_node = NULL;
--	struct ccsr_guts __iomem *guts;
--	struct fsl_lbc_regs *lbc = NULL;
-+	if (lbc_lcs0_ba && lbc_lcs1_ba)
-+		return true;
-+
-+	return false;
-+}
-+
-+static void indirect_access_pixis_probe(void)
-+{
-+	struct device_node *lbc_node;
-+	struct device_node *law_node;
-+	struct fsl_lbc_regs *lbc;
- 	void *ecm = NULL;
--	u8 __iomem *lbc_lcs0_ba = NULL;
--	u8 __iomem *lbc_lcs1_ba = NULL;
-+
- 	phys_addr_t cs0_addr, cs1_addr;
- 	u32 br0, or0, br1, or1;
- 	const __be32 *iprop;
- 	unsigned int num_laws;
--	u8 b;
--
--	/* Map the global utilities registers. */
--	guts_node = of_find_compatible_node(NULL, NULL, "fsl,p1022-guts");
--	if (!guts_node) {
--		pr_err("p1022ds: missing global utilities device node\n");
--		return;
--	}
--
--	guts = of_iomap(guts_node, 0);
--	if (!guts) {
--		pr_err("p1022ds: could not map global utilities device\n");
--		goto exit;
--	}
- 
- 	lbc_node = of_find_compatible_node(NULL, NULL, "fsl,p1022-elbc");
- 	if (!lbc_node) {
- 		pr_err("p1022ds: missing localbus node\n");
--		goto exit;
-+		return;
- 	}
- 
- 	lbc = of_iomap(lbc_node, 0);
-+	of_node_put(lbc_node);
- 	if (!lbc) {
- 		pr_err("p1022ds: could not map localbus node\n");
--		goto exit;
-+		return;
- 	}
- 
- 	law_node = of_find_compatible_node(NULL, NULL, "fsl,ecm-law");
-@@ -282,7 +281,103 @@ static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
- 	if (!lbc_lcs1_ba) {
- 		pr_err("p1022ds: could not ioremap CS1 address %llx\n",
- 		       (unsigned long long)cs1_addr);
--		goto exit;
-+
-+		iounmap(lbc_lcs0_ba);
-+	}
-+
-+exit:
-+	if (ecm)
-+		iounmap(ecm);
-+	if (lbc)
-+		iounmap(lbc);
-+
-+	if (law_node)
-+		of_node_put(law_node);
-+}
-+
-+static void indirect_access_pixis_reset_pcie_slot(void)
-+{
-+	if (!verify_pixis_indirect_access_address()) {
-+		WARN_ON(1);
-+		return;
-+	}
-+
-+	/* Set FPGA access address */
-+	out_8(lbc_lcs0_ba, PX_RST);
-+
-+	/* power down pcie slot */
-+	clrbits8(lbc_lcs1_ba, PX_RST_PCIE);
-+
-+	/* power up pcie slot */
-+	setbits8(lbc_lcs1_ba, PX_RST_PCIE);
-+}
-+
-+static void direct_access_pixis_reset_pcie_slot(void)
-+{
-+	struct device_node *pixis_node;
-+	void __iomem *pixis;
-+
-+	/* Map the pixis registers. */
-+	pixis_node =
-+		of_find_compatible_node(NULL, NULL, "fsl,p1022ds-fpga");
-+	if (!pixis_node) {
-+		pr_err("p1022ds: missing pixis node\n");
-+		return;
-+	}
-+
-+	pixis = of_iomap(pixis_node, 0);
-+	of_node_put(pixis_node);
-+	if (!pixis) {
-+		pr_err("p1022ds: could not map pixis registers\n");
-+		return;
-+	}
-+
-+	/* Rset PCIE slot */
-+	/* power down pcie slot */
-+	clrbits8(pixis + PX_RST, PX_RST_PCIE);
-+
-+	/* power up pcie slot */
-+	setbits8(pixis + PX_RST, PX_RST_PCIE);
-+
-+	iounmap(pixis);
-+}
-+
-+void p1022ds_reset_pcie_slot(void)
-+{
-+	if (px_ctl_altacc_flag)
-+		indirect_access_pixis_reset_pcie_slot();
-+	else
-+		direct_access_pixis_reset_pcie_slot();
-+}
-+
-+#if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
-+
-+/**
-+ * p1022ds_set_monitor_port: switch the output to a different monitor port
-+ */
-+static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
-+{
-+	struct device_node *guts_node;
-+	struct ccsr_guts __iomem *guts;
-+	u8 b;
-+
-+	if (!verify_pixis_indirect_access_address()) {
-+		WARN_ON(1);
-+		return;
-+	}
-+
-+	/* Map the global utilities registers. */
-+	guts_node = of_find_compatible_node(NULL, NULL, "fsl,p1022-guts");
-+	if (!guts_node) {
-+		pr_err("p1022ds: missing global utilities device node\n");
-+		return;
-+	}
-+
-+	guts = of_iomap(guts_node, 0);
-+	of_node_put(guts_node);
-+	if (!guts) {
-+		pr_err("p1022ds: could not map global utilities device\n");
-+		return;
- 	}
- 
- 	/* Make sure we're in indirect mode first. */
-@@ -307,6 +402,7 @@ static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
- 
- 		/* Enable indirect PIXIS mode.  */
- 		setbits8(pixis + PX_CTL, PX_CTL_ALTACC);
-+		px_ctl_altacc_flag = 1;
- 		iounmap(pixis);
- 
- 		/* Switch the board mux to the DIU */
-@@ -348,20 +444,7 @@ static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
- 	}
- 
- exit:
--	if (lbc_lcs1_ba)
--		iounmap(lbc_lcs1_ba);
--	if (lbc_lcs0_ba)
--		iounmap(lbc_lcs0_ba);
--	if (lbc)
--		iounmap(lbc);
--	if (ecm)
--		iounmap(ecm);
--	if (guts)
--		iounmap(guts);
--
--	of_node_put(law_node);
--	of_node_put(lbc_node);
--	of_node_put(guts_node);
-+	iounmap(guts);
- }
- 
- /**
-@@ -543,6 +626,8 @@ static void __init p1022_ds_setup_arch(void)
- 
- 	swiotlb_detect_4g();
- 
-+	indirect_access_pixis_probe();
-+
- 	pr_info("Freescale P1022 DS reference board\n");
- }
- 
--- 
-2.1.0.27.g96db324
+[S.H] The PHY driver needs to know what the backplane mode is,=20
+1000BASE-KX or 10GBASE-KR, the driver parses the property for
+"1000base-kx" or "10gbase-kr", the driver does use the property,
+I don't understand why the property is not related to my use case?
+
+Your first approach was to add "10gbase-rk" or "40gbase-foo" but
+now you tell us about ANEG. Of what use is the information given
+by the property when ANEG tells you something different? E.g.
+consider the property tells you "10g-something" but ANEG gives
+you "40g"; does the property add any value to your training
+decision now?
+
+[S.H] The ANEG is not a gerneric AN, it's special to 10G-KR,  KR AN can onl=
+y
+AN to KR if both sides support KR, it cannot give "40g" or anything differe=
+nt,=20
+drive needs the property to do speicific init.
+
+> Besides the driver, generally speaking, "copper + speed" is not enough to=
+ indicate
+> it's backplane, for ex. "copper + 1000" does not mean it has to be 1000BA=
+SE-KX,
+> it could be SGMII, hence cannot use KX autoneg.
+
+So, is it copper + speed + backplane? or speed + backplane? And out of
+the set of required input, is there anything your _cannot_ determine
+from other things, e.g. ANEG?
+
+[S.H] Backplane is enough, 1000BASE-KX means : copper + 1000 + KX stuff.
+The KR AN is to check whether LP is also KR, if yes, do training, otherwise=
+, do nothing.
+
+If it is backplane only, would a boolean property ("backplane-mode")
+be enough for the training decision?
+
+[S.H] a boolean property is not enough, there are different backplane modes=
+.
+
+> If putting backplane property to phy.txt is not good, I can put it to fsl=
+ specific
+> binding, like the second patch 2/3 did.
+
+You seem to see vendor specific properties as a place to dump all your
+waste you don't want to think about. You fail to give good reasons what
+is so special about the backplane setup and now you are telling us that
+it is even fsl-specific?
+
+[S.H] I don't think it's waste, I just thought it might be special to fsl.
+Agreed I failed to give good reasons, but I tried hard to. :(
+
+Thanks,
+Shaohui
+
+Sebastian
