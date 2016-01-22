@@ -1,37 +1,27 @@
-Return-Path: <shaohui.xie@nxp.com>
-Received: from emea01-db3-obe.outbound.protection.outlook.com
- (mail-db3on0082.outbound.protection.outlook.com [157.55.234.82])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yk0-x22b.google.com (mail-yk0-x22b.google.com
+ [IPv6:2607:f8b0:4002:c07::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C966F1A065A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 21:05:15 +1100 (AEDT)
-From: Shaohui Xie <shaohui.xie@nxp.com>
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn
- <andrew@lunn.ch>
-CC: Florian Fainelli <f.fainelli@gmail.com>, "shh.xie@gmail.com"
- <shh.xie@gmail.com>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "davem@davemloft.net" <davem@davemloft.net>,
- Shaohui Xie <Shaohui.Xie@freescale.com>
-Subject: Re: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
-Date: Fri, 22 Jan 2016 10:05:04 +0000
-Message-ID: <VI1PR04MB1664AD70D26C452F5A33595AE8C40@VI1PR04MB1664.eurprd04.prod.outlook.com>
-References: <1452759839-9874-1-git-send-email-shh.xie@gmail.com>
- <20160114164418.GD19773@lunn.ch>
- <VI1PR04MB166491DEBB439EB72742201DE8CD0@VI1PR04MB1664.eurprd04.prod.outlook.com>
- <56997951.90304@gmail.com> <5699B211.5070602@gmail.com>
- <VI1PR04MB16645A2F24DB515D86136BE2E8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
- <569C9CD2.10301@gmail.com>
- <VI1PR04MB1664AB0E483F01F1641059FFE8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
- <20160118151500.GD923@lunn.ch>
- <VI1PR04MB1664DFBC53F08C5CE7EBF22AE8C10@VI1PR04MB1664.eurprd04.prod.outlook.com>
- <20160121211250.GK9991@lunn.ch>
- <VI1PR04MB1664BAFB4EE494CB14830BCCE8C40@VI1PR04MB1664.eurprd04.prod.outlook.com>,
- <56A1F5AB.6090606@gmail.com>
-In-Reply-To: <56A1F5AB.6090606@gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7375A1A075A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 21:42:01 +1100 (AEDT)
+Received: by mail-yk0-x22b.google.com with SMTP id k129so82071620yke.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 02:42:01 -0800 (PST)
 MIME-Version: 1.0
+In-Reply-To: <1453451744.24910.4.camel@ellerman.id.au>
+References: <1453392931-20707-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <1453440564.21683.8.camel@ellerman.id.au>
+ <56A1CC1C.3000009@linux.vnet.ibm.com>
+ <1453451744.24910.4.camel@ellerman.id.au>
+Date: Fri, 22 Jan 2016 13:41:58 +0300
+Message-ID: <CAOJe8K2nE-49zBrCNrwNoepccv5UZ2SvdX0Ut_2XtzMhJd2T7Q@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/mm: Allow user space to map rtas_rmo_buf
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Dan Williams <dan.j.williams@intel.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,75 +31,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> Looking at fsl_backplane_config_aneg() you expect phydev->speed to be
->> set, and from the speed you then kick of either KR autoneg or KX
->> autoneg. Could you also start the training at this point? Use the
->> speed to indicate if training is needed?
+On 1/22/16, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> On Fri, 2016-01-22 at 11:58 +0530, Vasant Hegde wrote:
+>> On 01/22/2016 10:59 AM, Michael Ellerman wrote:
+>> > On Thu, 2016-01-21 at 21:45 +0530, Vasant Hegde wrote:
+>> >
+>> > > With commit 90a545e9 (restrict /dev/mem to idle io memory ranges)
+>> > > mapping
+>> > > rtas_rmo_buf from user space is failing. Hence we are not able to make
+>> > > RTAS syscall.
+>> >
+>> > Having said that, why the <expletive deleted> is librtas mapping
+>> > /dev/mem in
+>> > the first place? Unless there is a very good reason, and probably even
+>> > if there
+>> > is, we should fix that to use a sane API.
+>>
+>> We use rtas system call. We use /dev/mem interface to map the RTAS memory
+>> region
+>> (allocated by kernel and information is passed to user space via procfs)
+>> so that
+>> we can read/write to RTAS memory.
+>>
+>> I do not have historical information. May be Nathan has more information
+>> on this.
 >
->   [S.H]The training cannot be started at this point, yet, because it's ba=
-sed on
-> autoneg result, only when both sides autoneg-ed to 10G-KR, then to start
-> the training.
+> Yeah, we need to dig into what it's actually doing and why. I had a quick
+> look
+> but it wasn't obvious.
+>
+> We should not need 1) a system call, 2) a proc interface, and 3) a mmap of
+> /dev/mem.
+>
+> If the syscall's not sufficient and we really need to mmap, we should create
+> a
+> device which can then be mmapped in a more standard way.
+>
+> Having said that, Nathan's been moving more of the hotplug logic into the
+> kernel, so I'm also not clear on how much of the existing API we will need
+> in
+> the future. So yep hopefully Nathan can chime in.
 
-Shaohui,
+Yeah, but if we're going to move to only one interface to work with
+RTAS we can break existing applications.
 
-look, we want you to convince us why to have a generic backplane
-property in the phy binding. You had a bad start by adding new
-property values to a property that does not relate to your use
-case at all. Your job now really is to give strong reasons _why_
-and _what_ a phy driver needs to know about the backplane setup.
-
-[S.H] The PHY driver needs to know what the backplane mode is,=20
-1000BASE-KX or 10GBASE-KR, the driver parses the property for
-"1000base-kx" or "10gbase-kr", the driver does use the property,
-I don't understand why the property is not related to my use case?
-
-Your first approach was to add "10gbase-rk" or "40gbase-foo" but
-now you tell us about ANEG. Of what use is the information given
-by the property when ANEG tells you something different? E.g.
-consider the property tells you "10g-something" but ANEG gives
-you "40g"; does the property add any value to your training
-decision now?
-
-[S.H] The ANEG is not a gerneric AN, it's special to 10G-KR,  KR AN can onl=
-y
-AN to KR if both sides support KR, it cannot give "40g" or anything differe=
-nt,=20
-drive needs the property to do speicific init.
-
-> Besides the driver, generally speaking, "copper + speed" is not enough to=
- indicate
-> it's backplane, for ex. "copper + 1000" does not mean it has to be 1000BA=
-SE-KX,
-> it could be SGMII, hence cannot use KX autoneg.
-
-So, is it copper + speed + backplane? or speed + backplane? And out of
-the set of required input, is there anything your _cannot_ determine
-from other things, e.g. ANEG?
-
-[S.H] Backplane is enough, 1000BASE-KX means : copper + 1000 + KX stuff.
-The KR AN is to check whether LP is also KR, if yes, do training, otherwise=
-, do nothing.
-
-If it is backplane only, would a boolean property ("backplane-mode")
-be enough for the training decision?
-
-[S.H] a boolean property is not enough, there are different backplane modes=
-.
-
-> If putting backplane property to phy.txt is not good, I can put it to fsl=
- specific
-> binding, like the second patch 2/3 did.
-
-You seem to see vendor specific properties as a place to dump all your
-waste you don't want to think about. You fail to give good reasons what
-is so special about the backplane setup and now you are telling us that
-it is even fsl-specific?
-
-[S.H] I don't think it's waste, I just thought it might be special to fsl.
-Agreed I failed to give good reasons, but I tried hard to. :(
-
-Thanks,
-Shaohui
-
-Sebastian
+>
+> cheers
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
