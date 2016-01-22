@@ -1,25 +1,37 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-wm0-x22f.google.com (mail-wm0-x22f.google.com
- [IPv6:2a00:1450:400c:c09::22f])
+Return-Path: <sebastian.hesselbarth@gmail.com>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47D231A0019
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 20:15:35 +1100 (AEDT)
-Received: by mail-wm0-x22f.google.com with SMTP id r129so204746835wmr.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 01:15:35 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1453338364-45129-1-git-send-email-qiang.zhao@nxp.com>
-References: <1453338364-45129-1-git-send-email-qiang.zhao@nxp.com>
-Date: Fri, 22 Jan 2016 17:15:31 +0800
-Message-ID: <CADRPPNSMn=hqqJ8j_5D8WGpbxo-dw-XV_vHkQ1zxJymT7rspLQ@mail.gmail.com>
-Subject: Re: [PATCH] qe_ic: fix a buffer overflow error and add check elsewhere
-From: Leo Li <pku.leo@gmail.com>
-To: Zhao Qiang <qiang.zhao@nxp.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- lkml <linux-kernel@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Li Yang <leoyang.li@nxp.com>,
- oss@buserror.net, xiaobo.xie@nxp.com
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id B6CB11A065A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 20:26:10 +1100 (AEDT)
+Received: by mail-wm0-x242.google.com with SMTP id u188so16459410wmu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 01:26:10 -0800 (PST)
+Subject: Re: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
+To: Shaohui Xie <shaohui.xie@nxp.com>, Andrew Lunn <andrew@lunn.ch>
+References: <1452759839-9874-1-git-send-email-shh.xie@gmail.com>
+ <20160114164418.GD19773@lunn.ch>
+ <VI1PR04MB166491DEBB439EB72742201DE8CD0@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <56997951.90304@gmail.com> <5699B211.5070602@gmail.com>
+ <VI1PR04MB16645A2F24DB515D86136BE2E8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <569C9CD2.10301@gmail.com>
+ <VI1PR04MB1664AB0E483F01F1641059FFE8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <20160118151500.GD923@lunn.ch>
+ <VI1PR04MB1664DFBC53F08C5CE7EBF22AE8C10@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <20160121211250.GK9991@lunn.ch>
+ <VI1PR04MB1664BAFB4EE494CB14830BCCE8C40@VI1PR04MB1664.eurprd04.prod.outlook.com>
+Cc: Florian Fainelli <f.fainelli@gmail.com>,
+ "shh.xie@gmail.com" <shh.xie@gmail.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ Shaohui Xie <Shaohui.Xie@freescale.com>
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Message-ID: <56A1F5AB.6090606@gmail.com>
+Date: Fri, 22 Jan 2016 10:26:03 +0100
+In-Reply-To: <VI1PR04MB1664BAFB4EE494CB14830BCCE8C40@VI1PR04MB1664.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,14 +41,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 21, 2016 at 9:06 AM, Zhao Qiang <qiang.zhao@nxp.com> wrote:
-> 127 is the theoretical up boundary of QEIC number,
-> in fact there only be 44 qe_ic_info now.
-> add check to overflow for qe_ic_info
+On 22.01.2016 09:15, Shaohui Xie wrote:
+> _______________________________________
+> From: Andrew Lunn <andrew@lunn.ch>
+> Sent: Friday, January 22, 2016 5:12 AM
+> To: Shaohui Xie
+> Cc: Sebastian Hesselbarth; Florian Fainelli; shh.xie@gmail.com; devicetree@vger.kernel.org; netdev@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; davem@davemloft.net; Shaohui Xie
+> Subject: Re: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
 >
-> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> On Tue, Jan 19, 2016 at 05:00:35AM +0000, Shaohui Xie wrote:
+>>> -----Original Message-----
+>>> From: Andrew Lunn [mailto:andrew@lunn.ch]
+>>> Sent: Monday, January 18, 2016 11:15 PM
+>>> To: Shaohui Xie
+>>> Cc: Sebastian Hesselbarth; Florian Fainelli; shh.xie@gmail.com;
+>>> devicetree@vger.kernel.org; netdev@vger.kernel.org; linuxppc-
+>>> dev@lists.ozlabs.org; davem@davemloft.net; Shaohui Xie
+>>> Subject: Re: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
+>>>
+>>>> [S.H] the fsl backplane, e.g. 10GBASE-KR, needs software to handle
+>>>> link training, It's to train link partner, and trained by link partner
+>>> parallel.
+>>>>
+>>>> But if media type is not copper, e.g. optical module, we won't need this.
+>>>
+>>> So what we actually need to know is copper vs fibre?
+>
+>> Copper is not enough to indicate backplane, since backplane is
+>> always copper, but copper is not always backplane.
+>
+>> O.K, lets try again....
+>
+> [S.H]Seems I did not get your point, Sorry for the inconvenient.
+>
+>> If it is copper backplane you need to perform training.
+>
+>> Looking at the driver probe function, it is either 1000BASE-KX, no
+>> training needed, or else it is 10GBASE-RK and training is needed.
+>
+>> Looking at fsl_backplane_config_aneg() you expect phydev->speed to be
+>> set, and from the speed you then kick of either KR autoneg or KX
+>> autoneg. Could you also start the training at this point? Use the
+>> speed to indicate if training is needed?
+>
+>   [S.H]The training cannot be started at this point, yet, because it's based on
+> autoneg result, only when both sides autoneg-ed to 10G-KR, then to start
+> the training.
 
-Acked-by: Li Yang <leoyang.li@nxp.com>
+Shaohui,
 
-Regards,
-Leo
+look, we want you to convince us why to have a generic backplane
+property in the phy binding. You had a bad start by adding new
+property values to a property that does not relate to your use
+case at all. Your job now really is to give strong reasons _why_
+and _what_ a phy driver needs to know about the backplane setup.
+
+Your first approach was to add "10gbase-rk" or "40gbase-foo" but
+now you tell us about ANEG. Of what use is the information given
+by the property when ANEG tells you something different? E.g.
+consider the property tells you "10g-something" but ANEG gives
+you "40g"; does the property add any value to your training
+decision now?
+
+> Besides the driver, generally speaking, "copper + speed" is not enough to indicate
+> it's backplane, for ex. "copper + 1000" does not mean it has to be 1000BASE-KX,
+> it could be SGMII, hence cannot use KX autoneg.
+
+So, is it copper + speed + backplane? or speed + backplane? And out of
+the set of required input, is there anything your _cannot_ determine
+from other things, e.g. ANEG?
+
+If it is backplane only, would a boolean property ("backplane-mode")
+be enough for the training decision?
+
+> If putting backplane property to phy.txt is not good, I can put it to fsl specific
+> binding, like the second patch 2/3 did.
+
+You seem to see vendor specific properties as a place to dump all your
+waste you don't want to think about. You fail to give good reasons what
+is so special about the backplane setup and now you are telling us that
+it is even fsl-specific?
+
+Sebastian
