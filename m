@@ -1,44 +1,37 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <shaohui.xie@nxp.com>
+Received: from emea01-db3-obe.outbound.protection.outlook.com
+ (mail-db3on0058.outbound.protection.outlook.com [157.55.234.58])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47C5C1A0018
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 21:56:44 +1100 (AEDT)
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1C5891402BF
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2016 21:56:42 +1100 (AEDT)
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 22 Jan 2016 10:56:39 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id ABFB717D8066
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2016 10:56:43 +0000 (GMT)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0MAubpm5243256
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2016 10:56:37 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0M9uc1D009566
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2016 02:56:38 -0700
-Subject: Re: [PATCH] cxl: Add cxl_read_adapter_vpd() to the kernel API
-To: Michael Neuling <michael.neuling@au1.ibm.com>, ian@ozlabs.au.ibm.com,
- linuxppc-dev@ozlabs.org
-References: <1453223694-5190-1-git-send-email-fbarrat@linux.vnet.ibm.com>
- <1453256449.28504.56.camel@au.ibm.com> <56A12814.5080607@linux.vnet.ibm.com>
- <1453423130.4239.51.camel@au.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Message-ID: <56A20AE3.5060709@linux.vnet.ibm.com>
-Date: Fri, 22 Jan 2016 11:56:35 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 999001A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jan 2016 01:10:01 +1100 (AEDT)
+From: Shaohui Xie <shaohui.xie@nxp.com>
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn
+ <andrew@lunn.ch>
+CC: Florian Fainelli <f.fainelli@gmail.com>, "shh.xie@gmail.com"
+ <shh.xie@gmail.com>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "davem@davemloft.net" <davem@davemloft.net>
+Subject: Re: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
+Date: Fri, 22 Jan 2016 14:09:52 +0000
+Message-ID: <VI1PR04MB1664B669925ADB21D3A13594E8C40@VI1PR04MB1664.eurprd04.prod.outlook.com>
+References: <1452759839-9874-1-git-send-email-shh.xie@gmail.com>
+ <20160114164418.GD19773@lunn.ch>
+ <VI1PR04MB166491DEBB439EB72742201DE8CD0@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <56997951.90304@gmail.com> <5699B211.5070602@gmail.com>
+ <VI1PR04MB16645A2F24DB515D86136BE2E8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <569C9CD2.10301@gmail.com>
+ <VI1PR04MB1664AB0E483F01F1641059FFE8C00@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <20160118151500.GD923@lunn.ch>
+ <VI1PR04MB1664DFBC53F08C5CE7EBF22AE8C10@VI1PR04MB1664.eurprd04.prod.outlook.com>
+ <20160121211250.GK9991@lunn.ch>
+ <VI1PR04MB1664BAFB4EE494CB14830BCCE8C40@VI1PR04MB1664.eurprd04.prod.outlook.com>,
+ <56A1F5AB.6090606@gmail.com>,
+ <VI1PR04MB1664AD70D26C452F5A33595AE8C40@VI1PR04MB1664.eurprd04.prod.outlook.com>
+In-Reply-To: <VI1PR04MB1664AD70D26C452F5A33595AE8C40@VI1PR04MB1664.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-In-Reply-To: <1453423130.4239.51.camel@au.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,34 +41,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
+I'm not sure I explained myself clearly in previous reply, so I guess it's =
+worth to
+rephrase it.
 
-Le 22/01/2016 01:38, Michael Neuling a écrit :
-> On Thu, 2016-01-21 at 19:48 +0100, Frederic Barrat wrote:
->>
->> Le 20/01/2016 03:20, Michael Neuling a écrit :
->>> The only thing I'm a bit concerned about is are we going to end up
->>> duplicating a lot of the linux PCI API, but I guess we are only going
->>> to do this for things the papr HCALL interface mimics.
->>
->> There are actually very few operations we can do on the adapter with
->> hcalls. papr defines 'reset', 'read the VPD' and flashing a new image on
->> the card. So we'll soon run out of APIs to mimic.
->>
->> I guess it means the usage of cxl_get_phys_dev() should be discouraged,
->> since it's going to lead to different behaviors between bare-metal and
->> powerVM guest. Was there another expected use case for a kernel driver
->> other than accessing the VPD?
+1000BASE-KX and 10GBASE-KR are backplane modes supported by Freescale's PCS
+PHY, but different modes need different hardware settings, not just differe=
+nt PHY init
+routines, this also needs different serdes lane settings, this is done in p=
+robe() according
+to DTS properties.
+
+Regarding the autoneg part, it's not like normal autoneg which can autoneg =
+to different
+capabilities, when the PHY is 1000BSE-KX, it can only autoneg to 1000BASE-K=
+X only if
+LP is 1000BASE-KX,  same is true for 10GBASE-KR. The purpose of KR AN is to=
+ detect whether
+LP is also KR, if yes, do training, if not, do nothing, no any other result=
+ the KR AN can give.
+
+The reason "copper + speed" is not enough for backplane is because they are=
+ not precise,
+and backplane itself explains what it is, for ex. 1000BASE-KX clearly means=
+ the media is copper,
+speed is 1000, and should follow 1000BASE-KX standard in IEEE802.3.
+
+The reason I mentioned maybe I should put the backplane property in fsl's b=
+inding is because
+the backplane implementation is really vendor specific, it's heavily relay =
+how hardware implements
+the feature, maybe another vendor's hardware only needs a boolean property =
+for driver to tell it=20
+should work in backplane, hardware can deal with different modes, or even n=
+o any special=20
+property needed if the hardware is strong enough to handle any connections,=
+ I cannot assume.
+But I know what fsl's hardware needs to support backplane.
+
+Thank you for your time and reviewing!
+Shaohui
+
+________________________________________
+From: Shaohui Xie
+Sent: Friday, January 22, 2016 6:05 PM
+To: Sebastian Hesselbarth; Andrew Lunn
+Cc: Florian Fainelli; shh.xie@gmail.com; devicetree@vger.kernel.org; netdev=
+@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; davem@davemloft.net; Shaoh=
+ui Xie
+Subject: Re: [PATCH 1/3][v2] net: phy: introduce 1000BASE-KX and 10GBASE-KR
+
+>> Looking at fsl_backplane_config_aneg() you expect phydev->speed to be
+>> set, and from the speed you then kick of either KR autoneg or KX
+>> autoneg. Could you also start the training at this point? Use the
+>> speed to indicate if training is needed?
 >
-> It was just for VPD.  I figured it was the easiest way to add it. Maybe
-> it's worth getting rid of it in favour of VPD only.
->
-> If you want to remove it I'd be happy, but you'll need to coordinate
-> with the cxlflash driver.  You can probably just write the patch for
-> them and then get their ACK on it.
+>   [S.H]The training cannot be started at this point, yet, because it's ba=
+sed on
+> autoneg result, only when both sides autoneg-ed to 10G-KR, then to start
+> the training.
 
-Ok, then I would also be tempted to remove it. I'll sync with cxlflash 
-to do so.
-Thanks!
+Shaohui,
 
-   Fred
+look, we want you to convince us why to have a generic backplane
+property in the phy binding. You had a bad start by adding new
+property values to a property that does not relate to your use
+case at all. Your job now really is to give strong reasons _why_
+and _what_ a phy driver needs to know about the backplane setup.
+
+[S.H] The PHY driver needs to know what the backplane mode is,
+1000BASE-KX or 10GBASE-KR, the driver parses the property for
+"1000base-kx" or "10gbase-kr", the driver does use the property,
+I don't understand why the property is not related to my use case?
+
+Your first approach was to add "10gbase-rk" or "40gbase-foo" but
+now you tell us about ANEG. Of what use is the information given
+by the property when ANEG tells you something different? E.g.
+consider the property tells you "10g-something" but ANEG gives
+you "40g"; does the property add any value to your training
+decision now?
+
+[S.H] The ANEG is not a gerneric AN, it's special to 10G-KR,  KR AN can onl=
+y
+AN to KR if both sides support KR, it cannot give "40g" or anything differe=
+nt,
+drive needs the property to do speicific init.
+
+> Besides the driver, generally speaking, "copper + speed" is not enough to=
+ indicate
+> it's backplane, for ex. "copper + 1000" does not mean it has to be 1000BA=
+SE-KX,
+> it could be SGMII, hence cannot use KX autoneg.
+
+So, is it copper + speed + backplane? or speed + backplane? And out of
+the set of required input, is there anything your _cannot_ determine
+from other things, e.g. ANEG?
+
+[S.H] Backplane is enough, 1000BASE-KX means : copper + 1000 + KX stuff.
+The KR AN is to check whether LP is also KR, if yes, do training, otherwise=
+, do nothing.
+
+If it is backplane only, would a boolean property ("backplane-mode")
+be enough for the training decision?
+
+[S.H] a boolean property is not enough, there are different backplane modes=
+.
+
+> If putting backplane property to phy.txt is not good, I can put it to fsl=
+ specific
+> binding, like the second patch 2/3 did.
+
+You seem to see vendor specific properties as a place to dump all your
+waste you don't want to think about. You fail to give good reasons what
+is so special about the backplane setup and now you are telling us that
+it is even fsl-specific?
+
+[S.H] I don't think it's waste, I just thought it might be special to fsl.
+Agreed I failed to give good reasons, but I tried hard to. :(
+
+Thanks,
+Shaohui
+
+Sebastian
