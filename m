@@ -1,26 +1,32 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A93771A0562
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 12:59:55 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id n128so2561050pfn.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jan 2016 17:59:55 -0800 (PST)
-Subject: Re: [PATCH kernel v2 1/6] KVM: PPC: Rework H_PUT_TCE/H_GET_TCE
- handlers
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <1453361977-19589-1-git-send-email-aik@ozlabs.ru>
- <1453361977-19589-2-git-send-email-aik@ozlabs.ru>
- <20160122004245.GL27454@voom.redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <56A18D13.9050908@ozlabs.ru>
-Date: Fri, 22 Jan 2016 12:59:47 +1100
-MIME-Version: 1.0
-In-Reply-To: <20160122004245.GL27454@voom.redhat.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id CA6711A0562
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 14:44:42 +1100 (AEDT)
+Message-ID: <1453434282.21683.2.camel@ellerman.id.au>
+Subject: Re: [PATCH v3] kallsyms: add support for relative offsets in
+ kallsyms address table
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Kees Cook <keescook@chromium.org>, Andrew Morton
+ <akpm@linux-foundation.org>
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>, LKML
+ <linux-kernel@vger.kernel.org>, "linux-s390@vger.kernel.org"
+ <linux-s390@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "x86@kernel.org" <x86@kernel.org>, Ingo
+ Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Heiko Carstens
+ <heiko.carstens@de.ibm.com>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, Michal Marek <mmarek@suse.cz>, Rusty Russell
+ <rusty@rustcorp.com.au>, Arnd Bergmann <arnd@arndb.de>, linux-arch
+ <linux-arch@vger.kernel.org>
+Date: Fri, 22 Jan 2016 14:44:42 +1100
+In-Reply-To: <CAGXu5j+yNZRC99BonVwdawqQTBDQWMKu4gw9TTnA8nOU+fqSMg@mail.gmail.com>
+References: <1453373299-28181-1-git-send-email-ard.biesheuvel@linaro.org>
+ <1453396783-21591-1-git-send-email-ard.biesheuvel@linaro.org>
+ <20160121145008.746fc62fbe3fbc685869da57@linux-foundation.org>
+ <CAGXu5j+yNZRC99BonVwdawqQTBDQWMKu4gw9TTnA8nOU+fqSMg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,99 +36,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/22/2016 11:42 AM, David Gibson wrote:
-> On Thu, Jan 21, 2016 at 06:39:32PM +1100, Alexey Kardashevskiy wrote:
->> This reworks the existing H_PUT_TCE/H_GET_TCE handlers to have following
->> patches applied nicer.
->>
->> This moves the ioba boundaries check to a helper and adds a check for
->> least bits which have to be zeros.
->>
->> The patch is pretty mechanical (only check for least ioba bits is added)
->> so no change in behaviour is expected.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->
-> Concept looks good, but there are a couple of nits.
->
->> ---
->> Changelog:
->> v2:
->> * compare @ret with H_SUCCESS instead of assuming H_SUCCESS is zero
->> * made error reporting cleaner
->> ---
->>   arch/powerpc/kvm/book3s_64_vio_hv.c | 111 +++++++++++++++++++++++-------------
->>   1 file changed, 72 insertions(+), 39 deletions(-)
->>
->> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
->> index 89e96b3..862f9a2 100644
->> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
->> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
->> @@ -35,71 +35,104 @@
->>   #include <asm/ppc-opcode.h>
->>   #include <asm/kvm_host.h>
->>   #include <asm/udbg.h>
->> +#include <asm/iommu.h>
->>
->>   #define TCES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
->>
->> +/*
->> + * Finds a TCE table descriptor by LIOBN.
->> + *
->> + * WARNING: This will be called in real or virtual mode on HV KVM and virtual
->> + *          mode on PR KVM
->> + */
->> +static struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm_vcpu *vcpu,
->> +		unsigned long liobn)
->> +{
->> +	struct kvm *kvm = vcpu->kvm;
->> +	struct kvmppc_spapr_tce_table *stt;
->> +
->> +	list_for_each_entry_lockless(stt, &kvm->arch.spapr_tce_tables, list)
->
-> list_for_each_entry_lockless?  According to the comments in the
-> header, that's for RCU protected lists, whereas this one is just
-> protected by the lock in the kvm structure.  This is replacing a plain
-> list_for_each_entry().
+On Thu, 2016-01-21 at 14:55 -0800, Kees Cook wrote:
+> On Thu, Jan 21, 2016 at 2:50 PM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+> > On Thu, 21 Jan 2016 18:19:43 +0100 Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
+> > 
+> > > Similar to how relative extables are implemented, it is possible to emit
+> > > the kallsyms table in such a way that it contains offsets relative to some
+> > > anchor point in the kernel image rather than absolute addresses. The benefit
+> > > is that such table entries are no longer subject to dynamic relocation when
+> > > the build time and runtime offsets of the kernel image are different. Also,
+> > > on 64-bit architectures, it essentially cuts the size of the address table
+> > > in half since offsets can typically be expressed in 32 bits.
+> > > 
+> > > Since it is useful for some architectures (like x86) to retain the ability
+> > > to emit absolute values as well, this patch adds support for both, by
+> > > emitting absolute addresses as positive 32-bit values, and addresses
+> > > relative to the lowest encountered relative symbol as negative values, which
+> > > are subtracted from the runtime address of this base symbol to produce the
+> > > actual address.
+> > > 
+> > > Support for the above is enabled by default for all architectures except
+> > > IA-64, whose symbols are too far apart to capture in this manner.
+> > 
+> > I'm not really understanding the benefits of this.  A smaller address
+> > table is nice, but why is it desirable that "such table entries are no
+> > longer subject to dynamic relocation when the build time and runtime
+> > offsets of the kernel image are different"?
+> 
+> IIUC, this means that the relocation work done after decompression now
+> doesn't have to do relocation updates for all these values, which
+> means a smaller relocation table as well.
 
-My bad, the next patch should have done this
-s/list_for_each_entry/list_for_each_entry_lockless/
+Yep. If I remember the figures rightly it saves ~250K of relocations for the
+powerpc build.
 
-
->
->
->> +		if (stt->liobn == liobn)
->> +			return stt;
->> +
->> +	return NULL;
->> +}
->> +
->> +/*
->> + * Validates IO address.
->> + *
->> + * WARNING: This will be called in real-mode on HV KVM and virtual
->> + *          mode on PR KVM
->> + */
->> +static long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
->> +		unsigned long ioba, unsigned long npages)
->> +{
->> +	unsigned long mask = (1ULL << IOMMU_PAGE_SHIFT_4K) - 1;
->> +	unsigned long idx = ioba >> IOMMU_PAGE_SHIFT_4K;
->> +	unsigned long size = stt->window_size >> IOMMU_PAGE_SHIFT_4K;
->> +
->> +	if ((ioba & mask) || (idx + npages > size))
->
-> It doesn't matter for the current callers, but you should check for
-> overflow in idx + npages as well.
-
-
-npages can be only 1..512 and this is checked in H_PUT_TCE/etc handlers.
-idx is 52bit long max.
-And this is not going to change because H_PUT_TCE_INDIRECT will always be 
-limited by 512 (or one 4K page).
-
-Do I still need the overflow check here?
-
-
--- 
-Alexey
+cheers
