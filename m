@@ -1,46 +1,37 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7C4691A0562
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 17:26:13 +1100 (AEDT)
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B1F0A1402DE
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2016 17:26:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D8B8D1A05BF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 17:30:06 +1100 (AEDT)
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Fri, 22 Jan 2016 01:26:10 -0500
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 5BDB96E8041
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2016 01:13:01 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0M6Q8iE32571628
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2016 06:26:08 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0M6Q74Q009979
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2016 01:26:08 -0500
-Date: Fri, 22 Jan 2016 11:55:59 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net,
- viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com,
- anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com
-Subject: Re: [PATCH v5 5/5] cpufreq: powernv: Add sysfs attributes to show
- throttle stats
-Message-ID: <20160122062559.GB27515@in.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
-References: <1453369139-10203-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1453369139-10203-6-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Fri, 22 Jan 2016 16:29:52 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B82D93578052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 17:29:42 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0M6TC5L43843674
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 17:29:20 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0M6T9QV011732
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 17:29:10 +1100
+Message-ID: <56A1CC1C.3000009@linux.vnet.ibm.com>
+Date: Fri, 22 Jan 2016 11:58:44 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1453369139-10203-6-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+CC: Dan Williams <dan.j.williams@intel.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/mm: Allow user space to map rtas_rmo_buf
+References: <1453392931-20707-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <1453440564.21683.8.camel@ellerman.id.au>
+In-Reply-To: <1453440564.21683.8.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,10 +41,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 21, 2016 at 03:08:59PM +0530, Shilpasri G Bhat wrote:
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+On 01/22/2016 10:59 AM, Michael Ellerman wrote:
+> On Thu, 2016-01-21 at 21:45 +0530, Vasant Hegde wrote:
+> 
+>> With commit 90a545e9 (restrict /dev/mem to idle io memory ranges) mapping
+>> rtas_rmo_buf from user space is failing. Hence we are not able to make
+>> RTAS syscall.
+>>
+>> This patch calls page_is_rtas_user_buf before calling iomem_is_exclusive
+>> in  devmem_is_allowed(). This will allow user space to map rtas_rmo_buf
+>> and we are able to make RTAS syscall.
 
---
-Thanks and Regards
-gautham.
+Michael,
+
+> 
+> Thanks for the patch.
+> 
+> I'll put it in my fixes branch for next week.
+
+Thanks!
+
+> 
+> 
+> Having said that, why the <expletive deleted> is librtas mapping /dev/mem in
+> the first place? Unless there is a very good reason, and probably even if there
+> is, we should fix that to use a sane API.
+
+We use rtas system call. We use /dev/mem interface to map the RTAS memory region
+(allocated by kernel and information is passed to user space via procfs) so that
+we can read/write to RTAS memory.
+
+I do not have historical information. May be Nathan has more information on this.
+
+-Vasant
