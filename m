@@ -1,38 +1,33 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-ig0-x22c.google.com (mail-ig0-x22c.google.com
- [IPv6:2607:f8b0:4001:c05::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gromero@linux.vnet.ibm.com>
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 501831A05EB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jan 2016 08:54:48 +1100 (AEDT)
-Received: by mail-ig0-x22c.google.com with SMTP id z14so654819igp.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 13:54:48 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44BAD1A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jan 2016 03:23:42 +1100 (AEDT)
+Received: from localhost
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
+ Fri, 22 Jan 2016 14:23:37 -0200
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 070BF352006C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 11:23:27 -0500 (EST)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0MGOAIO4763856
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 14:24:11 -0200
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0MGNVFJ000370
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jan 2016 14:23:32 -0200
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Gustavo Romero <gromero@linux.vnet.ibm.com>
+Subject: [RFC] Fix si->si_code for guard page access on PowerPC
+Message-ID: <56A25783.7040502@linux.vnet.ibm.com>
+Date: Fri, 22 Jan 2016 14:23:31 -0200
 MIME-Version: 1.0
-In-Reply-To: <20160122130718.8313ec9aefa654f33bd17792@linux-foundation.org>
-References: <1453373299-28181-1-git-send-email-ard.biesheuvel@linaro.org>
- <1453396783-21591-1-git-send-email-ard.biesheuvel@linaro.org>
- <20160121145008.746fc62fbe3fbc685869da57@linux-foundation.org>
- <CAGXu5j+yNZRC99BonVwdawqQTBDQWMKu4gw9TTnA8nOU+fqSMg@mail.gmail.com>
- <20160121152045.82639ae577d816198607d650@linux-foundation.org>
- <CAKv+Gu8QvECRJ9DhEd=k-oTy=xVVFJSMaW0EOCxMMPsWsF2RMQ@mail.gmail.com>
- <20160122130718.8313ec9aefa654f33bd17792@linux-foundation.org>
-Date: Fri, 22 Jan 2016 22:54:44 +0100
-Message-ID: <CAKv+Gu9rgeWYgJ_0Rpx1DmvWP90O8r=MBN4YH4xZyn3r4wrUdg@mail.gmail.com>
-Subject: Re: [PATCH v3] kallsyms: add support for relative offsets in kallsyms
- address table
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kees Cook <keescook@chromium.org>, LKML <linux-kernel@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "x86@kernel.org" <x86@kernel.org>,
- Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Michal Marek <mmarek@suse.cz>, Rusty Russell <rusty@rustcorp.com.au>,
- Arnd Bergmann <arnd@arndb.de>, linux-arch <linux-arch@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,78 +37,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22 January 2016 at 22:07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Fri, 22 Jan 2016 09:20:41 +0100 Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
->
->> > : in half since offsets can typically be expressed in 32 bits.
->> > :
->> """
->>
->> In addition to fixing the broken grammar, would it make sense to
->> mention that dynamic relocation only occurs under
->> CONFIG_RELOCATABLE=y? I.e., something like
->>
->> """
->> On 64-bit architectures, it cuts the size of the kallsyms address
->> table in half, since offsets between kernel symbols can typically be
->> expressed in 32 bits. This saves several hundreds of kilobytes of
->> permanent .rodata on average. In addition, the kallsyms address table
->> is no longer subject to dynamic relocation when CONFIG_RELOCATABLE is
->> in effect, so the relocation work done after decompression now doesn't
->> have to do relocation updates for all these values. This saves up to
->> 24 bytes (i.e., the size of a ELF64 RELA relocation table entry) per
->> table entry, which easily adds up to a couple of megabytes of
->> uncompressed __init data on ppc64 or arm64. Even if these relocation
->> entries typically compress well, the combined size reduction of 2.8 MB
->> uncompressed for a ppc64_defconfig build (of which 2.4 MB is __init
->> data) results in a ~500 KB space saving in the compressed image.
->> """
->
-> Yes, that sounds very good.  I'd buy one :)
->
+Fix si->si_code for guard page access on PowerPC
 
-Did I tell you about the extended warranty?
+Currently, the mm code on PowerPC/POWER returns a si->si_code = 2
+(SEGV_ACCERR) when the stack tries to grow beyond the stack guard
+(stack ulimit). On other architectures, notably x86, the si->si_code
+returned when a guard page access occurs is 1 (SEGV_MAPERR).
 
-> Can you please send along a complete new changelog sometime?
+Although si->si_code is not historically reliable and hence no
+program should trust it for any semantic behavior, the right
+si->si_code for a guard page access is 1 (SEGV_MAPERR) and,
+besides that, some tests still trust it in specific cases.
 
-Sure:
+On PowerPC/POWER, if the mm tries to expand the stack and
+hits a page mapped by the program (say, an anonymous page
+with permission ---p) it generates a SIG_SEGV and a si->si_code = 2
+(SEGV_ACCERR), the same way it happens on x86. But then, when this
+guard page is removed (un-mapped) and the stack grows again reaching
+the stack guard (stack ulimit), the mm generates a SIG_SEGV and a
+si->si_code = 2 (SEGV_ACCERR) again, contrary to, for example,
+what happens on x86 (si->si_code = 1 (SIG_MAPERR)). It means that
+on PowerPC/POWER there is no semantic difference between a stack
+growth hitting a mapped area the stack has no permission to rd/wr
+and reaching the stack limit (stack ulimit), although indeed there
+is a difference.
 
-"""
-kallsyms: add support for relative offsets in kallsyms address table
+Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
+---
+  arch/powerpc/mm/fault.c | 4 +++-
+  1 file changed, 3 insertions(+), 1 deletion(-)
 
-Similar to how relative extables are implemented, it is possible to emit
-the kallsyms table in such a way that it contains offsets relative to some
-anchor point in the kernel image rather than absolute addresses.
-
-On 64-bit architectures, it cuts the size of the kallsyms address table in
-half, since offsets between kernel symbols can typically be expressed in 32
-bits. This saves several hundreds of kilobytes of permanent .rodata on
-average. In addition, the kallsyms address table is no longer subject to
-dynamic relocation when CONFIG_RELOCATABLE is in effect, so the relocation
-work done after decompression now doesn't have to do relocation updates for
-all these values. This saves up to 24 bytes (i.e., the size of a ELF64 RELA
-relocation table entry) per value, which easily adds up to a couple of
-megabytes of uncompressed __init data on ppc64 or arm64. Even if these
-relocation entries typically compress well, the combined size reduction of
-2.8 MB uncompressed for a ppc64_defconfig build (of which 2.4 MB is __init
-data) results in a ~500 KB space saving in the compressed image.
-
-Since it is useful for some architectures (like x86) to retain the ability
-to emit absolute values as well, this patch adds support for both, by
-emitting absolute addresses as positive 32-bit values, and addresses
-relative to the lowest encountered relative symbol as negative values,
-which are subtracted from the runtime address of this base symbol to
-produce the actual address.
-
-Support for the above is enabled by default for all architectures except
-IA-64, whose symbols are too far apart to capture in this manner.
-
-Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Tested-by: Michael Ellerman <mpe@ellerman.id.au> # powerpc
-Tested-by: Kees Cook <keescook@chromium.org> # x86_64
-Reviewed-by: Kees Cook <keescook@chromium.org>
-Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-"""
-
-Thanks,
-Ard.
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index a67c6d7..6954971 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -431,8 +431,10 @@ good_area:
+            */
+           fault = handle_mm_fault(mm, vma, address, flags);
+           if (unlikely(fault & (VM_FAULT_RETRY|VM_FAULT_ERROR))) {
+-                  if (fault & VM_FAULT_SIGSEGV)
++                  if (fault & VM_FAULT_SIGSEGV) {
++                           code = SEGV_MAPERR;
+                             goto bad_area;
++                  }
+                    rc = mm_fault_error(regs, address, fault);
+                    if (rc >= MM_FAULT_RETURN)
+                             goto bail;
