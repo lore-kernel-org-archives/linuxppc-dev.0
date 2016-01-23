@@ -1,38 +1,26 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 21AF21A0B6B
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jan 2016 00:21:57 +1100 (AEDT)
-Received: by mail-pa0-x22b.google.com with SMTP id ho8so56136431pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jan 2016 05:21:57 -0800 (PST)
-Date: Sun, 24 Jan 2016 00:21:34 +1100
-From: Balbir Singh <bsingharora@gmail.com>
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Michal Marek
- <mmarek@suse.cz>, "linux-s390@vger.kernel.org"
- <linux-s390@vger.kernel.org>, Rusty Russell <rusty@rustcorp.com.au>, Kees
- Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- "x86@kernel.org" <x86@kernel.org>, Heiko Carstens
- <heiko.carstens@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>, "H. Peter
- Anvin" <hpa@zytor.com>, linux-arch <linux-arch@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Ingo
- Molnar <mingo@kernel.org>
-Subject: Re: [PATCH v3] kallsyms: add support for relative offsets in
- kallsyms address table
-Message-ID: <20160124002134.192eb470@cotter.ozlabs.ibm.com>
-In-Reply-To: <CAKv+Gu9rgeWYgJ_0Rpx1DmvWP90O8r=MBN4YH4xZyn3r4wrUdg@mail.gmail.com>
-References: <1453373299-28181-1-git-send-email-ard.biesheuvel@linaro.org>
- <1453396783-21591-1-git-send-email-ard.biesheuvel@linaro.org>
- <20160121145008.746fc62fbe3fbc685869da57@linux-foundation.org>
- <CAGXu5j+yNZRC99BonVwdawqQTBDQWMKu4gw9TTnA8nOU+fqSMg@mail.gmail.com>
- <20160121152045.82639ae577d816198607d650@linux-foundation.org>
- <CAKv+Gu8QvECRJ9DhEd=k-oTy=xVVFJSMaW0EOCxMMPsWsF2RMQ@mail.gmail.com>
- <20160122130718.8313ec9aefa654f33bd17792@linux-foundation.org>
- <CAKv+Gu9rgeWYgJ_0Rpx1DmvWP90O8r=MBN4YH4xZyn3r4wrUdg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 764111A02EA
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jan 2016 08:24:55 +1100 (AEDT)
+Date: Sun, 24 Jan 2016 08:24:48 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+Cc: gleb@kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, pbonzini@redhat.com,
+ mahesh@linux.vnet.ibm.com, david@gibson.dropbear.id.au,
+ kvm@vger.kernel.org, mpe@ellerman.id.au
+Subject: Re: [PATCH v3 2/2] KVM: PPC: Exit guest upon MCE when FWNMI
+ capability is enabled
+Message-ID: <20160123212448.GC11916@fergus.ozlabs.ibm.com>
+References: <20160113070759.20248.86252.stgit@aravindap>
+ <20160113070809.20248.80811.stgit@aravindap>
+ <20160123102847.GB11916@fergus.ozlabs.ibm.com>
+ <56A377CF.8040706@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <56A377CF.8040706@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,44 +30,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 22 Jan 2016 22:54:44 +0100
-Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
+On Sat, Jan 23, 2016 at 06:23:35PM +0530, Aravinda Prasad wrote:
+> 
+> 
+> On Saturday 23 January 2016 03:58 PM, Paul Mackerras wrote:
+> > On Wed, Jan 13, 2016 at 12:38:09PM +0530, Aravinda Prasad wrote:
+> >> Enhance KVM to cause a guest exit with KVM_EXIT_NMI
+> >> exit reasons upon a machine check exception (MCE) in
+> >> the guest address space if the KVM_CAP_PPC_FWNMI
+> >> capability is enabled (instead of delivering 0x200
+> >> interrupt to guest). This enables QEMU to build error
+> >> log and deliver machine check exception to guest via
+> >> guest registered machine check handler.
+> >>
+> >> This approach simplifies the delivering of machine
+> >> check exception to guest OS compared to the earlier
+> >> approach of KVM directly invoking 0x200 guest interrupt
+> >> vector. In the earlier approach QEMU was enhanced to
+> >> patch the 0x200 interrupt vector during boot. The
+> >> patched code at 0x200 issued a private hcall to pass
+> >> the control to QEMU to build the error log.
+> >>
+> >> This design/approach is based on the feedback for the
+> >> QEMU patches to handle machine check exception. Details
+> >> of earlier approach of handling machine check exception
+> >> in QEMU and related discussions can be found at:
+> > 
+> > [snip]
+> > 
+> >> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> >> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> >> @@ -133,21 +133,18 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+> >>  	stb	r0, HSTATE_HWTHREAD_REQ(r13)
+> >>  
+> >>  	/*
+> >> -	 * For external and machine check interrupts, we need
+> >> -	 * to call the Linux handler to process the interrupt.
+> >> -	 * We do that by jumping to absolute address 0x500 for
+> >> -	 * external interrupts, or the machine_check_fwnmi label
+> >> -	 * for machine checks (since firmware might have patched
+> >> -	 * the vector area at 0x200).  The [h]rfid at the end of the
+> >> -	 * handler will return to the book3s_hv_interrupts.S code.
+> >> -	 * For other interrupts we do the rfid to get back
+> >> -	 * to the book3s_hv_interrupts.S code here.
+> >> +	 * For external interrupts we need to call the Linux
+> >> +	 * handler to process the interrupt. We do that by jumping
+> >> +	 * to absolute address 0x500 for external interrupts.
+> >> +	 * The [h]rfid at the end of the handler will return to
+> >> +	 * the book3s_hv_interrupts.S code. For other interrupts
+> >> +	 * we do the rfid to get back to the book3s_hv_interrupts.S
+> >> +	 * code here.
+> >>  	 */
+> >>  	ld	r8, 112+PPC_LR_STKOFF(r1)
+> >>  	addi	r1, r1, 112
+> >>  	ld	r7, HSTATE_HOST_MSR(r13)
+> >>  
+> >> -	cmpwi	cr1, r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+> >>  	cmpwi	r12, BOOK3S_INTERRUPT_EXTERNAL
+> >>  	beq	11f
+> >>  	cmpwi	r12, BOOK3S_INTERRUPT_H_DOORBELL
+> >> @@ -162,7 +159,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+> >>  	mtmsrd	r6, 1			/* Clear RI in MSR */
+> >>  	mtsrr0	r8
+> >>  	mtsrr1	r7
+> >> -	beq	cr1, 13f		/* machine check */
+> >>  	RFI
+> >>  
+> >>  	/* On POWER7, we have external interrupts set to use HSRR0/1 */
+> >> @@ -170,8 +166,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+> >>  	mtspr	SPRN_HSRR1, r7
+> >>  	ba	0x500
+> >>  
+> >> -13:	b	machine_check_fwnmi
+> >> -
+> > 
+> > So, what you're disabling here is the host-side handling of the
+> > machine check after completing the guest->host switch.  This has
+> > nothing to do with how the machine check gets communicated to the
+> > guest.
+> > 
+> > Now, part of the host-side machine check handling has already
+> > happened, but I thought there was more that was done in host kernel
+> > virtual mode.  If this change really is needed then I would want an
+> > ack from Mahesh that this is correct, and it will need to be explained
+> > in detail in the patch description.
+> 
+> If we don't do that we will end up running into
+> panic() in opal_machine_check() if UE belonged to guest.
+> 
+> Details in this link:
+> http://marc.info/?l=kvm-ppc&m=144730552720044&w=2
 
-> 
-> """
-> kallsyms: add support for relative offsets in kallsyms address table
-> 
-> Similar to how relative extables are implemented, it is possible to emit
-> the kallsyms table in such a way that it contains offsets relative to some
-> anchor point in the kernel image rather than absolute addresses.
-> 
-> On 64-bit architectures, it cuts the size of the kallsyms address table in
-> half, since offsets between kernel symbols can typically be expressed in 32
-> bits. This saves several hundreds of kilobytes of permanent .rodata on
-> average. In addition, the kallsyms address table is no longer subject to
-> dynamic relocation when CONFIG_RELOCATABLE is in effect, so the relocation
-> work done after decompression now doesn't have to do relocation updates for
-> all these values. This saves up to 24 bytes (i.e., the size of a ELF64 RELA
-> relocation table entry) per value, which easily adds up to a couple of
-> megabytes of uncompressed __init data on ppc64 or arm64. Even if these
-> relocation entries typically compress well, the combined size reduction of
-> 2.8 MB uncompressed for a ppc64_defconfig build (of which 2.4 MB is __init
-> data) results in a ~500 KB space saving in the compressed image.
-> 
-> Since it is useful for some architectures (like x86) to retain the ability
-> to emit absolute values as well, this patch adds support for both, by
-> emitting absolute addresses as positive 32-bit values, and addresses
-> relative to the lowest encountered relative symbol as negative values,
-> which are subtracted from the runtime address of this base symbol to
-> produce the actual address.
-> 
-> Support for the above is enabled by default for all architectures except
-> IA-64, whose symbols are too far apart to capture in this manner.
+Well maybe the panic call needs to be changed.  But the way you have
+it, we *never* get to opal_machine_check for any machine check
+interrupt, and I have a hard time believing that is correct.
 
-snip
-
-I still don't get the 2GB limitaiton, because of the 32 bit address
-does it imply that modules load with -2GB to +2GB of the kernel base
-address of the kallsyms address table?
-
-Balbir Singh.
+Paul.
