@@ -2,21 +2,24 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DD60F1A0C62
+ by lists.ozlabs.org (Postfix) with ESMTPS id D01B11A05D0
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 10:45:52 +1100 (AEDT)
-Date: Mon, 25 Jan 2016 10:46:44 +1100
+Date: Mon, 25 Jan 2016 10:43:29 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
  kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [PATCH kernel v2 2/6] KVM: PPC: Use RCU for arch.spapr_tce_tables
-Message-ID: <20160124234644.GB27454@voom.redhat.com>
+Subject: Re: [PATCH kernel v2 1/6] KVM: PPC: Rework H_PUT_TCE/H_GET_TCE
+ handlers
+Message-ID: <20160124234329.GA27454@voom.redhat.com>
 References: <1453361977-19589-1-git-send-email-aik@ozlabs.ru>
- <1453361977-19589-3-git-send-email-aik@ozlabs.ru>
+ <1453361977-19589-2-git-send-email-aik@ozlabs.ru>
+ <20160122004245.GL27454@voom.redhat.com>
+ <56A18D13.9050908@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="q/d9vTEvvdeKbPNw"
-In-Reply-To: <1453361977-19589-3-git-send-email-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="FCPLy5NpE1Kdjj9y"
+In-Reply-To: <56A18D13.9050908@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,113 +30,112 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---q/d9vTEvvdeKbPNw
+--FCPLy5NpE1Kdjj9y
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jan 21, 2016 at 06:39:33PM +1100, Alexey Kardashevskiy wrote:
-> At the moment spapr_tce_tables is not protected against races.
-
-That's not really true - it's protected by the kvm->lock mutex.
-
-> This makes
-> use of RCU-variants of list helpers. As some bits are executed in real
-> mode, this makes use of just introduced list_for_each_entry_rcu_notrace().
+On Fri, Jan 22, 2016 at 12:59:47PM +1100, Alexey Kardashevskiy wrote:
+> On 01/22/2016 11:42 AM, David Gibson wrote:
+> >On Thu, Jan 21, 2016 at 06:39:32PM +1100, Alexey Kardashevskiy wrote:
+> >>This reworks the existing H_PUT_TCE/H_GET_TCE handlers to have following
+> >>patches applied nicer.
+> >>
+> >>This moves the ioba boundaries check to a helper and adds a check for
+> >>least bits which have to be zeros.
+> >>
+> >>The patch is pretty mechanical (only check for least ioba bits is added)
+> >>so no change in behaviour is expected.
+> >>
+> >>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >
+> >Concept looks good, but there are a couple of nits.
+> >
+> >>---
+> >>Changelog:
+> >>v2:
+> >>* compare @ret with H_SUCCESS instead of assuming H_SUCCESS is zero
+> >>* made error reporting cleaner
+> >>---
+> >>  arch/powerpc/kvm/book3s_64_vio_hv.c | 111 +++++++++++++++++++++++----=
+---------
+> >>  1 file changed, 72 insertions(+), 39 deletions(-)
+> >>
+> >>diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/boo=
+k3s_64_vio_hv.c
+> >>index 89e96b3..862f9a2 100644
+> >>--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
+> >>+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+> >>@@ -35,71 +35,104 @@
+> >>  #include <asm/ppc-opcode.h>
+> >>  #include <asm/kvm_host.h>
+> >>  #include <asm/udbg.h>
+> >>+#include <asm/iommu.h>
+> >>
+> >>  #define TCES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
+> >>
+> >>+/*
+> >>+ * Finds a TCE table descriptor by LIOBN.
+> >>+ *
+> >>+ * WARNING: This will be called in real or virtual mode on HV KVM and =
+virtual
+> >>+ *          mode on PR KVM
+> >>+ */
+> >>+static struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm_vcp=
+u *vcpu,
+> >>+		unsigned long liobn)
+> >>+{
+> >>+	struct kvm *kvm =3D vcpu->kvm;
+> >>+	struct kvmppc_spapr_tce_table *stt;
+> >>+
+> >>+	list_for_each_entry_lockless(stt, &kvm->arch.spapr_tce_tables, list)
+> >
+> >list_for_each_entry_lockless?  According to the comments in the
+> >header, that's for RCU protected lists, whereas this one is just
+> >protected by the lock in the kvm structure.  This is replacing a plain
+> >list_for_each_entry().
 >=20
-> This converts release_spapr_tce_table() to a RCU scheduled handler.
+> My bad, the next patch should have done this
+> s/list_for_each_entry/list_for_each_entry_lockless/
 
-The change itself is fine, though.
+Ah, yes.  I hadn't yet looked at the second patch.
 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-> ---
->  arch/powerpc/include/asm/kvm_host.h |  1 +
->  arch/powerpc/kvm/book3s.c           |  2 +-
->  arch/powerpc/kvm/book3s_64_vio.c    | 20 +++++++++++---------
->  3 files changed, 13 insertions(+), 10 deletions(-)
+> >>+		if (stt->liobn =3D=3D liobn)
+> >>+			return stt;
+> >>+
+> >>+	return NULL;
+> >>+}
+> >>+
+> >>+/*
+> >>+ * Validates IO address.
+> >>+ *
+> >>+ * WARNING: This will be called in real-mode on HV KVM and virtual
+> >>+ *          mode on PR KVM
+> >>+ */
+> >>+static long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+> >>+		unsigned long ioba, unsigned long npages)
+> >>+{
+> >>+	unsigned long mask =3D (1ULL << IOMMU_PAGE_SHIFT_4K) - 1;
+> >>+	unsigned long idx =3D ioba >> IOMMU_PAGE_SHIFT_4K;
+> >>+	unsigned long size =3D stt->window_size >> IOMMU_PAGE_SHIFT_4K;
+> >>+
+> >>+	if ((ioba & mask) || (idx + npages > size))
+> >
+> >It doesn't matter for the current callers, but you should check for
+> >overflow in idx + npages as well.
 >=20
-> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/a=
-sm/kvm_host.h
-> index 271fefb..c7ee696 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -184,6 +184,7 @@ struct kvmppc_spapr_tce_table {
->  	struct kvm *kvm;
->  	u64 liobn;
->  	u32 window_size;
-> +	struct rcu_head rcu;
->  	struct page *pages[0];
->  };
-> =20
-> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-> index 638c6d9..b34220d 100644
-> --- a/arch/powerpc/kvm/book3s.c
-> +++ b/arch/powerpc/kvm/book3s.c
-> @@ -807,7 +807,7 @@ int kvmppc_core_init_vm(struct kvm *kvm)
->  {
-> =20
->  #ifdef CONFIG_PPC64
-> -	INIT_LIST_HEAD(&kvm->arch.spapr_tce_tables);
-> +	INIT_LIST_HEAD_RCU(&kvm->arch.spapr_tce_tables);
->  	INIT_LIST_HEAD(&kvm->arch.rtas_tokens);
->  #endif
-> =20
-> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_6=
-4_vio.c
-> index 54cf9bc..9526c34 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio.c
-> @@ -45,19 +45,16 @@ static long kvmppc_stt_npages(unsigned long window_si=
-ze)
->  		     * sizeof(u64), PAGE_SIZE) / PAGE_SIZE;
->  }
-> =20
-> -static void release_spapr_tce_table(struct kvmppc_spapr_tce_table *stt)
-> +static void release_spapr_tce_table(struct rcu_head *head)
->  {
-> -	struct kvm *kvm =3D stt->kvm;
-> +	struct kvmppc_spapr_tce_table *stt =3D container_of(head,
-> +			struct kvmppc_spapr_tce_table, rcu);
->  	int i;
-> =20
-> -	mutex_lock(&kvm->lock);
-> -	list_del(&stt->list);
->  	for (i =3D 0; i < kvmppc_stt_npages(stt->window_size); i++)
->  		__free_page(stt->pages[i]);
-> +
->  	kfree(stt);
-> -	mutex_unlock(&kvm->lock);
-> -
-> -	kvm_put_kvm(kvm);
->  }
-> =20
->  static int kvm_spapr_tce_fault(struct vm_area_struct *vma, struct vm_fau=
-lt *vmf)
-> @@ -88,7 +85,12 @@ static int kvm_spapr_tce_release(struct inode *inode, =
-struct file *filp)
->  {
->  	struct kvmppc_spapr_tce_table *stt =3D filp->private_data;
-> =20
-> -	release_spapr_tce_table(stt);
-> +	list_del_rcu(&stt->list);
-> +
-> +	kvm_put_kvm(stt->kvm);
-> +
-> +	call_rcu(&stt->rcu, release_spapr_tce_table);
-> +
->  	return 0;
->  }
-> =20
-> @@ -131,7 +133,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->  	kvm_get_kvm(kvm);
-> =20
->  	mutex_lock(&kvm->lock);
-> -	list_add(&stt->list, &kvm->arch.spapr_tce_tables);
-> +	list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
-> =20
->  	mutex_unlock(&kvm->lock);
-> =20
+>=20
+> npages can be only 1..512 and this is checked in H_PUT_TCE/etc handlers.
+> idx is 52bit long max.
+> And this is not going to change because H_PUT_TCE_INDIRECT will always be
+> limited by 512 (or one 4K page).
+
+Ah, ok.
+
+> Do I still need the overflow check here?
+
+Hm, I guess it's not essential.  I'd still prefer to see it though,
+since it's good practice in general.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -141,25 +143,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---q/d9vTEvvdeKbPNw
+--FCPLy5NpE1Kdjj9y
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJWpWJkAAoJEGw4ysog2bOSzA0P/Aj2A249rQ+E1Lh/kkYA//MD
-VGSOTlL4OfQTN5AuJnh0nRlVcOsxSD11kTvYPDHy+pUo/kIAdcu4a+drGgOxvv0P
-gzWGylRobufANC0Sk+4GsU6vq9JlYJfzOY9rNwniMIvWmynvlgS29ECMpJurp9Wu
-5Zeei+NXApQpQwJb7WjYaG9WVyS1nV2TEkJ+Tn9H8mh7cp5gBvHJ5Kcchtkvb2xf
-U7YMN5crjP52ODx5J+Xr1aC/VGIvx+CBkvf0zAtHfZ+Ng/mvHzOSOI8bCEzHdAMM
-jKZgKKwRZ7gwt7s3/ygiucPuZ7YLtNZI7MkhuiGvaIZyyMTs2IaktnsPG9BsWwv7
-CdTYh2FRP51XCxNXHqOivbyNOf/KdhdOpWYeJvOHUpklSi1hlEwpGVpifcx3r1k4
-E2vou4foKwaIWgYJV22vMLwz6GrrabwkJbwyXaikvo+P5fVewaff9feiPiFlNp+/
-YdD549fJH4Fe2gugxujvN8KgNcoy/6CWqjtYKofwQ6cxK0G2hDKiQWq5D29+qxS3
-ygoCojQ8qiHdSaubnwSS7UeuEi0S/t3QRv0Pu6eWgIOpIBqiGhB1+7X1i/NNhLO/
-7mqxgAjaEH/Rlh3cj6d38CJoT4m7b74HTCsuBV3uIj0b/44eJbcMpNZQhqlRCbzK
-k5PLCyvOQD+PezeF5NcM
-=lxmv
+iQIcBAEBAgAGBQJWpWGhAAoJEGw4ysog2bOS7wYQAMIUTa3leyb+yby7w1Z+IPON
+QR8hRgU4nn5Ca3VKOg6rGKOCNyTYA46VaTRi9GuRg9s5c78ZCaFpuZGnt671ViL1
+IePiPPbj3gAfSOAw7vvKAQsuupiKDYTBuN/+D7b8DQS5SsUv73v4OguXx6jUCpsg
+IE2f18OEaPn4Z6YfWoHPva0ZaHWBh7fAVDc77eGGc4S2veKivAR2cFxGe0UtVN/H
+2edZExPaeuRkUWgeirtADVSl/nKzVTp2A5UwnJJ/am9rfG9Wgzi1o40V+hGLHfzd
+6d4B7ydlp8Zjo48pQIWKLcJrqa7u/ylpxwrxEN3b5bv9yOrnBO125przJSxXBaE4
+BNOEzUu24oZIk4+P14uPSJ9HB9F+G5la1CB+bw6dvqg+JntFTynebafNsEmjPtT6
+50CYLPkpWIiNyLBh4i8hq7ZpRMEtTBX3p0pBKUns1jCe02zow3oUgIr+a2Paimbv
+F9TSPkxFB8qRcphz+ubk1WyISlkdErFZnU8/H6EAnIdImzzgI9ZwYb/CNjyB/7bF
+t9TH2LWeArPsxEjCgVebiUVjVdQM1ZXwYm0LVGpZo8cB1utr3LPli31mUlDbfErg
+BxSJ6hxKTH6hvoa/5HkQ9lUpQSCqA2pSf5QIkFPh517E9XP1n0lH5Ou70VEj+h6/
+V+Q2i8iOzpk/Cwbt5vi0
+=lbDF
 -----END PGP SIGNATURE-----
 
---q/d9vTEvvdeKbPNw--
+--FCPLy5NpE1Kdjj9y--
