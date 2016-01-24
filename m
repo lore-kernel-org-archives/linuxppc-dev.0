@@ -1,23 +1,22 @@
-Return-Path: <bp@alien8.de>
-Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
- by lists.ozlabs.org (Postfix) with ESMTP id 12A3D1A1908
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 05:07:23 +1100 (AEDT)
-Date: Sun, 24 Jan 2016 19:00:57 +0100
-From: Borislav Petkov <bp@alien8.de>
-To: Toshi Kani <toshi.kani@hpe.com>
-Cc: akpm@linux-foundation.org, linux-arch@vger.kernel.org,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org
-Subject: Re: [PATCH v3 06/17] arch: Set IORESOURCE_SYSTEM_RAM to System RAM
-Message-ID: <20160124180057.GC26879@pd.tnic>
-References: <1452020081-26534-1-git-send-email-toshi.kani@hpe.com>
- <1452020081-26534-6-git-send-email-toshi.kani@hpe.com>
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DD60F1A0C62
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 10:45:52 +1100 (AEDT)
+Date: Mon, 25 Jan 2016 10:46:44 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v2 2/6] KVM: PPC: Use RCU for arch.spapr_tce_tables
+Message-ID: <20160124234644.GB27454@voom.redhat.com>
+References: <1453361977-19589-1-git-send-email-aik@ozlabs.ru>
+ <1453361977-19589-3-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1452020081-26534-6-git-send-email-toshi.kani@hpe.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="q/d9vTEvvdeKbPNw"
+In-Reply-To: <1453361977-19589-3-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,405 +26,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adding the respective arch MLs to CC, as an FYI.
 
-On Tue, Jan 05, 2016 at 11:54:30AM -0700, Toshi Kani wrote:
-> Set IORESOURCE_SYSTEM_RAM to 'flags' of resource ranges with
-> "System RAM", "Kernel code", "Kernel data", and "Kernel bss".
-> 
-> Note that:
->  - IORESOURCE_SYSRAM (i.e. modifier bit) is set to 'flags'
->    when IORESOURCE_MEM is already set.  IORESOURCE_SYSTEM_RAM
->    is defined as (IORESOURCE_MEM|IORESOURCE_SYSRAM).
->  - Some archs do not set 'flags' for children nodes, such as
->    "Kernel code".  This patch does not change 'flags' in this
->    case.
-> 
-> Cc: linux-arch@vger.kernel.org
-> Signed-off-by: Toshi Kani <toshi.kani@hpe.com>
+--q/d9vTEvvdeKbPNw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, Jan 21, 2016 at 06:39:33PM +1100, Alexey Kardashevskiy wrote:
+> At the moment spapr_tce_tables is not protected against races.
+
+That's not really true - it's protected by the kvm->lock mutex.
+
+> This makes
+> use of RCU-variants of list helpers. As some bits are executed in real
+> mode, this makes use of just introduced list_for_each_entry_rcu_notrace().
+>=20
+> This converts release_spapr_tce_table() to a RCU scheduled handler.
+
+The change itself is fine, though.
+
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 > ---
->  arch/arm/kernel/setup.c       |    6 +++---
->  arch/arm64/kernel/setup.c     |    6 +++---
->  arch/avr32/kernel/setup.c     |    6 +++---
->  arch/m32r/kernel/setup.c      |    4 ++--
->  arch/mips/kernel/setup.c      |   10 ++++++----
->  arch/parisc/mm/init.c         |    6 +++---
->  arch/powerpc/mm/mem.c         |    2 +-
->  arch/s390/kernel/setup.c      |    8 ++++----
->  arch/score/kernel/setup.c     |    2 +-
->  arch/sh/kernel/setup.c        |    8 ++++----
->  arch/sparc/mm/init_64.c       |    8 ++++----
->  arch/tile/kernel/setup.c      |   11 ++++++++---
->  arch/unicore32/kernel/setup.c |    6 +++---
->  13 files changed, 45 insertions(+), 38 deletions(-)
-> 
-> diff --git a/arch/arm/kernel/setup.c b/arch/arm/kernel/setup.c
-> index 20edd34..ae44e09 100644
-> --- a/arch/arm/kernel/setup.c
-> +++ b/arch/arm/kernel/setup.c
-> @@ -173,13 +173,13 @@ static struct resource mem_res[] = {
->  		.name = "Kernel code",
->  		.start = 0,
->  		.end = 0,
-> -		.flags = IORESOURCE_MEM
-> +		.flags = IORESOURCE_SYSTEM_RAM
->  	},
->  	{
->  		.name = "Kernel data",
->  		.start = 0,
->  		.end = 0,
-> -		.flags = IORESOURCE_MEM
-> +		.flags = IORESOURCE_SYSTEM_RAM
->  	}
+>  arch/powerpc/include/asm/kvm_host.h |  1 +
+>  arch/powerpc/kvm/book3s.c           |  2 +-
+>  arch/powerpc/kvm/book3s_64_vio.c    | 20 +++++++++++---------
+>  3 files changed, 13 insertions(+), 10 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/a=
+sm/kvm_host.h
+> index 271fefb..c7ee696 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -184,6 +184,7 @@ struct kvmppc_spapr_tce_table {
+>  	struct kvm *kvm;
+>  	u64 liobn;
+>  	u32 window_size;
+> +	struct rcu_head rcu;
+>  	struct page *pages[0];
 >  };
->  
-> @@ -781,7 +781,7 @@ static void __init request_standard_resources(const struct machine_desc *mdesc)
->  		res->name  = "System RAM";
->  		res->start = __pfn_to_phys(memblock_region_memory_base_pfn(region));
->  		res->end = __pfn_to_phys(memblock_region_memory_end_pfn(region)) - 1;
-> -		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-> +		res->flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
->  
->  		request_resource(&iomem_resource, res);
->  
-> diff --git a/arch/arm64/kernel/setup.c b/arch/arm64/kernel/setup.c
-> index 8119479..450987d 100644
-> --- a/arch/arm64/kernel/setup.c
-> +++ b/arch/arm64/kernel/setup.c
-> @@ -73,13 +73,13 @@ static struct resource mem_res[] = {
->  		.name = "Kernel code",
->  		.start = 0,
->  		.end = 0,
-> -		.flags = IORESOURCE_MEM
-> +		.flags = IORESOURCE_SYSTEM_RAM
->  	},
->  	{
->  		.name = "Kernel data",
->  		.start = 0,
->  		.end = 0,
-> -		.flags = IORESOURCE_MEM
-> +		.flags = IORESOURCE_SYSTEM_RAM
->  	}
->  };
->  
-> @@ -210,7 +210,7 @@ static void __init request_standard_resources(void)
->  		res->name  = "System RAM";
->  		res->start = __pfn_to_phys(memblock_region_memory_base_pfn(region));
->  		res->end = __pfn_to_phys(memblock_region_memory_end_pfn(region)) - 1;
-> -		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-> +		res->flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
->  
->  		request_resource(&iomem_resource, res);
->  
-> diff --git a/arch/avr32/kernel/setup.c b/arch/avr32/kernel/setup.c
-> index 209ae5a..e692889 100644
-> --- a/arch/avr32/kernel/setup.c
-> +++ b/arch/avr32/kernel/setup.c
-> @@ -49,13 +49,13 @@ static struct resource __initdata kernel_data = {
->  	.name	= "Kernel data",
->  	.start	= 0,
->  	.end	= 0,
-> -	.flags	= IORESOURCE_MEM,
-> +	.flags	= IORESOURCE_SYSTEM_RAM,
->  };
->  static struct resource __initdata kernel_code = {
->  	.name	= "Kernel code",
->  	.start	= 0,
->  	.end	= 0,
-> -	.flags	= IORESOURCE_MEM,
-> +	.flags	= IORESOURCE_SYSTEM_RAM,
->  	.sibling = &kernel_data,
->  };
->  
-> @@ -134,7 +134,7 @@ add_physical_memory(resource_size_t start, resource_size_t end)
->  	new->start = start;
->  	new->end = end;
->  	new->name = "System RAM";
-> -	new->flags = IORESOURCE_MEM;
-> +	new->flags = IORESOURCE_SYSTEM_RAM;
->  
->  	*pprev = new;
+> =20
+> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+> index 638c6d9..b34220d 100644
+> --- a/arch/powerpc/kvm/book3s.c
+> +++ b/arch/powerpc/kvm/book3s.c
+> @@ -807,7 +807,7 @@ int kvmppc_core_init_vm(struct kvm *kvm)
+>  {
+> =20
+>  #ifdef CONFIG_PPC64
+> -	INIT_LIST_HEAD(&kvm->arch.spapr_tce_tables);
+> +	INIT_LIST_HEAD_RCU(&kvm->arch.spapr_tce_tables);
+>  	INIT_LIST_HEAD(&kvm->arch.rtas_tokens);
+>  #endif
+> =20
+> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_6=
+4_vio.c
+> index 54cf9bc..9526c34 100644
+> --- a/arch/powerpc/kvm/book3s_64_vio.c
+> +++ b/arch/powerpc/kvm/book3s_64_vio.c
+> @@ -45,19 +45,16 @@ static long kvmppc_stt_npages(unsigned long window_si=
+ze)
+>  		     * sizeof(u64), PAGE_SIZE) / PAGE_SIZE;
 >  }
-> diff --git a/arch/m32r/kernel/setup.c b/arch/m32r/kernel/setup.c
-> index 0392112..5f62ff0 100644
-> --- a/arch/m32r/kernel/setup.c
-> +++ b/arch/m32r/kernel/setup.c
-> @@ -70,14 +70,14 @@ static struct resource data_resource = {
->  	.name   = "Kernel data",
->  	.start  = 0,
->  	.end    = 0,
-> -	.flags  = IORESOURCE_BUSY | IORESOURCE_MEM
-> +	.flags  = IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
->  };
->  
->  static struct resource code_resource = {
->  	.name   = "Kernel code",
->  	.start  = 0,
->  	.end    = 0,
-> -	.flags  = IORESOURCE_BUSY | IORESOURCE_MEM
-> +	.flags  = IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
->  };
->  
->  unsigned long memory_start;
-> diff --git a/arch/mips/kernel/setup.c b/arch/mips/kernel/setup.c
-> index 66aac55..c385af1 100644
-> --- a/arch/mips/kernel/setup.c
-> +++ b/arch/mips/kernel/setup.c
-> @@ -732,21 +732,23 @@ static void __init resource_init(void)
->  			end = HIGHMEM_START - 1;
->  
->  		res = alloc_bootmem(sizeof(struct resource));
+> =20
+> -static void release_spapr_tce_table(struct kvmppc_spapr_tce_table *stt)
+> +static void release_spapr_tce_table(struct rcu_head *head)
+>  {
+> -	struct kvm *kvm =3D stt->kvm;
+> +	struct kvmppc_spapr_tce_table *stt =3D container_of(head,
+> +			struct kvmppc_spapr_tce_table, rcu);
+>  	int i;
+> =20
+> -	mutex_lock(&kvm->lock);
+> -	list_del(&stt->list);
+>  	for (i =3D 0; i < kvmppc_stt_npages(stt->window_size); i++)
+>  		__free_page(stt->pages[i]);
 > +
-> +		res->start = start;
-> +		res->end = end;
-> +		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-> +
->  		switch (boot_mem_map.map[i].type) {
->  		case BOOT_MEM_RAM:
->  		case BOOT_MEM_INIT_RAM:
->  		case BOOT_MEM_ROM_DATA:
->  			res->name = "System RAM";
-> +			res->flags |= IORESOURCE_SYSRAM;
->  			break;
->  		case BOOT_MEM_RESERVED:
->  		default:
->  			res->name = "reserved";
->  		}
->  
-> -		res->start = start;
-> -		res->end = end;
+>  	kfree(stt);
+> -	mutex_unlock(&kvm->lock);
 > -
-> -		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
->  		request_resource(&iomem_resource, res);
->  
->  		/*
-> diff --git a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
-> index 1b366c4..3c07d6b 100644
-> --- a/arch/parisc/mm/init.c
-> +++ b/arch/parisc/mm/init.c
-> @@ -55,12 +55,12 @@ signed char pfnnid_map[PFNNID_MAP_MAX] __read_mostly;
->  
->  static struct resource data_resource = {
->  	.name	= "Kernel data",
-> -	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM,
-> +	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM,
->  };
->  
->  static struct resource code_resource = {
->  	.name	= "Kernel code",
-> -	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM,
-> +	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM,
->  };
->  
->  static struct resource pdcdata_resource = {
-> @@ -201,7 +201,7 @@ static void __init setup_bootmem(void)
->  		res->name = "System RAM";
->  		res->start = pmem_ranges[i].start_pfn << PAGE_SHIFT;
->  		res->end = res->start + (pmem_ranges[i].pages << PAGE_SHIFT)-1;
-> -		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-> +		res->flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
->  		request_resource(&iomem_resource, res);
->  	}
->  
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 22d94c3..e78a2b7 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -541,7 +541,7 @@ static int __init add_system_ram_resources(void)
->  			res->name = "System RAM";
->  			res->start = base;
->  			res->end = base + size - 1;
-> -			res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-> +			res->flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
->  			WARN_ON(request_resource(&iomem_resource, res) < 0);
->  		}
->  	}
-> diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
-> index c837bca..b65a883 100644
-> --- a/arch/s390/kernel/setup.c
-> +++ b/arch/s390/kernel/setup.c
-> @@ -376,17 +376,17 @@ static void __init setup_lowcore(void)
->  
->  static struct resource code_resource = {
->  	.name  = "Kernel code",
-> -	.flags = IORESOURCE_BUSY | IORESOURCE_MEM,
-> +	.flags = IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM,
->  };
->  
->  static struct resource data_resource = {
->  	.name = "Kernel data",
-> -	.flags = IORESOURCE_BUSY | IORESOURCE_MEM,
-> +	.flags = IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM,
->  };
->  
->  static struct resource bss_resource = {
->  	.name = "Kernel bss",
-> -	.flags = IORESOURCE_BUSY | IORESOURCE_MEM,
-> +	.flags = IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM,
->  };
->  
->  static struct resource __initdata *standard_resources[] = {
-> @@ -410,7 +410,7 @@ static void __init setup_resources(void)
->  
->  	for_each_memblock(memory, reg) {
->  		res = alloc_bootmem_low(sizeof(*res));
-> -		res->flags = IORESOURCE_BUSY | IORESOURCE_MEM;
-> +		res->flags = IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM;
->  
->  		res->name = "System RAM";
->  		res->start = reg->base;
-> diff --git a/arch/score/kernel/setup.c b/arch/score/kernel/setup.c
-> index b48459a..f3a0649 100644
-> --- a/arch/score/kernel/setup.c
-> +++ b/arch/score/kernel/setup.c
-> @@ -101,7 +101,7 @@ static void __init resource_init(void)
->  	res->name = "System RAM";
->  	res->start = MEMORY_START;
->  	res->end = MEMORY_START + MEMORY_SIZE - 1;
-> -	res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-> +	res->flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
->  	request_resource(&iomem_resource, res);
->  
->  	request_resource(res, &code_resource);
-> diff --git a/arch/sh/kernel/setup.c b/arch/sh/kernel/setup.c
-> index de19cfa..3f1c18b 100644
-> --- a/arch/sh/kernel/setup.c
-> +++ b/arch/sh/kernel/setup.c
-> @@ -78,17 +78,17 @@ static char __initdata command_line[COMMAND_LINE_SIZE] = { 0, };
->  
->  static struct resource code_resource = {
->  	.name = "Kernel code",
-> -	.flags = IORESOURCE_BUSY | IORESOURCE_MEM,
-> +	.flags = IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM,
->  };
->  
->  static struct resource data_resource = {
->  	.name = "Kernel data",
-> -	.flags = IORESOURCE_BUSY | IORESOURCE_MEM,
-> +	.flags = IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM,
->  };
->  
->  static struct resource bss_resource = {
->  	.name	= "Kernel bss",
-> -	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM,
-> +	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM,
->  };
->  
->  unsigned long memory_start;
-> @@ -202,7 +202,7 @@ void __init __add_active_range(unsigned int nid, unsigned long start_pfn,
->  	res->name = "System RAM";
->  	res->start = start;
->  	res->end = end - 1;
-> -	res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-> +	res->flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
->  
->  	if (request_resource(&iomem_resource, res)) {
->  		pr_err("unable to request memory_resource 0x%lx 0x%lx\n",
-> diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
-> index 3025bd5..a02d43d 100644
-> --- a/arch/sparc/mm/init_64.c
-> +++ b/arch/sparc/mm/init_64.c
-> @@ -2862,17 +2862,17 @@ void hugetlb_setup(struct pt_regs *regs)
->  
->  static struct resource code_resource = {
->  	.name	= "Kernel code",
-> -	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM
-> +	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
->  };
->  
->  static struct resource data_resource = {
->  	.name	= "Kernel data",
-> -	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM
-> +	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
->  };
->  
->  static struct resource bss_resource = {
->  	.name	= "Kernel bss",
-> -	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM
-> +	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
->  };
->  
->  static inline resource_size_t compute_kern_paddr(void *addr)
-> @@ -2908,7 +2908,7 @@ static int __init report_memory(void)
->  		res->name = "System RAM";
->  		res->start = pavail[i].phys_addr;
->  		res->end = pavail[i].phys_addr + pavail[i].reg_size - 1;
-> -		res->flags = IORESOURCE_BUSY | IORESOURCE_MEM;
-> +		res->flags = IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM;
->  
->  		if (insert_resource(&iomem_resource, res) < 0) {
->  			pr_warn("Resource insertion failed.\n");
-> diff --git a/arch/tile/kernel/setup.c b/arch/tile/kernel/setup.c
-> index 6b755d1..6606fe2 100644
-> --- a/arch/tile/kernel/setup.c
-> +++ b/arch/tile/kernel/setup.c
-> @@ -1632,14 +1632,14 @@ static struct resource data_resource = {
->  	.name	= "Kernel data",
->  	.start	= 0,
->  	.end	= 0,
-> -	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM
-> +	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
->  };
->  
->  static struct resource code_resource = {
->  	.name	= "Kernel code",
->  	.start	= 0,
->  	.end	= 0,
-> -	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM
-> +	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
->  };
->  
->  /*
-> @@ -1673,10 +1673,15 @@ insert_ram_resource(u64 start_pfn, u64 end_pfn, bool reserved)
->  		kzalloc(sizeof(struct resource), GFP_ATOMIC);
->  	if (!res)
->  		return NULL;
-> -	res->name = reserved ? "Reserved" : "System RAM";
->  	res->start = start_pfn << PAGE_SHIFT;
->  	res->end = (end_pfn << PAGE_SHIFT) - 1;
->  	res->flags = IORESOURCE_BUSY | IORESOURCE_MEM;
-> +	if (reserved) {
-> +		res->name = "Reserved";
-> +	} else {
-> +		res->name = "System RAM";
-> +		res->flags |= IORESOURCE_SYSRAM;
-> +	}
->  	if (insert_resource(&iomem_resource, res)) {
->  		kfree(res);
->  		return NULL;
-> diff --git a/arch/unicore32/kernel/setup.c b/arch/unicore32/kernel/setup.c
-> index 3fa317f..c2bffa5 100644
-> --- a/arch/unicore32/kernel/setup.c
-> +++ b/arch/unicore32/kernel/setup.c
-> @@ -72,13 +72,13 @@ static struct resource mem_res[] = {
->  		.name = "Kernel code",
->  		.start = 0,
->  		.end = 0,
-> -		.flags = IORESOURCE_MEM
-> +		.flags = IORESOURCE_SYSTEM_RAM
->  	},
->  	{
->  		.name = "Kernel data",
->  		.start = 0,
->  		.end = 0,
-> -		.flags = IORESOURCE_MEM
-> +		.flags = IORESOURCE_SYSTEM_RAM
->  	}
->  };
->  
-> @@ -211,7 +211,7 @@ request_standard_resources(struct meminfo *mi)
->  		res->name  = "System RAM";
->  		res->start = mi->bank[i].start;
->  		res->end   = mi->bank[i].start + mi->bank[i].size - 1;
-> -		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-> +		res->flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
->  
->  		request_resource(&iomem_resource, res);
->  
-> 
+> -	kvm_put_kvm(kvm);
+>  }
+> =20
+>  static int kvm_spapr_tce_fault(struct vm_area_struct *vma, struct vm_fau=
+lt *vmf)
+> @@ -88,7 +85,12 @@ static int kvm_spapr_tce_release(struct inode *inode, =
+struct file *filp)
+>  {
+>  	struct kvmppc_spapr_tce_table *stt =3D filp->private_data;
+> =20
+> -	release_spapr_tce_table(stt);
+> +	list_del_rcu(&stt->list);
+> +
+> +	kvm_put_kvm(stt->kvm);
+> +
+> +	call_rcu(&stt->rcu, release_spapr_tce_table);
+> +
+>  	return 0;
+>  }
+> =20
+> @@ -131,7 +133,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+>  	kvm_get_kvm(kvm);
+> =20
+>  	mutex_lock(&kvm->lock);
+> -	list_add(&stt->list, &kvm->arch.spapr_tce_tables);
+> +	list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
+> =20
+>  	mutex_unlock(&kvm->lock);
+> =20
 
--- 
-Regards/Gruss,
-    Boris.
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-ECO tip #101: Trim your mails when you reply.
+--q/d9vTEvvdeKbPNw
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJWpWJkAAoJEGw4ysog2bOSzA0P/Aj2A249rQ+E1Lh/kkYA//MD
+VGSOTlL4OfQTN5AuJnh0nRlVcOsxSD11kTvYPDHy+pUo/kIAdcu4a+drGgOxvv0P
+gzWGylRobufANC0Sk+4GsU6vq9JlYJfzOY9rNwniMIvWmynvlgS29ECMpJurp9Wu
+5Zeei+NXApQpQwJb7WjYaG9WVyS1nV2TEkJ+Tn9H8mh7cp5gBvHJ5Kcchtkvb2xf
+U7YMN5crjP52ODx5J+Xr1aC/VGIvx+CBkvf0zAtHfZ+Ng/mvHzOSOI8bCEzHdAMM
+jKZgKKwRZ7gwt7s3/ygiucPuZ7YLtNZI7MkhuiGvaIZyyMTs2IaktnsPG9BsWwv7
+CdTYh2FRP51XCxNXHqOivbyNOf/KdhdOpWYeJvOHUpklSi1hlEwpGVpifcx3r1k4
+E2vou4foKwaIWgYJV22vMLwz6GrrabwkJbwyXaikvo+P5fVewaff9feiPiFlNp+/
+YdD549fJH4Fe2gugxujvN8KgNcoy/6CWqjtYKofwQ6cxK0G2hDKiQWq5D29+qxS3
+ygoCojQ8qiHdSaubnwSS7UeuEi0S/t3QRv0Pu6eWgIOpIBqiGhB1+7X1i/NNhLO/
+7mqxgAjaEH/Rlh3cj6d38CJoT4m7b74HTCsuBV3uIj0b/44eJbcMpNZQhqlRCbzK
+k5PLCyvOQD+PezeF5NcM
+=lxmv
+-----END PGP SIGNATURE-----
+
+--q/d9vTEvvdeKbPNw--
