@@ -2,15 +2,17 @@ Return-Path: <duwe@lst.de>
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 151201A001D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 04:05:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BE4E1A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 04:07:27 +1100 (AEDT)
+In-Reply-To: <20160125170459.14DB7692CE@newverein.lst.de>
+References: <20160125170459.14DB7692CE@newverein.lst.de>
 From: Torsten Duwe <duwe@lst.de>
-Date: Mon, 25 Jan 2016 16:38:48 +0100
-Subject: [PATCH v6 0/9] ftrace with regs + live patching for ppc64 LE (ABI v2)
+Date: Mon, 25 Jan 2016 16:26:03 +0100
+Subject: [PATCH v6 1/9] ppc64 (le): prepare for -mprofile-kernel
 To: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
-Message-Id: <20160125170459.14DB7692CE@newverein.lst.de>
+Message-Id: <20160125170723.D2CCE692CE@newverein.lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,66 +22,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changes since v5:
-  * extra "std r0,LRSAVE(r1)" for gcc-6
-    This makes the code compiler-agnostic.
-  * Follow Petr Mladek's suggestion to avoid
-    redefinition of HAVE_LIVEPATCH
+The gcc switch -mprofile-kernel, available for ppc64 on gcc > 4.8.5,
+allows to call _mcount very early in the function, which low-level
+ASM code and code patching functions need to consider.
+Especially the link register and the parameter registers are still
+alive and not yet saved into a new stack frame.
 
-Changes since v4:
-  * change comment style in entry_64.S to C89
-    (nobody is using assembler syntax comments there).
-  * the bool function restore_r2 shouldn't return 2,
-    that's a little confusing.
-  * Test whether the compiler supports -mprofile-kernel
-    and only then define CC_USING_MPROFILE_KERNEL
-  * also make the return value of klp_check_compiler_support
-    depend on that.
+Signed-off-by: Torsten Duwe <duwe@suse.de>
+---
+ arch/powerpc/kernel/entry_64.S  | 45 +++++++++++++++++++++++++++++++++++++++--
+ arch/powerpc/kernel/ftrace.c    | 12 +++++++++--
+ arch/powerpc/kernel/module_64.c | 14 +++++++++++++
+ 3 files changed, 67 insertions(+), 4 deletions(-)
 
-Major changes since v3:
-  * the graph tracer works now.
-    It turned out the stack frame it tried to manipulate does not
-    exist at that point.
-  * changes only needed in order to support -mprofile-kernel are now
-    in a separate patch, prepended.
-  * Kconfig cleanup so this is only selectable on ppc64le.
-
-
-Torsten Duwe (9):
-  ppc64 (le): prepare for -mprofile-kernel
-  ppc64le FTRACE_WITH_REGS implementation
-  ppc use ftrace_modify_all_code default
-  ppc64 ftrace_with_regs configuration variables
-  ppc64 ftrace_with_regs: spare early boot and low level
-  ppc64 ftrace: disable profiling for some functions
-  ppc64 ftrace: disable profiling for some files
-  Implement kernel live patching for ppc64le (ABIv2)
-  Enable LIVEPATCH to be configured on ppc64le and add livepatch.o if it
-    is selected.
-
- arch/powerpc/Kconfig                 |   7 ++
- arch/powerpc/Makefile                |  10 +++
- arch/powerpc/include/asm/ftrace.h    |   5 ++
- arch/powerpc/include/asm/livepatch.h |  45 ++++++++++
- arch/powerpc/kernel/Makefile         |  13 +--
- arch/powerpc/kernel/entry_64.S       | 166 ++++++++++++++++++++++++++++++++++-
- arch/powerpc/kernel/ftrace.c         |  88 ++++++++++++++-----
- arch/powerpc/kernel/livepatch.c      |  38 ++++++++
- arch/powerpc/kernel/module_64.c      |  39 +++++++-
- arch/powerpc/kernel/process.c        |   2 +-
- arch/powerpc/lib/Makefile            |   4 +-
- arch/powerpc/mm/fault.c              |   2 +-
- arch/powerpc/mm/hash_utils_64.c      |  18 ++--
- arch/powerpc/mm/hugetlbpage-hash64.c |   2 +-
- arch/powerpc/mm/hugetlbpage.c        |   4 +-
- arch/powerpc/mm/mem.c                |   2 +-
- arch/powerpc/mm/pgtable_64.c         |   2 +-
- arch/powerpc/mm/slb.c                |   6 +-
- arch/powerpc/mm/slice.c              |   8 +-
- kernel/trace/Kconfig                 |   5 ++
- 20 files changed, 412 insertions(+), 54 deletions(-)
- create mode 100644 arch/powerpc/include/asm/livepatch.h
- create mode 100644 arch/powerpc/kernel/livepatch.c
-
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index a94f155..e7cd043 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -1206,7 +1206,12 @@ _GLOBAL(enter_prom)
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ _GLOBAL(mcount)
+ _GLOBAL(_mcount)
+-	blr
++	std	r0,LRSAVE(r1) /* gcc6 does this _after_ this call _only_ */
++	mflr	r0
++	mtctr	r0
++	ld	r0,LRSAVE(r1)
++	mtlr	r0
++	bctr
+ 
+ _GLOBAL_TOC(ftrace_caller)
+ 	/* Taken from output of objdump from lib64/glibc */
+@@ -1262,13 +1267,28 @@ _GLOBAL(ftrace_stub)
+ 
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ _GLOBAL(ftrace_graph_caller)
++#ifdef CC_USING_MPROFILE_KERNEL
++	/* with -mprofile-kernel, parameter regs are still alive at _mcount */
++	std	r10, 104(r1)
++	std	r9, 96(r1)
++	std	r8, 88(r1)
++	std	r7, 80(r1)
++	std	r6, 72(r1)
++	std	r5, 64(r1)
++	std	r4, 56(r1)
++	std	r3, 48(r1)
++	mfctr	r4		/* ftrace_caller has moved local addr here */
++	std	r4, 40(r1)
++	mflr	r3		/* ftrace_caller has restored LR from stack */
++#else
+ 	/* load r4 with local address */
+ 	ld	r4, 128(r1)
+-	subi	r4, r4, MCOUNT_INSN_SIZE
+ 
+ 	/* Grab the LR out of the caller stack frame */
+ 	ld	r11, 112(r1)
+ 	ld	r3, 16(r11)
++#endif
++	subi	r4, r4, MCOUNT_INSN_SIZE
+ 
+ 	bl	prepare_ftrace_return
+ 	nop
+@@ -1277,6 +1297,26 @@ _GLOBAL(ftrace_graph_caller)
+ 	 * prepare_ftrace_return gives us the address we divert to.
+ 	 * Change the LR in the callers stack frame to this.
+ 	 */
++
++#ifdef CC_USING_MPROFILE_KERNEL
++	mtlr	r3
++
++	ld	r0, 40(r1)
++	mtctr	r0
++	ld	r10, 104(r1)
++	ld	r9, 96(r1)
++	ld	r8, 88(r1)
++	ld	r7, 80(r1)
++	ld	r6, 72(r1)
++	ld	r5, 64(r1)
++	ld	r4, 56(r1)
++	ld	r3, 48(r1)
++
++	addi	r1, r1, 112
++	mflr	r0
++	std	r0, LRSAVE(r1)
++	bctr
++#else
+ 	ld	r11, 112(r1)
+ 	std	r3, 16(r11)
+ 
+@@ -1284,6 +1324,7 @@ _GLOBAL(ftrace_graph_caller)
+ 	mtlr	r0
+ 	addi	r1, r1, 112
+ 	blr
++#endif
+ 
+ _GLOBAL(return_to_handler)
+ 	/* need to save return values */
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 44d4d8e..080c525 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -306,11 +306,19 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 	 * The load offset is different depending on the ABI. For simplicity
+ 	 * just mask it out when doing the compare.
+ 	 */
++#ifndef CC_USING_MPROFILE_KERNEL
+ 	if ((op[0] != 0x48000008) || ((op[1] & 0xffff0000) != 0xe8410000)) {
+-		pr_err("Unexpected call sequence: %x %x\n", op[0], op[1]);
++		pr_err("Unexpected call sequence at %p: %x %x\n",
++		ip, op[0], op[1]);
+ 		return -EINVAL;
+ 	}
+-
++#else
++	/* look for patched "NOP" on ppc64 with -mprofile-kernel */
++	if (op[0] != 0x60000000) {
++		pr_err("Unexpected call at %p: %x\n", ip, op[0]);
++		return -EINVAL;
++	}
++#endif
+ 	/* If we never set up a trampoline to ftrace_caller, then bail */
+ 	if (!rec->arch.mod->arch.tramp) {
+ 		pr_err("No ftrace trampoline\n");
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 6838451..30f6be1 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -475,6 +475,20 @@ static unsigned long stub_for_addr(Elf64_Shdr *sechdrs,
+ static int restore_r2(u32 *instruction, struct module *me)
+ {
+ 	if (*instruction != PPC_INST_NOP) {
++#ifdef CC_USING_MPROFILE_KERNEL
++		/* -mprofile_kernel sequence starting with
++		 * mflr r0 and maybe std r0, LRSAVE(r1)
++		 */
++		if ((instruction[-3] == 0x7c0802a6 &&
++		    instruction[-2] == 0xf8010010) ||
++		    instruction[-2] == 0x7c0802a6) {
++			/* Nothing to be done here, it's an _mcount
++			 * call location and r2 will have to be
++			 * restored in the _mcount function.
++			 */
++			return 1;
++		};
++#endif
+ 		pr_err("%s: Expect noop after relocate, got %08x\n",
+ 		       me->name, *instruction);
+ 		return 0;
 -- 
 1.8.5.6
