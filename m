@@ -1,30 +1,23 @@
-Return-Path: <alessio.bogani@elettra.eu>
-Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
- [140.105.206.208])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AEFCD1A001D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 22:25:07 +1100 (AEDT)
-Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
- by localhost (Email Security Appliance) with SMTP id A7A72440E54_6A603D3B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 11:15:31 +0000 (GMT)
-Received: from mail-qk0-f175.google.com (mail-qk0-f175.google.com
- [209.85.220.175])
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-wm0-x229.google.com (mail-wm0-x229.google.com
+ [IPv6:2a00:1450:400c:c09::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (verified OK))
- by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
- 43F3543E075_6A603D3F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 11:15:31 +0000 (GMT)
-Received: by mail-qk0-f175.google.com with SMTP id o6so52866000qkc.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 03:15:31 -0800 (PST)
-MIME-Version: 1.0
-Date: Mon, 25 Jan 2016 12:15:29 +0100
-Message-ID: <CAPk1OjFTA8SjDi5LaeNYZq4NCJaHMkG3bU9an5Tt4OtitBUJGw@mail.gmail.com>
-Subject: 86xx
-From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DE2741A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 01:19:51 +1100 (AEDT)
+Received: by mail-wm0-x229.google.com with SMTP id r129so65982628wmr.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 06:19:51 -0800 (PST)
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org, keescook@chromium.org,
+ akpm@linux-foundation.org, mingo@kernel.org, hpa@zytor.com,
+ heiko.carstens@de.ibm.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ mmarek@suse.cz, rusty@rustcorp.com.au, arnd@arndb.de,
+ linux-arch@vger.kernel.org, linux@roeck-us.net
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Subject: [PATCH v4 0/3] kallsyms base relative series
+Date: Mon, 25 Jan 2016 15:19:29 +0100
+Message-Id: <1453731572-18448-1-git-send-email-ard.biesheuvel@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,13 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi All,
+This v4 of my kallsyms base relative implementation is now a 3 piece series,
+since it caused some problems due to the way absolute symbols are handled
+by the absolute per cpu code. As it turns out, that code was probably wrong
+in the sense that it caused non-relocated symbol addresses to be emitted
+for values that are in fact relative to the address of the kernel text.
 
-Sorry for my very bad English!
+Patch #1 fixes the scripts/kallsyms invocation to only pass the x86_64
+specific --absolute-percpu option if CONFIG_SMP is also set.
 
-I'm looking for who takes care of the 86xx subtree
-(arch/powerpc/platform/86xx) but I haven't found any entry into
-MAINTEINARS file.
+Patch #2 reworks the absolute percpu code to only emit those percpu symbols
+as absolute, and not symbols that have been classified as 'A' (absolute) by
+the linker, since that does not mean quite the same thing.
 
-Ciao,
-Alessio
+Patch #3 is the original kallsyms base relative patch, with some
+modifications:
+- folded the s/ULLONG_MAX/-1ULL? change made by Andrew
+- ensured that the kallsyms_relative_base value itself is relocated as
+  required.
+- dropped all of the acks and other tags, as they have become outdated with
+  the recent changes to this patch.
+
+Ard Biesheuvel (3):
+  x86: kallsyms: disable absolute percpu symbols on !SMP
+  kallsyms: don't overload absolute symbol type for percpu symbols
+  kallsyms: add support for relative offsets in kallsyms address table
+
+ init/Kconfig            |  16 +++
+ kernel/kallsyms.c       |  38 ++++++--
+ scripts/kallsyms.c      | 102 +++++++++++++++++---
+ scripts/link-vmlinux.sh |   6 +-
+ scripts/namespace.pl    |   2 +
+ 5 files changed, 142 insertions(+), 22 deletions(-)
+
+-- 
+2.5.0
