@@ -1,12 +1,12 @@
 Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-wm0-x229.google.com (mail-wm0-x229.google.com
- [IPv6:2a00:1450:400c:c09::229])
+Received: from mail-wm0-x230.google.com (mail-wm0-x230.google.com
+ [IPv6:2a00:1450:400c:c09::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE2741A001D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 01:19:51 +1100 (AEDT)
-Received: by mail-wm0-x229.google.com with SMTP id r129so65982628wmr.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 06:19:51 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9076C1A023C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 01:19:52 +1100 (AEDT)
+Received: by mail-wm0-x230.google.com with SMTP id u188so67703295wmu.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 06:19:52 -0800 (PST)
 From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, x86@kernel.org, keescook@chromium.org,
@@ -15,9 +15,11 @@ To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
  mmarek@suse.cz, rusty@rustcorp.com.au, arnd@arndb.de,
  linux-arch@vger.kernel.org, linux@roeck-us.net
 Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Subject: [PATCH v4 0/3] kallsyms base relative series
-Date: Mon, 25 Jan 2016 15:19:29 +0100
-Message-Id: <1453731572-18448-1-git-send-email-ard.biesheuvel@linaro.org>
+Subject: [PATCH v4 1/3] x86: kallsyms: disable absolute percpu symbols on !SMP
+Date: Mon, 25 Jan 2016 15:19:30 +0100
+Message-Id: <1453731572-18448-2-git-send-email-ard.biesheuvel@linaro.org>
+In-Reply-To: <1453731572-18448-1-git-send-email-ard.biesheuvel@linaro.org>
+References: <1453731572-18448-1-git-send-email-ard.biesheuvel@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,38 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This v4 of my kallsyms base relative implementation is now a 3 piece series,
-since it caused some problems due to the way absolute symbols are handled
-by the absolute per cpu code. As it turns out, that code was probably wrong
-in the sense that it caused non-relocated symbol addresses to be emitted
-for values that are in fact relative to the address of the kernel text.
+scripts/kallsyms.c has a special --absolute-percpu command line
+option which deals with the zero based per cpu offsets that are
+used when building for SMP on x86_64. This means that the option
+should only be passed in that case, so add a check for CONFIG_SMP.
+Otherwise, per cpu variables are recorded as absolute quantities,
+(which they are not under !CONFIG_SMP) and they are not relocated
+under CONFIG_RELOCATABLE=y.
 
-Patch #1 fixes the scripts/kallsyms invocation to only pass the x86_64
-specific --absolute-percpu option if CONFIG_SMP is also set.
+Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+---
+ scripts/link-vmlinux.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Patch #2 reworks the absolute percpu code to only emit those percpu symbols
-as absolute, and not symbols that have been classified as 'A' (absolute) by
-the linker, since that does not mean quite the same thing.
-
-Patch #3 is the original kallsyms base relative patch, with some
-modifications:
-- folded the s/ULLONG_MAX/-1ULL? change made by Andrew
-- ensured that the kallsyms_relative_base value itself is relocated as
-  required.
-- dropped all of the acks and other tags, as they have become outdated with
-  the recent changes to this patch.
-
-Ard Biesheuvel (3):
-  x86: kallsyms: disable absolute percpu symbols on !SMP
-  kallsyms: don't overload absolute symbol type for percpu symbols
-  kallsyms: add support for relative offsets in kallsyms address table
-
- init/Kconfig            |  16 +++
- kernel/kallsyms.c       |  38 ++++++--
- scripts/kallsyms.c      | 102 +++++++++++++++++---
- scripts/link-vmlinux.sh |   6 +-
- scripts/namespace.pl    |   2 +
- 5 files changed, 142 insertions(+), 22 deletions(-)
-
+diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
+index ba6c34ea5429..b541c21072f2 100755
+--- a/scripts/link-vmlinux.sh
++++ b/scripts/link-vmlinux.sh
+@@ -86,7 +86,7 @@ kallsyms()
+ 		kallsymopt="${kallsymopt} --page-offset=$CONFIG_PAGE_OFFSET"
+ 	fi
+ 
+-	if [ -n "${CONFIG_X86_64}" ]; then
++	if [ -n "${CONFIG_X86_64}" ] && [ -n "${CONFIG_SMP}" ]; then
+ 		kallsymopt="${kallsymopt} --absolute-percpu"
+ 	fi
+ 
 -- 
 2.5.0
