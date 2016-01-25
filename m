@@ -1,36 +1,32 @@
-Return-Path: <aravinda@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C6BDE1A001D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 19:39:39 +1100 (AEDT)
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 24474140321
- for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2016 19:39:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DD61C1A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 20:12:55 +1100 (AEDT)
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
- Mon, 25 Jan 2016 01:39:37 -0700
-Message-ID: <56A5DF42.70908@linux.vnet.ibm.com>
-Date: Mon, 25 Jan 2016 14:09:30 +0530
-From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 25 Jan 2016 14:42:52 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0P9Cjlr15532430
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 14:42:46 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0P9CiQA014349
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2016 14:42:45 +0530
+Message-ID: <56A5E709.2070908@linux.vnet.ibm.com>
+Date: Mon, 25 Jan 2016 14:42:41 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@ozlabs.org>
-CC: kvm@vger.kernel.org, gleb@kernel.org, mahesh@linux.vnet.ibm.com,
- agraf@suse.de, kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org,
- pbonzini@redhat.com, david@gibson.dropbear.id.au
-Subject: Re: [PATCH v3 2/2] KVM: PPC: Exit guest upon MCE when FWNMI capability
- is enabled
-References: <20160113070759.20248.86252.stgit@aravindap>
- <20160113070809.20248.80811.stgit@aravindap>
- <20160123102847.GB11916@fergus.ozlabs.ibm.com>
- <56A377CF.8040706@linux.vnet.ibm.com>
- <20160123212448.GC11916@fergus.ozlabs.ibm.com>
-In-Reply-To: <20160123212448.GC11916@fergus.ozlabs.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, mpe@ellerman.id.au
+CC: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]  powerpc/perf: Remove PPMU_HAS_SSLOT flag for Power8
+References: <1453710826-3160-1-git-send-email-maddy@linux.vnet.ibm.com>
+In-Reply-To: <1453710826-3160-1-git-send-email-maddy@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,126 +36,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 01/25/2016 02:03 PM, Madhavan Srinivasan wrote:
+>  Commit: 7a7868326d77 introduced PPMU_HAS_SSLOT flag to
+>  remove assumption of MMCRA[SLOT] with respect to
+>  PPMU_ALT_SIPR flag. Commit 7a7868326d77's message also
+>  specifies that Power8 does not support MMCRA[SLOT].
+>  But still PPMU_HAS_SSLOT flag managed to get into
+>  Power8 code. Patch to remove the same from Power8 flags.
 
-
-On Sunday 24 January 2016 02:54 AM, Paul Mackerras wrote:
-> On Sat, Jan 23, 2016 at 06:23:35PM +0530, Aravinda Prasad wrote:
->>
->>
->> On Saturday 23 January 2016 03:58 PM, Paul Mackerras wrote:
->>> On Wed, Jan 13, 2016 at 12:38:09PM +0530, Aravinda Prasad wrote:
->>>> Enhance KVM to cause a guest exit with KVM_EXIT_NMI
->>>> exit reasons upon a machine check exception (MCE) in
->>>> the guest address space if the KVM_CAP_PPC_FWNMI
->>>> capability is enabled (instead of delivering 0x200
->>>> interrupt to guest). This enables QEMU to build error
->>>> log and deliver machine check exception to guest via
->>>> guest registered machine check handler.
->>>>
->>>> This approach simplifies the delivering of machine
->>>> check exception to guest OS compared to the earlier
->>>> approach of KVM directly invoking 0x200 guest interrupt
->>>> vector. In the earlier approach QEMU was enhanced to
->>>> patch the 0x200 interrupt vector during boot. The
->>>> patched code at 0x200 issued a private hcall to pass
->>>> the control to QEMU to build the error log.
->>>>
->>>> This design/approach is based on the feedback for the
->>>> QEMU patches to handle machine check exception. Details
->>>> of earlier approach of handling machine check exception
->>>> in QEMU and related discussions can be found at:
->>>
->>> [snip]
->>>
->>>> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->>>> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->>>> @@ -133,21 +133,18 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
->>>>  	stb	r0, HSTATE_HWTHREAD_REQ(r13)
->>>>  
->>>>  	/*
->>>> -	 * For external and machine check interrupts, we need
->>>> -	 * to call the Linux handler to process the interrupt.
->>>> -	 * We do that by jumping to absolute address 0x500 for
->>>> -	 * external interrupts, or the machine_check_fwnmi label
->>>> -	 * for machine checks (since firmware might have patched
->>>> -	 * the vector area at 0x200).  The [h]rfid at the end of the
->>>> -	 * handler will return to the book3s_hv_interrupts.S code.
->>>> -	 * For other interrupts we do the rfid to get back
->>>> -	 * to the book3s_hv_interrupts.S code here.
->>>> +	 * For external interrupts we need to call the Linux
->>>> +	 * handler to process the interrupt. We do that by jumping
->>>> +	 * to absolute address 0x500 for external interrupts.
->>>> +	 * The [h]rfid at the end of the handler will return to
->>>> +	 * the book3s_hv_interrupts.S code. For other interrupts
->>>> +	 * we do the rfid to get back to the book3s_hv_interrupts.S
->>>> +	 * code here.
->>>>  	 */
->>>>  	ld	r8, 112+PPC_LR_STKOFF(r1)
->>>>  	addi	r1, r1, 112
->>>>  	ld	r7, HSTATE_HOST_MSR(r13)
->>>>  
->>>> -	cmpwi	cr1, r12, BOOK3S_INTERRUPT_MACHINE_CHECK
->>>>  	cmpwi	r12, BOOK3S_INTERRUPT_EXTERNAL
->>>>  	beq	11f
->>>>  	cmpwi	r12, BOOK3S_INTERRUPT_H_DOORBELL
->>>> @@ -162,7 +159,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
->>>>  	mtmsrd	r6, 1			/* Clear RI in MSR */
->>>>  	mtsrr0	r8
->>>>  	mtsrr1	r7
->>>> -	beq	cr1, 13f		/* machine check */
->>>>  	RFI
->>>>  
->>>>  	/* On POWER7, we have external interrupts set to use HSRR0/1 */
->>>> @@ -170,8 +166,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
->>>>  	mtspr	SPRN_HSRR1, r7
->>>>  	ba	0x500
->>>>  
->>>> -13:	b	machine_check_fwnmi
->>>> -
->>>
->>> So, what you're disabling here is the host-side handling of the
->>> machine check after completing the guest->host switch.  This has
->>> nothing to do with how the machine check gets communicated to the
->>> guest.
->>>
->>> Now, part of the host-side machine check handling has already
->>> happened, but I thought there was more that was done in host kernel
->>> virtual mode.  If this change really is needed then I would want an
->>> ack from Mahesh that this is correct, and it will need to be explained
->>> in detail in the patch description.
->>
->> If we don't do that we will end up running into
->> panic() in opal_machine_check() if UE belonged to guest.
->>
->> Details in this link:
->> http://marc.info/?l=kvm-ppc&m=144730552720044&w=2
-> 
-> Well maybe the panic call needs to be changed.  But the way you have
-> it, we *never* get to opal_machine_check for any machine check
-> interrupt, and I have a hard time believing that is correct.
-
-If I am not wrong, earlier, even without this patch we never get to
-opal_machine_check() from this place for the machine check happening
-inside the guest (irrespective of whether the machine check is recovered
-or not). Because, we jump to fast_interrupt_c_return() from
-machine_check_realmode without causing the guest to exit.
-
-With this patch I call mc_cont from machine_check_realmode and want the
-guest to exit with NMI exit code. However, we don't want to call
-opal_machine_check(), because if we call opal_machine_check() we don't
-end up with NMI exit for the guest.
-
-Regards,
-Aravinda
-
-> 
-> Paul.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
-
--- 
-Regards,
-Aravinda
+Please follow the present protocol of referring to a commit
+ID like this (<hash_code>: ""). Also this PMU flag was added
+originally through the base POWER8 PMU enablement commit
+(e05b9b9e5c1: "powerpc/perf: Power8 PMU support") which can
+be mentioned in the "Fixes:" part.
