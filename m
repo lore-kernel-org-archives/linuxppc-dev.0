@@ -1,44 +1,15 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id B13681A03A6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 23:16:17 +1100 (AEDT)
-Date: Tue, 26 Jan 2016 12:16:09 +0000
-From: Will Deacon <will.deacon@arm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
- "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
- David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- ddaney.cavm@gmail.com, james.hogan@imgtec.com,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
-Message-ID: <20160126121608.GE21553@arm.com>
-References: <20160114203430.GC3818@linux.vnet.ibm.com>
- <56980C91.1010403@imgtec.com>
- <20160114212913.GF3818@linux.vnet.ibm.com>
- <20160115085554.GF3421@worktop> <20160115091348.GA27936@worktop>
- <20160115174612.GV3818@linux.vnet.ibm.com>
- <20160115212714.GM3421@worktop>
- <20160115215853.GC3818@linux.vnet.ibm.com>
- <20160125164242.GF22927@arm.com>
- <20160126060322.GJ4503@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160126060322.GJ4503@linux.vnet.ibm.com>
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from elettra.eu (m2.elettra.trieste.it [140.105.206.202])
+ by lists.ozlabs.org (Postfix) with ESMTP id CE0161A02EA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 23:25:38 +1100 (AEDT)
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+To: Scott Wood <oss@buserror.net>,
+	Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alessio Igor Bogani <alessio.bogani@elettra.eu>
+Subject: powerpc/dts: Move mvme2500.dts back in the right place
+Date: Tue, 26 Jan 2016 13:25:27 +0100
+Message-Id: <1453811127-28591-1-git-send-email-alessio.bogani@elettra.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,48 +19,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 25, 2016 at 10:03:22PM -0800, Paul E. McKenney wrote:
-> On Mon, Jan 25, 2016 at 04:42:43PM +0000, Will Deacon wrote:
-> > On Fri, Jan 15, 2016 at 01:58:53PM -0800, Paul E. McKenney wrote:
-> > > PPC Overlapping Group-B sets version 4
-> > > ""
-> > > (* When the Group-B sets from two different barriers involve instructions in
-> > >    the same thread, within that thread one set must contain the other.
-> > > 
-> > > 	P0	P1	P2
-> > > 	Rx=1	Wy=1	Wz=2
-> > > 	dep.	lwsync	lwsync
-> > > 	Ry=0	Wz=1	Wx=1
-> > > 	Rz=1
-> > > 
-> > > 	assert(!(z=2))
-> > > 
-> > >    Forbidden by ppcmem, allowed by herd.
-> > > *)
-> > > {
-> > > 0:r1=x; 0:r2=y; 0:r3=z;
-> > > 1:r1=x; 1:r2=y; 1:r3=z; 1:r4=1;
-> > > 2:r1=x; 2:r2=y; 2:r3=z; 2:r4=1; 2:r5=2;
-> > > }
-> > >  P0		| P1		| P2		;
-> > >  lwz r6,0(r1)	| stw r4,0(r2)	| stw r5,0(r3)	;
-> > >  xor r7,r6,r6	| lwsync	| lwsync	;
-> > >  lwzx r7,r7,r2	| stw r4,0(r3)	| stw r4,0(r1)	;
-> > >  lwz r8,0(r3)	|		|		;
-> > > 
-> > > exists
-> > > (z=2 /\ 0:r6=1 /\ 0:r7=0 /\ 0:r8=1)
-> > 
-> > That really hurts. Assuming that the "assert(!(z=2))" is actually there
-> > to constrain the coherence order of z to be {0->1->2}, then I think that
-> > this test is forbidden on arm using dmb instead of lwsync. That said, I
-> > also don't think the Rz=1 in P0 changes anything.
-> 
-> What about the smp_wmb() variant of dmb that orders only stores?
+Commit dc37374b9c83 ("powerpc/fsl: Move Freescale device tree files into
+fsl folder") move also mvme2500.dts which isn't a device tree for a
+Freescale board but for an Artesyn one. So move mvme2500.dts back in the
+right place.
 
-Tricky, but I think it still works out if the coherence order of z is as
-I described above. The line of reasoning is weird though -- I ended up
-considering the two cases where P0 reads z before and after it reads x
-and what that means for the read of y.
+Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+---
+ arch/powerpc/boot/dts/{fsl => }/mvme2500.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+ rename arch/powerpc/boot/dts/{fsl => }/mvme2500.dts (98%)
 
-Will
+diff --git a/arch/powerpc/boot/dts/fsl/mvme2500.dts b/arch/powerpc/boot/dts/mvme2500.dts
+similarity index 98%
+rename from arch/powerpc/boot/dts/fsl/mvme2500.dts
+rename to arch/powerpc/boot/dts/mvme2500.dts
+index c7bc1a0..67714cf 100644
+--- a/arch/powerpc/boot/dts/fsl/mvme2500.dts
++++ b/arch/powerpc/boot/dts/mvme2500.dts
+@@ -12,7 +12,7 @@
+  * Copyright 2009 Freescale Semiconductor Inc.
+  */
+ 
+-/include/ "p2020si-pre.dtsi"
++/include/ "fsl/p2020si-pre.dtsi"
+ 
+ / {
+ 	model = "MVME2500";
+@@ -258,7 +258,7 @@
+ 	};
+ };
+ 
+-/include/ "p2020si-post.dtsi"
++/include/ "fsl/p2020si-post.dtsi"
+ 
+ / {
+ 	soc@ffe00000 {
+-- 
+2.7.0
