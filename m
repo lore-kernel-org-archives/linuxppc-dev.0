@@ -1,19 +1,47 @@
-Return-Path: <saurabh.truth@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F49B1A02EA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 19:52:33 +1100 (AEDT)
-Received: by mail-pa0-x242.google.com with SMTP id pv5so7649422pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 00:52:33 -0800 (PST)
-From: Saurabh Sengar <saurabh.truth@gmail.com>
-To: scottwood@freescale.com, qiang.zhao@freescale.com, christophe.leroy@c-s.fr,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Saurabh Sengar <saurabh.truth@gmail.com>
-Subject: [PATCH] QE: making cpm_muram_alloc_common into static
-Date: Tue, 26 Jan 2016 14:22:01 +0530
-Message-Id: <1453798321-7787-1-git-send-email-saurabh.truth@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E0BD71A02EA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 21:16:25 +1100 (AEDT)
+Date: Tue, 26 Jan 2016 11:15:43 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Will Deacon <will.deacon@arm.com>,
+ Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
+ "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
+ David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
+ x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
+ Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
+ ddaney.cavm@gmail.com, james.hogan@imgtec.com,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
+Message-ID: <20160126101543.GC6357@twins.programming.kicks-ass.net>
+References: <5696CF08.8080700@imgtec.com> <20160114121449.GC15828@arm.com>
+ <5697F6D2.60409@imgtec.com>
+ <20160114203430.GC3818@linux.vnet.ibm.com>
+ <56980C91.1010403@imgtec.com>
+ <20160114212913.GF3818@linux.vnet.ibm.com>
+ <20160115085554.GF3421@worktop>
+ <20160115173912.GU3818@linux.vnet.ibm.com>
+ <20160125180234.GA26732@arm.com>
+ <20160126061211.GK4503@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160126061211.GK4503@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,111 +51,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-as cpm_muram_alloc_common is used only in this file,
-making it static
+On Mon, Jan 25, 2016 at 10:12:11PM -0800, Paul E. McKenney wrote:
+> On Mon, Jan 25, 2016 at 06:02:34PM +0000, Will Deacon wrote:
 
-Signed-off-by: Saurabh Sengar <saurabh.truth@gmail.com>
----
- drivers/soc/fsl/qe/qe_common.c | 66 +++++++++++++++++++++---------------------
- include/soc/fsl/qe/qe.h        |  2 --
- 2 files changed, 33 insertions(+), 35 deletions(-)
+> > Thanks for having a go at this. I tried defining something axiomatically,
+> > but got stuck pretty quickly. In my scheme, I used "data-directed
+> > transitivity" instead of "local transitivity", since the latter seems to
+> > be a bit of a misnomer.
+> 
+> I figured that "local" meant local to the CPUs participating in the
+> release-acquire chain.  As opposed to smp_mb() chains where the ordering
+> is "global" as in visible to all CPUs, whether on the chain or not.
+> Does that help?
 
-diff --git a/drivers/soc/fsl/qe/qe_common.c b/drivers/soc/fsl/qe/qe_common.c
-index 419fa5b..e18159a 100644
---- a/drivers/soc/fsl/qe/qe_common.c
-+++ b/drivers/soc/fsl/qe/qe_common.c
-@@ -103,6 +103,39 @@ out_muram:
- }
- 
- /*
-+ * cpm_muram_alloc_common - cpm_muram_alloc common code
-+ * @size: number of bytes to allocate
-+ * @algo: algorithm for alloc.
-+ * @data: data for genalloc's algorithm.
-+ *
-+ * This function returns an offset into the muram area.
-+ */
-+static unsigned long cpm_muram_alloc_common(unsigned long size,
-+		genpool_algo_t algo, void *data)
-+{
-+	struct muram_block *entry;
-+	unsigned long start;
-+
-+	start = gen_pool_alloc_algo(muram_pool, size, algo, data);
-+	if (!start)
-+		goto out2;
-+	start = start - GENPOOL_OFFSET;
-+	memset_io(cpm_muram_addr(start), 0, size);
-+	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
-+	if (!entry)
-+		goto out1;
-+	entry->start = start;
-+	entry->size = size;
-+	list_add(&entry->head, &muram_block_list);
-+
-+	return start;
-+out1:
-+	gen_pool_free(muram_pool, start, size);
-+out2:
-+	return (unsigned long)-ENOMEM;
-+}
-+
-+/*
-  * cpm_muram_alloc - allocate the requested size worth of multi-user ram
-  * @size: number of bytes to allocate
-  * @align: requested alignment, in bytes
-@@ -175,39 +208,6 @@ unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size)
- }
- EXPORT_SYMBOL(cpm_muram_alloc_fixed);
- 
--/*
-- * cpm_muram_alloc_common - cpm_muram_alloc common code
-- * @size: number of bytes to allocate
-- * @algo: algorithm for alloc.
-- * @data: data for genalloc's algorithm.
-- *
-- * This function returns an offset into the muram area.
-- */
--unsigned long cpm_muram_alloc_common(unsigned long size, genpool_algo_t algo,
--				     void *data)
--{
--	struct muram_block *entry;
--	unsigned long start;
--
--	start = gen_pool_alloc_algo(muram_pool, size, algo, data);
--	if (!start)
--		goto out2;
--	start = start - GENPOOL_OFFSET;
--	memset_io(cpm_muram_addr(start), 0, size);
--	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
--	if (!entry)
--		goto out1;
--	entry->start = start;
--	entry->size = size;
--	list_add(&entry->head, &muram_block_list);
--
--	return start;
--out1:
--	gen_pool_free(muram_pool, start, size);
--out2:
--	return (unsigned long)-ENOMEM;
--}
--
- /**
-  * cpm_muram_addr - turn a muram offset into a virtual address
-  * @offset: muram offset to convert
-diff --git a/include/soc/fsl/qe/qe.h b/include/soc/fsl/qe/qe.h
-index c7fa36c..33b29ea 100644
---- a/include/soc/fsl/qe/qe.h
-+++ b/include/soc/fsl/qe/qe.h
-@@ -103,8 +103,6 @@ int cpm_muram_init(void);
- unsigned long cpm_muram_alloc(unsigned long size, unsigned long align);
- int cpm_muram_free(unsigned long offset);
- unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size);
--unsigned long cpm_muram_alloc_common(unsigned long size, genpool_algo_t algo,
--				     void *data);
- void __iomem *cpm_muram_addr(unsigned long offset);
- unsigned long cpm_muram_offset(void __iomem *addr);
- dma_addr_t cpm_muram_dma(void __iomem *addr);
--- 
-1.9.1
+That is in fact how I read and understood it.
