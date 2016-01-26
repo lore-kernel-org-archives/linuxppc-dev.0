@@ -1,41 +1,50 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
+Return-Path: <gpkulkarni@gmail.com>
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C441D1A02EA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 03:52:48 +1100 (AEDT)
-Received: by mail-io0-x243.google.com with SMTP id f81so16181071iof.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 08:52:48 -0800 (PST)
-Date: Wed, 27 Jan 2016 00:52:07 +0800
-From: Boqun Feng <boqun.feng@gmail.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, Leonid.Yegoshin@imgtec.com,
- linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- mst@redhat.com, peterz@infradead.org, will.deacon@arm.com,
- virtualization@lists.linux-foundation.org, hpa@zytor.com,
- sparclinux@vger.kernel.org, mingo@kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- linux@arm.linux.org.uk, user-mode-linux-devel@lists.sourceforge.net,
- linux-sh@vger.kernel.org, mpe@ellerman.id.au, x86@kernel.org,
- xen-devel@lists.xenproject.org, mingo@elte.hu,
- linux-xtensa@linux-xtensa.org, james.hogan@imgtec.com,
- arnd@arndb.de, stefano.stabellini@eu.citrix.com,
- adi-buildroot-devel@lists.sourceforge.net, ddaney.cavm@gmail.com,
- tglx@linutronix.de, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, andrew.cooper3@citrix.com,
- linux-kernel@vger.kernel.org, ralf@linux-mips.org, joe@perches.com,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
-Message-ID: <20160126165207.GB6029@fixme-laptop.cn.ibm.com>
-References: <20160114204827.GE3818@linux.vnet.ibm.com>
- <20160118081929.GA30420@gondor.apana.org.au>
- <20160118154629.GB3818@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0ED691A0FDF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 04:16:14 +1100 (AEDT)
+Received: by mail-wm0-x243.google.com with SMTP id l65so18529419wmf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 09:16:13 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="LyciRD1jyfeSSjG0"
-In-Reply-To: <20160118154629.GB3818@linux.vnet.ibm.com>
+In-Reply-To: <20160120141806.GA8434@rob-hp-laptop>
+References: <1453134965-6125-1-git-send-email-gkulkarni@caviumnetworks.com>
+ <1453134965-6125-3-git-send-email-gkulkarni@caviumnetworks.com>
+ <20160120141806.GA8434@rob-hp-laptop>
+Date: Tue, 26 Jan 2016 22:46:10 +0530
+Message-ID: <CAFpQJXXtrZk19XBM=BTGZMgtNy-xppoG7NZ_nDAv=Nt5P62e6g@mail.gmail.com>
+Subject: Re: [PATCH v9 2/6] Documentation, dt, arm64/arm: dt bindings for numa.
+From: Ganapatrao Kulkarni <gpkulkarni@gmail.com>
+To: Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-pci@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-arch@vger.kernel.org,
+ Will Deacon <Will.Deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ Leif Lindholm <leif.lindholm@linaro.org>, rfranz@cavium.com,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ "msalter@redhat.com" <msalter@redhat.com>,
+ Steve Capper <steve.capper@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>,
+ Al Stone <al.stone@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
+ Pawel Moll <pawel.moll@arm.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>,
+ Marc Zyngier <marc.zyngier@arm.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, tony.luck@intel.com,
+ fenghua.yu@intel.com, james.hogan@imgtec.com,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "tglx@linutronix.de" <tglx@linutronix.de>, mingo@redhat.com,
+ hpa@zytor.com, x86@kernel.org, Jon Masters <jonathan@jonmasters.org>,
+ Robert Richter <rrichter@cavium.com>,
+ Prasun Kapoor <Prasun.Kapoor@caviumnetworks.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,92 +54,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Rob, Mark,
 
---LyciRD1jyfeSSjG0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Paul,
-
-On Mon, Jan 18, 2016 at 07:46:29AM -0800, Paul E. McKenney wrote:
-> On Mon, Jan 18, 2016 at 04:19:29PM +0800, Herbert Xu wrote:
-> > Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > >
-> > > You could use SYNC_ACQUIRE() to implement read_barrier_depends() and
-> > > smp_read_barrier_depends(), but SYNC_RMB probably does not suffice.
-> > > The reason for this is that smp_read_barrier_depends() must order the
-> > > pointer load against any subsequent read or write through a dereferen=
-ce
-> > > of that pointer.  For example:
-> > >=20
-> > >        p =3D READ_ONCE(gp);
-> > >        smp_rmb();
-> > >        r1 =3D p->a; /* ordered by smp_rmb(). */
-> > >        p->b =3D 42; /* NOT ordered by smp_rmb(), BUG!!! */
-> > >        r2 =3D x; /* ordered by smp_rmb(), but doesn't need to be. */
-> > >=20
-> > > In contrast:
-> > >=20
-> > >        p =3D READ_ONCE(gp);
-> > >        smp_read_barrier_depends();
-> > >        r1 =3D p->a; /* ordered by smp_read_barrier_depends(). */
-> > >        p->b =3D 42; /* ordered by smp_read_barrier_depends(). */
-> > >        r2 =3D x; /* not ordered by smp_read_barrier_depends(), which =
-is OK. */
-> > >=20
-> > > Again, if your hardware maintains local ordering for address
-> > > and data dependencies, you can have read_barrier_depends() and
-> > > smp_read_barrier_depends() be no-ops like they are for most
-> > > architectures.
-> > >=20
-> > > Does that help?
-> >=20
-> > This is crazy! smp_rmb started out being strictly stronger than
-> > smp_read_barrier_depends, when did this stop being the case?
->=20
-> Hello, Herbert!
->=20
-> It is true that most Linux kernel code relies only on the read-read
-> properties of dependencies, but the read-write properties are useful.
-> Admittedly relatively rarely, but useful.
->=20
-> The better comparison for smp_read_barrier_depends(), especially in
-> its rcu_dereference*() form, is smp_load_acquire().
->=20
-
-Confused..
-
-I recall that last time you and Linus came into a conclusion that even
-on Alpha, a barrier for read->write with data dependency is unnecessary:
-
-http://article.gmane.org/gmane.linux.kernel/2077661
-
-And in an earlier mail of that thread, Linus made his point that
-smp_read_barrier_depends() should only be used to order read->read.
-
-So right now, are we going to extend the semantics of
-smp_read_barrier_depends()? Can we just make smp_read_barrier_depends()
-still only work for read->read, and assume all the architectures won't
-reorder read->write with data dependency, so that the code above having
-a smp_rmb() also works?
-
-Regards,
-Boqun
-
---LyciRD1jyfeSSjG0
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWp6QvAAoJEEl56MO1B/q4pKoIAJPOsJ2T06GUg0wVhH82BU2R
-ZlkpggDwyKR/oUt7FdAj9Kzxq1ZMBfqOdIzwH81kpg0h4Z5fBOvAx3FXdBUb0rqS
-jkpd0eqRH0Ur1dPo3Mp9TvD3yPS51obs5HnpOE/E9WAMQcx7nDgjuqNHxSIJj1yG
-9qc/WDqt7WgQZaNoD9/3Y+JAtM0YfukMVfxTI7OoJdnZCKDa0jO3YExgC2SJVAEF
-0iB28yCN9OM2VSBNGdAnaQErCEL/GEi1Dzh6eI2UYPYfxBOL1EMMi9z97/00f7aS
-ZRJFahwgFqy/hJNbT7v3VWcBoYdj5vJxwjHZmR6seJsmo24GfJV9huS9tS8606w=
-=xJxv
------END PGP SIGNATURE-----
-
---LyciRD1jyfeSSjG0--
+On Wed, Jan 20, 2016 at 7:48 PM, Rob Herring <robh@kernel.org> wrote:
+> On Mon, Jan 18, 2016 at 10:06:01PM +0530, Ganapatrao Kulkarni wrote:
+>> DT bindings for numa mapping of memory, cores and IOs.
+>>
+>> Reviewed-by: Robert Richter <rrichter@cavium.com>
+>> Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
+>> ---
+>>  Documentation/devicetree/bindings/arm/numa.txt | 272 +++++++++++++++++++++++++
+>>  1 file changed, 272 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/arm/numa.txt
+>
+> This is looks okay to me, but some cosmetic things on the example.
+can i have your Ack please?
+>
+>> +==============================================================================
+>> +4 - Example dts
+>> +==============================================================================
+>> +
+>> +2 sockets system consists of 2 boards connected through ccn bus and
+>> +each board having one socket/soc of 8 cpus, memory and pci bus.
+>> +
+>> +     memory@00c00000 {
+>
+> Drop the leading 0s on unit addresses.
+i will correct these in next version.
+>
+>> +             device_type = "memory";
+>> +             reg = <0x0 0x00c00000 0x0 0x80000000>;
+>> +             /* node 0 */
+>> +             numa-node-id = <0>;
+>> +     };
+>> +
+>> +     memory@10000000000 {
+>> +             device_type = "memory";
+>> +             reg = <0x100 0x00000000 0x0 0x80000000>;
+>> +             /* node 1 */
+>> +             numa-node-id = <1>;
+>> +     };
+>> +
+>> +     cpus {
+>> +             #address-cells = <2>;
+>> +             #size-cells = <0>;
+>> +
+>> +             cpu@000 {
+>
+> Same here (leaving one of course).
+>
+>> +                     device_type = "cpu";
+>> +                     compatible =  "arm,armv8";
+>> +                     reg = <0x0 0x000>;
+>> +                     enable-method = "psci";
+>> +                     /* node 0 */
+>> +                     numa-node-id = <0>;
+>> +             };
+>> +             cpu@001 {
+>
+> and so on...
+>
+>> +                     device_type = "cpu";
+>> +                     compatible =  "arm,armv8";
+>> +                     reg = <0x0 0x001>;
+>
+> Either all leading 0s or none.
+>
+>> +                     reg = <0x0 0x008>;
+>> +                     enable-method = "psci";
+>> +                     /* node 1 */
+>
+> Kind of a pointless comment.
+>
+> Wouldn't each cluster of cpus for a given numa node be in a different
+> cpu affinity? Certainly not required by the architecture, but the common
+> case at least.
+>
+>> +                     numa-node-id = <1>;
+>> +             };
+>
+> [...]
+>
+>> +     pcie0: pcie0@0x8480,00000000 {
+>
+> Drop the 0x and the comma.
+>
+>> +             compatible = "arm,armv8";
+>> +             device_type = "pci";
+>> +             bus-range = <0 255>;
+>> +             #size-cells = <2>;
+>> +             #address-cells = <3>;
+>> +             reg = <0x8480 0x00000000 0 0x10000000>;  /* Configuration space */
+>> +             ranges = <0x03000000 0x8010 0x00000000 0x8010 0x00000000 0x70 0x00000000>;
+>> +             /* node 0 */
+>> +             numa-node-id = <0>;
+>> +        };
+>> +
+>> +     pcie1: pcie1@0x9480,00000000 {
+>
+> ditto
+>
+>> +             compatible = "arm,armv8";
+>> +             device_type = "pci";
+>> +             bus-range = <0 255>;
+>> +             #size-cells = <2>;
+>> +             #address-cells = <3>;
+>> +             reg = <0x9480 0x00000000 0 0x10000000>;  /* Configuration space */
+>> +             ranges = <0x03000000 0x9010 0x00000000 0x9010 0x00000000 0x70 0x00000000>;
+>> +             /* node 1 */
+>> +             numa-node-id = <1>;
+>> +        };
+>> +
+>> +     distance-map {
+>> +             compatible = "numa-distance-map-v1";
+>> +             distance-matrix = <0 0 10>,
+>> +                               <0 1 20>,
+>> +                               <1 1 10>;
+>> +     };
+>> --
+>> 1.8.1.4
+thanks
+Ganapat
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
