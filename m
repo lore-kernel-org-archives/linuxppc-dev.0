@@ -1,27 +1,25 @@
-Return-Path: <prvs=826ae1113=Stefano.Stabellini@citrix.com>
-Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE70D1A0452
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 23:26:00 +1100 (AEDT)
-Date: Tue, 26 Jan 2016 12:25:47 +0000
-From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-To: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-CC: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, <linux-arm-kernel@lists.infradead.org>, "Jiri
- Slaby" <jslaby@suse.com>, David Vrabel <david.vrabel@citrix.com>, Julien
- Grall <julien.grall@citrix.com>, Stefano Stabellini
- <stefano.stabellini@eu.citrix.com>, Wei Liu <wei.liu2@citrix.com>, "Jan
- Beulich" <JBeulich@suse.com>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] tty: hvc_xen: hide xen_console_remove when unused
-In-Reply-To: <56A6AA42.3000705@oracle.com>
-Message-ID: <alpine.DEB.2.02.1601261225150.3619@kaball.uk.xensource.com>
-References: <1453758918-3577213-1-git-send-email-arnd@arndb.de>
- <1453758918-3577213-3-git-send-email-arnd@arndb.de>
- <56A6AA42.3000705@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C453C1A02EA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 23:48:58 +1100 (AEDT)
+Date: Tue, 26 Jan 2016 13:48:53 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Miroslav Benes <mbenes@suse.cz>
+Cc: Torsten Duwe <duwe@lst.de>, Steven Rostedt <rostedt@goodmis.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ live-patching@vger.kernel.org
+Subject: Re: [PATCH v6 8/9] Implement kernel live patching for ppc64le (ABIv2)
+Message-ID: <20160126124853.GL3305@pathway.suse.cz>
+References: <20160125170459.14DB7692CE@newverein.lst.de>
+ <20160125170804.A11DB692DD@newverein.lst.de>
+ <alpine.LNX.2.00.1601261142190.24510@pobox.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LNX.2.00.1601261142190.24510@pobox.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 25 Jan 2016, Boris Ostrovsky wrote:
-> On 01/25/2016 04:54 PM, Arnd Bergmann wrote:
-> > xencons_disconnect_backend() is only called from xen_console_remove(),
+On Tue 2016-01-26 11:50:25, Miroslav Benes wrote:
 > 
-> and also from xencons_probe()/xencons_resume(). But those two are also under
-> the
-> same ifdef.
-
-Good point. Aside from this the patch is good.
-
- 
-> > which is conditionally compiled, so we get a harmless warning when
-> > CONFIG_HVC_XEN_FRONTEND is unset:
-> > 
-> > hvc/hvc_xen.c:350:12: error: 'xen_console_remove' defined but not used
-> > [-Werror=unused-function]
-> > 
-> > This moves the function down into the same #ifdef section to silence
-> > the warning.
-> > 
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> >   drivers/tty/hvc/hvc_xen.c | 2 +-
-> >   1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
-> > index fa816b7193b6..11725422dacb 100644
-> > --- a/drivers/tty/hvc/hvc_xen.c
-> > +++ b/drivers/tty/hvc/hvc_xen.c
-> > @@ -323,6 +323,7 @@ void xen_console_resume(void)
-> >   	}
-> >   }
-> >   +#ifdef CONFIG_HVC_XEN_FRONTEND
-> >   static void xencons_disconnect_backend(struct xencons_info *info)
-> >   {
-> >   	if (info->irq > 0)
-> > @@ -363,7 +364,6 @@ static int xen_console_remove(struct xencons_info *info)
-> >   	return 0;
-> >   }
-> >   -#ifdef CONFIG_HVC_XEN_FRONTEND
-> >   static int xencons_remove(struct xenbus_device *dev)
-> >   {
-> >   	return xen_console_remove(dev_get_drvdata(&dev->dev));
+> [ added Petr to CC list ]
 > 
+> On Mon, 25 Jan 2016, Torsten Duwe wrote:
+> 
+> >   * create the appropriate files+functions
+> >     arch/powerpc/include/asm/livepatch.h
+> >         klp_check_compiler_support,
+> >         klp_arch_set_pc
+> >     arch/powerpc/kernel/livepatch.c with a stub for
+> >         klp_write_module_reloc
+> >     This is architecture-independent work in progress.
+> >   * introduce a fixup in arch/powerpc/kernel/entry_64.S
+> >     for local calls that are becoming global due to live patching.
+> >     And of course do the main KLP thing: return to a maybe different
+> >     address, possibly altered by the live patching ftrace op.
+> > 
+> > Signed-off-by: Torsten Duwe <duwe@suse.de>
+> 
+> Hi,
+> 
+> I have a few questions...
+> 
+> We still need Petr's patch from [1] to make livepatch work, right? Could 
+> you, please, add it to this patch set to make it self-sufficient?
+> 
+> Second, what is the situation with mcount prologue between gcc < 6 and 
+> gcc-6? Are there only 12 bytes in gcc-6 prologue? If yes, we need to 
+> change Petr's patch to make it more general and to be able to cope with 
+> different prologues. This is unfortunate. Either way, please mention it 
+> somewhere in a changelog.
+
+I am going to update the extra patch. There is an idea to detect the
+offset during build by scrips/recordmcount. This tool looks for the
+ftrace locations. The offset should always be a constant that depends
+on the used architecture, compiler, and compiler flags.
+
+The tool is called post build. We might need to pass the constant
+as a symbol added to the binary. The tool already adds some symbols.
+
+
+Best Regards,
+Petr
