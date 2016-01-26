@@ -1,44 +1,24 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 985581A02EA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 22:09:38 +1100 (AEDT)
-Date: Tue, 26 Jan 2016 11:09:27 +0000
-From: Will Deacon <will.deacon@arm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
- "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
- David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- ddaney.cavm@gmail.com, james.hogan@imgtec.com,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
-Message-ID: <20160126110053.GA21553@arm.com>
-References: <56969F4B.7070001@imgtec.com>
- <20160113204844.GV6357@twins.programming.kicks-ass.net>
- <5696BA6E.4070508@imgtec.com> <20160114120445.GB15828@arm.com>
- <56980145.5030901@imgtec.com>
- <20160114204827.GE3818@linux.vnet.ibm.com>
- <56981212.7050301@imgtec.com>
- <20160114222046.GH3818@linux.vnet.ibm.com>
- <20160126102402.GE6357@twins.programming.kicks-ass.net>
- <20160126103200.GI6375@twins.programming.kicks-ass.net>
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D37C61A03A6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 21:50:32 +1100 (AEDT)
+Date: Tue, 26 Jan 2016 11:50:25 +0100 (CET)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Torsten Duwe <duwe@lst.de>
+cc: Steven Rostedt <rostedt@goodmis.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jiri Kosina <jkosina@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ live-patching@vger.kernel.org, pmladek@suse.cz
+Subject: Re: [PATCH v6 8/9] Implement kernel live patching for ppc64le (ABIv2)
+In-Reply-To: <20160125170804.A11DB692DD@newverein.lst.de>
+Message-ID: <alpine.LNX.2.00.1601261142190.24510@pobox.suse.cz>
+References: <20160125170459.14DB7692CE@newverein.lst.de>
+ <20160125170804.A11DB692DD@newverein.lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160126103200.GI6375@twins.programming.kicks-ass.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,44 +28,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 26, 2016 at 11:32:00AM +0100, Peter Zijlstra wrote:
-> On Tue, Jan 26, 2016 at 11:24:02AM +0100, Peter Zijlstra wrote:
-> 
-> > Yeah, this goes under the header: memory-barriers.txt is _NOT_ a
-> > specification (I seem to keep repeating this).
-> 
-> Do we want this ?
-> 
-> ---
->  Documentation/memory-barriers.txt | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
-> 
-> diff --git a/Documentation/memory-barriers.txt b/Documentation/memory-barriers.txt
-> index a61be39c7b51..433326ebdc26 100644
-> --- a/Documentation/memory-barriers.txt
-> +++ b/Documentation/memory-barriers.txt
-> @@ -1,3 +1,4 @@
-> +
->  			 ============================
->  			 LINUX KERNEL MEMORY BARRIERS
->  			 ============================
-> @@ -5,6 +6,22 @@
->  By: David Howells <dhowells@redhat.com>
->      Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->  
-> +==========
-> +DISCLAIMER
-> +==========
-> +
-> +This document is not a specification; it is intentionally (for the sake of
-> +brevity) and unintentionally (due to being human) incomplete. This document is
-> +meant as a guide to using the various memory barriers provided by Linux, but
-> +in case of any doubt (and there are many) please ask.
 
-It might be worth adding you and me to the top of the file, to save Paul
-Cc'ing us on questions (get_maintainer.pl points at poor old Corbet for
-this file).
+[ added Petr to CC list ]
 
-But yes, it seems that something like this is required.
+On Mon, 25 Jan 2016, Torsten Duwe wrote:
 
-Will
+>   * create the appropriate files+functions
+>     arch/powerpc/include/asm/livepatch.h
+>         klp_check_compiler_support,
+>         klp_arch_set_pc
+>     arch/powerpc/kernel/livepatch.c with a stub for
+>         klp_write_module_reloc
+>     This is architecture-independent work in progress.
+>   * introduce a fixup in arch/powerpc/kernel/entry_64.S
+>     for local calls that are becoming global due to live patching.
+>     And of course do the main KLP thing: return to a maybe different
+>     address, possibly altered by the live patching ftrace op.
+> 
+> Signed-off-by: Torsten Duwe <duwe@suse.de>
+
+Hi,
+
+I have a few questions...
+
+We still need Petr's patch from [1] to make livepatch work, right? Could 
+you, please, add it to this patch set to make it self-sufficient?
+
+Second, what is the situation with mcount prologue between gcc < 6 and 
+gcc-6? Are there only 12 bytes in gcc-6 prologue? If yes, we need to 
+change Petr's patch to make it more general and to be able to cope with 
+different prologues. This is unfortunate. Either way, please mention it 
+somewhere in a changelog.
+
+I haven't reviewed the patch properly yet, but there is a comment below.
+
+[1] http://lkml.kernel.org/g/20151203160004.GE8047@pathway.suse.cz
+
+> +/**
+> + * klp_write_module_reloc() - write a relocation in a module
+> + * @mod:       module in which the section to be modified is found
+> + * @type:      ELF relocation type (see asm/elf.h)
+> + * @loc:       address that the relocation should be written to
+> + * @value:     relocation value (sym address + addend)
+> + *
+> + * This function writes a relocation to the specified location for
+> + * a particular module.
+> + */
+> +int klp_write_module_reloc(struct module *mod, unsigned long type,
+> +			    unsigned long loc, unsigned long value)
+> +{
+> +	/* This requires infrastructure changes; we need the loadinfos. */
+> +	pr_err("lpc_write_module_reloc not yet supported\n");
+
+This is a nit, but there is no lpc_write_module_reloc. It should be 
+klp_write_module_reloc.
+
+Thanks,
+Miroslav
