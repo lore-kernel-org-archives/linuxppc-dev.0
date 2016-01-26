@@ -1,20 +1,41 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
+ [IPv6:2607:f8b0:4001:c06::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6996D1A02EA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 01:48:24 +1100 (AEDT)
-Message-ID: <1453819695.27129.26.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Alessio Igor Bogani <alessio.bogani@elettra.eu>, Kumar Gala
- <galak@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Tue, 26 Jan 2016 08:48:15 -0600
-In-Reply-To: <1453811127-28591-1-git-send-email-alessio.bogani@elettra.eu>
-References: <1453811127-28591-1-git-send-email-alessio.bogani@elettra.eu>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: powerpc/dts: Move mvme2500.dts back in the right place
+ by lists.ozlabs.org (Postfix) with ESMTPS id C441D1A02EA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 03:52:48 +1100 (AEDT)
+Received: by mail-io0-x243.google.com with SMTP id f81so16181071iof.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 08:52:48 -0800 (PST)
+Date: Wed, 27 Jan 2016 00:52:07 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, Leonid.Yegoshin@imgtec.com,
+ linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ mst@redhat.com, peterz@infradead.org, will.deacon@arm.com,
+ virtualization@lists.linux-foundation.org, hpa@zytor.com,
+ sparclinux@vger.kernel.org, mingo@kernel.org,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux@arm.linux.org.uk, user-mode-linux-devel@lists.sourceforge.net,
+ linux-sh@vger.kernel.org, mpe@ellerman.id.au, x86@kernel.org,
+ xen-devel@lists.xenproject.org, mingo@elte.hu,
+ linux-xtensa@linux-xtensa.org, james.hogan@imgtec.com,
+ arnd@arndb.de, stefano.stabellini@eu.citrix.com,
+ adi-buildroot-devel@lists.sourceforge.net, ddaney.cavm@gmail.com,
+ tglx@linutronix.de, linux-metag@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, andrew.cooper3@citrix.com,
+ linux-kernel@vger.kernel.org, ralf@linux-mips.org, joe@perches.com,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
+ Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
+Message-ID: <20160126165207.GB6029@fixme-laptop.cn.ibm.com>
+References: <20160114204827.GE3818@linux.vnet.ibm.com>
+ <20160118081929.GA30420@gondor.apana.org.au>
+ <20160118154629.GB3818@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="LyciRD1jyfeSSjG0"
+In-Reply-To: <20160118154629.GB3818@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,16 +45,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-01-26 at 13:25 +0100, Alessio Igor Bogani wrote:
-> Commit dc37374b9c83 ("powerpc/fsl: Move Freescale device tree files into
-> fsl folder") move also mvme2500.dts which isn't a device tree for a
-> Freescale board but for an Artesyn one. So move mvme2500.dts back in the
-> right place.
 
-It's not about who makes the board.  In theory it's for all boards with a
-Freescale SoC.  The initial set that was moved was those which use dtsi files
-from the fsl directory.  The motivation was that some of the dtsi files are
-now requiring the preprocessor, and preprocessor includes don't mix well with
-dts includes that change the current directory.
+--LyciRD1jyfeSSjG0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--Scott
+Hi Paul,
+
+On Mon, Jan 18, 2016 at 07:46:29AM -0800, Paul E. McKenney wrote:
+> On Mon, Jan 18, 2016 at 04:19:29PM +0800, Herbert Xu wrote:
+> > Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > >
+> > > You could use SYNC_ACQUIRE() to implement read_barrier_depends() and
+> > > smp_read_barrier_depends(), but SYNC_RMB probably does not suffice.
+> > > The reason for this is that smp_read_barrier_depends() must order the
+> > > pointer load against any subsequent read or write through a dereferen=
+ce
+> > > of that pointer.  For example:
+> > >=20
+> > >        p =3D READ_ONCE(gp);
+> > >        smp_rmb();
+> > >        r1 =3D p->a; /* ordered by smp_rmb(). */
+> > >        p->b =3D 42; /* NOT ordered by smp_rmb(), BUG!!! */
+> > >        r2 =3D x; /* ordered by smp_rmb(), but doesn't need to be. */
+> > >=20
+> > > In contrast:
+> > >=20
+> > >        p =3D READ_ONCE(gp);
+> > >        smp_read_barrier_depends();
+> > >        r1 =3D p->a; /* ordered by smp_read_barrier_depends(). */
+> > >        p->b =3D 42; /* ordered by smp_read_barrier_depends(). */
+> > >        r2 =3D x; /* not ordered by smp_read_barrier_depends(), which =
+is OK. */
+> > >=20
+> > > Again, if your hardware maintains local ordering for address
+> > > and data dependencies, you can have read_barrier_depends() and
+> > > smp_read_barrier_depends() be no-ops like they are for most
+> > > architectures.
+> > >=20
+> > > Does that help?
+> >=20
+> > This is crazy! smp_rmb started out being strictly stronger than
+> > smp_read_barrier_depends, when did this stop being the case?
+>=20
+> Hello, Herbert!
+>=20
+> It is true that most Linux kernel code relies only on the read-read
+> properties of dependencies, but the read-write properties are useful.
+> Admittedly relatively rarely, but useful.
+>=20
+> The better comparison for smp_read_barrier_depends(), especially in
+> its rcu_dereference*() form, is smp_load_acquire().
+>=20
+
+Confused..
+
+I recall that last time you and Linus came into a conclusion that even
+on Alpha, a barrier for read->write with data dependency is unnecessary:
+
+http://article.gmane.org/gmane.linux.kernel/2077661
+
+And in an earlier mail of that thread, Linus made his point that
+smp_read_barrier_depends() should only be used to order read->read.
+
+So right now, are we going to extend the semantics of
+smp_read_barrier_depends()? Can we just make smp_read_barrier_depends()
+still only work for read->read, and assume all the architectures won't
+reorder read->write with data dependency, so that the code above having
+a smp_rmb() also works?
+
+Regards,
+Boqun
+
+--LyciRD1jyfeSSjG0
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJWp6QvAAoJEEl56MO1B/q4pKoIAJPOsJ2T06GUg0wVhH82BU2R
+ZlkpggDwyKR/oUt7FdAj9Kzxq1ZMBfqOdIzwH81kpg0h4Z5fBOvAx3FXdBUb0rqS
+jkpd0eqRH0Ur1dPo3Mp9TvD3yPS51obs5HnpOE/E9WAMQcx7nDgjuqNHxSIJj1yG
+9qc/WDqt7WgQZaNoD9/3Y+JAtM0YfukMVfxTI7OoJdnZCKDa0jO3YExgC2SJVAEF
+0iB28yCN9OM2VSBNGdAnaQErCEL/GEi1Dzh6eI2UYPYfxBOL1EMMi9z97/00f7aS
+ZRJFahwgFqy/hJNbT7v3VWcBoYdj5vJxwjHZmR6seJsmo24GfJV9huS9tS8606w=
+=xJxv
+-----END PGP SIGNATURE-----
+
+--LyciRD1jyfeSSjG0--
