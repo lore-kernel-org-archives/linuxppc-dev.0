@@ -1,99 +1,83 @@
-Return-Path: <dhowells@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rientjes@google.com>
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 11EAC1A0174
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 01:57:19 +1100 (AEDT)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20160127083546.GJ6357@twins.programming.kicks-ass.net>
-References: <20160127083546.GJ6357@twins.programming.kicks-ass.net>
- <5696BA6E.4070508@imgtec.com> <20160114120445.GB15828@arm.com>
- <56980145.5030901@imgtec.com> <20160114204827.GE3818@linux.vnet.ibm.com>
- <56981212.7050301@imgtec.com> <20160114222046.GH3818@linux.vnet.ibm.com>
- <20160126102402.GE6357@twins.programming.kicks-ass.net>
- <20160126103200.GI6375@twins.programming.kicks-ass.net>
- <20160126110053.GA21553@arm.com> <20160126201143.GV4503@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: dhowells@redhat.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Will Deacon <will.deacon@arm.com>,
- Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
- "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
- David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org, x86@kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- ddaney.cavm@gmail.com, james.hogan@imgtec.com,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] documentation: Add disclaimer
+ by lists.ozlabs.org (Postfix) with ESMTPS id 750C01A0054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 09:17:09 +1100 (AEDT)
+Received: by mail-pa0-x229.google.com with SMTP id ho8so11398453pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 14:17:09 -0800 (PST)
+Date: Wed, 27 Jan 2016 14:17:05 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ x86@kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, davej@codemonkey.org.uk
+Subject: Re: [PATCH v3 2/3] x86: query dynamic DEBUG_PAGEALLOC setting
+In-Reply-To: <1453889401-43496-3-git-send-email-borntraeger@de.ibm.com>
+Message-ID: <alpine.DEB.2.10.1601271414180.23510@chino.kir.corp.google.com>
+References: <1453889401-43496-1-git-send-email-borntraeger@de.ibm.com>
+ <1453889401-43496-3-git-send-email-borntraeger@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 27 Jan 2016 14:57:07 +0000
-Message-ID: <15882.1453906627@warthog.procyon.org.uk>
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+List-ID: <linuxppc-dev.linuxppc.org>
 
-Peter Zijlstra <peterz@infradead.org> wrote:
+On Wed, 27 Jan 2016, Christian Borntraeger wrote:
 
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +DISCLAIMER
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +This document is not a specification; it is intentionally (for the sake=
- of
-> +brevity) and unintentionally (due to being human) incomplete. This docu=
-ment is
-> +meant as a guide to using the various memory barriers provided by Linux=
-, but
-> +in case of any doubt (and there are many) please ask.
-> +
-> +I repeat, this document is not a specification of what Linux expects fr=
-om
-> +hardware.
+> We can use debug_pagealloc_enabled() to check if we can map
+> the identity mapping with 2MB pages. We can also add the state
+> into the dump_stack output.
+> 
+> The patch does not touch the code for the 1GB pages, which ignored
+> CONFIG_DEBUG_PAGEALLOC. Do we need to fence this as well?
+> 
+> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+> Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+> ---
+>  arch/x86/kernel/dumpstack.c |  5 ++---
+>  arch/x86/mm/init.c          |  7 ++++---
+>  arch/x86/mm/pageattr.c      | 14 ++++----------
+>  3 files changed, 10 insertions(+), 16 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/dumpstack.c b/arch/x86/kernel/dumpstack.c
+> index 9c30acf..32e5699 100644
+> --- a/arch/x86/kernel/dumpstack.c
+> +++ b/arch/x86/kernel/dumpstack.c
+> @@ -265,9 +265,8 @@ int __die(const char *str, struct pt_regs *regs, long err)
+>  #ifdef CONFIG_SMP
+>  	printk("SMP ");
+>  #endif
+> -#ifdef CONFIG_DEBUG_PAGEALLOC
+> -	printk("DEBUG_PAGEALLOC ");
+> -#endif
+> +	if (debug_pagealloc_enabled())
+> +		printk("DEBUG_PAGEALLOC ");
+>  #ifdef CONFIG_KASAN
+>  	printk("KASAN");
+>  #endif
+> diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+> index 493f541..39823fd 100644
+> --- a/arch/x86/mm/init.c
+> +++ b/arch/x86/mm/init.c
+> @@ -150,13 +150,14 @@ static int page_size_mask;
+>  
+>  static void __init probe_page_size_mask(void)
+>  {
+> -#if !defined(CONFIG_DEBUG_PAGEALLOC) && !defined(CONFIG_KMEMCHECK)
+> +#if !defined(CONFIG_KMEMCHECK)
+>  	/*
+> -	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
+> +	 * For CONFIG_KMEMCHECK or pagealloc debugging, identity mapping will
+> +	 * use small pages.
+>  	 * This will simplify cpa(), which otherwise needs to support splitting
+>  	 * large pages into small in interrupt context, etc.
+>  	 */
+> -	if (cpu_has_pse)
+> +	if (cpu_has_pse && !debug_pagealloc_enabled())
+>  		page_size_mask |= 1 << PG_LEVEL_2M;
+>  #endif
+>  
 
-The purpose of this document is twofold:
-
- (1) to specify the minimum functionality that one can rely on for any
-     particular barrier, and
-
- (2) to provide a guide as to how to use the barriers that are available.
-
-Note that an architecture can provide more than the minimum requirement fo=
-r
-any particular barrier, but if the barrier provides less than that, it is
-incorrect.
-
-Note also that it is possible that a barrier may be a no-op for an
-architecture because the way that arch works renders an explicit barrier
-unnecessary in that case.
-
-> +
-
-Can you bung an extra blank line in here if you have to redo this at all?
-
-> +=3D=3D=3D=3D=3D=3D=3D=3D
-> +CONTENTS
-> +=3D=3D=3D=3D=3D=3D=3D=3D
->  =
-
->   (*) Abstract memory access model.
->  =
-
-
-David
+I would have thought free_init_pages() would be modified to use 
+debug_pagealloc_enabled() as well?
