@@ -1,33 +1,34 @@
-Return-Path: <zhiqiang.hou@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0061.outbound.protection.outlook.com [157.56.112.61])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
+ [140.105.206.208])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 68BDC1A0174
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 18:20:25 +1100 (AEDT)
-From: Zhiqiang Hou <zhiqiang.hou@nxp.com>
-To: Zhiqiang Hou <zhiqiang.hou@nxp.com>, Zhiqiang Hou
- <Zhiqiang.Hou@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Scott Wood <scottwood@freescale.com>,
- "galak@kernel.crashing.org" <galak@kernel.crashing.org>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
- <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>, "pawel.moll@arm.com"
- <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "Harninder
- Rai" <harninder.rai@freescale.com>, "robh@kernel.org" <robh@kernel.org>
-CC: Lian M.H. <Minghuan.Lian@freescale.com>, Hu Vincent
- <Mingkai.Hu@freescale.com>, Hou Zhiqiang <B48286@freescale.com>
-Subject: RE: [PATCH V4 1/2] powerpc/fsl: Add PCI node in device tree of
- bsc9132qds
-Date: Wed, 27 Jan 2016 06:47:13 +0000
-Message-ID: <HE1PR04MB09060D4FCE88CD7B3F1CBF9084D90@HE1PR04MB0906.eurprd04.prod.outlook.com>
-References: <1446693360-1578-1-git-send-email-Zhiqiang.Hou@freescale.com>
- <HE1PR04MB0906A35F4F48C8DACF5CD16D84E50@HE1PR04MB0906.eurprd04.prod.outlook.com>
-In-Reply-To: <HE1PR04MB0906A35F4F48C8DACF5CD16D84E50@HE1PR04MB0906.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="gb2312"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0956F1A1921
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 18:21:09 +1100 (AEDT)
+Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
+ by localhost (Email Security Appliance) with SMTP id 53E0F440E24_6A86FE0B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 07:21:04 +0000 (GMT)
+Received: from mail-qg0-f45.google.com (mail-qg0-f45.google.com
+ [209.85.192.45])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (verified OK))
+ by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
+ 7F37743E089_6A86FDEF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 07:21:02 +0000 (GMT)
+Received: by mail-qg0-f45.google.com with SMTP id o11so149455qge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 23:21:02 -0800 (PST)
 MIME-Version: 1.0
+In-Reply-To: <1453819695.27129.26.camel@buserror.net>
+References: <1453811127-28591-1-git-send-email-alessio.bogani@elettra.eu>
+ <1453819695.27129.26.camel@buserror.net>
+Date: Wed, 27 Jan 2016 08:21:01 +0100
+Message-ID: <CAPk1OjHxmT5pZAG=2FfnibKprXZVX9vyrYGUpxj-8eL73ddGFQ@mail.gmail.com>
+Subject: Re: powerpc/dts: Move mvme2500.dts back in the right place
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+To: Scott Wood <oss@buserror.net>
+Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,83 +38,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgSGVycmluZyBhbmQgS3VtYXIgYW5kIElhbiwNCg0KQ2FuIHlvdSBoZWxwIHRvIGFwcGx5IHRo
-aXMgcGF0Y2g/DQoNClRoYW5rcywNClpoaXFpYW5nIA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQo+IEZyb206IFpoaXFpYW5nIEhvdSBbbWFpbHRvOnpoaXFpYW5nLmhvdUBueHAuY29t
-XQ0KPiBTZW50OiAyMDE1xOoxMtTCMjLI1SAxNzoyOA0KPiBUbzogWmhpcWlhbmcgSG91IDxaaGlx
-aWFuZy5Ib3VAZnJlZXNjYWxlLmNvbT47IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0K
-PiBTY290dCBXb29kIDxzY290dHdvb2RAZnJlZXNjYWxlLmNvbT47IGdhbGFrQGtlcm5lbC5jcmFz
-aGluZy5vcmc7DQo+IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgcGF1bHVzQHNhbWJhLm9yZzsg
-bXBlQGVsbGVybWFuLmlkLmF1Ow0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgcm9iaCtk
-dEBrZXJuZWwub3JnOyBwYXdlbC5tb2xsQGFybS5jb207DQo+IG1hcmsucnV0bGFuZEBhcm0uY29t
-OyBpamMrZGV2aWNldHJlZUBoZWxsaW9uLm9yZy51azsgSGFybmluZGVyIFJhaQ0KPiA8aGFybmlu
-ZGVyLnJhaUBmcmVlc2NhbGUuY29tPg0KPiBDYzogTGlhbiBNLkguIDxNaW5naHVhbi5MaWFuQGZy
-ZWVzY2FsZS5jb20+OyBIdSBWaW5jZW50DQo+IDxNaW5na2FpLkh1QGZyZWVzY2FsZS5jb20+OyBI
-b3UgWmhpcWlhbmcgPEI0ODI4NkBmcmVlc2NhbGUuY29tPg0KPiBTdWJqZWN0OiBSRTogW1BBVENI
-IFY0IDEvMl0gcG93ZXJwYy9mc2w6IEFkZCBQQ0kgbm9kZSBpbiBkZXZpY2UgdHJlZSBvZg0KPiBi
-c2M5MTMycWRzDQo+IA0KPiBIaSBSb2IsDQo+IA0KPiBDb3VsZCB5b3UgcGxlYXNlIHRha2UgdGhp
-cyBwYXRjaCBpbnRvIGFjY291bnQ/DQo+IA0KPiBUaGFua3MsDQo+IFpoaXFpYW5nDQo+IA0KPiA+
-IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gRnJvbTogWmhpcWlhbmcgSG91IFttYWls
-dG86WmhpcWlhbmcuSG91QGZyZWVzY2FsZS5jb21dDQo+ID4gU2VudDogMjAxNcTqMTHUwjXI1SAx
-MToxNg0KPiA+IFRvOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgU2NvdHQgV29vZDsN
-Cj4gPiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7
-IHBhdWx1c0BzYW1iYS5vcmc7DQo+ID4gbXBlQGVsbGVybWFuLmlkLmF1OyBkZXZpY2V0cmVlQHZn
-ZXIua2VybmVsLm9yZzsgcm9iaCtkdEBrZXJuZWwub3JnOw0KPiA+IHBhd2VsLm1vbGxAYXJtLmNv
-bTsgbWFyay5ydXRsYW5kQGFybS5jb207DQo+ID4gaWpjK2RldmljZXRyZWVAaGVsbGlvbi5vcmcu
-dWs7IEhhcm5pbmRlciBSYWkNCj4gPiBDYzogTWluZ2h1YW4gTGlhbjsgTWluZ2thaSBIdTsgWmhp
-cWlhbmcgSG91DQo+ID4gU3ViamVjdDogW1BBVENIIFY0IDEvMl0gcG93ZXJwYy9mc2w6IEFkZCBQ
-Q0kgbm9kZSBpbiBkZXZpY2UgdHJlZSBvZg0KPiA+IGJzYzkxMzJxZHMNCj4gPg0KPiA+IEZyb206
-IEhhcm5pbmRlciBSYWkgPGhhcm5pbmRlci5yYWlAZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IFNp
-Z25lZC1vZmYtYnk6IEhhcm5pbmRlciBSYWkgPGhhcm5pbmRlci5yYWlAZnJlZXNjYWxlLmNvbT4N
-Cj4gPiBTaWduZWQtb2ZmLWJ5OiBNaW5naHVhbiBMaWFuIDxNaW5naHVhbi5MaWFuQGZyZWVzY2Fs
-ZS5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogSG91IFpoaXFpYW5nIDxCNDgyODZAZnJlZXNjYWxl
-LmNvbT4NCj4gPiAtLS0NCj4gPiBWNDogVjM6DQo+ID4gIC0gUmVtb3ZlIGdlcnJpdCBzdHVmZi4N
-Cj4gPiBWMjoNCj4gPiAgLSBSZW1vdmUgcHJvcGVydHkgY2xvY2stZnJlcXVlbmN5Lg0KPiA+DQo+
-ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9ic2M5MTMycWRzLmR0cyAgICAgICAgICB8IDE1ICsr
-KysrKysrKysrKysrDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvYnNjOTEzMnNpLXBv
-c3QuZHRzaSB8IDI4DQo+ID4gKysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ID4gKysrKysr
-KysrKysrKysrKysrKysrKysrKysrIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvYnNjOTEzMnNp
-LXByZS5kdA0KPiA+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKyBzaQ0KPiA+IHwgIDEgKw0K
-PiA+ICAzIGZpbGVzIGNoYW5nZWQsIDQ0IGluc2VydGlvbnMoKykNCj4gPg0KPiA+IGRpZmYgLS1n
-aXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvYnNjOTEzMnFkcy5kdHMNCj4gPiBiL2FyY2gvcG93
-ZXJwYy9ib290L2R0cy9ic2M5MTMycWRzLmR0cw0KPiA+IGluZGV4IDZjYWIxMDYuLjk0MGQ3MTkg
-MTAwNjQ0DQo+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2JzYzkxMzJxZHMuZHRzDQo+
-ID4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2JzYzkxMzJxZHMuZHRzDQo+ID4gQEAgLTI5
-LDYgKzI5LDIxIEBADQo+ID4gIHNvYzogc29jQGZmNzAwMDAwIHsNCj4gPiAgcmFuZ2VzID0gPDB4
-MCAweDAgMHhmZjcwMDAwMCAweDEwMDAwMD47ICB9Ow0KPiA+ICsNCj4gPiArcGNpMDogcGNpZUBm
-ZjcwYTAwMCB7DQo+ID4gK3JlZyA9IDwwIDB4ZmY3MGEwMDAgMCAweDEwMDA+Ow0KPiA+ICtyYW5n
-ZXMgPSA8MHgyMDAwMDAwIDB4MCAweDkwMDAwMDAwIDAgMHg5MDAwMDAwMCAweDANCj4gPiAweDIw
-MDAwMDAwDQo+ID4gKyAgMHgxMDAwMDAwIDB4MCAweDAwMDAwMDAwIDAgMHhjMDAxMDAwMCAweDAg
-MHgxMDAwMD47DQo+ID4gK3BjaWVAMCB7DQo+ID4gK3JhbmdlcyA9IDwweDIwMDAwMDAgMHgwIDB4
-OTAwMDAwMDANCj4gPiArICAweDIwMDAwMDAgMHgwIDB4OTAwMDAwMDANCj4gPiArICAweDAgMHgy
-MDAwMDAwMA0KPiA+ICsNCj4gPiArICAweDEwMDAwMDAgMHgwIDB4MA0KPiA+ICsgIDB4MTAwMDAw
-MCAweDAgMHgwDQo+ID4gKyAgMHgwIDB4MTAwMDAwPjsNCj4gPiArfTsNCj4gPiArfTsNCj4gPiAg
-fTsNCj4gPg0KPiA+ICAvaW5jbHVkZS8gImJzYzkxMzJxZHMuZHRzaSINCj4gPiBkaWZmIC0tZ2l0
-IGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9ic2M5MTMyc2ktcG9zdC5kdHNpDQo+ID4gYi9h
-cmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL2JzYzkxMzJzaS1wb3N0LmR0c2kNCj4gPiBpbmRleCBj
-NzIzMDcxLi5iNWYwNzE1IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9m
-c2wvYnNjOTEzMnNpLXBvc3QuZHRzaQ0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9m
-c2wvYnNjOTEzMnNpLXBvc3QuZHRzaQ0KPiA+IEBAIC00MCw2ICs0MCwzNCBAQA0KPiA+ICBpbnRl
-cnJ1cHRzID0gPDE2IDIgMCAwIDIwIDIgMCAwPjsNCj4gPiAgfTsNCj4gPg0KPiA+ICsvKiBjb250
-cm9sbGVyIGF0IDB4YTAwMCAqLw0KPiA+ICsmcGNpMCB7DQo+ID4gK2NvbXBhdGlibGUgPSAiZnNs
-LGJzYzkxMzItcGNpZSIsICJmc2wscW9yaXEtcGNpZS12Mi4yIjsgZGV2aWNlX3R5cGUgPQ0KPiA+
-ICsicGNpIjsgI3NpemUtY2VsbHMgPSA8Mj47ICNhZGRyZXNzLWNlbGxzID0gPDM+OyBidXMtcmFu
-Z2UgPSA8MCAyNTU+Ow0KPiA+ICtpbnRlcnJ1cHRzID0gPDE2IDIgMCAwPjsNCj4gPiArDQo+ID4g
-K3BjaWVAMCB7DQo+ID4gK3JlZyA9IDwwIDAgMCAwIDA+Ow0KPiA+ICsjaW50ZXJydXB0LWNlbGxz
-ID0gPDE+Ow0KPiA+ICsjc2l6ZS1jZWxscyA9IDwyPjsNCj4gPiArI2FkZHJlc3MtY2VsbHMgPSA8
-Mz47DQo+ID4gK2RldmljZV90eXBlID0gInBjaSI7DQo+ID4gK2ludGVycnVwdHMgPSA8MTYgMiAw
-IDA+Ow0KPiA+ICtpbnRlcnJ1cHQtbWFwLW1hc2sgPSA8MHhmODAwIDAgMCA3PjsNCj4gPiArDQo+
-ID4gK2ludGVycnVwdC1tYXAgPSA8DQo+ID4gKy8qIElEU0VMIDB4MCAqLw0KPiA+ICswMDAwIDB4
-MCAweDAgMHgxICZtcGljIDB4MCAweDIgMHgwIDB4MA0KPiA+ICswMDAwIDB4MCAweDAgMHgyICZt
-cGljIDB4MSAweDIgMHgwIDB4MA0KPiA+ICswMDAwIDB4MCAweDAgMHgzICZtcGljIDB4MiAweDIg
-MHgwIDB4MA0KPiA+ICswMDAwIDB4MCAweDAgMHg0ICZtcGljIDB4MyAweDIgMHgwIDB4MA0KPiA+
-ICs+Ow0KPiA+ICt9Ow0KPiA+ICt9Ow0KPiA+ICsNCj4gPiAgJnNvYyB7DQo+ID4gICNhZGRyZXNz
-LWNlbGxzID0gPDE+Ow0KPiA+ICAjc2l6ZS1jZWxscyA9IDwxPjsNCj4gPiBkaWZmIC0tZ2l0IGEv
-YXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9ic2M5MTMyc2ktcHJlLmR0c2kNCj4gPiBiL2FyY2gv
-cG93ZXJwYy9ib290L2R0cy9mc2wvYnNjOTEzMnNpLXByZS5kdHNpDQo+ID4gaW5kZXggMzAxYTlk
-Yi4uOTBmNzk0OSAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL2Jz
-YzkxMzJzaS1wcmUuZHRzaQ0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvYnNj
-OTEzMnNpLXByZS5kdHNpDQo+ID4gQEAgLTQ1LDYgKzQ1LDcgQEANCj4gPiAgc2VyaWFsMCA9ICZz
-ZXJpYWwwOw0KPiA+ICBldGhlcm5ldDAgPSAmZW5ldDA7DQo+ID4gIGV0aGVybmV0MSA9ICZlbmV0
-MTsNCj4gPiArcGNpMCA9ICZwY2kwOw0KPiA+ICB9Ow0KPiA+DQo+ID4gIGNwdXMgew0KPiA+IC0t
-DQo+ID4gMi4xLjAuMjcuZzk2ZGIzMjQNCg0K
+Scott,
+
+On 26 January 2016 at 15:48, Scott Wood <oss@buserror.net> wrote:
+> On Tue, 2016-01-26 at 13:25 +0100, Alessio Igor Bogani wrote:
+>> Commit dc37374b9c83 ("powerpc/fsl: Move Freescale device tree files into
+>> fsl folder") move also mvme2500.dts which isn't a device tree for a
+>> Freescale board but for an Artesyn one. So move mvme2500.dts back in the
+>> right place.
+>
+> It's not about who makes the board.  In theory it's for all boards with a
+> Freescale SoC.  The initial set that was moved was those which use dtsi files
+> from the fsl directory.  The motivation was that some of the dtsi files are
+> now requiring the preprocessor, and preprocessor includes don't mix well with
+> dts includes that change the current directory.
+
+Thank you for your detailed explanation and I'm sorry to have bothered you.
+
+Ciao,
+Alessio
