@@ -1,35 +1,45 @@
-Return-Path: <alessio.bogani@elettra.eu>
-Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
- [140.105.206.208])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EE16B1A02DE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 01:41:52 +1100 (AEDT)
-Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
- by localhost (Email Security Appliance) with SMTP id EAB63440D98_6A8D72CB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 14:41:48 +0000 (GMT)
-Received: from mail-qg0-f46.google.com (mail-qg0-f46.google.com
- [209.85.192.46])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (verified OK))
- by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
- 2E0BF43E068_6A8D72CF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 14:41:48 +0000 (GMT)
-Received: by mail-qg0-f46.google.com with SMTP id o11so7957170qge.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 06:41:48 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 11EAC1A0174
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 01:57:19 +1100 (AEDT)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20160127083546.GJ6357@twins.programming.kicks-ass.net>
+References: <20160127083546.GJ6357@twins.programming.kicks-ass.net>
+ <5696BA6E.4070508@imgtec.com> <20160114120445.GB15828@arm.com>
+ <56980145.5030901@imgtec.com> <20160114204827.GE3818@linux.vnet.ibm.com>
+ <56981212.7050301@imgtec.com> <20160114222046.GH3818@linux.vnet.ibm.com>
+ <20160126102402.GE6357@twins.programming.kicks-ass.net>
+ <20160126103200.GI6375@twins.programming.kicks-ass.net>
+ <20160126110053.GA21553@arm.com> <20160126201143.GV4503@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: dhowells@redhat.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
+ "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
+ David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org, x86@kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
+ Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
+ ddaney.cavm@gmail.com, james.hogan@imgtec.com,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] documentation: Add disclaimer
 MIME-Version: 1.0
-In-Reply-To: <1453904822.27129.44.camel@buserror.net>
-References: <CAPk1OjGew2n-17ztcbxcxBXWundeEk5nKQ5MS1HLYR4fiBOjxg@mail.gmail.com>
- <1453904726.27129.42.camel@buserror.net>
- <1453904822.27129.44.camel@buserror.net>
-Date: Wed, 27 Jan 2016 15:41:46 +0100
-Message-ID: <CAPk1OjGKxzCi58udCL2ocVOoiufetnfgJ1WUcjD-JbQs7Tbq9A@mail.gmail.com>
-Subject: Re: Question about 86xx
-From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-To: Scott Wood <oss@buserror.net>
-Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 27 Jan 2016 14:57:07 +0000
+Message-ID: <15882.1453906627@warthog.procyon.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,25 +49,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott,
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-On 27 January 2016 at 15:27, Scott Wood <oss@buserror.net> wrote:
-> On Wed, 2016-01-27 at 08:25 -0600, Scott Wood wrote:
->> On Wed, 2016-01-27 at 10:24 +0100, Alessio Igor Bogani wrote:
-[...]
->> > I'm wondering if we are allowed to put together configurations of the
->> > 86xx base systems
-[...]
->> > mpc86xx_defconfig/mpc86xx_smp_defconfig as like already done for 85xx
->> > ones.
->> Yes, that would be good.
->
-> Also consider using config fragments like 85xx now does (and sharing fragments
-> with 85xx where appropriate).
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +DISCLAIMER
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +This document is not a specification; it is intentionally (for the sake=
+ of
+> +brevity) and unintentionally (due to being human) incomplete. This docu=
+ment is
+> +meant as a guide to using the various memory barriers provided by Linux=
+, but
+> +in case of any doubt (and there are many) please ask.
+> +
+> +I repeat, this document is not a specification of what Linux expects fr=
+om
+> +hardware.
 
-It is exactly what I had in mind.
+The purpose of this document is twofold:
 
-Thank you very much!
+ (1) to specify the minimum functionality that one can rely on for any
+     particular barrier, and
 
-Ciao,
-Alessio
+ (2) to provide a guide as to how to use the barriers that are available.
+
+Note that an architecture can provide more than the minimum requirement fo=
+r
+any particular barrier, but if the barrier provides less than that, it is
+incorrect.
+
+Note also that it is possible that a barrier may be a no-op for an
+architecture because the way that arch works renders an explicit barrier
+unnecessary in that case.
+
+> +
+
+Can you bung an extra blank line in here if you have to redo this at all?
+
+> +=3D=3D=3D=3D=3D=3D=3D=3D
+> +CONTENTS
+> +=3D=3D=3D=3D=3D=3D=3D=3D
+>  =
+
+>   (*) Abstract memory access model.
+>  =
+
+
+David
