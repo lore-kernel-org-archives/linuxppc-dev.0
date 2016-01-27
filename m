@@ -1,20 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <rusty@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 933091A0174
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 15:10:31 +1100 (AEDT)
-Message-ID: <1453867831.12023.0.camel@ellerman.id.au>
-Subject: Re: [PATCH]  powerpc/perf: Remove PPMU_HAS_SSLOT flag for Power8
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Wed, 27 Jan 2016 15:10:31 +1100
-In-Reply-To: <1453710826-3160-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1453710826-3160-1-git-send-email-maddy@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id DD6D41A0174
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 15:32:10 +1100 (AEDT)
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-s390@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "x86\@kernel.org" <x86@kernel.org>, Kees Cook <keescook@chromium.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>,
+ "hpa\@zytor.com" <hpa@zytor.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, mpe@ellerman.id.au,
+ Michal Marek <mmarek@suse.cz>
+Subject: Re: [PATCH 0/4] support for text-relative kallsyms table
+In-Reply-To: <CAKv+Gu8Pzjt3e_CH0xiCqTk8b6kWV=7Wbiy2YsX99g0SQTW8Tg@mail.gmail.com>
+References: <1453280738-18721-1-git-send-email-ard.biesheuvel@linaro.org>
+ <878u3jy0te.fsf@rustcorp.com.au>
+ <CAKv+Gu95c84Pq=5FEAMkpym7HjmVpeGqy1B_RgWwd8eBe6b0qQ@mail.gmail.com>
+ <CAKv+Gu8Pzjt3e_CH0xiCqTk8b6kWV=7Wbiy2YsX99g0SQTW8Tg@mail.gmail.com>
+Date: Wed, 27 Jan 2016 14:16:41 +1030
+Message-ID: <87a8nrvg4e.fsf@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,44 +32,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-01-25 at 14:03 +0530, Madhavan Srinivasan wrote:
-
->  Commit: 7a7868326d77 introduced PPMU_HAS_SSLOT flag to
->  remove assumption of MMCRA[SLOT] with respect to
->  PPMU_ALT_SIPR flag. Commit 7a7868326d77's message also
->  specifies that Power8 does not support MMCRA[SLOT].
->  But still PPMU_HAS_SSLOT flag managed to get into
->  Power8 code. Patch to remove the same from Power8 flags.
+Ard Biesheuvel <ard.biesheuvel@linaro.org> writes:
+> On 21 January 2016 at 07:45, Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
+>> On 21 January 2016 at 06:10, Rusty Russell <rusty@rustcorp.com.au> wrote:
+>>> Ard Biesheuvel <ard.biesheuvel@linaro.org> writes:
+>>>> This implements text-relative kallsyms address tables. This was developed
+>>>> as part of my series to implement KASLR/CONFIG_RELOCATABLE for arm64, but
+>>>> I think it may be beneficial to other architectures as well, so I am
+>>>> presenting it as a separate series.
+>>>
+>>> Nice work!
+>>>
+>>
+>> Thanks
+>>
+>>> AFAICT this should work for every arch, as long as they start with _text
+>>> (esp: data and init must be > _text).  In addition, it's not harmful on
+>>> 32 bit archs.
+>>>
+>>> IOW, I'd like to turn it on for everyone and discard some code.  But
+>>> it's easier to roll in like you've done first.
+>>>
+>>> Should we enable it by default for every arch for now, and see what
+>>> happens?
+>>>
+>>
+>> As you say, this only works if every symbol >= _text, which is
+>> obviously not the case per the conditional in scripts/kallsyms.c,
+>> which emits _text + n or _text - n depending on whether the symbol
+>> precedes or follows _text. The git log tells me for which arch this
+>> was originally implemented, but it does not tell me which other archs
+>> have come to rely on it in the meantime.
+>>
+>> On top of that, ia64 fails to build with this option, since it has
+>> some whitelisted absolute symbols that look suspiciously like they
+>> could be emitted as _text relative (and it does not even matter in the
+>> absence of CONFIG_RELOCATABLE on ia64, afaict) but I don't know
+>> whether we can just override their types as T, since it would also
+>> change the type in the contents of /proc/kallsyms. So some guidance
+>> would be appreciated here.
+>>
 >
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Digging a little deeper, it appears that it would be non-trivial to
+> port this to ia64:
+>
+> ...
+> a000000000040720 A __kernel_syscall_via_break
+> a000000000040740 A __kernel_sigtramp
+> a000000000040a00 A __kernel_syscall_via_epc
+> a000000100000000 T ia64_ivt
+> a000000100000000 T __start_ivt_text
+> a000000100000000 T _stext
+> a000000100000000 T _text
+> ...
+>
+> The top three symbols are the absolute symbols that are explicitly
+> whitelisted by scripts/kallsyms.c, and they are too far from 0 and too
+> far from _text to be representable in 32 bits
 
-Thanks.
+How annoying.  OK, until ia64 is removed, we'll leave the option.
 
-I cleaned up and expanded the change log:
-
-  powerpc/perf: Remove PPMU_HAS_SSLOT flag for Power8
-
-  Commit 7a7868326d77 ("powerpc/perf: Add an explict flag indicating
-  presence of SLOT field") introduced the PPMU_HAS_SSLOT flag to remove
-  the assumption that MMCRA[SLOT] was present when PPMU_ALT_SIPR was not
-  set.
-
-  That commit's changelog also mentions that Power8 does not support
-  MMCRA[SLOT]. However when the Power8 PMU support was merged, it
-  errnoeously included the PPMU_HAS_SSLOT flag.
-
-  So remove PPMU_HAS_SSLOT from the Power8 flags.
-
-  mpe: On systems where MMCRA[SLOT] exists, the field occupies bits 37:39
-  (IBM numbering). On Power8 bit 37 is reserved, and 38:39 overlap with
-  the high bits of the Threshold Event Counter Mantissa. I am not aware of
-  any published events which use the thereshold counting mechanism, which
-  would cause the mantissa bits to be set. So in practice this bug is
-  unlikely to trigger in practice.
-
-  Fixes: e05b9b9e5c10 ("powerpc/perf: Power8 PMU support")
-  Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-  Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-
-cheers
+Thanks,
+Rusty.
