@@ -1,27 +1,44 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from e06smtp09.uk.ibm.com (e06smtp09.uk.ibm.com [195.75.94.105])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DC33E1A0FDF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 21:09:46 +1100 (AEDT)
-Received: from localhost
- by e06smtp09.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Wed, 27 Jan 2016 10:09:42 -0000
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, davej@codemonkey.org.uk,
- Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: [PATCH v3 1/3] mm: provide debug_pagealloc_enabled() without
- CONFIG_DEBUG_PAGEALLOC
-Date: Wed, 27 Jan 2016 11:09:59 +0100
-Message-Id: <1453889401-43496-2-git-send-email-borntraeger@de.ibm.com>
-In-Reply-To: <1453889401-43496-1-git-send-email-borntraeger@de.ibm.com>
-References: <1453889401-43496-1-git-send-email-borntraeger@de.ibm.com>
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 318B11A19E3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 21:12:01 +1100 (AEDT)
+Date: Wed, 27 Jan 2016 10:11:52 +0000
+From: Will Deacon <will.deacon@arm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
+ "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
+ David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
+ x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
+ Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
+ ddaney.cavm@gmail.com, james.hogan@imgtec.com,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] documentation: Add disclaimer
+Message-ID: <20160127101151.GB2390@arm.com>
+References: <20160114120445.GB15828@arm.com> <56980145.5030901@imgtec.com>
+ <20160114204827.GE3818@linux.vnet.ibm.com>
+ <56981212.7050301@imgtec.com>
+ <20160114222046.GH3818@linux.vnet.ibm.com>
+ <20160126102402.GE6357@twins.programming.kicks-ass.net>
+ <20160126103200.GI6375@twins.programming.kicks-ass.net>
+ <20160126110053.GA21553@arm.com>
+ <20160126201143.GV4503@linux.vnet.ibm.com>
+ <20160127083546.GJ6357@twins.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160127083546.GJ6357@twins.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,40 +48,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can provide debug_pagealloc_enabled() also if CONFIG_DEBUG_PAGEALLOC
-is not set. It will return false in that case.
+On Wed, Jan 27, 2016 at 09:35:46AM +0100, Peter Zijlstra wrote:
+> On Tue, Jan 26, 2016 at 12:11:43PM -0800, Paul E. McKenney wrote:
+> > So Peter, would you like to update your patch to include yourself
+> > and Will as authors?
+> 
+> Sure, here goes.
+> 
+> ---
+> Subject: documentation: Add disclaimer
+> 
+> It appears people are reading this document as a requirements list for
+> building hardware. This is not the intent of this document. Nor is it
+> particularly suited for this purpose.
+> 
+> The primary purpose of this document is our collective attempt to define
+> a set of primitives that (hopefully) allow us to write correct code on
+> the myriad of SMP platforms Linux supports.
+> 
+> Its a definite work in progress as our understanding of these platforms,
+> and memory ordering in general, progresses.
+> 
+> Nor does being mentioned in this document mean we think its a
+> particularly good idea; the data dependency barrier required by Alpha
+> being a prime example. Yes we have it, no you're insane to require it
+> when building new hardware.
+> 
+> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> ---
+>  Documentation/memory-barriers.txt | 18 +++++++++++++++++-
+>  1 file changed, 17 insertions(+), 1 deletion(-)
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Acked-by: David Rientjes <rientjes@google.com>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
----
- include/linux/mm.h | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+Acked-by: Will Deacon <will.deacon@arm.com>
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index f1cd22f..ae84716 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -2194,13 +2194,18 @@ kernel_map_pages(struct page *page, int numpages, int enable)
- #ifdef CONFIG_HIBERNATION
- extern bool kernel_page_present(struct page *page);
- #endif /* CONFIG_HIBERNATION */
--#else
-+#else  /* CONFIG_DEBUG_PAGEALLOC */
-+static inline bool debug_pagealloc_enabled(void)
-+{
-+	return false;
-+}
-+
- static inline void
- kernel_map_pages(struct page *page, int numpages, int enable) {}
- #ifdef CONFIG_HIBERNATION
- static inline bool kernel_page_present(struct page *page) { return true; }
- #endif /* CONFIG_HIBERNATION */
--#endif
-+#endif /* CONFIG_DEBUG_PAGEALLOC */
- 
- #ifdef __HAVE_ARCH_GATE_AREA
- extern struct vm_area_struct *get_gate_vma(struct mm_struct *mm);
--- 
-2.3.0
+Will
