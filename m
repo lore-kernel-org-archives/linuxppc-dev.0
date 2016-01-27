@@ -1,47 +1,39 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <borntraeger@de.ibm.com>
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BC90C1A0174
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 19:39:27 +1100 (AEDT)
-Date: Wed, 27 Jan 2016 09:39:05 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Will Deacon <will.deacon@arm.com>,
- Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
- "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
- David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- ddaney.cavm@gmail.com, james.hogan@imgtec.com,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
-Message-ID: <20160127083905.GK6357@twins.programming.kicks-ass.net>
-References: <20160114212913.GF3818@linux.vnet.ibm.com>
- <20160115085554.GF3421@worktop> <20160115091348.GA27936@worktop>
- <20160115174612.GV3818@linux.vnet.ibm.com>
- <20160115212714.GM3421@worktop>
- <20160115215853.GC3818@linux.vnet.ibm.com>
- <20160125164242.GF22927@arm.com>
- <20160126060322.GJ4503@linux.vnet.ibm.com>
- <20160126101927.GD6357@twins.programming.kicks-ass.net>
- <20160126201339.GW4503@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160126201339.GW4503@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CCAA31A0174
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 19:50:03 +1100 (AEDT)
+Received: from localhost
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
+ Wed, 27 Jan 2016 08:50:00 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id D9BEE1B0804B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 08:50:04 +0000 (GMT)
+Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
+ [9.149.37.229])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0R8nv3g5243142
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 08:49:57 GMT
+Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0R8nuRd003435
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 01:49:57 -0700
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, davej@codemonkey.org.uk,
+ Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: [PATCH v2 3/3] s390: query dynamic DEBUG_PAGEALLOC setting
+Date: Wed, 27 Jan 2016 09:50:18 +0100
+Message-Id: <1453884618-33852-4-git-send-email-borntraeger@de.ibm.com>
+In-Reply-To: <1453884618-33852-1-git-send-email-borntraeger@de.ibm.com>
+References: <1453884618-33852-1-git-send-email-borntraeger@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,26 +43,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 26, 2016 at 12:13:39PM -0800, Paul E. McKenney wrote:
-> On Tue, Jan 26, 2016 at 11:19:27AM +0100, Peter Zijlstra wrote:
+We can use debug_pagealloc_enabled() to check if we can map
+the identity mapping with 1MB/2GB pages as well as to print
+the current setting in dump_stack.
 
-> > So isn't smp_mb__after_unlock_lock() exactly such a scenario? And would
-> > not someone trying to implement RCsc locks using locally transitive
-> > RELEASE/ACQUIRE operations need exactly this stuff?
-> > 
-> > That is, I am afraid we need to cover the mix of local and global
-> > transitive operations at least in overview.
-> 
-> True, but we haven't gotten to locking yet.
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+---
+ arch/s390/kernel/dumpstack.c |  8 ++++----
+ arch/s390/mm/vmem.c          | 10 ++++------
+ 2 files changed, 8 insertions(+), 10 deletions(-)
 
-The mythical smp_mb__after_release_acquire() then ;-)
-
-(and yes, I know you're going to say we don't have that)
-
-> That said, I would argue
-> that smp_mb__after_unlock_lock() upgrades locks to transitive, and
-> thus would not be an exception to the "no combining transitive and
-> non-transitive steps in cycles" rule.
-
-But But But ;-) It does that exactly by combining. I suspect this is
-(partly) the source of your SC chains with one PC link example.
+diff --git a/arch/s390/kernel/dumpstack.c b/arch/s390/kernel/dumpstack.c
+index dc8e204..3f352e9 100644
+--- a/arch/s390/kernel/dumpstack.c
++++ b/arch/s390/kernel/dumpstack.c
+@@ -11,6 +11,7 @@
+ #include <linux/export.h>
+ #include <linux/kdebug.h>
+ #include <linux/ptrace.h>
++#include <linux/mm.h>
+ #include <linux/module.h>
+ #include <linux/sched.h>
+ #include <asm/processor.h>
+@@ -184,10 +185,9 @@ void die(struct pt_regs *regs, const char *str)
+ #endif
+ #ifdef CONFIG_SMP
+ 	printk("SMP ");
+-#endif
+-#ifdef CONFIG_DEBUG_PAGEALLOC
+-	printk("DEBUG_PAGEALLOC");
+-#endif
++#endif	
++if (debug_pagealloc_enabled())
++		printk("DEBUG_PAGEALLOC");
+ 	printk("\n");
+ 	notify_die(DIE_OOPS, str, regs, 0, regs->int_code & 0xffff, SIGSEGV);
+ 	print_modules();
+diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
+index ef7d6c8..d27fccba 100644
+--- a/arch/s390/mm/vmem.c
++++ b/arch/s390/mm/vmem.c
+@@ -94,16 +94,15 @@ static int vmem_add_mem(unsigned long start, unsigned long size, int ro)
+ 			pgd_populate(&init_mm, pg_dir, pu_dir);
+ 		}
+ 		pu_dir = pud_offset(pg_dir, address);
+-#ifndef CONFIG_DEBUG_PAGEALLOC
+ 		if (MACHINE_HAS_EDAT2 && pud_none(*pu_dir) && address &&
+-		    !(address & ~PUD_MASK) && (address + PUD_SIZE <= end)) {
++		    !(address & ~PUD_MASK) && (address + PUD_SIZE <= end) &&
++		     !debug_pagealloc_enabled()) {
+ 			pud_val(*pu_dir) = __pa(address) |
+ 				_REGION_ENTRY_TYPE_R3 | _REGION3_ENTRY_LARGE |
+ 				(ro ? _REGION_ENTRY_PROTECT : 0);
+ 			address += PUD_SIZE;
+ 			continue;
+ 		}
+-#endif
+ 		if (pud_none(*pu_dir)) {
+ 			pm_dir = vmem_pmd_alloc();
+ 			if (!pm_dir)
+@@ -111,9 +110,9 @@ static int vmem_add_mem(unsigned long start, unsigned long size, int ro)
+ 			pud_populate(&init_mm, pu_dir, pm_dir);
+ 		}
+ 		pm_dir = pmd_offset(pu_dir, address);
+-#ifndef CONFIG_DEBUG_PAGEALLOC
+ 		if (MACHINE_HAS_EDAT1 && pmd_none(*pm_dir) && address &&
+-		    !(address & ~PMD_MASK) && (address + PMD_SIZE <= end)) {
++		    !(address & ~PMD_MASK) && (address + PMD_SIZE <= end) &&
++		    !debug_pagealloc_enabled()) {
+ 			pmd_val(*pm_dir) = __pa(address) |
+ 				_SEGMENT_ENTRY | _SEGMENT_ENTRY_LARGE |
+ 				_SEGMENT_ENTRY_YOUNG |
+@@ -121,7 +120,6 @@ static int vmem_add_mem(unsigned long start, unsigned long size, int ro)
+ 			address += PMD_SIZE;
+ 			continue;
+ 		}
+-#endif
+ 		if (pmd_none(*pm_dir)) {
+ 			pt_dir = vmem_pte_alloc(address);
+ 			if (!pt_dir)
+-- 
+2.3.0
