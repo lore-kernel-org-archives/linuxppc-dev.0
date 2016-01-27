@@ -2,7 +2,7 @@ Return-Path: <borntraeger@de.ibm.com>
 Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CCAA31A0174
+ by lists.ozlabs.org (Postfix) with ESMTPS id D57A11A02DE
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 19:50:03 +1100 (AEDT)
 Received: from localhost
  by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
@@ -11,17 +11,17 @@ Received: from localhost
  Wed, 27 Jan 2016 08:50:00 -0000
 Received: from b06cxnps3075.portsmouth.uk.ibm.com
  (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id D9BEE1B0804B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 08:50:04 +0000 (GMT)
-Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
- [9.149.37.229])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id E384B2190046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 08:49:43 +0000 (GMT)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
  by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0R8nv3g5243142
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 08:49:57 GMT
-Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0R8nuRd003435
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 01:49:57 -0700
+ u0R8nuwl58392752
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 08:49:56 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0R7nuRb023825
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 00:49:58 -0700
 From: Christian Borntraeger <borntraeger@de.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, linux-mm@kvack.org, linux-arch@vger.kernel.org,
@@ -29,11 +29,9 @@ Cc: akpm@linux-foundation.org, linux-mm@kvack.org, linux-arch@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
  Joonsoo Kim <iamjoonsoo.kim@lge.com>, davej@codemonkey.org.uk,
  Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: [PATCH v2 3/3] s390: query dynamic DEBUG_PAGEALLOC setting
-Date: Wed, 27 Jan 2016 09:50:18 +0100
-Message-Id: <1453884618-33852-4-git-send-email-borntraeger@de.ibm.com>
-In-Reply-To: <1453884618-33852-1-git-send-email-borntraeger@de.ibm.com>
-References: <1453884618-33852-1-git-send-email-borntraeger@de.ibm.com>
+Subject: [PATCH v2 0/3] Optimize CONFIG_DEBUG_PAGEALLOC
+Date: Wed, 27 Jan 2016 09:50:15 +0100
+Message-Id: <1453884618-33852-1-git-send-email-borntraeger@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,84 +41,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can use debug_pagealloc_enabled() to check if we can map
-the identity mapping with 1MB/2GB pages as well as to print
-the current setting in dump_stack.
+As CONFIG_DEBUG_PAGEALLOC can be enabled/disabled via kernel
+parameters we can optimize some cases by checking the enablement
+state.
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
----
+I have done s390 and x86 as examples.
+s390 should be ok, I tested several combinations, x86 seems to
+work as well, but I have some concerns about the 1GB pages.
+The previous code did not bother at all with CONFIG_DEBUG_PAGEALLOC
+and I do not fully understand why.
+
+Power can probably do the same, Michael/Ben?
+I am not sure about sparc. Sparc seems to allocate the TSB buffer
+really early. David?
+
+
+V1->V2:
+- replace DEBUG_PAGEALLOC(disabled/enabled) with DEBUG_PAGEALLOC
+  dump_stack for s390/x86
+- add /* CONFIG_DEBUG_PAGEALLOC */ to else and endif
+
+
+Christian Borntraeger (3):
+  mm: provide debug_pagealloc_enabled() without CONFIG_DEBUG_PAGEALLOC
+  x86: query dynamic DEBUG_PAGEALLOC setting
+  s390: query dynamic DEBUG_PAGEALLOC setting
+
  arch/s390/kernel/dumpstack.c |  8 ++++----
  arch/s390/mm/vmem.c          | 10 ++++------
- 2 files changed, 8 insertions(+), 10 deletions(-)
+ arch/x86/kernel/dumpstack.c  |  5 ++---
+ arch/x86/mm/init.c           |  7 ++++---
+ arch/x86/mm/pageattr.c       | 14 ++++----------
+ include/linux/mm.h           |  9 +++++++--
+ 6 files changed, 25 insertions(+), 28 deletions(-)
 
-diff --git a/arch/s390/kernel/dumpstack.c b/arch/s390/kernel/dumpstack.c
-index dc8e204..3f352e9 100644
---- a/arch/s390/kernel/dumpstack.c
-+++ b/arch/s390/kernel/dumpstack.c
-@@ -11,6 +11,7 @@
- #include <linux/export.h>
- #include <linux/kdebug.h>
- #include <linux/ptrace.h>
-+#include <linux/mm.h>
- #include <linux/module.h>
- #include <linux/sched.h>
- #include <asm/processor.h>
-@@ -184,10 +185,9 @@ void die(struct pt_regs *regs, const char *str)
- #endif
- #ifdef CONFIG_SMP
- 	printk("SMP ");
--#endif
--#ifdef CONFIG_DEBUG_PAGEALLOC
--	printk("DEBUG_PAGEALLOC");
--#endif
-+#endif	
-+if (debug_pagealloc_enabled())
-+		printk("DEBUG_PAGEALLOC");
- 	printk("\n");
- 	notify_die(DIE_OOPS, str, regs, 0, regs->int_code & 0xffff, SIGSEGV);
- 	print_modules();
-diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
-index ef7d6c8..d27fccba 100644
---- a/arch/s390/mm/vmem.c
-+++ b/arch/s390/mm/vmem.c
-@@ -94,16 +94,15 @@ static int vmem_add_mem(unsigned long start, unsigned long size, int ro)
- 			pgd_populate(&init_mm, pg_dir, pu_dir);
- 		}
- 		pu_dir = pud_offset(pg_dir, address);
--#ifndef CONFIG_DEBUG_PAGEALLOC
- 		if (MACHINE_HAS_EDAT2 && pud_none(*pu_dir) && address &&
--		    !(address & ~PUD_MASK) && (address + PUD_SIZE <= end)) {
-+		    !(address & ~PUD_MASK) && (address + PUD_SIZE <= end) &&
-+		     !debug_pagealloc_enabled()) {
- 			pud_val(*pu_dir) = __pa(address) |
- 				_REGION_ENTRY_TYPE_R3 | _REGION3_ENTRY_LARGE |
- 				(ro ? _REGION_ENTRY_PROTECT : 0);
- 			address += PUD_SIZE;
- 			continue;
- 		}
--#endif
- 		if (pud_none(*pu_dir)) {
- 			pm_dir = vmem_pmd_alloc();
- 			if (!pm_dir)
-@@ -111,9 +110,9 @@ static int vmem_add_mem(unsigned long start, unsigned long size, int ro)
- 			pud_populate(&init_mm, pu_dir, pm_dir);
- 		}
- 		pm_dir = pmd_offset(pu_dir, address);
--#ifndef CONFIG_DEBUG_PAGEALLOC
- 		if (MACHINE_HAS_EDAT1 && pmd_none(*pm_dir) && address &&
--		    !(address & ~PMD_MASK) && (address + PMD_SIZE <= end)) {
-+		    !(address & ~PMD_MASK) && (address + PMD_SIZE <= end) &&
-+		    !debug_pagealloc_enabled()) {
- 			pmd_val(*pm_dir) = __pa(address) |
- 				_SEGMENT_ENTRY | _SEGMENT_ENTRY_LARGE |
- 				_SEGMENT_ENTRY_YOUNG |
-@@ -121,7 +120,6 @@ static int vmem_add_mem(unsigned long start, unsigned long size, int ro)
- 			address += PMD_SIZE;
- 			continue;
- 		}
--#endif
- 		if (pmd_none(*pm_dir)) {
- 			pt_dir = vmem_pte_alloc(address);
- 			if (!pt_dir)
 -- 
 2.3.0
