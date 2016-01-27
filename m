@@ -1,24 +1,50 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 73E0D1A02DE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 21:44:04 +1100 (AEDT)
-Date: Wed, 27 Jan 2016 11:44:00 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Anton Blanchard <anton@samba.org>,
- amodra@gmail.com, Jiri Kosina <jkosina@suse.cz>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org
-Subject: Re: [PATCH v6 1/9] ppc64 (le): prepare for -mprofile-kernel
-Message-ID: <20160127104400.GA32095@lst.de>
-References: <20160125170459.14DB7692CE@newverein.lst.de>
- <20160125170723.D2CCE692CE@newverein.lst.de>
- <1453889967.10839.2.camel@ellerman.id.au>
+Return-Path: <ralf@linux-mips.org>
+Received: from cvs.linux-mips.org (eddie.linux-mips.org [148.251.95.138])
+ by lists.ozlabs.org (Postfix) with ESMTP id D534D1A02DE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 21:48:03 +1100 (AEDT)
+Received: from localhost.localdomain ([127.0.0.1]:54488 "EHLO linux-mips.org"
+ rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
+ id S27011043AbcA0KlBnWUsM (ORCPT
+ <rfc822;linuxppc-dev@lists.ozlabs.org>);
+ Wed, 27 Jan 2016 11:41:01 +0100
+Date: Wed, 27 Jan 2016 11:40:32 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
+ Will Deacon <will.deacon@arm.com>, Peter Zijlstra <peterz@infradead.org>,
+ "Michael S. Tsirkin" <mst@redhat.com>,
+ linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-arch@vger.kernel.org, Andrew Cooper <andrew.cooper3@citrix.com>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ virtualization@lists.linux-foundation.org,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+ Joe Perches <joe@perches.com>,
+ David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
+ x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-sh@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ xen-devel@lists.xenproject.org, Ingo Molnar <mingo@kernel.org>,
+ ddaney.cavm@gmail.com, james.hogan@imgtec.com,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
+Message-ID: <20160127104032.GB2939@linux-mips.org>
+References: <5696CF08.8080700@imgtec.com> <20160114121449.GC15828@arm.com>
+ <5697F6D2.60409@imgtec.com>
+ <20160114203430.GC3818@linux.vnet.ibm.com>
+ <56980C91.1010403@imgtec.com>
+ <20160114212913.GF3818@linux.vnet.ibm.com>
+ <569814F2.50801@imgtec.com>
+ <20160114225510.GJ3818@linux.vnet.ibm.com>
+ <56983054.4070807@imgtec.com>
+ <20160115004753.GN3818@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1453889967.10839.2.camel@ellerman.id.au>
+In-Reply-To: <20160115004753.GN3818@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,86 +54,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 27, 2016 at 09:19:27PM +1100, Michael Ellerman wrote:
-> Hi Torsten,
-> 
-> > +++ b/arch/powerpc/kernel/entry_64.S
-> > @@ -1206,7 +1206,12 @@ _GLOBAL(enter_prom)
-> >  #ifdef CONFIG_DYNAMIC_FTRACE
-> >  _GLOBAL(mcount)
-> >  _GLOBAL(_mcount)
-> > -	blr
-> > +	std	r0,LRSAVE(r1) /* gcc6 does this _after_ this call _only_ */
-> > +	mflr	r0
-> > +	mtctr	r0
-> > +	ld	r0,LRSAVE(r1)
-> > +	mtlr	r0
-> > +	bctr
-> 
-> Can we use r11 instead? eg:
-> 
-> _GLOBAL(_mcount)
-> 	mflr	r11
-> 	mtctr	r11
-> 	mtlr	r0
-> 	bctr
-> 
-> Otherwise I worry the std/ld is going to cause a load-hit-store. And it's just
-> plain more instructions too.
-> 
-> I don't quite grok the gcc code enough to tell if that's always safe, GCC does
-> use r11 sometimes, but I don't think it ever expects it to survive across
-> _mcount()?
+On Thu, Jan 14, 2016 at 04:47:53PM -0800, Paul E. McKenney wrote:
 
-I used r11 in that area once, and it crashed, but I don't recall the deatils.
-We'll see. The performance shouldn't be critical, as the code is only used
-during boot-up. With DYNAMIC_FTRACE, The calls will be replaced by
-0x600000^W PPC_INST_NOP :)
+> So you need to build a different kernel for some types of MIPS systems?
 
-> >  
-> >  	bl	prepare_ftrace_return
-> >  	nop
-> 
-> AFAICS these end up being the only instructions shared between the two
-> versions. Which I don't think is worth the semantic burden of all the #ifdefs.
-> So please just write it as two separate functions, one for
-> CC_USING_MPROFILE_KERNEL and one for not.
-> 
-> > index 44d4d8e..080c525 100644
-> > --- a/arch/powerpc/kernel/ftrace.c
-> > +++ b/arch/powerpc/kernel/ftrace.c
-> > @@ -306,11 +306,19 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-> >  	 * The load offset is different depending on the ABI. For simplicity
-> >  	 * just mask it out when doing the compare.
-> >  	 */
-> > +#ifndef CC_USING_MPROFILE_KERNEL
-> >  	if ((op[0] != 0x48000008) || ((op[1] & 0xffff0000) != 0xe8410000)) {
-> > -		pr_err("Unexpected call sequence: %x %x\n", op[0], op[1]);
-> > +		pr_err("Unexpected call sequence at %p: %x %x\n",
-> > +		ip, op[0], op[1]);
-> >  		return -EINVAL;
-> >  	}
-> > -
-> > +#else
-> > +	/* look for patched "NOP" on ppc64 with -mprofile-kernel */
-> > +	if (op[0] != 0x60000000) {
-> 
-> That is "PPC_INST_NOP".
-> 
-> > +		pr_err("Unexpected call at %p: %x\n", ip, op[0]);
-> > +		return -EINVAL;
-> > +	}
-> > +#endif
-> 
-> Can you please break that out into a static inline, with separate versions for
-> the two cases.
-> 
-> We should aim for no #ifdefs inside functions.
+Yes.  We can't really do without.  Classic MIPS code is not relocatable
+without the complexity of PIC code as used by ELF DSOs - and their
+performanc penalty.  Plus we have a number of architecture revisions
+ovr the decades, big and little endian, 32 and 64 bit as the major
+stumbling stones.  There however are groups of similar systems that
+can share kernel binaries.
 
-Points taken.
+> Or do you do boot-time rewriting, like a number of other arches do?
 
-Does this set _work_ for you now? That'd be great to hear.
+We don't rewrite the code (as in the .text of the vmlinux binary) but we
+do runtime code generation for a few highly performance sensitive area
+of the kernel code such as copy_page() or TLB exception handlers.  This
+allows more flexibility than just inserting templates into the kernel
+code.  Downside - it means we have some of the complexity of as and ld
+in the kernel.
 
-Stay tuned for v7...
-
-	Torsten
+  Ralf
