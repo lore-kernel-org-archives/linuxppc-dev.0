@@ -1,23 +1,37 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-qg0-x22d.google.com (mail-qg0-x22d.google.com
- [IPv6:2607:f8b0:400d:c04::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6201A0174
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 16:29:04 +1100 (AEDT)
-Received: by mail-qg0-x22d.google.com with SMTP id o11so157155618qge.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2016 21:29:04 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DFD071A0174
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 18:28:06 +1100 (AEDT)
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3516D140BE0
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2016 18:28:06 +1100 (AEDT)
+Received: from localhost
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Wed, 27 Jan 2016 12:58:01 +0530
+Subject: Re: [PATCH v3 2/2] KVM: PPC: Exit guest upon MCE when FWNMI
+ capability is enabled
+To: Paul Mackerras <paulus@ozlabs.org>,
+ Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+References: <20160113070759.20248.86252.stgit@aravindap>
+ <20160113070809.20248.80811.stgit@aravindap>
+ <20160123102847.GB11916@fergus.ozlabs.ibm.com>
+ <56A377CF.8040706@linux.vnet.ibm.com>
+ <20160123212448.GC11916@fergus.ozlabs.ibm.com>
+Cc: gleb@kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, pbonzini@redhat.com,
+ david@gibson.dropbear.id.au, kvm@vger.kernel.org, mpe@ellerman.id.au
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Message-ID: <56A84F67.8050109@linux.vnet.ibm.com>
+Date: Wed, 27 Jan 2016 10:32:31 +0530
 MIME-Version: 1.0
-In-Reply-To: <56A814B4.9020802@au1.ibm.com>
-References: <1453704952-11197-1-git-send-email-oohall@gmail.com>
- <56A814B4.9020802@au1.ibm.com>
-Date: Wed, 27 Jan 2016 16:29:01 +1100
-Message-ID: <CAOSf1CEh6GjJZLKGXDviVbycPUuPzb6jL05Zq5d0pzBpeiumNA@mail.gmail.com>
-Subject: Re: [PATCH] Fix fall-through from case 30 (rld*) to case 31
-From: oliver <oohall@gmail.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=001a113a544e5f01e5052a4a14b4
+In-Reply-To: <20160123212448.GC11916@fergus.ozlabs.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,187 +41,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a113a544e5f01e5052a4a14b4
-Content-Type: text/plain; charset=UTF-8
-
-> The patch summary should probably be something along the lines of
-"powerpc/sstep: fix switch fall-through when analysing malformed rld*
-instructions" or similar. The rest of the message should have the more
-specific details of the bug you're fixing.
->
-> In general, we always mention the affected subsystems in the patch
-summary line and write both the summary line and the message so that other
-developers can get a quick understanding of what the patch does without
-actually needing to read the code. Keep in mind that commit messages will
-show up in the git logs of every kernel developer, not just powerpc people.
-
-That's fair.
-
-> I had a cursory glance at the code and it's not obvious to me that this
-is the correct way to deal with an invalid instruction. What happens when
-you break out of the switch? It looks like it just ends up returning 0, the
-same as any other instruction that isn't executed directly in the
-analyse_instr() stage.
->
->Is there anywhere else in the sstep code that deals well with malformed
-instructions?
-
-When you break out of the switch the opcode type is marked as unknown and
-when further attempts to parse the instruction fail it returns zero to
-indicate failure. Also, many of the instructions handled by the function
-are only valid in 64bit mode. For 32bit processors these instructions would
-be illegal and the code that handles them is #ifdef`ed out when compiling
-for 32 bit platforms so simply breaking out of the switch and letting it
-propagate should be the right move here.
-
-Oliver
-
-
-On Wed, Jan 27, 2016 at 11:52 AM, Andrew Donnellan <
-andrew.donnellan@au1.ibm.com> wrote:
-
-> On 25/01/16 17:55, Oliver O'Halloran wrote:
->
->> I think this bug can only be triggered if the instruction to
->> simulate is malformed. The switch in the else case only handles
->> the zero and one case, but it extracts bits 4:1 from the
->> instruction word so it may be other values. It's pretty minor, but
->> a bug is a bug.
+On 01/24/2016 02:54 AM, Paul Mackerras wrote:
+> On Sat, Jan 23, 2016 at 06:23:35PM +0530, Aravinda Prasad wrote:
 >>
->> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 >>
->
-> The patch summary should probably be something along the lines of
-> "powerpc/sstep: fix switch fall-through when analysing malformed rld*
-> instructions" or similar. The rest of the message should have the more
-> specific details of the bug you're fixing.
->
-> In general, we always mention the affected subsystems in the patch summary
-> line and write both the summary line and the message so that other
-> developers can get a quick understanding of what the patch does without
-> actually needing to read the code. Keep in mind that commit messages will
-> show up in the git logs of every kernel developer, not just powerpc people.
->
-> --- a/arch/powerpc/lib/sstep.c
->> +++ b/arch/powerpc/lib/sstep.c
->> @@ -925,6 +925,7 @@ int __kprobes analyse_instr(struct instruction_op
->> *op, struct pt_regs *regs,
->>                         }
->>                 }
->>   #endif
->> +       break; /* illegal instruction */
+>> On Saturday 23 January 2016 03:58 PM, Paul Mackerras wrote:
+>>> On Wed, Jan 13, 2016 at 12:38:09PM +0530, Aravinda Prasad wrote:
+>>>> Enhance KVM to cause a guest exit with KVM_EXIT_NMI
+>>>> exit reasons upon a machine check exception (MCE) in
+>>>> the guest address space if the KVM_CAP_PPC_FWNMI
+>>>> capability is enabled (instead of delivering 0x200
+>>>> interrupt to guest). This enables QEMU to build error
+>>>> log and deliver machine check exception to guest via
+>>>> guest registered machine check handler.
+>>>>
+>>>> This approach simplifies the delivering of machine
+>>>> check exception to guest OS compared to the earlier
+>>>> approach of KVM directly invoking 0x200 guest interrupt
+>>>> vector. In the earlier approach QEMU was enhanced to
+>>>> patch the 0x200 interrupt vector during boot. The
+>>>> patched code at 0x200 issued a private hcall to pass
+>>>> the control to QEMU to build the error log.
+>>>>
+>>>> This design/approach is based on the feedback for the
+>>>> QEMU patches to handle machine check exception. Details
+>>>> of earlier approach of handling machine check exception
+>>>> in QEMU and related discussions can be found at:
+>>>
+>>> [snip]
+>>>
+>>>> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>>>> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>>>> @@ -133,21 +133,18 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>>>>  	stb	r0, HSTATE_HWTHREAD_REQ(r13)
+>>>>  
+>>>>  	/*
+>>>> -	 * For external and machine check interrupts, we need
+>>>> -	 * to call the Linux handler to process the interrupt.
+>>>> -	 * We do that by jumping to absolute address 0x500 for
+>>>> -	 * external interrupts, or the machine_check_fwnmi label
+>>>> -	 * for machine checks (since firmware might have patched
+>>>> -	 * the vector area at 0x200).  The [h]rfid at the end of the
+>>>> -	 * handler will return to the book3s_hv_interrupts.S code.
+>>>> -	 * For other interrupts we do the rfid to get back
+>>>> -	 * to the book3s_hv_interrupts.S code here.
+>>>> +	 * For external interrupts we need to call the Linux
+>>>> +	 * handler to process the interrupt. We do that by jumping
+>>>> +	 * to absolute address 0x500 for external interrupts.
+>>>> +	 * The [h]rfid at the end of the handler will return to
+>>>> +	 * the book3s_hv_interrupts.S code. For other interrupts
+>>>> +	 * we do the rfid to get back to the book3s_hv_interrupts.S
+>>>> +	 * code here.
+>>>>  	 */
+>>>>  	ld	r8, 112+PPC_LR_STKOFF(r1)
+>>>>  	addi	r1, r1, 112
+>>>>  	ld	r7, HSTATE_HOST_MSR(r13)
+>>>>  
+>>>> -	cmpwi	cr1, r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+>>>>  	cmpwi	r12, BOOK3S_INTERRUPT_EXTERNAL
+>>>>  	beq	11f
+>>>>  	cmpwi	r12, BOOK3S_INTERRUPT_H_DOORBELL
+>>>> @@ -162,7 +159,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>>>>  	mtmsrd	r6, 1			/* Clear RI in MSR */
+>>>>  	mtsrr0	r8
+>>>>  	mtsrr1	r7
+>>>> -	beq	cr1, 13f		/* machine check */
+>>>>  	RFI
+>>>>  
+>>>>  	/* On POWER7, we have external interrupts set to use HSRR0/1 */
+>>>> @@ -170,8 +166,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>>>>  	mtspr	SPRN_HSRR1, r7
+>>>>  	ba	0x500
+>>>>  
+>>>> -13:	b	machine_check_fwnmi
+>>>> -
+>>>
+>>> So, what you're disabling here is the host-side handling of the
+>>> machine check after completing the guest->host switch.  This has
+>>> nothing to do with how the machine check gets communicated to the
+>>> guest.
+>>>
+>>> Now, part of the host-side machine check handling has already
+>>> happened, but I thought there was more that was done in host kernel
+>>> virtual mode.  If this change really is needed then I would want an
+>>> ack from Mahesh that this is correct, and it will need to be explained
+>>> in detail in the patch description.
 >>
->
-> I had a cursory glance at the code and it's not obvious to me that this is
-> the correct way to deal with an invalid instruction. What happens when you
-> break out of the switch? It looks like it just ends up returning 0, the
-> same as any other instruction that isn't executed directly in the
-> analyse_instr() stage.
->
-> Is there anywhere else in the sstep code that deals well with malformed
-> instructions?
->
-> --
-> Andrew Donnellan              Software Engineer, OzLabs
-> andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-> +61 2 6201 8874 (work)        IBM Australia Limited
->
->
+>> If we don't do that we will end up running into
+>> panic() in opal_machine_check() if UE belonged to guest.
+>>
+>> Details in this link:
+>> http://marc.info/?l=kvm-ppc&m=144730552720044&w=2
+> 
+> Well maybe the panic call needs to be changed.  But the way you have
+> it, we *never* get to opal_machine_check for any machine check
+> interrupt, and I have a hard time believing that is correct.
 
---001a113a544e5f01e5052a4a14b4
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+We do still go to opal_machine_check for MCE in host kernel/user space.
+The host virtual mode prints the event and then checks whether MCE is in
+kernel or user space context and acts accordingly.
 
-<div dir=3D"ltr"><span style=3D"font-size:12.8px">&gt; The patch summary sh=
-ould probably be something along the lines of</span><br style=3D"font-size:=
-12.8px"><span style=3D"font-size:12.8px">&quot;powerpc/sstep: fix switch fa=
-ll-through when analysing malformed rld* instructions&quot; or similar. The=
- rest of the message should have the more specific details of the bug you&#=
-39;re fixing.</span><br style=3D"font-size:12.8px">&gt;<br style=3D"font-si=
-ze:12.8px"><span style=3D"font-size:12.8px">&gt; In general, we always ment=
-ion the affected subsystems in the patch summary line and write both the su=
-mmary line and the message so that other developers can get a quick underst=
-anding of what the patch does without actually needing to read the code. Ke=
-ep in mind that commit messages will show up in the git logs of every kerne=
-l developer, not just powerpc people.</span><br><div><br></div><div>That&#3=
-9;s fair.</div><div><span style=3D"font-size:12.8px"><br></span></div><div>=
-<span style=3D"font-size:12.8px">&gt; I had a cursory glance at the code an=
-d it&#39;s not obvious to me that this is the correct way to deal with an i=
-nvalid instruction. What happens when you break out of the switch? It looks=
- like it just ends up returning 0, the same as any other instruction that i=
-sn&#39;t executed directly in the analyse_instr() stage.</span><br style=3D=
-"font-size:12.8px">&gt;<br style=3D"font-size:12.8px"><span style=3D"font-s=
-ize:12.8px">&gt;Is there anywhere else in the sstep code that deals well wi=
-th malformed instructions?</span><span style=3D"font-size:12.8px"><br></spa=
-n></div><div><br></div><div>When you break out of the switch the opcode typ=
-e is marked as unknown and when further attempts to parse the instruction f=
-ail it returns zero to indicate failure. Also, many of the instructions han=
-dled by the function are only valid in 64bit mode. For 32bit processors the=
-se instructions would be illegal and the code that handles them is #ifdef`e=
-d out when compiling for 32 bit platforms so simply breaking out of the swi=
-tch and letting it propagate should be the right move here.</div><div><br><=
-/div><div>Oliver</div><div><span style=3D"font-size:12.8px"><br></span></di=
-v></div><div class=3D"gmail_extra"><br><div class=3D"gmail_quote">On Wed, J=
-an 27, 2016 at 11:52 AM, Andrew Donnellan <span dir=3D"ltr">&lt;<a href=3D"=
-mailto:andrew.donnellan@au1.ibm.com" target=3D"_blank">andrew.donnellan@au1=
-.ibm.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=
-=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><span cl=
-ass=3D"">On 25/01/16 17:55, Oliver O&#39;Halloran wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex">
-I think this bug can only be triggered if the instruction to<br>
-simulate is malformed. The switch in the else case only handles<br>
-the zero and one case, but it extracts bits 4:1 from the<br>
-instruction word so it may be other values. It&#39;s pretty minor, but<br>
-a bug is a bug.<br>
-<br>
-Signed-off-by: Oliver O&#39;Halloran &lt;<a href=3D"mailto:oohall@gmail.com=
-" target=3D"_blank">oohall@gmail.com</a>&gt;<br>
-</blockquote>
-<br></span>
-The patch summary should probably be something along the lines of<br>
-&quot;powerpc/sstep: fix switch fall-through when analysing malformed rld* =
-instructions&quot; or similar. The rest of the message should have the more=
- specific details of the bug you&#39;re fixing.<br>
-<br>
-In general, we always mention the affected subsystems in the patch summary =
-line and write both the summary line and the message so that other develope=
-rs can get a quick understanding of what the patch does without actually ne=
-eding to read the code. Keep in mind that commit messages will show up in t=
-he git logs of every kernel developer, not just powerpc people.<span class=
-=3D""><br>
-<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex">
---- a/arch/powerpc/lib/sstep.c<br>
-+++ b/arch/powerpc/lib/sstep.c<br>
-@@ -925,6 +925,7 @@ int __kprobes analyse_instr(struct instruction_op *op, =
-struct pt_regs *regs,<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 }<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br>
-=C2=A0 #endif<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0break; /* illegal instruction */<br>
-</blockquote>
-<br></span>
-I had a cursory glance at the code and it&#39;s not obvious to me that this=
- is the correct way to deal with an invalid instruction. What happens when =
-you break out of the switch? It looks like it just ends up returning 0, the=
- same as any other instruction that isn&#39;t executed directly in the anal=
-yse_instr() stage.<br>
-<br>
-Is there anywhere else in the sstep code that deals well with malformed ins=
-tructions?<span class=3D"HOEnZb"><font color=3D"#888888"><br>
-<br>
--- <br>
-Andrew Donnellan=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 Software E=
-ngineer, OzLabs<br>
-<a href=3D"mailto:andrew.donnellan@au1.ibm.com" target=3D"_blank">andrew.do=
-nnellan@au1.ibm.com</a>=C2=A0 Australia Development Lab, Canberra<br>
-<a href=3D"tel:%2B61%202%206201%208874" value=3D"+61262018874" target=3D"_b=
-lank">+61 2 6201 8874</a>=C2=A0(work)=C2=A0 =C2=A0 =C2=A0 =C2=A0 IBM Austra=
-lia Limited<br>
-<br>
-</font></span></blockquote></div><br></div>
+For machine check while in guest, when we fall through
+machine_check_fwnmi, the register context points to host kernel module
+(__kvmppc_vcore_entry [kvm_hv]). And opal_machine_check thinks that
+memory UE is in host kernel rather than in guest and goes down the panic
+path. It becomes bit difficult to figure out whether MCE happened in
+guest OR in host kernel by looking at the register set received by
+opal_machine_check in this case.
 
---001a113a544e5f01e5052a4a14b4--
+Aravinda's implementation requires him to go back to KVM kernel module
+which would end up in NMI exit inside QEMU and then he can handle Memory
+error for guest inside QEMU and deliver it to guest. Hence he needs to
+bypass machine_check_fwnmi. But by this time we would have already
+hooked the mce event to work queue for console logging.
+
+The other approach could be to add additional field into machine check
+event that can help opal_machine_check to identify that MCE is from
+guest and then just return from interrupt after printing event instead
+of going down to panic path. But this could be bit messy.
+
+Thanks,
+-Mahesh.
+
+> 
+> Paul.
+> 
