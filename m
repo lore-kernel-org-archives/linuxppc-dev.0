@@ -1,44 +1,24 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3727B1A0174
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 21:25:53 +1100 (AEDT)
-Date: Wed, 27 Jan 2016 10:25:46 +0000
-From: Will Deacon <will.deacon@arm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
- "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
- David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- x86@kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- ddaney.cavm@gmail.com, james.hogan@imgtec.com,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
-Message-ID: <20160127102546.GD2390@arm.com>
-References: <20160114212913.GF3818@linux.vnet.ibm.com>
- <20160115085554.GF3421@worktop> <20160115091348.GA27936@worktop>
- <20160115174612.GV3818@linux.vnet.ibm.com>
- <20160115212714.GM3421@worktop>
- <20160115215853.GC3818@linux.vnet.ibm.com>
- <20160125164242.GF22927@arm.com>
- <20160126060322.GJ4503@linux.vnet.ibm.com>
- <20160126121608.GE21553@arm.com>
- <20160126195820.GS4503@linux.vnet.ibm.com>
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 73E0D1A02DE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jan 2016 21:44:04 +1100 (AEDT)
+Date: Wed, 27 Jan 2016 11:44:00 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Anton Blanchard <anton@samba.org>,
+ amodra@gmail.com, Jiri Kosina <jkosina@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org
+Subject: Re: [PATCH v6 1/9] ppc64 (le): prepare for -mprofile-kernel
+Message-ID: <20160127104400.GA32095@lst.de>
+References: <20160125170459.14DB7692CE@newverein.lst.de>
+ <20160125170723.D2CCE692CE@newverein.lst.de>
+ <1453889967.10839.2.camel@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160126195820.GS4503@linux.vnet.ibm.com>
+In-Reply-To: <1453889967.10839.2.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,54 +28,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 26, 2016 at 11:58:20AM -0800, Paul E. McKenney wrote:
-> On Tue, Jan 26, 2016 at 12:16:09PM +0000, Will Deacon wrote:
-> > On Mon, Jan 25, 2016 at 10:03:22PM -0800, Paul E. McKenney wrote:
-> > > On Mon, Jan 25, 2016 at 04:42:43PM +0000, Will Deacon wrote:
-> > > > On Fri, Jan 15, 2016 at 01:58:53PM -0800, Paul E. McKenney wrote:
-> > > > > PPC Overlapping Group-B sets version 4
-> > > > > ""
-> > > > > (* When the Group-B sets from two different barriers involve instructions in
-> > > > >    the same thread, within that thread one set must contain the other.
-> > > > > 
-> > > > > 	P0	P1	P2
-> > > > > 	Rx=1	Wy=1	Wz=2
-> > > > > 	dep.	lwsync	lwsync
-> > > > > 	Ry=0	Wz=1	Wx=1
-> > > > > 	Rz=1
-> > > > > 
-> > > > > 	assert(!(z=2))
-> > > > > 
-> > > > >    Forbidden by ppcmem, allowed by herd.
-> > > > > *)
-> > > > > {
-> > > > > 0:r1=x; 0:r2=y; 0:r3=z;
-> > > > > 1:r1=x; 1:r2=y; 1:r3=z; 1:r4=1;
-> > > > > 2:r1=x; 2:r2=y; 2:r3=z; 2:r4=1; 2:r5=2;
-> > > > > }
-> > > > >  P0		| P1		| P2		;
-> > > > >  lwz r6,0(r1)	| stw r4,0(r2)	| stw r5,0(r3)	;
-> > > > >  xor r7,r6,r6	| lwsync	| lwsync	;
-> > > > >  lwzx r7,r7,r2	| stw r4,0(r3)	| stw r4,0(r1)	;
-> > > > >  lwz r8,0(r3)	|		|		;
-> > > > > 
-> > > > > exists
-> > > > > (z=2 /\ 0:r6=1 /\ 0:r7=0 /\ 0:r8=1)
-> > > > 
-> > > > That really hurts. Assuming that the "assert(!(z=2))" is actually there
-> > > > to constrain the coherence order of z to be {0->1->2}, then I think that
-> > > > this test is forbidden on arm using dmb instead of lwsync. That said, I
-> > > > also don't think the Rz=1 in P0 changes anything.
-> > > 
-> > > What about the smp_wmb() variant of dmb that orders only stores?
-> > 
-> > Tricky, but I think it still works out if the coherence order of z is as
-> > I described above. The line of reasoning is weird though -- I ended up
-> > considering the two cases where P0 reads z before and after it reads x
-> > and what that means for the read of y.
+On Wed, Jan 27, 2016 at 09:19:27PM +1100, Michael Ellerman wrote:
+> Hi Torsten,
 > 
-> By "works out" you mean that ARM prohibits the outcome?
+> > +++ b/arch/powerpc/kernel/entry_64.S
+> > @@ -1206,7 +1206,12 @@ _GLOBAL(enter_prom)
+> >  #ifdef CONFIG_DYNAMIC_FTRACE
+> >  _GLOBAL(mcount)
+> >  _GLOBAL(_mcount)
+> > -	blr
+> > +	std	r0,LRSAVE(r1) /* gcc6 does this _after_ this call _only_ */
+> > +	mflr	r0
+> > +	mtctr	r0
+> > +	ld	r0,LRSAVE(r1)
+> > +	mtlr	r0
+> > +	bctr
+> 
+> Can we use r11 instead? eg:
+> 
+> _GLOBAL(_mcount)
+> 	mflr	r11
+> 	mtctr	r11
+> 	mtlr	r0
+> 	bctr
+> 
+> Otherwise I worry the std/ld is going to cause a load-hit-store. And it's just
+> plain more instructions too.
+> 
+> I don't quite grok the gcc code enough to tell if that's always safe, GCC does
+> use r11 sometimes, but I don't think it ever expects it to survive across
+> _mcount()?
 
-Yes, that's my understanding.
+I used r11 in that area once, and it crashed, but I don't recall the deatils.
+We'll see. The performance shouldn't be critical, as the code is only used
+during boot-up. With DYNAMIC_FTRACE, The calls will be replaced by
+0x600000^W PPC_INST_NOP :)
 
-Will
+> >  
+> >  	bl	prepare_ftrace_return
+> >  	nop
+> 
+> AFAICS these end up being the only instructions shared between the two
+> versions. Which I don't think is worth the semantic burden of all the #ifdefs.
+> So please just write it as two separate functions, one for
+> CC_USING_MPROFILE_KERNEL and one for not.
+> 
+> > index 44d4d8e..080c525 100644
+> > --- a/arch/powerpc/kernel/ftrace.c
+> > +++ b/arch/powerpc/kernel/ftrace.c
+> > @@ -306,11 +306,19 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+> >  	 * The load offset is different depending on the ABI. For simplicity
+> >  	 * just mask it out when doing the compare.
+> >  	 */
+> > +#ifndef CC_USING_MPROFILE_KERNEL
+> >  	if ((op[0] != 0x48000008) || ((op[1] & 0xffff0000) != 0xe8410000)) {
+> > -		pr_err("Unexpected call sequence: %x %x\n", op[0], op[1]);
+> > +		pr_err("Unexpected call sequence at %p: %x %x\n",
+> > +		ip, op[0], op[1]);
+> >  		return -EINVAL;
+> >  	}
+> > -
+> > +#else
+> > +	/* look for patched "NOP" on ppc64 with -mprofile-kernel */
+> > +	if (op[0] != 0x60000000) {
+> 
+> That is "PPC_INST_NOP".
+> 
+> > +		pr_err("Unexpected call at %p: %x\n", ip, op[0]);
+> > +		return -EINVAL;
+> > +	}
+> > +#endif
+> 
+> Can you please break that out into a static inline, with separate versions for
+> the two cases.
+> 
+> We should aim for no #ifdefs inside functions.
+
+Points taken.
+
+Does this set _work_ for you now? That'd be great to hear.
+
+Stay tuned for v7...
+
+	Torsten
