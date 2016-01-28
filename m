@@ -1,32 +1,36 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D6D521A030F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 19:40:46 +1100 (AEDT)
-Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
- [IPv6:2607:f8b0:400e:c03::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id D8CA71A030F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 20:12:19 +1100 (AEDT)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 53121140B96
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 19:40:45 +1100 (AEDT)
-Received: by mail-pa0-x234.google.com with SMTP id ho8so19757424pac.2
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 00:40:45 -0800 (PST)
-Date: Thu, 28 Jan 2016 14:10:41 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- rjw@rjwysocki.net, linux-pm@vger.kernel.org, pc@us.ibm.com,
- anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com,
- bsingharora@gmail.com, mpe@ellerman.id.au, linux-api@vger.kernel.org
-Subject: Re: [PATCH v7 6/6] cpufreq: powernv: Add sysfs attributes to show
- throttle stats
-Message-ID: <20160128084041.GK3935@vireshk>
-References: <1453965941-7363-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1453965941-7363-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1453965941-7363-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id AD0C61402CD
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 20:12:19 +1100 (AEDT)
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 28 Jan 2016 19:12:19 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3BF6E2BB005E
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 20:12:16 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0S9C8Wu60293340
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 20:12:16 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0S9BhmR028898
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 20:11:43 +1100
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
+Subject: [PATCH 1/2] powerpc/mm: Enable HugeTLB page migration
+Date: Thu, 28 Jan 2016 14:41:24 +0530
+Message-Id: <1453972285-8822-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,41 +40,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 28-01-16, 12:55, Shilpasri G Bhat wrote:
-> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> index b683e8e..dea4620 100644
-> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> @@ -271,3 +271,48 @@ Description:	Parameters for the CPU cache attributes
->  			- WriteBack: data is written only to the cache line and
->  				     the modified cache line is written to main
->  				     memory only when it is replaced
-> +
-> +What:		/sys/devices/system/cpu/cpufreq/chip*/throttle_stats
+This enables HugeTLB page migration for PPC64_BOOK3S systems which implement
+HugeTLB page at the PMD level. It enables the kernel configuration option
+CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION by default which turns on the function
+hugepage_migration_supported() during migration. After the recent changes
+to the PTE format, HugeTLB page migration happens successfully.
 
-What about the chip directory ? Shouldn't that be documented? And
-shouldn't that mention that this is just for powerpc ?
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+ arch/powerpc/Kconfig | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-And before that, I don't think that you are doing this properly. I am
-sorry that I never came to a point where I could review it, and you
-continued with it, version after version.
-
-But, I really have strong objections to the way this is done. And you
-are making things more complex then they are.
-
-So, these stats are per-policy, right ?
-
-Then why aren't they added on the policy->kobj instead, just like
-cpufreq-stats? And maybe inside cpufreq-stats folder only?
-
-That will solve many complexities you have in place here and will look
-sane as well.
-
-Right now, you have stats as two places, cpu/cpufreq/chip/ and
-cpu/cpuX/cpufreq/stats/, which doesn't look wise and adds to
-confusion.
-
-What do you say?
-
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index e4824fd..65d52a0 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -82,6 +82,10 @@ config GENERIC_HWEIGHT
+ config ARCH_HAS_DMA_SET_COHERENT_MASK
+         bool
+ 
++config ARCH_ENABLE_HUGEPAGE_MIGRATION
++	def_bool y
++	depends on PPC_BOOK3S_64 && HUGETLB_PAGE && MIGRATION
++
+ config PPC
+ 	bool
+ 	default y
 -- 
-viresh
+2.1.0
