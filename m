@@ -1,71 +1,64 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rientjes@google.com>
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ABCEA1A1A3C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 09:46:31 +1100 (AEDT)
-Message-ID: <1454021188.23148.7.camel@redhat.com>
-Subject: Re: [RFC PATCH v3 5/5] vfio-pci: Allow to mmap MSI-X table if host
- bridge supports filtering of MSIs
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Yongji Xie <xyjxie@linux.vnet.ibm.com>, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org
-Cc: bhelgaas@google.com, corbet@lwn.net, aik@ozlabs.ru,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com
-Date: Thu, 28 Jan 2016 15:46:28 -0700
-In-Reply-To: <1452841574-2781-6-git-send-email-xyjxie@linux.vnet.ibm.com>
-References: <1452841574-2781-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1452841574-2781-6-git-send-email-xyjxie@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F84D1A0E27
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 10:03:42 +1100 (AEDT)
+Received: by mail-pa0-x22d.google.com with SMTP id ho8so30275670pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 15:03:42 -0800 (PST)
+Date: Thu, 28 Jan 2016 15:03:39 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ x86@kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, davej@codemonkey.org.uk
+Subject: Re: [PATCH v3 2/3] x86: query dynamic DEBUG_PAGEALLOC setting
+In-Reply-To: <56A9E3D1.3090001@de.ibm.com>
+Message-ID: <alpine.DEB.2.10.1601281500160.31035@chino.kir.corp.google.com>
+References: <1453889401-43496-1-git-send-email-borntraeger@de.ibm.com>
+ <1453889401-43496-3-git-send-email-borntraeger@de.ibm.com>
+ <alpine.DEB.2.10.1601271414180.23510@chino.kir.corp.google.com>
+ <56A9E3D1.3090001@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+List-ID: <linuxppc-dev.linuxppc.org>
 
-On Fri, 2016-01-15 at 15:06 +0800, Yongji Xie wrote:
-> Current vfio-pci implementation disallows to mmap MSI-X
-> table in case that user get to touch this directly.
-> 
-> But we should allow to mmap these MSI-X tables if the PCI
-> host bridge supports filtering of MSIs.
-> 
-> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-> ---
->  drivers/vfio/pci/vfio_pci.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
-> index 11fd0f0..4d68f6a 100644
-> --- a/drivers/vfio/pci/vfio_pci.c
-> +++ b/drivers/vfio/pci/vfio_pci.c
-> @@ -555,7 +555,8 @@ static long vfio_pci_ioctl(void *device_data,
->  			    IORESOURCE_MEM && !pci_resources_share_page(pdev,
->  			    info.index)) {
->  				info.flags |= VFIO_REGION_INFO_FLAG_MMAP;
-> -				if (info.index == vdev->msix_bar) {
-> +				if (!pci_host_bridge_msi_filtered_enabled(pdev) &&
-> +				    info.index == vdev->msix_bar) {
->  					ret = msix_sparse_mmap_cap(vdev, &caps);
->  					if (ret)
->  						return ret;
-> @@ -967,7 +968,8 @@ static int vfio_pci_mmap(void *device_data, struct vm_area_struct *vma)
->  	if (phys_len < PAGE_SIZE || req_start + req_len > phys_len)
->  		return -EINVAL;
->  
-> -	if (index == vdev->msix_bar) {
-> +	if (!pci_host_bridge_msi_filtered_enabled(pdev) &&
-> +	    index == vdev->msix_bar) {
->  		/*
->  		 * Disallow mmaps overlapping the MSI-X table; users don't
->  		 * get to touch this directly.  We could find somewhere
+On Thu, 28 Jan 2016, Christian Borntraeger wrote:
 
-What about read()/write() access, why would we allow mmap() but not
-those?
+> Indeed, I only touched the identity mapping and dump stack.
+> The question is do we really want to change free_init_pages as well?
+> The unmapping during runtime causes significant overhead, but the
+> unmapping after init imposes almost no runtime overhead. Of course,
+> things get fishy now as what is enabled and what not.
+> 
+> Kconfig after my patch "mm/debug_pagealloc: Ask users for default setting of debug_pagealloc"
+> (in mm) now states
+> ----snip----
+> By default this option will have a small overhead, e.g. by not
+> allowing the kernel mapping to be backed by large pages on some
+> architectures. Even bigger overhead comes when the debugging is
+> enabled by DEBUG_PAGEALLOC_ENABLE_DEFAULT or the debug_pagealloc
+> command line parameter.
+> ----snip----
+> 
+> So I am tempted to NOT change free_init_pages, but the x86 maintainers
+> can certainly decide differently. Ingo, Thomas, H. Peter, please advise.
+> 
+
+I'm sorry, but I thought the discussion of the previous version of the 
+patchset led to deciding that all CONFIG_DEBUG_PAGEALLOC behavior would be 
+controlled by being enabled on the commandline and checked with 
+debug_pagealloc_enabled().
+
+I don't think we should have a CONFIG_DEBUG_PAGEALLOC that does some stuff 
+and then a commandline parameter or CONFIG_DEBUG_PAGEALLOC_ENABLE_DEFAULT 
+to enable more stuff.  It should either be all enabled by the commandline 
+(or config option) or split into a separate entity.  
+CONFIG_DEBUG_PAGEALLOC_LIGHT and CONFIG_DEBUG_PAGEALLOC would be fine, but 
+the current state is very confusing about what is being done and what 
+isn't.
+
+It also wouldn't hurt to enumerate what is enabled and what isn't enabled 
+in the Kconfig entry.
