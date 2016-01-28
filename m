@@ -1,46 +1,19 @@
-Return-Path: <dhowells@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jeffmerkey@gmail.com>
+Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
+ [IPv6:2607:f8b0:4003:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E0AB81A0201
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 07:02:25 +1100 (AEDT)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20160127233504.GP4503@linux.vnet.ibm.com>
-References: <20160127233504.GP4503@linux.vnet.ibm.com>
- <20160114120445.GB15828@arm.com> <56980145.5030901@imgtec.com>
- <20160114204827.GE3818@linux.vnet.ibm.com> <56981212.7050301@imgtec.com>
- <20160114222046.GH3818@linux.vnet.ibm.com>
- <20160126102402.GE6357@twins.programming.kicks-ass.net>
- <20160126103200.GI6375@twins.programming.kicks-ass.net>
- <20160126110053.GA21553@arm.com> <20160126201143.GV4503@linux.vnet.ibm.com>
- <15882.1453906627@warthog.procyon.org.uk>
-To: paulmck@linux.vnet.ibm.com
-Cc: dhowells@redhat.com, Peter Zijlstra <peterz@infradead.org>,
- Will Deacon <will.deacon@arm.com>,
- Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
- "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- virtualization@lists.linux-foundation.org,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Joe Perches <joe@perches.com>,
- David Miller <davem@davemloft.net>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org, x86@kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- adi-buildroot-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, xen-devel@lists.xenproject.org,
- Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- ddaney.cavm@gmail.com, james.hogan@imgtec.com,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] documentation: Add disclaimer
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 28 Jan 2016 20:02:14 +0000
-Message-ID: <17497.1454011334@warthog.procyon.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5188B1A0201
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 06:47:50 +1100 (AEDT)
+Received: by mail-oi0-x242.google.com with SMTP id x141so2473327oia.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 11:47:50 -0800 (PST)
+From: Jeffrey Merkey <jeffmerkey@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linux.mdb@gmail.com, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 29/31] Add debugger entry points for POWERPC
+Date: Thu, 28 Jan 2016 12:47:44 -0700
+Message-Id: <1454010464-29609-1-git-send-email-jeffmerkey@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,12 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+This patch series adds an export which can be set by system debuggers to
+direct the hard lockup and soft lockup detector to trigger a breakpoint
+exception and enter a debugger if one is active.  It is assumed that if
+someone sets this variable, then an breakpoint handler of some sort will
+be actively loaded or registered via the notify die handler chain.
 
-> Good point!  Would you be willing to add a Signed-off-by so I
-> can take the combined change, assuming Peter and Will are good
-> with it?
+This addition is extremely useful for debugging hard and soft lockups
+real time and quickly from a console debugger.
 
-Sure!
+Signed-off-by: Jeffrey Merkey <jeffmerkey@gmail.com>
+---
+ arch/powerpc/include/asm/kdebug.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-David
+diff --git a/arch/powerpc/include/asm/kdebug.h b/arch/powerpc/include/asm/kdebug.h
+index ae6d206..54f5ca8 100644
+--- a/arch/powerpc/include/asm/kdebug.h
++++ b/arch/powerpc/include/asm/kdebug.h
+@@ -11,5 +11,10 @@ enum die_val {
+ 	DIE_SSTEP,
+ };
+ 
++static inline void arch_breakpoint(void)
++{
++	asm(".long 0x7d821008"); /* twge r2, r2 */
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_KDEBUG_H */
+-- 
+1.8.3.1
