@@ -1,39 +1,48 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48F631A0325
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 01:45:10 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <heiko.carstens@de.ibm.com>
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1B382140BDE
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Jan 2016 01:45:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B58C1A030F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 02:27:59 +1100 (AEDT)
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 29 Jan 2016 00:45:08 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3EB193578052
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Jan 2016 01:45:07 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0SEiZMT48431222
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Jan 2016 01:44:43 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0SEiYXO027243
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Jan 2016 01:44:34 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc/mm: Enable HugeTLB page migration
-In-Reply-To: <1453972285-8822-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1453972285-8822-1-git-send-email-khandual@linux.vnet.ibm.com>
-Date: Thu, 28 Jan 2016 20:14:15 +0530
-Message-ID: <87io2dyda8.fsf@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <heiko.carstens@de.ibm.com>;
+ Thu, 28 Jan 2016 15:27:56 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id CF204219005C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 15:27:41 +0000 (GMT)
+Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
+ [9.149.37.250])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0SFRsXA852286
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 15:27:54 GMT
+Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0SFRrcA026601
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 08:27:54 -0700
+Date: Thu, 28 Jan 2016 16:27:51 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Kees Cook <keescook@chromium.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Joe Perches <joe@perches.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Amitkumar Karwar <akarwar@marvell.com>,
+ Nishant Sarmukadam <nishants@marvell.com>,
+ Kalle Valo <kvalo@codeaurora.org>, Steve French <sfrench@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+ linux-cifs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] param: convert some "on"/"off" users to strtobool
+Message-ID: <20160128152751.GB3926@osiris>
+References: <1453990627-19164-1-git-send-email-keescook@chromium.org>
+ <1453990627-19164-4-git-send-email-keescook@chromium.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1453990627-19164-4-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,50 +52,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
-
-> This enables HugeTLB page migration for PPC64_BOOK3S systems which implement
-> HugeTLB page at the PMD level. It enables the kernel configuration option
-> CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION by default which turns on the function
-> hugepage_migration_supported() during migration. After the recent changes
-> to the PTE format, HugeTLB page migration happens successfully.
->
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+On Thu, Jan 28, 2016 at 06:17:07AM -0800, Kees Cook wrote:
+> This changes several users of manual "on"/"off" parsing to use strtobool.
+> 
+> Signed-off-by: Kees Cook <keescook@chromium.org>
+> Cc: x86@kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-s390@vger.kernel.org
 > ---
->  arch/powerpc/Kconfig | 4 ++++
->  1 file changed, 4 insertions(+)
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index e4824fd..65d52a0 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -82,6 +82,10 @@ config GENERIC_HWEIGHT
->  config ARCH_HAS_DMA_SET_COHERENT_MASK
->          bool
->
-> +config ARCH_ENABLE_HUGEPAGE_MIGRATION
-> +	def_bool y
-> +	depends on PPC_BOOK3S_64 && HUGETLB_PAGE && MIGRATION
-> +
->  config PPC
->  	bool
->  	default y
+>  arch/powerpc/kernel/rtasd.c                  | 10 +++-------
+>  arch/powerpc/platforms/pseries/hotplug-cpu.c | 11 +++--------
+>  arch/s390/kernel/time.c                      |  8 ++------
+>  arch/s390/kernel/topology.c                  |  8 +++-----
+>  arch/x86/kernel/aperture_64.c                | 13 +++----------
+>  include/linux/tick.h                         |  2 +-
+>  kernel/time/hrtimer.c                        | 11 +++--------
+>  kernel/time/tick-sched.c                     | 11 +++--------
+>  8 files changed, 21 insertions(+), 53 deletions(-)
 
+For the s390 bits:
 
-Are you sure this is all that is needed ? We will get a FOLL_GET with hugetlb
-migration and our follow_huge_addr will BUG_ON on that. Look at
-e66f17ff71772b209eed39de35aaa99ba819c93d (" mm/hugetlb: take page table
-lock in follow_huge_pmd()").
-
-Again this doesn't work with 4K page size. So if you are taking this
-route, we will need that restriction here.
-
-I would suggest we switch 64K page size hugetlb to generic
-hugetlb and then do hugetlb migration on top of that.
-
-Till you help me understnd why that FOLL_GET issue is not valid for
-powerpc,
-
-NAK.
-
--aneesh
+Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
