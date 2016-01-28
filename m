@@ -2,19 +2,16 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1BAF91A0072
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1880B1A0054
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 13:40:11 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
 Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 1/4] arch/powerpc: Clean up error handling for
- htab_remove_mapping
-Date: Thu, 28 Jan 2016 13:41:03 +1100
-Message-Id: <1453948866-22808-2-git-send-email-david@gibson.dropbear.id.au>
-In-Reply-To: <1453948866-22808-1-git-send-email-david@gibson.dropbear.id.au>
-References: <1453948866-22808-1-git-send-email-david@gibson.dropbear.id.au>
+Subject: [PATCH 0/4] powerpc: Memory hotplug cleanups
+Date: Thu, 28 Jan 2016 13:41:02 +1100
+Message-Id: <1453948866-22808-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,58 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, the only error that htab_remove_mapping() can report is -EINVAL,
-if removal of bolted HPTEs isn't implemeted for this platform.  We make
-a few clean ups to the handling of this:
+These are some fairly straightforward cleanups to the memory hotplug
+paths on powerpc.  Mostly it deals with more graceful handling of
+failure cases.
 
- * EINVAL isn't really the right code - there's nothing wrong with the
-   function's arguments - use ENODEV instead
- * We were also printing a warning message, but that's a decision better
-   left up to the callers, so remove it
- * One caller is vmemmap_remove_mapping(), which will just BUG_ON() on
-   error, making the warning message irrelevant, so no change is needed
-   there.
- * The other caller is remove_section_mapping().  This is called in the
-   memory hot remove path at a point after vmemmap_remove_mapping() so
-   if hpte_removebolted isn't implemented, we'd expect to have already
-   BUG()ed anyway.  Put a WARN_ON() here, in lieu of a printk() since this
-   really shouldn't be happening.
+This series is a soft prerequisite for my patches for HPT resizing on
+pseries.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
----
- arch/powerpc/mm/hash_utils_64.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+David Gibson (4):
+  arch/powerpc: Clean up error handling for htab_remove_mapping
+  arch/powerpc: Handle removing maybe-present bolted HPTEs
+  arch/powerpc: Clean up memory hotplug failure paths
+  arch/powerpc: Split hash page table sizing heuristic into a helper
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index ba59d59..9f7d727 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -273,11 +273,8 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
- 	shift = mmu_psize_defs[psize].shift;
- 	step = 1 << shift;
- 
--	if (!ppc_md.hpte_removebolted) {
--		printk(KERN_WARNING "Platform doesn't implement "
--				"hpte_removebolted\n");
--		return -EINVAL;
--	}
-+	if (!ppc_md.hpte_removebolted)
-+		return -ENODEV;
- 
- 	for (vaddr = vstart; vaddr < vend; vaddr += step)
- 		ppc_md.hpte_removebolted(vaddr, psize, ssize);
-@@ -641,8 +638,10 @@ int create_section_mapping(unsigned long start, unsigned long end)
- 
- int remove_section_mapping(unsigned long start, unsigned long end)
- {
--	return htab_remove_mapping(start, end, mmu_linear_psize,
--			mmu_kernel_ssize);
-+	int rc = htab_remove_mapping(start, end, mmu_linear_psize,
-+				     mmu_kernel_ssize);
-+	WARN_ON(rc < 0);
-+	return rc;
- }
- #endif /* CONFIG_MEMORY_HOTPLUG */
- 
+ arch/powerpc/include/asm/machdep.h    |  2 +-
+ arch/powerpc/include/asm/mmu-hash64.h |  3 ++
+ arch/powerpc/mm/hash_utils_64.c       | 66 +++++++++++++++++++++--------------
+ arch/powerpc/mm/init_64.c             | 47 ++++++++++++++++---------
+ arch/powerpc/mm/mem.c                 | 10 ++++--
+ arch/powerpc/platforms/pseries/lpar.c |  7 ++--
+ 6 files changed, 88 insertions(+), 47 deletions(-)
+
 -- 
 2.5.0
