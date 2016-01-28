@@ -2,11 +2,11 @@ Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 758D01A1A84
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 09:46:26 +1100 (AEDT)
-Message-ID: <1454021182.23148.6.camel@redhat.com>
-Subject: Re: [RFC PATCH v3 3/5] PCI: Add host bridge attribute to indicate
- filtering of MSIs is supported
+ by lists.ozlabs.org (Postfix) with ESMTPS id ABCEA1A1A3C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 09:46:31 +1100 (AEDT)
+Message-ID: <1454021188.23148.7.camel@redhat.com>
+Subject: Re: [RFC PATCH v3 5/5] vfio-pci: Allow to mmap MSI-X table if host
+ bridge supports filtering of MSIs
 From: Alex Williamson <alex.williamson@redhat.com>
 To: Yongji Xie <xyjxie@linux.vnet.ibm.com>, kvm@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
@@ -15,10 +15,10 @@ Cc: bhelgaas@google.com, corbet@lwn.net, aik@ozlabs.ru,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
  nikunj@linux.vnet.ibm.com
-Date: Thu, 28 Jan 2016 15:46:22 -0700
-In-Reply-To: <1452841574-2781-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+Date: Thu, 28 Jan 2016 15:46:28 -0700
+In-Reply-To: <1452841574-2781-6-git-send-email-xyjxie@linux.vnet.ibm.com>
 References: <1452841574-2781-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1452841574-2781-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1452841574-2781-6-git-send-email-xyjxie@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,70 +31,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, 2016-01-15 at 15:06 +0800, Yongji Xie wrote:
-> MSI-X tables are not allowed to be mmapped in vfio-pci
-> driver in case that user get to touch this directly.
-> This will cause some performance issues when when PCI
-> adapters have critical registers in the same page as
-> the MSI-X table.
+> Current vfio-pci implementation disallows to mmap MSI-X
+> table in case that user get to touch this directly.
 > 
-> However, some kind of PCI host bridge such as IODA bridge
-> on Power support filtering of MSIs, which can ensure that a
-> given pci device can only shoot the MSIs assigned for it.
-> So we think it's safe to expose the MSI-X table to userspace
-> if filtering of MSIs is supported because the exposed MSI-X
-> table can't be used to do harm to other memory space.
-> 
-> To support this case, this patch adds a pci_host_bridge
-> attribute to indicate if this PCI host bridge supports
-> filtering of MSIs.
+> But we should allow to mmap these MSI-X tables if the PCI
+> host bridge supports filtering of MSIs.
 > 
 > Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 > ---
->  drivers/pci/host-bridge.c |    6 ++++++
->  include/linux/pci.h       |    3 +++
->  2 files changed, 9 insertions(+)
+>  drivers/vfio/pci/vfio_pci.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
-> index 5f4a2e0..c029267 100644
-> --- a/drivers/pci/host-bridge.c
-> +++ b/drivers/pci/host-bridge.c
-> @@ -96,3 +96,9 @@ void pcibios_bus_to_resource(struct pci_bus *bus, struct resource *res,
->  	res->end = region->end + offset;
->  }
->  EXPORT_SYMBOL(pcibios_bus_to_resource);
-> +
-> +bool pci_host_bridge_msi_filtered_enabled(struct pci_dev *pdev)
-> +{
-> +	return pci_find_host_bridge(pdev->bus)->msi_filtered;
-> +}
-> +EXPORT_SYMBOL_GPL(pci_host_bridge_msi_filtered_enabled);
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index b640d65..b952b78 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -412,6 +412,7 @@ struct pci_host_bridge {
->  	void (*release_fn)(struct pci_host_bridge *);
->  	void *release_data;
->  	unsigned int ignore_reset_delay:1;	/* for entire hierarchy */
-> +	unsigned int msi_filtered:1;	/* support filtering of MSIs */
->  	/* Resource alignment requirements */
->  	resource_size_t (*align_resource)(struct pci_dev *dev,
->  			const struct resource *res,
-> @@ -430,6 +431,8 @@ void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
+> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+> index 11fd0f0..4d68f6a 100644
+> --- a/drivers/vfio/pci/vfio_pci.c
+> +++ b/drivers/vfio/pci/vfio_pci.c
+> @@ -555,7 +555,8 @@ static long vfio_pci_ioctl(void *device_data,
+>  			    IORESOURCE_MEM && !pci_resources_share_page(pdev,
+>  			    info.index)) {
+>  				info.flags |= VFIO_REGION_INFO_FLAG_MMAP;
+> -				if (info.index == vdev->msix_bar) {
+> +				if (!pci_host_bridge_msi_filtered_enabled(pdev) &&
+> +				    info.index == vdev->msix_bar) {
+>  					ret = msix_sparse_mmap_cap(vdev, &caps);
+>  					if (ret)
+>  						return ret;
+> @@ -967,7 +968,8 @@ static int vfio_pci_mmap(void *device_data, struct vm_area_struct *vma)
+>  	if (phys_len < PAGE_SIZE || req_start + req_len > phys_len)
+>  		return -EINVAL;
 >  
->  int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge);
->  
-> +bool pci_host_bridge_msi_filtered_enabled(struct pci_dev *pdev);
-> +
->  /*
->   * The first PCI_BRIDGE_RESOURCE_NUM PCI bus resources (those that correspond
->   * to P2P or CardBus bridge windows) go in a table.  Additional ones (for
+> -	if (index == vdev->msix_bar) {
+> +	if (!pci_host_bridge_msi_filtered_enabled(pdev) &&
+> +	    index == vdev->msix_bar) {
+>  		/*
+>  		 * Disallow mmaps overlapping the MSI-X table; users don't
+>  		 * get to touch this directly.  We could find somewhere
 
-Don't we already have a flag for this in the IOMMU space?
-
-enum iommu_cap {
-        IOMMU_CAP_CACHE_COHERENCY,      /* IOMMU can enforce cache coherent DMA
-                                           transactions */
---->    IOMMU_CAP_INTR_REMAP,           /* IOMMU supports interrupt isolation */
-        IOMMU_CAP_NOEXEC,               /* IOMMU_NOEXEC flag */
-};
+What about read()/write() access, why would we allow mmap() but not
+those?
