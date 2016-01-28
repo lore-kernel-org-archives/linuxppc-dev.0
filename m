@@ -1,42 +1,46 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 34BED1A030F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 20:55:57 +1100 (AEDT)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 12E681A030F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 20:48:11 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id F3FCB140BAE
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 20:55:56 +1100 (AEDT)
 Received: from localhost
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Thu, 28 Jan 2016 09:48:07 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5028F17D8063
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 09:48:14 +0000 (GMT)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0S9m53H5439968
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 09:48:05 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0S9m2Z6012083
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 02:48:04 -0700
-Subject: Re: [PATCH v3 2/3] x86: query dynamic DEBUG_PAGEALLOC setting
-To: David Rientjes <rientjes@google.com>
-References: <1453889401-43496-1-git-send-email-borntraeger@de.ibm.com>
- <1453889401-43496-3-git-send-email-borntraeger@de.ibm.com>
- <alpine.DEB.2.10.1601271414180.23510@chino.kir.corp.google.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, davej@codemonkey.org.uk
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Message-ID: <56A9E3D1.3090001@de.ibm.com>
-Date: Thu, 28 Jan 2016 10:48:01 +0100
+ for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Thu, 28 Jan 2016 19:55:56 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 52752357805A
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 20:55:53 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0S9tjr665208548
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 20:55:53 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0S9tKqD009925
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 20:55:20 +1100
+Message-ID: <56A9E56C.1050505@linux.vnet.ibm.com>
+Date: Thu, 28 Jan 2016 15:24:52 +0530
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.10.1601271414180.23510@chino.kir.corp.google.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net,
+ linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org,
+ ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com,
+ bsingharora@gmail.com, mpe@ellerman.id.au, linux-api@vger.kernel.org
+Subject: Re: [PATCH v7 6/6] cpufreq: powernv: Add sysfs attributes to show
+ throttle stats
+References: <1453965941-7363-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1453965941-7363-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20160128084041.GK3935@vireshk> <56A9E136.8090900@linux.vnet.ibm.com>
+ <20160128094146.GO3935@vireshk>
+In-Reply-To: <20160128094146.GO3935@vireshk>
 Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -47,82 +51,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/27/2016 11:17 PM, David Rientjes wrote:
-> On Wed, 27 Jan 2016, Christian Borntraeger wrote:
+
+
+On 01/28/2016 03:11 PM, Viresh Kumar wrote:
+> On 28-01-16, 15:06, Shilpasri G Bhat wrote:
+>> No these stats are not per-policy. They are per-chip. The throttle event is
+>> common for all cores in the chip.
 > 
->> We can use debug_pagealloc_enabled() to check if we can map
->> the identity mapping with 2MB pages. We can also add the state
->> into the dump_stack output.
->>
->> The patch does not touch the code for the 1GB pages, which ignored
->> CONFIG_DEBUG_PAGEALLOC. Do we need to fence this as well?
->>
->> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
->> Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
->> ---
->>  arch/x86/kernel/dumpstack.c |  5 ++---
->>  arch/x86/mm/init.c          |  7 ++++---
->>  arch/x86/mm/pageattr.c      | 14 ++++----------
->>  3 files changed, 10 insertions(+), 16 deletions(-)
->>
->> diff --git a/arch/x86/kernel/dumpstack.c b/arch/x86/kernel/dumpstack.c
->> index 9c30acf..32e5699 100644
->> --- a/arch/x86/kernel/dumpstack.c
->> +++ b/arch/x86/kernel/dumpstack.c
->> @@ -265,9 +265,8 @@ int __die(const char *str, struct pt_regs *regs, long err)
->>  #ifdef CONFIG_SMP
->>  	printk("SMP ");
->>  #endif
->> -#ifdef CONFIG_DEBUG_PAGEALLOC
->> -	printk("DEBUG_PAGEALLOC ");
->> -#endif
->> +	if (debug_pagealloc_enabled())
->> +		printk("DEBUG_PAGEALLOC ");
->>  #ifdef CONFIG_KASAN
->>  	printk("KASAN");
->>  #endif
->> diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
->> index 493f541..39823fd 100644
->> --- a/arch/x86/mm/init.c
->> +++ b/arch/x86/mm/init.c
->> @@ -150,13 +150,14 @@ static int page_size_mask;
->>  
->>  static void __init probe_page_size_mask(void)
->>  {
->> -#if !defined(CONFIG_DEBUG_PAGEALLOC) && !defined(CONFIG_KMEMCHECK)
->> +#if !defined(CONFIG_KMEMCHECK)
->>  	/*
->> -	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
->> +	 * For CONFIG_KMEMCHECK or pagealloc debugging, identity mapping will
->> +	 * use small pages.
->>  	 * This will simplify cpa(), which otherwise needs to support splitting
->>  	 * large pages into small in interrupt context, etc.
->>  	 */
->> -	if (cpu_has_pse)
->> +	if (cpu_has_pse && !debug_pagealloc_enabled())
->>  		page_size_mask |= 1 << PG_LEVEL_2M;
->>  #endif
->>  
+> How do you define a chip? And how is it different then the group of
+> CPUs represented by the policy ?
 > 
-> I would have thought free_init_pages() would be modified to use 
-> debug_pagealloc_enabled() as well?
 
-
-Indeed, I only touched the identity mapping and dump stack.
-The question is do we really want to change free_init_pages as well?
-The unmapping during runtime causes significant overhead, but the
-unmapping after init imposes almost no runtime overhead. Of course,
-things get fishy now as what is enabled and what not.
-
-Kconfig after my patch "mm/debug_pagealloc: Ask users for default setting of debug_pagealloc"
-(in mm) now states
-----snip----
-By default this option will have a small overhead, e.g. by not
-allowing the kernel mapping to be backed by large pages on some
-architectures. Even bigger overhead comes when the debugging is
-enabled by DEBUG_PAGEALLOC_ENABLE_DEFAULT or the debug_pagealloc
-command line parameter.
-----snip----
-
-So I am tempted to NOT change free_init_pages, but the x86 maintainers
-can certainly decide differently. Ingo, Thomas, H. Peter, please advise.
+Chip is a group of policies.
+Hmm yes I see your point. We anyways maintain frequency stats which is
+per-policy. We might as well have throttle stats exported per-policy which
+points to per-chip data.
