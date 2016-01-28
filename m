@@ -1,20 +1,31 @@
-Return-Path: <b37399@nmglablinux22.freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0091.outbound.protection.outlook.com [65.55.169.91])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <keescook@chromium.org>
+Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
+ [IPv6:2607:f8b0:400e:c00::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B66D1A030F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 00:33:29 +1100 (AEDT)
-From: Ashish Kumar <Ashish.Kumar@nxp.com>
-To: <scott.wood@nxp.com>, <linuxppc-dev@lists.ozlabs.org>
-CC: Ashish Kumar <Ashish.Kumar@nxp.com>, Shaveta Leekha
- <Shaveta.Leekha@nxp.com>
-Subject: [PATCH] arch/PPC:B4860qds/B4420qds: Updates to device trees for B4860
- for DSP clusters and their L2 caches
-Date: Thu, 28 Jan 2016 18:47:39 +0530
-Message-ID: <1453987059-26263-1-git-send-email-Ashish.Kumar@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 628CF1A0325
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 01:17:17 +1100 (AEDT)
+Received: by mail-pf0-x231.google.com with SMTP id o185so19629463pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 06:17:17 -0800 (PST)
+From: Kees Cook <keescook@chromium.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kees Cook <keescook@chromium.org>, Amitkumar Karwar <akarwar@marvell.com>,
+ Nishant Sarmukadam <nishants@marvell.com>,
+ Kalle Valo <kvalo@codeaurora.org>, Steve French <sfrench@samba.org>,
+ linux-cifs@vger.kernel.org, Joe Perches <joe@perches.com>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] lib: fix callers of strtobool to use char array
+Date: Thu, 28 Jan 2016 06:17:05 -0800
+Message-Id: <1453990627-19164-2-git-send-email-keescook@chromium.org>
+In-Reply-To: <1453990627-19164-1-git-send-email-keescook@chromium.org>
+References: <1453990627-19164-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,165 +35,293 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-B4860 has 1 PPC core cluster and 3 DSP core clusters.
-Similarly B4420 has 1 PPC core cluster and 1 DSP core cluster.
+Some callers of strtobool were passing a pointer to unterminated strings.
+This fixes the issue and consolidates some logic in cifs.
 
-Each DSP core cluster consists of 2 SC3900 cores and a shared L2 cache.
-
-Add DSP clusters for B4420
-The L2 cache nodes such that they now appear in only the
-soc specific dtsi files(b4860si-post.dtsi and b4420si-post.dtsi).
-
-Signed-off-by: Ashish Kumar <Ashish.Kumar@nxp.com>
-Signed-off-by: Shaveta Leekha  <Shaveta.Leekha@nxp.com>
+Signed-off-by: Kees Cook <keescook@chromium.org>
+Cc: Amitkumar Karwar <akarwar@marvell.com>
+Cc: Nishant Sarmukadam <nishants@marvell.com>
+Cc: Kalle Valo <kvalo@codeaurora.org>
+Cc: Steve French <sfrench@samba.org>
+Cc: linux-cifs@vger.kernel.org
 ---
- arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |    7 +++-
- arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi  |   23 ++++++++++++
- arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |   20 ++++++++++-
- arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi  |   52 +++++++++++++++++++++++++++
- 4 files changed, 100 insertions(+), 2 deletions(-)
+ drivers/net/wireless/marvell/mwifiex/debugfs.c |   6 +-
+ fs/cifs/cifs_debug.c                           | 106 ++++++++++++-------------
+ fs/cifs/cifs_debug.h                           |   2 +-
+ fs/cifs/cifsfs.c                               |   6 +-
+ fs/cifs/cifsglob.h                             |   4 +-
+ 5 files changed, 58 insertions(+), 66 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-index f996cce..cc70adb 100644
---- a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-@@ -91,7 +91,12 @@
+diff --git a/drivers/net/wireless/marvell/mwifiex/debugfs.c b/drivers/net/wireless/marvell/mwifiex/debugfs.c
+index 0b9c580af988..76af60899c69 100644
+--- a/drivers/net/wireless/marvell/mwifiex/debugfs.c
++++ b/drivers/net/wireless/marvell/mwifiex/debugfs.c
+@@ -880,13 +880,13 @@ mwifiex_reset_write(struct file *file,
+ {
+ 	struct mwifiex_private *priv = file->private_data;
+ 	struct mwifiex_adapter *adapter = priv->adapter;
+-	char cmd;
++	char cmd[2] = { '\0' };
+ 	bool result;
  
- 	L2_1: l2-cache-controller@c20000 {
- 		compatible = "fsl,b4420-l2-cache-controller";
--		reg = <0xc20000 0x40000>;
-+		reg = <0xc20000 0x1000>;
-+		next-level-cache = <&cpc>;
-+	};
-+	L2_2: l2-cache-controller@c60000 {
-+		compatible = "fsl,b4420-l2-cache-controller";
-+		reg = <0xc60000 0x1000>;
- 		next-level-cache = <&cpc>;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
-index bc3bf93..87c2712 100644
---- a/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
-@@ -81,4 +81,27 @@
- 			fsl,portid-mapping = <0x80000000>;
- 		};
- 	};
-+
-+	dsp-clusters {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		dsp-cluster0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,sc3900-cluster";
-+			reg = <0>;
-+
-+			dsp0: dsp@0 {
-+				compatible = "fsl,sc3900";
-+				reg = <0>;
-+				next-level-cache = <&L2_2>;
-+			};
-+			dsp1: dsp@1 {
-+				compatible = "fsl,sc3900";
-+				reg = <1>;
-+				next-level-cache = <&L2_2>;
-+			};
-+		};
-+	};
- };
-diff --git a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-index 8687198..833d483 100644
---- a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-@@ -278,7 +278,25 @@
+-	if (copy_from_user(&cmd, ubuf, sizeof(cmd)))
++	if (copy_from_user(cmd, ubuf, sizeof(char)))
+ 		return -EFAULT;
  
- 	L2_1: l2-cache-controller@c20000 {
- 		compatible = "fsl,b4860-l2-cache-controller";
--		reg = <0xc20000 0x40000>;
-+		reg = <0xc20000 0x1000>;
-+		next-level-cache = <&cpc>;
-+	};
-+
-+	L2_2: l2-cache-controller@c60000 {
-+		compatible = "fsl,b4860-l2-cache-controller";
-+		reg = <0xc60000 0x1000>;
-+		next-level-cache = <&cpc>;
-+	};
-+
-+	L2_3: l2-cache-controller@ca0000 {
-+		compatible = "fsl,b4860-l2-cache-controller";
-+		reg = <0xca0000 0x1000>;
-+		next-level-cache = <&cpc>;
-+	};
-+
-+	L2_4: l2-cache-controller@ce0000 {
-+		compatible = "fsl,b4860-l2-cache-controller";
-+		reg = <0xce0000 0x1000>;
- 		next-level-cache = <&cpc>;
- 	};
+-	if (strtobool(&cmd, &result))
++	if (strtobool(cmd, &result))
+ 		return -EINVAL;
+ 
+ 	if (!result)
+diff --git a/fs/cifs/cifs_debug.c b/fs/cifs/cifs_debug.c
+index 50b268483302..2f7ffcc9e364 100644
+--- a/fs/cifs/cifs_debug.c
++++ b/fs/cifs/cifs_debug.c
+@@ -251,11 +251,29 @@ static const struct file_operations cifs_debug_data_proc_fops = {
+ 	.release	= single_release,
  };
-diff --git a/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-index 8797ce1..a45800d 100644
---- a/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-@@ -100,4 +100,56 @@
- 			fsl,portid-mapping = <0x80000000>;
- 		};
- 	};
-+	dsp-clusters {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		dsp-cluster0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,sc3900-cluster";
-+			reg = <0>;
-+			dsp0: dsp@0 {
-+				compatible = "fsl,sc3900";
-+				reg = <0>;
-+				next-level-cache = <&L2_2>;
-+			};
-+			dsp1: dsp@1 {
-+				compatible = "fsl,sc3900";
-+				reg = <1>;
-+				next-level-cache = <&L2_2>;
-+			};
-+		};
-+		dsp-cluster1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,sc3900-cluster";
-+			reg = <1>;
-+			dsp2: dsp@2 {
-+				compatible = "fsl,sc3900";
-+				reg = <2>;
-+				next-level-cache = <&L2_3>;
-+			};
-+			dsp3: dsp@3 {
-+				compatible = "fsl,sc3900";
-+				reg = <3>;
-+				next-level-cache = <&L2_3>;
-+			};
-+		};
-+		dsp-cluster2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,sc3900-cluster";
-+			reg = <2>;
-+			dsp4: dsp@4 {
-+				compatible = "fsl,sc3900";
-+				reg = <4>;
-+				next-level-cache = <&L2_4>;
-+			};
-+			dsp5: dsp@5 {
-+				compatible = "fsl,sc3900";
-+				reg = <5>;
-+				next-level-cache = <&L2_4>;
-+			};
-+		};
-+	};
- };
+ 
++static int get_user_bool(const char __user *buffer, bool *store)
++{
++	char c[2] = { '\0' };
++	bool bv;
++	int rc;
++
++	rc = get_user(c[0], buffer);
++	if (rc)
++		return rc;
++
++	rc = strtobool(c, &bv);
++	if (rc)
++		return rc;
++
++	*store = bv;
++
++	return 0;
++}
++
+ #ifdef CONFIG_CIFS_STATS
+ static ssize_t cifs_stats_proc_write(struct file *file,
+ 		const char __user *buffer, size_t count, loff_t *ppos)
+ {
+-	char c;
+ 	bool bv;
+ 	int rc;
+ 	struct list_head *tmp1, *tmp2, *tmp3;
+@@ -263,34 +281,32 @@ static ssize_t cifs_stats_proc_write(struct file *file,
+ 	struct cifs_ses *ses;
+ 	struct cifs_tcon *tcon;
+ 
+-	rc = get_user(c, buffer);
++	rc = get_user_bool(buffer, &bv);
+ 	if (rc)
+ 		return rc;
+ 
+-	if (strtobool(&c, &bv) == 0) {
+ #ifdef CONFIG_CIFS_STATS2
+-		atomic_set(&totBufAllocCount, 0);
+-		atomic_set(&totSmBufAllocCount, 0);
++	atomic_set(&totBufAllocCount, 0);
++	atomic_set(&totSmBufAllocCount, 0);
+ #endif /* CONFIG_CIFS_STATS2 */
+-		spin_lock(&cifs_tcp_ses_lock);
+-		list_for_each(tmp1, &cifs_tcp_ses_list) {
+-			server = list_entry(tmp1, struct TCP_Server_Info,
+-					    tcp_ses_list);
+-			list_for_each(tmp2, &server->smb_ses_list) {
+-				ses = list_entry(tmp2, struct cifs_ses,
+-						 smb_ses_list);
+-				list_for_each(tmp3, &ses->tcon_list) {
+-					tcon = list_entry(tmp3,
+-							  struct cifs_tcon,
+-							  tcon_list);
+-					atomic_set(&tcon->num_smbs_sent, 0);
+-					if (server->ops->clear_stats)
+-						server->ops->clear_stats(tcon);
+-				}
++	spin_lock(&cifs_tcp_ses_lock);
++	list_for_each(tmp1, &cifs_tcp_ses_list) {
++		server = list_entry(tmp1, struct TCP_Server_Info,
++				    tcp_ses_list);
++		list_for_each(tmp2, &server->smb_ses_list) {
++			ses = list_entry(tmp2, struct cifs_ses,
++					 smb_ses_list);
++			list_for_each(tmp3, &ses->tcon_list) {
++				tcon = list_entry(tmp3,
++						  struct cifs_tcon,
++						  tcon_list);
++				atomic_set(&tcon->num_smbs_sent, 0);
++				if (server->ops->clear_stats)
++					server->ops->clear_stats(tcon);
+ 			}
+ 		}
+-		spin_unlock(&cifs_tcp_ses_lock);
+ 	}
++	spin_unlock(&cifs_tcp_ses_lock);
+ 
+ 	return count;
+ }
+@@ -433,17 +449,17 @@ static int cifsFYI_proc_open(struct inode *inode, struct file *file)
+ static ssize_t cifsFYI_proc_write(struct file *file, const char __user *buffer,
+ 		size_t count, loff_t *ppos)
+ {
+-	char c;
++	char c[2] = { '\0' };
+ 	bool bv;
+ 	int rc;
+ 
+-	rc = get_user(c, buffer);
++	rc = get_user(c[0], buffer);
+ 	if (rc)
+ 		return rc;
+-	if (strtobool(&c, &bv) == 0)
++	if (strtobool(c, &bv) == 0)
+ 		cifsFYI = bv;
+-	else if ((c > '1') && (c <= '9'))
+-		cifsFYI = (int) (c - '0'); /* see cifs_debug.h for meanings */
++	else if ((c[0] > '1') && (c[0] <= '9'))
++		cifsFYI = (int) (c[0] - '0'); /* see cifs_debug.h for meanings */
+ 
+ 	return count;
+ }
+@@ -471,20 +487,12 @@ static int cifs_linux_ext_proc_open(struct inode *inode, struct file *file)
+ static ssize_t cifs_linux_ext_proc_write(struct file *file,
+ 		const char __user *buffer, size_t count, loff_t *ppos)
+ {
+-	char c;
+-	bool bv;
+ 	int rc;
+ 
+-	rc = get_user(c, buffer);
++	rc = get_user_bool(buffer, &linuxExtEnabled);
+ 	if (rc)
+ 		return rc;
+ 
+-	rc = strtobool(&c, &bv);
+-	if (rc)
+-		return rc;
+-
+-	linuxExtEnabled = bv;
+-
+ 	return count;
+ }
+ 
+@@ -511,20 +519,12 @@ static int cifs_lookup_cache_proc_open(struct inode *inode, struct file *file)
+ static ssize_t cifs_lookup_cache_proc_write(struct file *file,
+ 		const char __user *buffer, size_t count, loff_t *ppos)
+ {
+-	char c;
+-	bool bv;
+ 	int rc;
+ 
+-	rc = get_user(c, buffer);
++	rc = get_user_bool(buffer, &lookupCacheEnabled);
+ 	if (rc)
+ 		return rc;
+ 
+-	rc = strtobool(&c, &bv);
+-	if (rc)
+-		return rc;
+-
+-	lookupCacheEnabled = bv;
+-
+ 	return count;
+ }
+ 
+@@ -551,20 +551,12 @@ static int traceSMB_proc_open(struct inode *inode, struct file *file)
+ static ssize_t traceSMB_proc_write(struct file *file, const char __user *buffer,
+ 		size_t count, loff_t *ppos)
+ {
+-	char c;
+-	bool bv;
+ 	int rc;
+ 
+-	rc = get_user(c, buffer);
++	rc = get_user_bool(buffer, &traceSMB);
+ 	if (rc)
+ 		return rc;
+ 
+-	rc = strtobool(&c, &bv);
+-	if (rc)
+-		return rc;
+-
+-	traceSMB = bv;
+-
+ 	return count;
+ }
+ 
+@@ -622,7 +614,7 @@ static ssize_t cifs_security_flags_proc_write(struct file *file,
+ 	int rc;
+ 	unsigned int flags;
+ 	char flags_string[12];
+-	char c;
++	char c[2] = { '\0' };
+ 	bool bv;
+ 
+ 	if ((count < 1) || (count > 11))
+@@ -635,11 +627,11 @@ static ssize_t cifs_security_flags_proc_write(struct file *file,
+ 
+ 	if (count < 3) {
+ 		/* single char or single char followed by null */
+-		c = flags_string[0];
+-		if (strtobool(&c, &bv) == 0) {
++		c[0] = flags_string[0];
++		if (strtobool(c, &bv) == 0) {
+ 			global_secflags = bv ? CIFSSEC_MAX : CIFSSEC_DEF;
+ 			return count;
+-		} else if (!isdigit(c)) {
++		} else if (!isdigit(c[0])) {
+ 			cifs_dbg(VFS, "Invalid SecurityFlags: %s\n",
+ 					flags_string);
+ 			return -EINVAL;
+diff --git a/fs/cifs/cifs_debug.h b/fs/cifs/cifs_debug.h
+index 66cf0f9fff89..c611ca2339d7 100644
+--- a/fs/cifs/cifs_debug.h
++++ b/fs/cifs/cifs_debug.h
+@@ -25,7 +25,7 @@
+ void cifs_dump_mem(char *label, void *data, int length);
+ void cifs_dump_detail(void *);
+ void cifs_dump_mids(struct TCP_Server_Info *);
+-extern int traceSMB;		/* flag which enables the function below */
++extern bool traceSMB;		/* flag which enables the function below */
+ void dump_smb(void *, int);
+ #define CIFS_INFO	0x01
+ #define CIFS_RC		0x02
+diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
+index c48ca13673e3..931b446f2a44 100644
+--- a/fs/cifs/cifsfs.c
++++ b/fs/cifs/cifsfs.c
+@@ -54,10 +54,10 @@
+ #endif
+ 
+ int cifsFYI = 0;
+-int traceSMB = 0;
++bool traceSMB;
+ bool enable_oplocks = true;
+-unsigned int linuxExtEnabled = 1;
+-unsigned int lookupCacheEnabled = 1;
++bool linuxExtEnabled = true;
++bool lookupCacheEnabled = true;
+ unsigned int global_secflags = CIFSSEC_DEF;
+ /* unsigned int ntlmv2_support = 0; */
+ unsigned int sign_CIFS_PDUs = 1;
+diff --git a/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
+index a25b2513f146..d21da9f05bae 100644
+--- a/fs/cifs/cifsglob.h
++++ b/fs/cifs/cifsglob.h
+@@ -1596,11 +1596,11 @@ GLOBAL_EXTERN atomic_t midCount;
+ 
+ /* Misc globals */
+ GLOBAL_EXTERN bool enable_oplocks; /* enable or disable oplocks */
+-GLOBAL_EXTERN unsigned int lookupCacheEnabled;
++GLOBAL_EXTERN bool lookupCacheEnabled;
+ GLOBAL_EXTERN unsigned int global_secflags;	/* if on, session setup sent
+ 				with more secure ntlmssp2 challenge/resp */
+ GLOBAL_EXTERN unsigned int sign_CIFS_PDUs;  /* enable smb packet signing */
+-GLOBAL_EXTERN unsigned int linuxExtEnabled;/*enable Linux/Unix CIFS extensions*/
++GLOBAL_EXTERN bool linuxExtEnabled;/*enable Linux/Unix CIFS extensions*/
+ GLOBAL_EXTERN unsigned int CIFSMaxBufSize;  /* max size not including hdr */
+ GLOBAL_EXTERN unsigned int cifs_min_rcv;    /* min size of big ntwrk buf pool */
+ GLOBAL_EXTERN unsigned int cifs_min_small;  /* min size of small buf pool */
 -- 
-1.7.6.GIT
+2.6.3
