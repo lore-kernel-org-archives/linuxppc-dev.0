@@ -2,39 +2,40 @@ Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B05A91A0697
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 18:27:16 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D7D61A1A03
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 18:27:22 +1100 (AEDT)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7AA04140B8C
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 18:27:16 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id F36CB140B8C
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 18:27:21 +1100 (AEDT)
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Thu, 28 Jan 2016 17:27:16 +1000
+ Thu, 28 Jan 2016 17:27:21 +1000
 Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1D5953578057
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 18:27:14 +1100 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6CFCD2BB0054
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 18:27:19 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0S7Qhrd49021090
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 18:26:51 +1100
+ u0S7QmLI45809896
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 18:26:56 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0S7QfCL030485
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 18:26:41 +1100
+ u0S7QkJB030716
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2016 18:26:47 +1100
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
  pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com,
  shreyas@linux.vnet.ibm.com, bsingharora@gmail.com, mpe@ellerman.id.au,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v7 5/6] cpufreq: powernv: Replace pr_info with trace print for
- throttle event
-Date: Thu, 28 Jan 2016 12:55:40 +0530
-Message-Id: <1453965941-7363-6-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ linux-api@vger.kernel.org
+Subject: [PATCH v7 6/6] cpufreq: powernv: Add sysfs attributes to show
+ throttle stats
+Date: Thu, 28 Jan 2016 12:55:41 +0530
+Message-Id: <1453965941-7363-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 In-Reply-To: <1453965941-7363-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 References: <1453965941-7363-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,188 +47,430 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we use printk message to notify the throttle event. But this
-can flood the console if the cpu is throttled frequently. So replace the
-printk with the tracepoint to notify the throttle event. And also events
-like throttle below nominal frequency and OCC_RESET are reduced to
-pr_warn/pr_warn_once as pointed by MFG to not mark them as critical
-messages. This patch adds 'throttle_reason' to struct chip to store the
-throttle reason.
+Create sysfs attributes to export throttle information in
+/sys/devices/system/cpu/cpufreq/chipN. The newly added sysfs files are as
+follows:
+
+1)/sys/devices/system/cpu/cpufreq/chip0/throttle_frequencies
+  This gives the throttle stats for each of the available frequencies.
+  The throttle stat of a frequency is the total number of times the max
+  frequency is reduced to that frequency.
+  # cat /sys/devices/system/cpu/cpufreq/chip0/throttle_frequencies
+  4023000 0
+  3990000 0
+  3956000 1
+  3923000 0
+  3890000 0
+  3857000 2
+  3823000 0
+  3790000 0
+  3757000 2
+  3724000 1
+  3690000 1
+  ...
+
+2)/sys/devices/system/cpu/cpufreq/chip0/throttle_reasons
+  This directory contains throttle reason files. Each file gives the
+  total number of times the max frequency is throttled, except for
+  'unthrottle_count', which gives the total number of times the max
+  frequency is unthrottled after being throttled.
+  # cd /sys/devices/system/cpu/cpufreq/chip0/throttle_reasons
+  # cat cpu_over_temperature
+  7
+  # cat occ_reset
+  0
+  # cat over_current
+  0
+  # cat power_cap
+  0
+  # cat power_supply_failure
+  0
+  # cat unthrottle_count
+  7
+
+3)/sys/devices/system/cpu/cpufreq/chip0/throttle_stat
+  This gives the total number of events of max frequency throttling to
+  lower frequencies in the turbo range of frequencies and the sub-turbo(at
+  and below nominal) range of frequencies.
+  # cat /sys/devices/system/cpu/cpufreq/chip0/throttle_stat
+  turbo 7
+  sub-turbo 0
 
 Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: linux-api@vger.kernel.org
 ---
 Changes from v6:
-- Rename struct chip member 'throt_reason' to 'throttle_reason'
+- Rename struct chip members 'throt_{nominal/turbo}' to throttle_*
+- Rename sysfs throttle_reason attribute 'throttle_reset' to
+  'unthrottle_count'
+- Add sysfs attribute details in
+  Documentation/ABI/testing/sysfs-devices-system-cpu
+- Add helper routine get_chip_index_from_kobj() for throttle sysfs
+  attribute show() to get chip index from kobject.
+- Add the chip id in the pr_warn_once
 
 No changes from v5.
 
 Changes from v4:
-- Taken care of Gautham's comments to remove the new function
-  powernv_cpufreq_check_pmax()
-- Modified commit message
+- Taken care of Gautham's comments to use inline get_chip_index()
 
 Changes from v3:
-- Separate this patch to contain trace_point changes
-- Move struct chip member 'restore' of type bool above 'mask' to reduce
-  structure padding.
+- Seperate the patch to contain only the throttle sysfs attribute changes.
+- Add helper inline function get_chip_index()
 
-No changes from v2.
+Changes from v2:
+- Fixed kbuild test warning.
+drivers/cpufreq/powernv-cpufreq.c:609:2: warning: ignoring return
+value of 'kstrtoint', declared with attribute warn_unused_result
+[-Wunused-result]
 
 Changes from v1:
-- As suggested by Paul Clarke replaced char * throttle_reason[][30] by 
-  const char * const throttle_reason[].
+- Added a kobject to struct chip
+- Grouped the throttle reasons under a separate attribute_group and
+  exported each reason as individual file.
+- Moved the sysfs files from /sys/devices/system/node/nodeN to
+  /sys/devices/system/cpu/cpufreq/chipN
+- As suggested by Paul Clarke replaced 'Nominal' with 'sub-turbo'.
 
- drivers/cpufreq/powernv-cpufreq.c | 73 ++++++++++++++++++---------------------
- 1 file changed, 34 insertions(+), 39 deletions(-)
+ Documentation/ABI/testing/sysfs-devices-system-cpu |  45 +++++
+ drivers/cpufreq/powernv-cpufreq.c                  | 205 ++++++++++++++++++++-
+ 2 files changed, 241 insertions(+), 9 deletions(-)
 
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index b683e8e..dea4620 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -271,3 +271,48 @@ Description:	Parameters for the CPU cache attributes
+ 			- WriteBack: data is written only to the cache line and
+ 				     the modified cache line is written to main
+ 				     memory only when it is replaced
++
++What:		/sys/devices/system/cpu/cpufreq/chip*/throttle_stats
++Date:		Jan 2016
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++		Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	CPU Frequency throttle stat for the chip
++
++		This attribute gives the total number of events of max-frequency
++		throttling to any lower frequency in the turbo(above nominal) and
++		the sub-turbo (at and below nominal) range of frequencies.
++
++
++What:		/sys/devices/system/cpu/cpufreq/chip*/throttle_frequencies
++Date:		Jan 2016
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++		Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	CPU Frequency throttle stat for all available frequencies in the chip
++
++		This attribute gives the throttle stats for each of the available
++		frequencies. The throttle stat of a frequency is the total
++		number of times the max frequency is reduced to that frequency.
++
++What:		/sys/devices/system/cpu/cpufreq/chip*/throttle_reasons/<reason_attributes>
++Date:		Jan 2016
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++		Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	CPU Frequency throttle reason stat for the chip
++
++		This directory contains throttle reason files. Each file gives
++		the total number of times the max frequency is throttled, except
++		for 'unthrottle_count', which gives the total number of times
++		the max frequency is unthrottled after being throttled. Below
++		are the reason attributes.
++
++		cpu_over_temperature: Throttled due to cpu over temperature
++
++		occ_reset: Throttled due to reset of OCC
++
++		over_current: Throttled due to over current
++
++		power_cap: Throttled due to power capping
++
++		power_supply_failure: Throttled due to power supply failure
++
++		unthrottle_count: Unthrottled from any of the above reasons.
 diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index c670314..1bbc10a 100644
+index 1bbc10a..b647941 100644
 --- a/drivers/cpufreq/powernv-cpufreq.c
 +++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -29,6 +29,7 @@
- #include <linux/reboot.h>
- #include <linux/slab.h>
- #include <linux/cpu.h>
-+#include <trace/events/power.h>
+@@ -55,6 +55,16 @@ static const char * const throttle_reason[] = {
+ 	"OCC Reset"
+ };
  
- #include <asm/cputhreads.h>
- #include <asm/firmware.h>
-@@ -45,12 +46,22 @@ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
- static bool rebooting, throttled, occ_reset;
- static unsigned int *core_to_chip_map;
- 
-+static const char * const throttle_reason[] = {
-+	"No throttling",
-+	"Power Cap",
-+	"Processor Over Temperature",
-+	"Power Supply Failure",
-+	"Over Current",
-+	"OCC Reset"
++enum throttle_reason_type {
++	NO_THROTTLE = 0,
++	POWERCAP,
++	CPU_OVERTEMP,
++	POWER_SUPPLY_FAILURE,
++	OVERCURRENT,
++	OCC_RESET_THROTTLE,
++	OCC_MAX_REASON
 +};
 +
  static struct chip {
  	unsigned int id;
  	bool throttled;
-+	bool restore;
-+	u8 throttle_reason;
+@@ -62,6 +72,11 @@ static struct chip {
+ 	u8 throttle_reason;
  	cpumask_t mask;
  	struct work_struct throttle;
--	bool restore;
++	int throttle_turbo;
++	int throttle_nominal;
++	int reason[OCC_MAX_REASON];
++	int *pstate_stat;
++	struct kobject *kobj;
  } *chips;
  
  static int nr_chips;
-@@ -331,17 +342,17 @@ static void powernv_cpufreq_throttle_check(void *data)
+@@ -196,6 +211,126 @@ static struct freq_attr *powernv_cpu_freq_attr[] = {
+ 	NULL,
+ };
+ 
++static inline int get_chip_index(unsigned int id)
++{
++	int i;
++
++	for (i = 0; i < nr_chips; i++)
++		if (chips[i].id == id)
++			return i;
++
++	return -EINVAL;
++}
++
++static inline int get_chip_index_from_kobj(struct kobject *kobj)
++{
++	int ret, id;
++	int len = strlen("chip");
++
++	ret = kstrtoint(kobj->name + len, 0, &id);
++	if (ret)
++		return ret;
++
++	ret = get_chip_index(id);
++	if (ret < 0)
++		pr_warn_once("%s Matching chip-id not found %d\n", __func__,
++			     id);
++	return ret;
++}
++
++static ssize_t throttle_freq_show(struct kobject *kobj,
++				  struct kobj_attribute *attr, char *buf)
++{
++	int i, count = 0, id;
++
++	id = get_chip_index_from_kobj(kobj);
++	if (id < 0)
++		return id;
++
++	for (i = 0; i < powernv_pstate_info.nr_pstates; i++)
++		count += sprintf(&buf[count], "%d %d\n",
++			       powernv_freqs[i].frequency,
++			       chips[id].pstate_stat[i]);
++
++	return count;
++}
++
++static struct kobj_attribute attr_throttle_frequencies =
++__ATTR(throttle_frequencies, 0444, throttle_freq_show, NULL);
++
++static ssize_t throttle_stat_show(struct kobject *kobj,
++				  struct kobj_attribute *attr, char *buf)
++{
++	int id, count = 0;
++
++	id = get_chip_index_from_kobj(kobj);
++	if (id < 0)
++		return id;
++
++	count += sprintf(&buf[count], "turbo %d\n", chips[id].throttle_turbo);
++	count += sprintf(&buf[count], "sub-turbo %d\n",
++					chips[id].throttle_nominal);
++
++	return count;
++}
++
++static struct kobj_attribute attr_throttle_stat =
++__ATTR(throttle_stat, 0444, throttle_stat_show, NULL);
++
++#define define_throttle_reason_attr(attr_name, val)			  \
++static ssize_t attr_name##_show(struct kobject *kobj,			  \
++				  struct kobj_attribute *attr, char *buf) \
++{									  \
++	int id;								  \
++									  \
++	id = get_chip_index_from_kobj(kobj);				  \
++	if (id < 0)							  \
++		return id;						  \
++									  \
++	return sprintf(buf, "%d\n", chips[id].reason[val]);		  \
++}									  \
++									  \
++static struct kobj_attribute attr_##attr_name =				  \
++__ATTR(attr_name, 0444, attr_name##_show, NULL)
++
++define_throttle_reason_attr(unthrottle_count, NO_THROTTLE);
++define_throttle_reason_attr(power_cap, POWERCAP);
++define_throttle_reason_attr(cpu_over_temperature, CPU_OVERTEMP);
++define_throttle_reason_attr(power_supply_failure, POWER_SUPPLY_FAILURE);
++define_throttle_reason_attr(over_current, OVERCURRENT);
++define_throttle_reason_attr(occ_reset, OCC_RESET_THROTTLE);
++
++static struct attribute *throttle_reason_attrs[] = {
++	&attr_unthrottle_count.attr,
++	&attr_power_cap.attr,
++	&attr_cpu_over_temperature.attr,
++	&attr_power_supply_failure.attr,
++	&attr_over_current.attr,
++	&attr_occ_reset.attr,
++	NULL
++};
++
++static struct attribute *throttle_stat_attrs[] = {
++	&attr_throttle_frequencies.attr,
++	&attr_throttle_stat.attr,
++	NULL
++};
++
++static const struct attribute_group throttle_reason_group = {
++	.name   = "throttle_reasons",
++	.attrs  = throttle_reason_attrs,
++};
++
++static const struct attribute_group throttle_stat_group = {
++	.attrs = throttle_stat_attrs,
++};
++
++static const struct attribute_group *throttle_attr_groups[] = {
++	&throttle_stat_group,
++	&throttle_reason_group,
++	NULL
++};
++
+ /* Helper routines */
+ 
+ /* Access helpers to power mgt SPR */
+@@ -327,13 +462,16 @@ static void powernv_cpufreq_throttle_check(void *data)
+ 	unsigned int cpu = smp_processor_id();
+ 	unsigned int chip_id = core_to_chip_map[cpu_core_index_of_thread(cpu)];
+ 	unsigned long pmsr;
+-	int pmsr_pmax, i;
++	int pmsr_pmax, i, index;
+ 
+ 	pmsr = get_pmspr(SPRN_PMSR);
+ 
+-	for (i = 0; i < nr_chips; i++)
+-		if (chips[i].id == chip_id)
+-			break;
++	i = get_chip_index(chip_id);
++	if (unlikely(i < 0)) {
++		pr_warn_once("%s Matching chip-id not found %d\n", __func__,
++			     chip_id);
++		return;
++	}
+ 
+ 	/* Check for Pmax Capping */
+ 	pmsr_pmax = (s8)PMSR_MAX(pmsr);
+@@ -341,10 +479,19 @@ static void powernv_cpufreq_throttle_check(void *data)
+ 		if (chips[i].throttled)
  			goto next;
  		chips[i].throttled = true;
- 		if (pmsr_pmax < powernv_pstate_info.nominal)
--			pr_crit("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
--				cpu, chips[i].id, pmsr_pmax,
--				powernv_pstate_info.nominal);
--		else
--			pr_info("CPU %d on Chip %u has Pmax reduced below turbo frequency (%d < %d)\n",
--				cpu, chips[i].id, pmsr_pmax,
--				powernv_pstate_info.max);
-+			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
-+				     cpu, chips[i].id, pmsr_pmax,
-+				     powernv_pstate_info.nominal);
-+		trace_powernv_throttle(chips[i].id,
-+				      throttle_reason[chips[i].throttle_reason],
-+				      pmsr_pmax);
- 	} else if (chips[i].throttled) {
- 		chips[i].throttled = false;
--		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
--			chips[i].id, pmsr_pmax);
-+		trace_powernv_throttle(chips[i].id,
-+				      throttle_reason[chips[i].throttle_reason],
-+				      pmsr_pmax);
- 	}
- 
- 	/* Check if Psafe_mode_active is set in PMSR. */
-@@ -359,7 +370,7 @@ next:
- 
- 	if (throttled) {
- 		pr_info("PMSR = %16lx\n", pmsr);
--		pr_crit("CPU Frequency could be throttled\n");
-+		pr_warn("CPU Frequency could be throttled\n");
- 	}
- }
- 
-@@ -452,15 +463,6 @@ out:
- 	put_online_cpus();
- }
- 
--static char throttle_reason[][30] = {
--					"No throttling",
--					"Power Cap",
--					"Processor Over Temperature",
--					"Power Supply Failure",
--					"Over Current",
--					"OCC Reset"
--				     };
--
- static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
- 				   unsigned long msg_type, void *_msg)
- {
-@@ -486,7 +488,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
- 		 */
- 		if (!throttled) {
- 			throttled = true;
--			pr_crit("CPU frequency is throttled for duration\n");
-+			pr_warn("CPU frequency is throttled for duration\n");
- 		}
- 
- 		break;
-@@ -510,23 +512,18 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+-		if (pmsr_pmax < powernv_pstate_info.nominal)
++		if (pmsr_pmax < powernv_pstate_info.nominal) {
+ 			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
+ 				     cpu, chips[i].id, pmsr_pmax,
+ 				     powernv_pstate_info.nominal);
++			chips[i].throttle_nominal++;
++		} else {
++			chips[i].throttle_turbo++;
++		}
++
++		index  = powernv_pstate_info.max - pmsr_pmax;
++		if (index >= 0 && index < powernv_pstate_info.nr_pstates)
++			chips[i].pstate_stat[index]++;
++
+ 		trace_powernv_throttle(chips[i].id,
+ 				      throttle_reason[chips[i].throttle_reason],
+ 				      pmsr_pmax);
+@@ -512,13 +659,19 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
  			return 0;
  		}
  
--		if (omsg.throttle_status &&
-+		for (i = 0; i < nr_chips; i++)
-+			if (chips[i].id == omsg.chip)
-+				break;
-+
-+		if (omsg.throttle_status >= 0 &&
- 		    omsg.throttle_status <= OCC_MAX_THROTTLE_STATUS)
--			pr_info("OCC: Chip %u Pmax reduced due to %s\n",
--				(unsigned int)omsg.chip,
--				throttle_reason[omsg.throttle_status]);
--		else if (!omsg.throttle_status)
--			pr_info("OCC: Chip %u %s\n", (unsigned int)omsg.chip,
--				throttle_reason[omsg.throttle_status]);
--		else
--			return 0;
-+			chips[i].throttle_reason = omsg.throttle_status;
- 
 -		for (i = 0; i < nr_chips; i++)
--			if (chips[i].id == omsg.chip) {
--				if (!omsg.throttle_status)
--					chips[i].restore = true;
--				schedule_work(&chips[i].throttle);
--			}
-+		if (!omsg.throttle_status)
-+			chips[i].restore = true;
+-			if (chips[i].id == omsg.chip)
+-				break;
 +
-+		schedule_work(&chips[i].throttle);
- 	}
- 	return 0;
- }
-@@ -581,16 +578,14 @@ static int init_chip_info(void)
- 		cpumask_andnot(&cpu_mask, &cpu_mask, cpu_sibling_mask(cpu));
- 	}
++		i = get_chip_index(omsg.chip);
++		if (i < 0) {
++			pr_warn_once("%s Matching chip-id not found %d\n",
++				     __func__, (int)omsg.chip);
++			return i;
++		}
  
--	chips = kmalloc_array(nr_chips, sizeof(struct chip), GFP_KERNEL);
-+	chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
- 	if (!chips)
+ 		if (omsg.throttle_status >= 0 &&
+-		    omsg.throttle_status <= OCC_MAX_THROTTLE_STATUS)
++		    omsg.throttle_status <= OCC_MAX_THROTTLE_STATUS) {
+ 			chips[i].throttle_reason = omsg.throttle_status;
++			chips[i].reason[omsg.throttle_status]++;
++		}
+ 
+ 		if (!omsg.throttle_status)
+ 			chips[i].restore = true;
+@@ -583,12 +736,38 @@ static int init_chip_info(void)
  		goto free_chip_map;
  
  	for (i = 0; i < nr_chips; i++) {
++		char name[10];
++
  		chips[i].id = chip[i];
--		chips[i].throttled = false;
  		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
  		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
--		chips[i].restore = false;
++		chips[i].pstate_stat = kcalloc(powernv_pstate_info.nr_pstates,
++						sizeof(int), GFP_KERNEL);
++		if (!chips[i].pstate_stat)
++			goto free;
++
++		sprintf(name, "chip%d", chips[i].id);
++		chips[i].kobj = kobject_create_and_add(name,
++						       cpufreq_global_kobject);
++		if (!chips[i].kobj)
++			goto free;
++
++		ret = sysfs_create_groups(chips[i].kobj, throttle_attr_groups);
++		if (ret) {
++			pr_info("Chip %d failed to create throttle sysfs group\n",
++				chips[i].id);
++			goto free;
++		}
  	}
  
  	return 0;
++free:
++	nr_chips = i;
++	for (i = 0; i <= nr_chips; i++) {
++		kobject_put(chips[i].kobj);
++		kfree(chips[i].pstate_stat);
++	}
++	kfree(chips);
+ free_chip_map:
+ 	kfree(core_to_chip_map);
+ out:
+@@ -623,9 +802,17 @@ module_init(powernv_cpufreq_init);
+ 
+ static void __exit powernv_cpufreq_exit(void)
+ {
++	int i;
++
+ 	unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
+ 	opal_message_notifier_unregister(OPAL_MSG_OCC,
+ 					 &powernv_cpufreq_opal_nb);
++
++	for (i = 0; i < nr_chips; i++) {
++		kobject_put(chips[i].kobj);
++		kfree(chips[i].pstate_stat);
++	}
++
+ 	kfree(chips);
+ 	kfree(core_to_chip_map);
+ 	cpufreq_unregister_driver(&powernv_cpufreq_driver);
 -- 
 1.9.3
