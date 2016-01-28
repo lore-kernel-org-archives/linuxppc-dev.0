@@ -1,39 +1,20 @@
-Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <b37399@nmglablinux22.freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0083.outbound.protection.outlook.com [157.56.111.83])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D1B9A1A030F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 21:04:01 +1100 (AEDT)
-Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Thu, 28 Jan 2016 15:33:14 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0SA1nmD50135040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 15:31:49 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0SA1ha3027819
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 15:31:48 +0530
-Subject: Re: [RFC PATCH v3 0/5] vfio-pci: Allow to mmap sub-page MMIO BARs and
- MSI-X table on PPC64 platform
-To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-doc@vger.kernel.org
-References: <1452841574-2781-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-Cc: bhelgaas@google.com, corbet@lwn.net, aik@ozlabs.ru,
- alex.williamson@redhat.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
- zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- David Laight <David.Laight@ACULAB.COM>
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Message-ID: <56A9E70F.9030503@linux.vnet.ibm.com>
-Date: Thu, 28 Jan 2016 18:01:51 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id B9BE21A030F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2016 19:24:46 +1100 (AEDT)
+From: Ashish Kumar <Ashish.Kumar@nxp.com>
+To: <scott.wood@nxp.com>, <linuxppc-dev@lists.ozlabs.org>
+CC: Ashish Kumar <Ashish.Kumar@nxp.com>, Shaveta Leekha
+ <Shaveta.Leekha@nxp.com>
+Subject: [PATCH] B4860qds/B4420qds: Updates to device trees for B4860 for DSP
+ clusters and their L2 caches
+Date: Thu, 28 Jan 2016 13:22:34 +0530
+Message-ID: <1453967554-16989-1-git-send-email-Ashish.Kumar@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <1452841574-2781-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,81 +24,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ping...
+B4860 has 1 PPC core cluster and 3 DSP core clusters.
+Similarly B4420 has 1 PPC core cluster and 1 DSP core cluster.
 
-Alex, any comment?
+Each DSP core cluster consists of 2 SC3900 cores and a shared L2 cache.
 
-Regards,
-Yongji Xie
+1. Add DSP clusters for B4420
+2. Reorganized the L2 cache nodes such that they now appear in only the
+soc specific dtsi files(b4860si-post.dtsi and b4420si-post.dtsi).
+Earlier they were shown partly in common b4si-post.dtsi and si specific
+b4860si-post.dtsi files .
 
-On 2016/1/15 15:06, Yongji Xie wrote:
-> Current vfio-pci implementation disallows to mmap
-> sub-page(size < PAGE_SIZE) MMIO BARs and MSI-X table. This is because
-> sub-page BARs' mmio page may be shared with other BARs and MSI-X table
-> should not be accessed directly from the guest for security reasons.
->
-> But these will easily cause some performance issues for mmio accesses
-> in guest when vfio passthrough sub-page BARs or BARs containing MSI-X
-> table on PPC64 platform. This is because PAGE_SIZE is 64KB by default
-> on PPC64 platform and the big page may easily hit the sub-page MMIO
-> BARs' unmmapping and cause the unmmaping of the mmio page which
-> MSI-X table locate in, which lead to mmio emulation in host.
->
-> For sub-page MMIO BARs' unmmapping, this patchset adds a kernel
-> parameter for PCI resource allocator to enforce the alignment of all
-> MMIO BARs to be at least PAGE_SZIE and make it enabled by default on
-> PPC64 platform so that sub-page BAR's mmio page will not be shared
-> with other BARs. Then we can mmap sub-page MMIO BARs in vfio-pci driver
-> with this parameter enabled.
->
-> For MSI-X table's unmmapping, we think MSI-X table is safe to access
-> directly from userspace if PCI host bridge support filtering of MSIs
-> which can ensure that a given pci device can only shoot the MSIs
-> assigned for it. So we add a pci_host_bridge attribute to indicate
-> if this PCI host bridge supports filtering of MSIs. Then we can mmap
-> MSI-X table with this attribute set.
->
-> With this patchset applied, we can get almost 100% improvement on
-> performance for mmio accesses when we passthrough sub-page BARs to guest
-> in our test.
->
-> The two vfio related patches(patch 2 and patch 5) are based on the
-> proposed patchset[1].
->
-> Changelog v3:
-> - Rebase on new linux kernel mainline with the patchset[1] applied.
-> - Add a function to check whether PCI BARs'mmio page is shared with
->    other BARs.
-> - Add a host bridge attribute to indicate PCI host bridge support
->    filtering of MSIs.
-> - Use the new host bridge attribute to check if MSI-X table can
->    be mmapped instead of CONFIG_EEH.
-> - Remove Kconfig option VFIO_PCI_MMAP_MSIX
->
-> Changelog v2:
-> - Rebase on v4.4-rc6 with the patchset[1] applied.
-> - Use kernel parameter to enforce all MMIO BARs to be page aligned
->    on PCI core code instead of doing it on PPC64 arch code.
-> - Remove flags: VFIO_DEVICE_FLAGS_PCI_PAGE_ALIGNED
->                  VFIO_DEVICE_FLAGS_PCI_MSIX_MMAP
-> - Add a Kconfig option to support for mmapping MSI-X table.
->
-> [1] https://lkml.org/lkml/2015/11/23/748
->
-> Yongji Xie (5):
->    PCI: Add support for enforcing all MMIO BARs to be page aligned
->    vfio-pci: Allow to mmap sub-page MMIO BARs if the mmio page is exclusive
->    PCI: Add host bridge attribute to indicate filtering of MSIs is supported
->    powerpc/powernv/pci-ioda: Enable msi_filtered bit for any IODA host bridge
->    vfio-pci: Allow to mmap MSI-X table if host bridge supports filtering of MSIs
->
->   Documentation/kernel-parameters.txt       |    5 +++++
->   arch/powerpc/include/asm/pci.h            |   11 +++++++++
->   arch/powerpc/platforms/powernv/pci-ioda.c |    6 +++++
->   drivers/pci/host-bridge.c                 |    6 +++++
->   drivers/pci/pci.c                         |   35 +++++++++++++++++++++++++++++
->   drivers/pci/pci.h                         |    8 ++++++-
->   drivers/vfio/pci/vfio_pci.c               |   13 ++++++++---
->   include/linux/pci.h                       |    7 ++++++
->   8 files changed, 87 insertions(+), 4 deletions(-)
->
+Signed-off-by: Ashish Kumar <Ashish.Kumar@nxp.com>
+Signed-off-by: Shaveta Leekha  <Shaveta.Leekha@nxp.com>
+---
+ arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |    8 ++++
+ arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi  |   23 ++++++++++++
+ arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |   18 +++++++++
+ arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi  |   52 +++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |    5 ---
+ 5 files changed, 101 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+index 86161ae..c0fe250 100644
+--- a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+@@ -102,5 +102,13 @@
+ 
+ 	L2: l2-cache-controller@c20000 {
+ 		compatible = "fsl,b4420-l2-cache-controller";
++		reg = <0xc20000 0x1000>;
++		next-level-cache = <&cpc>;
++	};
++/* Following is DSP L2 cache*/
++	L2_2: l2-cache-controller@c60000 {
++		compatible = "fsl,b4420-l2-cache-controller";
++		reg = <0xc60000 0x1000>;
++		next-level-cache = <&cpc>;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
+index 338af7e..5fec4ea 100644
+--- a/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
+@@ -76,4 +76,27 @@
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+ 	};
++
++	dsp-clusters {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		dsp-cluster0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,sc3900-cluster";
++			reg = <0>;
++
++			dsp0: dsp@0 {
++				compatible = "fsl,sc3900";
++				reg = <0>;
++				next-level-cache = <&L2_2>;
++			};
++			dsp1: dsp@1 {
++				compatible = "fsl,sc3900";
++				reg = <1>;
++				next-level-cache = <&L2_2>;
++			};
++		};
++	};
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
+index f35e9e0..19679d3 100644
+--- a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
+@@ -204,5 +204,23 @@
+ 
+ 	L2: l2-cache-controller@c20000 {
+ 		compatible = "fsl,b4860-l2-cache-controller";
++		reg = <0xc20000 0x1000>;
++		next-level-cache = <&cpc>;
++	};
++/* Following are DSP L2 cache */
++	L2_2: l2-cache-controller@c60000 {
++		compatible = "fsl,b4860-l2-cache-controller";
++		reg = <0xc60000 0x1000>;
++		next-level-cache = <&cpc>;
++	};
++	L2_3: l2-cache-controller@ca0000 {
++		compatible = "fsl,b4860-l2-cache-controller";
++		reg = <0xca0000 0x1000>;
++		next-level-cache = <&cpc>;
++	};
++	L2_4: l2-cache-controller@ce0000 {
++		compatible = "fsl,b4860-l2-cache-controller";
++		reg = <0xce0000 0x1000>;
++		next-level-cache = <&cpc>;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
+index 1948f73..2e5dcb6 100644
+--- a/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
+@@ -90,4 +90,56 @@
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+ 	};
++	dsp-clusters {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		dsp-cluster0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,sc3900-cluster";
++			reg = <0>;
++			dsp0: dsp@0 {
++				compatible = "fsl,sc3900";
++				reg = <0>;
++				next-level-cache = <&L2_2>;
++			};
++			dsp1: dsp@1 {
++				compatible = "fsl,sc3900";
++				reg = <1>;
++				next-level-cache = <&L2_2>;
++			};
++		};
++		dsp-cluster1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,sc3900-cluster";
++			reg = <1>;
++			dsp2: dsp@2 {
++				compatible = "fsl,sc3900";
++				reg = <2>;
++				next-level-cache = <&L2_3>;
++			};
++			dsp3: dsp@3 {
++				compatible = "fsl,sc3900";
++				reg = <3>;
++				next-level-cache = <&L2_3>;
++			};
++		};
++		dsp-cluster2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,sc3900-cluster";
++			reg = <2>;
++			dsp4: dsp@4 {
++				compatible = "fsl,sc3900";
++				reg = <4>;
++				next-level-cache = <&L2_4>;
++			};
++			dsp5: dsp@5 {
++				compatible = "fsl,sc3900";
++				reg = <5>;
++				next-level-cache = <&L2_4>;
++			};
++		};
++	};
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+index 73136c0..350ea50 100644
+--- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+@@ -348,9 +348,4 @@
+ 		interrupts = <16 2 1 29>;
+ 	};
+ 
+-	L2: l2-cache-controller@c20000 {
+-		compatible = "fsl,b4-l2-cache-controller";
+-		reg = <0xc20000 0x1000>;
+-		next-level-cache = <&cpc>;
+-	};
+ };
+-- 
+1.7.6.GIT
