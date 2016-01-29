@@ -2,7 +2,7 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 329A81A1A0C
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5673C1A0E27
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 16:23:08 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
@@ -10,9 +10,9 @@ To: paulus@samba.org,
 	benh@kernel.crashing.org
 Cc: linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, thuth@redhat.com,
  lvivier@redhat.com, David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv2 3/9] arch/powerpc: Handle removing maybe-present bolted HPTEs
-Date: Fri, 29 Jan 2016 16:23:57 +1100
-Message-Id: <1454045043-25545-4-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFCv2 4/9] arch/powerpc: Clean up memory hotplug failure paths
+Date: Fri, 29 Jan 2016 16:23:58 +1100
+Message-Id: <1454045043-25545-5-git-send-email-david@gibson.dropbear.id.au>
 In-Reply-To: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
 References: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,130 +24,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment the hpte_removebolted callback in ppc_md returns void and
-will BUG_ON() if the hpte it's asked to remove doesn't exist in the first
-place.  This is awkward for the case of cleaning up a mapping which was
-partially made before failing.
+This makes a number of cleanups to handling of mapping failures during
+memory hotplug on Power:
 
-So, we add a return value to hpte_removebolted, and have it return ENOENT
-in the case that the HPTE to remove didn't exist in the first place.
+For errors creating the linear mapping for the hot-added region:
+  * This is now reported with EFAULT which is more appropriate than the
+    previous EINVAL (the failure is unlikely to be related to the
+    function's parameters)
+  * An error in this path now prints a warning message, rather than just
+    silently failing to add the extra memory.
+  * Previously a failure here could result in the region being partially
+    mapped.  We now clean up any partial mapping before failing.
 
-In the (sole) caller, we propagate errors in hpte_removebolted to its
-caller to handle.  However, we handle ENOENT specially, continuing to
-complete the unmapping over the specified range before returning the error
-to the caller.
-
-This means that htab_remove_mapping() will work sanely on a partially
-present mapping, removing any HPTEs which are present, while also returning
-ENOENT to its caller in case it's important there.
-
-There are two callers of htab_remove_mapping():
-   - In remove_section_mapping() we already WARN_ON() any error return,
-     which is reasonable - in this case the mapping should be fully
-     present
-   - In vmemmap_remove_mapping() we BUG_ON() any error.  We change that to
-     just a WARN_ON() in the case of ENOENT, since failing to remove a
-     mapping that wasn't there in the first place probably shouldn't be
-     fatal.
+For errors creating the vmemmap for the hot-added region:
+   * This is now reported with EFAULT instead of causing a BUG() - this
+     could happen for external reason (e.g. full hash table) so it's better
+     to handle this non-fatally
+   * An error message is also printed, so the failure won't be silent
+   * As above a failure could cause a partially mapped region, we now
+     clean this up.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/machdep.h    |  2 +-
- arch/powerpc/mm/hash_utils_64.c       | 10 +++++++---
- arch/powerpc/mm/init_64.c             |  9 +++++----
- arch/powerpc/platforms/pseries/lpar.c |  7 +++++--
- 4 files changed, 18 insertions(+), 10 deletions(-)
+ arch/powerpc/mm/hash_utils_64.c | 13 ++++++++++---
+ arch/powerpc/mm/init_64.c       | 38 ++++++++++++++++++++++++++------------
+ arch/powerpc/mm/mem.c           | 10 ++++++++--
+ 3 files changed, 44 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 3f191f5..a7d3f66 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -54,7 +54,7 @@ struct machdep_calls {
- 				       int psize, int apsize,
- 				       int ssize);
- 	long		(*hpte_remove)(unsigned long hpte_group);
--	void            (*hpte_removebolted)(unsigned long ea,
-+	long            (*hpte_removebolted)(unsigned long ea,
- 					     int psize, int ssize);
- 	void		(*flush_hash_range)(unsigned long number, int local);
- 	void		(*hugepage_invalidate)(unsigned long vsid,
 diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 9f7d727..0737eae 100644
+index 0737eae..e88a86e 100644
 --- a/arch/powerpc/mm/hash_utils_64.c
 +++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -269,6 +269,7 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
+@@ -635,9 +635,16 @@ static unsigned long __init htab_get_table_size(void)
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ int create_section_mapping(unsigned long start, unsigned long end)
  {
- 	unsigned long vaddr;
- 	unsigned int step, shift;
-+	int rc = 0;
- 
- 	shift = mmu_psize_defs[psize].shift;
- 	step = 1 << shift;
-@@ -276,10 +277,13 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
- 	if (!ppc_md.hpte_removebolted)
- 		return -ENODEV;
- 
--	for (vaddr = vstart; vaddr < vend; vaddr += step)
--		ppc_md.hpte_removebolted(vaddr, psize, ssize);
-+	for (vaddr = vstart; vaddr < vend; vaddr += step) {
-+		rc = ppc_md.hpte_removebolted(vaddr, psize, ssize);
-+		if ((rc < 0) && (rc != -ENOENT))
-+			return rc;
+-	return htab_bolt_mapping(start, end, __pa(start),
+-				 pgprot_val(PAGE_KERNEL), mmu_linear_psize,
+-				 mmu_kernel_ssize);
++	int rc = htab_bolt_mapping(start, end, __pa(start),
++				   pgprot_val(PAGE_KERNEL), mmu_linear_psize,
++				   mmu_kernel_ssize);
++
++	if (rc < 0) {
++		int rc2 = htab_remove_mapping(start, end, mmu_linear_psize,
++					      mmu_kernel_ssize);
++		BUG_ON(rc2 && (rc2 != -ENOENT));
 +	}
- 
--	return 0;
 +	return rc;
  }
- #endif /* CONFIG_MEMORY_HOTPLUG */
  
+ int remove_section_mapping(unsigned long start, unsigned long end)
 diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 379a6a9..baa1a23 100644
+index baa1a23..fbc9448 100644
 --- a/arch/powerpc/mm/init_64.c
 +++ b/arch/powerpc/mm/init_64.c
-@@ -232,10 +232,11 @@ static void __meminit vmemmap_create_mapping(unsigned long start,
- static void vmemmap_remove_mapping(unsigned long start,
- 				   unsigned long page_size)
+@@ -188,9 +188,9 @@ static int __meminit vmemmap_populated(unsigned long start, int page_size)
+  */
+ 
+ #ifdef CONFIG_PPC_BOOK3E
+-static void __meminit vmemmap_create_mapping(unsigned long start,
+-					     unsigned long page_size,
+-					     unsigned long phys)
++static int __meminit vmemmap_create_mapping(unsigned long start,
++					    unsigned long page_size,
++					    unsigned long phys)
  {
--	int mapped = htab_remove_mapping(start, start + page_size,
--					 mmu_vmemmap_psize,
--					 mmu_kernel_ssize);
--	BUG_ON(mapped < 0);
-+	int rc = htab_remove_mapping(start, start + page_size,
-+				     mmu_vmemmap_psize,
-+				     mmu_kernel_ssize);
-+	BUG_ON((rc < 0) && (rc != -ENOENT));
-+	WARN_ON(rc == -ENOENT);
- }
- #endif
- 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 477290a..92d472d 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -505,7 +505,7 @@ static void pSeries_lpar_hugepage_invalidate(unsigned long vsid,
- }
- #endif
- 
--static void pSeries_lpar_hpte_removebolted(unsigned long ea,
-+static long pSeries_lpar_hpte_removebolted(unsigned long ea,
- 					   int psize, int ssize)
- {
- 	unsigned long vpn;
-@@ -515,11 +515,14 @@ static void pSeries_lpar_hpte_removebolted(unsigned long ea,
- 	vpn = hpt_vpn(ea, vsid, ssize);
- 
- 	slot = pSeries_lpar_hpte_find(vpn, psize, ssize);
--	BUG_ON(slot == -1);
-+	if (slot == -1)
-+		return -ENOENT;
-+
- 	/*
- 	 * lpar doesn't use the passed actual page size
+ 	/* Create a PTE encoding without page size */
+ 	unsigned long i, flags = _PAGE_PRESENT | _PAGE_ACCESSED |
+@@ -208,6 +208,8 @@ static void __meminit vmemmap_create_mapping(unsigned long start,
  	 */
- 	pSeries_lpar_hpte_invalidate(slot, vpn, psize, 0, ssize, 0);
+ 	for (i = 0; i < page_size; i += PAGE_SIZE)
+ 		BUG_ON(map_kernel_page(start + i, phys, flags));
++
 +	return 0;
  }
  
- /*
+ #ifdef CONFIG_MEMORY_HOTPLUG
+@@ -217,15 +219,20 @@ static void vmemmap_remove_mapping(unsigned long start,
+ }
+ #endif
+ #else /* CONFIG_PPC_BOOK3E */
+-static void __meminit vmemmap_create_mapping(unsigned long start,
+-					     unsigned long page_size,
+-					     unsigned long phys)
++static int __meminit vmemmap_create_mapping(unsigned long start,
++					    unsigned long page_size,
++					    unsigned long phys)
+ {
+-	int  mapped = htab_bolt_mapping(start, start + page_size, phys,
+-					pgprot_val(PAGE_KERNEL),
+-					mmu_vmemmap_psize,
+-					mmu_kernel_ssize);
+-	BUG_ON(mapped < 0);
++	int rc = htab_bolt_mapping(start, start + page_size, phys,
++				   pgprot_val(PAGE_KERNEL),
++				   mmu_vmemmap_psize, mmu_kernel_ssize);
++	if (rc < 0) {
++		int rc2 = htab_remove_mapping(start, start + page_size,
++					      mmu_vmemmap_psize,
++					      mmu_kernel_ssize);
++		BUG_ON(rc2 && (rc2 != -ENOENT));
++	}
++	return rc;
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+@@ -304,6 +311,7 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
+ 
+ 	for (; start < end; start += page_size) {
+ 		void *p;
++		int rc;
+ 
+ 		if (vmemmap_populated(start, page_size))
+ 			continue;
+@@ -317,7 +325,13 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
+ 		pr_debug("      * %016lx..%016lx allocated at %p\n",
+ 			 start, start + page_size, p);
+ 
+-		vmemmap_create_mapping(start, page_size, __pa(p));
++		rc = vmemmap_create_mapping(start, page_size, __pa(p));
++		if (rc < 0) {
++			pr_warning(
++				"vmemmap_populate: Unable to create vmemmap mapping: %d\n",
++				rc);
++			return -EFAULT;
++		}
+ 	}
+ 
+ 	return 0;
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 22d94c3..8ffc1e2 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -119,12 +119,18 @@ int arch_add_memory(int nid, u64 start, u64 size, bool for_device)
+ 	struct zone *zone;
+ 	unsigned long start_pfn = start >> PAGE_SHIFT;
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
++	int rc;
+ 
+ 	pgdata = NODE_DATA(nid);
+ 
+ 	start = (unsigned long)__va(start);
+-	if (create_section_mapping(start, start + size))
+-		return -EINVAL;
++	rc = create_section_mapping(start, start + size);
++	if (rc) {
++		pr_warning(
++			"Unable to create mapping for hot added memory 0x%llx..0x%llx: %d\n",
++			start, start + size, rc);
++		return -EFAULT;
++	}
+ 
+ 	/* this should work for most non-highmem platforms */
+ 	zone = pgdata->node_zones +
 -- 
 2.5.0
