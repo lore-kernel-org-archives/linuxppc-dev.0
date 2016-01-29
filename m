@@ -1,8 +1,8 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CB8721A1A0C
+ by lists.ozlabs.org (Postfix) with ESMTPS id EDD681A0E27
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 16:23:07 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
@@ -10,9 +10,10 @@ To: paulus@samba.org,
 	benh@kernel.crashing.org
 Cc: linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, thuth@redhat.com,
  lvivier@redhat.com, David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv2 1/9] memblock: Don't mark memblock_phys_mem_size() as __init
-Date: Fri, 29 Jan 2016 16:23:55 +1100
-Message-Id: <1454045043-25545-2-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFCv2 2/9] arch/powerpc: Clean up error handling for
+ htab_remove_mapping
+Date: Fri, 29 Jan 2016 16:23:56 +1100
+Message-Id: <1454045043-25545-3-git-send-email-david@gibson.dropbear.id.au>
 In-Reply-To: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
 References: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,31 +25,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment memblock_phys_mem_size() is marked as __init, and so is
-discarded after boot.  This is different from most of the memblock
-functions which are marked __init_memblock, and are only discarded after
-boot if memory hotplug is not configured.
+Currently, the only error that htab_remove_mapping() can report is -EINVAL,
+if removal of bolted HPTEs isn't implemeted for this platform.  We make
+a few clean ups to the handling of this:
 
-To allow for upcoming code which will need memblock_phys_mem_size() in the
-hotplug path, change it from __init to __init_memblock.
+ * EINVAL isn't really the right code - there's nothing wrong with the
+   function's arguments - use ENODEV instead
+ * We were also printing a warning message, but that's a decision better
+   left up to the callers, so remove it
+ * One caller is vmemmap_remove_mapping(), which will just BUG_ON() on
+   error, making the warning message irrelevant, so no change is needed
+   there.
+ * The other caller is remove_section_mapping().  This is called in the
+   memory hot remove path at a point after vmemmap_remove_mapping() so
+   if hpte_removebolted isn't implemented, we'd expect to have already
+   BUG()ed anyway.  Put a WARN_ON() here, in lieu of a printk() since this
+   really shouldn't be happening.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- mm/memblock.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/mm/hash_utils_64.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/mm/memblock.c b/mm/memblock.c
-index d2ed81e..dd79899 100644
---- a/mm/memblock.c
-+++ b/mm/memblock.c
-@@ -1448,7 +1448,7 @@ void __init __memblock_free_late(phys_addr_t base, phys_addr_t size)
-  * Remaining API functions
-  */
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index ba59d59..9f7d727 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -273,11 +273,8 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
+ 	shift = mmu_psize_defs[psize].shift;
+ 	step = 1 << shift;
  
--phys_addr_t __init memblock_phys_mem_size(void)
-+phys_addr_t __init_memblock memblock_phys_mem_size(void)
+-	if (!ppc_md.hpte_removebolted) {
+-		printk(KERN_WARNING "Platform doesn't implement "
+-				"hpte_removebolted\n");
+-		return -EINVAL;
+-	}
++	if (!ppc_md.hpte_removebolted)
++		return -ENODEV;
+ 
+ 	for (vaddr = vstart; vaddr < vend; vaddr += step)
+ 		ppc_md.hpte_removebolted(vaddr, psize, ssize);
+@@ -641,8 +638,10 @@ int create_section_mapping(unsigned long start, unsigned long end)
+ 
+ int remove_section_mapping(unsigned long start, unsigned long end)
  {
- 	return memblock.memory.total_size;
+-	return htab_remove_mapping(start, end, mmu_linear_psize,
+-			mmu_kernel_ssize);
++	int rc = htab_remove_mapping(start, end, mmu_linear_psize,
++				     mmu_kernel_ssize);
++	WARN_ON(rc < 0);
++	return rc;
  }
+ #endif /* CONFIG_MEMORY_HOTPLUG */
+ 
 -- 
 2.5.0
