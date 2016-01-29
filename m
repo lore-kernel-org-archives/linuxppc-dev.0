@@ -1,27 +1,38 @@
-Return-Path: <alwillia@redhat.com>
-Received: from mx4-phx2.redhat.com (mx4-phx2.redhat.com [209.132.183.25])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <BATV+f69834103652f40a0a8f+4541+infradead.org+acme@casper.srs.infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 86BB61A0E27
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 06:05:54 +1100 (AEDT)
-Date: Fri, 29 Jan 2016 14:05:44 -0500 (EST)
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-doc@vger.kernel.org, bhelgaas@google.com, corbet@lwn.net,
- aik@ozlabs.ru, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
- zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com
-Message-ID: <163133676.20416948.1454094344181.JavaMail.zimbra@redhat.com>
-In-Reply-To: <56AB4182.5060501@linux.vnet.ibm.com>
-References: <1452841574-2781-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1452841574-2781-4-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1454021182.23148.6.camel@redhat.com> <56AB4182.5060501@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v3 3/5] PCI: Add host bridge attribute to indicate
- filtering of MSIs is supported
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 33C1A1A0167
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 08:18:17 +1100 (AEDT)
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Adrian Hunter <adrian.hunter@intel.com>,
+ Alexander Yarygin <yarygin@linux.vnet.ibm.com>,
+ Alexei Starovoitov <ast@kernel.org>, Al Grant <al.grant@arm.com>,
+ Brendan Gregg <brendan.d.gregg@gmail.com>,
+ Chunyan Zhang <zhang.chunyan@linaro.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, David Ahern <dsahern@gmail.com>,
+ He Kuang <hekuang@huawei.com>, Hemant Kumar <hemant@linux.vnet.ibm.com>,
+ Jiri Olsa <jolsa@redhat.com>, linux-arm-kernel@lists.infradead.org,
+ linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Li Zefan <lizefan@huawei.com>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+ Mathieu Poirier <mathieu.poirier@linaro.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Mike Leach <mike.leach@arm.com>,
+ Namhyung Kim <namhyung@kernel.org>,
+ "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Peter Zijlstra <peterz@infradead.org>,
+ pi3orama@163.com, Rabin Vincent <rabin@rab.in>,
+ Scott Wood <scottwood@freescale.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Tor Jeremiassen <tor@ti.com>, Wang Nan <wangnan0@huawei.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [GIT PULL 00/16] perf/core improvements and fixes
+Date: Fri, 29 Jan 2016 18:17:37 -0300
+Message-Id: <1454102273-16431-1-git-send-email-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,90 +42,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+See http://www.infradead.org/rpr.html
 
+Hi Ingo,
 
------ Original Message -----
-> On 2016/1/29 6:46, Alex Williamson wrote:
-> > On Fri, 2016-01-15 at 15:06 +0800, Yongji Xie wrote:
-> >> MSI-X tables are not allowed to be mmapped in vfio-pci
-> >> driver in case that user get to touch this directly.
-> >> This will cause some performance issues when when PCI
-> >> adapters have critical registers in the same page as
-> >> the MSI-X table.
-> >>   
-> >> However, some kind of PCI host bridge such as IODA bridge
-> >> on Power support filtering of MSIs, which can ensure that a
-> >> given pci device can only shoot the MSIs assigned for it.
-> >> So we think it's safe to expose the MSI-X table to userspace
-> >> if filtering of MSIs is supported because the exposed MSI-X
-> >> table can't be used to do harm to other memory space.
-> >>   
-> >> To support this case, this patch adds a pci_host_bridge
-> >> attribute to indicate if this PCI host bridge supports
-> >> filtering of MSIs.
-> >>   
-> >> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-> >> ---
-> >>   drivers/pci/host-bridge.c |    6 ++++++
-> >>   include/linux/pci.h       |    3 +++
-> >>   2 files changed, 9 insertions(+)
-> >>   
-> >> diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
-> >> index 5f4a2e0..c029267 100644
-> >> --- a/drivers/pci/host-bridge.c
-> >> +++ b/drivers/pci/host-bridge.c
-> >> @@ -96,3 +96,9 @@ void pcibios_bus_to_resource(struct pci_bus *bus, struct
-> >> resource *res,
-> >>   	res->end = region->end + offset;
-> >>   }
-> >>   EXPORT_SYMBOL(pcibios_bus_to_resource);
-> >> +
-> >> +bool pci_host_bridge_msi_filtered_enabled(struct pci_dev *pdev)
-> >> +{
-> >> +	return pci_find_host_bridge(pdev->bus)->msi_filtered;
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(pci_host_bridge_msi_filtered_enabled);
-> >> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> >> index b640d65..b952b78 100644
-> >> --- a/include/linux/pci.h
-> >> +++ b/include/linux/pci.h
-> >> @@ -412,6 +412,7 @@ struct pci_host_bridge {
-> >>   	void (*release_fn)(struct pci_host_bridge *);
-> >>   	void *release_data;
-> >>   	unsigned int ignore_reset_delay:1;	/* for entire hierarchy */
-> >> +	unsigned int msi_filtered:1;	/* support filtering of MSIs */
-> >>   	/* Resource alignment requirements */
-> >>   	resource_size_t (*align_resource)(struct pci_dev *dev,
-> >>   			const struct resource *res,
-> >> @@ -430,6 +431,8 @@ void pci_set_host_bridge_release(struct
-> >> pci_host_bridge *bridge,
-> >>   
-> >>   int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge);
-> >>   
-> >> +bool pci_host_bridge_msi_filtered_enabled(struct pci_dev *pdev);
-> >> +
-> >>   /*
-> >>    * The first PCI_BRIDGE_RESOURCE_NUM PCI bus resources (those that
-> >>    correspond
-> >>    * to P2P or CardBus bridge windows) go in a table.  Additional ones
-> >>    (for
-> > Don't we already have a flag for this in the IOMMU space?
-> >
-> > enum iommu_cap {
-> >          IOMMU_CAP_CACHE_COHERENCY,      /* IOMMU can enforce cache
-> >          coherent DMA
-> >                                             transactions */
-> > --->    IOMMU_CAP_INTR_REMAP,           /* IOMMU supports interrupt
-> > isolation */
-> >          IOMMU_CAP_NOEXEC,               /* IOMMU_NOEXEC flag */
-> > };
-> >
-> 
-> I saw this flag had been enabled in x86 and ARM arch.
-> 
-> I'm not sure whether we can mmap MSI-X table in those archs. I just
-> verify it on PPC64 arch.
+	This is on top of the previously submitted perf-core-for-mingo tag,
+please consider applying,
 
-Unfortunately that's not a very good excuse for creating an alternate implementation.  When x86 implements interrupt remapping, we get fine grained isolation of MSI vectors and we've always taken this flag to mean that the system is isolated from devices that may perform DoS attacks with MSI writes.  I'm not entirely sure whether ARM really provides that degree of isolation, but they would be incorrect is exposing the capability if they do not.  Thanks,
+- Arnaldo
 
-Alex
+The following changes since commit 5ac76283b32b116c58e362e99542182ddcfc8262:
+
+  perf cpumap: Auto initialize cpu__max_{node,cpu} (2016-01-26 16:08:36 -0300)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-2
+
+for you to fetch changes up to 814568db641f6587c1e98a3a85f214cb6a30fe10:
+
+  perf build: Align the names of the build tests: (2016-01-29 17:51:04 -0300)
+
+----------------------------------------------------------------
+New features:
+
+- Port 'perf kvm stat' to PowerPC (Hemant Kumar)
+
+Infrastructure:
+
+- Use the 'feature-dump' target to do the feature checks just once and then
+  add code to reuse that in the tests/make makefile, speeding up the
+  'make -C tools/perf build-test' target (Wang Nan)
+
+- Reduce the number of tests the 'build-test' target do to those that don't
+  pollute the source tree (Arnaldo Carvalho de Melo)
+
+- Improve the output of the build tests a bit by aligning the name of the
+  tests, more can be done to filter out uninteresting info in the output
+  (Arnaldo Carvalho de Melo)
+
+- Add perf_evlist pointer to *info_priv_size(), more prep work for
+  supporting the coresight architecture (Mathieu Poirier)
+
+- Improve the 'perf test bp_signal' test (Wang Nan)
+
+- Check environment before starting the BPF 'perf test', so that we can just
+  'Skip' older kernels instead of 'FAIL'ing them (Wang Nan)
+
+- Fix cpumode of synthesized buildid event (Wang Nan)
+
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+
+----------------------------------------------------------------
+Arnaldo Carvalho de Melo (2):
+      perf tools: Speed up build-tests by reducing the number of builds tested
+      perf build: Align the names of the build tests:
+
+Hemant Kumar (4):
+      perf kvm/{x86,s390}: Remove dependency on uapi/kvm_perf.h
+      perf kvm/{x86,s390}: Remove const from kvm_events_tp
+      perf kvm/powerpc: Port perf kvm stat to powerpc
+      perf kvm/powerpc: Add support for HCALL reasons
+
+Jiri Olsa (1):
+      perf build: Fix feature-dump checks, we need to test all features
+
+Mathieu Poirier (1):
+      perf auxtrace: Add perf_evlist pointer to *info_priv_size()
+
+Wang Nan (8):
+      tools build: Check basic headers for test-compile feature checker
+      perf build: Remove all condition feature check {C,LD}FLAGS
+      perf build: Use feature dump file for build-test
+      perf buildid: Fix cpumode of buildid event
+      perf test: Check environment before start real BPF test
+      perf test: Improve bp_signal
+      perf tools: Move timestamp creation to util
+      perf record: Use OPT_BOOLEAN_SET for buildid cache related options
+
+ tools/build/Makefile.feature                   |   8 ++
+ tools/build/feature/test-compile.c             |   2 +
+ tools/perf/Makefile                            |  11 +-
+ tools/perf/arch/powerpc/Makefile               |   2 +
+ tools/perf/arch/powerpc/util/Build             |   1 +
+ tools/perf/arch/powerpc/util/book3s_hcalls.h   | 123 ++++++++++++++++++
+ tools/perf/arch/powerpc/util/book3s_hv_exits.h |  33 +++++
+ tools/perf/arch/powerpc/util/kvm-stat.c        | 170 +++++++++++++++++++++++++
+ tools/perf/arch/s390/util/kvm-stat.c           |  10 +-
+ tools/perf/arch/x86/util/intel-bts.c           |   4 +-
+ tools/perf/arch/x86/util/intel-pt.c            |   4 +-
+ tools/perf/arch/x86/util/kvm-stat.c            |  16 ++-
+ tools/perf/builtin-buildid-cache.c             |  14 +-
+ tools/perf/builtin-kvm.c                       |  38 ++++--
+ tools/perf/builtin-record.c                    |  12 +-
+ tools/perf/config/Makefile                     | 101 +++++++--------
+ tools/perf/tests/bp_signal.c                   | 140 ++++++++++++++++----
+ tools/perf/tests/bpf.c                         |  37 ++++++
+ tools/perf/tests/make                          |  39 +++++-
+ tools/perf/util/auxtrace.c                     |   7 +-
+ tools/perf/util/auxtrace.h                     |   6 +-
+ tools/perf/util/build-id.c                     |   6 +-
+ tools/perf/util/kvm-stat.h                     |   8 +-
+ tools/perf/util/util.c                         |  17 +++
+ tools/perf/util/util.h                         |   1 +
+ 25 files changed, 688 insertions(+), 122 deletions(-)
+ create mode 100644 tools/perf/arch/powerpc/util/book3s_hcalls.h
+ create mode 100644 tools/perf/arch/powerpc/util/book3s_hv_exits.h
+ create mode 100644 tools/perf/arch/powerpc/util/kvm-stat.c
