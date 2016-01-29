@@ -2,7 +2,7 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 79A351A0E27
+ by lists.ozlabs.org (Postfix) with ESMTPS id AE9F51A1A0C
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 16:23:09 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
@@ -10,10 +10,10 @@ To: paulus@samba.org,
 	benh@kernel.crashing.org
 Cc: linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, thuth@redhat.com,
  lvivier@redhat.com, David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv2 5/9] arch/powerpc: Split hash page table sizing heuristic into
- a helper
-Date: Fri, 29 Jan 2016 16:23:59 +1100
-Message-Id: <1454045043-25545-6-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFCv2 6/9] pseries: Add hypercall wrappers for hash page table
+ resizing
+Date: Fri, 29 Jan 2016 16:24:00 +1100
+Message-Id: <1454045043-25545-7-git-send-email-david@gibson.dropbear.id.au>
 In-Reply-To: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
 References: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,84 +25,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-htab_get_table_size() either retrieve the size of the hash page table (HPT)
-from the device tree - if the HPT size is determined by firmware - or
-uses a heuristic to determine a good size based on RAM size if the kernel
-is responsible for allocating the HPT.
+This adds the hypercall numbers and wrapper functions for the hash page
+table resizing hypercalls.
 
-To support a PAPR extension allowing resizing of the HPT, we're going to
-want the memory size -> HPT size logic elsewhere, so split it out into a
-helper function.
+These are experimental "platform specific" values for now, until we have a
+formal PAPR update.
+
+It also adds a new firmware feature flat to track the presence of the
+HPT resizing calls.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/mmu-hash64.h |  3 +++
- arch/powerpc/mm/hash_utils_64.c       | 30 +++++++++++++++++-------------
- 2 files changed, 20 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/firmware.h       |  5 +++--
+ arch/powerpc/include/asm/hvcall.h         |  2 ++
+ arch/powerpc/include/asm/plpar_wrappers.h | 12 ++++++++++++
+ arch/powerpc/platforms/pseries/firmware.c |  1 +
+ 4 files changed, 18 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 7352d3f..cf070fd 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -607,6 +607,9 @@ static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
- 	context = (MAX_USER_CONTEXT) + ((ea >> 60) - 0xc) + 1;
- 	return get_vsid(context, ea, ssize);
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index b062924..32435d2 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -42,7 +42,7 @@
+ #define FW_FEATURE_SPLPAR	ASM_CONST(0x0000000000100000)
+ #define FW_FEATURE_LPAR		ASM_CONST(0x0000000000400000)
+ #define FW_FEATURE_PS3_LV1	ASM_CONST(0x0000000000800000)
+-/* Free				ASM_CONST(0x0000000001000000) */
++#define FW_FEATURE_HPT_RESIZE	ASM_CONST(0x0000000001000000)
+ #define FW_FEATURE_CMO		ASM_CONST(0x0000000002000000)
+ #define FW_FEATURE_VPHN		ASM_CONST(0x0000000004000000)
+ #define FW_FEATURE_XCMO		ASM_CONST(0x0000000008000000)
+@@ -66,7 +66,8 @@ enum {
+ 		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
+ 		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
+ 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
+-		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
++		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
++		FW_FEATURE_HPT_RESIZE,
+ 	FW_FEATURE_PSERIES_ALWAYS = 0,
+ 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index e3b54dd..195e080 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -293,6 +293,8 @@
+ 
+ /* Platform specific hcalls, used by KVM */
+ #define H_RTAS			0xf000
++#define H_RESIZE_HPT_PREPARE	0xf003
++#define H_RESIZE_HPT_COMMIT	0xf004
+ 
+ /* "Platform specific hcalls", provided by PHYP */
+ #define H_GET_24X7_CATALOG_PAGE	0xF078
+diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+index 1b39424..b7ee6d9 100644
+--- a/arch/powerpc/include/asm/plpar_wrappers.h
++++ b/arch/powerpc/include/asm/plpar_wrappers.h
+@@ -242,6 +242,18 @@ static inline long plpar_pte_protect(unsigned long flags, unsigned long ptex,
+ 	return plpar_hcall_norets(H_PROTECT, flags, ptex, avpn);
  }
-+
-+unsigned htab_shift_for_mem_size(unsigned long mem_size);
-+
- #endif /* __ASSEMBLY__ */
  
- #endif /* _ASM_POWERPC_MMU_HASH64_H_ */
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index e88a86e..d63f7dc 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -606,10 +606,24 @@ static int __init htab_dt_scan_pftsize(unsigned long node,
- 	return 0;
- }
- 
--static unsigned long __init htab_get_table_size(void)
-+unsigned htab_shift_for_mem_size(unsigned long mem_size)
- {
--	unsigned long mem_size, rnd_mem_size, pteg_count, psize;
-+	unsigned memshift = __ilog2(mem_size);
-+	unsigned pshift = mmu_psize_defs[mmu_virtual_psize].shift;
-+	unsigned pteg_shift;
-+
-+	/* round mem_size up to next power of 2 */
-+	if ((1UL << memshift) < mem_size)
-+		memshift += 1;
-+
-+	/* aim for 2 pages / pteg */
-+	pteg_shift = memshift - (pshift + 1);
-+
-+	return max(pteg_shift + 7, 18U);
-+}
- 
-+static unsigned long __init htab_get_table_size(void)
++static inline long plpar_resize_hpt_prepare(unsigned long flags,
++					    unsigned long shift)
 +{
- 	/* If hash size isn't already provided by the platform, we try to
- 	 * retrieve it from the device-tree. If it's not there neither, we
- 	 * calculate it now based on the total RAM size
-@@ -619,17 +633,7 @@ static unsigned long __init htab_get_table_size(void)
- 	if (ppc64_pft_size)
- 		return 1UL << ppc64_pft_size;
++	return plpar_hcall_norets(H_RESIZE_HPT_PREPARE, flags, shift);
++}
++
++static inline long plpar_resize_hpt_commit(unsigned long flags,
++					   unsigned long shift)
++{
++	return plpar_hcall_norets(H_RESIZE_HPT_COMMIT, flags, shift);
++}
++
+ static inline long plpar_tce_get(unsigned long liobn, unsigned long ioba,
+ 		unsigned long *tce_ret)
+ {
+diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+index 8c80588..7b287be 100644
+--- a/arch/powerpc/platforms/pseries/firmware.c
++++ b/arch/powerpc/platforms/pseries/firmware.c
+@@ -63,6 +63,7 @@ hypertas_fw_features_table[] = {
+ 	{FW_FEATURE_VPHN,		"hcall-vphn"},
+ 	{FW_FEATURE_SET_MODE,		"hcall-set-mode"},
+ 	{FW_FEATURE_BEST_ENERGY,	"hcall-best-energy-1*"},
++	{FW_FEATURE_HPT_RESIZE,		"hcall-hpt-resize"},
+ };
  
--	/* round mem_size up to next power of 2 */
--	mem_size = memblock_phys_mem_size();
--	rnd_mem_size = 1UL << __ilog2(mem_size);
--	if (rnd_mem_size < mem_size)
--		rnd_mem_size <<= 1;
--
--	/* # pages / 2 */
--	psize = mmu_psize_defs[mmu_virtual_psize].shift;
--	pteg_count = max(rnd_mem_size >> (psize + 1), 1UL << 11);
--
--	return pteg_count << 7;
-+	return htab_shift_for_mem_size(memblock_phys_mem_size());
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
+ /* Build up the firmware features bitmask using the contents of
 -- 
 2.5.0
