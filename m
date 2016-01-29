@@ -1,42 +1,42 @@
 Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D67651A0167
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 21:40:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 585D11A0167
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 21:43:17 +1100 (AEDT)
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Fri, 29 Jan 2016 20:40:44 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 99B9C2CE8058
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 21:40:42 +1100 (EST)
+ Fri, 29 Jan 2016 20:43:16 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id C570C2CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 21:43:14 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0TAeOE833947718
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 21:40:32 +1100
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0TAh8Vc44761212
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 21:43:16 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0TAe9O5023968
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 21:40:10 +1100
-Subject: Re: [RFC PATCH v3 3/5] PCI: Add host bridge attribute to indicate
- filtering of MSIs is supported
+ u0TAgfed029093
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 21:42:42 +1100
+Subject: Re: [RFC PATCH v3 5/5] vfio-pci: Allow to mmap MSI-X table if host
+ bridge supports filtering of MSIs
 To: Alex Williamson <alex.williamson@redhat.com>, kvm@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org
 References: <1452841574-2781-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1452841574-2781-4-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1454021182.23148.6.camel@redhat.com>
+ <1452841574-2781-6-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1454021188.23148.7.camel@redhat.com>
 Cc: bhelgaas@google.com, corbet@lwn.net, aik@ozlabs.ru,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
  nikunj@linux.vnet.ibm.com
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Message-ID: <56AB4182.5060501@linux.vnet.ibm.com>
-Date: Fri, 29 Jan 2016 18:40:02 +0800
+Message-ID: <56AB421B.3070004@linux.vnet.ibm.com>
+Date: Fri, 29 Jan 2016 18:42:35 +0800
 MIME-Version: 1.0
-In-Reply-To: <1454021182.23148.6.camel@redhat.com>
+In-Reply-To: <1454021188.23148.7.camel@redhat.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -49,78 +49,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On 2016/1/29 6:46, Alex Williamson wrote:
 > On Fri, 2016-01-15 at 15:06 +0800, Yongji Xie wrote:
->> MSI-X tables are not allowed to be mmapped in vfio-pci
->> driver in case that user get to touch this directly.
->> This will cause some performance issues when when PCI
->> adapters have critical registers in the same page as
->> the MSI-X table.
+>> Current vfio-pci implementation disallows to mmap MSI-X
+>> table in case that user get to touch this directly.
 >>   
->> However, some kind of PCI host bridge such as IODA bridge
->> on Power support filtering of MSIs, which can ensure that a
->> given pci device can only shoot the MSIs assigned for it.
->> So we think it's safe to expose the MSI-X table to userspace
->> if filtering of MSIs is supported because the exposed MSI-X
->> table can't be used to do harm to other memory space.
->>   
->> To support this case, this patch adds a pci_host_bridge
->> attribute to indicate if this PCI host bridge supports
->> filtering of MSIs.
+>> But we should allow to mmap these MSI-X tables if the PCI
+>> host bridge supports filtering of MSIs.
 >>   
 >> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 >> ---
->>   drivers/pci/host-bridge.c |    6 ++++++
->>   include/linux/pci.h       |    3 +++
->>   2 files changed, 9 insertions(+)
+>>   drivers/vfio/pci/vfio_pci.c |    6 ++++--
+>>   1 file changed, 4 insertions(+), 2 deletions(-)
 >>   
->> diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
->> index 5f4a2e0..c029267 100644
->> --- a/drivers/pci/host-bridge.c
->> +++ b/drivers/pci/host-bridge.c
->> @@ -96,3 +96,9 @@ void pcibios_bus_to_resource(struct pci_bus *bus, struct resource *res,
->>   	res->end = region->end + offset;
->>   }
->>   EXPORT_SYMBOL(pcibios_bus_to_resource);
->> +
->> +bool pci_host_bridge_msi_filtered_enabled(struct pci_dev *pdev)
->> +{
->> +	return pci_find_host_bridge(pdev->bus)->msi_filtered;
->> +}
->> +EXPORT_SYMBOL_GPL(pci_host_bridge_msi_filtered_enabled);
->> diff --git a/include/linux/pci.h b/include/linux/pci.h
->> index b640d65..b952b78 100644
->> --- a/include/linux/pci.h
->> +++ b/include/linux/pci.h
->> @@ -412,6 +412,7 @@ struct pci_host_bridge {
->>   	void (*release_fn)(struct pci_host_bridge *);
->>   	void *release_data;
->>   	unsigned int ignore_reset_delay:1;	/* for entire hierarchy */
->> +	unsigned int msi_filtered:1;	/* support filtering of MSIs */
->>   	/* Resource alignment requirements */
->>   	resource_size_t (*align_resource)(struct pci_dev *dev,
->>   			const struct resource *res,
->> @@ -430,6 +431,8 @@ void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
+>> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+>> index 11fd0f0..4d68f6a 100644
+>> --- a/drivers/vfio/pci/vfio_pci.c
+>> +++ b/drivers/vfio/pci/vfio_pci.c
+>> @@ -555,7 +555,8 @@ static long vfio_pci_ioctl(void *device_data,
+>>   			    IORESOURCE_MEM && !pci_resources_share_page(pdev,
+>>   			    info.index)) {
+>>   				info.flags |= VFIO_REGION_INFO_FLAG_MMAP;
+>> -				if (info.index == vdev->msix_bar) {
+>> +				if (!pci_host_bridge_msi_filtered_enabled(pdev) &&
+>> +				    info.index == vdev->msix_bar) {
+>>   					ret = msix_sparse_mmap_cap(vdev, &caps);
+>>   					if (ret)
+>>   						return ret;
+>> @@ -967,7 +968,8 @@ static int vfio_pci_mmap(void *device_data, struct vm_area_struct *vma)
+>>   	if (phys_len < PAGE_SIZE || req_start + req_len > phys_len)
+>>   		return -EINVAL;
 >>   
->>   int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge);
->>   
->> +bool pci_host_bridge_msi_filtered_enabled(struct pci_dev *pdev);
->> +
->>   /*
->>    * The first PCI_BRIDGE_RESOURCE_NUM PCI bus resources (those that correspond
->>    * to P2P or CardBus bridge windows) go in a table.  Additional ones (for
-> Don't we already have a flag for this in the IOMMU space?
->
-> enum iommu_cap {
->          IOMMU_CAP_CACHE_COHERENCY,      /* IOMMU can enforce cache coherent DMA
->                                             transactions */
-> --->    IOMMU_CAP_INTR_REMAP,           /* IOMMU supports interrupt isolation */
->          IOMMU_CAP_NOEXEC,               /* IOMMU_NOEXEC flag */
-> };
+>> -	if (index == vdev->msix_bar) {
+>> +	if (!pci_host_bridge_msi_filtered_enabled(pdev) &&
+>> +	    index == vdev->msix_bar) {
+>>   		/*
+>>   		 * Disallow mmaps overlapping the MSI-X table; users don't
+>>   		 * get to touch this directly.  We could find somewhere
+> What about read()/write() access, why would we allow mmap() but not
+> those?
 >
 
-I saw this flag had been enabled in x86 and ARM arch.
+Yes, you are right! I miss the MSI-X table check in vfio_pci_bar_rw().
+I will fix it in next version. Thanks.
 
-I'm not sure whether we can mmap MSI-X table in those archs. I just 
-verify it on PPC64 arch.
-
-Regards.
+Regards,
 Yongji Xie
