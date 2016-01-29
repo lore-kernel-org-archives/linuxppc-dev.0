@@ -2,17 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9CD651A0E27
+ by lists.ozlabs.org (Postfix) with ESMTPS id CE9F01A1A0C
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 12:58:40 +1100 (AEDT)
-In-Reply-To: <1453392931-20707-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1449033932-27307-1-git-send-email-gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Dan Williams <dan.j.williams@intel.com>
-Subject: Re: powerpc/mm: Allow user space to map rtas_rmo_buf
-Message-Id: <20160129015840.7EADC1402AC@ozlabs.org>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: powerpc/eeh: Fix PE location code
+Message-Id: <20160129015840.B48BC14031D@ozlabs.org>
 Date: Fri, 29 Jan 2016 12:58:40 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,24 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-21-01 at 16:15:31 UTC, Vasant Hegde wrote:
-> With commit 90a545e9 (restrict /dev/mem to idle io memory ranges) mapping
-> rtas_rmo_buf from user space is failing. Hence we are not able to make
-> RTAS syscall.
+On Wed, 2015-02-12 at 05:25:32 UTC, Gavin Shan wrote:
+> In eeh_pe_loc_get(), the PE location code is retrieved from the
+> "ibm,loc-code" property of the device node for the bridge of the
+> PE's primary bus. It's not correct because the property indicates
+> the parent PE's location code.
 > 
-> This patch calls page_is_rtas_user_buf before calling iomem_is_exclusive
-> in  devmem_is_allowed(). This will allow user space to map rtas_rmo_buf
-> and we are able to make RTAS syscall.
+> This reads the correct PE location code from "ibm,io-base-loc-code"
+> or "ibm,slot-location-code" property of PE parent bus's device node.
 > 
-> Reported-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> CC: Dan Williams <dan.j.williams@intel.com>
-> CC: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> CC: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-> Acked-by: Dan Williams <dan.j.williams@intel.com>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Tested-by: Russell Currey <ruscur@russell.cc>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/e256caa7d0515e301f8c8c6e7d
+https://git.kernel.org/powerpc/c/7e56f627768da4e6480986b514
 
 cheers
