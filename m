@@ -1,23 +1,43 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7E1101A0E27
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 20:31:31 +1100 (AEDT)
-Message-ID: <1454059885.7560.1.camel@ellerman.id.au>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.5-2 tag
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: amodra@gmail.com, aneesh.kumar@linux.vnet.ibm.com,
- chandan@linux.vnet.ibm.com, dan.j.williams@intel.com,
- gwshan@linux.vnet.ibm.com,  hegdevasant@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org,  linuxppc-dev@lists.ozlabs.org,
- maddy@linux.vnet.ibm.com, Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 29 Jan 2016 20:31:25 +1100
-Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature";
- boundary="=-rY13Dq5ug+0vEAvsei4P"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id C800C1A0E27
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 21:38:12 +1100 (AEDT)
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Fri, 29 Jan 2016 20:38:02 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 94DE22BB005A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 21:37:59 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0TAbphE49020982
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 21:38:01 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0TAbOXE018055
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 21:37:25 +1100
+Subject: Re: [RFC PATCH v3 1/5] PCI: Add support for enforcing all MMIO BARs
+ to be page aligned
+To: Alex Williamson <alex.williamson@redhat.com>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org
+References: <1452841574-2781-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1452841574-2781-2-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1454021169.23148.5.camel@redhat.com>
+Cc: bhelgaas@google.com, corbet@lwn.net, aik@ozlabs.ru,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Message-ID: <56AB40DC.4000302@linux.vnet.ibm.com>
+Date: Fri, 29 Jan 2016 18:37:16 +0800
+MIME-Version: 1.0
+In-Reply-To: <1454021169.23148.5.camel@redhat.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,98 +47,218 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 2016/1/29 6:46, Alex Williamson wrote:
+> On Fri, 2016-01-15 at 15:06 +0800, Yongji Xie wrote:
+>> When vfio passthrough a PCI device of which MMIO BARs
+>> are smaller than PAGE_SIZE, guest will not handle the
+>> mmio accesses to the BARs which leads to mmio emulations
+>> in host.
+>>   
+>> This is because vfio will not allow to passthrough one
+>> BAR's mmio page which may be shared with other BARs.
+>>   
+>> To solve this performance issue, this patch adds a kernel
+>> parameter "pci=resource_page_aligned=on" to enforce
+>> the alignment of all MMIO BARs to be at least PAGE_SIZE,
+>> so that one BAR's mmio page would not be shared with other
+>> BARs. We can also disable it through kernel parameter
+>> "pci=resource_page_aligned=off".
+>>   
+>> For the default value of the parameter, we think it should be
+>> arch-independent, so we add a macro
+>> HAVE_PCI_DEFAULT_RESOURCES_PAGE_ALIGNED to change it. And we
+>> define this macro to enable this parameter by default on PPC64
+>> platform which can easily hit this performance issue because
+>> its PAGE_SIZE is 64KB.
+>>   
+>> Note that the kernel parameter won't works if kernel doesn't do
+>> resources reallocation.
+> And where do you account for this so that we know whether it's really in
+> effect?
 
---=-rY13Dq5ug+0vEAvsei4P
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+We can check the flag PCI_PROBE_ONLY to know whether kernel do
+resources reallocation. Then we know if the kernel parameter is really
+in effect.
 
-Hi Linus,
+enum {
+     /* Force re-assigning all resources (ignore firmware
+      * setup completely)
+      */
+     PCI_REASSIGN_ALL_RSRC    = 0x00000001,
 
-Please pull powerpc fixes for 4.5:
+     /* Re-assign all bus numbers */
+     PCI_REASSIGN_ALL_BUS    = 0x00000002,
 
-The following changes since commit 9fa686068a32ddf256df03982b3e3967c18654a8=
-:
+     /* Do not try to assign, just use existing setup */
+--->    PCI_PROBE_ONLY        = 0x00000004,
 
-  Merge tag 'dmaengine-fix-4.5-rc1' of git://git.infradead.org/users/vkoul/=
-slave-dma (2016-01-20 10:15:21 -0800)
+And I will add this to commit log.
 
-are available in the git repository at:
+>> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+>> ---
+>>   Documentation/kernel-parameters.txt |    5 +++++
+>>   arch/powerpc/include/asm/pci.h      |   11 +++++++++++
+>>   drivers/pci/pci.c                   |   35 +++++++++++++++++++++++++++++++++++
+>>   drivers/pci/pci.h                   |    8 +++++++-
+>>   include/linux/pci.h                 |    4 ++++
+>>   5 files changed, 62 insertions(+), 1 deletion(-)
+>>   
+>> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+>> index 742f69d..3f2a7c9 100644
+>> --- a/Documentation/kernel-parameters.txt
+>> +++ b/Documentation/kernel-parameters.txt
+>> @@ -2857,6 +2857,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+>>   				PAGE_SIZE is used as alignment.
+>>   				PCI-PCI bridge can be specified, if resource
+>>   				windows need to be expanded.
+>> +		resource_page_aligned=	Enable/disable enforcing the alignment
+>> +				of all PCI devices' memory resources to be
+>> +				at least PAGE_SIZE if resources reallocation
+>> +				is done by kernel.
+>> +				Format: { "on" | "off" }
+>>   		ecrc=		Enable/disable PCIe ECRC (transaction layer
+>>   				end-to-end CRC checking).
+>>   				bios: Use BIOS/firmware settings. This is the
+>> diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+>> index 3453bd8..2d2b3ef 100644
+>> --- a/arch/powerpc/include/asm/pci.h
+>> +++ b/arch/powerpc/include/asm/pci.h
+>> @@ -136,6 +136,17 @@ extern pgprot_t	pci_phys_mem_access_prot(struct file *file,
+>>   					 unsigned long pfn,
+>>   					 unsigned long size,
+>>   					 pgprot_t prot);
+>> +#ifdef CONFIG_PPC64
+>> +
+>> +/* For PPC64, We enforce all PCI MMIO BARs to be page aligned
+>> + * by default. This would be helpful to improve performance
+>> + * when we passthrough a PCI device of which BARs are smaller
+>> + * than PAGE_SIZE(64KB). And we can use kernel parameter
+>> + * "pci=resource_page_aligned=off" to disable it.
+>> + */
+>> +#define HAVE_PCI_DEFAULT_RESOURCES_PAGE_ALIGNED	1
+>> +
+>> +#endif
+>>   
+>>   #define HAVE_ARCH_PCI_RESOURCE_TO_USER
+>>   extern void pci_resource_to_user(const struct pci_dev *dev, int bar,
+>> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+>> index 314db8c..7b21238 100644
+>> --- a/drivers/pci/pci.c
+>> +++ b/drivers/pci/pci.c
+>> @@ -99,6 +99,9 @@ u8 pci_cache_line_size;
+>>    */
+>>   unsigned int pcibios_max_latency = 255;
+>>   
+>> +bool pci_resources_page_aligned =
+>> +	IS_ENABLED(HAVE_PCI_DEFAULT_RESOURCES_PAGE_ALIGNED);
+> I don't think this is proper use of IS_ENABLED, which seems to be
+> targeted at CONFIG_ type options.  You could define this as that in an
+> arch Kconfig.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powe=
-rpc-4.5-2
+Is it better that we define this as a pci Kconfig and select it in arch 
+Kconfig?
 
-for you to fetch changes up to 2d19fc639516dc7b4184450b315c931d38549e61:
+>> +
+>>   /* If set, the PCIe ARI capability will not be used. */
+>>   static bool pcie_ari_disabled;
+>>   
+>> @@ -4746,6 +4749,35 @@ static ssize_t pci_resource_alignment_store(struct bus_type *bus,
+>>   BUS_ATTR(resource_alignment, 0644, pci_resource_alignment_show,
+>>   					pci_resource_alignment_store);
+>>   
+>> +static void pci_resources_get_page_aligned(char *str)
+>> +{
+>> +	if (!strncmp(str, "off", 3))
+>> +		pci_resources_page_aligned = false;
+>> +	else if (!strncmp(str, "on", 2))
+>> +		pci_resources_page_aligned = true;
+>> +}
+> "get"?
 
-  powerpc/mm: Fixup _HPAGE_CHG_MASK (2016-01-28 23:49:43 +1100)
+How about pci_resources_parse_page_aligned_param()?
 
-----------------------------------------------------------------
-powerpc fixes for 4.5
+>> +
+>> +/*
+>> + * This function checks whether PCI BARs' mmio page will be shared
+>> + * with other BARs.
+>> + */
+>> +bool pci_resources_share_page(struct pci_dev *dev, int resno)
+>> +{
+>> +	struct resource *res = dev->resource + resno;
+>> +
+>> +	if (resource_size(res) >= PAGE_SIZE)
+>> +		return false;
+>> +	if (pci_resources_page_aligned && !(res->start & ~PAGE_MASK) &&
+>> +	    res->flags & IORESOURCE_MEM) {
+>> +		if (res->sibling)
+>> +			return (res->sibling->start & ~PAGE_MASK);
+>> +		else
+>> +			return false;
+>> +	}
+>> +	return true;
+>> +}
+>> +EXPORT_SYMBOL_GPL(pci_resources_share_page);
+>> +
+>>   static int __init pci_resource_alignment_sysfs_init(void)
+>>   {
+>>   	return bus_create_file(&pci_bus_type,
+>> @@ -4859,6 +4891,9 @@ static int __init pci_setup(char *str)
+>>   			} else if (!strncmp(str, "resource_alignment=", 19)) {
+>>   				pci_set_resource_alignment_param(str + 19,
+>>   							strlen(str + 19));
+>> +			} else if (!strncmp(str, "resource_page_aligned=",
+>> +				   22)) {
+>> +				pci_resources_get_page_aligned(str + 22);
+> Doesn't this seem rather redundant with the option right above it,
+> resource_alignment=?  Why not modify that to support syntax where all
+> devices get the same alignment?
+>
 
- - Wire up copy_file_range() syscall from Chandan Rajendra
- - Simplify module TOC handling from Alan Modra
- - Remove newly added extra definition of pmd_dirty from Stephen Rothwell
- - Allow user space to map rtas_rmo_buf from Vasant Hegde
- - Fix PE location code from Gavin Shan
- - Remove PPMU_HAS_SSLOT flag for Power8 from Madhavan Srinivasan
- - Fixup _HPAGE_CHG_MASK from Aneesh Kumar K.V
+The kernel option will be used to do two things.
 
-----------------------------------------------------------------
-Alan Modra (1):
-      powerpc: Simplify module TOC handling
+Firstly, the option can be used to enable all devices to be page aligned.
 
-Aneesh Kumar K.V (1):
-      powerpc/mm: Fixup _HPAGE_CHG_MASK
+Secondly, we can use the option to disable it when the Kconfig option
+mentioned above enable all devices to be page aligned by default.
 
-Chandan Rajendra (1):
-      powerpc: Wire up copy_file_range() syscall
+We can easily modify this option "resource_alignment=" to do the first
+thing. But I didn't find a proper way to modify it to do the second thing.
 
-Gavin Shan (1):
-      powerpc/eeh: Fix PE location code
+>>   			} else if (!strncmp(str, "ecrc=", 5)) {
+>>   				pcie_ecrc_get_policy(str + 5);
+>>   			} else if (!strncmp(str, "hpiosize=", 9)) {
+>> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+>> index d390fc1..b9b333d 100644
+>> --- a/drivers/pci/pci.h
+>> +++ b/drivers/pci/pci.h
+>> @@ -312,11 +312,17 @@ static inline resource_size_t pci_resource_alignment(struct pci_dev *dev,
+>>   #ifdef CONFIG_PCI_IOV
+>>   	int resno = res - dev->resource;
+>>   
+>> -	if (resno >= PCI_IOV_RESOURCES && resno <= PCI_IOV_RESOURCE_END)
+>> +	if (resno >= PCI_IOV_RESOURCES && resno <= PCI_IOV_RESOURCE_END) {
+>> +		if (pci_resources_page_aligned && res->flags & IORESOURCE_MEM)
+>> +			return PAGE_ALIGN(pci_sriov_resource_alignment(dev,
+>> +					  resno));
+>>   		return pci_sriov_resource_alignment(dev, resno);
+>> +	}
+>>   #endif
+>>   	if (dev->class >> 8  == PCI_CLASS_BRIDGE_CARDBUS)
+>>   		return pci_cardbus_resource_alignment(res);
+>> +	if (pci_resources_page_aligned && res->flags & IORESOURCE_MEM)
+>> +		return PAGE_ALIGN(resource_alignment(res));
+>>   	return resource_alignment(res);
+>>   }
+>
+> Since we already have resource_alignment=, shouldn't we already have the
+> code in place to re-align?
 
-Madhavan Srinivasan (1):
-      powerpc/perf: Remove PPMU_HAS_SSLOT flag for Power8
+Yes, this code can do the re-aligning. But we can't reuse the code because
+it re-align device's bars by changing their sizes, which can potentially 
+break
+some drivers.
 
-Stephen Rothwell (1):
-      powerpc: Remove newly added extra definition of pmd_dirty
+I'm thinking if we can use IORESOURCE_STARTALIGN for this. Thanks.
 
-Vasant Hegde (1):
-      powerpc/mm: Allow user space to map rtas_rmo_buf
-
- arch/powerpc/include/asm/book3s/64/hash.h    |  4 +++-
- arch/powerpc/include/asm/book3s/64/pgtable.h |  1 -
- arch/powerpc/include/asm/systbl.h            |  1 +
- arch/powerpc/include/asm/unistd.h            |  2 +-
- arch/powerpc/include/uapi/asm/unistd.h       |  1 +
- arch/powerpc/kernel/eeh_pe.c                 | 33 +++++++++++++-----------=
-----
- arch/powerpc/kernel/misc_64.S                | 28 -----------------------
- arch/powerpc/kernel/module_64.c              | 12 +++++++---
- arch/powerpc/mm/mem.c                        |  4 ++--
- arch/powerpc/perf/power8-pmu.c               |  2 +-
- scripts/mod/modpost.c                        |  3 ++-
- 11 files changed, 35 insertions(+), 56 deletions(-)
-
---=-rY13Dq5ug+0vEAvsei4P
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAABAgAGBQJWqzFtAAoJEFHr6jzI4aWAub8P/i4BMUyrvF0H4+sv3Z8lKpVH
-PqkVkBTjdxbRfMByE08cFHKYBNbRz7MwZNaF7DW/8XQBxEtSW/g/fcqVfGNxehXr
-D4egYwSYa8QTemkJPcdiEcBDciLoo7/I95LPB2LMm7z9Y5klpej/T7nVLkwmkOaC
-Z3lsno15OUildwB+YjdFt2HGYOWDtHo5ssJTLeMu5h6Isit+SF2uTRBKBgQ31cmX
-x90DJPkfJvGoi4cYAfcQADgjWgr2iCzk4BjCUGnxwH111QFGahTEc5lXVPeCrFHF
-5KeUts+svDX3arMxZs4cyvrI84Usor8RtSkAPGMwoljt6smxVsrB+I/ZkShPQORV
-tlWFw+mVSAYv5slauGeYZAPIyAig0cT2A5DBwxPWxAq7+RZlUEfESqfDReF1yQ79
-/IsdZJetUH3LwKRSs7M9EoNFIMMEVTGaCbjR5JgFwbxglP/UUKZZuqGDy8vPWuby
-jgM4syJip2SvFPf3aC8pm3j+icz22Dju/AJEy97ydnQYvE0xpHSWxX3wVWwT3PB9
-5QVFlAJYkZ79Ix9aQQFpn96IuklyZ65wHTG8zJMI+vjaHgPUPgc1japmhDxsFSm1
-ks8qtyUECaLDK7z7tZKiM0tc6lHS7euMuCoBoFpArv1d3VbJbtlHPsVWRRSzJzc3
-pE45LeLRmWwVp11j2w7y
-=JiDc
------END PGP SIGNATURE-----
-
---=-rY13Dq5ug+0vEAvsei4P--
+Regards,
+Yongji Xie
