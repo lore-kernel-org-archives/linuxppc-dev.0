@@ -1,43 +1,35 @@
-Return-Path: <Maciej.Rozycki@imgtec.com>
-Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
- by lists.ozlabs.org (Postfix) with ESMTP id 159C01A0E27
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 00:39:03 +1100 (AEDT)
-Date: Fri, 29 Jan 2016 13:38:59 +0000
-From: "Maciej W. Rozycki" <macro@imgtec.com>
-To: Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>
-CC: <paulmck@linux.vnet.ibm.com>, Will Deacon <will.deacon@arm.com>, Peter
- Zijlstra <peterz@infradead.org>, "Michael S. Tsirkin" <mst@redhat.com>,
- <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- <linux-arch@vger.kernel.org>, Andrew Cooper <andrew.cooper3@citrix.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- <virtualization@lists.linux-foundation.org>, Stefano Stabellini
- <stefano.stabellini@eu.citrix.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>, Joe Perches
- <joe@perches.com>, David Miller <davem@davemloft.net>,
- <linux-ia64@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-s390@vger.kernel.org>, <sparclinux@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, <linux-metag@vger.kernel.org>,
- <linux-mips@linux-mips.org>, <x86@kernel.org>,
- <user-mode-linux-devel@lists.sourceforge.net>,
- <adi-buildroot-devel@lists.sourceforge.net>, <linux-sh@vger.kernel.org>,
- <linux-xtensa@linux-xtensa.org>, <xen-devel@lists.xenproject.org>, Ralf
- Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- <ddaney.cavm@gmail.com>, <james.hogan@imgtec.com>, Michael Ellerman
- <mpe@ellerman.id.au>
-Subject: Re: [v3,11/41] mips: reuse asm-generic/barrier.h
-In-Reply-To: <56A9656D.3080707@imgtec.com>
-Message-ID: <alpine.DEB.2.00.1601291333130.5958@tp.orcam.me.uk>
-References: <20160113104516.GE25458@arm.com> <5696CF08.8080700@imgtec.com>
- <20160114121449.GC15828@arm.com> <5697F6D2.60409@imgtec.com>
- <20160114203430.GC3818@linux.vnet.ibm.com> <56980C91.1010403@imgtec.com>
- <20160114212913.GF3818@linux.vnet.ibm.com>
- <569814F2.50801@imgtec.com> <20160114225510.GJ3818@linux.vnet.ibm.com>
- <56983054.4070807@imgtec.com> <20160115004753.GN3818@linux.vnet.ibm.com>
- <56984642.3090106@imgtec.com>
- <alpine.DEB.2.00.1601271116520.5958@tp.orcam.me.uk>
- <56A9656D.3080707@imgtec.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 719BE1A0E27
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 04:03:06 +1100 (AEDT)
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 29 Jan 2016 12:03:01 -0500
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id B4A0E38C8039
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 12:02:58 -0500 (EST)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0TH2wZA31064284
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 17:02:58 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0TGvrmj027566
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 11:57:54 -0500
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/book3s_32: Fix build error with checkpoint restart
+Date: Fri, 29 Jan 2016 22:32:49 +0530
+Message-Id: <1454086969-21074-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,15 +39,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 28 Jan 2016, Leonid Yegoshin wrote:
+In file included from mm/vmscan.c:54:0:
+include/linux/swapops.h: In function ‘pte_to_swp_entry’:
+include/linux/swapops.h:69:2: error: implicit declaration of function ‘pte_swp_soft_dirty’ [-Werror=implicit-function-declaration]
+  if (pte_swp_soft_dirty(pte))
+  ^
+include/linux/swapops.h:70:3: error: implicit declaration of function ‘pte_swp_clear_soft_dirty’ [-Werror=implicit-function-declaration]
+   pte = pte_swp_clear_soft_dirty(pte);
 
-> In http://patchwork.linux-mips.org/patch/10505/ the very last mesg exchange
-> is:
-[...]
-> ... and that stops forever...
+We support soft dirty tracking only with book3s 64 for now.
+So change the Kconfig dependency accordingly. Also CHECKPOINT_RESTORE
+feature is not really dependent on SOFT_DIRTY. We track the dependency
+between MEM_SOFT_DIRTY and ARCH_SOFT_DIRTY through headers
 
- Thanks for the reminder -- last June was very hectic, I travelled a lot 
-and I lost the discussion from my radar.  Apologies for that.  I replied 
-in that thread now with my results.  I hope this helps.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-  Maciej
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 09b94174d372..599329332613 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -558,7 +558,7 @@ choice
+ 
+ config PPC_4K_PAGES
+ 	bool "4k page size"
+-	select HAVE_ARCH_SOFT_DIRTY if CHECKPOINT_RESTORE && PPC_BOOK3S
++	select HAVE_ARCH_SOFT_DIRTY if PPC_BOOK3S_64
+ 
+ config PPC_16K_PAGES
+ 	bool "16k page size"
+@@ -567,7 +567,7 @@ config PPC_16K_PAGES
+ config PPC_64K_PAGES
+ 	bool "64k page size"
+ 	depends on !PPC_FSL_BOOK3E && (44x || PPC_STD_MMU_64 || PPC_BOOK3E_64)
+-	select HAVE_ARCH_SOFT_DIRTY if CHECKPOINT_RESTORE && PPC_BOOK3S
++	select HAVE_ARCH_SOFT_DIRTY if PPC_BOOK3S_64
+ 
+ config PPC_256K_PAGES
+ 	bool "256k page size"
+-- 
+2.5.0
