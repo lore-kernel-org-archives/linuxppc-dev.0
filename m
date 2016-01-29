@@ -1,41 +1,23 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1F3FA1A0E27
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 20:16:21 +1100 (AEDT)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E1741140C49
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Jan 2016 20:16:20 +1100 (AEDT)
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 29 Jan 2016 19:16:19 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E68AD3578054
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Jan 2016 20:16:17 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0T9G9s666978006
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Jan 2016 20:16:17 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0T9Fj0N003644
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Jan 2016 20:15:45 +1100
-Message-ID: <56AB2DB0.7060908@linux.vnet.ibm.com>
-Date: Fri, 29 Jan 2016 14:45:28 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc/mm: Enable HugeTLB page migration
-References: <1453972285-8822-1-git-send-email-khandual@linux.vnet.ibm.com>
- <87io2dyda8.fsf@linux.vnet.ibm.com>
-In-Reply-To: <87io2dyda8.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7E1101A0E27
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 20:31:31 +1100 (AEDT)
+Message-ID: <1454059885.7560.1.camel@ellerman.id.au>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.5-2 tag
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: amodra@gmail.com, aneesh.kumar@linux.vnet.ibm.com,
+ chandan@linux.vnet.ibm.com, dan.j.williams@intel.com,
+ gwshan@linux.vnet.ibm.com,  hegdevasant@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org,  linuxppc-dev@lists.ozlabs.org,
+ maddy@linux.vnet.ibm.com, Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 29 Jan 2016 20:31:25 +1100
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature";
+ boundary="=-rY13Dq5ug+0vEAvsei4P"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,63 +27,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/28/2016 08:14 PM, Aneesh Kumar K.V wrote:
-> Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
-> 
->> This enables HugeTLB page migration for PPC64_BOOK3S systems which implement
->> HugeTLB page at the PMD level. It enables the kernel configuration option
->> CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION by default which turns on the function
->> hugepage_migration_supported() during migration. After the recent changes
->> to the PTE format, HugeTLB page migration happens successfully.
->>
->> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/Kconfig | 4 ++++
->>  1 file changed, 4 insertions(+)
->>
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index e4824fd..65d52a0 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -82,6 +82,10 @@ config GENERIC_HWEIGHT
->>  config ARCH_HAS_DMA_SET_COHERENT_MASK
->>          bool
->>
->> +config ARCH_ENABLE_HUGEPAGE_MIGRATION
->> +	def_bool y
->> +	depends on PPC_BOOK3S_64 && HUGETLB_PAGE && MIGRATION
->> +
->>  config PPC
->>  	bool
->>  	default y
-> 
-> 
-> Are you sure this is all that is needed ? We will get a FOLL_GET with hugetlb
-> migration and our follow_huge_addr will BUG_ON on that. Look at
-> e66f17ff71772b209eed39de35aaa99ba819c93d (" mm/hugetlb: take page table
-> lock in follow_huge_pmd()").
 
-HugeTLB page migration was successful without any error and data integrity
-check passed on them as well. But yes there might be some corner cases which
-trigger the race condition we have not faced yet. Will try to understand the
-situation there and get back.
+--=-rY13Dq5ug+0vEAvsei4P
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> Again this doesn't work with 4K page size. So if you are taking this
-> route, we will need that restriction here.
-> 
+Hi Linus,
 
-Agreed, I had already put a comment on the thread pointing out the same.
-But yes, the restriction needs to be there in the enabling config option
-here as well.
+Please pull powerpc fixes for 4.5:
 
-> I would suggest we switch 64K page size hugetlb to generic
-> hugetlb and then do hugetlb migration on top of that.
+The following changes since commit 9fa686068a32ddf256df03982b3e3967c18654a8=
+:
 
-Will explore it and get back.
+  Merge tag 'dmaengine-fix-4.5-rc1' of git://git.infradead.org/users/vkoul/=
+slave-dma (2016-01-20 10:15:21 -0800)
 
-> 
-> Till you help me understnd why that FOLL_GET issue is not valid for
-> powerpc,
+are available in the git repository at:
 
-Sure will get back.
+  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powe=
+rpc-4.5-2
+
+for you to fetch changes up to 2d19fc639516dc7b4184450b315c931d38549e61:
+
+  powerpc/mm: Fixup _HPAGE_CHG_MASK (2016-01-28 23:49:43 +1100)
+
+----------------------------------------------------------------
+powerpc fixes for 4.5
+
+ - Wire up copy_file_range() syscall from Chandan Rajendra
+ - Simplify module TOC handling from Alan Modra
+ - Remove newly added extra definition of pmd_dirty from Stephen Rothwell
+ - Allow user space to map rtas_rmo_buf from Vasant Hegde
+ - Fix PE location code from Gavin Shan
+ - Remove PPMU_HAS_SSLOT flag for Power8 from Madhavan Srinivasan
+ - Fixup _HPAGE_CHG_MASK from Aneesh Kumar K.V
+
+----------------------------------------------------------------
+Alan Modra (1):
+      powerpc: Simplify module TOC handling
+
+Aneesh Kumar K.V (1):
+      powerpc/mm: Fixup _HPAGE_CHG_MASK
+
+Chandan Rajendra (1):
+      powerpc: Wire up copy_file_range() syscall
+
+Gavin Shan (1):
+      powerpc/eeh: Fix PE location code
+
+Madhavan Srinivasan (1):
+      powerpc/perf: Remove PPMU_HAS_SSLOT flag for Power8
+
+Stephen Rothwell (1):
+      powerpc: Remove newly added extra definition of pmd_dirty
+
+Vasant Hegde (1):
+      powerpc/mm: Allow user space to map rtas_rmo_buf
+
+ arch/powerpc/include/asm/book3s/64/hash.h    |  4 +++-
+ arch/powerpc/include/asm/book3s/64/pgtable.h |  1 -
+ arch/powerpc/include/asm/systbl.h            |  1 +
+ arch/powerpc/include/asm/unistd.h            |  2 +-
+ arch/powerpc/include/uapi/asm/unistd.h       |  1 +
+ arch/powerpc/kernel/eeh_pe.c                 | 33 +++++++++++++-----------=
+----
+ arch/powerpc/kernel/misc_64.S                | 28 -----------------------
+ arch/powerpc/kernel/module_64.c              | 12 +++++++---
+ arch/powerpc/mm/mem.c                        |  4 ++--
+ arch/powerpc/perf/power8-pmu.c               |  2 +-
+ scripts/mod/modpost.c                        |  3 ++-
+ 11 files changed, 35 insertions(+), 56 deletions(-)
+
+--=-rY13Dq5ug+0vEAvsei4P
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAABAgAGBQJWqzFtAAoJEFHr6jzI4aWAub8P/i4BMUyrvF0H4+sv3Z8lKpVH
+PqkVkBTjdxbRfMByE08cFHKYBNbRz7MwZNaF7DW/8XQBxEtSW/g/fcqVfGNxehXr
+D4egYwSYa8QTemkJPcdiEcBDciLoo7/I95LPB2LMm7z9Y5klpej/T7nVLkwmkOaC
+Z3lsno15OUildwB+YjdFt2HGYOWDtHo5ssJTLeMu5h6Isit+SF2uTRBKBgQ31cmX
+x90DJPkfJvGoi4cYAfcQADgjWgr2iCzk4BjCUGnxwH111QFGahTEc5lXVPeCrFHF
+5KeUts+svDX3arMxZs4cyvrI84Usor8RtSkAPGMwoljt6smxVsrB+I/ZkShPQORV
+tlWFw+mVSAYv5slauGeYZAPIyAig0cT2A5DBwxPWxAq7+RZlUEfESqfDReF1yQ79
+/IsdZJetUH3LwKRSs7M9EoNFIMMEVTGaCbjR5JgFwbxglP/UUKZZuqGDy8vPWuby
+jgM4syJip2SvFPf3aC8pm3j+icz22Dju/AJEy97ydnQYvE0xpHSWxX3wVWwT3PB9
+5QVFlAJYkZ79Ix9aQQFpn96IuklyZ65wHTG8zJMI+vjaHgPUPgc1japmhDxsFSm1
+ks8qtyUECaLDK7z7tZKiM0tc6lHS7euMuCoBoFpArv1d3VbJbtlHPsVWRRSzJzc3
+pE45LeLRmWwVp11j2w7y
+=JiDc
+-----END PGP SIGNATURE-----
+
+--=-rY13Dq5ug+0vEAvsei4P--
