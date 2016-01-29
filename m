@@ -3,36 +3,22 @@ Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:770:15f::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 33C1A1A0167
+ by lists.ozlabs.org (Postfix) with ESMTPS id 376861A01CD
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 08:18:17 +1100 (AEDT)
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Adrian Hunter <adrian.hunter@intel.com>,
+Cc: linux-kernel@vger.kernel.org, Hemant Kumar <hemant@linux.vnet.ibm.com>,
  Alexander Yarygin <yarygin@linux.vnet.ibm.com>,
- Alexei Starovoitov <ast@kernel.org>, Al Grant <al.grant@arm.com>,
- Brendan Gregg <brendan.d.gregg@gmail.com>,
- Chunyan Zhang <zhang.chunyan@linaro.org>,
- Daniel Borkmann <daniel@iogearbox.net>, David Ahern <dsahern@gmail.com>,
- He Kuang <hekuang@huawei.com>, Hemant Kumar <hemant@linux.vnet.ibm.com>,
- Jiri Olsa <jolsa@redhat.com>, linux-arm-kernel@lists.infradead.org,
- linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Li Zefan <lizefan@huawei.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- Mathieu Poirier <mathieu.poirier@linaro.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Mike Leach <mike.leach@arm.com>,
- Namhyung Kim <namhyung@kernel.org>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Peter Zijlstra <peterz@infradead.org>,
- pi3orama@163.com, Rabin Vincent <rabin@rab.in>,
- Scott Wood <scottwood@freescale.com>,
+ David Ahern <dsahern@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Scott  Wood <scottwood@freescale.com>,
  Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Tor Jeremiassen <tor@ti.com>, Wang Nan <wangnan0@huawei.com>,
- Will Deacon <will.deacon@arm.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [GIT PULL 00/16] perf/core improvements and fixes
-Date: Fri, 29 Jan 2016 18:17:37 -0300
-Message-Id: <1454102273-16431-1-git-send-email-acme@kernel.org>
+ linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [PATCH 14/16] perf kvm/powerpc: Port perf kvm stat to powerpc
+Date: Fri, 29 Jan 2016 18:17:51 -0300
+Message-Id: <1454102273-16431-15-git-send-email-acme@kernel.org>
+In-Reply-To: <1454102273-16431-1-git-send-email-acme@kernel.org>
+References: <1454102273-16431-1-git-send-email-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,108 +30,318 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 See http://www.infradead.org/rpr.html
 
-Hi Ingo,
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 
-	This is on top of the previously submitted perf-core-for-mingo tag,
-please consider applying,
+perf kvm can be used to analyze guest exit reasons. This support already
+exists in x86. Hence, porting it to powerpc.
 
-- Arnaldo
+ - To trace KVM events :
+  perf kvm stat record
+  If many guests are running, we can track for a specific guest by using
+  --pid as in : perf kvm stat record --pid <pid>
 
-The following changes since commit 5ac76283b32b116c58e362e99542182ddcfc8262:
+ - To see the results :
+  perf kvm stat report
 
-  perf cpumap: Auto initialize cpu__max_{node,cpu} (2016-01-26 16:08:36 -0300)
+The result shows the number of exits (from the guest context to
+host/hypervisor context) grouped by their respective exit reasons with
+their frequency.
 
-are available in the git repository at:
+Since, different powerpc machines have different KVM tracepoints, this
+patch discovers the available tracepoints dynamically and accordingly
+looks for them. If any single tracepoint is not present, this support
+won't be enabled for reporting. To record, this will fail if any of the
+events we are looking to record isn't available.  Right now, its only
+supported on PowerPC Book3S_HV architectures.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-2
+To analyze the different exits, group them and present them (in a slight
+descriptive way) to the user, we need a mapping between the "exit code"
+(dumped in the kvm_guest_exit tracepoint data) and to its related
+Interrupt vector description (exit reason). This patch adds this mapping
+in book3s_hv_exits.h.
 
-for you to fetch changes up to 814568db641f6587c1e98a3a85f214cb6a30fe10:
+It records on two available KVM tracepoints for book3s_hv:
 
-  perf build: Align the names of the build tests: (2016-01-29 17:51:04 -0300)
+"kvm_hv:kvm_guest_exit" and "kvm_hv:kvm_guest_enter".
 
-----------------------------------------------------------------
-New features:
+Here is a sample o/p:
+ # pgrep qemu
+19378
+60515
 
-- Port 'perf kvm stat' to PowerPC (Hemant Kumar)
+2 Guests are running on the host.
 
-Infrastructure:
+ # perf kvm stat record -a
+^C[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 4.153 MB perf.data.guest (39624
+samples) ]
 
-- Use the 'feature-dump' target to do the feature checks just once and then
-  add code to reuse that in the tests/make makefile, speeding up the
-  'make -C tools/perf build-test' target (Wang Nan)
+ # perf kvm stat report -p 60515
 
-- Reduce the number of tests the 'build-test' target do to those that don't
-  pollute the source tree (Arnaldo Carvalho de Melo)
+Analyze events for pid(s) 60515, all VCPUs:
 
-- Improve the output of the build tests a bit by aligning the name of the
-  tests, more can be done to filter out uninteresting info in the output
-  (Arnaldo Carvalho de Melo)
+     VM-EXIT Samples Samples% Time% MinTime    MaxTime  Avg time
 
-- Add perf_evlist pointer to *info_priv_size(), more prep work for
-  supporting the coresight architecture (Mathieu Poirier)
+       SYSCALL  9141  63.67%  7.49% 1.26us   5782.39us    9.87us (+- 6.46%)
+H_DATA_STORAGE  4114  28.66%  5.07% 1.72us   4597.68us   14.84us (+-20.06%)
+HV_DECREMENTER   418   2.91%  4.26% 0.70us  30002.22us  122.58us (+-70.29%)
+      EXTERNAL   392   2.73%  0.06% 0.64us    104.10us    1.94us (+-18.83%)
+RETURN_TO_HOST   287   2.00% 83.11% 1.53us 124240.15us 3486.52us (+-16.81%)
+H_INST_STORAGE     5   0.03%  0.00% 1.88us      3.73us    2.39us (+-14.20%)
 
-- Improve the 'perf test bp_signal' test (Wang Nan)
+Total Samples:14357, Total events handled time:1203918.42us.
 
-- Check environment before starting the BPF 'perf test', so that we can just
-  'Skip' older kernels instead of 'FAIL'ing them (Wang Nan)
-
-- Fix cpumode of synthesized buildid event (Wang Nan)
-
+Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+Cc: Alexander Yarygin <yarygin@linux.vnet.ibm.com>
+Cc: David Ahern <dsahern@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Scott  Wood <scottwood@freescale.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: http://lkml.kernel.org/r/1453962787-15376-3-git-send-email-hemant@linux.vnet.ibm.com
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-
-----------------------------------------------------------------
-Arnaldo Carvalho de Melo (2):
-      perf tools: Speed up build-tests by reducing the number of builds tested
-      perf build: Align the names of the build tests:
-
-Hemant Kumar (4):
-      perf kvm/{x86,s390}: Remove dependency on uapi/kvm_perf.h
-      perf kvm/{x86,s390}: Remove const from kvm_events_tp
-      perf kvm/powerpc: Port perf kvm stat to powerpc
-      perf kvm/powerpc: Add support for HCALL reasons
-
-Jiri Olsa (1):
-      perf build: Fix feature-dump checks, we need to test all features
-
-Mathieu Poirier (1):
-      perf auxtrace: Add perf_evlist pointer to *info_priv_size()
-
-Wang Nan (8):
-      tools build: Check basic headers for test-compile feature checker
-      perf build: Remove all condition feature check {C,LD}FLAGS
-      perf build: Use feature dump file for build-test
-      perf buildid: Fix cpumode of buildid event
-      perf test: Check environment before start real BPF test
-      perf test: Improve bp_signal
-      perf tools: Move timestamp creation to util
-      perf record: Use OPT_BOOLEAN_SET for buildid cache related options
-
- tools/build/Makefile.feature                   |   8 ++
- tools/build/feature/test-compile.c             |   2 +
- tools/perf/Makefile                            |  11 +-
+---
  tools/perf/arch/powerpc/Makefile               |   2 +
  tools/perf/arch/powerpc/util/Build             |   1 +
- tools/perf/arch/powerpc/util/book3s_hcalls.h   | 123 ++++++++++++++++++
- tools/perf/arch/powerpc/util/book3s_hv_exits.h |  33 +++++
- tools/perf/arch/powerpc/util/kvm-stat.c        | 170 +++++++++++++++++++++++++
- tools/perf/arch/s390/util/kvm-stat.c           |  10 +-
- tools/perf/arch/x86/util/intel-bts.c           |   4 +-
- tools/perf/arch/x86/util/intel-pt.c            |   4 +-
- tools/perf/arch/x86/util/kvm-stat.c            |  16 ++-
- tools/perf/builtin-buildid-cache.c             |  14 +-
- tools/perf/builtin-kvm.c                       |  38 ++++--
- tools/perf/builtin-record.c                    |  12 +-
- tools/perf/config/Makefile                     | 101 +++++++--------
- tools/perf/tests/bp_signal.c                   | 140 ++++++++++++++++----
- tools/perf/tests/bpf.c                         |  37 ++++++
- tools/perf/tests/make                          |  39 +++++-
- tools/perf/util/auxtrace.c                     |   7 +-
- tools/perf/util/auxtrace.h                     |   6 +-
- tools/perf/util/build-id.c                     |   6 +-
- tools/perf/util/kvm-stat.h                     |   8 +-
- tools/perf/util/util.c                         |  17 +++
- tools/perf/util/util.h                         |   1 +
- 25 files changed, 688 insertions(+), 122 deletions(-)
- create mode 100644 tools/perf/arch/powerpc/util/book3s_hcalls.h
+ tools/perf/arch/powerpc/util/book3s_hv_exits.h |  33 ++++++++
+ tools/perf/arch/powerpc/util/kvm-stat.c        | 107 +++++++++++++++++++++++++
+ tools/perf/builtin-kvm.c                       |  18 +++++
+ tools/perf/util/kvm-stat.h                     |   1 +
+ 6 files changed, 162 insertions(+)
  create mode 100644 tools/perf/arch/powerpc/util/book3s_hv_exits.h
  create mode 100644 tools/perf/arch/powerpc/util/kvm-stat.c
+
+diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
+index 7fbca175099e..9f9cea3478fd 100644
+--- a/tools/perf/arch/powerpc/Makefile
++++ b/tools/perf/arch/powerpc/Makefile
+@@ -1,3 +1,5 @@
+ ifndef NO_DWARF
+ PERF_HAVE_DWARF_REGS := 1
+ endif
++
++HAVE_KVM_STAT_SUPPORT := 1
+diff --git a/tools/perf/arch/powerpc/util/Build b/tools/perf/arch/powerpc/util/Build
+index 7b8b0d1a1b62..c8fe2074d217 100644
+--- a/tools/perf/arch/powerpc/util/Build
++++ b/tools/perf/arch/powerpc/util/Build
+@@ -1,5 +1,6 @@
+ libperf-y += header.o
+ libperf-y += sym-handling.o
++libperf-y += kvm-stat.o
+ 
+ libperf-$(CONFIG_DWARF) += dwarf-regs.o
+ libperf-$(CONFIG_DWARF) += skip-callchain-idx.o
+diff --git a/tools/perf/arch/powerpc/util/book3s_hv_exits.h b/tools/perf/arch/powerpc/util/book3s_hv_exits.h
+new file mode 100644
+index 000000000000..e68ba2da8970
+--- /dev/null
++++ b/tools/perf/arch/powerpc/util/book3s_hv_exits.h
+@@ -0,0 +1,33 @@
++#ifndef ARCH_PERF_BOOK3S_HV_EXITS_H
++#define ARCH_PERF_BOOK3S_HV_EXITS_H
++
++/*
++ * PowerPC Interrupt vectors : exit code to name mapping
++ */
++
++#define kvm_trace_symbol_exit \
++	{0x0,	"RETURN_TO_HOST"}, \
++	{0x100, "SYSTEM_RESET"}, \
++	{0x200, "MACHINE_CHECK"}, \
++	{0x300, "DATA_STORAGE"}, \
++	{0x380, "DATA_SEGMENT"}, \
++	{0x400, "INST_STORAGE"}, \
++	{0x480, "INST_SEGMENT"}, \
++	{0x500, "EXTERNAL"}, \
++	{0x501, "EXTERNAL_LEVEL"}, \
++	{0x502, "EXTERNAL_HV"}, \
++	{0x600, "ALIGNMENT"}, \
++	{0x700, "PROGRAM"}, \
++	{0x800, "FP_UNAVAIL"}, \
++	{0x900, "DECREMENTER"}, \
++	{0x980, "HV_DECREMENTER"}, \
++	{0xc00, "SYSCALL"}, \
++	{0xd00, "TRACE"}, \
++	{0xe00, "H_DATA_STORAGE"}, \
++	{0xe20, "H_INST_STORAGE"}, \
++	{0xe40, "H_EMUL_ASSIST"}, \
++	{0xf00, "PERFMON"}, \
++	{0xf20, "ALTIVEC"}, \
++	{0xf40, "VSX"}
++
++#endif
+diff --git a/tools/perf/arch/powerpc/util/kvm-stat.c b/tools/perf/arch/powerpc/util/kvm-stat.c
+new file mode 100644
+index 000000000000..27bc559b8b3a
+--- /dev/null
++++ b/tools/perf/arch/powerpc/util/kvm-stat.c
+@@ -0,0 +1,107 @@
++#include "util/kvm-stat.h"
++#include "util/parse-events.h"
++
++#include "book3s_hv_exits.h"
++
++#define NR_TPS 2
++
++const char *vcpu_id_str = "vcpu_id";
++const int decode_str_len = 40;
++const char *kvm_entry_trace = "kvm_hv:kvm_guest_enter";
++const char *kvm_exit_trace = "kvm_hv:kvm_guest_exit";
++
++define_exit_reasons_table(hv_exit_reasons, kvm_trace_symbol_exit);
++
++/* Tracepoints specific to ppc_book3s_hv */
++const char *ppc_book3s_hv_kvm_tp[] = {
++	"kvm_hv:kvm_guest_enter",
++	"kvm_hv:kvm_guest_exit",
++};
++
++/* 1 extra placeholder for NULL */
++const char *kvm_events_tp[NR_TPS + 1];
++const char *kvm_exit_reason;
++
++static struct kvm_events_ops exit_events = {
++	.is_begin_event = exit_event_begin,
++	.is_end_event = exit_event_end,
++	.decode_key = exit_event_decode_key,
++	.name = "VM-EXIT"
++};
++
++struct kvm_reg_events_ops kvm_reg_events_ops[] = {
++	{ .name = "vmexit", .ops = &exit_events },
++	{ NULL, NULL },
++};
++
++const char * const kvm_skip_events[] = {
++	NULL,
++};
++
++
++static int is_tracepoint_available(const char *str, struct perf_evlist *evlist)
++{
++	struct parse_events_error err;
++	int ret;
++
++	err.str = NULL;
++	ret = parse_events(evlist, str, &err);
++	if (err.str)
++		pr_err("%s : %s\n", str, err.str);
++	return ret;
++}
++
++static int ppc__setup_book3s_hv(struct perf_kvm_stat *kvm,
++				struct perf_evlist *evlist)
++{
++	const char **events_ptr;
++	int i, nr_tp = 0, err = -1;
++
++	/* Check for book3s_hv tracepoints */
++	for (events_ptr = ppc_book3s_hv_kvm_tp; *events_ptr; events_ptr++) {
++		err = is_tracepoint_available(*events_ptr, evlist);
++		if (err)
++			return -1;
++		nr_tp++;
++	}
++
++	for (i = 0; i < nr_tp; i++)
++		kvm_events_tp[i] = ppc_book3s_hv_kvm_tp[i];
++
++	kvm_events_tp[i] = NULL;
++	kvm_exit_reason = "trap";
++	kvm->exit_reasons = hv_exit_reasons;
++	kvm->exit_reasons_isa = "HV";
++
++	return 0;
++}
++
++/* Wrapper to setup kvm tracepoints */
++static int ppc__setup_kvm_tp(struct perf_kvm_stat *kvm)
++{
++	struct perf_evlist *evlist = perf_evlist__new();
++
++	if (evlist == NULL)
++		return -ENOMEM;
++
++	/* Right now, only supported on book3s_hv */
++	return ppc__setup_book3s_hv(kvm, evlist);
++}
++
++int setup_kvm_events_tp(struct perf_kvm_stat *kvm)
++{
++	return ppc__setup_kvm_tp(kvm);
++}
++
++int cpu_isa_init(struct perf_kvm_stat *kvm, const char *cpuid __maybe_unused)
++{
++	int ret;
++
++	ret = ppc__setup_kvm_tp(kvm);
++	if (ret) {
++		kvm->exit_reasons = NULL;
++		kvm->exit_reasons_isa = NULL;
++	}
++
++	return ret;
++}
+diff --git a/tools/perf/builtin-kvm.c b/tools/perf/builtin-kvm.c
+index ab5645cf39d2..bff666458b28 100644
+--- a/tools/perf/builtin-kvm.c
++++ b/tools/perf/builtin-kvm.c
+@@ -1132,6 +1132,11 @@ exit:
+ 		_p;			\
+ 	})
+ 
++int __weak setup_kvm_events_tp(struct perf_kvm_stat *kvm __maybe_unused)
++{
++	return 0;
++}
++
+ static int
+ kvm_events_record(struct perf_kvm_stat *kvm, int argc, const char **argv)
+ {
+@@ -1148,7 +1153,14 @@ kvm_events_record(struct perf_kvm_stat *kvm, int argc, const char **argv)
+ 		NULL
+ 	};
+ 	const char * const *events_tp;
++	int ret;
++
+ 	events_tp_size = 0;
++	ret = setup_kvm_events_tp(kvm);
++	if (ret < 0) {
++		pr_err("Unable to setup the kvm tracepoints\n");
++		return ret;
++	}
+ 
+ 	for (events_tp = kvm_events_tp; *events_tp; events_tp++)
+ 		events_tp_size++;
+@@ -1377,6 +1389,12 @@ static int kvm_events_live(struct perf_kvm_stat *kvm,
+ 	/*
+ 	 * generate the event list
+ 	 */
++	err = setup_kvm_events_tp(kvm);
++	if (err < 0) {
++		pr_err("Unable to setup the kvm tracepoints\n");
++		return err;
++	}
++
+ 	kvm->evlist = kvm_live_event_list();
+ 	if (kvm->evlist == NULL) {
+ 		err = -1;
+diff --git a/tools/perf/util/kvm-stat.h b/tools/perf/util/kvm-stat.h
+index c965dc844df3..d01e73592f6e 100644
+--- a/tools/perf/util/kvm-stat.h
++++ b/tools/perf/util/kvm-stat.h
+@@ -122,6 +122,7 @@ void exit_event_decode_key(struct perf_kvm_stat *kvm,
+ 
+ bool kvm_exit_event(struct perf_evsel *evsel);
+ bool kvm_entry_event(struct perf_evsel *evsel);
++int setup_kvm_events_tp(struct perf_kvm_stat *kvm);
+ 
+ #define define_exit_reasons_table(name, symbols)	\
+ 	static struct exit_reasons_table name[] = {	\
+-- 
+2.5.0
