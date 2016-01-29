@@ -2,14 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CE9F01A1A0C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 12:58:40 +1100 (AEDT)
-In-Reply-To: <1449033932-27307-1-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42FEC1A0E27
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 12:58:41 +1100 (AEDT)
+In-Reply-To: <1453876460-14209-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: powerpc/eeh: Fix PE location code
-Message-Id: <20160129015840.B48BC14031D@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powerpc/mm: Fixup _HPAGE_CHG_MASK
+Message-Id: <20160129015841.05C7C1409C4@ozlabs.org>
 Date: Fri, 29 Jan 2016 12:58:40 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,20 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-02-12 at 05:25:32 UTC, Gavin Shan wrote:
-> In eeh_pe_loc_get(), the PE location code is retrieved from the
-> "ibm,loc-code" property of the device node for the bridge of the
-> PE's primary bus. It's not correct because the property indicates
-> the parent PE's location code.
+On Wed, 2016-27-01 at 06:34:20 UTC, "Aneesh Kumar K.V" wrote:
+> This got wrongly updated by 7aa9a23c69eae5bfba4f1f92c58d89edc334c8ae
+> ("powerpc, thp: remove infrastructure for handling splitting PMDs")
+> during the last merge. Fix this up
 > 
-> This reads the correct PE location code from "ibm,io-base-loc-code"
-> or "ibm,slot-location-code" property of PE parent bus's device node.
-> 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Tested-by: Russell Currey <ruscur@russell.cc>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/7e56f627768da4e6480986b514
+https://git.kernel.org/powerpc/c/2d19fc639516dc7b4184450b31
 
 cheers
