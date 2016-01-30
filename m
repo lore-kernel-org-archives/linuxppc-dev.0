@@ -1,34 +1,36 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42F731A01D8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 14:07:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B60761A02D3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 14:07:59 +1100 (AEDT)
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 29 Jan 2016 22:07:23 -0500
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 27ADCC90027
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 22:07:18 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0U37Jpi31850542
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 03:07:19 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0U37JL5011437
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 22:07:19 -0500
-Date: Fri, 29 Jan 2016 19:07:10 -0800
+ Fri, 29 Jan 2016 20:07:57 -0700
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 6B6791FF0021
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 19:56:03 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0U37rsw29491356
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 20:07:53 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0U37rhp021919
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 20:07:53 -0700
+Date: Fri, 29 Jan 2016 19:07:45 -0800
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] powerpc/perf/hv-24x7: Fix usage with chip events
-Message-ID: <20160130030710.GA7330@us.ibm.com>
+Subject: [PATCH 2/2] powerpc/perf/hv-24x7: Display change in counter values
+Message-ID: <20160130030744.GB7330@us.ibm.com>
+References: <20160130030710.GA7330@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160130030710.GA7330@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,118 +40,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From 9b5848ce1834a4d82fc251022035d36d9e26b500 Mon Sep 17 00:00:00 2001
+>From a1aa992fb25fb8e98a5c5724376ae8cc91463de3 Mon Sep 17 00:00:00 2001
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Sat, 23 Jan 2016 03:58:12 -0500
-Subject: [PATCH 1/2] powerpc/perf/hv-24x7: Fix usage with chip events.
+Date: Mon, 25 Jan 2016 23:05:36 -0500
+Subject: [PATCH 2/2] powerpc/perf/hv-24x7: Display change in counter values
 
-24x7 counters can belong to different domains (core, chip, virtual CPU
-etc). For events in the 'chip' domain, sysfs entry currently looks like:
+For 24x7 counters, perf displays the raw value of the 24x7 counter, which
+is a monotonically increasing value.
 
-	$ cd /sys/bus/event_source/devices/hv_24x7/events
-	$ cat PM_XLINK_CYCLES__PHYS_CHIP
-	domain=0x1,offset=0x230,core=?,lpar=0x0
+	perf stat -C 0 -e \
+		'hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/' \
+		sleep 1
 
-where the required parameter, 'core=?' is specified with perf as:
+ Performance counter stats for 'CPU(s) 0':
 
-	perf stat -C 0 -e hv_24x7/PM_XLINK_CYCLES__PHYS_CHIP,core=1/ \
-		/bin/true
+     9,105,403,170      hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/
 
-This is inconsistent in that 'core' is a required parameter for a chip
-event.  Instead, have the the sysfs entry display 'chip=?' for chip
-events:
+       0.000425751 seconds time elapsed
 
-	$ cd /sys/bus/event_source/devices/hv_24x7/events
-	$ cat PM_XLINK_CYCLES__PHYS_CHIP
-	domain=0x1,offset=0x230,chip=?,lpar=0x0
+In the typical usage of 'perf stat' this counter value is not as useful
+as the _change_ in the counter value over the duration of the application.
 
-We also need to add a 'chip' entry in the sysfs format directory:
+Have h_24x7_event_init() set the event's prev_count to the raw value of
+the 24x7 counter at the time of initialization. When the application
+terminates, hv_24x7_event_read() will compute the change in value and
+report to the perf tool. Similarly, for the transaction interface, clear
+the event count to 0 at the beginning of the transaction.
 
-	$ ls /sys/bus/event_source/devices/hv_24x7/format
-	chip  core  domain  lpar  offset  vcpu
-	^^^^
-	(new)
+	perf stat -C 0 -e \
+		'hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/' \
+		sleep 1
 
-so the perf tool can automatically check usage and format the chip
-parameter correctly:
+ Performance counter stats for 'CPU(s) 0':
 
-	$ perf stat -C 0 -v -e hv_24x7/PM_XLINK_CYCLES__PHYS_CHIP/ \
-		/bin/true
-	Required parameter 'chip' not specified
-	invalid or unsupported event: 'hv_24x7/PM_XLINK_CYCLES__PHYS_CHIP/'
+           245,758      hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/
 
-	$ perf stat -C 0 -v -e hv_24x7/PM_XLINK_CYCLES__PHYS_CHIP,chip=1/ \
-		/bin/true
-	hv_24x7/PM_XLINK_CYCLES__PHYS_CHIP,chip=1/: 0 6628908 6628908
-
-	 Performance counter stats for 'CPU(s) 0':
-
-	         0      hv_24x7/PM_XLINK_CYCLES__PHYS_CHIP,chip=1/
-
-	    0.006606970 seconds time elapsed
+       1.006366383 seconds time elapsed
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/hv-24x7.c | 22 ++++++++++++++++++----
- 1 file changed, 18 insertions(+), 4 deletions(-)
+ arch/powerpc/perf/hv-24x7.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index 9f9dfda..b7a9a03 100644
+index b7a9a03..77b958f 100644
 --- a/arch/powerpc/perf/hv-24x7.c
 +++ b/arch/powerpc/perf/hv-24x7.c
-@@ -101,6 +101,7 @@ static bool catalog_entry_domain_is_valid(unsigned domain)
- EVENT_DEFINE_RANGE_FORMAT(domain, config, 0, 3);
- /* u16 */
- EVENT_DEFINE_RANGE_FORMAT(core, config, 16, 31);
-+EVENT_DEFINE_RANGE_FORMAT(chip, config, 16, 31);
- EVENT_DEFINE_RANGE_FORMAT(vcpu, config, 16, 31);
- /* u32, see "data_offset" */
- EVENT_DEFINE_RANGE_FORMAT(offset, config, 32, 63);
-@@ -115,6 +116,7 @@ static struct attribute *format_attrs[] = {
- 	&format_attr_domain.attr,
- 	&format_attr_offset.attr,
- 	&format_attr_core.attr,
-+	&format_attr_chip.attr,
- 	&format_attr_vcpu.attr,
- 	&format_attr_lpar.attr,
- 	NULL,
-@@ -289,10 +291,16 @@ static char *event_fmt(struct hv_24x7_event_data *event, unsigned domain)
- 	const char *sindex;
- 	const char *lpar;
- 
--	if (is_physical_domain(domain)) {
-+	switch (domain) {
-+	case HV_PERF_DOMAIN_PHYS_CHIP:
-+		lpar = "0x0";
-+		sindex = "chip";
-+		break;
-+	case HV_PERF_DOMAIN_PHYS_CORE:
- 		lpar = "0x0";
- 		sindex = "core";
--	} else {
-+		break;
-+	default:
- 		lpar = "?";
- 		sindex = "vcpu";
- 	}
-@@ -1089,10 +1097,16 @@ static int add_event_to_24x7_request(struct perf_event *event,
- 		return -EINVAL;
+@@ -1222,11 +1222,12 @@ static int h_24x7_event_init(struct perf_event *event)
+ 		return -EACCES;
  	}
  
--	if (is_physical_domain(event_get_domain(event)))
-+	switch (event_get_domain(event)) {
-+	case HV_PERF_DOMAIN_PHYS_CHIP:
-+		idx = event_get_chip(event);
-+		break;
-+	case HV_PERF_DOMAIN_PHYS_CORE:
- 		idx = event_get_core(event);
--	else
-+		break;
-+	default:
- 		idx = event_get_vcpu(event);
-+	}
+-	/* see if the event complains */
++	/* Get the initial value of the counter for this event */
+ 	if (single_24x7_request(event, &ct)) {
+ 		pr_devel("test hcall failed\n");
+ 		return -EIO;
+ 	}
++	(void)local64_xchg(&event->hw.prev_count, ct);
  
- 	i = request_buffer->num_requests++;
- 	req = &request_buffer->requests[i];
+ 	return 0;
+ }
+@@ -1289,6 +1290,16 @@ static void h_24x7_event_read(struct perf_event *event)
+ 			h24x7hw = &get_cpu_var(hv_24x7_hw);
+ 			h24x7hw->events[i] = event;
+ 			put_cpu_var(h24x7hw);
++			/*
++			 * Clear the event count so we can compute the _change_
++			 * in the 24x7 raw counter value at the end of the txn.
++			 *
++			 * Note that we could alternatively read the 24x7 value
++			 * now and save its value in event->hw.prev_count. But
++			 * that would require issuing a hcall, which would then
++			 * defeat the purpose of using the txn interface.
++			 */
++			local64_set(&event->count, 0);
+ 		}
+ 
+ 		put_cpu_var(hv_24x7_reqb);
 -- 
 2.5.3
