@@ -1,36 +1,36 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from e06smtp08.uk.ibm.com (e06smtp08.uk.ibm.com [195.75.94.104])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B60761A02D3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 14:07:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 854B71A003C
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jan 2016 01:07:28 +1100 (AEDT)
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp08.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 29 Jan 2016 20:07:57 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 6B6791FF0021
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 19:56:03 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u0U37rsw29491356
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 20:07:53 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u0U37rhp021919
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 20:07:53 -0700
-Date: Fri, 29 Jan 2016 19:07:45 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] powerpc/perf/hv-24x7: Display change in counter values
-Message-ID: <20160130030744.GB7330@us.ibm.com>
-References: <20160130030710.GA7330@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160130030710.GA7330@us.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Sat, 30 Jan 2016 14:07:24 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 93230219004D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 14:07:09 +0000 (GMT)
+Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
+ [9.149.37.248])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0UE7Ma89830712
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 14:07:22 GMT
+Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0UE7MML030991
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 09:07:22 -0500
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 02/16] cxl: Move bare-metal specific code to specialized
+ files
+Date: Sat, 30 Jan 2016 15:07:05 +0100
+Message-Id: <1454162839-24407-3-git-send-email-fbarrat@linux.vnet.ibm.com>
+In-Reply-To: <1454162839-24407-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+References: <1454162839-24407-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,82 +40,620 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From a1aa992fb25fb8e98a5c5724376ae8cc91463de3 Mon Sep 17 00:00:00 2001
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Mon, 25 Jan 2016 23:05:36 -0500
-Subject: [PATCH 2/2] powerpc/perf/hv-24x7: Display change in counter values
+Move a few functions around to better separate code specific to
+bare-metal environment from code which will be commonly used between
+guest and bare-metal.
+Code specific to bare-metal is meant to be in native.c or pci.c
+only. It's basically anything which touches the capi p1 registers,
+some p2 registers not needed from a guest and the PCI interface.
 
-For 24x7 counters, perf displays the raw value of the 24x7 counter, which
-is a monotonically increasing value.
-
-	perf stat -C 0 -e \
-		'hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/' \
-		sleep 1
-
- Performance counter stats for 'CPU(s) 0':
-
-     9,105,403,170      hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/
-
-       0.000425751 seconds time elapsed
-
-In the typical usage of 'perf stat' this counter value is not as useful
-as the _change_ in the counter value over the duration of the application.
-
-Have h_24x7_event_init() set the event's prev_count to the raw value of
-the 24x7 counter at the time of initialization. When the application
-terminates, hv_24x7_event_read() will compute the change in value and
-report to the perf tool. Similarly, for the transaction interface, clear
-the event count to 0 at the beginning of the transaction.
-
-	perf stat -C 0 -e \
-		'hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/' \
-		sleep 1
-
- Performance counter stats for 'CPU(s) 0':
-
-           245,758      hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/
-
-       1.006366383 seconds time elapsed
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Co-authored-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/hv-24x7.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ drivers/misc/cxl/cxl.h    |  24 +----
+ drivers/misc/cxl/irq.c    | 205 +--------------------------------------
+ drivers/misc/cxl/main.c   |   2 +-
+ drivers/misc/cxl/native.c | 240 +++++++++++++++++++++++++++++++++++++++++++++-
+ drivers/misc/cxl/pci.c    |  18 ----
+ 5 files changed, 245 insertions(+), 244 deletions(-)
 
-diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index b7a9a03..77b958f 100644
---- a/arch/powerpc/perf/hv-24x7.c
-+++ b/arch/powerpc/perf/hv-24x7.c
-@@ -1222,11 +1222,12 @@ static int h_24x7_event_init(struct perf_event *event)
- 		return -EACCES;
- 	}
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 3f88140..3b824e3 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -623,23 +623,8 @@ static inline u64 cxl_p2n_read(struct cxl_afu *afu, cxl_p2n_reg_t reg)
+ 		return ~0ULL;
+ }
  
--	/* see if the event complains */
-+	/* Get the initial value of the counter for this event */
- 	if (single_24x7_request(event, &ct)) {
- 		pr_devel("test hcall failed\n");
- 		return -EIO;
- 	}
-+	(void)local64_xchg(&event->hw.prev_count, ct);
+-static inline u64 cxl_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off)
+-{
+-	if (likely(cxl_adapter_link_ok(afu->adapter)))
+-		return in_le64((afu)->afu_desc_mmio + (afu)->crs_offset +
+-			       ((cr) * (afu)->crs_len) + (off));
+-	else
+-		return ~0ULL;
+-}
+-
+-static inline u32 cxl_afu_cr_read32(struct cxl_afu *afu, int cr, u64 off)
+-{
+-	if (likely(cxl_adapter_link_ok(afu->adapter)))
+-		return in_le32((afu)->afu_desc_mmio + (afu)->crs_offset +
+-			       ((cr) * (afu)->crs_len) + (off));
+-	else
+-		return 0xffffffff;
+-}
++u64 cxl_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off);
++u32 cxl_afu_cr_read32(struct cxl_afu *afu, int cr, u64 off);
+ u16 cxl_afu_cr_read16(struct cxl_afu *afu, int cr, u64 off);
+ u8 cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off);
  
+@@ -654,7 +639,6 @@ struct cxl_calls {
+ int register_cxl_calls(struct cxl_calls *calls);
+ void unregister_cxl_calls(struct cxl_calls *calls);
+ 
+-int cxl_alloc_adapter_nr(struct cxl *adapter);
+ void cxl_remove_adapter_nr(struct cxl *adapter);
+ 
+ int cxl_alloc_spa(struct cxl_afu *afu);
+@@ -697,7 +681,8 @@ void cxl_release_serr_irq(struct cxl_afu *afu);
+ int afu_register_irqs(struct cxl_context *ctx, u32 count);
+ void afu_release_irqs(struct cxl_context *ctx, void *cookie);
+ void afu_irq_name_free(struct cxl_context *ctx);
+-irqreturn_t cxl_slice_irq_err(int irq, void *data);
++irqreturn_t handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr,
++				u64 errstat);
+ 
+ int cxl_debugfs_init(void);
+ void cxl_debugfs_exit(void);
+@@ -746,7 +731,6 @@ int cxl_attach_process(struct cxl_context *ctx, bool kernel, u64 wed,
+ 			    u64 amr);
+ int cxl_detach_process(struct cxl_context *ctx);
+ 
+-int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info);
+ int cxl_ack_irq(struct cxl_context *ctx, u64 tfc, u64 psl_reset_mask);
+ 
+ int cxl_check_error(struct cxl_afu *afu);
+diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+index e468e6c..16fd67f 100644
+--- a/drivers/misc/cxl/irq.c
++++ b/drivers/misc/cxl/irq.c
+@@ -19,72 +19,6 @@
+ #include "cxl.h"
+ #include "trace.h"
+ 
+-/* XXX: This is implementation specific */
+-static irqreturn_t handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr, u64 errstat)
+-{
+-	u64 fir1, fir2, fir_slice, serr, afu_debug;
+-
+-	fir1 = cxl_p1_read(ctx->afu->adapter, CXL_PSL_FIR1);
+-	fir2 = cxl_p1_read(ctx->afu->adapter, CXL_PSL_FIR2);
+-	fir_slice = cxl_p1n_read(ctx->afu, CXL_PSL_FIR_SLICE_An);
+-	serr = cxl_p1n_read(ctx->afu, CXL_PSL_SERR_An);
+-	afu_debug = cxl_p1n_read(ctx->afu, CXL_AFU_DEBUG_An);
+-
+-	dev_crit(&ctx->afu->dev, "PSL ERROR STATUS: 0x%016llx\n", errstat);
+-	dev_crit(&ctx->afu->dev, "PSL_FIR1: 0x%016llx\n", fir1);
+-	dev_crit(&ctx->afu->dev, "PSL_FIR2: 0x%016llx\n", fir2);
+-	dev_crit(&ctx->afu->dev, "PSL_SERR_An: 0x%016llx\n", serr);
+-	dev_crit(&ctx->afu->dev, "PSL_FIR_SLICE_An: 0x%016llx\n", fir_slice);
+-	dev_crit(&ctx->afu->dev, "CXL_PSL_AFU_DEBUG_An: 0x%016llx\n", afu_debug);
+-
+-	dev_crit(&ctx->afu->dev, "STOPPING CXL TRACE\n");
+-	cxl_stop_trace(ctx->afu->adapter);
+-
+-	return cxl_ack_irq(ctx, 0, errstat);
+-}
+-
+-irqreturn_t cxl_slice_irq_err(int irq, void *data)
+-{
+-	struct cxl_afu *afu = data;
+-	u64 fir_slice, errstat, serr, afu_debug;
+-
+-	WARN(irq, "CXL SLICE ERROR interrupt %i\n", irq);
+-
+-	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
+-	fir_slice = cxl_p1n_read(afu, CXL_PSL_FIR_SLICE_An);
+-	errstat = cxl_p2n_read(afu, CXL_PSL_ErrStat_An);
+-	afu_debug = cxl_p1n_read(afu, CXL_AFU_DEBUG_An);
+-	dev_crit(&afu->dev, "PSL_SERR_An: 0x%016llx\n", serr);
+-	dev_crit(&afu->dev, "PSL_FIR_SLICE_An: 0x%016llx\n", fir_slice);
+-	dev_crit(&afu->dev, "CXL_PSL_ErrStat_An: 0x%016llx\n", errstat);
+-	dev_crit(&afu->dev, "CXL_PSL_AFU_DEBUG_An: 0x%016llx\n", afu_debug);
+-
+-	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
+-
+-	return IRQ_HANDLED;
+-}
+-
+-static irqreturn_t cxl_irq_err(int irq, void *data)
+-{
+-	struct cxl *adapter = data;
+-	u64 fir1, fir2, err_ivte;
+-
+-	WARN(1, "CXL ERROR interrupt %i\n", irq);
+-
+-	err_ivte = cxl_p1_read(adapter, CXL_PSL_ErrIVTE);
+-	dev_crit(&adapter->dev, "PSL_ErrIVTE: 0x%016llx\n", err_ivte);
+-
+-	dev_crit(&adapter->dev, "STOPPING CXL TRACE\n");
+-	cxl_stop_trace(adapter);
+-
+-	fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
+-	fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
+-
+-	dev_crit(&adapter->dev, "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n", fir1, fir2);
+-
+-	return IRQ_HANDLED;
+-}
+-
+ static irqreturn_t schedule_cxl_fault(struct cxl_context *ctx, u64 dsisr, u64 dar)
+ {
+ 	ctx->dsisr = dsisr;
+@@ -179,45 +113,6 @@ irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
+ 	return IRQ_HANDLED;
+ }
+ 
+-static irqreturn_t fail_psl_irq(struct cxl_afu *afu, struct cxl_irq_info *irq_info)
+-{
+-	if (irq_info->dsisr & CXL_PSL_DSISR_TRANS)
+-		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
+-	else
+-		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_A);
+-
+-	return IRQ_HANDLED;
+-}
+-
+-static irqreturn_t cxl_irq_multiplexed(int irq, void *data)
+-{
+-	struct cxl_afu *afu = data;
+-	struct cxl_context *ctx;
+-	struct cxl_irq_info irq_info;
+-	int ph = cxl_p2n_read(afu, CXL_PSL_PEHandle_An) & 0xffff;
+-	int ret;
+-
+-	if ((ret = cxl_get_irq(afu, &irq_info))) {
+-		WARN(1, "Unable to get CXL IRQ Info: %i\n", ret);
+-		return fail_psl_irq(afu, &irq_info);
+-	}
+-
+-	rcu_read_lock();
+-	ctx = idr_find(&afu->contexts_idr, ph);
+-	if (ctx) {
+-		ret = cxl_irq(irq, ctx, &irq_info);
+-		rcu_read_unlock();
+-		return ret;
+-	}
+-	rcu_read_unlock();
+-
+-	WARN(1, "Unable to demultiplex CXL PSL IRQ for PE %i DSISR %016llx DAR"
+-		" %016llx\n(Possible AFU HW issue - was a term/remove acked"
+-		" with outstanding transactions?)\n", ph, irq_info.dsisr,
+-		irq_info.dar);
+-	return fail_psl_irq(afu, &irq_info);
+-}
+-
+ static irqreturn_t cxl_irq_afu(int irq, void *data)
+ {
+ 	struct cxl_context *ctx = data;
+@@ -316,104 +211,6 @@ err:
+ 	return -ENOMEM;
+ }
+ 
+-int cxl_register_psl_err_irq(struct cxl *adapter)
+-{
+-	int rc;
+-
+-	adapter->irq_name = kasprintf(GFP_KERNEL, "cxl-%s-err",
+-				      dev_name(&adapter->dev));
+-	if (!adapter->irq_name)
+-		return -ENOMEM;
+-
+-	if ((rc = cxl_register_one_irq(adapter, cxl_irq_err, adapter,
+-				       &adapter->err_hwirq,
+-				       &adapter->err_virq,
+-				       adapter->irq_name))) {
+-		kfree(adapter->irq_name);
+-		adapter->irq_name = NULL;
+-		return rc;
+-	}
+-
+-	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, adapter->err_hwirq & 0xffff);
+-
+-	return 0;
+-}
+-
+-void cxl_release_psl_err_irq(struct cxl *adapter)
+-{
+-	if (adapter->err_virq != irq_find_mapping(NULL, adapter->err_hwirq))
+-		return;
+-
+-	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, 0x0000000000000000);
+-	cxl_unmap_irq(adapter->err_virq, adapter);
+-	cxl_release_one_irq(adapter, adapter->err_hwirq);
+-	kfree(adapter->irq_name);
+-}
+-
+-int cxl_register_serr_irq(struct cxl_afu *afu)
+-{
+-	u64 serr;
+-	int rc;
+-
+-	afu->err_irq_name = kasprintf(GFP_KERNEL, "cxl-%s-err",
+-				      dev_name(&afu->dev));
+-	if (!afu->err_irq_name)
+-		return -ENOMEM;
+-
+-	if ((rc = cxl_register_one_irq(afu->adapter, cxl_slice_irq_err, afu,
+-				       &afu->serr_hwirq,
+-				       &afu->serr_virq, afu->err_irq_name))) {
+-		kfree(afu->err_irq_name);
+-		afu->err_irq_name = NULL;
+-		return rc;
+-	}
+-
+-	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
+-	serr = (serr & 0x00ffffffffff0000ULL) | (afu->serr_hwirq & 0xffff);
+-	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
+-
+-	return 0;
+-}
+-
+-void cxl_release_serr_irq(struct cxl_afu *afu)
+-{
+-	if (afu->serr_virq != irq_find_mapping(NULL, afu->serr_hwirq))
+-		return;
+-
+-	cxl_p1n_write(afu, CXL_PSL_SERR_An, 0x0000000000000000);
+-	cxl_unmap_irq(afu->serr_virq, afu);
+-	cxl_release_one_irq(afu->adapter, afu->serr_hwirq);
+-	kfree(afu->err_irq_name);
+-}
+-
+-int cxl_register_psl_irq(struct cxl_afu *afu)
+-{
+-	int rc;
+-
+-	afu->psl_irq_name = kasprintf(GFP_KERNEL, "cxl-%s",
+-				      dev_name(&afu->dev));
+-	if (!afu->psl_irq_name)
+-		return -ENOMEM;
+-
+-	if ((rc = cxl_register_one_irq(afu->adapter, cxl_irq_multiplexed, afu,
+-				    &afu->psl_hwirq, &afu->psl_virq,
+-				    afu->psl_irq_name))) {
+-		kfree(afu->psl_irq_name);
+-		afu->psl_irq_name = NULL;
+-	}
+-	return rc;
+-}
+-
+-void cxl_release_psl_irq(struct cxl_afu *afu)
+-{
+-	if (afu->psl_virq != irq_find_mapping(NULL, afu->psl_hwirq))
+-		return;
+-
+-	cxl_unmap_irq(afu->psl_virq, afu);
+-	cxl_release_one_irq(afu->adapter, afu->psl_hwirq);
+-	kfree(afu->psl_irq_name);
+-}
+-
+ void afu_irq_name_free(struct cxl_context *ctx)
+ {
+ 	struct cxl_irq_name *irq_name, *tmp;
+@@ -504,7 +301,7 @@ int afu_register_irqs(struct cxl_context *ctx, u32 count)
+ 
+ 	afu_register_hwirqs(ctx);
+ 	return 0;
+- }
++}
+ 
+ void afu_release_irqs(struct cxl_context *ctx, void *cookie)
+ {
+diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+index 7ef5b43..90933eb 100644
+--- a/drivers/misc/cxl/main.c
++++ b/drivers/misc/cxl/main.c
+@@ -173,7 +173,7 @@ struct cxl *get_cxl_adapter(int num)
+ 	return adapter;
+ }
+ 
+-int cxl_alloc_adapter_nr(struct cxl *adapter)
++static int cxl_alloc_adapter_nr(struct cxl *adapter)
+ {
+ 	int i;
+ 
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 0b0a4c8..3103e33 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -712,7 +712,7 @@ int cxl_detach_process(struct cxl_context *ctx)
+ 	return detach_process_native_afu_directed(ctx);
+ }
+ 
+-int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info)
++static int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info)
+ {
+ 	u64 pidtid;
+ 
+@@ -734,6 +734,208 @@ int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info)
  	return 0;
  }
-@@ -1289,6 +1290,16 @@ static void h_24x7_event_read(struct perf_event *event)
- 			h24x7hw = &get_cpu_var(hv_24x7_hw);
- 			h24x7hw->events[i] = event;
- 			put_cpu_var(h24x7hw);
-+			/*
-+			 * Clear the event count so we can compute the _change_
-+			 * in the 24x7 raw counter value at the end of the txn.
-+			 *
-+			 * Note that we could alternatively read the 24x7 value
-+			 * now and save its value in event->hw.prev_count. But
-+			 * that would require issuing a hcall, which would then
-+			 * defeat the purpose of using the txn interface.
-+			 */
-+			local64_set(&event->count, 0);
- 		}
  
- 		put_cpu_var(hv_24x7_reqb);
++irqreturn_t handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr, u64 errstat)
++{
++	u64 fir1, fir2, fir_slice, serr, afu_debug;
++
++	fir1 = cxl_p1_read(ctx->afu->adapter, CXL_PSL_FIR1);
++	fir2 = cxl_p1_read(ctx->afu->adapter, CXL_PSL_FIR2);
++	fir_slice = cxl_p1n_read(ctx->afu, CXL_PSL_FIR_SLICE_An);
++	serr = cxl_p1n_read(ctx->afu, CXL_PSL_SERR_An);
++	afu_debug = cxl_p1n_read(ctx->afu, CXL_AFU_DEBUG_An);
++
++	dev_crit(&ctx->afu->dev, "PSL ERROR STATUS: 0x%016llx\n", errstat);
++	dev_crit(&ctx->afu->dev, "PSL_FIR1: 0x%016llx\n", fir1);
++	dev_crit(&ctx->afu->dev, "PSL_FIR2: 0x%016llx\n", fir2);
++	dev_crit(&ctx->afu->dev, "PSL_SERR_An: 0x%016llx\n", serr);
++	dev_crit(&ctx->afu->dev, "PSL_FIR_SLICE_An: 0x%016llx\n", fir_slice);
++	dev_crit(&ctx->afu->dev, "CXL_PSL_AFU_DEBUG_An: 0x%016llx\n", afu_debug);
++
++	dev_crit(&ctx->afu->dev, "STOPPING CXL TRACE\n");
++	cxl_stop_trace(ctx->afu->adapter);
++
++	return cxl_ack_irq(ctx, 0, errstat);
++}
++
++static irqreturn_t fail_psl_irq(struct cxl_afu *afu, struct cxl_irq_info *irq_info)
++{
++	if (irq_info->dsisr & CXL_PSL_DSISR_TRANS)
++		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
++	else
++		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_A);
++
++	return IRQ_HANDLED;
++}
++
++static irqreturn_t cxl_irq_multiplexed(int irq, void *data)
++{
++	struct cxl_afu *afu = data;
++	struct cxl_context *ctx;
++	struct cxl_irq_info irq_info;
++	int ph = cxl_p2n_read(afu, CXL_PSL_PEHandle_An) & 0xffff;
++	int ret;
++
++	if ((ret = cxl_get_irq(afu, &irq_info))) {
++		WARN(1, "Unable to get CXL IRQ Info: %i\n", ret);
++		return fail_psl_irq(afu, &irq_info);
++	}
++
++	rcu_read_lock();
++	ctx = idr_find(&afu->contexts_idr, ph);
++	if (ctx) {
++		ret = cxl_irq(irq, ctx, &irq_info);
++		rcu_read_unlock();
++		return ret;
++	}
++	rcu_read_unlock();
++
++	WARN(1, "Unable to demultiplex CXL PSL IRQ for PE %i DSISR %016llx DAR"
++		" %016llx\n(Possible AFU HW issue - was a term/remove acked"
++		" with outstanding transactions?)\n", ph, irq_info.dsisr,
++		irq_info.dar);
++	return fail_psl_irq(afu, &irq_info);
++}
++
++static irqreturn_t cxl_slice_irq_err(int irq, void *data)
++{
++	struct cxl_afu *afu = data;
++	u64 fir_slice, errstat, serr, afu_debug;
++
++	WARN(irq, "CXL SLICE ERROR interrupt %i\n", irq);
++
++	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
++	fir_slice = cxl_p1n_read(afu, CXL_PSL_FIR_SLICE_An);
++	errstat = cxl_p2n_read(afu, CXL_PSL_ErrStat_An);
++	afu_debug = cxl_p1n_read(afu, CXL_AFU_DEBUG_An);
++	dev_crit(&afu->dev, "PSL_SERR_An: 0x%016llx\n", serr);
++	dev_crit(&afu->dev, "PSL_FIR_SLICE_An: 0x%016llx\n", fir_slice);
++	dev_crit(&afu->dev, "CXL_PSL_ErrStat_An: 0x%016llx\n", errstat);
++	dev_crit(&afu->dev, "CXL_PSL_AFU_DEBUG_An: 0x%016llx\n", afu_debug);
++
++	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
++
++	return IRQ_HANDLED;
++}
++
++static irqreturn_t cxl_irq_err(int irq, void *data)
++{
++	struct cxl *adapter = data;
++	u64 fir1, fir2, err_ivte;
++
++	WARN(1, "CXL ERROR interrupt %i\n", irq);
++
++	err_ivte = cxl_p1_read(adapter, CXL_PSL_ErrIVTE);
++	dev_crit(&adapter->dev, "PSL_ErrIVTE: 0x%016llx\n", err_ivte);
++
++	dev_crit(&adapter->dev, "STOPPING CXL TRACE\n");
++	cxl_stop_trace(adapter);
++
++	fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
++	fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
++
++	dev_crit(&adapter->dev, "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n", fir1, fir2);
++
++	return IRQ_HANDLED;
++}
++
++int cxl_register_psl_err_irq(struct cxl *adapter)
++{
++	int rc;
++
++	adapter->irq_name = kasprintf(GFP_KERNEL, "cxl-%s-err",
++				      dev_name(&adapter->dev));
++	if (!adapter->irq_name)
++		return -ENOMEM;
++
++	if ((rc = cxl_register_one_irq(adapter, cxl_irq_err, adapter,
++				       &adapter->err_hwirq,
++				       &adapter->err_virq,
++				       adapter->irq_name))) {
++		kfree(adapter->irq_name);
++		adapter->irq_name = NULL;
++		return rc;
++	}
++
++	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, adapter->err_hwirq & 0xffff);
++
++	return 0;
++}
++
++void cxl_release_psl_err_irq(struct cxl *adapter)
++{
++	if (adapter->err_virq != irq_find_mapping(NULL, adapter->err_hwirq))
++		return;
++
++	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, 0x0000000000000000);
++	cxl_unmap_irq(adapter->err_virq, adapter);
++	cxl_release_one_irq(adapter, adapter->err_hwirq);
++	kfree(adapter->irq_name);
++}
++
++int cxl_register_serr_irq(struct cxl_afu *afu)
++{
++	u64 serr;
++	int rc;
++
++	afu->err_irq_name = kasprintf(GFP_KERNEL, "cxl-%s-err",
++				      dev_name(&afu->dev));
++	if (!afu->err_irq_name)
++		return -ENOMEM;
++
++	if ((rc = cxl_register_one_irq(afu->adapter, cxl_slice_irq_err, afu,
++				       &afu->serr_hwirq,
++				       &afu->serr_virq, afu->err_irq_name))) {
++		kfree(afu->err_irq_name);
++		afu->err_irq_name = NULL;
++		return rc;
++	}
++
++	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
++	serr = (serr & 0x00ffffffffff0000ULL) | (afu->serr_hwirq & 0xffff);
++	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
++
++	return 0;
++}
++
++void cxl_release_serr_irq(struct cxl_afu *afu)
++{
++	if (afu->serr_virq != irq_find_mapping(NULL, afu->serr_hwirq))
++		return;
++
++	cxl_p1n_write(afu, CXL_PSL_SERR_An, 0x0000000000000000);
++	cxl_unmap_irq(afu->serr_virq, afu);
++	cxl_release_one_irq(afu->adapter, afu->serr_hwirq);
++	kfree(afu->err_irq_name);
++}
++
++int cxl_register_psl_irq(struct cxl_afu *afu)
++{
++	int rc;
++
++	afu->psl_irq_name = kasprintf(GFP_KERNEL, "cxl-%s",
++				      dev_name(&afu->dev));
++	if (!afu->psl_irq_name)
++		return -ENOMEM;
++
++	if ((rc = cxl_register_one_irq(afu->adapter, cxl_irq_multiplexed, afu,
++				    &afu->psl_hwirq, &afu->psl_virq,
++				    afu->psl_irq_name))) {
++		kfree(afu->psl_irq_name);
++		afu->psl_irq_name = NULL;
++	}
++	return rc;
++}
++
++void cxl_release_psl_irq(struct cxl_afu *afu)
++{
++	if (afu->psl_virq != irq_find_mapping(NULL, afu->psl_hwirq))
++		return;
++
++	cxl_unmap_irq(afu->psl_virq, afu);
++	cxl_release_one_irq(afu->adapter, afu->psl_hwirq);
++	kfree(afu->psl_irq_name);
++}
++
+ static void recover_psl_err(struct cxl_afu *afu, u64 errstat)
+ {
+ 	u64 dsisr;
+@@ -763,3 +965,39 @@ int cxl_check_error(struct cxl_afu *afu)
+ {
+ 	return (cxl_p1n_read(afu, CXL_PSL_SCNTL_An) == ~0ULL);
+ }
++
++u64 cxl_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off)
++{
++	if (likely(cxl_adapter_link_ok(afu->adapter)))
++		return in_le64((afu)->afu_desc_mmio + (afu)->crs_offset +
++			       ((cr) * (afu)->crs_len) + (off));
++	else
++		return ~0ULL;
++}
++
++u32 cxl_afu_cr_read32(struct cxl_afu *afu, int cr, u64 off)
++{
++	if (likely(cxl_adapter_link_ok(afu->adapter)))
++		return in_le32((afu)->afu_desc_mmio + (afu)->crs_offset +
++			       ((cr) * (afu)->crs_len) + (off));
++	else
++		return 0xffffffff;
++}
++
++u16 cxl_afu_cr_read16(struct cxl_afu *afu, int cr, u64 off)
++{
++	u64 aligned_off = off & ~0x3L;
++	u32 val;
++
++	val = cxl_afu_cr_read32(afu, cr, aligned_off);
++	return (val >> ((off & 0x2) * 8)) & 0xffff;
++}
++
++u8 cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off)
++{
++	u64 aligned_off = off & ~0x3L;
++	u32 val;
++
++	val = cxl_afu_cr_read32(afu, cr, aligned_off);
++	return (val >> ((off & 0x3) * 8)) & 0xff;
++}
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index ad28c56..c6279e5 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -116,24 +116,6 @@
+ #define   AFUD_EB_LEN(val)		EXTRACT_PPC_BITS(val, 8, 63)
+ #define AFUD_READ_EB_OFF(afu)		AFUD_READ(afu, 0x48)
+ 
+-u16 cxl_afu_cr_read16(struct cxl_afu *afu, int cr, u64 off)
+-{
+-	u64 aligned_off = off & ~0x3L;
+-	u32 val;
+-
+-	val = cxl_afu_cr_read32(afu, cr, aligned_off);
+-	return (val >> ((off & 0x2) * 8)) & 0xffff;
+-}
+-
+-u8 cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off)
+-{
+-	u64 aligned_off = off & ~0x3L;
+-	u32 val;
+-
+-	val = cxl_afu_cr_read32(afu, cr, aligned_off);
+-	return (val >> ((off & 0x3) * 8)) & 0xff;
+-}
+-
+ static const struct pci_device_id cxl_pci_tbl[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0477), },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x044b), },
 -- 
-2.5.3
+1.9.1
