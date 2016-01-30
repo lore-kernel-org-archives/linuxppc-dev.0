@@ -1,24 +1,34 @@
-Return-Path: <BATV+32fd6bae951f336d06c5+4541+infradead.org+acme@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C8E161A0445
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 08:18:22 +1100 (AEDT)
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Hemant Kumar <hemant@linux.vnet.ibm.com>,
- Alexander Yarygin <yarygin@linux.vnet.ibm.com>,
- David Ahern <dsahern@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Scott  Wood <scottwood@freescale.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 15/16] perf kvm/powerpc: Add support for HCALL reasons
-Date: Fri, 29 Jan 2016 18:17:52 -0300
-Message-Id: <1454102273-16431-16-git-send-email-acme@kernel.org>
-In-Reply-To: <1454102273-16431-1-git-send-email-acme@kernel.org>
-References: <1454102273-16431-1-git-send-email-acme@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42F731A01D8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 14:07:26 +1100 (AEDT)
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Fri, 29 Jan 2016 22:07:23 -0500
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 27ADCC90027
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 22:07:18 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u0U37Jpi31850542
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 03:07:19 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u0U37JL5011437
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2016 22:07:19 -0500
+Date: Fri, 29 Jan 2016 19:07:10 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] powerpc/perf/hv-24x7: Fix usage with chip events
+Message-ID: <20160130030710.GA7330@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,301 +38,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hemant Kumar <hemant@linux.vnet.ibm.com>
+>From 9b5848ce1834a4d82fc251022035d36d9e26b500 Mon Sep 17 00:00:00 2001
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Sat, 23 Jan 2016 03:58:12 -0500
+Subject: [PATCH 1/2] powerpc/perf/hv-24x7: Fix usage with chip events.
 
-Powerpc provides hcall events that also provides insights into guest
-behaviour. Enhance perf kvm stat to record and analyze hcall events.
+24x7 counters can belong to different domains (core, chip, virtual CPU
+etc). For events in the 'chip' domain, sysfs entry currently looks like:
 
- - To trace hcall events :
-  perf kvm stat record
+	$ cd /sys/bus/event_source/devices/hv_24x7/events
+	$ cat PM_XLINK_CYCLES__PHYS_CHIP
+	domain=0x1,offset=0x230,core=?,lpar=0x0
 
- - To show the results :
-  perf kvm stat report --event=hcall
+where the required parameter, 'core=?' is specified with perf as:
 
-The result shows the number of hypervisor calls from the guest grouped
-by their respective reasons displayed with the frequency.
+	perf stat -C 0 -e hv_24x7/PM_XLINK_CYCLES__PHYS_CHIP,core=1/ \
+		/bin/true
 
-This patch makes use of two additional tracepoints
-"kvm_hv:kvm_hcall_enter" and "kvm_hv:kvm_hcall_exit". To map the hcall
-codes to their respective names, it needs a mapping. Such mapping is
-added in this patch in book3s_hcalls.h.
+This is inconsistent in that 'core' is a required parameter for a chip
+event.  Instead, have the the sysfs entry display 'chip=?' for chip
+events:
 
- # pgrep qemu
-A sample output :
-19378
-60515
+	$ cd /sys/bus/event_source/devices/hv_24x7/events
+	$ cat PM_XLINK_CYCLES__PHYS_CHIP
+	domain=0x1,offset=0x230,chip=?,lpar=0x0
 
-2 VMs running.
+We also need to add a 'chip' entry in the sysfs format directory:
 
- # perf kvm stat record -a
-^C[ perf record: Woken up 1 times to write data ]
-[ perf record: Captured and wrote 4.153 MB perf.data.guest (39624
-samples) ]
+	$ ls /sys/bus/event_source/devices/hv_24x7/format
+	chip  core  domain  lpar  offset  vcpu
+	^^^^
+	(new)
 
- # perf kvm stat report -p 60515 --event=hcall
+so the perf tool can automatically check usage and format the chip
+parameter correctly:
 
-Analyze events for all VMs, all VCPUs:
+	$ perf stat -C 0 -v -e hv_24x7/PM_XLINK_CYCLES__PHYS_CHIP/ \
+		/bin/true
+	Required parameter 'chip' not specified
+	invalid or unsupported event: 'hv_24x7/PM_XLINK_CYCLES__PHYS_CHIP/'
 
-    HCALL-EVENT Samples Samples% Time% MinTime MaxTime  AvgTime
+	$ perf stat -C 0 -v -e hv_24x7/PM_XLINK_CYCLES__PHYS_CHIP,chip=1/ \
+		/bin/true
+	hv_24x7/PM_XLINK_CYCLES__PHYS_CHIP,chip=1/: 0 6628908 6628908
 
-          H_IPI     822  66.08% 88.10% 0.63us  11.38us 2.05us (+- 1.42%)
-     H_SEND_CRQ     144  11.58%  3.77% 0.41us   0.88us 0.50us (+- 1.47%)
-   H_VIO_SIGNAL     118   9.49%  2.86% 0.37us   0.83us 0.47us (+- 1.43%)
-H_PUT_TERM_CHAR      76   6.11%  2.07% 0.37us   0.90us 0.52us (+- 2.43%)
-H_GET_TERM_CHAR      74   5.95%  2.23% 0.37us   1.70us 0.58us (+- 4.77%)
-         H_RTAS       6   0.48%  0.85% 1.10us   9.25us 2.70us (+-48.57%)
-      H_PERFMON       4   0.32%  0.12% 0.41us   0.96us 0.59us (+-20.92%)
+	 Performance counter stats for 'CPU(s) 0':
 
-Total Samples:1244, Total events handled time:1916.69us.
+	         0      hv_24x7/PM_XLINK_CYCLES__PHYS_CHIP,chip=1/
 
-Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
-Cc: Alexander Yarygin <yarygin@linux.vnet.ibm.com>
-Cc: David Ahern <dsahern@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Scott  Wood <scottwood@freescale.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lkml.kernel.org/r/1453962787-15376-4-git-send-email-hemant@linux.vnet.ibm.com
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+	    0.006606970 seconds time elapsed
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- tools/perf/arch/powerpc/util/book3s_hcalls.h | 123 +++++++++++++++++++++++++++
- tools/perf/arch/powerpc/util/kvm-stat.c      |  65 +++++++++++++-
- 2 files changed, 187 insertions(+), 1 deletion(-)
- create mode 100644 tools/perf/arch/powerpc/util/book3s_hcalls.h
+ arch/powerpc/perf/hv-24x7.c | 22 ++++++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
 
-diff --git a/tools/perf/arch/powerpc/util/book3s_hcalls.h b/tools/perf/arch/powerpc/util/book3s_hcalls.h
-new file mode 100644
-index 000000000000..0dd6b7f2d44f
---- /dev/null
-+++ b/tools/perf/arch/powerpc/util/book3s_hcalls.h
-@@ -0,0 +1,123 @@
-+#ifndef ARCH_PERF_BOOK3S_HV_HCALLS_H
-+#define ARCH_PERF_BOOK3S_HV_HCALLS_H
-+
-+/*
-+ * PowerPC HCALL codes : hcall code to name mapping
-+ */
-+#define kvm_trace_symbol_hcall \
-+	{0x4, "H_REMOVE"},					\
-+	{0x8, "H_ENTER"},					\
-+	{0xc, "H_READ"},					\
-+	{0x10, "H_CLEAR_MOD"},					\
-+	{0x14, "H_CLEAR_REF"},					\
-+	{0x18, "H_PROTECT"},					\
-+	{0x1c, "H_GET_TCE"},					\
-+	{0x20, "H_PUT_TCE"},					\
-+	{0x24, "H_SET_SPRG0"},					\
-+	{0x28, "H_SET_DABR"},					\
-+	{0x2c, "H_PAGE_INIT"},					\
-+	{0x30, "H_SET_ASR"},					\
-+	{0x34, "H_ASR_ON"},					\
-+	{0x38, "H_ASR_OFF"},					\
-+	{0x3c, "H_LOGICAL_CI_LOAD"},				\
-+	{0x40, "H_LOGICAL_CI_STORE"},				\
-+	{0x44, "H_LOGICAL_CACHE_LOAD"},				\
-+	{0x48, "H_LOGICAL_CACHE_STORE"},			\
-+	{0x4c, "H_LOGICAL_ICBI"},				\
-+	{0x50, "H_LOGICAL_DCBF"},				\
-+	{0x54, "H_GET_TERM_CHAR"},				\
-+	{0x58, "H_PUT_TERM_CHAR"},				\
-+	{0x5c, "H_REAL_TO_LOGICAL"},				\
-+	{0x60, "H_HYPERVISOR_DATA"},				\
-+	{0x64, "H_EOI"},					\
-+	{0x68, "H_CPPR"},					\
-+	{0x6c, "H_IPI"},					\
-+	{0x70, "H_IPOLL"},					\
-+	{0x74, "H_XIRR"},					\
-+	{0x78, "H_MIGRATE_DMA"},				\
-+	{0x7c, "H_PERFMON"},					\
-+	{0xdc, "H_REGISTER_VPA"},				\
-+	{0xe0, "H_CEDE"},					\
-+	{0xe4, "H_CONFER"},					\
-+	{0xe8, "H_PROD"},					\
-+	{0xec, "H_GET_PPP"},					\
-+	{0xf0, "H_SET_PPP"},					\
-+	{0xf4, "H_PURR"},					\
-+	{0xf8, "H_PIC"},					\
-+	{0xfc, "H_REG_CRQ"},					\
-+	{0x100, "H_FREE_CRQ"},					\
-+	{0x104, "H_VIO_SIGNAL"},				\
-+	{0x108, "H_SEND_CRQ"},					\
-+	{0x110, "H_COPY_RDMA"},					\
-+	{0x114, "H_REGISTER_LOGICAL_LAN"},			\
-+	{0x118, "H_FREE_LOGICAL_LAN"},				\
-+	{0x11c, "H_ADD_LOGICAL_LAN_BUFFER"},			\
-+	{0x120, "H_SEND_LOGICAL_LAN"},				\
-+	{0x124, "H_BULK_REMOVE"},				\
-+	{0x130, "H_MULTICAST_CTRL"},				\
-+	{0x134, "H_SET_XDABR"},					\
-+	{0x138, "H_STUFF_TCE"},					\
-+	{0x13c, "H_PUT_TCE_INDIRECT"},				\
-+	{0x14c, "H_CHANGE_LOGICAL_LAN_MAC"},			\
-+	{0x150, "H_VTERM_PARTNER_INFO"},			\
-+	{0x154, "H_REGISTER_VTERM"},				\
-+	{0x158, "H_FREE_VTERM"},				\
-+	{0x15c, "H_RESET_EVENTS"},				\
-+	{0x160, "H_ALLOC_RESOURCE"},				\
-+	{0x164, "H_FREE_RESOURCE"},				\
-+	{0x168, "H_MODIFY_QP"},					\
-+	{0x16c, "H_QUERY_QP"},					\
-+	{0x170, "H_REREGISTER_PMR"},				\
-+	{0x174, "H_REGISTER_SMR"},				\
-+	{0x178, "H_QUERY_MR"},					\
-+	{0x17c, "H_QUERY_MW"},					\
-+	{0x180, "H_QUERY_HCA"},					\
-+	{0x184, "H_QUERY_PORT"},				\
-+	{0x188, "H_MODIFY_PORT"},				\
-+	{0x18c, "H_DEFINE_AQP1"},				\
-+	{0x190, "H_GET_TRACE_BUFFER"},				\
-+	{0x194, "H_DEFINE_AQP0"},				\
-+	{0x198, "H_RESIZE_MR"},					\
-+	{0x19c, "H_ATTACH_MCQP"},				\
-+	{0x1a0, "H_DETACH_MCQP"},				\
-+	{0x1a4, "H_CREATE_RPT"},				\
-+	{0x1a8, "H_REMOVE_RPT"},				\
-+	{0x1ac, "H_REGISTER_RPAGES"},				\
-+	{0x1b0, "H_DISABLE_AND_GETC"},				\
-+	{0x1b4, "H_ERROR_DATA"},				\
-+	{0x1b8, "H_GET_HCA_INFO"},				\
-+	{0x1bc, "H_GET_PERF_COUNT"},				\
-+	{0x1c0, "H_MANAGE_TRACE"},				\
-+	{0x1d4, "H_FREE_LOGICAL_LAN_BUFFER"},			\
-+	{0x1d8, "H_POLL_PENDING"},				\
-+	{0x1e4, "H_QUERY_INT_STATE"},				\
-+	{0x244, "H_ILLAN_ATTRIBUTES"},				\
-+	{0x250, "H_MODIFY_HEA_QP"},				\
-+	{0x254, "H_QUERY_HEA_QP"},				\
-+	{0x258, "H_QUERY_HEA"},					\
-+	{0x25c, "H_QUERY_HEA_PORT"},				\
-+	{0x260, "H_MODIFY_HEA_PORT"},				\
-+	{0x264, "H_REG_BCMC"},					\
-+	{0x268, "H_DEREG_BCMC"},				\
-+	{0x26c, "H_REGISTER_HEA_RPAGES"},			\
-+	{0x270, "H_DISABLE_AND_GET_HEA"},			\
-+	{0x274, "H_GET_HEA_INFO"},				\
-+	{0x278, "H_ALLOC_HEA_RESOURCE"},			\
-+	{0x284, "H_ADD_CONN"},					\
-+	{0x288, "H_DEL_CONN"},					\
-+	{0x298, "H_JOIN"},					\
-+	{0x2a4, "H_VASI_STATE"},				\
-+	{0x2b0, "H_ENABLE_CRQ"},				\
-+	{0x2b8, "H_GET_EM_PARMS"},				\
-+	{0x2d0, "H_SET_MPP"},					\
-+	{0x2d4, "H_GET_MPP"},					\
-+	{0x2ec, "H_HOME_NODE_ASSOCIATIVITY"},			\
-+	{0x2f4, "H_BEST_ENERGY"},				\
-+	{0x2fc, "H_XIRR_X"},					\
-+	{0x300, "H_RANDOM"},					\
-+	{0x304, "H_COP"},					\
-+	{0x314, "H_GET_MPP_X"},					\
-+	{0x31c, "H_SET_MODE"},					\
-+	{0xf000, "H_RTAS"}					\
-+
-+#endif
-diff --git a/tools/perf/arch/powerpc/util/kvm-stat.c b/tools/perf/arch/powerpc/util/kvm-stat.c
-index 27bc559b8b3a..74eee30398f8 100644
---- a/tools/perf/arch/powerpc/util/kvm-stat.c
-+++ b/tools/perf/arch/powerpc/util/kvm-stat.c
-@@ -1,9 +1,11 @@
- #include "util/kvm-stat.h"
- #include "util/parse-events.h"
-+#include "util/debug.h"
+diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+index 9f9dfda..b7a9a03 100644
+--- a/arch/powerpc/perf/hv-24x7.c
++++ b/arch/powerpc/perf/hv-24x7.c
+@@ -101,6 +101,7 @@ static bool catalog_entry_domain_is_valid(unsigned domain)
+ EVENT_DEFINE_RANGE_FORMAT(domain, config, 0, 3);
+ /* u16 */
+ EVENT_DEFINE_RANGE_FORMAT(core, config, 16, 31);
++EVENT_DEFINE_RANGE_FORMAT(chip, config, 16, 31);
+ EVENT_DEFINE_RANGE_FORMAT(vcpu, config, 16, 31);
+ /* u32, see "data_offset" */
+ EVENT_DEFINE_RANGE_FORMAT(offset, config, 32, 63);
+@@ -115,6 +116,7 @@ static struct attribute *format_attrs[] = {
+ 	&format_attr_domain.attr,
+ 	&format_attr_offset.attr,
+ 	&format_attr_core.attr,
++	&format_attr_chip.attr,
+ 	&format_attr_vcpu.attr,
+ 	&format_attr_lpar.attr,
+ 	NULL,
+@@ -289,10 +291,16 @@ static char *event_fmt(struct hv_24x7_event_data *event, unsigned domain)
+ 	const char *sindex;
+ 	const char *lpar;
  
- #include "book3s_hv_exits.h"
-+#include "book3s_hcalls.h"
+-	if (is_physical_domain(domain)) {
++	switch (domain) {
++	case HV_PERF_DOMAIN_PHYS_CHIP:
++		lpar = "0x0";
++		sindex = "chip";
++		break;
++	case HV_PERF_DOMAIN_PHYS_CORE:
+ 		lpar = "0x0";
+ 		sindex = "core";
+-	} else {
++		break;
++	default:
+ 		lpar = "?";
+ 		sindex = "vcpu";
+ 	}
+@@ -1089,10 +1097,16 @@ static int add_event_to_24x7_request(struct perf_event *event,
+ 		return -EINVAL;
+ 	}
  
--#define NR_TPS 2
-+#define NR_TPS 4
- 
- const char *vcpu_id_str = "vcpu_id";
- const int decode_str_len = 40;
-@@ -11,17 +13,77 @@ const char *kvm_entry_trace = "kvm_hv:kvm_guest_enter";
- const char *kvm_exit_trace = "kvm_hv:kvm_guest_exit";
- 
- define_exit_reasons_table(hv_exit_reasons, kvm_trace_symbol_exit);
-+define_exit_reasons_table(hcall_reasons, kvm_trace_symbol_hcall);
- 
- /* Tracepoints specific to ppc_book3s_hv */
- const char *ppc_book3s_hv_kvm_tp[] = {
- 	"kvm_hv:kvm_guest_enter",
- 	"kvm_hv:kvm_guest_exit",
-+	"kvm_hv:kvm_hcall_enter",
-+	"kvm_hv:kvm_hcall_exit",
-+	NULL,
- };
- 
- /* 1 extra placeholder for NULL */
- const char *kvm_events_tp[NR_TPS + 1];
- const char *kvm_exit_reason;
- 
-+static void hcall_event_get_key(struct perf_evsel *evsel,
-+				struct perf_sample *sample,
-+				struct event_key *key)
-+{
-+	key->info = 0;
-+	key->key = perf_evsel__intval(evsel, sample, "req");
-+}
-+
-+static const char *get_hcall_exit_reason(u64 exit_code)
-+{
-+	struct exit_reasons_table *tbl = hcall_reasons;
-+
-+	while (tbl->reason != NULL) {
-+		if (tbl->exit_code == exit_code)
-+			return tbl->reason;
-+		tbl++;
+-	if (is_physical_domain(event_get_domain(event)))
++	switch (event_get_domain(event)) {
++	case HV_PERF_DOMAIN_PHYS_CHIP:
++		idx = event_get_chip(event);
++		break;
++	case HV_PERF_DOMAIN_PHYS_CORE:
+ 		idx = event_get_core(event);
+-	else
++		break;
++	default:
+ 		idx = event_get_vcpu(event);
 +	}
-+
-+	pr_debug("Unknown hcall code: %lld\n",
-+	       (unsigned long long)exit_code);
-+	return "UNKNOWN";
-+}
-+
-+static bool hcall_event_end(struct perf_evsel *evsel,
-+			    struct perf_sample *sample __maybe_unused,
-+			    struct event_key *key __maybe_unused)
-+{
-+	return (!strcmp(evsel->name, kvm_events_tp[3]));
-+}
-+
-+static bool hcall_event_begin(struct perf_evsel *evsel,
-+			      struct perf_sample *sample, struct event_key *key)
-+{
-+	if (!strcmp(evsel->name, kvm_events_tp[2])) {
-+		hcall_event_get_key(evsel, sample, key);
-+		return true;
-+	}
-+
-+	return false;
-+}
-+static void hcall_event_decode_key(struct perf_kvm_stat *kvm __maybe_unused,
-+				   struct event_key *key,
-+				   char *decode)
-+{
-+	const char *hcall_reason = get_hcall_exit_reason(key->key);
-+
-+	scnprintf(decode, decode_str_len, "%s", hcall_reason);
-+}
-+
-+static struct kvm_events_ops hcall_events = {
-+	.is_begin_event = hcall_event_begin,
-+	.is_end_event = hcall_event_end,
-+	.decode_key = hcall_event_decode_key,
-+	.name = "HCALL-EVENT",
-+};
-+
- static struct kvm_events_ops exit_events = {
- 	.is_begin_event = exit_event_begin,
- 	.is_end_event = exit_event_end,
-@@ -31,6 +93,7 @@ static struct kvm_events_ops exit_events = {
  
- struct kvm_reg_events_ops kvm_reg_events_ops[] = {
- 	{ .name = "vmexit", .ops = &exit_events },
-+	{ .name = "hcall", .ops = &hcall_events },
- 	{ NULL, NULL },
- };
- 
+ 	i = request_buffer->num_requests++;
+ 	req = &request_buffer->requests[i];
 -- 
-2.5.0
+2.5.3
