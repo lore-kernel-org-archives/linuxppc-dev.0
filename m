@@ -1,27 +1,21 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0172.hostedemail.com
- [216.40.44.172])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D16C1A0063
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jan 2016 04:37:22 +1100 (AEDT)
-Message-ID: <1454175435.7329.22.camel@perches.com>
-Subject: Re: Build failure: -Wno-unused-const-variable DNE on old GCC
-From: Joe Perches <joe@perches.com>
-To: "Maciej W. Rozycki" <macro@imgtec.com>, Brian Norris
- <computersforpeace@gmail.com>
-Cc: Michal Marek <mmarek@suse.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Anton Blanchard <anton@au1.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Michael Neuling <mikey@neuling.org>,  linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Olof Johansson <olof@lixom.net>
-Date: Sat, 30 Jan 2016 09:37:15 -0800
-In-Reply-To: <alpine.DEB.2.00.1601301413370.5958@tp.orcam.me.uk>
-References: <20160107185406.GA65420@google.com>
- <1452195444.4028.21.camel@perches.com> <568EC026.2020207@suse.com>
- <1452196651.4028.31.camel@perches.com> <20160107201826.GA120952@google.com>
- <alpine.DEB.2.00.1601301413370.5958@tp.orcam.me.uk>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3D5EE1A006D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jan 2016 18:07:08 +1100 (AEDT)
+Received: by mail-pa0-x244.google.com with SMTP id pv5so5683925pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jan 2016 23:07:08 -0800 (PST)
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: broonie@kernel.org
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, lgirdwood@gmail.com, tiwai@suse.de,
+ perex@perex.cz
+Subject: [PATCH] ASoC: fsl-asoc-card: Don't add DAPM routes for ASRC if it
+ doesn't exist
+Date: Sat, 30 Jan 2016 23:07:00 -0800
+Message-Id: <1454224020-19746-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,29 +25,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2016-01-30 at 14:20 +0000, Maciej W. Rozycki wrote:
-> On Thu, 7 Jan 2016, Brian Norris wrote:
-> 
-> > > Perhaps most uses of -Werror without some CONFIG_ guard
-> > > should be removed or replaced by some other mechanism.
-> > 
-> > +1000. I'd personally like to see all one-off uses of -Werror removed.
-> > 
-> > > $ git grep -E "=\s*\-Werror" | grep -v CONFIG
-> > > [...]
-> > > arch/alpha/lib/Makefile:ccflags-y := -Werror
-> > > arch/alpha/mm/Makefile:ccflags-y := -Werror
-> > > arch/alpha/oprofile/Makefile:ccflags-y := -Werror -Wno-sign-compare
-> > > arch/metag/oprofile/Makefile:ccflags-y	+= -Werror
-> > > arch/mips/Kbuild:subdir-ccflags-y := -Werror
-> > 
-> > ^^ I always patch this one out when build-testing MIPS, since I like to
-> > turn up warning levels (e.g., W=1), but not kill the build entirely.
-> 
->  The MIPS port switched on -Werror years ago, because people submitted 
-> awful code and couldn't be bothered unless the build crashed.  You're 
-> welcome to patch your own tree, however I maintain it was a very good 
-> decision, and TBH I think -Werror should be on globally.
+From: Nicolin Chen <nicolinc@nvidia.com>
 
-That'd be easy to do with some CONFIG_COMPILER_ERROR type
-rather than in specific directory Makefiles
+There are a pair of warnings when ASRC is absent in the DTB:
+  fsl-asoc-card sound: ASoC: no source widget found for ASRC-Playback
+  fsl-asoc-card sound: ASoC: Failed to add route ASRC-Playback -> direct -> CPU-Playback
+  fsl-asoc-card sound: ASoC: no sink widget found for ASRC-Capture
+  fsl-asoc-card sound: ASoC: Failed to add route CPU-Capture -> direct -> ASRC-Capture
+
+This is because the driver is still trying to add DAPM routes for ASRC
+even if it doesn't exist on that platform.
+
+The warnings are harmless but it might be annoying. So this patch drops
+the DAPM routes of ASRC when it's absent in the DAI link.
+
+Signed-off-by: Nicolin Chen <nicolinc@nvidia.com>
+---
+ sound/soc/fsl/fsl-asoc-card.c | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index 562b3bd..3d40797 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -99,19 +99,26 @@ struct fsl_asoc_card_priv {
+ /**
+  * This dapm route map exsits for DPCM link only.
+  * The other routes shall go through Device Tree.
++ *
++ * Note: keep all ASRC routes in the second half
++ *	 to drop them easily for non-ASRC cases.
+  */
+ static const struct snd_soc_dapm_route audio_map[] = {
+-	{"CPU-Playback",  NULL, "ASRC-Playback"},
++	/* 1st half -- Normal DAPM routes */
+ 	{"Playback",  NULL, "CPU-Playback"},
+-	{"ASRC-Capture",  NULL, "CPU-Capture"},
+ 	{"CPU-Capture",  NULL, "Capture"},
++	/* 2nd half -- ASRC DAPM routes */
++	{"CPU-Playback",  NULL, "ASRC-Playback"},
++	{"ASRC-Capture",  NULL, "CPU-Capture"},
+ };
+ 
+ static const struct snd_soc_dapm_route audio_map_ac97[] = {
+-	{"AC97 Playback",  NULL, "ASRC-Playback"},
++	/* 1st half -- Normal DAPM routes */
+ 	{"Playback",  NULL, "AC97 Playback"},
+-	{"ASRC-Capture",  NULL, "AC97 Capture"},
+ 	{"AC97 Capture",  NULL, "Capture"},
++	/* 2nd half -- ASRC DAPM routes */
++	{"AC97 Playback",  NULL, "ASRC-Playback"},
++	{"ASRC-Capture",  NULL, "AC97 Capture"},
+ };
+ 
+ /* Add all possible widgets into here without being redundant */
+@@ -593,6 +600,10 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 	priv->card.dapm_widgets = fsl_asoc_card_dapm_widgets;
+ 	priv->card.num_dapm_widgets = ARRAY_SIZE(fsl_asoc_card_dapm_widgets);
+ 
++	/* Drop the second half of DAPM routes -- ASRC */
++	if (!asrc_pdev)
++		priv->card.num_dapm_routes /= 2;
++
+ 	memcpy(priv->dai_link, fsl_asoc_card_dai,
+ 	       sizeof(struct snd_soc_dai_link) * ARRAY_SIZE(priv->dai_link));
+ 
+-- 
+1.9.1
