@@ -1,18 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael.heltne@gmail.com>
+Received: from mail-yk0-x230.google.com (mail-yk0-x230.google.com
+ [IPv6:2607:f8b0:4002:c07::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 51A4F1A0167
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Feb 2016 11:13:19 +1100 (AEDT)
-From: David Gibson <david@gibson.dropbear.id.au>
-To: mpe@ellerman.id.au,
-	benh@kernel.crashing.org
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, alex.williamson@redhat.com,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: [RESEND PATCH] vfio: Enable VFIO device for powerpc
-Date: Mon,  1 Feb 2016 11:14:15 +1100
-Message-Id: <1454285655-8162-1-git-send-email-david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8A7431A006C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Feb 2016 12:01:41 +1100 (AEDT)
+Received: by mail-yk0-x230.google.com with SMTP id z7so56004621yka.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jan 2016 17:01:41 -0800 (PST)
+MIME-Version: 1.0
+Date: Mon, 1 Feb 2016 01:01:38 +0000
+Message-ID: <CANtoAtNkjrJfac0nR7ay7LKToMf53KtpVZNv0+xabHn1QSwRkA@mail.gmail.com>
+Subject: =?UTF-8?Q?Failure_on_latest_GIT_=2D_implicit_declaration_of_func?=
+ =?UTF-8?Q?tion_=E2=80=98pte=5Fswp=5Fclear=5Fsoft=5Fdirty=E2=80=99?=
+From: Mike <michael.heltne@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=94eb2c08233459dd3e052aaaedb7
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,46 +24,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ec53500f "kvm: Add VFIO device" added a special KVM pseudo-device which is
-used to handle any necessary interactions between KVM and VFIO.
+--94eb2c08233459dd3e052aaaedb7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Currently that device is built on x86 and ARM, but not powerpc, although
-powerpc does support both KVM and VFIO.  This makes things awkward in
-userspace
+Building on ppc32
 
-Currently qemu prints an alarming error message if you attempt to use VFIO
-and it can't initialize the KVM VFIO device.  We don't want to remove the
-warning, because lack of the KVM VFIO device could mean coherency problems
-on x86.  On powerpc, however, the error is harmless but looks disturbing,
-and a test based on host architecture in qemu would be ugly, and break if
-we do need the KVM VFIO device for something important in future.
+In file included from fs/proc/task_mmu.c:14:0:
+include/linux/swapops.h: In function =E2=80=98pte_to_swp_entry=E2=80=99:
+include/linux/swapops.h:69:6: error: implicit declaration of function
+=E2=80=98pte_swp_soft_dirty=E2=80=99 [-Werror=3Dimplicit-function-declarati=
+on]
+  if (pte_swp_soft_dirty(pte))
+      ^
+include/linux/swapops.h:70:9: error: implicit declaration of function
+=E2=80=98pte_swp_clear_soft_dirty=E2=80=99 [-Werror=3Dimplicit-function-dec=
+laration]
+   pte =3D pte_swp_clear_soft_dirty(pte);
+         ^
+  if [ "-pg" =3D "-pg" ]; then set -e ; perl ./scripts/recordmcount.pl
+"powerpc" "big" "32" "objdump" "objcopy" "gcc -mbig-endian -m32 -Wall
+-Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common
+-Werror-implicit-function-declaration -Wno-format-security -std=3Dgnu89
+-msoft-float -pipe -Iarch/powerpc -ffixed-r2 -mmultiple -mno-altivec
+-mno-vsx -mno-spe -mspe=3Dno -funit-at-a-time -fno-dwarf2-cfi-asm -mno-stri=
+ng
+-mcpu=3Dpowerpc -mno-sched-epilog -Wa,-maltivec
+-fno-delete-null-pointer-checks -O2 --param=3Dallow-store-data-races=3D0
+-Wframe-larger-than=3D1024  -fno-stack-protector -Wno-unused-but-set-variab=
+le
+ -fno-var-tracking-assignments -pg  -Wdeclaration-after-statement
+-Wno-pointer-sign -fno-strict-overflow -fconserve-stack
+-Werror=3Dimplicit-int -Werror=3Dstrict-prototypes -Werror=3Ddate-time
+-DCC_HAVE_ASM_GOTO    " "ld -EB -m elf32ppc" "nm" "" "" "0"
+"fs/notify/inotify/inotify_user.o"; fi;
+fs/proc/task_mmu.c: In function =E2=80=98pte_to_pagemap_entry=E2=80=99:
+fs/proc/task_mmu.c:1158:7: error: implicit declaration of function
+=E2=80=98pte_soft_dirty=E2=80=99 [-Werror=3Dimplicit-function-declaration]
 
-There's nothing preventing the KVM VFIO device from being built for
-powerpc, so this patch turns it on.  It won't actually do anything, since
-we don't define any of the arch_*() hooks, but it will make qemu happy and
-we can extend it in future if we need to.
+--94eb2c08233459dd3e052aaaedb7
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-Reviewed-by: Eric Auger <eric.auger@linaro.org>
----
- arch/powerpc/kvm/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+<div dir=3D"ltr"><div>Building on ppc32=C2=A0</div><div><br></div><div>In f=
+ile included from fs/proc/task_mmu.c:14:0:</div><div>include/linux/swapops.=
+h: In function =E2=80=98pte_to_swp_entry=E2=80=99:</div><div>include/linux/=
+swapops.h:69:6: error: implicit declaration of function =E2=80=98pte_swp_so=
+ft_dirty=E2=80=99 [-Werror=3Dimplicit-function-declaration]</div><div>=C2=
+=A0 if (pte_swp_soft_dirty(pte))</div><div>=C2=A0 =C2=A0 =C2=A0 ^</div><div=
+>include/linux/swapops.h:70:9: error: implicit declaration of function =E2=
+=80=98pte_swp_clear_soft_dirty=E2=80=99 [-Werror=3Dimplicit-function-declar=
+ation]</div><div>=C2=A0 =C2=A0pte =3D pte_swp_clear_soft_dirty(pte);</div><=
+div>=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0^</div><div>=C2=A0 if [ &quot;-pg&quo=
+t; =3D &quot;-pg&quot; ]; then set -e ; perl ./scripts/<a href=3D"http://re=
+cordmcount.pl">recordmcount.pl</a> &quot;powerpc&quot; &quot;big&quot; &quo=
+t;32&quot; &quot;objdump&quot; &quot;objcopy&quot; &quot;gcc -mbig-endian -=
+m32 -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -=
+fno-common -Werror-implicit-function-declaration -Wno-format-security -std=
+=3Dgnu89 -msoft-float -pipe -Iarch/powerpc -ffixed-r2 -mmultiple -mno-altiv=
+ec -mno-vsx -mno-spe -mspe=3Dno -funit-at-a-time -fno-dwarf2-cfi-asm -mno-s=
+tring -mcpu=3Dpowerpc -mno-sched-epilog -Wa,-maltivec -fno-delete-null-poin=
+ter-checks -O2 --param=3Dallow-store-data-races=3D0 -Wframe-larger-than=3D1=
+024 =C2=A0-fno-stack-protector -Wno-unused-but-set-variable =C2=A0-fno-var-=
+tracking-assignments -pg =C2=A0-Wdeclaration-after-statement -Wno-pointer-s=
+ign -fno-strict-overflow -fconserve-stack -Werror=3Dimplicit-int -Werror=3D=
+strict-prototypes -Werror=3Ddate-time -DCC_HAVE_ASM_GOTO =C2=A0 =C2=A0&quot=
+; &quot;ld -EB -m elf32ppc&quot; &quot;nm&quot; &quot;&quot; &quot;&quot; &=
+quot;0&quot; &quot;fs/notify/inotify/inotify_user.o&quot;; fi;</div><div>fs=
+/proc/task_mmu.c: In function =E2=80=98pte_to_pagemap_entry=E2=80=99:</div>=
+<div>fs/proc/task_mmu.c:1158:7: error: implicit declaration of function =E2=
+=80=98pte_soft_dirty=E2=80=99 [-Werror=3Dimplicit-function-declaration]</di=
+v><div><br></div></div>
 
-Sorry for the double send, I messed up my addresses.  This was sent
-quite a long time ago, but seems to have slipped through the cracks.
-
-diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-index 0570eef..7f7b6d8 100644
---- a/arch/powerpc/kvm/Makefile
-+++ b/arch/powerpc/kvm/Makefile
-@@ -8,7 +8,7 @@ ccflags-y := -Ivirt/kvm -Iarch/powerpc/kvm
- KVM := ../../../virt/kvm
- 
- common-objs-y = $(KVM)/kvm_main.o $(KVM)/coalesced_mmio.o \
--		$(KVM)/eventfd.o
-+		$(KVM)/eventfd.o $(KVM)/vfio.o
- 
- CFLAGS_e500_mmu.o := -I.
- CFLAGS_e500_mmu_host.o := -I.
--- 
-2.5.0
+--94eb2c08233459dd3e052aaaedb7--
