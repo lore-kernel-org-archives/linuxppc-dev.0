@@ -1,35 +1,37 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A51D21A0166
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Feb 2016 18:12:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A619F1A0166
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Feb 2016 19:32:04 +1100 (AEDT)
 Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 1 Feb 2016 12:41:59 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u117Bli822937952
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Feb 2016 12:41:47 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u117BhAu006344
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Feb 2016 12:41:46 +0530
-Message-ID: <56AF0523.60902@linux.vnet.ibm.com>
-Date: Mon, 01 Feb 2016 12:41:31 +0530
+ Mon, 1 Feb 2016 18:32:04 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 754883578058
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Feb 2016 19:32:00 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u118VrMe27525358
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Feb 2016 19:32:02 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u118VRYw019064
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Feb 2016 19:31:27 +1100
+Message-ID: <56AF17CD.3080300@linux.vnet.ibm.com>
+Date: Mon, 01 Feb 2016 14:01:09 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: David Gibson <david@gibson.dropbear.id.au>, paulus@samba.org,
  mpe@ellerman.id.au, benh@kernel.crashing.org
 CC: aik@ozlabs.ru, lvivier@redhat.com, thuth@redhat.com,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFCv2 6/9] pseries: Add hypercall wrappers for hash page table
- resizing
+Subject: Re: [RFCv2 7/9] pseries: Add support for hash table resizing
 References: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
- <1454045043-25545-7-git-send-email-david@gibson.dropbear.id.au>
-In-Reply-To: <1454045043-25545-7-git-send-email-david@gibson.dropbear.id.au>
+ <1454045043-25545-8-git-send-email-david@gibson.dropbear.id.au>
+In-Reply-To: <1454045043-25545-8-git-send-email-david@gibson.dropbear.id.au>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -41,61 +43,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 01/29/2016 10:54 AM, David Gibson wrote:
-> This adds the hypercall numbers and wrapper functions for the hash page
-> table resizing hypercalls.
-> 
-> These are experimental "platform specific" values for now, until we have a
-> formal PAPR update.
-> 
-> It also adds a new firmware feature flat to track the presence of the
-> HPT resizing calls.
 
-Its a flag   ....................... ^^^^^^^ here.
+> +
+> +static int pseries_lpar_resize_hpt_commit(void *data)
+> +{
+> +	struct hpt_resize_state *state = data;
+> +
+> +	state->commit_rc = plpar_resize_hpt_commit(0, state->shift);
+> +	if (state->commit_rc != H_SUCCESS)
+> +		return -EIO;
+> +
+> +	/* Hypervisor has transitioned the HTAB, update our globals */
+> +	ppc64_pft_size = state->shift;
+> +	htab_size_bytes = 1UL << ppc64_pft_size;
+> +	htab_hash_mask = (htab_size_bytes >> 7) - 1;
+> +
+> +	return 0;
+> +}
+> +
 
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> ---
->  arch/powerpc/include/asm/firmware.h       |  5 +++--
->  arch/powerpc/include/asm/hvcall.h         |  2 ++
->  arch/powerpc/include/asm/plpar_wrappers.h | 12 ++++++++++++
->  arch/powerpc/platforms/pseries/firmware.c |  1 +
->  4 files changed, 18 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-> index b062924..32435d2 100644
-> --- a/arch/powerpc/include/asm/firmware.h
-> +++ b/arch/powerpc/include/asm/firmware.h
-> @@ -42,7 +42,7 @@
->  #define FW_FEATURE_SPLPAR	ASM_CONST(0x0000000000100000)
->  #define FW_FEATURE_LPAR		ASM_CONST(0x0000000000400000)
->  #define FW_FEATURE_PS3_LV1	ASM_CONST(0x0000000000800000)
-> -/* Free				ASM_CONST(0x0000000001000000) */
-> +#define FW_FEATURE_HPT_RESIZE	ASM_CONST(0x0000000001000000)
->  #define FW_FEATURE_CMO		ASM_CONST(0x0000000002000000)
->  #define FW_FEATURE_VPHN		ASM_CONST(0x0000000004000000)
->  #define FW_FEATURE_XCMO		ASM_CONST(0x0000000008000000)
-> @@ -66,7 +66,8 @@ enum {
->  		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
->  		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
->  		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
-> -		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
-> +		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
-> +		FW_FEATURE_HPT_RESIZE,
->  	FW_FEATURE_PSERIES_ALWAYS = 0,
->  	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
->  	FW_FEATURE_POWERNV_ALWAYS = 0,
-> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-> index e3b54dd..195e080 100644
-> --- a/arch/powerpc/include/asm/hvcall.h
-> +++ b/arch/powerpc/include/asm/hvcall.h
-> @@ -293,6 +293,8 @@
->  
->  /* Platform specific hcalls, used by KVM */
->  #define H_RTAS			0xf000
-> +#define H_RESIZE_HPT_PREPARE	0xf003
-> +#define H_RESIZE_HPT_COMMIT	0xf004
+snip
 
-This sound better and matches FW_FEATURE_HPT_RESIZE ?
+> +/* Must be called in user context */
+> +static int pseries_lpar_resize_hpt(unsigned long shift)
+> +{
+> +	struct hpt_resize_state state = {
+> +		.shift = shift,
+> +		.commit_rc = H_FUNCTION,
 
-#define H_HPT_RESIZE_PREPARE	0xf003
-#define H_HPT_RESIZE_COMMIT	0xf004
+> +
+> +	rc = stop_machine(pseries_lpar_resize_hpt_commit, &state, NULL);
+
+With my limited knowledge of stop_machine, wondering if the current
+or any future version of 'pseries_lpar_resize_hpt_commit' function
+can cause HPT change (page fault path) while stop is executing it.
