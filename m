@@ -1,39 +1,25 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <fengguang.wu@intel.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C5881A0190
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 04:18:06 +1100 (AEDT)
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9E0C6140C13
- for <linuxppc-dev@ozlabs.org>; Tue,  2 Feb 2016 04:18:04 +1100 (AEDT)
-Received: from localhost
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 1 Feb 2016 22:47:58 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u11HHtXB60883186
- for <linuxppc-dev@ozlabs.org>; Mon, 1 Feb 2016 22:47:55 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u11MljiN025530
- for <linuxppc-dev@ozlabs.org>; Tue, 2 Feb 2016 04:17:45 +0530
-Subject: [PATCH] ppc64 boot: Wait for boot cpu to show up if nr_cpus limit
- is about to hit.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Milton Miller <miltonm@us.ibm.com>
-Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 497881A0190
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 05:37:06 +1100 (AEDT)
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by ozlabs.org (Postfix) with ESMTP id A3D75140C31
+ for <linuxppc-dev@ozlabs.org>; Tue,  2 Feb 2016 05:37:04 +1100 (AEDT)
+Date: Tue, 2 Feb 2016 02:35:51 +0800
+From: kbuild test robot <lkp@intel.com>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: kbuild-all@01.org, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Milton Miller <miltonm@us.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
  Anton Blanchard <anton@samba.org>
-Date: Mon, 01 Feb 2016 22:47:53 +0530
-Message-ID: <20160201171444.3781.86591.stgit@mars.in.ibm.com>
+Subject: Re: [PATCH] ppc64 boot: Wait for boot cpu to show up if nr_cpus
+ limit is about to hit.
+Message-ID: <201602020236.4HiYCOw3%fengguang.wu@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: multipart/mixed; boundary="17pEHd4RhPHOinZp"
+In-Reply-To: <20160201171444.3781.86591.stgit@mars.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,225 +29,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-The kernel boot parameter 'nr_cpus=' allows one to specify number of
-possible cpus in the system. In the normal scenario the first cpu (cpu0)
-that shows up is the boot cpu and hence it gets covered under nr_cpus
-limit.
+--17pEHd4RhPHOinZp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-But this assumption will be broken in kdump scenario where kdump kenrel
-after a crash can boot up on an non-zero boot cpu. The paca structure
-allocation depends on value of nr_cpus and is indexed using logical cpu
-ids. This definetly will be an issue if boot cpu id > nr_cpus
+Hi Mahesh,
 
-This patch modifies allocate_pacas() and smp_setup_cpu_maps() to
-accommodate boot cpu for the case where boot_cpuid > nr_cpu_ids.
+[auto build test ERROR on powerpc/next]
+[also build test ERROR on v4.5-rc2 next-20160201]
+[if your patch is applied to the wrong git tree, please drop us a note to help improving the system]
 
-This change would help to reduce the memory reservation requirement for
-kdump on ppc64.
+url:    https://github.com/0day-ci/linux/commits/Mahesh-J-Salgaonkar/ppc64-boot-Wait-for-boot-cpu-to-show-up-if-nr_cpus-limit-is-about-to-hit/20160202-012114
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+config: powerpc-allnoconfig (attached as .config)
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        make.cross ARCH=powerpc 
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+All errors (new ones prefixed by >>):
+
+   arch/powerpc/kernel/prom.c: In function 'early_init_dt_scan_cpus':
+>> arch/powerpc/kernel/prom.c:345:14: error: lvalue required as left operand of assignment
+      nr_cpu_ids = _ALIGN_UP(nr_cpu_ids, nthreads);
+                 ^
+
+vim +345 arch/powerpc/kernel/prom.c
+
+   339	
+   340		/*
+   341		 * Now that we know threads per core lets align nr_cpu_ids to
+   342		 * correct SMT value.
+   343		 */
+   344		if (nr_cpu_ids % nthreads) {
+ > 345			nr_cpu_ids = _ALIGN_UP(nr_cpu_ids, nthreads);
+   346			pr_info("Aligned nr_cpus to SMT=%d, nr_cpu_ids = %d\n",
+   347					 nthreads, nr_cpu_ids);
+   348		}
+
 ---
- arch/powerpc/include/asm/paca.h    |    3 +++
- arch/powerpc/include/asm/smp.h     |    1 +
- arch/powerpc/kernel/paca.c         |   23 ++++++++++++++++++----
- arch/powerpc/kernel/prom.c         |   37 +++++++++++++++++++++++++++++++++++-
- arch/powerpc/kernel/setup-common.c |   25 ++++++++++++++++++++++++
- 5 files changed, 83 insertions(+), 6 deletions(-)
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 70bd438..9be48b4 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -41,6 +41,9 @@ extern unsigned int debug_smp_processor_id(void); /* from linux/smp.h */
- #define get_lppaca()	(get_paca()->lppaca_ptr)
- #define get_slb_shadow()	(get_paca()->slb_shadow_ptr)
- 
-+/* Maximum number of threads per core. */
-+#define	MAX_SMT		8
-+
- struct task_struct;
- 
- /*
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 825663c..0a5b99f 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -30,6 +30,7 @@
- #include <asm/percpu.h>
- 
- extern int boot_cpuid;
-+extern int boot_hw_cpuid;
- extern int spinning_secondaries;
- 
- extern void cpu_die(void);
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index 01ea0ed..96e5715 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -206,6 +206,7 @@ void __init allocate_pacas(void)
- {
- 	u64 limit;
- 	int cpu;
-+	int nr_cpus;
- 
- 	limit = ppc64_rma_size;
- 
-@@ -218,20 +219,32 @@ void __init allocate_pacas(void)
- 	limit = min(0x10000000ULL, limit);
- #endif
- 
--	paca_size = PAGE_ALIGN(sizeof(struct paca_struct) * nr_cpu_ids);
-+	/*
-+	 * Always align up the nr_cpu_ids to SMT threads and allocate
-+	 * the paca. This will help us to prepare for a situation where
-+	 * boot cpu id > nr_cpus_id. We will use the last nthreads
-+	 * slots (nthreads == threads per core) to accommodate a core
-+	 * that contains boot cpu thread.
-+	 *
-+	 * Do not change nr_cpu_ids value here. Let us do that in
-+	 * early_init_dt_scan_cpus() where we know exact value
-+	 * of threads per core.
-+	 */
-+	nr_cpus = _ALIGN_UP(nr_cpu_ids, MAX_SMT);
-+	paca_size = PAGE_ALIGN(sizeof(struct paca_struct) * nr_cpus);
- 
- 	paca = __va(memblock_alloc_base(paca_size, PAGE_SIZE, limit));
- 	memset(paca, 0, paca_size);
- 
- 	printk(KERN_DEBUG "Allocated %u bytes for %d pacas at %p\n",
--		paca_size, nr_cpu_ids, paca);
-+		paca_size, nr_cpus, paca);
- 
--	allocate_lppacas(nr_cpu_ids, limit);
-+	allocate_lppacas(nr_cpus, limit);
- 
--	allocate_slb_shadows(nr_cpu_ids, limit);
-+	allocate_slb_shadows(nr_cpus, limit);
- 
- 	/* Can't use for_each_*_cpu, as they aren't functional yet */
--	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
-+	for (cpu = 0; cpu < nr_cpus; cpu++)
- 		initialise_paca(&paca[cpu], cpu);
- }
- 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 7030b03..9d1568f 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -291,6 +291,29 @@ static void __init check_cpu_feature_properties(unsigned long node)
- 	}
- }
- 
-+/*
-+ * Adjust the logical id of a boot cpu to fall under nr_cpu_ids. Map it to
-+ * last core slot in the allocated paca array.
-+ *
-+ * e.g. on SMT=8 system, kernel booted with nr_cpus=1 and boot cpu = 33,
-+ * align nr_cpu_ids to MAX_SMT value 8. Allocate paca array to hold up-to
-+ * MAX_SMT=8 cpus. Since boot cpu 33 is greater than nr_cpus (8), adjust
-+ * its logical id so that new id becomes less than nr_cpu_ids. Make sure
-+ * that boot cpu's new logical id is aligned to its thread id and falls
-+ * under last nthreads slots available in paca array. In this case the
-+ * boot cpu 33 is adjusted to new boot cpu id 1.
-+ *
-+ */
-+static inline void adjust_boot_cpuid(int nthreads, int phys_id)
-+{
-+	boot_hw_cpuid = phys_id;
-+	if (boot_cpuid >= nr_cpu_ids) {
-+		boot_cpuid = (boot_cpuid % nthreads) + (nr_cpu_ids - nthreads);
-+		pr_info("Adjusted logical boot cpu id: logical %d physical %d\n",
-+			boot_cpuid, phys_id);
-+	}
-+}
-+
- static int __init early_init_dt_scan_cpus(unsigned long node,
- 					  const char *uname, int depth,
- 					  void *data)
-@@ -315,6 +338,16 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 	nthreads = len / sizeof(int);
- 
- 	/*
-+	 * Now that we know threads per core lets align nr_cpu_ids to
-+	 * correct SMT value.
-+	 */
-+	if (nr_cpu_ids % nthreads) {
-+		nr_cpu_ids = _ALIGN_UP(nr_cpu_ids, nthreads);
-+		pr_info("Aligned nr_cpus to SMT=%d, nr_cpu_ids = %d\n",
-+				 nthreads, nr_cpu_ids);
-+	}
-+
-+	/*
- 	 * Now see if any of these threads match our boot cpu.
- 	 * NOTE: This must match the parsing done in smp_setup_cpu_maps.
- 	 */
-@@ -352,7 +385,9 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 	DBG("boot cpu: logical %d physical %d\n", found,
- 	    be32_to_cpu(intserv[found_thread]));
- 	boot_cpuid = found;
--	set_hard_smp_processor_id(found, be32_to_cpu(intserv[found_thread]));
-+	adjust_boot_cpuid(nthreads, be32_to_cpu(intserv[found_thread]));
-+	set_hard_smp_processor_id(boot_cpuid,
-+					be32_to_cpu(intserv[found_thread]));
- 
- 	/*
- 	 * PAPR defines "logical" PVR values for cpus that
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 44c8d03..93c7e5f 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -77,6 +77,7 @@ struct machdep_calls *machine_id;
- EXPORT_SYMBOL(machine_id);
- 
- int boot_cpuid = -1;
-+int boot_hw_cpuid = -1;
- EXPORT_SYMBOL_GPL(boot_cpuid);
- 
- unsigned long klimit = (unsigned long) _end;
-@@ -444,6 +445,7 @@ void __init smp_setup_cpu_maps(void)
- 	struct device_node *dn = NULL;
- 	int cpu = 0;
- 	int nthreads = 1;
-+	bool boot_cpu_added = false;
- 
- 	DBG("smp_setup_cpu_maps()\n");
- 
-@@ -470,6 +472,24 @@ void __init smp_setup_cpu_maps(void)
- 		}
- 
- 		nthreads = len / sizeof(int);
-+		/*
-+		 * If boot cpu hasn't been added to paca and there are only
-+		 * last nthreads slots available in paca array then wait
-+		 * for boot cpu to show up.
-+		 */
-+		if (!boot_cpu_added && (cpu + nthreads) >= nr_cpu_ids) {
-+			int found = 0;
-+
-+			DBG("Holding last nthreads paca slots for boot cpu\n");
-+			for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
-+				if (boot_hw_cpuid == be32_to_cpu(intserv[j])) {
-+					found = 1;
-+					break;
-+				}
-+			}
-+			if (!found)
-+				continue;
-+		}
- 
- 		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
- 			bool avail;
-@@ -485,6 +505,11 @@ void __init smp_setup_cpu_maps(void)
- 			set_cpu_present(cpu, avail);
- 			set_hard_smp_processor_id(cpu, be32_to_cpu(intserv[j]));
- 			set_cpu_possible(cpu, true);
-+			if (boot_hw_cpuid == be32_to_cpu(intserv[j])) {
-+				DBG("Boot cpu %d (hard id %d) added to paca\n",
-+				    cpu, be32_to_cpu(intserv[j]));
-+				boot_cpu_added = true;
-+			}
- 			cpu++;
- 		}
- 	}
+--17pEHd4RhPHOinZp
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
+
+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
+
+--17pEHd4RhPHOinZp--
