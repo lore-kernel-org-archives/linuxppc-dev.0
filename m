@@ -1,39 +1,41 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 329B11A0166
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Feb 2016 19:52:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B67911A0166
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Feb 2016 20:13:40 +1100 (AEDT)
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 1 Feb 2016 18:52:41 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 43D882BB005B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Feb 2016 19:52:38 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u118qUml61931576
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Feb 2016 19:52:38 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u118q5ko025199
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Feb 2016 19:52:05 +1100
-Message-ID: <56AF1CA2.30603@linux.vnet.ibm.com>
-Date: Mon, 01 Feb 2016 14:21:46 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Mon, 1 Feb 2016 14:43:36 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u119DYqf62193764
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Feb 2016 14:43:34 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u119DTeC029001
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Feb 2016 14:43:33 +0530
+Subject: Re: [RFC PATCH v3 3/5] PCI: Add host bridge attribute to indicate
+ filtering of MSIs is supported
+To: Alex Williamson <alex.williamson@redhat.com>
+References: <1452841574-2781-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1452841574-2781-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1454021182.23148.6.camel@redhat.com> <56AB4182.5060501@linux.vnet.ibm.com>
+ <163133676.20416948.1454094344181.JavaMail.zimbra@redhat.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-doc@vger.kernel.org, bhelgaas@google.com, corbet@lwn.net,
+ aik@ozlabs.ru, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
+ zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Message-ID: <56AF21CE.8000206@linux.vnet.ibm.com>
+Date: Mon, 1 Feb 2016 17:13:50 +0800
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>, paulus@samba.org,
- mpe@ellerman.id.au, benh@kernel.crashing.org
-CC: aik@ozlabs.ru, lvivier@redhat.com, thuth@redhat.com,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFCv2 9/9] pseries: Automatically resize HPT for memory hot
- add/remove
-References: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
- <1454045043-25545-10-git-send-email-david@gibson.dropbear.id.au>
-In-Reply-To: <1454045043-25545-10-git-send-email-david@gibson.dropbear.id.au>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <163133676.20416948.1454094344181.JavaMail.zimbra@redhat.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,27 +45,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/29/2016 10:54 AM, David Gibson wrote:
->  #ifdef CONFIG_MEMORY_HOTPLUG
-> +void resize_hpt_for_hotplug(unsigned long new_mem_size)
-> +{
-> +	unsigned target_hpt_shift;
-> +
-> +	if (!ppc_md.resize_hpt)
-> +		return;
-> +
-> +	target_hpt_shift = htab_shift_for_mem_size(new_mem_size);
-> +
-> +	/*
-> +	 * To avoid lots of HPT resizes if memory size is fluctuating
-> +	 * across a boundary, we deliberately have some hysterisis
+On 2016/1/30 3:05, Alex Williamson wrote:
+>
+> ----- Original Message -----
+>> On 2016/1/29 6:46, Alex Williamson wrote:
+>>> On Fri, 2016-01-15 at 15:06 +0800, Yongji Xie wrote:
+>>>> MSI-X tables are not allowed to be mmapped in vfio-pci
+>>>> driver in case that user get to touch this directly.
+>>>> This will cause some performance issues when when PCI
+>>>> adapters have critical registers in the same page as
+>>>> the MSI-X table.
+>>>>    
+>>>> However, some kind of PCI host bridge such as IODA bridge
+>>>> on Power support filtering of MSIs, which can ensure that a
+>>>> given pci device can only shoot the MSIs assigned for it.
+>>>> So we think it's safe to expose the MSI-X table to userspace
+>>>> if filtering of MSIs is supported because the exposed MSI-X
+>>>> table can't be used to do harm to other memory space.
+>>>>    
+>>>> To support this case, this patch adds a pci_host_bridge
+>>>> attribute to indicate if this PCI host bridge supports
+>>>> filtering of MSIs.
+>>>>    
+>>>> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+>>>> ---
+>>>>    drivers/pci/host-bridge.c |    6 ++++++
+>>>>    include/linux/pci.h       |    3 +++
+>>>>    2 files changed, 9 insertions(+)
+>>>>    
+>>>> diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
+>>>> index 5f4a2e0..c029267 100644
+>>>> --- a/drivers/pci/host-bridge.c
+>>>> +++ b/drivers/pci/host-bridge.c
+>>>> @@ -96,3 +96,9 @@ void pcibios_bus_to_resource(struct pci_bus *bus, struct
+>>>> resource *res,
+>>>>    	res->end = region->end + offset;
+>>>>    }
+>>>>    EXPORT_SYMBOL(pcibios_bus_to_resource);
+>>>> +
+>>>> +bool pci_host_bridge_msi_filtered_enabled(struct pci_dev *pdev)
+>>>> +{
+>>>> +	return pci_find_host_bridge(pdev->bus)->msi_filtered;
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(pci_host_bridge_msi_filtered_enabled);
+>>>> diff --git a/include/linux/pci.h b/include/linux/pci.h
+>>>> index b640d65..b952b78 100644
+>>>> --- a/include/linux/pci.h
+>>>> +++ b/include/linux/pci.h
+>>>> @@ -412,6 +412,7 @@ struct pci_host_bridge {
+>>>>    	void (*release_fn)(struct pci_host_bridge *);
+>>>>    	void *release_data;
+>>>>    	unsigned int ignore_reset_delay:1;	/* for entire hierarchy */
+>>>> +	unsigned int msi_filtered:1;	/* support filtering of MSIs */
+>>>>    	/* Resource alignment requirements */
+>>>>    	resource_size_t (*align_resource)(struct pci_dev *dev,
+>>>>    			const struct resource *res,
+>>>> @@ -430,6 +431,8 @@ void pci_set_host_bridge_release(struct
+>>>> pci_host_bridge *bridge,
+>>>>    
+>>>>    int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge);
+>>>>    
+>>>> +bool pci_host_bridge_msi_filtered_enabled(struct pci_dev *pdev);
+>>>> +
+>>>>    /*
+>>>>     * The first PCI_BRIDGE_RESOURCE_NUM PCI bus resources (those that
+>>>>     correspond
+>>>>     * to P2P or CardBus bridge windows) go in a table.  Additional ones
+>>>>     (for
+>>> Don't we already have a flag for this in the IOMMU space?
+>>>
+>>> enum iommu_cap {
+>>>           IOMMU_CAP_CACHE_COHERENCY,      /* IOMMU can enforce cache
+>>>           coherent DMA
+>>>                                              transactions */
+>>> --->    IOMMU_CAP_INTR_REMAP,           /* IOMMU supports interrupt
+>>> isolation */
+>>>           IOMMU_CAP_NOEXEC,               /* IOMMU_NOEXEC flag */
+>>> };
+>>>
+>> I saw this flag had been enabled in x86 and ARM arch.
+>>
+>> I'm not sure whether we can mmap MSI-X table in those archs. I just
+>> verify it on PPC64 arch.
+> Unfortunately that's not a very good excuse for creating an alternate implementation.  When x86 implements interrupt remapping, we get fine grained isolation of MSI vectors and we've always taken this flag to mean that the system is isolated from devices that may perform DoS attacks with MSI writes.  I'm not entirely sure whether ARM really provides that degree of isolation, but they would be incorrect is exposing the capability if they do not.  Thanks,
+>
+> Alex
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
+OK, I will use this flag in next version. Thanks.
 
-What do you mean by 'memory size is fluctuating across a boundary' ?
-Through memory hotplug interface ? Why some one will do that ? I
-can understand why we dont have this check in the sysfs debug path
-as we would like to test any memory HPT re sizing scenario we want
-in any sequence of increase or decrease we want.
-
-Overall the RFC V2 looks pretty good. Looking forward to see the
-host side of the code for this feature.
+Regards,
+Yongji Xie
