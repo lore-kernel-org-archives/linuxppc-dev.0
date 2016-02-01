@@ -1,21 +1,34 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6BED31A0166
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Feb 2016 15:07:34 +1100 (AEDT)
-Message-ID: <1454299649.2486.11.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Zhiqiang Hou <zhiqiang.hou@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>
-Cc: "Mingkai.Hu@freescale.com" <Mingkai.Hu@freescale.com>
-Date: Sun, 31 Jan 2016 22:07:29 -0600
-In-Reply-To: <HE1PR04MB0906BB81802E707FEF34619B84DE0@HE1PR04MB0906.eurprd04.prod.outlook.com>
-References: <1451893517-20934-1-git-send-email-Zhiqiang.Hou@freescale.com>
- <HE1PR04MB0906BB81802E707FEF34619B84DE0@HE1PR04MB0906.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH] powerpc/fsl-pci: Correct the comparison of the LTSSM
+ by lists.ozlabs.org (Postfix) with ESMTPS id BD9CC1A006C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Feb 2016 16:50:19 +1100 (AEDT)
+Received: from localhost
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 1 Feb 2016 11:20:16 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u115oFkq9240906
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Feb 2016 11:20:15 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u115oAHE018449
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Feb 2016 11:20:14 +0530
+Message-ID: <56AEF20B.2030302@linux.vnet.ibm.com>
+Date: Mon, 01 Feb 2016 11:20:03 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>, paulus@samba.org,
+ mpe@ellerman.id.au, benh@kernel.crashing.org
+CC: aik@ozlabs.ru, lvivier@redhat.com, thuth@redhat.com,
+ linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: Re: [RFCv2 0/9] PAPR hash page table resizing (guest side)
+References: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
+In-Reply-To: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,64 +38,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[cc list trimmed]
-
-On Mon, 2016-02-01 at 03:57 +0000, Zhiqiang Hou wrote:
-> Hi,
+On 01/29/2016 10:53 AM, David Gibson wrote:
+> Here's a second prototype of the guest side work for runtime resizing
+> of the has page table in PAPR guests.
 > 
-> Any comments?
-
-Only that it was submitted too late for the last merge window, and I have not
-yet begun processing patches for the next one.  If you meant this to be a fix
-important enough to go in outside the merge window, it's missing any statement
-of what the actual symptoms are.
-
--Scott
-
+> This is now feature complete.  It implements the resizing, advertises
+> it with CAS, and will automatically invoke it to maintain a good HPT
+> size when memory is hot-added or hot-removed.
 > 
-> > -----Original Message-----
-> > From: Zhiqiang Hou [mailto:Zhiqiang.Hou@freescale.com]
-> > Sent: 2016年1月4日 15:45
-> > To: linuxppc-dev@lists.ozlabs.org; benh@kernel.crashing.org; 
-> > paulus@samba.org;
-> > mpe@ellerman.id.au
-> > Cc: Scott Wood <scottwood@freescale.com>; akpm@linux-foundation.org;
-> > robh@kernel.org; Mingkai.Hu@freescale.com; Hou Zhiqiang
-> > <Zhiqiang.Hou@freescale.com>
-> > Subject: [PATCH] powerpc/fsl-pci: Correct the comparison of the LTSSM
-> > 
-> > From: Hou Zhiqiang <Zhiqiang.Hou@freescale.com>
-> > 
-> > Only the value PCIE_LTSSM_L0 stands for the link is up, instead of >=
-> > PCIE_LTSSM_L0.
-> > 
-> > Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@freescale.com>
-> > ---
-> >  arch/powerpc/sysdev/fsl_pci.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> > index
-> > 610f472..1595f55 100644
-> > --- a/arch/powerpc/sysdev/fsl_pci.c
-> > +++ b/arch/powerpc/sysdev/fsl_pci.c
-> > @@ -73,7 +73,7 @@ static int fsl_pcie_check_link(struct pci_controller
-> > *hose)
-> >  					       PCIE_LTSSM, 4, &val);
-> >  		else
-> >  			early_read_config_dword(hose, 0, 0, PCIE_LTSSM,
-> > &val);
-> > -		if (val < PCIE_LTSSM_L0)
-> > +		if (val != PCIE_LTSSM_L0)
-> >  			return 1;
-> >  	} else {
-> >  		struct ccsr_pci __iomem *pci = hose->private_data;
-> > --
-> > 2.1.0.27.g96db324
+> Patches 1-5 are standalone prerequisite cleanups that I'll be pushing
+> concurrently.
 > 
-> Thanks,
-> Zhiqiang
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> David Gibson (9):
+>   memblock: Don't mark memblock_phys_mem_size() as __init
+>   arch/powerpc: Clean up error handling for htab_remove_mapping
+>   arch/powerpc: Handle removing maybe-present bolted HPTEs
+>   arch/powerpc: Clean up memory hotplug failure paths
+>   arch/powerpc: Split hash page table sizing heuristic into a helper
+
+A small nit. Please start the above commit message headers as
+"powerpc/mm:" instead, which sounds more clear and uniform with
+patch series related to other subsystems.
+
+Adding Nathan in the copy, may be he will have some inputs.
