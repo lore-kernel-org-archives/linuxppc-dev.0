@@ -1,21 +1,27 @@
-Return-Path: <raghav@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0103.outbound.protection.outlook.com [157.56.111.103])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <festevam@gmail.com>
+Received: from mail-ig0-x22e.google.com (mail-ig0-x22e.google.com
+ [IPv6:2607:f8b0:4001:c05::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9C90E1A0166
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Feb 2016 22:19:50 +1100 (AEDT)
-From: Raghav Dogra <raghav@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: <oss@buserror.net>, <prabhakar.kushwaha@nxp.com>, Raghav Dogra
- <raghav@freescale.com>
-Subject: [PATCH 2/3] driver/memory: Update dependency of IFC for Layerscape
-Date: Mon, 1 Feb 2016 16:16:37 +0530
-Message-ID: <1454323598-5149-2-git-send-email-raghav@freescale.com>
-In-Reply-To: <1454323598-5149-1-git-send-email-raghav@freescale.com>
-References: <1454323598-5149-1-git-send-email-raghav@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1305B1A0166
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Feb 2016 23:05:49 +1100 (AEDT)
+Received: by mail-ig0-x22e.google.com with SMTP id mw1so31316872igb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Feb 2016 04:05:49 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <569D3800.2040801@maciej.szmigiero.name>
+References: <569D3800.2040801@maciej.szmigiero.name>
+Date: Mon, 1 Feb 2016 10:05:46 -0200
+Message-ID: <CAOMZO5DwQza+jDdkA80v4wkrB56y53tOjkP2-36YNq2WBLodaA@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_ssi: remove explicit register defaults
+From: Fabio Estevam <festevam@gmail.com>
+To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@tabi.org>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,57 +31,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-IFC NAND is not working on ARM layescape platform due to
-undefined macro FSL_SOC.
-This patch fixes the dependency to enable NAND.
+Hi Maciej,
 
-Signed-off-by: Raghav Dogra <raghav@freescale.com>
----
- drivers/memory/Kconfig   | 2 +-
- drivers/memory/fsl_ifc.c | 4 +++-
- drivers/mtd/nand/Kconfig | 2 +-
- 3 files changed, 5 insertions(+), 3 deletions(-)
+On Mon, Jan 18, 2016 at 5:07 PM, Maciej S. Szmigiero
+<mail@maciej.szmigiero.name> wrote:
+> There is no guarantee that on fsl_ssi module load
+> SSI registers will have their power-on-reset values.
+>
+> In fact, if the driver is reloaded the values in
+> registers will be whatever they were set to previously.
+>
+> However, the cache needs to be fully populated at probe
+> time to avoid non-atomic allocations during register
+> access.
+>
+> Special case here is imx21-class SSI, since
+> according to datasheet it don't have SACC{ST,EN,DIS}
+> regs.
+>
+> This fixes hard lockup on fsl_ssi module reload,
+> at least in AC'97 mode.
+>
+> Fixes: 05cf237972fe ("ASoC: fsl_ssi: Add driver suspend and resume to support MEGA Fast")
+>
+> Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 
-diff --git a/drivers/memory/Kconfig b/drivers/memory/Kconfig
-index 6f31546..7365ecf 100644
---- a/drivers/memory/Kconfig
-+++ b/drivers/memory/Kconfig
-@@ -103,7 +103,7 @@ config FSL_CORENET_CF
- 
- config FSL_IFC
- 	bool
--	depends on FSL_SOC
-+	depends on FSL_SOC || ARCH_LAYERSCAPE
- 
- config JZ4780_NEMC
- 	bool "Ingenic JZ4780 SoC NEMC driver"
-diff --git a/drivers/memory/fsl_ifc.c b/drivers/memory/fsl_ifc.c
-index 054809e..f82a245 100644
---- a/drivers/memory/fsl_ifc.c
-+++ b/drivers/memory/fsl_ifc.c
-@@ -31,7 +31,9 @@
- #include <linux/of_device.h>
- #include <linux/platform_device.h>
- #include <linux/fsl_ifc.h>
--#include <asm/prom.h>
-+#include <linux/irqdomain.h>
-+#include <linux/of_address.h>
-+#include <linux/of_irq.h>
- 
- struct fsl_ifc_ctrl *fsl_ifc_ctrl_dev;
- EXPORT_SYMBOL(fsl_ifc_ctrl_dev);
-diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
-index 2896640..0c460e4 100644
---- a/drivers/mtd/nand/Kconfig
-+++ b/drivers/mtd/nand/Kconfig
-@@ -436,7 +436,7 @@ config MTD_NAND_FSL_ELBC
- 
- config MTD_NAND_FSL_IFC
- 	tristate "NAND support for Freescale IFC controller"
--	depends on MTD_NAND && FSL_SOC
-+	depends on MTD_NAND && (FSL_SOC || ARCH_LAYERSCAPE)
- 	select FSL_IFC
- 	select MEMORY
- 	help
--- 
-1.9.1
+I know I have already tested this and it worked fine on a mx6sabresd,
+but running linux-next 20160201 on a mx6sl-evk the ssi driver does not
+probe anymore:
+
+[    2.216954] fsl-asoc-card sound: ASoC: CPU DAI (null) not registered
+[    2.223412] fsl-asoc-card sound: snd_soc_register_card failed (-517)
+[    2.230258] imx-wm8962 sound: ASoC: CPU DAI 202c000.ssi not registered
+[    2.236806] imx-wm8962 sound: snd_soc_register_card failed (-517)
+[    2.244782] snvs_rtc 20cc000.snvs:snvs-rtc-lp: setting system clock
+to 1970-01-01 00:01:14 UTC (74)
+[    2.285864] fsl-asoc-card sound: ASoC: CPU DAI (null) not registered
+[    2.292335] fsl-asoc-card sound: snd_soc_register_card failed (-517)
+[    2.299572] imx-wm8962 sound: ASoC: CPU DAI 202c000.ssi not registered
+[    2.306121] imx-wm8962 sound: snd_soc_register_card failed (-517)
+
+Reverting this patch fixes the problem.
+
+Wandboard also has the same issue:
+
+http://arm-soc.lixom.net/bootlogs/next/next-20160201/wandboard-arm-imx_v6_v7_defconfig.html
+
+Any suggestions?
+
+Thanks
