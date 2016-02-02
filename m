@@ -1,37 +1,26 @@
-Return-Path: <Ganapatrao.Kulkarni@caviumnetworks.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0089.outbound.protection.outlook.com [157.56.111.89])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DCFE11A030A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 21:44:53 +1100 (AEDT)
-From: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
-To: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
- <linux-ia64@vger.kernel.org>, <linux-metag@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-s390@vger.kernel.org>,
- <linux-sh@vger.kernel.org>, <linux-arch@vger.kernel.org>,
- <Will.Deacon@arm.com>, <catalin.marinas@arm.com>, <robh+dt@kernel.org>,
- <mark.rutland@arm.com>, <grant.likely@linaro.org>,
- <leif.lindholm@linaro.org>, <rfranz@cavium.com>, <ard.biesheuvel@linaro.org>,
- <msalter@redhat.com>, <steve.capper@linaro.org>, <hanjun.guo@linaro.org>,
- <al.stone@linaro.org>, <arnd@arndb.de>, <pawel.moll@arm.com>,
- <ijc+devicetree@hellion.org.uk>, <galak@codeaurora.org>, <rjw@rjwysocki.net>,
- <lenb@kernel.org>, <marc.zyngier@arm.com>, <lorenzo.pieralisi@arm.com>,
- <bhelgaas@google.com>, <tony.luck@intel.com>, <fenghua.yu@intel.com>,
- <james.hogan@imgtec.com>, <benh@kernel.crashing.org>, <tglx@linutronix.de>,
- <mingo@redhat.com>, <hpa@zytor.com>, <x86@kernel.org>,
- <jonathan@jonmasters.org>, <rrichter@cavium.com>,
- <Prasun.Kapoor@caviumnetworks.com>
-CC: <gpkulkarni@gmail.com>
-Subject: [PATCH v10 8/8] numa, mm,
- cleanup: remove redundant NODE_DATA macro from asm header files.
-Date: Tue, 2 Feb 2016 15:39:23 +0530
-Message-ID: <1454407763-1017-9-git-send-email-gkulkarni@caviumnetworks.com>
-In-Reply-To: <1454407763-1017-1-git-send-email-gkulkarni@caviumnetworks.com>
-References: <1454407763-1017-1-git-send-email-gkulkarni@caviumnetworks.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D658C1A01D8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 23:12:29 +1100 (AEDT)
+Date: Tue, 2 Feb 2016 13:12:24 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Miroslav Benes <mbenes@suse.cz>
+Cc: Torsten Duwe <duwe@lst.de>, Steven Rostedt <rostedt@goodmis.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ live-patching@vger.kernel.org
+Subject: Re: [PATCH v6 8/9] Implement kernel live patching for ppc64le (ABIv2)
+Message-ID: <20160202121224.GS3305@pathway.suse.cz>
+References: <20160125170459.14DB7692CE@newverein.lst.de>
+ <20160125170804.A11DB692DD@newverein.lst.de>
+ <alpine.LNX.2.00.1601261142190.24510@pobox.suse.cz>
+ <20160126124853.GL3305@pathway.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160126124853.GL3305@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,231 +30,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-NODE_DATA is defined across multiple asm header files.
-Moving generic definition to asm-generic/mmzone.h to
-remove redundant definitions.
+On Tue 2016-01-26 13:48:53, Petr Mladek wrote:
+> On Tue 2016-01-26 11:50:25, Miroslav Benes wrote:
+> > 
+> > [ added Petr to CC list ]
+> > 
+> > On Mon, 25 Jan 2016, Torsten Duwe wrote:
+> > 
+> > >   * create the appropriate files+functions
+> > >     arch/powerpc/include/asm/livepatch.h
+> > >         klp_check_compiler_support,
+> > >         klp_arch_set_pc
+> > >     arch/powerpc/kernel/livepatch.c with a stub for
+> > >         klp_write_module_reloc
+> > >     This is architecture-independent work in progress.
+> > >   * introduce a fixup in arch/powerpc/kernel/entry_64.S
+> > >     for local calls that are becoming global due to live patching.
+> > >     And of course do the main KLP thing: return to a maybe different
+> > >     address, possibly altered by the live patching ftrace op.
+> > > 
+> > > Signed-off-by: Torsten Duwe <duwe@suse.de>
+> > 
+> > Hi,
+> > 
+> > I have a few questions...
+> > 
+> > We still need Petr's patch from [1] to make livepatch work, right? Could 
+> > you, please, add it to this patch set to make it self-sufficient?
+> > 
+> > Second, what is the situation with mcount prologue between gcc < 6 and 
+> > gcc-6? Are there only 12 bytes in gcc-6 prologue? If yes, we need to 
+> > change Petr's patch to make it more general and to be able to cope with 
+> > different prologues. This is unfortunate. Either way, please mention it 
+> > somewhere in a changelog.
+> 
+> I am going to update the extra patch. There is an idea to detect the
+> offset during build by scrips/recordmcount. This tool looks for the
+> ftrace locations. The offset should always be a constant that depends
+> on the used architecture, compiler, and compiler flags.
+> 
+> The tool is called post build. We might need to pass the constant
+> as a symbol added to the binary. The tool already adds some symbols.
 
-Reviewed-by: Robert Richter <rrichter@cavium.com>
-Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
----
- arch/arm64/include/asm/mmzone.h   |  4 +---
- arch/m32r/include/asm/mmzone.h    |  4 +---
- arch/metag/include/asm/mmzone.h   |  4 +---
- arch/powerpc/include/asm/mmzone.h |  8 ++------
- arch/s390/include/asm/mmzone.h    |  6 +-----
- arch/sh/include/asm/mmzone.h      |  4 +---
- arch/sparc/include/asm/mmzone.h   |  6 ++----
- arch/x86/include/asm/mmzone.h     |  3 +--
- arch/x86/include/asm/mmzone_32.h  |  5 -----
- arch/x86/include/asm/mmzone_64.h  | 17 -----------------
- include/asm-generic/mmzone.h      | 24 ++++++++++++++++++++++++
- 11 files changed, 34 insertions(+), 51 deletions(-)
- delete mode 100644 arch/x86/include/asm/mmzone_64.h
- create mode 100644 include/asm-generic/mmzone.h
+Hmm, the size of the offset is not a constant. In particular, leaf
+functions do not set TOC before the mcount location.
 
-diff --git a/arch/arm64/include/asm/mmzone.h b/arch/arm64/include/asm/mmzone.h
-index a0de9e6..611a1cf 100644
---- a/arch/arm64/include/asm/mmzone.h
-+++ b/arch/arm64/include/asm/mmzone.h
-@@ -4,9 +4,7 @@
- #ifdef CONFIG_NUMA
- 
- #include <asm/numa.h>
--
--extern struct pglist_data *node_data[];
--#define NODE_DATA(nid)		(node_data[(nid)])
-+#include  <asm-generic/mmzone.h>
- 
- #endif /* CONFIG_NUMA */
- #endif /* __ASM_MMZONE_H */
-diff --git a/arch/m32r/include/asm/mmzone.h b/arch/m32r/include/asm/mmzone.h
-index 115ced3..e3d66a0 100644
---- a/arch/m32r/include/asm/mmzone.h
-+++ b/arch/m32r/include/asm/mmzone.h
-@@ -7,12 +7,10 @@
- #define _ASM_MMZONE_H_
- 
- #include <asm/smp.h>
-+#include  <asm-generic/mmzone.h>
- 
- #ifdef CONFIG_DISCONTIGMEM
- 
--extern struct pglist_data *node_data[];
--#define NODE_DATA(nid)		(node_data[nid])
--
- #define node_localnr(pfn, nid)	((pfn) - NODE_DATA(nid)->node_start_pfn)
- 
- #define pmd_page(pmd)		(pfn_to_page(pmd_val(pmd) >> PAGE_SHIFT))
-diff --git a/arch/metag/include/asm/mmzone.h b/arch/metag/include/asm/mmzone.h
-index 9c88a9c..b1e95b3 100644
---- a/arch/metag/include/asm/mmzone.h
-+++ b/arch/metag/include/asm/mmzone.h
-@@ -3,9 +3,7 @@
- 
- #ifdef CONFIG_NEED_MULTIPLE_NODES
- #include <linux/numa.h>
--
--extern struct pglist_data *node_data[];
--#define NODE_DATA(nid)		(node_data[nid])
-+#include  <asm-generic/mmzone.h>
- 
- static inline int pfn_to_nid(unsigned long pfn)
- {
-diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
-index 7b58917..da0c5ba 100644
---- a/arch/powerpc/include/asm/mmzone.h
-+++ b/arch/powerpc/include/asm/mmzone.h
-@@ -19,12 +19,6 @@
- 
- #ifdef CONFIG_NEED_MULTIPLE_NODES
- 
--extern struct pglist_data *node_data[];
--/*
-- * Return a pointer to the node data for node n.
-- */
--#define NODE_DATA(nid)		(node_data[nid])
--
- /*
-  * Following are specific to this numa platform.
-  */
-@@ -42,5 +36,7 @@ u64 memory_hotplug_max(void);
- #define memory_hotplug_max() memblock_end_of_DRAM()
- #endif /* CONFIG_NEED_MULTIPLE_NODES */
- 
-+#include  <asm-generic/mmzone.h>
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_MMZONE_H_ */
-diff --git a/arch/s390/include/asm/mmzone.h b/arch/s390/include/asm/mmzone.h
-index a9e834e..91f1fcc 100644
---- a/arch/s390/include/asm/mmzone.h
-+++ b/arch/s390/include/asm/mmzone.h
-@@ -7,10 +7,6 @@
- #ifndef _ASM_S390_MMZONE_H
- #define _ASM_S390_MMZONE_H
- 
--#ifdef CONFIG_NUMA
-+#include  <asm-generic/mmzone.h>
- 
--extern struct pglist_data *node_data[];
--#define NODE_DATA(nid) (node_data[nid])
--
--#endif /* CONFIG_NUMA */
- #endif /* _ASM_S390_MMZONE_H */
-diff --git a/arch/sh/include/asm/mmzone.h b/arch/sh/include/asm/mmzone.h
-index 15a8496..c070d00 100644
---- a/arch/sh/include/asm/mmzone.h
-+++ b/arch/sh/include/asm/mmzone.h
-@@ -5,9 +5,7 @@
- 
- #ifdef CONFIG_NEED_MULTIPLE_NODES
- #include <linux/numa.h>
--
--extern struct pglist_data *node_data[];
--#define NODE_DATA(nid)		(node_data[nid])
-+#include  <asm-generic/mmzone.h>
- 
- static inline int pfn_to_nid(unsigned long pfn)
- {
-diff --git a/arch/sparc/include/asm/mmzone.h b/arch/sparc/include/asm/mmzone.h
-index 99d9b9f..ef1365b 100644
---- a/arch/sparc/include/asm/mmzone.h
-+++ b/arch/sparc/include/asm/mmzone.h
-@@ -5,13 +5,11 @@
- 
- #include <linux/cpumask.h>
- 
--extern struct pglist_data *node_data[];
--
--#define NODE_DATA(nid)		(node_data[nid])
--
- extern int numa_cpu_lookup_table[];
- extern cpumask_t numa_cpumask_lookup_table[];
- 
- #endif /* CONFIG_NEED_MULTIPLE_NODES */
- 
-+#include  <asm-generic/mmzone.h>
-+
- #endif /* _SPARC64_MMZONE_H */
-diff --git a/arch/x86/include/asm/mmzone.h b/arch/x86/include/asm/mmzone.h
-index d497bc4..5a52815 100644
---- a/arch/x86/include/asm/mmzone.h
-+++ b/arch/x86/include/asm/mmzone.h
-@@ -1,5 +1,4 @@
- #ifdef CONFIG_X86_32
- # include <asm/mmzone_32.h>
--#else
--# include <asm/mmzone_64.h>
- #endif
-+#include  <asm-generic/mmzone.h>
-diff --git a/arch/x86/include/asm/mmzone_32.h b/arch/x86/include/asm/mmzone_32.h
-index 1ec990b..09f7cfb 100644
---- a/arch/x86/include/asm/mmzone_32.h
-+++ b/arch/x86/include/asm/mmzone_32.h
-@@ -8,11 +8,6 @@
- 
- #include <asm/smp.h>
- 
--#ifdef CONFIG_NUMA
--extern struct pglist_data *node_data[];
--#define NODE_DATA(nid)	(node_data[nid])
--#endif /* CONFIG_NUMA */
--
- #ifdef CONFIG_DISCONTIGMEM
- 
- /*
-diff --git a/arch/x86/include/asm/mmzone_64.h b/arch/x86/include/asm/mmzone_64.h
-deleted file mode 100644
-index 129d9aa..0000000
---- a/arch/x86/include/asm/mmzone_64.h
-+++ /dev/null
-@@ -1,17 +0,0 @@
--/* K8 NUMA support */
--/* Copyright 2002,2003 by Andi Kleen, SuSE Labs */
--/* 2.5 Version loosely based on the NUMAQ Code by Pat Gaughen. */
--#ifndef _ASM_X86_MMZONE_64_H
--#define _ASM_X86_MMZONE_64_H
--
--#ifdef CONFIG_NUMA
--
--#include <linux/mmdebug.h>
--#include <asm/smp.h>
--
--extern struct pglist_data *node_data[];
--
--#define NODE_DATA(nid)		(node_data[nid])
--
--#endif
--#endif /* _ASM_X86_MMZONE_64_H */
-diff --git a/include/asm-generic/mmzone.h b/include/asm-generic/mmzone.h
-new file mode 100644
-index 0000000..ec0fc4c
---- /dev/null
-+++ b/include/asm-generic/mmzone.h
-@@ -0,0 +1,24 @@
-+/*
-+ * linux/include/asm-generic/mmzone.h
-+ *
-+ * Author: Ganapatrao Kulkarni <gkulkarni@cavium.com>
-+ * Copyright (C) 2016 Cavium Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#ifndef _ASM_GENERIC_MMZONE_H
-+#define _ASM_GENERIC_MMZONE_H
-+
-+#if defined(CONFIG_NUMA) || defined(CONFIG_NEED_MULTIPLE_NODES)
-+
-+#ifndef NODE_DATA
-+extern struct pglist_data *node_data[];
-+#define NODE_DATA(nid)          (node_data[(nid)])
-+#endif
-+
-+#endif
-+#endif /* _ASM_GENERIC_MMZONE_H */
--- 
-1.8.1.4
+For example, the code generated for int_to_scsilun() looks like:
+
+
+00000000000002d0 <int_to_scsilun>:
+ 2d0:   a6 02 08 7c     mflr    r0
+ 2d4:   10 00 01 f8     std     r0,16(r1)
+ 2d8:   01 00 00 48     bl      2d8 <int_to_scsilun+0x8>
+                        2d8: R_PPC64_REL24      _mcount
+ 2dc:   a6 02 08 7c     mflr    r0
+ 2e0:   10 00 01 f8     std     r0,16(r1)
+ 2e4:   e1 ff 21 f8     stdu    r1,-32(r1)
+ 2e8:   00 00 20 39     li      r9,0
+ 2ec:   00 00 24 f9     std     r9,0(r4)
+ 2f0:   04 00 20 39     li      r9,4
+ 2f4:   a6 03 29 7d     mtctr   r9
+ 2f8:   00 00 40 39     li      r10,0
+ 2fc:   02 c2 68 78     rldicl  r8,r3,56,8
+ 300:   78 23 89 7c     mr      r9,r4
+ 304:   ee 51 09 7d     stbux   r8,r9,r10
+ 308:   02 00 4a 39     addi    r10,r10,2
+ 30c:   01 00 69 98     stb     r3,1(r9)
+ 310:   02 84 63 78     rldicl  r3,r3,48,16
+ 314:   e8 ff 00 42     bdnz    2fc <int_to_scsilun+0x2c>
+ 318:   20 00 21 38     addi    r1,r1,32
+ 31c:   10 00 01 e8     ld      r0,16(r1)
+ 320:   a6 03 08 7c     mtlr    r0
+ 324:   20 00 80 4e     blr
+ 328:   00 00 00 60     nop
+ 32c:   00 00 42 60     ori     r2,r2,0
+
+
+Note that non-leaf functions starts with
+
+0000000000000330 <scsi_set_sense_information>:
+ 330:   00 00 4c 3c     addis   r2,r12,0
+                        330: R_PPC64_REL16_HA   .TOC.
+ 334:   00 00 42 38     addi    r2,r2,0
+                        334: R_PPC64_REL16_LO   .TOC.+0x4
+ 338:   a6 02 08 7c     mflr    r0
+ 33c:   10 00 01 f8     std     r0,16(r1)
+ 340:   01 00 00 48     bl      340 <scsi_set_sense_information+0x10>
+                        340: R_PPC64_REL24      _mcount
+
+
+The above code is generated from kernel-4.5-rc1 sources using
+
+$> gcc --version
+gcc (SUSE Linux) 4.8.5
+Copyright (C) 2015 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+But I get similar code also with
+
+$> gcc-6 --version
+gcc-6 (SUSE Linux) 6.0.0 20160121 (experimental) [trunk revision 232670]
+Copyright (C) 2016 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+
+The result is that kernel crashes when trying to trace leaf function
+from modules. The mcount location is replaced with a call (branch)
+that does not work without the TOC stuff.
+
+By other words, it seems that the code generated with -mprofile-kernel
+option has been buggy in all gcc versions.
+
+I am curious that nobody found this earlier. Do I something wrong,
+please?
+
+
+Best Regards,
+Petr
