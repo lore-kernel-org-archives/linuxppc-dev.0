@@ -3,8 +3,8 @@ Received: from na01-bn1-obe.outbound.protection.outlook.com
  (mail-bn1bon0083.outbound.protection.outlook.com [157.56.111.83])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2A6391A025F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 21:25:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7989A1A0279
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 21:25:21 +1100 (AEDT)
 From: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
 To: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
@@ -24,9 +24,9 @@ To: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
  <jonathan@jonmasters.org>, <rrichter@cavium.com>,
  <Prasun.Kapoor@caviumnetworks.com>
 CC: <gpkulkarni@gmail.com>
-Subject: [PATCH v10 3/8] dt, numa: adding numa dt binding implementation.
-Date: Tue, 2 Feb 2016 15:39:18 +0530
-Message-ID: <1454407763-1017-4-git-send-email-gkulkarni@caviumnetworks.com>
+Subject: [PATCH v10 1/8] arm64, numa: adding numa support for arm64 platforms.
+Date: Tue, 2 Feb 2016 15:39:16 +0530
+Message-ID: <1454407763-1017-2-git-send-email-gkulkarni@caviumnetworks.com>
 In-Reply-To: <1454407763-1017-1-git-send-email-gkulkarni@caviumnetworks.com>
 References: <1454407763-1017-1-git-send-email-gkulkarni@caviumnetworks.com>
 MIME-Version: 1.0
@@ -40,58 +40,345 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-dt node parsing for numa topology is done using device property
-numa-node-id and device node distance-map.
+Adding numa support for arm64 based platforms.
+This patch adds by default the dummy numa node and
+maps all memory and cpus to node 0.
+using this patch, numa can be simulated on single node arm64 platforms.
 
+Tested-by: Shannon Zhao <shannon.zhao@linaro.org>
 Reviewed-by: Robert Richter <rrichter@cavium.com>
 Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
 ---
- drivers/of/Kconfig   |  11 +++
- drivers/of/Makefile  |   1 +
- drivers/of/of_numa.c | 207 +++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/of.h   |   4 +
- 4 files changed, 223 insertions(+)
- create mode 100644 drivers/of/of_numa.c
+ arch/arm64/Kconfig                |  25 +++
+ arch/arm64/include/asm/mmzone.h   |  12 ++
+ arch/arm64/include/asm/numa.h     |  43 +++++
+ arch/arm64/include/asm/topology.h |  10 +
+ arch/arm64/kernel/pci.c           |  10 +
+ arch/arm64/kernel/setup.c         |   4 +
+ arch/arm64/kernel/smp.c           |   2 +
+ arch/arm64/mm/Makefile            |   1 +
+ arch/arm64/mm/init.c              |  34 +++-
+ arch/arm64/mm/mmu.c               |   1 +
+ arch/arm64/mm/numa.c              | 387 ++++++++++++++++++++++++++++++++++++++
+ 11 files changed, 524 insertions(+), 5 deletions(-)
+ create mode 100644 arch/arm64/include/asm/mmzone.h
+ create mode 100644 arch/arm64/include/asm/numa.h
+ create mode 100644 arch/arm64/mm/numa.c
 
-diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-index e2a4841..8f9cc3a 100644
---- a/drivers/of/Kconfig
-+++ b/drivers/of/Kconfig
-@@ -112,4 +112,15 @@ config OF_OVERLAY
- 	  While this option is selected automatically when needed, you can
- 	  enable it manually to improve device tree unit test coverage.
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 8cc6228..fcf3950 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -74,6 +74,7 @@ config ARM64
+ 	select HAVE_HW_BREAKPOINT if PERF_EVENTS
+ 	select HAVE_IRQ_TIME_ACCOUNTING
+ 	select HAVE_MEMBLOCK
++	select HAVE_MEMBLOCK_NODE_MAP if NUMA
+ 	select HAVE_PATA_PLATFORM
+ 	select HAVE_PERF_EVENTS
+ 	select HAVE_PERF_REGS
+@@ -534,6 +535,30 @@ config HOTPLUG_CPU
+ 	  Say Y here to experiment with turning CPUs off and on.  CPUs
+ 	  can be controlled through /sys/devices/system/cpu.
  
-+config OF_NUMA
-+	bool "Device Tree NUMA support"
-+	depends on NUMA
-+	depends on OF
-+	depends on ARM64
-+	default y
++# Common NUMA Features
++config NUMA
++	bool "Numa Memory Allocation and Scheduler Support"
++	depends on SMP
 +	help
-+	  Enable Device Tree NUMA support.
-+	  This enables the numa mapping of cpu, memory, io and
-+	  inter node distances using dt bindings.
++	  Enable NUMA (Non Uniform Memory Access) support.
 +
- endif # OF
-diff --git a/drivers/of/Makefile b/drivers/of/Makefile
-index 156c072..bee3fa9 100644
---- a/drivers/of/Makefile
-+++ b/drivers/of/Makefile
-@@ -14,5 +14,6 @@ obj-$(CONFIG_OF_MTD)	+= of_mtd.o
- obj-$(CONFIG_OF_RESERVED_MEM) += of_reserved_mem.o
- obj-$(CONFIG_OF_RESOLVE)  += resolver.o
- obj-$(CONFIG_OF_OVERLAY) += overlay.o
-+obj-$(CONFIG_OF_NUMA) += of_numa.o
++	  The kernel will try to allocate memory used by a CPU on the
++	  local memory of the CPU and add some more
++	  NUMA awareness to the kernel.
++
++config NODES_SHIFT
++	int "Maximum NUMA Nodes (as a power of 2)"
++	range 1 10
++	default "2"
++	depends on NEED_MULTIPLE_NODES
++	help
++	  Specify the maximum number of NUMA Nodes available on the target
++	  system.  Increases memory reserved to accommodate various tables.
++
++config USE_PERCPU_NUMA_NODE_ID
++	def_bool y
++	depends on NUMA
++
+ source kernel/Kconfig.preempt
+ source kernel/Kconfig.hz
  
- obj-$(CONFIG_OF_UNITTEST) += unittest-data/
-diff --git a/drivers/of/of_numa.c b/drivers/of/of_numa.c
+diff --git a/arch/arm64/include/asm/mmzone.h b/arch/arm64/include/asm/mmzone.h
 new file mode 100644
-index 0000000..1142cdb
+index 0000000..a0de9e6
 --- /dev/null
-+++ b/drivers/of/of_numa.c
-@@ -0,0 +1,207 @@
++++ b/arch/arm64/include/asm/mmzone.h
+@@ -0,0 +1,12 @@
++#ifndef __ASM_MMZONE_H
++#define __ASM_MMZONE_H
++
++#ifdef CONFIG_NUMA
++
++#include <asm/numa.h>
++
++extern struct pglist_data *node_data[];
++#define NODE_DATA(nid)		(node_data[(nid)])
++
++#endif /* CONFIG_NUMA */
++#endif /* __ASM_MMZONE_H */
+diff --git a/arch/arm64/include/asm/numa.h b/arch/arm64/include/asm/numa.h
+new file mode 100644
+index 0000000..574267f
+--- /dev/null
++++ b/arch/arm64/include/asm/numa.h
+@@ -0,0 +1,43 @@
++#ifndef __ASM_NUMA_H
++#define __ASM_NUMA_H
++
++#include <asm/topology.h>
++
++#ifdef CONFIG_NUMA
++
++/* currently, arm64 implements flat NUMA topology */
++#define parent_node(node)	(node)
++
++int __node_distance(int from, int to);
++#define node_distance(a, b) __node_distance(a, b)
++
++extern nodemask_t numa_nodes_parsed __initdata;
++
++/* Mappings between node number and cpus on that node. */
++extern cpumask_var_t node_to_cpumask_map[MAX_NUMNODES];
++void numa_clear_node(unsigned int cpu);
++
++#ifdef CONFIG_DEBUG_PER_CPU_MAPS
++const struct cpumask *cpumask_of_node(int node);
++#else
++/* Returns a pointer to the cpumask of CPUs on Node 'node'. */
++static inline const struct cpumask *cpumask_of_node(int node)
++{
++	return node_to_cpumask_map[node];
++}
++#endif
++
++void __init arm64_numa_init(void);
++int __init numa_add_memblk(int nodeid, u64 start, u64 end);
++void __init numa_set_distance(int from, int to, int distance);
++void __init numa_free_distance(void);
++void numa_store_cpu_info(unsigned int cpu);
++
++#else	/* CONFIG_NUMA */
++
++static inline void numa_store_cpu_info(unsigned int cpu) { }
++static inline void arm64_numa_init(void) { }
++
++#endif	/* CONFIG_NUMA */
++
++#endif	/* __ASM_NUMA_H */
+diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
+index a3e9d6f..8b57339 100644
+--- a/arch/arm64/include/asm/topology.h
++++ b/arch/arm64/include/asm/topology.h
+@@ -22,6 +22,16 @@ void init_cpu_topology(void);
+ void store_cpu_topology(unsigned int cpuid);
+ const struct cpumask *cpu_coregroup_mask(int cpu);
+ 
++#ifdef CONFIG_NUMA
++
++struct pci_bus;
++int pcibus_to_node(struct pci_bus *bus);
++#define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ?		\
++				 cpu_all_mask :				\
++				 cpumask_of_node(pcibus_to_node(bus)))
++
++#endif /* CONFIG_NUMA */
++
+ #include <asm-generic/topology.h>
+ 
+ #endif /* _ASM_ARM_TOPOLOGY_H */
+diff --git a/arch/arm64/kernel/pci.c b/arch/arm64/kernel/pci.c
+index b3d098b..65e6b7d 100644
+--- a/arch/arm64/kernel/pci.c
++++ b/arch/arm64/kernel/pci.c
+@@ -76,6 +76,16 @@ int raw_pci_write(unsigned int domain, unsigned int bus,
+ 	return -ENXIO;
+ }
+ 
++#ifdef CONFIG_NUMA
++
++int pcibus_to_node(struct pci_bus *bus)
++{
++	return dev_to_node(&bus->dev);
++}
++EXPORT_SYMBOL(pcibus_to_node);
++
++#endif
++
+ #ifdef CONFIG_ACPI
+ /* Root bridge scanning */
+ struct pci_bus *pci_acpi_scan_root(struct acpi_pci_root *root)
+diff --git a/arch/arm64/kernel/setup.c b/arch/arm64/kernel/setup.c
+index 8119479..d9b9761 100644
+--- a/arch/arm64/kernel/setup.c
++++ b/arch/arm64/kernel/setup.c
+@@ -53,6 +53,7 @@
+ #include <asm/cpufeature.h>
+ #include <asm/cpu_ops.h>
+ #include <asm/kasan.h>
++#include <asm/numa.h>
+ #include <asm/sections.h>
+ #include <asm/setup.h>
+ #include <asm/smp_plat.h>
+@@ -372,6 +373,9 @@ static int __init topology_init(void)
+ {
+ 	int i;
+ 
++	for_each_online_node(i)
++		register_one_node(i);
++
+ 	for_each_possible_cpu(i) {
+ 		struct cpu *cpu = &per_cpu(cpu_data.cpu, i);
+ 		cpu->hotpluggable = 1;
+diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
+index b1adc51..d6e7d6a 100644
+--- a/arch/arm64/kernel/smp.c
++++ b/arch/arm64/kernel/smp.c
+@@ -45,6 +45,7 @@
+ #include <asm/cputype.h>
+ #include <asm/cpu_ops.h>
+ #include <asm/mmu_context.h>
++#include <asm/numa.h>
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+ #include <asm/processor.h>
+@@ -125,6 +126,7 @@ int __cpu_up(unsigned int cpu, struct task_struct *idle)
+ static void smp_store_cpu_info(unsigned int cpuid)
+ {
+ 	store_cpu_topology(cpuid);
++	numa_store_cpu_info(cpuid);
+ }
+ 
+ /*
+diff --git a/arch/arm64/mm/Makefile b/arch/arm64/mm/Makefile
+index 57f57fd..54bb209 100644
+--- a/arch/arm64/mm/Makefile
++++ b/arch/arm64/mm/Makefile
+@@ -4,6 +4,7 @@ obj-y				:= dma-mapping.o extable.o fault.o init.o \
+ 				   context.o proc.o pageattr.o
+ obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
+ obj-$(CONFIG_ARM64_PTDUMP)	+= dump.o
++obj-$(CONFIG_NUMA)		+= numa.o
+ 
+ obj-$(CONFIG_KASAN)		+= kasan_init.o
+ KASAN_SANITIZE_kasan_init.o	:= n
+diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+index f3b061e..c39c670 100644
+--- a/arch/arm64/mm/init.c
++++ b/arch/arm64/mm/init.c
+@@ -37,6 +37,7 @@
+ 
+ #include <asm/fixmap.h>
+ #include <asm/memory.h>
++#include <asm/numa.h>
+ #include <asm/sections.h>
+ #include <asm/setup.h>
+ #include <asm/sizes.h>
+@@ -77,6 +78,21 @@ static phys_addr_t __init max_zone_dma_phys(void)
+ 	return min(offset + (1ULL << 32), memblock_end_of_DRAM());
+ }
+ 
++#ifdef CONFIG_NUMA
++
++static void __init zone_sizes_init(unsigned long min, unsigned long max)
++{
++	unsigned long max_zone_pfns[MAX_NR_ZONES]  = {0};
++
++	if (IS_ENABLED(CONFIG_ZONE_DMA))
++		max_zone_pfns[ZONE_DMA] = PFN_DOWN(max_zone_dma_phys());
++	max_zone_pfns[ZONE_NORMAL] = max;
++
++	free_area_init_nodes(max_zone_pfns);
++}
++
++#else
++
+ static void __init zone_sizes_init(unsigned long min, unsigned long max)
+ {
+ 	struct memblock_region *reg;
+@@ -117,6 +133,8 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max)
+ 	free_area_init_node(0, zone_size, min, zhole_size);
+ }
+ 
++#endif /* CONFIG_NUMA */
++
+ #ifdef CONFIG_HAVE_ARCH_PFN_VALID
+ int pfn_valid(unsigned long pfn)
+ {
+@@ -133,10 +151,15 @@ static void __init arm64_memory_present(void)
+ static void __init arm64_memory_present(void)
+ {
+ 	struct memblock_region *reg;
++	int nid = 0;
+ 
+-	for_each_memblock(memory, reg)
+-		memory_present(0, memblock_region_memory_base_pfn(reg),
+-			       memblock_region_memory_end_pfn(reg));
++	for_each_memblock(memory, reg) {
++#ifdef CONFIG_NUMA
++		nid = reg->nid;
++#endif
++		memory_present(nid, memblock_region_memory_base_pfn(reg),
++				memblock_region_memory_end_pfn(reg));
++	}
+ }
+ #endif
+ 
+@@ -181,7 +204,6 @@ void __init arm64_memblock_init(void)
+ 	dma_contiguous_reserve(arm64_dma_phys_limit);
+ 
+ 	memblock_allow_resize();
+-	memblock_dump_all();
+ }
+ 
+ void __init bootmem_init(void)
+@@ -193,6 +215,9 @@ void __init bootmem_init(void)
+ 
+ 	early_memtest(min << PAGE_SHIFT, max << PAGE_SHIFT);
+ 
++	max_pfn = max_low_pfn = max;
++
++	arm64_numa_init();
+ 	/*
+ 	 * Sparsemem tries to allocate bootmem in memory_present(), so must be
+ 	 * done after the fixed reservations.
+@@ -203,7 +228,6 @@ void __init bootmem_init(void)
+ 	zone_sizes_init(min, max);
+ 
+ 	high_memory = __va((max << PAGE_SHIFT) - 1) + 1;
+-	max_pfn = max_low_pfn = max;
+ }
+ 
+ #ifndef CONFIG_SPARSEMEM_VMEMMAP
+diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+index 58faeaa..44e3854 100644
+--- a/arch/arm64/mm/mmu.c
++++ b/arch/arm64/mm/mmu.c
+@@ -463,6 +463,7 @@ void __init paging_init(void)
+ 	zero_page = early_alloc(PAGE_SIZE);
+ 
+ 	bootmem_init();
++	memblock_dump_all();
+ 
+ 	empty_zero_page = virt_to_page(zero_page);
+ 
+diff --git a/arch/arm64/mm/numa.c b/arch/arm64/mm/numa.c
+new file mode 100644
+index 0000000..60f19a2
+--- /dev/null
++++ b/arch/arm64/mm/numa.c
+@@ -0,0 +1,387 @@
 +/*
-+ * OF NUMA Parsing support.
++ * NUMA support, based on the x86 implementation.
 + *
 + * Copyright (C) 2015 Cavium Inc.
 + * Author: Ganapatrao Kulkarni <gkulkarni@cavium.com>
@@ -109,208 +396,373 @@ index 0000000..1142cdb
 + * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 + */
 +
-+#include <linux/of.h>
-+#include <linux/of_fdt.h>
++#include <linux/bootmem.h>
++#include <linux/memblock.h>
++#include <linux/module.h>
 +
-+/* define default numa node to 0 */
-+#define DEFAULT_NODE 0
++struct pglist_data *node_data[MAX_NUMNODES] __read_mostly;
++EXPORT_SYMBOL(node_data);
++nodemask_t numa_nodes_parsed __initdata;
++static int cpu_to_node_map[NR_CPUS] = { [0 ... NR_CPUS-1] = NUMA_NO_NODE };
 +
-+/* Returns nid in the range [0..MAX_NUMNODES-1],
-+ * or NUMA_NO_NODE if no valid numa-node-id entry found
-+ * or DEFAULT_NODE if no numa-node-id entry exists
-+ */
-+static int of_numa_prop_to_nid(const __be32 *of_numa_prop, int length)
++static int numa_off;
++static int numa_distance_cnt;
++static u8 *numa_distance;
++
++static __init int numa_parse_early_param(char *opt)
 +{
-+	int nid;
-+
-+	if (!of_numa_prop)
-+		return DEFAULT_NODE;
-+
-+	if (length != sizeof(*of_numa_prop)) {
-+		pr_warn("NUMA: Invalid of_numa_prop length %d found.\n",
-+				length);
-+		return NUMA_NO_NODE;
++	if (!opt)
++		return -EINVAL;
++	if (!strncmp(opt, "off", 3)) {
++		pr_info("%s\n", "NUMA turned off");
++		numa_off = 1;
 +	}
++	return 0;
++}
++early_param("numa", numa_parse_early_param);
 +
-+	nid = of_read_number(of_numa_prop, 1);
-+	if (nid >= MAX_NUMNODES) {
-+		pr_warn("NUMA: Invalid numa node %d found.\n", nid);
-+		return NUMA_NO_NODE;
-+	}
++cpumask_var_t node_to_cpumask_map[MAX_NUMNODES];
++EXPORT_SYMBOL(node_to_cpumask_map);
 +
-+	return nid;
++#ifdef CONFIG_DEBUG_PER_CPU_MAPS
++
++/*
++ * Returns a pointer to the bitmask of CPUs on Node 'node'.
++ */
++const struct cpumask *cpumask_of_node(int node)
++{
++	if (WARN_ON(node >= nr_node_ids))
++		return cpu_none_mask;
++
++	if (WARN_ON(node_to_cpumask_map[node] == NULL))
++		return cpu_online_mask;
++
++	return node_to_cpumask_map[node];
++}
++EXPORT_SYMBOL(cpumask_of_node);
++
++#endif
++
++static void map_cpu_to_node(unsigned int cpu, int nid)
++{
++	set_cpu_numa_node(cpu, nid);
++	if (nid >= 0)
++		cpumask_set_cpu(cpu, node_to_cpumask_map[nid]);
 +}
 +
-+static int __init early_init_of_node_to_nid(unsigned long node)
++static void unmap_cpu_to_node(unsigned int cpu)
 +{
-+	int length;
-+	const __be32 *of_numa_prop;
++	int nid = cpu_to_node(cpu);
 +
-+	of_numa_prop = of_get_flat_dt_prop(node, "numa-node-id", &length);
++	if (nid >= 0)
++		cpumask_clear_cpu(cpu, node_to_cpumask_map[nid]);
++	set_cpu_numa_node(cpu, NUMA_NO_NODE);
++}
 +
-+	return of_numa_prop_to_nid(of_numa_prop, length);
++void numa_clear_node(unsigned int cpu)
++{
++	unmap_cpu_to_node(cpu);
 +}
 +
 +/*
-+ * Even though we connect cpus to numa domains later in SMP
-+ * init, we need to know the node ids now for all cpus.
-+*/
-+static int __init early_init_parse_cpu_node(unsigned long node)
++ * Allocate node_to_cpumask_map based on number of available nodes
++ * Requires node_possible_map to be valid.
++ *
++ * Note: cpumask_of_node() is not valid until after this is done.
++ * (Use CONFIG_DEBUG_PER_CPU_MAPS to check this.)
++ */
++static void __init setup_node_to_cpumask_map(void)
 +{
-+	int nid;
-+	const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
++	unsigned int cpu;
++	int node;
 +
-+	if (type == NULL)
-+		return 0;
++	/* setup nr_node_ids if not done yet */
++	if (nr_node_ids == MAX_NUMNODES)
++		setup_nr_node_ids();
 +
-+	if (strcmp(type, "cpu") != 0)
-+		return 0;
-+
-+	nid = early_init_of_node_to_nid(node);
-+	if (nid == NUMA_NO_NODE)
-+		return -EINVAL;
-+
-+	node_set(nid, numa_nodes_parsed);
-+	return 0;
-+}
-+
-+static int __init early_init_parse_memory_node(unsigned long node)
-+{
-+	const __be32 *reg, *endp;
-+	int length;
-+	int nid;
-+	const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
-+
-+	if (type == NULL)
-+		return 0;
-+
-+	if (strcmp(type, "memory") != 0)
-+		return 0;
-+
-+	nid = early_init_of_node_to_nid(node);
-+	if (nid == NUMA_NO_NODE)
-+		return -EINVAL;
-+
-+	reg = of_get_flat_dt_prop(node, "reg", &length);
-+	endp = reg + (length / sizeof(__be32));
-+
-+	while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
-+		u64 base, size;
-+
-+		base = dt_mem_next_cell(dt_root_addr_cells, &reg);
-+		size = dt_mem_next_cell(dt_root_size_cells, &reg);
-+		pr_debug("NUMA:  base = %llx , node = %u\n",
-+				base, nid);
-+
-+		if (numa_add_memblk(nid, base, size) < 0)
-+			return -EINVAL;
++	/* allocate and clear the mapping */
++	for (node = 0; node < nr_node_ids; node++) {
++		alloc_bootmem_cpumask_var(&node_to_cpumask_map[node]);
++		cpumask_clear(node_to_cpumask_map[node]);
 +	}
 +
-+	return 0;
++	for_each_possible_cpu(cpu)
++		set_cpu_numa_node(cpu, NUMA_NO_NODE);
++
++	/* cpumask_of_node() will now work */
++	pr_debug("NUMA: Node to cpumask map for %d nodes\n", nr_node_ids);
 +}
 +
-+static int __init early_init_parse_distance_map_v1(unsigned long node,
-+		const char *uname)
++/*
++ *  Set the cpu to node and mem mapping
++ */
++void numa_store_cpu_info(unsigned int cpu)
 +{
-+	const __be32 *prop_dist_matrix;
-+	int length = 0, i, matrix_count;
-+	int nr_size_cells = OF_ROOT_NODE_SIZE_CELLS_DEFAULT;
-+
-+	pr_info("NUMA: parsing numa-distance-map-v1\n");
-+
-+	prop_dist_matrix =
-+		of_get_flat_dt_prop(node, "distance-matrix", &length);
-+
-+	if (!length) {
-+		pr_err("NUMA: failed to parse distance-matrix\n");
-+		return -ENODEV;
-+	}
-+
-+	matrix_count = ((length / sizeof(__be32)) / (3 * nr_size_cells));
-+
-+	if ((matrix_count * sizeof(__be32) * 3 * nr_size_cells) !=  length) {
-+		pr_warn("NUMA: invalid distance-matrix length %d\n", length);
-+		return -EINVAL;
-+	}
-+
-+	for (i = 0; i < matrix_count; i++) {
-+		u32 nodea, nodeb, distance;
-+
-+		nodea = dt_mem_next_cell(nr_size_cells, &prop_dist_matrix);
-+		nodeb = dt_mem_next_cell(nr_size_cells, &prop_dist_matrix);
-+		distance = dt_mem_next_cell(nr_size_cells, &prop_dist_matrix);
-+		numa_set_distance(nodea, nodeb, distance);
-+		pr_debug("NUMA:  distance[node%d -> node%d] = %d\n",
-+				nodea, nodeb, distance);
-+
-+		/* Set default distance of node B->A same as A->B */
-+		if (nodeb > nodea)
-+			numa_set_distance(nodeb, nodea, distance);
-+	}
-+
-+	return 0;
++	map_cpu_to_node(cpu, numa_off ? 0 : cpu_to_node_map[cpu]);
 +}
 +
-+static int __init early_init_parse_distance_map(unsigned long node,
-+		const char *uname)
-+{
-+	if (strcmp(uname, "distance-map") != 0)
-+		return 0;
-+
-+	if (of_flat_dt_is_compatible(node, "numa-distance-map-v1"))
-+		return early_init_parse_distance_map_v1(node, uname);
-+
-+	pr_err("NUMA: invalid distance-map device node\n");
-+	return -EINVAL;
-+}
-+
-+static int __init early_init_of_scan_numa_map(unsigned long node, const char *uname,
-+				     int depth, void *data)
++/**
++ * numa_add_memblk - Set node id to memblk
++ * @nid: NUMA node ID of the new memblk
++ * @start: Start address of the new memblk
++ * @size:  Size of the new memblk
++ *
++ * RETURNS:
++ * 0 on success, -errno on failure.
++ */
++int __init numa_add_memblk(int nid, u64 start, u64 size)
 +{
 +	int ret;
 +
-+	ret = early_init_parse_cpu_node(node);
-+	if (ret)
++	ret = memblock_set_node(start, size, &memblock.memory, nid);
++	if (ret < 0) {
++		pr_err("NUMA: memblock [0x%llx - 0x%llx] failed to add on node %d\n",
++			start, (start + size - 1), nid);
++		return ret;
++	}
++
++	node_set(nid, numa_nodes_parsed);
++	pr_info("NUMA: Adding memblock [0x%llx - 0x%llx] on node %d\n",
++			start, (start + size - 1), nid);
++	return ret;
++}
++EXPORT_SYMBOL(numa_add_memblk);
++
++/**
++ * Initialize NODE_DATA for a node on the local memory
++ */
++static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
++{
++	const size_t nd_size = roundup(sizeof(pg_data_t), SMP_CACHE_BYTES);
++	u64 nd_pa;
++	void *nd;
++	int tnid;
++
++	pr_info("NUMA: Initmem setup node %d [mem %#010Lx-%#010Lx]\n",
++			nid, start_pfn << PAGE_SHIFT,
++			(end_pfn << PAGE_SHIFT) - 1);
++
++	nd_pa = memblock_alloc_try_nid(nd_size, SMP_CACHE_BYTES, nid);
++	nd = __va(nd_pa);
++
++	/* report and initialize */
++	pr_info("NUMA: NODE_DATA [mem %#010Lx-%#010Lx]\n",
++		nd_pa, nd_pa + nd_size - 1);
++	tnid = early_pfn_to_nid(nd_pa >> PAGE_SHIFT);
++	if (tnid != nid)
++		pr_info("NUMA: NODE_DATA(%d) on node %d\n", nid, tnid);
++
++	node_data[nid] = nd;
++	memset(NODE_DATA(nid), 0, sizeof(pg_data_t));
++	NODE_DATA(nid)->node_id = nid;
++	NODE_DATA(nid)->node_start_pfn = start_pfn;
++	NODE_DATA(nid)->node_spanned_pages = end_pfn - start_pfn;
++}
++
++/**
++ * numa_free_distance
++ *
++ * The current table is freed.
++ */
++void __init numa_free_distance(void)
++{
++	size_t size;
++
++	if (!numa_distance)
++		return;
++
++	size = numa_distance_cnt * numa_distance_cnt *
++		sizeof(numa_distance[0]);
++
++	memblock_free(__pa(numa_distance), size);
++	numa_distance_cnt = 0;
++	numa_distance = NULL;
++}
++
++/**
++ *
++ * Create a new NUMA distance table.
++ *
++ */
++static int __init numa_alloc_distance(void)
++{
++	size_t size;
++	u64 phys;
++	int i, j;
++
++	size = nr_node_ids * nr_node_ids * sizeof(numa_distance[0]);
++	phys = memblock_find_in_range(0, PFN_PHYS(max_pfn),
++				      size, PAGE_SIZE);
++	if (WARN_ON(!phys))
++		return -ENOMEM;
++
++	memblock_reserve(phys, size);
++
++	numa_distance = __va(phys);
++	numa_distance_cnt = nr_node_ids;
++
++	/* fill with the default distances */
++	for (i = 0; i < numa_distance_cnt; i++)
++		for (j = 0; j < numa_distance_cnt; j++)
++			numa_distance[i * numa_distance_cnt + j] = i == j ?
++				LOCAL_DISTANCE : REMOTE_DISTANCE;
++
++	pr_debug("NUMA: Initialized distance table, cnt=%d\n",
++			numa_distance_cnt);
++
++	return 0;
++}
++
++/**
++ * numa_set_distance - Set inter node NUMA distance from node to node.
++ * @from: the 'from' node to set distance
++ * @to: the 'to'  node to set distance
++ * @distance: NUMA distance
++ *
++ * Set the distance from node @from to @to to @distance.
++ * If distance table doesn't exist, a warning is printed.
++ *
++ * If @from or @to is higher than the highest known node or lower than zero
++ * or @distance doesn't make sense, the call is ignored.
++ *
++ */
++void __init numa_set_distance(int from, int to, int distance)
++{
++	if (!numa_distance) {
++		pr_warn_once("NUMA: Warning: distance table not allocated yet\n");
++		return;
++	}
++
++	if (from >= numa_distance_cnt || to >= numa_distance_cnt ||
++			from < 0 || to < 0) {
++		pr_warn_once("NUMA: Warning: node ids are out of bound, from=%d to=%d distance=%d\n",
++			    from, to, distance);
++		return;
++	}
++
++	if ((u8)distance != distance ||
++	    (from == to && distance != LOCAL_DISTANCE)) {
++		pr_warn_once("NUMA: Warning: invalid distance parameter, from=%d to=%d distance=%d\n",
++			     from, to, distance);
++		return;
++	}
++
++	numa_distance[from * numa_distance_cnt + to] = distance;
++}
++EXPORT_SYMBOL(numa_set_distance);
++
++/**
++ * Return NUMA distance @from to @to
++ */
++int __node_distance(int from, int to)
++{
++	if (from >= numa_distance_cnt || to >= numa_distance_cnt)
++		return from == to ? LOCAL_DISTANCE : REMOTE_DISTANCE;
++	return numa_distance[from * numa_distance_cnt + to];
++}
++EXPORT_SYMBOL(__node_distance);
++
++static int __init numa_register_nodes(void)
++{
++	int nid;
++	struct memblock_region *mblk;
++
++	/* Check that valid nid is set to memblks */
++	for_each_memblock(memory, mblk)
++		if (mblk->nid == NUMA_NO_NODE || mblk->nid >= MAX_NUMNODES) {
++			pr_warn("NUMA: Warning: invalid memblk node %d [mem %#010Lx-%#010Lx]\n",
++				mblk->nid, mblk->base, mblk->base + mblk->size - 1);
++			return -EINVAL;
++		}
++
++	/* Finally register nodes. */
++	for_each_node_mask(nid, numa_nodes_parsed) {
++		unsigned long start_pfn, end_pfn;
++
++		get_pfn_range_for_nid(nid, &start_pfn, &end_pfn);
++		setup_node_data(nid, start_pfn, end_pfn);
++		node_set_online(nid);
++	}
++
++	/* Setup online nodes to actual nodes*/
++	node_possible_map = numa_nodes_parsed;
++
++	return 0;
++}
++
++static int __init numa_init(int (*init_func)(void))
++{
++	int ret;
++
++	nodes_clear(numa_nodes_parsed);
++	nodes_clear(node_possible_map);
++	nodes_clear(node_online_map);
++	numa_free_distance();
++
++	ret = init_func();
++	if (ret < 0)
 +		return ret;
 +
-+	ret = early_init_parse_memory_node(node);
-+	if (ret)
++	if (nodes_empty(numa_nodes_parsed))
++		return -EINVAL;
++
++	ret = numa_register_nodes();
++	if (ret < 0)
 +		return ret;
 +
-+	return early_init_parse_distance_map(node, uname);
++	ret = numa_alloc_distance();
++	if (ret < 0)
++		return ret;
++
++	setup_node_to_cpumask_map();
++
++	/* init boot processor */
++	cpu_to_node_map[0] = 0;
++	map_cpu_to_node(0, 0);
++
++	return 0;
 +}
 +
-+int of_node_to_nid(struct device_node *device)
++/**
++ * dummy_numa_init - Fallback dummy NUMA init
++ *
++ * Used if there's no underlying NUMA architecture, NUMA initialization
++ * fails, or NUMA is disabled on the command line.
++ *
++ * Must online at least one node (node 0) and add memory blocks that cover all
++ * allowed memory. It is unlikely that this function fails.
++ */
++static int __init dummy_numa_init(void)
 +{
-+	const __be32 *of_numa_prop;
-+	int length;
++	int ret;
++	struct memblock_region *mblk;
 +
-+	of_numa_prop = of_get_property(device, "numa-node-id", &length);
-+	if (of_numa_prop)
-+		return of_numa_prop_to_nid(of_numa_prop, length);
++	pr_info("%s\n", "No NUMA configuration found");
++	pr_info("NUMA: Faking a node at [mem %#018Lx-%#018Lx]\n",
++	       0LLU, PFN_PHYS(max_pfn) - 1);
 +
-+	return NUMA_NO_NODE;
++	for_each_memblock(memory, mblk) {
++		ret = numa_add_memblk(0, mblk->base, mblk->size);
++		if (!ret)
++			continue;
++
++		pr_err("NUMA init failed\n");
++		return ret;
++	}
++
++	numa_off = 1;
++	return 0;
 +}
 +
-+/* DT node mapping is done already early_init_of_scan_memory */
-+int __init of_numa_init(void)
++/**
++ * arm64_numa_init - Initialize NUMA
++ *
++ * Try each configured NUMA initialization method until one succeeds.  The
++ * last fallback is dummy single node config encomapssing whole memory.
++ */
++void __init arm64_numa_init(void)
 +{
-+	return of_scan_flat_dt(early_init_of_scan_numa_map, NULL);
++	numa_init(dummy_numa_init);
 +}
-diff --git a/include/linux/of.h b/include/linux/of.h
-index dd10626..23e5bad 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -685,6 +685,10 @@ static inline int of_node_to_nid(struct device_node *device)
- }
- #endif
- 
-+#ifdef CONFIG_OF_NUMA
-+extern int __init of_numa_init(void);
-+#endif
-+
- static inline struct device_node *of_find_matching_node(
- 	struct device_node *from,
- 	const struct of_device_id *matches)
 -- 
 1.8.1.4
