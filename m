@@ -1,39 +1,40 @@
 Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5A7211A022F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 06:42:56 +1100 (AEDT)
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by lists.ozlabs.org (Postfix) with ESMTPS id F1BF61A027B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 06:43:00 +1100 (AEDT)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2B6C7140662
- for <linuxppc-dev@ozlabs.org>; Wed,  3 Feb 2016 06:42:56 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id A4010140C49
+ for <linuxppc-dev@ozlabs.org>; Wed,  3 Feb 2016 06:43:00 +1100 (AEDT)
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Wed, 3 Feb 2016 05:42:55 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id B2EEA2BB0057
- for <linuxppc-dev@ozlabs.org>; Wed,  3 Feb 2016 06:42:52 +1100 (EST)
+ Wed, 3 Feb 2016 05:43:00 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E5E173578052
+ for <linuxppc-dev@ozlabs.org>; Wed,  3 Feb 2016 06:42:57 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u12Jgi4w4390920
- for <linuxppc-dev@ozlabs.org>; Wed, 3 Feb 2016 06:42:52 +1100
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u12Jgdrb46727324
+ for <linuxppc-dev@ozlabs.org>; Wed, 3 Feb 2016 06:42:47 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u12JgKdX023534
- for <linuxppc-dev@ozlabs.org>; Wed, 3 Feb 2016 06:42:20 +1100
+ u12JgP5j023672
+ for <linuxppc-dev@ozlabs.org>; Wed, 3 Feb 2016 06:42:25 +1100
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
  pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com,
  shreyas@linux.vnet.ibm.com, bsingharora@gmail.com, mpe@ellerman.id.au,
  Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v8 3/6] cpufreq: powernv: Remove cpu_to_chip_id() from hot-path
-Date: Wed,  3 Feb 2016 01:11:39 +0530
-Message-Id: <1454442102-1229-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v8 4/6] cpufreq: powernv/tracing: Add powernv_throttle
+ tracepoint
+Date: Wed,  3 Feb 2016 01:11:40 +0530
+Message-Id: <1454442102-1229-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 In-Reply-To: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,100 +46,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-cpu_to_chip_id() does a DT walk through to find out the chip id by
-taking a contended device tree lock. This adds an unnecessary overhead
-in a hot path. So instead of calling cpu_to_chip_id() everytime cache
-the chip ids for all cores in the array 'core_to_chip_map' and use it
-in the hotpath.
+This patch adds the powernv_throttle tracepoint to trace the CPU
+frequency throttling event, which is used by the powernv-cpufreq
+driver in POWER8.
 
-Reported-by: Anton Blanchard <anton@samba.org>
 Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
 No changes from v7.
 
- drivers/cpufreq/powernv-cpufreq.c | 23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
+ include/trace/events/power.h | 22 ++++++++++++++++++++++
+ kernel/trace/power-traces.c  |  1 +
+ 2 files changed, 23 insertions(+)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index a271b0f..c670314 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -43,6 +43,7 @@
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index 284244e..19e5030 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -38,6 +38,28 @@ DEFINE_EVENT(cpu, cpu_idle,
+ 	TP_ARGS(state, cpu_id)
+ );
  
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
- static bool rebooting, throttled, occ_reset;
-+static unsigned int *core_to_chip_map;
- 
- static struct chip {
- 	unsigned int id;
-@@ -313,13 +314,14 @@ static inline unsigned int get_nominal_index(void)
- static void powernv_cpufreq_throttle_check(void *data)
- {
- 	unsigned int cpu = smp_processor_id();
-+	unsigned int chip_id = core_to_chip_map[cpu_core_index_of_thread(cpu)];
- 	unsigned long pmsr;
- 	int pmsr_pmax, i;
- 
- 	pmsr = get_pmspr(SPRN_PMSR);
- 
- 	for (i = 0; i < nr_chips; i++)
--		if (chips[i].id == cpu_to_chip_id(cpu))
-+		if (chips[i].id == chip_id)
- 			break;
- 
- 	/* Check for Pmax Capping */
-@@ -559,19 +561,29 @@ static int init_chip_info(void)
- 	unsigned int chip[256];
- 	unsigned int cpu, i;
- 	unsigned int prev_chip_id = UINT_MAX;
-+	cpumask_t cpu_mask;
-+	int ret = -ENOMEM;
- 
--	for_each_possible_cpu(cpu) {
-+	core_to_chip_map = kcalloc(cpu_nr_cores(), sizeof(unsigned int),
-+				   GFP_KERNEL);
-+	if (!core_to_chip_map)
-+		goto out;
++TRACE_EVENT(powernv_throttle,
 +
-+	cpumask_copy(&cpu_mask, cpu_possible_mask);
-+	for_each_cpu(cpu, &cpu_mask) {
- 		unsigned int id = cpu_to_chip_id(cpu);
++	TP_PROTO(int chip_id, const char *reason, int pmax),
++
++	TP_ARGS(chip_id, reason, pmax),
++
++	TP_STRUCT__entry(
++		__field(int, chip_id)
++		__string(reason, reason)
++		__field(int, pmax)
++	),
++
++	TP_fast_assign(
++		__entry->chip_id = chip_id;
++		__assign_str(reason, reason);
++		__entry->pmax = pmax;
++	),
++
++	TP_printk("Chip %d Pmax %d %s", __entry->chip_id,
++		  __entry->pmax, __get_str(reason))
++);
++
+ TRACE_EVENT(pstate_sample,
  
- 		if (prev_chip_id != id) {
- 			prev_chip_id = id;
- 			chip[nr_chips++] = id;
- 		}
-+		core_to_chip_map[cpu_core_index_of_thread(cpu)] = id;
-+		cpumask_andnot(&cpu_mask, &cpu_mask, cpu_sibling_mask(cpu));
- 	}
+ 	TP_PROTO(u32 core_busy,
+diff --git a/kernel/trace/power-traces.c b/kernel/trace/power-traces.c
+index eb4220a..81b8745 100644
+--- a/kernel/trace/power-traces.c
++++ b/kernel/trace/power-traces.c
+@@ -15,4 +15,5 @@
  
- 	chips = kmalloc_array(nr_chips, sizeof(struct chip), GFP_KERNEL);
- 	if (!chips)
--		return -ENOMEM;
-+		goto free_chip_map;
+ EXPORT_TRACEPOINT_SYMBOL_GPL(suspend_resume);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(cpu_idle);
++EXPORT_TRACEPOINT_SYMBOL_GPL(powernv_throttle);
  
- 	for (i = 0; i < nr_chips; i++) {
- 		chips[i].id = chip[i];
-@@ -582,6 +594,10 @@ static int init_chip_info(void)
- 	}
- 
- 	return 0;
-+free_chip_map:
-+	kfree(core_to_chip_map);
-+out:
-+	return ret;
- }
- 
- static int __init powernv_cpufreq_init(void)
-@@ -616,6 +632,7 @@ static void __exit powernv_cpufreq_exit(void)
- 	opal_message_notifier_unregister(OPAL_MSG_OCC,
- 					 &powernv_cpufreq_opal_nb);
- 	kfree(chips);
-+	kfree(core_to_chip_map);
- 	cpufreq_unregister_driver(&powernv_cpufreq_driver);
- }
- module_exit(powernv_cpufreq_exit);
 -- 
 1.9.3
