@@ -1,10 +1,10 @@
 Return-Path: <Ganapatrao.Kulkarni@caviumnetworks.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0080.outbound.protection.outlook.com [157.56.111.80])
+ (mail-bn1bon0073.outbound.protection.outlook.com [157.56.111.73])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EAD4F1A01D8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 21:44:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7935C1A021C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 21:44:17 +1100 (AEDT)
 From: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
 To: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
@@ -24,9 +24,10 @@ To: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
  <jonathan@jonmasters.org>, <rrichter@cavium.com>,
  <Prasun.Kapoor@caviumnetworks.com>
 CC: <gpkulkarni@gmail.com>
-Subject: [PATCH v10 2/8] Documentation, dt, numa: dt bindings for numa.
-Date: Tue, 2 Feb 2016 15:39:17 +0530
-Message-ID: <1454407763-1017-3-git-send-email-gkulkarni@caviumnetworks.com>
+Subject: [PATCH v10 5/8] arm64, dt,
+ thunderx: Add initial dts for Cavium Thunderx in 2 node topology.
+Date: Tue, 2 Feb 2016 15:39:20 +0530
+Message-ID: <1454407763-1017-6-git-send-email-gkulkarni@caviumnetworks.com>
 In-Reply-To: <1454407763-1017-1-git-send-email-gkulkarni@caviumnetworks.com>
 References: <1454407763-1017-1-git-send-email-gkulkarni@caviumnetworks.com>
 MIME-Version: 1.0
@@ -40,292 +41,927 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DT bindings for numa mapping of memory, cores and IOs.
+Adding dt file for Cavium's Thunderx dual socket platform.
 
-Reviewed-by: Robert Richter <rrichter@cavium.com>
 Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
 ---
- Documentation/devicetree/bindings/numa.txt | 272 +++++++++++++++++++++++++++++
- 1 file changed, 272 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/numa.txt
+ arch/arm64/boot/dts/cavium/Makefile             |   2 +-
+ arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts  |  83 +++
+ arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi | 806 ++++++++++++++++++++++++
+ 3 files changed, 890 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts
+ create mode 100644 arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi
 
-diff --git a/Documentation/devicetree/bindings/numa.txt b/Documentation/devicetree/bindings/numa.txt
+diff --git a/arch/arm64/boot/dts/cavium/Makefile b/arch/arm64/boot/dts/cavium/Makefile
+index e34f89d..7fe7067 100644
+--- a/arch/arm64/boot/dts/cavium/Makefile
++++ b/arch/arm64/boot/dts/cavium/Makefile
+@@ -1,4 +1,4 @@
+-dtb-$(CONFIG_ARCH_THUNDER) += thunder-88xx.dtb
++dtb-$(CONFIG_ARCH_THUNDER) += thunder-88xx.dtb thunder-88xx-2n.dtb
+ 
+ always		:= $(dtb-y)
+ subdir-y	:= $(dts-dirs)
+diff --git a/arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts b/arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts
 new file mode 100644
-index 0000000..ec5ed7c
+index 0000000..5601e87
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/numa.txt
-@@ -0,0 +1,272 @@
-+==============================================================================
-+NUMA binding description.
-+==============================================================================
++++ b/arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts
+@@ -0,0 +1,83 @@
++/*
++ * Cavium Thunder DTS file - Thunder board description
++ *
++ * Copyright (C) 2014, Cavium Inc.
++ *
++ * This file is dual-licensed: you can use it either under the terms
++ * of the GPL or the X11 license, at your option. Note that this dual
++ * licensing only applies to this file, and not this project as a
++ * whole.
++ *
++ *  a) This library is free software; you can redistribute it and/or
++ *     modify it under the terms of the GNU General Public License as
++ *     published by the Free Software Foundation; either version 2 of the
++ *     License, or (at your option) any later version.
++ *
++ *     This library is distributed in the hope that it will be useful,
++ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *     GNU General Public License for more details.
++ *
++ *     You should have received a copy of the GNU General Public
++ *     License along with this library; if not, write to the Free
++ *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
++ *     MA 02110-1301 USA
++ *
++ * Or, alternatively,
++ *
++ *  b) Permission is hereby granted, free of charge, to any person
++ *     obtaining a copy of this software and associated documentation
++ *     files (the "Software"), to deal in the Software without
++ *     restriction, including without limitation the rights to use,
++ *     copy, modify, merge, publish, distribute, sublicense, and/or
++ *     sell copies of the Software, and to permit persons to whom the
++ *     Software is furnished to do so, subject to the following
++ *     conditions:
++ *
++ *     The above copyright notice and this permission notice shall be
++ *     included in all copies or substantial portions of the Software.
++ *
++ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
++ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
++ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
++ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
++ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
++ *     OTHER DEALINGS IN THE SOFTWARE.
++ */
 +
-+==============================================================================
-+1 - Introduction
-+==============================================================================
++/dts-v1/;
 +
-+Systems employing a Non Uniform Memory Access (NUMA) architecture contain
-+collections of hardware resources including processors, memory, and I/O buses,
-+that comprise what is commonly known as a NUMA node.
-+Processor accesses to memory within the local NUMA node is generally faster
-+than processor accesses to memory outside of the local NUMA node.
-+DT defines interfaces that allow the platform to convey NUMA node
-+topology information to OS.
++/include/ "thunder-88xx-2n.dtsi"
 +
-+==============================================================================
-+2 - numa-node-id
-+==============================================================================
++/ {
++	model = "Cavium ThunderX CN88XX board";
++	compatible = "cavium,thunder-88xx";
 +
-+For the purpose of identification, each NUMA node is associated with a unique
-+token known as a node id. For the purpose of this binding
-+a node id is a 32-bit integer.
++	aliases {
++		serial0 = &uaa0;
++		serial1 = &uaa1;
++	};
 +
-+A device node is associated with a NUMA node by the presence of a
-+numa-node-id property which contains the node id of the device.
-+
-+Example:
-+	/* numa node 0 */
-+	numa-node-id = <0>;
-+
-+	/* numa node 1 */
-+	numa-node-id = <1>;
-+
-+==============================================================================
-+3 - distance-map
-+==============================================================================
-+
-+The device tree node distance-map describes the relative
-+distance (memory latency) between all numa nodes.
-+
-+- compatible : Should at least contain "numa-distance-map-v1".
-+
-+- distance-matrix
-+  This property defines a matrix to describe the relative distances
-+  between all numa nodes.
-+  It is represented as a list of node pairs and their relative distance.
-+
-+  Note:
-+	1. Each entry represents distance from first node to second node.
-+	The distances are equal in either direction.
-+	2. The distance from a node to self (local distance) is represented
-+	with value 10 and all internode distance should be represented with
-+	a value greater than 10.
-+	3. distance-matrix should have entries in lexicographical ascending
-+	order of nodes.
-+	4. There must be only one device node distance-map which must reside in the root node.
-+
-+Example:
-+	4 nodes connected in mesh/ring topology as below,
-+
-+		0_______20______1
-+		|               |
-+		|               |
-+		20             20
-+		|               |
-+		|               |
-+		|_______________|
-+		3       20      2
-+
-+	if relative distance for each hop is 20,
-+	then internode distance would be,
-+	      0 -> 1 = 20
-+	      1 -> 2 = 20
-+	      2 -> 3 = 20
-+	      3 -> 0 = 20
-+	      0 -> 2 = 40
-+	      1 -> 3 = 40
-+
-+     and dt presentation for this distance matrix is,
-+
-+		distance-map {
-+			 compatible = "numa-distance-map-v1";
-+			 distance-matrix = <0 0  10>,
-+					   <0 1  20>,
-+					   <0 2  40>,
-+					   <0 3  20>,
-+					   <1 0  20>,
-+					   <1 1  10>,
-+					   <1 2  20>,
-+					   <1 3  40>,
-+					   <2 0  40>,
-+					   <2 1  20>,
-+					   <2 2  10>,
-+					   <2 3  20>,
-+					   <3 0  20>,
-+					   <3 1  40>,
-+					   <3 2  20>,
-+					   <3 3  10>;
-+		};
-+
-+==============================================================================
-+4 - Example dts
-+==============================================================================
-+
-+Dual socket system consists of 2 boards connected through ccn bus and
-+each board having one socket/soc of 8 cpus, memory and pci bus.
-+
-+	memory@c00000 {
++	memory@00000000 {
 +		device_type = "memory";
-+		reg = <0x0 0xc00000 0x0 0x80000000>;
-+		/* node 0 */
++		reg = <0x0 0x01400000 0x3 0xFEC00000>;
++		/* socket 0 */
 +		numa-node-id = <0>;
 +	};
 +
 +	memory@10000000000 {
 +		device_type = "memory";
-+		reg = <0x100 0x0 0x0 0x80000000>;
-+		/* node 1 */
++		reg = <0x100 0x00400000 0x3 0xFFC00000>;
++		 /* socket 1 */
 +		numa-node-id = <1>;
++	};
++
++	distance-map {
++		compatible = "numa-distance-map-v1";
++		distance-matrix = <0 0  10>,
++				  <0 1  20>,
++				  <1 1  10>;
++	};
++};
+diff --git a/arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi b/arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi
+new file mode 100644
+index 0000000..b58e5c7
+--- /dev/null
++++ b/arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi
+@@ -0,0 +1,806 @@
++/*
++ * Cavium Thunder DTS file - Thunder SoC description
++ *
++ * Copyright (C) 2014, Cavium Inc.
++ *
++ * This file is dual-licensed: you can use it either under the terms
++ * of the GPL or the X11 license, at your option. Note that this dual
++ * licensing only applies to this file, and not this project as a
++ * whole.
++ *
++ *  a) This library is free software; you can redistribute it and/or
++ *     modify it under the terms of the GNU General Public License as
++ *     published by the Free Software Foundation; either version 2 of the
++ *     License, or (at your option) any later version.
++ *
++ *     This library is distributed in the hope that it will be useful,
++ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *     GNU General Public License for more details.
++ *
++ *     You should have received a copy of the GNU General Public
++ *     License along with this library; if not, write to the Free
++ *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
++ *     MA 02110-1301 USA
++ *
++ * Or, alternatively,
++ *
++ *  b) Permission is hereby granted, free of charge, to any person
++ *     obtaining a copy of this software and associated documentation
++ *     files (the "Software"), to deal in the Software without
++ *     restriction, including without limitation the rights to use,
++ *     copy, modify, merge, publish, distribute, sublicense, and/or
++ *     sell copies of the Software, and to permit persons to whom the
++ *     Software is furnished to do so, subject to the following
++ *     conditions:
++ *
++ *     The above copyright notice and this permission notice shall be
++ *     included in all copies or substantial portions of the Software.
++ *
++ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
++ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
++ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
++ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
++ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
++ *     OTHER DEALINGS IN THE SOFTWARE.
++ */
++
++/ {
++	compatible = "cavium,thunder-88xx";
++	interrupt-parent = <&gic0>;
++	#address-cells = <2>;
++	#size-cells = <2>;
++
++	psci {
++		compatible = "arm,psci-0.2";
++		method = "smc";
 +	};
 +
 +	cpus {
 +		#address-cells = <2>;
 +		#size-cells = <0>;
 +
-+		cpu@0 {
++		cpu@000 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0x0>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x000>;
 +			enable-method = "psci";
-+			/* node 0 */
++			/* socket 0 */
 +			numa-node-id = <0>;
 +		};
-+		cpu@1 {
++		cpu@001 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0x1>;
-+			enable-method = "psci";
-+			numa-node-id = <0>;
-+		};
-+		cpu@2 {
-+			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0x2>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x001>;
 +			enable-method = "psci";
 +			numa-node-id = <0>;
 +		};
-+		cpu@3 {
++		cpu@002 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0x3>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x002>;
 +			enable-method = "psci";
 +			numa-node-id = <0>;
 +		};
-+		cpu@4 {
++		cpu@003 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0x4>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x003>;
 +			enable-method = "psci";
 +			numa-node-id = <0>;
 +		};
-+		cpu@5 {
++		cpu@004 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0x5>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x004>;
 +			enable-method = "psci";
 +			numa-node-id = <0>;
 +		};
-+		cpu@6 {
++		cpu@005 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0x6>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x005>;
 +			enable-method = "psci";
 +			numa-node-id = <0>;
 +		};
-+		cpu@7 {
++		cpu@006 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0x7>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x006>;
 +			enable-method = "psci";
 +			numa-node-id = <0>;
 +		};
-+		cpu@8 {
++		cpu@007 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0x8>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x007>;
 +			enable-method = "psci";
-+			/* node 1 */
++			numa-node-id = <0>;
++		};
++		cpu@008 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x008>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@009 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x009>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@00a {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x00a>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@00b {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x00b>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@00c {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x00c>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@00d {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x00d>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@00e {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x00e>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@00f {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x00f>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@100 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x100>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@101 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x101>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@102 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x102>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@103 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x103>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@104 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x104>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@105 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x105>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@106 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x106>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@107 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x107>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@108 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x108>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@109 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x109>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@10a {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10a>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@10b {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10b>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@10c {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10c>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@10d {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10d>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@10e {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10e>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@10f {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10f>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@200 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x200>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@201 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x201>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@202 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x202>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@203 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x203>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@204 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x204>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@205 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x205>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@206 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x206>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@207 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x207>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@208 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x208>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@209 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x209>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@20a {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x20a>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@20b {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x20b>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@20c {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x20c>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@20d {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x20d>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@20e {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x20e>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@20f {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x20f>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++		};
++		cpu@10000 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10000>;
++			enable-method = "psci";
++			/* socket 1 */
 +			numa-node-id = <1>;
 +		};
-+		cpu@9 {
++		cpu@10001 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0x9>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10001>;
 +			enable-method = "psci";
 +			numa-node-id = <1>;
 +		};
-+		cpu@a {
++		cpu@10002 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0xa>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10002>;
 +			enable-method = "psci";
 +			numa-node-id = <1>;
 +		};
-+		cpu@b {
++		cpu@10003 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0xb>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10003>;
 +			enable-method = "psci";
 +			numa-node-id = <1>;
 +		};
-+		cpu@c {
++		cpu@10004 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0xc>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10004>;
 +			enable-method = "psci";
 +			numa-node-id = <1>;
 +		};
-+		cpu@d {
++		cpu@10005 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0xd>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10005>;
 +			enable-method = "psci";
 +			numa-node-id = <1>;
 +		};
-+		cpu@e {
++		cpu@10006 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0xe>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10006>;
 +			enable-method = "psci";
 +			numa-node-id = <1>;
 +		};
-+		cpu@f {
++		cpu@10007 {
 +			device_type = "cpu";
-+			compatible =  "arm,armv8";
-+			reg = <0x0 0xf>;
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10007>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10008 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10008>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10009 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10009>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1000a {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1000a>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1000b {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1000b>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1000c {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1000c>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1000d {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1000d>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1000e {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1000e>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1000f {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1000f>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10100 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10100>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10101 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10101>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10102 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10102>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10103 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10103>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10104 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10104>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10105 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10105>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10106 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10106>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10107 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10107>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10108 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10108>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10109 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10109>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1010a {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1010a>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1010b {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1010b>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1010c {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1010c>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1010d {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1010d>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1010e {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1010e>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1010f {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1010f>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10200 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10200>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10201 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10201>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10202 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10202>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10203 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10203>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10204 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10204>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10205 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10205>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10206 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10206>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10207 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10207>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10208 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10208>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@10209 {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x10209>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1020a {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1020a>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1020b {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1020b>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1020c {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1020c>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1020d {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1020d>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1020e {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1020e>;
++			enable-method = "psci";
++			numa-node-id = <1>;
++		};
++		cpu@1020f {
++			device_type = "cpu";
++			compatible = "cavium,thunder", "arm,armv8";
++			reg = <0x0 0x1020f>;
 +			enable-method = "psci";
 +			numa-node-id = <1>;
 +		};
 +	};
 +
-+	pcie0: pcie0@848000000000 {
-+		compatible = "arm,armv8";
-+		device_type = "pci";
-+		bus-range = <0 255>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <0x8480 0x00000000 0 0x10000000>;  /* Configuration space */
-+		ranges = <0x03000000 0x8010 0x00000000 0x8010 0x00000000 0x70 0x00000000>;
-+		/* node 0 */
-+		numa-node-id = <0>;
-+        };
-+
-+	pcie1: pcie1@948000000000 {
-+		compatible = "arm,armv8";
-+		device_type = "pci";
-+		bus-range = <0 255>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <0x9480 0x00000000 0 0x10000000>;  /* Configuration space */
-+		ranges = <0x03000000 0x9010 0x00000000 0x9010 0x00000000 0x70 0x00000000>;
-+		/* node 1 */
-+		numa-node-id = <1>;
-+        };
-+
-+	distance-map {
-+		compatible = "numa-distance-map-v1";
-+		distance-matrix = <0 0 10>,
-+				  <0 1 20>,
-+				  <1 1 10>;
++	timer {
++		compatible = "arm,armv8-timer";
++		interrupts = <1 13 0xff01>,
++		             <1 14 0xff01>,
++		             <1 11 0xff01>,
++		             <1 10 0xff01>;
 +	};
++
++	soc {
++		compatible = "simple-bus";
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		refclk50mhz: refclk50mhz {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <50000000>;
++			clock-output-names = "refclk50mhz";
++		};
++
++		gic0: interrupt-controller@8010,00000000 {
++			compatible = "arm,gic-v3";
++			#interrupt-cells = <3>;
++			#address-cells = <2>;
++			#size-cells = <2>;
++			#redistributor-regions = <2>;
++			ranges;
++			interrupt-controller;
++			reg = <0x8010 0x00000000 0x0 0x010000>, /* GICD */
++			      <0x8010 0x80000000 0x0 0x600000>, /* GICR Node 0 */
++			      <0x9010 0x80000000 0x0 0x600000>; /* GICR Node 1 */
++			interrupts = <1 9 0xf04>;
++
++			its: gic-its@8010,00020000 {
++				compatible = "arm,gic-v3-its";
++				msi-controller;
++				reg = <0x8010 0x20000 0x0 0x200000>;
++				numa-node-id = <0>;
++			};
++
++			its1: gic-its@9010,00020000 {
++				compatible = "arm,gic-v3-its";
++				msi-controller;
++				reg = <0x9010 0x20000 0x0 0x200000>;
++				numa-node-id = <1>;
++			};
++		};
++
++		uaa0: serial@87e0,24000000 {
++			compatible = "arm,pl011", "arm,primecell";
++			reg = <0x87e0 0x24000000 0x0 0x1000>;
++			interrupts = <1 21 4>;
++			clocks = <&refclk50mhz>;
++			clock-names = "apb_pclk";
++		};
++
++		uaa1: serial@87e0,25000000 {
++			compatible = "arm,pl011", "arm,primecell";
++			reg = <0x87e0 0x25000000 0x0 0x1000>;
++			interrupts = <1 22 4>;
++			clocks = <&refclk50mhz>;
++			clock-names = "apb_pclk";
++		};
++	};
++};
 -- 
 1.8.1.4
