@@ -2,22 +2,24 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F37031A0061
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 12:08:30 +1100 (AEDT)
-Date: Tue, 2 Feb 2016 11:57:08 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 123E01A006B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 12:08:31 +1100 (AEDT)
+Date: Tue, 2 Feb 2016 11:58:20 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Cc: paulus@samba.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
  aik@ozlabs.ru, lvivier@redhat.com, thuth@redhat.com,
- linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Subject: Re: [RFCv2 0/9] PAPR hash page table resizing (guest side)
-Message-ID: <20160202005708.GA15080@voom.fritz.box>
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFCv2 6/9] pseries: Add hypercall wrappers for hash page table
+ resizing
+Message-ID: <20160202005820.GB15080@voom.fritz.box>
 References: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
- <56AEF20B.2030302@linux.vnet.ibm.com>
+ <1454045043-25545-7-git-send-email-david@gibson.dropbear.id.au>
+ <56AF0523.60902@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="ZPt4rx8FFjLCG7dd"
-In-Reply-To: <56AEF20B.2030302@linux.vnet.ibm.com>
+ protocol="application/pgp-signature"; boundary="uQr8t48UFsdbeI+V"
+In-Reply-To: <56AF0523.60902@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +30,81 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---ZPt4rx8FFjLCG7dd
+--uQr8t48UFsdbeI+V
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Feb 01, 2016 at 11:20:03AM +0530, Anshuman Khandual wrote:
-> On 01/29/2016 10:53 AM, David Gibson wrote:
-> > Here's a second prototype of the guest side work for runtime resizing
-> > of the has page table in PAPR guests.
+On Mon, Feb 01, 2016 at 12:41:31PM +0530, Anshuman Khandual wrote:
+> On 01/29/2016 10:54 AM, David Gibson wrote:
+> > This adds the hypercall numbers and wrapper functions for the hash page
+> > table resizing hypercalls.
 > >=20
-> > This is now feature complete.  It implements the resizing, advertises
-> > it with CAS, and will automatically invoke it to maintain a good HPT
-> > size when memory is hot-added or hot-removed.
+> > These are experimental "platform specific" values for now, until we hav=
+e a
+> > formal PAPR update.
 > >=20
-> > Patches 1-5 are standalone prerequisite cleanups that I'll be pushing
-> > concurrently.
-> >=20
-> > David Gibson (9):
-> >   memblock: Don't mark memblock_phys_mem_size() as __init
-> >   arch/powerpc: Clean up error handling for htab_remove_mapping
-> >   arch/powerpc: Handle removing maybe-present bolted HPTEs
-> >   arch/powerpc: Clean up memory hotplug failure paths
-> >   arch/powerpc: Split hash page table sizing heuristic into a helper
+> > It also adds a new firmware feature flat to track the presence of the
+> > HPT resizing calls.
 >=20
-> A small nit. Please start the above commit message headers as
-> "powerpc/mm:" instead, which sounds more clear and uniform with
-> patch series related to other subsystems.
+> Its a flag   ....................... ^^^^^^^ here.
 
-Ok.
+Oops, thanks.
+
+>=20
+> >=20
+> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> > ---
+> >  arch/powerpc/include/asm/firmware.h       |  5 +++--
+> >  arch/powerpc/include/asm/hvcall.h         |  2 ++
+> >  arch/powerpc/include/asm/plpar_wrappers.h | 12 ++++++++++++
+> >  arch/powerpc/platforms/pseries/firmware.c |  1 +
+> >  4 files changed, 18 insertions(+), 2 deletions(-)
+> >=20
+> > diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include=
+/asm/firmware.h
+> > index b062924..32435d2 100644
+> > --- a/arch/powerpc/include/asm/firmware.h
+> > +++ b/arch/powerpc/include/asm/firmware.h
+> > @@ -42,7 +42,7 @@
+> >  #define FW_FEATURE_SPLPAR	ASM_CONST(0x0000000000100000)
+> >  #define FW_FEATURE_LPAR		ASM_CONST(0x0000000000400000)
+> >  #define FW_FEATURE_PS3_LV1	ASM_CONST(0x0000000000800000)
+> > -/* Free				ASM_CONST(0x0000000001000000) */
+> > +#define FW_FEATURE_HPT_RESIZE	ASM_CONST(0x0000000001000000)
+> >  #define FW_FEATURE_CMO		ASM_CONST(0x0000000002000000)
+> >  #define FW_FEATURE_VPHN		ASM_CONST(0x0000000004000000)
+> >  #define FW_FEATURE_XCMO		ASM_CONST(0x0000000008000000)
+> > @@ -66,7 +66,8 @@ enum {
+> >  		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
+> >  		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
+> >  		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
+> > -		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
+> > +		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
+> > +		FW_FEATURE_HPT_RESIZE,
+> >  	FW_FEATURE_PSERIES_ALWAYS =3D 0,
+> >  	FW_FEATURE_POWERNV_POSSIBLE =3D FW_FEATURE_OPAL,
+> >  	FW_FEATURE_POWERNV_ALWAYS =3D 0,
+> > diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/a=
+sm/hvcall.h
+> > index e3b54dd..195e080 100644
+> > --- a/arch/powerpc/include/asm/hvcall.h
+> > +++ b/arch/powerpc/include/asm/hvcall.h
+> > @@ -293,6 +293,8 @@
+> > =20
+> >  /* Platform specific hcalls, used by KVM */
+> >  #define H_RTAS			0xf000
+> > +#define H_RESIZE_HPT_PREPARE	0xf003
+> > +#define H_RESIZE_HPT_COMMIT	0xf004
+>=20
+> This sound better and matches FW_FEATURE_HPT_RESIZE ?
+
+I'm not quite sure what you're suggesting here.
+
+> #define H_HPT_RESIZE_PREPARE	0xf003
+> #define H_HPT_RESIZE_COMMIT	0xf004
+>=20
+>=20
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -64,25 +112,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---ZPt4rx8FFjLCG7dd
+--uQr8t48UFsdbeI+V
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJWr/7kAAoJEGw4ysog2bOSC1kP/3YsRV91C8T5g7bnsqI6XDyi
-MoH7N04CO3rVD8BxCb6qBQVCbcj5B8qnxLVKhTFGj8yWpuhseevwUj58WKKVd5lY
-k1VNvyy2wfSoyqGs7/tf3hfmehDhVzE99N3h02mOj5ptoc5M1t5YLeNPW+yH1q4U
-E7jAlf9od/4SO+7jeNF+bLPzOx3rK+fM0jweMOUKPwqdna3dqooquY6+4FzUddIj
-TKYs8hwo/Hzj6B++UEeFJMhcf82vu7PCxrF7FSO98kIGbY5tYydj46nWVlV1yX5z
-943WPAx3Mhw4wA1tk5GgAHSiurcPpSST8vb1CwVqoo2XRI/F2H4az+21LOlLsMFb
-GuczKQWfl+7Igwvdlqy2bMRR5GpQBgZ46r+sFhDJkGT+zyATkIqJRjSBXKKjRwUp
-RLAc5C3aeR7qT1dq8RSMu6fYRQCWXPakVZccdWDtXmPfN4d2xZZpnMKJaoTy15/N
-OVgz1VZdm/9iX3o5B8EKd6ydIJdaMoJ21E293s+x4pkYAICjZ0dQoADzHdxpryfJ
-bNGwmXoxy9mvVUFuqF6cxjrMGqvb4RDn1rIVSs1/eun99TmChNg11dflybNs2tvy
-L1FiDV75jPIbttL1QRbvGiwYaue3x0RVd5NwPhYhOQ6we4fDTb5lKQC2wFLavM4/
-4HH9gdbwTagvUV2eRrw7
-=Efpo
+iQIcBAEBAgAGBQJWr/8sAAoJEGw4ysog2bOSsO0P/0hKQG2iZMdS/5dHL20bh7Cd
+ryiP3oeQ2aXVeu06xTvgWjyVmZf+KlVkPvAfmDZcUM5F5BqLSFUAl8uACzjIQZpb
+4l1Z5Y/mweQftEIDshwOBO/+qckP3uV7/oipwZQZqKcUeP6MycoEaJzG8ly0T5CY
+VwjBiCnRX0+Pn7/4uSta9GU0R6pmnzu15VMpr37l8hCqXYInjT+F2+ljNST1EjKz
+1grVOznfD+j5L24RROcN4vFCdZU3O8mhKXmdQJwgNaLweiWiaVeU6tbMiKfY4ykw
+7JHy8VdYVo6EmTyaP4tzmtxcprkzoYmCoHgyJUZ2RqMf3Sd+Ri4e8c9Qg74nhgCL
+mMsDI1q0nEcb090B07hqc2L9cwdvhd2XVdoldKisHER2lqfXgXjFc9bM0tDPO0Nk
+XBYC93eqUdSLF+HqwXrQuMpTm0ixZ8cMFwAEupEUee/a6bTs5I2sy+iUgSAg4kA3
+QYK7CrBebgX9cQ6sEUmDSGJc0vkunzwQ4iPhrnFZize7PZCo/pz7MC4KqHJ/YM28
+IMkR18eg3FAQAEJbsaTpAk+e3IAiND9S6xXv7ye+trWwNkA89LyCpXTgqNtqyfg0
+Opz6p6ypPotWHcQrzZcREnvjPoBJdqEhUEyGTDSRcpp9KlPkDA6vHv7n9CjTWtn3
+yc5eKRRKq0x98yzdOYsM
+=V07r
 -----END PGP SIGNATURE-----
 
---ZPt4rx8FFjLCG7dd--
+--uQr8t48UFsdbeI+V--
