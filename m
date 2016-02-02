@@ -3,8 +3,8 @@ Received: from na01-bl2-obe.outbound.protection.outlook.com
  (mail-bl2on0072.outbound.protection.outlook.com [65.55.169.72])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DA2BB1A01FF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 21:26:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 50C171A0274
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 21:26:02 +1100 (AEDT)
 From: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
 To: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
@@ -24,9 +24,10 @@ To: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
  <jonathan@jonmasters.org>, <rrichter@cavium.com>,
  <Prasun.Kapoor@caviumnetworks.com>
 CC: <gpkulkarni@gmail.com>
-Subject: [PATCH v10 4/8] arm64, numa : Enable numa dt for arm64 platforms.
-Date: Tue, 2 Feb 2016 15:39:19 +0530
-Message-ID: <1454407763-1017-5-git-send-email-gkulkarni@caviumnetworks.com>
+Subject: [PATCH v10 6/8] arm64, mm,
+ numa: Adding numa balancing support for arm64.
+Date: Tue, 2 Feb 2016 15:39:21 +0530
+Message-ID: <1454407763-1017-7-git-send-email-gkulkarni@caviumnetworks.com>
 In-Reply-To: <1454407763-1017-1-git-send-email-gkulkarni@caviumnetworks.com>
 References: <1454407763-1017-1-git-send-email-gkulkarni@caviumnetworks.com>
 MIME-Version: 1.0
@@ -40,88 +41,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adding numa dt binding support for arm64 based platforms.
+enabled numa balancing for arm64 platforms.
+added pte, pmd protnone helpers for use by automatic NUMA balancing.
 
 Reviewed-by: Robert Richter <rrichter@cavium.com>
 Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
 ---
- arch/arm64/include/asm/numa.h |  2 ++
- arch/arm64/kernel/smp.c       |  2 ++
- arch/arm64/mm/numa.c          | 17 +++++++++++++++++
- 3 files changed, 21 insertions(+)
+ arch/arm64/Kconfig               |  1 +
+ arch/arm64/include/asm/pgtable.h | 18 ++++++++++++++++++
+ 2 files changed, 19 insertions(+)
 
-diff --git a/arch/arm64/include/asm/numa.h b/arch/arm64/include/asm/numa.h
-index 574267f..e9b4f29 100644
---- a/arch/arm64/include/asm/numa.h
-+++ b/arch/arm64/include/asm/numa.h
-@@ -31,12 +31,14 @@ void __init arm64_numa_init(void);
- int __init numa_add_memblk(int nodeid, u64 start, u64 end);
- void __init numa_set_distance(int from, int to, int distance);
- void __init numa_free_distance(void);
-+void __init early_map_cpu_to_node(unsigned int cpu, int nid);
- void numa_store_cpu_info(unsigned int cpu);
- 
- #else	/* CONFIG_NUMA */
- 
- static inline void numa_store_cpu_info(unsigned int cpu) { }
- static inline void arm64_numa_init(void) { }
-+static inline void early_map_cpu_to_node(unsigned int cpu, int nid) { }
- 
- #endif	/* CONFIG_NUMA */
- 
-diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
-index d6e7d6a..46c45c8 100644
---- a/arch/arm64/kernel/smp.c
-+++ b/arch/arm64/kernel/smp.c
-@@ -520,6 +520,8 @@ static void __init of_parse_and_init_cpus(void)
- 
- 		pr_debug("cpu logical map 0x%llx\n", hwid);
- 		cpu_logical_map(cpu_count) = hwid;
-+
-+		early_map_cpu_to_node(cpu_count, of_node_to_nid(dn));
- next:
- 		cpu_count++;
- 	}
-diff --git a/arch/arm64/mm/numa.c b/arch/arm64/mm/numa.c
-index 60f19a2..7aad5d4 100644
---- a/arch/arm64/mm/numa.c
-+++ b/arch/arm64/mm/numa.c
-@@ -20,6 +20,7 @@
- #include <linux/bootmem.h>
- #include <linux/memblock.h>
- #include <linux/module.h>
-+#include <linux/of.h>
- 
- struct pglist_data *node_data[MAX_NUMNODES] __read_mostly;
- EXPORT_SYMBOL(node_data);
-@@ -122,6 +123,15 @@ void numa_store_cpu_info(unsigned int cpu)
- 	map_cpu_to_node(cpu, numa_off ? 0 : cpu_to_node_map[cpu]);
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index fcf3950..8a7c02a 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -11,6 +11,7 @@ config ARM64
+ 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+ 	select ARCH_USE_CMPXCHG_LOCKREF
+ 	select ARCH_SUPPORTS_ATOMIC_RMW
++	select ARCH_SUPPORTS_NUMA_BALANCING if NUMA
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
+ 	select ARCH_WANT_FRAME_POINTERS
+diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+index 2d545d7a..24ce546 100644
+--- a/arch/arm64/include/asm/pgtable.h
++++ b/arch/arm64/include/asm/pgtable.h
+@@ -347,6 +347,24 @@ static inline pgprot_t mk_sect_prot(pgprot_t prot)
+ 	return __pgprot(pgprot_val(prot) & ~PTE_TABLE_BIT);
  }
  
-+void __init early_map_cpu_to_node(unsigned int cpu, int nid)
-+{
-+	/* fallback to node 0 */
-+	if (nid < 0 || nid >= MAX_NUMNODES)
-+		nid = 0;
++#ifdef CONFIG_NUMA_BALANCING
 +
-+	cpu_to_node_map[cpu] = nid;
++/*
++ * These work without NUMA balancing but the kernel does not care. See the
++ * comment in include/asm-generic/pgtable.h
++ */
++static inline int pte_protnone(pte_t pte)
++{
++	return ((pte_val(pte) & (PTE_VALID | PTE_PROT_NONE)) == PTE_PROT_NONE);
 +}
 +
- /**
-  * numa_add_memblk - Set node id to memblk
-  * @nid: NUMA node ID of the new memblk
-@@ -383,5 +393,12 @@ static int __init dummy_numa_init(void)
-  */
- void __init arm64_numa_init(void)
- {
-+	if (!numa_off) {
-+#ifdef CONFIG_OF_NUMA
-+		if (!numa_init(of_numa_init))
-+			return;
-+#endif
-+	}
++static inline int pmd_protnone(pmd_t pmd)
++{
++	return pte_protnone(pmd_pte(pmd));
++}
 +
- 	numa_init(dummy_numa_init);
- }
++#endif /* CONFIG_NUMA_BALANCING */
++
+ /*
+  * THP definitions.
+  */
 -- 
 1.8.1.4
