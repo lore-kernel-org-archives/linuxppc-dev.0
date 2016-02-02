@@ -1,10 +1,10 @@
 Return-Path: <Ganapatrao.Kulkarni@caviumnetworks.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0078.outbound.protection.outlook.com [207.46.100.78])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0083.outbound.protection.outlook.com [157.56.111.83])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6F3B81A01D8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 21:25:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2A6391A025F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 21:25:20 +1100 (AEDT)
 From: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
 To: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
@@ -24,9 +24,11 @@ To: <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
  <jonathan@jonmasters.org>, <rrichter@cavium.com>,
  <Prasun.Kapoor@caviumnetworks.com>
 CC: <gpkulkarni@gmail.com>
-Subject: [PATCH v10 0/8] arm64, numa: Add numa support for arm64 platforms
-Date: Tue, 2 Feb 2016 15:39:15 +0530
-Message-ID: <1454407763-1017-1-git-send-email-gkulkarni@caviumnetworks.com>
+Subject: [PATCH v10 3/8] dt, numa: adding numa dt binding implementation.
+Date: Tue, 2 Feb 2016 15:39:18 +0530
+Message-ID: <1454407763-1017-4-git-send-email-gkulkarni@caviumnetworks.com>
+In-Reply-To: <1454407763-1017-1-git-send-email-gkulkarni@caviumnetworks.com>
+References: <1454407763-1017-1-git-send-email-gkulkarni@caviumnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,124 +40,277 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-v10:
-	- Incorporated review comments from Rob Herring.
-	- Moved numa binding and implementation to devicetree core.
-	- Added cleanup patch to remove redundant NODE_DATA macro from asm header files
-	- Include numa balancing support for arm64 patch in this series.
-	- Fix tile build issue reported by the kbuild robot(patch 7)
+dt node parsing for numa topology is done using device property
+numa-node-id and device node distance-map.
 
-v9:	- Added cleanup patch to reuse and avoid redefinition of cpumask_of_pcibus
-	  as suggested from Will Deacon and Bjorn Helgaas.
-	- Including patch to Make pci-host-generic driver numa aware.
-	- Incorporated comment from Shannon Zhao.
-
-v8:
-	- Incorporated review comments of Mark Rutland and Will Deacon.
-	- Added pci helper function and macro for numa.
-
-v7:
-	- managing numa memory mapping using memblock.
-	- Incorporated review comments of Mark Rutland.
-
-v6:
-	- defined and implemented the numa dt binding using
-	node property proximity and device node distance-map.
-	- renamed dt_numa to of_numa
-
-v5:
-        - created base verion of numa.c which creates dummy numa without using dt
-          on single socket platforms. Then added patches for dt support.
-        - Incorporated review comments from Hanjun Guo.
-
-v4:
-done changes as per Arnd review comments.
-
-v3:
-Added changes to support numa on arm64 based platforms.
-Tested these patches on cavium's multinode(2 node topology) platform.
-In this patchset, defined and implemented dt bindings for numa mapping
-for core and memory using device node property arm,associativity.
-
-v2:
-Defined and implemented numa map for memory, cores to node and
-proximity distance matrix of nodes.
-
-v1:
-Initial patchset to support numa on arm64 platforms.
-
-Note:
-        1. This patchset is tested for numa with dt on
-           thunderx single socket and dual socket boards.
-        2. Numa DT booting needs the dt memory nodes, which are deleted in current efi-stub,
-        hence to try numa with dt, you need to rebase with ard's patchset.
-        http://git.linaro.org/people/ard.biesheuvel/linux-arm.git/shortlog/refs/heads/arm64-uefi-early-fdt-handling
-	3. PATCH[7,8] are not tested for other architectures.
-
-Ganapatrao Kulkarni (8):
-  arm64, numa: adding numa support for arm64 platforms.
-  Documentation, dt, numa: dt bindings for numa.
-  dt, numa: adding numa dt binding implementation.
-  arm64, numa : Enable numa dt for arm64 platforms.
-  arm64, dt, thunderx: Add initial dts for Cavium Thunderx in 2 node
-    topology.
-  arm64, mm, numa: Adding numa balancing support for arm64.
-  topology, cleanup: Avoid redefinition of cpumask_of_pcibus in asm
-    header files.
-  numa, mm, cleanup: remove redundant NODE_DATA macro from asm header
-    files.
-
- Documentation/devicetree/bindings/numa.txt      | 272 ++++++++
- arch/arm64/Kconfig                              |  26 +
- arch/arm64/boot/dts/cavium/Makefile             |   2 +-
- arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts  |  83 +++
- arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi | 806 ++++++++++++++++++++++++
- arch/arm64/include/asm/mmzone.h                 |  10 +
- arch/arm64/include/asm/numa.h                   |  45 ++
- arch/arm64/include/asm/pgtable.h                |  18 +
- arch/arm64/include/asm/topology.h               |   7 +
- arch/arm64/kernel/pci.c                         |  10 +
- arch/arm64/kernel/setup.c                       |   4 +
- arch/arm64/kernel/smp.c                         |   4 +
- arch/arm64/mm/Makefile                          |   1 +
- arch/arm64/mm/init.c                            |  34 +-
- arch/arm64/mm/mmu.c                             |   1 +
- arch/arm64/mm/numa.c                            | 404 ++++++++++++
- arch/ia64/include/asm/topology.h                |   4 -
- arch/m32r/include/asm/mmzone.h                  |   4 +-
- arch/metag/include/asm/mmzone.h                 |   4 +-
- arch/metag/include/asm/topology.h               |   3 -
- arch/powerpc/include/asm/mmzone.h               |   8 +-
- arch/powerpc/include/asm/topology.h             |   4 -
- arch/s390/include/asm/mmzone.h                  |   6 +-
- arch/s390/include/asm/pci.h                     |   2 +-
- arch/s390/include/asm/topology.h                |   1 +
- arch/sh/include/asm/mmzone.h                    |   4 +-
- arch/sh/include/asm/topology.h                  |   3 -
- arch/sparc/include/asm/mmzone.h                 |   6 +-
- arch/tile/include/asm/pci.h                     |   2 -
- arch/tile/include/asm/topology.h                |   3 +
- arch/x86/include/asm/mmzone.h                   |   3 +-
- arch/x86/include/asm/mmzone_32.h                |   5 -
- arch/x86/include/asm/mmzone_64.h                |  17 -
- arch/x86/include/asm/pci.h                      |   2 +-
- arch/x86/include/asm/topology.h                 |   1 +
- drivers/of/Kconfig                              |  11 +
- drivers/of/Makefile                             |   1 +
- drivers/of/of_numa.c                            | 207 ++++++
- include/asm-generic/mmzone.h                    |  24 +
- include/asm-generic/topology.h                  |   4 +-
- include/linux/of.h                              |   4 +
- 41 files changed, 1986 insertions(+), 74 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/numa.txt
- create mode 100644 arch/arm64/boot/dts/cavium/thunder-88xx-2n.dts
- create mode 100644 arch/arm64/boot/dts/cavium/thunder-88xx-2n.dtsi
- create mode 100644 arch/arm64/include/asm/mmzone.h
- create mode 100644 arch/arm64/include/asm/numa.h
- create mode 100644 arch/arm64/mm/numa.c
- delete mode 100644 arch/x86/include/asm/mmzone_64.h
+Reviewed-by: Robert Richter <rrichter@cavium.com>
+Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
+---
+ drivers/of/Kconfig   |  11 +++
+ drivers/of/Makefile  |   1 +
+ drivers/of/of_numa.c | 207 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/of.h   |   4 +
+ 4 files changed, 223 insertions(+)
  create mode 100644 drivers/of/of_numa.c
- create mode 100644 include/asm-generic/mmzone.h
 
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+index e2a4841..8f9cc3a 100644
+--- a/drivers/of/Kconfig
++++ b/drivers/of/Kconfig
+@@ -112,4 +112,15 @@ config OF_OVERLAY
+ 	  While this option is selected automatically when needed, you can
+ 	  enable it manually to improve device tree unit test coverage.
+ 
++config OF_NUMA
++	bool "Device Tree NUMA support"
++	depends on NUMA
++	depends on OF
++	depends on ARM64
++	default y
++	help
++	  Enable Device Tree NUMA support.
++	  This enables the numa mapping of cpu, memory, io and
++	  inter node distances using dt bindings.
++
+ endif # OF
+diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+index 156c072..bee3fa9 100644
+--- a/drivers/of/Makefile
++++ b/drivers/of/Makefile
+@@ -14,5 +14,6 @@ obj-$(CONFIG_OF_MTD)	+= of_mtd.o
+ obj-$(CONFIG_OF_RESERVED_MEM) += of_reserved_mem.o
+ obj-$(CONFIG_OF_RESOLVE)  += resolver.o
+ obj-$(CONFIG_OF_OVERLAY) += overlay.o
++obj-$(CONFIG_OF_NUMA) += of_numa.o
+ 
+ obj-$(CONFIG_OF_UNITTEST) += unittest-data/
+diff --git a/drivers/of/of_numa.c b/drivers/of/of_numa.c
+new file mode 100644
+index 0000000..1142cdb
+--- /dev/null
++++ b/drivers/of/of_numa.c
+@@ -0,0 +1,207 @@
++/*
++ * OF NUMA Parsing support.
++ *
++ * Copyright (C) 2015 Cavium Inc.
++ * Author: Ganapatrao Kulkarni <gkulkarni@cavium.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include <linux/of.h>
++#include <linux/of_fdt.h>
++
++/* define default numa node to 0 */
++#define DEFAULT_NODE 0
++
++/* Returns nid in the range [0..MAX_NUMNODES-1],
++ * or NUMA_NO_NODE if no valid numa-node-id entry found
++ * or DEFAULT_NODE if no numa-node-id entry exists
++ */
++static int of_numa_prop_to_nid(const __be32 *of_numa_prop, int length)
++{
++	int nid;
++
++	if (!of_numa_prop)
++		return DEFAULT_NODE;
++
++	if (length != sizeof(*of_numa_prop)) {
++		pr_warn("NUMA: Invalid of_numa_prop length %d found.\n",
++				length);
++		return NUMA_NO_NODE;
++	}
++
++	nid = of_read_number(of_numa_prop, 1);
++	if (nid >= MAX_NUMNODES) {
++		pr_warn("NUMA: Invalid numa node %d found.\n", nid);
++		return NUMA_NO_NODE;
++	}
++
++	return nid;
++}
++
++static int __init early_init_of_node_to_nid(unsigned long node)
++{
++	int length;
++	const __be32 *of_numa_prop;
++
++	of_numa_prop = of_get_flat_dt_prop(node, "numa-node-id", &length);
++
++	return of_numa_prop_to_nid(of_numa_prop, length);
++}
++
++/*
++ * Even though we connect cpus to numa domains later in SMP
++ * init, we need to know the node ids now for all cpus.
++*/
++static int __init early_init_parse_cpu_node(unsigned long node)
++{
++	int nid;
++	const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
++
++	if (type == NULL)
++		return 0;
++
++	if (strcmp(type, "cpu") != 0)
++		return 0;
++
++	nid = early_init_of_node_to_nid(node);
++	if (nid == NUMA_NO_NODE)
++		return -EINVAL;
++
++	node_set(nid, numa_nodes_parsed);
++	return 0;
++}
++
++static int __init early_init_parse_memory_node(unsigned long node)
++{
++	const __be32 *reg, *endp;
++	int length;
++	int nid;
++	const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
++
++	if (type == NULL)
++		return 0;
++
++	if (strcmp(type, "memory") != 0)
++		return 0;
++
++	nid = early_init_of_node_to_nid(node);
++	if (nid == NUMA_NO_NODE)
++		return -EINVAL;
++
++	reg = of_get_flat_dt_prop(node, "reg", &length);
++	endp = reg + (length / sizeof(__be32));
++
++	while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
++		u64 base, size;
++
++		base = dt_mem_next_cell(dt_root_addr_cells, &reg);
++		size = dt_mem_next_cell(dt_root_size_cells, &reg);
++		pr_debug("NUMA:  base = %llx , node = %u\n",
++				base, nid);
++
++		if (numa_add_memblk(nid, base, size) < 0)
++			return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int __init early_init_parse_distance_map_v1(unsigned long node,
++		const char *uname)
++{
++	const __be32 *prop_dist_matrix;
++	int length = 0, i, matrix_count;
++	int nr_size_cells = OF_ROOT_NODE_SIZE_CELLS_DEFAULT;
++
++	pr_info("NUMA: parsing numa-distance-map-v1\n");
++
++	prop_dist_matrix =
++		of_get_flat_dt_prop(node, "distance-matrix", &length);
++
++	if (!length) {
++		pr_err("NUMA: failed to parse distance-matrix\n");
++		return -ENODEV;
++	}
++
++	matrix_count = ((length / sizeof(__be32)) / (3 * nr_size_cells));
++
++	if ((matrix_count * sizeof(__be32) * 3 * nr_size_cells) !=  length) {
++		pr_warn("NUMA: invalid distance-matrix length %d\n", length);
++		return -EINVAL;
++	}
++
++	for (i = 0; i < matrix_count; i++) {
++		u32 nodea, nodeb, distance;
++
++		nodea = dt_mem_next_cell(nr_size_cells, &prop_dist_matrix);
++		nodeb = dt_mem_next_cell(nr_size_cells, &prop_dist_matrix);
++		distance = dt_mem_next_cell(nr_size_cells, &prop_dist_matrix);
++		numa_set_distance(nodea, nodeb, distance);
++		pr_debug("NUMA:  distance[node%d -> node%d] = %d\n",
++				nodea, nodeb, distance);
++
++		/* Set default distance of node B->A same as A->B */
++		if (nodeb > nodea)
++			numa_set_distance(nodeb, nodea, distance);
++	}
++
++	return 0;
++}
++
++static int __init early_init_parse_distance_map(unsigned long node,
++		const char *uname)
++{
++	if (strcmp(uname, "distance-map") != 0)
++		return 0;
++
++	if (of_flat_dt_is_compatible(node, "numa-distance-map-v1"))
++		return early_init_parse_distance_map_v1(node, uname);
++
++	pr_err("NUMA: invalid distance-map device node\n");
++	return -EINVAL;
++}
++
++static int __init early_init_of_scan_numa_map(unsigned long node, const char *uname,
++				     int depth, void *data)
++{
++	int ret;
++
++	ret = early_init_parse_cpu_node(node);
++	if (ret)
++		return ret;
++
++	ret = early_init_parse_memory_node(node);
++	if (ret)
++		return ret;
++
++	return early_init_parse_distance_map(node, uname);
++}
++
++int of_node_to_nid(struct device_node *device)
++{
++	const __be32 *of_numa_prop;
++	int length;
++
++	of_numa_prop = of_get_property(device, "numa-node-id", &length);
++	if (of_numa_prop)
++		return of_numa_prop_to_nid(of_numa_prop, length);
++
++	return NUMA_NO_NODE;
++}
++
++/* DT node mapping is done already early_init_of_scan_memory */
++int __init of_numa_init(void)
++{
++	return of_scan_flat_dt(early_init_of_scan_numa_map, NULL);
++}
+diff --git a/include/linux/of.h b/include/linux/of.h
+index dd10626..23e5bad 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -685,6 +685,10 @@ static inline int of_node_to_nid(struct device_node *device)
+ }
+ #endif
+ 
++#ifdef CONFIG_OF_NUMA
++extern int __init of_numa_init(void);
++#endif
++
+ static inline struct device_node *of_find_matching_node(
+ 	struct device_node *from,
+ 	const struct of_device_id *matches)
 -- 
 1.8.1.4
