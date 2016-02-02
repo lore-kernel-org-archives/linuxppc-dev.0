@@ -1,27 +1,39 @@
-Return-Path: <michael.heltne@gmail.com>
-Received: from mail-yk0-x22e.google.com (mail-yk0-x22e.google.com
- [IPv6:2607:f8b0:4002:c07::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 014751A0202
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 04:55:02 +1100 (AEDT)
-Received: by mail-yk0-x22e.google.com with SMTP id u9so59909047ykd.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Feb 2016 09:55:02 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5CAB31A0060
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 07:24:08 +1100 (AEDT)
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Tue, 2 Feb 2016 13:24:06 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C7BEA3E40030
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 13:24:02 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u12KO2WK29950110
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Feb 2016 13:24:02 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u12KNuqb007396
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Feb 2016 13:23:59 -0700
+Date: Tue, 2 Feb 2016 12:23:16 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] powerpc/perf/hv-24x7: Display change in counter values
+Message-ID: <20160202202315.GA8240@us.ibm.com>
+References: <20160130030710.GA7330@us.ibm.com>
+ <20160130030744.GB7330@us.ibm.com>
+ <56B0F2BD.4090007@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAJhHMCD1_o3XnHJXunxyYP8j_UpfxTG-M_utR2Cfvq5XozsBNQ@mail.gmail.com>
-References: <CANtoAtNkjrJfac0nR7ay7LKToMf53KtpVZNv0+xabHn1QSwRkA@mail.gmail.com>
- <CAJhHMCA6wy=i=yD4S-D0-vRTAOadTbwEtarsawK0BLw23G2Shg@mail.gmail.com>
- <878u336210.fsf@linux.vnet.ibm.com>
- <CAJhHMCD1_o3XnHJXunxyYP8j_UpfxTG-M_utR2Cfvq5XozsBNQ@mail.gmail.com>
-Date: Tue, 2 Feb 2016 17:55:00 +0000
-Message-ID: <CANtoAtPo75zuPpnMSfKFAgRdcOUc7k-v1k6zEebmSYcEQ2okkg@mail.gmail.com>
-Subject: =?UTF-8?Q?Re=3A_Failure_on_latest_GIT_=2D_implicit_declaration_of_?=
- =?UTF-8?Q?function_=E2=80=98pte=5Fswp=5Fclear=5Fsoft=5Fdirty=E2=80=99?=
-From: Mike <michael.heltne@gmail.com>
-To: Pranith Kumar <bobby.prani@gmail.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
-Content-Type: multipart/alternative; boundary=94eb2c0a912249288d052acd3364
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <56B0F2BD.4090007@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,69 +43,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---94eb2c0a912249288d052acd3364
-Content-Type: text/plain; charset=UTF-8
-
-Agreed, raised an eyebrow initially when select ppc64 and 32 :D
-
-I'll give a word on the trackpad issue later, cant remember seeing any
-changes that ought effect it really. guess the compile is done in a good
-hour or so, took the tiime to slim it down to someting reasonable
-
-Thanks man
-On 2 Feb 2016 18:14, "Pranith Kumar" <bobby.prani@gmail.com> wrote:
-
-> On Tue, Feb 2, 2016 at 1:48 AM, Aneesh Kumar K.V
-> <aneesh.kumar@linux.vnet.ibm.com> wrote:
+Madhavan Srinivasan [maddy@linux.vnet.ibm.com] wrote:
+> 
+> 
+> On Saturday 30 January 2016 08:37 AM, Sukadev Bhattiprolu wrote:
+> > From a1aa992fb25fb8e98a5c5724376ae8cc91463de3 Mon Sep 17 00:00:00 2001
+> > From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> > Date: Mon, 25 Jan 2016 23:05:36 -0500
+> > Subject: [PATCH 2/2] powerpc/perf/hv-24x7: Display change in counter values
 > >
-> > This patch didn't work for you ?
+> > For 24x7 counters, perf displays the raw value of the 24x7 counter, which
+> > is a monotonically increasing value.
 > >
+> > 	perf stat -C 0 -e \
+> > 		'hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/' \
+> > 		sleep 1
 > >
-> http://mid.gmane.org/1454086969-21074-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
+> >  Performance counter stats for 'CPU(s) 0':
 > >
->
-> This actually is a better patch. I didn't realize that we have the _64
-> version.
->
-> Thanks!
-> --
-> Pranith
->
+> >      9,105,403,170      hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/
+> >
+> >        0.000425751 seconds time elapsed
+> >
+> > In the typical usage of 'perf stat' this counter value is not as useful
+> > as the _change_ in the counter value over the duration of the application.
+> 
+> This may break application using this interface right? i.e, since
+> for all this time, counter output was raw values and application
+> may be post processing to calculate the difference, now with
+> this patch, application may need some change? Also,
+> should not this be documented somewhere?
 
---94eb2c0a912249288d052acd3364
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Agree that it does change the behavior. I am checking to see if it
+was explicitly documented that the values would be raw. But current
+behavior seems counter-intuitive and inconsistent with 'perf stat'.
 
-<p dir=3D"ltr">Agreed, raised an eyebrow initially when select ppc64 and 32=
- :D </p>
-<p dir=3D"ltr">I&#39;ll give a word on the trackpad issue later, cant remem=
-ber seeing any changes that ought effect it really. guess the compile is do=
-ne in a good hour or so, took the tiime to slim it down to someting reasona=
-ble </p>
-<p dir=3D"ltr">Thanks man <br>
-</p>
-<div class=3D"gmail_quote">On 2 Feb 2016 18:14, &quot;Pranith Kumar&quot; &=
-lt;<a href=3D"mailto:bobby.prani@gmail.com">bobby.prani@gmail.com</a>&gt; w=
-rote:<br type=3D"attribution"><blockquote class=3D"gmail_quote" style=3D"ma=
-rgin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">On Tue, Feb 2,=
- 2016 at 1:48 AM, Aneesh Kumar K.V<br>
-&lt;<a href=3D"mailto:aneesh.kumar@linux.vnet.ibm.com">aneesh.kumar@linux.v=
-net.ibm.com</a>&gt; wrote:<br>
-&gt;<br>
-&gt; This patch didn&#39;t work for you ?<br>
-&gt;<br>
-&gt; <a href=3D"http://mid.gmane.org/1454086969-21074-1-git-send-email-anee=
-sh.kumar@linux.vnet.ibm.com" rel=3D"noreferrer" target=3D"_blank">http://mi=
-d.gmane.org/1454086969-21074-1-git-send-email-aneesh.kumar@linux.vnet.ibm.c=
-om</a><br>
-&gt;<br>
-<br>
-This actually is a better patch. I didn&#39;t realize that we have the _64 =
-version.<br>
-<br>
-Thanks!<br>
---<br>
-Pranith<br>
-</blockquote></div>
+If we run something like:
 
---94eb2c0a912249288d052acd3364--
+	perf stat -C 0 -e <24x7-event> make
+
+we see the large number (raw value of the counter) when the application
+terminates. The raw value not very useful. To effectively use the counter
+in this scenario, user would ahve to run:
+
+	perf stat -C 0 -e <24x7-event> sleep 1
+	#note raw value 1
+
+	perf stat -C 0 -e <24x7-event> make
+	# note raw value 2
+
+	# compute diff of value2 and value1.
+
+Reporting the change in value seems to be consistent with normal usage of
+perf stat with events like cycles or instructions:
+
+Thanks,
+
+Sukadev
