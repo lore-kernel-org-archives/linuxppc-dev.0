@@ -1,25 +1,23 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
- [IPv6:2607:f8b0:400e:c03::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EC5451A007F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 10:32:09 +1100 (AEDT)
-Received: by mail-pa0-x233.google.com with SMTP id uo6so91542761pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Feb 2016 15:32:09 -0800 (PST)
-Date: Tue, 2 Feb 2016 10:31:54 +1100
-From: Balbir Singh <bsingharora@gmail.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- kgdb-bugreport@lists.sourceforge.net, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] Fix kgdb on little endian ppc64le
-Message-ID: <20160202103154.7fdaa748@cotter.ozlabs.ibm.com>
-In-Reply-To: <56AF35C4.2050700@au1.ibm.com>
-References: <20160201170325.4ec4324e@cotter.ozlabs.ibm.com>
- <56AF35C4.2050700@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F37031A0061
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 12:08:30 +1100 (AEDT)
+Date: Tue, 2 Feb 2016 11:57:08 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: paulus@samba.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
+ aik@ozlabs.ru, lvivier@redhat.com, thuth@redhat.com,
+ linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: Re: [RFCv2 0/9] PAPR hash page table resizing (guest side)
+Message-ID: <20160202005708.GA15080@voom.fritz.box>
+References: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
+ <56AEF20B.2030302@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="ZPt4rx8FFjLCG7dd"
+In-Reply-To: <56AEF20B.2030302@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +27,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 1 Feb 2016 21:39:00 +1100
-Andrew Donnellan <andrew.donnellan@au1.ibm.com> wrote:
 
-> On 01/02/16 17:03, Balbir Singh wrote:
-> > From: Balbir Singh <bsingharora@gmail.com>
-> >
-> > I spent some time trying to use kgdb and debugged my inability to
-> > resume from kgdb_handle_breakpoint(). NIP is not incremented
-> > and that leads to a loop in the debugger.
-> >
-> > I've tested this lightly on a virtual instance with KDB enabled.
-> > After the patch, I am able to get the "go" command to work as
-> > expected
-> >
-> > Signed-off-by: Balbir Singh <bsingharora@gmail.com>  
-> 
-> Should this be Cc'd to stable?
-> 
-> 
+--ZPt4rx8FFjLCG7dd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Good suggestion, Michael? I can repost this to stable if required?
+On Mon, Feb 01, 2016 at 11:20:03AM +0530, Anshuman Khandual wrote:
+> On 01/29/2016 10:53 AM, David Gibson wrote:
+> > Here's a second prototype of the guest side work for runtime resizing
+> > of the has page table in PAPR guests.
+> >=20
+> > This is now feature complete.  It implements the resizing, advertises
+> > it with CAS, and will automatically invoke it to maintain a good HPT
+> > size when memory is hot-added or hot-removed.
+> >=20
+> > Patches 1-5 are standalone prerequisite cleanups that I'll be pushing
+> > concurrently.
+> >=20
+> > David Gibson (9):
+> >   memblock: Don't mark memblock_phys_mem_size() as __init
+> >   arch/powerpc: Clean up error handling for htab_remove_mapping
+> >   arch/powerpc: Handle removing maybe-present bolted HPTEs
+> >   arch/powerpc: Clean up memory hotplug failure paths
+> >   arch/powerpc: Split hash page table sizing heuristic into a helper
+>=20
+> A small nit. Please start the above commit message headers as
+> "powerpc/mm:" instead, which sounds more clear and uniform with
+> patch series related to other subsystems.
 
-Balbir Singh.
+Ok.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--ZPt4rx8FFjLCG7dd
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJWr/7kAAoJEGw4ysog2bOSC1kP/3YsRV91C8T5g7bnsqI6XDyi
+MoH7N04CO3rVD8BxCb6qBQVCbcj5B8qnxLVKhTFGj8yWpuhseevwUj58WKKVd5lY
+k1VNvyy2wfSoyqGs7/tf3hfmehDhVzE99N3h02mOj5ptoc5M1t5YLeNPW+yH1q4U
+E7jAlf9od/4SO+7jeNF+bLPzOx3rK+fM0jweMOUKPwqdna3dqooquY6+4FzUddIj
+TKYs8hwo/Hzj6B++UEeFJMhcf82vu7PCxrF7FSO98kIGbY5tYydj46nWVlV1yX5z
+943WPAx3Mhw4wA1tk5GgAHSiurcPpSST8vb1CwVqoo2XRI/F2H4az+21LOlLsMFb
+GuczKQWfl+7Igwvdlqy2bMRR5GpQBgZ46r+sFhDJkGT+zyATkIqJRjSBXKKjRwUp
+RLAc5C3aeR7qT1dq8RSMu6fYRQCWXPakVZccdWDtXmPfN4d2xZZpnMKJaoTy15/N
+OVgz1VZdm/9iX3o5B8EKd6ydIJdaMoJ21E293s+x4pkYAICjZ0dQoADzHdxpryfJ
+bNGwmXoxy9mvVUFuqF6cxjrMGqvb4RDn1rIVSs1/eun99TmChNg11dflybNs2tvy
+L1FiDV75jPIbttL1QRbvGiwYaue3x0RVd5NwPhYhOQ6we4fDTb5lKQC2wFLavM4/
+4HH9gdbwTagvUV2eRrw7
+=Efpo
+-----END PGP SIGNATURE-----
+
+--ZPt4rx8FFjLCG7dd--
