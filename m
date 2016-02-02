@@ -1,26 +1,25 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yk0-x241.google.com (mail-yk0-x241.google.com
+ [IPv6:2607:f8b0:4002:c07::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D658C1A01D8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 23:12:29 +1100 (AEDT)
-Date: Tue, 2 Feb 2016 13:12:24 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Miroslav Benes <mbenes@suse.cz>
-Cc: Torsten Duwe <duwe@lst.de>, Steven Rostedt <rostedt@goodmis.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- live-patching@vger.kernel.org
-Subject: Re: [PATCH v6 8/9] Implement kernel live patching for ppc64le (ABIv2)
-Message-ID: <20160202121224.GS3305@pathway.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 62E3E1A01D8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 00:46:30 +1100 (AEDT)
+Received: by mail-yk0-x241.google.com with SMTP id u9so2260987ykd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Feb 2016 05:46:30 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20160125170804.A11DB692DD@newverein.lst.de>
 References: <20160125170459.14DB7692CE@newverein.lst.de>
  <20160125170804.A11DB692DD@newverein.lst.de>
- <alpine.LNX.2.00.1601261142190.24510@pobox.suse.cz>
- <20160126124853.GL3305@pathway.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160126124853.GL3305@pathway.suse.cz>
+Date: Tue, 2 Feb 2016 16:46:27 +0300
+Message-ID: <CAOJe8K2eABAD4rmuE8nKg6QSCAS68Dba_pHQkbcLuNX9y=qR2A@mail.gmail.com>
+Subject: Re: [PATCH v6 8/9] Implement kernel live patching for ppc64le (ABIv2)
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Torsten Duwe <duwe@lst.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,124 +29,221 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue 2016-01-26 13:48:53, Petr Mladek wrote:
-> On Tue 2016-01-26 11:50:25, Miroslav Benes wrote:
-> > 
-> > [ added Petr to CC list ]
-> > 
-> > On Mon, 25 Jan 2016, Torsten Duwe wrote:
-> > 
-> > >   * create the appropriate files+functions
-> > >     arch/powerpc/include/asm/livepatch.h
-> > >         klp_check_compiler_support,
-> > >         klp_arch_set_pc
-> > >     arch/powerpc/kernel/livepatch.c with a stub for
-> > >         klp_write_module_reloc
-> > >     This is architecture-independent work in progress.
-> > >   * introduce a fixup in arch/powerpc/kernel/entry_64.S
-> > >     for local calls that are becoming global due to live patching.
-> > >     And of course do the main KLP thing: return to a maybe different
-> > >     address, possibly altered by the live patching ftrace op.
-> > > 
-> > > Signed-off-by: Torsten Duwe <duwe@suse.de>
-> > 
-> > Hi,
-> > 
-> > I have a few questions...
-> > 
-> > We still need Petr's patch from [1] to make livepatch work, right? Could 
-> > you, please, add it to this patch set to make it self-sufficient?
-> > 
-> > Second, what is the situation with mcount prologue between gcc < 6 and 
-> > gcc-6? Are there only 12 bytes in gcc-6 prologue? If yes, we need to 
-> > change Petr's patch to make it more general and to be able to cope with 
-> > different prologues. This is unfortunate. Either way, please mention it 
-> > somewhere in a changelog.
-> 
-> I am going to update the extra patch. There is an idea to detect the
-> offset during build by scrips/recordmcount. This tool looks for the
-> ftrace locations. The offset should always be a constant that depends
-> on the used architecture, compiler, and compiler flags.
-> 
-> The tool is called post build. We might need to pass the constant
-> as a symbol added to the binary. The tool already adds some symbols.
-
-Hmm, the size of the offset is not a constant. In particular, leaf
-functions do not set TOC before the mcount location.
-
-For example, the code generated for int_to_scsilun() looks like:
-
-
-00000000000002d0 <int_to_scsilun>:
- 2d0:   a6 02 08 7c     mflr    r0
- 2d4:   10 00 01 f8     std     r0,16(r1)
- 2d8:   01 00 00 48     bl      2d8 <int_to_scsilun+0x8>
-                        2d8: R_PPC64_REL24      _mcount
- 2dc:   a6 02 08 7c     mflr    r0
- 2e0:   10 00 01 f8     std     r0,16(r1)
- 2e4:   e1 ff 21 f8     stdu    r1,-32(r1)
- 2e8:   00 00 20 39     li      r9,0
- 2ec:   00 00 24 f9     std     r9,0(r4)
- 2f0:   04 00 20 39     li      r9,4
- 2f4:   a6 03 29 7d     mtctr   r9
- 2f8:   00 00 40 39     li      r10,0
- 2fc:   02 c2 68 78     rldicl  r8,r3,56,8
- 300:   78 23 89 7c     mr      r9,r4
- 304:   ee 51 09 7d     stbux   r8,r9,r10
- 308:   02 00 4a 39     addi    r10,r10,2
- 30c:   01 00 69 98     stb     r3,1(r9)
- 310:   02 84 63 78     rldicl  r3,r3,48,16
- 314:   e8 ff 00 42     bdnz    2fc <int_to_scsilun+0x2c>
- 318:   20 00 21 38     addi    r1,r1,32
- 31c:   10 00 01 e8     ld      r0,16(r1)
- 320:   a6 03 08 7c     mtlr    r0
- 324:   20 00 80 4e     blr
- 328:   00 00 00 60     nop
- 32c:   00 00 42 60     ori     r2,r2,0
-
-
-Note that non-leaf functions starts with
-
-0000000000000330 <scsi_set_sense_information>:
- 330:   00 00 4c 3c     addis   r2,r12,0
-                        330: R_PPC64_REL16_HA   .TOC.
- 334:   00 00 42 38     addi    r2,r2,0
-                        334: R_PPC64_REL16_LO   .TOC.+0x4
- 338:   a6 02 08 7c     mflr    r0
- 33c:   10 00 01 f8     std     r0,16(r1)
- 340:   01 00 00 48     bl      340 <scsi_set_sense_information+0x10>
-                        340: R_PPC64_REL24      _mcount
-
-
-The above code is generated from kernel-4.5-rc1 sources using
-
-$> gcc --version
-gcc (SUSE Linux) 4.8.5
-Copyright (C) 2015 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-
-But I get similar code also with
-
-$> gcc-6 --version
-gcc-6 (SUSE Linux) 6.0.0 20160121 (experimental) [trunk revision 232670]
-Copyright (C) 2016 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-
-
-The result is that kernel crashes when trying to trace leaf function
-from modules. The mcount location is replaced with a call (branch)
-that does not work without the TOC stuff.
-
-By other words, it seems that the code generated with -mprofile-kernel
-option has been buggy in all gcc versions.
-
-I am curious that nobody found this earlier. Do I something wrong,
-please?
-
-
-Best Regards,
-Petr
+On 1/25/16, Torsten Duwe <duwe@lst.de> wrote:
+>   * create the appropriate files+functions
+>     arch/powerpc/include/asm/livepatch.h
+>         klp_check_compiler_support,
+>         klp_arch_set_pc
+>     arch/powerpc/kernel/livepatch.c with a stub for
+>         klp_write_module_reloc
+>     This is architecture-independent work in progress.
+>   * introduce a fixup in arch/powerpc/kernel/entry_64.S
+>     for local calls that are becoming global due to live patching.
+>     And of course do the main KLP thing: return to a maybe different
+>     address, possibly altered by the live patching ftrace op.
+>
+> Signed-off-by: Torsten Duwe <duwe@suse.de>
+> ---
+>  arch/powerpc/include/asm/livepatch.h | 45 +++++++++++++++++++++++++++++++
+>  arch/powerpc/kernel/entry_64.S       | 51
+> +++++++++++++++++++++++++++++++++---
+>  arch/powerpc/kernel/livepatch.c      | 38 +++++++++++++++++++++++++++
+>  3 files changed, 130 insertions(+), 4 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/livepatch.h
+>  create mode 100644 arch/powerpc/kernel/livepatch.c
+>
+> diff --git a/arch/powerpc/include/asm/livepatch.h
+> b/arch/powerpc/include/asm/livepatch.h
+> new file mode 100644
+> index 0000000..44e8a2d
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/livepatch.h
+> @@ -0,0 +1,45 @@
+> +/*
+> + * livepatch.h - powerpc-specific Kernel Live Patching Core
+> + *
+> + * Copyright (C) 2015 SUSE
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version 2
+> + * of the License, or (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, see <http://www.gnu.org/licenses/>.
+> + */
+> +#ifndef _ASM_POWERPC64_LIVEPATCH_H
+> +#define _ASM_POWERPC64_LIVEPATCH_H
+> +
+> +#include <linux/module.h>
+> +#include <linux/ftrace.h>
+> +
+> +#ifdef CONFIG_LIVEPATCH
+> +static inline int klp_check_compiler_support(void)
+> +{
+> +#if !defined(_CALL_ELF) || _CALL_ELF != 2 ||
+> !defined(CC_USING_MPROFILE_KERNEL)
+> +	return 1;
+> +#endif
+> +	return 0;
+> +}
+This function can be boolean.
+> +
+> +extern int klp_write_module_reloc(struct module *mod, unsigned long type,
+> +				   unsigned long loc, unsigned long value);
+> +
+> +static inline void klp_arch_set_pc(struct pt_regs *regs, unsigned long ip)
+> +{
+> +	regs->nip = ip;
+> +}
+> +#else
+> +#error Live patching support is disabled; check CONFIG_LIVEPATCH
+> +#endif
+> +
+> +#endif /* _ASM_POWERPC64_LIVEPATCH_H */
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index 9e98aa1..f6e3ee7 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -1267,6 +1267,9 @@ _GLOBAL(ftrace_caller)
+>  	mflr    r3
+>  	std     r3, _NIP(r1)
+>  	std	r3, 16(r1)
+> +#ifdef CONFIG_LIVEPATCH
+> +	mr	r14,r3		/* remember old NIP */
+> +#endif
+>  	subi    r3, r3, MCOUNT_INSN_SIZE
+>  	mfmsr   r4
+>  	std     r4, _MSR(r1)
+> @@ -1283,7 +1286,10 @@ ftrace_call:
+>  	nop
+>
+>  	ld	r3, _NIP(r1)
+> -	mtlr	r3
+> +	mtctr	r3		/* prepare to jump there */
+> +#ifdef CONFIG_LIVEPATCH
+> +	cmpd	r14,r3		/* has NIP been altered? */
+> +#endif
+>
+>  	REST_8GPRS(0,r1)
+>  	REST_8GPRS(8,r1)
+> @@ -1296,6 +1302,27 @@ ftrace_call:
+>  	mtlr	r12
+>  	mr	r2,r0		/* restore callee's TOC */
+>
+> +#ifdef CONFIG_LIVEPATCH
+> +	beq+	4f		/* likely(old_NIP == new_NIP) */
+> +
+> +	/* For a local call, restore this TOC after calling the patch function.
+> +	 * For a global call, it does not matter what we restore here,
+> +	 * since the global caller does its own restore right afterwards,
+> +	 * anyway. Just insert a KLP_return_helper frame in any case,
+> +	 * so a patch function can always count on the changed stack offsets.
+> +	 */
+> +	stdu	r1,-32(r1)	/* open new mini stack frame */
+> +	std	r0,24(r1)	/* save TOC now, unconditionally. */
+> +	bl	5f
+> +5:	mflr	r12
+> +	addi	r12,r12,(KLP_return_helper+4-.)@l
+> +	std	r12,LRSAVE(r1)
+> +	mtlr	r12
+> +	mfctr	r12		/* allow for TOC calculation in newfunc */
+> +	bctr
+> +4:
+> +#endif
+> +
+>  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+>  	stdu	r1, -112(r1)
+>  .globl ftrace_graph_call
+> @@ -1305,15 +1332,31 @@ _GLOBAL(ftrace_graph_stub)
+>  	addi	r1, r1, 112
+>  #endif
+>
+> -	mflr	r0		/* move this LR to CTR */
+> -	mtctr	r0
+> -
+>  	ld	r0,LRSAVE(r1)	/* restore callee's lr at _mcount site */
+>  	mtlr	r0
+>  	bctr			/* jump after _mcount site */
+>  #endif /* CC_USING_MPROFILE_KERNEL */
+>  _GLOBAL(ftrace_stub)
+>  	blr
+> +
+> +#ifdef CONFIG_LIVEPATCH
+> +/* Helper function for local calls that are becoming global
+> +   due to live patching.
+> +   We can't simply patch the NOP after the original call,
+> +   because, depending on the consistency model, some kernel
+> +   threads may still have called the original, local function
+> +   *without* saving their TOC in the respective stack frame slot,
+> +   so the decision is made per-thread during function return by
+> +   maybe inserting a KLP_return_helper frame or not.
+> +*/
+> +KLP_return_helper:
+> +	ld	r2,24(r1)	/* restore TOC (saved by ftrace_caller) */
+> +	addi r1, r1, 32		/* destroy mini stack frame */
+> +	ld	r0,LRSAVE(r1)	/* get the real return address */
+> +	mtlr	r0
+> +	blr
+> +#endif
+> +
+>  #else
+>  _GLOBAL_TOC(_mcount)
+>  	/* Taken from output of objdump from lib64/glibc */
+> diff --git a/arch/powerpc/kernel/livepatch.c
+> b/arch/powerpc/kernel/livepatch.c
+> new file mode 100644
+> index 0000000..564eafa
+> --- /dev/null
+> +++ b/arch/powerpc/kernel/livepatch.c
+> @@ -0,0 +1,38 @@
+> +/*
+> + * livepatch.c - powerpc-specific Kernel Live Patching Core
+> + *
+> + * Copyright (C) 2015 SUSE
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version 2
+> + * of the License, or (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, see <http://www.gnu.org/licenses/>.
+> + */
+> +#include <linux/module.h>
+> +#include <asm/livepatch.h>
+> +
+> +/**
+> + * klp_write_module_reloc() - write a relocation in a module
+> + * @mod:       module in which the section to be modified is found
+> + * @type:      ELF relocation type (see asm/elf.h)
+> + * @loc:       address that the relocation should be written to
+> + * @value:     relocation value (sym address + addend)
+> + *
+> + * This function writes a relocation to the specified location for
+> + * a particular module.
+> + */
+> +int klp_write_module_reloc(struct module *mod, unsigned long type,
+> +			    unsigned long loc, unsigned long value)
+> +{
+> +	/* This requires infrastructure changes; we need the loadinfos. */
+> +	pr_err("lpc_write_module_reloc not yet supported\n");
+> +	return -ENOSYS;
+> +}
+> --
+> 1.8.5.6
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
