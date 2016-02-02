@@ -1,39 +1,34 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+Return-Path: <hemant@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B6C811A01D8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 02:04:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 80D531A01D8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 02:28:01 +1100 (AEDT)
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 2 Feb 2016 10:04:30 -0500
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id BFA9638C8026
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Feb 2016 10:04:27 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u12F4RiY24641544
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Feb 2016 15:04:27 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u12F4Qmn026291
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Feb 2016 10:04:27 -0500
-Subject: Re: [RFCv2 4/9] arch/powerpc: Clean up memory hotplug failure paths
-To: David Gibson <david@gibson.dropbear.id.au>, paulus@samba.org,
- mpe@ellerman.id.au, benh@kernel.crashing.org
-References: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
- <1454045043-25545-5-git-send-email-david@gibson.dropbear.id.au>
-Cc: aik@ozlabs.ru, lvivier@redhat.com, thuth@redhat.com,
- linuxppc-dev@lists.ozlabs.org
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Message-ID: <56B0C577.1030809@linux.vnet.ibm.com>
-Date: Tue, 2 Feb 2016 09:04:23 -0600
-MIME-Version: 1.0
-In-Reply-To: <1454045043-25545-5-git-send-email-david@gibson.dropbear.id.au>
-Content-Type: text/plain; charset=utf-8
+ for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
+ Wed, 3 Feb 2016 01:27:59 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id BC3EB2BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 02:27:55 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u12FRbZ035389600
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Feb 2016 02:27:45 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u12FRNOr010879
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Feb 2016 02:27:23 +1100
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, srikar@linux.vnet.ibm.com, acme@kernel.org,
+ mjw@redhat.com, masami.hiramatsu.pt@hitachi.com,
+ naveen.n.rao@linux.vnet.ibm.com, hemant@linux.vnet.ibm.com
+Subject: [PATCH v4] perf/probe: Search both .eh_frame and .debug_frame
+ sections for probe location
+Date: Tue,  2 Feb 2016 20:56:46 +0530
+Message-Id: <1454426806-13974-1-git-send-email-hemant@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,93 +38,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/28/2016 11:23 PM, David Gibson wrote:
-> This makes a number of cleanups to handling of mapping failures during
-> memory hotplug on Power:
-> 
-> For errors creating the linear mapping for the hot-added region:
->   * This is now reported with EFAULT which is more appropriate than the
->     previous EINVAL (the failure is unlikely to be related to the
->     function's parameters)
->   * An error in this path now prints a warning message, rather than just
->     silently failing to add the extra memory.
->   * Previously a failure here could result in the region being partially
->     mapped.  We now clean up any partial mapping before failing.
-> 
-> For errors creating the vmemmap for the hot-added region:
->    * This is now reported with EFAULT instead of causing a BUG() - this
->      could happen for external reason (e.g. full hash table) so it's better
->      to handle this non-fatally
->    * An error message is also printed, so the failure won't be silent
->    * As above a failure could cause a partially mapped region, we now
->      clean this up.
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> ---
->  arch/powerpc/mm/hash_utils_64.c | 13 ++++++++++---
->  arch/powerpc/mm/init_64.c       | 38 ++++++++++++++++++++++++++------------
->  arch/powerpc/mm/mem.c           | 10 ++++++++--
->  3 files changed, 44 insertions(+), 17 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index 0737eae..e88a86e 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -635,9 +635,16 @@ static unsigned long __init htab_get_table_size(void)
->  #ifdef CONFIG_MEMORY_HOTPLUG
->  int create_section_mapping(unsigned long start, unsigned long end)
->  {
-> -	return htab_bolt_mapping(start, end, __pa(start),
-> -				 pgprot_val(PAGE_KERNEL), mmu_linear_psize,
-> -				 mmu_kernel_ssize);
-> +	int rc = htab_bolt_mapping(start, end, __pa(start),
-> +				   pgprot_val(PAGE_KERNEL), mmu_linear_psize,
-> +				   mmu_kernel_ssize);
-> +
-> +	if (rc < 0) {
-> +		int rc2 = htab_remove_mapping(start, end, mmu_linear_psize,
-> +					      mmu_kernel_ssize);
-> +		BUG_ON(rc2 && (rc2 != -ENOENT));
-> +	}
-> +	return rc;
->  }
->  
+perf probe through debuginfo__find_probes() in util/probe-finder.c
+checks for the functions' frame descriptions in either .eh_frame section
+of an ELF or the .debug_frame. The check is based on whether either one
+of these sections is present. Depending on distro, toolchain defaults,
+architetcutre, build flags, etc., CFI might be found in either .eh_frame
+and/or .debug_frame. Sometimes, it may happen that, .eh_frame, even if
+present, may not be complete and may miss some descriptions. Therefore,
+to be sure, to find the CFI covering an address we will always have to
+investigate both if available.
 
-<-- snip -->
+For e.g., in powerpc, this may happen :
+ $ gcc -g bin.c -o bin
 
->  #ifdef CONFIG_MEMORY_HOTPLUG
-> @@ -217,15 +219,20 @@ static void vmemmap_remove_mapping(unsigned long start,
->  }
->  #endif
->  #else /* CONFIG_PPC_BOOK3E */
-> -static void __meminit vmemmap_create_mapping(unsigned long start,
-> -					     unsigned long page_size,
-> -					     unsigned long phys)
-> +static int __meminit vmemmap_create_mapping(unsigned long start,
-> +					    unsigned long page_size,
-> +					    unsigned long phys)
->  {
-> -	int  mapped = htab_bolt_mapping(start, start + page_size, phys,
-> -					pgprot_val(PAGE_KERNEL),
-> -					mmu_vmemmap_psize,
-> -					mmu_kernel_ssize);
-> -	BUG_ON(mapped < 0);
-> +	int rc = htab_bolt_mapping(start, start + page_size, phys,
-> +				   pgprot_val(PAGE_KERNEL),
-> +				   mmu_vmemmap_psize, mmu_kernel_ssize);
-> +	if (rc < 0) {
-> +		int rc2 = htab_remove_mapping(start, start + page_size,
-> +					      mmu_vmemmap_psize,
-> +					      mmu_kernel_ssize);
-> +		BUG_ON(rc2 && (rc2 != -ENOENT));
-> +	}
-> +	return rc;
->  }
->  
+ $ objdump --dwarf ./bin
+ <1><145>: Abbrev Number: 7 (DW_TAG_subprogram)
+    <146>   DW_AT_external    : 1
+    <146>   DW_AT_name        : (indirect string, offset: 0x9e): main
+    <14a>   DW_AT_decl_file   : 1
+    <14b>   DW_AT_decl_line   : 39
+    <14c>   DW_AT_prototyped  : 1
+    <14c>   DW_AT_type        : <0x57>
+    <150>   DW_AT_low_pc      : 0x100007b8
 
-If I'm reading this correctly it appears that create_section_mapping() and
-vmemmap_create_mapping() for !PPC_BOOK3E are identical. Any reason to not
-have one routine, perhaps just have vmemmap_create_mapping() just call
-create_section_mapping()?
+If the .eh_frame and .debug_frame are checked for the same binary, we
+will find that, .eh_frame (although present) doesn't contain a
+description for "main" function.
+But, .debug_frame has a description :
 
--Nathan
+000000d8 00000024 00000000 FDE cie=00000000 pc=100007b8..10000838
+  DW_CFA_advance_loc: 16 to 100007c8
+  DW_CFA_def_cfa_offset: 144
+  DW_CFA_offset_extended_sf: r65 at cfa+16
+...
+
+Due to this (since, perf checks whether .eh_frame is present and goes on
+searching for that address inside that frame), perf is unable to process
+the probes :
+ # perf probe -x ./bin main
+Failed to get call frame on 0x100007b8
+  Error: Failed to add events.
+
+To avoid this issue, we need to check both the sections (.eh_frame and
+.debug_frame), which is done in this patch.
+
+Note that, we can always force everything into both .eh_frame and
+.debug_frame by :
+ $ gcc bin.c -fasynchronous-unwind-tables  -fno-dwarf2-cfi-asm -g -o bin
+
+Acked-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+---
+Changes since v3:
+- Rebased it to v4.5-rc2.
+Changes since v2:
+- Fixed an issue related to filling up both the CFIs (Suggested by Masami).
+Changes since v1:
+- pf->cfi is now cached as pf->cfi_eh and pf->cfi_dbg depending on the source of CFI
+  (Suggested by Mark Wielard).
+
+ tools/perf/util/probe-finder.c | 62 +++++++++++++++++++++++++-----------------
+ tools/perf/util/probe-finder.h |  5 +++-
+ 2 files changed, 41 insertions(+), 26 deletions(-)
+
+diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
+index 2be10fb..4ce5c5e 100644
+--- a/tools/perf/util/probe-finder.c
++++ b/tools/perf/util/probe-finder.c
+@@ -686,8 +686,9 @@ static int call_probe_finder(Dwarf_Die *sc_die, struct probe_finder *pf)
+ 		pf->fb_ops = NULL;
+ #if _ELFUTILS_PREREQ(0, 142)
+ 	} else if (nops == 1 && pf->fb_ops[0].atom == DW_OP_call_frame_cfa &&
+-		   pf->cfi != NULL) {
+-		if (dwarf_cfi_addrframe(pf->cfi, pf->addr, &frame) != 0 ||
++		   (pf->cfi_eh != NULL || pf->cfi_dbg != NULL)) {
++		if ((dwarf_cfi_addrframe(pf->cfi_eh, pf->addr, &frame) != 0 &&
++		     (dwarf_cfi_addrframe(pf->cfi_dbg, pf->addr, &frame) != 0)) ||
+ 		    dwarf_frame_cfa(frame, &pf->fb_ops, &nops) != 0) {
+ 			pr_warning("Failed to get call frame on 0x%jx\n",
+ 				   (uintmax_t)pf->addr);
+@@ -1015,8 +1016,7 @@ static int pubname_search_cb(Dwarf *dbg, Dwarf_Global *gl, void *data)
+ 	return DWARF_CB_OK;
+ }
+ 
+-/* Find probe points from debuginfo */
+-static int debuginfo__find_probes(struct debuginfo *dbg,
++static int debuginfo__find_probe_location(struct debuginfo *dbg,
+ 				  struct probe_finder *pf)
+ {
+ 	struct perf_probe_point *pp = &pf->pev->point;
+@@ -1025,27 +1025,6 @@ static int debuginfo__find_probes(struct debuginfo *dbg,
+ 	Dwarf_Die *diep;
+ 	int ret = 0;
+ 
+-#if _ELFUTILS_PREREQ(0, 142)
+-	Elf *elf;
+-	GElf_Ehdr ehdr;
+-	GElf_Shdr shdr;
+-
+-	/* Get the call frame information from this dwarf */
+-	elf = dwarf_getelf(dbg->dbg);
+-	if (elf == NULL)
+-		return -EINVAL;
+-
+-	if (gelf_getehdr(elf, &ehdr) == NULL)
+-		return -EINVAL;
+-
+-	if (elf_section_by_name(elf, &ehdr, &shdr, ".eh_frame", NULL) &&
+-	    shdr.sh_type == SHT_PROGBITS) {
+-		pf->cfi = dwarf_getcfi_elf(elf);
+-	} else {
+-		pf->cfi = dwarf_getcfi(dbg->dbg);
+-	}
+-#endif
+-
+ 	off = 0;
+ 	pf->lcache = intlist__new(NULL);
+ 	if (!pf->lcache)
+@@ -1108,6 +1087,39 @@ found:
+ 	return ret;
+ }
+ 
++/* Find probe points from debuginfo */
++static int debuginfo__find_probes(struct debuginfo *dbg,
++				  struct probe_finder *pf)
++{
++	int ret = 0;
++
++#if _ELFUTILS_PREREQ(0, 142)
++	Elf *elf;
++	GElf_Ehdr ehdr;
++	GElf_Shdr shdr;
++
++	if (pf->cfi_eh || pf->cfi_dbg)
++		return debuginfo__find_probe_location(dbg, pf);
++
++	/* Get the call frame information from this dwarf */
++	elf = dwarf_getelf(dbg->dbg);
++	if (elf == NULL)
++		return -EINVAL;
++
++	if (gelf_getehdr(elf, &ehdr) == NULL)
++		return -EINVAL;
++
++	if (elf_section_by_name(elf, &ehdr, &shdr, ".eh_frame", NULL) &&
++	    shdr.sh_type == SHT_PROGBITS)
++		pf->cfi_eh = dwarf_getcfi_elf(elf);
++
++	pf->cfi_dbg = dwarf_getcfi(dbg->dbg);
++#endif
++
++	ret = debuginfo__find_probe_location(dbg, pf);
++	return ret;
++}
++
+ struct local_vars_finder {
+ 	struct probe_finder *pf;
+ 	struct perf_probe_arg *args;
+diff --git a/tools/perf/util/probe-finder.h b/tools/perf/util/probe-finder.h
+index bed8271..0aec770 100644
+--- a/tools/perf/util/probe-finder.h
++++ b/tools/perf/util/probe-finder.h
+@@ -76,7 +76,10 @@ struct probe_finder {
+ 
+ 	/* For variable searching */
+ #if _ELFUTILS_PREREQ(0, 142)
+-	Dwarf_CFI		*cfi;		/* Call Frame Information */
++	/* Call Frame Information from .eh_frame */
++	Dwarf_CFI		*cfi_eh;
++	/* Call Frame Information from .debug_frame */
++	Dwarf_CFI		*cfi_dbg;
+ #endif
+ 	Dwarf_Op		*fb_ops;	/* Frame base attribute */
+ 	struct perf_probe_arg	*pvar;		/* Current target variable */
+-- 
+1.9.3
