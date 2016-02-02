@@ -1,37 +1,40 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F116B1A0205
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 06:42:44 +1100 (AEDT)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 025691A0202
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 05:18:29 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 6F07B140C49
+ for <linuxppc-dev@ozlabs.org>; Wed,  3 Feb 2016 06:42:44 +1100 (AEDT)
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 3 Feb 2016 04:18:28 +1000
+ for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Wed, 3 Feb 2016 05:42:40 +1000
 Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id DD62B2BB004D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 05:18:24 +1100 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 412A12BB0055
+ for <linuxppc-dev@ozlabs.org>; Wed,  3 Feb 2016 06:42:38 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u12IIGBJ50069584
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Feb 2016 05:18:24 +1100
+ u12JgTPi37027864
+ for <linuxppc-dev@ozlabs.org>; Wed, 3 Feb 2016 06:42:38 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u12IHqCX023706
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Feb 2016 05:17:52 +1100
-Subject: Re: [PATCH 2/2] powerpc/perf/hv-24x7: Display change in counter values
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <20160130030710.GA7330@us.ibm.com>
- <20160130030744.GB7330@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Message-ID: <56B0F2BD.4090007@linux.vnet.ibm.com>
-Date: Tue, 2 Feb 2016 23:47:33 +0530
-MIME-Version: 1.0
-In-Reply-To: <20160130030744.GB7330@us.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ u12Jg5TR023126
+ for <linuxppc-dev@ozlabs.org>; Wed, 3 Feb 2016 06:42:05 +1100
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+ pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com,
+ shreyas@linux.vnet.ibm.com, bsingharora@gmail.com, mpe@ellerman.id.au,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v8 0/6] cpufreq: powernv: Redesign the presentation of
+ throttle notification and solve bug-fixes in the driver
+Date: Wed,  3 Feb 2016 01:11:36 +0530
+Message-Id: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,91 +44,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+In POWER8, OCC(On-Chip-Controller) can throttle the frequency of the
+CPU when the chip crosses its thermal and power limits. Currently,
+powernv-cpufreq driver detects and reports this event as a console
+message. Some machines may not sustain the max turbo frequency in all
+conditions and can be throttled frequently. This can lead to the
+flooding of console with throttle messages. So this patchset aims to
+redesign the presentation of this event via sysfs counters and
+tracepoints. And it also fixes couple of bugs reported in the driver.
 
+- Patch [1] fixes a memory leak bug
+- Patch [2] fixes the cpu hot-plug bug in powernv_cpufreq_work_fn().
+- Patch [3] solves a bug in powernv_cpufreq_throttle_check(), which
+  calls in to cpu_to_chip_id() in hot path which reads DT every time
+  to find the chip id.
+- Patches [4] to [6] will add a perf trace point
+  "power:powernv_throttle" and sysfs throttle counter stats in
+  /sys/devices/system/cpu/cpufreq/chipN.
 
-On Saturday 30 January 2016 08:37 AM, Sukadev Bhattiprolu wrote:
-> From a1aa992fb25fb8e98a5c5724376ae8cc91463de3 Mon Sep 17 00:00:00 2001
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Mon, 25 Jan 2016 23:05:36 -0500
-> Subject: [PATCH 2/2] powerpc/perf/hv-24x7: Display change in counter values
->
-> For 24x7 counters, perf displays the raw value of the 24x7 counter, which
-> is a monotonically increasing value.
->
-> 	perf stat -C 0 -e \
-> 		'hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/' \
-> 		sleep 1
->
->  Performance counter stats for 'CPU(s) 0':
->
->      9,105,403,170      hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/
->
->        0.000425751 seconds time elapsed
->
-> In the typical usage of 'perf stat' this counter value is not as useful
-> as the _change_ in the counter value over the duration of the application.
+Changes from v7:
+- Changes in patch[6] involves adding a table to represent the
+  throtle stats in frequency X reason layout. Detailed version log
+  in the patch.
 
-This may break application using this interface right? i.e, since
-for all this time, counter output was raw values and application
-may be post processing to calculate the difference, now with
-this patch, application may need some change? Also,
-should not this be documented somewhere?
+Changes from v6:
+- Changes wrt comments from Balbir Singh and Viresh Kumar. Details in
+  the version log of the patches.
 
-Maddy
+Changes from v5:
+- Fix kbuild error:
+drivers/cpufreq/powernv-cpufreq.c:428:2: error: implicit declaration of
+function 'get_online_cpus' [-Werror=implicit-function-declaration]
 
-> Have h_24x7_event_init() set the event's prev_count to the raw value of
-> the 24x7 counter at the time of initialization. When the application
-> terminates, hv_24x7_event_read() will compute the change in value and
-> report to the perf tool. Similarly, for the transaction interface, clear
-> the event count to 0 at the beginning of the transaction.
->
-> 	perf stat -C 0 -e \
-> 		'hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/' \
-> 		sleep 1
->
->  Performance counter stats for 'CPU(s) 0':
->
->            245,758      hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=1/
->
->        1.006366383 seconds time elapsed
->
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/perf/hv-24x7.c | 13 ++++++++++++-
->  1 file changed, 12 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-> index b7a9a03..77b958f 100644
-> --- a/arch/powerpc/perf/hv-24x7.c
-> +++ b/arch/powerpc/perf/hv-24x7.c
-> @@ -1222,11 +1222,12 @@ static int h_24x7_event_init(struct perf_event *event)
->  		return -EACCES;
->  	}
->  
-> -	/* see if the event complains */
-> +	/* Get the initial value of the counter for this event */
->  	if (single_24x7_request(event, &ct)) {
->  		pr_devel("test hcall failed\n");
->  		return -EIO;
->  	}
-> +	(void)local64_xchg(&event->hw.prev_count, ct);
->  
->  	return 0;
->  }
-> @@ -1289,6 +1290,16 @@ static void h_24x7_event_read(struct perf_event *event)
->  			h24x7hw = &get_cpu_var(hv_24x7_hw);
->  			h24x7hw->events[i] = event;
->  			put_cpu_var(h24x7hw);
-> +			/*
-> +			 * Clear the event count so we can compute the _change_
-> +			 * in the 24x7 raw counter value at the end of the txn.
-> +			 *
-> +			 * Note that we could alternatively read the 24x7 value
-> +			 * now and save its value in event->hw.prev_count. But
-> +			 * that would require issuing a hcall, which would then
-> +			 * defeat the purpose of using the txn interface.
-> +			 */
-> +			local64_set(&event->count, 0);
->  		}
->  
->  		put_cpu_var(hv_24x7_reqb);
+Changes from v4:
+- Fix a hot-plug bug in powernv_cpufreq_work_fn()
+- Changes wrt Gautham's and Shreyas's comments 
+
+Changes from v3:
+- Add a fix to replace cpu_to_chip_id() with simpler PIR shift to 
+  obtain the chip id.
+- Break patch2 in to two patches separating the tracepoint and sysfs
+  attribute changes.
+
+Changes from v2:
+- Fixed kbuild test warning.
+drivers/cpufreq/powernv-cpufreq.c:609:2: warning: ignoring return
+value of 'kstrtoint', declared with attribute warn_unused_result
+[-Wunused-result]
+Shilpasri G Bhat (6):
+  cpufre: powernv: Free 'chips' on module exit
+  cpufreq: powernv: Hot-plug safe the kworker thread
+  cpufreq: powernv: Remove cpu_to_chip_id() from hot-path
+  cpufreq: powernv/tracing: Add powernv_throttle tracepoint
+  cpufreq: powernv: Replace pr_info with trace print for throttle event
+  cpufreq: powernv: Add sysfs attributes to show throttle stats
+
+ Documentation/ABI/testing/sysfs-devices-system-cpu |  66 +++++
+ drivers/cpufreq/powernv-cpufreq.c                  | 303 +++++++++++++++++----
+ include/trace/events/power.h                       |  22 ++
+ kernel/trace/power-traces.c                        |   1 +
+ 4 files changed, 337 insertions(+), 55 deletions(-)
+
+-- 
+1.9.3
