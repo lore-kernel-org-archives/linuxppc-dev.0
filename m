@@ -1,28 +1,26 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bobby.prani@gmail.com>
+Received: from mail-yk0-x235.google.com (mail-yk0-x235.google.com
+ [IPv6:2607:f8b0:4002:c07::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 369CC1A01D8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 03:47:18 +1100 (AEDT)
-Date: Tue, 2 Feb 2016 17:47:14 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Torsten Duwe <duwe@lst.de>
-Cc: Miroslav Benes <mbenes@suse.cz>, Steven Rostedt <rostedt@goodmis.org>,
- Michael Ellerman <mpe@ellerman.id.au>, anton@samba.org,
- Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- live-patching@vger.kernel.org
-Subject: Re: [PATCH v6 8/9] Implement kernel live patching for ppc64le (ABIv2)
-Message-ID: <20160202164714.GU3305@pathway.suse.cz>
-References: <20160125170459.14DB7692CE@newverein.lst.de>
- <20160125170804.A11DB692DD@newverein.lst.de>
- <alpine.LNX.2.00.1601261142190.24510@pobox.suse.cz>
- <20160126124853.GL3305@pathway.suse.cz>
- <20160202121224.GS3305@pathway.suse.cz>
- <20160202154523.GF32095@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7F3041A0202
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 04:15:00 +1100 (AEDT)
+Received: by mail-yk0-x235.google.com with SMTP id u9so58800141ykd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Feb 2016 09:15:00 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160202154523.GF32095@lst.de>
+In-Reply-To: <878u336210.fsf@linux.vnet.ibm.com>
+References: <CANtoAtNkjrJfac0nR7ay7LKToMf53KtpVZNv0+xabHn1QSwRkA@mail.gmail.com>
+ <CAJhHMCA6wy=i=yD4S-D0-vRTAOadTbwEtarsawK0BLw23G2Shg@mail.gmail.com>
+ <878u336210.fsf@linux.vnet.ibm.com>
+From: Pranith Kumar <bobby.prani@gmail.com>
+Date: Tue, 2 Feb 2016 12:14:28 -0500
+Message-ID: <CAJhHMCD1_o3XnHJXunxyYP8j_UpfxTG-M_utR2Cfvq5XozsBNQ@mail.gmail.com>
+Subject: =?UTF-8?Q?Re=3A_Failure_on_latest_GIT_=2D_implicit_declaration_of_?=
+ =?UTF-8?Q?function_=E2=80=98pte=5Fswp=5Fclear=5Fsoft=5Fdirty=E2=80=99?=
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Mike <michael.heltne@gmail.com>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,43 +30,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue 2016-02-02 16:45:23, Torsten Duwe wrote:
-> On Tue, Feb 02, 2016 at 01:12:24PM +0100, Petr Mladek wrote:
-> > 
-> > Hmm, the size of the offset is not a constant. In particular, leaf
-> > functions do not set TOC before the mcount location.
-> 
-> To be slightly more precise, a leaf function that additionally uses
-> no global data. No global function calls, no global data access =>
-> no need to load the TOC.
+On Tue, Feb 2, 2016 at 1:48 AM, Aneesh Kumar K.V
+<aneesh.kumar@linux.vnet.ibm.com> wrote:
+>
+> This patch didn't work for you ?
+>
+> http://mid.gmane.org/1454086969-21074-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
+>
 
-Thanks for explanation.
- 
-> > The result is that kernel crashes when trying to trace leaf function
-> 
-> The trampoline *requires* a proper TOC pointer to find the remote function
-> entry point. If you jump onto the trampoline with the TOC from the caller's
-> caller you'll grab some address from somewhere and jump into nirvana.
+This actually is a better patch. I didn't realize that we have the _64 version.
 
-The dmesg messages suggested someting like this.
-
-
-> > By other words, it seems that the code generated with -mprofile-kernel
-> > option has been buggy in all gcc versions.
-> 
-> Either that or we need bigger trampolines for everybody.
-> 
-> Michael, should we grow every module trampoline to always load R2,
-> or fix GCC to recognise the generated bl _mcount as a global function call?
-> Anton, what do you think?
-
-BTW: Is the trampoline used also for classic probes? If not, we might need
-a trampoline for them as well.
-
-Note that TOC is not set only when the problematic functions are
-compiled with --mprofile-kernel. I still see the TOC stuff when
-compiling only with -pg.
-
-
-Best Regards,
-Petr
+Thanks!
+-- 
+Pranith
