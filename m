@@ -1,22 +1,34 @@
-Return-Path: <jikos@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <viresh.kumar@linaro.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 675F91A0228
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 19:55:16 +1100 (AEDT)
-Date: Wed, 3 Feb 2016 09:55:11 +0100 (CET)
-From: Jiri Kosina <jikos@kernel.org>
-To: AKASHI Takahiro <takahiro.akashi@linaro.org>
-cc: Torsten Duwe <duwe@lst.de>, Steven Rostedt <rostedt@goodmis.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
-Subject: Re: [PATCH v6 1/9] ppc64 (le): prepare for -mprofile-kernel
-In-Reply-To: <56B1AAE5.10500@linaro.org>
-Message-ID: <alpine.LNX.2.00.1602030952220.22727@cbobk.fhfr.pm>
-References: <20160125170459.14DB7692CE@newverein.lst.de>
- <20160125170723.D2CCE692CE@newverein.lst.de> <56B1AAE5.10500@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 31DE91A0226
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 20:04:03 +1100 (AEDT)
+Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c00::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 62D9314033E
+ for <linuxppc-dev@ozlabs.org>; Wed,  3 Feb 2016 20:04:02 +1100 (AEDT)
+Received: by mail-pf0-x22c.google.com with SMTP id n128so10479217pfn.3
+ for <linuxppc-dev@ozlabs.org>; Wed, 03 Feb 2016 01:04:02 -0800 (PST)
+Date: Wed, 3 Feb 2016 14:33:57 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ rjw@rjwysocki.net, linux-pm@vger.kernel.org, pc@us.ibm.com,
+ anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com,
+ bsingharora@gmail.com, mpe@ellerman.id.au, linux-api@vger.kernel.org
+Subject: Re: [PATCH v8 6/6] cpufreq: powernv: Add sysfs attributes to show
+ throttle stats
+Message-ID: <20160203090357.GA31828@vireshk>
+References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1454442102-1229-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20160203082700.GZ31828@vireshk>
+ <56B1BD71.2050403@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <56B1BD71.2050403@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 3 Feb 2016, AKASHI Takahiro wrote:
+On 03-02-16, 14:12, Shilpasri G Bhat wrote:
+> I need the chip-id in the <attr>_show(). With just sysfs_create_group() I will
+> get the cpufreq_global_kobject in the <attr>_show() and I will not be able to
+> figure out the chip-id.
 
-> > The gcc switch -mprofile-kernel, available for ppc64 on gcc > 4.8.5,
-> > allows to call _mcount very early in the function, which low-level
-> > ASM code and code patching functions need to consider.
-> > Especially the link register and the parameter registers are still
-> > alive and not yet saved into a new stack frame.
-> 
-> I'm thinking of implementing live patch support *for arm64*, and as part of
-> those efforts, we are proposing[1] a new *generic* gcc option, -fprolog-add=N.
-> This option will insert N nop instructions at the beginning of each function.
-> So we have to initialize those codes at the boot time to later utilize
-> them for FTRACE_WITH_REGS. Other than that, it will work similarly
-> with -mfentry on x86 (and -mprofile-kernel?).
-> 
-> I'm totally unfamiliar with ppc architecture, but just wondering
-> whether this option will also be useful for other architectures.
+The more I look at it, the more I am convinced that keeping this
+'chip' directory in /sys/devices/system/cpu/cpuX/cpufreq/ makes sense.
 
-The interesting part of the story with ppc64 is that you indeed want to 
-create the callsite before the *most* of the prologue, but not really :) 
-The part of the prologue where TOC pointer is saved needs to happen before 
-the fentry/profiling call.
+So, here is the deal:
+- A 'chip' on your platforms can contain multiple group of CPUs, which
+  are represented by policies in cpufreq core. i.e. A chip can have
+  multiple policies.
+- All CPUs present on the same chip are subject to same throttling
+  outcomes.
+- Right now you are putting the 'chip' directory in cpu/cpufreq/
+  directory. Because that directory isn't specific to a policy, but
+  entire cpufreq subsystem, you can't get a policy->cpu in the code
+  for the kobject in question. And so you are *forced* to create a
+  kobject, so that you can do container_of() and get chip->id.
+- And then you also need to unnecessarily add another field in the
+  chip directory 'chip_mask', that is nothing but an bitwise OR
+  operation on policy->related_cpus, so that userspace can know which
+  policies/CPUs are managed by the 'chip'.
 
-I don't think this will be an issue on ARM64, but it definitely is 
-something that should be taken into account in case the gcc option is 
-meant to be really generic.
+What I can suggest is:
+- Move this directory inside cpuX/cpufreq/ directory, in a similar way
+  as to how we create 'stats' directory today.
+- You can then get policy->cpu, to get chip->id out of it.
+- The only disadvantage here is that the same chip directory will be
+  replicated in multiple policies, but that makes it more readable.
 
-Thanks,
+Thoughts ?
 
 -- 
-Jiri Kosina
-SUSE Labs
+viresh
