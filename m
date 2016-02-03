@@ -1,21 +1,18 @@
-Return-Path: <runaway@candw.ms>
-Received: from smtp687.redcondor.net (smtp687.redcondor.net [208.80.206.87])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B17831A0226
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 09:54:25 +1100 (AEDT)
-Subject: Re: commit 9178ba294b6839eeff1a91bed95515d783f3ee6c an A-Eon Tabor
- Board
-To: Alexander Graf <agraf@suse.de>
-References: <56B1C97A.9010807@candw.ms> <56B26689.8060905@suse.de>
- <56B27BEE.9090503@candw.ms> <56B27D26.5080507@suse.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-From: Julian Margetson <runaway@candw.ms>
-Message-ID: <56B28509.2080303@candw.ms>
-Date: Wed, 3 Feb 2016 18:54:01 -0400
-MIME-Version: 1.0
-In-Reply-To: <56B27D26.5080507@suse.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 2CA5C1A0226
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 09:54:26 +1100 (AEDT)
+Message-Id: <f7a5f7dcd5532671e65418e274f3ce8b3f5280b1.1454538978.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1454538974.git.christophe.leroy@c-s.fr>
+References: <cover.1454538974.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v5 14/23] powerpc/8xx: Handle CPU6 ERRATA directly in mtspr()
+ macro
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Wed,  3 Feb 2016 23:54:23 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,56 +22,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2/3/2016 6:20 PM, Alexander Graf wrote:
->
->
-> On 02/03/2016 11:15 PM, Julian Margetson wrote:
->> On 2/3/2016 4:43 PM, Alexander Graf wrote:
->>>
->>>
->>> On 02/03/2016 10:33 AM, Julian Margetson wrote:
->>>> Resending as it was attached to and old thread relating to a 
->>>> different motherboard.
->>>>
->>>> On 2/2/2016 9:54 AM, Julian Margetson wrote:
->>>>>
->>>>> Commit 9178ba294b6839eeff1a91bed95515d783f3ee6c prevents building 
->>>>> of kernel 4.1 branch on A-Eon Tabor Board.
->>>>>
->>>>> CC arch/powerpc/math-emu/fsqrt.o
->>>>> arch/powerpc/platforms/85xx/tabor.c:194:2: error: unknown field 
->>>>> ‘power_off’ specified in initializer
->>>
->>> I can't seem to find that file in Linux upstream?
->>>
->>>
->>> Alex
->>>
->>>
->>>
->>
->> It may have been discontinued as the patches used were maintained 
->> along with patches for the (Varisys)  A-Eon Cyrus board
->> which is officially supported from kernel 4.4.
->>
->> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=c383ee84e1d575b09d167185d15df24bde25eb15 
->>
->
-> I don't quite understand how an internal API change in Linux breaking 
-> random external patches is a bug? Either your code is upstream or it 
-> can break on every git commit done upstream.
->
->
-> Alex
->
->
->
+MPC8xx has an ERRATA on the use of mtspr() for some registers
+This patch includes the ERRATA handling directly into mtspr() macro
+so that mtspr() users don't need to bother about that errata
 
-Sorry I am relatively new at this.
-If I manage to pinpoint a problem on my powerpc machines I report it . 
-Most of them so far have indeed been bugs.
-The random external patches were done by person with far greater 
-competence than me who are no longer in the picture.
-Any  guidance would be greatly  appreciated .
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+v2: no change
+v3: no change
+v4: no change
+v5: no change
 
-Julian
+ arch/powerpc/include/asm/reg.h     |  2 +
+ arch/powerpc/include/asm/reg_8xx.h | 82 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 84 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index c4cb2ff..7b5d97f 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1211,9 +1211,11 @@ static inline void mtmsr_isync(unsigned long val)
+ #define mfspr(rn)	({unsigned long rval; \
+ 			asm volatile("mfspr %0," __stringify(rn) \
+ 				: "=r" (rval)); rval;})
++#ifndef mtspr
+ #define mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" : \
+ 				     : "r" ((unsigned long)(v)) \
+ 				     : "memory")
++#endif
+ 
+ extern void msr_check_and_set(unsigned long bits);
+ extern bool strict_msr_control;
+diff --git a/arch/powerpc/include/asm/reg_8xx.h b/arch/powerpc/include/asm/reg_8xx.h
+index 0f71c81..d41412c 100644
+--- a/arch/powerpc/include/asm/reg_8xx.h
++++ b/arch/powerpc/include/asm/reg_8xx.h
+@@ -50,4 +50,86 @@
+ #define DC_DFWT		0x40000000	/* Data cache is forced write through */
+ #define DC_LES		0x20000000	/* Caches are little endian mode */
+ 
++#ifdef CONFIG_8xx_CPU6
++#define do_mtspr_cpu6(rn, rn_addr, v)	\
++	do {								\
++		int _reg_cpu6 = rn_addr, _tmp_cpu6[1];		\
++		asm volatile("stw %0, %1;"				\
++			     "lwz %0, %1;"				\
++			     "mtspr " __stringify(rn) ",%2" :		\
++			     : "r" (_reg_cpu6), "m"(_tmp_cpu6),		\
++			       "r" ((unsigned long)(v))			\
++			     : "memory");				\
++	} while (0)
++
++#define do_mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" :	\
++				     : "r" ((unsigned long)(v))		\
++				     : "memory")
++#define mtspr(rn, v) \
++	do {								\
++		if (rn == SPRN_IMMR)					\
++			do_mtspr_cpu6(rn, 0x3d30, v);			\
++		else if (rn == SPRN_IC_CST)				\
++			do_mtspr_cpu6(rn, 0x2110, v);			\
++		else if (rn == SPRN_IC_ADR)				\
++			do_mtspr_cpu6(rn, 0x2310, v);			\
++		else if (rn == SPRN_IC_DAT)				\
++			do_mtspr_cpu6(rn, 0x2510, v);			\
++		else if (rn == SPRN_DC_CST)				\
++			do_mtspr_cpu6(rn, 0x3110, v);			\
++		else if (rn == SPRN_DC_ADR)				\
++			do_mtspr_cpu6(rn, 0x3310, v);			\
++		else if (rn == SPRN_DC_DAT)				\
++			do_mtspr_cpu6(rn, 0x3510, v);			\
++		else if (rn == SPRN_MI_CTR)				\
++			do_mtspr_cpu6(rn, 0x2180, v);			\
++		else if (rn == SPRN_MI_AP)				\
++			do_mtspr_cpu6(rn, 0x2580, v);			\
++		else if (rn == SPRN_MI_EPN)				\
++			do_mtspr_cpu6(rn, 0x2780, v);			\
++		else if (rn == SPRN_MI_TWC)				\
++			do_mtspr_cpu6(rn, 0x2b80, v);			\
++		else if (rn == SPRN_MI_RPN)				\
++			do_mtspr_cpu6(rn, 0x2d80, v);			\
++		else if (rn == SPRN_MI_CAM)				\
++			do_mtspr_cpu6(rn, 0x2190, v);			\
++		else if (rn == SPRN_MI_RAM0)				\
++			do_mtspr_cpu6(rn, 0x2390, v);			\
++		else if (rn == SPRN_MI_RAM1)				\
++			do_mtspr_cpu6(rn, 0x2590, v);			\
++		else if (rn == SPRN_MD_CTR)				\
++			do_mtspr_cpu6(rn, 0x3180, v);			\
++		else if (rn == SPRN_M_CASID)				\
++			do_mtspr_cpu6(rn, 0x3380, v);			\
++		else if (rn == SPRN_MD_AP)				\
++			do_mtspr_cpu6(rn, 0x3580, v);			\
++		else if (rn == SPRN_MD_EPN)				\
++			do_mtspr_cpu6(rn, 0x3780, v);			\
++		else if (rn == SPRN_M_TWB)				\
++			do_mtspr_cpu6(rn, 0x3980, v);			\
++		else if (rn == SPRN_MD_TWC)				\
++			do_mtspr_cpu6(rn, 0x3b80, v);			\
++		else if (rn == SPRN_MD_RPN)				\
++			do_mtspr_cpu6(rn, 0x3d80, v);			\
++		else if (rn == SPRN_M_TW)				\
++			do_mtspr_cpu6(rn, 0x3f80, v);			\
++		else if (rn == SPRN_MD_CAM)				\
++			do_mtspr_cpu6(rn, 0x3190, v);			\
++		else if (rn == SPRN_MD_RAM0)				\
++			do_mtspr_cpu6(rn, 0x3390, v);			\
++		else if (rn == SPRN_MD_RAM1)				\
++			do_mtspr_cpu6(rn, 0x3590, v);			\
++		else if (rn == SPRN_DEC)				\
++			do_mtspr_cpu6(rn, 0x2c00, v);			\
++		else if (rn == SPRN_TBWL)				\
++			do_mtspr_cpu6(rn, 0x3880, v);			\
++		else if (rn == SPRN_TBWU)				\
++			do_mtspr_cpu6(rn, 0x3a80, v);			\
++		else if (rn == SPRN_DPDR)				\
++			do_mtspr_cpu6(rn, 0x2d30, v);			\
++		else							\
++			do_mtspr(rn, v);				\
++	} while (0)
++#endif
++
+ #endif /* _ASM_POWERPC_REG_8xx_H */
+-- 
+2.1.0
