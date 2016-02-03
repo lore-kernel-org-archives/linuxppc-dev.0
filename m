@@ -1,23 +1,24 @@
-Return-Path: <michael.heltne@gmail.com>
-Received: from mail-yk0-x22c.google.com (mail-yk0-x22c.google.com
- [IPv6:2607:f8b0:4002:c07::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A61F71A0167
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 12:56:25 +1100 (AEDT)
-Received: by mail-yk0-x22c.google.com with SMTP id z7so6770461yka.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Feb 2016 17:56:25 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8EF461A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 15:31:10 +1100 (AEDT)
+Date: Wed, 3 Feb 2016 15:31:59 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: paulus@samba.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
+ aik@ozlabs.ru, lvivier@redhat.com, thuth@redhat.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFCv2 4/9] arch/powerpc: Clean up memory hotplug failure paths
+Message-ID: <20160203043159.GG15080@voom.fritz.box>
+References: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
+ <1454045043-25545-5-git-send-email-david@gibson.dropbear.id.au>
+ <56B0C577.1030809@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CANtoAtOYX4YvNKupcou_yXQ+rV6BY0z2m7Ovf4Mk6-Aa5xMQhQ@mail.gmail.com>
-References: <CANtoAtOYX4YvNKupcou_yXQ+rV6BY0z2m7Ovf4Mk6-Aa5xMQhQ@mail.gmail.com>
-Date: Wed, 3 Feb 2016 01:56:23 +0000
-Message-ID: <CANtoAtN20tjNrKzFMw=pgrsnz2huCdwTZtdoNKL8wvQFdAC7Mw@mail.gmail.com>
-Subject: Re: Failure on latest GIT - appletouch fails to register
-From: Mike <michael.heltne@gmail.com>
-To: Pranith Kumar <bobby.prani@gmail.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
-Content-Type: multipart/alternative; boundary=001a113d07ccd34659052ad3ec51
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="4eRLI4hEmsdu6Npr"
+In-Reply-To: <56B0C577.1030809@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,129 +28,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a113d07ccd34659052ad3ec51
-Content-Type: text/plain; charset=UTF-8
 
-Not made any less confusing with the presence of the evdev event4 and
-correct /dev/input/mouse ... cat on the device indicates no input is
-passed. Xorg correctly finds and assigns the pad and functions, evdev sets
-it up... But no inputs registered, i cannot spot any changes comparing to
-4.3.3 that would account for this ...
-
-On 3 February 2016 at 00:05, Mike <michael.heltne@gmail.com> wrote:
-
-> Normally as far as i can tell it should register it as input and that's
-> not happening, verified the config entry CONFIG_MOUSE_APPLETOUCH is
-> selected and compiled in both tests i've done for rc-1 and rc-2.
->
-> syslog.1:Feb  1 21:58:40 PowerBook-G4 kernel: [   14.744538] usbcore:
-> registered new interface driver appletouch
-> syslog.1:Feb  1 22:28:05 PowerBook-G4 kernel: [   14.904449] input:
-> appletouch as /devices/pci0001:10/0001:10:1a.0/usb2/2-2/2-2:1.1/input/input6
-> syslog.1:Feb  1 22:28:05 PowerBook-G4 kernel: [   14.905904] usbcore:
-> registered new interface driver appletouch
-> syslog.1:Feb  2 03:39:38 PowerBook-G4 kernel: [   15.423289] usbcore:
-> registered new interface driver appletouch
->
-> Any clues? Worked in 4.3.3 at least . Anyone point me to where i could
-> begin to look? Any structures changed which could account for this?
->
->
-> On 2 February 2016 at 17:55, Mike <michael.heltne@gmail.com> wrote:
->
->> Agreed, raised an eyebrow initially when select ppc64 and 32 :D
->>
->> I'll give a word on the trackpad issue later, cant remember seeing any
->> changes that ought effect it really. guess the compile is done in a good
->> hour or so, took the tiime to slim it down to someting reasonable
->>
->> Thanks man
->> On 2 Feb 2016 18:14, "Pranith Kumar" <bobby.prani@gmail.com> wrote:
->>
->>> On Tue, Feb 2, 2016 at 1:48 AM, Aneesh Kumar K.V
->>> <aneesh.kumar@linux.vnet.ibm.com> wrote:
->>> >
->>> > This patch didn't work for you ?
->>> >
->>> >
->>> http://mid.gmane.org/1454086969-21074-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
->>> >
->>>
->>> This actually is a better patch. I didn't realize that we have the _64
->>> version.
->>>
->>> Thanks!
->>> --
->>> Pranith
->>>
->>
->
-
---001a113d07ccd34659052ad3ec51
-Content-Type: text/html; charset=UTF-8
+--4eRLI4hEmsdu6Npr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-<div dir=3D"ltr">Not made any less confusing with the presence of the evdev=
- event4 and correct /dev/input/mouse ... cat on the device indicates no inp=
-ut is passed. Xorg correctly finds and assigns the pad and functions, evdev=
- sets it up... But no inputs registered, i cannot spot any changes comparin=
-g to 4.3.3 that would account for this ...=C2=A0</div><div class=3D"gmail_e=
-xtra"><br><div class=3D"gmail_quote">On 3 February 2016 at 00:05, Mike <spa=
-n dir=3D"ltr">&lt;<a href=3D"mailto:michael.heltne@gmail.com" target=3D"_bl=
-ank">michael.heltne@gmail.com</a>&gt;</span> wrote:<br><blockquote class=3D=
-"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding=
--left:1ex"><div dir=3D"ltr">Normally as far as i can tell it should registe=
-r it as input and that&#39;s not happening, verified the config entry CONFI=
-G_MOUSE_APPLETOUCH is selected and compiled in both tests i&#39;ve done for=
- rc-1 and rc-2. =C2=A0=C2=A0<div><br></div><div><div>syslog.1:Feb =C2=A01 2=
-1:58:40 PowerBook-G4 kernel: [ =C2=A0 14.744538] usbcore: registered new in=
-terface driver appletouch</div><div>syslog.1:Feb =C2=A01 22:28:05 PowerBook=
--G4 kernel: [ =C2=A0 14.904449] input: appletouch as /devices/pci0001:10/00=
-01:10:1a.0/usb2/2-2/2-2:1.1/input/input6</div><div>syslog.1:Feb =C2=A01 22:=
-28:05 PowerBook-G4 kernel: [ =C2=A0 14.905904] usbcore: registered new inte=
-rface driver appletouch</div><div>syslog.1:Feb =C2=A02 03:39:38 PowerBook-G=
-4 kernel: [ =C2=A0 15.423289] usbcore: registered new interface driver appl=
-etouch</div><div><br></div><div class=3D"gmail_extra">Any clues? Worked in =
-4.3.3 at least . Anyone point me to where i could begin to look? Any struct=
-ures changed which could account for this?=C2=A0</div><div class=3D"gmail_e=
-xtra"><br></div><div class=3D"gmail_extra"><br><div class=3D"gmail_quote">O=
-n 2 February 2016 at 17:55, Mike <span dir=3D"ltr">&lt;<a href=3D"mailto:mi=
-chael.heltne@gmail.com" target=3D"_blank">michael.heltne@gmail.com</a>&gt;<=
-/span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0px 0px =
-0px 0.8ex;border-left-width:1px;border-left-color:rgb(204,204,204);border-l=
-eft-style:solid;padding-left:1ex"><p dir=3D"ltr">Agreed, raised an eyebrow =
-initially when select ppc64 and 32 :D </p>
-<p dir=3D"ltr">I&#39;ll give a word on the trackpad issue later, cant remem=
-ber seeing any changes that ought effect it really. guess the compile is do=
-ne in a good hour or so, took the tiime to slim it down to someting reasona=
-ble </p>
-<p dir=3D"ltr">Thanks man <br>
-</p><div><div>
-<div class=3D"gmail_quote">On 2 Feb 2016 18:14, &quot;Pranith Kumar&quot; &=
-lt;<a href=3D"mailto:bobby.prani@gmail.com" target=3D"_blank">bobby.prani@g=
-mail.com</a>&gt; wrote:<br type=3D"attribution"><blockquote class=3D"gmail_=
-quote" style=3D"margin:0px 0px 0px 0.8ex;border-left-width:1px;border-left-=
-color:rgb(204,204,204);border-left-style:solid;padding-left:1ex">On Tue, Fe=
-b 2, 2016 at 1:48 AM, Aneesh Kumar K.V<br>
-&lt;<a href=3D"mailto:aneesh.kumar@linux.vnet.ibm.com" target=3D"_blank">an=
-eesh.kumar@linux.vnet.ibm.com</a>&gt; wrote:<br>
-&gt;<br>
-&gt; This patch didn&#39;t work for you ?<br>
-&gt;<br>
-&gt; <a href=3D"http://mid.gmane.org/1454086969-21074-1-git-send-email-anee=
-sh.kumar@linux.vnet.ibm.com" rel=3D"noreferrer" target=3D"_blank">http://mi=
-d.gmane.org/1454086969-21074-1-git-send-email-aneesh.kumar@linux.vnet.ibm.c=
-om</a><br>
-&gt;<br>
-<br>
-This actually is a better patch. I didn&#39;t realize that we have the _64 =
-version.<br>
-<br>
-Thanks!<span class=3D"HOEnZb"><font color=3D"#888888"><br>
---<br>
-Pranith<br>
-</font></span></blockquote></div>
-</div></div></blockquote></div><br></div></div></div>
-</blockquote></div><br></div>
+On Tue, Feb 02, 2016 at 09:04:23AM -0600, Nathan Fontenot wrote:
+> On 01/28/2016 11:23 PM, David Gibson wrote:
+> > This makes a number of cleanups to handling of mapping failures during
+> > memory hotplug on Power:
+> >=20
+> > For errors creating the linear mapping for the hot-added region:
+> >   * This is now reported with EFAULT which is more appropriate than the
+> >     previous EINVAL (the failure is unlikely to be related to the
+> >     function's parameters)
+> >   * An error in this path now prints a warning message, rather than just
+> >     silently failing to add the extra memory.
+> >   * Previously a failure here could result in the region being partially
+> >     mapped.  We now clean up any partial mapping before failing.
+> >=20
+> > For errors creating the vmemmap for the hot-added region:
+> >    * This is now reported with EFAULT instead of causing a BUG() - this
+> >      could happen for external reason (e.g. full hash table) so it's be=
+tter
+> >      to handle this non-fatally
+> >    * An error message is also printed, so the failure won't be silent
+> >    * As above a failure could cause a partially mapped region, we now
+> >      clean this up.
+> >=20
+> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> > ---
+> >  arch/powerpc/mm/hash_utils_64.c | 13 ++++++++++---
+> >  arch/powerpc/mm/init_64.c       | 38 ++++++++++++++++++++++++++-------=
+-----
+> >  arch/powerpc/mm/mem.c           | 10 ++++++++--
+> >  3 files changed, 44 insertions(+), 17 deletions(-)
+> >=20
+> > diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_uti=
+ls_64.c
+> > index 0737eae..e88a86e 100644
+> > --- a/arch/powerpc/mm/hash_utils_64.c
+> > +++ b/arch/powerpc/mm/hash_utils_64.c
+> > @@ -635,9 +635,16 @@ static unsigned long __init htab_get_table_size(vo=
+id)
+> >  #ifdef CONFIG_MEMORY_HOTPLUG
+> >  int create_section_mapping(unsigned long start, unsigned long end)
+> >  {
+> > -	return htab_bolt_mapping(start, end, __pa(start),
+> > -				 pgprot_val(PAGE_KERNEL), mmu_linear_psize,
+> > -				 mmu_kernel_ssize);
+> > +	int rc =3D htab_bolt_mapping(start, end, __pa(start),
+> > +				   pgprot_val(PAGE_KERNEL), mmu_linear_psize,
+> > +				   mmu_kernel_ssize);
+> > +
+> > +	if (rc < 0) {
+> > +		int rc2 =3D htab_remove_mapping(start, end, mmu_linear_psize,
+> > +					      mmu_kernel_ssize);
+> > +		BUG_ON(rc2 && (rc2 !=3D -ENOENT));
+> > +	}
+> > +	return rc;
+> >  }
+> > =20
+>=20
+> <-- snip -->
+>=20
+> >  #ifdef CONFIG_MEMORY_HOTPLUG
+> > @@ -217,15 +219,20 @@ static void vmemmap_remove_mapping(unsigned long =
+start,
+> >  }
+> >  #endif
+> >  #else /* CONFIG_PPC_BOOK3E */
+> > -static void __meminit vmemmap_create_mapping(unsigned long start,
+> > -					     unsigned long page_size,
+> > -					     unsigned long phys)
+> > +static int __meminit vmemmap_create_mapping(unsigned long start,
+> > +					    unsigned long page_size,
+> > +					    unsigned long phys)
+> >  {
+> > -	int  mapped =3D htab_bolt_mapping(start, start + page_size, phys,
+> > -					pgprot_val(PAGE_KERNEL),
+> > -					mmu_vmemmap_psize,
+> > -					mmu_kernel_ssize);
+> > -	BUG_ON(mapped < 0);
+> > +	int rc =3D htab_bolt_mapping(start, start + page_size, phys,
+> > +				   pgprot_val(PAGE_KERNEL),
+> > +				   mmu_vmemmap_psize, mmu_kernel_ssize);
+> > +	if (rc < 0) {
+> > +		int rc2 =3D htab_remove_mapping(start, start + page_size,
+> > +					      mmu_vmemmap_psize,
+> > +					      mmu_kernel_ssize);
+> > +		BUG_ON(rc2 && (rc2 !=3D -ENOENT));
+> > +	}
+> > +	return rc;
+> >  }
+> > =20
+>=20
+> If I'm reading this correctly it appears that create_section_mapping() and
+> vmemmap_create_mapping() for !PPC_BOOK3E are identical. Any reason to not
+> have one routine, perhaps just have vmemmap_create_mapping() just call
+> create_section_mapping()?
 
---001a113d07ccd34659052ad3ec51--
+Not really, apart from documenting what they're used for.  They're
+both fairly trivial wrappers around htab_bolt_mapping().  I think
+cleaning this up is outside the scope of this series though.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--4eRLI4hEmsdu6Npr
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJWsYK/AAoJEGw4ysog2bOS4q0QAL7b52kBvtS6pSb6zua4eF5B
+M1pM6eLYxWkNj9YHGjxdSaAI7ntLhPxrtbn5VcfWSv+jYNDm2Mnuu993lcMZgV4I
+xf2wMIKhcy4Jay/n9MRCiO0FlbeYckg7QwKMJhjt+HTN11Mwh3Dpek3hMVN3QFjZ
+1XS7n7L3DvbLCINnCQ+DUwqG/TOQWDNugWQ/C5xdjlYc+PmDxGMYl63bmVXqMHip
+M2CsdqbtvvWOTOJ5UZiLoVnFpB1kFJZm4nX/fVP65Dl5V4hwl01WkheouD3tbdrJ
+mKnLBi3g4geCOmZneMjvgiuZw4Es70sKlGeWNcmAXHC/b3E27R7Q5lBPbS3qne8t
+CLZcSW/FOnbpkCrML2rmaxwyxCgQpetOHYf984ZPJ1XwSr3UdN7oHZcz+/AEZNBw
+swDEfjXJmTT43KjGAV+eSwplcYZ577NfaCO1//FUyzg5tgVglVsxLlpBtOtpysDI
+h+wUem8EUvJNQGU0gFBQppA1pOMcBYMQp7quYKlsJXzP3PgkGWyQK6KNWrMYbONh
+Wj6LKwOR08KxVcXaWBWeyzjIvelysldJ7+Zaselu7klEV9wSYHB5IQyWgkPV7eYy
+DwyapstTDbh4hEDRxcNxRNA2r/hLeOKuTxk05EKBMIj6e72uC2GS/tUgibBkGkDx
+LheQMIzvQUE/RoUtJafX
+=mY//
+-----END PGP SIGNATURE-----
+
+--4eRLI4hEmsdu6Npr--
