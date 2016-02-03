@@ -1,38 +1,36 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <rjwysocki@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 77D1D1A007F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 23:26:44 +1100 (AEDT)
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Wed, 3 Feb 2016 10:26:41 -0200
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id D97D3352005F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 07:26:30 -0500 (EST)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u13CRGck4743206
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Feb 2016 10:27:17 -0200
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u13CQakV014596
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Feb 2016 10:26:37 -0200
-Subject: Re: [PATCH 2/2] powerpc/pseries: Check if EEH is enabled on DDW
- mechanism code
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1453234700-27593-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1453234700-27593-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <20160202234811.GA17911@gwshan>
-Cc: paulus@samba.org, nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Message-ID: <56B1F1FC.1080403@linux.vnet.ibm.com>
-Date: Wed, 3 Feb 2016 10:26:36 -0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 946541A0191
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 00:40:33 +1100 (AEDT)
+Received: from mail-lb0-x243.google.com (mail-lb0-x243.google.com
+ [IPv6:2a00:1450:4010:c04::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id BF9C2140B93
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Feb 2016 00:40:32 +1100 (AEDT)
+Received: by mail-lb0-x243.google.com with SMTP id dx9so610665lbc.2
+ for <linuxppc-dev@ozlabs.org>; Wed, 03 Feb 2016 05:40:32 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20160202234811.GA17911@gwshan>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Sender: rjwysocki@gmail.com
+In-Reply-To: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Date: Wed, 3 Feb 2016 14:40:29 +0100
+Message-ID: <CAJZ5v0g28Px=KPa3uCW86w+u35CKkHd7rCrbTfxDjKHmcBuOEQ@mail.gmail.com>
+Subject: Re: [PATCH v8 0/6] cpufreq: powernv: Redesign the presentation of
+ throttle notification and solve bug-fixes in the driver
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, pc@us.ibm.com,
+ anton@samba.org,
+ ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com, bsingharora@gmail.com,
+ mpe@ellerman.id.au
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,35 +40,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/02/2016 09:48 PM, Gavin Shan wrote:
-> On Tue, Jan 19, 2016 at 06:18:20PM -0200, Guilherme G. Piccoli wrote:
->> -	/* only attempt to use a new window if 64-bit DMA is requested */
->> -	if (!disable_ddw && dma_mask == DMA_BIT_MASK(64)) {
->> +	/* We should check if EEH is enabled here, since DDW mechanism has
->> +	 * an intrinsic dependency of EEH config addr information. Also, we
->> +	 * only attempt to use a new window if 64-bit DMA is requested */
->> +	if (eeh_enabled() && !disable_ddw && dma_mask == DMA_BIT_MASK(64)) {
->> 		dn = pci_device_to_OF_node(pdev);
->> 		dev_dbg(dev, "node is %s\n", dn->full_name);
->>
+Hi,
+
+On Tue, Feb 2, 2016 at 8:41 PM, Shilpasri G Bhat
+<shilpa.bhat@linux.vnet.ibm.com> wrote:
+> In POWER8, OCC(On-Chip-Controller) can throttle the frequency of the
+> CPU when the chip crosses its thermal and power limits. Currently,
+> powernv-cpufreq driver detects and reports this event as a console
+> message. Some machines may not sustain the max turbo frequency in all
+> conditions and can be throttled frequently. This can lead to the
+> flooding of console with throttle messages. So this patchset aims to
+> redesign the presentation of this event via sysfs counters and
+> tracepoints. And it also fixes couple of bugs reported in the driver.
 >
-> There are two types of addresses: (1) PCI config address (2) PE config address.
-> (1) is used to indentify one PCI device which is included in the PE. (2) is the
-> PCI config address of PE's primary bus in pHyp. Both of them can be used to identify
-> the PE. It means the (1) PCI config address, which is retrieved from pci_dn, can be
-> passed to hypervisor. Then we don't have to disable DDW when EEH is disabled.
+> - Patch [1] fixes a memory leak bug
+> - Patch [2] fixes the cpu hot-plug bug in powernv_cpufreq_work_fn().
+> - Patch [3] solves a bug in powernv_cpufreq_throttle_check(), which
+>   calls in to cpu_to_chip_id() in hot path which reads DT every time
+>   to find the chip id.
+> - Patches [4] to [6] will add a perf trace point
+>   "power:powernv_throttle" and sysfs throttle counter stats in
+>   /sys/devices/system/cpu/cpufreq/chipN.
 >
-> Guilherme, did you hit the crash on pHyp or PowerKVM?
+> Changes from v7:
+> - Changes in patch[6] involves adding a table to represent the
+>   throtle stats in frequency X reason layout. Detailed version log
+>   in the patch.
+>
+> Changes from v6:
+> - Changes wrt comments from Balbir Singh and Viresh Kumar. Details in
+>   the version log of the patches.
+>
+> Changes from v5:
+> - Fix kbuild error:
+> drivers/cpufreq/powernv-cpufreq.c:428:2: error: implicit declaration of
+> function 'get_online_cpus' [-Werror=implicit-function-declaration]
+>
+> Changes from v4:
+> - Fix a hot-plug bug in powernv_cpufreq_work_fn()
+> - Changes wrt Gautham's and Shreyas's comments
+>
+> Changes from v3:
+> - Add a fix to replace cpu_to_chip_id() with simpler PIR shift to
+>   obtain the chip id.
+> - Break patch2 in to two patches separating the tracepoint and sysfs
+>   attribute changes.
+>
+> Changes from v2:
+> - Fixed kbuild test warning.
+> drivers/cpufreq/powernv-cpufreq.c:609:2: warning: ignoring return
+> value of 'kstrtoint', declared with attribute warn_unused_result
+> [-Wunused-result]
+> Shilpasri G Bhat (6):
+>   cpufre: powernv: Free 'chips' on module exit
+>   cpufreq: powernv: Hot-plug safe the kworker thread
+>   cpufreq: powernv: Remove cpu_to_chip_id() from hot-path
+>   cpufreq: powernv/tracing: Add powernv_throttle tracepoint
+>   cpufreq: powernv: Replace pr_info with trace print for throttle event
+>   cpufreq: powernv: Add sysfs attributes to show throttle stats
 
-Gavin, thanks very much for the clarification. So, we can interchange 
-edev->config_addr with pdn->pci_ext_config_space ?
-This would solve the issue with DDW being enabled when EEH is not.
+It looks like patches [1-5/6] are not objectionable and I can apply
+them without the last one if you want me to.
 
-I hit the issue on PowerVM (PHyp). I wasn't able to perform hotplug in 
-qemu that time I was testing this - I can re-test on qemu. Can we use 
-pci_dn config address in qemu guest too?
-
-Cheers,
-
-
-Guilherme
+Thanks,
+Rafael
