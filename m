@@ -1,46 +1,23 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <BATV+9006fc25a7f852f9986f+4546+infradead.org+acme@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E7CD01A0913
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 03:24:54 +1100 (AEDT)
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F1C18140BFA
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Feb 2016 03:24:53 +1100 (AEDT)
-Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Wed, 3 Feb 2016 21:54:51 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u13GOnML2556178
- for <linuxppc-dev@ozlabs.org>; Wed, 3 Feb 2016 21:54:49 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u13GOjDD004974
- for <linuxppc-dev@ozlabs.org>; Wed, 3 Feb 2016 21:54:48 +0530
-Message-ID: <56B229C9.4010909@linux.vnet.ibm.com>
-Date: Wed, 03 Feb 2016 21:54:41 +0530
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>
-CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org,
- shreyas@linux.vnet.ibm.com, bsingharora@gmail.com, mpe@ellerman.id.au,
- linux-api@vger.kernel.org
-Subject: Re: [PATCH v8 6/6] cpufreq: powernv: Add sysfs attributes to show
- throttle stats
-References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1454442102-1229-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20160203082700.GZ31828@vireshk> <56B1BD71.2050403@linux.vnet.ibm.com>
- <20160203090357.GA31828@vireshk> <20160203120258.GA32294@in.ibm.com>
- <20160203140600.GG3469@vireshk>
-In-Reply-To: <20160203140600.GG3469@vireshk>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id A2F411A03DF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 04:04:18 +1100 (AEDT)
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Hemant Kumar <hemant@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Mark Wielaard <mjw@redhat.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [PATCH 3/3] perf probe: Search both .eh_frame and .debug_frame
+ sections for probe location
+Date: Wed,  3 Feb 2016 14:04:12 -0300
+Message-Id: <1454519052-14355-4-git-send-email-acme@kernel.org>
+In-Reply-To: <1454519052-14355-1-git-send-email-acme@kernel.org>
+References: <1454519052-14355-1-git-send-email-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,20 +27,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 
-> 
-> And now that you have mentioned that to me, why shouldn't this stats
-> directory be moved to debugfs ? :)
-> 
-> We are never going to perform a store here, isn't it ? And is just for
-> information, nothing more.
-> 
+'perf probe' through debuginfo__find_probes() in util/probe-finder.c
+checks for the functions' frame descriptions in either .eh_frame section
+of an ELF or the .debug_frame.
 
-I would very much like to keep the throttle stats either in cpuX/cpufreq or
-global cpufreq directory as these are populated by the platform cpufreq driver.
+The check is based on whether either one of these sections is present.
+Depending on distro, toolchain defaults, architetcutre, build flags,
+etc., CFI might be found in either .eh_frame and/or .debug_frame.
+Sometimes, it may happen that, .eh_frame, even if present, may not be
+complete and may miss some descriptions.
 
-Today we don't have a requirement to a perform a store operation on these files
-but we can have it in the future.
+Therefore, to be sure, to find the CFI covering an address we will
+always have to investigate both if available.
 
-Thanks and Regards,
-Shilpa
+For e.g., in powerpc, this may happen:
+  $ gcc -g bin.c -o bin
+
+  $ objdump --dwarf ./bin
+  <1><145>: Abbrev Number: 7 (DW_TAG_subprogram)
+     <146> DW_AT_external   : 1
+     <146> DW_AT_name       : (indirect string, offset: 0x9e): main
+     <14a> DW_AT_decl_file  : 1
+     <14b> DW_AT_decl_line  : 39
+     <14c> DW_AT_prototyped : 1
+     <14c> DW_AT_type       : <0x57>
+     <150> DW_AT_low_pc     : 0x100007b8
+
+If the .eh_frame and .debug_frame are checked for the same binary, we
+will find that, .eh_frame (although present) doesn't contain a
+description for "main" function.
+
+But, .debug_frame has a description:
+
+  000000d8 00000024 00000000 FDE cie=00000000 pc=100007b8..10000838
+    DW_CFA_advance_loc: 16 to 100007c8
+    DW_CFA_def_cfa_offset: 144
+    DW_CFA_offset_extended_sf: r65 at cfa+16
+  ...
+
+Due to this (since, perf checks whether .eh_frame is present and goes on
+searching for that address inside that frame), perf is unable to process
+the probes:
+
+  # perf probe -x ./bin main
+    Failed to get call frame on 0x100007b8
+    Error: Failed to add events.
+
+To avoid this issue, we need to check both the sections (.eh_frame and
+.debug_frame), which is done in this patch.
+
+Note that, we can always force everything into both .eh_frame and
+.debug_frame by:
+
+  $ gcc bin.c -fasynchronous-unwind-tables  -fno-dwarf2-cfi-asm -g -o bin
+
+Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+Acked-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Mark Wielaard <mjw@redhat.com>
+Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Link: http://lkml.kernel.org/r/1454426806-13974-1-git-send-email-hemant@linux.vnet.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/util/probe-finder.c | 62 +++++++++++++++++++++++++-----------------
+ tools/perf/util/probe-finder.h |  5 +++-
+ 2 files changed, 41 insertions(+), 26 deletions(-)
+
+diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
+index 2be10fb27172..4ce5c5e18f48 100644
+--- a/tools/perf/util/probe-finder.c
++++ b/tools/perf/util/probe-finder.c
+@@ -686,8 +686,9 @@ static int call_probe_finder(Dwarf_Die *sc_die, struct probe_finder *pf)
+ 		pf->fb_ops = NULL;
+ #if _ELFUTILS_PREREQ(0, 142)
+ 	} else if (nops == 1 && pf->fb_ops[0].atom == DW_OP_call_frame_cfa &&
+-		   pf->cfi != NULL) {
+-		if (dwarf_cfi_addrframe(pf->cfi, pf->addr, &frame) != 0 ||
++		   (pf->cfi_eh != NULL || pf->cfi_dbg != NULL)) {
++		if ((dwarf_cfi_addrframe(pf->cfi_eh, pf->addr, &frame) != 0 &&
++		     (dwarf_cfi_addrframe(pf->cfi_dbg, pf->addr, &frame) != 0)) ||
+ 		    dwarf_frame_cfa(frame, &pf->fb_ops, &nops) != 0) {
+ 			pr_warning("Failed to get call frame on 0x%jx\n",
+ 				   (uintmax_t)pf->addr);
+@@ -1015,8 +1016,7 @@ static int pubname_search_cb(Dwarf *dbg, Dwarf_Global *gl, void *data)
+ 	return DWARF_CB_OK;
+ }
+ 
+-/* Find probe points from debuginfo */
+-static int debuginfo__find_probes(struct debuginfo *dbg,
++static int debuginfo__find_probe_location(struct debuginfo *dbg,
+ 				  struct probe_finder *pf)
+ {
+ 	struct perf_probe_point *pp = &pf->pev->point;
+@@ -1025,27 +1025,6 @@ static int debuginfo__find_probes(struct debuginfo *dbg,
+ 	Dwarf_Die *diep;
+ 	int ret = 0;
+ 
+-#if _ELFUTILS_PREREQ(0, 142)
+-	Elf *elf;
+-	GElf_Ehdr ehdr;
+-	GElf_Shdr shdr;
+-
+-	/* Get the call frame information from this dwarf */
+-	elf = dwarf_getelf(dbg->dbg);
+-	if (elf == NULL)
+-		return -EINVAL;
+-
+-	if (gelf_getehdr(elf, &ehdr) == NULL)
+-		return -EINVAL;
+-
+-	if (elf_section_by_name(elf, &ehdr, &shdr, ".eh_frame", NULL) &&
+-	    shdr.sh_type == SHT_PROGBITS) {
+-		pf->cfi = dwarf_getcfi_elf(elf);
+-	} else {
+-		pf->cfi = dwarf_getcfi(dbg->dbg);
+-	}
+-#endif
+-
+ 	off = 0;
+ 	pf->lcache = intlist__new(NULL);
+ 	if (!pf->lcache)
+@@ -1108,6 +1087,39 @@ found:
+ 	return ret;
+ }
+ 
++/* Find probe points from debuginfo */
++static int debuginfo__find_probes(struct debuginfo *dbg,
++				  struct probe_finder *pf)
++{
++	int ret = 0;
++
++#if _ELFUTILS_PREREQ(0, 142)
++	Elf *elf;
++	GElf_Ehdr ehdr;
++	GElf_Shdr shdr;
++
++	if (pf->cfi_eh || pf->cfi_dbg)
++		return debuginfo__find_probe_location(dbg, pf);
++
++	/* Get the call frame information from this dwarf */
++	elf = dwarf_getelf(dbg->dbg);
++	if (elf == NULL)
++		return -EINVAL;
++
++	if (gelf_getehdr(elf, &ehdr) == NULL)
++		return -EINVAL;
++
++	if (elf_section_by_name(elf, &ehdr, &shdr, ".eh_frame", NULL) &&
++	    shdr.sh_type == SHT_PROGBITS)
++		pf->cfi_eh = dwarf_getcfi_elf(elf);
++
++	pf->cfi_dbg = dwarf_getcfi(dbg->dbg);
++#endif
++
++	ret = debuginfo__find_probe_location(dbg, pf);
++	return ret;
++}
++
+ struct local_vars_finder {
+ 	struct probe_finder *pf;
+ 	struct perf_probe_arg *args;
+diff --git a/tools/perf/util/probe-finder.h b/tools/perf/util/probe-finder.h
+index bed82716e1b4..0aec7704e395 100644
+--- a/tools/perf/util/probe-finder.h
++++ b/tools/perf/util/probe-finder.h
+@@ -76,7 +76,10 @@ struct probe_finder {
+ 
+ 	/* For variable searching */
+ #if _ELFUTILS_PREREQ(0, 142)
+-	Dwarf_CFI		*cfi;		/* Call Frame Information */
++	/* Call Frame Information from .eh_frame */
++	Dwarf_CFI		*cfi_eh;
++	/* Call Frame Information from .debug_frame */
++	Dwarf_CFI		*cfi_dbg;
+ #endif
+ 	Dwarf_Op		*fb_ops;	/* Frame base attribute */
+ 	struct perf_probe_arg	*pvar;		/* Current target variable */
+-- 
+2.5.0
