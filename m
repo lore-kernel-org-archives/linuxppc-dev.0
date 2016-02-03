@@ -1,21 +1,16 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D66441A0220
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 09:20:29 +1100 (AEDT)
-Subject: Re: commit 9178ba294b6839eeff1a91bed95515d783f3ee6c an A-Eon Tabor
- Board
-To: Julian Margetson <runaway@candw.ms>
-References: <56B1C97A.9010807@candw.ms> <56B26689.8060905@suse.de>
- <56B27BEE.9090503@candw.ms>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-From: Alexander Graf <agraf@suse.de>
-Message-ID: <56B27D26.5080507@suse.de>
-Date: Wed, 3 Feb 2016 23:20:22 +0100
-MIME-Version: 1.0
-In-Reply-To: <56B27BEE.9090503@candw.ms>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id D3E341A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 09:34:38 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/8xx: CONFIG_DEBUG_PAGEALLOC requires ITLBmiss for
+ kernel addresses
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20160203223426.60C681A2446@localhost.localdomain>
+Date: Wed,  3 Feb 2016 23:34:21 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,43 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When CONFIG_DEBUG_PAGEALLOC is activated, the initial TLB mapping gets
+flushed to track accesses to wrong areas. Therefore, kernel addresses
+will also generate ITLB misses.
 
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/head_8xx.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On 02/03/2016 11:15 PM, Julian Margetson wrote:
-> On 2/3/2016 4:43 PM, Alexander Graf wrote:
->>
->>
->> On 02/03/2016 10:33 AM, Julian Margetson wrote:
->>> Resending as it was attached to and old thread relating to a 
->>> different motherboard.
->>>
->>> On 2/2/2016 9:54 AM, Julian Margetson wrote:
->>>>
->>>> Commit 9178ba294b6839eeff1a91bed95515d783f3ee6c prevents building 
->>>> of kernel 4.1 branch on A-Eon Tabor Board.
->>>>
->>>> CC arch/powerpc/math-emu/fsqrt.o
->>>> arch/powerpc/platforms/85xx/tabor.c:194:2: error: unknown field 
->>>> ‘power_off’ specified in initializer
->>
->> I can't seem to find that file in Linux upstream?
->>
->>
->> Alex
->>
->>
->>
->
-> It may have been discontinued as the patches used were maintained 
-> along with patches for the (Varisys)  A-Eon Cyrus board
-> which is officially supported from kernel 4.4.
->
-> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=c383ee84e1d575b09d167185d15df24bde25eb15 
->
-
-I don't quite understand how an internal API change in Linux breaking 
-random external patches is a bug? Either your code is upstream or it can 
-break on every git commit done upstream.
-
-
-Alex
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 78c1eba..e629e28 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -329,7 +329,7 @@ InstructionTLBMiss:
+ 	/* If we are faulting a kernel address, we have to use the
+ 	 * kernel page tables.
+ 	 */
+-#ifdef CONFIG_MODULES
++#if defined(CONFIG_MODULES) || defined (CONFIG_DEBUG_PAGEALLOC)
+ 	/* Only modules will cause ITLB Misses as we always
+ 	 * pin the first 8MB of kernel memory */
+ 	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
+-- 
+2.1.0
