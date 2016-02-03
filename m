@@ -1,17 +1,22 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 4D74E1A0245
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 09:54:46 +1100 (AEDT)
-Message-Id: <dcab2a0be0b92940fcef3c9e8218b5870e5d2e1f.1454538980.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1454538974.git.christophe.leroy@c-s.fr>
-References: <cover.1454538974.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 23/23] powerpc32: Remove one insn in mulhdu
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed,  3 Feb 2016 23:54:42 +0100 (CET)
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7BB4A1A0340
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 10:00:06 +1100 (AEDT)
+Subject: Re: commit 9178ba294b6839eeff1a91bed95515d783f3ee6c an A-Eon Tabor
+ Board
+To: Julian Margetson <runaway@candw.ms>
+References: <56B1C97A.9010807@candw.ms> <56B26689.8060905@suse.de>
+ <56B27BEE.9090503@candw.ms> <56B27D26.5080507@suse.de>
+ <56B28509.2080303@candw.ms>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+From: Alexander Graf <agraf@suse.de>
+Message-ID: <56B2866A.40202@suse.de>
+Date: Wed, 3 Feb 2016 23:59:54 +0100
+MIME-Version: 1.0
+In-Reply-To: <56B28509.2080303@candw.ms>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,44 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove one instruction in mulhdu
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
-v2: new
-v3: no change
-v4: no change
-v5: no change
 
- arch/powerpc/kernel/misc_32.S | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+On 02/03/2016 11:54 PM, Julian Margetson wrote:
+> On 2/3/2016 6:20 PM, Alexander Graf wrote:
+>>
+>>
+>> On 02/03/2016 11:15 PM, Julian Margetson wrote:
+>>> On 2/3/2016 4:43 PM, Alexander Graf wrote:
+>>>>
+>>>>
+>>>> On 02/03/2016 10:33 AM, Julian Margetson wrote:
+>>>>> Resending as it was attached to and old thread relating to a 
+>>>>> different motherboard.
+>>>>>
+>>>>> On 2/2/2016 9:54 AM, Julian Margetson wrote:
+>>>>>>
+>>>>>> Commit 9178ba294b6839eeff1a91bed95515d783f3ee6c prevents building 
+>>>>>> of kernel 4.1 branch on A-Eon Tabor Board.
+>>>>>>
+>>>>>> CC arch/powerpc/math-emu/fsqrt.o
+>>>>>> arch/powerpc/platforms/85xx/tabor.c:194:2: error: unknown field 
+>>>>>> ‘power_off’ specified in initializer
+>>>>
+>>>> I can't seem to find that file in Linux upstream?
+>>>>
+>>>>
+>>>> Alex
+>>>>
+>>>>
+>>>>
+>>>
+>>> It may have been discontinued as the patches used were maintained 
+>>> along with patches for the (Varisys)  A-Eon Cyrus board
+>>> which is officially supported from kernel 4.4.
+>>>
+>>> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=c383ee84e1d575b09d167185d15df24bde25eb15 
+>>>
+>>
+>> I don't quite understand how an internal API change in Linux breaking 
+>> random external patches is a bug? Either your code is upstream or it 
+>> can break on every git commit done upstream.
+>>
+>>
+>> Alex
+>>
+>>
+>>
+>
+> Sorry I am relatively new at this.
+> If I manage to pinpoint a problem on my powerpc machines I report it . 
+> Most of them so far have indeed been bugs.
+> The random external patches were done by person with far greater 
+> competence than me who are no longer in the picture.
+> Any  guidance would be greatly  appreciated.
 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 3ec5a22..bf5160f 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -91,17 +91,16 @@ _GLOBAL(mulhdu)
- 	addc	r7,r0,r7
- 	addze	r4,r4
- 1:	beqlr	cr1		/* all done if high part of A is 0 */
--	mr	r10,r3
- 	mullw	r9,r3,r5
--	mulhwu	r3,r3,r5
-+	mulhwu	r10,r3,r5
- 	beq	2f
--	mullw	r0,r10,r6
--	mulhwu	r8,r10,r6
-+	mullw	r0,r3,r6
-+	mulhwu	r8,r3,r6
- 	addc	r7,r0,r7
- 	adde	r4,r4,r8
--	addze	r3,r3
-+	addze	r10,r10
- 2:	addc	r4,r4,r9
--	addze	r3,r3
-+	addze	r3,r10
- 	blr
- 
- /*
--- 
-2.1.0
+I think the most important step really is to upstream board support, 
+otherwise things will continue to fall apart for sure.
+
+As for the exact breakage you saw, just remove the line and put a line like
+
+   pm_power_off = tabor_power_off;
+
+in your board probe function in tabor.c.
+
+
+Alex
