@@ -1,18 +1,17 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 2B3351A025E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 09:54:29 +1100 (AEDT)
-Message-Id: <fbf9227031f338d788c2a8cfc0e3b209a23503cc.1454538978.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 4FEFE1A022E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 09:54:31 +1100 (AEDT)
+Message-Id: <59bd0cb31204c68d15a8d7a3df3dfbf8412a546d.1454538978.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1454538974.git.christophe.leroy@c-s.fr>
 References: <cover.1454538974.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 15/23] powerpc/8xx: remove special handling of CPU6 errata
- in set_dec()
+Subject: [PATCH v5 16/23] powerpc/8xx: rewrite set_context() in C
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed,  3 Feb 2016 23:54:25 +0100 (CET)
+Date: Wed,  3 Feb 2016 23:54:27 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,8 +21,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CPU6 ERRATA is now handled directly in mtspr(), so we can use the
-standard set_dec() fonction in all cases.
+There is no real need to have set_context() in assembly.
+Now that we have mtspr() handling CPU6 ERRATA directly, we
+can rewrite set_context() in C language for easier maintenance.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
@@ -32,67 +32,106 @@ v3: no change
 v4: no change
 v5: no change
 
- arch/powerpc/include/asm/time.h |  6 +-----
- arch/powerpc/kernel/head_8xx.S  | 18 ------------------
- 2 files changed, 1 insertion(+), 23 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 44 ------------------------------------------
+ arch/powerpc/mm/8xx_mmu.c      | 34 ++++++++++++++++++++++++++++++++
+ 2 files changed, 34 insertions(+), 44 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index 2d7109a..1092fdd 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -31,8 +31,6 @@ extern void tick_broadcast_ipi_handler(void);
- 
- extern void generic_calibrate_decr(void);
- 
--extern void set_dec_cpu6(unsigned int val);
--
- /* Some sane defaults: 125 MHz timebase, 1GHz processor */
- extern unsigned long ppc_proc_freq;
- #define DEFAULT_PROC_FREQ	(DEFAULT_TB_FREQ * 8)
-@@ -166,14 +164,12 @@ static inline void set_dec(int val)
- {
- #if defined(CONFIG_40x)
- 	mtspr(SPRN_PIT, val);
--#elif defined(CONFIG_8xx_CPU6)
--	set_dec_cpu6(val - 1);
- #else
- #ifndef CONFIG_BOOKE
- 	--val;
- #endif
- 	mtspr(SPRN_DEC, val);
--#endif /* not 40x or 8xx_CPU6 */
-+#endif /* not 40x */
- }
- 
- static inline unsigned long tb_ticks_since(unsigned long tstamp)
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index a268cf4..637f8e9 100644
+index 637f8e9..bb2b657 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -1011,24 +1011,6 @@ _GLOBAL(set_context)
- 	SYNC
- 	blr
+@@ -968,50 +968,6 @@ initial_mmu:
  
--#ifdef CONFIG_8xx_CPU6
--/* It's here because it is unique to the 8xx.
-- * It is important we get called with interrupts disabled.  I used to
-- * do that, but it appears that all code that calls this already had
-- * interrupt disabled.
+ 
+ /*
+- * Set up to use a given MMU context.
+- * r3 is context number, r4 is PGD pointer.
+- *
+- * We place the physical address of the new task page directory loaded
+- * into the MMU base register, and set the ASID compare register with
+- * the new "context."
 - */
--	.globl	set_dec_cpu6
--set_dec_cpu6:
--	lis	r7, cpu6_errata_word@h
--	ori	r7, r7, cpu6_errata_word@l
--	li	r4, 0x2c00
--	stw	r4, 8(r7)
--	lwz	r4, 8(r7)
--        mtspr   22, r3		/* Update Decrementer */
--	SYNC
--	blr
+-_GLOBAL(set_context)
+-
+-#ifdef CONFIG_BDI_SWITCH
+-	/* Context switch the PTE pointer for the Abatron BDI2000.
+-	 * The PGDIR is passed as second argument.
+-	 */
+-	lis	r5, KERNELBASE@h
+-	lwz	r5, 0xf0(r5)
+-	stw	r4, 0x4(r5)
 -#endif
 -
- /*
+-	/* Register M_TW will contain base address of level 1 table minus the
+-	 * lower part of the kernel PGDIR base address, so that all accesses to
+-	 * level 1 table are done relative to lower part of kernel PGDIR base
+-	 * address.
+-	 */
+-	li	r5, (swapper_pg_dir-PAGE_OFFSET)@l
+-	sub	r4, r4, r5
+-	tophys	(r4, r4)
+-#ifdef CONFIG_8xx_CPU6
+-	lis	r6, cpu6_errata_word@h
+-	ori	r6, r6, cpu6_errata_word@l
+-	li	r7, 0x3f80
+-	stw	r7, 12(r6)
+-	lwz	r7, 12(r6)
+-#endif
+-	mtspr	SPRN_M_TW, r4		/* Update pointeur to level 1 table */
+-#ifdef CONFIG_8xx_CPU6
+-	li	r7, 0x3380
+-	stw	r7, 12(r6)
+-	lwz	r7, 12(r6)
+-#endif
+-	mtspr	SPRN_M_CASID, r3	/* Update context */
+-	SYNC
+-	blr
+-
+-/*
   * We put a few things here that have to be page-aligned.
   * This stuff goes at the beginning of the data segment,
+  * which is page-aligned.
+diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
+index 6965575..8701e4d 100644
+--- a/arch/powerpc/mm/8xx_mmu.c
++++ b/arch/powerpc/mm/8xx_mmu.c
+@@ -147,3 +147,37 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	memblock_set_current_limit(min_t(u64, first_memblock_size,
+ 					 initial_memory_size));
+ }
++
++/*
++ * Set up to use a given MMU context.
++ * id is context number, pgd is PGD pointer.
++ *
++ * We place the physical address of the new task page directory loaded
++ * into the MMU base register, and set the ASID compare register with
++ * the new "context."
++ */
++void set_context(unsigned long id, pgd_t *pgd)
++{
++	s16 offset = (s16)(__pa(swapper_pg_dir));
++
++#ifdef CONFIG_BDI_SWITCH
++	pgd_t	**ptr = *(pgd_t ***)(KERNELBASE + 0xf0);
++
++	/* Context switch the PTE pointer for the Abatron BDI2000.
++	 * The PGDIR is passed as second argument.
++	 */
++	*(ptr + 1) = pgd;
++#endif
++
++	/* Register M_TW will contain base address of level 1 table minus the
++	 * lower part of the kernel PGDIR base address, so that all accesses to
++	 * level 1 table are done relative to lower part of kernel PGDIR base
++	 * address.
++	 */
++	mtspr(SPRN_M_TW, __pa(pgd) - offset);
++
++	/* Update context */
++	mtspr(SPRN_M_CASID, id);
++	/* sync */
++	mb();
++}
 -- 
 2.1.0
