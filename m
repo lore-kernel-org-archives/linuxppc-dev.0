@@ -1,18 +1,18 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 33C731A026E
+ by lists.ozlabs.org (Postfix) with ESMTP id 7C5AC1A0232
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 09:54:04 +1100 (AEDT)
-Message-Id: <47a323ce96f3d4ef4afe38746f7ec3456c494351.1454538974.git.christophe.leroy@c-s.fr>
+Message-Id: <7628f02c47443f08006a45c27ea4c66d251f2ab7.1454538974.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1454538974.git.christophe.leroy@c-s.fr>
 References: <cover.1454538974.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 04/23] powerpc/8xx: move setup_initial_memory_limit() into
- 8xx_mmu.c
+Subject: [PATCH v5 05/23] powerpc32: Fix pte_offset_kernel() to return NULL
+ for bad pages
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed,  3 Feb 2016 23:53:57 +0100 (CET)
+Date: Wed,  3 Feb 2016 23:53:59 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,71 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now we have a 8xx specific .c file for that so put it in there
-as other powerpc variants do
+The fixmap related functions try to map kernel pages that are
+already mapped through Large TLBs. pte_offset_kernel() has to
+return NULL for LTLBs, otherwise the caller will try to access
+level 2 table which doesn't exist
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v2: no change
-v3: no change
+v3: new
 v4: no change
 v5: no change
 
- arch/powerpc/mm/8xx_mmu.c | 17 +++++++++++++++++
- arch/powerpc/mm/init_32.c | 19 -------------------
- 2 files changed, 17 insertions(+), 19 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pgtable.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index 2d42745..a84f5eb 100644
---- a/arch/powerpc/mm/8xx_mmu.c
-+++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -81,3 +81,20 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
- 
- 	return mapped;
- }
-+
-+void setup_initial_memory_limit(phys_addr_t first_memblock_base,
-+				phys_addr_t first_memblock_size)
-+{
-+	/* We don't currently support the first MEMBLOCK not mapping 0
-+	 * physical on those processors
-+	 */
-+	BUG_ON(first_memblock_base != 0);
-+
-+#ifdef CONFIG_PIN_TLB
-+	/* 8xx can only access 24MB at the moment */
-+	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
-+#else
-+	/* 8xx can only access 8MB at the moment */
-+	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
-+#endif
-+}
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index a10be66..1a18e4b 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -193,22 +193,3 @@ void __init MMU_init(void)
- 	/* Shortly after that, the entire linear mapping will be available */
- 	memblock_set_current_limit(lowmem_end_addr);
- }
--
--#ifdef CONFIG_8xx /* No 8xx specific .c file to put that in ... */
--void setup_initial_memory_limit(phys_addr_t first_memblock_base,
--				phys_addr_t first_memblock_size)
--{
--	/* We don't currently support the first MEMBLOCK not mapping 0
--	 * physical on those processors
--	 */
--	BUG_ON(first_memblock_base != 0);
--
--#ifdef CONFIG_PIN_TLB
--	/* 8xx can only access 24MB at the moment */
--	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
--#else
--	/* 8xx can only access 8MB at the moment */
--	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
--#endif
--}
--#endif /* CONFIG_8xx */
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index c82cbf5..e201600 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -309,7 +309,8 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+ #define pte_index(address)		\
+ 	(((address) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1))
+ #define pte_offset_kernel(dir, addr)	\
+-	((pte_t *) pmd_page_vaddr(*(dir)) + pte_index(addr))
++	(pmd_bad(*(dir)) ? NULL : (pte_t *)pmd_page_vaddr(*(dir)) + \
++				  pte_index(addr))
+ #define pte_offset_map(dir, addr)		\
+ 	((pte_t *) kmap_atomic(pmd_page(*(dir))) + pte_index(addr))
+ #define pte_unmap(pte)		kunmap_atomic(pte)
 -- 
 2.1.0
