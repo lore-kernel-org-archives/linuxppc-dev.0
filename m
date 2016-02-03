@@ -1,24 +1,24 @@
 Return-Path: <b.zolnierkie@samsung.com>
-Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
+Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CED3A1A0519
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 03:05:35 +1100 (AEDT)
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout1.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id D01F21A051F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 03:05:45 +1100 (AEDT)
+Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O1Z033I3AWK5Q20@mailout1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 04 Feb 2016 00:55:32 +0900 (KST)
+ with ESMTP id <0O1Z02V1SAWU2F00@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 04 Feb 2016 00:55:42 +0900 (KST)
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 To: linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
  b.zolnierkie@samsung.com
-Subject: [RFT PATCH] powerpc: convert pseries_defconfig to use libata PATA
+Subject: [RFT PATCH] powerpc: convert storcenter_defconfig to use libata PATA
  drivers
-Date: Wed, 03 Feb 2016 16:50:29 +0100
-Message-id: <1454514630-29269-23-git-send-email-b.zolnierkie@samsung.com>
+Date: Wed, 03 Feb 2016 16:50:30 +0100
+Message-id: <1454514630-29269-24-git-send-email-b.zolnierkie@samsung.com>
 In-reply-to: <1454514630-29269-1-git-send-email-b.zolnierkie@samsung.com>
 References: <1454514630-29269-1-git-send-email-b.zolnierkie@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,7 +43,7 @@ in use:
 
 * having duplicate drivers for same hardware confuses users
 
-This patch converts pseries_defconfig to use libata PATA
+This patch converts storcenter_defconfig to use libata PATA
 drivers.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
@@ -51,31 +51,25 @@ Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Build tested only.
 If you have affected hardware please test.  Thank you.
 
- arch/powerpc/configs/pseries_defconfig | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ arch/powerpc/configs/storcenter_defconfig | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 36871a4..9b1bc2a 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -89,10 +89,6 @@ CONFIG_BLK_DEV_NBD=m
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=65536
- CONFIG_VIRTIO_BLK=m
+diff --git a/arch/powerpc/configs/storcenter_defconfig b/arch/powerpc/configs/storcenter_defconfig
+index b5db7df..adf7d26 100644
+--- a/arch/powerpc/configs/storcenter_defconfig
++++ b/arch/powerpc/configs/storcenter_defconfig
+@@ -37,12 +37,11 @@ CONFIG_NFTL_RW=y
+ CONFIG_MTD_CFI=y
+ CONFIG_MTD_CFI_AMDSTD=y
+ CONFIG_MTD_PHYSMAP=y
 -CONFIG_IDE=y
--CONFIG_BLK_DEV_IDECD=y
--CONFIG_BLK_DEV_GENERIC=y
--CONFIG_BLK_DEV_AMD74XX=y
+-CONFIG_BLK_DEV_VIA82CXXX=y
+-CONFIG_SCSI=y
  CONFIG_BLK_DEV_SD=y
- CONFIG_CHR_DEV_ST=y
  CONFIG_BLK_DEV_SR=y
-@@ -119,7 +115,8 @@ CONFIG_SCSI_DH_RDAC=m
- CONFIG_SCSI_DH_ALUA=m
- CONFIG_ATA=y
- CONFIG_SATA_AHCI=y
--# CONFIG_ATA_SFF is not set
-+CONFIG_PATA_AMD=y
-+CONFIG_ATA_GENERIC=y
+ CONFIG_SCSI_SPI_ATTRS=y
++CONFIG_ATA=y
++CONFIG_PATA_VIA=y
  CONFIG_MD=y
  CONFIG_BLK_DEV_MD=y
  CONFIG_MD_LINEAR=y
