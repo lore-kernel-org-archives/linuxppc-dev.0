@@ -1,35 +1,36 @@
 Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 225C21A0C3C
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2503C1A0C3D
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 10:29:19 +1100 (AEDT)
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
  Wed, 3 Feb 2016 16:29:18 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 50A3319D804E
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id DF24D19D803F
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 16:17:14 -0700 (MST)
 Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u13NTF9n25428014
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u13NTFcB27787352
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Feb 2016 16:29:15 -0700
 Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
  by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u13NTEIu029871
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Feb 2016 16:29:14 -0700
+ u13NTFBG029901
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Feb 2016 16:29:15 -0700
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 To: JBottomley@odin.com
 Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  nfont@linux.vnet.ibm.com, brking@linux.vnet.ibm.com, hare@suse.de,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: [PATCH 4/6] ibmvscsi: Use of_root to access OF device tree root node
-Date: Wed,  3 Feb 2016 17:28:32 -0600
-Message-Id: <1454542114-1797-5-git-send-email-tyreld@linux.vnet.ibm.com>
+Subject: [PATCH 5/6] ibmvscsi: Remove unsupported host config MAD and sysfs
+ interface
+Date: Wed,  3 Feb 2016 17:28:33 -0600
+Message-Id: <1454542114-1797-6-git-send-email-tyreld@linux.vnet.ibm.com>
 In-Reply-To: <1454542114-1797-1-git-send-email-tyreld@linux.vnet.ibm.com>
 References: <1454542114-1797-1-git-send-email-tyreld@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,50 +42,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The root node of the OF device tree is exported as of_root. No need
-to look up the root by path name. Instead just get a reference
-directly via of_root.
+A VIOSRP_HOST_CONFIG_TYPE management datagram (MAD) has existed in
+the code for some time. From what information I've gathered from
+Brian King this was likely implemented on the host side in a SLES 9
+based VIOS, which is no longer supported anywhere. Further, it is
+not defined in PAPR or supported by any AIX based VIOS.
+
+Treating as bit rot and removing the sysfs interface and associated
+host config code accordingly.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 ---
- drivers/scsi/ibmvscsi/ibmvscsi.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvscsi.c | 78 ----------------------------------------
+ drivers/scsi/ibmvscsi/viosrp.h   |  7 ----
+ 2 files changed, 85 deletions(-)
 
 diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index 7e51615..47cfe33 100644
+index 47cfe33..a2b8db1 100644
 --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
 +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -248,25 +248,23 @@ static void ibmvscsi_task(void *data)
- 
- static void gather_partition_info(void)
- {
--	struct device_node *rootdn;
--
- 	const char *ppartition_name;
- 	const __be32 *p_number_ptr;
- 
- 	/* Retrieve information about this partition */
--	rootdn = of_find_node_by_path("/");
--	if (!rootdn) {
-+	if (!of_root)
- 		return;
--	}
- 
--	ppartition_name = of_get_property(rootdn, "ibm,partition-name", NULL);
-+	of_node_get(of_root);
-+
-+	ppartition_name = of_get_property(of_root, "ibm,partition-name", NULL);
- 	if (ppartition_name)
- 		strncpy(partition_name, ppartition_name,
- 				sizeof(partition_name));
--	p_number_ptr = of_get_property(rootdn, "ibm,partition-no", NULL);
-+	p_number_ptr = of_get_property(of_root, "ibm,partition-no", NULL);
- 	if (p_number_ptr)
- 		partition_number = of_read_number(p_number_ptr, 1);
--	of_node_put(rootdn);
-+	of_node_put(of_root);
+@@ -1853,62 +1853,6 @@ static void ibmvscsi_handle_crq(struct viosrp_crq *crq,
  }
  
- static void set_adapter_info(struct ibmvscsi_host_data *hostdata)
+ /**
+- * ibmvscsi_get_host_config: Send the command to the server to get host
+- * configuration data.  The data is opaque to us.
+- */
+-static int ibmvscsi_do_host_config(struct ibmvscsi_host_data *hostdata,
+-				   unsigned char *buffer, int length)
+-{
+-	struct viosrp_host_config *host_config;
+-	struct srp_event_struct *evt_struct;
+-	unsigned long flags;
+-	dma_addr_t addr;
+-	int rc;
+-
+-	evt_struct = get_event_struct(&hostdata->pool);
+-	if (!evt_struct) {
+-		dev_err(hostdata->dev, "couldn't allocate event for HOST_CONFIG!\n");
+-		return -1;
+-	}
+-
+-	init_event_struct(evt_struct,
+-			  sync_completion,
+-			  VIOSRP_MAD_FORMAT,
+-			  info_timeout);
+-
+-	host_config = &evt_struct->iu.mad.host_config;
+-
+-	/* The transport length field is only 16-bit */
+-	length = min(0xffff, length);
+-
+-	/* Set up a lun reset SRP command */
+-	memset(host_config, 0x00, sizeof(*host_config));
+-	host_config->common.type = cpu_to_be32(VIOSRP_HOST_CONFIG_TYPE);
+-	host_config->common.length = cpu_to_be16(length);
+-	addr = dma_map_single(hostdata->dev, buffer, length, DMA_BIDIRECTIONAL);
+-
+-	if (dma_mapping_error(hostdata->dev, addr)) {
+-		if (!firmware_has_feature(FW_FEATURE_CMO))
+-			dev_err(hostdata->dev,
+-			        "dma_mapping error getting host config\n");
+-		free_event_struct(&hostdata->pool, evt_struct);
+-		return -1;
+-	}
+-
+-	host_config->buffer = cpu_to_be64(addr);
+-
+-	init_completion(&evt_struct->comp);
+-	spin_lock_irqsave(hostdata->host->host_lock, flags);
+-	rc = ibmvscsi_send_srp_event(evt_struct, hostdata, info_timeout * 2);
+-	spin_unlock_irqrestore(hostdata->host->host_lock, flags);
+-	if (rc == 0)
+-		wait_for_completion(&evt_struct->comp);
+-	dma_unmap_single(hostdata->dev, addr, length, DMA_BIDIRECTIONAL);
+-
+-	return rc;
+-}
+-
+-/**
+  * ibmvscsi_slave_configure: Set the "allow_restart" flag for each disk.
+  * @sdev:	struct scsi_device device to configure
+  *
+@@ -2090,27 +2034,6 @@ static struct device_attribute ibmvscsi_host_os_type = {
+ 	.show = show_host_os_type,
+ };
+ 
+-static ssize_t show_host_config(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct Scsi_Host *shost = class_to_shost(dev);
+-	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
+-
+-	/* returns null-terminated host config data */
+-	if (ibmvscsi_do_host_config(hostdata, buf, PAGE_SIZE) == 0)
+-		return strlen(buf);
+-	else
+-		return 0;
+-}
+-
+-static struct device_attribute ibmvscsi_host_config = {
+-	.attr = {
+-		 .name = "config",
+-		 .mode = S_IRUGO,
+-		 },
+-	.show = show_host_config,
+-};
+-
+ static struct device_attribute *ibmvscsi_attrs[] = {
+ 	&ibmvscsi_host_vhost_loc,
+ 	&ibmvscsi_host_vhost_name,
+@@ -2119,7 +2042,6 @@ static struct device_attribute *ibmvscsi_attrs[] = {
+ 	&ibmvscsi_host_partition_number,
+ 	&ibmvscsi_host_mad_version,
+ 	&ibmvscsi_host_os_type,
+-	&ibmvscsi_host_config,
+ 	NULL
+ };
+ 
+diff --git a/drivers/scsi/ibmvscsi/viosrp.h b/drivers/scsi/ibmvscsi/viosrp.h
+index da9bb29..04bae63 100644
+--- a/drivers/scsi/ibmvscsi/viosrp.h
++++ b/drivers/scsi/ibmvscsi/viosrp.h
+@@ -96,7 +96,6 @@ enum viosrp_mad_types {
+ 	VIOSRP_EMPTY_IU_TYPE = 0x01,
+ 	VIOSRP_ERROR_LOG_TYPE = 0x02,
+ 	VIOSRP_ADAPTER_INFO_TYPE = 0x03,
+-	VIOSRP_HOST_CONFIG_TYPE = 0x04,
+ 	VIOSRP_CAPABILITIES_TYPE = 0x05,
+ 	VIOSRP_ENABLE_FAST_FAIL = 0x08,
+ };
+@@ -162,11 +161,6 @@ struct viosrp_adapter_info {
+ 	__be64 buffer;
+ };
+ 
+-struct viosrp_host_config {
+-	struct mad_common common;
+-	__be64 buffer;
+-};
+-
+ struct viosrp_fast_fail {
+ 	struct mad_common common;
+ };
+@@ -204,7 +198,6 @@ union mad_iu {
+ 	struct viosrp_empty_iu empty_iu;
+ 	struct viosrp_error_log error_log;
+ 	struct viosrp_adapter_info adapter_info;
+-	struct viosrp_host_config host_config;
+ 	struct viosrp_fast_fail fast_fail;
+ 	struct viosrp_capabilities capabilities;
+ };
 -- 
 2.5.0
