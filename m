@@ -2,13 +2,13 @@ Return-Path: <b.zolnierkie@samsung.com>
 Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D91F31A02BD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 03:02:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C53001A0313
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 03:02:49 +1100 (AEDT)
 Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
  by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O1Z02V0CARK2F00@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 04 Feb 2016 00:52:33 +0900 (KST)
+ with ESMTP id <0O1Z02V0GARY2F00@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 04 Feb 2016 00:52:46 +0900 (KST)
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 To: linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -16,10 +16,10 @@ To: linuxppc-dev@lists.ozlabs.org,
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
  b.zolnierkie@samsung.com, Scott Wood <oss@buserror.net>,
  Kumar Gala <galak@kernel.crashing.org>
-Subject: [RFT PATCH] powerpc/85xx: convert tqm8541_defconfig to use libata PATA
+Subject: [RFT PATCH] powerpc/85xx: convert tqm8555_defconfig to use libata PATA
  drivers
-Date: Wed, 03 Feb 2016 16:50:12 +0100
-Message-id: <1454514630-29269-6-git-send-email-b.zolnierkie@samsung.com>
+Date: Wed, 03 Feb 2016 16:50:13 +0100
+Message-id: <1454514630-29269-7-git-send-email-b.zolnierkie@samsung.com>
 In-reply-to: <1454514630-29269-1-git-send-email-b.zolnierkie@samsung.com>
 References: <1454514630-29269-1-git-send-email-b.zolnierkie@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,7 +44,7 @@ in use:
 
 * having duplicate drivers for same hardware confuses users
 
-This patch converts tqm8541_defconfig to use libata PATA
+This patch converts tqm8555_defconfig to use libata PATA
 drivers.
 
 Cc: Scott Wood <oss@buserror.net>
@@ -54,13 +54,13 @@ Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Build tested only.
 If you have affected hardware please test.  Thank you.
 
- arch/powerpc/configs/85xx/tqm8541_defconfig | 7 ++++---
+ arch/powerpc/configs/85xx/tqm8555_defconfig | 7 ++++---
  1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/configs/85xx/tqm8541_defconfig b/arch/powerpc/configs/85xx/tqm8541_defconfig
-index bb402b3..c9b0028 100644
---- a/arch/powerpc/configs/85xx/tqm8541_defconfig
-+++ b/arch/powerpc/configs/85xx/tqm8541_defconfig
+diff --git a/arch/powerpc/configs/85xx/tqm8555_defconfig b/arch/powerpc/configs/85xx/tqm8555_defconfig
+index 02a931d..3d9c1c0d 100644
+--- a/arch/powerpc/configs/85xx/tqm8555_defconfig
++++ b/arch/powerpc/configs/85xx/tqm8555_defconfig
 @@ -30,9 +30,10 @@ CONFIG_MTD_CFI_AMDSTD=y
  CONFIG_BLK_DEV_LOOP=y
  CONFIG_BLK_DEV_RAM=y
