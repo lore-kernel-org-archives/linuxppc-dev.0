@@ -1,24 +1,24 @@
 Return-Path: <b.zolnierkie@samsung.com>
-Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
+Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CDD5F1A02EA
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 03:03:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F1E641A0370
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 03:03:28 +1100 (AEDT)
 Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout3.samsung.com
+ by mailout1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O1Z01ZF0ASQRW30@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 04 Feb 2016 00:53:14 +0900 (KST)
+ with ESMTP id <0O1Z007EAAT1VK10@mailout1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 04 Feb 2016 00:53:25 +0900 (KST)
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 To: linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
  b.zolnierkie@samsung.com
-Subject: [RFT PATCH] powerpc/86xx: convert gef_ppc9a_defconfig to use libata
+Subject: [RFT PATCH] powerpc/86xx: convert gef_sbc310_defconfig to use libata
  PATA drivers
-Date: Wed, 03 Feb 2016 16:50:15 +0100
-Message-id: <1454514630-29269-9-git-send-email-b.zolnierkie@samsung.com>
+Date: Wed, 03 Feb 2016 16:50:16 +0100
+Message-id: <1454514630-29269-10-git-send-email-b.zolnierkie@samsung.com>
 In-reply-to: <1454514630-29269-1-git-send-email-b.zolnierkie@samsung.com>
 References: <1454514630-29269-1-git-send-email-b.zolnierkie@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,7 +43,7 @@ in use:
 
 * having duplicate drivers for same hardware confuses users
 
-This patch converts gef_ppc9a_defconfig to use libata PATA
+This patch converts gef_sbc310_defconfig to use libata PATA
 drivers.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
@@ -51,14 +51,14 @@ Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Build tested only.
 If you have affected hardware please test.  Thank you.
 
- arch/powerpc/configs/86xx/gef_ppc9a_defconfig | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/configs/86xx/gef_sbc310_defconfig | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/configs/86xx/gef_ppc9a_defconfig b/arch/powerpc/configs/86xx/gef_ppc9a_defconfig
-index 9792a2c..ca06080 100644
---- a/arch/powerpc/configs/86xx/gef_ppc9a_defconfig
-+++ b/arch/powerpc/configs/86xx/gef_ppc9a_defconfig
-@@ -76,13 +76,12 @@ CONFIG_BLK_DEV_NBD=m
+diff --git a/arch/powerpc/configs/86xx/gef_sbc310_defconfig b/arch/powerpc/configs/86xx/gef_sbc310_defconfig
+index cadc366..2efd871 100644
+--- a/arch/powerpc/configs/86xx/gef_sbc310_defconfig
++++ b/arch/powerpc/configs/86xx/gef_sbc310_defconfig
+@@ -76,14 +76,12 @@ CONFIG_BLK_DEV_NBD=m
  CONFIG_BLK_DEV_RAM=y
  CONFIG_BLK_DEV_RAM_SIZE=131072
  CONFIG_DS1682=y
@@ -68,7 +68,8 @@ index 9792a2c..ca06080 100644
  CONFIG_CHR_DEV_ST=y
  CONFIG_BLK_DEV_SR=y
  CONFIG_ATA=y
- CONFIG_SATA_SIL=y
+ CONFIG_SATA_SIL24=y
+-# CONFIG_ATA_SFF is not set
 +CONFIG_PATA_PCMCIA=y
  CONFIG_NETDEVICES=y
  CONFIG_BONDING=m
