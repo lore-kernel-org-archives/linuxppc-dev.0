@@ -1,17 +1,21 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 960C41A0228
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 09:54:24 +1100 (AEDT)
-Message-Id: <357db4416f1ebd7113d5366933322710054f5a12.1454538977.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1454538974.git.christophe.leroy@c-s.fr>
-References: <cover.1454538974.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 13/23] powerpc/8xx: Add missing SPRN defines into reg_8xx.h
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed,  3 Feb 2016 23:54:21 +0100 (CET)
+Return-Path: <runaway@candw.ms>
+Received: from smtp687.redcondor.net (smtp687.redcondor.net [208.80.206.87])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B17831A0226
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 09:54:25 +1100 (AEDT)
+Subject: Re: commit 9178ba294b6839eeff1a91bed95515d783f3ee6c an A-Eon Tabor
+ Board
+To: Alexander Graf <agraf@suse.de>
+References: <56B1C97A.9010807@candw.ms> <56B26689.8060905@suse.de>
+ <56B27BEE.9090503@candw.ms> <56B27D26.5080507@suse.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+From: Julian Margetson <runaway@candw.ms>
+Message-ID: <56B28509.2080303@candw.ms>
+Date: Wed, 3 Feb 2016 18:54:01 -0400
+MIME-Version: 1.0
+In-Reply-To: <56B27D26.5080507@suse.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,67 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add missing SPRN defines into reg_8xx.h
-Some of them are defined in mmu-8xx.h, so we include mmu-8xx.h in
-reg_8xx.h, for that we remove references to PAGE_SHIFT in mmu-8xx.h
-to have it self sufficient, as includers of reg_8xx.h don't all
-include asm/page.h
+On 2/3/2016 6:20 PM, Alexander Graf wrote:
+>
+>
+> On 02/03/2016 11:15 PM, Julian Margetson wrote:
+>> On 2/3/2016 4:43 PM, Alexander Graf wrote:
+>>>
+>>>
+>>> On 02/03/2016 10:33 AM, Julian Margetson wrote:
+>>>> Resending as it was attached to and old thread relating to a 
+>>>> different motherboard.
+>>>>
+>>>> On 2/2/2016 9:54 AM, Julian Margetson wrote:
+>>>>>
+>>>>> Commit 9178ba294b6839eeff1a91bed95515d783f3ee6c prevents building 
+>>>>> of kernel 4.1 branch on A-Eon Tabor Board.
+>>>>>
+>>>>> CC arch/powerpc/math-emu/fsqrt.o
+>>>>> arch/powerpc/platforms/85xx/tabor.c:194:2: error: unknown field 
+>>>>> ‘power_off’ specified in initializer
+>>>
+>>> I can't seem to find that file in Linux upstream?
+>>>
+>>>
+>>> Alex
+>>>
+>>>
+>>>
+>>
+>> It may have been discontinued as the patches used were maintained 
+>> along with patches for the (Varisys)  A-Eon Cyrus board
+>> which is officially supported from kernel 4.4.
+>>
+>> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=c383ee84e1d575b09d167185d15df24bde25eb15 
+>>
+>
+> I don't quite understand how an internal API change in Linux breaking 
+> random external patches is a bug? Either your code is upstream or it 
+> can break on every git commit done upstream.
+>
+>
+> Alex
+>
+>
+>
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
-v2: no change
-v3: We just add missing ones, don't move anymore the ones from mmu-8xx.h
-v4: no change
-v5: no change
+Sorry I am relatively new at this.
+If I manage to pinpoint a problem on my powerpc machines I report it . 
+Most of them so far have indeed been bugs.
+The random external patches were done by person with far greater 
+competence than me who are no longer in the picture.
+Any  guidance would be greatly  appreciated .
 
- arch/powerpc/include/asm/mmu-8xx.h |  4 ++--
- arch/powerpc/include/asm/reg_8xx.h | 11 +++++++++++
- 2 files changed, 13 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
-index f05500a..0a566f1 100644
---- a/arch/powerpc/include/asm/mmu-8xx.h
-+++ b/arch/powerpc/include/asm/mmu-8xx.h
-@@ -171,9 +171,9 @@ typedef struct {
- } mm_context_t;
- #endif /* !__ASSEMBLY__ */
- 
--#if (PAGE_SHIFT == 12)
-+#if defined(CONFIG_PPC_4K_PAGES)
- #define mmu_virtual_psize	MMU_PAGE_4K
--#elif (PAGE_SHIFT == 14)
-+#elif defined(CONFIG_PPC_16K_PAGES)
- #define mmu_virtual_psize	MMU_PAGE_16K
- #else
- #error "Unsupported PAGE_SIZE"
-diff --git a/arch/powerpc/include/asm/reg_8xx.h b/arch/powerpc/include/asm/reg_8xx.h
-index e8ea346..0f71c81 100644
---- a/arch/powerpc/include/asm/reg_8xx.h
-+++ b/arch/powerpc/include/asm/reg_8xx.h
-@@ -4,6 +4,8 @@
- #ifndef _ASM_POWERPC_REG_8xx_H
- #define _ASM_POWERPC_REG_8xx_H
- 
-+#include <asm/mmu-8xx.h>
-+
- /* Cache control on the MPC8xx is provided through some additional
-  * special purpose registers.
-  */
-@@ -14,6 +16,15 @@
- #define SPRN_DC_ADR	569	/* Address needed for some commands */
- #define SPRN_DC_DAT	570	/* Read-only data register */
- 
-+/* Misc Debug */
-+#define SPRN_DPDR	630
-+#define SPRN_MI_CAM	816
-+#define SPRN_MI_RAM0	817
-+#define SPRN_MI_RAM1	818
-+#define SPRN_MD_CAM	824
-+#define SPRN_MD_RAM0	825
-+#define SPRN_MD_RAM1	826
-+
- /* Commands.  Only the first few are available to the instruction cache.
- */
- #define	IDC_ENABLE	0x02000000	/* Cache enable */
--- 
-2.1.0
+Julian
