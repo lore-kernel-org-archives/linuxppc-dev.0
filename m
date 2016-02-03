@@ -1,14 +1,14 @@
 Return-Path: <b.zolnierkie@samsung.com>
-Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
+Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EEFF61A02C0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 03:01:50 +1100 (AEDT)
-Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout2.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3E4401A02AF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 03:02:05 +1100 (AEDT)
+Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O1Z035B6AQ7IN00@mailout2.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 04 Feb 2016 00:51:47 +0900 (KST)
+ with ESMTP id <0O1Z007DNAQOVK10@mailout1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 04 Feb 2016 00:52:00 +0900 (KST)
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 To: linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -16,9 +16,10 @@ To: linuxppc-dev@lists.ozlabs.org,
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
  b.zolnierkie@samsung.com, Scott Wood <oss@buserror.net>,
  Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/85xx: disable IDE subsystem in ksi8560_defconfig
-Date: Wed, 03 Feb 2016 16:50:08 +0100
-Message-id: <1454514630-29269-2-git-send-email-b.zolnierkie@samsung.com>
+Subject: [RFT PATCH] powerpc/85xx: convert mpc85xx_cds_defconfig to use libata
+ PATA drivers
+Date: Wed, 03 Feb 2016 16:50:09 +0100
+Message-id: <1454514630-29269-3-git-send-email-b.zolnierkie@samsung.com>
 In-reply-to: <1454514630-29269-1-git-send-email-b.zolnierkie@samsung.com>
 References: <1454514630-29269-1-git-send-email-b.zolnierkie@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,28 +31,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch disables deprecated IDE subsystem in ksi8560_defconfig
-(no IDE host drivers are selected in this config so there is no valid
-reason to enable IDE subsystem itself).
+IDE subsystem has been deprecated since 2009 and the majority
+(if not all) of Linux distributions have switched to use
+libata for ATA support exclusively.  However there are still
+some users (mostly old or/and embedded non-x86 systems) that
+have not converted from using IDE subsystem to libata PATA
+drivers.  This doesn't seem to be good thing in the long-term
+for Linux as while there is less and less PATA systems left
+in use:
+
+* testing efforts are divided between two subsystems
+
+* having duplicate drivers for same hardware confuses users
+
+This patch converts mpc85xx_cds_defconfig to use libata PATA
+drivers.
 
 Cc: Scott Wood <oss@buserror.net>
 Cc: Kumar Gala <galak@kernel.crashing.org>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- arch/powerpc/configs/85xx/ksi8560_defconfig | 1 -
- 1 file changed, 1 deletion(-)
+Build tested only.
+If you have affected hardware please test.  Thank you.
 
-diff --git a/arch/powerpc/configs/85xx/ksi8560_defconfig b/arch/powerpc/configs/85xx/ksi8560_defconfig
-index 3be85c5..6f753a7 100644
---- a/arch/powerpc/configs/85xx/ksi8560_defconfig
-+++ b/arch/powerpc/configs/85xx/ksi8560_defconfig
-@@ -34,7 +34,6 @@ CONFIG_MTD_PHYSMAP_OF=y
+ arch/powerpc/configs/85xx/mpc85xx_cds_defconfig | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/configs/85xx/mpc85xx_cds_defconfig b/arch/powerpc/configs/85xx/mpc85xx_cds_defconfig
+index ecb0c3b..acc5342 100644
+--- a/arch/powerpc/configs/85xx/mpc85xx_cds_defconfig
++++ b/arch/powerpc/configs/85xx/mpc85xx_cds_defconfig
+@@ -30,9 +30,9 @@ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
  CONFIG_BLK_DEV_LOOP=y
  CONFIG_BLK_DEV_RAM=y
  CONFIG_BLK_DEV_RAM_SIZE=32768
 -CONFIG_IDE=y
+-CONFIG_BLK_DEV_GENERIC=y
+-CONFIG_BLK_DEV_VIA82CXXX=y
++CONFIG_ATA=y
++CONFIG_PATA_VIA=y
++CONFIG_ATA_GENERIC=y
  CONFIG_NETDEVICES=y
- CONFIG_FS_ENET=y
- # CONFIG_FS_ENET_HAS_SCC is not set
+ CONFIG_GIANFAR=y
+ CONFIG_E1000=y
 -- 
 1.9.1
