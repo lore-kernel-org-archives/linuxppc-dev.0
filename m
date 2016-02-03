@@ -1,18 +1,18 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 7C5AC1A0232
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 09:54:04 +1100 (AEDT)
-Message-Id: <7628f02c47443f08006a45c27ea4c66d251f2ab7.1454538974.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id BE3E71A0279
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 09:54:05 +1100 (AEDT)
+Message-Id: <91b7c33f869b13a6bbcf59cc76b3a950e825cc71.1454538975.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1454538974.git.christophe.leroy@c-s.fr>
 References: <cover.1454538974.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 05/23] powerpc32: Fix pte_offset_kernel() to return NULL
- for bad pages
+Subject: [PATCH v5 06/23] powerpc32: refactor x_mapped_by_bats() and
+ x_mapped_by_tlbcam() together
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed,  3 Feb 2016 23:53:59 +0100 (CET)
+Date: Wed,  3 Feb 2016 23:54:01 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,33 +22,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The fixmap related functions try to map kernel pages that are
-already mapped through Large TLBs. pte_offset_kernel() has to
-return NULL for LTLBs, otherwise the caller will try to access
-level 2 table which doesn't exist
+x_mapped_by_bats() and x_mapped_by_tlbcam() serve the same kind of
+purpose, and are never defined at the same time.
+So rename them x_block_mapped() and define them in the relevant
+places
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v3: new
+v2: no change
+v3: Functions are mutually exclusive so renamed iaw Scott comment instead of grouping into a single function
 v4: no change
 v5: no change
 
- arch/powerpc/include/asm/nohash/32/pgtable.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/fsl_booke_mmu.c |  4 ++--
+ arch/powerpc/mm/mmu_decl.h      | 10 ++++++++++
+ arch/powerpc/mm/pgtable_32.c    | 44 ++++++-----------------------------------
+ arch/powerpc/mm/ppc_mmu_32.c    |  4 ++--
+ 4 files changed, 20 insertions(+), 42 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index c82cbf5..e201600 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -309,7 +309,8 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- #define pte_index(address)		\
- 	(((address) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1))
- #define pte_offset_kernel(dir, addr)	\
--	((pte_t *) pmd_page_vaddr(*(dir)) + pte_index(addr))
-+	(pmd_bad(*(dir)) ? NULL : (pte_t *)pmd_page_vaddr(*(dir)) + \
-+				  pte_index(addr))
- #define pte_offset_map(dir, addr)		\
- 	((pte_t *) kmap_atomic(pmd_page(*(dir))) + pte_index(addr))
- #define pte_unmap(pte)		kunmap_atomic(pte)
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index f3afe3d..5d45341 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -75,7 +75,7 @@ unsigned long tlbcam_sz(int idx)
+ /*
+  * Return PA for this VA if it is mapped by a CAM, or 0
+  */
+-phys_addr_t v_mapped_by_tlbcam(unsigned long va)
++phys_addr_t v_block_mapped(unsigned long va)
+ {
+ 	int b;
+ 	for (b = 0; b < tlbcam_index; ++b)
+@@ -87,7 +87,7 @@ phys_addr_t v_mapped_by_tlbcam(unsigned long va)
+ /*
+  * Return VA for a given PA or 0 if not mapped
+  */
+-unsigned long p_mapped_by_tlbcam(phys_addr_t pa)
++unsigned long p_block_mapped(phys_addr_t pa)
+ {
+ 	int b;
+ 	for (b = 0; b < tlbcam_index; ++b)
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 7faeb9f..40dd5d3 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -158,3 +158,13 @@ struct tlbcam {
+ 	u32	MAS7;
+ };
+ #endif
++
++#if defined(CONFIG_6xx) || defined(CONFIG_FSL_BOOKE)
++/* 6xx have BATS */
++/* FSL_BOOKE have TLBCAM */
++phys_addr_t v_block_mapped(unsigned long va);
++unsigned long p_block_mapped(phys_addr_t pa);
++#else
++static inline phys_addr_t v_block_mapped(unsigned long va) { return 0; }
++static inline unsigned long p_block_mapped(phys_addr_t pa) { return 0; }
++#endif
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 7692d1b..db0d35e 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -41,32 +41,8 @@ unsigned long ioremap_base;
+ unsigned long ioremap_bot;
+ EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
+ 
+-#ifdef CONFIG_6xx
+-#define HAVE_BATS	1
+-#endif
+-
+-#if defined(CONFIG_FSL_BOOKE)
+-#define HAVE_TLBCAM	1
+-#endif
+-
+ extern char etext[], _stext[];
+ 
+-#ifdef HAVE_BATS
+-extern phys_addr_t v_mapped_by_bats(unsigned long va);
+-extern unsigned long p_mapped_by_bats(phys_addr_t pa);
+-#else /* !HAVE_BATS */
+-#define v_mapped_by_bats(x)	(0UL)
+-#define p_mapped_by_bats(x)	(0UL)
+-#endif /* HAVE_BATS */
+-
+-#ifdef HAVE_TLBCAM
+-extern phys_addr_t v_mapped_by_tlbcam(unsigned long va);
+-extern unsigned long p_mapped_by_tlbcam(phys_addr_t pa);
+-#else /* !HAVE_TLBCAM */
+-#define v_mapped_by_tlbcam(x)	(0UL)
+-#define p_mapped_by_tlbcam(x)	(0UL)
+-#endif /* HAVE_TLBCAM */
+-
+ #define PGDIR_ORDER	(32 + PGD_T_LOG2 - PGDIR_SHIFT)
+ 
+ #ifndef CONFIG_PPC_4K_PAGES
+@@ -228,19 +204,10 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
+ 
+ 	/*
+ 	 * Is it already mapped?  Perhaps overlapped by a previous
+-	 * BAT mapping.  If the whole area is mapped then we're done,
+-	 * otherwise remap it since we want to keep the virt addrs for
+-	 * each request contiguous.
+-	 *
+-	 * We make the assumption here that if the bottom and top
+-	 * of the range we want are mapped then it's mapped to the
+-	 * same virt address (and this is contiguous).
+-	 *  -- Cort
++	 * mapping.
+ 	 */
+-	if ((v = p_mapped_by_bats(p)) /*&& p_mapped_by_bats(p+size-1)*/ )
+-		goto out;
+-
+-	if ((v = p_mapped_by_tlbcam(p)))
++	v = p_block_mapped(p);
++	if (v)
+ 		goto out;
+ 
+ 	if (slab_is_available()) {
+@@ -278,7 +245,8 @@ void iounmap(volatile void __iomem *addr)
+ 	 * If mapped by BATs then there is nothing to do.
+ 	 * Calling vfree() generates a benign warning.
+ 	 */
+-	if (v_mapped_by_bats((unsigned long)addr)) return;
++	if (v_block_mapped((unsigned long)addr))
++		return;
+ 
+ 	if (addr > high_memory && (unsigned long) addr < ioremap_bot)
+ 		vunmap((void *) (PAGE_MASK & (unsigned long)addr));
+@@ -403,7 +371,7 @@ static int __change_page_attr(struct page *page, pgprot_t prot)
+ 	BUG_ON(PageHighMem(page));
+ 	address = (unsigned long)page_address(page);
+ 
+-	if (v_mapped_by_bats(address) || v_mapped_by_tlbcam(address))
++	if (v_block_mapped(address))
+ 		return 0;
+ 	if (!get_pteptr(&init_mm, address, &kpte, &kpmd))
+ 		return -EINVAL;
+diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
+index 6b2f3e4..2a049fb 100644
+--- a/arch/powerpc/mm/ppc_mmu_32.c
++++ b/arch/powerpc/mm/ppc_mmu_32.c
+@@ -49,7 +49,7 @@ struct batrange {		/* stores address ranges mapped by BATs */
+ /*
+  * Return PA for this VA if it is mapped by a BAT, or 0
+  */
+-phys_addr_t v_mapped_by_bats(unsigned long va)
++phys_addr_t v_block_mapped(unsigned long va)
+ {
+ 	int b;
+ 	for (b = 0; b < 4; ++b)
+@@ -61,7 +61,7 @@ phys_addr_t v_mapped_by_bats(unsigned long va)
+ /*
+  * Return VA for a given PA or 0 if not mapped
+  */
+-unsigned long p_mapped_by_bats(phys_addr_t pa)
++unsigned long p_block_mapped(phys_addr_t pa)
+ {
+ 	int b;
+ 	for (b = 0; b < 4; ++b)
 -- 
 2.1.0
