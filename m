@@ -1,38 +1,38 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <viresh.kumar@linaro.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CCBD51A0FE3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 10:29:20 +1100 (AEDT)
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 3 Feb 2016 16:29:19 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 621DD3E4003E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Feb 2016 16:29:16 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u13NTGFa22675466
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Feb 2016 16:29:16 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u13NTFHl029932
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Feb 2016 16:29:16 -0700
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-To: JBottomley@odin.com
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- nfont@linux.vnet.ibm.com, brking@linux.vnet.ibm.com, hare@suse.de,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: [PATCH 6/6] ibmvscsi: Add endian conversions to sysfs attribute show
- functions
-Date: Wed,  3 Feb 2016 17:28:34 -0600
-Message-Id: <1454542114-1797-7-git-send-email-tyreld@linux.vnet.ibm.com>
-In-Reply-To: <1454542114-1797-1-git-send-email-tyreld@linux.vnet.ibm.com>
-References: <1454542114-1797-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 91FA01A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 12:51:09 +1100 (AEDT)
+Received: from mail-pf0-x232.google.com (mail-pf0-x232.google.com
+ [IPv6:2607:f8b0:400e:c00::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id EE298140CC4
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Feb 2016 12:51:08 +1100 (AEDT)
+Received: by mail-pf0-x232.google.com with SMTP id w123so26339024pfb.0
+ for <linuxppc-dev@ozlabs.org>; Wed, 03 Feb 2016 17:51:07 -0800 (PST)
+Date: Thu, 4 Feb 2016 07:21:03 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org,
+ shreyas@linux.vnet.ibm.com, bsingharora@gmail.com,
+ mpe@ellerman.id.au, linux-api@vger.kernel.org
+Subject: Re: [PATCH v8 6/6] cpufreq: powernv: Add sysfs attributes to show
+ throttle stats
+Message-ID: <20160204015103.GM3469@vireshk>
+References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1454442102-1229-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20160203082700.GZ31828@vireshk>
+ <56B1BD71.2050403@linux.vnet.ibm.com>
+ <20160203090357.GA31828@vireshk>
+ <20160203120258.GA32294@in.ibm.com> <20160203140600.GG3469@vireshk>
+ <56B229C9.4010909@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <56B229C9.4010909@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,48 +42,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The values returned by the show functions for the host os_type,
-mad_version, and partition_number attributes get their values
-directly from the madapter_info struct whose associated fields are
-__be32 typed. Added endian conversion to ensure these values are
-sane on LE platforms.
+On 03-02-16, 21:54, Shilpasri G Bhat wrote:
+> 
+> > 
+> > And now that you have mentioned that to me, why shouldn't this stats
+> > directory be moved to debugfs ? :)
+> > 
+> > We are never going to perform a store here, isn't it ? And is just for
+> > information, nothing more.
+> > 
+> 
+> I would very much like to keep the throttle stats either in cpuX/cpufreq or
+> global cpufreq directory as these are populated by the platform cpufreq driver.
+> 
+> Today we don't have a requirement to a perform a store operation on these files
+> but we can have it in the future.
 
-Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
----
- drivers/scsi/ibmvscsi/ibmvscsi.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+No issues.
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index a2b8db1..3621ac5 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -1983,7 +1983,7 @@ static ssize_t show_host_partition_number(struct device *dev,
- 	int len;
- 
- 	len = snprintf(buf, PAGE_SIZE, "%d\n",
--		       hostdata->madapter_info.partition_number);
-+		       be32_to_cpu(hostdata->madapter_info.partition_number));
- 	return len;
- }
- 
-@@ -2003,7 +2003,7 @@ static ssize_t show_host_mad_version(struct device *dev,
- 	int len;
- 
- 	len = snprintf(buf, PAGE_SIZE, "%d\n",
--		       hostdata->madapter_info.mad_version);
-+		       be32_to_cpu(hostdata->madapter_info.mad_version));
- 	return len;
- }
- 
-@@ -2022,7 +2022,8 @@ static ssize_t show_host_os_type(struct device *dev,
- 	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
- 	int len;
- 
--	len = snprintf(buf, PAGE_SIZE, "%d\n", hostdata->madapter_info.os_type);
-+	len = snprintf(buf, PAGE_SIZE, "%d\n",
-+		       be32_to_cpu(hostdata->madapter_info.os_type));
- 	return len;
- }
- 
 -- 
-2.5.0
+viresh
