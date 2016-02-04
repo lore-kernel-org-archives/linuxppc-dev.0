@@ -1,21 +1,23 @@
-Return-Path: <andy.shevchenko@gmail.com>
-Received: from mail-yw0-x22c.google.com (mail-yw0-x22c.google.com
- [IPv6:2607:f8b0:4002:c05::22c])
+Return-Path: <keescook@google.com>
+Received: from mail-ig0-x231.google.com (mail-ig0-x231.google.com
+ [IPv6:2607:f8b0:4001:c05::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 549A81A0220
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 09:43:54 +1100 (AEDT)
-Received: by mail-yw0-x22c.google.com with SMTP id g127so36735847ywf.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Feb 2016 14:43:54 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 044421A0220
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 09:49:00 +1100 (AEDT)
+Received: by mail-ig0-x231.google.com with SMTP id 5so2138420igt.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Feb 2016 14:48:59 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1454619643-14444-2-git-send-email-keescook@chromium.org>
+Sender: keescook@google.com
+In-Reply-To: <CAHp75Vc37Q6GtReEZwbiYUeZqVh7iwDr8dk6Xg4kq0sKWi=41Q@mail.gmail.com>
 References: <1454619643-14444-1-git-send-email-keescook@chromium.org>
  <1454619643-14444-2-git-send-email-keescook@chromium.org>
-Date: Fri, 5 Feb 2016 00:43:52 +0200
-Message-ID: <CAHp75Vc37Q6GtReEZwbiYUeZqVh7iwDr8dk6Xg4kq0sKWi=41Q@mail.gmail.com>
+ <CAHp75Vc37Q6GtReEZwbiYUeZqVh7iwDr8dk6Xg4kq0sKWi=41Q@mail.gmail.com>
+Date: Thu, 4 Feb 2016 14:48:57 -0800
+Message-ID: <CAGXu5jJXekvEy8BjqzGG1Jk7oGFzkap=ivOZ6+kFyiqbTeuzJw@mail.gmail.com>
 Subject: Re: [PATCH v2 1/4] lib: move strtobool to kstrtobool
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-To: Kees Cook <keescook@chromium.org>
+From: Kees Cook <keescook@chromium.org>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>,
  Rasmus Villemoes <linux@rasmusvillemoes.dk>,
  Daniel Borkmann <daniel@iogearbox.net>,
@@ -25,7 +27,8 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>,
  Michael Ellerman <mpe@ellerman.id.au>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
  Martin Schwidefsky <schwidefsky@de.ibm.com>, "x86@kernel.org" <x86@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
  "open list:TI WILINK WIRELES..." <linux-wireless@vger.kernel.org>,
  netdev <netdev@vger.kernel.org>, linux-cifs@vger.kernel.org,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
@@ -39,162 +42,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 4, 2016 at 11:00 PM, Kees Cook <keescook@chromium.org> wrote:
-> Create the kstrtobool_from_user helper and moves strtobool logic into
-> the new kstrtobool (matching all the other kstrto* functions). Provides
-> an inline wrapper for existing strtobool callers.
+On Thu, Feb 4, 2016 at 2:43 PM, Andy Shevchenko
+<andy.shevchenko@gmail.com> wrote:
+> On Thu, Feb 4, 2016 at 11:00 PM, Kees Cook <keescook@chromium.org> wrote:
+>> Create the kstrtobool_from_user helper and moves strtobool logic into
+>> the new kstrtobool (matching all the other kstrto* functions). Provides
+>> an inline wrapper for existing strtobool callers.
+>>
+>> Signed-off-by: Kees Cook <keescook@chromium.org>
 >
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-
-One minor below.
-
-> ---
->  include/linux/kernel.h |  3 +++
->  include/linux/string.h |  6 +++++-
->  lib/kstrtox.c          | 35 +++++++++++++++++++++++++++++++++++
->  lib/string.c           | 29 -----------------------------
->  4 files changed, 43 insertions(+), 30 deletions(-)
+> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 >
-> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> index f31638c6e873..cdc25f47a23f 100644
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -357,6 +357,7 @@ int __must_check kstrtou16(const char *s, unsigned int base, u16 *res);
->  int __must_check kstrtos16(const char *s, unsigned int base, s16 *res);
->  int __must_check kstrtou8(const char *s, unsigned int base, u8 *res);
->  int __must_check kstrtos8(const char *s, unsigned int base, s8 *res);
-> +int __must_check kstrtobool(const char *s, unsigned int base, bool *res);
->
->  int __must_check kstrtoull_from_user(const char __user *s, size_t count, unsigned int base, unsigned long long *res);
->  int __must_check kstrtoll_from_user(const char __user *s, size_t count, unsigned int base, long long *res);
-> @@ -368,6 +369,8 @@ int __must_check kstrtou16_from_user(const char __user *s, size_t count, unsigne
->  int __must_check kstrtos16_from_user(const char __user *s, size_t count, unsigned int base, s16 *res);
->  int __must_check kstrtou8_from_user(const char __user *s, size_t count, unsigned int base, u8 *res);
->  int __must_check kstrtos8_from_user(const char __user *s, size_t count, unsigned int base, s8 *res);
+> One minor below.
 
-> +int __must_check kstrtobool_from_user(const char __user *s, size_t count,
-> +                                     unsigned int base, bool *res);
-
-We already are using long lines here, perhaps do the same?
+Thanks!
 
 >
->  static inline int __must_check kstrtou64_from_user(const char __user *s, size_t count, unsigned int base, u64 *res)
->  {
-> diff --git a/include/linux/string.h b/include/linux/string.h
-> index 9eebc66d957a..d2fb21b1081d 100644
-> --- a/include/linux/string.h
-> +++ b/include/linux/string.h
-> @@ -128,7 +128,11 @@ extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
->  extern void argv_free(char **argv);
+>> ---
+>>  include/linux/kernel.h |  3 +++
+>>  include/linux/string.h |  6 +++++-
+>>  lib/kstrtox.c          | 35 +++++++++++++++++++++++++++++++++++
+>>  lib/string.c           | 29 -----------------------------
+>>  4 files changed, 43 insertions(+), 30 deletions(-)
+>>
+>> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+>> index f31638c6e873..cdc25f47a23f 100644
+>> --- a/include/linux/kernel.h
+>> +++ b/include/linux/kernel.h
+>> @@ -357,6 +357,7 @@ int __must_check kstrtou16(const char *s, unsigned int base, u16 *res);
+>>  int __must_check kstrtos16(const char *s, unsigned int base, s16 *res);
+>>  int __must_check kstrtou8(const char *s, unsigned int base, u8 *res);
+>>  int __must_check kstrtos8(const char *s, unsigned int base, s8 *res);
+>> +int __must_check kstrtobool(const char *s, unsigned int base, bool *res);
+>>
+>>  int __must_check kstrtoull_from_user(const char __user *s, size_t count, unsigned int base, unsigned long long *res);
+>>  int __must_check kstrtoll_from_user(const char __user *s, size_t count, unsigned int base, long long *res);
+>> @@ -368,6 +369,8 @@ int __must_check kstrtou16_from_user(const char __user *s, size_t count, unsigne
+>>  int __must_check kstrtos16_from_user(const char __user *s, size_t count, unsigned int base, s16 *res);
+>>  int __must_check kstrtou8_from_user(const char __user *s, size_t count, unsigned int base, u8 *res);
+>>  int __must_check kstrtos8_from_user(const char __user *s, size_t count, unsigned int base, s8 *res);
 >
->  extern bool sysfs_streq(const char *s1, const char *s2);
-> -extern int strtobool(const char *s, bool *res);
-> +extern int kstrtobool(const char *s, unsigned int base, bool *res);
-> +static inline int strtobool(const char *s, bool *res)
-> +{
-> +       return kstrtobool(s, 0, res);
-> +}
+>> +int __must_check kstrtobool_from_user(const char __user *s, size_t count,
+>> +                                     unsigned int base, bool *res);
 >
->  #ifdef CONFIG_BINARY_PRINTF
->  int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args);
-> diff --git a/lib/kstrtox.c b/lib/kstrtox.c
-> index 94be244e8441..e18f088704d7 100644
-> --- a/lib/kstrtox.c
-> +++ b/lib/kstrtox.c
-> @@ -321,6 +321,40 @@ int kstrtos8(const char *s, unsigned int base, s8 *res)
->  }
->  EXPORT_SYMBOL(kstrtos8);
+> We already are using long lines here, perhaps do the same?
+
+I went back and forth on that, and decided that between checkpatch
+yelling at me, and trying to be an agent of less entropy, I wrapped
+the definition. I am fine either way, though.
+
+-Kees
+
 >
-> +/**
-> + * kstrtobool - convert common user inputs into boolean values
-> + * @s: input string
-> + * @base: ignored
-> + * @res: result
-> + *
-> + * This routine returns 0 iff the first character is one of 'Yy1Nn0'.
-> + * Otherwise it will return -EINVAL.  Value pointed to by res is
-> + * updated upon finding a match.
-> + */
-> +int kstrtobool(const char *s, unsigned int base, bool *res)
-> +{
-> +       if (!s)
-> +               return -EINVAL;
-> +
-> +       switch (s[0]) {
-> +       case 'y':
-> +       case 'Y':
-> +       case '1':
-> +               *res = true;
-> +               return 0;
-> +       case 'n':
-> +       case 'N':
-> +       case '0':
-> +               *res = false;
-> +               return 0;
-> +       default:
-> +               break;
-> +       }
-> +
-> +       return -EINVAL;
-> +}
-> +EXPORT_SYMBOL(kstrtobool);
-> +
->  #define kstrto_from_user(f, g, type)                                   \
->  int f(const char __user *s, size_t count, unsigned int base, type *res)        \
->  {                                                                      \
-> @@ -345,3 +379,4 @@ kstrto_from_user(kstrtou16_from_user,       kstrtou16,      u16);
->  kstrto_from_user(kstrtos16_from_user,  kstrtos16,      s16);
->  kstrto_from_user(kstrtou8_from_user,   kstrtou8,       u8);
->  kstrto_from_user(kstrtos8_from_user,   kstrtos8,       s8);
-> +kstrto_from_user(kstrtobool_from_user, kstrtobool,     bool);
-> diff --git a/lib/string.c b/lib/string.c
-> index 0323c0d5629a..1a90db9bc6e1 100644
-> --- a/lib/string.c
-> +++ b/lib/string.c
-> @@ -630,35 +630,6 @@ bool sysfs_streq(const char *s1, const char *s2)
->  }
->  EXPORT_SYMBOL(sysfs_streq);
+>>
+>>  static inline int __must_check kstrtou64_from_user(const char __user *s, size_t count, unsigned int base, u64 *res)
+>>  {
+>> diff --git a/include/linux/string.h b/include/linux/string.h
+>> index 9eebc66d957a..d2fb21b1081d 100644
+>> --- a/include/linux/string.h
+>> +++ b/include/linux/string.h
+>> @@ -128,7 +128,11 @@ extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
+>>  extern void argv_free(char **argv);
+>>
+>>  extern bool sysfs_streq(const char *s1, const char *s2);
+>> -extern int strtobool(const char *s, bool *res);
+>> +extern int kstrtobool(const char *s, unsigned int base, bool *res);
+>> +static inline int strtobool(const char *s, bool *res)
+>> +{
+>> +       return kstrtobool(s, 0, res);
+>> +}
+>>
+>>  #ifdef CONFIG_BINARY_PRINTF
+>>  int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args);
+>> diff --git a/lib/kstrtox.c b/lib/kstrtox.c
+>> index 94be244e8441..e18f088704d7 100644
+>> --- a/lib/kstrtox.c
+>> +++ b/lib/kstrtox.c
+>> @@ -321,6 +321,40 @@ int kstrtos8(const char *s, unsigned int base, s8 *res)
+>>  }
+>>  EXPORT_SYMBOL(kstrtos8);
+>>
+>> +/**
+>> + * kstrtobool - convert common user inputs into boolean values
+>> + * @s: input string
+>> + * @base: ignored
+>> + * @res: result
+>> + *
+>> + * This routine returns 0 iff the first character is one of 'Yy1Nn0'.
+>> + * Otherwise it will return -EINVAL.  Value pointed to by res is
+>> + * updated upon finding a match.
+>> + */
+>> +int kstrtobool(const char *s, unsigned int base, bool *res)
+>> +{
+>> +       if (!s)
+>> +               return -EINVAL;
+>> +
+>> +       switch (s[0]) {
+>> +       case 'y':
+>> +       case 'Y':
+>> +       case '1':
+>> +               *res = true;
+>> +               return 0;
+>> +       case 'n':
+>> +       case 'N':
+>> +       case '0':
+>> +               *res = false;
+>> +               return 0;
+>> +       default:
+>> +               break;
+>> +       }
+>> +
+>> +       return -EINVAL;
+>> +}
+>> +EXPORT_SYMBOL(kstrtobool);
+>> +
+>>  #define kstrto_from_user(f, g, type)                                   \
+>>  int f(const char __user *s, size_t count, unsigned int base, type *res)        \
+>>  {                                                                      \
+>> @@ -345,3 +379,4 @@ kstrto_from_user(kstrtou16_from_user,       kstrtou16,      u16);
+>>  kstrto_from_user(kstrtos16_from_user,  kstrtos16,      s16);
+>>  kstrto_from_user(kstrtou8_from_user,   kstrtou8,       u8);
+>>  kstrto_from_user(kstrtos8_from_user,   kstrtos8,       s8);
+>> +kstrto_from_user(kstrtobool_from_user, kstrtobool,     bool);
+>> diff --git a/lib/string.c b/lib/string.c
+>> index 0323c0d5629a..1a90db9bc6e1 100644
+>> --- a/lib/string.c
+>> +++ b/lib/string.c
+>> @@ -630,35 +630,6 @@ bool sysfs_streq(const char *s1, const char *s2)
+>>  }
+>>  EXPORT_SYMBOL(sysfs_streq);
+>>
+>> -/**
+>> - * strtobool - convert common user inputs into boolean values
+>> - * @s: input string
+>> - * @res: result
+>> - *
+>> - * This routine returns 0 iff the first character is one of 'Yy1Nn0'.
+>> - * Otherwise it will return -EINVAL.  Value pointed to by res is
+>> - * updated upon finding a match.
+>> - */
+>> -int strtobool(const char *s, bool *res)
+>> -{
+>> -       switch (s[0]) {
+>> -       case 'y':
+>> -       case 'Y':
+>> -       case '1':
+>> -               *res = true;
+>> -               break;
+>> -       case 'n':
+>> -       case 'N':
+>> -       case '0':
+>> -               *res = false;
+>> -               break;
+>> -       default:
+>> -               return -EINVAL;
+>> -       }
+>> -       return 0;
+>> -}
+>> -EXPORT_SYMBOL(strtobool);
+>> -
+>>  #ifndef __HAVE_ARCH_MEMSET
+>>  /**
+>>   * memset - Fill a region of memory with the given value
+>> --
+>> 2.6.3
+>>
 >
-> -/**
-> - * strtobool - convert common user inputs into boolean values
-> - * @s: input string
-> - * @res: result
-> - *
-> - * This routine returns 0 iff the first character is one of 'Yy1Nn0'.
-> - * Otherwise it will return -EINVAL.  Value pointed to by res is
-> - * updated upon finding a match.
-> - */
-> -int strtobool(const char *s, bool *res)
-> -{
-> -       switch (s[0]) {
-> -       case 'y':
-> -       case 'Y':
-> -       case '1':
-> -               *res = true;
-> -               break;
-> -       case 'n':
-> -       case 'N':
-> -       case '0':
-> -               *res = false;
-> -               break;
-> -       default:
-> -               return -EINVAL;
-> -       }
-> -       return 0;
-> -}
-> -EXPORT_SYMBOL(strtobool);
-> -
->  #ifndef __HAVE_ARCH_MEMSET
->  /**
->   * memset - Fill a region of memory with the given value
+>
+>
 > --
-> 2.6.3
->
+> With Best Regards,
+> Andy Shevchenko
 
 
 
 -- 
-With Best Regards,
-Andy Shevchenko
+Kees Cook
+Chrome OS & Brillo Security
