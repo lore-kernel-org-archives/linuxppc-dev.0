@@ -1,30 +1,19 @@
-Return-Path: <b.zolnierkie@samsung.com>
-Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 004DB1A007F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 01:35:39 +1100 (AEDT)
-Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O2101VMA1VCLC70@mailout1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 04 Feb 2016 23:35:36 +0900 (KST)
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFT PATCH] powerpc: convert amigaone_defconfig to use libata PATA
- drivers
-Date: Thu, 04 Feb 2016 15:35:08 +0100
-Message-id: <2550250.nXgBuiRPBT@amdc1976>
-In-reply-to: <56B26E7F.70307@gmx.net>
-References: <1454514630-29269-1-git-send-email-b.zolnierkie@samsung.com>
- <1454514630-29269-12-git-send-email-b.zolnierkie@samsung.com>
- <56B26E7F.70307@gmx.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F1B91A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 03:15:34 +1100 (AEDT)
+From: Torsten Duwe <duwe@lst.de>
+Date: Thu, 4 Feb 2016 15:29:17 +0100
+Subject: [PATCH v7 00/10] ftrace with regs + live patching for ppc64 LE (ABI
+ v2)
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
+ Petr Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>,
+ Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
+Message-Id: <20160204161527.5F3AC692CD@newverein.lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,85 +23,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Changes since v6:
+  * include Petr's patch, on popular demand ;)
+  * move #ifdefs out of functions for readability;
+    introduce static helper functions instead.
+  * No more literal binary instructions in hex,
+    at least not added by this patch set.
+  * add compile time checker to detect the presence
+    of known-good -mprofile-kernel support.
+  * limit Kconfig / compile to the configurations really supported:
+    + (static) FTRACE with -pg
+    +  DYNAMIC_FTRACE with -pg with or without -mprofile-kernel
+       (depending on the compiler)
+    +  DYNAMIC_FTRACE_WITH_REGS only with -mprofile-kernel
+       (will error out if the compiler is broken)
 
-Hi,
+Changes since v5:
+  * extra "std r0,LRSAVE(r1)" for gcc-6
+    This makes the code compiler-agnostic.
+  * Follow Petr Mladek's suggestion to avoid
+    redefinition of HAVE_LIVEPATCH
 
-On Wednesday, February 03, 2016 10:17:51 PM Gerhard Pircher wrote:
-> Am 2016-02-03 um 16:50 schrieb Bartlomiej Zolnierkiewicz:
-> > IDE subsystem has been deprecated since 2009 and the majority
-> > (if not all) of Linux distributions have switched to use
-> > libata for ATA support exclusively.  However there are still
-> > some users (mostly old or/and embedded non-x86 systems) that
-> > have not converted from using IDE subsystem to libata PATA
-> > drivers.  This doesn't seem to be good thing in the long-term
-> > for Linux as while there is less and less PATA systems left
-> > in use:
-> > 
-> > * testing efforts are divided between two subsystems
-> > 
-> > * having duplicate drivers for same hardware confuses users
-> > 
-> > This patch converts amigaone_defconfig to use libata PATA
-> > drivers.
-> > 
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > ---
-> > Build tested only.
-> > If you have affected hardware please test.  Thank you.
-> > 
-> >  arch/powerpc/configs/amigaone_defconfig | 10 ++++------
-> >  1 file changed, 4 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/configs/amigaone_defconfig b/arch/powerpc/configs/amigaone_defconfig
-> > index 84f1b41..55a4929 100644
-> > --- a/arch/powerpc/configs/amigaone_defconfig
-> > +++ b/arch/powerpc/configs/amigaone_defconfig
-> > @@ -46,12 +46,6 @@ CONFIG_PARPORT_PC_FIFO=y
-> >  CONFIG_BLK_DEV_FD=y
-> >  CONFIG_BLK_DEV_LOOP=y
-> >  CONFIG_BLK_DEV_RAM=y
-> > -CONFIG_IDE=y
-> > -CONFIG_BLK_DEV_IDECD=y
-> > -# CONFIG_IDEPCI_PCIBUS_ORDER is not set
-> > -CONFIG_BLK_DEV_GENERIC=y
-> > -CONFIG_BLK_DEV_SIIMAGE=y
-> > -CONFIG_BLK_DEV_VIA82CXXX=y
-> >  CONFIG_SCSI=y
-> >  CONFIG_BLK_DEV_SD=y
-> >  CONFIG_CHR_DEV_ST=y
-> > @@ -62,6 +56,10 @@ CONFIG_SCSI_CONSTANTS=y
-> >  CONFIG_SCSI_SYM53C8XX_2=y
-> >  CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=0
-> >  # CONFIG_SCSI_SYM53C8XX_MMIO is not set
-> > +CONFIG_ATA=y
-> > +CONFIG_PATA_SIL680=y
-> > +CONFIG_PATA_VIA=y
-> > +CONFIG_ATA_GENERIC=y
-> >  CONFIG_NETDEVICES=y
-> >  CONFIG_VORTEX=y
-> >  CONFIG_8139CP=y
-> > 
-> Thanks for cleaning up the defconfig file!
-> 
-> libata drivers work fine on the amigaone platform (tested on all three
-> first-gen AmigaOne machines). BTW: could it be that CONFIG_ATA_SFF=y
-> and CONFIG_ATA_BMDMA=y are missing in the patch?
+Changes since v4:
+  * change comment style in entry_64.S to C89
+    (nobody is using assembler syntax comments there).
+  * the bool function restore_r2 shouldn't return 2,
+    that's a little confusing.
+  * Test whether the compiler supports -mprofile-kernel
+    and only then define CC_USING_MPROFILE_KERNEL
+  * also make the return value of klp_check_compiler_support
+    depend on that.
 
-Thank you for testing!
+Major changes since v3:
+  * the graph tracer works now.
+    It turned out the stack frame it tried to manipulate does not
+    exist at that point.
+  * changes only needed in order to support -mprofile-kernel are now
+    in a separate patch, prepended.
+  * Kconfig cleanup so this is only selectable on ppc64le.
 
-When it comes to CONFIG_ATA_SFF and CONFIG_ATA_BMDMA there is no need
-to explicitly enable them because once CONFIG_ATA is enabled they both
-are also enabled by default (they both have 'default y' in Kconfig).
 
-[ defconfig changes in the patch were obtained by:
-  - doing 'make amigaone_defconfig'
-  - changing IDE options to libata ones using 'make menuconfig'
-  - doing 'make savedefconfig'
-  - doing 'diff -u arch/powerpc/configs/amigaone_defconfig defconfig'
-  so there should be no missing options etc. ]
+Petr Mladek (1):
+  livepatch: Detect offset for the ftrace location during build
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Torsten Duwe (9):
+  ppc64 (le): prepare for -mprofile-kernel
+  ppc64le FTRACE_WITH_REGS implementation
+  ppc use ftrace_modify_all_code default
+  ppc64 ftrace_with_regs configuration variables
+  ppc64 ftrace_with_regs: spare early boot and low level
+  ppc64 ftrace: disable profiling for some functions
+  ppc64 ftrace: disable profiling for some files
+  Implement kernel live patching for ppc64le (ABIv2)
+  Enable LIVEPATCH to be configured on ppc64le and add livepatch.o if it
+    is selected.
+
+ arch/powerpc/Kconfig                        |   6 +
+ arch/powerpc/Makefile                       |  17 +++
+ arch/powerpc/gcc-mprofile-kernel-notrace.sh |  33 ++++++
+ arch/powerpc/include/asm/code-patching.h    |  24 ++++
+ arch/powerpc/include/asm/ftrace.h           |   5 +
+ arch/powerpc/include/asm/livepatch.h        |  45 ++++++++
+ arch/powerpc/kernel/Makefile                |  13 ++-
+ arch/powerpc/kernel/entry_64.S              | 169 +++++++++++++++++++++++++++-
+ arch/powerpc/kernel/ftrace.c                | 129 ++++++++++++++++-----
+ arch/powerpc/kernel/livepatch.c             |  38 +++++++
+ arch/powerpc/kernel/module_64.c             |  56 ++++++++-
+ arch/powerpc/kernel/process.c               |   2 +-
+ arch/powerpc/lib/Makefile                   |   4 +-
+ arch/powerpc/mm/fault.c                     |   2 +-
+ arch/powerpc/mm/hash_utils_64.c             |  18 +--
+ arch/powerpc/mm/hugetlbpage-hash64.c        |   2 +-
+ arch/powerpc/mm/hugetlbpage.c               |   4 +-
+ arch/powerpc/mm/mem.c                       |   2 +-
+ arch/powerpc/mm/pgtable_64.c                |   2 +-
+ arch/powerpc/mm/slb.c                       |   6 +-
+ arch/powerpc/mm/slice.c                     |   8 +-
+ arch/s390/Kconfig                           |   1 +
+ kernel/livepatch/Makefile                   |  13 +++
+ kernel/livepatch/core.c                     |  12 +-
+ kernel/livepatch/ftrace-test.c              |   6 +
+ kernel/trace/Kconfig                        |   5 +
+ scripts/recordmcount.c                      |   6 +-
+ scripts/recordmcount.h                      |  17 ++-
+ 28 files changed, 575 insertions(+), 70 deletions(-)
+ create mode 100755 arch/powerpc/gcc-mprofile-kernel-notrace.sh
+ create mode 100644 arch/powerpc/include/asm/livepatch.h
+ create mode 100644 arch/powerpc/kernel/livepatch.c
+ create mode 100644 kernel/livepatch/ftrace-test.c
+
+-- 
+1.8.5.6
