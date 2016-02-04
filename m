@@ -1,32 +1,42 @@
-Return-Path: <keescook@chromium.org>
-Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
- [IPv6:2607:f8b0:400e:c00::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 53C051A0291
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 08:01:21 +1100 (AEDT)
-Received: by mail-pf0-x22a.google.com with SMTP id o185so55787070pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Feb 2016 13:01:21 -0800 (PST)
-From: Kees Cook <keescook@chromium.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kees Cook <keescook@chromium.org>, Amitkumar Karwar <akarwar@marvell.com>,
- Nishant Sarmukadam <nishants@marvell.com>,
- Kalle Valo <kvalo@codeaurora.org>, Steve French <sfrench@samba.org>,
- linux-cifs@vger.kernel.org, Joe Perches <joe@perches.com>,
- Andy Shevchenko <andy.shevchenko@gmail.com>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/4] lib: update single-char callers of strtobool
-Date: Thu,  4 Feb 2016 13:00:41 -0800
-Message-Id: <1454619643-14444-3-git-send-email-keescook@chromium.org>
-In-Reply-To: <1454619643-14444-1-git-send-email-keescook@chromium.org>
-References: <1454619643-14444-1-git-send-email-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3B4391A0221
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 08:26:40 +1100 (AEDT)
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Thu, 4 Feb 2016 14:26:38 -0700
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C8F743E4004F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 14:26:28 -0700 (MST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u14LQSt520578502
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Feb 2016 14:26:28 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u14LQSfH025836
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Feb 2016 14:26:28 -0700
+Subject: Re: [PATCH 2/6] ibmvscsi: Add and use enums for valid CRQ header
+ values
+To: manoj@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ JBottomley@odin.com
+References: <1454542114-1797-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1454542114-1797-3-git-send-email-tyreld@linux.vnet.ibm.com>
+ <56B3ACC9.60009@linux.vnet.ibm.com>
+Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, hare@suse.de, brking@linux.vnet.ibm.com,
+ nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Message-ID: <56B3C1C1.3080804@linux.vnet.ibm.com>
+Date: Thu, 4 Feb 2016 13:25:21 -0800
+MIME-Version: 1.0
+In-Reply-To: <56B3ACC9.60009@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,244 +46,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some callers of strtobool were passing a pointer to unterminated strings.
-In preparation of adding multi-character processing to kstrtobool, update
-the callers to not pass single-character pointers, and switch to using the
-new kstrtobool_from_user helper where possible.
+On 02/04/2016 11:55 AM, Manoj Kumar wrote:
+> On 2/3/2016 5:28 PM, Tyrel Datwyler wrote:
+>> The PAPR defines four valid header values for the first byte of a
+>> CRQ message. Namely, an unused/empty message (0x00), a valid
+>> command/response entry (0x80), a valid initialization entry (0xC0),
+>> and a transport event (0xFF). Define these values as enums and use
+>> them in the code in place of their magic number equivalents.
+>>
+>> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+>> ---
+>>   drivers/scsi/ibmvscsi/ibmvscsi.c | 14 +++++++-------
+>>   drivers/scsi/ibmvscsi/viosrp.h   |  7 +++++++
+>>   2 files changed, 14 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+>> index adfef9d..176260d 100644
+>> --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
+>> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+>> @@ -182,7 +182,7 @@ static struct viosrp_crq *crq_queue_next_crq(struct crq_queue *queue)
+>>
+>>   	spin_lock_irqsave(&queue->lock, flags);
+>>   	crq = &queue->msgs[queue->cur];
+>> -	if (crq->valid & 0x80) {
+>> +	if (crq->valid & VIOSRP_CRQ_VALID) {
+> 
+> After the switch to enums, bitwise operators are a bit misleading.
+> Especially in this case since multiple values would satisfy this
+> condition: VIOSRP_CRQ_VALID, VIOSRP_CRQ_INIT and
+> VIOSRP_CRQ_TRANSPORT.
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
-Cc: Amitkumar Karwar <akarwar@marvell.com>
-Cc: Nishant Sarmukadam <nishants@marvell.com>
-Cc: Kalle Valo <kvalo@codeaurora.org>
-Cc: Steve French <sfrench@samba.org>
-Cc: linux-cifs@vger.kernel.org
----
- drivers/net/wireless/marvell/mwifiex/debugfs.c | 10 ++---
- fs/cifs/cifs_debug.c                           | 58 +++++++-------------------
- fs/cifs/cifs_debug.h                           |  2 +-
- fs/cifs/cifsfs.c                               |  6 +--
- fs/cifs/cifsglob.h                             |  4 +-
- 5 files changed, 26 insertions(+), 54 deletions(-)
+Yeah, I can see how that is confusing. Since, all three possible valid
+crq message types have the first bit set I think this was originally a
+cute hack to grab anything that was likely valid. Then in
+ibmvscsi_handle_crq() we explicitly match the full header value in a
+switch statement logging anything that turned out actually invalid.
 
-diff --git a/drivers/net/wireless/marvell/mwifiex/debugfs.c b/drivers/net/wireless/marvell/mwifiex/debugfs.c
-index 0b9c580af988..bd061b02bc04 100644
---- a/drivers/net/wireless/marvell/mwifiex/debugfs.c
-+++ b/drivers/net/wireless/marvell/mwifiex/debugfs.c
-@@ -880,14 +880,12 @@ mwifiex_reset_write(struct file *file,
- {
- 	struct mwifiex_private *priv = file->private_data;
- 	struct mwifiex_adapter *adapter = priv->adapter;
--	char cmd;
- 	bool result;
-+	int rc;
- 
--	if (copy_from_user(&cmd, ubuf, sizeof(cmd)))
--		return -EFAULT;
--
--	if (strtobool(&cmd, &result))
--		return -EINVAL;
-+	rc = kstrtobool_from_user(ubuf, count, 0, &result);
-+	if (rc)
-+		return rc;
- 
- 	if (!result)
- 		return -EINVAL;
-diff --git a/fs/cifs/cifs_debug.c b/fs/cifs/cifs_debug.c
-index 50b268483302..6ee59abcb69b 100644
---- a/fs/cifs/cifs_debug.c
-+++ b/fs/cifs/cifs_debug.c
-@@ -255,7 +255,6 @@ static const struct file_operations cifs_debug_data_proc_fops = {
- static ssize_t cifs_stats_proc_write(struct file *file,
- 		const char __user *buffer, size_t count, loff_t *ppos)
- {
--	char c;
- 	bool bv;
- 	int rc;
- 	struct list_head *tmp1, *tmp2, *tmp3;
-@@ -263,11 +262,8 @@ static ssize_t cifs_stats_proc_write(struct file *file,
- 	struct cifs_ses *ses;
- 	struct cifs_tcon *tcon;
- 
--	rc = get_user(c, buffer);
--	if (rc)
--		return rc;
--
--	if (strtobool(&c, &bv) == 0) {
-+	rc = kstrtobool_from_user(buffer, count, 0, &bv);
-+	if (rc == 0) {
- #ifdef CONFIG_CIFS_STATS2
- 		atomic_set(&totBufAllocCount, 0);
- 		atomic_set(&totSmBufAllocCount, 0);
-@@ -290,6 +286,8 @@ static ssize_t cifs_stats_proc_write(struct file *file,
- 			}
- 		}
- 		spin_unlock(&cifs_tcp_ses_lock);
-+	} else {
-+		return rc;
- 	}
- 
- 	return count;
-@@ -433,17 +431,17 @@ static int cifsFYI_proc_open(struct inode *inode, struct file *file)
- static ssize_t cifsFYI_proc_write(struct file *file, const char __user *buffer,
- 		size_t count, loff_t *ppos)
- {
--	char c;
-+	char c[2] = { '\0' };
- 	bool bv;
- 	int rc;
- 
--	rc = get_user(c, buffer);
-+	rc = get_user(c[0], buffer);
- 	if (rc)
- 		return rc;
--	if (strtobool(&c, &bv) == 0)
-+	if (strtobool(c, &bv) == 0)
- 		cifsFYI = bv;
--	else if ((c > '1') && (c <= '9'))
--		cifsFYI = (int) (c - '0'); /* see cifs_debug.h for meanings */
-+	else if ((c[0] > '1') && (c[0] <= '9'))
-+		cifsFYI = (int) (c[0] - '0'); /* see cifs_debug.h for meanings */
- 
- 	return count;
- }
-@@ -471,20 +469,12 @@ static int cifs_linux_ext_proc_open(struct inode *inode, struct file *file)
- static ssize_t cifs_linux_ext_proc_write(struct file *file,
- 		const char __user *buffer, size_t count, loff_t *ppos)
- {
--	char c;
--	bool bv;
- 	int rc;
- 
--	rc = get_user(c, buffer);
-+	rc = kstrtobool_from_user(buffer, count, 0, &linuxExtEnabled);
- 	if (rc)
- 		return rc;
- 
--	rc = strtobool(&c, &bv);
--	if (rc)
--		return rc;
--
--	linuxExtEnabled = bv;
--
- 	return count;
- }
- 
-@@ -511,20 +501,12 @@ static int cifs_lookup_cache_proc_open(struct inode *inode, struct file *file)
- static ssize_t cifs_lookup_cache_proc_write(struct file *file,
- 		const char __user *buffer, size_t count, loff_t *ppos)
- {
--	char c;
--	bool bv;
- 	int rc;
- 
--	rc = get_user(c, buffer);
-+	rc = kstrtobool_from_user(buffer, count, 0, &lookupCacheEnabled);
- 	if (rc)
- 		return rc;
- 
--	rc = strtobool(&c, &bv);
--	if (rc)
--		return rc;
--
--	lookupCacheEnabled = bv;
--
- 	return count;
- }
- 
-@@ -551,20 +533,12 @@ static int traceSMB_proc_open(struct inode *inode, struct file *file)
- static ssize_t traceSMB_proc_write(struct file *file, const char __user *buffer,
- 		size_t count, loff_t *ppos)
- {
--	char c;
--	bool bv;
- 	int rc;
- 
--	rc = get_user(c, buffer);
-+	rc = kstrtobool_from_user(buffer, count, 0, &traceSMB);
- 	if (rc)
- 		return rc;
- 
--	rc = strtobool(&c, &bv);
--	if (rc)
--		return rc;
--
--	traceSMB = bv;
--
- 	return count;
- }
- 
-@@ -622,7 +596,7 @@ static ssize_t cifs_security_flags_proc_write(struct file *file,
- 	int rc;
- 	unsigned int flags;
- 	char flags_string[12];
--	char c;
-+	char c[2] = { '\0' };
- 	bool bv;
- 
- 	if ((count < 1) || (count > 11))
-@@ -635,11 +609,11 @@ static ssize_t cifs_security_flags_proc_write(struct file *file,
- 
- 	if (count < 3) {
- 		/* single char or single char followed by null */
--		c = flags_string[0];
--		if (strtobool(&c, &bv) == 0) {
-+		c[0] = flags_string[0];
-+		if (strtobool(c, &bv) == 0) {
- 			global_secflags = bv ? CIFSSEC_MAX : CIFSSEC_DEF;
- 			return count;
--		} else if (!isdigit(c)) {
-+		} else if (!isdigit(c[0])) {
- 			cifs_dbg(VFS, "Invalid SecurityFlags: %s\n",
- 					flags_string);
- 			return -EINVAL;
-diff --git a/fs/cifs/cifs_debug.h b/fs/cifs/cifs_debug.h
-index 66cf0f9fff89..c611ca2339d7 100644
---- a/fs/cifs/cifs_debug.h
-+++ b/fs/cifs/cifs_debug.h
-@@ -25,7 +25,7 @@
- void cifs_dump_mem(char *label, void *data, int length);
- void cifs_dump_detail(void *);
- void cifs_dump_mids(struct TCP_Server_Info *);
--extern int traceSMB;		/* flag which enables the function below */
-+extern bool traceSMB;		/* flag which enables the function below */
- void dump_smb(void *, int);
- #define CIFS_INFO	0x01
- #define CIFS_RC		0x02
-diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
-index c48ca13673e3..931b446f2a44 100644
---- a/fs/cifs/cifsfs.c
-+++ b/fs/cifs/cifsfs.c
-@@ -54,10 +54,10 @@
- #endif
- 
- int cifsFYI = 0;
--int traceSMB = 0;
-+bool traceSMB;
- bool enable_oplocks = true;
--unsigned int linuxExtEnabled = 1;
--unsigned int lookupCacheEnabled = 1;
-+bool linuxExtEnabled = true;
-+bool lookupCacheEnabled = true;
- unsigned int global_secflags = CIFSSEC_DEF;
- /* unsigned int ntlmv2_support = 0; */
- unsigned int sign_CIFS_PDUs = 1;
-diff --git a/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
-index a25b2513f146..d21da9f05bae 100644
---- a/fs/cifs/cifsglob.h
-+++ b/fs/cifs/cifsglob.h
-@@ -1596,11 +1596,11 @@ GLOBAL_EXTERN atomic_t midCount;
- 
- /* Misc globals */
- GLOBAL_EXTERN bool enable_oplocks; /* enable or disable oplocks */
--GLOBAL_EXTERN unsigned int lookupCacheEnabled;
-+GLOBAL_EXTERN bool lookupCacheEnabled;
- GLOBAL_EXTERN unsigned int global_secflags;	/* if on, session setup sent
- 				with more secure ntlmssp2 challenge/resp */
- GLOBAL_EXTERN unsigned int sign_CIFS_PDUs;  /* enable smb packet signing */
--GLOBAL_EXTERN unsigned int linuxExtEnabled;/*enable Linux/Unix CIFS extensions*/
-+GLOBAL_EXTERN bool linuxExtEnabled;/*enable Linux/Unix CIFS extensions*/
- GLOBAL_EXTERN unsigned int CIFSMaxBufSize;  /* max size not including hdr */
- GLOBAL_EXTERN unsigned int cifs_min_rcv;    /* min size of big ntwrk buf pool */
- GLOBAL_EXTERN unsigned int cifs_min_small;  /* min size of small buf pool */
--- 
-2.6.3
+> 
+> If 'valid' will only have one of these four enums defined, would
+> this be better written as:
+> 
+> 	if (crq->valid != VIOSRP_CRQ_FREE)
+
+This definitely would make the logic easier to read and follow. Also,
+this would make sure any crq with an invalid header that doesn't have
+its first bit set will also be logged by the ibmvscsi_handle_crq()
+switch statement default block and not silently ignored.
+
+-Tyrel
+
+> 
+>>   		if (++queue->cur == queue->size)
+>>   			queue->cur = 0;
+>>
+>> @@ -231,7 +231,7 @@ static void ibmvscsi_task(void *data)
+>>   		/* Pull all the valid messages off the CRQ */
+>>   		while ((crq = crq_queue_next_crq(&hostdata->queue)) != NULL) {
+>>   			ibmvscsi_handle_crq(crq, hostdata);
+>> -			crq->valid = 0x00;
+>> +			crq->valid = VIOSRP_CRQ_FREE;
+>>   		}
+>>
+>>   		vio_enable_interrupts(vdev);
+>> @@ -239,7 +239,7 @@ static void ibmvscsi_task(void *data)
+>>   		if (crq != NULL) {
+>>   			vio_disable_interrupts(vdev);
+>>   			ibmvscsi_handle_crq(crq, hostdata);
+>> -			crq->valid = 0x00;
+>> +			crq->valid = VIOSRP_CRQ_FREE;
+>>   		} else {
+>>   			done = 1;
+>>   		}
+>> @@ -474,7 +474,7 @@ static int initialize_event_pool(struct event_pool *pool,
+>>   		struct srp_event_struct *evt = &pool->events[i];
+>>   		memset(&evt->crq, 0x00, sizeof(evt->crq));
+>>   		atomic_set(&evt->free, 1);
+>> -		evt->crq.valid = 0x80;
+>> +		evt->crq.valid = VIOSRP_CRQ_VALID;
+>>   		evt->crq.IU_length = cpu_to_be16(sizeof(*evt->xfer_iu));
+>>   		evt->crq.IU_data_ptr = cpu_to_be64(pool->iu_token +
+>>   			sizeof(*evt->xfer_iu) * i);
+>> @@ -1767,7 +1767,7 @@ static void ibmvscsi_handle_crq(struct viosrp_crq *crq,
+>>   	struct srp_event_struct *evt_struct =
+>>   			(__force struct srp_event_struct *)crq->IU_data_ptr;
+>>   	switch (crq->valid) {
+>> -	case 0xC0:		/* initialization */
+>> +	case VIOSRP_CRQ_INIT:		/* initialization */
+>>   		switch (crq->format) {
+>>   		case 0x01:	/* Initialization message */
+>>   			dev_info(hostdata->dev, "partner initialized\n");
+>> @@ -1791,7 +1791,7 @@ static void ibmvscsi_handle_crq(struct viosrp_crq *crq,
+>>   			dev_err(hostdata->dev, "unknown crq message type: %d\n", crq->format);
+>>   		}
+>>   		return;
+>> -	case 0xFF:	/* Hypervisor telling us the connection is closed */
+>> +	case VIOSRP_CRQ_TRANSPORT:	/* Hypervisor telling us the connection is closed */
+>>   		scsi_block_requests(hostdata->host);
+>>   		atomic_set(&hostdata->request_limit, 0);
+>>   		if (crq->format == 0x06) {
+>> @@ -1807,7 +1807,7 @@ static void ibmvscsi_handle_crq(struct viosrp_crq *crq,
+>>   			ibmvscsi_reset_host(hostdata);
+>>   		}
+>>   		return;
+>> -	case 0x80:		/* real payload */
+>> +	case VIOSRP_CRQ_VALID:		/* real payload */
+>>   		break;
+>>   	default:
+>>   		dev_err(hostdata->dev, "got an invalid message type 0x%02x\n",
+>> diff --git a/drivers/scsi/ibmvscsi/viosrp.h b/drivers/scsi/ibmvscsi/viosrp.h
+>> index d1044e9..17f2de0 100644
+>> --- a/drivers/scsi/ibmvscsi/viosrp.h
+>> +++ b/drivers/scsi/ibmvscsi/viosrp.h
+>> @@ -51,6 +51,13 @@ union srp_iu {
+>>   	u8 reserved[SRP_MAX_IU_LEN];
+>>   };
+>>
+>> +enum viosrp_crq_headers {
+>> +	VIOSRP_CRQ_FREE = 0x00,
+>> +	VIOSRP_CRQ_VALID = 0x80,
+>> +	VIOSRP_CRQ_INIT = 0xC0,
+>> +	VIOSRP_CRQ_TRANSPORT = 0xFF
+>> +};
+>> +
+>>   enum viosrp_crq_formats {
+>>   	VIOSRP_SRP_FORMAT = 0x01,
+>>   	VIOSRP_MAD_FORMAT = 0x02,
+>>
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
