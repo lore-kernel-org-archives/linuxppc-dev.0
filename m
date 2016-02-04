@@ -1,24 +1,27 @@
-Return-Path: <jthumshirn@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <takahiro.akashi@linaro.org>
+Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c00::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1E97A1A0325
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 19:45:57 +1100 (AEDT)
-Date: Thu, 4 Feb 2016 09:45:52 +0100
-From: Johannes Thumshirn <jthumshirn@suse.de>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Cc: JBottomley@odin.com, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com,
- brking@linux.vnet.ibm.com, hare@suse.de
-Subject: Re: [PATCH 6/6] ibmvscsi: Add endian conversions to sysfs attribute
- show functions
-Message-ID: <20160204084552.GY27969@c203.arch.suse.de>
-References: <1454542114-1797-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <1454542114-1797-7-git-send-email-tyreld@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C9D881A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 20:31:50 +1100 (AEDT)
+Received: by mail-pf0-x22c.google.com with SMTP id n128so38975445pfn.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Feb 2016 01:31:49 -0800 (PST)
+Subject: Re: [PATCH v6 1/9] ppc64 (le): prepare for -mprofile-kernel
+To: Torsten Duwe <duwe@lst.de>, Jiri Kosina <jikos@kernel.org>
+References: <20160125170459.14DB7692CE@newverein.lst.de>
+ <20160125170723.D2CCE692CE@newverein.lst.de> <56B1AAE5.10500@linaro.org>
+ <alpine.LNX.2.00.1602030952220.22727@cbobk.fhfr.pm>
+ <20160203112449.GA27247@lst.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
+From: AKASHI Takahiro <takahiro.akashi@linaro.org>
+Message-ID: <56B31A7C.2050803@linaro.org>
+Date: Thu, 4 Feb 2016 18:31:40 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1454542114-1797-7-git-send-email-tyreld@linux.vnet.ibm.com>
+In-Reply-To: <20160203112449.GA27247@lst.de>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,63 +31,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 03, 2016 at 05:28:34PM -0600, Tyrel Datwyler wrote:
-> The values returned by the show functions for the host os_type,
-> mad_version, and partition_number attributes get their values
-> directly from the madapter_info struct whose associated fields are
-> __be32 typed. Added endian conversion to ensure these values are
-> sane on LE platforms.
-> 
-> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> ---
->  drivers/scsi/ibmvscsi/ibmvscsi.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-> index a2b8db1..3621ac5 100644
-> --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-> @@ -1983,7 +1983,7 @@ static ssize_t show_host_partition_number(struct device *dev,
->  	int len;
->  
->  	len = snprintf(buf, PAGE_SIZE, "%d\n",
-> -		       hostdata->madapter_info.partition_number);
-> +		       be32_to_cpu(hostdata->madapter_info.partition_number));
->  	return len;
->  }
->  
-> @@ -2003,7 +2003,7 @@ static ssize_t show_host_mad_version(struct device *dev,
->  	int len;
->  
->  	len = snprintf(buf, PAGE_SIZE, "%d\n",
-> -		       hostdata->madapter_info.mad_version);
-> +		       be32_to_cpu(hostdata->madapter_info.mad_version));
->  	return len;
->  }
->  
-> @@ -2022,7 +2022,8 @@ static ssize_t show_host_os_type(struct device *dev,
->  	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
->  	int len;
->  
-> -	len = snprintf(buf, PAGE_SIZE, "%d\n", hostdata->madapter_info.os_type);
-> +	len = snprintf(buf, PAGE_SIZE, "%d\n",
-> +		       be32_to_cpu(hostdata->madapter_info.os_type));
->  	return len;
->  }
->  
-> -- 
-> 2.5.0
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Jiri, Torsten
 
-Reviewed-by: Johannes Thumshirn <jthumshirn@suse.de>
--- 
-Johannes Thumshirn                                          Storage
-jthumshirn@suse.de                                +49 911 74053 689
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Felix Imendörffer, Jane Smithard, Graham Norton
-HRB 21284 (AG Nürnberg)
-Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
+Thank you for your explanation.
+
+On 02/03/2016 08:24 PM, Torsten Duwe wrote:
+> On Wed, Feb 03, 2016 at 09:55:11AM +0100, Jiri Kosina wrote:
+>> On Wed, 3 Feb 2016, AKASHI Takahiro wrote:
+>>> those efforts, we are proposing[1] a new *generic* gcc option, -fprolog-add=N.
+>>> This option will insert N nop instructions at the beginning of each function.
+>
+>> The interesting part of the story with ppc64 is that you indeed want to
+>> create the callsite before the *most* of the prologue, but not really :)
+>
+> I was silently assuming that GCC would do this right on ppc64le; add the NOPs
+> right after the TOC load. Or after TOC load and LR save? ...
+
+On arm/arm64, link register must be saved before any function call. So anyhow
+we will have to add something, 3 instructions at the minimum, like:
+    save lr
+    branch _mcount
+    restore lr
+    <prologue>
+    ...
+    <body>
+    ...
+
+>> The part of the prologue where TOC pointer is saved needs to happen before
+>> the fentry/profiling call.
+>
+> Yes, any call, to any profiler/tracer/live patcher is potentially global
+> and needs the _new_ TOC value.
+
+I don't want to bother you, but for my better understandings, could you show me
+an example of asm instructions for a function prologue under -mprofile-kernel, please?
+
+-Takahiro AKASHI
+
+> This proposal, if implemented in a too naive fashion, will worsen the problem
+> we currently discuss: a few NOPs _never_ cause any global reference. GCC might
+> be even more inclined to not load a new TOC value. That change would need to be
+> fairly smart on ppc64le.
+>
+> 	Torsten
+>
