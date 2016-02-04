@@ -1,18 +1,17 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 71B061A0289
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 21:33:15 +1100 (AEDT)
-Message-Id: <abec39712d536a31fb35f80931ff8e590c3874bb.1454581227.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 475B51A0244
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 21:33:17 +1100 (AEDT)
+Message-Id: <e3128f011d71437101ae79cf1f0f6ec342fec43a.1454581227.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1454581226.git.christophe.leroy@c-s.fr>
 References: <cover.1454581226.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v6 06/23] powerpc32: refactor x_mapped_by_bats() and
- x_mapped_by_tlbcam() together
+Subject: [PATCH v6 07/23] powerpc/8xx: Fix vaddr for IMMR early remap
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu,  4 Feb 2016 11:33:13 +0100 (CET)
+Date: Thu,  4 Feb 2016 11:33:15 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,165 +21,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-x_mapped_by_bats() and x_mapped_by_tlbcam() serve the same kind of
-purpose, and are never defined at the same time.
-So rename them x_block_mapped() and define them in the relevant
-places
+Memory: 124428K/131072K available (3748K kernel code, 188K rwdata,
+648K rodata, 508K init, 290K bss, 6644K reserved)
+Kernel virtual memory layout:
+  * 0xfffdf000..0xfffff000  : fixmap
+  * 0xfde00000..0xfe000000  : consistent mem
+  * 0xfddf6000..0xfde00000  : early ioremap
+  * 0xc9000000..0xfddf6000  : vmalloc & ioremap
+SLUB: HWalign=16, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+
+Today, IMMR is mapped 1:1 at startup
+
+Mapping IMMR 1:1 is just wrong because it may overlap with another
+area. On most mpc8xx boards it is OK as IMMR is set to 0xff000000
+but for instance on EP88xC board, IMMR is at 0xfa200000 which
+overlaps with VM ioremap area
+
+This patch fixes the virtual address for remapping IMMR with the fixmap
+regardless of the value of IMMR.
+
+The size of IMMR area is 256kbytes (CPM at offset 0, security engine
+at offset 128k) so a 512k page is enough
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
 v2: no change
-v3: Functions are mutually exclusive so renamed iaw Scott comment instead of grouping into a single function
-v4: no change
+v3: Using fixmap instead of fixed address
+v4: Fix a wrong #if notified by kbuild robot
 v5: no change
 v6: no change
 
- arch/powerpc/mm/fsl_booke_mmu.c |  4 ++--
- arch/powerpc/mm/mmu_decl.h      | 10 ++++++++++
- arch/powerpc/mm/pgtable_32.c    | 44 ++++++-----------------------------------
- arch/powerpc/mm/ppc_mmu_32.c    |  4 ++--
- 4 files changed, 20 insertions(+), 42 deletions(-)
+ arch/powerpc/include/asm/fixmap.h |  7 +++++++
+ arch/powerpc/kernel/asm-offsets.c |  8 ++++++++
+ arch/powerpc/kernel/head_8xx.S    | 11 ++++++-----
+ arch/powerpc/mm/mmu_decl.h        |  7 +++++++
+ arch/powerpc/sysdev/cpm_common.c  | 15 ++++++++++++---
+ 5 files changed, 40 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index f3afe3d..5d45341 100644
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -75,7 +75,7 @@ unsigned long tlbcam_sz(int idx)
- /*
-  * Return PA for this VA if it is mapped by a CAM, or 0
-  */
--phys_addr_t v_mapped_by_tlbcam(unsigned long va)
-+phys_addr_t v_block_mapped(unsigned long va)
+diff --git a/arch/powerpc/include/asm/fixmap.h b/arch/powerpc/include/asm/fixmap.h
+index 90f604b..d7dd8fb 100644
+--- a/arch/powerpc/include/asm/fixmap.h
++++ b/arch/powerpc/include/asm/fixmap.h
+@@ -51,6 +51,13 @@ enum fixed_addresses {
+ 	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
+ 	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
+ #endif
++#ifdef CONFIG_PPC_8xx
++	/* For IMMR we need an aligned 512K area */
++	FIX_IMMR_START,
++	FIX_IMMR_TOP = (FIX_IMMR_START - 1 + ((512 * 1024) / PAGE_SIZE)) &
++		       ~(((512 * 1024) / PAGE_SIZE) - 1),
++	FIX_IMMR_BASE = FIX_IMMR_TOP - 1 + ((512 * 1024) / PAGE_SIZE),
++#endif
+ 	/* FIX_PCIE_MCFG, */
+ 	__end_of_fixed_addresses
+ };
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 07cebc3..9724ff8 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -68,6 +68,10 @@
+ #include "../mm/mmu_decl.h"
+ #endif
+ 
++#ifdef CONFIG_PPC_8xx
++#include <asm/fixmap.h>
++#endif
++
+ int main(void)
  {
- 	int b;
- 	for (b = 0; b < tlbcam_index; ++b)
-@@ -87,7 +87,7 @@ phys_addr_t v_mapped_by_tlbcam(unsigned long va)
- /*
-  * Return VA for a given PA or 0 if not mapped
+ 	DEFINE(THREAD, offsetof(struct task_struct, thread));
+@@ -772,5 +776,9 @@ int main(void)
+ 
+ 	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
+ 
++#ifdef CONFIG_PPC_8xx
++	DEFINE(VIRT_IMMR_BASE, __fix_to_virt(FIX_IMMR_BASE));
++#endif
++
+ 	return 0;
+ }
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 87d1f5f..09173ae 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -30,6 +30,7 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/ptrace.h>
++#include <asm/fixmap.h>
+ 
+ /* Macro to make the code more readable. */
+ #ifdef CONFIG_8xx_CPU6
+@@ -763,7 +764,7 @@ start_here:
+  * virtual to physical.  Also, set the cache mode since that is defined
+  * by TLB entries and perform any additional mapping (like of the IMMR).
+  * If configured to pin some TLBs, we pin the first 8 Mbytes of kernel,
+- * 24 Mbytes of data, and the 8M IMMR space.  Anything not covered by
++ * 24 Mbytes of data, and the 512k IMMR space.  Anything not covered by
+  * these mappings is mapped by page tables.
   */
--unsigned long p_mapped_by_tlbcam(phys_addr_t pa)
-+unsigned long p_block_mapped(phys_addr_t pa)
- {
- 	int b;
- 	for (b = 0; b < tlbcam_index; ++b)
+ initial_mmu:
+@@ -812,7 +813,7 @@ initial_mmu:
+ 	ori	r8, r8, MD_APG_INIT@l
+ 	mtspr	SPRN_MD_AP, r8
+ 
+-	/* Map another 8 MByte at the IMMR to get the processor
++	/* Map a 512k page for the IMMR to get the processor
+ 	 * internal registers (among other things).
+ 	 */
+ #ifdef CONFIG_PIN_TLB
+@@ -820,12 +821,12 @@ initial_mmu:
+ 	mtspr	SPRN_MD_CTR, r10
+ #endif
+ 	mfspr	r9, 638			/* Get current IMMR */
+-	andis.	r9, r9, 0xff80		/* Get 8Mbyte boundary */
++	andis.	r9, r9, 0xfff8		/* Get 512 kbytes boundary */
+ 
+-	mr	r8, r9			/* Create vaddr for TLB */
++	lis	r8, VIRT_IMMR_BASE@h	/* Create vaddr for TLB */
+ 	ori	r8, r8, MD_EVALID	/* Mark it valid */
+ 	mtspr	SPRN_MD_EPN, r8
+-	li	r8, MD_PS8MEG		/* Set 8M byte page */
++	li	r8, MD_PS512K | MD_GUARDED	/* Set 512k byte page */
+ 	ori	r8, r8, MD_SVALID	/* Make it valid */
+ 	mtspr	SPRN_MD_TWC, r8
+ 	mr	r8, r9			/* Create paddr for TLB */
 diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 7faeb9f..40dd5d3 100644
+index 40dd5d3..e7228b7 100644
 --- a/arch/powerpc/mm/mmu_decl.h
 +++ b/arch/powerpc/mm/mmu_decl.h
-@@ -158,3 +158,13 @@ struct tlbcam {
- 	u32	MAS7;
- };
- #endif
-+
-+#if defined(CONFIG_6xx) || defined(CONFIG_FSL_BOOKE)
-+/* 6xx have BATS */
-+/* FSL_BOOKE have TLBCAM */
-+phys_addr_t v_block_mapped(unsigned long va);
-+unsigned long p_block_mapped(phys_addr_t pa);
+@@ -107,6 +107,13 @@ struct hash_pte;
+ extern struct hash_pte *Hash, *Hash_end;
+ extern unsigned long Hash_size, Hash_mask;
+ 
++#define PHYS_IMMR_BASE (mfspr(SPRN_IMMR) & 0xfff80000)
++#ifdef CONFIG_PPC_8xx
++#define VIRT_IMMR_BASE (__fix_to_virt(FIX_IMMR_BASE))
 +#else
-+static inline phys_addr_t v_block_mapped(unsigned long va) { return 0; }
-+static inline unsigned long p_block_mapped(phys_addr_t pa) { return 0; }
++#define VIRT_IMMR_BASE PHYS_IMMR_BASE
 +#endif
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 7692d1b..db0d35e 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -41,32 +41,8 @@ unsigned long ioremap_base;
- unsigned long ioremap_bot;
- EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
++
+ #endif /* CONFIG_PPC32 */
  
--#ifdef CONFIG_6xx
--#define HAVE_BATS	1
--#endif
--
--#if defined(CONFIG_FSL_BOOKE)
--#define HAVE_TLBCAM	1
--#endif
--
- extern char etext[], _stext[];
+ #ifdef CONFIG_PPC64
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+index 9d32465..94476f4 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -28,6 +28,7 @@
+ #include <asm/udbg.h>
+ #include <asm/io.h>
+ #include <asm/cpm.h>
++#include <asm/fixmap.h>
+ #include <soc/fsl/qe/qe.h>
  
--#ifdef HAVE_BATS
--extern phys_addr_t v_mapped_by_bats(unsigned long va);
--extern unsigned long p_mapped_by_bats(phys_addr_t pa);
--#else /* !HAVE_BATS */
--#define v_mapped_by_bats(x)	(0UL)
--#define p_mapped_by_bats(x)	(0UL)
--#endif /* HAVE_BATS */
--
--#ifdef HAVE_TLBCAM
--extern phys_addr_t v_mapped_by_tlbcam(unsigned long va);
--extern unsigned long p_mapped_by_tlbcam(phys_addr_t pa);
--#else /* !HAVE_TLBCAM */
--#define v_mapped_by_tlbcam(x)	(0UL)
--#define p_mapped_by_tlbcam(x)	(0UL)
--#endif /* HAVE_TLBCAM */
--
- #define PGDIR_ORDER	(32 + PGD_T_LOG2 - PGDIR_SHIFT)
+ #include <mm/mmu_decl.h>
+@@ -37,12 +38,16 @@
+ #endif
  
- #ifndef CONFIG_PPC_4K_PAGES
-@@ -228,19 +204,10 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
+ #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
+-static u32 __iomem *cpm_udbg_txdesc =
+-	(u32 __iomem __force *)CONFIG_PPC_EARLY_DEBUG_CPM_ADDR;
++static u32 __iomem *cpm_udbg_txdesc;
  
- 	/*
- 	 * Is it already mapped?  Perhaps overlapped by a previous
--	 * BAT mapping.  If the whole area is mapped then we're done,
--	 * otherwise remap it since we want to keep the virt addrs for
--	 * each request contiguous.
--	 *
--	 * We make the assumption here that if the bottom and top
--	 * of the range we want are mapped then it's mapped to the
--	 * same virt address (and this is contiguous).
--	 *  -- Cort
-+	 * mapping.
- 	 */
--	if ((v = p_mapped_by_bats(p)) /*&& p_mapped_by_bats(p+size-1)*/ )
--		goto out;
--
--	if ((v = p_mapped_by_tlbcam(p)))
-+	v = p_block_mapped(p);
-+	if (v)
- 		goto out;
- 
- 	if (slab_is_available()) {
-@@ -278,7 +245,8 @@ void iounmap(volatile void __iomem *addr)
- 	 * If mapped by BATs then there is nothing to do.
- 	 * Calling vfree() generates a benign warning.
- 	 */
--	if (v_mapped_by_bats((unsigned long)addr)) return;
-+	if (v_block_mapped((unsigned long)addr))
-+		return;
- 
- 	if (addr > high_memory && (unsigned long) addr < ioremap_bot)
- 		vunmap((void *) (PAGE_MASK & (unsigned long)addr));
-@@ -403,7 +371,7 @@ static int __change_page_attr(struct page *page, pgprot_t prot)
- 	BUG_ON(PageHighMem(page));
- 	address = (unsigned long)page_address(page);
- 
--	if (v_mapped_by_bats(address) || v_mapped_by_tlbcam(address))
-+	if (v_block_mapped(address))
- 		return 0;
- 	if (!get_pteptr(&init_mm, address, &kpte, &kpmd))
- 		return -EINVAL;
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 6b2f3e4..2a049fb 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -49,7 +49,7 @@ struct batrange {		/* stores address ranges mapped by BATs */
- /*
-  * Return PA for this VA if it is mapped by a BAT, or 0
-  */
--phys_addr_t v_mapped_by_bats(unsigned long va)
-+phys_addr_t v_block_mapped(unsigned long va)
+ static void udbg_putc_cpm(char c)
  {
- 	int b;
- 	for (b = 0; b < 4; ++b)
-@@ -61,7 +61,7 @@ phys_addr_t v_mapped_by_bats(unsigned long va)
- /*
-  * Return VA for a given PA or 0 if not mapped
-  */
--unsigned long p_mapped_by_bats(phys_addr_t pa)
-+unsigned long p_block_mapped(phys_addr_t pa)
+-	u8 __iomem *txbuf = (u8 __iomem __force *)in_be32(&cpm_udbg_txdesc[1]);
++	static u8 __iomem *txbuf;
++
++	if (unlikely(txbuf == NULL))
++		txbuf = (u8 __iomem __force *)
++			 (in_be32(&cpm_udbg_txdesc[1]) - PHYS_IMMR_BASE +
++			  VIRT_IMMR_BASE);
+ 
+ 	if (c == '\n')
+ 		udbg_putc_cpm('\r');
+@@ -56,6 +61,10 @@ static void udbg_putc_cpm(char c)
+ 
+ void __init udbg_init_cpm(void)
  {
- 	int b;
- 	for (b = 0; b < 4; ++b)
++	cpm_udbg_txdesc = (u32 __iomem __force *)
++			  (CONFIG_PPC_EARLY_DEBUG_CPM_ADDR - PHYS_IMMR_BASE +
++			   VIRT_IMMR_BASE);
++
+ 	if (cpm_udbg_txdesc) {
+ #ifdef CONFIG_CPM2
+ 		setbat(1, 0xf0000000, 0xf0000000, 1024*1024, PAGE_KERNEL_NCG);
 -- 
 2.1.0
