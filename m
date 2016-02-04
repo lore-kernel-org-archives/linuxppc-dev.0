@@ -1,18 +1,17 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 621EA1A022E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 21:33:41 +1100 (AEDT)
-Message-Id: <130c5220f626e274ff6f30edf088465f3d0a30bc.1454581227.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 634F01A026C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 21:33:44 +1100 (AEDT)
+Message-Id: <2639ded97e8d377ec96072443817b5d32fe03f9a.1454581227.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1454581226.git.christophe.leroy@c-s.fr>
 References: <cover.1454581226.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v6 19/23] powerpc32: Remove clear_pages() and define
- clear_page() inline
+Subject: [PATCH v6 20/23] powerpc32: move xxxxx_dcache_range() functions inline
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu,  4 Feb 2016 11:33:39 +0100 (CET)
+Date: Thu,  4 Feb 2016 11:33:41 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,99 +21,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-clear_pages() is never used expect by clear_page, and PPC32 is the
-only architecture (still) having this function. Neither PPC64 nor
-any other architecture has it.
+flush/clean/invalidate _dcache_range() functions are all very
+similar and are quite short. They are mainly used in __dma_sync()
+perf_event locate them in the top 3 consumming functions during
+heavy ethernet activity
 
-This patch removes clear_pages() and moves clear_page() function
-inline (same as PPC64) as it only is a few isns
+They are good candidate for inlining, as __dma_sync() does
+almost nothing but calling them
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v2: no change
+v2: new
 v3: no change
 v4: no change
 v5: no change
 v6: no change
 
- arch/powerpc/include/asm/page_32.h | 17 ++++++++++++++---
- arch/powerpc/kernel/misc_32.S      | 16 ----------------
- arch/powerpc/kernel/ppc_ksyms_32.c |  1 -
- 3 files changed, 14 insertions(+), 20 deletions(-)
+ arch/powerpc/include/asm/cacheflush.h | 52 ++++++++++++++++++++++++++--
+ arch/powerpc/kernel/misc_32.S         | 65 -----------------------------------
+ arch/powerpc/kernel/ppc_ksyms.c       |  2 ++
+ 3 files changed, 51 insertions(+), 68 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
-index 68d73b2..6a8e179 100644
---- a/arch/powerpc/include/asm/page_32.h
-+++ b/arch/powerpc/include/asm/page_32.h
-@@ -1,6 +1,8 @@
- #ifndef _ASM_POWERPC_PAGE_32_H
- #define _ASM_POWERPC_PAGE_32_H
- 
-+#include <asm/cache.h>
-+
- #if defined(CONFIG_PHYSICAL_ALIGN) && (CONFIG_PHYSICAL_START != 0)
- #if (CONFIG_PHYSICAL_START % CONFIG_PHYSICAL_ALIGN) != 0
- #error "CONFIG_PHYSICAL_START must be a multiple of CONFIG_PHYSICAL_ALIGN"
-@@ -36,9 +38,18 @@ typedef unsigned long long pte_basic_t;
- typedef unsigned long pte_basic_t;
+diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+index 6229e6b..97c9978 100644
+--- a/arch/powerpc/include/asm/cacheflush.h
++++ b/arch/powerpc/include/asm/cacheflush.h
+@@ -47,12 +47,58 @@ static inline void __flush_dcache_icache_phys(unsigned long physaddr)
+ }
  #endif
  
--struct page;
--extern void clear_pages(void *page, int order);
--static inline void clear_page(void *page) { clear_pages(page, 0); }
+-extern void flush_dcache_range(unsigned long start, unsigned long stop);
+ #ifdef CONFIG_PPC32
+-extern void clean_dcache_range(unsigned long start, unsigned long stop);
+-extern void invalidate_dcache_range(unsigned long start, unsigned long stop);
 +/*
-+ * Clear page using the dcbz instruction, which doesn't cause any
-+ * memory traffic (except to write out any cache lines which get
-+ * displaced).  This only works on cacheable memory.
++ * Write any modified data cache blocks out to memory and invalidate them.
++ * Does not invalidate the corresponding instruction cache blocks.
 + */
-+static inline void clear_page(void *addr)
++static inline void flush_dcache_range(unsigned long start, unsigned long stop)
 +{
-+	unsigned int i;
++	void *addr = (void *)(start & ~(L1_CACHE_BYTES - 1));
++	unsigned long size = stop - (unsigned long)addr + (L1_CACHE_BYTES - 1);
++	unsigned long i;
 +
-+	for (i = 0; i < PAGE_SIZE / L1_CACHE_BYTES; i++, addr += L1_CACHE_BYTES)
-+		dcbz(addr);
++	for (i = 0; i < size >> L1_CACHE_SHIFT; i++, addr += L1_CACHE_BYTES)
++		dcbf(addr);
++	mb();	/* sync */
 +}
- extern void copy_page(void *to, void *from);
- 
- #include <asm-generic/getorder.h>
++
++/*
++ * Write any modified data cache blocks out to memory.
++ * Does not invalidate the corresponding cache lines (especially for
++ * any corresponding instruction cache).
++ */
++static inline void clean_dcache_range(unsigned long start, unsigned long stop)
++{
++	void *addr = (void *)(start & ~(L1_CACHE_BYTES - 1));
++	unsigned long size = stop - (unsigned long)addr + (L1_CACHE_BYTES - 1);
++	unsigned long i;
++
++	for (i = 0; i < size >> L1_CACHE_SHIFT; i++, addr += L1_CACHE_BYTES)
++		dcbst(addr);
++	mb();	/* sync */
++}
++
++/*
++ * Like above, but invalidate the D-cache.  This is used by the 8xx
++ * to invalidate the cache so the PPC core doesn't get stale data
++ * from the CPM (no cache snooping here :-).
++ */
++static inline void invalidate_dcache_range(unsigned long start,
++					   unsigned long stop)
++{
++	void *addr = (void *)(start & ~(L1_CACHE_BYTES - 1));
++	unsigned long size = stop - (unsigned long)addr + (L1_CACHE_BYTES - 1);
++	unsigned long i;
++
++	for (i = 0; i < size >> L1_CACHE_SHIFT; i++, addr += L1_CACHE_BYTES)
++		dcbi(addr);
++	mb();	/* sync */
++}
++
+ #endif /* CONFIG_PPC32 */
+ #ifdef CONFIG_PPC64
++extern void flush_dcache_range(unsigned long start, unsigned long stop);
+ extern void flush_inval_dcache_range(unsigned long start, unsigned long stop);
+ extern void flush_dcache_phys_range(unsigned long start, unsigned long stop);
+ #endif
 diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 7d1284f..181afc1 100644
+index 181afc1..09e1e5d 100644
 --- a/arch/powerpc/kernel/misc_32.S
 +++ b/arch/powerpc/kernel/misc_32.S
-@@ -517,22 +517,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
- #endif /* CONFIG_BOOKE */
- 
+@@ -375,71 +375,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 	isync
+ 	blr
  /*
-- * Clear pages using the dcbz instruction, which doesn't cause any
-- * memory traffic (except to write out any cache lines which get
-- * displaced).  This only works on cacheable memory.
+- * Write any modified data cache blocks out to memory.
+- * Does not invalidate the corresponding cache lines (especially for
+- * any corresponding instruction cache).
 - *
-- * void clear_pages(void *page, int order) ;
+- * clean_dcache_range(unsigned long start, unsigned long stop)
 - */
--_GLOBAL(clear_pages)
--	li	r0,PAGE_SIZE/L1_CACHE_BYTES
--	slw	r0,r0,r4
--	mtctr	r0
--1:	dcbz	0,r3
+-_GLOBAL(clean_dcache_range)
+-	li	r5,L1_CACHE_BYTES-1
+-	andc	r3,r3,r5
+-	subf	r4,r3,r4
+-	add	r4,r4,r5
+-	srwi.	r4,r4,L1_CACHE_SHIFT
+-	beqlr
+-	mtctr	r4
+-
+-1:	dcbst	0,r3
 -	addi	r3,r3,L1_CACHE_BYTES
 -	bdnz	1b
+-	sync				/* wait for dcbst's to get to ram */
 -	blr
 -
 -/*
-  * Copy a whole page.  We use the dcbz instruction on the destination
-  * to reduce memory traffic (it eliminates the unnecessary reads of
-  * the destination into cache).  This requires that the destination
-diff --git a/arch/powerpc/kernel/ppc_ksyms_32.c b/arch/powerpc/kernel/ppc_ksyms_32.c
-index 30ddd8a..2bfaafe 100644
---- a/arch/powerpc/kernel/ppc_ksyms_32.c
-+++ b/arch/powerpc/kernel/ppc_ksyms_32.c
-@@ -10,7 +10,6 @@
- #include <asm/pgtable.h>
- #include <asm/dcr.h>
+- * Write any modified data cache blocks out to memory and invalidate them.
+- * Does not invalidate the corresponding instruction cache blocks.
+- *
+- * flush_dcache_range(unsigned long start, unsigned long stop)
+- */
+-_GLOBAL(flush_dcache_range)
+-	li	r5,L1_CACHE_BYTES-1
+-	andc	r3,r3,r5
+-	subf	r4,r3,r4
+-	add	r4,r4,r5
+-	srwi.	r4,r4,L1_CACHE_SHIFT
+-	beqlr
+-	mtctr	r4
+-
+-1:	dcbf	0,r3
+-	addi	r3,r3,L1_CACHE_BYTES
+-	bdnz	1b
+-	sync				/* wait for dcbst's to get to ram */
+-	blr
+-
+-/*
+- * Like above, but invalidate the D-cache.  This is used by the 8xx
+- * to invalidate the cache so the PPC core doesn't get stale data
+- * from the CPM (no cache snooping here :-).
+- *
+- * invalidate_dcache_range(unsigned long start, unsigned long stop)
+- */
+-_GLOBAL(invalidate_dcache_range)
+-	li	r5,L1_CACHE_BYTES-1
+-	andc	r3,r3,r5
+-	subf	r4,r3,r4
+-	add	r4,r4,r5
+-	srwi.	r4,r4,L1_CACHE_SHIFT
+-	beqlr
+-	mtctr	r4
+-
+-1:	dcbi	0,r3
+-	addi	r3,r3,L1_CACHE_BYTES
+-	bdnz	1b
+-	sync				/* wait for dcbi's to get to ram */
+-	blr
+-
+-/*
+  * Flush a particular page from the data cache to RAM.
+  * Note: this is necessary because the instruction cache does *not*
+  * snoop from the data cache.
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index 41e1607..3236679 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -6,7 +6,9 @@
+ #include <asm/cacheflush.h>
+ #include <asm/epapr_hcalls.h>
  
--EXPORT_SYMBOL(clear_pages);
- EXPORT_SYMBOL(ISA_DMA_THRESHOLD);
- EXPORT_SYMBOL(DMA_MODE_READ);
- EXPORT_SYMBOL(DMA_MODE_WRITE);
++#ifdef CONFIG_PPC64
+ EXPORT_SYMBOL(flush_dcache_range);
++#endif
+ EXPORT_SYMBOL(flush_icache_range);
+ 
+ EXPORT_SYMBOL(empty_zero_page);
 -- 
 2.1.0
