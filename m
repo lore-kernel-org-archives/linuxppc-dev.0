@@ -1,17 +1,18 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 01CCB1A0220
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 21:33:37 +1100 (AEDT)
-Message-Id: <c5ba120ee4fb006dc94a498c44064938ffae6c29.1454581227.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id E48C41A0220
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 21:33:39 +1100 (AEDT)
+Message-Id: <4a58ad704026233b41118b597df72a32525c6419.1454581227.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1454581226.git.christophe.leroy@c-s.fr>
 References: <cover.1454581226.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v6 17/23] powerpc/8xx: rewrite flush_instruction_cache() in C
+Subject: [PATCH v6 18/23] powerpc: add inline functions for cache related
+ instructions
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu,  4 Feb 2016 11:33:35 +0100 (CET)
+Date: Thu,  4 Feb 2016 11:33:37 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,68 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PPC8xx, flushing instruction cache is performed by writing
-in register SPRN_IC_CST. This registers suffers CPU6 ERRATA.
-The patch rewrites the fonction in C so that CPU6 ERRATA will
-be handled transparently
+This patch adds inline functions to use dcbz, dcbi, dcbf, dcbst
+from C functions
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v2: no change
+v2: new
 v3: no change
 v4: no change
 v5: no change
 v6: no change
 
- arch/powerpc/kernel/misc_32.S | 10 ++++------
- arch/powerpc/mm/8xx_mmu.c     |  7 +++++++
- 2 files changed, 11 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/cache.h | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index be8edd6..7d1284f 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -296,12 +296,9 @@ _GLOBAL(real_writeb)
-  * Flush instruction cache.
-  * This is a no-op on the 601.
-  */
-+#ifndef CONFIG_PPC_8xx
- _GLOBAL(flush_instruction_cache)
--#if defined(CONFIG_8xx)
--	isync
--	lis	r5, IDC_INVALL@h
--	mtspr	SPRN_IC_CST, r5
--#elif defined(CONFIG_4xx)
-+#if defined(CONFIG_4xx)
- #ifdef CONFIG_403GCX
- 	li      r3, 512
- 	mtctr   r3
-@@ -334,9 +331,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_UNIFIED_ID_CACHE)
- 	mfspr	r3,SPRN_HID0
- 	ori	r3,r3,HID0_ICFI
- 	mtspr	SPRN_HID0,r3
--#endif /* CONFIG_8xx/4xx */
-+#endif /* CONFIG_4xx */
- 	isync
- 	blr
-+#endif /* CONFIG_PPC_8xx */
+diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
+index 5f8229e..ffbafbf 100644
+--- a/arch/powerpc/include/asm/cache.h
++++ b/arch/powerpc/include/asm/cache.h
+@@ -69,6 +69,25 @@ extern void _set_L3CR(unsigned long);
+ #define _set_L3CR(val)	do { } while(0)
+ #endif
  
- /*
-  * Write any modified data cache blocks out to memory
-diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index b75c461..e2ce480 100644
---- a/arch/powerpc/mm/8xx_mmu.c
-+++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -181,3 +181,10 @@ void set_context(unsigned long id, pgd_t *pgd)
- 	/* sync */
- 	mb();
- }
-+
-+void flush_instruction_cache(void)
++static inline void dcbz(void *addr)
 +{
-+	isync();
-+	mtspr(SPRN_IC_CST, IDC_INVALL);
-+	isync();
++	__asm__ __volatile__ ("dcbz 0, %0" : : "r"(addr) : "memory");
 +}
++
++static inline void dcbi(void *addr)
++{
++	__asm__ __volatile__ ("dcbi 0, %0" : : "r"(addr) : "memory");
++}
++
++static inline void dcbf(void *addr)
++{
++	__asm__ __volatile__ ("dcbf 0, %0" : : "r"(addr) : "memory");
++}
++
++static inline void dcbst(void *addr)
++{
++	__asm__ __volatile__ ("dcbst 0, %0" : : "r"(addr) : "memory");
++}
+ #endif /* !__ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_CACHE_H */
 -- 
 2.1.0
