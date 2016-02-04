@@ -1,42 +1,24 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <jikos@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3B4391A0221
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 08:26:40 +1100 (AEDT)
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Thu, 4 Feb 2016 14:26:38 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C8F743E4004F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 14:26:28 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u14LQSt520578502
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Feb 2016 14:26:28 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u14LQSfH025836
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Feb 2016 14:26:28 -0700
-Subject: Re: [PATCH 2/6] ibmvscsi: Add and use enums for valid CRQ header
- values
-To: manoj@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- JBottomley@odin.com
-References: <1454542114-1797-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <1454542114-1797-3-git-send-email-tyreld@linux.vnet.ibm.com>
- <56B3ACC9.60009@linux.vnet.ibm.com>
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
- linux-kernel@vger.kernel.org, hare@suse.de, brking@linux.vnet.ibm.com,
- nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Message-ID: <56B3C1C1.3080804@linux.vnet.ibm.com>
-Date: Thu, 4 Feb 2016 13:25:21 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41F901A0190
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 08:48:00 +1100 (AEDT)
+Date: Thu, 4 Feb 2016 22:47:56 +0100 (CET)
+From: Jiri Kosina <jikos@kernel.org>
+To: AKASHI Takahiro <takahiro.akashi@linaro.org>
+cc: Torsten Duwe <duwe@lst.de>, Steven Rostedt <rostedt@goodmis.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
+Subject: Re: [PATCH v6 1/9] ppc64 (le): prepare for -mprofile-kernel
+In-Reply-To: <56B31A7C.2050803@linaro.org>
+Message-ID: <alpine.LNX.2.00.1602042244430.22727@cbobk.fhfr.pm>
+References: <20160125170459.14DB7692CE@newverein.lst.de>
+ <20160125170723.D2CCE692CE@newverein.lst.de> <56B1AAE5.10500@linaro.org>
+ <alpine.LNX.2.00.1602030952220.22727@cbobk.fhfr.pm>
+ <20160203112449.GA27247@lst.de> <56B31A7C.2050803@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <56B3ACC9.60009@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,135 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/04/2016 11:55 AM, Manoj Kumar wrote:
-> On 2/3/2016 5:28 PM, Tyrel Datwyler wrote:
->> The PAPR defines four valid header values for the first byte of a
->> CRQ message. Namely, an unused/empty message (0x00), a valid
->> command/response entry (0x80), a valid initialization entry (0xC0),
->> and a transport event (0xFF). Define these values as enums and use
->> them in the code in place of their magic number equivalents.
->>
->> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
->> ---
->>   drivers/scsi/ibmvscsi/ibmvscsi.c | 14 +++++++-------
->>   drivers/scsi/ibmvscsi/viosrp.h   |  7 +++++++
->>   2 files changed, 14 insertions(+), 7 deletions(-)
->>
->> diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
->> index adfef9d..176260d 100644
->> --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
->> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
->> @@ -182,7 +182,7 @@ static struct viosrp_crq *crq_queue_next_crq(struct crq_queue *queue)
->>
->>   	spin_lock_irqsave(&queue->lock, flags);
->>   	crq = &queue->msgs[queue->cur];
->> -	if (crq->valid & 0x80) {
->> +	if (crq->valid & VIOSRP_CRQ_VALID) {
-> 
-> After the switch to enums, bitwise operators are a bit misleading.
-> Especially in this case since multiple values would satisfy this
-> condition: VIOSRP_CRQ_VALID, VIOSRP_CRQ_INIT and
-> VIOSRP_CRQ_TRANSPORT.
+On Thu, 4 Feb 2016, AKASHI Takahiro wrote:
 
-Yeah, I can see how that is confusing. Since, all three possible valid
-crq message types have the first bit set I think this was originally a
-cute hack to grab anything that was likely valid. Then in
-ibmvscsi_handle_crq() we explicitly match the full header value in a
-switch statement logging anything that turned out actually invalid.
+> On arm/arm64, link register must be saved before any function call. So anyhow
+> we will have to add something, 3 instructions at the minimum, like:
+>    save lr
+>    branch _mcount
+>    restore lr
+>    <prologue>
+>    ...
+>    <body>
+>    ...
 
-> 
-> If 'valid' will only have one of these four enums defined, would
-> this be better written as:
-> 
-> 	if (crq->valid != VIOSRP_CRQ_FREE)
+This means that we have at least two architectures that need one 
+instruction before the mcount/mfentry call, and the rest of the prologue 
+to follow afterwards. On x86, we don't need any "pre-prologue".
 
-This definitely would make the logic easier to read and follow. Also,
-this would make sure any crq with an invalid header that doesn't have
-its first bit set will also be logged by the ibmvscsi_handle_crq()
-switch statement default block and not silently ignored.
+Persumably the corresponding opcodes have different sizes. This nicely 
+demonstrates my point -- if this one-gcc-option-to-rule-them-all would 
+exist, it needs to be generic enough to describe these kinds of 
+constraints (who knows what other restrictions will pop up when exploring 
+other, more exotic, architectures later).
 
--Tyrel
+Thanks,
 
-> 
->>   		if (++queue->cur == queue->size)
->>   			queue->cur = 0;
->>
->> @@ -231,7 +231,7 @@ static void ibmvscsi_task(void *data)
->>   		/* Pull all the valid messages off the CRQ */
->>   		while ((crq = crq_queue_next_crq(&hostdata->queue)) != NULL) {
->>   			ibmvscsi_handle_crq(crq, hostdata);
->> -			crq->valid = 0x00;
->> +			crq->valid = VIOSRP_CRQ_FREE;
->>   		}
->>
->>   		vio_enable_interrupts(vdev);
->> @@ -239,7 +239,7 @@ static void ibmvscsi_task(void *data)
->>   		if (crq != NULL) {
->>   			vio_disable_interrupts(vdev);
->>   			ibmvscsi_handle_crq(crq, hostdata);
->> -			crq->valid = 0x00;
->> +			crq->valid = VIOSRP_CRQ_FREE;
->>   		} else {
->>   			done = 1;
->>   		}
->> @@ -474,7 +474,7 @@ static int initialize_event_pool(struct event_pool *pool,
->>   		struct srp_event_struct *evt = &pool->events[i];
->>   		memset(&evt->crq, 0x00, sizeof(evt->crq));
->>   		atomic_set(&evt->free, 1);
->> -		evt->crq.valid = 0x80;
->> +		evt->crq.valid = VIOSRP_CRQ_VALID;
->>   		evt->crq.IU_length = cpu_to_be16(sizeof(*evt->xfer_iu));
->>   		evt->crq.IU_data_ptr = cpu_to_be64(pool->iu_token +
->>   			sizeof(*evt->xfer_iu) * i);
->> @@ -1767,7 +1767,7 @@ static void ibmvscsi_handle_crq(struct viosrp_crq *crq,
->>   	struct srp_event_struct *evt_struct =
->>   			(__force struct srp_event_struct *)crq->IU_data_ptr;
->>   	switch (crq->valid) {
->> -	case 0xC0:		/* initialization */
->> +	case VIOSRP_CRQ_INIT:		/* initialization */
->>   		switch (crq->format) {
->>   		case 0x01:	/* Initialization message */
->>   			dev_info(hostdata->dev, "partner initialized\n");
->> @@ -1791,7 +1791,7 @@ static void ibmvscsi_handle_crq(struct viosrp_crq *crq,
->>   			dev_err(hostdata->dev, "unknown crq message type: %d\n", crq->format);
->>   		}
->>   		return;
->> -	case 0xFF:	/* Hypervisor telling us the connection is closed */
->> +	case VIOSRP_CRQ_TRANSPORT:	/* Hypervisor telling us the connection is closed */
->>   		scsi_block_requests(hostdata->host);
->>   		atomic_set(&hostdata->request_limit, 0);
->>   		if (crq->format == 0x06) {
->> @@ -1807,7 +1807,7 @@ static void ibmvscsi_handle_crq(struct viosrp_crq *crq,
->>   			ibmvscsi_reset_host(hostdata);
->>   		}
->>   		return;
->> -	case 0x80:		/* real payload */
->> +	case VIOSRP_CRQ_VALID:		/* real payload */
->>   		break;
->>   	default:
->>   		dev_err(hostdata->dev, "got an invalid message type 0x%02x\n",
->> diff --git a/drivers/scsi/ibmvscsi/viosrp.h b/drivers/scsi/ibmvscsi/viosrp.h
->> index d1044e9..17f2de0 100644
->> --- a/drivers/scsi/ibmvscsi/viosrp.h
->> +++ b/drivers/scsi/ibmvscsi/viosrp.h
->> @@ -51,6 +51,13 @@ union srp_iu {
->>   	u8 reserved[SRP_MAX_IU_LEN];
->>   };
->>
->> +enum viosrp_crq_headers {
->> +	VIOSRP_CRQ_FREE = 0x00,
->> +	VIOSRP_CRQ_VALID = 0x80,
->> +	VIOSRP_CRQ_INIT = 0xC0,
->> +	VIOSRP_CRQ_TRANSPORT = 0xFF
->> +};
->> +
->>   enum viosrp_crq_formats {
->>   	VIOSRP_SRP_FORMAT = 0x01,
->>   	VIOSRP_MAD_FORMAT = 0x02,
->>
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+-- 
+Jiri Kosina
+SUSE Labs
