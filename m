@@ -1,36 +1,50 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <gpkulkarni@gmail.com>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5FA531A001D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 22:12:22 +1100 (AEDT)
-Received: from localhost
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 4 Feb 2016 16:42:19 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u14BCHmW50331652
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Feb 2016 16:42:17 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u14BBDop020824
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Feb 2016 16:41:14 +0530
-Message-ID: <56B331CE.5020806@linux.vnet.ibm.com>
-Date: Thu, 04 Feb 2016 16:41:10 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 55A3B1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 22:15:48 +1100 (AEDT)
+Received: by mail-wm0-x242.google.com with SMTP id r129so11680144wmr.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Feb 2016 03:15:48 -0800 (PST)
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-CC: lvivier@redhat.com, thuth@redhat.com, aik@ozlabs.ru, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFCv2 6/9] pseries: Add hypercall wrappers for hash page table
- resizing
-References: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
- <1454045043-25545-7-git-send-email-david@gibson.dropbear.id.au>
- <56AF0523.60902@linux.vnet.ibm.com> <20160202005820.GB15080@voom.fritz.box>
-In-Reply-To: <20160202005820.GB15080@voom.fritz.box>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20160202233417.GA4739@rob-hp-laptop>
+References: <1454407763-1017-1-git-send-email-gkulkarni@caviumnetworks.com>
+ <1454407763-1017-4-git-send-email-gkulkarni@caviumnetworks.com>
+ <20160202233417.GA4739@rob-hp-laptop>
+Date: Thu, 4 Feb 2016 16:45:44 +0530
+Message-ID: <CAFpQJXUtZcWt9xSAL0MZiFZegPUwrppQgv4ipTNGstvHR6-pBg@mail.gmail.com>
+Subject: Re: [PATCH v10 3/8] dt, numa: adding numa dt binding implementation.
+From: Ganapatrao Kulkarni <gpkulkarni@gmail.com>
+To: Rob Herring <robh@kernel.org>
+Cc: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-pci@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-arch@vger.kernel.org,
+ Will Deacon <Will.Deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>, Grant Likely <grant.likely@linaro.org>,
+ Leif Lindholm <leif.lindholm@linaro.org>, rfranz@cavium.com,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ "msalter@redhat.com" <msalter@redhat.com>,
+ Steve Capper <steve.capper@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>,
+ Al Stone <al.stone@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
+ Pawel Moll <pawel.moll@arm.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>,
+ Marc Zyngier <marc.zyngier@arm.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, tony.luck@intel.com,
+ fenghua.yu@intel.com, james.hogan@imgtec.com,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "tglx@linutronix.de" <tglx@linutronix.de>, mingo@redhat.com,
+ hpa@zytor.com, x86@kernel.org, Jon Masters <jonathan@jonmasters.org>,
+ Robert Richter <rrichter@cavium.com>,
+ Prasun Kapoor <Prasun.Kapoor@caviumnetworks.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,75 +54,326 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/02/2016 06:28 AM, David Gibson wrote:
-> On Mon, Feb 01, 2016 at 12:41:31PM +0530, Anshuman Khandual wrote:
->> On 01/29/2016 10:54 AM, David Gibson wrote:
->>> This adds the hypercall numbers and wrapper functions for the hash page
->>> table resizing hypercalls.
->>>
->>> These are experimental "platform specific" values for now, until we have a
->>> formal PAPR update.
->>>
->>> It also adds a new firmware feature flat to track the presence of the
->>> HPT resizing calls.
->>
->> Its a flag   ....................... ^^^^^^^ here.
-> 
-> Oops, thanks.
-> 
->>
->>>
->>> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
->>> ---
->>>  arch/powerpc/include/asm/firmware.h       |  5 +++--
->>>  arch/powerpc/include/asm/hvcall.h         |  2 ++
->>>  arch/powerpc/include/asm/plpar_wrappers.h | 12 ++++++++++++
->>>  arch/powerpc/platforms/pseries/firmware.c |  1 +
->>>  4 files changed, 18 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
->>> index b062924..32435d2 100644
->>> --- a/arch/powerpc/include/asm/firmware.h
->>> +++ b/arch/powerpc/include/asm/firmware.h
->>> @@ -42,7 +42,7 @@
->>>  #define FW_FEATURE_SPLPAR	ASM_CONST(0x0000000000100000)
->>>  #define FW_FEATURE_LPAR		ASM_CONST(0x0000000000400000)
->>>  #define FW_FEATURE_PS3_LV1	ASM_CONST(0x0000000000800000)
->>> -/* Free				ASM_CONST(0x0000000001000000) */
->>> +#define FW_FEATURE_HPT_RESIZE	ASM_CONST(0x0000000001000000)
->>>  #define FW_FEATURE_CMO		ASM_CONST(0x0000000002000000)
->>>  #define FW_FEATURE_VPHN		ASM_CONST(0x0000000004000000)
->>>  #define FW_FEATURE_XCMO		ASM_CONST(0x0000000008000000)
->>> @@ -66,7 +66,8 @@ enum {
->>>  		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
->>>  		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
->>>  		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
->>> -		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
->>> +		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
->>> +		FW_FEATURE_HPT_RESIZE,
->>>  	FW_FEATURE_PSERIES_ALWAYS = 0,
->>>  	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
->>>  	FW_FEATURE_POWERNV_ALWAYS = 0,
->>> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
->>> index e3b54dd..195e080 100644
->>> --- a/arch/powerpc/include/asm/hvcall.h
->>> +++ b/arch/powerpc/include/asm/hvcall.h
->>> @@ -293,6 +293,8 @@
->>>  
->>>  /* Platform specific hcalls, used by KVM */
->>>  #define H_RTAS			0xf000
->>> +#define H_RESIZE_HPT_PREPARE	0xf003
->>> +#define H_RESIZE_HPT_COMMIT	0xf004
->>
->> This sound better and matches FW_FEATURE_HPT_RESIZE ?
-> 
-> I'm not quite sure what you're suggesting here.
-> 
->> #define H_HPT_RESIZE_PREPARE	0xf003
->> #define H_HPT_RESIZE_COMMIT	0xf004
+Hi Rob,
 
-Just little bit of change of name of the macro like this
+On Wed, Feb 3, 2016 at 5:04 AM, Rob Herring <robh@kernel.org> wrote:
+> On Tue, Feb 02, 2016 at 03:39:18PM +0530, Ganapatrao Kulkarni wrote:
+>> dt node parsing for numa topology is done using device property
+>> numa-node-id and device node distance-map.
+>>
+>> Reviewed-by: Robert Richter <rrichter@cavium.com>
+>> Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
+>> ---
+>>  drivers/of/Kconfig   |  11 +++
+>>  drivers/of/Makefile  |   1 +
+>>  drivers/of/of_numa.c | 207 +++++++++++++++++++++++++++++++++++++++++++++++++++
+>>  include/linux/of.h   |   4 +
+>>  4 files changed, 223 insertions(+)
+>>  create mode 100644 drivers/of/of_numa.c
+>>
+>> diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+>> index e2a4841..8f9cc3a 100644
+>> --- a/drivers/of/Kconfig
+>> +++ b/drivers/of/Kconfig
+>> @@ -112,4 +112,15 @@ config OF_OVERLAY
+>>         While this option is selected automatically when needed, you can
+>>         enable it manually to improve device tree unit test coverage.
+>>
+>> +config OF_NUMA
+>> +     bool "Device Tree NUMA support"
+>
+> Does this need to be user visible?
 
+thanks, not required, arch can select
+>
+>> +     depends on NUMA
+>> +     depends on OF
+>> +     depends on ARM64
+>
+> drop this (and make sure it compiles on other arches). It will fail
+> because you also have a dependency on FDT.
 
-H_RESIZE_HPT_PREPARE -->  H_HPT_RESIZE_PREPARE
-H_RESIZE_HPT_COMMIT -->  H_HPT_RESIZE_COMMIT
+thanks will add OF_EARLY_FLATTREE
+>
+>> +     default y
+>> +     help
+>> +       Enable Device Tree NUMA support.
+>> +       This enables the numa mapping of cpu, memory, io and
+>> +       inter node distances using dt bindings.
+>> +
+>>  endif # OF
+>> diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+>> index 156c072..bee3fa9 100644
+>> --- a/drivers/of/Makefile
+>> +++ b/drivers/of/Makefile
+>> @@ -14,5 +14,6 @@ obj-$(CONFIG_OF_MTD)        += of_mtd.o
+>>  obj-$(CONFIG_OF_RESERVED_MEM) += of_reserved_mem.o
+>>  obj-$(CONFIG_OF_RESOLVE)  += resolver.o
+>>  obj-$(CONFIG_OF_OVERLAY) += overlay.o
+>> +obj-$(CONFIG_OF_NUMA) += of_numa.o
+>>
+>>  obj-$(CONFIG_OF_UNITTEST) += unittest-data/
+>> diff --git a/drivers/of/of_numa.c b/drivers/of/of_numa.c
+>> new file mode 100644
+>> index 0000000..1142cdb
+>> --- /dev/null
+>> +++ b/drivers/of/of_numa.c
+>> @@ -0,0 +1,207 @@
+>> +/*
+>> + * OF NUMA Parsing support.
+>> + *
+>> + * Copyright (C) 2015 Cavium Inc.
+>> + * Author: Ganapatrao Kulkarni <gkulkarni@cavium.com>
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2 as
+>> + * published by the Free Software Foundation.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + * You should have received a copy of the GNU General Public License
+>> + * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+>> + */
+>> +
+>> +#include <linux/of.h>
+>> +#include <linux/of_fdt.h>
+>
+> Surely you need some numa related includes.
+ok
+>
+>> +
+>> +/* define default numa node to 0 */
+>> +#define DEFAULT_NODE 0
+>> +
+>> +/* Returns nid in the range [0..MAX_NUMNODES-1],
+>> + * or NUMA_NO_NODE if no valid numa-node-id entry found
+>> + * or DEFAULT_NODE if no numa-node-id entry exists
+>> + */
+>> +static int of_numa_prop_to_nid(const __be32 *of_numa_prop, int length)
+>> +{
+>> +     int nid;
+>> +
+>> +     if (!of_numa_prop)
+>> +             return DEFAULT_NODE;
+>> +
+>> +     if (length != sizeof(*of_numa_prop)) {
+>> +             pr_warn("NUMA: Invalid of_numa_prop length %d found.\n",
+>> +                             length);
+>> +             return NUMA_NO_NODE;
+>> +     }
+>> +
+>> +     nid = of_read_number(of_numa_prop, 1);
+>> +     if (nid >= MAX_NUMNODES) {
+>> +             pr_warn("NUMA: Invalid numa node %d found.\n", nid);
+>> +             return NUMA_NO_NODE;
+>> +     }
+>> +
+>> +     return nid;
+>> +}
+>> +
+>> +static int __init early_init_of_node_to_nid(unsigned long node)
+>> +{
+>> +     int length;
+>> +     const __be32 *of_numa_prop;
+>> +
+>> +     of_numa_prop = of_get_flat_dt_prop(node, "numa-node-id", &length);
+>> +
+>> +     return of_numa_prop_to_nid(of_numa_prop, length);
+>> +}
+>> +
+>> +/*
+>> + * Even though we connect cpus to numa domains later in SMP
+>> + * init, we need to know the node ids now for all cpus.
+>> +*/
+>> +static int __init early_init_parse_cpu_node(unsigned long node)
+>> +{
+>> +     int nid;
+>> +     const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+>> +
+>> +     if (type == NULL)
+>> +             return 0;
+>> +
+>> +     if (strcmp(type, "cpu") != 0)
+>> +             return 0;
+>> +
+>> +     nid = early_init_of_node_to_nid(node);
+>> +     if (nid == NUMA_NO_NODE)
+>> +             return -EINVAL;
+>> +
+>> +     node_set(nid, numa_nodes_parsed);
+>> +     return 0;
+>> +}
+>> +
+>> +static int __init early_init_parse_memory_node(unsigned long node)
+>> +{
+>> +     const __be32 *reg, *endp;
+>> +     int length;
+>> +     int nid;
+>> +     const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+>> +
+>> +     if (type == NULL)
+>> +             return 0;
+>> +
+>> +     if (strcmp(type, "memory") != 0)
+>> +             return 0;
+>> +
+>> +     nid = early_init_of_node_to_nid(node);
+>> +     if (nid == NUMA_NO_NODE)
+>> +             return -EINVAL;
+>> +
+>> +     reg = of_get_flat_dt_prop(node, "reg", &length);
+>> +     endp = reg + (length / sizeof(__be32));
+>> +
+>> +     while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
+>> +             u64 base, size;
+>> +
+>> +             base = dt_mem_next_cell(dt_root_addr_cells, &reg);
+>> +             size = dt_mem_next_cell(dt_root_size_cells, &reg);
+>> +             pr_debug("NUMA:  base = %llx , node = %u\n",
+>> +                             base, nid);
+>> +
+>
+> We already have code to parse memory nodes. Can the NUMA part be
+> combined somehow.
+
+it is too early to parse numa in core code since there are no
+variables ready to hold parsed information.
+which is done in numa_init()
+>
+>> +             if (numa_add_memblk(nid, base, size) < 0)
+>> +                     return -EINVAL;
+>> +     }
+>> +
+>> +     return 0;
+>> +}
+>> +
+>> +static int __init early_init_parse_distance_map_v1(unsigned long node,
+>> +             const char *uname)
+>> +{
+>> +     const __be32 *prop_dist_matrix;
+>> +     int length = 0, i, matrix_count;
+>> +     int nr_size_cells = OF_ROOT_NODE_SIZE_CELLS_DEFAULT;
+>> +
+>> +     pr_info("NUMA: parsing numa-distance-map-v1\n");
+>> +
+>> +     prop_dist_matrix =
+>> +             of_get_flat_dt_prop(node, "distance-matrix", &length);
+>> +
+>> +     if (!length) {
+>> +             pr_err("NUMA: failed to parse distance-matrix\n");
+>> +             return -ENODEV;
+>> +     }
+>> +
+>> +     matrix_count = ((length / sizeof(__be32)) / (3 * nr_size_cells));
+>> +
+>> +     if ((matrix_count * sizeof(__be32) * 3 * nr_size_cells) !=  length) {
+>> +             pr_warn("NUMA: invalid distance-matrix length %d\n", length);
+>> +             return -EINVAL;
+>> +     }
+>> +
+>> +     for (i = 0; i < matrix_count; i++) {
+>> +             u32 nodea, nodeb, distance;
+>> +
+>> +             nodea = dt_mem_next_cell(nr_size_cells, &prop_dist_matrix);
+>> +             nodeb = dt_mem_next_cell(nr_size_cells, &prop_dist_matrix);
+>> +             distance = dt_mem_next_cell(nr_size_cells, &prop_dist_matrix);
+>> +             numa_set_distance(nodea, nodeb, distance);
+>> +             pr_debug("NUMA:  distance[node%d -> node%d] = %d\n",
+>> +                             nodea, nodeb, distance);
+>> +
+>> +             /* Set default distance of node B->A same as A->B */
+>> +             if (nodeb > nodea)
+>> +                     numa_set_distance(nodeb, nodea, distance);
+>> +     }
+>> +
+>> +     return 0;
+>> +}
+>> +
+>> +static int __init early_init_parse_distance_map(unsigned long node,
+>> +             const char *uname)
+>> +{
+>> +     if (strcmp(uname, "distance-map") != 0)
+>> +             return 0;
+>> +
+>> +     if (of_flat_dt_is_compatible(node, "numa-distance-map-v1"))
+>> +             return early_init_parse_distance_map_v1(node, uname);
+>> +
+>> +     pr_err("NUMA: invalid distance-map device node\n");
+>> +     return -EINVAL;
+>> +}
+>> +
+>> +static int __init early_init_of_scan_numa_map(unsigned long node, const char *uname,
+>> +                                  int depth, void *data)
+>> +{
+>> +     int ret;
+>> +
+>> +     ret = early_init_parse_cpu_node(node);
+>> +     if (ret)
+>> +             return ret;
+>> +
+>> +     ret = early_init_parse_memory_node(node);
+>> +     if (ret)
+>> +             return ret;
+>> +
+>> +     return early_init_parse_distance_map(node, uname);
+>> +}
+>> +
+>> +int of_node_to_nid(struct device_node *device)
+>> +{
+>> +     const __be32 *of_numa_prop;
+>> +     int length;
+>> +
+>> +     of_numa_prop = of_get_property(device, "numa-node-id", &length);
+>> +     if (of_numa_prop)
+>> +             return of_numa_prop_to_nid(of_numa_prop, length);
+>> +
+>> +     return NUMA_NO_NODE;
+>> +}
+>> +
+>> +/* DT node mapping is done already early_init_of_scan_memory */
+>> +int __init of_numa_init(void)
+>> +{
+>> +     return of_scan_flat_dt(early_init_of_scan_numa_map, NULL);
+>> +}
+>> diff --git a/include/linux/of.h b/include/linux/of.h
+>> index dd10626..23e5bad 100644
+>> --- a/include/linux/of.h
+>> +++ b/include/linux/of.h
+>> @@ -685,6 +685,10 @@ static inline int of_node_to_nid(struct device_node *device)
+>>  }
+>>  #endif
+>>
+>> +#ifdef CONFIG_OF_NUMA
+>> +extern int __init of_numa_init(void);
+>> +#endif
+>
+> You don't need an ifdef here unless you need an empty function.
+>
+> Can this be called internally by the DT code when it does the all
+> the other flat scanning instead of adding another call from arch code to
+> DT code. Ideally, the arch code would call DT code once and it would do
+> all the parsing it needs to.
+
+It is too early to include numa related dt parsing in the core dt
+parsing like early_init_dt_scan()
+since, numa init is called in bootmem_init after some mmblk related
+variables are set.
+which is little late in sequence to setup_machine_fdt
+
+of_numa_init is called through numa_init, after required variables are
+initialized.
+In current implementation, the dt scan for numa parsing like memory
+node, cpus and distance map
+happens after the required data structures are initialized, moving this parsing
+to core dt parsing will make this implementation in to 2 levels and
+makes it complex,
+which is at present fairly simple and straightforward.
+
+>
+> Rob
+
+thanks
+Ganapat
