@@ -1,22 +1,30 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 88E1B1A007F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 00:42:18 +1100 (AEDT)
-Subject: Re: [PATCH v5 21/23] powerpc: Simplify test in __dma_sync()
-To: Denis Kirjanov <kda@linux-powerpc.org>
-References: <cover.1454538974.git.christophe.leroy@c-s.fr>
- <42d5343703a9e67b5a2d94c8877bc0098448f71b.1454538980.git.christophe.leroy@c-s.fr>
- <CAOJe8K2qmRARai6okSXtvpkt2JOfJCrqwUOinDAyo2Qoypd7uw@mail.gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <56B35537.3050708@c-s.fr>
-Date: Thu, 4 Feb 2016 14:42:15 +0100
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
+ [140.105.206.208])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA0AB1A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 00:56:49 +1100 (AEDT)
+Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
+ by localhost (Email Security Appliance) with SMTP id 8E384440D96_6B3589CB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 13:56:44 +0000 (GMT)
+Received: from mail-qk0-f180.google.com (mail-qk0-f180.google.com
+ [209.85.220.180])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (verified OK))
+ by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
+ 27F3243E070_6B3589CF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 13:56:44 +0000 (GMT)
+Received: by mail-qk0-f180.google.com with SMTP id s5so21038381qkd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Feb 2016 05:56:44 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <CAOJe8K2qmRARai6okSXtvpkt2JOfJCrqwUOinDAyo2Qoypd7uw@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Date: Thu, 4 Feb 2016 14:56:42 +0100
+Message-ID: <CAPk1OjGDTCy6TzX1B3oi6NA3s==23vRgTdRh2SKfyVj-K7k75Q@mail.gmail.com>
+Subject: Question about code which uses MPIC_NO_RESET on 85XX
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,80 +34,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
+Can we change this code (from mpc85xx_ds.c)
 
-Le 04/02/2016 12:37, Denis Kirjanov a écrit :
-> On 2/4/16, Christophe Leroy <christophe.leroy@c-s.fr> wrote:
->> This simplification helps the compiler. We now have only one test
->> instead of two, so it reduces the number of branches.
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->> v2: new
->> v3: no change
->> v4: no change
->> v5: no change
->>
->>   arch/powerpc/mm/dma-noncoherent.c | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/mm/dma-noncoherent.c
->> b/arch/powerpc/mm/dma-noncoherent.c
->> index 169aba4..2dc74e5 100644
->> --- a/arch/powerpc/mm/dma-noncoherent.c
->> +++ b/arch/powerpc/mm/dma-noncoherent.c
->> @@ -327,7 +327,7 @@ void __dma_sync(void *vaddr, size_t size, int direction)
->>   		 * invalidate only when cache-line aligned otherwise there is
->>   		 * the potential for discarding uncommitted data from the cache
->>   		 */
->> -		if ((start & (L1_CACHE_BYTES - 1)) || (size & (L1_CACHE_BYTES - 1)))
->> +		if ((start | end) & (L1_CACHE_BYTES - 1))
->>   			flush_dcache_range(start, end);
->>   		else
->>   			invalidate_dcache_range(start, end);
-> The previous version of address cache-line aligned check reads perfectly fine.
-> What's the benefit of this micro optimization?
-With this optimisation we avoid one unneccessary test and two associated 
-jumps. Taking into account that __dma_sync() is one of the top ten CPU 
-consummers, I believe it is worth it:
+if (of_flat_dt_is_compatible(root, "fsl,MPC8572DS-CAMP")) {
+    mpic = mpic_alloc(NULL, 0,
+        MPIC_NO_RESET |
+        MPIC_BIG_ENDIAN |
+        MPIC_SINGLE_DEST_CPU,
+        0, 256, " OpenPIC  ");
+} else {
+    mpic = mpic_alloc(NULL, 0,
+        MPIC_BIG_ENDIAN |
+        MPIC_SINGLE_DEST_CPU,
+        0, 256, " OpenPIC  ");
+}
 
-Without the patch:
+in this one
 
-c000d894:    70 6a 00 0f     andi.   r10,r3,15
-c000d898:    39 29 00 0f     addi    r9,r9,15
-c000d89c:    54 63 00 36     rlwinm  r3,r3,0,0,27
-c000d8a0:    7d 23 48 50     subf    r9,r3,r9
-c000d8a4:    41 82 00 84     beq     c000d928 <__dma_sync+0xb8>
-[...]
-c000d8c0:    7c 00 04 ac     sync
-c000d8c4:    4e 80 00 20     blr
-[...]
-c000d928:    70 8a 00 0f     andi.   r10,r4,15
-c000d92c:    40 a2 ff 7c     bne     c000d8a8 <__dma_sync+0x38>
-c000d930:    55 2a e1 3f     rlwinm. r10,r9,28,4,31
-c000d934:    41 a2 ff 8c     beq     c000d8c0 <__dma_sync+0x50>
+mpic = mpic_alloc(NULL, 0,
+    MPIC_BIG_ENDIAN |
+    MPIC_SINGLE_DEST_CPU,
+    0, 256, " OpenPIC  ");
 
-With the patch:
+using "pic-no-reset" in the device tree?
 
-c000d894:    7c 89 1b 78     or      r9,r4,r3
-c000d898:    71 2a 00 0f     andi.   r10,r9,15
-c000d89c:    54 63 00 36     rlwinm  r3,r3,0,0,27
-c000d8a0:    38 84 00 0f     addi    r4,r4,15
-c000d8a4:    7c 83 20 50     subf    r4,r3,r4
-c000d8a8:    41 82 00 84     beq     c000d92c <__dma_sync+0xbc>
-[...]
-c000d8c4:    7c 00 04 ac     sync
-c000d8c8:    4e 80 00 20     blr
-[...]
-c000d92c:    54 89 e1 3f     rlwinm. r9,r4,28,4,31
-c000d930:    41 a2 ff 94     beq     c000d8c4 <__dma_sync+0x54>
+Thanks!
 
-
-Christophe
->> --
->> 2.1.0
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Ciao,
+Alessio
