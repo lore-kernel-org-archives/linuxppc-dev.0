@@ -3,27 +3,33 @@ Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
  [140.105.206.208])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AA0AB1A007F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 00:56:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438441A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 01:26:09 +1100 (AEDT)
 Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
- by localhost (Email Security Appliance) with SMTP id 8E384440D96_6B3589CB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 13:56:44 +0000 (GMT)
-Received: from mail-qk0-f180.google.com (mail-qk0-f180.google.com
- [209.85.220.180])
+ by localhost (Email Security Appliance) with SMTP id 2DCB2440D96_6B35F7DB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 14:26:05 +0000 (GMT)
+Received: from mail-qk0-f174.google.com (mail-qk0-f174.google.com
+ [209.85.220.174])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (verified OK))
  by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
- 27F3243E070_6B3589CF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 13:56:44 +0000 (GMT)
-Received: by mail-qk0-f180.google.com with SMTP id s5so21038381qkd.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Feb 2016 05:56:44 -0800 (PST)
+ DBF6D43E087_6B35F7BF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 14:26:03 +0000 (GMT)
+Received: by mail-qk0-f174.google.com with SMTP id o6so21488723qkc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Feb 2016 06:26:03 -0800 (PST)
 MIME-Version: 1.0
-Date: Thu, 4 Feb 2016 14:56:42 +0100
-Message-ID: <CAPk1OjGDTCy6TzX1B3oi6NA3s==23vRgTdRh2SKfyVj-K7k75Q@mail.gmail.com>
-Subject: Question about code which uses MPIC_NO_RESET on 85XX
+In-Reply-To: <CAPk1OjGKxzCi58udCL2ocVOoiufetnfgJ1WUcjD-JbQs7Tbq9A@mail.gmail.com>
+References: <CAPk1OjGew2n-17ztcbxcxBXWundeEk5nKQ5MS1HLYR4fiBOjxg@mail.gmail.com>
+ <1453904726.27129.42.camel@buserror.net>
+ <1453904822.27129.44.camel@buserror.net>
+ <CAPk1OjGKxzCi58udCL2ocVOoiufetnfgJ1WUcjD-JbQs7Tbq9A@mail.gmail.com>
+Date: Thu, 4 Feb 2016 15:26:02 +0100
+Message-ID: <CAPk1OjHnF=oi=M5son2vdsZwrhXC6Uy-wTJKpQiZcZMnWLb8KA@mail.gmail.com>
+Subject: Re: Question about 86xx
 From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-To: linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <oss@buserror.net>
+Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,33 +40,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Scott,
 
-Can we change this code (from mpc85xx_ds.c)
+On 27 January 2016 at 15:41, Alessio Igor Bogani
+<alessio.bogani@elettra.eu> wrote:
+> Scott,
+>
+> On 27 January 2016 at 15:27, Scott Wood <oss@buserror.net> wrote:
+>> On Wed, 2016-01-27 at 08:25 -0600, Scott Wood wrote:
+>>> On Wed, 2016-01-27 at 10:24 +0100, Alessio Igor Bogani wrote:
+> [...]
+>>> > I'm wondering if we are allowed to put together configurations of the
+>>> > 86xx base systems
+> [...]
+>>> > mpc86xx_defconfig/mpc86xx_smp_defconfig as like already done for 85xx
+>>> > ones.
+>>> Yes, that would be good.
 
-if (of_flat_dt_is_compatible(root, "fsl,MPC8572DS-CAMP")) {
-    mpic = mpic_alloc(NULL, 0,
-        MPIC_NO_RESET |
-        MPIC_BIG_ENDIAN |
-        MPIC_SINGLE_DEST_CPU,
-        0, 256, " OpenPIC  ");
-} else {
-    mpic = mpic_alloc(NULL, 0,
-        MPIC_BIG_ENDIAN |
-        MPIC_SINGLE_DEST_CPU,
-        0, 256, " OpenPIC  ");
-}
+There are 6 boards into arch/powerpc/configs/86xx directory. Five of
+them are based on dual core 8641 whereas one is based on single core
+8610. How should I proceed? Use a single file (mpc86xx_defconfig) or
+use two files (mpc86xx_defconfig and mpc86xx_smp_defconfig)?
 
-in this one
-
-mpic = mpic_alloc(NULL, 0,
-    MPIC_BIG_ENDIAN |
-    MPIC_SINGLE_DEST_CPU,
-    0, 256, " OpenPIC  ");
-
-using "pic-no-reset" in the device tree?
-
-Thanks!
+Thanks a lot!
 
 Ciao,
 Alessio
