@@ -1,17 +1,40 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id C016C1A0226
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 21:33:50 +1100 (AEDT)
-Message-Id: <525b6412d4d9006f60f8e48137eadad11076f8ae.1454581227.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1454581226.git.christophe.leroy@c-s.fr>
-References: <cover.1454581226.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v6 23/23] powerpc32: Remove one insn in mulhdu
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu,  4 Feb 2016 11:33:48 +0100 (CET)
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 336C11A1766
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 21:57:23 +1100 (AEDT)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 4 Feb 2016 20:57:22 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 267882BB004D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Feb 2016 21:57:16 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u14AuvxC55640082
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Feb 2016 21:57:05 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u14Auhhf016124
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Feb 2016 21:56:43 +1100
+Message-ID: <56B32E54.90307@linux.vnet.ibm.com>
+Date: Thu, 04 Feb 2016 16:26:20 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>
+CC: lvivier@redhat.com, thuth@redhat.com, aik@ozlabs.ru, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [RFCv2 5/9] arch/powerpc: Split hash page table sizing heuristic
+ into a helper
+References: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
+ <1454045043-25545-6-git-send-email-david@gibson.dropbear.id.au>
+ <56AF0380.3020500@linux.vnet.ibm.com> <20160202010447.GC15080@voom.fritz.box>
+In-Reply-To: <20160202010447.GC15080@voom.fritz.box>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,45 +44,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove one instruction in mulhdu
+On 02/02/2016 06:34 AM, David Gibson wrote:
+> On Mon, Feb 01, 2016 at 12:34:32PM +0530, Anshuman Khandual wrote:
+>> On 01/29/2016 10:53 AM, David Gibson wrote:
+>>> htab_get_table_size() either retrieve the size of the hash page table (HPT)
+>>> from the device tree - if the HPT size is determined by firmware - or
+>>> uses a heuristic to determine a good size based on RAM size if the kernel
+>>> is responsible for allocating the HPT.
+>>>
+>>> To support a PAPR extension allowing resizing of the HPT, we're going to
+>>> want the memory size -> HPT size logic elsewhere, so split it out into a
+>>> helper function.
+>>>
+>>> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+>>> ---
+>>>  arch/powerpc/include/asm/mmu-hash64.h |  3 +++
+>>>  arch/powerpc/mm/hash_utils_64.c       | 30 +++++++++++++++++-------------
+>>>  2 files changed, 20 insertions(+), 13 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+>>> index 7352d3f..cf070fd 100644
+>>> --- a/arch/powerpc/include/asm/mmu-hash64.h
+>>> +++ b/arch/powerpc/include/asm/mmu-hash64.h
+>>> @@ -607,6 +607,9 @@ static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
+>>>  	context = (MAX_USER_CONTEXT) + ((ea >> 60) - 0xc) + 1;
+>>>  	return get_vsid(context, ea, ssize);
+>>>  }
+>>> +
+>>> +unsigned htab_shift_for_mem_size(unsigned long mem_size);
+>>> +
+>>>  #endif /* __ASSEMBLY__ */
+>>>  
+>>>  #endif /* _ASM_POWERPC_MMU_HASH64_H_ */
+>>> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+>>> index e88a86e..d63f7dc 100644
+>>> --- a/arch/powerpc/mm/hash_utils_64.c
+>>> +++ b/arch/powerpc/mm/hash_utils_64.c
+>>> @@ -606,10 +606,24 @@ static int __init htab_dt_scan_pftsize(unsigned long node,
+>>>  	return 0;
+>>>  }
+>>>  
+>>> -static unsigned long __init htab_get_table_size(void)
+>>> +unsigned htab_shift_for_mem_size(unsigned long mem_size)
+>>>  {
+>>> -	unsigned long mem_size, rnd_mem_size, pteg_count, psize;
+>>> +	unsigned memshift = __ilog2(mem_size);
+>>> +	unsigned pshift = mmu_psize_defs[mmu_virtual_psize].shift;
+>>> +	unsigned pteg_shift;
+>>> +
+>>> +	/* round mem_size up to next power of 2 */
+>>> +	if ((1UL << memshift) < mem_size)
+>>> +		memshift += 1;
+>>> +
+>>> +	/* aim for 2 pages / pteg */
+>>
+>> While here I guess its a good opportunity to write couple of lines
+>> about why one PTE group for every two physical pages on the system,
+> 
+> Well, that don't really know, it's just copied from the existing code.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
-v2: new
-v3: no change
-v4: no change
-v5: no change
-v6: no change
+Aneesh, would you know why ?
 
- arch/powerpc/kernel/misc_32.S | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+> 
+>> why minimum (1UL << 11 = 2048) number of PTE groups required,
 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 3ec5a22..bf5160f 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -91,17 +91,16 @@ _GLOBAL(mulhdu)
- 	addc	r7,r0,r7
- 	addze	r4,r4
- 1:	beqlr	cr1		/* all done if high part of A is 0 */
--	mr	r10,r3
- 	mullw	r9,r3,r5
--	mulhwu	r3,r3,r5
-+	mulhwu	r10,r3,r5
- 	beq	2f
--	mullw	r0,r10,r6
--	mulhwu	r8,r10,r6
-+	mullw	r0,r3,r6
-+	mulhwu	r8,r3,r6
- 	addc	r7,r0,r7
- 	adde	r4,r4,r8
--	addze	r3,r3
-+	addze	r10,r10
- 2:	addc	r4,r4,r9
--	addze	r3,r3
-+	addze	r3,r10
- 	blr
- 
- /*
--- 
-2.1.0
+Aneesh, would you know why ?
+
+> 
+> Ok.
+> 
+>> why
+>> (1U << 7 = 128) entries per PTE group
+> 
+> Um.. what?  Because that's how big a PTEG is, I don't think
+> re-explaining the HPT structure here is useful.
+
+Agreed, though think some where these things should be macros not used
+as hard coded numbers like this.
