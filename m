@@ -1,18 +1,31 @@
-Return-Path: <weiyj_lk@163.com>
-Received: from m12-16.163.com (m12-16.163.com [220.181.12.16])
- by lists.ozlabs.org (Postfix) with ESMTP id F16341A001D
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Feb 2016 01:10:18 +1100 (AEDT)
-From: weiyj_lk@163.com
-To: Scott Wood <scottwood@freescale.com>,
- Zhao Qiang <qiang.zhao@freescale.com>,
- Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Wei Yongjun <yongjun_wei@trendmicro.com.cn>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] QE: Use GFP_ATOMIC under spin lock
-Date: Fri,  5 Feb 2016 21:52:23 +0800
-Message-Id: <1454680343-18393-1-git-send-email-weiyj_lk@163.com>
+Return-Path: <rostedt@goodmis.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB2DE1A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Feb 2016 01:36:54 +1100 (AEDT)
+Received: from smtprelay.hostedemail.com (smtprelay0198.hostedemail.com
+ [216.40.44.198])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 45E1F140BAD
+ for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2016 01:36:53 +1100 (AEDT)
+Date: Fri, 5 Feb 2016 09:36:47 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, Michael Ellerman
+ <mpe@ellerman.id.au>
+Subject: Re: [PATCH v3 2/2] powerpc: tracing: don't trace hcalls on offline
+ CPUs
+Message-ID: <20160205093647.79ca2f70@gandalf.local.home>
+In-Reply-To: <CAOJe8K2Ahh-y95BmpsP+d2P9ysUsyo5CnhPOXymEJzjFwkR=7Q@mail.gmail.com>
+References: <1450124286-4822-1-git-send-email-kda@linux-powerpc.org>
+ <1450124286-4822-2-git-send-email-kda@linux-powerpc.org>
+ <1452599615.20985.2.camel@ellerman.id.au>
+ <CAOJe8K2iVOy9=Ds09_ePct3xR6qCH0U4XoKW-qP_TNEMe8GAmQ@mail.gmail.com>
+ <CAOJe8K2Ahh-y95BmpsP+d2P9ysUsyo5CnhPOXymEJzjFwkR=7Q@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +35,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+On Fri, 5 Feb 2016 14:20:17 +0300
+Denis Kirjanov <kda@linux-powerpc.org> wrote:
 
-The function cpm_muram_alloc_common() is called from several
-places, in some of which, such as cpm_muram_alloc(), a lock is
-held here, so we should use GFP_ATOMIC when a lock is held.
+> >>> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>  
+> >
+> > Hi Steven,
+> >
+> > please apply with Michael's acked-by tag.  
+> 
+> ping
+> 
 
-Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
----
- drivers/soc/fsl/qe/qe_common.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Actually, can you take this through the ppc tree? The
+TRACE_EVENT_FN_COND is already in mainline.
 
-diff --git a/drivers/soc/fsl/qe/qe_common.c b/drivers/soc/fsl/qe/qe_common.c
-index 419fa5b..d774e54 100644
---- a/drivers/soc/fsl/qe/qe_common.c
-+++ b/drivers/soc/fsl/qe/qe_common.c
-@@ -194,7 +194,7 @@ unsigned long cpm_muram_alloc_common(unsigned long size, genpool_algo_t algo,
- 		goto out2;
- 	start = start - GENPOOL_OFFSET;
- 	memset_io(cpm_muram_addr(start), 0, size);
--	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
-+	entry = kmalloc(sizeof(*entry), GFP_ATOMIC);
- 	if (!entry)
- 		goto out1;
- 	entry->start = start;
+You can add my:
+
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+
+-- Steve
