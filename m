@@ -1,41 +1,18 @@
-Return-Path: <keescook@google.com>
-Received: from mail-ig0-x234.google.com (mail-ig0-x234.google.com
- [IPv6:2607:f8b0:4001:c05::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F0391A0318
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Feb 2016 08:18:07 +1100 (AEDT)
-Received: by mail-ig0-x234.google.com with SMTP id mw1so22471839igb.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Feb 2016 13:18:07 -0800 (PST)
+Return-Path: <kirill.shutemov@linux.intel.com>
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by lists.ozlabs.org (Postfix) with ESMTP id 630E31A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Feb 2016 08:48:23 +1100 (AEDT)
+Date: Sat, 6 Feb 2016 00:47:18 +0300
+From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: Fix Multi hit ERAT cause by recent THP update
+Message-ID: <20160205214718.GA88280@black.fi.intel.com>
+References: <1454695900-9282-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1CCD6FE5@AcuExch.aculab.com>
-References: <1454619643-14444-1-git-send-email-keescook@chromium.org>
- <1454619643-14444-3-git-send-email-keescook@chromium.org>
- <063D6719AE5E284EB5DD2968C1650D6D1CCD6FE5@AcuExch.aculab.com>
-Date: Fri, 5 Feb 2016 13:18:04 -0800
-Message-ID: <CAGXu5jJrFv5Y8Q_i3yFYBDmT0+pO05dS3ijB0gOn-huasxZWmA@mail.gmail.com>
-Subject: Re: [PATCH v2 2/4] lib: update single-char callers of strtobool
-From: Kees Cook <keescook@chromium.org>
-To: David Laight <David.Laight@aculab.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Amitkumar Karwar <akarwar@marvell.com>,
- Nishant Sarmukadam <nishants@marvell.com>, Kalle Valo <kvalo@codeaurora.org>,
- Steve French <sfrench@samba.org>,
- "linux-cifs@vger.kernel.org" <linux-cifs@vger.kernel.org>,
- Joe Perches <joe@perches.com>,
- Andy Shevchenko <andy.shevchenko@gmail.com>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Daniel Borkmann <daniel@iogearbox.net>, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- "x86@kernel.org" <x86@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1454695900-9282-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,42 +22,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 5, 2016 at 2:46 AM, David Laight <David.Laight@aculab.com> wrote:
-> From: Kees Cook
->> Sent: 04 February 2016 21:01
->> Some callers of strtobool were passing a pointer to unterminated strings.
->> In preparation of adding multi-character processing to kstrtobool, update
->> the callers to not pass single-character pointers, and switch to using the
->> new kstrtobool_from_user helper where possible.
->
-> Personally I think you should change the name of the function so that the
-> compiler (and linker) will pick up places that have not been changed.
-> Relying on people to make the required changes will cause problems.
+On Fri, Feb 05, 2016 at 11:41:40PM +0530, Aneesh Kumar K.V wrote:
+> With ppc64 we use the deposted pgtable_t to store the hash pte slot
+> information. We should not withdraw the deposited pgtable_t without
+> marking the pmd none. This ensure that low level hash fault handling
+> will skip this huge pte and we will handle them at upper levels. We
+> do take page table lock there and we can serialize against a parallel
+> THP split there. Hence mark the pte none (ie, remove __PAGE_USER) before
+> splitting the huge pmd.
+> 
+> Also make sure we wait for irq disable section in other cpus to finish
+> before flipping a huge pte entry with a regular pmd entry. Code paths
+> like find_linux_pte_or_hugepte depend on irq disable to get
+> a stable pte_t pointer. A parallel thp split need to make sure we
+> don't convert a pmd pte to a regular pmd entry without waiting for the
+> irq disable section to finish.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-After the single-character users were pointed out, I looked for others
-and there aren't any.
+Cc list is too short. At least akpm@ and linux-mm@ should be there.
+Probably numa balancing folks.
 
-> The current code (presumably) treats "no", "nyet" and "nkjkkrkjrkjterkj" as false.
-> Changing that behaviour will break things.
+Have you tested it with CONFIG_NUMA_BALANCING disabled?
 
-There's no change there. All three of those will still be "false".
-Perhaps my changelog shouldn't say "unterminated" but rather
-"character array".
+I would expect some additional changes in this area would be required.
+pmd_protnone() is always zero without numa balancing compiled in and
+therefore I don't see where we will get this serialization agians ptl on
+fault side.
 
-> If you want to support "on" and "off", then maybe check for the supplied string
-> starting with the character sequences "on\0" and "off\0" (as well as any others).
-> This doesn't need the input string be '\0' terminated - since you match y and n
-> without looking at the 2nd byte.
-> You'd have to be extremely unlucky to get a page fault in the 3 bytes
-> following an 'o' if the caller supplied a single byte buffer.
+> ---
+>  arch/powerpc/include/asm/book3s/64/pgtable.h |  4 ++++
+>  arch/powerpc/mm/pgtable_64.c                 | 36 +++++++++++++++++++++++++++-
+>  include/asm-generic/pgtable.h                |  8 +++++++
+>  mm/huge_memory.c                             |  1 +
+>  4 files changed, 48 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> index 8d1c41d28318..0415856941e0 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -281,6 +281,10 @@ extern pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
+>  extern void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
+>  			    pmd_t *pmdp);
+>  
+> +#define __HAVE_ARCH_PMDP_HUGE_SPLITTING_FLUSH
+> +extern void pmdp_huge_splitting_flush(struct vm_area_struct *vma,
+> +				      unsigned long address, pmd_t *pmdp);
 
-I'd prefer to keep the switch statement as short as possible, and I
-don't want to do full string compares. And as you say, even fixing the
-single-byte callers seems like a needless exercise, but seeing as how
-it's a net clean-up, I think it's good they way I've got the series.
+I don't really like the name, but cannot think of anything better.
 
--Kees
+> +
+>  #define pmd_move_must_withdraw pmd_move_must_withdraw
+>  struct spinlock;
+>  static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
+> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+> index 3124a20d0fab..d80a23a92f95 100644
+> --- a/arch/powerpc/mm/pgtable_64.c
+> +++ b/arch/powerpc/mm/pgtable_64.c
+> @@ -646,6 +646,31 @@ pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
+>  	return pgtable;
+>  }
+>  
+> +void pmdp_huge_splitting_flush(struct vm_area_struct *vma,
+> +			       unsigned long address, pmd_t *pmdp)
+> +{
+> +	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
+> +
+> +#ifdef CONFIG_DEBUG_VM
+> +	BUG_ON(REGION_ID(address) != USER_REGION_ID);
+> +#endif
+> +	/*
+> +	 * We can't mark the pmd none here, because that will cause a race
+> +	 * against exit_mmap. We need to continue mark pmd TRANS HUGE, while
+> +	 * we spilt, but at the same time we wan't rest of the ppc64 code
+> +	 * not to insert hash pte on this, because we will be modifying
+> +	 * the deposited pgtable in the caller of this function. Hence
+> +	 * clear the _PAGE_USER so that we move the fault handling to
+> +	 * higher level function and that will serialize against ptl.
+> +	 * We need to flush existing hash pte entries here even though,
+> +	 * the translation is still valid, because we will withdraw
+> +	 * pgtable_t after this.
+> +	 */
+> +	pmd_hugepage_update(vma->vm_mm, address, pmdp, _PAGE_USER, 0);
+> +	return;
+> +}
+> +
+> +
+>  /*
+>   * set a new huge pmd. We should not be called for updating
+>   * an existing pmd entry. That should go via pmd_hugepage_update.
+> @@ -663,10 +688,19 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
+>  	return set_pte_at(mm, addr, pmdp_ptep(pmdp), pmd_pte(pmd));
+>  }
+>  
+> +/*
+> + * We use this to invalidate a pmdp entry before switching from a
+> + * hugepte to regular pmd entry.
+> + */
+>  void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
+>  		     pmd_t *pmdp)
+>  {
+> -	pmd_hugepage_update(vma->vm_mm, address, pmdp, _PAGE_PRESENT, 0);
+> +	pmd_hugepage_update(vma->vm_mm, address, pmdp, ~0UL, 0);
+> +	/*
+> +	 * This ensures that generic code that rely on IRQ disabling
+> +	 * to prevent a parallel THP split work as expected.
+> +	 */
+> +	kick_all_cpus_sync();
+>  }
+>  
+>  /*
+> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+> index 0b3c0d39ef75..388065c79795 100644
+> --- a/include/asm-generic/pgtable.h
+> +++ b/include/asm-generic/pgtable.h
+> @@ -239,6 +239,14 @@ extern void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
+>  			    pmd_t *pmdp);
+>  #endif
+>  
+> +#ifndef __HAVE_ARCH_PMDP_HUGE_SPLITTING_FLUSH
+> +static inline void pmdp_huge_splitting_flush(struct vm_area_struct *vma,
+> +					     unsigned long address, pmd_t *pmdp)
+> +{
+> +	return;
+> +}
+> +#endif
+> +
+>  #ifndef __HAVE_ARCH_PTE_SAME
+>  static inline int pte_same(pte_t pte_a, pte_t pte_b)
+>  {
+> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+> index 36c070167b71..b52d16a86e91 100644
+> --- a/mm/huge_memory.c
+> +++ b/mm/huge_memory.c
+> @@ -2860,6 +2860,7 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
+>  	young = pmd_young(*pmd);
+>  	dirty = pmd_dirty(*pmd);
+>  
+> +	pmdp_huge_splitting_flush(vma, haddr, pmd);
+>  	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
+>  	pmd_populate(mm, &_pmd, pgtable);
+>  
+> -- 
+> 2.5.0
+> 
 
 -- 
-Kees Cook
-Chrome OS & Brillo Security
+ Kirill A. Shutemov
