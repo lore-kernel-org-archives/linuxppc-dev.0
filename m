@@ -1,27 +1,28 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from smtprelay.hostedemail.com (smtprelay0156.hostedemail.com
- [216.40.44.156])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-wm0-x22a.google.com (mail-wm0-x22a.google.com
+ [IPv6:2a00:1450:400c:c09::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D95341A0065
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Feb 2016 03:30:39 +1100 (AEDT)
-Date: Fri, 5 Feb 2016 11:30:32 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Torsten Duwe <duwe@lst.de>, Michael Ellerman <mpe@ellerman.id.au>, Jiri
- Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>, Jessica Yu
- <jeyu@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
-Subject: Re: [PATCH v7 04/10] ppc64 ftrace_with_regs configuration variables
-Message-ID: <20160205113032.620c97f3@gandalf.local.home>
-In-Reply-To: <20160205161834.GF731@pathway.suse.cz>
-References: <20160204161527.5F3AC692CD@newverein.lst.de>
- <20160204162053.C76A7692D8@newverein.lst.de>
- <20160205140517.GE3305@pathway.suse.cz>
- <20160205094803.1e0c6c91@gandalf.local.home>
- <20160205161834.GF731@pathway.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 238811A006D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Feb 2016 05:05:09 +1100 (AEDT)
+Received: by mail-wm0-x22a.google.com with SMTP id g62so38382924wme.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Feb 2016 10:05:08 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Sender: pku.leo@gmail.com
+In-Reply-To: <1454635050.2486.25.camel@buserror.net>
+References: <1454481372-10288-1-git-send-email-raghav@freescale.com>
+ <CADRPPNTKFA8rkynJR4wCNgAmqvmiwYwTi2Uk9hDUMB4+N7ST_Q@mail.gmail.com>
+ <1454635050.2486.25.camel@buserror.net>
+Date: Fri, 5 Feb 2016 12:05:05 -0600
+Message-ID: <CADRPPNQc1gPPSa-ELFhpCJ-V-kAcP02B1K-pr0M66Fe8mgDSDg@mail.gmail.com>
+Subject: Re: [PATCH] mtd/ifc: Add support for IFC controller version 2.0
+From: Li Yang <leoli@freescale.com>
+To: Scott Wood <oss@buserror.net>
+Cc: Raghav Dogra <raghav@freescale.com>,
+ Brian Norris <computersforpeace@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, prabhakar.kushwaha@nxp.com,
+ linux-mtd@lists.infradead.org, Jaiprakash Singh <b44839@freescale.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 5 Feb 2016 17:18:34 +0100
-Petr Mladek <pmladek@suse.com> wrote:
+On Thu, Feb 4, 2016 at 7:17 PM, Scott Wood <oss@buserror.net> wrote:
+> On Thu, 2016-02-04 at 17:07 -0600, Li Yang wrote:
+>> On Wed, Feb 3, 2016 at 12:36 AM, Raghav Dogra <raghav@freescale.com> wrote:
+>> > The new IFC controller version 2.0 has a different memory map page.
+>> > Upto IFC 1.4 PAGE size is 4 KB and from IFC2.0 PAGE size is 64KB.
+>> > This patch segregates the IFC global and runtime registers to appropriate
+>> > PAGE sizes.
+>>
+>> If the global registers and the runtime registers are so independent
+>> that they have to be on different page boundaries, it would make more
+>> sense for them to be defined as separate reg regions in the device
+>> tree at the very beginning.  Then we would only need to change the
+>> device tree now and it would be future proof for any page size.
+>
+> That's great if you have a time machine.  Otherwise, NACK.
 
-> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> index a138f6d..de6dab0 100644
-> --- a/kernel/trace/Kconfig
-> +++ b/kernel/trace/Kconfig
-> @@ -449,7 +449,7 @@ config PROBE_EVENTS
->  	def_bool n
->  
->  config DYNAMIC_FTRACE
-> -	bool "enable/disable function tracing dynamically"
-> +	bool "Enable/Disable function tracing dynamically"
->  	depends on FUNCTION_TRACER
->  	depends on HAVE_DYNAMIC_FTRACE
->  	default y
-> @@ -472,9 +472,17 @@ config DYNAMIC_FTRACE
->  	  otherwise has native performance as long as no tracing is active.
->  
->  config DYNAMIC_FTRACE_WITH_REGS
-> -	def_bool y
-> +	bool "Pass registers to function tracer"
->  	depends on DYNAMIC_FTRACE
->  	depends on HAVE_DYNAMIC_FTRACE_WITH_REGS
-> +	default y
-> +	help
-> +	  This option enables passing the current state of processor
-> +	  registers to the function tracer. It allows to do a more
-> +	  detailed analyze and print more information.
-> +
-> +	  Say Y here if you are unsure. The only exception is if
-> +	  you want to pass a build error caused by a broken compiler.
->  
->  config FUNCTION_PROFILER
->  	bool "Kernel function profiler"
-> 
-> 
-> I made "enable/disable" uppercase because it looked weird in
-> context of other descritions.
-> 
+I didn't suggest that we need to change it now.  But we might need to
+be more careful in the future when creating bindings for new hardware.
 
-This works too, and I'm fine with it.
-
--- Steve
+Regards,
+Leo
