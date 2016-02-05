@@ -1,24 +1,27 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 6B4A41A0018
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 18:56:54 +1100 (AEDT)
-Subject: Re: [PATCH v5 21/23] powerpc: Simplify test in __dma_sync()
-To: Denis Kirjanov <kda@linux-powerpc.org>
-References: <cover.1454538974.git.christophe.leroy@c-s.fr>
- <42d5343703a9e67b5a2d94c8877bc0098448f71b.1454538980.git.christophe.leroy@c-s.fr>
- <CAOJe8K2qmRARai6okSXtvpkt2JOfJCrqwUOinDAyo2Qoypd7uw@mail.gmail.com>
- <56B35537.3050708@c-s.fr>
- <CAOJe8K035FFSgew8+fCHL9YBkScRZaHL_fEJFsAsVnT5qCm_ZQ@mail.gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <56B455C3.6020702@c-s.fr>
-Date: Fri, 5 Feb 2016 08:56:51 +0100
+Return-Path: <jthumshirn@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E33701A006F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 19:34:18 +1100 (AEDT)
+Date: Fri, 5 Feb 2016 09:34:13 +0100
+From: Johannes Thumshirn <jthumshirn@suse.de>
+To: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
+Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, martin.petersen@oracle.com,
+ linux-scsi@vger.kernel.org, JBottomley@odin.com,
+ linux-kernel@vger.kernel.org, hare@suse.de,
+ brking@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 5/6] ibmvscsi: Remove unsupported host config MAD and
+ sysfs interface
+Message-ID: <20160205083413.GF27969@c203.arch.suse.de>
+References: <1454542114-1797-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1454542114-1797-6-git-send-email-tyreld@linux.vnet.ibm.com>
+ <20160204080317.GT27969@c203.arch.suse.de>
+ <56B38EE7.6060102@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <CAOJe8K035FFSgew8+fCHL9YBkScRZaHL_fEJFsAsVnT5qCm_ZQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <56B38EE7.6060102@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Feb 04, 2016 at 09:48:23AM -0800, Tyrel Datwyler wrote:
+> On 02/04/2016 12:03 AM, Johannes Thumshirn wrote:
+> > On Wed, Feb 03, 2016 at 05:28:33PM -0600, Tyrel Datwyler wrote:
+> >> A VIOSRP_HOST_CONFIG_TYPE management datagram (MAD) has existed in
+> >> the code for some time. From what information I've gathered from
+> >> Brian King this was likely implemented on the host side in a SLES 9
+> >> based VIOS, which is no longer supported anywhere. Further, it is
+> >> not defined in PAPR or supported by any AIX based VIOS.
+> >>
+> >> Treating as bit rot and removing the sysfs interface and associated
+> >> host config code accordingly.
+> > 
+> > Doesn't removing a sysfs interface potentially break userspace code?
+> > 
+> 
+> In the general case yes, but I feel in this case no. First, Reading from
+> this config attribute of a vscsi host adapter always returns nothing.
+> Second, any userspace code using this attribute better be checking for
+> the existence of config. Just a quick look for
+> /sys/class/scsi_host/host*/config under other host adapters on my system
+> I find that attribute doesn't exist for any of them.
+> 
+> If there is truly enough concern that somebody may actually be accessing
+> this useless attribute from userspace then we can still strip out the
+> unsupported code, but leave the attribute and return nothing directly
+> from the show function.
 
+Which is what I kinda prefer. Slowly deprecate and phase out, but don't break
+userspace. You never know who is writing some obscure piece of code relaying on
+some sysfs attribute.
 
-Le 05/02/2016 08:52, Denis Kirjanov a Ã©crit :
-> On 2/4/16, Christophe Leroy <christophe.leroy@c-s.fr> wrote:
->>
->> Le 04/02/2016 12:37, Denis Kirjanov a Ã©crit :
->>> On 2/4/16, Christophe Leroy <christophe.leroy@c-s.fr> wrote:
->>>> This simplification helps the compiler. We now have only one test
->>>> instead of two, so it reduces the number of branches.
->>>>
->>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>>> ---
->>>> v2: new
->>>> v3: no change
->>>> v4: no change
->>>> v5: no change
->>>>
->>>>    arch/powerpc/mm/dma-noncoherent.c | 2 +-
->>>>    1 file changed, 1 insertion(+), 1 deletion(-)
->>>>
->>>> diff --git a/arch/powerpc/mm/dma-noncoherent.c
->>>> b/arch/powerpc/mm/dma-noncoherent.c
->>>> index 169aba4..2dc74e5 100644
->>>> --- a/arch/powerpc/mm/dma-noncoherent.c
->>>> +++ b/arch/powerpc/mm/dma-noncoherent.c
->>>> @@ -327,7 +327,7 @@ void __dma_sync(void *vaddr, size_t size, int
->>>> direction)
->>>>    		 * invalidate only when cache-line aligned otherwise there is
->>>>    		 * the potential for discarding uncommitted data from the cache
->>>>    		 */
->>>> -		if ((start & (L1_CACHE_BYTES - 1)) || (size & (L1_CACHE_BYTES - 1)))
->>>> +		if ((start | end) & (L1_CACHE_BYTES - 1))
->>>>    			flush_dcache_range(start, end);
->>>>    		else
->>>>    			invalidate_dcache_range(start, end);
->>> The previous version of address cache-line aligned check reads perfectly
->>> fine.
->>> What's the benefit of this micro optimization?
->> With this optimisation we avoid one unneccessary test and two associated
->> jumps. Taking into account that __dma_sync() is one of the top ten CPU
->> consummers, I believe it is worth it:
->>
->>
-> Yeah, looks better. Did you compile the kernel with default compiler flags?
->
-> Thanks!
-Yes I did
+Thanks,
+	Johannes
 
-Christophe
+-- 
+Johannes Thumshirn                                          Storage
+jthumshirn@suse.de                                +49 911 74053 689
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Felix Imendörffer, Jane Smithard, Graham Norton
+HRB 21284 (AG Nürnberg)
+Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
