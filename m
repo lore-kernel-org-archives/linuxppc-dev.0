@@ -1,29 +1,34 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.189])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 20A191A0243
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 21:22:29 +1100 (AEDT)
-Date: Fri, 5 Feb 2016 11:22:24 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: AKASHI Takahiro <takahiro.akashi@linaro.org>,
- Jiri Kosina <jikos@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Torsten Duwe <duwe@lst.de>,
- live-patching@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v6 1/9] ppc64 (le): prepare for -mprofile-kernel
-Message-ID: <20160205102222.GD3305@pathway.suse.cz>
-References: <20160125170459.14DB7692CE@newverein.lst.de>
- <20160125170723.D2CCE692CE@newverein.lst.de>
- <56B1AAE5.10500@linaro.org>
- <alpine.LNX.2.00.1602030952220.22727@cbobk.fhfr.pm>
- <20160203112449.GA27247@lst.de> <56B31A7C.2050803@linaro.org>
- <20160204110224.GD731@pathway.suse.cz>
- <CAKTCnznB8WQGbuJkek7nhnXW6FSBR+Mk__jeNfpgfpTf8G9MMA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 094201A0243
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 21:49:53 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Kees Cook' <keescook@chromium.org>, Andrew Morton
+ <akpm@linux-foundation.org>
+CC: Amitkumar Karwar <akarwar@marvell.com>, Nishant Sarmukadam
+ <nishants@marvell.com>, Kalle Valo <kvalo@codeaurora.org>, Steve French
+ <sfrench@samba.org>, "linux-cifs@vger.kernel.org"
+ <linux-cifs@vger.kernel.org>, Joe Perches <joe@perches.com>, Andy Shevchenko
+ <andy.shevchenko@gmail.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Daniel Borkmann <daniel@iogearbox.net>, Michael Ellerman
+ <mpe@ellerman.id.au>, Heiko Carstens <heiko.carstens@de.ibm.com>, "Martin
+ Schwidefsky" <schwidefsky@de.ibm.com>, "x86@kernel.org" <x86@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v2 2/4] lib: update single-char callers of strtobool
+Date: Fri, 5 Feb 2016 10:46:19 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CCD6FE5@AcuExch.aculab.com>
+References: <1454619643-14444-1-git-send-email-keescook@chromium.org>
+ <1454619643-14444-3-git-send-email-keescook@chromium.org>
+In-Reply-To: <1454619643-14444-3-git-send-email-keescook@chromium.org>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAKTCnznB8WQGbuJkek7nhnXW6FSBR+Mk__jeNfpgfpTf8G9MMA@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,24 +38,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri 2016-02-05 15:40:27, Balbir Singh wrote:
-> On Thu, Feb 4, 2016 at 10:02 PM, Petr Mladek <pmladek@suse.com> wrote:
-> For big endian builds I saw
-> 
-> Dump of assembler code for function alloc_pages_current:
->    0xc000000000256f00 <+0>:    mflr    r0
->    0xc000000000256f04 <+4>:    std     r0,16(r1)
->    0xc000000000256f08 <+8>:    bl      0xc000000000009e5c <.mcount>
->    0xc000000000256f0c <+12>:    mflr    r0
-> 
-> The offset is 8 bytes. Your earlier patch handled this by adding 16, I
-> suspect it needs revisiting
+From: Kees Cook
+> Sent: 04 February 2016 21:01
+> Some callers of strtobool were passing a pointer to unterminated strings.
+> In preparation of adding multi-character processing to kstrtobool, update
+> the callers to not pass single-character pointers, and switch to using th=
+e
+> new kstrtobool_from_user helper where possible.
 
-It seems to be one of the funcitons that do not access any global
-symbol. gcc does not produce TOC handling in this case when
-compiled with -mprofile-kernel. I believe that it is a gcc bug.
-More details can be found in the thread starting at
-http://thread.gmane.org/gmane.linux.kernel/2134759/focus=2141996
+Personally I think you should change the name of the function so that the
+compiler (and linker) will pick up places that have not been changed.
+Relying on people to make the required changes will cause problems.
 
-Best Regards,
-Petr
+The current code (presumably) treats "no", "nyet" and "nkjkkrkjrkjterkj" as=
+ false.
+Changing that behaviour will break things.
+
+If you want to support "on" and "off", then maybe check for the supplied st=
+ring
+starting with the character sequences "on\0" and "off\0" (as well as any ot=
+hers).
+This doesn't need the input string be '\0' terminated - since you match y a=
+nd n
+without looking at the 2nd byte.
+You'd have to be extremely unlucky to get a page fault in the 3 bytes
+following an 'o' if the caller supplied a single byte buffer.
+
+	David
