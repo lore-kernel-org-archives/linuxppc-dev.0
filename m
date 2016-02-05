@@ -1,27 +1,15 @@
-Return-Path: <jthumshirn@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E33701A006F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 19:34:18 +1100 (AEDT)
-Date: Fri, 5 Feb 2016 09:34:13 +0100
-From: Johannes Thumshirn <jthumshirn@suse.de>
-To: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
-Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, JBottomley@odin.com,
- linux-kernel@vger.kernel.org, hare@suse.de,
- brking@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 5/6] ibmvscsi: Remove unsupported host config MAD and
- sysfs interface
-Message-ID: <20160205083413.GF27969@c203.arch.suse.de>
-References: <1454542114-1797-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <1454542114-1797-6-git-send-email-tyreld@linux.vnet.ibm.com>
- <20160204080317.GT27969@c203.arch.suse.de>
- <56B38EE7.6060102@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <56B38EE7.6060102@gmail.com>
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from elettra.eu (m2.elettra.trieste.it [140.105.206.202])
+ by lists.ozlabs.org (Postfix) with ESMTP id F09E21A01A3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Feb 2016 19:58:25 +1100 (AEDT)
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+To: Scott Wood <oss@buserror.net>,
+	Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alessio Igor Bogani <alessio.bogani@elettra.eu>
+Subject: powerpc/86xx: Consolidate common platform code
+Date: Fri,  5 Feb 2016 09:58:14 +0100
+Message-Id: <1454662694-31118-1-git-send-email-alessio.bogani@elettra.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,44 +19,352 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 04, 2016 at 09:48:23AM -0800, Tyrel Datwyler wrote:
-> On 02/04/2016 12:03 AM, Johannes Thumshirn wrote:
-> > On Wed, Feb 03, 2016 at 05:28:33PM -0600, Tyrel Datwyler wrote:
-> >> A VIOSRP_HOST_CONFIG_TYPE management datagram (MAD) has existed in
-> >> the code for some time. From what information I've gathered from
-> >> Brian King this was likely implemented on the host side in a SLES 9
-> >> based VIOS, which is no longer supported anywhere. Further, it is
-> >> not defined in PAPR or supported by any AIX based VIOS.
-> >>
-> >> Treating as bit rot and removing the sysfs interface and associated
-> >> host config code accordingly.
-> > 
-> > Doesn't removing a sysfs interface potentially break userspace code?
-> > 
-> 
-> In the general case yes, but I feel in this case no. First, Reading from
-> this config attribute of a vscsi host adapter always returns nothing.
-> Second, any userspace code using this attribute better be checking for
-> the existence of config. Just a quick look for
-> /sys/class/scsi_host/host*/config under other host adapters on my system
-> I find that attribute doesn't exist for any of them.
-> 
-> If there is truly enough concern that somebody may actually be accessing
-> this useless attribute from userspace then we can still strip out the
-> unsupported code, but leave the attribute and return nothing directly
-> from the show function.
+Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+---
+ arch/powerpc/platforms/86xx/Makefile       |  2 +-
+ arch/powerpc/platforms/86xx/common.c       | 42 ++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/86xx/gef_ppc9a.c    | 32 +----------------------
+ arch/powerpc/platforms/86xx/gef_sbc310.c   | 32 +----------------------
+ arch/powerpc/platforms/86xx/gef_sbc610.c   | 32 +----------------------
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c | 20 ++------------
+ arch/powerpc/platforms/86xx/mpc86xx.h      |  2 ++
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c | 21 +--------------
+ arch/powerpc/platforms/86xx/sbc8641d.c     | 32 +----------------------
+ 9 files changed, 52 insertions(+), 163 deletions(-)
+ create mode 100644 arch/powerpc/platforms/86xx/common.c
 
-Which is what I kinda prefer. Slowly deprecate and phase out, but don't break
-userspace. You never know who is writing some obscure piece of code relaying on
-some sysfs attribute.
-
-Thanks,
-	Johannes
-
+diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
+index 8051aa2..01958fe 100644
+--- a/arch/powerpc/platforms/86xx/Makefile
++++ b/arch/powerpc/platforms/86xx/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for the PowerPC 86xx linux kernel.
+ #
+ 
+-obj-y				:= pic.o
++obj-y				:= pic.o common.o
+ obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
+ obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
+ obj-$(CONFIG_SBC8641D)		+= sbc8641d.o
+diff --git a/arch/powerpc/platforms/86xx/common.c b/arch/powerpc/platforms/86xx/common.c
+new file mode 100644
+index 0000000..bee3177
+--- /dev/null
++++ b/arch/powerpc/platforms/86xx/common.c
+@@ -0,0 +1,42 @@
++/*
++ * Routines common to most mpc86xx-based boards.
++ *
++ * This is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/of_platform.h>
++
++#include "mpc86xx.h"
++
++static const struct of_device_id mpc86xx_common_ids[] __initconst = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{ .compatible = "simple-bus", },
++	{ .name = "localbus", },
++	{ .compatible = "gianfar", },
++	{ .compatible = "fsl,mpc8641-pcie", },
++	{},
++};
++
++int __init mpc86xx_common_publish_devices(void)
++{
++	return of_platform_bus_probe(NULL, mpc86xx_common_ids, NULL);
++}
++
++long __init mpc86xx_time_init(void)
++{
++	unsigned int temp;
++
++	/* Set the time base to zero */
++	mtspr(SPRN_TBWL, 0);
++	mtspr(SPRN_TBWU, 0);
++
++	temp = mfspr(SPRN_HID0);
++	temp |= HID0_TBEN;
++	mtspr(SPRN_HID0, temp);
++	asm volatile("isync");
++
++	return 0;
++}
+diff --git a/arch/powerpc/platforms/86xx/gef_ppc9a.c b/arch/powerpc/platforms/86xx/gef_ppc9a.c
+index bf17933..8e63b75 100644
+--- a/arch/powerpc/platforms/86xx/gef_ppc9a.c
++++ b/arch/powerpc/platforms/86xx/gef_ppc9a.c
+@@ -197,37 +197,7 @@ static int __init gef_ppc9a_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+-	{},
+-};
+-
+-static int __init declare_of_platform_devices(void)
+-{
+-	printk(KERN_DEBUG "Probe platform devices\n");
+-	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+-
+-	return 0;
+-}
+-machine_arch_initcall(gef_ppc9a, declare_of_platform_devices);
++machine_arch_initcall(gef_ppc9a, mpc86xx_common_publish_devices);
+ 
+ define_machine(gef_ppc9a) {
+ 	.name			= "GE PPC9A",
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc310.c b/arch/powerpc/platforms/86xx/gef_sbc310.c
+index 8facf58..0e0be94 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc310.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc310.c
+@@ -184,37 +184,7 @@ static int __init gef_sbc310_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+-	{},
+-};
+-
+-static int __init declare_of_platform_devices(void)
+-{
+-	printk(KERN_DEBUG "Probe platform devices\n");
+-	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+-
+-	return 0;
+-}
+-machine_arch_initcall(gef_sbc310, declare_of_platform_devices);
++machine_arch_initcall(gef_sbc310, mpc86xx_common_publish_devices);
+ 
+ define_machine(gef_sbc310) {
+ 	.name			= "GE SBC310",
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
+index 8c9058d..e8292b4 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc610.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
+@@ -174,37 +174,7 @@ static int __init gef_sbc610_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+-	{},
+-};
+-
+-static int __init declare_of_platform_devices(void)
+-{
+-	printk(KERN_DEBUG "Probe platform devices\n");
+-	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+-
+-	return 0;
+-}
+-machine_arch_initcall(gef_sbc610, declare_of_platform_devices);
++machine_arch_initcall(gef_sbc610, mpc86xx_common_publish_devices);
+ 
+ define_machine(gef_sbc610) {
+ 	.name			= "GE SBC610",
+diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+index 437a9c3..957473e 100644
+--- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
++++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+@@ -88,12 +88,10 @@ static inline void mpc8610_suspend_init(void) { }
+ static const struct of_device_id mpc8610_ids[] __initconst = {
+ 	{ .compatible = "fsl,mpc8610-immr", },
+ 	{ .compatible = "fsl,mpc8610-guts", },
+-	{ .compatible = "simple-bus", },
+ 	/* So that the DMA channel nodes can be probed individually: */
+ 	{ .compatible = "fsl,eloplus-dma", },
+ 	/* PCI controllers */
+ 	{ .compatible = "fsl,mpc8610-pci", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+ 	{}
+ };
+ 
+@@ -105,6 +103,8 @@ static int __init mpc8610_declare_of_platform_devices(void)
+ 	/* Enable wakeup on PIXIS' event IRQ. */
+ 	mpc8610_suspend_init();
+ 
++	mpc86xx_common_publish_devices();
++
+ 	/* Without this call, the SSI device driver won't get probed. */
+ 	of_platform_bus_probe(NULL, mpc8610_ids, NULL);
+ 
+@@ -327,22 +327,6 @@ static int __init mpc86xx_hpcd_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+ define_machine(mpc86xx_hpcd) {
+ 	.name			= "MPC86xx HPCD",
+ 	.probe			= mpc86xx_hpcd_probe,
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx.h b/arch/powerpc/platforms/86xx/mpc86xx.h
+index 08efb57..53500db 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx.h
++++ b/arch/powerpc/platforms/86xx/mpc86xx.h
+@@ -17,5 +17,7 @@
+ 
+ extern void mpc86xx_smp_init(void);
+ extern void mpc86xx_init_irq(void);
++extern long mpc86xx_time_init(void);
++extern int mpc86xx_common_publish_devices(void);
+ 
+ #endif	/* __MPC86XX_H__ */
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index 07ccb1b..e508481 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -110,33 +110,14 @@ static int __init mpc86xx_hpcn_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init
+-mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+ static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+ 	{ .compatible = "fsl,srio", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+ 	{},
+ };
+ 
+ static int __init declare_of_platform_devices(void)
+ {
++	mpc86xx_common_publish_devices();
+ 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+ 
+ 	return 0;
+diff --git a/arch/powerpc/platforms/86xx/sbc8641d.c b/arch/powerpc/platforms/86xx/sbc8641d.c
+index 6810b71..2a9cf27 100644
+--- a/arch/powerpc/platforms/86xx/sbc8641d.c
++++ b/arch/powerpc/platforms/86xx/sbc8641d.c
+@@ -75,37 +75,7 @@ static int __init sbc8641_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init
+-mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+-	{},
+-};
+-
+-static int __init declare_of_platform_devices(void)
+-{
+-	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+-
+-	return 0;
+-}
+-machine_arch_initcall(sbc8641, declare_of_platform_devices);
++machine_arch_initcall(sbc8641, mpc86xx_common_publish_devices);
+ 
+ define_machine(sbc8641) {
+ 	.name			= "SBC8641D",
 -- 
-Johannes Thumshirn                                          Storage
-jthumshirn@suse.de                                +49 911 74053 689
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Felix Imendörffer, Jane Smithard, Graham Norton
-HRB 21284 (AG Nürnberg)
-Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
+2.7.0
