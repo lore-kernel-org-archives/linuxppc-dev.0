@@ -1,26 +1,27 @@
-Return-Path: <philip@turmel.org>
-Received: from atl.turmel.org (atl.turmel.org [74.117.157.138])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3F8B51A0205
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Feb 2016 15:04:00 +1100 (AEDT)
-Subject: Re: Bisected Regression 4.3.5 => 4.4.1 booting HP ZBook in EFI mode
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-References: <56B518C4.8030007@turmel.org> <20160205222936.GA7139@kroah.com>
- <56B53344.3090300@turmel.org> <20160206010958.GA2205@kroah.com>
-Cc: Boqun Feng <boqun.feng@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id D44AB1A0190
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Feb 2016 21:32:48 +1100 (AEDT)
+Date: Sat, 6 Feb 2016 11:32:43 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
  Michael Ellerman <mpe@ellerman.id.au>,
- "Peter Zijlstra (Intel)" <peterz@infradead.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org
-From: Phil Turmel <philip@turmel.org>
-Message-ID: <56B570AA.8050208@turmel.org>
-Date: Fri, 5 Feb 2016 23:03:54 -0500
+ Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
+ Jessica Yu <jeyu@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
+Subject: Re: [PATCH v7 04/10] ppc64 ftrace_with_regs configuration variables
+Message-ID: <20160206103243.GB3130@lst.de>
+References: <20160204161527.5F3AC692CD@newverein.lst.de>
+ <20160204162053.C76A7692D8@newverein.lst.de>
+ <20160205140517.GE3305@pathway.suse.cz>
+ <20160205094803.1e0c6c91@gandalf.local.home>
+ <20160205161834.GF731@pathway.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <20160206010958.GA2205@kroah.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160205161834.GF731@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +31,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/05/2016 08:09 PM, Greg Kroah-Hartman wrote:
+On Fri, Feb 05, 2016 at 05:18:34PM +0100, Petr Mladek wrote:
+[...]
+> more complicated. Whem I think about it, the change below does similar
+> job and looks more strightforwad:
 
-> Ah, you have versioned modules / builds enabled, that's what caused the
-> rebuild, if you disable CONFIG_MODVERSIONS and
-> CONFIG_MODULE_SRCVERSION_ALL you shouldn't rebuild everything.
-> 
-> If those options are disabled, then something really odd is going on
-> here...
+Had I only looked closer. That's exactly how I thought it would work
+in the first place. I'd call that a fix. Full ACK from my side.
 
-So, MODVERSIONS was off, but MODULE_SRCVERSIONS_ALL and
-LOCALVERSION_AUTO were on.
-
-Repeating with those turned off, nothing was rebuilt.
-
-That was bootable, too.  So I turned them on individually
-and each was still bootable.  I verified the config matched
-the originals I started with.
-
-So I cleaned my tree and started over building v4.3.5 then v4.4.1.
-They both booted.  So I can no longer reproduce this.
-
-Sorry for the noise.
-
-Phil
+	Torsten
