@@ -1,34 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8905F1A030D
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2618A1A02CD
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 20:21:52 +1100 (AEDT)
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 8 Feb 2016 02:21:50 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id A056C19D8042
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 02:09:45 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id u189Lk7H17629406
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 02:21:46 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u189Lj5J026273
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 02:21:46 -0700
+ Mon, 8 Feb 2016 02:21:51 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 2857919D803F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 02:09:47 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u189Lmgm30081086
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 02:21:48 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u189LldU009752
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 02:21:48 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 24/29] powerpc/mm: Hash linux abstractions for early init
- routines
-Date: Mon,  8 Feb 2016 14:50:36 +0530
-Message-Id: <1454923241-6681-25-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2 26/29] powerpc/mm: Hash linux abstraction for HugeTLB
+Date: Mon,  8 Feb 2016 14:50:38 +0530
+Message-Id: <1454923241-6681-27-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,297 +41,285 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/32/mmu-hash.h |  6 +-
- arch/powerpc/include/asm/book3s/64/mmu-hash.h | 61 +-----------------
- arch/powerpc/include/asm/book3s/64/mmu.h      | 92 +++++++++++++++++++++++++++
- arch/powerpc/include/asm/mmu.h                | 25 ++++----
- arch/powerpc/mm/hash_utils_64.c               |  6 +-
- 5 files changed, 115 insertions(+), 75 deletions(-)
- create mode 100644 arch/powerpc/include/asm/book3s/64/mmu.h
+ arch/powerpc/include/asm/book3s/64/hash-4k.h      | 10 ++++----
+ arch/powerpc/include/asm/book3s/64/hash-64k.h     | 14 +++++------
+ arch/powerpc/include/asm/book3s/64/pgalloc-hash.h |  7 ++++++
+ arch/powerpc/include/asm/book3s/64/pgalloc.h      |  9 +++++++
+ arch/powerpc/include/asm/book3s/64/pgtable.h      | 30 +++++++++++++++++++++++
+ arch/powerpc/include/asm/hugetlb.h                |  4 ---
+ arch/powerpc/include/asm/nohash/pgalloc.h         |  7 ++++++
+ arch/powerpc/mm/hugetlbpage-hash64.c              | 11 ++++-----
+ arch/powerpc/mm/hugetlbpage.c                     | 16 ++++++++++++
+ 9 files changed, 86 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/mmu-hash.h b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-index 16f513e5cbd7..b82e063494dd 100644
---- a/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-@@ -1,5 +1,5 @@
--#ifndef _ASM_POWERPC_MMU_HASH32_H_
--#define _ASM_POWERPC_MMU_HASH32_H_
-+#ifndef _ASM_POWERPC_BOOK3S_32_MMU_HASH_H_
-+#define _ASM_POWERPC_BOOK3S_32_MMU_HASH_H_
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index 1ef4b39f96fd..5fc9e4e1db5f 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -66,23 +66,23 @@
  /*
-  * 32-bit hash table MMU support
+  * For 4k page size, we support explicit hugepage via hugepd
   */
-@@ -90,4 +90,4 @@ typedef struct {
- #define mmu_virtual_psize	MMU_PAGE_4K
- #define mmu_linear_psize	MMU_PAGE_256M
- 
--#endif /* _ASM_POWERPC_MMU_HASH32_H_ */
-+#endif /* _ASM_POWERPC_BOOK3S_32_MMU_HASH_H_ */
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index 95ee27564804..ee929cb1a150 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -1,5 +1,5 @@
--#ifndef _ASM_POWERPC_MMU_HASH64_H_
--#define _ASM_POWERPC_MMU_HASH64_H_
-+#ifndef _ASM_POWERPC_BOOK3S_64_MMU_HASH_H_
-+#define _ASM_POWERPC_BOOK3S_64_MMU_HASH_H_
- /*
-  * PowerPC64 memory management structures
-  *
-@@ -126,24 +126,6 @@ extern struct hash_pte *htab_address;
- extern unsigned long htab_size_bytes;
- extern unsigned long htab_hash_mask;
- 
--/*
-- * Page size definition
-- *
-- *    shift : is the "PAGE_SHIFT" value for that page size
-- *    sllp  : is a bit mask with the value of SLB L || LP to be or'ed
-- *            directly to a slbmte "vsid" value
-- *    penc  : is the HPTE encoding mask for the "LP" field:
-- *
-- */
--struct mmu_psize_def
--{
--	unsigned int	shift;	/* number of bits */
--	int		penc[MMU_PAGE_COUNT];	/* HPTE encoding */
--	unsigned int	tlbiel;	/* tlbiel supported for that page size */
--	unsigned long	avpnm;	/* bits to mask out in AVPN in the HPTE */
--	unsigned long	sllp;	/* SLB L||LP (exact mask to use in slbmte) */
--};
--extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
- 
- static inline int shift_to_mmu_psize(unsigned int shift)
+-static inline int pmd_huge(pmd_t pmd)
++static inline int hlpmd_huge(pmd_t pmd)
  {
-@@ -209,11 +191,6 @@ static inline int segment_shift(int ssize)
- /*
-  * The current system page and segment sizes
-  */
--extern int mmu_linear_psize;
--extern int mmu_virtual_psize;
--extern int mmu_vmalloc_psize;
--extern int mmu_vmemmap_psize;
--extern int mmu_io_psize;
- extern int mmu_kernel_ssize;
- extern int mmu_highuser_ssize;
- extern u16 mmu_slb_size;
-@@ -511,38 +488,6 @@ static inline void subpage_prot_free(struct mm_struct *mm) {}
- static inline void subpage_prot_init_new_context(struct mm_struct *mm) { }
- #endif /* CONFIG_PPC_SUBPAGE_PROT */
- 
--typedef unsigned long mm_context_id_t;
--struct spinlock;
--
--typedef struct {
--	mm_context_id_t id;
--	u16 user_psize;		/* page size index */
--
--#ifdef CONFIG_PPC_MM_SLICES
--	u64 low_slices_psize;	/* SLB page size encodings */
--	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
--#else
--	u16 sllp;		/* SLB page size encoding */
--#endif
--	unsigned long vdso_base;
--#ifdef CONFIG_PPC_SUBPAGE_PROT
--	struct subpage_prot_table spt;
--#endif /* CONFIG_PPC_SUBPAGE_PROT */
--#ifdef CONFIG_PPC_ICSWX
--	struct spinlock *cop_lockp; /* guard acop and cop_pid */
--	unsigned long acop;	/* mask of enabled coprocessor types */
--	unsigned int cop_pid;	/* pid value used with coprocessors */
--#endif /* CONFIG_PPC_ICSWX */
--#ifdef CONFIG_PPC_64K_PAGES
--	/* for 4K PTE fragment support */
--	void *pte_frag;
--#endif
--#ifdef CONFIG_SPAPR_TCE_IOMMU
--	struct list_head iommu_group_mem_list;
--#endif
--} mm_context_t;
--
--
- #if 0
- /*
-  * The code below is equivalent to this function for arguments
-@@ -609,4 +554,4 @@ static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
+ 	return 0;
  }
- #endif /* __ASSEMBLY__ */
  
--#endif /* _ASM_POWERPC_MMU_HASH64_H_ */
-+#endif /* _ASM_POWERPC_BOOK3S_64_MMU_HASH_H_ */
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-new file mode 100644
-index 000000000000..44a47bc81fb2
---- /dev/null
-+++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -0,0 +1,92 @@
-+#ifndef _ASM_POWERPC_BOOK3S_64_MMU_H_
-+#define _ASM_POWERPC_BOOK3S_64_MMU_H_
-+
-+#ifndef __ASSEMBLY__
-+/*
-+ * Page size definition
-+ *
-+ *    shift : is the "PAGE_SHIFT" value for that page size
-+ *    sllp  : is a bit mask with the value of SLB L || LP to be or'ed
-+ *            directly to a slbmte "vsid" value
-+ *    penc  : is the HPTE encoding mask for the "LP" field:
-+ *
-+ */
-+struct mmu_psize_def {
-+	unsigned int	shift;	/* number of bits */
-+	int		penc[MMU_PAGE_COUNT];	/* HPTE encoding */
-+	unsigned int	tlbiel;	/* tlbiel supported for that page size */
-+	unsigned long	avpnm;	/* bits to mask out in AVPN in the HPTE */
-+	unsigned long	sllp;	/* SLB L||LP (exact mask to use in slbmte) */
-+};
-+extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
-+#endif /* __ASSEMBLY__ */
-+
-+#ifdef CONFIG_PPC_STD_MMU_64
-+/* 64-bit classic hash table MMU */
-+#include <asm/book3s/64/mmu-hash.h>
-+#endif
-+
-+#ifndef __ASSEMBLY__
-+
-+typedef unsigned long mm_context_id_t;
-+struct spinlock;
-+
-+typedef struct {
-+	mm_context_id_t id;
-+	u16 user_psize;		/* page size index */
-+
-+#ifdef CONFIG_PPC_MM_SLICES
-+	u64 low_slices_psize;	/* SLB page size encodings */
-+	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
-+#else
-+	u16 sllp;		/* SLB page size encoding */
-+#endif
-+	unsigned long vdso_base;
-+#ifdef CONFIG_PPC_SUBPAGE_PROT
-+	struct subpage_prot_table spt;
-+#endif /* CONFIG_PPC_SUBPAGE_PROT */
-+#ifdef CONFIG_PPC_ICSWX
-+	struct spinlock *cop_lockp; /* guard acop and cop_pid */
-+	unsigned long acop;	/* mask of enabled coprocessor types */
-+	unsigned int cop_pid;	/* pid value used with coprocessors */
-+#endif /* CONFIG_PPC_ICSWX */
-+#ifdef CONFIG_PPC_64K_PAGES
-+	/* for 4K PTE fragment support */
-+	void *pte_frag;
-+#endif
-+#ifdef CONFIG_SPAPR_TCE_IOMMU
-+	struct list_head iommu_group_mem_list;
-+#endif
-+} mm_context_t;
-+
-+/*
-+ * The current system page and segment sizes
-+ */
-+extern int mmu_linear_psize;
-+extern int mmu_virtual_psize;
-+extern int mmu_vmalloc_psize;
-+extern int mmu_vmemmap_psize;
-+extern int mmu_io_psize;
-+
-+/* MMU initialization */
-+extern void hlearly_init_mmu(void);
-+static inline void early_init_mmu(void)
-+{
-+	return hlearly_init_mmu();
-+}
-+extern void hlearly_init_mmu_secondary(void);
-+static inline void early_init_mmu_secondary(void)
-+{
-+	return hlearly_init_mmu_secondary();
-+}
-+
-+extern void hlsetup_initial_memory_limit(phys_addr_t first_memblock_base,
-+					 phys_addr_t first_memblock_size);
-+static inline void setup_initial_memory_limit(phys_addr_t first_memblock_base,
-+					      phys_addr_t first_memblock_size)
-+{
-+	return hlsetup_initial_memory_limit(first_memblock_base,
-+					   first_memblock_size);
-+}
-+#endif /* __ASSEMBLY__ */
-+#endif /* _ASM_POWERPC_BOOK3S_64_MMU_H_ */
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 18a1b7dbf5fb..e4117df50156 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -121,13 +121,6 @@ static inline void mmu_clear_feature(unsigned long feature)
+-static inline int pud_huge(pud_t pud)
++static inline int hlpud_huge(pud_t pud)
+ {
+ 	return 0;
+ }
  
- extern unsigned int __start___mmu_ftr_fixup, __stop___mmu_ftr_fixup;
+-static inline int pgd_huge(pgd_t pgd)
++static inline int hlpgd_huge(pgd_t pgd)
+ {
+ 	return 0;
+ }
+ #define pgd_huge pgd_huge
  
--/* MMU initialization */
--extern void early_init_mmu(void);
--extern void early_init_mmu_secondary(void);
--
--extern void setup_initial_memory_limit(phys_addr_t first_memblock_base,
--				       phys_addr_t first_memblock_size);
--
- #ifdef CONFIG_PPC64
- /* This is our real memory area size on ppc64 server, on embedded, we
-  * make it match the size our of bolted TLB area
-@@ -180,10 +173,20 @@ static inline void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
- 
- #define MMU_PAGE_COUNT	15
- 
--#if defined(CONFIG_PPC_STD_MMU_64)
--/* 64-bit classic hash table MMU */
--#include <asm/book3s/64/mmu-hash.h>
--#elif defined(CONFIG_PPC_STD_MMU_32)
-+#ifdef CONFIG_PPC_BOOK3S_64
-+#include <asm/book3s/64/mmu.h>
-+#else /* CONFIG_PPC_BOOK3S_64 */
-+
-+#ifndef __ASSEMBLY__
-+/* MMU initialization */
-+extern void early_init_mmu(void);
-+extern void early_init_mmu_secondary(void);
-+extern void setup_initial_memory_limit(phys_addr_t first_memblock_base,
-+				       phys_addr_t first_memblock_size);
-+#endif /* __ASSEMBLY__ */
-+#endif
-+
-+#if defined(CONFIG_PPC_STD_MMU_32)
- /* 32-bit classic hash table MMU */
- #include <asm/book3s/32/mmu-hash.h>
- #elif defined(CONFIG_40x)
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index aec47cf45db2..aac47ca6a618 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -798,7 +798,7 @@ static void __init htab_initialize(void)
- #undef KB
- #undef MB
- 
--void __init early_init_mmu(void)
-+void __init hlearly_init_mmu(void)
+-static inline int hugepd_ok(hugepd_t hpd)
++static inline int hlhugepd_ok(hugepd_t hpd)
  {
  	/*
- 	 * initialize global variables
-@@ -842,7 +842,7 @@ void __init early_init_mmu(void)
+ 	 * if it is not a pte and have hugepd shift mask
+@@ -93,7 +93,7 @@ static inline int hugepd_ok(hugepd_t hpd)
+ 		return true;
+ 	return false;
+ }
+-#define is_hugepd(hpd)		(hugepd_ok(hpd))
++#define is_hlhugepd(hpd)	(hlhugepd_ok(hpd))
+ #endif
+ 
+ #endif /* !__ASSEMBLY__ */
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index e697fc528c0a..4fff8b12ba0f 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -146,7 +146,7 @@ extern bool __rpte_sub_valid(real_pte_t rpte, unsigned long index);
+  * Defined in such a way that we can optimize away code block at build time
+  * if CONFIG_HUGETLB_PAGE=n.
+  */
+-static inline int pmd_huge(pmd_t pmd)
++static inline int hlpmd_huge(pmd_t pmd)
+ {
+ 	/*
+ 	 * leaf pte for huge page
+@@ -154,7 +154,7 @@ static inline int pmd_huge(pmd_t pmd)
+ 	return !!(pmd_val(pmd) & H_PAGE_PTE);
  }
  
- #ifdef CONFIG_SMP
--void early_init_mmu_secondary(void)
-+void hlearly_init_mmu_secondary(void)
+-static inline int pud_huge(pud_t pud)
++static inline int hlpud_huge(pud_t pud)
  {
- 	/* Initialize hash table for that CPU */
- 	if (!firmware_has_feature(FW_FEATURE_LPAR))
-@@ -1576,7 +1576,7 @@ void __kernel_map_pages(struct page *page, int numpages, int enable)
+ 	/*
+ 	 * leaf pte for huge page
+@@ -162,7 +162,7 @@ static inline int pud_huge(pud_t pud)
+ 	return !!(pud_val(pud) & H_PAGE_PTE);
  }
- #endif /* CONFIG_DEBUG_PAGEALLOC */
  
--void setup_initial_memory_limit(phys_addr_t first_memblock_base,
-+void hlsetup_initial_memory_limit(phys_addr_t first_memblock_base,
- 				phys_addr_t first_memblock_size)
+-static inline int pgd_huge(pgd_t pgd)
++static inline int hlpgd_huge(pgd_t pgd)
  {
- 	/* We don't currently support the first MEMBLOCK not mapping 0
+ 	/*
+ 	 * leaf pte for huge page
+@@ -172,19 +172,19 @@ static inline int pgd_huge(pgd_t pgd)
+ #define pgd_huge pgd_huge
+ 
+ #ifdef CONFIG_DEBUG_VM
+-extern int hugepd_ok(hugepd_t hpd);
+-#define is_hugepd(hpd)               (hugepd_ok(hpd))
++extern int hlhugepd_ok(hugepd_t hpd);
++#define is_hlhugepd(hpd)               (hlhugepd_ok(hpd))
+ #else
+ /*
+  * With 64k page size, we have hugepage ptes in the pgd and pmd entries. We don't
+  * need to setup hugepage directory for them. Our pte and page directory format
+  * enable us to have this enabled.
+  */
+-static inline int hugepd_ok(hugepd_t hpd)
++static inline int hlhugepd_ok(hugepd_t hpd)
+ {
+ 	return 0;
+ }
+-#define is_hugepd(pdep)			0
++#define is_hlhugepd(pdep)			0
+ #endif /* CONFIG_DEBUG_VM */
+ 
+ #endif /* CONFIG_HUGETLB_PAGE */
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc-hash.h b/arch/powerpc/include/asm/book3s/64/pgalloc-hash.h
+index dbf680970c12..1dcfe7b75f06 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc-hash.h
+@@ -56,4 +56,11 @@ static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
+ {
+ 	pgtable_free_tlb(tlb, pud, H_PUD_INDEX_SIZE);
+ }
++
++extern pte_t *huge_hlpte_alloc(struct mm_struct *mm, unsigned long addr,
++			       unsigned long sz);
++extern void hugetlb_free_hlpgd_range(struct mmu_gather *tlb, unsigned long addr,
++				     unsigned long end, unsigned long floor,
++				     unsigned long ceiling);
++
+ #endif /* _ASM_POWERPC_BOOK3S_64_PGALLOC_HASH_H */
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+index ff3c0e36fe3d..fa2ddda14b3d 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+@@ -66,4 +66,13 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
+ #include <asm/book3s/64/pgalloc-hash.h>
+ #endif
+ 
++#ifdef CONFIG_HUGETLB_PAGE
++static inline void hugetlb_free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
++					  unsigned long end, unsigned long floor,
++					  unsigned long ceiling)
++{
++	return hugetlb_free_hlpgd_range(tlb, addr, end, floor, ceiling);
++}
++#endif
++
+ #endif /* __ASM_POWERPC_BOOK3S_64_PGALLOC_H */
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 921784c0aa05..61f4d26bdaa9 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -718,6 +718,36 @@ static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
+ 	return true;
+ }
+ 
++#ifdef CONFIG_HUGETLB_PAGE
++
++static inline int pmd_huge(pmd_t pmd)
++{
++	return hlpmd_huge(pmd);
++}
++
++static inline int pud_huge(pud_t pud)
++{
++	return hlpud_huge(pud);
++}
++
++static inline int pgd_huge(pgd_t pgd)
++{
++	return hlpgd_huge(pgd);
++}
++
++static inline bool hugepd_ok(hugepd_t hpd)
++{
++	return hlhugepd_ok(hpd);
++}
++
++static inline bool is_hugepd(hugepd_t hpd)
++{
++	return is_hlhugepd(hpd);
++}
++#define is_hugepd is_hugepd
++
++#endif /* CONFIG_HUGETLB_PAGE */
++
+ #define pgprot_noncached pgprot_noncached
+ static inline pgprot_t pgprot_noncached(pgprot_t prot)
+ {
+diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+index 0525f1c29afb..c938150c440c 100644
+--- a/arch/powerpc/include/asm/hugetlb.h
++++ b/arch/powerpc/include/asm/hugetlb.h
+@@ -88,10 +88,6 @@ void book3e_hugetlb_preload(struct vm_area_struct *vma, unsigned long ea,
+ 			    pte_t pte);
+ void flush_hugetlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
+ 
+-void hugetlb_free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
+-			    unsigned long end, unsigned long floor,
+-			    unsigned long ceiling);
+-
+ /*
+  * The version of vma_mmu_pagesize() in arch/powerpc/mm/hugetlbpage.c needs
+  * to override the version in mm/hugetlb.c
+diff --git a/arch/powerpc/include/asm/nohash/pgalloc.h b/arch/powerpc/include/asm/nohash/pgalloc.h
+index b39ec956d71e..2967ca3148da 100644
+--- a/arch/powerpc/include/asm/nohash/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/pgalloc.h
+@@ -20,4 +20,11 @@ static inline void tlb_flush_pgtable(struct mmu_gather *tlb,
+ #else
+ #include <asm/nohash/32/pgalloc.h>
+ #endif
++
++#ifdef CONFIG_HUGETLB_PAGE
++void hugetlb_free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
++			    unsigned long end, unsigned long floor,
++			    unsigned long ceiling);
++#endif
++
+ #endif /* _ASM_POWERPC_NOHASH_PGALLOC_H */
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index 0126900c696e..84dd590b4a93 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -132,7 +132,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+  * This enables us to catch the wrong page directory format
+  * Moved here so that we can use WARN() in the call.
+  */
+-int hugepd_ok(hugepd_t hpd)
++int hlhugepd_ok(hugepd_t hpd)
+ {
+ 	bool is_hugepd;
+ 
+@@ -176,7 +176,7 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+  * At this point we do the placement change only for BOOK3S 64. This would
+  * possibly work on other subarchs.
+  */
+-pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz)
++pte_t *huge_hlpte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz)
+ {
+ 	pgd_t *pg;
+ 	pud_t *pu;
+@@ -335,9 +335,9 @@ static void hugetlb_free_pud_range(struct mmu_gather *tlb, pgd_t *pgd,
+ /*
+  * This function frees user-level page tables of a process.
+  */
+-void hugetlb_free_pgd_range(struct mmu_gather *tlb,
+-			    unsigned long addr, unsigned long end,
+-			    unsigned long floor, unsigned long ceiling)
++void hugetlb_free_hlpgd_range(struct mmu_gather *tlb,
++			      unsigned long addr, unsigned long end,
++			      unsigned long floor, unsigned long ceiling)
+ {
+ 	pgd_t *pgd;
+ 	unsigned long next;
+@@ -373,7 +373,6 @@ void hugetlb_free_pgd_range(struct mmu_gather *tlb,
+ 	} while (addr = next, addr != end);
+ }
+ 
+-
+ /* Build list of addresses of gigantic pages.  This function is used in early
+  * boot before the buddy allocator is setup.
+  */
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 26fb814f289f..1e5e4d4cac55 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -454,3 +454,19 @@ int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
+ 
+ 	return 1;
+ }
++
++#ifdef CONFIG_PPC_BOOK3S_64
++/*
++ * Generic book3s code. We didn't want to create a separate header just for this
++ * ideally we want this static inline. But that require larger changes
++ */
++pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz)
++{
++#ifdef CONFIG_HUGETLB_PAGE
++	return huge_hlpte_alloc(mm, addr, sz);
++#else
++	WARN(1, "%s called with HUGETLB disabled\n", __func__);
++	return NULL;
++#endif
++}
++#endif
 -- 
 2.5.0
