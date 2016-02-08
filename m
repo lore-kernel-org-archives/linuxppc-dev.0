@@ -1,34 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 951361A02DF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 20:21:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 79DB91A02D3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 20:21:59 +1100 (AEDT)
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 8 Feb 2016 02:21:55 -0700
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 1E7CA19D8042
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 02:09:52 -0700 (MST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u189Lq2V22347964
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 09:21:52 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u189Lq22007924
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 04:21:52 -0500
+ Mon, 8 Feb 2016 04:21:57 -0500
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 79F2AC90041
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 04:21:52 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u189Ls7636503714
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 09:21:54 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u189Lrdl018794
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 04:21:54 -0500
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 28/29] powerpc/mm: Hash linux abstraction for tlbflush
- routines
-Date: Mon,  8 Feb 2016 14:50:40 +0530
-Message-Id: <1454923241-6681-29-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2 29/29] powerpc/mm: Hash linux abstraction for pte swap
+ encoding
+Date: Mon,  8 Feb 2016 14:50:41 +0530
+Message-Id: <1454923241-6681-30-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,160 +42,167 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/tlbflush-hash.h | 28 ++++++-----
- arch/powerpc/include/asm/book3s/64/tlbflush.h      | 56 ++++++++++++++++++++++
- arch/powerpc/include/asm/tlbflush.h                |  2 +-
- arch/powerpc/mm/tlb_hash64.c                       |  2 +-
- 4 files changed, 73 insertions(+), 15 deletions(-)
- create mode 100644 arch/powerpc/include/asm/book3s/64/tlbflush.h
+ arch/powerpc/include/asm/book3s/64/hash.h    | 35 +++++++----------
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 57 ++++++++++++++++++++++++++++
+ arch/powerpc/mm/slb.c                        |  1 -
+ 3 files changed, 70 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-index 1b753f96b374..ddce8477fe0c 100644
---- a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-@@ -52,40 +52,42 @@ extern void flush_hash_range(unsigned long number, int local);
- extern void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
- 				pmd_t *pmdp, unsigned int psize, int ssize,
- 				unsigned long flags);
--
--static inline void local_flush_tlb_mm(struct mm_struct *mm)
-+static inline void local_flush_hltlb_mm(struct mm_struct *mm)
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index 5e66915f47ee..2039587c11ea 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -234,34 +234,25 @@
+ #define hlpmd_index(address) (((address) >> (H_PMD_SHIFT)) & (H_PTRS_PER_PMD - 1))
+ #define hlpte_index(address) (((address) >> (PAGE_SHIFT)) & (H_PTRS_PER_PTE - 1))
+ 
+-/* Encode and de-code a swap entry */
+-#define MAX_SWAPFILES_CHECK() do { \
+-	BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS); \
+-	/*							\
+-	 * Don't have overlapping bits with _PAGE_HPTEFLAGS	\
+-	 * We filter HPTEFLAGS on set_pte.			\
+-	 */							\
+-	BUILD_BUG_ON(H_PAGE_HPTEFLAGS & (0x1f << H_PAGE_BIT_SWAP_TYPE)); \
+-	BUILD_BUG_ON(H_PAGE_HPTEFLAGS & H_PAGE_SWP_SOFT_DIRTY);	\
+-	} while (0)
+ /*
+  * on pte we don't need handle RADIX_TREE_EXCEPTIONAL_SHIFT;
++ * We encode swap type in the lower part of pte, skipping the lowest two bits.
++ * Offset is encoded as pfn.
+  */
+-#define SWP_TYPE_BITS 5
+-#define __swp_type(x)		(((x).val >> H_PAGE_BIT_SWAP_TYPE) \
+-				& ((1UL << SWP_TYPE_BITS) - 1))
+-#define __swp_offset(x)		((x).val >> H_PTE_RPN_SHIFT)
+-#define __swp_entry(type, offset)	((swp_entry_t) { \
+-					((type) << H_PAGE_BIT_SWAP_TYPE) \
+-					| ((offset) << H_PTE_RPN_SHIFT) })
++#define hl_swp_type(x)		(((x).val >> H_PAGE_BIT_SWAP_TYPE)	\
++				 & ((1UL << SWP_TYPE_BITS) - 1))
++#define hl_swp_offset(x)	((x).val >> H_PTE_RPN_SHIFT)
++#define hl_swp_entry(type, offset)	((swp_entry_t) {		\
++				((type) << H_PAGE_BIT_SWAP_TYPE)	\
++				| ((offset) << H_PTE_RPN_SHIFT) })
+ /*
+  * swp_entry_t must be independent of pte bits. We build a swp_entry_t from
+  * swap type and offset we get from swap and convert that to pte to find a
+  * matching pte in linux page table.
+  * Clear bits not found in swap entries here.
+  */
+-#define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val((pte)) & ~H_PAGE_PTE })
+-#define __swp_entry_to_pte(x)	__pte((x).val | H_PAGE_PTE)
++#define hl_pte_to_swp_entry(pte)	((swp_entry_t) { pte_val((pte)) & ~H_PAGE_PTE })
++#define hl_swp_entry_to_pte(x)	__pte((x).val | H_PAGE_PTE)
+ 
+ #ifdef CONFIG_MEM_SOFT_DIRTY
+ #define H_PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + H_PAGE_BIT_SWAP_TYPE))
+@@ -270,17 +261,17 @@
+ #endif /* CONFIG_MEM_SOFT_DIRTY */
+ 
+ #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
+-static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
++static inline pte_t hl_pte_swp_mksoft_dirty(pte_t pte)
  {
+ 	return __pte(pte_val(pte) | H_PAGE_SWP_SOFT_DIRTY);
  }
  
--static inline void flush_tlb_mm(struct mm_struct *mm)
-+static inline void flush_hltlb_mm(struct mm_struct *mm)
+-static inline bool pte_swp_soft_dirty(pte_t pte)
++static inline bool hl_pte_swp_soft_dirty(pte_t pte)
  {
+ 	return !!(pte_val(pte) & H_PAGE_SWP_SOFT_DIRTY);
  }
  
--static inline void local_flush_tlb_page(struct vm_area_struct *vma,
--					unsigned long vmaddr)
-+static inline void local_flush_hltlb_page(struct vm_area_struct *vma,
-+					  unsigned long vmaddr)
+-static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
++static inline pte_t hl_pte_swp_clear_soft_dirty(pte_t pte)
  {
+ 	return __pte(pte_val(pte) & ~H_PAGE_SWP_SOFT_DIRTY);
  }
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 61f4d26bdaa9..c8269c71ba75 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -5,6 +5,7 @@
+  * the ppc64 hashed page table.
+  */
  
--static inline void flush_tlb_page(struct vm_area_struct *vma,
--				  unsigned long vmaddr)
-+static inline void flush_hltlb_page(struct vm_area_struct *vma,
-+				    unsigned long vmaddr)
++#define SWP_TYPE_BITS 5
+ #include <asm/book3s/64/hash.h>
+ #include <asm/barrier.h>
+ 
+@@ -325,6 +326,62 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
  {
+ 	return set_hlpte_at(mm, addr, ptep, pte);
  }
- 
--static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
--					 unsigned long vmaddr)
-+static inline void flush_hltlb_page_nohash(struct vm_area_struct *vma,
-+					   unsigned long vmaddr)
- {
- }
- 
--static inline void flush_tlb_range(struct vm_area_struct *vma,
--				   unsigned long start, unsigned long end)
-+static inline void flush_hltlb_range(struct vm_area_struct *vma,
-+				     unsigned long start, unsigned long end)
- {
- }
- 
--static inline void flush_tlb_kernel_range(unsigned long start,
--					  unsigned long end)
-+static inline void flush_hltlb_kernel_range(unsigned long start,
-+					    unsigned long end)
- {
- }
- 
++/*
++ * Swap definitions
++ */
 +
-+struct mmu_gather;
-+extern void hltlb_flush(struct mmu_gather *tlb);
- /* Private function for use by PCI IO mapping code */
- extern void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
- 				     unsigned long end);
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush.h b/arch/powerpc/include/asm/book3s/64/tlbflush.h
-new file mode 100644
-index 000000000000..37d7f289ad42
---- /dev/null
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush.h
-@@ -0,0 +1,56 @@
-+#ifndef _ASM_POWERPC_BOOK3S_64_TLBFLUSH_H
-+#define _ASM_POWERPC_BOOK3S_64_TLBFLUSH_H
-+
-+#include <asm/book3s/64/tlbflush-hash.h>
-+
-+static inline void flush_tlb_range(struct vm_area_struct *vma,
-+				   unsigned long start, unsigned long end)
++/* Encode and de-code a swap entry */
++#define MAX_SWAPFILES_CHECK() do {					\
++		BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS);	\
++		/*							\
++		 * Don't have overlapping bits with _PAGE_HPTEFLAGS	\
++		 * We filter HPTEFLAGS on set_pte.			\
++		 */							\
++		BUILD_BUG_ON(H_PAGE_HPTEFLAGS & (0x1f << H_PAGE_BIT_SWAP_TYPE)); \
++		BUILD_BUG_ON(H_PAGE_HPTEFLAGS & H_PAGE_SWP_SOFT_DIRTY);	\
++	} while (0)
++/*
++ * on pte we don't need handle RADIX_TREE_EXCEPTIONAL_SHIFT;
++ */
++static inline swp_entry_t __pte_to_swp_entry(pte_t pte)
 +{
-+	return flush_hltlb_range(vma, start, end);
++	return hl_pte_to_swp_entry(pte);
 +}
 +
-+static inline void flush_tlb_kernel_range(unsigned long start,
-+					  unsigned long end)
++static inline pte_t __swp_entry_to_pte(swp_entry_t entry)
 +{
-+	return flush_hltlb_kernel_range(start, end);
++	return hl_swp_entry_to_pte(entry);
 +}
 +
-+static inline void local_flush_tlb_mm(struct mm_struct *mm)
++static inline unsigned long __swp_type(swp_entry_t entry)
 +{
-+	return local_flush_hltlb_mm(mm);
++	return hl_swp_type(entry);
 +}
 +
-+static inline void local_flush_tlb_page(struct vm_area_struct *vma,
-+					unsigned long vmaddr)
++static inline pgoff_t __swp_offset(swp_entry_t entry)
 +{
-+	return local_flush_hltlb_page(vma, vmaddr);
++	return hl_swp_offset(entry);
 +}
 +
-+static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
-+					 unsigned long vmaddr)
++static inline swp_entry_t __swp_entry(unsigned long type, pgoff_t offset)
 +{
-+	return flush_hltlb_page_nohash(vma, vmaddr);
++	return hl_swp_entry(type, offset);
 +}
 +
-+static inline void tlb_flush(struct mmu_gather *tlb)
++#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
++static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
 +{
-+	return hltlb_flush(tlb);
++	return hl_pte_swp_mksoft_dirty(pte);
 +}
-+
-+#ifdef CONFIG_SMP
-+static inline void flush_tlb_mm(struct mm_struct *mm)
++static inline bool pte_swp_soft_dirty(pte_t pte)
 +{
-+	return flush_hltlb_mm(mm);
++	return hl_pte_swp_soft_dirty(pte);
 +}
-+
-+static inline void flush_tlb_page(struct vm_area_struct *vma,
-+				  unsigned long vmaddr)
++static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
 +{
-+	return flush_hltlb_page(vma, vmaddr);
++	return hl_pte_swp_clear_soft_dirty(pte);
 +}
-+#else
-+#define flush_tlb_mm(mm)		local_flush_tlb_mm(mm)
-+#define flush_tlb_page(vma, addr)	local_flush_tlb_page(vma, addr)
-+#endif /* CONFIG_SMP */
-+
-+#endif /*  _ASM_POWERPC_BOOK3S_64_TLBFLUSH_H */
-diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
-index 9f77f85e3e99..2fc4331c5bc5 100644
---- a/arch/powerpc/include/asm/tlbflush.h
-+++ b/arch/powerpc/include/asm/tlbflush.h
-@@ -78,7 +78,7 @@ static inline void local_flush_tlb_mm(struct mm_struct *mm)
- }
++#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
  
- #elif defined(CONFIG_PPC_STD_MMU_64)
--#include <asm/book3s/64/tlbflush-hash.h>
-+#include <asm/book3s/64/tlbflush.h>
- #else
- #error Unsupported MMU type
- #endif
-diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
-index 98a85e426255..ebf386becf9e 100644
---- a/arch/powerpc/mm/tlb_hash64.c
-+++ b/arch/powerpc/mm/tlb_hash64.c
-@@ -155,7 +155,7 @@ void __flush_tlb_pending(struct ppc64_tlb_batch *batch)
- 	batch->index = 0;
- }
- 
--void tlb_flush(struct mmu_gather *tlb)
-+void hltlb_flush(struct mmu_gather *tlb)
+ static inline void pmd_set(pmd_t *pmdp, unsigned long val)
  {
- 	struct ppc64_tlb_batch *tlbbatch = &get_cpu_var(ppc64_tlb_batch);
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 24af734fcbd7..e80da474997c 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -14,7 +14,6 @@
+  *      2 of the License, or (at your option) any later version.
+  */
  
+-#include <asm/pgtable.h>
+ #include <asm/mmu.h>
+ #include <asm/mmu_context.h>
+ #include <asm/paca.h>
 -- 
 2.5.0
