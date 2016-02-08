@@ -1,21 +1,37 @@
-Return-Path: <luis.henriques@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CF9431A0290
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 09:27:26 +1100 (AEDT)
-From: Luis Henriques <luis.henriques@canonical.com>
-To: Geoff Levand <geoff@infradead.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Joe Perches <joe@perches.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 4/4] powerpc/ps3: gelic_udbg: use struct udphdr from
- <linux/udp.h>
-Date: Mon,  8 Feb 2016 22:27:07 +0000
-Message-Id: <1454970427-23017-5-git-send-email-luis.henriques@canonical.com>
-In-Reply-To: <1454970427-23017-1-git-send-email-luis.henriques@canonical.com>
-References: <1454970427-23017-1-git-send-email-luis.henriques@canonical.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B77D1A02CD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 09:41:57 +1100 (AEDT)
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 9 Feb 2016 08:41:54 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3208D3578054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 09:41:52 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u18MfgfH9109582
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 09:41:50 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u18MfJt7020042
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 09:41:20 +1100
+Date: Tue, 9 Feb 2016 09:40:55 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH 2/2] powerpc/eeh: Reworked eeh_pe_bus_get()
+Message-ID: <20160208224055.GA6171@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1454909719-17252-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1454909719-17252-2-git-send-email-gwshan@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1454909719-17252-2-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,48 +41,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Instead of defining a local version of struct udphdr use the standard
-definition from <linux/udp.h>.
+On Mon, Feb 08, 2016 at 04:35:19PM +1100, Gavin Shan wrote:
+>The original implementation is ugly: unnecessary if statements and
+>"out" tag. This reworks the function to avoid above weaknesses. No
+>functional changes introduced.
+>
+>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-The 'src' field is named 'source' in the <linux/udp.h> definition.
+Michael, please ignore this one now because it conflicts with another
+patch which needs to be ported to stable. I'll repost all of them
+later.
 
-Signed-off-by: Luis Henriques <luis.henriques@canonical.com>
----
- arch/powerpc/platforms/ps3/gelic_udbg.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+Thanks,
+Gavin
 
-diff --git a/arch/powerpc/platforms/ps3/gelic_udbg.c b/arch/powerpc/platforms/ps3/gelic_udbg.c
-index d69f33dcc64b..09bf24d616a5 100644
---- a/arch/powerpc/platforms/ps3/gelic_udbg.c
-+++ b/arch/powerpc/platforms/ps3/gelic_udbg.c
-@@ -17,6 +17,7 @@
- #include <linux/etherdevice.h>
- #include <linux/if_vlan.h>
- #include <linux/ip.h>
-+#include <linux/udp.h>
- 
- #include <asm/io.h>
- #include <asm/udbg.h>
-@@ -61,13 +62,6 @@ struct debug_block {
- 	u8 pkt[1520];
- } __packed;
- 
--struct udphdr {
--	u16 src;
--	u16 dest;
--	u16 len;
--	u16 checksum;
--} __packed;
--
- static __iomem struct ethhdr *h_eth;
- static __iomem struct vlan_hdr *h_vlan;
- static __iomem struct iphdr *h_ip;
-@@ -186,7 +180,7 @@ static void gelic_debug_init(void)
- 
- 	header_size += sizeof(struct udphdr);
- 	h_udp = (struct udphdr *)(h_ip + 1);
--	h_udp->src = GELIC_DEBUG_PORT;
-+	h_udp->source = GELIC_DEBUG_PORT;
- 	h_udp->dest = GELIC_DEBUG_PORT;
- 
- 	pmsgc = pmsg = (char *)(h_udp + 1);
+>---
+> arch/powerpc/kernel/eeh_pe.c | 28 ++++++++++++----------------
+> 1 file changed, 12 insertions(+), 16 deletions(-)
+>
+>diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+>index 8654cb1..1d64e60 100644
+>--- a/arch/powerpc/kernel/eeh_pe.c
+>+++ b/arch/powerpc/kernel/eeh_pe.c
+>@@ -923,25 +923,21 @@ out:
+>  */
+> struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
+> {
+>-	struct pci_bus *bus = NULL;
+> 	struct eeh_dev *edev;
+> 	struct pci_dev *pdev;
+>
+>-	if (pe->type & EEH_PE_PHB) {
+>-		bus = pe->phb->bus;
+>-	} else if (pe->type & EEH_PE_BUS ||
+>-		   pe->type & EEH_PE_DEVICE) {
+>-		if (pe->bus) {
+>-			bus = pe->bus;
+>-			goto out;
+>-		}
+>+	if (pe->type & EEH_PE_PHB)
+>+		return pe->phb->bus;
+>
+>-		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
+>-		pdev = eeh_dev_to_pci_dev(edev);
+>-		if (pdev)
+>-			bus = pdev->bus;
+>-	}
+>+	/* The primary bus might be cached during probe time */
+>+	if (pe->bus)
+>+		return pe->bus;
+>
+>-out:
+>-	return bus;
+>+	/* Retrieve the parent PCI bus of first (top) PCI device */
+>+	edev = list_first_entry_or_null(&pe->edevs, struct eeh_dev, list);
+>+	pdev = eeh_dev_to_pci_dev(edev);
+>+	if (pdev)
+>+		return pdev->bus;
+>+
+>+	return NULL;
+> }
+>-- 
+>2.1.0
+>
