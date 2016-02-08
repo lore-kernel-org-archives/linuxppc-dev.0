@@ -1,33 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 877BD1A030A
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 20:21:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A99D41A0193
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 20:21:28 +1100 (AEDT)
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 8 Feb 2016 04:21:32 -0500
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8AFF938C8041
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 04:21:29 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u189LTxB29360240
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 09:21:29 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u189LS5H012094
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 04:21:29 -0500
+ Mon, 8 Feb 2016 02:21:26 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id BD45119D8040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 02:09:09 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u189LAjS29032502
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 02:21:10 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u189L9C0007402
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 02:21:10 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 17/29] powerpc/mm: THP is only available on hash64 as of now
-Date: Mon,  8 Feb 2016 14:50:29 +0530
-Message-Id: <1454923241-6681-18-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2 08/29] mm: Some arch may want to use HPAGE_PMD related
+ values as variables
+Date: Mon,  8 Feb 2016 14:50:20 +0530
+Message-Id: <1454923241-6681-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,789 +40,234 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+With next generation power processor, we are having a new mmu model
+[1] that require us to maintain a different linux page table format.
+
+Inorder to support both current and future ppc64 systems with a single
+kernel we need to make sure kernel can select between different page
+table format at runtime. With the new MMU (radix MMU) added, we will
+have two different pmd hugepage size 16MB for hash model and 2MB for
+Radix model. Hence make HPAGE_PMD related values as a variable.
+
+[1] http://ibm.biz/power-isa3 (Needs registration).
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/pgtable-hash64.c | 374 +++++++++++++++++++++++++++++++++++++++
- arch/powerpc/mm/pgtable_64.c     | 374 ---------------------------------------
- 2 files changed, 374 insertions(+), 374 deletions(-)
+ arch/arm/include/asm/pgtable-3level.h | 8 ++++++++
+ arch/arm64/include/asm/pgtable.h      | 7 +++++++
+ arch/mips/include/asm/pgtable.h       | 8 ++++++++
+ arch/powerpc/mm/pgtable_64.c          | 7 +++++++
+ arch/s390/include/asm/pgtable.h       | 8 ++++++++
+ arch/sparc/include/asm/pgtable_64.h   | 7 +++++++
+ arch/tile/include/asm/pgtable.h       | 9 +++++++++
+ arch/x86/include/asm/pgtable.h        | 8 ++++++++
+ include/linux/huge_mm.h               | 3 ---
+ mm/huge_memory.c                      | 8 +++++---
+ 10 files changed, 67 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
-index 4813a3c2d457..8cfa297f2c64 100644
---- a/arch/powerpc/mm/pgtable-hash64.c
-+++ b/arch/powerpc/mm/pgtable-hash64.c
-@@ -21,6 +21,9 @@
- 
- #include "mmu_decl.h"
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/thp.h>
-+
- #if H_PGTABLE_RANGE > USER_VSID_RANGE
- #warning Limited user VSID range means pagetable space is wasted
- #endif
-@@ -245,3 +248,374 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
- 	/* Perform the setting of the PTE */
- 	__set_pte_at(mm, addr, ptep, pte, 0);
+diff --git a/arch/arm/include/asm/pgtable-3level.h b/arch/arm/include/asm/pgtable-3level.h
+index dc46398bc3a5..4b934de4d088 100644
+--- a/arch/arm/include/asm/pgtable-3level.h
++++ b/arch/arm/include/asm/pgtable-3level.h
+@@ -281,6 +281,14 @@ static inline void set_pmd_at(struct mm_struct *mm, unsigned long addr,
+ 	flush_pmd_entry(pmdp);
  }
-+
-+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-+
-+/*
-+ * This is called when relaxing access to a hugepage. It's also called in the page
-+ * fault path when we don't hit any of the major fault cases, ie, a minor
-+ * update of _PAGE_ACCESSED, _PAGE_DIRTY, etc... The generic code will have
-+ * handled those two for us, we additionally deal with missing execute
-+ * permission here on some processors
-+ */
-+int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
-+			  pmd_t *pmdp, pmd_t entry, int dirty)
-+{
-+	int changed;
-+#ifdef CONFIG_DEBUG_VM
-+	WARN_ON(!pmd_trans_huge(*pmdp));
-+	assert_spin_locked(&vma->vm_mm->page_table_lock);
-+#endif
-+	changed = !pmd_same(*(pmdp), entry);
-+	if (changed) {
-+		__ptep_set_access_flags(pmdp_ptep(pmdp), pmd_pte(entry));
-+		/*
-+		 * Since we are not supporting SW TLB systems, we don't
-+		 * have any thing similar to flush_tlb_page_nohash()
-+		 */
-+	}
-+	return changed;
-+}
-+
-+unsigned long pmd_hugepage_update(struct mm_struct *mm, unsigned long addr,
-+				  pmd_t *pmdp, unsigned long clr,
-+				  unsigned long set)
-+{
-+
-+	unsigned long old, tmp;
-+
-+#ifdef CONFIG_DEBUG_VM
-+	WARN_ON(!pmd_trans_huge(*pmdp));
-+	assert_spin_locked(&mm->page_table_lock);
+ 
++#if HPAGE_PMD_ORDER >= MAX_ORDER
++#error "hugepages can't be allocated by the buddy allocator"
 +#endif
 +
-+#ifdef PTE_ATOMIC_UPDATES
-+	__asm__ __volatile__(
-+	"1:	ldarx	%0,0,%3\n\
-+		andi.	%1,%0,%6\n\
-+		bne-	1b \n\
-+		andc	%1,%0,%4 \n\
-+		or	%1,%1,%7\n\
-+		stdcx.	%1,0,%3 \n\
-+		bne-	1b"
-+	: "=&r" (old), "=&r" (tmp), "=m" (*pmdp)
-+	: "r" (pmdp), "r" (clr), "m" (*pmdp), "i" (H_PAGE_BUSY), "r" (set)
-+	: "cc" );
-+#else
-+	old = pmd_val(*pmdp);
-+	*pmdp = __pmd((old & ~clr) | set);
++#if HPAGE_PMD_ORDER < 2
++#error "We need more than 2 pages to do deferred thp split"
 +#endif
-+	trace_hugepage_update(addr, old, clr, set);
-+	if (old & H_PAGE_HASHPTE)
-+		hpte_do_hugepage_flush(mm, addr, pmdp, old);
-+	return old;
-+}
 +
-+pmd_t pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long address,
-+			  pmd_t *pmdp)
-+{
-+	pmd_t pmd;
-+
-+	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
-+	VM_BUG_ON(pmd_trans_huge(*pmdp));
-+
-+	pmd = *pmdp;
-+	pmd_clear(pmdp);
-+	/*
-+	 * Wait for all pending hash_page to finish. This is needed
-+	 * in case of subpage collapse. When we collapse normal pages
-+	 * to hugepage, we first clear the pmd, then invalidate all
-+	 * the PTE entries. The assumption here is that any low level
-+	 * page fault will see a none pmd and take the slow path that
-+	 * will wait on mmap_sem. But we could very well be in a
-+	 * hash_page with local ptep pointer value. Such a hash page
-+	 * can result in adding new HPTE entries for normal subpages.
-+	 * That means we could be modifying the page content as we
-+	 * copy them to a huge page. So wait for parallel hash_page
-+	 * to finish before invalidating HPTE entries. We can do this
-+	 * by sending an IPI to all the cpus and executing a dummy
-+	 * function there.
-+	 */
-+	kick_all_cpus_sync();
-+	/*
-+	 * Now invalidate the hpte entries in the range
-+	 * covered by pmd. This make sure we take a
-+	 * fault and will find the pmd as none, which will
-+	 * result in a major fault which takes mmap_sem and
-+	 * hence wait for collapse to complete. Without this
-+	 * the __collapse_huge_page_copy can result in copying
-+	 * the old content.
-+	 */
-+	flush_tlb_pmd_range(vma->vm_mm, &pmd, address);
-+	return pmd;
-+}
-+
-+int pmdp_test_and_clear_young(struct vm_area_struct *vma,
-+			      unsigned long address, pmd_t *pmdp)
-+{
-+	return __pmdp_test_and_clear_young(vma->vm_mm, address, pmdp);
-+}
-+
-+/*
-+ * We currently remove entries from the hashtable regardless of whether
-+ * the entry was young or dirty. The generic routines only flush if the
-+ * entry was young or dirty which is not good enough.
-+ *
-+ * We should be more intelligent about this but for the moment we override
-+ * these functions and force a tlb flush unconditionally
-+ */
-+int pmdp_clear_flush_young(struct vm_area_struct *vma,
-+				  unsigned long address, pmd_t *pmdp)
-+{
-+	return __pmdp_test_and_clear_young(vma->vm_mm, address, pmdp);
-+}
-+
-+/*
-+ * We want to put the pgtable in pmd and use pgtable for tracking
-+ * the base page size hptes
-+ */
-+void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-+				pgtable_t pgtable)
-+{
-+	pgtable_t *pgtable_slot;
-+	assert_spin_locked(&mm->page_table_lock);
-+	/*
-+	 * we store the pgtable in the second half of PMD
-+	 */
-+	pgtable_slot = (pgtable_t *)pmdp + H_PTRS_PER_PMD;
-+	*pgtable_slot = pgtable;
-+	/*
-+	 * expose the deposited pgtable to other cpus.
-+	 * before we set the hugepage PTE at pmd level
-+	 * hash fault code looks at the deposted pgtable
-+	 * to store hash index values.
-+	 */
-+	smp_wmb();
-+}
-+
-+pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
-+{
-+	pgtable_t pgtable;
-+	pgtable_t *pgtable_slot;
-+
-+	assert_spin_locked(&mm->page_table_lock);
-+	pgtable_slot = (pgtable_t *)pmdp + H_PTRS_PER_PMD;
-+	pgtable = *pgtable_slot;
-+	/*
-+	 * Once we withdraw, mark the entry NULL.
-+	 */
-+	*pgtable_slot = NULL;
-+	/*
-+	 * We store HPTE information in the deposited PTE fragment.
-+	 * zero out the content on withdraw.
-+	 */
-+	memset(pgtable, 0, H_PTE_FRAG_SIZE);
-+	return pgtable;
-+}
-+
-+void pmdp_huge_splitting_flush(struct vm_area_struct *vma,
-+			       unsigned long address, pmd_t *pmdp)
-+{
-+	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
-+
-+#ifdef CONFIG_DEBUG_VM
-+	BUG_ON(REGION_ID(address) != H_USER_REGION_ID);
+ static inline int has_transparent_hugepage(void)
+ {
+ 	return 1;
+diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+index bf464de33f52..6bc4605d0d58 100644
+--- a/arch/arm64/include/asm/pgtable.h
++++ b/arch/arm64/include/asm/pgtable.h
+@@ -378,6 +378,13 @@ static inline pgprot_t mk_sect_prot(pgprot_t prot)
+ 
+ #define set_pmd_at(mm, addr, pmdp, pmd)	set_pte_at(mm, addr, (pte_t *)pmdp, pmd_pte(pmd))
+ 
++#if HPAGE_PMD_ORDER >= MAX_ORDER
++#error "hugepages can't be allocated by the buddy allocator"
 +#endif
-+	/*
-+	 * We can't mark the pmd none here, because that will cause a race
-+	 * against exit_mmap. We need to continue mark pmd TRANS HUGE, while
-+	 * we spilt, but at the same time we wan't rest of the ppc64 code
-+	 * not to insert hash pte on this, because we will be modifying
-+	 * the deposited pgtable in the caller of this function. Hence
-+	 * clear the _PAGE_USER so that we move the fault handling to
-+	 * higher level function and that will serialize against ptl.
-+	 * We need to flush existing hash pte entries here even though,
-+	 * the translation is still valid, because we will withdraw
-+	 * pgtable_t after this.
-+	 */
-+	pmd_hugepage_update(vma->vm_mm, address, pmdp, H_PAGE_USER, 0);
-+}
 +
-+
-+/*
-+ * set a new huge pmd. We should not be called for updating
-+ * an existing pmd entry. That should go via pmd_hugepage_update.
-+ */
-+void set_pmd_at(struct mm_struct *mm, unsigned long addr,
-+		pmd_t *pmdp, pmd_t pmd)
-+{
-+#ifdef CONFIG_DEBUG_VM
-+	WARN_ON((pmd_val(*pmdp) & (H_PAGE_PRESENT | H_PAGE_USER)) ==
-+		(H_PAGE_PRESENT | H_PAGE_USER));
-+	assert_spin_locked(&mm->page_table_lock);
-+	WARN_ON(!pmd_trans_huge(pmd));
++#if HPAGE_PMD_ORDER < 2
++#error "We need more than 2 pages to do deferred thp split"
 +#endif
-+	trace_hugepage_set_pmd(addr, pmd_val(pmd));
-+	return set_pte_at(mm, addr, pmdp_ptep(pmdp), pmd_pte(pmd));
-+}
-+
-+/*
-+ * We use this to invalidate a pmdp entry before switching from a
-+ * hugepte to regular pmd entry.
-+ */
-+void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
-+		     pmd_t *pmdp)
-+{
-+	pmd_hugepage_update(vma->vm_mm, address, pmdp, ~0UL, 0);
-+	/*
-+	 * This ensures that generic code that rely on IRQ disabling
-+	 * to prevent a parallel THP split work as expected.
-+	 */
-+	kick_all_cpus_sync();
-+}
-+
-+/*
-+ * A linux hugepage PMD was changed and the corresponding hash table entries
-+ * neesd to be flushed.
-+ */
-+void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
-+			    pmd_t *pmdp, unsigned long old_pmd)
-+{
-+	int ssize;
-+	unsigned int psize;
-+	unsigned long vsid;
-+	unsigned long flags = 0;
-+	const struct cpumask *tmp;
-+
-+	/* get the base page size,vsid and segment size */
-+#ifdef CONFIG_DEBUG_VM
-+	psize = get_slice_psize(mm, addr);
-+	BUG_ON(psize == MMU_PAGE_16M);
+ static inline int has_transparent_hugepage(void)
+ {
+ 	return 1;
+diff --git a/arch/mips/include/asm/pgtable.h b/arch/mips/include/asm/pgtable.h
+index 9a4fe0133ff1..005839fd438d 100644
+--- a/arch/mips/include/asm/pgtable.h
++++ b/arch/mips/include/asm/pgtable.h
+@@ -468,6 +468,14 @@ static inline int io_remap_pfn_range(struct vm_area_struct *vma,
+ 
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ 
++#if HPAGE_PMD_ORDER >= MAX_ORDER
++#error "hugepages can't be allocated by the buddy allocator"
 +#endif
-+	if (old_pmd & H_PAGE_COMBO)
-+		psize = MMU_PAGE_4K;
-+	else
-+		psize = MMU_PAGE_64K;
 +
-+	if (!is_kernel_addr(addr)) {
-+		ssize = user_segment_size(addr);
-+		vsid = get_vsid(mm->context.id, addr, ssize);
-+		WARN_ON(vsid == 0);
-+	} else {
-+		vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
-+		ssize = mmu_kernel_ssize;
-+	}
++#if HPAGE_PMD_ORDER < 2
++#error "We need more than 2 pages to do deferred thp split"
++#endif
 +
-+	tmp = cpumask_of(smp_processor_id());
-+	if (cpumask_equal(mm_cpumask(mm), tmp))
-+		flags |= HPTE_LOCAL_UPDATE;
-+
-+	return flush_hash_hugepage(vsid, addr, pmdp, psize, ssize, flags);
-+}
-+
-+static pmd_t pmd_set_protbits(pmd_t pmd, pgprot_t pgprot)
-+{
-+	return __pmd(pmd_val(pmd) | pgprot_val(pgprot));
-+}
-+
-+pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot)
-+{
-+	unsigned long pmdv;
-+
-+	pmdv = pfn << H_PTE_RPN_SHIFT;
-+	return pmd_set_protbits(__pmd(pmdv), pgprot);
-+}
-+
-+pmd_t mk_pmd(struct page *page, pgprot_t pgprot)
-+{
-+	return pfn_pmd(page_to_pfn(page), pgprot);
-+}
-+
-+pmd_t pmd_modify(pmd_t pmd, pgprot_t newprot)
-+{
-+	unsigned long pmdv;
-+
-+	pmdv = pmd_val(pmd);
-+	pmdv &= H_HPAGE_CHG_MASK;
-+	return pmd_set_protbits(__pmd(pmdv), newprot);
-+}
-+
-+/*
-+ * This is called at the end of handling a user page fault, when the
-+ * fault has been handled by updating a HUGE PMD entry in the linux page tables.
-+ * We use it to preload an HPTE into the hash table corresponding to
-+ * the updated linux HUGE PMD entry.
-+ */
-+void update_mmu_cache_pmd(struct vm_area_struct *vma, unsigned long addr,
-+			  pmd_t *pmd)
-+{
-+	return;
-+}
-+
-+pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
-+			      unsigned long addr, pmd_t *pmdp)
-+{
-+	pmd_t old_pmd;
-+	pgtable_t pgtable;
-+	unsigned long old;
-+	pgtable_t *pgtable_slot;
-+
-+	old = pmd_hugepage_update(mm, addr, pmdp, ~0UL, 0);
-+	old_pmd = __pmd(old);
-+	/*
-+	 * We have pmd == none and we are holding page_table_lock.
-+	 * So we can safely go and clear the pgtable hash
-+	 * index info.
-+	 */
-+	pgtable_slot = (pgtable_t *)pmdp + H_PTRS_PER_PMD;
-+	pgtable = *pgtable_slot;
-+	/*
-+	 * Let's zero out old valid and hash index details
-+	 * hash fault look at them.
-+	 */
-+	memset(pgtable, 0, H_PTE_FRAG_SIZE);
-+	/*
-+	 * Serialize against find_linux_pte_or_hugepte which does lock-less
-+	 * lookup in page tables with local interrupts disabled. For huge pages
-+	 * it casts pmd_t to pte_t. Since format of pte_t is different from
-+	 * pmd_t we want to prevent transit from pmd pointing to page table
-+	 * to pmd pointing to huge page (and back) while interrupts are disabled.
-+	 * We clear pmd to possibly replace it with page table pointer in
-+	 * different code paths. So make sure we wait for the parallel
-+	 * find_linux_pte_or_hugepage to finish.
-+	 */
-+	kick_all_cpus_sync();
-+	return old_pmd;
-+}
-+
-+int has_transparent_hugepage(void)
-+{
-+
-+	BUILD_BUG_ON_MSG((H_PMD_SHIFT - PAGE_SHIFT) >= MAX_ORDER,
-+		"hugepages can't be allocated by the buddy allocator");
-+
-+	BUILD_BUG_ON_MSG((H_PMD_SHIFT - PAGE_SHIFT) < 2,
-+			 "We need more than 2 pages to do deferred thp split");
-+
-+	if (!mmu_has_feature(MMU_FTR_16M_PAGE))
-+		return 0;
-+	/*
-+	 * We support THP only if PMD_SIZE is 16MB.
-+	 */
-+	if (mmu_psize_defs[MMU_PAGE_16M].shift != H_PMD_SHIFT)
-+		return 0;
-+	/*
-+	 * We need to make sure that we support 16MB hugepage in a segement
-+	 * with base page size 64K or 4K. We only enable THP with a PAGE_SIZE
-+	 * of 64K.
-+	 */
-+	/*
-+	 * If we have 64K HPTE, we will be using that by default
-+	 */
-+	if (mmu_psize_defs[MMU_PAGE_64K].shift &&
-+	    (mmu_psize_defs[MMU_PAGE_64K].penc[MMU_PAGE_16M] == -1))
-+		return 0;
-+	/*
-+	 * Ok we only have 4K HPTE
-+	 */
-+	if (mmu_psize_defs[MMU_PAGE_4K].penc[MMU_PAGE_16M] == -1)
-+		return 0;
-+
-+	return 1;
-+}
-+#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+ extern int has_transparent_hugepage(void);
+ 
+ static inline int pmd_trans_huge(pmd_t pmd)
 diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 8d203f1b1162..99a44e1a9414 100644
+index e8214b7f2210..8840d31a5586 100644
 --- a/arch/powerpc/mm/pgtable_64.c
 +++ b/arch/powerpc/mm/pgtable_64.c
-@@ -55,9 +55,6 @@
+@@ -818,6 +818,13 @@ pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
  
- #include "mmu_decl.h"
+ int has_transparent_hugepage(void)
+ {
++
++	BUILD_BUG_ON_MSG((PMD_SHIFT - PAGE_SHIFT) >= MAX_ORDER,
++		"hugepages can't be allocated by the buddy allocator");
++
++	BUILD_BUG_ON_MSG((PMD_SHIFT - PAGE_SHIFT) < 2,
++			 "We need more than 2 pages to do deferred thp split");
++
+ 	if (!mmu_has_feature(MMU_FTR_16M_PAGE))
+ 		return 0;
+ 	/*
+diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
+index 64ead8091248..79e7ea6e272c 100644
+--- a/arch/s390/include/asm/pgtable.h
++++ b/arch/s390/include/asm/pgtable.h
+@@ -1617,6 +1617,14 @@ static inline int pmd_trans_huge(pmd_t pmd)
+ 	return pmd_val(pmd) & _SEGMENT_ENTRY_LARGE;
+ }
  
--#define CREATE_TRACE_POINTS
--#include <trace/events/thp.h>
--
- #ifdef CONFIG_PPC_STD_MMU_64
- #if TASK_SIZE_USER64 > (1UL << (ESID_BITS + SID_SHIFT))
- #error TASK_SIZE_USER64 exceeds user VSID range
-@@ -445,374 +442,3 @@ void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
++#if HPAGE_PMD_ORDER >= MAX_ORDER
++#error "hugepages can't be allocated by the buddy allocator"
++#endif
++
++#if HPAGE_PMD_ORDER < 2
++#error "We need more than 2 pages to do deferred thp split"
++#endif
++
+ static inline int has_transparent_hugepage(void)
+ {
+ 	return MACHINE_HAS_HPAGE ? 1 : 0;
+diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
+index 7a38d6a576c5..1f3884687f80 100644
+--- a/arch/sparc/include/asm/pgtable_64.h
++++ b/arch/sparc/include/asm/pgtable_64.h
+@@ -681,6 +681,13 @@ static inline unsigned long pmd_trans_huge(pmd_t pmd)
+ 	return pte_val(pte) & _PAGE_PMD_HUGE;
+ }
+ 
++#if HPAGE_PMD_ORDER >= MAX_ORDER
++#error "hugepages can't be allocated by the buddy allocator"
++#endif
++
++#if HPAGE_PMD_ORDER < 2
++#error "We need more than 2 pages to do deferred thp split"
++#endif
+ #define has_transparent_hugepage() 1
+ 
+ static inline pmd_t pmd_mkold(pmd_t pmd)
+diff --git a/arch/tile/include/asm/pgtable.h b/arch/tile/include/asm/pgtable.h
+index 96cecf55522e..70c5a44e8909 100644
+--- a/arch/tile/include/asm/pgtable.h
++++ b/arch/tile/include/asm/pgtable.h
+@@ -487,6 +487,15 @@ static inline pmd_t pmd_modify(pmd_t pmd, pgprot_t newprot)
+ }
+ 
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
++
++#if HPAGE_PMD_ORDER >= MAX_ORDER
++#error "hugepages can't be allocated by the buddy allocator"
++#endif
++
++#if HPAGE_PMD_ORDER < 2
++#error "We need more than 2 pages to do deferred thp split"
++#endif
++
+ #define has_transparent_hugepage() 1
+ #define pmd_trans_huge pmd_huge_page
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
+index 0687c4748b8f..7f3a39d98ad5 100644
+--- a/arch/x86/include/asm/pgtable.h
++++ b/arch/x86/include/asm/pgtable.h
+@@ -178,6 +178,14 @@ static inline int pmd_devmap(pmd_t pmd)
+ 	return !!(pmd_val(pmd) & _PAGE_DEVMAP);
  }
  #endif
- #endif /* CONFIG_PPC_64K_PAGES */
--
--#ifdef CONFIG_TRANSPARENT_HUGEPAGE
--
--/*
-- * This is called when relaxing access to a hugepage. It's also called in the page
-- * fault path when we don't hit any of the major fault cases, ie, a minor
-- * update of _PAGE_ACCESSED, _PAGE_DIRTY, etc... The generic code will have
-- * handled those two for us, we additionally deal with missing execute
-- * permission here on some processors
-- */
--int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
--			  pmd_t *pmdp, pmd_t entry, int dirty)
--{
--	int changed;
--#ifdef CONFIG_DEBUG_VM
--	WARN_ON(!pmd_trans_huge(*pmdp));
--	assert_spin_locked(&vma->vm_mm->page_table_lock);
++
++#if HPAGE_PMD_ORDER >= MAX_ORDER
++#error "hugepages can't be allocated by the buddy allocator"
++#endif
++
++#if HPAGE_PMD_ORDER < 2
++#error "We need more than 2 pages to do deferred thp split"
++#endif
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+ 
+ static inline pte_t pte_set_flags(pte_t pte, pteval_t set)
+diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
+index 459fd25b378e..f12513a20a06 100644
+--- a/include/linux/huge_mm.h
++++ b/include/linux/huge_mm.h
+@@ -111,9 +111,6 @@ void __split_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
+ 			__split_huge_pmd(__vma, __pmd, __address);	\
+ 	}  while (0)
+ 
+-#if HPAGE_PMD_ORDER >= MAX_ORDER
+-#error "hugepages can't be allocated by the buddy allocator"
 -#endif
--	changed = !pmd_same(*(pmdp), entry);
--	if (changed) {
--		__ptep_set_access_flags(pmdp_ptep(pmdp), pmd_pte(entry));
--		/*
--		 * Since we are not supporting SW TLB systems, we don't
--		 * have any thing similar to flush_tlb_page_nohash()
--		 */
--	}
--	return changed;
--}
--
--unsigned long pmd_hugepage_update(struct mm_struct *mm, unsigned long addr,
--				  pmd_t *pmdp, unsigned long clr,
--				  unsigned long set)
--{
--
--	unsigned long old, tmp;
--
--#ifdef CONFIG_DEBUG_VM
--	WARN_ON(!pmd_trans_huge(*pmdp));
--	assert_spin_locked(&mm->page_table_lock);
--#endif
--
--#ifdef PTE_ATOMIC_UPDATES
--	__asm__ __volatile__(
--	"1:	ldarx	%0,0,%3\n\
--		andi.	%1,%0,%6\n\
--		bne-	1b \n\
--		andc	%1,%0,%4 \n\
--		or	%1,%1,%7\n\
--		stdcx.	%1,0,%3 \n\
--		bne-	1b"
--	: "=&r" (old), "=&r" (tmp), "=m" (*pmdp)
--	: "r" (pmdp), "r" (clr), "m" (*pmdp), "i" (H_PAGE_BUSY), "r" (set)
--	: "cc" );
--#else
--	old = pmd_val(*pmdp);
--	*pmdp = __pmd((old & ~clr) | set);
--#endif
--	trace_hugepage_update(addr, old, clr, set);
--	if (old & H_PAGE_HASHPTE)
--		hpte_do_hugepage_flush(mm, addr, pmdp, old);
--	return old;
--}
--
--pmd_t pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long address,
--			  pmd_t *pmdp)
--{
--	pmd_t pmd;
--
--	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
--	VM_BUG_ON(pmd_trans_huge(*pmdp));
--
--	pmd = *pmdp;
--	pmd_clear(pmdp);
--	/*
--	 * Wait for all pending hash_page to finish. This is needed
--	 * in case of subpage collapse. When we collapse normal pages
--	 * to hugepage, we first clear the pmd, then invalidate all
--	 * the PTE entries. The assumption here is that any low level
--	 * page fault will see a none pmd and take the slow path that
--	 * will wait on mmap_sem. But we could very well be in a
--	 * hash_page with local ptep pointer value. Such a hash page
--	 * can result in adding new HPTE entries for normal subpages.
--	 * That means we could be modifying the page content as we
--	 * copy them to a huge page. So wait for parallel hash_page
--	 * to finish before invalidating HPTE entries. We can do this
--	 * by sending an IPI to all the cpus and executing a dummy
--	 * function there.
--	 */
--	kick_all_cpus_sync();
--	/*
--	 * Now invalidate the hpte entries in the range
--	 * covered by pmd. This make sure we take a
--	 * fault and will find the pmd as none, which will
--	 * result in a major fault which takes mmap_sem and
--	 * hence wait for collapse to complete. Without this
--	 * the __collapse_huge_page_copy can result in copying
--	 * the old content.
--	 */
--	flush_tlb_pmd_range(vma->vm_mm, &pmd, address);
--	return pmd;
--}
--
--int pmdp_test_and_clear_young(struct vm_area_struct *vma,
--			      unsigned long address, pmd_t *pmdp)
--{
--	return __pmdp_test_and_clear_young(vma->vm_mm, address, pmdp);
--}
--
--/*
-- * We currently remove entries from the hashtable regardless of whether
-- * the entry was young or dirty. The generic routines only flush if the
-- * entry was young or dirty which is not good enough.
-- *
-- * We should be more intelligent about this but for the moment we override
-- * these functions and force a tlb flush unconditionally
-- */
--int pmdp_clear_flush_young(struct vm_area_struct *vma,
--				  unsigned long address, pmd_t *pmdp)
--{
--	return __pmdp_test_and_clear_young(vma->vm_mm, address, pmdp);
--}
--
--/*
-- * We want to put the pgtable in pmd and use pgtable for tracking
-- * the base page size hptes
-- */
--void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
--				pgtable_t pgtable)
--{
--	pgtable_t *pgtable_slot;
--	assert_spin_locked(&mm->page_table_lock);
--	/*
--	 * we store the pgtable in the second half of PMD
--	 */
--	pgtable_slot = (pgtable_t *)pmdp + H_PTRS_PER_PMD;
--	*pgtable_slot = pgtable;
--	/*
--	 * expose the deposited pgtable to other cpus.
--	 * before we set the hugepage PTE at pmd level
--	 * hash fault code looks at the deposted pgtable
--	 * to store hash index values.
--	 */
--	smp_wmb();
--}
--
--pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
--{
--	pgtable_t pgtable;
--	pgtable_t *pgtable_slot;
--
--	assert_spin_locked(&mm->page_table_lock);
--	pgtable_slot = (pgtable_t *)pmdp + H_PTRS_PER_PMD;
--	pgtable = *pgtable_slot;
--	/*
--	 * Once we withdraw, mark the entry NULL.
--	 */
--	*pgtable_slot = NULL;
--	/*
--	 * We store HPTE information in the deposited PTE fragment.
--	 * zero out the content on withdraw.
--	 */
--	memset(pgtable, 0, H_PTE_FRAG_SIZE);
--	return pgtable;
--}
--
--void pmdp_huge_splitting_flush(struct vm_area_struct *vma,
--			       unsigned long address, pmd_t *pmdp)
--{
--	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
--
--#ifdef CONFIG_DEBUG_VM
--	BUG_ON(REGION_ID(address) != H_USER_REGION_ID);
--#endif
--	/*
--	 * We can't mark the pmd none here, because that will cause a race
--	 * against exit_mmap. We need to continue mark pmd TRANS HUGE, while
--	 * we spilt, but at the same time we wan't rest of the ppc64 code
--	 * not to insert hash pte on this, because we will be modifying
--	 * the deposited pgtable in the caller of this function. Hence
--	 * clear the _PAGE_USER so that we move the fault handling to
--	 * higher level function and that will serialize against ptl.
--	 * We need to flush existing hash pte entries here even though,
--	 * the translation is still valid, because we will withdraw
--	 * pgtable_t after this.
--	 */
--	pmd_hugepage_update(vma->vm_mm, address, pmdp, H_PAGE_USER, 0);
--}
--
--
--/*
-- * set a new huge pmd. We should not be called for updating
-- * an existing pmd entry. That should go via pmd_hugepage_update.
-- */
--void set_pmd_at(struct mm_struct *mm, unsigned long addr,
--		pmd_t *pmdp, pmd_t pmd)
--{
--#ifdef CONFIG_DEBUG_VM
--	WARN_ON((pmd_val(*pmdp) & (H_PAGE_PRESENT | H_PAGE_USER)) ==
--		(H_PAGE_PRESENT | H_PAGE_USER));
--	assert_spin_locked(&mm->page_table_lock);
--	WARN_ON(!pmd_trans_huge(pmd));
--#endif
--	trace_hugepage_set_pmd(addr, pmd_val(pmd));
--	return set_pte_at(mm, addr, pmdp_ptep(pmdp), pmd_pte(pmd));
--}
--
--/*
-- * We use this to invalidate a pmdp entry before switching from a
-- * hugepte to regular pmd entry.
-- */
--void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
--		     pmd_t *pmdp)
--{
--	pmd_hugepage_update(vma->vm_mm, address, pmdp, ~0UL, 0);
--	/*
--	 * This ensures that generic code that rely on IRQ disabling
--	 * to prevent a parallel THP split work as expected.
--	 */
--	kick_all_cpus_sync();
--}
--
--/*
-- * A linux hugepage PMD was changed and the corresponding hash table entries
-- * neesd to be flushed.
-- */
--void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
--			    pmd_t *pmdp, unsigned long old_pmd)
--{
--	int ssize;
--	unsigned int psize;
--	unsigned long vsid;
--	unsigned long flags = 0;
--	const struct cpumask *tmp;
--
--	/* get the base page size,vsid and segment size */
--#ifdef CONFIG_DEBUG_VM
--	psize = get_slice_psize(mm, addr);
--	BUG_ON(psize == MMU_PAGE_16M);
--#endif
--	if (old_pmd & H_PAGE_COMBO)
--		psize = MMU_PAGE_4K;
--	else
--		psize = MMU_PAGE_64K;
--
--	if (!is_kernel_addr(addr)) {
--		ssize = user_segment_size(addr);
--		vsid = get_vsid(mm->context.id, addr, ssize);
--		WARN_ON(vsid == 0);
--	} else {
--		vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
--		ssize = mmu_kernel_ssize;
--	}
--
--	tmp = cpumask_of(smp_processor_id());
--	if (cpumask_equal(mm_cpumask(mm), tmp))
--		flags |= HPTE_LOCAL_UPDATE;
--
--	return flush_hash_hugepage(vsid, addr, pmdp, psize, ssize, flags);
--}
--
--static pmd_t pmd_set_protbits(pmd_t pmd, pgprot_t pgprot)
--{
--	return __pmd(pmd_val(pmd) | pgprot_val(pgprot));
--}
--
--pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot)
--{
--	unsigned long pmdv;
--
--	pmdv = pfn << H_PTE_RPN_SHIFT;
--	return pmd_set_protbits(__pmd(pmdv), pgprot);
--}
--
--pmd_t mk_pmd(struct page *page, pgprot_t pgprot)
--{
--	return pfn_pmd(page_to_pfn(page), pgprot);
--}
--
--pmd_t pmd_modify(pmd_t pmd, pgprot_t newprot)
--{
--	unsigned long pmdv;
--
--	pmdv = pmd_val(pmd);
--	pmdv &= H_HPAGE_CHG_MASK;
--	return pmd_set_protbits(__pmd(pmdv), newprot);
--}
--
--/*
-- * This is called at the end of handling a user page fault, when the
-- * fault has been handled by updating a HUGE PMD entry in the linux page tables.
-- * We use it to preload an HPTE into the hash table corresponding to
-- * the updated linux HUGE PMD entry.
-- */
--void update_mmu_cache_pmd(struct vm_area_struct *vma, unsigned long addr,
--			  pmd_t *pmd)
--{
--	return;
--}
--
--pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
--			      unsigned long addr, pmd_t *pmdp)
--{
--	pmd_t old_pmd;
--	pgtable_t pgtable;
--	unsigned long old;
--	pgtable_t *pgtable_slot;
--
--	old = pmd_hugepage_update(mm, addr, pmdp, ~0UL, 0);
--	old_pmd = __pmd(old);
--	/*
--	 * We have pmd == none and we are holding page_table_lock.
--	 * So we can safely go and clear the pgtable hash
--	 * index info.
--	 */
--	pgtable_slot = (pgtable_t *)pmdp + H_PTRS_PER_PMD;
--	pgtable = *pgtable_slot;
--	/*
--	 * Let's zero out old valid and hash index details
--	 * hash fault look at them.
--	 */
--	memset(pgtable, 0, H_PTE_FRAG_SIZE);
--	/*
--	 * Serialize against find_linux_pte_or_hugepte which does lock-less
--	 * lookup in page tables with local interrupts disabled. For huge pages
--	 * it casts pmd_t to pte_t. Since format of pte_t is different from
--	 * pmd_t we want to prevent transit from pmd pointing to page table
--	 * to pmd pointing to huge page (and back) while interrupts are disabled.
--	 * We clear pmd to possibly replace it with page table pointer in
--	 * different code paths. So make sure we wait for the parallel
--	 * find_linux_pte_or_hugepage to finish.
--	 */
--	kick_all_cpus_sync();
--	return old_pmd;
--}
--
--int has_transparent_hugepage(void)
--{
--
--	BUILD_BUG_ON_MSG((H_PMD_SHIFT - PAGE_SHIFT) >= MAX_ORDER,
--		"hugepages can't be allocated by the buddy allocator");
--
--	BUILD_BUG_ON_MSG((H_PMD_SHIFT - PAGE_SHIFT) < 2,
--			 "We need more than 2 pages to do deferred thp split");
--
--	if (!mmu_has_feature(MMU_FTR_16M_PAGE))
--		return 0;
--	/*
--	 * We support THP only if PMD_SIZE is 16MB.
--	 */
--	if (mmu_psize_defs[MMU_PAGE_16M].shift != H_PMD_SHIFT)
--		return 0;
--	/*
--	 * We need to make sure that we support 16MB hugepage in a segement
--	 * with base page size 64K or 4K. We only enable THP with a PAGE_SIZE
--	 * of 64K.
--	 */
--	/*
--	 * If we have 64K HPTE, we will be using that by default
--	 */
--	if (mmu_psize_defs[MMU_PAGE_64K].shift &&
--	    (mmu_psize_defs[MMU_PAGE_64K].penc[MMU_PAGE_16M] == -1))
--		return 0;
--	/*
--	 * Ok we only have 4K HPTE
--	 */
--	if (mmu_psize_defs[MMU_PAGE_4K].penc[MMU_PAGE_16M] == -1)
--		return 0;
--
--	return 1;
--}
--#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+ extern int hugepage_madvise(struct vm_area_struct *vma,
+ 			    unsigned long *vm_flags, int advice);
+ extern void vma_adjust_trans_huge(struct vm_area_struct *vma,
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index b52d16a86e91..db1362d015ce 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -83,7 +83,7 @@ unsigned long transparent_hugepage_flags __read_mostly =
+ 	(1<<TRANSPARENT_HUGEPAGE_USE_ZERO_PAGE_FLAG);
+ 
+ /* default scan 8*512 pte (or vmas) every 30 second */
+-static unsigned int khugepaged_pages_to_scan __read_mostly = HPAGE_PMD_NR*8;
++static unsigned int khugepaged_pages_to_scan __read_mostly;
+ static unsigned int khugepaged_pages_collapsed;
+ static unsigned int khugepaged_full_scans;
+ static unsigned int khugepaged_scan_sleep_millisecs __read_mostly = 10000;
+@@ -98,7 +98,7 @@ static DECLARE_WAIT_QUEUE_HEAD(khugepaged_wait);
+  * it would have happened if the vma was large enough during page
+  * fault.
+  */
+-static unsigned int khugepaged_max_ptes_none __read_mostly = HPAGE_PMD_NR-1;
++static unsigned int khugepaged_max_ptes_none __read_mostly;
+ 
+ static int khugepaged(void *none);
+ static int khugepaged_slab_init(void);
+@@ -655,6 +655,9 @@ static int __init hugepage_init(void)
+ 	int err;
+ 	struct kobject *hugepage_kobj;
+ 
++	khugepaged_pages_to_scan = HPAGE_PMD_NR*8;
++	khugepaged_max_ptes_none = HPAGE_PMD_NR-1;
++
+ 	if (!has_transparent_hugepage()) {
+ 		transparent_hugepage_flags = 0;
+ 		return -EINVAL;
+@@ -764,7 +767,6 @@ void prep_transhuge_page(struct page *page)
+ 	 * we use page->mapping and page->indexlru in second tail page
+ 	 * as list_head: assuming THP order >= 2
+ 	 */
+-	BUILD_BUG_ON(HPAGE_PMD_ORDER < 2);
+ 
+ 	INIT_LIST_HEAD(page_deferred_list(page));
+ 	set_compound_page_dtor(page, TRANSHUGE_PAGE_DTOR);
 -- 
 2.5.0
