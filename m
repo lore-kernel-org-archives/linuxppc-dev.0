@@ -2,33 +2,33 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2CC791A030F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 20:21:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6A1EA1A030F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 20:21:48 +1100 (AEDT)
 Received: from localhost
  by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 8 Feb 2016 02:21:45 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 546191FF0041
+ Mon, 8 Feb 2016 02:21:46 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 75A471FF0042
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 02:09:53 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u189LhPZ25493512
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 02:21:43 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u189LgYx000823
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 02:21:43 -0700
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id u189Lgal25231422
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 02:21:42 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u189Le9H026142
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2016 02:21:42 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 23/29] powerpc/mm: Move hash related mmu-*.h headers to
- book3s/
-Date: Mon,  8 Feb 2016 14:50:35 +0530
-Message-Id: <1454923241-6681-24-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2 22/29] powerpc/mm: Hash linux abstraction for mmu context
+ handling code
+Date: Mon,  8 Feb 2016 14:50:34 +0530
+Message-Id: <1454923241-6681-23-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,163 +42,238 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/{mmu-hash32.h => book3s/32/mmu-hash.h} | 0
- arch/powerpc/include/asm/{mmu-hash64.h => book3s/64/mmu-hash.h} | 0
- arch/powerpc/include/asm/mmu.h                                  | 4 ++--
- arch/powerpc/kernel/idle_power7.S                               | 2 +-
- arch/powerpc/kvm/book3s_32_mmu_host.c                           | 2 +-
- arch/powerpc/kvm/book3s_64_mmu.c                                | 2 +-
- arch/powerpc/kvm/book3s_64_mmu_host.c                           | 2 +-
- arch/powerpc/kvm/book3s_64_mmu_hv.c                             | 2 +-
- arch/powerpc/kvm/book3s_64_vio.c                                | 2 +-
- arch/powerpc/kvm/book3s_64_vio_hv.c                             | 2 +-
- arch/powerpc/kvm/book3s_hv_rm_mmu.c                             | 2 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S                         | 2 +-
- 12 files changed, 11 insertions(+), 11 deletions(-)
- rename arch/powerpc/include/asm/{mmu-hash32.h => book3s/32/mmu-hash.h} (100%)
- rename arch/powerpc/include/asm/{mmu-hash64.h => book3s/64/mmu-hash.h} (100%)
+ arch/powerpc/include/asm/mmu_context.h | 63 +++++++++++++++++++++++-----------
+ arch/powerpc/kernel/swsusp.c           |  2 +-
+ arch/powerpc/mm/mmu_context_hash64.c   | 16 ++++-----
+ arch/powerpc/mm/mmu_context_nohash.c   |  3 +-
+ drivers/cpufreq/pmac32-cpufreq.c       |  2 +-
+ drivers/macintosh/via-pmu.c            |  4 +--
+ 6 files changed, 57 insertions(+), 33 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash32.h b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-similarity index 100%
-rename from arch/powerpc/include/asm/mmu-hash32.h
-rename to arch/powerpc/include/asm/book3s/32/mmu-hash.h
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-similarity index 100%
-rename from arch/powerpc/include/asm/mmu-hash64.h
-rename to arch/powerpc/include/asm/book3s/64/mmu-hash.h
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 3d5abfe6ba67..18a1b7dbf5fb 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -182,10 +182,10 @@ static inline void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 878c27771717..5124b721da6e 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -10,11 +10,6 @@
+ #include <asm/cputable.h>
+ #include <asm/cputhreads.h>
  
- #if defined(CONFIG_PPC_STD_MMU_64)
- /* 64-bit classic hash table MMU */
--#  include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #elif defined(CONFIG_PPC_STD_MMU_32)
- /* 32-bit classic hash table MMU */
--#  include <asm/mmu-hash32.h>
-+#include <asm/book3s/32/mmu-hash.h>
- #elif defined(CONFIG_40x)
- /* 40x-style software loaded TLB */
- #  include <asm/mmu-40x.h>
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index cf4fb5429cf1..470ceebd2d23 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -19,7 +19,7 @@
- #include <asm/kvm_book3s_asm.h>
- #include <asm/opal.h>
- #include <asm/cpuidle.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
+-/*
+- * Most if the context management is out of line
+- */
+-extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
+-extern void destroy_context(struct mm_struct *mm);
+ #ifdef CONFIG_SPAPR_TCE_IOMMU
+ struct mm_iommu_table_group_mem_t;
  
- #undef DEBUG
+@@ -33,16 +28,50 @@ extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
+ extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
+ #endif
++/*
++ * Most of the context management is out of line
++ */
++#ifdef CONFIG_PPC_BOOK3S_64
++extern int hlinit_new_context(struct task_struct *tsk, struct mm_struct *mm);
++static inline int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
++{
++	return hlinit_new_context(tsk, mm);
++}
++
++extern void hldestroy_context(struct mm_struct *mm);
++static inline void destroy_context(struct mm_struct *mm)
++{
++	return hldestroy_context(mm);
++}
  
-diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
-index 55c4d51ea3e2..999106991a76 100644
---- a/arch/powerpc/kvm/book3s_32_mmu_host.c
-+++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
-@@ -22,7 +22,7 @@
+-extern void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next);
+ extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
+-extern void set_context(unsigned long id, pgd_t *pgd);
++static inline void switch_mmu_context(struct mm_struct *prev,
++				      struct mm_struct *next,
++				      struct task_struct *tsk)
++{
++	return switch_slb(tsk, next);
++}
  
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash32.h>
-+#include <asm/book3s/32/mmu-hash.h>
- #include <asm/machdep.h>
- #include <asm/mmu_context.h>
- #include <asm/hw_irq.h>
-diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
-index 9bf7031a67ff..b9131aa1aedf 100644
---- a/arch/powerpc/kvm/book3s_64_mmu.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu.c
-@@ -26,7 +26,7 @@
- #include <asm/tlbflush.h>
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
+-#ifdef CONFIG_PPC_BOOK3S_64
+-extern int __init_new_context(void);
+-extern void __destroy_context(int context_id);
++extern void set_context(unsigned long id, pgd_t *pgd);
++extern int __hlinit_new_context(void);
++static inline int __init_new_context(void)
++{
++	return __hlinit_new_context();
++}
++extern void __hldestroy_context(int context_id);
++static inline void __destroy_context(int context_id)
++{
++	return __hldestroy_context(context_id);
++}
+ static inline void mmu_context_init(void) { }
+ #else
++extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
++extern void destroy_context(struct mm_struct *mm);
++
++extern void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next,
++			       struct task_struct *tsk);
++extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
++extern void set_context(unsigned long id, pgd_t *pgd);
+ extern unsigned long __init_new_context(void);
+ extern void __destroy_context(unsigned long context_id);
+ extern void mmu_context_init(void);
+@@ -88,17 +117,11 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+ 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+ 		asm volatile ("dssall");
+ #endif /* CONFIG_ALTIVEC */
+-
+-	/* The actual HW switching method differs between the various
+-	 * sub architectures.
++	/*
++	 * The actual HW switching method differs between the various
++	 * sub architectures. Out of line for now
+ 	 */
+-#ifdef CONFIG_PPC_STD_MMU_64
+-	switch_slb(tsk, next);
+-#else
+-	/* Out of line for now */
+-	switch_mmu_context(prev, next);
+-#endif
+-
++	switch_mmu_context(prev, next, tsk);
+ }
  
- /* #define DEBUG_MMU */
- 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
-index 30fc2d83dffa..d7959b2a8b32 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_host.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
-@@ -23,7 +23,7 @@
- 
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #include <asm/machdep.h>
- #include <asm/mmu_context.h>
- #include <asm/hw_irq.h>
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index fb37290a57b4..c7b78d8336b2 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -32,7 +32,7 @@
- #include <asm/tlbflush.h>
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #include <asm/hvcall.h>
- #include <asm/synch.h>
- #include <asm/ppc-opcode.h>
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 54cf9bc94dad..9c3b76bb69d9 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
+ #define deactivate_mm(tsk,mm)	do { } while (0)
+diff --git a/arch/powerpc/kernel/swsusp.c b/arch/powerpc/kernel/swsusp.c
+index 6669b1752512..6ae9bd5086a4 100644
+--- a/arch/powerpc/kernel/swsusp.c
++++ b/arch/powerpc/kernel/swsusp.c
+@@ -31,6 +31,6 @@ void save_processor_state(void)
+ void restore_processor_state(void)
+ {
+ #ifdef CONFIG_PPC32
+-	switch_mmu_context(current->active_mm, current->active_mm);
++	switch_mmu_context(current->active_mm, current->active_mm, NULL);
+ #endif
+ }
+diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
+index ff9baa5d2944..9c147d800760 100644
+--- a/arch/powerpc/mm/mmu_context_hash64.c
++++ b/arch/powerpc/mm/mmu_context_hash64.c
 @@ -30,7 +30,7 @@
- #include <asm/tlbflush.h>
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #include <asm/hvcall.h>
- #include <asm/synch.h>
- #include <asm/ppc-opcode.h>
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index 89e96b3e0039..039028d3ccb5 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -29,7 +29,7 @@
- #include <asm/tlbflush.h>
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #include <asm/hvcall.h>
- #include <asm/synch.h>
- #include <asm/ppc-opcode.h>
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 91700518bbf3..4cb8db05f3e5 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -17,7 +17,7 @@
- #include <asm/tlbflush.h>
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #include <asm/hvcall.h>
- #include <asm/synch.h>
- #include <asm/ppc-opcode.h>
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 6ee26de9a1de..c613fee0b9f7 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -27,7 +27,7 @@
- #include <asm/asm-offsets.h>
- #include <asm/exception-64s.h>
- #include <asm/kvm_book3s_asm.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #include <asm/tm.h>
+ static DEFINE_SPINLOCK(mmu_context_lock);
+ static DEFINE_IDA(mmu_context_ida);
  
- #define VCPU_GPRS_TM(reg) (((reg) * ULONG_SIZE) + VCPU_GPR_TM)
+-int __init_new_context(void)
++int __hlinit_new_context(void)
+ {
+ 	int index;
+ 	int err;
+@@ -59,11 +59,11 @@ again:
+ }
+ EXPORT_SYMBOL_GPL(__init_new_context);
+ 
+-int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
++int hlinit_new_context(struct task_struct *tsk, struct mm_struct *mm)
+ {
+ 	int index;
+ 
+-	index = __init_new_context();
++	index = __hlinit_new_context();
+ 	if (index < 0)
+ 		return index;
+ 
+@@ -78,7 +78,7 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+ #ifdef CONFIG_PPC_ICSWX
+ 	mm->context.cop_lockp = kmalloc(sizeof(spinlock_t), GFP_KERNEL);
+ 	if (!mm->context.cop_lockp) {
+-		__destroy_context(index);
++		__hldestroy_context(index);
+ 		subpage_prot_free(mm);
+ 		mm->context.id = MMU_NO_CONTEXT;
+ 		return -ENOMEM;
+@@ -95,13 +95,13 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+ 	return 0;
+ }
+ 
+-void __destroy_context(int context_id)
++void __hldestroy_context(int context_id)
+ {
+ 	spin_lock(&mmu_context_lock);
+ 	ida_remove(&mmu_context_ida, context_id);
+ 	spin_unlock(&mmu_context_lock);
+ }
+-EXPORT_SYMBOL_GPL(__destroy_context);
++EXPORT_SYMBOL_GPL(__hldestroy_context);
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+ static void destroy_pagetable_page(struct mm_struct *mm)
+@@ -133,7 +133,7 @@ static inline void destroy_pagetable_page(struct mm_struct *mm)
+ #endif
+ 
+ 
+-void destroy_context(struct mm_struct *mm)
++void hldestroy_context(struct mm_struct *mm)
+ {
+ #ifdef CONFIG_SPAPR_TCE_IOMMU
+ 	mm_iommu_cleanup(&mm->context);
+@@ -146,7 +146,7 @@ void destroy_context(struct mm_struct *mm)
+ #endif /* CONFIG_PPC_ICSWX */
+ 
+ 	destroy_pagetable_page(mm);
+-	__destroy_context(mm->context.id);
++	__hldestroy_context(mm->context.id);
+ 	subpage_prot_free(mm);
+ 	mm->context.id = MMU_NO_CONTEXT;
+ }
+diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+index 986afbc22c76..a36c43a27893 100644
+--- a/arch/powerpc/mm/mmu_context_nohash.c
++++ b/arch/powerpc/mm/mmu_context_nohash.c
+@@ -226,7 +226,8 @@ static void context_check_map(void)
+ static void context_check_map(void) { }
+ #endif
+ 
+-void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
++void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next,
++			struct task_struct *tsk)
+ {
+ 	unsigned int i, id, cpu = smp_processor_id();
+ 	unsigned long *map;
+diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
+index 1f49d97a70ea..bde503c66945 100644
+--- a/drivers/cpufreq/pmac32-cpufreq.c
++++ b/drivers/cpufreq/pmac32-cpufreq.c
+@@ -298,7 +298,7 @@ static int pmu_set_cpu_speed(int low_speed)
+  		_set_L3CR(save_l3cr);
+ 
+ 	/* Restore userland MMU context */
+-	switch_mmu_context(NULL, current->active_mm);
++	switch_mmu_context(NULL, current->active_mm, NULL);
+ 
+ #ifdef DEBUG_FREQ
+ 	printk(KERN_DEBUG "HID1, after: %x\n", mfspr(SPRN_HID1));
+diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+index 01ee736fe0ef..f8b6d1403c16 100644
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -1851,7 +1851,7 @@ static int powerbook_sleep_grackle(void)
+  		_set_L2CR(save_l2cr);
+ 	
+ 	/* Restore userland MMU context */
+-	switch_mmu_context(NULL, current->active_mm);
++	switch_mmu_context(NULL, current->active_mm, NULL);
+ 
+ 	/* Power things up */
+ 	pmu_unlock();
+@@ -1940,7 +1940,7 @@ powerbook_sleep_Core99(void)
+  		_set_L3CR(save_l3cr);
+ 	
+ 	/* Restore userland MMU context */
+-	switch_mmu_context(NULL, current->active_mm);
++	switch_mmu_context(NULL, current->active_mm, NULL);
+ 
+ 	/* Tell PMU we are ready */
+ 	pmu_unlock();
 -- 
 2.5.0
