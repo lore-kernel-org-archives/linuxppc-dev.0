@@ -1,19 +1,15 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8B9C41A0018
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 22:13:22 +1100 (AEDT)
-Message-ID: <1454929996.1562.3.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Fix incorrect PPC32 PAMU dependency
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B7A31A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 22:31:50 +1100 (AEDT)
+In-Reply-To: <1453272618-1083-1-git-send-email-andrew.donnellan@au1.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andy Fleming <afleming@gmail.com>, joro@8bytes.org
-Cc: iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 08 Feb 2016 22:13:16 +1100
-In-Reply-To: <1454638566-1953-1-git-send-email-afleming@gmail.com>
-References: <1454638566-1953-1-git-send-email-afleming@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Subject: Re: [1/2] powerpc/powernv: new function to access OPAL msglog
+Message-Id: <20160208113149.F33D1140B99@ozlabs.org>
+Date: Mon,  8 Feb 2016 22:31:49 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +19,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-02-04 at 20:16 -0600, Andy Fleming wrote:
+On Wed, 2016-20-01 at 06:50:17 UTC, Andrew Donnellan wrote:
+> Currently, the OPAL msglog/console buffer is exposed as a sysfs file, with
+> the sysfs read handler responsible for retrieving the log from the OPAL
+> buffer. We'd like to be able to use it in xmon as well.
+> 
+> Refactor the OPAL msglog code to create a new function, opal_msglog_copy(),
+> that copies to an arbitrary buffer.
 
-> The Freescale PAMU can also be enabled on 64-bit power
-> chips. Commit 477ab7a19cec8409e4e2dd10e7348e4cac3c06e5
-> (iommu: Make more drivers depend on COMPILE_TEST)
-> added this false dependency. Fixed it by allowing PPC64, too.
->
-> Signed-off-by: Andy Fleming <afleming@gmail.com>
-> ---
->  drivers/iommu/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/iommu/Kconfig b/drivers/iommu/Kconfig
-> index a1e75cb..63ec7ae 100644
-> --- a/drivers/iommu/Kconfig
-> +++ b/drivers/iommu/Kconfig
-> @@ -57,7 +57,7 @@ config IOMMU_DMA
->
->  config FSL_PAMU
->  	bool "Freescale IOMMU support"
-> -	depends on PPC32
-> +	depends on PPC32 || PPC64
+This is a good idea, but the implementation is not quite right, comments below.
 
-That's == PPC.
+> diff --git a/arch/powerpc/platforms/powernv/opal-msglog.c b/arch/powerpc/platforms/powernv/opal-msglog.c
+> index 44ed78a..a06191c 100644
+> --- a/arch/powerpc/platforms/powernv/opal-msglog.c
+> +++ b/arch/powerpc/platforms/powernv/opal-msglog.c
+> @@ -31,11 +31,11 @@ struct memcons {
+>  	__be32 in_cons;
+>  };
+>  
+> -static ssize_t opal_msglog_read(struct file *file, struct kobject *kobj,
+> -				struct bin_attribute *bin_attr, char *to,
+> -				loff_t pos, size_t count)
+> +static struct bin_attribute opal_msglog_attr;
+> +
+> +ssize_t opal_msglog_copy(char *to, loff_t pos, size_t count)
+>  {
+> -	struct memcons *mc = bin_attr->private;
+> +	struct memcons *mc = opal_msglog_attr.private;
 
->  	depends on PPC_E500MC || COMPILE_TEST
+Pulling the memcons out of the bin_attr here is not all that nice. This routine
+should really stand on its own without reference to the bin_attr. In theory I
+might want to disable building sysfs but still have this routine available.
 
-But then you have that ^
+It's also a bit fishy if it's called before the bin_attr is initialised or when
+the memcons initialisation fails. In both cases it should be OK, because the
+structs in question are static and so the private pointer will be NULL, but
+that's a bit fragile.
 
-Multiple depends are joined with &&, so you get:
+I think the solution is simply to create a:
 
-	depends on PPC && (PPC_E500MC || COMPILE_TEST)
+  static struct memcons *opal_memcons;
 
-PPC_E500MC depends (indirectly) on PPC, so I think it would be clearer as:
-
-	depends on PPC_E500MC || (COMPILE_TEST && PPC)
-
-Which I /think/ matches the original intention?
+And use that in opal_msglog_copy() and so on.
 
 cheers
