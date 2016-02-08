@@ -1,46 +1,35 @@
-Return-Path: <michael.heltne@gmail.com>
-Received: from mail-yk0-x236.google.com (mail-yk0-x236.google.com
- [IPv6:2607:f8b0:4002:c07::236])
+Return-Path: <reinhard.boris@googlemail.com>
+Received: from mail-lb0-x22c.google.com (mail-lb0-x22c.google.com
+ [IPv6:2a00:1450:4010:c04::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6DA001A0190
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 23:09:51 +1100 (AEDT)
-Received: by mail-yk0-x236.google.com with SMTP id z7so85750879yka.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Feb 2016 04:09:51 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 009C41A0190
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 23:42:05 +1100 (AEDT)
+Received: by mail-lb0-x22c.google.com with SMTP id bc4so81946790lbc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Feb 2016 04:42:05 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <56B865A0.4060707@daenzer.net>
 References: <CANtoAtPSgkxEvAdOs-gZGOECYN8OFTvwRrsg+US41ji1fGEDLA@mail.gmail.com>
  <56B865A0.4060707@daenzer.net>
-Date: Mon, 8 Feb 2016 12:09:48 +0000
-Message-ID: <CANtoAtMBuvObPZPYuUiFJF39qRgay7jLKH_Ch3DzdhdG-cFbbA@mail.gmail.com>
+In-Reply-To: <56B865A0.4060707@daenzer.net>
+From: Boris Reinhard <reinhard.boris@googlemail.com>
+Date: Mon, 08 Feb 2016 12:41:52 +0000
+Message-ID: <CAK90Sjk-AXekt_WKSk53GUeUZk-T4WhrwoNuwPA5N4pX2OPceA@mail.gmail.com>
 Subject: Re: PowerPC agpmode issues
-From: Mike <michael.heltne@gmail.com>
-To: =?UTF-8?Q?Michel_D=C3=A4nzer?= <michel@daenzer.net>
-Cc: Pranith Kumar <bobby.prani@gmail.com>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: multipart/alternative; boundary=001a113dd0d0cc8978052b411376
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+To: =?UTF-8?Q?Michel_D=C3=A4nzer?= <michel@daenzer.net>,
+ Mike <michael.heltne@gmail.com>, Pranith Kumar <bobby.prani@gmail.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/alternative; boundary=047d7b3a7f5c074c33052b4187ae
+List-ID: <linuxppc-dev.linuxppc.org>
 
---001a113dd0d0cc8978052b411376
+--047d7b3a7f5c074c33052b4187ae
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-I feel that would alleviate the symptoms and still leave a sick puppy. If
-one could work around some of the issues i'd like that solution, it would
-certainly make it easier for newcomers. It's a lucky enough situation that
-default shipping mesa is broken enough to default to swrast, hardware
-acceleration brings on a crash so hard a 5 sec power off is required if
-agpmode is active...
+Definitely would have made sense for years, but could someone possibly look
+into a proper solution?
 
-On 8 February 2016 at 09:53, Michel D=C3=A4nzer <michel@daenzer.net> wrote:
+Michel D=C3=A4nzer <michel@daenzer.net> schrieb am Mo., 8. Feb. 2016 11:00:
 
 > On 05.02.2016 11:47, Mike wrote:
 > > Hi.
@@ -101,24 +90,21 @@ m/subdev/pci/agp.c
 > Earthling Michel D=C3=A4nzer               |               http://www.amd=
 .com
 > Libre software enthusiast             |             Mesa and X developer
->
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
---001a113dd0d0cc8978052b411376
+--047d7b3a7f5c074c33052b4187ae
 Content-Type: text/html; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-<div dir=3D"ltr">I feel that would alleviate the symptoms and still leave a=
- sick puppy. If one could work around some of the issues i&#39;d like that =
-solution, it would certainly make it easier for newcomers. It&#39;s a lucky=
- enough situation that default shipping mesa is broken enough to default to=
- swrast, hardware acceleration brings on a crash so hard a 5 sec power off =
-is required if agpmode is active...=C2=A0</div><div class=3D"gmail_extra"><=
-br><div class=3D"gmail_quote">On 8 February 2016 at 09:53, Michel D=C3=A4nz=
-er <span dir=3D"ltr">&lt;<a href=3D"mailto:michel@daenzer.net" target=3D"_b=
-lank">michel@daenzer.net</a>&gt;</span> wrote:<br><blockquote class=3D"gmai=
-l_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left=
-:1ex"><div class=3D"HOEnZb"><div class=3D"h5">On 05.02.2016 11:47, Mike wro=
-te:<br>
+Definitely would have made sense for years, but could someone possibly look=
+ into a proper solution?<div><br><div class=3D"gmail_quote"><div dir=3D"ltr=
+">Michel D=C3=A4nzer &lt;<a href=3D"mailto:michel@daenzer.net">michel@daenz=
+er.net</a>&gt; schrieb am Mo., 8. Feb. 2016 11:00:<br></div><blockquote cla=
+ss=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;pa=
+dding-left:1ex">On 05.02.2016 11:47, Mike wrote:<br>
 &gt; Hi.<br>
 &gt; Managed to get the Radeon R300 running on mesa 11.1.1 with an old 2013=
 <br>
@@ -173,14 +159,13 @@ ev/pci/agp.c</a><br>
 br>
 &gt; ums to kms and a serious regression hitting the linux kernel? No?<br>
 <br>
-</div></div>Not really. UMS was just using a static GART mapping, whereas K=
-MS is<br>
+Not really. UMS was just using a static GART mapping, whereas KMS is<br>
 dynamically binding pages into the GART as needed. Apparently, older<br>
 revisions of UniNorth have trouble with the latter. I think it would<br>
 make sense to change radeon.agpmode to default to -1 on powerpc as well.<br=
 >
 Any takers?<br>
-<span class=3D"HOEnZb"><font color=3D"#888888"><br>
+<br>
 <br>
 --<br>
 Earthling Michel D=C3=A4nzer=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
@@ -189,6 +174,12 @@ Earthling Michel D=C3=A4nzer=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
 .com</a><br>
 Libre software enthusiast=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0|=
 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Mesa and X developer<br>
-</font></span></blockquote></div><br></div>
+_______________________________________________<br>
+Linuxppc-dev mailing list<br>
+<a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org" target=3D"_blank">Linuxppc=
+-dev@lists.ozlabs.org</a><br>
+<a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" rel=3D"noreferre=
+r" target=3D"_blank">https://lists.ozlabs.org/listinfo/linuxppc-dev</a></bl=
+ockquote></div></div>
 
---001a113dd0d0cc8978052b411376--
+--047d7b3a7f5c074c33052b4187ae--
