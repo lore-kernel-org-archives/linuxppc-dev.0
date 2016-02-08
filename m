@@ -1,37 +1,40 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 082D01A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 10:58:50 +1100 (AEDT)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1B77D1A02CD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 09:41:57 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id A9916140C31
+ for <linuxppc-dev@ozlabs.org>; Tue,  9 Feb 2016 10:58:49 +1100 (AEDT)
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 9 Feb 2016 08:41:54 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3208D3578054
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 09:41:52 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u18MfgfH9109582
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 09:41:50 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u18MfJt7020042
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 09:41:20 +1100
-Date: Tue, 9 Feb 2016 09:40:55 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: Re: [PATCH 2/2] powerpc/eeh: Reworked eeh_pe_bus_get()
-Message-ID: <20160208224055.GA6171@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1454909719-17252-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1454909719-17252-2-git-send-email-gwshan@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 9 Feb 2016 09:58:47 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 87C652BB004D
+ for <linuxppc-dev@ozlabs.org>; Tue,  9 Feb 2016 10:58:41 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u18NwXJV60031214
+ for <linuxppc-dev@ozlabs.org>; Tue, 9 Feb 2016 10:58:41 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u18Nw8Wd022069
+ for <linuxppc-dev@ozlabs.org>; Tue, 9 Feb 2016 10:58:08 +1100
+Subject: Re: powerpc/eeh: eeh_pci_enable(): fix checking of post-request state
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <20160208113706.12246140B99@ozlabs.org>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-ID: <56B92B74.8040108@au1.ibm.com>
+Date: Tue, 9 Feb 2016 10:57:40 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1454909719-17252-2-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <20160208113706.12246140B99@ozlabs.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,66 +44,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 08, 2016 at 04:35:19PM +1100, Gavin Shan wrote:
->The original implementation is ugly: unnecessary if statements and
->"out" tag. This reworks the function to avoid above weaknesses. No
->functional changes introduced.
+On 08/02/16 22:37, Michael Ellerman wrote:
+> Looks like I missed this?
 >
->Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Should it still go in? Is it a fix? If so when did it break, and should it go
+> to stable?
 
-Michael, please ignore this one now because it conflicts with another
-patch which needs to be ported to stable. I'll repost all of them
-later.
+It is a fix - I'm a bit hazy on the details now but IIRC, Daniel Axtens 
+and I encountered this when doing some cxl debugging, though I think we 
+decided not to tag this for stable since it was a secondary issue to the 
+primary bug we were looking for. It probably could go to stable though? 
+(Daniel - thoughts?)
 
-Thanks,
-Gavin
+The line in question was last touched in 4d4f577e4b5e, but it looks like 
+the behaviour wasn't right even before that.
 
->---
-> arch/powerpc/kernel/eeh_pe.c | 28 ++++++++++++----------------
-> 1 file changed, 12 insertions(+), 16 deletions(-)
->
->diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
->index 8654cb1..1d64e60 100644
->--- a/arch/powerpc/kernel/eeh_pe.c
->+++ b/arch/powerpc/kernel/eeh_pe.c
->@@ -923,25 +923,21 @@ out:
->  */
-> struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
-> {
->-	struct pci_bus *bus = NULL;
-> 	struct eeh_dev *edev;
-> 	struct pci_dev *pdev;
->
->-	if (pe->type & EEH_PE_PHB) {
->-		bus = pe->phb->bus;
->-	} else if (pe->type & EEH_PE_BUS ||
->-		   pe->type & EEH_PE_DEVICE) {
->-		if (pe->bus) {
->-			bus = pe->bus;
->-			goto out;
->-		}
->+	if (pe->type & EEH_PE_PHB)
->+		return pe->phb->bus;
->
->-		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
->-		pdev = eeh_dev_to_pci_dev(edev);
->-		if (pdev)
->-			bus = pdev->bus;
->-	}
->+	/* The primary bus might be cached during probe time */
->+	if (pe->bus)
->+		return pe->bus;
->
->-out:
->-	return bus;
->+	/* Retrieve the parent PCI bus of first (top) PCI device */
->+	edev = list_first_entry_or_null(&pe->edevs, struct eeh_dev, list);
->+	pdev = eeh_dev_to_pci_dev(edev);
->+	if (pdev)
->+		return pdev->bus;
->+
->+	return NULL;
-> }
->-- 
->2.1.0
->
+
+Andrew
+
+-- 
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
