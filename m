@@ -1,41 +1,14 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C69EB1A0018
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 14:50:51 +1100 (AEDT)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9A0681402EC
- for <linuxppc-dev@ozlabs.org>; Mon,  8 Feb 2016 14:50:51 +1100 (AEDT)
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 8 Feb 2016 13:50:50 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id DAE4D3578052
- for <linuxppc-dev@ozlabs.org>; Mon,  8 Feb 2016 14:50:48 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u181td9u44367978
- for <linuxppc-dev@ozlabs.org>; Mon, 8 Feb 2016 12:55:48 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u183oFHH020555
- for <linuxppc-dev@ozlabs.org>; Mon, 8 Feb 2016 14:50:16 +1100
-Date: Mon, 8 Feb 2016 14:49:48 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, gwshan@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/eeh: fix incorrect function name in comment
-Message-ID: <20160208034948.GA22439@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1454902759-8212-1-git-send-email-andrew.donnellan@au1.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1454902759-8212-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 264181A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Feb 2016 15:09:09 +1100 (AEDT)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V3] powerpc/powernv: Remove support for p5ioc2
+Date: Mon,  8 Feb 2016 15:08:20 +1100
+Message-Id: <1454904500-11218-1-git-send-email-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,36 +18,549 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 08, 2016 at 02:39:19PM +1100, Andrew Donnellan wrote:
->The comment block above pcibios_set_pcie_reset_state() incorrectly refers
->to pcibios_set_pcie_slot_reset(). Fix the comment accordingly.
->
->Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+"p5ioc2 is used by approximately 2 machines in the world, and has never
+ever been a supported configuration."
 
-Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+The code for p5ioc2 is essentially unused and complicates what is already
+a very complicated codebase.  Its removal is essentially a "free win" in
+the effort to simplify the powernv PCI code.
 
-Thanks,
-Gavin
+In addition, support for p5ioc2 has been dropped from skiboot.  There's no
+reason to keep it around in the kernel.
 
->---
-> arch/powerpc/kernel/eeh.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->
->diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->index 40e4d4a..8c6005c 100644
->--- a/arch/powerpc/kernel/eeh.c
->+++ b/arch/powerpc/kernel/eeh.c
->@@ -739,7 +739,7 @@ static void *eeh_restore_dev_state(void *data, void *userdata)
-> }
->
-> /**
->- * pcibios_set_pcie_slot_reset - Set PCI-E reset state
->+ * pcibios_set_pcie_reset_state - Set PCI-E reset state
->  * @dev: pci device struct
->  * @state: reset state to enter
->  *
->-- 
->Andrew Donnellan              Software Engineer, OzLabs
->andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
->+61 2 6201 8874 (work)        IBM Australia Limited
->
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+---
+V3: Remove now-useless variable "found_ioda" thanks to Gavin
+V2: Remove pointless union and rebase on -next thanks to Andrew
+
+Tested on a P7IOC machine and a PHB3 machine.
+
+Skiboot p5ioc2 removal patch: https://patchwork.ozlabs.org/patch/544898/
+---
+ arch/powerpc/platforms/powernv/Makefile     |   2 +-
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c | 271 ----------------------------
+ arch/powerpc/platforms/powernv/pci.c        |  17 +-
+ arch/powerpc/platforms/powernv/pci.h        | 152 ++++++++--------
+ 4 files changed, 74 insertions(+), 368 deletions(-)
+ delete mode 100644 arch/powerpc/platforms/powernv/pci-p5ioc2.c
+
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index f1516b5..cd9711e 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -5,7 +5,7 @@ obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
+ obj-y			+= opal-kmsg.o
+ 
+ obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
+-obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o npu-dma.o
++obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
+ obj-$(CONFIG_EEH)	+= eeh-powernv.o
+ obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
+ obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
+diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+deleted file mode 100644
+index f2bdfea..0000000
+--- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
++++ /dev/null
+@@ -1,271 +0,0 @@
+-/*
+- * Support PCI/PCIe on PowerNV platforms
+- *
+- * Currently supports only P5IOC2
+- *
+- * Copyright 2011 Benjamin Herrenschmidt, IBM Corp.
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/pci.h>
+-#include <linux/delay.h>
+-#include <linux/string.h>
+-#include <linux/init.h>
+-#include <linux/bootmem.h>
+-#include <linux/irq.h>
+-#include <linux/io.h>
+-#include <linux/msi.h>
+-
+-#include <asm/sections.h>
+-#include <asm/io.h>
+-#include <asm/prom.h>
+-#include <asm/pci-bridge.h>
+-#include <asm/machdep.h>
+-#include <asm/msi_bitmap.h>
+-#include <asm/ppc-pci.h>
+-#include <asm/opal.h>
+-#include <asm/iommu.h>
+-#include <asm/tce.h>
+-
+-#include "powernv.h"
+-#include "pci.h"
+-
+-/* For now, use a fixed amount of TCE memory for each p5ioc2
+- * hub, 16M will do
+- */
+-#define P5IOC2_TCE_MEMORY	0x01000000
+-
+-#ifdef CONFIG_PCI_MSI
+-static int pnv_pci_p5ioc2_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
+-				    unsigned int hwirq, unsigned int virq,
+-				    unsigned int is_64, struct msi_msg *msg)
+-{
+-	if (WARN_ON(!is_64))
+-		return -ENXIO;
+-	msg->data = hwirq - phb->msi_base;
+-	msg->address_hi = 0x10000000;
+-	msg->address_lo = 0;
+-
+-	return 0;
+-}
+-
+-static void pnv_pci_init_p5ioc2_msis(struct pnv_phb *phb)
+-{
+-	unsigned int count;
+-	const __be32 *prop = of_get_property(phb->hose->dn,
+-					     "ibm,opal-msi-ranges", NULL);
+-	if (!prop)
+-		return;
+-
+-	/* Don't do MSI's on p5ioc2 PCI-X are they are not properly
+-	 * verified in HW
+-	 */
+-	if (of_device_is_compatible(phb->hose->dn, "ibm,p5ioc2-pcix"))
+-		return;
+-	phb->msi_base = be32_to_cpup(prop);
+-	count = be32_to_cpup(prop + 1);
+-	if (msi_bitmap_alloc(&phb->msi_bmp, count, phb->hose->dn)) {
+-		pr_err("PCI %d: Failed to allocate MSI bitmap !\n",
+-		       phb->hose->global_number);
+-		return;
+-	}
+-	phb->msi_setup = pnv_pci_p5ioc2_msi_setup;
+-	phb->msi32_support = 0;
+-	pr_info(" Allocated bitmap for %d MSIs (base IRQ 0x%x)\n",
+-		count, phb->msi_base);
+-}
+-#else
+-static void pnv_pci_init_p5ioc2_msis(struct pnv_phb *phb) { }
+-#endif /* CONFIG_PCI_MSI */
+-
+-static struct iommu_table_ops pnv_p5ioc2_iommu_ops = {
+-	.set = pnv_tce_build,
+-#ifdef CONFIG_IOMMU_API
+-	.exchange = pnv_tce_xchg,
+-#endif
+-	.clear = pnv_tce_free,
+-	.get = pnv_tce_get,
+-};
+-
+-static void pnv_pci_p5ioc2_dma_dev_setup(struct pnv_phb *phb,
+-					 struct pci_dev *pdev)
+-{
+-	struct iommu_table *tbl = phb->p5ioc2.table_group.tables[0];
+-
+-	if (!tbl->it_map) {
+-		tbl->it_ops = &pnv_p5ioc2_iommu_ops;
+-		iommu_init_table(tbl, phb->hose->node);
+-		iommu_register_group(&phb->p5ioc2.table_group,
+-				pci_domain_nr(phb->hose->bus), phb->opal_id);
+-		INIT_LIST_HEAD_RCU(&tbl->it_group_list);
+-		pnv_pci_link_table_and_group(phb->hose->node, 0,
+-				tbl, &phb->p5ioc2.table_group);
+-	}
+-
+-	set_iommu_table_base(&pdev->dev, tbl);
+-	iommu_add_device(&pdev->dev);
+-}
+-
+-static const struct pci_controller_ops pnv_pci_p5ioc2_controller_ops = {
+-	.dma_dev_setup = pnv_pci_dma_dev_setup,
+-#ifdef CONFIG_PCI_MSI
+-       .setup_msi_irqs = pnv_setup_msi_irqs,
+-       .teardown_msi_irqs = pnv_teardown_msi_irqs,
+-#endif
+-};
+-
+-static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np, u64 hub_id,
+-					   void *tce_mem, u64 tce_size)
+-{
+-	struct pnv_phb *phb;
+-	const __be64 *prop64;
+-	u64 phb_id;
+-	int64_t rc;
+-	static int primary = 1;
+-	struct iommu_table_group *table_group;
+-	struct iommu_table *tbl;
+-
+-	pr_info(" Initializing p5ioc2 PHB %s\n", np->full_name);
+-
+-	prop64 = of_get_property(np, "ibm,opal-phbid", NULL);
+-	if (!prop64) {
+-		pr_err("  Missing \"ibm,opal-phbid\" property !\n");
+-		return;
+-	}
+-	phb_id = be64_to_cpup(prop64);
+-	pr_devel("  PHB-ID  : 0x%016llx\n", phb_id);
+-	pr_devel("  TCE AT  : 0x%016lx\n", __pa(tce_mem));
+-	pr_devel("  TCE SZ  : 0x%016llx\n", tce_size);
+-
+-	rc = opal_pci_set_phb_tce_memory(phb_id, __pa(tce_mem), tce_size);
+-	if (rc != OPAL_SUCCESS) {
+-		pr_err("  Failed to set TCE memory, OPAL error %lld\n", rc);
+-		return;
+-	}
+-
+-	phb = memblock_virt_alloc(sizeof(struct pnv_phb), 0);
+-	phb->hose = pcibios_alloc_controller(np);
+-	if (!phb->hose) {
+-		pr_err("  Failed to allocate PCI controller\n");
+-		return;
+-	}
+-
+-	spin_lock_init(&phb->lock);
+-	phb->hose->first_busno = 0;
+-	phb->hose->last_busno = 0xff;
+-	phb->hose->private_data = phb;
+-	phb->hose->controller_ops = pnv_pci_p5ioc2_controller_ops;
+-	phb->hub_id = hub_id;
+-	phb->opal_id = phb_id;
+-	phb->type = PNV_PHB_P5IOC2;
+-	phb->model = PNV_PHB_MODEL_P5IOC2;
+-
+-	phb->regs = of_iomap(np, 0);
+-
+-	if (phb->regs == NULL)
+-		pr_err("  Failed to map registers !\n");
+-	else {
+-		pr_devel("  P_BUID     = 0x%08x\n", in_be32(phb->regs + 0x100));
+-		pr_devel("  P_IOSZ     = 0x%08x\n", in_be32(phb->regs + 0x1b0));
+-		pr_devel("  P_IO_ST    = 0x%08x\n", in_be32(phb->regs + 0x1e0));
+-		pr_devel("  P_MEM1_H   = 0x%08x\n", in_be32(phb->regs + 0x1a0));
+-		pr_devel("  P_MEM1_L   = 0x%08x\n", in_be32(phb->regs + 0x190));
+-		pr_devel("  P_MSZ1_L   = 0x%08x\n", in_be32(phb->regs + 0x1c0));
+-		pr_devel("  P_MEM_ST   = 0x%08x\n", in_be32(phb->regs + 0x1d0));
+-		pr_devel("  P_MEM2_H   = 0x%08x\n", in_be32(phb->regs + 0x2c0));
+-		pr_devel("  P_MEM2_L   = 0x%08x\n", in_be32(phb->regs + 0x2b0));
+-		pr_devel("  P_MSZ2_H   = 0x%08x\n", in_be32(phb->regs + 0x2d0));
+-		pr_devel("  P_MSZ2_L   = 0x%08x\n", in_be32(phb->regs + 0x2e0));
+-	}
+-
+-	/* Interpret the "ranges" property */
+-	/* This also maps the I/O region and sets isa_io/mem_base */
+-	pci_process_bridge_OF_ranges(phb->hose, np, primary);
+-	primary = 0;
+-
+-	phb->hose->ops = &pnv_pci_ops;
+-
+-	/* Setup MSI support */
+-	pnv_pci_init_p5ioc2_msis(phb);
+-
+-	/* Setup TCEs */
+-	phb->dma_dev_setup = pnv_pci_p5ioc2_dma_dev_setup;
+-	pnv_pci_setup_iommu_table(&phb->p5ioc2.iommu_table,
+-				  tce_mem, tce_size, 0,
+-				  IOMMU_PAGE_SHIFT_4K);
+-	/*
+-	 * We do not allocate iommu_table as we do not support
+-	 * hotplug or SRIOV on P5IOC2 and therefore iommu_free_table()
+-	 * should not be called for phb->p5ioc2.table_group.tables[0] ever.
+-	 */
+-	tbl = phb->p5ioc2.table_group.tables[0] = &phb->p5ioc2.iommu_table;
+-	table_group = &phb->p5ioc2.table_group;
+-	table_group->tce32_start = tbl->it_offset << tbl->it_page_shift;
+-	table_group->tce32_size = tbl->it_size << tbl->it_page_shift;
+-}
+-
+-void __init pnv_pci_init_p5ioc2_hub(struct device_node *np)
+-{
+-	struct device_node *phbn;
+-	const __be64 *prop64;
+-	u64 hub_id;
+-	void *tce_mem;
+-	uint64_t tce_per_phb;
+-	int64_t rc;
+-	int phb_count = 0;
+-
+-	pr_info("Probing p5ioc2 IO-Hub %s\n", np->full_name);
+-
+-	prop64 = of_get_property(np, "ibm,opal-hubid", NULL);
+-	if (!prop64) {
+-		pr_err(" Missing \"ibm,opal-hubid\" property !\n");
+-		return;
+-	}
+-	hub_id = be64_to_cpup(prop64);
+-	pr_info(" HUB-ID : 0x%016llx\n", hub_id);
+-
+-	/* Count child PHBs and calculate TCE space per PHB */
+-	for_each_child_of_node(np, phbn) {
+-		if (of_device_is_compatible(phbn, "ibm,p5ioc2-pcix") ||
+-		    of_device_is_compatible(phbn, "ibm,p5ioc2-pciex"))
+-			phb_count++;
+-	}
+-
+-	if (phb_count <= 0) {
+-		pr_info(" No PHBs for Hub %s\n", np->full_name);
+-		return;
+-	}
+-
+-	tce_per_phb = __rounddown_pow_of_two(P5IOC2_TCE_MEMORY / phb_count);
+-	pr_info(" Allocating %lld MB of TCE memory per PHB\n",
+-		tce_per_phb >> 20);
+-
+-	/* Currently allocate 16M of TCE memory for every Hub
+-	 *
+-	 * XXX TODO: Make it chip local if possible
+-	 */
+-	tce_mem = memblock_virt_alloc(P5IOC2_TCE_MEMORY, P5IOC2_TCE_MEMORY);
+-	pr_debug(" TCE    : 0x%016lx..0x%016lx\n",
+-		__pa(tce_mem), __pa(tce_mem) + P5IOC2_TCE_MEMORY - 1);
+-	rc = opal_pci_set_hub_tce_memory(hub_id, __pa(tce_mem),
+-					P5IOC2_TCE_MEMORY);
+-	if (rc != OPAL_SUCCESS) {
+-		pr_err(" Failed to allocate TCE memory, OPAL error %lld\n", rc);
+-		return;
+-	}
+-
+-	/* Initialize PHBs */
+-	for_each_child_of_node(np, phbn) {
+-		if (of_device_is_compatible(phbn, "ibm,p5ioc2-pcix") ||
+-		    of_device_is_compatible(phbn, "ibm,p5ioc2-pciex")) {
+-			pnv_pci_init_p5ioc2_phb(phbn, hub_id,
+-					tce_mem, tce_per_phb);
+-			tce_mem += tce_per_phb;
+-		}
+-	}
+-}
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 2f55c86..8de0140 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -380,10 +380,7 @@ static void pnv_pci_config_check_eeh(struct pci_dn *pdn)
+ 	 */
+ 	pe_no = pdn->pe_number;
+ 	if (pe_no == IODA_INVALID_PE) {
+-		if (phb->type == PNV_PHB_P5IOC2)
+-			pe_no = 0;
+-		else
+-			pe_no = phb->ioda.reserved_pe;
++		pe_no = phb->ioda.reserved_pe;
+ 	}
+ 
+ 	/*
+@@ -779,7 +776,6 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_IBM, 0x3b9, pnv_p7ioc_rc_quirk);
+ void __init pnv_pci_init(void)
+ {
+ 	struct device_node *np;
+-	bool found_ioda = false;
+ 
+ 	pci_add_flags(PCI_CAN_SKIP_ISA_ALIGN);
+ 
+@@ -787,20 +783,11 @@ void __init pnv_pci_init(void)
+ 	if (!firmware_has_feature(FW_FEATURE_OPAL))
+ 		return;
+ 
+-	/* Look for IODA IO-Hubs. We don't support mixing IODA
+-	 * and p5ioc2 due to the need to change some global
+-	 * probing flags
+-	 */
++	/* Look for IODA IO-Hubs. */
+ 	for_each_compatible_node(np, NULL, "ibm,ioda-hub") {
+ 		pnv_pci_init_ioda_hub(np);
+-		found_ioda = true;
+ 	}
+ 
+-	/* Look for p5ioc2 IO-Hubs */
+-	if (!found_ioda)
+-		for_each_compatible_node(np, NULL, "ibm,p5ioc2")
+-			pnv_pci_init_p5ioc2_hub(np);
+-
+ 	/* Look for ioda2 built-in PHB3's */
+ 	for_each_compatible_node(np, NULL, "ibm,ioda2-phb")
+ 		pnv_pci_init_ioda2_phb(np);
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 7f56313..32cae3d 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -4,16 +4,14 @@
+ struct pci_dn;
+ 
+ enum pnv_phb_type {
+-	PNV_PHB_P5IOC2	= 0,
+-	PNV_PHB_IODA1	= 1,
+-	PNV_PHB_IODA2	= 2,
+-	PNV_PHB_NPU	= 3,
++	PNV_PHB_IODA1	= 0,
++	PNV_PHB_IODA2	= 1,
++	PNV_PHB_NPU	= 2,
+ };
+ 
+ /* Precise PHB model for error management */
+ enum pnv_phb_model {
+ 	PNV_PHB_MODEL_UNKNOWN,
+-	PNV_PHB_MODEL_P5IOC2,
+ 	PNV_PHB_MODEL_P7IOC,
+ 	PNV_PHB_MODEL_PHB3,
+ 	PNV_PHB_MODEL_NPU,
+@@ -121,81 +119,74 @@ struct pnv_phb {
+ 	void (*freeze_pe)(struct pnv_phb *phb, int pe_no);
+ 	int (*unfreeze_pe)(struct pnv_phb *phb, int pe_no, int opt);
+ 
+-	union {
+-		struct {
+-			struct iommu_table iommu_table;
+-			struct iommu_table_group table_group;
+-		} p5ioc2;
+-
+-		struct {
+-			/* Global bridge info */
+-			unsigned int		total_pe;
+-			unsigned int		reserved_pe;
+-
+-			/* 32-bit MMIO window */
+-			unsigned int		m32_size;
+-			unsigned int		m32_segsize;
+-			unsigned int		m32_pci_base;
+-
+-			/* 64-bit MMIO window */
+-			unsigned int		m64_bar_idx;
+-			unsigned long		m64_size;
+-			unsigned long		m64_segsize;
+-			unsigned long		m64_base;
+-			unsigned long		m64_bar_alloc;
+-
+-			/* IO ports */
+-			unsigned int		io_size;
+-			unsigned int		io_segsize;
+-			unsigned int		io_pci_base;
+-
+-			/* PE allocation bitmap */
+-			unsigned long		*pe_alloc;
+-			/* PE allocation mutex */
+-			struct mutex		pe_alloc_mutex;
+-
+-			/* M32 & IO segment maps */
+-			unsigned int		*m32_segmap;
+-			unsigned int		*io_segmap;
+-			struct pnv_ioda_pe	*pe_array;
+-
+-			/* IRQ chip */
+-			int			irq_chip_init;
+-			struct irq_chip		irq_chip;
+-
+-			/* Sorted list of used PE's based
+-			 * on the sequence of creation
+-			 */
+-			struct list_head	pe_list;
+-			struct mutex            pe_list_mutex;
+-
+-			/* Reverse map of PEs, will have to extend if
+-			 * we are to support more than 256 PEs, indexed
+-			 * bus { bus, devfn }
+-			 */
+-			unsigned char		pe_rmap[0x10000];
+-
+-			/* 32-bit TCE tables allocation */
+-			unsigned long		tce32_count;
+-
+-			/* Total "weight" for the sake of DMA resources
+-			 * allocation
+-			 */
+-			unsigned int		dma_weight;
+-			unsigned int		dma_pe_count;
+-
+-			/* Sorted list of used PE's, sorted at
+-			 * boot for resource allocation purposes
+-			 */
+-			struct list_head	pe_dma_list;
+-
+-			/* TCE cache invalidate registers (physical and
+-			 * remapped)
+-			 */
+-			phys_addr_t		tce_inval_reg_phys;
+-			__be64 __iomem		*tce_inval_reg;
+-		} ioda;
+-	};
++	struct {
++		/* Global bridge info */
++		unsigned int		total_pe;
++		unsigned int		reserved_pe;
++
++		/* 32-bit MMIO window */
++		unsigned int		m32_size;
++		unsigned int		m32_segsize;
++		unsigned int		m32_pci_base;
++
++		/* 64-bit MMIO window */
++		unsigned int		m64_bar_idx;
++		unsigned long		m64_size;
++		unsigned long		m64_segsize;
++		unsigned long		m64_base;
++		unsigned long		m64_bar_alloc;
++
++		/* IO ports */
++		unsigned int		io_size;
++		unsigned int		io_segsize;
++		unsigned int		io_pci_base;
++
++		/* PE allocation bitmap */
++		unsigned long		*pe_alloc;
++		/* PE allocation mutex */
++		struct mutex		pe_alloc_mutex;
++
++		/* M32 & IO segment maps */
++		unsigned int		*m32_segmap;
++		unsigned int		*io_segmap;
++		struct pnv_ioda_pe	*pe_array;
++
++		/* IRQ chip */
++		int			irq_chip_init;
++		struct irq_chip		irq_chip;
++
++		/* Sorted list of used PE's based
++		 * on the sequence of creation
++		 */
++		struct list_head	pe_list;
++		struct mutex            pe_list_mutex;
++
++		/* Reverse map of PEs, will have to extend if
++		 * we are to support more than 256 PEs, indexed
++		 * bus { bus, devfn }
++		 */
++		unsigned char		pe_rmap[0x10000];
++
++		/* 32-bit TCE tables allocation */
++		unsigned long		tce32_count;
++
++		/* Total "weight" for the sake of DMA resources
++		 * allocation
++		 */
++		unsigned int		dma_weight;
++		unsigned int		dma_pe_count;
++
++		/* Sorted list of used PE's, sorted at
++		 * boot for resource allocation purposes
++		 */
++		struct list_head	pe_dma_list;
++
++		/* TCE cache invalidate registers (physical and
++		 * remapped)
++		 */
++		phys_addr_t		tce_inval_reg_phys;
++		__be64 __iomem		*tce_inval_reg;
++	} ioda;
+ 
+ 	/* PHB and hub status structure */
+ 	union {
+@@ -232,7 +223,6 @@ extern void pnv_pci_unlink_table_and_group(struct iommu_table *tbl,
+ extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+ 				      void *tce_mem, u64 tce_size,
+ 				      u64 dma_offset, unsigned page_shift);
+-extern void pnv_pci_init_p5ioc2_hub(struct device_node *np);
+ extern void pnv_pci_init_ioda_hub(struct device_node *np);
+ extern void pnv_pci_init_ioda2_phb(struct device_node *np);
+ extern void pnv_pci_init_npu_phb(struct device_node *np);
+-- 
+2.7.1
