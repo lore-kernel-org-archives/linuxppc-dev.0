@@ -1,33 +1,25 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8517F1A001D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 11:45:51 +1100 (AEDT)
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9D87B140BF6
- for <linuxppc-dev@ozlabs.org>; Tue,  9 Feb 2016 11:45:50 +1100 (AEDT)
-Received: by mail-pa0-x243.google.com with SMTP id y7so425480paa.2
- for <linuxppc-dev@ozlabs.org>; Mon, 08 Feb 2016 16:45:50 -0800 (PST)
-Date: Tue, 9 Feb 2016 11:45:47 +1100
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>, Anton
- Blanchard <anton@samba.org>
-Subject: Re: [PATCH v3 4/9] powerpc: Explicitly disable math features when
- copying thread
-Message-ID: <20160209114547.3c50cd0a@camb691>
-In-Reply-To: <CAKTCnzmzxSgckvr8SJVd7yeVWBexaHedzPVfoOn0yQafLYvcMw@mail.gmail.com>
-References: <1453337749-15506-1-git-send-email-cyrilbur@gmail.com>
- <1453337749-15506-5-git-send-email-cyrilbur@gmail.com>
- <20160125110423.3b0a5ae3@cotter.ozlabs.ibm.com>
- <20160127105048.1fec7e07@camb691>
- <CAKTCnzmzxSgckvr8SJVd7yeVWBexaHedzPVfoOn0yQafLYvcMw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F32631A0191
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 12:20:43 +1100 (AEDT)
+Date: Tue, 9 Feb 2016 10:43:12 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org,
+ linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, thuth@redhat.com,
+ lvivier@redhat.com
+Subject: Re: [RFCv2 3/9] arch/powerpc: Handle removing maybe-present bolted
+ HPTEs
+Message-ID: <20160209004312.GD29288@voom.bne.redhat.com>
+References: <1454045043-25545-1-git-send-email-david@gibson.dropbear.id.au>
+ <1454045043-25545-4-git-send-email-david@gibson.dropbear.id.au>
+ <20160208025404.GC30807@oak.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="11Y7aswkeuHtSBEs"
+In-Reply-To: <20160208025404.GC30807@oak.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,116 +29,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 27 Jan 2016 23:01:59 +1100
-Balbir Singh <bsingharora@gmail.com> wrote:
 
-> On Wed, Jan 27, 2016 at 10:50 AM, Cyril Bur <cyrilbur@gmail.com> wrote:
-> > On Mon, 25 Jan 2016 11:04:23 +1100
-> > Balbir Singh <bsingharora@gmail.com> wrote:
-> >  
-> >> On Thu, 21 Jan 2016 11:55:44 +1100
-> >> Cyril Bur <cyrilbur@gmail.com> wrote:
-> >>  
-> >> > Currently when threads get scheduled off they always giveup the FPU,
-> >> > Altivec (VMX) and Vector (VSX) units if they were using them. When they are
-> >> > scheduled back on a fault is then taken to enable each facility and load
-> >> > registers. As a result explicitly disabling FPU/VMX/VSX has not been
-> >> > necessary.
-> >> >
-> >> > Future changes and optimisations remove this mandatory giveup and fault
-> >> > which could cause calls such as clone() and fork() to copy threads and run
-> >> > them later with FPU/VMX/VSX enabled but no registers loaded.
-> >> >
-> >> > This patch starts the process of having MSR_{FP,VEC,VSX} mean that a
-> >> > threads registers are hot while not having MSR_{FP,VEC,VSX} means that the
-> >> > registers must be loaded. This allows for a smarter return to userspace.
-> >> >
-> >> > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> >> > ---
-> >> >  arch/powerpc/kernel/process.c | 1 +
-> >> >  1 file changed, 1 insertion(+)
-> >> >
-> >> > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> >> > index dccc87e..e0c3d2d 100644
-> >> > --- a/arch/powerpc/kernel/process.c
-> >> > +++ b/arch/powerpc/kernel/process.c
-> >> > @@ -1307,6 +1307,7 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
-> >> >
-> >> >             f = ret_from_fork;
-> >> >     }
-> >> > +   childregs->msr &= ~(MSR_FP|MSR_VEC|MSR_VSX);  
-> >>  
-> >
-> > Hi Balbir,
-> >
-> > Perhaps I'm missing something, are you saying
-> >  
-> >> Ideally you want to use __msr_check_and_clear()
-> >>  
-> >
-> > instead of childregs->msr &= ~(MSR_FP|MSR_VEC|MSR_VSX); ? I don't see how that
-> > can work...
-> >
-> > __msr_check_and_clear() operates on the currently active MSR, that is, the msr
-> > for the current kernel context. childregs->msr is the value that will be used
-> > for that userspace context when the kernel returns. Here we must ensure that
-> > that children are created with the bit disabled.
-> >  
-> 
-> Yes, my bad! I thought the routine took generic bits, hoping to reuse
-> the CONFIG_VSX bits. I don't think it helps much, what you have is
-> correct.
-> 
-> >> Basically we start with these bits off and then take an exception on use?
-> >>  
-> >
-> > Currently yes, this is what I'm trying to change. This patch hasn't been
-> > necessary until now as any thread which saves its FPU/VMX/VSX data ALSO
-> > disables those bits in regs->msr and so theres no way a clone() or fork() can
-> > create a child with MSR_FP or MSR_VEC or MSR_VSX set. I add a meaning to
-> > 'having a regs->msr FP,VEC,VSX bit set' to mean that 'the regs are hot' in a
-> > subsequent patch which means this assumption no longer holds so now we must
-> > explicitly disable (so as to signal that the FPU/VMX/VSX regs are not hot) for
-> > children thread.
-> >
-> > Sounds like I still haven't got that commit message quite right yet.  
-> 
-> I think the older series had more data to help understand the patch.
-> It would help to move some of them to the current series
-> 
+--11Y7aswkeuHtSBEs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The previous commit message to this patch was:
+On Mon, Feb 08, 2016 at 01:54:04PM +1100, Paul Mackerras wrote:
+> On Fri, Jan 29, 2016 at 04:23:57PM +1100, David Gibson wrote:
+> > At the moment the hpte_removebolted callback in ppc_md returns void and
+> > will BUG_ON() if the hpte it's asked to remove doesn't exist in the fir=
+st
+> > place.  This is awkward for the case of cleaning up a mapping which was
+> > partially made before failing.
+> >=20
+> > So, we add a return value to hpte_removebolted, and have it return ENOE=
+NT
+> > in the case that the HPTE to remove didn't exist in the first place.
+> >=20
+> > In the (sole) caller, we propagate errors in hpte_removebolted to its
+> > caller to handle.  However, we handle ENOENT specially, continuing to
+> > complete the unmapping over the specified range before returning the er=
+ror
+> > to the caller.
+> >=20
+> > This means that htab_remove_mapping() will work sanely on a partially
+> > present mapping, removing any HPTEs which are present, while also retur=
+ning
+> > ENOENT to its caller in case it's important there.
+> >=20
+> > There are two callers of htab_remove_mapping():
+> >    - In remove_section_mapping() we already WARN_ON() any error return,
+> >      which is reasonable - in this case the mapping should be fully
+> >      present
+> >    - In vmemmap_remove_mapping() we BUG_ON() any error.  We change that=
+ to
+> >      just a WARN_ON() in the case of ENOENT, since failing to remove a
+> >      mapping that wasn't there in the first place probably shouldn't be
+> >      fatal.
+> >=20
+> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+>=20
+> [snip]
+>=20
+> > --- a/arch/powerpc/mm/hash_utils_64.c
+> > +++ b/arch/powerpc/mm/hash_utils_64.c
+> > @@ -269,6 +269,7 @@ int htab_remove_mapping(unsigned long vstart, unsig=
+ned long vend,
+> >  {
+> >  	unsigned long vaddr;
+> >  	unsigned int step, shift;
+> > +	int rc =3D 0;
+> > =20
+> >  	shift =3D mmu_psize_defs[psize].shift;
+> >  	step =3D 1 << shift;
+> > @@ -276,10 +277,13 @@ int htab_remove_mapping(unsigned long vstart, uns=
+igned long vend,
+> >  	if (!ppc_md.hpte_removebolted)
+> >  		return -ENODEV;
+> > =20
+> > -	for (vaddr =3D vstart; vaddr < vend; vaddr +=3D step)
+> > -		ppc_md.hpte_removebolted(vaddr, psize, ssize);
+> > +	for (vaddr =3D vstart; vaddr < vend; vaddr +=3D step) {
+> > +		rc =3D ppc_md.hpte_removebolted(vaddr, psize, ssize);
+> > +		if ((rc < 0) && (rc !=3D -ENOENT))
+> > +			return rc;
+> > +	}
+> > =20
+> > -	return 0;
+> > +	return rc;
+>=20
+> This will return the rc from the last hpte_removebolted call, which
+> might be 0 even if earlier calls had returned -ENOENT.  Or, if the
+> last call fails with -ENOENT, this will return -ENOENT.  Is that
+> exactly what you meant?  In the case where some calls to
+> hpte_removebolted return -ENOENT, I would think we would want a
+> consistent return value, which could be either 0 or -ENOENT, but it
+> shouldn't depend on which specific calls fail with -ENOENT, in my
+> opinion.
 
-With threads leaving the math bits enabled in their saved MSR to indicate
-that the hardware is hot and a restore is not needed, children need to turn
-it off as when they do get scheduled, there's no way their registers could
-have been hot.
+I agree.  The intention was that this returned -ENOENT iff any of the
+individual calls did, but I messed up the logic; thanks for the catch.
 
-Mikey pointed out, that was misleading as it wasn't clear that I was preparing
-for future work and that no bug currently exists.
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-Are you talking about another patch?
+--11Y7aswkeuHtSBEs
+Content-Type: application/pgp-signature; name="signature.asc"
 
-I have tried to incorporate more from the old commit message into the new one,
-see below:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-Currently when threads get scheduled off they always giveup the FPU,
-Altivec (VMX) and Vector (VSX) units if they were using them. When they are
-scheduled back on a fault is then taken to enable each facility and load
-registers. As a result explicitly disabling FPU/VMX/VSX has not been
-necessary.
+iQIcBAEBAgAGBQJWuTYgAAoJEGw4ysog2bOSXE8P/iWlaKlaDn59Gta3ZGpxhWh1
+iL3AwZHDL++WX/p38fPGEZdPPg9IEkkICZbCzmZTNJOk8iUuqUfMgbj6Rp+sU9WY
+cU9YRPYT5yaHVKGPVYcArYyzkjIxGZSNHChw4UMvuGef4O3tN+Rk60aqKCndB8Kn
+obIDAYK+z0BDBEmU1DlsjlrW9IZ8LDKsfnzQxSRSnEjRXsIAOIwTSTa2pXxq96qt
+XKOAEIrhY/AqQ9fw/4SBDwDIbwQU4LzWvIIS5iFJRXHgC/wDmhbZ4eFpwQmRDo+F
+Q1aYwIMcedTMQVlRrUywy+ZDL/1J15utUjbzenokKRzehvfFwNU77MXFA076ZjDE
+fGIh41eqpxXaZREDKJE86+jAAZVsxazO2apjNTUjFlxVvgVW6BLdIjL64LycEjkz
+nyO/PC/BdWYejK84gF/7N5Z5EZQDifPV7y7d31Tq2wVylUiaovKAskgVeiCa51j6
++klyvAK0wLNk/NJFnWA1VLi7ihTJZR8lHQhLcl7aGwhAGAhaU9+DsF7Gik3zELzJ
+H5yWKWuGcdbYwMcX+nqwGsPNzvz7d0BziE0OHkJ7IkEKM19ZboOuWrzQqGDZslcG
+aB2EgXgmT+TTyue1lDdAnWb+SnDT6E1E/0Ny3xicqWY5gfsGGZFyB4xqKtoYJoy5
+7qE02BMUcNyn+dqKxcUd
+=RPxp
+-----END PGP SIGNATURE-----
 
-Future changes and optimisations remove this mandatory giveup and fault
-which could cause calls such as clone() and fork() to copy threads and run
-them later with FPU/VMX/VSX enabled but no registers loaded.
-
-This patch starts the process of having MSR_{FP,VEC,VSX} mean that a
-threads registers are hot while not having MSR_{FP,VEC,VSX} means that the
-registers must be loaded. This allows for a smarter return to userspace. In the
-case of fork() and clone(), children must have their FPU/VMX/VSX facilities
-disabled as there is no way they could have been hot.
-
-Mpe: Let me know if you want me to send this as a new series or if you're
-happy to incorporate that from here.
-
-Cyril
+--11Y7aswkeuHtSBEs--
