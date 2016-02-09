@@ -1,33 +1,31 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <viresh.kumar@linaro.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C23C1A0220
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 15:51:37 +1100 (AEDT)
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 9 Feb 2016 14:51:35 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 27B732CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 15:51:32 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u194pMhv43253798
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 15:51:30 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u194ox3C030593
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 15:50:59 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v2 2/4] powerpc/powernv: Fix stale PE primary bus
-Date: Tue,  9 Feb 2016 15:50:22 +1100
-Message-Id: <1454993431-17068-2-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1454993431-17068-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1454993431-17068-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 228F01A0290
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 16:20:12 +1100 (AEDT)
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 886441402A8
+ for <linuxppc-dev@ozlabs.org>; Tue,  9 Feb 2016 16:20:10 +1100 (AEDT)
+Received: by mail-pa0-x231.google.com with SMTP id cy9so85615590pac.0
+ for <linuxppc-dev@ozlabs.org>; Mon, 08 Feb 2016 21:20:10 -0800 (PST)
+Date: Tue, 9 Feb 2016 10:50:04 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ rjw@rjwysocki.net, linux-pm@vger.kernel.org, pc@us.ibm.com,
+ anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com,
+ bsingharora@gmail.com, linux-api@vger.kernel.org
+Subject: Re: [PATCH v9] cpufreq: powernv: Add sysfs attributes to show
+ throttle stats
+Message-ID: <20160209052004.GA15734@vireshk>
+References: <1454942667-13424-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1454942667-13424-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,79 +35,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When PCI bus is unplugged during full hotplug for EEH recovery,
-the platform PE instance (struct pnv_ioda_pe) isn't released and
-it dereferences the stale PCI bus that has been released. It leads
-to kernel crash when referring to the stale PCI bus.
+On 08-02-16, 20:14, Shilpasri G Bhat wrote:
+> Create sysfs attributes to export throttle information in
+> /sys/devices/system/cpu/cpuX/cpufreq/throttle_stats directory. The
+> newly added sysfs files are as follows:
+> 
+> 1)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/turbo_stat
+> 2)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/sub-turbo_stat
+> 3)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/unthrottle
+> 4)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/powercap
+> 5)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overtemp
+> 6)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/supply_fault
+> 7)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overcurrent
+> 8)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/occ_reset
+> 
+> Detailed explanation of each attribute is added to
+> Documentation/ABI/testing/sysfs-devices-system-cpu
+> 
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> ---
+> Changes from v8:
+> - Moved the sysfs attributes from cpu/cpufreq/chipX to cpuX/cpufreq/throttle_stats
+> - Adhering to one-value-per-file, replace throttle_table with multiple
+>   sysfs files.
+> - Using CPUFREQ_POLICY_NOTIFIER to add/remove attribute_group.
 
-This fixes the issue by correcting the PE's primary bus when it's
-oneline at plugging time, in pnv_pci_dma_bus_setup() which is to
-be called by pcibios_fixup_bus().
+Looks far better and sensible, but there are few bugs we have to fix
+first.
 
-Reported-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Reported-by: Pradipta Ghosh <pradghos@in.ibm.com>
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Tested-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
----
- arch/powerpc/platforms/powernv/pci-ioda.c |  1 +
- arch/powerpc/platforms/powernv/pci.c      | 20 ++++++++++++++++++++
- arch/powerpc/platforms/powernv/pci.h      |  1 +
- 3 files changed, 22 insertions(+)
+>  static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+>  {
+>  	struct powernv_smp_call_data freq_data;
+> @@ -589,6 +694,7 @@ static int init_chip_info(void)
+>  	}
+>  
+>  	return 0;
+> +
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 573ae19..f90dc04 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -3180,6 +3180,7 @@ static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
- 
- static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
-        .dma_dev_setup = pnv_pci_dma_dev_setup,
-+       .dma_bus_setup = pnv_pci_dma_bus_setup,
- #ifdef CONFIG_PCI_MSI
-        .setup_msi_irqs = pnv_setup_msi_irqs,
-        .teardown_msi_irqs = pnv_teardown_msi_irqs,
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 8de0140..2441dec 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -757,6 +757,26 @@ void pnv_pci_dma_dev_setup(struct pci_dev *pdev)
- 		phb->dma_dev_setup(phb, pdev);
- }
- 
-+void pnv_pci_dma_bus_setup(struct pci_bus *bus)
-+{
-+	struct pci_controller *hose = bus->sysdata;
-+	struct pnv_phb *phb = hose->private_data;
-+	struct pnv_ioda_pe *pe;
-+
-+	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
-+		if (!(pe->flags | (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)))
-+			continue;
-+
-+		if (!pe->pbus)
-+			continue;
-+
-+		if (bus->number == ((pe->rid >> 8) & 0xFF)) {
-+			pe->pbus = bus;
-+			break;
-+		}
-+	}
-+}
-+
- void pnv_pci_shutdown(void)
- {
- 	struct pci_controller *hose;
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 32cae3d..3f814f3 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -232,6 +232,7 @@ extern void pnv_pci_reset_secondary_bus(struct pci_dev *dev);
- extern int pnv_eeh_phb_reset(struct pci_controller *hose, int option);
- 
- extern void pnv_pci_dma_dev_setup(struct pci_dev *pdev);
-+extern void pnv_pci_dma_bus_setup(struct pci_bus *bus);
- extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
- extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
- 
+Unrelated change.
+
+>  free_chip_map:
+>  	kfree(core_to_chip_map);
+>  out:
+> @@ -615,6 +721,8 @@ static int __init powernv_cpufreq_init(void)
+>  	if (rc)
+>  		return rc;
+>  
+> +	cpufreq_register_notifier(&powernv_cpufreq_policy_nb,
+> +				  CPUFREQ_POLICY_NOTIFIER);
+>  	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
+>  	opal_message_notifier_register(OPAL_MSG_OCC, &powernv_cpufreq_opal_nb);
+>  	return cpufreq_register_driver(&powernv_cpufreq_driver);
+
+If this fails, you don't unregister the notifiers. Actually, the BUG
+is already there, and you must fix that first.
+
+> @@ -626,6 +734,8 @@ static void __exit powernv_cpufreq_exit(void)
+>  	unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
+>  	opal_message_notifier_unregister(OPAL_MSG_OCC,
+>  					 &powernv_cpufreq_opal_nb);
+> +	cpufreq_unregister_notifier(&powernv_cpufreq_policy_nb,
+> +				    CPUFREQ_POLICY_NOTIFIER);
+>  	kfree(chips);
+>  	kfree(core_to_chip_map);
+>  	cpufreq_unregister_driver(&powernv_cpufreq_driver);
+
+This is even more stupid. You remove the driver after freeing all
+resources :)
+
+Make this reverse of init..
+
+Fix existing issues first and then apply this patch on the top.
+
 -- 
-2.1.0
+viresh
