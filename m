@@ -1,19 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B26831A0272
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 21:20:21 +1100 (AEDT)
-Message-ID: <1455013213.23568.1.camel@ellerman.id.au>
-Subject: Re: [1/2] powerpc/powernv: new function to access OPAL msglog
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org
-Date: Tue, 09 Feb 2016 21:20:13 +1100
-In-Reply-To: <56B97926.1090304@au1.ibm.com>
-References: <20160208113149.F33D1140B99@ozlabs.org>
- <56B97926.1090304@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id C8FDA1A02CE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 21:23:08 +1100 (AEDT)
+Message-Id: <ce64a208704307609589b1f54a71fd1423ac339f.1454932181.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1454932181.git.christophe.leroy@c-s.fr>
+References: <cover.1454932181.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v7 01/23] powerpc/8xx: Save r3 all the time in DTLB miss
+ handler
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Tue,  9 Feb 2016 11:23:05 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +22,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-02-09 at 16:29 +1100, Andrew Donnellan wrote:
-> On 08/02/16 22:31, Michael Ellerman wrote:
-> > Pulling the memcons out of the bin_attr here is not all that nice. This routine
-> > should really stand on its own without reference to the bin_attr. In theory I
-> > might want to disable building sysfs but still have this routine available.
->
-> Yeah it's a bit ugly, though does disabling sysfs actually break it?
+We are spending between 40 and 160 cycles with a mean of 65 cycles in
+the DTLB handling routine (measured with mftbl) so make it more
+simple althought it adds one instruction.
+With this modification, we get three registers available at all time,
+which will help with following patch.
 
-Probably not, it looks like bin_attribute is still defined even when sysfs is
-disabled. And the build would break in other places too.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+v2: no change
+v3: no change
+v4: no change
+v5: no change
+v6: no change
+v7: no change
 
-> I can separate it out anyway - there's no reason for the memcons to be
-> tied to the sysfs entry.
+ arch/powerpc/kernel/head_8xx.S | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
-Yeah that was more my point.
-
-> > It's also a bit fishy if it's called before the bin_attr is initialised or when
-> > the memcons initialisation fails. In both cases it should be OK, because the
-> > structs in question are static and so the private pointer will be NULL, but
-> > that's a bit fragile.
-> >
-> > I think the solution is simply to create a:
-> >
-> >    static struct memcons *opal_memcons;
-> >
-> > And use that in opal_msglog_copy() and so on.
->
-> Will respin.
-
-Thanks.
-
-cheers
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index e629e28..a89492e 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -385,23 +385,20 @@ InstructionTLBMiss:
+ 
+ 	. = 0x1200
+ DataStoreTLBMiss:
+-#ifdef CONFIG_8xx_CPU6
+ 	mtspr	SPRN_SPRG_SCRATCH2, r3
+-#endif
+ 	EXCEPTION_PROLOG_0
+-	mfcr	r10
++	mfcr	r3
+ 
+ 	/* If we are faulting a kernel address, we have to use the
+ 	 * kernel page tables.
+ 	 */
+-	mfspr	r11, SPRN_MD_EPN
+-	IS_KERNEL(r11, r11)
++	mfspr	r10, SPRN_MD_EPN
++	IS_KERNEL(r11, r10)
+ 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
+ 	BRANCH_UNLESS_KERNEL(3f)
+ 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+ 3:
+-	mtcr	r10
+-	mfspr	r10, SPRN_MD_EPN
++	mtcr	r3
+ 
+ 	/* Insert level 1 index */
+ 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+@@ -453,9 +450,7 @@ DataStoreTLBMiss:
+ 	MTSPR_CPU6(SPRN_MD_RPN, r10, r3)	/* Update TLB entry */
+ 
+ 	/* Restore registers */
+-#ifdef CONFIG_8xx_CPU6
+ 	mfspr	r3, SPRN_SPRG_SCRATCH2
+-#endif
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+ 	EXCEPTION_EPILOG_0
+ 	rfi
+-- 
+2.1.0
