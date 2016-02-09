@@ -1,17 +1,18 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 2A1221A028E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 03:08:02 +1100 (AEDT)
-Message-Id: <3c627354c920c564c01cbdb1f960f3e2ed9eac10.1455032446.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 3ECC31A028E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 03:08:05 +1100 (AEDT)
+Message-Id: <469ed145e21be6720c186686039b569e30ca1ed4.1455032446.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1455032446.git.christophe.leroy@c-s.fr>
 References: <cover.1455032446.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v8 07/23] powerpc/8xx: Fix vaddr for IMMR early remap
+Subject: [PATCH v8 08/23] powerpc/8xx: Map IMMR area with 512k page at a fixed
+ address
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue,  9 Feb 2016 17:08:00 +0100 (CET)
+Date: Tue,  9 Feb 2016 17:08:02 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,193 +22,242 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Memory: 124428K/131072K available (3748K kernel code, 188K rwdata,
-648K rodata, 508K init, 290K bss, 6644K reserved)
-Kernel virtual memory layout:
-  * 0xfffdf000..0xfffff000  : fixmap
-  * 0xfde00000..0xfe000000  : consistent mem
-  * 0xfddf6000..0xfde00000  : early ioremap
-  * 0xc9000000..0xfddf6000  : vmalloc & ioremap
-SLUB: HWalign=16, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+Once the linear memory space has been mapped with 8Mb pages, as
+seen in the related commit, we get 11 millions DTLB missed during
+the reference 600s period. 77% of the misses are on user addresses
+and 23% are on kernel addresses (1 fourth for linear address space
+and 3 fourth for virtual address space)
 
-Today, IMMR is mapped 1:1 at startup
+Traditionaly, each driver manages one computer board which has its
+own components with its own memory maps.
+But on embedded chips like the MPC8xx, the SOC has all registers
+located in the same IO area.
 
-Mapping IMMR 1:1 is just wrong because it may overlap with another
-area. On most mpc8xx boards it is OK as IMMR is set to 0xff000000
-but for instance on EP88xC board, IMMR is at 0xfa200000 which
-overlaps with VM ioremap area
+When looking at ioremaps done during startup, we see that
+many drivers are re-mapping small parts of the IMMR for their own use
+and all those small pieces gets their own 4k page, amplifying the
+number of TLB misses: in our system we get 0xff000000 mapped 31 times
+and 0xff003000 mapped 9 times.
 
-This patch fixes the virtual address for remapping IMMR with the fixmap
-regardless of the value of IMMR.
+Even if each part of IMMR was mapped only once with 4k pages, it would
+still be several small mappings towards linear area.
 
-The size of IMMR area is 256kbytes (CPM at offset 0, security engine
-at offset 128k) so a 512k page is enough
+With the patch, on the same principle as what was done for the RAM,
+the IMMR gets mapped by a 512k page.
+
+In 4k pages mode, we reserve a 4Mb area for mapping IMMR. The TLB
+miss handler checks that we are within the first 512k and bail out
+with page not marked valid if we are outside
+
+In 16k pages mode, it is not realistic to reserve a 64Mb area, so
+we do a standard mapping of the 512k area using 32 pages of 16k.
+The CPM will be mapped via the first two pages, and the SEC engine
+will be mapped via the 16th and 17th pages. As the pages are marked
+guarded, there will be no speculative accesses.
+
+With this patch applied, the number of DTLB misses during the 10 min
+period is reduced to 11.8 millions for a duration of 5.8s, which
+represents 2% of the non-idle time hence yet another 10% reduction.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v2: no change
-v3: Using fixmap instead of fixed address
-v4: Fix a wrong #if notified by kbuild robot
+v2:
+- using bt instead of blt/bgt
+- reorganised in order to have only one taken branch for both 512k
+and 8M instead of a first branch for both 8M and 512k then a second
+branch for 512k
+
+v3:
+- using fixmap
+- using the new x_block_mapped() functions
+
+v4: no change
 v5: no change
-v6: no change
+v6: removed use of pmd_val() as L-value
 v8: no change
 
- arch/powerpc/include/asm/fixmap.h |  7 +++++++
- arch/powerpc/kernel/asm-offsets.c |  8 ++++++++
- arch/powerpc/kernel/head_8xx.S    | 11 ++++++-----
- arch/powerpc/mm/mmu_decl.h        |  7 +++++++
- arch/powerpc/sysdev/cpm_common.c  | 15 ++++++++++++---
- 5 files changed, 40 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/fixmap.h |  9 ++++++-
+ arch/powerpc/kernel/head_8xx.S    | 36 +++++++++++++++++++++++++-
+ arch/powerpc/mm/8xx_mmu.c         | 53 +++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/mm/mmu_decl.h        |  3 ++-
+ 4 files changed, 98 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/fixmap.h b/arch/powerpc/include/asm/fixmap.h
-index 90f604b..d7dd8fb 100644
+index d7dd8fb..b954dc3 100644
 --- a/arch/powerpc/include/asm/fixmap.h
 +++ b/arch/powerpc/include/asm/fixmap.h
-@@ -51,6 +51,13 @@ enum fixed_addresses {
- 	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
+@@ -52,12 +52,19 @@ enum fixed_addresses {
  	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
  #endif
-+#ifdef CONFIG_PPC_8xx
+ #ifdef CONFIG_PPC_8xx
+-	/* For IMMR we need an aligned 512K area */
+ 	FIX_IMMR_START,
++#ifdef CONFIG_PPC_4K_PAGES
++	/* For IMMR we need an aligned 4M area (full PGD entry) */
++	FIX_IMMR_TOP = (FIX_IMMR_START - 1 + ((4 * 1024 * 1024) / PAGE_SIZE)) &
++		       ~(((4 * 1024 * 1024) / PAGE_SIZE) - 1),
++	FIX_IMMR_BASE = FIX_IMMR_TOP - 1 + ((4 * 1024 * 1024) / PAGE_SIZE),
++#else
 +	/* For IMMR we need an aligned 512K area */
-+	FIX_IMMR_START,
-+	FIX_IMMR_TOP = (FIX_IMMR_START - 1 + ((512 * 1024) / PAGE_SIZE)) &
-+		       ~(((512 * 1024) / PAGE_SIZE) - 1),
-+	FIX_IMMR_BASE = FIX_IMMR_TOP - 1 + ((512 * 1024) / PAGE_SIZE),
+ 	FIX_IMMR_TOP = (FIX_IMMR_START - 1 + ((512 * 1024) / PAGE_SIZE)) &
+ 		       ~(((512 * 1024) / PAGE_SIZE) - 1),
+ 	FIX_IMMR_BASE = FIX_IMMR_TOP - 1 + ((512 * 1024) / PAGE_SIZE),
+ #endif
 +#endif
  	/* FIX_PCIE_MCFG, */
  	__end_of_fixed_addresses
  };
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 07cebc3..9724ff8 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -68,6 +68,10 @@
- #include "../mm/mmu_decl.h"
- #endif
- 
-+#ifdef CONFIG_PPC_8xx
-+#include <asm/fixmap.h>
-+#endif
-+
- int main(void)
- {
- 	DEFINE(THREAD, offsetof(struct task_struct, thread));
-@@ -772,5 +776,9 @@ int main(void)
- 
- 	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
- 
-+#ifdef CONFIG_PPC_8xx
-+	DEFINE(VIRT_IMMR_BASE, __fix_to_virt(FIX_IMMR_BASE));
-+#endif
-+
- 	return 0;
- }
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 87d1f5f..09173ae 100644
+index 09173ae..ae721a1 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -30,6 +30,7 @@
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
- #include <asm/ptrace.h>
-+#include <asm/fixmap.h>
+@@ -254,6 +254,37 @@ DataAccess:
+ 	. = 0x400
+ InstructionAccess:
  
- /* Macro to make the code more readable. */
- #ifdef CONFIG_8xx_CPU6
-@@ -763,7 +764,7 @@ start_here:
-  * virtual to physical.  Also, set the cache mode since that is defined
-  * by TLB entries and perform any additional mapping (like of the IMMR).
-  * If configured to pin some TLBs, we pin the first 8 Mbytes of kernel,
-- * 24 Mbytes of data, and the 8M IMMR space.  Anything not covered by
-+ * 24 Mbytes of data, and the 512k IMMR space.  Anything not covered by
-  * these mappings is mapped by page tables.
-  */
- initial_mmu:
-@@ -812,7 +813,7 @@ initial_mmu:
- 	ori	r8, r8, MD_APG_INIT@l
- 	mtspr	SPRN_MD_AP, r8
- 
--	/* Map another 8 MByte at the IMMR to get the processor
-+	/* Map a 512k page for the IMMR to get the processor
- 	 * internal registers (among other things).
- 	 */
- #ifdef CONFIG_PIN_TLB
-@@ -820,12 +821,12 @@ initial_mmu:
- 	mtspr	SPRN_MD_CTR, r10
- #endif
- 	mfspr	r9, 638			/* Get current IMMR */
--	andis.	r9, r9, 0xff80		/* Get 8Mbyte boundary */
-+	andis.	r9, r9, 0xfff8		/* Get 512 kbytes boundary */
- 
--	mr	r8, r9			/* Create vaddr for TLB */
-+	lis	r8, VIRT_IMMR_BASE@h	/* Create vaddr for TLB */
- 	ori	r8, r8, MD_EVALID	/* Mark it valid */
- 	mtspr	SPRN_MD_EPN, r8
--	li	r8, MD_PS8MEG		/* Set 8M byte page */
-+	li	r8, MD_PS512K | MD_GUARDED	/* Set 512k byte page */
- 	ori	r8, r8, MD_SVALID	/* Make it valid */
- 	mtspr	SPRN_MD_TWC, r8
- 	mr	r8, r9			/* Create paddr for TLB */
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 40dd5d3..e7228b7 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -107,6 +107,13 @@ struct hash_pte;
- extern struct hash_pte *Hash, *Hash_end;
- extern unsigned long Hash_size, Hash_mask;
- 
-+#define PHYS_IMMR_BASE (mfspr(SPRN_IMMR) & 0xfff80000)
-+#ifdef CONFIG_PPC_8xx
-+#define VIRT_IMMR_BASE (__fix_to_virt(FIX_IMMR_BASE))
-+#else
-+#define VIRT_IMMR_BASE PHYS_IMMR_BASE
++/*
++ * Bottom part of DTLBMiss handler for 512k pages
++ * not enough space in the primary location
++ */
++#ifdef CONFIG_PPC_4K_PAGES
++/*
++ * 512k pages are only used for mapping IMMR area in 4K pages mode.
++ * Only map the first 512k page of the 4M area covered by the PGD entry.
++ * This should not happen, but if we are called for another page of that
++ * area, don't mark it valid
++ *
++ * In 16k pages mode, IMMR is directly mapped with 16k pages
++ */
++DTLBMiss512k:
++	rlwinm.	r10, r10, 0, 0x00380000
++	bne-	1f
++	ori	r11, r11, MD_SVALID
++1:	mtcr	r3
++	MTSPR_CPU6(SPRN_MD_TWC, r11, r3)
++	rlwinm	r10, r11, 0, 0xffc00000
++	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SHARED | _PAGE_DIRTY	| \
++			  _PAGE_PRESENT | _PAGE_NO_CACHE
++	MTSPR_CPU6(SPRN_MD_RPN, r10, r3)	/* Update TLB entry */
++
++	li	r11, RPN_PATTERN
++	mfspr	r3, SPRN_SPRG_SCRATCH2
++	mtspr	SPRN_DAR, r11	/* Tag DAR */
++	EXCEPTION_EPILOG_0
++	rfi
 +#endif
 +
- #endif /* CONFIG_PPC32 */
+ /* External interrupt */
+ 	EXCEPTION(0x500, HardwareInterrupt, do_IRQ, EXC_XFER_LITE)
  
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index 9d32465..94476f4 100644
---- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -28,6 +28,7 @@
- #include <asm/udbg.h>
- #include <asm/io.h>
- #include <asm/cpm.h>
+@@ -405,6 +436,9 @@ DataStoreTLBMiss:
+ 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
+ 	mtcr	r11
+ 	bt-	28,DTLBMiss8M		/* bit 28 = Large page (8M) */
++#ifdef CONFIG_PPC_4K_PAGES
++	bt-	29,DTLBMiss512k		/* bit 29 = Large page (8M or 512K) */
++#endif
+ 	mtcr	r3
+ 
+ 	/* We have a pte table, so load fetch the pte from the table.
+@@ -559,7 +593,7 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+ 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
+ 	mtcr	r11
+-	bt	28,200f		/* bit 28 = Large page (8M) */
++	bt	29,200f		/* bit 29 = Large page (8M or 512K) */
+ 	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
+ 	/* Insert level 2 index */
+ 	rlwimi	r11, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
+index a84f5eb..f37d5ec 100644
+--- a/arch/powerpc/mm/8xx_mmu.c
++++ b/arch/powerpc/mm/8xx_mmu.c
+@@ -13,10 +13,61 @@
+  */
+ 
+ #include <linux/memblock.h>
 +#include <asm/fixmap.h>
- #include <soc/fsl/qe/qe.h>
  
- #include <mm/mmu_decl.h>
-@@ -37,12 +38,16 @@
+ #include "mmu_decl.h"
+ 
++#define IMMR_SIZE (__fix_to_virt(FIX_IMMR_TOP) + PAGE_SIZE - VIRT_IMMR_BASE)
++
+ extern int __map_without_ltlbs;
++
++/*
++ * Return PA for this VA if it is in IMMR area, or 0
++ */
++phys_addr_t v_block_mapped(unsigned long va)
++{
++	unsigned long p = PHYS_IMMR_BASE;
++
++	if (__map_without_ltlbs)
++		return 0;
++	if (va >= VIRT_IMMR_BASE && va < VIRT_IMMR_BASE + IMMR_SIZE)
++		return p + va - VIRT_IMMR_BASE;
++	return 0;
++}
++
++/*
++ * Return VA for a given PA or 0 if not mapped
++ */
++unsigned long p_block_mapped(phys_addr_t pa)
++{
++	unsigned long p = PHYS_IMMR_BASE;
++
++	if (__map_without_ltlbs)
++		return 0;
++	if (pa >= p && pa < p + IMMR_SIZE)
++		return VIRT_IMMR_BASE + pa - p;
++	return 0;
++}
++
++static void mmu_mapin_immr(void)
++{
++	unsigned long p = PHYS_IMMR_BASE;
++	unsigned long v = VIRT_IMMR_BASE;
++#ifdef CONFIG_PPC_4K_PAGES
++	pmd_t *pmdp;
++	unsigned long val = p | MD_PS512K | MD_GUARDED;
++
++	pmdp = pmd_offset(pud_offset(pgd_offset_k(v), v), v);
++	*pmdp = __pmd(val);
++#else /* CONFIG_PPC_16K_PAGES */
++	unsigned long f = pgprot_val(PAGE_KERNEL_NCG);
++	int offset;
++
++	for (offset = 0; offset < IMMR_SIZE; offset += PAGE_SIZE)
++		map_page(v + offset, p + offset, f);
++#endif
++}
++
+ /*
+  * MMU_init_hw does the chip-specific initialization of the MMU hardware.
+  */
+@@ -79,6 +130,8 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
+ 	 */
+ 	memblock_set_current_limit(mapped);
+ 
++	mmu_mapin_immr();
++
+ 	return mapped;
+ }
+ 
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index e7228b7..3872332 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -166,9 +166,10 @@ struct tlbcam {
+ };
  #endif
  
- #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
--static u32 __iomem *cpm_udbg_txdesc =
--	(u32 __iomem __force *)CONFIG_PPC_EARLY_DEBUG_CPM_ADDR;
-+static u32 __iomem *cpm_udbg_txdesc;
- 
- static void udbg_putc_cpm(char c)
- {
--	u8 __iomem *txbuf = (u8 __iomem __force *)in_be32(&cpm_udbg_txdesc[1]);
-+	static u8 __iomem *txbuf;
-+
-+	if (unlikely(txbuf == NULL))
-+		txbuf = (u8 __iomem __force *)
-+			 (in_be32(&cpm_udbg_txdesc[1]) - PHYS_IMMR_BASE +
-+			  VIRT_IMMR_BASE);
- 
- 	if (c == '\n')
- 		udbg_putc_cpm('\r');
-@@ -56,6 +61,10 @@ static void udbg_putc_cpm(char c)
- 
- void __init udbg_init_cpm(void)
- {
-+	cpm_udbg_txdesc = (u32 __iomem __force *)
-+			  (CONFIG_PPC_EARLY_DEBUG_CPM_ADDR - PHYS_IMMR_BASE +
-+			   VIRT_IMMR_BASE);
-+
- 	if (cpm_udbg_txdesc) {
- #ifdef CONFIG_CPM2
- 		setbat(1, 0xf0000000, 0xf0000000, 1024*1024, PAGE_KERNEL_NCG);
+-#if defined(CONFIG_6xx) || defined(CONFIG_FSL_BOOKE)
++#if defined(CONFIG_6xx) || defined(CONFIG_FSL_BOOKE) || defined(CONFIG_PPC_8xx)
+ /* 6xx have BATS */
+ /* FSL_BOOKE have TLBCAM */
++/* 8xx have LTLB */
+ phys_addr_t v_block_mapped(unsigned long va);
+ unsigned long p_block_mapped(phys_addr_t pa);
+ #else
 -- 
 2.1.0
