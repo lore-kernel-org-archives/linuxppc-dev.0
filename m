@@ -1,18 +1,17 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 7980D1A0314
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 21:23:44 +1100 (AEDT)
-Message-Id: <4a58ad704026233b41118b597df72a32525c6419.1454932181.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 9F0411A0331
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 21:23:47 +1100 (AEDT)
+Message-Id: <2639ded97e8d377ec96072443817b5d32fe03f9a.1454932181.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1454932181.git.christophe.leroy@c-s.fr>
 References: <cover.1454932181.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v7 18/23] powerpc: add inline functions for cache related
- instructions
+Subject: [PATCH v7 20/23] powerpc32: move xxxxx_dcache_range() functions inline
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue,  9 Feb 2016 11:23:40 +0100 (CET)
+Date: Tue,  9 Feb 2016 11:23:45 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,8 +21,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds inline functions to use dcbz, dcbi, dcbf, dcbst
-from C functions
+flush/clean/invalidate _dcache_range() functions are all very
+similar and are quite short. They are mainly used in __dma_sync()
+perf_event locate them in the top 3 consumming functions during
+heavy ethernet activity
+
+They are good candidate for inlining, as __dma_sync() does
+almost nothing but calling them
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
@@ -34,38 +38,166 @@ v5: no change
 v6: no change
 v7: no change
 
- arch/powerpc/include/asm/cache.h | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/powerpc/include/asm/cacheflush.h | 52 ++++++++++++++++++++++++++--
+ arch/powerpc/kernel/misc_32.S         | 65 -----------------------------------
+ arch/powerpc/kernel/ppc_ksyms.c       |  2 ++
+ 3 files changed, 51 insertions(+), 68 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
-index 5f8229e..ffbafbf 100644
---- a/arch/powerpc/include/asm/cache.h
-+++ b/arch/powerpc/include/asm/cache.h
-@@ -69,6 +69,25 @@ extern void _set_L3CR(unsigned long);
- #define _set_L3CR(val)	do { } while(0)
+diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+index 6229e6b..97c9978 100644
+--- a/arch/powerpc/include/asm/cacheflush.h
++++ b/arch/powerpc/include/asm/cacheflush.h
+@@ -47,12 +47,58 @@ static inline void __flush_dcache_icache_phys(unsigned long physaddr)
+ }
  #endif
  
-+static inline void dcbz(void *addr)
+-extern void flush_dcache_range(unsigned long start, unsigned long stop);
+ #ifdef CONFIG_PPC32
+-extern void clean_dcache_range(unsigned long start, unsigned long stop);
+-extern void invalidate_dcache_range(unsigned long start, unsigned long stop);
++/*
++ * Write any modified data cache blocks out to memory and invalidate them.
++ * Does not invalidate the corresponding instruction cache blocks.
++ */
++static inline void flush_dcache_range(unsigned long start, unsigned long stop)
 +{
-+	__asm__ __volatile__ ("dcbz 0, %0" : : "r"(addr) : "memory");
++	void *addr = (void *)(start & ~(L1_CACHE_BYTES - 1));
++	unsigned long size = stop - (unsigned long)addr + (L1_CACHE_BYTES - 1);
++	unsigned long i;
++
++	for (i = 0; i < size >> L1_CACHE_SHIFT; i++, addr += L1_CACHE_BYTES)
++		dcbf(addr);
++	mb();	/* sync */
 +}
 +
-+static inline void dcbi(void *addr)
++/*
++ * Write any modified data cache blocks out to memory.
++ * Does not invalidate the corresponding cache lines (especially for
++ * any corresponding instruction cache).
++ */
++static inline void clean_dcache_range(unsigned long start, unsigned long stop)
 +{
-+	__asm__ __volatile__ ("dcbi 0, %0" : : "r"(addr) : "memory");
++	void *addr = (void *)(start & ~(L1_CACHE_BYTES - 1));
++	unsigned long size = stop - (unsigned long)addr + (L1_CACHE_BYTES - 1);
++	unsigned long i;
++
++	for (i = 0; i < size >> L1_CACHE_SHIFT; i++, addr += L1_CACHE_BYTES)
++		dcbst(addr);
++	mb();	/* sync */
 +}
 +
-+static inline void dcbf(void *addr)
++/*
++ * Like above, but invalidate the D-cache.  This is used by the 8xx
++ * to invalidate the cache so the PPC core doesn't get stale data
++ * from the CPM (no cache snooping here :-).
++ */
++static inline void invalidate_dcache_range(unsigned long start,
++					   unsigned long stop)
 +{
-+	__asm__ __volatile__ ("dcbf 0, %0" : : "r"(addr) : "memory");
++	void *addr = (void *)(start & ~(L1_CACHE_BYTES - 1));
++	unsigned long size = stop - (unsigned long)addr + (L1_CACHE_BYTES - 1);
++	unsigned long i;
++
++	for (i = 0; i < size >> L1_CACHE_SHIFT; i++, addr += L1_CACHE_BYTES)
++		dcbi(addr);
++	mb();	/* sync */
 +}
 +
-+static inline void dcbst(void *addr)
-+{
-+	__asm__ __volatile__ ("dcbst 0, %0" : : "r"(addr) : "memory");
-+}
- #endif /* !__ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_CACHE_H */
+ #endif /* CONFIG_PPC32 */
+ #ifdef CONFIG_PPC64
++extern void flush_dcache_range(unsigned long start, unsigned long stop);
+ extern void flush_inval_dcache_range(unsigned long start, unsigned long stop);
+ extern void flush_dcache_phys_range(unsigned long start, unsigned long stop);
+ #endif
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 181afc1..09e1e5d 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -375,71 +375,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 	isync
+ 	blr
+ /*
+- * Write any modified data cache blocks out to memory.
+- * Does not invalidate the corresponding cache lines (especially for
+- * any corresponding instruction cache).
+- *
+- * clean_dcache_range(unsigned long start, unsigned long stop)
+- */
+-_GLOBAL(clean_dcache_range)
+-	li	r5,L1_CACHE_BYTES-1
+-	andc	r3,r3,r5
+-	subf	r4,r3,r4
+-	add	r4,r4,r5
+-	srwi.	r4,r4,L1_CACHE_SHIFT
+-	beqlr
+-	mtctr	r4
+-
+-1:	dcbst	0,r3
+-	addi	r3,r3,L1_CACHE_BYTES
+-	bdnz	1b
+-	sync				/* wait for dcbst's to get to ram */
+-	blr
+-
+-/*
+- * Write any modified data cache blocks out to memory and invalidate them.
+- * Does not invalidate the corresponding instruction cache blocks.
+- *
+- * flush_dcache_range(unsigned long start, unsigned long stop)
+- */
+-_GLOBAL(flush_dcache_range)
+-	li	r5,L1_CACHE_BYTES-1
+-	andc	r3,r3,r5
+-	subf	r4,r3,r4
+-	add	r4,r4,r5
+-	srwi.	r4,r4,L1_CACHE_SHIFT
+-	beqlr
+-	mtctr	r4
+-
+-1:	dcbf	0,r3
+-	addi	r3,r3,L1_CACHE_BYTES
+-	bdnz	1b
+-	sync				/* wait for dcbst's to get to ram */
+-	blr
+-
+-/*
+- * Like above, but invalidate the D-cache.  This is used by the 8xx
+- * to invalidate the cache so the PPC core doesn't get stale data
+- * from the CPM (no cache snooping here :-).
+- *
+- * invalidate_dcache_range(unsigned long start, unsigned long stop)
+- */
+-_GLOBAL(invalidate_dcache_range)
+-	li	r5,L1_CACHE_BYTES-1
+-	andc	r3,r3,r5
+-	subf	r4,r3,r4
+-	add	r4,r4,r5
+-	srwi.	r4,r4,L1_CACHE_SHIFT
+-	beqlr
+-	mtctr	r4
+-
+-1:	dcbi	0,r3
+-	addi	r3,r3,L1_CACHE_BYTES
+-	bdnz	1b
+-	sync				/* wait for dcbi's to get to ram */
+-	blr
+-
+-/*
+  * Flush a particular page from the data cache to RAM.
+  * Note: this is necessary because the instruction cache does *not*
+  * snoop from the data cache.
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index 41e1607..3236679 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -6,7 +6,9 @@
+ #include <asm/cacheflush.h>
+ #include <asm/epapr_hcalls.h>
+ 
++#ifdef CONFIG_PPC64
+ EXPORT_SYMBOL(flush_dcache_range);
++#endif
+ EXPORT_SYMBOL(flush_icache_range);
+ 
+ EXPORT_SYMBOL(empty_zero_page);
 -- 
 2.1.0
