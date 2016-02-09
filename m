@@ -1,31 +1,34 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 952521A0220
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 15:51:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1F9CB1A0191
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 15:51:37 +1100 (AEDT)
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 9 Feb 2016 14:51:35 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 07B172BB0052
+ Tue, 9 Feb 2016 14:51:36 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id D67F13578054
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 15:51:32 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u194pNqd59703328
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 15:51:32 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u194oxYA025510
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 15:50:59 +1100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u194pNvu47841416
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 15:51:31 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u194p0MD023205
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 15:51:00 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v2 1/4] powerpc/eeh: Fix stale cached primary bus
-Date: Tue,  9 Feb 2016 15:50:21 +1100
-Message-Id: <1454993431-17068-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v2 4/4] powerpc/powernv: Simplify definitions of EEH debugfs
+ handlers
+Date: Tue,  9 Feb 2016 15:50:24 +1100
+Message-Id: <1454993431-17068-4-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1454993431-17068-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1454993431-17068-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,102 +38,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When PE is created, its primary bus is cached to pe->bus. At later
-point, the cached primary bus is returned from eeh_pe_bus_get().
-However, we could get stale cached primary bus and run into kernel
-crash in one case: full hotplug as part of fenced PHB error recovery
-releases all PCI busses under the PHB at unplugging time and recreate
-them at plugging time. pe->bus is still dereferencing the PCI bus
-that was released.
+The EEH debugfs handlers have same prototype. This introduces
+a macro to define them, then to simplify the code. No logical
+changes.
 
-This adds another PE flag (EEH_PE_PRI_BUS) to represent the validity
-of pe->bus. pe->bus is updated when its first child EEH device is
-online and the flag is set. Before unplugging in full hotplug for
-error recovery, the flag is cleared.
-
-Fixes: 8cdb2833 ("powerpc/eeh: Trace PCI bus from PE")
-Cc: stable@vger.kernel.org #v3.11+
-Reported-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Reported-by: Pradipta Ghosh <pradghos@in.ibm.com>
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Tested-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h               | 1 +
- arch/powerpc/kernel/eeh_driver.c             | 3 +++
- arch/powerpc/kernel/eeh_pe.c                 | 2 +-
- arch/powerpc/platforms/powernv/eeh-powernv.c | 5 ++++-
- 4 files changed, 9 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 60 ++++++++++------------------
+ 1 file changed, 22 insertions(+), 38 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index c5eb86f..867c39b 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -81,6 +81,7 @@ struct pci_dn;
- #define EEH_PE_KEEP		(1 << 8)	/* Keep PE on hotplug	*/
- #define EEH_PE_CFG_RESTRICTED	(1 << 9)	/* Block config on error */
- #define EEH_PE_REMOVED		(1 << 10)	/* Removed permanently	*/
-+#define EEH_PE_PRI_BUS		(1 << 11)	/* Cached primary bus   */
- 
- struct eeh_pe {
- 	int type;			/* PE type: PHB/Bus/Device	*/
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 9387421..301be31 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -564,6 +564,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 	 */
- 	eeh_pe_state_mark(pe, EEH_PE_KEEP);
- 	if (bus) {
-+		eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
- 		pci_lock_rescan_remove();
- 		pcibios_remove_pci_devices(bus);
- 		pci_unlock_rescan_remove();
-@@ -803,6 +804,7 @@ perm_error:
- 	 * the their PCI config any more.
- 	 */
- 	if (frozen_bus) {
-+		eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
- 		eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
- 
- 		pci_lock_rescan_remove();
-@@ -886,6 +888,7 @@ static void eeh_handle_special_event(void)
- 					continue;
- 
- 				/* Notify all devices to be down */
-+				eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
- 				bus = eeh_pe_bus_get(phb_pe);
- 				eeh_pe_dev_traverse(pe,
- 					eeh_report_failure, NULL);
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index 8654cb1..127d124 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -931,7 +931,7 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
- 		bus = pe->phb->bus;
- 	} else if (pe->type & EEH_PE_BUS ||
- 		   pe->type & EEH_PE_DEVICE) {
--		if (pe->bus) {
-+		if (pe->state & EEH_PE_PRI_BUS) {
- 			bus = pe->bus;
- 			goto out;
- 		}
 diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 5f152b9..87f47e5 100644
+index 87f47e5..8119172 100644
 --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
 +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -444,9 +444,12 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
- 	 * PCI devices of the PE are expected to be removed prior
- 	 * to PE reset.
- 	 */
--	if (!edev->pe->bus)
-+	if (!(edev->pe->state & EEH_PE_PRI_BUS)) {
- 		edev->pe->bus = pci_find_bus(hose->global_number,
- 					     pdn->busno);
-+		if (edev->pe->bus)
-+			edev->pe->state |= EEH_PE_PRI_BUS;
-+	}
+@@ -167,42 +167,26 @@ static int pnv_eeh_dbgfs_get(void *data, int offset, u64 *val)
+ 	return 0;
+ }
  
- 	/*
- 	 * Enable EEH explicitly so that we will do EEH check
+-static int pnv_eeh_outb_dbgfs_set(void *data, u64 val)
+-{
+-	return pnv_eeh_dbgfs_set(data, 0xD10, val);
+-}
+-
+-static int pnv_eeh_outb_dbgfs_get(void *data, u64 *val)
+-{
+-	return pnv_eeh_dbgfs_get(data, 0xD10, val);
+-}
+-
+-static int pnv_eeh_inbA_dbgfs_set(void *data, u64 val)
+-{
+-	return pnv_eeh_dbgfs_set(data, 0xD90, val);
+-}
+-
+-static int pnv_eeh_inbA_dbgfs_get(void *data, u64 *val)
+-{
+-	return pnv_eeh_dbgfs_get(data, 0xD90, val);
+-}
+-
+-static int pnv_eeh_inbB_dbgfs_set(void *data, u64 val)
+-{
+-	return pnv_eeh_dbgfs_set(data, 0xE10, val);
+-}
+-
+-static int pnv_eeh_inbB_dbgfs_get(void *data, u64 *val)
+-{
+-	return pnv_eeh_dbgfs_get(data, 0xE10, val);
+-}
++#define PNV_EEH_DBGFS_ENTRY(name, reg)				\
++static int pnv_eeh_dbgfs_set_##name(void *data, u64 val)	\
++{								\
++	return pnv_eeh_dbgfs_set(data, reg, val);		\
++}								\
++								\
++static int pnv_eeh_dbgfs_get_##name(void *data, u64 *val)	\
++{								\
++	return pnv_eeh_dbgfs_get(data, reg, val);		\
++}								\
++								\
++DEFINE_SIMPLE_ATTRIBUTE(pnv_eeh_dbgfs_ops_##name,		\
++			pnv_eeh_dbgfs_get_##name,		\
++                        pnv_eeh_dbgfs_set_##name,		\
++			"0x%llx\n")
++
++PNV_EEH_DBGFS_ENTRY(outb, 0xD10);
++PNV_EEH_DBGFS_ENTRY(inbA, 0xD90);
++PNV_EEH_DBGFS_ENTRY(inbB, 0xE10);
+ 
+-DEFINE_SIMPLE_ATTRIBUTE(pnv_eeh_outb_dbgfs_ops, pnv_eeh_outb_dbgfs_get,
+-			pnv_eeh_outb_dbgfs_set, "0x%llx\n");
+-DEFINE_SIMPLE_ATTRIBUTE(pnv_eeh_inbA_dbgfs_ops, pnv_eeh_inbA_dbgfs_get,
+-			pnv_eeh_inbA_dbgfs_set, "0x%llx\n");
+-DEFINE_SIMPLE_ATTRIBUTE(pnv_eeh_inbB_dbgfs_ops, pnv_eeh_inbB_dbgfs_get,
+-			pnv_eeh_inbB_dbgfs_set, "0x%llx\n");
+ #endif /* CONFIG_DEBUG_FS */
+ 
+ /**
+@@ -268,13 +252,13 @@ static int pnv_eeh_post_init(void)
+ 
+ 		debugfs_create_file("err_injct_outbound", 0600,
+ 				    phb->dbgfs, hose,
+-				    &pnv_eeh_outb_dbgfs_ops);
++				    &pnv_eeh_dbgfs_ops_outb);
+ 		debugfs_create_file("err_injct_inboundA", 0600,
+ 				    phb->dbgfs, hose,
+-				    &pnv_eeh_inbA_dbgfs_ops);
++				    &pnv_eeh_dbgfs_ops_inbA);
+ 		debugfs_create_file("err_injct_inboundB", 0600,
+ 				    phb->dbgfs, hose,
+-				    &pnv_eeh_inbB_dbgfs_ops);
++				    &pnv_eeh_dbgfs_ops_inbB);
+ #endif /* CONFIG_DEBUG_FS */
+ 	}
+ 
 -- 
 2.1.0
