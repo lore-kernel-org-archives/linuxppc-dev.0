@@ -1,39 +1,21 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7F7FA1A0191
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 02:21:27 +1100 (AEDT)
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Tue, 9 Feb 2016 15:21:24 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 729CE1B0805F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 15:21:35 +0000 (GMT)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u19FLMer5374168
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 15:21:22 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u19FLKam031698
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 08:21:21 -0700
-Subject: Re: [PATCH v3 13/18] cxl: sysfs support for guests
-To: Stewart Smith <stewart@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
- michael.neuling@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
-References: <1454765345-7417-1-git-send-email-fbarrat@linux.vnet.ibm.com>
- <1454765345-7417-14-git-send-email-fbarrat@linux.vnet.ibm.com>
- <877fifykej.fsf@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Message-ID: <56BA03EF.8040507@linux.vnet.ibm.com>
-Date: Tue, 9 Feb 2016 16:21:19 +0100
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 222C71A0191
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 02:49:32 +1100 (AEDT)
+Subject: Re: [PATCH v7 00/23] powerpc/8xx: Use large pages for RAM and IMMR
+ and other improvments
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>, Jonathan Corbet <corbet@lwn.net>
+References: <cover.1454932181.git.christophe.leroy@c-s.fr>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <56BA0A88.3050704@c-s.fr>
+Date: Tue, 9 Feb 2016 16:49:28 +0100
 MIME-Version: 1.0
-In-Reply-To: <877fifykej.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+In-Reply-To: <cover.1454932181.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,25 +27,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-Le 08/02/2016 04:02, Stewart Smith a écrit :
-> Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
->> --- a/Documentation/ABI/testing/sysfs-class-cxl
->> +++ b/Documentation/ABI/testing/sysfs-class-cxl
->> @@ -183,7 +183,7 @@ Description:    read only
->>                   Identifies the revision level of the PSL.
->>   Users:		https://github.com/ibm-capi/libcxl
->>
->> -What:           /sys/class/cxl/<card>/base_image
->> +What:           /sys/class/cxl/<card>/base_image (not in a guest)
+Le 09/02/2016 11:23, Christophe Leroy a Ã©crit :
+> The main purpose of this patchset is to dramatically reduce the time
+> spent in DTLB miss handler. This is achieved by:
+> 1/ Mapping RAM with 8M pages
+> 2/ Mapping IMMR with a fixed 512K page
 >
-> Is this going to be the case for KVM guest as well as PowerVM guest?
+>
+> Change in v7:
+> * Don't include x_block_mapped() from compilation in
+> arch/powerpc/mm/fsl_booke_mmu.c when CONFIG_FSL_BOOKE is not set
+> (reported by kbuild test robot)
+>
+>
 
+Please don't apply it, for some reason the modification supposed to be 
+in v7 didn't get in. I will submit v8. Sorry for the noise.
 
-That's too early to say.
-The entries we've removed are because the information is filtered by 
-pHyp and not available to the OS. Some of it because nobody thought it 
-would be useful, some of it because it's not meant to be seen by the OS. 
-For KVM, if the card can be shared between guests, I would expect the 
-same kind of restrictions.
-
-   Fred
+Christophe
