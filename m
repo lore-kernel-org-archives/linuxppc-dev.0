@@ -1,19 +1,28 @@
-Return-Path: <raghav.dogra@nxp.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0090.outbound.protection.outlook.com [65.55.169.90])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 935BD1A0399
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 21:12:50 +1100 (AEDT)
-From: Raghav Dogra <raghav.dogra@nxp.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: <oss@buserror.net>, <prabhakar.kushwaha@nxp.com>, Raghav Dogra
- <raghav.dogra@nxp.com>
-Subject: [PATCH][v3] mpc85xx/lbc: modify suspend/resume entry sequence
-Date: Tue, 9 Feb 2016 15:09:08 +0530
-Message-ID: <1455010748-6316-1-git-send-email-raghav.dogra@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C8FD51A0318
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 22:57:37 +1100 (AEDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+Message-ID: <trinity-ec0d2d46-6887-49a0-aa66-47aad4c93969-1455018735101@3capp-gmx-bs34>
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+To: Mike <michael.heltne@gmail.com>
+Cc: =?UTF-8?Q?=22Michel_D=C3=A4nzer=22?= <michel@daenzer.net>, "Boris
+ Reinhard" <reinhard.boris@googlemail.com>, "Pranith Kumar"
+ <bobby.prani@gmail.com>, "open list:LINUX FOR POWERPC..."
+ <linuxppc-dev@lists.ozlabs.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: PowerPC agpmode issues
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 9 Feb 2016 12:52:15 +0100
+In-Reply-To: <CANtoAtNUbSdS0GgoSGUPK4sRsXOhLtNmPqbFFaQ0xW0gGecCRA@mail.gmail.com>
+References: <CANtoAtPSgkxEvAdOs-gZGOECYN8OFTvwRrsg+US41ji1fGEDLA@mail.gmail.com>
+ <56B865A0.4060707@daenzer.net>
+ <CAK90Sjk-AXekt_WKSk53GUeUZk-T4WhrwoNuwPA5N4pX2OPceA@mail.gmail.com>
+ <CANtoAtPoYodsC3u-BOi8HM=ew03CX32BBKvFXwZJ4wbSkMWRZQ@mail.gmail.com>
+ <56B943E3.1010407@daenzer.net>,
+ <CANtoAtNUbSdS0GgoSGUPK4sRsXOhLtNmPqbFFaQ0xW0gGecCRA@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,135 +32,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Modify platform driver suspend/resume to syscore
-suspend/resume. This is because p1022ds needs to use
-localbus when entering the PCIE resume.
+> On 9 Feb 2016 03:27, "Mike" <michael=2Eheltne@gmail=2Ecom> wrote:
+> Ok, so its quirks to be added then? Something not implemented in KMS
+> that was in UMS?
+> Reports are that the same issue exsist on PPC Amiga Ones with a VIA
+> chipset, and the Pegasos 2 with the Artica s chipset, i posted a
+> mail from detailiing that=2E
+Just to avoid some confusion:
+Old long story short: the issues for AmigaOnes and the Pegasos _1_ with
+ArticiaS northbridge and VIA southbridge are that:
+1=2E the AGP controller corrupts data transfers in AGP mode (also dependin=
+g
+on the AGP HW request queue size)=2E So there is no official AGP driver th=
+at
+would require radeon=2Eagpmode=3D-1=2E The microA1 is supposed to have a f=
+ix
+for this HW data corruption, but I yet have to dig out my ArticiaS AGP
+driver code for some test runs=2E=2E=2E
+2=2E At least the AmigaOne with ArticiaS chip need non-coherent DMA
+allocations and/or proper cache flushes to avoid corrupted DMA transfers=
+=2E
 
-Signed-off-by: Raghav Dogra <raghav.dogra@nxp.com>
----
-Changes for v3: rebased to linux.git main branch
+Nonetheless I had DRI1 working _only_ on my A1SE under Debian Squeeze (i=
+=2Ee=2E
+glxgears could run on the desktop with hardware acceleration), but DRI2
+with its very dynamic GART mapping is a no-go on every first-gen AmigaOne
+machine, even if the GART driver test (radeon=2Etest=3D1) runs through in
+PCIGART mode (could it be that it uses a more or less static GART mapping
+for the test?)=2E
 
- arch/powerpc/sysdev/Makefile  |  2 +-
- arch/powerpc/sysdev/fsl_lbc.c | 49 +++++++++++++++++++++++++++++++++----------
- 2 files changed, 39 insertions(+), 12 deletions(-)
+> Sure that might be it, but i get different results trying agpmode=3D1-2-=
+4,
+> 2 gave a noisy screen before the hard crash=2E i find it rather impossib=
+le
+> to debug at all as the crash happens so fast no logs seem to be written=
+=2E=2E
+> I think i would need serial=2E=2E=2E
+> I'd personally love nothing more then to see support restored and a
+> default as expected working condition ought be the minimum requirement=
+=2E
+> I use a powerbook a1106, 5,6=2E With a 5,8 on the way=2E Those are the l=
+ast
+> two revision powerbooks in the 15" series=2E In swrast they become usele=
+ss,
+> impossible to use for any productivity=2E Most people trying to use linu=
+x
+> on ppc for personal use come in macs, with the exception of the Amiga PP=
+C
+> crowd now running their amcc 440/460ex or e600 based x500/5000, all of
+> which have of course pci-e more cores and more threads=2E Yet struggle e=
+ven
+> with regressions left and right to keep up with the single core performa=
+nce
+> of the G4's=2E Sure it's pushing 10 years , but it's the only alternativ=
+e
+> if one wishes to remain mobile=2E
+swrast definitely isn't fun on 10 years old PPC machines=2E Current Firefo=
+x
+is already slow enough on these machines=2E=2E=2E :-)
 
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index bd6bd72..ee972aa 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -18,9 +18,9 @@ obj-$(CONFIG_PPC_PMI)		+= pmi.o
- obj-$(CONFIG_U3_DART)		+= dart_iommu.o
- obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o fsl_mpic_err.o
-+obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
- obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
- obj-$(CONFIG_FSL_PMC)		+= fsl_pmc.o
--obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
- obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
- obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+= fsl_85xx_l2ctlr.o fsl_85xx_cache_sram.o
- obj-$(CONFIG_SIMPLE_GPIO)	+= simple_gpio.o
-diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
-index 47f7810..424b67f 100644
---- a/arch/powerpc/sysdev/fsl_lbc.c
-+++ b/arch/powerpc/sysdev/fsl_lbc.c
-@@ -27,6 +27,7 @@
- #include <linux/platform_device.h>
- #include <linux/interrupt.h>
- #include <linux/mod_devicetable.h>
-+#include <linux/syscore_ops.h>
- #include <asm/prom.h>
- #include <asm/fsl_lbc.h>
- 
-@@ -352,24 +353,42 @@ err:
- #ifdef CONFIG_SUSPEND
- 
- /* save lbc registers */
--static int fsl_lbc_suspend(struct platform_device *pdev, pm_message_t state)
-+static int fsl_lbc_syscore_suspend(void)
- {
--	struct fsl_lbc_ctrl *ctrl = dev_get_drvdata(&pdev->dev);
--	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-+	struct fsl_lbc_ctrl *ctrl;
-+	struct fsl_lbc_regs __iomem *lbc;
-+
-+	ctrl = fsl_lbc_ctrl_dev;
-+	if (!ctrl)
-+		goto out;
-+
-+	lbc = ctrl->regs;
-+	if (!lbc)
-+		goto out;
- 
- 	ctrl->saved_regs = kmalloc(sizeof(struct fsl_lbc_regs), GFP_KERNEL);
- 	if (!ctrl->saved_regs)
- 		return -ENOMEM;
- 
- 	_memcpy_fromio(ctrl->saved_regs, lbc, sizeof(struct fsl_lbc_regs));
-+
-+out:
- 	return 0;
- }
- 
- /* restore lbc registers */
--static int fsl_lbc_resume(struct platform_device *pdev)
-+static void fsl_lbc_syscore_resume(void)
- {
--	struct fsl_lbc_ctrl *ctrl = dev_get_drvdata(&pdev->dev);
--	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-+	struct fsl_lbc_ctrl *ctrl;
-+	struct fsl_lbc_regs __iomem *lbc;
-+
-+	ctrl = fsl_lbc_ctrl_dev;
-+	if (!ctrl)
-+		goto out;
-+
-+	lbc = ctrl->regs;
-+	if (!lbc)
-+		goto out;
- 
- 	if (ctrl->saved_regs) {
- 		_memcpy_toio(lbc, ctrl->saved_regs,
-@@ -377,7 +396,9 @@ static int fsl_lbc_resume(struct platform_device *pdev)
- 		kfree(ctrl->saved_regs);
- 		ctrl->saved_regs = NULL;
- 	}
--	return 0;
-+
-+out:
-+	return;
- }
- #endif /* CONFIG_SUSPEND */
- 
-@@ -389,20 +410,26 @@ static const struct of_device_id fsl_lbc_match[] = {
- 	{},
- };
- 
-+#ifdef CONFIG_SUSPEND
-+static struct syscore_ops lbc_syscore_pm_ops = {
-+	.suspend = fsl_lbc_syscore_suspend,
-+	.resume = fsl_lbc_syscore_resume,
-+};
-+#endif
-+
- static struct platform_driver fsl_lbc_ctrl_driver = {
- 	.driver = {
- 		.name = "fsl-lbc",
- 		.of_match_table = fsl_lbc_match,
- 	},
- 	.probe = fsl_lbc_ctrl_probe,
--#ifdef CONFIG_SUSPEND
--	.suspend     = fsl_lbc_suspend,
--	.resume      = fsl_lbc_resume,
--#endif
- };
- 
- static int __init fsl_lbc_init(void)
- {
-+#ifdef CONFIG_SUSPEND
-+	register_syscore_ops(&lbc_syscore_pm_ops);
-+#endif
- 	return platform_driver_register(&fsl_lbc_ctrl_driver);
- }
- subsys_initcall(fsl_lbc_init);
--- 
-1.9.1
+> On 9 Feb 2016 02:41, "Michel D=C3=A4nzer" <michel@daenzer=2Enet> wrote:
+> > On 08=2E02=2E2016 22:28, Mike wrote:
+> > Certainly 750~800 fps in glxgears vs 3000+ in debian squeeze, i cant
+> > bring myself to say that it's an acceptable situation no matter how
+> > tired i am of the problem knowing how well the setup could do=2E It's
+> > clear that the implementation is broken for everything but x86, [=2E=
+=2E=2E]
+>=20
+> Why is that? It was working fine on my last-gen PowerBook=2E AFAIK Darwi=
+n
+> / OS X never used anything but a static AGP GART mapping though, so it
+> seems very likely that the issues with older UniNorth revisions are
+> simply due to the hardware being unable to support the usage patterns of
+> modern GPU drivers=2E
+>=20
+> That said, if you guys have specific suggestions for a "proper"
+> solution, nobody's standing in your way=2E
+I have to admit that I lack the knowledge of the inner workings of the
+TTM/radeon code (and its TTM AGP backend) to do any useful work here=2E
+I was hoping that the TMA DMA allocator could be of any help at least for
+non-cache coherent machines given that (IIRC) ARM is using it together
+with the nuoveau driver on the TEGRA platform, but I guess that would need
+some modifications also on the powerpc architecture side (maybe a new
+non-coherent DMA allocator that is not limited to 2M virtual address space
+for mappings)=2E Thus I guess a lot of things could be improved/fixed, but
+nowadays Linux code doesn't seem to be something for the "occasional hobby
+hacker"=2E :-)
+
+regards,
+Gerhard
