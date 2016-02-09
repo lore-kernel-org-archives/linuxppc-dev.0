@@ -1,17 +1,17 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 9A1691A0272
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 03:08:33 +1100 (AEDT)
-Message-Id: <b1653dc55ba88a19f9fcd7705ffb36e7e751b6b0.1455032446.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 8575E1A02C0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 03:08:36 +1100 (AEDT)
+Message-Id: <f4875d57b151fbae932fd991c5e26357e2f6a7b3.1455032446.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1455032446.git.christophe.leroy@c-s.fr>
 References: <cover.1455032446.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v8 22/23] powerpc32: small optimisation in flush_icache_range()
+Subject: [PATCH v8 23/23] powerpc32: Remove one insn in mulhdu
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue,  9 Feb 2016 17:08:31 +0100 (CET)
+Date: Tue,  9 Feb 2016 17:08:33 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,8 +21,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Inlining of _dcache_range() functions has shown that the compiler
-does the same thing a bit better with one insn less
+Remove one instruction in mulhdu
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
@@ -33,25 +32,35 @@ v5: no change
 v6: no change
 v8: no change
 
- arch/powerpc/kernel/misc_32.S | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/misc_32.S | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 09e1e5d..3ec5a22 100644
+index 3ec5a22..bf5160f 100644
 --- a/arch/powerpc/kernel/misc_32.S
 +++ b/arch/powerpc/kernel/misc_32.S
-@@ -348,10 +348,9 @@ BEGIN_FTR_SECTION
- 	PURGE_PREFETCHED_INS
- 	blr				/* for 601, do nothing */
- END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
--	li	r5,L1_CACHE_BYTES-1
--	andc	r3,r3,r5
-+	rlwinm	r3,r3,0,0,31 - L1_CACHE_SHIFT
- 	subf	r4,r3,r4
--	add	r4,r4,r5
-+	addi	r4,r4,L1_CACHE_BYTES - 1
- 	srwi.	r4,r4,L1_CACHE_SHIFT
- 	beqlr
- 	mtctr	r4
+@@ -91,17 +91,16 @@ _GLOBAL(mulhdu)
+ 	addc	r7,r0,r7
+ 	addze	r4,r4
+ 1:	beqlr	cr1		/* all done if high part of A is 0 */
+-	mr	r10,r3
+ 	mullw	r9,r3,r5
+-	mulhwu	r3,r3,r5
++	mulhwu	r10,r3,r5
+ 	beq	2f
+-	mullw	r0,r10,r6
+-	mulhwu	r8,r10,r6
++	mullw	r0,r3,r6
++	mulhwu	r8,r3,r6
+ 	addc	r7,r0,r7
+ 	adde	r4,r4,r8
+-	addze	r3,r3
++	addze	r10,r10
+ 2:	addc	r4,r4,r9
+-	addze	r3,r3
++	addze	r3,r10
+ 	blr
+ 
+ /*
 -- 
 2.1.0
