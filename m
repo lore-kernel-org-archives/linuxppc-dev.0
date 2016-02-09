@@ -1,16 +1,45 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D8E081A02D0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 20:45:18 +1100 (AEDT)
-In-Reply-To: <20160209030830.GA4815@us.ibm.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: powerpc/perf/hv-gpci: Increase request buffer size
-Message-Id: <20160209094518.B91C7140B9A@ozlabs.org>
-Date: Tue,  9 Feb 2016 20:45:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CFC891A0310
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 20:45:33 +1100 (AEDT)
+Received: by mail-wm0-x241.google.com with SMTP id 128so2316881wmz.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Feb 2016 01:45:33 -0800 (PST)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Tue, 9 Feb 2016 10:45:26 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ David Long <dave.long@linaro.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ "chengang@emindsoft.com.cn" <chengang@emindsoft.com.cn>,
+ Andy Lutomirski <luto@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>,
+ David Hildenbrand <dahi@linux.vnet.ibm.com>,
+ Denys Vlasenko <dvlasenk@redhat.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, Jan Beulich <JBeulich@suse.com>,
+ Kees Cook <keescook@chromium.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Oleg Nesterov <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Rashmica Gupta <rashmicy@gmail.com>, Rich Felker <dalias@libc.org>,
+ Richard Kuo <rkuo@codeaurora.org>, Roland McGrath <roland@hack.frob.com>,
+ Russell King <linux@arm.linux.org.uk>,
+ Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v3 0/2] Consolidate redundant register/stack access code
+Message-ID: <20160209094526.GB25268@gmail.com>
+References: <1454996337-7935-1-git-send-email-dave.long@linaro.org>
+ <1455010600.13384.3.camel@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1455010600.13384.3.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,59 +49,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-09-02 at 03:08:30 UTC, Sukadev Bhattiprolu wrote:
-> >From 31edd352fb7c2a72913f1977fa1bf168109089ad Mon Sep 17 00:00:00 2001
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Tue, 9 Feb 2016 02:47:45 -0500
-> Subject: [PATCH] powerpc/perf/hv-gpci: Increase request buffer size
+
+* Michael Ellerman <mpe@ellerman.id.au> wrote:
+
+> On Tue, 2016-02-09 at 00:38 -0500, David Long wrote:
 > 
-> The GPCI hcall allows for a 4K buffer but we limit the buffer
-> to 1K. The problem with a 1K buffer is if a request results in
-> returning more values than can be accomodated in the 1K buffer
-> the request will fail.
+> > From: "David A. Long" <dave.long@linaro.org>
+> >
+> > Move duplicate and functionally equivalent code for accessing registers
+> > and stack (CONFIG_HAVE_REGS_AND_STACK_ACCESS_API) from arch subdirs into
+> > common kernel files.
+> >
+> > I'm sending this out again (with updated distribution list) because v2
+> > just never got pulled in, even though I don't think there were any
+> > outstanding issues.
 > 
-> The buffer we are using is currently allocated on the stack and
-> hence limited in size. Instead use a per-CPU 4K buffer like we do
-> with 24x7 counters (hv-24x7.c).
-> 
-> diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
-> index 856fe6e..e6fad73 100644
-> --- a/arch/powerpc/perf/hv-gpci.c
-> +++ b/arch/powerpc/perf/hv-gpci.c
-> @@ -127,8 +127,16 @@ static const struct attribute_group *attr_groups[] = {
->  	NULL,
->  };
->  
-> +#define HGPCI_REQ_BUFFER_SIZE	4096
->  #define GPCI_MAX_DATA_BYTES \
-> -	(1024 - sizeof(struct hv_get_perf_counter_info_params))
-> +	(HGPCI_REQ_BUFFER_SIZE - sizeof(struct hv_get_perf_counter_info_params))
-> +
-> +DEFINE_PER_CPU(char, hv_gpci_reqb[HGPCI_REQ_BUFFER_SIZE]) __aligned(sizeof(uint64_t));
-> +
-> +struct hv_gpci_request_buffer {
-> +	struct hv_get_perf_counter_info_params params;
-> +	uint8_t bytes[1];
+> A big cross arch patch like this would often get taken by Andrew Morton, but
+> AFAICS you didn't CC him - so I just added him, perhaps he'll pick it up for
+> us :D
 
-bytes is 1 byte long, but ..
+The other problem is that the second patch is commingling changes to 6 separate 
+architectures:
 
-> @@ -163,9 +168,11 @@ static unsigned long single_gpci_request(u32 req, u32 starting_index,
->  	 */
->  	count = 0;
->  	for (i = offset; i < offset + length; i++)
-> -		count |= arg.bytes[i] << (i - offset);
-> +		count |= arg->bytes[i] << (i - offset);
+ 16 files changed, 106 insertions(+), 343 deletions(-)
 
+that should probably be 6 separate patches. Easier to review, easier to bisect to, 
+easier to revert, etc.
 
-Here you read from bytes[i] where i can be > 1 (AFAICS).
+Thanks,
 
-That's fishy at best, and newer GCCs just don't allow it.
-
-I think you could do this and it would work, but untested:
-
-   struct hv_gpci_request_buffer {
-   	struct hv_get_perf_counter_info_params params;
-   	uint8_t bytes[4096 - sizeof(struct hv_get_perf_counter_info_parms)];
-   };
-
-cheers
+	Ingo
