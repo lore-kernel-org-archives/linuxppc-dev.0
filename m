@@ -1,17 +1,18 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 7AE781A0272
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 21:23:08 +1100 (AEDT)
-Message-Id: <cover.1454932181.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id CC6CA1A02DF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 21:23:19 +1100 (AEDT)
+Message-Id: <abec39712d536a31fb35f80931ff8e590c3874bb.1454932181.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1454932181.git.christophe.leroy@c-s.fr>
+References: <cover.1454932181.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v7 00/23] powerpc/8xx: Use large pages for RAM and IMMR and
- other improvments
+Subject: [PATCH v7 06/23] powerpc32: refactor x_mapped_by_bats() and
+ x_mapped_by_tlbcam() together
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-doc@vger.kernel.org
-Date: Tue,  9 Feb 2016 11:23:03 +0100 (CET)
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Tue,  9 Feb 2016 11:23:16 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,105 +22,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The main purpose of this patchset is to dramatically reduce the time
-spent in DTLB miss handler. This is achieved by:
-1/ Mapping RAM with 8M pages
-2/ Mapping IMMR with a fixed 512K page
+x_mapped_by_bats() and x_mapped_by_tlbcam() serve the same kind of
+purpose, and are never defined at the same time.
+So rename them x_block_mapped() and define them in the relevant
+places
 
-On a live running system (VoIP gateway for Air Trafic Control), over
-a 10 minutes period (with 277s idle), we get 87 millions DTLB misses
-and approximatly 35 secondes are spent in DTLB handler.
-This represents 5.8% of the overall time and even 10.8% of the
-non-idle time.
-Among those 87 millions DTLB misses, 15% are on user addresses and
-85% are on kernel addresses. And within the kernel addresses, 93%
-are on addresses from the linear address space and only 7% are on
-addresses from the virtual address space.
-
-Once the full patchset applied, the number of DTLB misses during the
-period is reduced to 11.8 millions for a duration of 5.8s, which
-represents 2% of the non-idle time.
-
-This patch also includes other miscellaneous improvements:
-1/ Handling of CPU6 ERRATA directly in mtspr() C macro to reduce code
-specific to PPC8xx
-2/ Rewrite of a few non critical ASM functions in C
-3/ Removal of some unused items
-
-See related patches for details
-
-Main changes in v3:
-* Using fixmap instead of fix address for mapping IMMR
-
-Change in v4:
-* Fix of a wrong #if notified by kbuild robot in 07/23
-
-Change in v5:
-* Removed use of pmd_val() as L-value
-* Adapted to match the new include files layout in Linux 4.5
-
-Change in v6:
-* Removed remaining use of pmd_val() as L-value (reported by kbuild test robot)
-
-Change in v7:
-* Don't include x_block_mapped() from compilation in
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+v2: no change
+v3: Functions are mutually exclusive so renamed iaw Scott comment instead of grouping into a single function
+v4: no change
+v5: no change
+v6: no change
+v7: Don't include x_block_mapped() from compilation in
 arch/powerpc/mm/fsl_booke_mmu.c when CONFIG_FSL_BOOKE is not set
-(reported by kbuild test robot)
+(problem reported by kbuild robot with a configuration having
+CONFIG_FSL_BOOK3E and not CONFIG_FSL_BOOKE)
 
-Christophe Leroy (23):
-  powerpc/8xx: Save r3 all the time in DTLB miss handler
-  powerpc/8xx: Map linear kernel RAM with 8M pages
-  powerpc: Update documentation for noltlbs kernel parameter
-  powerpc/8xx: move setup_initial_memory_limit() into 8xx_mmu.c
-  powerpc32: Fix pte_offset_kernel() to return NULL for bad pages
-  powerpc32: refactor x_mapped_by_bats() and x_mapped_by_tlbcam()
-    together
-  powerpc/8xx: Fix vaddr for IMMR early remap
-  powerpc/8xx: Map IMMR area with 512k page at a fixed address
-  powerpc/8xx: CONFIG_PIN_TLB unneeded for CONFIG_PPC_EARLY_DEBUG_CPM
-  powerpc/8xx: map more RAM at startup when needed
-  powerpc32: Remove useless/wrong MMU:setio progress message
-  powerpc32: remove ioremap_base
-  powerpc/8xx: Add missing SPRN defines into reg_8xx.h
-  powerpc/8xx: Handle CPU6 ERRATA directly in mtspr() macro
-  powerpc/8xx: remove special handling of CPU6 errata in set_dec()
-  powerpc/8xx: rewrite set_context() in C
-  powerpc/8xx: rewrite flush_instruction_cache() in C
-  powerpc: add inline functions for cache related instructions
-  powerpc32: Remove clear_pages() and define clear_page() inline
-  powerpc32: move xxxxx_dcache_range() functions inline
-  powerpc: Simplify test in __dma_sync()
-  powerpc32: small optimisation in flush_icache_range()
-  powerpc32: Remove one insn in mulhdu
+ arch/powerpc/mm/fsl_booke_mmu.c |  4 ++--
+ arch/powerpc/mm/mmu_decl.h      | 10 ++++++++++
+ arch/powerpc/mm/pgtable_32.c    | 44 ++++++-----------------------------------
+ arch/powerpc/mm/ppc_mmu_32.c    |  4 ++--
+ 4 files changed, 20 insertions(+), 42 deletions(-)
 
- Documentation/kernel-parameters.txt          |   2 +-
- arch/powerpc/Kconfig.debug                   |   1 -
- arch/powerpc/include/asm/cache.h             |  19 +++
- arch/powerpc/include/asm/cacheflush.h        |  52 ++++++-
- arch/powerpc/include/asm/fixmap.h            |  14 ++
- arch/powerpc/include/asm/mmu-8xx.h           |   4 +-
- arch/powerpc/include/asm/nohash/32/pgtable.h |   5 +-
- arch/powerpc/include/asm/page_32.h           |  17 ++-
- arch/powerpc/include/asm/reg.h               |   2 +
- arch/powerpc/include/asm/reg_8xx.h           |  93 ++++++++++++
- arch/powerpc/include/asm/time.h              |   6 +-
- arch/powerpc/kernel/asm-offsets.c            |   8 ++
- arch/powerpc/kernel/head_8xx.S               | 207 +++++++++++++++++----------
- arch/powerpc/kernel/misc_32.S                | 107 ++------------
- arch/powerpc/kernel/ppc_ksyms.c              |   2 +
- arch/powerpc/kernel/ppc_ksyms_32.c           |   1 -
- arch/powerpc/mm/8xx_mmu.c                    | 190 ++++++++++++++++++++++++
- arch/powerpc/mm/Makefile                     |   1 +
- arch/powerpc/mm/dma-noncoherent.c            |   2 +-
- arch/powerpc/mm/fsl_booke_mmu.c              |   4 +-
- arch/powerpc/mm/init_32.c                    |  23 ---
- arch/powerpc/mm/mmu_decl.h                   |  34 +++--
- arch/powerpc/mm/pgtable_32.c                 |  47 +-----
- arch/powerpc/mm/ppc_mmu_32.c                 |   4 +-
- arch/powerpc/platforms/embedded6xx/mpc10x.h  |  10 --
- arch/powerpc/sysdev/cpm_common.c             |  15 +-
- 26 files changed, 583 insertions(+), 287 deletions(-)
- create mode 100644 arch/powerpc/mm/8xx_mmu.c
-
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index f3afe3d..5d45341 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -75,7 +75,7 @@ unsigned long tlbcam_sz(int idx)
+ /*
+  * Return PA for this VA if it is mapped by a CAM, or 0
+  */
+-phys_addr_t v_mapped_by_tlbcam(unsigned long va)
++phys_addr_t v_block_mapped(unsigned long va)
+ {
+ 	int b;
+ 	for (b = 0; b < tlbcam_index; ++b)
+@@ -87,7 +87,7 @@ phys_addr_t v_mapped_by_tlbcam(unsigned long va)
+ /*
+  * Return VA for a given PA or 0 if not mapped
+  */
+-unsigned long p_mapped_by_tlbcam(phys_addr_t pa)
++unsigned long p_block_mapped(phys_addr_t pa)
+ {
+ 	int b;
+ 	for (b = 0; b < tlbcam_index; ++b)
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 7faeb9f..40dd5d3 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -158,3 +158,13 @@ struct tlbcam {
+ 	u32	MAS7;
+ };
+ #endif
++
++#if defined(CONFIG_6xx) || defined(CONFIG_FSL_BOOKE)
++/* 6xx have BATS */
++/* FSL_BOOKE have TLBCAM */
++phys_addr_t v_block_mapped(unsigned long va);
++unsigned long p_block_mapped(phys_addr_t pa);
++#else
++static inline phys_addr_t v_block_mapped(unsigned long va) { return 0; }
++static inline unsigned long p_block_mapped(phys_addr_t pa) { return 0; }
++#endif
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 7692d1b..db0d35e 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -41,32 +41,8 @@ unsigned long ioremap_base;
+ unsigned long ioremap_bot;
+ EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
+ 
+-#ifdef CONFIG_6xx
+-#define HAVE_BATS	1
+-#endif
+-
+-#if defined(CONFIG_FSL_BOOKE)
+-#define HAVE_TLBCAM	1
+-#endif
+-
+ extern char etext[], _stext[];
+ 
+-#ifdef HAVE_BATS
+-extern phys_addr_t v_mapped_by_bats(unsigned long va);
+-extern unsigned long p_mapped_by_bats(phys_addr_t pa);
+-#else /* !HAVE_BATS */
+-#define v_mapped_by_bats(x)	(0UL)
+-#define p_mapped_by_bats(x)	(0UL)
+-#endif /* HAVE_BATS */
+-
+-#ifdef HAVE_TLBCAM
+-extern phys_addr_t v_mapped_by_tlbcam(unsigned long va);
+-extern unsigned long p_mapped_by_tlbcam(phys_addr_t pa);
+-#else /* !HAVE_TLBCAM */
+-#define v_mapped_by_tlbcam(x)	(0UL)
+-#define p_mapped_by_tlbcam(x)	(0UL)
+-#endif /* HAVE_TLBCAM */
+-
+ #define PGDIR_ORDER	(32 + PGD_T_LOG2 - PGDIR_SHIFT)
+ 
+ #ifndef CONFIG_PPC_4K_PAGES
+@@ -228,19 +204,10 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
+ 
+ 	/*
+ 	 * Is it already mapped?  Perhaps overlapped by a previous
+-	 * BAT mapping.  If the whole area is mapped then we're done,
+-	 * otherwise remap it since we want to keep the virt addrs for
+-	 * each request contiguous.
+-	 *
+-	 * We make the assumption here that if the bottom and top
+-	 * of the range we want are mapped then it's mapped to the
+-	 * same virt address (and this is contiguous).
+-	 *  -- Cort
++	 * mapping.
+ 	 */
+-	if ((v = p_mapped_by_bats(p)) /*&& p_mapped_by_bats(p+size-1)*/ )
+-		goto out;
+-
+-	if ((v = p_mapped_by_tlbcam(p)))
++	v = p_block_mapped(p);
++	if (v)
+ 		goto out;
+ 
+ 	if (slab_is_available()) {
+@@ -278,7 +245,8 @@ void iounmap(volatile void __iomem *addr)
+ 	 * If mapped by BATs then there is nothing to do.
+ 	 * Calling vfree() generates a benign warning.
+ 	 */
+-	if (v_mapped_by_bats((unsigned long)addr)) return;
++	if (v_block_mapped((unsigned long)addr))
++		return;
+ 
+ 	if (addr > high_memory && (unsigned long) addr < ioremap_bot)
+ 		vunmap((void *) (PAGE_MASK & (unsigned long)addr));
+@@ -403,7 +371,7 @@ static int __change_page_attr(struct page *page, pgprot_t prot)
+ 	BUG_ON(PageHighMem(page));
+ 	address = (unsigned long)page_address(page);
+ 
+-	if (v_mapped_by_bats(address) || v_mapped_by_tlbcam(address))
++	if (v_block_mapped(address))
+ 		return 0;
+ 	if (!get_pteptr(&init_mm, address, &kpte, &kpmd))
+ 		return -EINVAL;
+diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
+index 6b2f3e4..2a049fb 100644
+--- a/arch/powerpc/mm/ppc_mmu_32.c
++++ b/arch/powerpc/mm/ppc_mmu_32.c
+@@ -49,7 +49,7 @@ struct batrange {		/* stores address ranges mapped by BATs */
+ /*
+  * Return PA for this VA if it is mapped by a BAT, or 0
+  */
+-phys_addr_t v_mapped_by_bats(unsigned long va)
++phys_addr_t v_block_mapped(unsigned long va)
+ {
+ 	int b;
+ 	for (b = 0; b < 4; ++b)
+@@ -61,7 +61,7 @@ phys_addr_t v_mapped_by_bats(unsigned long va)
+ /*
+  * Return VA for a given PA or 0 if not mapped
+  */
+-unsigned long p_mapped_by_bats(phys_addr_t pa)
++unsigned long p_block_mapped(phys_addr_t pa)
+ {
+ 	int b;
+ 	for (b = 0; b < 4; ++b)
 -- 
 2.1.0
