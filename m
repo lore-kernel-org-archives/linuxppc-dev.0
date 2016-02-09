@@ -1,43 +1,23 @@
-Return-Path: <dave.long@linaro.org>
-Received: from mail-qg0-x236.google.com (mail-qg0-x236.google.com
- [IPv6:2607:f8b0:400d:c04::236])
+Return-Path: <dinarv@gmail.com>
+Received: from mail-lf0-x232.google.com (mail-lf0-x232.google.com
+ [IPv6:2a00:1450:4010:c07::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7BFC31A03A7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 07:55:07 +1100 (AEDT)
-Received: by mail-qg0-x236.google.com with SMTP id y89so75900952qge.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Feb 2016 12:55:07 -0800 (PST)
-Subject: Re: [PATCH v3 0/2] Consolidate redundant register/stack access code
-To: Ingo Molnar <mingo@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
-References: <1454996337-7935-1-git-send-email-dave.long@linaro.org>
- <1455010600.13384.3.camel@ellerman.id.au> <20160209094526.GB25268@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "H. Peter Anvin"
- <hpa@zytor.com>, "chengang@emindsoft.com.cn" <chengang@emindsoft.com.cn>,
- Andy Lutomirski <luto@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>,
- David Hildenbrand <dahi@linux.vnet.ibm.com>,
- Denys Vlasenko <dvlasenk@redhat.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Jan Beulich <JBeulich@suse.com>,
- Kees Cook <keescook@chromium.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Oleg Nesterov
- <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Rashmica Gupta <rashmicy@gmail.com>, Rich Felker <dalias@libc.org>,
- Richard Kuo <rkuo@codeaurora.org>, Roland McGrath <roland@hack.frob.com>,
- Russell King <linux@arm.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will.deacon@arm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-From: David Long <dave.long@linaro.org>
-Message-ID: <56BA5226.3090105@linaro.org>
-Date: Tue, 9 Feb 2016 15:55:02 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 988B91A038E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 08:03:10 +1100 (AEDT)
+Received: by mail-lf0-x232.google.com with SMTP id j78so123441667lfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Feb 2016 13:03:10 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20160209094526.GB25268@gmail.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+In-Reply-To: <CALeDE9Pc6z5Ed=92u47VPpQ9V-bKsUg95vy1pDSQ805U0R=z-g@mail.gmail.com>
+References: <CALeDE9Pc6z5Ed=92u47VPpQ9V-bKsUg95vy1pDSQ805U0R=z-g@mail.gmail.com>
+From: Dinar Valeev <dinarv@gmail.com>
+Date: Tue, 9 Feb 2016 22:02:45 +0100
+Message-ID: <CADqALGTumTqorBs2sok54EHLA7PeHREKjQjudZBGPfhx3Suh6A@mail.gmail.com>
+Subject: Re: build regression from c153693: Simplify module TOC handling
+To: Peter Robinson <pbrobinson@gmail.com>
+Cc: amodra@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>, kernel@lists.fedoraproject.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,40 +27,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/09/2016 04:45 AM, Ingo Molnar wrote:
+On Tue, Feb 9, 2016 at 5:28 PM, Peter Robinson <pbrobinson@gmail.com> wrote:
+> Hi Alan,
 >
-> * Michael Ellerman <mpe@ellerman.id.au> wrote:
->
->> On Tue, 2016-02-09 at 00:38 -0500, David Long wrote:
->>
->>> From: "David A. Long" <dave.long@linaro.org>
->>>
->>> Move duplicate and functionally equivalent code for accessing registers
->>> and stack (CONFIG_HAVE_REGS_AND_STACK_ACCESS_API) from arch subdirs into
->>> common kernel files.
->>>
->>> I'm sending this out again (with updated distribution list) because v2
->>> just never got pulled in, even though I don't think there were any
->>> outstanding issues.
->>
->> A big cross arch patch like this would often get taken by Andrew Morton, but
->> AFAICS you didn't CC him - so I just added him, perhaps he'll pick it up for
->> us :D
->
-> The other problem is that the second patch is commingling changes to 6 separate
-> architectures:
->
->   16 files changed, 106 insertions(+), 343 deletions(-)
->
-> that should probably be 6 separate patches. Easier to review, easier to bisect to,
-> easier to revert, etc.
->
-> Thanks,
->
-> 	Ingo
->
+> Your patch for "powerpc: Simplify module TOC handling" is causing the
+> Fedora ppc64le to fail to build with depmod failures. Reverting the
+> commit fixes it for us on rawhide.
+Anton's patch [1] fixes it.
 
-I see your point but I'm not sure it could have been broken into 
-separate successive patches that would each build for all architectures.
-
--dl
+[1] https://build.opensuse.org/package/view_file/Base:System/kmod/depmod-Ignore_PowerPC64_ABIv2_.TOC.symbol.patch
+>
+> We're getting the out put below, full logs at [1]. Let me know if you
+> have any other queries.
+>
+> Regards,
+> Peter
+>
+> [1] http://ppc.koji.fedoraproject.org/kojifiles/work/tasks/5115/3125115/build.log
+>
+> + depmod -b . -aeF ./System.map 4.5.0-0.rc2.git0.1.fc24.ppc64le
+> Depmod failure
+> + '[' -s depmod.out ']'
+> + echo 'Depmod failure'
+> + cat depmod.out
+> depmod: WARNING:
+> /builddir/build/BUILDROOT/kernel-4.5.0-0.rc2.git0.1.fc24.ppc64le/./lib/modules/4.5.0-0.rc2.git0.1.fc24.ppc64le/kernel/arch/powerpc/platforms/powernv/opal-prd.ko
+> needs unknown symbol .TOC.
+> depmod: WARNING:
+> /builddir/build/BUILDROOT/kernel-4.5.0-0.rc2.git0.1.fc24.ppc64le/./lib/modules/4.5.0-0.rc2.git0.1.fc24.ppc64le/kernel/arch/powerpc/platforms/pseries/pseries_energy.ko
+> needs unknown symbol .TOC.
+> depmod: WARNING:
+> /builddir/build/BUILDROOT/kernel-4.5.0-0.rc2.git0.1.fc24.ppc64le/./lib/modules/4.5.0-0.rc2.git0.1.fc24.ppc64le/kernel/arch/powerpc/platforms/pseries/hvcserver.ko
+> needs unknown symbol .TOC.
+> depmod: WARNING:
+> /builddir/build/BUILDROOT/kernel-4.5.0-0.rc2.git0.1.fc24.ppc64le/./lib/modules/4.5.0-0.rc2.git0.1.fc24.ppc64le/kernel/arch/powerpc/kvm/kvm.ko
+> needs unknown symbol .TOC.
+> depmod: WARNING:
+> /builddir/build/BUILDROOT/kernel-4.5.0-0.rc2.git0.1.fc24.ppc64le/./lib/modules/4.5.0-0.rc2.git0.1.fc24.ppc64le/kernel/arch/powerpc/kvm/kvm-pr.ko
+> needs unknown symbol .TOC.
+> depmod: WARNING:
+> /builddir/build/BUILDROOT/kernel-4.5.0-0.rc2.git0.1.fc24.ppc64le/./lib/modules/4.5.0-0.rc2.git0.1.fc24.ppc64le/kernel/arch/powerpc/kvm/kvm-hv.ko
+> needs unknown symbol .TOC.
+> depmod: WARNING:
+> /builddir/build/BUILDROOT/kernel-4.5.0-0.rc2.git0.1.fc24.ppc64le/./lib/modules/4.5.0-0.rc2.git0.1.fc24.ppc64le/kernel/kernel/rcu/rcutorture.ko
+> needs unknown symbol .TOC.
+> depmod: WARNING:
+> /builddir/build/BUILDROOT/kernel-4.5.0-0.rc2.git0.1.fc24.ppc64le/./lib/modules/4.5.0-0.rc2.git0.1.fc24.ppc64le/kernel/kernel/trace/ring_buffer_benchmark.ko
+> needs unknown symbol .TOC.
+> depmod: WARNING:
+> /builddir/build/BUILDROOT/kernel-4.5.0-0.rc2.git0.1.fc24.ppc64le/./lib/modules/4.5.0-0.rc2.git0.1.fc24.ppc64le/kernel/kernel/torture.ko
+> needs unknown symbol .TOC.
+> depmod: WARNING:
+> /builddir/build/BUILDROOT/kernel-4.5.0-0.rc2.git0.1.fc24.ppc64le/./lib/modules/4.5.0-0.rc2.git0.1.fc24.ppc64le/kernel/fs/nfs_common/nfs_acl.ko
+> needs unknown symbol .TOC.
+> depmod: WARNING:
+> /builddir/build/BUILDROOT/kernel-4.5.0-0.rc2.git0.1.fc24.ppc64le/./lib/modules/4.5.0-0.rc2.git0.1.fc24.ppc64le/kernel/fs/nfs_common/grace.ko
+> needs unknown symbol .TOC.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
