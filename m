@@ -1,17 +1,17 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id BADBC1A0290
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 03:08:23 +1100 (AEDT)
-Message-Id: <7b784461cc05c5c5b047dd9e8661739fae192699.1455032446.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 448291A02E5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 03:08:13 +1100 (AEDT)
+Message-Id: <dd9a02ac9b27e46c0affdb7a5f3749f38b11872d.1455032446.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1455032446.git.christophe.leroy@c-s.fr>
 References: <cover.1455032446.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v8 17/23] powerpc/8xx: rewrite flush_instruction_cache() in C
+Subject: [PATCH v8 12/23] powerpc32: remove ioremap_base
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue,  9 Feb 2016 17:08:21 +0100 (CET)
+Date: Tue,  9 Feb 2016 17:08:10 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,69 +21,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PPC8xx, flushing instruction cache is performed by writing
-in register SPRN_IC_CST. This registers suffers CPU6 ERRATA.
-The patch rewrites the fonction in C so that CPU6 ERRATA will
-be handled transparently
+ioremap_base is not initialised and is nowhere used so remove it
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
 v2: no change
-v3: no change
+v3: fix comment as well
 v4: no change
 v5: no change
 v6: no change
 v8: no change
 
- arch/powerpc/kernel/misc_32.S | 10 ++++------
- arch/powerpc/mm/8xx_mmu.c     |  7 +++++++
- 2 files changed, 11 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pgtable.h |  2 +-
+ arch/powerpc/mm/mmu_decl.h                   |  1 -
+ arch/powerpc/mm/pgtable_32.c                 |  3 +--
+ arch/powerpc/platforms/embedded6xx/mpc10x.h  | 10 ----------
+ 4 files changed, 2 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index be8edd6..7d1284f 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -296,12 +296,9 @@ _GLOBAL(real_writeb)
-  * Flush instruction cache.
-  * This is a no-op on the 601.
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index e201600..7808475 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -86,7 +86,7 @@ extern int icache_44x_need_flush;
+  * We no longer map larger than phys RAM with the BATs so we don't have
+  * to worry about the VMALLOC_OFFSET causing problems.  We do have to worry
+  * about clashes between our early calls to ioremap() that start growing down
+- * from ioremap_base being run into the VM area allocations (growing upwards
++ * from IOREMAP_TOP being run into the VM area allocations (growing upwards
+  * from VMALLOC_START).  For this reason we have ioremap_bot to check when
+  * we actually run into our mappings setup in the early boot with the VM
+  * system.  This really does become a problem for machines with good amounts
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 3872332..53564a3 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -100,7 +100,6 @@ extern void setbat(int index, unsigned long virt, phys_addr_t phys,
+ 
+ extern int __map_without_bats;
+ extern int __allow_ioremap_reserved;
+-extern unsigned long ioremap_base;
+ extern unsigned int rtas_data, rtas_size;
+ 
+ struct hash_pte;
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index db0d35e..815ccd7 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -37,7 +37,6 @@
+ 
+ #include "mmu_decl.h"
+ 
+-unsigned long ioremap_base;
+ unsigned long ioremap_bot;
+ EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
+ 
+@@ -173,7 +172,7 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
+ 	/*
+ 	 * Choose an address to map it to.
+ 	 * Once the vmalloc system is running, we use it.
+-	 * Before then, we use space going down from ioremap_base
++	 * Before then, we use space going down from IOREMAP_TOP
+ 	 * (ioremap_bot records where we're up to).
+ 	 */
+ 	p = addr & PAGE_MASK;
+diff --git a/arch/powerpc/platforms/embedded6xx/mpc10x.h b/arch/powerpc/platforms/embedded6xx/mpc10x.h
+index b290b63..5ad1202 100644
+--- a/arch/powerpc/platforms/embedded6xx/mpc10x.h
++++ b/arch/powerpc/platforms/embedded6xx/mpc10x.h
+@@ -24,13 +24,11 @@
+  *   Processor: 0x80000000 - 0x807fffff -> PCI I/O: 0x00000000 - 0x007fffff
+  *   Processor: 0xc0000000 - 0xdfffffff -> PCI MEM: 0x00000000 - 0x1fffffff
+  *   PCI MEM:   0x80000000 -> Processor System Memory: 0x00000000
+- *   EUMB mapped to: ioremap_base - 0x00100000 (ioremap_base - 1 MB)
+  *
+  * MAP B (CHRP Map)
+  *   Processor: 0xfe000000 - 0xfebfffff -> PCI I/O: 0x00000000 - 0x00bfffff
+  *   Processor: 0x80000000 - 0xbfffffff -> PCI MEM: 0x80000000 - 0xbfffffff
+  *   PCI MEM:   0x00000000 -> Processor System Memory: 0x00000000
+- *   EUMB mapped to: ioremap_base - 0x00100000 (ioremap_base - 1 MB)
   */
-+#ifndef CONFIG_PPC_8xx
- _GLOBAL(flush_instruction_cache)
--#if defined(CONFIG_8xx)
--	isync
--	lis	r5, IDC_INVALL@h
--	mtspr	SPRN_IC_CST, r5
--#elif defined(CONFIG_4xx)
-+#if defined(CONFIG_4xx)
- #ifdef CONFIG_403GCX
- 	li      r3, 512
- 	mtctr   r3
-@@ -334,9 +331,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_UNIFIED_ID_CACHE)
- 	mfspr	r3,SPRN_HID0
- 	ori	r3,r3,HID0_ICFI
- 	mtspr	SPRN_HID0,r3
--#endif /* CONFIG_8xx/4xx */
-+#endif /* CONFIG_4xx */
- 	isync
- 	blr
-+#endif /* CONFIG_PPC_8xx */
  
  /*
-  * Write any modified data cache blocks out to memory
-diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index b75c461..e2ce480 100644
---- a/arch/powerpc/mm/8xx_mmu.c
-+++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -181,3 +181,10 @@ void set_context(unsigned long id, pgd_t *pgd)
- 	/* sync */
- 	mb();
- }
-+
-+void flush_instruction_cache(void)
-+{
-+	isync();
-+	mtspr(SPRN_IC_CST, IDC_INVALL);
-+	isync();
-+}
+@@ -138,14 +136,6 @@
+ #define MPC10X_EUMB_WP_OFFSET		0x000ff000 /* Data path diagnostic, watchpoint reg offset */
+ #define MPC10X_EUMB_WP_SIZE		0x00001000 /* Data path diagnostic, watchpoint reg size */
+ 
+-/*
+- * Define some recommended places to put the EUMB regs.
+- * For both maps, recommend putting the EUMB from 0xeff00000 to 0xefffffff.
+- */
+-extern unsigned long			ioremap_base;
+-#define	MPC10X_MAPA_EUMB_BASE		(ioremap_base - MPC10X_EUMB_SIZE)
+-#define	MPC10X_MAPB_EUMB_BASE		MPC10X_MAPA_EUMB_BASE
+-
+ enum ppc_sys_devices {
+ 	MPC10X_IIC1,
+ 	MPC10X_DMA0,
 -- 
 2.1.0
