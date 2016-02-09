@@ -1,17 +1,42 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 8575E1A02C0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 03:08:36 +1100 (AEDT)
-Message-Id: <f4875d57b151fbae932fd991c5e26357e2f6a7b3.1455032446.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1455032446.git.christophe.leroy@c-s.fr>
-References: <cover.1455032446.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v8 23/23] powerpc32: Remove one insn in mulhdu
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue,  9 Feb 2016 17:08:33 +0100 (CET)
+Return-Path: <manoj@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 116871A038E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 04:41:59 +1100 (AEDT)
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
+ Tue, 9 Feb 2016 10:41:57 -0700
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 6AC753E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Feb 2016 10:41:54 -0700 (MST)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u19Hfr6G34275410
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 17:41:53 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u19HceuP008829
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Feb 2016 12:38:40 -0500
+Reply-To: manoj@linux.vnet.ibm.com
+Subject: Re: [PATCH 2/6] ibmvscsi: Add and use enums for valid CRQ header
+ values
+References: <1454542114-1797-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1454542114-1797-3-git-send-email-tyreld@linux.vnet.ibm.com>
+ <56B3ACC9.60009@linux.vnet.ibm.com> <56B3C1C1.3080804@linux.vnet.ibm.com>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, JBottomley@odin.com
+Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, hare@suse.de, brking@linux.vnet.ibm.com,
+ nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+From: Manoj Kumar <manoj@linux.vnet.ibm.com>
+Message-ID: <56BA24E1.9090808@linux.vnet.ibm.com>
+Date: Tue, 9 Feb 2016 11:41:53 -0600
+MIME-Version: 1.0
+In-Reply-To: <56B3C1C1.3080804@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,46 +46,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove one instruction in mulhdu
+> Yeah, I can see how that is confusing. Since, all three possible valid
+> crq message types have the first bit set I think this was originally a
+> cute hack to grab anything that was likely valid. Then in
+> ibmvscsi_handle_crq() we explicitly match the full header value in a
+> switch statement logging anything that turned out actually invalid.
+>
+>>
+>> If 'valid' will only have one of these four enums defined, would
+>> this be better written as:
+>>
+>> 	if (crq->valid != VIOSRP_CRQ_FREE)
+>
+> This definitely would make the logic easier to read and follow. Also,
+> this would make sure any crq with an invalid header that doesn't have
+> its first bit set will also be logged by the ibmvscsi_handle_crq()
+> switch statement default block and not silently ignored.
+>
+> -Tyrel
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
-v2: new
-v3: no change
-v4: no change
-v5: no change
-v6: no change
-v8: no change
+Sounds good, Tyrel. Does this mean I should expect a v2 of this patch
+series?
 
- arch/powerpc/kernel/misc_32.S | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 3ec5a22..bf5160f 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -91,17 +91,16 @@ _GLOBAL(mulhdu)
- 	addc	r7,r0,r7
- 	addze	r4,r4
- 1:	beqlr	cr1		/* all done if high part of A is 0 */
--	mr	r10,r3
- 	mullw	r9,r3,r5
--	mulhwu	r3,r3,r5
-+	mulhwu	r10,r3,r5
- 	beq	2f
--	mullw	r0,r10,r6
--	mulhwu	r8,r10,r6
-+	mullw	r0,r3,r6
-+	mulhwu	r8,r3,r6
- 	addc	r7,r0,r7
- 	adde	r4,r4,r8
--	addze	r3,r3
-+	addze	r10,r10
- 2:	addc	r4,r4,r9
--	addze	r3,r3
-+	addze	r3,r10
- 	blr
- 
- /*
--- 
-2.1.0
+- Manoj N. Kumar
