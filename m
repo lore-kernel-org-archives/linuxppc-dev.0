@@ -1,36 +1,17 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE4E61A03DF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 18:25:20 +1100 (AEDT)
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Wed, 10 Feb 2016 17:25:20 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id BBAC02BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 18:25:17 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1A7P5AJ55443604
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 18:25:13 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1A7OjVf015217
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 18:24:45 +1100
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Michael Neuling <michael.neuling@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v3 09/18] cxl: New possible return value from hcall
-In-reply-to: <1454765345-7417-10-git-send-email-fbarrat@linux.vnet.ibm.com>
-References: <1454765345-7417-1-git-send-email-fbarrat@linux.vnet.ibm.com>
- <1454765345-7417-10-git-send-email-fbarrat@linux.vnet.ibm.com>
-Date: Wed, 10 Feb 2016 18:24:19 +1100
-Message-Id: <1455089049-sup-5878@delenn.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D8F41A03C5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 18:51:34 +1100 (AEDT)
+In-Reply-To: <1453337749-15506-7-git-send-email-cyrilbur@gmail.com>
+To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: mikey@neuling.org, anton@samba.org
+Subject: Re: [v3, 6/9] powerpc: Prepare for splitting giveup_{fpu, altivec,
+ vsx} in two
+Message-Id: <20160210075134.07A0B140324@ozlabs.org>
+Date: Wed, 10 Feb 2016 18:51:33 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,4 +21,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+On Thu, 2016-21-01 at 00:55:46 UTC, Cyril Bur wrote:
+> This prepares for the decoupling of saving {fpu,altivec,vsx} registers and
+> marking {fpu,altivec,vsx} as being unused by a thread.
+> 
+> Currently giveup_{fpu,altivec,vsx}() does both however optimisations to
+> task switching can be made if these two operations are decoupled.
+> save_all() will permit the saving of registers to thread structs and leave
+> threads MSR with bits enabled.
+> 
+> This patch introduces no functional change.
+
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 0955b7c..45e37c0 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -349,6 +349,14 @@ void flush_spe_to_thread(struct task_struct *tsk)
+>  		preempt_enable();
+>  	}
+>  }
+> +#else
+> +/*
+> + * save_all() is going to test MSR_SPE, rather than pull in all the
+> + * booke definitions all the time on a books kernel just ensure it exists
+> + * but acts as a nop.
+> + */
+> +
+> +#define MSR_SPE 0
+>  #endif /* CONFIG_SPE */
+
+
+Building corenet32/64_defconfig this gives me:
+
+  arch/powerpc/kernel/process.c:392:0: error: "MSR_SPE" redefined [-Werror]
+   #define MSR_SPE 0
+   ^
+  In file included from ./arch/powerpc/include/asm/reg.h:18:0,
+                   from ./arch/powerpc/include/asm/processor.h:13,
+                   from ./arch/powerpc/include/asm/thread_info.h:33,
+                   from include/linux/thread_info.h:54,
+                   from include/asm-generic/preempt.h:4,
+                   from arch/powerpc/include/generated/asm/preempt.h:1,
+                   from include/linux/preempt.h:59,
+                   from include/linux/spinlock.h:50,
+                   from include/linux/seqlock.h:35,
+                   from include/linux/time.h:5,
+                   from include/uapi/linux/timex.h:56,
+                   from include/linux/timex.h:56,
+                   from include/linux/sched.h:19,
+                   from arch/powerpc/kernel/process.c:18:
+  ./arch/powerpc/include/asm/reg_booke.h:33:0: note: this is the location of the previous definition
+   #define MSR_SPE  __MASK(MSR_SPE_LG)
+   ^
+  cc1: all warnings being treated as errors
+  scripts/Makefile.build:258: recipe for target 'arch/powerpc/kernel/process.o' failed
+  make[1]: *** [arch/powerpc/kernel/process.o] Error 1
+  make[1]: *** Waiting for unfinished jobs....
+  Makefile:950: recipe for target 'arch/powerpc/kernel' failed
+
+cheers
