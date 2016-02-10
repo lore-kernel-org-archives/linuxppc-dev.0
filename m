@@ -1,28 +1,23 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EAD181A039D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 11:32:41 +1100 (AEDT)
-Received: by mail-pa0-x22c.google.com with SMTP id kp3so2368783pab.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Feb 2016 16:32:41 -0800 (PST)
-Subject: Re: [RFC PATCH kernel] powerpc/ioda: Set "read" permission when
- "write" is set
-To: Douglas Miller <dougmill@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <1452573620-17979-1-git-send-email-aik@ozlabs.ru>
- <1452640054.3262.11.camel@kernel.crashing.org>
- <5695B542.5010001@linux.vnet.ibm.com> <569DB2F3.1070901@ozlabs.ru>
- <569E87F8.1030907@linux.vnet.ibm.com> <56B942CF.9020906@ozlabs.ru>
- <56B9F783.6070002@linux.vnet.ibm.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <56BA8523.2080207@ozlabs.ru>
-Date: Wed, 10 Feb 2016 11:32:35 +1100
-MIME-Version: 1.0
-In-Reply-To: <56B9F783.6070002@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0E7811A03AA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 11:33:34 +1100 (AEDT)
+Message-ID: <1455064413.7576.3.camel@ellerman.id.au>
+Subject: Re: [PATCH v7 07/10] ppc64 ftrace: disable profiling for some files
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Torsten Duwe <duwe@lst.de>
+Cc: Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>, Petr
+ Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>, Steven Rostedt
+ <rostedt@goodmis.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
+Date: Wed, 10 Feb 2016 11:33:33 +1100
+In-Reply-To: <20160204162114.09AD4692E0@newverein.lst.de>
+References: <20160204161527.5F3AC692CD@newverein.lst.de>
+ <20160204162114.09AD4692E0@newverein.lst.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,113 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/10/2016 01:28 AM, Douglas Miller wrote:
-> We finally got the chance to test it end of last week. I forgot to update
-> everyone Monday. B all appearances, the patch fixes the problem. We did not
-> see any new issues with the patch (vs. same test scenarios without).
->
-> I'll also update the bugzilla.
+On Mon, 2016-01-25 at 16:31 +0100, Torsten Duwe wrote:
 
-Thanks. Care to add "Tested-by"?
+> This patch complements the "notrace" attribute for selected functions.
+> It adds -mprofile-kernel to the cc flags to be stripped from the command
+> line for code-patching.o and feature-fixups.o, in addition to "-pg"
 
+This could probably be folded into patch 5, and the combined patch would be
+"remove -mprofile-kernel in all the same places we remove -pg and for the same
+reasons".
 
->
-> Thanks,
-> Doug
->
-> On 02/08/2016 07:37 PM, Alexey Kardashevskiy wrote:
->> On 01/20/2016 06:01 AM, Douglas Miller wrote:
->>>
->>>
->>> On 01/18/2016 09:52 PM, Alexey Kardashevskiy wrote:
->>>> On 01/13/2016 01:24 PM, Douglas Miller wrote:
->>>>>
->>>>>
->>>>> On 01/12/2016 05:07 PM, Benjamin Herrenschmidt wrote:
->>>>>> On Tue, 2016-01-12 at 15:40 +1100, Alexey Kardashevskiy wrote:
->>>>>>> Quite often drivers set only "write" permission assuming that this
->>>>>>> includes "read" permission as well and this works on plenty
->>>>>>> platforms.
->>>>>>> However IODA2 is strict about this and produces an EEH when "read"
->>>>>>> permission is not and reading happens.
->>>>>>>
->>>>>>> This adds a workaround in IODA code to always add the "read" bit when
->>>>>>> the "write" bit is set.
->>>>>>>
->>>>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>>>>> ---
->>>>>>>
->>>>>>>
->>>>>>> Ben, what was the driver which did not set "read" and caused EEH?
->>>>>> aacraid
->>>>>>
->>>>>> Cheers,
->>>>>> Ben.
->>>>> Just to be precise, the driver wasn't responsible for setting READ. The
->>>>> driver called scsi_dma_map() and the scsicmd was set (by scsi layer) as
->>>>> DMA_FROM_DEVICE so the current code would set the permissions to
->>>>> WRITE-ONLY. Previously, and in other architectures, this scsicmd would
->>>>> have
->>>>> resulted in READ+WRITE permissions on the DMA map.
->>>>
->>>>
->>>> Does the patch fix the issue? Thanks.
->>>>
->>>>
->>>>
->>>>>>
->>>>>>> ---
->>>>>>>   arch/powerpc/platforms/powernv/pci.c | 6 ++++++
->>>>>>>   1 file changed, 6 insertions(+)
->>>>>>>
->>>>>>> diff --git a/arch/powerpc/platforms/powernv/pci.c
->>>>>>> b/arch/powerpc/platforms/powernv/pci.c
->>>>>>> index f2dd772..c7dcae5 100644
->>>>>>> --- a/arch/powerpc/platforms/powernv/pci.c
->>>>>>> +++ b/arch/powerpc/platforms/powernv/pci.c
->>>>>>> @@ -601,6 +601,9 @@ int pnv_tce_build(struct iommu_table *tbl, long
->>>>>>> index, long npages,
->>>>>>>       u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
->>>>>>>       long i;
->>>>>>> +    if (proto_tce & TCE_PCI_WRITE)
->>>>>>> +        proto_tce |= TCE_PCI_READ;
->>>>>>> +
->>>>>>>       for (i = 0; i < npages; i++) {
->>>>>>>           unsigned long newtce = proto_tce |
->>>>>>>               ((rpn + i) << tbl->it_page_shift);
->>>>>>> @@ -622,6 +625,9 @@ int pnv_tce_xchg(struct iommu_table *tbl, long
->>>>>>> index,
->>>>>>>       BUG_ON(*hpa & ~IOMMU_PAGE_MASK(tbl));
->>>>>>> +    if (newtce & TCE_PCI_WRITE)
->>>>>>> +        newtce |= TCE_PCI_READ;
->>>>>>> +
->>>>>>>       oldtce = xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce));
->>>>>>>       *hpa = be64_to_cpu(oldtce) & ~(TCE_PCI_READ |
->>>>>>> TCE_PCI_WRITE);
->>>>>>>       *direction = iommu_tce_direction(oldtce);
->>>>>> _______________________________________________
->>>>>> Linuxppc-dev mailing list
->>>>>> Linuxppc-dev@lists.ozlabs.org
->>>>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>>>>
->>>>> _______________________________________________
->>>>> Linuxppc-dev mailing list
->>>>> Linuxppc-dev@lists.ozlabs.org
->>>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>>>
->>>>
->>> I am still working on getting a machine to try this on. From code
->>> inspection, it looks like it should work. The problem is shortage of
->>> machines and machines tied-up by Test.
->>
->> Any progress here? Thanks.
->>
->>
->>
->>
->
+I can't think of anywhere we would want to disable -pg but not disable
+-mprofile-kernel? Or vice versa.
 
-
--- 
-Alexey
+cheers
