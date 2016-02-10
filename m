@@ -1,17 +1,40 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6B45D1A03C9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 19:56:04 +1100 (AEDT)
-In-Reply-To: <1453337749-15506-2-git-send-email-cyrilbur@gmail.com>
-To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v3,
- 1/9] selftests/powerpc: Test the preservation of FPU and VMX regs
- across syscall
-Message-Id: <20160210085604.42A23140321@ozlabs.org>
-Date: Wed, 10 Feb 2016 19:56:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D03581A0549
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 19:56:56 +1100 (AEDT)
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 10 Feb 2016 01:56:55 -0700
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id E5CAA19D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 01:44:49 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1A8uptU30408838
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 01:56:51 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1A8uoe0030887
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 01:56:51 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>, mpe@ellerman.id.au,
+ paulus@samba.org, benh@kernel.crashing.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 1/4] powerpc/mm: Clean up error handling for
+ htab_remove_mapping
+In-Reply-To: <1454988763-5580-2-git-send-email-david@gibson.dropbear.id.au>
+References: <1454988763-5580-1-git-send-email-david@gibson.dropbear.id.au>
+ <1454988763-5580-2-git-send-email-david@gibson.dropbear.id.au>
+Date: Wed, 10 Feb 2016 14:26:46 +0530
+Message-ID: <87a8n9x7sh.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,135 +44,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[offlist]
+David Gibson <david@gibson.dropbear.id.au> writes:
 
-On Thu, 2016-21-01 at 00:55:41 UTC, Cyril Bur wrote:
-> Test that the non volatile floating point and Altivec registers get
-> correctly preserved across the fork() syscall.
-> 
-> fork() works nicely for this purpose, the registers should be the same for
-> both parent and child
+> Currently, the only error that htab_remove_mapping() can report is -EINVAL,
+> if removal of bolted HPTEs isn't implemeted for this platform.  We make
+> a few clean ups to the handling of this:
+>
+>  * EINVAL isn't really the right code - there's nothing wrong with the
+>    function's arguments - use ENODEV instead
+>  * We were also printing a warning message, but that's a decision better
+>    left up to the callers, so remove it
+>  * One caller is vmemmap_remove_mapping(), which will just BUG_ON() on
+>    error, making the warning message redundant, so no change is needed
+>    there.
+>  * The other caller is remove_section_mapping().  This is called in the
+>    memory hot remove path at a point after vmemmap_remove_mapping() so
+>    if hpte_removebolted isn't implemented, we'd expect to have already
+>    BUG()ed anyway.  Put a WARN_ON() here, in lieu of a printk() since this
+>    really shouldn't be happening.
+>
 
-...
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-> diff --git a/tools/testing/selftests/powerpc/basic_asm.h b/tools/testing/selftests/powerpc/basic_asm.h
-> new file mode 100644
-> index 0000000..27aca79
-> --- /dev/null
-> +++ b/tools/testing/selftests/powerpc/basic_asm.h
-> @@ -0,0 +1,26 @@
-> +#include <ppc-asm.h>
-> +#include <asm/unistd.h>
-> +
-> +#define LOAD_REG_IMMEDIATE(reg,expr) \
-> +	lis	reg,(expr)@highest;	\
-> +	ori	reg,reg,(expr)@higher;	\
-> +	rldicr	reg,reg,32,31;	\
-> +	oris	reg,reg,(expr)@high;	\
-> +	ori	reg,reg,(expr)@l;
-> +
-> +#define PUSH_BASIC_STACK(size) \
-> +	std	2,24(sp); \
-> +	mflr	r0; \
-> +	std	r0,16(sp); \
-> +	mfcr	r0; \
-> +	stw	r0,8(sp); \
-> +	stdu	sp,-size(sp);
-
-Unless I'm completely misreading this, that's not ABI compliant.
-
-You are supposed to save LR into your caller's stack frame, but the TOC and CR
-go into *your* stack frame.
-
-I know that's not super obvious from the ABI doc.
-
-See for example this code generated by GCC:
-
-extern int global_thing;
-
-int foo(int x, int (*fp)(int x))
-{
-	int a, b, c;
-
-	a = x;
-	b = a + global_thing;
-	c = b + 2;
-
-	a = fp(x);
-
-	printf("%d %d %d\n", a, b, c);
-
-	return a;
-}
-
-0000000000000000 <foo>:
-   0:	00 00 4c 3c 	addis   r2,r12,0
-			0: R_PPC64_REL16_HA	.TOC.
-   4:	00 00 42 38 	addi    r2,r2,0
-			4: R_PPC64_REL16_LO	.TOC.+0x4
-   8:	a6 02 08 7c 	mflr    r0
-   c:	f0 ff c1 fb 	std     r30,-16(r1)	<- save r30 into (what will be) our stack frame
-  10:	f8 ff e1 fb 	std     r31,-8(r1)	<- save r31 into (what will be) our stack frame
-  14:	78 23 8c 7c 	mr      r12,r4		<- put fp into r12 because we'll be calling its global entry point
-  18:	a6 03 89 7c 	mtctr   r4		<- put fp into CTR
-  1c:	00 00 22 3d 	addis   r9,r2,0
-			1c: R_PPC64_TOC16_HA	.toc
-  20:	00 00 29 e9 	ld      r9,0(r9)
-			20: R_PPC64_TOC16_LO_DS	.toc
-  24:	10 00 01 f8 	std     r0,16(r1)	<- save r0 (LR) into *our caller's* stack frame
-  28:	91 ff 21 f8 	stdu    r1,-112(r1)	<- create our stack frame & store the backchain pointer
-  2c:	18 00 41 f8 	std     r2,24(r1)	<- save r2 (TOC) into *our* stack frame
-  30:	00 00 e9 83 	lwz     r31,0(r9)
-  34:	14 1a ff 7f 	add     r31,r31,r3
-  38:	21 04 80 4e 	bctrl			<- call fp, it will get it's TOC pointer using r12
-  3c:	18 00 41 e8 	ld      r2,24(r1)	<- restore our r2 (TOC) from *our* stack frame
-  40:	02 00 ff 38 	addi    r7,r31,2
-  44:	b4 07 e6 7f 	extsw   r6,r31
-  48:	b4 07 e7 7c 	extsw   r7,r7
-  4c:	78 1b 7e 7c 	mr      r30,r3
-  50:	00 00 82 3c 	addis   r4,r2,0
-			50: R_PPC64_TOC16_HA	.rodata.str1.8
-  54:	78 f3 c5 7f 	mr      r5,r30
-  58:	00 00 84 38 	addi    r4,r4,0
-			58: R_PPC64_TOC16_LO	.rodata.str1.8
-  5c:	01 00 60 38 	li      r3,1
-  60:	01 00 00 48 	bl      60 <foo+0x60>
-			60: R_PPC64_REL24	__printf_chk
-  64:	00 00 00 60 	nop
-  68:	70 00 21 38 	addi    r1,r1,112	<- pop our stack frame
-  6c:	78 f3 c3 7f 	mr      r3,r30
-  70:	10 00 01 e8 	ld      r0,16(r1)	<- restore r0 (LR) from our caller's stack frame
-  74:	f0 ff c1 eb 	ld      r30,-16(r1)	<- restore r30 from (what was) our stack frame
-  78:	f8 ff e1 eb 	ld      r31,-8(r1)	<- restore r31 from (what was) our stack frame
-  7c:	a6 03 08 7c 	mtlr    r0		<- restore LR
-  80:	20 00 80 4e 	blr			<- return
-
-
-
-So your macro wants to be more like:
-
-#define PUSH_BASIC_STACK(_size) \
-	mflr	r0;		\
-	std	r0,16(r1);	\
-	stdu	r1,-_size(r1);	\
-	mfcr	r0;		\
-	stw	r0,8(r1);	\
-	std	r2,24(r1);
-
-Though untested.
-
-Also you're relying on the caller to ensure size is big enough. So maybe it'd
-be better if you ensured that, making the size parameter the *extra* size above
-the minimum stack frame. eg:
-
-
-#define PUSH_BASIC_STACK(_extra) 	\
-	mflr	r0;			\
-	std	r0,16(r1);		\
-	stdu	r1,-(_extra + 32)(r1);	\
-	mfcr	r0;			\
-	stw	r0,8(r1);		\
-	std	r2,24(r1);
-
-
-cheers
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> ---
+>  arch/powerpc/mm/hash_utils_64.c | 13 ++++++-------
+>  1 file changed, 6 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index ba59d59..9f7d727 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -273,11 +273,8 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
+>  	shift = mmu_psize_defs[psize].shift;
+>  	step = 1 << shift;
+>  
+> -	if (!ppc_md.hpte_removebolted) {
+> -		printk(KERN_WARNING "Platform doesn't implement "
+> -				"hpte_removebolted\n");
+> -		return -EINVAL;
+> -	}
+> +	if (!ppc_md.hpte_removebolted)
+> +		return -ENODEV;
+>  
+>  	for (vaddr = vstart; vaddr < vend; vaddr += step)
+>  		ppc_md.hpte_removebolted(vaddr, psize, ssize);
+> @@ -641,8 +638,10 @@ int create_section_mapping(unsigned long start, unsigned long end)
+>  
+>  int remove_section_mapping(unsigned long start, unsigned long end)
+>  {
+> -	return htab_remove_mapping(start, end, mmu_linear_psize,
+> -			mmu_kernel_ssize);
+> +	int rc = htab_remove_mapping(start, end, mmu_linear_psize,
+> +				     mmu_kernel_ssize);
+> +	WARN_ON(rc < 0);
+> +	return rc;
+>  }
+>  #endif /* CONFIG_MEMORY_HOTPLUG */
+>  
+> -- 
+> 2.5.0
