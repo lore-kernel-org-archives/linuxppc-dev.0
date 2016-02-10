@@ -1,32 +1,33 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 821941A03D6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:04:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A54A61A0429
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:04:24 +1100 (AEDT)
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Wed, 10 Feb 2016 16:04:23 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0C7972CE8059
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:04:20 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1A648CF43057382
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:04:16 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1A63lAa025706
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:03:47 +1100
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1ACB02CE8059
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:03:56 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1A63iKl30146590
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:03:52 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1A63NNT011814
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:03:23 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, bhelgaas@google.com, mpe@ellerman.id.au,
  aik@ozlabs.ru, ruscur@russell.cc, Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH v14 5/9] powerpc/eeh: EEH device for VF
-Date: Wed, 10 Feb 2016 17:02:53 +1100
-Message-Id: <1455084177-15525-6-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v14 4/9] powerpc/eeh: Cache normal BARs,
+ not windows or IOV BARs
+Date: Wed, 10 Feb 2016 17:02:52 +1100
+Message-Id: <1455084177-15525-5-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1455084177-15525-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1455084177-15525-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,77 +41,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 
-VFs and their corresponding pdn are created and released dynamically
-when their PF's SRIOV capability is enabled and disabled. This creates
-and releases EEH devices for VFs when creating and releasing their pdn
-instances, which means EEH devices and pdn instances have same life
-cycle. Also, VF's EEH device is identified by (struct eeh_dev::physfn).
+This restricts the EEH address cache to use only the first 7 BARs. This
+makes __eeh_addr_cache_insert_dev() ignore PCI bridge window and IOV BARs.
+As the result of this change, eeh_addr_cache_get_dev() will return VFs from
+VF's resource addresses instead of parent PFs.
+
+This also removes PCI bridge check as we limit __eeh_addr_cache_insert_dev()
+to 7 BARs and this effectively excludes PCI bridges from being cached.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h |  1 +
- arch/powerpc/kernel/pci_dn.c   | 15 +++++++++++++++
- 2 files changed, 16 insertions(+)
+ arch/powerpc/kernel/eeh_cache.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 867c39b..574ed49a 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -141,6 +141,7 @@ struct eeh_dev {
- 	struct pci_controller *phb;	/* Associated PHB		*/
- 	struct pci_dn *pdn;		/* Associated PCI device node	*/
- 	struct pci_dev *pdev;		/* Associated PCI device	*/
-+	struct pci_dev *physfn;		/* Associated SRIOV PF		*/
- 	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
- };
- 
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index b3b4df9..e23bdf7 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -179,6 +179,7 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
- {
- #ifdef CONFIG_PCI_IOV
- 	struct pci_dn *parent, *pdn;
-+	struct eeh_dev *edev;
- 	int i;
- 
- 	/* Only support IOV for now */
-@@ -204,6 +205,12 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
- 				 __func__, i);
- 			return NULL;
- 		}
-+
-+		/* Create the EEH device for the VF */
-+		eeh_dev_init(pdn, pci_bus_to_host(pdev->bus));
-+		edev = pdn_to_eeh_dev(pdn);
-+		BUG_ON(!edev);
-+		edev->physfn = pdev;
+diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
+index a1e86e1..ddbcfab 100644
+--- a/arch/powerpc/kernel/eeh_cache.c
++++ b/arch/powerpc/kernel/eeh_cache.c
+@@ -195,8 +195,11 @@ static void __eeh_addr_cache_insert_dev(struct pci_dev *dev)
+ 		return;
  	}
- #endif /* CONFIG_PCI_IOV */
  
-@@ -215,6 +222,7 @@ void remove_dev_pci_data(struct pci_dev *pdev)
- #ifdef CONFIG_PCI_IOV
- 	struct pci_dn *parent;
- 	struct pci_dn *pdn, *tmp;
-+	struct eeh_dev *edev;
- 	int i;
+-	/* Walk resources on this device, poke them into the tree */
+-	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
++	/*
++	 * Walk resources on this device, poke the first 7 (6 normal BAR and 1
++	 * ROM BAR) into the tree.
++	 */
++	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+ 		resource_size_t start = pci_resource_start(dev,i);
+ 		resource_size_t end = pci_resource_end(dev,i);
+ 		unsigned long flags = pci_resource_flags(dev,i);
+@@ -222,10 +225,6 @@ void eeh_addr_cache_insert_dev(struct pci_dev *dev)
+ {
+ 	unsigned long flags;
  
- 	/*
-@@ -256,6 +264,13 @@ void remove_dev_pci_data(struct pci_dev *pdev)
- 			    pdn->devfn != pci_iov_virtfn_devfn(pdev, i))
- 				continue;
- 
-+			/* Release EEH device for the VF */
-+			edev = pdn_to_eeh_dev(pdn);
-+			if (edev) {
-+				pdn->edev = NULL;
-+				kfree(edev);
-+			}
-+
- 			if (!list_empty(&pdn->list))
- 				list_del(&pdn->list);
- 
+-	/* Ignore PCI bridges */
+-	if ((dev->class >> 16) == PCI_BASE_CLASS_BRIDGE)
+-		return;
+-
+ 	spin_lock_irqsave(&pci_io_addr_cache_root.piar_lock, flags);
+ 	__eeh_addr_cache_insert_dev(dev);
+ 	spin_unlock_irqrestore(&pci_io_addr_cache_root.piar_lock, flags);
 -- 
 2.1.0
