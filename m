@@ -1,36 +1,17 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BC35D1A03A3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 19:32:10 +1100 (AEDT)
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Wed, 10 Feb 2016 18:32:10 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 771F33578055
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 19:32:08 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1A8Vv567798846
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 19:32:05 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1A8VaWB022363
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 19:31:36 +1100
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Michael Neuling <michael.neuling@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v3 10/18] cxl: New hcalls to support CAPI adapters
-In-reply-to: <1454765345-7417-11-git-send-email-fbarrat@linux.vnet.ibm.com>
-References: <1454765345-7417-1-git-send-email-fbarrat@linux.vnet.ibm.com>
- <1454765345-7417-11-git-send-email-fbarrat@linux.vnet.ibm.com>
-Date: Wed, 10 Feb 2016 19:31:10 +1100
-Message-Id: <1455089064-sup-7113@delenn.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B45D1A03C9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 19:56:04 +1100 (AEDT)
+In-Reply-To: <1453337749-15506-2-git-send-email-cyrilbur@gmail.com>
+To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [v3,
+ 1/9] selftests/powerpc: Test the preservation of FPU and VMX regs
+ across syscall
+Message-Id: <20160210085604.42A23140321@ozlabs.org>
+Date: Wed, 10 Feb 2016 19:56:04 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,134 +21,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> +#define H_CONTROL_CA_FUNCTION_RESET                   1 /* perform a reset */
-> +#define H_CONTROL_CA_FUNCTION_SUSPEND_PROCESS         2 /* suspend a process from being executed */
-> +#define H_CONTROL_CA_FUNCTION_RESUME_PROCESS          3 /* resume a process to be executed */
-> +#define H_CONTROL_CA_FUNCTION_READ_ERR_STATE          4 /* read the error state */
-> +#define H_CONTROL_CA_FUNCTION_GET_AFU_ERR             5 /* collect the AFU error buffer */
-> +#define H_CONTROL_CA_FUNCTION_GET_CONFIG              6 /* collect configuration record */
-> +#define H_CONTROL_CA_FUNCTION_GET_DOWNLOAD_STATE      7 /* query to return download status */
-> +#define H_CONTROL_CA_FUNCTION_TERMINATE_PROCESS       8 /* terminate the process before completion */
-> +#define H_CONTROL_CA_FUNCTION_COLLECT_VPD             9 /* collect VPD */
-> +#define H_CONTROL_CA_FUNCTION_GET_FUNCTION_ERR_INT   11 /* read the function-wide error data based on an interrupt */
-> +#define H_CONTROL_CA_FUNCTION_ACK_FUNCTION_ERR_INT   12 /* acknowledge function-wide error data based on an interrupt */
-> +#define H_CONTROL_CA_FUNCTION_GET_ERROR_LOG          13 /* retrieve the Platform Log ID (PLID) of an error log */
-> +
-> +#define H_CONTROL_CA_FAULTS_RESPOND_PSL    1
-> +#define H_CONTROL_CA_FAULTS_RESPOND_AFU    2
-> +
-> +#define OP_STR_AFU(x)                            \
-> +    (x == H_CONTROL_CA_FUNCTION_RESET ? "RESET" :            \
-> +        x == H_CONTROL_CA_FUNCTION_RESUME_PROCESS ? "PROCESS" :    \
-> +        x == H_CONTROL_CA_FUNCTION_RESUME_PROCESS ? "RESUME" :    \
+[offlist]
 
-H_CONTROL_CA_FUNCTION_RESUME_PROCESS is listed twice here, and the names
-don't match.
+On Thu, 2016-21-01 at 00:55:41 UTC, Cyril Bur wrote:
+> Test that the non volatile floating point and Altivec registers get
+> correctly preserved across the fork() syscall.
+> 
+> fork() works nicely for this purpose, the registers should be the same for
+> both parent and child
 
-> +        x == H_CONTROL_CA_FUNCTION_READ_ERR_STATE ? "READ_ERR_STATE" : \
-> +        x == H_CONTROL_CA_FUNCTION_GET_AFU_ERR ? "GET_AFU_ERR" : \
-> +        x == H_CONTROL_CA_FUNCTION_GET_CONFIG ? "GET_CONFIG" :    \
-> +        x == H_CONTROL_CA_FUNCTION_GET_DOWNLOAD_STATE ? "DOWNLOAD_STATE" : \
-> +        x == H_CONTROL_CA_FUNCTION_TERMINATE_PROCESS ? "TERMINATE_PROC" : \
-> +        x == H_CONTROL_CA_FUNCTION_COLLECT_VPD ? "COLLECT_VPD" :    \
-> +        x == H_CONTROL_CA_FUNCTION_GET_FUNCTION_ERR_INT ? "GET_ERR_INTERRUPT" :    \
-> +        x == H_CONTROL_CA_FUNCTION_ACK_FUNCTION_ERR_INT ? "ACK_ERR_INTERRUPT" :    \
-> +        x == H_CONTROL_CA_FUNCTION_GET_ERROR_LOG ? "GET_ERROR_LOG" : \
-> +        "UNKNOWN OP")
+...
+
+> diff --git a/tools/testing/selftests/powerpc/basic_asm.h b/tools/testing/selftests/powerpc/basic_asm.h
+> new file mode 100644
+> index 0000000..27aca79
+> --- /dev/null
+> +++ b/tools/testing/selftests/powerpc/basic_asm.h
+> @@ -0,0 +1,26 @@
+> +#include <ppc-asm.h>
+> +#include <asm/unistd.h>
 > +
-> +#define H_CONTROL_CA_FACILITY_RESET                   1 /* perform a reset */
-> +#define H_CONTROL_CA_FACILITY_COLLECT_VPD             2 /* collect VPD */
+> +#define LOAD_REG_IMMEDIATE(reg,expr) \
+> +	lis	reg,(expr)@highest;	\
+> +	ori	reg,reg,(expr)@higher;	\
+> +	rldicr	reg,reg,32,31;	\
+> +	oris	reg,reg,(expr)@high;	\
+> +	ori	reg,reg,(expr)@l;
 > +
-> +#define OP_STR_CONTROL_ADAPTER(x)                    \
-> +    (x == H_CONTROL_CA_FACILITY_RESET ? "RESET" :            \
-> +        x == H_CONTROL_CA_FACILITY_COLLECT_VPD ? "COLLECT_VPD" : \
-> +        "UNKNOWN OP")
-> +
-> +#define H_CONTROL_CA_FACILITY_DOWNLOAD                1 /* download adapter image */
-> +#define H_CONTROL_CA_FACILITY_VALIDATE                2 /* validate adapter image */
-> +
-> +#define OP_STR_DOWNLOAD_ADAPTER(x)                    \
-> +    (x == H_CONTROL_CA_FACILITY_DOWNLOAD ? "DOWNLOAD" :        \
-> +        x == H_CONTROL_CA_FACILITY_VALIDATE ? "VALIDATE" :    \
-> +        "UNKNOWN OP")
-> +
+> +#define PUSH_BASIC_STACK(size) \
+> +	std	2,24(sp); \
+> +	mflr	r0; \
+> +	std	r0,16(sp); \
+> +	mfcr	r0; \
+> +	stw	r0,8(sp); \
+> +	stdu	sp,-size(sp);
 
-Since these are almost sequential how about using static arrays and a
-lookup helper, like:
+Unless I'm completely misreading this, that's not ABI compliant.
 
-static char *afu_op_names[] = {
-	"UNKNOWN_OP",           /* 0 undefined */
-	"RESET",                /* 1 */
-	"SUSPEND_PROCESS",      /* 2 */
-	"RESUME_PROCESS",       /* 3 */
-	"READ_ERR_STATE",       /* 4 */
-	"GET_AFU_ERR",          /* 5 */
-	"GET_CONFIG",           /* 6 */
-	"GET_DOWNLOAD_STATE",   /* 7 */
-	"TERMINATE_PROCESS",    /* 8 */
-	"COLLECT_VPD",          /* 9 */
-	"UNKNOWN_OP",           /* 10 undefined */
-	"GET_FUNCTION_ERR_INT", /* 11 */
-	"ACK_FUNCTION_ERR_INT", /* 12 */
-	"GET_ERROR_LOG",        /* 13 */
-};
+You are supposed to save LR into your caller's stack frame, but the TOC and CR
+go into *your* stack frame.
 
-static char *control_adapter_op_names[] = {
-	"UNKNOWN_OP",           /* 0 undefined */
-	"RESET",                /* 1 */
-	"COLLECT_VPD",          /* 2 */
-};
+I know that's not super obvious from the ABI doc.
 
-static char *download_op_names[] = {
-	"UNKNOWN_OP",           /* 0 undefined */
-	"DOWNLOAD",             /* 1 */
-	"VALIDATE",             /* 2 */
-};
+See for example this code generated by GCC:
 
-static char* op_str(unsigned int op, char *name_array[], int array_len)
+extern int global_thing;
+
+int foo(int x, int (*fp)(int x))
 {
-	if (op >= array_len)
-		return "UNKNOWN_OP";
-	return name_array[op];
+	int a, b, c;
+
+	a = x;
+	b = a + global_thing;
+	c = b + 2;
+
+	a = fp(x);
+
+	printf("%d %d %d\n", a, b, c);
+
+	return a;
 }
 
-#define OP_STR(op, name_array)      op_str(op, name_array, ARRAY_SIZE(name_array))
+0000000000000000 <foo>:
+   0:	00 00 4c 3c 	addis   r2,r12,0
+			0: R_PPC64_REL16_HA	.TOC.
+   4:	00 00 42 38 	addi    r2,r2,0
+			4: R_PPC64_REL16_LO	.TOC.+0x4
+   8:	a6 02 08 7c 	mflr    r0
+   c:	f0 ff c1 fb 	std     r30,-16(r1)	<- save r30 into (what will be) our stack frame
+  10:	f8 ff e1 fb 	std     r31,-8(r1)	<- save r31 into (what will be) our stack frame
+  14:	78 23 8c 7c 	mr      r12,r4		<- put fp into r12 because we'll be calling its global entry point
+  18:	a6 03 89 7c 	mtctr   r4		<- put fp into CTR
+  1c:	00 00 22 3d 	addis   r9,r2,0
+			1c: R_PPC64_TOC16_HA	.toc
+  20:	00 00 29 e9 	ld      r9,0(r9)
+			20: R_PPC64_TOC16_LO_DS	.toc
+  24:	10 00 01 f8 	std     r0,16(r1)	<- save r0 (LR) into *our caller's* stack frame
+  28:	91 ff 21 f8 	stdu    r1,-112(r1)	<- create our stack frame & store the backchain pointer
+  2c:	18 00 41 f8 	std     r2,24(r1)	<- save r2 (TOC) into *our* stack frame
+  30:	00 00 e9 83 	lwz     r31,0(r9)
+  34:	14 1a ff 7f 	add     r31,r31,r3
+  38:	21 04 80 4e 	bctrl			<- call fp, it will get it's TOC pointer using r12
+  3c:	18 00 41 e8 	ld      r2,24(r1)	<- restore our r2 (TOC) from *our* stack frame
+  40:	02 00 ff 38 	addi    r7,r31,2
+  44:	b4 07 e6 7f 	extsw   r6,r31
+  48:	b4 07 e7 7c 	extsw   r7,r7
+  4c:	78 1b 7e 7c 	mr      r30,r3
+  50:	00 00 82 3c 	addis   r4,r2,0
+			50: R_PPC64_TOC16_HA	.rodata.str1.8
+  54:	78 f3 c5 7f 	mr      r5,r30
+  58:	00 00 84 38 	addi    r4,r4,0
+			58: R_PPC64_TOC16_LO	.rodata.str1.8
+  5c:	01 00 60 38 	li      r3,1
+  60:	01 00 00 48 	bl      60 <foo+0x60>
+			60: R_PPC64_REL24	__printf_chk
+  64:	00 00 00 60 	nop
+  68:	70 00 21 38 	addi    r1,r1,112	<- pop our stack frame
+  6c:	78 f3 c3 7f 	mr      r3,r30
+  70:	10 00 01 e8 	ld      r0,16(r1)	<- restore r0 (LR) from our caller's stack frame
+  74:	f0 ff c1 eb 	ld      r30,-16(r1)	<- restore r30 from (what was) our stack frame
+  78:	f8 ff e1 eb 	ld      r31,-8(r1)	<- restore r31 from (what was) our stack frame
+  7c:	a6 03 08 7c 	mtlr    r0		<- restore LR
+  80:	20 00 80 4e 	blr			<- return
 
-#define OP_STR_AFU(op)              OP_STR(op, afu_op_names)
-#define OP_STR_CONTROL_ADAPTER(op)  OP_STR(op, control_adapter_op_names)
-#define OP_STR_DOWNLOAD_ADAPTER(op) OP_STR(op, download_op_names)
-
-> +    buf = (u32 *) element;
-> +    for (i = 0; i*4 < sizeof(struct cxl_process_element_hcall); i += 4) {
-> +        if ((i+3)*4 < sizeof(struct cxl_process_element_hcall))
-> +            pr_devel("%.8x %.8x %.8x %.8x\n", buf[i], buf[i + 1], buf[i + 2], buf[i + 3]);
-> +        else if ((i+2)*4 < sizeof(struct cxl_process_element_hcall))
-> +            pr_devel("%.8x %.8x %.8x\n", buf[i], buf[i + 1], buf[i + 2]);
-> +        else if ((i+1)*4 < sizeof(struct cxl_process_element_hcall))
-> +            pr_devel("%.8x %.8x\n", buf[i], buf[i + 1]);
-> +        else
-> +            pr_devel("%.8x\n", buf[i]);
-
-For something that is only used with pr_devel for debugging I'd like
-something that is a little easier on the eyes, like:
-
-or (i = 0; i < sizeof(struct cxl_process_element_hcall); i++) {
-	if (i && i % 4 == 0)
-		pr_devel("\n");
-	pr_devel("%08x ", buf[i]);
-}
-pr_devel("\n");
 
 
+So your macro wants to be more like:
 
-> +/*
-> + * This is straight out of PAPR, but replacing some of the compound fields with
-> + * a single field, where they were identical to the register layout.
-> + *
-> + * The 'flags' parameter regroups the various bit-fields
-> + */
+#define PUSH_BASIC_STACK(_size) \
+	mflr	r0;		\
+	std	r0,16(r1);	\
+	stdu	r1,-_size(r1);	\
+	mfcr	r0;		\
+	stw	r0,8(r1);	\
+	std	r2,24(r1);
 
-Thanks for getting rid of the bit fields :)
+Though untested.
 
-Cheers,
--Ian
+Also you're relying on the caller to ensure size is big enough. So maybe it'd
+be better if you ensured that, making the size parameter the *extra* size above
+the minimum stack frame. eg:
+
+
+#define PUSH_BASIC_STACK(_extra) 	\
+	mflr	r0;			\
+	std	r0,16(r1);		\
+	stdu	r1,-(_extra + 32)(r1);	\
+	mfcr	r0;			\
+	stw	r0,8(r1);		\
+	std	r2,24(r1);
+
+
+cheers
