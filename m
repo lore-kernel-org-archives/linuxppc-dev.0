@@ -1,40 +1,31 @@
-Return-Path: <dougmill@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
+ [140.105.206.208])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 494671A006D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 23:26:17 +1100 (AEDT)
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <dougmill@linux.vnet.ibm.com>;
- Wed, 10 Feb 2016 07:26:14 -0500
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 38D2738C8039
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 07:26:13 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1ACQDMB23658594
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 12:26:13 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1ACQCiR027690
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 07:26:13 -0500
-Received: from oc5780617838.ibm.com ([9.80.84.27])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- u1ACQBuB027610
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 07:26:11 -0500
-Subject: Re: [RFC PATCH kernel] powerpc/ioda: Set "read" permission when
- "write" is set
-To: linuxppc-dev@lists.ozlabs.org
-References: <1452573620-17979-1-git-send-email-aik@ozlabs.ru>
-From: Douglas Miller <dougmill@linux.vnet.ibm.com>
-Message-ID: <56BB2C63.4060206@linux.vnet.ibm.com>
-Date: Wed, 10 Feb 2016 06:26:11 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id BAE7D1A006D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 01:40:09 +1100 (AEDT)
+Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
+ by localhost (Email Security Appliance) with SMTP id A1B49440EC6_6BB4BC4B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 14:40:04 +0000 (GMT)
+Received: from mail-qg0-f54.google.com (mail-qg0-f54.google.com
+ [209.85.192.54])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (verified OK))
+ by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
+ 60C6C43E082_6BB4BC3F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 14:40:03 +0000 (GMT)
+Received: by mail-qg0-f54.google.com with SMTP id b67so14723417qgb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 06:40:03 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1452573620-17979-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Date: Wed, 10 Feb 2016 15:40:01 +0100
+Message-ID: <CAPk1OjEAMaZjup2UWmtibyDtM1qSH7OuKQqgLV4iDnBm5gF_8g@mail.gmail.com>
+Subject: mpc8641si-pre.dtsi and mpc8641si-post.dtsi
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,51 +35,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Tested-by: Douglas Miller <dougmill@linux.vnet.ibm.com>
+Hi Kumar, Scott and all,
 
+I'm wondering if actual make sense create files in subject to
+consolidate five device tree (gef_ppc9a.dts, gef_sbc310.dts,
+gef_sbc610.dts, mpc8641_hpcn.dts and sbc8641d.dts). If it makes sense
+what device tree can I take as example?
 
-On 01/11/2016 10:40 PM, Alexey Kardashevskiy wrote:
-> Quite often drivers set only "write" permission assuming that this
-> includes "read" permission as well and this works on plenty platforms.
-> However IODA2 is strict about this and produces an EEH when "read"
-> permission is not and reading happens.
->
-> This adds a workaround in IODA code to always add the "read" bit when
-> the "write" bit is set.
->
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->
->
-> Ben, what was the driver which did not set "read" and caused EEH?
->
->
-> ---
->   arch/powerpc/platforms/powernv/pci.c | 6 ++++++
->   1 file changed, 6 insertions(+)
->
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index f2dd772..c7dcae5 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -601,6 +601,9 @@ int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
->   	u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
->   	long i;
->   
-> +	if (proto_tce & TCE_PCI_WRITE)
-> +		proto_tce |= TCE_PCI_READ;
-> +
->   	for (i = 0; i < npages; i++) {
->   		unsigned long newtce = proto_tce |
->   			((rpn + i) << tbl->it_page_shift);
-> @@ -622,6 +625,9 @@ int pnv_tce_xchg(struct iommu_table *tbl, long index,
->   
->   	BUG_ON(*hpa & ~IOMMU_PAGE_MASK(tbl));
->   
-> +	if (newtce & TCE_PCI_WRITE)
-> +		newtce |= TCE_PCI_READ;
-> +
->   	oldtce = xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce));
->   	*hpa = be64_to_cpu(oldtce) & ~(TCE_PCI_READ | TCE_PCI_WRITE);
->   	*direction = iommu_tce_direction(oldtce);
+Thank you very much!
+
+Ciao,
+Alessio
