@@ -1,40 +1,37 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 135141A06EA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:01:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 32A031A03A1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:05:37 +1100 (AEDT)
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 10 Feb 2016 04:01:08 -0500
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 244B66E8048
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 03:47:58 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1A9168G26935464
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 09:01:06 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1A915vi006620
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 04:01:05 -0500
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>, mpe@ellerman.id.au,
- paulus@samba.org, benh@kernel.crashing.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 4/4] powerpc/mm: Split hash page table sizing heuristic
- into a helper
-In-Reply-To: <1454988763-5580-5-git-send-email-david@gibson.dropbear.id.au>
-References: <1454988763-5580-1-git-send-email-david@gibson.dropbear.id.au>
- <1454988763-5580-5-git-send-email-david@gibson.dropbear.id.au>
-Date: Wed, 10 Feb 2016 14:31:00 +0530
-Message-ID: <871t8lx7lf.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Wed, 10 Feb 2016 19:05:37 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id D377C3578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:05:33 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1A95Mxm37683368
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:05:30 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1A951mp028653
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:05:01 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Michael Neuling <michael.neuling@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v3 11/18] cxl: Separate bare-metal fields in adapter and
+ AFU data structures
+In-reply-to: <1454765345-7417-12-git-send-email-fbarrat@linux.vnet.ibm.com>
+References: <1454765345-7417-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+ <1454765345-7417-12-git-send-email-fbarrat@linux.vnet.ibm.com>
+Date: Wed, 10 Feb 2016 20:04:32 +1100
+Message-Id: <1455093092-sup-8574@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,90 +41,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Gibson <david@gibson.dropbear.id.au> writes:
+> @@ -825,6 +826,14 @@ static int pci_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
+>      if (!afu)
+>          return -ENOMEM;
+>  
+> +    afu->native = kzalloc(sizeof(struct cxl_afu_native), GFP_KERNEL);
+> +    if (!afu->native) {
+> +        kfree(afu);
+> +        return -ENOMEM;
+> +    }
 
-> htab_get_table_size() either retrieve the size of the hash page table (HPT)
-> from the device tree - if the HPT size is determined by firmware - or
-> uses a heuristic to determine a good size based on RAM size if the kernel
-> is responsible for allocating the HPT.
->
-> To support a PAPR extension allowing resizing of the HPT, we're going to
-> want the memory size -> HPT size logic elsewhere, so split it out into a
-> helper function.
->
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+This function is already using goto style error paths, so it would be
+better to use it since you have some common cleanup to do:
 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> ---
->  arch/powerpc/include/asm/mmu-hash64.h |  3 +++
->  arch/powerpc/mm/hash_utils_64.c       | 32 +++++++++++++++++++-------------
->  2 files changed, 22 insertions(+), 13 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-> index 7352d3f..cf070fd 100644
-> --- a/arch/powerpc/include/asm/mmu-hash64.h
-> +++ b/arch/powerpc/include/asm/mmu-hash64.h
-> @@ -607,6 +607,9 @@ static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
->  	context = (MAX_USER_CONTEXT) + ((ea >> 60) - 0xc) + 1;
->  	return get_vsid(context, ea, ssize);
->  }
-> +
-> +unsigned htab_shift_for_mem_size(unsigned long mem_size);
-> +
->  #endif /* __ASSEMBLY__ */
+int rc = -ENOMEM;
+
+...
+
+    if (!afu->native)
+        goto err_free_afu;
+
+...
+
+err_free_afu_native:
+    kfree(afu->native);
+err_free_afu:
+    kfree(afu);
+    return rc;
+
+> @@ -1162,6 +1173,13 @@ static struct cxl *cxl_pci_init_adapter(struct pci_dev *dev)
+>      if (!adapter)
+>          return ERR_PTR(-ENOMEM);
 >  
->  #endif /* _ASM_POWERPC_MMU_HASH64_H_ */
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index fdcf9d1..da5d279 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -611,10 +611,26 @@ static int __init htab_dt_scan_pftsize(unsigned long node,
->  	return 0;
->  }
->  
-> -static unsigned long __init htab_get_table_size(void)
-> +unsigned htab_shift_for_mem_size(unsigned long mem_size)
->  {
-> -	unsigned long mem_size, rnd_mem_size, pteg_count, psize;
-> +	unsigned memshift = __ilog2(mem_size);
-> +	unsigned pshift = mmu_psize_defs[mmu_virtual_psize].shift;
-> +	unsigned pteg_shift;
-> +
-> +	/* round mem_size up to next power of 2 */
-> +	if ((1UL << memshift) < mem_size)
-> +		memshift += 1;
-> +
-> +	/* aim for 2 pages / pteg */
-> +	pteg_shift = memshift - (pshift + 1);
-> +
-> +	/* 2^11 PTEGS / 2^18 bytes is the minimum htab size permitted
-> +	 * by the architecture */
-> +	return max(pteg_shift + 7, 18U);
-> +}
->  
-> +static unsigned long __init htab_get_table_size(void)
-> +{
->  	/* If hash size isn't already provided by the platform, we try to
->  	 * retrieve it from the device-tree. If it's not there neither, we
->  	 * calculate it now based on the total RAM size
-> @@ -624,17 +640,7 @@ static unsigned long __init htab_get_table_size(void)
->  	if (ppc64_pft_size)
->  		return 1UL << ppc64_pft_size;
->  
-> -	/* round mem_size up to next power of 2 */
-> -	mem_size = memblock_phys_mem_size();
-> -	rnd_mem_size = 1UL << __ilog2(mem_size);
-> -	if (rnd_mem_size < mem_size)
-> -		rnd_mem_size <<= 1;
-> -
-> -	/* # pages / 2 */
-> -	psize = mmu_psize_defs[mmu_virtual_psize].shift;
-> -	pteg_count = max(rnd_mem_size >> (psize + 1), 1UL << 11);
-> -
-> -	return pteg_count << 7;
-> +	return 1UL << htab_shift_for_mem_size(memblock_phys_mem_size());
->  }
->  
->  #ifdef CONFIG_MEMORY_HOTPLUG
-> -- 
-> 2.5.0
+> +    adapter->native = kzalloc(sizeof(struct cxl_native), GFP_KERNEL);
+> +    if (!adapter->native) {
+> +        pci_disable_device(dev);
+> +        cxl_release_adapter(&adapter->dev);
+> +        return ERR_PTR(-ENOMEM);
+
+Likewise, since there is now some cleanup in this error path that is
+part in common with another error path in the function change both error
+paths to use goto style error handling.
