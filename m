@@ -1,32 +1,32 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 391C21A006D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:04:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AEB6C1A03AB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:04:06 +1100 (AEDT)
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 10 Feb 2016 16:04:02 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D1DA32CE8057
+ Wed, 10 Feb 2016 16:04:06 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B99922BB004D
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:03:55 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1A63iSE49021122
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:03:52 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1A63N6h011789
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1A63lcU23461902
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:03:55 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1A63MO6010691
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 17:03:23 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, bhelgaas@google.com, mpe@ellerman.id.au,
  aik@ozlabs.ru, ruscur@russell.cc, Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH v14 2/9] PCI: Add pcibios_bus_add_device() weak function
-Date: Wed, 10 Feb 2016 17:02:50 +1100
-Message-Id: <1455084177-15525-3-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v14 1/9] PCI/IOV: Rename and export virtfn_{add, remove}
+Date: Wed, 10 Feb 2016 17:02:49 +1100
+Message-Id: <1455084177-15525-2-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1455084177-15525-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1455084177-15525-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,50 +40,96 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 
-This adds weak function pcibios_bus_add_device() for arch dependent
-code could do proper setup. For example, powerpc could setup EEH
-related resources for SRIOV VFs.
+During EEH recovery, hotplug is applied to the devices which don't
+have drivers or their drivers don't support EEH. However, the hotplug,
+which was implemented based on PCI bus, can't be applied to VF directly.
+Instead, we unplug and plug individual PCI devices (VFs).
+
+This renames virtn_{add,remove}() and exports them so they can be used
+in PCI hotplug during EEH recovery.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- drivers/pci/bus.c   | 3 +++
- include/linux/pci.h | 1 +
- 2 files changed, 4 insertions(+)
+ drivers/pci/iov.c   | 10 +++++-----
+ include/linux/pci.h |  8 ++++++++
+ 2 files changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
-index 89b3bef..6469ff6 100644
---- a/drivers/pci/bus.c
-+++ b/drivers/pci/bus.c
-@@ -271,6 +271,8 @@ bool pci_bus_clip_resource(struct pci_dev *dev, int idx)
+diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+index 31f31d4..fa4f138 100644
+--- a/drivers/pci/iov.c
++++ b/drivers/pci/iov.c
+@@ -113,7 +113,7 @@ resource_size_t pci_iov_resource_size(struct pci_dev *dev, int resno)
+ 	return dev->sriov->barsz[resno - PCI_IOV_RESOURCES];
+ }
  
- void __weak pcibios_resource_survey_bus(struct pci_bus *bus) { }
+-static int virtfn_add(struct pci_dev *dev, int id, int reset)
++int pci_iov_add_virtfn(struct pci_dev *dev, int id, int reset)
+ {
+ 	int i;
+ 	int rc = -ENOMEM;
+@@ -188,7 +188,7 @@ failed:
+ 	return rc;
+ }
  
-+void __weak pcibios_bus_add_device(struct pci_dev *pdev) { }
-+
- /**
-  * pci_bus_add_device - start driver for a single device
-  * @dev: device to add
-@@ -285,6 +287,7 @@ void pci_bus_add_device(struct pci_dev *dev)
- 	 * Can not put in pci_device_add yet because resources
- 	 * are not assigned yet for some devices.
- 	 */
-+	pcibios_bus_add_device(dev);
- 	pci_fixup_device(pci_fixup_final, dev);
- 	pci_create_sysfs_dev_files(dev);
- 	pci_proc_attach_device(dev);
+-static void virtfn_remove(struct pci_dev *dev, int id, int reset)
++void pci_iov_remove_virtfn(struct pci_dev *dev, int id, int reset)
+ {
+ 	char buf[VIRTFN_ID_LEN];
+ 	struct pci_dev *virtfn;
+@@ -321,7 +321,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ 	}
+ 
+ 	for (i = 0; i < initial; i++) {
+-		rc = virtfn_add(dev, i, 0);
++		rc = pci_iov_add_virtfn(dev, i, 0);
+ 		if (rc)
+ 			goto failed;
+ 	}
+@@ -333,7 +333,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ 
+ failed:
+ 	while (i--)
+-		virtfn_remove(dev, i, 0);
++		pci_iov_remove_virtfn(dev, i, 0);
+ 
+ 	pcibios_sriov_disable(dev);
+ err_pcibios:
+@@ -359,7 +359,7 @@ static void sriov_disable(struct pci_dev *dev)
+ 		return;
+ 
+ 	for (i = 0; i < iov->num_VFs; i++)
+-		virtfn_remove(dev, i, 0);
++		pci_iov_remove_virtfn(dev, i, 0);
+ 
+ 	pcibios_sriov_disable(dev);
+ 
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 3db5e30..bc435d62 100644
+index 27df4a6..3db5e30 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -770,6 +770,7 @@ extern struct list_head pci_root_buses;	/* list of all known PCI buses */
- int no_pci_devices(void);
+@@ -1738,6 +1738,8 @@ int pci_iov_virtfn_devfn(struct pci_dev *dev, int id);
  
- void pcibios_resource_survey_bus(struct pci_bus *bus);
-+void pcibios_bus_add_device(struct pci_dev *pdev);
- void pcibios_add_bus(struct pci_bus *bus);
- void pcibios_remove_bus(struct pci_bus *bus);
- void pcibios_fixup_bus(struct pci_bus *);
+ int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn);
+ void pci_disable_sriov(struct pci_dev *dev);
++int pci_iov_add_virtfn(struct pci_dev *dev, int id, int reset);
++void pci_iov_remove_virtfn(struct pci_dev *dev, int id, int reset);
+ int pci_num_vf(struct pci_dev *dev);
+ int pci_vfs_assigned(struct pci_dev *dev);
+ int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs);
+@@ -1754,6 +1756,12 @@ static inline int pci_iov_virtfn_devfn(struct pci_dev *dev, int id)
+ }
+ static inline int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn)
+ { return -ENODEV; }
++static inline int pci_iov_add_virtfn(struct pci_dev *dev, int id, int reset)
++{
++	return -ENOSYS;
++}
++static inline void pci_iov_remove_virtfn(struct pci_dev *dev,
++					 int id, int reset) { }
+ static inline void pci_disable_sriov(struct pci_dev *dev) { }
+ static inline int pci_num_vf(struct pci_dev *dev) { return 0; }
+ static inline int pci_vfs_assigned(struct pci_dev *dev)
 -- 
 2.1.0
