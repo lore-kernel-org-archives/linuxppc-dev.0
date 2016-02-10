@@ -1,37 +1,38 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A30361A03C4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:00:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 135141A06EA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:01:10 +1100 (AEDT)
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 10 Feb 2016 02:00:31 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 48BD519D8048
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 01:48:28 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1A90Tww11862106
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 02:00:29 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1A90RwG020147
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 02:00:29 -0700
+ Wed, 10 Feb 2016 04:01:08 -0500
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 244B66E8048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 03:47:58 -0500 (EST)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1A9168G26935464
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 09:01:06 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1A915vi006620
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 04:01:05 -0500
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: David Gibson <david@gibson.dropbear.id.au>, mpe@ellerman.id.au,
  paulus@samba.org, benh@kernel.crashing.org
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 3/4] powerpc/mm: Clean up memory hotplug failure paths
-In-Reply-To: <1454988763-5580-4-git-send-email-david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 4/4] powerpc/mm: Split hash page table sizing heuristic
+ into a helper
+In-Reply-To: <1454988763-5580-5-git-send-email-david@gibson.dropbear.id.au>
 References: <1454988763-5580-1-git-send-email-david@gibson.dropbear.id.au>
- <1454988763-5580-4-git-send-email-david@gibson.dropbear.id.au>
-Date: Wed, 10 Feb 2016 14:30:20 +0530
-Message-ID: <874mdhx7mj.fsf@linux.vnet.ibm.com>
+ <1454988763-5580-5-git-send-email-david@gibson.dropbear.id.au>
+Date: Wed, 10 Feb 2016 14:31:00 +0530
+Message-ID: <871t8lx7lf.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,167 +46,88 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 David Gibson <david@gibson.dropbear.id.au> writes:
 
-> This makes a number of cleanups to handling of mapping failures during
-> memory hotplug on Power:
+> htab_get_table_size() either retrieve the size of the hash page table (HPT)
+> from the device tree - if the HPT size is determined by firmware - or
+> uses a heuristic to determine a good size based on RAM size if the kernel
+> is responsible for allocating the HPT.
 >
-> For errors creating the linear mapping for the hot-added region:
->   * This is now reported with EFAULT which is more appropriate than the
->     previous EINVAL (the failure is unlikely to be related to the
->     function's parameters)
->   * An error in this path now prints a warning message, rather than just
->     silently failing to add the extra memory.
->   * Previously a failure here could result in the region being partially
->     mapped.  We now clean up any partial mapping before failing.
->
-> For errors creating the vmemmap for the hot-added region:
->    * This is now reported with EFAULT instead of causing a BUG() - this
->      could happen for external reason (e.g. full hash table) so it's better
->      to handle this non-fatally
->    * An error message is also printed, so the failure won't be silent
->    * As above a failure could cause a partially mapped region, we now
->      clean this up.
+> To support a PAPR extension allowing resizing of the HPT, we're going to
+> want the memory size -> HPT size logic elsewhere, so split it out into a
+> helper function.
 >
 Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> Reviewed-by: Paul Mackerras <paulus@samba.org>
 > ---
->  arch/powerpc/mm/hash_utils_64.c | 13 ++++++++++---
->  arch/powerpc/mm/init_64.c       | 38 ++++++++++++++++++++++++++------------
->  arch/powerpc/mm/mem.c           | 10 ++++++++--
->  3 files changed, 44 insertions(+), 17 deletions(-)
+>  arch/powerpc/include/asm/mmu-hash64.h |  3 +++
+>  arch/powerpc/mm/hash_utils_64.c       | 32 +++++++++++++++++++-------------
+>  2 files changed, 22 insertions(+), 13 deletions(-)
 >
+> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+> index 7352d3f..cf070fd 100644
+> --- a/arch/powerpc/include/asm/mmu-hash64.h
+> +++ b/arch/powerpc/include/asm/mmu-hash64.h
+> @@ -607,6 +607,9 @@ static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
+>  	context = (MAX_USER_CONTEXT) + ((ea >> 60) - 0xc) + 1;
+>  	return get_vsid(context, ea, ssize);
+>  }
+> +
+> +unsigned htab_shift_for_mem_size(unsigned long mem_size);
+> +
+>  #endif /* __ASSEMBLY__ */
+>  
+>  #endif /* _ASM_POWERPC_MMU_HASH64_H_ */
 > diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index 99fbee0..fdcf9d1 100644
+> index fdcf9d1..da5d279 100644
 > --- a/arch/powerpc/mm/hash_utils_64.c
 > +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -640,9 +640,16 @@ static unsigned long __init htab_get_table_size(void)
->  #ifdef CONFIG_MEMORY_HOTPLUG
->  int create_section_mapping(unsigned long start, unsigned long end)
->  {
-> -	return htab_bolt_mapping(start, end, __pa(start),
-> -				 pgprot_val(PAGE_KERNEL), mmu_linear_psize,
-> -				 mmu_kernel_ssize);
-> +	int rc = htab_bolt_mapping(start, end, __pa(start),
-> +				   pgprot_val(PAGE_KERNEL), mmu_linear_psize,
-> +				   mmu_kernel_ssize);
-> +
-> +	if (rc < 0) {
-> +		int rc2 = htab_remove_mapping(start, end, mmu_linear_psize,
-> +					      mmu_kernel_ssize);
-> +		BUG_ON(rc2 && (rc2 != -ENOENT));
-> +	}
-> +	return rc;
->  }
->  
->  int remove_section_mapping(unsigned long start, unsigned long end)
-> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-> index baa1a23..fbc9448 100644
-> --- a/arch/powerpc/mm/init_64.c
-> +++ b/arch/powerpc/mm/init_64.c
-> @@ -188,9 +188,9 @@ static int __meminit vmemmap_populated(unsigned long start, int page_size)
->   */
->  
->  #ifdef CONFIG_PPC_BOOK3E
-> -static void __meminit vmemmap_create_mapping(unsigned long start,
-> -					     unsigned long page_size,
-> -					     unsigned long phys)
-> +static int __meminit vmemmap_create_mapping(unsigned long start,
-> +					    unsigned long page_size,
-> +					    unsigned long phys)
->  {
->  	/* Create a PTE encoding without page size */
->  	unsigned long i, flags = _PAGE_PRESENT | _PAGE_ACCESSED |
-> @@ -208,6 +208,8 @@ static void __meminit vmemmap_create_mapping(unsigned long start,
->  	 */
->  	for (i = 0; i < page_size; i += PAGE_SIZE)
->  		BUG_ON(map_kernel_page(start + i, phys, flags));
-> +
-> +	return 0;
->  }
->  
->  #ifdef CONFIG_MEMORY_HOTPLUG
-> @@ -217,15 +219,20 @@ static void vmemmap_remove_mapping(unsigned long start,
->  }
->  #endif
->  #else /* CONFIG_PPC_BOOK3E */
-> -static void __meminit vmemmap_create_mapping(unsigned long start,
-> -					     unsigned long page_size,
-> -					     unsigned long phys)
-> +static int __meminit vmemmap_create_mapping(unsigned long start,
-> +					    unsigned long page_size,
-> +					    unsigned long phys)
->  {
-> -	int  mapped = htab_bolt_mapping(start, start + page_size, phys,
-> -					pgprot_val(PAGE_KERNEL),
-> -					mmu_vmemmap_psize,
-> -					mmu_kernel_ssize);
-> -	BUG_ON(mapped < 0);
-> +	int rc = htab_bolt_mapping(start, start + page_size, phys,
-> +				   pgprot_val(PAGE_KERNEL),
-> +				   mmu_vmemmap_psize, mmu_kernel_ssize);
-> +	if (rc < 0) {
-> +		int rc2 = htab_remove_mapping(start, start + page_size,
-> +					      mmu_vmemmap_psize,
-> +					      mmu_kernel_ssize);
-> +		BUG_ON(rc2 && (rc2 != -ENOENT));
-> +	}
-> +	return rc;
->  }
->  
->  #ifdef CONFIG_MEMORY_HOTPLUG
-> @@ -304,6 +311,7 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
->  
->  	for (; start < end; start += page_size) {
->  		void *p;
-> +		int rc;
->  
->  		if (vmemmap_populated(start, page_size))
->  			continue;
-> @@ -317,7 +325,13 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
->  		pr_debug("      * %016lx..%016lx allocated at %p\n",
->  			 start, start + page_size, p);
->  
-> -		vmemmap_create_mapping(start, page_size, __pa(p));
-> +		rc = vmemmap_create_mapping(start, page_size, __pa(p));
-> +		if (rc < 0) {
-> +			pr_warning(
-> +				"vmemmap_populate: Unable to create vmemmap mapping: %d\n",
-> +				rc);
-> +			return -EFAULT;
-> +		}
->  	}
->  
+> @@ -611,10 +611,26 @@ static int __init htab_dt_scan_pftsize(unsigned long node,
 >  	return 0;
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index d0f0a51..f980da6 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -119,12 +119,18 @@ int arch_add_memory(int nid, u64 start, u64 size, bool for_device)
->  	struct zone *zone;
->  	unsigned long start_pfn = start >> PAGE_SHIFT;
->  	unsigned long nr_pages = size >> PAGE_SHIFT;
-> +	int rc;
+>  }
 >  
->  	pgdata = NODE_DATA(nid);
+> -static unsigned long __init htab_get_table_size(void)
+> +unsigned htab_shift_for_mem_size(unsigned long mem_size)
+>  {
+> -	unsigned long mem_size, rnd_mem_size, pteg_count, psize;
+> +	unsigned memshift = __ilog2(mem_size);
+> +	unsigned pshift = mmu_psize_defs[mmu_virtual_psize].shift;
+> +	unsigned pteg_shift;
+> +
+> +	/* round mem_size up to next power of 2 */
+> +	if ((1UL << memshift) < mem_size)
+> +		memshift += 1;
+> +
+> +	/* aim for 2 pages / pteg */
+> +	pteg_shift = memshift - (pshift + 1);
+> +
+> +	/* 2^11 PTEGS / 2^18 bytes is the minimum htab size permitted
+> +	 * by the architecture */
+> +	return max(pteg_shift + 7, 18U);
+> +}
 >  
->  	start = (unsigned long)__va(start);
-> -	if (create_section_mapping(start, start + size))
-> -		return -EINVAL;
-> +	rc = create_section_mapping(start, start + size);
-> +	if (rc) {
-> +		pr_warning(
-> +			"Unable to create mapping for hot added memory 0x%llx..0x%llx: %d\n",
-> +			start, start + size, rc);
-> +		return -EFAULT;
-> +	}
+> +static unsigned long __init htab_get_table_size(void)
+> +{
+>  	/* If hash size isn't already provided by the platform, we try to
+>  	 * retrieve it from the device-tree. If it's not there neither, we
+>  	 * calculate it now based on the total RAM size
+> @@ -624,17 +640,7 @@ static unsigned long __init htab_get_table_size(void)
+>  	if (ppc64_pft_size)
+>  		return 1UL << ppc64_pft_size;
 >  
->  	/* this should work for most non-highmem platforms */
->  	zone = pgdata->node_zones +
+> -	/* round mem_size up to next power of 2 */
+> -	mem_size = memblock_phys_mem_size();
+> -	rnd_mem_size = 1UL << __ilog2(mem_size);
+> -	if (rnd_mem_size < mem_size)
+> -		rnd_mem_size <<= 1;
+> -
+> -	/* # pages / 2 */
+> -	psize = mmu_psize_defs[mmu_virtual_psize].shift;
+> -	pteg_count = max(rnd_mem_size >> (psize + 1), 1UL << 11);
+> -
+> -	return pteg_count << 7;
+> +	return 1UL << htab_shift_for_mem_size(memblock_phys_mem_size());
+>  }
+>  
+>  #ifdef CONFIG_MEMORY_HOTPLUG
 > -- 
 > 2.5.0
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
