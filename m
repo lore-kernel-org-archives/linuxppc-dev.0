@@ -2,20 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0E7811A03AA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 11:33:34 +1100 (AEDT)
-Message-ID: <1455064413.7576.3.camel@ellerman.id.au>
-Subject: Re: [PATCH v7 07/10] ppc64 ftrace: disable profiling for some files
+ by lists.ozlabs.org (Postfix) with ESMTPS id 198D51A039F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 12:50:39 +1100 (AEDT)
+Message-ID: <1455069038.7576.6.camel@ellerman.id.au>
+Subject: Re: [PATCH v7 06/10] ppc64 ftrace: disable profiling for some
+ functions
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Torsten Duwe <duwe@lst.de>
 Cc: Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>, Petr
  Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>, Steven Rostedt
  <rostedt@goodmis.org>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
-Date: Wed, 10 Feb 2016 11:33:33 +1100
-In-Reply-To: <20160204162114.09AD4692E0@newverein.lst.de>
+Date: Wed, 10 Feb 2016 12:50:38 +1100
+In-Reply-To: <20160204162107.65ECE692DF@newverein.lst.de>
 References: <20160204161527.5F3AC692CD@newverein.lst.de>
- <20160204162114.09AD4692E0@newverein.lst.de>
+ <20160204162107.65ECE692DF@newverein.lst.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,15 +30,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Mon, 2016-01-25 at 16:31 +0100, Torsten Duwe wrote:
 
-> This patch complements the "notrace" attribute for selected functions.
-> It adds -mprofile-kernel to the cc flags to be stripped from the command
-> line for code-patching.o and feature-fixups.o, in addition to "-pg"
+> At least POWER7/8 have MMUs that don't completely autoload;
+> a normal, recoverable memory fault might pass through these functions.
+> If a dynamic tracer function causes such a fault, any of these functions
+> being traced with -mprofile-kernel may cause an endless recursion.
 
-This could probably be folded into patch 5, and the combined patch would be
-"remove -mprofile-kernel in all the same places we remove -pg and for the same
-reasons".
+I'm not really happy with this one, still :)
 
-I can't think of anywhere we would want to disable -pg but not disable
--mprofile-kernel? Or vice versa.
+At the moment I can trace these without any problems, with either ftrace or
+kprobes, but obviously it was causing you some trouble. So I'd like to
+understand why you were having issues when regular tracing doesn't.
+
+If it's the case that tracing can work for these functions, but live patching
+doesn't (for some reason), then maybe these should be blocked by the live
+patching infrastructure rather than at the ftrace/kprobes level.
 
 cheers
