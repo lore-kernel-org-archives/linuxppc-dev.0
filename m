@@ -1,20 +1,31 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D0E1A1A0019
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 14:22:45 +1100 (AEDT)
-Message-ID: <1455160957.2463.14.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Alessio Igor Bogani <alessio.bogani@elettra.eu>, Kumar Gala
- <galak@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Wed, 10 Feb 2016 21:22:37 -0600
-In-Reply-To: <1455096160-5868-1-git-send-email-alessio.bogani@elettra.eu>
-References: <1455096160-5868-1-git-send-email-alessio.bogani@elettra.eu>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: powerpc/86xx: Use config fragments approach
+ by lists.ozlabs.org (Postfix) with ESMTPS id DEEF81A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 15:03:01 +1100 (AEDT)
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Thu, 11 Feb 2016 14:03:00 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4D741357803F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 15:02:51 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1B42ZwX43057180
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 15:02:46 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1B42FKC010629
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 15:02:15 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH kernel v2] powerpc: Make vmalloc_to_phys() public
+Date: Thu, 11 Feb 2016 15:01:18 +1100
+Message-Id: <1455163278-42034-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,59 +35,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-02-10 at 10:22 +0100, Alessio Igor Bogani wrote:
-> Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-> ---
->  arch/powerpc/Makefile                            |  10 +
->  arch/powerpc/configs/86xx-32bit.config           |   4 +
->  arch/powerpc/configs/86xx-hw.config              | 106 +++++++++
->  arch/powerpc/configs/86xx-smp.config             |   2 +
->  arch/powerpc/configs/86xx/gef_ppc9a_defconfig    | 216 ------------------
->  arch/powerpc/configs/86xx/gef_sbc310_defconfig   | 214 ------------------
->  arch/powerpc/configs/86xx/gef_sbc610_defconfig   | 273 --------------------
-> ---
->  arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig | 110 ---------
->  arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig | 156 -------------
->  arch/powerpc/configs/86xx/sbc8641d_defconfig     | 246 --------------------
->  arch/powerpc/configs/mpc86xx_basic_defconfig     |   6 +
->  arch/powerpc/configs/mpc86xx_defconfig           | 162 --------------
->  12 files changed, 128 insertions(+), 1377 deletions(-)
->  create mode 100644 arch/powerpc/configs/86xx-32bit.config
->  create mode 100644 arch/powerpc/configs/86xx-hw.config
->  create mode 100644 arch/powerpc/configs/86xx-smp.config
->  delete mode 100644 arch/powerpc/configs/86xx/gef_ppc9a_defconfig
->  delete mode 100644 arch/powerpc/configs/86xx/gef_sbc310_defconfig
->  delete mode 100644 arch/powerpc/configs/86xx/gef_sbc610_defconfig
->  delete mode 100644 arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig
->  delete mode 100644 arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig
->  delete mode 100644 arch/powerpc/configs/86xx/sbc8641d_defconfig
->  create mode 100644 arch/powerpc/configs/mpc86xx_basic_defconfig
->  delete mode 100644 arch/powerpc/configs/mpc86xx_defconfig
+This makes vmalloc_to_phys() public as there will be another user
+(KVM in-kernel VFIO acceleration) for it soon. As this new user
+can be compiled as a module, this exports the symbol.
 
-Why do your patches not start with [PATCH]?
+As a little optimization, this changes the helper to call
+vmalloc_to_pfn() instead of vmalloc_to_page() as the size of the
+struct page may not be power-of-two aligned which will make gcc use
+multiply instructions instead of shifts.
 
-How does the resulting config compare to the individual previous configs?  Are
-there any options that were dropped from the union of the old configs? 
- Mutually exclusive options that had to be resolved one way or another? 
- Changes in non-hw options?
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+---
 
-It would be nice to do what I did with 85xx in commit 7e2ad2ef851, and start
-with a patch that makes the defconfigs conform to what the new approach will
-give (to more easily see what is changing), and then have the next patch
-switch to fragments.
+Changes:
+v2:
+* extended commit log with a note about exporting
+---
+ arch/powerpc/include/asm/pgtable.h | 3 +++
+ arch/powerpc/mm/pgtable.c          | 8 ++++++++
+ arch/powerpc/perf/hv-24x7.c        | 8 --------
+ 3 files changed, 11 insertions(+), 8 deletions(-)
 
-> diff --git a/arch/powerpc/configs/86xx-32bit.config
-> b/arch/powerpc/configs/86xx-32bit.config
-> new file mode 100644
-> index 0000000..8a2c6ff
-> --- /dev/null
-> +++ b/arch/powerpc/configs/86xx-32bit.config
-> @@ -0,0 +1,4 @@
-> +CONFIG_HIGHMEM=y
-> +CONFIG_KEXEC=y
-> +CONFIG_PPC_86xx=y
-> +CONFIG_PROC_KCORE=y
-
-Why is this not in mpc86xx_basic_defconfig?  There is no 64-bit 86xx.
-
--Scott
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index ac9fb11..47897a3 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -78,6 +78,9 @@ static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
+ 	}
+ 	return __find_linux_pte_or_hugepte(pgdir, ea, is_thp, shift);
+ }
++
++unsigned long vmalloc_to_phys(void *vmalloc_addr);
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_PGTABLE_H */
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 83dfd79..de37ff4 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -243,3 +243,11 @@ void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
+ }
+ #endif /* CONFIG_DEBUG_VM */
+ 
++unsigned long vmalloc_to_phys(void *va)
++{
++	unsigned long pfn = vmalloc_to_pfn(va);
++
++	BUG_ON(!pfn);
++	return __pa(pfn_to_kaddr(pfn)) + offset_in_page(va);
++}
++EXPORT_SYMBOL_GPL(vmalloc_to_phys);
+diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+index 9f9dfda..3b09ecf 100644
+--- a/arch/powerpc/perf/hv-24x7.c
++++ b/arch/powerpc/perf/hv-24x7.c
+@@ -493,14 +493,6 @@ static size_t event_to_attr_ct(struct hv_24x7_event_data *event)
+ 	}
+ }
+ 
+-static unsigned long vmalloc_to_phys(void *v)
+-{
+-	struct page *p = vmalloc_to_page(v);
+-
+-	BUG_ON(!p);
+-	return page_to_phys(p) + offset_in_page(v);
+-}
+-
+ /* */
+ struct event_uniq {
+ 	struct rb_node node;
+-- 
+2.5.0.rc3
