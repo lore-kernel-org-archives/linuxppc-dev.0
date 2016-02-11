@@ -1,20 +1,16 @@
-Return-Path: <abounine@ott.idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D78B31A003D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 01:37:59 +1100 (AEDT)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
- Matt Porter <mporter@kernel.crashing.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Aurelien Jacquiot <a-jacquiot@ti.com>,
- Andre van Herk <andre.van.herk@prodrive-technologies.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/fsl_rio: update for port-write interface change
-Date: Thu, 11 Feb 2016 09:37:41 -0500
-Message-Id: <1455201461-598-1-git-send-email-alexandre.bounine@idt.com>
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from elettra.eu (m1.elettra.trieste.it [140.105.206.201])
+ by lists.ozlabs.org (Postfix) with ESMTP id 70C871A00F8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 01:38:50 +1100 (AEDT)
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+To: Scott Wood <oss@buserror.net>,
+	Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Denis Kirjanov <kda@linux-powerpc.org>,
+ Alessio Igor Bogani <alessio.bogani@elettra.eu>
+Subject: [PATCH v3 1/1] powerpc/86xx: Consolidate common platform code
+Date: Thu, 11 Feb 2016 15:38:46 +0100
+Message-Id: <1455201526-2400-1-git-send-email-alessio.bogani@elettra.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,92 +20,359 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Platform-specific update following changes in port-write handler interface.
-
-This is a follow-up patch for
-    [PATCH 22/30] rapidio: add global inbound port write interfaces
-
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Aurelien Jacquiot <a-jacquiot@ti.com>
-Cc: Andre van Herk <andre.van.herk@prodrive-technologies.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
 ---
- arch/powerpc/sysdev/fsl_rio.c |    1 +
- arch/powerpc/sysdev/fsl_rio.h |    1 +
- arch/powerpc/sysdev/fsl_rmu.c |   16 ++++++++++------
- 3 files changed, 12 insertions(+), 6 deletions(-)
+v2 -> v3
+	Use isync() as suggested by Denis Kirjanov
 
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index 385371a..f5bf38b9 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -726,6 +726,7 @@ int fsl_rio_setup(struct platform_device *dev)
- 		fsl_rio_inbound_mem_init(priv);
+v1 -> v2
+	Use appropriate [PATCH] prefix
+
+ arch/powerpc/platforms/86xx/Makefile       |  2 +-
+ arch/powerpc/platforms/86xx/common.c       | 43 ++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/86xx/gef_ppc9a.c    | 32 +---------------------
+ arch/powerpc/platforms/86xx/gef_sbc310.c   | 32 +---------------------
+ arch/powerpc/platforms/86xx/gef_sbc610.c   | 32 +---------------------
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c | 20 ++------------
+ arch/powerpc/platforms/86xx/mpc86xx.h      |  2 ++
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c | 21 +--------------
+ arch/powerpc/platforms/86xx/sbc8641d.c     | 32 +---------------------
+ 9 files changed, 53 insertions(+), 163 deletions(-)
+ create mode 100644 arch/powerpc/platforms/86xx/common.c
+
+diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
+index ede815d..2d889ad 100644
+--- a/arch/powerpc/platforms/86xx/Makefile
++++ b/arch/powerpc/platforms/86xx/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for the PowerPC 86xx linux kernel.
+ #
  
- 		dbell->mport[i] = port;
-+		pw->mport[i] = port;
- 
- 		if (rio_register_mport(port)) {
- 			release_resource(&port->iores);
-diff --git a/arch/powerpc/sysdev/fsl_rio.h b/arch/powerpc/sysdev/fsl_rio.h
-index d53407a..12dd18f 100644
---- a/arch/powerpc/sysdev/fsl_rio.h
-+++ b/arch/powerpc/sysdev/fsl_rio.h
-@@ -97,6 +97,7 @@ struct fsl_rio_dbell {
- };
- 
- struct fsl_rio_pw {
-+	struct rio_mport *mport[MAX_PORT_NUM];
- 	struct device *dev;
- 	struct rio_pw_regs __iomem *pw_regs;
- 	struct rio_port_write_msg port_write_msg;
-diff --git a/arch/powerpc/sysdev/fsl_rmu.c b/arch/powerpc/sysdev/fsl_rmu.c
-index b48197a..176acfc 100644
---- a/arch/powerpc/sysdev/fsl_rmu.c
-+++ b/arch/powerpc/sysdev/fsl_rmu.c
-@@ -481,14 +481,14 @@ pw_done:
- static void fsl_pw_dpc(struct work_struct *work)
- {
- 	struct fsl_rio_pw *pw = container_of(work, struct fsl_rio_pw, pw_work);
--	u32 msg_buffer[RIO_PW_MSG_SIZE/sizeof(u32)];
-+	union rio_pw_msg msg_buffer;
-+	int i;
- 
- 	/*
- 	 * Process port-write messages
- 	 */
--	while (kfifo_out_spinlocked(&pw->pw_fifo, (unsigned char *)msg_buffer,
-+	while (kfifo_out_spinlocked(&pw->pw_fifo, (unsigned char *)&msg_buffer,
- 			 RIO_PW_MSG_SIZE, &pw->pw_fifo_lock)) {
--		/* Process one message */
- #ifdef DEBUG_PW
- 		{
- 		u32 i;
-@@ -496,15 +496,19 @@ static void fsl_pw_dpc(struct work_struct *work)
- 		for (i = 0; i < RIO_PW_MSG_SIZE/sizeof(u32); i++) {
- 			if ((i%4) == 0)
- 				pr_debug("\n0x%02x: 0x%08x", i*4,
--					 msg_buffer[i]);
-+					 msg_buffer.raw[i]);
- 			else
--				pr_debug(" 0x%08x", msg_buffer[i]);
-+				pr_debug(" 0x%08x", msg_buffer.raw[i]);
- 		}
- 		pr_debug("\n");
- 		}
- #endif
- 		/* Pass the port-write message to RIO core for processing */
--		rio_inb_pwrite_handler((union rio_pw_msg *)msg_buffer);
-+		for (i = 0; i < MAX_PORT_NUM; i++) {
-+			if (pw->mport[i])
-+				rio_inb_pwrite_handler(pw->mport[i],
-+						       &msg_buffer);
-+		}
- 	}
+-obj-y				:= pic.o
++obj-y				:= pic.o common.o
+ obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
+ obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
+ obj-$(CONFIG_SBC8641D)		+= sbc8641d.o
+diff --git a/arch/powerpc/platforms/86xx/common.c b/arch/powerpc/platforms/86xx/common.c
+new file mode 100644
+index 0000000..0f7b7fc
+--- /dev/null
++++ b/arch/powerpc/platforms/86xx/common.c
+@@ -0,0 +1,43 @@
++/*
++ * Routines common to most mpc86xx-based boards.
++ *
++ * This is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/of_platform.h>
++#include <asm/synch.h>
++
++#include "mpc86xx.h"
++
++static const struct of_device_id mpc86xx_common_ids[] __initconst = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{ .compatible = "simple-bus", },
++	{ .name = "localbus", },
++	{ .compatible = "gianfar", },
++	{ .compatible = "fsl,mpc8641-pcie", },
++	{},
++};
++
++int __init mpc86xx_common_publish_devices(void)
++{
++	return of_platform_bus_probe(NULL, mpc86xx_common_ids, NULL);
++}
++
++long __init mpc86xx_time_init(void)
++{
++	unsigned int temp;
++
++	/* Set the time base to zero */
++	mtspr(SPRN_TBWL, 0);
++	mtspr(SPRN_TBWU, 0);
++
++	temp = mfspr(SPRN_HID0);
++	temp |= HID0_TBEN;
++	mtspr(SPRN_HID0, temp);
++	isync();
++
++	return 0;
++}
+diff --git a/arch/powerpc/platforms/86xx/gef_ppc9a.c b/arch/powerpc/platforms/86xx/gef_ppc9a.c
+index bf17933..8e63b75 100644
+--- a/arch/powerpc/platforms/86xx/gef_ppc9a.c
++++ b/arch/powerpc/platforms/86xx/gef_ppc9a.c
+@@ -197,37 +197,7 @@ static int __init gef_ppc9a_probe(void)
+ 	return 0;
  }
  
+-static long __init mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+-	{},
+-};
+-
+-static int __init declare_of_platform_devices(void)
+-{
+-	printk(KERN_DEBUG "Probe platform devices\n");
+-	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+-
+-	return 0;
+-}
+-machine_arch_initcall(gef_ppc9a, declare_of_platform_devices);
++machine_arch_initcall(gef_ppc9a, mpc86xx_common_publish_devices);
+ 
+ define_machine(gef_ppc9a) {
+ 	.name			= "GE PPC9A",
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc310.c b/arch/powerpc/platforms/86xx/gef_sbc310.c
+index 8facf58..0e0be94 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc310.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc310.c
+@@ -184,37 +184,7 @@ static int __init gef_sbc310_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+-	{},
+-};
+-
+-static int __init declare_of_platform_devices(void)
+-{
+-	printk(KERN_DEBUG "Probe platform devices\n");
+-	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+-
+-	return 0;
+-}
+-machine_arch_initcall(gef_sbc310, declare_of_platform_devices);
++machine_arch_initcall(gef_sbc310, mpc86xx_common_publish_devices);
+ 
+ define_machine(gef_sbc310) {
+ 	.name			= "GE SBC310",
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
+index 8c9058d..e8292b4 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc610.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
+@@ -174,37 +174,7 @@ static int __init gef_sbc610_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+-	{},
+-};
+-
+-static int __init declare_of_platform_devices(void)
+-{
+-	printk(KERN_DEBUG "Probe platform devices\n");
+-	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+-
+-	return 0;
+-}
+-machine_arch_initcall(gef_sbc610, declare_of_platform_devices);
++machine_arch_initcall(gef_sbc610, mpc86xx_common_publish_devices);
+ 
+ define_machine(gef_sbc610) {
+ 	.name			= "GE SBC610",
+diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+index 437a9c3..957473e 100644
+--- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
++++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+@@ -88,12 +88,10 @@ static inline void mpc8610_suspend_init(void) { }
+ static const struct of_device_id mpc8610_ids[] __initconst = {
+ 	{ .compatible = "fsl,mpc8610-immr", },
+ 	{ .compatible = "fsl,mpc8610-guts", },
+-	{ .compatible = "simple-bus", },
+ 	/* So that the DMA channel nodes can be probed individually: */
+ 	{ .compatible = "fsl,eloplus-dma", },
+ 	/* PCI controllers */
+ 	{ .compatible = "fsl,mpc8610-pci", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+ 	{}
+ };
+ 
+@@ -105,6 +103,8 @@ static int __init mpc8610_declare_of_platform_devices(void)
+ 	/* Enable wakeup on PIXIS' event IRQ. */
+ 	mpc8610_suspend_init();
+ 
++	mpc86xx_common_publish_devices();
++
+ 	/* Without this call, the SSI device driver won't get probed. */
+ 	of_platform_bus_probe(NULL, mpc8610_ids, NULL);
+ 
+@@ -327,22 +327,6 @@ static int __init mpc86xx_hpcd_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+ define_machine(mpc86xx_hpcd) {
+ 	.name			= "MPC86xx HPCD",
+ 	.probe			= mpc86xx_hpcd_probe,
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx.h b/arch/powerpc/platforms/86xx/mpc86xx.h
+index 08efb57..53500db 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx.h
++++ b/arch/powerpc/platforms/86xx/mpc86xx.h
+@@ -17,5 +17,7 @@
+ 
+ extern void mpc86xx_smp_init(void);
+ extern void mpc86xx_init_irq(void);
++extern long mpc86xx_time_init(void);
++extern int mpc86xx_common_publish_devices(void);
+ 
+ #endif	/* __MPC86XX_H__ */
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index 07ccb1b..e508481 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -110,33 +110,14 @@ static int __init mpc86xx_hpcn_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init
+-mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+ static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+ 	{ .compatible = "fsl,srio", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+ 	{},
+ };
+ 
+ static int __init declare_of_platform_devices(void)
+ {
++	mpc86xx_common_publish_devices();
+ 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+ 
+ 	return 0;
+diff --git a/arch/powerpc/platforms/86xx/sbc8641d.c b/arch/powerpc/platforms/86xx/sbc8641d.c
+index 6810b71..2a9cf27 100644
+--- a/arch/powerpc/platforms/86xx/sbc8641d.c
++++ b/arch/powerpc/platforms/86xx/sbc8641d.c
+@@ -75,37 +75,7 @@ static int __init sbc8641_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init
+-mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+-	{},
+-};
+-
+-static int __init declare_of_platform_devices(void)
+-{
+-	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+-
+-	return 0;
+-}
+-machine_arch_initcall(sbc8641, declare_of_platform_devices);
++machine_arch_initcall(sbc8641, mpc86xx_common_publish_devices);
+ 
+ define_machine(sbc8641) {
+ 	.name			= "SBC8641D",
 -- 
-1.7.8.4
+2.7.1
