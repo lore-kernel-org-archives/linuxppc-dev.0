@@ -1,26 +1,26 @@
 Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4804D1A0019
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 12:32:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 270251A0063
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 12:32:44 +1100 (AEDT)
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 10 Feb 2016 18:32:41 -0700
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 085BE3E40047
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 18:32:38 -0700 (MST)
+ Wed, 10 Feb 2016 20:32:42 -0500
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 9D63EC90042
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:32:37 -0500 (EST)
 Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1B1Wc8A21430296
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 01:32:38 GMT
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1B1WdBF35061938
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 01:32:39 GMT
 Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
  by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1B1TLo0003673
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:29:21 -0500
+ u1B1TMFR003713
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:29:22 -0500
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 To: james.bottomley@hansenpartnership.com
 Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
@@ -28,10 +28,10 @@ Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
  nfont@linux.vnet.ibm.com, brking@linux.vnet.ibm.com,
  jthumshirn@suse.de, manoj@linux.vnet.ibm.com,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: [PATCH v2 3/7] ibmvscsi: Replace magic values in set_adpater_info()
- with defines
-Date: Wed, 10 Feb 2016 19:32:24 -0600
-Message-Id: <1455154348-3226-4-git-send-email-tyreld@linux.vnet.ibm.com>
+Subject: [PATCH v2 4/7] ibmvscsi: Use of_root to access OF device tree root
+ node
+Date: Wed, 10 Feb 2016 19:32:25 -0600
+Message-Id: <1455154348-3226-5-git-send-email-tyreld@linux.vnet.ibm.com>
 In-Reply-To: <1455154348-3226-1-git-send-email-tyreld@linux.vnet.ibm.com>
 References: <1455154348-3226-1-git-send-email-tyreld@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,62 +43,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add defines for mad version and mad os_type, and replace the magic
-numbers in set_adapter_info() accordingly.
+The root node of the OF device tree is exported as of_root. No need
+to look up the root by path name. Instead just get a reference
+directly via of_root.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Reviewed-by: Johannes Thumshirn <jthumshirn@suse.de>
 ---
- drivers/scsi/ibmvscsi/ibmvscsi.c | 8 ++++----
- drivers/scsi/ibmvscsi/viosrp.h   | 3 +++
- 2 files changed, 7 insertions(+), 4 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvscsi.c | 14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index c888ea1..4b09a9b 100644
+index 4b09a9b..c208295 100644
 --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
 +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -283,8 +283,8 @@ static void set_adapter_info(struct ibmvscsi_host_data *hostdata)
- 	hostdata->madapter_info.partition_number =
- 					cpu_to_be32(partition_number);
+@@ -248,25 +248,23 @@ static void ibmvscsi_task(void *data)
  
--	hostdata->madapter_info.mad_version = cpu_to_be32(1);
--	hostdata->madapter_info.os_type = cpu_to_be32(2);
-+	hostdata->madapter_info.mad_version = cpu_to_be32(SRP_MAD_VERSION_1);
-+	hostdata->madapter_info.os_type = cpu_to_be32(SRP_MAD_OS_LINUX);
+ static void gather_partition_info(void)
+ {
+-	struct device_node *rootdn;
+-
+ 	const char *ppartition_name;
+ 	const __be32 *p_number_ptr;
+ 
+ 	/* Retrieve information about this partition */
+-	rootdn = of_find_node_by_path("/");
+-	if (!rootdn) {
++	if (!of_root)
+ 		return;
+-	}
+ 
+-	ppartition_name = of_get_property(rootdn, "ibm,partition-name", NULL);
++	of_node_get(of_root);
++
++	ppartition_name = of_get_property(of_root, "ibm,partition-name", NULL);
+ 	if (ppartition_name)
+ 		strncpy(partition_name, ppartition_name,
+ 				sizeof(partition_name));
+-	p_number_ptr = of_get_property(rootdn, "ibm,partition-no", NULL);
++	p_number_ptr = of_get_property(of_root, "ibm,partition-no", NULL);
+ 	if (p_number_ptr)
+ 		partition_number = of_read_number(p_number_ptr, 1);
+-	of_node_put(rootdn);
++	of_node_put(of_root);
  }
  
- /**
-@@ -1398,7 +1398,7 @@ static void adapter_info_rsp(struct srp_event_struct *evt_struct)
- 			hostdata->host->max_sectors = 
- 				be32_to_cpu(hostdata->madapter_info.port_max_txu[0]) >> 9;
- 		
--		if (be32_to_cpu(hostdata->madapter_info.os_type) == 3 &&
-+		if (be32_to_cpu(hostdata->madapter_info.os_type) == SRP_MAD_OS_AIX &&
- 		    strcmp(hostdata->madapter_info.srp_version, "1.6a") <= 0) {
- 			dev_err(hostdata->dev, "host (Ver. %s) doesn't support large transfers\n",
- 				hostdata->madapter_info.srp_version);
-@@ -1407,7 +1407,7 @@ static void adapter_info_rsp(struct srp_event_struct *evt_struct)
- 			hostdata->host->sg_tablesize = MAX_INDIRECT_BUFS;
- 		}
- 
--		if (be32_to_cpu(hostdata->madapter_info.os_type) == 3) {
-+		if (be32_to_cpu(hostdata->madapter_info.os_type) == SRP_MAD_OS_AIX) {
- 			enable_fast_fail(hostdata);
- 			return;
- 		}
-diff --git a/drivers/scsi/ibmvscsi/viosrp.h b/drivers/scsi/ibmvscsi/viosrp.h
-index 3d20851..d0f689b 100644
---- a/drivers/scsi/ibmvscsi/viosrp.h
-+++ b/drivers/scsi/ibmvscsi/viosrp.h
-@@ -221,7 +221,10 @@ struct mad_adapter_info_data {
- 	char srp_version[8];
- 	char partition_name[96];
- 	__be32 partition_number;
-+#define SRP_MAD_VERSION_1 1
- 	__be32 mad_version;
-+#define SRP_MAD_OS_LINUX 2
-+#define SRP_MAD_OS_AIX 3
- 	__be32 os_type;
- 	__be32 port_max_txu[8];	/* per-port maximum transfer */
- };
+ static void set_adapter_info(struct ibmvscsi_host_data *hostdata)
 -- 
 2.5.0
