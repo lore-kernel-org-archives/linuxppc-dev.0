@@ -1,26 +1,26 @@
 Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E84AD1A001D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 12:32:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5FB2E1A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 12:32:42 +1100 (AEDT)
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 10 Feb 2016 18:32:40 -0700
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id B5B151FF0046
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 18:20:47 -0700 (MST)
+ Wed, 10 Feb 2016 20:32:39 -0500
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 73720C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:32:33 -0500 (EST)
 Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1B1WbHJ27918486
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 01:32:37 GMT
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1B1WZxn27394048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 01:32:35 GMT
 Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
  by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1B1TKD5003642
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:29:20 -0500
+ u1B1TIU4003594
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:29:18 -0500
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 To: james.bottomley@hansenpartnership.com
 Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
@@ -28,11 +28,9 @@ Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
  nfont@linux.vnet.ibm.com, brking@linux.vnet.ibm.com,
  jthumshirn@suse.de, manoj@linux.vnet.ibm.com,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: [PATCH v2 2/7] ibmvscsi: Add and use enums for valid CRQ header values
-Date: Wed, 10 Feb 2016 19:32:23 -0600
-Message-Id: <1455154348-3226-3-git-send-email-tyreld@linux.vnet.ibm.com>
-In-Reply-To: <1455154348-3226-1-git-send-email-tyreld@linux.vnet.ibm.com>
-References: <1455154348-3226-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/7] ibmvscsi code cleanup
+Date: Wed, 10 Feb 2016 19:32:21 -0600
+Message-Id: <1455154348-3226-1-git-send-email-tyreld@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,121 +40,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PAPR defines four valid header values for the first byte of a
-CRQ message. Namely, an unused/empty message (0x00), a valid
-command/response entry (0x80), a valid initialization entry (0xC0),
-and a valid transport event (0xFF). Further, initialization responses
-have two formats namely initialize (0x01) and initialize complete
-(0x02). Define these values as enums and use them in the code in
-place of their magic number equivalents.
+Fixed up a couple spots that were out of line with the PAPR in regards
+to its defined VSCSI protocol. Did away with some magic numbers directly
+in the code. Fixed a minor endian issue.
 
-Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
----
- drivers/scsi/ibmvscsi/ibmvscsi.c | 18 +++++++++---------
- drivers/scsi/ibmvscsi/viosrp.h   | 12 ++++++++++++
- 2 files changed, 21 insertions(+), 9 deletions(-)
+--
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index adfef9d..c888ea1 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -182,7 +182,7 @@ static struct viosrp_crq *crq_queue_next_crq(struct crq_queue *queue)
- 
- 	spin_lock_irqsave(&queue->lock, flags);
- 	crq = &queue->msgs[queue->cur];
--	if (crq->valid & 0x80) {
-+	if (crq->valid != VIOSRP_CRQ_FREE) {
- 		if (++queue->cur == queue->size)
- 			queue->cur = 0;
- 
-@@ -231,7 +231,7 @@ static void ibmvscsi_task(void *data)
- 		/* Pull all the valid messages off the CRQ */
- 		while ((crq = crq_queue_next_crq(&hostdata->queue)) != NULL) {
- 			ibmvscsi_handle_crq(crq, hostdata);
--			crq->valid = 0x00;
-+			crq->valid = VIOSRP_CRQ_FREE;
- 		}
- 
- 		vio_enable_interrupts(vdev);
-@@ -239,7 +239,7 @@ static void ibmvscsi_task(void *data)
- 		if (crq != NULL) {
- 			vio_disable_interrupts(vdev);
- 			ibmvscsi_handle_crq(crq, hostdata);
--			crq->valid = 0x00;
-+			crq->valid = VIOSRP_CRQ_FREE;
- 		} else {
- 			done = 1;
- 		}
-@@ -474,7 +474,7 @@ static int initialize_event_pool(struct event_pool *pool,
- 		struct srp_event_struct *evt = &pool->events[i];
- 		memset(&evt->crq, 0x00, sizeof(evt->crq));
- 		atomic_set(&evt->free, 1);
--		evt->crq.valid = 0x80;
-+		evt->crq.valid = VIOSRP_CRQ_CMD_RSP;
- 		evt->crq.IU_length = cpu_to_be16(sizeof(*evt->xfer_iu));
- 		evt->crq.IU_data_ptr = cpu_to_be64(pool->iu_token +
- 			sizeof(*evt->xfer_iu) * i);
-@@ -1767,9 +1767,9 @@ static void ibmvscsi_handle_crq(struct viosrp_crq *crq,
- 	struct srp_event_struct *evt_struct =
- 			(__force struct srp_event_struct *)crq->IU_data_ptr;
- 	switch (crq->valid) {
--	case 0xC0:		/* initialization */
-+	case VIOSRP_CRQ_INIT_RSP:		/* initialization */
- 		switch (crq->format) {
--		case 0x01:	/* Initialization message */
-+		case VIOSRP_CRQ_INIT:	/* Initialization message */
- 			dev_info(hostdata->dev, "partner initialized\n");
- 			/* Send back a response */
- 			rc = ibmvscsi_send_crq(hostdata, 0xC002000000000000LL, 0);
-@@ -1781,7 +1781,7 @@ static void ibmvscsi_handle_crq(struct viosrp_crq *crq,
- 			}
- 
- 			break;
--		case 0x02:	/* Initialization response */
-+		case VIOSRP_CRQ_INIT_COMPLETE:	/* Initialization response */
- 			dev_info(hostdata->dev, "partner initialization complete\n");
- 
- 			/* Now login */
-@@ -1791,7 +1791,7 @@ static void ibmvscsi_handle_crq(struct viosrp_crq *crq,
- 			dev_err(hostdata->dev, "unknown crq message type: %d\n", crq->format);
- 		}
- 		return;
--	case 0xFF:	/* Hypervisor telling us the connection is closed */
-+	case VIOSRP_CRQ_XPORT_EVENT:	/* Hypervisor telling us the connection is closed */
- 		scsi_block_requests(hostdata->host);
- 		atomic_set(&hostdata->request_limit, 0);
- 		if (crq->format == 0x06) {
-@@ -1807,7 +1807,7 @@ static void ibmvscsi_handle_crq(struct viosrp_crq *crq,
- 			ibmvscsi_reset_host(hostdata);
- 		}
- 		return;
--	case 0x80:		/* real payload */
-+	case VIOSRP_CRQ_CMD_RSP:		/* real payload */
- 		break;
- 	default:
- 		dev_err(hostdata->dev, "got an invalid message type 0x%02x\n",
-diff --git a/drivers/scsi/ibmvscsi/viosrp.h b/drivers/scsi/ibmvscsi/viosrp.h
-index d1044e9..3d20851 100644
---- a/drivers/scsi/ibmvscsi/viosrp.h
-+++ b/drivers/scsi/ibmvscsi/viosrp.h
-@@ -51,6 +51,18 @@ union srp_iu {
- 	u8 reserved[SRP_MAX_IU_LEN];
- };
- 
-+enum viosrp_crq_headers {
-+	VIOSRP_CRQ_FREE = 0x00,
-+	VIOSRP_CRQ_CMD_RSP = 0x80,
-+	VIOSRP_CRQ_INIT_RSP = 0xC0,
-+	VIOSRP_CRQ_XPORT_EVENT = 0xFF
-+};
-+
-+enum viosrp_crq_init_formats {
-+	VIOSRP_CRQ_INIT = 0x01,
-+	VIOSRP_CRQ_INIT_COMPLETE = 0x02
-+};
-+
- enum viosrp_crq_formats {
- 	VIOSRP_SRP_FORMAT = 0x01,
- 	VIOSRP_MAD_FORMAT = 0x02,
+v2 changes:
+
+-Renamed CRQ header enums and added enums for INIT formats
+-Check that crq->valid != VIOSRP_CRQ_FREE before handling in place
+of hacky bitwise & to check for first bit being set.
+-Added define for AIX os_type
+-Left sysfs config attribute to prevent breaking userspace
+
+Tyrel Datwyler (7):
+  ibmvscsi: Correct values for several viosrp_crq_format enums
+  ibmvscsi: Add and use enums for valid CRQ header values
+  ibmvscsi: Replace magic values in set_adpater_info() with defines
+  ibmvscsi: Use of_root to access OF device tree root node
+  ibmvscsi: Remove unsupported host config MAD
+  ibmvscsi: Add endian conversions to sysfs attribute show functions
+  ibmvscsi: use H_CLOSED instead of magic number
+
+ drivers/scsi/ibmvscsi/ibmvscsi.c | 128 ++++++++++-----------------------------
+ drivers/scsi/ibmvscsi/viosrp.h   |  26 +++++---
+ 2 files changed, 49 insertions(+), 105 deletions(-)
+
 -- 
 2.5.0
