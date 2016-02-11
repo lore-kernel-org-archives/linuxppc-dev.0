@@ -1,30 +1,25 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C794A1A0018
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 09:30:33 +1100 (AEDT)
-Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
- [IPv6:2607:f8b0:4003:c06::243])
+Return-Path: <geoff@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7F8FA140BC4
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Feb 2016 09:30:32 +1100 (AEDT)
-Received: by mail-oi0-x243.google.com with SMTP id i14so24872oig.2
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2016 14:30:32 -0800 (PST)
-MIME-Version: 1.0
-Sender: joel.stan@gmail.com
-In-Reply-To: <1455176180-19670-1-git-send-email-andrew.donnellan@au1.ibm.com>
-References: <1455002269-26543-1-git-send-email-andrew.donnellan@au1.ibm.com>
- <1455176180-19670-1-git-send-email-andrew.donnellan@au1.ibm.com>
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 12 Feb 2016 09:00:10 +1030
-Message-ID: <CACPK8XcDL2ogtbAf7yXXs0RpAjHAr4p7SpQo56VDFgeVhnCO4Q@mail.gmail.com>
-Subject: Re: [PATCH V3 1/2] powerpc/powernv: new function to access OPAL msglog
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Stewart Smith <stewart@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5553D1A004B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 10:20:28 +1100 (AEDT)
+Message-ID: <1455232599.3767.5.camel@infradead.org>
+Subject: Re: [PATCH v2 0/4] powerpc/ps3: gelic_udbg: drop local versions of
+ network data structs
+From: Geoff Levand <geoff@infradead.org>
+To: Luis Henriques <luis.henriques@canonical.com>, Michael Ellerman
+ <mpe@ellerman.id.au>
+Cc: Joe Perches <joe@perches.com>, Geert Uytterhoeven
+ <geert@linux-m68k.org>,  linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1454970427-23017-1-git-send-email-luis.henriques@canonical.com>
+References: <1454970427-23017-1-git-send-email-luis.henriques@canonical.com>
+Content-Type: text/html; charset="utf-8"
+Mime-Version: 1.0
+Date: Thu, 11 Feb 2016 23:20:18 +0000
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,172 +29,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 11, 2016 at 6:06 PM, Andrew Donnellan
-<andrew.donnellan@au1.ibm.com> wrote:
-> Currently, the OPAL msglog/console buffer is exposed as a sysfs file, with
-> the sysfs read handler responsible for retrieving the log from the OPAL
-> buffer. We'd like to be able to use it in xmon as well.
->
-> Refactor the OPAL msglog code to create a new function, opal_msglog_copy(),
-> that copies to an arbitrary buffer. Separate the initialisation code into
-> generic memcons init and sysfs file creation.
->
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-
-Reviewed-by: Joel Stanley <joel@jms.id.au>
-
->
-> ---
->
-> Changes V2->V3:
-> - incorporate comments from Joel Stanley
-> - opal_msglog_sysfs_init() now bails out if opal_memcons isn't set
->
-> Changes V1->V2:
-> - Incorporate comments from mpe
-> - Move the memcons pointer out of the bin_attribute struct
-> - Decouple memcons init from sysfs init
-> ---
->  arch/powerpc/include/asm/opal.h              |  3 +++
->  arch/powerpc/platforms/powernv/opal-msglog.c | 34 ++++++++++++++++++++--------
->  arch/powerpc/platforms/powernv/opal.c        |  7 ++++--
->  3 files changed, 32 insertions(+), 12 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> index 07a99e6..9d86c66 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -248,6 +248,7 @@ extern int opal_elog_init(void);
->  extern void opal_platform_dump_init(void);
->  extern void opal_sys_param_init(void);
->  extern void opal_msglog_init(void);
-> +extern void opal_msglog_sysfs_init(void);
->  extern int opal_async_comp_init(void);
->  extern int opal_sensor_init(void);
->  extern int opal_hmi_handler_init(void);
-> @@ -273,6 +274,8 @@ void opal_free_sg_list(struct opal_sg_list *sg);
->
->  extern int opal_error_code(int rc);
->
-> +ssize_t opal_msglog_copy(char *to, loff_t pos, size_t count);
-> +
->  #endif /* __ASSEMBLY__ */
->
->  #endif /* _ASM_POWERPC_OPAL_H */
-> diff --git a/arch/powerpc/platforms/powernv/opal-msglog.c b/arch/powerpc/platforms/powernv/opal-msglog.c
-> index 44ed78a..c7a8f72 100644
-> --- a/arch/powerpc/platforms/powernv/opal-msglog.c
-> +++ b/arch/powerpc/platforms/powernv/opal-msglog.c
-> @@ -31,26 +31,25 @@ struct memcons {
->         __be32 in_cons;
->  };
->
-> -static ssize_t opal_msglog_read(struct file *file, struct kobject *kobj,
-> -                               struct bin_attribute *bin_attr, char *to,
-> -                               loff_t pos, size_t count)
-> +static struct memcons *opal_memcons = NULL;
-> +
-> +ssize_t opal_msglog_copy(char *to, loff_t pos, size_t count)
->  {
-> -       struct memcons *mc = bin_attr->private;
->         const char *conbuf;
->         ssize_t ret;
->         size_t first_read = 0;
->         uint32_t out_pos, avail;
->
-> -       if (!mc)
-> +       if (!opal_memcons)
->                 return -ENODEV;
->
-> -       out_pos = be32_to_cpu(ACCESS_ONCE(mc->out_pos));
-> +       out_pos = be32_to_cpu(ACCESS_ONCE(opal_memcons->out_pos));
->
->         /* Now we've read out_pos, put a barrier in before reading the new
->          * data it points to in conbuf. */
->         smp_rmb();
->
-> -       conbuf = phys_to_virt(be64_to_cpu(mc->obuf_phys));
-> +       conbuf = phys_to_virt(be64_to_cpu(opal_memcons->obuf_phys));
->
->         /* When the buffer has wrapped, read from the out_pos marker to the end
->          * of the buffer, and then read the remaining data as in the un-wrapped
-> @@ -58,7 +57,7 @@ static ssize_t opal_msglog_read(struct file *file, struct kobject *kobj,
->         if (out_pos & MEMCONS_OUT_POS_WRAP) {
->
->                 out_pos &= MEMCONS_OUT_POS_MASK;
-> -               avail = be32_to_cpu(mc->obuf_size) - out_pos;
-> +               avail = be32_to_cpu(opal_memcons->obuf_size) - out_pos;
->
->                 ret = memory_read_from_buffer(to, count, &pos,
->                                 conbuf + out_pos, avail);
-> @@ -76,7 +75,7 @@ static ssize_t opal_msglog_read(struct file *file, struct kobject *kobj,
->         }
->
->         /* Sanity check. The firmware should not do this to us. */
-> -       if (out_pos > be32_to_cpu(mc->obuf_size)) {
-> +       if (out_pos > be32_to_cpu(opal_memcons->obuf_size)) {
->                 pr_err("OPAL: memory console corruption. Aborting read.\n");
->                 return -EINVAL;
->         }
-> @@ -91,6 +90,13 @@ out:
->         return ret;
->  }
->
-> +static ssize_t opal_msglog_read(struct file *file, struct kobject *kobj,
-> +                               struct bin_attribute *bin_attr, char *to,
-> +                               loff_t pos, size_t count)
-> +{
-> +       return opal_msglog_copy(to, pos, count);
-> +}
-> +
->  static struct bin_attribute opal_msglog_attr = {
->         .attr = {.name = "msglog", .mode = 0444},
->         .read = opal_msglog_read
-> @@ -117,8 +123,16 @@ void __init opal_msglog_init(void)
->                 return;
->         }
->
-> -       opal_msglog_attr.private = mc;
-> +       opal_memcons = mc;
-> +}
->
-> +void __init opal_msglog_sysfs_init(void)
-> +{
-> +       if (!opal_memcons) {
-> +               pr_warn("OPAL: message log initialisation failed, not creating sysfs entry\n");
-> +               return;
-> +       }
-> +
->         if (sysfs_create_bin_file(opal_kobj, &opal_msglog_attr) != 0)
->                 pr_warn("OPAL: sysfs file creation failed\n");
->  }
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 4e0da5a..0256d07 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -724,6 +724,9 @@ static int __init opal_init(void)
->                 of_node_put(leds);
->         }
->
-> +       /* Initialise OPAL message log interface */
-> +       opal_msglog_init();
-> +
->         /* Create "opal" kobject under /sys/firmware */
->         rc = opal_sysfs_init();
->         if (rc == 0) {
-> @@ -739,8 +742,8 @@ static int __init opal_init(void)
->                 opal_platform_dump_init();
->                 /* Setup system parameters interface */
->                 opal_sys_param_init();
-> -               /* Setup message log interface. */
-> -               opal_msglog_init();
-> +               /* Setup message log sysfs interface. */
-> +               opal_msglog_sysfs_init();
->         }
->
->         /* Initialize platform devices: IPMI backend, PRD & flash interface */
-> --
-> Andrew Donnellan              Software Engineer, OzLabs
-> andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-> +61 2 6201 8874 (work)        IBM Australia Limited
->
+<html><head><style id="-x-evo-style-a" type="text/css">a { cursor: text; }</style><style id="-x-evo-a-color-style" type="text/css">a { color: #569be4; }</style><style id="-x-evo-a-color-style-visited" type="text/css">a.-x-evo-visited-link { color: #569be4; }</style><style id="-x-evo-quote-style" type="text/css">.-x-evo-quoted { -webkit-user-select: none; }</style><style id="-x-evo-composer-sheet" media="screen" type="text/css">body {
+  font-family: 'Monospace';
+  font-size: 11pt;
+  font-weight: 400;
+  font-style: normal;
+  -webkit-line-break: after-white-space;
+}
+pre,code,.pre {
+  font-family: 'Monospace';
+  font-size: 11pt;
+  font-weight: 400;
+  font-style: normal;
+}p,pre,code,address {
+  margin: 0;
+}
+h1,h2,h3,h4,h5,h6 {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+td:before {
+  content: "​";}
+img {
+  height: inherit; 
+  width: inherit; 
+}
+span.-x-evo-resizable-wrapper:hover {
+  outline: 1px dashed red; 
+  resize: both; 
+  overflow: hidden; 
+  display: inline-block; 
+}
+td:hover {
+  outline: 1px dotted red;
+}
+.-x-evo-plaintext-table {
+  border-collapse: collapse;
+  width: 71ch;
+}
+.-x-evo-plaintext-table td{
+  vertical-align: top;
+}
+td > * {
+  display : inline-block;
+}
+ul[data-evo-plain-text]{
+  list-style: outside none;
+  -webkit-padding-start: 3ch; 
+}
+ul[data-evo-plain-text] > li{
+  list-style-position: outside;
+  text-indent: -2ch;
+}
+ul[data-evo-plain-text] > li::before {
+  content: "* ";
+}
+ul[data-evo-plain-text].-x-evo-indented {
+  -webkit-padding-start: 3ch; 
+}
+ul:not([data-evo-plain-text]),ol > li.-x-evo-align-center{
+  list-style-position: inside;
+}
+ul:not([data-evo-plain-text]),ol > li.-x-evo-align-right{
+  list-style-position: inside;
+}
+ul:not([data-evo-plain-text]),ol > li{
+  text-indent: -3ch;
+  list-style-position: inside;
+}
+ol{
+  -webkit-padding-start: 6ch; 
+}
+ol.-x-evo-indented{
+  -webkit-padding-start: 3ch; 
+}
+.-x-evo-align-left {
+  text-align: left; 
+}
+.-x-evo-align-center {
+  text-align: center; 
+}
+.-x-evo-align-right {
+  text-align: right; 
+}
+ol,ul {
+  -webkit-margin-before: 0em; 
+  -webkit-margin-after: 0em; 
+}
+blockquote {
+  -webkit-margin-before: 0em; 
+  -webkit-margin-after: 0em; 
+}
+a {
+  word-wrap: break-word; 
+  word-break: break-all; 
+}
+blockquote[type=cite] {
+  padding: 0.0ex 0ex;
+  margin: 0ex;
+  -webkit-margin-start: 0em; 
+  -webkit-margin-end : 0em; 
+  color: #737373 !important; 
+}
+.-x-evo-quote-character {
+  color: rgb(114,159,207);
+}
+.-x-evo-quote-character+.-x-evo-quote-character{
+  color: rgb(173,127,168);
+}
+.-x-evo-quote-character+.-x-evo-quote-character+.-x-evo-quote-character{
+  color: rgb(138,226,52);
+}
+.-x-evo-quote-character+.-x-evo-quote-character+.-x-evo-quote-character+.-x-evo-quote-character{
+  color: rgb(252,175,62);
+}
+.-x-evo-quote-character+.-x-evo-quote-character+.-x-evo-quote-character+.-x-evo-quote-character+.-x-evo-quote-character{
+  color: rgb(233,185,110);
+}
+blockquote[type=cite]:not(.-x-evo-plaintext-quoted) {
+  padding: 0ch 1ch 0ch 1ch;
+  margin: 0ch;
+  border-width: 0px 2px 0px 2px;
+  border-style: none solid none solid;
+  border-radius: 2px;
+}
+blockquote[type=cite]:not(.-x-evo-plaintext-quoted) {
+  border-color: rgb(114,159,207);
+}
+blockquote[type=cite]:not(.-x-evo-plaintext-quoted) blockquote[type=cite]:not(.-x-evo-plaintext-quoted) {
+  border-color: rgb(173,127,168);
+}
+blockquote[type=cite]:not(.-x-evo-plaintext-quoted) blockquote[type=cite]:not(.-x-evo-plaintext-quoted) blockquote[type=cite]:not(.-x-evo-plaintext-quoted) {
+  border-color: rgb(138,226,52);
+}
+blockquote[type=cite]:not(.-x-evo-plaintext-quoted) blockquote[type=cite]:not(.-x-evo-plaintext-quoted) blockquote[type=cite]:not(.-x-evo-plaintext-quoted) blockquote[type=cite]:not(.-x-evo-plaintext-quoted) {
+  border-color: rgb(252,175,62);
+}
+blockquote[type=cite]:not(.-x-evo-plaintext-quoted) blockquote[type=cite]:not(.-x-evo-plaintext-quoted) blockquote[type=cite]:not(.-x-evo-plaintext-quoted) blockquote[type=cite]:not(.-x-evo-plaintext-quoted) blockquote[type=cite]:not(.-x-evo-plaintext-quoted) {
+  border-color: rgb(233,185,110);
+}
+</style></head><body data-message="" data-converted="" spellcheck="true" style="font-family: monospace; word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" bgcolor="#ffffff" text="#555555" link="#569be4" vlink="#569be4" data-evo-draft=""><div class="-x-evo-paragraph" style="width: 71ch; word-wrap: normal; ">On Mon, 2016-02-08 at 22:27 +0000, Luis Henriques wrote:</div><div class="-x-evo-paragraph" style="width: 71ch; word-wrap: normal; "><br></div><blockquote type="cite" id="-x-evo-main-cite" class="-x-evo-plaintext-quoted"><div class="-x-evo-paragraph" style="width: 71ch; word-wrap: normal; "><span class="-x-evo-quoted"><span class="-x-evo-quote-character">&gt; </span></span>Luis Henriques (4):</div><div class="-x-evo-paragraph" style="width: 71ch; word-wrap: normal; "><span class="-x-evo-quoted"><span class="-x-evo-quote-character">&gt; </span></span>&nbsp; powerpc/ps3: gelic_udbg: use struct ethhdr from &lt;linux/if_ether.h&gt;</div><div class="-x-evo-paragraph" style="width: 71ch; word-wrap: normal; "><span class="-x-evo-quoted"><span class="-x-evo-quote-character">&gt; </span></span>&nbsp; powerpc/ps3: gelic_udbg: use struct vlan_hdr from &lt;linux/if_vlan.h&gt;</div><div class="-x-evo-paragraph" style="width: 71ch; word-wrap: normal; "><span class="-x-evo-quoted"><span class="-x-evo-quote-character">&gt; </span></span>&nbsp; powerpc/ps3: gelic_udbg: use struct iphdr from &lt;linux/ip.h&gt;</div><div class="-x-evo-paragraph" style="width: 71ch; word-wrap: normal; "><span class="-x-evo-quoted"><span class="-x-evo-quote-character">&gt; </span></span>&nbsp; powerpc/ps3: gelic_udbg: use struct udphdr from &lt;linux/udp.h&gt;</div></blockquote><div class="-x-evo-paragraph" style="width: 71ch; word-wrap: normal; "><br></div><div class="-x-evo-paragraph" style="width: 71ch; word-wrap: normal; ">These all look fine. &nbsp;Thanks for taking time to do this clean up. &nbsp;I'll try to test next chance I get.</div><div class="-x-evo-paragraph" style="width: 71ch; word-wrap: normal; "><br></div><div class="-x-evo-paragraph" style="width: 71ch; word-wrap: normal; ">Acked-by: Geoff Levand &lt;<a href="mailto:geoff@infradead.org">geoff@infradead.org</a>&gt;</div><div class="-x-evo-paragraph" style="width: 71ch; word-wrap: normal; "><span id="-x-evo-selection-start-marker" data-anchor=""></span><span id="-x-evo-selection-end-marker"></span><br></div></body></html>
