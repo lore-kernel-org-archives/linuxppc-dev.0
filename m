@@ -2,8 +2,8 @@ Return-Path: <msampath@alphion.com>
 Received: from mx1.alphion.com (mx1.alphion.com [71.168.162.18])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A3BCD1A003F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 00:07:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E92661A003D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 00:07:04 +1100 (AEDT)
 From: Murali Sampath <MSampath@alphion.com>
 To: Balbir Singh <bsingharora@gmail.com>, Kamalesh Babulal
  <kamalesh@linux.vnet.ibm.com>
@@ -14,15 +14,15 @@ CC: Petr Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>,
  <live-patching@vger.kernel.org>, Miroslav Benes <mbenes@suse.cz>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Subject: Re: [PATCH v8 4/8] ppc64 ftrace_with_regs configuration variables
-Date: Thu, 11 Feb 2016 13:00:53 +0000
-Message-ID: <20160211130053.5955729.20187.27391@alphion.com>
+Date: Thu, 11 Feb 2016 13:00:15 +0000
+Message-ID: <20160211130014.5955729.76685.27387@alphion.com>
 References: <20160210174221.EBBEC692C8@newverein.lst.de>
  <20160210174450.9C065692C8@newverein.lst.de>
  <1455176897.2885.12.camel@gmail.com>
  <20160211083932.GA23103@linux.vnet.ibm.com>,
  <1455183328.2885.18.camel@gmail.com>
 In-Reply-To: <1455183328.2885.18.camel@gmail.com>
-Content-Type: text/plain; charset="windows-1256"
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,7 +33,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=FD t
+
 
   Original Message
 From: Balbir Singh
