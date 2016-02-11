@@ -1,29 +1,28 @@
-Return-Path: <msampath@alphion.com>
-Received: from mx1.alphion.com (mx1.alphion.com [71.168.162.18])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E92661A003D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 00:07:04 +1100 (AEDT)
-From: Murali Sampath <MSampath@alphion.com>
-To: Balbir Singh <bsingharora@gmail.com>, Kamalesh Babulal
- <kamalesh@linux.vnet.ibm.com>
-CC: Petr Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Steven Rostedt
- <rostedt@goodmis.org>, Torsten Duwe <duwe@lst.de>, Jiri Kosina
- <jkosina@suse.cz>, "live-patching@vger.kernel.org"
- <live-patching@vger.kernel.org>, Miroslav Benes <mbenes@suse.cz>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v8 4/8] ppc64 ftrace_with_regs configuration variables
-Date: Thu, 11 Feb 2016 13:00:15 +0000
-Message-ID: <20160211130014.5955729.76685.27387@alphion.com>
-References: <20160210174221.EBBEC692C8@newverein.lst.de>
- <20160210174450.9C065692C8@newverein.lst.de>
- <1455176897.2885.12.camel@gmail.com>
- <20160211083932.GA23103@linux.vnet.ibm.com>,
- <1455183328.2885.18.camel@gmail.com>
-In-Reply-To: <1455183328.2885.18.camel@gmail.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6AEB21A003D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 01:15:42 +1100 (AEDT)
+Received: from mail-yw0-x243.google.com (mail-yw0-x243.google.com
+ [IPv6:2607:f8b0:4002:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id AADFA1402C4
+ for <linuxppc-dev@ozlabs.org>; Fri, 12 Feb 2016 01:15:40 +1100 (AEDT)
+Received: by mail-yw0-x243.google.com with SMTP id c124so2748561ywe.0
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2016 06:15:40 -0800 (PST)
 MIME-Version: 1.0
+In-Reply-To: <1455002269-26543-2-git-send-email-andrew.donnellan@au1.ibm.com>
+References: <1455002269-26543-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ <1455002269-26543-2-git-send-email-andrew.donnellan@au1.ibm.com>
+Date: Thu, 11 Feb 2016 17:15:38 +0300
+Message-ID: <CAOJe8K0-XZA5pc6jSAizi8HJuvaE5rO9Aewy9qpb32oetSo_ag@mail.gmail.com>
+Subject: Re: [PATCH V2 2/2] powerpc/xmon: add command to dump OPAL msglog
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, stewart@linux.vnet.ibm.com
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,65 +32,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-  Original Message
-From: Balbir Singh
-Sent: Thursday, February 11, 2016 4:37 AM
-To: Kamalesh Babulal
-Cc: Petr Mladek; Jessica Yu; linux-kernel@vger.kernel.org; Steven Rostedt; =
-Torsten Duwe; Jiri Kosina; live-patching@vger.kernel.org; Miroslav Benes; l=
-inuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v8 4/8] ppc64 ftrace_with_regs configuration variables
-
-
-On Thu, 2016-02-11 at 14:09 +0530, Kamalesh Babulal wrote:
-> * Balbir Singh <bsingharora@gmail.com> [2016-02-11 18:48:17]:
+On 2/9/16, Andrew Donnellan <andrew.donnellan@au1.ibm.com> wrote:
+> Add the 'do' command to dump the OPAL msglog in xmon.
 >
-> > On Wed, 2016-02-10 at 17:25 +0100, Torsten Duwe wrote:
-> >
-> > snip
-> >
-> > > diff --git a/arch/powerpc/gcc-mprofile-kernel-notrace.sh
-> > > b/arch/powerpc/gcc-mprofile-kernel-notrace.sh
-> > > new file mode 100755
-> > > index 0000000..68d6482
-> > > --- /dev/null
-> > > +++ b/arch/powerpc/gcc-mprofile-kernel-notrace.sh
-> > > @@ -0,0 +1,33 @@
-> > > +#!/bin/sh
-> > > +# Test whether the compile option -mprofile-kernel
-> > > +# generates profiling code ( =3D a call to mcount), and
-> > > +# whether a function without any global references sets
-> > > +# the TOC pointer properly at the beginning, and
-> > > +# whether the "notrace" function attribute successfully
-> > > +# suppresses the _mcount call.
-> > > +
-> > > +echo "int func() { return 0; }" | \
-> > > +    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-> > > +    grep -q "mcount"
-> > > +
-> > > +trace_result=3D$?
-> > > +
-> > > +echo "int func() { return 0; }" | \
-> > > +    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-> > > +    sed -n -e '/func:/,/bl _mcount/p' | grep -q TOC
-> > > +
-> > > +leaf_toc_result=3D$?
-> > > +
-> >
-> > leaf_toc_result failed for me with gcc 5. I'll try and grab gcc-6
-> > and give the patches a spin
-> >
->
-> It fails for me to on ppc64le but pass over ppc64
->
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-This series is for ppc64le only, so we can safely ignore ppc64 for now
+I think it would be better to create system-specific files under
+ powerpc/xmon/ directory, in this case something like xmon_powernv.c.
 
-Regards,
-Balbir Singh.
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@lists.ozlabs.org
-https://lists.ozlabs.org/listinfo/linuxppc-dev
+There are some many macros there.
+
+Current code already looks very ugly, look at the cell-specific spu* stuff
+for example.
+
+> ---
+>  arch/powerpc/xmon/xmon.c | 60
+> ++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 60 insertions(+)
+>
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index 07a8508..48b75ae 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -47,6 +47,11 @@
+>  #include <asm/debug.h>
+>  #include <asm/hw_breakpoint.h>
+>
+> +#ifdef CONFIG_PPC_POWERNV
+> +#include <asm/opal.h>
+> +#include <asm/firmware.h>
+> +#endif
+> +
+>  #ifdef CONFIG_PPC64
+>  #include <asm/hvcall.h>
+>  #include <asm/paca.h>
+> @@ -119,6 +124,11 @@ static void dump(void);
+>  static void prdump(unsigned long, long);
+>  static int ppc_inst_dump(unsigned long, long, int);
+>  static void dump_log_buf(void);
+> +
+> +#ifdef CONFIG_PPC_POWERNV
+> +static void dump_opal_msglog(void);
+> +#endif
+> +
+>  static void backtrace(struct pt_regs *);
+>  static void excprint(struct pt_regs *);
+>  static void prregs(struct pt_regs *);
+> @@ -202,6 +212,10 @@ Commands:\n\
+>    df	dump float values\n\
+>    dd	dump double values\n\
+>    dl    dump the kernel log buffer\n"
+> +#ifdef CONFIG_PPC_POWERNV
+> +  "\
+> +  do    dump the OPAL message log\n"
+> +#endif
+>  #ifdef CONFIG_PPC64
+>    "\
+>    dp[#]	dump paca for current cpu, or cpu #\n\
+> @@ -2253,6 +2267,12 @@ dump(void)
+>  		last_cmd = "di\n";
+>  	} else if (c == 'l') {
+>  		dump_log_buf();
+> +	} else if (c == 'o') {
+> +#ifdef CONFIG_PPC_POWERNV
+> +		dump_opal_msglog();
+> +#else
+> +		printf("Machine is not running OPAL firmware.\n");
+> +#endif
+>  	} else if (c == 'r') {
+>  		scanhex(&ndump);
+>  		if (ndump == 0)
+> @@ -2395,6 +2415,46 @@ dump_log_buf(void)
+>  	catch_memory_errors = 0;
+>  }
+>
+> +#ifdef CONFIG_PPC_POWERNV
+> +void
+> +dump_opal_msglog(void)
+> +{
+> +	unsigned char buf[128];
+> +	ssize_t res;
+> +	loff_t pos = 0;
+> +
+> +	if (!firmware_has_feature(FW_FEATURE_OPAL)) {
+> +		printf("Machine is not running OPAL firmware.\n");
+> +		return;
+> +	}
+> +
+> +	if (setjmp(bus_error_jmp) != 0) {
+> +		printf("Error dumping OPAL msglog!\n");
+> +		return;
+> +	}
+> +
+> +	catch_memory_errors = 1;
+> +	sync();
+> +
+> +	xmon_start_pagination();
+> +	while ((res = opal_msglog_copy(buf, pos, sizeof(buf) - 1))) {
+> +		if (res < 0) {
+> +			printf("Error dumping OPAL msglog! Error: %zd\n", res);
+> +			break;
+> +		}
+> +		buf[res] = '\0';
+> +		printf("%s", buf);
+> +		pos += res;
+> +	}
+> +	xmon_end_pagination();
+> +
+> +	sync();
+> +	/* wait a little while to see if we get a machine check */
+> +	__delay(200);
+> +	catch_memory_errors = 0;
+> +}
+> +#endif
+> +
+>  /*
+>   * Memory operations - move, set, print differences
+>   */
+> --
+> Andrew Donnellan              Software Engineer, OzLabs
+> andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
+> +61 2 6201 8874 (work)        IBM Australia Limited
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
