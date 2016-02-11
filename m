@@ -1,46 +1,22 @@
-Return-Path: <Robert.Richter@caviumnetworks.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0073.outbound.protection.outlook.com [157.56.111.73])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CCD551A003D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 03:05:12 +1100 (AEDT)
-Date: Thu, 11 Feb 2016 16:32:55 +0100
-From: Robert Richter <robert.richter@caviumnetworks.com>
-To: Rob Herring <robh+dt@kernel.org>
-CC: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org"
- <linux-pci@vger.kernel.org>, <linux-ia64@vger.kernel.org>, linux-metag
- <linux-metag@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- <linux-s390@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, Will Deacon
- <Will.Deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, "Mark
- Rutland" <mark.rutland@arm.com>, Grant Likely <grant.likely@linaro.org>,
- "Leif Lindholm" <leif.lindholm@linaro.org>, <rfranz@cavium.com>, Ard
- Biesheuvel <ard.biesheuvel@linaro.org>, Mark Salter <msalter@redhat.com>,
- Steve Capper <steve.capper@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>,
- Al Stone <al.stone@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Pawel Moll
- <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, "Kumar
- Gala" <galak@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown
- <lenb@kernel.org>, Marc Zyngier <marc.zyngier@arm.com>, Lorenzo Pieralisi
- <lorenzo.pieralisi@arm.com>, Bjorn Helgaas <bhelgaas@google.com>, Tony Luck
- <tony.luck@intel.com>, <fenghua.yu@intel.com>, James Hogan
- <james.hogan@imgtec.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H.
- Peter Anvin" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, Jon Masters
- <jonathan@jonmasters.org>, <Prasun.Kapoor@caviumnetworks.com>, "Ganapatrao
- Kulkarni" <gpkulkarni@gmail.com>
-Subject: Re: [PATCH v10 3/8] dt, numa: adding numa dt binding implementation.
-Message-ID: <20160211153255.GR24726@rric.localdomain>
-References: <1454407763-1017-1-git-send-email-gkulkarni@caviumnetworks.com>
- <1454407763-1017-4-git-send-email-gkulkarni@caviumnetworks.com>
- <CAL_JsqK5HV9yzBE+ANnTw26eVR7Dy+B8OkwQ-7WF8KDa86Fd9g@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <CAL_JsqK5HV9yzBE+ANnTw26eVR7Dy+B8OkwQ-7WF8KDa86Fd9g@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3368B1A003C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 03:10:19 +1100 (AEDT)
+Message-ID: <1455207007.2463.23.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Denis Kirjanov <kda@linux-powerpc.org>, Alessio Igor Bogani
+ <alessio.bogani@elettra.eu>
+Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Date: Thu, 11 Feb 2016 10:10:07 -0600
+In-Reply-To: <CAOJe8K2TFtppS4ni=ZCL=p853jO=ewjp3i+wOAQpVeSb7BFkUw@mail.gmail.com>
+References: <1455177651-6686-1-git-send-email-alessio.bogani@elettra.eu>
+ <CAOJe8K2TFtppS4ni=ZCL=p853jO=ewjp3i+wOAQpVeSb7BFkUw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH v2 1/1] powerpc/86xx: Consolidate common platform code
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,21 +26,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11.02.16 08:50:41, Rob Herring wrote:
-> On Tue, Feb 2, 2016 at 4:09 AM, Ganapatrao Kulkarni
-> <gkulkarni@caviumnetworks.com> wrote:
-> > dt node parsing for numa topology is done using device property
-> > numa-node-id and device node distance-map.
+On Thu, 2016-02-11 at 12:21 +0300, Denis Kirjanov wrote:
+> On 2/11/16, Alessio Igor Bogani <alessio.bogani@elettra.eu> wrote:
+> > Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+> > ---
+> > v1 -> v2
+> > 	Use appropriate [PATCH] prefix
+> > 
+> >  arch/powerpc/platforms/86xx/Makefile       |  2 +-
+> >  arch/powerpc/platforms/86xx/common.c       | 42
+> > ++++++++++++++++++++++++++++++
+> >  arch/powerpc/platforms/86xx/gef_ppc9a.c    | 32 +----------------------
+> >  arch/powerpc/platforms/86xx/gef_sbc310.c   | 32 +----------------------
+> >  arch/powerpc/platforms/86xx/gef_sbc610.c   | 32 +----------------------
+> >  arch/powerpc/platforms/86xx/mpc8610_hpcd.c | 20 ++------------
+> >  arch/powerpc/platforms/86xx/mpc86xx.h      |  2 ++
+> >  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c | 21 +--------------
+> >  arch/powerpc/platforms/86xx/sbc8641d.c     | 32 +----------------------
+> >  9 files changed, 52 insertions(+), 163 deletions(-)
+> >  create mode 100644 arch/powerpc/platforms/86xx/common.c
+> > 
+> > diff --git a/arch/powerpc/platforms/86xx/Makefile
+> > b/arch/powerpc/platforms/86xx/Makefile
+> > index ede815d..2d889ad 100644
+> > --- a/arch/powerpc/platforms/86xx/Makefile
+> > +++ b/arch/powerpc/platforms/86xx/Makefile
+> > @@ -2,7 +2,7 @@
+> >  # Makefile for the PowerPC 86xx linux kernel.
+> >  #
+> > 
+> > -obj-y				:= pic.o
+> > +obj-y				:= pic.o common.o
+> >  obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
+> >  obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
+> >  obj-$(CONFIG_SBC8641D)		+= sbc8641d.o
+> > diff --git a/arch/powerpc/platforms/86xx/common.c
+> > b/arch/powerpc/platforms/86xx/common.c
+> > new file mode 100644
+> > index 0000000..bee3177
+> > --- /dev/null
+> > +++ b/arch/powerpc/platforms/86xx/common.c
+> > @@ -0,0 +1,42 @@
+> > +/*
+> > + * Routines common to most mpc86xx-based boards.
+> > + *
+> > + * This is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License version 2 as
+> > + * published by the Free Software Foundation.
+> > + */
+> > +
+> > +#include <linux/of_platform.h>
+> > +
+> > +#include "mpc86xx.h"
+> > +
+> > +static const struct of_device_id mpc86xx_common_ids[] __initconst = {
+> > +	{ .type = "soc", },
+> > +	{ .compatible = "soc", },
+> > +	{ .compatible = "simple-bus", },
+> > +	{ .name = "localbus", },
+> > +	{ .compatible = "gianfar", },
+> > +	{ .compatible = "fsl,mpc8641-pcie", },
+> > +	{},
+> > +};
+> > +
+> > +int __init mpc86xx_common_publish_devices(void)
+> > +{
+> > +	return of_platform_bus_probe(NULL, mpc86xx_common_ids, NULL);
+> > +}
+> > +
+> > +long __init mpc86xx_time_init(void)
+> > +{
+> > +	unsigned int temp;
+> > +
+> > +	/* Set the time base to zero */
+> > +	mtspr(SPRN_TBWL, 0);
+> > +	mtspr(SPRN_TBWU, 0);
+> > +
+> > +	temp = mfspr(SPRN_HID0);
+> > +	temp |= HID0_TBEN;
+> > +	mtspr(SPRN_HID0, temp);
+> > +	asm volatile("isync");
+> While we're here you could just use isync()
 > 
-> How is it that powerpc doesn't need flat DT parsing for NUMA? Both
-> arches are memblock based and the binding is similar IIRC, so you
-> should be able to find a way to do this with the unflattened tree.
-> Ideally, there should be some common code shared as well.
-> 
-> Do you have a git tree with this series?
 
-I have pushed it here for you:
+Could you please trim the part of the mail you're not replying to?  It takes a
+while to scan to find where the reply actually is.
 
- https://git.kernel.org/cgit/linux/kernel/git/rric/linux.git/log/?h=thunder/numa-v10
-
--Robert
+-Scott
