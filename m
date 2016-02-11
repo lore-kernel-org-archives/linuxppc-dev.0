@@ -1,38 +1,20 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ABB6D1A03D1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 12:32:47 +1100 (AEDT)
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 10 Feb 2016 20:32:45 -0500
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id D144DC9003E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:32:40 -0500 (EST)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1B1WgWH34930886
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 01:32:42 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1B1TPhN003811
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 20:29:26 -0500
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-To: james.bottomley@hansenpartnership.com
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- nfont@linux.vnet.ibm.com, brking@linux.vnet.ibm.com,
- jthumshirn@suse.de, manoj@linux.vnet.ibm.com,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: [PATCH v2 7/7] ibmvscsi: use H_CLOSED instead of magic number
-Date: Wed, 10 Feb 2016 19:32:28 -0600
-Message-Id: <1455154348-3226-8-git-send-email-tyreld@linux.vnet.ibm.com>
-In-Reply-To: <1455154348-3226-1-git-send-email-tyreld@linux.vnet.ibm.com>
-References: <1455154348-3226-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D0E1A1A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 14:22:45 +1100 (AEDT)
+Message-ID: <1455160957.2463.14.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Alessio Igor Bogani <alessio.bogani@elettra.eu>, Kumar Gala
+ <galak@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Wed, 10 Feb 2016 21:22:37 -0600
+In-Reply-To: <1455096160-5868-1-git-send-email-alessio.bogani@elettra.eu>
+References: <1455096160-5868-1-git-send-email-alessio.bogani@elettra.eu>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: powerpc/86xx: Use config fragments approach
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,35 +24,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In a couple places the magic value of 2 is used to check the return
-code of hypercalls. This translates to H_CLOSED.
+On Wed, 2016-02-10 at 10:22 +0100, Alessio Igor Bogani wrote:
+> Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+> ---
+>  arch/powerpc/Makefile                            |  10 +
+>  arch/powerpc/configs/86xx-32bit.config           |   4 +
+>  arch/powerpc/configs/86xx-hw.config              | 106 +++++++++
+>  arch/powerpc/configs/86xx-smp.config             |   2 +
+>  arch/powerpc/configs/86xx/gef_ppc9a_defconfig    | 216 ------------------
+>  arch/powerpc/configs/86xx/gef_sbc310_defconfig   | 214 ------------------
+>  arch/powerpc/configs/86xx/gef_sbc610_defconfig   | 273 --------------------
+> ---
+>  arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig | 110 ---------
+>  arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig | 156 -------------
+>  arch/powerpc/configs/86xx/sbc8641d_defconfig     | 246 --------------------
+>  arch/powerpc/configs/mpc86xx_basic_defconfig     |   6 +
+>  arch/powerpc/configs/mpc86xx_defconfig           | 162 --------------
+>  12 files changed, 128 insertions(+), 1377 deletions(-)
+>  create mode 100644 arch/powerpc/configs/86xx-32bit.config
+>  create mode 100644 arch/powerpc/configs/86xx-hw.config
+>  create mode 100644 arch/powerpc/configs/86xx-smp.config
+>  delete mode 100644 arch/powerpc/configs/86xx/gef_ppc9a_defconfig
+>  delete mode 100644 arch/powerpc/configs/86xx/gef_sbc310_defconfig
+>  delete mode 100644 arch/powerpc/configs/86xx/gef_sbc610_defconfig
+>  delete mode 100644 arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig
+>  delete mode 100644 arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig
+>  delete mode 100644 arch/powerpc/configs/86xx/sbc8641d_defconfig
+>  create mode 100644 arch/powerpc/configs/mpc86xx_basic_defconfig
+>  delete mode 100644 arch/powerpc/configs/mpc86xx_defconfig
 
-Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
----
- drivers/scsi/ibmvscsi/ibmvscsi.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Why do your patches not start with [PATCH]?
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index 6025481..d9534ee 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -314,7 +314,7 @@ static int ibmvscsi_reset_crq_queue(struct crq_queue *queue,
- 	rc = plpar_hcall_norets(H_REG_CRQ,
- 				vdev->unit_address,
- 				queue->msg_token, PAGE_SIZE);
--	if (rc == 2) {
-+	if (rc == H_CLOSED) {
- 		/* Adapter is good, but other end is not ready */
- 		dev_warn(hostdata->dev, "Partner adapter not ready\n");
- 	} else if (rc != 0) {
-@@ -364,7 +364,7 @@ static int ibmvscsi_init_crq_queue(struct crq_queue *queue,
- 		rc = ibmvscsi_reset_crq_queue(queue,
- 					      hostdata);
- 
--	if (rc == 2) {
-+	if (rc == H_CLOSED) {
- 		/* Adapter is good, but other end is not ready */
- 		dev_warn(hostdata->dev, "Partner adapter not ready\n");
- 		retrc = 0;
--- 
-2.5.0
+How does the resulting config compare to the individual previous configs?  Are
+there any options that were dropped from the union of the old configs? 
+ Mutually exclusive options that had to be resolved one way or another? 
+ Changes in non-hw options?
+
+It would be nice to do what I did with 85xx in commit 7e2ad2ef851, and start
+with a patch that makes the defconfigs conform to what the new approach will
+give (to more easily see what is changing), and then have the next patch
+switch to fragments.
+
+> diff --git a/arch/powerpc/configs/86xx-32bit.config
+> b/arch/powerpc/configs/86xx-32bit.config
+> new file mode 100644
+> index 0000000..8a2c6ff
+> --- /dev/null
+> +++ b/arch/powerpc/configs/86xx-32bit.config
+> @@ -0,0 +1,4 @@
+> +CONFIG_HIGHMEM=y
+> +CONFIG_KEXEC=y
+> +CONFIG_PPC_86xx=y
+> +CONFIG_PROC_KCORE=y
+
+Why is this not in mpc86xx_basic_defconfig?  There is no 64-bit 86xx.
+
+-Scott
