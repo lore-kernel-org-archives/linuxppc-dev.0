@@ -1,50 +1,34 @@
-Return-Path: <gerald.schaefer@de.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 73F261A0038
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 06:57:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8C3071A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 09:24:43 +1100 (AEDT)
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gerald.schaefer@de.ibm.com>;
- Thu, 11 Feb 2016 19:57:08 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id E7AF22190061
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 19:56:50 +0000 (GMT)
-Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
- [9.149.37.217])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1BJv53v27459820
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 19:57:05 GMT
-Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1BJv3IV019045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 14:57:05 -0500
-Date: Thu, 11 Feb 2016 20:57:02 +0100
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, Andrew Morton
- <akpm@linux-foundation.org>, Linus Torvalds
- <torvalds@linux-foundation.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org, Catalin Marinas
- <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- linux-arm-kernel@lists.infradead.org, Martin Schwidefsky
- <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>
-Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe
- also on PowerPC and ARM)
-Message-ID: <20160211205702.24f0d17a@thinkpad>
-In-Reply-To: <20160211190942.GA10244@node.shutemov.name>
-References: <20160211192223.4b517057@thinkpad>
- <20160211190942.GA10244@node.shutemov.name>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Thu, 11 Feb 2016 15:24:41 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id E59A43E4003E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 15:11:15 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1BMOcrL25952366
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 15:24:38 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1BMOclJ024382
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 15:24:38 -0700
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: james.bottomley@hansenpartnership.com
+Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, brking@linux.vnet.ibm.com,
+ nfont@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Subject: [PATCH] ibmvfc: byteswap scsi_id, wwpn, and node_name prior to logging
+Date: Thu, 11 Feb 2016 16:24:35 -0600
+Message-Id: <1455229475-3984-1-git-send-email-tyreld@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,57 +38,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 11 Feb 2016 21:09:42 +0200
-"Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+When logging async events the scsi_id, wwpn, and node_name values
+are used directly from the CRQ struct which are of type __be64. This
+can be confusing to someone looking through the log on a LE system.
+Instead byteswap these values to host endian prior to logging.
 
-> On Thu, Feb 11, 2016 at 07:22:23PM +0100, Gerald Schaefer wrote:
-> > Hi,
-> > 
-> > Sebastian Ott reported random kernel crashes beginning with v4.5-rc1 and
-> > he also bisected this to commit 61f5d698 "mm: re-enable THP". Further
-> > review of the THP rework patches, which cannot be bisected, revealed
-> > commit fecffad "s390, thp: remove infrastructure for handling splitting PMDs"
-> > (and also similar commits for other archs).
-> > 
-> > This commit removes the THP splitting bit and also the architecture
-> > implementation of pmdp_splitting_flush(), which took care of the IPI for
-> > fast_gup serialization. The commit message says
-> > 
-> >     pmdp_splitting_flush() is not needed too: on splitting PMD we will do
-> >     pmdp_clear_flush() + set_pte_at().  pmdp_clear_flush() will do IPI as
-> >     needed for fast_gup
-> > 
-> > The assumption that a TLB flush will also produce an IPI is wrong on s390,
-> > and maybe also on other architectures, and I thought that this was actually
-> > the main reason for having an arch-specific pmdp_splitting_flush().
-> > 
-> > At least PowerPC and ARM also had an individual implementation of
-> > pmdp_splitting_flush() that used kick_all_cpus_sync() instead of a TLB
-> > flush to send the IPI, and those were also removed. Putting the arch
-> > maintainers and mailing lists on cc to verify.
-> > 
-> > On s390 this will break the IPI serialization against fast_gup, which
-> > would certainly explain the random kernel crashes, please revert or fix
-> > the pmdp_splitting_flush() removal.
-> 
-> Sorry for that.
-> 
-> I believe, the problem was already addressed for PowerPC:
-> 
-> http://lkml.kernel.org/g/454980831-16631-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
-> 
-> I think kick_all_cpus_sync() in arch-specific pmdp_invalidate() would do
-> the trick, right?
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+---
+ drivers/scsi/ibmvscsi/ibmvfc.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Hmm, not sure about that. After pmdp_invalidate(), a pmd_none() check in
-fast_gup will still return false, because the pmd is not empty (at least
-on s390). So I don't see spontaneously how it will help fast_gup to break
-out to the slow path in case of THP splitting.
-
-> 
-> If yes, I'll prepare patch tomorrow (some sleep required).
-> 
-
-We'll check if adding kick_all_cpus_sync() to pmdp_invalidate() helps.
-It would also be good if Martin has a look at this, he'll return on
-Monday.
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index 6aa317c..fc523c3 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -2636,7 +2636,8 @@ static void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
+ 	struct ibmvfc_target *tgt;
+ 
+ 	ibmvfc_log(vhost, desc->log_level, "%s event received. scsi_id: %llx, wwpn: %llx,"
+-		   " node_name: %llx%s\n", desc->desc, crq->scsi_id, crq->wwpn, crq->node_name,
++		   " node_name: %llx%s\n", desc->desc, be64_to_cpu(crq->scsi_id),
++		   be64_to_cpu(crq->wwpn), be64_to_cpu(crq->node_name),
+ 		   ibmvfc_get_link_state(crq->link_state));
+ 
+ 	switch (be64_to_cpu(crq->event)) {
+-- 
+2.5.0
