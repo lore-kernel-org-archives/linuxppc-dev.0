@@ -1,31 +1,50 @@
-Return-Path: <kirill.shutemov@linux.intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by lists.ozlabs.org (Postfix) with ESMTP id AB9931A0048
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 06:12:59 +1100 (AEDT)
-Date: Thu, 11 Feb 2016 22:12:53 +0300
-From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Return-Path: <gerald.schaefer@de.ibm.com>
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 73F261A0038
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 06:57:12 +1100 (AEDT)
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gerald.schaefer@de.ibm.com>;
+ Thu, 11 Feb 2016 19:57:08 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id E7AF22190061
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 19:56:50 +0000 (GMT)
+Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
+ [9.149.37.217])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1BJv53v27459820
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 19:57:05 GMT
+Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1BJv3IV019045
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 14:57:05 -0500
+Date: Thu, 11 Feb 2016 20:57:02 +0100
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
+Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Linus Torvalds
+ <torvalds@linux-foundation.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org, Catalin Marinas
+ <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ linux-arm-kernel@lists.infradead.org, Martin Schwidefsky
+ <schwidefsky@de.ibm.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
  Sebastian Ott <sebott@linux.vnet.ibm.com>
-Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe also
- on PowerPC and ARM)
-Message-ID: <20160211191253.GA8589@black.fi.intel.com>
+Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe
+ also on PowerPC and ARM)
+Message-ID: <20160211205702.24f0d17a@thinkpad>
+In-Reply-To: <20160211190942.GA10244@node.shutemov.name>
 References: <20160211192223.4b517057@thinkpad>
  <20160211190942.GA10244@node.shutemov.name>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160211190942.GA10244@node.shutemov.name>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,7 +54,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 11, 2016 at 09:09:42PM +0200, Kirill A. Shutemov wrote:
+On Thu, 11 Feb 2016 21:09:42 +0200
+"Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+
 > On Thu, Feb 11, 2016 at 07:22:23PM +0100, Gerald Schaefer wrote:
 > > Hi,
 > > 
@@ -71,10 +92,19 @@ On Thu, Feb 11, 2016 at 09:09:42PM +0200, Kirill A. Shutemov wrote:
 > I believe, the problem was already addressed for PowerPC:
 > 
 > http://lkml.kernel.org/g/454980831-16631-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
+> 
+> I think kick_all_cpus_sync() in arch-specific pmdp_invalidate() would do
+> the trick, right?
 
-Correct link is
+Hmm, not sure about that. After pmdp_invalidate(), a pmd_none() check in
+fast_gup will still return false, because the pmd is not empty (at least
+on s390). So I don't see spontaneously how it will help fast_gup to break
+out to the slow path in case of THP splitting.
 
-http://lkml.kernel.org/g/1454980831-16631-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
+> 
+> If yes, I'll prepare patch tomorrow (some sleep required).
+> 
 
--- 
- Kirill A. Shutemov
+We'll check if adding kick_all_cpus_sync() to pmdp_invalidate() helps.
+It would also be good if Martin has a look at this, he'll return on
+Monday.
