@@ -1,41 +1,39 @@
 Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E2A571A0038
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 18:32:41 +1100 (AEDT)
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8EFE41A003C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 18:37:41 +1100 (AEDT)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A9ACE140B8C
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2016 18:32:41 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 53008140B8C
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2016 18:37:41 +1100 (AEDT)
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 11 Feb 2016 17:32:40 +1000
+ Thu, 11 Feb 2016 17:37:41 +1000
 Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 585662BB0045
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2016 18:32:38 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B635A2CE8054
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2016 18:37:35 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1B7WPwE54263822
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2016 18:32:33 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1B7W56u003029
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2016 18:32:05 +1100
-Subject: Re: [PATCH V2 1/2] powerpc/powernv: new function to access OPAL msglog
-To: Joel Stanley <joel@jms.id.au>
-References: <1455002269-26543-1-git-send-email-andrew.donnellan@au1.ibm.com>
- <CACPK8Xcfi+8XAR3WxvP6qJ7YjSBprZNcMzKrtiaABgoGw015gw@mail.gmail.com>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+ u1B7bMD243057400
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2016 18:37:31 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1B7b3mu016267
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2016 18:37:03 +1100
 From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Message-ID: <56BC38DC.9090301@au1.ibm.com>
-Date: Thu, 11 Feb 2016 18:31:40 +1100
-MIME-Version: 1.0
-In-Reply-To: <CACPK8Xcfi+8XAR3WxvP6qJ7YjSBprZNcMzKrtiaABgoGw015gw@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+To: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au
+Cc: stewart@linux.vnet.ibm.com, joel@jms.id.au
+Subject: [PATCH V3 2/2] powerpc/xmon: add command to dump OPAL msglog
+Date: Thu, 11 Feb 2016 18:36:20 +1100
+Message-Id: <1455176180-19670-2-git-send-email-andrew.donnellan@au1.ibm.com>
+In-Reply-To: <1455176180-19670-1-git-send-email-andrew.donnellan@au1.ibm.com>
+References: <1455002269-26543-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ <1455176180-19670-1-git-send-email-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,45 +43,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/02/16 18:14, Joel Stanley wrote:
-> Looks like you didn't break it much. Congratulations on being the new
-> memcons maintainer!
+Add the 'do' command to dump the OPAL msglog in xmon.
 
-Argh, I forgot the golden rule of kernel development - if you touch it, 
-you own it... :)
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+---
+ arch/powerpc/xmon/xmon.c | 60 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 60 insertions(+)
 
-> There's one issue with your error handling.
->
->> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
->> index 4e0da5a..0256d07 100644
->> --- a/arch/powerpc/platforms/powernv/opal.c
->> +++ b/arch/powerpc/platforms/powernv/opal.c
->> @@ -724,6 +724,9 @@ static int __init opal_init(void)
->>                  of_node_put(leds);
->>          }
->>
->> +       /* Initialise OPAL message log interface */
->> +       opal_msglog_init();
->
-> If this fails due to eg. the magic number being wrong.
->
->> +
->>          /* Create "opal" kobject under /sys/firmware */
->>          rc = opal_sysfs_init();
->>          if (rc == 0) {
->> @@ -739,8 +742,8 @@ static int __init opal_init(void)
->>                  opal_platform_dump_init();
->>                  /* Setup system parameters interface */
->>                  opal_sys_param_init();
->> -               /* Setup message log interface. */
->> -               opal_msglog_init();
->> +               /* Setup message log sysfs interface. */
->> +               opal_msglog_sysfs_init();
->
-> This will succeed, leaving you with a sysfs file attached to a broken driver.
-
-V3 on its way...
-
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 07a8508..48b75ae 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -47,6 +47,11 @@
+ #include <asm/debug.h>
+ #include <asm/hw_breakpoint.h>
+ 
++#ifdef CONFIG_PPC_POWERNV
++#include <asm/opal.h>
++#include <asm/firmware.h>
++#endif
++
+ #ifdef CONFIG_PPC64
+ #include <asm/hvcall.h>
+ #include <asm/paca.h>
+@@ -119,6 +124,11 @@ static void dump(void);
+ static void prdump(unsigned long, long);
+ static int ppc_inst_dump(unsigned long, long, int);
+ static void dump_log_buf(void);
++
++#ifdef CONFIG_PPC_POWERNV
++static void dump_opal_msglog(void);
++#endif
++
+ static void backtrace(struct pt_regs *);
+ static void excprint(struct pt_regs *);
+ static void prregs(struct pt_regs *);
+@@ -202,6 +212,10 @@ Commands:\n\
+   df	dump float values\n\
+   dd	dump double values\n\
+   dl    dump the kernel log buffer\n"
++#ifdef CONFIG_PPC_POWERNV
++  "\
++  do    dump the OPAL message log\n"
++#endif
+ #ifdef CONFIG_PPC64
+   "\
+   dp[#]	dump paca for current cpu, or cpu #\n\
+@@ -2253,6 +2267,12 @@ dump(void)
+ 		last_cmd = "di\n";
+ 	} else if (c == 'l') {
+ 		dump_log_buf();
++	} else if (c == 'o') {
++#ifdef CONFIG_PPC_POWERNV
++		dump_opal_msglog();
++#else
++		printf("Machine is not running OPAL firmware.\n");
++#endif
+ 	} else if (c == 'r') {
+ 		scanhex(&ndump);
+ 		if (ndump == 0)
+@@ -2395,6 +2415,46 @@ dump_log_buf(void)
+ 	catch_memory_errors = 0;
+ }
+ 
++#ifdef CONFIG_PPC_POWERNV
++void
++dump_opal_msglog(void)
++{
++	unsigned char buf[128];
++	ssize_t res;
++	loff_t pos = 0;
++
++	if (!firmware_has_feature(FW_FEATURE_OPAL)) {
++		printf("Machine is not running OPAL firmware.\n");
++		return;
++	}
++
++	if (setjmp(bus_error_jmp) != 0) {
++		printf("Error dumping OPAL msglog!\n");
++		return;
++	}
++
++	catch_memory_errors = 1;
++	sync();
++
++	xmon_start_pagination();
++	while ((res = opal_msglog_copy(buf, pos, sizeof(buf) - 1))) {
++		if (res < 0) {
++			printf("Error dumping OPAL msglog! Error: %zd\n", res);
++			break;
++		}
++		buf[res] = '\0';
++		printf("%s", buf);
++		pos += res;
++	}
++	xmon_end_pagination();
++
++	sync();
++	/* wait a little while to see if we get a machine check */
++	__delay(200);
++	catch_memory_errors = 0;
++}
++#endif
++
+ /*
+  * Memory operations - move, set, print differences
+  */
 -- 
 Andrew Donnellan              Software Engineer, OzLabs
 andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
