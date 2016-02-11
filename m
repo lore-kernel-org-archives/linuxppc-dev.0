@@ -1,26 +1,15 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E124E1A003D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 18:48:25 +1100 (AEDT)
-Received: by mail-pa0-x243.google.com with SMTP id gc2so107583pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Feb 2016 23:48:25 -0800 (PST)
-Message-ID: <1455176897.2885.12.camel@gmail.com>
-Subject: Re: [PATCH v8 4/8] ppc64 ftrace_with_regs configuration variables
-From: Balbir Singh <bsingharora@gmail.com>
-To: Torsten Duwe <duwe@lst.de>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>, Petr
- Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>, Steven Rostedt
- <rostedt@goodmis.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
-Date: Thu, 11 Feb 2016 18:48:17 +1100
-In-Reply-To: <20160210174450.9C065692C8@newverein.lst.de>
-References: <20160210174221.EBBEC692C8@newverein.lst.de>
- <20160210174450.9C065692C8@newverein.lst.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from elettra.eu (m1.elettra.trieste.it [140.105.206.201])
+ by lists.ozlabs.org (Postfix) with ESMTP id 069791A0038
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Feb 2016 19:00:56 +1100 (AEDT)
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+To: Scott Wood <oss@buserror.net>,
+	Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Alessio Igor Bogani <alessio.bogani@elettra.eu>
+Subject: [PATCH v2 1/1] powerpc/86xx: Consolidate common platform code
+Date: Thu, 11 Feb 2016 09:00:51 +0100
+Message-Id: <1455177651-6686-1-git-send-email-alessio.bogani@elettra.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,50 +19,355 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-02-10 at 17:25 +0100, Torsten Duwe wrote:
+Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+---
+v1 -> v2
+	Use appropriate [PATCH] prefix
 
-snip
+ arch/powerpc/platforms/86xx/Makefile       |  2 +-
+ arch/powerpc/platforms/86xx/common.c       | 42 ++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/86xx/gef_ppc9a.c    | 32 +----------------------
+ arch/powerpc/platforms/86xx/gef_sbc310.c   | 32 +----------------------
+ arch/powerpc/platforms/86xx/gef_sbc610.c   | 32 +----------------------
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c | 20 ++------------
+ arch/powerpc/platforms/86xx/mpc86xx.h      |  2 ++
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c | 21 +--------------
+ arch/powerpc/platforms/86xx/sbc8641d.c     | 32 +----------------------
+ 9 files changed, 52 insertions(+), 163 deletions(-)
+ create mode 100644 arch/powerpc/platforms/86xx/common.c
 
-> diff --git a/arch/powerpc/gcc-mprofile-kernel-notrace.sh b/arch/powerpc/gcc-mprofile-kernel-notrace.sh
-> new file mode 100755
-> index 0000000..68d6482
-> --- /dev/null
-> +++ b/arch/powerpc/gcc-mprofile-kernel-notrace.sh
-> @@ -0,0 +1,33 @@
-> +#!/bin/sh
-> +# Test whether the compile option -mprofile-kernel
-> +# generates profiling code ( = a call to mcount), and
-> +# whether a function without any global references sets
-> +# the TOC pointer properly at the beginning, and
-> +# whether the "notrace" function attribute successfully
-> +# suppresses the _mcount call.
-> +
-> +echo "int func() { return 0; }" | \
-> +    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-> +    grep -q "mcount"
-> +
-> +trace_result=$?
-> +
-> +echo "int func() { return 0; }" | \
-> +    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-> +    sed -n -e '/func:/,/bl _mcount/p' | grep -q TOC
-> +
-> +leaf_toc_result=$?
-> +
-
-leaf_toc_result failed for me with gcc 5. I'll try and grab gcc-6
-and give the patches a spin
-
-> +/bin/echo -e "#include \nnotrace int func() { return 0; }" | \
-> +    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-> +    grep -q "mcount"
-> +
-> +notrace_result=$?
-> +
-> +if [ "$trace_result" -eq "0" -a \
-> +	"$leaf_toc_result" -eq "0" -a \
-> +	"$notrace_result" -eq "1" ]; then
-> +	echo y
-> +else
-> +	echo n
-> +fi
+diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
+index ede815d..2d889ad 100644
+--- a/arch/powerpc/platforms/86xx/Makefile
++++ b/arch/powerpc/platforms/86xx/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for the PowerPC 86xx linux kernel.
+ #
+ 
+-obj-y				:= pic.o
++obj-y				:= pic.o common.o
+ obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
+ obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
+ obj-$(CONFIG_SBC8641D)		+= sbc8641d.o
+diff --git a/arch/powerpc/platforms/86xx/common.c b/arch/powerpc/platforms/86xx/common.c
+new file mode 100644
+index 0000000..bee3177
+--- /dev/null
++++ b/arch/powerpc/platforms/86xx/common.c
+@@ -0,0 +1,42 @@
++/*
++ * Routines common to most mpc86xx-based boards.
++ *
++ * This is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/of_platform.h>
++
++#include "mpc86xx.h"
++
++static const struct of_device_id mpc86xx_common_ids[] __initconst = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{ .compatible = "simple-bus", },
++	{ .name = "localbus", },
++	{ .compatible = "gianfar", },
++	{ .compatible = "fsl,mpc8641-pcie", },
++	{},
++};
++
++int __init mpc86xx_common_publish_devices(void)
++{
++	return of_platform_bus_probe(NULL, mpc86xx_common_ids, NULL);
++}
++
++long __init mpc86xx_time_init(void)
++{
++	unsigned int temp;
++
++	/* Set the time base to zero */
++	mtspr(SPRN_TBWL, 0);
++	mtspr(SPRN_TBWU, 0);
++
++	temp = mfspr(SPRN_HID0);
++	temp |= HID0_TBEN;
++	mtspr(SPRN_HID0, temp);
++	asm volatile("isync");
++
++	return 0;
++}
+diff --git a/arch/powerpc/platforms/86xx/gef_ppc9a.c b/arch/powerpc/platforms/86xx/gef_ppc9a.c
+index bf17933..8e63b75 100644
+--- a/arch/powerpc/platforms/86xx/gef_ppc9a.c
++++ b/arch/powerpc/platforms/86xx/gef_ppc9a.c
+@@ -197,37 +197,7 @@ static int __init gef_ppc9a_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+-	{},
+-};
+-
+-static int __init declare_of_platform_devices(void)
+-{
+-	printk(KERN_DEBUG "Probe platform devices\n");
+-	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+-
+-	return 0;
+-}
+-machine_arch_initcall(gef_ppc9a, declare_of_platform_devices);
++machine_arch_initcall(gef_ppc9a, mpc86xx_common_publish_devices);
+ 
+ define_machine(gef_ppc9a) {
+ 	.name			= "GE PPC9A",
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc310.c b/arch/powerpc/platforms/86xx/gef_sbc310.c
+index 8facf58..0e0be94 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc310.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc310.c
+@@ -184,37 +184,7 @@ static int __init gef_sbc310_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+-	{},
+-};
+-
+-static int __init declare_of_platform_devices(void)
+-{
+-	printk(KERN_DEBUG "Probe platform devices\n");
+-	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+-
+-	return 0;
+-}
+-machine_arch_initcall(gef_sbc310, declare_of_platform_devices);
++machine_arch_initcall(gef_sbc310, mpc86xx_common_publish_devices);
+ 
+ define_machine(gef_sbc310) {
+ 	.name			= "GE SBC310",
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
+index 8c9058d..e8292b4 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc610.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
+@@ -174,37 +174,7 @@ static int __init gef_sbc610_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+-	{},
+-};
+-
+-static int __init declare_of_platform_devices(void)
+-{
+-	printk(KERN_DEBUG "Probe platform devices\n");
+-	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+-
+-	return 0;
+-}
+-machine_arch_initcall(gef_sbc610, declare_of_platform_devices);
++machine_arch_initcall(gef_sbc610, mpc86xx_common_publish_devices);
+ 
+ define_machine(gef_sbc610) {
+ 	.name			= "GE SBC610",
+diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+index 437a9c3..957473e 100644
+--- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
++++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+@@ -88,12 +88,10 @@ static inline void mpc8610_suspend_init(void) { }
+ static const struct of_device_id mpc8610_ids[] __initconst = {
+ 	{ .compatible = "fsl,mpc8610-immr", },
+ 	{ .compatible = "fsl,mpc8610-guts", },
+-	{ .compatible = "simple-bus", },
+ 	/* So that the DMA channel nodes can be probed individually: */
+ 	{ .compatible = "fsl,eloplus-dma", },
+ 	/* PCI controllers */
+ 	{ .compatible = "fsl,mpc8610-pci", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+ 	{}
+ };
+ 
+@@ -105,6 +103,8 @@ static int __init mpc8610_declare_of_platform_devices(void)
+ 	/* Enable wakeup on PIXIS' event IRQ. */
+ 	mpc8610_suspend_init();
+ 
++	mpc86xx_common_publish_devices();
++
+ 	/* Without this call, the SSI device driver won't get probed. */
+ 	of_platform_bus_probe(NULL, mpc8610_ids, NULL);
+ 
+@@ -327,22 +327,6 @@ static int __init mpc86xx_hpcd_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+ define_machine(mpc86xx_hpcd) {
+ 	.name			= "MPC86xx HPCD",
+ 	.probe			= mpc86xx_hpcd_probe,
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx.h b/arch/powerpc/platforms/86xx/mpc86xx.h
+index 08efb57..53500db 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx.h
++++ b/arch/powerpc/platforms/86xx/mpc86xx.h
+@@ -17,5 +17,7 @@
+ 
+ extern void mpc86xx_smp_init(void);
+ extern void mpc86xx_init_irq(void);
++extern long mpc86xx_time_init(void);
++extern int mpc86xx_common_publish_devices(void);
+ 
+ #endif	/* __MPC86XX_H__ */
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index 07ccb1b..e508481 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -110,33 +110,14 @@ static int __init mpc86xx_hpcn_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init
+-mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+ static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+ 	{ .compatible = "fsl,srio", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+ 	{},
+ };
+ 
+ static int __init declare_of_platform_devices(void)
+ {
++	mpc86xx_common_publish_devices();
+ 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+ 
+ 	return 0;
+diff --git a/arch/powerpc/platforms/86xx/sbc8641d.c b/arch/powerpc/platforms/86xx/sbc8641d.c
+index 6810b71..2a9cf27 100644
+--- a/arch/powerpc/platforms/86xx/sbc8641d.c
++++ b/arch/powerpc/platforms/86xx/sbc8641d.c
+@@ -75,37 +75,7 @@ static int __init sbc8641_probe(void)
+ 	return 0;
+ }
+ 
+-static long __init
+-mpc86xx_time_init(void)
+-{
+-	unsigned int temp;
+-
+-	/* Set the time base to zero */
+-	mtspr(SPRN_TBWL, 0);
+-	mtspr(SPRN_TBWU, 0);
+-
+-	temp = mfspr(SPRN_HID0);
+-	temp |= HID0_TBEN;
+-	mtspr(SPRN_HID0, temp);
+-	asm volatile("isync");
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id of_bus_ids[] __initconst = {
+-	{ .compatible = "simple-bus", },
+-	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,mpc8641-pcie", },
+-	{},
+-};
+-
+-static int __init declare_of_platform_devices(void)
+-{
+-	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+-
+-	return 0;
+-}
+-machine_arch_initcall(sbc8641, declare_of_platform_devices);
++machine_arch_initcall(sbc8641, mpc86xx_common_publish_devices);
+ 
+ define_machine(sbc8641) {
+ 	.name			= "SBC8641D",
+-- 
+2.7.1
