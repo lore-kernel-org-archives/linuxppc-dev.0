@@ -1,28 +1,20 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <abounine@ott.idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6AEB21A003D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 01:15:42 +1100 (AEDT)
-Received: from mail-yw0-x243.google.com (mail-yw0-x243.google.com
- [IPv6:2607:f8b0:4002:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AADFA1402C4
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Feb 2016 01:15:40 +1100 (AEDT)
-Received: by mail-yw0-x243.google.com with SMTP id c124so2748561ywe.0
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2016 06:15:40 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1455002269-26543-2-git-send-email-andrew.donnellan@au1.ibm.com>
-References: <1455002269-26543-1-git-send-email-andrew.donnellan@au1.ibm.com>
- <1455002269-26543-2-git-send-email-andrew.donnellan@au1.ibm.com>
-Date: Thu, 11 Feb 2016 17:15:38 +0300
-Message-ID: <CAOJe8K0-XZA5pc6jSAizi8HJuvaE5rO9Aewy9qpb32oetSo_ag@mail.gmail.com>
-Subject: Re: [PATCH V2 2/2] powerpc/xmon: add command to dump OPAL msglog
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, stewart@linux.vnet.ibm.com
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id D78B31A003D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 01:37:59 +1100 (AEDT)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
+ Matt Porter <mporter@kernel.crashing.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Aurelien Jacquiot <a-jacquiot@ti.com>,
+ Andre van Herk <andre.van.herk@prodrive-technologies.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/fsl_rio: update for port-write interface change
+Date: Thu, 11 Feb 2016 09:37:41 -0500
+Message-Id: <1455201461-598-1-git-send-email-alexandre.bounine@idt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,129 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2/9/16, Andrew Donnellan <andrew.donnellan@au1.ibm.com> wrote:
-> Add the 'do' command to dump the OPAL msglog in xmon.
->
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Platform-specific update following changes in port-write handler interface.
 
-I think it would be better to create system-specific files under
- powerpc/xmon/ directory, in this case something like xmon_powernv.c.
+This is a follow-up patch for
+    [PATCH 22/30] rapidio: add global inbound port write interfaces
 
-There are some many macros there.
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Aurelien Jacquiot <a-jacquiot@ti.com>
+Cc: Andre van Herk <andre.van.herk@prodrive-technologies.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/sysdev/fsl_rio.c |    1 +
+ arch/powerpc/sysdev/fsl_rio.h |    1 +
+ arch/powerpc/sysdev/fsl_rmu.c |   16 ++++++++++------
+ 3 files changed, 12 insertions(+), 6 deletions(-)
 
-Current code already looks very ugly, look at the cell-specific spu* stuff
-for example.
-
-> ---
->  arch/powerpc/xmon/xmon.c | 60
-> ++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 60 insertions(+)
->
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index 07a8508..48b75ae 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -47,6 +47,11 @@
->  #include <asm/debug.h>
->  #include <asm/hw_breakpoint.h>
->
-> +#ifdef CONFIG_PPC_POWERNV
-> +#include <asm/opal.h>
-> +#include <asm/firmware.h>
-> +#endif
-> +
->  #ifdef CONFIG_PPC64
->  #include <asm/hvcall.h>
->  #include <asm/paca.h>
-> @@ -119,6 +124,11 @@ static void dump(void);
->  static void prdump(unsigned long, long);
->  static int ppc_inst_dump(unsigned long, long, int);
->  static void dump_log_buf(void);
-> +
-> +#ifdef CONFIG_PPC_POWERNV
-> +static void dump_opal_msglog(void);
-> +#endif
-> +
->  static void backtrace(struct pt_regs *);
->  static void excprint(struct pt_regs *);
->  static void prregs(struct pt_regs *);
-> @@ -202,6 +212,10 @@ Commands:\n\
->    df	dump float values\n\
->    dd	dump double values\n\
->    dl    dump the kernel log buffer\n"
-> +#ifdef CONFIG_PPC_POWERNV
-> +  "\
-> +  do    dump the OPAL message log\n"
-> +#endif
->  #ifdef CONFIG_PPC64
->    "\
->    dp[#]	dump paca for current cpu, or cpu #\n\
-> @@ -2253,6 +2267,12 @@ dump(void)
->  		last_cmd = "di\n";
->  	} else if (c == 'l') {
->  		dump_log_buf();
-> +	} else if (c == 'o') {
-> +#ifdef CONFIG_PPC_POWERNV
-> +		dump_opal_msglog();
-> +#else
-> +		printf("Machine is not running OPAL firmware.\n");
-> +#endif
->  	} else if (c == 'r') {
->  		scanhex(&ndump);
->  		if (ndump == 0)
-> @@ -2395,6 +2415,46 @@ dump_log_buf(void)
->  	catch_memory_errors = 0;
->  }
->
-> +#ifdef CONFIG_PPC_POWERNV
-> +void
-> +dump_opal_msglog(void)
-> +{
-> +	unsigned char buf[128];
-> +	ssize_t res;
-> +	loff_t pos = 0;
-> +
-> +	if (!firmware_has_feature(FW_FEATURE_OPAL)) {
-> +		printf("Machine is not running OPAL firmware.\n");
-> +		return;
-> +	}
-> +
-> +	if (setjmp(bus_error_jmp) != 0) {
-> +		printf("Error dumping OPAL msglog!\n");
-> +		return;
-> +	}
-> +
-> +	catch_memory_errors = 1;
-> +	sync();
-> +
-> +	xmon_start_pagination();
-> +	while ((res = opal_msglog_copy(buf, pos, sizeof(buf) - 1))) {
-> +		if (res < 0) {
-> +			printf("Error dumping OPAL msglog! Error: %zd\n", res);
-> +			break;
-> +		}
-> +		buf[res] = '\0';
-> +		printf("%s", buf);
-> +		pos += res;
-> +	}
-> +	xmon_end_pagination();
-> +
-> +	sync();
-> +	/* wait a little while to see if we get a machine check */
-> +	__delay(200);
-> +	catch_memory_errors = 0;
-> +}
-> +#endif
-> +
->  /*
->   * Memory operations - move, set, print differences
->   */
-> --
-> Andrew Donnellan              Software Engineer, OzLabs
-> andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-> +61 2 6201 8874 (work)        IBM Australia Limited
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
+index 385371a..f5bf38b9 100644
+--- a/arch/powerpc/sysdev/fsl_rio.c
++++ b/arch/powerpc/sysdev/fsl_rio.c
+@@ -726,6 +726,7 @@ int fsl_rio_setup(struct platform_device *dev)
+ 		fsl_rio_inbound_mem_init(priv);
+ 
+ 		dbell->mport[i] = port;
++		pw->mport[i] = port;
+ 
+ 		if (rio_register_mport(port)) {
+ 			release_resource(&port->iores);
+diff --git a/arch/powerpc/sysdev/fsl_rio.h b/arch/powerpc/sysdev/fsl_rio.h
+index d53407a..12dd18f 100644
+--- a/arch/powerpc/sysdev/fsl_rio.h
++++ b/arch/powerpc/sysdev/fsl_rio.h
+@@ -97,6 +97,7 @@ struct fsl_rio_dbell {
+ };
+ 
+ struct fsl_rio_pw {
++	struct rio_mport *mport[MAX_PORT_NUM];
+ 	struct device *dev;
+ 	struct rio_pw_regs __iomem *pw_regs;
+ 	struct rio_port_write_msg port_write_msg;
+diff --git a/arch/powerpc/sysdev/fsl_rmu.c b/arch/powerpc/sysdev/fsl_rmu.c
+index b48197a..176acfc 100644
+--- a/arch/powerpc/sysdev/fsl_rmu.c
++++ b/arch/powerpc/sysdev/fsl_rmu.c
+@@ -481,14 +481,14 @@ pw_done:
+ static void fsl_pw_dpc(struct work_struct *work)
+ {
+ 	struct fsl_rio_pw *pw = container_of(work, struct fsl_rio_pw, pw_work);
+-	u32 msg_buffer[RIO_PW_MSG_SIZE/sizeof(u32)];
++	union rio_pw_msg msg_buffer;
++	int i;
+ 
+ 	/*
+ 	 * Process port-write messages
+ 	 */
+-	while (kfifo_out_spinlocked(&pw->pw_fifo, (unsigned char *)msg_buffer,
++	while (kfifo_out_spinlocked(&pw->pw_fifo, (unsigned char *)&msg_buffer,
+ 			 RIO_PW_MSG_SIZE, &pw->pw_fifo_lock)) {
+-		/* Process one message */
+ #ifdef DEBUG_PW
+ 		{
+ 		u32 i;
+@@ -496,15 +496,19 @@ static void fsl_pw_dpc(struct work_struct *work)
+ 		for (i = 0; i < RIO_PW_MSG_SIZE/sizeof(u32); i++) {
+ 			if ((i%4) == 0)
+ 				pr_debug("\n0x%02x: 0x%08x", i*4,
+-					 msg_buffer[i]);
++					 msg_buffer.raw[i]);
+ 			else
+-				pr_debug(" 0x%08x", msg_buffer[i]);
++				pr_debug(" 0x%08x", msg_buffer.raw[i]);
+ 		}
+ 		pr_debug("\n");
+ 		}
+ #endif
+ 		/* Pass the port-write message to RIO core for processing */
+-		rio_inb_pwrite_handler((union rio_pw_msg *)msg_buffer);
++		for (i = 0; i < MAX_PORT_NUM; i++) {
++			if (pw->mport[i])
++				rio_inb_pwrite_handler(pw->mport[i],
++						       &msg_buffer);
++		}
+ 	}
+ }
+ 
+-- 
+1.7.8.4
