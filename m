@@ -1,25 +1,36 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 80C4D1A002B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 16:53:02 +1100 (AEDT)
-Date: Fri, 12 Feb 2016 16:52:58 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-Subject: Re: [PATCH kernel v2 6/6] KVM: PPC: Add support for multiple-TCE
- hcalls
-Message-ID: <20160212055258.GA6219@fergus.ozlabs.ibm.com>
-References: <1453361977-19589-1-git-send-email-aik@ozlabs.ru>
- <1453361977-19589-7-git-send-email-aik@ozlabs.ru>
- <20160211053206.GD9757@oak.ozlabs.ibm.com>
- <56BD657A.1020203@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E29111A002B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 17:03:45 +1100 (AEDT)
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 12 Feb 2016 16:03:45 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6D2EA2BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 17:03:43 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1C63SBl21692446
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 17:03:37 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1C63AnU000953
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 17:03:10 +1100
+Subject: Re: [PATCH v2 2/4] powerpc/powernv: Fix stale PE primary bus
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au
+References: <1454993431-17068-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1454993431-17068-2-git-send-email-gwshan@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-ID: <56BD7586.7060803@au1.ibm.com>
+Date: Fri, 12 Feb 2016 17:02:46 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <56BD657A.1020203@ozlabs.ru>
+In-Reply-To: <1454993431-17068-2-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +40,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 12, 2016 at 03:54:18PM +1100, Alexey Kardashevskiy wrote:
-> On 02/11/2016 04:32 PM, Paul Mackerras wrote:
-> >On Thu, Jan 21, 2016 at 06:39:37PM +1100, Alexey Kardashevskiy wrote:
-> >>+	rmap = (void *) vmalloc_to_phys(rmap);
-> >>+
-> >>+	lock_rmap(rmap);
-> >
-> >A comment here explaining why we lock the rmap and what that achieves
-> >would be useful for future generations.
-> 
-> 
-> /* This protects the guest page with the TCE list from going away while we
-> are reading TCE list */
-> 
-> ?
-> 
-> By "going away" I mean H_ENTER/H_REMOVE executed on parallel CPUs, is this
-> roughly correct? as I did grep for "lock_rmap()" and did not find a single
-> comment next to it...
+On 09/02/16 15:50, Gavin Shan wrote:
+> When PCI bus is unplugged during full hotplug for EEH recovery,
+> the platform PE instance (struct pnv_ioda_pe) isn't released and
+> it dereferences the stale PCI bus that has been released. It leads
+> to kernel crash when referring to the stale PCI bus.
+>
+> This fixes the issue by correcting the PE's primary bus when it's
+> oneline at plugging time, in pnv_pci_dma_bus_setup() which is to
+> be called by pcibios_fixup_bus().
+>
+> Reported-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Reported-by: Pradipta Ghosh <pradghos@in.ibm.com>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Tested-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Actually, taking the rmap lock stops the guest real -> host real
-mapping from changing.  For the comment, I suggest this:
+I realise this has already been merged, but the following was found by 
+Coverity:
 
-	/*
-	 * Synchronize with the MMU notifier callbacks in
-	 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
-	 * While we have the rmap lock, code running on other CPUs
-	 * cannot finish unmapping the host real page that backs
-	 * this guest real page, so we are OK to access the host
-	 * real page.
-	 */
+> +void pnv_pci_dma_bus_setup(struct pci_bus *bus)
+> +{
+> +	struct pci_controller *hose = bus->sysdata;
+> +	struct pnv_phb *phb = hose->private_data;
+> +	struct pnv_ioda_pe *pe;
+> +
+> +	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+> +		if (!(pe->flags | (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)))
+> +			continue;
 
-Paul.
+This condition is always false. I think the first "|" is supposed to be "&".
+
+-- 
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
