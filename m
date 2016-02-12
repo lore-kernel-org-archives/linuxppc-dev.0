@@ -2,20 +2,21 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C28F91A004B
+ by lists.ozlabs.org (Postfix) with ESMTPS id E90351A004C
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 15:15:00 +1100 (AEDT)
-Date: Fri, 12 Feb 2016 15:14:57 +1100
+Date: Fri, 12 Feb 2016 13:52:38 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Cc: benh@kernel.crashing.org, mpe@ellerman.id.au,
  linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Subject: Re: [PATCH V2 00/29] Book3s abstraction in preparation for new MMU
- model
-Message-ID: <20160212041457.GE13831@oak.ozlabs.ibm.com>
+Subject: Re: [PATCH V2 02/29] powerpc/mm: Split pgtable types to separate
+ header
+Message-ID: <20160212025238.GC13831@oak.ozlabs.ibm.com>
 References: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1454923241-6681-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1454923241-6681-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,16 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 08, 2016 at 02:50:12PM +0530, Aneesh Kumar K.V wrote:
-> Hello,
+On Mon, Feb 08, 2016 at 02:50:14PM +0530, Aneesh Kumar K.V wrote:
+> We remove real_pte_t out of STRICT_MM_TYPESCHECK. We will later add
+> a radix variant that is big endian
 > 
-> This is a large series, mostly consisting of code movement. No new features
-> are done in this series. The changes are done to accomodate the upcoming new memory
-> model in future powerpc chips. The details of the new MMU model can be found at
-> 
->  http://ibm.biz/power-isa3 (Needs registration). I am including a summary of the changes below.
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-This series doesn't seem to apply against either v4.4 or Linus'
-current master.  What is this patch against?
+It looks like most of what this patch does is move a bunch of
+definitions from page.h to a new pgtable-types.h.  What is the
+motivation for this?  Is the code identical (pure code movement) or do
+you make changes along the way, and if so, what and why?
+
+What exactly are you doing with real_pte_t and why?
 
 Paul.
