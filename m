@@ -1,52 +1,26 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C21F91A004B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Feb 2016 03:18:11 +1100 (AEDT)
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 12 Feb 2016 11:18:08 -0500
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id A54C76E8055
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 11:04:57 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1CGI5Ou29360344
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 16:18:05 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1CGI4tp012917
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 11:18:05 -0500
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>
-Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe also
- on PowerPC and ARM)
-In-Reply-To: <20160212125943.1eb2ca9d@thinkpad>
-References: <20160211192223.4b517057@thinkpad>
- <20160211190942.GA10244@node.shutemov.name>
- <20160211205702.24f0d17a@thinkpad> <87a8n6shf2.fsf@linux.vnet.ibm.com>
- <20160212125943.1eb2ca9d@thinkpad>
-Date: Fri, 12 Feb 2016 21:47:39 +0530
-Message-ID: <8760xtsy1o.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DA6641A004E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Feb 2016 03:45:22 +1100 (AEDT)
+Date: Fri, 12 Feb 2016 17:45:17 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Torsten Duwe <duwe@lst.de>, Michael Ellerman <mpe@ellerman.id.au>,
+ Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
+ Jessica Yu <jeyu@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org
+Subject: Re: [PATCH v8 8/8] livepatch: Detect offset for the ftrace location
+ during build
+Message-ID: <20160212164517.GO12548@pathway.suse.cz>
+References: <20160210174221.EBBEC692C8@newverein.lst.de>
+ <20160210174517.8347D692C8@newverein.lst.de>
+ <1455293609.16012.9.camel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1455293609.16012.9.camel@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,87 +30,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Gerald Schaefer <gerald.schaefer@de.ibm.com> writes:
-
-> On Fri, 12 Feb 2016 09:34:33 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+On Sat 2016-02-13 03:13:29, Balbir Singh wrote:
+> On Thu, 2016-01-28 at 16:32 +0100, Torsten Duwe wrote:
+> > From: Petr Mladek <pmladek@suse.com>
+> > 
+> > Livepatch works on x86_64 and s390 only when the ftrace call
+> > is at the very beginning of the function. But PPC is different.
+> > We need to handle TOC and save LR there before calling the
+> > global ftrace handler.
+> > 
+> > Now, the problem is that the extra operations have different
+> > length on PPC depending on the used gcc version. It is
+> > 4 instructions (16 bytes) before gcc-6 and only 3 instructions
+> > (12 bytes) with gcc-6.
+> > 
+> > This patch tries to detect the offset a generic way during
+> > build. It assumes that the offset of the ftrace location
+> > is the same for all functions. It modifies the existing
+> > recordmcount tool that is able to find read mcount locations
+> > directly from the object files. It adds an option -p
+> > to print the first found offset.
+> > 
+> > The recordmcount tool is then used in the kernel/livepatch
+> > subdirectory to generate a header file. It defines
+> > a constant that is used to compute the ftrace location
+> > from the function address.
+> > 
+> > Finally, we have to enable the C implementation of the
+> > recordmcount tool to be used on PPC and S390. It seems
+> > to work fine there. It should be more reliable because
+> > it reads the standardized elf structures. The old perl
+> > implementation uses rather complex regular expressions
+> > to parse objdump output and is therefore much more tricky.
+> 
+> I'm still missing something, I'm getting offset as 8
 >
->> Gerald Schaefer <gerald.schaefer@de.ibm.com> writes:
->> 
->> > On Thu, 11 Feb 2016 21:09:42 +0200
->> > "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
->> >
->> >> On Thu, Feb 11, 2016 at 07:22:23PM +0100, Gerald Schaefer wrote:
->> >> > Hi,
->> >> > 
->> >> > Sebastian Ott reported random kernel crashes beginning with v4.5-rc1 and
->> >> > he also bisected this to commit 61f5d698 "mm: re-enable THP". Further
->> >> > review of the THP rework patches, which cannot be bisected, revealed
->> >> > commit fecffad "s390, thp: remove infrastructure for handling splitting PMDs"
->> >> > (and also similar commits for other archs).
->> >> > 
->> >> > This commit removes the THP splitting bit and also the architecture
->> >> > implementation of pmdp_splitting_flush(), which took care of the IPI for
->> >> > fast_gup serialization. The commit message says
->> >> > 
->> >> >     pmdp_splitting_flush() is not needed too: on splitting PMD we will do
->> >> >     pmdp_clear_flush() + set_pte_at().  pmdp_clear_flush() will do IPI as
->> >> >     needed for fast_gup
->> >> > 
->> >> > The assumption that a TLB flush will also produce an IPI is wrong on s390,
->> >> > and maybe also on other architectures, and I thought that this was actually
->> >> > the main reason for having an arch-specific pmdp_splitting_flush().
->> >> > 
->> >> > At least PowerPC and ARM also had an individual implementation of
->> >> > pmdp_splitting_flush() that used kick_all_cpus_sync() instead of a TLB
->> >> > flush to send the IPI, and those were also removed. Putting the arch
->> >> > maintainers and mailing lists on cc to verify.
->> >> > 
->> >> > On s390 this will break the IPI serialization against fast_gup, which
->> >> > would certainly explain the random kernel crashes, please revert or fix
->> >> > the pmdp_splitting_flush() removal.
->> >> 
->> >> Sorry for that.
->> >> 
->> >> I believe, the problem was already addressed for PowerPC:
->> >> 
->> >> http://lkml.kernel.org/g/454980831-16631-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
->> >> 
->> >> I think kick_all_cpus_sync() in arch-specific pmdp_invalidate() would do
->> >> the trick, right?
->> >
->> > Hmm, not sure about that. After pmdp_invalidate(), a pmd_none() check in
->> > fast_gup will still return false, because the pmd is not empty (at least
->> > on s390).
->> 
->> Why can't we do this ? I did this for ppc64.
->> 
->>  void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
->>  		     pmd_t *pmdp)
->>  {
->> -	pmd_hugepage_update(vma->vm_mm, address, pmdp, _PAGE_PRESENT, 0);
->> +	pmd_hugepage_update(vma->vm_mm, address, pmdp, ~0UL, 0);
->> 
->
-> Wouldn't that semantically change what pmdp_invalidate() was supposed to
-> do? The comment before the call says "the pmd_trans_huge and
-> pmd_trans_splitting must remain set at all times on the pmd". So, after
-> removing pmd_trans_splitting, it seems to be necessary to at least keep
-> pmd_trans_huge set.
->
-> In your case, the pmd would be completely cleared, which may help to find
-> it in fast_gup with pmd_none(), but I'm not sure if this would open up
-> other problems, e.g. with concurrent page faults. But I must also admit that
-> my THP overview got a little rusty.
+> When I run, I get
+> 
+> scripts/recordmcount -p kernel/livepatch/core.o 
+> #define KLP_FTRACE_LOCATION 8
+> 
+> scripts/recordmcount -p kernel/livepatch/ftrace-test.o 
+> #define KLP_FTRACE_LOCATION 8
+> 
+> My sample fails as well, since the expected offset is 16.
+> I guess the script is being run against a not so good
+> test.
 
-Thinking about this more, I guess, I should not be doing this. Because
-this bring in the exit_mmap race that I outlined in the patch even
-though the window now is small. 
+I guess that you used a broken gcc and cheated the check
+to pass the compilation. Did you, please?
 
-I guess we should fix this in the gup path by checking for what ever
-trick we are using to mark the pmd splitting. For ppc64 we clear the
-_PAGE_USER. We are ok as long as autonuma is enabled because
-pmd_protnone() check will check against _PAGE_USER. But that may not be
-sufficient. 
+The test used to detect the offset is using a minimalistic
+function is is afftected by the gcc bug.
 
--aneesh
+The patch below might be used to cheat the offset check as well.
+
+Torsten, please mention this somewhere if you, just by chance,
+send a new version of the patchset.
+
+>From f6a438a3f2f60cc1acc859b41d0cc9259c9a331e Mon Sep 17 00:00:00 2001
+From: root <root@c79.arch.suse.de>
+Date: Tue, 2 Feb 2016 15:35:06 +0100
+Subject: [PATCH 2/2] livepatch: Make sure the TOC is handled when detecting
+ ftrace location
+
+There seems to be a bug in gcc on PPC. It does not handle TOC
+if the function does not access global variables or functions
+by default. But it should when profiling is enabled.
+
+This patch works around this problem by adding a call
+to a global function.
+
+This patch is for testing only!
+---
+ kernel/livepatch/ftrace-test.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/kernel/livepatch/ftrace-test.c b/kernel/livepatch/ftrace-test.c
+index 22f0c54bf7b3..a3b7aabb67e5 100644
+--- a/kernel/livepatch/ftrace-test.c
++++ b/kernel/livepatch/ftrace-test.c
+@@ -1,6 +1,9 @@
+ /* Sample code to figure out mcount location offset */
++#include <linux/printk.h>
++
+ 
+ int test(int a)
+ {
++	printk("%d\n", a);
+ 	return ++a;
+ }
+-- 
+1.8.5.6
