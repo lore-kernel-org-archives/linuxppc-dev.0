@@ -1,42 +1,41 @@
-Return-Path: <manoj@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <kirill@shutemov.name>
+Received: from mail-wm0-x22f.google.com (mail-wm0-x22f.google.com
+ [IPv6:2a00:1450:400c:c09::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9D5D91A0045
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Feb 2016 09:06:03 +1100 (AEDT)
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
- Fri, 12 Feb 2016 15:06:01 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 3104B3E40044
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 15:06:00 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1CM60N128704898
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 15:06:00 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1CM5xNX003419
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 15:05:59 -0700
-Reply-To: manoj@linux.vnet.ibm.com
-Subject: Re: [PATCH v2 3/7] ibmvscsi: Replace magic values in
- set_adpater_info() with defines
-References: <1455154348-3226-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <1455154348-3226-4-git-send-email-tyreld@linux.vnet.ibm.com>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- james.bottomley@hansenpartnership.com
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- nfont@linux.vnet.ibm.com, brking@linux.vnet.ibm.com, jthumshirn@suse.de
-From: Manoj Kumar <manoj@linux.vnet.ibm.com>
-Message-ID: <56BE574C.1090603@linux.vnet.ibm.com>
-Date: Fri, 12 Feb 2016 16:06:04 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1BEBB1A006B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Feb 2016 10:15:17 +1100 (AEDT)
+Received: by mail-wm0-x22f.google.com with SMTP id c200so40951391wme.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 15:15:17 -0800 (PST)
+Date: Sat, 13 Feb 2016 01:15:10 +0200
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+ Andrea Arcangeli <aarcange@redhat.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>
+Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe also
+ on PowerPC and ARM)
+Message-ID: <20160212231510.GB15142@node.shutemov.name>
+References: <20160211192223.4b517057@thinkpad>
+ <20160211190942.GA10244@node.shutemov.name>
+ <20160211205702.24f0d17a@thinkpad>
+ <20160212154116.GA15142@node.shutemov.name>
+ <56BE00E7.1010303@de.ibm.com> <20160212181640.4eabb85f@thinkpad>
 MIME-Version: 1.0
-In-Reply-To: <1455154348-3226-4-git-send-email-tyreld@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160212181640.4eabb85f@thinkpad>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,68 +45,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Feb 12, 2016 at 06:16:40PM +0100, Gerald Schaefer wrote:
+> On Fri, 12 Feb 2016 16:57:27 +0100
+> Christian Borntraeger <borntraeger@de.ibm.com> wrote:
+> 
+> > On 02/12/2016 04:41 PM, Kirill A. Shutemov wrote:
+> > > On Thu, Feb 11, 2016 at 08:57:02PM +0100, Gerald Schaefer wrote:
+> > >> On Thu, 11 Feb 2016 21:09:42 +0200
+> > >> "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+> > >>
+> > >>> On Thu, Feb 11, 2016 at 07:22:23PM +0100, Gerald Schaefer wrote:
+> > >>>> Hi,
+> > >>>>
+> > >>>> Sebastian Ott reported random kernel crashes beginning with v4.5-rc1 and
+> > >>>> he also bisected this to commit 61f5d698 "mm: re-enable THP". Further
+> > >>>> review of the THP rework patches, which cannot be bisected, revealed
+> > >>>> commit fecffad "s390, thp: remove infrastructure for handling splitting PMDs"
+> > >>>> (and also similar commits for other archs).
+> > >>>>
+> > >>>> This commit removes the THP splitting bit and also the architecture
+> > >>>> implementation of pmdp_splitting_flush(), which took care of the IPI for
+> > >>>> fast_gup serialization. The commit message says
+> > >>>>
+> > >>>>     pmdp_splitting_flush() is not needed too: on splitting PMD we will do
+> > >>>>     pmdp_clear_flush() + set_pte_at().  pmdp_clear_flush() will do IPI as
+> > >>>>     needed for fast_gup
+> > >>>>
+> > >>>> The assumption that a TLB flush will also produce an IPI is wrong on s390,
+> > >>>> and maybe also on other architectures, and I thought that this was actually
+> > >>>> the main reason for having an arch-specific pmdp_splitting_flush().
+> > >>>>
+> > >>>> At least PowerPC and ARM also had an individual implementation of
+> > >>>> pmdp_splitting_flush() that used kick_all_cpus_sync() instead of a TLB
+> > >>>> flush to send the IPI, and those were also removed. Putting the arch
+> > >>>> maintainers and mailing lists on cc to verify.
+> > >>>>
+> > >>>> On s390 this will break the IPI serialization against fast_gup, which
+> > >>>> would certainly explain the random kernel crashes, please revert or fix
+> > >>>> the pmdp_splitting_flush() removal.
+> > >>>
+> > >>> Sorry for that.
+> > >>>
+> > >>> I believe, the problem was already addressed for PowerPC:
+> > >>>
+> > >>> http://lkml.kernel.org/g/454980831-16631-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
+> > >>>
+> > >>> I think kick_all_cpus_sync() in arch-specific pmdp_invalidate() would do
+> > >>> the trick, right?
+> > >>
+> > >> Hmm, not sure about that. After pmdp_invalidate(), a pmd_none() check in
+> > >> fast_gup will still return false, because the pmd is not empty (at least
+> > >> on s390). So I don't see spontaneously how it will help fast_gup to break
+> > >> out to the slow path in case of THP splitting.
+> > > 
+> > > What pmdp_flush_direct() does in pmdp_invalidate()? It's hard to unwrap for me :-/
+> > > Does it make the pmd !pmd_present()?
+> > 
+> > It uses the idte instruction, which in an atomic fashion flushes the associated
+> > TLB entry and changes the value of the pmd entry to invalid. This comes from the
+> > HW requirement to not  change a PTE/PMD that might be still in use, other than 
+> > with special instructions that does the tlb handling and the invalidation together.
+> 
+> Correct, and it does _not_ make the pmd !pmd_present(), that would only be the
+> case after a _clear_flush(). It only marks the pmd as invalid and flushes,
+> so that it cannot generate a new TLB entry before the following pmd_populate(),
+> but it keeps its other content. This is to fulfill the requirements outlined in
+> the comment in mm/huge_memory.c before the call to pmdp_invalidate(). And
+> independent from that comment, we would need such an _invalidate() or
+> _clear_flush() on s390 before the pmd_populate() because of the HW details
+> that Christian described.
+> 
+> Reading the comment again, I do now notice that it also says "mark the current
+> pmd notpresent", which we cannot do w/o losing the huge and (formerly) splitting
+> bits, but it also shouldn't be needed to provide the "single TLB guarantee" that
+> is required from the comment. So, a pmd_present() check on s390 in this state
+> would still return true. Not sure yet if this is a problem, need more thinking,
+> this behavior was already present before the THP rework but maybe it was OK
+> before and is not OK now.
+> 
+> At least for fast_gup this should not be a problem though.
 
-Reviewed-by: Manoj Kumar <manoj@linux.vnet.ibm.com>
+I'm trying to wrap my head around the issue and I don't think missing
+serialization with gup_fast is the cause -- we just don't need it
+anymore.
 
----
-Manoj Kumar
+Previously, __split_huge_page_splitting() required serialization against
+gup_fast to make sure nobody can obtain new reference to the page after
+__split_huge_page_splitting() returns. This was a way to stabilize page
+references before starting to distribute them from head page to tail
+pages.
 
-On 2/10/2016 7:32 PM, Tyrel Datwyler wrote:
-> Add defines for mad version and mad os_type, and replace the magic
-> numbers in set_adapter_info() accordingly.
->
-> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> ---
->   drivers/scsi/ibmvscsi/ibmvscsi.c | 8 ++++----
->   drivers/scsi/ibmvscsi/viosrp.h   | 3 +++
->   2 files changed, 7 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-> index c888ea1..4b09a9b 100644
-> --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-> @@ -283,8 +283,8 @@ static void set_adapter_info(struct ibmvscsi_host_data *hostdata)
->   	hostdata->madapter_info.partition_number =
->   					cpu_to_be32(partition_number);
->
-> -	hostdata->madapter_info.mad_version = cpu_to_be32(1);
-> -	hostdata->madapter_info.os_type = cpu_to_be32(2);
-> +	hostdata->madapter_info.mad_version = cpu_to_be32(SRP_MAD_VERSION_1);
-> +	hostdata->madapter_info.os_type = cpu_to_be32(SRP_MAD_OS_LINUX);
->   }
->
->   /**
-> @@ -1398,7 +1398,7 @@ static void adapter_info_rsp(struct srp_event_struct *evt_struct)
->   			hostdata->host->max_sectors =
->   				be32_to_cpu(hostdata->madapter_info.port_max_txu[0]) >> 9;
->   		
-> -		if (be32_to_cpu(hostdata->madapter_info.os_type) == 3 &&
-> +		if (be32_to_cpu(hostdata->madapter_info.os_type) == SRP_MAD_OS_AIX &&
->   		    strcmp(hostdata->madapter_info.srp_version, "1.6a") <= 0) {
->   			dev_err(hostdata->dev, "host (Ver. %s) doesn't support large transfers\n",
->   				hostdata->madapter_info.srp_version);
-> @@ -1407,7 +1407,7 @@ static void adapter_info_rsp(struct srp_event_struct *evt_struct)
->   			hostdata->host->sg_tablesize = MAX_INDIRECT_BUFS;
->   		}
->
-> -		if (be32_to_cpu(hostdata->madapter_info.os_type) == 3) {
-> +		if (be32_to_cpu(hostdata->madapter_info.os_type) == SRP_MAD_OS_AIX) {
->   			enable_fast_fail(hostdata);
->   			return;
->   		}
-> diff --git a/drivers/scsi/ibmvscsi/viosrp.h b/drivers/scsi/ibmvscsi/viosrp.h
-> index 3d20851..d0f689b 100644
-> --- a/drivers/scsi/ibmvscsi/viosrp.h
-> +++ b/drivers/scsi/ibmvscsi/viosrp.h
-> @@ -221,7 +221,10 @@ struct mad_adapter_info_data {
->   	char srp_version[8];
->   	char partition_name[96];
->   	__be32 partition_number;
-> +#define SRP_MAD_VERSION_1 1
->   	__be32 mad_version;
-> +#define SRP_MAD_OS_LINUX 2
-> +#define SRP_MAD_OS_AIX 3
->   	__be32 os_type;
->   	__be32 port_max_txu[8];	/* per-port maximum transfer */
->   };
->
+With new refcounting, we don't care about this. Splitting PMD is now
+decoupled from splitting underlying compound page. It's okay to get new
+pins after split_huge_pmd(). To stabilize page references during
+split_huge_page() we rely on setting up migration entries once all
+pmds are split into page table entries.
+
+The theory that serialization against gup_fast is not a root cause of the
+crashes is consistent no crashes on arm64. Problem is somewhere else.
+ 
+> > (It also does some some other magic to the attach_count, which might hold off
+> > finish_arch_post_lock_switch while some flushing is happening, but this should
+> > be unrelated here)
+> > 
+> > 
+> > > I'm also confused by pmd_none() is equal to !pmd_present() on s390. Hm?
+> > 
+> > Don't know, Gerald or Martin?
+> 
+> The implementation frequently changes depending on how many new bits Martin
+> needs to squeeze out :-)
+
+One bit was freed up by the commit you've pointed to as a cause.
+I wounder If it's possible that screw up something while removing it? I
+don't see it, but who knows.
+
+Could you check if revert of fecffad25458 helps?
+
+And could you share how crashes looks like? I haven't seen backtraces yet.
+
+> We don't have a _PAGE_PRESENT bit for pmds, so pmd_present() just checks if the
+> entry is not empty. pmd_none() of course does the opposite, it checks if it is
+> empty.
+
+-- 
+ Kirill A. Shutemov
