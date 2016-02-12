@@ -1,31 +1,25 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F0861A002B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 16:04:40 +1100 (AEDT)
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 12 Feb 2016 15:04:40 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C55F42CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 16:04:35 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1C54RSl13762750
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 16:04:35 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1C542VG007355
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 16:04:03 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/eeh: Fix partial hotplug criterion
-Date: Fri, 12 Feb 2016 16:03:05 +1100
-Message-Id: <1455253387-478-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 80C4D1A002B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 16:53:02 +1100 (AEDT)
+Date: Fri, 12 Feb 2016 16:52:58 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v2 6/6] KVM: PPC: Add support for multiple-TCE
+ hcalls
+Message-ID: <20160212055258.GA6219@fergus.ozlabs.ibm.com>
+References: <1453361977-19589-1-git-send-email-aik@ozlabs.ru>
+ <1453361977-19589-7-git-send-email-aik@ozlabs.ru>
+ <20160211053206.GD9757@oak.ozlabs.ibm.com>
+ <56BD657A.1020203@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <56BD657A.1020203@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,40 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During error recovery, the device could be removed as part of the
-partial hotplug. The criterion used to come with partial hotplug
-is: if the device driver provides error_detected(), slot_reset()
-and resume() callbacks, it's immune from hotplug. Otherwise,
-it's going to experience partial hotplug during EEH recovery. But
-the criterion isn't correct enough: mlx4_core driver for Mellanox
-adapters provides error_detected(), slot_reset() callbacks, but
-resume() isn't there. Those Mellanox adapters won't be to involved
-in the partial hotplug.
+On Fri, Feb 12, 2016 at 03:54:18PM +1100, Alexey Kardashevskiy wrote:
+> On 02/11/2016 04:32 PM, Paul Mackerras wrote:
+> >On Thu, Jan 21, 2016 at 06:39:37PM +1100, Alexey Kardashevskiy wrote:
+> >>+	rmap = (void *) vmalloc_to_phys(rmap);
+> >>+
+> >>+	lock_rmap(rmap);
+> >
+> >A comment here explaining why we lock the rmap and what that achieves
+> >would be useful for future generations.
+> 
+> 
+> /* This protects the guest page with the TCE list from going away while we
+> are reading TCE list */
+> 
+> ?
+> 
+> By "going away" I mean H_ENTER/H_REMOVE executed on parallel CPUs, is this
+> roughly correct? as I did grep for "lock_rmap()" and did not find a single
+> comment next to it...
 
-This fixes the criterion to a practical one: adpater with driver
-that provides error_detected(), slot_reset() will be immune from
-partial hotplug. resume() isn't mandatory.
+Actually, taking the rmap lock stops the guest real -> host real
+mapping from changing.  For the comment, I suggest this:
 
-Fixes: f2da4ccf ("powerpc/eeh: More relaxed hotplug criterion")
-Cc: stable@vger.kernel.org #v4.4+
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/eeh_driver.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+	/*
+	 * Synchronize with the MMU notifier callbacks in
+	 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
+	 * While we have the rmap lock, code running on other CPUs
+	 * cannot finish unmapping the host real page that backs
+	 * this guest real page, so we are OK to access the host
+	 * real page.
+	 */
 
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 301be31..650cfb3 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -418,8 +418,7 @@ static void *eeh_rmv_device(void *data, void *userdata)
- 		eeh_pcid_put(dev);
- 		if (driver->err_handler &&
- 		    driver->err_handler->error_detected &&
--		    driver->err_handler->slot_reset &&
--		    driver->err_handler->resume)
-+		    driver->err_handler->slot_reset)
- 			return NULL;
- 	}
- 
--- 
-2.1.0
+Paul.
