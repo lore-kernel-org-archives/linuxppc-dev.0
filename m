@@ -1,41 +1,30 @@
-Return-Path: <kirill@shutemov.name>
-Received: from mail-wm0-x22f.google.com (mail-wm0-x22f.google.com
- [IPv6:2a00:1450:400c:c09::22f])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1BEBB1A006B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Feb 2016 10:15:17 +1100 (AEDT)
-Received: by mail-wm0-x22f.google.com with SMTP id c200so40951391wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 15:15:17 -0800 (PST)
-Date: Sat, 13 Feb 2016 01:15:10 +0200
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>,
- Andrea Arcangeli <aarcange@redhat.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>
-Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe also
- on PowerPC and ARM)
-Message-ID: <20160212231510.GB15142@node.shutemov.name>
-References: <20160211192223.4b517057@thinkpad>
- <20160211190942.GA10244@node.shutemov.name>
- <20160211205702.24f0d17a@thinkpad>
- <20160212154116.GA15142@node.shutemov.name>
- <56BE00E7.1010303@de.ibm.com> <20160212181640.4eabb85f@thinkpad>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160212181640.4eabb85f@thinkpad>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B52CE1A006C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Feb 2016 12:33:12 +1100 (AEDT)
+Received: by mail-pa0-x241.google.com with SMTP id yy13so4460042pab.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2016 17:33:12 -0800 (PST)
+Message-ID: <1455327180.16012.14.camel@gmail.com>
+Subject: Re: [PATCH v8 8/8] livepatch: Detect offset for the ftrace location
+ during build
+From: Balbir Singh <bsingharora@gmail.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Torsten Duwe <duwe@lst.de>, Michael Ellerman <mpe@ellerman.id.au>, Jiri
+ Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>, Jessica Yu
+ <jeyu@redhat.com>,  Steven Rostedt <rostedt@goodmis.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org
+Date: Sat, 13 Feb 2016 12:33:00 +1100
+In-Reply-To: <20160212164517.GO12548@pathway.suse.cz>
+References: <20160210174221.EBBEC692C8@newverein.lst.de>
+ <20160210174517.8347D692C8@newverein.lst.de>
+ <1455293609.16012.9.camel@gmail.com>
+ <20160212164517.GO12548@pathway.suse.cz>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,128 +34,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 12, 2016 at 06:16:40PM +0100, Gerald Schaefer wrote:
-> On Fri, 12 Feb 2016 16:57:27 +0100
-> Christian Borntraeger <borntraeger@de.ibm.com> wrote:
-> 
-> > On 02/12/2016 04:41 PM, Kirill A. Shutemov wrote:
-> > > On Thu, Feb 11, 2016 at 08:57:02PM +0100, Gerald Schaefer wrote:
-> > >> On Thu, 11 Feb 2016 21:09:42 +0200
-> > >> "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
-> > >>
-> > >>> On Thu, Feb 11, 2016 at 07:22:23PM +0100, Gerald Schaefer wrote:
-> > >>>> Hi,
-> > >>>>
-> > >>>> Sebastian Ott reported random kernel crashes beginning with v4.5-rc1 and
-> > >>>> he also bisected this to commit 61f5d698 "mm: re-enable THP". Further
-> > >>>> review of the THP rework patches, which cannot be bisected, revealed
-> > >>>> commit fecffad "s390, thp: remove infrastructure for handling splitting PMDs"
-> > >>>> (and also similar commits for other archs).
-> > >>>>
-> > >>>> This commit removes the THP splitting bit and also the architecture
-> > >>>> implementation of pmdp_splitting_flush(), which took care of the IPI for
-> > >>>> fast_gup serialization. The commit message says
-> > >>>>
-> > >>>>     pmdp_splitting_flush() is not needed too: on splitting PMD we will do
-> > >>>>     pmdp_clear_flush() + set_pte_at().  pmdp_clear_flush() will do IPI as
-> > >>>>     needed for fast_gup
-> > >>>>
-> > >>>> The assumption that a TLB flush will also produce an IPI is wrong on s390,
-> > >>>> and maybe also on other architectures, and I thought that this was actually
-> > >>>> the main reason for having an arch-specific pmdp_splitting_flush().
-> > >>>>
-> > >>>> At least PowerPC and ARM also had an individual implementation of
-> > >>>> pmdp_splitting_flush() that used kick_all_cpus_sync() instead of a TLB
-> > >>>> flush to send the IPI, and those were also removed. Putting the arch
-> > >>>> maintainers and mailing lists on cc to verify.
-> > >>>>
-> > >>>> On s390 this will break the IPI serialization against fast_gup, which
-> > >>>> would certainly explain the random kernel crashes, please revert or fix
-> > >>>> the pmdp_splitting_flush() removal.
-> > >>>
-> > >>> Sorry for that.
-> > >>>
-> > >>> I believe, the problem was already addressed for PowerPC:
-> > >>>
-> > >>> http://lkml.kernel.org/g/454980831-16631-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
-> > >>>
-> > >>> I think kick_all_cpus_sync() in arch-specific pmdp_invalidate() would do
-> > >>> the trick, right?
-> > >>
-> > >> Hmm, not sure about that. After pmdp_invalidate(), a pmd_none() check in
-> > >> fast_gup will still return false, because the pmd is not empty (at least
-> > >> on s390). So I don't see spontaneously how it will help fast_gup to break
-> > >> out to the slow path in case of THP splitting.
+On Fri, 2016-02-12 at 17:45 +0100, Petr Mladek wrote:
+> On Sat 2016-02-13 03:13:29, Balbir Singh wrote:
+> > On Thu, 2016-01-28 at 16:32 +0100, Torsten Duwe wrote:
+> > > From: Petr Mladek <pmladek@suse.com>
 > > > 
-> > > What pmdp_flush_direct() does in pmdp_invalidate()? It's hard to unwrap for me :-/
-> > > Does it make the pmd !pmd_present()?
+> > > Livepatch works on x86_64 and s390 only when the ftrace call
+> > > is at the very beginning of the function. But PPC is different.
+> > > We need to handle TOC and save LR there before calling the
+> > > global ftrace handler.
+> > > 
+> > > Now, the problem is that the extra operations have different
+> > > length on PPC depending on the used gcc version. It is
+> > > 4 instructions (16 bytes) before gcc-6 and only 3 instructions
+> > > (12 bytes) with gcc-6.
+> > > 
+> > > This patch tries to detect the offset a generic way during
+> > > build. It assumes that the offset of the ftrace location
+> > > is the same for all functions. It modifies the existing
+> > > recordmcount tool that is able to find read mcount locations
+> > > directly from the object files. It adds an option -p
+> > > to print the first found offset.
+> > > 
+> > > The recordmcount tool is then used in the kernel/livepatch
+> > > subdirectory to generate a header file. It defines
+> > > a constant that is used to compute the ftrace location
+> > > from the function address.
+> > > 
+> > > Finally, we have to enable the C implementation of the
+> > > recordmcount tool to be used on PPC and S390. It seems
+> > > to work fine there. It should be more reliable because
+> > > it reads the standardized elf structures. The old perl
+> > > implementation uses rather complex regular expressions
+> > > to parse objdump output and is therefore much more tricky.
 > > 
-> > It uses the idte instruction, which in an atomic fashion flushes the associated
-> > TLB entry and changes the value of the pmd entry to invalid. This comes from the
-> > HW requirement to not  change a PTE/PMD that might be still in use, other than 
-> > with special instructions that does the tlb handling and the invalidation together.
-> 
-> Correct, and it does _not_ make the pmd !pmd_present(), that would only be the
-> case after a _clear_flush(). It only marks the pmd as invalid and flushes,
-> so that it cannot generate a new TLB entry before the following pmd_populate(),
-> but it keeps its other content. This is to fulfill the requirements outlined in
-> the comment in mm/huge_memory.c before the call to pmdp_invalidate(). And
-> independent from that comment, we would need such an _invalidate() or
-> _clear_flush() on s390 before the pmd_populate() because of the HW details
-> that Christian described.
-> 
-> Reading the comment again, I do now notice that it also says "mark the current
-> pmd notpresent", which we cannot do w/o losing the huge and (formerly) splitting
-> bits, but it also shouldn't be needed to provide the "single TLB guarantee" that
-> is required from the comment. So, a pmd_present() check on s390 in this state
-> would still return true. Not sure yet if this is a problem, need more thinking,
-> this behavior was already present before the THP rework but maybe it was OK
-> before and is not OK now.
-> 
-> At least for fast_gup this should not be a problem though.
-
-I'm trying to wrap my head around the issue and I don't think missing
-serialization with gup_fast is the cause -- we just don't need it
-anymore.
-
-Previously, __split_huge_page_splitting() required serialization against
-gup_fast to make sure nobody can obtain new reference to the page after
-__split_huge_page_splitting() returns. This was a way to stabilize page
-references before starting to distribute them from head page to tail
-pages.
-
-With new refcounting, we don't care about this. Splitting PMD is now
-decoupled from splitting underlying compound page. It's okay to get new
-pins after split_huge_pmd(). To stabilize page references during
-split_huge_page() we rely on setting up migration entries once all
-pmds are split into page table entries.
-
-The theory that serialization against gup_fast is not a root cause of the
-crashes is consistent no crashes on arm64. Problem is somewhere else.
- 
-> > (It also does some some other magic to the attach_count, which might hold off
-> > finish_arch_post_lock_switch while some flushing is happening, but this should
-> > be unrelated here)
+> > I'm still missing something, I'm getting offset as 8
 > > 
+> > When I run, I get
 > > 
-> > > I'm also confused by pmd_none() is equal to !pmd_present() on s390. Hm?
+> > scripts/recordmcount -p kernel/livepatch/core.o 
+> > #define KLP_FTRACE_LOCATION 8
 > > 
-> > Don't know, Gerald or Martin?
+> > scripts/recordmcount -p kernel/livepatch/ftrace-test.o 
+> > #define KLP_FTRACE_LOCATION 8
+> > 
+> > My sample fails as well, since the expected offset is 16.
+> > I guess the script is being run against a not so good
+> > test.
 > 
-> The implementation frequently changes depending on how many new bits Martin
-> needs to squeeze out :-)
+> I guess that you used a broken gcc and cheated the check
+> to pass the compilation. Did you, please?
+> 
+> The test used to detect the offset is using a minimalistic
+> function is is afftected by the gcc bug.
+> 
+> The patch below might be used to cheat the offset check as well.
+> 
+> Torsten, please mention this somewhere if you, just by chance,
+> send a new version of the patchset.
+> 
+> From f6a438a3f2f60cc1acc859b41d0cc9259c9a331e Mon Sep 17 00:00:00 2001
+> From: root <root@c79.arch.suse.de>
+> Date: Tue, 2 Feb 2016 15:35:06 +0100
+> Subject: [PATCH 2/2] livepatch: Make sure the TOC is handled when detecting
+>  ftrace location
+> 
+> There seems to be a bug in gcc on PPC. It does not handle TOC
+> if the function does not access global variables or functions
+> by default. But it should when profiling is enabled.
+> 
 
-One bit was freed up by the commit you've pointed to as a cause.
-I wounder If it's possible that screw up something while removing it? I
-don't see it, but who knows.
+Yep.. Please see see http://marc.info/?l=linux-kernel&m=145518015816435&w=2
+and my question at http://marc.info/?l=linuxppc-embedded&m=145518330317496&w=2
 
-Could you check if revert of fecffad25458 helps?
+> This patch works around this problem by adding a call
+> to a global function.
+> 
+> This patch is for testing only!
+> ---
+>  kernel/livepatch/ftrace-test.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/kernel/livepatch/ftrace-test.c b/kernel/livepatch/ftrace-test.c
+> index 22f0c54bf7b3..a3b7aabb67e5 100644
+> --- a/kernel/livepatch/ftrace-test.c
+> +++ b/kernel/livepatch/ftrace-test.c
+> @@ -1,6 +1,9 @@
+>  /* Sample code to figure out mcount location offset */
+> +#include 
+> +
+>  
+>  int test(int a)
+>  {
+> +	printk("%d\n", a);
+>  	return ++a;
+>  }
 
-And could you share how crashes looks like? I haven't seen backtraces yet.
+This is much better, I see the offset of 16.
 
-> We don't have a _PAGE_PRESENT bit for pmds, so pmd_present() just checks if the
-> entry is not empty. pmd_none() of course does the opposite, it checks if it is
-> empty.
-
--- 
- Kirill A. Shutemov
+Balbir Singh
