@@ -3,10 +3,10 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 208E11A0320
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 08:04:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 76E541A0325
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 08:12:53 +1100 (AEDT)
 Subject: Patch "sched: Fix crash in sched_init_numa()" has been added to the
- 4.3-stable tree
+ 4.4-stable tree
 To: raghavendra.kt@linux.vnet.ibm.com, anton@samba.org,
  benh@kernel.crashing.org, gkurz@linux.vnet.ibm.com, grant.likely@linaro.org,
  gregkh@linuxfoundation.org, jstancek@redhat.com, linux-mm@kvack.org,
@@ -15,8 +15,8 @@ To: raghavendra.kt@linux.vnet.ibm.com, anton@samba.org,
  vdavydov@parallels.com
 Cc: <stable@vger.kernel.org>, <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
-Date: Sun, 14 Feb 2016 13:04:29 -0800
-Message-ID: <1455483869147137@kroah.com>
+Date: Sun, 14 Feb 2016 13:12:51 -0800
+Message-ID: <1455484371152114@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,12 +33,12 @@ This is a note to let you know that I've just added the patch titled
 
     sched: Fix crash in sched_init_numa()
 
-to the 4.3-stable tree which can be found at:
+to the 4.4-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
      sched-fix-crash-in-sched_init_numa.patch
-and it can be found in the queue-4.3 subdirectory.
+and it can be found in the queue-4.4 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
 please let <stable@vger.kernel.org> know about it.
@@ -91,7 +91,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -6678,7 +6678,7 @@ static void sched_init_numa(void)
+@@ -6738,7 +6738,7 @@ static void sched_init_numa(void)
  
  			sched_domains_numa_masks[i][j] = mask;
  
@@ -104,4 +104,4 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 Patches currently in stable-queue which might be from raghavendra.kt@linux.vnet.ibm.com are
 
-queue-4.3/sched-fix-crash-in-sched_init_numa.patch
+queue-4.4/sched-fix-crash-in-sched_init_numa.patch
