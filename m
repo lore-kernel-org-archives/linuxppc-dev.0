@@ -1,27 +1,31 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8A95B1A0330
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 09:48:54 +1100 (AEDT)
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
- Jan Stancek <jstancek@redhat.com>,
- Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
- gkurz@linux.vnet.ibm.com, grant.likely@linaro.org,
- nikunj@linux.vnet.ibm.com, vdavydov@parallels.com,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, peterz@infradead.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- anton@samba.org, Ingo Molnar <mingo@kernel.org>
-Subject: [PATCH 4.3 156/200] sched: Fix crash in sched_init_numa()
-Date: Sun, 14 Feb 2016 14:22:43 -0800
-Message-Id: <20160214222223.033623423@linuxfoundation.org>
-In-Reply-To: <20160214222217.084543173@linuxfoundation.org>
-References: <20160214222217.084543173@linuxfoundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id E12851A0331
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 10:53:27 +1100 (AEDT)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 15 Feb 2016 09:53:26 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id CCA342BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 10:53:23 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1ENrFEN10551752
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 10:53:23 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1ENqpKU019912
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 10:52:51 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/eeh: Remove duplicated check in eeh_dump_pe_log()
+Date: Mon, 15 Feb 2016 10:52:26 +1100
+Message-Id: <1455493946-27967-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,58 +35,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-4.3-stable review patch.  If anyone has any objections, please let me know.
+When eeh_dump_pe_log() is called in eeh_slot_error_detail(), we
+already have the check that the PE isn't in PCI config blocked
+state. So we needn't the duplicated check in eeh_dump_pe_log().
 
-------------------
+This removes the duplicated check in eeh_dump_pe_log().
 
-From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-
-commit 9c03ee147193645be4c186d3688232fa438c57c7 upstream.
-
-The following PowerPC commit:
-
-  c118baf80256 ("arch/powerpc/mm/numa.c: do not allocate bootmem memory for non existing nodes")
-
-avoids allocating bootmem memory for non existent nodes.
-
-But when DEBUG_PER_CPU_MAPS=y is enabled, my powerNV system failed to boot
-because in sched_init_numa(), cpumask_or() operation was done on
-unallocated nodes.
-
-Fix that by making cpumask_or() operation only on existing nodes.
-
-[ Tested with and w/o DEBUG_PER_CPU_MAPS=y on x86 and PowerPC. ]
-
-Reported-by: Jan Stancek <jstancek@redhat.com>
-Tested-by: Jan Stancek <jstancek@redhat.com>
-Signed-off-by: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-Cc: <gkurz@linux.vnet.ibm.com>
-Cc: <grant.likely@linaro.org>
-Cc: <nikunj@linux.vnet.ibm.com>
-Cc: <vdavydov@parallels.com>
-Cc: <linuxppc-dev@lists.ozlabs.org>
-Cc: <linux-mm@kvack.org>
-Cc: <peterz@infradead.org>
-Cc: <benh@kernel.crashing.org>
-Cc: <paulus@samba.org>
-Cc: <mpe@ellerman.id.au>
-Cc: <anton@samba.org>
-Link: http://lkml.kernel.org/r/1452884483-11676-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- kernel/sched/core.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/eeh.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -6678,7 +6678,7 @@ static void sched_init_numa(void)
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 8c6005c..46b41be 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -268,13 +268,6 @@ static void *eeh_dump_pe_log(void *data, void *flag)
+ 	struct eeh_dev *edev, *tmp;
+ 	size_t *plen = flag;
  
- 			sched_domains_numa_masks[i][j] = mask;
- 
--			for (k = 0; k < nr_node_ids; k++) {
-+			for_each_node(k) {
- 				if (node_distance(j, k) > sched_domains_numa_distance[i])
- 					continue;
- 
+-	/* If the PE's config space is blocked, 0xFF's will be
+-	 * returned. It's pointless to collect the log in this
+-	 * case.
+-	 */
+-	if (pe->state & EEH_PE_CFG_BLOCKED)
+-		return NULL;
+-
+ 	eeh_pe_for_each_dev(pe, edev, tmp)
+ 		*plen += eeh_dump_dev_log(edev, pci_regs_buf + *plen,
+ 					  EEH_PCI_REGS_LOG_LEN - *plen);
+-- 
+2.1.0
