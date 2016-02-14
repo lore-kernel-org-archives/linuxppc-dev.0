@@ -3,22 +3,25 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 76E541A0325
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 08:12:53 +1100 (AEDT)
-Subject: Patch "sched: Fix crash in sched_init_numa()" has been added to the
- 4.4-stable tree
-To: raghavendra.kt@linux.vnet.ibm.com, anton@samba.org,
- benh@kernel.crashing.org, gkurz@linux.vnet.ibm.com, grant.likely@linaro.org,
- gregkh@linuxfoundation.org, jstancek@redhat.com, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org, mpe@ellerman.id.au,
- nikunj@linux.vnet.ibm.com, paulus@samba.org, peterz@infradead.org,
- vdavydov@parallels.com
-Cc: <stable@vger.kernel.org>, <stable-commits@vger.kernel.org>
-From: <gregkh@linuxfoundation.org>
-Date: Sun, 14 Feb 2016 13:12:51 -0800
-Message-ID: <1455484371152114@kroah.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 915F41A0325
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 09:28:34 +1100 (AEDT)
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
+ Jan Stancek <jstancek@redhat.com>,
+ Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
+ gkurz@linux.vnet.ibm.com, grant.likely@linaro.org,
+ nikunj@linux.vnet.ibm.com, vdavydov@parallels.com,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, peterz@infradead.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ anton@samba.org, Ingo Molnar <mingo@kernel.org>
+Subject: [PATCH 4.4 079/117] sched: Fix crash in sched_init_numa()
+Date: Sun, 14 Feb 2016 14:21:56 -0800
+Message-Id: <20160214222143.801451886@linuxfoundation.org>
+In-Reply-To: <20160214222141.393531627@linuxfoundation.org>
+References: <20160214222141.393531627@linuxfoundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,26 +31,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+4.4-stable review patch.  If anyone has any objections, please let me know.
 
-This is a note to let you know that I've just added the patch titled
-
-    sched: Fix crash in sched_init_numa()
-
-to the 4.4-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-
-The filename of the patch is:
-     sched-fix-crash-in-sched_init_numa.patch
-and it can be found in the queue-4.4 subdirectory.
-
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
-
-
->From 9c03ee147193645be4c186d3688232fa438c57c7 Mon Sep 17 00:00:00 2001
-From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-Date: Sat, 16 Jan 2016 00:31:23 +0530
-Subject: sched: Fix crash in sched_init_numa()
+------------------
 
 From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
 
@@ -100,8 +86,3 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  				if (node_distance(j, k) > sched_domains_numa_distance[i])
  					continue;
  
-
-
-Patches currently in stable-queue which might be from raghavendra.kt@linux.vnet.ibm.com are
-
-queue-4.4/sched-fix-crash-in-sched_init_numa.patch
