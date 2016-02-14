@@ -3,8 +3,8 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 915F41A0325
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 09:28:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8A95B1A0330
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 09:48:54 +1100 (AEDT)
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
@@ -15,11 +15,11 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, peterz@infradead.org,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  anton@samba.org, Ingo Molnar <mingo@kernel.org>
-Subject: [PATCH 4.4 079/117] sched: Fix crash in sched_init_numa()
-Date: Sun, 14 Feb 2016 14:21:56 -0800
-Message-Id: <20160214222143.801451886@linuxfoundation.org>
-In-Reply-To: <20160214222141.393531627@linuxfoundation.org>
-References: <20160214222141.393531627@linuxfoundation.org>
+Subject: [PATCH 4.3 156/200] sched: Fix crash in sched_init_numa()
+Date: Sun, 14 Feb 2016 14:22:43 -0800
+Message-Id: <20160214222223.033623423@linuxfoundation.org>
+In-Reply-To: <20160214222217.084543173@linuxfoundation.org>
+References: <20160214222217.084543173@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,7 +31,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-4.4-stable review patch.  If anyone has any objections, please let me know.
+4.3-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -77,7 +77,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -6738,7 +6738,7 @@ static void sched_init_numa(void)
+@@ -6678,7 +6678,7 @@ static void sched_init_numa(void)
  
  			sched_domains_numa_masks[i][j] = mask;
  
