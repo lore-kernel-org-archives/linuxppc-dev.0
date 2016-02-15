@@ -2,21 +2,15 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C66B01A0330
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 21:27:22 +1100 (AEDT)
-Message-ID: <1455532035.26205.5.camel@ellerman.id.au>
-Subject: Re: [PATCH v8 4/8] ppc64 ftrace_with_regs configuration variables
+ by lists.ozlabs.org (Postfix) with ESMTPS id ECB9F1A0336
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 21:38:06 +1100 (AEDT)
+Message-ID: <1455532680.26205.8.camel@ellerman.id.au>
+Subject: Rebase of my fixes branch
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Torsten Duwe <duwe@lst.de>, Balbir Singh <bsingharora@gmail.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>, Petr
- Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>, Steven Rostedt
- <rostedt@goodmis.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
-Date: Mon, 15 Feb 2016 21:27:15 +1100
-In-Reply-To: <20160211084230.GB29683@lst.de>
-References: <20160210174221.EBBEC692C8@newverein.lst.de>
- <20160210174450.9C065692C8@newverein.lst.de>
- <1455176897.2885.12.camel@gmail.com> <20160211084230.GB29683@lst.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ gwshan@linux.vnet.ibm.com
+Date: Mon, 15 Feb 2016 21:38:00 +1100
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,42 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi guys,
+Hi folks,
 
-Sorry I haven't been keeping up to date with this thread I've been away.
+FYI I've rebased my fixes branch.
 
-On Thu, 2016-02-11 at 09:42 +0100, Torsten Duwe wrote:
-> On Thu, Feb 11, 2016 at 06:48:17PM +1100, Balbir Singh wrote:
-> > On Wed, 2016-02-10 at 17:25 +0100, Torsten Duwe wrote:
-> > > +
-> > > +echo "int func() { return 0; }" | \
-> > > +    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-> > > +    sed -n -e '/func:/,/bl _mcount/p' | grep -q TOC
-> > > +
-> > > +leaf_toc_result=$?
-> > 
-> > leaf_toc_result failed for me with gcc 5. I'll try and grab gcc-6
-> > and give the patches a spin
-> 
-> Don't bother. _All_ gccs are broken in that respect currently.
+Unfortunately we had a couple of fixes in fixes that needed fixes in order to
+be actual fixes.
 
-I'm not sure where we got our wires crossed on this one, but this is not a gcc
-bug. In fact it's a feature :)
+So if you're basing some work on it you'll have to fetch and rebase.
 
-There is explicit code in gcc to check whether the TOC setup is needed and only
-emit it when it's required. One case where it's *not* required is when the
-function does not TOC accesses. (See rs6000_global_entry_point_needed_p()).
-
-So I think this is just one of the "fun" details we have to deal with to
-implement kernel tracing.
-
-The first implication of this is that there is not a single offset value for
-the _mcount call, it needs to be calculated per-function. In practice there
-will only be two values, so we could try both, or we could just have the code
-work it out dynamically by looking for the expected code sequence?
-
-Secondly it means the ftrace trampoline needs to cope with being called with r2
-containing something other than the kernel TOC (ie. a module's TOC pointer).
-But I think that's solvable also?
+The old head commit was: 0fe53e8d335bfc02f81300b70211e61fb931a725
+           and now it's: c777e2a8b65420b31dac28a453e35be984f5808b
 
 cheers
