@@ -1,28 +1,59 @@
-Return-Path: <a.hajda@samsung.com>
-Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
- [210.118.77.14])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <sebott@linux.vnet.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 948871A034B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 01:46:51 +1100 (AEDT)
-Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout4.w1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O2L00BCUF982A40@mailout4.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 15 Feb 2016 14:36:44 +0000 (GMT)
-From: Andrzej Hajda <a.hajda@samsung.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrzej Hajda <a.hajda@samsung.com>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>, Li Yang <leoli@freescale.com>,
- Felipe Balbi <balbi@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 7/7] usb: gadget: fsl_qe_udc: fix IS_ERR_VALUE usage
-Date: Mon, 15 Feb 2016 15:35:25 +0100
-Message-id: <1455546925-22119-8-git-send-email-a.hajda@samsung.com>
-In-reply-to: <1455546925-22119-1-git-send-email-a.hajda@samsung.com>
-References: <1455546925-22119-1-git-send-email-a.hajda@samsung.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C0BFA1A0353
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 03:39:00 +1100 (AEDT)
+Received: from localhost
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sebott@linux.vnet.ibm.com>;
+ Mon, 15 Feb 2016 16:38:56 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 0582A17D805A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 16:39:12 +0000 (GMT)
+Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
+ [9.149.37.217])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1FGcsYB49545470
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 16:38:54 GMT
+Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1FGciC3023043
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 11:38:46 -0500
+Date: Mon, 15 Feb 2016 17:38:43 +0100 (CET)
+From: Sebastian Ott <sebott@linux.vnet.ibm.com>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org
+Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe also
+ on PowerPC and ARM)
+In-Reply-To: <20160215113159.GA28832@node.shutemov.name>
+Message-ID: <alpine.LFD.2.20.1602151736120.1820@schleppi>
+References: <20160211192223.4b517057@thinkpad>
+ <20160211190942.GA10244@node.shutemov.name>
+ <20160211205702.24f0d17a@thinkpad>
+ <20160212154116.GA15142@node.shutemov.name> <56BE00E7.1010303@de.ibm.com>
+ <20160212181640.4eabb85f@thinkpad>
+ <20160212231510.GB15142@node.shutemov.name>
+ <alpine.LFD.2.20.1602131238260.1910@schleppi>
+ <20160215113159.GA28832@node.shutemov.name>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +63,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-IS_ERR_VALUE macro should be used only with unsigned long type.
-Otherwise it can work incorrectly.
+On Mon, 15 Feb 2016, Kirill A. Shutemov wrote:
+> > [   59.851421] list_del corruption. next->prev should be 000000006e1eb000, but was 0000000000000400
+> 
+> This kinda interesting: 0x400 is TAIL_MAPPING.. Hm..
+> 
+> Could you check if you see the problem on commit 1c290f642101 and its
+> immediate parent?
 
-The patch follows conclusion from discussion on LKML [1][2].
+Both 1c290f642101 and 1c290f642101^ survived 20 compile runs each.
 
-[1]: http://permalink.gmane.org/gmane.linux.kernel/2120927
-[2]: http://permalink.gmane.org/gmane.linux.kernel/2150581
-
-Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
----
- drivers/usb/gadget/udc/fsl_qe_udc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
-index 53c0692..93d28cb 100644
---- a/drivers/usb/gadget/udc/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
-@@ -2340,7 +2340,7 @@ static struct qe_udc *qe_udc_config(struct platform_device *ofdev)
- {
- 	struct qe_udc *udc;
- 	struct device_node *np = ofdev->dev.of_node;
--	unsigned int tmp_addr = 0;
-+	unsigned long tmp_addr = 0;
- 	struct usb_device_para __iomem *usbpram;
- 	unsigned int i;
- 	u64 size;
--- 
-1.9.1
+Sebastian
