@@ -1,36 +1,27 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1422D1A0349
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 12:57:12 +1100 (AEDT)
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Mon, 15 Feb 2016 11:57:11 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C2AC03578057
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 12:57:08 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1F1v0YA17694770
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 12:57:08 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1F1uaPS008263
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 12:56:36 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Alexander Graf <agraf@suse.com>,
- Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-Subject: [PATCH kernel v3 6/7] KVM: PPC: Move reusable bits of H_PUT_TCE
- handler to helpers
-Date: Mon, 15 Feb 2016 12:55:08 +1100
-Message-Id: <1455501309-47200-7-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1455501309-47200-1-git-send-email-aik@ozlabs.ru>
-References: <1455501309-47200-1-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 277C01A004D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 13:44:48 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id w128so6307020pfb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Feb 2016 18:44:48 -0800 (PST)
+Message-ID: <1455504278.16012.18.camel@gmail.com>
+Subject: Re: [PATCH V3] powerpc/mm: Fix Multi hit ERAT cause by recent THP
+ update
+From: Balbir Singh <bsingharora@gmail.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ akpm@linux-foundation.org, Mel Gorman <mgorman@techsingularity.net>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org
+Date: Mon, 15 Feb 2016 13:44:38 +1100
+In-Reply-To: <1454980831-16631-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1454980831-16631-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,176 +31,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Upcoming multi-tce support (H_PUT_TCE_INDIRECT/H_STUFF_TCE hypercalls)
-will validate TCE (not to have unexpected bits) and IO address
-(to be within the DMA window boundaries).
+On Tue, 2016-02-09 at 06:50 +0530, Aneesh Kumar K.V wrote:
+> 
+> Also make sure we wait for irq disable section in other cpus to finish
+> before flipping a huge pte entry with a regular pmd entry. Code paths
+> like find_linux_pte_or_hugepte depend on irq disable to get
+> a stable pte_t pointer. A parallel thp split need to make sure we
+> don't convert a pmd pte to a regular pmd entry without waiting for the
+> irq disable section to finish.
+> 
+> Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/pgtable.h |  4 ++++
+>  arch/powerpc/mm/pgtable_64.c                 | 35
+> +++++++++++++++++++++++++++-
+>  include/asm-generic/pgtable.h                |  8 +++++++
+>  mm/huge_memory.c                             |  1 +
+>  4 files changed, 47 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> index 8d1c41d28318..ac07a30a7934 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -281,6 +281,10 @@ extern pgtable_t pgtable_trans_huge_withdraw(struct
+> mm_struct *mm, pmd_t *pmdp);
+>  extern void pmdp_invalidate(struct vm_area_struct *vma, unsigned long
+> address,
+>  			    pmd_t *pmdp);
+>  
+> +#define __HAVE_ARCH_PMDP_HUGE_SPLIT_PREPARE
+> +extern void pmdp_huge_split_prepare(struct vm_area_struct *vma,
+> +				    unsigned long address, pmd_t *pmdp);
+> +
+>  #define pmd_move_must_withdraw pmd_move_must_withdraw
+>  struct spinlock;
+>  static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
+> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+> index 3124a20d0fab..c8a00da39969 100644
+> --- a/arch/powerpc/mm/pgtable_64.c
+> +++ b/arch/powerpc/mm/pgtable_64.c
+> @@ -646,6 +646,30 @@ pgtable_t pgtable_trans_huge_withdraw(struct mm_struct
+> *mm, pmd_t *pmdp)
+>  	return pgtable;
+>  }
+>  
+> +void pmdp_huge_split_prepare(struct vm_area_struct *vma,
+> +			     unsigned long address, pmd_t *pmdp)
+> +{
+> +	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
+> +
+> +#ifdef CONFIG_DEBUG_VM
+> +	BUG_ON(REGION_ID(address) != USER_REGION_ID);
+> +#endif
+> +	/*
+> +	 * We can't mark the pmd none here, because that will cause a race
+> +	 * against exit_mmap. We need to continue mark pmd TRANS HUGE, while
+> +	 * we spilt, but at the same time we wan't rest of the ppc64 code
+> +	 * not to insert hash pte on this, because we will be modifying
+> +	 * the deposited pgtable in the caller of this function. Hence
+> +	 * clear the _PAGE_USER so that we move the fault handling to
+> +	 * higher level function and that will serialize against ptl.
+> +	 * We need to flush existing hash pte entries here even though,
+> +	 * the translation is still valid, because we will withdraw
+> +	 * pgtable_t after this.
+> +	 */
+> +	pmd_hugepage_update(vma->vm_mm, address, pmdp, _PAGE_USER, 0);
 
-This introduces helpers to validate TCE and IO address. The helpers are
-exported as they compile into vmlinux (to work in realmode) and will be
-used later by KVM kernel module in virtual mode.
+Can this break any checks for _PAGE_USER? From other paths?
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-Changes:
-v3:
-* inverted @mask in kvmppc_tce_validate() to match the same variable in
-kvmppc_ioba_validate()
-* s/arithmetial/arithmetic/
-* s/should be enabled/would have to be enabled/
+> +}
+> +
+> +
+>  /*
+>   * set a new huge pmd. We should not be called for updating
+>   * an existing pmd entry. That should go via pmd_hugepage_update.
+> @@ -663,10 +687,19 @@ void set_pmd_at(struct mm_struct *mm, unsigned long
+> addr,
+>  	return set_pte_at(mm, addr, pmdp_ptep(pmdp), pmd_pte(pmd));
+>  }
+>  
+> +/*
+> + * We use this to invalidate a pmdp entry before switching from a
+> + * hugepte to regular pmd entry.
+> + */
+>  void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
+>  		     pmd_t *pmdp)
+>  {
+> -	pmd_hugepage_update(vma->vm_mm, address, pmdp, _PAGE_PRESENT, 0);
+> +	pmd_hugepage_update(vma->vm_mm, address, pmdp, ~0UL, 0);
+> +	/*
+> +	 * This ensures that generic code that rely on IRQ disabling
+> +	 * to prevent a parallel THP split work as expected.
+> +	 */
+> +	kick_all_cpus_sync();
 
-v2:
-* added note to the commit log about why new helpers are exported
-* did not add a note that xxx_validate() validate TCEs for KVM (not for
-host kernel DMA) as the helper names and file location tell what are
-they for
----
- arch/powerpc/include/asm/kvm_ppc.h  |  4 ++
- arch/powerpc/kvm/book3s_64_vio_hv.c | 89 ++++++++++++++++++++++++++++++++-----
- 2 files changed, 83 insertions(+), 10 deletions(-)
+Seems expensive, anyway I think the right should do something like or a wrapper
+for it
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 2241d53..9513911 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -166,6 +166,10 @@ extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
- 
- extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 				struct kvm_create_spapr_tce *args);
-+extern long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
-+		unsigned long ioba, unsigned long npages);
-+extern long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *tt,
-+		unsigned long tce);
- extern long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 			     unsigned long ioba, unsigned long tce);
- extern long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index 0ce4ffb..b608fdd 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -36,6 +36,7 @@
- #include <asm/kvm_host.h>
- #include <asm/udbg.h>
- #include <asm/iommu.h>
-+#include <asm/tce.h>
- 
- #define TCES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
- 
-@@ -64,7 +65,7 @@ static struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm_vcpu *vcpu,
-  * WARNING: This will be called in real-mode on HV KVM and virtual
-  *          mode on PR KVM
-  */
--static long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
-+long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
- 		unsigned long ioba, unsigned long npages)
- {
- 	unsigned long mask = (1ULL << IOMMU_PAGE_SHIFT_4K) - 1;
-@@ -76,6 +77,79 @@ static long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
- 
- 	return H_SUCCESS;
- }
-+EXPORT_SYMBOL_GPL(kvmppc_ioba_validate);
-+
-+/*
-+ * Validates TCE address.
-+ * At the moment flags and page mask are validated.
-+ * As the host kernel does not access those addresses (just puts them
-+ * to the table and user space is supposed to process them), we can skip
-+ * checking other things (such as TCE is a guest RAM address or the page
-+ * was actually allocated).
-+ *
-+ * WARNING: This will be called in real-mode on HV KVM and virtual
-+ *          mode on PR KVM
-+ */
-+long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *stt, unsigned long tce)
-+{
-+	unsigned long mask =
-+			~(IOMMU_PAGE_MASK_4K | TCE_PCI_WRITE | TCE_PCI_READ);
-+
-+	if (tce & mask)
-+		return H_PARAMETER;
-+
-+	return H_SUCCESS;
-+}
-+EXPORT_SYMBOL_GPL(kvmppc_tce_validate);
-+
-+/* Note on the use of page_address() in real mode,
-+ *
-+ * It is safe to use page_address() in real mode on ppc64 because
-+ * page_address() is always defined as lowmem_page_address()
-+ * which returns __va(PFN_PHYS(page_to_pfn(page))) which is arithmetic
-+ * operation and does not access page struct.
-+ *
-+ * Theoretically page_address() could be defined different
-+ * but either WANT_PAGE_VIRTUAL or HASHED_PAGE_VIRTUAL
-+ * would have to be enabled.
-+ * WANT_PAGE_VIRTUAL is never enabled on ppc32/ppc64,
-+ * HASHED_PAGE_VIRTUAL could be enabled for ppc32 only and only
-+ * if CONFIG_HIGHMEM is defined. As CONFIG_SPARSEMEM_VMEMMAP
-+ * is not expected to be enabled on ppc32, page_address()
-+ * is safe for ppc32 as well.
-+ *
-+ * WARNING: This will be called in real-mode on HV KVM and virtual
-+ *          mode on PR KVM
-+ */
-+static u64 *kvmppc_page_address(struct page *page)
-+{
-+#if defined(HASHED_PAGE_VIRTUAL) || defined(WANT_PAGE_VIRTUAL)
-+#error TODO: fix to avoid page_address() here
-+#endif
-+	return (u64 *) page_address(page);
-+}
-+
-+/*
-+ * Handles TCE requests for emulated devices.
-+ * Puts guest TCE values to the table and expects user space to convert them.
-+ * Called in both real and virtual modes.
-+ * Cannot fail so kvmppc_tce_validate must be called before it.
-+ *
-+ * WARNING: This will be called in real-mode on HV KVM and virtual
-+ *          mode on PR KVM
-+ */
-+void kvmppc_tce_put(struct kvmppc_spapr_tce_table *stt,
-+		unsigned long idx, unsigned long tce)
-+{
-+	struct page *page;
-+	u64 *tbl;
-+
-+	page = stt->pages[idx / TCES_PER_PAGE];
-+	tbl = kvmppc_page_address(page);
-+
-+	tbl[idx % TCES_PER_PAGE] = tce;
-+}
-+EXPORT_SYMBOL_GPL(kvmppc_tce_put);
- 
- /* WARNING: This will be called in real-mode on HV KVM and virtual
-  *          mode on PR KVM
-@@ -85,9 +159,6 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- {
- 	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
- 	long ret;
--	unsigned long idx;
--	struct page *page;
--	u64 *tbl;
- 
- 	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
- 	/* 	    liobn, ioba, tce); */
-@@ -99,13 +170,11 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 	if (ret != H_SUCCESS)
- 		return ret;
- 
--	idx = ioba >> IOMMU_PAGE_SHIFT_4K;
--	page = stt->pages[idx / TCES_PER_PAGE];
--	tbl = (u64 *)page_address(page);
-+	ret = kvmppc_tce_validate(stt, tce);
-+	if (ret != H_SUCCESS)
-+		return ret;
- 
--	/* FIXME: Need to validate the TCE itself */
--	/* udbg_printf("tce @ %p\n", &tbl[idx % TCES_PER_PAGE]); */
--	tbl[idx % TCES_PER_PAGE] = tce;
-+	kvmppc_tce_put(stt, ioba >> IOMMU_PAGE_SHIFT_4K, tce);
- 
- 	return H_SUCCESS;
- }
--- 
-2.5.0.rc3
+on_each_cpu_mask(mm_cpumask(vma->vm_mm), do_nothing, NULL, 1);
+
+do_nothing is not exported, but that can be fixed :)
+
+Balbir Singh
