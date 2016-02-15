@@ -1,28 +1,23 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 93F1D1A0467
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 16:10:06 +1100 (AEDT)
-Received: by mail-pa0-x244.google.com with SMTP id fl4so6716514pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Feb 2016 21:10:06 -0800 (PST)
-Message-ID: <1455512997.16012.24.camel@gmail.com>
-Subject: Re: [PATCH V3] powerpc/mm: Fix Multi hit ERAT cause by recent THP
- update
-From: Balbir Singh <bsingharora@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- akpm@linux-foundation.org, Mel Gorman <mgorman@techsingularity.net>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org
-Date: Mon, 15 Feb 2016 16:09:57 +1100
-In-Reply-To: <87lh6mfv2j.fsf@linux.vnet.ibm.com>
-References: <1454980831-16631-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1455504278.16012.18.camel@gmail.com> <87lh6mfv2j.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id AC8151A0D0B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 16:21:28 +1100 (AEDT)
+Date: Mon, 15 Feb 2016 14:47:29 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>,
+ Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v3 1/7] powerpc: Make vmalloc_to_phys() public
+Message-ID: <20160215034729.GT2732@voom.fritz.box>
+References: <1455501309-47200-1-git-send-email-aik@ozlabs.ru>
+ <1455501309-47200-2-git-send-email-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="GMArzDD+OGn24EFp"
+In-Reply-To: <1455501309-47200-2-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,23 +28,51 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-> Now we can't depend for mm_cpumask, a parallel find_linux_pte_hugepte
-> can happen outside that. Now i had a variant for kick_all_cpus_sync that
-> ignored idle cpus. But then that needs more verification.
-> 
-> http://article.gmane.org/gmane.linux.ports.ppc.embedded/81105
-Can be racy as a CPU moves from non-idle to idle
+--GMArzDD+OGn24EFp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In
+On Mon, Feb 15, 2016 at 12:55:03PM +1100, Alexey Kardashevskiy wrote:
+> This makes vmalloc_to_phys() public as there will be another user
+> (KVM in-kernel VFIO acceleration) for it soon. As this new user
+> can be compiled as a module, this exports the symbol.
+>=20
+> As a little optimization, this changes the helper to call
+> vmalloc_to_pfn() instead of vmalloc_to_page() as the size of the
+> struct page may not be power-of-two aligned which will make gcc use
+> multiply instructions instead of shifts.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-> +     pmd_hugepage_update(vma->vm_mm, address, pmdp, ~0UL, 0);
-> +     /*
-> +      * This ensures that generic code that rely on IRQ disabling
-> +      * to prevent a parallel THP split work as expected.
-> +      */
-> +     kick_all_cpus_sync();
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-pmdp_invalidate()->pmd_hugepage_update() can still run in parallel with 
-find_linux_pte_or_hugepte() and race.. Am I missing something?
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-Balbir Singh
+--GMArzDD+OGn24EFp
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJWwUpRAAoJEGw4ysog2bOSW+4P/Redo+8asEu4MuKaERJpTsci
+WNEtpSPAt+goZG0LMFl2t4kksen/428qtBNA0UsRNaXzGr+SZR1oBiJ5b47xVh/R
+5r+5WQJVtGAxc92DAXJ+vGewRP8L923o5s2FO0w1jRQJbfFi6KPvxCB5kE2fcrKn
+rRXOZbmS0JwqqvHjeOnF9+uX8syvL2//qHdOpIkR57tKTzgLszU3QPc9F3/ZT2At
+aYxc/IeUf9qBTiiKVZwP+SFf1HTPFlmybSOjzdDWFqvp/BoRrR0zvEBh4BkbIkTV
++gU6UnhR8qPrTB+f/kFqx7c+2Ab1XJ3Zx3ftEqYTOvbTObqvtHhmYLdbZltq7vtB
+UDXDhfwx3salvD0Fer3nUaD4dkGxwKQslENk5pzCz1uLKGno1CDHowdN9zi4yts7
+J4OXQY7bod8RN8VMuhbLEL8q/1FW/rRv8jqJ9+CBS8xrav6YSmZo6wwbfbz0cUMY
+7C018NXdhqcKLx8Q5CarIru4mIF+d1Bdns4J28g/9c7eQbjeuwAJyB2I4iwQ+5lJ
+vA5WXfE19GNqo6X26Y8lNFTKLtzO2Nufw9EnqHKfx7J5zXm161VfKhTnGAxYVoa0
+X8P5TVVYNiHbHlHE8eHn7Nee+AipRngGyt7qFQtVuEjhnyopU8TzbQh848uOwYXc
+bGp9L5rBoFoaxz0jfUs+
+=zaZK
+-----END PGP SIGNATURE-----
+
+--GMArzDD+OGn24EFp--
