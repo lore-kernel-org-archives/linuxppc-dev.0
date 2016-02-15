@@ -1,37 +1,17 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <raghav.dogra@nxp.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0079.outbound.protection.outlook.com [65.55.169.79])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E53581A0A94
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 16:25:54 +1100 (AEDT)
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 15 Feb 2016 00:25:35 -0500
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 92F9738C8039
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 00:25:33 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1F5PX2K30408840
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 05:25:33 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1F5PWhg012440
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 00:25:33 -0500
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Subject: Re: [PATCH V2 05/29] powerpc/mm: Copy pgalloc (part 2)
-In-Reply-To: <20160212035334.GD13831@oak.ozlabs.ibm.com>
-References: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1454923241-6681-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20160212035334.GD13831@oak.ozlabs.ibm.com>
-Date: Mon, 15 Feb 2016 10:55:27 +0530
-Message-ID: <87fuwufsu0.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A1E651A0338
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 17:28:54 +1100 (AEDT)
+From: Raghav Dogra <raghav.dogra@nxp.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+CC: <oss@buserror.net>, <prabhakar.kushwaha@nxp.com>, Raghav Dogra
+ <raghav.dogra@nxp.com>
+Subject: [PATCH][v3] drivers/memory: Add deep sleep support for IFC
+Date: Mon, 15 Feb 2016 11:44:24 +0530
+Message-ID: <1455516864-3594-1-git-send-email-raghav.dogra@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,28 +23,245 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@ozlabs.org> writes:
+Add support of suspend, resume function to support deep sleep.
+Also make sure of SRAM initialization  during resume.
 
-> On Mon, Feb 08, 2016 at 02:50:17PM +0530, Aneesh Kumar K.V wrote:
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->
-> This needs a proper patch description.
->
-> Paul.
+Signed-off-by: Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+Signed-off-by: Raghav Dogra <raghav.dogra@nxp.com>
+---
+Changes for v3: Replace spin_event_timeout() with arch independent macro
 
-I am expecting part1, 2 and 3 will be folded into one patch before
-merge. I updated part1 with
+Based on git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+branch "master"
 
-powerpc/mm: Copy pgalloc (part 1)
+ drivers/memory/fsl_ifc.c | 165 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fsl_ifc.h  |   6 ++
+ 2 files changed, 171 insertions(+)
 
-This patch make a copy of pgalloc routines for book3s. The idea is to
-enable a hash64 copy of these pgalloc routines which can be later
-updated to have a radix conditional. Radix introduce a new page table
-format with different page table size.
-
-This mostly does:
-
-cp pgalloc-32.h book3s/32/pgalloc.h
-cp pgalloc-64.h book3s/64/pgalloc.h
-
--aneesh
+diff --git a/drivers/memory/fsl_ifc.c b/drivers/memory/fsl_ifc.c
+index acd1460..fa028bd 100644
+--- a/drivers/memory/fsl_ifc.c
++++ b/drivers/memory/fsl_ifc.c
+@@ -24,6 +24,7 @@
+ #include <linux/compiler.h>
+ #include <linux/sched.h>
+ #include <linux/spinlock.h>
++#include <linux/delay.h>
+ #include <linux/types.h>
+ #include <linux/slab.h>
+ #include <linux/io.h>
+@@ -35,6 +36,8 @@
+ 
+ struct fsl_ifc_ctrl *fsl_ifc_ctrl_dev;
+ EXPORT_SYMBOL(fsl_ifc_ctrl_dev);
++#define FSL_IFC_V1_3_0	0x01030000
++#define IFC_TIMEOUT_MSECS	100000 /* 100ms */
+ 
+ /*
+  * convert_ifc_address - convert the base address
+@@ -309,6 +312,163 @@ err:
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_PM_SLEEP
++/* save ifc registers */
++static int fsl_ifc_suspend(struct device *dev)
++{
++	struct fsl_ifc_ctrl *ctrl = dev_get_drvdata(dev);
++	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	__be32 nand_evter_intr_en, cm_evter_intr_en, nor_evter_intr_en,
++							 gpcm_evter_intr_en;
++
++	ctrl->saved_regs = kzalloc(sizeof(struct fsl_ifc_regs), GFP_KERNEL);
++	if (!ctrl->saved_regs)
++		return -ENOMEM;
++
++	cm_evter_intr_en = ifc_in32(&ifc->cm_evter_intr_en);
++	nand_evter_intr_en = ifc_in32(&ifc->ifc_nand.nand_evter_intr_en);
++	nor_evter_intr_en = ifc_in32(&ifc->ifc_nor.nor_evter_intr_en);
++	gpcm_evter_intr_en = ifc_in32(&ifc->ifc_gpcm.gpcm_evter_intr_en);
++
++/* IFC interrupts disabled */
++
++	ifc_out32(0x0, &ifc->cm_evter_intr_en);
++	ifc_out32(0x0, &ifc->ifc_nand.nand_evter_intr_en);
++	ifc_out32(0x0, &ifc->ifc_nor.nor_evter_intr_en);
++	ifc_out32(0x0, &ifc->ifc_gpcm.gpcm_evter_intr_en);
++
++	memcpy_fromio(ctrl->saved_regs, ifc, sizeof(struct fsl_ifc_regs));
++
++/* save the interrupt values */
++	ctrl->saved_regs->cm_evter_intr_en = cm_evter_intr_en;
++	ctrl->saved_regs->ifc_nand.nand_evter_intr_en = nand_evter_intr_en;
++	ctrl->saved_regs->ifc_nor.nor_evter_intr_en = nor_evter_intr_en;
++	ctrl->saved_regs->ifc_gpcm.gpcm_evter_intr_en = gpcm_evter_intr_en;
++
++	return 0;
++}
++
++/* restore ifc registers */
++static int fsl_ifc_resume(struct device *dev)
++{
++	struct fsl_ifc_ctrl *ctrl = dev_get_drvdata(dev);
++	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	struct fsl_ifc_regs *savd_regs = ctrl->saved_regs;
++	uint32_t ver = 0, ncfgr, timeout, ifc_bank, i;
++
++/*
++ * IFC interrupts disabled
++ */
++	ifc_out32(0x0, &ifc->cm_evter_intr_en);
++	ifc_out32(0x0, &ifc->ifc_nand.nand_evter_intr_en);
++	ifc_out32(0x0, &ifc->ifc_nor.nor_evter_intr_en);
++	ifc_out32(0x0, &ifc->ifc_gpcm.gpcm_evter_intr_en);
++
++
++	if (ctrl->saved_regs) {
++		for (ifc_bank = 0; ifc_bank < FSL_IFC_BANK_COUNT; ifc_bank++) {
++			ifc_out32(savd_regs->cspr_cs[ifc_bank].cspr_ext,
++					&ifc->cspr_cs[ifc_bank].cspr_ext);
++			ifc_out32(savd_regs->cspr_cs[ifc_bank].cspr,
++					&ifc->cspr_cs[ifc_bank].cspr);
++			ifc_out32(savd_regs->amask_cs[ifc_bank].amask,
++					&ifc->amask_cs[ifc_bank].amask);
++			ifc_out32(savd_regs->csor_cs[ifc_bank].csor_ext,
++					&ifc->csor_cs[ifc_bank].csor_ext);
++			ifc_out32(savd_regs->csor_cs[ifc_bank].csor,
++					&ifc->csor_cs[ifc_bank].csor);
++			for (i = 0; i < 4; i++) {
++				ifc_out32(savd_regs->ftim_cs[ifc_bank].ftim[i],
++					&ifc->ftim_cs[ifc_bank].ftim[i]);
++			}
++		}
++		ifc_out32(savd_regs->ifc_gcr, &ifc->ifc_gcr);
++		ifc_out32(savd_regs->cm_evter_en, &ifc->cm_evter_en);
++
++/*
++* IFC controller NAND machine registers
++*/
++		ifc_out32(savd_regs->ifc_nand.ncfgr, &ifc->ifc_nand.ncfgr);
++		ifc_out32(savd_regs->ifc_nand.nand_fcr0,
++						&ifc->ifc_nand.nand_fcr0);
++		ifc_out32(savd_regs->ifc_nand.nand_fcr1,
++						&ifc->ifc_nand.nand_fcr1);
++		ifc_out32(savd_regs->ifc_nand.row0, &ifc->ifc_nand.row0);
++		ifc_out32(savd_regs->ifc_nand.row1, &ifc->ifc_nand.row1);
++		ifc_out32(savd_regs->ifc_nand.col0, &ifc->ifc_nand.col0);
++		ifc_out32(savd_regs->ifc_nand.col1, &ifc->ifc_nand.col1);
++		ifc_out32(savd_regs->ifc_nand.row2, &ifc->ifc_nand.row2);
++		ifc_out32(savd_regs->ifc_nand.col2, &ifc->ifc_nand.col2);
++		ifc_out32(savd_regs->ifc_nand.row3, &ifc->ifc_nand.row3);
++		ifc_out32(savd_regs->ifc_nand.col3, &ifc->ifc_nand.col3);
++		ifc_out32(savd_regs->ifc_nand.nand_fbcr,
++						&ifc->ifc_nand.nand_fbcr);
++		ifc_out32(savd_regs->ifc_nand.nand_fir0,
++						&ifc->ifc_nand.nand_fir0);
++		ifc_out32(savd_regs->ifc_nand.nand_fir1,
++						&ifc->ifc_nand.nand_fir1);
++		ifc_out32(savd_regs->ifc_nand.nand_fir2,
++						&ifc->ifc_nand.nand_fir2);
++		ifc_out32(savd_regs->ifc_nand.nand_csel,
++						&ifc->ifc_nand.nand_csel);
++		ifc_out32(savd_regs->ifc_nand.nandseq_strt,
++						&ifc->ifc_nand.nandseq_strt);
++		ifc_out32(savd_regs->ifc_nand.nand_evter_en,
++						&ifc->ifc_nand.nand_evter_en);
++		ifc_out32(savd_regs->ifc_nand.nanndcr, &ifc->ifc_nand.nanndcr);
++
++/*
++* IFC controller NOR machine registers
++*/
++		ifc_out32(savd_regs->ifc_nor.nor_evter_en,
++					&ifc->ifc_nor.nor_evter_en);
++		ifc_out32(savd_regs->ifc_nor.norcr, &ifc->ifc_nor.norcr);
++
++/*
++ * IFC controller GPCM Machine registers
++ */
++		ifc_out32(savd_regs->ifc_gpcm.gpcm_evter_en,
++					&ifc->ifc_gpcm.gpcm_evter_en);
++
++
++
++/*
++ * IFC interrupts enabled
++ */
++	ifc_out32(ctrl->saved_regs->cm_evter_intr_en, &ifc->cm_evter_intr_en);
++	ifc_out32(ctrl->saved_regs->ifc_nand.nand_evter_intr_en,
++					&ifc->ifc_nand.nand_evter_intr_en);
++	ifc_out32(ctrl->saved_regs->ifc_nor.nor_evter_intr_en,
++					&ifc->ifc_nor.nor_evter_intr_en);
++	ifc_out32(ctrl->saved_regs->ifc_gpcm.gpcm_evter_intr_en,
++					&ifc->ifc_gpcm.gpcm_evter_intr_en);
++
++		kfree(ctrl->saved_regs);
++		ctrl->saved_regs = NULL;
++	}
++
++	ver = ifc_in32(&ctrl->regs->ifc_rev);
++	ncfgr = ifc_in32(&ifc->ifc_nand.ncfgr);
++	if (ver >= FSL_IFC_V1_3_0) {
++
++		ifc_out32(ncfgr | IFC_NAND_SRAM_INIT_EN,
++					&ifc->ifc_nand.ncfgr);
++		/* wait for  SRAM_INIT bit to be clear or timeout */
++		timeout = IFC_TIMEOUT_MSECS;
++		while ((ifc_in32(&ifc->ifc_nand.ncfgr) &
++					IFC_NAND_SRAM_INIT_EN) && timeout) {
++			cpu_relax();
++			timeout--;
++		}
++
++		if (!timeout)
++			dev_err(ctrl->dev, "Timeout waiting for IFC SRAM INIT");
++	}
++
++	return 0;
++}
++#endif /* CONFIG_PM_SLEEP */
++
+ static const struct of_device_id fsl_ifc_match[] = {
+ 	{
+ 		.compatible = "fsl,ifc",
+@@ -316,10 +476,15 @@ static const struct of_device_id fsl_ifc_match[] = {
+ 	{},
+ };
+ 
++static const struct dev_pm_ops ifc_pm_ops = {
++	SET_SYSTEM_SLEEP_PM_OPS(fsl_ifc_suspend, fsl_ifc_resume)
++};
++
+ static struct platform_driver fsl_ifc_ctrl_driver = {
+ 	.driver = {
+ 		.name	= "fsl-ifc",
+ 		.of_match_table = fsl_ifc_match,
++		.pm = &ifc_pm_ops,
+ 	},
+ 	.probe       = fsl_ifc_ctrl_probe,
+ 	.remove      = fsl_ifc_ctrl_remove,
+diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
+index 0023088..850481a 100644
+--- a/include/linux/fsl_ifc.h
++++ b/include/linux/fsl_ifc.h
+@@ -270,6 +270,8 @@
+  */
+ /* Auto Boot Mode */
+ #define IFC_NAND_NCFGR_BOOT		0x80000000
++/* SRAM INIT EN */
++#define IFC_NAND_SRAM_INIT_EN		0x20000000
+ /* Addressing Mode-ROW0+n/COL0 */
+ #define IFC_NAND_NCFGR_ADDR_MODE_RC0	0x00000000
+ /* Addressing Mode-ROW0+n/COL0+n */
+@@ -842,6 +844,10 @@ struct fsl_ifc_ctrl {
+ 	u32 nand_stat;
+ 	wait_queue_head_t nand_wait;
+ 	bool little_endian;
++#ifdef CONFIG_PM_SLEEP
++	/* save regs when system go to deep-sleep */
++	struct fsl_ifc_regs		*saved_regs;
++#endif
+ };
+ 
+ extern struct fsl_ifc_ctrl *fsl_ifc_ctrl_dev;
+-- 
+1.9.1
