@@ -1,41 +1,41 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5E6CF1A0065
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 09:45:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 90E1B1A0066
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 10:20:22 +1100 (AEDT)
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 16 Feb 2016 08:45:01 +1000
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Tue, 16 Feb 2016 09:20:19 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9B8C23578056
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 09:44:58 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id ABC0D2BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 10:20:17 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1FMio3U5702006
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 09:44:58 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1FMiPRx012500
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 09:44:26 +1100
-Date: Tue, 16 Feb 2016 09:43:58 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/4] powerpc/powernv: Fix stale PE primary bus
-Message-ID: <20160215224358.GA9417@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1454993431-17068-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1454993431-17068-2-git-send-email-gwshan@linux.vnet.ibm.com>
- <56BD7586.7060803@au1.ibm.com> <20160212060924.GA9809@gwshan>
- <1455532715.26205.9.camel@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1455532715.26205.9.camel@ellerman.id.au>
+ u1FNK9xi65405172
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 10:20:17 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1FNJiBI030368
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 10:19:45 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: christophe lombard <clombard@linux.vnet.ibm.com>
+Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Michael Neuling <michael.neuling@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v3 14/18] cxl: Support to flash a new image on the adapter
+ from a guest
+In-reply-to: <56C23AE2.8050608@linux.vnet.ibm.com>
+References: <1454765345-7417-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+ <1454765345-7417-15-git-send-email-fbarrat@linux.vnet.ibm.com>
+ <1455097101-sup-8413@delenn.ozlabs.ibm.com>
+ <56C23AE2.8050608@linux.vnet.ibm.com>
+Date: Tue, 16 Feb 2016 10:19:10 +1100
+Message-Id: <1455577998-sup-2795@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,57 +45,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 15, 2016 at 09:38:35PM +1100, Michael Ellerman wrote:
->On Fri, 2016-02-12 at 17:09 +1100, Gavin Shan wrote:
->
->> On Fri, Feb 12, 2016 at 05:02:46PM +1100, Andrew Donnellan wrote:
->
->> > On 09/02/16 15:50, Gavin Shan wrote:
->
->> > > When PCI bus is unplugged during full hotplug for EEH recovery,
->> > > the platform PE instance (struct pnv_ioda_pe) isn't released and
->> > > it dereferences the stale PCI bus that has been released. It leads
->> > > to kernel crash when referring to the stale PCI bus.
->> > > 
->> > > This fixes the issue by correcting the PE's primary bus when it's
->> > > oneline at plugging time, in pnv_pci_dma_bus_setup() which is to
->> > > be called by pcibios_fixup_bus().
->> > > 
->> > > Reported-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
->> > > Reported-by: Pradipta Ghosh <pradghos@in.ibm.com>
->> > > Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> > > Tested-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
->> > 
->> > I realise this has already been merged, but the following was found by
->> > Coverity:
->> > 
->
->> > > +void pnv_pci_dma_bus_setup(struct pci_bus *bus)
->> > > +{
->> > > +	struct pci_controller *hose = bus->sysdata;
->> > > +	struct pnv_phb *phb = hose->private_data;
->> > > +	struct pnv_ioda_pe *pe;
->> > > +
->> > > +	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
->> > > +		if (!(pe->flags | (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)))
->> > > +			continue;
->> > 
->> > This condition is always false. I think the first "|" is supposed to be "&".
->> > 
->> 
->> Yeah, that should be "&". I think the problem isn't found when doing
->> testing in non-SRIOV environment. Thanks for pointing it out.
->> 
->> Michael, please let me know if I need send a follow-up revision to
->> correct this one? I found the first two patches have been put into
->> linux-next branch. I think we probably just need repost the correct
->> version for this one only.
->
->As it happens I needed to rebase my fixes branch anyway, so I've updated it and
->rebased. No further action required :)
->
+Excerpts from christophe lombard's message of 2016-02-16 07:53:54 +1100:
+> >> +void cxl_guest_reload_module(struct cxl *adapter)
+> >> +{
+> >> +    struct platform_device *pdev;
+> >> +    int afu;
+> >> +
+> >> +    for (afu = 0; afu < adapter->slices; afu++)
+> >> +        cxl_guest_remove_afu(adapter->afu[afu]);
+> > Should we possibly have done this part earlier?
+> >
+> > I'd think it should be done before any operation that might lead to us
+> > resetting the card. Probably the safest thing is to do it when the first
+> > chunk is handed to the kernel so we can make sure it's safe, and return
+> > -EBUSY if any of the AFUs are still in use.
+> Not necessary. PowerVM - phyp - refuses any type of action when an operation
+> of download/validation is in progress. The reverse is true as well.
 
-Thanks Michael. Sorry for the rebase :-)
+I was more thinking about what could happen in the short window between
+when phyp resets the card and is potentially accepting new operations
+and when we remove the old AFUs from Linux - could anything bad happen
+if someone e.g. did an attach at that moment and Linux still had
+outdated info left over from the previous AFU?
 
-Thanks,
-Gavin
+Cheers,
+-Ian
