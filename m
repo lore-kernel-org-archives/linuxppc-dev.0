@@ -1,19 +1,26 @@
 Return-Path: <raghav.dogra@nxp.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0079.outbound.protection.outlook.com [65.55.169.79])
+Received: from emea01-db3-obe.outbound.protection.outlook.com
+ (mail-db3on0094.outbound.protection.outlook.com [157.55.234.94])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A1E651A0338
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 17:28:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB6791A038E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 17:33:36 +1100 (AEDT)
 From: Raghav Dogra <raghav.dogra@nxp.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: <oss@buserror.net>, <prabhakar.kushwaha@nxp.com>, Raghav Dogra
- <raghav.dogra@nxp.com>
-Subject: [PATCH][v3] drivers/memory: Add deep sleep support for IFC
-Date: Mon, 15 Feb 2016 11:44:24 +0530
-Message-ID: <1455516864-3594-1-git-send-email-raghav.dogra@nxp.com>
+To: Brian Norris <computersforpeace@gmail.com>, Li Yang <leoli@freescale.com>
+CC: Raghav Dogra <raghav@freescale.com>, "linux-mtd@lists.infradead.org"
+ <linux-mtd@lists.infradead.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, "oss@buserror.net" <oss@buserror.net>,
+ Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>, Jaiprakash Singh
+ <b44839@freescale.com>
+Subject: RE: [PATCH] mtd/ifc: Add support for IFC controller version 2.0
+Date: Mon, 15 Feb 2016 06:18:02 +0000
+Message-ID: <DB4PR04MB3465D14DB9003BF000DFE9889AC0@DB4PR04MB346.eurprd04.prod.outlook.com>
+References: <1454481372-10288-1-git-send-email-raghav@freescale.com>
+ <CADRPPNTKFA8rkynJR4wCNgAmqvmiwYwTi2Uk9hDUMB4+N7ST_Q@mail.gmail.com>
+ <20160212194411.GF21465@google.com>
+In-Reply-To: <20160212194411.GF21465@google.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,245 +30,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support of suspend, resume function to support deep sleep.
-Also make sure of SRAM initialization  during resume.
 
-Signed-off-by: Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
-Signed-off-by: Raghav Dogra <raghav.dogra@nxp.com>
----
-Changes for v3: Replace spin_event_timeout() with arch independent macro
 
-Based on git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
-branch "master"
+> -----Original Message-----
+> From: Brian Norris [mailto:computersforpeace@gmail.com]
+> Sent: Saturday, February 13, 2016 1:14 AM
+> To: Li Yang <leoli@freescale.com>
+> Cc: Raghav Dogra <raghav@freescale.com>; linux-mtd@lists.infradead.org;
+> linuxppc-dev <linuxppc-dev@lists.ozlabs.org>; oss@buserror.net; Prabhakar
+> Kushwaha <prabhakar.kushwaha@nxp.com>; Jaiprakash Singh
+> <b44839@freescale.com>
+> Subject: Re: [PATCH] mtd/ifc: Add support for IFC controller version 2.0
+>=20
+> On Thu, Feb 04, 2016 at 05:07:16PM -0600, Li Yang wrote:
+> > On Wed, Feb 3, 2016 at 12:36 AM, Raghav Dogra <raghav@freescale.com>
+> wrote:
+> > > The new IFC controller version 2.0 has a different memory map page.
+> > > Upto IFC 1.4 PAGE size is 4 KB and from IFC2.0 PAGE size is 64KB.
+> > > This patch segregates the IFC global and runtime registers to
+> > > appropriate PAGE sizes.
+> >
+> > If the global registers and the runtime registers are so independent
+> > that they have to be on different page boundaries, it would make more
+> > sense for them to be defined as separate reg regions in the device
+> > tree at the very beginning.  Then we would only need to change the
+> > device tree now and it would be future proof for any page size.
+>=20
+> To be clear: Scott, you were NACK'ing the DT binding change request, righ=
+t? I
+> though we had an Ack on the previous revision (that Raghav failed to carr=
+y).
+>=20
+> > >
+> > > Signed-off-by: Jaiprakash Singh <b44839@freescale.com>
+> > > Signed-off-by: Raghav Dogra <raghav@freescale.com>
+> >
+> > The patch cannot apply on latest 4.5-rc cleanly either.  Otherwise,
+>=20
+> Yeah... neither this patch nor its (allegedly) dependent patch [1] apply
+> cleanly.
+>=20
+> If you expect me to take this patch via MTD, please rebase to l2-mtd.git =
+as
+> stated here:
+>=20
+> http://linux-mtd.infradead.org/source.html
+>
+I expect Scott to pick this patch, and apply via linuxppc-dev. I will send =
+the patch on based on git://git.kernel.org/pub/scm/linux/kernel/git/torvald=
+s/linux.git
+Branch "master"
 
- drivers/memory/fsl_ifc.c | 165 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fsl_ifc.h  |   6 ++
- 2 files changed, 171 insertions(+)
+-Raghav
 
-diff --git a/drivers/memory/fsl_ifc.c b/drivers/memory/fsl_ifc.c
-index acd1460..fa028bd 100644
---- a/drivers/memory/fsl_ifc.c
-+++ b/drivers/memory/fsl_ifc.c
-@@ -24,6 +24,7 @@
- #include <linux/compiler.h>
- #include <linux/sched.h>
- #include <linux/spinlock.h>
-+#include <linux/delay.h>
- #include <linux/types.h>
- #include <linux/slab.h>
- #include <linux/io.h>
-@@ -35,6 +36,8 @@
- 
- struct fsl_ifc_ctrl *fsl_ifc_ctrl_dev;
- EXPORT_SYMBOL(fsl_ifc_ctrl_dev);
-+#define FSL_IFC_V1_3_0	0x01030000
-+#define IFC_TIMEOUT_MSECS	100000 /* 100ms */
- 
- /*
-  * convert_ifc_address - convert the base address
-@@ -309,6 +312,163 @@ err:
- 	return ret;
- }
- 
-+#ifdef CONFIG_PM_SLEEP
-+/* save ifc registers */
-+static int fsl_ifc_suspend(struct device *dev)
-+{
-+	struct fsl_ifc_ctrl *ctrl = dev_get_drvdata(dev);
-+	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	__be32 nand_evter_intr_en, cm_evter_intr_en, nor_evter_intr_en,
-+							 gpcm_evter_intr_en;
-+
-+	ctrl->saved_regs = kzalloc(sizeof(struct fsl_ifc_regs), GFP_KERNEL);
-+	if (!ctrl->saved_regs)
-+		return -ENOMEM;
-+
-+	cm_evter_intr_en = ifc_in32(&ifc->cm_evter_intr_en);
-+	nand_evter_intr_en = ifc_in32(&ifc->ifc_nand.nand_evter_intr_en);
-+	nor_evter_intr_en = ifc_in32(&ifc->ifc_nor.nor_evter_intr_en);
-+	gpcm_evter_intr_en = ifc_in32(&ifc->ifc_gpcm.gpcm_evter_intr_en);
-+
-+/* IFC interrupts disabled */
-+
-+	ifc_out32(0x0, &ifc->cm_evter_intr_en);
-+	ifc_out32(0x0, &ifc->ifc_nand.nand_evter_intr_en);
-+	ifc_out32(0x0, &ifc->ifc_nor.nor_evter_intr_en);
-+	ifc_out32(0x0, &ifc->ifc_gpcm.gpcm_evter_intr_en);
-+
-+	memcpy_fromio(ctrl->saved_regs, ifc, sizeof(struct fsl_ifc_regs));
-+
-+/* save the interrupt values */
-+	ctrl->saved_regs->cm_evter_intr_en = cm_evter_intr_en;
-+	ctrl->saved_regs->ifc_nand.nand_evter_intr_en = nand_evter_intr_en;
-+	ctrl->saved_regs->ifc_nor.nor_evter_intr_en = nor_evter_intr_en;
-+	ctrl->saved_regs->ifc_gpcm.gpcm_evter_intr_en = gpcm_evter_intr_en;
-+
-+	return 0;
-+}
-+
-+/* restore ifc registers */
-+static int fsl_ifc_resume(struct device *dev)
-+{
-+	struct fsl_ifc_ctrl *ctrl = dev_get_drvdata(dev);
-+	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	struct fsl_ifc_regs *savd_regs = ctrl->saved_regs;
-+	uint32_t ver = 0, ncfgr, timeout, ifc_bank, i;
-+
-+/*
-+ * IFC interrupts disabled
-+ */
-+	ifc_out32(0x0, &ifc->cm_evter_intr_en);
-+	ifc_out32(0x0, &ifc->ifc_nand.nand_evter_intr_en);
-+	ifc_out32(0x0, &ifc->ifc_nor.nor_evter_intr_en);
-+	ifc_out32(0x0, &ifc->ifc_gpcm.gpcm_evter_intr_en);
-+
-+
-+	if (ctrl->saved_regs) {
-+		for (ifc_bank = 0; ifc_bank < FSL_IFC_BANK_COUNT; ifc_bank++) {
-+			ifc_out32(savd_regs->cspr_cs[ifc_bank].cspr_ext,
-+					&ifc->cspr_cs[ifc_bank].cspr_ext);
-+			ifc_out32(savd_regs->cspr_cs[ifc_bank].cspr,
-+					&ifc->cspr_cs[ifc_bank].cspr);
-+			ifc_out32(savd_regs->amask_cs[ifc_bank].amask,
-+					&ifc->amask_cs[ifc_bank].amask);
-+			ifc_out32(savd_regs->csor_cs[ifc_bank].csor_ext,
-+					&ifc->csor_cs[ifc_bank].csor_ext);
-+			ifc_out32(savd_regs->csor_cs[ifc_bank].csor,
-+					&ifc->csor_cs[ifc_bank].csor);
-+			for (i = 0; i < 4; i++) {
-+				ifc_out32(savd_regs->ftim_cs[ifc_bank].ftim[i],
-+					&ifc->ftim_cs[ifc_bank].ftim[i]);
-+			}
-+		}
-+		ifc_out32(savd_regs->ifc_gcr, &ifc->ifc_gcr);
-+		ifc_out32(savd_regs->cm_evter_en, &ifc->cm_evter_en);
-+
-+/*
-+* IFC controller NAND machine registers
-+*/
-+		ifc_out32(savd_regs->ifc_nand.ncfgr, &ifc->ifc_nand.ncfgr);
-+		ifc_out32(savd_regs->ifc_nand.nand_fcr0,
-+						&ifc->ifc_nand.nand_fcr0);
-+		ifc_out32(savd_regs->ifc_nand.nand_fcr1,
-+						&ifc->ifc_nand.nand_fcr1);
-+		ifc_out32(savd_regs->ifc_nand.row0, &ifc->ifc_nand.row0);
-+		ifc_out32(savd_regs->ifc_nand.row1, &ifc->ifc_nand.row1);
-+		ifc_out32(savd_regs->ifc_nand.col0, &ifc->ifc_nand.col0);
-+		ifc_out32(savd_regs->ifc_nand.col1, &ifc->ifc_nand.col1);
-+		ifc_out32(savd_regs->ifc_nand.row2, &ifc->ifc_nand.row2);
-+		ifc_out32(savd_regs->ifc_nand.col2, &ifc->ifc_nand.col2);
-+		ifc_out32(savd_regs->ifc_nand.row3, &ifc->ifc_nand.row3);
-+		ifc_out32(savd_regs->ifc_nand.col3, &ifc->ifc_nand.col3);
-+		ifc_out32(savd_regs->ifc_nand.nand_fbcr,
-+						&ifc->ifc_nand.nand_fbcr);
-+		ifc_out32(savd_regs->ifc_nand.nand_fir0,
-+						&ifc->ifc_nand.nand_fir0);
-+		ifc_out32(savd_regs->ifc_nand.nand_fir1,
-+						&ifc->ifc_nand.nand_fir1);
-+		ifc_out32(savd_regs->ifc_nand.nand_fir2,
-+						&ifc->ifc_nand.nand_fir2);
-+		ifc_out32(savd_regs->ifc_nand.nand_csel,
-+						&ifc->ifc_nand.nand_csel);
-+		ifc_out32(savd_regs->ifc_nand.nandseq_strt,
-+						&ifc->ifc_nand.nandseq_strt);
-+		ifc_out32(savd_regs->ifc_nand.nand_evter_en,
-+						&ifc->ifc_nand.nand_evter_en);
-+		ifc_out32(savd_regs->ifc_nand.nanndcr, &ifc->ifc_nand.nanndcr);
-+
-+/*
-+* IFC controller NOR machine registers
-+*/
-+		ifc_out32(savd_regs->ifc_nor.nor_evter_en,
-+					&ifc->ifc_nor.nor_evter_en);
-+		ifc_out32(savd_regs->ifc_nor.norcr, &ifc->ifc_nor.norcr);
-+
-+/*
-+ * IFC controller GPCM Machine registers
-+ */
-+		ifc_out32(savd_regs->ifc_gpcm.gpcm_evter_en,
-+					&ifc->ifc_gpcm.gpcm_evter_en);
-+
-+
-+
-+/*
-+ * IFC interrupts enabled
-+ */
-+	ifc_out32(ctrl->saved_regs->cm_evter_intr_en, &ifc->cm_evter_intr_en);
-+	ifc_out32(ctrl->saved_regs->ifc_nand.nand_evter_intr_en,
-+					&ifc->ifc_nand.nand_evter_intr_en);
-+	ifc_out32(ctrl->saved_regs->ifc_nor.nor_evter_intr_en,
-+					&ifc->ifc_nor.nor_evter_intr_en);
-+	ifc_out32(ctrl->saved_regs->ifc_gpcm.gpcm_evter_intr_en,
-+					&ifc->ifc_gpcm.gpcm_evter_intr_en);
-+
-+		kfree(ctrl->saved_regs);
-+		ctrl->saved_regs = NULL;
-+	}
-+
-+	ver = ifc_in32(&ctrl->regs->ifc_rev);
-+	ncfgr = ifc_in32(&ifc->ifc_nand.ncfgr);
-+	if (ver >= FSL_IFC_V1_3_0) {
-+
-+		ifc_out32(ncfgr | IFC_NAND_SRAM_INIT_EN,
-+					&ifc->ifc_nand.ncfgr);
-+		/* wait for  SRAM_INIT bit to be clear or timeout */
-+		timeout = IFC_TIMEOUT_MSECS;
-+		while ((ifc_in32(&ifc->ifc_nand.ncfgr) &
-+					IFC_NAND_SRAM_INIT_EN) && timeout) {
-+			cpu_relax();
-+			timeout--;
-+		}
-+
-+		if (!timeout)
-+			dev_err(ctrl->dev, "Timeout waiting for IFC SRAM INIT");
-+	}
-+
-+	return 0;
-+}
-+#endif /* CONFIG_PM_SLEEP */
-+
- static const struct of_device_id fsl_ifc_match[] = {
- 	{
- 		.compatible = "fsl,ifc",
-@@ -316,10 +476,15 @@ static const struct of_device_id fsl_ifc_match[] = {
- 	{},
- };
- 
-+static const struct dev_pm_ops ifc_pm_ops = {
-+	SET_SYSTEM_SLEEP_PM_OPS(fsl_ifc_suspend, fsl_ifc_resume)
-+};
-+
- static struct platform_driver fsl_ifc_ctrl_driver = {
- 	.driver = {
- 		.name	= "fsl-ifc",
- 		.of_match_table = fsl_ifc_match,
-+		.pm = &ifc_pm_ops,
- 	},
- 	.probe       = fsl_ifc_ctrl_probe,
- 	.remove      = fsl_ifc_ctrl_remove,
-diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
-index 0023088..850481a 100644
---- a/include/linux/fsl_ifc.h
-+++ b/include/linux/fsl_ifc.h
-@@ -270,6 +270,8 @@
-  */
- /* Auto Boot Mode */
- #define IFC_NAND_NCFGR_BOOT		0x80000000
-+/* SRAM INIT EN */
-+#define IFC_NAND_SRAM_INIT_EN		0x20000000
- /* Addressing Mode-ROW0+n/COL0 */
- #define IFC_NAND_NCFGR_ADDR_MODE_RC0	0x00000000
- /* Addressing Mode-ROW0+n/COL0+n */
-@@ -842,6 +844,10 @@ struct fsl_ifc_ctrl {
- 	u32 nand_stat;
- 	wait_queue_head_t nand_wait;
- 	bool little_endian;
-+#ifdef CONFIG_PM_SLEEP
-+	/* save regs when system go to deep-sleep */
-+	struct fsl_ifc_regs		*saved_regs;
-+#endif
- };
- 
- extern struct fsl_ifc_ctrl *fsl_ifc_ctrl_dev;
--- 
-1.9.1
+> > Acked-by: Li Yang <leoyang.li@nxp.com>
+>=20
+> Brian
+>=20
+> [1] https://patchwork.ozlabs.org/patch/564785/
