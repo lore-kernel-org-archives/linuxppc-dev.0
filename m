@@ -1,21 +1,34 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 26B321A017D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 14:21:31 +1100 (AEDT)
-Date: Mon, 15 Feb 2016 14:21:24 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Subject: Re: [PATCH V2 07/29] mm: Make vm_get_page_prot arch specific.
-Message-ID: <20160215032124.GB3797@oak.ozlabs.ibm.com>
-References: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1454923241-6681-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 878BE1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 14:26:53 +1100 (AEDT)
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 15 Feb 2016 13:26:52 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8AC563578056
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 14:26:50 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1F3QgHn59506830
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 14:26:50 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1F3QIgV011639
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 14:26:18 +1100
+Subject: Re: [PATCH] powerpc/eeh: Remove duplicated check in eeh_dump_pe_log()
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <1455493946-27967-1-git-send-email-gwshan@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-ID: <56C14541.5000302@au1.ibm.com>
+Date: Mon, 15 Feb 2016 14:25:53 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1454923241-6681-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1455493946-27967-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +38,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 08, 2016 at 02:50:19PM +0530, Aneesh Kumar K.V wrote:
-> With next generation power processor, we are having a new mmu model
-> [1] that require us to maintain a different linux page table format.
-> 
-> Inorder to support both current and future ppc64 systems with a single
-> kernel we need to make sure kernel can select between different page
-> table format at runtime. With the new MMU (radix MMU) added, we will
-> have to dynamically switch between different protection map. Hence
-> override vm_get_page_prot instead of using arch_vm_get_page_prot. We
-> also drop arch_vm_get_page_prot since only powerpc used it.
+On 15/02/16 10:52, Gavin Shan wrote:
+> When eeh_dump_pe_log() is called in eeh_slot_error_detail(), we
+> already have the check that the PE isn't in PCI config blocked
+> state. So we needn't the duplicated check in eeh_dump_pe_log().
+>
+> This removes the duplicated check in eeh_dump_pe_log().
+>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-What's different about ISA v3.0 that means that the protection_map[]
-entries need to be different?
+eeh_dump_pe_log() isn't called anywhere outside of 
+eeh_slot_error_detail(), so this should have no functional change.
 
-If it's just different bit assignments for things like _PAGE_READ
-etc., couldn't we fix this up at early boot time by writing new values
-into protection_map[]?  Is there a reason why that wouldn't work, or
-why you don't want to do that?
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Paul.
+-- 
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
