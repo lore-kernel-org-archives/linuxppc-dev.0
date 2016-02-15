@@ -1,39 +1,22 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 996F11A004E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 15:40:35 +1100 (AEDT)
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 14 Feb 2016 21:40:33 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id E66053E40047
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Feb 2016 21:40:29 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1F4eTWF33685546
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Feb 2016 21:40:29 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1F4eTmO006674
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Feb 2016 21:40:29 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6AD2B1A0316
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 16:02:23 +1100 (AEDT)
+Date: Mon, 15 Feb 2016 15:11:53 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Cc: benh@kernel.crashing.org, mpe@ellerman.id.au,
  linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Subject: Re: [PATCH V2 07/29] mm: Make vm_get_page_prot arch specific.
-In-Reply-To: <20160215032124.GB3797@oak.ozlabs.ibm.com>
+Subject: Re: [PATCH V2 08/29] mm: Some arch may want to use HPAGE_PMD related
+ values as variables
+Message-ID: <20160215041153.GC3797@oak.ozlabs.ibm.com>
 References: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1454923241-6681-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20160215032124.GB3797@oak.ozlabs.ibm.com>
-Date: Mon, 15 Feb 2016 10:10:24 +0530
-Message-ID: <87io1qfux3.fsf@linux.vnet.ibm.com>
+ <1454923241-6681-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1454923241-6681-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,30 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@ozlabs.org> writes:
+On Mon, Feb 08, 2016 at 02:50:20PM +0530, Aneesh Kumar K.V wrote:
+> With next generation power processor, we are having a new mmu model
+> [1] that require us to maintain a different linux page table format.
+> 
+> Inorder to support both current and future ppc64 systems with a single
+> kernel we need to make sure kernel can select between different page
+> table format at runtime. With the new MMU (radix MMU) added, we will
+> have two different pmd hugepage size 16MB for hash model and 2MB for
+> Radix model. Hence make HPAGE_PMD related values as a variable.
 
-> On Mon, Feb 08, 2016 at 02:50:19PM +0530, Aneesh Kumar K.V wrote:
->> With next generation power processor, we are having a new mmu model
->> [1] that require us to maintain a different linux page table format.
->> 
->> Inorder to support both current and future ppc64 systems with a single
->> kernel we need to make sure kernel can select between different page
->> table format at runtime. With the new MMU (radix MMU) added, we will
->> have to dynamically switch between different protection map. Hence
->> override vm_get_page_prot instead of using arch_vm_get_page_prot. We
->> also drop arch_vm_get_page_prot since only powerpc used it.
->
-> What's different about ISA v3.0 that means that the protection_map[]
-> entries need to be different?
->
-> If it's just different bit assignments for things like _PAGE_READ
-> etc., couldn't we fix this up at early boot time by writing new values
-> into protection_map[]?  Is there a reason why that wouldn't work, or
-> why you don't want to do that?
->
+But this patch doesn't actually turn any constant into a variable, as
+far as I can see...
 
-Yes, that is other way to do this. But I thought it is easier to have
-different protection_map array for radix and hash. That made the code
-more readable.
+Most of what this patch does is to move two tests around:
 
--aneesh
+* The #if HPAGE_PMD_ORDER >= MAX_ORDER test get moved from a generic
+header into all archs except powerpc, and for powerpc it gets turned
+into BUILD_BUG_ON.  However, BUILD_BUG_ON only works on things that
+are known at compile time, last time I looked.  Doesn't it need to be
+a BUG_ON to prepare for HPAGE_PMD_ORDER being a variable that isn't
+known at compile time?
+
+* The existing BUILD_BUG_ON(HPAGE_PMD_ORDER < 2) gets turned into #if
+for all archs except powerpc, and for powerpc it stays as a
+BUILD_BUG_ON but gets moved to arch code.  That doesn't really seem to
+accomplish anything.  Once again, doesn't it need to become a BUG_ON?
+If so, could we just make it BUG_ON in the generic code where the
+BUILD_BUG_ON currently is?
+
+Paul.
