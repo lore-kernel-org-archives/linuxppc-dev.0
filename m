@@ -1,26 +1,28 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <a.hajda@samsung.com>
+Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
+ [210.118.77.14])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D081A1A0338
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 01:04:13 +1100 (AEDT)
-Date: Mon, 15 Feb 2016 15:04:08 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Balbir Singh <bsingharora@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
- Jessica Yu <jeyu@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org
-Subject: Re: [PATCH v8 4/8] ppc64 ftrace_with_regs configuration variables
-Message-ID: <20160215140408.GA22872@lst.de>
-References: <20160210174221.EBBEC692C8@newverein.lst.de>
- <20160210174450.9C065692C8@newverein.lst.de>
- <1455176897.2885.12.camel@gmail.com> <20160211084230.GB29683@lst.de>
- <1455532035.26205.5.camel@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1455532035.26205.5.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id ECA821A034B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 01:46:50 +1100 (AEDT)
+Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
+ by mailout4.w1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
+ with ESMTP id <0O2L00C73F95SG40@mailout4.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Mon, 15 Feb 2016 14:36:41 +0000 (GMT)
+From: Andrzej Hajda <a.hajda@samsung.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrzej Hajda <a.hajda@samsung.com>, coreteam@netfilter.org,
+ linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
+ linux-media@vger.kernel.org, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org,
+ linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
+ netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH 0/7] fix IS_ERR_VALUE usage
+Date: Mon, 15 Feb 2016 15:35:18 +0100
+Message-id: <1455546925-22119-1-git-send-email-a.hajda@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,36 +32,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 15, 2016 at 09:27:15PM +1100, Michael Ellerman wrote:
-> 
-> There is explicit code in gcc to check whether the TOC setup is needed and only
+Hi,
 
-That's undestood. The claim here is: that check is incomplete, at least.
+This small set of independent patches tries to fix incorrect
+IS_ERR_VALUE macro usage. It fixes most usages leading to errors
+as described in [1]. It also follows conclusion from the discussion
+[1][2] - IS_ERR_VALUE should be used only with unsigned long type,
+signed types should use comparison 'ret < 0'.
 
-> emit it when it's required. One case where it's *not* required is when the
-> function does not TOC accesses. (See rs6000_global_entry_point_needed_p()).
+The patchset does not fix errors present in net/ethernet/freescale
+and soc/fsq/qe drivers - these drivers mixes different types:
+dma_addr_t, u32, unsigned long, fixing it properly seems to me more
+challenging, maybe maintainers or brave volunteers can look it.
 
-n.b. I cannot find this symbol in the 4.9.3 tree, but I know what you mean.
+The list of missing fixes:
+drivers/net/ethernet/freescale/fs_enet/mac-scc.c:149:36-37: WARNING: incorrect argument type in IS_ERR_VALUE(fep -> ring_mem_addr)
+drivers/net/ethernet/freescale/ucc_geth.c:2237:48-49: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> tx_bd_ring_offset [ j ])
+drivers/net/ethernet/freescale/ucc_geth.c:2314:48-49: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> rx_bd_ring_offset [ j ])
+drivers/net/ethernet/freescale/ucc_geth.c:2524:44-45: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> tx_glbl_pram_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2544:45-46: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> thread_dat_tx_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2571:46-47: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> send_q_mem_reg_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2612:42-43: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> scheduler_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2659:54-55: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> tx_fw_statistics_pram_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2696:44-45: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> rx_glbl_pram_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2715:45-46: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> thread_dat_rx_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2736:54-55: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> rx_fw_statistics_pram_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2756:53-54: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> rx_irq_coalescing_tbl_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2822:44-45: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> rx_bd_qs_tbl_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2908:47-48: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> exf_glbl_param_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:292:36-37: WARNING: incorrect argument type in IS_ERR_VALUE(init_enet_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:3042:39-40: WARNING: incorrect argument type in IS_ERR_VALUE(init_enet_pram_offset)
+drivers/soc/fsl/qe/ucc_fast.c:271:60-61: WARNING: incorrect argument type in IS_ERR_VALUE(uccf -> ucc_fast_tx_virtual_fifo_base_offset)
+drivers/soc/fsl/qe/ucc_fast.c:284:60-61: WARNING: incorrect argument type in IS_ERR_VALUE(uccf -> ucc_fast_rx_virtual_fifo_base_offset)
+drivers/soc/fsl/qe/ucc_slow.c:186:38-39: WARNING: incorrect argument type in IS_ERR_VALUE(uccs -> us_pram_offset)
+drivers/soc/fsl/qe/ucc_slow.c:213:38-39: WARNING: incorrect argument type in IS_ERR_VALUE(uccs -> rx_base_offset)
+drivers/soc/fsl/qe/ucc_slow.c:224:38-39: WARNING: incorrect argument type in IS_ERR_VALUE(uccs -> tx_base_offset)
+drivers/net/ethernet/freescale/fs_enet/mac-fcc.c:110:35-36: WARNING: unknown argument type in IS_ERR_VALUE(fpi -> dpram_offset)
 
-The point here is: If you profile using "-pg", gcc perfectly recognises that
-it is generating a call to "_mcount", which may be non-local, and loads the TOC.
-If you use "-pg -mprofile-kernel", gcc seems to forget that, and omits the TOC
-load, for a similar assembler calling sequence.
+[1]: http://permalink.gmane.org/gmane.linux.kernel/2120927
+[2]: http://permalink.gmane.org/gmane.linux.kernel/2150581
 
-Looking at the code I can _understand_ why this is so, but my GCC knowledge
-is not that deep that I could easily _fix_ this reliably.
+Regards
+Andrzej
 
-[...]
 
-> Secondly it means the ftrace trampoline needs to cope with being called with r2
-> containing something other than the kernel TOC (ie. a module's TOC pointer).
-> But I think that's solvable also?
+Andrzej Hajda (7):
+  netfilter: fix IS_ERR_VALUE usage
+  MIPS: module: fix incorrect IS_ERR_VALUE macro usages
+  drivers: char: mem: fix IS_ERROR_VALUE usage
+  atmel-isi: fix IS_ERR_VALUE usage
+  serial: clps711x: fix IS_ERR_VALUE usage
+  fbdev: exynos: fix IS_ERR_VALUE usage
+  usb: gadget: fsl_qe_udc: fix IS_ERR_VALUE usage
 
-That was the alternative I asked about; but given that the _mcount / ftrace_caller
-trampoline hardly differs from a normal trampoline (so far), loading R2 would be the
-general case, or an excessive special case handling would result.
+ arch/mips/kernel/module-rela.c                |  2 +-
+ arch/mips/kernel/module.c                     |  2 +-
+ drivers/char/mem.c                            |  2 +-
+ drivers/media/platform/soc_camera/atmel-isi.c |  4 ++--
+ drivers/tty/serial/clps711x.c                 | 14 ++++++++------
+ drivers/usb/gadget/udc/fsl_qe_udc.c           |  2 +-
+ drivers/video/fbdev/exynos/exynos_mipi_dsi.c  |  6 +++---
+ include/linux/netfilter/x_tables.h            |  6 +++---
+ net/ipv4/netfilter/arp_tables.c               | 11 +++++++----
+ net/ipv4/netfilter/ip_tables.c                | 12 ++++++++----
+ net/ipv6/netfilter/ip6_tables.c               | 13 +++++++++----
+ 11 files changed, 44 insertions(+), 30 deletions(-)
 
-I'd rather see gcc getting fixed than to have workarounds in all projects that use
-it, and others agreed.
-
-	Torsten
+-- 
+1.9.1
