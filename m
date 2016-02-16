@@ -1,24 +1,41 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 207911A000B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 16:32:48 +1100 (AEDT)
-Message-ID: <1455600767.14533.5.camel@ellerman.id.au>
-Subject: Re: [PATCH v4 1/9] selftests/powerpc: Test the preservation of FPU
- and VMX regs across syscall
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Cyril Bur <cyrilbur@gmail.com>, "Naveen N. Rao"
- <naveen.n.rao@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, anton@samba.org
-Date: Tue, 16 Feb 2016 16:32:47 +1100
-In-Reply-To: <20160216110625.7b2e8134@camb691>
-References: <1455512850-2543-1-git-send-email-cyrilbur@gmail.com>
- <1455512850-2543-2-git-send-email-cyrilbur@gmail.com>
- <20160215165916.GH2599@naverao1-tp.ibm.com>
- <20160216110625.7b2e8134@camb691>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id A1BB01A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 16:47:28 +1100 (AEDT)
+Received: from localhost
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
+ Tue, 16 Feb 2016 11:17:24 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1G5l2Qj32702710
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 11:17:04 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1G5lDHu014675
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 11:17:14 +0530
+Date: Tue, 16 Feb 2016 11:17:02 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Balbir Singh <bsingharora@gmail.com>, Jessica Yu <jeyu@redhat.com>,
+ linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+ Torsten Duwe <duwe@lst.de>, Jiri Kosina <jkosina@suse.cz>,
+ live-patching@vger.kernel.org, Miroslav Benes <mbenes@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v8 8/8] livepatch: Detect offset for the ftrace location
+ during build
+Message-ID: <20160216054701.GA20570@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20160210174221.EBBEC692C8@newverein.lst.de>
+ <20160210174517.8347D692C8@newverein.lst.de>
+ <1455293609.16012.9.camel@gmail.com>
+ <20160212164517.GO12548@pathway.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20160212164517.GO12548@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,123 +45,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-02-16 at 11:06 +1100, Cyril Bur wrote:
-> On Mon, 15 Feb 2016 22:29:17 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+* Petr Mladek <pmladek@suse.com> [2016-02-12 17:45:17]:
+
+[...]
+> I guess that you used a broken gcc and cheated the check
+> to pass the compilation. Did you, please?
 > 
-> > On 2016/02/15 04:07PM, Cyril Bur wrote:
-> > > Test that the non volatile floating point and Altivec registers get
-> > > correctly preserved across the fork() syscall.
-> > > 
-> > > fork() works nicely for this purpose, the registers should be the same for
-> > > both parent and child
-> > > 
-> > > diff --git a/tools/testing/selftests/powerpc/basic_asm.h b/tools/testing/selftests/powerpc/basic_asm.h
-> > > new file mode 100644
-> > > index 0000000..f243da0
-> > > --- /dev/null
-> > > +++ b/tools/testing/selftests/powerpc/basic_asm.h
-> > > @@ -0,0 +1,30 @@
-> > > +#include <ppc-asm.h>
-> > > +#include <asm/unistd.h>
-> > > +
-> > > +#define LOAD_REG_IMMEDIATE(reg,expr) \
-> > > +	lis	reg,(expr)@highest;	\
-> > > +	ori	reg,reg,(expr)@higher;	\
-> > > +	rldicr	reg,reg,32,31;	\
-> > > +	oris	reg,reg,(expr)@high;	\
-> > > +	ori	reg,reg,(expr)@l;
-> > > +
-> > > +/* It is very important to note here that _extra is the extra amount of
-> > > + * stack space needed.
-> > > + * This space must be accessed at sp + 32!  
-> > 
+> The test used to detect the offset is using a minimalistic
+> function is is afftected by the gcc bug.
 > 
-> Hi Naveen,
+> The patch below might be used to cheat the offset check as well.
 > 
-> Thanks for the review.
-
-> > This looks to be specific to ABIv2. Is this series limited to ppc64le?  
-> > If so, you might want to ensure this only builds there.
-> > 
+> Torsten, please mention this somewhere if you, just by chance,
+> send a new version of the patchset.
 > 
-> Is ABIv1 still in use? Can we still compile for v1? 
-
-YES! >:E
-
-> This is for series 64bit only, I've not really got any reason to believe this
-> is LE only, shouldn't this work BE? The makefile enforces 64bit, I believe it is
-> ok for kernel selftests to fail to compile if they aren't going to be able to
-> run.
-
-> > Also:
-> > #define PPC_ABIV2_MIN_STACK_SIZE 32
-> > 
-> > or just:
-> > #define PPC_MIN_STACK	32
-> > 
-> > ... is helpful. And, you might want to base the rest of your code that 
-> > use PUSH_BASIC_STACK() on that. If we ever want to have these tests run 
-> > anywhere else, that'll help a lot. (See further below)
-> > 
+> From f6a438a3f2f60cc1acc859b41d0cc9259c9a331e Mon Sep 17 00:00:00 2001
+> From: root <root@c79.arch.suse.de>
+> Date: Tue, 2 Feb 2016 15:35:06 +0100
+> Subject: [PATCH 2/2] livepatch: Make sure the TOC is handled when detecting
+>  ftrace location
 > 
-> So I thought about it. I agree that it would be nice, I just worry that I might
-> get rabbitholed, I can see it going further and then providing stack accessors
-> to abstract out even PPC_MIN_STACK except in a bunch of macros, and that's when
-> I know I've gone too far.
+> There seems to be a bug in gcc on PPC. It does not handle TOC
+> if the function does not access global variables or functions
+> by default. But it should when profiling is enabled.
 > 
-> Perhaps I could look at adding this when I write more tests, I have grand plans
-> to push way more tests.
-
-You definitely need a #define for the minimum stack frame size, based on the
-ABI version. You can basically do what the kernel does for STACK_FRAME_MIN_SIZE.
-
-You also need to cope with the TOC save slot moving between ABIv1 & 2, which
-shouldn't be hard with a macro for it.
-
-> > > + */
-> > > +#define PUSH_BASIC_STACK(_extra) \
-> > > +	mflr	r0; \
-> > > +	std	r0,16(sp); \
-> > > +	stdu	sp,-(_extra + 32)(sp); \
-> > > +	mfcr	r0; \
-> > > +	stw	r0,8(sp); \
-> > > +	std	2,24(sp);  
-> > 		^^
-> > Better to use r2 here and below.
-> > 
+> This patch works around this problem by adding a call
+> to a global function.
 > 
-> I think the reason I used '2' is that 'r2' isn't actually defined in ppc-asm.h
-> for userspace, due to conventions, like 'sp', 'toc' has been used. So I could
-> have used 'toc' but then there was an issue with toc NOT being defined, or
-> getting undefined in some situations.
-
-That's true, ppc-asm.h doesn't define r2, instead it defines toc.
-
-But you can always use %r2, which is preferable to 2 IMHO.
-
-Personally I'd rather you use %r1 than sp, but I won't make you. As someone who
-has read lots of powerpc assembler %r1 translates as "stack pointer" where as
-"sp" translates as "huh?".
-
-> > > +FUNC_START(test_fpu)
-> > > +	#r3 holds pointer to where to put the result of fork
-> > > +	#r4 holds pointer to the pid
-> > > +	#f14-f31 are non volatiles
-> > > +	PUSH_BASIC_STACK(256)
-> > > +	std	r3,40(sp) #Address of darray  
-> > 
-> > So, this could be:
-> > 	PUSH_BASIC_STACK(256)
-> > 	std	r3,PPC_MIN_STACK+8(sp)
-> > 
-> > ... though I wonder why there is +8 here?
+> This patch is for testing only!
+> ---
+>  kernel/livepatch/ftrace-test.c | 3 +++
+>  1 file changed, 3 insertions(+)
 > 
-> I think the +8 is left over from my using +0 for something else and then not
-> and not going back and being all neat about stack usage. Admittedly I didn't
-> look over that too hard it being a selftest and all, I'm not sure optimal
-> stack usage is super important here.
+> diff --git a/kernel/livepatch/ftrace-test.c b/kernel/livepatch/ftrace-test.c
+> index 22f0c54bf7b3..a3b7aabb67e5 100644
+> --- a/kernel/livepatch/ftrace-test.c
+> +++ b/kernel/livepatch/ftrace-test.c
+> @@ -1,6 +1,9 @@
+>  /* Sample code to figure out mcount location offset */
+> +#include <linux/printk.h>
+> +
+>  
+>  int test(int a)
+>  {
+> +	printk("%d\n", a);
+>  	return ++a;
+>  }
 
-The first free slot is at PPC_MIN_STACK(%r1), so that's what you should use.
+Thanks. This workaround, helped to load sample livepatch module.
 
-cheers
+Thanks,
+Kamalesh.
