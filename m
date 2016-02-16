@@ -1,28 +1,28 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BD74E1A01DC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1BDE01A02D7
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 17:38:11 +1100 (AEDT)
 Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
  Tue, 16 Feb 2016 12:08:09 +0530
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
  by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1G6c4e645154460
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 12:08:05 +0530
+ u1G6c4Ih1769972
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 12:08:04 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1G6brLB030634
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 12:07:56 +0530
+ u1G6c35f031138
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 12:08:04 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V11_RESEND 05/10] powerpc/perf: Change the name of HW PMU
- branch filter tracking variable
-Date: Tue, 16 Feb 2016 12:07:05 +0530
-Message-Id: <1455604630-16214-6-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V11_RESEND 08/10] powerpc/perf: Change POWER8 PMU
+ configuration to work with SW filters
+Date: Tue, 16 Feb 2016 12:07:08 +0530
+Message-Id: <1455604630-16214-9-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1455604630-16214-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1455604630-16214-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,59 +34,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch simply changes the name of the variable from 'bhrb_filter' to
-'bhrb_hw_filter' in order to add one more variable which will track SW
-filters in generic powerpc book3s code which will be implemented in the
-subsequent patch. This patch does not change any functionality.
+The kernel now supports SW based branch filters for book3s systems with
+some specific requirements while dealing with HW supported branch filters
+in order to achieve overall OR semantics prevailing in perf branch stack
+sampling framework. This patch adapts the BHRB branch filter configuration
+to meet those protocols. POWER8 PMU can only handle one HW based branch
+filter request at any point of time. For all other combinations PMU will
+pass it on to the SW.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/core-book3s.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/perf/power8-pmu.c | 51 ++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 44 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 02b724b..710c98c 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -52,7 +52,7 @@ struct cpu_hw_events {
- 	int n_txn_start;
+diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+index 3d819cb..ee8a68a 100644
+--- a/arch/powerpc/perf/power8-pmu.c
++++ b/arch/powerpc/perf/power8-pmu.c
+@@ -656,6 +656,16 @@ static int power8_generic_events[] = {
  
- 	/* BHRB bits */
--	u64				bhrb_filter;	/* BHRB HW branch filter */
-+	u64				bhrb_hw_filter;	/* BHRB HW filter */
- 	unsigned int			bhrb_users;
- 	void				*bhrb_context;
- 	struct	perf_branch_stack	bhrb_stack;
-@@ -1356,7 +1356,7 @@ static void power_pmu_enable(struct pmu *pmu)
+ static u64 power8_bhrb_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
+ {
++	u64 x, pmu_bhrb_filter;
++
++	pmu_bhrb_filter = 0;
++	*bhrb_filter = 0;
++
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY) {
++		*bhrb_filter = PERF_SAMPLE_BRANCH_ANY;
++		return pmu_bhrb_filter;
++	}
++
+ 	/* BHRB and regular PMU events share the same privilege state
+ 	 * filter configuration. BHRB is always recorded along with a
+ 	 * regular PMU event. As the privilege state filter is handled
+@@ -666,18 +676,45 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
+ 	/* Ignore user, kernel, hv bits */
+ 	branch_sample_type &= ~PERF_SAMPLE_BRANCH_PLM_ALL;
  
- 	mb();
- 	if (cpuhw->bhrb_users)
--		ppmu->config_bhrb(cpuhw->bhrb_filter);
-+		ppmu->config_bhrb(cpuhw->bhrb_hw_filter);
+-	/* No branch filter requested */
+-	if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY)
+-		return 0;
++	/*
++	 * POWER8 does not support ORing of PMU HW branch filters. Hence
++	 * if multiple branch filters are requested which may include filters
++	 * supported in PMU, still go ahead and clear the PMU based HW branch
++	 * filter component as in this case all the filters will be processed
++	 * in SW.
++	 */
  
- 	write_mmcr0(cpuhw, mmcr0);
+ 	if (branch_sample_type & PERF_SAMPLE_BRANCH_CALL)
+ 		return -1;
  
-@@ -1464,7 +1464,7 @@ nocheck:
-  out:
- 	if (has_branch_stack(event)) {
- 		power_pmu_bhrb_enable(event);
--		cpuhw->bhrb_filter = ppmu->bhrb_filter_map(
-+		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map(
- 					event->attr.branch_sample_type);
- 	}
+-	if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY_CALL)
+-		return POWER8_MMCRA_IFM1;
++	for_each_branch_sample_type(x) {
++		/* Ignore privilege branch filters */
++		if ((x == PERF_SAMPLE_BRANCH_USER)
++			|| (x == PERF_SAMPLE_BRANCH_KERNEL)
++				|| (x == PERF_SAMPLE_BRANCH_HV))
++			continue;
++
++		if (!(branch_sample_type & x))
++			continue;
++
++		/* Supported individual PMU branch filters */
++		if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
++			branch_sample_type &= ~PERF_SAMPLE_BRANCH_ANY_CALL;
++			if (branch_sample_type) {
++				/* Multiple filters will be processed in SW */
++				pmu_bhrb_filter = 0;
++				*bhrb_filter = 0;
++				return pmu_bhrb_filter;
++			} else {
++				/* Individual filter will be processed in HW */
++				pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
++				*bhrb_filter    |= PERF_SAMPLE_BRANCH_ANY_CALL;
++				return pmu_bhrb_filter;
++			}
++		}
++	}
  
-@@ -1871,10 +1871,10 @@ static int power_pmu_event_init(struct perf_event *event)
- 	err = power_check_constraints(cpuhw, events, cflags, n + 1);
+-	/* Every thing else is unsupported */
+-	return -1;
++	return pmu_bhrb_filter;
+ }
  
- 	if (has_branch_stack(event)) {
--		cpuhw->bhrb_filter = ppmu->bhrb_filter_map(
-+		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map(
- 					event->attr.branch_sample_type);
- 
--		if (cpuhw->bhrb_filter == -1) {
-+		if (cpuhw->bhrb_hw_filter == -1) {
- 			put_cpu_var(cpu_hw_events);
- 			return -EOPNOTSUPP;
- 		}
+ static void power8_config_bhrb(u64 pmu_bhrb_filter)
 -- 
 2.1.0
