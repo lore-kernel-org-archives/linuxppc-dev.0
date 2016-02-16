@@ -1,41 +1,21 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A1BB01A000B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 16:47:28 +1100 (AEDT)
-Received: from localhost
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Tue, 16 Feb 2016 11:17:24 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1G5l2Qj32702710
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 11:17:04 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1G5lDHu014675
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 11:17:14 +0530
-Date: Tue, 16 Feb 2016 11:17:02 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, Jessica Yu <jeyu@redhat.com>,
- linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
- Torsten Duwe <duwe@lst.de>, Jiri Kosina <jkosina@suse.cz>,
- live-patching@vger.kernel.org, Miroslav Benes <mbenes@suse.cz>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v8 8/8] livepatch: Detect offset for the ftrace location
- during build
-Message-ID: <20160216054701.GA20570@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20160210174221.EBBEC692C8@newverein.lst.de>
- <20160210174517.8347D692C8@newverein.lst.de>
- <1455293609.16012.9.camel@gmail.com>
- <20160212164517.GO12548@pathway.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20160212164517.GO12548@pathway.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B08731A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 17:32:57 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id w128so7826484pfb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 22:32:57 -0800 (PST)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: andrew.donnellan@au1.ibm.com,
+	Oliver O'Halloran <oohall@gmail.com>
+Subject: [PATCH v2] powerpc/sstep.c - Fix emulation fall-through
+Date: Tue, 16 Feb 2016 17:31:53 +1100
+Message-Id: <1455604313-13818-1-git-send-email-oohall@gmail.com>
+In-Reply-To: <56C27479.8080808@au1.ibm.com>
+References: <56C27479.8080808@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,54 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Petr Mladek <pmladek@suse.com> [2016-02-12 17:45:17]:
+There is a switch fallthough in instr_analyze() which can cause
+an invalid instruction to be emulated as a different, valid,
+instruction. The rld* (opcode 30) case extracts a sub-opcode from
+bits 3:1 of the instruction word. However, the only valid values
+of this field a 001 and 000. These cases are correctly handled,
+but the others are not which causes execution to fall through
+into case 31.
 
-[...]
-> I guess that you used a broken gcc and cheated the check
-> to pass the compilation. Did you, please?
-> 
-> The test used to detect the offset is using a minimalistic
-> function is is afftected by the gcc bug.
-> 
-> The patch below might be used to cheat the offset check as well.
-> 
-> Torsten, please mention this somewhere if you, just by chance,
-> send a new version of the patchset.
-> 
-> From f6a438a3f2f60cc1acc859b41d0cc9259c9a331e Mon Sep 17 00:00:00 2001
-> From: root <root@c79.arch.suse.de>
-> Date: Tue, 2 Feb 2016 15:35:06 +0100
-> Subject: [PATCH 2/2] livepatch: Make sure the TOC is handled when detecting
->  ftrace location
-> 
-> There seems to be a bug in gcc on PPC. It does not handle TOC
-> if the function does not access global variables or functions
-> by default. But it should when profiling is enabled.
-> 
-> This patch works around this problem by adding a call
-> to a global function.
-> 
-> This patch is for testing only!
-> ---
->  kernel/livepatch/ftrace-test.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/kernel/livepatch/ftrace-test.c b/kernel/livepatch/ftrace-test.c
-> index 22f0c54bf7b3..a3b7aabb67e5 100644
-> --- a/kernel/livepatch/ftrace-test.c
-> +++ b/kernel/livepatch/ftrace-test.c
-> @@ -1,6 +1,9 @@
->  /* Sample code to figure out mcount location offset */
-> +#include <linux/printk.h>
-> +
->  
->  int test(int a)
->  {
-> +	printk("%d\n", a);
->  	return ++a;
->  }
+Breaking out of the switch causes the instruction to be marked as
+unknown and allows the caller to deal with the invalid instruction
+in a manner consistent with other invalid instructions.
 
-Thanks. This workaround, helped to load sample livepatch module.
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/lib/sstep.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks,
-Kamalesh.
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index dc885b3..e25f73c 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -925,6 +925,7 @@ int __kprobes analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 			}
+ 		}
+ #endif
++	break; /* illegal instruction */
+ 
+ 	case 31:
+ 		switch ((instr >> 1) & 0x3ff) {
+-- 
+2.5.0
