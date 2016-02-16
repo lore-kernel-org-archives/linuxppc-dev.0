@@ -2,23 +2,26 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6DDB11A000B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 21:09:23 +1100 (AEDT)
-Message-ID: <1455617356.31947.2.camel@ellerman.id.au>
-Subject: Re: [PATCH v8 4/8] ppc64 ftrace_with_regs configuration variables
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7A29F1A000C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 21:16:50 +1100 (AEDT)
+Message-ID: <1455617809.31947.6.camel@ellerman.id.au>
+Subject: Re: [PATCH V10 03/28] powerpc, ptrace: Enable in transaction
+ NT_PRFPREG ptrace requests
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Torsten Duwe <duwe@lst.de>
-Cc: Balbir Singh <bsingharora@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>, Jessica Yu
- <jeyu@redhat.com>,  Steven Rostedt <rostedt@goodmis.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org
-Date: Tue, 16 Feb 2016 21:09:16 +1100
-In-Reply-To: <20160215140408.GA22872@lst.de>
-References: <20160210174221.EBBEC692C8@newverein.lst.de>
- <20160210174450.9C065692C8@newverein.lst.de>
- <1455176897.2885.12.camel@gmail.com> <20160211084230.GB29683@lst.de>
- <1455532035.26205.5.camel@ellerman.id.au> <20160215140408.GA22872@lst.de>
+To: Denis Kirjanov <kda@linux-powerpc.org>, Anshuman Khandual
+ <khandual@linux.vnet.ibm.com>
+Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
+ Paul.Clothier@imgtec.com, davem@davemloft.net, peterz@infradead.org,
+ palves@redhat.com, Ulrich.Weigand@de.ibm.com, linux-kernel@vger.kernel.org,
+ shuahkh@osg.samsung.com, dhowells@redhat.com, linuxppc-dev@ozlabs.org,
+ kirjanov@gmail.com, tglx@linutronix.de, oleg@redhat.com, davej@redhat.com,
+ akpm@linux-foundation.org, sukadev@linux.vnet.ibm.com,
+ emachado@linux.vnet.ibm.com, sam.bobroff@au1.ibm.com
+Date: Tue, 16 Feb 2016 21:16:49 +1100
+In-Reply-To: <CAOJe8K11GOHeMdy-LMyhUn-s5=R6xaPvtLP__+qCNH4R=NavGQ@mail.gmail.com>
+References: <1455613198-5113-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1455613198-5113-4-git-send-email-khandual@linux.vnet.ibm.com>
+ <CAOJe8K11GOHeMdy-LMyhUn-s5=R6xaPvtLP__+qCNH4R=NavGQ@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,47 +33,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-02-15 at 15:04 +0100, Torsten Duwe wrote:
-> On Mon, Feb 15, 2016 at 09:27:15PM +1100, Michael Ellerman wrote:
+On Tue, 2016-02-16 at 12:09 +0300, Denis Kirjanov wrote:
+
+> On 2/16/16, Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
+
+> > This patch enables in transaction NT_PRFPREG ptrace requests.
+> > The function fpr_get which gets the running value of all FPR
+> > registers and the function fpr_set which sets the running
+> > value of of all FPR registers work on the running set of FPR
+> > registers whose location will be different if transaction is
+> > active. This patch makes these functions adapt to situations
+> > when the transaction is active.
 > > 
-> > There is explicit code in gcc to check whether the TOC setup is needed and only
-> 
-> That's undestood. The claim here is: that check is incomplete, at least.
+> > Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/kernel/ptrace.c | 93
+> > ++++++++++++++++++++++++++++++++++++++++++--
+> >  1 file changed, 89 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+> > index 30a03c0..547a979 100644
+> > --- a/arch/powerpc/kernel/ptrace.c
+> > +++ b/arch/powerpc/kernel/ptrace.c
+> > @@ -358,6 +358,29 @@ static int gpr_set(struct task_struct *target, const
+> > struct user_regset *regset,
+> >  	return ret;
+> >  }
+> > 
+> > +/*
+> > + * When the transaction is active, 'transact_fp' holds the current running
+> > + * value of all FPR registers and 'fp_state' holds the last checkpointed
+> > + * value of all FPR registers for the current transaction. When transaction
+> > + * is not active 'fp_state' holds the current running state of all the FPR
+> > + * registers. So this function which returns the current running values of
+> > + * all the FPR registers, needs to know whether any transaction is active
+> > + * or not.
+> > + *
+> > + * Userspace interface buffer layout:
+> > + *
+> > + * struct data {
+> > + *	u64	fpr[32];
+> > + *	u64	fpscr;
+> > + * };
+> > + *
+> > + * There are two config options CONFIG_VSX and CONFIG_PPC_TRANSACTIONAL_MEM
+> > + * which determines the final code in this function. All the combinations
+> > of
+> > + * these two config options are possible except the one below as
+> > transactional
+> > + * memory config pulls in CONFIG_VSX automatically.
+> > + *
+> > + *	!defined(CONFIG_VSX) && defined(CONFIG_PPC_TRANSACTIONAL_MEM)
+> > + */
+> >  static int fpr_get(struct task_struct *target, const struct user_regset
+> > *regset,
+> >  		   unsigned int pos, unsigned int count,
+> >  		   void *kbuf, void __user *ubuf)
+> > @@ -368,14 +391,31 @@ static int fpr_get(struct task_struct *target, const
+> > struct user_regset *regset,
+> >  #endif
+> >  	flush_fp_to_thread(target);
+> > 
+> > -#ifdef CONFIG_VSX
+> > +#if defined(CONFIG_VSX) && defined(CONFIG_PPC_TRANSACTIONAL_MEM)
+> > +	/* copy to local buffer then write that out */
+> > +	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
+> > +		flush_altivec_to_thread(target);
+> > +		flush_tmregs_to_thread(target);
+> > +		for (i = 0; i < 32 ; i++)
 
-OK at least we agree on what's happening.
+> use ELF_NFPREG
 
-> > emit it when it's required. One case where it's *not* required is when the
-> > function does not TOC accesses. (See rs6000_global_entry_point_needed_p()).
-> 
-> n.b. I cannot find this symbol in the 4.9.3 tree, but I know what you mean.
-> 
-> The point here is: If you profile using "-pg", gcc perfectly recognises that
-> it is generating a call to "_mcount", which may be non-local, and loads the TOC.
-> If you use "-pg -mprofile-kernel", gcc seems to forget that, and omits the TOC
-> load, for a similar assembler calling sequence.
+> > +			buf[i] = target->thread.TS_TRANS_FPR(i);
+> > +		buf[32] = target->thread.transact_fp.fpscr;
 
-That's by design.
+#define ELF_NFPREG	33	/* includes fpscr */
 
-mprofile-kernel is supposed to create as little overhead as possible in the
-non-traced case. All of the burden is shifted to the trace function (_mcount).
+So it's not what he wants here. Unless you mean that he should use i < ELF_NFPREG - 1; ?
 
-The reason to do that is because modern distros always build with tracing, but
-most of the time tracing will not actually be active. So we want the cost of
-tracing-built-in-but-disabled to be ~zero.
-
-> > Secondly it means the ftrace trampoline needs to cope with being called with r2
-> > containing something other than the kernel TOC (ie. a module's TOC pointer).
-> > But I think that's solvable also?
-> 
-> That was the alternative I asked about; but given that the _mcount / ftrace_caller
-> trampoline hardly differs from a normal trampoline (so far), loading R2 would be the
-> general case, or an excessive special case handling would result.
-
-I'm not sure I follow what you mean there at the end.
-
-Requiring ftrace_caller() to load the kernel TOC is not a problem IMHO.
-
-I think I have an easier way to do it, I'll reply to the patch with that (if it
-works).
+We already have several loops over the 32 fprs, I don't think hiding the "32"
+behind a macro really buys us anything.
 
 cheers
