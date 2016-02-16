@@ -1,38 +1,37 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 38FAC1A005A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 09:59:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB6361A0353
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 10:00:21 +1100 (AEDT)
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 17 Feb 2016 08:59:35 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 161D02BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 09:59:33 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1GMxO4t65405116
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 09:59:33 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1GMx0Ev008583
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 09:59:00 +1100
-Date: Wed, 17 Feb 2016 09:58:35 +1100
+ Wed, 17 Feb 2016 09:00:21 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1BD9F2CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 10:00:18 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1GN0AbG61538362
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 10:00:18 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1GMxjxN027973
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 09:59:45 +1100
+Date: Wed, 17 Feb 2016 09:59:21 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] MAINTAINERS: rename EEH from "enhanced" to "extended"
+To: Russell Currey <ruscur@russell.cc>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/eeh: rename EEH from "extended" to "enhanced"
  error handling
-Message-ID: <20160216225835.GA8240@gwshan>
+Message-ID: <20160216225921.GA8768@gwshan>
 Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1455612720-3758-1-git-send-email-ruscur@russell.cc>
- <20160216224908.GA5078@gwshan>
+References: <1455624365-4200-1-git-send-email-ruscur@russell.cc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160216224908.GA5078@gwshan>
+In-Reply-To: <1455624365-4200-1-git-send-email-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,69 +41,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 17, 2016 at 09:49:08AM +1100, Gavin Shan wrote:
->On Tue, Feb 16, 2016 at 07:52:00PM +1100, Russell Currey wrote:
->>Incredibly, IBM online documentation for EEH uses "extended error handling"
->>and "enhanced error handling" to refer to the same thing, in different
->>places.  In other parts of the kernel, namely the EEH documentation (found
->>in Documentation/powerpc/eeh-pci-error-recovery.txt), it's referred to as
->>"extended", and in my opinion "extended" makes more sense for what EEH
->>does.
->>
->>The only place "enhanced error handling" shows up in the kernel is in
->>MAINTAINERS, so fix it.
->>
+On Tue, Feb 16, 2016 at 11:06:05PM +1100, Russell Currey wrote:
+>IBM online documentation for EEH uses "extended error handling" and
+>"enhanced error handling" to refer to the same thing, in different
+>places.  The only place mentioning it as "enhanced error handling" in the
+>kernel is the MAINTAINERS file, and it's "extended" in some documentation.
 >
->Russell, Thanks for fixing it up. Since you're at it, Please replace the
->maintainer to yourself. Also, the components mentioned in this file are
->listed in alphabetic order according to their names. As the name of EEH
->is changed, it would be put in front of "Extended Verification Module (EVM)".
+>IBM originally defined EEH as "enhanced error handling", so standardise
+>all mentions of EEH to use that term.
 >
+>Signed-off-by: Russell Currey <ruscur@russell.cc>
 
-I agree with Michael as discussed in another thread: we're going to use
-"enhanced", not "extended" though some chip datasheet (P7IOC) talks about
-"extended error handling".
-
-Russell, please change the maintainer to you and repost.
-
->>Signed-off-by: Russell Currey <ruscur@russell.cc>
->
->With above issues fixed:
->
->Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->
+Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
 Thanks,
 Gavin
 
->>---
->>I don't know what kind of things parse MAINTAINERS, and if there's a chance
->>this will break them.  Also, the powerpc tree *is* the right place to send
->>this, right?
->>---
->> MAINTAINERS | 2 +-
->> 1 file changed, 1 insertion(+), 1 deletion(-)
->>
->>diff --git a/MAINTAINERS b/MAINTAINERS
->>index 28eb61b..e5d9134 100644
->>--- a/MAINTAINERS
->>+++ b/MAINTAINERS
->>@@ -4222,7 +4222,7 @@ M:	Maxim Levitsky <maximlevitsky@gmail.com>
->> S:	Maintained
->> F:	drivers/media/rc/ene_ir.*
->> 
->>-ENHANCED ERROR HANDLING (EEH)
->>+EXTENDED ERROR HANDLING (EEH)
->> M:	Gavin Shan <shangw@linux.vnet.ibm.com>
->> L:	linuxppc-dev@lists.ozlabs.org
->> S:	Supported
->>-- 
->>2.7.1
->>
->>_______________________________________________
->>Linuxppc-dev mailing list
->>Linuxppc-dev@lists.ozlabs.org
->>https://lists.ozlabs.org/listinfo/linuxppc-dev
+>---
+>This is essentially a V2 (though it has the inverse result) of this patch:
+>https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-February/139367.html
+>---
+> Documentation/powerpc/eeh-pci-error-recovery.txt | 2 +-
+> arch/powerpc/kernel/eeh.c                        | 2 +-
+> 2 files changed, 2 insertions(+), 2 deletions(-)
+>
+>diff --git a/Documentation/powerpc/eeh-pci-error-recovery.txt b/Documentation/powerpc/eeh-pci-error-recovery.txt
+>index 9d4e33d..6781892 100644
+>--- a/Documentation/powerpc/eeh-pci-error-recovery.txt
+>+++ b/Documentation/powerpc/eeh-pci-error-recovery.txt
+>@@ -12,7 +12,7 @@ Overview:
+> The IBM POWER-based pSeries and iSeries computers include PCI bus
+> controller chips that have extended capabilities for detecting and
+> reporting a large variety of PCI bus error conditions.  These features
+>-go under the name of "EEH", for "Extended Error Handling".  The EEH
+>+go under the name of "EEH", for "Enhanced Error Handling".  The EEH
+> hardware features allow PCI bus errors to be cleared and a PCI
+> card to be "rebooted", without also having to reboot the operating
+> system.
+>diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>index 40e4d4a..2e78466 100644
+>--- a/arch/powerpc/kernel/eeh.c
+>+++ b/arch/powerpc/kernel/eeh.c
+>@@ -48,7 +48,7 @@
+> 
+> 
+> /** Overview:
+>- *  EEH, or "Extended Error Handling" is a PCI bridge technology for
+>+ *  EEH, or "Enhanced Error Handling" is a PCI bridge technology for
+>  *  dealing with PCI bus errors that can't be dealt with within the
+>  *  usual PCI framework, except by check-stopping the CPU.  Systems
+>  *  that are designed for high-availability/reliability cannot afford
+>-- 
+>2.7.1
 >
 >_______________________________________________
 >Linuxppc-dev mailing list
