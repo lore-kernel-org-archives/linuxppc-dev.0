@@ -1,41 +1,29 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
+ [IPv6:2607:f8b0:400e:c03::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D1151A000B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 16:03:42 +1100 (AEDT)
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 65F7514031E
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 16:03:41 +1100 (AEDT)
-Received: from localhost
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 16 Feb 2016 10:33:38 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1G53DL111862428
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 10:33:13 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1G53LCi023197
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 10:33:25 +0530
-Date: Tue, 16 Feb 2016 10:32:55 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Cyril Bur <cyrilbur@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, anton@samba.org
-Subject: Re: [PATCH v4 1/9] selftests/powerpc: Test the preservation of FPU
- and VMX regs across syscall
-Message-ID: <20160216050255.GI2599@naverao1-tp.ibm.com>
-References: <1455512850-2543-1-git-send-email-cyrilbur@gmail.com>
- <1455512850-2543-2-git-send-email-cyrilbur@gmail.com>
- <20160215165916.GH2599@naverao1-tp.ibm.com>
- <20160216110625.7b2e8134@camb691>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160216110625.7b2e8134@camb691>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DEDB41A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 16:20:27 +1100 (AEDT)
+Received: by mail-pa0-x230.google.com with SMTP id fy10so57369189pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 21:20:27 -0800 (PST)
+Message-ID: <1455600014.3308.9.camel@gmail.com>
+Subject: Re: [PATCH V3] powerpc/mm: Fix Multi hit ERAT cause by recent THP
+ update
+From: Balbir Singh <bsingharora@gmail.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ akpm@linux-foundation.org, Mel Gorman <mgorman@techsingularity.net>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org
+Date: Tue, 16 Feb 2016 16:20:14 +1100
+In-Reply-To: <87d1ryfd94.fsf@linux.vnet.ibm.com>
+References: <1454980831-16631-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1455504278.16012.18.camel@gmail.com> <87lh6mfv2j.fsf@linux.vnet.ibm.com>
+ <1455512997.16012.24.camel@gmail.com> <87d1ryfd94.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,75 +33,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/02/16 11:06AM, Cyril Bur wrote:
-> On Mon, 15 Feb 2016 22:29:17 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On Mon, 2016-02-15 at 16:31 +0530, Aneesh Kumar K.V wrote:
+> Balbir Singh <bsingharora@gmail.com> writes:
 > 
-> > On 2016/02/15 04:07PM, Cyril Bur wrote:
-> > > Test that the non volatile floating point and Altivec registers get
-> > > correctly preserved across the fork() syscall.
+> > > Now we can't depend for mm_cpumask, a parallel find_linux_pte_hugepte
+> > > can happen outside that. Now i had a variant for kick_all_cpus_sync that
+> > > ignored idle cpus. But then that needs more verification.
 > > > 
-> > > fork() works nicely for this purpose, the registers should be the same for
-> > > both parent and child
-> > > 
-> > > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> > > ---
-
-<snip>
-
-> > > +
-> > > +/* It is very important to note here that _extra is the extra amount of
-> > > + * stack space needed.
-> > > + * This space must be accessed at sp + 32!  
+> > > http://article.gmane.org/gmane.linux.ports.ppc.embedded/81105
+> > Can be racy as a CPU moves from non-idle to idle
+> > 
+> > In
+> > 
+> > > +     pmd_hugepage_update(vma->vm_mm, address, pmdp, ~0UL, 0);
+> > > +     /*
+> > > +      * This ensures that generic code that rely on IRQ disabling
+> > > +      * to prevent a parallel THP split work as expected.
+> > > +      */
+> > > +     kick_all_cpus_sync();
+> > 
+> > pmdp_invalidate()->pmd_hugepage_update() can still run in parallel with 
+> > find_linux_pte_or_hugepte() and race.. Am I missing something?
 > > 
 > 
-> Hi Naveen,
-> 
-> Thanks for the review.
-> 
-> > This looks to be specific to ABIv2. Is this series limited to ppc64le?  
-> > If so, you might want to ensure this only builds there.
-> > 
-> 
-> Is ABIv1 still in use? Can we still compile for v1? 
+> Yes. But then we make sure that the pte_t returned by
+> find_linux_pte_or_hugepte doesn't change to a regular pmd entry by using
+> that kick. Now callers of find_lnux_pte_or_hugepte will check for
+> _PAGE_PRESENT. So if it called before
+> pmd_hugepage_update(_PAGE_PRESENT), we wait for the caller to finish the
+> usage (via kick()). Or they bail out after finding _PAGE_PRESENT cleared.
 
-Yes, that's the earlier ppc64 BE (I'm assuming these tests can be run 
-when booted in LPARs as well)
+Makes sense, but I would still check the assumption about checking for
+_PAGE_PRESENT
 
-> 
-> This is for series 64bit only, I've not really got any reason to believe this
-> is LE only, shouldn't this work BE? The makefile enforces 64bit, I believe it is
-
-This won't work for ABIv1 BE since the stack setup is a bit different. I 
-think your patches assume that 32 bytes is the minimum stack size, but 
-that's only for ABIv2. Also, the locations of CR and TOC save areas on 
-the stack are quite different:
-
-http://refspecs.linuxfoundation.org/ELF/ppc64/PPC-elf64abi-1.9.html#STACK
-
-> ok for kernel selftests to fail to compile if they aren't going to be able to
-> run.
-> 
-> > Also:
-> > #define PPC_ABIV2_MIN_STACK_SIZE 32
-> > 
-> > or just:
-> > #define PPC_MIN_STACK	32
-> > 
-> > ... is helpful. And, you might want to base the rest of your code that 
-> > use PUSH_BASIC_STACK() on that. If we ever want to have these tests run 
-> > anywhere else, that'll help a lot. (See further below)
-> > 
-> 
-> So I thought about it. I agree that it would be nice, I just worry that I might
-> get rabbitholed, I can see it going further and then providing stack accessors
-> to abstract out even PPC_MIN_STACK except in a bunch of macros, and that's when
-> I know I've gone too far.
-> 
-> Perhaps I could look at adding this when I write more tests, I have grand plans
-> to push way more tests.
-
-Sure - just that if you ever intend to have these for ABIv1, it will be 
-way easier to put together macros now rather than later.
-
-- Naveen
+Balbir Singh
