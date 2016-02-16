@@ -2,26 +2,27 @@ Return-Path: <duwe@lst.de>
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 565AC1A000C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 21:35:55 +1100 (AEDT)
-Date: Tue, 16 Feb 2016 11:35:51 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404F71A000C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 21:39:11 +1100 (AEDT)
+Date: Tue, 16 Feb 2016 11:39:07 +0100
 From: Torsten Duwe <duwe@lst.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Balbir Singh <bsingharora@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
- Jessica Yu <jeyu@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org
-Subject: Re: [PATCH v8 4/8] ppc64 ftrace_with_regs configuration variables
-Message-ID: <20160216103551.GA25103@lst.de>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Petr Mladek <pmladek@suse.com>, Balbir Singh <bsingharora@gmail.com>,
+ Jessica Yu <jeyu@redhat.com>, linux-kernel@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>, Jiri Kosina <jkosina@suse.cz>,
+ live-patching@vger.kernel.org, Miroslav Benes <mbenes@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v8 8/8] livepatch: Detect offset for the ftrace
+ location during build
+Message-ID: <20160216103907.GB25103@lst.de>
 References: <20160210174221.EBBEC692C8@newverein.lst.de>
- <20160210174450.9C065692C8@newverein.lst.de>
- <1455176897.2885.12.camel@gmail.com> <20160211084230.GB29683@lst.de>
- <1455532035.26205.5.camel@ellerman.id.au> <20160215140408.GA22872@lst.de>
- <1455617356.31947.2.camel@ellerman.id.au>
+ <20160210174517.8347D692C8@newverein.lst.de>
+ <1455293609.16012.9.camel@gmail.com> <20160212164517.GO12548@pathway.suse.cz>
+ <20160216054701.GA20570@linux.vnet.ibm.com> <20160216082302.GA20522@lst.de>
+ <20160216103028.GA10730@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1455617356.31947.2.camel@ellerman.id.au>
+In-Reply-To: <20160216103028.GA10730@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,51 +32,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 16, 2016 at 09:09:16PM +1100, Michael Ellerman wrote:
-> On Mon, 2016-02-15 at 15:04 +0100, Torsten Duwe wrote:
-> > If you use "-pg -mprofile-kernel", gcc seems to forget that, and omits the TOC
-> > load, for a similar assembler calling sequence.
+On Tue, Feb 16, 2016 at 04:00:30PM +0530, Kamalesh Babulal wrote:
+> * Torsten Duwe <duwe@lst.de> [2016-02-16 09:23:02]:
+> > 
+> > N.b.: if you try to livepatch/trace such a leaf function without
+> > global dependencies, it will crash if that function got called with
+> > a different TOC value. Hence this whole testing.
+> > 
 > 
-> That's by design.
+> I am running out of ideas on how to generate this crash, any pointers
+> will be helpful.
 
-Ah, ok.
+Petr discovered some modular SCSI helper function does it.
 
-> mprofile-kernel is supposed to create as little overhead as possible in the
-> non-traced case. All of the burden is shifted to the trace function (_mcount).
-
-... or its helpers, see below.
-
-> The reason to do that is because modern distros always build with tracing, but
-> most of the time tracing will not actually be active. So we want the cost of
-> tracing-built-in-but-disabled to be ~zero.
-
-Ok, that's a design goal.
-
-> > That was the alternative I asked about; but given that the _mcount / ftrace_caller
-> > trampoline hardly differs from a normal trampoline (so far), loading R2 would be the
-> > general case, or an excessive special case handling would result.
-> 
-> I'm not sure I follow what you mean there at the end.
-
-This suggests you have not yet actively debugged this problem ;-)
-
-> Requiring ftrace_caller() to load the kernel TOC is not a problem IMHO.
-
-The problem is, you don't get to ftrace_caller in the first place :)
-
-> I think I have an easier way to do it, I'll reply to the patch with that (if it
-> works).
-
-I doubt so. Either it works, _or_ it is easier ;)
-
-To save you some work: by the design of minimal overhead you try to follow,
-SQUASH_TOC_SAVE_INSN from my patches isn't sufficient. You'll need to load the
-_current_ TOC _on_ the trampoline, and in turn it will be different from the regular
-trampolines; and that needs to be recognised, or the normal module linker logic
-won't work.
-
-OTOH my proposed GCC change only affects a very limited number of functions...
-
-Looking forward to your patch!
-
+HTH,
 	Torsten
