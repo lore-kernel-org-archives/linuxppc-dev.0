@@ -1,27 +1,40 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D3D701A00A2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 19:23:06 +1100 (AEDT)
-Date: Tue, 16 Feb 2016 09:23:02 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Petr Mladek <pmladek@suse.com>, Balbir Singh <bsingharora@gmail.com>,
- Jessica Yu <jeyu@redhat.com>, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>, Jiri Kosina <jkosina@suse.cz>,
- live-patching@vger.kernel.org, Miroslav Benes <mbenes@suse.cz>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v8 8/8] livepatch: Detect offset for the ftrace
- location during build
-Message-ID: <20160216082302.GA20522@lst.de>
-References: <20160210174221.EBBEC692C8@newverein.lst.de>
- <20160210174517.8347D692C8@newverein.lst.de>
- <1455293609.16012.9.camel@gmail.com> <20160212164517.GO12548@pathway.suse.cz>
- <20160216054701.GA20570@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 777CB1A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 19:25:46 +1100 (AEDT)
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 16 Feb 2016 01:25:44 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 551471FF0025
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 01:13:51 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1G8PfdH29622426
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 01:25:41 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1G8PeRa006062
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 01:25:41 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Subject: Re: [PATCH V2 12/29] powerpc/mm: Move hash64 specific defintions to
+ seperate header
+In-Reply-To: <20160215052449.GE3797@oak.ozlabs.ibm.com>
+References: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1454923241-6681-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20160215052449.GE3797@oak.ozlabs.ibm.com>
+Date: Tue, 16 Feb 2016 13:55:31 +0530
+Message-ID: <87y4aldptw.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160216054701.GA20570@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,23 +44,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 16, 2016 at 11:17:02AM +0530, Kamalesh Babulal wrote:
-> * Petr Mladek <pmladek@suse.com> [2016-02-12 17:45:17]:
-> >  int test(int a)
-> >  {
-> > +	printk("%d\n", a);
-> >  	return ++a;
-> >  }
-> 
-> Thanks. This workaround, helped to load sample livepatch module.
+Paul Mackerras <paulus@ozlabs.org> writes:
 
-N.b.: if you try to livepatch/trace such a leaf function without
-global dependencies, it will crash if that function got called with
-a different TOC value. Hence this whole testing.
+> On Mon, Feb 08, 2016 at 02:50:24PM +0530, Aneesh Kumar K.V wrote:
+>> Also split pgalloc 64k and 4k headers
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>
+> In the subject: s/defintions/definitions/; s/seperate/separate/
+>
+> A more detailed patch description would be good.  Apart from that,
+>
+> Reviewed-by: Paul Mackerras <paulus@samba.org>
 
-You may alternatively try my gcc patch ;-)
+Updated as below:
 
-Another caveat is functions with stack arguments (>8 args, varargs).
-My code needs special precautions then because of the return helper.
+powerpc/mm: Move hash64 specific definitions to separate header
 
-	Torsten
+We will be adding a radix variant of these routines in the followup
+patches. Move the hash64 variant into its own header so that we can
+rename them easily later. Also split pgalloc 64k and 4k headers
+
+Reviewed-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
