@@ -2,29 +2,29 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 39D771A02BF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 20:02:08 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 19F971A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 20:02:14 +1100 (AEDT)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8A7C4140A68
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:02:07 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id D7FAA1409B7
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:02:13 +1100 (AEDT)
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 16 Feb 2016 19:02:07 +1000
+ Tue, 16 Feb 2016 19:02:13 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id D76A1357805A
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:02:05 +1100 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 96FE92BB0055
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:02:10 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1G91vNN6291642
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:02:05 +1100
+ u1G922Rs66846868
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:02:10 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1G91OQi018619
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:01:33 +1100
+ u1G91Whf019331
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:01:36 +1100
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 Cc: peterz@infradead.org, akpm@linux-foundation.org, tglx@linutronix.de,
@@ -35,9 +35,9 @@ Cc: peterz@infradead.org, akpm@linux-foundation.org, tglx@linutronix.de,
  mpe@ellerman.id.au, sam.bobroff@au1.ibm.com, kirjanov@gmail.com,
  shuahkh@osg.samsung.com, Ulrich.Weigand@de.ibm.com,
  emachado@linux.vnet.ibm.com
-Subject: [PATCH V10 08/28] powerpc, ptrace: Enable support for NT_PPC_CFPR
-Date: Tue, 16 Feb 2016 14:29:38 +0530
-Message-Id: <1455613198-5113-9-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V10 09/28] powerpc, ptrace: Enable support for NT_PPC_CVMX
+Date: Tue, 16 Feb 2016 14:29:39 +0530
+Message-Id: <1455613198-5113-10-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1455613198-5113-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1455613198-5113-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -49,37 +49,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables support for TM checkpointed FPR register
-set ELF core note NT_PPC_CFPR based ptrace requests through
+This patch enables support for TM checkpointed VMX register
+set ELF core note NT_PPC_CVMX based ptrace requests through
 PTRACE_GETREGSET, PTRACE_SETREGSET calls. This is achieved
-through adding a register set REGSET_CFPR in powerpc
+through adding a register set REGSET_CVMX in powerpc
 corresponding to the ELF core note section added. It
 implements the get, set and active functions for this new
 register set added.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/ptrace.c | 126 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 126 insertions(+)
+ arch/powerpc/include/uapi/asm/elf.h |   1 +
+ arch/powerpc/kernel/ptrace.c        | 158 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 159 insertions(+)
 
+diff --git a/arch/powerpc/include/uapi/asm/elf.h b/arch/powerpc/include/uapi/asm/elf.h
+index c2d21d1..ecb4e84 100644
+--- a/arch/powerpc/include/uapi/asm/elf.h
++++ b/arch/powerpc/include/uapi/asm/elf.h
+@@ -91,6 +91,7 @@
+ 
+ #define ELF_NGREG	48	/* includes nip, msr, lr, etc. */
+ #define ELF_NFPREG	33	/* includes fpscr */
++#define ELF_NVMX	34	/* includes all vector registers */
+ 
+ typedef unsigned long elf_greg_t64;
+ typedef elf_greg_t64 elf_gregset_t64[ELF_NGREG];
 diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 8462c7e..13b3ec6 100644
+index 13b3ec6..123a03c 100644
 --- a/arch/powerpc/kernel/ptrace.c
 +++ b/arch/powerpc/kernel/ptrace.c
-@@ -1032,6 +1032,121 @@ static int tm_cgpr_set(struct task_struct *target,
+@@ -64,6 +64,8 @@ struct pt_regs_offset {
+ 	{.name = STR(gpr##num), .offset = offsetof(struct pt_regs, gpr[num])}
+ #define REG_OFFSET_END {.name = NULL, .offset = 0}
  
- 	return ret;
++#define TVSO(f)	(offsetof(struct thread_vr_state, f))
++
+ static const struct pt_regs_offset regoffset_table[] = {
+ 	GPR_OFFSET_NAME(0),
+ 	GPR_OFFSET_NAME(1),
+@@ -1147,6 +1149,151 @@ static int tm_cfpr_set(struct task_struct *target,
+ 	target->thread.fp_state.fpscr = buf[32];
+ 	return 0;
  }
 +
 +/**
-+ * tm_cfpr_active - get active number of registers in CFPR
++ * tm_cvmx_active - get active number of registers in CVMX
 + * @target:	The target task.
 + * @regset:	The user regset structure.
 + *
 + * This function checks for the active number of available
-+ * regisers in transaction checkpointed FPR category.
++ * regisers in checkpointed VMX category.
 + */
-+static int tm_cfpr_active(struct task_struct *target,
++static int tm_cvmx_active(struct task_struct *target,
 +				const struct user_regset *regset)
 +{
 +	if (!cpu_has_feature(CPU_FTR_TM))
@@ -92,7 +114,7 @@ index 8462c7e..13b3ec6 100644
 +}
 +
 +/**
-+ * tm_cfpr_get - get CFPR registers
++ * tm_cvmx_get - get CMVX registers
 + * @target:	The target task.
 + * @regset:	The user regset structure.
 + * @pos:	The buffer position.
@@ -100,25 +122,27 @@ index 8462c7e..13b3ec6 100644
 + * @kbuf:	Kernel buffer to copy from.
 + * @ubuf:	User buffer to copy into.
 + *
-+ * This function gets in transaction checkpointed FPR registers.
++ * This function gets in transaction checkpointed VMX registers.
 + *
-+ * When the transaction is active 'fp_state' holds the checkpointed
-+ * values for the current transaction to fall back on if it aborts
-+ * in between. This function gets those checkpointed FPR registers.
-+ * The userspace interface buffer layout is as follows.
++ * When the transaction is active 'vr_state' and 'vr_save' hold
++ * the checkpointed values for the current transaction to fall
++ * back on if it aborts in between. The userspace interface buffer
++ * layout is as follows.
 + *
 + * struct data {
-+ *	u64	fpr[32];
-+ *	u64	fpscr;
++ *	vector128	vr[32];
++ *	vector128	vscr;
++ *	vector128	vrsave;
 + *};
 + */
-+static int tm_cfpr_get(struct task_struct *target,
++static int tm_cvmx_get(struct task_struct *target,
 +			const struct user_regset *regset,
 +			unsigned int pos, unsigned int count,
 +			void *kbuf, void __user *ubuf)
 +{
-+	u64 buf[33];
-+	int i;
++	int ret;
++
++	BUILD_BUG_ON(TVSO(vscr) != TVSO(vr[32]));
 +
 +	if (!cpu_has_feature(CPU_FTR_TM))
 +		return -ENODEV;
@@ -126,19 +150,33 @@ index 8462c7e..13b3ec6 100644
 +	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
 +		return -ENODATA;
 +
++	/* Flush the state */
 +	flush_fp_to_thread(target);
 +	flush_altivec_to_thread(target);
 +	flush_tmregs_to_thread(target);
 +
-+	/* copy to local buffer then write that out */
-+	for (i = 0; i < 32 ; i++)
-+		buf[i] = target->thread.TS_FPR(i);
-+	buf[32] = target->thread.fp_state.fpscr;
-+	return user_regset_copyout(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
++	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++					&target->thread.vr_state, 0,
++					33 * sizeof(vector128));
++	if (!ret) {
++		/*
++		 * Copy out only the low-order word of vrsave.
++		 */
++		union {
++			elf_vrreg_t reg;
++			u32 word;
++		} vrsave;
++		memset(&vrsave, 0, sizeof(vrsave));
++		vrsave.word = target->thread.vrsave;
++		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &vrsave,
++						33 * sizeof(vector128), -1);
++	}
++
++	return ret;
 +}
 +
 +/**
-+ * tm_cfpr_set - set CFPR registers
++ * tm_cvmx_set - set CMVX registers
 + * @target:	The target task.
 + * @regset:	The user regset structure.
 + * @pos:	The buffer position.
@@ -146,25 +184,27 @@ index 8462c7e..13b3ec6 100644
 + * @kbuf:	Kernel buffer to copy into.
 + * @ubuf:	User buffer to copy from.
 + *
-+ * This function sets in transaction checkpointed FPR registers.
++ * This function sets in transaction checkpointed VMX registers.
 + *
-+ * When the transaction is active 'fp_state' holds the checkpointed
-+ * FPR register values for the current transaction to fall back on
-+ * if it aborts in between. This function sets these checkpointed
-+ * FPR registers. The userspace interface buffer layout is as follows.
++ * When the transaction is active 'vr_state' and 'vr_save' hold
++ * the checkpointed values for the current transaction to fall
++ * back on if it aborts in between. The userspace interface buffer
++ * layout is as follows.
 + *
 + * struct data {
-+ *	u64	fpr[32];
-+ *	u64	fpscr;
++ *	vector128	vr[32];
++ *	vector128	vscr;
++ *	vector128	vrsave;
 + *};
 + */
-+static int tm_cfpr_set(struct task_struct *target,
++static int tm_cvmx_set(struct task_struct *target,
 +			const struct user_regset *regset,
 +			unsigned int pos, unsigned int count,
 +			const void *kbuf, const void __user *ubuf)
 +{
-+	u64 buf[33];
-+	int i;
++	int ret;
++
++	BUILD_BUG_ON(TVSO(vscr) != TVSO(vr[32]));
 +
 +	if (!cpu_has_feature(CPU_FTR_TM))
 +		return -ENODEV;
@@ -176,46 +216,58 @@ index 8462c7e..13b3ec6 100644
 +	flush_altivec_to_thread(target);
 +	flush_tmregs_to_thread(target);
 +
-+	/* copy to local buffer then write that out */
-+	i = user_regset_copyin(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
-+	if (i)
-+		return i;
-+	for (i = 0; i < 32 ; i++)
-+		target->thread.TS_FPR(i) = buf[i];
-+	target->thread.fp_state.fpscr = buf[32];
-+	return 0;
++	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++					&target->thread.vr_state, 0,
++					33 * sizeof(vector128));
++	if (!ret && count > 0) {
++		/*
++		 * We use only the low-order word of vrsave.
++		 */
++		union {
++			elf_vrreg_t reg;
++			u32 word;
++		} vrsave;
++		memset(&vrsave, 0, sizeof(vrsave));
++		vrsave.word = target->thread.vrsave;
++		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &vrsave,
++						33 * sizeof(vector128), -1);
++		if (!ret)
++			target->thread.vrsave = vrsave.word;
++	}
++
++	return ret;
 +}
  #endif
  
  /*
-@@ -1051,6 +1166,7 @@ enum powerpc_regset {
- #endif
+@@ -1167,6 +1314,7 @@ enum powerpc_regset {
  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
  	REGSET_TM_CGPR,		/* TM checkpointed GPR registers */
-+	REGSET_TM_CFPR,		/* TM checkpointed FPR registers */
+ 	REGSET_TM_CFPR,		/* TM checkpointed FPR registers */
++	REGSET_TM_CVMX,		/* TM checkpointed VMX registers */
  #endif
  };
  
-@@ -1092,6 +1208,11 @@ static const struct user_regset native_regsets[] = {
- 		.size = sizeof(long), .align = sizeof(long),
- 		.active = tm_cgpr_active, .get = tm_cgpr_get, .set = tm_cgpr_set
+@@ -1213,6 +1361,11 @@ static const struct user_regset native_regsets[] = {
+ 		.size = sizeof(double), .align = sizeof(double),
+ 		.active = tm_cfpr_active, .get = tm_cfpr_get, .set = tm_cfpr_set
  	},
-+	[REGSET_TM_CFPR] = {
-+		.core_note_type = NT_PPC_TM_CFPR, .n = ELF_NFPREG,
-+		.size = sizeof(double), .align = sizeof(double),
-+		.active = tm_cfpr_active, .get = tm_cfpr_get, .set = tm_cfpr_set
++	[REGSET_TM_CVMX] = {
++		.core_note_type = NT_PPC_TM_CVMX, .n = ELF_NVMX,
++		.size = sizeof(vector128), .align = sizeof(vector128),
++		.active = tm_cvmx_active, .get = tm_cvmx_get, .set = tm_cvmx_set
 +	},
  #endif
  };
  
-@@ -1324,6 +1445,11 @@ static const struct user_regset compat_regsets[] = {
- 		.active = tm_cgpr_active,
- 		.get = tm_cgpr32_get, .set = tm_cgpr32_set
+@@ -1450,6 +1603,11 @@ static const struct user_regset compat_regsets[] = {
+ 		.size = sizeof(double), .align = sizeof(double),
+ 		.active = tm_cfpr_active, .get = tm_cfpr_get, .set = tm_cfpr_set
  	},
-+	[REGSET_TM_CFPR] = {
-+		.core_note_type = NT_PPC_TM_CFPR, .n = ELF_NFPREG,
-+		.size = sizeof(double), .align = sizeof(double),
-+		.active = tm_cfpr_active, .get = tm_cfpr_get, .set = tm_cfpr_set
++	[REGSET_TM_CVMX] = {
++		.core_note_type = NT_PPC_TM_CVMX, .n = ELF_NVMX,
++		.size = sizeof(vector128), .align = sizeof(vector128),
++		.active = tm_cvmx_active, .get = tm_cvmx_get, .set = tm_cvmx_set
 +	},
  #endif
  };
