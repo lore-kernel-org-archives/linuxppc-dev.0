@@ -2,29 +2,29 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 19B1B1A0314
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 20:03:17 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 354411A0075
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 20:03:22 +1100 (AEDT)
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A8192140B04
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:03:16 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 9C700140B04
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:03:21 +1100 (AEDT)
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 16 Feb 2016 19:03:16 +1000
+ Tue, 16 Feb 2016 19:03:21 +1000
 Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id D6E7E357805A
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:03:12 +1100 (EST)
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0D845357803F
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:03:19 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1G934pm59768832
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:03:12 +1100
+ u1G93Bj08454482
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:03:19 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1G92bMB022442
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:02:40 +1100
+ u1G92fJi022653
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 20:02:46 +1100
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 Cc: peterz@infradead.org, akpm@linux-foundation.org, tglx@linutronix.de,
@@ -35,10 +35,10 @@ Cc: peterz@infradead.org, akpm@linux-foundation.org, tglx@linutronix.de,
  mpe@ellerman.id.au, sam.bobroff@au1.ibm.com, kirjanov@gmail.com,
  shuahkh@osg.samsung.com, Ulrich.Weigand@de.ibm.com,
  emachado@linux.vnet.ibm.com
-Subject: [PATCH V10 25/28] selftests, powerpc: Add ptrace tests for VSX,
- VMX registers in TM
-Date: Tue, 16 Feb 2016 14:29:55 +0530
-Message-Id: <1455613198-5113-26-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V10 26/28] selftests, powerpc: Add ptrace tests for VSX,
+ VMX registers in suspended TM
+Date: Tue, 16 Feb 2016 14:29:56 +0530
+Message-Id: <1455613198-5113-27-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1455613198-5113-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1455613198-5113-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -51,36 +51,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 This patch adds ptrace interface test for VSX, VMX registers
-inside TM context. This also adds ptrace interface based helper
-functions related to chckpointed VSX, VMX registers access.
+inside suspended TM context.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
  tools/testing/selftests/powerpc/ptrace/Makefile    |   3 +-
- .../selftests/powerpc/ptrace/ptrace-tm-vsx.c       | 196 +++++++++++++++++++++
- 2 files changed, 198 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c
+ .../selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c   | 212 +++++++++++++++++++++
+ 2 files changed, 214 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c
 
 diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
-index d6c02ac..f77a493 100644
+index f77a493..1f38b74 100644
 --- a/tools/testing/selftests/powerpc/ptrace/Makefile
 +++ b/tools/testing/selftests/powerpc/ptrace/Makefile
 @@ -1,5 +1,6 @@
  TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
--ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx
-+ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx
-+
+-ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx
++ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx \
++ptrace-tm-spd-vsx
+ 
  
  all: $(TEST_PROGS)
- 
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c
 new file mode 100644
-index 0000000..7ab46d7
+index 0000000..e52a309
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c
-@@ -0,0 +1,196 @@
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c
+@@ -0,0 +1,212 @@
 +/*
-+ * Ptrace test for VMX/VSX registers in the TM context
++ * Ptrace test for VMX/VSX registers in the TM Suspend context
 + *
 + * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
 + *
@@ -99,6 +98,7 @@ index 0000000..7ab46d7
 +extern void storevsx(void *p, int tmp);
 +
 +unsigned long fp_load[VEC_MAX];
++unsigned long fp_load_new[VEC_MAX];
 +unsigned long fp_store[VEC_MAX];
 +unsigned long fp_load_ckpt[VEC_MAX];
 +unsigned long fp_load_ckpt_new[VEC_MAX];
@@ -108,12 +108,22 @@ index 0000000..7ab46d7
 +	loadvsx(fp_load, 0);
 +}
 +
++__attribute__((used)) void load_vsx_new(void)
++{
++	loadvsx(fp_load_new, 0);
++}
++
 +__attribute__((used)) void load_vsx_ckpt(void)
 +{
 +	loadvsx(fp_load_ckpt, 0);
 +}
 +
-+void tm_vsx(void)
++__attribute__((used)) void wait_parent(void)
++{
++	while(!cptr[1]);
++}
++
++void tm_spd_vsx(void)
 +{
 +	unsigned long result, texasr;
 +	int ret;
@@ -127,8 +137,11 @@ index 0000000..7ab46d7
 +		TBEGIN
 +		"beq 2f;"
 +
++		"bl load_vsx_new;"
++		TSUSPEND
 +		"bl load_vsx;"
-+		"b .;"
++		"bl wait_parent;"
++		TRESUME
 +
 +		TEND
 +		"li 0, 0;"
@@ -160,7 +173,7 @@ index 0000000..7ab46d7
 +	exit(1);
 +}
 +
-+int trace_tm_vsx(pid_t child)
++int trace_tm_spd_vsx(pid_t child)
 +{
 +	unsigned long vsx[VSX_MAX];
 +	unsigned long vmx[VMX_MAX + 2][2];
@@ -223,18 +236,19 @@ index 0000000..7ab46d7
 +	return TEST_PASS;
 +}
 +
-+int ptrace_tm_vsx(void)
++int ptrace_tm_spd_vsx(void)
 +{
 +	pid_t pid;
 +	int ret, status, i;
 +
 +	SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-+	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 1, 0777|IPC_CREAT);
++	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 2, 0777|IPC_CREAT);
 +
 +	for(i = 0; i < 128; i++) {
 +		fp_load[i] = 1 + rand();
-+		fp_load_ckpt[i] = 1 + 2 * rand();
-+		fp_load_ckpt_new[i] = 1 + 3 * rand();
++		fp_load_new[i] = 1 + 2 * rand();
++		fp_load_ckpt[i] = 1 + 3 * rand();
++		fp_load_ckpt_new[i] = 1 + 4 * rand();
 +	}
 +
 +	pid = fork();
@@ -244,17 +258,18 @@ index 0000000..7ab46d7
 +	}
 +
 +	if (pid == 0)
-+		tm_vsx();
++		tm_spd_vsx();
 +
 +	if (pid) {
 +		pptr = (int *)shmat(shm_id, NULL, 0);
-+		ret = trace_tm_vsx(pid);
++		ret = trace_tm_spd_vsx(pid);
 +		if (ret) {
 +			kill(pid, SIGKILL);
 +			return TEST_FAIL;
 +		}
 +
 +		pptr[0] = 1;
++		pptr[1] = 1;
 +		shmdt((void *)pptr);
 +		ret = wait(&status);
 +		if (ret != pid) {
@@ -273,7 +288,7 @@ index 0000000..7ab46d7
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(ptrace_tm_vsx, "ptrace_tm_vsx");
++	return test_harness(ptrace_tm_spd_vsx, "ptrace_tm_spd_vsx");
 +}
 -- 
 2.1.0
