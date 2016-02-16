@@ -1,37 +1,21 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7BC251A03D4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 10:25:46 +1100 (AEDT)
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 16 Feb 2016 18:25:44 -0500
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 7641C6E8040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 18:12:33 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1GNPfFZ27983962
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 23:25:41 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1GNPfSc015674
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 18:25:41 -0500
-Date: Tue, 16 Feb 2016 15:25:20 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] powerpc/perf/24x7: Eliminate domain suffix in event names
-Message-ID: <20160216232520.GB27660@us.ibm.com>
-References: <20160216232427.GA27660@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160216232427.GA27660@us.ibm.com>
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2011B1A005A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 10:50:09 +1100 (AEDT)
+Message-ID: <1455666599.3357.5.camel@russell.cc>
+Subject: Re: [PATCH] MAINTAINERS: rename EEH from "enhanced" to "extended"
+ error handling
+From: Russell Currey <ruscur@russell.cc>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Wed, 17 Feb 2016 10:49:59 +1100
+In-Reply-To: <20160216225835.GA8240@gwshan>
+References: <1455612720-3758-1-git-send-email-ruscur@russell.cc>
+ <20160216224908.GA5078@gwshan> <20160216225835.GA8240@gwshan>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,303 +25,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From 1520e8087d047e8ab6c1bda027a74eb33956e5a0 Mon Sep 17 00:00:00 2001
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Tue, 16 Feb 2016 22:21:25 -0500
-Subject: [PATCH 2/2] powerpc/perf/24x7: Eliminate domain suffix in event names
+On Wed, 2016-02-17 at 09:58 +1100, Gavin Shan wrote:
+> On Wed, Feb 17, 2016 at 09:49:08AM +1100, Gavin Shan wrote:
+> > 
+> > On Tue, Feb 16, 2016 at 07:52:00PM +1100, Russell Currey wrote:
+> > > 
+> > > Incredibly, IBM online documentation for EEH uses "extended error
+> > > handling"
+> > > and "enhanced error handling" to refer to the same thing, in
+> > > different
+> > > places.  In other parts of the kernel, namely the EEH documentation
+> > > (found
+> > > in Documentation/powerpc/eeh-pci-error-recovery.txt), it's referred
+> > > to as
+> > > "extended", and in my opinion "extended" makes more sense for what
+> > > EEH
+> > > does.
+> > > 
+> > > The only place "enhanced error handling" shows up in the kernel is in
+> > > MAINTAINERS, so fix it.
+> > > 
+> > Russell, Thanks for fixing it up. Since you're at it, Please replace
+> > the
+> > maintainer to yourself. Also, the components mentioned in this file are
+> > listed in alphabetic order according to their names. As the name of EEH
+> > is changed, it would be put in front of "Extended Verification Module
+> > (EVM)".
+> > 
+> I agree with Michael as discussed in another thread: we're going to use
+> "enhanced", not "extended" though some chip datasheet (P7IOC) talks about
+> "extended error handling".
+> 
+> Russell, please change the maintainer to you and repost.
+Sure.
 
-The Physical Core events of the 24x7 PMU can be monitored across various
-domains (physical core, vcpu home core, vcpu home node etc). For each of
-these core events, we currently create multiple events in sysfs, one for
-each domain the event can be monitored in. These events are distinguished
-by their suffixes like __PHYS_CORE, __VCPU_HOME_CORE etc.
-
-Rather than creating multiple such entries, we could let the user specify
-make 'domain' index a required parameter and let the user specify a value
-for it (like they currently specify the core index).
-
-	$ cat /sys/bus/event_source/devices/hv_24x7/events/HPM_CCYC
-	domain=?,offset=0x98,core=?,lpar=0x0
-
-	$ perf stat -C 0 -e hv_24x7/HPM_CCYC,domain=2,core=1/ true
-
-(the 'domain=?' and 'core=?' in sysfs tell perf tool to enforce them as
-required parameters).
-
-This simplifies the interface and allows users to identify events by the
-name specified in the catalog (User can determine the domain index by
-referring to '/sys/bus/event_source/devices/hv_24x7/interface/domains').
-
-Eliminating the event suffix eliminates several functions and simplifies
-code.
-
-Note that Physical Chip events can only be monitored in the chip domain
-so those events have the domain set to 1 (rather than =?) and users don't
-need to specify the domain index for the Chip events.
-
-	$ cat /sys/bus/event_source/devices/hv_24x7/events/PM_XLINK_CYCLES
-	domain=1,offset=0x230,chip=?,lpar=0x0
-
-	$ perf stat -C 0 -e hv_24x7/PM_XLINK_CYCLES,chip=1/ true
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- arch/powerpc/perf/hv-24x7.c | 149 ++++++++++++++++++++------------------------
- 1 file changed, 66 insertions(+), 83 deletions(-)
-
-diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index 36b29fd..59012e7 100644
---- a/arch/powerpc/perf/hv-24x7.c
-+++ b/arch/powerpc/perf/hv-24x7.c
-@@ -27,20 +27,6 @@
- #include "hv-24x7-catalog.h"
- #include "hv-common.h"
- 
--static const char *event_domain_suffix(unsigned domain)
--{
--	switch (domain) {
--#define DOMAIN(n, v, x, c)		\
--	case HV_PERF_DOMAIN_##n:	\
--		return "__" #n;
--#include "hv-24x7-domains.h"
--#undef DOMAIN
--	default:
--		WARN(1, "unknown domain %d\n", domain);
--		return "__UNKNOWN_DOMAIN_SUFFIX";
--	}
--}
--
- static bool domain_is_valid(unsigned domain)
- {
- 	switch (domain) {
-@@ -294,38 +280,70 @@ static unsigned long h_get_24x7_catalog_page(char page[],
- 					version, index);
- }
- 
--static unsigned core_domains[] = {
--	HV_PERF_DOMAIN_PHYS_CORE,
--	HV_PERF_DOMAIN_VCPU_HOME_CORE,
--	HV_PERF_DOMAIN_VCPU_HOME_CHIP,
--	HV_PERF_DOMAIN_VCPU_HOME_NODE,
--	HV_PERF_DOMAIN_VCPU_REMOTE_NODE,
--};
--/* chip event data always yeilds a single event, core yeilds multiple */
--#define MAX_EVENTS_PER_EVENT_DATA ARRAY_SIZE(core_domains)
--
-+/*
-+ * Each event we find in the catalog, will have a sysfs entry. Format the
-+ * data for this sysfs entry based on the event's domain.
-+ *
-+ * Events belonging to the Chip domain can only be monitored in that domain.
-+ * i.e the domain for these events is a fixed/knwon value.
-+ *
-+ * Events belonging to the Core domain can be monitored either in the physical
-+ * core or in one of the virtual CPU domains. So the domain value for these
-+ * events must be specified by the user (i.e is a required parameter). Format
-+ * the Core events with 'domain=?' so the perf-tool can error check required
-+ * parameters.
-+ *
-+ * NOTE: For the Core domain events, rather than making domain a required
-+ *	 parameter we could default it to PHYS_CORE and allowe users to
-+ *	 override the domain to one of the VCPU domains.
-+ *
-+ *	 However, this can make the interface a little inconsistent.
-+ *
-+ *	 If we set domain=2 (PHYS_CHIP) and allow user to override this field
-+ *	 the user may be tempted to also modify the "offset=x" field in which
-+ *	 can lead to confusing usage. Consider the HPM_PCYC (offset=0x18) and
-+ *	 HPM_INST (offset=0x20) events. With:
-+ *
-+ *		perf stat -e hv_24x7/HPM_PCYC,offset=0x20/
-+ *
-+ *	we end up monitoring HPM_INST, while the command line has HPM_PCYC.
-+ *
-+ *	By not assigning a default value to the domain for the Core events,
-+ *	we can have simple guidelines:
-+ *
-+ *		- Specifying values for parameters with "=?" is required.
-+ *
-+ *		- Specifying (i.e overriding) values for other parameters
-+ *		  is undefined.
-+ */
- static char *event_fmt(struct hv_24x7_event_data *event, unsigned domain)
- {
- 	const char *sindex;
- 	const char *lpar;
-+	const char *domain_str;
-+	char buf[8];
- 
- 	switch (domain) {
- 	case HV_PERF_DOMAIN_PHYS_CHIP:
-+		snprintf(buf, sizeof(buf), "%d", domain);
-+		domain_str = buf;
- 		lpar = "0x0";
- 		sindex = "chip";
- 		break;
- 	case HV_PERF_DOMAIN_PHYS_CORE:
-+		domain_str = "?";
- 		lpar = "0x0";
- 		sindex = "core";
- 		break;
- 	default:
-+		domain_str = "?";
- 		lpar = "?";
- 		sindex = "vcpu";
- 	}
- 
- 	return kasprintf(GFP_KERNEL,
--			"domain=0x%x,offset=0x%x,%s=?,lpar=%s",
--			domain,
-+			"domain=%s,offset=0x%x,%s=?,lpar=%s",
-+			domain_str,
- 			be16_to_cpu(event->event_counter_offs) +
- 				be16_to_cpu(event->event_group_record_offs),
- 			sindex,
-@@ -365,6 +383,15 @@ static struct attribute *device_str_attr_create_(char *name, char *str)
- 	return &attr->attr.attr;
- }
- 
-+/*
-+ * Allocate and initialize strings representing event attributes.
-+ *
-+ * NOTE: The strings allocated here are never destroyed and continue to
-+ *	 exist till shutdown. This is to allow us to create as many events
-+ *	 from the catalog as possible, even if we encounter errors with some.
-+ *	 In case of changes to error paths in future, these may need to be
-+ *	 freed by the caller.
-+ */
- static struct attribute *device_str_attr_create(char *name, int name_max,
- 						int name_nonce,
- 						char *str, size_t str_max)
-@@ -396,16 +423,6 @@ out_s:
- 	return NULL;
- }
- 
--static void device_str_attr_destroy(struct attribute *attr)
--{
--	struct dev_ext_attribute *d;
--
--	d = container_of(attr, struct dev_ext_attribute, attr.attr);
--	kfree(d->var);
--	kfree(d->attr.attr.name);
--	kfree(d);
--}
--
- static struct attribute *event_to_attr(unsigned ix,
- 				       struct hv_24x7_event_data *event,
- 				       unsigned domain,
-@@ -413,7 +430,6 @@ static struct attribute *event_to_attr(unsigned ix,
- {
- 	int event_name_len;
- 	char *ev_name, *a_ev_name, *val;
--	const char *ev_suffix;
- 	struct attribute *attr;
- 
- 	if (!domain_is_valid(domain)) {
-@@ -426,14 +442,13 @@ static struct attribute *event_to_attr(unsigned ix,
- 	if (!val)
- 		return NULL;
- 
--	ev_suffix = event_domain_suffix(domain);
- 	ev_name = event_name(event, &event_name_len);
- 	if (!nonce)
--		a_ev_name = kasprintf(GFP_KERNEL, "%.*s%s",
--				(int)event_name_len, ev_name, ev_suffix);
-+		a_ev_name = kasprintf(GFP_KERNEL, "%.*s",
-+				(int)event_name_len, ev_name);
- 	else
--		a_ev_name = kasprintf(GFP_KERNEL, "%.*s%s__%d",
--				(int)event_name_len, ev_name, ev_suffix, nonce);
-+		a_ev_name = kasprintf(GFP_KERNEL, "%.*s__%d",
-+				(int)event_name_len, ev_name, nonce);
- 
- 	if (!a_ev_name)
- 		goto out_val;
-@@ -478,45 +493,14 @@ event_to_long_desc_attr(struct hv_24x7_event_data *event, int nonce)
- 	return device_str_attr_create(name, nl, nonce, desc, dl);
- }
- 
--static ssize_t event_data_to_attrs(unsigned ix, struct attribute **attrs,
-+static int event_data_to_attrs(unsigned ix, struct attribute **attrs,
- 				   struct hv_24x7_event_data *event, int nonce)
- {
--	unsigned i;
--
--	switch (event->domain) {
--	case HV_PERF_DOMAIN_PHYS_CHIP:
--		*attrs = event_to_attr(ix, event, event->domain, nonce);
--		return 1;
--	case HV_PERF_DOMAIN_PHYS_CORE:
--		for (i = 0; i < ARRAY_SIZE(core_domains); i++) {
--			attrs[i] = event_to_attr(ix, event, core_domains[i],
--						nonce);
--			if (!attrs[i]) {
--				pr_warn("catalog event %u: individual attr %u "
--					"creation failure\n", ix, i);
--				for (; i; i--)
--					device_str_attr_destroy(attrs[i - 1]);
--				return -1;
--			}
--		}
--		return i;
--	default:
--		pr_warn("catalog event %u: domain %u is not allowed in the "
--				"catalog\n", ix, event->domain);
-+	*attrs = event_to_attr(ix, event, event->domain, nonce);
-+	if (!*attrs)
- 		return -1;
--	}
--}
- 
--static size_t event_to_attr_ct(struct hv_24x7_event_data *event)
--{
--	switch (event->domain) {
--	case HV_PERF_DOMAIN_PHYS_CHIP:
--		return 1;
--	case HV_PERF_DOMAIN_PHYS_CORE:
--		return ARRAY_SIZE(core_domains);
--	default:
--		return 0;
--	}
-+	return 0;
- }
- 
- static unsigned long vmalloc_to_phys(void *v)
-@@ -752,9 +736,8 @@ static int create_events_from_catalog(struct attribute ***events_,
- 		goto e_free;
- 	}
- 
--	if (SIZE_MAX / MAX_EVENTS_PER_EVENT_DATA - 1 < event_entry_count) {
--		pr_err("event_entry_count %zu is invalid\n",
--				event_entry_count);
-+	if (SIZE_MAX - 1 < event_entry_count) {
-+		pr_err("event_entry_count %zu is invalid\n", event_entry_count);
- 		ret = -EIO;
- 		goto e_free;
- 	}
-@@ -827,7 +810,7 @@ static int create_events_from_catalog(struct attribute ***events_,
- 			continue;
- 		}
- 
--		attr_max += event_to_attr_ct(event);
-+		attr_max++;
- 	}
- 
- 	event_idx_last = event_idx;
-@@ -877,12 +860,12 @@ static int create_events_from_catalog(struct attribute ***events_,
- 		nonce = event_uniq_add(&ev_uniq, name, nl, event->domain);
- 		ct    = event_data_to_attrs(event_idx, events + event_attr_ct,
- 					    event, nonce);
--		if (ct <= 0) {
-+		if (ct < 0) {
- 			pr_warn("event %zu (%.*s) creation failure, skipping\n",
- 				event_idx, nl, name);
- 			junk_events++;
- 		} else {
--			event_attr_ct += ct;
-+			event_attr_ct++;
- 			event_descs[desc_ct] = event_to_desc_attr(event, nonce);
- 			if (event_descs[desc_ct])
- 				desc_ct++;
--- 
-1.8.3.1
+While I'm changing MAINTAINERS, what are your thoughts on renaming the EEH
+entry from "ENHANCED ERROR HANDLING (EEH)" to something like "PCI EXTENDED
+ERROR HANDLING (EEH)" or "EXTENDED ERROR HANDLING (EEH) FOR PCI" - so it's
+clear it refers to PCI and not something more generic?
+> 
+> > 
+> > > 
+> > > Signed-off-by: Russell Currey <ruscur@russell.cc>
+> > With above issues fixed:
+> > 
+> > Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> > 
+> Thanks,
+> Gavin
+> 
+> > 
+> > > 
+> > > ---
+> > > I don't know what kind of things parse MAINTAINERS, and if there's a
+> > > chance
+> > > this will break them.  Also, the powerpc tree *is* the right place to
+> > > send
+> > > this, right?
+> > > ---
+> > > MAINTAINERS | 2 +-
+> > > 1 file changed, 1 insertion(+), 1 deletion(-)
+> > > 
+> > > diff --git a/MAINTAINERS b/MAINTAINERS
+> > > index 28eb61b..e5d9134 100644
+> > > --- a/MAINTAINERS
+> > > +++ b/MAINTAINERS
+> > > @@ -4222,7 +4222,7 @@ M:	Maxim Levitsky <maximlevitsky@gmail.c
+> > > om>
+> > > S:	Maintained
+> > > F:	drivers/media/rc/ene_ir.*
+> > > 
+> > > -ENHANCED ERROR HANDLING (EEH)
+> > > +EXTENDED ERROR HANDLING (EEH)
+> > > M:	Gavin Shan <shangw@linux.vnet.ibm.com>
+> > > L:	linuxppc-dev@lists.ozlabs.org
+> > > S:	Supported
