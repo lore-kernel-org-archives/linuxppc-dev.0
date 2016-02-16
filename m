@@ -1,21 +1,30 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B08731A000B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 17:32:57 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id w128so7826484pfb.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Feb 2016 22:32:57 -0800 (PST)
-From: Oliver O'Halloran <oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EDC4A1A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 17:37:46 +1100 (AEDT)
+Received: from localhost
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 16 Feb 2016 12:07:43 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1G6bOuo20381736
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 12:07:25 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1G6baXk029674
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 12:07:37 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: andrew.donnellan@au1.ibm.com,
-	Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH v2] powerpc/sstep.c - Fix emulation fall-through
-Date: Tue, 16 Feb 2016 17:31:53 +1100
-Message-Id: <1455604313-13818-1-git-send-email-oohall@gmail.com>
-In-Reply-To: <56C27479.8080808@au1.ibm.com>
-References: <56C27479.8080808@au1.ibm.com>
+Subject: [PATCH V11_RESEND 01/10] powerpc/perf: Change name & type of 'pred'
+ in power_pmu_bhrb_read
+Date: Tue, 16 Feb 2016 12:07:01 +0530
+Message-Id: <1455604630-16214-2-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1455604630-16214-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1455604630-16214-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,34 +34,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is a switch fallthough in instr_analyze() which can cause
-an invalid instruction to be emulated as a different, valid,
-instruction. The rld* (opcode 30) case extracts a sub-opcode from
-bits 3:1 of the instruction word. However, the only valid values
-of this field a 001 and 000. These cases are correctly handled,
-but the others are not which causes execution to fall through
-into case 31.
+Branch record attributes 'mispred' and 'predicted' are single bit
+fields as defined in the perf ABI. Hence the data type of the field
+'pred' used during BHRB processing should be changed from integer
+to bool. This patch also changes the name of the variable from 'pred'
+to 'mispred' making the logical inversion process more meaningful
+and readable.
 
-Breaking out of the switch causes the instruction to be marked as
-unknown and allows the caller to deal with the invalid instruction
-in a manner consistent with other invalid instructions.
-
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Reported-by: Daniel Axtens <dja@axtens.net>
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/lib/sstep.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/perf/core-book3s.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index dc885b3..e25f73c 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -925,6 +925,7 @@ int __kprobes analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 			}
- 		}
- #endif
-+	break; /* illegal instruction */
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index d1e65ce..a158923 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -426,7 +426,8 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ {
+ 	u64 val;
+ 	u64 addr;
+-	int r_index, u_index, pred;
++	int r_index, u_index;
++	bool mispred;
  
- 	case 31:
- 		switch ((instr >> 1) & 0x3ff) {
+ 	r_index = 0;
+ 	u_index = 0;
+@@ -438,7 +439,7 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ 			break;
+ 		else {
+ 			addr = val & BHRB_EA;
+-			pred = val & BHRB_PREDICTION;
++			mispred = val & BHRB_PREDICTION;
+ 
+ 			if (!addr)
+ 				/* invalid entry */
+@@ -467,8 +468,9 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ 				 * (ie. computed gotos/XL form)
+ 				 */
+ 				cpuhw->bhrb_entries[u_index].to = addr;
+-				cpuhw->bhrb_entries[u_index].mispred = pred;
+-				cpuhw->bhrb_entries[u_index].predicted = ~pred;
++				cpuhw->bhrb_entries[u_index].mispred = mispred;
++				cpuhw->bhrb_entries[u_index].predicted =
++								~mispred;
+ 
+ 				/* Get from address in next entry */
+ 				val = read_bhrb(r_index++);
+@@ -486,8 +488,9 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ 				cpuhw->bhrb_entries[u_index].from = addr;
+ 				cpuhw->bhrb_entries[u_index].to =
+ 					power_pmu_bhrb_to(addr);
+-				cpuhw->bhrb_entries[u_index].mispred = pred;
+-				cpuhw->bhrb_entries[u_index].predicted = ~pred;
++				cpuhw->bhrb_entries[u_index].mispred = mispred;
++				cpuhw->bhrb_entries[u_index].predicted =
++								~mispred;
+ 			}
+ 			u_index++;
+ 
 -- 
-2.5.0
+2.1.0
