@@ -1,30 +1,24 @@
-Return-Path: <cyrilbur@gmail.com>
+Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 941AA1A007F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 11:06:37 +1100 (AEDT)
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CA2F7140557
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2016 11:06:36 +1100 (AEDT)
-Received: by mail-pa0-x241.google.com with SMTP id yy13so7747926pab.1
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2016 16:06:36 -0800 (PST)
-Date: Tue, 16 Feb 2016 11:06:25 +1100
-From: Cyril Bur <cyrilbur@gmail.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, anton@samba.org
-Subject: Re: [PATCH v4 1/9] selftests/powerpc: Test the preservation of FPU
- and VMX regs across syscall
-Message-ID: <20160216110625.7b2e8134@camb691>
-In-Reply-To: <20160215165916.GH2599@naverao1-tp.ibm.com>
-References: <1455512850-2543-1-git-send-email-cyrilbur@gmail.com>
- <1455512850-2543-2-git-send-email-cyrilbur@gmail.com>
- <20160215165916.GH2599@naverao1-tp.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 39B071A0013
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 11:39:56 +1100 (AEDT)
+Date: Tue, 16 Feb 2016 11:40:58 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>,
+ Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v3 7/7] KVM: PPC: Add support for multiple-TCE
+ hcalls
+Message-ID: <20160216004058.GB2269@voom.redhat.com>
+References: <1455501309-47200-1-git-send-email-aik@ozlabs.ru>
+ <1455501309-47200-8-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="BwCQnh7xodEAoBMC"
+In-Reply-To: <1455501309-47200-8-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,322 +28,587 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 15 Feb 2016 22:29:17 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-> On 2016/02/15 04:07PM, Cyril Bur wrote:
-> > Test that the non volatile floating point and Altivec registers get
-> > correctly preserved across the fork() syscall.
-> > 
-> > fork() works nicely for this purpose, the registers should be the same for
-> > both parent and child
-> > 
-> > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> > ---
-> >  tools/testing/selftests/powerpc/Makefile           |   3 +-
-> >  tools/testing/selftests/powerpc/basic_asm.h        |  30 ++++
-> >  tools/testing/selftests/powerpc/math/.gitignore    |   2 +
-> >  tools/testing/selftests/powerpc/math/Makefile      |  14 ++
-> >  tools/testing/selftests/powerpc/math/fpu_asm.S     | 161 +++++++++++++++++
-> >  tools/testing/selftests/powerpc/math/fpu_syscall.c |  90 ++++++++++
-> >  tools/testing/selftests/powerpc/math/vmx_asm.S     | 193 +++++++++++++++++++++
-> >  tools/testing/selftests/powerpc/math/vmx_syscall.c |  92 ++++++++++
-> >  8 files changed, 584 insertions(+), 1 deletion(-)
-> >  create mode 100644 tools/testing/selftests/powerpc/basic_asm.h
-> >  create mode 100644 tools/testing/selftests/powerpc/math/.gitignore
-> >  create mode 100644 tools/testing/selftests/powerpc/math/Makefile
-> >  create mode 100644 tools/testing/selftests/powerpc/math/fpu_asm.S
-> >  create mode 100644 tools/testing/selftests/powerpc/math/fpu_syscall.c
-> >  create mode 100644 tools/testing/selftests/powerpc/math/vmx_asm.S
-> >  create mode 100644 tools/testing/selftests/powerpc/math/vmx_syscall.c
-> > 
-> > diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
-> > index 0c2706b..19e8191 100644
-> > --- a/tools/testing/selftests/powerpc/Makefile
-> > +++ b/tools/testing/selftests/powerpc/Makefile
-> > @@ -22,7 +22,8 @@ SUB_DIRS = benchmarks 		\
-> >  	   switch_endian	\
-> >  	   syscalls		\
-> >  	   tm			\
-> > -	   vphn
-> > +	   vphn         \
-> > +	   math
-> >  
-> >  endif
-> >  
-> > diff --git a/tools/testing/selftests/powerpc/basic_asm.h b/tools/testing/selftests/powerpc/basic_asm.h
-> > new file mode 100644
-> > index 0000000..f243da0
-> > --- /dev/null
-> > +++ b/tools/testing/selftests/powerpc/basic_asm.h
-> > @@ -0,0 +1,30 @@
-> > +#include <ppc-asm.h>
-> > +#include <asm/unistd.h>
-> > +
-> > +#define LOAD_REG_IMMEDIATE(reg,expr) \
-> > +	lis	reg,(expr)@highest;	\
-> > +	ori	reg,reg,(expr)@higher;	\
-> > +	rldicr	reg,reg,32,31;	\
-> > +	oris	reg,reg,(expr)@high;	\
-> > +	ori	reg,reg,(expr)@l;
-> > +
-> > +/* It is very important to note here that _extra is the extra amount of
-> > + * stack space needed.
-> > + * This space must be accessed at sp + 32!  
-> 
+--BwCQnh7xodEAoBMC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Naveen,
+On Mon, Feb 15, 2016 at 12:55:09PM +1100, Alexey Kardashevskiy wrote:
+> This adds real and virtual mode handlers for the H_PUT_TCE_INDIRECT and
+> H_STUFF_TCE hypercalls for user space emulated devices such as IBMVIO
+> devices or emulated PCI. These calls allow adding multiple entries
+> (up to 512) into the TCE table in one call which saves time on
+> transition between kernel and user space.
+>=20
+> The current implementation of kvmppc_h_stuff_tce() allows it to be
+> executed in both real and virtual modes so there is one helper.
+> The kvmppc_rm_h_put_tce_indirect() needs to translate the guest address
+> to the host address and since the translation is different, there are
+> 2 helpers - one for each mode.
+>=20
+> This implements the KVM_CAP_PPC_MULTITCE capability. When present,
+> the kernel will try handling H_PUT_TCE_INDIRECT and H_STUFF_TCE if these
+> are enabled by the userspace via KVM_CAP_PPC_ENABLE_HCALL.
+> If they can not be handled by the kernel, they are passed on to
+> the user space. The user space still has to have an implementation
+> for these.
+>=20
+> Both HV and PR-syle KVM are supported.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> Changes:
+> v3:
+> * remove virtual mode copy of kvmppc_h_stuff_tce and
+> kvmppc_h_put_tce, will add them in another patch
+>=20
+> v2:
+> * compare @ret with H_SUCCESS instead of assuming H_SUCCESS is zero
+> * s/~IOMMU_PAGE_MASK_4K/SZ_4K-1/ when testing @tce_list
+> ---
+>  Documentation/virtual/kvm/api.txt       |  25 ++++++
+>  arch/powerpc/include/asm/kvm_ppc.h      |  12 +++
+>  arch/powerpc/kvm/book3s_64_vio.c        |  60 ++++++++++++-
+>  arch/powerpc/kvm/book3s_64_vio_hv.c     | 150 ++++++++++++++++++++++++++=
++++++-
+>  arch/powerpc/kvm/book3s_hv.c            |  26 +++++-
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S |   4 +-
+>  arch/powerpc/kvm/book3s_pr_papr.c       |  35 ++++++++
+>  arch/powerpc/kvm/powerpc.c              |   3 +
+>  8 files changed, 306 insertions(+), 9 deletions(-)
+>=20
+> diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kv=
+m/api.txt
+> index 07e4cdf..da39435 100644
+> --- a/Documentation/virtual/kvm/api.txt
+> +++ b/Documentation/virtual/kvm/api.txt
+> @@ -3035,6 +3035,31 @@ Returns: 0 on success, -1 on error
+> =20
+>  Queues an SMI on the thread's vcpu.
+> =20
+> +4.97 KVM_CAP_PPC_MULTITCE
+> +
+> +Capability: KVM_CAP_PPC_MULTITCE
+> +Architectures: ppc
+> +Type: vm
+> +
+> +This capability means the kernel is capable of handling hypercalls
+> +H_PUT_TCE_INDIRECT and H_STUFF_TCE without passing those into the user
+> +space. This significantly accelerates DMA operations for PPC KVM guests.
+> +User space should expect that its handlers for these hypercalls
+> +are not going to be called if user space previously registered LIOBN
+> +in KVM (via KVM_CREATE_SPAPR_TCE or similar calls).
+> +
+> +In order to enable H_PUT_TCE_INDIRECT and H_STUFF_TCE use in the guest,
+> +user space might have to advertise it for the guest. For example,
+> +IBM pSeries (sPAPR) guest starts using them if "hcall-multi-tce" is
+> +present in the "ibm,hypertas-functions" device-tree property.
+> +
+> +The hypercalls mentioned above may or may not be processed successfully
+> +in the kernel based fast path. If they can not be handled by the kernel,
+> +they will get passed on to user space. So user space still has to have
+> +an implementation for these despite the in kernel acceleration.
+> +
+> +This capability is always enabled.
+> +
+>  5. The kvm_run structure
+>  ------------------------
+> =20
+> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/as=
+m/kvm_ppc.h
+> index 9513911..4cadee5 100644
+> --- a/arch/powerpc/include/asm/kvm_ppc.h
+> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> @@ -166,12 +166,24 @@ extern int kvmppc_pseries_do_hcall(struct kvm_vcpu =
+*vcpu);
+> =20
+>  extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+>  				struct kvm_create_spapr_tce *args);
+> +extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
+> +		struct kvm_vcpu *vcpu, unsigned long liobn);
+>  extern long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+>  		unsigned long ioba, unsigned long npages);
+>  extern long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *tt,
+>  		unsigned long tce);
+> +extern long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
+> +		unsigned long *ua, unsigned long **prmap);
+> +extern void kvmppc_tce_put(struct kvmppc_spapr_tce_table *tt,
+> +		unsigned long idx, unsigned long tce);
+>  extern long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>  			     unsigned long ioba, unsigned long tce);
+> +extern long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+> +		unsigned long liobn, unsigned long ioba,
+> +		unsigned long tce_list, unsigned long npages);
+> +extern long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
+> +		unsigned long liobn, unsigned long ioba,
+> +		unsigned long tce_value, unsigned long npages);
+>  extern long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>  			     unsigned long ioba);
+>  extern struct page *kvm_alloc_hpt(unsigned long nr_pages);
+> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_6=
+4_vio.c
+> index 84993d1..0b1fd98 100644
+> --- a/arch/powerpc/kvm/book3s_64_vio.c
+> +++ b/arch/powerpc/kvm/book3s_64_vio.c
+> @@ -14,6 +14,7 @@
+>   *
+>   * Copyright 2010 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
+>   * Copyright 2011 David Gibson, IBM Corporation <dwg@au1.ibm.com>
+> + * Copyright 2016 Alexey Kardashevskiy, IBM Corporation <aik@au1.ibm.com>
+>   */
+> =20
+>  #include <linux/types.h>
+> @@ -37,8 +38,7 @@
+>  #include <asm/kvm_host.h>
+>  #include <asm/udbg.h>
+>  #include <asm/iommu.h>
+> -
+> -#define TCES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
+> +#include <asm/tce.h>
+> =20
+>  static unsigned long kvmppc_tce_pages(unsigned long window_size)
+>  {
+> @@ -204,3 +204,59 @@ fail:
+>  	}
+>  	return ret;
+>  }
+> +
+> +long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+> +		unsigned long liobn, unsigned long ioba,
+> +		unsigned long tce_list, unsigned long npages)
+> +{
+> +	struct kvmppc_spapr_tce_table *stt;
+> +	long i, ret =3D H_SUCCESS, idx;
+> +	unsigned long entry, ua =3D 0;
+> +	u64 __user *tces, tce;
+> +
+> +	stt =3D kvmppc_find_table(vcpu, liobn);
+> +	if (!stt)
+> +		return H_TOO_HARD;
+> +
+> +	entry =3D ioba >> IOMMU_PAGE_SHIFT_4K;
+> +	/*
+> +	 * SPAPR spec says that the maximum size of the list is 512 TCEs
+> +	 * so the whole table fits in 4K page
+> +	 */
+> +	if (npages > 512)
+> +		return H_PARAMETER;
+> +
+> +	if (tce_list & (SZ_4K - 1))
+> +		return H_PARAMETER;
+> +
+> +	ret =3D kvmppc_ioba_validate(stt, ioba, npages);
+> +	if (ret !=3D H_SUCCESS)
+> +		return ret;
+> +
+> +	idx =3D srcu_read_lock(&vcpu->kvm->srcu);
+> +	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, NULL)) {
+> +		ret =3D H_TOO_HARD;
+> +		goto unlock_exit;
+> +	}
+> +	tces =3D (u64 __user *) ua;
+> +
+> +	for (i =3D 0; i < npages; ++i) {
+> +		if (get_user(tce, tces + i)) {
+> +			ret =3D H_PARAMETER;
 
-Thanks for the review.
+I'm trying to work out if H_PARAMETER is really the right thing here.
 
-> This looks to be specific to ABIv2. Is this series limited to ppc64le?  
-> If so, you might want to ensure this only builds there.
-> 
+If the guest has actually supplied a bad address, I'd expect
+kvmppc_gpa_to_ua() to have picked that up.  So I see two cases here:
+1) this shouldn't ever happen, in which case a WARN_ON() and
+H_HARDWARE would be better or 2) this can happen because of something
+concurrently unmapping / swapping out the userspace memory, in whih
+case it's not the guest's fault and should probably be H_TOO_HARD.
 
-Is ABIv1 still in use? Can we still compile for v1? 
+Or am I missing something?
 
-This is for series 64bit only, I've not really got any reason to believe this
-is LE only, shouldn't this work BE? The makefile enforces 64bit, I believe it is
-ok for kernel selftests to fail to compile if they aren't going to be able to
-run.
+> +			goto unlock_exit;
+> +		}
+> +		tce =3D be64_to_cpu(tce);
+> +
+> +		ret =3D kvmppc_tce_validate(stt, tce);
+> +		if (ret !=3D H_SUCCESS)
+> +			goto unlock_exit;
+> +
+> +		kvmppc_tce_put(stt, entry + i, tce);
+> +	}
+> +
+> +unlock_exit:
+> +	srcu_read_unlock(&vcpu->kvm->srcu, idx);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(kvmppc_h_put_tce_indirect);
+> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3=
+s_64_vio_hv.c
+> index b608fdd..0486aa2 100644
+> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+> @@ -14,6 +14,7 @@
+>   *
+>   * Copyright 2010 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
+>   * Copyright 2011 David Gibson, IBM Corporation <dwg@au1.ibm.com>
+> + * Copyright 2016 Alexey Kardashevskiy, IBM Corporation <aik@au1.ibm.com>
+>   */
+> =20
+>  #include <linux/types.h>
+> @@ -30,6 +31,7 @@
+>  #include <asm/kvm_ppc.h>
+>  #include <asm/kvm_book3s.h>
+>  #include <asm/mmu-hash64.h>
+> +#include <asm/mmu_context.h>
+>  #include <asm/hvcall.h>
+>  #include <asm/synch.h>
+>  #include <asm/ppc-opcode.h>
+> @@ -37,6 +39,7 @@
+>  #include <asm/udbg.h>
+>  #include <asm/iommu.h>
+>  #include <asm/tce.h>
+> +#include <asm/iommu.h>
+> =20
+>  #define TCES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
+> =20
+> @@ -46,7 +49,7 @@
+>   * WARNING: This will be called in real or virtual mode on HV KVM and vi=
+rtual
+>   *          mode on PR KVM
+>   */
+> -static struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm_vcpu =
+*vcpu,
+> +struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm_vcpu *vcpu,
+>  		unsigned long liobn)
+>  {
+>  	struct kvm *kvm =3D vcpu->kvm;
+> @@ -58,6 +61,7 @@ static struct kvmppc_spapr_tce_table *kvmppc_find_table=
+(struct kvm_vcpu *vcpu,
+> =20
+>  	return NULL;
+>  }
+> +EXPORT_SYMBOL_GPL(kvmppc_find_table);
+> =20
+>  /*
+>   * Validates IO address.
+> @@ -151,9 +155,29 @@ void kvmppc_tce_put(struct kvmppc_spapr_tce_table *s=
+tt,
+>  }
+>  EXPORT_SYMBOL_GPL(kvmppc_tce_put);
+> =20
+> -/* WARNING: This will be called in real-mode on HV KVM and virtual
+> - *          mode on PR KVM
+> - */
+> +long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
+> +		unsigned long *ua, unsigned long **prmap)
+> +{
+> +	unsigned long gfn =3D gpa >> PAGE_SHIFT;
+> +	struct kvm_memory_slot *memslot;
+> +
+> +	memslot =3D search_memslots(kvm_memslots(kvm), gfn);
+> +	if (!memslot)
+> +		return -EINVAL;
+> +
+> +	*ua =3D __gfn_to_hva_memslot(memslot, gfn) |
+> +		(gpa & ~(PAGE_MASK | TCE_PCI_READ | TCE_PCI_WRITE));
+> +
+> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> +	if (prmap)
+> +		*prmap =3D &memslot->arch.rmap[gfn - memslot->base_gfn];
+> +#endif
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(kvmppc_gpa_to_ua);
+> +
+> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>  long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>  		      unsigned long ioba, unsigned long tce)
+>  {
+> @@ -180,6 +204,122 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsign=
+ed long liobn,
+>  }
+>  EXPORT_SYMBOL_GPL(kvmppc_h_put_tce);
+> =20
+> +static long kvmppc_rm_ua_to_hpa(struct kvm_vcpu *vcpu,
+> +		unsigned long ua, unsigned long *phpa)
+> +{
+> +	pte_t *ptep, pte;
+> +	unsigned shift =3D 0;
+> +
+> +	ptep =3D __find_linux_pte_or_hugepte(vcpu->arch.pgdir, ua, NULL, &shift=
+);
+> +	if (!ptep || !pte_present(*ptep))
+> +		return -ENXIO;
+> +	pte =3D *ptep;
+> +
+> +	if (!shift)
+> +		shift =3D PAGE_SHIFT;
+> +
+> +	/* Avoid handling anything potentially complicated in realmode */
+> +	if (shift > PAGE_SHIFT)
+> +		return -EAGAIN;
+> +
+> +	if (!pte_young(pte))
+> +		return -EAGAIN;
+> +
+> +	*phpa =3D (pte_pfn(pte) << PAGE_SHIFT) | (ua & ((1ULL << shift) - 1)) |
+> +			(ua & ~PAGE_MASK);
+> +
+> +	return 0;
+> +}
+> +
+> +long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+> +		unsigned long liobn, unsigned long ioba,
+> +		unsigned long tce_list,	unsigned long npages)
+> +{
+> +	struct kvmppc_spapr_tce_table *stt;
+> +	long i, ret =3D H_SUCCESS;
+> +	unsigned long tces, entry, ua =3D 0;
+> +	unsigned long *rmap =3D NULL;
+> +
+> +	stt =3D kvmppc_find_table(vcpu, liobn);
+> +	if (!stt)
+> +		return H_TOO_HARD;
+> +
+> +	entry =3D ioba >> IOMMU_PAGE_SHIFT_4K;
+> +	/*
+> +	 * The spec says that the maximum size of the list is 512 TCEs
+> +	 * so the whole table addressed resides in 4K page
+> +	 */
+> +	if (npages > 512)
+> +		return H_PARAMETER;
+> +
+> +	if (tce_list & (SZ_4K - 1))
+> +		return H_PARAMETER;
+> +
+> +	ret =3D kvmppc_ioba_validate(stt, ioba, npages);
+> +	if (ret !=3D H_SUCCESS)
+> +		return ret;
+> +
+> +	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
+> +		return H_TOO_HARD;
+> +
+> +	rmap =3D (void *) vmalloc_to_phys(rmap);
+> +
+> +	/*
+> +	 * Synchronize with the MMU notifier callbacks in
+> +	 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
+> +	 * While we have the rmap lock, code running on other CPUs
+> +	 * cannot finish unmapping the host real page that backs
+> +	 * this guest real page, so we are OK to access the host
+> +	 * real page.
+> +	 */
+> +	lock_rmap(rmap);
 
-> Also:
-> #define PPC_ABIV2_MIN_STACK_SIZE 32
-> 
-> or just:
-> #define PPC_MIN_STACK	32
-> 
-> ... is helpful. And, you might want to base the rest of your code that 
-> use PUSH_BASIC_STACK() on that. If we ever want to have these tests run 
-> anywhere else, that'll help a lot. (See further below)
-> 
+You don't appear to actually use rmap between the lock and unlock..
 
-So I thought about it. I agree that it would be nice, I just worry that I might
-get rabbitholed, I can see it going further and then providing stack accessors
-to abstract out even PPC_MIN_STACK except in a bunch of macros, and that's when
-I know I've gone too far.
+> +	if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
+> +		ret =3D H_TOO_HARD;
+> +		goto unlock_exit;
+> +	}
+> +
+> +	for (i =3D 0; i < npages; ++i) {
+> +		unsigned long tce =3D be64_to_cpu(((u64 *)tces)[i]);
+> +
+> +		ret =3D kvmppc_tce_validate(stt, tce);
+> +		if (ret !=3D H_SUCCESS)
+> +			goto unlock_exit;
+> +
+> +		kvmppc_tce_put(stt, entry + i, tce);
+> +	}
+> +
+> +unlock_exit:
+> +	unlock_rmap(rmap);
+> +
+> +	return ret;
+> +}
+> +
+> +long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
+> +		unsigned long liobn, unsigned long ioba,
+> +		unsigned long tce_value, unsigned long npages)
+> +{
+> +	struct kvmppc_spapr_tce_table *stt;
+> +	long i, ret;
+> +
+> +	stt =3D kvmppc_find_table(vcpu, liobn);
+> +	if (!stt)
+> +		return H_TOO_HARD;
+> +
+> +	ret =3D kvmppc_ioba_validate(stt, ioba, npages);
+> +	if (ret !=3D H_SUCCESS)
+> +		return ret;
+> +
+> +	/* Check permission bits only to allow userspace poison TCE for debug */
+> +	if (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ))
+> +		return H_PARAMETER;
+> +
+> +	for (i =3D 0; i < npages; ++i, ioba +=3D IOMMU_PAGE_SIZE_4K)
+> +		kvmppc_tce_put(stt, ioba >> IOMMU_PAGE_SHIFT_4K, tce_value);
+> +
+> +	return H_SUCCESS;
+> +}
+> +EXPORT_SYMBOL_GPL(kvmppc_h_stuff_tce);
+> +
+>  long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>  		      unsigned long ioba)
+>  {
+> @@ -205,3 +345,5 @@ long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned=
+ long liobn,
+>  	return H_SUCCESS;
+>  }
+>  EXPORT_SYMBOL_GPL(kvmppc_h_get_tce);
+> +
+> +#endif /* KVM_BOOK3S_HV_POSSIBLE */
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index baeddb0..33b491e 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -768,7 +768,31 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+>  		if (kvmppc_xics_enabled(vcpu)) {
+>  			ret =3D kvmppc_xics_hcall(vcpu, req);
+>  			break;
+> -		} /* fallthrough */
+> +		}
+> +		return RESUME_HOST;
+> +	case H_PUT_TCE:
+> +		ret =3D kvmppc_h_put_tce(vcpu, kvmppc_get_gpr(vcpu, 4),
+> +						kvmppc_get_gpr(vcpu, 5),
+> +						kvmppc_get_gpr(vcpu, 6));
+> +		if (ret =3D=3D H_TOO_HARD)
+> +			return RESUME_HOST;
+> +		break;
+> +	case H_PUT_TCE_INDIRECT:
+> +		ret =3D kvmppc_h_put_tce_indirect(vcpu, kvmppc_get_gpr(vcpu, 4),
+> +						kvmppc_get_gpr(vcpu, 5),
+> +						kvmppc_get_gpr(vcpu, 6),
+> +						kvmppc_get_gpr(vcpu, 7));
+> +		if (ret =3D=3D H_TOO_HARD)
+> +			return RESUME_HOST;
+> +		break;
+> +	case H_STUFF_TCE:
+> +		ret =3D kvmppc_h_stuff_tce(vcpu, kvmppc_get_gpr(vcpu, 4),
+> +						kvmppc_get_gpr(vcpu, 5),
+> +						kvmppc_get_gpr(vcpu, 6),
+> +						kvmppc_get_gpr(vcpu, 7));
+> +		if (ret =3D=3D H_TOO_HARD)
+> +			return RESUME_HOST;
+> +		break;
+>  	default:
+>  		return RESUME_HOST;
+>  	}
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/b=
+ook3s_hv_rmhandlers.S
+> index 6ee26de..ed16182 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -2006,8 +2006,8 @@ hcall_real_table:
+>  	.long	0		/* 0x12c */
+>  	.long	0		/* 0x130 */
+>  	.long	DOTSYM(kvmppc_h_set_xdabr) - hcall_real_table
+> -	.long	0		/* 0x138 */
+> -	.long	0		/* 0x13c */
+> +	.long	DOTSYM(kvmppc_h_stuff_tce) - hcall_real_table
+> +	.long	DOTSYM(kvmppc_rm_h_put_tce_indirect) - hcall_real_table
+>  	.long	0		/* 0x140 */
+>  	.long	0		/* 0x144 */
+>  	.long	0		/* 0x148 */
+> diff --git a/arch/powerpc/kvm/book3s_pr_papr.c b/arch/powerpc/kvm/book3s_=
+pr_papr.c
+> index f2c75a1..02176fd 100644
+> --- a/arch/powerpc/kvm/book3s_pr_papr.c
+> +++ b/arch/powerpc/kvm/book3s_pr_papr.c
+> @@ -280,6 +280,37 @@ static int kvmppc_h_pr_logical_ci_store(struct kvm_v=
+cpu *vcpu)
+>  	return EMULATE_DONE;
+>  }
+> =20
+> +static int kvmppc_h_pr_put_tce_indirect(struct kvm_vcpu *vcpu)
+> +{
+> +	unsigned long liobn =3D kvmppc_get_gpr(vcpu, 4);
+> +	unsigned long ioba =3D kvmppc_get_gpr(vcpu, 5);
+> +	unsigned long tce =3D kvmppc_get_gpr(vcpu, 6);
+> +	unsigned long npages =3D kvmppc_get_gpr(vcpu, 7);
+> +	long rc;
+> +
+> +	rc =3D kvmppc_h_put_tce_indirect(vcpu, liobn, ioba,
+> +			tce, npages);
+> +	if (rc =3D=3D H_TOO_HARD)
+> +		return EMULATE_FAIL;
+> +	kvmppc_set_gpr(vcpu, 3, rc);
+> +	return EMULATE_DONE;
+> +}
+> +
+> +static int kvmppc_h_pr_stuff_tce(struct kvm_vcpu *vcpu)
+> +{
+> +	unsigned long liobn =3D kvmppc_get_gpr(vcpu, 4);
+> +	unsigned long ioba =3D kvmppc_get_gpr(vcpu, 5);
+> +	unsigned long tce_value =3D kvmppc_get_gpr(vcpu, 6);
+> +	unsigned long npages =3D kvmppc_get_gpr(vcpu, 7);
+> +	long rc;
+> +
+> +	rc =3D kvmppc_h_stuff_tce(vcpu, liobn, ioba, tce_value, npages);
+> +	if (rc =3D=3D H_TOO_HARD)
+> +		return EMULATE_FAIL;
+> +	kvmppc_set_gpr(vcpu, 3, rc);
+> +	return EMULATE_DONE;
+> +}
+> +
+>  static int kvmppc_h_pr_xics_hcall(struct kvm_vcpu *vcpu, u32 cmd)
+>  {
+>  	long rc =3D kvmppc_xics_hcall(vcpu, cmd);
+> @@ -306,6 +337,10 @@ int kvmppc_h_pr(struct kvm_vcpu *vcpu, unsigned long=
+ cmd)
+>  		return kvmppc_h_pr_bulk_remove(vcpu);
+>  	case H_PUT_TCE:
+>  		return kvmppc_h_pr_put_tce(vcpu);
+> +	case H_PUT_TCE_INDIRECT:
+> +		return kvmppc_h_pr_put_tce_indirect(vcpu);
+> +	case H_STUFF_TCE:
+> +		return kvmppc_h_pr_stuff_tce(vcpu);
+>  	case H_CEDE:
+>  		kvmppc_set_msr_fast(vcpu, kvmppc_get_msr(vcpu) | MSR_EE);
+>  		kvm_vcpu_block(vcpu);
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index a3b182d..69f897d 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -569,6 +569,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, lon=
+g ext)
+>  	case KVM_CAP_PPC_GET_SMMU_INFO:
+>  		r =3D 1;
+>  		break;
+> +	case KVM_CAP_SPAPR_MULTITCE:
+> +		r =3D 1;
+> +		break;
+>  #endif
+>  	default:
+>  		r =3D 0;
 
-Perhaps I could look at adding this when I write more tests, I have grand plans
-to push way more tests.
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-> > + */
-> > +#define PUSH_BASIC_STACK(_extra) \
-> > +	mflr	r0; \
-> > +	std	r0,16(sp); \
-> > +	stdu	sp,-(_extra + 32)(sp); \
-> > +	mfcr	r0; \
-> > +	stw	r0,8(sp); \
-> > +	std	2,24(sp);  
-> 		^^
-> Better to use r2 here and below.
-> 
+--BwCQnh7xodEAoBMC
+Content-Type: application/pgp-signature; name="signature.asc"
 
-I think the reason I used '2' is that 'r2' isn't actually defined in ppc-asm.h
-for userspace, due to conventions, like 'sp', 'toc' has been used. So I could
-have used 'toc' but then there was an issue with toc NOT being defined, or
-getting undefined in some situations.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-> > +
-> > +#define POP_BASIC_STACK(_extra) \
-> > +	ld	2,24(sp); \
-> > +	lwz	r0,8(sp); \
-> > +	mtcr	r0; \
-> > +	addi	sp,sp,(_extra + 32); \
-> > +	ld	r0,16(sp); \
-> > +	mtlr	r0;
-> > +
-> > diff --git a/tools/testing/selftests/powerpc/math/.gitignore b/tools/testing/selftests/powerpc/math/.gitignore
-> > new file mode 100644
-> > index 0000000..b19b269
-> > --- /dev/null
-> > +++ b/tools/testing/selftests/powerpc/math/.gitignore
-> > @@ -0,0 +1,2 @@
-> > +fpu_syscall
-> > +vmx_syscall
-> > diff --git a/tools/testing/selftests/powerpc/math/Makefile b/tools/testing/selftests/powerpc/math/Makefile
-> > new file mode 100644
-> > index 0000000..418bef1
-> > --- /dev/null
-> > +++ b/tools/testing/selftests/powerpc/math/Makefile
-> > @@ -0,0 +1,14 @@
-> > +TEST_PROGS := fpu_syscall vmx_syscall
-> > +
-> > +all: $(TEST_PROGS)
-> > +
-> > +$(TEST_PROGS): ../harness.c
-> > +$(TEST_PROGS): CFLAGS += -O2 -g -pthread -m64 -maltivec
-> > +
-> > +fpu_syscall: fpu_asm.S
-> > +vmx_syscall: vmx_asm.S
-> > +
-> > +include ../../lib.mk
-> > +
-> > +clean:
-> > +	rm -f $(TEST_PROGS) *.o
-> > diff --git a/tools/testing/selftests/powerpc/math/fpu_asm.S b/tools/testing/selftests/powerpc/math/fpu_asm.S
-> > new file mode 100644
-> > index 0000000..8733874
-> > --- /dev/null
-> > +++ b/tools/testing/selftests/powerpc/math/fpu_asm.S
-> > @@ -0,0 +1,161 @@
-> > +/*
-> > + * Copyright 2015, Cyril Bur, IBM Corp.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > + * modify it under the terms of the GNU General Public License
-> > + * as published by the Free Software Foundation; either version
-> > + * 2 of the License, or (at your option) any later version.
-> > + */
-> > +
-> > +#include "../basic_asm.h"
-> > +
-> > +#define PUSH_FPU(pos) \
-> > +	stfd	f14,pos(sp); \
-> > +	stfd	f15,pos+8(sp); \
-> > +	stfd	f16,pos+16(sp); \
-> > +	stfd	f17,pos+24(sp); \
-> > +	stfd	f18,pos+32(sp); \
-> > +	stfd	f19,pos+40(sp); \
-> > +	stfd	f20,pos+48(sp); \
-> > +	stfd	f21,pos+56(sp); \
-> > +	stfd	f22,pos+64(sp); \
-> > +	stfd	f23,pos+72(sp); \
-> > +	stfd	f24,pos+80(sp); \
-> > +	stfd	f25,pos+88(sp); \
-> > +	stfd	f26,pos+96(sp); \
-> > +	stfd	f27,pos+104(sp); \
-> > +	stfd	f28,pos+112(sp); \
-> > +	stfd	f29,pos+120(sp); \
-> > +	stfd	f30,pos+128(sp); \
-> > +	stfd	f31,pos+136(sp);
-> > +
-> > +#define POP_FPU(pos) \
-> > +	lfd	f14,pos(sp); \
-> > +	lfd	f15,pos+8(sp); \
-> > +	lfd	f16,pos+16(sp); \
-> > +	lfd	f17,pos+24(sp); \
-> > +	lfd	f18,pos+32(sp); \
-> > +	lfd	f19,pos+40(sp); \
-> > +	lfd	f20,pos+48(sp); \
-> > +	lfd	f21,pos+56(sp); \
-> > +	lfd	f22,pos+64(sp); \
-> > +	lfd	f23,pos+72(sp); \
-> > +	lfd	f24,pos+80(sp); \
-> > +	lfd	f25,pos+88(sp); \
-> > +	lfd	f26,pos+96(sp); \
-> > +	lfd	f27,pos+104(sp); \
-> > +	lfd	f28,pos+112(sp); \
-> > +	lfd	f29,pos+120(sp); \
-> > +	lfd	f30,pos+128(sp); \
-> > +	lfd	f31,pos+136(sp);
-> > +
-> > +#Careful calling this, it will 'clobber' fpu (by design)
-> > +#Don't call this from C
-> > +FUNC_START(load_fpu)
-> > +	lfd	f14,0(r3)
-> > +	lfd	f15,8(r3)
-> > +	lfd	f16,16(r3)
-> > +	lfd	f17,24(r3)
-> > +	lfd	f18,32(r3)
-> > +	lfd	f19,40(r3)
-> > +	lfd	f20,48(r3)
-> > +	lfd	f21,56(r3)
-> > +	lfd	f22,64(r3)
-> > +	lfd	f23,72(r3)
-> > +	lfd	f24,80(r3)
-> > +	lfd	f25,88(r3)
-> > +	lfd	f26,96(r3)
-> > +	lfd	f27,104(r3)
-> > +	lfd	f28,112(r3)
-> > +	lfd	f29,120(r3)
-> > +	lfd	f30,128(r3)
-> > +	lfd	f31,136(r3)
-> > +	blr
-> > +FUNC_END(load_fpu)
-> > +
-> > +FUNC_START(check_fpu)
-> > +	mr r4,r3
-> > +	li	r3,1 #assume a bad result
-> > +	lfd	f0,0(r4)
-> > +	fcmpu	cr1,f0,f14
-> > +	bne	cr1,1f
-> > +	lfd	f0,8(r4)
-> > +	fcmpu	cr1,f0,f15
-> > +	bne	cr1,1f
-> > +	lfd	f0,16(r4)
-> > +	fcmpu	cr1,f0,f16
-> > +	bne	cr1,1f
-> > +	lfd	f0,24(r4)
-> > +	fcmpu	cr1,f0,f17
-> > +	bne	cr1,1f
-> > +	lfd	f0,32(r4)
-> > +	fcmpu	cr1,f0,f18
-> > +	bne	cr1,1f
-> > +	lfd	f0,40(r4)
-> > +	fcmpu	cr1,f0,f19
-> > +	bne	cr1,1f
-> > +	lfd	f0,48(r4)
-> > +	fcmpu	cr1,f0,f20
-> > +	bne	cr1,1f
-> > +	lfd	f0,56(r4)
-> > +	fcmpu	cr1,f0,f21
-> > +	bne	cr1,1f
-> > +	lfd	f0,64(r4)
-> > +	fcmpu	cr1,f0,f22
-> > +	bne	cr1,1f
-> > +	lfd	f0,72(r4)
-> > +	fcmpu	cr1,f0,f23
-> > +	bne	cr1,1f
-> > +	lfd	f0,80(r4)
-> > +	fcmpu	cr1,f0,f24
-> > +	bne	cr1,1f
-> > +	lfd	f0,88(r4)
-> > +	fcmpu	cr1,f0,f25
-> > +	bne	cr1,1f
-> > +	lfd	f0,96(r4)
-> > +	fcmpu	cr1,f0,f26
-> > +	bne	cr1,1f
-> > +	lfd	f0,104(r4)
-> > +	fcmpu	cr1,f0,f27
-> > +	bne	cr1,1f
-> > +	lfd	f0,112(r4)
-> > +	fcmpu	cr1,f0,f28
-> > +	bne	cr1,1f
-> > +	lfd	f0,120(r4)
-> > +	fcmpu	cr1,f0,f29
-> > +	bne	cr1,1f
-> > +	lfd	f0,128(r4)
-> > +	fcmpu	cr1,f0,f30
-> > +	bne	cr1,1f
-> > +	lfd	f0,136(r4)
-> > +	fcmpu	cr1,f0,f31
-> > +	bne	cr1,1f
-> > +	li	r3,0 #Sucess!!!
-> > +1:	blr
-> > +
-> > +FUNC_START(test_fpu)
-> > +	#r3 holds pointer to where to put the result of fork
-> > +	#r4 holds pointer to the pid
-> > +	#f14-f31 are non volatiles
-> > +	PUSH_BASIC_STACK(256)
-> > +	std	r3,40(sp) #Address of darray  
-> 
-> So, this could be:
-> 	PUSH_BASIC_STACK(256)
-> 	std	r3,PPC_MIN_STACK+8(sp)
-> 
-> ... though I wonder why there is +8 here?
-> 
+iQIcBAEBAgAGBQJWwnAaAAoJEGw4ysog2bOSvJsP/RpTMfNam80yELIlN5M1hANX
+oiFjDzs0PwNDOzm4W3/EW9g4y83cx0J1gfugnpzCKU5mhrsfBIAkvtUzFgfxn2RJ
+klQ5FXBwPm25577Grd8zJvj6HiRav5ljv+25fVSLXtustFF2F7WDvR1EVG9/vscD
+dvwUikUW4DqCYOD8ZesbWwG44hGWne/uTWrvOyLwvrvKDjBzN+59GgFUq/dB9JXE
+bXl61IA6eqILYyP2uHXyTJ7+MvWvLfoHAt/5kVTQosXBc+88Bfnhphyie62xAXn4
+/pLqVSunyvwfQWK8boyVDLDnD2VqV6GsEESmGzfT7P+hObsyHzAWb4zH/CbkWRlr
+dvd7yLdz2k43djbFW9fORF0lg2R42kgWfd5nmLdxe1vjwXbrSG9EeHYxiwptS+ge
+QbqqD4OEp0lpoT7eN+4uYQ78Qp6oiH95btKWl6LAEYaDyt3MpD+u2OIWKTOWj7P5
+D9Ej2N01vbmuGJSikWB7tJHQ80K72BC3HAEqflyTygBRNe9UrHCf6FLu+w0dN4G4
+Eie/OxM4oIhZC3e1Sp5p+AhD5zYKmKzIL0hpsFt75Mdzu0VfvXC9BI5c0Rdn1FrX
+iuih4LEERpYLXbczEHBLqSu1El3eqSDHdrglMiujKzCjFE3enHyzZqs/7lxFRZWK
+a7Q4DXvu3txV+Z88Qj9R
+=kclr
+-----END PGP SIGNATURE-----
 
-I think the +8 is left over from my using +0 for something else and then not
-and not going back and being all neat about stack usage. Admittedly I didn't
-look over that too hard it being a selftest and all, I'm not sure optimal
-stack usage is super important here.
-
-
-Thanks,
-
-Cyril
-> 
-> - Naveen
-> 
+--BwCQnh7xodEAoBMC--
