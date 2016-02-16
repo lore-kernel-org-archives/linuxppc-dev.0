@@ -1,28 +1,40 @@
-Return-Path: <raghav.dogra@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0093.outbound.protection.outlook.com [157.56.112.93])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2B4F31A000B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 18:34:33 +1100 (AEDT)
-From: Raghav Dogra <raghav.dogra@nxp.com>
-To: Scott Wood <oss@buserror.net>, Brian Norris <computersforpeace@gmail.com>,
- Li Yang <leoli@freescale.com>
-CC: Raghav Dogra <raghav@freescale.com>, "linux-mtd@lists.infradead.org"
- <linux-mtd@lists.infradead.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, Prabhakar Kushwaha
- <prabhakar.kushwaha@nxp.com>, Jaiprakash Singh <b44839@freescale.com>
-Subject: RE: [PATCH] mtd/ifc: Add support for IFC controller version 2.0
-Date: Tue, 16 Feb 2016 07:19:14 +0000
-Message-ID: <DB4PR04MB34625474D74B7295776205A89AD0@DB4PR04MB346.eurprd04.prod.outlook.com>
-References: <1454481372-10288-1-git-send-email-raghav@freescale.com>
- <CADRPPNTKFA8rkynJR4wCNgAmqvmiwYwTi2Uk9hDUMB4+N7ST_Q@mail.gmail.com>
- <20160212194411.GF21465@google.com>
- <DB4PR04MB3465D14DB9003BF000DFE9889AC0@DB4PR04MB346.eurprd04.prod.outlook.com>
- <1455583310.2463.37.camel@buserror.net>
-In-Reply-To: <1455583310.2463.37.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2943C1A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 19:12:57 +1100 (AEDT)
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 16 Feb 2016 03:12:55 -0500
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 607E0C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 03:12:50 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1G8CqdZ26673218
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 08:12:52 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1G8CqAK021179
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 03:12:52 -0500
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Subject: Re: [PATCH V2 08/29] mm: Some arch may want to use HPAGE_PMD related
+ values as variables
+In-Reply-To: <20160215041153.GC3797@oak.ozlabs.ibm.com>
+References: <1454923241-6681-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1454923241-6681-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20160215041153.GC3797@oak.ozlabs.ibm.com>
+Date: Tue, 16 Feb 2016 13:42:42 +0530
+Message-ID: <874md9f4zp.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,71 +44,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU2NvdHQgV29vZCBbbWFp
-bHRvOm9zc0BidXNlcnJvci5uZXRdDQo+IFNlbnQ6IFR1ZXNkYXksIEZlYnJ1YXJ5IDE2LCAyMDE2
-IDY6MTIgQU0NCj4gVG86IFJhZ2hhdiBEb2dyYSA8cmFnaGF2LmRvZ3JhQG54cC5jb20+OyBCcmlh
-biBOb3JyaXMNCj4gPGNvbXB1dGVyc2ZvcnBlYWNlQGdtYWlsLmNvbT47IExpIFlhbmcgPGxlb2xp
-QGZyZWVzY2FsZS5jb20+DQo+IENjOiBSYWdoYXYgRG9ncmEgPHJhZ2hhdkBmcmVlc2NhbGUuY29t
-PjsgbGludXgtbXRkQGxpc3RzLmluZnJhZGVhZC5vcmc7DQo+IGxpbnV4cHBjLWRldiA8bGludXhw
-cGMtZGV2QGxpc3RzLm96bGFicy5vcmc+OyBQcmFiaGFrYXIgS3VzaHdhaGENCj4gPHByYWJoYWth
-ci5rdXNod2FoYUBueHAuY29tPjsgSmFpcHJha2FzaCBTaW5naA0KPiA8YjQ0ODM5QGZyZWVzY2Fs
-ZS5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIG10ZC9pZmM6IEFkZCBzdXBwb3J0IGZvciBJ
-RkMgY29udHJvbGxlciB2ZXJzaW9uIDIuMA0KPiANCj4gT24gTW9uLCAyMDE2LTAyLTE1IGF0IDA2
-OjE4ICswMDAwLCBSYWdoYXYgRG9ncmEgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwg
-TWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBCcmlhbiBOb3JyaXMgW21haWx0bzpjb21wdXRlcnNm
-b3JwZWFjZUBnbWFpbC5jb21dDQo+ID4gPiBTZW50OiBTYXR1cmRheSwgRmVicnVhcnkgMTMsIDIw
-MTYgMToxNCBBTQ0KPiA+ID4gVG86IExpIFlhbmcgPGxlb2xpQGZyZWVzY2FsZS5jb20+DQo+ID4g
-PiBDYzogUmFnaGF2IERvZ3JhIDxyYWdoYXZAZnJlZXNjYWxlLmNvbT47DQo+ID4gPiBsaW51eC1t
-dGRAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbGludXhwcGMtZGV2DQo+ID4gPiA8bGludXhwcGMtZGV2
-QGxpc3RzLm96bGFicy5vcmc+OyBvc3NAYnVzZXJyb3IubmV0OyBQcmFiaGFrYXINCj4gPiA+IEt1
-c2h3YWhhIDxwcmFiaGFrYXIua3VzaHdhaGFAbnhwLmNvbT47IEphaXByYWthc2ggU2luZ2gNCj4g
-PiA+IDxiNDQ4MzlAZnJlZXNjYWxlLmNvbT4NCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIG10
-ZC9pZmM6IEFkZCBzdXBwb3J0IGZvciBJRkMgY29udHJvbGxlciB2ZXJzaW9uDQo+ID4gPiAyLjAN
-Cj4gPiA+DQo+ID4gPiBPbiBUaHUsIEZlYiAwNCwgMjAxNiBhdCAwNTowNzoxNlBNIC0wNjAwLCBM
-aSBZYW5nIHdyb3RlOg0KPiA+ID4gPiBPbiBXZWQsIEZlYiAzLCAyMDE2IGF0IDEyOjM2IEFNLCBS
-YWdoYXYgRG9ncmENCj4gPiA+ID4gPHJhZ2hhdkBmcmVlc2NhbGUuY29tPg0KPiA+ID4gd3JvdGU6
-DQo+ID4gPiA+ID4gVGhlIG5ldyBJRkMgY29udHJvbGxlciB2ZXJzaW9uIDIuMCBoYXMgYSBkaWZm
-ZXJlbnQgbWVtb3J5IG1hcCBwYWdlLg0KPiA+ID4gPiA+IFVwdG8gSUZDIDEuNCBQQUdFIHNpemUg
-aXMgNCBLQiBhbmQgZnJvbSBJRkMyLjAgUEFHRSBzaXplIGlzIDY0S0IuDQo+ID4gPiA+ID4gVGhp
-cyBwYXRjaCBzZWdyZWdhdGVzIHRoZSBJRkMgZ2xvYmFsIGFuZCBydW50aW1lIHJlZ2lzdGVycyB0
-bw0KPiA+ID4gPiA+IGFwcHJvcHJpYXRlIFBBR0Ugc2l6ZXMuDQo+ID4gPiA+DQo+ID4gPiA+IElm
-IHRoZSBnbG9iYWwgcmVnaXN0ZXJzIGFuZCB0aGUgcnVudGltZSByZWdpc3RlcnMgYXJlIHNvDQo+
-ID4gPiA+IGluZGVwZW5kZW50IHRoYXQgdGhleSBoYXZlIHRvIGJlIG9uIGRpZmZlcmVudCBwYWdl
-IGJvdW5kYXJpZXMsIGl0DQo+ID4gPiA+IHdvdWxkIG1ha2UgbW9yZSBzZW5zZSBmb3IgdGhlbSB0
-byBiZSBkZWZpbmVkIGFzIHNlcGFyYXRlIHJlZw0KPiA+ID4gPiByZWdpb25zIGluIHRoZSBkZXZp
-Y2UgdHJlZSBhdCB0aGUgdmVyeSBiZWdpbm5pbmcuICBUaGVuIHdlIHdvdWxkDQo+ID4gPiA+IG9u
-bHkgbmVlZCB0byBjaGFuZ2UgdGhlIGRldmljZSB0cmVlIG5vdyBhbmQgaXQgd291bGQgYmUgZnV0
-dXJlIHByb29mDQo+IGZvciBhbnkgcGFnZSBzaXplLg0KPiA+ID4NCj4gPiA+IFRvIGJlIGNsZWFy
-OiBTY290dCwgeW91IHdlcmUgTkFDSydpbmcgdGhlIERUIGJpbmRpbmcgY2hhbmdlIHJlcXVlc3Qs
-DQo+ID4gPiByaWdodD8gSSB0aG91Z2ggd2UgaGFkIGFuIEFjayBvbiB0aGUgcHJldmlvdXMgcmV2
-aXNpb24gKHRoYXQgUmFnaGF2DQo+ID4gPiBmYWlsZWQgdG8gY2FycnkpLg0KPiA+ID4NCj4gPiA+
-ID4gPg0KPiA+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IEphaXByYWthc2ggU2luZ2ggPGI0NDgzOUBm
-cmVlc2NhbGUuY29tPg0KPiA+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFJhZ2hhdiBEb2dyYSA8cmFn
-aGF2QGZyZWVzY2FsZS5jb20+DQo+ID4gPiA+DQo+ID4gPiA+IFRoZSBwYXRjaCBjYW5ub3QgYXBw
-bHkgb24gbGF0ZXN0IDQuNS1yYyBjbGVhbmx5IGVpdGhlci4NCj4gPiA+ID4gT3RoZXJ3aXNlLA0K
-PiA+ID4NCj4gPiA+IFllYWguLi4gbmVpdGhlciB0aGlzIHBhdGNoIG5vciBpdHMgKGFsbGVnZWRs
-eSkgZGVwZW5kZW50IHBhdGNoIFsxXQ0KPiA+ID4gYXBwbHkgY2xlYW5seS4NCj4gPiA+DQo+ID4g
-PiBJZiB5b3UgZXhwZWN0IG1lIHRvIHRha2UgdGhpcyBwYXRjaCB2aWEgTVRELCBwbGVhc2UgcmVi
-YXNlIHRvDQo+ID4gPiBsMi1tdGQuZ2l0IGFzIHN0YXRlZCBoZXJlOg0KPiA+ID4NCj4gPiA+IGh0
-dHA6Ly9saW51eC1tdGQuaW5mcmFkZWFkLm9yZy9zb3VyY2UuaHRtbA0KPiA+ID4NCj4gPiBJIGV4
-cGVjdCBTY290dCB0byBwaWNrIHRoaXMgcGF0Y2gsIGFuZCBhcHBseSB2aWEgbGludXhwcGMtZGV2
-LiBJIHdpbGwNCj4gPiBzZW5kIHRoZSBwYXRjaCBvbiBiYXNlZCBvbg0KPiA+IGdpdDovL2dpdC5r
-ZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC90b3J2YWxkcy9saW51eC5naXQNCj4g
-PiBCcmFuY2ggIm1hc3RlciINCj4gDQo+IFdoeSBhcmUgeW91IGV4cGVjdGluZyB0aGF0LCBmb3Ig
-YSBwYXRjaCB0aGF0IHRvdWNoZXMgYW4gTVREIGRyaXZlciBhbmQNCj4gZG9lc24ndCB0b3VjaCBh
-cmNoL3Bvd2VycGMsIGFuZCBmb3Igd2hpY2ggSSd2ZSBhbHJlYWR5IGdpdmVuIGFuIGFjayBmb3Ig
-aXQgdG8NCj4gZ28gdmlhIHRoZSBNVEQgdHJlZT8NCg0KSSB3YXMgZXhwZWN0aW5nIHRoYXQgYmVj
-YXVzZSB0aGlzIHBhdGNoIGlzIGRlcGVuZGVudCBvbiB0aGUNCiJkcml2ZXJzL21lbW9yeTogQWRk
-IGRlZXAgc2xlZXAgc3VwcG9ydCBmb3IgSUZDIiBwYXRjaCANCmh0dHBzOi8vcGF0Y2h3b3JrLm96
-bGFicy5vcmcvcGF0Y2gvNTgyNzYyLyBmb3Igd2hpY2ggYW4gQUNLIGlzIHN0aWxsIHBlbmRpbmcu
-DQpTbywgdGlsbCB5b3UgQUNLIHRoYXQgcGF0Y2gsIEJyaWFuIHdvbid0IGJlIGFibGUgdG8gcGlj
-ayB0aGF0IHBhdGNoLCBJIGd1ZXNzLg0KU28sIEkgdGhvdWdodCB5b3UgY2FuIHBpY2sgYm90aCB0
-aGUgcGF0Y2hlcyB3aGVuIGFuIEFDSyBpcyBnaXZlbiB0byB0aGUgZGVlcCBzbGVlcCBwYXRjaC4N
-Cg0KQW55aG93LCBJIGhhdmUgc2VudCB0aGUgbmV3ZXIgdmVyc2lvbiBvZiB0aGlzIHBhdGNoIHdo
-aWNoIGlzIGFwcGxpY2FibGUgb24gbDItbXRkLmdpdCANCkJ1dCBpdCBpcyBzdGlsbCBkZXBlbmRl
-bnQgb24gdGhlIGRlZXAgc2xlZXAgcGF0Y2ggKHdoaWNoIGlzIGFwcGxpY2FibGUgbm93IG9uIGwy
-LW10ZC5naXQgYXMgd2VsbCkNCg0KLVJhZ2hhdg0KPiANCj4gV2hhdCB0cmVlIGRpZCB5b3UgdXNl
-IHRvIGdlbmVyYXRlIHRoaXMgcGF0Y2g/ICBJZiB0aGVyZSdzIHN0dWZmIGluIHRoZSBNVEQNCj4g
-dHJlZSB0aGF0IGNvbmZsaWN0cywgdGhhdCdzIGFsbCB0aGUgbW9yZSByZWFzb24gdG8gc2VuZCBp
-dCB2aWEgdGhlIE1URCB0cmVlDQo+IChhZnRlciByZWJhc2luZyBvbnRvIGl0KS4NCj4gDQo+IC1T
-Y290dA0KDQo=
+Paul Mackerras <paulus@ozlabs.org> writes:
+
+> On Mon, Feb 08, 2016 at 02:50:20PM +0530, Aneesh Kumar K.V wrote:
+>> With next generation power processor, we are having a new mmu model
+>> [1] that require us to maintain a different linux page table format.
+>> 
+>> Inorder to support both current and future ppc64 systems with a single
+>> kernel we need to make sure kernel can select between different page
+>> table format at runtime. With the new MMU (radix MMU) added, we will
+>> have two different pmd hugepage size 16MB for hash model and 2MB for
+>> Radix model. Hence make HPAGE_PMD related values as a variable.
+>
+> But this patch doesn't actually turn any constant into a variable, as
+> far as I can see...
+
+This get done in a later patch where we rename PMD_SHIFT to H_PMD_SHIFT.
+[PATCH V2 15/29] powerpc/mm: Rename hash specific page table bits (_PAGE* -> H_PAGE*)
+
+>
+> Most of what this patch does is to move two tests around:
+>
+> * The #if HPAGE_PMD_ORDER >= MAX_ORDER test get moved from a generic
+> header into all archs except powerpc, and for powerpc it gets turned
+> into BUILD_BUG_ON.  However, BUILD_BUG_ON only works on things that
+> are known at compile time, last time I looked.  Doesn't it need to be
+> a BUG_ON to prepare for HPAGE_PMD_ORDER being a variable that isn't
+> known at compile time?
+>
+> * The existing BUILD_BUG_ON(HPAGE_PMD_ORDER < 2) gets turned into #if
+> for all archs except powerpc, and for powerpc it stays as a
+> BUILD_BUG_ON but gets moved to arch code.  That doesn't really seem to
+> accomplish anything.  Once again, doesn't it need to become a BUG_ON?
+> If so, could we just make it BUG_ON in the generic code where the
+> BUILD_BUG_ON currently is?
+
+The patch actually got updated after feedback from Kirill
+Updated patch here. We still want to fail during build for ppc64. So
+there is a BUILD_BUG_ON also added
+
+http://article.gmane.org/gmane.linux.kernel/2148538
+
+-aneesh
