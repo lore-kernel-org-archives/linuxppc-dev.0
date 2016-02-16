@@ -1,21 +1,36 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 120EC1A0202
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 08:21:16 +1100 (AEDT)
-Message-ID: <1455657664.2463.68.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 16 Feb 2016 15:21:04 -0600
-In-Reply-To: <20160211161650.1F12C1A2400@localhost.localdomain>
-References: <20160211161650.1F12C1A2400@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH v5] powerpc32: provide VIRT_CPU_ACCOUNTING
+ by lists.ozlabs.org (Postfix) with ESMTPS id 31AC41A029E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 08:39:19 +1100 (AEDT)
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Tue, 16 Feb 2016 21:39:16 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id C396A2190023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 21:38:59 +0000 (GMT)
+Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
+ [9.149.37.252])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1GLdE8x51249242
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 21:39:14 GMT
+Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1GLdEv8016075
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 14:39:14 -0700
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 02/18] cxl: Move bare-metal specific code to specialized
+ files
+Date: Tue, 16 Feb 2016 22:38:55 +0100
+Message-Id: <1455658751-16970-3-git-send-email-fbarrat@linux.vnet.ibm.com>
+In-Reply-To: <1455658751-16970-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+References: <1455658751-16970-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,87 +40,622 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-02-11 at 17:16 +0100, Christophe Leroy wrote:
-> This patch provides VIRT_CPU_ACCOUTING to PPC32 architecture.
-> PPC32 doesn't have the PACA structure, so we use the task_info
-> structure to store the accounting data.
-> 
-> In order to reuse on PPC32 the PPC64 functions, all u64 data has
-> been replaced by 'unsigned long' so that it is u32 on PPC32 and
-> u64 on PPC64
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
-> Changes in v3: unlike previous version of the patch that was inspired
-> from IA64 architecture, this new version tries to reuse as much as
-> possible the PPC64 implementation.
-> 
-> PPC32 doesn't have PACA and past discusion on v2 version has shown
-> that it is not worth implementing a PACA in PPC32 architecture
-> (see below benh opinion)
-> 
-> benh: PACA is actually a data structure and you really really don't want it
-> on ppc32 :-) Having a register point to current works, having a register
-> point to per-cpu data instead works too (ie, change what we do today),
-> but don't introduce a PACA *please* :-)
+Move a few functions around to better separate code specific to
+bare-metal environment from code which will be commonly used between
+guest and bare-metal.
 
-And Ben never replied to my reply at the time:
+Code specific to bare-metal is meant to be in native.c or pci.c
+only. It's basically anything which touches the capi p1 registers,
+some p2 registers not needed from a guest and the PCI interface.
 
-"What is special about 64-bit that warrants doing things differently from 32
--bit?  What is the difference between PACA and "per-cpu data", other than the
-obscure name?"
+Co-authored-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+---
+ drivers/misc/cxl/cxl.h    |  24 +----
+ drivers/misc/cxl/irq.c    | 205 +--------------------------------------
+ drivers/misc/cxl/main.c   |   2 +-
+ drivers/misc/cxl/native.c | 240 +++++++++++++++++++++++++++++++++++++++++++++-
+ drivers/misc/cxl/pci.c    |  18 ----
+ 5 files changed, 245 insertions(+), 244 deletions(-)
 
-I can understand wanting to avoid churn, but other than that, doing things 
-differently on 64-bit versus 32-bit sucks.
-
-> b/arch/powerpc/include/asm/cputime.h
-> index e245255..c4c33be 100644
-> --- a/arch/powerpc/include/asm/cputime.h
-> +++ b/arch/powerpc/include/asm/cputime.h
-> @@ -230,7 +230,11 @@ static inline cputime_t clock_t_to_cputime(const
-> unsigned long clk)
->  
->  #define cputime64_to_clock_t(ct)	cputime_to_clock_t((cputime_t)(ct))
->  
-> +#ifdef CONFIG_PPC64
->  static inline void arch_vtime_task_switch(struct task_struct *tsk) { }
-> +#else
-> +void arch_vtime_task_switch(struct task_struct *tsk);
-> +#endif
-
-Add a comment explaining why this is empty on 64-bit but non-empty on 32-bit.
-
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm
-> -offsets.c
-> index 07cebc3..b04b957 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -256,6 +256,13 @@ int main(void)
->  	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
->  	DEFINE(PACA_NAPSTATELOST, offsetof(struct paca_struct,
-> nap_state_lost));
->  	DEFINE(PACA_SPRG_VDSO, offsetof(struct paca_struct, sprg_vdso));
-> +#else /* CONFIG_PPC64 */
-> +#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-> +	DEFINE(PACA_STARTTIME, offsetof(struct thread_info, starttime));
-> +	DEFINE(PACA_STARTTIME_USER, offsetof(struct thread_info,
-> starttime_user));
-> +	DEFINE(PACA_USER_TIME, offsetof(struct thread_info, user_time));
-> +	DEFINE(PACA_SYSTEM_TIME, offsetof(struct thread_info,
-> system_time));
-> +#endif
->  #endif /* CONFIG_PPC64 */
-
-Can you change the name if it's not always going to be relative to a PACA?
-
-> +#ifdef CONFIG_PPC32
-> +#define get_paca()	task_thread_info(tsk)
-> +#endif
-
-Likewise, this is just going to cause confusion.
-
-Can you bundle up the time accounting fields into a struct, that you share
-between the paca and the 32-bit thread_info, and then have a macro to grab a
-pointer to that?
-
--Scott
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 3f88140..3b824e3 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -623,23 +623,8 @@ static inline u64 cxl_p2n_read(struct cxl_afu *afu, cxl_p2n_reg_t reg)
+ 		return ~0ULL;
+ }
+ 
+-static inline u64 cxl_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off)
+-{
+-	if (likely(cxl_adapter_link_ok(afu->adapter)))
+-		return in_le64((afu)->afu_desc_mmio + (afu)->crs_offset +
+-			       ((cr) * (afu)->crs_len) + (off));
+-	else
+-		return ~0ULL;
+-}
+-
+-static inline u32 cxl_afu_cr_read32(struct cxl_afu *afu, int cr, u64 off)
+-{
+-	if (likely(cxl_adapter_link_ok(afu->adapter)))
+-		return in_le32((afu)->afu_desc_mmio + (afu)->crs_offset +
+-			       ((cr) * (afu)->crs_len) + (off));
+-	else
+-		return 0xffffffff;
+-}
++u64 cxl_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off);
++u32 cxl_afu_cr_read32(struct cxl_afu *afu, int cr, u64 off);
+ u16 cxl_afu_cr_read16(struct cxl_afu *afu, int cr, u64 off);
+ u8 cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off);
+ 
+@@ -654,7 +639,6 @@ struct cxl_calls {
+ int register_cxl_calls(struct cxl_calls *calls);
+ void unregister_cxl_calls(struct cxl_calls *calls);
+ 
+-int cxl_alloc_adapter_nr(struct cxl *adapter);
+ void cxl_remove_adapter_nr(struct cxl *adapter);
+ 
+ int cxl_alloc_spa(struct cxl_afu *afu);
+@@ -697,7 +681,8 @@ void cxl_release_serr_irq(struct cxl_afu *afu);
+ int afu_register_irqs(struct cxl_context *ctx, u32 count);
+ void afu_release_irqs(struct cxl_context *ctx, void *cookie);
+ void afu_irq_name_free(struct cxl_context *ctx);
+-irqreturn_t cxl_slice_irq_err(int irq, void *data);
++irqreturn_t handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr,
++				u64 errstat);
+ 
+ int cxl_debugfs_init(void);
+ void cxl_debugfs_exit(void);
+@@ -746,7 +731,6 @@ int cxl_attach_process(struct cxl_context *ctx, bool kernel, u64 wed,
+ 			    u64 amr);
+ int cxl_detach_process(struct cxl_context *ctx);
+ 
+-int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info);
+ int cxl_ack_irq(struct cxl_context *ctx, u64 tfc, u64 psl_reset_mask);
+ 
+ int cxl_check_error(struct cxl_afu *afu);
+diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+index e468e6c..16fd67f 100644
+--- a/drivers/misc/cxl/irq.c
++++ b/drivers/misc/cxl/irq.c
+@@ -19,72 +19,6 @@
+ #include "cxl.h"
+ #include "trace.h"
+ 
+-/* XXX: This is implementation specific */
+-static irqreturn_t handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr, u64 errstat)
+-{
+-	u64 fir1, fir2, fir_slice, serr, afu_debug;
+-
+-	fir1 = cxl_p1_read(ctx->afu->adapter, CXL_PSL_FIR1);
+-	fir2 = cxl_p1_read(ctx->afu->adapter, CXL_PSL_FIR2);
+-	fir_slice = cxl_p1n_read(ctx->afu, CXL_PSL_FIR_SLICE_An);
+-	serr = cxl_p1n_read(ctx->afu, CXL_PSL_SERR_An);
+-	afu_debug = cxl_p1n_read(ctx->afu, CXL_AFU_DEBUG_An);
+-
+-	dev_crit(&ctx->afu->dev, "PSL ERROR STATUS: 0x%016llx\n", errstat);
+-	dev_crit(&ctx->afu->dev, "PSL_FIR1: 0x%016llx\n", fir1);
+-	dev_crit(&ctx->afu->dev, "PSL_FIR2: 0x%016llx\n", fir2);
+-	dev_crit(&ctx->afu->dev, "PSL_SERR_An: 0x%016llx\n", serr);
+-	dev_crit(&ctx->afu->dev, "PSL_FIR_SLICE_An: 0x%016llx\n", fir_slice);
+-	dev_crit(&ctx->afu->dev, "CXL_PSL_AFU_DEBUG_An: 0x%016llx\n", afu_debug);
+-
+-	dev_crit(&ctx->afu->dev, "STOPPING CXL TRACE\n");
+-	cxl_stop_trace(ctx->afu->adapter);
+-
+-	return cxl_ack_irq(ctx, 0, errstat);
+-}
+-
+-irqreturn_t cxl_slice_irq_err(int irq, void *data)
+-{
+-	struct cxl_afu *afu = data;
+-	u64 fir_slice, errstat, serr, afu_debug;
+-
+-	WARN(irq, "CXL SLICE ERROR interrupt %i\n", irq);
+-
+-	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
+-	fir_slice = cxl_p1n_read(afu, CXL_PSL_FIR_SLICE_An);
+-	errstat = cxl_p2n_read(afu, CXL_PSL_ErrStat_An);
+-	afu_debug = cxl_p1n_read(afu, CXL_AFU_DEBUG_An);
+-	dev_crit(&afu->dev, "PSL_SERR_An: 0x%016llx\n", serr);
+-	dev_crit(&afu->dev, "PSL_FIR_SLICE_An: 0x%016llx\n", fir_slice);
+-	dev_crit(&afu->dev, "CXL_PSL_ErrStat_An: 0x%016llx\n", errstat);
+-	dev_crit(&afu->dev, "CXL_PSL_AFU_DEBUG_An: 0x%016llx\n", afu_debug);
+-
+-	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
+-
+-	return IRQ_HANDLED;
+-}
+-
+-static irqreturn_t cxl_irq_err(int irq, void *data)
+-{
+-	struct cxl *adapter = data;
+-	u64 fir1, fir2, err_ivte;
+-
+-	WARN(1, "CXL ERROR interrupt %i\n", irq);
+-
+-	err_ivte = cxl_p1_read(adapter, CXL_PSL_ErrIVTE);
+-	dev_crit(&adapter->dev, "PSL_ErrIVTE: 0x%016llx\n", err_ivte);
+-
+-	dev_crit(&adapter->dev, "STOPPING CXL TRACE\n");
+-	cxl_stop_trace(adapter);
+-
+-	fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
+-	fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
+-
+-	dev_crit(&adapter->dev, "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n", fir1, fir2);
+-
+-	return IRQ_HANDLED;
+-}
+-
+ static irqreturn_t schedule_cxl_fault(struct cxl_context *ctx, u64 dsisr, u64 dar)
+ {
+ 	ctx->dsisr = dsisr;
+@@ -179,45 +113,6 @@ irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
+ 	return IRQ_HANDLED;
+ }
+ 
+-static irqreturn_t fail_psl_irq(struct cxl_afu *afu, struct cxl_irq_info *irq_info)
+-{
+-	if (irq_info->dsisr & CXL_PSL_DSISR_TRANS)
+-		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
+-	else
+-		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_A);
+-
+-	return IRQ_HANDLED;
+-}
+-
+-static irqreturn_t cxl_irq_multiplexed(int irq, void *data)
+-{
+-	struct cxl_afu *afu = data;
+-	struct cxl_context *ctx;
+-	struct cxl_irq_info irq_info;
+-	int ph = cxl_p2n_read(afu, CXL_PSL_PEHandle_An) & 0xffff;
+-	int ret;
+-
+-	if ((ret = cxl_get_irq(afu, &irq_info))) {
+-		WARN(1, "Unable to get CXL IRQ Info: %i\n", ret);
+-		return fail_psl_irq(afu, &irq_info);
+-	}
+-
+-	rcu_read_lock();
+-	ctx = idr_find(&afu->contexts_idr, ph);
+-	if (ctx) {
+-		ret = cxl_irq(irq, ctx, &irq_info);
+-		rcu_read_unlock();
+-		return ret;
+-	}
+-	rcu_read_unlock();
+-
+-	WARN(1, "Unable to demultiplex CXL PSL IRQ for PE %i DSISR %016llx DAR"
+-		" %016llx\n(Possible AFU HW issue - was a term/remove acked"
+-		" with outstanding transactions?)\n", ph, irq_info.dsisr,
+-		irq_info.dar);
+-	return fail_psl_irq(afu, &irq_info);
+-}
+-
+ static irqreturn_t cxl_irq_afu(int irq, void *data)
+ {
+ 	struct cxl_context *ctx = data;
+@@ -316,104 +211,6 @@ err:
+ 	return -ENOMEM;
+ }
+ 
+-int cxl_register_psl_err_irq(struct cxl *adapter)
+-{
+-	int rc;
+-
+-	adapter->irq_name = kasprintf(GFP_KERNEL, "cxl-%s-err",
+-				      dev_name(&adapter->dev));
+-	if (!adapter->irq_name)
+-		return -ENOMEM;
+-
+-	if ((rc = cxl_register_one_irq(adapter, cxl_irq_err, adapter,
+-				       &adapter->err_hwirq,
+-				       &adapter->err_virq,
+-				       adapter->irq_name))) {
+-		kfree(adapter->irq_name);
+-		adapter->irq_name = NULL;
+-		return rc;
+-	}
+-
+-	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, adapter->err_hwirq & 0xffff);
+-
+-	return 0;
+-}
+-
+-void cxl_release_psl_err_irq(struct cxl *adapter)
+-{
+-	if (adapter->err_virq != irq_find_mapping(NULL, adapter->err_hwirq))
+-		return;
+-
+-	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, 0x0000000000000000);
+-	cxl_unmap_irq(adapter->err_virq, adapter);
+-	cxl_release_one_irq(adapter, adapter->err_hwirq);
+-	kfree(adapter->irq_name);
+-}
+-
+-int cxl_register_serr_irq(struct cxl_afu *afu)
+-{
+-	u64 serr;
+-	int rc;
+-
+-	afu->err_irq_name = kasprintf(GFP_KERNEL, "cxl-%s-err",
+-				      dev_name(&afu->dev));
+-	if (!afu->err_irq_name)
+-		return -ENOMEM;
+-
+-	if ((rc = cxl_register_one_irq(afu->adapter, cxl_slice_irq_err, afu,
+-				       &afu->serr_hwirq,
+-				       &afu->serr_virq, afu->err_irq_name))) {
+-		kfree(afu->err_irq_name);
+-		afu->err_irq_name = NULL;
+-		return rc;
+-	}
+-
+-	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
+-	serr = (serr & 0x00ffffffffff0000ULL) | (afu->serr_hwirq & 0xffff);
+-	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
+-
+-	return 0;
+-}
+-
+-void cxl_release_serr_irq(struct cxl_afu *afu)
+-{
+-	if (afu->serr_virq != irq_find_mapping(NULL, afu->serr_hwirq))
+-		return;
+-
+-	cxl_p1n_write(afu, CXL_PSL_SERR_An, 0x0000000000000000);
+-	cxl_unmap_irq(afu->serr_virq, afu);
+-	cxl_release_one_irq(afu->adapter, afu->serr_hwirq);
+-	kfree(afu->err_irq_name);
+-}
+-
+-int cxl_register_psl_irq(struct cxl_afu *afu)
+-{
+-	int rc;
+-
+-	afu->psl_irq_name = kasprintf(GFP_KERNEL, "cxl-%s",
+-				      dev_name(&afu->dev));
+-	if (!afu->psl_irq_name)
+-		return -ENOMEM;
+-
+-	if ((rc = cxl_register_one_irq(afu->adapter, cxl_irq_multiplexed, afu,
+-				    &afu->psl_hwirq, &afu->psl_virq,
+-				    afu->psl_irq_name))) {
+-		kfree(afu->psl_irq_name);
+-		afu->psl_irq_name = NULL;
+-	}
+-	return rc;
+-}
+-
+-void cxl_release_psl_irq(struct cxl_afu *afu)
+-{
+-	if (afu->psl_virq != irq_find_mapping(NULL, afu->psl_hwirq))
+-		return;
+-
+-	cxl_unmap_irq(afu->psl_virq, afu);
+-	cxl_release_one_irq(afu->adapter, afu->psl_hwirq);
+-	kfree(afu->psl_irq_name);
+-}
+-
+ void afu_irq_name_free(struct cxl_context *ctx)
+ {
+ 	struct cxl_irq_name *irq_name, *tmp;
+@@ -504,7 +301,7 @@ int afu_register_irqs(struct cxl_context *ctx, u32 count)
+ 
+ 	afu_register_hwirqs(ctx);
+ 	return 0;
+- }
++}
+ 
+ void afu_release_irqs(struct cxl_context *ctx, void *cookie)
+ {
+diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+index 7ef5b43..90933eb 100644
+--- a/drivers/misc/cxl/main.c
++++ b/drivers/misc/cxl/main.c
+@@ -173,7 +173,7 @@ struct cxl *get_cxl_adapter(int num)
+ 	return adapter;
+ }
+ 
+-int cxl_alloc_adapter_nr(struct cxl *adapter)
++static int cxl_alloc_adapter_nr(struct cxl *adapter)
+ {
+ 	int i;
+ 
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 0b0a4c8..3103e33 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -712,7 +712,7 @@ int cxl_detach_process(struct cxl_context *ctx)
+ 	return detach_process_native_afu_directed(ctx);
+ }
+ 
+-int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info)
++static int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info)
+ {
+ 	u64 pidtid;
+ 
+@@ -734,6 +734,208 @@ int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info)
+ 	return 0;
+ }
+ 
++irqreturn_t handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr, u64 errstat)
++{
++	u64 fir1, fir2, fir_slice, serr, afu_debug;
++
++	fir1 = cxl_p1_read(ctx->afu->adapter, CXL_PSL_FIR1);
++	fir2 = cxl_p1_read(ctx->afu->adapter, CXL_PSL_FIR2);
++	fir_slice = cxl_p1n_read(ctx->afu, CXL_PSL_FIR_SLICE_An);
++	serr = cxl_p1n_read(ctx->afu, CXL_PSL_SERR_An);
++	afu_debug = cxl_p1n_read(ctx->afu, CXL_AFU_DEBUG_An);
++
++	dev_crit(&ctx->afu->dev, "PSL ERROR STATUS: 0x%016llx\n", errstat);
++	dev_crit(&ctx->afu->dev, "PSL_FIR1: 0x%016llx\n", fir1);
++	dev_crit(&ctx->afu->dev, "PSL_FIR2: 0x%016llx\n", fir2);
++	dev_crit(&ctx->afu->dev, "PSL_SERR_An: 0x%016llx\n", serr);
++	dev_crit(&ctx->afu->dev, "PSL_FIR_SLICE_An: 0x%016llx\n", fir_slice);
++	dev_crit(&ctx->afu->dev, "CXL_PSL_AFU_DEBUG_An: 0x%016llx\n", afu_debug);
++
++	dev_crit(&ctx->afu->dev, "STOPPING CXL TRACE\n");
++	cxl_stop_trace(ctx->afu->adapter);
++
++	return cxl_ack_irq(ctx, 0, errstat);
++}
++
++static irqreturn_t fail_psl_irq(struct cxl_afu *afu, struct cxl_irq_info *irq_info)
++{
++	if (irq_info->dsisr & CXL_PSL_DSISR_TRANS)
++		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
++	else
++		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_A);
++
++	return IRQ_HANDLED;
++}
++
++static irqreturn_t cxl_irq_multiplexed(int irq, void *data)
++{
++	struct cxl_afu *afu = data;
++	struct cxl_context *ctx;
++	struct cxl_irq_info irq_info;
++	int ph = cxl_p2n_read(afu, CXL_PSL_PEHandle_An) & 0xffff;
++	int ret;
++
++	if ((ret = cxl_get_irq(afu, &irq_info))) {
++		WARN(1, "Unable to get CXL IRQ Info: %i\n", ret);
++		return fail_psl_irq(afu, &irq_info);
++	}
++
++	rcu_read_lock();
++	ctx = idr_find(&afu->contexts_idr, ph);
++	if (ctx) {
++		ret = cxl_irq(irq, ctx, &irq_info);
++		rcu_read_unlock();
++		return ret;
++	}
++	rcu_read_unlock();
++
++	WARN(1, "Unable to demultiplex CXL PSL IRQ for PE %i DSISR %016llx DAR"
++		" %016llx\n(Possible AFU HW issue - was a term/remove acked"
++		" with outstanding transactions?)\n", ph, irq_info.dsisr,
++		irq_info.dar);
++	return fail_psl_irq(afu, &irq_info);
++}
++
++static irqreturn_t cxl_slice_irq_err(int irq, void *data)
++{
++	struct cxl_afu *afu = data;
++	u64 fir_slice, errstat, serr, afu_debug;
++
++	WARN(irq, "CXL SLICE ERROR interrupt %i\n", irq);
++
++	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
++	fir_slice = cxl_p1n_read(afu, CXL_PSL_FIR_SLICE_An);
++	errstat = cxl_p2n_read(afu, CXL_PSL_ErrStat_An);
++	afu_debug = cxl_p1n_read(afu, CXL_AFU_DEBUG_An);
++	dev_crit(&afu->dev, "PSL_SERR_An: 0x%016llx\n", serr);
++	dev_crit(&afu->dev, "PSL_FIR_SLICE_An: 0x%016llx\n", fir_slice);
++	dev_crit(&afu->dev, "CXL_PSL_ErrStat_An: 0x%016llx\n", errstat);
++	dev_crit(&afu->dev, "CXL_PSL_AFU_DEBUG_An: 0x%016llx\n", afu_debug);
++
++	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
++
++	return IRQ_HANDLED;
++}
++
++static irqreturn_t cxl_irq_err(int irq, void *data)
++{
++	struct cxl *adapter = data;
++	u64 fir1, fir2, err_ivte;
++
++	WARN(1, "CXL ERROR interrupt %i\n", irq);
++
++	err_ivte = cxl_p1_read(adapter, CXL_PSL_ErrIVTE);
++	dev_crit(&adapter->dev, "PSL_ErrIVTE: 0x%016llx\n", err_ivte);
++
++	dev_crit(&adapter->dev, "STOPPING CXL TRACE\n");
++	cxl_stop_trace(adapter);
++
++	fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
++	fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
++
++	dev_crit(&adapter->dev, "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n", fir1, fir2);
++
++	return IRQ_HANDLED;
++}
++
++int cxl_register_psl_err_irq(struct cxl *adapter)
++{
++	int rc;
++
++	adapter->irq_name = kasprintf(GFP_KERNEL, "cxl-%s-err",
++				      dev_name(&adapter->dev));
++	if (!adapter->irq_name)
++		return -ENOMEM;
++
++	if ((rc = cxl_register_one_irq(adapter, cxl_irq_err, adapter,
++				       &adapter->err_hwirq,
++				       &adapter->err_virq,
++				       adapter->irq_name))) {
++		kfree(adapter->irq_name);
++		adapter->irq_name = NULL;
++		return rc;
++	}
++
++	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, adapter->err_hwirq & 0xffff);
++
++	return 0;
++}
++
++void cxl_release_psl_err_irq(struct cxl *adapter)
++{
++	if (adapter->err_virq != irq_find_mapping(NULL, adapter->err_hwirq))
++		return;
++
++	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, 0x0000000000000000);
++	cxl_unmap_irq(adapter->err_virq, adapter);
++	cxl_release_one_irq(adapter, adapter->err_hwirq);
++	kfree(adapter->irq_name);
++}
++
++int cxl_register_serr_irq(struct cxl_afu *afu)
++{
++	u64 serr;
++	int rc;
++
++	afu->err_irq_name = kasprintf(GFP_KERNEL, "cxl-%s-err",
++				      dev_name(&afu->dev));
++	if (!afu->err_irq_name)
++		return -ENOMEM;
++
++	if ((rc = cxl_register_one_irq(afu->adapter, cxl_slice_irq_err, afu,
++				       &afu->serr_hwirq,
++				       &afu->serr_virq, afu->err_irq_name))) {
++		kfree(afu->err_irq_name);
++		afu->err_irq_name = NULL;
++		return rc;
++	}
++
++	serr = cxl_p1n_read(afu, CXL_PSL_SERR_An);
++	serr = (serr & 0x00ffffffffff0000ULL) | (afu->serr_hwirq & 0xffff);
++	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
++
++	return 0;
++}
++
++void cxl_release_serr_irq(struct cxl_afu *afu)
++{
++	if (afu->serr_virq != irq_find_mapping(NULL, afu->serr_hwirq))
++		return;
++
++	cxl_p1n_write(afu, CXL_PSL_SERR_An, 0x0000000000000000);
++	cxl_unmap_irq(afu->serr_virq, afu);
++	cxl_release_one_irq(afu->adapter, afu->serr_hwirq);
++	kfree(afu->err_irq_name);
++}
++
++int cxl_register_psl_irq(struct cxl_afu *afu)
++{
++	int rc;
++
++	afu->psl_irq_name = kasprintf(GFP_KERNEL, "cxl-%s",
++				      dev_name(&afu->dev));
++	if (!afu->psl_irq_name)
++		return -ENOMEM;
++
++	if ((rc = cxl_register_one_irq(afu->adapter, cxl_irq_multiplexed, afu,
++				    &afu->psl_hwirq, &afu->psl_virq,
++				    afu->psl_irq_name))) {
++		kfree(afu->psl_irq_name);
++		afu->psl_irq_name = NULL;
++	}
++	return rc;
++}
++
++void cxl_release_psl_irq(struct cxl_afu *afu)
++{
++	if (afu->psl_virq != irq_find_mapping(NULL, afu->psl_hwirq))
++		return;
++
++	cxl_unmap_irq(afu->psl_virq, afu);
++	cxl_release_one_irq(afu->adapter, afu->psl_hwirq);
++	kfree(afu->psl_irq_name);
++}
++
+ static void recover_psl_err(struct cxl_afu *afu, u64 errstat)
+ {
+ 	u64 dsisr;
+@@ -763,3 +965,39 @@ int cxl_check_error(struct cxl_afu *afu)
+ {
+ 	return (cxl_p1n_read(afu, CXL_PSL_SCNTL_An) == ~0ULL);
+ }
++
++u64 cxl_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off)
++{
++	if (likely(cxl_adapter_link_ok(afu->adapter)))
++		return in_le64((afu)->afu_desc_mmio + (afu)->crs_offset +
++			       ((cr) * (afu)->crs_len) + (off));
++	else
++		return ~0ULL;
++}
++
++u32 cxl_afu_cr_read32(struct cxl_afu *afu, int cr, u64 off)
++{
++	if (likely(cxl_adapter_link_ok(afu->adapter)))
++		return in_le32((afu)->afu_desc_mmio + (afu)->crs_offset +
++			       ((cr) * (afu)->crs_len) + (off));
++	else
++		return 0xffffffff;
++}
++
++u16 cxl_afu_cr_read16(struct cxl_afu *afu, int cr, u64 off)
++{
++	u64 aligned_off = off & ~0x3L;
++	u32 val;
++
++	val = cxl_afu_cr_read32(afu, cr, aligned_off);
++	return (val >> ((off & 0x2) * 8)) & 0xffff;
++}
++
++u8 cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off)
++{
++	u64 aligned_off = off & ~0x3L;
++	u32 val;
++
++	val = cxl_afu_cr_read32(afu, cr, aligned_off);
++	return (val >> ((off & 0x3) * 8)) & 0xff;
++}
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index ad28c56..c6279e5 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -116,24 +116,6 @@
+ #define   AFUD_EB_LEN(val)		EXTRACT_PPC_BITS(val, 8, 63)
+ #define AFUD_READ_EB_OFF(afu)		AFUD_READ(afu, 0x48)
+ 
+-u16 cxl_afu_cr_read16(struct cxl_afu *afu, int cr, u64 off)
+-{
+-	u64 aligned_off = off & ~0x3L;
+-	u32 val;
+-
+-	val = cxl_afu_cr_read32(afu, cr, aligned_off);
+-	return (val >> ((off & 0x2) * 8)) & 0xffff;
+-}
+-
+-u8 cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off)
+-{
+-	u64 aligned_off = off & ~0x3L;
+-	u32 val;
+-
+-	val = cxl_afu_cr_read32(afu, cr, aligned_off);
+-	return (val >> ((off & 0x3) * 8)) & 0xff;
+-}
+-
+ static const struct pci_device_id cxl_pci_tbl[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0477), },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x044b), },
+-- 
+1.9.1
