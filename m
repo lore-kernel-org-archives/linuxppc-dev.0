@@ -1,37 +1,35 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DB6361A0353
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 10:00:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AC5EA1A005A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 10:24:53 +1100 (AEDT)
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 17 Feb 2016 09:00:21 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1BD9F2CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 10:00:18 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1GN0AbG61538362
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 10:00:18 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1GMxjxN027973
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 09:59:45 +1100
-Date: Wed, 17 Feb 2016 09:59:21 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Russell Currey <ruscur@russell.cc>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/eeh: rename EEH from "extended" to "enhanced"
- error handling
-Message-ID: <20160216225921.GA8768@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1455624365-4200-1-git-send-email-ruscur@russell.cc>
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Tue, 16 Feb 2016 18:24:51 -0500
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id F1503C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 18:24:45 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1GNOm2336569150
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 23:24:48 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1GNOll3023702
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 18:24:48 -0500
+Date: Tue, 16 Feb 2016 15:24:27 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] powerpc/perf/hv-24x7: Display domain indices in sysfs
+Message-ID: <20160216232427.GA27660@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1455624365-4200-1-git-send-email-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,60 +39,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 16, 2016 at 11:06:05PM +1100, Russell Currey wrote:
->IBM online documentation for EEH uses "extended error handling" and
->"enhanced error handling" to refer to the same thing, in different
->places.  The only place mentioning it as "enhanced error handling" in the
->kernel is the MAINTAINERS file, and it's "extended" in some documentation.
->
->IBM originally defined EEH as "enhanced error handling", so standardise
->all mentions of EEH to use that term.
->
->Signed-off-by: Russell Currey <ruscur@russell.cc>
+>From aff5a822e873522b9a3f355f816547394b452a64 Mon Sep 17 00:00:00 2001
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Tue, 16 Feb 2016 20:07:51 -0500
+Subject: [PATCH 1/2] powerpc/perf/hv-24x7: Display domain indices in sysfs
 
-Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To help users determine domains, display the domain indices used by the
+kernel in sysfs.
 
-Thanks,
-Gavin
+	$ cat /sys/bus/event_source/devices/hv_24x7/interface/domains
+	1: Physical Chip
+	2: Physical Core
+	3: VCPU Home Core
+	4: VCPU Home Chip
+	5: VCPU Home Node
+	6: VCPU Remote Node
 
->---
->This is essentially a V2 (though it has the inverse result) of this patch:
->https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-February/139367.html
->---
-> Documentation/powerpc/eeh-pci-error-recovery.txt | 2 +-
-> arch/powerpc/kernel/eeh.c                        | 2 +-
-> 2 files changed, 2 insertions(+), 2 deletions(-)
->
->diff --git a/Documentation/powerpc/eeh-pci-error-recovery.txt b/Documentation/powerpc/eeh-pci-error-recovery.txt
->index 9d4e33d..6781892 100644
->--- a/Documentation/powerpc/eeh-pci-error-recovery.txt
->+++ b/Documentation/powerpc/eeh-pci-error-recovery.txt
->@@ -12,7 +12,7 @@ Overview:
-> The IBM POWER-based pSeries and iSeries computers include PCI bus
-> controller chips that have extended capabilities for detecting and
-> reporting a large variety of PCI bus error conditions.  These features
->-go under the name of "EEH", for "Extended Error Handling".  The EEH
->+go under the name of "EEH", for "Enhanced Error Handling".  The EEH
-> hardware features allow PCI bus errors to be cleared and a PCI
-> card to be "rebooted", without also having to reboot the operating
-> system.
->diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->index 40e4d4a..2e78466 100644
->--- a/arch/powerpc/kernel/eeh.c
->+++ b/arch/powerpc/kernel/eeh.c
->@@ -48,7 +48,7 @@
-> 
-> 
-> /** Overview:
->- *  EEH, or "Extended Error Handling" is a PCI bridge technology for
->+ *  EEH, or "Enhanced Error Handling" is a PCI bridge technology for
->  *  dealing with PCI bus errors that can't be dealt with within the
->  *  usual PCI framework, except by check-stopping the CPU.  Systems
->  *  that are designed for high-availability/reliability cannot afford
->-- 
->2.7.1
->
->_______________________________________________
->Linuxppc-dev mailing list
->Linuxppc-dev@lists.ozlabs.org
->https://lists.ozlabs.org/listinfo/linuxppc-dev
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/hv-24x7.c | 41 +++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/perf/hv-24x7.h |  1 +
+ 2 files changed, 42 insertions(+)
+
+diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+index 77b958f..36b29fd 100644
+--- a/arch/powerpc/perf/hv-24x7.c
++++ b/arch/powerpc/perf/hv-24x7.c
+@@ -68,6 +68,24 @@ static bool is_physical_domain(unsigned domain)
+ 	}
+ }
+ 
++static const char *domain_name(unsigned domain)
++{
++	if (!domain_is_valid(domain))
++		return NULL;
++
++	switch (domain) {
++	case HV_PERF_DOMAIN_PHYS_CHIP:		return "Physical Chip";
++	case HV_PERF_DOMAIN_PHYS_CORE:		return "Physical Core";
++	case HV_PERF_DOMAIN_VCPU_HOME_CORE:	return "VCPU Home Core";
++	case HV_PERF_DOMAIN_VCPU_HOME_CHIP:	return "VCPU Home Chip";
++	case HV_PERF_DOMAIN_VCPU_HOME_NODE:	return "VCPU Home Node";
++	case HV_PERF_DOMAIN_VCPU_REMOTE_NODE:	return "VCPU Remote Node";
++	}
++
++	WARN_ON_ONCE(domain);
++	return NULL;
++}
++
+ static bool catalog_entry_domain_is_valid(unsigned domain)
+ {
+ 	return is_physical_domain(domain);
+@@ -969,6 +987,27 @@ e_free:
+ 	return ret;
+ }
+ 
++static ssize_t domains_show(struct device *dev, struct device_attribute *attr,
++			    char *page)
++{
++	int d, n, count = 0;
++	const char *str;
++
++	for (d = 0; d < HV_PERF_DOMAIN_MAX; d++) {
++		str = domain_name(d);
++		if (!str)
++			continue;
++
++		n = sprintf(page, "%d: %s\n", d, str);
++		if (n < 0)
++			break;
++
++		count += n;
++		page += n;
++	}
++	return count;
++}
++
+ #define PAGE_0_ATTR(_name, _fmt, _expr)				\
+ static ssize_t _name##_show(struct device *dev,			\
+ 			    struct device_attribute *dev_attr,	\
+@@ -997,6 +1036,7 @@ PAGE_0_ATTR(catalog_version, "%lld\n",
+ PAGE_0_ATTR(catalog_len, "%lld\n",
+ 		(unsigned long long)be32_to_cpu(page_0->length) * 4096);
+ static BIN_ATTR_RO(catalog, 0/* real length varies */);
++static DEVICE_ATTR_RO(domains);
+ 
+ static struct bin_attribute *if_bin_attrs[] = {
+ 	&bin_attr_catalog,
+@@ -1006,6 +1046,7 @@ static struct bin_attribute *if_bin_attrs[] = {
+ static struct attribute *if_attrs[] = {
+ 	&dev_attr_catalog_len.attr,
+ 	&dev_attr_catalog_version.attr,
++	&dev_attr_domains.attr,
+ 	NULL,
+ };
+ 
+diff --git a/arch/powerpc/perf/hv-24x7.h b/arch/powerpc/perf/hv-24x7.h
+index 0f9fa21..2d7f4e4 100644
+--- a/arch/powerpc/perf/hv-24x7.h
++++ b/arch/powerpc/perf/hv-24x7.h
+@@ -7,6 +7,7 @@ enum hv_perf_domains {
+ #define DOMAIN(n, v, x, c) HV_PERF_DOMAIN_##n = v,
+ #include "hv-24x7-domains.h"
+ #undef DOMAIN
++	HV_PERF_DOMAIN_MAX,
+ };
+ 
+ struct hv_24x7_request {
+-- 
+1.8.3.1
