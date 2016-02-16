@@ -1,26 +1,35 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A2E721A0013
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 11:41:56 +1100 (AEDT)
-Message-ID: <1455583310.2463.37.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Raghav Dogra <raghav.dogra@nxp.com>, Brian Norris
- <computersforpeace@gmail.com>, Li Yang <leoli@freescale.com>
-Cc: Raghav Dogra <raghav@freescale.com>, "linux-mtd@lists.infradead.org"
- <linux-mtd@lists.infradead.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>,  Prabhakar Kushwaha
- <prabhakar.kushwaha@nxp.com>, Jaiprakash Singh <b44839@freescale.com>
-Date: Mon, 15 Feb 2016 18:41:50 -0600
-In-Reply-To: <DB4PR04MB3465D14DB9003BF000DFE9889AC0@DB4PR04MB346.eurprd04.prod.outlook.com>
-References: <1454481372-10288-1-git-send-email-raghav@freescale.com>
- <CADRPPNTKFA8rkynJR4wCNgAmqvmiwYwTi2Uk9hDUMB4+N7ST_Q@mail.gmail.com>
- <20160212194411.GF21465@google.com>
- <DB4PR04MB3465D14DB9003BF000DFE9889AC0@DB4PR04MB346.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH] mtd/ifc: Add support for IFC controller version 2.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id A7ACD1A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 12:01:09 +1100 (AEDT)
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 16 Feb 2016 11:01:08 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 03F892CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 12:01:06 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1G10v9N11862098
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 12:01:05 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1G10XOE031573
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 12:00:33 +1100
+Subject: Re: [PATCH] powerpc/lib/sstep.c - Fix emulation fall-through
+To: "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <1453704952-11197-1-git-send-email-oohall@gmail.com>
+ <1455578929-29599-1-git-send-email-oohall@gmail.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-ID: <56C27479.8080808@au1.ibm.com>
+Date: Tue, 16 Feb 2016 11:59:37 +1100
+MIME-Version: 1.0
+In-Reply-To: <1455578929-29599-1-git-send-email-oohall@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,63 +39,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-02-15 at 06:18 +0000, Raghav Dogra wrote:
-> 
-> > -----Original Message-----
-> > From: Brian Norris [mailto:computersforpeace@gmail.com]
-> > Sent: Saturday, February 13, 2016 1:14 AM
-> > To: Li Yang <leoli@freescale.com>
-> > Cc: Raghav Dogra <raghav@freescale.com>; linux-mtd@lists.infradead.org;
-> > linuxppc-dev <linuxppc-dev@lists.ozlabs.org>; oss@buserror.net; Prabhakar
-> > Kushwaha <prabhakar.kushwaha@nxp.com>; Jaiprakash Singh
-> > <b44839@freescale.com>
-> > Subject: Re: [PATCH] mtd/ifc: Add support for IFC controller version 2.0
-> > 
-> > On Thu, Feb 04, 2016 at 05:07:16PM -0600, Li Yang wrote:
-> > > On Wed, Feb 3, 2016 at 12:36 AM, Raghav Dogra <raghav@freescale.com>
-> > wrote:
-> > > > The new IFC controller version 2.0 has a different memory map page.
-> > > > Upto IFC 1.4 PAGE size is 4 KB and from IFC2.0 PAGE size is 64KB.
-> > > > This patch segregates the IFC global and runtime registers to
-> > > > appropriate PAGE sizes.
-> > > 
-> > > If the global registers and the runtime registers are so independent
-> > > that they have to be on different page boundaries, it would make more
-> > > sense for them to be defined as separate reg regions in the device
-> > > tree at the very beginning.  Then we would only need to change the
-> > > device tree now and it would be future proof for any page size.
-> > 
-> > To be clear: Scott, you were NACK'ing the DT binding change request,
-> > right? I
-> > though we had an Ack on the previous revision (that Raghav failed to
-> > carry).
-> > 
-> > > > 
-> > > > Signed-off-by: Jaiprakash Singh <b44839@freescale.com>
-> > > > Signed-off-by: Raghav Dogra <raghav@freescale.com>
-> > > 
-> > > The patch cannot apply on latest 4.5-rc cleanly either.  Otherwise,
-> > 
-> > Yeah... neither this patch nor its (allegedly) dependent patch [1] apply
-> > cleanly.
-> > 
-> > If you expect me to take this patch via MTD, please rebase to l2-mtd.git
-> > as
-> > stated here:
-> > 
-> > http://linux-mtd.infradead.org/source.html
-> > 
-> I expect Scott to pick this patch, and apply via linuxppc-dev. I will send
-> the patch on based on
-> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
-> Branch "master"
+On 16/02/16 10:28, Oliver O'Halloran wrote:
+> There is a switch fallthough in instr_analyze() which can cause
+> an invalid instruction to be emulated as a different, valid,
+> instruction. The rld* (opcode 30) case extracts a sub-opcode from
+> bits 3:1 of the instruction word. However, the only valid values
+> of this field a 001 and 000. These cases are correctly handled,
+> but the others are not which causes execution to fall through
+> into case 31.
+>
+> Breaking out of the switch causes the instruction to be marked as
+> unknown and allows the caller to deal with the invalid instruction
+> in a manner consistent with other invalid instructions.
+>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 
-Why are you expecting that, for a patch that touches an MTD driver and doesn't
-touch arch/powerpc, and for which I've already given an ack for it to go via
-the MTD tree?
+The title should probably be "powerpc/sstep: fix switch fallthrough in 
+instruction emulation" to be consistent with our usual patch titling 
+practice. Please respin.
 
-What tree did you use to generate this patch?  If there's stuff in the MTD
-tree that conflicts, that's all the more reason to send it via the MTD tree
-(after rebasing onto it).
+Apart from that, I'm reasonably convinced this is an appropriate fix:
 
--Scott
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+
+-- 
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
