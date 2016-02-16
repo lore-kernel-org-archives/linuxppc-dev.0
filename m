@@ -1,35 +1,37 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AC5EA1A005A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 10:24:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7BC251A03D4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 10:25:46 +1100 (AEDT)
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 16 Feb 2016 18:24:51 -0500
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id F1503C9003E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 18:24:45 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1GNOm2336569150
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 23:24:48 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1GNOll3023702
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 18:24:48 -0500
-Date: Tue, 16 Feb 2016 15:24:27 -0800
+ Tue, 16 Feb 2016 18:25:44 -0500
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 7641C6E8040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 18:12:33 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1GNPfFZ27983962
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 23:25:41 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1GNPfSc015674
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 18:25:41 -0500
+Date: Tue, 16 Feb 2016 15:25:20 -0800
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] powerpc/perf/hv-24x7: Display domain indices in sysfs
-Message-ID: <20160216232427.GA27660@us.ibm.com>
+Subject: [PATCH 2/2] powerpc/perf/24x7: Eliminate domain suffix in event names
+Message-ID: <20160216232520.GB27660@us.ibm.com>
+References: <20160216232427.GA27660@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160216232427.GA27660@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,112 +41,303 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From aff5a822e873522b9a3f355f816547394b452a64 Mon Sep 17 00:00:00 2001
+>From 1520e8087d047e8ab6c1bda027a74eb33956e5a0 Mon Sep 17 00:00:00 2001
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Tue, 16 Feb 2016 20:07:51 -0500
-Subject: [PATCH 1/2] powerpc/perf/hv-24x7: Display domain indices in sysfs
+Date: Tue, 16 Feb 2016 22:21:25 -0500
+Subject: [PATCH 2/2] powerpc/perf/24x7: Eliminate domain suffix in event names
 
-To help users determine domains, display the domain indices used by the
-kernel in sysfs.
+The Physical Core events of the 24x7 PMU can be monitored across various
+domains (physical core, vcpu home core, vcpu home node etc). For each of
+these core events, we currently create multiple events in sysfs, one for
+each domain the event can be monitored in. These events are distinguished
+by their suffixes like __PHYS_CORE, __VCPU_HOME_CORE etc.
 
-	$ cat /sys/bus/event_source/devices/hv_24x7/interface/domains
-	1: Physical Chip
-	2: Physical Core
-	3: VCPU Home Core
-	4: VCPU Home Chip
-	5: VCPU Home Node
-	6: VCPU Remote Node
+Rather than creating multiple such entries, we could let the user specify
+make 'domain' index a required parameter and let the user specify a value
+for it (like they currently specify the core index).
+
+	$ cat /sys/bus/event_source/devices/hv_24x7/events/HPM_CCYC
+	domain=?,offset=0x98,core=?,lpar=0x0
+
+	$ perf stat -C 0 -e hv_24x7/HPM_CCYC,domain=2,core=1/ true
+
+(the 'domain=?' and 'core=?' in sysfs tell perf tool to enforce them as
+required parameters).
+
+This simplifies the interface and allows users to identify events by the
+name specified in the catalog (User can determine the domain index by
+referring to '/sys/bus/event_source/devices/hv_24x7/interface/domains').
+
+Eliminating the event suffix eliminates several functions and simplifies
+code.
+
+Note that Physical Chip events can only be monitored in the chip domain
+so those events have the domain set to 1 (rather than =?) and users don't
+need to specify the domain index for the Chip events.
+
+	$ cat /sys/bus/event_source/devices/hv_24x7/events/PM_XLINK_CYCLES
+	domain=1,offset=0x230,chip=?,lpar=0x0
+
+	$ perf stat -C 0 -e hv_24x7/PM_XLINK_CYCLES,chip=1/ true
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/hv-24x7.c | 41 +++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/perf/hv-24x7.h |  1 +
- 2 files changed, 42 insertions(+)
+ arch/powerpc/perf/hv-24x7.c | 149 ++++++++++++++++++++------------------------
+ 1 file changed, 66 insertions(+), 83 deletions(-)
 
 diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index 77b958f..36b29fd 100644
+index 36b29fd..59012e7 100644
 --- a/arch/powerpc/perf/hv-24x7.c
 +++ b/arch/powerpc/perf/hv-24x7.c
-@@ -68,6 +68,24 @@ static bool is_physical_domain(unsigned domain)
- 	}
- }
+@@ -27,20 +27,6 @@
+ #include "hv-24x7-catalog.h"
+ #include "hv-common.h"
  
-+static const char *domain_name(unsigned domain)
-+{
-+	if (!domain_is_valid(domain))
-+		return NULL;
-+
-+	switch (domain) {
-+	case HV_PERF_DOMAIN_PHYS_CHIP:		return "Physical Chip";
-+	case HV_PERF_DOMAIN_PHYS_CORE:		return "Physical Core";
-+	case HV_PERF_DOMAIN_VCPU_HOME_CORE:	return "VCPU Home Core";
-+	case HV_PERF_DOMAIN_VCPU_HOME_CHIP:	return "VCPU Home Chip";
-+	case HV_PERF_DOMAIN_VCPU_HOME_NODE:	return "VCPU Home Node";
-+	case HV_PERF_DOMAIN_VCPU_REMOTE_NODE:	return "VCPU Remote Node";
-+	}
-+
-+	WARN_ON_ONCE(domain);
-+	return NULL;
-+}
-+
- static bool catalog_entry_domain_is_valid(unsigned domain)
+-static const char *event_domain_suffix(unsigned domain)
+-{
+-	switch (domain) {
+-#define DOMAIN(n, v, x, c)		\
+-	case HV_PERF_DOMAIN_##n:	\
+-		return "__" #n;
+-#include "hv-24x7-domains.h"
+-#undef DOMAIN
+-	default:
+-		WARN(1, "unknown domain %d\n", domain);
+-		return "__UNKNOWN_DOMAIN_SUFFIX";
+-	}
+-}
+-
+ static bool domain_is_valid(unsigned domain)
  {
- 	return is_physical_domain(domain);
-@@ -969,6 +987,27 @@ e_free:
- 	return ret;
+ 	switch (domain) {
+@@ -294,38 +280,70 @@ static unsigned long h_get_24x7_catalog_page(char page[],
+ 					version, index);
  }
  
-+static ssize_t domains_show(struct device *dev, struct device_attribute *attr,
-+			    char *page)
-+{
-+	int d, n, count = 0;
-+	const char *str;
-+
-+	for (d = 0; d < HV_PERF_DOMAIN_MAX; d++) {
-+		str = domain_name(d);
-+		if (!str)
-+			continue;
-+
-+		n = sprintf(page, "%d: %s\n", d, str);
-+		if (n < 0)
-+			break;
-+
-+		count += n;
-+		page += n;
-+	}
-+	return count;
-+}
-+
- #define PAGE_0_ATTR(_name, _fmt, _expr)				\
- static ssize_t _name##_show(struct device *dev,			\
- 			    struct device_attribute *dev_attr,	\
-@@ -997,6 +1036,7 @@ PAGE_0_ATTR(catalog_version, "%lld\n",
- PAGE_0_ATTR(catalog_len, "%lld\n",
- 		(unsigned long long)be32_to_cpu(page_0->length) * 4096);
- static BIN_ATTR_RO(catalog, 0/* real length varies */);
-+static DEVICE_ATTR_RO(domains);
+-static unsigned core_domains[] = {
+-	HV_PERF_DOMAIN_PHYS_CORE,
+-	HV_PERF_DOMAIN_VCPU_HOME_CORE,
+-	HV_PERF_DOMAIN_VCPU_HOME_CHIP,
+-	HV_PERF_DOMAIN_VCPU_HOME_NODE,
+-	HV_PERF_DOMAIN_VCPU_REMOTE_NODE,
+-};
+-/* chip event data always yeilds a single event, core yeilds multiple */
+-#define MAX_EVENTS_PER_EVENT_DATA ARRAY_SIZE(core_domains)
+-
++/*
++ * Each event we find in the catalog, will have a sysfs entry. Format the
++ * data for this sysfs entry based on the event's domain.
++ *
++ * Events belonging to the Chip domain can only be monitored in that domain.
++ * i.e the domain for these events is a fixed/knwon value.
++ *
++ * Events belonging to the Core domain can be monitored either in the physical
++ * core or in one of the virtual CPU domains. So the domain value for these
++ * events must be specified by the user (i.e is a required parameter). Format
++ * the Core events with 'domain=?' so the perf-tool can error check required
++ * parameters.
++ *
++ * NOTE: For the Core domain events, rather than making domain a required
++ *	 parameter we could default it to PHYS_CORE and allowe users to
++ *	 override the domain to one of the VCPU domains.
++ *
++ *	 However, this can make the interface a little inconsistent.
++ *
++ *	 If we set domain=2 (PHYS_CHIP) and allow user to override this field
++ *	 the user may be tempted to also modify the "offset=x" field in which
++ *	 can lead to confusing usage. Consider the HPM_PCYC (offset=0x18) and
++ *	 HPM_INST (offset=0x20) events. With:
++ *
++ *		perf stat -e hv_24x7/HPM_PCYC,offset=0x20/
++ *
++ *	we end up monitoring HPM_INST, while the command line has HPM_PCYC.
++ *
++ *	By not assigning a default value to the domain for the Core events,
++ *	we can have simple guidelines:
++ *
++ *		- Specifying values for parameters with "=?" is required.
++ *
++ *		- Specifying (i.e overriding) values for other parameters
++ *		  is undefined.
++ */
+ static char *event_fmt(struct hv_24x7_event_data *event, unsigned domain)
+ {
+ 	const char *sindex;
+ 	const char *lpar;
++	const char *domain_str;
++	char buf[8];
  
- static struct bin_attribute *if_bin_attrs[] = {
- 	&bin_attr_catalog,
-@@ -1006,6 +1046,7 @@ static struct bin_attribute *if_bin_attrs[] = {
- static struct attribute *if_attrs[] = {
- 	&dev_attr_catalog_len.attr,
- 	&dev_attr_catalog_version.attr,
-+	&dev_attr_domains.attr,
- 	NULL,
- };
+ 	switch (domain) {
+ 	case HV_PERF_DOMAIN_PHYS_CHIP:
++		snprintf(buf, sizeof(buf), "%d", domain);
++		domain_str = buf;
+ 		lpar = "0x0";
+ 		sindex = "chip";
+ 		break;
+ 	case HV_PERF_DOMAIN_PHYS_CORE:
++		domain_str = "?";
+ 		lpar = "0x0";
+ 		sindex = "core";
+ 		break;
+ 	default:
++		domain_str = "?";
+ 		lpar = "?";
+ 		sindex = "vcpu";
+ 	}
  
-diff --git a/arch/powerpc/perf/hv-24x7.h b/arch/powerpc/perf/hv-24x7.h
-index 0f9fa21..2d7f4e4 100644
---- a/arch/powerpc/perf/hv-24x7.h
-+++ b/arch/powerpc/perf/hv-24x7.h
-@@ -7,6 +7,7 @@ enum hv_perf_domains {
- #define DOMAIN(n, v, x, c) HV_PERF_DOMAIN_##n = v,
- #include "hv-24x7-domains.h"
- #undef DOMAIN
-+	HV_PERF_DOMAIN_MAX,
- };
+ 	return kasprintf(GFP_KERNEL,
+-			"domain=0x%x,offset=0x%x,%s=?,lpar=%s",
+-			domain,
++			"domain=%s,offset=0x%x,%s=?,lpar=%s",
++			domain_str,
+ 			be16_to_cpu(event->event_counter_offs) +
+ 				be16_to_cpu(event->event_group_record_offs),
+ 			sindex,
+@@ -365,6 +383,15 @@ static struct attribute *device_str_attr_create_(char *name, char *str)
+ 	return &attr->attr.attr;
+ }
  
- struct hv_24x7_request {
++/*
++ * Allocate and initialize strings representing event attributes.
++ *
++ * NOTE: The strings allocated here are never destroyed and continue to
++ *	 exist till shutdown. This is to allow us to create as many events
++ *	 from the catalog as possible, even if we encounter errors with some.
++ *	 In case of changes to error paths in future, these may need to be
++ *	 freed by the caller.
++ */
+ static struct attribute *device_str_attr_create(char *name, int name_max,
+ 						int name_nonce,
+ 						char *str, size_t str_max)
+@@ -396,16 +423,6 @@ out_s:
+ 	return NULL;
+ }
+ 
+-static void device_str_attr_destroy(struct attribute *attr)
+-{
+-	struct dev_ext_attribute *d;
+-
+-	d = container_of(attr, struct dev_ext_attribute, attr.attr);
+-	kfree(d->var);
+-	kfree(d->attr.attr.name);
+-	kfree(d);
+-}
+-
+ static struct attribute *event_to_attr(unsigned ix,
+ 				       struct hv_24x7_event_data *event,
+ 				       unsigned domain,
+@@ -413,7 +430,6 @@ static struct attribute *event_to_attr(unsigned ix,
+ {
+ 	int event_name_len;
+ 	char *ev_name, *a_ev_name, *val;
+-	const char *ev_suffix;
+ 	struct attribute *attr;
+ 
+ 	if (!domain_is_valid(domain)) {
+@@ -426,14 +442,13 @@ static struct attribute *event_to_attr(unsigned ix,
+ 	if (!val)
+ 		return NULL;
+ 
+-	ev_suffix = event_domain_suffix(domain);
+ 	ev_name = event_name(event, &event_name_len);
+ 	if (!nonce)
+-		a_ev_name = kasprintf(GFP_KERNEL, "%.*s%s",
+-				(int)event_name_len, ev_name, ev_suffix);
++		a_ev_name = kasprintf(GFP_KERNEL, "%.*s",
++				(int)event_name_len, ev_name);
+ 	else
+-		a_ev_name = kasprintf(GFP_KERNEL, "%.*s%s__%d",
+-				(int)event_name_len, ev_name, ev_suffix, nonce);
++		a_ev_name = kasprintf(GFP_KERNEL, "%.*s__%d",
++				(int)event_name_len, ev_name, nonce);
+ 
+ 	if (!a_ev_name)
+ 		goto out_val;
+@@ -478,45 +493,14 @@ event_to_long_desc_attr(struct hv_24x7_event_data *event, int nonce)
+ 	return device_str_attr_create(name, nl, nonce, desc, dl);
+ }
+ 
+-static ssize_t event_data_to_attrs(unsigned ix, struct attribute **attrs,
++static int event_data_to_attrs(unsigned ix, struct attribute **attrs,
+ 				   struct hv_24x7_event_data *event, int nonce)
+ {
+-	unsigned i;
+-
+-	switch (event->domain) {
+-	case HV_PERF_DOMAIN_PHYS_CHIP:
+-		*attrs = event_to_attr(ix, event, event->domain, nonce);
+-		return 1;
+-	case HV_PERF_DOMAIN_PHYS_CORE:
+-		for (i = 0; i < ARRAY_SIZE(core_domains); i++) {
+-			attrs[i] = event_to_attr(ix, event, core_domains[i],
+-						nonce);
+-			if (!attrs[i]) {
+-				pr_warn("catalog event %u: individual attr %u "
+-					"creation failure\n", ix, i);
+-				for (; i; i--)
+-					device_str_attr_destroy(attrs[i - 1]);
+-				return -1;
+-			}
+-		}
+-		return i;
+-	default:
+-		pr_warn("catalog event %u: domain %u is not allowed in the "
+-				"catalog\n", ix, event->domain);
++	*attrs = event_to_attr(ix, event, event->domain, nonce);
++	if (!*attrs)
+ 		return -1;
+-	}
+-}
+ 
+-static size_t event_to_attr_ct(struct hv_24x7_event_data *event)
+-{
+-	switch (event->domain) {
+-	case HV_PERF_DOMAIN_PHYS_CHIP:
+-		return 1;
+-	case HV_PERF_DOMAIN_PHYS_CORE:
+-		return ARRAY_SIZE(core_domains);
+-	default:
+-		return 0;
+-	}
++	return 0;
+ }
+ 
+ static unsigned long vmalloc_to_phys(void *v)
+@@ -752,9 +736,8 @@ static int create_events_from_catalog(struct attribute ***events_,
+ 		goto e_free;
+ 	}
+ 
+-	if (SIZE_MAX / MAX_EVENTS_PER_EVENT_DATA - 1 < event_entry_count) {
+-		pr_err("event_entry_count %zu is invalid\n",
+-				event_entry_count);
++	if (SIZE_MAX - 1 < event_entry_count) {
++		pr_err("event_entry_count %zu is invalid\n", event_entry_count);
+ 		ret = -EIO;
+ 		goto e_free;
+ 	}
+@@ -827,7 +810,7 @@ static int create_events_from_catalog(struct attribute ***events_,
+ 			continue;
+ 		}
+ 
+-		attr_max += event_to_attr_ct(event);
++		attr_max++;
+ 	}
+ 
+ 	event_idx_last = event_idx;
+@@ -877,12 +860,12 @@ static int create_events_from_catalog(struct attribute ***events_,
+ 		nonce = event_uniq_add(&ev_uniq, name, nl, event->domain);
+ 		ct    = event_data_to_attrs(event_idx, events + event_attr_ct,
+ 					    event, nonce);
+-		if (ct <= 0) {
++		if (ct < 0) {
+ 			pr_warn("event %zu (%.*s) creation failure, skipping\n",
+ 				event_idx, nl, name);
+ 			junk_events++;
+ 		} else {
+-			event_attr_ct += ct;
++			event_attr_ct++;
+ 			event_descs[desc_ct] = event_to_desc_attr(event, nonce);
+ 			if (event_descs[desc_ct])
+ 				desc_ct++;
 -- 
 1.8.3.1
