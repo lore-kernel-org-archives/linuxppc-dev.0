@@ -1,60 +1,32 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-ig0-x232.google.com (mail-ig0-x232.google.com
+ [IPv6:2607:f8b0:4001:c05::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 970721A007F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 05:46:12 +1100 (AEDT)
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Tue, 16 Feb 2016 18:46:09 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 200D917D805A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 18:46:24 +0000 (GMT)
-Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
- [9.149.37.252])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1GIk5TN6881664
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 18:46:06 GMT
-Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1GIk4oA000401
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 11:46:05 -0700
-Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe also
- on PowerPC and ARM)
-To: "Kirill A. Shutemov" <kirill@shutemov.name>,
- Gerald Schaefer <gerald.schaefer@de.ibm.com>
-References: <20160211192223.4b517057@thinkpad>
- <20160211190942.GA10244@node.shutemov.name>
- <20160211205702.24f0d17a@thinkpad>
- <20160212154116.GA15142@node.shutemov.name> <56BE00E7.1010303@de.ibm.com>
- <20160212181640.4eabb85f@thinkpad>
- <20160212231510.GB15142@node.shutemov.name>
- <alpine.LFD.2.20.1602131238260.1910@schleppi>
- <20160215113159.GA28832@node.shutemov.name>
- <20160215193702.4a15ed5e@thinkpad> <20160215213526.GA9766@node.shutemov.name>
-Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
- <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Message-ID: <56C36E6B.70009@de.ibm.com>
-Date: Tue, 16 Feb 2016 19:46:03 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id B90861A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 05:59:10 +1100 (AEDT)
+Received: by mail-ig0-x232.google.com with SMTP id y8so84147539igp.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 10:59:10 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20160215213526.GA9766@node.shutemov.name>
-Content-Type: text/plain; charset=windows-1252
+Sender: linus971@gmail.com
+In-Reply-To: <20160215175825.GA15878@linux.vnet.ibm.com>
+References: <20160215175825.GA15878@linux.vnet.ibm.com>
+Date: Tue, 16 Feb 2016 10:59:08 -0800
+Message-ID: <CA+55aFxaQEvDrzecmZUQ5QfKzU4ei6E-+NpsW5hYp3ouaLP98g@mail.gmail.com>
+Subject: Re: Writes, smp_wmb(), and transitivity?
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Paul McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Will Deacon <will.deacon@arm.com>, Andy.Glew@imgtec.com,
+ Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, David Miller <davem@davemloft.net>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-metag@vger.kernel.org,
+ linux-mips <linux-mips@linux-mips.org>, linux-xtensa@linux-xtensa.org,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, graham.whaley@gmail.com,
+ Peter Anvin <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -64,12 +36,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/15/2016 10:35 PM, Kirill A. Shutemov wrote:
-> 
-> Is there any chance that I'll be able to trigger the bug using QEMU?
-> Does anybody have an QEMU image I can use?
+On Mon, Feb 15, 2016 at 9:58 AM, Paul E. McKenney
+<paulmck@linux.vnet.ibm.com> wrote:
+>
+> Two threads:
+>
+>         int a, b;
+>
+>         void thread0(void)
+>         {
+>                 WRITE_ONCE(a, 1);
+>                 smp_wmb();
+>                 WRITE_ONCE(b, 2);
+>         }
+>
+>         void thread1(void)
+>         {
+>                 WRITE_ONCE(b, 1);
+>                 smp_wmb();
+>                 WRITE_ONCE(a, 2);
+>         }
+>
+>         /* After all threads have completed and the dust has settled... */
+>
+>         BUG_ON(a == 1 && b == 1);
 
-qemu/TCG on s390 does neither provide SMP nor large pages (only QEMU/KVM does)
-so this will probably not help you here. 
+So the more I look at that kind of litmus test, the less I think that
+we should care, because I can't come up with a scenario in where that
+kind of test makes sense. without even a possibility of any causal
+relationship between the two, I can't say why we'd ever care about the
+ordering of the (independent) writes to the individual variables.
 
-Christian
+If somebody can make up a causal chain, things differ. But as long as
+all the CPU's are just doing locally ordered writes, I don't think we
+need to care about a global store ordering.
+
+              Linus
