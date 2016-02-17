@@ -2,23 +2,23 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1C66C1A0352
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C5FD1A034E
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:57 +1100 (AEDT)
 Received: from localhost
  by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Wed, 17 Feb 2016 13:45:56 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A52A7357809A
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id A48BC357805E
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:52 +1100 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1H3jill5112242
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1H3jiIh7471482
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:52 +1100
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1H3jIsk018169
+ u1H3jIu6018153
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:20 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
@@ -26,10 +26,10 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
  dja@axtens.net, bhelgaas@google.com, robherring2@gmail.com,
  grant.likely@linaro.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v8 37/45] powerpc/powernv: Use firmware PCI slot reset
- infrastructure
-Date: Wed, 17 Feb 2016 14:44:20 +1100
-Message-Id: <1455680668-23298-38-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v8 34/45] powerpc/powernv: Exclude root bus in
+ pnv_pci_reset_secondary_bus()
+Date: Wed, 17 Feb 2016 14:44:17 +1100
+Message-Id: <1455680668-23298-35-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,76 +41,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The skiboot firmware might provide the PCI slot reset capability
-which is identified by property "ibm,reset-by-firmware" on the
-PCI slot associated device node.
+The function pnv_pci_reset_secondary_bus() is called like below.
+It's impossible for call the function on root bus. So it's safe
+to remove the root bus case in the function. No functional changes
+introduced.
 
-This checks the property. If it exists, the reset request is routed
-to firmware. Otherwise, the reset is done by kernel as before.
+   pci_parent_bus_reset() / pci_bus_reset() / pci_try_reset_bus()
+   pci_reset_bridge_secondary_bus()
+   pcibios_reset_secondary_bus()
+   pnv_pci_reset_secondary_bus()
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Reviewed-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/platforms/powernv/eeh-powernv.c | 41 +++++++++++++++++++++++++++-
- 1 file changed, 40 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index e23b063..c8a5217 100644
+index 9226df1..593b8dc 100644
 --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
 +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -789,7 +789,7 @@ static int pnv_eeh_root_reset(struct pci_controller *hose, int option)
- 	return ret;
+@@ -868,16 +868,8 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
+ 
+ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
+ {
+-	struct pci_controller *hose;
+-
+-	if (pci_is_root_bus(dev->bus)) {
+-		hose = pci_bus_to_host(dev->bus);
+-		pnv_eeh_root_reset(hose, EEH_RESET_HOT);
+-		pnv_eeh_root_reset(hose, EEH_RESET_DEACTIVATE);
+-	} else {
+-		pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
+-		pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
+-	}
++	pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
++	pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
  }
  
--static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
-+static int __pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
- {
- 	struct pci_dn *pdn = pci_get_pdn_by_devfn(dev->bus, dev->devfn);
- 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-@@ -840,6 +840,45 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
- 	return 0;
- }
- 
-+static int pnv_eeh_bridge_reset(struct pci_dev *pdev, int option)
-+{
-+	struct pci_controller *hose;
-+	struct pnv_phb *phb;
-+	struct device_node *dn = pdev ? pci_device_to_OF_node(pdev) : NULL;
-+	uint64_t id = (0x1ul << 60);
-+	uint8_t scope;
-+	int64_t rc;
-+
-+	/*
-+	 * If the firmware can't handle it, we will issue hot reset
-+	 * on the secondary bus despite the requested reset type.
-+	 */
-+	if (!dn || !of_get_property(dn, "ibm,reset-by-firmware", NULL))
-+		return __pnv_eeh_bridge_reset(pdev, option);
-+
-+	/* The firmware can handle the request */
-+	switch (option) {
-+	case EEH_RESET_HOT:
-+		scope = OPAL_RESET_PCI_HOT;
-+		break;
-+	case EEH_RESET_FUNDAMENTAL:
-+		scope = OPAL_RESET_PCI_FUNDAMENTAL;
-+		break;
-+	case EEH_RESET_DEACTIVATE:
-+		return 0;
-+	default:
-+		dev_warn(&pdev->dev, "%s: Unsupported reset %d\n",
-+			 __func__, option);
-+		return -EINVAL;
-+	}
-+
-+	hose = pci_bus_to_host(pdev->bus);
-+	phb = hose->private_data;
-+	id |= (pdev->bus->number << 24) | (pdev->devfn << 16) | phb->opal_id;
-+	rc = opal_pci_reset(id, scope, OPAL_ASSERT_RESET);
-+	return pnv_pci_poll(id, rc, NULL);
-+}
-+
- static int pnv_pci_dev_reset_type(struct pci_dev *pdev, void *data)
- {
- 	int *freset = data;
+ static void pnv_eeh_wait_for_pending(struct pci_dn *pdn, const char *type,
 -- 
 2.1.0
