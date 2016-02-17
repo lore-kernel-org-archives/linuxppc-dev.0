@@ -1,23 +1,35 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x22b.google.com (mail-pf0-x22b.google.com
- [IPv6:2607:f8b0:400e:c00::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A66351A0018
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 18:16:12 +1100 (AEDT)
-Received: by mail-pf0-x22b.google.com with SMTP id q63so6590394pfb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 23:16:12 -0800 (PST)
-Message-ID: <1455693365.3089.8.camel@gmail.com>
-Subject: Re: Fix BUG_ON() reporting in real mode on powerpc
-From: Balbir Singh <bsingharora@gmail.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 17 Feb 2016 18:16:05 +1100
-In-Reply-To: <20160217045606.GA19276@oak.ozlabs.ibm.com>
-References: <1455684191.3089.3.camel@gmail.com>
- <20160217045606.GA19276@oak.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 99ED71A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 18:27:43 +1100 (AEDT)
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Wed, 17 Feb 2016 17:27:42 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4D9BE2BB005B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 18:27:38 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1H7ROB641812000
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 18:27:38 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1H7R0s0019937
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 18:27:00 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>, stable@vger.kernel.org.#.4.2+,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH kernel v2] powerpc/ioda: Set "read" permission when "write" is
+ set
+Date: Wed, 17 Feb 2016 18:26:31 +1100
+Message-Id: <1455693991-31405-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,59 +39,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Quite often drivers set only "write" permission assuming that this
+includes "read" permission as well and this works on plenty platforms.
+However IODA2 is strict about this and produces an EEH when "read"
+permission is not and reading happens.
 
-> It might be a little better to do this:
-> 
-> 		bugaddr = regs->nip;
-> 		if (REGION_ID(bugaddr) == 0 && !(regs->msr & MSR_IR))
-> 			bugaddr += PAGE_OFFSET;
-> 
-> It is possible to execute from addresses with the 0xc000... on top in
-> real mode, because the CPU ignores the top 4 address bits in real
-> mode.
+This adds a workaround in IODA code to always add the "read" bit when
+the "write" bit is set.
 
-Good catch! Thank you
+This fixes breakage introduced in
+10b35b2b74 powerpc/powernv: Do not set "read" flag if direction==DMA_NONE
 
-Changelog:
-     Don't add PAGE_OFFSET blindly, check if REGION_ID is 0
-
-I ran into this issue while debugging an early boot problem.
-The system hit a BUG_ON() but report bug failed to print the
-line number and file name. The reason being that the system
-was running in real mode and report_bug() searches for
-addresses in the PAGE_OFFSET+ region
-
-Suggested-by: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+Cc: stable@vger.kernel.org # 4.2+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Tested-by: Douglas Miller <dougmill@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/traps.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/pci.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index b6becc7..4de4fe7 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1148,6 +1148,7 @@ void __kprobes program_check_exception(struct pt_regs *regs)
- 		goto bail;
- 	}
- 	if (reason & REASON_TRAP) {
-+		unsigned long bugaddr;
- 		/* Debugger is first in line to stop recursive faults in
- 		 * rcu_lock, notify_die, or atomic_notifier_call_chain */
- 		if (debugger_bpt(regs))
-@@ -1158,8 +1159,12 @@ void __kprobes program_check_exception(struct pt_regs *regs)
- 				== NOTIFY_STOP)
- 			goto bail;
- 
-+		bugaddr = regs->nip;
-+		if ((REGION_ID(bugaddr) == 0) && !(regs->msr & MSR_IR))
-+			bugaddr += PAGE_OFFSET;
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 2f55c86..6a97ba4 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -599,6 +599,9 @@ int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+ 	u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
+ 	long i;
+ 
++	if (proto_tce & TCE_PCI_WRITE)
++		proto_tce |= TCE_PCI_READ;
 +
- 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
--		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
-+		    report_bug(bugaddr, regs) == BUG_TRAP_TYPE_WARN) {
- 			regs->nip += 4;
- 			goto bail;
- 		}
--- 
-2.5.0
+ 	for (i = 0; i < npages; i++) {
+ 		unsigned long newtce = proto_tce |
+ 			((rpn + i) << tbl->it_page_shift);
+@@ -620,6 +623,9 @@ int pnv_tce_xchg(struct iommu_table *tbl, long index,
+ 
+ 	BUG_ON(*hpa & ~IOMMU_PAGE_MASK(tbl));
+ 
++	if (newtce & TCE_PCI_WRITE)
++		newtce |= TCE_PCI_READ;
++
+ 	oldtce = xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce));
+ 	*hpa = be64_to_cpu(oldtce) & ~(TCE_PCI_READ | TCE_PCI_WRITE);
+ 	*direction = iommu_tce_direction(oldtce);
+-- 
+2.5.0.rc3
