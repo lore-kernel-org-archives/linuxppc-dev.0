@@ -1,34 +1,34 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9FAB71A034E
+ by lists.ozlabs.org (Postfix) with ESMTPS id B52051A0354
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:56 +1100 (AEDT)
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Wed, 17 Feb 2016 13:45:56 +1000
 Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9774D3578099
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 179D02BB007D
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:52 +1100 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1H3ji7o24445052
+ u1H3jiWG31981822
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:52 +1100
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1H3jIip018162
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:20 +1100
+ u1H3jImN018079
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:19 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
  dja@axtens.net, bhelgaas@google.com, robherring2@gmail.com,
  grant.likely@linaro.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v8 36/45] powerpc/powernv: Support PCI slot ID
-Date: Wed, 17 Feb 2016 14:44:19 +1100
-Message-Id: <1455680668-23298-37-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v8 18/45] powerpc/powernv: Increase PE# capacity
+Date: Wed, 17 Feb 2016 14:44:01 +1100
+Message-Id: <1455680668-23298-19-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,185 +40,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PowerNV platforms runs on top of skiboot firmware that includes
-changes to support PCI slots. PCI slots are identified by PHB's
-ID or the combo of that and PCI slot ID.
+Each PHB maintains an array helping to translate 2-bytes Request
+ID (RID) to PE# with the assumption that PE# takes one byte, meaning
+that we can't have more than 256 PEs. However, pci_dn->pe_number
+already had 4-bytes for the PE#.
 
-This changes the EEH PowerNV backend to support PCI slots:
-
-   * Rename arguments of opal_pci_reset() and opal_pci_poll().
-   * One more argument (PCI slot's state) added to opal_pci_poll().
-   * Drop pnv_eeh_phb_poll() and introduce a enhanced similar
-     function pnv_pci_poll() that will be used by PowerNV hotplug
-     backends.
+This extends the PE# capacity for every PHB. After that, the PE number
+is represented by 4-bytes value. Then we can reuse IODA_INVALID_PE to
+check the PE# in phb->pe_rmap[] is valid or not.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Reviewed-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/include/asm/opal.h              |  4 +--
- arch/powerpc/platforms/powernv/eeh-powernv.c | 42 ++++++----------------------
- arch/powerpc/platforms/powernv/pci.c         | 21 ++++++++++++++
- arch/powerpc/platforms/powernv/pci.h         |  1 +
- 4 files changed, 32 insertions(+), 36 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 6 +++++-
+ arch/powerpc/platforms/powernv/pci.h      | 7 ++-----
+ 2 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 07a99e6..9e0039f 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -131,7 +131,7 @@ int64_t opal_pci_map_pe_dma_window(uint64_t phb_id, uint16_t pe_number, uint16_t
- int64_t opal_pci_map_pe_dma_window_real(uint64_t phb_id, uint16_t pe_number,
- 					uint16_t dma_window_number, uint64_t pci_start_addr,
- 					uint64_t pci_mem_size);
--int64_t opal_pci_reset(uint64_t phb_id, uint8_t reset_scope, uint8_t assert_state);
-+int64_t opal_pci_reset(uint64_t id, uint8_t reset_scope, uint8_t assert_state);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 59782fba..7800897 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -757,7 +757,7 @@ static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
  
- int64_t opal_pci_get_hub_diag_data(uint64_t hub_id, void *diag_buffer,
- 				   uint64_t diag_buffer_len);
-@@ -148,7 +148,7 @@ int64_t opal_get_dpo_status(__be64 *dpo_timeout);
- int64_t opal_set_system_attention_led(uint8_t led_action);
- int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
- 			    __be16 *pci_error_type, __be16 *severity);
--int64_t opal_pci_poll(uint64_t phb_id);
-+int64_t opal_pci_poll(uint64_t id, uint8_t *state);
- int64_t opal_return_cpu(void);
- int64_t opal_check_token(uint64_t token);
- int64_t opal_reinit_cpus(uint64_t flags);
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index c7454ba..e23b063 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -717,28 +717,11 @@ static int pnv_eeh_get_state(struct eeh_pe *pe, int *delay)
- 	return ret;
- }
+ 	/* Clear the reverse map */
+ 	for (rid = pe->rid; rid < rid_end; rid++)
+-		phb->ioda.pe_rmap[rid] = 0;
++		phb->ioda.pe_rmap[rid] = IODA_INVALID_PE;
  
--static s64 pnv_eeh_phb_poll(struct pnv_phb *phb)
--{
--	s64 rc = OPAL_HARDWARE;
--
--	while (1) {
--		rc = opal_pci_poll(phb->opal_id);
--		if (rc <= 0)
--			break;
--
--		if (system_state < SYSTEM_RUNNING)
--			udelay(1000 * rc);
--		else
--			msleep(rc);
--	}
--
--	return rc;
--}
--
- int pnv_eeh_phb_reset(struct pci_controller *hose, int option)
- {
- 	struct pnv_phb *phb = hose->private_data;
- 	s64 rc = OPAL_HARDWARE;
-+	int ret;
+ 	/* Release from all parents PELT-V */
+ 	while (parent) {
+@@ -3387,6 +3387,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	if (prop32)
+ 		phb->ioda.reserved_pe_idx = be32_to_cpup(prop32);
  
- 	pr_debug("%s: Reset PHB#%x, option=%d\n",
- 		 __func__, hose->global_number, option);
-@@ -753,8 +736,6 @@ int pnv_eeh_phb_reset(struct pci_controller *hose, int option)
- 		rc = opal_pci_reset(phb->opal_id,
- 				    OPAL_RESET_PHB_COMPLETE,
- 				    OPAL_DEASSERT_RESET);
--	if (rc < 0)
--		goto out;
- 
- 	/*
- 	 * Poll state of the PHB until the request is done
-@@ -762,24 +743,22 @@ int pnv_eeh_phb_reset(struct pci_controller *hose, int option)
- 	 * reset followed by hot reset on root bus. So we also
- 	 * need the PCI bus settlement delay.
- 	 */
--	rc = pnv_eeh_phb_poll(phb);
--	if (option == EEH_RESET_DEACTIVATE) {
-+	ret = pnv_pci_poll(phb->opal_id, rc, NULL);
-+	if (option == EEH_RESET_DEACTIVATE && !ret) {
- 		if (system_state < SYSTEM_RUNNING)
- 			udelay(1000 * EEH_PE_RST_SETTLE_TIME);
- 		else
- 			msleep(EEH_PE_RST_SETTLE_TIME);
- 	}
--out:
--	if (rc != OPAL_SUCCESS)
--		return -EIO;
- 
--	return 0;
-+	return ret;
- }
- 
- static int pnv_eeh_root_reset(struct pci_controller *hose, int option)
- {
- 	struct pnv_phb *phb = hose->private_data;
- 	s64 rc = OPAL_HARDWARE;
-+	int ret;
- 
- 	pr_debug("%s: Reset PHB#%x, option=%d\n",
- 		 __func__, hose->global_number, option);
-@@ -801,18 +780,13 @@ static int pnv_eeh_root_reset(struct pci_controller *hose, int option)
- 		rc = opal_pci_reset(phb->opal_id,
- 				    OPAL_RESET_PCI_HOT,
- 				    OPAL_DEASSERT_RESET);
--	if (rc < 0)
--		goto out;
- 
- 	/* Poll state of the PHB until the request is done */
--	rc = pnv_eeh_phb_poll(phb);
--	if (option == EEH_RESET_DEACTIVATE)
-+	ret = pnv_pci_poll(phb->opal_id, rc, NULL);
-+	if (option == EEH_RESET_DEACTIVATE && !ret)
- 		msleep(EEH_PE_RST_SETTLE_TIME);
--out:
--	if (rc != OPAL_SUCCESS)
--		return -EIO;
- 
--	return 0;
-+	return ret;
- }
- 
- static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index b87a315..a458703 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -42,6 +42,27 @@
- #define cfg_dbg(fmt...)	do { } while(0)
- //#define cfg_dbg(fmt...)	printk(fmt)
- 
-+int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *state)
-+{
-+	while (rval > 0) {
-+		if (system_state < SYSTEM_RUNNING)
-+			udelay(1000 * rval);
-+		else
-+			msleep(rval);
++	/* Invalidate RID to PE# mapping */
++	for (i = 0; i < ARRAY_SIZE(phb->ioda.pe_rmap); ++i)
++		phb->ioda.pe_rmap[i] = IODA_INVALID_PE;
 +
-+		rval = opal_pci_poll(id, state);
-+	}
-+
-+	/*
-+	 * The caller expects to retrieve additional
-+	 * information if the last argument isn't NULL.
-+	 */
-+	if (rval == OPAL_SUCCESS && state)
-+		rval = opal_pci_poll(id, state);
-+
-+	return (rval == OPAL_SUCCESS) ? 0 : -EIO;
-+}
-+
- #ifdef CONFIG_PCI_MSI
- int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- {
+ 	/* Parse 64-bit MMIO range */
+ 	pnv_ioda_parse_m64_window(phb);
+ 
 diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 0cddde3..6857703 100644
+index 350e630..928cf81 100644
 --- a/arch/powerpc/platforms/powernv/pci.h
 +++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -192,6 +192,7 @@ extern int pnv_tce_xchg(struct iommu_table *tbl, long index,
- 		unsigned long *hpa, enum dma_data_direction *direction);
- extern unsigned long pnv_tce_get(struct iommu_table *tbl, long index);
+@@ -160,11 +160,8 @@ struct pnv_phb {
+ 		struct list_head	pe_list;
+ 		struct mutex            pe_list_mutex;
  
-+int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *state);
- void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
- 				unsigned char *log_buff);
- int pnv_pci_cfg_read(struct pci_dn *pdn,
+-		/* Reverse map of PEs, will have to extend if
+-		 * we are to support more than 256 PEs, indexed
+-		 * bus { bus, devfn }
+-		 */
+-		unsigned char		pe_rmap[0x10000];
++		/* Reverse map of PEs, indexed by {bus, devfn} */
++		int			pe_rmap[0x10000];
+ 
+ 		/* TCE cache invalidate registers (physical and
+ 		 * remapped)
 -- 
 2.1.0
