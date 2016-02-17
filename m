@@ -1,34 +1,24 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419981A029E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 19:34:39 +1100 (AEDT)
-Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 17 Feb 2016 13:34:12 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1H843vX29556916
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 13:34:04 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1H83fbX024348
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 13:33:42 +0530
-Message-ID: <56C42954.3000801@linux.vnet.ibm.com>
-Date: Wed, 17 Feb 2016 13:33:32 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Balbir Singh <bsingharora@gmail.com>, Paul Mackerras <paulus@ozlabs.org>
-CC: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Fix BUG_ON() reporting in real mode on powerpc
-References: <1455684191.3089.3.camel@gmail.com>
- <20160217045606.GA19276@oak.ozlabs.ibm.com>
- <1455693365.3089.8.camel@gmail.com>
-In-Reply-To: <1455693365.3089.8.camel@gmail.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8A3721A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 20:10:58 +1100 (AEDT)
+Received: from localhost.localdomain (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id 651F3140297
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 20:10:58 +1100 (AEDT)
+Message-ID: <1455700258.17094.56.camel@neuling.org>
+Subject: Re: [PATCH 2/2] powerpc: Add POWER9 cputable entry
+From: Michael Neuling <mikey@neuling.org>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Wed, 17 Feb 2016 20:10:58 +1100
+In-Reply-To: <56C40D1A.9060601@linux.vnet.ibm.com>
+References: <1455685668-30198-1-git-send-email-mikey@neuling.org>
+ <1455685668-30198-2-git-send-email-mikey@neuling.org>
+ <56C40D1A.9060601@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,19 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/17/2016 12:46 PM, Balbir Singh wrote:
->> > It might be a little better to do this:
->> > 
->> > 		bugaddr = regs->nip;
->> > 		if (REGION_ID(bugaddr) == 0 && !(regs->msr & MSR_IR))
->> > 			bugaddr += PAGE_OFFSET;
->> > 
->> > It is possible to execute from addresses with the 0xc000... on top in
->> > real mode, because the CPU ignores the top 4 address bits in real
->> > mode.
-> Good catch! Thank you
-> 
-> Changelog:
->      Don't add PAGE_OFFSET blindly, check if REGION_ID is 0
+> > +_GLOBAL(__setup_cpu_power9)
+> > +	mflr	r11
+> > +	bl	__init_FSCR
+> > +	bl	__init_PMU
+> Just to keep in mind, I am not sure whether
+> powerisa 3.0 support MMCRS spr, so we
+> will need a feature check in __init_PMU()
+> for power9.
 
-Cant we use USER_REGION_ID directly ?
+Yeah, I'm not expecting this to work.
+
+I'm trying to lay down a common base we can start working on.  There
+are lots of people working a bunch different bases.  I want to avoid
+that and we can do that by upstreaming.
+
+> > +	bl	__init_hvmode_206
+> > +	mtlr	r11
+> > +	beqlr
+> > +	li	r0,0
+> > +	mtspr	SPRN_LPID,r0
+> > +	mfspr	r3,SPRN_LPCR
+> > +	ori	r3, r3, LPCR_PECEDH
+> > +	bl	__init_LPCR
+> > +	bl	__init_HFSCR
+> > +	bl	__init_tlb_power9
+> > +	bl	__init_PMU_HV
+>=20
+> Again, need to check whether powerisa 3.0 support MMCRH spr
+> which is used in __init_PMU_HV()
+
+Same here.
+> > +	{	/*  Hacked up Power9 */
+
+/me reviews his own patch...
+
+Oops
+
+> > +		.pvr_mask		=3D 0xffff0000,
+> > +		.pvr_value		=3D 0x004e0000,
+> > +		.cpu_name		=3D "POWER9 (raw)",
+> > +		.cpu_features		=3D CPU_FTRS_POWER9,
+> > +		.cpu_user_features	=3D COMMON_USER_POWER9,
+> > +		.cpu_user_features2	=3D COMMON_USER2_POWER9,
+> > +		.mmu_features		=3D MMU_FTRS_POWER9,
+> > +		.icache_bsize		=3D 128,
+> > +		.dcache_bsize		=3D 128,
+> > +		.num_pmcs		=3D 6,
+> > +		.pmc_type		=3D PPC_PMC_IBM,
+> > +		.oprofile_cpu_type	=3D "ppc64/power8",
+>
+> This should be ppc64/power9. We use "oprofile_cpu_type" in PMU init.
+
+Yep, we can fix that up when we post PMU patches, but if I repost I'll
+change so it doesn't match with old one.
+
+Mikey
