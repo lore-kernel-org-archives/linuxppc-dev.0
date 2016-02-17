@@ -2,15 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EAE801A0342
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 23:41:27 +1100 (AEDT)
-In-Reply-To: <1455002269-26543-2-git-send-email-andrew.donnellan@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8E2451A0342
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 23:41:28 +1100 (AEDT)
+In-Reply-To: <1454993431-17068-4-git-send-email-gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: stewart@linux.vnet.ibm.com
-Subject: Re: [V2,2/2] powerpc/xmon: add command to dump OPAL msglog
-Message-Id: <20160217124127.C2C07140778@ozlabs.org>
-Date: Wed, 17 Feb 2016 23:41:27 +1100 (AEDT)
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [v2,
+ 4/4] powerpc/powernv: Simplify definitions of EEH debugfs handlers
+Message-Id: <20160217124128.6DF75140783@ozlabs.org>
+Date: Wed, 17 Feb 2016 23:41:28 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,13 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-09-02 at 07:17:49 UTC, Andrew Donnellan wrote:
-> Add the 'do' command to dump the OPAL msglog in xmon.
+On Tue, 2016-09-02 at 04:50:24 UTC, Gavin Shan wrote:
+> The EEH debugfs handlers have same prototype. This introduces
+> a macro to define them, then to simplify the code. No logical
+> changes.
 > 
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/fde93a0f774f510bfaabccd5ba
+https://git.kernel.org/powerpc/c/ccc9662da5494a7c4ff5ed5d16
 
 cheers
