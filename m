@@ -1,24 +1,47 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wm0-x236.google.com (mail-wm0-x236.google.com
+ [IPv6:2a00:1450:400c:c09::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8A3721A0018
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 20:10:58 +1100 (AEDT)
-Received: from localhost.localdomain (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id 651F3140297
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 20:10:58 +1100 (AEDT)
-Message-ID: <1455700258.17094.56.camel@neuling.org>
-Subject: Re: [PATCH 2/2] powerpc: Add POWER9 cputable entry
-From: Michael Neuling <mikey@neuling.org>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Date: Wed, 17 Feb 2016 20:10:58 +1100
-In-Reply-To: <56C40D1A.9060601@linux.vnet.ibm.com>
-References: <1455685668-30198-1-git-send-email-mikey@neuling.org>
- <1455685668-30198-2-git-send-email-mikey@neuling.org>
- <56C40D1A.9060601@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id CCCCD1A0331
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 20:45:17 +1100 (AEDT)
+Received: by mail-wm0-x236.google.com with SMTP id b205so147386530wmb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 01:45:17 -0800 (PST)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Wed, 17 Feb 2016 10:45:10 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: David Long <dave.long@linaro.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ "chengang@emindsoft.com.cn" <chengang@emindsoft.com.cn>,
+ Andy Lutomirski <luto@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>,
+ David Hildenbrand <dahi@linux.vnet.ibm.com>,
+ Denys Vlasenko <dvlasenk@redhat.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, Jan Beulich <JBeulich@suse.com>,
+ Kees Cook <keescook@chromium.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Oleg Nesterov <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Rashmica Gupta <rashmicy@gmail.com>, Rich Felker <dalias@libc.org>,
+ Richard Kuo <rkuo@codeaurora.org>, Roland McGrath <roland@hack.frob.com>,
+ Russell King <linux@arm.linux.org.uk>,
+ Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v3 0/2] Consolidate redundant register/stack access code
+Message-ID: <20160217094510.GA27144@gmail.com>
+References: <1454996337-7935-1-git-send-email-dave.long@linaro.org>
+ <1455010600.13384.3.camel@ellerman.id.au>
+ <20160209094526.GB25268@gmail.com> <56BA5226.3090105@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <56BA5226.3090105@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,59 +51,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > +_GLOBAL(__setup_cpu_power9)
-> > +	mflr	r11
-> > +	bl	__init_FSCR
-> > +	bl	__init_PMU
-> Just to keep in mind, I am not sure whether
-> powerisa 3.0 support MMCRS spr, so we
-> will need a feature check in __init_PMU()
-> for power9.
 
-Yeah, I'm not expecting this to work.
+* David Long <dave.long@linaro.org> wrote:
 
-I'm trying to lay down a common base we can start working on.  There
-are lots of people working a bunch different bases.  I want to avoid
-that and we can do that by upstreaming.
+> On 02/09/2016 04:45 AM, Ingo Molnar wrote:
+> >
+> >* Michael Ellerman <mpe@ellerman.id.au> wrote:
+> >
+> >>On Tue, 2016-02-09 at 00:38 -0500, David Long wrote:
+> >>
+> >>>From: "David A. Long" <dave.long@linaro.org>
+> >>>
+> >>>Move duplicate and functionally equivalent code for accessing registers
+> >>>and stack (CONFIG_HAVE_REGS_AND_STACK_ACCESS_API) from arch subdirs into
+> >>>common kernel files.
+> >>>
+> >>>I'm sending this out again (with updated distribution list) because v2
+> >>>just never got pulled in, even though I don't think there were any
+> >>>outstanding issues.
+> >>
+> >>A big cross arch patch like this would often get taken by Andrew Morton, but
+> >>AFAICS you didn't CC him - so I just added him, perhaps he'll pick it up for
+> >>us :D
+> >
+> >The other problem is that the second patch is commingling changes to 6 separate
+> >architectures:
+> >
+> >  16 files changed, 106 insertions(+), 343 deletions(-)
+> >
+> >that should probably be 6 separate patches. Easier to review, easier to bisect to,
+> >easier to revert, etc.
+> >
+> >Thanks,
+> >
+> >	Ingo
+> >
+> 
+> I see your point but I'm not sure it could have been broken into separate 
+> successive patches that would each build for all architectures.
 
-> > +	bl	__init_hvmode_206
-> > +	mtlr	r11
-> > +	beqlr
-> > +	li	r0,0
-> > +	mtspr	SPRN_LPID,r0
-> > +	mfspr	r3,SPRN_LPCR
-> > +	ori	r3, r3, LPCR_PECEDH
-> > +	bl	__init_LPCR
-> > +	bl	__init_HFSCR
-> > +	bl	__init_tlb_power9
-> > +	bl	__init_PMU_HV
->=20
-> Again, need to check whether powerisa 3.0 support MMCRH spr
-> which is used in __init_PMU_HV()
+Why? AFAICS all the functionality appears to be conditional on 
+CONFIG_HAVE_REGS_AND_STACK_ACCESS_API, so it ought to build standalone as well, on 
+a per arch basis, as long as the core kernel patch is applied first.
 
-Same here.
-> > +	{	/*  Hacked up Power9 */
+Thanks,
 
-/me reviews his own patch...
-
-Oops
-
-> > +		.pvr_mask		=3D 0xffff0000,
-> > +		.pvr_value		=3D 0x004e0000,
-> > +		.cpu_name		=3D "POWER9 (raw)",
-> > +		.cpu_features		=3D CPU_FTRS_POWER9,
-> > +		.cpu_user_features	=3D COMMON_USER_POWER9,
-> > +		.cpu_user_features2	=3D COMMON_USER2_POWER9,
-> > +		.mmu_features		=3D MMU_FTRS_POWER9,
-> > +		.icache_bsize		=3D 128,
-> > +		.dcache_bsize		=3D 128,
-> > +		.num_pmcs		=3D 6,
-> > +		.pmc_type		=3D PPC_PMC_IBM,
-> > +		.oprofile_cpu_type	=3D "ppc64/power8",
->
-> This should be ppc64/power9. We use "oprofile_cpu_type" in PMU init.
-
-Yep, we can fix that up when we post PMU patches, but if I repost I'll
-change so it doesn't match with old one.
-
-Mikey
+	Ingo
