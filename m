@@ -2,33 +2,33 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D6671A032C
+ by lists.ozlabs.org (Postfix) with ESMTPS id 644041A032C
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:46:18 +1100 (AEDT)
 Received: from localhost
  by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 17 Feb 2016 13:46:17 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id DB6602CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:46:15 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1H3k70249610824
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:46:15 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1H3jgoC019367
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:43 +1100
+ Wed, 17 Feb 2016 13:46:18 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 807832CE8062
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:46:16 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1H3k8FO2949394
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:46:16 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1H3jgeM006551
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:44 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
  dja@axtens.net, bhelgaas@google.com, robherring2@gmail.com,
  grant.likely@linaro.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v8 23/45] powerpc/powernv: Dynamically release PEs
-Date: Wed, 17 Feb 2016 14:44:06 +1100
-Message-Id: <1455680668-23298-24-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v8 27/45] powerpc/pci: Export pci_add_device_node_info()
+Date: Wed, 17 Feb 2016 14:44:10 +1100
+Message-Id: <1455680668-23298-28-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,368 +40,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This support releasing PEs dynamically. Firstly, this moves
-pnv_pci_ioda2_release_dma_pe() around, which is called to
-release DMA resource on releasing IODA2 PE. Secondly, several
-functions are implemented to release the consumed resources
-on releasing the PE:
-
-   * pnv_pci_ioda1_unset_window() to unset TVEs for the PE.
-   * pnv_pci_ioda1_release_dma_pe() to unset TVEs for the PE and
-     destroy the IOMMU table.
-   * pnv_ioda_release_pe_seg() releases the consumed IO/M32/M64
-     segments by the PE.
-
-Lastly, this adds a reference count of PE, representing the number
-of PCI devices associated with the PE. The reference count is
-increased when PCI device joins the PE. It's decreased when PCI
-device leaves the PE in pnv_pci_release_device(). When the count
-becomes zero, its consumed resources are released by functions
-as mentioned above. Note that the count is accessed concurrently.
-So a "counter" with "int" type is enough here.
+This renames update_dn_pci_info() to pci_add_device_node_info()
+with corresponding adjustment on the parameter type and exports it.
+The function is used to create pdn (struct pci_dn) for the indicated
+device node. Another function add_pdn(), almost wrapper of
+pci_add_device_node_info(), to be used in traverse_pci_devices(). No
+logical changes introduced.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 236 ++++++++++++++++++++++++++----
- arch/powerpc/platforms/powernv/pci.h      |   1 +
- 2 files changed, 209 insertions(+), 28 deletions(-)
+ arch/powerpc/include/asm/pci-bridge.h  |  3 ++-
+ arch/powerpc/kernel/pci_dn.c           | 30 +++++++++++++++++++-----------
+ arch/powerpc/platforms/pseries/setup.c |  2 +-
+ 3 files changed, 22 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 077f9db..fa428a8 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -119,6 +119,158 @@ static inline bool pnv_pci_is_mem_pref_64(unsigned long flags)
- 		(IORESOURCE_MEM_64 | IORESOURCE_PREFETCH));
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 03f4ee7..72a9d4e 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -238,7 +238,8 @@ extern struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *bus,
+ extern struct pci_dn *pci_get_pdn(struct pci_dev *pdev);
+ extern struct pci_dn *add_dev_pci_data(struct pci_dev *pdev);
+ extern void remove_dev_pci_data(struct pci_dev *pdev);
+-extern void *update_dn_pci_info(struct device_node *dn, void *data);
++extern struct pci_dn *pci_add_device_node_info(struct pci_controller *hose,
++					       struct device_node *dn);
+ 
+ static inline int pci_device_from_OF_node(struct device_node *np,
+ 					  u8 *bus, u8 *devfn)
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index 38102cb..0a249ff 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -282,13 +282,9 @@ void remove_dev_pci_data(struct pci_dev *pdev)
+ #endif /* CONFIG_PCI_IOV */
  }
  
-+static unsigned int pnv_pci_ioda_pe_dma_weight(struct pnv_ioda_pe *pe);
-+static long pnv_pci_ioda1_unset_window(struct iommu_table_group *table_group,
-+				       int num);
-+static void pnv_pci_ioda1_release_dma_pe(struct pnv_ioda_pe *pe)
-+{
-+	struct iommu_table *tbl;
-+	unsigned int weight = pnv_pci_ioda_pe_dma_weight(pe);
-+	int64_t rc;
-+
-+	if (!weight)
-+		return;
-+
-+	tbl = pe->table_group.tables[0];
-+	rc = pnv_pci_ioda1_unset_window(&pe->table_group, 0);
-+	if (rc)
-+		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
-+
-+	if (pe->table_group.group) {
-+		iommu_group_put(pe->table_group.group);
-+		WARN_ON(pe->table_group.group);
-+	}
-+
-+	pnv_pci_ioda_table_free_pages(tbl);
-+	iommu_free_table(tbl, "pnv");
-+}
-+
-+static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
-+				       int num);
-+static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
-+static void pnv_pci_ioda2_release_dma_pe(struct pnv_ioda_pe *pe)
-+{
-+	struct iommu_table *tbl;
-+	unsigned int weight = pnv_pci_ioda_pe_dma_weight(pe);
-+	int64_t rc;
-+
-+	if (!weight)
-+		return;
-+
-+	tbl = pe->table_group.tables[0];
-+	rc = pnv_pci_ioda2_unset_window(&pe->table_group, 0);
-+	if (rc)
-+		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
-+
-+	pnv_pci_ioda2_set_bypass(pe, false);
-+	if (pe->table_group.group) {
-+		iommu_group_put(pe->table_group.group);
-+		WARN_ON(pe->table_group.group);
-+	}
-+
-+	pnv_pci_ioda_table_free_pages(tbl);
-+	iommu_free_table(tbl, "pnv");
-+}
-+
-+static void pnv_ioda_release_pe_seg(struct pnv_ioda_pe *pe)
-+{
-+	struct pnv_phb *phb = pe->phb;
-+	int win, index, *segmap = NULL;
-+	int64_t rc;
-+
-+	for (win = OPAL_M32_WINDOW_TYPE; win <= OPAL_IO_WINDOW_TYPE; win++) {
-+		if (phb->type == PNV_PHB_IODA2 &&
-+		    (win == OPAL_IO_WINDOW_TYPE || win == OPAL_M64_WINDOW_TYPE))
-+			continue;
-+
-+		switch (win) {
-+		case OPAL_IO_WINDOW_TYPE:
-+			segmap = phb->ioda.io_segmap;
-+			break;
-+		case OPAL_M32_WINDOW_TYPE:
-+			segmap = phb->ioda.m32_segmap;
-+			break;
-+		case OPAL_M64_WINDOW_TYPE:
-+			segmap = phb->ioda.m64_segmap;
-+			break;
-+		}
-+
-+		for (index = 0; index < phb->ioda.total_pe_num; index++) {
-+			if (segmap[index] != pe->pe_number)
-+				continue;
-+
-+			if (win == OPAL_M64_WINDOW_TYPE)
-+				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
-+						phb->ioda.reserved_pe_idx, win,
-+						index / PNV_IODA1_M64_SEGS,
-+						index % PNV_IODA1_M64_SEGS);
-+			else
-+				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
-+						phb->ioda.reserved_pe_idx, win,
-+						0, index);
-+			if (rc != OPAL_SUCCESS)
-+				pe_warn(pe, "Error %ld unmapping (%d) segment#%d\n",
-+					rc, win, index);
-+
-+			segmap[index] = IODA_INVALID_PE;
-+		}
-+	}
-+}
-+
-+static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb,
-+				   struct pnv_ioda_pe *pe);
-+static void pnv_ioda_free_pe(struct pnv_ioda_pe *pe);
-+static void pnv_ioda_release_pe(struct pnv_ioda_pe *pe)
-+{
-+	struct pnv_phb *phb = pe->phb;
-+	struct pnv_ioda_pe *tmp, *slave;
-+
-+	/* Release slave PEs in compound PE */
-+	if (pe->flags & PNV_IODA_PE_MASTER) {
-+		list_for_each_entry_safe(slave, tmp, &pe->slaves, list)
-+			pnv_ioda_release_pe(slave);
-+	}
-+
-+	/* Remove the PE from the list */
-+	list_del(&pe->list);
-+
-+	/* Release DMA segments */
-+	switch (phb->type) {
-+	case PNV_PHB_IODA1:
-+		pnv_pci_ioda1_release_dma_pe(pe);
-+		break;
-+	case PNV_PHB_IODA2:
-+		pnv_pci_ioda2_release_dma_pe(pe);
-+		break;
-+	default:
-+		WARN_ON(1);
-+	}
-+
-+	pnv_ioda_release_pe_seg(pe);
-+	pnv_ioda_deconfigure_pe(pe->phb, pe);
-+
-+	pnv_ioda_free_pe(pe);
-+}
-+
-+static void pnv_pci_release_device(struct pci_dev *pdev)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-+	struct pnv_phb *phb = hose->private_data;
-+	struct pci_dn *pdn = pci_get_pdn(pdev);
-+	struct pnv_ioda_pe *pe;
-+
-+	if (pdev->is_virtfn)
-+		return;
-+
-+	if (!pdn || pdn->pe_number == IODA_INVALID_PE)
-+		return;
-+
-+	pe = &phb->ioda.pe_array[pdn->pe_number];
-+	WARN_ON(--pe->device_count < 0);
-+	if (pe->device_count == 0)
-+		pnv_ioda_release_pe(pe);
-+}
-+
- static struct pnv_ioda_pe *pnv_ioda_init_pe(struct pnv_phb *phb, int pe_no)
+-/*
+- * Traverse_func that inits the PCI fields of the device node.
+- * NOTE: this *must* be done before read/write config to the device.
+- */
+-void *update_dn_pci_info(struct device_node *dn, void *data)
++struct pci_dn *pci_add_device_node_info(struct pci_controller *hose,
++					struct device_node *dn)
  {
- 	phb->ioda.pe_array[pe_no].phb = phb;
-@@ -715,7 +867,6 @@ static int pnv_ioda_set_peltv(struct pnv_phb *phb,
- 	return 0;
- }
- 
--#ifdef CONFIG_PCI_IOV
- static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
- {
- 	struct pci_dev *parent;
-@@ -750,9 +901,11 @@ static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
- 		}
- 		rid_end = pe->rid + (count << 8);
- 	} else {
-+#ifdef CONFIG_PCI_IOV
- 		if (pe->flags & PNV_IODA_PE_VF)
- 			parent = pe->parent_dev;
- 		else
-+#endif
- 			parent = pe->pdev->bus->self;
- 		bcomp = OpalPciBusAll;
- 		dcomp = OPAL_COMPARE_RID_DEVICE_NUMBER;
-@@ -790,11 +943,12 @@ static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
- 
- 	pe->pbus = NULL;
- 	pe->pdev = NULL;
-+#ifdef CONFIG_PCI_IOV
- 	pe->parent_dev = NULL;
-+#endif
- 
- 	return 0;
- }
--#endif /* CONFIG_PCI_IOV */
- 
- static int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
- {
-@@ -1031,6 +1185,7 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
- 		if (pdn->pe_number != IODA_INVALID_PE)
- 			continue;
- 
-+		pe->device_count++;
- 		pdn->pcidev = dev;
- 		pdn->pe_number = pe->pe_number;
- 		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
-@@ -1095,9 +1250,8 @@ static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
- 			bus->busn_res.start, pe->pe_number);
- 
- 	if (pnv_ioda_configure_pe(phb, pe)) {
--		/* XXX What do we do here ? */
--		pnv_ioda_free_pe(pe);
- 		pe->pbus = NULL;
-+		pnv_ioda_release_pe(pe);
+-	struct pci_controller *phb = data;
+ 	const __be32 *type = of_get_property(dn, "ibm,pci-config-space-type", NULL);
+ 	const __be32 *regs;
+ 	struct device_node *parent;
+@@ -299,7 +295,7 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
  		return NULL;
- 	}
- 
-@@ -1333,29 +1487,6 @@ m64_failed:
- 	return -EBUSY;
- }
- 
--static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
--		int num);
--static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
--
--static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe *pe)
--{
--	struct iommu_table    *tbl;
--	int64_t               rc;
--
--	tbl = pe->table_group.tables[0];
--	rc = pnv_pci_ioda2_unset_window(&pe->table_group, 0);
--	if (rc)
--		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
--
--	pnv_pci_ioda2_set_bypass(pe, false);
--	if (pe->table_group.group) {
--		iommu_group_put(pe->table_group.group);
--		BUG_ON(pe->table_group.group);
--	}
--	pnv_pci_ioda_table_free_pages(tbl);
--	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
--}
--
- static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
- {
- 	struct pci_bus        *bus;
-@@ -1376,7 +1507,7 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
- 		if (pe->parent_dev != pdev)
- 			continue;
- 
--		pnv_pci_ioda2_release_dma_pe(pdev, pe);
-+		pnv_pci_ioda2_release_dma_pe(pe);
- 
- 		/* Remove from list */
- 		mutex_lock(&phb->ioda.pe_list_mutex);
-@@ -1780,6 +1911,16 @@ static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
- 	 */
- }
- 
-+static void pnv_pci_ioda1_tce_invalidate_entire(struct pnv_ioda_pe *pe)
-+{
-+	struct iommu_table *tbl = pe->table_group.tables[0];
-+
-+	if (!tbl)
-+		return;
-+
-+	pnv_pci_ioda1_tce_invalidate(tbl, tbl->it_offset, tbl->it_size, false);
-+}
-+
- static int pnv_ioda1_tce_build(struct iommu_table *tbl, long index,
- 		long npages, unsigned long uaddr,
- 		enum dma_data_direction direction,
-@@ -2144,6 +2285,44 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
- 	}
- }
- 
-+static long pnv_pci_ioda1_unset_window(struct iommu_table_group *table_group,
-+				       int num)
-+{
-+	struct pnv_ioda_pe *pe = container_of(table_group, struct pnv_ioda_pe,
-+					      table_group);
-+	struct pnv_phb *phb = pe->phb;
-+	int start, count, i;
-+	long rc = OPAL_SUCCESS;
-+
-+	pe_info(pe, "Removing DMA window #%d\n", num);
-+
-+	/* Search the used DMA32 segments */
-+	start = -1;
-+	count = 0;
-+	for (i = 0; i < phb->ioda.dma32_count; i++) {
-+		if (phb->ioda.dma32_segmap[i] != pe->pe_number)
-+			continue;
-+
-+		if (count++ == 0)
-+			start = i;
-+	}
-+
-+	if (!count)
-+		return OPAL_SUCCESS;
-+
-+	for (i = start; i < start + count; i++)
-+		rc |= opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
-+						 i, 0, 0ul, 0ul, 0ul);
-+	if (rc)
-+		pe_warn(pe, "Failure %ld unmapping TVEs\n");
-+	else
-+		pnv_pci_ioda1_tce_invalidate_entire(pe);
-+
-+	pnv_pci_unlink_table_and_group(table_group->tables[num], table_group);
-+
-+	return rc;
-+}
-+
- static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
- 		int num, struct iommu_table *tbl)
- {
-@@ -3318,6 +3497,7 @@ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
- 	.teardown_msi_irqs	= pnv_teardown_msi_irqs,
+ 	dn->data = pdn;
+ 	pdn->node = dn;
+-	pdn->phb = phb;
++	pdn->phb = hose;
+ #ifdef CONFIG_PPC_POWERNV
+ 	pdn->pe_number = IODA_INVALID_PE;
  #endif
- 	.enable_device_hook	= pnv_pci_enable_device_hook,
-+	.release_device		= pnv_pci_release_device,
- 	.window_alignment	= pnv_pci_window_alignment,
- 	.setup_bridge		= pnv_pci_setup_bridge,
- 	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 01f2428..0cddde3 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -31,6 +31,7 @@ struct pnv_phb;
- struct pnv_ioda_pe {
- 	unsigned long		flags;
- 	struct pnv_phb		*phb;
-+	int			device_count;
+@@ -331,8 +327,9 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
+ 	if (pdn->parent)
+ 		list_add_tail(&pdn->list, &pdn->parent->child_list);
  
- #define PNV_IODA_MAX_PEER_PES	8
- 	struct pnv_ioda_pe	*peers[PNV_IODA_MAX_PEER_PES];
+-	return NULL;
++	return pdn;
+ }
++EXPORT_SYMBOL_GPL(pci_add_device_node_info);
+ 
+ /*
+  * Traverse a device tree stopping each PCI device in the tree.
+@@ -432,6 +429,18 @@ void *traverse_pci_dn(struct pci_dn *root,
+ 	return NULL;
+ }
+ 
++static void *add_pdn(struct device_node *dn, void *data)
++{
++	struct pci_controller *hose = data;
++	struct pci_dn *pdn;
++
++	pdn = pci_add_device_node_info(hose, dn);
++	if (!pdn)
++		return ERR_PTR(-ENOMEM);
++
++	return NULL;
++}
++
+ /** 
+  * pci_devs_phb_init_dynamic - setup pci devices under this PHB
+  * phb: pci-to-host bridge (top-level bridge connecting to cpu)
+@@ -446,8 +455,7 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
+ 	struct pci_dn *pdn;
+ 
+ 	/* PHB nodes themselves must not match */
+-	update_dn_pci_info(dn, phb);
+-	pdn = dn->data;
++	pdn = pci_add_device_node_info(phb, dn);
+ 	if (pdn) {
+ 		pdn->devfn = pdn->busno = -1;
+ 		pdn->vendor_id = pdn->device_id = pdn->class_code = 0;
+@@ -456,7 +464,7 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
+ 	}
+ 
+ 	/* Update dn->phb ptrs for new phb and children devices */
+-	traverse_pci_devices(dn, update_dn_pci_info, phb);
++	traverse_pci_devices(dn, add_pdn, phb);
+ }
+ 
+ /** 
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 36df46e..6f8d020 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -265,7 +265,7 @@ static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long act
+ 		pdn = parent ? PCI_DN(parent) : NULL;
+ 		if (pdn) {
+ 			/* Create pdn and EEH device */
+-			update_dn_pci_info(np, pdn->phb);
++			pci_add_device_node_info(pdn->phb, np);
+ 			eeh_dev_init(PCI_DN(np), pdn->phb);
+ 		}
+ 
 -- 
 2.1.0
