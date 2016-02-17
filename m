@@ -2,33 +2,33 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3EFE01A029E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A16021A029A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:37 +1100 (AEDT)
 Received: from localhost
  by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 17 Feb 2016 13:45:35 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9E77F2BB005A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:28 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1H3jK27786838
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:28 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1H3ite8002364
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:44:56 +1100
+ Wed, 17 Feb 2016 13:45:37 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 857BF2CE805D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:27 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1H3jJCm12845404
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:27 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1H3isTQ011981
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:44:55 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
  dja@axtens.net, bhelgaas@google.com, robherring2@gmail.com,
  grant.likely@linaro.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v8 03/45] powerpc/pci: Cleanup on struct pci_controller_ops
-Date: Wed, 17 Feb 2016 14:43:46 +1100
-Message-Id: <1455680668-23298-4-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v8 01/45] PCI: Add pcibios_setup_bridge()
+Date: Wed, 17 Feb 2016 14:43:44 +1100
+Message-Id: <1455680668-23298-2-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,57 +40,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Each PHB has one instance of "struct pci_controller_ops", which
-includes various callbacks called by PCI subsystem. In the definition
-of this struct, some callbacks have explicit names for its arguments,
-but the left don't have.
+Currently, PowerPC PowerNV platform utilizes ppc_md.pcibios_fixup(),
+which is called for once after PCI probing and resource assignment
+are completed, to allocate platform required resources for PCI devices:
+PE#, IO and MMIO mapping, DMA address translation (TCE) table etc.
+Obviously, it's not hotplug friendly.
 
-This adds all explicit names of the arguments to the callbacks in
-"struct pci_controller_ops" so that the code looks consistent.
+This adds weak function pcibios_setup_bridge(), which is called by
+pci_setup_bridge(). PowerPC PowerNV platform will reuse the function
+to assign above platform required resources to newly plugged PCI devices
+during PCI hotplug in subsequent patches.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Reviewed-by: Daniel Axtens <dja@axtens.net>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- arch/powerpc/include/asm/pci-bridge.h | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/pci/setup-bus.c | 5 +++++
+ include/linux/pci.h     | 1 +
+ 2 files changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index b688d04..4dd6ef4 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -21,18 +21,19 @@ struct pci_controller_ops {
- 	void		(*dma_dev_setup)(struct pci_dev *dev);
- 	void		(*dma_bus_setup)(struct pci_bus *bus);
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index 7796d0a..acda514 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -696,11 +696,16 @@ static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
+ 	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
+ }
  
--	int		(*probe_mode)(struct pci_bus *);
-+	int		(*probe_mode)(struct pci_bus *bus);
++void __weak pcibios_setup_bridge(struct pci_bus *bus, unsigned long type)
++{
++}
++
+ void pci_setup_bridge(struct pci_bus *bus)
+ {
+ 	unsigned long type = IORESOURCE_IO | IORESOURCE_MEM |
+ 				  IORESOURCE_PREFETCH;
  
- 	/* Called when pci_enable_device() is called. Returns true to
- 	 * allow assignment/enabling of the device. */
--	bool		(*enable_device_hook)(struct pci_dev *);
-+	bool		(*enable_device_hook)(struct pci_dev *dev);
++	pcibios_setup_bridge(bus, type);
+ 	__pci_setup_bridge(bus, type);
+ }
  
--	void		(*disable_device)(struct pci_dev *);
-+	void		(*disable_device)(struct pci_dev *dev);
- 
--	void		(*release_device)(struct pci_dev *);
-+	void		(*release_device)(struct pci_dev *dev);
- 
- 	/* Called during PCI resource reassignment */
--	resource_size_t (*window_alignment)(struct pci_bus *, unsigned long type);
-+	resource_size_t (*window_alignment)(struct pci_bus *bus,
-+					    unsigned long type);
- 	void		(*setup_bridge)(struct pci_bus *bus,
- 					unsigned long type);
- 	void		(*reset_secondary_bus)(struct pci_dev *dev);
-@@ -46,7 +47,7 @@ struct pci_controller_ops {
- 	int             (*dma_set_mask)(struct pci_dev *dev, u64 dma_mask);
- 	u64		(*dma_get_required_mask)(struct pci_dev *dev);
- 
--	void		(*shutdown)(struct pci_controller *);
-+	void		(*shutdown)(struct pci_controller *hose);
- };
- 
- /*
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index bc435d62..8161c79 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -842,6 +842,7 @@ void pci_stop_and_remove_bus_device_locked(struct pci_dev *dev);
+ void pci_stop_root_bus(struct pci_bus *bus);
+ void pci_remove_root_bus(struct pci_bus *bus);
+ void pci_setup_cardbus(struct pci_bus *bus);
++void pcibios_setup_bridge(struct pci_bus *bus, unsigned long type);
+ void pci_sort_breadthfirst(void);
+ #define dev_is_pci(d) ((d)->bus == &pci_bus_type)
+ #define dev_is_pf(d) ((dev_is_pci(d) ? to_pci_dev(d)->is_physfn : false))
 -- 
 2.1.0
