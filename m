@@ -1,39 +1,20 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
+ [IPv6:2607:f8b0:400e:c00::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 39D331A2E6C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 15:39:33 +1100 (AEDT)
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 17 Feb 2016 14:39:32 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id B7DDD3578052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 15:39:29 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1H4dLij9568588
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 15:39:29 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1H4cuBF004017
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 15:38:57 +1100
-Subject: Re: [PATCH v8 04/45] powerpc/powernv: Cleanup on pci_controller_ops
- instances
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1455680668-23298-5-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: devicetree@vger.kernel.org, aik@ozlabs.ru, linux-pci@vger.kernel.org,
- grant.likely@linaro.org, robherring2@gmail.com, bhelgaas@google.com,
- dja@axtens.net
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Message-ID: <56C3F948.5090804@au1.ibm.com>
-Date: Wed, 17 Feb 2016 15:38:32 +1100
-MIME-Version: 1.0
-In-Reply-To: <1455680668-23298-5-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id D247D1A358C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 15:43:18 +1100 (AEDT)
+Received: by mail-pf0-x230.google.com with SMTP id q63so4286449pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 20:43:18 -0800 (PST)
+Message-ID: <1455684191.3089.3.camel@gmail.com>
+Subject: Fix BUG_ON() reporting in real mode on powerpc
+From: Balbir Singh <bsingharora@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>
+Date: Wed, 17 Feb 2016 15:43:11 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,20 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17/02/16 14:43, Gavin Shan wrote:
-> This cleans up on below data struct instances to use tab instead of
-> space indent of statement to avoid complains from scripts/checkpatch.pl.
-> No logical changes introduced.
->
->    @pnv_pci_ioda_controller_ops
->    @pnv_npu_ioda_controller_ops
->
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Reviewed-by: Daniel Axtens <dja@axtens.net>
+From: Balbir Singh <bsingharora@gmail.com>
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+I ran into this issue while debugging an early boot problem.
+The system hit a BUG_ON() but report bug failed to print the
+line number and file name. The reason being that the system
+was running in real mode and report_bug() searches for
+addresses in the PAGE_OFFSET+ region
 
--- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+Suggested-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+ arch/powerpc/kernel/traps.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index b6becc7..8f28120 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1148,6 +1148,7 @@ void __kprobes program_check_exception(struct pt_regs *regs)
+ 		goto bail;
+ 	}
+ 	if (reason & REASON_TRAP) {
++		unsigned long bugaddr;
+ 		/* Debugger is first in line to stop recursive faults in
+ 		 * rcu_lock, notify_die, or atomic_notifier_call_chain */
+ 		if (debugger_bpt(regs))
+@@ -1158,8 +1159,13 @@ void __kprobes program_check_exception(struct pt_regs *regs)
+ 				== NOTIFY_STOP)
+ 			goto bail;
+ 
++		if (!(regs->msr & MSR_IR))
++			bugaddr = regs->nip + PAGE_OFFSET;
++		else
++			bugaddr = regs->nip;
++
+ 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
+-		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
++		    report_bug(bugaddr, regs) == BUG_TRAP_TYPE_WARN) {
+ 			regs->nip += 4;
+ 			goto bail;
+ 		}
+-- 
+2.5.0
