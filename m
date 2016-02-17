@@ -1,56 +1,24 @@
-Return-Path: <gerald.schaefer@de.ibm.com>
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <jsarha@ti.com>
+Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0EA861A03BA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 06:13:50 +1100 (AEDT)
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gerald.schaefer@de.ibm.com>;
- Wed, 17 Feb 2016 19:13:47 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 982E32190056
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 19:13:29 +0000 (GMT)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1HJDiIG34406552
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 19:13:44 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1HIDitn018078
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 11:13:45 -0700
-Date: Wed, 17 Feb 2016 20:13:40 +0100
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-To: Sebastian Ott <sebott@linux.vnet.ibm.com>
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>, Andrea Arcangeli
- <aarcange@redhat.com>, Christian Borntraeger <borntraeger@de.ibm.com>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, Andrew Morton
- <akpm@linux-foundation.org>, Linus Torvalds
- <torvalds@linux-foundation.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org, Catalin Marinas
- <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- linux-arm-kernel@lists.infradead.org, Martin Schwidefsky
- <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org
-Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe
- also on PowerPC and ARM)
-Message-ID: <20160217201340.2dafad8d@thinkpad>
-In-Reply-To: <alpine.LFD.2.20.1602131238260.1910@schleppi>
-References: <20160211192223.4b517057@thinkpad>
- <20160211190942.GA10244@node.shutemov.name>
- <20160211205702.24f0d17a@thinkpad>
- <20160212154116.GA15142@node.shutemov.name>
- <56BE00E7.1010303@de.ibm.com> <20160212181640.4eabb85f@thinkpad>
- <20160212231510.GB15142@node.shutemov.name>
- <alpine.LFD.2.20.1602131238260.1910@schleppi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id B3E621A03B4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 03:05:13 +1100 (AEDT)
+Subject: Re: [PATCH v8 43/45] drivers/of: Specify parent node in
+ of_fdt_unflatten_tree()
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, <linuxppc-dev@lists.ozlabs.org>
+References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1455680668-23298-44-git-send-email-gwshan@linux.vnet.ibm.com>
+CC: <linux-pci@vger.kernel.org>, <devicetree@vger.kernel.org>,
+ <benh@kernel.crashing.org>, <mpe@ellerman.id.au>, <aik@ozlabs.ru>,
+ <dja@axtens.net>, <bhelgaas@google.com>, <robherring2@gmail.com>,
+ <grant.likely@linaro.org>
+From: Jyri Sarha <jsarha@ti.com>
+Message-ID: <56C49896.3090109@ti.com>
+Date: Wed, 17 Feb 2016 17:58:14 +0200
+MIME-Version: 1.0
+In-Reply-To: <1455680668-23298-44-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,53 +28,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 13 Feb 2016 12:58:31 +0100 (CET)
-Sebastian Ott <sebott@linux.vnet.ibm.com> wrote:
+On 02/17/16 05:44, Gavin Shan wrote:
+> This adds one more argument to of_fdt_unflatten_tree() to specify
+> the parent node of the FDT blob that is going to be unflattened.
+> In the result, the function can be used to unflatten FDT blob that
+> represents device sub-tree in PowerNV PCI hotplug driver.
+>
+> Cc: Jyri Sarha <jsarha@ti.com>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> ---
+>   drivers/gpu/drm/tilcdc/tilcdc_slave_compat.c |  2 +-
 
-> [   59.875935] ------------[ cut here ]------------
-> [   59.875937] kernel BUG at mm/huge_memory.c:2884!
-> [   59.875979] illegal operation: 0001 ilc:1 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-> [   59.875986] Modules linked in: bridge stp llc btrfs xor mlx4_en vxlan ip6_udp_tunnel udp_tunnel mlx4_ib ptp pps_core ib_sa ib_mad ib_core ib_addr ghash_s390 prng raid6_pq ecb aes_s390 des_s390 des_generic sha512_s390 sha256_s390 sha1_s390 mlx4_core sha_common genwqe_card scm_block crc_itu_t vhost_net tun vhost dm_mod macvtap eadm_sch macvlan kvm autofs4
-> [   59.876033] CPU: 2 PID: 5402 Comm: git Tainted: G        W       4.4.0-07794-ga4eff16-dirty #77
-> [   59.876036] task: 00000000d2312948 ti: 00000000cfecc000 task.ti: 00000000cfecc000
-> [   59.876039] Krnl PSW : 0704d00180000000 00000000002bf3aa (__split_huge_pmd_locked+0x562/0xa10)
-> [   59.876045]            R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:3 CC:1 PM:0 EA:3
->                Krnl GPRS: 0000000001a7a1cf 000003d10177c000 0000000000044068 000000005df00215
-> [   59.876051]            0000000000000001 0000000000000001 0000000000000000 00000000774e6900
-> [   59.876054]            000003ff52000000 000000006d403b10 000000006e1eb800 000003ff51f00000
-> [   59.876058]            000003d10177c000 0000000000715190 00000000002bf234 00000000cfecfb58
-> [   59.876068] Krnl Code: 00000000002bf39c: d507d010a000	clc	16(8,%%r13),0(%%r10)
->                           00000000002bf3a2: a7840004		brc	8,2bf3aa
->                          #00000000002bf3a6: a7f40001		brc	15,2bf3a8
->                          >00000000002bf3aa: 91407440		tm	1088(%%r7),64
->                           00000000002bf3ae: a7840208		brc	8,2bf7be
->                           00000000002bf3b2: a7f401e9		brc	15,2bf784
->                           00000000002bf3b6: 9104a006		tm	6(%%r10),4
->                           00000000002bf3ba: a7740004		brc	7,2bf3c2
-> [   59.876089] Call Trace:
-> [   59.876092] ([<00000000002bf234>] __split_huge_pmd_locked+0x3ec/0xa10)
-> [   59.876095]  [<00000000002c4310>] __split_huge_pmd+0x118/0x218
-> [   59.876099]  [<00000000002810e8>] unmap_single_vma+0x2d8/0xb40
-> [   59.876102]  [<0000000000282d66>] zap_page_range+0x116/0x318
-> [   59.876105]  [<000000000029b834>] SyS_madvise+0x23c/0x5e8
-> [   59.876108]  [<00000000006f9f56>] system_call+0xd6/0x258
-> [   59.876111]  [<000003ff9bbfd282>] 0x3ff9bbfd282
-> [   59.876113] INFO: lockdep is turned off.
-> [   59.876115] Last Breaking-Event-Address:
-> [   59.876118]  [<00000000002bf3a6>] __split_huge_pmd_locked+0x55e/0xa10
+Acked-by: Jyri Sarha <jsarha@ti.com>
 
-The BUG at mm/huge_memory.c:2884 is interesting, it's the BUG_ON(!pte_none(*pte))
-check in __split_huge_pmd_locked(). Obviously we expect the pre-allocated
-pagetables to be empty, but in collapse_huge_page() we deposit the original
-pagetable instead of allocating a new (empty) one. This saves an allocation,
-which is good, but doesn't that mean that if such a collapsed hugepage will
-ever be split, we will always run into the BUG_ON(!pte_none(*pte)), or one
-of the two other VM_BUG_ONs in mm/huge_memory.c that check the same?
-
-This behavior is not new, it was the same before the THP rework, so I do not
-assume that it is related to the current problems, maybe with the exception
-of this specific crash. I never saw the BUG at mm/huge_memory.c:2884 myself,
-and the other crashes probably cannot be explained with this. Maybe I am
-also missing something, but I do not see how collapse_huge_page() and the
-(non-empty) pgtable deposit there can work out with the BUG_ON(!pte_none(*pte))
-checks. Any thoughts?
+>   drivers/of/fdt.c                             | 14 ++++++++++----
+>   drivers/of/unittest.c                        |  2 +-
+>   include/linux/of_fdt.h                       |  1 +
+>   4 files changed, 13 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/gpu/drm/tilcdc/tilcdc_slave_compat.c b/drivers/gpu/drm/tilcdc/tilcdc_slave_compat.c
+> index 106679b..f9c79da 100644
+> --- a/drivers/gpu/drm/tilcdc/tilcdc_slave_compat.c
+> +++ b/drivers/gpu/drm/tilcdc/tilcdc_slave_compat.c
+> @@ -157,7 +157,7 @@ struct device_node * __init tilcdc_get_overlay(struct kfree_table *kft)
+>   	if (!overlay_data || kfree_table_add(kft, overlay_data))
+>   		return NULL;
+>
+> -	of_fdt_unflatten_tree(overlay_data, &overlay);
+> +	of_fdt_unflatten_tree(overlay_data, NULL, &overlay);
+>   	if (!overlay) {
+>   		pr_warn("%s: Unfattening overlay tree failed\n", __func__);
+>   		return NULL;
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index 3fc9a30..16a1ba5 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -450,11 +450,13 @@ static int unflatten_dt_nodes(const void *blob,
+>    * pointers of the nodes so the normal device-tree walking functions
+>    * can be used.
+>    * @blob: The blob to expand
+> + * @dad: Parent device node
+>    * @mynodes: The device_node tree created by the call
+>    * @dt_alloc: An allocator that provides a virtual address to memory
+>    * for the resulting tree
+>    */
+>   static void __unflatten_device_tree(const void *blob,
+> +			     struct device_node *dad,
+>   			     struct device_node **mynodes,
+>   			     void * (*dt_alloc)(u64 size, u64 align))
+>   {
+> @@ -479,7 +481,7 @@ static void __unflatten_device_tree(const void *blob,
+>   	}
+>
+>   	/* First pass, scan for size */
+> -	size = unflatten_dt_nodes(blob, NULL, NULL, NULL);
+> +	size = unflatten_dt_nodes(blob, NULL, dad, NULL);
+>   	if (size < 0)
+>   		return;
+>
+> @@ -495,7 +497,7 @@ static void __unflatten_device_tree(const void *blob,
+>   	pr_debug("  unflattening %p...\n", mem);
+>
+>   	/* Second pass, do actual unflattening */
+> -	unflatten_dt_nodes(blob, mem, NULL, mynodes);
+> +	unflatten_dt_nodes(blob, mem, dad, mynodes);
+>   	if (be32_to_cpup(mem + size) != 0xdeadbeef)
+>   		pr_warning("End of tree marker overwritten: %08x\n",
+>   			   be32_to_cpup(mem + size));
+> @@ -512,6 +514,9 @@ static DEFINE_MUTEX(of_fdt_unflatten_mutex);
+>
+>   /**
+>    * of_fdt_unflatten_tree - create tree of device_nodes from flat blob
+> + * @blob: Flat device tree blob
+> + * @dad: Parent device node
+> + * @mynodes: The device tree created by the call
+>    *
+>    * unflattens the device-tree passed by the firmware, creating the
+>    * tree of struct device_node. It also fills the "name" and "type"
+> @@ -519,10 +524,11 @@ static DEFINE_MUTEX(of_fdt_unflatten_mutex);
+>    * can be used.
+>    */
+>   void of_fdt_unflatten_tree(const unsigned long *blob,
+> +			struct device_node *dad,
+>   			struct device_node **mynodes)
+>   {
+>   	mutex_lock(&of_fdt_unflatten_mutex);
+> -	__unflatten_device_tree(blob, mynodes, &kernel_tree_alloc);
+> +	__unflatten_device_tree(blob, dad, mynodes, &kernel_tree_alloc);
+>   	mutex_unlock(&of_fdt_unflatten_mutex);
+>   }
+>   EXPORT_SYMBOL_GPL(of_fdt_unflatten_tree);
+> @@ -1180,7 +1186,7 @@ bool __init early_init_dt_scan(void *params)
+>    */
+>   void __init unflatten_device_tree(void)
+>   {
+> -	__unflatten_device_tree(initial_boot_params, &of_root,
+> +	__unflatten_device_tree(initial_boot_params, NULL, &of_root,
+>   				early_init_dt_alloc_memory_arch);
+>
+>   	/* Get pointer to "/chosen" and "/aliases" nodes for use everywhere */
+> diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+> index 979b6e4..ec36f93 100644
+> --- a/drivers/of/unittest.c
+> +++ b/drivers/of/unittest.c
+> @@ -921,7 +921,7 @@ static int __init unittest_data_add(void)
+>   			"not running tests\n", __func__);
+>   		return -ENOMEM;
+>   	}
+> -	of_fdt_unflatten_tree(unittest_data, &unittest_data_node);
+> +	of_fdt_unflatten_tree(unittest_data, NULL, &unittest_data_node);
+>   	if (!unittest_data_node) {
+>   		pr_warn("%s: No tree to attach; not running tests\n", __func__);
+>   		return -ENODATA;
+> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+> index df9ef38..3644960 100644
+> --- a/include/linux/of_fdt.h
+> +++ b/include/linux/of_fdt.h
+> @@ -38,6 +38,7 @@ extern bool of_fdt_is_big_endian(const void *blob,
+>   extern int of_fdt_match(const void *blob, unsigned long node,
+>   			const char *const *compat);
+>   extern void of_fdt_unflatten_tree(const unsigned long *blob,
+> +			       struct device_node *dad,
+>   			       struct device_node **mynodes);
+>
+>   /* TBD: Temporary export of fdt globals - remove when code fully merged */
+>
