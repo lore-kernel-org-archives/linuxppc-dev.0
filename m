@@ -1,20 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0BF111A1DF6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 15:23:21 +1100 (AEDT)
-Message-ID: <1455683000.2956.10.camel@ellerman.id.au>
-Subject: Re: [PATCH V11_RESEND 00/10] powerpc/perf: Enable SW branch filters
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Anshuman Khandual
- <khandual@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 17 Feb 2016 15:23:20 +1100
-In-Reply-To: <56C31F38.1030702@c-s.fr>
-References: <1455604630-16214-1-git-send-email-khandual@linux.vnet.ibm.com>
- <56C31F38.1030702@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B8AF1A08A0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 15:36:43 +1100 (AEDT)
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 17 Feb 2016 14:36:42 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7815F2CE805A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 15:36:41 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1H4aXxJ52559896
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 15:36:41 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1H4a84G012676
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 15:36:09 +1100
+Subject: Re: [PATCH v8 33/45] powerpc/powernv: Simplify pnv_eeh_reset()
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1455680668-23298-34-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: devicetree@vger.kernel.org, aik@ozlabs.ru, linux-pci@vger.kernel.org,
+ grant.likely@linaro.org, robherring2@gmail.com, bhelgaas@google.com,
+ dja@axtens.net
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-ID: <56C3F89F.4070505@au1.ibm.com>
+Date: Wed, 17 Feb 2016 15:35:43 +1100
+MIME-Version: 1.0
+In-Reply-To: <1455680668-23298-34-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,15 +42,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-02-16 at 14:08 +0100, Christophe Leroy wrote:
+On 17/02/16 14:44, Gavin Shan wrote:
+> This drops unnecessary nested if statements in pnv_eeh_reset() to
+> improve the code readability. After the changes, the unused local
+> variable "ret" is dropped as well. No logical changes introduced.
+>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-> Your patches seem to be under review in Patchwork, see 
-> https://patchwork.ozlabs.org/patch/526275/
-> Why do you resend it ?
+This looks good to me.
 
-Because I haven't *actually* got around to reviewing them. Or at least I
-started and found problems and haven't had time to debug them and reply.
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-So I'm OK for Anshuman to post a rebase of these.
-
-cheers
+-- 
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
