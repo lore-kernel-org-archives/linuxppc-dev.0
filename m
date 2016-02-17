@@ -1,21 +1,34 @@
-Return-Path: <raghav.dogra@nxp.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0094.outbound.protection.outlook.com [157.56.111.94])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 998731A03E6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 22:40:20 +1100 (AEDT)
-From: Raghav Dogra <raghav.dogra@nxp.com>
-To: <linux-mtd@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>
-CC: <computersforpeace@gmail.com>, <oss@buserror.net>,
- <prabhakar.kushwaha@nxp.com>, <leoli@freescale.com>, Raghav Dogra
- <raghav.dogra@nxp.com>, Jaiprakash Singh <b44839@freescale.com>, Raghav Dogra
- <raghav@freescale.com>
-Subject: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
-Date: Wed, 17 Feb 2016 16:54:18 +0530
-Message-ID: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 26F1D1A033E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 23:14:00 +1100 (AEDT)
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 17 Feb 2016 22:13:58 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 34A552CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 23:13:57 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1HCDne933554528
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 23:13:57 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1HCDOYr013563
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 23:13:24 +1100
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
+Subject: [RFC 3/4] powerpc/mm: Rename the vmemmap_backing struct and its
+ elements
+Date: Wed, 17 Feb 2016 17:42:58 +0530
+Message-Id: <1455711179-20357-3-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1455711179-20357-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1455711179-20357-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,456 +38,234 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The new IFC controller version 2.0 has a different memory map page.
-Upto IFC 1.4 PAGE size is 4 KB and from IFC2.0 PAGE size is 64KB.
-This patch segregates the IFC global and runtime registers to appropriate
-PAGE sizes.
+The structure to track single virtual to physical mapping has
+been renamed from vmemmap_backing to vmemmap_hw_map which sounds
+more appropriate. This forms a single entry of the global linked
+list tracking all of the vmemmap physical mapping. The changes
+are as follows.
 
-Signed-off-by: Jaiprakash Singh <b44839@freescale.com>
-Signed-off-by: Raghav Dogra <raghav@freescale.com>
-Acked-by: Li Yang <leoyang.li@nxp.com>
-Signed-off-by: Raghav Dogra <raghav.dogra@nxp.com>
+	vmemmap_backing.list -> vmemmap_hw_map.link
+	vmemmap_backing.phys -> vmemmap_hw_map.paddr
+	vmemmap_backing.virt_addr -> vmemmap_hw_map.vaddr
+
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
-Changes for v3: not dependent on 
-"drivers/memory: Add deep sleep support for IFC" patch
+ arch/powerpc/include/asm/pgalloc-64.h | 16 +++++++---
+ arch/powerpc/kernel/machine_kexec.c   |  8 ++---
+ arch/powerpc/mm/init_64.c             | 58 +++++++++++++++++------------------
+ 3 files changed, 44 insertions(+), 38 deletions(-)
 
-Changes for v2: rebased to resolve conflicts
-Applicable to git://git.infradead.org/l2-mtd.git
-
-This patch is dependent on "drivers/memory: Add deep sleep support for IFC"
-https://patchwork.ozlabs.org/patch/582762/
-which is also applicable to git://git.infradead.org/l2-mtd.git
-
-This patch is the new version of following patch with changed title:
-https://patchwork.ozlabs.org/patch/557391/
-
- drivers/memory/fsl_ifc.c        | 36 ++++++++++-----------
- drivers/mtd/nand/fsl_ifc_nand.c | 72 ++++++++++++++++++++++-------------------
- include/linux/fsl_ifc.h         | 45 +++++++++++++++++---------
- 3 files changed, 87 insertions(+), 66 deletions(-)
-
-diff --git a/drivers/memory/fsl_ifc.c b/drivers/memory/fsl_ifc.c
-index 2a691da..904b4af 100644
---- a/drivers/memory/fsl_ifc.c
-+++ b/drivers/memory/fsl_ifc.c
-@@ -59,11 +59,11 @@ int fsl_ifc_find(phys_addr_t addr_base)
+diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
+index 69ef28a..e03b41c 100644
+--- a/arch/powerpc/include/asm/pgalloc-64.h
++++ b/arch/powerpc/include/asm/pgalloc-64.h
+@@ -11,12 +11,18 @@
+ #include <linux/cpumask.h>
+ #include <linux/percpu.h>
+ 
+-struct vmemmap_backing {
+-	struct vmemmap_backing *list;
+-	unsigned long phys;
+-	unsigned long virt_addr;
++/*
++ * This structure tracks a single virtual page mapping from
++ * the vmemmap ddress space. This element is required to
++ * track virtual to physical mapping of page structures in
++ * absense of a page table at boot time.
++ */
++struct vmemmap_hw_map {
++	struct vmemmap_hw_map *link;
++	unsigned long paddr;
++	unsigned long vaddr;
+ };
+-extern struct vmemmap_backing *vmemmap_list;
++extern struct vmemmap_hw_map *vmemmap_list;
+ 
+ /*
+  * Functions that deal with pagetables that could be at any level of
+diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+index 015ae55..0d90798 100644
+--- a/arch/powerpc/kernel/machine_kexec.c
++++ b/arch/powerpc/kernel/machine_kexec.c
+@@ -80,10 +80,10 @@ void arch_crash_save_vmcoreinfo(void)
+ 	VMCOREINFO_SYMBOL(vmemmap_list);
+ 	VMCOREINFO_SYMBOL(mmu_vmemmap_psize);
+ 	VMCOREINFO_SYMBOL(mmu_psize_defs);
+-	VMCOREINFO_STRUCT_SIZE(vmemmap_backing);
+-	VMCOREINFO_OFFSET(vmemmap_backing, list);
+-	VMCOREINFO_OFFSET(vmemmap_backing, phys);
+-	VMCOREINFO_OFFSET(vmemmap_backing, virt_addr);
++	VMCOREINFO_STRUCT_SIZE(vmemmap_hw_map);
++	VMCOREINFO_OFFSET(vmemmap_hw_map, link);
++	VMCOREINFO_OFFSET(vmemmap_hw_map, paddr);
++	VMCOREINFO_OFFSET(vmemmap_hw_map, vaddr);
+ 	VMCOREINFO_STRUCT_SIZE(mmu_psize_def);
+ 	VMCOREINFO_OFFSET(mmu_psize_def, shift);
+ #endif
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index d6b9b4d..9b5dea3 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -194,7 +194,7 @@ static int __meminit vmemmap_populated(unsigned long start, int page_size)
+ #ifdef CONFIG_PPC_BOOK3E
+ static void __meminit vmemmap_create_mapping(unsigned long start,
+ 					     unsigned long page_size,
+-					     unsigned long phys)
++					     unsigned long paddr)
  {
- 	int i = 0;
+ 	/* Create a PTE encoding without page size */
+ 	unsigned long i, flags = _PAGE_PRESENT | _PAGE_ACCESSED |
+@@ -207,11 +207,11 @@ static void __meminit vmemmap_create_mapping(unsigned long start,
+ 	flags |= mmu_psize_defs[mmu_vmemmap_psize].enc << 8;
  
--	if (!fsl_ifc_ctrl_dev || !fsl_ifc_ctrl_dev->regs)
-+	if (!fsl_ifc_ctrl_dev || !fsl_ifc_ctrl_dev->gregs)
- 		return -ENODEV;
- 
- 	for (i = 0; i < fsl_ifc_ctrl_dev->banks; i++) {
--		u32 cspr = ifc_in32(&fsl_ifc_ctrl_dev->regs->cspr_cs[i].cspr);
-+		u32 cspr = ifc_in32(&fsl_ifc_ctrl_dev->gregs->cspr_cs[i].cspr);
- 		if (cspr & CSPR_V && (cspr & CSPR_BA) ==
- 				convert_ifc_address(addr_base))
- 			return i;
-@@ -75,7 +75,7 @@ EXPORT_SYMBOL(fsl_ifc_find);
- 
- static int fsl_ifc_ctrl_init(struct fsl_ifc_ctrl *ctrl)
- {
--	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	struct fsl_ifc_global __iomem *ifc = ctrl->gregs;
- 
- 	/*
- 	 * Clear all the common status and event registers
-@@ -104,7 +104,7 @@ static int fsl_ifc_ctrl_remove(struct platform_device *dev)
- 	irq_dispose_mapping(ctrl->nand_irq);
- 	irq_dispose_mapping(ctrl->irq);
- 
--	iounmap(ctrl->regs);
-+	iounmap(ctrl->gregs);
- 
- 	dev_set_drvdata(&dev->dev, NULL);
- 	kfree(ctrl);
-@@ -122,7 +122,7 @@ static DEFINE_SPINLOCK(nand_irq_lock);
- 
- static u32 check_nand_stat(struct fsl_ifc_ctrl *ctrl)
- {
--	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	struct fsl_ifc_runtime __iomem *ifc = ctrl->rregs;
- 	unsigned long flags;
- 	u32 stat;
- 
-@@ -157,7 +157,7 @@ static irqreturn_t fsl_ifc_nand_irq(int irqno, void *data)
- static irqreturn_t fsl_ifc_ctrl_irq(int irqno, void *data)
- {
- 	struct fsl_ifc_ctrl *ctrl = data;
--	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	struct fsl_ifc_global __iomem *ifc = ctrl->gregs;
- 	u32 err_axiid, err_srcid, status, cs_err, err_addr;
- 	irqreturn_t ret = IRQ_NONE;
- 
-@@ -215,6 +215,7 @@ static int fsl_ifc_ctrl_probe(struct platform_device *dev)
- {
- 	int ret = 0;
- 	int version, banks;
-+	void __iomem *addr;
- 
- 	dev_info(&dev->dev, "Freescale Integrated Flash Controller\n");
- 
-@@ -225,22 +226,13 @@ static int fsl_ifc_ctrl_probe(struct platform_device *dev)
- 	dev_set_drvdata(&dev->dev, fsl_ifc_ctrl_dev);
- 
- 	/* IOMAP the entire IFC region */
--	fsl_ifc_ctrl_dev->regs = of_iomap(dev->dev.of_node, 0);
--	if (!fsl_ifc_ctrl_dev->regs) {
-+	fsl_ifc_ctrl_dev->gregs = of_iomap(dev->dev.of_node, 0);
-+	if (!fsl_ifc_ctrl_dev->gregs) {
- 		dev_err(&dev->dev, "failed to get memory region\n");
- 		ret = -ENODEV;
- 		goto err;
- 	}
- 
--	version = ifc_in32(&fsl_ifc_ctrl_dev->regs->ifc_rev) &
--			FSL_IFC_VERSION_MASK;
--	banks = (version == FSL_IFC_VERSION_1_0_0) ? 4 : 8;
--	dev_info(&dev->dev, "IFC version %d.%d, %d banks\n",
--		version >> 24, (version >> 16) & 0xf, banks);
--
--	fsl_ifc_ctrl_dev->version = version;
--	fsl_ifc_ctrl_dev->banks = banks;
--
- 	if (of_property_read_bool(dev->dev.of_node, "little-endian")) {
- 		fsl_ifc_ctrl_dev->little_endian = true;
- 		dev_dbg(&dev->dev, "IFC REGISTERS are LITTLE endian\n");
-@@ -249,8 +241,9 @@ static int fsl_ifc_ctrl_probe(struct platform_device *dev)
- 		dev_dbg(&dev->dev, "IFC REGISTERS are BIG endian\n");
- 	}
- 
--	version = ioread32be(&fsl_ifc_ctrl_dev->regs->ifc_rev) &
-+	version = ifc_in32(&fsl_ifc_ctrl_dev->gregs->ifc_rev) &
- 			FSL_IFC_VERSION_MASK;
-+
- 	banks = (version == FSL_IFC_VERSION_1_0_0) ? 4 : 8;
- 	dev_info(&dev->dev, "IFC version %d.%d, %d banks\n",
- 		version >> 24, (version >> 16) & 0xf, banks);
-@@ -258,6 +251,13 @@ static int fsl_ifc_ctrl_probe(struct platform_device *dev)
- 	fsl_ifc_ctrl_dev->version = version;
- 	fsl_ifc_ctrl_dev->banks = banks;
- 
-+	addr = fsl_ifc_ctrl_dev->gregs;
-+	if (version >= FSL_IFC_VERSION_2_0_0)
-+		addr += PGOFFSET_64K;
-+	else
-+		addr += PGOFFSET_4K;
-+	fsl_ifc_ctrl_dev->rregs = addr;
-+
- 	/* get the Controller level irq */
- 	fsl_ifc_ctrl_dev->irq = irq_of_parse_and_map(dev->dev.of_node, 0);
- 	if (fsl_ifc_ctrl_dev->irq == 0) {
-diff --git a/drivers/mtd/nand/fsl_ifc_nand.c b/drivers/mtd/nand/fsl_ifc_nand.c
-index 43f5a3a..f8a016f 100644
---- a/drivers/mtd/nand/fsl_ifc_nand.c
-+++ b/drivers/mtd/nand/fsl_ifc_nand.c
-@@ -232,7 +232,7 @@ static void set_addr(struct mtd_info *mtd, int column, int page_addr, int oob)
- 	struct nand_chip *chip = mtd_to_nand(mtd);
- 	struct fsl_ifc_mtd *priv = nand_get_controller_data(chip);
- 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
--	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	struct fsl_ifc_runtime __iomem *ifc = ctrl->rregs;
- 	int buf_num;
- 
- 	ifc_nand_ctrl->page = page_addr;
-@@ -295,7 +295,7 @@ static void fsl_ifc_run_command(struct mtd_info *mtd)
- 	struct fsl_ifc_mtd *priv = nand_get_controller_data(chip);
- 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
- 	struct fsl_ifc_nand_ctrl *nctrl = ifc_nand_ctrl;
--	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	struct fsl_ifc_runtime __iomem *ifc = ctrl->rregs;
- 	u32 eccstat[4];
- 	int i;
- 
-@@ -371,7 +371,7 @@ static void fsl_ifc_do_read(struct nand_chip *chip,
- {
- 	struct fsl_ifc_mtd *priv = nand_get_controller_data(chip);
- 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
--	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	struct fsl_ifc_runtime __iomem *ifc = ctrl->rregs;
- 
- 	/* Program FIR/IFC_NAND_FCR0 for Small/Large page */
- 	if (mtd->writesize > 512) {
-@@ -411,7 +411,7 @@ static void fsl_ifc_cmdfunc(struct mtd_info *mtd, unsigned int command,
- 	struct nand_chip *chip = mtd_to_nand(mtd);
- 	struct fsl_ifc_mtd *priv = nand_get_controller_data(chip);
- 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
--	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	struct fsl_ifc_runtime __iomem *ifc = ctrl->rregs;
- 
- 	/* clear the read buffer */
- 	ifc_nand_ctrl->read_bytes = 0;
-@@ -723,7 +723,7 @@ static int fsl_ifc_wait(struct mtd_info *mtd, struct nand_chip *chip)
- {
- 	struct fsl_ifc_mtd *priv = nand_get_controller_data(chip);
- 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
--	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	struct fsl_ifc_runtime __iomem *ifc = ctrl->rregs;
- 	u32 nand_fsr;
- 
- 	/* Use READ_STATUS command, but wait for the device to be ready */
-@@ -825,39 +825,42 @@ static int fsl_ifc_chip_init_tail(struct mtd_info *mtd)
- static void fsl_ifc_sram_init(struct fsl_ifc_mtd *priv)
- {
- 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
--	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	struct fsl_ifc_runtime __iomem *ifc_runtime = ctrl->rregs;
-+	struct fsl_ifc_global __iomem *ifc_global = ctrl->gregs;
- 	uint32_t csor = 0, csor_8k = 0, csor_ext = 0;
- 	uint32_t cs = priv->bank;
- 
- 	/* Save CSOR and CSOR_ext */
--	csor = ifc_in32(&ifc->csor_cs[cs].csor);
--	csor_ext = ifc_in32(&ifc->csor_cs[cs].csor_ext);
-+	csor = ifc_in32(&ifc_global->csor_cs[cs].csor);
-+	csor_ext = ifc_in32(&ifc_global->csor_cs[cs].csor_ext);
- 
- 	/* chage PageSize 8K and SpareSize 1K*/
- 	csor_8k = (csor & ~(CSOR_NAND_PGS_MASK)) | 0x0018C000;
--	ifc_out32(csor_8k, &ifc->csor_cs[cs].csor);
--	ifc_out32(0x0000400, &ifc->csor_cs[cs].csor_ext);
-+	ifc_out32(csor_8k, &ifc_global->csor_cs[cs].csor);
-+	ifc_out32(0x0000400, &ifc_global->csor_cs[cs].csor_ext);
- 
- 	/* READID */
- 	ifc_out32((IFC_FIR_OP_CW0 << IFC_NAND_FIR0_OP0_SHIFT) |
--		  (IFC_FIR_OP_UA  << IFC_NAND_FIR0_OP1_SHIFT) |
--		  (IFC_FIR_OP_RB << IFC_NAND_FIR0_OP2_SHIFT),
--		  &ifc->ifc_nand.nand_fir0);
-+		    (IFC_FIR_OP_UA  << IFC_NAND_FIR0_OP1_SHIFT) |
-+		    (IFC_FIR_OP_RB << IFC_NAND_FIR0_OP2_SHIFT),
-+		    &ifc_runtime->ifc_nand.nand_fir0);
- 	ifc_out32(NAND_CMD_READID << IFC_NAND_FCR0_CMD0_SHIFT,
--		  &ifc->ifc_nand.nand_fcr0);
--	ifc_out32(0x0, &ifc->ifc_nand.row3);
-+		    &ifc_runtime->ifc_nand.nand_fcr0);
-+	ifc_out32(0x0, &ifc_runtime->ifc_nand.row3);
- 
--	ifc_out32(0x0, &ifc->ifc_nand.nand_fbcr);
-+	ifc_out32(0x0, &ifc_runtime->ifc_nand.nand_fbcr);
- 
- 	/* Program ROW0/COL0 */
--	ifc_out32(0x0, &ifc->ifc_nand.row0);
--	ifc_out32(0x0, &ifc->ifc_nand.col0);
-+	ifc_out32(0x0, &ifc_runtime->ifc_nand.row0);
-+	ifc_out32(0x0, &ifc_runtime->ifc_nand.col0);
- 
- 	/* set the chip select for NAND Transaction */
--	ifc_out32(cs << IFC_NAND_CSEL_SHIFT, &ifc->ifc_nand.nand_csel);
-+	ifc_out32(cs << IFC_NAND_CSEL_SHIFT,
-+		&ifc_runtime->ifc_nand.nand_csel);
- 
- 	/* start read seq */
--	ifc_out32(IFC_NAND_SEQ_STRT_FIR_STRT, &ifc->ifc_nand.nandseq_strt);
-+	ifc_out32(IFC_NAND_SEQ_STRT_FIR_STRT,
-+		&ifc_runtime->ifc_nand.nandseq_strt);
- 
- 	/* wait for command complete flag or timeout */
- 	wait_event_timeout(ctrl->nand_wait, ctrl->nand_stat,
-@@ -867,14 +870,15 @@ static void fsl_ifc_sram_init(struct fsl_ifc_mtd *priv)
- 		printk(KERN_ERR "fsl-ifc: Failed to Initialise SRAM\n");
- 
- 	/* Restore CSOR and CSOR_ext */
--	ifc_out32(csor, &ifc->csor_cs[cs].csor);
--	ifc_out32(csor_ext, &ifc->csor_cs[cs].csor_ext);
-+	ifc_out32(csor, &ifc_global->csor_cs[cs].csor);
-+	ifc_out32(csor_ext, &ifc_global->csor_cs[cs].csor_ext);
+ 	/* For each PTE for that area, map things. Note that we don't
+-	 * increment phys because all PTEs are of the large size and
++	 * increment paddr because all PTEs are of the large size and
+ 	 * thus must have the low bits clear
+ 	 */
+ 	for (i = 0; i < page_size; i += PAGE_SIZE)
+-		BUG_ON(map_kernel_page(start + i, phys, flags));
++		BUG_ON(map_kernel_page(start + i, paddr, flags));
  }
  
- static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
+ #ifdef CONFIG_MEMORY_HOTPLUG
+@@ -223,9 +223,9 @@ static void vmemmap_remove_mapping(unsigned long start,
+ #else /* CONFIG_PPC_BOOK3E */
+ static void __meminit vmemmap_create_mapping(unsigned long start,
+ 					     unsigned long page_size,
+-					     unsigned long phys)
++					     unsigned long paddr)
  {
- 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
--	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	struct fsl_ifc_global __iomem *ifc_global = ctrl->gregs;
-+	struct fsl_ifc_runtime __iomem *ifc_runtime = ctrl->rregs;
- 	struct nand_chip *chip = &priv->chip;
- 	struct mtd_info *mtd = nand_to_mtd(&priv->chip);
- 	struct nand_ecclayout *layout;
-@@ -886,7 +890,8 @@ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
+-	int  mapped = htab_bolt_mapping(start, start + page_size, phys,
++	int  mapped = htab_bolt_mapping(start, start + page_size, paddr,
+ 					pgprot_val(PAGE_KERNEL),
+ 					mmu_vmemmap_psize,
+ 					mmu_kernel_ssize);
+@@ -245,19 +245,19 @@ static void vmemmap_remove_mapping(unsigned long start,
  
- 	/* fill in nand_chip structure */
- 	/* set up function call table */
--	if ((ifc_in32(&ifc->cspr_cs[priv->bank].cspr)) & CSPR_PORT_SIZE_16)
-+	if ((ifc_in32(&ifc_global->cspr_cs[priv->bank].cspr))
-+		& CSPR_PORT_SIZE_16)
- 		chip->read_byte = fsl_ifc_read_byte16;
- 	else
- 		chip->read_byte = fsl_ifc_read_byte;
-@@ -900,13 +905,14 @@ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
- 	chip->bbt_td = &bbt_main_descr;
- 	chip->bbt_md = &bbt_mirror_descr;
+ #endif /* CONFIG_PPC_BOOK3E */
  
--	ifc_out32(0x0, &ifc->ifc_nand.ncfgr);
-+	ifc_out32(0x0, &ifc_runtime->ifc_nand.ncfgr);
+-struct vmemmap_backing *vmemmap_list;
+-static struct vmemmap_backing *next;
++struct vmemmap_hw_map *vmemmap_list;
++static struct vmemmap_hw_map *next;
+ static int num_left;
+ static int num_freed;
  
- 	/* set up nand options */
- 	chip->bbt_options = NAND_BBT_USE_FLASH;
- 	chip->options = NAND_NO_SUBPAGE_WRITE;
+-static __meminit struct vmemmap_backing * vmemmap_list_alloc(int node)
++static __meminit struct vmemmap_hw_map * vmemmap_list_alloc(int node)
+ {
+-	struct vmemmap_backing *vmem_back;
++	struct vmemmap_hw_map *vmem_back;
+ 	/* get from freed entries first */
+ 	if (num_freed) {
+ 		num_freed--;
+ 		vmem_back = next;
+-		next = next->list;
++		next = next->link;
  
--	if (ifc_in32(&ifc->cspr_cs[priv->bank].cspr) & CSPR_PORT_SIZE_16) {
-+	if (ifc_in32(&ifc_global->cspr_cs[priv->bank].cspr)
-+		& CSPR_PORT_SIZE_16) {
- 		chip->read_byte = fsl_ifc_read_byte16;
- 		chip->options |= NAND_BUSWIDTH_16;
- 	} else {
-@@ -919,7 +925,7 @@ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
- 	chip->ecc.read_page = fsl_ifc_read_page;
- 	chip->ecc.write_page = fsl_ifc_write_page;
+ 		return vmem_back;
+ 	}
+@@ -269,7 +269,7 @@ static __meminit struct vmemmap_backing * vmemmap_list_alloc(int node)
+ 			WARN_ON(1);
+ 			return NULL;
+ 		}
+-		num_left = PAGE_SIZE / sizeof(struct vmemmap_backing);
++		num_left = PAGE_SIZE / sizeof(struct vmemmap_hw_map);
+ 	}
  
--	csor = ifc_in32(&ifc->csor_cs[priv->bank].csor);
-+	csor = ifc_in32(&ifc_global->csor_cs[priv->bank].csor);
- 
- 	/* Hardware generates ECC per 512 Bytes */
- 	chip->ecc.size = 512;
-@@ -1007,10 +1013,10 @@ static int fsl_ifc_chip_remove(struct fsl_ifc_mtd *priv)
- 	return 0;
+ 	num_left--;
+@@ -277,11 +277,11 @@ static __meminit struct vmemmap_backing * vmemmap_list_alloc(int node)
+ 	return next++;
  }
  
--static int match_bank(struct fsl_ifc_regs __iomem *ifc, int bank,
-+static int match_bank(struct fsl_ifc_global __iomem *ifc_global, int bank,
- 		      phys_addr_t addr)
+-static __meminit void vmemmap_list_populate(unsigned long phys,
++static __meminit void vmemmap_list_populate(unsigned long paddr,
+ 					    unsigned long start,
+ 					    int node)
  {
--	u32 cspr = ifc_in32(&ifc->cspr_cs[bank].cspr);
-+	u32 cspr = ifc_in32(&ifc_global->cspr_cs[bank].cspr);
+-	struct vmemmap_backing *vmem_back;
++	struct vmemmap_hw_map *vmem_back;
  
- 	if (!(cspr & CSPR_V))
- 		return 0;
-@@ -1024,7 +1030,7 @@ static DEFINE_MUTEX(fsl_ifc_nand_mutex);
+ 	vmem_back = vmemmap_list_alloc(node);
+ 	if (unlikely(!vmem_back)) {
+@@ -289,9 +289,9 @@ static __meminit void vmemmap_list_populate(unsigned long phys,
+ 		return;
+ 	}
  
- static int fsl_ifc_nand_probe(struct platform_device *dev)
+-	vmem_back->phys = phys;
+-	vmem_back->virt_addr = start;
+-	vmem_back->list = vmemmap_list;
++	vmem_back->paddr = paddr;
++	vmem_back->vaddr = start;
++	vmem_back->link = vmemmap_list;
+ 
+ 	vmemmap_list = vmem_back;
+ }
+@@ -329,13 +329,13 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ static unsigned long vmemmap_list_free(unsigned long start)
  {
--	struct fsl_ifc_regs __iomem *ifc;
-+	struct fsl_ifc_runtime __iomem *ifc;
- 	struct fsl_ifc_mtd *priv;
- 	struct resource res;
- 	static const char *part_probe_types[]
-@@ -1034,9 +1040,9 @@ static int fsl_ifc_nand_probe(struct platform_device *dev)
- 	struct device_node *node = dev->dev.of_node;
- 	struct mtd_info *mtd;
+-	struct vmemmap_backing *vmem_back, *vmem_back_prev;
++	struct vmemmap_hw_map *vmem_back, *vmem_back_prev;
  
--	if (!fsl_ifc_ctrl_dev || !fsl_ifc_ctrl_dev->regs)
-+	if (!fsl_ifc_ctrl_dev || !fsl_ifc_ctrl_dev->rregs)
- 		return -ENODEV;
--	ifc = fsl_ifc_ctrl_dev->regs;
-+	ifc = fsl_ifc_ctrl_dev->rregs;
+ 	vmem_back_prev = vmem_back = vmemmap_list;
  
- 	/* get, allocate and map the memory resource */
- 	ret = of_address_to_resource(node, 0, &res);
-@@ -1047,7 +1053,7 @@ static int fsl_ifc_nand_probe(struct platform_device *dev)
- 
- 	/* find which chip select it is connected to */
- 	for (bank = 0; bank < fsl_ifc_ctrl_dev->banks; bank++) {
--		if (match_bank(ifc, bank, res.start))
-+		if (match_bank(fsl_ifc_ctrl_dev->gregs, bank, res.start))
+ 	/* look for it with prev pointer recorded */
+-	for (; vmem_back; vmem_back = vmem_back->list) {
+-		if (vmem_back->virt_addr == start)
++	for (; vmem_back; vmem_back = vmem_back->link) {
++		if (vmem_back->vaddr == start)
  			break;
+ 		vmem_back_prev = vmem_back;
  	}
+@@ -347,16 +347,16 @@ static unsigned long vmemmap_list_free(unsigned long start)
  
-diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
-index 0023088..3f9778c 100644
---- a/include/linux/fsl_ifc.h
-+++ b/include/linux/fsl_ifc.h
-@@ -39,6 +39,10 @@
- #define FSL_IFC_VERSION_MASK	0x0F0F0000
- #define FSL_IFC_VERSION_1_0_0	0x01000000
- #define FSL_IFC_VERSION_1_1_0	0x01010000
-+#define FSL_IFC_VERSION_2_0_0	0x02000000
-+
-+#define PGOFFSET_64K	(64*1024)
-+#define PGOFFSET_4K	(4*1024)
+ 	/* remove it from vmemmap_list */
+ 	if (vmem_back == vmemmap_list) /* remove head */
+-		vmemmap_list = vmem_back->list;
++		vmemmap_list = vmem_back->link;
+ 	else
+-		vmem_back_prev->list = vmem_back->list;
++		vmem_back_prev->link = vmem_back->link;
  
- /*
-  * CSPR - Chip Select Property Register
-@@ -723,20 +727,26 @@ struct fsl_ifc_nand {
- 	__be32 nand_evter_en;
- 	u32 res17[0x2];
- 	__be32 nand_evter_intr_en;
--	u32 res18[0x2];
-+	__be32 nand_vol_addr_stat;
-+	u32 res18;
- 	__be32 nand_erattr0;
- 	__be32 nand_erattr1;
- 	u32 res19[0x10];
- 	__be32 nand_fsr;
--	u32 res20;
--	__be32 nand_eccstat[4];
--	u32 res21[0x20];
-+	u32 res20[0x3];
-+	__be32 nand_eccstat[6];
-+	u32 res21[0x1c];
- 	__be32 nanndcr;
- 	u32 res22[0x2];
- 	__be32 nand_autoboot_trgr;
- 	u32 res23;
- 	__be32 nand_mdr;
--	u32 res24[0x5C];
-+	u32 res24[0x1C];
-+	__be32 nand_dll_lowcfg0;
-+	__be32 nand_dll_lowcfg1;
-+	u32 res25;
-+	__be32 nand_dll_lowstat;
-+	u32 res26[0x3c];
- };
+ 	/* next point to this freed entry */
+-	vmem_back->list = next;
++	vmem_back->link = next;
+ 	next = vmem_back;
+ 	num_freed++;
  
- /*
-@@ -771,13 +781,12 @@ struct fsl_ifc_gpcm {
- 	__be32 gpcm_erattr1;
- 	__be32 gpcm_erattr2;
- 	__be32 gpcm_stat;
--	u32 res4[0x1F3];
- };
+-	return vmem_back->phys;
++	return vmem_back->paddr;
+ }
  
- /*
-  * IFC Controller Registers
+ void __ref vmemmap_free(unsigned long start, unsigned long end)
+@@ -427,20 +427,20 @@ void register_page_bootmem_memmap(unsigned long section_nr,
   */
--struct fsl_ifc_regs {
-+struct fsl_ifc_global {
- 	__be32 ifc_rev;
- 	u32 res1[0x2];
- 	struct {
-@@ -803,21 +812,26 @@ struct fsl_ifc_regs {
- 	} ftim_cs[FSL_IFC_BANK_COUNT];
- 	u32 res9[0x30];
- 	__be32 rb_stat;
--	u32 res10[0x2];
-+	__be32 rb_map;
-+	__be32 wb_map;
- 	__be32 ifc_gcr;
--	u32 res11[0x2];
-+	u32 res10[0x2];
- 	__be32 cm_evter_stat;
--	u32 res12[0x2];
-+	u32 res11[0x2];
- 	__be32 cm_evter_en;
--	u32 res13[0x2];
-+	u32 res12[0x2];
- 	__be32 cm_evter_intr_en;
--	u32 res14[0x2];
-+	u32 res13[0x2];
- 	__be32 cm_erattr0;
- 	__be32 cm_erattr1;
--	u32 res15[0x2];
-+	u32 res14[0x2];
- 	__be32 ifc_ccr;
- 	__be32 ifc_csr;
--	u32 res16[0x2EB];
-+	__be32 ddr_ccr_low;
-+};
-+
-+
-+struct fsl_ifc_runtime {
- 	struct fsl_ifc_nand ifc_nand;
- 	struct fsl_ifc_nor ifc_nor;
- 	struct fsl_ifc_gpcm ifc_gpcm;
-@@ -831,7 +845,8 @@ extern int fsl_ifc_find(phys_addr_t addr_base);
- struct fsl_ifc_ctrl {
- 	/* device info */
- 	struct device			*dev;
--	struct fsl_ifc_regs __iomem	*regs;
-+	struct fsl_ifc_global __iomem	*gregs;
-+	struct fsl_ifc_runtime __iomem	*rregs;
- 	int				irq;
- 	int				nand_irq;
- 	spinlock_t			lock;
+ struct page *realmode_pfn_to_page(unsigned long pfn)
+ {
+-	struct vmemmap_backing *vmem_back;
++	struct vmemmap_hw_map *vmem_back;
+ 	struct page *page;
+ 	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
+ 	unsigned long pg_va = (unsigned long) pfn_to_page(pfn);
+ 
+-	for (vmem_back = vmemmap_list; vmem_back; vmem_back = vmem_back->list) {
+-		if (pg_va < vmem_back->virt_addr)
++	for (vmem_back = vmemmap_list; vmem_back; vmem_back = vmem_back->link) {
++		if (pg_va < vmem_back->vaddr)
+ 			continue;
+ 
+ 		/* After vmemmap_list entry free is possible, need check all */
+ 		if ((pg_va + sizeof(struct page)) <=
+-				(vmem_back->virt_addr + page_size)) {
+-			page = (struct page *) (vmem_back->phys + pg_va -
+-				vmem_back->virt_addr);
++				(vmem_back->vaddr + page_size)) {
++			page = (struct page *) (vmem_back->paddr + pg_va -
++				vmem_back->vaddr);
+ 			return page;
+ 		}
+ 	}
 -- 
-1.9.1
+2.1.0
