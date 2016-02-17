@@ -1,24 +1,28 @@
-Return-Path: <dcb314@hotmail.com>
-Received: from DUB004-OMC1S33.hotmail.com (dub004-omc1s33.hotmail.com
- [157.55.0.232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <jthumshirn@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5C6811A0018
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 18:39:44 +1100 (AEDT)
-Message-ID: <DUB128-W420C9B466D12DF872907619CAE0@phx.gbl>
-From: David Binderman <dcb314@hotmail.com>
-To: Daniel Axtens <dja@axtens.net>, "benh@kernel.crashing.org"
- <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>,
- "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: linux-4.5-rc4/arch/powerpc/boot/treeboot-akebono.c:90: possible
- bad test ?
-Date: Wed, 17 Feb 2016 07:34:20 +0000
-In-Reply-To: <87fuwscm9v.fsf@gamma.ozlabs.ibm.com>
-References: <DUB128-W3951FD832DE1C66D3A7C799CAD0@phx.gbl>,
- <87fuwscm9v.fsf@gamma.ozlabs.ibm.com>
-Content-Type: text/plain; charset="iso-8859-1"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2E6311A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 19:05:42 +1100 (AEDT)
+Date: Wed, 17 Feb 2016 09:05:36 +0100
+From: Johannes Thumshirn <jthumshirn@suse.de>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+ linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com,
+ brking@linux.vnet.ibm.com, manoj@linux.vnet.ibm.com,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 3/7] ibmvscsi: Replace magic values in
+ set_adpater_info() with defines
+Message-ID: <20160217080536.GJ18134@c203.arch.suse.de>
+References: <1455154348-3226-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1455154348-3226-4-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1455295395.2396.22.camel@HansenPartnership.com>
+ <56BE0D7D.3050703@linux.vnet.ibm.com>
+ <yq1k2m4xclf.fsf@sermon.lab.mkp.net>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <yq1k2m4xclf.fsf@sermon.lab.mkp.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +32,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello there Daniel=2C=0A=
-=0A=
-----------------------------------------=0A=
-> That looks like a good suggestion: maybe make the test 'if (!emac)'=0A=
-> rather than explicitly comparing with zero.=0A=
-=0A=
-Righto.=0A=
-=0A=
-> Are you comfortable sending a patch to that effect?=0A=
-=0A=
-Sorry=2C no. =0A=
-=0A=
-My email provider can't implement the somewhat strict whitespace=0A=
-rules of kernel patches.=0A=
-=0A=
-Nothing stopping any keen person implementing that patch=2C however =3B->=
-=0A=
-=0A=
-I checked the rest of the treeboot-akebono.c source code file with=0A=
-the static analyser and found nothing wrong. No warnings from=0A=
-gcc -Wextra=2C either=2C so after the patch=2C it looks ok to me.=0A=
-=0A=
-=0A=
-Regards=0A=
-=0A=
-David Binderman=0A=
-=0A=
- 		 	   		  =
+On Tue, Feb 16, 2016 at 10:03:24PM -0500, Martin K. Petersen wrote:
+> >>>>> "Tyrel" == Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
+> 
+> >> Is there some reason you didn't carry the review tag over from this:
+> >> 
+> >> http://mid.gmane.org/20160204084459.GW27969@c203.arch.suse.de
+> >> 
+> >> ?
+> >> 
+> >> James
+> 
+> Tyrel> The patch is slightly changed from v1. A define for AIX os type
+> Tyrel> was added as mentioned in the cover letter v2 changes, and I
+> Tyrel> moved the defines to the mad_adapter_info_data structure around
+> Tyrel> the fields they apply.
+> 
+> Johannes: Mind checking this out?
+
+I'm sorry I though I already did.
+
+Reviewed-by: Johannes Thumshirn <jthumshirn@suse.de>
+
+> 
+> https://patchwork.kernel.org/patch/8276101/
+> 
+> -- 
+> Martin K. Petersen	Oracle Linux Engineering
+
+-- 
+Johannes Thumshirn                                          Storage
+jthumshirn@suse.de                                +49 911 74053 689
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Felix Imendörffer, Jane Smithard, Graham Norton
+HRB 21284 (AG Nürnberg)
+Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
