@@ -1,39 +1,26 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-wm0-x231.google.com (mail-wm0-x231.google.com
+ [IPv6:2a00:1450:400c:c09::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C3B751A0353
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 09:38:07 +1100 (AEDT)
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 18 Feb 2016 08:38:07 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id CC5AF2CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 09:38:05 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1HMbvbx65536088
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 09:38:05 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1HMbWWu022389
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 09:37:33 +1100
-Date: Thu, 18 Feb 2016 09:36:38 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org,
- gwshan@linux.vnet.ibm.com, linux-pci@vger.kernel.org,
- benh@kernel.crashing.org
-Subject: Re: [PATCH] MAINTAINERS: Update EEH details and maintainership
-Message-ID: <20160217223638.GB6112@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1455689164-12128-1-git-send-email-ruscur@russell.cc>
- <20160217173224.GA28147@localhost>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 114421A03D6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 10:19:46 +1100 (AEDT)
+Received: by mail-wm0-x231.google.com with SMTP id g62so1190251wme.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 15:19:46 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160217173224.GA28147@localhost>
+In-Reply-To: <DB4PR04MB346600B0CB57C4F161C896589AE0@DB4PR04MB346.eurprd04.prod.outlook.com>
+References: <1455516864-3594-1-git-send-email-raghav.dogra@nxp.com>
+ <1455611695.2463.56.camel@buserror.net>
+ <DB4PR04MB346600B0CB57C4F161C896589AE0@DB4PR04MB346.eurprd04.prod.outlook.com>
+Date: Wed, 17 Feb 2016 17:19:42 -0600
+Message-ID: <CADRPPNQpCv7xJEXE98xQExw2R_hE_YWj6T49WfB2NhW22UHEYA@mail.gmail.com>
+Subject: Re: [PATCH][v3] drivers/memory: Add deep sleep support for IFC
+From: Leo Li <pku.leo@gmail.com>
+To: Raghav Dogra <raghav.dogra@nxp.com>
+Cc: Scott Wood <oss@buserror.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,74 +30,323 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 17, 2016 at 11:32:24AM -0600, Bjorn Helgaas wrote:
->On Wed, Feb 17, 2016 at 05:06:04PM +1100, Russell Currey wrote:
->> Enhanced Error Handling could mean anything in the context of the entire
->> kernel, so change the name to reference that it is both for PCI and
->> powerpc.
->> 
->> EEH covers a bit more than the previously listed files, so add the headers
->> and platform-specific code to the EEH maintained section.
->> 
->> In addition, I am taking over the maintainership.
->> 
->> Signed-off-by: Russell Currey <ruscur@russell.cc>
+On Wed, Feb 17, 2016 at 8:40 AM, Raghav Dogra <raghav.dogra@nxp.com> wrote:
 >
->This is fine with me.  I expect it will be merged via the powerpc tree,
->since I think that's how all of Gavin Shan's recent patches in this area
->are being handled.
 >
+>> -----Original Message-----
+>> From: Scott Wood [mailto:oss@buserror.net]
+>> Sent: Tuesday, February 16, 2016 2:05 PM
+>> To: Raghav Dogra <raghav.dogra@nxp.com>; linuxppc-dev@lists.ozlabs.org
+>> Cc: Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+>> Subject: Re: [PATCH][v3] drivers/memory: Add deep sleep support for IFC
+>>
+>> On Mon, 2016-02-15 at 11:44 +0530, Raghav Dogra wrote:
+>> > Add support of suspend, resume function to support deep sleep.
+>> > Also make sure of SRAM initialization  during resume.
+>> >
+>> > Signed-off-by: Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+>> > Signed-off-by: Raghav Dogra <raghav.dogra@nxp.com>
 
-Bjorn, thanks for your great helps in the past. Yeah, I think the code
-will be merged via the powerpc tree as before. Looking forward to your
-support Russell's work in future :-)
+Similar comment as last time, that we should involve the MTD guys.
 
-Thanks,
-Gavin
-
->> ---
->>  MAINTAINERS | 16 +++++++++-------
->>  1 file changed, 9 insertions(+), 7 deletions(-)
->> 
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index 28eb61b..95d999e 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -4222,13 +4222,6 @@ M:	Maxim Levitsky <maximlevitsky@gmail.com>
->>  S:	Maintained
->>  F:	drivers/media/rc/ene_ir.*
->>  
->> -ENHANCED ERROR HANDLING (EEH)
->> -M:	Gavin Shan <shangw@linux.vnet.ibm.com>
->> -L:	linuxppc-dev@lists.ozlabs.org
->> -S:	Supported
->> -F:	Documentation/powerpc/eeh-pci-error-recovery.txt
->> -F:	arch/powerpc/kernel/eeh*.c
->> -
->>  EPSON S1D13XXX FRAMEBUFFER DRIVER
->>  M:	Kristoffer Ericson <kristoffer.ericson@gmail.com>
->>  S:	Maintained
->> @@ -8244,6 +8237,15 @@ L:	linux-pci@vger.kernel.org
->>  S:	Supported
->>  F:	Documentation/PCI/pci-error-recovery.txt
->>  
->> +PCI ENHANCED ERROR HANDLING (EEH) FOR POWERPC
->> +M:	Russell Currey <ruscur@russell.cc>
->> +L:	linuxppc-dev@lists.ozlabs.org
->> +S:	Supported
->> +F:	Documentation/powerpc/eeh-pci-error-recovery.txt
->> +F:	arch/powerpc/kernel/eeh*.c
->> +F:	arch/powerpc/platforms/*/eeh*.c
->> +F:	arch/powerpc/include/*/eeh*.h
->> +
->>  PCI SUBSYSTEM
->>  M:	Bjorn Helgaas <bhelgaas@google.com>
->>  L:	linux-pci@vger.kernel.org
->> -- 
->> 2.7.1
->> 
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> > ---
+>> > Changes for v3: Replace spin_event_timeout() with arch independent
+>> > macro
+>> >
+>> > Based on
+>> > git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+>> > branch "master"
+>> >
+>> >  drivers/memory/fsl_ifc.c | 165
+>> > +++++++++++++++++++++++++++++++++++++++++++++++
+>> >  include/linux/fsl_ifc.h  |   6 ++
+>> >  2 files changed, 171 insertions(+)
+>> >
+>> > diff --git a/drivers/memory/fsl_ifc.c b/drivers/memory/fsl_ifc.c index
+>> > acd1460..fa028bd 100644
+>> > --- a/drivers/memory/fsl_ifc.c
+>> > +++ b/drivers/memory/fsl_ifc.c
+>> > @@ -24,6 +24,7 @@
+>> >  #include <linux/compiler.h>
+>> >  #include <linux/sched.h>
+>> >  #include <linux/spinlock.h>
+>> > +#include <linux/delay.h>
+>> >  #include <linux/types.h>
+>> >  #include <linux/slab.h>
+>> >  #include <linux/io.h>
+>> > @@ -35,6 +36,8 @@
+>> >
+>> >  struct fsl_ifc_ctrl *fsl_ifc_ctrl_dev;
+>> > EXPORT_SYMBOL(fsl_ifc_ctrl_dev);
+>> > +#define FSL_IFC_V1_3_0     0x01030000
+>> > +#define IFC_TIMEOUT_MSECS  100000 /* 100ms */
+>>
+>> What does the "MSECS" mean in IFC_TIMEOUT_MSECS?  It's a unit without a
+>> quantity.
 >
+> Yes, I agree. I will rename it to IFC_WAIT_ITR.
+>
+>>
+>> >
+>> >  /*
+>> >   * convert_ifc_address - convert the base address @@ -309,6 +312,163
+>> > @@ err:
+>> >     return ret;
+>> >  }
+>> >
+>> > +#ifdef CONFIG_PM_SLEEP
+>> > +/* save ifc registers */
+>> > +static int fsl_ifc_suspend(struct device *dev) {
+>> > +   struct fsl_ifc_ctrl *ctrl = dev_get_drvdata(dev);
+>> > +   struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
+>> > +   __be32 nand_evter_intr_en, cm_evter_intr_en, nor_evter_intr_en,
+>> > +                                                    gpcm_evter_intr_en
+>> > ;
+>>
+>> s/__be32/u32/ as they've already been converted to host endianness.
+>>
+>> Also please repeat the type on a new line rather than use continuation lines
+>> to declare more variables (and don't indent continuation lines so far).
+>>
+>
+> Okay, will take care of this in the next version.
+>
+>> > +
+>> > +   ctrl->saved_regs = kzalloc(sizeof(struct fsl_ifc_regs),
+>> > GFP_KERNEL);
+>> > +   if (!ctrl->saved_regs)
+>> > +           return -ENOMEM;
+>>
+>> Allocate memory at probe time, not here.
+>>
+>
+> But, why allocate memory at the probe when it is not known at that time whether
+> deep sleep state would be required or not? Is that because we want to save time
+> while going to deep sleep?
+>
+>> > +   cm_evter_intr_en = ifc_in32(&ifc->cm_evter_intr_en);
+>> > +   nand_evter_intr_en = ifc_in32(&ifc->ifc_nand.nand_evter_intr_en);
+>> > +   nor_evter_intr_en = ifc_in32(&ifc->ifc_nor.nor_evter_intr_en);
+>> > +   gpcm_evter_intr_en = ifc_in32(&ifc-
+>> >ifc_gpcm.gpcm_evter_intr_en);
+>> > +
+>> > +/* IFC interrupts disabled */
+>> > +
+>> > +   ifc_out32(0x0, &ifc->cm_evter_intr_en);
+>>
+>> Indent the comments the same as the code.
+>>
+>
+> Okay.
+>
+>> > +   ifc_out32(0x0, &ifc->ifc_nand.nand_evter_intr_en);
+>> > +   ifc_out32(0x0, &ifc->ifc_nor.nor_evter_intr_en);
+>> > +   ifc_out32(0x0, &ifc->ifc_gpcm.gpcm_evter_intr_en);
+>> > +
+>> > +   memcpy_fromio(ctrl->saved_regs, ifc, sizeof(struct fsl_ifc_regs));
+>> > +
+>> > +/* save the interrupt values */
+>> > +   ctrl->saved_regs->cm_evter_intr_en = cm_evter_intr_en;
+>> > +   ctrl->saved_regs->ifc_nand.nand_evter_intr_en =
+>> nand_evter_intr_en;
+>> > +   ctrl->saved_regs->ifc_nor.nor_evter_intr_en = nor_evter_intr_en;
+>> > +   ctrl->saved_regs->ifc_gpcm.gpcm_evter_intr_en =
+>> gpcm_evter_intr_en;
+>>
+>> Why didn't you use the memcpy_fromio() to save these, and clear intr_en
+>> later?
+>>
+>
+> I used it whenever I did a write/read on iomem. In this case, both memories
+> are non iomem.
+>
+>> That said, I still don't like this approach.  I'd rather see the nand driver save
+>> the registers it cares about, and this driver wouldn't have to do much other
+>> than quiesce the rest of the interrupts.
+>>
+>
+> Okay, we will analyze the required changes and include them.
+>
+>> > +
+>> > +   return 0;
+>> > +}
+>> > +
+>> > +/* restore ifc registers */
+>> > +static int fsl_ifc_resume(struct device *dev) {
+>> > +   struct fsl_ifc_ctrl *ctrl = dev_get_drvdata(dev);
+>> > +   struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
+>> > +   struct fsl_ifc_regs *savd_regs = ctrl->saved_regs;
+>> > +   uint32_t ver = 0, ncfgr, timeout, ifc_bank, i;
+>>
+>> s/savd/saved/
+>>
+>
+> Okay.
+>
+>> > +
+>> > +/*
+>> > + * IFC interrupts disabled
+>> > + */
+>> > +   ifc_out32(0x0, &ifc->cm_evter_intr_en);
+>> > +   ifc_out32(0x0, &ifc->ifc_nand.nand_evter_intr_en);
+>> > +   ifc_out32(0x0, &ifc->ifc_nor.nor_evter_intr_en);
+>> > +   ifc_out32(0x0, &ifc->ifc_gpcm.gpcm_evter_intr_en);
+>> > +
+>> > +
+>> > +   if (ctrl->saved_regs) {
+>> > +           for (ifc_bank = 0; ifc_bank < FSL_IFC_BANK_COUNT;
+>> > ifc_bank++) {
+>> > +                   ifc_out32(savd_regs->cspr_cs[ifc_bank].cspr_ext,
+>> > +                                   &ifc->cspr_cs[ifc_bank].cspr_ext);
+>> > +                   ifc_out32(savd_regs->cspr_cs[ifc_bank].cspr,
+>> > +                                   &ifc->cspr_cs[ifc_bank].cspr);
+>> > +                   ifc_out32(savd_regs->amask_cs[ifc_bank].amask,
+>> > +                                   &ifc->amask_cs[ifc_bank].amask);
+>> > +                   ifc_out32(savd_regs->csor_cs[ifc_bank].csor_ext,
+>> > +                                   &ifc->csor_cs[ifc_bank].csor_ext);
+>> > +                   ifc_out32(savd_regs->csor_cs[ifc_bank].csor,
+>> > +                                   &ifc->csor_cs[ifc_bank].csor);
+>>
+>> Align continuation lines the way patchwork suggests ("&ifc" aligned with
+>> "savd").
+>
+> Okay, I will take care of this in the next patch.
+>
+>>
+>> Does resume from deep sleep go via U-Boot (which would initialize these
+>> registers) on these chips?
+>
+> Yes, deep sleep resume goes via u-boot and these registers should be initialized
+> By u-boot.
+>
+>>
+>> > +                   for (i = 0; i < 4; i++) {
+>> > +                           ifc_out32(savd_regs
+>> > ->ftim_cs[ifc_bank].ftim[i],
+>> > +                                   &ifc->ftim_cs[ifc_bank].ftim[i]);
+>> > +                   }
+>> > +           }
+>> > +           ifc_out32(savd_regs->ifc_gcr, &ifc->ifc_gcr);
+>> > +           ifc_out32(savd_regs->cm_evter_en, &ifc->cm_evter_en);
+>> > +
+>> > +/*
+>> > +* IFC controller NAND machine registers */
+>> > +           ifc_out32(savd_regs->ifc_nand.ncfgr, &ifc->ifc_nand.ncfgr);
+>> > +           ifc_out32(savd_regs->ifc_nand.nand_fcr0,
+>> > +                                           &ifc->ifc_nand.nand_fcr0);
+>> > +           ifc_out32(savd_regs->ifc_nand.nand_fcr1,
+>> > +                                           &ifc->ifc_nand.nand_fcr1);
+>> > +           ifc_out32(savd_regs->ifc_nand.row0, &ifc->ifc_nand.row0);
+>> > +           ifc_out32(savd_regs->ifc_nand.row1, &ifc->ifc_nand.row1);
+>> > +           ifc_out32(savd_regs->ifc_nand.col0, &ifc->ifc_nand.col0);
+>> > +           ifc_out32(savd_regs->ifc_nand.col1, &ifc->ifc_nand.col1);
+>> > +           ifc_out32(savd_regs->ifc_nand.row2, &ifc->ifc_nand.row2);
+>> > +           ifc_out32(savd_regs->ifc_nand.col2, &ifc->ifc_nand.col2);
+>> > +           ifc_out32(savd_regs->ifc_nand.row3, &ifc->ifc_nand.row3);
+>> > +           ifc_out32(savd_regs->ifc_nand.col3, &ifc->ifc_nand.col3);
+>> > +           ifc_out32(savd_regs->ifc_nand.nand_fbcr,
+>> > +                                           &ifc->ifc_nand.nand_fbcr);
+>> > +           ifc_out32(savd_regs->ifc_nand.nand_fir0,
+>> > +                                           &ifc->ifc_nand.nand_fir0);
+>> > +           ifc_out32(savd_regs->ifc_nand.nand_fir1,
+>> > +                                           &ifc->ifc_nand.nand_fir1);
+>> > +           ifc_out32(savd_regs->ifc_nand.nand_fir2,
+>> > +                                           &ifc->ifc_nand.nand_fir2);
+>> > +           ifc_out32(savd_regs->ifc_nand.nand_csel,
+>> > +                                           &ifc->ifc_nand.nand_csel);
+>> > +           ifc_out32(savd_regs->ifc_nand.nandseq_strt,
+>> > +                                           &ifc
+>> > ->ifc_nand.nandseq_strt);
+>> > +           ifc_out32(savd_regs->ifc_nand.nand_evter_en,
+>> > +                                           &ifc
+>> > ->ifc_nand.nand_evter_en);
+>> > +           ifc_out32(savd_regs->ifc_nand.nanndcr, &ifc
+>> > ->ifc_nand.nanndcr);
+>>
+>> Many of these are either initialized by the NAND driver for each transaction,
+>> or are not used at all.
+>>
+>
+> Yes, will analyze the registers used and take care of them.
+>
+>> > +
+>> > +/*
+>> > +* IFC controller NOR machine registers */
+>> > +           ifc_out32(savd_regs->ifc_nor.nor_evter_en,
+>> > +                                   &ifc->ifc_nor.nor_evter_en);
+>> > +           ifc_out32(savd_regs->ifc_nor.norcr, &ifc->ifc_nor.norcr);
+>>
+>> What uses these?
+>>
+>
+> These registers are not used as such, but we would like to retain their value as they
+> can be of help in case of error conditions.
+>
+>> > +
+>> > +/*
+>> > + * IFC controller GPCM Machine registers  */
+>> > +           ifc_out32(savd_regs->ifc_gpcm.gpcm_evter_en,
+>> > +                                   &ifc->ifc_gpcm.gpcm_evter_en);
+>> > +
+>> > +
+>> > +
+>> > +/*
+>> > + * IFC interrupts enabled
+>> > + */
+>> > +   ifc_out32(ctrl->saved_regs->cm_evter_intr_en, &ifc
+>> > ->cm_evter_intr_en);
+>> > +   ifc_out32(ctrl->saved_regs->ifc_nand.nand_evter_intr_en,
+>> > +                                   &ifc->ifc_nand.nand_evter_intr_en);
+>> > +   ifc_out32(ctrl->saved_regs->ifc_nor.nor_evter_intr_en,
+>> > +                                   &ifc->ifc_nor.nor_evter_intr_en);
+>> > +   ifc_out32(ctrl->saved_regs->ifc_gpcm.gpcm_evter_intr_en,
+>> > +                                   &ifc-
+>> >ifc_gpcm.gpcm_evter_intr_en);
+>> > +
+>> > +           kfree(ctrl->saved_regs);
+>> > +           ctrl->saved_regs = NULL;
+>> > +   }
+>>
+>> Bad indentation
+>>
+>
+> Will take care.
+>
+>> > +
+>> > +   ver = ifc_in32(&ctrl->regs->ifc_rev);
+>> > +   ncfgr = ifc_in32(&ifc->ifc_nand.ncfgr);
+>> > +   if (ver >= FSL_IFC_V1_3_0) {
+>> > +
+>> > +           ifc_out32(ncfgr | IFC_NAND_SRAM_INIT_EN,
+>> > +                                   &ifc->ifc_nand.ncfgr);
+>> > +           /* wait for  SRAM_INIT bit to be clear or timeout */
+>> > +           timeout = IFC_TIMEOUT_MSECS;
+>> > +           while ((ifc_in32(&ifc->ifc_nand.ncfgr) &
+>> > +                                   IFC_NAND_SRAM_INIT_EN) &&
+>> timeout)
+>> > {
+>> > +                   cpu_relax();
+>> > +                   timeout--;
+>> > +           }
+>>
+>> How can this timeout be in milliseconds or any other real unit of time, if it's
+>> actually measuring loop iterations with no udelay() or similar?
+>>
+>
+> Yes, it's not in millisecond any longer. Will change the name to IFC_WAIT_ITR
+>
+>> Is it really necessary to spin here rather than waiting for an interrupt like
+>> normal?
+>>
+>
+> Aren't the global interrupts disabled at this stage? Can we use the interrupt based
+> waits in the deep sleep code? We used it based on the assumption that interrupts
+> cannot be used here.
+
+At the resume() stage, interrupts are already enabled.  But the
+problem of using interrupt based wait here is that we cannot give a
+correct return value at this point.  And it can also defeat the
+ordering of resume() callbacks for dependent devices.
+
+Regards,
+Leo
