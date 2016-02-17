@@ -1,23 +1,22 @@
-Return-Path: <martin.petersen@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pf0-x229.google.com (mail-pf0-x229.google.com
+ [IPv6:2607:f8b0:400e:c00::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2714F1A03E6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 10:31:03 +1100 (AEDT)
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Cc: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- brking@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com
-Subject: Re: [PATCH] ibmvfc: byteswap scsi_id, wwpn,
- and node_name prior to logging
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-References: <1455229475-3984-1-git-send-email-tyreld@linux.vnet.ibm.com>
-Date: Wed, 17 Feb 2016 18:30:51 -0500
-In-Reply-To: <1455229475-3984-1-git-send-email-tyreld@linux.vnet.ibm.com>
- (Tyrel Datwyler's message of "Thu, 11 Feb 2016 16:24:35 -0600")
-Message-ID: <yq1d1ruud78.fsf@sermon.lab.mkp.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D05531A039B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 10:45:33 +1100 (AEDT)
+Received: by mail-pf0-x229.google.com with SMTP id e127so19829265pfe.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 15:45:33 -0800 (PST)
+Subject: Re: [V3] powerpc/powernv: Remove support for p5ioc2
+To: Michael Ellerman <mpe@ellerman.id.au>, Russell Currey
+ <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+References: <20160217124131.3E1D6140770@ozlabs.org>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <56C50615.1030601@ozlabs.ru>
+Date: Thu, 18 Feb 2016 10:45:25 +1100
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20160217124131.3E1D6140770@ozlabs.org>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>>> "Tyrel" == Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
+On 02/17/2016 11:41 PM, Michael Ellerman wrote:
+> On Mon, 2016-08-02 at 04:08:20 UTC, Russell Currey wrote:
+>> "p5ioc2 is used by approximately 2 machines in the world, and has never
+>> ever been a supported configuration."
+>>
+>> The code for p5ioc2 is essentially unused and complicates what is already
+>> a very complicated codebase.  Its removal is essentially a "free win" in
+>> the effort to simplify the powernv PCI code.
+>>
+>> In addition, support for p5ioc2 has been dropped from skiboot.  There's no
+>> reason to keep it around in the kernel.
+>>
+>> Signed-off-by: Russell Currey <ruscur@russell.cc>
+>> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+>
+> Applied to powerpc next, thanks.
+>
+> https://git.kernel.org/powerpc/c/2de50e9674fc4ca3c6174b0447
 
-Tyrel> When logging async events the scsi_id, wwpn, and node_name values
-Tyrel> are used directly from the CRQ struct which are of type
-Tyrel> __be64. This can be confusing to someone looking through the log
-Tyrel> on a LE system.  Instead byteswap these values to host endian
-Tyrel> prior to logging.
 
-Applied to 4.6/scsi-queue.
+WOW! Nice :( I am using one, every day, even for HV KVM sometime. Thanks, 
+folks.
+
 
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+Alexey
