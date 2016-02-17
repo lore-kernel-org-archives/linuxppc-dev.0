@@ -1,30 +1,34 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EC9101A029A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:08:41 +1100 (AEDT)
-Message-ID: <1455678521.2956.4.camel@ellerman.id.au>
-Subject: Re: [PATCH v8 8/8] livepatch: Detect offset for the ftrace location
- during build
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Petr Mladek <pmladek@suse.com>, Torsten Duwe <duwe@lst.de>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
- linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- live-patching@vger.kernel.org, Miroslav Benes <mbenes@suse.cz>,
- linuxppc-dev@lists.ozlabs.org
-Date: Wed, 17 Feb 2016 14:08:41 +1100
-In-Reply-To: <20160216135742.GT12548@pathway.suse.cz>
-References: <20160210174221.EBBEC692C8@newverein.lst.de>
- <20160210174517.8347D692C8@newverein.lst.de>
- <1455293609.16012.9.camel@gmail.com>
- <20160212164517.GO12548@pathway.suse.cz>
- <20160216054701.GA20570@linux.vnet.ibm.com> <20160216082302.GA20522@lst.de>
- <20160216103028.GA10730@linux.vnet.ibm.com> <20160216103907.GB25103@lst.de>
- <20160216135742.GT12548@pathway.suse.cz>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3E5051A029A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:36 +1100 (AEDT)
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 17 Feb 2016 13:45:35 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id CFC322CE8059
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:26 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1H3jIgH60358790
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:26 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1H3irpQ002311
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:44:54 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
+ dja@axtens.net, bhelgaas@google.com, robherring2@gmail.com,
+ grant.likely@linaro.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v8 00/45] powerpc/powernv: PCI hotplug support
+Date: Wed, 17 Feb 2016 14:43:43 +1100
+Message-Id: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,135 +38,315 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-02-16 at 14:57 +0100, Petr Mladek wrote:
-> 
-> Some dugging has shown an Oops in the fucntion int_to_scsilun()
-> called from ibmvscsi_queuecommand(). So, I rebooted and
-> did the following test:
-> 
-> $> echo ibmvscsi_queuecommand >/sys/kernel/debug/tracing/set_ftrace_filter
-> $> echo function > /sys/kernel/debug/tracing/current_tracer 
-> $> echo 1 > /sys/kernel/debug/tracing/tracing_on
-> $> cat /sys/kernel/debug/tracing/trace
-> # tracer: function
-> #
-> # entries-in-buffer/entries-written: 7/7   #P:4
-> #
-> #                              _-----=> irqs-off
-> #                             / _----=> need-resched
-> #                            | / _---=> hardirq/softirq
-> #                            || / _--=> preempt-depth
-> #                            ||| /     delay
-> #           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
-> #              | |       |   ||||       |         |
->             bash-3488  [000] ....   100.278622: ibmvscsi_queuecommand <-scsi_dispatch_cmd
->      kworker/1:2-223   [001] ....   101.048569: ibmvscsi_queuecommand <-scsi_dispatch_cmd
->      kworker/1:2-223   [001] ....   103.048575: ibmvscsi_queuecommand <-scsi_dispatch_cmd
->      jbd2/sda3-8-1021  [003] ....   104.008645: ibmvscsi_queuecommand <-scsi_dispatch_cmd
->      jbd2/sda3-8-1021  [003] ....   104.008883: ibmvscsi_queuecommand <-scsi_dispatch_cmd
->           <idle>-0     [000] ..s.   104.017672: ibmvscsi_queuecommand <-scsi_dispatch_cmd
->           <idle>-0     [003] ..s.   104.017771: ibmvscsi_queuecommand <-scsi_dispatch_cmd
-> 
-> It means that ibmvscsi_queuecommand can be traced. Then I did
-> 
-> c79:/sys/kernel/debug/tracing # echo int_to_scsilun >set_ftrace_filter
-> 
-> BANG!
-> 
-> Unable to handle kernel paging request for data at address 0xd00000000108b148
-> Faulting instruction address: 0xd000000000bde35c
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=2048 NUMA pSeries
-> Modules linked in: af_packet(E) dm_mod(E) e1000(E) rtc_generic(E) ext4(E) crc16(E) mbcache(E) jbd2(E) sr_mod(E) cdrom(E) sd_mod(E) ibmvscsi(E) scsi_transport_srp(E) sg(E) scsi_mod(E) autofs4(E)
-> CPU: 1 PID: 223 Comm: kworker/1:2 Tainted: G            E   4.5.0-rc2-11-default+ #90
-> Workqueue: events_freezable_power_ disk_events_workfn
-> task: c0000000f7d99aa0 ti: c0000000f7cb8000 task.ti: c0000000f7cb8000
-> NIP: d000000000bde35c LR: d000000000bcffec CTR: d000000000bcffe0
-> REGS: c0000000f7cbb3b0 TRAP: 0300   Tainted: G            E    (4.5.0-rc2-11-default+)
-> MSR: 8000000100009033 <SF,EE,ME,IR,DR,RI,LE,TM[E]>  CR: 24c82220  XER: 00000000
-> CFAR: d000000000bdd144 DAR: d00000000108b148 DSISR: 40000000 SOFTE: 0 
-> GPR00: d0000000010a21cc c0000000f7cbb630 d0000000010aeda0 0000000000008200 
-> GPR04: c0000000fa0b33fc 000000000000014a c0000000fa0b3408 0000000000000010 
-> GPR08: 0000000000000008 c00000000370a4e0 0000000000000000 d00000000108b128 
-> GPR12: d000000000bcffe0 c000000007e80300 c0000000000d8b18 c0000000fe04ba80 
-> GPR16: 0000000000000000 c0000000f7b6f208 0000000000000000 0000000000010000 
-> GPR20: c0000000f7b6f144 c0000000f7b6f140 d000000000bcbcf0 0000000000000000 
-> GPR24: 0000000000000200 0000000000000000 0000000000000001 c0000000f7b6f810 
-> GPR28: c0000000f7b6f000 c0000000f7b6f000 c0000000fa0b33a0 c0000000fe837e00 
-> NIP [d000000000bde35c] scsi_inq_str+0x21b0/0x41ac [scsi_mod]
-> LR [d000000000bcffec] int_to_scsilun+0xc/0x60 [scsi_mod]
-> Call Trace:
-> [c0000000f7cbb630] [d0000000010a21cc] ibmvscsi_queuecommand+0x10c/0x4e0 [ibmvscsi] (unreliable)
-> [c0000000f7cbb6e0] [d000000000bcbea8] scsi_dispatch_cmd+0xe8/0x2c0 [scsi_mod]
-> [c0000000f7cbb760] [d000000000bceb0c] scsi_request_fn+0x50c/0x8b0 [scsi_mod]
-> [c0000000f7cbb850] [c000000000407280] __blk_run_queue+0x60/0x90
-> [c0000000f7cbb880] [c000000000413640] blk_execute_rq_nowait+0x100/0x1a0
-> [c0000000f7cbb8d0] [c000000000413768] blk_execute_rq+0x88/0x170
-> [c0000000f7cbb9b0] [d000000000bca048] scsi_execute+0x108/0x1d0 [scsi_mod]
-> [c0000000f7cbba20] [d000000000bca2e8] scsi_execute_req_flags+0xc8/0x150 [scsi_mod]
-> [c0000000f7cbbae0] [d0000000012209e4] sr_check_events+0xb4/0x340 [sr_mod]
-> [c0000000f7cbbb90] [d0000000011c00b4] cdrom_check_events+0x44/0x80 [cdrom]
-> [c0000000f7cbbbc0] [d000000001220fa4] sr_block_check_events+0x44/0x60 [sr_mod]
-> [c0000000f7cbbbe0] [c0000000004222f8] disk_check_events+0x78/0x1b0
-> [c0000000f7cbbc50] [c0000000000d0610] process_one_work+0x1a0/0x480
-> [c0000000f7cbbce0] [c0000000000d0998] worker_thread+0xa8/0x5c0
-> [c0000000f7cbbd80] [c0000000000d8c24] kthread+0x114/0x140
-> [c0000000f7cbbe30] [c000000000009538] ret_from_kernel_thread+0x5c/0xa4
-> Instruction dump:
-> 396bc360 f8410018 e98b0020 7d8903a6 4e800420 00000000 00000000 0044fb30 
-> c0000000 3d62fffe 396bc388 60000000 <e98b0020> 7d8903a6 4e800420 00000000 
-> ---[ end trace 3b830c669dd7adb5 ]---
-> 
-> 
-> Note that ibmvscsi_queuecommand() handle TOC and int_to_scsilun()
-> does not handle TOC
-> 
-> $> objdump -hdr  drivers/scsi/ibmvscsi/ibmvscsi.ko
-> 00000000000020c0 <ibmvscsi_queuecommand>:
->     20c0:       00 00 4c 3c     addis   r2,r12,0
->                         20c0: R_PPC64_REL16_HA  .TOC.
->     20c4:       00 00 42 38     addi    r2,r2,0
->                         20c4: R_PPC64_REL16_LO  .TOC.+0x4
->     20c8:       a6 02 08 7c     mflr    r0
->     20cc:       10 00 01 f8     std     r0,16(r1)
->     20d0:       01 00 00 48     bl      20d0 <ibmvscsi_queuecommand+0x10>
->                         20d0: R_PPC64_REL24     _mcount
->     20d4:       a6 02 08 7c     mflr    r0
-> 
-> 
-> $> objdump -hdr  drivers/scsi/scsi_mod.ko
-> [...]
-> 000000000000ffe0 <int_to_scsilun>:
->     ffe0:       a6 02 08 7c     mflr    r0
->     ffe4:       10 00 01 f8     std     r0,16(r1)
->     ffe8:       01 00 00 48     bl      ffe8 <int_to_scsilun+0x8>
->                         ffe8: R_PPC64_REL24     _mcount
->     ffec:       a6 02 08 7c     mflr    r0
->     fff0:       10 00 01 f8     std     r0,16(r1)
->     fff4:       e1 ff 21 f8     stdu    r1,-32(r1)
-> 
-> 
-> I am able to trace int_to_scsilun() if I add a global call
-> into this fucntion.
-> 
-> I could trace any function when everything is built into the kernel.
-> 
-> 
-> I am not sure where the problem is but even normal tracing does not
-> work with this patchset and when -pg -mprofile-kernel is used.
+This series of patches rebases on powerpc/next branch, plus below additional
+patches:
 
-When you call into ibmvscsi_queuecommand() it sets up r2 to hold the TOC for
-ibmvscsi.ko.
+   <This series of patches>
+   <Followup 3 patches from Gavin on SRIOV EEH, which aren't posted>
+   https://patchwork.ozlabs.org/patch/581315/	(PATCH[1/9] Richard's SRIOV EEH)
+   https://patchwork.ozlabs.org/patch/582639/	(PATCH[1/1] Gavin's EEH fix)
+   https://patchwork.ozlabs.org/patch/582093/	(PATCH[1/1] Gavin's EEH fix)
+   https://patchwork.ozlabs.org/patch/580626/	(PATCH[1/4] Gavin's PCI fix)
+   https://patchwork.ozlabs.org/patch/580153/	(PATCH[1/1] Andrew's EEH minor fix)
+   https://patchwork.ozlabs.org/patch/566827/	(PATCH[1/1] Russell's P5IOC2 removal)
+   https://patchwork.ozlabs.org/patch/534154/	(PATCH[1/7] Richard's SRIOV rework)
+   commit 388f7b1 ("Linux 4.5-rc3")
+   
+The series of patches intend to support PCI slot for PowerPC PowerNV platform,
+which is running on top of skiboot firmware. The patchset requires corresponding
+changes from skiboot firmware, which is sent to skiboot@lists.ozlabs.org
+for review. The PCI slots are exposed by skiboot with device node properties,
+and kernel utilizes those properties to populated PCI slots accordingly.
 
-It then calls int_to_scsilun(). int_to_scsilun() does no TOC setup, and tries
-to call _mcount. It can't call _mcount() directly (because int_to_scsilun() is
-in a module), it has to go via a stub.
+The original PCI infrastructure on PowerNV platform can't support hotplug
+because the PE is assigned during PHB fixup time, which is called for once
+during system boot time. For this, the PCI infrastructure on PowerNV platform
+has been reworked for a lot. After that, the PE and its corresponding resources
+(IODT, M32DT, M64 segments, DMA32 and bypass window) are assigned upon updating
+PCI bridge's resources, which might decide PE# assigned to the PE (e.g. M64
+resources, on P8 strictly speaking). Each PE will maintain a reference count,
+which is (number of child PCI devices + 1). That indicates when last child PCI
+device leaves the PE, the PE and its included resources will be relased and put
+back into free pool again. With this design, the PE will be released when EEH PE
+is released. PATCH[1 - 23] are related to this part.
 
-That stub uses r2 to find the location of itself, but it only works if r2 holds
-the TOC for scsi_mod.ko. In this case r2 still contains ibmvscsi.ko's TOC.
+>From skiboot perspective, PCI slot is providing (hot/fundamental/complete)
+resets to EEH. The kernel gets to know if skiboot supports various reset on one
+particular PCI slot through device-tree node. If it does, EEH will utilize the
+functionality provided by skiboot. Besides, the device-tree nodes have to change
+in order to support PCI hotplug. For example, when one PCI adapter inserted to
+one slot, its device-tree node should be added to the system dynamically. Conversely,
+the device-tree node should be removed from the system when the PCI adapter is going
+to be offline. Since pci_dn and eeh_dev have same life cyle as PCI device nodes,
+they should be added/removed accordingly during PCI hotplug. PATCH[24 - 39] are
+doing the related work.
 
-So when the stub calculates the address of itself it gets the wrong value, and
-then when it does a load using that address it either faults (as in your case),
-or you get some bogus value and jump into a random piece of code.
+The OF driver is changed to support unflattening FDT blob for sub-stree, which
+is covered by PATCH[40 - 44].
 
-cheers
+The last one, PATCH[45], is the standalone PCI hotplug driver for PowerPC PowerNV
+platform.
+
+=======
+Testing
+=======
+1. Unplug adapters behind non-empty slot, then plug them.
+
+   1.1 Check status
+   # cat /sys/bus/pci/slots/C10/address 
+   0003:09:00
+   # cat /sys/bus/pci/slots/C10/adapter 
+   1
+   # cat /sys/bus/pci/slots/C10/power 
+   1
+   # lspci
+   0003:09:00.0 Ethernet controller: \
+   Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
+   0003:09:00.1 Ethernet controller: \
+   Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
+   0003:09:00.2 Ethernet controller: \
+   Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
+   0003:09:00.3 Ethernet controller: \
+   Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
+   # lspci -t
+   # lspci -t
+   -+-[0003:00]---00.0-[01-13]----00.0-[02-13]--+-01.0-[03]----00.0
+    |                                           +-08.0-[04-08]--
+    |                                           +-09.0-[09]--+-00.0
+    |                                           |            +-00.1
+    |                                           |            +-00.2
+    |                                           |            \-00.3
+    |                                           +-10.0-[0a-0e]--
+    |                                           \-11.0-[0f-13]--
+
+   1.2 Unplug adapter 0003:09.00.x
+   # echo 0 > /sys/bus/pci/slots/C10/power 
+   # lspci -t
+   -+-[0003:00]---00.0-[01-13]----00.0-[02-13]--+-01.0-[03]----00.0
+    |                                           +-08.0-[04-08]--
+    |                                           +-09.0-[09]--
+    |                                           +-10.0-[0a-0e]--
+    |                                           \-11.0-[0f-13]--
+
+   1.3 Plug adapter 0003:09.00.x
+   # echo 1 > /sys/bus/pci/slots/C10/power 
+   # lspci -t
+   -+-[0003:00]---00.0-[01-13]----00.0-[02-13]--+-01.0-[03]----00.0
+    |                                           +-08.0-[04-08]--
+    |                                           +-09.0-[09]--+-00.0
+    |                                           |            +-00.1
+    |                                           |            +-00.2
+    |                                           |            \-00.3
+    |                                           +-10.0-[0a-0e]--
+    |                                           \-11.0-[0f-13]--
+ 
+
+   1.4 Inject EEH error to adapter 0003:09:00.x, which is recovered.
+   # cat /sys/bus/pci/devices/0003:09:00.0/eeh_pe_config_addr 
+   0x1
+   # echo 1:0:4:0:0 > /sys/kernel/debug/powerpc/PCI0003/err_injct
+   # lspci -ns 0003:09:00.0
+   # dmesg | grep EEH
+   EEH: Frozen PHB#3-PE#1 detected
+   EEH: PE location: U78C9.001.WZS00CF-P1-C10, PHB location: N/A
+   EEH: Detected PCI bus error on PHB#3-PE#1
+   EEH: This PCI device has failed 1 times in the last hour
+   EEH: Notify device drivers to shutdown
+   EEH: Collect temporary log
+   EEH: Reset without hotplug activity
+   EEH: Notify device drivers the completion of reset
+   EEH: Notify device driver to resume
+
+2. Plug adapter and then unplug it. This requires hack in skiboot
+   to skip probing the adapters behind the target (C12 in the
+   testing) for once.
+
+   2.1 Check status
+   # cat /sys/bus/pci/slots/C12/address 
+   0001:06
+   # cat /sys/bus/pci/slots/C12/power 
+   0
+   # cat /sys/bus/pci/slots/C12/adapter 
+   1
+   # lspci -t
+   +-[0001:00]---00.0-[01-0a]----00.0-[02-0a]--+-01.0-[03-04]----00.0-[04]----00.0
+                                               +-08.0-[05]----00.0
+                                               \-09.0-[06-0a]--
+
+   2.2 Plug adapter 0001:06:00.x
+   # echo 1 > /sys/bus/pci/slots/C12/power
+   # lspci -t
+   +-[0001:00]---00.0-[01-0a]----00.0-[02-0a]--+-01.0-[03-04]----00.0-[04]----00.0
+                                               +-08.0-[05]----00.0
+                                               \-09.0-[06-0a]--+-00.0
+                                                               \-00.1
+   # lspci
+   0001:06:00.0 Ethernet controller: \
+   Broadcom Corporation NetXtreme II BCM57810 10 Gigabit Ethernet (rev 10)
+   0001:06:00.1 Ethernet controller: \
+   Broadcom Corporation NetXtreme II BCM57810 10 Gigabit Ethernet (rev 10)
+
+   2.3 Inject EEH error to adapter 0001:06:00.x, which is recovered
+   # cat /sys/bus/pci/devices/0001:06:00.0/eeh_pe_config_addr 
+   0x2
+   # echo 2:0:4:0:0 > /sys/kernel/debug/powerpc/PCI0001/err_injct
+   # dmesg | grep EEH
+   EEH: Frozen PHB#1-PE#2 detected
+   EEH: PE location: U78C9.001.WZS00CF-P1-C12, PHB location: N/A
+   EEH: Detected PCI bus error on PHB#1-PE#2
+   EEH: This PCI device has failed 1 times in the last hour
+   EEH: Notify device drivers to shutdown
+   EEH: Collect temporary log
+   EEH: Reset without hotplug activity
+   EEH: Notify device drivers the completion of reset
+   EEH: Notify device driver to resume
+
+   2.4 Unplug adapter 0001:06:00.x
+   # echo 0 > /sys/bus/pci/slots/C12/power
+   # lspci -t
+   +-[0001:00]---00.0-[01-0a]----00.0-[02-0a]--+-01.0-[03-04]----00.0-[04]----00.0
+                                               +-08.0-[05]----00.0
+                                               \-09.0-[06-0a]--
+
+=========
+Changelog
+=========
+v8:
+   * Rebased to linux-powerpc next branch.
+   * Resolve comments from Alexey and Daniel on PCI part
+   * Resolve comments from Rob on fdt.c
+   * Retested (refer to the "Testing section")
+v7:
+   * Reworked revision to some extent.
+   * Rebased to powerpc/next repository.
+   * Reorder/split/merge/drop according - Alexey.
+   * Defined macros and use array to track IO/M32/M64/DMA32 segments - Alexey.
+   * Merged 3 files to one for the hotplug driver - Alexey.
+   * As part of OPAL API, defined macros for PCI slot power state, hotplug
+     message type. Defined macros for PCI slot power confirmed state in
+     hotplug driver.
+   * Misc comments from Alexey.
+   * Reworked unflatten_dt_node() to avoid recursive function calls.
+   * Use EXPORT_SYMBOL_GPL() and document function's input/output - Rob/Frank.
+v6:
+   * Patch reorder, split, squash - Alexey.
+   * Minor coding style - Alexey.
+   * Better function names for pcibios_{add,remove}_pci_devices - Bjorn
+   * Replace pr_warn() with dev_warn() in PowerNV hotplug driver - Bjorn
+   * Concurrent depth as parameter passed to __unflatten_dt_node() - Grant / Alexey
+   * Replace overlay with of_changeset - Grant
+v5:
+   * Rebased to 4.1.rc6 and some unmerged patches as below:
+     Alexey's DDW patchset (v11);
+     Gavin's EEH error injection support (in mpe's next branch);
+     Richard's EEH cleanup patches (in mpe's next branch);
+     Richard's EEH support for VF (v7);
+     Gavin's misc EEH fixes for 4.2;
+   * The revision bases on skiboot corresponding patches (v7):
+     https://patchwork.ozlabs.org/patch/480437/
+   * Utilize OF overlay to update device-tree with help of newly introduced
+     OPAL API opal_get_overlay_dt().
+   * Split patches for easy review according to aik's comments.
+   * Fix coding style from checkpatchc.pl as pointed by aik.
+   * Code cleanup and misc fixup according to aik's input.
+v4:
+   * Rebased to 4.1.RC1
+   * Added API to unflatten FDT blob to device node sub-tree, which is attached
+     the indicated parent device node. The original mechanism based on formatted
+     string stream has been dropped.
+   * The PATCH[v3 09/21] ("powerpc/eeh: Delay probing EEH device during hotplug")
+     was picked up sent to linux-ppc@ separately for review as Richard's "VF EEH
+     Support" depends on that.
+v3:
+   * Rebased to 4.1.RC0
+   * PowerNV PCI infrasturcture is total refactored in order to support PCI
+     hotplug. The PowerNV hotplug driver is also reworked a lot because of
+     the changes in skiboot in order to support PCI hotplug.
+
+Gavin Shan (45):
+  PCI: Add pcibios_setup_bridge()
+  powerpc/pci: Override pcibios_setup_bridge()
+  powerpc/pci: Cleanup on struct pci_controller_ops
+  powerpc/powernv: Cleanup on pci_controller_ops instances
+  powerpc/powernv: Drop phb->bdfn_to_pe()
+  powerpc/powernv: Reorder fields in struct pnv_phb
+  powerpc/powernv: Rename PE# fields in struct pnv_phb
+  powerpc/powernv: Fix initial IO and M32 segmap
+  powerpc/powernv: Simplify pnv_ioda_setup_pe_seg()
+  powerpc/powernv: IO and M32 mapping based on PCI device resources
+  powerpc/powernv: Track M64 segment consumption
+  powerpc/powernv: Rename M64 related functions
+  powerpc/powernv/ioda1: M64 support on P7IOC
+  powerpc/powernv/ioda1: Rename pnv_pci_ioda_setup_dma_pe()
+  powerpc/powernv/ioda1: Introduce PNV_IODA1_DMA32_SEGSIZE
+  powerpc/powernv: Remove DMA32 PE list
+  powerpc/powernv/ioda1: Improve DMA32 segment track
+  powerpc/powernv: Increase PE# capacity
+  powerpc/powernv: Use PE instead of number during setup and release
+  powerpc/powernv: Allocate PE# in reverse order
+  powerpc/powernv: Create PEs at PCI hot plugging time
+  powerpc/powernv/ioda1: Support releasing IODA1 TCE table
+  powerpc/powernv: Dynamically release PEs
+  powerpc/pci: Rename pcibios_{add,remove}_pci_devices()
+  powerpc/pci: Rename pcibios_find_pci_bus()
+  powerpc/pci: Move pci_find_bus_by_node() around
+  powerpc/pci: Export pci_add_device_node_info()
+  powerpc/pci: Introduce pci_remove_device_node_info()
+  powerpc/pci: Export pci_traverse_device_nodes()
+  powerpc/pci: Delay populating pdn
+  powerpc/pci: Don't scan empty slot
+  powerpc/pci: Update bridge windows on PCI plug
+  powerpc/powernv: Simplify pnv_eeh_reset()
+  powerpc/powernv: Exclude root bus in pnv_pci_reset_secondary_bus()
+  powerpc/powernv: Fundamental reset in pnv_pci_reset_secondary_bus()
+  powerpc/powernv: Support PCI slot ID
+  powerpc/powernv: Use firmware PCI slot reset infrastructure
+  powerpc/powernv: Functions to get/set PCI slot status
+  powerpc/powernv: Select OF_DYNAMIC
+  drivers/of: Split unflatten_dt_node()
+  drivers/of: Avoid recursively calling unflatten_dt_node()
+  drivers/of: Rename unflatten_dt_node()
+  drivers/of: Specify parent node in of_fdt_unflatten_tree()
+  drivers/of: Return allocated memory from of_fdt_unflatten_tree()
+  PCI/hotplug: PowerPC PowerNV PCI hotplug driver
+
+ arch/powerpc/include/asm/eeh.h                 |    2 +-
+ arch/powerpc/include/asm/opal-api.h            |   17 +-
+ arch/powerpc/include/asm/opal.h                |    8 +-
+ arch/powerpc/include/asm/pci-bridge.h          |   25 +-
+ arch/powerpc/include/asm/pnv-pci.h             |    7 +
+ arch/powerpc/include/asm/ppc-pci.h             |    8 +-
+ arch/powerpc/kernel/eeh_dev.c                  |   17 +-
+ arch/powerpc/kernel/eeh_driver.c               |   12 +-
+ arch/powerpc/kernel/pci-common.c               |   16 +-
+ arch/powerpc/kernel/pci-hotplug.c              |   47 +-
+ arch/powerpc/kernel/pci_dn.c                   |   89 +-
+ arch/powerpc/platforms/maple/pci.c             |   34 +-
+ arch/powerpc/platforms/pasemi/pci.c            |    3 -
+ arch/powerpc/platforms/powermac/pci.c          |   38 +-
+ arch/powerpc/platforms/powernv/Kconfig         |    1 +
+ arch/powerpc/platforms/powernv/eeh-powernv.c   |  179 ++--
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    4 +
+ arch/powerpc/platforms/powernv/pci-ioda.c      | 1243 +++++++++++++++---------
+ arch/powerpc/platforms/powernv/pci.c           |   92 +-
+ arch/powerpc/platforms/powernv/pci.h           |   60 +-
+ arch/powerpc/platforms/pseries/msi.c           |    4 +-
+ arch/powerpc/platforms/pseries/pci_dlpar.c     |   32 -
+ arch/powerpc/platforms/pseries/setup.c         |    8 +-
+ drivers/gpu/drm/tilcdc/tilcdc_slave_compat.c   |    2 +-
+ drivers/of/fdt.c                               |  372 ++++---
+ drivers/of/unittest.c                          |    2 +-
+ drivers/pci/hotplug/Kconfig                    |   12 +
+ drivers/pci/hotplug/Makefile                   |    3 +
+ drivers/pci/hotplug/pnv_php.c                  |  870 +++++++++++++++++
+ drivers/pci/hotplug/rpadlpar_core.c            |    8 +-
+ drivers/pci/hotplug/rpaphp_core.c              |    4 +-
+ drivers/pci/hotplug/rpaphp_pci.c               |    4 +-
+ drivers/pci/setup-bus.c                        |    5 +
+ include/linux/of_fdt.h                         |    5 +-
+ include/linux/pci.h                            |    1 +
+ 35 files changed, 2360 insertions(+), 874 deletions(-)
+ create mode 100644 drivers/pci/hotplug/pnv_php.c
+
+-- 
+2.1.0
