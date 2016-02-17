@@ -2,33 +2,34 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DB0BD1A0347
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC9E61A039B
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:56 +1100 (AEDT)
 Received: from localhost
  by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Wed, 17 Feb 2016 13:45:56 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2DD393578087
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0AA312CE8078
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:52 +1100 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1H3jhKb12321206
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1H3jhv514286994
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:51 +1100
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1H3jIAR018062
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:18 +1100
+ u1H3jIAe018065
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:45:19 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
  dja@axtens.net, bhelgaas@google.com, robherring2@gmail.com,
  grant.likely@linaro.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v8 06/45] powerpc/powernv: Reorder fields in struct pnv_phb
-Date: Wed, 17 Feb 2016 14:43:49 +1100
-Message-Id: <1455680668-23298-7-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v8 14/45] powerpc/powernv/ioda1: Rename
+ pnv_pci_ioda_setup_dma_pe()
+Date: Wed, 17 Feb 2016 14:43:57 +1100
+Message-Id: <1455680668-23298-15-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,36 +41,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This moves those fields in struct pnv_phb that are related to PE
-allocation around. No logical change.
+This renames pnv_pci_ioda_setup_dma_pe() to pnv_pci_ioda1_setup_dma_pe()
+as it's the counter-part of IODA2's pnv_pci_ioda2_setup_dma_pe().
+No logical changes introduced.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci.h | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 78f035e..f2a1452 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -140,15 +140,14 @@ struct pnv_phb {
- 		unsigned int		io_segsize;
- 		unsigned int		io_pci_base;
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 8488238..d18b95e 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2026,9 +2026,10 @@ static struct iommu_table_ops pnv_ioda2_iommu_ops = {
+ 	.free = pnv_ioda2_table_free,
+ };
  
--		/* PE allocation bitmap */
--		unsigned long		*pe_alloc;
--		/* PE allocation mutex */
-+		/* PE allocation */
- 		struct mutex		pe_alloc_mutex;
-+		unsigned long		*pe_alloc;
-+		struct pnv_ioda_pe	*pe_array;
+-static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+-				      struct pnv_ioda_pe *pe, unsigned int base,
+-				      unsigned int segs)
++static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
++				       struct pnv_ioda_pe *pe,
++				       unsigned int base,
++				       unsigned int segs)
+ {
  
- 		/* M32 & IO segment maps */
- 		unsigned int		*m32_segmap;
- 		unsigned int		*io_segmap;
--		struct pnv_ioda_pe	*pe_array;
- 
- 		/* IRQ chip */
- 		int			irq_chip_init;
+ 	struct page *tce_mem = NULL;
+@@ -2616,7 +2617,7 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+ 		if (phb->type == PNV_PHB_IODA1) {
+ 			pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
+ 				pe->dma_weight, segs);
+-			pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
++			pnv_pci_ioda1_setup_dma_pe(phb, pe, base, segs);
+ 		} else if (phb->type == PNV_PHB_IODA2) {
+ 			pe_info(pe, "Assign DMA32 space\n");
+ 			segs = 0;
 -- 
 2.1.0
