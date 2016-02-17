@@ -1,21 +1,20 @@
-Return-Path: <xerofoify@gmail.com>
-Received: from mail-qk0-x233.google.com (mail-qk0-x233.google.com
- [IPv6:2607:f8b0:400d:c09::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48D701A03B4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 03:25:28 +1100 (AEDT)
-Received: by mail-qk0-x233.google.com with SMTP id s68so7720753qkh.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 08:25:28 -0800 (PST)
-From: Nicholas Krause <xerofoify@gmail.com>
-To: agraf@suse.com
-Cc: gleb@kernel.org, pbonzini@redhat.com, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH RESEND] kvm:powerpc:Fix incorrect return statement in the
- function mpic_set_default_irq_routing
-Date: Wed, 17 Feb 2016 11:25:21 -0500
-Message-Id: <1455726321-5029-1-git-send-email-xerofoify@gmail.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id C03531A03B4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 03:29:12 +1100 (AEDT)
+Subject: Re: [PATCH v5] powerpc32: provide VIRT_CPU_ACCOUNTING
+To: Scott Wood <oss@buserror.net>
+References: <20160211161650.1F12C1A2400@localhost.localdomain>
+ <1455657664.2463.68.camel@buserror.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <56C49FD3.8060108@c-s.fr>
+Date: Wed, 17 Feb 2016 17:29:07 +0100
+MIME-Version: 1.0
+In-Reply-To: <1455657664.2463.68.camel@buserror.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,42 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes the incorrect return statement in the function
-mpic_set_default_irq_routing from always returning zero
-to signal success to this function's caller to instead
-return the return value of kvm_set_irq_routing as this
-function can fail and we need to correctly signal the
-caller of mpic_set_default_irq_routing when the call
-to this particular function has failed.
 
-Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
----
- arch/powerpc/kvm/mpic.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/mpic.c b/arch/powerpc/kvm/mpic.c
-index 6249cdc..b14b85a 100644
---- a/arch/powerpc/kvm/mpic.c
-+++ b/arch/powerpc/kvm/mpic.c
-@@ -1641,16 +1641,17 @@ static void mpic_destroy(struct kvm_device *dev)
- static int mpic_set_default_irq_routing(struct openpic *opp)
- {
- 	struct kvm_irq_routing_entry *routing;
-+	int ret;
- 
- 	/* Create a nop default map, so that dereferencing it still works */
- 	routing = kzalloc((sizeof(*routing)), GFP_KERNEL);
- 	if (!routing)
- 		return -ENOMEM;
- 
--	kvm_set_irq_routing(opp->kvm, routing, 0, 0);
-+	ret = kvm_set_irq_routing(opp->kvm, routing, 0, 0);
- 
- 	kfree(routing);
--	return 0;
-+	return ret;
- }
- 
- static int mpic_create(struct kvm_device *dev, u32 type)
--- 
-2.1.4
+Le 16/02/2016 22:21, Scott Wood a écrit :
+> On Thu, 2016-02-11 at 17:16 +0100, Christophe Leroy wrote:
+>> This patch provides VIRT_CPU_ACCOUTING to PPC32 architecture.
+>> PPC32 doesn't have the PACA structure, so we use the task_info
+>> structure to store the accounting data.
+>>
+>> In order to reuse on PPC32 the PPC64 functions, all u64 data has
+>> been replaced by 'unsigned long' so that it is u32 on PPC32 and
+>> u64 on PPC64
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>> Changes in v3: unlike previous version of the patch that was inspired
+>> from IA64 architecture, this new version tries to reuse as much as
+>> possible the PPC64 implementation.
+>>
+>> PPC32 doesn't have PACA and past discusion on v2 version has shown
+>> that it is not worth implementing a PACA in PPC32 architecture
+>> (see below benh opinion)
+>>
+>> benh: PACA is actually a data structure and you really really don't want it
+>> on ppc32 :-) Having a register point to current works, having a register
+>> point to per-cpu data instead works too (ie, change what we do today),
+>> but don't introduce a PACA *please* :-)
+> And Ben never replied to my reply at the time:
+>
+> "What is special about 64-bit that warrants doing things differently from 32
+> -bit?  What is the difference between PACA and "per-cpu data", other than the
+> obscure name?"
+>
+> I can understand wanting to avoid churn, but other than that, doing things
+> differently on 64-bit versus 32-bit sucks.
+>
+
+What I can see is that PACA is always available via register r13. Do we 
+have anything equivalent on PPC32 ?
+If we define a per-cpu data for accounting, what will be the quick way 
+to get access to it in entry_32.S ?
+Something like a table of accounting data for each CPU, that we index 
+with thread_info->cpu ?
+This would allow a quite quick access, is it the good way to proceed in 
+order to have something closer to PPC64 ?
+
+Christophe
