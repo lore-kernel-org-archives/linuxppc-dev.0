@@ -1,38 +1,45 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <kirill@shutemov.name>
+Received: from mail-wm0-x229.google.com (mail-wm0-x229.google.com
+ [IPv6:2a00:1450:400c:c09::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BAD8C1A04FA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 02:01:21 +1100 (AEDT)
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 17 Feb 2016 10:01:19 -0500
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 84C2EC90045
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 10:01:13 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1HF1F7030212218
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 15:01:15 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1HF1Fw1004365
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 10:01:15 -0500
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 1/2] powerpc/powernv: Create separate subcores CPU feature
- bit
-In-Reply-To: <1455685668-30198-1-git-send-email-mikey@neuling.org>
-References: <1455685668-30198-1-git-send-email-mikey@neuling.org>
-Date: Wed, 17 Feb 2016 20:29:22 +0530
-Message-ID: <878u2jz8l1.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B077F1A0405
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 02:05:03 +1100 (AEDT)
+Received: by mail-wm0-x229.google.com with SMTP id g62so241291055wme.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 07:05:03 -0800 (PST)
+Date: Wed, 17 Feb 2016 17:04:56 +0200
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org
+Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe also
+ on PowerPC and ARM)
+Message-ID: <20160217150456.GA15882@node.shutemov.name>
+References: <20160211205702.24f0d17a@thinkpad>
+ <20160212154116.GA15142@node.shutemov.name>
+ <56BE00E7.1010303@de.ibm.com> <20160212181640.4eabb85f@thinkpad>
+ <20160212231510.GB15142@node.shutemov.name>
+ <alpine.LFD.2.20.1602131238260.1910@schleppi>
+ <20160215113159.GA28832@node.shutemov.name>
+ <20160215193702.4a15ed5e@thinkpad>
+ <20160215213526.GA9766@node.shutemov.name>
+ <20160216172444.013988d8@thinkpad>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160216172444.013988d8@thinkpad>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,57 +49,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
+On Tue, Feb 16, 2016 at 05:24:44PM +0100, Gerald Schaefer wrote:
+> On Mon, 15 Feb 2016 23:35:26 +0200
+> "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+> 
+> > Is there any chance that I'll be able to trigger the bug using QEMU?
+> > Does anybody have an QEMU image I can use?
+> > 
+> 
+> I have no image, but trying to reproduce this under virtualization may
+> help to trigger this also on other architectures. After ruling out IPI
+> vs. fast_gup I do not really see why this should be arch-specific, and
+> it wouldn't be the first time that we hit subtle races first on s390, due
+> to our virtualized environment (my test case is make -j20 with 10 CPUs and
+> 4GB of memory, no swap).
 
-> Subcores isn't really part of the 2.07 architecture but currently we
-> turn it on using the 2.07 feature bit.  Subcores is really a POWER8
-> specific feature.
->
-> This adds a new CPU_FTR bit just for subcores and moves the subcore
-> init code over to use this.
->
+Could you post your kernel config?
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+It would be nice also to check if disabling split_huge_page() would make
+any difference:
 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
->  arch/powerpc/include/asm/cputable.h      | 3 ++-
->  arch/powerpc/platforms/powernv/subcore.c | 2 +-
->  2 files changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-> index b118072..a47e175 100644
-> --- a/arch/powerpc/include/asm/cputable.h
-> +++ b/arch/powerpc/include/asm/cputable.h
-> @@ -196,6 +196,7 @@ enum {
->  #define CPU_FTR_DAWR			LONG_ASM_CONST(0x0400000000000000)
->  #define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
->  #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
-> +#define CPU_FTR_SUBCORE			LONG_ASM_CONST(0x2000000000000000)
->
->  #ifndef __ASSEMBLY__
->
-> @@ -443,7 +444,7 @@ enum {
->  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
->  	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
->  	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
-> -	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP)
-> +	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_SUBCORE)
->  #define CPU_FTRS_POWER8E (CPU_FTRS_POWER8 | CPU_FTR_PMAO_BUG)
->  #define CPU_FTRS_POWER8_DD1 (CPU_FTRS_POWER8 & ~CPU_FTR_DBELL)
->  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-> diff --git a/arch/powerpc/platforms/powernv/subcore.c b/arch/powerpc/platforms/powernv/subcore.c
-> index 503a73f..0babef1 100644
-> --- a/arch/powerpc/platforms/powernv/subcore.c
-> +++ b/arch/powerpc/platforms/powernv/subcore.c
-> @@ -407,7 +407,7 @@ static DEVICE_ATTR(subcores_per_core, 0644,
->
->  static int subcore_init(void)
->  {
-> -	if (!cpu_has_feature(CPU_FTR_ARCH_207S))
-> +	if (!cpu_has_feature(CPU_FTR_SUBCORE))
->  		return 0;
->
->  	/*
-> -- 
-> 2.5.0
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index a75081ca31cf..26d2b7b21021 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -3364,6 +3364,8 @@ int split_huge_page_to_list(struct page *page, struct list_head *list)
+ 	bool mlocked;
+ 	unsigned long flags;
+ 
++	return -EBUSY;
++
+ 	VM_BUG_ON_PAGE(is_huge_zero_page(page), page);
+ 	VM_BUG_ON_PAGE(!PageAnon(page), page);
+ 	VM_BUG_ON_PAGE(!PageLocked(page), page);
+-- 
+ Kirill A. Shutemov
