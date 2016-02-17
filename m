@@ -1,22 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <martin.petersen@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B1F451A005A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 13:23:09 +1100 (AEDT)
-Message-ID: <1455675789.2956.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] MAINTAINERS: rename EEH from "enhanced" to "extended"
- error handling
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Russell Currey <ruscur@russell.cc>, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 17 Feb 2016 13:23:09 +1100
-In-Reply-To: <1455666599.3357.5.camel@russell.cc>
-References: <1455612720-3758-1-git-send-email-ruscur@russell.cc>
- <20160216224908.GA5078@gwshan> <20160216225835.GA8240@gwshan>
- <1455666599.3357.5.camel@russell.cc>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 19F161A029A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 14:03:37 +1100 (AEDT)
+To: jthumshirn@suse.de
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+ martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ nfont@linux.vnet.ibm.com, brking@linux.vnet.ibm.com,
+ manoj@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 3/7] ibmvscsi: Replace magic values in
+ set_adpater_info() with defines
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+References: <1455154348-3226-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1455154348-3226-4-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1455295395.2396.22.camel@HansenPartnership.com>
+ <56BE0D7D.3050703@linux.vnet.ibm.com>
+Date: Tue, 16 Feb 2016 22:03:24 -0500
+In-Reply-To: <56BE0D7D.3050703@linux.vnet.ibm.com> (Tyrel Datwyler's message
+ of "Fri, 12 Feb 2016 08:51:09 -0800")
+Message-ID: <yq1k2m4xclf.fsf@sermon.lab.mkp.net>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,47 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-02-17 at 10:49 +1100, Russell Currey wrote:
-> On Wed, 2016-02-17 at 09:58 +1100, Gavin Shan wrote:
-> > On Wed, Feb 17, 2016 at 09:49:08AM +1100, Gavin Shan wrote:
-> > > 
-> > > On Tue, Feb 16, 2016 at 07:52:00PM +1100, Russell Currey wrote:
-> > > > 
-> > > > Incredibly, IBM online documentation for EEH uses "extended error
-> > > > handling"
-> > > > and "enhanced error handling" to refer to the same thing, in
-> > > > different
-> > > > places.  In other parts of the kernel, namely the EEH documentation
-> > > > (found
-> > > > in Documentation/powerpc/eeh-pci-error-recovery.txt), it's referred
-> > > > to as
-> > > > "extended", and in my opinion "extended" makes more sense for what
-> > > > EEH
-> > > > does.
-> > > > 
-> > > > The only place "enhanced error handling" shows up in the kernel is in
-> > > > MAINTAINERS, so fix it.
-> > > > 
-> > > Russell, Thanks for fixing it up. Since you're at it, Please replace
-> > > the
-> > > maintainer to yourself. Also, the components mentioned in this file are
-> > > listed in alphabetic order according to their names. As the name of EEH
-> > > is changed, it would be put in front of "Extended Verification Module
-> > > (EVM)".
-> > > 
-> > I agree with Michael as discussed in another thread: we're going to use
-> > "enhanced", not "extended" though some chip datasheet (P7IOC) talks about
-> > "extended error handling".
-> > 
-> > Russell, please change the maintainer to you and repost.
-> Sure.
-> 
-> While I'm changing MAINTAINERS, what are your thoughts on renaming the EEH
-> entry from "ENHANCED ERROR HANDLING (EEH)" to something like "PCI EXTENDED
-> ERROR HANDLING (EEH)" or "EXTENDED ERROR HANDLING (EEH) FOR PCI" - so it's
-> clear it refers to PCI and not something more generic?
+>>>>> "Tyrel" == Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
 
-Yep, having PCI at the front would be good as it will sort next to the other
-PCI things. Having POWERPC in there is probably also good.
+>> Is there some reason you didn't carry the review tag over from this:
+>> 
+>> http://mid.gmane.org/20160204084459.GW27969@c203.arch.suse.de
+>> 
+>> ?
+>> 
+>> James
 
-cheers
+Tyrel> The patch is slightly changed from v1. A define for AIX os type
+Tyrel> was added as mentioned in the cover letter v2 changes, and I
+Tyrel> moved the defines to the mad_adapter_info_data structure around
+Tyrel> the fields they apply.
+
+Johannes: Mind checking this out?
+
+https://patchwork.kernel.org/patch/8276101/
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
