@@ -1,20 +1,39 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B8CD71A03B5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 16:08:01 +1100 (AEDT)
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>
-Subject: [PATCH 2/2] powerpc: Add POWER9 cputable entry
-Date: Wed, 17 Feb 2016 16:07:48 +1100
-Message-Id: <1455685668-30198-2-git-send-email-mikey@neuling.org>
-In-Reply-To: <1455685668-30198-1-git-send-email-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D70A01A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 17:04:11 +1100 (AEDT)
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Wed, 17 Feb 2016 16:04:01 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 91B40357803F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 17:03:59 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1H63pu22097600
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 17:03:59 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1H63Rrx000614
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 17:03:27 +1100
+Received: from [9.124.88.162] ([9.124.88.162])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ u1H63PlN032478
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 17:03:26 +1100
+Subject: Re: [PATCH 2/2] powerpc: Add POWER9 cputable entry
+To: linuxppc-dev@lists.ozlabs.org
 References: <1455685668-30198-1-git-send-email-mikey@neuling.org>
+ <1455685668-30198-2-git-send-email-mikey@neuling.org>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Message-ID: <56C40D1A.9060601@linux.vnet.ibm.com>
+Date: Wed, 17 Feb 2016 11:33:06 +0530
+MIME-Version: 1.0
+In-Reply-To: <1455685668-30198-2-git-send-email-mikey@neuling.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,257 +43,269 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a cputable entry for POWER9.  More code is required to actually
-boot and run on a POWER9 but this gets the base piece in which we can
-start building on.
 
-Copies over from POWER8 except for:
-- Adds a new CPU_FTR_ARCH_30 bit to start hanging new architecture
-  features from (in subsequent patches).
-- Advertises new user features bits PPC_FEATURE2_ARCH_3_00 &
-  HAS_IEEE128 when on POWER9.
-- Drops CPU_FTR_SUBCORE.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/include/asm/cputable.h   | 14 ++++++++--
- arch/powerpc/include/asm/mmu-hash64.h |  1 +
- arch/powerpc/include/asm/mmu.h        |  1 +
- arch/powerpc/kernel/cpu_setup_power.S | 48 +++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/cputable.c        | 36 ++++++++++++++++++++++++++
- arch/powerpc/kernel/mce_power.c       | 15 +++++------
- 6 files changed, 105 insertions(+), 10 deletions(-)
+On Wednesday 17 February 2016 10:37 AM, Michael Neuling wrote:
+> Add a cputable entry for POWER9.  More code is required to actually
+> boot and run on a POWER9 but this gets the base piece in which we can
+> start building on.
+>
+> Copies over from POWER8 except for:
+> - Adds a new CPU_FTR_ARCH_30 bit to start hanging new architecture
+>   features from (in subsequent patches).
+> - Advertises new user features bits PPC_FEATURE2_ARCH_3_00 &
+>   HAS_IEEE128 when on POWER9.
+> - Drops CPU_FTR_SUBCORE.
+>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+>  arch/powerpc/include/asm/cputable.h   | 14 ++++++++--
+>  arch/powerpc/include/asm/mmu-hash64.h |  1 +
+>  arch/powerpc/include/asm/mmu.h        |  1 +
+>  arch/powerpc/kernel/cpu_setup_power.S | 48 +++++++++++++++++++++++++++++++++++
+>  arch/powerpc/kernel/cputable.c        | 36 ++++++++++++++++++++++++++
+>  arch/powerpc/kernel/mce_power.c       | 15 +++++------
+>  6 files changed, 105 insertions(+), 10 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+> index a47e175..7fb238c 100644
+> --- a/arch/powerpc/include/asm/cputable.h
+> +++ b/arch/powerpc/include/asm/cputable.h
+> @@ -171,7 +171,7 @@ enum {
+>  #define CPU_FTR_ARCH_201		LONG_ASM_CONST(0x0000000200000000)
+>  #define CPU_FTR_ARCH_206		LONG_ASM_CONST(0x0000000400000000)
+>  #define CPU_FTR_ARCH_207S		LONG_ASM_CONST(0x0000000800000000)
+> -/* Free					LONG_ASM_CONST(0x0000001000000000) */
+> +#define CPU_FTR_ARCH_30			LONG_ASM_CONST(0x0000001000000000)
+>  #define CPU_FTR_MMCRA			LONG_ASM_CONST(0x0000002000000000)
+>  #define CPU_FTR_CTRL			LONG_ASM_CONST(0x0000004000000000)
+>  #define CPU_FTR_SMT			LONG_ASM_CONST(0x0000008000000000)
+> @@ -447,6 +447,16 @@ enum {
+>  	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_SUBCORE)
+>  #define CPU_FTRS_POWER8E (CPU_FTRS_POWER8 | CPU_FTR_PMAO_BUG)
+>  #define CPU_FTRS_POWER8_DD1 (CPU_FTRS_POWER8 & ~CPU_FTR_DBELL)
+> +#define CPU_FTRS_POWER9 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+> +	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
+> +	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+> +	    CPU_FTR_COHERENT_ICACHE | \
+> +	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+> +	    CPU_FTR_DSCR | CPU_FTR_SAO  | \
+> +	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
+> +	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
+> +	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
+> +	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_30)
+>  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+>  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+>  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+> @@ -465,7 +475,7 @@ enum {
+>  	    (CPU_FTRS_POWER4 | CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | \
+>  	     CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
+>  	     CPU_FTRS_POWER8 | CPU_FTRS_POWER8_DD1 | CPU_FTRS_CELL | \
+> -	     CPU_FTRS_PA6T | CPU_FTR_VSX)
+> +	     CPU_FTRS_PA6T | CPU_FTR_VSX | CPU_FTRS_POWER9)
+>  #endif
+>  #else
+>  enum {
+> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+> index 7352d3f..e36dc90 100644
+> --- a/arch/powerpc/include/asm/mmu-hash64.h
+> +++ b/arch/powerpc/include/asm/mmu-hash64.h
+> @@ -114,6 +114,7 @@
+>  
+>  #define POWER7_TLB_SETS		128	/* # sets in POWER7 TLB */
+>  #define POWER8_TLB_SETS		512	/* # sets in POWER8 TLB */
+> +#define POWER9_TLB_SETS_HASH	256	/* # sets in POWER9 TLB Hash mode */
+>  
+>  #ifndef __ASSEMBLY__
+>  
+> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+> index 3d5abfe..54d4650 100644
+> --- a/arch/powerpc/include/asm/mmu.h
+> +++ b/arch/powerpc/include/asm/mmu.h
+> @@ -97,6 +97,7 @@
+>  #define MMU_FTRS_POWER6		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
+>  #define MMU_FTRS_POWER7		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
+>  #define MMU_FTRS_POWER8		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
+> +#define MMU_FTRS_POWER9		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
+>  #define MMU_FTRS_CELL		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | \
+>  				MMU_FTR_CI_LARGE_PAGE
+>  #define MMU_FTRS_PA6T		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | \
+> diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
+> index 9c9b741..1785480 100644
+> --- a/arch/powerpc/kernel/cpu_setup_power.S
+> +++ b/arch/powerpc/kernel/cpu_setup_power.S
+> @@ -83,6 +83,43 @@ _GLOBAL(__restore_cpu_power8)
+>  	mtlr	r11
+>  	blr
+>  
+> +_GLOBAL(__setup_cpu_power9)
+> +	mflr	r11
+> +	bl	__init_FSCR
+> +	bl	__init_PMU
+Just to keep in mind, I am not sure whether
+powerisa 3.0 support MMCRS spr, so we
+will need a feature check in __init_PMU()
+for power9.
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index a47e175..7fb238c 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -171,7 +171,7 @@ enum {
- #define CPU_FTR_ARCH_201		LONG_ASM_CONST(0x0000000200000000)
- #define CPU_FTR_ARCH_206		LONG_ASM_CONST(0x0000000400000000)
- #define CPU_FTR_ARCH_207S		LONG_ASM_CONST(0x0000000800000000)
--/* Free					LONG_ASM_CONST(0x0000001000000000) */
-+#define CPU_FTR_ARCH_30			LONG_ASM_CONST(0x0000001000000000)
- #define CPU_FTR_MMCRA			LONG_ASM_CONST(0x0000002000000000)
- #define CPU_FTR_CTRL			LONG_ASM_CONST(0x0000004000000000)
- #define CPU_FTR_SMT			LONG_ASM_CONST(0x0000008000000000)
-@@ -447,6 +447,16 @@ enum {
- 	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_SUBCORE)
- #define CPU_FTRS_POWER8E (CPU_FTRS_POWER8 | CPU_FTR_PMAO_BUG)
- #define CPU_FTRS_POWER8_DD1 (CPU_FTRS_POWER8 & ~CPU_FTR_DBELL)
-+#define CPU_FTRS_POWER9 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-+	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
-+	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-+	    CPU_FTR_COHERENT_ICACHE | \
-+	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
-+	    CPU_FTR_DSCR | CPU_FTR_SAO  | \
-+	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
-+	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
-+	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
-+	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_30)
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-@@ -465,7 +475,7 @@ enum {
- 	    (CPU_FTRS_POWER4 | CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | \
- 	     CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
- 	     CPU_FTRS_POWER8 | CPU_FTRS_POWER8_DD1 | CPU_FTRS_CELL | \
--	     CPU_FTRS_PA6T | CPU_FTR_VSX)
-+	     CPU_FTRS_PA6T | CPU_FTR_VSX | CPU_FTRS_POWER9)
- #endif
- #else
- enum {
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 7352d3f..e36dc90 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -114,6 +114,7 @@
- 
- #define POWER7_TLB_SETS		128	/* # sets in POWER7 TLB */
- #define POWER8_TLB_SETS		512	/* # sets in POWER8 TLB */
-+#define POWER9_TLB_SETS_HASH	256	/* # sets in POWER9 TLB Hash mode */
- 
- #ifndef __ASSEMBLY__
- 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 3d5abfe..54d4650 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -97,6 +97,7 @@
- #define MMU_FTRS_POWER6		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
- #define MMU_FTRS_POWER7		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
- #define MMU_FTRS_POWER8		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
-+#define MMU_FTRS_POWER9		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
- #define MMU_FTRS_CELL		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | \
- 				MMU_FTR_CI_LARGE_PAGE
- #define MMU_FTRS_PA6T		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | \
-diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
-index 9c9b741..1785480 100644
---- a/arch/powerpc/kernel/cpu_setup_power.S
-+++ b/arch/powerpc/kernel/cpu_setup_power.S
-@@ -83,6 +83,43 @@ _GLOBAL(__restore_cpu_power8)
- 	mtlr	r11
- 	blr
- 
-+_GLOBAL(__setup_cpu_power9)
-+	mflr	r11
-+	bl	__init_FSCR
-+	bl	__init_PMU
-+	bl	__init_hvmode_206
-+	mtlr	r11
-+	beqlr
-+	li	r0,0
-+	mtspr	SPRN_LPID,r0
-+	mfspr	r3,SPRN_LPCR
-+	ori	r3, r3, LPCR_PECEDH
-+	bl	__init_LPCR
-+	bl	__init_HFSCR
-+	bl	__init_tlb_power9
-+	bl	__init_PMU_HV
-+	mtlr	r11
-+	blr
-+
-+_GLOBAL(__restore_cpu_power9)
-+	mflr	r11
-+	bl	__init_FSCR
-+	bl	__init_PMU
-+	mfmsr	r3
-+	rldicl.	r0,r3,4,63
-+	mtlr	r11
-+	beqlr
-+	li	r0,0
-+	mtspr	SPRN_LPID,r0
-+	mfspr   r3,SPRN_LPCR
-+	ori	r3, r3, LPCR_PECEDH
-+	bl	__init_LPCR
-+	bl	__init_HFSCR
-+	bl	__init_tlb_power9
-+	bl	__init_PMU_HV
-+	mtlr	r11
-+	blr
-+
- __init_hvmode_206:
- 	/* Disable CPU_FTR_HVMODE and exit if MSR:HV is not set */
- 	mfmsr	r3
-@@ -160,6 +197,17 @@ __init_tlb_power8:
- 	ptesync
- 1:	blr
- 
-+__init_tlb_power9:
-+	li	r6,256
-+	mtctr	r6
-+	li	r7,0xc00	/* IS field = 0b11 */
-+	ptesync
-+2:	tlbiel	r7
-+	addi	r7,r7,0x1000
-+	bdnz	2b
-+	ptesync
-+1:	blr
-+
- __init_PMU_HV:
- 	li	r5,0
- 	mtspr	SPRN_MMCRC,r5
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 7d80bfd..a4e31fa 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -70,9 +70,12 @@ extern void __setup_cpu_power7(unsigned long offset, struct cpu_spec* spec);
- extern void __restore_cpu_power7(void);
- extern void __setup_cpu_power8(unsigned long offset, struct cpu_spec* spec);
- extern void __restore_cpu_power8(void);
-+extern void __setup_cpu_power9(unsigned long offset, struct cpu_spec* spec);
-+extern void __restore_cpu_power9(void);
- extern void __restore_cpu_a2(void);
- extern void __flush_tlb_power7(unsigned int action);
- extern void __flush_tlb_power8(unsigned int action);
-+extern void __flush_tlb_power9(unsigned int action);
- extern long __machine_check_early_realmode_p7(struct pt_regs *regs);
- extern long __machine_check_early_realmode_p8(struct pt_regs *regs);
- #endif /* CONFIG_PPC64 */
-@@ -116,6 +119,19 @@ extern void __restore_cpu_e6500(void);
- #define COMMON_USER_PA6T	(COMMON_USER_PPC64 | PPC_FEATURE_PA6T |\
- 				 PPC_FEATURE_TRUE_LE | \
- 				 PPC_FEATURE_HAS_ALTIVEC_COMP)
-+#define COMMON_USER_POWER9	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_06 |\
-+				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
-+				 PPC_FEATURE_TRUE_LE | \
-+				 PPC_FEATURE_PSERIES_PERFMON_COMPAT)
-+#define COMMON_USER2_POWER9	(PPC_FEATURE2_ARCH_2_07 | \
-+				 PPC_FEATURE2_HTM_COMP | \
-+				 PPC_FEATURE2_HTM_NOSC_COMP | \
-+				 PPC_FEATURE2_DSCR | \
-+				 PPC_FEATURE2_ISEL | PPC_FEATURE2_TAR | \
-+				 PPC_FEATURE2_VEC_CRYPTO | \
-+				 PPC_FEATURE2_ARCH_3_00 | \
-+				 PPC_FEATURE2_HAS_IEEE128)
-+
- #ifdef CONFIG_PPC_BOOK3E_64
- #define COMMON_USER_BOOKE	(COMMON_USER_PPC64 | PPC_FEATURE_BOOKE)
- #else
-@@ -499,6 +515,26 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check_early	= __machine_check_early_realmode_p8,
- 		.platform		= "power8",
- 	},
-+	{	/*  Hacked up Power9 */
-+		.pvr_mask		= 0xffff0000,
-+		.pvr_value		= 0x004e0000,
-+		.cpu_name		= "POWER9 (raw)",
-+		.cpu_features		= CPU_FTRS_POWER9,
-+		.cpu_user_features	= COMMON_USER_POWER9,
-+		.cpu_user_features2	= COMMON_USER2_POWER9,
-+		.mmu_features		= MMU_FTRS_POWER9,
-+		.icache_bsize		= 128,
-+		.dcache_bsize		= 128,
-+		.num_pmcs		= 6,
-+		.pmc_type		= PPC_PMC_IBM,
-+		.oprofile_cpu_type	= "ppc64/power8",
-+		.oprofile_type		= PPC_OPROFILE_INVALID,
-+		.cpu_setup		= __setup_cpu_power9,
-+		.cpu_restore		= __restore_cpu_power9,
-+		.flush_tlb		= __flush_tlb_power9,
-+		.machine_check_early	= __machine_check_early_realmode_p8,
-+		.platform		= "power9",
-+	},
- 	{	/* Cell Broadband Engine */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x00700000,
-diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-index 2c647b1..9131b95 100644
---- a/arch/powerpc/kernel/mce_power.c
-+++ b/arch/powerpc/kernel/mce_power.c
-@@ -54,7 +54,7 @@ static void flush_tlb_206(unsigned int num_sets, unsigned int action)
- }
- 
- /*
-- * Generic routine to flush TLB on power7. This routine is used as
-+ * Generic routine to flush TLB on power*. This routine is used as
-  * flush_tlb hook in cpu_spec for Power7 processor.
-  *
-  * action => TLB_INVAL_SCOPE_GLOBAL:  Invalidate all TLBs.
-@@ -65,18 +65,17 @@ void __flush_tlb_power7(unsigned int action)
- 	flush_tlb_206(POWER7_TLB_SETS, action);
- }
- 
--/*
-- * Generic routine to flush TLB on power8. This routine is used as
-- * flush_tlb hook in cpu_spec for power8 processor.
-- *
-- * action => TLB_INVAL_SCOPE_GLOBAL:  Invalidate all TLBs.
-- *	     TLB_INVAL_SCOPE_LPID: Invalidate TLB for current LPID.
-- */
- void __flush_tlb_power8(unsigned int action)
- {
- 	flush_tlb_206(POWER8_TLB_SETS, action);
- }
- 
-+void __flush_tlb_power9(unsigned int action)
-+{
-+	flush_tlb_206(POWER9_TLB_SETS_HASH, action);
-+}
-+
-+
- /* flush SLBs and reload */
- static void flush_and_reload_slb(void)
- {
--- 
-2.5.0
+> +	bl	__init_hvmode_206
+> +	mtlr	r11
+> +	beqlr
+> +	li	r0,0
+> +	mtspr	SPRN_LPID,r0
+> +	mfspr	r3,SPRN_LPCR
+> +	ori	r3, r3, LPCR_PECEDH
+> +	bl	__init_LPCR
+> +	bl	__init_HFSCR
+> +	bl	__init_tlb_power9
+> +	bl	__init_PMU_HV
+
+Again, need to check whether powerisa 3.0 support MMCRH spr
+which is used in __init_PMU_HV()
+
+> +	mtlr	r11
+> +	blr
+> +
+> +_GLOBAL(__restore_cpu_power9)
+> +	mflr	r11
+> +	bl	__init_FSCR
+> +	bl	__init_PMU
+> +	mfmsr	r3
+> +	rldicl.	r0,r3,4,63
+> +	mtlr	r11
+> +	beqlr
+> +	li	r0,0
+> +	mtspr	SPRN_LPID,r0
+> +	mfspr   r3,SPRN_LPCR
+> +	ori	r3, r3, LPCR_PECEDH
+> +	bl	__init_LPCR
+> +	bl	__init_HFSCR
+> +	bl	__init_tlb_power9
+> +	bl	__init_PMU_HV
+> +	mtlr	r11
+> +	blr
+> +
+>  __init_hvmode_206:
+>  	/* Disable CPU_FTR_HVMODE and exit if MSR:HV is not set */
+>  	mfmsr	r3
+> @@ -160,6 +197,17 @@ __init_tlb_power8:
+>  	ptesync
+>  1:	blr
+>  
+> +__init_tlb_power9:
+> +	li	r6,256
+> +	mtctr	r6
+> +	li	r7,0xc00	/* IS field = 0b11 */
+> +	ptesync
+> +2:	tlbiel	r7
+> +	addi	r7,r7,0x1000
+> +	bdnz	2b
+> +	ptesync
+> +1:	blr
+> +
+>  __init_PMU_HV:
+>  	li	r5,0
+>  	mtspr	SPRN_MMCRC,r5
+> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+> index 7d80bfd..a4e31fa 100644
+> --- a/arch/powerpc/kernel/cputable.c
+> +++ b/arch/powerpc/kernel/cputable.c
+> @@ -70,9 +70,12 @@ extern void __setup_cpu_power7(unsigned long offset, struct cpu_spec* spec);
+>  extern void __restore_cpu_power7(void);
+>  extern void __setup_cpu_power8(unsigned long offset, struct cpu_spec* spec);
+>  extern void __restore_cpu_power8(void);
+> +extern void __setup_cpu_power9(unsigned long offset, struct cpu_spec* spec);
+> +extern void __restore_cpu_power9(void);
+>  extern void __restore_cpu_a2(void);
+>  extern void __flush_tlb_power7(unsigned int action);
+>  extern void __flush_tlb_power8(unsigned int action);
+> +extern void __flush_tlb_power9(unsigned int action);
+>  extern long __machine_check_early_realmode_p7(struct pt_regs *regs);
+>  extern long __machine_check_early_realmode_p8(struct pt_regs *regs);
+>  #endif /* CONFIG_PPC64 */
+> @@ -116,6 +119,19 @@ extern void __restore_cpu_e6500(void);
+>  #define COMMON_USER_PA6T	(COMMON_USER_PPC64 | PPC_FEATURE_PA6T |\
+>  				 PPC_FEATURE_TRUE_LE | \
+>  				 PPC_FEATURE_HAS_ALTIVEC_COMP)
+> +#define COMMON_USER_POWER9	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_06 |\
+> +				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
+> +				 PPC_FEATURE_TRUE_LE | \
+> +				 PPC_FEATURE_PSERIES_PERFMON_COMPAT)
+> +#define COMMON_USER2_POWER9	(PPC_FEATURE2_ARCH_2_07 | \
+> +				 PPC_FEATURE2_HTM_COMP | \
+> +				 PPC_FEATURE2_HTM_NOSC_COMP | \
+> +				 PPC_FEATURE2_DSCR | \
+> +				 PPC_FEATURE2_ISEL | PPC_FEATURE2_TAR | \
+> +				 PPC_FEATURE2_VEC_CRYPTO | \
+> +				 PPC_FEATURE2_ARCH_3_00 | \
+> +				 PPC_FEATURE2_HAS_IEEE128)
+> +
+>  #ifdef CONFIG_PPC_BOOK3E_64
+>  #define COMMON_USER_BOOKE	(COMMON_USER_PPC64 | PPC_FEATURE_BOOKE)
+>  #else
+> @@ -499,6 +515,26 @@ static struct cpu_spec __initdata cpu_specs[] = {
+>  		.machine_check_early	= __machine_check_early_realmode_p8,
+>  		.platform		= "power8",
+>  	},
+> +	{	/*  Hacked up Power9 */
+> +		.pvr_mask		= 0xffff0000,
+> +		.pvr_value		= 0x004e0000,
+> +		.cpu_name		= "POWER9 (raw)",
+> +		.cpu_features		= CPU_FTRS_POWER9,
+> +		.cpu_user_features	= COMMON_USER_POWER9,
+> +		.cpu_user_features2	= COMMON_USER2_POWER9,
+> +		.mmu_features		= MMU_FTRS_POWER9,
+> +		.icache_bsize		= 128,
+> +		.dcache_bsize		= 128,
+> +		.num_pmcs		= 6,
+> +		.pmc_type		= PPC_PMC_IBM,
+> +		.oprofile_cpu_type	= "ppc64/power8",
+This should be ppc64/power9. We use "oprofile_cpu_type" in PMU init.
+
+> +		.oprofile_type		= PPC_OPROFILE_INVALID,
+> +		.cpu_setup		= __setup_cpu_power9,
+> +		.cpu_restore		= __restore_cpu_power9,
+> +		.flush_tlb		= __flush_tlb_power9,
+> +		.machine_check_early	= __machine_check_early_realmode_p8,
+> +		.platform		= "power9",
+> +	},
+>  	{	/* Cell Broadband Engine */
+>  		.pvr_mask		= 0xffff0000,
+>  		.pvr_value		= 0x00700000,
+> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+> index 2c647b1..9131b95 100644
+> --- a/arch/powerpc/kernel/mce_power.c
+> +++ b/arch/powerpc/kernel/mce_power.c
+> @@ -54,7 +54,7 @@ static void flush_tlb_206(unsigned int num_sets, unsigned int action)
+>  }
+>  
+>  /*
+> - * Generic routine to flush TLB on power7. This routine is used as
+> + * Generic routine to flush TLB on power*. This routine is used as
+>   * flush_tlb hook in cpu_spec for Power7 processor.
+>   *
+>   * action => TLB_INVAL_SCOPE_GLOBAL:  Invalidate all TLBs.
+> @@ -65,18 +65,17 @@ void __flush_tlb_power7(unsigned int action)
+>  	flush_tlb_206(POWER7_TLB_SETS, action);
+>  }
+>  
+> -/*
+> - * Generic routine to flush TLB on power8. This routine is used as
+> - * flush_tlb hook in cpu_spec for power8 processor.
+> - *
+> - * action => TLB_INVAL_SCOPE_GLOBAL:  Invalidate all TLBs.
+> - *	     TLB_INVAL_SCOPE_LPID: Invalidate TLB for current LPID.
+> - */
+>  void __flush_tlb_power8(unsigned int action)
+>  {
+>  	flush_tlb_206(POWER8_TLB_SETS, action);
+>  }
+>  
+> +void __flush_tlb_power9(unsigned int action)
+> +{
+> +	flush_tlb_206(POWER9_TLB_SETS_HASH, action);
+> +}
+> +
+> +
+>  /* flush SLBs and reload */
+>  static void flush_and_reload_slb(void)
+>  {
