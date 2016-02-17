@@ -1,24 +1,24 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dcb314@hotmail.com>
+Received: from DUB004-OMC1S33.hotmail.com (dub004-omc1s33.hotmail.com
+ [157.55.0.232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 09D361A0018
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 18:29:53 +1100 (AEDT)
-Received: by mail-pa0-x230.google.com with SMTP id yy13so6622062pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Feb 2016 23:29:52 -0800 (PST)
-Subject: Re: [RFC, kernel] powerpc/ioda: Set "read" permission when "write" is
- set
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <20160216031824.E5C8E140761@ozlabs.org>
-Cc: Paul Mackerras <paulus@samba.org>,
- David Gibson <david@gibson.dropbear.id.au>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <56C42146.5080608@ozlabs.ru>
-Date: Wed, 17 Feb 2016 18:29:10 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C6811A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 18:39:44 +1100 (AEDT)
+Message-ID: <DUB128-W420C9B466D12DF872907619CAE0@phx.gbl>
+From: David Binderman <dcb314@hotmail.com>
+To: Daniel Axtens <dja@axtens.net>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: linux-4.5-rc4/arch/powerpc/boot/treeboot-akebono.c:90: possible
+ bad test ?
+Date: Wed, 17 Feb 2016 07:34:20 +0000
+In-Reply-To: <87fuwscm9v.fsf@gamma.ozlabs.ibm.com>
+References: <DUB128-W3951FD832DE1C66D3A7C799CAD0@phx.gbl>,
+ <87fuwscm9v.fsf@gamma.ozlabs.ibm.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-In-Reply-To: <20160216031824.E5C8E140761@ozlabs.org>
-Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,32 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/16/2016 02:18 PM, Michael Ellerman wrote:
-> On Tue, 2016-12-01 at 04:40:20 UTC, Alexey Kardashevskiy wrote:
->> Quite often drivers set only "write" permission assuming that this
->> includes "read" permission as well and this works on plenty platforms.
->> However IODA2 is strict about this and produces an EEH when "read"
->> permission is not and reading happens.
->>
->> This adds a workaround in IODA code to always add the "read" bit when
->> the "write" bit is set.
->>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> Tested-by: Douglas Miller <dougmill@linux.vnet.ibm.com>
->
-> Are you planning on sending a non-RFC version of this?
-
-Just posted.
-
-> If so is it an urgent fix I should send upstream now?
-
-Yes.
-
- > And if so should it also be CC'ed to stable?
-
-Ben suggested that yes, it should. Thanks. Sorry about breaking things.
-
-
--- 
-Alexey
+Hello there Daniel=2C=0A=
+=0A=
+----------------------------------------=0A=
+> That looks like a good suggestion: maybe make the test 'if (!emac)'=0A=
+> rather than explicitly comparing with zero.=0A=
+=0A=
+Righto.=0A=
+=0A=
+> Are you comfortable sending a patch to that effect?=0A=
+=0A=
+Sorry=2C no. =0A=
+=0A=
+My email provider can't implement the somewhat strict whitespace=0A=
+rules of kernel patches.=0A=
+=0A=
+Nothing stopping any keen person implementing that patch=2C however =3B->=
+=0A=
+=0A=
+I checked the rest of the treeboot-akebono.c source code file with=0A=
+the static analyser and found nothing wrong. No warnings from=0A=
+gcc -Wextra=2C either=2C so after the patch=2C it looks ok to me.=0A=
+=0A=
+=0A=
+Regards=0A=
+=0A=
+David Binderman=0A=
+=0A=
+ 		 	   		  =
