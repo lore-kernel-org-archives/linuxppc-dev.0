@@ -1,24 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <raghav.dogra@nxp.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0094.outbound.protection.outlook.com [157.56.111.94])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 03E771A0338
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 22:39:14 +1100 (AEDT)
-Message-ID: <1455709153.23614.4.camel@ellerman.id.au>
-Subject: Re: [PATCH v8 1/8] ppc64 (le): prepare for -mprofile-kernel
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Torsten Duwe <duwe@lst.de>
-Cc: Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>, Petr
- Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>, Steven Rostedt
- <rostedt@goodmis.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, live-patching@vger.kernel.org
-Date: Wed, 17 Feb 2016 22:39:13 +1100
-In-Reply-To: <20160217113022.GA9578@lst.de>
-References: <20160210174221.EBBEC692C8@newverein.lst.de>
- <20160210174435.06578692C8@newverein.lst.de>
- <1455706540.4450.2.camel@ellerman.id.au> <20160217113022.GA9578@lst.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 998731A03E6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 22:40:20 +1100 (AEDT)
+From: Raghav Dogra <raghav.dogra@nxp.com>
+To: <linux-mtd@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>
+CC: <computersforpeace@gmail.com>, <oss@buserror.net>,
+ <prabhakar.kushwaha@nxp.com>, <leoli@freescale.com>, Raghav Dogra
+ <raghav.dogra@nxp.com>, Jaiprakash Singh <b44839@freescale.com>, Raghav Dogra
+ <raghav@freescale.com>
+Subject: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
+Date: Wed, 17 Feb 2016 16:54:18 +0530
+Message-ID: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +25,456 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-02-17 at 12:30 +0100, Torsten Duwe wrote:
-> On Wed, Feb 17, 2016 at 09:55:40PM +1100, Michael Ellerman wrote:
-> > 
-> > On a kernel built with the 2 instruction version this will fault when the
-> > function we're looking at is located at the beginning of a page. Because
-> > instruction[-3] goes off the front of the mapping.
-> > 
-> > We can probably fix that. But it's still a bit dicey.
-> 
-> Not necessarily. Now that it's a separate function, it can be nested a bit deeper,
-> so we don't take chances on compiler optimisation:
-> 
-> if (instruction[-2] == PPC_INST_STD_LR) /* where should R0 come from? there must be... */
->   {
->     if (instruction[-3] == PPC_INST_MFLR)
->       return 1;
->   }
-> else if (instruction[-2] == PPC_INST_MFLR)
->     return 1;
-> return 0;
+The new IFC controller version 2.0 has a different memory map page.
+Upto IFC 1.4 PAGE size is 4 KB and from IFC2.0 PAGE size is 64KB.
+This patch segregates the IFC global and runtime registers to appropriate
+PAGE sizes.
 
-Yeah true that should work in practice.
+Signed-off-by: Jaiprakash Singh <b44839@freescale.com>
+Signed-off-by: Raghav Dogra <raghav@freescale.com>
+Acked-by: Li Yang <leoyang.li@nxp.com>
+Signed-off-by: Raghav Dogra <raghav.dogra@nxp.com>
+---
+Changes for v3: not dependent on 
+"drivers/memory: Add deep sleep support for IFC" patch
 
-It's still trivial to construct a module that will oops the loader, but I guess
-that's always been true.
+Changes for v2: rebased to resolve conflicts
+Applicable to git://git.infradead.org/l2-mtd.git
 
-> > I'm wondering if we want to just say we only support the 2 instruction version.
-> > Currently that means GCC 6 only, or a distro compiler with the backport of
-> > e95d0248dace. But we could also ask GCC to backport it to 4.9 and 5.
-> 
-> IMHO that's a too weak reason for a too strong limitation. OTOH getting everyone
-> to use the 2 insn version sounds appealing...
+This patch is dependent on "drivers/memory: Add deep sleep support for IFC"
+https://patchwork.ozlabs.org/patch/582762/
+which is also applicable to git://git.infradead.org/l2-mtd.git
 
-Fair enough. I'm just trying to manage the complexity explosion.
+This patch is the new version of following patch with changed title:
+https://patchwork.ozlabs.org/patch/557391/
 
-I'd certainly advocate that you backport it to your toolchain.
+ drivers/memory/fsl_ifc.c        | 36 ++++++++++-----------
+ drivers/mtd/nand/fsl_ifc_nand.c | 72 ++++++++++++++++++++++-------------------
+ include/linux/fsl_ifc.h         | 45 +++++++++++++++++---------
+ 3 files changed, 87 insertions(+), 66 deletions(-)
 
-> Is e95d0248dace self-sufficient or does it depend on other improvements?
-
-AFAIK it's self sufficient, it just deletes a single line. I'll ask the GCC
-guys tomorrow if they can backport it if you don't beat me to it :)
-
-cheers
+diff --git a/drivers/memory/fsl_ifc.c b/drivers/memory/fsl_ifc.c
+index 2a691da..904b4af 100644
+--- a/drivers/memory/fsl_ifc.c
++++ b/drivers/memory/fsl_ifc.c
+@@ -59,11 +59,11 @@ int fsl_ifc_find(phys_addr_t addr_base)
+ {
+ 	int i = 0;
+ 
+-	if (!fsl_ifc_ctrl_dev || !fsl_ifc_ctrl_dev->regs)
++	if (!fsl_ifc_ctrl_dev || !fsl_ifc_ctrl_dev->gregs)
+ 		return -ENODEV;
+ 
+ 	for (i = 0; i < fsl_ifc_ctrl_dev->banks; i++) {
+-		u32 cspr = ifc_in32(&fsl_ifc_ctrl_dev->regs->cspr_cs[i].cspr);
++		u32 cspr = ifc_in32(&fsl_ifc_ctrl_dev->gregs->cspr_cs[i].cspr);
+ 		if (cspr & CSPR_V && (cspr & CSPR_BA) ==
+ 				convert_ifc_address(addr_base))
+ 			return i;
+@@ -75,7 +75,7 @@ EXPORT_SYMBOL(fsl_ifc_find);
+ 
+ static int fsl_ifc_ctrl_init(struct fsl_ifc_ctrl *ctrl)
+ {
+-	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	struct fsl_ifc_global __iomem *ifc = ctrl->gregs;
+ 
+ 	/*
+ 	 * Clear all the common status and event registers
+@@ -104,7 +104,7 @@ static int fsl_ifc_ctrl_remove(struct platform_device *dev)
+ 	irq_dispose_mapping(ctrl->nand_irq);
+ 	irq_dispose_mapping(ctrl->irq);
+ 
+-	iounmap(ctrl->regs);
++	iounmap(ctrl->gregs);
+ 
+ 	dev_set_drvdata(&dev->dev, NULL);
+ 	kfree(ctrl);
+@@ -122,7 +122,7 @@ static DEFINE_SPINLOCK(nand_irq_lock);
+ 
+ static u32 check_nand_stat(struct fsl_ifc_ctrl *ctrl)
+ {
+-	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	struct fsl_ifc_runtime __iomem *ifc = ctrl->rregs;
+ 	unsigned long flags;
+ 	u32 stat;
+ 
+@@ -157,7 +157,7 @@ static irqreturn_t fsl_ifc_nand_irq(int irqno, void *data)
+ static irqreturn_t fsl_ifc_ctrl_irq(int irqno, void *data)
+ {
+ 	struct fsl_ifc_ctrl *ctrl = data;
+-	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	struct fsl_ifc_global __iomem *ifc = ctrl->gregs;
+ 	u32 err_axiid, err_srcid, status, cs_err, err_addr;
+ 	irqreturn_t ret = IRQ_NONE;
+ 
+@@ -215,6 +215,7 @@ static int fsl_ifc_ctrl_probe(struct platform_device *dev)
+ {
+ 	int ret = 0;
+ 	int version, banks;
++	void __iomem *addr;
+ 
+ 	dev_info(&dev->dev, "Freescale Integrated Flash Controller\n");
+ 
+@@ -225,22 +226,13 @@ static int fsl_ifc_ctrl_probe(struct platform_device *dev)
+ 	dev_set_drvdata(&dev->dev, fsl_ifc_ctrl_dev);
+ 
+ 	/* IOMAP the entire IFC region */
+-	fsl_ifc_ctrl_dev->regs = of_iomap(dev->dev.of_node, 0);
+-	if (!fsl_ifc_ctrl_dev->regs) {
++	fsl_ifc_ctrl_dev->gregs = of_iomap(dev->dev.of_node, 0);
++	if (!fsl_ifc_ctrl_dev->gregs) {
+ 		dev_err(&dev->dev, "failed to get memory region\n");
+ 		ret = -ENODEV;
+ 		goto err;
+ 	}
+ 
+-	version = ifc_in32(&fsl_ifc_ctrl_dev->regs->ifc_rev) &
+-			FSL_IFC_VERSION_MASK;
+-	banks = (version == FSL_IFC_VERSION_1_0_0) ? 4 : 8;
+-	dev_info(&dev->dev, "IFC version %d.%d, %d banks\n",
+-		version >> 24, (version >> 16) & 0xf, banks);
+-
+-	fsl_ifc_ctrl_dev->version = version;
+-	fsl_ifc_ctrl_dev->banks = banks;
+-
+ 	if (of_property_read_bool(dev->dev.of_node, "little-endian")) {
+ 		fsl_ifc_ctrl_dev->little_endian = true;
+ 		dev_dbg(&dev->dev, "IFC REGISTERS are LITTLE endian\n");
+@@ -249,8 +241,9 @@ static int fsl_ifc_ctrl_probe(struct platform_device *dev)
+ 		dev_dbg(&dev->dev, "IFC REGISTERS are BIG endian\n");
+ 	}
+ 
+-	version = ioread32be(&fsl_ifc_ctrl_dev->regs->ifc_rev) &
++	version = ifc_in32(&fsl_ifc_ctrl_dev->gregs->ifc_rev) &
+ 			FSL_IFC_VERSION_MASK;
++
+ 	banks = (version == FSL_IFC_VERSION_1_0_0) ? 4 : 8;
+ 	dev_info(&dev->dev, "IFC version %d.%d, %d banks\n",
+ 		version >> 24, (version >> 16) & 0xf, banks);
+@@ -258,6 +251,13 @@ static int fsl_ifc_ctrl_probe(struct platform_device *dev)
+ 	fsl_ifc_ctrl_dev->version = version;
+ 	fsl_ifc_ctrl_dev->banks = banks;
+ 
++	addr = fsl_ifc_ctrl_dev->gregs;
++	if (version >= FSL_IFC_VERSION_2_0_0)
++		addr += PGOFFSET_64K;
++	else
++		addr += PGOFFSET_4K;
++	fsl_ifc_ctrl_dev->rregs = addr;
++
+ 	/* get the Controller level irq */
+ 	fsl_ifc_ctrl_dev->irq = irq_of_parse_and_map(dev->dev.of_node, 0);
+ 	if (fsl_ifc_ctrl_dev->irq == 0) {
+diff --git a/drivers/mtd/nand/fsl_ifc_nand.c b/drivers/mtd/nand/fsl_ifc_nand.c
+index 43f5a3a..f8a016f 100644
+--- a/drivers/mtd/nand/fsl_ifc_nand.c
++++ b/drivers/mtd/nand/fsl_ifc_nand.c
+@@ -232,7 +232,7 @@ static void set_addr(struct mtd_info *mtd, int column, int page_addr, int oob)
+ 	struct nand_chip *chip = mtd_to_nand(mtd);
+ 	struct fsl_ifc_mtd *priv = nand_get_controller_data(chip);
+ 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
+-	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	struct fsl_ifc_runtime __iomem *ifc = ctrl->rregs;
+ 	int buf_num;
+ 
+ 	ifc_nand_ctrl->page = page_addr;
+@@ -295,7 +295,7 @@ static void fsl_ifc_run_command(struct mtd_info *mtd)
+ 	struct fsl_ifc_mtd *priv = nand_get_controller_data(chip);
+ 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
+ 	struct fsl_ifc_nand_ctrl *nctrl = ifc_nand_ctrl;
+-	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	struct fsl_ifc_runtime __iomem *ifc = ctrl->rregs;
+ 	u32 eccstat[4];
+ 	int i;
+ 
+@@ -371,7 +371,7 @@ static void fsl_ifc_do_read(struct nand_chip *chip,
+ {
+ 	struct fsl_ifc_mtd *priv = nand_get_controller_data(chip);
+ 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
+-	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	struct fsl_ifc_runtime __iomem *ifc = ctrl->rregs;
+ 
+ 	/* Program FIR/IFC_NAND_FCR0 for Small/Large page */
+ 	if (mtd->writesize > 512) {
+@@ -411,7 +411,7 @@ static void fsl_ifc_cmdfunc(struct mtd_info *mtd, unsigned int command,
+ 	struct nand_chip *chip = mtd_to_nand(mtd);
+ 	struct fsl_ifc_mtd *priv = nand_get_controller_data(chip);
+ 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
+-	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	struct fsl_ifc_runtime __iomem *ifc = ctrl->rregs;
+ 
+ 	/* clear the read buffer */
+ 	ifc_nand_ctrl->read_bytes = 0;
+@@ -723,7 +723,7 @@ static int fsl_ifc_wait(struct mtd_info *mtd, struct nand_chip *chip)
+ {
+ 	struct fsl_ifc_mtd *priv = nand_get_controller_data(chip);
+ 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
+-	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	struct fsl_ifc_runtime __iomem *ifc = ctrl->rregs;
+ 	u32 nand_fsr;
+ 
+ 	/* Use READ_STATUS command, but wait for the device to be ready */
+@@ -825,39 +825,42 @@ static int fsl_ifc_chip_init_tail(struct mtd_info *mtd)
+ static void fsl_ifc_sram_init(struct fsl_ifc_mtd *priv)
+ {
+ 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
+-	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	struct fsl_ifc_runtime __iomem *ifc_runtime = ctrl->rregs;
++	struct fsl_ifc_global __iomem *ifc_global = ctrl->gregs;
+ 	uint32_t csor = 0, csor_8k = 0, csor_ext = 0;
+ 	uint32_t cs = priv->bank;
+ 
+ 	/* Save CSOR and CSOR_ext */
+-	csor = ifc_in32(&ifc->csor_cs[cs].csor);
+-	csor_ext = ifc_in32(&ifc->csor_cs[cs].csor_ext);
++	csor = ifc_in32(&ifc_global->csor_cs[cs].csor);
++	csor_ext = ifc_in32(&ifc_global->csor_cs[cs].csor_ext);
+ 
+ 	/* chage PageSize 8K and SpareSize 1K*/
+ 	csor_8k = (csor & ~(CSOR_NAND_PGS_MASK)) | 0x0018C000;
+-	ifc_out32(csor_8k, &ifc->csor_cs[cs].csor);
+-	ifc_out32(0x0000400, &ifc->csor_cs[cs].csor_ext);
++	ifc_out32(csor_8k, &ifc_global->csor_cs[cs].csor);
++	ifc_out32(0x0000400, &ifc_global->csor_cs[cs].csor_ext);
+ 
+ 	/* READID */
+ 	ifc_out32((IFC_FIR_OP_CW0 << IFC_NAND_FIR0_OP0_SHIFT) |
+-		  (IFC_FIR_OP_UA  << IFC_NAND_FIR0_OP1_SHIFT) |
+-		  (IFC_FIR_OP_RB << IFC_NAND_FIR0_OP2_SHIFT),
+-		  &ifc->ifc_nand.nand_fir0);
++		    (IFC_FIR_OP_UA  << IFC_NAND_FIR0_OP1_SHIFT) |
++		    (IFC_FIR_OP_RB << IFC_NAND_FIR0_OP2_SHIFT),
++		    &ifc_runtime->ifc_nand.nand_fir0);
+ 	ifc_out32(NAND_CMD_READID << IFC_NAND_FCR0_CMD0_SHIFT,
+-		  &ifc->ifc_nand.nand_fcr0);
+-	ifc_out32(0x0, &ifc->ifc_nand.row3);
++		    &ifc_runtime->ifc_nand.nand_fcr0);
++	ifc_out32(0x0, &ifc_runtime->ifc_nand.row3);
+ 
+-	ifc_out32(0x0, &ifc->ifc_nand.nand_fbcr);
++	ifc_out32(0x0, &ifc_runtime->ifc_nand.nand_fbcr);
+ 
+ 	/* Program ROW0/COL0 */
+-	ifc_out32(0x0, &ifc->ifc_nand.row0);
+-	ifc_out32(0x0, &ifc->ifc_nand.col0);
++	ifc_out32(0x0, &ifc_runtime->ifc_nand.row0);
++	ifc_out32(0x0, &ifc_runtime->ifc_nand.col0);
+ 
+ 	/* set the chip select for NAND Transaction */
+-	ifc_out32(cs << IFC_NAND_CSEL_SHIFT, &ifc->ifc_nand.nand_csel);
++	ifc_out32(cs << IFC_NAND_CSEL_SHIFT,
++		&ifc_runtime->ifc_nand.nand_csel);
+ 
+ 	/* start read seq */
+-	ifc_out32(IFC_NAND_SEQ_STRT_FIR_STRT, &ifc->ifc_nand.nandseq_strt);
++	ifc_out32(IFC_NAND_SEQ_STRT_FIR_STRT,
++		&ifc_runtime->ifc_nand.nandseq_strt);
+ 
+ 	/* wait for command complete flag or timeout */
+ 	wait_event_timeout(ctrl->nand_wait, ctrl->nand_stat,
+@@ -867,14 +870,15 @@ static void fsl_ifc_sram_init(struct fsl_ifc_mtd *priv)
+ 		printk(KERN_ERR "fsl-ifc: Failed to Initialise SRAM\n");
+ 
+ 	/* Restore CSOR and CSOR_ext */
+-	ifc_out32(csor, &ifc->csor_cs[cs].csor);
+-	ifc_out32(csor_ext, &ifc->csor_cs[cs].csor_ext);
++	ifc_out32(csor, &ifc_global->csor_cs[cs].csor);
++	ifc_out32(csor_ext, &ifc_global->csor_cs[cs].csor_ext);
+ }
+ 
+ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
+ {
+ 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
+-	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	struct fsl_ifc_global __iomem *ifc_global = ctrl->gregs;
++	struct fsl_ifc_runtime __iomem *ifc_runtime = ctrl->rregs;
+ 	struct nand_chip *chip = &priv->chip;
+ 	struct mtd_info *mtd = nand_to_mtd(&priv->chip);
+ 	struct nand_ecclayout *layout;
+@@ -886,7 +890,8 @@ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
+ 
+ 	/* fill in nand_chip structure */
+ 	/* set up function call table */
+-	if ((ifc_in32(&ifc->cspr_cs[priv->bank].cspr)) & CSPR_PORT_SIZE_16)
++	if ((ifc_in32(&ifc_global->cspr_cs[priv->bank].cspr))
++		& CSPR_PORT_SIZE_16)
+ 		chip->read_byte = fsl_ifc_read_byte16;
+ 	else
+ 		chip->read_byte = fsl_ifc_read_byte;
+@@ -900,13 +905,14 @@ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
+ 	chip->bbt_td = &bbt_main_descr;
+ 	chip->bbt_md = &bbt_mirror_descr;
+ 
+-	ifc_out32(0x0, &ifc->ifc_nand.ncfgr);
++	ifc_out32(0x0, &ifc_runtime->ifc_nand.ncfgr);
+ 
+ 	/* set up nand options */
+ 	chip->bbt_options = NAND_BBT_USE_FLASH;
+ 	chip->options = NAND_NO_SUBPAGE_WRITE;
+ 
+-	if (ifc_in32(&ifc->cspr_cs[priv->bank].cspr) & CSPR_PORT_SIZE_16) {
++	if (ifc_in32(&ifc_global->cspr_cs[priv->bank].cspr)
++		& CSPR_PORT_SIZE_16) {
+ 		chip->read_byte = fsl_ifc_read_byte16;
+ 		chip->options |= NAND_BUSWIDTH_16;
+ 	} else {
+@@ -919,7 +925,7 @@ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
+ 	chip->ecc.read_page = fsl_ifc_read_page;
+ 	chip->ecc.write_page = fsl_ifc_write_page;
+ 
+-	csor = ifc_in32(&ifc->csor_cs[priv->bank].csor);
++	csor = ifc_in32(&ifc_global->csor_cs[priv->bank].csor);
+ 
+ 	/* Hardware generates ECC per 512 Bytes */
+ 	chip->ecc.size = 512;
+@@ -1007,10 +1013,10 @@ static int fsl_ifc_chip_remove(struct fsl_ifc_mtd *priv)
+ 	return 0;
+ }
+ 
+-static int match_bank(struct fsl_ifc_regs __iomem *ifc, int bank,
++static int match_bank(struct fsl_ifc_global __iomem *ifc_global, int bank,
+ 		      phys_addr_t addr)
+ {
+-	u32 cspr = ifc_in32(&ifc->cspr_cs[bank].cspr);
++	u32 cspr = ifc_in32(&ifc_global->cspr_cs[bank].cspr);
+ 
+ 	if (!(cspr & CSPR_V))
+ 		return 0;
+@@ -1024,7 +1030,7 @@ static DEFINE_MUTEX(fsl_ifc_nand_mutex);
+ 
+ static int fsl_ifc_nand_probe(struct platform_device *dev)
+ {
+-	struct fsl_ifc_regs __iomem *ifc;
++	struct fsl_ifc_runtime __iomem *ifc;
+ 	struct fsl_ifc_mtd *priv;
+ 	struct resource res;
+ 	static const char *part_probe_types[]
+@@ -1034,9 +1040,9 @@ static int fsl_ifc_nand_probe(struct platform_device *dev)
+ 	struct device_node *node = dev->dev.of_node;
+ 	struct mtd_info *mtd;
+ 
+-	if (!fsl_ifc_ctrl_dev || !fsl_ifc_ctrl_dev->regs)
++	if (!fsl_ifc_ctrl_dev || !fsl_ifc_ctrl_dev->rregs)
+ 		return -ENODEV;
+-	ifc = fsl_ifc_ctrl_dev->regs;
++	ifc = fsl_ifc_ctrl_dev->rregs;
+ 
+ 	/* get, allocate and map the memory resource */
+ 	ret = of_address_to_resource(node, 0, &res);
+@@ -1047,7 +1053,7 @@ static int fsl_ifc_nand_probe(struct platform_device *dev)
+ 
+ 	/* find which chip select it is connected to */
+ 	for (bank = 0; bank < fsl_ifc_ctrl_dev->banks; bank++) {
+-		if (match_bank(ifc, bank, res.start))
++		if (match_bank(fsl_ifc_ctrl_dev->gregs, bank, res.start))
+ 			break;
+ 	}
+ 
+diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
+index 0023088..3f9778c 100644
+--- a/include/linux/fsl_ifc.h
++++ b/include/linux/fsl_ifc.h
+@@ -39,6 +39,10 @@
+ #define FSL_IFC_VERSION_MASK	0x0F0F0000
+ #define FSL_IFC_VERSION_1_0_0	0x01000000
+ #define FSL_IFC_VERSION_1_1_0	0x01010000
++#define FSL_IFC_VERSION_2_0_0	0x02000000
++
++#define PGOFFSET_64K	(64*1024)
++#define PGOFFSET_4K	(4*1024)
+ 
+ /*
+  * CSPR - Chip Select Property Register
+@@ -723,20 +727,26 @@ struct fsl_ifc_nand {
+ 	__be32 nand_evter_en;
+ 	u32 res17[0x2];
+ 	__be32 nand_evter_intr_en;
+-	u32 res18[0x2];
++	__be32 nand_vol_addr_stat;
++	u32 res18;
+ 	__be32 nand_erattr0;
+ 	__be32 nand_erattr1;
+ 	u32 res19[0x10];
+ 	__be32 nand_fsr;
+-	u32 res20;
+-	__be32 nand_eccstat[4];
+-	u32 res21[0x20];
++	u32 res20[0x3];
++	__be32 nand_eccstat[6];
++	u32 res21[0x1c];
+ 	__be32 nanndcr;
+ 	u32 res22[0x2];
+ 	__be32 nand_autoboot_trgr;
+ 	u32 res23;
+ 	__be32 nand_mdr;
+-	u32 res24[0x5C];
++	u32 res24[0x1C];
++	__be32 nand_dll_lowcfg0;
++	__be32 nand_dll_lowcfg1;
++	u32 res25;
++	__be32 nand_dll_lowstat;
++	u32 res26[0x3c];
+ };
+ 
+ /*
+@@ -771,13 +781,12 @@ struct fsl_ifc_gpcm {
+ 	__be32 gpcm_erattr1;
+ 	__be32 gpcm_erattr2;
+ 	__be32 gpcm_stat;
+-	u32 res4[0x1F3];
+ };
+ 
+ /*
+  * IFC Controller Registers
+  */
+-struct fsl_ifc_regs {
++struct fsl_ifc_global {
+ 	__be32 ifc_rev;
+ 	u32 res1[0x2];
+ 	struct {
+@@ -803,21 +812,26 @@ struct fsl_ifc_regs {
+ 	} ftim_cs[FSL_IFC_BANK_COUNT];
+ 	u32 res9[0x30];
+ 	__be32 rb_stat;
+-	u32 res10[0x2];
++	__be32 rb_map;
++	__be32 wb_map;
+ 	__be32 ifc_gcr;
+-	u32 res11[0x2];
++	u32 res10[0x2];
+ 	__be32 cm_evter_stat;
+-	u32 res12[0x2];
++	u32 res11[0x2];
+ 	__be32 cm_evter_en;
+-	u32 res13[0x2];
++	u32 res12[0x2];
+ 	__be32 cm_evter_intr_en;
+-	u32 res14[0x2];
++	u32 res13[0x2];
+ 	__be32 cm_erattr0;
+ 	__be32 cm_erattr1;
+-	u32 res15[0x2];
++	u32 res14[0x2];
+ 	__be32 ifc_ccr;
+ 	__be32 ifc_csr;
+-	u32 res16[0x2EB];
++	__be32 ddr_ccr_low;
++};
++
++
++struct fsl_ifc_runtime {
+ 	struct fsl_ifc_nand ifc_nand;
+ 	struct fsl_ifc_nor ifc_nor;
+ 	struct fsl_ifc_gpcm ifc_gpcm;
+@@ -831,7 +845,8 @@ extern int fsl_ifc_find(phys_addr_t addr_base);
+ struct fsl_ifc_ctrl {
+ 	/* device info */
+ 	struct device			*dev;
+-	struct fsl_ifc_regs __iomem	*regs;
++	struct fsl_ifc_global __iomem	*gregs;
++	struct fsl_ifc_runtime __iomem	*rregs;
+ 	int				irq;
+ 	int				nand_irq;
+ 	spinlock_t			lock;
+-- 
+1.9.1
