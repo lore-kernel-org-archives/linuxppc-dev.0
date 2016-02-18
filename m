@@ -1,20 +1,25 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
+Received: from mail-pf0-x22b.google.com (mail-pf0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c00::22b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 27F1D1A042E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 13:48:10 +1100 (AEDT)
-Received: by mail-pa0-x22c.google.com with SMTP id yy13so21968316pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 18:48:10 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C87B41A00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 13:52:10 +1100 (AEDT)
+Received: by mail-pf0-x22b.google.com with SMTP id c10so23156915pfc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 18:52:10 -0800 (PST)
+Message-ID: <1455763922.3089.10.camel@gmail.com>
+Subject: Re: [PATCH V6 01/35] powerpc/mm: move pte headers to book3s directory
 From: Balbir Singh <bsingharora@gmail.com>
-To: mpe@ellerman.id.au,
-	linuxppc-dev@lists.ozlabs.org
-Cc: paulus@samba.org,
-	Balbir Singh <bsingharora@gmail.com>
-Subject: [RESEND][PATCH] Fix BUG_ON() reporting in real mode on PPC
-Date: Thu, 18 Feb 2016 13:48:01 +1100
-Message-Id: <1455763681-13663-1-git-send-email-bsingharora@gmail.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, Scott Wood
+ <scottwood@freescale.com>, Denis Kirjanov <kda@linux-powerpc.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Thu, 18 Feb 2016 13:52:02 +1100
+In-Reply-To: <1448941020-15168-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1448941020-15168-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1448941020-15168-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changelog:
-    Don't use REGION_ID, breaks on some platforms
-    Don't blindly add PAGE_OFFSET to bugaddr
+On Tue, 2015-12-01 at 09:06 +0530, Aneesh Kumar K.V wrote:
+> Acked-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/{pte-hash32.h => book3s/32/hash.h} | 0
+>  arch/powerpc/include/asm/{pte-hash64.h => book3s/64/hash.h} | 0
+>  arch/powerpc/include/asm/pgtable-ppc32.h                    | 2 +-
+>  arch/powerpc/include/asm/pgtable-ppc64.h                    | 2 +-
+>  4 files changed, 2 insertions(+), 2 deletions(-)
+>  rename arch/powerpc/include/asm/{pte-hash32.h => book3s/32/hash.h} (100%)
+>  rename arch/powerpc/include/asm/{pte-hash64.h => book3s/64/hash.h} (100%)
 
-I ran into this issue while debugging an early boot problem.
-The system hit a BUG_ON() but report bug failed to print the
-line number and file name. The reason being that the system
-was running in real mode and report_bug() searches for
-addresses in the PAGE_OFFSET+ region
+Why not pte-hash.h?
 
-Suggested-by: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/kernel/traps.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index b6becc7..4e5c11d 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1148,6 +1148,7 @@ void __kprobes program_check_exception(struct pt_regs *regs)
- 		goto bail;
- 	}
- 	if (reason & REASON_TRAP) {
-+		unsigned long bugaddr;
- 		/* Debugger is first in line to stop recursive faults in
- 		 * rcu_lock, notify_die, or atomic_notifier_call_chain */
- 		if (debugger_bpt(regs))
-@@ -1158,8 +1159,15 @@ void __kprobes program_check_exception(struct pt_regs *regs)
- 				== NOTIFY_STOP)
- 			goto bail;
- 
-+		bugaddr = regs->nip;
-+		/*
-+		 * Fixup bugaddr for BUG_ON() in real mode
-+		 */
-+		if (!is_kernel_addr(bugaddr) && !(regs->msr & MSR_IR))
-+			bugaddr += PAGE_OFFSET;
-+
- 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
--		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
-+		    report_bug(bugaddr, regs) == BUG_TRAP_TYPE_WARN) {
- 			regs->nip += 4;
- 			goto bail;
- 		}
--- 
-2.5.0
+Balbir Singh.
