@@ -1,34 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 164F81A0542
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 03:52:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CBA871A0359
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 03:52:12 +1100 (AEDT)
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 18 Feb 2016 09:52:08 -0700
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 0986B3E40047
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 09:52:05 -0700 (MST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1IGq5wj35192914
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 16:52:05 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1IGq4WT029067
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 11:52:05 -0500
+ Thu, 18 Feb 2016 09:52:10 -0700
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 9AFD419D8045
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 09:40:06 -0700 (MST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1IGq8wo31588456
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 16:52:08 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1IGq7mE029760
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 11:52:08 -0500
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V3 22/30] powerpc/mm: Hash linux abstraction for functions in
- pgtable-hash.c
-Date: Thu, 18 Feb 2016 22:20:46 +0530
-Message-Id: <1455814254-10226-23-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V3 24/30] powerpc/mm: Move hash related mmu-*.h headers to
+ book3s/
+Date: Thu, 18 Feb 2016 22:20:48 +0530
+Message-Id: <1455814254-10226-25-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1455814254-10226-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1455814254-10226-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,334 +40,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We will later make the generic functions do conditial radix or hash
-page table access. This patch doesn't do hugepage api update yet.
-
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/32/pgtable.h | 13 ++++++++
- arch/powerpc/include/asm/book3s/64/hash.h    | 12 ++++++-
- arch/powerpc/include/asm/book3s/64/pgtable.h | 47 +++++++++++++++++++++++++++-
- arch/powerpc/include/asm/book3s/pgtable.h    |  4 ---
- arch/powerpc/include/asm/nohash/64/pgtable.h |  4 ++-
- arch/powerpc/include/asm/nohash/pgtable.h    | 11 +++++++
- arch/powerpc/include/asm/pgtable.h           | 13 --------
- arch/powerpc/mm/init_64.c                    |  3 --
- arch/powerpc/mm/pgtable-hash64.c             | 34 ++++++++++----------
- 9 files changed, 101 insertions(+), 40 deletions(-)
+ arch/powerpc/include/asm/{mmu-hash32.h => book3s/32/mmu-hash.h} | 0
+ arch/powerpc/include/asm/{mmu-hash64.h => book3s/64/mmu-hash.h} | 0
+ arch/powerpc/include/asm/mmu.h                                  | 4 ++--
+ arch/powerpc/kernel/idle_power7.S                               | 2 +-
+ arch/powerpc/kvm/book3s_32_mmu_host.c                           | 2 +-
+ arch/powerpc/kvm/book3s_64_mmu.c                                | 2 +-
+ arch/powerpc/kvm/book3s_64_mmu_host.c                           | 2 +-
+ arch/powerpc/kvm/book3s_64_mmu_hv.c                             | 2 +-
+ arch/powerpc/kvm/book3s_64_vio.c                                | 2 +-
+ arch/powerpc/kvm/book3s_64_vio_hv.c                             | 2 +-
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c                             | 2 +-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S                         | 2 +-
+ 12 files changed, 11 insertions(+), 11 deletions(-)
+ rename arch/powerpc/include/asm/{mmu-hash32.h => book3s/32/mmu-hash.h} (100%)
+ rename arch/powerpc/include/asm/{mmu-hash64.h => book3s/64/mmu-hash.h} (100%)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index 38b33dcfcc9d..539609c8a77b 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -102,6 +102,9 @@ extern unsigned long ioremap_bot;
- #define pte_clear(mm, addr, ptep) \
- 	do { pte_update(ptep, ~_PAGE_HASHPTE, 0); } while (0)
+diff --git a/arch/powerpc/include/asm/mmu-hash32.h b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
+similarity index 100%
+rename from arch/powerpc/include/asm/mmu-hash32.h
+rename to arch/powerpc/include/asm/book3s/32/mmu-hash.h
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+similarity index 100%
+rename from arch/powerpc/include/asm/mmu-hash64.h
+rename to arch/powerpc/include/asm/book3s/64/mmu-hash.h
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 54d46504733d..8ca1c983bf6c 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -183,10 +183,10 @@ static inline void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
  
-+extern void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
-+		       pte_t pte);
-+
- #define pmd_none(pmd)		(!pmd_val(pmd))
- #define	pmd_bad(pmd)		(pmd_val(pmd) & _PMD_BAD)
- #define	pmd_present(pmd)	(pmd_val(pmd) & _PMD_PRESENT_MASK)
-@@ -477,6 +480,16 @@ static inline pgprot_t pgprot_writecombine(pgprot_t prot)
- 	return pgprot_noncached_wc(prot);
- }
+ #if defined(CONFIG_PPC_STD_MMU_64)
+ /* 64-bit classic hash table MMU */
+-#  include <asm/mmu-hash64.h>
++#include <asm/book3s/64/mmu-hash.h>
+ #elif defined(CONFIG_PPC_STD_MMU_32)
+ /* 32-bit classic hash table MMU */
+-#  include <asm/mmu-hash32.h>
++#include <asm/book3s/32/mmu-hash.h>
+ #elif defined(CONFIG_40x)
+ /* 40x-style software loaded TLB */
+ #  include <asm/mmu-40x.h>
+diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+index cf4fb5429cf1..470ceebd2d23 100644
+--- a/arch/powerpc/kernel/idle_power7.S
++++ b/arch/powerpc/kernel/idle_power7.S
+@@ -19,7 +19,7 @@
+ #include <asm/kvm_book3s_asm.h>
+ #include <asm/opal.h>
+ #include <asm/cpuidle.h>
+-#include <asm/mmu-hash64.h>
++#include <asm/book3s/64/mmu-hash.h>
  
-+/*
-+ * This gets called at the end of handling a page fault, when
-+ * the kernel has put a new PTE into the page table for the process.
-+ * We use it to ensure coherency between the i-cache and d-cache
-+ * for the page which has just been mapped in.
-+ * On machines which use an MMU hash table, we use this to put a
-+ * corresponding HPTE into the hash table ahead of time, instead of
-+ * waiting for the inevitable extra hash-table miss exception.
-+ */
-+extern void update_mmu_cache(struct vm_area_struct *, unsigned long, pte_t *);
- #endif /* !__ASSEMBLY__ */
+ #undef DEBUG
  
- #endif /*  _ASM_POWERPC_BOOK3S_32_PGTABLE_H */
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index d80c4c7fa6c1..551daeee6870 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -589,7 +589,17 @@ static inline void hpte_do_hugepage_flush(struct mm_struct *mm,
- }
- #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
+index 55c4d51ea3e2..999106991a76 100644
+--- a/arch/powerpc/kvm/book3s_32_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
+@@ -22,7 +22,7 @@
  
--extern int map_kernel_page(unsigned long ea, unsigned long pa, int flags);
-+extern int hlmap_kernel_page(unsigned long ea, unsigned long pa, int flags);
-+extern void hlpgtable_cache_init(void);
-+extern void __meminit hlvmemmap_create_mapping(unsigned long start,
-+					       unsigned long page_size,
-+					       unsigned long phys);
-+extern void hlvmemmap_remove_mapping(unsigned long start,
-+				     unsigned long page_size);
-+extern void set_hlpte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
-+			 pte_t pte);
-+extern void hlupdate_mmu_cache(struct vm_area_struct *vma, unsigned long address,
-+			       pte_t *ptep);
- #endif /* !__ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_BOOK3S_64_HASH_H */
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index cf400803e61c..005f0e265f37 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -320,6 +320,12 @@ static inline int pte_present(pte_t pte)
- 	return hlpte_present(pte);
- }
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+-#include <asm/mmu-hash32.h>
++#include <asm/book3s/32/mmu-hash.h>
+ #include <asm/machdep.h>
+ #include <asm/mmu_context.h>
+ #include <asm/hw_irq.h>
+diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
+index 9bf7031a67ff..b9131aa1aedf 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu.c
++++ b/arch/powerpc/kvm/book3s_64_mmu.c
+@@ -26,7 +26,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+-#include <asm/mmu-hash64.h>
++#include <asm/book3s/64/mmu-hash.h>
  
-+static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
-+			      pte_t *ptep, pte_t pte)
-+{
-+	return set_hlpte_at(mm, addr, ptep, pte);
-+}
-+
- static inline void pmd_set(pmd_t *pmdp, unsigned long val)
- {
- 	*pmdp = __pmd(val);
-@@ -462,7 +468,46 @@ extern struct page *pgd_page(pgd_t pgd);
- 	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
+ /* #define DEBUG_MMU */
  
- void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
--void pgtable_cache_init(void);
-+static inline void pgtable_cache_init(void)
-+{
-+	return hlpgtable_cache_init();
-+}
-+
-+static inline int map_kernel_page(unsigned long ea, unsigned long pa,
-+				  unsigned long flags)
-+{
-+	return hlmap_kernel_page(ea, pa, flags);
-+}
-+
-+static inline void __meminit vmemmap_create_mapping(unsigned long start,
-+						    unsigned long page_size,
-+						    unsigned long phys)
-+{
-+	return hlvmemmap_create_mapping(start, page_size, phys);
-+}
-+
-+#ifdef CONFIG_MEMORY_HOTPLUG
-+static inline void vmemmap_remove_mapping(unsigned long start,
-+					  unsigned long page_size)
-+{
-+	return hlvmemmap_remove_mapping(start, page_size);
-+}
-+#endif
-+
-+/*
-+ * This gets called at the end of handling a page fault, when
-+ * the kernel has put a new PTE into the page table for the process.
-+ * We use it to ensure coherency between the i-cache and d-cache
-+ * for the page which has just been mapped in.
-+ * On machines which use an MMU hash table, we use this to put a
-+ * corresponding HPTE into the hash table ahead of time, instead of
-+ * waiting for the inevitable extra hash-table miss exception.
-+ */
-+static inline void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
-+				    pte_t *ptep)
-+{
-+	return hlupdate_mmu_cache(vma, address, ptep);
-+}
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
+index 30fc2d83dffa..d7959b2a8b32 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
+@@ -23,7 +23,7 @@
  
- struct page *realmode_pfn_to_page(unsigned long pfn);
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+-#include <asm/mmu-hash64.h>
++#include <asm/book3s/64/mmu-hash.h>
+ #include <asm/machdep.h>
+ #include <asm/mmu_context.h>
+ #include <asm/hw_irq.h>
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index fb37290a57b4..c7b78d8336b2 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -32,7 +32,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+-#include <asm/mmu-hash64.h>
++#include <asm/book3s/64/mmu-hash.h>
+ #include <asm/hvcall.h>
+ #include <asm/synch.h>
+ #include <asm/ppc-opcode.h>
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index 54cf9bc94dad..9c3b76bb69d9 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -30,7 +30,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+-#include <asm/mmu-hash64.h>
++#include <asm/book3s/64/mmu-hash.h>
+ #include <asm/hvcall.h>
+ #include <asm/synch.h>
+ #include <asm/ppc-opcode.h>
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index 89e96b3e0039..039028d3ccb5 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -29,7 +29,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+-#include <asm/mmu-hash64.h>
++#include <asm/book3s/64/mmu-hash.h>
+ #include <asm/hvcall.h>
+ #include <asm/synch.h>
+ #include <asm/ppc-opcode.h>
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 91700518bbf3..4cb8db05f3e5 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -17,7 +17,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+-#include <asm/mmu-hash64.h>
++#include <asm/book3s/64/mmu-hash.h>
+ #include <asm/hvcall.h>
+ #include <asm/synch.h>
+ #include <asm/ppc-opcode.h>
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 6ee26de9a1de..c613fee0b9f7 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -27,7 +27,7 @@
+ #include <asm/asm-offsets.h>
+ #include <asm/exception-64s.h>
+ #include <asm/kvm_book3s_asm.h>
+-#include <asm/mmu-hash64.h>
++#include <asm/book3s/64/mmu-hash.h>
+ #include <asm/tm.h>
  
-diff --git a/arch/powerpc/include/asm/book3s/pgtable.h b/arch/powerpc/include/asm/book3s/pgtable.h
-index 8b0f4a29259a..620f8b6e1ba2 100644
---- a/arch/powerpc/include/asm/book3s/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/pgtable.h
-@@ -12,10 +12,6 @@
- /* Insert a PTE, top-level function is out of line. It uses an inline
-  * low level function in the respective pgtable-* files
-  */
--extern void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
--		       pte_t pte);
--
--
- #define __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
- extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
- 				 pte_t *ptep, pte_t entry, int dirty);
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index a68e809d7739..7010d95cbedf 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -360,7 +360,9 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
- void pgtable_cache_init(void);
- extern int map_kernel_page(unsigned long ea, unsigned long pa, int flags);
--
-+extern void __meminit vmemmap_create_mapping(unsigned long start,
-+					     unsigned long page_size,
-+					     unsigned long phys);
- #endif /* __ASSEMBLY__ */
- 
- #endif /* _ASM_POWERPC_NOHASH_64_PGTABLE_H */
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index 1263c22d60d8..d86467288fc7 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -248,5 +248,16 @@ static inline int pgd_huge(pgd_t pgd)
- #define is_hugepd(hpd)		(hugepd_ok(hpd))
- #endif
- 
-+/*
-+ * This gets called at the end of handling a page fault, when
-+ * the kernel has put a new PTE into the page table for the process.
-+ * We use it to ensure coherency between the i-cache and d-cache
-+ * for the page which has just been mapped in.
-+ * On machines which use an MMU hash table, we use this to put a
-+ * corresponding HPTE into the hash table ahead of time, instead of
-+ * waiting for the inevitable extra hash-table miss exception.
-+ */
-+extern void update_mmu_cache(struct vm_area_struct *, unsigned long, pte_t *);
-+
- #endif /* __ASSEMBLY__ */
- #endif
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index ac9fb114e25d..dcd2b0d85d48 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -47,19 +47,6 @@ extern void paging_init(void);
- #define kern_addr_valid(addr)	(1)
- 
- #include <asm-generic/pgtable.h>
--
--
--/*
-- * This gets called at the end of handling a page fault, when
-- * the kernel has put a new PTE into the page table for the process.
-- * We use it to ensure coherency between the i-cache and d-cache
-- * for the page which has just been mapped in.
-- * On machines which use an MMU hash table, we use this to put a
-- * corresponding HPTE into the hash table ahead of time, instead of
-- * waiting for the inevitable extra hash-table miss exception.
-- */
--extern void update_mmu_cache(struct vm_area_struct *, unsigned long, pte_t *);
--
- extern int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
- 		       unsigned long end, int write,
- 		       struct page **pages, int *nr);
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 05b025a0efe6..b3dd5ad68e53 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -194,9 +194,6 @@ static __meminit void vmemmap_list_populate(unsigned long phys,
- 	vmemmap_list = vmem_back;
- }
- 
--extern void __meminit vmemmap_create_mapping(unsigned long start,
--					     unsigned long page_size,
--					     unsigned long phys);
- int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
- {
- 	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
-diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
-index c11e19f68b6d..9302dc19112c 100644
---- a/arch/powerpc/mm/pgtable-hash64.c
-+++ b/arch/powerpc/mm/pgtable-hash64.c
-@@ -52,7 +52,7 @@ static void pmd_ctor(void *addr)
- }
- 
- 
--void pgtable_cache_init(void)
-+void hlpgtable_cache_init(void)
- {
- 	pgtable_cache_add(H_PGD_INDEX_SIZE, pgd_ctor);
- 	pgtable_cache_add(H_PMD_CACHE_INDEX, pmd_ctor);
-@@ -75,9 +75,9 @@ void pgtable_cache_init(void)
-  * On hash-based CPUs, the vmemmap is bolted in the hash table.
-  *
-  */
--void __meminit vmemmap_create_mapping(unsigned long start,
--				      unsigned long page_size,
--				      unsigned long phys)
-+void __meminit hlvmemmap_create_mapping(unsigned long start,
-+					unsigned long page_size,
-+					unsigned long phys)
- {
- 	int  mapped = htab_bolt_mapping(start, start + page_size, phys,
- 					pgprot_val(H_PAGE_KERNEL),
-@@ -87,8 +87,8 @@ void __meminit vmemmap_create_mapping(unsigned long start,
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
--void vmemmap_remove_mapping(unsigned long start,
--			    unsigned long page_size)
-+void hlvmemmap_remove_mapping(unsigned long start,
-+			      unsigned long page_size)
- {
- 	int mapped = htab_remove_mapping(start, start + page_size,
- 					 mmu_vmemmap_psize,
-@@ -98,8 +98,8 @@ void vmemmap_remove_mapping(unsigned long start,
- #endif
- #endif /* CONFIG_SPARSEMEM_VMEMMAP */
- 
--void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
--		      pte_t *ptep)
-+void hlupdate_mmu_cache(struct vm_area_struct *vma, unsigned long address,
-+			pte_t *ptep)
- {
- 	/*
- 	 * We don't need to worry about _PAGE_PRESENT here because we are
-@@ -133,7 +133,7 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
-  * map_kernel_page adds an entry to the ioremap page table
-  * and adds an entry to the HPT, possibly bolting it
-  */
--int map_kernel_page(unsigned long ea, unsigned long pa, int flags)
-+int hlmap_kernel_page(unsigned long ea, unsigned long pa, int flags)
- {
- 	pgd_t *pgdp;
- 	pud_t *pudp;
-@@ -178,7 +178,7 @@ int map_kernel_page(unsigned long ea, unsigned long pa, int flags)
-  * and we avoid _PAGE_SPECIAL and _PAGE_NO_CACHE. We also only do that
-  * on userspace PTEs
-  */
--static inline int pte_looks_normal(pte_t pte)
-+static inline int hlpte_looks_normal(pte_t pte)
- {
- 	return (pte_val(pte) & (H_PAGE_PRESENT | H_PAGE_SPECIAL |
- 					H_PAGE_NO_CACHE | H_PAGE_USER)) ==
-@@ -203,11 +203,11 @@ static struct page *maybe_pte_to_page(pte_t pte)
-  * flush the cache for valid PTEs in set_pte. Embedded CPU without HW exec
-  * support falls into the same category.
-  */
--static pte_t set_pte_filter(pte_t pte)
-+static pte_t set_hlpte_filter(pte_t pte)
- {
- 	pte = __pte(pte_val(pte) & ~H_PAGE_HPTEFLAGS);
--	if (pte_looks_normal(pte) && !(cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
--				       cpu_has_feature(CPU_FTR_NOEXECUTE))) {
-+	if (hlpte_looks_normal(pte) && !(cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
-+					 cpu_has_feature(CPU_FTR_NOEXECUTE))) {
- 		struct page *pg = maybe_pte_to_page(pte);
- 
- 		if (!pg)
-@@ -223,8 +223,8 @@ static pte_t set_pte_filter(pte_t pte)
- /*
-  * set_pte stores a linux PTE into the linux page table.
-  */
--void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
--		pte_t pte)
-+void set_hlpte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
-+		  pte_t pte)
- {
- 	/*
- 	 * When handling numa faults, we already have the pte marked
-@@ -243,10 +243,10 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
- 	 * this context might not have been activated yet when this
- 	 * is called.
- 	 */
--	pte = set_pte_filter(pte);
-+	pte = set_hlpte_filter(pte);
- 
- 	/* Perform the setting of the PTE */
--	__set_pte_at(mm, addr, ptep, pte, 0);
-+	__set_hlpte_at(mm, addr, ptep, pte, 0);
- }
- 
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ #define VCPU_GPRS_TM(reg) (((reg) * ULONG_SIZE) + VCPU_GPR_TM)
 -- 
 2.5.0
