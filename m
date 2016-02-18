@@ -1,25 +1,21 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-yw0-x232.google.com (mail-yw0-x232.google.com
- [IPv6:2607:f8b0:4002:c05::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 652031A03EF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 11:26:03 +1100 (AEDT)
-Received: by mail-yw0-x232.google.com with SMTP id g127so27758870ywf.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 16:26:03 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <8760xnz7sn.fsf@linux.vnet.ibm.com>
-References: <1455684191.3089.3.camel@gmail.com>
- <20160217045606.GA19276@oak.ozlabs.ibm.com>
- <1455693365.3089.8.camel@gmail.com>
- <8760xnz7sn.fsf@linux.vnet.ibm.com>
-Date: Thu, 18 Feb 2016 11:25:59 +1100
-Message-ID: <CAKTCnzmYSZ+0+kkPECMPPAYB10OAD-=fsjOeGM8jB4ENYP7-dA@mail.gmail.com>
-Subject: Re: Fix BUG_ON() reporting in real mode on powerpc
-From: Balbir Singh <bsingharora@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 916DE1A04E1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 11:28:01 +1100 (AEDT)
+Message-ID: <1455755270.3653.93.camel@kernel.crashing.org>
+Subject: Re: [PATCH kernel v2] powerpc/ioda: Set "read" permission when
+ "write" is set
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ stable@vger.kernel.org.#.4.2+
+Date: Thu, 18 Feb 2016 11:27:50 +1100
+In-Reply-To: <1455693991-31405-1-git-send-email-aik@ozlabs.ru>
+References: <1455693991-31405-1-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,29 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> Changelog:
->>      Don't add PAGE_OFFSET blindly, check if REGION_ID is 0
->>
->> I ran into this issue while debugging an early boot problem.
->> The system hit a BUG_ON() but report bug failed to print the
->> line number and file name. The reason being that the system
->> was running in real mode and report_bug() searches for
->> addresses in the PAGE_OFFSET+ region
->>
->> Suggested-by: Paul Mackerras <paulus@samba.org>
->> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+On Wed, 2016-02-17 at 18:26 +1100, Alexey Kardashevskiy wrote:
+> Quite often drivers set only "write" permission assuming that this
+> includes "read" permission as well and this works on plenty
+> platforms.
+> However IODA2 is strict about this and produces an EEH when "read"
+> permission is not and reading happens.
+> 
+> This adds a workaround in IODA code to always add the "read" bit when
+> the "write" bit is set.
+> 
+> This fixes breakage introduced in
+> 10b35b2b74 powerpc/powernv: Do not set "read" flag if
+> direction==DMA_NONE
+> 
+> Cc: stable@vger.kernel.org # 4.2+
 
-<snip>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-> Can we add some comments around this. When i looked at this first, i was
-> wondering how nip can be in user region. But then realized that what we
-> are checking here is kernel address used in real mode. The use of
-> REGION_ID eventhough simpler is confusing. Hence adding the comment with
-> details Paul mentioned in email will help.
->
->
-I've tried and covered it in the changelog, I thought a code comment
-would make sense for the very non  obvious cases and not repeat what
-the code does as comment
-
-Balbir Singh.
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Tested-by: Douglas Miller <dougmill@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/powernv/pci.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci.c
+> b/arch/powerpc/platforms/powernv/pci.c
+> index 2f55c86..6a97ba4 100644
+> --- a/arch/powerpc/platforms/powernv/pci.c
+> +++ b/arch/powerpc/platforms/powernv/pci.c
+> @@ -599,6 +599,9 @@ int pnv_tce_build(struct iommu_table *tbl, long
+> index, long npages,
+>  	u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
+>  	long i;
+>  
+> +	if (proto_tce & TCE_PCI_WRITE)
+> +		proto_tce |= TCE_PCI_READ;
+> +
+>  	for (i = 0; i < npages; i++) {
+>  		unsigned long newtce = proto_tce |
+>  			((rpn + i) << tbl->it_page_shift);
+> @@ -620,6 +623,9 @@ int pnv_tce_xchg(struct iommu_table *tbl, long
+> index,
+>  
+>  	BUG_ON(*hpa & ~IOMMU_PAGE_MASK(tbl));
+>  
+> +	if (newtce & TCE_PCI_WRITE)
+> +		newtce |= TCE_PCI_READ;
+> +
+>  	oldtce = xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce));
+>  	*hpa = be64_to_cpu(oldtce) & ~(TCE_PCI_READ |
+> TCE_PCI_WRITE);
+>  	*direction = iommu_tce_direction(oldtce);
