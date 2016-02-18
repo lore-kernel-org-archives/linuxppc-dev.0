@@ -1,33 +1,46 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+Return-Path: <seroyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 020D81A04EF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 03:45:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FD991A0542
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 03:45:36 +1100 (AEDT)
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 18 Feb 2016 11:45:04 -0500
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id E102AC9003E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 11:44:56 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1IGiwrA33292540
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 16:44:59 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1IGivuC030859
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 11:44:58 -0500
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/mm/hash: Clear the invalid slot information correctly
-Date: Thu, 18 Feb 2016 22:14:44 +0530
-Message-Id: <1455813884-8283-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <seroyer@linux.vnet.ibm.com>;
+ Thu, 18 Feb 2016 09:45:34 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 13E7619D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 09:33:30 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1IGjWOk30015680
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 09:45:32 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1IGjTiv023714
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 09:45:32 -0700
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Date: Thu, 18 Feb 2016 10:45:24 -0600
+From: Steven Royer <seroyer@linux.vnet.ibm.com>
+To: Stewart Smith <stewart@linux.vnet.ibm.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann
+ <arnd@arndb.de>, linux-doc@vger.kernel.org, Jonathan Corbet
+ <corbet@lwn.net>, linux-kernel@vger.kernel.org, Steven Royer
+ <seroyer@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] add POWER Virtual Management Channel driver
+In-Reply-To: <87fuwqio0r.fsf@linux.vnet.ibm.com>
+References: <1455655393-3137-1-git-send-email-seroyer@linux.vnet.ibm.com>
+ <20160216221822.GA32255@kroah.com>
+ <e2c42d22f68dbb943363bfb6e06c8f79@imap.linux.ibm.com>
+ <20160217223141.GA16341@kroah.com>
+ <0523320d3efd5c9dcac10a85aecd1fe1@imap.linux.ibm.com>
+ <87fuwqio0r.fsf@linux.vnet.ibm.com>
+Message-ID: <2247b06f84e5bf367fa5e2174245bd9f@imap.linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,95 +50,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can get a hash pte fault with 4k base page size and find the pte
-already inserted with 64K base page size. In that case we need to clear
-the existing slot information from the old pte. Fix this correctly
+On 2016-02-17 23:30, Stewart Smith wrote:
+> Steven Royer <seroyer@linux.vnet.ibm.com> writes:
+>> On 2016-02-17 16:31, Greg Kroah-Hartman wrote:
+>>> On Wed, Feb 17, 2016 at 03:18:26PM -0600, Steven Royer wrote:
+>>>> On 2016-02-16 16:18, Greg Kroah-Hartman wrote:
+>>>> >On Tue, Feb 16, 2016 at 02:43:13PM -0600, Steven Royer wrote:
+>>>> >>From: Steven Royer <seroyer@us.ibm.com>
+>>>> >>
+>>>> >>The ibmvmc driver is a device driver for the POWER Virtual Management
+>>>> >>Channel virtual adapter on the PowerVM platform.  It is used to
+>>>> >>communicate with the hypervisor for virtualization management.  It
+>>>> >>provides both request/response and asynchronous message support through
+>>>> >>the /dev/ibmvmc node.
+>>>> >
+>>>> >What is the protocol for that device node?
+>>>> The protocol is not currently published.  I am pushing on getting it
+>>>> published, but that process will take time.  If you have a PowerVM
+>>>> system
+>>>> with NovaLink, it would not be hard to reverse engineer it...  If 
+>>>> you
+>>>> don't
+>>>> have a PowerVM system, then this driver isn't interesting anyway...
+> 
+> Stephen - if you need some help pushing for it to be published, let me
+> know, there's a few internal things I could help push.
+Thanks
 
-With THP, we also clear the slot information with respect to all
-the 64K hash pte mapping that 16MB page. They are all invalid
-now. This make sure we don't find the slot valid when we fault with
-4k base page size. Finding the slot valid should not result in any wrong
-behavior because we do check again in hash page table for the validity.
-But we can avoid that check completely.
+> 
+>>> You can't just expect us to review this code without at least having 
+>>> a
+>>> clue as to how it is supposed to work?
+>> There are two layers to the protocol.  The first layer is the only 
+>> layer
+>> that the driver actually cares about.  The second layer is just a
+>> payload that is between the application and the hypervisor and can
+>> change independently from the kernel/driver (this is what is 
+>> transported
+>> over the /dev/ibmvmc node).  The first layer technically is published 
+>> in
+>> the PAPR (appendix G), but it is not trivial for most people to access
+> 
+> https://members.openpowerfoundation.org/document/dl/469 is LoPAPR which
+> has been published through OpenPower Foundation and anyone can access,
+> although Appendix G there is on EEH. Although VMC (Virtual Management
+> Channel) is mentioned in that document the details aren't there... so
+> it's possible that this is only in some other PAPR version :/
+> and... looking in internal places, it is. *sigh*
+> 
+> With my OpenPower Foundation hat on, I'll say that it's a
+> work-in-progress getting all this documentation in order.
+> 
+> The questions of if it's a sensible hypervisor to partition interface
+> and if it's a sensible userspace API are open for debate :)
+> 
+> Would we implement this way of communicating between a KVM guest and 
+> the
+> host linux system? If not, then it's probably not a generally good
+> idea. That being said, it seems to be what already exists in PowerVM
 
-Fixes: a43c0eb8364c022 ("powerpc/mm: Convert 4k hash insert to C")
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/hash64_4k.c       |  2 +-
- arch/powerpc/mm/hash64_64k.c      | 12 +++++++++---
- arch/powerpc/mm/hugepage-hash64.c |  7 ++++++-
- 3 files changed, 16 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
-index e7c04542ba62..e3e76b929f33 100644
---- a/arch/powerpc/mm/hash64_4k.c
-+++ b/arch/powerpc/mm/hash64_4k.c
-@@ -106,7 +106,7 @@ repeat:
- 			}
- 		}
- 		/*
--		 * Hypervisor failure. Restore old pmd and return -1
-+		 * Hypervisor failure. Restore old pte and return -1
- 		 * similar to __hash_page_*
- 		 */
- 		if (unlikely(slot == -2)) {
-diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
-index 0762c1e08c88..b3895720edb0 100644
---- a/arch/powerpc/mm/hash64_64k.c
-+++ b/arch/powerpc/mm/hash64_64k.c
-@@ -111,7 +111,13 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	 */
- 	if (!(old_pte & _PAGE_COMBO)) {
- 		flush_hash_page(vpn, rpte, MMU_PAGE_64K, ssize, flags);
--		old_pte &= ~_PAGE_HASHPTE | _PAGE_F_GIX | _PAGE_F_SECOND;
-+		/*
-+		 * clear the old slot details from the old and new pte.
-+		 * On hash insert failure we use old pte value and we don't
-+		 * want slot information there if we have a insert failure.
-+		 */
-+		old_pte &= ~(_PAGE_HASHPTE | _PAGE_F_GIX | _PAGE_F_SECOND);
-+		new_pte &= ~(_PAGE_HASHPTE | _PAGE_F_GIX | _PAGE_F_SECOND);
- 		goto htab_insert_hpte;
- 	}
- 	/*
-@@ -182,7 +188,7 @@ repeat:
- 		}
- 	}
- 	/*
--	 * Hypervisor failure. Restore old pmd and return -1
-+	 * Hypervisor failure. Restore old pte and return -1
- 	 * similar to __hash_page_*
- 	 */
- 	if (unlikely(slot == -2)) {
-@@ -305,7 +311,7 @@ repeat:
- 			}
- 		}
- 		/*
--		 * Hypervisor failure. Restore old pmd and return -1
-+		 * Hypervisor failure. Restore old pte and return -1
- 		 * similar to __hash_page_*
- 		 */
- 		if (unlikely(slot == -2)) {
-diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
-index 49b152b0f926..8424f46c2bf7 100644
---- a/arch/powerpc/mm/hugepage-hash64.c
-+++ b/arch/powerpc/mm/hugepage-hash64.c
-@@ -78,9 +78,14 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
- 		 * base page size. This is because demote_segment won't flush
- 		 * hash page table entries.
- 		 */
--		if ((old_pmd & _PAGE_HASHPTE) && !(old_pmd & _PAGE_COMBO))
-+		if ((old_pmd & _PAGE_HASHPTE) && !(old_pmd & _PAGE_COMBO)) {
- 			flush_hash_hugepage(vsid, ea, pmdp, MMU_PAGE_64K,
- 					    ssize, flags);
-+			/*
-+			 * clear the old slot information 
-+			 */
-+			memset(hpte_slot_array, 0, PTE_FRAG_SIZE);
-+		}
- 	}
- 
- 	valid = hpte_valid(hpte_slot_array, index);
--- 
-2.5.0
+There is no "host" OS on PowerVM.  The ibmvmc device makes it possible 
+to emulate that behavior by picking one of the LPARs to be privileged.  
+So this isn't really similar to a KVM guest talking to the KVM host.  
+It's more like this Linux OS becomes the host.  ibmvmc is the pipe that 
+enables virtualization management software (i.e., OpenStack via 
+NovaLink) to manage PowerVM: create/destroy/modify guests, etc...  The 
+why's and how's of NovaLink are described simply here: 
+https://www.ibm.com/developerworks/community/wikis/home?lang=en#!/wiki/Power%20Systems/page/Introducing%20PowerVM%20NovaLink
