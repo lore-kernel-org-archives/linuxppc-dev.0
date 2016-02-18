@@ -1,34 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF6351A0359
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 03:52:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 048411A0350
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 03:52:09 +1100 (AEDT)
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 18 Feb 2016 09:52:05 -0700
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 3F9391FF0021
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 09:40:10 -0700 (MST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1IGq0Dw33489002
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 16:52:00 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1IGpxPa021564
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 11:52:00 -0500
+ Thu, 18 Feb 2016 09:52:08 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 4423B19D8048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 09:40:04 -0700 (MST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1IGq6PV22282378
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 09:52:06 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1IGq5cx029701
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 09:52:06 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V3 20/30] powerpc/mm: Create a new headers for tlbflush for
- hash64
-Date: Thu, 18 Feb 2016 22:20:44 +0530
-Message-Id: <1455814254-10226-21-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V3 23/30] powerpc/mm: Hash linux abstraction for mmu context
+ handling code
+Date: Thu, 18 Feb 2016 22:20:47 +0530
+Message-Id: <1455814254-10226-24-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1455814254-10226-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1455814254-10226-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,213 +42,238 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/tlbflush-hash.h | 94 ++++++++++++++++++++++
- arch/powerpc/include/asm/tlbflush.h                | 92 +--------------------
- 2 files changed, 95 insertions(+), 91 deletions(-)
- create mode 100644 arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
+ arch/powerpc/include/asm/mmu_context.h | 63 +++++++++++++++++++++++-----------
+ arch/powerpc/kernel/swsusp.c           |  2 +-
+ arch/powerpc/mm/mmu_context_hash64.c   | 16 ++++-----
+ arch/powerpc/mm/mmu_context_nohash.c   |  3 +-
+ drivers/cpufreq/pmac32-cpufreq.c       |  2 +-
+ drivers/macintosh/via-pmu.c            |  4 +--
+ 6 files changed, 57 insertions(+), 33 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-new file mode 100644
-index 000000000000..1b753f96b374
---- /dev/null
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-@@ -0,0 +1,94 @@
-+#ifndef _ASM_POWERPC_BOOK3S_64_TLBFLUSH_HASH_H
-+#define _ASM_POWERPC_BOOK3S_64_TLBFLUSH_HASH_H
-+
-+#define MMU_NO_CONTEXT		0
-+
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 878c27771717..5124b721da6e 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -10,11 +10,6 @@
+ #include <asm/cputable.h>
+ #include <asm/cputhreads.h>
+ 
+-/*
+- * Most if the context management is out of line
+- */
+-extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
+-extern void destroy_context(struct mm_struct *mm);
+ #ifdef CONFIG_SPAPR_TCE_IOMMU
+ struct mm_iommu_table_group_mem_t;
+ 
+@@ -33,16 +28,50 @@ extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
+ extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
+ #endif
 +/*
-+ * TLB flushing for 64-bit hash-MMU CPUs
++ * Most of the context management is out of line
 + */
-+
-+#include <linux/percpu.h>
-+#include <asm/page.h>
-+
-+#define PPC64_TLB_BATCH_NR 192
-+
-+struct ppc64_tlb_batch {
-+	int			active;
-+	unsigned long		index;
-+	struct mm_struct	*mm;
-+	real_pte_t		pte[PPC64_TLB_BATCH_NR];
-+	unsigned long		vpn[PPC64_TLB_BATCH_NR];
-+	unsigned int		psize;
-+	int			ssize;
-+};
-+DECLARE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
-+
-+extern void __flush_tlb_pending(struct ppc64_tlb_batch *batch);
-+
-+#define __HAVE_ARCH_ENTER_LAZY_MMU_MODE
-+
-+static inline void arch_enter_lazy_mmu_mode(void)
++#ifdef CONFIG_PPC_BOOK3S_64
++extern int hlinit_new_context(struct task_struct *tsk, struct mm_struct *mm);
++static inline int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
 +{
-+	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
-+
-+	batch->active = 1;
++	return hlinit_new_context(tsk, mm);
 +}
 +
-+static inline void arch_leave_lazy_mmu_mode(void)
++extern void hldestroy_context(struct mm_struct *mm);
++static inline void destroy_context(struct mm_struct *mm)
 +{
-+	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
-+
-+	if (batch->index)
-+		__flush_tlb_pending(batch);
-+	batch->active = 0;
++	return hldestroy_context(mm);
 +}
-+
-+#define arch_flush_lazy_mmu_mode()      do {} while (0)
-+
-+
-+extern void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize,
-+			    int ssize, unsigned long flags);
-+extern void flush_hash_range(unsigned long number, int local);
-+extern void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
-+				pmd_t *pmdp, unsigned int psize, int ssize,
-+				unsigned long flags);
-+
-+static inline void local_flush_tlb_mm(struct mm_struct *mm)
+ 
+-extern void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next);
+ extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
+-extern void set_context(unsigned long id, pgd_t *pgd);
++static inline void switch_mmu_context(struct mm_struct *prev,
++				      struct mm_struct *next,
++				      struct task_struct *tsk)
 +{
++	return switch_slb(tsk, next);
 +}
-+
-+static inline void flush_tlb_mm(struct mm_struct *mm)
+ 
+-#ifdef CONFIG_PPC_BOOK3S_64
+-extern int __init_new_context(void);
+-extern void __destroy_context(int context_id);
++extern void set_context(unsigned long id, pgd_t *pgd);
++extern int __hlinit_new_context(void);
++static inline int __init_new_context(void)
 +{
++	return __hlinit_new_context();
 +}
-+
-+static inline void local_flush_tlb_page(struct vm_area_struct *vma,
-+					unsigned long vmaddr)
++extern void __hldestroy_context(int context_id);
++static inline void __destroy_context(int context_id)
 +{
++	return __hldestroy_context(context_id);
 +}
+ static inline void mmu_context_init(void) { }
+ #else
++extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
++extern void destroy_context(struct mm_struct *mm);
 +
-+static inline void flush_tlb_page(struct vm_area_struct *vma,
-+				  unsigned long vmaddr)
-+{
-+}
-+
-+static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
-+					 unsigned long vmaddr)
-+{
-+}
-+
-+static inline void flush_tlb_range(struct vm_area_struct *vma,
-+				   unsigned long start, unsigned long end)
-+{
-+}
-+
-+static inline void flush_tlb_kernel_range(unsigned long start,
-+					  unsigned long end)
-+{
-+}
-+
-+/* Private function for use by PCI IO mapping code */
-+extern void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
-+				     unsigned long end);
-+extern void flush_tlb_pmd_range(struct mm_struct *mm, pmd_t *pmd,
-+				unsigned long addr);
-+#endif /*  _ASM_POWERPC_BOOK3S_64_TLBFLUSH_HASH_H */
-diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
-index 23d351ca0303..9f77f85e3e99 100644
---- a/arch/powerpc/include/asm/tlbflush.h
-+++ b/arch/powerpc/include/asm/tlbflush.h
-@@ -78,97 +78,7 @@ static inline void local_flush_tlb_mm(struct mm_struct *mm)
++extern void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next,
++			       struct task_struct *tsk);
++extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
++extern void set_context(unsigned long id, pgd_t *pgd);
+ extern unsigned long __init_new_context(void);
+ extern void __destroy_context(unsigned long context_id);
+ extern void mmu_context_init(void);
+@@ -88,17 +117,11 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+ 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+ 		asm volatile ("dssall");
+ #endif /* CONFIG_ALTIVEC */
+-
+-	/* The actual HW switching method differs between the various
+-	 * sub architectures.
++	/*
++	 * The actual HW switching method differs between the various
++	 * sub architectures. Out of line for now
+ 	 */
+-#ifdef CONFIG_PPC_STD_MMU_64
+-	switch_slb(tsk, next);
+-#else
+-	/* Out of line for now */
+-	switch_mmu_context(prev, next);
+-#endif
+-
++	switch_mmu_context(prev, next, tsk);
  }
  
- #elif defined(CONFIG_PPC_STD_MMU_64)
--
--#define MMU_NO_CONTEXT		0
--
--/*
-- * TLB flushing for 64-bit hash-MMU CPUs
-- */
--
--#include <linux/percpu.h>
--#include <asm/page.h>
--
--#define PPC64_TLB_BATCH_NR 192
--
--struct ppc64_tlb_batch {
--	int			active;
--	unsigned long		index;
--	struct mm_struct	*mm;
--	real_pte_t		pte[PPC64_TLB_BATCH_NR];
--	unsigned long		vpn[PPC64_TLB_BATCH_NR];
--	unsigned int		psize;
--	int			ssize;
--};
--DECLARE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
--
--extern void __flush_tlb_pending(struct ppc64_tlb_batch *batch);
--
--#define __HAVE_ARCH_ENTER_LAZY_MMU_MODE
--
--static inline void arch_enter_lazy_mmu_mode(void)
--{
--	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
--
--	batch->active = 1;
--}
--
--static inline void arch_leave_lazy_mmu_mode(void)
--{
--	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
--
--	if (batch->index)
--		__flush_tlb_pending(batch);
--	batch->active = 0;
--}
--
--#define arch_flush_lazy_mmu_mode()      do {} while (0)
--
--
--extern void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize,
--			    int ssize, unsigned long flags);
--extern void flush_hash_range(unsigned long number, int local);
--extern void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
--				pmd_t *pmdp, unsigned int psize, int ssize,
--				unsigned long flags);
--
--static inline void local_flush_tlb_mm(struct mm_struct *mm)
--{
--}
--
--static inline void flush_tlb_mm(struct mm_struct *mm)
--{
--}
--
--static inline void local_flush_tlb_page(struct vm_area_struct *vma,
--					unsigned long vmaddr)
--{
--}
--
--static inline void flush_tlb_page(struct vm_area_struct *vma,
--				  unsigned long vmaddr)
--{
--}
--
--static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
--					 unsigned long vmaddr)
--{
--}
--
--static inline void flush_tlb_range(struct vm_area_struct *vma,
--				   unsigned long start, unsigned long end)
--{
--}
--
--static inline void flush_tlb_kernel_range(unsigned long start,
--					  unsigned long end)
--{
--}
--
--/* Private function for use by PCI IO mapping code */
--extern void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
--				     unsigned long end);
--extern void flush_tlb_pmd_range(struct mm_struct *mm, pmd_t *pmd,
--				unsigned long addr);
-+#include <asm/book3s/64/tlbflush-hash.h>
- #else
- #error Unsupported MMU type
+ #define deactivate_mm(tsk,mm)	do { } while (0)
+diff --git a/arch/powerpc/kernel/swsusp.c b/arch/powerpc/kernel/swsusp.c
+index 6669b1752512..6ae9bd5086a4 100644
+--- a/arch/powerpc/kernel/swsusp.c
++++ b/arch/powerpc/kernel/swsusp.c
+@@ -31,6 +31,6 @@ void save_processor_state(void)
+ void restore_processor_state(void)
+ {
+ #ifdef CONFIG_PPC32
+-	switch_mmu_context(current->active_mm, current->active_mm);
++	switch_mmu_context(current->active_mm, current->active_mm, NULL);
  #endif
+ }
+diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
+index ff9baa5d2944..9c147d800760 100644
+--- a/arch/powerpc/mm/mmu_context_hash64.c
++++ b/arch/powerpc/mm/mmu_context_hash64.c
+@@ -30,7 +30,7 @@
+ static DEFINE_SPINLOCK(mmu_context_lock);
+ static DEFINE_IDA(mmu_context_ida);
+ 
+-int __init_new_context(void)
++int __hlinit_new_context(void)
+ {
+ 	int index;
+ 	int err;
+@@ -59,11 +59,11 @@ again:
+ }
+ EXPORT_SYMBOL_GPL(__init_new_context);
+ 
+-int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
++int hlinit_new_context(struct task_struct *tsk, struct mm_struct *mm)
+ {
+ 	int index;
+ 
+-	index = __init_new_context();
++	index = __hlinit_new_context();
+ 	if (index < 0)
+ 		return index;
+ 
+@@ -78,7 +78,7 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+ #ifdef CONFIG_PPC_ICSWX
+ 	mm->context.cop_lockp = kmalloc(sizeof(spinlock_t), GFP_KERNEL);
+ 	if (!mm->context.cop_lockp) {
+-		__destroy_context(index);
++		__hldestroy_context(index);
+ 		subpage_prot_free(mm);
+ 		mm->context.id = MMU_NO_CONTEXT;
+ 		return -ENOMEM;
+@@ -95,13 +95,13 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+ 	return 0;
+ }
+ 
+-void __destroy_context(int context_id)
++void __hldestroy_context(int context_id)
+ {
+ 	spin_lock(&mmu_context_lock);
+ 	ida_remove(&mmu_context_ida, context_id);
+ 	spin_unlock(&mmu_context_lock);
+ }
+-EXPORT_SYMBOL_GPL(__destroy_context);
++EXPORT_SYMBOL_GPL(__hldestroy_context);
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+ static void destroy_pagetable_page(struct mm_struct *mm)
+@@ -133,7 +133,7 @@ static inline void destroy_pagetable_page(struct mm_struct *mm)
+ #endif
+ 
+ 
+-void destroy_context(struct mm_struct *mm)
++void hldestroy_context(struct mm_struct *mm)
+ {
+ #ifdef CONFIG_SPAPR_TCE_IOMMU
+ 	mm_iommu_cleanup(&mm->context);
+@@ -146,7 +146,7 @@ void destroy_context(struct mm_struct *mm)
+ #endif /* CONFIG_PPC_ICSWX */
+ 
+ 	destroy_pagetable_page(mm);
+-	__destroy_context(mm->context.id);
++	__hldestroy_context(mm->context.id);
+ 	subpage_prot_free(mm);
+ 	mm->context.id = MMU_NO_CONTEXT;
+ }
+diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+index 986afbc22c76..a36c43a27893 100644
+--- a/arch/powerpc/mm/mmu_context_nohash.c
++++ b/arch/powerpc/mm/mmu_context_nohash.c
+@@ -226,7 +226,8 @@ static void context_check_map(void)
+ static void context_check_map(void) { }
+ #endif
+ 
+-void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
++void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next,
++			struct task_struct *tsk)
+ {
+ 	unsigned int i, id, cpu = smp_processor_id();
+ 	unsigned long *map;
+diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
+index 1f49d97a70ea..bde503c66945 100644
+--- a/drivers/cpufreq/pmac32-cpufreq.c
++++ b/drivers/cpufreq/pmac32-cpufreq.c
+@@ -298,7 +298,7 @@ static int pmu_set_cpu_speed(int low_speed)
+  		_set_L3CR(save_l3cr);
+ 
+ 	/* Restore userland MMU context */
+-	switch_mmu_context(NULL, current->active_mm);
++	switch_mmu_context(NULL, current->active_mm, NULL);
+ 
+ #ifdef DEBUG_FREQ
+ 	printk(KERN_DEBUG "HID1, after: %x\n", mfspr(SPRN_HID1));
+diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+index 01ee736fe0ef..f8b6d1403c16 100644
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -1851,7 +1851,7 @@ static int powerbook_sleep_grackle(void)
+  		_set_L2CR(save_l2cr);
+ 	
+ 	/* Restore userland MMU context */
+-	switch_mmu_context(NULL, current->active_mm);
++	switch_mmu_context(NULL, current->active_mm, NULL);
+ 
+ 	/* Power things up */
+ 	pmu_unlock();
+@@ -1940,7 +1940,7 @@ powerbook_sleep_Core99(void)
+  		_set_L3CR(save_l3cr);
+ 	
+ 	/* Restore userland MMU context */
+-	switch_mmu_context(NULL, current->active_mm);
++	switch_mmu_context(NULL, current->active_mm, NULL);
+ 
+ 	/* Tell PMU we are ready */
+ 	pmu_unlock();
 -- 
 2.5.0
