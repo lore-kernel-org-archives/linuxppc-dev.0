@@ -1,20 +1,39 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0066.outbound.protection.outlook.com [207.46.100.66])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0C0EC1A05FF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 12:48:51 +1100 (AEDT)
-From: Zhao Qiang <qiang.zhao@nxp.com>
-To: <robh+dt@kernel.org>
-CC: <oss@buserror.net>, <leoyang.li@nxp.com>, <linux-kernel@vger.kernel.org>,
- <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Zhao Qiang
- <qiang.zhao@nxp.com>
-Subject: [PATCH v2 7/7] T104xQDS: Add qe node to t104xqds
-Date: Thu, 18 Feb 2016 09:06:12 +0800
-Message-ID: <1455757572-44955-7-git-send-email-qiang.zhao@nxp.com>
-In-Reply-To: <1455757572-44955-1-git-send-email-qiang.zhao@nxp.com>
-References: <1455757572-44955-1-git-send-email-qiang.zhao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EF3071A0707
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 12:49:55 +1100 (AEDT)
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 17 Feb 2016 18:49:53 -0700
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id C64E619D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 18:37:49 -0700 (MST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1I1npne29622432
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 01:49:51 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1I1nocT013850
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Feb 2016 20:49:51 -0500
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au,
+ Scott Wood <scottwood@freescale.com>,
+ Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V6 20/35] powerpc/mm: Don't track subpage valid bit in
+ pte_t
+In-Reply-To: <20160218011152.GA2765@fergus.ozlabs.ibm.com>
+References: <1448941020-15168-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1448941020-15168-21-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20160218011152.GA2765@fergus.ozlabs.ibm.com>
+Date: Thu, 18 Feb 2016 07:19:45 +0530
+Message-ID: <87vb5m9492.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,64 +45,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-add qe node to t104xqds.dtsi
+Paul Mackerras <paulus@ozlabs.org> writes:
 
-Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
----
-Changes for v2
-	- rebase
+> On Tue, Dec 01, 2015 at 09:06:45AM +0530, Aneesh Kumar K.V wrote:
+>> This free up 11 bits in pte_t. In the later patch we also change
+>> the pte_t format so that we can start supporting migration pte
+>> at pmd level. We now track 4k subpage valid bit as below
+>> 
+>> If we have _PAGE_COMBO set, we override the _PAGE_F_GIX_SHIFT
+>> and _PAGE_F_SECOND. Together we have 4 bits, each of them
+>> used to indicate whether any of the 4 4k subpage in that group
+>> is valid. ie,
+>> 
+>> [ group 1 bit ]   [ group 2 bit ]  ..... [ group 4 ]
+>> [ subpage 1 - 4]  [ subpage 5- 8]  ..... [ subpage 13 - 16]
+>> 
+>> We still track each 4k subpage slot number and secondary hash
+>> information in the second half of pgtable_t. Removing the subpage
+>> tracking have some significant overhead on aim9 and ebizzy benchmark and
+>> to support THP with 4K subpage, we do need a pgtable_t of 4096 bytes.
+>
+> I know this has already been applied, but this hunk looks wrong:
+>
+>> @@ -102,7 +131,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+>>  	 */
+>>  	if (!(old_pte & _PAGE_COMBO)) {
+>>  		flush_hash_page(vpn, rpte, MMU_PAGE_64K, ssize, flags);
+>> -		old_pte &= ~_PAGE_HPTE_SUB;
+>> +		old_pte &= ~_PAGE_HASHPTE | _PAGE_F_GIX | _PAGE_F_SECOND;
+>
+> Shouldn't this be:
+>
+> +		old_pte &= ~(_PAGE_HASHPTE | _PAGE_F_GIX | _PAGE_F_SECOND);
+>
+> instead?
 
- arch/powerpc/boot/dts/fsl/t104xqds.dtsi | 40 +++++++++++++++++++++++++++++++++
- 1 file changed, 40 insertions(+)
+Thanks for checking this closely. Yes it should be what you suggested. I
+will do a patch for this.
 
-diff --git a/arch/powerpc/boot/dts/fsl/t104xqds.dtsi b/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
-index 1498d1e..1a8e60d 100644
---- a/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
-@@ -190,4 +190,44 @@
- 				  0 0x00010000>;
- 		};
- 	};
-+
-+	qe: qe@ffe140000 {
-+		ranges = <0x0 0xf 0xfe140000 0x40000>;
-+		reg = <0xf 0xfe140000 0 0x480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <0>;
-+
-+		si1: si@700 {
-+			compatible = "fsl,qe-si";
-+			reg = <0x700 0x80>;
-+		};
-+
-+		siram1: siram@1000 {
-+			compatible = "fsl,qe-siram";
-+			reg = <0x1000 0x800>;
-+		};
-+
-+		ucc_hdlc: ucc@2000 {
-+			compatible = "fsl,ucc-hdlc";
-+			rx-clock-name = "clk8";
-+			tx-clock-name = "clk9";
-+			fsl,rx-sync-clock = "rsync_pin";
-+			fsl,tx-sync-clock = "tsync_pin";
-+			fsl,tx-timeslot = <0xfffffffe>;
-+			fsl,rx-timeslot = <0xfffffffe>;
-+			fsl,tdm-framer-type = "e1";
-+			fsl,tdm-mode = "normal";
-+			fsl,tdm-id = <0>;
-+			fsl,siram-entry-id = <0>;
-+			fsl,tdm-interface;
-+		};
-+
-+		ucc_serial: ucc@2200 {
-+			device_type = "serial";
-+			compatible = "ucc_uart";
-+			port-number = <1>;
-+			rx-clock-name = "brg2";
-+			tx-clock-name = "brg2";
-+		};
-+	};
- };
--- 
-2.1.0.27.g96db324
+-aneesh
