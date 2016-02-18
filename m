@@ -1,21 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 916DE1A04E1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 11:28:01 +1100 (AEDT)
-Message-ID: <1455755270.3653.93.camel@kernel.crashing.org>
-Subject: Re: [PATCH kernel v2] powerpc/ioda: Set "read" permission when
- "write" is set
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- stable@vger.kernel.org.#.4.2+
-Date: Thu, 18 Feb 2016 11:27:50 +1100
-In-Reply-To: <1455693991-31405-1-git-send-email-aik@ozlabs.ru>
-References: <1455693991-31405-1-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 558871A0353
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 12:11:35 +1100 (AEDT)
+Message-ID: <1455757889.2463.88.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Leo Li <pku.leo@gmail.com>, Raghav Dogra <raghav.dogra@nxp.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+Date: Wed, 17 Feb 2016 19:11:29 -0600
+In-Reply-To: <CADRPPNQpCv7xJEXE98xQExw2R_hE_YWj6T49WfB2NhW22UHEYA@mail.gmail.com>
+References: <1455516864-3594-1-git-send-email-raghav.dogra@nxp.com>
+ <1455611695.2463.56.camel@buserror.net>
+ <DB4PR04MB346600B0CB57C4F161C896589AE0@DB4PR04MB346.eurprd04.prod.outlook.com>
+ <CADRPPNQpCv7xJEXE98xQExw2R_hE_YWj6T49WfB2NhW22UHEYA@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Subject: Re: [PATCH][v3] drivers/memory: Add deep sleep support for IFC
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-02-17 at 18:26 +1100, Alexey Kardashevskiy wrote:
-> Quite often drivers set only "write" permission assuming that this
-> includes "read" permission as well and this works on plenty
-> platforms.
-> However IODA2 is strict about this and produces an EEH when "read"
-> permission is not and reading happens.
+On Wed, 2016-02-17 at 17:19 -0600, Leo Li wrote:
+> On Wed, Feb 17, 2016 at 8:40 AM, Raghav Dogra <raghav.dogra@nxp.com> wrote:
+> > 
+> > > Is it really necessary to spin here rather than waiting for an interrupt
+> > > like
+> > > normal?
+> > > 
+> > 
+> > Aren't the global interrupts disabled at this stage? Can we use the
+> > interrupt based
+> > waits in the deep sleep code? We used it based on the assumption that
+> > interrupts
+> > cannot be used here.
 > 
-> This adds a workaround in IODA code to always add the "read" bit when
-> the "write" bit is set.
-> 
-> This fixes breakage introduced in
-> 10b35b2b74 powerpc/powernv: Do not set "read" flag if
-> direction==DMA_NONE
-> 
-> Cc: stable@vger.kernel.org # 4.2+
+> At the resume() stage, interrupts are already enabled.  But the
+> problem of using interrupt based wait here is that we cannot give a
+> correct return value at this point.  And it can also defeat the
+> ordering of resume() callbacks for dependent devices.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I didn't say to return from the resume() function before the operation is
+done, just to have the resume() function wait for the interrupt.  At the very
+least it would make it easier to reuse existing code once this is moved to the
+NAND driver, if we don't need a special way of waiting for this operation.
 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Tested-by: Douglas Miller <dougmill@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/pci.c | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci.c
-> b/arch/powerpc/platforms/powernv/pci.c
-> index 2f55c86..6a97ba4 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -599,6 +599,9 @@ int pnv_tce_build(struct iommu_table *tbl, long
-> index, long npages,
->  	u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
->  	long i;
->  
-> +	if (proto_tce & TCE_PCI_WRITE)
-> +		proto_tce |= TCE_PCI_READ;
-> +
->  	for (i = 0; i < npages; i++) {
->  		unsigned long newtce = proto_tce |
->  			((rpn + i) << tbl->it_page_shift);
-> @@ -620,6 +623,9 @@ int pnv_tce_xchg(struct iommu_table *tbl, long
-> index,
->  
->  	BUG_ON(*hpa & ~IOMMU_PAGE_MASK(tbl));
->  
-> +	if (newtce & TCE_PCI_WRITE)
-> +		newtce |= TCE_PCI_READ;
-> +
->  	oldtce = xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce));
->  	*hpa = be64_to_cpu(oldtce) & ~(TCE_PCI_READ |
-> TCE_PCI_WRITE);
->  	*direction = iommu_tce_direction(oldtce);
+-Scott
