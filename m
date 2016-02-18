@@ -1,22 +1,40 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0057.outbound.protection.outlook.com [157.56.110.57])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8E6101A05CA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 12:15:20 +1100 (AEDT)
-From: Zhao Qiang <qiang.zhao@nxp.com>
-To: <robh+dt@kernel.org>
-CC: <oss@buserror.net>, <leoyang.li@nxp.com>, <linux-kernel@vger.kernel.org>,
- <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Zhao Qiang
- <qiang.zhao@nxp.com>
-Subject: [PATCH v2 6/7] T104xRDB: Add qe node to t104xrdb
-Date: Thu, 18 Feb 2016 09:06:11 +0800
-Message-ID: <1455757572-44955-6-git-send-email-qiang.zhao@nxp.com>
-In-Reply-To: <1455757572-44955-1-git-send-email-qiang.zhao@nxp.com>
-References: <1455757572-44955-1-git-send-email-qiang.zhao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2E90F1A0549
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 12:18:06 +1100 (AEDT)
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 908FA14009B
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2016 12:18:05 +1100 (AEDT)
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 18 Feb 2016 11:18:03 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id C231E2CE8054
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2016 12:18:00 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1I1Hqvp33095796
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2016 12:18:00 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1I1HS1S020495
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2016 12:17:28 +1100
+Subject: Re: [V2,1/2] powerpc/powernv: new function to access OPAL msglog
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <20160217124126.83F60140662@ozlabs.org>
+Cc: stewart@linux.vnet.ibm.com
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-ID: <56C51B8F.7080602@au1.ibm.com>
+Date: Thu, 18 Feb 2016 12:17:03 +1100
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20160217124126.83F60140662@ozlabs.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,64 +44,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-add qe node to t104xrdb.dtsi
+On 17/02/16 23:41, Michael Ellerman wrote:
+> I see you've posted a v3 since I merged this, please send an incremental patch
+> with the changes.
 
-Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
----
-Changes for v2
-	- rebase
+http://patchwork.ozlabs.org/patch/584416/
 
- arch/powerpc/boot/dts/fsl/t104xrdb.dtsi | 40 +++++++++++++++++++++++++++++++++
- 1 file changed, 40 insertions(+)
-
-diff --git a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-index 830ea48..3b08601 100644
---- a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-@@ -186,4 +186,44 @@
- 				  0 0x00010000>;
- 		};
- 	};
-+
-+	qe: qe@ffe140000 {
-+		ranges = <0x0 0xf 0xfe140000 0x40000>;
-+		reg = <0xf 0xfe140000 0 0x480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <0>;
-+
-+		si1: si@700 {
-+			compatible = "fsl,qe-si";
-+			reg = <0x700 0x80>;
-+		};
-+
-+		siram1: siram@1000 {
-+			compatible = "fsl,qe-siram";
-+			reg = <0x1000 0x800>;
-+		};
-+
-+		ucc_hdlc: ucc@2000 {
-+			compatible = "fsl,ucc-hdlc";
-+			rx-clock-name = "clk8";
-+			tx-clock-name = "clk9";
-+			fsl,rx-sync-clock = "rsync_pin";
-+			fsl,tx-sync-clock = "tsync_pin";
-+			fsl,tx-timeslot = <0xfffffffe>;
-+			fsl,rx-timeslot = <0xfffffffe>;
-+			fsl,tdm-framer-type = "e1";
-+			fsl,tdm-mode = "normal";
-+			fsl,tdm-id = <0>;
-+			fsl,siram-entry-id = <0>;
-+			fsl,tdm-interface;
-+		};
-+
-+		ucc_serial: ucc@2200 {
-+			device_type = "serial";
-+			compatible = "ucc_uart";
-+			port-number = <1>;
-+			rx-clock-name = "brg2";
-+			tx-clock-name = "brg2";
-+		};
-+	};
- };
 -- 
-2.1.0.27.g96db324
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
