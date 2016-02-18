@@ -1,26 +1,21 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-wm0-x235.google.com (mail-wm0-x235.google.com
- [IPv6:2a00:1450:400c:c09::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D0A4D1A0620
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 08:18:26 +1100 (AEDT)
-Received: by mail-wm0-x235.google.com with SMTP id g62so44289657wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 13:18:26 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 10A481A0617
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 10:13:24 +1100 (AEDT)
+Date: Fri, 19 Feb 2016 10:13:19 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Subject: Re: [PATCH V3 00/30] Book3s abstraction in preparation for new MMU
+ model
+Message-ID: <20160218231319.GB2765@fergus.ozlabs.ibm.com>
+References: <1455814254-10226-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
-References: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
-Date: Thu, 18 Feb 2016 15:18:21 -0600
-Message-ID: <CADRPPNS1i1XgtpyiT_=rDuDXBDn=ehNY32=RKTC9hdKXhWWq8A@mail.gmail.com>
-Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
-From: Leo Li <pku.leo@gmail.com>
-To: Raghav Dogra <raghav.dogra@nxp.com>
-Cc: linux-mtd@lists.infradead.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>, Scott Wood <oss@buserror.net>,
- Brian Norris <computersforpeace@gmail.com>, Raghav Dogra <raghav@freescale.com>,
- Jaiprakash Singh <b44839@freescale.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1455814254-10226-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,31 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 17, 2016 at 5:24 AM, Raghav Dogra <raghav.dogra@nxp.com> wrote:
-> The new IFC controller version 2.0 has a different memory map page.
-> Upto IFC 1.4 PAGE size is 4 KB and from IFC2.0 PAGE size is 64KB.
-> This patch segregates the IFC global and runtime registers to appropriate
-> PAGE sizes.
->
-> Signed-off-by: Jaiprakash Singh <b44839@freescale.com>
-> Signed-off-by: Raghav Dogra <raghav@freescale.com>
-> Acked-by: Li Yang <leoyang.li@nxp.com>
-> Signed-off-by: Raghav Dogra <raghav.dogra@nxp.com>
-> ---
-> Changes for v3: not dependent on
-> "drivers/memory: Add deep sleep support for IFC" patch
->
-> Changes for v2: rebased to resolve conflicts
-> Applicable to git://git.infradead.org/l2-mtd.git
->
-> This patch is dependent on "drivers/memory: Add deep sleep support for IFC"
-> https://patchwork.ozlabs.org/patch/582762/
-> which is also applicable to git://git.infradead.org/l2-mtd.git
+On Thu, Feb 18, 2016 at 10:20:24PM +0530, Aneesh Kumar K.V wrote:
+> Hello,
+> 
+> This is a large series, mostly consisting of code movement. No new features
+> are done in this series. The changes are done to accomodate the upcoming new memory
+> model in future powerpc chips. The details of the new MMU model can be found at
+> 
+>  http://ibm.biz/power-isa3 (Needs registration). I am including a summary of the changes below.
 
-This patch seems to be in good shape, but the dependency is still
-having quite some feedback to be addressed.  Depending on it will
-greatly delay the time that this critical patch for LS2 to be merged.
-Could you remove the dependency like Scott already suggested?
+This doesn't apply against Linus' current tree - have you already
+posted the prerequisite patches?  If so, what's the subject of the
+0/N patch of the prerequisite series?
 
-Regards,
-Leo
+> ISA 3.0 adds support for the radix tree style of MMU with full
+> virtualization and related control mechanisms that manage its
+> coexistence with the HPT. Radix-using operating systems will
+> manage their own translation tables instead of relying on hcalls.
+> 
+> Radix style MMU model requires us to do a 4 level page table
+> with 64K and 4K page size. The table index size different page size
+> is listed below
+> 
+> PGD -> 13 bits
+> PUD -> 9 (1G hugepage)
+> PMD -> 9 (2M huge page)
+> PTE -> 5 (for 64k), 9 (for 4k)
+> 
+> We also require the page table to be in big endian format.
+> 
+> The changes proposed in this series enables us to support both
+> hash page table and radix tree style MMU using a single kernel
+> with limited impact. The idea is to change core page table
+> accessors to static inline functions and later hotpatch them
+> to switch to hash or radix tree functions. For ex:
+> 
+> static inline int pte_write(pte_t pte)
+> {
+>        if (radix_enabled())
+>                return rpte_write(pte);
+>         return hlpte_write(pte);
+> }
+
+Given that with a hash-based MMU, the Linux page tables are purely a
+software construct, I don't see why this complexity is necessary.  We
+can make the PTE have the same format on radix and hash instead.  I
+have a patch series that does that almost ready to post.
+
+> On boot we will hotpatch the code so as to avoid conditional operation.
+> 
+> The other two major change propsed in this series is to switch hash
+> linux page table to a 4 level table in big endian format. This is
+> done so that functions like pte_val(), pud_populate() doesn't need
+> hotpatching and thereby helps in limiting runtime impact of the changes.
+
+Right, I agree with this.
+
+Paul.
