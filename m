@@ -1,17 +1,39 @@
-Return-Path: <rashmicy@gmail.com>
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB2431A0635
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 12:55:59 +1100 (AEDT)
-Received: by mail-pf0-x231.google.com with SMTP id e127so41828684pfe.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 17:55:59 -0800 (PST)
-From: Rashmica Gupta <rashmicy@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/Kconfig: Update config option based on page size.
-Date: Fri, 19 Feb 2016 12:55:43 +1100
-Message-Id: <1455846943-32147-1-git-send-email-rashmicy@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B0DF71A0644
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 13:34:53 +1100 (AEDT)
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 18 Feb 2016 19:34:51 -0700
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 5CA8F3E40030
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 19:34:48 -0700 (MST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1J2YloB32243718
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 02:34:47 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1J2Ylgl021408
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 21:34:47 -0500
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Subject: Re: [PATCH V3 00/30] Book3s abstraction in preparation for new MMU
+ model
+In-Reply-To: <20160218231319.GB2765@fergus.ozlabs.ibm.com>
+References: <1455814254-10226-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20160218231319.GB2765@fergus.ozlabs.ibm.com>
+Date: Fri, 19 Feb 2016 08:04:43 +0530
+Message-ID: <87h9h5e8cc.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,51 +43,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently on PPC64 changing kernel pagesize from 4K to 64K leaves
-FORCE_MAX_ZONEORDER set to 13 - which produces a compile error.
+Paul Mackerras <paulus@ozlabs.org> writes:
 
-The error occurs because of the following constraint (from
-include/linux/mmzone.h) being violated:
+> On Thu, Feb 18, 2016 at 10:20:24PM +0530, Aneesh Kumar K.V wrote:
+>> Hello,
+>> 
+>> This is a large series, mostly consisting of code movement. No new features
+>> are done in this series. The changes are done to accomodate the upcoming new memory
+>> model in future powerpc chips. The details of the new MMU model can be found at
+>> 
+>>  http://ibm.biz/power-isa3 (Needs registration). I am including a summary of the changes below.
+>
+> This doesn't apply against Linus' current tree - have you already
+> posted the prerequisite patches?  If so, what's the subject of the
+> 0/N patch of the prerequisite series?
 
-	MAX_ORDER -1 + PAGESHIFT <= SECTION_SIZE_BITS.
 
-Expanding this out, we get:
+I would suggest to use github to get the tree. Yes I have some dependent
+patches and they are not in a single series.
 
-	FORCE_MAX_ZONEBITS <= 25 - PAGESHIFT,
+https://github.com/kvaneesh/linux/commits/radix-mmu-v2
 
-which requires, for a 64K page, FORCE_MAX_ZONEBITS <= 9. Thus
-set max value of FORCE_MAX_ZONEORDER for 64K pages to 9.
+Most of the dependent pathces are already in mpe/fixes and the reason to put
+them in the branch is to avoid patch apply issues, if we are planning to
+take this for next merge window. Since this series involve lots of code
+movement, I was worried about errors during cherry-pick/conflict resolution. 
 
-Also, check the minimum value:
-In include/linux/huge_mm.h, we have the constraint HPAGE_PMD_ORDER <
-MAX_ORDER which expands out to:
 
-	PTE_INDEX_SIZE < FORCE_MAX_ZONEORDER.
-
-PTE_INDEX_SIZE is:
-	9 (4k hash or no hash 4K pgtable) or
-	8 (64K hash or no hash 64K pgtable).
-Thus a min value of 9 for 64K pages is reasonable.
-
-So, update the range of FORCE_MAX_ZONEORDER from 9-64 to 9-9.
-
-Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
----
- arch/powerpc/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index e4824fd04bb7..3bd3465b93ba 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -585,7 +585,7 @@ endchoice
- 
- config FORCE_MAX_ZONEORDER
- 	int "Maximum zone order"
--	range 9 64 if PPC64 && PPC_64K_PAGES
-+	range 9 9 if PPC64 && PPC_64K_PAGES
- 	default "9" if PPC64 && PPC_64K_PAGES
- 	range 13 64 if PPC64 && !PPC_64K_PAGES
- 	default "13" if PPC64 && !PPC_64K_PAGES
--- 
-2.5.0
+-aneesh
