@@ -1,23 +1,37 @@
-Return-Path: <rashmicy@gmail.com>
-Received: from mail-pa0-x235.google.com (mail-pa0-x235.google.com
- [IPv6:2607:f8b0:400e:c03::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BE03C1A060D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 15:31:27 +1100 (AEDT)
-Received: by mail-pa0-x235.google.com with SMTP id fl4so43357541pad.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 20:31:27 -0800 (PST)
-Subject: Re: [PATCH] powerpc/Kconfig: Update config option based on page size.
-To: Balbir Singh <bsingharora@gmail.com>
-References: <1455846943-32147-1-git-send-email-rashmicy@gmail.com>
- <56C69535.90907@gmail.com>
-From: Rashmica <rashmicy@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Message-ID: <56C69A98.3020800@gmail.com>
-Date: Fri, 19 Feb 2016 15:31:20 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 306641A0610
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 15:51:39 +1100 (AEDT)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 19 Feb 2016 14:51:37 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A636B2BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 15:51:31 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1J4pNuj721296
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 15:51:31 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1J4ow6m019894
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 15:50:59 +1100
+Message-ID: <56C69F21.4070101@linux.vnet.ibm.com>
+Date: Fri, 19 Feb 2016 10:20:41 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <56C69535.90907@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+CC: aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [RFC 1/4] powerpc/mm: Rename variable to reflect start address
+ of a section
+References: <1455711179-20357-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1455806072.5284.17.camel@ellerman.id.au>
+In-Reply-To: <1455806072.5284.17.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,95 +41,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 02/18/2016 08:04 PM, Michael Ellerman wrote:
+> On Wed, 2016-02-17 at 17:42 +0530, Anshuman Khandual wrote:
+> 
+>> The commit (16a05bff1: powerpc: start loop at section start of
+>> start in vmemmap_populated()) reused 'start' variable to compute
+>> the starting address of the memory section where the given address
+>> belongs. Then the same variable is used for iterating over starting
+>> address of all memory sections before reaching the 'end' address.
+>> Renaming it as 'section_start' makes the logic more clear.
+>>
+>> Fixes: 16a05bff1 ("powerpc: start loop at section start of start in vmemmap_populated()")
+> 
+> It's not a fix, just a cleanup. Fixes lines should be reserved for actual bug
+> fixes.
 
+Sure, got it.
 
-On 19/02/16 15:08, Balbir Singh wrote:
->
-> On 19/02/16 12:55, Rashmica Gupta wrote:
->> Currently on PPC64 changing kernel pagesize from 4K to 64K leaves
->> FORCE_MAX_ZONEORDER set to 13 - which produces a compile error.
->>
->> The error occurs because of the following constraint (from
->> include/linux/mmzone.h) being violated:
->>
->> 	MAX_ORDER -1 + PAGESHIFT <= SECTION_SIZE_BITS.
-> IA64 has this cool hack
->
->        12 #ifdef CONFIG_FORCE_MAX_ZONEORDER
->        13 #if ((CONFIG_FORCE_MAX_ZONEORDER - 1 + PAGE_SHIFT) > SECTION_SIZE_BITS)
->        14 #undef SECTION_SIZE_BITS
->        15 #define SECTION_SIZE_BITS (CONFIG_FORCE_MAX_ZONEORDER - 1 + PAGE_SHIFT)
->        16 #endif
->
-> But coming back (we can revisit the SECTION_SIZE_BITS definition later)
-I feel like someone more senior than me should weigh in on if this is 
-worth doing...
-
-> MAX_ORDER -1 + 16 <= 24 for 64 K
->
-> and
->
-> MAX_ORDER -1 + 12 < = 24 for 4K
->
-> Your calculations are correct
->> Expanding this out, we get:
->>
->> 	FORCE_MAX_ZONEBITS <= 25 - PAGESHIFT,
->>
->> which requires, for a 64K page, FORCE_MAX_ZONEBITS <= 9. Thus
->> set max value of FORCE_MAX_ZONEORDER for 64K pages to 9.
->>
->> Also, check the minimum value:
->> In include/linux/huge_mm.h, we have the constraint HPAGE_PMD_ORDER <
->> MAX_ORDER which expands out to:
->>
->> 	PTE_INDEX_SIZE < FORCE_MAX_ZONEORDER.
->> PTE_INDEX_SIZE is:
->> 	9 (4k hash or no hash 4K pgtable) or
->> 	8 (64K hash or no hash 64K pgtable).
->> Thus a min value of 9 for 64K pages is reasonable.
-> For 4K pages we end up with
->
-> 9 < FORCE_MAX_ZONE_ORDER
-> FORCE_MAX_ZONE_ORDER -1 + 12 < = 24
->
-> The range is 9 to 13
->
-> For 64K we end up with
-> 8 < FORCE_MAX_ZONE_ORDER
-> FORCE_MAX_ZONE_ORDER -1 + 16 <= 24 or FORCE_MAX_ZONE_ORDER <= 9
->
-> The range is really between 8 and 9 unless we tweak the SECTION_SIZE_BITS
-Yup, you are right! Might have had a brain spaz...
->> So, update the range of FORCE_MAX_ZONEORDER from 9-64 to 9-9.
->>
->> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+> 
+>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 >> ---
->>   arch/powerpc/Kconfig | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>  arch/powerpc/mm/init_64.c | 12 ++++++++----
+>>  1 file changed, 8 insertions(+), 4 deletions(-)
 >>
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index e4824fd04bb7..3bd3465b93ba 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -585,7 +585,7 @@ endchoice
->>   
->>   config FORCE_MAX_ZONEORDER
->>   	int "Maximum zone order"
->> -	range 9 64 if PPC64 && PPC_64K_PAGES
->> +	range 9 9 if PPC64 && PPC_64K_PAGES
-> range 8 9?
-Agreed.
->>   	default "9" if PPC64 && PPC_64K_PAGES
->>   	range 13 64 if PPC64 && !PPC_64K_PAGES
-> Should this be fixed as well?
-> range 9 13?
-Agreed.
->>   	default "13" if PPC64 && !PPC_64K_PAGES
-Should the default values remain as is, or follow the trend and be equal 
-to the minimum value?
-> Please check my calculations
->
-> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
->
-> Balbir Singh
+>> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+>> index 379a6a9..d6b9b4d 100644
+>> --- a/arch/powerpc/mm/init_64.c
+>> +++ b/arch/powerpc/mm/init_64.c
+>> @@ -170,11 +170,15 @@ static unsigned long __meminit vmemmap_section_start(unsigned long page)
+>>   */
+>>  static int __meminit vmemmap_populated(unsigned long start, int page_size)
+>>  {
+>> -	unsigned long end = start + page_size;
+>> -	start = (unsigned long)(pfn_to_page(vmemmap_section_start(start)));
+>> +	unsigned long end, section_start;
+>>  
+>> -	for (; start < end; start += (PAGES_PER_SECTION * sizeof(struct page)))
+>> -		if (pfn_valid(page_to_pfn((struct page *)start)))
+>> +	end = start + page_size;
+>> +	section_start = (unsigned long)(pfn_to_page
+>> +					(vmemmap_section_start(start)));
+>> +
+>> +	for (; section_start < end; section_start
+>> +				+= (PAGES_PER_SECTION * sizeof(struct page)))
+>> +		if (pfn_valid(page_to_pfn((struct page *)section_start)))
+>>  			return 1;
+>>  
+>>  	return 0;
+> 
+> That's not a big improvement.
+> 
+> But I think this code could be improved. There's a lot of casts, it seems to be
+> confused about whether it's iterating over addresses or struct pages.
+
+Right, this patch just tries to clear on such confusion. Thats all.
