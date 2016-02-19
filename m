@@ -1,37 +1,17 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pf0-x236.google.com (mail-pf0-x236.google.com
+ [IPv6:2607:f8b0:400e:c00::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 852861A0689
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 16:16:42 +1100 (AEDT)
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 19 Feb 2016 15:16:41 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8AE4C3578057
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 16:16:38 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1J5GUAw64422030
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 16:16:38 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1J5G55F009245
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 16:16:06 +1100
-Message-ID: <56C6A504.9060503@linux.vnet.ibm.com>
-Date: Fri, 19 Feb 2016 10:45:48 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-CC: aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [RFC 2/4] powerpc/mm: Add comments to the vmemmap layout
-References: <1455711179-20357-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1455711179-20357-2-git-send-email-khandual@linux.vnet.ibm.com>
- <1455805370.5284.13.camel@ellerman.id.au>
-In-Reply-To: <1455805370.5284.13.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id CFB511A05C0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 16:39:05 +1100 (AEDT)
+Received: by mail-pf0-x236.google.com with SMTP id q63so44977084pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 21:39:05 -0800 (PST)
+From: Rashmica Gupta <rashmicy@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V2] powerpc/Kconfig: Update config option based on page size.
+Date: Fri, 19 Feb 2016 16:38:47 +1100
+Message-Id: <1455860327-22913-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,152 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/18/2016 07:52 PM, Michael Ellerman wrote:
-> On Wed, 2016-02-17 at 17:42 +0530, Anshuman Khandual wrote:
-> 
->> Add some explaination to the layout of vmemmap virtual address
->> space and how physical page mapping is only used for valid PFNs
->> present at any point on the system.
->>
->> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/include/asm/book3s/64/pgtable.h | 41 ++++++++++++++++++++++++++++
->>  1 file changed, 41 insertions(+)
->>
->> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> index 8d1c41d..9db4a86 100644
->> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
->> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> @@ -26,6 +26,47 @@
->>  #define IOREMAP_BASE	(PHB_IO_END)
->>  #define IOREMAP_END	(KERN_VIRT_START + KERN_VIRT_SIZE)
->>  
->> +/*
->> + * Starting address of the virtual address space where all page structs
-> 
-> This is so far from the variable it's referring to that it's not clear what it
-> refers to. So you should say "vmemmap is the starting ..."
-> 
->> + * for the system physical memory are stored under the vmemmap sparse
->                                               ^
-> 					      , when using the SPARSEMEM_VMEMMAP
->> + * memory model. All possible struct pages are logically stored in a
->> + * sequence in this virtual address space irrespective of the fact
->> + * whether any given PFN is valid or even the memory section is valid
->> + * or not.
-> 
-> I know what you mean but I think that could be worded better. But it's too late
-> for me to reword it :)
-> 
-> The key point is that we allocate space for a page struct for each PFN that
-> could be present in the system, including holes in the address space (hence
-> sparse). That has the nice property of meaning there is a constant relationship
-> between the address of a struct page and it's PFN.
-> 
->> + * During boot and memory hotplug add operation when new memory
->                   ^                               ^
-> 		  or				  ,
->> + * sections are added, real physical allocation and hash table bolting
->                                                   ^
-> 						  of struct pages
-> 
->> + * will be performed. This saves precious physical memory when the system
->> + * really does not have valid PFNs in some address ranges.
-> 
-> 
->> + *
->> + *  vmemmap +--------------+
->> + *     +    |  page struct +----------+  PFN is valid
->> + *     |    +--------------+          |
->> + *     |    |  page struct |          |  PFN is invalid
->> + *     |    +--------------+          |
->> + *     |    |  page struct +------+   |
->> + *     |    +--------------+      |   |
->> + *     |    |  page struct |      |   |
->> + *     |    +--------------+      |   |
->> + *     |    |  page struct |      |   |
->> + *     |    +--------------+      |   |
->> + *     |    |  page struct +--+   |   |
->> + *     |    +--------------+  |   |   |
->> + *     |    |  page struct |  |   |   |       +-------------+
->> + *     |    +--------------+  |   |   +-----> |     PFN     |
->> + *     |    |  page struct |  |   |           +-------------+
->> + *     |    +--------------+  |   +---------> |     PFN     |
->> + *     |    |  page struct |  |               +-------------+
->> + *     |    +--------------+  +-------------> |     PFN     |
->> + *     |    |  page struct |                  +-------------+
->> + *     |    +--------------+           +----> |     PFN     |
->> + *     |    |  page struct |           |      +-------------+
->> + *     |    +--------------+           |    Bolted in hash table
->> + *     |    |  page struct +-----------+
->> + *     v    +--------------+
-> 
-> 
-> The things on the right are not PFNs, they're struct pages. Each one
-> corresponds to a PFN, but that relationship is derived from the vmemap layout,
-> not the physical layout.
-> 
-> I think it's more like:
-> 
-> 	f000000000000000		  c000000000000000 (and also 0x0)
-> vmemmap +--------------+                  +--------------+
->    +    |  page struct | +--------------> |  page struct |
->    |    +--------------+                  +--------------+
->    |    |  page struct | +--------------> |  page struct |
->    |    +--------------+ |                +--------------+
->    |    |  page struct | +       +------> |  page struct |
->    |    +--------------+         |        +--------------+
->    |    |  page struct |         |   +--> |  page struct |
->    |    +--------------+         |   |    +--------------+
->    |    |  page struct |         |   |
->    |    +--------------+         |   |
->    |    |  page struct |         |   |
->    |    +--------------+         |   |
->    |    |  page struct |         |   |
->    |    +--------------+         |   |
->    |    |  page struct |         |   |
->    |    +--------------+         |   |
->    |    |  page struct | +-------+   |
->    |    +--------------+             |
->    |    |  page struct | +-----------+
->    |    +--------------+
->    |    |  page struct | No mapping
->    |    +--------------+
->    |    |  page struct | No mapping
->    v    +--------------+
-> 
-> 
-> 
-> Then there's the relationship between struct pages and PFNs:
-> 
-> 
->                            page_to_pfn
->                            +--------->
->   vmemmap +--------------+             +-------------+
->      +    |  page struct | +---------> |     PFN     |
->      |    +--------------+             +-------------+
->      |    |  page struct | +---------> |     PFN     |
->      |    +--------------+             +-------------+
->      |    |  page struct | +---------> |     PFN     |
->      |    +--------------+             +-------------+
->      |    |  page struct | +---------> |     PFN     |
->      |    +--------------+             +-------------+
->      |    |              |
->      |    +--------------+
->      |    |              |
->      |    +--------------+
->      |    |              |
->      |    +--------------+             +-------------+
->      |    |  page struct | +---------> |     PFN     |
->      |    +--------------+             +-------------+
->      |    |              |
->      |    +--------------+
->      |    |              |
->      |    +--------------+             +-------------+
->      |    |  page struct | +---------> |     PFN     |
->      |    +--------------+             +-------------+
->      |    |  page struct | +---------> |     PFN     |
->      v    +--------------+             +-------------+
+Currently on PPC64 changing kernel pagesize from 4K to 64K leaves
+FORCE_MAX_ZONEORDER set to 13 - which produces a compile error.
 
-Awesome, this conveys the message better. Will change it next time
-around. Thanks !
+The error occurs because of the following constraint (from
+include/linux/mmzone.h) being violated:
+
+	MAX_ORDER -1 + PAGESHIFT <= SECTION_SIZE_BITS.
+
+Expanding this out, we get:
+
+	FORCE_MAX_ZONEBITS <= 25 - PAGESHIFT,
+
+which requires, for a 64K page, FORCE_MAX_ZONEBITS <= 9. Thus set max
+value of FORCE_MAX_ZONEORDER for 64K pages to 9, and 4K pages to 13.
+
+Also, check the minimum value:
+In include/linux/huge_mm.h, we have the constraint HPAGE_PMD_ORDER <
+MAX_ORDER which expands out to:
+
+	PTE_INDEX_SIZE < FORCE_MAX_ZONEORDER.
+
+PTE_INDEX_SIZE is:
+	9 (4k hash or no hash 4K pgtable) or
+	8 (64K hash or no hash 64K pgtable).
+Thus a min value of 8 for 64K pages and 9 for 4K pages is reasonable.
+
+So, update the range of FORCE_MAX_ZONEORDER from 9-64 to 8-9 for 64K pages
+and from 13-64 to 9-13 for 4K pages.
+
+Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+---
+
+v2: Changed the range for 4K pages and minimum for 64K pages as suggested
+by Balbir Singh. 
+
+
+ arch/powerpc/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index e4824fd04bb7..b933530821fb 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -585,9 +585,9 @@ endchoice
+ 
+ config FORCE_MAX_ZONEORDER
+ 	int "Maximum zone order"
+-	range 9 64 if PPC64 && PPC_64K_PAGES
++	range 8 9 if PPC64 && PPC_64K_PAGES
+ 	default "9" if PPC64 && PPC_64K_PAGES
+-	range 13 64 if PPC64 && !PPC_64K_PAGES
++	range 9 13 if PPC64 && !PPC_64K_PAGES
+ 	default "13" if PPC64 && !PPC_64K_PAGES
+ 	range 9 64 if PPC32 && PPC_16K_PAGES
+ 	default "9" if PPC32 && PPC_16K_PAGES
+-- 
+2.5.0
