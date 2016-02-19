@@ -1,23 +1,40 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 909C61A06F4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 21:37:44 +1100 (AEDT)
-Message-ID: <1455878263.6506.4.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/mm/hash: Clear the invalid slot information
- correctly
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, benh@kernel.crashing.org,
- paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Fri, 19 Feb 2016 21:37:43 +1100
-In-Reply-To: <56C6ADC6.5000603@linux.vnet.ibm.com>
-References: <1455813884-8283-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <56C6ADC6.5000603@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 94D191A06F4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 22:03:25 +1100 (AEDT)
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 19 Feb 2016 21:03:23 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 724462BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 22:03:21 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1JB3CIM8782302
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 22:03:21 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1JB2meD019682
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 22:02:48 +1100
+Message-ID: <56C6F646.9040506@linux.vnet.ibm.com>
+Date: Fri, 19 Feb 2016 16:32:30 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+CC: aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [RFC 4/4] powerpc/mm: Rename global tracker for virtual to
+ physical mapping
+References: <1455711179-20357-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1455711179-20357-4-git-send-email-khandual@linux.vnet.ibm.com>
+ <1455806240.5284.19.camel@ellerman.id.au>
+ <56C6A00C.5030602@linux.vnet.ibm.com>
+ <1455877859.6506.1.camel@ellerman.id.au>
+In-Reply-To: <1455877859.6506.1.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +44,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-02-19 at 11:23 +0530, Anshuman Khandual wrote:
-> On 02/18/2016 10:14 PM, Aneesh Kumar K.V wrote:
-> > We can get a hash pte fault with 4k base page size and find the pte
-> > already inserted with 64K base page size. In that case we need to clear
-...
->
-> > diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
-> > index e7c04542ba62..e3e76b929f33 100644
-> > --- a/arch/powerpc/mm/hash64_4k.c
-> > +++ b/arch/powerpc/mm/hash64_4k.c
-> > @@ -106,7 +106,7 @@ repeat:
-> >  			}
-> >  		}
-> >  		/*
-> > -		 * Hypervisor failure. Restore old pmd and return -1
-> > +		 * Hypervisor failure. Restore old pte and return -1
->
-> This change is not relevant here. Should be a separate patch.
+On 02/19/2016 04:00 PM, Michael Ellerman wrote:
+> On Fri, 2016-02-19 at 10:24 +0530, Anshuman Khandual wrote:
+>> > On 02/18/2016 08:07 PM, Michael Ellerman wrote:
+>>> > > On Wed, 2016-02-17 at 17:42 +0530, Anshuman Khandual wrote:
+>>> > > 
+>>>> > > > This renames the global list which tracks all the virtual to physical
+>>>> > > > mapping and also the global list which tracks all the available unused
+>>>> > > > vmemmap_hw_map node structures.
+>>> > > 
+>>> > > But why? Why are the new names *so* much better that we would want to go
+>>> > > through all this churn?
+>> > 
+>> > Hmm, okay. Its kind of subjective but then its upto you.
+> Yeah it is of course. I'm not saying your names aren't better, but they're not
+> obviously better to me, and so it's a lot of code churn for not much benefit
+> IMHO.
+> 
+> But you can try and convince me if you really feel strongly about it.
 
-Yeah.
-
-If it was -rc1 then I would probably let it go, but this will land in rc6 so
-the fixes need to be tight.
-
-cheers
+Agreed, its not worth the churn. Thanks !
