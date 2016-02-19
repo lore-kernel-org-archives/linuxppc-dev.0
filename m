@@ -1,19 +1,17 @@
-Return-Path: <dave.hansen@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id 9CD551A0627
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 12:28:29 +1100 (AEDT)
-Subject: Re: [PATCH V3 01/30] mm: Make vm_get_page_prot arch specific.
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1455814254-10226-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1455814254-10226-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-From: Dave Hansen <dave.hansen@intel.com>
-Message-ID: <56C66FBB.7000808@intel.com>
-Date: Thu, 18 Feb 2016 17:28:27 -0800
-MIME-Version: 1.0
-In-Reply-To: <1455814254-10226-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
+ [IPv6:2607:f8b0:400e:c00::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB2431A0635
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 12:55:59 +1100 (AEDT)
+Received: by mail-pf0-x231.google.com with SMTP id e127so41828684pfe.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 17:55:59 -0800 (PST)
+From: Rashmica Gupta <rashmicy@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/Kconfig: Update config option based on page size.
+Date: Fri, 19 Feb 2016 12:55:43 +1100
+Message-Id: <1455846943-32147-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,22 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/18/2016 08:50 AM, Aneesh Kumar K.V wrote:
-> With next generation power processor, we are having a new mmu model
-> [1] that require us to maintain a different linux page table format.
-> 
-> Inorder to support both current and future ppc64 systems with a single
-> kernel we need to make sure kernel can select between different page
-> table format at runtime. With the new MMU (radix MMU) added, we will
-> have to dynamically switch between different protection map. Hence
-> override vm_get_page_prot instead of using arch_vm_get_page_prot. We
-> also drop arch_vm_get_page_prot since only powerpc used it.
+Currently on PPC64 changing kernel pagesize from 4K to 64K leaves
+FORCE_MAX_ZONEORDER set to 13 - which produces a compile error.
 
-Hi Aneesh,
+The error occurs because of the following constraint (from
+include/linux/mmzone.h) being violated:
 
-I've got some patches I'm hoping to get in to 4.6 that start using
-arch_vm_get_page_prot() on x86:
+	MAX_ORDER -1 + PAGESHIFT <= SECTION_SIZE_BITS.
 
-> http://git.kernel.org/cgit/linux/kernel/git/daveh/x86-pkeys.git/commit/?h=pkeys-v024&id=aa1e61398fb598869981cfe48275cff832945669
+Expanding this out, we get:
 
-So I'd prefer that it stay in place. :)
+	FORCE_MAX_ZONEBITS <= 25 - PAGESHIFT,
+
+which requires, for a 64K page, FORCE_MAX_ZONEBITS <= 9. Thus
+set max value of FORCE_MAX_ZONEORDER for 64K pages to 9.
+
+Also, check the minimum value:
+In include/linux/huge_mm.h, we have the constraint HPAGE_PMD_ORDER <
+MAX_ORDER which expands out to:
+
+	PTE_INDEX_SIZE < FORCE_MAX_ZONEORDER.
+
+PTE_INDEX_SIZE is:
+	9 (4k hash or no hash 4K pgtable) or
+	8 (64K hash or no hash 64K pgtable).
+Thus a min value of 9 for 64K pages is reasonable.
+
+So, update the range of FORCE_MAX_ZONEORDER from 9-64 to 9-9.
+
+Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+---
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index e4824fd04bb7..3bd3465b93ba 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -585,7 +585,7 @@ endchoice
+ 
+ config FORCE_MAX_ZONEORDER
+ 	int "Maximum zone order"
+-	range 9 64 if PPC64 && PPC_64K_PAGES
++	range 9 9 if PPC64 && PPC_64K_PAGES
+ 	default "9" if PPC64 && PPC_64K_PAGES
+ 	range 13 64 if PPC64 && !PPC_64K_PAGES
+ 	default "13" if PPC64 && !PPC_64K_PAGES
+-- 
+2.5.0
