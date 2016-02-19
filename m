@@ -1,39 +1,23 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c03::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 94D191A06F4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 22:03:25 +1100 (AEDT)
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 19 Feb 2016 21:03:23 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 724462BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 22:03:21 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1JB3CIM8782302
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 22:03:21 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1JB2meD019682
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 22:02:48 +1100
-Message-ID: <56C6F646.9040506@linux.vnet.ibm.com>
-Date: Fri, 19 Feb 2016 16:32:30 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 867DB1A0686
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 22:30:46 +1100 (AEDT)
+Received: by mail-pa0-x22f.google.com with SMTP id yy13so49031788pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 03:30:46 -0800 (PST)
+Subject: Re: [PATCH] powerpc/mm/hash: Clear the invalid slot information
+ correctly
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+References: <1455813884-8283-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <56C6FCDD.8010302@gmail.com>
+Date: Fri, 19 Feb 2016 22:30:37 +1100
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-CC: aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [RFC 4/4] powerpc/mm: Rename global tracker for virtual to
- physical mapping
-References: <1455711179-20357-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1455711179-20357-4-git-send-email-khandual@linux.vnet.ibm.com>
- <1455806240.5284.19.camel@ellerman.id.au>
- <56C6A00C.5030602@linux.vnet.ibm.com>
- <1455877859.6506.1.camel@ellerman.id.au>
-In-Reply-To: <1455877859.6506.1.camel@ellerman.id.au>
+In-Reply-To: <1455813884-8283-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -44,23 +28,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/19/2016 04:00 PM, Michael Ellerman wrote:
-> On Fri, 2016-02-19 at 10:24 +0530, Anshuman Khandual wrote:
->> > On 02/18/2016 08:07 PM, Michael Ellerman wrote:
->>> > > On Wed, 2016-02-17 at 17:42 +0530, Anshuman Khandual wrote:
->>> > > 
->>>> > > > This renames the global list which tracks all the virtual to physical
->>>> > > > mapping and also the global list which tracks all the available unused
->>>> > > > vmemmap_hw_map node structures.
->>> > > 
->>> > > But why? Why are the new names *so* much better that we would want to go
->>> > > through all this churn?
->> > 
->> > Hmm, okay. Its kind of subjective but then its upto you.
-> Yeah it is of course. I'm not saying your names aren't better, but they're not
-> obviously better to me, and so it's a lot of code churn for not much benefit
-> IMHO.
-> 
-> But you can try and convince me if you really feel strongly about it.
 
-Agreed, its not worth the churn. Thanks !
+On 19/02/16 03:44, Aneesh Kumar K.V wrote:
+> We can get a hash pte fault with 4k base page size and find the pte
+> already inserted with 64K base page size. In that case we need to clear
+> the existing slot information from the old pte. Fix this correctly
+>
+> With THP, we also clear the slot information with respect to all
+> the 64K hash pte mapping that 16MB page. They are all invalid
+> now. This make sure we don't find the slot valid when we fault with
+> 4k base page size. Finding the slot valid should not result in any wrong
+> behavior because we do check again in hash page table for the validity.
+> But we can avoid that check completely.
+>
+> Fixes: a43c0eb8364c022 ("powerpc/mm: Convert 4k hash insert to C")
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/hash64_4k.c       |  2 +-
+>  arch/powerpc/mm/hash64_64k.c      | 12 +++++++++---
+>  arch/powerpc/mm/hugepage-hash64.c |  7 ++++++-
+>  3 files changed, 16 insertions(+), 5 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
+> index e7c04542ba62..e3e76b929f33 100644
+> --- a/arch/powerpc/mm/hash64_4k.c
+> +++ b/arch/powerpc/mm/hash64_4k.c
+> @@ -106,7 +106,7 @@ repeat:
+>  			}
+>  		}
+>  		/*
+> -		 * Hypervisor failure. Restore old pmd and return -1
+> +		 * Hypervisor failure. Restore old pte and return -1
+>  		 * similar to __hash_page_*
+>  		 */
+>  		if (unlikely(slot == -2)) {
+> diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
+> index 0762c1e08c88..b3895720edb0 100644
+> --- a/arch/powerpc/mm/hash64_64k.c
+> +++ b/arch/powerpc/mm/hash64_64k.c
+> @@ -111,7 +111,13 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+>  	 */
+>  	if (!(old_pte & _PAGE_COMBO)) {
+>  		flush_hash_page(vpn, rpte, MMU_PAGE_64K, ssize, flags);
+> -		old_pte &= ~_PAGE_HASHPTE | _PAGE_F_GIX | _PAGE_F_SECOND;
+> +		/*
+> +		 * clear the old slot details from the old and new pte.
+> +		 * On hash insert failure we use old pte value and we don't
+> +		 * want slot information there if we have a insert failure.
+> +		 */
+> +		old_pte &= ~(_PAGE_HASHPTE | _PAGE_F_GIX | _PAGE_F_SECOND);
+> +		new_pte &= ~(_PAGE_HASHPTE | _PAGE_F_GIX | _PAGE_F_SECOND);
+>  		goto htab_insert_hpte;
+>  	}
+>  	/*
+> @@ -182,7 +188,7 @@ repeat:
+>  		}
+>  	}
+>  	/*
+> -	 * Hypervisor failure. Restore old pmd and return -1
+> +	 * Hypervisor failure. Restore old pte and return -1
+>  	 * similar to __hash_page_*
+>  	 */
+>  	if (unlikely(slot == -2)) {
+> @@ -305,7 +311,7 @@ repeat:
+>  			}
+>  		}
+>  		/*
+> -		 * Hypervisor failure. Restore old pmd and return -1
+> +		 * Hypervisor failure. Restore old pte and return -1
+>  		 * similar to __hash_page_*
+>  		 */
+>  		if (unlikely(slot == -2)) {
+> diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
+> index 49b152b0f926..8424f46c2bf7 100644
+> --- a/arch/powerpc/mm/hugepage-hash64.c
+> +++ b/arch/powerpc/mm/hugepage-hash64.c
+> @@ -78,9 +78,14 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
+>  		 * base page size. This is because demote_segment won't flush
+>  		 * hash page table entries.
+>  		 */
+> -		if ((old_pmd & _PAGE_HASHPTE) && !(old_pmd & _PAGE_COMBO))
+> +		if ((old_pmd & _PAGE_HASHPTE) && !(old_pmd & _PAGE_COMBO)) {
+>  			flush_hash_hugepage(vsid, ea, pmdp, MMU_PAGE_64K,
+>  					    ssize, flags);
+> +			/*
+> +			 * clear the old slot information 
+> +			 */
+Redundant comment, something more useful? why clear it?
+> +			memset(hpte_slot_array, 0, PTE_FRAG_SIZE);
+> +		}
+>  	}
+>  
+>  	valid = hpte_valid(hpte_slot_array, index);
