@@ -1,44 +1,21 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EBDB11A0682
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 14:18:03 +1100 (AEDT)
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 19 Feb 2016 13:18:03 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 510672CE805B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 14:17:54 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1J3Hk7632833706
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 14:17:54 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1J3HKHF009844
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 14:17:22 +1100
-Date: Fri, 19 Feb 2016 14:16:55 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Rob Herring <robherring2@gmail.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, aik@ozlabs.ru, dja@axtens.net,
- Bjorn Helgaas <bhelgaas@google.com>, Grant Likely <grant.likely@linaro.org>
-Subject: Re: [PATCH v8 42/45] drivers/of: Rename unflatten_dt_node()
-Message-ID: <20160219031655.GA10818@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1455680668-23298-43-git-send-email-gwshan@linux.vnet.ibm.com>
- <CAL_JsqJydgmkU=SGcr-0JHsYG8wXk5GEQCQXY7y+FHH2A0LZkw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9E63E1A0686
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Feb 2016 15:08:27 +1100 (AEDT)
+Received: by mail-pa0-x231.google.com with SMTP id fl4so43036337pad.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2016 20:08:27 -0800 (PST)
+Subject: Re: [PATCH] powerpc/Kconfig: Update config option based on page size.
+To: Rashmica Gupta <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <1455846943-32147-1-git-send-email-rashmicy@gmail.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <56C69535.90907@gmail.com>
+Date: Fri, 19 Feb 2016 15:08:21 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAL_JsqJydgmkU=SGcr-0JHsYG8wXk5GEQCQXY7y+FHH2A0LZkw@mail.gmail.com>
+In-Reply-To: <1455846943-32147-1-git-send-email-rashmicy@gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,38 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 17, 2016 at 08:59:53AM -0600, Rob Herring wrote:
->On Tue, Feb 16, 2016 at 9:44 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
->> This renames unflatten_dt_node() to unflatten_dt_nodes() as it
->> populates multiple device nodes from FDT blob. No logical changes
->> introduced.
->>
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> ---
->>  drivers/of/fdt.c | 14 +++++++-------
->>  1 file changed, 7 insertions(+), 7 deletions(-)
->
->Acked-by: Rob Herring <robh@kernel.org>
->
->I'm happy to take patches 40-42 for 4.6 if the rest of the series
->doesn't go in given they fix a separate problem. I just need to know
->soon (or at least they need to go into -next soon).
->
 
-Thanks for quick response, Rob. It depends how much comments I will
-receive for the powerpc/powernv part. Except that, all parts including
-this one have been ack'ed. I can discuss it with Michael Ellerman.
-By the way, how soon you need the decision to merge 40-42? If that's
-one or two weeks later, I don't think the reivew on the whole series
-can be done.
 
-Also, I think you probably can merge 40-44 as they're all about
-fdt.c. If they can be merged at one time, I needn't bother (cc)
-you again if I need send a updated revision. Thanks for your
-review.
-
-Thanks,
-Gavin
-
->Rob
+On 19/02/16 12:55, Rashmica Gupta wrote:
+> Currently on PPC64 changing kernel pagesize from 4K to 64K leaves
+> FORCE_MAX_ZONEORDER set to 13 - which produces a compile error.
 >
+> The error occurs because of the following constraint (from
+> include/linux/mmzone.h) being violated:
+>
+> 	MAX_ORDER -1 + PAGESHIFT <= SECTION_SIZE_BITS.
+IA64 has this cool hack
+
+      12 #ifdef CONFIG_FORCE_MAX_ZONEORDER
+      13 #if ((CONFIG_FORCE_MAX_ZONEORDER - 1 + PAGE_SHIFT) > SECTION_SIZE_BITS)
+      14 #undef SECTION_SIZE_BITS
+      15 #define SECTION_SIZE_BITS (CONFIG_FORCE_MAX_ZONEORDER - 1 + PAGE_SHIFT)
+      16 #endif
+
+But coming back (we can revisit the SECTION_SIZE_BITS definition later)
+
+MAX_ORDER -1 + 16 <= 24 for 64 K
+
+and
+
+MAX_ORDER -1 + 12 < = 24 for 4K
+
+Your calculations are correct
+>
+> Expanding this out, we get:
+>
+> 	FORCE_MAX_ZONEBITS <= 25 - PAGESHIFT,
+>
+> which requires, for a 64K page, FORCE_MAX_ZONEBITS <= 9. Thus
+> set max value of FORCE_MAX_ZONEORDER for 64K pages to 9.
+>
+> Also, check the minimum value:
+> In include/linux/huge_mm.h, we have the constraint HPAGE_PMD_ORDER <
+> MAX_ORDER which expands out to:
+>
+> 	PTE_INDEX_SIZE < FORCE_MAX_ZONEORDER.
+
+> PTE_INDEX_SIZE is:
+> 	9 (4k hash or no hash 4K pgtable) or
+> 	8 (64K hash or no hash 64K pgtable).
+> Thus a min value of 9 for 64K pages is reasonable.
+
+For 4K pages we end up with
+
+9 < FORCE_MAX_ZONE_ORDER
+FORCE_MAX_ZONE_ORDER -1 + 12 < = 24
+
+The range is 9 to 13
+
+For 64K we end up with
+8 < FORCE_MAX_ZONE_ORDER
+FORCE_MAX_ZONE_ORDER -1 + 16 <= 24 or FORCE_MAX_ZONE_ORDER <= 9
+
+The range is really between 8 and 9 unless we tweak the SECTION_SIZE_BITS
+> So, update the range of FORCE_MAX_ZONEORDER from 9-64 to 9-9.
+>
+> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+> ---
+>  arch/powerpc/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index e4824fd04bb7..3bd3465b93ba 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -585,7 +585,7 @@ endchoice
+>  
+>  config FORCE_MAX_ZONEORDER
+>  	int "Maximum zone order"
+> -	range 9 64 if PPC64 && PPC_64K_PAGES
+> +	range 9 9 if PPC64 && PPC_64K_PAGES
+range 8 9?
+>  	default "9" if PPC64 && PPC_64K_PAGES
+>  	range 13 64 if PPC64 && !PPC_64K_PAGES
+Should this be fixed as well?
+range 9 13?
+>  	default "13" if PPC64 && !PPC_64K_PAGES
+
+Please check my calculations
+
+Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+
+Balbir Singh
