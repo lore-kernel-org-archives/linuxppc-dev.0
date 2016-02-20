@@ -1,20 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <paulus@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BCBD11A07D4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 16:54:23 +1100 (AEDT)
-Date: Sat, 20 Feb 2016 16:54:19 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9DD361A07E3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 17:12:54 +1100 (AEDT)
+From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	linux-mm@kvack.org
-Subject: Re: Problems with THP in v4.5-rc4 on POWER
-Message-ID: <20160220055419.GB16191@fergus.ozlabs.ibm.com>
-References: <20160220013942.GA16191@fergus.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160220013942.GA16191@fergus.ozlabs.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH 0/9] powerpc/mm: Restructure Linux PTE on Book3S/64 to
+ radix format
+Date: Sat, 20 Feb 2016 17:12:31 +1100
+Message-Id: <1455948760-24710-1-git-send-email-paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Feb 20, 2016 at 12:39:42PM +1100, Paul Mackerras wrote:
-> It seems there's something wrong with our transparent hugepage
-> implementation on POWER server processors as of v4.5-rc4.  I have seen
-> the email thread on "[BUG] random kernel crashes after THP rework on
-> s390 (maybe also on PowerPC and ARM)", but this doesn't seem exactly
-> the same as that (though it may of course be related).
-> 
-> I have been testing v4.5-rc4 with Aneesh's patch "powerpc/mm/hash:
-> Clear the invalid slot information correctly" on top, on a KVM guest
-> with 160 vcpus (threads=8) and 32GB of memory backed by 16MB large
-> pages, running on a POWER8 machine running a 4.4.1 host kernel (20
-> cores * 8 threads, 128GB of RAM).  The guest kernel is compiled with
-> THP enabled and set to "always" (i.e. not "madvise").
-> 
-> On this setup, when doing something like a large kernel compile, I see
-> random segfaults happening (in gcc, cc1, sh, etc.).  I also see bursts
-> of messages like this on the host console:
-> 
-> [50957.570859] Harmless Hypervisor Maintenance interrupt [Recovered]
-> [50957.570864]  Error detail: Processor Recovery done
-> [50957.570869]  HMER: 2040000000000000
+This patch series modifies the Linux PTE format used on 64-bit Book3S
+processors (i.e. POWER server processors) to make the bits line up
+with the PTE format used in the radix trees defined in PowerISA v3.0.
+This will reduce the amount of further change required to make a
+kernel that can run with either a radix MMU or a hashed page table
+(HPT) MMU.
 
-When I use a merge of v4.5-rc4 with the fixes branch from the powerpc
-tree, I don't see these messages any more, presumably due to
-"powerpc/mm: Fix Multi hit ERAT cause by recent THP update".  With my
-patch, I still see that it is finding HPTEs to invalidate, but without
-my patch, even though it is presumably leaving HPTEs around, I don't
-see any errors (such as random segfaults) occurring.
+This also changes the upper levels of the tree to use real addresses
+rather than kernel virtual addresses - that is, we no longer have the
+0xc000... at the top of each PGD/PUD/PMD entry.  I made this change
+for all 64-bit machines, both embedded and server.
+
+The patch series is against v4.5-rc4 plus Aneesh's "powerpc/mm/hash:
+Clear the invalid slot information correctly" patch.
+
+I have compiled this for all the defconfigs in the tree, without
+error.  I have tested this, with the fixes branch of the powerpc tree
+merged in, both running bare-metal on a POWER8 and in a KVM guest on
+that POWER8 system.  In the guest I tested both 4k and 64k configs,
+with THP enabled; in the host I tested with 64k page size and THP
+enabled.  All these tests ran fine, including running a KVM guest on
+the bare-metal system.  So far I have done kernel compiles in a loop
+as the test, but I plan to run LTP and possibly some other tests.
+
+Comments welcome.
 
 Paul.
+
+ arch/powerpc/include/asm/book3s/64/hash-4k.h    |  5 ++-
+ arch/powerpc/include/asm/book3s/64/hash-64k.h   | 24 ++++++-----
+ arch/powerpc/include/asm/book3s/64/hash.h       | 54 ++++++++++++-------------
+ arch/powerpc/include/asm/book3s/64/pgtable.h    |  6 +--
+ arch/powerpc/include/asm/nohash/64/pgtable-4k.h |  2 +-
+ arch/powerpc/include/asm/nohash/64/pgtable.h    | 10 ++---
+ arch/powerpc/include/asm/pgalloc-64.h           | 16 ++++----
+ arch/powerpc/mm/hash64_64k.c                    |  3 +-
+ arch/powerpc/mm/hash_utils_64.c                 | 10 ++---
+ arch/powerpc/mm/hugetlbpage-hash64.c            |  5 ++-
+ arch/powerpc/mm/mmu_decl.h                      |  2 +-
+ arch/powerpc/mm/pgtable_64.c                    |  4 +-
+ 12 files changed, 71 insertions(+), 70 deletions(-)
