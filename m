@@ -1,22 +1,35 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7B1FC1A07B3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 13:05:53 +1100 (AEDT)
-Message-ID: <1455933946.17239.0.camel@ellerman.id.au>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.5-3 tag
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: aik@ozlabs.ru, aneesh.kumar@linux.vnet.ibm.com,
- gwshan@linux.vnet.ibm.com,  kda@linux-powerpc.org,
- kirill.shutemov@linux.intel.com,  linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, rostedt@goodmis.org,  schwab@linux-m68k.org
-Date: Sat, 20 Feb 2016 13:05:46 +1100
-Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature";
- boundary="=-H+j49cSRRywpoiYlrLI2"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 427C91A07C4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 16:03:56 +1100 (AEDT)
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Sat, 20 Feb 2016 15:03:54 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id CADF72BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 16:03:48 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1K53bsO8323380
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 16:03:48 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1K53CwN001147
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 16:03:13 +1100
+From: Anju T <anju@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mpe@ellerman.id.au, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
+ dsahern@gmail.com, acme@redhat.com, sukadev@linux.vnet.ibm.com,
+ hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ anju@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V11 0/4]perf/powerpc: Add ability to sample intr machine state
+ in powerpc
+Date: Sat, 20 Feb 2016 10:32:44 +0530
+Message-Id: <1455944568-7231-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,98 +39,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This short patch series adds the ability to sample the interrupted
+machine state for each hardware sample.
 
---=-H+j49cSRRywpoiYlrLI2
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+To test this patchset,
+Eg:
 
-Hi Linus,
+$ perf record -I?       # list supported registers
 
-Please pull some more powerpc fixes for 4.5:
+output:
+available registers: r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 r17 r18 r19 r20 r21 r22 r23 r24 r25 r26 r27 r28 r29 r30 r31 nip msr orig_r3 ctr link xer ccr softe trap dar dsisr 
 
-The following changes since commit 2d19fc639516dc7b4184450b315c931d38549e61=
-:
+ usage: perf record [<options>] [<command>]
+    or: perf record [<options>] -- <command> [<options>]
 
-  powerpc/mm: Fixup _HPAGE_CHG_MASK (2016-01-28 23:49:43 +1100)
+    -I, --intr-regs[=<any register>]
+                          sample selected machine registers on interrupt, use -I ? to list register names
 
-are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powe=
-rpc-4.5-3
+$ perf record -I ls   # record machine state at interrupt
+$ perf script -D      # read the perf.data file
 
-for you to fetch changes up to 6ecad912a0073c768db1491c27ca55ad2d0ee68f:
+Sample output obtained for this patchset/ output looks like as follows:
 
-  powerpc/ioda: Set "read" permission when "write" is set (2016-02-17 23:52=
-:17 +1100)
+496768515470 0x1988 [0x188]: PERF_RECORD_SAMPLE(IP, 0x1): 4522/4522: 0xc0000000001e538c period: 1 addr: 0
+... intr regs: mask 0x7ffffffffff ABI 64-bit
+.... r0    0xc0000000001e5e34
+.... r1    0xc000000fe733f9a0
+.... r2    0xc000000001523100
+.... r3    0xc000000ffaadeb60
+.... r4    0xc000000003456800
+.... r5    0x73a9b5e000
+.... r6    0x1e000000
+.... r7    0x0
+.... r8    0x0
+.... r9    0x0
+.... r10   0x1
+.... r11   0x0
+.... r12   0x24022822
+.... r13   0xc00000000feec180
+.... r14   0x0
+.... r15   0xc000001e4be18800
+.... r16   0x0
+.... r17   0xc000000ffaac5000
+.... r18   0xc000000fe733f8a0
+.... r19   0xc000000001523100
+.... r20   0xc00000000009fd1c
+.... r21   0xc000000fcaa69000
+.... r22   0xc0000000001e4968
+.... r23   0xc000000001523100
+.... r24   0xc000000fe733f850
+.... r25   0xc000000fcaa69000
+.... r26   0xc000000003b8fcf0
+.... r27   0xfffffffffffffead
+.... r28   0x0
+.... r29   0xc000000fcaa69000
+.... r30   0x1
+.... r31   0x0
+.... nip   0xc0000000001dd320
+.... msr   0x9000000000009032
+.... orig_r3 0xc0000000001e538c
+.... ctr   0xc00000000009d550
+.... link  0xc0000000001e5e34
+.... xer   0x0
+.... ccr   0x84022882
+.... softe 0x0
+.... trap  0xf01
+.... dar   0x0
+.... dsisr 0xf00040060000004
+ ... thread: :4522:4522
+ ...... dso: /root/.debug/.build-id/b0/ef11b1a1629e62ac9de75199117ee5ef9469e9
+           :4522  4522   496.768515:          1 cycles:  c0000000001e538c .perf_event_context_sched_in (/boot/vmlinux)
 
-----------------------------------------------------------------
-powerpc fixes for 4.5 #2
 
- - Fix build error on 32-bit with checkpoint restart from Aneesh Kumar
- - Fix dedotify for binutils >=3D 2.26 from Andreas Schwab
- - Don't trace hcalls on offline CPUs from Denis Kirjanov
- - eeh: Fix stale cached primary bus from Gavin Shan
- - eeh: Fix stale PE primary bus from Gavin Shan
- - mm: Fix Multi hit ERAT cause by recent THP update from Aneesh Kumar K.V
- - ioda: Set "read" permission when "write" is set from Alexey Kardashevski=
-y
 
-----------------------------------------------------------------
-Alexey Kardashevskiy (1):
-      powerpc/ioda: Set "read" permission when "write" is set
+Changes from v10:
 
-Andreas Schwab (1):
-      powerpc: Fix dedotify for binutils >=3D 2.26
+- Included SOFTE as suggested by mpe
+- The name of registers displayed is  changed from
+  gpr* to r* also the macro names changed from 
+  PERF_REG_POWERPC_GPR* to PERF_REG_POWERPC_R*.
+- The conflict in returning the ABI is resolved.
+- #define PERF_REG_SP  is again changed to  PERF_REG_POWERPC_R1
+- Comment in tools/perf/config/Makefile is updated.
+- removed the "Reviewed-By" tag as the patch has logic changes.
 
-Aneesh Kumar K.V (2):
-      powerpc/book3s_32: Fix build error with checkpoint restart
-      powerpc/mm: Fix Multi hit ERAT cause by recent THP update
 
-Denis Kirjanov (1):
-      powerpc/pseries: Don't trace hcalls on offline CPUs
+Changes from V9:
 
-Gavin Shan (2):
-      powerpc/eeh: Fix stale cached primary bus
-      powerpc/powernv: Fix stale PE primary bus
+- Changed the name displayed for link register from "lnk" to "link" in 
+  tools/perf/arch/powerpc/include/perf_regs.h
 
- arch/powerpc/Kconfig                         |  4 ++--
- arch/powerpc/include/asm/book3s/64/pgtable.h |  4 ++++
- arch/powerpc/include/asm/eeh.h               |  1 +
- arch/powerpc/include/asm/trace.h             |  8 +++++--
- arch/powerpc/kernel/eeh_driver.c             |  3 +++
- arch/powerpc/kernel/eeh_pe.c                 |  2 +-
- arch/powerpc/kernel/module_64.c              |  2 +-
- arch/powerpc/mm/pgtable_64.c                 | 32 ++++++++++++++++++++++++=
-++++
- arch/powerpc/platforms/powernv/eeh-powernv.c |  5 ++++-
- arch/powerpc/platforms/powernv/pci-ioda.c    |  1 +
- arch/powerpc/platforms/powernv/pci.c         | 26 ++++++++++++++++++++++
- arch/powerpc/platforms/powernv/pci.h         |  1 +
- include/asm-generic/pgtable.h                |  8 +++++++
- mm/huge_memory.c                             |  1 +
- 14 files changed, 91 insertions(+), 7 deletions(-)
+changes from V8:
 
---=-H+j49cSRRywpoiYlrLI2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+- Corrected the indentation issue in the Makefile mentioned in 3rd patch
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Changes from V7:
 
-iQIcBAABAgAGBQJWx8n6AAoJEFHr6jzI4aWAJzsQALIILIviLBkb9fDxOv5sYx2n
-aH6jEnSVyW0HgHMalW2zS5a7x+ZBHuEIUcY5G5I2eac5bKNtqd6Zx3ZlnMzN6fNs
-8ZbEMQEp82ajOYHsF+48h31+3GCdMxqCaMAV+8rLGUaFWUYVxYl8fNSiTsOfeGx1
-qdqLRKApZOH9+5k9Tht1IxUZVPC15RDH8TCmjxqNEgPdqMbx0wyIUjXqPMfhIcK5
-nlN0Wf5sUJZd87Lrji0oRKyVCIgZZlDoUxLpQsK1Qx8lZS6/6O/0P5pLVPJvHfQy
-uHEAkrXc5XvjtL3KF4TDW3NJaSWJU+N7f9vHLs2EkEi33XmTPRGjLobAfY4uAB9K
-kp/PO3nnXyJf4/qJ4XVvyA1LJ9ozre/IRkMEk3s3yjLwHKLKkUjDZ0wEQ3xoRrwk
-iXyUmvvI9/DuU3W5PCh0KdOBnUHRnQuSc2RKZloQ5oUV5UH7QddyzOpWAslGCmy7
-hhL6VTGias4G1KYmhHlWxtFgWVTISRok9qJT/RozD892suDdggE+0LhyVY8XMvw9
-c2XNMg5W4jRuwX4XMwVIPmBRthQZQWTVyXrOo66GgzuGJf2IL04agbypSK/XTcp6
-zXcBcAv3RHO5XnFKLT6ijNHK7boW6K/+PE8T9xQU7Ex/TKiwegCGXrmqotnsAIEc
-EzlA0q0StxnI4mQMW2bZ
-=2JiH
------END PGP SIGNATURE-----
+- Addressed the new line issue in 3rd patch.
 
---=-H+j49cSRRywpoiYlrLI2--
+Changes from V6:
+
+- Corrected the typo in patch  tools/perf: Map the ID values with register names.
+  ie #define PERF_REG_SP  PERF_REG_POWERPC_R1 should be #define PERF_REG_SP   PERF_REG_POWERPC_GPR1
+
+
+Changes from V5:
+
+- Enabled perf_sample_regs_user also in this patch set.Functions added in 
+   arch/powerpc/perf/perf_regs.c
+- Added Maddy's patch to this patchset for enabling -I? option which will
+  list the supported register names.
+
+
+Changes from V4:
+
+- Removed the softe and MQ from all patches
+- Switch case is replaced with an array in the 3rd patch
+
+Changes from V3:
+
+- Addressed the comments by Sukadev regarding the nits in the descriptions.
+- Modified the subject of first patch.
+- Included the sample output in the 3rd patch also.
+
+Changes from V2:
+
+- tools/perf/config/Makefile is moved to the patch tools/perf.
+- The patchset is reordered.
+- perf_regs_load() function is used for the dwarf unwind test.Since it is not required here,
+  it is removed from tools/perf/arch/powerpc/include/perf_regs.h
+- PERF_REGS_POWERPC_RESULT is removed.
+
+Changes from V1:
+
+- Solved the name missmatch issue in the from and signed-off field of the patch series.
+- Added necessary comments in the 3rd patch ie perf/powerpc ,as suggested by Maddy.
+
+
+
+Anju T (3):
+  perf/powerpc: assign an id to each powerpc register
+  perf/powerpc: add support for sampling intr machine state
+  tools/perf: Map the ID values with register names
+
+Madhavan Srinivasan (1):
+  tool/perf: Add sample_reg_mask to include all perf_regs regs
+
+
+ arch/powerpc/Kconfig                        |  1 +
+ arch/powerpc/include/uapi/asm/perf_regs.h   | 50 ++++++++++++++++
+ arch/powerpc/perf/Makefile                  |  1 +
+ arch/powerpc/perf/perf_regs.c               | 91 +++++++++++++++++++++++++++++
+ tools/perf/arch/powerpc/include/perf_regs.h | 69 ++++++++++++++++++++++
+ tools/perf/arch/powerpc/util/Build          |  1 +
+ tools/perf/arch/powerpc/util/perf_regs.c    | 49 ++++++++++++++++
+ tools/perf/config/Makefile                  |  5 ++
+ 8 files changed, 267 insertions(+)
+ create mode 100644 arch/powerpc/include/uapi/asm/perf_regs.h
+ create mode 100644 arch/powerpc/perf/perf_regs.c
+ create mode 100644 tools/perf/arch/powerpc/include/perf_regs.h
+ create mode 100644 tools/perf/arch/powerpc/util/perf_regs.c
+
+-- 
+2.1.0
