@@ -1,36 +1,37 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E241C1A0947
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2016 02:32:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EE0A11A096C
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2016 03:16:30 +1100 (AEDT)
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 20 Feb 2016 08:32:36 -0700
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2349E1FF0023
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 08:20:42 -0700 (MST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1KFWW3G26869810
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 15:32:32 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1KFWVwj012517
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 10:32:31 -0500
+ Sat, 20 Feb 2016 11:16:28 -0500
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 44810C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 11:16:22 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1KGGOLS33882232
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 16:16:24 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1KGGNDn015973
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 11:16:23 -0500
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Paul Mackerras via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 0/9] powerpc/mm: Restructure Linux PTE on Book3S/64 to
- radix format
-In-Reply-To: <87ziuvcun9.fsf@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC PATCH 2/9] powerpc/mm/book3s-64: Free up 7 high-order bits
+ in the Linux PTE
+In-Reply-To: <1455948760-24710-3-git-send-email-paulus@samba.org>
 References: <1455948760-24710-1-git-send-email-paulus@samba.org>
- <87ziuvcun9.fsf@linux.vnet.ibm.com>
-Date: Sat, 20 Feb 2016 21:02:28 +0530
-Message-ID: <874md38kj7.fsf@linux.vnet.ibm.com>
+ <1455948760-24710-3-git-send-email-paulus@samba.org>
+Date: Sat, 20 Feb 2016 21:46:19 +0530
+Message-ID: <871t878ii4.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,53 +43,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+Paul Mackerras <paulus@samba.org> writes:
 
-> Paul Mackerras <paulus@samba.org> writes:
->
->> This patch series modifies the Linux PTE format used on 64-bit Book3S
->> processors (i.e. POWER server processors) to make the bits line up
->> with the PTE format used in the radix trees defined in PowerISA v3.0.
->> This will reduce the amount of further change required to make a
->> kernel that can run with either a radix MMU or a hashed page table
->> (HPT) MMU.
->>
->> This also changes the upper levels of the tree to use real addresses
->> rather than kernel virtual addresses - that is, we no longer have the
->> 0xc000... at the top of each PGD/PUD/PMD entry.  I made this change
->> for all 64-bit machines, both embedded and server.
->>
->> The patch series is against v4.5-rc4 plus Aneesh's "powerpc/mm/hash:
->> Clear the invalid slot information correctly" patch.
->>
->> I have compiled this for all the defconfigs in the tree, without
->> error.  I have tested this, with the fixes branch of the powerpc tree
->> merged in, both running bare-metal on a POWER8 and in a KVM guest on
->> that POWER8 system.  In the guest I tested both 4k and 64k configs,
->> with THP enabled; in the host I tested with 64k page size and THP
->> enabled.  All these tests ran fine, including running a KVM guest on
->> the bare-metal system.  So far I have done kernel compiles in a loop
->> as the test, but I plan to run LTP and possibly some other tests.
->>
->> Comments welcome.
->
-> I was expecting some complex changes in asm and other part of the code. That
-> is one of the reason I was holding of a series like this till I get the
-> radix merged. I should have really tried the radix/hash linux page table 
-> consolidation to see the impact.
->
-> Now how do we want to go with this series ?. If we are taking this
-> series before the books3 hash linux abstraction series, I will have to
-> redo that series now on top of this.
->
+> This frees up bits 57-63 in the Linux PTE on 64-bit Book 3S machines.
+> In the 4k page case, this is done just by reducing the size of the
+> RPN field to 39 bits, giving 51-bit real addresses.  In the 64k page
+> case, we had 10 unused bits in the middle of the PTE, so this moves
+> the RPN field down 10 bits to make use of those unused bits.  This
+> means the RPN field is now 3 bits larger at 37 bits, giving 53-bit
+> real addresses in the normal case, or 49-bit real addresses for the
+> special 4k PFN case.
 
-Another option is to do this on top of book3s hash linux abstraction
-series. I can drop the core patch 
 
-mm: Some arch may want to use HPAGE_PMD related values as variables
-
-and rest goes in as it is. Later with this patch series we undo some of
-abstraction added. With that approach with each pte bit that we are
-moving we also document which part of radix won't need an update.
+Is it ok to have different real address bits between 4k and 64k linux
+config ?
 
 -aneesh
