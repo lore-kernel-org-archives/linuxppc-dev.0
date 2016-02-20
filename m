@@ -2,17 +2,17 @@ Return-Path: <paulus@samba.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C3DB11A08CE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 17:13:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 927DA1A08C0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2016 17:13:16 +1100 (AEDT)
 From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Michael Ellerman <mpe@ellerman.id.au>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Paul Mackerras <paulus@samba.org>
-Subject: [RFC PATCH 5/9] powerpc/mm/book3s-64: Move _PAGE_PTE to 2nd most
- significant bit
-Date: Sat, 20 Feb 2016 17:12:36 +1100
-Message-Id: <1455948760-24710-6-git-send-email-paulus@samba.org>
+Subject: [RFC PATCH 6/9] powerpc/mm/book3s-64: Move HPTE-related bits in PTE
+ to upper end
+Date: Sat, 20 Feb 2016 17:12:37 +1100
+Message-Id: <1455948760-24710-7-git-send-email-paulus@samba.org>
 In-Reply-To: <1455948760-24710-1-git-send-email-paulus@samba.org>
 References: <1455948760-24710-1-git-send-email-paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,36 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This changes _PAGE_PTE for 64-bit Book 3S processors from 0x1 to
-0x4000_0000_0000_0000, because that bit is used as the L (leaf)
-bit by PowerISA v3.0 CPUs in radix mode.  The "leaf" bit indicates
-that the PTE points to a page directly rather than another radix
-level, which is what the _PAGE_PTE bit means.
+This moves the _PAGE_HASHPTE, _PAGE_F_GIX and _PAGE_F_SECOND fields in
+the Linux PTE on 64-bit Book 3S systems to the most significant byte.
+Of the 5 bits, one is a software-use bit and the other four are
+reserved bit positions in the PowerISA v3.0 radix PTE format.
+Using these bits is OK because these bits are all to do with tracking
+the HPTE(s) associated with the Linux PTE, and therefore won't be
+needed in radix mode.  This frees up bit positions in the lower two
+bytes.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/book3s/64/hash.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/book3s/64/hash.h | 8 ++++----
+ arch/powerpc/mm/hugetlbpage-hash64.c      | 5 +++--
+ 2 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index 72ea557..8f077c1 100644
+index 8f077c1..c8eba0e 100644
 --- a/arch/powerpc/include/asm/book3s/64/hash.h
 +++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -13,7 +13,6 @@
-  * We could create separate kernel read-only if we used the 3 PP bits
-  * combinations that newer processors provide but we currently don't.
-  */
--#define _PAGE_PTE		0x00001	/* distinguishes PTEs from pointers */
- #define _PAGE_BIT_SWAP_TYPE	2
- #define _PAGE_USER		0x00004 /* page may be accessed by userspace */
- #define _PAGE_EXEC		0x00008 /* execute permission */
-@@ -38,6 +37,7 @@
+@@ -24,11 +24,7 @@
+ #define _PAGE_DIRTY		0x00080 /* C: page changed */
+ #define _PAGE_ACCESSED		0x00100 /* R: page referenced */
+ #define _PAGE_RW		0x00200 /* software: user write access allowed */
+-#define _PAGE_HASHPTE		0x00400 /* software: pte has an associated HPTE */
+ #define _PAGE_BUSY		0x00800 /* software: PTE & hash are busy */
+-#define _PAGE_F_GIX		0x07000 /* full page: hidx bits */
+-#define _PAGE_F_GIX_SHIFT	12
+-#define _PAGE_F_SECOND		0x08000 /* Whether to use secondary hash or not */
+ #define _PAGE_SPECIAL		0x10000 /* software: special page */
+ 
+ #ifdef CONFIG_MEM_SOFT_DIRTY
+@@ -37,6 +33,10 @@
  #define _PAGE_SOFT_DIRTY	0x00000
  #endif
  
-+#define _PAGE_PTE		(1ul << 62)	/* distinguishes PTEs from pointers */
++#define _PAGE_F_GIX_SHIFT	57
++#define _PAGE_F_GIX		(7ul << 57)	/* HPTE index within HPTEG */
++#define _PAGE_F_SECOND		(1ul << 60)	/* HPTE is in 2ndary HPTEG */
++#define _PAGE_HASHPTE		(1ul << 61)	/* PTE has associated HPTE */
+ #define _PAGE_PTE		(1ul << 62)	/* distinguishes PTEs from pointers */
  #define _PAGE_PRESENT		(1ul << 63)	/* pte contains a translation */
  
- /*
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index e2138c7..8555fce 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -76,7 +76,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		if (old_pte & _PAGE_F_SECOND)
+ 			hash = ~hash;
+ 		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-		slot += (old_pte & _PAGE_F_GIX) >> 12;
++		slot += (old_pte & _PAGE_F_GIX) >> _PAGE_F_GIX_SHIFT;
+ 
+ 		if (ppc_md.hpte_updatepp(slot, rflags, vpn, mmu_psize,
+ 					 mmu_psize, ssize, flags) == -1)
+@@ -105,7 +105,8 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 			return -1;
+ 		}
+ 
+-		new_pte |= (slot << 12) & (_PAGE_F_SECOND | _PAGE_F_GIX);
++		new_pte |= (slot << _PAGE_F_GIX_SHIFT) &
++			(_PAGE_F_SECOND | _PAGE_F_GIX);
+ 	}
+ 
+ 	/*
 -- 
 2.5.0
