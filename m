@@ -1,21 +1,23 @@
-Return-Path: <ben@decadent.org.uk>
-Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
- [88.96.1.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EC2821A0A00
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2016 05:17:38 +1100 (AEDT)
-Received: from ben by shadbolt.decadent.org.uk with local (Exim 4.84)
- (envelope-from <ben@decadent.org.uk>) id 1aXBnh-0004Oj-2J
- for linuxppc-dev@lists.ozlabs.org; Sat, 20 Feb 2016 17:58:38 +0000
-Date: Sat, 20 Feb 2016 17:58:37 +0000
-From: Ben Hutchings <ben@decadent.org.uk>
-To: linuxppc-dev@lists.ozlabs.org
-Message-ID: <20160220175836.GA14491@decadent.org.uk>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="ZPt4rx8FFjLCG7dd"
-Subject: powerpc/mm: Fix HAVE_ARCH_SOFT_DIRTY dependencies
+ by lists.ozlabs.org (Postfix) with ESMTPS id 04B581A0947
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2016 12:30:43 +1100 (AEDT)
+Message-ID: <1456014735.3136.26.camel@kernel.crashing.org>
+Subject: Re: [PATCH V3 01/30] mm: Make vm_get_page_prot arch specific.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Paul Mackerras
+ <paulus@ozlabs.org>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Date: Sun, 21 Feb 2016 11:32:15 +1100
+In-Reply-To: <87egc9e83j.fsf@linux.vnet.ibm.com>
+References: <1455814254-10226-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1455814254-10226-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20160218231546.GC2765@fergus.ozlabs.ibm.com>
+ <87egc9e83j.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,61 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2016-02-19 at 08:10 +0530, Aneesh Kumar K.V wrote:
+> 
+> I was hoping to do that after this series. Something similar to
+> 
+> https://github.com/kvaneesh/linux/commit/0c2ac1328b678a6e187d1f2644a007204c59a047
+> 
+> "
+> powerpc/mm: Add helper for page flag access in ioremap_at
+> 
+> Instead of using variables we use static inline which get patched during
+> boot to either hash or radix version.
+> "
+> 
+> That gives us a base to revert patches if we find issues with hash and
+> still have a working radix base. So idea is to introduce radix with minimal
+> changes to hash and then consolidate hash and radix as much as we can by
+> updating hash linux format.
 
---ZPt4rx8FFjLCG7dd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It's too much churn. In the end, that adds more risk than it removes and
+makes it harder to follow what's going on.
 
-Soft dirty bit support was only implemented for 64-bit Book3S, and
-32-bit configurations currently fail to build.
+I'd say first change hash to use the radix PTE format, then add radix.
 
-Fixes: 7207f43665b8 ("powerpc/mm: Add page soft dirty tracking")
-References: https://buildd.debian.org/status/fetch.php?pkg=3Dlinux&arch=3Dp=
-owerpc&ver=3D4.5%7Erc4-1%7Eexp1&stamp=3D1455791718
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -557,7 +557,7 @@ choice
-=20
- config PPC_4K_PAGES
- 	bool "4k page size"
--	select HAVE_ARCH_SOFT_DIRTY if CHECKPOINT_RESTORE && PPC_BOOK3S
-+	select HAVE_ARCH_SOFT_DIRTY if CHECKPOINT_RESTORE && PPC_BOOK3S_64
-=20
- config PPC_16K_PAGES
- 	bool "16k page size"
-@@ -566,7 +566,7 @@ config PPC_16K_PAGES
- config PPC_64K_PAGES
- 	bool "64k page size"
- 	depends on !PPC_FSL_BOOK3E && (44x || PPC_STD_MMU_64 || PPC_BOOK3E_64)
--	select HAVE_ARCH_SOFT_DIRTY if CHECKPOINT_RESTORE && PPC_BOOK3S
-+	select HAVE_ARCH_SOFT_DIRTY if CHECKPOINT_RESTORE && PPC_BOOK3S_64
-=20
- config PPC_256K_PAGES
- 	bool "256k page size"
+Maybe just wait for Paulus patches ?
 
---ZPt4rx8FFjLCG7dd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIVAwUBVsipTOe/yOyVhhEJAQqnoxAA0xl6oBz23XjkSGY8o5KEIz+A6qYF4kOe
-euOgg/AjqHRmS1EBpWOkdBNy7EumiNSAKKDZDdb9ldGbDTOUg14bZMbyqGevWP91
-B/aH1WkLe89F3f4pH8sppVHPTQzcCuPbzTePLe4171A4ShxXNI+ynFSkbI68Bmyn
-8MLuj1rYIkNs0i0qnqWSkXDgzTXNLs8bZEEtZzJVYpXqOoCqM4miMbyT9oI5McCM
-5oTr2UGnlkMetUdVt63m+/eu2R20jKPkvnJ5D892XlcD1VuvVMkm3pciePIS/ird
-Snu2HoO0aw6aATgJxkFfETG7IfzCu8kt2UB/lz8AXpl+HERM8oZzvDPG77FomS1i
-1aQj8J5g83B92SjI2HxCqPIWB7yc2W+GxCEN49F0nROfSgXxAcAbAIaaQy6PIh2B
-51TbaSmhbLq5+g6cIzWGho9Fm73D2bZYAuya1dbWJzP/kZtufSXBZZmY20ebY2oR
-NGC3XSLrrE4Xys+0Lv5vNLpfmBLMJWrbRJLVxIcCtZZEJrKzJ9TvZEGVedSMVOV4
-b35ibSwuHbq7ihFa+EPh0K2DUT+MKoupveF8gfS39+ZomLH2IgllKgGqZqL/yS1G
-OQus97OGmI/Ra9c9g0SaOQfX54DGqJh8G8xIT3+Ham0QjkGodbd2unIY/4e1Z6FM
-uMBWZaAps44=
-=v+Ci
------END PGP SIGNATURE-----
-
---ZPt4rx8FFjLCG7dd--
+Cheers,
+Ben.
