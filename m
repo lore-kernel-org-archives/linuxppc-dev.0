@@ -1,39 +1,22 @@
-Return-Path: <manoj@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4668B1A067C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2016 09:29:54 +1100 (AEDT)
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
- Sun, 21 Feb 2016 15:29:52 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 912D819D803E
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2016 15:17:46 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1LMTnGk28442752
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2016 15:29:49 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1LMTmLX003173
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2016 15:29:49 -0700
-Reply-To: manoj@linux.vnet.ibm.com
-Subject: Re: Fwd: [PATCH v4 08/18] cxl: IRQ allocation for guests
-References: <1455658751-16970-9-git-send-email-fbarrat@linux.vnet.ibm.com>
- <56CA2CB1.5030105@linux.vnet.ibm.com>
-To: fbarrat@linux.vnet.ibm.com
-Cc: Ian Munsie <imunsie@au1.ibm.com>, michael.neuling@au1.ibm.com,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-From: Manoj Kumar <manoj@linux.vnet.ibm.com>
-Message-ID: <56CA3A6F.9060402@linux.vnet.ibm.com>
-Date: Sun, 21 Feb 2016 16:30:07 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6745C1A08ED
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2016 09:46:13 +1100 (AEDT)
+Date: Mon, 22 Feb 2016 09:43:34 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Paul Mackerras via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [RFC PATCH 2/9] powerpc/mm/book3s-64: Free up 7 high-order bits
+ in the Linux PTE
+Message-ID: <20160221224334.GD30309@fergus.ozlabs.ibm.com>
+References: <1455948760-24710-1-git-send-email-paulus@samba.org>
+ <1455948760-24710-3-git-send-email-paulus@samba.org>
+ <871t878ii4.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <56CA2CB1.5030105@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <871t878ii4.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,200 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fred: See comment below.
+On Sat, Feb 20, 2016 at 09:46:19PM +0530, Aneesh Kumar K.V wrote:
+> Paul Mackerras <paulus@samba.org> writes:
+> 
+> > This frees up bits 57-63 in the Linux PTE on 64-bit Book 3S machines.
+> > In the 4k page case, this is done just by reducing the size of the
+> > RPN field to 39 bits, giving 51-bit real addresses.  In the 64k page
+> > case, we had 10 unused bits in the middle of the PTE, so this moves
+> > the RPN field down 10 bits to make use of those unused bits.  This
+> > means the RPN field is now 3 bits larger at 37 bits, giving 53-bit
+> > real addresses in the normal case, or 49-bit real addresses for the
+> > special 4k PFN case.
+> 
+> 
+> Is it ok to have different real address bits between 4k and 64k linux
+> config ?
 
----
-Manoj Kumar
+Do you mean a different number of address bits, or a different
+location?  In fact both were different before this patch anyway.
 
-> Subject: [PATCH v4 08/18] cxl: IRQ allocation for guests
-> Date: Tue, 16 Feb 2016 22:39:01 +0100
-> From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com,
-> mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
->
-> The PSL interrupt is not going to be multiplexed in a guest, so an
-> interrupt will be allocated for it for each context.
-
-Not clear why this is the case. Why cannot the CXL later still
-multiplex this in a guest? Is this a design choice, an
-architectural issue, or the complexity of implementation did
-not warrant this? From an API perspective it would have been
-preferable to not cascade this change down to all consumers,
-and have consumers aware whether they are working in a
-bare-metal or a guest environment.
-
-It will still be
-> the first interrupt found in the first interrupt range, but is treated
-> almost like any other AFU interrupt when creating/deleting the
-> context. Only the handler is different. Rework the code so that the
-> range 0 is treated like the other ranges.
->
-> Co-authored-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> ---
->   drivers/misc/cxl/irq.c | 78
-> +++++++++++++++++++++++++++++++++++++++++---------
->   1 file changed, 64 insertions(+), 14 deletions(-)
->
-> diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
-> index 5033869..3c04c14 100644
-> --- a/drivers/misc/cxl/irq.c
-> +++ b/drivers/misc/cxl/irq.c
-> @@ -19,6 +19,13 @@
->   #include "cxl.h"
->   #include "trace.h"
->
-> +static int afu_irq_range_start(void)
-> +{
-> +    if (cpu_has_feature(CPU_FTR_HVMODE))
-> +        return 1;
-> +    return 0;
-> +}
-> +
->   static irqreturn_t schedule_cxl_fault(struct cxl_context *ctx, u64
-> dsisr, u64 dar)
->   {
->       ctx->dsisr = dsisr;
-> @@ -117,11 +124,23 @@ static irqreturn_t cxl_irq_afu(int irq, void *data)
->   {
->       struct cxl_context *ctx = data;
->       irq_hw_number_t hwirq = irqd_to_hwirq(irq_get_irq_data(irq));
-> -    int irq_off, afu_irq = 1;
-> +    int irq_off, afu_irq = 0;
->       __u16 range;
->       int r;
->
-> -    for (r = 1; r < CXL_IRQ_RANGES; r++) {
-> +    /*
-> +     * Look for the interrupt number.
-> +     * On bare-metal, we know range 0 only contains the PSL
-> +     * interrupt so we could start counting at range 1 and initialize
-> +     * afu_irq at 1.
-> +     * In a guest, range 0 also contains AFU interrupts, so it must
-> +     * be counted for. Therefore we initialize afu_irq at 0 to take into
-> +     * account the PSL interrupt.
-> +     *
-> +     * For code-readability, it just seems easier to go over all
-> +     * the ranges on bare-metal and guest. The end result is the same.
-> +     */
-> +    for (r = 0; r < CXL_IRQ_RANGES; r++) {
->           irq_off = hwirq - ctx->irqs.offset[r];
->           range = ctx->irqs.range[r];
->           if (irq_off >= 0 && irq_off < range) {
-> @@ -131,7 +150,7 @@ static irqreturn_t cxl_irq_afu(int irq, void *data)
->           afu_irq += range;
->       }
->       if (unlikely(r >= CXL_IRQ_RANGES)) {
-> -        WARN(1, "Recieved AFU IRQ out of range for pe %i (virq %i hwirq
-> %lx)\n",
-> +        WARN(1, "Received AFU IRQ out of range for pe %i (virq %i hwirq
-> %lx)\n",
->                ctx->pe, irq, hwirq);
->           return IRQ_HANDLED;
->       }
-> @@ -141,7 +160,7 @@ static irqreturn_t cxl_irq_afu(int irq, void *data)
->              afu_irq, ctx->pe, irq, hwirq);
->
->       if (unlikely(!ctx->irq_bitmap)) {
-> -        WARN(1, "Recieved AFU IRQ for context with no IRQ bitmap\n");
-> +        WARN(1, "Received AFU IRQ for context with no IRQ bitmap\n");
->           return IRQ_HANDLED;
->       }
->       spin_lock(&ctx->lock);
-> @@ -227,17 +246,33 @@ int afu_allocate_irqs(struct cxl_context *ctx, u32
-> count)
->   {
->       int rc, r, i, j = 1;
->       struct cxl_irq_name *irq_name;
-> +    int alloc_count;
-> +
-> +    /*
-> +     * In native mode, range 0 is reserved for the multiplexed
-> +     * PSL interrupt. It has been allocated when the AFU was initialized.
-> +     *
-> +     * In a guest, the PSL interrupt is not mutliplexed, but per-context,
-> +     * and is the first interrupt from range 0. It still needs to be
-> +     * allocated, so bump the count by one.
-> +     */
-> +    if (cpu_has_feature(CPU_FTR_HVMODE))
-> +        alloc_count = count;
-> +    else
-> +        alloc_count = count + 1;
->
->       /* Initialize the list head to hold irq names */
->       INIT_LIST_HEAD(&ctx->irq_names);
->
->       if ((rc = cxl_ops->alloc_irq_ranges(&ctx->irqs, ctx->afu->adapter,
-> -                            count)))
-> +                            alloc_count)))
->           return rc;
->
-> -    /* Multiplexed PSL Interrupt */
-> -    ctx->irqs.offset[0] = ctx->afu->psl_hwirq;
-> -    ctx->irqs.range[0] = 1;
-> +    if (cpu_has_feature(CPU_FTR_HVMODE)) {
-> +        /* Multiplexed PSL Interrupt */
-> +        ctx->irqs.offset[0] = ctx->afu->psl_hwirq;
-> +        ctx->irqs.range[0] = 1;
-> +    }
->
->       ctx->irq_count = count;
->       ctx->irq_bitmap = kcalloc(BITS_TO_LONGS(count),
-> @@ -249,7 +284,7 @@ int afu_allocate_irqs(struct cxl_context *ctx, u32
-> count)
->        * Allocate names first.  If any fail, bail out before allocating
->        * actual hardware IRQs.
->        */
-> -    for (r = 1; r < CXL_IRQ_RANGES; r++) {
-> +    for (r = afu_irq_range_start(); r < CXL_IRQ_RANGES; r++) {
->           for (i = 0; i < ctx->irqs.range[r]; i++) {
->               irq_name = kmalloc(sizeof(struct cxl_irq_name),
->                          GFP_KERNEL);
-> @@ -279,15 +314,30 @@ static void afu_register_hwirqs(struct cxl_context
-> *ctx)
->   {
->       irq_hw_number_t hwirq;
->       struct cxl_irq_name *irq_name;
-> -    int r,i;
-> +    int r, i;
-> +    irqreturn_t (*handler)(int irq, void *data);
->
->       /* We've allocated all memory now, so let's do the irq allocations */
->       irq_name = list_first_entry(&ctx->irq_names, struct cxl_irq_name,
-> list);
-> -    for (r = 1; r < CXL_IRQ_RANGES; r++) {
-> +    for (r = afu_irq_range_start(); r < CXL_IRQ_RANGES; r++) {
->           hwirq = ctx->irqs.offset[r];
->           for (i = 0; i < ctx->irqs.range[r]; hwirq++, i++) {
-> -            cxl_map_irq(ctx->afu->adapter, hwirq,
-> -                    cxl_irq_afu, ctx, irq_name->name);
-> +            if (r == 0 && i == 0)
-> +                /*
-> +                 * The very first interrupt of range 0 is
-> +                 * always the PSL interrupt, but we only
-> +                 * need to connect a handler for guests,
-> +                 * because there's one PSL interrupt per
-> +                 * context.
-> +                 * On bare-metal, the PSL interrupt is
-> +                 * multiplexed and was setup when the AFU
-> +                 * was configured.
-> +                 */
-> +                handler = cxl_ops->psl_interrupt;
-> +            else
-> +                handler = cxl_irq_afu;
-> +            cxl_map_irq(ctx->afu->adapter, hwirq, handler, ctx,
-> +                irq_name->name);
->               irq_name = list_next_entry(irq_name, list);
->           }
->       }
-> @@ -311,7 +361,7 @@ void afu_release_irqs(struct cxl_context *ctx, void
-> *cookie)
->       unsigned int virq;
->       int r, i;
->
-> -    for (r = 1; r < CXL_IRQ_RANGES; r++) {
-> +    for (r = afu_irq_range_start(); r < CXL_IRQ_RANGES; r++) {
->           hwirq = ctx->irqs.offset[r];
->           for (i = 0; i < ctx->irqs.range[r]; hwirq++, i++) {
->               virq = irq_find_mapping(NULL, hwirq);
+Paul.
