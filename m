@@ -2,21 +2,21 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 96F5B1A096C
+ by lists.ozlabs.org (Postfix) with ESMTPS id AD6021A08EB
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2016 09:46:13 +1100 (AEDT)
-Date: Mon, 22 Feb 2016 09:45:53 +1100
+Date: Mon, 22 Feb 2016 09:36:16 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Cc: Paul Mackerras via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [RFC PATCH 3/9] powerpc/mm/64: Use physical addresses in upper
- page table tree levels
-Message-ID: <20160221224553.GE30309@fergus.ozlabs.ibm.com>
+Subject: Re: [RFC PATCH 7/9] powerpc/mm/book3s-64: Shuffle read, write,
+ execute and user bits in PTE
+Message-ID: <20160221223616.GB30309@fergus.ozlabs.ibm.com>
 References: <1455948760-24710-1-git-send-email-paulus@samba.org>
- <1455948760-24710-4-git-send-email-paulus@samba.org>
- <87y4af730x.fsf@linux.vnet.ibm.com>
+ <1455948760-24710-8-git-send-email-paulus@samba.org>
+ <87si0m7c5t.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87y4af730x.fsf@linux.vnet.ibm.com>
+In-Reply-To: <87si0m7c5t.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +26,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Feb 20, 2016 at 10:05:58PM +0530, Aneesh Kumar K.V wrote:
+On Sun, Feb 21, 2016 at 01:00:54PM +0530, Aneesh Kumar K.V wrote:
 > Paul Mackerras <paulus@samba.org> writes:
 > 
-> > This changes the Linux page tables to store physical addresses
-> > rather than kernel virtual addresses in the upper levels of the
-> > tree (pgd, pud and pmd) for all 64-bit machines.
+> > This moves the _PAGE_EXEC, _PAGE_RW and _PAGE_USER bits around in
+> > the Linux PTE on 64-bit Book 3S systems to correspond with the bit
+> > positions used in radix mode by PowerISA v3.0 CPUs.  This also adds
+> > a _PAGE_READ bit corresponding to the read permission bit in the
+> > radix PTE.  _PAGE_READ is currently unused but could possibly be used
+> > in future to improve pte_protnone().
 > >
-> > This frees up some high order bits, and will be needed with book3s
-> > PowerISA v3.0 machines which read the page table tree in hardware
-> > in radix mode.
+> > Signed-off-by: Paul Mackerras <paulus@samba.org>
+> > ---
+> >  arch/powerpc/include/asm/book3s/64/hash.h | 10 ++++++----
+> >  1 file changed, 6 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+> > index c8eba0e..0fc750c 100644
+> > --- a/arch/powerpc/include/asm/book3s/64/hash.h
+> > +++ b/arch/powerpc/include/asm/book3s/64/hash.h
+> > @@ -13,9 +13,12 @@
+> >   * We could create separate kernel read-only if we used the 3 PP bits
+> >   * combinations that newer processors provide but we currently don't.
+> >   */
+> > -#define _PAGE_BIT_SWAP_TYPE	2
+> > -#define _PAGE_USER		0x00004 /* page may be accessed by userspace */
+> > -#define _PAGE_EXEC		0x00008 /* execute permission */
+> > +#define _PAGE_BIT_SWAP_TYPE	0
+> > +
+> > +#define _PAGE_EXEC		0x00001 /* execute permission */
+> > +#define _PAGE_RW		0x00002 /* read & write access allowed */
+> > +#define _PAGE_READ		0x00004	/* read access allowed */
+> > +#define _PAGE_USER		0x00008 /* page may be accessed by userspace */
+> >  #define _PAGE_GUARDED		0x00010 /* G: guarded (side-effect) page */
+> >  /* M (memory coherence) is always set in the HPTE, so we don't need it here */
+> >  #define _PAGE_COHERENT		0x0
+> > @@ -23,7 +26,6 @@
+> >  #define _PAGE_WRITETHRU		0x00040 /* W: cache write-through */
+> >  #define _PAGE_DIRTY		0x00080 /* C: page changed */
+> >  #define _PAGE_ACCESSED		0x00100 /* R: page referenced */
+> > -#define _PAGE_RW		0x00200 /* software: user write access allowed */
+> >  #define _PAGE_BUSY		0x00800 /* software: PTE & hash are busy */
+> >  #define _PAGE_SPECIAL		0x10000 /* software: special page */
+> >
 > 
 > 
-> Should we not update pmd_pgtable ?
+> For radix, _PAGE_USER is the inverse of this right ?. Ie, we set that
+> bit position to 1 to indicate privileged access only.
 
-Not sure what you mean by this - the patch does update pmd_pgtable
-for the 64k page case (the 4k case is already fine).
+Right, we'll need a follow-on patch that changes this to a _PAGE_PRIV
+bit and changes the logic that uses _PAGE_USER either that or a
+_PAGE_PRIV bit.  But at least we have the bit position reserved now.
 
-> I have the below patch in my series.
-> 
-> http://mid.gmane.org/1455814254-10226-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com
+> Also can you use constants like
+> #define _PAGE_USER PPC_BIT(60)
 
-That looks like a reasonable thing to do.
+I'd really rather not - that is harder for the casual reader to parse,
+because they then have to go off and find out what exactly PPC_BIT
+does.  The only time that using PPC_BIT would help is when checking
+that the bit definitions match the Power ISA, and that's presumably
+done by intelligent people that can handle backwards bit numbering in
+their heads. :)
 
 Paul.
