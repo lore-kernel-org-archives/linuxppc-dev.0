@@ -1,22 +1,39 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <manoj@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AD6021A08EB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2016 09:46:13 +1100 (AEDT)
-Date: Mon, 22 Feb 2016 09:36:16 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Paul Mackerras via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [RFC PATCH 7/9] powerpc/mm/book3s-64: Shuffle read, write,
- execute and user bits in PTE
-Message-ID: <20160221223616.GB30309@fergus.ozlabs.ibm.com>
-References: <1455948760-24710-1-git-send-email-paulus@samba.org>
- <1455948760-24710-8-git-send-email-paulus@samba.org>
- <87si0m7c5t.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0A6921A0C5E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2016 09:49:56 +1100 (AEDT)
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
+ Sun, 21 Feb 2016 15:49:54 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 5B9683E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2016 15:49:52 -0700 (MST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1LMnqct33292520
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2016 15:49:52 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1LMnpNs023028
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2016 15:49:52 -0700
+Reply-To: manoj@linux.vnet.ibm.com
+Subject: Re: Fwd: [PATCH v4 09/18] cxl: New possible return value from hcall
+References: <1455658751-16970-10-git-send-email-fbarrat@linux.vnet.ibm.com>
+ <56CA2CBD.4070907@linux.vnet.ibm.com>
+To: fbarrat@linux.vnet.ibm.com
+Cc: Ian Munsie <imunsie@au1.ibm.com>, michael.neuling@au1.ibm.com,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+From: Manoj Kumar <manoj@linux.vnet.ibm.com>
+Message-ID: <56CA3F22.2000804@linux.vnet.ibm.com>
+Date: Sun, 21 Feb 2016 16:50:10 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87si0m7c5t.fsf@linux.vnet.ibm.com>
+In-Reply-To: <56CA2CBD.4070907@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,66 +43,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Feb 21, 2016 at 01:00:54PM +0530, Aneesh Kumar K.V wrote:
-> Paul Mackerras <paulus@samba.org> writes:
-> 
-> > This moves the _PAGE_EXEC, _PAGE_RW and _PAGE_USER bits around in
-> > the Linux PTE on 64-bit Book 3S systems to correspond with the bit
-> > positions used in radix mode by PowerISA v3.0 CPUs.  This also adds
-> > a _PAGE_READ bit corresponding to the read permission bit in the
-> > radix PTE.  _PAGE_READ is currently unused but could possibly be used
-> > in future to improve pte_protnone().
-> >
-> > Signed-off-by: Paul Mackerras <paulus@samba.org>
-> > ---
-> >  arch/powerpc/include/asm/book3s/64/hash.h | 10 ++++++----
-> >  1 file changed, 6 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-> > index c8eba0e..0fc750c 100644
-> > --- a/arch/powerpc/include/asm/book3s/64/hash.h
-> > +++ b/arch/powerpc/include/asm/book3s/64/hash.h
-> > @@ -13,9 +13,12 @@
-> >   * We could create separate kernel read-only if we used the 3 PP bits
-> >   * combinations that newer processors provide but we currently don't.
-> >   */
-> > -#define _PAGE_BIT_SWAP_TYPE	2
-> > -#define _PAGE_USER		0x00004 /* page may be accessed by userspace */
-> > -#define _PAGE_EXEC		0x00008 /* execute permission */
-> > +#define _PAGE_BIT_SWAP_TYPE	0
-> > +
-> > +#define _PAGE_EXEC		0x00001 /* execute permission */
-> > +#define _PAGE_RW		0x00002 /* read & write access allowed */
-> > +#define _PAGE_READ		0x00004	/* read access allowed */
-> > +#define _PAGE_USER		0x00008 /* page may be accessed by userspace */
-> >  #define _PAGE_GUARDED		0x00010 /* G: guarded (side-effect) page */
-> >  /* M (memory coherence) is always set in the HPTE, so we don't need it here */
-> >  #define _PAGE_COHERENT		0x0
-> > @@ -23,7 +26,6 @@
-> >  #define _PAGE_WRITETHRU		0x00040 /* W: cache write-through */
-> >  #define _PAGE_DIRTY		0x00080 /* C: page changed */
-> >  #define _PAGE_ACCESSED		0x00100 /* R: page referenced */
-> > -#define _PAGE_RW		0x00200 /* software: user write access allowed */
-> >  #define _PAGE_BUSY		0x00800 /* software: PTE & hash are busy */
-> >  #define _PAGE_SPECIAL		0x10000 /* software: special page */
-> >
-> 
-> 
-> For radix, _PAGE_USER is the inverse of this right ?. Ie, we set that
-> bit position to 1 to indicate privileged access only.
+Reviewed-by: Manoj Kumar <manoj@linux.vnet.ibm.com>
 
-Right, we'll need a follow-on patch that changes this to a _PAGE_PRIV
-bit and changes the logic that uses _PAGE_USER either that or a
-_PAGE_PRIV bit.  But at least we have the bit position reserved now.
+---
+Manoj Kumar
 
-> Also can you use constants like
-> #define _PAGE_USER PPC_BIT(60)
 
-I'd really rather not - that is harder for the casual reader to parse,
-because they then have to go off and find out what exactly PPC_BIT
-does.  The only time that using PPC_BIT would help is when checking
-that the bit definitions match the Power ISA, and that's presumably
-done by intelligent people that can handle backwards bit numbering in
-their heads. :)
+> Subject: [PATCH v4 09/18] cxl: New possible return value from hcall
+> Date: Tue, 16 Feb 2016 22:39:02 +0100
+> From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com,
+> mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+>
+> From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+>
+> The hcalls introduced for CAPI use a possible new value:
+> H_STATE (invalid state).
 
-Paul.
+Same suggestion as earlier. Try to avoid references to
+the term CAPI externally.
