@@ -1,39 +1,24 @@
-Return-Path: <manoj@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE5B81A0353
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2016 10:22:06 +1100 (AEDT)
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
- Sun, 21 Feb 2016 16:22:04 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 835873E4003F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2016 16:21:56 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1LNLu0V35848356
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2016 16:21:56 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1LNLtVb023342
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Feb 2016 16:21:56 -0700
-Reply-To: manoj@linux.vnet.ibm.com
-Subject: Re: Fwd: [PATCH v4 10/18] cxl: New hcalls to support CAPI adapters
-References: <1455658751-16970-11-git-send-email-fbarrat@linux.vnet.ibm.com>
- <56CA2CC6.9010802@linux.vnet.ibm.com>
-To: fbarrat@linux.vnet.ibm.com
-Cc: Ian Munsie <imunsie@au1.ibm.com>, michael.neuling@au1.ibm.com,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-From: Manoj Kumar <manoj@linux.vnet.ibm.com>
-Message-ID: <56CA46A6.3070005@linux.vnet.ibm.com>
-Date: Sun, 21 Feb 2016 17:22:14 -0600
-MIME-Version: 1.0
-In-Reply-To: <56CA2CC6.9010802@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 142AD1A0607
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2016 11:27:37 +1100 (AEDT)
+Message-ID: <1456100856.4690.3.camel@ellerman.id.au>
+Subject: Re: [RFC PATCH 7/9] powerpc/mm/book3s-64: Shuffle read, write,
+ execute and user bits in PTE
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Paul Mackerras <paulus@ozlabs.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Paul Mackerras via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 22 Feb 2016 11:27:36 +1100
+In-Reply-To: <20160221223616.GB30309@fergus.ozlabs.ibm.com>
+References: <1455948760-24710-1-git-send-email-paulus@samba.org>
+ <1455948760-24710-8-git-send-email-paulus@samba.org>
+ <87si0m7c5t.fsf@linux.vnet.ibm.com>
+ <20160221223616.GB30309@fergus.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,34 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fred: See comments below.
-
-The most egregious checkpatch violations so far in this series,
-for going beyond 80 columns.
-
-total: 65 warnings, 924 lines checked
-
-
-On 2/21/2016 3:31 PM, Uma Krishnan wrote:
-> From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+On Mon, 2016-02-22 at 09:36 +1100, Paul Mackerras wrote:
+> On Sun, Feb 21, 2016 at 01:00:54PM +0530, Aneesh Kumar K.V wrote:
+> > Paul Mackerras <paulus@samba.org> writes:
+> >
+> > Also can you use constants like
+> > #define _PAGE_USER PPC_BIT(60)
 >
-> The hypervisor calls provide an interface with a coherent plaform
+> I'd really rather not - that is harder for the casual reader to parse,
+> because they then have to go off and find out what exactly PPC_BIT
+> does.  The only time that using PPC_BIT would help is when checking
+> that the bit definitions match the Power ISA, and that's presumably
+> done by intelligent people that can handle backwards bit numbering in
+> their heads. :)
 
-plaform->platform
+Yep agree 100%.
 
+Using PPC_BIT() means every time someone sees that defintion they need to think
+about what the conversion is and whether it's right, ie. for the entire future
+history of this code.
 
-> +/**
-> + * cxl_h_download_adapter_image - Download the base image in the coherent
-> + *                                platoform facility.
+On the other hand not using PPC_BIT() means the person who writes the
+definition needs to think about it and do the correct conversion, but only
+once.
 
-
-platoform->platform
-
-> +
-> +/**
-> + * cxl_h_validate_adapter_image - Validate the base image in the coherent
-> + *                                platoform facility.
-
-platoform->platform
-
-Irreverent to the Socratic amongst us.
+cheers
