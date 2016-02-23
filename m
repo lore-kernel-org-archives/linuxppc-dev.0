@@ -1,33 +1,33 @@
 Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45E9C1A05D8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 15BCF1A05D2
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 03:22:11 +1100 (AEDT)
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Tue, 23 Feb 2016 16:22:09 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id C0A99219005C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 16:21:51 +0000 (GMT)
+ Tue, 23 Feb 2016 16:22:08 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2F0C217D805F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 16:22:27 +0000 (GMT)
 Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
  [9.149.37.250])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1NGM7cO32833770
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 16:22:07 GMT
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1NGM6qD8061360
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 16:22:06 GMT
 Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1NGM6dU008966
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 09:22:07 -0700
+ u1NGM5hk008900
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 09:22:05 -0700
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com, mpe@ellerman.id.au,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 18/18] cxl: Add tracepoints around the cxl hcall
-Date: Tue, 23 Feb 2016 17:21:59 +0100
-Message-Id: <1456244519-18934-19-git-send-email-fbarrat@linux.vnet.ibm.com>
+Subject: [PATCH v5 13/18] cxl: sysfs support for guests
+Date: Tue, 23 Feb 2016 17:21:54 +0100
+Message-Id: <1456244519-18934-14-git-send-email-fbarrat@linux.vnet.ibm.com>
 In-Reply-To: <1456244519-18934-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 References: <1456244519-18934-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,289 +41,198 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Christophe Lombard <clombard@linux.vnet.ibm.com>
 
-To ease debugging, add a few tracepoints around the cxl hcalls.
+Filter out a few adapter parameters which don't make sense in a guest.
+Document the changes.
 
 Co-authored-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/hcalls.c |   9 +++
- drivers/misc/cxl/trace.h  | 193 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 202 insertions(+)
+ Documentation/ABI/testing/sysfs-class-cxl |  8 +++----
+ drivers/misc/cxl/cxl.h                    |  1 +
+ drivers/misc/cxl/guest.c                  | 12 +++++++++++
+ drivers/misc/cxl/native.c                 |  6 ++++++
+ drivers/misc/cxl/sysfs.c                  | 36 +++++++++++++++++++++++--------
+ 5 files changed, 50 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/misc/cxl/hcalls.c b/drivers/misc/cxl/hcalls.c
-index 7e4c517..f01d4c0 100644
---- a/drivers/misc/cxl/hcalls.c
-+++ b/drivers/misc/cxl/hcalls.c
-@@ -14,6 +14,7 @@
- #include <asm/hvcall.h>
- #include <asm/byteorder.h>
- #include "hcalls.h"
-+#include "trace.h"
+diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
+index b07e86d..4d0da47 100644
+--- a/Documentation/ABI/testing/sysfs-class-cxl
++++ b/Documentation/ABI/testing/sysfs-class-cxl
+@@ -183,7 +183,7 @@ Description:    read only
+                 Identifies the revision level of the PSL.
+ Users:		https://github.com/ibm-capi/libcxl
  
- #define CXL_HCALL_TIMEOUT 60000
- #define CXL_HCALL_TIMEOUT_DOWNLOAD 120000
-@@ -142,6 +143,7 @@ long cxl_h_attach_process(u64 unit_address,
- 	CXL_H_WAIT_UNTIL_DONE(rc, retbuf, H_ATTACH_CA_PROCESS, unit_address, virt_to_phys(element));
- 	_PRINT_MSG(rc, "cxl_h_attach_process(%#.16llx, %#.16lx): %li\n",
- 		unit_address, virt_to_phys(element), rc);
-+	trace_cxl_hcall_attach(unit_address, virt_to_phys(element), retbuf[0], retbuf[1], retbuf[2], rc);
+-What:           /sys/class/cxl/<card>/base_image
++What:           /sys/class/cxl/<card>/base_image (not in a guest)
+ Date:           September 2014
+ Contact:        linuxppc-dev@lists.ozlabs.org
+ Description:    read only
+@@ -193,7 +193,7 @@ Description:    read only
+                 during the initial program load.
+ Users:		https://github.com/ibm-capi/libcxl
  
- 	pr_devel("token: 0x%.8lx mmio_addr: 0x%lx mmio_size: 0x%lx\nProcess Element Structure:\n",
- 		retbuf[0], retbuf[1], retbuf[2]);
-@@ -181,6 +183,7 @@ long cxl_h_detach_process(u64 unit_address, u64 process_token)
+-What:           /sys/class/cxl/<card>/image_loaded
++What:           /sys/class/cxl/<card>/image_loaded (not in a guest)
+ Date:           September 2014
+ Contact:        linuxppc-dev@lists.ozlabs.org
+ Description:    read only
+@@ -201,7 +201,7 @@ Description:    read only
+                 onto the card.
+ Users:		https://github.com/ibm-capi/libcxl
  
- 	CXL_H_WAIT_UNTIL_DONE(rc, retbuf, H_DETACH_CA_PROCESS, unit_address, process_token);
- 	_PRINT_MSG(rc, "cxl_h_detach_process(%#.16llx, 0x%.8llx): %li\n", unit_address, process_token, rc);
-+	trace_cxl_hcall_detach(unit_address, process_token, rc);
+-What:           /sys/class/cxl/<card>/load_image_on_perst
++What:           /sys/class/cxl/<card>/load_image_on_perst (not in a guest)
+ Date:           December 2014
+ Contact:        linuxppc-dev@lists.ozlabs.org
+ Description:    read/write
+@@ -224,7 +224,7 @@ Description:    write only
+                 to reload the FPGA depending on load_image_on_perst.
+ Users:		https://github.com/ibm-capi/libcxl
  
- 	switch (rc) {
- 	case H_SUCCESS:       /* The process was detached from the coherent platform function */
-@@ -213,6 +216,7 @@ static long cxl_h_control_function(u64 unit_address, u64 op,
- 	CXL_H9_WAIT_UNTIL_DONE(rc, retbuf, H_CONTROL_CA_FUNCTION, unit_address, op, p1, p2, p3, p4);
- 	_PRINT_MSG(rc, "cxl_h_control_function(%#.16llx, %s(%#llx, %#llx, %#llx, %#llx, R4: %#lx)): %li\n",
- 		unit_address, OP_STR_AFU(op), p1, p2, p3, p4, retbuf[0], rc);
-+	trace_cxl_hcall_control_function(unit_address, OP_STR_AFU(op), p1, p2, p3, p4, retbuf[0], rc);
+-What:		/sys/class/cxl/<card>/perst_reloads_same_image
++What:		/sys/class/cxl/<card>/perst_reloads_same_image (not in a guest)
+ Date:		July 2015
+ Contact:	linuxppc-dev@lists.ozlabs.org
+ Description:	read/write
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 4372a87..e54bf4f 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -844,6 +844,7 @@ struct cxl_backend_ops {
+ 	int (*attach_process)(struct cxl_context *ctx, bool kernel,
+ 			u64 wed, u64 amr);
+ 	int (*detach_process)(struct cxl_context *ctx);
++	bool (*support_attributes)(const char *attr_name);
+ 	bool (*link_ok)(struct cxl *cxl);
+ 	void (*release_afu)(struct device *dev);
+ 	ssize_t (*afu_read_err_buffer)(struct cxl_afu *afu, char *buf,
+diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+index 03eb83d..d02ff03 100644
+--- a/drivers/misc/cxl/guest.c
++++ b/drivers/misc/cxl/guest.c
+@@ -596,6 +596,17 @@ static int guest_afu_check_and_enable(struct cxl_afu *afu)
+ 	return 0;
+ }
  
- 	switch (rc) {
- 	case H_SUCCESS:       /* The operation is completed for the coherent platform function */
-@@ -406,6 +410,7 @@ long cxl_h_collect_int_info(u64 unit_address, u64 process_token,
- 			unit_address, process_token);
- 	_PRINT_MSG(rc, "cxl_h_collect_int_info(%#.16llx, 0x%llx): %li\n",
- 		unit_address, process_token, rc);
-+	trace_cxl_hcall_collect_int_info(unit_address, process_token, rc);
++static bool guest_support_attributes(const char *attr_name)
++{
++	if ((strcmp(attr_name, "base_image") == 0) ||
++		(strcmp(attr_name, "load_image_on_perst") == 0) ||
++		(strcmp(attr_name, "perst_reloads_same_image") == 0) ||
++		(strcmp(attr_name, "image_loaded") == 0))
++		return false;
++
++	return true;
++}
++
+ static int activate_afu_directed(struct cxl_afu *afu)
+ {
+ 	int rc;
+@@ -936,6 +947,7 @@ const struct cxl_backend_ops cxl_guest_ops = {
+ 	.ack_irq = guest_ack_irq,
+ 	.attach_process = guest_attach_process,
+ 	.detach_process = guest_detach_process,
++	.support_attributes = guest_support_attributes,
+ 	.link_ok = guest_link_ok,
+ 	.release_afu = guest_release_afu,
+ 	.afu_read_err_buffer = guest_afu_read_err_buffer,
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index c0bca59..acb9486 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -967,6 +967,11 @@ int cxl_check_error(struct cxl_afu *afu)
+ 	return (cxl_p1n_read(afu, CXL_PSL_SCNTL_An) == ~0ULL);
+ }
  
- 	switch (rc) {
- 	case H_SUCCESS:     /* The interrupt info is returned in return registers. */
-@@ -449,6 +454,8 @@ long cxl_h_control_faults(u64 unit_address, u64 process_token,
- 	_PRINT_MSG(rc, "cxl_h_control_faults(%#.16llx, 0x%llx, %#llx, %#llx): %li (%#lx)\n",
- 		unit_address, process_token, control_mask, reset_mask,
- 		rc, retbuf[0]);
-+	trace_cxl_hcall_control_faults(unit_address, process_token,
-+				control_mask, reset_mask, retbuf[0], rc);
++static bool native_support_attributes(const char *attr_name)
++{
++	return true;
++}
++
+ static int native_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off, u64 *out)
+ {
+ 	if (unlikely(!cxl_ops->link_ok(afu->adapter)))
+@@ -1026,6 +1031,7 @@ const struct cxl_backend_ops cxl_native_ops = {
+ 	.ack_irq = native_ack_irq,
+ 	.attach_process = native_attach_process,
+ 	.detach_process = native_detach_process,
++	.support_attributes = native_support_attributes,
+ 	.link_ok = cxl_adapter_link_ok,
+ 	.release_afu = cxl_pci_release_afu,
+ 	.afu_read_err_buffer = cxl_pci_afu_read_err_buffer,
+diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
+index 1a1409c..41963d4 100644
+--- a/drivers/misc/cxl/sysfs.c
++++ b/drivers/misc/cxl/sysfs.c
+@@ -253,8 +253,14 @@ static ssize_t irqs_max_store(struct device *device,
+ 	if (irqs_max < afu->pp_irqs)
+ 		return -EINVAL;
  
- 	switch (rc) {
- 	case H_SUCCESS:    /* Faults were successfully controlled for the function. */
-@@ -482,6 +489,7 @@ static long cxl_h_control_facility(u64 unit_address, u64 op,
- 	CXL_H9_WAIT_UNTIL_DONE(rc, retbuf, H_CONTROL_CA_FACILITY, unit_address, op, p1, p2, p3, p4);
- 	_PRINT_MSG(rc, "cxl_h_control_facility(%#.16llx, %s(%#llx, %#llx, %#llx, %#llx, R4: %#lx)): %li\n",
- 		unit_address, OP_STR_CONTROL_ADAPTER(op), p1, p2, p3, p4, retbuf[0], rc);
-+	trace_cxl_hcall_control_facility(unit_address, OP_STR_CONTROL_ADAPTER(op), p1, p2, p3, p4, retbuf[0], rc);
+-	if (irqs_max > afu->adapter->user_irqs)
+-		return -EINVAL;
++	if (cpu_has_feature(CPU_FTR_HVMODE)) {
++		if (irqs_max > afu->adapter->user_irqs)
++			return -EINVAL;
++	} else {
++		/* pHyp sets a per-AFU limit */
++		if (irqs_max > afu->guest->max_ints)
++			return -EINVAL;
++	}
  
- 	switch (rc) {
- 	case H_SUCCESS:       /* The operation is completed for the coherent platform facility */
-@@ -588,6 +596,7 @@ static long cxl_h_download_facility(u64 unit_address, u64 op,
+ 	afu->irqs_max = irqs_max;
+ 	return count;
+@@ -406,24 +412,36 @@ static struct device_attribute afu_attrs[] = {
+ 
+ int cxl_sysfs_adapter_add(struct cxl *adapter)
+ {
++	struct device_attribute *dev_attr;
+ 	int i, rc;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(adapter_attrs); i++) {
+-		if ((rc = device_create_file(&adapter->dev, &adapter_attrs[i])))
+-			goto err;
++		dev_attr = &adapter_attrs[i];
++		if (cxl_ops->support_attributes(dev_attr->attr.name)) {
++			if ((rc = device_create_file(&adapter->dev, dev_attr)))
++				goto err;
++		}
  	}
- 	_PRINT_MSG(rc, "cxl_h_download_facility(%#.16llx, %s(%#llx, %#llx), %#lx): %li\n",
- 		 unit_address, OP_STR_DOWNLOAD_ADAPTER(op), list_address, num, retbuf[0], rc);
-+	trace_cxl_hcall_download_facility(unit_address, OP_STR_DOWNLOAD_ADAPTER(op), list_address, num, retbuf[0], rc);
+ 	return 0;
+ err:
+-	for (i--; i >= 0; i--)
+-		device_remove_file(&adapter->dev, &adapter_attrs[i]);
++	for (i--; i >= 0; i--) {
++		dev_attr = &adapter_attrs[i];
++		if (cxl_ops->support_attributes(dev_attr->attr.name))
++			device_remove_file(&adapter->dev, dev_attr);
++	}
+ 	return rc;
+ }
++
+ void cxl_sysfs_adapter_remove(struct cxl *adapter)
+ {
++	struct device_attribute *dev_attr;
+ 	int i;
  
- 	switch (rc) {
- 	case H_SUCCESS:       /* The operation is completed for the coherent platform facility */
-diff --git a/drivers/misc/cxl/trace.h b/drivers/misc/cxl/trace.h
-index 6e1e2ad..751d611 100644
---- a/drivers/misc/cxl/trace.h
-+++ b/drivers/misc/cxl/trace.h
-@@ -450,6 +450,199 @@ DEFINE_EVENT(cxl_pe_class, cxl_slbia,
- 	TP_ARGS(ctx)
- );
+-	for (i = 0; i < ARRAY_SIZE(adapter_attrs); i++)
+-		device_remove_file(&adapter->dev, &adapter_attrs[i]);
++	for (i = 0; i < ARRAY_SIZE(adapter_attrs); i++) {
++		dev_attr = &adapter_attrs[i];
++		if (cxl_ops->support_attributes(dev_attr->attr.name))
++			device_remove_file(&adapter->dev, dev_attr);
++	}
+ }
  
-+TRACE_EVENT(cxl_hcall,
-+	TP_PROTO(u64 unit_address, u64 process_token, long rc),
-+
-+	TP_ARGS(unit_address, process_token, rc),
-+
-+	TP_STRUCT__entry(
-+		__field(u64, unit_address)
-+		__field(u64, process_token)
-+		__field(long, rc)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->unit_address = unit_address;
-+		__entry->process_token = process_token;
-+		__entry->rc = rc;
-+	),
-+
-+	TP_printk("unit_address=0x%016llx process_token=0x%016llx rc=%li",
-+		__entry->unit_address,
-+		__entry->process_token,
-+		__entry->rc
-+	)
-+);
-+
-+TRACE_EVENT(cxl_hcall_control,
-+	TP_PROTO(u64 unit_address, char *fct, u64 p1, u64 p2, u64 p3,
-+	u64 p4, unsigned long r4, long rc),
-+
-+	TP_ARGS(unit_address, fct, p1, p2, p3, p4, r4, rc),
-+
-+	TP_STRUCT__entry(
-+		__field(u64, unit_address)
-+		__field(char *, fct)
-+		__field(u64, p1)
-+		__field(u64, p2)
-+		__field(u64, p3)
-+		__field(u64, p4)
-+		__field(unsigned long, r4)
-+		__field(long, rc)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->unit_address = unit_address;
-+		__entry->fct = fct;
-+		__entry->p1 = p1;
-+		__entry->p2 = p2;
-+		__entry->p3 = p3;
-+		__entry->p4 = p4;
-+		__entry->r4 = r4;
-+		__entry->rc = rc;
-+	),
-+
-+	TP_printk("unit_address=%#.16llx %s(%#llx, %#llx, %#llx, %#llx, R4: %#lx)): %li",
-+		__entry->unit_address,
-+		__entry->fct,
-+		__entry->p1,
-+		__entry->p2,
-+		__entry->p3,
-+		__entry->p4,
-+		__entry->r4,
-+		__entry->rc
-+	)
-+);
-+
-+TRACE_EVENT(cxl_hcall_attach,
-+	TP_PROTO(u64 unit_address, u64 phys_addr, unsigned long process_token,
-+		unsigned long mmio_addr, unsigned long mmio_size, long rc),
-+
-+	TP_ARGS(unit_address, phys_addr, process_token,
-+		mmio_addr, mmio_size, rc),
-+
-+	TP_STRUCT__entry(
-+		__field(u64, unit_address)
-+		__field(u64, phys_addr)
-+		__field(unsigned long, process_token)
-+		__field(unsigned long, mmio_addr)
-+		__field(unsigned long, mmio_size)
-+		__field(long, rc)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->unit_address = unit_address;
-+		__entry->phys_addr = phys_addr;
-+		__entry->process_token = process_token;
-+		__entry->mmio_addr = mmio_addr;
-+		__entry->mmio_size = mmio_size;
-+		__entry->rc = rc;
-+	),
-+
-+	TP_printk("unit_address=0x%016llx phys_addr=0x%016llx "
-+		"token=0x%.8lx mmio_addr=0x%lx mmio_size=0x%lx rc=%li",
-+		__entry->unit_address,
-+		__entry->phys_addr,
-+		__entry->process_token,
-+		__entry->mmio_addr,
-+		__entry->mmio_size,
-+		__entry->rc
-+	)
-+);
-+
-+DEFINE_EVENT(cxl_hcall, cxl_hcall_detach,
-+	TP_PROTO(u64 unit_address, u64 process_token, long rc),
-+	TP_ARGS(unit_address, process_token, rc)
-+);
-+
-+DEFINE_EVENT(cxl_hcall_control, cxl_hcall_control_function,
-+	TP_PROTO(u64 unit_address, char *fct, u64 p1, u64 p2, u64 p3,
-+	u64 p4, unsigned long r4, long rc),
-+	TP_ARGS(unit_address, fct, p1, p2, p3, p4, r4, rc)
-+);
-+
-+DEFINE_EVENT(cxl_hcall, cxl_hcall_collect_int_info,
-+	TP_PROTO(u64 unit_address, u64 process_token, long rc),
-+	TP_ARGS(unit_address, process_token, rc)
-+);
-+
-+TRACE_EVENT(cxl_hcall_control_faults,
-+	TP_PROTO(u64 unit_address, u64 process_token,
-+		u64 control_mask, u64 reset_mask, unsigned long r4,
-+		long rc),
-+
-+	TP_ARGS(unit_address, process_token,
-+		control_mask, reset_mask, r4, rc),
-+
-+	TP_STRUCT__entry(
-+		__field(u64, unit_address)
-+		__field(u64, process_token)
-+		__field(u64, control_mask)
-+		__field(u64, reset_mask)
-+		__field(unsigned long, r4)
-+		__field(long, rc)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->unit_address = unit_address;
-+		__entry->process_token = process_token;
-+		__entry->control_mask = control_mask;
-+		__entry->reset_mask = reset_mask;
-+		__entry->r4 = r4;
-+		__entry->rc = rc;
-+	),
-+
-+	TP_printk("unit_address=0x%016llx process_token=0x%llx "
-+		"control_mask=%#llx reset_mask=%#llx r4=%#lx rc=%li",
-+		__entry->unit_address,
-+		__entry->process_token,
-+		__entry->control_mask,
-+		__entry->reset_mask,
-+		__entry->r4,
-+		__entry->rc
-+	)
-+);
-+
-+DEFINE_EVENT(cxl_hcall_control, cxl_hcall_control_facility,
-+	TP_PROTO(u64 unit_address, char *fct, u64 p1, u64 p2, u64 p3,
-+	u64 p4, unsigned long r4, long rc),
-+	TP_ARGS(unit_address, fct, p1, p2, p3, p4, r4, rc)
-+);
-+
-+TRACE_EVENT(cxl_hcall_download_facility,
-+	TP_PROTO(u64 unit_address, char *fct, u64 list_address, u64 num,
-+	unsigned long r4, long rc),
-+
-+	TP_ARGS(unit_address, fct, list_address, num, r4, rc),
-+
-+	TP_STRUCT__entry(
-+		__field(u64, unit_address)
-+		__field(char *, fct)
-+		__field(u64, list_address)
-+		__field(u64, num)
-+		__field(unsigned long, r4)
-+		__field(long, rc)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->unit_address = unit_address;
-+		__entry->fct = fct;
-+		__entry->list_address = list_address;
-+		__entry->num = num;
-+		__entry->r4 = r4;
-+		__entry->rc = rc;
-+	),
-+
-+	TP_printk("%#.16llx, %s(%#llx, %#llx), %#lx): %li",
-+		__entry->unit_address,
-+		__entry->fct,
-+		__entry->list_address,
-+		__entry->num,
-+		__entry->r4,
-+		__entry->rc
-+	)
-+);
-+
- #endif /* _CXL_TRACE_H */
- 
- /* This part must be outside protection */
+ struct afu_config_record {
+@@ -534,7 +552,7 @@ static struct afu_config_record *cxl_sysfs_afu_new_cr(struct cxl_afu *afu, int c
+ 	/*
+ 	 * Export raw AFU PCIe like config record. For now this is read only by
+ 	 * root - we can expand that later to be readable by non-root and maybe
+-	 * even writable provided we have a good use-case. Once we suport
++	 * even writable provided we have a good use-case. Once we support
+ 	 * exposing AFUs through a virtual PHB they will get that for free from
+ 	 * Linux' PCI infrastructure, but until then it's not clear that we
+ 	 * need it for anything since the main use case is just identifying
 -- 
 1.9.1
