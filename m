@@ -1,36 +1,15 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp08.uk.ibm.com (e06smtp08.uk.ibm.com [195.75.94.104])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CEA201A04FB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 03:22:28 +1100 (AEDT)
-Received: from localhost
- by e06smtp08.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Tue, 23 Feb 2016 16:22:25 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id B38681B0805F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 16:22:25 +0000 (GMT)
-Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
- [9.149.37.250])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1NGM6mS5112080
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 16:22:06 GMT
-Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1NGM5UN008909
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 09:22:06 -0700
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 14/18] cxl: Support to flash a new image on the adapter
- from a guest
-Date: Tue, 23 Feb 2016 17:21:55 +0100
-Message-Id: <1456244519-18934-15-git-send-email-fbarrat@linux.vnet.ibm.com>
-In-Reply-To: <1456244519-18934-1-git-send-email-fbarrat@linux.vnet.ibm.com>
-References: <1456244519-18934-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id DC8CC1A0331
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 03:59:46 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v7] powerpc32: provide VIRT_CPU_ACCOUNTING
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20160223165943.050941A2400@localhost.localdomain>
+Date: Tue, 23 Feb 2016 17:59:42 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,837 +19,582 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+This patch provides VIRT_CPU_ACCOUTING to PPC32 architecture.
+PPC32 doesn't have the PACA structure, so we use the task_info
+structure to store the accounting data.
 
-The new flash.c file contains the logic to flash a new image on the
-adapter, through a hcall. It is an iterative process, with chunks of
-data of 1M at a time. There are also 2 phases: write and verify. The
-flash operation itself is driven from a user-land tool.
-Once flashing is successful, an rtas call is made to update the device
-tree with the new properties values for the adapter and the AFU(s)
+In order to reuse on PPC32 the PPC64 functions, all u64 data has
+been replaced by 'unsigned long' so that it is u32 on PPC32 and
+u64 on PPC64
 
-Add a new char device for the adapter, so that the flash tool can
-access the card, even if there is no valid AFU on it.
-
-Co-authored-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- Documentation/powerpc/cxl.txt |  55 +++++
- drivers/misc/cxl/Makefile     |   2 +-
- drivers/misc/cxl/base.c       |   7 +
- drivers/misc/cxl/cxl.h        |   6 +
- drivers/misc/cxl/file.c       |  11 +-
- drivers/misc/cxl/flash.c      | 538 ++++++++++++++++++++++++++++++++++++++++++
- drivers/misc/cxl/guest.c      |  15 ++
- include/uapi/misc/cxl.h       |  24 ++
- 8 files changed, 653 insertions(+), 5 deletions(-)
- create mode 100644 drivers/misc/cxl/flash.c
+Changes in v3: unlike previous version of the patch that was inspired
+from IA64 architecture, this new version tries to reuse as much as
+possible the PPC64 implementation.
 
-diff --git a/Documentation/powerpc/cxl.txt b/Documentation/powerpc/cxl.txt
-index 205c1b8..1440044 100644
---- a/Documentation/powerpc/cxl.txt
-+++ b/Documentation/powerpc/cxl.txt
-@@ -116,6 +116,8 @@ Work Element Descriptor (WED)
- User API
- ========
+PPC32 doesn't have PACA and past discusion on v2 version has shown
+that it is not worth implementing a PACA in PPC32 architecture
+(see below benh opinion)
+
+benh: PACA is actually a data structure and you really really don't want it
+on ppc32 :-) Having a register point to current works, having a register
+point to per-cpu data instead works too (ie, change what we do today),
+but don't introduce a PACA *please* :-)
+
+Changes in v4: ACCOUNT_CPU_USER_ENTRY/EXIT() needed updates in other
+places than entry_32.S and entry_64.S (reported by kbuild-robot)
+Related defines in asm-offset.c need to be conditional to
+CONFIG_VIRT_CPU_ACCOUNTING_NATIVE (reported by kbuild-robot)
+
+Changes in v5: Using PPC_LL et PPC_STL instead of defining new macros
+AC_LD and AC_STD
+
+Changes in v6: jiffies64_to_cputime64() modified to avoid 64 bits
+div and mod on PPC32
+
+Changes in v7: created a struct cpu_accounting_data which is
+common to PPC32 and PPC64
+taken into account Scott's comments
+
+ arch/powerpc/Kconfig                     |  1 +
+ arch/powerpc/include/asm/accounting.h    | 24 +++++++++
+ arch/powerpc/include/asm/cputime.h       | 14 +++--
+ arch/powerpc/include/asm/exception-64s.h |  2 +-
+ arch/powerpc/include/asm/paca.h          |  9 +---
+ arch/powerpc/include/asm/ppc_asm.h       | 24 ++++-----
+ arch/powerpc/include/asm/reg.h           |  1 +
+ arch/powerpc/include/asm/thread_info.h   |  5 ++
+ arch/powerpc/kernel/asm-offsets.c        | 23 +++++++--
+ arch/powerpc/kernel/entry_32.S           | 17 ++++++
+ arch/powerpc/kernel/entry_64.S           |  6 +--
+ arch/powerpc/kernel/exceptions-64e.S     |  4 +-
+ arch/powerpc/kernel/time.c               | 89 +++++++++++++++++++++-----------
+ arch/powerpc/platforms/Kconfig.cputype   |  1 -
+ 14 files changed, 157 insertions(+), 63 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/accounting.h
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 3a557be..57ce4ff 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -159,6 +159,7 @@ config PPC
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+ 	select HAVE_ARCH_SECCOMP_FILTER
+ 	select ARCH_HAS_UBSAN_SANITIZE_ALL
++	select HAVE_VIRT_CPU_ACCOUNTING
  
-+1. AFU character devices
-+
-     For AFUs operating in AFU directed mode, two character device
-     files will be created. /dev/cxl/afu0.0m will correspond to a
-     master context and /dev/cxl/afu0.0s will correspond to a slave
-@@ -362,6 +364,59 @@ read
-         reserved fields:
-             For future extensions and padding
- 
-+
-+2. Card character device (powerVM guest only)
-+
-+    In a powerVM guest, an extra character device is created for the
-+    card. The device is only used to write (flash) a new image on the
-+    FPGA accelerator. Once the image is written and verified, the
-+    device tree is updated and the card is reset to reload the updated
-+    image.
-+
-+open
-+----
-+
-+    Opens the device and allocates a file descriptor to be used with
-+    the rest of the API. The device can only be opened once.
-+
-+ioctl
-+-----
-+
-+CXL_IOCTL_DOWNLOAD_IMAGE:
-+CXL_IOCTL_VALIDATE_IMAGE:
-+    Starts and controls flashing a new FPGA image. Partial
-+    reconfiguration is not supported (yet), so the image must contain
-+    a copy of the PSL and AFU(s). Since an image can be quite large,
-+    the caller may have to iterate, splitting the image in smaller
-+    chunks.
-+
-+    Takes a pointer to a struct cxl_adapter_image:
-+        struct cxl_adapter_image {
-+            __u64 flags;
-+            __u64 *data;
-+            __u64 len_data;
-+            __u64 len_image;
-+            __u64 reserved1;
-+            __u64 reserved2;
-+            __u64 reserved3;
-+            __u64 reserved4;
-+        };
-+
-+    flags:
-+        These flags indicate which optional fields are present in
-+        this struct. Currently all fields are mandatory.
-+
-+    data:
-+        Pointer to a buffer with part of the image to write to the
-+        card.
-+
-+    len_data:
-+        Size of the buffer pointed to by data.
-+
-+    len_image:
-+        Full size of the image.
-+
-+
- Sysfs Class
- ===========
- 
-diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
-index a3d4bef..9ab874f 100644
---- a/drivers/misc/cxl/Makefile
-+++ b/drivers/misc/cxl/Makefile
-@@ -4,7 +4,7 @@ ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
- cxl-y				+= main.o file.o irq.o fault.o native.o
- cxl-y				+= context.o sysfs.o debugfs.o pci.o trace.o
- cxl-y				+= vphb.o api.o
--cxl-y				+= guest.o of.o hcalls.o
-+cxl-y				+= flash.o guest.o of.o hcalls.o
- obj-$(CONFIG_CXL)		+= cxl.o
- obj-$(CONFIG_CXL_BASE)		+= base.o
- 
-diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
-index a9f0dd3..957f4dd 100644
---- a/drivers/misc/cxl/base.c
-+++ b/drivers/misc/cxl/base.c
-@@ -84,3 +84,10 @@ void unregister_cxl_calls(struct cxl_calls *calls)
- 	synchronize_rcu();
- }
- EXPORT_SYMBOL_GPL(unregister_cxl_calls);
-+
-+int cxl_update_properties(struct device_node *dn,
-+			  struct property *new_prop)
-+{
-+	return of_update_property(dn, new_prop);
-+}
-+EXPORT_SYMBOL_GPL(cxl_update_properties);
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index e54bf4f..0bf536c 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -324,6 +324,10 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
- #define CXL_MODE_TIME_SLICED 0x4
- #define CXL_SUPPORTED_MODES (CXL_MODE_DEDICATED | CXL_MODE_DIRECTED)
- 
-+#define CXL_DEV_MINORS 13   /* 1 control + 4 AFUs * 3 (dedicated/master/shared) */
-+#define CXL_CARD_MINOR(adapter) (adapter->adapter_num * CXL_DEV_MINORS)
-+#define CXL_DEVT_ADAPTER(dev) (MINOR(dev) / CXL_DEV_MINORS)
-+
- enum cxl_context_status {
- 	CLOSED,
- 	OPENED,
-@@ -686,12 +690,14 @@ struct cxl_calls {
- };
- int register_cxl_calls(struct cxl_calls *calls);
- void unregister_cxl_calls(struct cxl_calls *calls);
-+int cxl_update_properties(struct device_node *dn, struct property *new_prop);
- 
- void cxl_remove_adapter_nr(struct cxl *adapter);
- 
- int cxl_alloc_spa(struct cxl_afu *afu);
- void cxl_release_spa(struct cxl_afu *afu);
- 
-+dev_t cxl_get_dev(void);
- int cxl_file_init(void);
- void cxl_file_exit(void);
- int cxl_register_adapter(struct cxl *adapter);
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index df4d49a..e160462 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -26,9 +26,7 @@
- #include "trace.h"
- 
- #define CXL_NUM_MINORS 256 /* Total to reserve */
--#define CXL_DEV_MINORS 13   /* 1 control + 4 AFUs * 3 (dedicated/master/shared) */
- 
--#define CXL_CARD_MINOR(adapter) (adapter->adapter_num * CXL_DEV_MINORS)
- #define CXL_AFU_MINOR_D(afu) (CXL_CARD_MINOR(afu->adapter) + 1 + (3 * afu->slice))
- #define CXL_AFU_MINOR_M(afu) (CXL_AFU_MINOR_D(afu) + 1)
- #define CXL_AFU_MINOR_S(afu) (CXL_AFU_MINOR_D(afu) + 2)
-@@ -36,7 +34,6 @@
- #define CXL_AFU_MKDEV_M(afu) MKDEV(MAJOR(cxl_dev), CXL_AFU_MINOR_M(afu))
- #define CXL_AFU_MKDEV_S(afu) MKDEV(MAJOR(cxl_dev), CXL_AFU_MINOR_S(afu))
- 
--#define CXL_DEVT_ADAPTER(dev) (MINOR(dev) / CXL_DEV_MINORS)
- #define CXL_DEVT_AFU(dev) ((MINOR(dev) % CXL_DEV_MINORS - 1) / 3)
- 
- #define CXL_DEVT_IS_CARD(dev) (MINOR(dev) % CXL_DEV_MINORS == 0)
-@@ -446,7 +443,8 @@ static const struct file_operations afu_master_fops = {
- 
- static char *cxl_devnode(struct device *dev, umode_t *mode)
- {
--	if (CXL_DEVT_IS_CARD(dev->devt)) {
-+	if (cpu_has_feature(CPU_FTR_HVMODE) &&
-+	    CXL_DEVT_IS_CARD(dev->devt)) {
- 		/*
- 		 * These minor numbers will eventually be used to program the
- 		 * PSL and AFUs once we have dynamic reprogramming support
-@@ -547,6 +545,11 @@ int cxl_register_adapter(struct cxl *adapter)
- 	return device_register(&adapter->dev);
- }
- 
-+dev_t cxl_get_dev(void)
-+{
-+	return cxl_dev;
-+}
-+
- int __init cxl_file_init(void)
- {
- 	int rc;
-diff --git a/drivers/misc/cxl/flash.c b/drivers/misc/cxl/flash.c
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
+diff --git a/arch/powerpc/include/asm/accounting.h b/arch/powerpc/include/asm/accounting.h
 new file mode 100644
-index 0000000..30d494d
+index 0000000..c133246
 --- /dev/null
-+++ b/drivers/misc/cxl/flash.c
-@@ -0,0 +1,538 @@
-+#include <linux/kernel.h>
-+#include <linux/fs.h>
-+#include <linux/semaphore.h>
-+#include <linux/slab.h>
-+#include <linux/uaccess.h>
-+#include <asm/rtas.h>
++++ b/arch/powerpc/include/asm/accounting.h
+@@ -0,0 +1,24 @@
++/*
++ * Common time accounting prototypes and such for all ppc machines.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
 +
-+#include "cxl.h"
-+#include "hcalls.h"
++#ifndef __POWERPC_ACCOUNTING_H
++#define __POWERPC_ACCOUNTING_H
 +
-+#define DOWNLOAD_IMAGE 1
-+#define VALIDATE_IMAGE 2
-+
-+struct ai_header {
-+	u16 version;
-+	u8  reserved0[6];
-+	u16 vendor;
-+	u16 device;
-+	u16 subsystem_vendor;
-+	u16 subsystem;
-+	u64 image_offset;
-+	u64 image_length;
-+	u8  reserved1[96];
++/* Stuff for accurate time accounting */
++struct cpu_accounting_data {
++	unsigned long user_time;	/* accumulated usermode TB ticks */
++	unsigned long system_time;	/* accumulated system TB ticks */
++	unsigned long user_time_scaled;	/* accumulated usermode SPURR ticks */
++	unsigned long starttime;	/* TB value snapshot */
++	unsigned long starttime_user;	/* TB value on exit to usermode */
++	unsigned long startspurr;	/* SPURR value snapshot */
++	unsigned long utime_sspurr;	/* ->user_time when ->startspurr set */
 +};
 +
-+static struct semaphore sem;
-+unsigned long *buffer[CXL_AI_MAX_ENTRIES];
-+struct sg_list *le;
-+static u64 continue_token;
-+static unsigned int transfer;
-+
-+struct update_props_workarea {
-+	__be32 phandle;
-+	__be32 state;
-+	__be64 reserved;
-+	__be32 nprops;
-+} __packed;
-+
-+struct update_nodes_workarea {
-+	__be32 state;
-+	__be64 unit_address;
-+	__be32 reserved;
-+} __packed;
-+
-+#define DEVICE_SCOPE 3
-+#define NODE_ACTION_MASK	0xff000000
-+#define NODE_COUNT_MASK		0x00ffffff
-+#define OPCODE_DELETE	0x01000000
-+#define OPCODE_UPDATE	0x02000000
-+#define OPCODE_ADD	0x03000000
-+
-+static int rcall(int token, char *buf, s32 scope)
-+{
-+	int rc;
-+
-+	spin_lock(&rtas_data_buf_lock);
-+
-+	memcpy(rtas_data_buf, buf, RTAS_DATA_BUF_SIZE);
-+	rc = rtas_call(token, 2, 1, NULL, rtas_data_buf, scope);
-+	memcpy(buf, rtas_data_buf, RTAS_DATA_BUF_SIZE);
-+
-+	spin_unlock(&rtas_data_buf_lock);
-+	return rc;
-+}
-+
-+static int update_property(struct device_node *dn, const char *name,
-+			   u32 vd, char *value)
-+{
-+	struct property *new_prop;
-+	u32 *val;
-+	int rc;
-+
-+	new_prop = kzalloc(sizeof(*new_prop), GFP_KERNEL);
-+	if (!new_prop)
-+		return -ENOMEM;
-+
-+	new_prop->name = kstrdup(name, GFP_KERNEL);
-+	if (!new_prop->name) {
-+		kfree(new_prop);
-+		return -ENOMEM;
-+	}
-+
-+	new_prop->length = vd;
-+	new_prop->value = kzalloc(new_prop->length, GFP_KERNEL);
-+	if (!new_prop->value) {
-+		kfree(new_prop->name);
-+		kfree(new_prop);
-+		return -ENOMEM;
-+	}
-+	memcpy(new_prop->value, value, vd);
-+
-+	val = (u32 *)new_prop->value;
-+	rc = cxl_update_properties(dn, new_prop);
-+	pr_devel("%s: update property (%s, length: %i, value: %#x)\n",
-+		  dn->name, name, vd, be32_to_cpu(*val));
-+
-+	if (rc) {
-+		kfree(new_prop->name);
-+		kfree(new_prop->value);
-+		kfree(new_prop);
-+	}
-+	return rc;
-+}
-+
-+static int update_node(__be32 phandle, s32 scope)
-+{
-+	struct update_props_workarea *upwa;
-+	struct device_node *dn;
-+	int i, rc, ret;
-+	char *prop_data;
-+	char *buf;
-+	int token;
-+	u32 nprops;
-+	u32 vd;
-+
-+	token = rtas_token("ibm,update-properties");
-+	if (token == RTAS_UNKNOWN_SERVICE)
-+		return -EINVAL;
-+
-+	buf = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+	memset(buf, 0, RTAS_DATA_BUF_SIZE);
-+
-+	dn = of_find_node_by_phandle(be32_to_cpu(phandle));
-+	if (!dn) {
-+		kfree(buf);
-+		return -ENOENT;
-+	}
-+
-+	upwa = (struct update_props_workarea *)&buf[0];
-+	upwa->phandle = phandle;
-+	do {
-+		rc = rcall(token, buf, scope);
-+		if (rc < 0)
-+			break;
-+
-+		prop_data = buf + sizeof(*upwa);
-+		nprops = be32_to_cpu(upwa->nprops);
-+
-+		if (*prop_data == 0) {
-+			prop_data++;
-+			vd = be32_to_cpu(*(__be32 *)prop_data);
-+			prop_data += vd + sizeof(vd);
-+			nprops--;
-+		}
-+
-+		for (i = 0; i < nprops; i++) {
-+			char *prop_name;
-+
-+			prop_name = prop_data;
-+			prop_data += strlen(prop_name) + 1;
-+			vd = be32_to_cpu(*(__be32 *)prop_data);
-+			prop_data += sizeof(vd);
-+
-+			if ((vd != 0x00000000) && (vd != 0x80000000)) {
-+				ret = update_property(dn, prop_name, vd, prop_data);
-+				if (ret)
-+					pr_err("cxl: Could not update property %s - %i\n",
-+					       prop_name, ret);
-+
-+				prop_data += vd;
-+			}
-+		}
-+	} while (rc == 1);
-+
-+	of_node_put(dn);
-+	kfree(buf);
-+	return rc;
-+}
-+
-+static int update_devicetree(struct cxl *adapter, s32 scope)
-+{
-+	struct update_nodes_workarea *unwa;
-+	u32 action, node_count;
-+	int token, rc, i;
-+	__be32 *data, drc_index, phandle;
-+	char *buf;
-+
-+	token = rtas_token("ibm,update-nodes");
-+	if (token == RTAS_UNKNOWN_SERVICE)
-+		return -EINVAL;
-+
-+	buf = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+	memset(buf, 0, RTAS_DATA_BUF_SIZE);
-+
-+	unwa = (struct update_nodes_workarea *)&buf[0];
-+	unwa->unit_address = cpu_to_be64(adapter->guest->handle);
-+	do {
-+		rc = rcall(token, buf, scope);
-+		if (rc && rc != 1)
-+			break;
-+
-+		data = (__be32 *)buf + 4;
-+		while (be32_to_cpu(*data) & NODE_ACTION_MASK) {
-+			action = be32_to_cpu(*data) & NODE_ACTION_MASK;
-+			node_count = be32_to_cpu(*data) & NODE_COUNT_MASK;
-+			pr_devel("device reconfiguration - action: %#x, nodes: %#x\n",
-+				 action, node_count);
-+			data++;
-+
-+			for (i = 0; i < node_count; i++) {
-+				phandle = *data++;
-+
-+				switch (action) {
-+				case OPCODE_DELETE:
-+					/* nothing to do */
-+					break;
-+				case OPCODE_UPDATE:
-+					update_node(phandle, scope);
-+					break;
-+				case OPCODE_ADD:
-+					/* nothing to do, just move the pointer */
-+					drc_index = *data++;
-+					break;
-+				}
-+			}
-+		}
-+	} while (rc == 1);
-+
-+	kfree(buf);
-+	return 0;
-+}
-+
-+static int handle_image(struct cxl *adapter,
-+			int operation,
-+			long (*fct)(u64, u64, u64, u64 *),
-+			struct cxl_adapter_image *ai)
-+{
-+	size_t mod, s_copy, len_chunk = 0;
-+	struct ai_header *header = NULL;
-+	unsigned int entries = 0, i;
-+	void *dest, *from;
-+	int rc = 0, need_header;
-+
-+	/* base adapter image header */
-+	need_header = (ai->flags & CXL_AI_NEED_HEADER);
-+	if (need_header) {
-+		header = kzalloc(sizeof(struct ai_header), GFP_KERNEL);
-+		if (!header)
-+			return -ENOMEM;
-+		header->version = cpu_to_be16(1);
-+		header->vendor = cpu_to_be16(adapter->guest->vendor);
-+		header->device = cpu_to_be16(adapter->guest->device);
-+		header->subsystem_vendor = cpu_to_be16(adapter->guest->subsystem_vendor);
-+		header->subsystem = cpu_to_be16(adapter->guest->subsystem);
-+		header->image_offset = cpu_to_be64(CXL_AI_HEADER_SIZE);
-+		header->image_length = cpu_to_be64(ai->len_image);
-+	}
-+
-+	/* number of entries in the list */
-+	len_chunk = ai->len_data;
-+	if (need_header)
-+		len_chunk += CXL_AI_HEADER_SIZE;
-+
-+	entries = len_chunk / CXL_AI_BUFFER_SIZE;
-+	mod = len_chunk % CXL_AI_BUFFER_SIZE;
-+	if (mod)
-+		entries++;
-+
-+	if (entries > CXL_AI_MAX_ENTRIES) {
-+		rc = -EINVAL;
-+		goto err;
-+	}
-+
-+	/*          < -- MAX_CHUNK_SIZE = 4096 * 256 = 1048576 bytes -->
-+	 * chunk 0  ----------------------------------------------------
-+	 *          | header   |  data                                 |
-+	 *          ----------------------------------------------------
-+	 * chunk 1  ----------------------------------------------------
-+	 *          | data                                             |
-+	 *          ----------------------------------------------------
-+	 * ....
-+	 * chunk n  ----------------------------------------------------
-+	 *          | data                                             |
-+	 *          ----------------------------------------------------
-+	 */
-+	from = ai->data;
-+	for (i = 0; i < entries; i++) {
-+		dest = buffer[i];
-+		s_copy = CXL_AI_BUFFER_SIZE;
-+
-+		if ((need_header) && (i == 0)) {
-+			/* add adapter image header */
-+			memcpy(buffer[i], header, sizeof(struct ai_header));
-+			s_copy = CXL_AI_BUFFER_SIZE - CXL_AI_HEADER_SIZE;
-+			dest += CXL_AI_HEADER_SIZE; /* image offset */
-+		}
-+		if ((i == (entries - 1)) && mod)
-+			s_copy = mod;
-+
-+		/* copy data */
-+		if (copy_from_user(dest, from, s_copy))
-+			goto err;
-+
-+		/* fill in the list */
-+		le[i].phys_addr = cpu_to_be64(virt_to_phys(buffer[i]));
-+		le[i].len = cpu_to_be64(CXL_AI_BUFFER_SIZE);
-+		if ((i == (entries - 1)) && mod)
-+			le[i].len = cpu_to_be64(mod);
-+		from += s_copy;
-+	}
-+	pr_devel("%s (op: %i, need header: %i, entries: %i, token: %#llx)\n",
-+		 __func__, operation, need_header, entries, continue_token);
-+
-+	/*
-+	 * download/validate the adapter image to the coherent
-+	 * platform facility
-+	 */
-+	rc = fct(adapter->guest->handle, virt_to_phys(le), entries, &continue_token);
-+	if (rc == 0) /* success of download/validation operation */
-+		continue_token = 0;
-+
-+err:
-+	kfree(header);
-+
-+	return rc;
-+}
-+
-+static int transfer_image(struct cxl *adapter,
-+			  int operation,
-+			  struct cxl_adapter_image *ai)
-+{
-+	int rc = 0;
-+	int afu;
-+
-+	switch (operation) {
-+	case DOWNLOAD_IMAGE:
-+		rc = handle_image(adapter, operation, &cxl_h_download_adapter_image, ai);
-+		if (rc < 0) {
-+			pr_devel("resetting adapter\n");
-+			cxl_h_reset_adapter(adapter->guest->handle);
-+		}
-+		return rc;
-+
-+	case VALIDATE_IMAGE:
-+		rc = handle_image(adapter, operation, &cxl_h_validate_adapter_image, ai);
-+		if (rc < 0) {
-+			pr_devel("resetting adapter\n");
-+			cxl_h_reset_adapter(adapter->guest->handle);
-+			return rc;
-+		}
-+		if (rc == 0) {
-+			pr_devel("remove curent afu\n");
-+			for (afu = 0; afu < adapter->slices; afu++)
-+				cxl_guest_remove_afu(adapter->afu[afu]);
-+
-+			pr_devel("resetting adapter\n");
-+			cxl_h_reset_adapter(adapter->guest->handle);
-+
-+			/* The entire image has now been
-+			 * downloaded and the validation has
-+			 * been successfully performed.
-+			 * After that, the partition should call
-+			 * ibm,update-nodes and
-+			 * ibm,update-properties to receive the
-+			 * current configuration
-+			 */
-+			rc = update_devicetree(adapter, DEVICE_SCOPE);
-+			transfer = 1;
-+		}
-+		return rc;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static long ioctl_transfer_image(struct cxl *adapter,
-+				 int operation,
-+				 struct cxl_adapter_image __user *uai)
-+{
-+	struct cxl_adapter_image ai;
-+
-+	pr_devel("%s\n", __func__);
-+
-+	if (copy_from_user(&ai, uai, sizeof(struct cxl_adapter_image)))
-+		return -EFAULT;
-+
-+	/*
-+	 * Make sure reserved fields and bits are set to 0
-+	 */
-+	if (ai.reserved1 || ai.reserved2 || ai.reserved3 || ai.reserved4 ||
-+		(ai.flags & ~CXL_AI_ALL))
-+		return -EINVAL;
-+
-+	return transfer_image(adapter, operation, &ai);
-+}
-+
-+static int device_open(struct inode *inode, struct file *file)
-+{
-+	int adapter_num = CXL_DEVT_ADAPTER(inode->i_rdev);
-+	struct cxl *adapter;
-+	int rc = 0, i;
-+
-+	pr_devel("in %s\n", __func__);
-+
-+	BUG_ON(sizeof(struct ai_header) != CXL_AI_HEADER_SIZE);
-+
-+	/* Allows one process to open the device by using a semaphore */
-+	if (down_interruptible(&sem) != 0)
-+		return -EPERM;
-+
-+	if (!(adapter = get_cxl_adapter(adapter_num)))
-+		return -ENODEV;
-+
-+	file->private_data = adapter;
-+	continue_token = 0;
-+	transfer = 0;
-+
-+	for (i = 0; i < CXL_AI_MAX_ENTRIES; i++)
-+		buffer[i] = NULL;
-+
-+	/* aligned buffer containing list entries which describes up to
-+	 * 1 megabyte of data (256 entries of 4096 bytes each)
-+	 *  Logical real address of buffer 0  -  Buffer 0 length in bytes
-+	 *  Logical real address of buffer 1  -  Buffer 1 length in bytes
-+	 *  Logical real address of buffer 2  -  Buffer 2 length in bytes
-+	 *  ....
-+	 *  ....
-+	 *  Logical real address of buffer N  -  Buffer N length in bytes
-+	 */
-+	le = (struct sg_list *)get_zeroed_page(GFP_KERNEL);
-+	if (!le) {
-+		rc = -ENOMEM;
-+		goto err;
-+	}
-+
-+	for (i = 0; i < CXL_AI_MAX_ENTRIES; i++) {
-+		buffer[i] = (unsigned long *)get_zeroed_page(GFP_KERNEL);
-+		if (!buffer[i]) {
-+			rc = -ENOMEM;
-+			goto err1;
-+		}
-+	}
-+
-+	return 0;
-+
-+err1:
-+	for (i = 0; i < CXL_AI_MAX_ENTRIES; i++) {
-+		if (buffer[i])
-+			free_page((unsigned long) buffer[i]);
-+	}
-+
-+	if (le)
-+		free_page((unsigned long) le);
-+err:
-+	put_device(&adapter->dev);
-+
-+	return rc;
-+}
-+
-+static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-+{
-+	struct cxl *adapter = file->private_data;
-+
-+	pr_devel("in %s\n", __func__);
-+
-+	if (cmd == CXL_IOCTL_DOWNLOAD_IMAGE)
-+		return ioctl_transfer_image(adapter,
-+					    DOWNLOAD_IMAGE,
-+					    (struct cxl_adapter_image __user *)arg);
-+	else if (cmd == CXL_IOCTL_VALIDATE_IMAGE)
-+		return ioctl_transfer_image(adapter,
-+					    VALIDATE_IMAGE,
-+					    (struct cxl_adapter_image __user *)arg);
-+	else
-+		return -EINVAL;
-+}
-+
-+static long device_compat_ioctl(struct file *file, unsigned int cmd,
-+				unsigned long arg)
-+{
-+	return device_ioctl(file, cmd, arg);
-+}
-+
-+static int device_close(struct inode *inode, struct file *file)
-+{
-+	struct cxl *adapter = file->private_data;
-+	int i;
-+
-+	pr_devel("in %s\n", __func__);
-+
-+	for (i = 0; i < CXL_AI_MAX_ENTRIES; i++) {
-+		if (buffer[i])
-+			free_page((unsigned long) buffer[i]);
-+	}
-+
-+	if (le)
-+		free_page((unsigned long) le);
-+
-+	up(&sem);
-+	put_device(&adapter->dev);
-+	continue_token = 0;
-+
-+	/* reload the module */
-+	if (transfer)
-+		cxl_guest_reload_module(adapter);
-+	else {
-+		pr_devel("resetting adapter\n");
-+		cxl_h_reset_adapter(adapter->guest->handle);
-+	}
-+
-+	transfer = 0;
-+	return 0;
-+}
-+
-+static const struct file_operations fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= device_open,
-+	.unlocked_ioctl	= device_ioctl,
-+	.compat_ioctl	= device_compat_ioctl,
-+	.release	= device_close,
-+};
-+
-+void cxl_guest_remove_chardev(struct cxl *adapter)
-+{
-+	cdev_del(&adapter->guest->cdev);
-+}
-+
-+int cxl_guest_add_chardev(struct cxl *adapter)
-+{
-+	dev_t devt;
-+	int rc;
-+
-+	devt = MKDEV(MAJOR(cxl_get_dev()), CXL_CARD_MINOR(adapter));
-+	cdev_init(&adapter->guest->cdev, &fops);
-+	if ((rc = cdev_add(&adapter->guest->cdev, devt, 1))) {
-+		dev_err(&adapter->dev, "Unable to add chardev on adapter (card%i): %i\n",
-+					adapter->adapter_num, rc);
-+		goto err;
-+	}
-+	adapter->dev.devt = devt;
-+	sema_init(&sem, 1);
-+err:
-+	return rc;
-+}
-diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
-index d02ff03..8340f2a 100644
---- a/drivers/misc/cxl/guest.c
-+++ b/drivers/misc/cxl/guest.c
-@@ -876,6 +876,7 @@ void cxl_guest_remove_adapter(struct cxl *adapter)
++#endif
+diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
+index e245255..afaa4f3 100644
+--- a/arch/powerpc/include/asm/cputime.h
++++ b/arch/powerpc/include/asm/cputime.h
+@@ -90,11 +90,10 @@ static inline void setup_cputime_one_jiffy(void)
+ static inline cputime64_t jiffies64_to_cputime64(const u64 jif)
+ {
+ 	u64 ct;
+-	u64 sec;
++	u64 sec = jif;
  
- 	cxl_sysfs_adapter_remove(adapter);
+ 	/* have to be a little careful about overflow */
+-	ct = jif % HZ;
+-	sec = jif / HZ;
++	ct = do_div(sec, HZ);
+ 	if (ct) {
+ 		ct *= tb_ticks_per_sec;
+ 		do_div(ct, HZ);
+@@ -230,7 +229,16 @@ static inline cputime_t clock_t_to_cputime(const unsigned long clk)
  
-+	cxl_guest_remove_chardev(adapter);
- 	device_unregister(&adapter->dev);
- }
+ #define cputime64_to_clock_t(ct)	cputime_to_clock_t((cputime_t)(ct))
  
-@@ -913,6 +914,9 @@ struct cxl *cxl_guest_init_adapter(struct device_node *np, struct platform_devic
- 	if ((rc = properties_look_ok(adapter)))
- 		goto err1;
++/*
++ * PPC64 uses PACA which is task independent for storing accounting data while
++ * PPC32 uses struct thread_info, therefore at task switch the accounting data
++ * has to be populated in the new task
++ */
++#ifdef CONFIG_PPC64
+ static inline void arch_vtime_task_switch(struct task_struct *tsk) { }
++#else
++void arch_vtime_task_switch(struct task_struct *tsk);
++#endif
  
-+	if ((rc = cxl_guest_add_chardev(adapter)))
-+		goto err1;
-+
- 	/*
- 	 * After we call this function we must not free the adapter directly,
- 	 * even if it returns an error!
-@@ -928,12 +932,23 @@ struct cxl *cxl_guest_init_adapter(struct device_node *np, struct platform_devic
- err_put1:
- 	device_unregister(&adapter->dev);
- 	free = false;
-+	cxl_guest_remove_chardev(adapter);
- err1:
- 	if (free)
- 		free_adapter(adapter);
- 	return ERR_PTR(rc);
- }
+ #endif /* __KERNEL__ */
+ #endif /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 93ae809..8bc38d1 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -287,7 +287,7 @@ do_kvm_##n:								\
+ 	std	r0,GPR0(r1);		/* save r0 in stackframe	*/ \
+ 	std	r10,GPR1(r1);		/* save r1 in stackframe	*/ \
+ 	beq	4f;			/* if from kernel mode		*/ \
+-	ACCOUNT_CPU_USER_ENTRY(r9, r10);				   \
++	ACCOUNT_CPU_USER_ENTRY(r13, r9, r10);				   \
+ 	SAVE_PPR(area, r9, r10);					   \
+ 4:	EXCEPTION_PROLOG_COMMON_2(area)					   \
+ 	EXCEPTION_PROLOG_COMMON_3(n)					   \
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 546540b..ad171e9 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -25,6 +25,7 @@
+ #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+ #include <asm/kvm_book3s_asm.h>
+ #endif
++#include <asm/accounting.h>
  
-+void cxl_guest_reload_module(struct cxl *adapter)
-+{
-+	struct platform_device *pdev;
+ register struct paca_struct *local_paca asm("r13");
+ 
+@@ -184,13 +185,7 @@ struct paca_struct {
+ #endif
+ 
+ 	/* Stuff for accurate time accounting */
+-	u64 user_time;			/* accumulated usermode TB ticks */
+-	u64 system_time;		/* accumulated system TB ticks */
+-	u64 user_time_scaled;		/* accumulated usermode SPURR ticks */
+-	u64 starttime;			/* TB value snapshot */
+-	u64 starttime_user;		/* TB value on exit to usermode */
+-	u64 startspurr;			/* SPURR value snapshot */
+-	u64 utime_sspurr;		/* ->user_time when ->startspurr set */
++	struct cpu_accounting_data accounting;
+ 	u64 stolen_time;		/* TB ticks taken by hypervisor */
+ 	u64 dtl_ridx;			/* read index in dispatch log */
+ 	struct dtl_entry *dtl_curr;	/* pointer corresponding to dtl_ridx */
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index 499d9f8..f37d3b2 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -24,27 +24,27 @@
+  */
+ 
+ #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+-#define ACCOUNT_CPU_USER_ENTRY(ra, rb)
+-#define ACCOUNT_CPU_USER_EXIT(ra, rb)
++#define ACCOUNT_CPU_USER_ENTRY(ptr, ra, rb)
++#define ACCOUNT_CPU_USER_EXIT(ptr, ra, rb)
+ #define ACCOUNT_STOLEN_TIME
+ #else
+-#define ACCOUNT_CPU_USER_ENTRY(ra, rb)					\
++#define ACCOUNT_CPU_USER_ENTRY(ptr, ra, rb)				\
+ 	MFTB(ra);			/* get timebase */		\
+-	ld	rb,PACA_STARTTIME_USER(r13);				\
+-	std	ra,PACA_STARTTIME(r13);					\
++	PPC_LL	rb, ACCOUNT_STARTTIME_USER(ptr);			\
++	PPC_STL	ra, ACCOUNT_STARTTIME(ptr);				\
+ 	subf	rb,rb,ra;		/* subtract start value */	\
+-	ld	ra,PACA_USER_TIME(r13);					\
++	PPC_LL	ra, ACCOUNT_USER_TIME(ptr);				\
+ 	add	ra,ra,rb;		/* add on to user time */	\
+-	std	ra,PACA_USER_TIME(r13);					\
++	PPC_STL	ra, ACCOUNT_USER_TIME(ptr);				\
+ 
+-#define ACCOUNT_CPU_USER_EXIT(ra, rb)					\
++#define ACCOUNT_CPU_USER_EXIT(ptr, ra, rb)				\
+ 	MFTB(ra);			/* get timebase */		\
+-	ld	rb,PACA_STARTTIME(r13);					\
+-	std	ra,PACA_STARTTIME_USER(r13);				\
++	PPC_LL	rb, ACCOUNT_STARTTIME(ptr);				\
++	PPC_STL	ra, ACCOUNT_STARTTIME_USER(ptr);			\
+ 	subf	rb,rb,ra;		/* subtract start value */	\
+-	ld	ra,PACA_SYSTEM_TIME(r13);				\
++	PPC_LL	ra, ACCOUNT_SYSTEM_TIME(ptr);				\
+ 	add	ra,ra,rb;		/* add on to system time */	\
+-	std	ra,PACA_SYSTEM_TIME(r13)
++	PPC_STL	ra, ACCOUNT_SYSTEM_TIME(ptr)
+ 
+ #ifdef CONFIG_PPC_SPLPAR
+ #define ACCOUNT_STOLEN_TIME						\
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index c4cb2ff..ff6b591 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1275,6 +1275,7 @@ static inline unsigned long mfvtb (void)
+ 			asm volatile("mfspr %0, %1" : "=r" (rval) : \
+ 				"i" (SPRN_TBRU)); rval;})
+ #endif
++#define mftb()		mftbl()
+ #endif /* !__powerpc64__ */
+ 
+ #define mttbl(v)	asm volatile("mttbl %0":: "r"(v))
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index 7efee4a..9e1f06e 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -33,6 +33,7 @@
+ #include <asm/processor.h>
+ #include <asm/page.h>
+ #include <linux/stringify.h>
++#include <asm/accounting.h>
+ 
+ /*
+  * low level task data.
+@@ -44,6 +45,10 @@ struct thread_info {
+ 						   <0 => BUG */
+ 	unsigned long	local_flags;		/* private flags for thread */
+ 
++#if defined(CONFIG_VIRT_CPU_ACCOUNTING_NATIVE) && defined(CONFIG_PPC32)
++	struct cpu_accounting_data accounting;
++#endif
 +
-+	pdev = adapter->guest->pdev;
-+	cxl_guest_remove_adapter(adapter);
-+
-+	cxl_of_probe(pdev);
-+}
-+
- const struct cxl_backend_ops cxl_guest_ops = {
- 	.module = THIS_MODULE,
- 	.adapter_reset = guest_reset,
-diff --git a/include/uapi/misc/cxl.h b/include/uapi/misc/cxl.h
-index 1e889aa..4de0063 100644
---- a/include/uapi/misc/cxl.h
-+++ b/include/uapi/misc/cxl.h
-@@ -55,11 +55,35 @@ struct cxl_afu_id {
- 	__u64 reserved6;
+ 	/* low level flags - has atomic operations done on it */
+ 	unsigned long	flags ____cacheline_aligned_in_smp;
  };
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 07cebc3..9e108d7 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -249,13 +249,28 @@ int main(void)
+ 	DEFINE(PACAHWCPUID, offsetof(struct paca_struct, hw_cpu_id));
+ 	DEFINE(PACAKEXECSTATE, offsetof(struct paca_struct, kexec_state));
+ 	DEFINE(PACA_DSCR_DEFAULT, offsetof(struct paca_struct, dscr_default));
+-	DEFINE(PACA_STARTTIME, offsetof(struct paca_struct, starttime));
+-	DEFINE(PACA_STARTTIME_USER, offsetof(struct paca_struct, starttime_user));
+-	DEFINE(PACA_USER_TIME, offsetof(struct paca_struct, user_time));
+-	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
++	DEFINE(ACCOUNT_STARTTIME,
++	       offsetof(struct paca_struct, accounting.starttime));
++	DEFINE(ACCOUNT_STARTTIME_USER,
++	       offsetof(struct paca_struct, accounting.starttime_user));
++	DEFINE(ACCOUNT_USER_TIME,
++	       offsetof(struct paca_struct, accounting.user_time));
++	DEFINE(ACCOUNT_SYSTEM_TIME,
++	       offsetof(struct paca_struct, accounting.system_time));
+ 	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
+ 	DEFINE(PACA_NAPSTATELOST, offsetof(struct paca_struct, nap_state_lost));
+ 	DEFINE(PACA_SPRG_VDSO, offsetof(struct paca_struct, sprg_vdso));
++#else /* CONFIG_PPC64 */
++#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
++	DEFINE(ACCOUNT_STARTTIME,
++	       offsetof(struct thread_info, accounting.starttime));
++	DEFINE(ACCOUNT_STARTTIME_USER,
++	       offsetof(struct thread_info, accounting.starttime_user));
++	DEFINE(ACCOUNT_USER_TIME,
++	       offsetof(struct thread_info, accounting.user_time));
++	DEFINE(ACCOUNT_SYSTEM_TIME,
++	       offsetof(struct thread_info, accounting.system_time));
++#endif
+ #endif /* CONFIG_PPC64 */
  
-+/* base adapter image header is included in the image */
-+#define CXL_AI_NEED_HEADER	0x0000000000000001ULL
-+#define CXL_AI_ALL		CXL_AI_NEED_HEADER
+ 	/* RTAS */
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 2405631..9899032 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -175,6 +175,12 @@ transfer_to_handler:
+ 	addi	r12,r12,-1
+ 	stw	r12,4(r11)
+ #endif
++#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
++	CURRENT_THREAD_INFO(r9, r1)
++	tophys(r9, r9)
++	ACCOUNT_CPU_USER_ENTRY(r9, r11, r12)
++#endif
 +
-+#define CXL_AI_HEADER_SIZE 128
-+#define CXL_AI_BUFFER_SIZE 4096
-+#define CXL_AI_MAX_ENTRIES 256
-+#define CXL_AI_MAX_CHUNK_SIZE (CXL_AI_BUFFER_SIZE * CXL_AI_MAX_ENTRIES)
-+
-+struct cxl_adapter_image {
-+	__u64 flags;
-+	__u64 *data;
-+	__u64 len_data;
-+	__u64 len_image;
-+	__u64 reserved1;
-+	__u64 reserved2;
-+	__u64 reserved3;
-+	__u64 reserved4;
-+};
-+
- /* ioctl numbers */
- #define CXL_MAGIC 0xCA
-+/* AFU devices */
- #define CXL_IOCTL_START_WORK		_IOW(CXL_MAGIC, 0x00, struct cxl_ioctl_start_work)
- #define CXL_IOCTL_GET_PROCESS_ELEMENT	_IOR(CXL_MAGIC, 0x01, __u32)
- #define CXL_IOCTL_GET_AFU_ID            _IOR(CXL_MAGIC, 0x02, struct cxl_afu_id)
-+/* adapter devices */
-+#define CXL_IOCTL_DOWNLOAD_IMAGE        _IOW(CXL_MAGIC, 0x0A, struct cxl_adapter_image)
-+#define CXL_IOCTL_VALIDATE_IMAGE        _IOW(CXL_MAGIC, 0x0B, struct cxl_adapter_image)
+ 	b	3f
  
- #define CXL_READ_MIN_SIZE 0x1000 /* 4K */
+ 2:	/* if from kernel, check interrupted DOZE/NAP mode and
+@@ -398,6 +404,13 @@ BEGIN_FTR_SECTION
+ 	lwarx	r7,0,r1
+ END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
+ 	stwcx.	r0,0,r1			/* to clear the reservation */
++#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
++	andi.	r4,r8,MSR_PR
++	beq	3f
++	CURRENT_THREAD_INFO(r4, r1)
++	ACCOUNT_CPU_USER_EXIT(r4, r5, r7)
++3:
++#endif
+ 	lwz	r4,_LINK(r1)
+ 	lwz	r5,_CCR(r1)
+ 	mtlr	r4
+@@ -769,6 +782,10 @@ restore_user:
+ 	andis.	r10,r0,DBCR0_IDM@h
+ 	bnel-	load_dbcr0
+ #endif
++#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
++	CURRENT_THREAD_INFO(r9, r1)
++	ACCOUNT_CPU_USER_EXIT(r9, r10, r11)
++#endif
  
+ 	b	restore
+ 
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 0d525ce..d9bf82b 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -70,7 +70,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
+ 	std	r0,GPR0(r1)
+ 	std	r10,GPR1(r1)
+ 	beq	2f			/* if from kernel mode */
+-	ACCOUNT_CPU_USER_ENTRY(r10, r11)
++	ACCOUNT_CPU_USER_ENTRY(r13, r10, r11)
+ 2:	std	r2,GPR2(r1)
+ 	std	r3,GPR3(r1)
+ 	mfcr	r2
+@@ -222,7 +222,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+ 	ld	r4,_LINK(r1)
+ 
+ 	beq-	1f
+-	ACCOUNT_CPU_USER_EXIT(r11, r12)
++	ACCOUNT_CPU_USER_EXIT(r13, r11, r12)
+ 
+ BEGIN_FTR_SECTION
+ 	HMT_MEDIUM_LOW
+@@ -822,7 +822,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ BEGIN_FTR_SECTION
+ 	mtspr	SPRN_PPR,r2	/* Restore PPR */
+ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+-	ACCOUNT_CPU_USER_EXIT(r2, r4)
++	ACCOUNT_CPU_USER_EXIT(r13, r2, r4)
+ 	REST_GPR(13, r1)
+ 1:
+ 	mtspr	SPRN_SRR1,r3
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 488e631..c3f1d30 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -386,7 +386,7 @@ exc_##n##_common:							    \
+ 	std	r10,_NIP(r1);		/* save SRR0 to stackframe */	    \
+ 	std	r11,_MSR(r1);		/* save SRR1 to stackframe */	    \
+ 	beq	2f;			/* if from kernel mode */	    \
+-	ACCOUNT_CPU_USER_ENTRY(r10,r11);/* accounting (uses cr0+eq) */	    \
++	ACCOUNT_CPU_USER_ENTRY(r13,r10,r11);/* accounting (uses cr0+eq) */  \
+ 2:	ld	r3,excf+EX_R10(r13);	/* get back r10 */		    \
+ 	ld	r4,excf+EX_R11(r13);	/* get back r11 */		    \
+ 	mfspr	r5,scratch;		/* get back r13 */		    \
+@@ -1059,7 +1059,7 @@ fast_exception_return:
+ 	andi.	r6,r10,MSR_PR
+ 	REST_2GPRS(6, r1)
+ 	beq	1f
+-	ACCOUNT_CPU_USER_EXIT(r10, r11)
++	ACCOUNT_CPU_USER_EXIT(r13, r10, r11)
+ 	ld	r0,GPR13(r1)
+ 
+ 1:	stdcx.	r0,0,r1		/* to clear the reservation */
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 81b0900..837e59a 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -165,7 +165,15 @@ DEFINE_PER_CPU(unsigned long, cputime_scaled_last_delta);
+ 
+ cputime_t cputime_one_jiffy;
+ 
++#ifdef CONFIG_PPC_SPLPAR
+ void (*dtl_consumer)(struct dtl_entry *, u64);
++#endif
++
++#ifdef CONFIG_PPC64
++#define get_accounting(tsk)	(&get_paca()->accounting)
++#else
++#define get_accounting(tsk)	(&task_thread_info(tsk)->accounting)
++#endif
+ 
+ static void calc_cputime_factors(void)
+ {
+@@ -185,7 +193,7 @@ static void calc_cputime_factors(void)
+  * Read the SPURR on systems that have it, otherwise the PURR,
+  * or if that doesn't exist return the timebase value passed in.
+  */
+-static u64 read_spurr(u64 tb)
++static unsigned long read_spurr(unsigned long tb)
+ {
+ 	if (cpu_has_feature(CPU_FTR_SPURR))
+ 		return mfspr(SPRN_SPURR);
+@@ -248,8 +256,8 @@ static u64 scan_dispatch_log(u64 stop_tb)
+ void accumulate_stolen_time(void)
+ {
+ 	u64 sst, ust;
+-
+ 	u8 save_soft_enabled = local_paca->soft_enabled;
++	struct cpu_accounting_data *acct = &local_paca->accounting;
+ 
+ 	/* We are called early in the exception entry, before
+ 	 * soft/hard_enabled are sync'ed to the expected state
+@@ -259,11 +267,11 @@ void accumulate_stolen_time(void)
+ 	 */
+ 	local_paca->soft_enabled = 0;
+ 
+-	sst = scan_dispatch_log(local_paca->starttime_user);
+-	ust = scan_dispatch_log(local_paca->starttime);
+-	local_paca->system_time -= sst;
+-	local_paca->user_time -= ust;
+-	local_paca->stolen_time += ust + sst;
++	sst = scan_dispatch_log(acct->starttime_user);
++	ust = scan_dispatch_log(acct->starttime);
++	acct->system_time -= sst;
++	acct->user_time -= ust;
++	acct->stolen_time += ust + sst;
+ 
+ 	local_paca->soft_enabled = save_soft_enabled;
+ }
+@@ -271,14 +279,15 @@ void accumulate_stolen_time(void)
+ static inline u64 calculate_stolen_time(u64 stop_tb)
+ {
+ 	u64 stolen = 0;
++	struct cpu_accounting_data *acct = get_accounting(NULL);
+ 
+ 	if (get_paca()->dtl_ridx != be64_to_cpu(get_lppaca()->dtl_idx)) {
+ 		stolen = scan_dispatch_log(stop_tb);
+-		get_paca()->system_time -= stolen;
++		acct->system_time -= stolen;
+ 	}
+ 
+-	stolen += get_paca()->stolen_time;
+-	get_paca()->stolen_time = 0;
++	stolen += acct->stolen_time;
++	acct->stolen_time = 0;
+ 	return stolen;
+ }
+ 
+@@ -294,27 +303,29 @@ static inline u64 calculate_stolen_time(u64 stop_tb)
+  * Account time for a transition between system, hard irq
+  * or soft irq state.
+  */
+-static u64 vtime_delta(struct task_struct *tsk,
+-			u64 *sys_scaled, u64 *stolen)
++static unsigned long vtime_delta(struct task_struct *tsk,
++				 unsigned long *sys_scaled,
++				 unsigned long *stolen)
+ {
+-	u64 now, nowscaled, deltascaled;
+-	u64 udelta, delta, user_scaled;
++	unsigned long now, nowscaled, deltascaled;
++	unsigned long udelta, delta, user_scaled;
++	struct cpu_accounting_data *acct = get_accounting(tsk);
+ 
+ 	WARN_ON_ONCE(!irqs_disabled());
+ 
+ 	now = mftb();
+ 	nowscaled = read_spurr(now);
+-	get_paca()->system_time += now - get_paca()->starttime;
+-	get_paca()->starttime = now;
+-	deltascaled = nowscaled - get_paca()->startspurr;
+-	get_paca()->startspurr = nowscaled;
++	acct->system_time += now - acct->starttime;
++	acct->starttime = now;
++	deltascaled = nowscaled - acct->startspurr;
++	acct->startspurr = nowscaled;
+ 
+ 	*stolen = calculate_stolen_time(now);
+ 
+-	delta = get_paca()->system_time;
+-	get_paca()->system_time = 0;
+-	udelta = get_paca()->user_time - get_paca()->utime_sspurr;
+-	get_paca()->utime_sspurr = get_paca()->user_time;
++	delta = acct->system_time;
++	acct->system_time = 0;
++	udelta = acct->user_time - acct->utime_sspurr;
++	acct->utime_sspurr = acct->user_time;
+ 
+ 	/*
+ 	 * Because we don't read the SPURR on every kernel entry/exit,
+@@ -336,14 +347,14 @@ static u64 vtime_delta(struct task_struct *tsk,
+ 			*sys_scaled = deltascaled;
+ 		}
+ 	}
+-	get_paca()->user_time_scaled += user_scaled;
++	acct->user_time_scaled += user_scaled;
+ 
+ 	return delta;
+ }
+ 
+ void vtime_account_system(struct task_struct *tsk)
+ {
+-	u64 delta, sys_scaled, stolen;
++	unsigned long delta, sys_scaled, stolen;
+ 
+ 	delta = vtime_delta(tsk, &sys_scaled, &stolen);
+ 	account_system_time(tsk, 0, delta, sys_scaled);
+@@ -354,7 +365,7 @@ EXPORT_SYMBOL_GPL(vtime_account_system);
+ 
+ void vtime_account_idle(struct task_struct *tsk)
+ {
+-	u64 delta, sys_scaled, stolen;
++	unsigned long delta, sys_scaled, stolen;
+ 
+ 	delta = vtime_delta(tsk, &sys_scaled, &stolen);
+ 	account_idle_time(delta + stolen);
+@@ -372,15 +383,33 @@ void vtime_account_idle(struct task_struct *tsk)
+ void vtime_account_user(struct task_struct *tsk)
+ {
+ 	cputime_t utime, utimescaled;
++	struct cpu_accounting_data *acct = get_accounting(tsk);
+ 
+-	utime = get_paca()->user_time;
+-	utimescaled = get_paca()->user_time_scaled;
+-	get_paca()->user_time = 0;
+-	get_paca()->user_time_scaled = 0;
+-	get_paca()->utime_sspurr = 0;
++	utime = acct->user_time;
++	utimescaled = acct->user_time_scaled;
++	acct->user_time = 0;
++	acct->user_time_scaled = 0;
++	acct->utime_sspurr = 0;
+ 	account_user_time(tsk, utime, utimescaled);
+ }
+ 
++#ifdef CONFIG_PPC32
++/*
++ * Called from the context switch with interrupts disabled, to charge all
++ * accumulated times to the current process, and to prepare accounting on
++ * the next process.
++ */
++void arch_vtime_task_switch(struct task_struct *prev)
++{
++	struct cpu_accounting_data *pacct = get_accounting(prev);
++	struct cpu_accounting_data *nacct = get_accounting(current);
++
++	nacct->starttime = pacct->starttime;
++	nacct->system_time = 0;
++	nacct->user_time = 0;
++}
++#endif /* CONFIG_PPC32 */
++
+ #else /* ! CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
+ #define calc_cputime_factors()
+ #endif
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 142dff5..54b8043 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -1,7 +1,6 @@
+ config PPC64
+ 	bool "64-bit kernel"
+ 	default n
+-	select HAVE_VIRT_CPU_ACCOUNTING
+ 	select ZLIB_DEFLATE
+ 	help
+ 	  This option selects whether a 32-bit or a 64-bit kernel
 -- 
-1.9.1
+2.1.0
