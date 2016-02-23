@@ -1,38 +1,36 @@
-Return-Path: <xinhui@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 435DA1A05E7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 00:15:26 +1100 (AEDT)
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 87FA01A07BF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 22:07:01 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 0863F14090A
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2016 00:15:24 +1100 (AEDT)
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui@linux.vnet.ibm.com>;
- Tue, 23 Feb 2016 21:07:00 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id DFBA43578052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 22:06:57 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1NB6nTx524572
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 22:06:57 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1NB6O4R020782
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 22:06:25 +1100
-Message-ID: <56CC3CDD.8040006@linux.vnet.ibm.com>
-Date: Tue, 23 Feb 2016 19:05:01 +0800
-From: Pan Xinhui <xinhui@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 23 Feb 2016 18:45:21 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1NDFA8S65142864
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 18:45:11 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1NIiXCe017616
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2016 00:14:34 +0530
+Message-ID: <56CC5B59.4030902@linux.vnet.ibm.com>
+Date: Tue, 23 Feb 2016 18:45:05 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Boqun Feng <boqun.feng@gmail.com>,
- "Peter Zijlstra (Intel)" <peterz@infradead.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH V2] arch/powerpc: use BUILD_BUG_ON_MSG() when detect unfit
- {cmp}xchg size
+To: "Kirill A. Shutemov" <kirill@shutemov.name>,
+ kirill.shutemov@linux.intel.com, Hugh Dickins <hughd@google.com>
+CC: Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Question on follow_page_mask
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -43,91 +41,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: pan xinhui <xinhui.pan@linux.vnet.ibm.com>
+Not able to understand the first code block of follow_page_mask
+function. follow_huge_addr function is expected to find the page
+struct for the given address if it turns out to be a HugeTLB page
+but then when it finds the page we bug on if it had been called
+with FOLL_GET flag.
 
-__xchg_called_with_bad_pointer() can't tell us what codes use {cmp}xchg
-in incorrect way.  And no error will be reported until the link stage.
-To fix such a kind of issues easily, we use BUILD_BUG_ON_MSG() here.
+	page = follow_huge_addr(mm, address, flags & FOLL_WRITE);
+	if (!IS_ERR(page)) {
+		BUG_ON(flags & FOLL_GET);
+		return page;
+	}
 
-Signed-off-by: pan xinhui <xinhui.pan@linux.vnet.ibm.com>
----
-change from V1:
-	use BUILD_BUG_ON_MSG to provide more build error messages.
----
- arch/powerpc/include/asm/cmpxchg.h | 19 +++++--------------
- 1 file changed, 5 insertions(+), 14 deletions(-)
+do_move_page_to_node_array calls follow_page with FOLL_GET which
+in turn calls follow_page_mask with FOLL_GET. On POWER, the
+function follow_huge_addr is defined and does not return -EINVAL
+like the generic one. It returns the page struct if its a HugeTLB
+page. Just curious to know what is the purpose behind the BUG_ON.
+Thank you.
 
-diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
-index d1a8d93..730028b 100644
---- a/arch/powerpc/include/asm/cmpxchg.h
-+++ b/arch/powerpc/include/asm/cmpxchg.h
-@@ -5,6 +5,7 @@
- #include <linux/compiler.h>
- #include <asm/synch.h>
- #include <asm/asm-compat.h>
-+#include <linux/bug.h>
- 
- /*
-  * Atomic exchange
-@@ -92,12 +93,6 @@ __xchg_u64_local(volatile void *p, unsigned long val)
- }
- #endif
- 
--/*
-- * This function doesn't exist, so you'll get a linker error
-- * if something tries to do an invalid xchg().
-- */
--extern void __xchg_called_with_bad_pointer(void);
--
- static __always_inline unsigned long
- __xchg(volatile void *ptr, unsigned long x, unsigned int size)
- {
-@@ -109,7 +104,7 @@ __xchg(volatile void *ptr, unsigned long x, unsigned int size)
- 		return __xchg_u64(ptr, x);
- #endif
- 	}
--	__xchg_called_with_bad_pointer();
-+	BUILD_BUG_ON_MSG(1, "Unsupported size for __xchg");
- 	return x;
- }
- 
-@@ -124,7 +119,7 @@ __xchg_local(volatile void *ptr, unsigned long x, unsigned int size)
- 		return __xchg_u64_local(ptr, x);
- #endif
- 	}
--	__xchg_called_with_bad_pointer();
-+	BUILD_BUG_ON_MSG(1, "Unsupported size for __xchg_local");
- 	return x;
- }
- #define xchg(ptr,x)							     \
-@@ -235,10 +230,6 @@ __cmpxchg_u64_local(volatile unsigned long *p, unsigned long old,
- }
- #endif
- 
--/* This function doesn't exist, so you'll get a linker error
--   if something tries to do an invalid cmpxchg().  */
--extern void __cmpxchg_called_with_bad_pointer(void);
--
- static __always_inline unsigned long
- __cmpxchg(volatile void *ptr, unsigned long old, unsigned long new,
- 	  unsigned int size)
-@@ -251,7 +242,7 @@ __cmpxchg(volatile void *ptr, unsigned long old, unsigned long new,
- 		return __cmpxchg_u64(ptr, old, new);
- #endif
- 	}
--	__cmpxchg_called_with_bad_pointer();
-+	BUILD_BUG_ON_MSG(1, "Unsupported size for __cmpxchg");
- 	return old;
- }
- 
-@@ -267,7 +258,7 @@ __cmpxchg_local(volatile void *ptr, unsigned long old, unsigned long new,
- 		return __cmpxchg_u64_local(ptr, old, new);
- #endif
- 	}
--	__cmpxchg_called_with_bad_pointer();
-+	BUILD_BUG_ON_MSG(1, "Unsupported size for __cmpxchg_local");
- 	return old;
- }
- 
--- 
-2.5.0
+Regards
+Anshuman
