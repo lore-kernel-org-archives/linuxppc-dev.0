@@ -2,33 +2,33 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 062AC1A05D9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 15:49:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C0AE51A0586
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 15:49:04 +1100 (AEDT)
 Received: from localhost
  by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 22 Feb 2016 21:49:01 -0700
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 9CD041FF0021
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2016 21:37:08 -0700 (MST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1N4mwQS29098134
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 04:48:58 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1N4mw0Y025179
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2016 23:48:58 -0500
+ Mon, 22 Feb 2016 21:49:03 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 0606C3E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2016 21:49:01 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1N4n06c27721732
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2016 21:49:00 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1N4n0j4019822
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Feb 2016 21:49:00 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V4 13/18] powerpc/mm: Move hash related mmu-*.h headers to
- book3s/
-Date: Tue, 23 Feb 2016 10:18:15 +0530
-Message-Id: <1456202900-5454-14-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V4 14/18] powerpc/mm: Create a new headers for tlbflush for
+ hash64
+Date: Tue, 23 Feb 2016 10:18:16 +0530
+Message-Id: <1456202900-5454-15-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1456202900-5454-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1456202900-5454-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,163 +42,213 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/{mmu-hash32.h => book3s/32/mmu-hash.h} | 0
- arch/powerpc/include/asm/{mmu-hash64.h => book3s/64/mmu-hash.h} | 0
- arch/powerpc/include/asm/mmu.h                                  | 4 ++--
- arch/powerpc/kernel/idle_power7.S                               | 2 +-
- arch/powerpc/kvm/book3s_32_mmu_host.c                           | 2 +-
- arch/powerpc/kvm/book3s_64_mmu.c                                | 2 +-
- arch/powerpc/kvm/book3s_64_mmu_host.c                           | 2 +-
- arch/powerpc/kvm/book3s_64_mmu_hv.c                             | 2 +-
- arch/powerpc/kvm/book3s_64_vio.c                                | 2 +-
- arch/powerpc/kvm/book3s_64_vio_hv.c                             | 2 +-
- arch/powerpc/kvm/book3s_hv_rm_mmu.c                             | 2 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S                         | 2 +-
- 12 files changed, 11 insertions(+), 11 deletions(-)
- rename arch/powerpc/include/asm/{mmu-hash32.h => book3s/32/mmu-hash.h} (100%)
- rename arch/powerpc/include/asm/{mmu-hash64.h => book3s/64/mmu-hash.h} (100%)
+ arch/powerpc/include/asm/book3s/64/tlbflush-hash.h | 94 ++++++++++++++++++++++
+ arch/powerpc/include/asm/tlbflush.h                | 92 +--------------------
+ 2 files changed, 95 insertions(+), 91 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
 
-diff --git a/arch/powerpc/include/asm/mmu-hash32.h b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-similarity index 100%
-rename from arch/powerpc/include/asm/mmu-hash32.h
-rename to arch/powerpc/include/asm/book3s/32/mmu-hash.h
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-similarity index 100%
-rename from arch/powerpc/include/asm/mmu-hash64.h
-rename to arch/powerpc/include/asm/book3s/64/mmu-hash.h
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 54d46504733d..8ca1c983bf6c 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -183,10 +183,10 @@ static inline void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
+new file mode 100644
+index 000000000000..1b753f96b374
+--- /dev/null
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
+@@ -0,0 +1,94 @@
++#ifndef _ASM_POWERPC_BOOK3S_64_TLBFLUSH_HASH_H
++#define _ASM_POWERPC_BOOK3S_64_TLBFLUSH_HASH_H
++
++#define MMU_NO_CONTEXT		0
++
++/*
++ * TLB flushing for 64-bit hash-MMU CPUs
++ */
++
++#include <linux/percpu.h>
++#include <asm/page.h>
++
++#define PPC64_TLB_BATCH_NR 192
++
++struct ppc64_tlb_batch {
++	int			active;
++	unsigned long		index;
++	struct mm_struct	*mm;
++	real_pte_t		pte[PPC64_TLB_BATCH_NR];
++	unsigned long		vpn[PPC64_TLB_BATCH_NR];
++	unsigned int		psize;
++	int			ssize;
++};
++DECLARE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
++
++extern void __flush_tlb_pending(struct ppc64_tlb_batch *batch);
++
++#define __HAVE_ARCH_ENTER_LAZY_MMU_MODE
++
++static inline void arch_enter_lazy_mmu_mode(void)
++{
++	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
++
++	batch->active = 1;
++}
++
++static inline void arch_leave_lazy_mmu_mode(void)
++{
++	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
++
++	if (batch->index)
++		__flush_tlb_pending(batch);
++	batch->active = 0;
++}
++
++#define arch_flush_lazy_mmu_mode()      do {} while (0)
++
++
++extern void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize,
++			    int ssize, unsigned long flags);
++extern void flush_hash_range(unsigned long number, int local);
++extern void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
++				pmd_t *pmdp, unsigned int psize, int ssize,
++				unsigned long flags);
++
++static inline void local_flush_tlb_mm(struct mm_struct *mm)
++{
++}
++
++static inline void flush_tlb_mm(struct mm_struct *mm)
++{
++}
++
++static inline void local_flush_tlb_page(struct vm_area_struct *vma,
++					unsigned long vmaddr)
++{
++}
++
++static inline void flush_tlb_page(struct vm_area_struct *vma,
++				  unsigned long vmaddr)
++{
++}
++
++static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
++					 unsigned long vmaddr)
++{
++}
++
++static inline void flush_tlb_range(struct vm_area_struct *vma,
++				   unsigned long start, unsigned long end)
++{
++}
++
++static inline void flush_tlb_kernel_range(unsigned long start,
++					  unsigned long end)
++{
++}
++
++/* Private function for use by PCI IO mapping code */
++extern void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
++				     unsigned long end);
++extern void flush_tlb_pmd_range(struct mm_struct *mm, pmd_t *pmd,
++				unsigned long addr);
++#endif /*  _ASM_POWERPC_BOOK3S_64_TLBFLUSH_HASH_H */
+diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
+index 23d351ca0303..9f77f85e3e99 100644
+--- a/arch/powerpc/include/asm/tlbflush.h
++++ b/arch/powerpc/include/asm/tlbflush.h
+@@ -78,97 +78,7 @@ static inline void local_flush_tlb_mm(struct mm_struct *mm)
+ }
  
- #if defined(CONFIG_PPC_STD_MMU_64)
- /* 64-bit classic hash table MMU */
--#  include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #elif defined(CONFIG_PPC_STD_MMU_32)
- /* 32-bit classic hash table MMU */
--#  include <asm/mmu-hash32.h>
-+#include <asm/book3s/32/mmu-hash.h>
- #elif defined(CONFIG_40x)
- /* 40x-style software loaded TLB */
- #  include <asm/mmu-40x.h>
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index cf4fb5429cf1..470ceebd2d23 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -19,7 +19,7 @@
- #include <asm/kvm_book3s_asm.h>
- #include <asm/opal.h>
- #include <asm/cpuidle.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- 
- #undef DEBUG
- 
-diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
-index 55c4d51ea3e2..999106991a76 100644
---- a/arch/powerpc/kvm/book3s_32_mmu_host.c
-+++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
-@@ -22,7 +22,7 @@
- 
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash32.h>
-+#include <asm/book3s/32/mmu-hash.h>
- #include <asm/machdep.h>
- #include <asm/mmu_context.h>
- #include <asm/hw_irq.h>
-diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
-index 9bf7031a67ff..b9131aa1aedf 100644
---- a/arch/powerpc/kvm/book3s_64_mmu.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu.c
-@@ -26,7 +26,7 @@
- #include <asm/tlbflush.h>
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- 
- /* #define DEBUG_MMU */
- 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
-index 913cd2198fa6..114edace6cdd 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_host.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
-@@ -23,7 +23,7 @@
- 
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #include <asm/machdep.h>
- #include <asm/mmu_context.h>
- #include <asm/hw_irq.h>
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index fb37290a57b4..c7b78d8336b2 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -32,7 +32,7 @@
- #include <asm/tlbflush.h>
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #include <asm/hvcall.h>
- #include <asm/synch.h>
- #include <asm/ppc-opcode.h>
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 54cf9bc94dad..9c3b76bb69d9 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -30,7 +30,7 @@
- #include <asm/tlbflush.h>
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #include <asm/hvcall.h>
- #include <asm/synch.h>
- #include <asm/ppc-opcode.h>
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index 89e96b3e0039..039028d3ccb5 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -29,7 +29,7 @@
- #include <asm/tlbflush.h>
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #include <asm/hvcall.h>
- #include <asm/synch.h>
- #include <asm/ppc-opcode.h>
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 91700518bbf3..4cb8db05f3e5 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -17,7 +17,7 @@
- #include <asm/tlbflush.h>
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #include <asm/hvcall.h>
- #include <asm/synch.h>
- #include <asm/ppc-opcode.h>
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 6ee26de9a1de..c613fee0b9f7 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -27,7 +27,7 @@
- #include <asm/asm-offsets.h>
- #include <asm/exception-64s.h>
- #include <asm/kvm_book3s_asm.h>
--#include <asm/mmu-hash64.h>
-+#include <asm/book3s/64/mmu-hash.h>
- #include <asm/tm.h>
- 
- #define VCPU_GPRS_TM(reg) (((reg) * ULONG_SIZE) + VCPU_GPR_TM)
+ #elif defined(CONFIG_PPC_STD_MMU_64)
+-
+-#define MMU_NO_CONTEXT		0
+-
+-/*
+- * TLB flushing for 64-bit hash-MMU CPUs
+- */
+-
+-#include <linux/percpu.h>
+-#include <asm/page.h>
+-
+-#define PPC64_TLB_BATCH_NR 192
+-
+-struct ppc64_tlb_batch {
+-	int			active;
+-	unsigned long		index;
+-	struct mm_struct	*mm;
+-	real_pte_t		pte[PPC64_TLB_BATCH_NR];
+-	unsigned long		vpn[PPC64_TLB_BATCH_NR];
+-	unsigned int		psize;
+-	int			ssize;
+-};
+-DECLARE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
+-
+-extern void __flush_tlb_pending(struct ppc64_tlb_batch *batch);
+-
+-#define __HAVE_ARCH_ENTER_LAZY_MMU_MODE
+-
+-static inline void arch_enter_lazy_mmu_mode(void)
+-{
+-	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
+-
+-	batch->active = 1;
+-}
+-
+-static inline void arch_leave_lazy_mmu_mode(void)
+-{
+-	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
+-
+-	if (batch->index)
+-		__flush_tlb_pending(batch);
+-	batch->active = 0;
+-}
+-
+-#define arch_flush_lazy_mmu_mode()      do {} while (0)
+-
+-
+-extern void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize,
+-			    int ssize, unsigned long flags);
+-extern void flush_hash_range(unsigned long number, int local);
+-extern void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
+-				pmd_t *pmdp, unsigned int psize, int ssize,
+-				unsigned long flags);
+-
+-static inline void local_flush_tlb_mm(struct mm_struct *mm)
+-{
+-}
+-
+-static inline void flush_tlb_mm(struct mm_struct *mm)
+-{
+-}
+-
+-static inline void local_flush_tlb_page(struct vm_area_struct *vma,
+-					unsigned long vmaddr)
+-{
+-}
+-
+-static inline void flush_tlb_page(struct vm_area_struct *vma,
+-				  unsigned long vmaddr)
+-{
+-}
+-
+-static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
+-					 unsigned long vmaddr)
+-{
+-}
+-
+-static inline void flush_tlb_range(struct vm_area_struct *vma,
+-				   unsigned long start, unsigned long end)
+-{
+-}
+-
+-static inline void flush_tlb_kernel_range(unsigned long start,
+-					  unsigned long end)
+-{
+-}
+-
+-/* Private function for use by PCI IO mapping code */
+-extern void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
+-				     unsigned long end);
+-extern void flush_tlb_pmd_range(struct mm_struct *mm, pmd_t *pmd,
+-				unsigned long addr);
++#include <asm/book3s/64/tlbflush-hash.h>
+ #else
+ #error Unsupported MMU type
+ #endif
 -- 
 2.5.0
