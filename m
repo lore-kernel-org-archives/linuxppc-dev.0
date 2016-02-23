@@ -1,24 +1,36 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <cyrilbur@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E5D521A0591
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 14:25:45 +1100 (AEDT)
-Message-ID: <1456197945.12877.1.camel@ellerman.id.au>
-Subject: Re: [PATCH v5] powerpc32: provide VIRT_CPU_ACCOUNTING
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <oss@buserror.net>, Christophe Leroy
- <christophe.leroy@c-s.fr>,  Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 23 Feb 2016 14:25:45 +1100
-In-Reply-To: <1456193718.2463.142.camel@buserror.net>
-References: <20160211161650.1F12C1A2400@localhost.localdomain>
- <1455657664.2463.68.camel@buserror.net>
- <1456193080.16667.1.camel@ellerman.id.au>
- <1456193718.2463.142.camel@buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B1F61A05BE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 14:39:48 +1100 (AEDT)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4ACD1140B9C
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 14:39:48 +1100 (AEDT)
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
+ Tue, 23 Feb 2016 13:39:46 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 94BA82BB0045
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 14:39:44 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1N3datN6553628
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 14:39:44 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1N3dCDw021727
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 14:39:12 +1100
+From: Cyril Bur <cyrilbur@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Cc: naveen.n.rao@linux.vnet.ibm.com
+Subject: [PATCH v5 0/9] FP/VEC/VSX switching optimisations
+Date: Tue, 23 Feb 2016 14:38:13 +1100
+Message-Id: <1456198702-29657-1-git-send-email-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,76 +40,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-02-22 at 20:15 -0600, Scott Wood wrote:
-> On Tue, 2016-02-23 at 13:04 +1100, Michael Ellerman wrote:
-> > On Tue, 2016-02-16 at 15:21 -0600, Scott Wood wrote:
-> > > On Thu, 2016-02-11 at 17:16 +0100, Christophe Leroy wrote:
-> > > > This patch provides VIRT_CPU_ACCOUTING to PPC32 architecture.
-> > > > PPC32 doesn't have the PACA structure, so we use the task_info
-> > > > structure to store the accounting data.
-> > > > 
-> > > > In order to reuse on PPC32 the PPC64 functions, all u64 data has
-> > > > been replaced by 'unsigned long' so that it is u32 on PPC32 and
-> > > > u64 on PPC64
-> > > > 
-> > > > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> > > > ---
-> > > > Changes in v3: unlike previous version of the patch that was inspired
-> > > > from IA64 architecture, this new version tries to reuse as much as
-> > > > possible the PPC64 implementation.
-> > > > 
-> > > > PPC32 doesn't have PACA and past discusion on v2 version has shown
-> > > > that it is not worth implementing a PACA in PPC32 architecture
-> > > > (see below benh opinion)
-> > > > 
-> > > > benh: PACA is actually a data structure and you really really don't want
-> > > > it
-> > > > on ppc32 :-) Having a register point to current works, having a register
-> > > > point to per-cpu data instead works too (ie, change what we do today),
-> > > > but don't introduce a PACA *please* :-)
-> > > 
-> > > And Ben never replied to my reply at the time:
-> > > 
-> > > "What is special about 64-bit that warrants doing things differently from
-> > > 32
-> > > -bit?
-> > 
-> > Nothing. It's just historical cruft. But we're not realistically going to
-> > get
-> > rid of it anytime soon on 64-bit.
-> 
-> I wasn't suggesting getting rid of it on 64-bit, but rather adding it on 32
-> -bit, to hold things that are used by both.  I was confused by the vehemence
-> of Ben's objection.
+Cover-letter for V1 of the series is at
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-November/136350.html
 
-OK right. I think he's just saying we'd like to (eventually) get rid of it on
-64-bit, so adding it on 32-bit would be a step backward.
+Cover-letter for V2 of the series is at
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-January/138054.html
 
-> > > What is the difference between PACA and "per-cpu data", other than the
-> > > obscure name?"
-> > 
-> > Not much. The pacas are allocated differently to per-cpu data, they're
-> > available earlier in boot etc.
-> 
-> Ah, I was thinking of the general concept of per-cpu data, not the specific
-> mechanism that Linux implements in percpu.h etc.
+Changes in V3:
+Addressed review comments from Michael Neuling
+ - Made commit message in 4/9 better reflect the patch
+ - Removed overuse of #ifdef blocks and redundant condition in 5/9
+ - Split 6/8 in two to better prepare for 7,8,9
+ - Removed #ifdefs in 6/9
 
-Oh ok, in that case no it's not special at all.
+Changes in V4:
+ - Addressed non ABI compliant ASM macros in 1/9
+ - Fixed build breakage due to changing #ifdefs in V3 (6/9)
+ - Reordered some conditions in if statements
 
-> >  What we'd like is to have r13 point to the
-> > per-cpu data area, and then the contents of the paca could just be regular
-> > per-cpu data. But like I said above that's a big change.
-> 
-> That change seems orthogonal to the question of making the mechanism available
-> on 32-bit to ease unification of code which uses it.
+Changes in V5:
+ - Enchanced basic-asm.h to provide ABI independent macro as pointed out by
+   Naveen Rao.
+   - Tested for both BE and LE builds. Had to disable -flto from the
+     selftests/powerpc Makefile as it didn't play well with the custom ASM.
+ - Added some extra debugging output to the vmx_signal testcase
+ - Fixed comments in testing code
+ - Updated VSX test code to use GCC Altivec macros
 
-That's true.
 
-Though in this case I think you actually do want to store those values in the thread_info.
-If you look at eg. vtime_delta() where we use those values, it's passed a task
-struct.
 
-So your suggestion to define a common struct that is shared between the 32-bit
-thread_info and the 64-bit paca would be a good solution I think.
+Cyril Bur (9):
+  selftests/powerpc: Test the preservation of FPU and VMX regs across
+    syscall
+  selftests/powerpc: Test preservation of FPU and VMX regs across
+    preemption
+  selftests/powerpc: Test FPU and VMX regs in signal ucontext
+  powerpc: Explicitly disable math features when copying thread
+  powerpc: Restore FPU/VEC/VSX if previously used
+  powerpc: Prepare for splitting giveup_{fpu,altivec,vsx} in two
+  powerpc: Add the ability to save FPU without giving it up
+  powerpc: Add the ability to save Altivec without giving it up
+  powerpc: Add the ability to save VSX without giving it up
 
-cheers
+ arch/powerpc/include/asm/processor.h               |   2 +
+ arch/powerpc/include/asm/reg.h                     |   8 +
+ arch/powerpc/include/asm/switch_to.h               |  13 +-
+ arch/powerpc/kernel/asm-offsets.c                  |   2 +
+ arch/powerpc/kernel/entry_64.S                     |  21 +-
+ arch/powerpc/kernel/fpu.S                          |  25 +--
+ arch/powerpc/kernel/ppc_ksyms.c                    |   4 -
+ arch/powerpc/kernel/process.c                      | 168 +++++++++++++--
+ arch/powerpc/kernel/vector.S                       |  45 +---
+ tools/testing/selftests/powerpc/Makefile           |   3 +-
+ tools/testing/selftests/powerpc/basic_asm.h        |  62 ++++++
+ tools/testing/selftests/powerpc/math/.gitignore    |   6 +
+ tools/testing/selftests/powerpc/math/Makefile      |  21 ++
+ tools/testing/selftests/powerpc/math/fpu_asm.S     | 197 +++++++++++++++++
+ tools/testing/selftests/powerpc/math/fpu_preempt.c | 113 ++++++++++
+ tools/testing/selftests/powerpc/math/fpu_signal.c  | 135 ++++++++++++
+ tools/testing/selftests/powerpc/math/fpu_syscall.c |  90 ++++++++
+ tools/testing/selftests/powerpc/math/vmx_asm.S     | 234 +++++++++++++++++++++
+ tools/testing/selftests/powerpc/math/vmx_preempt.c | 112 ++++++++++
+ tools/testing/selftests/powerpc/math/vmx_signal.c  | 156 ++++++++++++++
+ tools/testing/selftests/powerpc/math/vmx_syscall.c |  91 ++++++++
+ 21 files changed, 1425 insertions(+), 83 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/basic_asm.h
+ create mode 100644 tools/testing/selftests/powerpc/math/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/math/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_asm.S
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_preempt.c
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_signal.c
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_syscall.c
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_asm.S
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_preempt.c
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_signal.c
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_syscall.c
+
+-- 
+2.7.1
