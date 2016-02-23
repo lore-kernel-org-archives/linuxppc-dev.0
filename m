@@ -1,37 +1,40 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <kirill@shutemov.name>
+Received: from mail-wm0-x236.google.com (mail-wm0-x236.google.com
+ [IPv6:2a00:1450:400c:c09::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43FE61A0416
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 20:26:31 +1100 (AEDT)
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 23 Feb 2016 02:26:29 -0700
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id D2DB63E40044
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 02:26:25 -0700 (MST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1N9QPL422282298
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 09:26:25 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1N9QOYR017119
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 04:26:24 -0500
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V4 00/18] Book3s abstraction in preparation for new MMU
- model
-In-Reply-To: <1456202900-5454-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1456202900-5454-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 23 Feb 2016 14:56:20 +0530
-Message-ID: <87povnhj5v.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 012DB1A0518
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 21:32:26 +1100 (AEDT)
+Received: by mail-wm0-x236.google.com with SMTP id g62so203245833wme.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 02:32:26 -0800 (PST)
+Date: Tue, 23 Feb 2016 13:32:21 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>
+Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe also
+ on PowerPC and ARM)
+Message-ID: <20160223103221.GA1418@node.shutemov.name>
+References: <20160211192223.4b517057@thinkpad>
+ <20160211190942.GA10244@node.shutemov.name>
+ <20160211205702.24f0d17a@thinkpad>
+ <20160212154116.GA15142@node.shutemov.name>
+ <56BE00E7.1010303@de.ibm.com> <20160212181640.4eabb85f@thinkpad>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160212181640.4eabb85f@thinkpad>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,55 +44,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+On Fri, Feb 12, 2016 at 06:16:40PM +0100, Gerald Schaefer wrote:
+> On Fri, 12 Feb 2016 16:57:27 +0100
+> Christian Borntraeger <borntraeger@de.ibm.com> wrote:
+> 
+> > > I'm also confused by pmd_none() is equal to !pmd_present() on s390. Hm?
+> > 
+> > Don't know, Gerald or Martin?
+> 
+> The implementation frequently changes depending on how many new bits Martin
+> needs to squeeze out :-)
+> We don't have a _PAGE_PRESENT bit for pmds, so pmd_present() just checks if the
+> entry is not empty. pmd_none() of course does the opposite, it checks if it is
+> empty.
 
-> Hello,
->
-> This series mostly consisting of code movement. One new thing added in this series
-> is to switch book3s 64 to 4 level page table. The changes are done to accomodate
-> the upcoming new memory model in future powerpc chips. The details of the new
-> MMU model can be found at
->
->  http://ibm.biz/power-isa3 (Needs registration). I am including a summary of the changes below.
->
-> ISA 3.0 adds support for the radix tree style of MMU with full
-> virtualization and related control mechanisms that manage its
-> coexistence with the HPT. Radix-using operating systems will
-> manage their own translation tables instead of relying on hcalls.
->
-> Radix style MMU model requires us to do a 4 level page table
-> with 64K and 4K page size. The table index size different page size
-> is listed below
->
-> PGD -> 13 bits
-> PUD -> 9 (1G hugepage)
-> PMD -> 9 (2M huge page)
-> PTE -> 5 (for 64k), 9 (for 4k)
->
-> We also require the page table to be in big endian format.
->
-> Changes from V3:
->  * rebase on top of PTE bits movement patch series
->  * Drop all the hash linux abstraction patches
->  * Keep only 4 level table and other code movement patches.
->
-> Changes from V2:
->  * rebase to latest kernel
->  * Update commit messages
->  * address review comments
->
-> Changes from V1:
-> * move patches adding helpers to the next series
->
->
-> NOTE:
->  This is lightly tested. Right now 4K linux page size is what is being tested. Once that is done
->  I will have to do 64K linux page size tests.
->
+I still worry about pmd_present(). It looks wrong to me. I wounder if
+patch below makes a difference.
 
-Tested the below tests with 4K page size and 64K page size
-* libhugetlbfs test
-* ltp mm tests
-* kernel build in loop (testing thp collapse and split)
+The theory is that the splitting bit effetely masked bogus pmd_present():
+we had pmd_trans_splitting() in all code path and that prevented mm from
+touching the pmd. Once pmd_trans_splitting() has gone, mm proceed with the
+pmd where it shouldn't and here's a boom.
 
--aneesh
+I'm not sure that the patch is correct wrt yound/old pmds and I have no
+way to test it...
+
+diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
+index 64ead8091248..2eeb17ab68ac 100644
+--- a/arch/s390/include/asm/pgtable.h
++++ b/arch/s390/include/asm/pgtable.h
+@@ -490,7 +490,7 @@ static inline int pud_bad(pud_t pud)
+ 
+ static inline int pmd_present(pmd_t pmd)
+ {
+-	return pmd_val(pmd) != _SEGMENT_ENTRY_INVALID;
++	return !(pmd_val(pmd) & _SEGMENT_ENTRY_INVALID);
+ }
+ 
+ static inline int pmd_none(pmd_t pmd)
+-- 
+ Kirill A. Shutemov
