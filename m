@@ -1,35 +1,35 @@
 Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp06.uk.ibm.com (e06smtp06.uk.ibm.com [195.75.94.102])
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7AC661A04D3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 03:22:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DF2D91A034B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 03:22:06 +1100 (AEDT)
 Received: from localhost
- by e06smtp06.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Tue, 23 Feb 2016 16:22:05 -0000
+ Tue, 23 Feb 2016 16:22:03 -0000
 Received: from b06cxnps4076.portsmouth.uk.ibm.com
  (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2219A1B08069
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 16:22:22 +0000 (GMT)
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 34991219005F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 16:21:45 +0000 (GMT)
 Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
  [9.149.37.250])
  by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1NGM2lo65208420
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 16:22:02 GMT
+ u1NGM0IY65208388
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 16:22:00 GMT
 Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1NGM2q6008761
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 09:22:02 -0700
+ u1NGM003008619
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 09:22:00 -0700
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com, mpe@ellerman.id.au,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 04/18] cxl: Introduce implementation-specific API
-Date: Tue, 23 Feb 2016 17:21:45 +0100
-Message-Id: <1456244519-18934-5-git-send-email-fbarrat@linux.vnet.ibm.com>
-In-Reply-To: <1456244519-18934-1-git-send-email-fbarrat@linux.vnet.ibm.com>
-References: <1456244519-18934-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+Subject: =?UTF-8?q?=5BPATCH=20v5=2000/18=5D=20cxl=3A=20Add=20support=20for=20powerVM=20guest=E2=80=8B?=
+Date: Tue, 23 Feb 2016 17:21:41 +0100
+Message-Id: <1456244519-18934-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,941 +39,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The backend API (in cxl.h) lists some low-level functions whose
-implementation is different on bare-metal and in a guest. Each
-environment implements its own functions, and the common code uses
-them through function pointers, defined in cxl_backend_ops
+This series adds support for a cxl card in a powerVM guest.
 
-Co-authored-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
----
- drivers/misc/cxl/api.c     |   8 +--
- drivers/misc/cxl/context.c |   4 +-
- drivers/misc/cxl/cxl.h     |  53 +++++++++++-------
- drivers/misc/cxl/fault.c   |   6 +-
- drivers/misc/cxl/file.c    |  15 ++---
- drivers/misc/cxl/irq.c     |  19 ++++---
- drivers/misc/cxl/main.c    |  11 ++--
- drivers/misc/cxl/native.c  | 135 ++++++++++++++++++++++++++++-----------------
- drivers/misc/cxl/pci.c     |  16 +++---
- drivers/misc/cxl/sysfs.c   |  32 +++++++----
- drivers/misc/cxl/vphb.c    |   6 +-
- 11 files changed, 185 insertions(+), 120 deletions(-)
+It requires firmware FW840 and an activation code for cxl (CAPI).
+Note that pHyp only claims support for cxlflash, and not generic
+support for FPGA CAPI accelerators. cxlflash uses the (slightly
+modified) Nallatech card, so the memcopy AFU is expected to
+work. There's no support for the dedicated mode programming model.
 
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index b45d857..31eb842 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -100,7 +100,7 @@ EXPORT_SYMBOL_GPL(cxl_allocate_afu_irqs);
- void cxl_free_afu_irqs(struct cxl_context *ctx)
- {
- 	afu_irq_name_free(ctx);
--	cxl_release_irq_ranges(&ctx->irqs, ctx->afu->adapter);
-+	cxl_ops->release_irq_ranges(&ctx->irqs, ctx->afu->adapter);
- }
- EXPORT_SYMBOL_GPL(cxl_free_afu_irqs);
- 
-@@ -176,7 +176,7 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
- 
- 	cxl_ctx_get();
- 
--	if ((rc = cxl_attach_process(ctx, kernel, wed , 0))) {
-+	if ((rc = cxl_ops->attach_process(ctx, kernel, wed, 0))) {
- 		put_pid(ctx->pid);
- 		cxl_ctx_put();
- 		goto out;
-@@ -342,11 +342,11 @@ int cxl_afu_reset(struct cxl_context *ctx)
- 	struct cxl_afu *afu = ctx->afu;
- 	int rc;
- 
--	rc = __cxl_afu_reset(afu);
-+	rc = cxl_ops->afu_reset(afu);
- 	if (rc)
- 		return rc;
- 
--	return cxl_afu_check_and_enable(afu);
-+	return cxl_ops->afu_check_and_enable(afu);
- }
- EXPORT_SYMBOL_GPL(cxl_afu_reset);
- 
-diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-index 262b88e..aa65262 100644
---- a/drivers/misc/cxl/context.c
-+++ b/drivers/misc/cxl/context.c
-@@ -214,8 +214,8 @@ int __detach_context(struct cxl_context *ctx)
- 	/* Only warn if we detached while the link was OK.
- 	 * If detach fails when hw is down, we don't care.
- 	 */
--	WARN_ON(cxl_detach_process(ctx) &&
--		cxl_adapter_link_ok(ctx->afu->adapter));
-+	WARN_ON(cxl_ops->detach_process(ctx) &&
-+		cxl_ops->link_ok(ctx->afu->adapter));
- 	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
- 
- 	/* release the reference to the group leader and mm handling pid */
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 3b824e3..8233af3 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -623,11 +623,6 @@ static inline u64 cxl_p2n_read(struct cxl_afu *afu, cxl_p2n_reg_t reg)
- 		return ~0ULL;
- }
- 
--u64 cxl_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off);
--u32 cxl_afu_cr_read32(struct cxl_afu *afu, int cr, u64 off);
--u16 cxl_afu_cr_read16(struct cxl_afu *afu, int cr, u64 off);
--u8 cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off);
--
- ssize_t cxl_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
- 				loff_t off, size_t count);
- 
-@@ -666,10 +661,6 @@ void cxl_sysfs_afu_m_remove(struct cxl_afu *afu);
- 
- struct cxl *cxl_alloc_adapter(void);
- struct cxl_afu *cxl_alloc_afu(struct cxl *adapter, int slice);
--
--int cxl_afu_activate_mode(struct cxl_afu *afu, int mode);
--int _cxl_afu_deactivate_mode(struct cxl_afu *afu, int mode);
--int cxl_afu_deactivate_mode(struct cxl_afu *afu);
- int cxl_afu_select_best_mode(struct cxl_afu *afu);
- 
- int cxl_register_psl_irq(struct cxl_afu *afu);
-@@ -681,8 +672,6 @@ void cxl_release_serr_irq(struct cxl_afu *afu);
- int afu_register_irqs(struct cxl_context *ctx, u32 count);
- void afu_release_irqs(struct cxl_context *ctx, void *cookie);
- void afu_irq_name_free(struct cxl_context *ctx);
--irqreturn_t handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr,
--				u64 errstat);
- 
- int cxl_debugfs_init(void);
- void cxl_debugfs_exit(void);
-@@ -727,18 +716,10 @@ int cxl_register_one_irq(struct cxl *adapter, irq_handler_t handler,
- 			void *cookie, irq_hw_number_t *dest_hwirq,
- 			unsigned int *dest_virq, const char *name);
- 
--int cxl_attach_process(struct cxl_context *ctx, bool kernel, u64 wed,
--			    u64 amr);
--int cxl_detach_process(struct cxl_context *ctx);
--
--int cxl_ack_irq(struct cxl_context *ctx, u64 tfc, u64 psl_reset_mask);
--
- int cxl_check_error(struct cxl_afu *afu);
- int cxl_afu_slbia(struct cxl_afu *afu);
- int cxl_tlb_slb_invalidate(struct cxl *adapter);
- int cxl_afu_disable(struct cxl_afu *afu);
--int __cxl_afu_reset(struct cxl_afu *afu);
--int cxl_afu_check_and_enable(struct cxl_afu *afu);
- int cxl_psl_purge(struct cxl_afu *afu);
- 
- void cxl_stop_trace(struct cxl *cxl);
-@@ -757,4 +738,38 @@ unsigned int afu_poll(struct file *file, struct poll_table_struct *poll);
- ssize_t afu_read(struct file *file, char __user *buf, size_t count, loff_t *off);
- extern const struct file_operations afu_fops;
- 
-+struct cxl_backend_ops {
-+	struct module *module;
-+	int (*adapter_reset)(struct cxl *adapter);
-+	int (*alloc_one_irq)(struct cxl *adapter);
-+	void (*release_one_irq)(struct cxl *adapter, int hwirq);
-+	int (*alloc_irq_ranges)(struct cxl_irq_ranges *irqs,
-+				struct cxl *adapter, unsigned int num);
-+	void (*release_irq_ranges)(struct cxl_irq_ranges *irqs,
-+				struct cxl *adapter);
-+	int (*setup_irq)(struct cxl *adapter, unsigned int hwirq,
-+			unsigned int virq);
-+	irqreturn_t (*handle_psl_slice_error)(struct cxl_context *ctx,
-+					u64 dsisr, u64 errstat);
-+	irqreturn_t (*psl_interrupt)(int irq, void *data);
-+	int (*ack_irq)(struct cxl_context *ctx, u64 tfc, u64 psl_reset_mask);
-+	int (*attach_process)(struct cxl_context *ctx, bool kernel,
-+			u64 wed, u64 amr);
-+	int (*detach_process)(struct cxl_context *ctx);
-+	bool (*link_ok)(struct cxl *cxl);
-+	void (*release_afu)(struct device *dev);
-+	ssize_t (*afu_read_err_buffer)(struct cxl_afu *afu, char *buf,
-+				loff_t off, size_t count);
-+	int (*afu_check_and_enable)(struct cxl_afu *afu);
-+	int (*afu_activate_mode)(struct cxl_afu *afu, int mode);
-+	int (*afu_deactivate_mode)(struct cxl_afu *afu, int mode);
-+	int (*afu_reset)(struct cxl_afu *afu);
-+	int (*afu_cr_read8)(struct cxl_afu *afu, int cr_idx, u64 offset, u8 *val);
-+	int (*afu_cr_read16)(struct cxl_afu *afu, int cr_idx, u64 offset, u16 *val);
-+	int (*afu_cr_read32)(struct cxl_afu *afu, int cr_idx, u64 offset, u32 *val);
-+	int (*afu_cr_read64)(struct cxl_afu *afu, int cr_idx, u64 offset, u64 *val);
-+};
-+extern const struct cxl_backend_ops cxl_native_ops;
-+extern const struct cxl_backend_ops *cxl_ops;
-+
- #endif
-diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-index 81c3f75..ab740a1 100644
---- a/drivers/misc/cxl/fault.c
-+++ b/drivers/misc/cxl/fault.c
-@@ -101,7 +101,7 @@ static void cxl_ack_ae(struct cxl_context *ctx)
- {
- 	unsigned long flags;
- 
--	cxl_ack_irq(ctx, CXL_PSL_TFC_An_AE, 0);
-+	cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_AE, 0);
- 
- 	spin_lock_irqsave(&ctx->lock, flags);
- 	ctx->pending_fault = true;
-@@ -125,7 +125,7 @@ static int cxl_handle_segment_miss(struct cxl_context *ctx,
- 	else {
- 
- 		mb(); /* Order seg table write to TFC MMIO write */
--		cxl_ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
-+		cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
- 	}
- 
- 	return IRQ_HANDLED;
-@@ -163,7 +163,7 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
- 	local_irq_restore(flags);
- 
- 	pr_devel("Page fault successfully handled for pe: %i!\n", ctx->pe);
--	cxl_ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
-+	cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
- }
- 
- /*
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index 783337d..b8ce29b 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -79,7 +79,7 @@ static int __afu_open(struct inode *inode, struct file *file, bool master)
- 	if (!afu->current_mode)
- 		goto err_put_afu;
- 
--	if (!cxl_adapter_link_ok(adapter)) {
-+	if (!cxl_ops->link_ok(adapter)) {
- 		rc = -EIO;
- 		goto err_put_afu;
- 	}
-@@ -210,8 +210,8 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 
- 	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
- 
--	if ((rc = cxl_attach_process(ctx, false, work.work_element_descriptor,
--				     amr))) {
-+	if ((rc = cxl_ops->attach_process(ctx, false, work.work_element_descriptor,
-+							amr))) {
- 		afu_release_irqs(ctx, ctx);
- 		goto out;
- 	}
-@@ -222,6 +222,7 @@ out:
- 	mutex_unlock(&ctx->status_mutex);
- 	return rc;
- }
-+
- static long afu_ioctl_process_element(struct cxl_context *ctx,
- 				      int __user *upe)
- {
-@@ -259,7 +260,7 @@ long afu_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 	if (ctx->status == CLOSED)
- 		return -EIO;
- 
--	if (!cxl_adapter_link_ok(ctx->afu->adapter))
-+	if (!cxl_ops->link_ok(ctx->afu->adapter))
- 		return -EIO;
- 
- 	pr_devel("afu_ioctl\n");
-@@ -289,7 +290,7 @@ int afu_mmap(struct file *file, struct vm_area_struct *vm)
- 	if (ctx->status != STARTED)
- 		return -EIO;
- 
--	if (!cxl_adapter_link_ok(ctx->afu->adapter))
-+	if (!cxl_ops->link_ok(ctx->afu->adapter))
- 		return -EIO;
- 
- 	return cxl_context_iomap(ctx, vm);
-@@ -336,7 +337,7 @@ ssize_t afu_read(struct file *file, char __user *buf, size_t count,
- 	int rc;
- 	DEFINE_WAIT(wait);
- 
--	if (!cxl_adapter_link_ok(ctx->afu->adapter))
-+	if (!cxl_ops->link_ok(ctx->afu->adapter))
- 		return -EIO;
- 
- 	if (count < CXL_READ_MIN_SIZE)
-@@ -349,7 +350,7 @@ ssize_t afu_read(struct file *file, char __user *buf, size_t count,
- 		if (ctx_event_pending(ctx))
- 			break;
- 
--		if (!cxl_adapter_link_ok(ctx->afu->adapter)) {
-+		if (!cxl_ops->link_ok(ctx->afu->adapter)) {
- 			rc = -EIO;
- 			goto out;
- 		}
-diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
-index 16fd67f..56ad301 100644
---- a/drivers/misc/cxl/irq.c
-+++ b/drivers/misc/cxl/irq.c
-@@ -79,7 +79,8 @@ irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
- 	if (dsisr & CXL_PSL_DSISR_An_UR)
- 		pr_devel("CXL interrupt: AURP PTE not found\n");
- 	if (dsisr & CXL_PSL_DSISR_An_PE)
--		return handle_psl_slice_error(ctx, dsisr, irq_info->errstat);
-+		return cxl_ops->handle_psl_slice_error(ctx, dsisr,
-+						irq_info->errstat);
- 	if (dsisr & CXL_PSL_DSISR_An_AE) {
- 		pr_devel("CXL interrupt: AFU Error 0x%016llx\n", irq_info->afu_err);
- 
-@@ -103,7 +104,7 @@ irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
- 			wake_up_all(&ctx->wq);
- 		}
- 
--		cxl_ack_irq(ctx, CXL_PSL_TFC_An_A, 0);
-+		cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_A, 0);
- 		return IRQ_HANDLED;
- 	}
- 	if (dsisr & CXL_PSL_DSISR_An_OC)
-@@ -167,7 +168,8 @@ unsigned int cxl_map_irq(struct cxl *adapter, irq_hw_number_t hwirq,
- 		return 0;
- 	}
- 
--	cxl_setup_irq(adapter, hwirq, virq);
-+	if (cxl_ops->setup_irq)
-+		cxl_ops->setup_irq(adapter, hwirq, virq);
- 
- 	pr_devel("hwirq %#lx mapped to virq %u\n", hwirq, virq);
- 
-@@ -195,7 +197,7 @@ int cxl_register_one_irq(struct cxl *adapter,
- {
- 	int hwirq, virq;
- 
--	if ((hwirq = cxl_alloc_one_irq(adapter)) < 0)
-+	if ((hwirq = cxl_ops->alloc_one_irq(adapter)) < 0)
- 		return hwirq;
- 
- 	if (!(virq = cxl_map_irq(adapter, hwirq, handler, cookie, name)))
-@@ -207,7 +209,7 @@ int cxl_register_one_irq(struct cxl *adapter,
- 	return 0;
- 
- err:
--	cxl_release_one_irq(adapter, hwirq);
-+	cxl_ops->release_one_irq(adapter, hwirq);
- 	return -ENOMEM;
- }
- 
-@@ -230,7 +232,8 @@ int afu_allocate_irqs(struct cxl_context *ctx, u32 count)
- 	/* Initialize the list head to hold irq names */
- 	INIT_LIST_HEAD(&ctx->irq_names);
- 
--	if ((rc = cxl_alloc_irq_ranges(&ctx->irqs, ctx->afu->adapter, count)))
-+	if ((rc = cxl_ops->alloc_irq_ranges(&ctx->irqs, ctx->afu->adapter,
-+							count)))
- 		return rc;
- 
- 	/* Multiplexed PSL Interrupt */
-@@ -268,7 +271,7 @@ int afu_allocate_irqs(struct cxl_context *ctx, u32 count)
- 	return 0;
- 
- out:
--	cxl_release_irq_ranges(&ctx->irqs, ctx->afu->adapter);
-+	cxl_ops->release_irq_ranges(&ctx->irqs, ctx->afu->adapter);
- 	afu_irq_name_free(ctx);
- 	return -ENOMEM;
- }
-@@ -319,7 +322,7 @@ void afu_release_irqs(struct cxl_context *ctx, void *cookie)
- 	}
- 
- 	afu_irq_name_free(ctx);
--	cxl_release_irq_ranges(&ctx->irqs, ctx->afu->adapter);
-+	cxl_ops->release_irq_ranges(&ctx->irqs, ctx->afu->adapter);
- 
- 	ctx->irq_count = 0;
- }
-diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-index 90933eb..a9051512 100644
---- a/drivers/misc/cxl/main.c
-+++ b/drivers/misc/cxl/main.c
-@@ -32,6 +32,8 @@ uint cxl_verbose;
- module_param_named(verbose, cxl_verbose, uint, 0600);
- MODULE_PARM_DESC(verbose, "Enable verbose dmesg output");
- 
-+const struct cxl_backend_ops *cxl_ops;
-+
- int cxl_afu_slbia(struct cxl_afu *afu)
- {
- 	unsigned long timeout = jiffies + (HZ * CXL_TIMEOUT);
-@@ -46,7 +48,7 @@ int cxl_afu_slbia(struct cxl_afu *afu)
- 		/* If the adapter has gone down, we can assume that we
- 		 * will PERST it and that will invalidate everything.
- 		 */
--		if (!cxl_adapter_link_ok(afu->adapter))
-+		if (!cxl_ops->link_ok(afu->adapter))
- 			return -EIO;
- 		cpu_relax();
- 	}
-@@ -228,7 +230,7 @@ struct cxl_afu *cxl_alloc_afu(struct cxl *adapter, int slice)
- 
- 	afu->adapter = adapter;
- 	afu->dev.parent = &adapter->dev;
--	afu->dev.release = cxl_release_afu;
-+	afu->dev.release = cxl_ops->release_afu;
- 	afu->slice = slice;
- 	idr_init(&afu->contexts_idr);
- 	mutex_init(&afu->contexts_lock);
-@@ -244,10 +246,10 @@ struct cxl_afu *cxl_alloc_afu(struct cxl *adapter, int slice)
- int cxl_afu_select_best_mode(struct cxl_afu *afu)
- {
- 	if (afu->modes_supported & CXL_MODE_DIRECTED)
--		return cxl_afu_activate_mode(afu, CXL_MODE_DIRECTED);
-+		return cxl_ops->afu_activate_mode(afu, CXL_MODE_DIRECTED);
- 
- 	if (afu->modes_supported & CXL_MODE_DEDICATED)
--		return cxl_afu_activate_mode(afu, CXL_MODE_DEDICATED);
-+		return cxl_ops->afu_activate_mode(afu, CXL_MODE_DEDICATED);
- 
- 	dev_warn(&afu->dev, "No supported programming modes available\n");
- 	/* We don't fail this so the user can inspect sysfs */
-@@ -269,6 +271,7 @@ static int __init init_cxl(void)
- 	if ((rc = register_cxl_calls(&cxl_calls)))
- 		goto err;
- 
-+	cxl_ops = &cxl_native_ops;
- 	if ((rc = pci_register_driver(&cxl_pci_driver)))
- 		goto err1;
- 
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index 3103e33..16d3b1a 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -42,7 +42,7 @@ static int afu_control(struct cxl_afu *afu, u64 command,
- 			goto out;
- 		}
- 
--		if (!cxl_adapter_link_ok(afu->adapter)) {
-+		if (!cxl_ops->link_ok(afu->adapter)) {
- 			afu->enabled = enabled;
- 			rc = -EIO;
- 			goto out;
-@@ -80,7 +80,7 @@ int cxl_afu_disable(struct cxl_afu *afu)
- }
- 
- /* This will disable as well as reset */
--int __cxl_afu_reset(struct cxl_afu *afu)
-+static int __cxl_afu_reset(struct cxl_afu *afu)
- {
- 	pr_devel("AFU reset request\n");
- 
-@@ -90,9 +90,9 @@ int __cxl_afu_reset(struct cxl_afu *afu)
- 			   false);
- }
- 
--int cxl_afu_check_and_enable(struct cxl_afu *afu)
-+static int cxl_afu_check_and_enable(struct cxl_afu *afu)
- {
--	if (!cxl_adapter_link_ok(afu->adapter)) {
-+	if (!cxl_ops->link_ok(afu->adapter)) {
- 		WARN(1, "Refusing to enable afu while link down!\n");
- 		return -EIO;
- 	}
-@@ -114,7 +114,7 @@ int cxl_psl_purge(struct cxl_afu *afu)
- 
- 	pr_devel("PSL purge request\n");
- 
--	if (!cxl_adapter_link_ok(afu->adapter)) {
-+	if (!cxl_ops->link_ok(afu->adapter)) {
- 		dev_warn(&afu->dev, "PSL Purge called with link down, ignoring\n");
- 		rc = -EIO;
- 		goto out;
-@@ -136,7 +136,7 @@ int cxl_psl_purge(struct cxl_afu *afu)
- 			rc = -EBUSY;
- 			goto out;
- 		}
--		if (!cxl_adapter_link_ok(afu->adapter)) {
-+		if (!cxl_ops->link_ok(afu->adapter)) {
- 			rc = -EIO;
- 			goto out;
- 		}
-@@ -247,7 +247,7 @@ int cxl_tlb_slb_invalidate(struct cxl *adapter)
- 			dev_warn(&adapter->dev, "WARNING: CXL adapter wide TLBIA timed out!\n");
- 			return -EBUSY;
- 		}
--		if (!cxl_adapter_link_ok(adapter))
-+		if (!cxl_ops->link_ok(adapter))
- 			return -EIO;
- 		cpu_relax();
- 	}
-@@ -258,7 +258,7 @@ int cxl_tlb_slb_invalidate(struct cxl *adapter)
- 			dev_warn(&adapter->dev, "WARNING: CXL adapter wide SLBIA timed out!\n");
- 			return -EBUSY;
- 		}
--		if (!cxl_adapter_link_ok(adapter))
-+		if (!cxl_ops->link_ok(adapter))
- 			return -EIO;
- 		cpu_relax();
- 	}
-@@ -299,7 +299,7 @@ static void slb_invalid(struct cxl_context *ctx)
- 	cxl_p1_write(adapter, CXL_PSL_SLBIA, CXL_TLB_SLB_IQ_LPIDPID);
- 
- 	while (1) {
--		if (!cxl_adapter_link_ok(adapter))
-+		if (!cxl_ops->link_ok(adapter))
- 			break;
- 		slbia = cxl_p1_read(adapter, CXL_PSL_SLBIA);
- 		if (!(slbia & CXL_TLB_SLB_P))
-@@ -330,7 +330,7 @@ static int do_process_element_cmd(struct cxl_context *ctx,
- 			rc = -EBUSY;
- 			goto out;
- 		}
--		if (!cxl_adapter_link_ok(ctx->afu->adapter)) {
-+		if (!cxl_ops->link_ok(ctx->afu->adapter)) {
- 			dev_warn(&ctx->afu->dev, "WARNING: Device link down, aborting Process Element Command!\n");
- 			rc = -EIO;
- 			goto out;
-@@ -386,7 +386,7 @@ static int terminate_process_element(struct cxl_context *ctx)
- 	 * should always succeed: it's not running if the hw has gone
- 	 * away and is being reset.
- 	 */
--	if (cxl_adapter_link_ok(ctx->afu->adapter))
-+	if (cxl_ops->link_ok(ctx->afu->adapter))
- 		rc = do_process_element_cmd(ctx, CXL_SPA_SW_CMD_TERMINATE,
- 					    CXL_PE_SOFTWARE_STATE_V | CXL_PE_SOFTWARE_STATE_T);
- 	ctx->elem->software_state = 0;	/* Remove Valid bit */
-@@ -405,7 +405,7 @@ static int remove_process_element(struct cxl_context *ctx)
- 	/* We could be asked to remove when the hw is down. Again, if
- 	 * the hw is down, the PE is gone, so we succeed.
- 	 */
--	if (cxl_adapter_link_ok(ctx->afu->adapter))
-+	if (cxl_ops->link_ok(ctx->afu->adapter))
- 		rc = do_process_element_cmd(ctx, CXL_SPA_SW_CMD_REMOVE, 0);
- 
- 	if (!rc)
-@@ -531,7 +531,7 @@ static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 amr)
- 	ctx->elem->common.wed = cpu_to_be64(wed);
- 
- 	/* first guy needs to enable */
--	if ((result = cxl_afu_check_and_enable(ctx->afu)))
-+	if ((result = cxl_ops->afu_check_and_enable(ctx->afu)))
- 		return result;
- 
- 	return add_process_element(ctx);
-@@ -547,7 +547,7 @@ static int deactivate_afu_directed(struct cxl_afu *afu)
- 	cxl_sysfs_afu_m_remove(afu);
- 	cxl_chardev_afu_remove(afu);
- 
--	__cxl_afu_reset(afu);
-+	cxl_ops->afu_reset(afu);
- 	cxl_afu_disable(afu);
- 	cxl_psl_purge(afu);
- 
-@@ -611,7 +611,7 @@ static int attach_dedicated(struct cxl_context *ctx, u64 wed, u64 amr)
- 	/* master only context for dedicated */
- 	cxl_assign_psn_space(ctx);
- 
--	if ((rc = __cxl_afu_reset(afu)))
-+	if ((rc = cxl_ops->afu_reset(afu)))
- 		return rc;
- 
- 	cxl_p2n_write(afu, CXL_PSL_WED_An, wed);
-@@ -631,7 +631,7 @@ static int deactivate_dedicated_process(struct cxl_afu *afu)
- 	return 0;
- }
- 
--int _cxl_afu_deactivate_mode(struct cxl_afu *afu, int mode)
-+static int cxl_afu_deactivate_mode(struct cxl_afu *afu, int mode)
- {
- 	if (mode == CXL_MODE_DIRECTED)
- 		return deactivate_afu_directed(afu);
-@@ -640,19 +640,14 @@ int _cxl_afu_deactivate_mode(struct cxl_afu *afu, int mode)
- 	return 0;
- }
- 
--int cxl_afu_deactivate_mode(struct cxl_afu *afu)
--{
--	return _cxl_afu_deactivate_mode(afu, afu->current_mode);
--}
--
--int cxl_afu_activate_mode(struct cxl_afu *afu, int mode)
-+static int cxl_afu_activate_mode(struct cxl_afu *afu, int mode)
- {
- 	if (!mode)
- 		return 0;
- 	if (!(mode & afu->modes_supported))
- 		return -EINVAL;
- 
--	if (!cxl_adapter_link_ok(afu->adapter)) {
-+	if (!cxl_ops->link_ok(afu->adapter)) {
- 		WARN(1, "Device link is down, refusing to activate!\n");
- 		return -EIO;
- 	}
-@@ -665,9 +660,9 @@ int cxl_afu_activate_mode(struct cxl_afu *afu, int mode)
- 	return -EINVAL;
- }
- 
--int cxl_attach_process(struct cxl_context *ctx, bool kernel, u64 wed, u64 amr)
-+static int cxl_attach_process(struct cxl_context *ctx, bool kernel, u64 wed, u64 amr)
- {
--	if (!cxl_adapter_link_ok(ctx->afu->adapter)) {
-+	if (!cxl_ops->link_ok(ctx->afu->adapter)) {
- 		WARN(1, "Device link is down, refusing to attach process!\n");
- 		return -EIO;
- 	}
-@@ -684,7 +679,7 @@ int cxl_attach_process(struct cxl_context *ctx, bool kernel, u64 wed, u64 amr)
- 
- static inline int detach_process_native_dedicated(struct cxl_context *ctx)
- {
--	__cxl_afu_reset(ctx->afu);
-+	cxl_ops->afu_reset(ctx->afu);
- 	cxl_afu_disable(ctx->afu);
- 	cxl_psl_purge(ctx->afu);
- 	return 0;
-@@ -702,7 +697,7 @@ static inline int detach_process_native_afu_directed(struct cxl_context *ctx)
- 	return 0;
- }
- 
--int cxl_detach_process(struct cxl_context *ctx)
-+static int cxl_detach_process(struct cxl_context *ctx)
- {
- 	trace_cxl_detach(ctx);
- 
-@@ -719,7 +714,7 @@ static int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info)
- 	/* If the adapter has gone away, we can't get any meaningful
- 	 * information.
- 	 */
--	if (!cxl_adapter_link_ok(afu->adapter))
-+	if (!cxl_ops->link_ok(afu->adapter))
- 		return -EIO;
- 
- 	info->dsisr = cxl_p2n_read(afu, CXL_PSL_DSISR_An);
-@@ -734,7 +729,7 @@ static int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info)
- 	return 0;
- }
- 
--irqreturn_t handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr, u64 errstat)
-+static irqreturn_t handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr, u64 errstat)
- {
- 	u64 fir1, fir2, fir_slice, serr, afu_debug;
- 
-@@ -754,7 +749,7 @@ irqreturn_t handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr, u64 errst
- 	dev_crit(&ctx->afu->dev, "STOPPING CXL TRACE\n");
- 	cxl_stop_trace(ctx->afu->adapter);
- 
--	return cxl_ack_irq(ctx, 0, errstat);
-+	return cxl_ops->ack_irq(ctx, 0, errstat);
- }
- 
- static irqreturn_t fail_psl_irq(struct cxl_afu *afu, struct cxl_irq_info *irq_info)
-@@ -868,7 +863,7 @@ void cxl_release_psl_err_irq(struct cxl *adapter)
- 
- 	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, 0x0000000000000000);
- 	cxl_unmap_irq(adapter->err_virq, adapter);
--	cxl_release_one_irq(adapter, adapter->err_hwirq);
-+	cxl_ops->release_one_irq(adapter, adapter->err_hwirq);
- 	kfree(adapter->irq_name);
- }
- 
-@@ -904,7 +899,7 @@ void cxl_release_serr_irq(struct cxl_afu *afu)
- 
- 	cxl_p1n_write(afu, CXL_PSL_SERR_An, 0x0000000000000000);
- 	cxl_unmap_irq(afu->serr_virq, afu);
--	cxl_release_one_irq(afu->adapter, afu->serr_hwirq);
-+	cxl_ops->release_one_irq(afu->adapter, afu->serr_hwirq);
- 	kfree(afu->err_irq_name);
- }
- 
-@@ -932,7 +927,7 @@ void cxl_release_psl_irq(struct cxl_afu *afu)
- 		return;
- 
- 	cxl_unmap_irq(afu->psl_virq, afu);
--	cxl_release_one_irq(afu->adapter, afu->psl_hwirq);
-+	cxl_ops->release_one_irq(afu->adapter, afu->psl_hwirq);
- 	kfree(afu->psl_irq_name);
- }
- 
-@@ -950,7 +945,7 @@ static void recover_psl_err(struct cxl_afu *afu, u64 errstat)
- 	cxl_p2n_write(afu, CXL_PSL_ErrStat_An, errstat);
- }
- 
--int cxl_ack_irq(struct cxl_context *ctx, u64 tfc, u64 psl_reset_mask)
-+static int cxl_ack_irq(struct cxl_context *ctx, u64 tfc, u64 psl_reset_mask)
- {
- 	trace_cxl_psl_irq_ack(ctx, tfc);
- 	if (tfc)
-@@ -966,38 +961,74 @@ int cxl_check_error(struct cxl_afu *afu)
- 	return (cxl_p1n_read(afu, CXL_PSL_SCNTL_An) == ~0ULL);
- }
- 
--u64 cxl_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off)
-+static int cxl_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off, u64 *out)
- {
--	if (likely(cxl_adapter_link_ok(afu->adapter)))
--		return in_le64((afu)->afu_desc_mmio + (afu)->crs_offset +
--			       ((cr) * (afu)->crs_len) + (off));
--	else
--		return ~0ULL;
-+	if (unlikely(!cxl_ops->link_ok(afu->adapter)))
-+		return -EIO;
-+	if (unlikely(off >= afu->crs_len))
-+		return -ERANGE;
-+	*out = in_le64(afu->afu_desc_mmio + afu->crs_offset +
-+		(cr * afu->crs_len) + off);
-+	return 0;
- }
- 
--u32 cxl_afu_cr_read32(struct cxl_afu *afu, int cr, u64 off)
-+static int cxl_afu_cr_read32(struct cxl_afu *afu, int cr, u64 off, u32 *out)
- {
--	if (likely(cxl_adapter_link_ok(afu->adapter)))
--		return in_le32((afu)->afu_desc_mmio + (afu)->crs_offset +
--			       ((cr) * (afu)->crs_len) + (off));
--	else
--		return 0xffffffff;
-+	if (unlikely(!cxl_ops->link_ok(afu->adapter)))
-+		return -EIO;
-+	if (unlikely(off >= afu->crs_len))
-+		return -ERANGE;
-+	*out = in_le32(afu->afu_desc_mmio + afu->crs_offset +
-+		(cr * afu->crs_len) + off);
-+	return 0;
- }
- 
--u16 cxl_afu_cr_read16(struct cxl_afu *afu, int cr, u64 off)
-+static int cxl_afu_cr_read16(struct cxl_afu *afu, int cr, u64 off, u16 *out)
- {
- 	u64 aligned_off = off & ~0x3L;
- 	u32 val;
-+	int rc;
- 
--	val = cxl_afu_cr_read32(afu, cr, aligned_off);
--	return (val >> ((off & 0x2) * 8)) & 0xffff;
-+	rc = cxl_afu_cr_read32(afu, cr, aligned_off, &val);
-+	if (!rc)
-+		*out = (val >> ((off & 0x3) * 8)) & 0xffff;
-+	return rc;
- }
- 
--u8 cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off)
-+static int cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off, u8 *out)
- {
- 	u64 aligned_off = off & ~0x3L;
- 	u32 val;
-+	int rc;
- 
--	val = cxl_afu_cr_read32(afu, cr, aligned_off);
--	return (val >> ((off & 0x3) * 8)) & 0xff;
-+	rc = cxl_afu_cr_read32(afu, cr, aligned_off, &val);
-+	if (!rc)
-+		*out = (val >> ((off & 0x3) * 8)) & 0xff;
-+	return rc;
- }
-+
-+const struct cxl_backend_ops cxl_native_ops = {
-+	.module = THIS_MODULE,
-+	.adapter_reset = cxl_reset,
-+	.alloc_one_irq = cxl_alloc_one_irq,
-+	.release_one_irq = cxl_release_one_irq,
-+	.alloc_irq_ranges = cxl_alloc_irq_ranges,
-+	.release_irq_ranges = cxl_release_irq_ranges,
-+	.setup_irq = cxl_setup_irq,
-+	.handle_psl_slice_error = handle_psl_slice_error,
-+	.psl_interrupt = NULL,
-+	.ack_irq = cxl_ack_irq,
-+	.attach_process = cxl_attach_process,
-+	.detach_process = cxl_detach_process,
-+	.link_ok = cxl_adapter_link_ok,
-+	.release_afu = cxl_release_afu,
-+	.afu_read_err_buffer = cxl_afu_read_err_buffer,
-+	.afu_check_and_enable = cxl_afu_check_and_enable,
-+	.afu_activate_mode = cxl_afu_activate_mode,
-+	.afu_deactivate_mode = cxl_afu_deactivate_mode,
-+	.afu_reset = __cxl_afu_reset,
-+	.afu_cr_read8 = cxl_afu_cr_read8,
-+	.afu_cr_read16 = cxl_afu_cr_read16,
-+	.afu_cr_read32 = cxl_afu_cr_read32,
-+	.afu_cr_read64 = cxl_afu_cr_read64,
-+};
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index c6279e5..6e2c274 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -646,7 +646,8 @@ static int cxl_read_afu_descriptor(struct cxl_afu *afu)
- 
- static int cxl_afu_descriptor_looks_ok(struct cxl_afu *afu)
- {
--	int i;
-+	int i, rc;
-+	u32 val;
- 
- 	if (afu->psa && afu->adapter->ps_size <
- 			(afu->pp_offset + afu->pp_size*afu->max_procs_virtualised)) {
-@@ -658,7 +659,8 @@ static int cxl_afu_descriptor_looks_ok(struct cxl_afu *afu)
- 		dev_warn(&afu->dev, "AFU uses < PAGE_SIZE per-process PSA!");
- 
- 	for (i = 0; i < afu->crs_num; i++) {
--		if ((cxl_afu_cr_read32(afu, i, 0) == 0)) {
-+		rc = cxl_ops->afu_cr_read32(afu, i, 0, &val);
-+		if (rc || val == 0) {
- 			dev_err(&afu->dev, "ABORTING: AFU configuration record %i is invalid\n", i);
- 			return -EINVAL;
- 		}
-@@ -679,7 +681,7 @@ static int sanitise_afu_regs(struct cxl_afu *afu)
- 	reg = cxl_p2n_read(afu, CXL_AFU_Cntl_An);
- 	if ((reg & CXL_AFU_Cntl_An_ES_MASK) != CXL_AFU_Cntl_An_ES_Disabled) {
- 		dev_warn(&afu->dev, "WARNING: AFU was not disabled: %#016llx\n", reg);
--		if (__cxl_afu_reset(afu))
-+		if (cxl_ops->afu_reset(afu))
- 			return -EIO;
- 		if (cxl_afu_disable(afu))
- 			return -EIO;
-@@ -775,7 +777,7 @@ static int cxl_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pc
- 		goto err1;
- 
- 	/* We need to reset the AFU before we can read the AFU descriptor */
--	if ((rc = __cxl_afu_reset(afu)))
-+	if ((rc = cxl_ops->afu_reset(afu)))
- 		goto err1;
- 
- 	if (cxl_verbose)
-@@ -876,7 +878,7 @@ static void cxl_remove_afu(struct cxl_afu *afu)
- 	spin_unlock(&afu->adapter->afu_list_lock);
- 
- 	cxl_context_detach_all(afu);
--	cxl_afu_deactivate_mode(afu);
-+	cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
- 
- 	cxl_deconfigure_afu(afu);
- 	device_unregister(&afu->dev);
-@@ -1398,7 +1400,7 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
- 			return result;
- 
- 		cxl_context_detach_all(afu);
--		cxl_afu_deactivate_mode(afu);
-+		cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
- 		cxl_deconfigure_afu(afu);
- 	}
- 	cxl_deconfigure_adapter(adapter);
-@@ -1445,7 +1447,7 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
- 
- 			afu_dev->dev.archdata.cxl_ctx = ctx;
- 
--			if (cxl_afu_check_and_enable(afu))
-+			if (cxl_ops->afu_check_and_enable(afu))
- 				goto err;
- 
- 			afu_dev->error_state = pci_channel_io_normal;
-diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-index 02006f71..300eafe 100644
---- a/drivers/misc/cxl/sysfs.c
-+++ b/drivers/misc/cxl/sysfs.c
-@@ -69,7 +69,7 @@ static ssize_t reset_adapter_store(struct device *device,
- 	if ((rc != 1) || (val != 1))
- 		return -EINVAL;
- 
--	if ((rc = cxl_reset(adapter)))
-+	if ((rc = cxl_ops->adapter_reset(adapter)))
- 		return rc;
- 	return count;
- }
-@@ -211,7 +211,7 @@ static ssize_t reset_store_afu(struct device *device,
- 		goto err;
- 	}
- 
--	if ((rc = __cxl_afu_reset(afu)))
-+	if ((rc = cxl_ops->afu_reset(afu)))
- 		goto err;
- 
- 	rc = count;
-@@ -348,7 +348,7 @@ static ssize_t mode_store(struct device *device, struct device_attribute *attr,
- 	}
- 
- 	/*
--	 * cxl_afu_deactivate_mode needs to be done outside the lock, prevent
-+	 * afu_deactivate_mode needs to be done outside the lock, prevent
- 	 * other contexts coming in before we are ready:
- 	 */
- 	old_mode = afu->current_mode;
-@@ -357,9 +357,9 @@ static ssize_t mode_store(struct device *device, struct device_attribute *attr,
- 
- 	mutex_unlock(&afu->contexts_lock);
- 
--	if ((rc = _cxl_afu_deactivate_mode(afu, old_mode)))
-+	if ((rc = cxl_ops->afu_deactivate_mode(afu, old_mode)))
- 		return rc;
--	if ((rc = cxl_afu_activate_mode(afu, mode)))
-+	if ((rc = cxl_ops->afu_activate_mode(afu, mode)))
- 		return rc;
- 
- 	return count;
-@@ -389,7 +389,7 @@ static ssize_t afu_eb_read(struct file *filp, struct kobject *kobj,
- 	struct cxl_afu *afu = to_cxl_afu(container_of(kobj,
- 						      struct device, kobj));
- 
--	return cxl_afu_read_err_buffer(afu, buf, off, count);
-+	return cxl_ops->afu_read_err_buffer(afu, buf, off, count);
- }
- 
- static struct device_attribute afu_attrs[] = {
-@@ -469,10 +469,12 @@ static ssize_t afu_read_config(struct file *filp, struct kobject *kobj,
- 	struct afu_config_record *cr = to_cr(kobj);
- 	struct cxl_afu *afu = to_cxl_afu(container_of(kobj->parent, struct device, kobj));
- 
--	u64 i, j, val;
-+	u64 i, j, val, rc;
- 
- 	for (i = 0; i < count;) {
--		val = cxl_afu_cr_read64(afu, cr->cr, off & ~0x7);
-+		rc = cxl_ops->afu_cr_read64(afu, cr->cr, off & ~0x7, &val);
-+		if (rc)
-+			val = ~0ULL;
- 		for (j = off & 0x7; j < 8 && i < count; i++, j++, off++)
- 			buf[i] = (val >> (j * 8)) & 0xff;
- 	}
-@@ -517,9 +519,17 @@ static struct afu_config_record *cxl_sysfs_afu_new_cr(struct cxl_afu *afu, int c
- 		return ERR_PTR(-ENOMEM);
- 
- 	cr->cr = cr_idx;
--	cr->device = cxl_afu_cr_read16(afu, cr_idx, PCI_DEVICE_ID);
--	cr->vendor = cxl_afu_cr_read16(afu, cr_idx, PCI_VENDOR_ID);
--	cr->class = cxl_afu_cr_read32(afu, cr_idx, PCI_CLASS_REVISION) >> 8;
-+
-+	rc = cxl_ops->afu_cr_read16(afu, cr_idx, PCI_DEVICE_ID, &cr->device);
-+	if (rc)
-+		goto err;
-+	rc = cxl_ops->afu_cr_read16(afu, cr_idx, PCI_VENDOR_ID, &cr->vendor);
-+	if (rc)
-+		goto err;
-+	rc = cxl_ops->afu_cr_read32(afu, cr_idx, PCI_CLASS_REVISION, &cr->class);
-+	if (rc)
-+		goto err;
-+	cr->class >>= 8;
- 
- 	/*
- 	 * Export raw AFU PCIe like config record. For now this is read only by
-diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
-index cbd4331..e8a8eed 100644
---- a/drivers/misc/cxl/vphb.c
-+++ b/drivers/misc/cxl/vphb.c
-@@ -49,7 +49,7 @@ static bool cxl_pci_enable_device_hook(struct pci_dev *dev)
- 	phb = pci_bus_to_host(dev->bus);
- 	afu = (struct cxl_afu *)phb->private_data;
- 
--	if (!cxl_adapter_link_ok(afu->adapter)) {
-+	if (!cxl_ops->link_ok(afu->adapter)) {
- 		dev_warn(&dev->dev, "%s: Device link is down, refusing to enable AFU\n", __func__);
- 		return false;
- 	}
-@@ -66,7 +66,7 @@ static bool cxl_pci_enable_device_hook(struct pci_dev *dev)
- 		return false;
- 	dev->dev.archdata.cxl_ctx = ctx;
- 
--	return (cxl_afu_check_and_enable(afu) == 0);
-+	return (cxl_ops->afu_check_and_enable(afu) == 0);
- }
- 
- static void cxl_pci_disable_device(struct pci_dev *dev)
-@@ -161,7 +161,7 @@ static inline bool cxl_config_link_ok(struct pci_bus *bus)
- 	if (phb == NULL)
- 		return false;
- 	afu = (struct cxl_afu *)phb->private_data;
--	return cxl_adapter_link_ok(afu->adapter);
-+	return cxl_ops->link_ok(afu->adapter);
- }
- 
- static int cxl_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
+It builds on top of the existing cxl driver for bare-metal. The cxl
+module registers either a pci driver or a platform driver, based on
+the environment (bare-metal or guest).
+
+The differences in implementation have mostly 2 root causes:
+1/ The cxl card is not showing as a PCI device in the device tree over
+pHyp. Instead, it is a new type of device found at the root of the
+device tree. The AFU description(s) can be found in subfolder(s)
+2/ When interacting with the card, the operating system doesn't have
+access to the p1 registers, which are the most privileged and reserved
+for the hypervisor. It can theoretically access the p2 registers,
+though there are hcalls defined for most cases. We only rely on p2
+registers for SLB invalidation, for which there is no hcall.
+
+The interactions with the hypervisor are defined in an extension of
+the PAPR.
+
+Roughly 3/4 of the code is common between the 2 types of driver. When
+the code needs to call a platform-specific implementation, it does so
+through an API. The bare-metal and guest implementations each describe
+their own definition. See struct cxl_backend_ops.
+
+It has been tested in little-endian and big-endian environments, using
+the memcpy and cxlflash AFUs.
+
+The first 3 patches are mostly cleanup and fixes, separating the
+bare-metal-specific code from the code which will also be used in a
+guest.
+Patches 4-8 restructure existing code, to easily add the guest implementation
+Patches 9,10 define the interactions with pHyp
+Patch 11 prepares the main data structures, separating common and
+implementation-specific fields
+Patch 12 introduces the core of the guest-specific code
+The rest adds smaller, independent changes to better support guests:
+sysfs, kernel API, flash of the adapter and failure handling, ...
+
+
+
+
+Changelog:
+v4->v5:
+ Address comments from Manoj
+ - prefer the term 'cxl' over 'capi' throughout the patchset
+ - fix some typos in comments and commit messages
+ - fix a couple of Coding Style issues
+v3->v4:
+ Address comments from Ian:
+ - patch 3: cxl_psa_map() now fails immediately if context is not attached
+ - patch 5: rephrase commit message
+ - patch 8: add better comment
+ - patch 10: improve pr_devel traces
+ - patch 11: rework some error paths
+ - patch 12: improve debug traces
+ - patch 14: (big) rework of the user API for adapter device
+ - patch 16: return EPERM instead of EIO
+v2->v3:
+ - comment from Ian: external_pe is now an integer
+ - add patch 3: the problem state is only defined at attach time when
+   using the kernel API, not during context initialization
+ - add patch 18: add tracepoints around CAPI hcalls for debugging
+v1->v2: (v1 was privately reviewed)
+ - integrate comments from Michael Neuling and Ian Munsie
+ - add another patch to the series: adapter failure handling
+ - base patchset on 4.5-rc1
+
+
+
+  cxl: Move common code away from bare-metal-specific files
+  cxl: Move bare-metal specific code to specialized files
+  cxl: Define process problem state area at attach time only
+  cxl: Introduce implementation-specific API
+  cxl: Rename some bare-metal specific functions
+  cxl: Isolate a few bare-metal-specific calls
+  cxl: Update cxl_irq() prototype
+  cxl: IRQ allocation for guests
+  cxl: New possible return value from hcall
+  cxl: New hcalls to support cxl adapters
+  cxl: Separate bare-metal fields in adapter and AFU data structures
+  cxl: Add guest-specific code
+  cxl: sysfs support for guests
+  cxl: Support to flash a new image on the adapter from a guest
+  cxl: Parse device tree and create cxl device(s) at boot
+  cxl: Support the cxl kernel API from a guest
+  cxl: Adapter failure handling
+  cxl: Add tracepoints around the cxl hcall
+
+ Documentation/ABI/testing/sysfs-class-cxl |    8 +-
+ Documentation/powerpc/cxl.txt             |   55 ++
+ arch/powerpc/include/asm/hvcall.h         |    1 +
+ drivers/misc/cxl/Makefile                 |    1 +
+ drivers/misc/cxl/api.c                    |   82 +-
+ drivers/misc/cxl/base.c                   |   32 +
+ drivers/misc/cxl/context.c                |   11 +-
+ drivers/misc/cxl/cxl.h                    |  280 ++++---
+ drivers/misc/cxl/debugfs.c                |    4 +
+ drivers/misc/cxl/fault.c                  |   25 +-
+ drivers/misc/cxl/file.c                   |   28 +-
+ drivers/misc/cxl/flash.c                  |  538 +++++++++++++
+ drivers/misc/cxl/guest.c                  | 1164 +++++++++++++++++++++++++++++
+ drivers/misc/cxl/hcalls.c                 |  648 ++++++++++++++++
+ drivers/misc/cxl/hcalls.h                 |  203 +++++
+ drivers/misc/cxl/irq.c                    |  309 ++------
+ drivers/misc/cxl/main.c                   |  117 ++-
+ drivers/misc/cxl/native.c                 |  468 ++++++++++--
+ drivers/misc/cxl/of.c                     |  513 +++++++++++++
+ drivers/misc/cxl/pci.c                    |  262 +++----
+ drivers/misc/cxl/sysfs.c                  |   70 +-
+ drivers/misc/cxl/trace.h                  |  193 +++++
+ drivers/misc/cxl/vphb.c                   |  158 ++--
+ include/misc/cxl.h                        |    5 +
+ include/uapi/misc/cxl.h                   |   24 +
+ 25 files changed, 4475 insertions(+), 724 deletions(-)
+ create mode 100644 drivers/misc/cxl/flash.c
+ create mode 100644 drivers/misc/cxl/guest.c
+ create mode 100644 drivers/misc/cxl/hcalls.c
+ create mode 100644 drivers/misc/cxl/hcalls.h
+ create mode 100644 drivers/misc/cxl/of.c
+
 -- 
 1.9.1
