@@ -1,40 +1,25 @@
-Return-Path: <kirill@shutemov.name>
-Received: from mail-wm0-x236.google.com (mail-wm0-x236.google.com
- [IPv6:2a00:1450:400c:c09::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 012DB1A0518
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 21:32:26 +1100 (AEDT)
-Received: by mail-wm0-x236.google.com with SMTP id g62so203245833wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 02:32:26 -0800 (PST)
-Date: Tue, 23 Feb 2016 13:32:21 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>
-Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe also
- on PowerPC and ARM)
-Message-ID: <20160223103221.GA1418@node.shutemov.name>
-References: <20160211192223.4b517057@thinkpad>
- <20160211190942.GA10244@node.shutemov.name>
- <20160211205702.24f0d17a@thinkpad>
- <20160212154116.GA15142@node.shutemov.name>
- <56BE00E7.1010303@de.ibm.com> <20160212181640.4eabb85f@thinkpad>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160212181640.4eabb85f@thinkpad>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2356C1A051A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 21:39:59 +1100 (AEDT)
+Message-ID: <1456223992.3192.0.camel@ellerman.id.au>
+Subject: Re: [PATCH] arch/powerpc: use BUILD_BUG() when detect unfit
+ {cmp}xchg, size
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Boqun Feng <boqun.feng@gmail.com>, Pan Xinhui <xinhui@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, open list <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, "'Peter Zijlstra (Intel)\"" <peterz@infradead.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,  Thomas Gleixner
+ <tglx@linutronix.de>
+Date: Tue, 23 Feb 2016 21:39:52 +1100
+In-Reply-To: <20160223091525.GA2918@fixme-laptop.cn.ibm.com>
+References: <56CC1C1C.6030405@linux.vnet.ibm.com>
+ <20160223091525.GA2918@fixme-laptop.cn.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,43 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 12, 2016 at 06:16:40PM +0100, Gerald Schaefer wrote:
-> On Fri, 12 Feb 2016 16:57:27 +0100
-> Christian Borntraeger <borntraeger@de.ibm.com> wrote:
-> 
-> > > I'm also confused by pmd_none() is equal to !pmd_present() on s390. Hm?
+On Tue, 2016-02-23 at 17:15 +0800, Boqun Feng wrote:
+> On Tue, Feb 23, 2016 at 04:45:16PM +0800, Pan Xinhui wrote:
+> > From: pan xinhui <xinhui.pan@linux.vnet.ibm.com>
 > > 
-> > Don't know, Gerald or Martin?
+> > diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
+> > index d1a8d93..20c0a30 100644
+> > --- a/arch/powerpc/include/asm/cmpxchg.h
+> > +++ b/arch/powerpc/include/asm/cmpxchg.h
+> > @@ -92,12 +93,6 @@ __xchg_u64_local(volatile void *p, unsigned long val)
+> >  }
+> >  #endif
+> >  
+> > -/*
+> > - * This function doesn't exist, so you'll get a linker error
+> > - * if something tries to do an invalid xchg().
+> > - */
+> > -extern void __xchg_called_with_bad_pointer(void);
+> > -
+> >  static __always_inline unsigned long
+> >  __xchg(volatile void *ptr, unsigned long x, unsigned int size)
+> >  {
+> > @@ -109,7 +104,7 @@ __xchg(volatile void *ptr, unsigned long x, unsigned int size)
+> >  		return __xchg_u64(ptr, x);
+> >  #endif
+> >  	}
+> > -	__xchg_called_with_bad_pointer();
+> > +	BUILD_BUG();
 > 
-> The implementation frequently changes depending on how many new bits Martin
-> needs to squeeze out :-)
-> We don't have a _PAGE_PRESENT bit for pmds, so pmd_present() just checks if the
-> entry is not empty. pmd_none() of course does the opposite, it checks if it is
-> empty.
+> Maybe we can use BUILD_BUG_ON_MSG(1, "Unsupported size for xchg"), which
+> could provide more information.
 
-I still worry about pmd_present(). It looks wrong to me. I wounder if
-patch below makes a difference.
+Yes I would prefer there was a message. Please send a v2.
 
-The theory is that the splitting bit effetely masked bogus pmd_present():
-we had pmd_trans_splitting() in all code path and that prevented mm from
-touching the pmd. Once pmd_trans_splitting() has gone, mm proceed with the
-pmd where it shouldn't and here's a boom.
-
-I'm not sure that the patch is correct wrt yound/old pmds and I have no
-way to test it...
-
-diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
-index 64ead8091248..2eeb17ab68ac 100644
---- a/arch/s390/include/asm/pgtable.h
-+++ b/arch/s390/include/asm/pgtable.h
-@@ -490,7 +490,7 @@ static inline int pud_bad(pud_t pud)
- 
- static inline int pmd_present(pmd_t pmd)
- {
--	return pmd_val(pmd) != _SEGMENT_ENTRY_INVALID;
-+	return !(pmd_val(pmd) & _SEGMENT_ENTRY_INVALID);
- }
- 
- static inline int pmd_none(pmd_t pmd)
--- 
- Kirill A. Shutemov
+cheers
