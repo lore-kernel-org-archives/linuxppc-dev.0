@@ -1,37 +1,37 @@
 Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6047F1A0764
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 14:40:22 +1100 (AEDT)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1E9851A07D4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 14:40:29 +1100 (AEDT)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 197D2140B9C
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 14:40:22 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id EABAA140BA7
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 14:40:28 +1100 (AEDT)
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
- Tue, 23 Feb 2016 13:40:21 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 43E2C2BB0057
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 14:40:18 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1N3eAx248365818
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 14:40:18 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1N3djq3016509
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 14:39:45 +1100
+ Tue, 23 Feb 2016 13:40:27 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id A97F73578058
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 14:40:24 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1N3eGaH38994132
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 14:40:24 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1N3dqnl002066
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 14:39:52 +1100
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@ozlabs.org
 Cc: naveen.n.rao@linux.vnet.ibm.com
-Subject: [PATCH v5 7/9] powerpc: Add the ability to save FPU without giving it
- up
-Date: Tue, 23 Feb 2016 14:38:20 +1100
-Message-Id: <1456198702-29657-8-git-send-email-cyrilbur@gmail.com>
+Subject: [PATCH v5 2/9] selftests/powerpc: Test preservation of FPU and VMX
+ regs across preemption
+Date: Tue, 23 Feb 2016 14:38:15 +1100
+Message-Id: <1456198702-29657-3-git-send-email-cyrilbur@gmail.com>
 In-Reply-To: <1456198702-29657-1-git-send-email-cyrilbur@gmail.com>
 References: <1456198702-29657-1-git-send-email-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,112 +43,409 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the ability to be able to save the FPU registers to the
-thread struct without giving up (disabling the facility) next time the
-process returns to userspace.
-
-This patch optimises the thread copy path (as a result of a fork() or
-clone()) so that the parent thread can return to userspace with hot
-registers avoiding a possibly pointless reload of FPU register state.
+Loop in assembly checking the registers with many threads.
 
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- arch/powerpc/include/asm/switch_to.h |  3 ++-
- arch/powerpc/kernel/fpu.S            | 21 ++++-----------------
- arch/powerpc/kernel/process.c        | 12 +++++++++++-
- 3 files changed, 17 insertions(+), 19 deletions(-)
+ tools/testing/selftests/powerpc/math/.gitignore    |   2 +
+ tools/testing/selftests/powerpc/math/Makefile      |   5 +-
+ tools/testing/selftests/powerpc/math/fpu_asm.S     |  36 +++++++
+ tools/testing/selftests/powerpc/math/fpu_preempt.c | 113 +++++++++++++++++++++
+ tools/testing/selftests/powerpc/math/vmx_asm.S     |  43 +++++++-
+ tools/testing/selftests/powerpc/math/vmx_preempt.c | 112 ++++++++++++++++++++
+ 6 files changed, 308 insertions(+), 3 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_preempt.c
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_preempt.c
 
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 3690041..6a201e8 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -28,13 +28,14 @@ extern void giveup_all(struct task_struct *);
- extern void enable_kernel_fp(void);
- extern void flush_fp_to_thread(struct task_struct *);
- extern void giveup_fpu(struct task_struct *);
--extern void __giveup_fpu(struct task_struct *);
-+extern void save_fpu(struct task_struct *);
- static inline void disable_kernel_fp(void)
- {
- 	msr_check_and_clear(MSR_FP);
- }
- #else
- static inline void __giveup_fpu(struct task_struct *t) { }
-+static inline void save_fpu(struct task_struct *t) { }
- static inline void flush_fp_to_thread(struct task_struct *t) { }
- #endif
+diff --git a/tools/testing/selftests/powerpc/math/.gitignore b/tools/testing/selftests/powerpc/math/.gitignore
+index b19b269..1a6f09e 100644
+--- a/tools/testing/selftests/powerpc/math/.gitignore
++++ b/tools/testing/selftests/powerpc/math/.gitignore
+@@ -1,2 +1,4 @@
+ fpu_syscall
+ vmx_syscall
++fpu_preempt
++vmx_preempt
+diff --git a/tools/testing/selftests/powerpc/math/Makefile b/tools/testing/selftests/powerpc/math/Makefile
+index 598e5df..5f5617c 100644
+--- a/tools/testing/selftests/powerpc/math/Makefile
++++ b/tools/testing/selftests/powerpc/math/Makefile
+@@ -1,4 +1,4 @@
+-TEST_PROGS := fpu_syscall vmx_syscall
++TEST_PROGS := fpu_syscall fpu_preempt vmx_syscall vmx_preempt
  
-diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-index b063524..15da2b5 100644
---- a/arch/powerpc/kernel/fpu.S
-+++ b/arch/powerpc/kernel/fpu.S
-@@ -143,33 +143,20 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ all: $(TEST_PROGS)
+ 
+@@ -8,7 +8,10 @@ $(TEST_PROGS): ../harness.c
+ $(TEST_PROGS): CFLAGS = $(filter-out -flto,$(CFLAGS) -O2 -g -pthread -m64 -maltivec)
+ 
+ fpu_syscall: fpu_asm.S
++fpu_preempt: fpu_asm.S
++
+ vmx_syscall: vmx_asm.S
++vmx_preempt: vmx_asm.S
+ 
+ include ../../lib.mk
+ 
+diff --git a/tools/testing/selftests/powerpc/math/fpu_asm.S b/tools/testing/selftests/powerpc/math/fpu_asm.S
+index b12c051..6d9ac4d4 100644
+--- a/tools/testing/selftests/powerpc/math/fpu_asm.S
++++ b/tools/testing/selftests/powerpc/math/fpu_asm.S
+@@ -159,3 +159,39 @@ FUNC_START(test_fpu)
+ 	POP_BASIC_STACK(256)
  	blr
- 
- /*
-- * __giveup_fpu(tsk)
-- * Disable FP for the task given as the argument,
-- * and save the floating-point registers in its thread_struct.
-+ * save_fpu(tsk)
-+ * Save the floating-point registers in its thread_struct.
-  * Enables the FPU for use in the kernel on return.
-  */
--_GLOBAL(__giveup_fpu)
-+_GLOBAL(save_fpu)
- 	addi	r3,r3,THREAD	        /* want THREAD of task */
- 	PPC_LL	r6,THREAD_FPSAVEAREA(r3)
- 	PPC_LL	r5,PT_REGS(r3)
- 	PPC_LCMPI	0,r6,0
- 	bne	2f
- 	addi	r6,r3,THREAD_FPSTATE
--2:	PPC_LCMPI	0,r5,0
--	SAVE_32FPVSRS(0, R4, R6)
-+2:	SAVE_32FPVSRS(0, R4, R6)
- 	mffs	fr0
- 	stfd	fr0,FPSTATE_FPSCR(r6)
--	beq	1f
--	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
--	li	r3,MSR_FP|MSR_FE0|MSR_FE1
--#ifdef CONFIG_VSX
--BEGIN_FTR_SECTION
--	oris	r3,r3,MSR_VSX@h
--END_FTR_SECTION_IFSET(CPU_FTR_VSX)
--#endif
--	andc	r4,r4,r3		/* disable FP for previous task */
--	PPC_STL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
--1:
- 	blr
- 
- /*
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 29da07f..a7e5061 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -133,6 +133,16 @@ void __msr_check_and_clear(unsigned long bits)
- EXPORT_SYMBOL(__msr_check_and_clear);
- 
- #ifdef CONFIG_PPC_FPU
-+void __giveup_fpu(struct task_struct *tsk)
+ FUNC_END(test_fpu)
++
++#int preempt_fpu(double *darray, int *threads_running, int *running)
++#On starting will (atomically) decrement not_ready as a signal that the FPU
++#has been loaded with darray. Will proceed to check the validity of the FPU
++#registers while running is not zero.
++FUNC_START(preempt_fpu)
++	PUSH_BASIC_STACK(256)
++	std r3,STACK_FRAME_PARAM(0)(sp) #double *darray
++	std r4,STACK_FRAME_PARAM(1)(sp) #int *threads_starting
++	std r5,STACK_FRAME_PARAM(2)(sp) #int *running
++	PUSH_FPU(STACK_FRAME_LOCAL(3,0))
++
++	bl load_fpu
++	nop
++
++	#Atomic DEC
++	ld r3,STACK_FRAME_PARAM(1)(sp)
++1:	lwarx r4,0,r3
++	addi r4,r4,-1
++	stwcx. r4,0,r3
++	bne- 1b
++
++2:	ld r3,STACK_FRAME_PARAM(0)(sp)
++	bl check_fpu
++	nop
++	cmpdi r3,0
++	bne 3f
++	ld r4,STACK_FRAME_PARAM(2)(sp)
++	ld r5,0(r4)
++	cmpwi r5,0
++	bne 2b
++
++3:	POP_FPU(STACK_FRAME_LOCAL(3,0))
++	POP_BASIC_STACK(256)
++	blr
++FUNC_END(preempt_fpu)
+diff --git a/tools/testing/selftests/powerpc/math/fpu_preempt.c b/tools/testing/selftests/powerpc/math/fpu_preempt.c
+new file mode 100644
+index 0000000..0f85b79
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/math/fpu_preempt.c
+@@ -0,0 +1,113 @@
++/*
++ * Copyright 2015, Cyril Bur, IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ * This test attempts to see if the FPU registers change across preemption.
++ * Two things should be noted here a) The check_fpu function in asm only checks
++ * the non volatile registers as it is reused from the syscall test b) There is
++ * no way to be sure preemption happened so this test just uses many threads
++ * and a long wait. As such, a successful test doesn't mean much but a failure
++ * is bad.
++ */
++
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/syscall.h>
++#include <sys/time.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <stdlib.h>
++#include <pthread.h>
++
++#include "utils.h"
++
++/* Time to wait for workers to get preempted (seconds) */
++#define PREEMPT_TIME 20
++/*
++ * Factor by which to multiply number of online CPUs for total number of
++ * worker threads
++ */
++#define THREAD_FACTOR 8
++
++
++__thread double darray[] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
++		     1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
++		     2.1};
++
++int threads_starting;
++int running;
++
++extern void preempt_fpu(double *darray, int *threads_starting, int *running);
++
++void *preempt_fpu_c(void *p)
 +{
-+	save_fpu(tsk);
-+	tsk->thread.regs->msr &= ~MSR_FP;
-+#ifdef CONFIG_VSX
-+	if (cpu_has_feature(CPU_FTR_VSX))
-+		tsk->thread.regs->msr &= ~MSR_VSX;
-+#endif
++	int i;
++	srand(pthread_self());
++	for (i = 0; i < 21; i++)
++		darray[i] = rand();
++
++	/* Test failed if it ever returns */
++	preempt_fpu(darray, &threads_starting, &running);
++
++	return p;
 +}
 +
- void giveup_fpu(struct task_struct *tsk)
- {
- 	check_if_tm_restore_required(tsk);
-@@ -459,7 +469,7 @@ void save_all(struct task_struct *tsk)
- 	msr_check_and_set(msr_all_available);
++int test_preempt_fpu(void)
++{
++	int i, rc, threads;
++	pthread_t *tids;
++
++	threads = sysconf(_SC_NPROCESSORS_ONLN) * THREAD_FACTOR;
++	tids = malloc((threads) * sizeof(pthread_t));
++	FAIL_IF(!tids);
++
++	running = true;
++	threads_starting = threads;
++	for (i = 0; i < threads; i++) {
++		rc = pthread_create(&tids[i], NULL, preempt_fpu_c, NULL);
++		FAIL_IF(rc);
++	}
++
++	setbuf(stdout, NULL);
++	/* Not really necessary but nice to wait for every thread to start */
++	printf("\tWaiting for all workers to start...");
++	while(threads_starting)
++		asm volatile("": : :"memory");
++	printf("done\n");
++
++	printf("\tWaiting for %d seconds to let some workers get preempted...", PREEMPT_TIME);
++	sleep(PREEMPT_TIME);
++	printf("done\n");
++
++	printf("\tStopping workers...");
++	/*
++	 * Working are checking this value every loop. In preempt_fpu 'cmpwi r5,0; bne 2b'.
++	 * r5 will have loaded the value of running.
++	 */
++	running = 0;
++	for (i = 0; i < threads; i++) {
++		void *rc_p;
++		pthread_join(tids[i], &rc_p);
++
++		/*
++		 * Harness will say the fail was here, look at why preempt_fpu
++		 * returned
++		 */
++		if ((long) rc_p)
++			printf("oops\n");
++		FAIL_IF((long) rc_p);
++	}
++	printf("done\n");
++
++	free(tids);
++	return 0;
++}
++
++int main(int argc, char *argv[])
++{
++	return test_harness(test_preempt_fpu, "fpu_preempt");
++}
+diff --git a/tools/testing/selftests/powerpc/math/vmx_asm.S b/tools/testing/selftests/powerpc/math/vmx_asm.S
+index 82ddb38..b7017d5 100644
+--- a/tools/testing/selftests/powerpc/math/vmx_asm.S
++++ b/tools/testing/selftests/powerpc/math/vmx_asm.S
+@@ -9,6 +9,7 @@
  
- 	if (usermsr & MSR_FP)
--		__giveup_fpu(tsk);
-+		save_fpu(tsk);
+ #include "../basic_asm.h"
  
- 	if (usermsr & MSR_VEC)
- 		__giveup_altivec(tsk);
++#POS MUST BE 16 ALIGNED!
+ #define PUSH_VMX(pos,reg) \
+ 	li	reg,pos; \
+ 	stvx	v20,reg,sp; \
+@@ -35,6 +36,7 @@
+ 	addi	reg,reg,16; \
+ 	stvx	v31,reg,sp;
+ 
++#POS MUST BE 16 ALIGNED!
+ #define POP_VMX(pos,reg) \
+ 	li	reg,pos; \
+ 	lvx	v20,reg,sp; \
+@@ -93,7 +95,7 @@ FUNC_END(load_vmx)
+ 
+ #Should be safe from C, only touches r4, r5 and v0,v1,v2
+ FUNC_START(check_vmx)
+-	PUSH_BASIC_STACK(16)
++	PUSH_BASIC_STACK(32)
+ 	mr r4,r3
+ 	li	r3,1 #assume a bad result
+ 	li	r5,0
+@@ -162,7 +164,7 @@ FUNC_START(check_vmx)
+ 	cmpdi	r0,0xffffffffffffffff
+ 	bne	1f
+ 	li	r3,0
+-1:	POP_BASIC_STACK(16)
++1:	POP_BASIC_STACK(32)
+ 	blr
+ FUNC_END(check_vmx)
+ 
+@@ -193,3 +195,40 @@ FUNC_START(test_vmx)
+ 	POP_BASIC_STACK(512)
+ 	blr
+ FUNC_END(test_vmx)
++
++#int preempt_vmx(vector int *varray, int *threads_starting, int *running)
++#On starting will (atomically) decrement threads_starting as a signal that
++#the VMX have been loaded with varray. Will proceed to check the validity of
++#the VMX registers while running is not zero.
++FUNC_START(preempt_vmx)
++	PUSH_BASIC_STACK(512)
++	std r3,STACK_FRAME_PARAM(0)(sp) #vector int *varray
++	std r4,STACK_FRAME_PARAM(1)(sp) #int *threads_starting
++	std r5,STACK_FRAME_PARAM(2)(sp) #int *running
++	#VMX need to write to 16 byte aligned addresses, skip STACK_FRAME_LOCAL(3,0)
++	PUSH_VMX(STACK_FRAME_LOCAL(4,0),r4)
++
++	bl load_vmx
++	nop
++
++	#Atomic DEC
++	ld r3,STACK_FRAME_PARAM(1)(sp)
++1:	lwarx r4,0,r3
++	addi r4,r4,-1
++	stwcx. r4,0,r3
++	bne- 1b
++
++2:	ld r3,STACK_FRAME_PARAM(0)(sp)
++	bl check_vmx
++	nop
++	cmpdi r3,0
++	bne 3f
++	ld r4,STACK_FRAME_PARAM(2)(sp)
++	ld r5,0(r4)
++	cmpwi r5,0
++	bne 2b
++
++3:	POP_VMX(STACK_FRAME_LOCAL(4,0),r4)
++	POP_BASIC_STACK(512)
++	blr
++FUNC_END(preempt_vmx)
+diff --git a/tools/testing/selftests/powerpc/math/vmx_preempt.c b/tools/testing/selftests/powerpc/math/vmx_preempt.c
+new file mode 100644
+index 0000000..9ef376c
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/math/vmx_preempt.c
+@@ -0,0 +1,112 @@
++/*
++ * Copyright 2015, Cyril Bur, IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ * This test attempts to see if the VMX registers change across preemption.
++ * Two things should be noted here a) The check_vmx function in asm only checks
++ * the non volatile registers as it is reused from the syscall test b) There is
++ * no way to be sure preemption happened so this test just uses many threads
++ * and a long wait. As such, a successful test doesn't mean much but a failure
++ * is bad.
++ */
++
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/syscall.h>
++#include <sys/time.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <stdlib.h>
++#include <pthread.h>
++
++#include "utils.h"
++
++/* Time to wait for workers to get preempted (seconds) */
++#define PREEMPT_TIME 20
++/*
++ * Factor by which to multiply number of online CPUs for total number of
++ * worker threads
++ */
++#define THREAD_FACTOR 8
++
++__thread vector int varray[] = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10,11,12},
++	{13,14,15,16},{17,18,19,20},{21,22,23,24},
++	{25,26,27,28},{29,30,31,32},{33,34,35,36},
++	{37,38,39,40},{41,42,43,44},{45,46,47,48}};
++
++int threads_starting;
++int running;
++
++extern void preempt_vmx(vector int *varray, int *threads_starting, int *running);
++
++void *preempt_vmx_c(void *p)
++{
++	int i, j;
++	srand(pthread_self());
++	for (i = 0; i < 12; i++)
++		for (j = 0; j < 4; j++)
++			varray[i][j] = rand();
++
++	/* Test fails if it ever returns */
++	preempt_vmx(varray, &threads_starting, &running);
++	return p;
++}
++
++int test_preempt_vmx(void)
++{
++	int i, rc, threads;
++	pthread_t *tids;
++
++	threads = sysconf(_SC_NPROCESSORS_ONLN) * THREAD_FACTOR;
++	tids = malloc(threads * sizeof(pthread_t));
++	FAIL_IF(!tids);
++
++	running = true;
++	threads_starting = threads;
++	for (i = 0; i < threads; i++) {
++		rc = pthread_create(&tids[i], NULL, preempt_vmx_c, NULL);
++		FAIL_IF(rc);
++	}
++
++	setbuf(stdout, NULL);
++	/* Not really nessesary but nice to wait for every thread to start */
++	printf("\tWaiting for all workers to start...");
++	while(threads_starting)
++		asm volatile("": : :"memory");
++	printf("done\n");
++
++	printf("\tWaiting for %d seconds to let some workers get preempted...", PREEMPT_TIME);
++	sleep(PREEMPT_TIME);
++	printf("done\n");
++
++	printf("\tStopping workers...");
++	/*
++	 * Working are checking this value every loop. In preempt_vmx 'cmpwi r5,0; bne 2b'.
++	 * r5 will have loaded the value of running.
++	 */
++	running = 0;
++	for (i = 0; i < threads; i++) {
++		void *rc_p;
++		pthread_join(tids[i], &rc_p);
++
++		/*
++		 * Harness will say the fail was here, look at why preempt_vmx
++		 * returned
++		 */
++		if ((long) rc_p)
++			printf("oops\n");
++		FAIL_IF((long) rc_p);
++	}
++	printf("done\n");
++
++	return 0;
++}
++
++int main(int argc, char *argv[])
++{
++	return test_harness(test_preempt_vmx, "vmx_preempt");
++}
 -- 
 2.7.1
