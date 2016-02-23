@@ -1,38 +1,42 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id C23CC1A0594
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 05:47:15 +1100 (AEDT)
-Date: Tue, 23 Feb 2016 18:47:14 +0000
-From: Will Deacon <will.deacon@arm.com>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- linux-arm-kernel@lists.infradead.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>, steve.capper@arm.com
-Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe also
- on PowerPC and ARM)
-Message-ID: <20160223184658.GA27281@arm.com>
-References: <20160211192223.4b517057@thinkpad>
- <20160211190942.GA10244@node.shutemov.name>
- <20160211205702.24f0d17a@thinkpad>
- <20160212154116.GA15142@node.shutemov.name>
- <56BE00E7.1010303@de.ibm.com> <20160212181640.4eabb85f@thinkpad>
- <20160223103221.GA1418@node.shutemov.name>
- <20160223191907.25719a4d@thinkpad>
+Return-Path: <manoj@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9BC101A05B3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 06:08:01 +1100 (AEDT)
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
+ Tue, 23 Feb 2016 12:07:59 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 5F2DB3E40047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 12:07:57 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1NJ7vm534537614
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 12:07:57 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1NJ7vil009326
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 12:07:57 -0700
+Received: from [9.41.250.246] (manoj.austin.ibm.com [9.41.250.246])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ u1NJ7uLj009221
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 12:07:57 -0700
+Reply-To: manoj@linux.vnet.ibm.com
+Subject: Re: [PATCH v5 01/18] cxl: Move common code away from
+ bare-metal-specific files
+References: <1456244519-18934-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+ <1456244519-18934-2-git-send-email-fbarrat@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+From: Manoj Kumar <manoj@linux.vnet.ibm.com>
+Message-ID: <56CCAE22.2070603@linux.vnet.ibm.com>
+Date: Tue, 23 Feb 2016 13:08:18 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160223191907.25719a4d@thinkpad>
+In-Reply-To: <1456244519-18934-2-git-send-email-fbarrat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,46 +46,285 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[adding Steve, since he worked on THP for 32-bit ARM]
+Reviewed-by: Manoj Kumar <manoj@linux.vnet.ibm.com>
 
-On Tue, Feb 23, 2016 at 07:19:07PM +0100, Gerald Schaefer wrote:
-> On Tue, 23 Feb 2016 13:32:21 +0300
-> "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
-> > The theory is that the splitting bit effetely masked bogus pmd_present():
-> > we had pmd_trans_splitting() in all code path and that prevented mm from
-> > touching the pmd. Once pmd_trans_splitting() has gone, mm proceed with the
-> > pmd where it shouldn't and here's a boom.
-> 
-> Well, I don't think pmd_present() == true is bogus for a trans_huge pmd under
-> splitting, after all there is a page behind the the pmd. Also, if it was
-> bogus, and it would need to be false, why should it be marked !pmd_present()
-> only at the pmdp_invalidate() step before the pmd_populate()? It clearly
-> is pmd_present() before that, on all architectures, and if there was any
-> problem/race with that, setting it to !pmd_present() at this stage would
-> only (marginally) reduce the race window.
-> 
-> BTW, PowerPC and Sparc seem to do the same thing in pmdp_invalidate(),
-> i.e. they do not set pmd_present() == false, only mark it so that it would
-> not generate a new TLB entry, just like on s390. After all, the function
-> is called pmdp_invalidate(), and I think the comment in mm/huge_memory.c
-> before that call is just a little ambiguous in its wording. When it says
-> "mark the pmd notpresent" it probably means "mark it so that it will not
-> generate a new TLB entry", which is also what the comment is really about:
-> prevent huge and small entries in the TLB for the same page at the same
-> time.
-> 
-> FWIW, and since the ARM arch-list is already on cc, I think there is
-> an issue with pmdp_invalidate() on ARM, since it also seems to clear
-> the trans_huge (and formerly trans_splitting) bit, which actually makes
-> the pmd !pmd_present(), but it violates the other requirement from the
-> comment:
-> "the pmd_trans_huge and pmd_trans_splitting must remain set at all times
-> on the pmd until the split is complete for this pmd"
+---
+Manoj Kumar
 
-I've only been testing this for arm64 (where I'm yet to see a problem),
-but we use the generic pmdp_invalidate implementation from
-mm/pgtable-generic.c there. On arm64, pmd_trans_huge will return true
-after pmd_mknotpresent. On arm, it does look to be buggy, since it nukes
-the entire entry... Steve?
-
-Will
+On 2/23/2016 10:21 AM, Frederic Barrat wrote:
+> From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+>
+> Move around some functions which will be accessed from the bare-metal
+> and guest environments.
+> Code in native.c and pci.c is meant to be bare-metal specific.
+> Other files contain code which may be shared with guests.
+>
+> Co-authored-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> ---
+>   drivers/misc/cxl/cxl.h    |  9 +++++++
+>   drivers/misc/cxl/irq.c    | 14 +++++-----
+>   drivers/misc/cxl/main.c   | 67 +++++++++++++++++++++++++++++++++++++++++++++++
+>   drivers/misc/cxl/native.c | 21 ---------------
+>   drivers/misc/cxl/pci.c    | 48 +--------------------------------
+>   5 files changed, 84 insertions(+), 75 deletions(-)
+>
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index a521bc7..3f88140 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -526,6 +526,7 @@ void cxl_release_irq_ranges(struct cxl_irq_ranges *irqs, struct cxl *adapter);
+>   int cxl_setup_irq(struct cxl *adapter, unsigned int hwirq, unsigned int virq);
+>   int cxl_update_image_control(struct cxl *adapter);
+>   int cxl_reset(struct cxl *adapter);
+> +void cxl_release_afu(struct device *dev);
+>
+>   /* common == phyp + powernv */
+>   struct cxl_process_element_common {
+> @@ -679,6 +680,9 @@ void cxl_sysfs_afu_remove(struct cxl_afu *afu);
+>   int cxl_sysfs_afu_m_add(struct cxl_afu *afu);
+>   void cxl_sysfs_afu_m_remove(struct cxl_afu *afu);
+>
+> +struct cxl *cxl_alloc_adapter(void);
+> +struct cxl_afu *cxl_alloc_afu(struct cxl *adapter, int slice);
+> +
+>   int cxl_afu_activate_mode(struct cxl_afu *afu, int mode);
+>   int _cxl_afu_deactivate_mode(struct cxl_afu *afu, int mode);
+>   int cxl_afu_deactivate_mode(struct cxl_afu *afu);
+> @@ -733,6 +737,11 @@ struct cxl_irq_info {
+>   };
+>
+>   void cxl_assign_psn_space(struct cxl_context *ctx);
+> +irqreturn_t cxl_irq(int irq, void *ctx, struct cxl_irq_info *irq_info);
+> +int cxl_register_one_irq(struct cxl *adapter, irq_handler_t handler,
+> +			void *cookie, irq_hw_number_t *dest_hwirq,
+> +			unsigned int *dest_virq, const char *name);
+> +
+>   int cxl_attach_process(struct cxl_context *ctx, bool kernel, u64 wed,
+>   			    u64 amr);
+>   int cxl_detach_process(struct cxl_context *ctx);
+> diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+> index 09a4060..e468e6c 100644
+> --- a/drivers/misc/cxl/irq.c
+> +++ b/drivers/misc/cxl/irq.c
+> @@ -93,7 +93,7 @@ static irqreturn_t schedule_cxl_fault(struct cxl_context *ctx, u64 dsisr, u64 da
+>   	return IRQ_HANDLED;
+>   }
+>
+> -static irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
+> +irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
+>   {
+>   	struct cxl_context *ctx = data;
+>   	u64 dsisr, dar;
+> @@ -291,12 +291,12 @@ void cxl_unmap_irq(unsigned int virq, void *cookie)
+>   	irq_dispose_mapping(virq);
+>   }
+>
+> -static int cxl_register_one_irq(struct cxl *adapter,
+> -				irq_handler_t handler,
+> -				void *cookie,
+> -				irq_hw_number_t *dest_hwirq,
+> -				unsigned int *dest_virq,
+> -				const char *name)
+> +int cxl_register_one_irq(struct cxl *adapter,
+> +			irq_handler_t handler,
+> +			void *cookie,
+> +			irq_hw_number_t *dest_hwirq,
+> +			unsigned int *dest_virq,
+> +			const char *name)
+>   {
+>   	int hwirq, virq;
+>
+> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+> index 9fde75e..7ef5b43 100644
+> --- a/drivers/misc/cxl/main.c
+> +++ b/drivers/misc/cxl/main.c
+> @@ -32,6 +32,27 @@ uint cxl_verbose;
+>   module_param_named(verbose, cxl_verbose, uint, 0600);
+>   MODULE_PARM_DESC(verbose, "Enable verbose dmesg output");
+>
+> +int cxl_afu_slbia(struct cxl_afu *afu)
+> +{
+> +	unsigned long timeout = jiffies + (HZ * CXL_TIMEOUT);
+> +
+> +	pr_devel("cxl_afu_slbia issuing SLBIA command\n");
+> +	cxl_p2n_write(afu, CXL_SLBIA_An, CXL_TLB_SLB_IQ_ALL);
+> +	while (cxl_p2n_read(afu, CXL_SLBIA_An) & CXL_TLB_SLB_P) {
+> +		if (time_after_eq(jiffies, timeout)) {
+> +			dev_warn(&afu->dev, "WARNING: CXL AFU SLBIA timed out!\n");
+> +			return -EBUSY;
+> +		}
+> +		/* If the adapter has gone down, we can assume that we
+> +		 * will PERST it and that will invalidate everything.
+> +		 */
+> +		if (!cxl_adapter_link_ok(afu->adapter))
+> +			return -EIO;
+> +		cpu_relax();
+> +	}
+> +	return 0;
+> +}
+> +
+>   static inline void _cxl_slbia(struct cxl_context *ctx, struct mm_struct *mm)
+>   {
+>   	struct task_struct *task;
+> @@ -174,6 +195,52 @@ void cxl_remove_adapter_nr(struct cxl *adapter)
+>   	idr_remove(&cxl_adapter_idr, adapter->adapter_num);
+>   }
+>
+> +struct cxl *cxl_alloc_adapter(void)
+> +{
+> +	struct cxl *adapter;
+> +
+> +	if (!(adapter = kzalloc(sizeof(struct cxl), GFP_KERNEL)))
+> +		return NULL;
+> +
+> +	spin_lock_init(&adapter->afu_list_lock);
+> +
+> +	if (cxl_alloc_adapter_nr(adapter))
+> +		goto err1;
+> +
+> +	if (dev_set_name(&adapter->dev, "card%i", adapter->adapter_num))
+> +		goto err2;
+> +
+> +	return adapter;
+> +
+> +err2:
+> +	cxl_remove_adapter_nr(adapter);
+> +err1:
+> +	kfree(adapter);
+> +	return NULL;
+> +}
+> +
+> +struct cxl_afu *cxl_alloc_afu(struct cxl *adapter, int slice)
+> +{
+> +	struct cxl_afu *afu;
+> +
+> +	if (!(afu = kzalloc(sizeof(struct cxl_afu), GFP_KERNEL)))
+> +		return NULL;
+> +
+> +	afu->adapter = adapter;
+> +	afu->dev.parent = &adapter->dev;
+> +	afu->dev.release = cxl_release_afu;
+> +	afu->slice = slice;
+> +	idr_init(&afu->contexts_idr);
+> +	mutex_init(&afu->contexts_lock);
+> +	spin_lock_init(&afu->afu_cntl_lock);
+> +	mutex_init(&afu->spa_mutex);
+> +
+> +	afu->prefault_mode = CXL_PREFAULT_NONE;
+> +	afu->irqs_max = afu->adapter->user_irqs;
+> +
+> +	return afu;
+> +}
+> +
+>   int cxl_afu_select_best_mode(struct cxl_afu *afu)
+>   {
+>   	if (afu->modes_supported & CXL_MODE_DIRECTED)
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index f409097..0b0a4c8 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -265,27 +265,6 @@ int cxl_tlb_slb_invalidate(struct cxl *adapter)
+>   	return 0;
+>   }
+>
+> -int cxl_afu_slbia(struct cxl_afu *afu)
+> -{
+> -	unsigned long timeout = jiffies + (HZ * CXL_TIMEOUT);
+> -
+> -	pr_devel("cxl_afu_slbia issuing SLBIA command\n");
+> -	cxl_p2n_write(afu, CXL_SLBIA_An, CXL_TLB_SLB_IQ_ALL);
+> -	while (cxl_p2n_read(afu, CXL_SLBIA_An) & CXL_TLB_SLB_P) {
+> -		if (time_after_eq(jiffies, timeout)) {
+> -			dev_warn(&afu->dev, "WARNING: CXL AFU SLBIA timed out!\n");
+> -			return -EBUSY;
+> -		}
+> -		/* If the adapter has gone down, we can assume that we
+> -		 * will PERST it and that will invalidate everything.
+> -		 */
+> -		if (!cxl_adapter_link_ok(afu->adapter))
+> -			return -EIO;
+> -		cpu_relax();
+> -	}
+> -	return 0;
+> -}
+> -
+>   static int cxl_write_sstp(struct cxl_afu *afu, u64 sstp0, u64 sstp1)
+>   {
+>   	int rc;
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 4c1903f..ad28c56 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -604,7 +604,7 @@ static void cxl_unmap_slice_regs(struct cxl_afu *afu)
+>   	}
+>   }
+>
+> -static void cxl_release_afu(struct device *dev)
+> +void cxl_release_afu(struct device *dev)
+>   {
+>   	struct cxl_afu *afu = to_cxl_afu(dev);
+>
+> @@ -616,28 +616,6 @@ static void cxl_release_afu(struct device *dev)
+>   	kfree(afu);
+>   }
+>
+> -static struct cxl_afu *cxl_alloc_afu(struct cxl *adapter, int slice)
+> -{
+> -	struct cxl_afu *afu;
+> -
+> -	if (!(afu = kzalloc(sizeof(struct cxl_afu), GFP_KERNEL)))
+> -		return NULL;
+> -
+> -	afu->adapter = adapter;
+> -	afu->dev.parent = &adapter->dev;
+> -	afu->dev.release = cxl_release_afu;
+> -	afu->slice = slice;
+> -	idr_init(&afu->contexts_idr);
+> -	mutex_init(&afu->contexts_lock);
+> -	spin_lock_init(&afu->afu_cntl_lock);
+> -	mutex_init(&afu->spa_mutex);
+> -
+> -	afu->prefault_mode = CXL_PREFAULT_NONE;
+> -	afu->irqs_max = afu->adapter->user_irqs;
+> -
+> -	return afu;
+> -}
+> -
+>   /* Expects AFU struct to have recently been zeroed out */
+>   static int cxl_read_afu_descriptor(struct cxl_afu *afu)
+>   {
+> @@ -1105,30 +1083,6 @@ static void cxl_release_adapter(struct device *dev)
+>   	kfree(adapter);
+>   }
+>
+> -static struct cxl *cxl_alloc_adapter(void)
+> -{
+> -	struct cxl *adapter;
+> -
+> -	if (!(adapter = kzalloc(sizeof(struct cxl), GFP_KERNEL)))
+> -		return NULL;
+> -
+> -	spin_lock_init(&adapter->afu_list_lock);
+> -
+> -	if (cxl_alloc_adapter_nr(adapter))
+> -		goto err1;
+> -
+> -	if (dev_set_name(&adapter->dev, "card%i", adapter->adapter_num))
+> -		goto err2;
+> -
+> -	return adapter;
+> -
+> -err2:
+> -	cxl_remove_adapter_nr(adapter);
+> -err1:
+> -	kfree(adapter);
+> -	return NULL;
+> -}
+> -
+>   #define CXL_PSL_ErrIVTE_tberror (0x1ull << (63-31))
+>
+>   static int sanitise_adapter_regs(struct cxl *adapter)
+>
