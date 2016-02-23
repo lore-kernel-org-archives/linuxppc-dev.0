@@ -1,24 +1,27 @@
 Return-Path: <xinhui@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 71E6E1A05C0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 22:05:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 87FA01A07BF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 22:07:01 +1100 (AEDT)
 Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xinhui@linux.vnet.ibm.com>;
- Tue, 23 Feb 2016 16:35:32 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1NB5Sai5439766
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 16:35:28 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1NB5ITK005155
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 16:35:25 +0530
-Message-ID: <56CC3C30.2020706@linux.vnet.ibm.com>
-Date: Tue, 23 Feb 2016 19:02:08 +0800
+ Tue, 23 Feb 2016 21:07:00 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id DFBA43578052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 22:06:57 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1NB6nTx524572
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 22:06:57 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1NB6O4R020782
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 22:06:25 +1100
+Message-ID: <56CC3CDD.8040006@linux.vnet.ibm.com>
+Date: Tue, 23 Feb 2016 19:05:01 +0800
 From: Pan Xinhui <xinhui@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
