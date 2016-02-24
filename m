@@ -1,32 +1,14 @@
-Return-Path: <hughd@google.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <jk@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E27E31A05B3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 08:08:06 +1100 (AEDT)
-Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
- [IPv6:2607:f8b0:400e:c00::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id ED963140662
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2016 08:08:05 +1100 (AEDT)
-Received: by mail-pf0-x22a.google.com with SMTP id x65so118468002pfb.1
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2016 13:08:05 -0800 (PST)
-Date: Tue, 23 Feb 2016 13:07:53 -0800 (PST)
-From: Hugh Dickins <hughd@google.com>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- kirill.shutemov@linux.intel.com, Hugh Dickins <hughd@google.com>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
-Subject: Re: Question on follow_page_mask
-In-Reply-To: <20160223140349.GA21820@node.shutemov.name>
-Message-ID: <alpine.LSU.2.11.1602231230010.3043@eggly.anvils>
-References: <56CC5B59.4030902@linux.vnet.ibm.com>
- <20160223140349.GA21820@node.shutemov.name>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id ED66E1A0063
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 12:55:51 +1100 (AEDT)
+From: Jeremy Kerr <jk@ozlabs.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/3] powerpc/powernv: Add powernv_defconfig
+Date: Wed, 24 Feb 2016 09:55:03 +0800
+Message-Id: <1456278905-4824-1-git-send-email-jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,51 +18,328 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 23 Feb 2016, Kirill A. Shutemov wrote:
-> On Tue, Feb 23, 2016 at 06:45:05PM +0530, Anshuman Khandual wrote:
-> > Not able to understand the first code block of follow_page_mask
-> > function. follow_huge_addr function is expected to find the page
-> > struct for the given address if it turns out to be a HugeTLB page
-> > but then when it finds the page we bug on if it had been called
-> > with FOLL_GET flag.
-> > 
-> > 	page = follow_huge_addr(mm, address, flags & FOLL_WRITE);
-> > 	if (!IS_ERR(page)) {
-> > 		BUG_ON(flags & FOLL_GET);
-> > 		return page;
-> > 	}
-> > 
-> > do_move_page_to_node_array calls follow_page with FOLL_GET which
-> > in turn calls follow_page_mask with FOLL_GET. On POWER, the
-> > function follow_huge_addr is defined and does not return -EINVAL
-> > like the generic one. It returns the page struct if its a HugeTLB
-> > page. Just curious to know what is the purpose behind the BUG_ON.
-> 
-> I would guess requesting pin on non-reclaimable page is considered
-> useless, meaning suspicius behavior. BUG_ON() is overkill, I think.
-> WARN_ON_ONCE() would make it.
+This change adds a defconfig for the non-virtualised power platforms,
+based on pseries_defconfig, but without pseries, and little-endian,
+and no OF trampoline.
 
-No, it's there to guard against abuse, until the correct functionality
-is implemented: which has not so far been required, I think.
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+---
+ arch/powerpc/configs/powernv_defconfig | 307 +++++++++++++++++++++++++++++++++
+ 1 file changed, 307 insertions(+)
+ create mode 100644 arch/powerpc/configs/powernv_defconfig
 
-The problem is that a get_page() here is too late: it needs to be done
-inside each arch's implementation of follow_huge_addr(), while holding
-whatever is the appropriate lock, dropped by the time it returns here.
-
-If you look through where FOLL_GET is usually implemented, such as in
-follow_page_pte(), but pud and pmd cases too, I hope you'll still find
-that they are careful to get the reference on the page while it's safe
-in the pagetable.
-
-But follow_huge_addr() would need some work to offer the same guarantees:
-it's good for those "peep at a page without actually getting a reference"
-cases, but not good enough for preventing a page for being put to some
-other use completely, before we've secured it with our reference.
-
-Unless something's changed: the last time I recall the issue coming up,
-was when Naoya Horiguchi was working on hugetlbfs page migration: see
-linux-kernel/linux-mm mail thread "BUG at mm/memory.c:1489!" from
-28 May 2014; and the resolution there was not to support the
-follow_huge_addr() case (which IIRC is peculiar to powerpc alone?).
-
-Hugh
+diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
+new file mode 100644
+index 0000000..ad0ad65
+--- /dev/null
++++ b/arch/powerpc/configs/powernv_defconfig
+@@ -0,0 +1,307 @@
++CONFIG_PPC64=y
++CONFIG_SMP=y
++CONFIG_NR_CPUS=2048
++CONFIG_CPU_LITTLE_ENDIAN=y
++CONFIG_SYSVIPC=y
++CONFIG_POSIX_MQUEUE=y
++CONFIG_FHANDLE=y
++CONFIG_AUDIT=y
++CONFIG_IRQ_DOMAIN_DEBUG=y
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
++CONFIG_TASKSTATS=y
++CONFIG_TASK_DELAY_ACCT=y
++CONFIG_TASK_XACCT=y
++CONFIG_TASK_IO_ACCOUNTING=y
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++CONFIG_NUMA_BALANCING=y
++CONFIG_CGROUPS=y
++CONFIG_MEMCG=y
++CONFIG_MEMCG_SWAP=y
++CONFIG_CGROUP_SCHED=y
++CONFIG_CGROUP_FREEZER=y
++CONFIG_CPUSETS=y
++CONFIG_CGROUP_DEVICE=y
++CONFIG_CGROUP_CPUACCT=y
++CONFIG_CGROUP_PERF=y
++CONFIG_USER_NS=y
++CONFIG_BLK_DEV_INITRD=y
++# CONFIG_COMPAT_BRK is not set
++CONFIG_PROFILING=y
++CONFIG_OPROFILE=y
++CONFIG_KPROBES=y
++CONFIG_JUMP_LABEL=y
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++CONFIG_MODVERSIONS=y
++CONFIG_MODULE_SRCVERSION_ALL=y
++CONFIG_PARTITION_ADVANCED=y
++# CONFIG_PPC_PSERIES is not set
++# CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
++CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
++CONFIG_CPU_IDLE=y
++CONFIG_HZ_100=y
++CONFIG_BINFMT_MISC=m
++CONFIG_PPC_TRANSACTIONAL_MEM=y
++CONFIG_HOTPLUG_CPU=y
++CONFIG_KEXEC=y
++CONFIG_IRQ_ALL_CPUS=y
++CONFIG_NUMA=y
++CONFIG_MEMORY_HOTPLUG=y
++CONFIG_MEMORY_HOTREMOVE=y
++CONFIG_KSM=y
++CONFIG_TRANSPARENT_HUGEPAGE=y
++CONFIG_PPC_64K_PAGES=y
++CONFIG_PPC_SUBPAGE_PROT=y
++CONFIG_SCHED_SMT=y
++CONFIG_PM=y
++CONFIG_PCI_MSI=y
++CONFIG_HOTPLUG_PCI=y
++CONFIG_NET=y
++CONFIG_PACKET=y
++CONFIG_UNIX=y
++CONFIG_XFRM_USER=m
++CONFIG_NET_KEY=m
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++CONFIG_NET_IPIP=y
++CONFIG_SYN_COOKIES=y
++CONFIG_INET_AH=m
++CONFIG_INET_ESP=m
++CONFIG_INET_IPCOMP=m
++# CONFIG_IPV6 is not set
++CONFIG_NETFILTER=y
++# CONFIG_NETFILTER_ADVANCED is not set
++CONFIG_BRIDGE=m
++CONFIG_VLAN_8021Q=m
++CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++CONFIG_DEVTMPFS=y
++CONFIG_DEVTMPFS_MOUNT=y
++CONFIG_PARPORT=m
++CONFIG_PARPORT_PC=m
++CONFIG_BLK_DEV_FD=m
++CONFIG_BLK_DEV_LOOP=y
++CONFIG_BLK_DEV_NBD=m
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_SIZE=65536
++CONFIG_VIRTIO_BLK=m
++CONFIG_IDE=y
++CONFIG_BLK_DEV_IDECD=y
++CONFIG_BLK_DEV_GENERIC=y
++CONFIG_BLK_DEV_AMD74XX=y
++CONFIG_BLK_DEV_SD=y
++CONFIG_CHR_DEV_ST=y
++CONFIG_BLK_DEV_SR=y
++CONFIG_BLK_DEV_SR_VENDOR=y
++CONFIG_CHR_DEV_SG=y
++CONFIG_SCSI_CONSTANTS=y
++CONFIG_SCSI_FC_ATTRS=y
++CONFIG_SCSI_SRP_ATTRS=y
++CONFIG_SCSI_CXGB3_ISCSI=m
++CONFIG_SCSI_CXGB4_ISCSI=m
++CONFIG_SCSI_BNX2_ISCSI=m
++CONFIG_BE2ISCSI=m
++CONFIG_SCSI_MPT2SAS=m
++CONFIG_SCSI_SYM53C8XX_2=y
++CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=0
++CONFIG_SCSI_IPR=y
++CONFIG_SCSI_QLA_FC=m
++CONFIG_SCSI_QLA_ISCSI=m
++CONFIG_SCSI_LPFC=m
++CONFIG_SCSI_VIRTIO=m
++CONFIG_SCSI_DH=y
++CONFIG_SCSI_DH_RDAC=m
++CONFIG_SCSI_DH_ALUA=m
++CONFIG_ATA=y
++CONFIG_SATA_AHCI=y
++# CONFIG_ATA_SFF is not set
++CONFIG_MD=y
++CONFIG_BLK_DEV_MD=y
++CONFIG_MD_LINEAR=y
++CONFIG_MD_RAID0=y
++CONFIG_MD_RAID1=y
++CONFIG_MD_RAID10=m
++CONFIG_MD_RAID456=m
++CONFIG_MD_MULTIPATH=m
++CONFIG_MD_FAULTY=m
++CONFIG_BLK_DEV_DM=y
++CONFIG_DM_CRYPT=m
++CONFIG_DM_SNAPSHOT=m
++CONFIG_DM_THIN_PROVISIONING=m
++CONFIG_DM_MIRROR=m
++CONFIG_DM_ZERO=m
++CONFIG_DM_MULTIPATH=m
++CONFIG_DM_MULTIPATH_QL=m
++CONFIG_DM_MULTIPATH_ST=m
++CONFIG_DM_UEVENT=y
++CONFIG_BONDING=m
++CONFIG_DUMMY=m
++CONFIG_MACVLAN=m
++CONFIG_MACVTAP=m
++CONFIG_VXLAN=m
++CONFIG_NETCONSOLE=y
++CONFIG_TUN=m
++CONFIG_VETH=m
++CONFIG_VIRTIO_NET=m
++CONFIG_VHOST_NET=m
++CONFIG_VORTEX=y
++CONFIG_ACENIC=m
++CONFIG_ACENIC_OMIT_TIGON_I=y
++CONFIG_PCNET32=y
++CONFIG_TIGON3=y
++CONFIG_BNX2X=m
++CONFIG_CHELSIO_T1=m
++CONFIG_BE2NET=m
++CONFIG_S2IO=m
++CONFIG_E100=y
++CONFIG_E1000=y
++CONFIG_E1000E=y
++CONFIG_IXGB=m
++CONFIG_IXGBE=m
++CONFIG_MLX4_EN=m
++CONFIG_MYRI10GE=m
++CONFIG_QLGE=m
++CONFIG_NETXEN_NIC=m
++CONFIG_PPP=m
++CONFIG_PPP_BSDCOMP=m
++CONFIG_PPP_DEFLATE=m
++CONFIG_PPPOE=m
++CONFIG_PPP_ASYNC=m
++CONFIG_PPP_SYNC_TTY=m
++# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
++CONFIG_INPUT_EVDEV=m
++CONFIG_INPUT_MISC=y
++# CONFIG_SERIO_SERPORT is not set
++CONFIG_DEVPTS_MULTIPLE_INSTANCES=y
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_SERIAL_JSM=m
++CONFIG_VIRTIO_CONSOLE=m
++CONFIG_RAW_DRIVER=y
++CONFIG_MAX_RAW_DEVS=1024
++CONFIG_FB=y
++CONFIG_FIRMWARE_EDID=y
++CONFIG_FB_OF=y
++CONFIG_FB_MATROX=y
++CONFIG_FB_MATROX_MILLENIUM=y
++CONFIG_FB_MATROX_MYSTIQUE=y
++CONFIG_FB_MATROX_G=y
++CONFIG_FB_RADEON=y
++CONFIG_FB_IBM_GXT4500=y
++CONFIG_LCD_PLATFORM=m
++# CONFIG_VGA_CONSOLE is not set
++CONFIG_FRAMEBUFFER_CONSOLE=y
++CONFIG_LOGO=y
++CONFIG_HID_GYRATION=y
++CONFIG_HID_PANTHERLORD=y
++CONFIG_HID_PETALYNX=y
++CONFIG_HID_SAMSUNG=y
++CONFIG_HID_SUNPLUS=y
++CONFIG_USB_HIDDEV=y
++CONFIG_USB=y
++CONFIG_USB_MON=m
++CONFIG_USB_EHCI_HCD=y
++# CONFIG_USB_EHCI_HCD_PPC_OF is not set
++CONFIG_USB_OHCI_HCD=y
++CONFIG_USB_STORAGE=m
++CONFIG_NEW_LEDS=y
++CONFIG_LEDS_CLASS=m
++CONFIG_LEDS_POWERNV=m
++CONFIG_INFINIBAND=m
++CONFIG_INFINIBAND_USER_MAD=m
++CONFIG_INFINIBAND_USER_ACCESS=m
++CONFIG_INFINIBAND_MTHCA=m
++CONFIG_INFINIBAND_CXGB3=m
++CONFIG_INFINIBAND_CXGB4=m
++CONFIG_MLX4_INFINIBAND=m
++CONFIG_INFINIBAND_IPOIB=m
++CONFIG_INFINIBAND_IPOIB_CM=y
++CONFIG_INFINIBAND_SRP=m
++CONFIG_INFINIBAND_ISER=m
++CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_GENERIC=y
++CONFIG_VIRTIO_PCI=m
++CONFIG_VIRTIO_BALLOON=m
++CONFIG_EXT2_FS=y
++CONFIG_EXT2_FS_XATTR=y
++CONFIG_EXT2_FS_POSIX_ACL=y
++CONFIG_EXT2_FS_SECURITY=y
++CONFIG_EXT3_FS=y
++CONFIG_EXT3_FS_POSIX_ACL=y
++CONFIG_EXT3_FS_SECURITY=y
++CONFIG_REISERFS_FS=y
++CONFIG_REISERFS_FS_XATTR=y
++CONFIG_REISERFS_FS_POSIX_ACL=y
++CONFIG_REISERFS_FS_SECURITY=y
++CONFIG_JFS_FS=m
++CONFIG_JFS_POSIX_ACL=y
++CONFIG_JFS_SECURITY=y
++CONFIG_XFS_FS=m
++CONFIG_XFS_POSIX_ACL=y
++CONFIG_BTRFS_FS=m
++CONFIG_BTRFS_FS_POSIX_ACL=y
++CONFIG_NILFS2_FS=m
++CONFIG_AUTOFS4_FS=m
++CONFIG_FUSE_FS=m
++CONFIG_OVERLAY_FS=m
++CONFIG_ISO9660_FS=y
++CONFIG_UDF_FS=m
++CONFIG_MSDOS_FS=y
++CONFIG_VFAT_FS=y
++CONFIG_PROC_KCORE=y
++CONFIG_TMPFS=y
++CONFIG_TMPFS_POSIX_ACL=y
++CONFIG_HUGETLBFS=y
++CONFIG_CRAMFS=m
++CONFIG_SQUASHFS=m
++CONFIG_SQUASHFS_XATTR=y
++CONFIG_SQUASHFS_LZO=y
++CONFIG_SQUASHFS_XZ=y
++CONFIG_PSTORE=y
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3_ACL=y
++CONFIG_NFS_V4=y
++CONFIG_NFSD=m
++CONFIG_NFSD_V3_ACL=y
++CONFIG_NFSD_V4=y
++CONFIG_CIFS=m
++CONFIG_CIFS_XATTR=y
++CONFIG_CIFS_POSIX=y
++CONFIG_NLS_DEFAULT="utf8"
++CONFIG_NLS_CODEPAGE_437=y
++CONFIG_NLS_ASCII=y
++CONFIG_NLS_ISO8859_1=y
++CONFIG_NLS_UTF8=y
++CONFIG_MAGIC_SYSRQ=y
++CONFIG_DEBUG_KERNEL=y
++CONFIG_DEBUG_STACK_USAGE=y
++CONFIG_DEBUG_STACKOVERFLOW=y
++CONFIG_LOCKUP_DETECTOR=y
++CONFIG_LATENCYTOP=y
++CONFIG_SCHED_TRACER=y
++CONFIG_BLK_DEV_IO_TRACE=y
++CONFIG_CODE_PATCHING_SELFTEST=y
++CONFIG_FTR_FIXUP_SELFTEST=y
++CONFIG_MSI_BITMAP_SELFTEST=y
++CONFIG_XMON=y
++CONFIG_CRYPTO_TEST=m
++CONFIG_CRYPTO_CCM=m
++CONFIG_CRYPTO_PCBC=m
++CONFIG_CRYPTO_HMAC=y
++CONFIG_CRYPTO_MICHAEL_MIC=m
++CONFIG_CRYPTO_TGR192=m
++CONFIG_CRYPTO_WP512=m
++CONFIG_CRYPTO_ANUBIS=m
++CONFIG_CRYPTO_BLOWFISH=m
++CONFIG_CRYPTO_CAST6=m
++CONFIG_CRYPTO_KHAZAD=m
++CONFIG_CRYPTO_SALSA20=m
++CONFIG_CRYPTO_SERPENT=m
++CONFIG_CRYPTO_TEA=m
++CONFIG_CRYPTO_TWOFISH=m
++CONFIG_CRYPTO_LZO=m
++CONFIG_CRYPTO_DEV_NX=y
++CONFIG_VIRTUALIZATION=y
++CONFIG_KVM_BOOK3S_64=m
++CONFIG_KVM_BOOK3S_64_HV=m
+-- 
+2.5.0
