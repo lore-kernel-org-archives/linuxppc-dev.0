@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44F0A1A03DB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 01:28:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0E0221A03F6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 01:28:58 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: bsingharora@gmail.com, duwe@lst.de, <linux-kernel@vger.kernel.org>,
  rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
  jeyu@redhat.com, jkosina@suse.cz, live-patching@vger.kernel.org,
  mbenes@suse.cz
-Subject: [PATCH 11/12] powerpc/ftrace: Rework __ftrace_make_nop()
-Date: Thu, 25 Feb 2016 01:28:34 +1100
-Message-Id: <1456324115-21144-11-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 12/12] powerpc/ftrace: Disable profiling for some files
+Date: Thu, 25 Feb 2016 01:28:35 +1100
+Message-Id: <1456324115-21144-12-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1456324115-21144-1-git-send-email-mpe@ellerman.id.au>
 References: <1456324115-21144-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,63 +24,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-__ftrace_make_nop() needs to detect either the two instruction or
-the three instruction versions of the _mcount() sequence.
+From: Torsten Duwe <duwe@lst.de>
 
-But if we're running a kernel with the two instruction sequence, we need
-to be careful not to read from ip - 8, or we'll fault and (possibly)
-incorrectly declare the sequence doesn't match.
+Using -mprofile-kernel on early boot code not only confuses the
+checker but is also useless, as the infrastructure is not yet in
+place. Proceed like with -pg (remove it from CFLAGS), equally with
+time.o, ftrace and its helper files.
 
-To keep the code simpler just look at ip - 4, and if it is either of the
-expected instructions declare it good. We've already passed a lot of
-other checks.
+  * arch/powerpc/kernel/Makefile,
+    arch/powerpc/lib/Makefile:
+    - remove -mprofile-kernel from low level, boot code and
+      code-patching objects' CFLAGS.
 
+Signed-off-by: Torsten Duwe <duwe@suse.de>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/ftrace.c | 23 +++++++----------------
- 1 file changed, 7 insertions(+), 16 deletions(-)
+ arch/powerpc/kernel/Makefile | 12 ++++++------
+ arch/powerpc/lib/Makefile    |  4 ++--
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-Squash.
-
-diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index f190528e3781..fe7486f9849e 100644
---- a/arch/powerpc/kernel/ftrace.c
-+++ b/arch/powerpc/kernel/ftrace.c
-@@ -174,28 +174,19 @@ __ftrace_make_nop(struct module *mod,
- 		return -EFAULT;
- 	}
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 794f22adf99d..44667fde7ae4 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -16,14 +16,14 @@ endif
  
--	if (op != PPC_INST_LD_TOC)
--	{
--		unsigned int op0, op1;
-+	if (op != PPC_INST_LD_TOC) {
-+		unsigned int inst;
+ ifdef CONFIG_FUNCTION_TRACER
+ # Do not trace early boot code
+-CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog
+-CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog
+-CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog
+-CFLAGS_REMOVE_prom.o = -pg -mno-sched-epilog
++CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog -mprofile-kernel
++CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog -mprofile-kernel
++CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog -mprofile-kernel
++CFLAGS_REMOVE_prom.o = -pg -mno-sched-epilog -mprofile-kernel
+ # do not trace tracer code
+-CFLAGS_REMOVE_ftrace.o = -pg -mno-sched-epilog
++CFLAGS_REMOVE_ftrace.o = -pg -mno-sched-epilog -mprofile-kernel
+ # timers used by tracing
+-CFLAGS_REMOVE_time.o = -pg -mno-sched-epilog
++CFLAGS_REMOVE_time.o = -pg -mno-sched-epilog -mprofile-kernel
+ endif
  
--		if (probe_kernel_read(&op0, (void *)(ip-8), MCOUNT_INSN_SIZE)) {
--			pr_err("Fetching op0 failed.\n");
-+		if (probe_kernel_read(&inst, (void *)(ip - 4), 4)) {
-+			pr_err("Fetching instruction at %lx failed.\n", ip - 4);
- 			return -EFAULT;
- 		}
+ obj-y				:= cputable.o ptrace.o syscalls.o \
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index a47e14277fd8..98e22b2d7bec 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -6,8 +6,8 @@ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
  
--		if (probe_kernel_read(&op1, (void *)(ip-4), MCOUNT_INSN_SIZE)) {
--			pr_err("Fetching op1 failed.\n");
--			return -EFAULT;
--		}
--
--		/* mflr r0 ; [ std r0,LRSAVE(r1) ]? */
--		if ( (op0 != PPC_INST_MFLR ||
--		      op1 != PPC_INST_STD_LR)
--		     && op1 != PPC_INST_MFLR )
--		{
-+		/* We expect either a mlfr r0, or a std r0, LRSAVE(r1) */
-+		if (inst != PPC_INST_MFLR && inst != PPC_INST_STD_LR) {
- 			pr_err("Unexpected instructions around bl _mcount\n"
- 			       "when enabling dynamic ftrace!\t"
--			       "(%08x,%08x,bl,%08x)\n", op0, op1, op);
-+			       "(%08x,bl,%08x)\n", inst, op);
- 			return -EINVAL;
- 		}
+ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
  
+-CFLAGS_REMOVE_code-patching.o = -pg
+-CFLAGS_REMOVE_feature-fixups.o = -pg
++CFLAGS_REMOVE_code-patching.o = -pg -mprofile-kernel
++CFLAGS_REMOVE_feature-fixups.o = -pg -mprofile-kernel
+ 
+ obj-y += string.o alloc.o crtsavres.o ppc_ksyms.o code-patching.o \
+ 	 feature-fixups.o
 -- 
 2.5.0
