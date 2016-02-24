@@ -1,33 +1,22 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9A5021A048F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 04:27:58 +1100 (AEDT)
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 24 Feb 2016 17:27:55 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 436831B0804B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 17:28:13 +0000 (GMT)
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
- [9.149.37.228])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1OHRrxc65470686
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 17:27:53 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1OHRqWo011090
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 10:27:53 -0700
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com,
+ by lists.ozlabs.org (Postfix) with ESMTPS id A57CC1A049B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 04:37:39 +1100 (AEDT)
+Received: from localhost.localdomain (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id 5C3E1140CC9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 04:37:39 +1100 (AEDT)
+Message-ID: <1456335458.3941.3.camel@neuling.org>
+Subject: Re: [PATCH] cxl: Fix PSL timebase synchronization detection
+From: Michael Neuling <mikey@neuling.org>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, ian@ozlabs.au.ibm.com,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] cxl: Fix PSL timebase synchronization detection
-Date: Wed, 24 Feb 2016 18:27:51 +0100
-Message-Id: <1456334871-30397-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+Date: Wed, 24 Feb 2016 11:37:38 -0600
+In-Reply-To: <1456334871-30397-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+References: <1456334871-30397-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,33 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PSL timebase synchronization is seemingly failing for
-configuration not including VIRT_CPU_ACCOUNTING_NATIVE. The driver
-shows the following trace in dmesg:
-PSL: Timebase sync: giving up!
+On Wed, 2016-02-24 at 18:27 +0100, Frederic Barrat wrote:
+> The PSL timebase synchronization is seemingly failing for
+> configuration not including VIRT_CPU_ACCOUNTING_NATIVE. The driver
+> shows the following trace in dmesg:
+> PSL: Timebase sync: giving up!
+>=20
+> The PSL timebase register is actually syncing correctly, but the cxl
+> driver is not detecting it. Fix is to use the proper timebase-to-time
+> conversion.
+>=20
+> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
-The PSL timebase register is actually syncing correctly, but the cxl
-driver is not detecting it. Fix is to use the proper timebase-to-time
-conversion.
+Looks good!
 
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: <stable@vger.kernel.org> # 4.3+
----
- drivers/misc/cxl/pci.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Acked-by: Michael Neuling <mikey@neuling.org>
 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 4c1903f..0c6c17a1 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -415,7 +415,7 @@ static int cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
- 		delta = mftb() - psl_tb;
- 		if (delta < 0)
- 			delta = -delta;
--	} while (cputime_to_usecs(delta) > 16);
-+	} while (tb_to_ns(delta) > 16000);
- 
- 	return 0;
- }
--- 
-1.9.1
+
+> Cc: <stable@vger.kernel.org> # 4.3+
+> ---
+>  drivers/misc/cxl/pci.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 4c1903f..0c6c17a1 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -415,7 +415,7 @@ static int cxl_setup_psl_timebase(struct cxl
+> *adapter, struct pci_dev *dev)
+>  		delta =3D mftb() - psl_tb;
+>  		if (delta < 0)
+>  			delta =3D -delta;
+> -	} while (cputime_to_usecs(delta) > 16);
+> +	} while (tb_to_ns(delta) > 16000);
+> =20
+>  	return 0;
+>  }
