@@ -2,17 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CAB141A0776
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 01:35:16 +1100 (AEDT)
-In-Reply-To: <1455981114-18869-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E41091A0776
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 01:35:17 +1100 (AEDT)
+In-Reply-To: <1455253387-478-1-git-send-email-gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [V2] powerpc/mm/hash: Clear the invalid slot information correctly
-Message-Id: <20160224143516.A07E9140BEA@ozlabs.org>
-Date: Thu, 25 Feb 2016 01:35:16 +1100 (AEDT)
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: powerpc/eeh: Fix partial hotplug criterion
+Message-Id: <20160224143517.64011140BFD@ozlabs.org>
+Date: Thu, 25 Feb 2016 01:35:17 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,24 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2016-20-02 at 15:11:54 UTC, "Aneesh Kumar K.V" wrote:
-> We can get a hash pte fault with 4k base page size and find the pte
-> already inserted with 64K base page size. In that case we need to clear
-> the existing slot information from the old pte. Fix this correctly
+On Fri, 2016-12-02 at 05:03:05 UTC, Gavin Shan wrote:
+> During error recovery, the device could be removed as part of the
+> partial hotplug. The criterion used to come with partial hotplug
+> is: if the device driver provides error_detected(), slot_reset()
+> and resume() callbacks, it's immune from hotplug. Otherwise,
+> it's going to experience partial hotplug during EEH recovery. But
+> the criterion isn't correct enough: mlx4_core driver for Mellanox
+> adapters provides error_detected(), slot_reset() callbacks, but
+> resume() isn't there. Those Mellanox adapters won't be to involved
+> in the partial hotplug.
 > 
-> With THP, we also clear the slot information with respect to all
-> the 64K hash pte mapping that 16MB page. They are all invalid
-> now. This make sure we don't find the slot valid when we fault with
-> 4k base page size. Finding the slot valid should not result in any wrong
-> behavior because we do check again in hash page table for the validity.
-> But we can avoid that check completely.
+> This fixes the criterion to a practical one: adpater with driver
+> that provides error_detected(), slot_reset() will be immune from
+> partial hotplug. resume() isn't mandatory.
 > 
-> Fixes: a43c0eb8364c022 ("powerpc/mm: Convert 4k hash insert to C")
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Fixes: f2da4ccf ("powerpc/eeh: More relaxed hotplug criterion")
+> Cc: stable@vger.kernel.org #v4.4+
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/9ab3ac233a8b4ffcc27c8475b8
+https://git.kernel.org/powerpc/c/f6bf0fa14cf848ae770e0b7842
 
 cheers
