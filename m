@@ -1,41 +1,32 @@
-Return-Path: <manoj@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+Return-Path: <tlfalcon@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A031A1A04B0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 06:03:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1A5581A04B2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 06:34:15 +1100 (AEDT)
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
- Wed, 24 Feb 2016 14:03:18 -0500
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 056026E8041
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 13:50:06 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1OJ3EgL28180492
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 19:03:14 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1OJ3EGs006712
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 14:03:14 -0500
-Received: from [9.41.250.246] (manoj.austin.ibm.com [9.41.250.246])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- u1OJ3C4a006405
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 14:03:12 -0500
-Reply-To: manoj@linux.vnet.ibm.com
-Subject: Re: [PATCH v5 13/18] cxl: sysfs support for guests
-References: <1456244519-18934-1-git-send-email-fbarrat@linux.vnet.ibm.com>
- <1456244519-18934-14-git-send-email-fbarrat@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-From: Manoj Kumar <manoj@linux.vnet.ibm.com>
-Message-ID: <56CDFE87.50908@linux.vnet.ibm.com>
-Date: Wed, 24 Feb 2016 13:03:35 -0600
-MIME-Version: 1.0
-In-Reply-To: <1456244519-18934-14-git-send-email-fbarrat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
+ Wed, 24 Feb 2016 12:34:13 -0700
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 50CBA3E4005E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 12:34:09 -0700 (MST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1OJY8j531719578
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 19:34:08 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1OJY79t014217
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 14:34:08 -0500
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+To: netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [net-next PATCH] ibmvnic: map L2/L3/L4 header descriptors to firmware
+Date: Wed, 24 Feb 2016 13:34:03 -0600
+Message-Id: <1456342443-11613-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,207 +36,324 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reviewed-by: Manoj Kumar <manoj@linux.vnet.ibm.com>
+Allow the VNIC driver to provide descriptors containing
+L2/L3/L4 headers to firmware.  This feature is needed
+for greater hardware compatibility and enablement of offloading
+technologies for some backing hardware.
 
+Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 ---
-Manoj Kumar
+ drivers/net/ethernet/ibm/ibmvnic.c | 238 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 235 insertions(+), 3 deletions(-)
 
-
-
-On 2/23/2016 10:21 AM, Frederic Barrat wrote:
-> From: Christophe Lombard <clombard@linux.vnet.ibm.com>
->
-> Filter out a few adapter parameters which don't make sense in a guest.
-> Document the changes.
->
-> Co-authored-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> ---
->   Documentation/ABI/testing/sysfs-class-cxl |  8 +++----
->   drivers/misc/cxl/cxl.h                    |  1 +
->   drivers/misc/cxl/guest.c                  | 12 +++++++++++
->   drivers/misc/cxl/native.c                 |  6 ++++++
->   drivers/misc/cxl/sysfs.c                  | 36 +++++++++++++++++++++++--------
->   5 files changed, 50 insertions(+), 13 deletions(-)
->
-> diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
-> index b07e86d..4d0da47 100644
-> --- a/Documentation/ABI/testing/sysfs-class-cxl
-> +++ b/Documentation/ABI/testing/sysfs-class-cxl
-> @@ -183,7 +183,7 @@ Description:    read only
->                   Identifies the revision level of the PSL.
->   Users:		https://github.com/ibm-capi/libcxl
->
-> -What:           /sys/class/cxl/<card>/base_image
-> +What:           /sys/class/cxl/<card>/base_image (not in a guest)
->   Date:           September 2014
->   Contact:        linuxppc-dev@lists.ozlabs.org
->   Description:    read only
-> @@ -193,7 +193,7 @@ Description:    read only
->                   during the initial program load.
->   Users:		https://github.com/ibm-capi/libcxl
->
-> -What:           /sys/class/cxl/<card>/image_loaded
-> +What:           /sys/class/cxl/<card>/image_loaded (not in a guest)
->   Date:           September 2014
->   Contact:        linuxppc-dev@lists.ozlabs.org
->   Description:    read only
-> @@ -201,7 +201,7 @@ Description:    read only
->                   onto the card.
->   Users:		https://github.com/ibm-capi/libcxl
->
-> -What:           /sys/class/cxl/<card>/load_image_on_perst
-> +What:           /sys/class/cxl/<card>/load_image_on_perst (not in a guest)
->   Date:           December 2014
->   Contact:        linuxppc-dev@lists.ozlabs.org
->   Description:    read/write
-> @@ -224,7 +224,7 @@ Description:    write only
->                   to reload the FPGA depending on load_image_on_perst.
->   Users:		https://github.com/ibm-capi/libcxl
->
-> -What:		/sys/class/cxl/<card>/perst_reloads_same_image
-> +What:		/sys/class/cxl/<card>/perst_reloads_same_image (not in a guest)
->   Date:		July 2015
->   Contact:	linuxppc-dev@lists.ozlabs.org
->   Description:	read/write
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index 4372a87..e54bf4f 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -844,6 +844,7 @@ struct cxl_backend_ops {
->   	int (*attach_process)(struct cxl_context *ctx, bool kernel,
->   			u64 wed, u64 amr);
->   	int (*detach_process)(struct cxl_context *ctx);
-> +	bool (*support_attributes)(const char *attr_name);
->   	bool (*link_ok)(struct cxl *cxl);
->   	void (*release_afu)(struct device *dev);
->   	ssize_t (*afu_read_err_buffer)(struct cxl_afu *afu, char *buf,
-> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
-> index 03eb83d..d02ff03 100644
-> --- a/drivers/misc/cxl/guest.c
-> +++ b/drivers/misc/cxl/guest.c
-> @@ -596,6 +596,17 @@ static int guest_afu_check_and_enable(struct cxl_afu *afu)
->   	return 0;
->   }
->
-> +static bool guest_support_attributes(const char *attr_name)
-> +{
-> +	if ((strcmp(attr_name, "base_image") == 0) ||
-> +		(strcmp(attr_name, "load_image_on_perst") == 0) ||
-> +		(strcmp(attr_name, "perst_reloads_same_image") == 0) ||
-> +		(strcmp(attr_name, "image_loaded") == 0))
-> +		return false;
-> +
-> +	return true;
-> +}
-> +
->   static int activate_afu_directed(struct cxl_afu *afu)
->   {
->   	int rc;
-> @@ -936,6 +947,7 @@ const struct cxl_backend_ops cxl_guest_ops = {
->   	.ack_irq = guest_ack_irq,
->   	.attach_process = guest_attach_process,
->   	.detach_process = guest_detach_process,
-> +	.support_attributes = guest_support_attributes,
->   	.link_ok = guest_link_ok,
->   	.release_afu = guest_release_afu,
->   	.afu_read_err_buffer = guest_afu_read_err_buffer,
-> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-> index c0bca59..acb9486 100644
-> --- a/drivers/misc/cxl/native.c
-> +++ b/drivers/misc/cxl/native.c
-> @@ -967,6 +967,11 @@ int cxl_check_error(struct cxl_afu *afu)
->   	return (cxl_p1n_read(afu, CXL_PSL_SCNTL_An) == ~0ULL);
->   }
->
-> +static bool native_support_attributes(const char *attr_name)
-> +{
-> +	return true;
-> +}
-> +
->   static int native_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off, u64 *out)
->   {
->   	if (unlikely(!cxl_ops->link_ok(afu->adapter)))
-> @@ -1026,6 +1031,7 @@ const struct cxl_backend_ops cxl_native_ops = {
->   	.ack_irq = native_ack_irq,
->   	.attach_process = native_attach_process,
->   	.detach_process = native_detach_process,
-> +	.support_attributes = native_support_attributes,
->   	.link_ok = cxl_adapter_link_ok,
->   	.release_afu = cxl_pci_release_afu,
->   	.afu_read_err_buffer = cxl_pci_afu_read_err_buffer,
-> diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-> index 1a1409c..41963d4 100644
-> --- a/drivers/misc/cxl/sysfs.c
-> +++ b/drivers/misc/cxl/sysfs.c
-> @@ -253,8 +253,14 @@ static ssize_t irqs_max_store(struct device *device,
->   	if (irqs_max < afu->pp_irqs)
->   		return -EINVAL;
->
-> -	if (irqs_max > afu->adapter->user_irqs)
-> -		return -EINVAL;
-> +	if (cpu_has_feature(CPU_FTR_HVMODE)) {
-> +		if (irqs_max > afu->adapter->user_irqs)
-> +			return -EINVAL;
-> +	} else {
-> +		/* pHyp sets a per-AFU limit */
-> +		if (irqs_max > afu->guest->max_ints)
-> +			return -EINVAL;
-> +	}
->
->   	afu->irqs_max = irqs_max;
->   	return count;
-> @@ -406,24 +412,36 @@ static struct device_attribute afu_attrs[] = {
->
->   int cxl_sysfs_adapter_add(struct cxl *adapter)
->   {
-> +	struct device_attribute *dev_attr;
->   	int i, rc;
->
->   	for (i = 0; i < ARRAY_SIZE(adapter_attrs); i++) {
-> -		if ((rc = device_create_file(&adapter->dev, &adapter_attrs[i])))
-> -			goto err;
-> +		dev_attr = &adapter_attrs[i];
-> +		if (cxl_ops->support_attributes(dev_attr->attr.name)) {
-> +			if ((rc = device_create_file(&adapter->dev, dev_attr)))
-> +				goto err;
-> +		}
->   	}
->   	return 0;
->   err:
-> -	for (i--; i >= 0; i--)
-> -		device_remove_file(&adapter->dev, &adapter_attrs[i]);
-> +	for (i--; i >= 0; i--) {
-> +		dev_attr = &adapter_attrs[i];
-> +		if (cxl_ops->support_attributes(dev_attr->attr.name))
-> +			device_remove_file(&adapter->dev, dev_attr);
-> +	}
->   	return rc;
->   }
-> +
->   void cxl_sysfs_adapter_remove(struct cxl *adapter)
->   {
-> +	struct device_attribute *dev_attr;
->   	int i;
->
-> -	for (i = 0; i < ARRAY_SIZE(adapter_attrs); i++)
-> -		device_remove_file(&adapter->dev, &adapter_attrs[i]);
-> +	for (i = 0; i < ARRAY_SIZE(adapter_attrs); i++) {
-> +		dev_attr = &adapter_attrs[i];
-> +		if (cxl_ops->support_attributes(dev_attr->attr.name))
-> +			device_remove_file(&adapter->dev, dev_attr);
-> +	}
->   }
->
->   struct afu_config_record {
-> @@ -534,7 +552,7 @@ static struct afu_config_record *cxl_sysfs_afu_new_cr(struct cxl_afu *afu, int c
->   	/*
->   	 * Export raw AFU PCIe like config record. For now this is read only by
->   	 * root - we can expand that later to be readable by non-root and maybe
-> -	 * even writable provided we have a good use-case. Once we suport
-> +	 * even writable provided we have a good use-case. Once we support
->   	 * exposing AFUs through a virtual PHB they will get that for free from
->   	 * Linux' PCI infrastructure, but until then it's not clear that we
->   	 * need it for anything since the main use case is just identifying
->
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 7d657084..43c1df6 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -61,6 +61,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/in.h>
+ #include <linux/ip.h>
++#include <linux/ipv6.h>
+ #include <linux/irq.h>
+ #include <linux/kthread.h>
+ #include <linux/seq_file.h>
+@@ -94,6 +95,7 @@ static int ibmvnic_reenable_crq_queue(struct ibmvnic_adapter *);
+ static int ibmvnic_send_crq(struct ibmvnic_adapter *, union ibmvnic_crq *);
+ static int send_subcrq(struct ibmvnic_adapter *adapter, u64 remote_handle,
+ 		       union sub_crq *sub_crq);
++static int send_subcrq_indirect(struct ibmvnic_adapter *, u64, u64, u64);
+ static irqreturn_t ibmvnic_interrupt_rx(int irq, void *instance);
+ static int enable_scrq_irq(struct ibmvnic_adapter *,
+ 			   struct ibmvnic_sub_crq_queue *);
+@@ -561,12 +563,177 @@ static int ibmvnic_close(struct net_device *netdev)
+ 	return 0;
+ }
+ 
++/**
++ * build_hdr_data - creates L2/L3/L4 header data buffer
++ * @hdr_field - bitfield determining needed headers
++ * @skb - socket buffer
++ * @hdr_len - array of header lengths
++ * @tot_len - total length of data
++ *
++ * Reads hdr_field to determine which headers are needed by firmware.
++ * Builds a buffer containing these headers.  Saves individual header
++ * lengths and total buffer length to be used to build descriptors.
++ */
++static unsigned char *build_hdr_data(u8 hdr_field, struct sk_buff *skb,
++				     int *hdr_len, int *tot_len)
++{
++	unsigned char *hdr_data;
++	unsigned char *hdrs[3];
++	u8 proto = 0;
++	int len = 0;
++	int i;
++
++	if ((hdr_field >> 6) & 1) {
++		hdrs[0] = skb_mac_header(skb);
++		hdr_len[0] = sizeof(struct ethhdr);
++	}
++
++	if ((hdr_field >> 5) & 1) {
++		hdrs[1] = skb_network_header(skb);
++		if (skb->protocol == htons(ETH_P_IP))
++			hdr_len[1] = ip_hdr(skb)->ihl * 4;
++		else if (skb->protocol == htons(ETH_P_IPV6))
++			hdr_len[1] = sizeof(struct ipv6hdr);
++	}
++
++	if ((hdr_field >> 4) & 1) {
++		hdrs[2] = skb_transport_header(skb);
++		if (skb->protocol == htons(ETH_P_IP))
++			proto = ip_hdr(skb)->protocol;
++		else if (skb->protocol == htons(ETH_P_IPV6))
++			proto = ipv6_hdr(skb)->nexthdr;
++
++		if (proto == IPPROTO_TCP)
++			hdr_len[2] = tcp_hdrlen(skb);
++		else if (proto == IPPROTO_UDP)
++			hdr_len[2] = sizeof(struct udphdr);
++	}
++
++	*tot_len = hdr_len[0] + hdr_len[1] + hdr_len[2];
++
++	hdr_data = kmalloc(*tot_len, GFP_KERNEL);
++	if (!hdr_data)
++		return NULL;
++
++	for (i = 0; i < 3; i++) {
++		if (hdrs[i])
++			memcpy(hdr_data, hdrs[i] + len, hdr_len[i]);
++		len += hdr_len[i];
++	}
++	return hdr_data;
++}
++
++/**
++ * create_hdr_descs - create header and header extension descriptors
++ * @hdr_field - bitfield determining needed headers
++ * @data - buffer containing header data
++ * @len - length of data buffer
++ * @hdr_len - array of individual header lengths
++ * @scrq_arr - descriptor array
++ *
++ * Creates header and, if needed, header extension descriptors and
++ * places them in a descriptor array, scrq_arr
++ */
++
++void create_hdr_descs(u8 hdr_field, unsigned char *data, int len, int *hdr_len,
++		      union sub_crq *scrq_arr)
++{
++	union sub_crq hdr_desc;
++	int tmp_len = len;
++	int tmp;
++
++	while (tmp_len > 0) {
++		unsigned char *cur = data + len - tmp_len;
++
++		memset(&hdr_desc, 0, sizeof(hdr_desc));
++		if (cur != data) {
++			tmp = tmp_len > 29 ? 29 : tmp_len;
++			hdr_desc.hdr_ext.first = IBMVNIC_CRQ_CMD;
++			hdr_desc.hdr_ext.type = IBMVNIC_HDR_EXT_DESC;
++			hdr_desc.hdr_ext.len = tmp;
++		} else {
++			tmp = tmp_len > 24 ? 24 : tmp_len;
++			hdr_desc.hdr.first = IBMVNIC_CRQ_CMD;
++			hdr_desc.hdr.type = IBMVNIC_HDR_DESC;
++			hdr_desc.hdr.len = tmp;
++			hdr_desc.hdr.l2_len = (u8)hdr_len[0];
++			hdr_desc.hdr.l3_len = (u16)hdr_len[1];
++			hdr_desc.hdr.l4_len = (u8)hdr_len[2];
++			hdr_desc.hdr.flag = hdr_field << 1;
++		}
++		memcpy(hdr_desc.hdr.data, cur, tmp);
++		tmp_len -= tmp;
++		*scrq_arr = hdr_desc;
++		scrq_arr++;
++	}
++}
++
++static int calc_num_hdr_descs(int len)
++{
++	int num_descs = 1;
++
++	len -= 24;
++	if (len > 0)
++		num_descs += len % 29 ? len / 29 + 1 : len / 29;
++	return num_descs;
++}
++
++static union sub_crq *alloc_scrq_array(int num, union sub_crq subcrq)
++{
++	union sub_crq *scrq_arr;
++
++	scrq_arr = kcalloc(num, sizeof(*scrq_arr), GFP_KERNEL);
++	if (!scrq_arr)
++		return NULL;
++	scrq_arr[0] = subcrq;
++	return scrq_arr;
++}
++
++/**
++ * build_hdr_descs_arr - build a header descriptor array
++ * @skb - socket buffer
++ * @num_entries - number of descriptors to be sent
++ * @subcrq - first TX descriptor
++ * @hdr_field - bit field determining which headers will be sent
++ *
++ * This function will build a TX with descriptor array with applicable
++ * L2/L3/L4 packet header descriptors to be sent by send_subcrq_indirect.
++ */
++
++static union sub_crq *build_hdr_descs_arr(struct sk_buff *skb,
++					  int *num_entries,
++					  union sub_crq subcrq, u8 hdr_field)
++{
++	unsigned char *hdr_data;
++	union sub_crq *entries;
++	int hdr_len[3] = {0};
++	int tot_len;
++
++	hdr_data = bld_hdr_data(hdr_field, skb, hdr_len, &tot_len);
++	if (!hdr_data)
++		return NULL;
++
++	*num_entries += calc_num_hdr_descs(tot_len);
++
++	entries = alloc_scrq_array(*num_entries, subcrq);
++	if (!entries) {
++		kfree(hdr_data);
++		return NULL;
++	}
++
++	create_hdr_descs(hdr_field, hdr_data, tot_len, hdr_len, entries + 1);
++	kfree(hdr_data);
++	return entries;
++}
++
+ static int ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
+ {
+ 	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
+ 	int queue_num = skb_get_queue_mapping(skb);
++	u8 *hdrs = (u8 *)&adapter->tx_rx_desc_req;
+ 	struct device *dev = &adapter->vdev->dev;
+ 	struct ibmvnic_tx_buff *tx_buff = NULL;
++	union sub_crq *indir_arr = NULL;
+ 	struct ibmvnic_tx_pool *tx_pool;
+ 	unsigned int tx_send_failed = 0;
+ 	unsigned int tx_map_failed = 0;
+@@ -576,9 +743,11 @@ static int ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
+ 	dma_addr_t data_dma_addr;
+ 	struct netdev_queue *txq;
+ 	bool used_bounce = false;
++	dma_addr_t indir_ioba;
+ 	unsigned long lpar_rc;
+ 	union sub_crq tx_crq;
+ 	unsigned int offset;
++	int num_entries = 1;
+ 	unsigned char *dst;
+ 	u64 *handle_array;
+ 	int index = 0;
+@@ -644,10 +813,47 @@ static int ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
+ 			tx_crq.v1.flags1 |= IBMVNIC_TX_PROT_UDP;
+ 	}
+ 
+-	if (skb->ip_summed == CHECKSUM_PARTIAL)
++	if (skb->ip_summed == CHECKSUM_PARTIAL) {
+ 		tx_crq.v1.flags1 |= IBMVNIC_TX_CHKSUM_OFFLOAD;
++		hdrs += 2;
++	}
++
++	/* determine if l2/3/4 headers are sent to firmware */
++	if ((*hdrs >> 7) & 1 &&
++	    (skb->protocol == htons(ETH_P_IP) ||
++	     skb->protocol == htons(ETH_P_IPV6))) {
++		indir_arr = build_hdr_descs_arr(skb,
++						&num_entries,
++						tx_crq, *hdrs);
++		if (!indir_arr) {
++			dev_err(dev, "tx: unable to create descriptor array\n");
++			tx_send_failed++;
++			tx_dropped++;
++			ret = NETDEV_TX_BUSY;
++			goto out;
++		}
++		tx_crq.v1.n_crq_elem = num_entries;
++		indir_ioba = dma_map_single(dev, indir_arr,
++					    num_entries * sizeof(*indir_arr),
++					    DMA_TO_DEVICE);
++		if (dma_mapping_error(dev, indir_ioba)) {
++			if (!firmware_has_feature(FW_FEATURE_CMO))
++				dev_err(dev, "tx: unable to map descriptor array\n");
++			tx_map_failed++;
++			tx_dropped++;
++			ret = NETDEV_TX_BUSY;
++			goto out;
++		}
+ 
+-	lpar_rc = send_subcrq(adapter, handle_array[0], &tx_crq);
++		lpar_rc = send_subcrq_indirect(adapter, handle_array[0],
++					       (u64)indir_ioba,
++					       (u64)num_entries);
++		dma_unmap_single(dev, indir_ioba,
++				 num_entries * sizeof(*indir_arr),
++				 DMA_TO_DEVICE);
++	} else {
++		lpar_rc = send_subcrq(adapter, handle_array[0], &tx_crq);
++	}
+ 
+ 	if (lpar_rc != H_SUCCESS) {
+ 		dev_err(dev, "tx failed with code %ld\n", lpar_rc);
+@@ -674,6 +880,7 @@ out:
+ 	netdev->stats.tx_packets += tx_packets;
+ 	adapter->tx_send_failed += tx_send_failed;
+ 	adapter->tx_map_failed += tx_map_failed;
++	kfree(indir_arr);
+ 
+ 	return ret;
+ }
+@@ -1494,6 +1701,30 @@ static int send_subcrq(struct ibmvnic_adapter *adapter, u64 remote_handle,
+ 	return rc;
+ }
+ 
++static int send_subcrq_indirect(struct ibmvnic_adapter *adapter,
++				u64 remote_handle, u64 ioba, u64 num_entries)
++{
++	unsigned int ua = adapter->vdev->unit_address;
++	struct device *dev = &adapter->vdev->dev;
++	int rc;
++
++	/* Make sure the hypervisor sees the complete request */
++	mb();
++
++	rc = plpar_hcall_norets(H_SEND_SUB_CRQ_INDIRECT, ua,
++				cpu_to_be64(remote_handle),
++				cpu_to_be64(ioba),
++				cpu_to_be64(num_entries));
++
++	if (rc) {
++		if (rc == H_CLOSED)
++			dev_warn(dev, "CRQ Queue closed\n");
++		dev_err(dev, "Send (indirect) error (rc=%d)\n", rc);
++	}
++
++	return rc;
++}
++
+ static int ibmvnic_send_crq(struct ibmvnic_adapter *adapter,
+ 			    union ibmvnic_crq *crq)
+ {
+@@ -2447,7 +2678,8 @@ static void handle_query_cap_rsp(union ibmvnic_crq *crq,
+ 			   adapter->opt_rxba_entries_per_subcrq);
+ 		break;
+ 	case TX_RX_DESC_REQ:
+-		adapter->tx_rx_desc_req = crq->query_capability.number;
++		adapter->tx_rx_desc_req =
++				be64_to_cpu(crq->query_capability.number);
+ 		netdev_dbg(netdev, "tx_rx_desc_req = %llx\n",
+ 			   adapter->tx_rx_desc_req);
+ 		break;
+-- 
+1.8.3.1
