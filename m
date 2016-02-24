@@ -1,47 +1,56 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+Return-Path: <schwidefsky@de.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DF7101A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 18:51:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA3121A0354
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 19:22:18 +1100 (AEDT)
 Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Wed, 24 Feb 2016 13:21:20 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1O7pGnc65339452
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 13:21:17 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1O7pExq025429
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 13:21:15 +0530
-Date: Wed, 24 Feb 2016 13:21:04 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Torsten Duwe <duwe@lst.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Petr Mladek <pmladek@suse.com>,
- Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
- linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
- live-patching@vger.kernel.org, Miroslav Benes <mbenes@suse.cz>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v8 8/8] livepatch: Detect offset for the ftrace location
- during build
-Message-ID: <20160224075103.GA21618@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20160210174517.8347D692C8@newverein.lst.de>
- <1455293609.16012.9.camel@gmail.com>
- <20160212164517.GO12548@pathway.suse.cz>
- <20160216054701.GA20570@linux.vnet.ibm.com>
- <20160216082302.GA20522@lst.de>
- <20160216103028.GA10730@linux.vnet.ibm.com>
- <20160216103907.GB25103@lst.de>
- <20160216135742.GT12548@pathway.suse.cz>
- <1455678521.2956.4.camel@ellerman.id.au>
- <20160223170017.GB21932@lst.de>
+ for <linuxppc-dev@lists.ozlabs.org> from <schwidefsky@de.ibm.com>;
+ Wed, 24 Feb 2016 08:22:15 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id C82922190019
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 08:21:57 +0000 (GMT)
+Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
+ [9.149.37.248])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1O8MDsj22085756
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 08:22:13 GMT
+Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1O8MBhQ022715
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 03:22:13 -0500
+Date: Wed, 24 Feb 2016 09:22:08 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>, Christian Borntraeger
+ <borntraeger@de.ibm.com>, "Kirill A. Shutemov"
+ <kirill.shutemov@linux.intel.com>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Linus Torvalds
+ <torvalds@linux-foundation.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org, Catalin Marinas
+ <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ linux-arm-kernel@lists.infradead.org, Heiko Carstens
+ <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org, Sebastian Ott
+ <sebott@linux.vnet.ibm.com>
+Subject: Re: [BUG] random kernel crashes after THP rework on s390 (maybe
+ also on PowerPC and ARM)
+Message-ID: <20160224092208.49e013ff@mschwide>
+In-Reply-To: <20160223191907.25719a4d@thinkpad>
+References: <20160211192223.4b517057@thinkpad>
+ <20160211190942.GA10244@node.shutemov.name>
+ <20160211205702.24f0d17a@thinkpad>
+ <20160212154116.GA15142@node.shutemov.name>
+ <56BE00E7.1010303@de.ibm.com> <20160212181640.4eabb85f@thinkpad>
+ <20160223103221.GA1418@node.shutemov.name>
+ <20160223191907.25719a4d@thinkpad>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20160223170017.GB21932@lst.de>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,113 +60,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Torsten Duwe <duwe@lst.de> [2016-02-23 18:00:17]:
+On Tue, 23 Feb 2016 19:19:07 +0100
+Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
 
-> On Wed, Feb 17, 2016 at 02:08:41PM +1100, Michael Ellerman wrote:
+> On Tue, 23 Feb 2016 13:32:21 +0300
+> "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+> 
+> > On Fri, Feb 12, 2016 at 06:16:40PM +0100, Gerald Schaefer wrote:
+> > > On Fri, 12 Feb 2016 16:57:27 +0100
+> > > Christian Borntraeger <borntraeger@de.ibm.com> wrote:
+> > > 
+> > > > > I'm also confused by pmd_none() is equal to !pmd_present() on s390. Hm?
+> > > > 
+> > > > Don't know, Gerald or Martin?
+> > > 
+> > > The implementation frequently changes depending on how many new bits Martin
+> > > needs to squeeze out :-)
+> > > We don't have a _PAGE_PRESENT bit for pmds, so pmd_present() just checks if the
+> > > entry is not empty. pmd_none() of course does the opposite, it checks if it is
+> > > empty.
 > > 
-> > That stub uses r2 to find the location of itself, but it only works if r2 holds
-> > the TOC for scsi_mod.ko. In this case r2 still contains ibmvscsi.ko's TOC.
+> > I still worry about pmd_present(). It looks wrong to me. I wounder if
+> > patch below makes a difference.
+> > 
+> > The theory is that the splitting bit effetely masked bogus pmd_present():
+> > we had pmd_trans_splitting() in all code path and that prevented mm from
+> > touching the pmd. Once pmd_trans_splitting() has gone, mm proceed with the
+> > pmd where it shouldn't and here's a boom.
 > 
-> Here's my solution, a bit rough still. This replaces the module_64.c change
-> from patch 2/8:
+> Well, I don't think pmd_present() == true is bogus for a trans_huge pmd under
+> splitting, after all there is a page behind the the pmd. Also, if it was
+> bogus, and it would need to be false, why should it be marked !pmd_present()
+> only at the pmdp_invalidate() step before the pmd_populate()? It clearly
+> is pmd_present() before that, on all architectures, and if there was any
+> problem/race with that, setting it to !pmd_present() at this stage would
+> only (marginally) reduce the race window.
 > 
-> I shuffle the trampoline instructions so the R2-save-to-stack comes first.
-> This allows me to construct a profiling trampoline code that
-> looks very similar. The first instruction, harmful to -mprofile-kernel
-> can now be replaced with a load of the *kernel* TOC value via paca.
-> Arithmetic is done in r11, to keep it bitwise identical where possible.
-> Likewise the result is "moved" to r12 via an addi.
-> 
-> What do you think?
-> 
+> BTW, PowerPC and Sparc seem to do the same thing in pmdp_invalidate(),
+> i.e. they do not set pmd_present() == false, only mark it so that it would
+> not generate a new TLB entry, just like on s390. After all, the function
+> is called pmdp_invalidate(), and I think the comment in mm/huge_memory.c
+> before that call is just a little ambiguous in its wording. When it says
+> "mark the pmd notpresent" it probably means "mark it so that it will not
+> generate a new TLB entry", which is also what the comment is really about:
+> prevent huge and small entries in the TLB for the same page at the same
+> time.
 
-Hi Torsten,
+If I am not mistaken this is true for x86 as well. The generic implementation
+for pmdp_invalidate sets a new pmd that has been modified with
+pmd_mknotpresent. For x86 this function removes the _PAGE_PRESENT and
+_PAGE_PROTNONE bits from the entry. The _PAGE_PSE bit stays set and that
+makes pmd_present return true.
 
- I hit build failure, after replacing this patch with patch 2/8 module_64.c
-hunk.
+-- 
+blue skies,
+   Martin.
 
-  CC      arch/powerpc/kernel/module.o
-  CC      arch/powerpc/kernel/module_64.o
-In file included from ./arch/powerpc/include/asm/asm-offsets.h:1:0,
-                 from arch/powerpc/kernel/module_64.c:30:
-include/generated/asm-offsets.h:14:0: error: "NMI_MASK" redefined [-Werror]
- #define NMI_MASK 1048576 /* NMI_MASK  # */
- ^
-In file included from include/linux/spinlock.h:50:0,
-                 from include/linux/seqlock.h:35,
-                 from include/linux/time.h:5,
-                 from include/linux/stat.h:18,
-                 from include/linux/module.h:10,
-                 from arch/powerpc/kernel/module_64.c:21:
-include/linux/preempt.h:46:0: note: this is the location of the previous definition
- #define NMI_MASK (__IRQ_MASK(NMI_BITS)     << NMI_SHIFT)
- ^
-In file included from ./arch/powerpc/include/asm/asm-offsets.h:1:0,
-                 from arch/powerpc/kernel/module_64.c:30:
-include/generated/asm-offsets.h:148:0: error: "CLONE_VM" redefined [-Werror]
- #define CLONE_VM 256 /* CLONE_VM  # */
- ^
-In file included from include/linux/sched.h:4:0,
-                 from ./arch/powerpc/include/asm/elf.h:12,
-                 from include/linux/elf.h:4,
-                 from include/linux/module.h:15,
-                 from arch/powerpc/kernel/module_64.c:21:
-include/uapi/linux/sched.h:8:0: note: this is the location of the previous definition
- #define CLONE_VM 0x00000100 /* set if VM shared between processes */
- ^
-In file included from ./arch/powerpc/include/asm/asm-offsets.h:1:0,
-                 from arch/powerpc/kernel/module_64.c:30:
-include/generated/asm-offsets.h:149:0: error: "CLONE_UNTRACED" redefined [-Werror]
- #define CLONE_UNTRACED 8388608 /* CLONE_UNTRACED  # */
- ^
-In file included from include/linux/sched.h:4:0,
-                 from ./arch/powerpc/include/asm/elf.h:12,
-                 from include/linux/elf.h:4,
-                 from include/linux/module.h:15,
-                 from arch/powerpc/kernel/module_64.c:21:
-include/uapi/linux/sched.h:22:0: note: this is the location of the previous definition
- #define CLONE_UNTRACED  0x00800000 /* set if the tracing process can't force CLONE_PTRACE on this clone */
- ^
-In file included from ./arch/powerpc/include/asm/asm-offsets.h:1:0,
-                 from arch/powerpc/kernel/module_64.c:30:
-include/generated/asm-offsets.h:185:0: error: "NSEC_PER_SEC" redefined [-Werror]
- #define NSEC_PER_SEC 1000000000 /* NSEC_PER_SEC  # */
- ^
-In file included from include/linux/time.h:7:0,
-                 from include/linux/stat.h:18,
-                 from include/linux/module.h:10,
-                 from arch/powerpc/kernel/module_64.c:21:
-include/linux/time64.h:35:0: note: this is the location of the previous definition
- #define NSEC_PER_SEC 1000000000L
- ^
-In file included from ./arch/powerpc/include/asm/asm-offsets.h:1:0,
-                 from arch/powerpc/kernel/module_64.c:30:
-include/generated/asm-offsets.h:188:0: error: "PGD_TABLE_SIZE" redefined [-Werror]
- #define PGD_TABLE_SIZE 32768 /* PGD_TABLE_SIZE  # */
- ^
-In file included from ./arch/powerpc/include/asm/book3s/64/hash.h:58:0,
-                 from ./arch/powerpc/include/asm/book3s/64/pgtable.h:8,
-                 from ./arch/powerpc/include/asm/mmu-hash64.h:24,
-                 from ./arch/powerpc/include/asm/mmu.h:185,
-                 from ./arch/powerpc/include/asm/lppaca.h:36,
-                 from ./arch/powerpc/include/asm/paca.h:21,
-                 from ./arch/powerpc/include/asm/hw_irq.h:42,
-                 from ./arch/powerpc/include/asm/irqflags.h:11,
-                 from include/linux/irqflags.h:15,
-                 from include/linux/spinlock.h:53,
-                 from include/linux/seqlock.h:35,
-                 from include/linux/time.h:5,
-                 from include/linux/stat.h:18,
-                 from include/linux/module.h:10,
-                 from arch/powerpc/kernel/module_64.c:21:
-./arch/powerpc/include/asm/book3s/64/hash-64k.h:133:0: note: this is the location of the previous definition
- #define PGD_TABLE_SIZE (sizeof(pgd_t) << PGD_INDEX_SIZE)
- ^
-cc1: all warnings being treated as errors
-scripts/Makefile.build:258: recipe for target 'arch/powerpc/kernel/module_64.o' failed
-make[1]: *** [arch/powerpc/kernel/module_64.o] Error 1
-Makefile:950: recipe for target 'arch/powerpc/kernel' failed
-make: *** [arch/powerpc/kernel] Error 2
-
-Thanks,
-Kamalesh.
+"Reality continues to ruin my life." - Calvin.
