@@ -1,40 +1,40 @@
 Return-Path: <manoj@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DC3541A0497
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 08:16:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 839461A04B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 08:41:07 +1100 (AEDT)
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
- Wed, 24 Feb 2016 16:16:07 -0500
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 897C4C90041
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 16:16:01 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1OLG4Ui31064170
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 21:16:04 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1OLG28u002325
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 16:16:03 -0500
+ Wed, 24 Feb 2016 14:41:04 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id F0E833E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 14:40:40 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1OLeeow14614632
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 14:40:40 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1OLeesk005235
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 14:40:40 -0700
 Received: from [9.41.250.246] (manoj.austin.ibm.com [9.41.250.246])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- u1OL94v5009796
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 16:09:04 -0500
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ u1OLeeuf005131
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 14:40:40 -0700
 Reply-To: manoj@linux.vnet.ibm.com
-Subject: Re: [PATCH v5 16/18] cxl: Support the cxl kernel API from a guest
+Subject: Re: [PATCH v5 17/18] cxl: Adapter failure handling
 References: <1456244519-18934-1-git-send-email-fbarrat@linux.vnet.ibm.com>
- <1456244519-18934-17-git-send-email-fbarrat@linux.vnet.ibm.com>
+ <1456244519-18934-18-git-send-email-fbarrat@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 From: Manoj Kumar <manoj@linux.vnet.ibm.com>
-Message-ID: <56CE1C05.4000007@linux.vnet.ibm.com>
-Date: Wed, 24 Feb 2016 15:09:25 -0600
+Message-ID: <56CE236E.9070205@linux.vnet.ibm.com>
+Date: Wed, 24 Feb 2016 15:41:02 -0600
 MIME-Version: 1.0
-In-Reply-To: <1456244519-18934-17-git-send-email-fbarrat@linux.vnet.ibm.com>
+In-Reply-To: <1456244519-18934-18-git-send-email-fbarrat@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -52,551 +52,562 @@ Manoj Kumar
 
 
 On 2/23/2016 10:21 AM, Frederic Barrat wrote:
-> Like on bare-metal, the cxl driver creates a virtual PHB and a pci
-> device for the AFU. The configuration space of the device is mapped to
-> the configuration record of the AFU.
+> From: Christophe Lombard <clombard@linux.vnet.ibm.com>
 >
-> Reuse the code defined in afu_cr_read8|16|32() when reading the
-> configuration space of the AFU device.
+> Check the AFU state whenever an API is called. The hypervisor may
+> issue a reset of the adapter when it detects a fault. When it happens,
+> it launches an error recovery which will either move the AFU to a
+> permanent failure state, or in the disabled state.
+> If the AFU is found to be disabled, detach all existing contexts from
+> it before issuing a AFU reset to re-enable it.
 >
-> Even though the (virtual) AFU device is a pci device, the adapter is
-> not. So a driver using the cxl kernel API cannot read the VPD of the
-> adapter through the usual PCI interface. Therefore, we add a call to
-> the cxl kernel API:
-> ssize_t cxl_read_adapter_vpd(struct pci_dev *dev, void *buf, size_t count);
+> Before detaching contexts, notify any kernel driver through the EEH
+> callbacks of the AFU pci device.
 >
-> Co-authored-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> Co-authored-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 > Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 > Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 > ---
->   drivers/misc/cxl/api.c    |  63 ++++++++++++++-----
->   drivers/misc/cxl/cxl.h    |   6 +-
->   drivers/misc/cxl/guest.c  |  26 ++++++++
->   drivers/misc/cxl/native.c |  50 +++++++++++++++
->   drivers/misc/cxl/pci.c    |   9 ++-
->   drivers/misc/cxl/vphb.c   | 154 +++++++++++++++++++---------------------------
->   include/misc/cxl.h        |   5 ++
->   7 files changed, 203 insertions(+), 110 deletions(-)
+>   drivers/misc/cxl/context.c |   2 +-
+>   drivers/misc/cxl/cxl.h     |  18 ++---
+>   drivers/misc/cxl/file.c    |  10 +--
+>   drivers/misc/cxl/guest.c   | 167 ++++++++++++++++++++++++++++++++++++++++++++-
+>   drivers/misc/cxl/main.c    |   2 +-
+>   drivers/misc/cxl/native.c  |  32 ++++-----
+>   drivers/misc/cxl/vphb.c    |   2 +-
+>   7 files changed, 198 insertions(+), 35 deletions(-)
 >
-> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-> index 325f957..75ec2f9 100644
-> --- a/drivers/misc/cxl/api.c
-> +++ b/drivers/misc/cxl/api.c
-> @@ -89,28 +89,11 @@ int cxl_release_context(struct cxl_context *ctx)
->   }
->   EXPORT_SYMBOL_GPL(cxl_release_context);
+> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+> index 180c85a..10370f2 100644
+> --- a/drivers/misc/cxl/context.c
+> +++ b/drivers/misc/cxl/context.c
+> @@ -220,7 +220,7 @@ int __detach_context(struct cxl_context *ctx)
+>   	 * If detach fails when hw is down, we don't care.
+>   	 */
+>   	WARN_ON(cxl_ops->detach_process(ctx) &&
+> -		cxl_ops->link_ok(ctx->afu->adapter));
+> +		cxl_ops->link_ok(ctx->afu->adapter, ctx->afu));
+>   	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
 >
-> -int cxl_allocate_afu_irqs(struct cxl_context *ctx, int num)
-> -{
-> -	if (num == 0)
-> -		num = ctx->afu->pp_irqs;
-> -	return afu_allocate_irqs(ctx, num);
-> -}
-> -EXPORT_SYMBOL_GPL(cxl_allocate_afu_irqs);
-> -
-> -void cxl_free_afu_irqs(struct cxl_context *ctx)
-> -{
-> -	afu_irq_name_free(ctx);
-> -	cxl_ops->release_irq_ranges(&ctx->irqs, ctx->afu->adapter);
-> -}
-> -EXPORT_SYMBOL_GPL(cxl_free_afu_irqs);
-> -
->   static irq_hw_number_t cxl_find_afu_irq(struct cxl_context *ctx, int num)
->   {
->   	__u16 range;
->   	int r;
->
-> -	WARN_ON(num == 0);
-> -
->   	for (r = 0; r < CXL_IRQ_RANGES; r++) {
->   		range = ctx->irqs.range[r];
->   		if (num < range) {
-> @@ -121,6 +104,44 @@ static irq_hw_number_t cxl_find_afu_irq(struct cxl_context *ctx, int num)
->   	return 0;
->   }
->
-> +int cxl_allocate_afu_irqs(struct cxl_context *ctx, int num)
-> +{
-> +	int res;
-> +	irq_hw_number_t hwirq;
-> +
-> +	if (num == 0)
-> +		num = ctx->afu->pp_irqs;
-> +	res = afu_allocate_irqs(ctx, num);
-> +	if (!res && !cpu_has_feature(CPU_FTR_HVMODE)) {
-> +		/* In a guest, the PSL interrupt is not multiplexed. It was
-> +		 * allocated above, and we need to set its handler
-> +		 */
-> +		hwirq = cxl_find_afu_irq(ctx, 0);
-> +		if (hwirq)
-> +			cxl_map_irq(ctx->afu->adapter, hwirq, cxl_ops->psl_interrupt, ctx, "psl");
-> +	}
-> +	return res;
-> +}
-> +EXPORT_SYMBOL_GPL(cxl_allocate_afu_irqs);
-> +
-> +void cxl_free_afu_irqs(struct cxl_context *ctx)
-> +{
-> +	irq_hw_number_t hwirq;
-> +	unsigned int virq;
-> +
-> +	if (!cpu_has_feature(CPU_FTR_HVMODE)) {
-> +		hwirq = cxl_find_afu_irq(ctx, 0);
-> +		if (hwirq) {
-> +			virq = irq_find_mapping(NULL, hwirq);
-> +			if (virq)
-> +				cxl_unmap_irq(virq, ctx);
-> +		}
-> +	}
-> +	afu_irq_name_free(ctx);
-> +	cxl_ops->release_irq_ranges(&ctx->irqs, ctx->afu->adapter);
-> +}
-> +EXPORT_SYMBOL_GPL(cxl_free_afu_irqs);
-> +
->   int cxl_map_afu_irq(struct cxl_context *ctx, int num,
->   		    irq_handler_t handler, void *cookie, char *name)
->   {
-> @@ -356,3 +377,11 @@ void cxl_perst_reloads_same_image(struct cxl_afu *afu,
->   	afu->adapter->perst_same_image = perst_reloads_same_image;
->   }
->   EXPORT_SYMBOL_GPL(cxl_perst_reloads_same_image);
-> +
-> +ssize_t cxl_read_adapter_vpd(struct pci_dev *dev, void *buf, size_t count)
-> +{
-> +	struct cxl_afu *afu = cxl_pci_to_afu(dev);
-> +
-> +	return cxl_ops->read_adapter_vpd(afu->adapter, buf, count);
-> +}
-> +EXPORT_SYMBOL_GPL(cxl_read_adapter_vpd);
+>   	/* release the reference to the group leader and mm handling pid */
 > diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index 0bf536c..6c2521c 100644
+> index 6c2521c..e9150c3 100644
 > --- a/drivers/misc/cxl/cxl.h
 > +++ b/drivers/misc/cxl/cxl.h
-> @@ -581,6 +581,7 @@ int cxl_pci_setup_irq(struct cxl *adapter, unsigned int hwirq, unsigned int virq
->   int cxl_update_image_control(struct cxl *adapter);
->   int cxl_pci_reset(struct cxl *adapter);
->   void cxl_pci_release_afu(struct device *dev);
-> +ssize_t cxl_pci_read_adapter_vpd(struct cxl *adapter, void *buf, size_t len);
->
->   /* common == phyp + powernv */
->   struct cxl_process_element_common {
-> @@ -802,7 +803,6 @@ int cxl_psl_purge(struct cxl_afu *afu);
->
->   void cxl_stop_trace(struct cxl *cxl);
->   int cxl_pci_vphb_add(struct cxl_afu *afu);
-> -void cxl_pci_vphb_reconfigure(struct cxl_afu *afu);
->   void cxl_pci_vphb_remove(struct cxl_afu *afu);
->
->   extern struct pci_driver cxl_pci_driver;
-> @@ -863,6 +863,10 @@ struct cxl_backend_ops {
->   	int (*afu_cr_read16)(struct cxl_afu *afu, int cr_idx, u64 offset, u16 *val);
->   	int (*afu_cr_read32)(struct cxl_afu *afu, int cr_idx, u64 offset, u32 *val);
->   	int (*afu_cr_read64)(struct cxl_afu *afu, int cr_idx, u64 offset, u64 *val);
-> +	int (*afu_cr_write8)(struct cxl_afu *afu, int cr_idx, u64 offset, u8 val);
-> +	int (*afu_cr_write16)(struct cxl_afu *afu, int cr_idx, u64 offset, u16 val);
-> +	int (*afu_cr_write32)(struct cxl_afu *afu, int cr_idx, u64 offset, u32 val);
-> +	ssize_t (*read_adapter_vpd)(struct cxl *adapter, void *buf, size_t count);
+> @@ -373,6 +373,8 @@ struct cxl_afu_guest {
+>   	phys_addr_t p2n_phys;
+>   	u64 p2n_size;
+>   	int max_ints;
+> +	struct mutex recovery_lock;
+> +	int previous_state;
 >   };
->   extern const struct cxl_backend_ops cxl_native_ops;
->   extern const struct cxl_backend_ops cxl_guest_ops;
-> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
-> index 8340f2a..2563896 100644
-> --- a/drivers/misc/cxl/guest.c
-> +++ b/drivers/misc/cxl/guest.c
-> @@ -418,6 +418,24 @@ static int guest_afu_cr_read64(struct cxl_afu *afu, int cr_idx,	u64 offset,
->   	return _guest_afu_cr_readXX(8, afu, cr_idx, offset, out);
+>
+>   struct cxl_afu {
+> @@ -611,7 +613,7 @@ struct cxl_process_element {
+>   	__be32 software_state;
+>   } __packed;
+>
+> -static inline bool cxl_adapter_link_ok(struct cxl *cxl)
+> +static inline bool cxl_adapter_link_ok(struct cxl *cxl, struct cxl_afu *afu)
+>   {
+>   	struct pci_dev *pdev;
+>
+> @@ -630,13 +632,13 @@ static inline void __iomem *_cxl_p1_addr(struct cxl *cxl, cxl_p1_reg_t reg)
+>
+>   static inline void cxl_p1_write(struct cxl *cxl, cxl_p1_reg_t reg, u64 val)
+>   {
+> -	if (likely(cxl_adapter_link_ok(cxl)))
+> +	if (likely(cxl_adapter_link_ok(cxl, NULL)))
+>   		out_be64(_cxl_p1_addr(cxl, reg), val);
 >   }
 >
-> +static int guest_afu_cr_write32(struct cxl_afu *afu, int cr, u64 off, u32 in)
-> +{
-> +	/* config record is not writable from guest */
-> +	return -EPERM;
-> +}
-> +
-> +static int guest_afu_cr_write16(struct cxl_afu *afu, int cr, u64 off, u16 in)
-> +{
-> +	/* config record is not writable from guest */
-> +	return -EPERM;
-> +}
-> +
-> +static int guest_afu_cr_write8(struct cxl_afu *afu, int cr, u64 off, u8 in)
-> +{
-> +	/* config record is not writable from guest */
-> +	return -EPERM;
-> +}
-> +
->   static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 amr)
+>   static inline u64 cxl_p1_read(struct cxl *cxl, cxl_p1_reg_t reg)
 >   {
->   	struct cxl_process_element_hcall *elem;
-> @@ -794,6 +812,9 @@ int cxl_guest_init_afu(struct cxl *adapter, int slice, struct device_node *afu_n
+> -	if (likely(cxl_adapter_link_ok(cxl)))
+> +	if (likely(cxl_adapter_link_ok(cxl, NULL)))
+>   		return in_be64(_cxl_p1_addr(cxl, reg));
+>   	else
+>   		return ~0ULL;
+> @@ -650,13 +652,13 @@ static inline void __iomem *_cxl_p1n_addr(struct cxl_afu *afu, cxl_p1n_reg_t reg
 >
->   	afu->enabled = true;
+>   static inline void cxl_p1n_write(struct cxl_afu *afu, cxl_p1n_reg_t reg, u64 val)
+>   {
+> -	if (likely(cxl_adapter_link_ok(afu->adapter)))
+> +	if (likely(cxl_adapter_link_ok(afu->adapter, afu)))
+>   		out_be64(_cxl_p1n_addr(afu, reg), val);
+>   }
 >
-> +	if ((rc = cxl_pci_vphb_add(afu)))
-> +		dev_info(&afu->dev, "Can't register vPHB\n");
+>   static inline u64 cxl_p1n_read(struct cxl_afu *afu, cxl_p1n_reg_t reg)
+>   {
+> -	if (likely(cxl_adapter_link_ok(afu->adapter)))
+> +	if (likely(cxl_adapter_link_ok(afu->adapter, afu)))
+>   		return in_be64(_cxl_p1n_addr(afu, reg));
+>   	else
+>   		return ~0ULL;
+> @@ -669,13 +671,13 @@ static inline void __iomem *_cxl_p2n_addr(struct cxl_afu *afu, cxl_p2n_reg_t reg
+>
+>   static inline void cxl_p2n_write(struct cxl_afu *afu, cxl_p2n_reg_t reg, u64 val)
+>   {
+> -	if (likely(cxl_adapter_link_ok(afu->adapter)))
+> +	if (likely(cxl_adapter_link_ok(afu->adapter, afu)))
+>   		out_be64(_cxl_p2n_addr(afu, reg), val);
+>   }
+>
+>   static inline u64 cxl_p2n_read(struct cxl_afu *afu, cxl_p2n_reg_t reg)
+>   {
+> -	if (likely(cxl_adapter_link_ok(afu->adapter)))
+> +	if (likely(cxl_adapter_link_ok(afu->adapter, afu)))
+>   		return in_be64(_cxl_p2n_addr(afu, reg));
+>   	else
+>   		return ~0ULL;
+> @@ -851,7 +853,7 @@ struct cxl_backend_ops {
+>   			u64 wed, u64 amr);
+>   	int (*detach_process)(struct cxl_context *ctx);
+>   	bool (*support_attributes)(const char *attr_name);
+> -	bool (*link_ok)(struct cxl *cxl);
+> +	bool (*link_ok)(struct cxl *cxl, struct cxl_afu *afu);
+>   	void (*release_afu)(struct device *dev);
+>   	ssize_t (*afu_read_err_buffer)(struct cxl_afu *afu, char *buf,
+>   				loff_t off, size_t count);
+> diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+> index e160462..eec468f 100644
+> --- a/drivers/misc/cxl/file.c
+> +++ b/drivers/misc/cxl/file.c
+> @@ -76,7 +76,7 @@ static int __afu_open(struct inode *inode, struct file *file, bool master)
+>   	if (!afu->current_mode)
+>   		goto err_put_afu;
+>
+> -	if (!cxl_ops->link_ok(adapter)) {
+> +	if (!cxl_ops->link_ok(adapter, afu)) {
+>   		rc = -EIO;
+>   		goto err_put_afu;
+>   	}
+> @@ -257,7 +257,7 @@ long afu_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+>   	if (ctx->status == CLOSED)
+>   		return -EIO;
+>
+> -	if (!cxl_ops->link_ok(ctx->afu->adapter))
+> +	if (!cxl_ops->link_ok(ctx->afu->adapter, ctx->afu))
+>   		return -EIO;
+>
+>   	pr_devel("afu_ioctl\n");
+> @@ -287,7 +287,7 @@ int afu_mmap(struct file *file, struct vm_area_struct *vm)
+>   	if (ctx->status != STARTED)
+>   		return -EIO;
+>
+> -	if (!cxl_ops->link_ok(ctx->afu->adapter))
+> +	if (!cxl_ops->link_ok(ctx->afu->adapter, ctx->afu))
+>   		return -EIO;
+>
+>   	return cxl_context_iomap(ctx, vm);
+> @@ -334,7 +334,7 @@ ssize_t afu_read(struct file *file, char __user *buf, size_t count,
+>   	int rc;
+>   	DEFINE_WAIT(wait);
+>
+> -	if (!cxl_ops->link_ok(ctx->afu->adapter))
+> +	if (!cxl_ops->link_ok(ctx->afu->adapter, ctx->afu))
+>   		return -EIO;
+>
+>   	if (count < CXL_READ_MIN_SIZE)
+> @@ -347,7 +347,7 @@ ssize_t afu_read(struct file *file, char __user *buf, size_t count,
+>   		if (ctx_event_pending(ctx))
+>   			break;
+>
+> -		if (!cxl_ops->link_ok(ctx->afu->adapter)) {
+> +		if (!cxl_ops->link_ok(ctx->afu->adapter, ctx->afu)) {
+>   			rc = -EIO;
+>   			goto out;
+>   		}
+> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+> index 2563896..d19df59 100644
+> --- a/drivers/misc/cxl/guest.c
+> +++ b/drivers/misc/cxl/guest.c
+> @@ -15,6 +15,46 @@
+>   #include "hcalls.h"
+>   #include "trace.h"
+>
+> +#define CXL_ERROR_DETECTED_EVENT	1
+> +#define CXL_SLOT_RESET_EVENT		2
+> +#define CXL_RESUME_EVENT		3
 > +
->   	return 0;
+> +static void pci_error_handlers(struct cxl_afu *afu,
+> +				int bus_error_event,
+> +				pci_channel_state_t state)
+> +{
+> +	struct pci_dev *afu_dev;
+> +
+> +	if (afu->phb == NULL)
+> +		return;
+> +
+> +	list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
+> +		if (!afu_dev->driver)
+> +			continue;
+> +
+> +		switch (bus_error_event) {
+> +		case CXL_ERROR_DETECTED_EVENT:
+> +			afu_dev->error_state = state;
+> +
+> +			if (afu_dev->driver->err_handler &&
+> +			    afu_dev->driver->err_handler->error_detected)
+> +				afu_dev->driver->err_handler->error_detected(afu_dev, state);
+> +		break;
+> +		case CXL_SLOT_RESET_EVENT:
+> +			afu_dev->error_state = state;
+> +
+> +			if (afu_dev->driver->err_handler &&
+> +			    afu_dev->driver->err_handler->slot_reset)
+> +				afu_dev->driver->err_handler->slot_reset(afu_dev);
+> +		break;
+> +		case CXL_RESUME_EVENT:
+> +			if (afu_dev->driver->err_handler &&
+> +			    afu_dev->driver->err_handler->resume)
+> +				afu_dev->driver->err_handler->resume(afu_dev);
+> +		break;
+> +		}
+> +	}
+> +}
 >
->   err_put2:
-> @@ -819,6 +840,7 @@ void cxl_guest_remove_afu(struct cxl_afu *afu)
->   	if (!afu)
->   		return;
->
-> +	cxl_pci_vphb_remove(afu);
->   	cxl_sysfs_afu_remove(afu);
->
->   	spin_lock(&afu->adapter->afu_list_lock);
-> @@ -974,4 +996,8 @@ const struct cxl_backend_ops cxl_guest_ops = {
->   	.afu_cr_read16 = guest_afu_cr_read16,
->   	.afu_cr_read32 = guest_afu_cr_read32,
->   	.afu_cr_read64 = guest_afu_cr_read64,
-> +	.afu_cr_write8 = guest_afu_cr_write8,
-> +	.afu_cr_write16 = guest_afu_cr_write16,
-> +	.afu_cr_write32 = guest_afu_cr_write32,
-> +	.read_adapter_vpd = cxl_guest_read_adapter_vpd,
->   };
-> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-> index acb9486..1ca1011 100644
-> --- a/drivers/misc/cxl/native.c
-> +++ b/drivers/misc/cxl/native.c
-> @@ -1018,6 +1018,52 @@ static int native_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off, u8 *out)
+>   static irqreturn_t guest_handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr,
+>   					u64 errstat)
+> @@ -133,6 +173,22 @@ static irqreturn_t guest_psl_irq(int irq, void *data)
 >   	return rc;
 >   }
 >
-> +static int native_afu_cr_write32(struct cxl_afu *afu, int cr, u64 off, u32 in)
+> +static int afu_read_error_state(struct cxl_afu *afu, int *state_out)
 > +{
-> +	if (unlikely(!cxl_ops->link_ok(afu->adapter)))
-> +		return -EIO;
-> +	if (unlikely(off >= afu->crs_len))
-> +		return -ERANGE;
-> +	out_le32(afu->native->afu_desc_mmio + afu->crs_offset +
-> +		(cr * afu->crs_len) + off, in);
+> +	u64 state;
+> +	int rc = 0;
+> +
+> +	rc = cxl_h_read_error_state(afu->guest->handle, &state);
+> +	if (!rc) {
+> +		WARN_ON(state != H_STATE_NORMAL &&
+> +			state != H_STATE_DISABLE &&
+> +			state != H_STATE_TEMP_UNAVAILABLE &&
+> +			state != H_STATE_PERM_UNAVAILABLE);
+> +		*state_out = state & 0xffffffff;
+> +	}
+> +	return rc;
+> +}
+> +
+>   static irqreturn_t guest_slice_irq_err(int irq, void *data)
+>   {
+>   	struct cxl_afu *afu = data;
+> @@ -201,10 +257,26 @@ static int irq_free_range(struct cxl *adapter, int irq, int len)
+>
+>   static int guest_reset(struct cxl *adapter)
+>   {
+> -	int rc;
+> +	struct cxl_afu *afu = NULL;
+> +	int i, rc;
+>
+>   	pr_devel("Adapter reset request\n");
+> +	for (i = 0; i < adapter->slices; i++) {
+> +		if ((afu = adapter->afu[i])) {
+> +			pci_error_handlers(afu, CXL_ERROR_DETECTED_EVENT,
+> +					pci_channel_io_frozen);
+> +			cxl_context_detach_all(afu);
+> +		}
+> +	}
+> +
+>   	rc = cxl_h_reset_adapter(adapter->guest->handle);
+> +	for (i = 0; i < adapter->slices; i++) {
+> +		if (!rc && (afu = adapter->afu[i])) {
+> +			pci_error_handlers(afu, CXL_SLOT_RESET_EVENT,
+> +					pci_channel_io_normal);
+> +			pci_error_handlers(afu, CXL_RESUME_EVENT, 0);
+> +		}
+> +	}
+>   	return rc;
+>   }
+>
+> @@ -556,7 +628,7 @@ static int guest_detach_process(struct cxl_context *ctx)
+>   	pr_devel("in %s\n", __func__);
+>   	trace_cxl_detach(ctx);
+>
+> -	if (!cxl_ops->link_ok(ctx->afu->adapter))
+> +	if (!cxl_ops->link_ok(ctx->afu->adapter, ctx->afu))
+>   		return -EIO;
+>
+>   	if (ctx->afu->current_mode == CXL_MODE_DIRECTED)
+> @@ -717,8 +789,95 @@ static void guest_unmap_slice_regs(struct cxl_afu *afu)
+>   		iounmap(afu->p2n_mmio);
+>   }
+>
+> -static bool guest_link_ok(struct cxl *cxl)
+> +static int afu_update_state(struct cxl_afu *afu)
+> +{
+> +	int rc, cur_state;
+> +
+> +	rc = afu_read_error_state(afu, &cur_state);
+> +	if (rc)
+> +		return rc;
+> +
+> +	if (afu->guest->previous_state == cur_state)
+> +		return 0;
+> +
+> +	pr_devel("AFU(%d) update state to %#x\n", afu->slice, cur_state);
+> +
+> +	switch (cur_state) {
+> +	case H_STATE_NORMAL:
+> +		afu->guest->previous_state = cur_state;
+> +		rc = 1;
+> +		break;
+> +
+> +	case H_STATE_DISABLE:
+> +		pci_error_handlers(afu, CXL_ERROR_DETECTED_EVENT,
+> +				pci_channel_io_frozen);
+> +
+> +		cxl_context_detach_all(afu);
+> +		if ((rc = cxl_ops->afu_reset(afu)))
+> +			pr_devel("reset hcall failed %d\n", rc);
+> +
+> +		rc = afu_read_error_state(afu, &cur_state);
+> +		if (!rc && cur_state == H_STATE_NORMAL) {
+> +			pci_error_handlers(afu, CXL_SLOT_RESET_EVENT,
+> +					pci_channel_io_normal);
+> +			pci_error_handlers(afu, CXL_RESUME_EVENT, 0);
+> +			rc = 1;
+> +		}
+> +		afu->guest->previous_state = 0;
+> +		break;
+> +
+> +	case H_STATE_TEMP_UNAVAILABLE:
+> +		afu->guest->previous_state = cur_state;
+> +		break;
+> +
+> +	case H_STATE_PERM_UNAVAILABLE:
+> +		dev_err(&afu->dev, "AFU is in permanent error state\n");
+> +		pci_error_handlers(afu, CXL_ERROR_DETECTED_EVENT,
+> +				pci_channel_io_perm_failure);
+> +		afu->guest->previous_state = cur_state;
+> +		break;
+> +
+> +	default:
+> +		pr_err("Unexpected AFU(%d) error state: %#x\n",
+> +		       afu->slice, cur_state);
+> +		return -EINVAL;
+> +	}
+> +
+> +	return rc;
+> +}
+> +
+> +static int afu_do_recovery(struct cxl_afu *afu)
+>   {
+> +	int rc;
+> +
+> +	/* many threads can arrive here, in case of detach_all for example.
+> +	 * Only one needs to drive the recovery
+> +	 */
+> +	if (mutex_trylock(&afu->guest->recovery_lock)) {
+> +		rc = afu_update_state(afu);
+> +		mutex_unlock(&afu->guest->recovery_lock);
+> +		return rc;
+> +	}
 > +	return 0;
 > +}
 > +
-> +static int native_afu_cr_write16(struct cxl_afu *afu, int cr, u64 off, u16 in)
+> +static bool guest_link_ok(struct cxl *cxl, struct cxl_afu *afu)
 > +{
-> +	u64 aligned_off = off & ~0x3L;
-> +	u32 val32, mask, shift;
-> +	int rc;
+> +	int state;
 > +
-> +	rc = native_afu_cr_read32(afu, cr, aligned_off, &val32);
-> +	if (rc)
-> +		return rc;
-> +	shift = (off & 0x3) * 8;
-> +	WARN_ON(shift == 24);
-> +	mask = 0xffff << shift;
-> +	val32 = (val32 & ~mask) | (in << shift);
+> +	if (afu) {
+> +		if (afu_read_error_state(afu, &state) ||
+> +			state != H_STATE_NORMAL) {
+> +			if (afu_do_recovery(afu) > 0) {
+> +				/* check again in case we've just fixed it */
+> +				if (!afu_read_error_state(afu, &state) &&
+> +					state == H_STATE_NORMAL)
+> +					return true;
+> +			}
+> +			return false;
+> +		}
+> +	}
 > +
-> +	rc = native_afu_cr_write32(afu, cr, aligned_off, val32);
-> +	return rc;
-> +}
-> +
-> +static int native_afu_cr_write8(struct cxl_afu *afu, int cr, u64 off, u8 in)
-> +{
-> +	u64 aligned_off = off & ~0x3L;
-> +	u32 val32, mask, shift;
-> +	int rc;
-> +
-> +	rc = native_afu_cr_read32(afu, cr, aligned_off, &val32);
-> +	if (rc)
-> +		return rc;
-> +	shift = (off & 0x3) * 8;
-> +	mask = 0xff << shift;
-> +	val32 = (val32 & ~mask) | (in << shift);
-> +
-> +	rc = native_afu_cr_write32(afu, cr, aligned_off, val32);
-> +	return rc;
-> +}
-> +
->   const struct cxl_backend_ops cxl_native_ops = {
->   	.module = THIS_MODULE,
->   	.adapter_reset = cxl_pci_reset,
-> @@ -1043,4 +1089,8 @@ const struct cxl_backend_ops cxl_native_ops = {
->   	.afu_cr_read16 = native_afu_cr_read16,
->   	.afu_cr_read32 = native_afu_cr_read32,
->   	.afu_cr_read64 = native_afu_cr_read64,
-> +	.afu_cr_write8 = native_afu_cr_write8,
-> +	.afu_cr_write16 = native_afu_cr_write16,
-> +	.afu_cr_write32 = native_afu_cr_write32,
-> +	.read_adapter_vpd = cxl_pci_read_adapter_vpd,
->   };
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index fb4fd45..6cae044 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -881,6 +881,7 @@ static void cxl_pci_remove_afu(struct cxl_afu *afu)
->   	if (!afu)
->   		return;
->
-> +	cxl_pci_vphb_remove(afu);
->   	cxl_sysfs_afu_remove(afu);
->   	cxl_debugfs_afu_remove(afu);
->
-> @@ -1067,6 +1068,11 @@ static int cxl_vsec_looks_ok(struct cxl *adapter, struct pci_dev *dev)
->   	return 0;
+>   	return true;
 >   }
 >
-> +ssize_t cxl_pci_read_adapter_vpd(struct cxl *adapter, void *buf, size_t len)
-> +{
-> +	return pci_read_vpd(to_pci_dev(adapter->dev.parent), 0, len, buf);
-> +}
-> +
->   static void cxl_release_adapter(struct device *dev)
->   {
->   	struct cxl *adapter = to_cxl_adapter(dev);
-> @@ -1272,7 +1278,6 @@ static void cxl_remove(struct pci_dev *dev)
->   	 */
->   	for (i = 0; i < adapter->slices; i++) {
->   		afu = adapter->afu[i];
-> -		cxl_pci_vphb_remove(afu);
->   		cxl_pci_remove_afu(afu);
+> @@ -757,6 +916,8 @@ int cxl_guest_init_afu(struct cxl *adapter, int slice, struct device_node *afu_n
+>   		return -ENOMEM;
 >   	}
->   	cxl_pci_remove_adapter(adapter);
-> @@ -1451,8 +1456,6 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
->   		if (cxl_afu_select_best_mode(afu))
->   			goto err;
 >
-> -		cxl_pci_vphb_reconfigure(afu);
-> -
->   		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
->   			/* Reset the device context.
->   			 * TODO: make this less disruptive
+> +	mutex_init(&afu->guest->recovery_lock);
+> +
+>   	if ((rc = dev_set_name(&afu->dev, "afu%i.%i",
+>   					  adapter->adapter_num,
+>   					  slice)))
+> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+> index b3c3ebf..b5eeb71 100644
+> --- a/drivers/misc/cxl/main.c
+> +++ b/drivers/misc/cxl/main.c
+> @@ -48,7 +48,7 @@ int cxl_afu_slbia(struct cxl_afu *afu)
+>   		/* If the adapter has gone down, we can assume that we
+>   		 * will PERST it and that will invalidate everything.
+>   		 */
+> -		if (!cxl_ops->link_ok(afu->adapter))
+> +		if (!cxl_ops->link_ok(afu->adapter, afu))
+>   			return -EIO;
+>   		cpu_relax();
+>   	}
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index 1ca1011..2235311 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -42,7 +42,7 @@ static int afu_control(struct cxl_afu *afu, u64 command,
+>   			goto out;
+>   		}
+>
+> -		if (!cxl_ops->link_ok(afu->adapter)) {
+> +		if (!cxl_ops->link_ok(afu->adapter, afu)) {
+>   			afu->enabled = enabled;
+>   			rc = -EIO;
+>   			goto out;
+> @@ -92,7 +92,7 @@ static int native_afu_reset(struct cxl_afu *afu)
+>
+>   static int native_afu_check_and_enable(struct cxl_afu *afu)
+>   {
+> -	if (!cxl_ops->link_ok(afu->adapter)) {
+> +	if (!cxl_ops->link_ok(afu->adapter, afu)) {
+>   		WARN(1, "Refusing to enable afu while link down!\n");
+>   		return -EIO;
+>   	}
+> @@ -114,7 +114,7 @@ int cxl_psl_purge(struct cxl_afu *afu)
+>
+>   	pr_devel("PSL purge request\n");
+>
+> -	if (!cxl_ops->link_ok(afu->adapter)) {
+> +	if (!cxl_ops->link_ok(afu->adapter, afu)) {
+>   		dev_warn(&afu->dev, "PSL Purge called with link down, ignoring\n");
+>   		rc = -EIO;
+>   		goto out;
+> @@ -136,7 +136,7 @@ int cxl_psl_purge(struct cxl_afu *afu)
+>   			rc = -EBUSY;
+>   			goto out;
+>   		}
+> -		if (!cxl_ops->link_ok(afu->adapter)) {
+> +		if (!cxl_ops->link_ok(afu->adapter, afu)) {
+>   			rc = -EIO;
+>   			goto out;
+>   		}
+> @@ -250,7 +250,7 @@ int cxl_tlb_slb_invalidate(struct cxl *adapter)
+>   			dev_warn(&adapter->dev, "WARNING: CXL adapter wide TLBIA timed out!\n");
+>   			return -EBUSY;
+>   		}
+> -		if (!cxl_ops->link_ok(adapter))
+> +		if (!cxl_ops->link_ok(adapter, NULL))
+>   			return -EIO;
+>   		cpu_relax();
+>   	}
+> @@ -261,7 +261,7 @@ int cxl_tlb_slb_invalidate(struct cxl *adapter)
+>   			dev_warn(&adapter->dev, "WARNING: CXL adapter wide SLBIA timed out!\n");
+>   			return -EBUSY;
+>   		}
+> -		if (!cxl_ops->link_ok(adapter))
+> +		if (!cxl_ops->link_ok(adapter, NULL))
+>   			return -EIO;
+>   		cpu_relax();
+>   	}
+> @@ -302,7 +302,7 @@ static void slb_invalid(struct cxl_context *ctx)
+>   	cxl_p1_write(adapter, CXL_PSL_SLBIA, CXL_TLB_SLB_IQ_LPIDPID);
+>
+>   	while (1) {
+> -		if (!cxl_ops->link_ok(adapter))
+> +		if (!cxl_ops->link_ok(adapter, NULL))
+>   			break;
+>   		slbia = cxl_p1_read(adapter, CXL_PSL_SLBIA);
+>   		if (!(slbia & CXL_TLB_SLB_P))
+> @@ -333,7 +333,7 @@ static int do_process_element_cmd(struct cxl_context *ctx,
+>   			rc = -EBUSY;
+>   			goto out;
+>   		}
+> -		if (!cxl_ops->link_ok(ctx->afu->adapter)) {
+> +		if (!cxl_ops->link_ok(ctx->afu->adapter, ctx->afu)) {
+>   			dev_warn(&ctx->afu->dev, "WARNING: Device link down, aborting Process Element Command!\n");
+>   			rc = -EIO;
+>   			goto out;
+> @@ -389,7 +389,7 @@ static int terminate_process_element(struct cxl_context *ctx)
+>   	 * should always succeed: it's not running if the hw has gone
+>   	 * away and is being reset.
+>   	 */
+> -	if (cxl_ops->link_ok(ctx->afu->adapter))
+> +	if (cxl_ops->link_ok(ctx->afu->adapter, ctx->afu))
+>   		rc = do_process_element_cmd(ctx, CXL_SPA_SW_CMD_TERMINATE,
+>   					    CXL_PE_SOFTWARE_STATE_V | CXL_PE_SOFTWARE_STATE_T);
+>   	ctx->elem->software_state = 0;	/* Remove Valid bit */
+> @@ -408,7 +408,7 @@ static int remove_process_element(struct cxl_context *ctx)
+>   	/* We could be asked to remove when the hw is down. Again, if
+>   	 * the hw is down, the PE is gone, so we succeed.
+>   	 */
+> -	if (cxl_ops->link_ok(ctx->afu->adapter))
+> +	if (cxl_ops->link_ok(ctx->afu->adapter, ctx->afu))
+>   		rc = do_process_element_cmd(ctx, CXL_SPA_SW_CMD_REMOVE, 0);
+>
+>   	if (!rc)
+> @@ -650,7 +650,7 @@ static int native_afu_activate_mode(struct cxl_afu *afu, int mode)
+>   	if (!(mode & afu->modes_supported))
+>   		return -EINVAL;
+>
+> -	if (!cxl_ops->link_ok(afu->adapter)) {
+> +	if (!cxl_ops->link_ok(afu->adapter, afu)) {
+>   		WARN(1, "Device link is down, refusing to activate!\n");
+>   		return -EIO;
+>   	}
+> @@ -666,7 +666,7 @@ static int native_afu_activate_mode(struct cxl_afu *afu, int mode)
+>   static int native_attach_process(struct cxl_context *ctx, bool kernel,
+>   				u64 wed, u64 amr)
+>   {
+> -	if (!cxl_ops->link_ok(ctx->afu->adapter)) {
+> +	if (!cxl_ops->link_ok(ctx->afu->adapter, ctx->afu)) {
+>   		WARN(1, "Device link is down, refusing to attach process!\n");
+>   		return -EIO;
+>   	}
+> @@ -718,7 +718,7 @@ static int native_get_irq_info(struct cxl_afu *afu, struct cxl_irq_info *info)
+>   	/* If the adapter has gone away, we can't get any meaningful
+>   	 * information.
+>   	 */
+> -	if (!cxl_ops->link_ok(afu->adapter))
+> +	if (!cxl_ops->link_ok(afu->adapter, afu))
+>   		return -EIO;
+>
+>   	info->dsisr = cxl_p2n_read(afu, CXL_PSL_DSISR_An);
+> @@ -974,7 +974,7 @@ static bool native_support_attributes(const char *attr_name)
+>
+>   static int native_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off, u64 *out)
+>   {
+> -	if (unlikely(!cxl_ops->link_ok(afu->adapter)))
+> +	if (unlikely(!cxl_ops->link_ok(afu->adapter, afu)))
+>   		return -EIO;
+>   	if (unlikely(off >= afu->crs_len))
+>   		return -ERANGE;
+> @@ -985,7 +985,7 @@ static int native_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off, u64 *out)
+>
+>   static int native_afu_cr_read32(struct cxl_afu *afu, int cr, u64 off, u32 *out)
+>   {
+> -	if (unlikely(!cxl_ops->link_ok(afu->adapter)))
+> +	if (unlikely(!cxl_ops->link_ok(afu->adapter, afu)))
+>   		return -EIO;
+>   	if (unlikely(off >= afu->crs_len))
+>   		return -ERANGE;
+> @@ -1020,7 +1020,7 @@ static int native_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off, u8 *out)
+>
+>   static int native_afu_cr_write32(struct cxl_afu *afu, int cr, u64 off, u32 in)
+>   {
+> -	if (unlikely(!cxl_ops->link_ok(afu->adapter)))
+> +	if (unlikely(!cxl_ops->link_ok(afu->adapter, afu)))
+>   		return -EIO;
+>   	if (unlikely(off >= afu->crs_len))
+>   		return -ERANGE;
 > diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
-> index baa4087..c960a09 100644
+> index c960a09..490b934 100644
 > --- a/drivers/misc/cxl/vphb.c
 > +++ b/drivers/misc/cxl/vphb.c
-> @@ -99,113 +99,90 @@ static int cxl_pcie_cfg_record(u8 bus, u8 devfn)
->   	return (bus << 8) + devfn;
->   }
+> @@ -49,7 +49,7 @@ static bool cxl_pci_enable_device_hook(struct pci_dev *dev)
+>   	phb = pci_bus_to_host(dev->bus);
+>   	afu = (struct cxl_afu *)phb->private_data;
 >
-> -static unsigned long cxl_pcie_cfg_addr(struct pci_controller* phb,
-> -				       u8 bus, u8 devfn, int offset)
-> -{
-> -	int record = cxl_pcie_cfg_record(bus, devfn);
-> -
-> -	return (unsigned long)phb->cfg_addr + ((unsigned long)phb->cfg_data * record) + offset;
-> -}
-> -
-> -
->   static int cxl_pcie_config_info(struct pci_bus *bus, unsigned int devfn,
-> -				int offset, int len,
-> -				volatile void __iomem **ioaddr,
-> -				u32 *mask, int *shift)
-> +				struct cxl_afu **_afu, int *_record)
->   {
->   	struct pci_controller *phb;
->   	struct cxl_afu *afu;
-> -	unsigned long addr;
-> +	int record;
->
->   	phb = pci_bus_to_host(bus);
->   	if (phb == NULL)
->   		return PCIBIOS_DEVICE_NOT_FOUND;
-> -	afu = (struct cxl_afu *)phb->private_data;
->
-> -	if (cxl_pcie_cfg_record(bus->number, devfn) > afu->crs_num)
-> +	afu = (struct cxl_afu *)phb->private_data;
-> +	record = cxl_pcie_cfg_record(bus->number, devfn);
-> +	if (record > afu->crs_num)
->   		return PCIBIOS_DEVICE_NOT_FOUND;
-> -	if (offset >= (unsigned long)phb->cfg_data)
-> -		return PCIBIOS_BAD_REGISTER_NUMBER;
-> -	addr = cxl_pcie_cfg_addr(phb, bus->number, devfn, offset);
->
-> -	*ioaddr = (void *)(addr & ~0x3ULL);
-> -	*shift = ((addr & 0x3) * 8);
-> -	switch (len) {
-> -	case 1:
-> -		*mask = 0xff;
-> -		break;
-> -	case 2:
-> -		*mask = 0xffff;
-> -		break;
-> -	default:
-> -		*mask = 0xffffffff;
-> -		break;
-> -	}
-> +	*_afu = afu;
-> +	*_record = record;
->   	return 0;
->   }
->
-> -
-> -static inline bool cxl_config_link_ok(struct pci_bus *bus)
-> -{
-> -	struct pci_controller *phb;
-> -	struct cxl_afu *afu;
-> -
-> -	/* Config space IO is based on phb->cfg_addr, which is based on
-> -	 * afu_desc_mmio. This isn't safe to read/write when the link
-> -	 * goes down, as EEH tears down MMIO space.
-> -	 *
-> -	 * Check if the link is OK before proceeding.
-> -	 */
-> -
-> -	phb = pci_bus_to_host(bus);
-> -	if (phb == NULL)
-> -		return false;
-> -	afu = (struct cxl_afu *)phb->private_data;
-> -	return cxl_ops->link_ok(afu->adapter);
-> -}
-> -
->   static int cxl_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
->   				int offset, int len, u32 *val)
->   {
-> -	volatile void __iomem *ioaddr;
-> -	int shift, rc;
-> -	u32 mask;
-> +	int rc, record;
-> +	struct cxl_afu *afu;
-> +	u8 val8;
-> +	u16 val16;
-> +	u32 val32;
->
-> -	rc = cxl_pcie_config_info(bus, devfn, offset, len, &ioaddr,
-> -				  &mask, &shift);
-> +	rc = cxl_pcie_config_info(bus, devfn, &afu, &record);
->   	if (rc)
->   		return rc;
->
-> -	if (!cxl_config_link_ok(bus))
-> +	switch (len) {
-> +	case 1:
-> +		rc = cxl_ops->afu_cr_read8(afu, record, offset,	&val8);
-> +		*val = val8;
-> +		break;
-> +	case 2:
-> +		rc = cxl_ops->afu_cr_read16(afu, record, offset, &val16);
-> +		*val = val16;
-> +		break;
-> +	case 4:
-> +		rc = cxl_ops->afu_cr_read32(afu, record, offset, &val32);
-> +		*val = val32;
-> +		break;
-> +	default:
-> +		WARN_ON(1);
-> +	}
-> +
-> +	if (rc)
->   		return PCIBIOS_DEVICE_NOT_FOUND;
->
-> -	/* Can only read 32 bits */
-> -	*val = (in_le32(ioaddr) >> shift) & mask;
->   	return PCIBIOS_SUCCESSFUL;
->   }
->
->   static int cxl_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
->   				 int offset, int len, u32 val)
->   {
-> -	volatile void __iomem *ioaddr;
-> -	u32 v, mask;
-> -	int shift, rc;
-> +	int rc, record;
-> +	struct cxl_afu *afu;
->
-> -	rc = cxl_pcie_config_info(bus, devfn, offset, len, &ioaddr,
-> -				  &mask, &shift);
-> +	rc = cxl_pcie_config_info(bus, devfn, &afu, &record);
->   	if (rc)
->   		return rc;
->
-> -	if (!cxl_config_link_ok(bus))
-> -		return PCIBIOS_DEVICE_NOT_FOUND;
-> -
-> -	/* Can only write 32 bits so do read-modify-write */
-> -	mask <<= shift;
-> -	val <<= shift;
-> +	switch (len) {
-> +	case 1:
-> +		rc = cxl_ops->afu_cr_write8(afu, record, offset, val & 0xff);
-> +		break;
-> +	case 2:
-> +		rc = cxl_ops->afu_cr_write16(afu, record, offset, val & 0xffff);
-> +		break;
-> +	case 4:
-> +		rc = cxl_ops->afu_cr_write32(afu, record, offset, val);
-> +		break;
-> +	default:
-> +		WARN_ON(1);
-> +	}
->
-> -	v = (in_le32(ioaddr) & ~mask) | (val & mask);
-> +	if (rc)
-> +		return PCIBIOS_SET_FAILED;
->
-> -	out_le32(ioaddr, v);
->   	return PCIBIOS_SUCCESSFUL;
->   }
->
-> @@ -233,23 +210,31 @@ int cxl_pci_vphb_add(struct cxl_afu *afu)
->   {
->   	struct pci_dev *phys_dev;
->   	struct pci_controller *phb, *phys_phb;
-> -
-> -	phys_dev = to_pci_dev(afu->adapter->dev.parent);
-> -	phys_phb = pci_bus_to_host(phys_dev->bus);
-> +	struct device_node *vphb_dn;
-> +	struct device *parent;
-> +
-> +	if (cpu_has_feature(CPU_FTR_HVMODE)) {
-> +		phys_dev = to_pci_dev(afu->adapter->dev.parent);
-> +		phys_phb = pci_bus_to_host(phys_dev->bus);
-> +		vphb_dn = phys_phb->dn;
-> +		parent = &phys_dev->dev;
-> +	} else {
-> +		vphb_dn = afu->adapter->dev.parent->of_node;
-> +		parent = afu->adapter->dev.parent;
-> +	}
->
->   	/* Alloc and setup PHB data structure */
-> -	phb = pcibios_alloc_controller(phys_phb->dn);
-> -
-> +	phb = pcibios_alloc_controller(vphb_dn);
->   	if (!phb)
->   		return -ENODEV;
->
->   	/* Setup parent in sysfs */
-> -	phb->parent = &phys_dev->dev;
-> +	phb->parent = parent;
->
->   	/* Setup the PHB using arch provided callback */
->   	phb->ops = &cxl_pcie_pci_ops;
-> -	phb->cfg_addr = afu->native->afu_desc_mmio + afu->crs_offset;
-> -	phb->cfg_data = (void *)(u64)afu->crs_len;
-> +	phb->cfg_addr = NULL;
-> +	phb->cfg_data = 0;
->   	phb->private_data = afu;
->   	phb->controller_ops = cxl_pci_controller_ops;
->
-> @@ -272,15 +257,6 @@ int cxl_pci_vphb_add(struct cxl_afu *afu)
->   	return 0;
->   }
->
-> -void cxl_pci_vphb_reconfigure(struct cxl_afu *afu)
-> -{
-> -	/* When we are reconfigured, the AFU's MMIO space is unmapped
-> -	 * and remapped. We need to reflect this in the PHB's view of
-> -	 * the world.
-> -	 */
-> -	afu->phb->cfg_addr = afu->native->afu_desc_mmio + afu->crs_offset;
-> -}
-> -
->   void cxl_pci_vphb_remove(struct cxl_afu *afu)
->   {
->   	struct pci_controller *phb;
-> diff --git a/include/misc/cxl.h b/include/misc/cxl.h
-> index f2ffe5b..5bcf11a 100644
-> --- a/include/misc/cxl.h
-> +++ b/include/misc/cxl.h
-> @@ -210,4 +210,9 @@ ssize_t cxl_fd_read(struct file *file, char __user *buf, size_t count,
->   void cxl_perst_reloads_same_image(struct cxl_afu *afu,
->   				  bool perst_reloads_same_image);
->
-> +/*
-> + * Read the VPD for the card where the AFU resides
-> + */
-> +ssize_t cxl_read_adapter_vpd(struct pci_dev *dev, void *buf, size_t count);
-> +
->   #endif /* _MISC_CXL_H */
+> -	if (!cxl_ops->link_ok(afu->adapter)) {
+> +	if (!cxl_ops->link_ok(afu->adapter, afu)) {
+>   		dev_warn(&dev->dev, "%s: Device link is down, refusing to enable AFU\n", __func__);
+>   		return false;
+>   	}
 >
