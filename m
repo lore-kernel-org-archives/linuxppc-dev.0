@@ -1,12 +1,12 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
- [IPv6:2607:f8b0:400e:c00::22c])
+Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
+ [IPv6:2607:f8b0:400e:c03::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C30401A0347
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 17:37:30 +1100 (AEDT)
-Received: by mail-pf0-x22c.google.com with SMTP id q63so7346351pfb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 22:37:30 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A63F31A0351
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 17:55:43 +1100 (AEDT)
+Received: by mail-pa0-x230.google.com with SMTP id ho8so7672335pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Feb 2016 22:55:43 -0800 (PST)
 Subject: Re: [PATCH v8 8/8] livepatch: Detect offset for the ftrace location
  during build
 To: Torsten Duwe <duwe@lst.de>, Michael Ellerman <mpe@ellerman.id.au>
@@ -17,6 +17,7 @@ References: <20160210174221.EBBEC692C8@newverein.lst.de>
  <20160216103028.GA10730@linux.vnet.ibm.com> <20160216103907.GB25103@lst.de>
  <20160216135742.GT12548@pathway.suse.cz>
  <1455678521.2956.4.camel@ellerman.id.au> <20160223170017.GB21932@lst.de>
+ <56CD4FA0.4090109@gmail.com>
 Cc: Petr Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>,
  Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
  Steven Rostedt <rostedt@goodmis.org>,
@@ -24,10 +25,10 @@ Cc: Petr Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>,
  live-patching@vger.kernel.org, Miroslav Benes <mbenes@suse.cz>,
  linuxppc-dev@lists.ozlabs.org
 From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <56CD4FA0.4090109@gmail.com>
-Date: Wed, 24 Feb 2016 17:37:20 +1100
+Message-ID: <56CD53E7.3010108@gmail.com>
+Date: Wed, 24 Feb 2016 17:55:35 +1100
 MIME-Version: 1.0
-In-Reply-To: <20160223170017.GB21932@lst.de>
+In-Reply-To: <56CD4FA0.4090109@gmail.com>
 Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,272 +39,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+<snip>
 
+We need to remove the SQUASH_TOC_SAVE_INSNS bits as well, now that the ppc64_profile_stub_insns does not save r2
+> Looks like we are getting closer to the final solution Thanks, Balbir 
 
-On 24/02/16 04:00, Torsten Duwe wrote:
-> On Wed, Feb 17, 2016 at 02:08:41PM +1100, Michael Ellerman wrote:
->> That stub uses r2 to find the location of itself, but it only works if r2 holds
->> the TOC for scsi_mod.ko. In this case r2 still contains ibmvscsi.ko's TOC.
-> Here's my solution, a bit rough still. This replaces the module_64.c change
-> from patch 2/8:
->
-> I shuffle the trampoline instructions so the R2-save-to-stack comes first.
-> This allows me to construct a profiling trampoline code that
-> looks very similar. The first instruction, harmful to -mprofile-kernel
-> can now be replaced with a load of the *kernel* TOC value via paca.
-> Arithmetic is done in r11, to keep it bitwise identical where possible.
-> Likewise the result is "moved" to r12 via an addi.
-Michael has a similar change that he intends to post. I gave this a run but
-the system crashes on boot.
+With the SQUASH_TOC_SAVE_INSNS removed, ftrace function seems to work, but function_graph is broken. I've not yet debugged this.
 
->
-> What do you think?
->
-> 	Torsten
->
->
-> --- a/arch/powerpc/kernel/module_64.c
-> +++ b/arch/powerpc/kernel/module_64.c
-> @@ -27,6 +27,7 @@
->  #include <linux/bug.h>
->  #include <linux/uaccess.h>
->  #include <asm/module.h>
-> +#include <asm/asm-offsets.h>
-Creates an include conflict for me. NMI_MASK, PGD_TABLE_SIZE, etc
-are already defined elsewhere.
->  #include <asm/firmware.h>
->  #include <asm/code-patching.h>
->  #include <linux/sort.h>
-> @@ -123,10 +124,10 @@ struct ppc64_stub_entry
->   */
->  
->  static u32 ppc64_stub_insns[] = {
-> -	0x3d620000,			/* addis   r11,r2, <high> */
-> -	0x396b0000,			/* addi    r11,r11, <low> */
->  	/* Save current r2 value in magic place on the stack. */
->  	0xf8410000|R2_STACK_OFFSET,	/* std     r2,R2_STACK_OFFSET(r1) */
-> +	0x3d620000,			/* addis   r11,r2, <high> */
-> +	0x396b0000,			/* addi    r11,r11, <low> */
->  	0xe98b0020,			/* ld      r12,32(r11) */
->  #if !defined(_CALL_ELF) || _CALL_ELF != 2
->  	/* Set up new r2 from function descriptor */
-> @@ -136,13 +137,30 @@ static u32 ppc64_stub_insns[] = {
->  	0x4e800420			/* bctr */
->  };
->  
-> +/* In case of _mcount calls or dynamic ftracing with -mprofile-kernel,
-> + * the stack frame already holds the TOC value of the original
-> + * caller. And even worse, for a leaf function without global data
-> + * references, R2 holds the TOC of the caller's caller, e.g. is
-> + * completely undefined. So: do not dare to write r2 anywhere, and use
-> + * the kernel's TOC to find _mcount / ftrace_caller.  Mcount and
-> + * ftrace_caller will then take care of the r2 value themselves.
-> + */
-> +static u32 ppc64_profile_stub_insns[] = {
-> +	0xe98d0000|PACATOC,		/* ld	   r12,PACATOC(r13) */
-> +	0x3d6c0000,			/* addis   r11,r12, <high> */
-> +	0x396b0000,			/* addi    r11,r11, <low> */
-> +	0x398b0000,			/* addi    r12,r11,0 */
-> +	0x7d8903a6,			/* mtctr   r12 */
-> +	0x4e800420			/* bctr */
-> +};
-> +
->  #ifdef CONFIG_DYNAMIC_FTRACE
->  
->  static u32 ppc64_stub_mask[] = {
-> +	0xee330000,
-> +	0xfff10000,
->  	0xffff0000,
-> -	0xffff0000,
-> -	0xffffffff,
-> -	0xffffffff,
-> +	0x2fffffdf,
->  #if !defined(_CALL_ELF) || _CALL_ELF != 2
->  	0xffffffff,
->  #endif
-> @@ -168,10 +186,15 @@ bool is_module_trampoline(u32 *p)
->  		if ((insna & mask) != (insnb & mask))
->  			return false;
->  	}
-> +	if (insns[0] != ppc64_stub_insns[0] &&
-> +	    insns[0] != ppc64_profile_stub_insns[0])
-> +		return false;
->  
-Michael was mentioning a better way of doing this, we can simplify the
-checking bits
+[   77.182430] b'Oops: Kernel access of bad area, sig: 11 [#1]'
+[   77.182464] b'SMP NR_CPUS=32 NUMA pSeries'
+[   77.182513] b'Modules linked in: sr_mod cdrom virtio_blk virtio_net ibmvscsi scsi_transport_srp scsi_mod virtio_pci virtio_ring virtio'
+[   77.182661] b'CPU: 1 PID: 2287 Comm: sshd Not tainted 4.5.0-rc4-00007-g1968536-dirty #143'
+[   77.182709] b'task: c000000037b6bc00 ti: c00000003e8c4000 task.ti: c00000003e8c4000'
+[   77.182757] b'NIP: c000000000194ebc LR: c000000000049d4c CTR: d0000000004f1434'
+[   77.182804] b'REGS: c00000003e8c72a0 TRAP: 0300   Not tainted  (4.5.0-rc4-00007-g1968536-dirty)'
+[   77.182858] b'MSR: 8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 28282828  XER: 20000000'
+[   77.183008] b'CFAR: c00000000017f400 DAR: d000000000653c70 DSISR: 40000000 SOFTE: 1 '
+[   77.183008] b'GPR00: c000000000009f3c c00000003e8c7520 d0000000004fde40 c00000000077da34 '
+[   77.183008] b'GPR04: d0000000004f1430 c00000003e008100 c00000003719e520 c00000003719e008 '
+[   77.183008] b'GPR08: c00000000113ea50 d00000000064de40 d0000000004f57b8 c000000000009d1c '
+[   77.183008] b'GPR12: c00000000077da34 c00000000fff8400 00000000000005a8 0000000040000000 '
+[   77.183008] b'GPR16: 0000000022000000 00000000000346db c00000003e8c7720 c00000000113fbe0 '
+[   77.183008] b'GPR20: 0000000000000000 c00000000113fbd0 c000000037a9dc00 0000000000000000 '
+[   77.183008] b'GPR24: 0000000000000000 c00000000113fbe0 c000000037077000 c000000037077090 '
+[   77.183008] b'GPR28: c0000000379982d8 d0000000004f1430 c00000000077da34 c000000037077068 '
+[   77.183788] b'NIP [c000000000194ebc] ftrace_graph_is_dead+0xc/0x20'
+[   77.183850] b'LR [c000000000049d4c] prepare_ftrace_return+0x2c/0x110'
+---Type <return> to continue, or q <return> to quit---
+[   77.183890] b'Call Trace:'
+[   77.183911] b'[c00000003e8c7520] [c000000037a9dc00] 0xc000000037a9dc00 (unreliable)'
+[   77.183987] b'[c00000003e8c7570] [c000000000009f3c] ftrace_graph_caller+0x34/0x74'
+[   77.184080] b'[c00000003e8c75e0] [c00000000077da34] dev_hard_start_xmit+0x374/0x4e0'
+[   77.184139] b'[c00000003e8c76c0] [c000000000009f7c] return_to_handler+0x0/0x58 (bad_page_fault+0x130/0x150)'
+[   77.184210] b'[c00000003e8c7760] [c000000000009f7c] return_to_handler+0x0/0x58 (handle_page_fault+0x2c/0x30)'
+[   77.184281] b'[c00000003e8c7800] [c000000000009f7c] return_to_handler+0x0/0x58 (sch_direct_xmit+0xe0/0x2d0)'
+[   77.184369] b'[c00000003e8c7860] [c000000000009f7c] return_to_handler+0x0/0x58 (__dev_queue_xmit+0x2d4/0x6a0)'
+[   77.184473] b'[c00000003e8c78f0] [c000000000009f7c] return_to_handler+0x0/0x58 (return_to_handler+0x0/0x58)'
+[   77.184544] b'[c00000003e8c7930] [c000000000009f7c] return_to_handler+0x0/0x58 (ip_finish_output2+0x348/0x420)'
+[   77.184614] b'[c00000003e8c79a0] [c000000000009f7c] return_to_handler+0x0/0x58 (return_to_handler+0x0/0x58)'
+[   77.184684] b'[c00000003e8c7a70] [c000000000009f7c] return_to_handler+0x0/0x58 (ip_output+0xd0/0x160)'
+[   77.184754] b'[c00000003e8c7ae0] [c000000000009f7c] return_to_handler+0x0/0x58 (ip_local_out+0x6c/0x90)'
+[   77.184823] b'[c00000003e8c7b30] [c000000000009f7c] return_to_handler+0x0/0x58 (return_to_handler+0x0/0x58)'
+[   77.184893] b'[c00000003e8c7c00] [c000000000009f7c] return_to_handler+0x0/0x58 (tcp_transmit_skb+0x980/0xa50)'
+[   77.184969] b'[c00000003e8c7c40] [c000000000009f7c] return_to_handler+0x0/0x58 (tcp_write_xmit+0xd9c/0x1120)'
+[   77.185039] b'[c00000003e8c7c60] [c000000000009f7c] return_to_handler+0x0/0x58 (__tcp_push_pending_frames+0x50/0x130)'
+[   77.185117] b'[c00000003e8c7d00] [c000000000009f7c] return_to_handler+0x0/0x58 (tcp_push+0x194/0x1e0)'
+[   77.185192] b'[c00000003e8c7d90] [c000000000009f7c] return_to_handler+0x0/0x58 (tcp_sendmsg+0xa54/0xce0)'
+[   77.185262] b'[c00000003e8c7de0] [c000000000009f7c] return_to_handler+0x0/0x58 (inet_sendmsg+0xd8/0x100)'
+[   77.185342] b'[c00000003e8c7e30] [c000000000009f7c] return_to_handler+0x0/0x58 (sock_sendmsg+0x38/0x60)'
+[   77.185416] b'Instruction dump:'
+[   77.185469] b'60000000 4bfe3b89 60000000 e8610020 38210030 e8010010 7c0803a6 4bffff40 '
+[   77.185566] b'60420000 3c4c00fa 3842e750 3d220015 <88695e30> 4e800020 60000000 60000000 '
+[   77.185668] b'---[ end trace 78e882547ec0a563 ]---'
+[   79.191159] b'Kernel panic - not syncing: Fatal exception in interrupt'
 
->  	return true;
->  }
->  
-> +extern unsigned long __toc_start;
-> +
->  int module_trampoline_target(struct module *mod, u32 *trampoline,
->  			     unsigned long *target)
->  {
-> @@ -180,7 +203,7 @@ int module_trampoline_target(struct modu
->  	long offset;
->  	void *toc_entry;
->  
-> -	if (probe_kernel_read(buf, trampoline, sizeof(buf)))
-> +	if (probe_kernel_read(buf, trampoline+1, sizeof(buf)))
->  		return -EFAULT;
->  
->  	upper = buf[0] & 0xffff;
-> @@ -189,6 +212,13 @@ int module_trampoline_target(struct modu
->  	/* perform the addis/addi, both signed */
->  	offset = ((short)upper << 16) + (short)lower;
->  
-> +	/* profiling trampolines work differently */
-> +	if ((buf[0] & 0xFFFF0000) == 0x3D6C0000)
-> +	  {
-> +	    *target = offset + (unsigned long)(&__toc_start) + 0x8000UL;
-> +	    return 0;
-> +	  }
-> +
->  	/*
->  	 * Now get the address this trampoline jumps to. This
->  	 * is always 32 bytes into our trampoline stub.
-> @@ -427,14 +457,24 @@ static inline unsigned long my_r2(Elf64_
->  static inline int create_stub(Elf64_Shdr *sechdrs,
->  			      struct ppc64_stub_entry *entry,
->  			      unsigned long addr,
-> -			      struct module *me)
-> +			      struct module *me,
-> +			      bool prof)
->  {
->  	long reladdr;
->  
-> -	memcpy(entry->jump, ppc64_stub_insns, sizeof(ppc64_stub_insns));
-> +	if (prof)
-> +	{
-> +		memcpy(entry->jump, ppc64_profile_stub_insns,
-> +		       sizeof(ppc64_stub_insns));
->  
-> -	/* Stub uses address relative to r2. */
-> -	reladdr = (unsigned long)entry - my_r2(sechdrs, me);
-> +		/* Stub uses address relative to kernel TOC. */
-> +		reladdr = addr - ((unsigned long)(&__toc_start) + 0x8000UL);
-> +	} else {
-> +		memcpy(entry->jump, ppc64_stub_insns, sizeof(ppc64_stub_insns));
-> +
-> +		/* Stub uses address relative to r2. */
-> +		reladdr = (unsigned long)entry - my_r2(sechdrs, me);
-> +	}
->  	if (reladdr > 0x7FFFFFFF || reladdr < -(0x80000000L)) {
->  		pr_err("%s: Address %p of stub out of range of %p.\n",
->  		       me->name, (void *)reladdr, (void *)my_r2);
-> @@ -442,8 +482,8 @@ static inline int create_stub(Elf64_Shdr
->  	}
->  	pr_debug("Stub %p get data from reladdr %li\n", entry, reladdr);
->  
-> -	entry->jump[0] |= PPC_HA(reladdr);
-> -	entry->jump[1] |= PPC_LO(reladdr);
-> +	entry->jump[1] |= PPC_HA(reladdr);
-> +	entry->jump[2] |= PPC_LO(reladdr);
->  	entry->funcdata = func_desc(addr);
->  	return 1;
->  }
-> @@ -452,7 +492,8 @@ static inline int create_stub(Elf64_Shdr
->     stub to set up the TOC ptr (r2) for the function. */
->  static unsigned long stub_for_addr(Elf64_Shdr *sechdrs,
->  				   unsigned long addr,
-> -				   struct module *me)
-> +				   struct module *me,
-> +				   bool prof)
->  {
->  	struct ppc64_stub_entry *stubs;
->  	unsigned int i, num_stubs;
-> @@ -468,44 +509,17 @@ static unsigned long stub_for_addr(Elf64
->  			return (unsigned long)&stubs[i];
->  	}
->  
-> -	if (!create_stub(sechdrs, &stubs[i], addr, me))
-> +	if (!create_stub(sechdrs, &stubs[i], addr, me, prof))
->  		return 0;
->  
->  	return (unsigned long)&stubs[i];
->  }
->  
-> -#ifdef CC_USING_MPROFILE_KERNEL
-> -static int is_early_mcount_callsite(u32 *instruction)
-> -{
-> -	/* -mprofile-kernel sequence starting with
-> -	 * mflr r0 and maybe std r0, LRSAVE(r1).
-> -	 */
-> -	if ((instruction[-3] == PPC_INST_MFLR &&
-> -	     instruction[-2] == PPC_INST_STD_LR) ||
-> -	    instruction[-2] == PPC_INST_MFLR) {
-> -		/* Nothing to be done here, it's an _mcount
-> -		 * call location and r2 will have to be
-> -		 * restored in the _mcount function.
-> -		 */
-> -		return 1;
-> -	}
-> -	return 0;
-> -}
-> -#else
-> -/* without -mprofile-kernel, mcount calls are never early */
-> -static int is_early_mcount_callsite(u32 *instruction)
-> -{
-> -	return 0;
-> -}
-> -#endif
-> -
-
-We need to remove the SQUASH_TOC_SAVE_INSNS bits as well, now
-that the ppc64_profile_stub_insns does not save r2
->  /* We expect a noop next: if it is, replace it with instruction to
->     restore r2. */
->  static int restore_r2(u32 *instruction, struct module *me)
->  {
->  	if (*instruction != PPC_INST_NOP) {
-> -		if (is_early_mcount_callsite(instruction))
-> -			return 1;
->  		pr_err("%s: Expect noop after relocate, got %08x\n",
->  		       me->name, *instruction);
->  		return 0;
-> @@ -515,6 +529,12 @@ static int restore_r2(u32 *instruction,
->  	return 1;
->  }
->  
-> +#ifdef CC_USING_MPROFILE_KERNEL
-> +#define IS_KERNEL_PROFILING_CALL (!strcmp("_mcount", strtab+sym->st_name))
-> +#else
-> +#define IS_KERNEL_PROFILING_CALL 0
-> +#endif
-> +
->  int apply_relocate_add(Elf64_Shdr *sechdrs,
->  		       const char *strtab,
->  		       unsigned int symindex,
-> @@ -630,11 +650,15 @@ int apply_relocate_add(Elf64_Shdr *sechd
->  		case R_PPC_REL24:
->  			/* FIXME: Handle weak symbols here --RR */
->  			if (sym->st_shndx == SHN_UNDEF) {
-> +				bool prof = false;
-> +				if (IS_KERNEL_PROFILING_CALL)
-> +					prof = true;
->  				/* External: go via stub */
-> -				value = stub_for_addr(sechdrs, value, me);
-> +				value = stub_for_addr(sechdrs, value, me, prof);
->  				if (!value)
->  					return -ENOENT;
-> -				if (!restore_r2((u32 *)location + 1, me))
-> +				if (!prof &&
-> +				    !restore_r2((u32 *)location + 1, me))
->  					return -ENOEXEC;
->  			} else
->  				value += local_entry_offset(sym);
-> @@ -722,7 +746,7 @@ int apply_relocate_add(Elf64_Shdr *sechd
->  	me->arch.toc = my_r2(sechdrs, me);
->  	me->arch.tramp = stub_for_addr(sechdrs,
->  				       (unsigned long)ftrace_caller,
-> -				       me);
-> +				       me, true);
->  #endif
->  
->  	return 0;
-
-Looks like we are getting closer to the final solution
-
-Thanks,
-Balbir
+Warm Regards,
+Balbir Singh.
