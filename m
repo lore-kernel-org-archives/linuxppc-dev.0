@@ -1,30 +1,16 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 27FA11A0356
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 20:23:22 +1100 (AEDT)
-Date: Wed, 24 Feb 2016 10:23:18 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Petr Mladek <pmladek@suse.com>,
- Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
- linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- live-patching@vger.kernel.org, Miroslav Benes <mbenes@suse.cz>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v8 8/8] livepatch: Detect offset for the ftrace
- location during build
-Message-ID: <20160224092318.GA24232@lst.de>
-References: <20160212164517.GO12548@pathway.suse.cz>
- <20160216054701.GA20570@linux.vnet.ibm.com> <20160216082302.GA20522@lst.de>
- <20160216103028.GA10730@linux.vnet.ibm.com> <20160216103907.GB25103@lst.de>
- <20160216135742.GT12548@pathway.suse.cz>
- <1455678521.2956.4.camel@ellerman.id.au> <20160223170017.GB21932@lst.de>
- <56CD4FA0.4090109@gmail.com> <56CD53E7.3010108@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <56CD53E7.3010108@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 152651A0356
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 20:39:24 +1100 (AEDT)
+In-Reply-To: <56A25783.7040502@linux.vnet.ibm.com>
+To: Gustavo Romero <gromero@linux.vnet.ibm.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC] Fix si->si_code for guard page access on PowerPC
+Message-Id: <20160224093923.EC10314090A@ozlabs.org>
+Date: Wed, 24 Feb 2016 20:39:23 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,14 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 24, 2016 at 05:55:35PM +1100, Balbir Singh wrote:
-> <snip>
+Hi Gustavo,
+
+On Fri, 2016-22-01 at 16:23:31 UTC, Gustavo Romero wrote:
+> Fix si->si_code for guard page access on PowerPC
 > 
-> We need to remove the SQUASH_TOC_SAVE_INSNS bits as well, now that the ppc64_profile_stub_insns does not save r2
+...
+> 
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index a67c6d7..6954971 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -431,8 +431,10 @@ good_area:
+>             */
+>            fault = handle_mm_fault(mm, vma, address, flags);
+>            if (unlikely(fault & (VM_FAULT_RETRY|VM_FAULT_ERROR))) {
+> -                  if (fault & VM_FAULT_SIGSEGV)
+> +                  if (fault & VM_FAULT_SIGSEGV) {
+> +                           code = SEGV_MAPERR;
+>                              goto bad_area;
+> +                  }
+>                     rc = mm_fault_error(regs, address, fault);
+>                     if (rc >= MM_FAULT_RETURN)
+>                              goto bail;
 
-Sure -- this was meant to _replace_ the changes from patch 2/8, not on top.
-And yes, it exposes duplicate definitions, but does not cause them AFAICS.
-The two unasked questions about it were: Is Michael's solution on a similar
-basis? Is this worth any further effort e.g. put into v9?
 
-	Torsten
+As we discussed on IRC, I'd prefer if this case was handled in
+mm_fault_error(). So please send a v2 which does that, or let us know if you
+have problems.
+
+cheers
