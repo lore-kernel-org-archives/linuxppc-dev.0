@@ -1,28 +1,19 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
- [IPv6:2607:f8b0:400e:c03::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <xuelin.shi@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0130.outbound.protection.outlook.com [65.55.169.130])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AD7CC1A0063
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 16:06:32 +1100 (AEDT)
-Received: by mail-pa0-x236.google.com with SMTP id yy13so25464607pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 21:06:32 -0800 (PST)
-Received: from cotter.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id i13sm8547470pfi.95.2016.02.24.21.06.27
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLSv1/SSLv3 cipher=OTHER);
- Wed, 24 Feb 2016 21:06:29 -0800 (PST)
-Subject: Re: [PATCH V4 02/18] mm: Some arch may want to use HPAGE_PMD related
- values as variables
-To: linuxppc-dev@lists.ozlabs.org
-References: <1456202900-5454-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1456202900-5454-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <56CE8BD1.60100@gmail.com>
-Date: Thu, 25 Feb 2016 16:06:25 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 79EE21A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 16:11:11 +1100 (AEDT)
+From: <xuelin.shi@nxp.com>
+To: <robh+dt@kernel.org>, <scott.wood@nxp.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>, Xuelin Shi
+ <xuelin.shi@nxp.com>
+Subject: [PATCH] powerpc/p5040: Add device node for RAID Engine 
+Date: Thu, 25 Feb 2016 09:14:05 +0800
+Message-ID: <1456362845-12169-1-git-send-email-xuelin.shi@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <1456202900-5454-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,30 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Xuelin Shi <xuelin.shi@nxp.com>
 
+add the missing RAID Engine device node for p5040.
+otherwise, the device can not be detected.
 
-On 23/02/16 15:48, Aneesh Kumar K.V wrote:
-> From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-In the changelog, strip from here <--
-> With next generation power processor, we are having a new mmu model
-> [1] that require us to maintain a different linux page table format.
->
-> Inorder to support both current and future ppc64 systems with a single
-> kernel we need to make sure kernel can select between different page
-> table format at runtime.
+Signed-off-by: Xuelin Shi <xuelin.shi@nxp.com>
+---
+ arch/powerpc/boot/dts/fsl/p5040si-post.dtsi | 1 +
+ arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi  | 6 ++++++
+ 2 files changed, 7 insertions(+)
 
----> till here
-
->  With the new MMU (radix MMU) added, we will
-> have two different pmd hugepage size 16MB for hash model and 2MB for
-> Radix model. Hence make HPAGE_PMD related values as a variable.
->
-> Actual conversion of HPAGE_PMD to a variable for ppc64 happens in a
-> followup patch.
->
-> [1] http://ibm.biz/power-isa3 (Needs registration).
->
-> Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-Balbir Singh.
+diff --git a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
+index 2f227b1..e2bd931 100644
+--- a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
+@@ -420,6 +420,7 @@
+ 		fsl,iommu-parent = <&pamu4>;
+ 	};
+ 
++/include/ "qoriq-raid1.0-0.dtsi"
+ /include/ "qoriq-qman1.dtsi"
+ /include/ "qoriq-bman1.dtsi"
+ 
+diff --git a/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
+index 0659d5b..dbd5775 100644
+--- a/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
+@@ -73,6 +73,12 @@
+ 		rtic_d = &rtic_d;
+ 		sec_mon = &sec_mon;
+ 
++		raideng = &raideng;
++		raideng_jr0 = &raideng_jr0;
++		raideng_jr1 = &raideng_jr1;
++		raideng_jr2 = &raideng_jr2;
++		raideng_jr3 = &raideng_jr3;
++
+ 		fman0 = &fman0;
+ 		fman1 = &fman1;
+ 		ethernet0 = &enet0;
+-- 
+1.8.4
