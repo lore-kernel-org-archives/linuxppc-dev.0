@@ -1,39 +1,30 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <duwe@lst.de>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 69DD91A0342
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 00:19:41 +1100 (AEDT)
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Thu, 25 Feb 2016 13:19:37 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 750881B08069
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 13:19:44 +0000 (GMT)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1PDJOoM131514
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 13:19:24 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1PCJP4K022788
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 05:19:25 -0700
-Subject: Re: [PATCH v5 15/18] cxl: Parse device tree and create cxl device(s)
- at boot
-To: manoj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-References: <1456244519-18934-1-git-send-email-fbarrat@linux.vnet.ibm.com>
- <1456244519-18934-16-git-send-email-fbarrat@linux.vnet.ibm.com>
- <56CE0F71.60404@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Message-ID: <56CEFF5B.8010000@linux.vnet.ibm.com>
-Date: Thu, 25 Feb 2016 14:19:23 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5B4451A0060
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 00:31:37 +1100 (AEDT)
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E2EC61402D6
+ for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2016 00:31:36 +1100 (AEDT)
+Date: Thu, 25 Feb 2016 14:31:33 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
+ jkosina@suse.cz, live-patching@vger.kernel.org, mbenes@suse.cz
+Subject: Re: [PATCH 03/12] powerpc/module: Create a special stub for
+ ftrace_caller()
+Message-ID: <20160225133133.GE21932@lst.de>
+References: <1456324115-21144-1-git-send-email-mpe@ellerman.id.au>
+ <1456324115-21144-3-git-send-email-mpe@ellerman.id.au>
+ <56CE4616.9080100@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <56CE0F71.60404@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <56CE4616.9080100@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,25 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Feb 25, 2016 at 11:08:54AM +1100, Balbir Singh wrote:
+> How about some comments on r2
+> r2 is still pointing to the module's toc, will be saved by ftrace_caller and restored by the instruction following bl ftrace_caller (after patching _mcount/nop)
 
+To be precise: ftrace_caller needs to save _and_ restore r2 in case of -mprofile-kernel.
 
-Le 24/02/2016 21:15, Manoj Kumar a écrit :
-> On 2/23/2016 10:21 AM, Frederic Barrat wrote:
->> +module_init(cxl_base_init);
->
-> Is this a remnant from when there were two modules?
-> Do you really need two module_init() calls (can't one be called from the
-> other)?
-> What is the tear-down portion of this (module_exit)?
+> > +	/* Stub uses address relative to kernel_toc */
+> > +	reladdr = (unsigned long)ftrace_caller - get_paca()->kernel_toc;
 
-No, this is not a left-over from the previous 2-module implementation of 
-the cxl driver.
-The file base.c is not part of the "normal" cxl driver. It is either 
-part of the kernel if the cxl driver is a module or configured in the 
-kernel. Or it is discarded if cxl is not even a module. So code in that 
-file is either in the kernel or it's not even compiled. That was already 
-the case on bare-metal.
-Code in module_init() is executed when the kernel boots and it is not 
-going away.
+kernel_toc is a compile time constant; do you really want to look it up in
+memory at runtime each time? It's a bit tricky to get the +- 0x8000 right
+OTOH...
 
-   Fred
+I wrote:
+extern unsigned long __toc_start;
+    reladdr = addr - ((unsigned long)(&__toc_start) + 0x8000UL);
+
+looks a bit odd, but evaluates to a constant for ftrace_caller.
+
+Either way is fine with me:
+
+Signed-off-by: Torsten Duwe <duwe@suse.de>
+Reviewed-by: Torsten Duwe <duwe@suse.de>
+
+> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+
+	Torsten
