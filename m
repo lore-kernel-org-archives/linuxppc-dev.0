@@ -1,28 +1,28 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from emea01-db3-obe.outbound.protection.outlook.com
- (mail-db3on0090.outbound.protection.outlook.com [157.55.234.90])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E5001A00A5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 16:55:55 +1100 (AEDT)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: Scott Wood <oss@buserror.net>, Rob Herring <robh@kernel.org>
-CC: Yang-Leo Li <leoyang.li@nxp.com>, "linux-kernel@vger.kernel.org"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9682D1A035A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 16:56:50 +1100 (AEDT)
+Message-ID: <1456379804.5360.43.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Qiang Zhao <qiang.zhao@nxp.com>, Rob Herring <robh@kernel.org>
+Cc: Yang-Leo Li <leoyang.li@nxp.com>, "linux-kernel@vger.kernel.org"
  <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
  <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
  <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH v2 1/7] QE: Add IC, SI and SIRAM document to device tree
- bindings.
-Date: Thu, 25 Feb 2016 05:55:48 +0000
-Message-ID: <AM3PR04MB118518B07AE928823BE73B8491A60@AM3PR04MB1185.eurprd04.prod.outlook.com>
+Date: Wed, 24 Feb 2016 23:56:44 -0600
+In-Reply-To: <AM3PR04MB118518B07AE928823BE73B8491A60@AM3PR04MB1185.eurprd04.prod.outlook.com>
 References: <1455757572-44955-1-git-send-email-qiang.zhao@nxp.com>
  <20160223201520.GA3354@rob-hp-laptop>
  <1456258812.5360.22.camel@buserror.net>
  <AM3PR04MB1185D9D56F72F7AD64AC92E291A60@AM3PR04MB1185.eurprd04.prod.outlook.com>
  <1456369908.5360.28.camel@buserror.net>
-In-Reply-To: <1456369908.5360.28.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ <AM3PR04MB118518B07AE928823BE73B8491A60@AM3PR04MB1185.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH v2 1/7] QE: Add IC, SI and SIRAM document to device tree
+ bindings.
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,59 +32,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gVGh1LCAyMDE2LTAyLTI1IGF0IDExOjEyICBBTSwgU2NvdHQgV29vZCB3cm90ZToNCj4gLS0t
-LS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU2NvdHQgV29vZCBbbWFpbHRvOm9zc0Bi
-dXNlcnJvci5uZXRdDQo+IFNlbnQ6IFRodXJzZGF5LCBGZWJydWFyeSAyNSwgMjAxNiAxMToxMiBB
-TQ0KPiBUbzogUWlhbmcgWmhhbyA8cWlhbmcuemhhb0BueHAuY29tPjsgUm9iIEhlcnJpbmcgPHJv
-YmhAa2VybmVsLm9yZz4NCj4gQ2M6IFlhbmctTGVvIExpIDxsZW95YW5nLmxpQG54cC5jb20+OyBs
-aW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9y
-ZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2
-MiAxLzddIFFFOiBBZGQgSUMsIFNJIGFuZCBTSVJBTSBkb2N1bWVudCB0byBkZXZpY2UgdHJlZQ0K
-PiBiaW5kaW5ncy4NCj4gDQo+IE9uIFRodSwgMjAxNi0wMi0yNSBhdCAwMzoxMCArMDAwMCwgUWlh
-bmcgWmhhbyB3cm90ZToNCj4gPiBPbiBXZWQsIDIwMTYtMDItMjQgYXQgMDQ6MjAgIEFNLCBTY290
-dCBXb29kIHdyb3RlOg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZy
-b206IFNjb3R0IFdvb2QgW21haWx0bzpvc3NAYnVzZXJyb3IubmV0XQ0KPiA+ID4gU2VudDogV2Vk
-bmVzZGF5LCBGZWJydWFyeSAyNCwgMjAxNiA0OjIwIEFNDQo+ID4gPiBUbzogUm9iIEhlcnJpbmcg
-PHJvYmhAa2VybmVsLm9yZz47IFFpYW5nIFpoYW8gPHFpYW5nLnpoYW9AbnhwLmNvbT4NCj4gPiA+
-IENjOiBZYW5nLUxlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPjsgbGludXgta2VybmVsQHZnZXIu
-a2VybmVsLm9yZzsNCj4gPiA+IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1k
-ZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCB2MiAxLzddIFFF
-OiBBZGQgSUMsIFNJIGFuZCBTSVJBTSBkb2N1bWVudCB0bw0KPiA+ID4gZGV2aWNlIHRyZWUgYmlu
-ZGluZ3MuDQo+ID4gPg0KPiA+ID4gT24gVHVlLCAyMDE2LTAyLTIzIGF0IDE0OjE1IC0wNjAwLCBS
-b2IgSGVycmluZyB3cm90ZToNCj4gPiA+ID4gT24gVGh1LCBGZWIgMTgsIDIwMTYgYXQgMDk6MDY6
-MDZBTSArMDgwMCwgWmhhbyBRaWFuZyB3cm90ZToNCj4gPiA+ID4gPiBBZGQgSUMsIFNJIGFuZCBT
-SVJBTSBkb2N1bWVudCBvZiBRRSB0bw0KPiA+ID4gPiA+IERvY3VtZW50YXRpb24vZGV2aWNldHJl
-ZS9iaW5kaW5ncy9wb3dlcnBjL2ZzbC9jcG1fcWUvcWUudHh0DQo+ID4gPiA+ID4NCj4gPiA+ID4g
-PiBTaWduZWQtb2ZmLWJ5OiBaaGFvIFFpYW5nIDxxaWFuZy56aGFvQG54cC5jb20+DQo+ID4gPiA+
-ID4gLS0tDQo+ID4gPiA+ID4gQ2hhbmdlcyBmb3IgdjINCj4gPiA+ID4gPiAJLSBBZGQgaW50ZXJy
-dXB0LWNvbnRyb2xsZXIgaW4gUmVxdWlyZWQgcHJvcGVydGllcw0KPiA+ID4gPiA+IAktIGRlbGV0
-ZSBhZGRyZXNzLWNlbGxzIGFuZCBzaXplLWNlbGxzIGZvciBxZS1zaSBhbmQgcWUtc2lyYW0NCj4g
-PiA+ID4gPg0KPiA+ID4gPiA+ICAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBjL2ZzbC9j
-cG1fcWUvcWUudHh0ICB8IDUwDQo+ID4gPiA+ID4gKysrKysrKysrKysrKysrKysrKysrKw0KPiA+
-ID4gPiA+ICAxIGZpbGUgY2hhbmdlZCwgNTAgaW5zZXJ0aW9ucygrKQ0KPiA+ID4gPiA+DQo+ID4g
-PiA+ID4gZGlmZiAtLWdpdA0KPiA+ID4gPiA+IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
-bmRpbmdzL3Bvd2VycGMvZnNsL2NwbV9xZS9xZS50eHQNCj4gPiA+ID4gPiBiL0RvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBjL2ZzbC9jcG1fcWUvcWUudHh0DQo+ID4gPiA+
-ID4gaW5kZXggNGY4OTMwMi4uODQwNTJhNyAxMDA2NDQNCj4gPiA+ID4gPiAtLS0NCj4gPiA+ID4g
-PiBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBjL2ZzbC9jcG1fcWUv
-cWUudHh0DQo+ID4gPiA+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdz
-L3Bvd2VycGMvZnNsL2NwbV9xZS9xZS50eA0KPiA+ID4gPiA+ICsrKyB0DQo+ID4gPiA+ID4gQEAg
-LTY5LDYgKzY5LDU2IEBAIEV4YW1wbGU6DQo+ID4gPiA+ID4gIAl9Ow0KPiA+ID4gPiA+ICAgICAg
-IH07DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiArKiBJbnRlcnJ1cHQgQ29udHJvbGxlciAoSUMpDQo+
-ID4gPiA+ID4gKw0KPiA+ID4gPiA+ICtSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiA+ID4gPiA+ICst
-IGNvbXBhdGlibGUgOiBzaG91bGQgYmUgImZzbCxxZS1pYyIuDQo+ID4gPiA+DQo+ID4gPiA+ID4g
-Ky0gY29tcGF0aWJsZSA6IHNob3VsZCBiZSAiZnNsLHFlLXNpIi4NCj4gPiA+ID4NCj4gPiA+ID4g
-PiArLSBjb21wYXRpYmxlIDogc2hvdWxkIGJlICJmc2wscWUtc2lyYW0iLg0KPiA+ID4gPg0KPiA+
-ID4gPiBUaGVzZSBjb21wYXRpYmxlIHN0cmluZ3MgYXJlIGFsbCBhIGJpdCBnZW5lcmljIGFuZCBz
-aG91bGQgaGF2ZSBTb0MNCj4gPiA+ID4gc3BlY2lmaWMgY29tcGF0aWJsZSBzdHJpbmdzLg0KPiA+
-ID4NCj4gPiA+IEkgZG9uJ3Qga25vdyBhYm91dCBzaS9zaXJhbSwgYnV0ICJmc2wscWUtaWMiIGhh
-cyBiZWVuIGFyb3VuZCBzaW5jZQ0KPiA+ID4gMjAwOCwgc28gaXQgc2hvdWxkIGJlIGRvY3VtZW50
-ZWQgZXZlbiBpZiBhIG1vcmUgc3BlY2lmaWMgY29tcGF0aWJsZQ0KPiA+ID4gaXMgYWxzbyBhZGRl
-ZC4NCj4gPg0KPiA+IEFncmVlLCBhbmQgc2kvc2lyYW0gYXJlIGFsc28gaGFzIGJlZW4gYXJvdW5k
-IHNpbmNlIDIwMDguDQo+IA0KPiBXaGVyZT8gIEkgY291bGRuJ3QgZmluZCB0aGVtIHdoZW4gZ3Jl
-cHBpbmcuDQoNClNvcnJ5LCBJIG1ha2UgYSBtaXN0YWtlLCB0aGV5IGhhdmUgbm90IGJlZW4gaW4g
-dXBzdHJlYW0uDQoNCj4gDQo+ID4gSW4gYWRkaXRpb24sIEkgZG9u4oCZdCB0aGluayBpdCBpcyBu
-ZWVkZWQgdG8gYWRkIHNwZWNpZmljIGNvbXBhdGlibGUsDQo+ID4gYmVjYXVzZSB0aGV5IGFyZSB0
-aGUgc2FtZSBpbiBxZS1zdXBwb3J0ZWQgc29jLg0KPiANCj4gSG93IGRvIHdlIGtub3cgdGhhdCB0
-aGV5IGFyZSAxMDAlIHRoZSBzYW1lPw0KDQpZb3UgbWVhbiBpdCB3aWxsIGJlIGNoYW5nZWQgaW4g
-bGF0ZXIgdmVyc2lvbj8NCg0KQlINCi1aaGFvDQoNCg==
+On Thu, 2016-02-25 at 05:55 +0000, Qiang Zhao wrote:
+> On Thu, 2016-02-25 at 11:12  AM, Scott Wood wrote:
+> > -----Original Message-----
+> > From: Scott Wood [mailto:oss@buserror.net]
+> > Sent: Thursday, February 25, 2016 11:12 AM
+> > To: Qiang Zhao <qiang.zhao@nxp.com>; Rob Herring <robh@kernel.org>
+> > Cc: Yang-Leo Li <leoyang.li@nxp.com>; linux-kernel@vger.kernel.org;
+> > devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [PATCH v2 1/7] QE: Add IC, SI and SIRAM document to device
+> > tree
+> > bindings.
+> > 
+> > On Thu, 2016-02-25 at 03:10 +0000, Qiang Zhao wrote:
+> > > On Wed, 2016-02-24 at 04:20  AM, Scott Wood wrote:
+> > > > -----Original Message-----
+> > > > From: Scott Wood [mailto:oss@buserror.net]
+> > > > Sent: Wednesday, February 24, 2016 4:20 AM
+> > > > To: Rob Herring <robh@kernel.org>; Qiang Zhao <qiang.zhao@nxp.com>
+> > > > Cc: Yang-Leo Li <leoyang.li@nxp.com>; linux-kernel@vger.kernel.org;
+> > > > devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> > > > Subject: Re: [PATCH v2 1/7] QE: Add IC, SI and SIRAM document to
+> > > > device tree bindings.
+> > > > 
+> > > > On Tue, 2016-02-23 at 14:15 -0600, Rob Herring wrote:
+> > > > > On Thu, Feb 18, 2016 at 09:06:06AM +0800, Zhao Qiang wrote:
+> > > > > > Add IC, SI and SIRAM document of QE to
+> > > > > > Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt
+> > > > > > 
+> > > > > > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> > > > > > ---
+> > > > > > Changes for v2
+> > > > > > 	- Add interrupt-controller in Required properties
+> > > > > > 	- delete address-cells and size-cells for qe-si and qe-siram
+> > > > > > 
+> > > > > >  .../devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt  | 50
+> > > > > > ++++++++++++++++++++++
+> > > > > >  1 file changed, 50 insertions(+)
+> > > > > > 
+> > > > > > diff --git
+> > > > > > a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt
+> > > > > > b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt
+> > > > > > index 4f89302..84052a7 100644
+> > > > > > ---
+> > > > > > a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt
+> > > > > > +++ b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe.tx
+> > > > > > +++ t
+> > > > > > @@ -69,6 +69,56 @@ Example:
+> > > > > >  	};
+> > > > > >       };
+> > > > > > 
+> > > > > > +* Interrupt Controller (IC)
+> > > > > > +
+> > > > > > +Required properties:
+> > > > > > +- compatible : should be "fsl,qe-ic".
+> > > > > 
+> > > > > > +- compatible : should be "fsl,qe-si".
+> > > > > 
+> > > > > > +- compatible : should be "fsl,qe-siram".
+> > > > > 
+> > > > > These compatible strings are all a bit generic and should have SoC
+> > > > > specific compatible strings.
+> > > > 
+> > > > I don't know about si/siram, but "fsl,qe-ic" has been around since
+> > > > 2008, so it should be documented even if a more specific compatible
+> > > > is also added.
+> > > 
+> > > Agree, and si/siram are also has been around since 2008.
+> > 
+> > Where?  I couldn't find them when grepping.
+> 
+> Sorry, I make a mistake, they have not been in upstream.
+> 
+> > 
+> > > In addition, I don’t think it is needed to add specific compatible,
+> > > because they are the same in qe-supported soc.
+> > 
+> > How do we know that they are 100% the same?
+> 
+> You mean it will be changed in later version?
+
+That's always a possibility, but even on current chips, what bit of
+documentation are you referring to that confirms it's the exact same logic?
+
+-Scott
