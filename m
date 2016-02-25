@@ -1,35 +1,36 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <sboyd@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 102081A0352
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 10:20:01 +1100 (AEDT)
-Received: from mail-pf0-f173.google.com (mail-pf0-f173.google.com
- [209.85.192.173])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 72F761402BC
- for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2016 10:20:00 +1100 (AEDT)
-Received: by mail-pf0-f173.google.com with SMTP id q63so40685470pfb.0
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2016 15:20:00 -0800 (PST)
-Received: from cotter.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id ss5sm14573387pab.15.2016.02.25.15.19.57
- for <linuxppc-dev@ozlabs.org> (version=TLSv1/SSLv3 cipher=OTHER);
- Thu, 25 Feb 2016 15:19:58 -0800 (PST)
-Resent-Message-ID: <56CF8C1A.8080105@gmail.com>
-Date: Thu, 25 Feb 2016 20:12:49 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: mpe@ellerman.id.au, duwe@lst.de, jkosina@suse.cz, mbenes@suse.cz,
- pmladek@suse.com, jeyu@redhat.com, rostedt@goodmis.org,
- live-patching@vger.kernel.org, Torsten Duwe <duwe@suse.de>
-Subject: Re: [RFC][PATCH] Enable livepatching for powerpc
-Message-ID: <20160225144248.GA7539@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <1456402305-1612-1-git-send-email-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C9A3E1A0B4C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:05:26 +1100 (AEDT)
+Date: Thu, 25 Feb 2016 15:56:55 -0800
+From: Stephen Boyd <sboyd@codeaurora.org>
+To: Lothar =?iso-8859-1?Q?Wa=DFmann?= <LW@KARO-electronics.de>,
+ Shawn Guo <shawnguo@kernel.org>
+Cc: Anson Huang <b20788@freescale.com>, Arnd Bergmann <arnd@arndb.de>,
+ Bai Ping <b51503@freescale.com>,
+ Fabio Estevam <fabio.estevam@freescale.com>,
+ Frank Li <Frank.Li@freescale.com>, Fugang Duan <B38611@freescale.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Jaroslav Kysela <perex@perex.cz>, Kumar Gala <galak@codeaurora.org>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>,
+ Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ Sascha Hauer <kernel@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
+ Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ alsa-devel@alsa-project.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/2] clk: imx6: add kpp clock for i.MX6UL
+Message-ID: <20160225235655.GN28849@codeaurora.org>
+References: <1452619759-14474-1-git-send-email-LW@KARO-electronics.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1456402305-1612-1-git-send-email-bsingharora@gmail.com>
+In-Reply-To: <1452619759-14474-1-git-send-email-LW@KARO-electronics.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,33 +40,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Balbir Singh <bsingharora@gmail.com> [2016-02-25 23:11:45]:
-
-> This applies on top of the patches posted by Michael today
-> Enable livepatching. This takes patch 6/8 and 7/8 of v8 as the base.
-> Removes the extra strict check in gcc-profile-kernel-notrace.sh
-> and adds logic for checking offsets in livepatch. The patch
-> for HAVE_C_RECORDMCOUNT is not required and not used here.
+On 01/12, Lothar Waßmann wrote:
+> This patchset adds the clock which is necessary to operate the KPP
+> unit on i.MX6UL.
+> The first patch removes bogus whitespace before TABs in indentation.
+> The second patch adds the clock definition.
 > 
-> Depending on whether or not a TOC is generated, the offset
-> for _mcount can be +16 or +8. The changes are such that the
-> offset checks are specific to powerpc.
-> 
-> Comments? Testing? I tested the sample in the livepatch
-> directory
-> 
-> References
-> 
-> 1. https://patchwork.ozlabs.org/patch/581521/
-> 2. https://patchwork.ozlabs.org/patch/587464/
-> 
-> Signed-off-by: Torsten Duwe <duwe@suse.de>
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 
-I was able to test livepatch-sample module with this patch + Michael patch set.
+Both look fine. Shawn?
 
-Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-
-
-Regards,
-Kamalesh.
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
