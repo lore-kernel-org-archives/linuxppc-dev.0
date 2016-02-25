@@ -1,40 +1,30 @@
-Return-Path: <ddaney.cavm@gmail.com>
-Received: from mail-pf0-x232.google.com (mail-pf0-x232.google.com
- [IPv6:2607:f8b0:400e:c00::232])
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A88E41A054D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 11:04:16 +1100 (AEDT)
+Received: from mail-pf0-x233.google.com (mail-pf0-x233.google.com
+ [IPv6:2607:f8b0:400e:c00::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E15D51A03D5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 11:02:52 +1100 (AEDT)
-Received: by mail-pf0-x232.google.com with SMTP id e127so21759619pfe.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 16:02:52 -0800 (PST)
-From: David Daney <ddaney.cavm@gmail.com>
-To: Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
- Mark Rutland <mark.rutland@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- James Hogan <james.hogan@imgtec.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>,
- Chris Metcalf <cmetcalf@ezchip.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-ia64@vger.kernel.org,
- linux-metag@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
- Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>,
- David Daney <david.daney@cavium.com>
-Subject: [PATCH 2/2] numa, mm,
- cleanup: remove redundant NODE_DATA macro from asm header files.
-Date: Wed, 24 Feb 2016 16:02:08 -0800
-Message-Id: <1456358528-24213-3-git-send-email-ddaney.cavm@gmail.com>
-In-Reply-To: <1456358528-24213-1-git-send-email-ddaney.cavm@gmail.com>
-References: <1456358528-24213-1-git-send-email-ddaney.cavm@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id E2E76140778
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2016 11:04:15 +1100 (AEDT)
+Received: by mail-pf0-x233.google.com with SMTP id x65so21799950pfb.1
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2016 16:04:15 -0800 (PST)
+Subject: Re: [PATCH 02/12] powerpc/module: Mark module stubs with a magic value
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <1456324115-21144-1-git-send-email-mpe@ellerman.id.au>
+ <1456324115-21144-2-git-send-email-mpe@ellerman.id.au>
+Cc: duwe@lst.de, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
+ jkosina@suse.cz, live-patching@vger.kernel.org, mbenes@suse.cz
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <56CE44F8.8070605@gmail.com>
+Date: Thu, 25 Feb 2016 11:04:08 +1100
+MIME-Version: 1.0
+In-Reply-To: <1456324115-21144-2-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,234 +34,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
 
-NODE_DATA is defined across multiple asm header files.
-Moving generic definition to asm-generic/mmzone.h to
-remove redundant definitions.
 
-Reviewed-by: Robert Richter <rrichter@cavium.com>
-Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
-Signed-off-by: David Daney <david.daney@cavium.com>
----
- arch/arm64/include/asm/mmzone.h   |  4 +---
- arch/m32r/include/asm/mmzone.h    |  4 +---
- arch/metag/include/asm/mmzone.h   |  4 +---
- arch/powerpc/include/asm/mmzone.h |  8 ++------
- arch/s390/include/asm/mmzone.h    |  6 +-----
- arch/sh/include/asm/mmzone.h      |  4 +---
- arch/sparc/include/asm/mmzone.h   |  6 ++----
- arch/x86/include/asm/mmzone.h     |  3 +--
- arch/x86/include/asm/mmzone_32.h  |  5 -----
- arch/x86/include/asm/mmzone_64.h  | 17 -----------------
- include/asm-generic/mmzone.h      | 24 ++++++++++++++++++++++++
- 11 files changed, 34 insertions(+), 51 deletions(-)
- delete mode 100644 arch/x86/include/asm/mmzone_64.h
- create mode 100644 include/asm-generic/mmzone.h
+On 25/02/16 01:28, Michael Ellerman wrote:
+> When a module is loaded, calls out to the kernel go via a stub which is
+> generated at runtime. One of these stubs is used to call _mcount(),
+> which is the default target of tracing calls generated by the compiler
+> with -pg.
+>
+> If dynamic ftrace is enabled (which it typicall is), another stub is
+> used to call ftrace_caller(), which is the target of tracing calls when
+> ftrace is actually active.
+>
+> ftrace then wants to disable the calls to _mcount() at module startup,
+> and enable/disable the calls to ftrace_caller() when enabling/disablig
+> tracing - all of these it does by patching the code.
+>
+> As part of that code patching, the ftrace code wants to confirm that the
+> branch it is about to modify, is in fact a call to a module stub which
+> calls _mcount() or ftrace_caller().
+>
+> Currently it does that by inspecting the instructions and confirming
+> they are what it expects. Although that works, the code to do it is
+> pretty intricate because it requires lots of knowledge about the exact
+> format of the stub.
+>
+> We can make that process easier by marking the generated stubs with a
+> magic value, and then looking for that magic value. Altough this is not
+> as rigorous as the current method, I believe it is sufficient in
+> practice.
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/include/asm/module.h |  3 +-
+>  arch/powerpc/kernel/ftrace.c      | 14 ++-----
+>  arch/powerpc/kernel/module_64.c   | 78 +++++++++++++--------------------------
+>  3 files changed, 31 insertions(+), 64 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+> index 74d25a749018..5b6b5a427b54 100644
+> --- a/arch/powerpc/include/asm/module.h
+> +++ b/arch/powerpc/include/asm/module.h
+> @@ -78,8 +78,7 @@ struct mod_arch_specific {
+>  #    endif	/* MODULE */
+>  #endif
+>  
+> -bool is_module_trampoline(u32 *insns);
+> -int module_trampoline_target(struct module *mod, u32 *trampoline,
+> +int module_trampoline_target(struct module *mod, unsigned long trampoline,
+>  			     unsigned long *target);
+>  
+>  #ifdef CONFIG_DYNAMIC_FTRACE
+> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+> index 44d4d8eb3c85..4505cbfd0e13 100644
+> --- a/arch/powerpc/kernel/ftrace.c
+> +++ b/arch/powerpc/kernel/ftrace.c
+> @@ -106,10 +106,9 @@ static int
+>  __ftrace_make_nop(struct module *mod,
+>  		  struct dyn_ftrace *rec, unsigned long addr)
+>  {
+> -	unsigned int op;
+> -	unsigned long entry, ptr;
+> +	unsigned long entry, ptr, tramp;
+>  	unsigned long ip = rec->ip;
+> -	void *tramp;
+> +	unsigned int op;
+>  
+>  	/* read where this goes */
+>  	if (probe_kernel_read(&op, (void *)ip, sizeof(int)))
+> @@ -122,14 +121,9 @@ __ftrace_make_nop(struct module *mod,
+>  	}
+>  
+>  	/* lets find where the pointer goes */
+> -	tramp = (void *)find_bl_target(ip, op);
+> -
+> -	pr_devel("ip:%lx jumps to %p", ip, tramp);
+> +	tramp = find_bl_target(ip, op);
+>  
+> -	if (!is_module_trampoline(tramp)) {
+> -		pr_err("Not a trampoline\n");
+> -		return -EINVAL;
+> -	}
+> +	pr_devel("ip:%lx jumps to %lx", ip, tramp);
+>  
+>  	if (module_trampoline_target(mod, tramp, &ptr)) {
+>  		pr_err("Failed to get trampoline target\n");
+> diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+> index 599c753c7960..9629966e614b 100644
+> --- a/arch/powerpc/kernel/module_64.c
+> +++ b/arch/powerpc/kernel/module_64.c
+> @@ -96,6 +96,8 @@ static unsigned int local_entry_offset(const Elf64_Sym *sym)
+>  }
+>  #endif
+>  
+> +#define STUB_MAGIC 0x73747562 /* stub */
+> +
+>  /* Like PPC32, we need little trampolines to do > 24-bit jumps (into
+>     the kernel itself).  But on PPC64, these need to be used for every
+>     jump, actually, to reset r2 (TOC+0x8000). */
+> @@ -105,7 +107,8 @@ struct ppc64_stub_entry
+>  	 * need 6 instructions on ABIv2 but we always allocate 7 so
+>  	 * so we don't have to modify the trampoline load instruction. */
+>  	u32 jump[7];
+> -	u32 unused;
+> +	/* Used by ftrace to identify stubs */
+> +	u32 magic;
 
-diff --git a/arch/arm64/include/asm/mmzone.h b/arch/arm64/include/asm/mmzone.h
-index a0de9e6..611a1cf 100644
---- a/arch/arm64/include/asm/mmzone.h
-+++ b/arch/arm64/include/asm/mmzone.h
-@@ -4,9 +4,7 @@
- #ifdef CONFIG_NUMA
- 
- #include <asm/numa.h>
--
--extern struct pglist_data *node_data[];
--#define NODE_DATA(nid)		(node_data[(nid)])
-+#include  <asm-generic/mmzone.h>
- 
- #endif /* CONFIG_NUMA */
- #endif /* __ASM_MMZONE_H */
-diff --git a/arch/m32r/include/asm/mmzone.h b/arch/m32r/include/asm/mmzone.h
-index 115ced3..e3d66a0 100644
---- a/arch/m32r/include/asm/mmzone.h
-+++ b/arch/m32r/include/asm/mmzone.h
-@@ -7,12 +7,10 @@
- #define _ASM_MMZONE_H_
- 
- #include <asm/smp.h>
-+#include  <asm-generic/mmzone.h>
- 
- #ifdef CONFIG_DISCONTIGMEM
- 
--extern struct pglist_data *node_data[];
--#define NODE_DATA(nid)		(node_data[nid])
--
- #define node_localnr(pfn, nid)	((pfn) - NODE_DATA(nid)->node_start_pfn)
- 
- #define pmd_page(pmd)		(pfn_to_page(pmd_val(pmd) >> PAGE_SHIFT))
-diff --git a/arch/metag/include/asm/mmzone.h b/arch/metag/include/asm/mmzone.h
-index 9c88a9c..b1e95b3 100644
---- a/arch/metag/include/asm/mmzone.h
-+++ b/arch/metag/include/asm/mmzone.h
-@@ -3,9 +3,7 @@
- 
- #ifdef CONFIG_NEED_MULTIPLE_NODES
- #include <linux/numa.h>
--
--extern struct pglist_data *node_data[];
--#define NODE_DATA(nid)		(node_data[nid])
-+#include  <asm-generic/mmzone.h>
- 
- static inline int pfn_to_nid(unsigned long pfn)
- {
-diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
-index 7b58917..da0c5ba 100644
---- a/arch/powerpc/include/asm/mmzone.h
-+++ b/arch/powerpc/include/asm/mmzone.h
-@@ -19,12 +19,6 @@
- 
- #ifdef CONFIG_NEED_MULTIPLE_NODES
- 
--extern struct pglist_data *node_data[];
--/*
-- * Return a pointer to the node data for node n.
-- */
--#define NODE_DATA(nid)		(node_data[nid])
--
- /*
-  * Following are specific to this numa platform.
-  */
-@@ -42,5 +36,7 @@ u64 memory_hotplug_max(void);
- #define memory_hotplug_max() memblock_end_of_DRAM()
- #endif /* CONFIG_NEED_MULTIPLE_NODES */
- 
-+#include  <asm-generic/mmzone.h>
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_MMZONE_H_ */
-diff --git a/arch/s390/include/asm/mmzone.h b/arch/s390/include/asm/mmzone.h
-index a9e834e..91f1fcc 100644
---- a/arch/s390/include/asm/mmzone.h
-+++ b/arch/s390/include/asm/mmzone.h
-@@ -7,10 +7,6 @@
- #ifndef _ASM_S390_MMZONE_H
- #define _ASM_S390_MMZONE_H
- 
--#ifdef CONFIG_NUMA
-+#include  <asm-generic/mmzone.h>
- 
--extern struct pglist_data *node_data[];
--#define NODE_DATA(nid) (node_data[nid])
--
--#endif /* CONFIG_NUMA */
- #endif /* _ASM_S390_MMZONE_H */
-diff --git a/arch/sh/include/asm/mmzone.h b/arch/sh/include/asm/mmzone.h
-index 15a8496..c070d00 100644
---- a/arch/sh/include/asm/mmzone.h
-+++ b/arch/sh/include/asm/mmzone.h
-@@ -5,9 +5,7 @@
- 
- #ifdef CONFIG_NEED_MULTIPLE_NODES
- #include <linux/numa.h>
--
--extern struct pglist_data *node_data[];
--#define NODE_DATA(nid)		(node_data[nid])
-+#include  <asm-generic/mmzone.h>
- 
- static inline int pfn_to_nid(unsigned long pfn)
- {
-diff --git a/arch/sparc/include/asm/mmzone.h b/arch/sparc/include/asm/mmzone.h
-index 99d9b9f..ef1365b 100644
---- a/arch/sparc/include/asm/mmzone.h
-+++ b/arch/sparc/include/asm/mmzone.h
-@@ -5,13 +5,11 @@
- 
- #include <linux/cpumask.h>
- 
--extern struct pglist_data *node_data[];
--
--#define NODE_DATA(nid)		(node_data[nid])
--
- extern int numa_cpu_lookup_table[];
- extern cpumask_t numa_cpumask_lookup_table[];
- 
- #endif /* CONFIG_NEED_MULTIPLE_NODES */
- 
-+#include  <asm-generic/mmzone.h>
-+
- #endif /* _SPARC64_MMZONE_H */
-diff --git a/arch/x86/include/asm/mmzone.h b/arch/x86/include/asm/mmzone.h
-index d497bc4..8b9a0c2 100644
---- a/arch/x86/include/asm/mmzone.h
-+++ b/arch/x86/include/asm/mmzone.h
-@@ -1,5 +1,4 @@
-+#include  <asm-generic/mmzone.h>
- #ifdef CONFIG_X86_32
- # include <asm/mmzone_32.h>
--#else
--# include <asm/mmzone_64.h>
- #endif
-diff --git a/arch/x86/include/asm/mmzone_32.h b/arch/x86/include/asm/mmzone_32.h
-index 1ec990b..09f7cfb 100644
---- a/arch/x86/include/asm/mmzone_32.h
-+++ b/arch/x86/include/asm/mmzone_32.h
-@@ -8,11 +8,6 @@
- 
- #include <asm/smp.h>
- 
--#ifdef CONFIG_NUMA
--extern struct pglist_data *node_data[];
--#define NODE_DATA(nid)	(node_data[nid])
--#endif /* CONFIG_NUMA */
--
- #ifdef CONFIG_DISCONTIGMEM
- 
- /*
-diff --git a/arch/x86/include/asm/mmzone_64.h b/arch/x86/include/asm/mmzone_64.h
-deleted file mode 100644
-index 129d9aa..0000000
---- a/arch/x86/include/asm/mmzone_64.h
-+++ /dev/null
-@@ -1,17 +0,0 @@
--/* K8 NUMA support */
--/* Copyright 2002,2003 by Andi Kleen, SuSE Labs */
--/* 2.5 Version loosely based on the NUMAQ Code by Pat Gaughen. */
--#ifndef _ASM_X86_MMZONE_64_H
--#define _ASM_X86_MMZONE_64_H
--
--#ifdef CONFIG_NUMA
--
--#include <linux/mmdebug.h>
--#include <asm/smp.h>
--
--extern struct pglist_data *node_data[];
--
--#define NODE_DATA(nid)		(node_data[nid])
--
--#endif
--#endif /* _ASM_X86_MMZONE_64_H */
-diff --git a/include/asm-generic/mmzone.h b/include/asm-generic/mmzone.h
-new file mode 100644
-index 0000000..ec0fc4c
---- /dev/null
-+++ b/include/asm-generic/mmzone.h
-@@ -0,0 +1,24 @@
-+/*
-+ * linux/include/asm-generic/mmzone.h
-+ *
-+ * Author: Ganapatrao Kulkarni <gkulkarni@cavium.com>
-+ * Copyright (C) 2016 Cavium Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#ifndef _ASM_GENERIC_MMZONE_H
-+#define _ASM_GENERIC_MMZONE_H
-+
-+#if defined(CONFIG_NUMA) || defined(CONFIG_NEED_MULTIPLE_NODES)
-+
-+#ifndef NODE_DATA
-+extern struct pglist_data *node_data[];
-+#define NODE_DATA(nid)          (node_data[(nid)])
-+#endif
-+
-+#endif
-+#endif /* _ASM_GENERIC_MMZONE_H */
--- 
-1.8.3.1
+>  	/* Data for the above code */
+>  	func_desc_t funcdata;
+>  };
+> @@ -139,70 +142,39 @@ static u32 ppc64_stub_insns[] = {
+>  };
+>  
+>  #ifdef CONFIG_DYNAMIC_FTRACE
+> -
+> -static u32 ppc64_stub_mask[] = {
+> -	0xffff0000,
+> -	0xffff0000,
+> -	0xffffffff,
+> -	0xffffffff,
+> -#if !defined(_CALL_ELF) || _CALL_ELF != 2
+> -	0xffffffff,
+> -#endif
+> -	0xffffffff,
+> -	0xffffffff
+> -};
+> -
+> -bool is_module_trampoline(u32 *p)
+> +int module_trampoline_target(struct module *mod, unsigned long addr,
+> +			     unsigned long *target)
+>  {
+> -	unsigned int i;
+> -	u32 insns[ARRAY_SIZE(ppc64_stub_insns)];
+> -
+> -	BUILD_BUG_ON(sizeof(ppc64_stub_insns) != sizeof(ppc64_stub_mask));
+> +	struct ppc64_stub_entry *stub;
+> +	func_desc_t funcdata;
+> +	u32 magic;
+>  
+> -	if (probe_kernel_read(insns, p, sizeof(insns)))
+> +	if (!within_module_core(addr, mod)) {
+> +		pr_err("%s: stub %lx not in module %s\n", __func__, addr, mod->name);
+>  		return -EFAULT;
+-EFAULT or -EINVAL? I wonder if we can recover from a bad trampoline address.
+
+Reviewed-by: Balbir Singh <bsingharora@gmail.com>
