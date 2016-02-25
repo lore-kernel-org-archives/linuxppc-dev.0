@@ -1,24 +1,15 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AFD0B1A0342
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 21:48:16 +1100 (AEDT)
-Message-ID: <1456397295.15739.16.camel@ellerman.id.au>
-Subject: Re: [PATCH 03/12] powerpc/module: Create a special stub for
- ftrace_caller()
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org
-Cc: duwe@lst.de, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
- jkosina@suse.cz,  live-patching@vger.kernel.org, mbenes@suse.cz
-Date: Thu, 25 Feb 2016 21:48:15 +1100
-In-Reply-To: <56CE4616.9080100@gmail.com>
-References: <1456324115-21144-1-git-send-email-mpe@ellerman.id.au>
- <1456324115-21144-3-git-send-email-mpe@ellerman.id.au>
- <56CE4616.9080100@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from elettra.eu (m1.elettra.trieste.it [140.105.206.201])
+ by lists.ozlabs.org (Postfix) with ESMTP id 6C6531A0342
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 21:57:15 +1100 (AEDT)
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+To: Scott Wood <oss@buserror.net>,
+	Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Alessio Igor Bogani <alessio.bogani@elettra.eu>
+Subject: [RFC PATCH v1 1/2] powerpc/86xx: Move dts files to fsl directory
+Date: Thu, 25 Feb 2016 11:57:04 +0100
+Message-Id: <1456397825-1786-1-git-send-email-alessio.bogani@elettra.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,41 +19,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-02-25 at 11:08 +1100, Balbir Singh wrote:
-> 
-> On 25/02/16 01:28, Michael Ellerman wrote:
-> > In order to support the new -mprofile-kernel ABI, we need to be able to
-> > call from the module back to ftrace_caller() (in the kernel) without
-> > using the module's r2. That is because the function in this module which
-> > is calling ftrace_caller() may not have setup r2, if it doesn't
-> > otherwise need it (ie. it accesses no globals).
-> > 
-> > To make that work we add a new stub which is used for calling
-> > ftrace_caller(), which uses the kernel toc instead of the module toc.
-> > 
-> > diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-> > index 9629966e614b..e711d40a3b8f 100644
-> > --- a/arch/powerpc/kernel/module_64.c
-> > +++ b/arch/powerpc/kernel/module_64.c
-> > @@ -671,10 +671,56 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
-> >  }
-> >  
-> >  #ifdef CONFIG_DYNAMIC_FTRACE
-> > +
-> > +#define PACATOC offsetof(struct paca_struct, kernel_toc)
-> > +
-> > +static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module *me)
-> > +{
-> > +	struct ppc64_stub_entry *entry;
-> > +	unsigned int i, num_stubs;
+Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+---
+ arch/powerpc/boot/dts/{ => fsl}/gef_ppc9a.dts        | 0
+ arch/powerpc/boot/dts/{ => fsl}/gef_sbc310.dts       | 0
+ arch/powerpc/boot/dts/{ => fsl}/gef_sbc610.dts       | 0
+ arch/powerpc/boot/dts/{ => fsl}/mpc8641_hpcn.dts     | 0
+ arch/powerpc/boot/dts/{ => fsl}/mpc8641_hpcn_36b.dts | 0
+ arch/powerpc/boot/dts/{ => fsl}/sbc8641d.dts         | 0
+ 6 files changed, 0 insertions(+), 0 deletions(-)
+ rename arch/powerpc/boot/dts/{ => fsl}/gef_ppc9a.dts (100%)
+ rename arch/powerpc/boot/dts/{ => fsl}/gef_sbc310.dts (100%)
+ rename arch/powerpc/boot/dts/{ => fsl}/gef_sbc610.dts (100%)
+ rename arch/powerpc/boot/dts/{ => fsl}/mpc8641_hpcn.dts (100%)
+ rename arch/powerpc/boot/dts/{ => fsl}/mpc8641_hpcn_36b.dts (100%)
+ rename arch/powerpc/boot/dts/{ => fsl}/sbc8641d.dts (100%)
 
-> How about some comments on r2
-> r2 is still pointing to the module's toc, will be saved by ftrace_caller and
-> restored by the instruction following bl ftrace_caller (after patching
-> _mcount/nop)
-
-Yeah I'll add some commentary.
-
-I think the change log describes it fairly well but a comment is also good.
-
-cheers
+diff --git a/arch/powerpc/boot/dts/gef_ppc9a.dts b/arch/powerpc/boot/dts/fsl/gef_ppc9a.dts
+similarity index 100%
+rename from arch/powerpc/boot/dts/gef_ppc9a.dts
+rename to arch/powerpc/boot/dts/fsl/gef_ppc9a.dts
+diff --git a/arch/powerpc/boot/dts/gef_sbc310.dts b/arch/powerpc/boot/dts/fsl/gef_sbc310.dts
+similarity index 100%
+rename from arch/powerpc/boot/dts/gef_sbc310.dts
+rename to arch/powerpc/boot/dts/fsl/gef_sbc310.dts
+diff --git a/arch/powerpc/boot/dts/gef_sbc610.dts b/arch/powerpc/boot/dts/fsl/gef_sbc610.dts
+similarity index 100%
+rename from arch/powerpc/boot/dts/gef_sbc610.dts
+rename to arch/powerpc/boot/dts/fsl/gef_sbc610.dts
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts
+similarity index 100%
+rename from arch/powerpc/boot/dts/mpc8641_hpcn.dts
+rename to arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts b/arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts
+similarity index 100%
+rename from arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts
+rename to arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts
+diff --git a/arch/powerpc/boot/dts/sbc8641d.dts b/arch/powerpc/boot/dts/fsl/sbc8641d.dts
+similarity index 100%
+rename from arch/powerpc/boot/dts/sbc8641d.dts
+rename to arch/powerpc/boot/dts/fsl/sbc8641d.dts
+-- 
+2.7.1
