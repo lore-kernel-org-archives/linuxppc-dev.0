@@ -1,21 +1,24 @@
-Return-Path: <hughd@google.com>
-Received: from mail-ob0-x22f.google.com (mail-ob0-x22f.google.com
- [IPv6:2607:f8b0:4003:c01::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yinghai@kernel.org>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E55B21A00A5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 13:11:07 +1100 (AEDT)
-Received: by mail-ob0-x22f.google.com with SMTP id jq7so36102613obb.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 18:11:07 -0800 (PST)
-Date: Wed, 24 Feb 2016 18:10:57 -0800 (PST)
-From: Hugh Dickins <hughd@google.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-cc: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org
-Subject: Problems with swapping in v4.5-rc on POWER
-Message-ID: <alpine.LSU.2.11.1602241716220.15121@eggly.anvils>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0A9361A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 13:14:05 +1100 (AEDT)
+From: Yinghai Lu <yinghai@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, TJ <linux@iam.tj>,
+ Yijing Wang <wangyijing@huawei.com>, Khalid Aziz <khalid.aziz@oracle.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Yinghai Lu <yinghai@kernel.org>, Michal Simek <monstr@monstr.eu>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org
+Subject: [PATCH v10 51/59] PCI: Unify skip_ioresource_align()
+Date: Wed, 24 Feb 2016 18:12:42 -0800
+Message-Id: <1456366370-28995-52-git-send-email-yinghai@kernel.org>
+In-Reply-To: <1456366370-28995-1-git-send-email-yinghai@kernel.org>
+References: <1456366370-28995-1-git-send-email-yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,34 +28,185 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I've plagiarized the subject from Paulus's "Problems with THP" mail
-last weekend; but my similar problems are on PowerMac G5 baremetal,
-with 4kB pages, not capable of THP and no THP configured in.
+There are powerpc generic version and x86 local version for
+skip_ioresource_align().
 
-Under heavily swapping load, running kernel builds on tmpfs in limited
-memory, I've been seeing random segfaults too, internal compiler errors
-etc.  Not easily reproduced: sometimes happens in minutes, sometimes
-not for several hours.
+Move the powerpc version to setup-bus.c, and kill x86 local version.
 
-I tried and failed to construct a reproducer for you: my lack of a good
-recipe has deterred me from reporting it, and seeing Paulus's mail on
-THP gave me hope that the answer would come up in that thread; but no,
-that was quickly resolved as a THP issue, since fixed.
+Also kill dummy version in microblaze.
 
-(Mine had appeared to be fixed in v4.5-rc4 anyway; but I guess I
-just didn't try hard enough, it resurfaced on -rc5 immediately.)
+Cc: Michal Simek <monstr@monstr.eu>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/microblaze/pci/pci-common.c |  8 --------
+ arch/powerpc/kernel/pci-common.c | 11 +----------
+ arch/x86/include/asm/pci_x86.h   |  1 -
+ arch/x86/pci/common.c            |  4 ++--
+ arch/x86/pci/i386.c              | 11 +----------
+ drivers/pci/setup-bus.c          |  9 +++++++++
+ include/linux/pci.h              |  2 ++
+ 7 files changed, 15 insertions(+), 31 deletions(-)
 
-I've seen no sign of such problems on x86.  And I saw no sign of such
-problems on v4.4-rc8-mm1, when I included the fixes to the _PAGE_PTE
-and _PAGE_SWP_SOFT_DIRTY swapoff issues we discussed back then (in
-33 hours of load, should be good enough; but did see such problems
-a couple of times before including those fixes - I took them to be
-a side-effect of the page flags issue, but now rather doubt that).
-
-The minutes or hours thing: I wonder if that indicates a missing
-initialization somewhere: that can easily show up soon after booting,
-but then the machine settles into a steady state of reusing the same
-structures, now initialized; until much later something disturbs the
-state and it has to allocate more.  Sheer speculation, but I wonder.
-
-Hugh
+diff --git a/arch/microblaze/pci/pci-common.c b/arch/microblaze/pci/pci-common.c
+index ae838ed..09b1af6 100644
+--- a/arch/microblaze/pci/pci-common.c
++++ b/arch/microblaze/pci/pci-common.c
+@@ -878,11 +878,6 @@ void pcibios_fixup_bus(struct pci_bus *bus)
+ }
+ EXPORT_SYMBOL(pcibios_fixup_bus);
+ 
+-static int skip_isa_ioresource_align(struct pci_dev *dev)
+-{
+-	return 0;
+-}
+-
+ /*
+  * We need to avoid collisions with `mirrored' VGA ports
+  * and other strange ISA hardware, so we always want the
+@@ -899,12 +894,9 @@ static int skip_isa_ioresource_align(struct pci_dev *dev)
+ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
+ 				resource_size_t size, resource_size_t align)
+ {
+-	struct pci_dev *dev = data;
+ 	resource_size_t start = res->start;
+ 
+ 	if (res->flags & IORESOURCE_IO) {
+-		if (skip_isa_ioresource_align(dev))
+-			return start;
+ 		if (start & 0x300)
+ 			start = (start + 0x3ff) & ~0x3ff;
+ 	}
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 0f7a60f..2a7f4fd 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1053,15 +1053,6 @@ void pci_fixup_cardbus(struct pci_bus *bus)
+ 	pcibios_setup_bus_devices(bus);
+ }
+ 
+-
+-static int skip_isa_ioresource_align(struct pci_dev *dev)
+-{
+-	if (pci_has_flag(PCI_CAN_SKIP_ISA_ALIGN) &&
+-	    !(dev->bus->bridge_ctl & PCI_BRIDGE_CTL_ISA))
+-		return 1;
+-	return 0;
+-}
+-
+ /*
+  * We need to avoid collisions with `mirrored' VGA ports
+  * and other strange ISA hardware, so we always want the
+@@ -1082,7 +1073,7 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
+ 	resource_size_t start = res->start;
+ 
+ 	if (res->flags & IORESOURCE_IO) {
+-		if (skip_isa_ioresource_align(dev))
++		if (skip_isa_ioresource_align(dev->bus))
+ 			return start;
+ 		if (start & 0x300)
+ 			start = (start + 0x3ff) & ~0x3ff;
+diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
+index 46873fb..3f9ba17 100644
+--- a/arch/x86/include/asm/pci_x86.h
++++ b/arch/x86/include/asm/pci_x86.h
+@@ -28,7 +28,6 @@ do {						\
+ #define PCI_ASSIGN_ROMS		0x1000
+ #define PCI_BIOS_IRQ_SCAN	0x2000
+ #define PCI_ASSIGN_ALL_BUSSES	0x4000
+-#define PCI_CAN_SKIP_ISA_ALIGN	0x8000
+ #define PCI_USE__CRS		0x10000
+ #define PCI_CHECK_ENABLE_AMD_MMCONF	0x20000
+ #define PCI_HAS_IO_ECS		0x40000
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index 2879efc..77a450e 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -83,7 +83,7 @@ DEFINE_RAW_SPINLOCK(pci_config_lock);
+ 
+ static int __init can_skip_ioresource_align(const struct dmi_system_id *d)
+ {
+-	pci_probe |= PCI_CAN_SKIP_ISA_ALIGN;
++	pci_add_flags(PCI_CAN_SKIP_ISA_ALIGN);
+ 	printk(KERN_INFO "PCI: %s detected, can skip ISA alignment\n", d->ident);
+ 	return 0;
+ }
+@@ -619,7 +619,7 @@ char *__init pcibios_setup(char *str)
+ 		pci_routeirq = 1;
+ 		return NULL;
+ 	} else if (!strcmp(str, "skip_isa_align")) {
+-		pci_probe |= PCI_CAN_SKIP_ISA_ALIGN;
++		pci_add_flags(PCI_CAN_SKIP_ISA_ALIGN);
+ 		return NULL;
+ 	} else if (!strcmp(str, "noioapicquirk")) {
+ 		noioapicquirk = 1;
+diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
+index 0a9f2ca..cf296f5 100644
+--- a/arch/x86/pci/i386.c
++++ b/arch/x86/pci/i386.c
+@@ -128,15 +128,6 @@ static void __init pcibios_fw_addr_list_del(void)
+ 	pcibios_fw_addr_done = true;
+ }
+ 
+-static int
+-skip_isa_ioresource_align(struct pci_dev *dev) {
+-
+-	if ((pci_probe & PCI_CAN_SKIP_ISA_ALIGN) &&
+-	    !(dev->bus->bridge_ctl & PCI_BRIDGE_CTL_ISA))
+-		return 1;
+-	return 0;
+-}
+-
+ /*
+  * We need to avoid collisions with `mirrored' VGA ports
+  * and other strange ISA hardware, so we always want the
+@@ -158,7 +149,7 @@ pcibios_align_resource(void *data, const struct resource *res,
+ 	resource_size_t start = res->start;
+ 
+ 	if (res->flags & IORESOURCE_IO) {
+-		if (skip_isa_ioresource_align(dev))
++		if (skip_isa_ioresource_align(dev->bus))
+ 			return start;
+ 		if (start & 0x300)
+ 			start = (start + 0x3ff) & ~0x3ff;
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index 4c595c5..530fa9b 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -1151,6 +1151,15 @@ static resource_size_t window_alignment(struct pci_bus *bus,
+ 	return max(align, arch_align);
+ }
+ 
++int skip_isa_ioresource_align(struct pci_bus *bus)
++{
++	if (pci_has_flag(PCI_CAN_SKIP_ISA_ALIGN) &&
++	    !(bus->bridge_ctl & PCI_BRIDGE_CTL_ISA))
++		return 1;
++
++	return 0;
++}
++
+ static resource_size_t size_aligned_for_isa(resource_size_t size)
+ {
+ 	/*
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index d4592e3..6687346 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -751,6 +751,8 @@ struct pci_driver {
+ /* these external functions are only available when PCI support is enabled */
+ #ifdef CONFIG_PCI
+ 
++int skip_isa_ioresource_align(struct pci_bus *bus);
++
+ void pcie_bus_configure_settings(struct pci_bus *bus);
+ 
+ enum pcie_bus_config_types {
+-- 
+1.8.4.5
