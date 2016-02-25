@@ -1,23 +1,41 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <shreyas@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 38C8F1A0063
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 17:43:59 +1100 (AEDT)
-Message-ID: <1456382638.30375.4.camel@ellerman.id.au>
-Subject: Re: [PATCH 02/12] powerpc/module: Mark module stubs with a magic value
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org
-Cc: duwe@lst.de, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
- jkosina@suse.cz,  live-patching@vger.kernel.org, mbenes@suse.cz
-Date: Thu, 25 Feb 2016 17:43:58 +1100
-In-Reply-To: <56CE44F8.8070605@gmail.com>
-References: <1456324115-21144-1-git-send-email-mpe@ellerman.id.au>
- <1456324115-21144-2-git-send-email-mpe@ellerman.id.au>
- <56CE44F8.8070605@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id E19EA1A0342
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 18:45:15 +1100 (AEDT)
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 2CBEE14032B
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2016 18:45:14 +1100 (AEDT)
+Received: from localhost
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Thu, 25 Feb 2016 13:15:12 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1P7j9U49240976
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2016 13:15:09 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1P7aqu2022432
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2016 13:15:08 +0530
+Message-ID: <56CEA7B0.6020900@linux.vnet.ibm.com>
+Date: Thu, 25 Feb 2016 12:35:20 +0530
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 3/3] powernv: Fix MCE handler to avoid trashing CR0/CR1
+ registers.
+References: <20160225045420.6543.55495.stgit@mars.in.ibm.com>
+ <20160225045524.6543.52552.stgit@mars.in.ibm.com>
+In-Reply-To: <20160225045524.6543.52552.stgit@mars.in.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +45,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-02-25 at 11:04 +1100, Balbir Singh wrote:
->
-> On 25/02/16 01:28, Michael Ellerman wrote:
-> > -bool is_module_trampoline(u32 *p)
-> > +int module_trampoline_target(struct module *mod, unsigned long addr,
-> > +			     unsigned long *target)
-> >  {
-> > -	unsigned int i;
-> > -	u32 insns[ARRAY_SIZE(ppc64_stub_insns)];
-> > -
-> > -	BUILD_BUG_ON(sizeof(ppc64_stub_insns) != sizeof(ppc64_stub_mask));
-> > +	struct ppc64_stub_entry *stub;
-> > +	func_desc_t funcdata;
-> > +	u32 magic;
-> >
-> > -	if (probe_kernel_read(insns, p, sizeof(insns)))
-> > +	if (!within_module_core(addr, mod)) {
-> > +		pr_err("%s: stub %lx not in module %s\n", __func__, addr, mod->name);
-> >  		return -EFAULT;
 
-> -EFAULT or -EINVAL?
 
-I think we want EFAULT. Otherwise ftrace_bug() will try and print the actual
-instruction, which would then fault. (though I haven't confirmed that by
-testing)
+On 02/25/2016 10:25 AM, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> 
+> The current implementation of MCE early handling modifies CR0/1 registers
+> without saving its old values. Fix this by moving early check for
+> powersaving mode to machine_check_handle_early().
+> 
+> The power architecture 2.06 or later allows the possibility of getting
+> machine check while in nap/sleep/winkle. The last bit of HSPRG0 is set
+> to 1, if thread is woken up from winkle. Hence, clear the last bit of
+> HSPRG0 (r13) before MCE handler starts using it as paca pointer.
+> 
+> Also, the current code always puts the thread into nap state irrespective
+> of whatever idle state it woke up from. Fix that by looking at
+> paca->thread_idle_state and put the thread back into same state where it
+> came from.
+> 
+> Reported-by: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/exceptions-64s.S |   66 ++++++++++++++++++++--------------
+>  1 file changed, 39 insertions(+), 27 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index d4c99f0..7fa71e7 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -164,29 +164,14 @@ machine_check_pSeries_1:
+>  	 * vector
+>  	 */
+>  	SET_SCRATCH0(r13)		/* save r13 */
+> -#ifdef CONFIG_PPC_P7_NAP
+> -BEGIN_FTR_SECTION
+> -	/* Running native on arch 2.06 or later, check if we are
+> -	 * waking up from nap. We only handle no state loss and
+> -	 * supervisor state loss. We do -not- handle hypervisor
+> -	 * state loss at this time.
+> +	/*
+> +	 * Running native on arch 2.06 or later, we may wakeup from winkle
+> +	 * inside machine check. If yes, then last bit of HSPGR0 would be set
+> +	 * to 1. Hence clear it unconditionally.
+>  	 */
+> -	mfspr	r13,SPRN_SRR1
+> -	rlwinm.	r13,r13,47-31,30,31
+> -	OPT_GET_SPR(r13, SPRN_CFAR, CPU_FTR_CFAR)
+> -	beq	9f
+> -
+> -	mfspr	r13,SPRN_SRR1
+> -	rlwinm.	r13,r13,47-31,30,31
+> -	/* waking up from powersave (nap) state */
+> -	cmpwi	cr1,r13,2
+> -	/* Total loss of HV state is fatal. let's just stay stuck here */
+> -	OPT_GET_SPR(r13, SPRN_CFAR, CPU_FTR_CFAR)
+> -	bgt	cr1,.
+> -9:
+> -	OPT_SET_SPR(r13, SPRN_CFAR, CPU_FTR_CFAR)
+> -END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+> -#endif /* CONFIG_PPC_P7_NAP */
+> +	GET_PACA(r13)
+> +	clrrdi	r13,r13,1
+> +	SET_PACA(r13)
+>  	EXCEPTION_PROLOG_0(PACA_EXMC)
+>  BEGIN_FTR_SECTION
+>  	b	machine_check_powernv_early
+> @@ -1362,25 +1347,52 @@ machine_check_handle_early:
+>  	 * Check if thread was in power saving mode. We come here when any
+>  	 * of the following is true:
+>  	 * a. thread wasn't in power saving mode
+> -	 * b. thread was in power saving mode with no state loss or
+> -	 *    supervisor state loss
+> +	 * b. thread was in power saving mode with no state loss,
+> +	 *    supervisor state loss or hypervisor state loss.
+>  	 *
+> -	 * Go back to nap again if (b) is true.
+> +	 * Go back to nap/sleep/winkle mode again if (b) is true.
+>  	 */
+>  	rlwinm.	r11,r12,47-31,30,31	/* Was it in power saving mode? */
+>  	beq	4f			/* No, it wasn;t */
+>  	/* Thread was in power saving mode. Go back to nap again. */
+>  	cmpwi	r11,2
+> -	bne	3f
+> -	/* Supervisor state loss */
+> +	blt	3f
+> +	/* Supervisor/Hypervisor state loss loss */
 
-> I wonder if we can recover from a bad trampoline address.
+loss repeated twice in comment
+>  	li	r0,1
+>  	stb	r0,PACA_NAPSTATELOST(r13)
+>  3:	bl	machine_check_queue_event
+>  	MACHINE_CHECK_HANDLER_WINDUP
+>  	GET_PACA(r13)
+> +	/*
+> +	 * Check what idle state this CPU was in and go back to same mode
+> +	 * again.
+> +	 */
+> +	lbz	r3,PACA_THREAD_IDLE_STATE(r13)
+> +	cmpwi	r3,PNV_THREAD_NAP
+> +	bgt	1f
+>  	ld	r1,PACAR1(r13)
+>  	li	r3,PNV_THREAD_NAP
+>  	b	power7_enter_nap_mode
 
-We can't recover at the moment. Do you mean is there some way we could recover?
+You could call IDLE_STATE_ENTER_SEQ(PPC_NAP) here to keep it consistent
+with what you do for sleep and winkle below. power7_enter_nap_mode is
+only setting couple of PACA flags which are anyway set in your case.
 
-cheers
+Also what is the MSR at this point? I don't foresee any issue as long as
+we are in real mode. That said, ISA says SF, HV and ME bits should be 1,
+RI can be 0,1 and rest have to be 0 before entering low power mode.
+> +	/* No return */
+> +1:
+> +	cmpwi	r3,PNV_THREAD_SLEEP
+> +	bgt	2f
+> +	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
+> +	/* No return */
+> +
+> +2:
+> +	/*
+> +	 * Go back to winkle. Please note that this thread was woken up in
+> +	 * machine check from winkle and have not restored the per-subcore
+> +	 * state. Hence before going back to winkle, set last bit of HSPGR0
+> +	 * to 1. This will make sure that if this thread gets woken up
+> +	 * again at reset vector 0x100 then it will get chance to restore
+> +	 * the subcore state.
+> +	 */
+> +	ori	r13,r13,1
+> +	SET_PACA(r13)
+
+Note PACA_THREAD_IDLE_STATE(r13) showing PNV_THREAD_WINKLE doesn't
+necessarily mean we woke up from winkle. It only means we requested for
+it. So here is possible you are setting last bit of HSPRG0 unnecessarily
+in some cases. I don't believe this has any harmful effects though. It
+will only result unnecessarily restoring SLB and few SPRs next time the
+thread wakes up in reset vector.
+
+> +	IDLE_STATE_ENTER_SEQ(PPC_WINKLE)
+> +	/* No return */
+>  4:
+>  #endif
+>  	/*
+> 
+Overall this patch looks good to me.
+
+Reviewed-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
