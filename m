@@ -1,28 +1,39 @@
-Return-Path: <duwe@lst.de>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F39361A0342
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 00:17:30 +1100 (AEDT)
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 88D1D140322
- for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2016 00:17:30 +1100 (AEDT)
-Date: Thu, 25 Feb 2016 14:17:27 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, bsingharora@gmail.com,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
- jkosina@suse.cz, live-patching@vger.kernel.org, mbenes@suse.cz
-Subject: Re: [PATCH 02/12] powerpc/module: Mark module stubs with a magic value
-Message-ID: <20160225131727.GD21932@lst.de>
-References: <1456324115-21144-1-git-send-email-mpe@ellerman.id.au>
- <1456324115-21144-2-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 69DD91A0342
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 00:19:41 +1100 (AEDT)
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Thu, 25 Feb 2016 13:19:37 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 750881B08069
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 13:19:44 +0000 (GMT)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1PDJOoM131514
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 13:19:24 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1PCJP4K022788
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 05:19:25 -0700
+Subject: Re: [PATCH v5 15/18] cxl: Parse device tree and create cxl device(s)
+ at boot
+To: manoj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+References: <1456244519-18934-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+ <1456244519-18934-16-git-send-email-fbarrat@linux.vnet.ibm.com>
+ <56CE0F71.60404@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Message-ID: <56CEFF5B.8010000@linux.vnet.ibm.com>
+Date: Thu, 25 Feb 2016 14:19:23 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1456324115-21144-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <56CE0F71.60404@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,22 +43,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 25, 2016 at 01:28:25AM +1100, Michael Ellerman wrote:
-> 
-> We can make that process easier by marking the generated stubs with a
-> magic value, and then looking for that magic value. Altough this is not
-> as rigorous as the current method, I believe it is sufficient in
-> practice.
 
-The actual magic value is sort of debatable; it should be "improbable"
-enough. But this can be changed easily, for each kernel compile, even.
 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Reviewed-by: Torsten Duwe <duwe@suse.de>
+Le 24/02/2016 21:15, Manoj Kumar a écrit :
+> On 2/23/2016 10:21 AM, Frederic Barrat wrote:
+>> +module_init(cxl_base_init);
+>
+> Is this a remnant from when there were two modules?
+> Do you really need two module_init() calls (can't one be called from the
+> other)?
+> What is the tear-down portion of this (module_exit)?
 
-[for reference:]
->  
-> +#define STUB_MAGIC 0x73747562 /* stub */
-> +
+No, this is not a left-over from the previous 2-module implementation of 
+the cxl driver.
+The file base.c is not part of the "normal" cxl driver. It is either 
+part of the kernel if the cxl driver is a module or configured in the 
+kernel. Or it is discarded if cxl is not even a module. So code in that 
+file is either in the kernel or it's not even compiled. That was already 
+the case on bare-metal.
+Code in module_init() is executed when the kernel boots and it is not 
+going away.
 
-	Torsten
+   Fred
