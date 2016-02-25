@@ -1,12 +1,12 @@
 Return-Path: <ddaney.cavm@gmail.com>
-Received: from mail-pf0-x22e.google.com (mail-pf0-x22e.google.com
- [IPv6:2607:f8b0:400e:c00::22e])
+Received: from mail-pf0-x232.google.com (mail-pf0-x232.google.com
+ [IPv6:2607:f8b0:400e:c00::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 854B01A03D5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 11:02:51 +1100 (AEDT)
-Received: by mail-pf0-x22e.google.com with SMTP id q63so21761205pfb.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 16:02:51 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E15D51A03D5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 11:02:52 +1100 (AEDT)
+Received: by mail-pf0-x232.google.com with SMTP id e127so21759619pfe.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 16:02:52 -0800 (PST)
 From: David Daney <ddaney.cavm@gmail.com>
 To: Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
  Mark Rutland <mark.rutland@arm.com>,
@@ -29,10 +29,10 @@ To: Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
 Cc: linux-kernel@vger.kernel.org,
  Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>,
  David Daney <david.daney@cavium.com>
-Subject: [PATCH 1/2] topology,
- cleanup: Avoid redefinition of cpumask_of_pcibus in asm header files.
-Date: Wed, 24 Feb 2016 16:02:07 -0800
-Message-Id: <1456358528-24213-2-git-send-email-ddaney.cavm@gmail.com>
+Subject: [PATCH 2/2] numa, mm,
+ cleanup: remove redundant NODE_DATA macro from asm header files.
+Date: Wed, 24 Feb 2016 16:02:08 -0800
+Message-Id: <1456358528-24213-3-git-send-email-ddaney.cavm@gmail.com>
 In-Reply-To: <1456358528-24213-1-git-send-email-ddaney.cavm@gmail.com>
 References: <1456358528-24213-1-git-send-email-ddaney.cavm@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,197 +46,232 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
 
-At present cpumask_of_pcibus is defined for !CONFIG_NUMA and moving out
-to common will allow to use for numa too. This also avoids
-redefinition of this macro in respective architecture header files.
+NODE_DATA is defined across multiple asm header files.
+Moving generic definition to asm-generic/mmzone.h to
+remove redundant definitions.
 
 Reviewed-by: Robert Richter <rrichter@cavium.com>
 Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
 Signed-off-by: David Daney <david.daney@cavium.com>
 ---
- arch/arm64/include/asm/topology.h   | 3 ---
- arch/ia64/include/asm/topology.h    | 4 ----
- arch/metag/include/asm/topology.h   | 3 ---
- arch/powerpc/include/asm/topology.h | 4 ----
- arch/s390/include/asm/pci.h         | 2 +-
- arch/s390/include/asm/topology.h    | 1 +
- arch/sh/include/asm/topology.h      | 3 ---
- arch/tile/include/asm/pci.h         | 2 --
- arch/tile/include/asm/topology.h    | 3 +++
- arch/x86/include/asm/pci.h          | 2 +-
- arch/x86/include/asm/topology.h     | 1 +
- include/asm-generic/topology.h      | 4 ++--
- 12 files changed, 9 insertions(+), 23 deletions(-)
+ arch/arm64/include/asm/mmzone.h   |  4 +---
+ arch/m32r/include/asm/mmzone.h    |  4 +---
+ arch/metag/include/asm/mmzone.h   |  4 +---
+ arch/powerpc/include/asm/mmzone.h |  8 ++------
+ arch/s390/include/asm/mmzone.h    |  6 +-----
+ arch/sh/include/asm/mmzone.h      |  4 +---
+ arch/sparc/include/asm/mmzone.h   |  6 ++----
+ arch/x86/include/asm/mmzone.h     |  3 +--
+ arch/x86/include/asm/mmzone_32.h  |  5 -----
+ arch/x86/include/asm/mmzone_64.h  | 17 -----------------
+ include/asm-generic/mmzone.h      | 24 ++++++++++++++++++++++++
+ 11 files changed, 34 insertions(+), 51 deletions(-)
+ delete mode 100644 arch/x86/include/asm/mmzone_64.h
+ create mode 100644 include/asm-generic/mmzone.h
 
-diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
-index 8b57339..6e1f62c 100644
---- a/arch/arm64/include/asm/topology.h
-+++ b/arch/arm64/include/asm/topology.h
-@@ -26,9 +26,6 @@ const struct cpumask *cpu_coregroup_mask(int cpu);
+diff --git a/arch/arm64/include/asm/mmzone.h b/arch/arm64/include/asm/mmzone.h
+index a0de9e6..611a1cf 100644
+--- a/arch/arm64/include/asm/mmzone.h
++++ b/arch/arm64/include/asm/mmzone.h
+@@ -4,9 +4,7 @@
+ #ifdef CONFIG_NUMA
  
- struct pci_bus;
- int pcibus_to_node(struct pci_bus *bus);
--#define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ?		\
--				 cpu_all_mask :				\
--				 cpumask_of_node(pcibus_to_node(bus)))
+ #include <asm/numa.h>
+-
+-extern struct pglist_data *node_data[];
+-#define NODE_DATA(nid)		(node_data[(nid)])
++#include  <asm-generic/mmzone.h>
  
  #endif /* CONFIG_NUMA */
+ #endif /* __ASM_MMZONE_H */
+diff --git a/arch/m32r/include/asm/mmzone.h b/arch/m32r/include/asm/mmzone.h
+index 115ced3..e3d66a0 100644
+--- a/arch/m32r/include/asm/mmzone.h
++++ b/arch/m32r/include/asm/mmzone.h
+@@ -7,12 +7,10 @@
+ #define _ASM_MMZONE_H_
  
-diff --git a/arch/ia64/include/asm/topology.h b/arch/ia64/include/asm/topology.h
-index 3ad8f69..2778eb6 100644
---- a/arch/ia64/include/asm/topology.h
-+++ b/arch/ia64/include/asm/topology.h
-@@ -58,10 +58,6 @@ void build_cpu_to_node_map(void);
+ #include <asm/smp.h>
++#include  <asm-generic/mmzone.h>
  
- extern void arch_fix_phys_package_id(int num, u32 slot);
+ #ifdef CONFIG_DISCONTIGMEM
  
--#define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ?		\
--				 cpu_all_mask :				\
--				 cpumask_of_node(pcibus_to_node(bus)))
+-extern struct pglist_data *node_data[];
+-#define NODE_DATA(nid)		(node_data[nid])
 -
- #include <asm-generic/topology.h>
+ #define node_localnr(pfn, nid)	((pfn) - NODE_DATA(nid)->node_start_pfn)
  
- #endif /* _ASM_IA64_TOPOLOGY_H */
-diff --git a/arch/metag/include/asm/topology.h b/arch/metag/include/asm/topology.h
-index e95f874..b285196 100644
---- a/arch/metag/include/asm/topology.h
-+++ b/arch/metag/include/asm/topology.h
-@@ -9,9 +9,6 @@
- #define cpumask_of_node(node)	((void)node, cpu_online_mask)
+ #define pmd_page(pmd)		(pfn_to_page(pmd_val(pmd) >> PAGE_SHIFT))
+diff --git a/arch/metag/include/asm/mmzone.h b/arch/metag/include/asm/mmzone.h
+index 9c88a9c..b1e95b3 100644
+--- a/arch/metag/include/asm/mmzone.h
++++ b/arch/metag/include/asm/mmzone.h
+@@ -3,9 +3,7 @@
  
- #define pcibus_to_node(bus)	((void)(bus), -1)
--#define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ? \
--					cpu_all_mask : \
--					cpumask_of_node(pcibus_to_node(bus)))
- 
- #endif
- 
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index 8b3b46b..eee025d 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -32,10 +32,6 @@ static inline int pcibus_to_node(struct pci_bus *bus)
- }
- #endif
- 
--#define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ?		\
--				 cpu_all_mask :				\
--				 cpumask_of_node(pcibus_to_node(bus)))
+ #ifdef CONFIG_NEED_MULTIPLE_NODES
+ #include <linux/numa.h>
 -
- extern int __node_distance(int, int);
- #define node_distance(a, b) __node_distance(a, b)
+-extern struct pglist_data *node_data[];
+-#define NODE_DATA(nid)		(node_data[nid])
++#include  <asm-generic/mmzone.h>
  
-diff --git a/arch/s390/include/asm/pci.h b/arch/s390/include/asm/pci.h
-index c873e68..539fb2d 100644
---- a/arch/s390/include/asm/pci.h
-+++ b/arch/s390/include/asm/pci.h
-@@ -205,7 +205,7 @@ static inline int __pcibus_to_node(const struct pci_bus *bus)
- }
- 
- static inline const struct cpumask *
--cpumask_of_pcibus(const struct pci_bus *bus)
-+__cpumask_of_pcibus(const struct pci_bus *bus)
+ static inline int pfn_to_nid(unsigned long pfn)
  {
- 	return cpu_online_mask;
- }
-diff --git a/arch/s390/include/asm/topology.h b/arch/s390/include/asm/topology.h
-index 6b53962..ac2f88f 100644
---- a/arch/s390/include/asm/topology.h
-+++ b/arch/s390/include/asm/topology.h
-@@ -78,6 +78,7 @@ static inline const struct cpumask *cpumask_of_node(int node)
- #define parent_node(node) (node)
+diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
+index 7b58917..da0c5ba 100644
+--- a/arch/powerpc/include/asm/mmzone.h
++++ b/arch/powerpc/include/asm/mmzone.h
+@@ -19,12 +19,6 @@
  
- #define pcibus_to_node(bus) __pcibus_to_node(bus)
-+#define cpumask_of_pcibus(bus) __cpumask_of_pcibus(bus)
+ #ifdef CONFIG_NEED_MULTIPLE_NODES
  
- #define node_distance(a, b) __node_distance(a, b)
- 
-diff --git a/arch/sh/include/asm/topology.h b/arch/sh/include/asm/topology.h
-index b0a282d..357983d 100644
---- a/arch/sh/include/asm/topology.h
-+++ b/arch/sh/include/asm/topology.h
-@@ -9,9 +9,6 @@
- #define cpumask_of_node(node)	((void)node, cpu_online_mask)
- 
- #define pcibus_to_node(bus)	((void)(bus), -1)
--#define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ? \
--					cpu_all_mask : \
--					cpumask_of_node(pcibus_to_node(bus)))
- 
- #endif
- 
-diff --git a/arch/tile/include/asm/pci.h b/arch/tile/include/asm/pci.h
-index dfedd7a..473ed46 100644
---- a/arch/tile/include/asm/pci.h
-+++ b/arch/tile/include/asm/pci.h
-@@ -223,8 +223,6 @@ static inline int pcibios_assign_all_busses(void)
- /* Minimum PCI I/O address, starting at the page boundary. */
- #define PCIBIOS_MIN_IO		PAGE_SIZE
- 
--/* Use any cpu for PCI. */
--#define cpumask_of_pcibus(bus) cpu_online_mask
- 
- /* implement the pci_ DMA API in terms of the generic device dma_ one */
- #include <asm-generic/pci-dma-compat.h>
-diff --git a/arch/tile/include/asm/topology.h b/arch/tile/include/asm/topology.h
-index b11d5fc..9770b86 100644
---- a/arch/tile/include/asm/topology.h
-+++ b/arch/tile/include/asm/topology.h
-@@ -46,6 +46,9 @@ static inline const struct cpumask *cpumask_of_node(int node)
- 
- #endif /* CONFIG_NUMA */
- 
-+/* Use any cpu for PCI. */
-+#define cpumask_of_pcibus(bus) cpu_online_mask
-+
- #include <asm-generic/topology.h>
- 
- #ifdef CONFIG_SMP
-diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
-index 4625943..4a6f358 100644
---- a/arch/x86/include/asm/pci.h
-+++ b/arch/x86/include/asm/pci.h
-@@ -121,7 +121,7 @@ static inline int __pcibus_to_node(const struct pci_bus *bus)
- }
- 
- static inline const struct cpumask *
--cpumask_of_pcibus(const struct pci_bus *bus)
-+__cpumask_of_pcibus(const struct pci_bus *bus)
- {
- 	int node;
- 
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index 0fb4648..980f6ee 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -91,6 +91,7 @@ extern void setup_node_to_cpumask_map(void);
- #define parent_node(node) (node)
- 
- #define pcibus_to_node(bus) __pcibus_to_node(bus)
-+#define cpumask_of_pcibus(bus) __cpumask_of_pcibus(bus)
- 
- extern int __node_distance(int, int);
- #define node_distance(a, b) __node_distance(a, b)
-diff --git a/include/asm-generic/topology.h b/include/asm-generic/topology.h
-index fc824e2..ee305f1 100644
---- a/include/asm-generic/topology.h
-+++ b/include/asm-generic/topology.h
-@@ -54,14 +54,14 @@
- #define pcibus_to_node(bus)	((void)(bus), -1)
- #endif
- 
-+#endif	/* !CONFIG_NUMA */
-+
- #ifndef cpumask_of_pcibus
- #define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ?		\
- 				 cpu_all_mask :				\
- 				 cpumask_of_node(pcibus_to_node(bus)))
- #endif
- 
--#endif	/* CONFIG_NUMA */
+-extern struct pglist_data *node_data[];
+-/*
+- * Return a pointer to the node data for node n.
+- */
+-#define NODE_DATA(nid)		(node_data[nid])
 -
- #if !defined(CONFIG_NUMA) || !defined(CONFIG_HAVE_MEMORYLESS_NODES)
+ /*
+  * Following are specific to this numa platform.
+  */
+@@ -42,5 +36,7 @@ u64 memory_hotplug_max(void);
+ #define memory_hotplug_max() memblock_end_of_DRAM()
+ #endif /* CONFIG_NEED_MULTIPLE_NODES */
  
- #ifndef set_numa_mem
++#include  <asm-generic/mmzone.h>
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_MMZONE_H_ */
+diff --git a/arch/s390/include/asm/mmzone.h b/arch/s390/include/asm/mmzone.h
+index a9e834e..91f1fcc 100644
+--- a/arch/s390/include/asm/mmzone.h
++++ b/arch/s390/include/asm/mmzone.h
+@@ -7,10 +7,6 @@
+ #ifndef _ASM_S390_MMZONE_H
+ #define _ASM_S390_MMZONE_H
+ 
+-#ifdef CONFIG_NUMA
++#include  <asm-generic/mmzone.h>
+ 
+-extern struct pglist_data *node_data[];
+-#define NODE_DATA(nid) (node_data[nid])
+-
+-#endif /* CONFIG_NUMA */
+ #endif /* _ASM_S390_MMZONE_H */
+diff --git a/arch/sh/include/asm/mmzone.h b/arch/sh/include/asm/mmzone.h
+index 15a8496..c070d00 100644
+--- a/arch/sh/include/asm/mmzone.h
++++ b/arch/sh/include/asm/mmzone.h
+@@ -5,9 +5,7 @@
+ 
+ #ifdef CONFIG_NEED_MULTIPLE_NODES
+ #include <linux/numa.h>
+-
+-extern struct pglist_data *node_data[];
+-#define NODE_DATA(nid)		(node_data[nid])
++#include  <asm-generic/mmzone.h>
+ 
+ static inline int pfn_to_nid(unsigned long pfn)
+ {
+diff --git a/arch/sparc/include/asm/mmzone.h b/arch/sparc/include/asm/mmzone.h
+index 99d9b9f..ef1365b 100644
+--- a/arch/sparc/include/asm/mmzone.h
++++ b/arch/sparc/include/asm/mmzone.h
+@@ -5,13 +5,11 @@
+ 
+ #include <linux/cpumask.h>
+ 
+-extern struct pglist_data *node_data[];
+-
+-#define NODE_DATA(nid)		(node_data[nid])
+-
+ extern int numa_cpu_lookup_table[];
+ extern cpumask_t numa_cpumask_lookup_table[];
+ 
+ #endif /* CONFIG_NEED_MULTIPLE_NODES */
+ 
++#include  <asm-generic/mmzone.h>
++
+ #endif /* _SPARC64_MMZONE_H */
+diff --git a/arch/x86/include/asm/mmzone.h b/arch/x86/include/asm/mmzone.h
+index d497bc4..8b9a0c2 100644
+--- a/arch/x86/include/asm/mmzone.h
++++ b/arch/x86/include/asm/mmzone.h
+@@ -1,5 +1,4 @@
++#include  <asm-generic/mmzone.h>
+ #ifdef CONFIG_X86_32
+ # include <asm/mmzone_32.h>
+-#else
+-# include <asm/mmzone_64.h>
+ #endif
+diff --git a/arch/x86/include/asm/mmzone_32.h b/arch/x86/include/asm/mmzone_32.h
+index 1ec990b..09f7cfb 100644
+--- a/arch/x86/include/asm/mmzone_32.h
++++ b/arch/x86/include/asm/mmzone_32.h
+@@ -8,11 +8,6 @@
+ 
+ #include <asm/smp.h>
+ 
+-#ifdef CONFIG_NUMA
+-extern struct pglist_data *node_data[];
+-#define NODE_DATA(nid)	(node_data[nid])
+-#endif /* CONFIG_NUMA */
+-
+ #ifdef CONFIG_DISCONTIGMEM
+ 
+ /*
+diff --git a/arch/x86/include/asm/mmzone_64.h b/arch/x86/include/asm/mmzone_64.h
+deleted file mode 100644
+index 129d9aa..0000000
+--- a/arch/x86/include/asm/mmzone_64.h
++++ /dev/null
+@@ -1,17 +0,0 @@
+-/* K8 NUMA support */
+-/* Copyright 2002,2003 by Andi Kleen, SuSE Labs */
+-/* 2.5 Version loosely based on the NUMAQ Code by Pat Gaughen. */
+-#ifndef _ASM_X86_MMZONE_64_H
+-#define _ASM_X86_MMZONE_64_H
+-
+-#ifdef CONFIG_NUMA
+-
+-#include <linux/mmdebug.h>
+-#include <asm/smp.h>
+-
+-extern struct pglist_data *node_data[];
+-
+-#define NODE_DATA(nid)		(node_data[nid])
+-
+-#endif
+-#endif /* _ASM_X86_MMZONE_64_H */
+diff --git a/include/asm-generic/mmzone.h b/include/asm-generic/mmzone.h
+new file mode 100644
+index 0000000..ec0fc4c
+--- /dev/null
++++ b/include/asm-generic/mmzone.h
+@@ -0,0 +1,24 @@
++/*
++ * linux/include/asm-generic/mmzone.h
++ *
++ * Author: Ganapatrao Kulkarni <gkulkarni@cavium.com>
++ * Copyright (C) 2016 Cavium Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#ifndef _ASM_GENERIC_MMZONE_H
++#define _ASM_GENERIC_MMZONE_H
++
++#if defined(CONFIG_NUMA) || defined(CONFIG_NEED_MULTIPLE_NODES)
++
++#ifndef NODE_DATA
++extern struct pglist_data *node_data[];
++#define NODE_DATA(nid)          (node_data[(nid)])
++#endif
++
++#endif
++#endif /* _ASM_GENERIC_MMZONE_H */
 -- 
 1.8.3.1
