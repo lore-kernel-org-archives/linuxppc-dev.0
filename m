@@ -1,19 +1,29 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id A41ED1A04FB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 16:12:38 +1100 (AEDT)
-Date: Thu, 25 Feb 2016 00:12:34 -0500 (EST)
-Message-Id: <20160225.001234.830392805325286378.davem@davemloft.net>
-To: tlfalcon@linux.vnet.ibm.com
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [net-next PATCH v3] ibmvnic: map L2/L3/L4 header descriptors
- to firmware
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1456371283-24349-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-References: <1456371283-24349-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
+ [IPv6:2607:f8b0:400e:c03::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A25751A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 16:35:09 +1100 (AEDT)
+Received: by mail-pa0-x234.google.com with SMTP id fl4so25957287pad.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Feb 2016 21:35:09 -0800 (PST)
+Received: from cotter.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id a21sm8790501pfj.40.2016.02.24.21.35.06
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLSv1/SSLv3 cipher=OTHER);
+ Wed, 24 Feb 2016 21:35:07 -0800 (PST)
+Subject: Re: [PATCH V4 04/18] powerpc/mm: Split pgtable types to separate
+ header
+To: linuxppc-dev@lists.ozlabs.org
+References: <1456202900-5454-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1456202900-5454-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20160225031240.GC18753@oak.ozlabs.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <56CE9287.7080509@gmail.com>
+Date: Thu, 25 Feb 2016 16:35:03 +1100
+MIME-Version: 1.0
+In-Reply-To: <20160225031240.GC18753@oak.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,39 +33,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Date: Wed, 24 Feb 2016 21:34:43 -0600
 
-> +
-> +static union sub_crq *build_hdr_descs_arr(struct sk_buff *skb,
-> +					  int *num_entries,
-> +					  union sub_crq subcrq, u8 hdr_field)
-> +{
-> +	unsigned char *hdr_data;
-> +	union sub_crq *entries;
-> +	int hdr_len[3] = {0};
-> +	int tot_len;
-> +
-> +	hdr_data = build_hdr_data(hdr_field, skb, hdr_len, &tot_len);
-> +	if (!hdr_data)
-> +		return NULL;
-> +
-> +	*num_entries += calc_num_hdr_descs(tot_len);
-> +
-> +	entries = alloc_scrq_array(*num_entries, subcrq);
 
-Doing an extra memory allocation for every transmit packet is going
-to kill performance.  We are spending enormous amounts of effort
-trying to eliminate the bare minimum memory allocations that occur
-as-is because that cost is what dominates and this patch is going
-to make it even worse for this device.
+On 25/02/16 14:12, Paul Mackerras wrote:
+> On Tue, Feb 23, 2016 at 10:18:06AM +0530, Aneesh Kumar K.V wrote:
+>> We move the page table accessors into a separate header. We will
+>> later add a big endian variant of the table which is needed for radix.
+>> No functionality change only code movement.
+>>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Reviewed-by: Paul Mackerras <paulus@samba.org>
+>
+> We may end up using a big-endian Linux page table even on hash,
+> for the sake of simplicity.
+>
+Doesn't the series you posted, do that? Assuming those patches are
+applied before these
 
-I don't care what offloads this enables, the implementation is
-unacceptable from a performance standpoint.
-
-Also, you should only add this new code when the offloads that make
-use of the feature are added as well, otherwise it is unused bloat.
-
-I am not applying this patch, there are so many things wrong with it.
-
-Sorry.
+Balbir Singh
