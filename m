@@ -1,44 +1,23 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A294C1A034A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 17:23:25 +1100 (AEDT)
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6FE021402A8
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2016 17:23:25 +1100 (AEDT)
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 25 Feb 2016 16:23:24 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7F4DB357803F
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2016 17:23:21 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1P6NDT054067250
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2016 17:23:21 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1P6Mm5Q028168
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2016 17:22:49 +1100
-Date: Thu, 25 Feb 2016 11:52:05 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Cyril Bur <cyrilbur@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v5 1/9] selftests/powerpc: Test the preservation of FPU
- and VMX regs across syscall
-Message-ID: <20160225062205.GA20786@naverao1-tp.ibm.com>
-References: <1456198702-29657-1-git-send-email-cyrilbur@gmail.com>
- <1456198702-29657-2-git-send-email-cyrilbur@gmail.com>
- <20160224142738.GB18778@naverao1-tp.ibm.com>
- <20160225104441.6e7fe396@camb691>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160225104441.6e7fe396@camb691>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 38C8F1A0063
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 17:43:59 +1100 (AEDT)
+Message-ID: <1456382638.30375.4.camel@ellerman.id.au>
+Subject: Re: [PATCH 02/12] powerpc/module: Mark module stubs with a magic value
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org
+Cc: duwe@lst.de, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
+ jkosina@suse.cz,  live-patching@vger.kernel.org, mbenes@suse.cz
+Date: Thu, 25 Feb 2016 17:43:58 +1100
+In-Reply-To: <56CE44F8.8070605@gmail.com>
+References: <1456324115-21144-1-git-send-email-mpe@ellerman.id.au>
+ <1456324115-21144-2-git-send-email-mpe@ellerman.id.au>
+ <56CE44F8.8070605@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,108 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/02/25 10:44AM, Cyril Bur wrote:
-> On Wed, 24 Feb 2016 19:57:38 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> 
-> > On 2016/02/23 02:38PM, Cyril Bur wrote:
-> > > Test that the non volatile floating point and Altivec registers get
-> > > correctly preserved across the fork() syscall.
-> > > 
-> > > fork() works nicely for this purpose, the registers should be the same for
-> > > both parent and child
-> > > 
-> > > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> > > ---
+On Thu, 2016-02-25 at 11:04 +1100, Balbir Singh wrote:
+>
+> On 25/02/16 01:28, Michael Ellerman wrote:
+> > -bool is_module_trampoline(u32 *p)
+> > +int module_trampoline_target(struct module *mod, unsigned long addr,
+> > +			     unsigned long *target)
+> >  {
+> > -	unsigned int i;
+> > -	u32 insns[ARRAY_SIZE(ppc64_stub_insns)];
+> > -
+> > -	BUILD_BUG_ON(sizeof(ppc64_stub_insns) != sizeof(ppc64_stub_mask));
+> > +	struct ppc64_stub_entry *stub;
+> > +	func_desc_t funcdata;
+> > +	u32 magic;
+> >
+> > -	if (probe_kernel_read(insns, p, sizeof(insns)))
+> > +	if (!within_module_core(addr, mod)) {
+> > +		pr_err("%s: stub %lx not in module %s\n", __func__, addr, mod->name);
+> >  		return -EFAULT;
 
-<snip>
+> -EFAULT or -EINVAL?
 
-> > > diff --git a/tools/testing/selftests/powerpc/basic_asm.h 
-> > > b/tools/testing/selftests/powerpc/basic_asm.h
-> > > new file mode 100644
-> > > index 0000000..f56482f
-> > > --- /dev/null
-> > > +++ b/tools/testing/selftests/powerpc/basic_asm.h
-> > > @@ -0,0 +1,62 @@
-> > > +#include <ppc-asm.h>
-> > > +#include <asm/unistd.h>
-> > > +
-> > > +#if defined(_CALL_ELF) && _CALL_ELF == 2
-> > > +#define STACK_FRAME_MIN_SIZE 32
-> > > +#define STACK_FRAME_TOC_POS  24
-> > > +#define __STACK_FRAME_PARAM(_param)  (32 + ((_param)*8))
-> > > +#define __STACK_FRAME_LOCAL(_num_params,_var_num)  ((STACK_FRAME_PARAM(_num_params)) + ((_var_num)*8))
-> > > +#else
-> > > +#define STACK_FRAME_MIN_SIZE 112
-> > > +#define STACK_FRAME_TOC_POS  40
-> > > +#define __STACK_FRAME_PARAM(i)  (48 + ((i)*8))
-> > > +/*
-> > > + * Caveat: if a function passed more than 8 params, the caller will have
-> > > + * made more space... this should be reflected by this C code.
-> > > + * if (_num_params > 8)
-> > > + *     total = 112 + ((_num_params - 8) * 8)
-> > > + *
-> > > + * And substitute the '112' for 'total' in the macro. Doable in preprocessor for ASM?
-> > > + */  
-> > 
-> > Per my understanding, the parameter save area is only for parameters to 
-> > functions that *we* call. And since we control that, I don't think we 
-> > need to worry about having more than 8 parameters.
-> > 
-> 
-> Yes, I just thought I'd put that there to prevent anyone blindly reusing this
-> macro somewhere and getting stung. But you're correct, we don't need to worry
-> about this caveat for this code.
+I think we want EFAULT. Otherwise ftrace_bug() will try and print the actual
+instruction, which would then fault. (though I haven't confirmed that by
+testing)
 
-Agreed, so probably a simpler warning will suffice. Also, it is worth 
-noting that this is not necessarily 8 parameters, but 8 doublewords - we 
-may have less number of parameters, but may still need more than 8 
-doublewords.
+> I wonder if we can recover from a bad trampoline address.
 
-> 
-> > > +#define __STACK_FRAME_LOCAL(_num_params,_var_num)  (112 + ((_var_num)*8))
-> > > +#endif
-> > > +/* Parameter x saved to the stack */
-> > > +#define STACK_FRAME_PARAM(var)    __STACK_FRAME_PARAM(var)
-> > > +/* Local variable x saved to the stack after x parameters */
-> > > +#define STACK_FRAME_LOCAL(num_params,var)    __STACK_FRAME_LOCAL(num_params,var)  
-> > 
-> > So this works, but I'm wondering if this is really worth the code 
-> > complexity - every use needs to determine appropriate extra stack space, 
-> > the number of parameters to save and so on.  This is after all for 
-> > selftests and so, we probably don't need to be precise in stack space 
-> > usage. We can get away using a larger fixed size stack.  That will 
-> > simplify a lot of the code further on and future tests won't need to 
-> > bother with all the details.
-> > 
-> 
-> So I agree that we don't need to be precise about stack space at all (I'm sure
-> you noticed all my stack pushes and pops are very overestimated in size).
-> 
-> I should probably go back to basics and explain how these macros started. In
-> writing all this I got fed up of typing the PUSH_BASIC_STACK and
-> POP_BASIC_STACK macro out at the start of each function. I wasn't trying to
-> macro out the entire calling convention and honestly I don't think it is a good
-> idea. The more easy to use/abstracted the macros get the less flexible they
+We can't recover at the moment. Do you mean is there some way we could recover?
 
-The simplification here is largely in terms of the stack size and the 
-fpu/gpr/vmx save areas. I don't think most tests would need more control 
-there. For the few tests that may need it, they can always hand code or 
-introduce different macros.
-
-> become. These being selftests, I expect that people might want to do
-> funky/questionable/hacky things, flexibility in the macros might help with that.
-
-Sure, but having every test deal with the intricacies of the stack is 
-not good. It's better to have simple macros that work for the common 
-generic case and consider introducing more specific macros/hard coding 
-where more control is desired.
-
-> 
-> I feel like if we want to go down the route of fully abstracting out everything
-> then perhaps we should be considering C...
-
-If that works for your tests, sure, I think that is not a bad idea.
-
-
-- Naveen
+cheers
