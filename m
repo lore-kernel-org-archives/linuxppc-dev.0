@@ -1,20 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CD98C1A0341
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 15:12:30 +1100 (AEDT)
-Message-ID: <1456373550.30375.3.camel@ellerman.id.au>
-Subject: Re: Problems with swapping in v4.5-rc on POWER
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Hugh Dickins <hughd@google.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 25 Feb 2016 15:12:30 +1100
-In-Reply-To: <alpine.LSU.2.11.1602241716220.15121@eggly.anvils>
-References: <alpine.LSU.2.11.1602241716220.15121@eggly.anvils>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A9B4D1A0342
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 15:33:05 +1100 (AEDT)
+Message-ID: <1456374775.5360.32.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Wed, 24 Feb 2016 22:32:55 -0600
+In-Reply-To: <1456202900-5454-16-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1456202900-5454-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1456202900-5454-16-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Subject: Re: [PATCH V4 15/18] powerpc/mm: Move hash page table related
+ functions to pgtable-hash64.c
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-02-24 at 18:10 -0800, Hugh Dickins via Linuxppc-dev wrote:
+On Tue, 2016-02-23 at 10:18 +0530, Aneesh Kumar K.V wrote:
+> 
+> diff --git a/arch/powerpc/mm/pgtable-book3e.c b/arch/powerpc/mm/pgtable
+> -book3e.c
+> new file mode 100644
+> index 000000000000..bdaa4376f838
+> --- /dev/null
+> +++ b/arch/powerpc/mm/pgtable-book3e.c
+> @@ -0,0 +1,163 @@
+> +
+> +/*
+> + * Copyright IBM Corporation, 2015
+> + * Author Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of version 2 of the GNU Lesser General Public License
+> + * as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it would be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> + *
+> + */
+> +
+> +/*
+> + * PPC64 THP Support for hash based MMUs
+> + */
 
-> I've plagiarized the subject from Paulus's "Problems with THP" mail
-> last weekend; but my similar problems are on PowerMac G5 baremetal,
-> with 4kB pages, not capable of THP and no THP configured in.
-> 
-> Under heavily swapping load, running kernel builds on tmpfs in limited
-> memory, I've been seeing random segfaults too, internal compiler errors
-> etc.  Not easily reproduced: sometimes happens in minutes, sometimes
-> not for several hours.
-> 
-> I tried and failed to construct a reproducer for you: my lack of a good
-> recipe has deterred me from reporting it, and seeing Paulus's mail on
-> THP gave me hope that the answer would come up in that thread; but no,
-> that was quickly resolved as a THP issue, since fixed.
-> 
-> (Mine had appeared to be fixed in v4.5-rc4 anyway; but I guess I
-> just didn't try hard enough, it resurfaced on -rc5 immediately.)
-> 
-> I've seen no sign of such problems on x86.  And I saw no sign of such
-> problems on v4.4-rc8-mm1, when I included the fixes to the _PAGE_PTE
-> and _PAGE_SWP_SOFT_DIRTY swapoff issues we discussed back then (in
-> 33 hours of load, should be good enough; but did see such problems
-> a couple of times before including those fixes - I took them to be
-> a side-effect of the page flags issue, but now rather doubt that).
-> 
-> The minutes or hours thing: I wonder if that indicates a missing
-> initialization somewhere: that can easily show up soon after booting,
-> but then the machine settles into a steady state of reusing the same
-> structures, now initialized; until much later something disturbs the
-> state and it has to allocate more.  Sheer speculation, but I wonder.
+This comment doesn't match the filename.
 
-Thanks Hugh.
+Regarding the rest of the file's contents, why is this being code being
+copied?  The very terse changelog doesn't cover it.
 
-I do run tests on G5, but obviously not rigorously enough. I kicked off a few
-kernel builds on mine and it survived, though once it hits swap it's almost
-unusably slow. I'll leave it running overnight and see if I hit anything.
-
-cheers
+-Scott
