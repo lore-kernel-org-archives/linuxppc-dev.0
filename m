@@ -1,30 +1,40 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <warrier@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0E8401A0007
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2016 05:16:24 +1100 (AEDT)
-Message-ID: <1456510574.5360.48.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Li Yang <leoli@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette
- <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Russell
- King <linux@arm.linux.org.uk>, linux-clk@vger.kernel.org,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>,  "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, Tang Yuantian
- <Yuantian.Tang@freescale.com>
-Date: Fri, 26 Feb 2016 12:16:14 -0600
-In-Reply-To: <CADRPPNRiU-9b5J_9+0ofk6huLCn4LPm1s_2yd=Py0eBBi9GGXg@mail.gmail.com>
-References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
- <3374654.Hks5DeSGVV@vostro.rjw.lan>
- <1443215827.32298.130.camel@freescale.com>
- <2148611.GEpYdTfpoR@vostro.rjw.lan>
- <CADRPPNRiU-9b5J_9+0ofk6huLCn4LPm1s_2yd=Py0eBBi9GGXg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock
- implementation details
+ by lists.ozlabs.org (Postfix) with ESMTPS id E1DA91A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2016 05:41:01 +1100 (AEDT)
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id EEDB2140307
+ for <linuxppc-dev@ozlabs.org>; Sat, 27 Feb 2016 05:41:00 +1100 (AEDT)
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
+ Fri, 26 Feb 2016 11:40:58 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id E67E019D804A
+ for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2016 11:28:52 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id u1QIeubd44499162
+ for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2016 11:40:56 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1QIetbB016903
+ for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2016 11:40:55 -0700
+From: Suresh Warrier <warrier@linux.vnet.ibm.com>
+To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: warrier@linux.vnet.ibm.com, paulus@samba.org, agraf@suse.de,
+ mpe@ellerman.id.au
+Subject: [PATCH 01/14] powerpc: Add simple cache inhibited MMIO accessors
+Date: Fri, 26 Feb 2016 12:40:19 -0600
+Message-Id: <1456512032-31286-2-git-send-email-warrier@linux.vnet.ibm.com>
+In-Reply-To: <1456512032-31286-1-git-send-email-warrier@linux.vnet.ibm.com>
+References: <1456512032-31286-1-git-send-email-warrier@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,66 +44,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-02-26 at 12:14 -0600, Li Yang wrote:
-> On Fri, Sep 25, 2015 at 4:50 PM, Rafael J. Wysocki <rjw@rjwysocki.net>
-> wrote:
-> > On Friday, September 25, 2015 04:17:07 PM Scott Wood wrote:
-> > > On Fri, 2015-09-25 at 23:42 +0200, Rafael J. Wysocki wrote:
-> > > > On Tuesday, September 22, 2015 12:46:54 PM Viresh Kumar wrote:
-> > > > > On 19-09-15, 23:29, Scott Wood wrote:
-> > > > > > Get the CPU clock's potential parent clocks from the clock
-> > > > > > interface
-> > > > > > itself, rather than manually parsing the clocks property to find a
-> > > > > > phandle, looking at the clock-names property of that, and assuming
-> > > > > > that
-> > > > > > those are valid parent clocks for the cpu clock.
-> > > > > > 
-> > > > > > This is necessary now that the clocks are generated based on the
-> > > > > > clock
-> > > > > > driver's knowledge of the chip rather than a fragile device-tree
-> > > > > > description of the mux options.
-> > > > > > 
-> > > > > > We can now rely on the clock driver to ensure that the mux only
-> > > > > > exposes
-> > > > > > options that are valid.  The cpufreq driver was currently being
-> > > > > > overly
-> > > > > > conservative in some cases -- for example, the "min_cpufreq =
-> > > > > > get_bus_freq()" restriction only applies to chips with erratum
-> > > > > > A-004510, and whether the freq_mask used on p5020 is needed
-> > > > > > depends on
-> > > > > > the actual frequencies of the PLLs (FWIW, p5040 has a similar
-> > > > > > limitation but its .freq_mask was zero) -- and the frequency mask
-> > > > > > mechanism made assumptions about particular parent clock indices
-> > > > > > that
-> > > > > > are no longer valid.
-> > > > > > 
-> > > > > > Signed-off-by: Scott Wood <scottwood@freescale.com>
-> > > > > > ---
-> > > > > > v3: was patch 1/5 and patch 4/5, plus blacklist e6500 and changes
-> > > > > > to clk api usage
-> > > > > > 
-> > > > > >  drivers/cpufreq/qoriq-cpufreq.c | 137 ++++++++++++---------------
-> > > > > > ------
-> > > > > > -------
-> > > > > >  1 file changed, 40 insertions(+), 97 deletions(-)
-> > > > > 
-> > > > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > > 
-> > > > I'm wondering who's supposed to be merging this set?
-> > > 
-> > > As I noted in the cover letter, I'm looking for acks so that I can apply
-> > > these to a topic branch which can be pulled through the PPC and ARM
-> > > trees,
-> > > each of which will have patches that depend on it.
-> > 
-> > OK, so no objections from the cpufreq side and you have the ACK from
-> > Viresh.
-> 
-> Hi Scott,
-> 
-> Did you drop this patch later?  I can not find it in 4.5-rc still.
+Add simple cache inhibited accessors for memory mapped I/O.
+Unlike the accessors built from the DEF_MMIO_* macros, these
+don't include any hardware memory barriers, callers need to
+manage memory barriers on their own. These can only be called
+in hypervisor mode.
 
-I was asked to get an ack from Russell King patch 4/5, which this patch
-requires.  Despite repeated pings, I could not get a reply from Russell King.
+Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/io.h | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
--Scott
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index 6c1297e..d329a01 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -241,6 +241,34 @@ static inline void out_be64(volatile u64 __iomem *addr, u64 val)
+ #endif
+ #endif /* __powerpc64__ */
+ 
++
++/*
++ * Simple Cache inhibited accessors
++ * Unlike the DEF_MMIO_* macros, these don't include any h/w memory
++ * barriers, callers need to manage memory barriers on their own.
++ */
++
++static inline u32 _lwzcix(unsigned long addr)
++{
++	u32 ret;
++
++	__asm__ __volatile__("lwzcix %0,0, %1"
++			     : "=r" (ret) : "r" (addr) : "memory");
++	return ret;
++}
++
++static inline void _stbcix(u64 addr, u8 val)
++{
++	__asm__ __volatile__("stbcix %0,0,%1"
++		: : "r" (val), "r" (addr) : "memory");
++}
++
++static inline void _stwcix(u64 addr, u32 val)
++{
++	__asm__ __volatile__("stwcix %0,0,%1"
++		: : "r" (val), "r" (addr) : "memory");
++}
++
+ /*
+  * Low level IO stream instructions are defined out of line for now
+  */
+-- 
+1.8.3.4
