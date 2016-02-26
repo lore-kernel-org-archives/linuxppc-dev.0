@@ -1,33 +1,31 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 014741A0B4C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:05:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 84D8D1A0341
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:15:02 +1100 (AEDT)
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 26 Feb 2016 10:05:54 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1EF6D2CE8059
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:05:51 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1Q05gdo50528412
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:05:51 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1Q05IZH000991
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:05:18 +1100
+ Fri, 26 Feb 2016 10:15:01 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 67D972CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:14:59 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1Q0Epqn10551626
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:14:59 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1Q0EQ3c028906
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:14:27 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH 3/3] powerpc/eeh: Synchronize recovery in host/guest
-Date: Fri, 26 Feb 2016 11:04:52 +1100
-Message-Id: <1456445092-18337-4-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1456445092-18337-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1456445092-18337-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v2] powerpc/eeh: Remove duplicated check in eeh_dump_pe_log()
+Date: Fri, 26 Feb 2016 11:14:00 +1100
+Message-Id: <1456445640-24085-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,43 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When passing through SRIOV VFs to guest, we possibly encounter EEH
-error on PF. In this case, the VF PEs are put into frozen state.
-The error could be reported to guest before it's captured by the
-host. That means the guest could attempt to recover errors on VFs
-before host gets chance to recover errors on PFs. The VFs won't be
-recovered successfully.
+When eeh_dump_pe_log() is only called by eeh_slot_error_detail(),
+we already have the check that the PE isn't in PCI config blocked
+state in eeh_slot_error_detail(). So we needn't the duplicated
+check in eeh_dump_pe_log().
 
-This enforces the recovery order for above case: the recovery on
-child PE in guest is hold until the recovery on parent PE in host
-is completed.
+This removes the duplicated check in eeh_dump_pe_log(). No logical
+changes introduced.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+v2: Improved commit log
+---
+ arch/powerpc/kernel/eeh.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
 diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index fd9c782..42bd546 100644
+index 8c6005c..46b41be 100644
 --- a/arch/powerpc/kernel/eeh.c
 +++ b/arch/powerpc/kernel/eeh.c
-@@ -1541,6 +1541,17 @@ int eeh_pe_get_state(struct eeh_pe *pe)
- 	if (!eeh_ops || !eeh_ops->get_state)
- 		return -ENOENT;
+@@ -268,13 +268,6 @@ static void *eeh_dump_pe_log(void *data, void *flag)
+ 	struct eeh_dev *edev, *tmp;
+ 	size_t *plen = flag;
  
-+	/*
-+	 * If the parent PE, which is owned by host kernel, is experiencing
-+	 * error recovery. We should return temporarily unavailable PE state
-+	 * so that the recovery on guest side is suspended until the error
-+	 * recovery is completed on host side.
-+	 */
-+	if (pe->parent &&
-+	    !(pe->state & EEH_PE_REMOVED) &&
-+	    (pe->parent->state & (EEH_PE_ISOLATED | EEH_PE_RECOVERING)))
-+		return EEH_PE_STATE_UNAVAIL;
-+
- 	result = eeh_ops->get_state(pe, NULL);
- 	rst_active = !!(result & EEH_STATE_RESET_ACTIVE);
- 	dma_en = !!(result & EEH_STATE_DMA_ENABLED);
+-	/* If the PE's config space is blocked, 0xFF's will be
+-	 * returned. It's pointless to collect the log in this
+-	 * case.
+-	 */
+-	if (pe->state & EEH_PE_CFG_BLOCKED)
+-		return NULL;
+-
+ 	eeh_pe_for_each_dev(pe, edev, tmp)
+ 		*plen += eeh_dump_dev_log(edev, pci_regs_buf + *plen,
+ 					  EEH_PCI_REGS_LOG_LEN - *plen);
 -- 
 2.1.0
