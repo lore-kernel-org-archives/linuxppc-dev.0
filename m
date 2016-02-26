@@ -1,42 +1,26 @@
-Return-Path: <warrier@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0F1821A0D96
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2016 05:49:50 +1100 (AEDT)
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CC68F14031E
- for <linuxppc-dev@ozlabs.org>; Sat, 27 Feb 2016 05:49:48 +1100 (AEDT)
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
- Fri, 26 Feb 2016 11:49:47 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id B4D353E4004F
- for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2016 11:49:45 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id u1QInjYL34799772
- for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2016 11:49:45 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1QInjZv015427
- for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2016 11:49:45 -0700
-Subject: Re: [PATCH 00/14] KVM: PPC: Book3S HV: PCI Passthrough Interrupt
- Optimizations
-To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
-References: <1456512032-31286-1-git-send-email-warrier@linux.vnet.ibm.com>
-Cc: paulus@samba.org, agraf@suse.de
-From: "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>
-Message-ID: <56D09E46.6090400@linux.vnet.ibm.com>
-Date: Fri, 26 Feb 2016 12:49:42 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A7F81A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2016 07:20:19 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Li Yang <leoli@freescale.com>, devicetree@vger.kernel.org,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Jia Hongtao <hongtao.jia@freescale.com>, edubezval@gmail.com,
+ viresh.kumar@linaro.org, Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
+ device tree
+Date: Fri, 26 Feb 2016 21:20:04 +0100
+Message-ID: <2396230.MApG9VTrxr@wuerfel>
+In-Reply-To: <CADRPPNSqXBqD0of0ZorXFOKQc1OQaaJCPFUTMUezJexkegHY9A@mail.gmail.com>
+References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
+ <3550740.QzZi28fbXg@wuerfel>
+ <CADRPPNSqXBqD0of0ZorXFOKQc1OQaaJCPFUTMUezJexkegHY9A@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1456512032-31286-1-git-send-email-warrier@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,66 +30,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Friday 26 February 2016 12:04:59 Li Yang wrote:
+> On Fri, Dec 18, 2015 at 4:32 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> > On Tuesday 15 December 2015 00:58:26 Rafael J. Wysocki wrote:
+> >> On Thursday, November 26, 2015 05:21:11 PM Jia Hongtao wrote:
+> >> > Register the qoriq cpufreq driver as a cooling device, based on the
+> >> > thermal device tree framework. When temperature crosses the passive trip
+> >> > point cpufreq is used to throttle CPUs.
+> >> >
+> >> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> >> > Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >>
+> >> Applied, thanks!
+> >>
+> >
+> > I got a randconfig build error today:
+> >
+> > drivers/built-in.o: In function `qoriq_cpufreq_ready':
+> > debugfs.c:(.text+0x1f4688): undefined reference to `of_cpufreq_cooling_register'
+> >
+> > CONFIG_OF=y
+> > CONFIG_QORIQ_CPUFREQ=y
+> > CONFIG_THERMAL=m
+> > CONFIG_THERMAL_OF=y
+> >
+> > I think you need a 'depends on THERMAL' to prevent the driver from
+> > being built-in when THERMAL=m.
+> 
+> Maybe this is not the best approach.  The cpufreq feature itself
+> should be working independently without thermal framework.  I think we
+> should make the qoriq_cpufreq_ready() defined as null function if
+> THERMAL is not defined.
+
+It already does this when CONFIG_THERMAL is not defined, and my
+patch doesn't change that. I'm not sure what you are asking for now.
+
+Do you want to allow using the cpufreq driver as a built-in driver
+even when the thermal code is in a module, and then silently skip
+all thermal management as if it was turned off?
+
+That would be this patch:
+
+diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+index c156f5082758..a8d9241fc1bb 100644
+--- a/include/linux/cpu_cooling.h
++++ b/include/linux/cpu_cooling.h
+@@ -48,7 +48,7 @@ cpufreq_power_cooling_register(const struct cpumask *clip_cpus,
+  * @np: a valid struct device_node to the cooling device device tree node.
+  * @clip_cpus: cpumask of cpus where the frequency constraints will happen
+  */
+-#ifdef CONFIG_THERMAL_OF
++#if IS_REACHABLE(CONFIG_THERMAL_OF)
+ struct thermal_cooling_device *
+ of_cpufreq_cooling_register(struct device_node *np,
+ 			    const struct cpumask *clip_cpus);
 
 
-On 02/26/2016 12:40 PM, Suresh Warrier wrote:
-> This patch set adds support for handling interrupts for PCI adapters
-> entirely in the guest under the right conditions. When an interrupt
-> is received by KVM in real mode, if the interrupt is from a PCI
-> passthrough adapter owned by the guest, KVM will update the virtual
-> ICP for the VCPU that is the target of the interrupt entirely in
-> real mode and generate the virtual interrupt. If the VCPU is not
-> running in the guest, it will wake up the VCPU.  It will also update
-> the affinity of the interrupt to directly target the CPU (core)
-> where this VCPU is being scheduled as an optimization. 
-> 
-> KVM needs the mapping between hardware interrupt numbers in the host
-> to the virtual hardware interrupt (GSI) that needs to get injected
-> into the guest. This patch set takes advantage of the IRQ bypass
-> manager feature to create this mapping. For now, we allocate and
-> manage a separate mapping structure per VM.
-> 
-> Although a mapping is created for every passthrough IRQ requested
-> in the guest, we also maintain a cache of mappings that is used to
-> speed up search. For now, KVM real mode code only looks in the cache for
-> a mapping. If no mapping is found, we fall back on the usual interrupt
-> routing mechanism - switch back to host and run the VFIO interrupt
-> handler.
-> 
-> This is based on 4.5-rc1 plus the patch set in
-> http://www.spinics.net/lists/kvm-ppc/msg11131.html since it has
-> dependencies on vmalloc_to_phys() being public.
-> 
-> Suresh Warrier (14):
->   powerpc: Add simple cache inhibited MMIO accessors
->   KVM: PPC: Book3S HV: Convert kvmppc_read_intr to a C function
->   KVM: PPC: select IRQ_BYPASS_MANAGER
->   KVM: PPC: Book3S HV: Introduce kvmppc_passthru_irqmap
->   KVM: PPC: Book3S HV: Enable IRQ bypass
->   KVM: PPC: Book3S HV: Caching for passthrough IRQ map
->   KVM: PPC: Book3S HV: Handle passthrough interrupts in guest
->   KVM: PPC: Book3S HV: Complete passthrough interrupt in host
->   KVM: PPC: Book3S HV: Enable KVM real mode handling of passthrough IRQs
->   KVM: PPC: Book3S HV: Dump irqmap in debugfs
->   KVM: PPC: Book3S HV: Tunable to disable KVM IRQ bypass
->   KVM: PPC: Book3S HV: Update irq stats for IRQs handled in real mode
->   KVM: PPC: Book3S HV: Change affinity for passthrough IRQ
->   KVM: PPC: Book3S HV: Counters for passthrough IRQ stats
-> 
->  arch/powerpc/include/asm/io.h             |  28 +++
->  arch/powerpc/include/asm/kvm_asm.h        |  10 +
->  arch/powerpc/include/asm/kvm_book3s.h     |   1 +
->  arch/powerpc/include/asm/kvm_host.h       |  25 +++
->  arch/powerpc/include/asm/kvm_ppc.h        |  28 +++
->  arch/powerpc/include/asm/pnv-pci.h        |   1 +
->  arch/powerpc/kvm/Kconfig                  |   2 +
->  arch/powerpc/kvm/book3s.c                 |  45 +++++
->  arch/powerpc/kvm/book3s_hv.c              | 318 +++++++++++++++++++++++++++++-
->  arch/powerpc/kvm/book3s_hv_builtin.c      | 157 +++++++++++++++
->  arch/powerpc/kvm/book3s_hv_rm_xics.c      | 181 +++++++++++++++++
->  arch/powerpc/kvm/book3s_hv_rmhandlers.S   | 226 ++++++++++++---------
->  arch/powerpc/kvm/book3s_xics.c            |  68 ++++++-
->  arch/powerpc/kvm/book3s_xics.h            |   3 +
->  arch/powerpc/platforms/powernv/pci-ioda.c |  14 +-
->  15 files changed, 1013 insertions(+), 94 deletions(-)
-> 
+but my feeling is that this would cause more surprises when users
+find their thermal management is not active even though it was
+enabled in Kconfig and the thermal module gets loaded.
+
+	Arnd
