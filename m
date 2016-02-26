@@ -1,31 +1,30 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46EC31A0B56
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 21:45:04 +1100 (AEDT)
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 790B11402D6
- for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2016 21:45:03 +1100 (AEDT)
-Received: by mail-pa0-x22b.google.com with SMTP id fy10so49315432pac.1
- for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2016 02:45:03 -0800 (PST)
-Date: Fri, 26 Feb 2016 16:15:00 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- rjw@rjwysocki.net, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com,
- shreyas@linux.vnet.ibm.com
-Subject: Re: [PATCH v10 1/2] cpufreq: powernv: Fix bugs in
- powernv_cpufreq_{init/exit}
-Message-ID: <20160226104500.GH5823@vireshk-i7>
-References: <1456483012-29466-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1456483012-29466-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B2E8B1A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2016 05:05:03 +1100 (AEDT)
+Received: by mail-wm0-x243.google.com with SMTP id c200so10371356wme.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 10:05:03 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1456483012-29466-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Sender: pku.leo@gmail.com
+In-Reply-To: <3550740.QzZi28fbXg@wuerfel>
+References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
+ <1697588.dLcbZBRWO4@vostro.rjw.lan> <3550740.QzZi28fbXg@wuerfel>
+Date: Fri, 26 Feb 2016 12:04:59 -0600
+Message-ID: <CADRPPNSqXBqD0of0ZorXFOKQc1OQaaJCPFUTMUezJexkegHY9A@mail.gmail.com>
+Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
+ device tree
+From: Li Yang <leoli@freescale.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Jia Hongtao <hongtao.jia@freescale.com>, edubezval@gmail.com,
+ viresh.kumar@linaro.org,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ devicetree@vger.kernel.org, Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,18 +34,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26-02-16, 16:06, Shilpasri G Bhat wrote:
-> Unregister the notifiers if cpufreq_driver_register() fails in
-> powernv_cpufreq_init(). Re-arrange the unregistration and cleanup routines
-> in powernv_cpufreq_exit() to free all the resources after the driver
-> has unregistered.
-> 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 40 ++++++++++++++++++++++++++++-----------
->  1 file changed, 29 insertions(+), 11 deletions(-)
+On Fri, Dec 18, 2015 at 4:32 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Tuesday 15 December 2015 00:58:26 Rafael J. Wysocki wrote:
+>> On Thursday, November 26, 2015 05:21:11 PM Jia Hongtao wrote:
+>> > Register the qoriq cpufreq driver as a cooling device, based on the
+>> > thermal device tree framework. When temperature crosses the passive trip
+>> > point cpufreq is used to throttle CPUs.
+>> >
+>> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+>> > Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>
+>> Applied, thanks!
+>>
+>
+> I got a randconfig build error today:
+>
+> drivers/built-in.o: In function `qoriq_cpufreq_ready':
+> debugfs.c:(.text+0x1f4688): undefined reference to `of_cpufreq_cooling_register'
+>
+> CONFIG_OF=y
+> CONFIG_QORIQ_CPUFREQ=y
+> CONFIG_THERMAL=m
+> CONFIG_THERMAL_OF=y
+>
+> I think you need a 'depends on THERMAL' to prevent the driver from
+> being built-in when THERMAL=m.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Maybe this is not the best approach.  The cpufreq feature itself
+should be working independently without thermal framework.  I think we
+should make the qoriq_cpufreq_ready() defined as null function if
+THERMAL is not defined.
 
--- 
-viresh
+Regards,
+Leo
