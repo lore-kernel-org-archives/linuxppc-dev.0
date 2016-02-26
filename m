@@ -1,37 +1,36 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e17.ny.us.ibm.com (unknown [129.33.205.207])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DD00A1A0C62
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 13:09:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 200F71A0060
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 13:22:11 +1100 (AEDT)
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 25 Feb 2016 19:09:08 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 1AEB01FF0023
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 18:57:16 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1Q2962044302542
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 19:09:06 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1Q2967c001966
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 19:09:06 -0700
+ Thu, 25 Feb 2016 21:11:52 -0500
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id CAE9EC90043
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 21:11:47 -0500 (EST)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1Q2BoRI14155790
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 02:11:50 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1Q2BnrO026461
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Feb 2016 21:11:50 -0500
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Paul Mackerras <paulus@ozlabs.org>
 Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V4 07/18] powerpc/mm: Update masked bits for linux page
- table
-In-Reply-To: <20160225034113.GF18753@oak.ozlabs.ibm.com>
+Subject: Re: [PATCH V4 08/18] powerpc/mm: Copy pgalloc (part 1)
+In-Reply-To: <20160225042731.GG18753@oak.ozlabs.ibm.com>
 References: <1456202900-5454-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1456202900-5454-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20160225034113.GF18753@oak.ozlabs.ibm.com>
-Date: Fri, 26 Feb 2016 07:38:57 +0530
-Message-ID: <878u28jk92.fsf@linux.vnet.ibm.com>
+ <1456202900-5454-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20160225042731.GG18753@oak.ozlabs.ibm.com>
+Date: Fri, 26 Feb 2016 07:41:45 +0530
+Message-ID: <8760xcjk4e.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,48 +44,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Paul Mackerras <paulus@ozlabs.org> writes:
 
-> On Tue, Feb 23, 2016 at 10:18:09AM +0530, Aneesh Kumar K.V wrote:
->> We now use physical address in upper page table tree levels. Even though
->> they are aligned to their size, for the masked bits we use the
->> overloaded bit positions as per PowerISA 3.0. We keep the bad bits check
->> as it is, and will use conditional there when adding radix. Bad bits
->> check also check for reserved bits and we oveload some of the reserved
->> fields of radix in hash config.
+> On Tue, Feb 23, 2016 at 10:18:10AM +0530, Aneesh Kumar K.V wrote:
+>> This patch make a copy of pgalloc routines for book3s. The idea is to
+>> enable a hash64 copy of these pgalloc routines which can be later
+>> updated to have a radix conditional. Radix introduce a new page table
+>> format with different page table size.
 >> 
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/include/asm/book3s/64/hash-64k.h | 15 ++++++---------
->>  1 file changed, 6 insertions(+), 9 deletions(-)
+>> This mostly does:
 >> 
->> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
->> index f0f5f91d7909..60c2c912c3a7 100644
->> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
->> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
->> @@ -60,15 +60,12 @@
->>  #define PTE_FRAG_SIZE_SHIFT  12
->>  #define PTE_FRAG_SIZE (1UL << PTE_FRAG_SIZE_SHIFT)
->>  
->> -/*
->> - * Bits to mask out from a PMD to get to the PTE page
->> - * PMDs point to PTE table fragments which are PTE_FRAG_SIZE aligned.
->> - */
->> -#define PMD_MASKED_BITS		(PTE_FRAG_SIZE - 1)
->> -/* Bits to mask out from a PGD/PUD to get to the PMD page */
->> -#define PUD_MASKED_BITS		0x1ff
->> -/* FIXME!! Will be fixed in next patch */
->> -#define PGD_MASKED_BITS		0
->> +/* Bits to mask out from a PMD to get to the PTE page */
->> +#define PMD_MASKED_BITS		0xc0000000000000ffUL
->> +/* Bits to mask out from a PUD to get to the PMD page */
->> +#define PUD_MASKED_BITS		0xc0000000000000ffUL
->> +/* Bits to mask out from a PGD to get to the PUD page */
->> +#define PGD_MASKED_BITS		0xc0000000000000ffUL
+>> cp pgalloc-32.h book3s/32/pgalloc.h
+>> cp pgalloc-64.h book3s/64/pgalloc.h
 >
-> Why not fold this into the previous patch?  (and include this patch's
-> commentary in the previous patch's commentary, of course)
+> What is the motivation for copying over the 32-bit header?
+
+That was moved, because I was looking to consolidate all book3s headers
+under book3s/ and wanted to move pgalloc-64.h to book3s.
+
+>
+> Regarding the 64-bit header, I don't see anything in it that will need
+> to be changed for radix other than making P{G,U,M}D_INDEX_SIZE be
+> variables rather than constants (and possibly have a lowercase name
+> instead of uppercase).  What other changes are you expecting to make?
 >
 
-Ok will do that. I was trying to make sure the change is called out
-separately.
+I was taking the approach of conditional call rather than variables. Hence
+moved them to 64/pgalloc.h so that we can add a static inline for those.
 
 -aneesh
