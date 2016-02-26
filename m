@@ -1,31 +1,38 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 84D8D1A0341
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:15:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC88E1A0341
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:15:06 +1100 (AEDT)
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 26 Feb 2016 10:15:01 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 67D972CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:14:59 +1100 (EST)
+ Fri, 26 Feb 2016 10:15:05 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 91F03357803F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:15:03 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1Q0Epqn10551626
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:14:59 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1Q0EtIk7471420
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:15:03 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1Q0EQ3c028906
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:14:27 +1100
+ u1Q0EUsk028993
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:14:31 +1100
+Date: Fri, 26 Feb 2016 11:13:36 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v2] powerpc/eeh: Remove duplicated check in eeh_dump_pe_log()
-Date: Fri, 26 Feb 2016 11:14:00 +1100
-Message-Id: <1456445640-24085-1-git-send-email-gwshan@linux.vnet.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/eeh: Remove duplicated check in eeh_dump_pe_log()
+Message-ID: <20160226001336.GA18058@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1455493946-27967-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <56C14541.5000302@au1.ibm.com> <20160215233026.GA16298@gwshan>
+ <56C2661C.9050707@au1.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <56C2661C.9050707@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,39 +42,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When eeh_dump_pe_log() is only called by eeh_slot_error_detail(),
-we already have the check that the PE isn't in PCI config blocked
-state in eeh_slot_error_detail(). So we needn't the duplicated
-check in eeh_dump_pe_log().
+On Tue, Feb 16, 2016 at 10:58:20AM +1100, Andrew Donnellan wrote:
+>On 16/02/16 10:30, Gavin Shan wrote:
+>>Thanks for review. Do you want to see revised patch to include your
+>>comments?
+>
+>Not particularly - the comments were just detailing what I went through as I
+>reviewed it. Feel free to include it if you feel it makes the description
+>clearer, but I don't really care.
+>
 
-This removes the duplicated check in eeh_dump_pe_log(). No logical
-changes introduced.
+I think it's always worthy to have better commit log, v2 will be sent shortly
+to have improved commit log, thanks for review.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
----
-v2: Improved commit log
----
- arch/powerpc/kernel/eeh.c | 7 -------
- 1 file changed, 7 deletions(-)
+Thanks,
+Gavin
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 8c6005c..46b41be 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -268,13 +268,6 @@ static void *eeh_dump_pe_log(void *data, void *flag)
- 	struct eeh_dev *edev, *tmp;
- 	size_t *plen = flag;
- 
--	/* If the PE's config space is blocked, 0xFF's will be
--	 * returned. It's pointless to collect the log in this
--	 * case.
--	 */
--	if (pe->state & EEH_PE_CFG_BLOCKED)
--		return NULL;
--
- 	eeh_pe_for_each_dev(pe, edev, tmp)
- 		*plen += eeh_dump_dev_log(edev, pci_regs_buf + *plen,
- 					  EEH_PCI_REGS_LOG_LEN - *plen);
--- 
-2.1.0
+>-- 
+>Andrew Donnellan              Software Engineer, OzLabs
+>andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
+>+61 2 6201 8874 (work)        IBM Australia Limited
