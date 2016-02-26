@@ -1,26 +1,24 @@
-Return-Path: <hughd@google.com>
-Received: from mail-oi0-x230.google.com (mail-oi0-x230.google.com
- [IPv6:2607:f8b0:4003:c06::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0B16A1A04B8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 21:05:03 +1100 (AEDT)
-Received: by mail-oi0-x230.google.com with SMTP id m82so58739666oif.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 02:05:02 -0800 (PST)
-Date: Fri, 26 Feb 2016 02:04:49 -0800 (PST)
-From: Hugh Dickins <hughd@google.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-cc: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Subject: Re: Problems with swapping in v4.5-rc on POWER
-In-Reply-To: <alpine.LSU.2.11.1602251322130.8063@eggly.anvils>
-Message-ID: <alpine.LSU.2.11.1602260157430.10399@eggly.anvils>
-References: <alpine.LSU.2.11.1602241716220.15121@eggly.anvils>
- <877fhttmr1.fsf@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1602242136270.6876@eggly.anvils>
- <alpine.LSU.2.11.1602251322130.8063@eggly.anvils>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id EDB411A04B8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 21:14:09 +1100 (AEDT)
+Message-ID: <1456481641.25691.5.camel@ellerman.id.au>
+Subject: Re: [PATCH 07/12] powerpc/ftrace: FTRACE_WITH_REGS implementation
+ for ppc64le
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Torsten Duwe <duwe@lst.de>, Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, pmladek@suse.com, jeyu@redhat.com,
+ jkosina@suse.cz,  linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com,  live-patching@vger.kernel.org, mbenes@suse.cz
+Date: Fri, 26 Feb 2016 21:14:01 +1100
+In-Reply-To: <20160225151113.GK21932@lst.de>
+References: <1456324115-21144-1-git-send-email-mpe@ellerman.id.au>
+ <1456324115-21144-7-git-send-email-mpe@ellerman.id.au>
+ <56CE4F7B.7050704@gmail.com> <20160225151113.GK21932@lst.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,39 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 25 Feb 2016, Hugh Dickins wrote:
-> On Wed, 24 Feb 2016, Hugh Dickins wrote:
-> > On Thu, 25 Feb 2016, Aneesh Kumar K.V wrote:
-> > > 
-> > > Can you test the impact of the merge listed below ?(ie, revert the merge and see if
-> > > we can reproduce and also verify with merge applied). This will give us a
-> > > set of commits to look closer. We had quiet a lot of page table
-> > > related changes going in this merge window. 
-> > > 
-> > > f689b742f217b2ffe7 ("Pull powerpc updates from Michael Ellerman:")
-> > > 
-> > > That is the merge commit that added _PAGE_PTE. 
-> > 
-> > Another experiment running on it at the moment, I'd like to give that
-> > a few more hours, and then will try the revert you suggest.  But does
-> > that merge revert cleanly, did you try?  I'm afraid of interactions,
-> > whether obvious or subtle, with the THP refcounting rework.  Oh, since
-> > I don't have THP configured on, maybe I can ignore any issues from that.
-> 
-> That revert worked painlessly, only a very few and simple conflicts,
-> I ran that under load for 12 hours, no problem seen.
-> 
-> I've now checked out an f689b742 tree and started on that, just to
-> confirm that it fails fairly quickly I hope; and will then proceed
-> to git bisect, giving that as bad and 37cea93b as good.
-> 
-> Given the uncertainty of whether 12 hours is really long enough to be
-> sure, and perhaps difficulties along the way, I don't rate my chances
-> of a reliable bisection higher than 60%, but we'll see.
+On Thu, 2016-02-25 at 16:11 +0100, Torsten Duwe wrote:
+> On Thu, Feb 25, 2016 at 11:48:59AM +1100, Balbir Singh wrote:
 
-I'm sure you won't want a breathless report from me on each bisection
-step, but I ought to report that: contrary to our expectations, the
-f689b742 survived without error for 12 hours, so appears to be good.
-I'll bisect between there and v4.5-rc1.
+> > > @@ -608,6 +621,9 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+> > >  					return -ENOENT;
+> > >  				if (!restore_r2((u32 *)location + 1, me))
+> > >  					return -ENOEXEC;
+> > > +				/* Squash the TOC saver for profiler calls */
+> > > +				if (!strcmp("_mcount", strtab+sym->st_name))
+> > > +					SQUASH_TOC_SAVE_INSN(value);
+> > I don't think we need this anymore, do we?
+>
+> I'm not sure. Once a module is loaded, are all the "bl _mcount"s NOPed out
+> before any of its functions are run? If not, the _mcount trampoline will
+> be used, and it must not save R2!
 
-Hugh
+With dynamic ftrace, yes they are all nop'ed out before the module runs. See
+ftrace_module_init() called from load_module().
+
+But with static ftrace they are just left as-is.
+
+As this series is currently written you can't enable mprofile-kernel with
+static ftrace. But that's a bit fragile, someone could easily send a patch to
+enable it for static ftrace and we'd probably merge it without thinking about
+this code. So I'll leave this as is for now, and we will clean it up once the
+series is in.
+
+cheers
