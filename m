@@ -1,31 +1,31 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 87BA61A0B54
+ by lists.ozlabs.org (Postfix) with ESMTPS id 014741A0B4C
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:05:55 +1100 (AEDT)
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Fri, 26 Feb 2016 10:05:54 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7B5FD2BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:05:50 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1Q05gY166453664
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:05:50 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1Q05Igc024733
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1EF6D2CE8059
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:05:51 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1Q05gdo50528412
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:05:51 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1Q05IZH000991
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 11:05:18 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH 1/3] powerpc/eeh: Don't propagate error to guest
-Date: Fri, 26 Feb 2016 11:04:50 +1100
-Message-Id: <1456445092-18337-2-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 3/3] powerpc/eeh: Synchronize recovery in host/guest
+Date: Fri, 26 Feb 2016 11:04:52 +1100
+Message-Id: <1456445092-18337-4-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1456445092-18337-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1456445092-18337-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,69 +37,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When EEH error happened to the parent PE of those PEs that have
-been passed through to guest, the error is propagated to guest
-domain and the VFIO driver's error handlers are called. It's not
-correct as the error in the host domain shouldn't be propagated
-to guests and affect them.
+When passing through SRIOV VFs to guest, we possibly encounter EEH
+error on PF. In this case, the VF PEs are put into frozen state.
+The error could be reported to guest before it's captured by the
+host. That means the guest could attempt to recover errors on VFs
+before host gets chance to recover errors on PFs. The VFs won't be
+recovered successfully.
 
-This adds one more limitation when calling EEH error handlers.
-If the PE has been passed through to guest, the error handlers
-won't be called.
+This enforces the recovery order for above case: the recovery on
+child PE in guest is hold until the recovery on parent PE in host
+is completed.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh_driver.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/eeh.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index c0fe7a6..6c59de8 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -195,7 +195,7 @@ static void *eeh_report_error(void *data, void *userdata)
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver;
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index fd9c782..42bd546 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -1541,6 +1541,17 @@ int eeh_pe_get_state(struct eeh_pe *pe)
+ 	if (!eeh_ops || !eeh_ops->get_state)
+ 		return -ENOENT;
  
--	if (!dev || eeh_dev_removed(edev))
-+	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
- 		return NULL;
- 	dev->error_state = pci_channel_io_frozen;
- 
-@@ -237,7 +237,7 @@ static void *eeh_report_mmio_enabled(void *data, void *userdata)
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver;
- 
--	if (!dev || eeh_dev_removed(edev))
-+	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
- 		return NULL;
- 
- 	driver = eeh_pcid_get(dev);
-@@ -277,7 +277,7 @@ static void *eeh_report_reset(void *data, void *userdata)
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver;
- 
--	if (!dev || eeh_dev_removed(edev))
-+	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
- 		return NULL;
- 	dev->error_state = pci_channel_io_normal;
- 
-@@ -336,7 +336,7 @@ static void *eeh_report_resume(void *data, void *userdata)
- 	bool was_in_error;
- 	struct pci_driver *driver;
- 
--	if (!dev || eeh_dev_removed(edev))
-+	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
- 		return NULL;
- 	dev->error_state = pci_channel_io_normal;
- 
-@@ -375,7 +375,7 @@ static void *eeh_report_failure(void *data, void *userdata)
- 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
- 	struct pci_driver *driver;
- 
--	if (!dev || eeh_dev_removed(edev))
-+	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
- 		return NULL;
- 	dev->error_state = pci_channel_io_perm_failure;
- 
++	/*
++	 * If the parent PE, which is owned by host kernel, is experiencing
++	 * error recovery. We should return temporarily unavailable PE state
++	 * so that the recovery on guest side is suspended until the error
++	 * recovery is completed on host side.
++	 */
++	if (pe->parent &&
++	    !(pe->state & EEH_PE_REMOVED) &&
++	    (pe->parent->state & (EEH_PE_ISOLATED | EEH_PE_RECOVERING)))
++		return EEH_PE_STATE_UNAVAIL;
++
+ 	result = eeh_ops->get_state(pe, NULL);
+ 	rst_active = !!(result & EEH_STATE_RESET_ACTIVE);
+ 	dma_en = !!(result & EEH_STATE_DMA_ENABLED);
 -- 
 2.1.0
