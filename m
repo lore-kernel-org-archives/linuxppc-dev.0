@@ -1,27 +1,29 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 743F31A0B6F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2016 11:05:29 +1100 (AEDT)
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by ozlabs.org (Postfix) with SMTP id 9753F140180
- for <linuxppc-dev@ozlabs.org>; Sat, 27 Feb 2016 11:05:27 +1100 (AEDT)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com,
- shreyas@linux.vnet.ibm.com
-Subject: Re: [PATCH v10 1/2] cpufreq: powernv: Fix bugs in
- powernv_cpufreq_{init/exit}
-Date: Sat, 27 Feb 2016 01:00:23 +0100
-Message-ID: <3063057.dJbqXY2tKb@vostro.rjw.lan>
-In-Reply-To: <20160226104500.GH5823@vireshk-i7>
-References: <1456483012-29466-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1456483012-29466-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20160226104500.GH5823@vireshk-i7>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 265E51A0060
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2016 11:08:31 +1100 (AEDT)
+Message-ID: <1456531704.5360.53.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Li Yang <leoli@freescale.com>, Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ devicetree@vger.kernel.org,  "linux-pm@vger.kernel.org"
+ <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jia
+ Hongtao <hongtao.jia@freescale.com>, Eduardo Valentin
+ <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Date: Fri, 26 Feb 2016 18:08:24 -0600
+In-Reply-To: <CADRPPNQPOUE-2_UnHbfMvGXCuuKYkX4a2Pp3Sb9Uc3vgMr-HuQ@mail.gmail.com>
+References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
+ <2396230.MApG9VTrxr@wuerfel>
+ <CADRPPNTeBXJBybGwm4jkS64nSyWg+oaod3KJbE_SqfdSuUCA_Q@mail.gmail.com>
+ <3593471.QAyZdAuTcW@wuerfel>
+ <CADRPPNSASmfxS=BWKvOxGKyCiqno9YvOuAfBaHwKL-Y=jQ2Dzw@mail.gmail.com>
+ <CADRPPNQPOUE-2_UnHbfMvGXCuuKYkX4a2Pp3Sb9Uc3vgMr-HuQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
+ device tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,20 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday, February 26, 2016 04:15:00 PM Viresh Kumar wrote:
-> On 26-02-16, 16:06, Shilpasri G Bhat wrote:
-> > Unregister the notifiers if cpufreq_driver_register() fails in
-> > powernv_cpufreq_init(). Re-arrange the unregistration and cleanup routines
-> > in powernv_cpufreq_exit() to free all the resources after the driver
-> > has unregistered.
+On Fri, 2016-02-26 at 18:04 -0600, Li Yang wrote:
+> On Fri, Feb 26, 2016 at 5:31 PM, Li Yang <leoli@freescale.com> wrote:
+> > On Fri, Feb 26, 2016 at 5:16 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> > > On Friday 26 February 2016 17:07:09 Li Yang wrote:
+> > > > 
+> > > > I don't have a perfect solution either.  But I think this is still
+> > > > better than making cpufreq not usable.  The cpufreq driver will print
+> > > > out an error message if thermal is not reachable.  Maybe this can
+> > > > relief the confusion a little bit?
+> > > 
+> > > With my patch, the configuration will just force the cpufreq
+> > > driver to be a loadable module as well if thermal is a module,
+> > > so the dependency can be resolved by loading the thermal module first.
 > > 
-> > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> > ---
-> >  drivers/cpufreq/powernv-cpufreq.c | 40 ++++++++++++++++++++++++++++-----------
-> >  1 file changed, 29 insertions(+), 11 deletions(-)
+> > It would be perfect if this it true.  But I tried with the following
+> > change, it just makes QORIQ_CPUFREQ non-selectable if THERMAL=m.
+> > 
+> > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> > index dcb972a38fbc..ca05037dd565 100644
+> > --- a/drivers/cpufreq/Kconfig
+> > +++ b/drivers/cpufreq/Kconfig
+> > @@ -297,6 +297,7 @@ endif
+> >  config QORIQ_CPUFREQ
+> >         tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
+> >         depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
+> > +       depends on !CPU_THERMAL || THERMAL=y
+> >         select CLK_QORIQ
+> >         help
+> >           This adds the CPUFreq driver support for Freescale QorIQ SoCs
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> I find we can achieve your desired result with the following change instead:
+> 
+> +       depends on (THERMAL=m && m) || THERMAL=y || THERMAL=n
 
-Queued up for 4.6, thanks!
+"depends on THERMAL || !THERMAL" should also work.
 
-Rafael
+-Scott
