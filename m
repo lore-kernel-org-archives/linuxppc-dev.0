@@ -1,35 +1,37 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shawnguo@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 748051A04B8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Feb 2016 11:41:09 +1100 (AEDT)
-Received: by mail-wm0-x244.google.com with SMTP id g62so11703224wme.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Feb 2016 16:41:09 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D8C7C1A0B50
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Feb 2016 13:51:33 +1100 (AEDT)
+Date: Sun, 28 Feb 2016 10:51:07 +0800
+From: Shawn Guo <shawnguo@kernel.org>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Lothar =?iso-8859-1?Q?Wa=DFmann?= <LW@KARO-electronics.de>,
+ Anson Huang <b20788@freescale.com>, Arnd Bergmann <arnd@arndb.de>,
+ Bai Ping <b51503@freescale.com>,
+ Fabio Estevam <fabio.estevam@freescale.com>,
+ Frank Li <Frank.Li@freescale.com>, Fugang Duan <B38611@freescale.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Jaroslav Kysela <perex@perex.cz>, Kumar Gala <galak@codeaurora.org>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>,
+ Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ Sascha Hauer <kernel@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
+ Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ alsa-devel@alsa-project.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/2] clk: imx6: add kpp clock for i.MX6UL
+Message-ID: <20160228025107.GC22051@tiger>
+References: <1452619759-14474-1-git-send-email-LW@KARO-electronics.de>
+ <20160225235655.GN28849@codeaurora.org>
 MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <1456531704.5360.53.camel@buserror.net>
-References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
- <2396230.MApG9VTrxr@wuerfel>
- <CADRPPNTeBXJBybGwm4jkS64nSyWg+oaod3KJbE_SqfdSuUCA_Q@mail.gmail.com>
- <3593471.QAyZdAuTcW@wuerfel>
- <CADRPPNSASmfxS=BWKvOxGKyCiqno9YvOuAfBaHwKL-Y=jQ2Dzw@mail.gmail.com>
- <CADRPPNQPOUE-2_UnHbfMvGXCuuKYkX4a2Pp3Sb9Uc3vgMr-HuQ@mail.gmail.com>
- <1456531704.5360.53.camel@buserror.net>
-Date: Fri, 26 Feb 2016 18:41:06 -0600
-Message-ID: <CADRPPNQhmb3bET9fV072ad5FEHAPrjuXSze1HwnRnKMRmFi8cg@mail.gmail.com>
-Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
- device tree
-From: Li Yang <leoli@freescale.com>
-To: Scott Wood <oss@buserror.net>
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- devicetree@vger.kernel.org,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Jia Hongtao <hongtao.jia@freescale.com>, Eduardo Valentin <edubezval@gmail.com>,
- Viresh Kumar <viresh.kumar@linaro.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20160225235655.GN28849@codeaurora.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,45 +41,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 26, 2016 at 6:08 PM, Scott Wood <oss@buserror.net> wrote:
-> On Fri, 2016-02-26 at 18:04 -0600, Li Yang wrote:
->> On Fri, Feb 26, 2016 at 5:31 PM, Li Yang <leoli@freescale.com> wrote:
->> > On Fri, Feb 26, 2016 at 5:16 PM, Arnd Bergmann <arnd@arndb.de> wrote:
->> > > On Friday 26 February 2016 17:07:09 Li Yang wrote:
->> > > >
->> > > > I don't have a perfect solution either.  But I think this is still
->> > > > better than making cpufreq not usable.  The cpufreq driver will print
->> > > > out an error message if thermal is not reachable.  Maybe this can
->> > > > relief the confusion a little bit?
->> > >
->> > > With my patch, the configuration will just force the cpufreq
->> > > driver to be a loadable module as well if thermal is a module,
->> > > so the dependency can be resolved by loading the thermal module first.
->> >
->> > It would be perfect if this it true.  But I tried with the following
->> > change, it just makes QORIQ_CPUFREQ non-selectable if THERMAL=m.
->> >
->> > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
->> > index dcb972a38fbc..ca05037dd565 100644
->> > --- a/drivers/cpufreq/Kconfig
->> > +++ b/drivers/cpufreq/Kconfig
->> > @@ -297,6 +297,7 @@ endif
->> >  config QORIQ_CPUFREQ
->> >         tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
->> >         depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
->> > +       depends on !CPU_THERMAL || THERMAL=y
->> >         select CLK_QORIQ
->> >         help
->> >           This adds the CPUFreq driver support for Freescale QorIQ SoCs
->>
->>
->> I find we can achieve your desired result with the following change instead:
->>
->> +       depends on (THERMAL=m && m) || THERMAL=y || THERMAL=n
->
-> "depends on THERMAL || !THERMAL" should also work.
+On Thu, Feb 25, 2016 at 03:56:55PM -0800, Stephen Boyd wrote:
+> On 01/12, Lothar Waßmann wrote:
+> > This patchset adds the clock which is necessary to operate the KPP
+> > unit on i.MX6UL.
+> > The first patch removes bogus whitespace before TABs in indentation.
+> > The second patch adds the clock definition.
+> > 
+> 
+> Both look fine. Shawn?
 
-Right.  And this is more simpler.
+Oops, the patches were overlooked.  Applied now.  Thanks for reminding.
 
-Regards,
-Leo
+Shawn
