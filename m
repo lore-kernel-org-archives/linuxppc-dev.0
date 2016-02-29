@@ -1,20 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 73B841A0035
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 22:05:24 +1100 (AEDT)
-In-Reply-To: <56CC3CDD.8040006@linux.vnet.ibm.com>
-To: xinhui <xinhui@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 32DDA1A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 22:05:25 +1100 (AEDT)
+In-Reply-To: <1455763681-13663-1-git-send-email-bsingharora@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
- Boqun Feng <boqun.feng@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [V2] arch/powerpc: use BUILD_BUG_ON_MSG() when detect unfit
- {cmp}xchg size
-Message-Id: <20160229110524.59951140662@ozlabs.org>
+Cc: paulus@samba.org
+Subject: Re: [RESEND] Fix BUG_ON() reporting in real mode on PPC
+Message-Id: <20160229110525.09317140317@ozlabs.org>
 Date: Mon, 29 Feb 2016 22:05:24 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,17 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-23-02 at 11:05:01 UTC, xinhui wrote:
-> From: pan xinhui <xinhui.pan@linux.vnet.ibm.com>
+On Thu, 2016-18-02 at 02:48:01 UTC, Balbir Singh wrote:
+> Changelog:
+>     Don't use REGION_ID, breaks on some platforms
+>     Don't blindly add PAGE_OFFSET to bugaddr
 > 
-> __xchg_called_with_bad_pointer() can't tell us what codes use {cmp}xchg
-> in incorrect way.  And no error will be reported until the link stage.
-> To fix such a kind of issues easily, we use BUILD_BUG_ON_MSG() here.
+> I ran into this issue while debugging an early boot problem.
+> The system hit a BUG_ON() but report bug failed to print the
+> line number and file name. The reason being that the system
+> was running in real mode and report_bug() searches for
+> addresses in the PAGE_OFFSET+ region
 > 
-> Signed-off-by: pan xinhui <xinhui.pan@linux.vnet.ibm.com>
+> Suggested-by: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/10d8b1480e6966ba03cd3afad3
+https://git.kernel.org/powerpc/c/a4c3f909b4d9bb9430bf42ad58
 
 cheers
