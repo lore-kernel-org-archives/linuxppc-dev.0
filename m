@@ -1,21 +1,22 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 774C51A0CA8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 18:26:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 8683E1A0E5B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 18:26:45 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH 4/9] powerpc: inline ip_fast_csum()
-To: Denis Kirjanov <kda@linux-powerpc.org>
+Subject: Re: [PATCH 8/9] powerpc: simplify csum_add(a, b) in case a or b is
+ constant 0
+To: Scott Wood <scottwood@freescale.com>
 References: <cover.1442876807.git.christophe.leroy@c-s.fr>
- <807dbc9449077e36752c649c09ae1c0d70e45254.1442876807.git.christophe.leroy@c-s.fr>
- <CAOJe8K0+duRrj19OoPjdoX725Jwh4T=im=_aCp+N8UTNudp=3w@mail.gmail.com>
+ <5549ecca2c921f34d076c47b5e2a91a3e78b20a7.1442876807.git.christophe.leroy@c-s.fr>
+ <1445571207.701.152.camel@freescale.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
-Message-ID: <56D3F287.6020707@c-s.fr>
-Date: Mon, 29 Feb 2016 08:25:59 +0100
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
+Message-ID: <56D3F2B2.1040907@c-s.fr>
+Date: Mon, 29 Feb 2016 08:26:42 +0100
 MIME-Version: 1.0
-In-Reply-To: <CAOJe8K0+duRrj19OoPjdoX725Jwh4T=im=_aCp+N8UTNudp=3w@mail.gmail.com>
+In-Reply-To: <1445571207.701.152.camel@freescale.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,24 +29,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-Le 23/09/2015 07:43, Denis Kirjanov a écrit :
-> On 9/22/15, Christophe Leroy <christophe.leroy@c-s.fr> wrote:
->> In several architectures, ip_fast_csum() is inlined
->> There are functions like ip_send_check() which do nothing
->> much more than calling ip_fast_csum().
->> Inlining ip_fast_csum() allows the compiler to optimise better
-> Hi Christophe,
-> I did try it and see no difference on ppc64. Did you test with socklib
-> with modified loopback and if so do you have any numbers?
-
-Hi Denis,
-
-I put a mftbl at start and end of ip_send_check() and tested on a MPC885:
-* Without ip_fast_csum() inlined, approxymatly 7 TB ticks are spent in 
-ip_send_check()
-* With ip_fast_csum() inlined, approxymatly 5,4 TB ticks are spent in 
-ip_send_check()
-
-So it is about 23% time reduction.
+Le 23/10/2015 05:33, Scott Wood a écrit :
+> On Tue, 2015-09-22 at 16:34 +0200, Christophe Leroy wrote:
+>> Simplify csum_add(a, b) in case a or b is constant 0
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   arch/powerpc/include/asm/checksum.h | 6 ++++++
+>>   1 file changed, 6 insertions(+)
+>>
+>> diff --git a/arch/powerpc/include/asm/checksum.h
+>> b/arch/powerpc/include/asm/checksum.h
+>> index 56deea8..f8a9704 100644
+>> --- a/arch/powerpc/include/asm/checksum.h
+>> +++ b/arch/powerpc/include/asm/checksum.h
+>> @@ -119,7 +119,13 @@ static inline __wsum csum_add(__wsum csum, __wsum
+>> addend)
+>>   {
+>>   #ifdef __powerpc64__
+>>        u64 res = (__force u64)csum;
+>> +#endif
+>> +     if (__builtin_constant_p(csum) && csum == 0)
+>> +             return addend;
+>> +     if (__builtin_constant_p(addend) && addend == 0)
+>> +             return csum;
+>>
+>> +#ifdef __powerpc64__
+>>        res += (__force u64)addend;
+>>        return (__force __wsum)((u32)res + (res >> 32));
+>>   #else
+> How often does this happen?
+>
+>
+In the following patch (9/9), csum_add() is used to implement 
+csum_partial() for small blocks.
+In several places in the networking code, csum_partial() is called with 
+0 as initial sum.
 
 Christophe
