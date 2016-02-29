@@ -1,16 +1,20 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A36201A0FE1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 22:10:13 +1100 (AEDT)
-In-Reply-To: <1456727395-27386-1-git-send-email-sjitindarsingh@gmail.com>
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Subject: Re: selftests/powerpc: Remove -flto from common CFLAGS
-Message-Id: <20160229111013.71B58140779@ozlabs.org>
-Date: Mon, 29 Feb 2016 22:10:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ACC01A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 22:32:38 +1100 (AEDT)
+Date: Mon, 29 Feb 2016 22:30:54 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v3 0/7] KVM: PPC: Add in-kernel multitce handling
+Message-ID: <20160229113054.GD32418@fergus.ozlabs.ibm.com>
+References: <1455501309-47200-1-git-send-email-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1455501309-47200-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,48 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Suraj,
-
-On Mon, 2016-29-02 at 06:29:55 UTC, Suraj Jitindar Singh wrote:
-> LTO can cause GCC to inline some functions which have attributes set. The
-
-You should define what LTO is the first time you use it.
-
-> act of inlining the functions can lead to GCC forgetting about the
-> attributes which leads to incorrect tests.
-> Notable example being: __attribute__((__target__("no-vsx")))
-
-That is probably a GCC bug, but we still need to work around it for now.
-
-> LTO can also interact strangely with custom assembly functions and cause
-> tests to intermittently fail.
-
-That's probably Cyril writing bad asm :)
-
-> Both these cases are hard to detect and require manual inspection of
-> binaries which is unlikely to happen for all tests. Furthermore, LTO
-> optimisations are not necessary for selftests and correctness is paramount
-> and as such it is best to disable LTO.
+On Mon, Feb 15, 2016 at 12:55:02PM +1100, Alexey Kardashevskiy wrote:
+> These patches enable in-kernel acceleration for H_PUT_TCE_INDIRECT and
+> H_STUFF_TCE hypercalls which allow doing multiple (up to 512) TCE entries
+> update in a single call saving time on switching context. QEMU already
+> supports these hypercalls so this is just an optimization.
 > 
-> LTO can be enabled on a per test basis.
+> Both HV and PR KVM modes are supported.
 > 
-> A pseries_le_defconfig kernel on a POWER8 was used to determine that the
-> same subset of selftests pass and fail with and without -flto in the
-> common Makefile.
+> This does not affect VFIO, this support is coming next.
 > 
-> These tests always fail:
-> selftests: per_event_excludes [FAIL]
-> selftests: event_attributes_test [FAIL]
-> selftests: ebb_vs_cpu_event_test [FAIL]
-> selftests: cpu_event_vs_ebb_test [FAIL]
-> selftests: cpu_event_pinned_vs_ebb_test [FAIL]
+> This includes "powerpc: Make vmalloc_to_phys() public" as the patch depends
+> on it. The individual patches have changelog.
 
-They shouldn't :)
+Series applied to my kvm-ppc-next branch, thanks.
 
-Are you running as root? Bare metal or guest?
-
-> selftests: ipc_unmuxed [FAIL]
-
-That one is expected.
-
-cheers
+Paul.
