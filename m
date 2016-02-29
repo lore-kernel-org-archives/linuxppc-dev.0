@@ -1,35 +1,34 @@
 Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D3FD11A005D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 23:25:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A5E11A0B5A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 23:25:07 +1100 (AEDT)
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Mon, 29 Feb 2016 05:25:01 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 685E619D8042
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 05:12:55 -0700 (MST)
+ Mon, 29 Feb 2016 05:25:04 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id BD9AB19D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 05:12:58 -0700 (MST)
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1TCOwxw36438068
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 05:24:58 -0700
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1TCP2wV35389582
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 05:25:02 -0700
 Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
  by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1TCOweM023951
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 05:24:58 -0700
+ u1TCP1Y7024161
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 05:25:02 -0700
 From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  benh@kernel.crashing.org, paulus@samba.org, mahesh@linux.vnet.ibm.com,
  maddy@linux.vnet.ibm.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH 2/3] powerpc/powernv: Encapsulate idle preparation steps in a
- macro
-Date: Mon, 29 Feb 2016 17:52:59 +0530
-Message-Id: <1456748580-10519-3-git-send-email-shreyas@linux.vnet.ibm.com>
+Subject: [PATCH 3/3] powerpc/powernv: Refactor hypervisor state restore code
+Date: Mon, 29 Feb 2016 17:53:00 +0530
+Message-Id: <1456748580-10519-4-git-send-email-shreyas@linux.vnet.ibm.com>
 In-Reply-To: <1456748580-10519-1-git-send-email-shreyas@linux.vnet.ibm.com>
 References: <1456748580-10519-1-git-send-email-shreyas@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,178 +40,202 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Before entering any idle state which can result in a state loss
-we currently save the context in the stack before entering idle.
-Encapsulate these steps in a macro IDLE_STATE_PREP. Move this
-and other macros to commonly accessible location.
+In the current code, when the thread wakes up in reset vector, some
+of the state restore code and check for whether a thread needs to
+branch to kvm is duplicated. Reorder the code such that this
+duplication is avoided.
+
+At a higher level this is what the change looks like-
+
+Before this patch -
+===================
+power7_wakeup_tb_loss:
+	restore hypervisor state
+	if (thread needed by kvm)
+		goto kvm_start_guest
+	restore nvgprs, cr, pc
+	rfid to process context
+
+power7_wakeup_loss:
+	restore nvgprs, cr, pc
+	rfid to process context
+
+reset vector:
+	if (waking from deep idle states)
+		goto power7_wakeup_tb_loss
+	else
+		if (thread needed by kvm)
+			goto kvm_start_guest
+		goto power7_wakeup_loss
+
+After this patch -
+==================
+power7_wakeup_tb_loss:
+	restore hypervisor state
+	return
+
+power7_restore_hyp_resource():
+	if (waking from deep idle states)
+		goto power7_wakeup_tb_loss
+	return
+
+power7_wakeup_loss:
+	restore nvgprs, cr, pc
+	rfid to process context
+
+reset vector:
+	power7_restore_hyp_resource()
+	if (thread needed by kvm)
+                goto kvm_start_guest
+	goto power7_wakeup_loss
 
 Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/cpuidle.h | 68 ++++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/idle_power7.S  | 65 ++----------------------------------
- 2 files changed, 70 insertions(+), 63 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 29 +++-------------
+ arch/powerpc/kernel/idle_power7.S    | 67 ++++++++++++++++++++----------------
+ 2 files changed, 41 insertions(+), 55 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
-index d2f99ca1e3a6..6c678a779e8e 100644
---- a/arch/powerpc/include/asm/cpuidle.h
-+++ b/arch/powerpc/include/asm/cpuidle.h
-@@ -15,6 +15,74 @@ extern u32 pnv_fastsleep_workaround_at_entry[];
- extern u32 pnv_fastsleep_workaround_at_exit[];
- #endif
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 7716cebf4b8e..7ebfbb0c9992 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -107,25 +107,8 @@ BEGIN_FTR_SECTION
+ 	beq	9f
  
-+/*
-+ * IDLE_STATE_PREP - Will be called in preparation for entering
-+ * any hardware idle state. Since idle states can result in a
-+ * state loss, we create a regs frame on the stack, fill it up
-+ * with the state we care about and stick a pointer to it in
-+ * PACAR1. Use interrupt stack frame for this purpose.
-+ * r3 - contains idle state to be entered
-+ * r13 - PACA pointer
-+ */
-+#define IDLE_STATE_PREP						\
-+	mflr	r0;						\
-+	std	r0,16(r1);					\
-+	stdu	r1,-INT_FRAME_SIZE(r1);				\
-+	std	r0,_LINK(r1);					\
-+	std	r0,_NIP(r1);					\
-+								\
-+	/* Hard disable interrupts */				\
-+	mfmsr	r9;						\
-+	rldicl	r9,r9,48,1;					\
-+	rotldi	r9,r9,16;					\
-+	mtmsrd	r9,1;		/* hard-disable interrupts */	\
-+								\
-+	/* Check if something happened while soft-disabled */	\
-+	lbz	r0,PACAIRQHAPPENED(r13);			\
-+	andi.	r0,r0,~PACA_IRQ_HARD_DIS@l;			\
-+	beq	1f;						\
-+	cmpwi	cr0,r4,0;					\
-+	beq	1f;						\
-+	addi	r1,r1,INT_FRAME_SIZE;				\
-+	ld	r0,16(r1);					\
-+	li	r3,0;			/* Return 0 (no nap) */	\
-+	mtlr	r0;						\
-+	blr;							\
-+1:	/* We mark irqs hard disabled as this is the state	\
-+	 * we'll  be in when returning and we need to tell	\
-+	 * arch_local_irq_restore() about it */			\
-+	li	r0,PACA_IRQ_HARD_DIS;				\
-+	stb	r0,PACAIRQHAPPENED(r13);			\
-+								\
-+	/* We haven't lost state ... yet */			\
-+	li	r0,0;						\
-+	stb	r0,PACA_NAPSTATELOST(r13);			\
-+								\
-+	/* Continue saving state */				\
-+	SAVE_GPR(2, r1);					\
-+	SAVE_NVGPRS(r1);					\
-+	mfcr	r4;						\
-+	std	r4,_CCR(r1);					\
-+	std	r9,_MSR(r1);					\
-+	std	r1,PACAR1(r13);					\
-+
-+/*
-+ * We use interrupt stack to save and restore few registers like
-+ * PC, CR, LR and NVGPRs while enter/exiting idle states. Since
-+ * volatile registers don't need to be saved/restored use that space
-+ * instead to save/restore sprs which lose state during winkle.
-+ */
-+#define _SDR1	GPR3
-+#define _RPR	GPR4
-+#define _SPURR	GPR5
-+#define _PURR	GPR6
-+#define _TSCR	GPR7
-+#define _DSCR	GPR8
-+#define _AMOR	GPR9
-+#define _WORT	GPR10
-+#define _WORC	GPR11
-+
-+
- #endif
+ 	cmpwi	cr3,r13,2
++	bl	power7_restore_hyp_resource
  
- #endif
+-	/*
+-	 * Check if last bit of HSPGR0 is set. This indicates whether we are
+-	 * waking up from winkle.
+-	 */
+-	GET_PACA(r13)
+-	clrldi	r5,r13,63
+-	clrrdi	r13,r13,1
+-	cmpwi	cr4,r5,1
+-	mtspr	SPRN_HSPRG0,r13
+-
+-	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
+-	cmpwi   cr2,r0,PNV_THREAD_NAP
+-	bgt     cr2,8f				/* Either sleep or Winkle */
+-
+-	/* Waking up from nap should not cause hypervisor state loss */
+-	bgt	cr3,.
+-
+-	/* Waking up from nap */
+ 	li	r0,PNV_THREAD_RUNNING
+ 	stb	r0,PACA_THREAD_IDLE_STATE(r13)	/* Clear thread state */
+ 
+@@ -143,13 +126,9 @@ BEGIN_FTR_SECTION
+ 
+ 	/* Return SRR1 from power7_nap() */
+ 	mfspr	r3,SPRN_SRR1
+-	beq	cr3,2f
+-	b	power7_wakeup_noloss
+-2:	b	power7_wakeup_loss
+-
+-	/* Fast Sleep wakeup on PowerNV */
+-8:	GET_PACA(r13)
+-	b 	power7_wakeup_tb_loss
++	blt	cr3,2f
++	b	power7_wakeup_loss
++2:	b	power7_wakeup_noloss
+ 
+ 9:
+ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
 diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index abc53e88a5b4..6af57e292848 100644
+index 6af57e292848..0852685a22b8 100644
 --- a/arch/powerpc/kernel/idle_power7.S
 +++ b/arch/powerpc/kernel/idle_power7.S
-@@ -24,20 +24,6 @@
+@@ -197,6 +197,35 @@ _GLOBAL(power7_winkle)
+ 	b	power7_powersave_common
+ 	/* No return */
  
- #undef DEBUG
++/*
++ * Called from reset vector. Check whether we have woken up with
++ * hypervisor state loss. If yes, restore hypervisor state and return
++ * back to reset vector.
++ */
++_GLOBAL(power7_restore_hyp_resource)
++	/*
++	 * Check if last bit of HSPGR0 is set. This indicates whether we are
++	 * waking up from winkle.
++	 */
++	GET_PACA(r13)
++	clrldi	r5,r13,63
++	clrrdi	r13,r13,1
++	cmpwi	cr4,r5,1
++	mtspr	SPRN_HSPRG0,r13
++
++	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
++	cmpwi   cr2,r0,PNV_THREAD_NAP
++	bgt     cr2,power7_wakeup_tb_loss	/* Either sleep or Winkle */
++
++	/*
++	 * We fall through here if PACA_THREAD_IDLE_STATE shows we are waking
++	 * up from nap. At this stage CR3 shouldn't contains 'gt' since that
++	 * indicates we are waking with hypervisor state loss from nap.
++	 */
++	bgt	cr3,.
++
++	blr
++
+ _GLOBAL(power7_wakeup_tb_loss)
+ 	ld	r2,PACATOC(r13);
+ 	ld	r1,PACAR1(r13)
+@@ -205,11 +234,13 @@ _GLOBAL(power7_wakeup_tb_loss)
+ 	 * and they are restored before switching to the process context. Hence
+ 	 * until they are restored, they are free to be used.
+ 	 *
+-	 * Save SRR1 in a NVGPR as it might be clobbered in opal_call_realmode
+-	 * (called in CHECK_HMI_INTERRUPT). SRR1 is required to determine the
+-	 * wakeup reason if we branch to kvm_start_guest.
++	 * Save SRR1 and LR in NVGPRs as they might be clobbered in
++	 * opal_call_realmode (called in CHECK_HMI_INTERRUPT). SRR1 is required
++	 * to determine the wakeup reason if we branch to kvm_start_guest. LR
++	 * is required to return back to reset vector after hypervisor state
++	 * restore is complete.
+ 	 */
+-
++	mflr	r17
+ 	mfspr	r16,SPRN_SRR1
+ BEGIN_FTR_SECTION
+ 	CHECK_HMI_INTERRUPT
+@@ -359,33 +390,9 @@ common_exit:
  
--/*
-- * Use unused space in the interrupt stack to save and restore
-- * registers for winkle support.
-- */
--#define _SDR1	GPR3
--#define _RPR	GPR4
--#define _SPURR	GPR5
--#define _PURR	GPR6
--#define _TSCR	GPR7
--#define _DSCR	GPR8
--#define _AMOR	GPR9
--#define _WORT	GPR10
--#define _WORC	GPR11
--
- /* Idle state entry routines */
+ hypervisor_state_restored:
  
- #define	IDLE_STATE_ENTER_SEQ(IDLE_INST)				\
-@@ -77,55 +63,8 @@ core_idle_lock_held:
-  * 	1 - check
-  */
- _GLOBAL(power7_powersave_common)
--	/* Use r3 to pass state nap/sleep/winkle */
--	/* NAP is a state loss, we create a regs frame on the
--	 * stack, fill it up with the state we care about and
--	 * stick a pointer to it in PACAR1. We really only
--	 * need to save PC, some CR bits and the NV GPRs,
--	 * but for now an interrupt frame will do.
--	 */
--	mflr	r0
--	std	r0,16(r1)
--	stdu	r1,-INT_FRAME_SIZE(r1)
--	std	r0,_LINK(r1)
--	std	r0,_NIP(r1)
+-	li	r5,PNV_THREAD_RUNNING
+-	stb     r5,PACA_THREAD_IDLE_STATE(r13)
 -
--	/* Hard disable interrupts */
--	mfmsr	r9
--	rldicl	r9,r9,48,1
--	rotldi	r9,r9,16
--	mtmsrd	r9,1			/* hard-disable interrupts */
+ 	mtspr	SPRN_SRR1,r16
+-#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+-	li      r0,KVM_HWTHREAD_IN_KERNEL
+-	stb     r0,HSTATE_HWTHREAD_STATE(r13)
+-	/* Order setting hwthread_state vs. testing hwthread_req */
+-	sync
+-	lbz     r0,HSTATE_HWTHREAD_REQ(r13)
+-	cmpwi   r0,0
+-	beq     6f
+-	b       kvm_start_guest
+-6:
+-#endif
 -
--	/* Check if something happened while soft-disabled */
--	lbz	r0,PACAIRQHAPPENED(r13)
--	andi.	r0,r0,~PACA_IRQ_HARD_DIS@l
--	beq	1f
--	cmpwi	cr0,r4,0
--	beq	1f
+-	REST_NVGPRS(r1)
+-	REST_GPR(2, r1)
+-	ld	r3,_CCR(r1)
+-	ld	r4,_MSR(r1)
+-	ld	r5,_NIP(r1)
 -	addi	r1,r1,INT_FRAME_SIZE
--	ld	r0,16(r1)
--	li	r3,0			/* Return 0 (no nap) */
--	mtlr	r0
--	blr
--
--1:	/* We mark irqs hard disabled as this is the state we'll
--	 * be in when returning and we need to tell arch_local_irq_restore()
--	 * about it
--	 */
--	li	r0,PACA_IRQ_HARD_DIS
--	stb	r0,PACAIRQHAPPENED(r13)
--
--	/* We haven't lost state ... yet */
--	li	r0,0
--	stb	r0,PACA_NAPSTATELOST(r13)
--
--	/* Continue saving state */
--	SAVE_GPR(2, r1)
--	SAVE_NVGPRS(r1)
--	mfcr	r4
--	std	r4,_CCR(r1)
--	std	r9,_MSR(r1)
--	std	r1,PACAR1(r13)
-+	/* Save PC, CR, LR and NVGPRs in stack */
-+	IDLE_STATE_PREP;
+-	mtcr	r3
+-	mfspr	r3,SPRN_SRR1		/* Return SRR1 */
+-	mtspr	SPRN_SRR1,r4
+-	mtspr	SPRN_SRR0,r5
+-	rfid
++	mtlr	r17
++	blr
  
- 	/*
- 	 * Go to real mode to do the nap, as required by the architecture.
+ fastsleep_workaround_at_exit:
+ 	li	r3,1
 -- 
 1.9.3
