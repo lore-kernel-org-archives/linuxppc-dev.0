@@ -1,39 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 368CD1A0D9F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 18:49:46 +1100 (AEDT)
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 29 Feb 2016 02:49:44 -0500
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 7BF546E8041
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 02:36:33 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1T7nfU133030364
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 07:49:42 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1T7nfhh005045
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 02:49:41 -0500
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 2/2] powerpc/mm: Replace _PAGE_USER with _PAGE_PRIV
-In-Reply-To: <1456713374.32505.55.camel@kernel.crashing.org>
-References: <1456456850-2679-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1456456850-2679-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1456713374.32505.55.camel@kernel.crashing.org>
-Date: Mon, 29 Feb 2016 13:19:37 +0530
-Message-ID: <87bn70q7la.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C83241A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 19:38:01 +1100 (AEDT)
+Date: Mon, 29 Feb 2016 19:37:56 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v3 7/7] KVM: PPC: Add support for multiple-TCE
+ hcalls
+Message-ID: <20160229083756.GB32418@fergus.ozlabs.ibm.com>
+References: <1455501309-47200-1-git-send-email-aik@ozlabs.ru>
+ <1455501309-47200-8-git-send-email-aik@ozlabs.ru>
+ <56C52EF8.4050409@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <56C52EF8.4050409@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,20 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Thu, Feb 18, 2016 at 01:39:52PM +1100, Alexey Kardashevskiy wrote:
+> 
+> The latest powerkvm kernel passes @thp instead of NULL and check for it
+> below in addition to (shift > PAGE_SHIFT), should it be fixed here as well?
+> 
+> Is that possible for __find_linux_pte_or_hugepte() return thp==true but
+> shift<=PAGE_SHIT, assuming we call it on vcpu->arch.pgdir, not an ordinary
+> task pgdir?
 
-> On Fri, 2016-02-26 at 08:50 +0530, Aneesh Kumar K.V wrote:
->> _PAGE_PRIV means the page can be accessed only by kernel. This is
->> done
->> to keep pte bits similar to PowerISA 3.0 radix PTE format. User
->> pages are now makred by clearing _PAGE_PRIV bit.
->
-> Very minor nit: It's not clear that PRIV means PRIVILEGED (rather than
-> PRIVATE). Can you spell it out completely instead ? I like things being
-> self-describing ;-)
->
+Looking at the code for __find_linux_pte_or_hugepte, if it returns
+thp==true then it must return shift==PMD_SHIFT, which is 24 for
+Book3S 64 with 64k pages.  With 4k pages, we don't get the option to
+enable THP (on Book3S 64).
 
-Ok, I will update this
+Other platforms might return other values, but they would always be
+greater than PAGE_SHIFT.
 
-Thanks,
--aneesh
+Paul.
