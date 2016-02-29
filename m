@@ -1,20 +1,21 @@
-Return-Path: <intermediadc@hotmail.com>
-Received: from DUB004-OMC3S5.hotmail.com (dub004-omc3s5.hotmail.com
- [157.55.2.14])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E7CBE1A00A5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 06:08:41 +1100 (AEDT)
-Message-ID: <DUB117-W18044BE969CC05E69F545CC8BA0@phx.gbl>
-Content-Type: multipart/alternative;
- boundary="_f0f1bc6b-6426-4950-a7f3-cb51dc75bc71_"
-From: luigi burdo <intermediadc@hotmail.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-CC: "chzigotzky@xenosoft.de" <chzigotzky@xenosoft.de>, Trevor Dickinson
- <contact@a-eon.com>, "matthew@a-eon.com" <matthew@a-eon.com>
-Subject: Freescale P5020 cpu will be kvm-pr?
-Date: Mon, 29 Feb 2016 20:03:16 +0100
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7ACE91A0324
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 09:38:10 +1100 (AEDT)
+Message-ID: <1456785480.5360.60.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Alessio Igor Bogani <alessio.bogani@elettra.eu>, Kumar Gala
+ <galak@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Mon, 29 Feb 2016 16:38:00 -0600
+In-Reply-To: <1456397825-1786-2-git-send-email-alessio.bogani@elettra.eu>
+References: <1456397825-1786-1-git-send-email-alessio.bogani@elettra.eu>
+ <1456397825-1786-2-git-send-email-alessio.bogani@elettra.eu>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [RFC PATCH v1 2/2] powerpc/86xx: Introduce and use common dtsi
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,56 +25,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_f0f1bc6b-6426-4950-a7f3-cb51dc75bc71_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2016-02-25 at 11:57 +0100, Alessio Igor Bogani wrote:
+> Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+> ---
+>  arch/powerpc/boot/dts/fsl/gef_ppc9a.dts        | 284 +++-------------------
+>  arch/powerpc/boot/dts/fsl/gef_sbc310.dts       | 276 +++------------------
+>  arch/powerpc/boot/dts/fsl/gef_sbc610.dts       | 284 +++-------------------
+>  arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts     | 318 ++++------------------
+> ---
+>  arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts | 317 ++++------------------
+> --
+>  arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi  | 124 ++++++++++
+>  arch/powerpc/boot/dts/fsl/mpc8641si-pre.dtsi   |  59 +++++
+>  arch/powerpc/boot/dts/fsl/sbc8641d.dts         | 314 +++-------------------
+> --
+>  8 files changed, 400 insertions(+), 1576 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi
+>  create mode 100644 arch/powerpc/boot/dts/fsl/mpc8641si-pre.dtsi
 
-Hi all=2Csorry for this email but i need to ask to  Alexander Graf and Mich=
-ael Ellerman if will be possible have kvm and kvm-pr for the Freescale/Nix =
-P5020 cpu . We are testing a new desktop machine with this powerpc cpu clas=
-sesand right now we see kvm under qemu is working only on emb side=2C this =
-because the kernelset the e5500 cpu as a emb and there is no an option for =
-build the kernel with book3s.
+Could you post a diff of what the decompiled trees look like before and after
+this change (e.g. interrupts went from 2-cell to 4-cell)?  It is very hard to
+review in this form.  Or better, like the config change, have a commit that
+first makes changes to what the unified trees will be, and then a second
+commit that generates the same output using includes.
 
-here are the new machine specs:http://www.vincentperkins.com/AmigaNG/x5000.=
-php=20
-Thanks for your time and sorry for my English
-Luigi BurdoA-eon X5000 Beta Tester=20
- 		 	   		  =
+> +/include/ "qoriq-mpic.dtsi"
+> +	pic@40000 {
+> +		compatible = "chrp,open-pic";
+> +	};
 
---_f0f1bc6b-6426-4950-a7f3-cb51dc75bc71_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+This is removing the fsl,mpic compatible, which is required for 4-cell
+interrupt specifiers.
 
-<html>
-<head>
-<style><!--
-.hmmessage P
-{
-margin:0px=3B
-padding:0px
-}
-body.hmmessage
-{
-font-size: 12pt=3B
-font-family:Calibri
-}
---></style></head>
-<body class=3D'hmmessage'><div dir=3D'ltr'>Hi all=2C<div>sorry for this ema=
-il but i need to ask to &nbsp=3BAlexander Graf and Michael Ellerman if will=
- be possible have kvm and kvm-pr for&nbsp=3B<span style=3D"font-size: 12pt=
-=3B">the Freescale/Nix P5020 cpu .&nbsp=3B</span></div><div><span style=3D"=
-font-size: 12pt=3B">We are testing a new desktop machine with this powerpc =
-cpu classes</span><div>and right now we see kvm under qemu is working only =
-on emb side=2C this because the kernel</div><div>set the e5500 cpu as a emb=
- and there is no an option for build the kernel with book3s.</div><div><br>=
-</div><div><br></div><div>here are the new machine specs:</div><div><a href=
-=3D"http://www.vincentperkins.com/AmigaNG/x5000.php" target=3D"_blank" styl=
-e=3D"font-size: 12pt=3B">http://www.vincentperkins.com/AmigaNG/x5000.php</a=
-><span style=3D"font-size: 12pt=3B">&nbsp=3B</span></div><div><br></div><di=
-v>Thanks for your time&nbsp=3B</div><div>and sorry for my English</div><div=
-><br></div><div>Luigi Burdo</div><div>A-eon X5000 Beta Tester&nbsp=3B</div>=
-<div><br></div></div> 		 	   		  </div></body>
-</html>=
+> +&pci0 {
+> +	compatible = "fsl,mpc8641-pcie";
+> +	device_type = "pci";
+> +	#size-cells = <2>;
+> +	#address-cells = <3>;
+> +	bus-range = <0x0 0xff>;
+> +	clock-frequency = <33333333>;
 
---_f0f1bc6b-6426-4950-a7f3-cb51dc75bc71_--
+The clock frequency of PCI Express is not 33 MHz.
+
+
+> diff --git a/arch/powerpc/boot/dts/fsl/mpc8641si-pre.dtsi
+> b/arch/powerpc/boot/dts/fsl/mpc8641si-pre.dtsi
+> new file mode 100644
+> index 0000000..026fa58
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/fsl/mpc8641si-pre.dtsi
+> @@ -0,0 +1,59 @@
+> +/*
+> + * MPC8641 Silicon/SoC Device Tree Source (pre include)
+> + *
+> + * Copyright 2016 Elettra-Sincrotrone Trieste S.C.p.A.
+> + *
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
+> + *
+> + */
+> +
+> +/dts-v1/;
+> +
+> +/ {
+> +	compatible = "fsl,MPC8641";
+
+This compatible is pointless -- it will be overwritten by the board
+compatible.
+
+-Scott
