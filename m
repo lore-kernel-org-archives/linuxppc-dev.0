@@ -2,45 +2,43 @@ Return-Path: <cyrilbur@gmail.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BFEC21A0BBD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 17:55:51 +1100 (AEDT)
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F9BC1A033A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 17:55:53 +1100 (AEDT)
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7BA4F1402BC
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:51 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 193E31402BC
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:53 +1100 (AEDT)
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
- Mon, 29 Feb 2016 16:55:51 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id AEBDB2BB0055
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:47 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1T6tdaD7799238
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:47 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1T6tFql009489
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:15 +1100
+ Mon, 29 Feb 2016 16:55:52 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9F8832CE8046
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:49 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1T6tfUH66453696
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:49 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u1T6tHTh000849
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:17 +1100
 Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- u1T6tFbl008425
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:15 +1100
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ u1T6tH77032303
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:17 +1100
 Received: from camb691.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id BD010A0380
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:54:26 +1100 (AEDT)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 8DCEDA00D7
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:54:22 +1100 (AEDT)
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/9] powerpc: Restore FPU/VEC/VSX if previously used
-Date: Mon, 29 Feb 2016 17:53:47 +1100
-Message-Id: <1456728831-31862-6-git-send-email-cyrilbur@gmail.com>
-In-Reply-To: <1456728831-31862-1-git-send-email-cyrilbur@gmail.com>
-References: <1456728831-31862-1-git-send-email-cyrilbur@gmail.com>
+Subject: [PATCH 0/9] FP/VEC/VSX switching optimisations
+Date: Mon, 29 Feb 2016 17:53:42 +1100
+Message-Id: <1456728831-31862-1-git-send-email-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,294 +48,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the FPU, VEC and VSX facilities are lazily loaded. This is not a
-problem unless a process is using these facilities.
+Cover-letter for V1 of the series is at
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-November/136350.html
 
-Modern versions of GCC are very good at automatically vectorising code, new
-and modernised workloads make use of floating point and vector facilities,
-even the kernel makes use of vectorised memcpy.
+Cover-letter for V2 of the series is at
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-January/138054.html
 
-All this combined greatly increases the cost of a syscall since the kernel
-uses the facilities sometimes even in syscall fast-path making it
-increasingly common for a thread to take an *_unavailable exception soon
-after a syscall, not to mention potentially taking all three.
+Changes in V3:
+Addressed review comments from Michael Neuling
+ - Made commit message in 4/9 better reflect the patch
+ - Removed overuse of #ifdef blocks and redundant condition in 5/9
+ - Split 6/8 in two to better prepare for 7,8,9
+ - Removed #ifdefs in 6/9
 
-The obvious overcompensation to this problem is to simply always load all
-the facilities on every exit to userspace. Loading up all FPU, VEC and VSX
-registers every time can be expensive and if a workload does avoid using
-them, it should not be forced to incur this penalty.
+Changes in V4:
+ - Addressed non ABI compliant ASM macros in 1/9
+ - Fixed build breakage due to changing #ifdefs in V3 (6/9)
+ - Reordered some conditions in if statements
 
-An 8bit counter is used to detect if the registers have been used in the
-past and the registers are always loaded until the value wraps to back to
-zero.
+Changes in V5:
+ - Enhanced basic-asm.h to provide ABI independent macro as pointed out by
+   Naveen Rao.
+   - Tested for both BE and LE builds. Had to disable -flto from the
+     selftests/powerpc Makefile as it didn't play well with the custom ASM.
+ - Added some extra debugging output to the vmx_signal testcase
+ - Fixed comments in testing code
+ - Updated VSX test code to use GCC Altivec macros
 
-Several versions of the assembly in entry_64.S. 1. Always calling C, 2.
-Performing a common case check and then calling C and 3. A complex check in
-asm. After some benchmarking it was determined that avoiding C in the
-common case is a performance benefit. The full check in asm greatly
-complicated that codepath for a negligible performance gain and the
-trade-off was deemed not worth it.
+Changes in V6:
+ - Removed recursive definition of CFLAGS in math/Makefile
+ - Corrected the use of the word param in favour of doubleword
+ - Reordered some code in basic-asm.h and neatened some comments
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
- arch/powerpc/include/asm/processor.h |  2 +
- arch/powerpc/kernel/asm-offsets.c    |  2 +
- arch/powerpc/kernel/entry_64.S       | 21 +++++++--
- arch/powerpc/kernel/fpu.S            |  4 ++
- arch/powerpc/kernel/process.c        | 88 +++++++++++++++++++++++++++++++-----
- arch/powerpc/kernel/vector.S         |  4 ++
- 6 files changed, 107 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index ac23308..dcab21f 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -236,11 +236,13 @@ struct thread_struct {
- #endif
- 	struct arch_hw_breakpoint hw_brk; /* info on the hardware breakpoint */
- 	unsigned long	trap_nr;	/* last trap # on this thread */
-+	u8 load_fp;
- #ifdef CONFIG_ALTIVEC
- 	struct thread_vr_state vr_state;
- 	struct thread_vr_state *vr_save_area;
- 	unsigned long	vrsave;
- 	int		used_vr;	/* set if process has used altivec */
-+	u8 load_vec;
- #endif /* CONFIG_ALTIVEC */
- #ifdef CONFIG_VSX
- 	/* VSR status */
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 07cebc3..10d5eab 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -95,12 +95,14 @@ int main(void)
- 	DEFINE(THREAD_FPSTATE, offsetof(struct thread_struct, fp_state));
- 	DEFINE(THREAD_FPSAVEAREA, offsetof(struct thread_struct, fp_save_area));
- 	DEFINE(FPSTATE_FPSCR, offsetof(struct thread_fp_state, fpscr));
-+	DEFINE(THREAD_LOAD_FP, offsetof(struct thread_struct, load_fp));
- #ifdef CONFIG_ALTIVEC
- 	DEFINE(THREAD_VRSTATE, offsetof(struct thread_struct, vr_state));
- 	DEFINE(THREAD_VRSAVEAREA, offsetof(struct thread_struct, vr_save_area));
- 	DEFINE(THREAD_VRSAVE, offsetof(struct thread_struct, vrsave));
- 	DEFINE(THREAD_USED_VR, offsetof(struct thread_struct, used_vr));
- 	DEFINE(VRSTATE_VSCR, offsetof(struct thread_vr_state, vscr));
-+	DEFINE(THREAD_LOAD_VEC, offsetof(struct thread_struct, load_vec));
- #endif /* CONFIG_ALTIVEC */
- #ifdef CONFIG_VSX
- 	DEFINE(THREAD_USED_VSR, offsetof(struct thread_struct, used_vsr));
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 0d525ce..038e0a1 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -210,7 +210,20 @@ system_call:			/* label this so stack traces look sane */
- 	li	r11,-MAX_ERRNO
- 	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
- 	bne-	syscall_exit_work
--	cmpld	r3,r11
-+
-+	andi.	r0,r8,MSR_FP
-+	beq 2f
-+#ifdef CONFIG_ALTIVEC
-+	andis.	r0,r8,MSR_VEC@h
-+	bne	3f
-+#endif
-+2:	addi    r3,r1,STACK_FRAME_OVERHEAD
-+	bl	restore_math
-+	ld	r8,_MSR(r1)
-+	ld	r3,RESULT(r1)
-+	li	r11,-MAX_ERRNO
-+
-+3:	cmpld	r3,r11
- 	ld	r5,_CCR(r1)
- 	bge-	syscall_error
- .Lsyscall_error_cont:
-@@ -602,8 +615,8 @@ _GLOBAL(ret_from_except_lite)
- 
- 	/* Check current_thread_info()->flags */
- 	andi.	r0,r4,_TIF_USER_WORK_MASK
--#ifdef CONFIG_PPC_BOOK3E
- 	bne	1f
-+#ifdef CONFIG_PPC_BOOK3E
- 	/*
- 	 * Check to see if the dbcr0 register is set up to debug.
- 	 * Use the internal debug mode bit to do this.
-@@ -618,7 +631,9 @@ _GLOBAL(ret_from_except_lite)
- 	mtspr	SPRN_DBSR,r10
- 	b	restore
- #else
--	beq	restore
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	restore_math
-+	b	restore
- #endif
- 1:	andi.	r0,r4,_TIF_NEED_RESCHED
- 	beq	2f
-diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-index 2117eac..b063524 100644
---- a/arch/powerpc/kernel/fpu.S
-+++ b/arch/powerpc/kernel/fpu.S
-@@ -130,6 +130,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	or	r12,r12,r4
- 	std	r12,_MSR(r1)
- #endif
-+	/* Don't care if r4 overflows, this is desired behaviour */
-+	lbz	r4,THREAD_LOAD_FP(r5)
-+	addi	r4,r4,1
-+	stb	r4,THREAD_LOAD_FP(r5)
- 	addi	r10,r5,THREAD_FPSTATE
- 	lfd	fr0,FPSTATE_FPSCR(r10)
- 	MTFSF_L(fr0)
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index e0c3d2d..55c1eb0 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -187,9 +187,22 @@ void enable_kernel_fp(void)
- 	}
- }
- EXPORT_SYMBOL(enable_kernel_fp);
-+
-+static int restore_fp(struct task_struct *tsk) {
-+	if (tsk->thread.load_fp) {
-+		load_fp_state(&current->thread.fp_state);
-+		current->thread.load_fp++;
-+		return 1;
-+	}
-+	return 0;
-+}
-+#else
-+static int restore_fp(struct task_struct *tsk) { return 0; }
- #endif /* CONFIG_PPC_FPU */
- 
- #ifdef CONFIG_ALTIVEC
-+#define loadvec(thr) ((thr).load_vec)
-+
- void giveup_altivec(struct task_struct *tsk)
- {
- 	check_if_tm_restore_required(tsk);
-@@ -229,6 +242,21 @@ void flush_altivec_to_thread(struct task_struct *tsk)
- 	}
- }
- EXPORT_SYMBOL_GPL(flush_altivec_to_thread);
-+
-+static int restore_altivec(struct task_struct *tsk)
-+{
-+	if (cpu_has_feature(CPU_FTR_ALTIVEC) && tsk->thread.load_vec) {
-+		load_vr_state(&tsk->thread.vr_state);
-+		tsk->thread.used_vr = 1;
-+		tsk->thread.load_vec++;
-+
-+		return 1;
-+	}
-+	return 0;
-+}
-+#else
-+#define loadvec(thr) 0
-+static inline int restore_altivec(struct task_struct *tsk) { return 0; }
- #endif /* CONFIG_ALTIVEC */
- 
- #ifdef CONFIG_VSX
-@@ -275,6 +303,18 @@ void flush_vsx_to_thread(struct task_struct *tsk)
- 	}
- }
- EXPORT_SYMBOL_GPL(flush_vsx_to_thread);
-+
-+static int restore_vsx(struct task_struct *tsk)
-+{
-+	if (cpu_has_feature(CPU_FTR_VSX)) {
-+		tsk->thread.used_vsr = 1;
-+		return 1;
-+	}
-+
-+	return 0;
-+}
-+#else
-+static inline int restore_vsx(struct task_struct *tsk) { return 0; }
- #endif /* CONFIG_VSX */
- 
- #ifdef CONFIG_SPE
-@@ -374,6 +414,36 @@ void giveup_all(struct task_struct *tsk)
- }
- EXPORT_SYMBOL(giveup_all);
- 
-+void restore_math(struct pt_regs *regs)
-+{
-+	unsigned long msr;
-+
-+	if (!current->thread.load_fp && !loadvec(current->thread))
-+		return;
-+
-+	msr = regs->msr;
-+	msr_check_and_set(msr_all_available);
-+
-+	/*
-+	 * Only reload if the bit is not set in the user MSR, the bit BEING set
-+	 * indicates that the registers are hot
-+	 */
-+	if ((!(msr & MSR_FP)) && restore_fp(current))
-+		msr |= MSR_FP | current->thread.fpexc_mode;
-+
-+	if ((!(msr & MSR_VEC)) && restore_altivec(current))
-+		msr |= MSR_VEC;
-+
-+	if ((msr & (MSR_FP | MSR_VEC)) == (MSR_FP | MSR_VEC) &&
-+			restore_vsx(current)) {
-+		msr |= MSR_VSX;
-+	}
-+
-+	msr_check_and_clear(msr_all_available);
-+
-+	regs->msr = msr;
-+}
-+
- void flush_all_to_thread(struct task_struct *tsk)
- {
- 	if (tsk->thread.regs) {
-@@ -832,17 +902,9 @@ void restore_tm_state(struct pt_regs *regs)
- 
- 	msr_diff = current->thread.ckpt_regs.msr & ~regs->msr;
- 	msr_diff &= MSR_FP | MSR_VEC | MSR_VSX;
--	if (msr_diff & MSR_FP) {
--		msr_check_and_set(MSR_FP);
--		load_fp_state(&current->thread.fp_state);
--		msr_check_and_clear(MSR_FP);
--		regs->msr |= current->thread.fpexc_mode;
--	}
--	if (msr_diff & MSR_VEC) {
--		msr_check_and_set(MSR_VEC);
--		load_vr_state(&current->thread.vr_state);
--		msr_check_and_clear(MSR_VEC);
--	}
-+
-+	restore_math(regs);
-+
- 	regs->msr |= msr_diff;
- }
- 
-@@ -1006,6 +1068,10 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 		batch = this_cpu_ptr(&ppc64_tlb_batch);
- 		batch->active = 1;
- 	}
-+
-+	if (current_thread_info()->task->thread.regs)
-+		restore_math(current_thread_info()->task->thread.regs);
-+
- #endif /* CONFIG_PPC_BOOK3S_64 */
- 
- 	return last;
-diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-index 162d0f7..038cff8 100644
---- a/arch/powerpc/kernel/vector.S
-+++ b/arch/powerpc/kernel/vector.S
-@@ -91,6 +91,10 @@ _GLOBAL(load_up_altivec)
- 	oris	r12,r12,MSR_VEC@h
- 	std	r12,_MSR(r1)
- #endif
-+	/* Don't care if r4 overflows, this is desired behaviour */
-+	lbz	r4,THREAD_LOAD_VEC(r5)
-+	addi	r4,r4,1
-+	stb	r4,THREAD_LOAD_VEC(r5)
- 	addi	r6,r5,THREAD_VRSTATE
- 	li	r4,1
- 	li	r10,VRSTATE_VSCR
+
+Cyril Bur (9):
+  selftests/powerpc: Test the preservation of FPU and VMX regs across
+    syscall
+  selftests/powerpc: Test preservation of FPU and VMX regs across
+    preemption
+  selftests/powerpc: Test FPU and VMX regs in signal ucontext
+  powerpc: Explicitly disable math features when copying thread
+  powerpc: Restore FPU/VEC/VSX if previously used
+  powerpc: Prepare for splitting giveup_{fpu,altivec,vsx} in two
+  powerpc: Add the ability to save FPU without giving it up
+  powerpc: Add the ability to save Altivec without giving it up
+  powerpc: Add the ability to save VSX without giving it up
+
+ arch/powerpc/include/asm/processor.h               |   2 +
+ arch/powerpc/include/asm/reg.h                     |   8 +
+ arch/powerpc/include/asm/switch_to.h               |  13 +-
+ arch/powerpc/kernel/asm-offsets.c                  |   2 +
+ arch/powerpc/kernel/entry_64.S                     |  21 +-
+ arch/powerpc/kernel/fpu.S                          |  25 +--
+ arch/powerpc/kernel/ppc_ksyms.c                    |   4 -
+ arch/powerpc/kernel/process.c                      | 168 +++++++++++++--
+ arch/powerpc/kernel/vector.S                       |  45 +---
+ tools/testing/selftests/powerpc/Makefile           |   3 +-
+ tools/testing/selftests/powerpc/basic_asm.h        |  63 ++++++
+ tools/testing/selftests/powerpc/math/.gitignore    |   6 +
+ tools/testing/selftests/powerpc/math/Makefile      |  21 ++
+ tools/testing/selftests/powerpc/math/fpu_asm.S     | 197 +++++++++++++++++
+ tools/testing/selftests/powerpc/math/fpu_preempt.c | 113 ++++++++++
+ tools/testing/selftests/powerpc/math/fpu_signal.c  | 135 ++++++++++++
+ tools/testing/selftests/powerpc/math/fpu_syscall.c |  90 ++++++++
+ tools/testing/selftests/powerpc/math/vmx_asm.S     | 234 +++++++++++++++++++++
+ tools/testing/selftests/powerpc/math/vmx_preempt.c | 112 ++++++++++
+ tools/testing/selftests/powerpc/math/vmx_signal.c  | 156 ++++++++++++++
+ tools/testing/selftests/powerpc/math/vmx_syscall.c |  91 ++++++++
+ 21 files changed, 1426 insertions(+), 83 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/basic_asm.h
+ create mode 100644 tools/testing/selftests/powerpc/math/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/math/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_asm.S
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_preempt.c
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_signal.c
+ create mode 100644 tools/testing/selftests/powerpc/math/fpu_syscall.c
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_asm.S
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_preempt.c
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_signal.c
+ create mode 100644 tools/testing/selftests/powerpc/math/vmx_syscall.c
+
 -- 
 2.7.2
