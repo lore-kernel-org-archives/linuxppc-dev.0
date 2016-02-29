@@ -1,24 +1,26 @@
 Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7F3B61A0341
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 10:03:04 +1100 (AEDT)
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 322251A0B51
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 10:08:35 +1100 (AEDT)
+Received: from mail-pf0-x22b.google.com (mail-pf0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c00::22b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BA897140B99
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 10:03:03 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id 184so3971428pff.1
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 15:03:03 -0800 (PST)
-Date: Tue, 1 Mar 2016 10:02:54 +1100
+ by ozlabs.org (Postfix) with ESMTPS id A5F23140B9E
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 10:08:34 +1100 (AEDT)
+Received: by mail-pf0-x22b.google.com with SMTP id l6so2889320pfl.3
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 15:08:34 -0800 (PST)
+Date: Tue, 1 Mar 2016 10:08:25 +1100
 From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/9] FP/VEC/VSX switching optimisations
-Message-ID: <20160301100254.5cd7b558@camb691>
-In-Reply-To: <1456728831-31862-1-git-send-email-cyrilbur@gmail.com>
-References: <1456728831-31862-1-git-send-email-cyrilbur@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Suraj Jitindar Singh <sjitindarsingh@gmail.com>, linuxppc-dev@ozlabs.org
+Subject: Re: selftests/powerpc: Remove -flto from common CFLAGS
+Message-ID: <20160301100825.67747147@camb691>
+In-Reply-To: <20160229111013.71B58140779@ozlabs.org>
+References: <1456727395-27386-1-git-send-email-sjitindarsingh@gmail.com>
+ <20160229111013.71B58140779@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,91 +32,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 29 Feb 2016 17:53:42 +1100
-Cyril Bur <cyrilbur@gmail.com> wrote:
+On Mon, 29 Feb 2016 22:10:13 +1100 (AEDT)
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Apologies this should have had a Version 6 prefix!
+> Hi Suraj,
+> 
+> On Mon, 2016-29-02 at 06:29:55 UTC, Suraj Jitindar Singh wrote:
+> > LTO can cause GCC to inline some functions which have attributes set. The  
+> 
+> You should define what LTO is the first time you use it.
+> 
+> > act of inlining the functions can lead to GCC forgetting about the
+> > attributes which leads to incorrect tests.
+> > Notable example being: __attribute__((__target__("no-vsx")))  
+> 
+> That is probably a GCC bug, but we still need to work around it for now.
 
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=70010
 
+> 
+> > LTO can also interact strangely with custom assembly functions and cause
+> > tests to intermittently fail.  
+> 
+> That's probably Cyril writing bad asm :)
 
-> Cover-letter for V1 of the series is at
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-November/136350.html
+No doubt.
+
 > 
-> Cover-letter for V2 of the series is at
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-January/138054.html
+> > Both these cases are hard to detect and require manual inspection of
+> > binaries which is unlikely to happen for all tests. Furthermore, LTO
+> > optimisations are not necessary for selftests and correctness is paramount
+> > and as such it is best to disable LTO.
+> > 
+> > LTO can be enabled on a per test basis.
+> > 
+> > A pseries_le_defconfig kernel on a POWER8 was used to determine that the
+> > same subset of selftests pass and fail with and without -flto in the
+> > common Makefile.
+> > 
+> > These tests always fail:
+> > selftests: per_event_excludes [FAIL]
+> > selftests: event_attributes_test [FAIL]
+> > selftests: ebb_vs_cpu_event_test [FAIL]
+> > selftests: cpu_event_vs_ebb_test [FAIL]
+> > selftests: cpu_event_pinned_vs_ebb_test [FAIL]  
 > 
-> Changes in V3:
-> Addressed review comments from Michael Neuling
->  - Made commit message in 4/9 better reflect the patch
->  - Removed overuse of #ifdef blocks and redundant condition in 5/9
->  - Split 6/8 in two to better prepare for 7,8,9
->  - Removed #ifdefs in 6/9
+> They shouldn't :)
 > 
-> Changes in V4:
->  - Addressed non ABI compliant ASM macros in 1/9
->  - Fixed build breakage due to changing #ifdefs in V3 (6/9)
->  - Reordered some conditions in if statements
+> Are you running as root? Bare metal or guest?
 > 
-> Changes in V5:
->  - Enhanced basic-asm.h to provide ABI independent macro as pointed out by
->    Naveen Rao.
->    - Tested for both BE and LE builds. Had to disable -flto from the
->      selftests/powerpc Makefile as it didn't play well with the custom ASM.
->  - Added some extra debugging output to the vmx_signal testcase
->  - Fixed comments in testing code
->  - Updated VSX test code to use GCC Altivec macros
+
+Interesting. I believe this was run baremetal as root. I'm going to test the
+patch in qemu at root. Is there a list of expected failures in certain
+situations?
+
+> > selftests: ipc_unmuxed [FAIL]  
 > 
-> Changes in V6:
->  - Removed recursive definition of CFLAGS in math/Makefile
->  - Corrected the use of the word param in favour of doubleword
->  - Reordered some code in basic-asm.h and neatened some comments
+> That one is expected.
 > 
-> 
-> 
-> Cyril Bur (9):
->   selftests/powerpc: Test the preservation of FPU and VMX regs across
->     syscall
->   selftests/powerpc: Test preservation of FPU and VMX regs across
->     preemption
->   selftests/powerpc: Test FPU and VMX regs in signal ucontext
->   powerpc: Explicitly disable math features when copying thread
->   powerpc: Restore FPU/VEC/VSX if previously used
->   powerpc: Prepare for splitting giveup_{fpu,altivec,vsx} in two
->   powerpc: Add the ability to save FPU without giving it up
->   powerpc: Add the ability to save Altivec without giving it up
->   powerpc: Add the ability to save VSX without giving it up
-> 
->  arch/powerpc/include/asm/processor.h               |   2 +
->  arch/powerpc/include/asm/reg.h                     |   8 +
->  arch/powerpc/include/asm/switch_to.h               |  13 +-
->  arch/powerpc/kernel/asm-offsets.c                  |   2 +
->  arch/powerpc/kernel/entry_64.S                     |  21 +-
->  arch/powerpc/kernel/fpu.S                          |  25 +--
->  arch/powerpc/kernel/ppc_ksyms.c                    |   4 -
->  arch/powerpc/kernel/process.c                      | 168 +++++++++++++--
->  arch/powerpc/kernel/vector.S                       |  45 +---
->  tools/testing/selftests/powerpc/Makefile           |   3 +-
->  tools/testing/selftests/powerpc/basic_asm.h        |  63 ++++++
->  tools/testing/selftests/powerpc/math/.gitignore    |   6 +
->  tools/testing/selftests/powerpc/math/Makefile      |  21 ++
->  tools/testing/selftests/powerpc/math/fpu_asm.S     | 197 +++++++++++++++++
->  tools/testing/selftests/powerpc/math/fpu_preempt.c | 113 ++++++++++
->  tools/testing/selftests/powerpc/math/fpu_signal.c  | 135 ++++++++++++
->  tools/testing/selftests/powerpc/math/fpu_syscall.c |  90 ++++++++
->  tools/testing/selftests/powerpc/math/vmx_asm.S     | 234 +++++++++++++++++++++
->  tools/testing/selftests/powerpc/math/vmx_preempt.c | 112 ++++++++++
->  tools/testing/selftests/powerpc/math/vmx_signal.c  | 156 ++++++++++++++
->  tools/testing/selftests/powerpc/math/vmx_syscall.c |  91 ++++++++
->  21 files changed, 1426 insertions(+), 83 deletions(-)
->  create mode 100644 tools/testing/selftests/powerpc/basic_asm.h
->  create mode 100644 tools/testing/selftests/powerpc/math/.gitignore
->  create mode 100644 tools/testing/selftests/powerpc/math/Makefile
->  create mode 100644 tools/testing/selftests/powerpc/math/fpu_asm.S
->  create mode 100644 tools/testing/selftests/powerpc/math/fpu_preempt.c
->  create mode 100644 tools/testing/selftests/powerpc/math/fpu_signal.c
->  create mode 100644 tools/testing/selftests/powerpc/math/fpu_syscall.c
->  create mode 100644 tools/testing/selftests/powerpc/math/vmx_asm.S
->  create mode 100644 tools/testing/selftests/powerpc/math/vmx_preempt.c
->  create mode 100644 tools/testing/selftests/powerpc/math/vmx_signal.c
->  create mode 100644 tools/testing/selftests/powerpc/math/vmx_syscall.c
-> 
+> cheers
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
