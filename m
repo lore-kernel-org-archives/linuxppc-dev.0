@@ -1,23 +1,35 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
+ [140.105.206.208])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 198CD1A005D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 17:11:07 +1100 (AEDT)
-Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
- [IPv6:2607:f8b0:400e:c03::234])
+ by lists.ozlabs.org (Postfix) with ESMTPS id A82141A0013
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 21:34:06 +1100 (AEDT)
+Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
+ by localhost (Email Security Appliance) with SMTP id 4F658440EC3_6D41E9AB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 10:34:02 +0000 (GMT)
+Received: from mail-qg0-f53.google.com (mail-qg0-f53.google.com
+ [209.85.192.53])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7E2A314016A
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:11:06 +1100 (AEDT)
-Received: by mail-pa0-x234.google.com with SMTP id yy13so86242735pab.3
- for <linuxppc-dev@ozlabs.org>; Sun, 28 Feb 2016 22:11:06 -0800 (PST)
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Cc: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Subject: [PATCH] selftests/powerpc: Remove -flto from common CFLAGS
-Date: Mon, 29 Feb 2016 17:09:36 +1100
-Message-Id: <1456726176-26103-1-git-send-email-sjitindarsingh@gmail.com>
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (verified OK))
+ by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
+ 04DEB43E04A_6D41E99F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 10:34:01 +0000 (GMT)
+Received: by mail-qg0-f53.google.com with SMTP id d32so55795430qgd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 02:34:00 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1456397825-1786-2-git-send-email-alessio.bogani@elettra.eu>
+References: <1456397825-1786-1-git-send-email-alessio.bogani@elettra.eu>
+ <1456397825-1786-2-git-send-email-alessio.bogani@elettra.eu>
+Date: Mon, 29 Feb 2016 11:33:59 +0100
+Message-ID: <CAPk1OjFw-wQ+2AGq_oHoWM6F7bvbRuMbL9NVtrDwAhKdf86gzw@mail.gmail.com>
+Subject: Re: [RFC PATCH v1 2/2] powerpc/86xx: Introduce and use common dtsi
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+To: Scott Wood <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ Alessio Igor Bogani <alessio.bogani@elettra.eu>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,50 +39,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-LTO can cause GCC to inline some functions which have attributes set. The
-act of inlining the functions can lead to GCC forgetting about the
-attributes which leads to incorrect tests.
-Notable example being: __attribute__((__target__("no-vsx")))
-LTO can also interact strangely with custom assembly functions and cause
-tests to intermittently fail.
+Hi,
 
-Both these cases are hard to detect and require manual inspection of
-binaries which is unlikely to happen for all tests. Furthermore, LTO
-optimisations are not necessary for selftests and correctness is paramount
-and as such it is best to disable LTO.
+On 25 February 2016 at 11:57, Alessio Igor Bogani
+<alessio.bogani@elettra.eu> wrote:
+> Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+> ---
+>  arch/powerpc/boot/dts/fsl/gef_ppc9a.dts        | 284 +++-------------------
+>  arch/powerpc/boot/dts/fsl/gef_sbc310.dts       | 276 +++------------------
+>  arch/powerpc/boot/dts/fsl/gef_sbc610.dts       | 284 +++-------------------
+>  arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts     | 318 ++++---------------------
+>  arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts | 317 ++++--------------------
+>  arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi  | 124 ++++++++++
+>  arch/powerpc/boot/dts/fsl/mpc8641si-pre.dtsi   |  59 +++++
+>  arch/powerpc/boot/dts/fsl/sbc8641d.dts         | 314 +++---------------------
+>  8 files changed, 400 insertions(+), 1576 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi
+>  create mode 100644 arch/powerpc/boot/dts/fsl/mpc8641si-pre.dtsi
+[...]
 
-LTO can be enabled on a per test basis.
+Any comments?
 
-A pseries_le_defconfig kernel on a POWER8 was used to determine that the
-same subset of selftests pass and fail with and without -flto in the
-common Makefile.
+Thanks!
 
-These tests always fail:
-selftests: per_event_excludes [FAIL]
-selftests: event_attributes_test [FAIL]
-selftests: ebb_vs_cpu_event_test [FAIL]
-selftests: cpu_event_vs_ebb_test [FAIL]
-selftests: cpu_event_pinned_vs_ebb_test [FAIL]
-selftests: ipc_unmuxed [FAIL]
-And the remaining tests PASS.
-
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
----
- tools/testing/selftests/powerpc/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
-index 0c2706b..7925a96 100644
---- a/tools/testing/selftests/powerpc/Makefile
-+++ b/tools/testing/selftests/powerpc/Makefile
-@@ -8,7 +8,7 @@ ifeq ($(ARCH),powerpc)
- 
- GIT_VERSION = $(shell git describe --always --long --dirty || echo "unknown")
- 
--CFLAGS := -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CURDIR) $(CFLAGS)
-+CFLAGS := -Wall -O2 -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CURDIR) $(CFLAGS)
- 
- export CFLAGS
- 
--- 
-2.5.0
+Ciao,
+Alessio
