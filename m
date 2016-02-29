@@ -1,27 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B0611A0347
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 21:06:02 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Li Yang <leoli@freescale.com>
-Cc: Scott Wood <oss@buserror.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- devicetree@vger.kernel.org,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Jia Hongtao <hongtao.jia@freescale.com>,
- Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
- device tree
-Date: Mon, 29 Feb 2016 11:05:37 +0100
-Message-ID: <8056913.EWiGLtcdOV@wuerfel>
-In-Reply-To: <CADRPPNQhmb3bET9fV072ad5FEHAPrjuXSze1HwnRnKMRmFi8cg@mail.gmail.com>
-References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
- <1456531704.5360.53.camel@buserror.net>
- <CADRPPNQhmb3bET9fV072ad5FEHAPrjuXSze1HwnRnKMRmFi8cg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 198CD1A005D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 17:11:07 +1100 (AEDT)
+Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
+ [IPv6:2607:f8b0:400e:c03::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 7E2A314016A
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:11:06 +1100 (AEDT)
+Received: by mail-pa0-x234.google.com with SMTP id yy13so86242735pab.3
+ for <linuxppc-dev@ozlabs.org>; Sun, 28 Feb 2016 22:11:06 -0800 (PST)
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Cc: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Subject: [PATCH] selftests/powerpc: Remove -flto from common CFLAGS
+Date: Mon, 29 Feb 2016 17:09:36 +1100
+Message-Id: <1456726176-26103-1-git-send-email-sjitindarsingh@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,44 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 26 February 2016 18:41:06 Li Yang wrote:
-> >> >
-> >> > It would be perfect if this it true.  But I tried with the following
-> >> > change, it just makes QORIQ_CPUFREQ non-selectable if THERMAL=m.
-> >> >
-> >> > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> >> > index dcb972a38fbc..ca05037dd565 100644
-> >> > --- a/drivers/cpufreq/Kconfig
-> >> > +++ b/drivers/cpufreq/Kconfig
-> >> > @@ -297,6 +297,7 @@ endif
-> >> >  config QORIQ_CPUFREQ
-> >> >         tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
-> >> >         depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
-> >> > +       depends on !CPU_THERMAL || THERMAL=y
-> >> >         select CLK_QORIQ
-> >> >         help
-> >> >           This adds the CPUFreq driver support for Freescale QorIQ SoCs
-> >>
+LTO can cause GCC to inline some functions which have attributes set. The
+act of inlining the functions can lead to GCC forgetting about the
+attributes which leads to incorrect tests.
+Notable example being: __attribute__((__target__("no-vsx")))
+LTO can also interact strangely with custom assembly functions and cause
+tests to intermittently fail.
 
-Oops.
+Both these cases are hard to detect and require manual inspection of
+binaries which is unlikely to happen for all tests. Furthermore, LTO
+optimisations are not necessary for selftests and correctness is paramount
+and as such it is best to disable LTO.
 
-> >> I find we can achieve your desired result with the following change instead:
-> >>
-> >> +       depends on (THERMAL=m && m) || THERMAL=y || THERMAL=n
-> >
-> > "depends on THERMAL || !THERMAL" should also work.
-> 
-> Right.  And this is more simpler.
+LTO can be enabled on a per test basis.
 
+A pseries_le_defconfig kernel on a POWER8 was used to determine that the
+same subset of selftests pass and fail with and without -flto in the
+common Makefile.
 
-Note the check on !CPU_THERMAL rather than !THERMAL in my patch, that
-part was correct. I think the line should be
+These tests always fail:
+selftests: per_event_excludes [FAIL]
+selftests: event_attributes_test [FAIL]
+selftests: ebb_vs_cpu_event_test [FAIL]
+selftests: cpu_event_vs_ebb_test [FAIL]
+selftests: cpu_event_pinned_vs_ebb_test [FAIL]
+selftests: ipc_unmuxed [FAIL]
+And the remaining tests PASS.
 
-	depends on !CPU_THERMAL || THERMAL
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+---
+ tools/testing/selftests/powerpc/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-as some other drivers do. I must have copied the line
-from ARM_MT8173_CPUFREQ, which is a 'bool' symbol, when
-it should have been the same as ARM_BIG_LITTLE_CPUFREQ and
-CPUFREQ_DT.
-
-	Arnd
+diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
+index 0c2706b..7925a96 100644
+--- a/tools/testing/selftests/powerpc/Makefile
++++ b/tools/testing/selftests/powerpc/Makefile
+@@ -8,7 +8,7 @@ ifeq ($(ARCH),powerpc)
+ 
+ GIT_VERSION = $(shell git describe --always --long --dirty || echo "unknown")
+ 
+-CFLAGS := -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CURDIR) $(CFLAGS)
++CFLAGS := -Wall -O2 -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CURDIR) $(CFLAGS)
+ 
+ export CFLAGS
+ 
+-- 
+2.5.0
