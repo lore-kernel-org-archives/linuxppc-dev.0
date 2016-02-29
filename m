@@ -2,18 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3145E1A0035
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 20:26:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0FD391A033A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 20:26:35 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: bsingharora@gmail.com, duwe@lst.de, <linux-kernel@vger.kernel.org>,
  rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
  jeyu@redhat.com, jkosina@suse.cz, live-patching@vger.kernel.org,
  mbenes@suse.cz
-Subject: [PATCH v2 4/8] powerpc/module: Create a special stub for
- ftrace_caller()
-Date: Mon, 29 Feb 2016 20:26:25 +1100
-Message-Id: <1456737989-8755-4-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v2 5/8] powerpc/ftrace: Use generic ftrace_modify_all_code()
+Date: Mon, 29 Feb 2016 20:26:26 +1100
+Message-Id: <1456737989-8755-5-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1456737989-8755-1-git-send-email-mpe@ellerman.id.au>
 References: <1456737989-8755-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,114 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to support the new -mprofile-kernel ABI, we need to be able to
-call from the module back to ftrace_caller() (in the kernel) without
-using the module's r2. That is because the function in this module which
-is calling ftrace_caller() may not have setup r2, if it doesn't
-otherwise need it (ie. it accesses no globals).
+From: Torsten Duwe <duwe@lst.de>
 
-To make that work we add a new stub which is used for calling
-ftrace_caller(), which uses the kernel toc instead of the module toc.
+Convert powerpc's arch_ftrace_update_code() from its own version to use
+the generic default functionality (without stop_machine -- our
+instructions are properly aligned and the replacements atomic).
+
+With this we gain error checking and the much-needed function_trace_op
+handling.
 
 Reviewed-by: Balbir Singh <bsingharora@gmail.com>
-Reviewed-by: Torsten Duwe <duwe@suse.de>
+Signed-off-by: Torsten Duwe <duwe@suse.de>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/module_64.c | 69 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 68 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/ftrace.c | 17 +++++------------
+ 1 file changed, 5 insertions(+), 12 deletions(-)
 
-v2: Only use the new stub for mprofile-kernel.
-    Use the new kernel_toc_addr() helper.
+v2: No change.
 
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 9629966e614b..76c0963572f5 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -31,6 +31,7 @@
- #include <asm/code-patching.h>
- #include <linux/sort.h>
- #include <asm/setup.h>
-+#include <asm/sections.h>
- 
- /* FIXME: We don't do .init separately.  To do this, we'd need to have
-    a separate r2 value in the init and core section, and stub between
-@@ -671,10 +672,76 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 4505cbfd0e13..62899fbae703 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -449,20 +449,13 @@ void ftrace_replace_code(int enable)
+ 	}
  }
  
- #ifdef CONFIG_DYNAMIC_FTRACE
-+
-+#ifdef CC_USING_MPROFILE_KERNEL
-+
-+#define PACATOC offsetof(struct paca_struct, kernel_toc)
-+
 +/*
-+ * For mprofile-kernel we use a special stub for ftrace_caller() because we
-+ * can't rely on r2 containing this module's TOC when we enter the stub.
-+ *
-+ * That can happen if the function calling us didn't need to use the toc. In
-+ * that case it won't have setup r2, and the r2 value will be either the
-+ * kernel's toc, or possibly another modules toc.
-+ *
-+ * To deal with that this stub uses the kernel toc, which is always accessible
-+ * via the paca (in r13). The target (ftrace_caller()) is responsible for
-+ * saving and restoring the toc before returning.
++ * Use the default ftrace_modify_all_code, but without
++ * stop_machine().
 + */
-+static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module *me)
-+{
-+	struct ppc64_stub_entry *entry;
-+	unsigned int i, num_stubs;
-+	static u32 stub_insns[] = {
-+		0xe98d0000 | PACATOC, 	/* ld      r12,PACATOC(r13)	*/
-+		0x3d8c0000,		/* addis   r12,r12,<high>	*/
-+		0x398c0000, 		/* addi    r12,r12,<low>	*/
-+		0x7d8903a6, 		/* mtctr   r12			*/
-+		0x4e800420, 		/* bctr				*/
-+	};
-+	long reladdr;
-+
-+	num_stubs = sechdrs[me->arch.stubs_section].sh_size / sizeof(*entry);
-+
-+	/* Find the next available stub entry */
-+	entry = (void *)sechdrs[me->arch.stubs_section].sh_addr;
-+	for (i = 0; i < num_stubs && stub_func_addr(entry->funcdata); i++, entry++);
-+
-+	if (i >= num_stubs) {
-+		pr_err("%s: Unable to find a free slot for ftrace stub.\n", me->name);
-+		return 0;
-+	}
-+
-+	memcpy(entry->jump, stub_insns, sizeof(stub_insns));
-+
-+	/* Stub uses address relative to kernel toc (from the paca) */
-+	reladdr = (unsigned long)ftrace_caller - kernel_toc_addr();
-+	if (reladdr > 0x7FFFFFFF || reladdr < -(0x80000000L)) {
-+		pr_err("%s: Address of ftrace_caller out of range of kernel_toc.\n", me->name);
-+		return 0;
-+	}
-+
-+	entry->jump[1] |= PPC_HA(reladdr);
-+	entry->jump[2] |= PPC_LO(reladdr);
-+
-+	/* Eventhough we don't use funcdata in the stub, it's needed elsewhere. */
-+	entry->funcdata = func_desc((unsigned long)ftrace_caller);
-+	entry->magic = STUB_MAGIC;
-+
-+	return (unsigned long)entry;
-+}
-+#else
-+static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module *me)
-+{
-+	return stub_for_addr(sechdrs, (unsigned long)ftrace_caller, me);
-+}
-+#endif
-+
- int module_finalize_ftrace(struct module *mod, const Elf_Shdr *sechdrs)
+ void arch_ftrace_update_code(int command)
  {
- 	mod->arch.toc = my_r2(sechdrs, mod);
--	mod->arch.tramp = stub_for_addr(sechdrs, (unsigned long)ftrace_caller, mod);
-+	mod->arch.tramp = create_ftrace_stub(sechdrs, mod);
+-	if (command & FTRACE_UPDATE_CALLS)
+-		ftrace_replace_code(1);
+-	else if (command & FTRACE_DISABLE_CALLS)
+-		ftrace_replace_code(0);
+-
+-	if (command & FTRACE_UPDATE_TRACE_FUNC)
+-		ftrace_update_ftrace_func(ftrace_trace_function);
+-
+-	if (command & FTRACE_START_FUNC_RET)
+-		ftrace_enable_ftrace_graph_caller();
+-	else if (command & FTRACE_STOP_FUNC_RET)
+-		ftrace_disable_ftrace_graph_caller();
++	ftrace_modify_all_code(command);
+ }
  
- 	if (!mod->arch.tramp)
- 		return -ENOENT;
+ int __init ftrace_dyn_arch_init(void)
 -- 
 2.5.0
