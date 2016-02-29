@@ -1,21 +1,27 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E3FD01A0B53
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 20:26:37 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: bsingharora@gmail.com, duwe@lst.de, <linux-kernel@vger.kernel.org>,
- rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
- jeyu@redhat.com, jkosina@suse.cz, live-patching@vger.kernel.org,
- mbenes@suse.cz
-Subject: [PATCH v2 8/8] powerpc/ftrace: Add Kconfig & Make glue for
- mprofile-kernel
-Date: Mon, 29 Feb 2016 20:26:29 +1100
-Message-Id: <1456737989-8755-8-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1456737989-8755-1-git-send-email-mpe@ellerman.id.au>
-References: <1456737989-8755-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5B0611A0347
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 21:06:02 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Li Yang <leoli@freescale.com>
+Cc: Scott Wood <oss@buserror.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ devicetree@vger.kernel.org,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Jia Hongtao <hongtao.jia@freescale.com>,
+ Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
+ device tree
+Date: Mon, 29 Feb 2016 11:05:37 +0100
+Message-ID: <8056913.EWiGLtcdOV@wuerfel>
+In-Reply-To: <CADRPPNQhmb3bET9fV072ad5FEHAPrjuXSze1HwnRnKMRmFi8cg@mail.gmail.com>
+References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
+ <1456531704.5360.53.camel@buserror.net>
+ <CADRPPNQhmb3bET9fV072ad5FEHAPrjuXSze1HwnRnKMRmFi8cg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,134 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Torsten Duwe <duwe@lst.de>
+On Friday 26 February 2016 18:41:06 Li Yang wrote:
+> >> >
+> >> > It would be perfect if this it true.  But I tried with the following
+> >> > change, it just makes QORIQ_CPUFREQ non-selectable if THERMAL=m.
+> >> >
+> >> > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> >> > index dcb972a38fbc..ca05037dd565 100644
+> >> > --- a/drivers/cpufreq/Kconfig
+> >> > +++ b/drivers/cpufreq/Kconfig
+> >> > @@ -297,6 +297,7 @@ endif
+> >> >  config QORIQ_CPUFREQ
+> >> >         tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
+> >> >         depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
+> >> > +       depends on !CPU_THERMAL || THERMAL=y
+> >> >         select CLK_QORIQ
+> >> >         help
+> >> >           This adds the CPUFreq driver support for Freescale QorIQ SoCs
+> >>
 
-Firstly we add logic to Kconfig to allow a user to choose if they want
-mprofile-kernel. This has to be user-selectable because only some
-current toolchains support it. If we enabled it unconditionally we would
-prevent some users from building the kernel entirely.
+Oops.
 
-Arguably it would be nice if we could detect if mprofile-kernel was
-available, and use it then. However that would violate the principle of
-least surprise because a user having choosen options such as live
-patching, would then see them quietly disabled at build time.
+> >> I find we can achieve your desired result with the following change instead:
+> >>
+> >> +       depends on (THERMAL=m && m) || THERMAL=y || THERMAL=n
+> >
+> > "depends on THERMAL || !THERMAL" should also work.
+> 
+> Right.  And this is more simpler.
 
-We also make the user selectable option negative, ie. it disables when
-selected, so that allyesconfig continues to build on old toolchains.
 
-Once we've decided we do want to use mprofile-kernel, we then add a
-script which checks it actually works. That is because there are
-versions of gcc that accept the flag but don't generate correct code.
+Note the check on !CPU_THERMAL rather than !THERMAL in my patch, that
+part was correct. I think the line should be
 
-Due to the way kconfig works, we can't error out when we detect a
-non-working toolchain. If we did a user would never be able to modify
-their config and run oldconfig - because the check would block oldconfig
-from running. Instead we emit a warning and add a bogus flag to CFLAGS
-so that the build will fail.
+	depends on !CPU_THERMAL || THERMAL
 
-Signed-off-by: Torsten Duwe <duwe@suse.de>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/Kconfig                              | 18 ++++++++++++++++++
- arch/powerpc/Makefile                             | 15 +++++++++++++++
- arch/powerpc/scripts/gcc-check-mprofile-kernel.sh | 23 +++++++++++++++++++++++
- 3 files changed, 56 insertions(+)
- create mode 100755 arch/powerpc/scripts/gcc-check-mprofile-kernel.sh
+as some other drivers do. I must have copied the line
+from ARM_MT8173_CPUFREQ, which is a 'bool' symbol, when
+it should have been the same as ARM_BIG_LITTLE_CPUFREQ and
+CPUFREQ_DT.
 
-v2: Rework to prevent breaking the build by default for users with
-    unsupported toolchains.
-    Warn rather than erroring so that users can run oldconfig.
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index e4824fd04bb7..9b34308e0b94 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -94,6 +94,7 @@ config PPC
- 	select OF_RESERVED_MEM
- 	select HAVE_FTRACE_MCOUNT_RECORD
- 	select HAVE_DYNAMIC_FTRACE
-+	select HAVE_DYNAMIC_FTRACE_WITH_REGS if MPROFILE_KERNEL
- 	select HAVE_FUNCTION_TRACER
- 	select HAVE_FUNCTION_GRAPH_TRACER
- 	select SYSCTL_EXCEPTION_TRACE
-@@ -373,6 +374,23 @@ config PPC_TRANSACTIONAL_MEM
-        ---help---
-          Support user-mode Transactional Memory on POWERPC.
- 
-+config DISABLE_MPROFILE_KERNEL
-+	bool "Disable use of mprofile-kernel for kernel tracing"
-+	depends on PPC64 && CPU_LITTLE_ENDIAN
-+	default y
-+	help
-+	  Selecting this options disables use of the mprofile-kernel ABI for
-+	  kernel tracing. That will cause options such as live patching
-+	  (CONFIG_LIVEPATCH) which depend on CONFIG_DYNAMIC_FTRACE_WITH_REGS to
-+	  be disabled also.
-+
-+	  If you have a toolchain which supports mprofile-kernel, then you can
-+	  enable this. Otherwise leave it disabled. If you're not sure, say
-+	  "N".
-+
-+config MPROFILE_KERNEL
-+	def_bool !DISABLE_MPROFILE_KERNEL
-+
- config IOMMU_HELPER
- 	def_bool PPC64
- 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 96efd8213c1c..f4e49a4153cb 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -133,6 +133,21 @@ else
- CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=powerpc64
- endif
- 
-+ifdef CONFIG_MPROFILE_KERNEL
-+    ifeq ($(shell $(srctree)/arch/powerpc/scripts/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__),OK)
-+        CC_FLAGS_FTRACE := -pg -mprofile-kernel
-+        KBUILD_CPPFLAGS += -DCC_USING_MPROFILE_KERNEL
-+    else
-+        # If the user asked for mprofile-kernel but the toolchain doesn't
-+        # support it, emit a warning and deliberately break the build later
-+        # with mprofile-kernel-not-supported. We would prefer to make this an
-+        # error right here, but then the user would never be able to run
-+        # oldconfig to change their configuration.
-+        $(warning Compiler does not support mprofile-kernel, set CONFIG_DISABLE_MPROFILE_KERNEL)
-+        CC_FLAGS_FTRACE := -mprofile-kernel-not-supported
-+    endif
-+endif
-+
- CFLAGS-$(CONFIG_CELL_CPU) += $(call cc-option,-mcpu=cell)
- CFLAGS-$(CONFIG_POWER4_CPU) += $(call cc-option,-mcpu=power4)
- CFLAGS-$(CONFIG_POWER5_CPU) += $(call cc-option,-mcpu=power5)
-diff --git a/arch/powerpc/scripts/gcc-check-mprofile-kernel.sh b/arch/powerpc/scripts/gcc-check-mprofile-kernel.sh
-new file mode 100755
-index 000000000000..c658d8cf760b
---- /dev/null
-+++ b/arch/powerpc/scripts/gcc-check-mprofile-kernel.sh
-@@ -0,0 +1,23 @@
-+#!/bin/bash
-+
-+set -e
-+set -o pipefail
-+
-+# To debug, uncomment the following line
-+# set -x
-+
-+# Test whether the compile option -mprofile-kernel exists and generates
-+# profiling code (ie. a call to _mcount()).
-+echo "int func() { return 0; }" | \
-+    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-+    grep -q "_mcount"
-+
-+# Test whether the notrace attribute correctly suppresses calls to _mcount().
-+
-+echo -e "#include <linux/compiler.h>\nnotrace int func() { return 0; }" | \
-+    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-+    grep -q "_mcount" && \
-+    exit 1
-+
-+echo "OK"
-+exit 0
--- 
-2.5.0
+	Arnd
