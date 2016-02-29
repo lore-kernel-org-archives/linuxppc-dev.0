@@ -2,44 +2,44 @@ Return-Path: <cyrilbur@gmail.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9011B1A005D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 17:55:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2BDF51A09E7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 17:55:50 +1100 (AEDT)
 Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 435601402BC
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:29 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id EC8361402BC
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:49 +1100 (AEDT)
 Received: from localhost
  by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
- Mon, 29 Feb 2016 16:55:27 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C86EF2CE8056
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:23 +1100 (EST)
+ Mon, 29 Feb 2016 16:55:49 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 914DD2BB005A
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:47 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u1T6tFsh54001796
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:23 +1100
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u1T6tdYf17367110
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:47 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u1T6spmZ032176
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:54:51 +1100
+ u1T6tFxs000950
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:15 +1100
 Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- u1T6soCI031321
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:54:50 +1100
+ u1T6tFcN032186
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:55:15 +1100
 Received: from camb691.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id AA364A027A
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id CD2DAA03B0
  for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 17:54:26 +1100 (AEDT)
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/9] selftests/powerpc: Test FPU and VMX regs in signal
- ucontext
-Date: Mon, 29 Feb 2016 17:53:45 +1100
-Message-Id: <1456728831-31862-4-git-send-email-cyrilbur@gmail.com>
+Subject: [PATCH 6/9] powerpc: Prepare for splitting giveup_{fpu, altivec,
+ vsx} in two
+Date: Mon, 29 Feb 2016 17:53:48 +1100
+Message-Id: <1456728831-31862-7-git-send-email-cyrilbur@gmail.com>
 In-Reply-To: <1456728831-31862-1-git-send-email-cyrilbur@gmail.com>
 References: <1456728831-31862-1-git-send-email-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -51,353 +51,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Load up the non volatile FPU and VMX regs and ensure that they are the
-expected value in a signal handler
+This prepares for the decoupling of saving {fpu,altivec,vsx} registers and
+marking {fpu,altivec,vsx} as being unused by a thread.
+
+Currently giveup_{fpu,altivec,vsx}() does both however optimisations to
+task switching can be made if these two operations are decoupled.
+save_all() will permit the saving of registers to thread structs and leave
+threads MSR with bits enabled.
+
+This patch introduces no functional change.
 
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- tools/testing/selftests/powerpc/math/.gitignore   |   2 +
- tools/testing/selftests/powerpc/math/Makefile     |   4 +-
- tools/testing/selftests/powerpc/math/fpu_signal.c | 135 +++++++++++++++++++
- tools/testing/selftests/powerpc/math/vmx_signal.c | 156 ++++++++++++++++++++++
- 4 files changed, 296 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/math/fpu_signal.c
- create mode 100644 tools/testing/selftests/powerpc/math/vmx_signal.c
+ arch/powerpc/include/asm/reg.h       |  8 ++++++++
+ arch/powerpc/include/asm/switch_to.h |  7 +++++++
+ arch/powerpc/kernel/process.c        | 31 ++++++++++++++++++++++++++++++-
+ 3 files changed, 45 insertions(+), 1 deletion(-)
 
-diff --git a/tools/testing/selftests/powerpc/math/.gitignore b/tools/testing/selftests/powerpc/math/.gitignore
-index 1a6f09e..4fe13a4 100644
---- a/tools/testing/selftests/powerpc/math/.gitignore
-+++ b/tools/testing/selftests/powerpc/math/.gitignore
-@@ -2,3 +2,5 @@ fpu_syscall
- vmx_syscall
- fpu_preempt
- vmx_preempt
-+fpu_signal
-+vmx_signal
-diff --git a/tools/testing/selftests/powerpc/math/Makefile b/tools/testing/selftests/powerpc/math/Makefile
-index b04fd58..11389f1 100644
---- a/tools/testing/selftests/powerpc/math/Makefile
-+++ b/tools/testing/selftests/powerpc/math/Makefile
-@@ -1,4 +1,4 @@
--TEST_PROGS := fpu_syscall fpu_preempt vmx_syscall vmx_preempt
-+TEST_PROGS := fpu_syscall fpu_preempt fpu_signal vmx_syscall vmx_preempt vmx_signal
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index c4cb2ff..d07b110 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -75,6 +75,14 @@
+ #define MSR_HV		0
+ #endif
  
- all: $(TEST_PROGS)
- 
-@@ -9,9 +9,11 @@ $(TEST_PROGS): CFLAGS := $(filter-out -flto,$(CFLAGS) -O2 -g -pthread -m64 -malt
- 
- fpu_syscall: fpu_asm.S
- fpu_preempt: fpu_asm.S
-+fpu_signal:  fpu_asm.S
- 
- vmx_syscall: vmx_asm.S
- vmx_preempt: vmx_asm.S
-+vmx_signal: vmx_asm.S
- 
- include ../../lib.mk
- 
-diff --git a/tools/testing/selftests/powerpc/math/fpu_signal.c b/tools/testing/selftests/powerpc/math/fpu_signal.c
-new file mode 100644
-index 0000000..888aa51
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/math/fpu_signal.c
-@@ -0,0 +1,135 @@
 +/*
-+ * Copyright 2015, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ *
-+ * This test attempts to see if the FPU registers are correctly reported in a
-+ * signal context. Each worker just spins checking its FPU registers, at some
-+ * point a signal will interrupt it and C code will check the signal context
-+ * ensuring it is also the same.
++ * To be used in shared book E/book S, this avoids needing to worry about
++ * book S/book E in shared code
 + */
++#ifndef MSR_SPE
++#define MSR_SPE 	0
++#endif
 +
-+#include <stdio.h>
-+#include <unistd.h>
-+#include <sys/syscall.h>
-+#include <sys/time.h>
-+#include <sys/types.h>
-+#include <sys/wait.h>
-+#include <stdlib.h>
-+#include <pthread.h>
-+
-+#include "utils.h"
-+
-+/* Number of times each thread should receive the signal */
-+#define ITERATIONS 10
-+/*
-+ * Factor by which to multiply number of online CPUs for total number of
-+ * worker threads
-+ */
-+#define THREAD_FACTOR 8
-+
-+__thread double darray[] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
-+		     1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
-+		     2.1};
-+
-+bool bad_context;
-+int threads_starting;
-+int running;
-+
-+extern long preempt_fpu(double *darray, int *threads_starting, int *running);
-+
-+void signal_fpu_sig(int sig, siginfo_t *info, void *context)
+ #define MSR_VEC		__MASK(MSR_VEC_LG)	/* Enable AltiVec */
+ #define MSR_VSX		__MASK(MSR_VSX_LG)	/* Enable VSX */
+ #define MSR_POW		__MASK(MSR_POW_LG)	/* Enable Power Management */
+diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+index 5b268b6..3690041 100644
+--- a/arch/powerpc/include/asm/switch_to.h
++++ b/arch/powerpc/include/asm/switch_to.h
+@@ -34,6 +34,7 @@ static inline void disable_kernel_fp(void)
+ 	msr_check_and_clear(MSR_FP);
+ }
+ #else
++static inline void __giveup_fpu(struct task_struct *t) { }
+ static inline void flush_fp_to_thread(struct task_struct *t) { }
+ #endif
+ 
+@@ -46,6 +47,8 @@ static inline void disable_kernel_altivec(void)
+ {
+ 	msr_check_and_clear(MSR_VEC);
+ }
++#else
++static inline void __giveup_altivec(struct task_struct *t) { }
+ #endif
+ 
+ #ifdef CONFIG_VSX
+@@ -57,6 +60,8 @@ static inline void disable_kernel_vsx(void)
+ {
+ 	msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
+ }
++#else
++static inline void __giveup_vsx(struct task_struct *t) { }
+ #endif
+ 
+ #ifdef CONFIG_SPE
+@@ -68,6 +73,8 @@ static inline void disable_kernel_spe(void)
+ {
+ 	msr_check_and_clear(MSR_SPE);
+ }
++#else
++static inline void __giveup_spe(struct task_struct *t) { }
+ #endif
+ 
+ static inline void clear_task_ebb(struct task_struct *t)
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 55c1eb0..29da07f 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -444,12 +444,41 @@ void restore_math(struct pt_regs *regs)
+ 	regs->msr = msr;
+ }
+ 
++void save_all(struct task_struct *tsk)
 +{
-+	int i;
-+	ucontext_t *uc = context;
-+	mcontext_t *mc = &uc->uc_mcontext;
++	unsigned long usermsr;
 +
-+	/* Only the non volatiles were loaded up */
-+	for (i = 14; i < 32; i++) {
-+		if (mc->fp_regs[i] != darray[i - 14]) {
-+			bad_context = true;
-+			break;
-+		}
-+	}
++	if (!tsk->thread.regs)
++		return;
++
++	usermsr = tsk->thread.regs->msr;
++
++	if ((usermsr & msr_all_available) == 0)
++		return;
++
++	msr_check_and_set(msr_all_available);
++
++	if (usermsr & MSR_FP)
++		__giveup_fpu(tsk);
++
++	if (usermsr & MSR_VEC)
++		__giveup_altivec(tsk);
++
++	if (usermsr & MSR_VSX)
++		__giveup_vsx(tsk);
++
++	if (usermsr & MSR_SPE)
++		__giveup_spe(tsk);
++
++	msr_check_and_clear(msr_all_available);
 +}
 +
-+void *signal_fpu_c(void *p)
-+{
-+	int i;
-+	long rc;
-+	struct sigaction act;
-+	act.sa_sigaction = signal_fpu_sig;
-+	act.sa_flags = SA_SIGINFO;
-+	rc = sigaction(SIGUSR1, &act, NULL);
-+	if (rc)
-+		return p;
-+
-+	srand(pthread_self());
-+	for (i = 0; i < 21; i++)
-+		darray[i] = rand();
-+
-+	rc = preempt_fpu(darray, &threads_starting, &running);
-+
-+	return (void *) rc;
-+}
-+
-+int test_signal_fpu(void)
-+{
-+	int i, j, rc, threads;
-+	void *rc_p;
-+	pthread_t *tids;
-+
-+	threads = sysconf(_SC_NPROCESSORS_ONLN) * THREAD_FACTOR;
-+	tids = malloc(threads * sizeof(pthread_t));
-+	FAIL_IF(!tids);
-+
-+	running = true;
-+	threads_starting = threads;
-+	for (i = 0; i < threads; i++) {
-+		rc = pthread_create(&tids[i], NULL, signal_fpu_c, NULL);
-+		FAIL_IF(rc);
-+	}
-+
-+	setbuf(stdout, NULL);
-+	printf("\tWaiting for all workers to start...");
-+	while (threads_starting)
-+		asm volatile("": : :"memory");
-+	printf("done\n");
-+
-+	printf("\tSending signals to all threads %d times...", ITERATIONS);
-+	for (i = 0; i < ITERATIONS; i++) {
-+		for (j = 0; j < threads; j++) {
-+			pthread_kill(tids[j], SIGUSR1);
-+		}
-+		sleep(1);
-+	}
-+	printf("done\n");
-+
-+	printf("\tStopping workers...");
-+	running = 0;
-+	for (i = 0; i < threads; i++) {
-+		pthread_join(tids[i], &rc_p);
-+
-+		/*
-+		 * Harness will say the fail was here, look at why signal_fpu
-+		 * returned
-+		 */
-+		if ((long) rc_p || bad_context)
-+			printf("oops\n");
-+		if (bad_context)
-+			fprintf(stderr, "\t!! bad_context is true\n");
-+		FAIL_IF((long) rc_p || bad_context);
-+	}
-+	printf("done\n");
-+
-+	free(tids);
-+	return 0;
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	return test_harness(test_signal_fpu, "fpu_signal");
-+}
-diff --git a/tools/testing/selftests/powerpc/math/vmx_signal.c b/tools/testing/selftests/powerpc/math/vmx_signal.c
-new file mode 100644
-index 0000000..671d753
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/math/vmx_signal.c
-@@ -0,0 +1,156 @@
-+/*
-+ * Copyright 2015, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ *
-+ * This test attempts to see if the VMX registers are correctly reported in a
-+ * signal context. Each worker just spins checking its VMX registers, at some
-+ * point a signal will interrupt it and C code will check the signal context
-+ * ensuring it is also the same.
-+ */
-+
-+#include <stdio.h>
-+#include <unistd.h>
-+#include <sys/syscall.h>
-+#include <sys/time.h>
-+#include <sys/types.h>
-+#include <sys/wait.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <pthread.h>
-+#include <altivec.h>
-+
-+#include "utils.h"
-+
-+/* Number of times each thread should receive the signal */
-+#define ITERATIONS 10
-+/*
-+ * Factor by which to multiply number of online CPUs for total number of
-+ * worker threads
-+ */
-+#define THREAD_FACTOR 8
-+
-+__thread vector int varray[] = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10,11,12},
-+	{13,14,15,16},{17,18,19,20},{21,22,23,24},
-+	{25,26,27,28},{29,30,31,32},{33,34,35,36},
-+	{37,38,39,40},{41,42,43,44},{45,46,47,48}};
-+
-+bool bad_context;
-+int running;
-+int threads_starting;
-+
-+extern int preempt_vmx(vector int *varray, int *threads_starting, int *sentinal);
-+
-+void signal_vmx_sig(int sig, siginfo_t *info, void *context)
-+{
-+	int i;
-+	ucontext_t *uc = context;
-+	mcontext_t *mc = &uc->uc_mcontext;
-+
-+	/* Only the non volatiles were loaded up */
-+	for (i = 20; i < 32; i++) {
-+		if (memcmp(mc->v_regs->vrregs[i], &varray[i - 20], 16)) {
-+			int j;
-+			/*
-+			 * Shouldn't printf() in a signal handler, however, this is a
-+			 * test and we've detected failure. Understanding what failed
-+			 * is paramount. All that happens after this is tests exit with
-+			 * failure.
-+			 */
-+			printf("VMX mismatch at reg %d!\n", i);
-+			printf("Reg | Actual                  | Expected\n");
-+			for (j = 20; j < 32; j++) {
-+				printf("%d  | 0x%04x%04x%04x%04x      | 0x%04x%04x%04x%04x\n", j, mc->v_regs->vrregs[j][0],
-+					   mc->v_regs->vrregs[j][1], mc->v_regs->vrregs[j][2], mc->v_regs->vrregs[j][3],
-+					   varray[j - 20][0], varray[j - 20][1], varray[j - 20][2], varray[j - 20][3]);
-+			}
-+			bad_context = true;
-+			break;
-+		}
-+	}
-+}
-+
-+void *signal_vmx_c(void *p)
-+{
-+	int i, j;
-+	long rc;
-+	struct sigaction act;
-+	act.sa_sigaction = signal_vmx_sig;
-+	act.sa_flags = SA_SIGINFO;
-+	rc = sigaction(SIGUSR1, &act, NULL);
-+	if (rc)
-+		return p;
-+
-+	srand(pthread_self());
-+	for (i = 0; i < 12; i++)
-+		for (j = 0; j < 4; j++)
-+			varray[i][j] = rand();
-+
-+	rc = preempt_vmx(varray, &threads_starting, &running);
-+
-+	return (void *) rc;
-+}
-+
-+int test_signal_vmx(void)
-+{
-+	int i, j, rc, threads;
-+	void *rc_p;
-+	pthread_t *tids;
-+
-+	threads = sysconf(_SC_NPROCESSORS_ONLN) * THREAD_FACTOR;
-+	tids = malloc(threads * sizeof(pthread_t));
-+	FAIL_IF(!tids);
-+
-+	running = true;
-+	threads_starting = threads;
-+	for (i = 0; i < threads; i++) {
-+		rc = pthread_create(&tids[i], NULL, signal_vmx_c, NULL);
-+		FAIL_IF(rc);
-+	}
-+
-+	setbuf(stdout, NULL);
-+	printf("\tWaiting for %d workers to start... %d", threads, threads_starting);
-+	while (threads_starting) {
-+		asm volatile("": : :"memory");
-+		usleep(1000);
-+		printf(", %d", threads_starting);
-+	}
-+	printf(" ...done\n");
-+
-+	printf("\tSending signals to all threads %d times...", ITERATIONS);
-+	for (i = 0; i < ITERATIONS; i++) {
-+		for (j = 0; j < threads; j++) {
-+			pthread_kill(tids[j], SIGUSR1);
-+		}
-+		sleep(1);
-+	}
-+	printf("done\n");
-+
-+	printf("\tKilling workers...");
-+	running = 0;
-+	for (i = 0; i < threads; i++) {
-+		pthread_join(tids[i], &rc_p);
-+
-+		/*
-+		 * Harness will say the fail was here, look at why signal_vmx
-+		 * returned
-+		 */
-+		if ((long) rc_p || bad_context)
-+			printf("oops\n");
-+		if (bad_context)
-+			fprintf(stderr, "\t!! bad_context is true\n");
-+		FAIL_IF((long) rc_p || bad_context);
-+	}
-+	printf("done\n");
-+
-+	free(tids);
-+	return 0;
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	return test_harness(test_signal_vmx, "vmx_signal");
-+}
+ void flush_all_to_thread(struct task_struct *tsk)
+ {
+ 	if (tsk->thread.regs) {
+ 		preempt_disable();
+ 		BUG_ON(tsk != current);
+-		giveup_all(tsk);
++		save_all(tsk);
+ 
+ #ifdef CONFIG_SPE
+ 		if (tsk->thread.regs->msr & MSR_SPE)
 -- 
 2.7.2
