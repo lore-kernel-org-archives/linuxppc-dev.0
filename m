@@ -2,38 +2,41 @@ Return-Path: <mahesh@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 65BA71A0B86
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 16:48:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC97A1A0B57
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 16:48:48 +1100 (AEDT)
 Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 18EFB140187
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 16:48:11 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 7F719140778
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 16:48:48 +1100 (AEDT)
 Received: from localhost
  by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Tue, 1 Mar 2016 15:48:09 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 41F823578053
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 16:48:07 +1100 (EST)
+ Tue, 1 Mar 2016 15:48:47 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7CF402CE8054
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 16:48:45 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u215lwUG36765740
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 16:48:07 +1100
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u215mbFk36896940
+ for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 16:48:45 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u215lXNw027243
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 16:47:34 +1100
-Subject: [PATCH v2 1/3] powernv: Move IDLE_STATE_ENTER_SEQ macro to cpuidle.h
+ u215mClV028702
+ for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 16:48:12 +1100
+Subject: [PATCH v2 2/3] powernv: Rename pSeries to powenv from
+ machine_check_pSeries_early.
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
  Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Tue, 01 Mar 2016 11:17:08 +0530
-Message-ID: <20160301054655.15714.48085.stgit@mars.in.ibm.com>
+Date: Tue, 01 Mar 2016 11:17:46 +0530
+Message-ID: <20160301054739.15714.191.stgit@mars.in.ibm.com>
+In-Reply-To: <20160301054655.15714.48085.stgit@mars.in.ibm.com>
+References: <20160301054655.15714.48085.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -47,60 +50,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Move IDLE_STATE_ENTER_SEQ macro to cpuidle.h so that MCE handler changes
-in subsequent patch can use it.
+The routine machine_check_pSeries_early() is only used on powernv, not
+pseries. Hence rename machine_check_pSeries_early to
+machine_check_powernv_early.
 
-No functionality change.
-
+Reported-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/cpuidle.h |   14 ++++++++++++++
- arch/powerpc/kernel/idle_power7.S  |   12 ------------
- 2 files changed, 14 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
-index d2f99ca..5894ad6 100644
---- a/arch/powerpc/include/asm/cpuidle.h
-+++ b/arch/powerpc/include/asm/cpuidle.h
-@@ -17,4 +17,18 @@ extern u32 pnv_fastsleep_workaround_at_exit[];
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 0607ae9..d4c99f0 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -189,7 +189,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+ #endif /* CONFIG_PPC_P7_NAP */
+ 	EXCEPTION_PROLOG_0(PACA_EXMC)
+ BEGIN_FTR_SECTION
+-	b	machine_check_pSeries_early
++	b	machine_check_powernv_early
+ FTR_SECTION_ELSE
+ 	b	machine_check_pSeries_0
+ ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
+@@ -443,7 +443,7 @@ denorm_exception_hv:
  
- #endif
- 
-+/* Idle state entry routines */
-+#ifdef	CONFIG_PPC_P7_NAP
-+#define	IDLE_STATE_ENTER_SEQ(IDLE_INST)				\
-+	/* Magic NAP/SLEEP/WINKLE mode enter sequence */	\
-+	std	r0,0(r1);					\
-+	ptesync;						\
-+	ld	r0,0(r1);					\
-+1:	cmp	cr0,r0,r0;					\
-+	bne	1b;						\
-+	IDLE_INST;						\
-+	b	.
-+#endif /* CONFIG_PPC_P7_NAP */
-+
-+
- #endif
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index cedc4ef..cd43c90 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -37,18 +37,6 @@
- #define _WORT	GPR10
- #define _WORC	GPR11
- 
--/* Idle state entry routines */
--
--#define	IDLE_STATE_ENTER_SEQ(IDLE_INST)				\
--	/* Magic NAP/SLEEP/WINKLE mode enter sequence */	\
--	std	r0,0(r1);					\
--	ptesync;						\
--	ld	r0,0(r1);					\
--1:	cmp	cr0,r0,r0;					\
--	bne	1b;						\
--	IDLE_INST;						\
--	b	.
--
- 	.text
- 
- /*
+ 	.align	7
+ 	/* moved from 0x200 */
+-machine_check_pSeries_early:
++machine_check_powernv_early:
+ BEGIN_FTR_SECTION
+ 	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
+ 	/*
