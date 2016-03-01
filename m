@@ -1,23 +1,18 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9FDAB1A06BA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 01:57:30 +1100 (AEDT)
-Message-ID: <1456844240.5360.65.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>
-Date: Tue, 01 Mar 2016 08:57:20 -0600
-In-Reply-To: <CAPk1OjG8hFAtJM1wLFcTHCD1Ld9fKuvcZgKpuDZ1=o-_RQGXOw@mail.gmail.com>
-References: <1456397825-1786-1-git-send-email-alessio.bogani@elettra.eu>
- <1456397825-1786-2-git-send-email-alessio.bogani@elettra.eu>
- <1456785480.5360.60.camel@buserror.net>
- <CAPk1OjG8hFAtJM1wLFcTHCD1Ld9fKuvcZgKpuDZ1=o-_RQGXOw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [RFC PATCH v1 2/2] powerpc/86xx: Introduce and use common dtsi
+ by lists.ozlabs.org (Postfix) with ESMTPS id AD98F1A06C2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 04:00:58 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: linux-arm-kernel@lists.infradead.org, Kyle McMartin <kyle@mcmartin.ca>,
+ rtc-linux@googlegroups.com, Alessandro Zummo <a.zummo@towertech.it>,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org
+Subject: [PATCH 0/6] rtc: generic: follow up for COMPILE_TEST
+Date: Tue,  1 Mar 2016 17:59:56 +0100
+Message-Id: <1456851608-3374907-1-git-send-email-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-03-01 at 15:55 +0100, Alessio Igor Bogani wrote:
-> Scott,
-> 
-> On 29 February 2016 at 23:38, Scott Wood <oss@buserror.net> wrote:
-> [...]
-> > 
-> > > +&pci0 {
-> > > +     compatible = "fsl,mpc8641-pcie";
-> > > +     device_type = "pci";
-> > > +     #size-cells = <2>;
-> > > +     #address-cells = <3>;
-> > > +     bus-range = <0x0 0xff>;
-> > > +     clock-frequency = <33333333>;
-> > 
-> > The clock frequency of PCI Express is not 33 MHz.
-> 
-> A lot of dtsi files into fsl directory have got that value!
+Today's linux-next kernel allowed building the rtc-generic
+driver (and most other rtc drivers) on all architectures,
+but this caused some errors on architectures without asm/rtc.h.
 
-Well, they shouldn't. :-P
+This series reworks that driver to avoid the dependency,
+and simplifies all four implementations. My first approach
+was to split the driver into four separate drivers, but
+that didn't feel right when three of them have their own
+multiplexors.
 
-This isn't the first time I've told someone to take that out.
+The first five patches can be applied independent of one other,
+while patch 6 is optional and can be applied when all others
+are merged. Alternatively, they can all go in through the
+rtc tree. I compile-tested only the powerpc and sh targets for
+which I happened to have cross-compilers installed.
 
--Scott
+	Arnd
