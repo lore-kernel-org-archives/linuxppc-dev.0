@@ -1,37 +1,45 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <cyrilbur@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A07EC1A074D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 15:27:56 +1100 (AEDT)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 145681A0B6B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 15:15:35 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 72C1F140324
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 15:27:56 +1100 (AEDT)
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 29 Feb 2016 21:15:34 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 4F93B1FF0021
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 21:03:41 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u214FVtX45088910
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 21:15:31 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u214FUYg031681
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 21:15:31 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 4/4] mm: Some arch may want to use HPAGE_PMD related values as
- variables
-Date: Tue,  1 Mar 2016 09:45:14 +0530
-Message-Id: <1456805714-21774-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1456805714-21774-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1456805714-21774-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
+ Tue, 1 Mar 2016 14:27:53 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 77B132BB0055
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 15:27:50 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u214Rgkd52166790
+ for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 15:27:50 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u214RIDx029399
+ for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 15:27:18 +1100
+Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ u214RIqM028777
+ for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 15:27:18 +1100
+Received: from camb691.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES128-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 988C0A01E4
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 15:26:53 +1100 (AEDT)
+From: Cyril Bur <cyrilbur@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] selftests/powerpc: PMU libs: use signed long to read
+ perf_event_paranoid
+Date: Tue,  1 Mar 2016 15:26:36 +1100
+Message-Id: <1456806396-27432-1-git-send-email-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,138 +49,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Excerpt from man 2 perf_event_open:
 
-With next generation power processor, we are having a new mmu model
-[1] that require us to maintain a different linux page table format.
+/proc/sys/kernel/perf_event_paranoid
+  The perf_event_paranoid file can be set to restrict access to the
+  performance counters.
+    2 allow only user-space measurements.
+    1 allow both kernel and user measurements (default).
+    0 allow access to CPU-specific data but not raw tracepoint samples.
+   -1 no restrictions.
 
-Inorder to support both current and future ppc64 systems with a single
-kernel we need to make sure kernel can select between different page
-table format at runtime. With the new MMU (radix MMU) added, we will
-have two different pmd hugepage size 16MB for hash model and 2MB for
-Radix model. Hence make HPAGE_PMD related values as a variable.
+require_paranoia_below() should return 0 if perf_event_paranoid is below a
+specified level, the value from perf_event_paranoid is read into an
+unsigned long so the incorrect value is returned when perf_event_paranoid
+is set to -1.
 
-Actual conversion of HPAGE_PMD to a variable for ppc64 happens in a
-followup patch.
+Without this patch applied there is the same number of selftests/powerpc
+which skip when /proc/sys/kernel/perf_event_paranoid is set to 1 or -1 but
+no skips when set to zero.
+With this patch applied there no skipped selftests/powerpc test when
+/proc/sys/kernel/perf_event_paranoid is set to 0 or -1.
 
-[1] http://ibm.biz/power-isa3 (Needs registration).
-
-Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- arch/powerpc/mm/pgtable_64.c |  7 +++++++
- include/linux/bug.h          |  9 +++++++++
- include/linux/huge_mm.h      |  3 ---
- mm/huge_memory.c             | 17 ++++++++++++++---
- 4 files changed, 30 insertions(+), 6 deletions(-)
+ tools/testing/selftests/powerpc/pmu/lib.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index af304e6d5a89..0eb53128ca2a 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -817,6 +817,13 @@ pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
+diff --git a/tools/testing/selftests/powerpc/pmu/lib.c b/tools/testing/selftests/powerpc/pmu/lib.c
+index a361ad3..8b992fa 100644
+--- a/tools/testing/selftests/powerpc/pmu/lib.c
++++ b/tools/testing/selftests/powerpc/pmu/lib.c
+@@ -190,7 +190,7 @@ int parse_proc_maps(void)
  
- int has_transparent_hugepage(void)
+ bool require_paranoia_below(int level)
  {
-+
-+	BUILD_BUG_ON_MSG((PMD_SHIFT - PAGE_SHIFT) >= MAX_ORDER,
-+		"hugepages can't be allocated by the buddy allocator");
-+
-+	BUILD_BUG_ON_MSG((PMD_SHIFT - PAGE_SHIFT) < 2,
-+			 "We need more than 2 pages to do deferred thp split");
-+
- 	if (!mmu_has_feature(MMU_FTR_16M_PAGE))
- 		return 0;
- 	/*
-diff --git a/include/linux/bug.h b/include/linux/bug.h
-index 7f4818673c41..e51b0709e78d 100644
---- a/include/linux/bug.h
-+++ b/include/linux/bug.h
-@@ -20,6 +20,7 @@ struct pt_regs;
- #define BUILD_BUG_ON_MSG(cond, msg) (0)
- #define BUILD_BUG_ON(condition) (0)
- #define BUILD_BUG() (0)
-+#define MAYBE_BUILD_BUG_ON(cond) (0)
- #else /* __CHECKER__ */
- 
- /* Force a compilation error if a constant expression is not a power of 2 */
-@@ -83,6 +84,14 @@ struct pt_regs;
-  */
- #define BUILD_BUG() BUILD_BUG_ON_MSG(1, "BUILD_BUG failed")
- 
-+#define MAYBE_BUILD_BUG_ON(cond)			\
-+	do {						\
-+		if (__builtin_constant_p((cond)))       \
-+			BUILD_BUG_ON(cond);             \
-+		else                                    \
-+			BUG_ON(cond);                   \
-+	} while (0)
-+
- #endif	/* __CHECKER__ */
- 
- #ifdef CONFIG_GENERIC_BUG
-diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
-index 459fd25b378e..f12513a20a06 100644
---- a/include/linux/huge_mm.h
-+++ b/include/linux/huge_mm.h
-@@ -111,9 +111,6 @@ void __split_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
- 			__split_huge_pmd(__vma, __pmd, __address);	\
- 	}  while (0)
- 
--#if HPAGE_PMD_ORDER >= MAX_ORDER
--#error "hugepages can't be allocated by the buddy allocator"
--#endif
- extern int hugepage_madvise(struct vm_area_struct *vma,
- 			    unsigned long *vm_flags, int advice);
- extern void vma_adjust_trans_huge(struct vm_area_struct *vma,
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index aea8f7a42df9..36c22a89df61 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -83,7 +83,7 @@ unsigned long transparent_hugepage_flags __read_mostly =
- 	(1<<TRANSPARENT_HUGEPAGE_USE_ZERO_PAGE_FLAG);
- 
- /* default scan 8*512 pte (or vmas) every 30 second */
--static unsigned int khugepaged_pages_to_scan __read_mostly = HPAGE_PMD_NR*8;
-+static unsigned int khugepaged_pages_to_scan __read_mostly;
- static unsigned int khugepaged_pages_collapsed;
- static unsigned int khugepaged_full_scans;
- static unsigned int khugepaged_scan_sleep_millisecs __read_mostly = 10000;
-@@ -98,7 +98,7 @@ static DECLARE_WAIT_QUEUE_HEAD(khugepaged_wait);
-  * it would have happened if the vma was large enough during page
-  * fault.
-  */
--static unsigned int khugepaged_max_ptes_none __read_mostly = HPAGE_PMD_NR-1;
-+static unsigned int khugepaged_max_ptes_none __read_mostly;
- 
- static int khugepaged(void *none);
- static int khugepaged_slab_init(void);
-@@ -660,6 +660,18 @@ static int __init hugepage_init(void)
- 		return -EINVAL;
+-	unsigned long current;
++	long current;
+ 	char *end, buf[16];
+ 	FILE *f;
+ 	int rc;
+@@ -208,7 +208,7 @@ bool require_paranoia_below(int level)
+ 		goto out_close;
  	}
  
-+	khugepaged_pages_to_scan = HPAGE_PMD_NR * 8;
-+	khugepaged_max_ptes_none = HPAGE_PMD_NR - 1;
-+	/*
-+	 * hugepages can't be allocated by the buddy allocator
-+	 */
-+	MAYBE_BUILD_BUG_ON(HPAGE_PMD_ORDER >= MAX_ORDER);
-+	/*
-+	 * we use page->mapping and page->index in second tail page
-+	 * as list_head: assuming THP order >= 2
-+	 */
-+	MAYBE_BUILD_BUG_ON(HPAGE_PMD_ORDER < 2);
-+
- 	err = hugepage_init_sysfs(&hugepage_kobj);
- 	if (err)
- 		goto err_sysfs;
-@@ -764,7 +776,6 @@ void prep_transhuge_page(struct page *page)
- 	 * we use page->mapping and page->indexlru in second tail page
- 	 * as list_head: assuming THP order >= 2
- 	 */
--	BUILD_BUG_ON(HPAGE_PMD_ORDER < 2);
+-	current = strtoul(buf, &end, 10);
++	current = strtol(buf, &end, 10);
  
- 	INIT_LIST_HEAD(page_deferred_list(page));
- 	set_compound_page_dtor(page, TRANSHUGE_PAGE_DTOR);
+ 	if (end == buf) {
+ 		printf("Couldn't parse " PARANOID_PATH "?\n");
+@@ -216,7 +216,7 @@ bool require_paranoia_below(int level)
+ 	}
+ 
+ 	if (current >= level)
+-		goto out;
++		goto out_close;
+ 
+ 	rc = 0;
+ out_close:
 -- 
-2.5.0
+2.7.2
