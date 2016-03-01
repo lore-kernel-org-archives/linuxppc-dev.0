@@ -1,38 +1,33 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 52B6C1A06C2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 16:31:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9DD771A074D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 16:46:19 +1100 (AEDT)
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 29 Feb 2016 22:31:22 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id A093E3E4003F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 22:31:20 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u215VK4625428150
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 22:31:20 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u215VKPA008098
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 22:31:20 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH] powerpc/mm: Use big endian page table for book3s 64
-In-Reply-To: <56D3A61B.5040308@gmail.com>
-References: <1456458814-7497-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <56D3A61B.5040308@gmail.com>
-Date: Tue, 01 Mar 2016 11:01:15 +0530
-Message-ID: <87y4a2pxwc.fsf@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 1 Mar 2016 11:16:16 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u215k5pR19857842
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Mar 2016 11:16:06 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u215k7Dl019063
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Mar 2016 11:16:08 +0530
+Message-ID: <56D52C98.5060601@linux.vnet.ibm.com>
+Date: Tue, 01 Mar 2016 11:16:00 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/lpar: Don't crash on H_PROTECT errors
+References: <1456746752-9298-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <56D476DD.9060402@linux.vnet.ibm.com> <871t7urcnm.fsf@linux.vnet.ibm.com>
+In-Reply-To: <871t7urcnm.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,131 +37,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
+On 03/01/2016 10:57 AM, Aneesh Kumar K.V wrote:
+> Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
+> 
+>> > On 02/29/2016 03:52 AM, Anshuman Khandual wrote:
+>>> >> There are certain condition in which H_PROTECT can return error code
+>>> >> other than H_NOT_FOUND and H_SUCCESS. One such being an attempt to
+>>> >> update an hpte owned by adjunct partition. Return 0 in that case so
+>>> >> that user space will retry the access. In adjunct case this mean we
+>>> >> will not make much progress in the user space. But atleast we get a
+>>> >> chance to kill the task and avoid taking down the entire box.
+>>> >> 
+>>> >> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>>> >> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>>> >> ---
+>>> >>  arch/powerpc/platforms/pseries/lpar.c | 2 +-
+>>> >>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>> >> 
+>>> >> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+>>> >> index 477290a..31bcdaf 100644
+>>> >> --- a/arch/powerpc/platforms/pseries/lpar.c
+>>> >> +++ b/arch/powerpc/platforms/pseries/lpar.c
+>>> >> @@ -310,7 +310,7 @@ static long pSeries_lpar_hpte_updatepp(unsigned long slot,
+>>> >>  
+>>> >>  	pr_devel("ok\n");
+>>> >>  
+>>> >> -	BUG_ON(lpar_rc != H_SUCCESS);
+>>> >> +	WARN_RATELIMIT(lpar_rc != H_SUCCESS, "H_PROTECT returned %lu\n", lpar_rc);
+>> >
+>> > In the event that we don't get H_NOT_FOUND (which is handled earlier in
+>> > the function) or H_SUCCESS this patch assumes H_RESOURCE. It fails to
+>> > handle H_PARAMETER which is also a valid return from the H_PROTECT
+>> > hypercall.
+> One of the possible thing we could do is sent SIGBUS to the application
+> rather than taking down the system ?
 
-> On 26/02/16 14:53, Aneesh Kumar K.V wrote:
->> This enables us to share the same page table code for
->> both radix and hash. Radix use a hardware defined big endian
->                              ^uses
->> page table
->>
->> Asm -> C conversion makes it simpler to build code for both little
->> and big endian page table.
->
->>
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->> Note:
->> Any suggestion on how we can do that pte update better so that we can build
->> a LE and BE page table kernel will be helpful.
-> Ideally this should not break software compatibility for VM migration,
-> but might be worth testing. Basically a hypervisor with BE page tables
-> and software endian older kernel instance. Also look for any tools
-> that work off of saved dump images with PTE entries in them -
-> crash/kdump/etc
-
-
-
-I will check this.
-
-
->>  arch/powerpc/include/asm/book3s/64/hash.h   |  75 ++++++++++++--------
->>  arch/powerpc/include/asm/kvm_book3s_64.h    |  12 ++--
->>  arch/powerpc/include/asm/page.h             |   4 ++
->>  arch/powerpc/include/asm/pgtable-be-types.h | 104 ++++++++++++++++++++++++++++
->>  arch/powerpc/mm/hash64_4k.c                 |   6 +-
->>  arch/powerpc/mm/hash64_64k.c                |  11 +--
->>  arch/powerpc/mm/hugepage-hash64.c           |   5 +-
->>  arch/powerpc/mm/hugetlbpage-hash64.c        |   5 +-
->>  arch/powerpc/mm/pgtable-hash64.c            |  42 +++++------
->>  9 files changed, 197 insertions(+), 67 deletions(-)
->>  create mode 100644 arch/powerpc/include/asm/pgtable-be-types.h
->>
->> diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
->> index 9b451cb8294a..9153bda5f395 100644
->> --- a/arch/powerpc/include/asm/book3s/64/hash.h
->> +++ b/arch/powerpc/include/asm/book3s/64/hash.h
->> @@ -1,6 +1,9 @@
->>  #ifndef _ASM_POWERPC_BOOK3S_64_HASH_H
->>  #define _ASM_POWERPC_BOOK3S_64_HASH_H
->>  #ifdef __KERNEL__
->> +#ifndef __ASSEMBLY__
->> +#include <asm/cmpxchg.h>
->> +#endif
-> Do we still need PTE_ATOMIC_UPDATE as 1 after these changes?
-
-
-yes. we are not changing anything with respect to _PAGE_BUSY handling.
-
->>  
->>  /*
->>   * Common bits between 4K and 64K pages in a linux-style PTE.
->> @@ -249,27 +252,35 @@ static inline unsigned long pte_update(struct mm_struct *mm,
->>  				       unsigned long set,
->>  				       int huge)
->>  {
->> -	unsigned long old, tmp;
->> -
->> -	__asm__ __volatile__(
->> -	"1:	ldarx	%0,0,%3		# pte_update\n\
->> -	andi.	%1,%0,%6\n\
->> -	bne-	1b \n\
->> -	andc	%1,%0,%4 \n\
->> -	or	%1,%1,%7\n\
->> -	stdcx.	%1,0,%3 \n\
->> -	bne-	1b"
->> -	: "=&r" (old), "=&r" (tmp), "=m" (*ptep)
->> -	: "r" (ptep), "r" (clr), "m" (*ptep), "i" (_PAGE_BUSY), "r" (set)
->> -	: "cc" );
->> +	pte_t pte;
->> +	unsigned long old_pte, new_pte;
->> +
->> +	do {
->> +reload:
->> +		pte = READ_ONCE(*ptep);
->> +		old_pte = pte_val(pte);
->> +
->> +		/* If PTE busy, retry */
->> +		if (unlikely(old_pte & _PAGE_BUSY))
->> +			goto reload;
-> A loop within another? goto to upward labels can be ugly..
->
->     do {
->         pte = READ_ONCE(*ptep);
->         old_pte = pte_val(pte);
->
->         while (unlikely(old_pte & _PAGE_BUSY)) {
->             cpu_relax(); /* Do we need this? */
->             pte = READ_ONCE(*ptep);
->             old_pte = pte_val(pte);
->         }
->
-> The above four lines can be abstracted further to loop_while_page_busy() if required :)
-
-I will check this.
-
-
->> +		/*
->> +		 * Try to lock the PTE, add ACCESSED and DIRTY if it was
->> +		 * a write access. Since this is 4K insert of 64K page size
->> +		 * also add _PAGE_COMBO
->> +		 */
->> +		new_pte = (old_pte | set) & ~clr;
->> +
->> +	} while (cpu_to_be64(old_pte) != __cmpxchg_u64((unsigned long *)ptep,
->> +						   cpu_to_be64(old_pte),
->> +						   cpu_to_be64(new_pte)));
->>  	/* huge pages use the old page table lock */
->>  	if (!huge)
->>  		assert_pte_locked(mm, addr);
->>  
->> -	if (old & _PAGE_HASHPTE)
->> -		hpte_need_flush(mm, addr, ptep, old, huge);
->> +	if (old_pte & _PAGE_HASHPTE)
->> +		hpte_need_flush(mm, addr, ptep, old_pte, huge);
->>  
->> -	return old;
->> +	return old_pte;
->>  }
-
--aneesh
+But in case of H_PARAMETER, its the kernel which generated wrong arguments
+which was in it's control, hence BUG_ON will not more appropriate for it ?
