@@ -1,48 +1,36 @@
-Return-Path: <daniel.thompson@linaro.org>
-Received: from mail-wm0-x234.google.com (mail-wm0-x234.google.com
- [IPv6:2a00:1450:400c:c09::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
+ [140.105.206.208])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7CFC71A06BA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 01:04:26 +1100 (AEDT)
-Received: by mail-wm0-x234.google.com with SMTP id p65so34925617wmp.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Mar 2016 06:04:26 -0800 (PST)
-Subject: Re: [PATCH v3 4/4] printk/nmi: Increase the size of NMI buffer and
- make it configurable
-To: Petr Mladek <pmladek@suse.com>
-References: <1449667265-17525-1-git-send-email-pmladek@suse.com>
- <1449667265-17525-5-git-send-email-pmladek@suse.com>
- <CAMuHMdXVgr58YjoePGrRbMyMncQ27f85prL7G5SpeHeNxoYrXQ@mail.gmail.com>
- <20151211124159.GB3729@pathway.suse.cz>
- <20151211145725.b0e81bb4bb18fcd72ef5f557@linux-foundation.org>
- <20151211232113.GZ8644@n2100.arm.linux.org.uk>
- <alpine.LNX.2.00.1512120024370.9922@cbobk.fhfr.pm>
- <5673DD60.7080302@linaro.org> <20151218145207.GK3729@pathway.suse.cz>
- <56743BA0.1030409@linaro.org>
-Cc: Jiri Kosina <jikos@kernel.org>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- Andrew Morton <akpm@linux-foundation.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>,
- Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- the arch/x86 maintainers <x86@kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "adi-buildroot-devel@lists.sourceforge.net"
- <adi-buildroot-devel@lists.sourceforge.net>,
- Cris <linux-cris-kernel@axis.com>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- sparclinux <sparclinux@vger.kernel.org>
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Message-ID: <56D5A164.3000000@linaro.org>
-Date: Tue, 1 Mar 2016 14:04:20 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id DA1891A06BA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 01:55:38 +1100 (AEDT)
+Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
+ by localhost (Email Security Appliance) with SMTP id 04CFD440D8F_6D5AD66B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 14:55:34 +0000 (GMT)
+Received: from mail-qk0-f176.google.com (mail-qk0-f176.google.com
+ [209.85.220.176])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (verified OK))
+ by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
+ 9E03143E09B_6D5AD64F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 14:55:32 +0000 (GMT)
+Received: by mail-qk0-f176.google.com with SMTP id o6so70172300qkc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Mar 2016 06:55:32 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <56743BA0.1030409@linaro.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+In-Reply-To: <1456785480.5360.60.camel@buserror.net>
+References: <1456397825-1786-1-git-send-email-alessio.bogani@elettra.eu>
+ <1456397825-1786-2-git-send-email-alessio.bogani@elettra.eu>
+ <1456785480.5360.60.camel@buserror.net>
+Date: Tue, 1 Mar 2016 15:55:31 +0100
+Message-ID: <CAPk1OjG8hFAtJM1wLFcTHCD1Ld9fKuvcZgKpuDZ1=o-_RQGXOw@mail.gmail.com>
+Subject: Re: [RFC PATCH v1 2/2] powerpc/86xx: Introduce and use common dtsi
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+To: Scott Wood <oss@buserror.net>
+Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,45 +40,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 18/12/15 17:00, Daniel Thompson wrote:
->>> The MCE handlers should only call printk() when they decide to panic
->>> and *after* busting the spinlocks. At this point deferring printk()
->>> until it is safe is not very helpful.
->>>
->>> When we bust the spinlocks we should probably restore the normal
->>> printk() function to give best chance of the failure messages making
->>> it out.
->>
->> The problem is that we do not know what locks need to be busted. There
->> are too many consoles and too many locks involved. Also busting locks
->> open another can of worms.
+Scott,
+
+On 29 February 2016 at 23:38, Scott Wood <oss@buserror.net> wrote:
+[...]
+> Could you post a diff of what the decompiled trees look like before and after
+> this change (e.g. interrupts went from 2-cell to 4-cell)?  It is very hard to
+> review in this form.  Or better, like the config change, have a commit that
+> first makes changes to what the unified trees will be, and then a second
+> commit that generates the same output using includes.
+
+Yes I'll surely do it.
+
+>> +/include/ "qoriq-mpic.dtsi"
+>> +     pic@40000 {
+>> +             compatible = "chrp,open-pic";
+>> +     };
 >
-> Yes, I agree that busting the spinlocks doesn't avoid all risk of deadlock.
+> This is removing the fsl,mpic compatible, which is required for 4-cell
+> interrupt specifiers.
+
+Ok.
+
+>> +&pci0 {
+>> +     compatible = "fsl,mpc8641-pcie";
+>> +     device_type = "pci";
+>> +     #size-cells = <2>;
+>> +     #address-cells = <3>;
+>> +     bus-range = <0x0 0xff>;
+>> +     clock-frequency = <33333333>;
 >
-> Probably I've been placing too much weight on the importance of getting
-> messages out when dying. You're right that surviving far enough through
-> a panic to trigger kdump or reset is equally (or more) important in many
-> scenarios than getting a failure message out.
+> The clock frequency of PCI Express is not 33 MHz.
+
+A lot of dtsi files into fsl directory have got that value!
+
+>> diff --git a/arch/powerpc/boot/dts/fsl/mpc8641si-pre.dtsi
+[...]
+>> +/dts-v1/;
+>> +
+>> +/ {
+>> +     compatible = "fsl,MPC8641";
 >
-> However on a system with nothing but "while(1) {}" hooked up to panic()
-> then its worth risking a lock up. In this case restoring normal printk()
-> behavior and dumping the NMI buffers would be worthwhile.
+> This compatible is pointless -- it will be overwritten by the board
+> compatible.
 
-An a (much) later thread[1] Andrew Morton described this comment as 
-non-committal. Sorry for that.
+Ok.
 
-I don't object to the overall approach taken by Petr, merely that I 
-think there are cases where the current patchset doesn't put in quite 
-enough effort to issue messages.
+Thanks for have reviewed my patches.
 
-Panic triggered during NMI is the only case I can think of and that, I 
-think, could be addressed by adding an extra call to printk_nmi_flush() 
-during panic(). It should probably only cover cases where we *don't* 
-call kdump and the panic handler doesn't restart the machine... so just 
-after the pr_emerg("...end kernel panic") would be OK for me.
-
-
-Daniel.
-
-
-[1]: http://thread.gmane.org/gmane.linux.ports.arm.kernel/482845
+Ciao,
+Alessio
