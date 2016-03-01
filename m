@@ -1,15 +1,23 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F2D231A045E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 10:02:31 +1100 (AEDT)
-In-Reply-To: <56BB6FB9.2020701@linux.vnet.ibm.com>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [3/3] powerpc/pseries: Cleanup property cloning in memory dlpar
-Message-Id: <20160301230231.DA2A81402D8@ozlabs.org>
-Date: Wed,  2 Mar 2016 10:02:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 251CF1A029C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 10:25:34 +1100 (AEDT)
+Date: Wed, 2 Mar 2016 10:26:01 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: paulus@samba.org, benh@kernel.crashing.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [4/4] powerpc/mm: Split hash page table sizing heuristic into a
+ helper
+Message-ID: <20160301232601.GL5427@voom.redhat.com>
+References: <1454988763-5580-5-git-send-email-david@gibson.dropbear.id.au>
+ <20160301222119.D4717140326@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="lR6P3/j+HGelbRkf"
+In-Reply-To: <20160301222119.D4717140326@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,91 +27,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-10-02 at 17:13:29 UTC, Nathan Fontenot wrote:
-> Now that the DLPAR add/remove flow updates the ibm,dynamic-memory device
-> tree property each time we add or remove a LMB the work needed to clone
-> this property can be reduced.
-> 
-> Prior to performing any memory DLPAR operation we now clone the device
-> tree property once and convert it to cpu format. This copy is then used
-> to walk through LMBs as we process them and is thrown away when we
-> are finished. There is no longer a need to convert the entire property to
-> cpu format and then back to BE every time we update it, we can just parse
-> it in its native BE format and update the one LMB we need to modify
-> before updating the property.
-> 
-> This patch removes the BE => cpu conversion step in the clone routine and
-> creates a drconf_property_to_cpu() routine to make this conversion for the
-> one time we need to convert the entire property. This then allows us
-> to remove dlpar_update_drconf_property() since we can now do everything
-> in dlpar_update_device_tree_lmb().
 
-Hi Nathan,
+--lR6P3/j+HGelbRkf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This sounds like a good cleanup on the face of it.
+On Wed, Mar 02, 2016 at 09:21:19AM +1100, Michael Ellerman wrote:
+> On Tue, 2016-09-02 at 03:32:43 UTC, David Gibson wrote:
+> > htab_get_table_size() either retrieve the size of the hash page table (=
+HPT)
+> > from the device tree - if the HPT size is determined by firmware - or
+> > uses a heuristic to determine a good size based on RAM size if the kern=
+el
+> > is responsible for allocating the HPT.
+> >=20
+> > To support a PAPR extension allowing resizing of the HPT, we're going to
+> > want the memory size -> HPT size logic elsewhere, so split it out into a
+> > helper function.
+> >=20
+> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> > Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>=20
+> Applied to powerpc next, thanks.
+>=20
+> https://git.kernel.org/powerpc/c/5c3c7ede2bdcb85fa2fd51c814
+>=20
+> I reworded one comment a little, from:
+>=20
+> 	/* 2^11 PTEGS / 2^18 bytes is the minimum htab size permitted
+> 	 * by the architecture */
+>=20
+> to:
+> 	/*
+> 	 * 2^11 PTEGS of 128 bytes each, ie. 2^18 bytes is the minimum htab
+> 	 * size permitted by the architecture.
+> 	 */
+>=20
+> To avoid any confusion about the "/" referring to division.
 
-But even with it applied I still see a boat load of endian errors from sparse
-in this file. That worries me, can you please try and fix them.
+Good call, thanks.
 
-  arch/powerpc/platforms/pseries/hotplug-memory.c:121:20: warning: cast to restricted __be32
-  arch/powerpc/platforms/pseries/hotplug-memory.c:126:38: warning: cast to restricted __be32
-  arch/powerpc/platforms/pseries/hotplug-memory.c:129:39: warning: incorrect type in assignment (different base types)
-  arch/powerpc/platforms/pseries/hotplug-memory.c:129:39:    expected unsigned int [unsigned] [usertype] flags
-  arch/powerpc/platforms/pseries/hotplug-memory.c:129:39:    got restricted __be32 [usertype] <noident>
-  arch/powerpc/platforms/pseries/hotplug-memory.c:130:42: warning: incorrect type in assignment (different base types)
-  arch/powerpc/platforms/pseries/hotplug-memory.c:130:42:    expected unsigned int [unsigned] [usertype] aa_index
-  arch/powerpc/platforms/pseries/hotplug-memory.c:130:42:    got restricted __be32 [usertype] <noident>
-  arch/powerpc/platforms/pseries/hotplug-memory.c:188:21: warning: cast to restricted __be32
-  arch/powerpc/platforms/pseries/hotplug-memory.c:189:28: warning: cast to restricted __be32
-  arch/powerpc/platforms/pseries/hotplug-memory.c:296:16: warning: cast to restricted __be64
-  arch/powerpc/platforms/pseries/hotplug-memory.c:615:33: warning: cast to restricted __be32
-  arch/powerpc/platforms/pseries/hotplug-memory.c:675:14: warning: cast to restricted __be32
-  arch/powerpc/platforms/pseries/hotplug-memory.c:681:37: warning: cast to restricted __be64
-  arch/powerpc/platforms/pseries/hotplug-memory.c:682:37: warning: cast to restricted __be32
-  arch/powerpc/platforms/pseries/hotplug-memory.c:683:33: warning: cast to restricted __be32
-  arch/powerpc/platforms/pseries/hotplug-memory.c:694:15: warning: incorrect type in assignment (different base types)
-  arch/powerpc/platforms/pseries/hotplug-memory.c:694:15:    expected unsigned int [unsigned] [usertype] count
-  arch/powerpc/platforms/pseries/hotplug-memory.c:694:15:    got restricted __be32 [usertype] drc_count
-  arch/powerpc/platforms/pseries/hotplug-memory.c:695:19: warning: incorrect type in assignment (different base types)
-  arch/powerpc/platforms/pseries/hotplug-memory.c:695:19:    expected unsigned int [unsigned] [usertype] drc_index
-  arch/powerpc/platforms/pseries/hotplug-memory.c:695:19:    got restricted __be32 [usertype] drc_index
-  arch/powerpc/platforms/pseries/hotplug-memory.c:766:16: warning: cast to restricted __be64
-  arch/powerpc/platforms/pseries/hotplug-memory.c:808:22: warning: cast to restricted __be32
-  arch/powerpc/platforms/pseries/hotplug-memory.c:809:24: warning: cast to restricted __be32
-  arch/powerpc/platforms/pseries/hotplug-memory.c:811:33: warning: cast to restricted __be64
-  arch/powerpc/platforms/pseries/hotplug-memory.c:814:31: warning: cast to restricted __be32
-  arch/powerpc/platforms/pseries/hotplug-memory.c:816:30: warning: cast to restricted __be32
-  arch/powerpc/platforms/pseries/hotplug-memory.c:818:43: warning: cast to restricted __be64
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
+--lR6P3/j+HGelbRkf
+Content-Type: application/pgp-signature; name="signature.asc"
 
-I think the problem is you're using one type, struct of_drconf_cell, to hold
-both BE and LE data, but at different times. That may be OK if you do the
-conversions exactly right, but it is highly error prone, and also confuses the
-checker, so is best avoided.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-So we can either say that of_drconf_cell holds the device tree representation,
-in which case it should use __be64/__be32, or we say that it holds the cpu
-endian representation, in which case it stays as is.
+iQIcBAEBAgAGBQJW1iUJAAoJEGw4ysog2bOSTlYP/2z4zukzOD1pzku81VC9p5VF
+8dMbRe1ETTQADXf1fwZtnM7UJxkWrbUwYkfdVIy4gBnQ/aSfxKSbega4gUW0O/CQ
+MmjnlEDbd9Tu0M4PArFv4xU/qNltGgQeQ/tPw6vlL5RIXiQKUe5cWoY7WKBCcT2f
+aPfVGjj3219mmhuO4LHnmfnS2lwe2WxH23uE2saWw7llSzEF3KEDBExsn+nruMYX
++g5PNwfZvN3W6yDHAn5Hk4R0X61H/ZGH0BIdN3+WSYZ6Pulo5g7WYFrE7/drQQRp
+1eeFSx6S0UA/q5uvUqvXoK6eNH8iggOQRKtN62oCub2uRCmaB+J3v2E1RZ7hu/s5
+OHcOGBnMJL7P6dCl2rDVOdyei37SaLgTeSRl+aXrJ3Q7ItA6Fc3oCErb+azA3XpY
+apn/at8HAvhKcq/DQRZ5e+YYR7BMIzo3uqa/vYpruAoF/vX2mGIl0MehcX7L2ObZ
+46hnROxyStitNlM4ajArrHHzRqHrJjKUNfQGalTFDqFijzJeWXrpjAlYYV08qBhj
+HlDsxtj3RswDXikHda5VV7zytyj47fSlDwf9ihVZb421F2PZIlh9qA6WgEzgga3d
+atlBzAeRze14ZmX3gD0FlclTI/kaTTLVR/ygPn19uhJBx0hUOztF1RB/Qs6BsUsE
+ZCBdLyQmWjO+QvKiIaO1
+=WkSZ
+-----END PGP SIGNATURE-----
 
-My preference would be the latter, and we create an accessor which does the
-conversion in exactly one place, ie. something like:
-
-void of_property_read_drconf_cell(const struct property *p,
-                                 struct of_drconf_cell *result)
-{
-       struct {
-               __be64 base_addr;
-               __be32 drc_index;
-               __be32 reserved;
-               __be32 aa_index;
-               __be32 flags;
-       } *s = (void *)p->value;
-
-       result->base_addr = be64_to_cpu(s->base_addr);
-       result->drc_index = be32_to_cpu(s->base_addr);
-       result->reserved = be32_to_cpu(s->reserved);
-       result->aa_index = be32_to_cpu(s->aa_index);
-       result->flags = be32_to_cpu(s->flags);
-}
-
-cheers
+--lR6P3/j+HGelbRkf--
