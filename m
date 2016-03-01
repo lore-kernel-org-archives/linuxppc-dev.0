@@ -2,37 +2,36 @@ Return-Path: <cyrilbur@gmail.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E51AD1A0007
+ by lists.ozlabs.org (Postfix) with ESMTPS id 003A81A0324
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 16:57:11 +1100 (AEDT)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BA0B3140778
+ by ozlabs.org (Postfix) with ESMTPS id D0797140B9E
  for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 16:57:11 +1100 (AEDT)
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
  Tue, 1 Mar 2016 15:57:10 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id B519D2CE8056
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 16:57:08 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u215v0bO9372152
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 16:57:08 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u215uaeC019482
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 16:56:36 +1100
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 250223578058
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 16:57:05 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u215uvda11731440
+ for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 16:57:05 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u215uW3p005764
+ for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 16:56:32 +1100
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@ozlabs.org
 Cc: mikey@neuling.org, anton@samba.org
-Subject: [PATCH 2/2] powerpc: Batch up loads/stores on saving and restoring VSX
-Date: Tue,  1 Mar 2016 16:55:35 +1100
-Message-Id: <1456811735-1289-2-git-send-email-cyrilbur@gmail.com>
-In-Reply-To: <1456811735-1289-1-git-send-email-cyrilbur@gmail.com>
-References: <1456811735-1289-1-git-send-email-cyrilbur@gmail.com>
+Subject: [PATCH 1/2] powerpc: Batch up loads/stores on saving and restoring
+ Altivec
+Date: Tue,  1 Mar 2016 16:55:34 +1100
+Message-Id: <1456811735-1289-1-git-send-email-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,9 +41,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the assembly to save and restore VSX registers boils down to a
-load immediate of the offset of the specific VSX register in memory
-followed by the load/store which repeats in sequence for each VSX register.
+Currently the assembly to save and restore Altivec registers boils down to
+a load immediate of the offset of the specific Altivec register in memory
+followed by the load/store which repeats in sequence for each Altivec
+register.
 
 This patch attempts to do better by loading up four registers with
 immediates so that the loads and stores can be batched up and better
@@ -54,294 +54,211 @@ This patch results in four load/stores in sequence and one add between
 groups of four. Also, by using a pair of base registers it means that the
 result of the add is not needed by the following instruction.
 
-Due to the overlapping layout of FPU registers and VSX registers on POWER
-chips, this patch also benefits FPU loads and stores when VSX is compiled
-in and the CPU is VSX capable.
-
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- arch/powerpc/include/asm/ppc_asm.h | 65 ++++++++++++++++++++++++++++++--------
- arch/powerpc/kernel/fpu.S          | 43 ++++++++++++++++---------
- arch/powerpc/kernel/tm.S           | 46 ++++++++++++++-------------
- 3 files changed, 104 insertions(+), 50 deletions(-)
+These patches need to be applied on to of my rework of FPU/VMX/VSX
+switching: https://patchwork.ozlabs.org/patch/589703/
+
+I left in some of my comments indicating if functions are called from C or
+not. Looking at them now, they might be a bit much, let me know what you
+think.
+
+Tested 64 bit BE and LE under KVM, not sure how I can test 32bit.
+
+
+ arch/powerpc/include/asm/ppc_asm.h | 63 ++++++++++++++++++++++++++++++--------
+ arch/powerpc/kernel/tm.S           |  6 ++--
+ arch/powerpc/kernel/vector.S       | 20 +++++++++---
+ 3 files changed, 70 insertions(+), 19 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 5ba69ed..dd0df12 100644
+index 499d9f8..5ba69ed 100644
 --- a/arch/powerpc/include/asm/ppc_asm.h
 +++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -173,19 +173,58 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- #define LXVD2X_ROT(n,b,base)		LXVD2X(n,b,base);	\
- 					XXSWAPD(n,n)
- #endif
--/* Save the lower 32 VSRs in the thread VSR region */
--#define SAVE_VSR(n,b,base)	li b,16*(n);  STXVD2X_ROT(n,R##base,R##b)
--#define SAVE_2VSRS(n,b,base)	SAVE_VSR(n,b,base); SAVE_VSR(n+1,b,base)
--#define SAVE_4VSRS(n,b,base)	SAVE_2VSRS(n,b,base); SAVE_2VSRS(n+2,b,base)
--#define SAVE_8VSRS(n,b,base)	SAVE_4VSRS(n,b,base); SAVE_4VSRS(n+4,b,base)
--#define SAVE_16VSRS(n,b,base)	SAVE_8VSRS(n,b,base); SAVE_8VSRS(n+8,b,base)
--#define SAVE_32VSRS(n,b,base)	SAVE_16VSRS(n,b,base); SAVE_16VSRS(n+16,b,base)
--#define REST_VSR(n,b,base)	li b,16*(n); LXVD2X_ROT(n,R##base,R##b)
--#define REST_2VSRS(n,b,base)	REST_VSR(n,b,base); REST_VSR(n+1,b,base)
--#define REST_4VSRS(n,b,base)	REST_2VSRS(n,b,base); REST_2VSRS(n+2,b,base)
--#define REST_8VSRS(n,b,base)	REST_4VSRS(n,b,base); REST_4VSRS(n+4,b,base)
--#define REST_16VSRS(n,b,base)	REST_8VSRS(n,b,base); REST_8VSRS(n+8,b,base)
--#define REST_32VSRS(n,b,base)	REST_16VSRS(n,b,base); REST_16VSRS(n+16,b,base)
-+
-+#define __SAVE_4VSRS(n,off0,off1,off2,off3,base) \
-+	STXVD2X_ROT(n,R##base,R##off0); \
-+	STXVD2X_ROT(n+1,R##base,R##off1); \
-+	STXVD2X_ROT(n+2,R##base,R##off2); \
-+	STXVD2X_ROT(n+3,R##base,R##off3)
+@@ -110,18 +110,57 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+ #define REST_16FPRS(n, base)	REST_8FPRS(n, base); REST_8FPRS(n+8, base)
+ #define REST_32FPRS(n, base)	REST_16FPRS(n, base); REST_16FPRS(n+16, base)
+ 
+-#define SAVE_VR(n,b,base)	li b,16*(n);  stvx n,base,b
+-#define SAVE_2VRS(n,b,base)	SAVE_VR(n,b,base); SAVE_VR(n+1,b,base)
+-#define SAVE_4VRS(n,b,base)	SAVE_2VRS(n,b,base); SAVE_2VRS(n+2,b,base)
+-#define SAVE_8VRS(n,b,base)	SAVE_4VRS(n,b,base); SAVE_4VRS(n+4,b,base)
+-#define SAVE_16VRS(n,b,base)	SAVE_8VRS(n,b,base); SAVE_8VRS(n+8,b,base)
+-#define SAVE_32VRS(n,b,base)	SAVE_16VRS(n,b,base); SAVE_16VRS(n+16,b,base)
+-#define REST_VR(n,b,base)	li b,16*(n); lvx n,base,b
+-#define REST_2VRS(n,b,base)	REST_VR(n,b,base); REST_VR(n+1,b,base)
+-#define REST_4VRS(n,b,base)	REST_2VRS(n,b,base); REST_2VRS(n+2,b,base)
+-#define REST_8VRS(n,b,base)	REST_4VRS(n,b,base); REST_4VRS(n+4,b,base)
+-#define REST_16VRS(n,b,base)	REST_8VRS(n,b,base); REST_8VRS(n+8,b,base)
+-#define REST_32VRS(n,b,base)	REST_16VRS(n,b,base); REST_16VRS(n+16,b,base)
++#define __SAVE_4VRS(n,off0,off1,off2,off3,base) \
++	stvx n,base,off0; \
++	stvx n+1,base,off1; \
++	stvx n+2,base,off2; \
++	stvx n+3,base,off3
 +
 +/* Restores the base for the caller */
-+#define SAVE_32VSRS(reg0,reg1,reg2,reg3,reg4,base) \
++#define SAVE_32VRS(reg0,reg1,reg2,reg3,reg4,base) \
 +	addi reg4,base,64; \
 +	li reg0,0; li reg1,16; li reg2,32; li reg3,48; \
-+	__SAVE_4VSRS(0,reg0,reg1,reg2,reg3,base); \
++	__SAVE_4VRS(0,reg0,reg1,reg2,reg3,base); \
 +	addi base,base,128; \
-+	__SAVE_4VSRS(4,reg0,reg1,reg2,reg3,reg4); \
++	__SAVE_4VRS(4,reg0,reg1,reg2,reg3,reg4); \
 +	addi reg4,reg4,128; \
-+	__SAVE_4VSRS(8,reg0,reg1,reg2,reg3,base); \
++	__SAVE_4VRS(8,reg0,reg1,reg2,reg3,base); \
 +	addi base,base,128; \
-+	__SAVE_4VSRS(12,reg0,reg1,reg2,reg3,reg4); \
++	__SAVE_4VRS(12,reg0,reg1,reg2,reg3,reg4); \
 +	addi reg4,reg4,128; \
-+	__SAVE_4VSRS(16,reg0,reg1,reg2,reg3,base); \
++	__SAVE_4VRS(16,reg0,reg1,reg2,reg3,base); \
 +	addi base,base,128; \
-+	__SAVE_4VSRS(20,reg0,reg1,reg2,reg3,reg4); \
++	__SAVE_4VRS(20,reg0,reg1,reg2,reg3,reg4); \
 +	addi reg4,reg4,128; \
-+	__SAVE_4VSRS(24,reg0,reg1,reg2,reg3,base); \
-+	__SAVE_4VSRS(28,reg0,reg1,reg2,reg3,reg4); \
++	__SAVE_4VRS(24,reg0,reg1,reg2,reg3,base); \
++	__SAVE_4VRS(28,reg0,reg1,reg2,reg3,reg4); \
 +	subi base,base,384
 +
-+#define __REST_4VSRS(n,off0,off1,off2,off3,base) \
-+	LXVD2X_ROT(n,R##base,R##off0); \
-+	LXVD2X_ROT(n+1,R##base,R##off1); \
-+	LXVD2X_ROT(n+2,R##base,R##off2); \
-+	LXVD2X_ROT(n+3,R##base,R##off3)
++#define __REST_4VRS(n,off0,off1,off2,off3,base) \
++	lvx n,base,off0; \
++	lvx n+1,base,off1; \
++	lvx n+2,base,off2; \
++	lvx n+3,base,off3
 +
 +/* Restores the base for the caller */
-+#define REST_32VSRS(reg0,reg1,reg2,reg3,reg4,base) \
++#define REST_32VRS(reg0,reg1,reg2,reg3,reg4,base) \
 +	addi reg4,base,64; \
 +	li reg0,0; li reg1,16; li reg2,32; li reg3,48; \
-+	__REST_4VSRS(0,reg0,reg1,reg2,reg3,base); \
++	__REST_4VRS(0,reg0,reg1,reg2,reg3,base); \
 +	addi base,base,128; \
-+	__REST_4VSRS(4,reg0,reg1,reg2,reg3,reg4); \
++	__REST_4VRS(4,reg0,reg1,reg2,reg3,reg4); \
 +	addi reg4,reg4,128; \
-+	__REST_4VSRS(8,reg0,reg1,reg2,reg3,base); \
++	__REST_4VRS(8,reg0,reg1,reg2,reg3,base); \
 +	addi base,base,128; \
-+	__REST_4VSRS(12,reg0,reg1,reg2,reg3,reg4); \
++	__REST_4VRS(12,reg0,reg1,reg2,reg3,reg4); \
 +	addi reg4,reg4,128; \
-+	__REST_4VSRS(16,reg0,reg1,reg2,reg3,base); \
++	__REST_4VRS(16,reg0,reg1,reg2,reg3,base); \
 +	addi base,base,128; \
-+	__REST_4VSRS(20,reg0,reg1,reg2,reg3,reg4); \
++	__REST_4VRS(20,reg0,reg1,reg2,reg3,reg4); \
 +	addi reg4,reg4,128; \
-+	__REST_4VSRS(24,reg0,reg1,reg2,reg3,base); \
-+	__REST_4VSRS(28,reg0,reg1,reg2,reg3,reg4); \
++	__REST_4VRS(24,reg0,reg1,reg2,reg3,base); \
++	__REST_4VRS(28,reg0,reg1,reg2,reg3,reg4); \
 +	subi base,base,384
  
- /*
-  * b = base register for addressing, o = base offset from register of 1st EVR
-diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-index 15da2b5..dc57ff1 100644
---- a/arch/powerpc/kernel/fpu.S
-+++ b/arch/powerpc/kernel/fpu.S
-@@ -26,29 +26,32 @@
- #include <asm/ptrace.h>
- 
- #ifdef CONFIG_VSX
--#define __REST_32FPVSRS(n,c,base)					\
-+#define __REST_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base)	\
- BEGIN_FTR_SECTION							\
- 	b	2f;							\
- END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
--	REST_32FPRS(n,base);						\
-+	REST_32FPRS(0,base);						\
- 	b	3f;							\
--2:	REST_32VSRS(n,c,base);						\
-+2:	REST_32VSRS(reg0,reg1,reg2,reg3,reg4,base); \
- 3:
- 
--#define __SAVE_32FPVSRS(n,c,base)					\
-+#define __SAVE_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base) \
- BEGIN_FTR_SECTION							\
- 	b	2f;							\
- END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
--	SAVE_32FPRS(n,base);						\
-+	SAVE_32FPRS(0,base);						\
- 	b	3f;							\
--2:	SAVE_32VSRS(n,c,base);						\
-+2:	SAVE_32VSRS(reg0,reg1,reg2,reg3,reg4,base); \
- 3:
- #else
--#define __REST_32FPVSRS(n,b,base)	REST_32FPRS(n, base)
--#define __SAVE_32FPVSRS(n,b,base)	SAVE_32FPRS(n, base)
-+#define __REST_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base)	REST_32FPRS(0, base)
-+#define __SAVE_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base)	SAVE_32FPRS(0, base)
- #endif
--#define REST_32FPVSRS(n,c,base) __REST_32FPVSRS(n,__REG_##c,__REG_##base)
--#define SAVE_32FPVSRS(n,c,base) __SAVE_32FPVSRS(n,__REG_##c,__REG_##base)
-+#define REST_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base) \
-+__REST_32FPVSRS(__REG_##reg0,__REG_##reg1,__REG_##reg2,__REG_##reg3,__REG_##reg4,__REG_##base)
-+
-+#define SAVE_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base) \
-+__SAVE_32FPVSRS(__REG_##reg0,__REG_##reg1,__REG_##reg2,__REG_##reg3,__REG_##reg4,__REG_##base)
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- /* void do_load_up_transact_fpu(struct thread_struct *thread)
-@@ -56,6 +59,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
-  * This is similar to load_up_fpu but for the transactional version of the FP
-  * register set.  It doesn't mess with the task MSR or valid flags.
-  * Furthermore, we don't do lazy FP with TM currently.
+ #ifdef __BIG_ENDIAN__
+ #define STXVD2X_ROT(n,b,base)		STXVD2X(n,b,base)
+diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+index bf8f34a..81e1305 100644
+--- a/arch/powerpc/kernel/tm.S
++++ b/arch/powerpc/kernel/tm.S
+@@ -96,6 +96,8 @@ _GLOBAL(tm_abort)
+  * they will abort back to the checkpointed state we save out here.
+  *
+  * Call with IRQs off, stacks get all out of sync for some periods in here!
 + *
 + * Is called from C
   */
- _GLOBAL(do_load_up_transact_fpu)
+ _GLOBAL(tm_reclaim)
+ 	mfcr	r6
+@@ -151,7 +153,7 @@ _GLOBAL(tm_reclaim)
+ 	beq	dont_backup_vec
+ 
+ 	addi	r7, r3, THREAD_TRANSACT_VRSTATE
+-	SAVE_32VRS(0, r6, r7)	/* r6 scratch, r7 transact vr state */
++	SAVE_32VRS(r6,r8,r9,r10,r11,r7)	/* r6,r8,r9,r10,r11 scratch, r7 transact vr state */
+ 	mfvscr	v0
+ 	li	r6, VRSTATE_VSCR
+ 	stvx	v0, r7, r6
+@@ -361,7 +363,7 @@ _GLOBAL(__tm_recheckpoint)
+ 	li	r5, VRSTATE_VSCR
+ 	lvx	v0, r8, r5
+ 	mtvscr	v0
+-	REST_32VRS(0, r5, r8)			/* r5 scratch, r8 ptr */
++	REST_32VRS(r5,r6,r9,r10,r11,r8)			/* r5,r6,r9,r10,r11 scratch, r8 ptr */
+ dont_restore_vec:
+ 	ld	r5, THREAD_VRSAVE(r3)
+ 	mtspr	SPRN_VRSAVE, r5
+diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
+index 1c2e7a3..8d587fb 100644
+--- a/arch/powerpc/kernel/vector.S
++++ b/arch/powerpc/kernel/vector.S
+@@ -13,6 +13,8 @@
+  * This is similar to load_up_altivec but for the transactional version of the
+  * vector regs.  It doesn't mess with the task MSR or valid flags.
+  * Furthermore, VEC laziness is not supported with TM currently.
++ *
++ * Is called from C
+  */
+ _GLOBAL(do_load_up_transact_altivec)
  	mfmsr	r6
-@@ -71,7 +76,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	addi	r7,r3,THREAD_TRANSACT_FPSTATE
- 	lfd	fr0,FPSTATE_FPSCR(r7)
- 	MTFSF_L(fr0)
--	REST_32FPVSRS(0, R4, R7)
-+	REST_32FPVSRS(R4,R5,R6,R8,R9,R7)
+@@ -27,7 +29,7 @@ _GLOBAL(do_load_up_transact_altivec)
+ 	lvx	v0,r10,r3
+ 	mtvscr	v0
+ 	addi	r10,r3,THREAD_TRANSACT_VRSTATE
+-	REST_32VRS(0,r4,r10)
++	REST_32VRS(r4,r5,r6,r7,r8,r10)
  
  	blr
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-@@ -79,19 +84,23 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ #endif
+@@ -35,20 +37,24 @@ _GLOBAL(do_load_up_transact_altivec)
  /*
-  * Load state from memory into FP registers including FPSCR.
-  * Assumes the caller has enabled FP in the MSR.
+  * Load state from memory into VMX registers including VSCR.
+  * Assumes the caller has enabled VMX in the MSR.
 + *
 + * Is called from C
   */
- _GLOBAL(load_fp_state)
- 	lfd	fr0,FPSTATE_FPSCR(r3)
- 	MTFSF_L(fr0)
--	REST_32FPVSRS(0, R4, R3)
-+	REST_32FPVSRS(R4,R5,R6,R7,R8,R3)
+ _GLOBAL(load_vr_state)
+ 	li	r4,VRSTATE_VSCR
+ 	lvx	v0,r4,r3
+ 	mtvscr	v0
+-	REST_32VRS(0,r4,r3)
++	REST_32VRS(r4,r5,r6,r7,r8,r3)
  	blr
  
  /*
-  * Store FP state into memory, including FPSCR
-  * Assumes the caller has enabled FP in the MSR.
+  * Store VMX state into memory, including VSCR.
+  * Assumes the caller has enabled VMX in the MSR.
 + *
 + * NOT called from C
   */
- _GLOBAL(store_fp_state)
--	SAVE_32FPVSRS(0, R4, R3)
-+	SAVE_32FPVSRS(R4,R5,R6,R7,R8,R3)
- 	mffs	fr0
- 	stfd	fr0,FPSTATE_FPSCR(r3)
- 	blr
-@@ -104,6 +113,8 @@ _GLOBAL(store_fp_state)
-  * enable the FPU for the current task and return to the task.
+ _GLOBAL(store_vr_state)
+-	SAVE_32VRS(0, r4, r3)
++	SAVE_32VRS(r4,r5,r6,r7,r8,r3)
+ 	mfvscr	v0
+ 	li	r4, VRSTATE_VSCR
+ 	stvx	v0, r4, r3
+@@ -63,6 +69,8 @@ _GLOBAL(store_vr_state)
+  *
   * Note that on 32-bit this can only use registers that will be
   * restored by fast_exception_return, i.e. r3 - r6, r10 and r11.
 + *
 + * NOT called from C
   */
- _GLOBAL(load_up_fpu)
- 	mfmsr	r5
-@@ -137,7 +148,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	addi	r10,r5,THREAD_FPSTATE
- 	lfd	fr0,FPSTATE_FPSCR(r10)
- 	MTFSF_L(fr0)
--	REST_32FPVSRS(0, R4, R10)
-+	REST_32FPVSRS(R3,R4,R5,R6,R11,R10)
+ _GLOBAL(load_up_altivec)
+ 	mfmsr	r5			/* grab the current MSR */
+@@ -101,13 +109,15 @@ _GLOBAL(load_up_altivec)
+ 	stw	r4,THREAD_USED_VR(r5)
+ 	lvx	v0,r10,r6
+ 	mtvscr	v0
+-	REST_32VRS(0,r4,r6)
++	REST_32VRS(r3,r4,r5,r10,r11,r6)
  	/* restore registers and return */
- 	/* we haven't used ctr or xer or lr */
  	blr
-@@ -146,6 +157,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
-  * save_fpu(tsk)
-  * Save the floating-point registers in its thread_struct.
-  * Enables the FPU for use in the kernel on return.
+ 
+ /*
+  * save_altivec(tsk)
+  * Save the vector registers to its thread_struct
 + *
 + * Is called from C
   */
- _GLOBAL(save_fpu)
- 	addi	r3,r3,THREAD	        /* want THREAD of task */
-@@ -154,7 +167,7 @@ _GLOBAL(save_fpu)
- 	PPC_LCMPI	0,r6,0
+ _GLOBAL(save_altivec)
+ 	addi	r3,r3,THREAD		/* want THREAD of task */
+@@ -116,7 +126,7 @@ _GLOBAL(save_altivec)
+ 	PPC_LCMPI	0,r7,0
  	bne	2f
- 	addi	r6,r3,THREAD_FPSTATE
--2:	SAVE_32FPVSRS(0, R4, R6)
-+2:	SAVE_32FPVSRS(R4,R5,R7,R8,R9,R6)
- 	mffs	fr0
- 	stfd	fr0,FPSTATE_FPSCR(r6)
- 	blr
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index 81e1305..61900b8 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -14,30 +14,32 @@
- 
- #ifdef CONFIG_VSX
- /* See fpu.S, this is borrowed from there */
--#define __SAVE_32FPRS_VSRS(n,c,base)		\
--BEGIN_FTR_SECTION				\
--	b	2f;				\
--END_FTR_SECTION_IFSET(CPU_FTR_VSX);		\
--	SAVE_32FPRS(n,base);			\
--	b	3f;				\
--2:	SAVE_32VSRS(n,c,base);			\
-+#define __SAVE_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base) \
-+BEGIN_FTR_SECTION							\
-+	b	2f;							\
-+END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
-+	SAVE_32FPRS(0,base);						\
-+	b	3f;							\
-+2:	SAVE_32VSRS(reg0,reg1,reg2,reg3,reg4,base); \
- 3:
--#define __REST_32FPRS_VSRS(n,c,base)		\
--BEGIN_FTR_SECTION				\
--	b	2f;				\
--END_FTR_SECTION_IFSET(CPU_FTR_VSX);		\
--	REST_32FPRS(n,base);			\
--	b	3f;				\
--2:	REST_32VSRS(n,c,base);			\
-+
-+#define __REST_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base)	\
-+BEGIN_FTR_SECTION							\
-+	b	2f;							\
-+END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
-+	REST_32FPRS(0,base);						\
-+	b	3f;							\
-+2:	REST_32VSRS(reg0,reg1,reg2,reg3,reg4,base); \
- 3:
-+
- #else
--#define __SAVE_32FPRS_VSRS(n,c,base)	SAVE_32FPRS(n, base)
--#define __REST_32FPRS_VSRS(n,c,base)	REST_32FPRS(n, base)
-+#define __SAVE_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base)	SAVE_32FPRS(0, base)
-+#define __REST_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base)	REST_32FPRS(0, base)
- #endif
--#define SAVE_32FPRS_VSRS(n,c,base) \
--	__SAVE_32FPRS_VSRS(n,__REG_##c,__REG_##base)
--#define REST_32FPRS_VSRS(n,c,base) \
--	__REST_32FPRS_VSRS(n,__REG_##c,__REG_##base)
-+#define SAVE_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base) \
-+__SAVE_32FPRS_VSRS(__REG_##reg0,__REG_##reg1,__REG_##reg2,__REG_##reg3,__REG_##reg4,__REG_##base)
-+#define REST_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base) \
-+__REST_32FPRS_VSRS(__REG_##reg0,__REG_##reg1,__REG_##reg2,__REG_##reg3,__REG_##reg4,__REG_##base)
- 
- /* Stack frame offsets for local variables. */
- #define TM_FRAME_L0	TM_FRAME_SIZE-16
-@@ -165,7 +167,7 @@ dont_backup_vec:
- 	beq	dont_backup_fp
- 
- 	addi	r7, r3, THREAD_TRANSACT_FPSTATE
--	SAVE_32FPRS_VSRS(0, R6, R7)	/* r6 scratch, r7 transact fp state */
-+	SAVE_32FPRS_VSRS(R6,R8,R9,R10,R11,R7) /* r6,r8,r9,r10,r11 scratch, r7 transact fp state */
- 
- 	mffs    fr0
- 	stfd    fr0,FPSTATE_FPSCR(r7)
-@@ -375,7 +377,7 @@ dont_restore_vec:
- 	addi	r8, r3, THREAD_FPSTATE
- 	lfd	fr0, FPSTATE_FPSCR(r8)
- 	MTFSF_L(fr0)
--	REST_32FPRS_VSRS(0, R4, R8)
-+	REST_32FPRS_VSRS(R4,R5,R6,R7,R9,R8)
- 
- dont_restore_fp:
- 	mtmsr	r6				/* FP/Vec off again! */
+ 	addi	r7,r3,THREAD_VRSTATE
+-2:	SAVE_32VRS(0,r4,r7)
++2:	SAVE_32VRS(r4,r5,r6,r8,r9,r7)
+ 	mfvscr	v0
+ 	li	r4,VRSTATE_VSCR
+ 	stvx	v0,r4,r7
 -- 
 2.7.2
