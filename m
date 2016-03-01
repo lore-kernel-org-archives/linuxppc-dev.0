@@ -1,17 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A5DE41A03DF
+ by lists.ozlabs.org (Postfix) with ESMTPS id CBB1B1A045E
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 09:21:19 +1100 (AEDT)
-In-Reply-To: <1454988763-5580-3-git-send-email-david@gibson.dropbear.id.au>
+In-Reply-To: <1454988763-5580-4-git-send-email-david@gibson.dropbear.id.au>
 To: David Gibson <david@gibson.dropbear.id.au>, paulus@samba.org,
  benh@kernel.crashing.org
 From: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [2/4] powerpc/mm: Handle removing maybe-present bolted HPTEs
-Message-Id: <20160301222119.7AD971402DE@ozlabs.org>
+Subject: Re: [3/4] powerpc/mm: Clean up memory hotplug failure paths
+Message-Id: <20160301222119.ABDE3140B0D@ozlabs.org>
 Date: Wed,  2 Mar 2016 09:21:19 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,38 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-09-02 at 03:32:41 UTC, David Gibson wrote:
-> At the moment the hpte_removebolted callback in ppc_md returns void and
-> will BUG_ON() if the hpte it's asked to remove doesn't exist in the first
-> place.  This is awkward for the case of cleaning up a mapping which was
-> partially made before failing.
+On Tue, 2016-09-02 at 03:32:42 UTC, David Gibson wrote:
+> This makes a number of cleanups to handling of mapping failures during
+> memory hotplug on Power:
 > 
-> So, we add a return value to hpte_removebolted, and have it return ENOENT
-> in the case that the HPTE to remove didn't exist in the first place.
+> For errors creating the linear mapping for the hot-added region:
+>   * This is now reported with EFAULT which is more appropriate than the
+>     previous EINVAL (the failure is unlikely to be related to the
+>     function's parameters)
+>   * An error in this path now prints a warning message, rather than just
+>     silently failing to add the extra memory.
+>   * Previously a failure here could result in the region being partially
+>     mapped.  We now clean up any partial mapping before failing.
 > 
-> In the (sole) caller, we propagate errors in hpte_removebolted to its
-> caller to handle.  However, we handle ENOENT specially, continuing to
-> complete the unmapping over the specified range before returning the error
-> to the caller.
-> 
-> This means that htab_remove_mapping() will work sanely on a partially
-> present mapping, removing any HPTEs which are present, while also returning
-> ENOENT to its caller in case it's important there.
-> 
-> There are two callers of htab_remove_mapping():
->    - In remove_section_mapping() we already WARN_ON() any error return,
->      which is reasonable - in this case the mapping should be fully
->      present
->    - In vmemmap_remove_mapping() we BUG_ON() any error.  We change that to
->      just a WARN_ON() in the case of ENOENT, since failing to remove a
->      mapping that wasn't there in the first place probably shouldn't be
->      fatal.
+> For errors creating the vmemmap for the hot-added region:
+>    * This is now reported with EFAULT instead of causing a BUG() - this
+>      could happen for external reason (e.g. full hash table) so it's better
+>      to handle this non-fatally
+>    * An error message is also printed, so the failure won't be silent
+>    * As above a failure could cause a partially mapped region, we now
+>      clean this up.
 > 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> Reviewed-by: Paul Mackerras <paulus@samba.org>
 > Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/27828f98a0522ad4a745a80407
+https://git.kernel.org/powerpc/c/1dace6c665ec59bdc4eeafa4db
 
 cheers
