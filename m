@@ -1,18 +1,18 @@
 Return-Path: <qiang.zhao@nxp.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0100.outbound.protection.outlook.com [157.56.111.100])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0091.outbound.protection.outlook.com [207.46.100.91])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E7E501A0D2D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 18:33:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 59D7F1A0E13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 18:33:38 +1100 (AEDT)
 From: Zhao Qiang <qiang.zhao@nxp.com>
 To: <robh+dt@kernel.org>
 CC: <oss@buserror.net>, <leoyang.li@nxp.com>, <xiaobo.xie@nxp.com>,
  <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, Zhao Qiang <qiang.zhao@nxp.com>
-Subject: [PATCH v3 6/7] T104xRDB: Add qe node to t104xrdb
-Date: Tue, 1 Mar 2016 15:09:42 +0800
-Message-ID: <1456816183-22340-6-git-send-email-qiang.zhao@nxp.com>
+Subject: [PATCH v3 5/7] T104xD4RDB: Add qe node to t104xd4rdb
+Date: Tue, 1 Mar 2016 15:09:41 +0800
+Message-ID: <1456816183-22340-5-git-send-email-qiang.zhao@nxp.com>
 In-Reply-To: <1456816183-22340-1-git-send-email-qiang.zhao@nxp.com>
 References: <1456816183-22340-1-git-send-email-qiang.zhao@nxp.com>
 MIME-Version: 1.0
@@ -26,7 +26,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-add qe node to t104xrdb.dtsi
+add qe node to t104xd4rdb.dtsi and t1040si-post.dtsi.
 
 Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
 ---
@@ -35,14 +35,68 @@ Changes for v2
 Changes for v3
 	- rebase
 
- arch/powerpc/boot/dts/fsl/t104xrdb.dtsi | 39 +++++++++++++++++++++++++++++++++
- 1 file changed, 39 insertions(+)
+ arch/powerpc/boot/dts/fsl/t1040si-post.dtsi | 45 +++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/t104xd4rdb.dtsi   | 39 +++++++++++++++++++++++++
+ 2 files changed, 84 insertions(+)
 
-diff --git a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-index 830ea48..79d923e 100644
---- a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-@@ -186,4 +186,43 @@
+diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+index e0f4da5..012f813 100644
+--- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+@@ -673,3 +673,48 @@
+ 		};
+ 	};
+ };
++
++&qe {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	device_type = "qe";
++	compatible = "fsl,qe";
++	fsl,qe-num-riscs = <1>;
++	fsl,qe-num-snums = <28>;
++
++	qeic: interrupt-controller@80 {
++		interrupt-controller;
++		compatible = "fsl,qe-ic";
++		#address-cells = <0>;
++		#interrupt-cells = <1>;
++		reg = <0x80 0x80>;
++		interrupts = <95 2 0 0  94 2 0 0>; //high:79 low:78
++	};
++
++	ucc@2000 {
++		cell-index = <1>;
++		reg = <0x2000 0x200>;
++		interrupts = <32>;
++		interrupt-parent = <&qeic>;
++	};
++
++	ucc@2200 {
++		cell-index = <3>;
++		reg = <0x2200 0x200>;
++		interrupts = <34>;
++		interrupt-parent = <&qeic>;
++	};
++
++	muram@10000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,qe-muram", "fsl,cpm-muram";
++		ranges = <0x0 0x10000 0x6000>;
++
++		data-only@0 {
++			compatible = "fsl,qe-muram-data",
++			"fsl,cpm-muram-data";
++			reg = <0x0 0x6000>;
++		};
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/t104xd4rdb.dtsi b/arch/powerpc/boot/dts/fsl/t104xd4rdb.dtsi
+index 3f6d7c6..d9e89d5 100644
+--- a/arch/powerpc/boot/dts/fsl/t104xd4rdb.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t104xd4rdb.dtsi
+@@ -212,4 +212,43 @@
  				  0 0x00010000>;
  		};
  	};
