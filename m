@@ -1,45 +1,33 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A07EC1A074D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 15:27:56 +1100 (AEDT)
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 72C1F140324
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 15:27:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A68631A074D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 15:34:16 +1100 (AEDT)
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
- Tue, 1 Mar 2016 14:27:53 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 77B132BB0055
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 15:27:50 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u214Rgkd52166790
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 15:27:50 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u214RIDx029399
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 15:27:18 +1100
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- u214RIqM028777
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 15:27:18 +1100
-Received: from camb691.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher AES128-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 988C0A01E4
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 15:26:53 +1100 (AEDT)
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] selftests/powerpc: PMU libs: use signed long to read
- perf_event_paranoid
-Date: Tue,  1 Mar 2016 15:26:36 +1100
-Message-Id: <1456806396-27432-1-git-send-email-cyrilbur@gmail.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 1 Mar 2016 10:04:13 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u214Y87U19005880
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Mar 2016 10:04:08 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u214Y9WO012903
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Mar 2016 10:04:10 +0530
+Message-ID: <56D51BC1.7050904@linux.vnet.ibm.com>
+Date: Tue, 01 Mar 2016 10:04:09 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+CC: aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH] powerpc/lpar: Don't crash on H_PROTECT errors
+References: <1456746752-9298-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <56D476DD.9060402@linux.vnet.ibm.com>
+In-Reply-To: <56D476DD.9060402@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,62 +37,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpt from man 2 perf_event_open:
+On 02/29/2016 10:20 PM, Tyrel Datwyler wrote:
+> On 02/29/2016 03:52 AM, Anshuman Khandual wrote:
+>> There are certain condition in which H_PROTECT can return error code
+>> other than H_NOT_FOUND and H_SUCCESS. One such being an attempt to
+>> update an hpte owned by adjunct partition. Return 0 in that case so
+>> that user space will retry the access. In adjunct case this mean we
+>> will not make much progress in the user space. But atleast we get a
+>> chance to kill the task and avoid taking down the entire box.
+>>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/pseries/lpar.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+>> index 477290a..31bcdaf 100644
+>> --- a/arch/powerpc/platforms/pseries/lpar.c
+>> +++ b/arch/powerpc/platforms/pseries/lpar.c
+>> @@ -310,7 +310,7 @@ static long pSeries_lpar_hpte_updatepp(unsigned long slot,
+>>  
+>>  	pr_devel("ok\n");
+>>  
+>> -	BUG_ON(lpar_rc != H_SUCCESS);
+>> +	WARN_RATELIMIT(lpar_rc != H_SUCCESS, "H_PROTECT returned %lu\n", lpar_rc);
+> 
+> In the event that we don't get H_NOT_FOUND (which is handled earlier in
+> the function) or H_SUCCESS this patch assumes H_RESOURCE. It fails to
+> handle H_PARAMETER which is also a valid return from the H_PROTECT
+> hypercall.
 
-/proc/sys/kernel/perf_event_paranoid
-  The perf_event_paranoid file can be set to restrict access to the
-  performance counters.
-    2 allow only user-space measurements.
-    1 allow both kernel and user measurements (default).
-    0 allow access to CPU-specific data but not raw tracepoint samples.
-   -1 no restrictions.
-
-require_paranoia_below() should return 0 if perf_event_paranoid is below a
-specified level, the value from perf_event_paranoid is read into an
-unsigned long so the incorrect value is returned when perf_event_paranoid
-is set to -1.
-
-Without this patch applied there is the same number of selftests/powerpc
-which skip when /proc/sys/kernel/perf_event_paranoid is set to 1 or -1 but
-no skips when set to zero.
-With this patch applied there no skipped selftests/powerpc test when
-/proc/sys/kernel/perf_event_paranoid is set to 0 or -1.
-
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
- tools/testing/selftests/powerpc/pmu/lib.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/tools/testing/selftests/powerpc/pmu/lib.c b/tools/testing/selftests/powerpc/pmu/lib.c
-index a361ad3..8b992fa 100644
---- a/tools/testing/selftests/powerpc/pmu/lib.c
-+++ b/tools/testing/selftests/powerpc/pmu/lib.c
-@@ -190,7 +190,7 @@ int parse_proc_maps(void)
- 
- bool require_paranoia_below(int level)
- {
--	unsigned long current;
-+	long current;
- 	char *end, buf[16];
- 	FILE *f;
- 	int rc;
-@@ -208,7 +208,7 @@ bool require_paranoia_below(int level)
- 		goto out_close;
- 	}
- 
--	current = strtoul(buf, &end, 10);
-+	current = strtol(buf, &end, 10);
- 
- 	if (end == buf) {
- 		printf("Couldn't parse " PARANOID_PATH "?\n");
-@@ -216,7 +216,7 @@ bool require_paranoia_below(int level)
- 	}
- 
- 	if (current >= level)
--		goto out;
-+		goto out_close;
- 
- 	rc = 0;
- out_close:
--- 
-2.7.2
+Right, I guess its okay to BUG_ON() if we detect H_PARAMETER return code
+as the kernel should not have created wrong arguments to the hcall in
+the first place. Although we will still want to return 0 from here for
+H_RESOURCE return code with a WARN_RATELIMIT message. Will change the
+code accordingly next time around.
