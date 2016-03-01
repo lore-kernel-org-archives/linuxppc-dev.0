@@ -1,21 +1,20 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6E90F1A0BE0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 04:02:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 004941A0CB4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 04:03:10 +1100 (AEDT)
 From: Arnd Bergmann <arnd@arndb.de>
 To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 Cc: linux-arm-kernel@lists.infradead.org, Kyle McMartin <kyle@mcmartin.ca>,
  rtc-linux@googlegroups.com, Alessandro Zummo <a.zummo@towertech.it>,
  linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
  linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- Arnd Bergmann <arnd@arndb.de>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/6] parisc: rtc: provide rtc_class_ops directly
-Date: Tue,  1 Mar 2016 18:00:00 +0100
-Message-Id: <1456851608-3374907-5-git-send-email-arnd@arndb.de>
+ Arnd Bergmann <arnd@arndb.de>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Rich Felker <dalias@libc.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH 5/6] sh: rtc: provide rtc_class_ops directly
+Date: Tue,  1 Mar 2016 18:00:01 +0100
+Message-Id: <1456851608-3374907-6-git-send-email-arnd@arndb.de>
 In-Reply-To: <1456851608-3374907-1-git-send-email-arnd@arndb.de>
 References: <1456851608-3374907-1-git-send-email-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,75 +28,76 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 The rtc-generic driver provides an architecture specific
 wrapper on top of the generic rtc_class_ops abstraction,
-and on pa-risc, that is implemented using an open-coded
-version of rtc_time_to_tm/rtc_tm_to_time.
+and on sh, that goes through another indirection using
+the rtc_sh_get_time/rtc_sh_set_time functions.
 
-This changes the parisc rtc-generic device to provide its
-rtc_class_ops directly, using the normal helper functions,
-which makes this y2038 safe (on 32-bit) and simplifies
-the implementation.
+This changes the sh rtc-generic device to provide its
+rtc_class_ops directly, skipping one of the abstraction
+levels.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/parisc/kernel/time.c | 35 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 34 insertions(+), 1 deletion(-)
+ arch/sh/kernel/time.c | 32 +++++++++++++++++++-------------
+ 1 file changed, 19 insertions(+), 13 deletions(-)
 
-diff --git a/arch/parisc/kernel/time.c b/arch/parisc/kernel/time.c
-index 400acac0a304..176ef5c2aa82 100644
---- a/arch/parisc/kernel/time.c
-+++ b/arch/parisc/kernel/time.c
-@@ -12,6 +12,7 @@
-  */
- #include <linux/errno.h>
- #include <linux/module.h>
-+#include <linux/rtc.h>
- #include <linux/sched.h>
- #include <linux/kernel.h>
- #include <linux/param.h>
-@@ -224,11 +225,43 @@ void __init start_cpu_itimer(void)
- 	per_cpu(cpu_data, cpu).it_value = next_tick;
+diff --git a/arch/sh/kernel/time.c b/arch/sh/kernel/time.c
+index d6d0a986c6e9..92cd676970d9 100644
+--- a/arch/sh/kernel/time.c
++++ b/arch/sh/kernel/time.c
+@@ -50,27 +50,30 @@ int update_persistent_clock(struct timespec now)
  }
+ #endif
  
+-unsigned int get_rtc_time(struct rtc_time *tm)
 +static int rtc_generic_get_time(struct device *dev, struct rtc_time *tm)
-+{
-+	struct pdc_tod tod_data;
-+
-+	memset(wtime, 0, sizeof(*wtime));
-+	if (pdc_tod_read(&tod_data) < 0)
-+		return -EOPNOTSUPP;
-+
-+	/* we treat tod_sec as unsigned, so this can work until year 2106 */
-+	rtc_time64_to_tm(tod_data.tod_sec, &tm);
-+	return rtc_valid_tm(tm);
-+}
-+
+ {
+-	if (rtc_sh_get_time != null_rtc_get_time) {
+-		struct timespec tv;
++	struct timespec tv;
+ 
+-		rtc_sh_get_time(&tv);
+-		rtc_time_to_tm(tv.tv_sec, tm);
+-	}
+-
+-	return RTC_24H;
++	rtc_sh_get_time(&tv);
++	rtc_time_to_tm(tv.tv_sec, tm);
++	return 0;
+ }
+-EXPORT_SYMBOL(get_rtc_time);
+ 
+-int set_rtc_time(struct rtc_time *tm)
 +static int rtc_generic_set_time(struct device *dev, struct rtc_time *tm)
-+{
-+	time64_t secs = rtc_tm_to_time64(tm);
-+
-+	if (pdc_tod_set(secs, 0) < 0)
+ {
+ 	unsigned long secs;
+ 
+ 	rtc_tm_to_time(tm, &secs);
+-	return rtc_sh_set_time(secs);
++	if (!rtc_sh_set_time || rtc_sh_set_time(secs) < 0)
 +		return -EOPNOTSUPP;
 +
 +	return 0;
-+}
+ }
+-EXPORT_SYMBOL(set_rtc_time);
 +
 +static const struct rtc_class_ops rtc_generic_ops = {
 +	.read_time = rtc_generic_get_time,
 +	.set_time = rtc_generic_set_time,
 +};
-+
- static int __init rtc_init(void)
+ 
+ static int __init rtc_generic_init(void)
  {
- 	struct platform_device *pdev;
+@@ -79,7 +82,10 @@ static int __init rtc_generic_init(void)
+ 	if (rtc_sh_get_time == null_rtc_get_time)
+ 		return -ENODEV;
  
 -	pdev = platform_device_register_simple("rtc-generic", -1, NULL, 0);
 +	pdev = platform_device_register_data(NULL, "rtc-generic", -1,
 +					     &rtc_generic_ops,
 +					     sizeof(rtc_generic_ops));
 +
-+
+ 
  	return PTR_ERR_OR_ZERO(pdev);
  }
- device_initcall(rtc_init);
 -- 
 2.7.0
