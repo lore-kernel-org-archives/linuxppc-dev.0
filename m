@@ -1,33 +1,35 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A390D1A074D
+ by lists.ozlabs.org (Postfix) with ESMTPS id D2CCC1A08B6
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 15:15:30 +1100 (AEDT)
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Mon, 29 Feb 2016 21:15:28 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 34EDB3E4003F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 21:15:25 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id u214FOWR45219952
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id DF50B3E40030
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 21:15:24 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u214FO6E43516012
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 21:15:24 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u214FNVm010205
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u214FO3V001286
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Feb 2016 21:15:24 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 0/4] Add 4 level page table for 64k book3s config
-Date: Tue,  1 Mar 2016 09:45:10 +0530
-Message-Id: <1456805714-21774-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 1/4] powerpc/mm: Split pgtable types to separate header
+Date: Tue,  1 Mar 2016 09:45:11 +0530
+Message-Id: <1456805714-21774-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1456805714-21774-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1456805714-21774-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,35 +39,246 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series move book3s config with 64k linux page size to a 4 level
-linux page table setup. This makes it similar to PowerISA 3.0 radix
-setup which inturn will enable us to support both hash and radix
-MMU model using single kernel.
+We move the page table accessors into a separate header. We will
+later add a big endian variant of the table which is needed for radix.
+No functionality change only code movement.
 
-
-Aneesh Kumar K.V (3):
-  powerpc/mm: Split pgtable types to separate header
-  powerpc/mm: Don't have conditional defines for real_pte_t
-  powerpc/mm: Switch book3s 64 with 64K page size to 4 level page table
-
-Kirill A. Shutemov (1):
-  mm: Some arch may want to use HPAGE_PMD related values as variables
-
- arch/powerpc/Kconfig                          |   1 +
- arch/powerpc/include/asm/book3s/64/hash-4k.h  |  33 +-------
- arch/powerpc/include/asm/book3s/64/hash-64k.h |  31 ++++----
- arch/powerpc/include/asm/book3s/64/hash.h     |  11 +++
- arch/powerpc/include/asm/book3s/64/pgtable.h  |  30 ++++++--
- arch/powerpc/include/asm/page.h               | 104 +-------------------------
- arch/powerpc/include/asm/pgalloc-64.h         |  28 ++++++-
- arch/powerpc/include/asm/pgtable-types.h      | 103 +++++++++++++++++++++++++
- arch/powerpc/mm/init_64.c                     |  21 ++++--
- arch/powerpc/mm/pgtable_64.c                  |   7 ++
- include/linux/bug.h                           |   9 +++
- include/linux/huge_mm.h                       |   3 -
- mm/huge_memory.c                              |  17 ++++-
- 13 files changed, 227 insertions(+), 171 deletions(-)
+Reviewed-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/page.h          | 104 +----------------------------
+ arch/powerpc/include/asm/pgtable-types.h | 108 +++++++++++++++++++++++++++++++
+ 2 files changed, 109 insertions(+), 103 deletions(-)
  create mode 100644 arch/powerpc/include/asm/pgtable-types.h
 
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index af7a3422a3ef..ab3d8977bacd 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -288,109 +288,7 @@ extern long long virt_phys_offset;
+ 
+ #ifndef __ASSEMBLY__
+ 
+-#ifdef CONFIG_STRICT_MM_TYPECHECKS
+-/* These are used to make use of C type-checking. */
+-
+-/* PTE level */
+-typedef struct { pte_basic_t pte; } pte_t;
+-#define __pte(x)	((pte_t) { (x) })
+-static inline pte_basic_t pte_val(pte_t x)
+-{
+-	return x.pte;
+-}
+-
+-/* 64k pages additionally define a bigger "real PTE" type that gathers
+- * the "second half" part of the PTE for pseudo 64k pages
+- */
+-#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
+-typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
+-#else
+-typedef struct { pte_t pte; } real_pte_t;
+-#endif
+-
+-/* PMD level */
+-#ifdef CONFIG_PPC64
+-typedef struct { unsigned long pmd; } pmd_t;
+-#define __pmd(x)	((pmd_t) { (x) })
+-static inline unsigned long pmd_val(pmd_t x)
+-{
+-	return x.pmd;
+-}
+-
+-/* PUD level exusts only on 4k pages */
+-#ifndef CONFIG_PPC_64K_PAGES
+-typedef struct { unsigned long pud; } pud_t;
+-#define __pud(x)	((pud_t) { (x) })
+-static inline unsigned long pud_val(pud_t x)
+-{
+-	return x.pud;
+-}
+-#endif /* !CONFIG_PPC_64K_PAGES */
+-#endif /* CONFIG_PPC64 */
+-
+-/* PGD level */
+-typedef struct { unsigned long pgd; } pgd_t;
+-#define __pgd(x)	((pgd_t) { (x) })
+-static inline unsigned long pgd_val(pgd_t x)
+-{
+-	return x.pgd;
+-}
+-
+-/* Page protection bits */
+-typedef struct { unsigned long pgprot; } pgprot_t;
+-#define pgprot_val(x)	((x).pgprot)
+-#define __pgprot(x)	((pgprot_t) { (x) })
+-
+-#else
+-
+-/*
+- * .. while these make it easier on the compiler
+- */
+-
+-typedef pte_basic_t pte_t;
+-#define __pte(x)	(x)
+-static inline pte_basic_t pte_val(pte_t pte)
+-{
+-	return pte;
+-}
+-
+-#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
+-typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
+-#else
+-typedef pte_t real_pte_t;
+-#endif
+-
+-
+-#ifdef CONFIG_PPC64
+-typedef unsigned long pmd_t;
+-#define __pmd(x)	(x)
+-static inline unsigned long pmd_val(pmd_t pmd)
+-{
+-	return pmd;
+-}
+-
+-#ifndef CONFIG_PPC_64K_PAGES
+-typedef unsigned long pud_t;
+-#define __pud(x)	(x)
+-static inline unsigned long pud_val(pud_t pud)
+-{
+-	return pud;
+-}
+-#endif /* !CONFIG_PPC_64K_PAGES */
+-#endif /* CONFIG_PPC64 */
+-
+-typedef unsigned long pgd_t;
+-#define __pgd(x)	(x)
+-static inline unsigned long pgd_val(pgd_t pgd)
+-{
+-	return pgd;
+-}
+-
+-typedef unsigned long pgprot_t;
+-#define pgprot_val(x)	(x)
+-#define __pgprot(x)	(x)
+-
+-#endif
++#include <asm/pgtable-types.h>
+ 
+ typedef struct { signed long pd; } hugepd_t;
+ 
+diff --git a/arch/powerpc/include/asm/pgtable-types.h b/arch/powerpc/include/asm/pgtable-types.h
+new file mode 100644
+index 000000000000..2fac0c4acfa4
+--- /dev/null
++++ b/arch/powerpc/include/asm/pgtable-types.h
+@@ -0,0 +1,108 @@
++#ifndef _ASM_POWERPC_PGTABLE_TYPES_H
++#define _ASM_POWERPC_PGTABLE_TYPES_H
++
++#ifdef CONFIG_STRICT_MM_TYPECHECKS
++/* These are used to make use of C type-checking. */
++
++/* PTE level */
++typedef struct { pte_basic_t pte; } pte_t;
++#define __pte(x)	((pte_t) { (x) })
++static inline pte_basic_t pte_val(pte_t x)
++{
++	return x.pte;
++}
++
++/* 64k pages additionally define a bigger "real PTE" type that gathers
++ * the "second half" part of the PTE for pseudo 64k pages
++ */
++#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
++typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
++#else
++typedef struct { pte_t pte; } real_pte_t;
++#endif
++
++/* PMD level */
++#ifdef CONFIG_PPC64
++typedef struct { unsigned long pmd; } pmd_t;
++#define __pmd(x)	((pmd_t) { (x) })
++static inline unsigned long pmd_val(pmd_t x)
++{
++	return x.pmd;
++}
++
++/* PUD level exusts only on 4k pages */
++#ifndef CONFIG_PPC_64K_PAGES
++typedef struct { unsigned long pud; } pud_t;
++#define __pud(x)	((pud_t) { (x) })
++static inline unsigned long pud_val(pud_t x)
++{
++	return x.pud;
++}
++#endif /* !CONFIG_PPC_64K_PAGES */
++#endif /* CONFIG_PPC64 */
++
++/* PGD level */
++typedef struct { unsigned long pgd; } pgd_t;
++#define __pgd(x)	((pgd_t) { (x) })
++static inline unsigned long pgd_val(pgd_t x)
++{
++	return x.pgd;
++}
++
++/* Page protection bits */
++typedef struct { unsigned long pgprot; } pgprot_t;
++#define pgprot_val(x)	((x).pgprot)
++#define __pgprot(x)	((pgprot_t) { (x) })
++
++#else
++
++/*
++ * .. while these make it easier on the compiler
++ */
++
++typedef pte_basic_t pte_t;
++#define __pte(x)	(x)
++static inline pte_basic_t pte_val(pte_t pte)
++{
++	return pte;
++}
++
++#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
++typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
++#else
++typedef pte_t real_pte_t;
++#endif
++
++
++#ifdef CONFIG_PPC64
++typedef unsigned long pmd_t;
++#define __pmd(x)	(x)
++static inline unsigned long pmd_val(pmd_t pmd)
++{
++	return pmd;
++}
++
++#ifndef CONFIG_PPC_64K_PAGES
++typedef unsigned long pud_t;
++#define __pud(x)	(x)
++static inline unsigned long pud_val(pud_t pud)
++{
++	return pud;
++}
++#endif /* !CONFIG_PPC_64K_PAGES */
++#endif /* CONFIG_PPC64 */
++
++typedef unsigned long pgd_t;
++#define __pgd(x)	(x)
++static inline unsigned long pgd_val(pgd_t pgd)
++{
++	return pgd;
++}
++
++typedef unsigned long pgprot_t;
++#define pgprot_val(x)	(x)
++#define __pgprot(x)	(x)
++
++#endif
++
++#endif /* _ASM_POWERPC_PGTABLE_TYPES_H */
 -- 
 2.5.0
