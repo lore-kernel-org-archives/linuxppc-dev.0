@@ -1,33 +1,28 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A68631A074D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 15:34:16 +1100 (AEDT)
-Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 1 Mar 2016 10:04:13 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u214Y87U19005880
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Mar 2016 10:04:08 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u214Y9WO012903
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Mar 2016 10:04:10 +0530
-Message-ID: <56D51BC1.7050904@linux.vnet.ibm.com>
-Date: Tue, 01 Mar 2016 10:04:09 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 03C171A06A7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 15:46:25 +1100 (AEDT)
+Received: from mail-pa0-x235.google.com (mail-pa0-x235.google.com
+ [IPv6:2607:f8b0:400e:c03::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4DF95140BA6
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 15:46:23 +1100 (AEDT)
+Received: by mail-pa0-x235.google.com with SMTP id fy10so104522588pac.1
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Feb 2016 20:46:23 -0800 (PST)
+Subject: Re: selftests/powerpc: Remove -flto from common CFLAGS
+To: Cyril Bur <cyrilbur@gmail.com>
+References: <1456727395-27386-1-git-send-email-sjitindarsingh@gmail.com>
+ <20160229111013.71B58140779@ozlabs.org> <20160301141154.1938845e@camb691>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Message-ID: <56D51E99.20604@gmail.com>
+Date: Tue, 1 Mar 2016 15:46:17 +1100
 MIME-Version: 1.0
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-CC: aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/lpar: Don't crash on H_PROTECT errors
-References: <1456746752-9298-1-git-send-email-khandual@linux.vnet.ibm.com>
- <56D476DD.9060402@linux.vnet.ibm.com>
-In-Reply-To: <56D476DD.9060402@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20160301141154.1938845e@camb691>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,39 +32,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/29/2016 10:20 PM, Tyrel Datwyler wrote:
-> On 02/29/2016 03:52 AM, Anshuman Khandual wrote:
->> There are certain condition in which H_PROTECT can return error code
->> other than H_NOT_FOUND and H_SUCCESS. One such being an attempt to
->> update an hpte owned by adjunct partition. Return 0 in that case so
->> that user space will retry the access. In adjunct case this mean we
->> will not make much progress in the user space. But atleast we get a
->> chance to kill the task and avoid taking down the entire box.
+On 01/03/16 14:11, Cyril Bur wrote:
+> On Mon, 29 Feb 2016 22:10:13 +1100 (AEDT)
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+>> Hi Suraj,
 >>
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/platforms/pseries/lpar.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
+>> On Mon, 2016-29-02 at 06:29:55 UTC, Suraj Jitindar Singh wrote:
+>>> LTO can cause GCC to inline some functions which have attributes set. The  
+>> You should define what LTO is the first time you use it.
 >>
->> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
->> index 477290a..31bcdaf 100644
->> --- a/arch/powerpc/platforms/pseries/lpar.c
->> +++ b/arch/powerpc/platforms/pseries/lpar.c
->> @@ -310,7 +310,7 @@ static long pSeries_lpar_hpte_updatepp(unsigned long slot,
->>  
->>  	pr_devel("ok\n");
->>  
->> -	BUG_ON(lpar_rc != H_SUCCESS);
->> +	WARN_RATELIMIT(lpar_rc != H_SUCCESS, "H_PROTECT returned %lu\n", lpar_rc);
-> 
-> In the event that we don't get H_NOT_FOUND (which is handled earlier in
-> the function) or H_SUCCESS this patch assumes H_RESOURCE. It fails to
-> handle H_PARAMETER which is also a valid return from the H_PROTECT
-> hypercall.
+>>> act of inlining the functions can lead to GCC forgetting about the
+>>> attributes which leads to incorrect tests.
+>>> Notable example being: __attribute__((__target__("no-vsx")))  
+>> That is probably a GCC bug, but we still need to work around it for now.
+>>
+>>> LTO can also interact strangely with custom assembly functions and cause
+>>> tests to intermittently fail.  
+>> That's probably Cyril writing bad asm :)
+>>
+>>> Both these cases are hard to detect and require manual inspection of
+>>> binaries which is unlikely to happen for all tests. Furthermore, LTO
+>>> optimisations are not necessary for selftests and correctness is paramount
+>>> and as such it is best to disable LTO.
+>>>
+>>> LTO can be enabled on a per test basis.
+>>>
+>>> A pseries_le_defconfig kernel on a POWER8 was used to determine that the
+>>> same subset of selftests pass and fail with and without -flto in the
+>>> common Makefile.
+>>>
+>>> These tests always fail:
+>>> selftests: per_event_excludes [FAIL]
+>>> selftests: event_attributes_test [FAIL]
+>>> selftests: ebb_vs_cpu_event_test [FAIL]
+>>> selftests: cpu_event_vs_ebb_test [FAIL]
+>>> selftests: cpu_event_pinned_vs_ebb_test [FAIL]  
+>> They shouldn't :)
+>>
+>> Are you running as root? Bare metal or guest?
+> The answer here is that /proc/sys/kernel/perf_event_paranoid defaults to 1 but
+> 0 is needed for these tests to not SKIP. The standard harness does not decern
+> between skips and fails, running each test in powerpc/ shows SKIP/FAIL.
+>
+> I have run four kernels under QEMU/KVM on a fairly busy VM box and I have the
+> same result for all 4. All had /proc/sys/kernel/perf_event_paranoid set to 0
+> before running the tests. Each test was run by it's self not with the
+> run_kselftest.sh script which hides SKIPs.
+>
+> pseries_defconfig (BE) qemu/KVM PATCHED
+> # grep FAIL *.out
+> cpu_event_pinned_vs_ebb_test.out:[FAIL] Test FAILED on line 87
+> ipc_unmuxed.out:[FAIL] Test FAILED on line 38
+> per_event_excludes.out:[FAIL] Test FAILED on line 95
+>
+> pseries_defconfig (BE) qemu/KVM unpatched
+> # grep FAIL *.out
+> cpu_event_pinned_vs_ebb_test.out:[FAIL] Test FAILED on line 87
+> ipc_unmuxed.out:[FAIL] Test FAILED on line 38
+> per_event_excludes.out:[FAIL] Test FAILED on line 95
+>
+> pseries_le_defconfig (LE) qemu/KVM PATCHED
+> # grep FAIL *.out
+> cpu_event_pinned_vs_ebb_test.out:[FAIL] Test FAILED on line 87
+> ipc_unmuxed.out:[FAIL] Test FAILED on line 38
+> per_event_excludes.out:[FAIL] Test FAILED on line 95
+>
+> pseries_le_defconfig (LE) qemu/KVM unpatched
+> # grep FAIL *.out
+> cpu_event_pinned_vs_ebb_test.out:[FAIL] Test FAILED on line 87
+> ipc_unmuxed.out:[FAIL] Test FAILED on line 38
+> per_event_excludes.out:[FAIL] Test FAILED on line 95
+>
+> There were no matches for grep SKIP *.out for any of the four.
+>
+> This patch appears to not have affected any of the tests.
+>
+> Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+>
+The same tests were run with /proc/sys/kernel/perf_event_paranoid set to 0 on an bare metal power8 system with the same results.
 
-Right, I guess its okay to BUG_ON() if we detect H_PARAMETER return code
-as the kernel should not have created wrong arguments to the hcall in
-the first place. Although we will still want to return 0 from here for
-H_RESOURCE return code with a WARN_RATELIMIT message. Will change the
-code accordingly next time around.
+pseries_le_defconfig (LE) PATCHED
+# grep FAIL results_patched
+[FAIL] Test FAILED on line 95
+selftests: per_event_excludes [FAIL]
+[FAIL] Test FAILED on line 87
+selftests: cpu_event_pinned_vs_ebb_test [FAIL]
+selftests: ipc_unmuxed [FAIL]
+
+pseries_le_defconfig (LE) unpatched
+# grep FAIL results_unpatched
+[FAIL] Test FAILED on line 95
+selftests: per_event_excludes [FAIL]
+[FAIL] Test FAILED on line 87
+selftests: cpu_event_pinned_vs_ebb_test [FAIL]
+selftests: ipc_unmuxed [FAIL]
+
+Thus there was no change in the test results between the patched and unpatched systems.
+
+>>> selftests: ipc_unmuxed [FAIL]  
+>> That one is expected.
+>>
+>> cheers
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
