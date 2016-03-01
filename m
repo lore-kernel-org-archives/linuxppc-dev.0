@@ -1,37 +1,36 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 003A81A0324
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 16:57:11 +1100 (AEDT)
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D0797140B9E
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 16:57:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 306831A06BA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 17:55:44 +1100 (AEDT)
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
- Tue, 1 Mar 2016 15:57:10 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 250223578058
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2016 16:57:05 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u215uvda11731440
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 16:57:05 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u215uW3p005764
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Mar 2016 16:56:32 +1100
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Cc: mikey@neuling.org, anton@samba.org
-Subject: [PATCH 1/2] powerpc: Batch up loads/stores on saving and restoring
- Altivec
-Date: Tue,  1 Mar 2016 16:55:34 +1100
-Message-Id: <1456811735-1289-1-git-send-email-cyrilbur@gmail.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Tue, 1 Mar 2016 16:55:44 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 394462BB005A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 17:55:41 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u216tVbK20316318
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Mar 2016 17:55:41 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u216t61Y003555
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Mar 2016 17:55:06 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: kvm-ppc@vger.kernel.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
+Subject: [PATCH kernel v2 1/4] KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_64
+ capability number
+Date: Tue,  1 Mar 2016 17:54:37 +1100
+Message-Id: <1456815280-38546-2-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1456815280-38546-1-git-send-email-aik@ozlabs.ru>
+References: <1456815280-38546-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,224 +40,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the assembly to save and restore Altivec registers boils down to
-a load immediate of the offset of the specific Altivec register in memory
-followed by the load/store which repeats in sequence for each Altivec
-register.
+This adds a capability number for 64-bit TCE tables support.
 
-This patch attempts to do better by loading up four registers with
-immediates so that the loads and stores can be batched up and better
-pipelined by the processor.
-
-This patch results in four load/stores in sequence and one add between
-groups of four. Also, by using a pair of base registers it means that the
-result of the add is not needed by the following instruction.
-
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
-These patches need to be applied on to of my rework of FPU/VMX/VSX
-switching: https://patchwork.ozlabs.org/patch/589703/
+ include/uapi/linux/kvm.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-I left in some of my comments indicating if functions are called from C or
-not. Looking at them now, they might be a bit much, let me know what you
-think.
-
-Tested 64 bit BE and LE under KVM, not sure how I can test 32bit.
-
-
- arch/powerpc/include/asm/ppc_asm.h | 63 ++++++++++++++++++++++++++++++--------
- arch/powerpc/kernel/tm.S           |  6 ++--
- arch/powerpc/kernel/vector.S       | 20 +++++++++---
- 3 files changed, 70 insertions(+), 19 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 499d9f8..5ba69ed 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -110,18 +110,57 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- #define REST_16FPRS(n, base)	REST_8FPRS(n, base); REST_8FPRS(n+8, base)
- #define REST_32FPRS(n, base)	REST_16FPRS(n, base); REST_16FPRS(n+16, base)
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 9da9051..8ce5f64 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -850,6 +850,7 @@ struct kvm_ppc_smmu_info {
+ #define KVM_CAP_IOEVENTFD_ANY_LENGTH 122
+ #define KVM_CAP_HYPERV_SYNIC 123
+ #define KVM_CAP_S390_RI 124
++#define KVM_CAP_SPAPR_TCE_64 125
  
--#define SAVE_VR(n,b,base)	li b,16*(n);  stvx n,base,b
--#define SAVE_2VRS(n,b,base)	SAVE_VR(n,b,base); SAVE_VR(n+1,b,base)
--#define SAVE_4VRS(n,b,base)	SAVE_2VRS(n,b,base); SAVE_2VRS(n+2,b,base)
--#define SAVE_8VRS(n,b,base)	SAVE_4VRS(n,b,base); SAVE_4VRS(n+4,b,base)
--#define SAVE_16VRS(n,b,base)	SAVE_8VRS(n,b,base); SAVE_8VRS(n+8,b,base)
--#define SAVE_32VRS(n,b,base)	SAVE_16VRS(n,b,base); SAVE_16VRS(n+16,b,base)
--#define REST_VR(n,b,base)	li b,16*(n); lvx n,base,b
--#define REST_2VRS(n,b,base)	REST_VR(n,b,base); REST_VR(n+1,b,base)
--#define REST_4VRS(n,b,base)	REST_2VRS(n,b,base); REST_2VRS(n+2,b,base)
--#define REST_8VRS(n,b,base)	REST_4VRS(n,b,base); REST_4VRS(n+4,b,base)
--#define REST_16VRS(n,b,base)	REST_8VRS(n,b,base); REST_8VRS(n+8,b,base)
--#define REST_32VRS(n,b,base)	REST_16VRS(n,b,base); REST_16VRS(n+16,b,base)
-+#define __SAVE_4VRS(n,off0,off1,off2,off3,base) \
-+	stvx n,base,off0; \
-+	stvx n+1,base,off1; \
-+	stvx n+2,base,off2; \
-+	stvx n+3,base,off3
-+
-+/* Restores the base for the caller */
-+#define SAVE_32VRS(reg0,reg1,reg2,reg3,reg4,base) \
-+	addi reg4,base,64; \
-+	li reg0,0; li reg1,16; li reg2,32; li reg3,48; \
-+	__SAVE_4VRS(0,reg0,reg1,reg2,reg3,base); \
-+	addi base,base,128; \
-+	__SAVE_4VRS(4,reg0,reg1,reg2,reg3,reg4); \
-+	addi reg4,reg4,128; \
-+	__SAVE_4VRS(8,reg0,reg1,reg2,reg3,base); \
-+	addi base,base,128; \
-+	__SAVE_4VRS(12,reg0,reg1,reg2,reg3,reg4); \
-+	addi reg4,reg4,128; \
-+	__SAVE_4VRS(16,reg0,reg1,reg2,reg3,base); \
-+	addi base,base,128; \
-+	__SAVE_4VRS(20,reg0,reg1,reg2,reg3,reg4); \
-+	addi reg4,reg4,128; \
-+	__SAVE_4VRS(24,reg0,reg1,reg2,reg3,base); \
-+	__SAVE_4VRS(28,reg0,reg1,reg2,reg3,reg4); \
-+	subi base,base,384
-+
-+#define __REST_4VRS(n,off0,off1,off2,off3,base) \
-+	lvx n,base,off0; \
-+	lvx n+1,base,off1; \
-+	lvx n+2,base,off2; \
-+	lvx n+3,base,off3
-+
-+/* Restores the base for the caller */
-+#define REST_32VRS(reg0,reg1,reg2,reg3,reg4,base) \
-+	addi reg4,base,64; \
-+	li reg0,0; li reg1,16; li reg2,32; li reg3,48; \
-+	__REST_4VRS(0,reg0,reg1,reg2,reg3,base); \
-+	addi base,base,128; \
-+	__REST_4VRS(4,reg0,reg1,reg2,reg3,reg4); \
-+	addi reg4,reg4,128; \
-+	__REST_4VRS(8,reg0,reg1,reg2,reg3,base); \
-+	addi base,base,128; \
-+	__REST_4VRS(12,reg0,reg1,reg2,reg3,reg4); \
-+	addi reg4,reg4,128; \
-+	__REST_4VRS(16,reg0,reg1,reg2,reg3,base); \
-+	addi base,base,128; \
-+	__REST_4VRS(20,reg0,reg1,reg2,reg3,reg4); \
-+	addi reg4,reg4,128; \
-+	__REST_4VRS(24,reg0,reg1,reg2,reg3,base); \
-+	__REST_4VRS(28,reg0,reg1,reg2,reg3,reg4); \
-+	subi base,base,384
+ #ifdef KVM_CAP_IRQ_ROUTING
  
- #ifdef __BIG_ENDIAN__
- #define STXVD2X_ROT(n,b,base)		STXVD2X(n,b,base)
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index bf8f34a..81e1305 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -96,6 +96,8 @@ _GLOBAL(tm_abort)
-  * they will abort back to the checkpointed state we save out here.
-  *
-  * Call with IRQs off, stacks get all out of sync for some periods in here!
-+ *
-+ * Is called from C
-  */
- _GLOBAL(tm_reclaim)
- 	mfcr	r6
-@@ -151,7 +153,7 @@ _GLOBAL(tm_reclaim)
- 	beq	dont_backup_vec
- 
- 	addi	r7, r3, THREAD_TRANSACT_VRSTATE
--	SAVE_32VRS(0, r6, r7)	/* r6 scratch, r7 transact vr state */
-+	SAVE_32VRS(r6,r8,r9,r10,r11,r7)	/* r6,r8,r9,r10,r11 scratch, r7 transact vr state */
- 	mfvscr	v0
- 	li	r6, VRSTATE_VSCR
- 	stvx	v0, r7, r6
-@@ -361,7 +363,7 @@ _GLOBAL(__tm_recheckpoint)
- 	li	r5, VRSTATE_VSCR
- 	lvx	v0, r8, r5
- 	mtvscr	v0
--	REST_32VRS(0, r5, r8)			/* r5 scratch, r8 ptr */
-+	REST_32VRS(r5,r6,r9,r10,r11,r8)			/* r5,r6,r9,r10,r11 scratch, r8 ptr */
- dont_restore_vec:
- 	ld	r5, THREAD_VRSAVE(r3)
- 	mtspr	SPRN_VRSAVE, r5
-diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-index 1c2e7a3..8d587fb 100644
---- a/arch/powerpc/kernel/vector.S
-+++ b/arch/powerpc/kernel/vector.S
-@@ -13,6 +13,8 @@
-  * This is similar to load_up_altivec but for the transactional version of the
-  * vector regs.  It doesn't mess with the task MSR or valid flags.
-  * Furthermore, VEC laziness is not supported with TM currently.
-+ *
-+ * Is called from C
-  */
- _GLOBAL(do_load_up_transact_altivec)
- 	mfmsr	r6
-@@ -27,7 +29,7 @@ _GLOBAL(do_load_up_transact_altivec)
- 	lvx	v0,r10,r3
- 	mtvscr	v0
- 	addi	r10,r3,THREAD_TRANSACT_VRSTATE
--	REST_32VRS(0,r4,r10)
-+	REST_32VRS(r4,r5,r6,r7,r8,r10)
- 
- 	blr
- #endif
-@@ -35,20 +37,24 @@ _GLOBAL(do_load_up_transact_altivec)
- /*
-  * Load state from memory into VMX registers including VSCR.
-  * Assumes the caller has enabled VMX in the MSR.
-+ *
-+ * Is called from C
-  */
- _GLOBAL(load_vr_state)
- 	li	r4,VRSTATE_VSCR
- 	lvx	v0,r4,r3
- 	mtvscr	v0
--	REST_32VRS(0,r4,r3)
-+	REST_32VRS(r4,r5,r6,r7,r8,r3)
- 	blr
- 
- /*
-  * Store VMX state into memory, including VSCR.
-  * Assumes the caller has enabled VMX in the MSR.
-+ *
-+ * NOT called from C
-  */
- _GLOBAL(store_vr_state)
--	SAVE_32VRS(0, r4, r3)
-+	SAVE_32VRS(r4,r5,r6,r7,r8,r3)
- 	mfvscr	v0
- 	li	r4, VRSTATE_VSCR
- 	stvx	v0, r4, r3
-@@ -63,6 +69,8 @@ _GLOBAL(store_vr_state)
-  *
-  * Note that on 32-bit this can only use registers that will be
-  * restored by fast_exception_return, i.e. r3 - r6, r10 and r11.
-+ *
-+ * NOT called from C
-  */
- _GLOBAL(load_up_altivec)
- 	mfmsr	r5			/* grab the current MSR */
-@@ -101,13 +109,15 @@ _GLOBAL(load_up_altivec)
- 	stw	r4,THREAD_USED_VR(r5)
- 	lvx	v0,r10,r6
- 	mtvscr	v0
--	REST_32VRS(0,r4,r6)
-+	REST_32VRS(r3,r4,r5,r10,r11,r6)
- 	/* restore registers and return */
- 	blr
- 
- /*
-  * save_altivec(tsk)
-  * Save the vector registers to its thread_struct
-+ *
-+ * Is called from C
-  */
- _GLOBAL(save_altivec)
- 	addi	r3,r3,THREAD		/* want THREAD of task */
-@@ -116,7 +126,7 @@ _GLOBAL(save_altivec)
- 	PPC_LCMPI	0,r7,0
- 	bne	2f
- 	addi	r7,r3,THREAD_VRSTATE
--2:	SAVE_32VRS(0,r4,r7)
-+2:	SAVE_32VRS(r4,r5,r6,r8,r9,r7)
- 	mfvscr	v0
- 	li	r4,VRSTATE_VSCR
- 	stvx	v0,r4,r7
 -- 
-2.7.2
+2.5.0.rc3
