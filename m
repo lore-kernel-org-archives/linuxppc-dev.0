@@ -1,34 +1,33 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 595841A0B56
+ by lists.ozlabs.org (Postfix) with ESMTPS id 86E881A0B57
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 17:55:52 +1100 (AEDT)
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Tue, 1 Mar 2016 16:55:51 +1000
+ Tue, 1 Mar 2016 16:55:50 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 5CA9A2CE8059
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 17:55:47 +1100 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 957842BB0059
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2016 17:55:44 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u216tVSm4718950
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Mar 2016 17:55:47 +1100
+ u216tVbJ2359610
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Mar 2016 17:55:44 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u216t6u5015759
+ u216t6ea015756
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Mar 2016 17:55:07 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: kvm-ppc@vger.kernel.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
  David Gibson <david@gibson.dropbear.id.au>,
  linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
-Subject: [PATCH kernel v2 2/4] KVM: PPC: Add @page_shift to
- kvmppc_spapr_tce_table
-Date: Tue,  1 Mar 2016 17:54:38 +1100
-Message-Id: <1456815280-38546-3-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v2 4/4] KVM: PPC: Add support for 64bit TCE windows
+Date: Tue,  1 Mar 2016 17:54:40 +1100
+Message-Id: <1456815280-38546-5-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1456815280-38546-1-git-send-email-aik@ozlabs.ru>
 References: <1456815280-38546-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,194 +39,215 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment the kvmppc_spapr_tce_table struct can only describe
-4GB windows and handle fixed size (4K) pages. Dynamic DMA windows
-support more so these limits need to be extended.
+The existing KVM_CREATE_SPAPR_TCE only supports 32bit windows which is not
+enough for directly mapped windows as the guest can get more than 4GB.
 
-This replaces window_size (in bytes, 4GB max) with page_shift (32bit)
-and size (64bit, in pages).
+This adds KVM_CREATE_SPAPR_TCE_64 ioctl and advertises it
+via KVM_CAP_SPAPR_TCE_64 capability. The table size is checked against
+the locked memory limit.
 
-This should cause no behavioural change as this is changing
-the internal structures only - the user interface still only
-allows one to create a 32-bit table with 4KiB pages at this stage.
+Since 64bit windows are to support Dynamic DMA windows (DDW), let's add
+@bus_offset and @page_shift which are also required by DDW.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
 Changes:
-v3:
-* added a note that this only changes the internal structure
+v2:
+* fixed padding in kvm_create_spapr_tce_64
+* added comment in commit log about checking the window size
 ---
- arch/powerpc/include/asm/kvm_host.h |  3 ++-
- arch/powerpc/kvm/book3s_64_vio.c    | 22 +++++++++++-----------
- arch/powerpc/kvm/book3s_64_vio_hv.c | 21 ++++++++++-----------
- 3 files changed, 23 insertions(+), 23 deletions(-)
+ Documentation/virtual/kvm/api.txt   | 32 ++++++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/kvm_ppc.h  |  2 +-
+ arch/powerpc/include/uapi/asm/kvm.h |  9 +++++++++
+ arch/powerpc/kvm/book3s_64_vio.c    | 10 +++++++---
+ arch/powerpc/kvm/powerpc.c          | 25 ++++++++++++++++++++++++-
+ include/uapi/linux/kvm.h            |  2 ++
+ 6 files changed, 75 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index ffdbc2d..edf66f7 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -182,8 +182,9 @@ struct kvmppc_spapr_tce_table {
- 	struct list_head list;
- 	struct kvm *kvm;
- 	u64 liobn;
--	u32 window_size;
- 	struct rcu_head rcu;
-+	u32 page_shift;
-+	u64 size;		/* window size in pages */
- 	struct page *pages[0];
+diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
+index da39435..bc78652 100644
+--- a/Documentation/virtual/kvm/api.txt
++++ b/Documentation/virtual/kvm/api.txt
+@@ -3060,6 +3060,38 @@ an implementation for these despite the in kernel acceleration.
+ 
+ This capability is always enabled.
+ 
++4.98 KVM_CREATE_SPAPR_TCE_64
++
++Capability: KVM_CAP_SPAPR_TCE_64
++Architectures: powerpc
++Type: vm ioctl
++Parameters: struct kvm_create_spapr_tce_64 (in)
++Returns: file descriptor for manipulating the created TCE table
++
++This is an extension for KVM_CAP_SPAPR_TCE which only supports 32bit
++windows, described in 4.62 KVM_CREATE_SPAPR_TCE
++
++This capability uses extended struct in ioctl interface:
++
++/* for KVM_CAP_SPAPR_TCE_64 */
++struct kvm_create_spapr_tce_64 {
++	__u64 liobn;
++	__u32 page_shift;
++	__u32 flags;
++	__u64 offset;	/* in pages */
++	__u64 size; 	/* in pages */
++};
++
++The aim of extension is to support an additional bigger DMA window with
++a variable page size.
++KVM_CREATE_SPAPR_TCE_64 receives a 64bit window size, an IOMMU page shift and
++a bus offset of the corresponding DMA window, @size and @offset are numbers
++of IOMMU pages.
++
++@flags are not used at the moment.
++
++The rest of functionality is identical to KVM_CREATE_SPAPR_TCE.
++
+ 5. The kvm_run structure
+ ------------------------
+ 
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 197a8ac..2544eda 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -165,7 +165,7 @@ extern void kvmppc_map_vrma(struct kvm_vcpu *vcpu,
+ extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
+ 
+ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+-				struct kvm_create_spapr_tce *args);
++				struct kvm_create_spapr_tce_64 *args);
+ extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
+ 		struct kvm_vcpu *vcpu, unsigned long liobn);
+ extern long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index ab4d473..c93cf35 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -333,6 +333,15 @@ struct kvm_create_spapr_tce {
+ 	__u32 window_size;
  };
  
++/* for KVM_CAP_SPAPR_TCE_64 */
++struct kvm_create_spapr_tce_64 {
++	__u64 liobn;
++	__u32 page_shift;
++	__u32 flags;
++	__u64 offset;	/* in pages */
++	__u64 size;	/* in pages */
++};
++
+ /* for KVM_ALLOCATE_RMA */
+ struct kvm_allocate_rma {
+ 	__u64 rma_size;
 diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 94c8e7e..61cbc44 100644
+index 61cbc44..2c2d103 100644
 --- a/arch/powerpc/kvm/book3s_64_vio.c
 +++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -40,10 +40,9 @@
- #include <asm/iommu.h>
- #include <asm/tce.h>
+@@ -147,20 +147,23 @@ static const struct file_operations kvm_spapr_tce_fops = {
+ };
  
--static unsigned long kvmppc_tce_pages(unsigned long window_size)
-+static unsigned long kvmppc_tce_pages(unsigned long iommu_pages)
- {
--	return ALIGN((window_size >> IOMMU_PAGE_SHIFT_4K)
--		     * sizeof(u64), PAGE_SIZE) / PAGE_SIZE;
-+	return ALIGN(iommu_pages * sizeof(u64), PAGE_SIZE) / PAGE_SIZE;
- }
- 
- static unsigned long kvmppc_stt_pages(unsigned long tce_pages)
-@@ -95,8 +94,7 @@ static void release_spapr_tce_table(struct rcu_head *head)
- {
- 	struct kvmppc_spapr_tce_table *stt = container_of(head,
- 			struct kvmppc_spapr_tce_table, rcu);
--	int i;
--	unsigned long npages = kvmppc_tce_pages(stt->window_size);
-+	unsigned long i, npages = kvmppc_tce_pages(stt->size);
- 
- 	for (i = 0; i < npages; i++)
- 		__free_page(stt->pages[i]);
-@@ -109,7 +107,7 @@ static int kvm_spapr_tce_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- 	struct kvmppc_spapr_tce_table *stt = vma->vm_file->private_data;
- 	struct page *page;
- 
--	if (vmf->pgoff >= kvmppc_tce_pages(stt->window_size))
-+	if (vmf->pgoff >= kvmppc_tce_pages(stt->size))
- 		return VM_FAULT_SIGBUS;
- 
- 	page = stt->pages[vmf->pgoff];
-@@ -137,7 +135,7 @@ static int kvm_spapr_tce_release(struct inode *inode, struct file *filp)
- 	kvm_put_kvm(stt->kvm);
- 
- 	kvmppc_account_memlimit(
--		kvmppc_stt_pages(kvmppc_tce_pages(stt->window_size)), false);
-+		kvmppc_stt_pages(kvmppc_tce_pages(stt->size)), false);
- 	call_rcu(&stt->rcu, release_spapr_tce_table);
- 
- 	return 0;
-@@ -152,7 +150,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 				   struct kvm_create_spapr_tce *args)
+ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+-				   struct kvm_create_spapr_tce *args)
++				   struct kvm_create_spapr_tce_64 *args)
  {
  	struct kvmppc_spapr_tce_table *stt = NULL;
--	unsigned long npages;
-+	unsigned long npages, size;
+ 	unsigned long npages, size;
  	int ret = -ENOMEM;
  	int i;
  
-@@ -162,7 +160,8 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
++	if (!args->size)
++		return -EINVAL;
++
+ 	/* Check this LIOBN hasn't been previously allocated */
+ 	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
+ 		if (stt->liobn == args->liobn)
  			return -EBUSY;
  	}
  
--	npages = kvmppc_tce_pages(args->window_size);
-+	size = args->window_size >> IOMMU_PAGE_SHIFT_4K;
-+	npages = kvmppc_tce_pages(size);
+-	size = args->window_size >> IOMMU_PAGE_SHIFT_4K;
++	size = args->size;
+ 	npages = kvmppc_tce_pages(size);
  	ret = kvmppc_account_memlimit(kvmppc_stt_pages(npages), true);
  	if (ret) {
- 		stt = NULL;
-@@ -175,7 +174,8 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+@@ -174,7 +177,8 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
  		goto fail;
  
  	stt->liobn = args->liobn;
--	stt->window_size = args->window_size;
-+	stt->page_shift = IOMMU_PAGE_SHIFT_4K;
-+	stt->size = size;
+-	stt->page_shift = IOMMU_PAGE_SHIFT_4K;
++	stt->page_shift = args->page_shift;
++	stt->offset = args->offset;
+ 	stt->size = size;
  	stt->kvm = kvm;
  
- 	for (i = 0; i < npages; i++) {
-@@ -218,7 +218,7 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	if (!stt)
- 		return H_TOO_HARD;
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 9258675..19aa59b 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -33,6 +33,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/cputhreads.h>
+ #include <asm/irqflags.h>
++#include <asm/iommu.h>
+ #include "timing.h"
+ #include "irq.h"
+ #include "../mm/mmu_decl.h"
+@@ -519,6 +520,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
  
--	entry = ioba >> IOMMU_PAGE_SHIFT_4K;
-+	entry = ioba >> stt->page_shift;
- 	/*
- 	 * SPAPR spec says that the maximum size of the list is 512 TCEs
- 	 * so the whole table fits in 4K page
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index 0486aa2..c786a58 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -72,11 +72,10 @@ EXPORT_SYMBOL_GPL(kvmppc_find_table);
- long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
- 		unsigned long ioba, unsigned long npages)
- {
--	unsigned long mask = (1ULL << IOMMU_PAGE_SHIFT_4K) - 1;
--	unsigned long idx = ioba >> IOMMU_PAGE_SHIFT_4K;
--	unsigned long size = stt->window_size >> IOMMU_PAGE_SHIFT_4K;
-+	unsigned long mask = (1ULL << stt->page_shift) - 1;
-+	unsigned long idx = ioba >> stt->page_shift;
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	case KVM_CAP_SPAPR_TCE:
++	case KVM_CAP_SPAPR_TCE_64:
+ 	case KVM_CAP_PPC_ALLOC_HTAB:
+ 	case KVM_CAP_PPC_RTAS:
+ 	case KVM_CAP_PPC_FIXUP_HCALL:
+@@ -1344,13 +1346,34 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ 		break;
+ 	}
+ #ifdef CONFIG_PPC_BOOK3S_64
++	case KVM_CREATE_SPAPR_TCE_64: {
++		struct kvm_create_spapr_tce_64 create_tce_64;
++
++		r = -EFAULT;
++		if (copy_from_user(&create_tce_64, argp, sizeof(create_tce_64)))
++			goto out;
++		if (create_tce_64.flags) {
++			r = -EINVAL;
++			goto out;
++		}
++		r = kvm_vm_ioctl_create_spapr_tce(kvm, &create_tce_64);
++		goto out;
++	}
+ 	case KVM_CREATE_SPAPR_TCE: {
+ 		struct kvm_create_spapr_tce create_tce;
++		struct kvm_create_spapr_tce_64 create_tce_64;
  
--	if ((ioba & mask) || (idx + npages > size) || (idx + npages < idx))
-+	if ((ioba & mask) || (idx + npages > stt->size) || (idx + npages < idx))
- 		return H_PARAMETER;
- 
- 	return H_SUCCESS;
-@@ -96,8 +95,8 @@ EXPORT_SYMBOL_GPL(kvmppc_ioba_validate);
-  */
- long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *stt, unsigned long tce)
- {
--	unsigned long mask =
--			~(IOMMU_PAGE_MASK_4K | TCE_PCI_WRITE | TCE_PCI_READ);
-+	unsigned long page_mask = ~((1ULL << stt->page_shift) - 1);
-+	unsigned long mask = ~(page_mask | TCE_PCI_WRITE | TCE_PCI_READ);
- 
- 	if (tce & mask)
- 		return H_PARAMETER;
-@@ -198,7 +197,7 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 	if (ret != H_SUCCESS)
- 		return ret;
- 
--	kvmppc_tce_put(stt, ioba >> IOMMU_PAGE_SHIFT_4K, tce);
-+	kvmppc_tce_put(stt, ioba >> stt->page_shift, tce);
- 
- 	return H_SUCCESS;
- }
-@@ -244,7 +243,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	if (!stt)
- 		return H_TOO_HARD;
- 
--	entry = ioba >> IOMMU_PAGE_SHIFT_4K;
-+	entry = ioba >> stt->page_shift;
- 	/*
- 	 * The spec says that the maximum size of the list is 512 TCEs
- 	 * so the whole table addressed resides in 4K page
-@@ -313,8 +312,8 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
- 	if (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ))
- 		return H_PARAMETER;
- 
--	for (i = 0; i < npages; ++i, ioba += IOMMU_PAGE_SIZE_4K)
--		kvmppc_tce_put(stt, ioba >> IOMMU_PAGE_SHIFT_4K, tce_value);
-+	for (i = 0; i < npages; ++i, ioba += (1ULL << stt->page_shift))
-+		kvmppc_tce_put(stt, ioba >> stt->page_shift, tce_value);
- 
- 	return H_SUCCESS;
- }
-@@ -336,7 +335,7 @@ long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 	if (ret != H_SUCCESS)
- 		return ret;
- 
--	idx = ioba >> IOMMU_PAGE_SHIFT_4K;
-+	idx = ioba >> stt->page_shift;
- 	page = stt->pages[idx / TCES_PER_PAGE];
- 	tbl = (u64 *)page_address(page);
- 
+ 		r = -EFAULT;
+ 		if (copy_from_user(&create_tce, argp, sizeof(create_tce)))
+ 			goto out;
+-		r = kvm_vm_ioctl_create_spapr_tce(kvm, &create_tce);
++
++		create_tce_64.liobn = create_tce.liobn;
++		create_tce_64.page_shift = IOMMU_PAGE_SHIFT_4K;
++		create_tce_64.offset = 0;
++		create_tce_64.size = create_tce.window_size >>
++				IOMMU_PAGE_SHIFT_4K;
++		create_tce_64.flags = 0;
++		r = kvm_vm_ioctl_create_spapr_tce(kvm, &create_tce_64);
+ 		goto out;
+ 	}
+ 	case KVM_PPC_GET_SMMU_INFO: {
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 8ce5f64..b06208b 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -1143,6 +1143,8 @@ struct kvm_s390_ucas_mapping {
+ /* Available with KVM_CAP_PPC_ALLOC_HTAB */
+ #define KVM_PPC_ALLOCATE_HTAB	  _IOWR(KVMIO, 0xa7, __u32)
+ #define KVM_CREATE_SPAPR_TCE	  _IOW(KVMIO,  0xa8, struct kvm_create_spapr_tce)
++#define KVM_CREATE_SPAPR_TCE_64	  _IOW(KVMIO,  0xa8, \
++				       struct kvm_create_spapr_tce_64)
+ /* Available with KVM_CAP_RMA */
+ #define KVM_ALLOCATE_RMA	  _IOR(KVMIO,  0xa9, struct kvm_allocate_rma)
+ /* Available with KVM_CAP_PPC_HTAB_FD */
 -- 
 2.5.0.rc3
