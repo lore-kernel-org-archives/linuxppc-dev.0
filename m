@@ -1,16 +1,14 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 71BE21A03DF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 09:21:20 +1100 (AEDT)
-In-Reply-To: <1456339871-4368-1-git-send-email-adam.buchbinder@gmail.com>
-To: Adam Buchbinder <adam.buchbinder@gmail.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: trivial@kernel.org, Adam Buchbinder <adam.buchbinder@gmail.com>
-Subject: Re: powerpc: Fix misspellings in comments.
-Message-Id: <20160301222120.28649140BE7@ozlabs.org>
-Date: Wed,  2 Mar 2016 09:21:20 +1100 (AEDT)
+Return-Path: <Nora.Bjorklund@enea.com>
+Received: from mx-3.enea.com (sestofw01.enea.se [192.36.1.252])
+ by lists.ozlabs.org (Postfix) with SMTP id 0C5021A06C2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 02:47:37 +1100 (AEDT)
+From: =?utf-8?B?Tm9yYSBCasO2cmtsdW5k?= <Nora.Bjorklund@enea.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: GPIO expander for p2041
+Date: Tue, 1 Mar 2016 15:41:21 +0000
+Message-ID: <1456846859.1203.6.camel@enea.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,11 +18,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-24-02 at 18:51:11 UTC, Adam Buchbinder wrote:
-> Signed-off-by: Adam Buchbinder <adam.buchbinder@gmail.com>
-
-Applied to powerpc next, thanks.
-
-https://git.kernel.org/powerpc/c/446957ba5127141ee007fc6150
-
-cheers
+SGksDQoNCkkgd2FzIHdvcmtpbmcgb24gYSBwMjA0MXJkYiB0YXJnZXQgbm90IHNvIGxvbmcgYWdv
+IGFuZCBuZWVkZWQgdG8gdXNlDQp0aGUgZ3BpbyBwaW5zIChkZXNjcmliZWQgaW4gZGV0YWlsIGlu
+IHRoZSBwMjA0MSByZWZlcmVuY2UgbWFudWFsKSwNCnRoZXNlIGFyZSB2aXNpYmxlIG9uIHRoZSBw
+MjA0MSBmYWN0IHNoZWV0IFsxXS4gVGhlIHBpbnMgYXJlIGNvbm5lY3RlZA0KdG8gYSBncGlvIGV4
+cGFuZGVyLCBQQ0E5NjcyIFsyXSwgd2hpY2ggaXMgY29ubmVjdGVkIHRvIGEgaTJjLWJ1cy7CoA0K
+DQpUaGUgZXhwYW5kZXIgd2FzIG5vdCBhdmFpbGFibGUgaW4gdGhlIGRldmljZS10cmVlIGZvciBw
+MjA0MXJkYiBzbyBJDQpwYXRjaGVkIGl0IGxvY2FsbHkgdG8gaW5jbHVkZSBpdC4gVGhlIGdwaW8t
+ZXhwYW5kZXIgZG9lcyBub3Qgc2VlbSB0byBiZQ0KYXZhaWxhYmxlIGluIGFueSB1cHN0cmVhbSBy
+ZXBvc2l0b3J5IGVpdGhlciAoYXQgdGhpcyB0aW1lIEkgd2FzIHdvcmtpbmcNCm9uIGEgdmVyc2lv
+biBvZiB0aGUgMy4xMiBrZXJuZWwsIGJ1dCBpdCBzZWVtcyB0byBiZSB0aGUgc2FtZSBmb3IgdGhl
+DQpvbmUgSSBvYnRhaW5lZCBmcm9tDQpnaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4
+L2tlcm5lbC9naXQvcG93ZXJwYy9saW51eC5naXQpLg0KDQpXb3VsZCB0aGlzIHBhdGNoIGJlIG9m
+IGFueSBpbnRlcmVzdCBmb3IgdGhlIHVwc3RyZWFtIHBvd2VycGMga2VybmVsPw0KVGhlIGdwaW8g
+cGlucyBhcmUgdGhlcmUgb24gYWxsIHAyMDQxcmRiIHRhcmdldHMgKGF0IGxlYXN0IHNpbmNlIHRo
+ZXkNCmFyZSBtZW50aW9uZWQgYXMgc3VjaCBpbiB0aGUgcmVmZXJlbmNlIGd1aWRlKSwgc28gSSBj
+b3VsZCBub3QgY29tZSB1cA0Kd2l0aCBhIHJlYXNvbiB0byB3aHkgaXQgaXMgZXhjbHVkZWQgZnJv
+bSB0aGUgZGV2aWNlIHRyZWUuDQoNCkJlc3QgUmVnYXJkcywNCk5vcmEgQmrDtnJrbHVuZMKgDQoN
+Ci0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQpbMV3CoGh0dHA6Ly9jYWNoZS5ueHAuY29t
+L2ZpbGVzLzMyYml0L2RvYy9mYWN0X3NoZWV0L1AyMDQxUkRCRlMucGRmP2Zwc3ANCj0xJldUX1RZ
+UEU9RmFjdCUyMFNoZWV0cyZXVF9WRU5ET1I9RlJFRVNDQUxFJldUX0ZJTEVfRk9STUFUPXBkZiZX
+VF9BU1NFDQpUPURvY3VtZW50YXRpb24mZmlsZUV4dD0ucGRmwqAobG9naW4gbWlnaHQgYmUgcmVx
+dWlyZWQpDQpbMl3CoGh0dHA6Ly93d3cubnhwLmNvbS9wcm9kdWN0cy9pbnRlcmZhY2UtYW5kLWNv
+bm5lY3Rpdml0eS9pbnRlcmZhY2UtYW4NCmQtc3lzdGVtLW1hbmFnZW1lbnQvaTJjL2kyYy1nZW5l
+cmFsLXB1cnBvc2UtaS1vL3JlbW90ZS04LWJpdC1pLW8tDQpleHBhbmRlci1mb3ItZm0tcGx1cy1p
+Yy1idXMtd2l0aC1pbnRlcnJ1cHQtYW5kLXJlc2V0OlBDQTk2NzINCg==
