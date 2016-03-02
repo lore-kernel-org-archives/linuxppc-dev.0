@@ -1,31 +1,28 @@
-Return-Path: <cov@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hughd@google.com>
+Received: from mail-pf0-x233.google.com (mail-pf0-x233.google.com
+ [IPv6:2607:f8b0:400e:c00::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6822D1A0DC1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 23:20:28 +1100 (AEDT)
-Subject: Re: [PATCH 0/2] Tracking user space vDSO remaping
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-References: <cover.1426866405.git.ldufour@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Jeff Dike <jdike@addtoit.com>, Richard Weinberger <richard@nod.at>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, Arnd Bergmann <arnd@arndb.de>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-s390@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- user-mode-linux-user@lists.sourceforge.net, linux-arch@vger.kernel.org,
- linux-mm@kvack.org, criu@openvz.org, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, Will Deacon <Will.Deacon@arm.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- David Brown <david.brown@linaro.org>
-From: Christopher Covington <cov@codeaurora.org>
-Message-ID: <56D6D8D6.6060306@codeaurora.org>
-Date: Wed, 2 Mar 2016 07:13:10 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A3C21A01E9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 07:50:02 +1100 (AEDT)
+Received: by mail-pf0-x233.google.com with SMTP id 4so567114pfd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Mar 2016 12:50:02 -0800 (PST)
+Date: Wed, 2 Mar 2016 12:49:52 -0800 (PST)
+From: Hugh Dickins <hughd@google.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+cc: Hugh Dickins <hughd@google.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org
+Subject: Re: Problems with swapping in v4.5-rc on POWER
+In-Reply-To: <alpine.LSU.2.11.1602260157430.10399@eggly.anvils>
+Message-ID: <alpine.LSU.2.11.1603021226300.31251@eggly.anvils>
+References: <alpine.LSU.2.11.1602241716220.15121@eggly.anvils>
+ <877fhttmr1.fsf@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1602242136270.6876@eggly.anvils>
+ <alpine.LSU.2.11.1602251322130.8063@eggly.anvils>
+ <alpine.LSU.2.11.1602260157430.10399@eggly.anvils>
 MIME-Version: 1.0
-In-Reply-To: <cover.1426866405.git.ldufour@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,48 +32,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-On 03/20/2015 11:53 AM, Laurent Dufour wrote:
-> CRIU is recreating the process memory layout by remapping the checkpointee
-> memory area on top of the current process (criu). This includes remapping
-> the vDSO to the place it has at checkpoint time.
+On Fri, 26 Feb 2016, Hugh Dickins wrote:
+> On Thu, 25 Feb 2016, Hugh Dickins wrote:
+> > On Wed, 24 Feb 2016, Hugh Dickins wrote:
+> > > On Thu, 25 Feb 2016, Aneesh Kumar K.V wrote:
+> > > > 
+> > > > Can you test the impact of the merge listed below ?(ie, revert the merge and see if
+> > > > we can reproduce and also verify with merge applied). This will give us a
+> > > > set of commits to look closer. We had quiet a lot of page table
+> > > > related changes going in this merge window. 
+> > > > 
+> > > > f689b742f217b2ffe7 ("Pull powerpc updates from Michael Ellerman:")
+> > > > 
+> > > > That is the merge commit that added _PAGE_PTE. 
+> > > 
+> > > Another experiment running on it at the moment, I'd like to give that
+> > > a few more hours, and then will try the revert you suggest.  But does
+> > > that merge revert cleanly, did you try?  I'm afraid of interactions,
+> > > whether obvious or subtle, with the THP refcounting rework.  Oh, since
+> > > I don't have THP configured on, maybe I can ignore any issues from that.
+> > 
+> > That revert worked painlessly, only a very few and simple conflicts,
+> > I ran that under load for 12 hours, no problem seen.
+> > 
+> > I've now checked out an f689b742 tree and started on that, just to
+> > confirm that it fails fairly quickly I hope; and will then proceed
+> > to git bisect, giving that as bad and 37cea93b as good.
+> > 
+> > Given the uncertainty of whether 12 hours is really long enough to be
+> > sure, and perhaps difficulties along the way, I don't rate my chances
+> > of a reliable bisection higher than 60%, but we'll see.
 > 
-> However some architectures like powerpc are keeping a reference to the vDSO
-> base address to build the signal return stack frame by calling the vDSO
-> sigreturn service. So once the vDSO has been moved, this reference is no
-> more valid and the signal frame built later are not usable.
-> 
-> This patch serie is introducing a new mm hook 'arch_remap' which is called
-> when mremap is done and the mm lock still hold. The next patch is adding the
-> vDSO remap and unmap tracking to the powerpc architecture.
-> 
-> Laurent Dufour (2):
->   mm: Introducing arch_remap hook
->   powerpc/mm: Tracking vDSO remap
-> 
->  arch/powerpc/include/asm/mmu_context.h   | 35 +++++++++++++++++++++++++++++++-
->  arch/s390/include/asm/mmu_context.h      |  6 ++++++
->  arch/um/include/asm/mmu_context.h        |  5 +++++
->  arch/unicore32/include/asm/mmu_context.h |  6 ++++++
->  arch/x86/include/asm/mmu_context.h       |  6 ++++++
->  include/asm-generic/mm_hooks.h           |  6 ++++++
->  mm/mremap.c                              |  9 ++++++--
->  7 files changed, 70 insertions(+), 3 deletions(-)
+> I'm sure you won't want a breathless report from me on each bisection
+> step, but I ought to report that: contrary to our expectations, the
+> f689b742 survived without error for 12 hours, so appears to be good.
+> I'll bisect between there and v4.5-rc1.
 
-We would like to be able to remap/unmap the VDSO on arm and arm64 as
-well. When I proposed a patch with mmu_context.h and mmu-arch-hooks.h
-changes to arm64 that were nearly identical to those done to powerpc,
-Will Deacon reasonably suggested [1] attempting to combine the code and
-provide generic VDSO accessors. Unfortunately, I no prior experience
-with generic MM code. Can anyone advise on how to get started with that?
+The bisection completed this morning (log appended below):
+not a satisfactory conclusion, it's pointing to a davem/net merge.
 
-1. http://www.spinics.net/lists/linux-arm-msm/msg18441.html
+I was uncomfortable when I marked that point bad in the first place:
+it ran for 9 hours before hitting a compiler error, which was nearly
+twice as long as the longest I'd seen before (5 hours), and
+uncomfortably close to the 12 hours I've been taking as good.
 
-Thanks,
-Christopher Covington
+My current thinking is that the powerpc merge that you indicated,
+that I found to be "good", is the one that contains the bad commit;
+but that the bug is very rare to manifest in that kernel, and my test
+of the davem/net merge happened to be unusually unlucky to hit it.
 
--- 
-Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Then some other later change makes it significantly easier to hit;
+and identifying that change may make it much easier to pin down
+what the original bug is.
+
+So I've replayed the bisection up to that point, marked the davem/net
+merge as good this time, and set off again in the hope that it will
+lead somewhere more enlightening.  But prepared for disappointment.
+
+Hugh
+
+git bisect start
+# good: [f689b742f217b2ffe7925f8a6521b208ee995309] Merge tag 'powerpc-4.5-1' of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux
+git bisect good f689b742f217b2ffe7925f8a6521b208ee995309
+# bad: [92e963f50fc74041b5e9e744c330dca48e04f08d] Linux 4.5-rc1
+git bisect bad 92e963f50fc74041b5e9e744c330dca48e04f08d
+# bad: [7f36f1b2a8c4f55f8226ed6c8bb4ed6de11c4015] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/ide
+git bisect bad 7f36f1b2a8c4f55f8226ed6c8bb4ed6de11c4015
+# bad: [6606b342febfd470b4a33acb73e360eeaca1d9bb] Merge git://www.linux-watchdog.org/linux-watchdog
+git bisect bad 6606b342febfd470b4a33acb73e360eeaca1d9bb
+# good: [d0021d3bdfe9d551859bca1f58da0e6be8e26043] Merge remote-tracking branch 'asoc/topic/wm8960' into asoc-next
+git bisect good d0021d3bdfe9d551859bca1f58da0e6be8e26043
+# good: [e3315b439c30c208582ac64e58f0c0d36b83181e] ALSA: oxfw: allocate own address region for SCS.1 series
+git bisect good e3315b439c30c208582ac64e58f0c0d36b83181e
+# good: [3da834e3e5a4a5d26882955298b55a9ed37a00bc] clk: remove duplicated COMMON_CLK_NXP record from clk/Kconfig
+git bisect good 3da834e3e5a4a5d26882955298b55a9ed37a00bc
+# bad: [e535d74bc50df2357d3253f8f3ca48c66d0d892a] Merge tag 'docs-4.5' of git://git.lwn.net/linux
+git bisect bad e535d74bc50df2357d3253f8f3ca48c66d0d892a
+# bad: [4e5448a31d73d0e944b7adb9049438a09bc332cb] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net
+git bisect bad 4e5448a31d73d0e944b7adb9049438a09bc332cb
+# good: [b70ce2ab41cb67ab3d661eda078f7c4029bbca95] dts: hisi: fixes no syscon fault when init mdio
+git bisect good b70ce2ab41cb67ab3d661eda078f7c4029bbca95
+# good: [4a658527271bce43afb1cf4feec89afe6716ca59] xen-netback: delete NAPI instance when queue fails to initialize
+git bisect good 4a658527271bce43afb1cf4feec89afe6716ca59
+# good: [c6894dec8ea9ae05747124dce98b3b5c2e69b168] bridge: fix lockdep addr_list_lock false positive splat
+git bisect good c6894dec8ea9ae05747124dce98b3b5c2e69b168
+# good: [36beca6571c941b28b0798667608239731f9bc3a] sparc64: Fix numa node distance initialization
+git bisect good 36beca6571c941b28b0798667608239731f9bc3a
+# good: [750afbf8ee9c6a1c74a1fe5fc9852146b1d72687] bgmac: Fix reversed test of build_skb() return value.
+git bisect good 750afbf8ee9c6a1c74a1fe5fc9852146b1d72687
+# good: [5a18d263f8d27418c98b8e8551dadfe975c054e3] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/sparc
+git bisect good 5a18d263f8d27418c98b8e8551dadfe975c054e3
+# first bad commit: [4e5448a31d73d0e944b7adb9049438a09bc332cb] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net
