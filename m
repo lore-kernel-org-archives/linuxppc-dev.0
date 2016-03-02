@@ -1,28 +1,32 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
+ [IPv6:2607:f8b0:4001:c06::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0AF961A06BA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 19:46:31 +1100 (AEDT)
-Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 2 Mar 2016 14:16:26 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u228kN7u8257818
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Mar 2016 14:16:23 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u228kKdW014545
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Mar 2016 14:16:22 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
-Subject: [RFC] powerpc/mm: Add validation for platform reserved memory ranges
-Date: Wed,  2 Mar 2016 14:16:12 +0530
-Message-Id: <1456908372-18876-1-git-send-email-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BF1911A0B4C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 19:57:29 +1100 (AEDT)
+Received: by mail-io0-x243.google.com with SMTP id m184so847085iof.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Mar 2016 00:57:29 -0800 (PST)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1456851608-3374907-2-git-send-email-arnd@arndb.de>
+References: <1456851608-3374907-1-git-send-email-arnd@arndb.de>
+ <1456851608-3374907-2-git-send-email-arnd@arndb.de>
+Date: Wed, 2 Mar 2016 09:57:27 +0100
+Message-ID: <CAMuHMdW5+jZ1n9WnCwBrGSGjUa8ziNTTqf-H15EFTQC_iwnw+Q@mail.gmail.com>
+Subject: Re: [PATCH 1/6] rtc: generic: allow building on all architectures
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Kyle McMartin <kyle@mcmartin.ca>,
+ RTCLINUX <rtc-linux@googlegroups.com>, Alessandro Zummo <a.zummo@towertech.it>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,111 +36,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For partition running on PHYP, there can be a adjunct partition
-which shares the virtual address range with the operating system.
-Virtual address ranges which can be used by the adjunct partition
-are communicated with virtual device node of the device tree with
-a property known as "ibm,reserved-virtual-addresses". This patch
-introduces a new function named 'validate_reserved_va_range' which
-is called inside 'setup_system' to validate that these reserved
-virtual address ranges do not overlap with the address ranges used
-by the kernel for all supported memory contexts. This helps prevent
-the possibility of getting return codes similar to H_RESOURCE for
-H_PROTECT hcalls for conflicting HPTE entries.
+Hi Arnd,
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/mmu.h  |  1 +
- arch/powerpc/kernel/setup_64.c  |  2 ++
- arch/powerpc/mm/hash_utils_64.c | 51 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 54 insertions(+)
+On Tue, Mar 1, 2016 at 5:59 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> There are four architectures using this driver, but since we can
+> build it with COMPILE_TEST, we should try dealing with the absence
+> of the asm/rtc.h header file, to avoid getting a build error:
+>
+> drivers/rtc/rtc-generic.c:12:21: fatal error: asm/rtc.h: No such file or directory
+>
+> This creates an alternative use of the driver, allowing architectures
+> to pass a set of rtc_class_ops in platform data. We can convert the
+> four architectures to use this and then remove the original
+> code.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/rtc/rtc-generic.c | 12 +++++++++++-
+>  1 file changed, 11 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/rtc/rtc-generic.c b/drivers/rtc/rtc-generic.c
+> index e782ebd719b2..d726c6aa96a8 100644
+> --- a/drivers/rtc/rtc-generic.c
+> +++ b/drivers/rtc/rtc-generic.c
+> @@ -9,6 +9,8 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/rtc.h>
+>
+> +#if defined(CONFIG_M68K) || defined(CONFIG_PARISC) || \
+> +    defined(CONFIG_PPC) || defined(CONFIG_SUPERH32)
+>  #include <asm/rtc.h>
+>
+>  static int generic_get_time(struct device *dev, struct rtc_time *tm)
+> @@ -33,13 +35,21 @@ static const struct rtc_class_ops generic_rtc_ops = {
+>         .read_time = generic_get_time,
+>         .set_time = generic_set_time,
+>  };
+> +#else
+> +#define generic_rtc_ops *(struct rtc_class_ops*)NULL
+> +#endif
+>
+>  static int __init generic_rtc_probe(struct platform_device *dev)
+>  {
+>         struct rtc_device *rtc;
+> +       const struct rtc_class_ops *ops;
+> +
+> +       ops = dev_get_platdata(&dev->dev);
+> +       if (!ops)
+> +               ops = &generic_rtc_ops;
 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 3d5abfe..95257c1 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -124,6 +124,7 @@ extern unsigned int __start___mmu_ftr_fixup, __stop___mmu_ftr_fixup;
- /* MMU initialization */
- extern void early_init_mmu(void);
- extern void early_init_mmu_secondary(void);
-+extern void validate_reserved_va_range(void);
- 
- extern void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 				       phys_addr_t first_memblock_size);
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 5c03a6a..04bc592 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -546,6 +546,8 @@ void __init setup_system(void)
- 	smp_release_cpus();
- #endif
- 
-+	validate_reserved_va_range();
-+
- 	pr_info("Starting Linux %s %s\n", init_utsname()->machine,
- 		 init_utsname()->version);
- 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index ba59d59..03adafc 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -810,6 +810,57 @@ void __init early_init_mmu(void)
- 	slb_initialize();
- }
- 
-+/*
-+ * PAPR says that each record contains 3 * 32 bit element, hence 12 bytes.
-+ * First two element contains the abbreviated virtual address (high order
-+ * 32 bits and low order 32 bits generates the abbreviated virtual address
-+ * of 64 bits which need to be concatenated with 12 bits of 0 at the end
-+ * to generate the actual 76 bit reserved virtual address) and size of the
-+ * reserved virtual address range is encoded in next 32 bit element as number
-+ * of 4K pages.
-+ */
-+#define	BYTES_PER_RVA_RECORD	12
-+
-+/*
-+ * Linux uses 65 bits (MAX_PHYSMEM_BITS + CONTEXT_BITS) from available 78
-+ * bit wide virtual address range. As reserved virtual address range comes
-+ * as an abbreviated form of 64 bits, we will use a partial address mask
-+ * (65 bit mask >> 12) to match it for simplicity.
-+ */
-+#define	PARTIAL_USED_VA_MASK	0x1FFFFFFFFFFFFFULL
-+
-+void __init validate_reserved_va_range(void)
-+{
-+	struct device_node *np;
-+	struct property *prop;
-+	unsigned int size, count, i;
-+	const __be32 *value;
-+	__be64 vaddr;
-+
-+	np = of_find_node_by_name(NULL, "vdevice");
-+	if (!np)
-+		return;
-+
-+	prop = of_find_property(np, "ibm,reserved-virtual-addresses", NULL);
-+	if (!prop)
-+		return;
-+
-+	value = of_get_property(np, "ibm,reserved-virtual-addresses", &size);
-+	if (!value)
-+		return;
-+
-+	count = size / BYTES_PER_RVA_RECORD;
-+	for (i = 0; i < count; i++) {
-+		vaddr = ((__be64) value[i * 3] << 32) | value[i * 3 + 1];
-+		if (vaddr & ~PARTIAL_USED_VA_MASK) {
-+			pr_info("Reserved virtual address range starting "
-+				"at [%llx000] verified for overlap\n", vaddr);
-+			continue;
-+		}
-+		BUG_ON("Reserved virtual address range overlapping");
-+	}
-+}
-+
- #ifdef CONFIG_SMP
- void early_init_mmu_secondary(void)
- {
--- 
-2.1.0
+I hope no compiler version treats "&*(struct rtc_class_ops*)NULL" as
+undefined behavior?
+
+>
+>         rtc = devm_rtc_device_register(&dev->dev, "rtc-generic",
+> -                                       &generic_rtc_ops, THIS_MODULE);
+> +                                       ops, THIS_MODULE);
+>         if (IS_ERR(rtc))
+>                 return PTR_ERR(rtc);
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
