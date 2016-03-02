@@ -1,18 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <joel.stan@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 73FAB1A01D7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 12:47:06 +1100 (AEDT)
-Message-ID: <1456883226.24490.4.camel@ellerman.id.au>
-Subject: Re: [3/3] powerpc/pseries: Cleanup property cloning in memory dlpar
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 02 Mar 2016 12:47:06 +1100
-In-Reply-To: <20160301230231.DA2A81402D8@ozlabs.org>
-References: <20160301230231.DA2A81402D8@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id C96EE1A01D7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 12:50:31 +1100 (AEDT)
+Received: from mail-ob0-x231.google.com (mail-ob0-x231.google.com
+ [IPv6:2607:f8b0:4003:c01::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D68AB1402C0
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Mar 2016 12:50:30 +1100 (AEDT)
+Received: by mail-ob0-x231.google.com with SMTP id fz5so53436440obc.0
+ for <linuxppc-dev@ozlabs.org>; Tue, 01 Mar 2016 17:50:30 -0800 (PST)
+MIME-Version: 1.0
+Sender: joel.stan@gmail.com
+In-Reply-To: <1456882616-26811-1-git-send-email-mpe@ellerman.id.au>
+References: <1456882616-26811-1-git-send-email-mpe@ellerman.id.au>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 2 Mar 2016 12:20:09 +1030
+Message-ID: <CACPK8Xe+vxJe-ArTP7ZU4gKjJtZwviT0t9h7kS1R1WvW6E-msA@mail.gmail.com>
+Subject: Re: [PATCH] MAINTAINERS: Add powerpc drivers to the powerpc section
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,35 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-03-02 at 10:02 +1100, Michael Ellerman wrote:
-> On Wed, 2016-10-02 at 17:13:29 UTC, Nathan Fontenot wrote:
-> > Now that the DLPAR add/remove flow updates the ibm,dynamic-memory device
-> > tree property each time we add or remove a LMB the work needed to clone
-> > this property can be reduced.
-> > 
-> > Prior to performing any memory DLPAR operation we now clone the device
-> > tree property once and convert it to cpu format. This copy is then used
-> > to walk through LMBs as we process them and is thrown away when we
-> > are finished. There is no longer a need to convert the entire property to
-> > cpu format and then back to BE every time we update it, we can just parse
-> > it in its native BE format and update the one LMB we need to modify
-> > before updating the property.
-> > 
-> > This patch removes the BE => cpu conversion step in the clone routine and
-> > creates a drconf_property_to_cpu() routine to make this conversion for the
-> > one time we need to convert the entire property. This then allows us
-> > to remove dlpar_update_drconf_property() since we can now do everything
-> > in dlpar_update_device_tree_lmb().
-> 
-> Hi Nathan,
-> 
-> This sounds like a good cleanup on the face of it.
-> 
-> But even with it applied I still see a boat load of endian errors from sparse
-> in this file. That worries me, can you please try and fix them.
+On Wed, Mar 2, 2016 at 12:06 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> We'd like folks working on drivers for powerpc to also Cc linuxppc-dev,
+> so we can be aware of what's going on in drivers and/or review the
+> changes.
+>
+> So add patterns to the powerpc MAINTAINERS section to catch some of the
+> drivers we're interested in.
 
-I can merge patches 1 and 2 if you like, and leave this one for you to fixup?
-Or I can just wait for a v2 of the whole series. Let me know which you'd
-prefer.
+There are a few more that would be good. '*opal*.c' catches these:
 
-cheers
+./drivers/i2c/busses/i2c-opal.c
+./drivers/rtc/rtc-opal.c
+./drivers/tty/hvc/hvc_opal.c
+
+and '*powernv*.c' gets these (some a duplicates with what you have):
+
+./drivers/leds/leds-powernv.c
+./drivers/cpufreq/powernv-cpufreq.c
+./drivers/mtd/devices/powernv_flash.c
+./drivers/cpuidle/cpuidle-powernv.c
+./drivers/char/hw_random/powernv-rng.c
+./drivers/char/ipmi/ipmi_powernv.c
+./drivers/hwmon/ibmpowernv.c
+./drivers/crypto/nx/nx-842-powernv.c
+
+Cheers,
+
+Joel
