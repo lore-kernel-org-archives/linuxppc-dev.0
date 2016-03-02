@@ -1,22 +1,15 @@
-Return-Path: <mikenmeg@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF3471A06BA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 15:19:21 +1100 (AEDT)
-Message-ID: <1456892361.24490.10.camel@ellerman.id.au>
-Subject: Re: [PATCH] MAINTAINERS: Add powerpc drivers to the powerpc section
-From: Mike & Meg <mikenmeg@ellerman.id.au>
-To: Joe Perches <joe@perches.com>, Joel Stanley <joel@jms.id.au>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Date: Wed, 02 Mar 2016 15:19:21 +1100
-In-Reply-To: <1456889582.4436.43.camel@perches.com>
-References: <1456882616-26811-1-git-send-email-mpe@ellerman.id.au>
- <CACPK8Xe+vxJe-ArTP7ZU4gKjJtZwviT0t9h7kS1R1WvW6E-msA@mail.gmail.com>
- <1456888343.24490.8.camel@ellerman.id.au>
- <1456889582.4436.43.camel@perches.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 566181A06BA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 17:13:04 +1100 (AEDT)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Russell Currey <ruscur@russell.cc>
+Subject: [PATCH] powerpc/swsusp: Only use tlbie in POWER4 mode
+Date: Wed,  2 Mar 2016 17:12:45 +1100
+Message-Id: <1456899165-21624-1-git-send-email-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,90 +19,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-03-01 at 19:33 -0800, Joe Perches wrote:
-> On Wed, 2016-03-02 at 14:12 +1100, Michael Ellerman wrote:
-> > On Wed, 2016-03-02 at 12:20 +1030, Joel Stanley wrote:
-> > 
-> > > 
-> > > On Wed, Mar 2, 2016 at 12:06 PM, Michael Ellerman  wrote:
-> > > 
-> > > > 
-> > > > We'd like folks working on drivers for powerpc to also Cc linuxppc-dev,
-> > > > so we can be aware of what's going on in drivers and/or review the
-> > > > changes.
-> > > > 
-> > > > So add patterns to the powerpc MAINTAINERS section to catch some of the
-> > > > drivers we're interested in.
-> > > There are a few more that would be good. '*opal*.c' catches these:
-> > > 
-> > > ./drivers/i2c/busses/i2c-opal.c
-> > > ./drivers/rtc/rtc-opal.c
-> > > ./drivers/tty/hvc/hvc_opal.c
+If CONFIG_HIBERNATION and CONFIG_PPC_BOOK3S_64 are set, code in
+arch/powerpc/kernel/swsusp_amd64.S which uses the tlbia macro is enabled.
+tlbia in turn uses tlbie, an instruction which takes more than one
+operand in newer versions of POWER.  As such, the kernel fails to build
+due to the assembler complaining about missing operands.
 
-> > Ah yep thanks, will add "N: opal".
-> 
-> N: and F: have different characteristics for get_maintainer.pl
-> 
-> From MAINTAINERS:
-> 
-> 	   scripts/get_maintainer.pl has different behavior for files that
-> 	   match F: pattern and matches of N: patterns.  By default,
-> 	   get_maintainer will not look at git log history when an F: pattern
-> 	   match occurs.  When an N: match occurs, git log history is used
-> 	   to also notify the people that have git commit signatures.
+This can be worked around by assembling the instruction as in POWER4.
+This fixes the build breakage caused by enabling CONFIG_HIBERNATION.
+Hibernation is currently only tested on G5 PowerMacs, which should be
+unaffected by this change.  For other platforms it may now build,
+whether or not it works is a different story.
 
-Yeah I saw that.
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+---
+ arch/powerpc/include/asm/ppc_asm.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-What I want is to add linuxppc-dev to whatever it would have done previously.
-ie. I don't want to hijack the patches from whoever would have got them.
-
-And listing all the drivers explicitly would be a bit gross:
-
-F:	drivers/block/ps3disk.c
-F:	drivers/block/ps3vram.c
-F:	drivers/char/hw_random/powernv-rng.c
-F:	drivers/char/hw_random/pseries-rng.c
-F:	drivers/char/ipmi/ipmi_powernv.c
-F:	drivers/char/ps3flash.c
-F:	drivers/cpufreq/pmac32-cpufreq.c
-F:	drivers/cpufreq/pmac64-cpufreq.c
-F:	drivers/cpufreq/powernv-cpufreq.c
-F:	drivers/cpuidle/cpuidle-powernv.c
-F:	drivers/cpuidle/cpuidle-pseries.c
-F:	drivers/crypto/nx/nx-842-powernv.c
-F:	drivers/crypto/nx/nx-842-pseries.c
-F:	drivers/hwmon/ibmpowernv.c
-F:	drivers/i2c/busses/i2c-opal.c
-F:	drivers/i2c/busses/i2c-powermac.c
-F:	drivers/ide/pmac.c
-F:	drivers/leds/leds-powernv.c
-F:	drivers/media/rc/keymaps/rc-asus-ps3-100.c
-F:	drivers/mtd/devices/powernv_flash.c
-F:	drivers/net/ethernet/ti/cpmac.c
-F:	drivers/net/ethernet/toshiba/ps3_gelic_net.c
-F:	drivers/net/ethernet/toshiba/ps3_gelic_net.h
-F:	drivers/net/ethernet/toshiba/ps3_gelic_wireless.c
-F:	drivers/net/ethernet/toshiba/ps3_gelic_wireless.h
-F:	drivers/ps3/ps3av.c
-F:	drivers/ps3/ps3av_cmd.c
-F:	drivers/ps3/ps3-lpm.c
-F:	drivers/ps3/ps3stor_lib.c
-F:	drivers/ps3/ps3-sys-manager.c
-F:	drivers/ps3/ps3-vuart.c
-F:	drivers/rtc/rtc-opal.c
-F:	drivers/rtc/rtc-ps3.c
-F:	drivers/scsi/ps3rom.c
-F:	drivers/tty/hvc/hvc_opal.c
-F:	drivers/tty/serial/pmac_zilog.c
-F:	drivers/tty/serial/pmac_zilog.h
-F:	drivers/usb/host/ehci-ps3.c
-F:	drivers/usb/host/ohci-ps3.c
-F:	drivers/video/fbdev/ps3fb.c
-F:	sound/ppc/pmac.c
-F:	sound/ppc/pmac.h
-F:	sound/ppc/powermac.c
-F:	sound/ppc/snd_ps3.c
-F:	sound/ppc/snd_ps3.h
-F:	sound/ppc/snd_ps3_reg.h
-
-cheers
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index 499d9f8..2b31632 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -427,7 +427,10 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+ 	li	r4,1024;			\
+ 	mtctr	r4;				\
+ 	lis	r4,KERNELBASE@h;		\
++	.machine push;				\
++	.machine "power4";			\
+ 0:	tlbie	r4;				\
++	.machine pop;				\
+ 	addi	r4,r4,0x1000;			\
+ 	bdnz	0b
+ #endif
+-- 
+2.7.2
