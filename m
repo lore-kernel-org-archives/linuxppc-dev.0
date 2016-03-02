@@ -1,38 +1,37 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 07E441A045E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 13:14:08 +1100 (AEDT)
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 2 Mar 2016 12:14:06 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id A71FB2CE805D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 13:14:00 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u222Dq8K54460536
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Mar 2016 13:14:00 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u222DSwH026045
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Mar 2016 13:13:28 +1100
-Date: Wed, 2 Mar 2016 13:13:03 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Russell Currey <ruscur@russell.cc>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 3/3] powerpc/eeh: Synchronize recovery in host/guest
-Message-ID: <20160302021303.GA17916@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1456445092-18337-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1456445092-18337-4-git-send-email-gwshan@linux.vnet.ibm.com>
- <1456880600.4528.3.camel@russell.cc>
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id BA6131A06A7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 13:15:44 +1100 (AEDT)
+Date: Wed, 2 Mar 2016 02:15:50 +0000
+From: Will Deacon <will.deacon@arm.com>
+To: David Daney <ddaney.cavm@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, Mark Rutland <mark.rutland@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ James Hogan <james.hogan@imgtec.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Chris Metcalf <cmetcalf@ezchip.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>,
+ David Daney <david.daney@cavium.com>
+Subject: Re: [PATCH 2/2] numa, mm, cleanup: remove redundant NODE_DATA macro
+ from asm header files.
+Message-ID: <20160302021550.GI14022@arm.com>
+References: <1456358528-24213-1-git-send-email-ddaney.cavm@gmail.com>
+ <1456358528-24213-3-git-send-email-ddaney.cavm@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1456880600.4528.3.camel@russell.cc>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1456358528-24213-3-git-send-email-ddaney.cavm@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,65 +41,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 02, 2016 at 12:03:20PM +1100, Russell Currey wrote:
->On Fri, 2016-02-26 at 11:04 +1100, Gavin Shan wrote:
->> When passing through SRIOV VFs to guest, we possibly encounter EEH
->> error on PF. In this case, the VF PEs are put into frozen state.
->> The error could be reported to guest before it's captured by the
->> host. That means the guest could attempt to recover errors on VFs
->> before host gets chance to recover errors on PFs. The VFs won't be
->> recovered successfully.
->> 
->> This enforces the recovery order for above case: the recovery on
->> child PE in guest is hold until the recovery on parent PE in host
->> is completed.
->> 
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/kernel/eeh.c | 11 +++++++++++
->>  1 file changed, 11 insertions(+)
->> 
->> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->> index fd9c782..42bd546 100644
->> --- a/arch/powerpc/kernel/eeh.c
->> +++ b/arch/powerpc/kernel/eeh.c
->> @@ -1541,6 +1541,17 @@ int eeh_pe_get_state(struct eeh_pe *pe)
->>  	if (!eeh_ops || !eeh_ops->get_state)
->>  		return -ENOENT;
->>  
->> +	/*
->> +	 * If the parent PE, which is owned by host kernel, is
->> experiencing
->> +	 * error recovery. We should return temporarily unavailable PE
->> state
->> +	 * so that the recovery on guest side is suspended until the
->> error
->> +	 * recovery is completed on host side.
->> +	 */
->
->Hi Gavin,
->
->I think this could be worded a little better.  For example:
->
->/*
-> * If the parent PE is owned by the host kernel and is undergoing
-> * error recovery, we should return the PE state as temporarily
-> * unavailable so that the error recovery on the guest is suspended
-> * until the recovery completes on the host.
-> */
->
+On Wed, Feb 24, 2016 at 04:02:08PM -0800, David Daney wrote:
+> From: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
+> 
+> NODE_DATA is defined across multiple asm header files.
+> Moving generic definition to asm-generic/mmzone.h to
+> remove redundant definitions.
+> 
+> Reviewed-by: Robert Richter <rrichter@cavium.com>
+> Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
+> Signed-off-by: David Daney <david.daney@cavium.com>
+> ---
+>  arch/arm64/include/asm/mmzone.h   |  4 +---
+>  arch/m32r/include/asm/mmzone.h    |  4 +---
+>  arch/metag/include/asm/mmzone.h   |  4 +---
+>  arch/powerpc/include/asm/mmzone.h |  8 ++------
+>  arch/s390/include/asm/mmzone.h    |  6 +-----
+>  arch/sh/include/asm/mmzone.h      |  4 +---
+>  arch/sparc/include/asm/mmzone.h   |  6 ++----
+>  arch/x86/include/asm/mmzone.h     |  3 +--
+>  arch/x86/include/asm/mmzone_32.h  |  5 -----
+>  arch/x86/include/asm/mmzone_64.h  | 17 -----------------
+>  include/asm-generic/mmzone.h      | 24 ++++++++++++++++++++++++
+>  11 files changed, 34 insertions(+), 51 deletions(-)
+>  delete mode 100644 arch/x86/include/asm/mmzone_64.h
+>  create mode 100644 include/asm-generic/mmzone.h
+> 
+> diff --git a/arch/arm64/include/asm/mmzone.h b/arch/arm64/include/asm/mmzone.h
+> index a0de9e6..611a1cf 100644
+> --- a/arch/arm64/include/asm/mmzone.h
+> +++ b/arch/arm64/include/asm/mmzone.h
+> @@ -4,9 +4,7 @@
+>  #ifdef CONFIG_NUMA
+>  
+>  #include <asm/numa.h>
+> -
+> -extern struct pglist_data *node_data[];
+> -#define NODE_DATA(nid)		(node_data[(nid)])
+> +#include  <asm-generic/mmzone.h>
+>  
+>  #endif /* CONFIG_NUMA */
+>  #endif /* __ASM_MMZONE_H */
 
-Yes, it will be integrated to v2. Thanks for review.
+Actually, we can remove the header file entirely and use a generic-y
+line in Kbuild instead.
 
->> +	if (pe->parent &&
->> +	    !(pe->state & EEH_PE_REMOVED) &&
->> +	    (pe->parent->state & (EEH_PE_ISOLATED | EEH_PE_RECOVERING)))
->> +		return EEH_PE_STATE_UNAVAIL;
->> +
->>  	result = eeh_ops->get_state(pe, NULL);
->>  	rst_active = !!(result & EEH_STATE_RESET_ACTIVE);
->>  	dma_en = !!(result & EEH_STATE_DMA_ENABLED);
->
-
-Thanks,
-Gavin
+Will
