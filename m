@@ -1,18 +1,20 @@
-Return-Path: <ruscur@russell.cc>
-Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 61D651A0BB5
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 12:04:47 +1100 (AEDT)
-Message-ID: <1456880682.4528.5.camel@russell.cc>
-Subject: Re: [PATCH 0/3] powerpc/eeh: Enhancement to EEH for VF
-From: Russell Currey <ruscur@russell.cc>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 02 Mar 2016 12:04:42 +1100
-In-Reply-To: <1456445092-18337-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1456445092-18337-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C6C421A005D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 12:08:03 +1100 (AEDT)
+Date: Wed, 2 Mar 2016 11:38:26 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 1/2] powerpc/mm: Update prot_none implementation
+ using _PAGE_READ
+Message-ID: <20160302003826.GA3160@oak.ozlabs.ibm.com>
+References: <1456456850-2679-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1456456850-2679-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,32 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-02-26 at 11:04 +1100, Gavin Shan wrote:
-> Those patches are based on the series of patches supporting EEH for VF,
-> which is pending for merging: https://patchwork.ozlabs.org/patch/581315/
+On Fri, Feb 26, 2016 at 08:50:49AM +0530, Aneesh Kumar K.V wrote:
+> Now that we have _PAGE_READ use that to implement prot none. With this
+> prot_none is _PAGE_PRESENT with none of the access bits set. While
+> hashing we map that to PP bit 00.
 > 
-> This series of patches fixes couple of issue that resides in previous
-> patchset:
+> With this implementation, we will now take a prot fault for prot none
+> ptes, whereas before, we never inserted such a pte to hash. Hence we
+> always got nohpte fault before.
 > 
->    * The error handlers provided by vfio-pci driver shouldn't be called.
->      Otherwise, the guest is simply killed.
->    * When we have partially hoplug in error recovery, we shouldn't remove
->      those passed-through devices. Otherwise, the guest will be brought
->      to undefined situation.
->    * When we have errors detected on PF PE, hold VF PE that has been
-> passed
->      through to guest until the recovery on PF PE is done
-> 
-> Gavin Shan (3):
->   powerpc/eeh: Don't propagate error to guest
->   powerpc/eeh: Don't remove passed VFs
->   powerpc/eeh: Synchronize recovery in host/guest
-> 
->  arch/powerpc/kernel/eeh.c        | 11 +++++++++++
->  arch/powerpc/kernel/eeh_driver.c | 13 ++++++++-----
->  2 files changed, 19 insertions(+), 5 deletions(-)
-> 
+> This is in preparation to remove _PAGE_USER from book3s 64
 
-For the whole series (incorporating my comments on patch 3):
+Mostly looks good, but I have a comment:
 
-Reviewed-by: Russell Currey <ruscur@russell.cc>
+> @@ -176,10 +177,12 @@
+>  #define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
+>  #define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | \
+>  				 _PAGE_EXEC)
+
+Don't we need _PAGE_READ in PAGE_SHARED[_X] now?
+
+Paul.
