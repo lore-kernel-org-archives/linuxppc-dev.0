@@ -1,32 +1,42 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BF1911A0B4C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 19:57:29 +1100 (AEDT)
-Received: by mail-io0-x243.google.com with SMTP id m184so847085iof.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Mar 2016 00:57:29 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 019201A0B4C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 20:00:38 +1100 (AEDT)
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C8FD414090A
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Mar 2016 20:00:37 +1100 (AEDT)
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 2 Mar 2016 19:00:36 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id CEC4D2CE8054
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Mar 2016 20:00:32 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2290OqS12124474
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Mar 2016 20:00:32 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u22900Ot003596
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Mar 2016 20:00:00 +1100
+Message-ID: <56D6AB70.3040503@linux.vnet.ibm.com>
+Date: Wed, 02 Mar 2016 14:29:28 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1456851608-3374907-2-git-send-email-arnd@arndb.de>
-References: <1456851608-3374907-1-git-send-email-arnd@arndb.de>
- <1456851608-3374907-2-git-send-email-arnd@arndb.de>
-Date: Wed, 2 Mar 2016 09:57:27 +0100
-Message-ID: <CAMuHMdW5+jZ1n9WnCwBrGSGjUa8ziNTTqf-H15EFTQC_iwnw+Q@mail.gmail.com>
-Subject: Re: [PATCH 1/6] rtc: generic: allow building on all architectures
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Kyle McMartin <kyle@mcmartin.ca>,
- RTCLINUX <rtc-linux@googlegroups.com>, Alessandro Zummo <a.zummo@towertech.it>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+To: Cyril Bur <cyrilbur@gmail.com>
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V10 17/28] selftests, powerpc: Add ptrace tests for EBB
+References: <1455613198-5113-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1455613198-5113-18-git-send-email-khandual@linux.vnet.ibm.com>
+ <20160302113247.48a0e8d0@camb691>
+In-Reply-To: <20160302113247.48a0e8d0@camb691>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,72 +46,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Arnd,
+On 03/02/2016 06:02 AM, Cyril Bur wrote:
+> On Tue, 16 Feb 2016 14:29:47 +0530
+> Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
+> 
+>> This patch adds ptrace interface test for EBB specific
+>> registers. This also adds some generic ptrace interface
+>> based helper functions to be used by other patches later
+>> on in the series.
+>>
+>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>> ---
+>>  tools/testing/selftests/powerpc/Makefile           |   3 +-
+>>  tools/testing/selftests/powerpc/ptrace/Makefile    |   7 +
+>>  .../testing/selftests/powerpc/ptrace/ptrace-ebb.c  | 150 ++++++++++++++
+>>  .../testing/selftests/powerpc/ptrace/ptrace-ebb.h  | 103 ++++++++++
+>>  tools/testing/selftests/powerpc/ptrace/ptrace.h    | 225 +++++++++++++++++++++
+>>  5 files changed, 487 insertions(+), 1 deletion(-)
+>>  create mode 100644 tools/testing/selftests/powerpc/ptrace/Makefile
+>>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-ebb.c
+>>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-ebb.h
+>>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace.h
+>>
+>> diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
+>> index 0c2706b..5b3c62c 100644
+>> --- a/tools/testing/selftests/powerpc/Makefile
+>> +++ b/tools/testing/selftests/powerpc/Makefile
+>> @@ -22,7 +22,8 @@ SUB_DIRS = benchmarks 		\
+>>  	   switch_endian	\
+>>  	   syscalls		\
+>>  	   tm			\
+>> -	   vphn
+>> +	   vphn			\
+>> +	   ptrace
+>>  
+>>  endif
+>>  
+>> diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
+>> new file mode 100644
+>> index 0000000..8666ac0
+>> --- /dev/null
+>> +++ b/tools/testing/selftests/powerpc/ptrace/Makefile
+>> @@ -0,0 +1,7 @@
+>> +TEST_PROGS := ptrace-ebb
+>> +all: $(TEST_PROGS)
+>> +
+>> +$(TEST_PROGS): ../harness.c ptrace.S ../utils.c
+>> +ptrace-ebb: ../pmu/event.c ../pmu/lib.c ../pmu/ebb/ebb_handler.S ../pmu/ebb/busy_loop.S
+>> +clean:
+>> +	rm -f $(TEST_PROGS) *.o
+> 
+> If you:
+> include ../../lib.mk
+> 
+> Then this Makefile just works with run_tests and install targets from the
+> base Makefile
 
-On Tue, Mar 1, 2016 at 5:59 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> There are four architectures using this driver, but since we can
-> build it with COMPILE_TEST, we should try dealing with the absence
-> of the asm/rtc.h header file, to avoid getting a build error:
->
-> drivers/rtc/rtc-generic.c:12:21: fatal error: asm/rtc.h: No such file or directory
->
-> This creates an alternative use of the driver, allowing architectures
-> to pass a set of rtc_class_ops in platform data. We can convert the
-> four architectures to use this and then remove the original
-> code.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/rtc/rtc-generic.c | 12 +++++++++++-
->  1 file changed, 11 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/rtc/rtc-generic.c b/drivers/rtc/rtc-generic.c
-> index e782ebd719b2..d726c6aa96a8 100644
-> --- a/drivers/rtc/rtc-generic.c
-> +++ b/drivers/rtc/rtc-generic.c
-> @@ -9,6 +9,8 @@
->  #include <linux/platform_device.h>
->  #include <linux/rtc.h>
->
-> +#if defined(CONFIG_M68K) || defined(CONFIG_PARISC) || \
-> +    defined(CONFIG_PPC) || defined(CONFIG_SUPERH32)
->  #include <asm/rtc.h>
->
->  static int generic_get_time(struct device *dev, struct rtc_time *tm)
-> @@ -33,13 +35,21 @@ static const struct rtc_class_ops generic_rtc_ops = {
->         .read_time = generic_get_time,
->         .set_time = generic_set_time,
->  };
-> +#else
-> +#define generic_rtc_ops *(struct rtc_class_ops*)NULL
-> +#endif
->
->  static int __init generic_rtc_probe(struct platform_device *dev)
->  {
->         struct rtc_device *rtc;
-> +       const struct rtc_class_ops *ops;
-> +
-> +       ops = dev_get_platdata(&dev->dev);
-> +       if (!ops)
-> +               ops = &generic_rtc_ops;
+Sure, will do that.
 
-I hope no compiler version treats "&*(struct rtc_class_ops*)NULL" as
-undefined behavior?
+> 
+>> diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-ebb.c b/tools/testing/selftests/powerpc/ptrace/ptrace-ebb.c
+>> new file mode 100644
+>> index 0000000..e1ca608
+>> --- /dev/null
+>> +++ b/tools/testing/selftests/powerpc/ptrace/ptrace-ebb.c
+>> @@ -0,0 +1,150 @@
+>> +/*
+>> + * Ptrace interface test for EBB
+>> + *
+>> + * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License
+>> + * as published by the Free Software Foundation; either version
+>> + * 2 of the License, or (at your option) any later version.
+>> + */
+>> +#include "../pmu/ebb/ebb.h"
+>> +#include "ptrace.h"
+>> +#include "ptrace-ebb.h"
+>> +
+> 
+> Check out tools/testing/selftests/powerpc/utils.h which provides a nice (and
+> super hacky) FAIL_IF() macro.
 
->
->         rtc = devm_rtc_device_register(&dev->dev, "rtc-generic",
-> -                                       &generic_rtc_ops, THIS_MODULE);
-> +                                       ops, THIS_MODULE);
->         if (IS_ERR(rtc))
->                 return PTR_ERR(rtc);
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Sure, will check it out and see where all it can be used.
