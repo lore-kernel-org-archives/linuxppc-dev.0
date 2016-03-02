@@ -1,43 +1,29 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2A3FA1A0B4C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 20:05:55 +1100 (AEDT)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F160B1402DE
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Mar 2016 20:05:54 +1100 (AEDT)
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 2 Mar 2016 19:05:54 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 41A7E2CE805A
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Mar 2016 20:05:50 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2295g1n852364
- for <linuxppc-dev@ozlabs.org>; Wed, 2 Mar 2016 20:05:50 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2295Hsr024710
- for <linuxppc-dev@ozlabs.org>; Wed, 2 Mar 2016 20:05:17 +1100
-Message-ID: <56D6ACBC.90604@linux.vnet.ibm.com>
-Date: Wed, 02 Mar 2016 14:35:00 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C1DE1A0BA9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 20:06:12 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, Kyle McMartin <kyle@mcmartin.ca>,
+ RTCLINUX <rtc-linux@googlegroups.com>, Alessandro Zummo <a.zummo@towertech.it>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/6] rtc: generic: allow building on all architectures
+Date: Wed, 02 Mar 2016 10:05:18 +0100
+Message-ID: <1620536.OtjnSSLgCT@wuerfel>
+In-Reply-To: <CAMuHMdW5+jZ1n9WnCwBrGSGjUa8ziNTTqf-H15EFTQC_iwnw+Q@mail.gmail.com>
+References: <1456851608-3374907-1-git-send-email-arnd@arndb.de>
+ <1456851608-3374907-2-git-send-email-arnd@arndb.de>
+ <CAMuHMdW5+jZ1n9WnCwBrGSGjUa8ziNTTqf-H15EFTQC_iwnw+Q@mail.gmail.com>
 MIME-Version: 1.0
-To: Cyril Bur <cyrilbur@gmail.com>
-CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V10 18/28] selftests, powerpc: Add ptrace tests for GPR/FPR
- registers
-References: <1455613198-5113-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1455613198-5113-19-git-send-email-khandual@linux.vnet.ibm.com>
- <20160302114001.64f8adbb@camb691>
-In-Reply-To: <20160302114001.64f8adbb@camb691>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,18 +33,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/02/2016 06:10 AM, Cyril Bur wrote:
-> On Tue, 16 Feb 2016 14:29:48 +0530
-> Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
+On Wednesday 02 March 2016 09:57:27 Geert Uytterhoeven wrote:
+> > @@ -33,13 +35,21 @@ static const struct rtc_class_ops generic_rtc_ops = {
+> >         .read_time = generic_get_time,
+> >         .set_time = generic_set_time,
+> >  };
+> > +#else
+> > +#define generic_rtc_ops *(struct rtc_class_ops*)NULL
+> > +#endif
+> >
+> >  static int __init generic_rtc_probe(struct platform_device *dev)
+> >  {
+> >         struct rtc_device *rtc;
+> > +       const struct rtc_class_ops *ops;
+> > +
+> > +       ops = dev_get_platdata(&dev->dev);
+> > +       if (!ops)
+> > +               ops = &generic_rtc_ops;
 > 
->> > This patch adds ptrace interface test for GPR/FPR registers.
->> > This adds ptrace interface based helper functions related to
->> > GPR/FPR access and some assembly helper functions related to
->> > GPR/FPR registers.
->> > 
-> I wonder if with a bit of thought we could share our assembly helper
-> functions... https://patchwork.ozlabs.org/patch/589703/
-> 
-> Let me know, happy to meet in the middle and augment my series if needed.
+> I hope no compiler version treats "&*(struct rtc_class_ops*)NULL" as
+> undefined behavior?
 
-Let me look into this in detail, will need some time.
+It's a bit odd, but I think it's syntactically correct C, and not
+much too different from 
+
+#define offsetof(TYPE, MEMBER)  ((size_t)&((TYPE *)0)->MEMBER)
+
+is it? My last patch gets rid of it again.
+
+	Arnd
