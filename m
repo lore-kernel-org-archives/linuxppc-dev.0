@@ -1,32 +1,34 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F0B4A1A005D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 13:29:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 05C2B1A0BB7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 13:30:26 +1100 (AEDT)
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 2 Mar 2016 12:29:54 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 5BA1C2BB005F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 13:29:51 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u222TgEA24182880
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Mar 2016 13:29:51 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u222TIUV004213
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Mar 2016 13:29:18 +1100
+ Wed, 2 Mar 2016 12:30:25 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2EA902CE8057
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 13:30:21 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u222UCts59047940
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Mar 2016 13:30:21 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u222TmHt007443
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Mar 2016 13:29:48 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: ruscur@russell.cc, mpe@ellerman.id.au,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v2 0/3] powerpc/eeh: Enhancement to EEH for VF
-Date: Wed,  2 Mar 2016 13:28:49 +1100
-Message-Id: <1456885732-23070-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v2 3/3] powerpc/eeh: Synchronize recovery in host/guest
+Date: Wed,  2 Mar 2016 13:28:52 +1100
+Message-Id: <1456885732-23070-4-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1456885732-23070-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1456885732-23070-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,33 +38,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Those patches are based on the series of patches supporting EEH for VF,
-which is pending for merging: https://patchwork.ozlabs.org/patch/581315/
+When passing through SRIOV VFs to guest, we possibly encounter EEH
+error on PF. In this case, the VF PEs are put into frozen state.
+The error could be reported to guest before it's captured by the
+host. That means the guest could attempt to recover errors on VFs
+before host gets chance to recover errors on PFs. The VFs won't be
+recovered successfully.
 
-This series of patches fixes couple of issue that resides in previous
-patchset:
+This enforces the recovery order for above case: the recovery on
+child PE in guest is hold until the recovery on parent PE in host
+is completed.
 
-   * The error handlers provided by vfio-pci driver shouldn't be called.
-     Otherwise, the guest is simply killed.
-   * When we have partially hoplug in error recovery, we shouldn't remove
-     those passed-through devices. Otherwise, the guest will be brought
-     to undefined situation.
-   * When we have errors detected on PF PE, hold VF PE that has been passed
-     through to guest until the recovery on PF PE is done
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Reviewed-by: Russell Currey <ruscur@russell.cc>
+---
+ arch/powerpc/kernel/eeh.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Changelog
-=========
-v2:
-   * Add Russell's comments to eeh_pe_get_state().
-
-Gavin Shan (3):
-  powerpc/eeh: Don't propagate error to guest
-  powerpc/eeh: Don't remove passed VFs
-  powerpc/eeh: Synchronize recovery in host/guest
-
- arch/powerpc/kernel/eeh.c        | 11 +++++++++++
- arch/powerpc/kernel/eeh_driver.c | 13 ++++++++-----
- 2 files changed, 19 insertions(+), 5 deletions(-)
-
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index fd9c782..5591f05 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -1541,6 +1541,17 @@ int eeh_pe_get_state(struct eeh_pe *pe)
+ 	if (!eeh_ops || !eeh_ops->get_state)
+ 		return -ENOENT;
+ 
++	/*
++	 * If the parent PE is owned by the host kernel and is undergoing
++	 * error recovery, we should return the PE state as temporarily
++	 * unavailable so that the error recovery on the guest is suspended
++	 * until the recovery completes on the host.
++	 */
++	if (pe->parent &&
++	    !(pe->state & EEH_PE_REMOVED) &&
++	    (pe->parent->state & (EEH_PE_ISOLATED | EEH_PE_RECOVERING)))
++		return EEH_PE_STATE_UNAVAIL;
++
+ 	result = eeh_ops->get_state(pe, NULL);
+ 	rst_active = !!(result & EEH_STATE_RESET_ACTIVE);
+ 	dma_en = !!(result & EEH_STATE_DMA_ENABLED);
 -- 
 2.1.0
