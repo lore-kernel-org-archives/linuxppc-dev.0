@@ -1,37 +1,34 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id C1D511A0CCE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 13:17:03 +1100 (AEDT)
-Date: Wed, 2 Mar 2016 02:17:10 +0000
-From: Will Deacon <will.deacon@arm.com>
-To: David Daney <ddaney.cavm@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, Mark Rutland <mark.rutland@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- James Hogan <james.hogan@imgtec.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S. Miller" <davem@davemloft.net>,
- Chris Metcalf <cmetcalf@ezchip.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, Arnd Bergmann <arnd@arndb.de>,
- linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>,
- David Daney <david.daney@cavium.com>
-Subject: Re: [PATCH 1/2] topology, cleanup: Avoid redefinition of
- cpumask_of_pcibus in asm header files.
-Message-ID: <20160302021710.GJ14022@arm.com>
-References: <1456358528-24213-1-git-send-email-ddaney.cavm@gmail.com>
- <1456358528-24213-2-git-send-email-ddaney.cavm@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1456358528-24213-2-git-send-email-ddaney.cavm@gmail.com>
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 701C41A005D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 13:29:53 +1100 (AEDT)
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 2 Mar 2016 12:29:52 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 49DF02BB005D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2016 13:29:51 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u222TgJS1442292
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Mar 2016 13:29:51 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u222TI8n006507
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Mar 2016 13:29:18 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: ruscur@russell.cc, mpe@ellerman.id.au,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v2 1/3] powerpc/eeh: Don't propagate error to guest
+Date: Wed,  2 Mar 2016 13:28:50 +1100
+Message-Id: <1456885732-23070-2-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1456885732-23070-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1456885732-23070-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,47 +38,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 24, 2016 at 04:02:07PM -0800, David Daney wrote:
-> From: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
-> 
-> At present cpumask_of_pcibus is defined for !CONFIG_NUMA and moving out
-> to common will allow to use for numa too. This also avoids
-> redefinition of this macro in respective architecture header files.
-> 
-> Reviewed-by: Robert Richter <rrichter@cavium.com>
-> Signed-off-by: Ganapatrao Kulkarni <gkulkarni@caviumnetworks.com>
-> Signed-off-by: David Daney <david.daney@cavium.com>
-> ---
->  arch/arm64/include/asm/topology.h   | 3 ---
->  arch/ia64/include/asm/topology.h    | 4 ----
->  arch/metag/include/asm/topology.h   | 3 ---
->  arch/powerpc/include/asm/topology.h | 4 ----
->  arch/s390/include/asm/pci.h         | 2 +-
->  arch/s390/include/asm/topology.h    | 1 +
->  arch/sh/include/asm/topology.h      | 3 ---
->  arch/tile/include/asm/pci.h         | 2 --
->  arch/tile/include/asm/topology.h    | 3 +++
->  arch/x86/include/asm/pci.h          | 2 +-
->  arch/x86/include/asm/topology.h     | 1 +
->  include/asm-generic/topology.h      | 4 ++--
->  12 files changed, 9 insertions(+), 23 deletions(-)
-> 
-> diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
-> index 8b57339..6e1f62c 100644
-> --- a/arch/arm64/include/asm/topology.h
-> +++ b/arch/arm64/include/asm/topology.h
-> @@ -26,9 +26,6 @@ const struct cpumask *cpu_coregroup_mask(int cpu);
->  
->  struct pci_bus;
->  int pcibus_to_node(struct pci_bus *bus);
-> -#define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ?		\
-> -				 cpu_all_mask :				\
-> -				 cpumask_of_node(pcibus_to_node(bus)))
->  
->  #endif /* CONFIG_NUMA */
+When EEH error happened to the parent PE of those PEs that have
+been passed through to guest, the error is propagated to guest
+domain and the VFIO driver's error handlers are called. It's not
+correct as the error in the host domain shouldn't be propagated
+to guests and affect them.
 
-Looks like a sensible clean up to me (on top of the arm64 NUMA patches):
+This adds one more limitation when calling EEH error handlers.
+If the PE has been passed through to guest, the error handlers
+won't be called.
 
-Acked-by: Will Deacon <will.deacon@arm.com>
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Reviewed-by: Russell Currey <ruscur@russell.cc>
+---
+ arch/powerpc/kernel/eeh_driver.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Will
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index c0fe7a6..6c59de8 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -195,7 +195,7 @@ static void *eeh_report_error(void *data, void *userdata)
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver;
+ 
+-	if (!dev || eeh_dev_removed(edev))
++	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+ 		return NULL;
+ 	dev->error_state = pci_channel_io_frozen;
+ 
+@@ -237,7 +237,7 @@ static void *eeh_report_mmio_enabled(void *data, void *userdata)
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver;
+ 
+-	if (!dev || eeh_dev_removed(edev))
++	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+ 		return NULL;
+ 
+ 	driver = eeh_pcid_get(dev);
+@@ -277,7 +277,7 @@ static void *eeh_report_reset(void *data, void *userdata)
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver;
+ 
+-	if (!dev || eeh_dev_removed(edev))
++	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+ 		return NULL;
+ 	dev->error_state = pci_channel_io_normal;
+ 
+@@ -336,7 +336,7 @@ static void *eeh_report_resume(void *data, void *userdata)
+ 	bool was_in_error;
+ 	struct pci_driver *driver;
+ 
+-	if (!dev || eeh_dev_removed(edev))
++	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+ 		return NULL;
+ 	dev->error_state = pci_channel_io_normal;
+ 
+@@ -375,7 +375,7 @@ static void *eeh_report_failure(void *data, void *userdata)
+ 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+ 	struct pci_driver *driver;
+ 
+-	if (!dev || eeh_dev_removed(edev))
++	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+ 		return NULL;
+ 	dev->error_state = pci_channel_io_perm_failure;
+ 
+-- 
+2.1.0
