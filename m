@@ -1,32 +1,32 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D65D01A0C0F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 10:54:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 38FC11A0C41
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 10:54:46 +1100 (AEDT)
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 4 Mar 2016 09:54:44 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D2F322BB005B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 10:54:37 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u23NsT6O43581602
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 10:54:37 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u23Ns5ib005203
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 10:54:05 +1100
+ Fri, 4 Mar 2016 09:54:45 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 5B2002CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 10:54:43 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u23NsZPt21692502
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 10:54:43 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u23NsA4W026114
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 10:54:11 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: ruscur@russell.cc, mpe@ellerman.id.au,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v15 10/12] powerpc/eeh: Don't propagate error to guest
-Date: Fri,  4 Mar 2016 10:53:12 +1100
-Message-Id: <1457049194-9281-11-git-send-email-gwshan@linux.vnet.ibm.com>
+ Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: [PATCH v15 02/12] PCI: Add pcibios_bus_add_device() weak function
+Date: Fri,  4 Mar 2016 10:53:04 +1100
+Message-Id: <1457049194-9281-3-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1457049194-9281-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1457049194-9281-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,70 +38,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When EEH error happened to the parent PE of those PEs that have
-been passed through to guest, the error is propagated to guest
-domain and the VFIO driver's error handlers are called. It's not
-correct as the error in the host domain shouldn't be propagated
-to guests and affect them.
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
 
-This adds one more limitation when calling EEH error handlers.
-If the PE has been passed through to guest, the error handlers
-won't be called.
+This adds weak function pcibios_bus_add_device() for arch dependent
+code could do proper setup. For example, powerpc could setup EEH
+related resources for SRIOV VFs.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Reviewed-by: Russell Currey <ruscur@russell.cc>
+Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- arch/powerpc/kernel/eeh_driver.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/pci/bus.c   | 3 +++
+ include/linux/pci.h | 1 +
+ 2 files changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index c0fe7a6..6c59de8 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -195,7 +195,7 @@ static void *eeh_report_error(void *data, void *userdata)
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver;
+diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+index 89b3bef..6469ff6 100644
+--- a/drivers/pci/bus.c
++++ b/drivers/pci/bus.c
+@@ -271,6 +271,8 @@ bool pci_bus_clip_resource(struct pci_dev *dev, int idx)
  
--	if (!dev || eeh_dev_removed(edev))
-+	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
- 		return NULL;
- 	dev->error_state = pci_channel_io_frozen;
+ void __weak pcibios_resource_survey_bus(struct pci_bus *bus) { }
  
-@@ -237,7 +237,7 @@ static void *eeh_report_mmio_enabled(void *data, void *userdata)
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver;
++void __weak pcibios_bus_add_device(struct pci_dev *pdev) { }
++
+ /**
+  * pci_bus_add_device - start driver for a single device
+  * @dev: device to add
+@@ -285,6 +287,7 @@ void pci_bus_add_device(struct pci_dev *dev)
+ 	 * Can not put in pci_device_add yet because resources
+ 	 * are not assigned yet for some devices.
+ 	 */
++	pcibios_bus_add_device(dev);
+ 	pci_fixup_device(pci_fixup_final, dev);
+ 	pci_create_sysfs_dev_files(dev);
+ 	pci_proc_attach_device(dev);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 3db5e30..bc435d62 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -770,6 +770,7 @@ extern struct list_head pci_root_buses;	/* list of all known PCI buses */
+ int no_pci_devices(void);
  
--	if (!dev || eeh_dev_removed(edev))
-+	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
- 		return NULL;
- 
- 	driver = eeh_pcid_get(dev);
-@@ -277,7 +277,7 @@ static void *eeh_report_reset(void *data, void *userdata)
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver;
- 
--	if (!dev || eeh_dev_removed(edev))
-+	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
- 		return NULL;
- 	dev->error_state = pci_channel_io_normal;
- 
-@@ -336,7 +336,7 @@ static void *eeh_report_resume(void *data, void *userdata)
- 	bool was_in_error;
- 	struct pci_driver *driver;
- 
--	if (!dev || eeh_dev_removed(edev))
-+	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
- 		return NULL;
- 	dev->error_state = pci_channel_io_normal;
- 
-@@ -375,7 +375,7 @@ static void *eeh_report_failure(void *data, void *userdata)
- 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
- 	struct pci_driver *driver;
- 
--	if (!dev || eeh_dev_removed(edev))
-+	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
- 		return NULL;
- 	dev->error_state = pci_channel_io_perm_failure;
- 
+ void pcibios_resource_survey_bus(struct pci_bus *bus);
++void pcibios_bus_add_device(struct pci_dev *pdev);
+ void pcibios_add_bus(struct pci_bus *bus);
+ void pcibios_remove_bus(struct pci_bus *bus);
+ void pcibios_fixup_bus(struct pci_bus *);
 -- 
 2.1.0
