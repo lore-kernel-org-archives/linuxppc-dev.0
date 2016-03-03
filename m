@@ -1,26 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0221A1A032F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 16:51:07 +1100 (AEDT)
-Message-ID: <1456984266.28236.1.camel@ellerman.id.au>
-Subject: Re: Problems with swapping in v4.5-rc on POWER
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Hugh Dickins <hughd@google.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org
-Date: Thu, 03 Mar 2016 16:51:06 +1100
-In-Reply-To: <alpine.LSU.2.11.1603021226300.31251@eggly.anvils>
-References: <alpine.LSU.2.11.1602241716220.15121@eggly.anvils>
- <877fhttmr1.fsf@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1602242136270.6876@eggly.anvils>
- <alpine.LSU.2.11.1602251322130.8063@eggly.anvils>
- <alpine.LSU.2.11.1602260157430.10399@eggly.anvils>
- <alpine.LSU.2.11.1603021226300.31251@eggly.anvils>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 095371A032F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 17:16:45 +1100 (AEDT)
+From: Scott Wood <oss@buserror.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Scott Wood <oss@buserror.net>
+Date: Thu,  3 Mar 2016 00:16:38 -0600
+Message-Id: <1456985798-31675-1-git-send-email-oss@buserror.net>
+Subject: [PATCH] powerpc/fsl-book3e: Avoid lbarx on e5500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,68 +20,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-03-02 at 12:49 -0800, Hugh Dickins wrote:
-> On Fri, 26 Feb 2016, Hugh Dickins wrote:
-> > On Thu, 25 Feb 2016, Hugh Dickins wrote:
-> > > On Wed, 24 Feb 2016, Hugh Dickins wrote:
-> > > > On Thu, 25 Feb 2016, Aneesh Kumar K.V wrote:
-> > > > > 
-> > > > > Can you test the impact of the merge listed below ?(ie, revert the merge and see if
-> > > > > we can reproduce and also verify with merge applied). This will give us a
-> > > > > set of commits to look closer. We had quiet a lot of page table
-> > > > > related changes going in this merge window. 
-> > > > > 
-> > > > > f689b742f217b2ffe7 ("Pull powerpc updates from Michael Ellerman:")
-> > > > > 
-> > > > > That is the merge commit that added _PAGE_PTE. 
-> > > > 
-> > > > Another experiment running on it at the moment, I'd like to give that
-> > > > a few more hours, and then will try the revert you suggest.  But does
-> > > > that merge revert cleanly, did you try?  I'm afraid of interactions,
-> > > > whether obvious or subtle, with the THP refcounting rework.  Oh, since
-> > > > I don't have THP configured on, maybe I can ignore any issues from that.
-> > > 
-> > > That revert worked painlessly, only a very few and simple conflicts,
-> > > I ran that under load for 12 hours, no problem seen.
-> > > 
-> > > I've now checked out an f689b742 tree and started on that, just to
-> > > confirm that it fails fairly quickly I hope; and will then proceed
-> > > to git bisect, giving that as bad and 37cea93b as good.
-> > > 
-> > > Given the uncertainty of whether 12 hours is really long enough to be
-> > > sure, and perhaps difficulties along the way, I don't rate my chances
-> > > of a reliable bisection higher than 60%, but we'll see.
-> > 
-> > I'm sure you won't want a breathless report from me on each bisection
-> > step, but I ought to report that: contrary to our expectations, the
-> > f689b742 survived without error for 12 hours, so appears to be good.
-> > I'll bisect between there and v4.5-rc1.
-> 
-> The bisection completed this morning (log appended below):
-> not a satisfactory conclusion, it's pointing to a davem/net merge.
-> 
-> I was uncomfortable when I marked that point bad in the first place:
-> it ran for 9 hours before hitting a compiler error, which was nearly
-> twice as long as the longest I'd seen before (5 hours), and
-> uncomfortably close to the 12 hours I've been taking as good.
-> 
-> My current thinking is that the powerpc merge that you indicated,
-> that I found to be "good", is the one that contains the bad commit;
-> but that the bug is very rare to manifest in that kernel, and my test
-> of the davem/net merge happened to be unusually unlucky to hit it.
-> 
-> Then some other later change makes it significantly easier to hit;
-> and identifying that change may make it much easier to pin down
-> what the original bug is.
-> 
-> So I've replayed the bisection up to that point, marked the davem/net
-> merge as good this time, and set off again in the hope that it will
-> lead somewhere more enlightening.  But prepared for disappointment.
+lbarx/stbcx. are implemented on e6500, but not on e5500.
+Likewise, SMT is on e6500, but not on e5500.
 
-Thanks Hugh. That logic sounds reasonable, I doubt we can blame davem :)
+So, avoid executing an unimplemented instruction by only locking
+when needed (i.e. in the presence of SMT).
 
-I've setup another box here to try and reproduce it. It's running with 4k
-pages, no THP, and it's going well into swap. Hopefully I can hit the same bug,
-but we'll see in 12 hours I guess.
+Signed-off-by: Scott Wood <oss@buserror.net>
+---
+This fixes a regression that was introduced in v4.5-rc1.
 
-cheers
+ arch/powerpc/mm/hugetlbpage-book3e.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/arch/powerpc/mm/hugetlbpage-book3e.c b/arch/powerpc/mm/hugetlbpage-book3e.c
+index 7e6d088..83a8be7 100644
+--- a/arch/powerpc/mm/hugetlbpage-book3e.c
++++ b/arch/powerpc/mm/hugetlbpage-book3e.c
+@@ -8,6 +8,8 @@
+ #include <linux/mm.h>
+ #include <linux/hugetlb.h>
+ 
++#include <asm/mmu.h>
++
+ #ifdef CONFIG_PPC_FSL_BOOK3E
+ #ifdef CONFIG_PPC64
+ static inline int tlb1_next(void)
+@@ -60,6 +62,14 @@ static inline void book3e_tlb_lock(void)
+ 	unsigned long tmp;
+ 	int token = smp_processor_id() + 1;
+ 
++	/*
++	 * Besides being unnecessary in the absence of SMT, this
++	 * check prevents trying to do lbarx/stbcx. on e5500 which
++	 * doesn't implement either feature.
++	 */
++	if (!cpu_has_feature(CPU_FTR_SMT))
++		return;
++
+ 	asm volatile("1: lbarx %0, 0, %1;"
+ 		     "cmpwi %0, 0;"
+ 		     "bne 2f;"
+@@ -80,6 +90,9 @@ static inline void book3e_tlb_unlock(void)
+ {
+ 	struct paca_struct *paca = get_paca();
+ 
++	if (!cpu_has_feature(CPU_FTR_SMT))
++		return;
++
+ 	isync();
+ 	paca->tcd_ptr->lock = 0;
+ }
+-- 
+2.5.0
