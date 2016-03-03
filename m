@@ -1,16 +1,44 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 095371A032F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 17:16:45 +1100 (AEDT)
-From: Scott Wood <oss@buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 470DF1A032F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 17:48:37 +1100 (AEDT)
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 14C9D140DF7
+ for <linuxppc-dev@ozlabs.org>; Thu,  3 Mar 2016 17:48:37 +1100 (AEDT)
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
+ Thu, 3 Mar 2016 16:48:35 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id E299C2CE805A
+ for <linuxppc-dev@ozlabs.org>; Thu,  3 Mar 2016 17:48:31 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u236mNiF4587876
+ for <linuxppc-dev@ozlabs.org>; Thu, 3 Mar 2016 17:48:31 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u236lxJD032009
+ for <linuxppc-dev@ozlabs.org>; Thu, 3 Mar 2016 17:47:59 +1100
+Date: Thu, 3 Mar 2016 12:17:37 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
-	Scott Wood <oss@buserror.net>
-Date: Thu,  3 Mar 2016 00:16:38 -0600
-Message-Id: <1456985798-31675-1-git-send-email-oss@buserror.net>
-Subject: [PATCH] powerpc/fsl-book3e: Avoid lbarx on e5500
+Cc: linuxppc-dev@ozlabs.org, pmladek@suse.com, jeyu@redhat.com,
+ jkosina@suse.cz, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ duwe@lst.de, live-patching@vger.kernel.org, mbenes@suse.cz
+Subject: Re: [PATCH v3 1/8] powerpc: Create a helper for getting the kernel
+ toc value
+Message-ID: <20160303064736.GA18743@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <1456979220-10931-1-git-send-email-mpe@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1456979220-10931-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,56 +48,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-lbarx/stbcx. are implemented on e6500, but not on e5500.
-Likewise, SMT is on e6500, but not on e5500.
+* Michael Ellerman <mpe@ellerman.id.au> [2016-03-03 15:26:53]:
 
-So, avoid executing an unimplemented instruction by only locking
-when needed (i.e. in the presence of SMT).
+> Move the logic to work out the kernel toc pointer into a header. This is
+> a good cleanup, and also means we can use it elsewhere in future.
+> 
+> Reviewed-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> Reviewed-by: Torsten Duwe <duwe@suse.de>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Signed-off-by: Scott Wood <oss@buserror.net>
----
-This fixes a regression that was introduced in v4.5-rc1.
+For the patchset,
 
- arch/powerpc/mm/hugetlbpage-book3e.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/arch/powerpc/mm/hugetlbpage-book3e.c b/arch/powerpc/mm/hugetlbpage-book3e.c
-index 7e6d088..83a8be7 100644
---- a/arch/powerpc/mm/hugetlbpage-book3e.c
-+++ b/arch/powerpc/mm/hugetlbpage-book3e.c
-@@ -8,6 +8,8 @@
- #include <linux/mm.h>
- #include <linux/hugetlb.h>
- 
-+#include <asm/mmu.h>
-+
- #ifdef CONFIG_PPC_FSL_BOOK3E
- #ifdef CONFIG_PPC64
- static inline int tlb1_next(void)
-@@ -60,6 +62,14 @@ static inline void book3e_tlb_lock(void)
- 	unsigned long tmp;
- 	int token = smp_processor_id() + 1;
- 
-+	/*
-+	 * Besides being unnecessary in the absence of SMT, this
-+	 * check prevents trying to do lbarx/stbcx. on e5500 which
-+	 * doesn't implement either feature.
-+	 */
-+	if (!cpu_has_feature(CPU_FTR_SMT))
-+		return;
-+
- 	asm volatile("1: lbarx %0, 0, %1;"
- 		     "cmpwi %0, 0;"
- 		     "bne 2f;"
-@@ -80,6 +90,9 @@ static inline void book3e_tlb_unlock(void)
- {
- 	struct paca_struct *paca = get_paca();
- 
-+	if (!cpu_has_feature(CPU_FTR_SMT))
-+		return;
-+
- 	isync();
- 	paca->tcd_ptr->lock = 0;
- }
--- 
-2.5.0
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
