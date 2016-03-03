@@ -1,32 +1,32 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 770E01A0B97
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 10:54:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 27B6A1A0BA3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 10:54:41 +1100 (AEDT)
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 4 Mar 2016 09:54:39 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D03002CE805A
+ Fri, 4 Mar 2016 09:54:40 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id CC6272CE8059
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 10:54:36 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u23NsSQl4522366
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u23NsSnR1507768
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 10:54:36 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u23Ns4IZ012199
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u23Ns46J026013
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 10:54:04 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: ruscur@russell.cc, mpe@ellerman.id.au,
  Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH v15 06/12] powerpc/eeh: Create PE for VFs
-Date: Fri,  4 Mar 2016 10:53:08 +1100
-Message-Id: <1457049194-9281-7-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v15 05/12] powerpc/eeh: EEH device for VF
+Date: Fri,  4 Mar 2016 10:53:07 +1100
+Message-Id: <1457049194-9281-6-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1457049194-9281-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1457049194-9281-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,84 +40,77 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 
-This creates PEs for VFs in the weak function pcibios_bus_add_device().
-Those PEs for VFs are identified with newly introduced flag EEH_PE_VF
-so that we treat them differently during EEH recovery.
+VFs and their corresponding pdn are created and released dynamically
+when their PF's SRIOV capability is enabled and disabled. This creates
+and releases EEH devices for VFs when creating and releasing their pdn
+instances, which means EEH devices and pdn instances have same life
+cycle. Also, VF's EEH device is identified by (struct eeh_dev::physfn).
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h               |  1 +
- arch/powerpc/kernel/eeh_pe.c                 | 10 ++++++++--
- arch/powerpc/platforms/powernv/eeh-powernv.c | 16 ++++++++++++++++
- 3 files changed, 25 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/eeh.h |  1 +
+ arch/powerpc/kernel/pci_dn.c   | 15 +++++++++++++++
+ 2 files changed, 16 insertions(+)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 574ed49a..0c551a2 100644
+index 867c39b..574ed49a 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -72,6 +72,7 @@ struct pci_dn;
- #define EEH_PE_PHB	(1 << 1)	/* PHB PE    */
- #define EEH_PE_DEVICE 	(1 << 2)	/* Device PE */
- #define EEH_PE_BUS	(1 << 3)	/* Bus PE    */
-+#define EEH_PE_VF	(1 << 4)	/* VF PE     */
- 
- #define EEH_PE_ISOLATED		(1 << 0)	/* Isolated PE		*/
- #define EEH_PE_RECOVERING	(1 << 1)	/* Recovering PE	*/
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index 98f8180..edd2e04 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -299,7 +299,10 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
- 	 * EEH device already having associated PE, but
- 	 * the direct parent EEH device doesn't have yet.
- 	 */
--	pdn = pdn ? pdn->parent : NULL;
-+	if (edev->physfn)
-+		pdn = pci_get_pdn(edev->physfn);
-+	else
-+		pdn = pdn ? pdn->parent : NULL;
- 	while (pdn) {
- 		/* We're poking out of PCI territory */
- 		parent = pdn_to_eeh_dev(pdn);
-@@ -382,7 +385,10 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
- 	}
- 
- 	/* Create a new EEH PE */
--	pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
-+	if (edev->physfn)
-+		pe = eeh_pe_alloc(edev->phb, EEH_PE_VF);
-+	else
-+		pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
- 	if (!pe) {
- 		pr_err("%s: out of memory!\n", __func__);
- 		return -ENOMEM;
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 8119172..830526e 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -1503,6 +1503,22 @@ static struct eeh_ops pnv_eeh_ops = {
- 	.restore_config		= pnv_eeh_restore_config
+@@ -141,6 +141,7 @@ struct eeh_dev {
+ 	struct pci_controller *phb;	/* Associated PHB		*/
+ 	struct pci_dn *pdn;		/* Associated PCI device node	*/
+ 	struct pci_dev *pdev;		/* Associated PCI device	*/
++	struct pci_dev *physfn;		/* Associated SRIOV PF		*/
+ 	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
  };
  
-+void pcibios_bus_add_device(struct pci_dev *pdev)
-+{
-+	struct pci_dn *pdn = pci_get_pdn(pdev);
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index b3b4df9..e23bdf7 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -179,6 +179,7 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+ {
+ #ifdef CONFIG_PCI_IOV
+ 	struct pci_dn *parent, *pdn;
++	struct eeh_dev *edev;
+ 	int i;
+ 
+ 	/* Only support IOV for now */
+@@ -204,6 +205,12 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+ 				 __func__, i);
+ 			return NULL;
+ 		}
 +
-+	if (!pdev->is_virtfn)
-+		return;
++		/* Create the EEH device for the VF */
++		eeh_dev_init(pdn, pci_bus_to_host(pdev->bus));
++		edev = pdn_to_eeh_dev(pdn);
++		BUG_ON(!edev);
++		edev->physfn = pdev;
+ 	}
+ #endif /* CONFIG_PCI_IOV */
+ 
+@@ -215,6 +222,7 @@ void remove_dev_pci_data(struct pci_dev *pdev)
+ #ifdef CONFIG_PCI_IOV
+ 	struct pci_dn *parent;
+ 	struct pci_dn *pdn, *tmp;
++	struct eeh_dev *edev;
+ 	int i;
+ 
+ 	/*
+@@ -256,6 +264,13 @@ void remove_dev_pci_data(struct pci_dev *pdev)
+ 			    pdn->devfn != pci_iov_virtfn_devfn(pdev, i))
+ 				continue;
+ 
++			/* Release EEH device for the VF */
++			edev = pdn_to_eeh_dev(pdn);
++			if (edev) {
++				pdn->edev = NULL;
++				kfree(edev);
++			}
 +
-+	/*
-+	 * The following operations will fail if VF's sysfs files
-+	 * aren't created or its resources aren't finalized.
-+	 */
-+	eeh_add_device_early(pdn);
-+	eeh_add_device_late(pdev);
-+	eeh_sysfs_add_device(pdev);
-+}
-+
- /**
-  * eeh_powernv_init - Register platform dependent EEH operations
-  *
+ 			if (!list_empty(&pdn->list))
+ 				list_del(&pdn->list);
+ 
 -- 
 2.1.0
