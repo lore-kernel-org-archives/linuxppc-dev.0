@@ -1,8 +1,8 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1DD9B1A06A7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5A6FF1A03DF
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 12:59:54 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
@@ -10,10 +10,9 @@ To: paulus@samba.org,
 	benh@kernel.crashing.org
 Cc: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFC 08/18] pseries: Automatically resize HPT for memory hot
- add/remove
-Date: Thu,  3 Mar 2016 12:59:39 +1100
-Message-Id: <1456970389-28802-9-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFC 09/18] powerpc/kvm: Corectly report KVM_CAP_PPC_ALLOC_HTAB
+Date: Thu,  3 Mar 2016 12:59:40 +1100
+Message-Id: <1456970389-28802-10-git-send-email-david@gibson.dropbear.id.au>
 In-Reply-To: <1456970389-28802-1-git-send-email-david@gibson.dropbear.id.au>
 References: <1456970389-28802-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,94 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We've now implemented code in the pseries platform to use the new PAPR
-interface to allow resizing the hash page table (HPT) at runtime.
+At present KVM on powerpc always reports KVM_CAP_PPC_ALLOC_HTAB as enabled.
+However, the ioctl() it advertises (KVM_PPC_ALLOCATE_HTAB) only actually
+works on KVM HV.  On KVM PR it will fail with ENOTTY.
 
-This patch uses that interface to automatically attempt to resize the HPT
-when memory is hot added or removed.  This tries to always keep the HPT at
-a reasonable size for our current memory size.
+qemu already has a workaround for this, so it's not breaking things in
+practice, but it would be better to advertise this correctly.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-Reviewed-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/sparsemem.h |  1 +
- arch/powerpc/mm/hash_utils_64.c      | 29 +++++++++++++++++++++++++++++
- arch/powerpc/mm/mem.c                |  4 ++++
- 3 files changed, 34 insertions(+)
+ arch/powerpc/kvm/powerpc.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
-index f6fc0ee..737335c 100644
---- a/arch/powerpc/include/asm/sparsemem.h
-+++ b/arch/powerpc/include/asm/sparsemem.h
-@@ -16,6 +16,7 @@
- #endif /* CONFIG_SPARSEMEM */
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index a3b182d..2f21ab7 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -509,7 +509,6 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
  
- #ifdef CONFIG_MEMORY_HOTPLUG
-+extern void resize_hpt_for_hotplug(unsigned long new_mem_size);
- extern int create_section_mapping(unsigned long start, unsigned long end);
- extern int remove_section_mapping(unsigned long start, unsigned long end);
- #ifdef CONFIG_NUMA
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 0809bea..6fbc27a 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -645,6 +645,35 @@ static unsigned long __init htab_get_table_size(void)
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
-+void resize_hpt_for_hotplug(unsigned long new_mem_size)
-+{
-+	unsigned target_hpt_shift;
-+
-+	if (!ppc_md.resize_hpt)
-+		return;
-+
-+	target_hpt_shift = htab_shift_for_mem_size(new_mem_size);
-+
-+	/*
-+	 * To avoid lots of HPT resizes if memory size is fluctuating
-+	 * across a boundary, we deliberately have some hysterisis
-+	 * here: we immediately increase the HPT size if the target
-+	 * shift exceeds the current shift, but we won't attempt to
-+	 * reduce unless the target shift is at least 2 below the
-+	 * current shift
-+	 */
-+	if ((target_hpt_shift > ppc64_pft_size)
-+	    || (target_hpt_shift < (ppc64_pft_size - 1))) {
-+		int rc;
-+
-+		rc = ppc_md.resize_hpt(target_hpt_shift);
-+		if (rc)
-+			printk(KERN_WARNING
-+			       "Unable to resize hash page table to target order %d: %d\n",
-+			       target_hpt_shift, rc);
-+	}
-+}
-+
- int create_section_mapping(unsigned long start, unsigned long end)
- {
- 	int rc = htab_bolt_mapping(start, end, __pa(start),
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index f980da6..4938ee7 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -121,6 +121,8 @@ int arch_add_memory(int nid, u64 start, u64 size, bool for_device)
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 	int rc;
- 
-+	resize_hpt_for_hotplug(memblock_phys_mem_size());
-+
- 	pgdata = NODE_DATA(nid);
- 
- 	start = (unsigned long)__va(start);
-@@ -161,6 +163,8 @@ int arch_remove_memory(u64 start, u64 size)
- 	 */
- 	vm_unmap_aliases();
- 
-+	resize_hpt_for_hotplug(memblock_phys_mem_size());
-+
- 	return ret;
- }
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	case KVM_CAP_SPAPR_TCE:
+-	case KVM_CAP_PPC_ALLOC_HTAB:
+ 	case KVM_CAP_PPC_RTAS:
+ 	case KVM_CAP_PPC_FIXUP_HCALL:
+ 	case KVM_CAP_PPC_ENABLE_HCALL:
+@@ -518,6 +517,10 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
  #endif
+ 		r = 1;
+ 		break;
++
++	case KVM_CAP_PPC_ALLOC_HTAB:
++		r = hv_enabled;
++		break;
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+ 	case KVM_CAP_PPC_SMT:
 -- 
 2.5.0
