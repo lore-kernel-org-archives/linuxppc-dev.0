@@ -2,7 +2,7 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 24D341A0342
+ by lists.ozlabs.org (Postfix) with ESMTPS id A248A1A045D
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 12:59:52 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
@@ -10,9 +10,12 @@ To: paulus@samba.org,
 	benh@kernel.crashing.org
 Cc: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFC 00/18] PAPR HPT resizing, guest side & host side preliminaries
-Date: Thu,  3 Mar 2016 12:59:31 +1100
-Message-Id: <1456970389-28802-1-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFC 05/18] pseries: Add hypercall wrappers for hash page table
+ resizing
+Date: Thu,  3 Mar 2016 12:59:36 +1100
+Message-Id: <1456970389-28802-6-git-send-email-david@gibson.dropbear.id.au>
+In-Reply-To: <1456970389-28802-1-git-send-email-david@gibson.dropbear.id.au>
+References: <1456970389-28802-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,67 +25,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an incomplete implementation of the kernel parts of the PAPR
-hashed page table (HPT) resizing extension.
+This adds the hypercall numbers and wrapper functions for the hash page
+table resizing hypercalls.
 
-It contains a complete guest-side implementation - or as complete as
-it can be until we have a final PAPR change.
+These are experimental "platform specific" values for now, until we have a
+formal PAPR update.
 
-It also contains preliminary patches towards a host side
-implementation for KVM HV (the KVM PR and TCG host-side
-implementations live in qemu).  This isn't working yet, but has an
-outline of the approach.
+It also adds a new firmware feature flag to track the presence of the
+HPT resizing calls.
 
-I'm hoping particularly for comment on the locking / synchronization
-between the resizing work thread and the hypercalls in patch 18/18.
-This is much hairier than I'd like, in order to handle the various
-failure / cancellation paths, but as yet I haven't seen a simpler way
-of accomplishing what we need.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Reviewed-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/include/asm/firmware.h       |  5 +++--
+ arch/powerpc/include/asm/hvcall.h         |  2 ++
+ arch/powerpc/include/asm/plpar_wrappers.h | 12 ++++++++++++
+ arch/powerpc/platforms/pseries/firmware.c |  1 +
+ 4 files changed, 18 insertions(+), 2 deletions(-)
 
-David Gibson (18):
-  powerpc/mm: Clean up error handling for htab_remove_mapping
-  powerpc/mm: Handle removing maybe-present bolted HPTEs
-  powerpc/mm: Clean up memory hotplug failure paths
-  powerpc/mm: Split hash page table sizing heuristic into a helper
-  pseries: Add hypercall wrappers for hash page table resizing
-  pseries: Add support for hash table resizing
-  pseries: Advertise HPT resizing support via CAS
-  pseries: Automatically resize HPT for memory hot add/remove
-  powerpc/kvm: Corectly report KVM_CAP_PPC_ALLOC_HTAB
-  powerpc/kvm: Add capability flag for hashed page table resizing
-  powerpc/kvm: Rename kvm_alloc_hpt() for clarity
-  powerpc/kvm: Gather HPT related variables into sub-structure
-  powerpc/kvm: Don't store values derivable from HPT order
-  powerpc/kvm: Split HPT allocation from activation
-  powerpc/kvm: Allow KVM_PPC_ALLOCATE_HTAB ioctl() to change HPT size
-  powerpc/kvm: HPT resizing stub implementation
-  powerpc/kvm: Advertise availablity of HPT resizing on KVM HV
-  powerpc/kvm: Outline of HPT resizing implementation
-
- arch/powerpc/include/asm/firmware.h       |   5 +-
- arch/powerpc/include/asm/hvcall.h         |   2 +
- arch/powerpc/include/asm/kvm_book3s.h     |   6 +
- arch/powerpc/include/asm/kvm_book3s_64.h  |  15 +
- arch/powerpc/include/asm/kvm_host.h       |  18 +-
- arch/powerpc/include/asm/kvm_ppc.h        |  11 +-
- arch/powerpc/include/asm/machdep.h        |   3 +-
- arch/powerpc/include/asm/mmu-hash64.h     |   3 +
- arch/powerpc/include/asm/plpar_wrappers.h |  12 +
- arch/powerpc/include/asm/prom.h           |   1 +
- arch/powerpc/include/asm/sparsemem.h      |   1 +
- arch/powerpc/kernel/prom_init.c           |   2 +-
- arch/powerpc/kvm/book3s_64_mmu_hv.c       | 452 ++++++++++++++++++++++++------
- arch/powerpc/kvm/book3s_hv.c              |  38 ++-
- arch/powerpc/kvm/book3s_hv_builtin.c      |   8 +-
- arch/powerpc/kvm/book3s_hv_rm_mmu.c       |  62 ++--
- arch/powerpc/kvm/powerpc.c                |  17 +-
- arch/powerpc/mm/hash_utils_64.c           | 128 +++++++--
- arch/powerpc/mm/init_64.c                 |  47 ++--
- arch/powerpc/mm/mem.c                     |  14 +-
- arch/powerpc/platforms/pseries/firmware.c |   1 +
- arch/powerpc/platforms/pseries/lpar.c     | 119 +++++++-
- include/uapi/linux/kvm.h                  |   1 +
- 23 files changed, 774 insertions(+), 192 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index b062924..32435d2 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -42,7 +42,7 @@
+ #define FW_FEATURE_SPLPAR	ASM_CONST(0x0000000000100000)
+ #define FW_FEATURE_LPAR		ASM_CONST(0x0000000000400000)
+ #define FW_FEATURE_PS3_LV1	ASM_CONST(0x0000000000800000)
+-/* Free				ASM_CONST(0x0000000001000000) */
++#define FW_FEATURE_HPT_RESIZE	ASM_CONST(0x0000000001000000)
+ #define FW_FEATURE_CMO		ASM_CONST(0x0000000002000000)
+ #define FW_FEATURE_VPHN		ASM_CONST(0x0000000004000000)
+ #define FW_FEATURE_XCMO		ASM_CONST(0x0000000008000000)
+@@ -66,7 +66,8 @@ enum {
+ 		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
+ 		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
+ 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
+-		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
++		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
++		FW_FEATURE_HPT_RESIZE,
+ 	FW_FEATURE_PSERIES_ALWAYS = 0,
+ 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index e3b54dd..195e080 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -293,6 +293,8 @@
+ 
+ /* Platform specific hcalls, used by KVM */
+ #define H_RTAS			0xf000
++#define H_RESIZE_HPT_PREPARE	0xf003
++#define H_RESIZE_HPT_COMMIT	0xf004
+ 
+ /* "Platform specific hcalls", provided by PHYP */
+ #define H_GET_24X7_CATALOG_PAGE	0xF078
+diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+index 1b39424..b7ee6d9 100644
+--- a/arch/powerpc/include/asm/plpar_wrappers.h
++++ b/arch/powerpc/include/asm/plpar_wrappers.h
+@@ -242,6 +242,18 @@ static inline long plpar_pte_protect(unsigned long flags, unsigned long ptex,
+ 	return plpar_hcall_norets(H_PROTECT, flags, ptex, avpn);
+ }
+ 
++static inline long plpar_resize_hpt_prepare(unsigned long flags,
++					    unsigned long shift)
++{
++	return plpar_hcall_norets(H_RESIZE_HPT_PREPARE, flags, shift);
++}
++
++static inline long plpar_resize_hpt_commit(unsigned long flags,
++					   unsigned long shift)
++{
++	return plpar_hcall_norets(H_RESIZE_HPT_COMMIT, flags, shift);
++}
++
+ static inline long plpar_tce_get(unsigned long liobn, unsigned long ioba,
+ 		unsigned long *tce_ret)
+ {
+diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+index 8c80588..7b287be 100644
+--- a/arch/powerpc/platforms/pseries/firmware.c
++++ b/arch/powerpc/platforms/pseries/firmware.c
+@@ -63,6 +63,7 @@ hypertas_fw_features_table[] = {
+ 	{FW_FEATURE_VPHN,		"hcall-vphn"},
+ 	{FW_FEATURE_SET_MODE,		"hcall-set-mode"},
+ 	{FW_FEATURE_BEST_ENERGY,	"hcall-best-energy-1*"},
++	{FW_FEATURE_HPT_RESIZE,		"hcall-hpt-resize"},
+ };
+ 
+ /* Build up the firmware features bitmask using the contents of
 -- 
 2.5.0
