@@ -1,37 +1,19 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 789491A0342
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 15:10:51 +1100 (AEDT)
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Thu, 3 Mar 2016 14:10:50 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6C5BD3578052
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 15:10:48 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u234Aesu54394970
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Mar 2016 15:10:48 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u234AFSN024685
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Mar 2016 15:10:16 +1100
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: "michael.neuling" <michael.neuling@au1.ibm.com>, mpe <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v5 11/18] cxl: Separate bare-metal fields in adapter and
- AFU data structures
-In-reply-to: <1456244519-18934-12-git-send-email-fbarrat@linux.vnet.ibm.com>
-References: <1456244519-18934-1-git-send-email-fbarrat@linux.vnet.ibm.com>
- <1456244519-18934-12-git-send-email-fbarrat@linux.vnet.ibm.com>
-Date: Thu, 03 Mar 2016 15:09:20 +1100
-Message-Id: <1456977899-sup-5701@delenn.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A4F261A03DF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 15:27:02 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: bsingharora@gmail.com, duwe@lst.de, <linux-kernel@vger.kernel.org>,
+ rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
+ jeyu@redhat.com, jkosina@suse.cz, live-patching@vger.kernel.org,
+ mbenes@suse.cz
+Subject: [PATCH v3 1/8] powerpc: Create a helper for getting the kernel toc
+ value
+Date: Thu,  3 Mar 2016 15:26:53 +1100
+Message-Id: <1456979220-10931-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,84 +23,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from Frederic Barrat's message of 2016-02-24 03:21:52 +1100:
->  static int pci_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
->  {
->      struct cxl_afu *afu;
-> -    int rc;
-> +    int rc = -ENOMEM;
->  
->      afu = cxl_alloc_afu(adapter, slice);
->      if (!afu)
->          return -ENOMEM;
->  
-> +    afu->native = kzalloc(sizeof(struct cxl_afu_native), GFP_KERNEL);
-> +    if (!afu->native)
-> +        goto err_free_afu;
-> +
-> +    mutex_init(&afu->native->spa_mutex);
-> +
->      rc = dev_set_name(&afu->dev, "afu%i.%i", adapter->adapter_num, slice);
->      if (rc)
-> -        goto err_free;
-> +        goto err_free_native;
->  
->      rc = pci_configure_afu(afu, adapter, dev);
->      if (rc)
-> -        goto err_free;
-> +        goto err_free_native;
->  
->      /* Don't care if this fails */
->      cxl_debugfs_afu_add(afu);
-> @@ -859,7 +866,9 @@ err_put1:
->      device_unregister(&afu->dev);
->      return rc;
->  
-> -err_free:
-> +err_free_native:
-> +    kfree(afu->native);
-> +err_free_afu:
->      kfree(afu);
->      return rc;
+Move the logic to work out the kernel toc pointer into a header. This is
+a good cleanup, and also means we can use it elsewhere in future.
 
-Great - thanks for changing that to use consistent error paths :)
+Reviewed-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Reviewed-by: Torsten Duwe <duwe@suse.de>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/sections.h | 12 ++++++++++++
+ arch/powerpc/kernel/paca.c          | 11 +----------
+ 2 files changed, 13 insertions(+), 10 deletions(-)
 
-> @@ -1162,6 +1172,12 @@ static struct cxl *cxl_pci_init_adapter(struct pci_dev *dev)
->      if (!adapter)
->          return ERR_PTR(-ENOMEM);
->  
-> +    adapter->native = kzalloc(sizeof(struct cxl_native), GFP_KERNEL);
-> +    if (!adapter->native) {
-> +        rc = -ENOMEM;
-> +        goto err_release;
-> +    }
-> +
->      /* Set defaults for parameters which need to persist over
->       * configure/reconfigure
->       */
-> @@ -1171,8 +1187,7 @@ static struct cxl *cxl_pci_init_adapter(struct pci_dev *dev)
->      rc = cxl_configure_adapter(adapter, dev);
->      if (rc) {
->          pci_disable_device(dev);
-> -        cxl_release_adapter(&adapter->dev);
-> -        return ERR_PTR(rc);
-> +        goto err_release;
->      }
->  
->      /* Don't care if this one fails: */
-> @@ -1198,6 +1213,10 @@ err_put1:
->      cxl_deconfigure_adapter(adapter);
->      device_unregister(&adapter->dev);
->      return ERR_PTR(rc);
-> +
-> +err_release:
-> +    cxl_release_adapter(&adapter->dev);
-> +    return ERR_PTR(rc);
->  }
+v3: No change.
+v2: New.
 
-Likewise, looks much better now :)
-
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
-
-Cheers,
--Ian
+diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
+index a5e930aca804..abf5866e08c6 100644
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@ -22,6 +22,18 @@ static inline int in_kernel_text(unsigned long addr)
+ 	return 0;
+ }
+ 
++static inline unsigned long kernel_toc_addr(void)
++{
++	/* Defined by the linker, see vmlinux.lds.S */
++	extern unsigned long __toc_start;
++
++	/*
++	 * The TOC register (r2) points 32kB into the TOC, so that 64kB of
++	 * the TOC can be addressed using a single machine instruction.
++	 */
++	return (unsigned long)(&__toc_start) + 0x8000UL;
++}
++
+ static inline int overlaps_interrupt_vector_text(unsigned long start,
+ 							unsigned long end)
+ {
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index 01ea0edf0579..93dae296b6be 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -17,10 +17,6 @@
+ #include <asm/pgtable.h>
+ #include <asm/kexec.h>
+ 
+-/* This symbol is provided by the linker - let it fill in the paca
+- * field correctly */
+-extern unsigned long __toc_start;
+-
+ #ifdef CONFIG_PPC_BOOK3S
+ 
+ /*
+@@ -149,11 +145,6 @@ EXPORT_SYMBOL(paca);
+ 
+ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
+ {
+-       /* The TOC register (GPR2) points 32kB into the TOC, so that 64kB
+-	* of the TOC can be addressed using a single machine instruction.
+-	*/
+-	unsigned long kernel_toc = (unsigned long)(&__toc_start) + 0x8000UL;
+-
+ #ifdef CONFIG_PPC_BOOK3S
+ 	new_paca->lppaca_ptr = new_lppaca(cpu);
+ #else
+@@ -161,7 +152,7 @@ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
+ #endif
+ 	new_paca->lock_token = 0x8000;
+ 	new_paca->paca_index = cpu;
+-	new_paca->kernel_toc = kernel_toc;
++	new_paca->kernel_toc = kernel_toc_addr();
+ 	new_paca->kernelbase = (unsigned long) _stext;
+ 	/* Only set MSR:IR/DR when MMU is initialized */
+ 	new_paca->kernel_msr = MSR_KERNEL & ~(MSR_IR | MSR_DR);
+-- 
+2.5.0
