@@ -1,28 +1,21 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pf0-x233.google.com (mail-pf0-x233.google.com
- [IPv6:2607:f8b0:400e:c00::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A3C21A01E9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 07:50:02 +1100 (AEDT)
-Received: by mail-pf0-x233.google.com with SMTP id 4so567114pfd.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Mar 2016 12:50:02 -0800 (PST)
-Date: Wed, 2 Mar 2016 12:49:52 -0800 (PST)
-From: Hugh Dickins <hughd@google.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-cc: Hugh Dickins <hughd@google.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org
-Subject: Re: Problems with swapping in v4.5-rc on POWER
-In-Reply-To: <alpine.LSU.2.11.1602260157430.10399@eggly.anvils>
-Message-ID: <alpine.LSU.2.11.1603021226300.31251@eggly.anvils>
-References: <alpine.LSU.2.11.1602241716220.15121@eggly.anvils>
- <877fhttmr1.fsf@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1602242136270.6876@eggly.anvils>
- <alpine.LSU.2.11.1602251322130.8063@eggly.anvils>
- <alpine.LSU.2.11.1602260157430.10399@eggly.anvils>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC4591A045E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 12:59:52 +1100 (AEDT)
+From: David Gibson <david@gibson.dropbear.id.au>
+To: paulus@samba.org,
+	aik@ozlabs.ru,
+	benh@kernel.crashing.org
+Cc: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: [RFC 04/18] powerpc/mm: Split hash page table sizing heuristic into a
+ helper
+Date: Thu,  3 Mar 2016 12:59:35 +1100
+Message-Id: <1456970389-28802-5-git-send-email-david@gibson.dropbear.id.au>
+In-Reply-To: <1456970389-28802-1-git-send-email-david@gibson.dropbear.id.au>
+References: <1456970389-28802-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,94 +25,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 26 Feb 2016, Hugh Dickins wrote:
-> On Thu, 25 Feb 2016, Hugh Dickins wrote:
-> > On Wed, 24 Feb 2016, Hugh Dickins wrote:
-> > > On Thu, 25 Feb 2016, Aneesh Kumar K.V wrote:
-> > > > 
-> > > > Can you test the impact of the merge listed below ?(ie, revert the merge and see if
-> > > > we can reproduce and also verify with merge applied). This will give us a
-> > > > set of commits to look closer. We had quiet a lot of page table
-> > > > related changes going in this merge window. 
-> > > > 
-> > > > f689b742f217b2ffe7 ("Pull powerpc updates from Michael Ellerman:")
-> > > > 
-> > > > That is the merge commit that added _PAGE_PTE. 
-> > > 
-> > > Another experiment running on it at the moment, I'd like to give that
-> > > a few more hours, and then will try the revert you suggest.  But does
-> > > that merge revert cleanly, did you try?  I'm afraid of interactions,
-> > > whether obvious or subtle, with the THP refcounting rework.  Oh, since
-> > > I don't have THP configured on, maybe I can ignore any issues from that.
-> > 
-> > That revert worked painlessly, only a very few and simple conflicts,
-> > I ran that under load for 12 hours, no problem seen.
-> > 
-> > I've now checked out an f689b742 tree and started on that, just to
-> > confirm that it fails fairly quickly I hope; and will then proceed
-> > to git bisect, giving that as bad and 37cea93b as good.
-> > 
-> > Given the uncertainty of whether 12 hours is really long enough to be
-> > sure, and perhaps difficulties along the way, I don't rate my chances
-> > of a reliable bisection higher than 60%, but we'll see.
-> 
-> I'm sure you won't want a breathless report from me on each bisection
-> step, but I ought to report that: contrary to our expectations, the
-> f689b742 survived without error for 12 hours, so appears to be good.
-> I'll bisect between there and v4.5-rc1.
+htab_get_table_size() either retrieve the size of the hash page table (HPT)
+from the device tree - if the HPT size is determined by firmware - or
+uses a heuristic to determine a good size based on RAM size if the kernel
+is responsible for allocating the HPT.
 
-The bisection completed this morning (log appended below):
-not a satisfactory conclusion, it's pointing to a davem/net merge.
+To support a PAPR extension allowing resizing of the HPT, we're going to
+want the memory size -> HPT size logic elsewhere, so split it out into a
+helper function.
 
-I was uncomfortable when I marked that point bad in the first place:
-it ran for 9 hours before hitting a compiler error, which was nearly
-twice as long as the longest I'd seen before (5 hours), and
-uncomfortably close to the 12 hours I've been taking as good.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/include/asm/mmu-hash64.h |  3 +++
+ arch/powerpc/mm/hash_utils_64.c       | 32 +++++++++++++++++++-------------
+ 2 files changed, 22 insertions(+), 13 deletions(-)
 
-My current thinking is that the powerpc merge that you indicated,
-that I found to be "good", is the one that contains the bad commit;
-but that the bug is very rare to manifest in that kernel, and my test
-of the davem/net merge happened to be unusually unlucky to hit it.
-
-Then some other later change makes it significantly easier to hit;
-and identifying that change may make it much easier to pin down
-what the original bug is.
-
-So I've replayed the bisection up to that point, marked the davem/net
-merge as good this time, and set off again in the hope that it will
-lead somewhere more enlightening.  But prepared for disappointment.
-
-Hugh
-
-git bisect start
-# good: [f689b742f217b2ffe7925f8a6521b208ee995309] Merge tag 'powerpc-4.5-1' of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux
-git bisect good f689b742f217b2ffe7925f8a6521b208ee995309
-# bad: [92e963f50fc74041b5e9e744c330dca48e04f08d] Linux 4.5-rc1
-git bisect bad 92e963f50fc74041b5e9e744c330dca48e04f08d
-# bad: [7f36f1b2a8c4f55f8226ed6c8bb4ed6de11c4015] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/ide
-git bisect bad 7f36f1b2a8c4f55f8226ed6c8bb4ed6de11c4015
-# bad: [6606b342febfd470b4a33acb73e360eeaca1d9bb] Merge git://www.linux-watchdog.org/linux-watchdog
-git bisect bad 6606b342febfd470b4a33acb73e360eeaca1d9bb
-# good: [d0021d3bdfe9d551859bca1f58da0e6be8e26043] Merge remote-tracking branch 'asoc/topic/wm8960' into asoc-next
-git bisect good d0021d3bdfe9d551859bca1f58da0e6be8e26043
-# good: [e3315b439c30c208582ac64e58f0c0d36b83181e] ALSA: oxfw: allocate own address region for SCS.1 series
-git bisect good e3315b439c30c208582ac64e58f0c0d36b83181e
-# good: [3da834e3e5a4a5d26882955298b55a9ed37a00bc] clk: remove duplicated COMMON_CLK_NXP record from clk/Kconfig
-git bisect good 3da834e3e5a4a5d26882955298b55a9ed37a00bc
-# bad: [e535d74bc50df2357d3253f8f3ca48c66d0d892a] Merge tag 'docs-4.5' of git://git.lwn.net/linux
-git bisect bad e535d74bc50df2357d3253f8f3ca48c66d0d892a
-# bad: [4e5448a31d73d0e944b7adb9049438a09bc332cb] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net
-git bisect bad 4e5448a31d73d0e944b7adb9049438a09bc332cb
-# good: [b70ce2ab41cb67ab3d661eda078f7c4029bbca95] dts: hisi: fixes no syscon fault when init mdio
-git bisect good b70ce2ab41cb67ab3d661eda078f7c4029bbca95
-# good: [4a658527271bce43afb1cf4feec89afe6716ca59] xen-netback: delete NAPI instance when queue fails to initialize
-git bisect good 4a658527271bce43afb1cf4feec89afe6716ca59
-# good: [c6894dec8ea9ae05747124dce98b3b5c2e69b168] bridge: fix lockdep addr_list_lock false positive splat
-git bisect good c6894dec8ea9ae05747124dce98b3b5c2e69b168
-# good: [36beca6571c941b28b0798667608239731f9bc3a] sparc64: Fix numa node distance initialization
-git bisect good 36beca6571c941b28b0798667608239731f9bc3a
-# good: [750afbf8ee9c6a1c74a1fe5fc9852146b1d72687] bgmac: Fix reversed test of build_skb() return value.
-git bisect good 750afbf8ee9c6a1c74a1fe5fc9852146b1d72687
-# good: [5a18d263f8d27418c98b8e8551dadfe975c054e3] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/sparc
-git bisect good 5a18d263f8d27418c98b8e8551dadfe975c054e3
-# first bad commit: [4e5448a31d73d0e944b7adb9049438a09bc332cb] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+index 7352d3f..cf070fd 100644
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -607,6 +607,9 @@ static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
+ 	context = (MAX_USER_CONTEXT) + ((ea >> 60) - 0xc) + 1;
+ 	return get_vsid(context, ea, ssize);
+ }
++
++unsigned htab_shift_for_mem_size(unsigned long mem_size);
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_MMU_HASH64_H_ */
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index fdcf9d1..da5d279 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -611,10 +611,26 @@ static int __init htab_dt_scan_pftsize(unsigned long node,
+ 	return 0;
+ }
+ 
+-static unsigned long __init htab_get_table_size(void)
++unsigned htab_shift_for_mem_size(unsigned long mem_size)
+ {
+-	unsigned long mem_size, rnd_mem_size, pteg_count, psize;
++	unsigned memshift = __ilog2(mem_size);
++	unsigned pshift = mmu_psize_defs[mmu_virtual_psize].shift;
++	unsigned pteg_shift;
++
++	/* round mem_size up to next power of 2 */
++	if ((1UL << memshift) < mem_size)
++		memshift += 1;
++
++	/* aim for 2 pages / pteg */
++	pteg_shift = memshift - (pshift + 1);
++
++	/* 2^11 PTEGS / 2^18 bytes is the minimum htab size permitted
++	 * by the architecture */
++	return max(pteg_shift + 7, 18U);
++}
+ 
++static unsigned long __init htab_get_table_size(void)
++{
+ 	/* If hash size isn't already provided by the platform, we try to
+ 	 * retrieve it from the device-tree. If it's not there neither, we
+ 	 * calculate it now based on the total RAM size
+@@ -624,17 +640,7 @@ static unsigned long __init htab_get_table_size(void)
+ 	if (ppc64_pft_size)
+ 		return 1UL << ppc64_pft_size;
+ 
+-	/* round mem_size up to next power of 2 */
+-	mem_size = memblock_phys_mem_size();
+-	rnd_mem_size = 1UL << __ilog2(mem_size);
+-	if (rnd_mem_size < mem_size)
+-		rnd_mem_size <<= 1;
+-
+-	/* # pages / 2 */
+-	psize = mmu_psize_defs[mmu_virtual_psize].shift;
+-	pteg_count = max(rnd_mem_size >> (psize + 1), 1UL << 11);
+-
+-	return pteg_count << 7;
++	return 1UL << htab_shift_for_mem_size(memblock_phys_mem_size());
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+-- 
+2.5.0
