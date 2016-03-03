@@ -1,44 +1,25 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 00CEC1A0324
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 20:54:53 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C3EB514145C
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Mar 2016 20:54:52 +1100 (AEDT)
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Thu, 3 Mar 2016 19:54:52 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 6467C2CE805A
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Mar 2016 20:54:48 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u239sd2N10748216
- for <linuxppc-dev@ozlabs.org>; Thu, 3 Mar 2016 20:54:48 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u239sFSL017469
- for <linuxppc-dev@ozlabs.org>; Thu, 3 Mar 2016 20:54:15 +1100
-Date: Thu, 3 Mar 2016 15:23:53 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, duwe@lst.de, linux-kernel@vger.kernel.org,
- rostedt@goodmis.org, pmladek@suse.com, jeyu@redhat.com,
- jkosina@suse.cz, live-patching@vger.kernel.org, mbenes@suse.cz,
- Torsten Duwe <duwe@suse.de>
-Subject: Re: [RFC][PATCH][v2] Enable livepatching for powerpc
-Message-ID: <20160303095352.GA21283@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <1456988454-26437-1-git-send-email-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC5811A035C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2016 21:24:23 +1100 (AEDT)
+Date: Thu, 3 Mar 2016 11:20:02 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ acme@kernel.org, mingo@redhat.com, paulus@samba.org
+Subject: Re: hw_breakpoint: Fix Oops at destroying hw_breakpoint event on
+ powerpc
+Message-ID: <20160303102002.GK6356@twins.programming.kicks-ass.net>
+References: <1456912517-5711-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <20160302115324.63B35140BF5@ozlabs.org>
+ <20160302115942.GC6356@twins.programming.kicks-ass.net>
+ <1456997018.335.7.camel@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1456988454-26437-1-git-send-email-bsingharora@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1456997018.335.7.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,40 +29,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Balbir Singh <bsingharora@gmail.com> [2016-03-03 18:00:54]:
+On Thu, Mar 03, 2016 at 08:23:38PM +1100, Michael Ellerman wrote:
+> On Wed, 2016-03-02 at 12:59 +0100, Peter Zijlstra wrote:
+> 
+> > On Wed, Mar 02, 2016 at 10:53:24PM +1100, Michael Ellerman wrote:
+> 
+> > > Peterz, acme, do you guys want to take this? Or should I?
+> >
+> > I'm not too happy its touching event->ctx at all. It really should not
+> > be doing that.
+> 
+> Hmm OK.
+> 
+> It's been using ctx->task since it was merged in 2010. In fact that commit also
+> added arch_unregister_hw_breakpoint(), and we're still the only user of that.
 
-> Changelog:
-> 	1. Implement review comments by Michael
-> 	2. The previous version compared _NIP from the
-> 	   wrong location to check for whether we
-> 	   are going to a patched location
-> 
-> This applies on top of the patches posted by Michael 
-> https://patchwork.ozlabs.org/patch/589791/
-> 
-> It enables livepatching. This takes patch 6/8 and 7/8 of v8 as the base.
-> Removes the extra strict check in gcc-profile-kernel-notrace.sh
-> and adds logic for checking offsets in livepatch. The patch
-> for HAVE_C_RECORDMCOUNT is not required and not used here.
-> 
-> Depending on whether or not a TOC is generated, the offset
-> for _mcount can be +16,+12,+8,+4. The changes are such that the
-> offset checks are specific to powerpc.
-> 
-> TODOs
-> 1. Build a version with offsets removed and rebuild
->    ftrace_location() sort of functionality
-> 2. Make livepatching experimental on powerpc
-> 
-> Comments? Testing? I tested the sample in the livepatch
-> directory
-> 
-> References
-> 
-> 1. https://patchwork.ozlabs.org/patch/581521/
-> 2. https://patchwork.ozlabs.org/patch/587464/
-> 
-> Signed-off-by: Torsten Duwe <duwe@suse.de>
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+Yes, I saw that.
 
-Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> The prima facie reason it's using ctx is to get at task->thread to clear
+> last_hit_ubp.
+
+Indeed, but if there's a preemption point in between setting and using
+that state, the ctx->task pointer might not actually still point to the
+same task. With inherited events the event might get swapped to the next
+task if it has the exact same (inherited) event configuration instead of
+reprogramming the hardware.
+
+And if there's no preemption point in between then:
+
+> It looks like other arches avoid needing to do something similar by storing the
+> break point in a per-cpu array. Which I guess is what you meant in your other
+> mail ("Why do you keep per task state anyway?").
+
+this seems possible. And indeed, that was part of that question. The
+other part was wondering how per-cpu breakpoints were treated, although
+for those the per-cpu storage thing is an 'obvious' solution.
+
+> I can't think of a reason why we can't also store it per-cpu, but I could be
+> wrong, I don't know the code well and I haven't thought about it for very long.
+
+Right, so I'm not really up to snuff on the whole hw_breakpoint stuff
+either, that was bolted onto perf by mingo, fweisbec, kprasad and others
+while I was doing PMU bits, and I've never really dug into it.
+
+I understand kprasad is no longer with IBM, his email bounced. That's a
+shame because he knew about this stuff.. :/
+
+> Do you mind if I merge the following fix for now as a band-aid, and we'll try
+> and fix it up properly in the next few weeks (but maybe not in time for 4.5
+> final).
+
+OK, that works for me.
+
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
