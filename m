@@ -1,30 +1,34 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8E1101A0B50
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 07:43:58 +1100 (AEDT)
-Received: from mail-yk0-x22e.google.com (mail-yk0-x22e.google.com
- [IPv6:2607:f8b0:4002:c07::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DEAB5141BA5
- for <linuxppc-dev@ozlabs.org>; Fri,  4 Mar 2016 07:43:57 +1100 (AEDT)
-Received: by mail-yk0-x22e.google.com with SMTP id v186so14524616yke.2
- for <linuxppc-dev@ozlabs.org>; Thu, 03 Mar 2016 12:43:57 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C2F51A0BFE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:25:17 +1100 (AEDT)
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 4 Mar 2016 10:25:16 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 413293578052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:25:13 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u240P5gh10682872
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:25:13 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u240Oe9x022346
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:24:41 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: ruscur@russell.cc, mpe@ellerman.id.au,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/eeh: Fix build error caused by pci_dn
+Date: Fri,  4 Mar 2016 11:23:39 +1100
+Message-Id: <1457051025-9718-1-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1457023921-2051-1-git-send-email-pmladek@suse.com>
-References: <1457023921-2051-1-git-send-email-pmladek@suse.com>
-Date: Fri, 4 Mar 2016 07:43:55 +1100
-Message-ID: <CAKTCnzmtnkqcgSHu0YFpzxP3Rcdsb4KTDmd8uBDwW4MZ0ACbxQ@mail.gmail.com>
-Subject: Re: [PATCH][v4] livepatch/ppc: Enable livepatching on powerpc
-From: Balbir Singh <bsingharora@gmail.com>
-To: Petr Mladek <pmladek@suse.com>
-Cc: linuxppc-dev@ozlabs.org, Miroslav Benes <mbenes@suse.cz>,
- Torsten Duwe <duwe@suse.de>, duwe@lst.de,
- live-patching@vger.kernel.org, jkosina@suse.cz, rostedt@goodmis.org,
- jeyu@redhat.com, kamalesh@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
-Content-Type: multipart/alternative; boundary=001a1142371ca207f3052d2b0e3e
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,108 +38,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a1142371ca207f3052d2b0e3e
-Content-Type: text/plain; charset=UTF-8
+eeh.h could be included when we have following condition. Then we
+run into build error as below: (CONFIG_PPC64 && !CONFIG_EEH) ||
+(!CONFIG_PPC64 && !CONFIG_EEH)
 
-On 4 Mar 2016 03:52, "Petr Mladek" <pmladek@suse.com> wrote:
->
-> From: Balbir Singh <bsingharora@gmail.com>
->
-> Changelog v4:
->         1. Renamed klp_matchaddr() to klp_get_ftrace_location()
->            and used it just to convert the function address.
->         2. Synced klp_write_module_reloc() with s390(); made it
->            inline, no error message, return -ENOSYS
->         3. Added an error message when including
->            powerpc/include/asm/livepatch.h without HAVE_LIVEPATCH
->         4. Update some comments.
-> Changelog v3:
->         1. Moved -ENOSYS to -EINVAL in klp_write_module_reloc
->         2. Moved klp_matchaddr to use ftrace_location_range
-> Changelog v2:
->         1. Implement review comments by Michael
->         2. The previous version compared _NIP from the
->            wrong location to check for whether we
->            are going to a patched location
->
-> This applies on top of the patches posted by Michael
-> https://patchwork.ozlabs.org/patch/589791/
->
-> It enables livepatching. This takes patch 6/8 and 7/8 of v8 as the base.
-> (See the reference [1] below) and adds logic for checking offset ranges
-> in livepatch with ftrace_location_range.
->
-> I tested the sample in the livepatch
->
-> Signed-off-by: Torsten Duwe <duwe@suse.de>
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> Signed-off-by: Petr Mladek <pmladek@suse.com>
->
-Like the cleanup and the patch
+In file included from arch/powerpc/kernel/of_platform.c:30:0:
+./arch/powerpc/include/asm/eeh.h:344:48: error: ‘struct pci_dn’ \
+declared inside parameter list [-Werror]
+    :
+In file included from arch/powerpc/mm/hash_utils_64.c:49:0:
+./arch/powerpc/include/asm/eeh.h:344:48: error: ‘struct pci_dn’ \
+declared inside parameter list [-Werror]
 
-Balbir
+This fixes the issue by replacing those empty inline functions
+with macro so that we don't rely on @pci_dn when CONFIG_EEH is
+disabled.
 
---001a1142371ca207f3052d2b0e3e
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Fixes: ff57b45 ("powerpc/eeh: Do probe on pci_dn")
+Cc: stable@vger.kernel.org # v4.1+
+Reported-by: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/eeh.h | 20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
-<p dir=3D"ltr"><br>
-On 4 Mar 2016 03:52, &quot;Petr Mladek&quot; &lt;<a href=3D"mailto:pmladek@=
-suse.com">pmladek@suse.com</a>&gt; wrote:<br>
-&gt;<br>
-&gt; From: Balbir Singh &lt;<a href=3D"mailto:bsingharora@gmail.com">bsingh=
-arora@gmail.com</a>&gt;<br>
-&gt;<br>
-&gt; Changelog v4:<br>
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 1. Renamed klp_matchaddr() to klp_get_ftra=
-ce_location()<br>
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0and used it just to convert t=
-he function address.<br>
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 2. Synced klp_write_module_reloc() with s3=
-90(); made it<br>
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0inline, no error message, ret=
-urn -ENOSYS<br>
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 3. Added an error message when including<b=
-r>
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0powerpc/include/asm/livepatch=
-.h without HAVE_LIVEPATCH<br>
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 4. Update some comments.<br>
-&gt; Changelog v3:<br>
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 1. Moved -ENOSYS to -EINVAL in klp_write_m=
-odule_reloc<br>
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 2. Moved klp_matchaddr to use ftrace_locat=
-ion_range<br>
-&gt; Changelog v2:<br>
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 1. Implement review comments by Michael<br=
->
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 2. The previous version compared _NIP from=
- the<br>
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0wrong location to check for w=
-hether we<br>
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0are going to a patched locati=
-on<br>
-&gt;<br>
-&gt; This applies on top of the patches posted by Michael<br>
-&gt; <a href=3D"https://patchwork.ozlabs.org/patch/589791/">https://patchwo=
-rk.ozlabs.org/patch/589791/</a><br>
-&gt;<br>
-&gt; It enables livepatching. This takes patch 6/8 and 7/8 of v8 as the bas=
-e.<br>
-&gt; (See the reference [1] below) and adds logic for checking offset range=
-s<br>
-&gt; in livepatch with ftrace_location_range.<br>
-&gt;<br>
-&gt; I tested the sample in the livepatch<br>
-&gt;<br>
-&gt; Signed-off-by: Torsten Duwe &lt;<a href=3D"mailto:duwe@suse.de">duwe@s=
-use.de</a>&gt;<br>
-&gt; Signed-off-by: Balbir Singh &lt;<a href=3D"mailto:bsingharora@gmail.co=
-m">bsingharora@gmail.com</a>&gt;<br>
-&gt; Signed-off-by: Petr Mladek &lt;<a href=3D"mailto:pmladek@suse.com">pml=
-adek@suse.com</a>&gt;<br>
-&gt;<br>
-Like the cleanup and the patch</p>
-<p dir=3D"ltr">Balbir<br>
-</p>
-
---001a1142371ca207f3052d2b0e3e--
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index fb9f376..e9fee82 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -341,19 +341,13 @@ static inline int eeh_check_failure(const volatile void __iomem *token)
+ 
+ #define eeh_dev_check_failure(x) (0)
+ 
+-static inline void eeh_addr_cache_build(void) { }
+-
+-static inline void eeh_add_device_early(struct pci_dn *pdn) { }
+-
+-static inline void eeh_add_device_tree_early(struct pci_dn *pdn) { }
+-
+-static inline void eeh_add_device_late(struct pci_dev *dev) { }
+-
+-static inline void eeh_add_device_tree_late(struct pci_bus *bus) { }
+-
+-static inline void eeh_add_sysfs_files(struct pci_bus *bus) { }
+-
+-static inline void eeh_remove_device(struct pci_dev *dev) { }
++#define eeh_addr_cache_build()
++#define eeh_add_device_early(pdn)
++#define eeh_add_device_tree_early(pdn)
++#define eeh_add_device_late(pdev)
++#define eeh_add_device_tree_late(pbus)
++#define eeh_add_sysfs_files(pbus)
++#define eeh_remove_device(pdev)
+ 
+ #define EEH_POSSIBLE_ERROR(val, type) (0)
+ #define EEH_IO_ERROR_VALUE(size) (-1UL)
+-- 
+2.1.0
