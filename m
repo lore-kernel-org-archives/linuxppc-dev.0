@@ -1,39 +1,31 @@
-Return-Path: <manoj@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <hughd@google.com>
+Received: from mail-ob0-x22f.google.com (mail-ob0-x22f.google.com
+ [IPv6:2607:f8b0:4003:c01::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C6BFD1A0615
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Mar 2016 04:41:11 +1100 (AEDT)
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
- Fri, 4 Mar 2016 12:41:08 -0500
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 672C538C803B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 12:41:06 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u24Hf6lx22741208
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 17:41:06 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u24Hf5jF023236
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 12:41:05 -0500
-Reply-To: manoj@linux.vnet.ibm.com
-Subject: Re: [PATCH v6 19/20] cxlflash: Use new cxl_pci_read_adapter_vpd() API
-References: <1457090804-9719-1-git-send-email-fbarrat@linux.vnet.ibm.com>
- <1457090804-9719-20-git-send-email-fbarrat@linux.vnet.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
- michael.neuling@au1.ibm.com, mrochs@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org
-From: Manoj Kumar <manoj@linux.vnet.ibm.com>
-Message-ID: <56D9C8D2.1010201@linux.vnet.ibm.com>
-Date: Fri, 4 Mar 2016 11:41:38 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8A2831A0615
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Mar 2016 04:58:33 +1100 (AEDT)
+Received: by mail-ob0-x22f.google.com with SMTP id rt7so56565491obb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Mar 2016 09:58:33 -0800 (PST)
+Date: Fri, 4 Mar 2016 09:58:23 -0800 (PST)
+From: Hugh Dickins <hughd@google.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+cc: Hugh Dickins <hughd@google.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org
+Subject: Re: Problems with swapping in v4.5-rc on POWER
+In-Reply-To: <1456984266.28236.1.camel@ellerman.id.au>
+Message-ID: <alpine.LSU.2.11.1603040948250.5477@eggly.anvils>
+References: <alpine.LSU.2.11.1602241716220.15121@eggly.anvils>
+ <877fhttmr1.fsf@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1602242136270.6876@eggly.anvils>
+ <alpine.LSU.2.11.1602251322130.8063@eggly.anvils>
+ <alpine.LSU.2.11.1602260157430.10399@eggly.anvils>
+ <alpine.LSU.2.11.1603021226300.31251@eggly.anvils>
+ <1456984266.28236.1.camel@ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1457090804-9719-20-git-send-email-fbarrat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,88 +35,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fred:
+On Thu, 3 Mar 2016, Michael Ellerman wrote:
+> On Wed, 2016-03-02 at 12:49 -0800, Hugh Dickins wrote:
+> > On Fri, 26 Feb 2016, Hugh Dickins wrote:
+> > > On Thu, 25 Feb 2016, Hugh Dickins wrote:
+> > > > On Wed, 24 Feb 2016, Hugh Dickins wrote:
+> > > > > On Thu, 25 Feb 2016, Aneesh Kumar K.V wrote:
+> > > > > > 
+> > > > > > Can you test the impact of the merge listed below ?(ie, revert the merge and see if
+> > > > > > we can reproduce and also verify with merge applied). This will give us a
+> > > > > > set of commits to look closer. We had quiet a lot of page table
+> > > > > > related changes going in this merge window. 
+> > > > > > 
+> > > > > > f689b742f217b2ffe7 ("Pull powerpc updates from Michael Ellerman:")
+> > > > > > 
+> > > > > > That is the merge commit that added _PAGE_PTE. 
+> > > > > 
+> > > > > Another experiment running on it at the moment, I'd like to give that
+> > > > > a few more hours, and then will try the revert you suggest.  But does
+> > > > > that merge revert cleanly, did you try?  I'm afraid of interactions,
+> > > > > whether obvious or subtle, with the THP refcounting rework.  Oh, since
+> > > > > I don't have THP configured on, maybe I can ignore any issues from that.
+> > > > 
+> > > > That revert worked painlessly, only a very few and simple conflicts,
+> > > > I ran that under load for 12 hours, no problem seen.
+> > > > 
+> > > > I've now checked out an f689b742 tree and started on that, just to
+> > > > confirm that it fails fairly quickly I hope; and will then proceed
+> > > > to git bisect, giving that as bad and 37cea93b as good.
+> > > > 
+> > > > Given the uncertainty of whether 12 hours is really long enough to be
+> > > > sure, and perhaps difficulties along the way, I don't rate my chances
+> > > > of a reliable bisection higher than 60%, but we'll see.
+> > > 
+> > > I'm sure you won't want a breathless report from me on each bisection
+> > > step, but I ought to report that: contrary to our expectations, the
+> > > f689b742 survived without error for 12 hours, so appears to be good.
+> > > I'll bisect between there and v4.5-rc1.
+> > 
+> > The bisection completed this morning (log appended below):
+> > not a satisfactory conclusion, it's pointing to a davem/net merge.
+> > 
+> > I was uncomfortable when I marked that point bad in the first place:
+> > it ran for 9 hours before hitting a compiler error, which was nearly
+> > twice as long as the longest I'd seen before (5 hours), and
+> > uncomfortably close to the 12 hours I've been taking as good.
+> > 
+> > My current thinking is that the powerpc merge that you indicated,
+> > that I found to be "good", is the one that contains the bad commit;
+> > but that the bug is very rare to manifest in that kernel, and my test
+> > of the davem/net merge happened to be unusually unlucky to hit it.
+> > 
+> > Then some other later change makes it significantly easier to hit;
+> > and identifying that change may make it much easier to pin down
+> > what the original bug is.
+> > 
+> > So I've replayed the bisection up to that point, marked the davem/net
+> > merge as good this time, and set off again in the hope that it will
+> > lead somewhere more enlightening.  But prepared for disappointment.
+> 
+> Thanks Hugh. That logic sounds reasonable, I doubt we can blame davem :)
+> 
+> I've setup another box here to try and reproduce it. It's running with 4k
+> pages, no THP, and it's going well into swap. Hopefully I can hit the same bug,
+> but we'll see in 12 hours I guess.
 
-Thanks for submitting this. Including linux-scsi.
+The alternative bisection was as unsatisfactory as the first:
+again it fingered an irrelevant merge (rather than any commit
+pulled in by that merge) as the bad commit.
 
-Acked-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
+It seems this issue is too intermittent for bisection to be useful,
+on my load anyway.
 
-- Manoj
+The best I can do now is try v4.4 for a couple of days, to verify that
+still comes out good (rather than the machine going bad coincident with
+v4.5-rc), then try v4.5-rc7 to verify that that still comes out bad.
 
+I'll report back on those; but beyond that, I'll have to leave it to you.
 
-On 3/4/2016 5:26 AM, Frederic Barrat wrote:
-> To read the adapter VPD, drivers can't rely on pci config APIs, as it
-> wouldn't work on powerVM. cxl introduced a new kernel API especially
-> for this, so start using it.
->
-> Co-authored-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> ---
->   drivers/scsi/cxlflash/common.h |  1 -
->   drivers/scsi/cxlflash/main.c   | 18 ++----------------
->   2 files changed, 2 insertions(+), 17 deletions(-)
->
-> diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
-> index 5ada926..580f370 100644
-> --- a/drivers/scsi/cxlflash/common.h
-> +++ b/drivers/scsi/cxlflash/common.h
-> @@ -106,7 +106,6 @@ struct cxlflash_cfg {
->   	atomic_t scan_host_needed;
->
->   	struct cxl_afu *cxl_afu;
-> -	struct pci_dev *parent_dev;
->
->   	atomic_t recovery_threads;
->   	struct mutex ctx_recovery_mutex;
-> diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-> index f6d90ce..e04aae7 100644
-> --- a/drivers/scsi/cxlflash/main.c
-> +++ b/drivers/scsi/cxlflash/main.c
-> @@ -1407,7 +1407,7 @@ static int start_context(struct cxlflash_cfg *cfg)
->    */
->   static int read_vpd(struct cxlflash_cfg *cfg, u64 wwpn[])
->   {
-> -	struct pci_dev *dev = cfg->parent_dev;
-> +	struct pci_dev *dev = cfg->dev;
->   	int rc = 0;
->   	int ro_start, ro_size, i, j, k;
->   	ssize_t vpd_size;
-> @@ -1416,7 +1416,7 @@ static int read_vpd(struct cxlflash_cfg *cfg, u64 wwpn[])
->   	char *wwpn_vpd_tags[NUM_FC_PORTS] = { "V5", "V6" };
->
->   	/* Get the VPD data from the device */
-> -	vpd_size = pci_read_vpd(dev, 0, sizeof(vpd_data), vpd_data);
-> +	vpd_size = cxl_read_adapter_vpd(dev, vpd_data, sizeof(vpd_data));
->   	if (unlikely(vpd_size <= 0)) {
->   		dev_err(&dev->dev, "%s: Unable to read VPD (size = %ld)\n",
->   		       __func__, vpd_size);
-> @@ -2392,7 +2392,6 @@ static int cxlflash_probe(struct pci_dev *pdev,
->   {
->   	struct Scsi_Host *host;
->   	struct cxlflash_cfg *cfg = NULL;
-> -	struct device *phys_dev;
->   	struct dev_dependent_vals *ddv;
->   	int rc = 0;
->
-> @@ -2458,19 +2457,6 @@ static int cxlflash_probe(struct pci_dev *pdev,
->
->   	pci_set_drvdata(pdev, cfg);
->
-> -	/*
-> -	 * Use the special service provided to look up the physical
-> -	 * PCI device, since we are called on the probe of the virtual
-> -	 * PCI host bus (vphb)
-> -	 */
-> -	phys_dev = cxl_get_phys_dev(pdev);
-> -	if (!dev_is_pci(phys_dev)) {
-> -		dev_err(&pdev->dev, "%s: not a pci dev\n", __func__);
-> -		rc = -ENODEV;
-> -		goto out_remove;
-> -	}
-> -	cfg->parent_dev = to_pci_dev(phys_dev);
-> -
->   	cfg->cxl_afu = cxl_pci_to_afu(pdev);
->
->   	rc = init_pci(cfg);
->
+Hugh
