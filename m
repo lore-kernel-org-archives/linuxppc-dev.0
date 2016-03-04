@@ -1,28 +1,31 @@
-Return-Path: <mbenes@suse.cz>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A42EE1A032F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 20:31:41 +1100 (AEDT)
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 300DB14030F
- for <linuxppc-dev@ozlabs.org>; Fri,  4 Mar 2016 20:31:40 +1100 (AEDT)
-Date: Fri, 4 Mar 2016 10:31:35 +0100 (CET)
-From: Miroslav Benes <mbenes@suse.cz>
-To: Michael Ellerman <mpe@ellerman.id.au>
-cc: Petr Mladek <pmladek@suse.com>, linuxppc-dev@ozlabs.org, jeyu@redhat.com,
- jkosina@suse.cz, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com, duwe@lst.de, live-patching@vger.kernel.org,
- Torsten Duwe <duwe@suse.de>
-Subject: Re: [PATCH][v4] livepatch/ppc: Enable livepatching on powerpc
-In-Reply-To: <1457078325.20076.1.camel@ellerman.id.au>
-Message-ID: <alpine.LNX.2.00.1603041026320.31153@pobox.suse.cz>
-References: <1457023921-2051-1-git-send-email-pmladek@suse.com>
- <1457078325.20076.1.camel@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 599281A045D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 20:51:38 +1100 (AEDT)
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 4 Mar 2016 19:51:36 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A725B2BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 20:51:30 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u249pMXF54919356
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 20:51:30 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u249ovB5028867
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 20:50:58 +1100
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
+Subject: [PATCH] powerpc/mm: Add validation for platform reserved memory ranges
+Date: Fri,  4 Mar 2016 15:20:39 +0530
+Message-Id: <1457085039-27656-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,63 +35,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+For partition running on PHYP, there can be a adjunct partition
+which shares the virtual address range with the operating system.
+Virtual address ranges which can be used by the adjunct partition
+are communicated with virtual device node of the device tree with
+a property known as "ibm,reserved-virtual-addresses". This patch
+introduces a new function named 'validate_reserved_va_range' which
+is called  during initialization to validate that these reserved
+virtual address ranges do not overlap with the address ranges used
+by the kernel for all supported memory contexts. This helps prevent
+the possibility of getting return codes similar to H_RESOURCE for
+H_PROTECT hcalls for conflicting HPTE entries.
 
-Hi,
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+- It has been tested on both LE and BE POWER8 platforms
 
-On Fri, 4 Mar 2016, Michael Ellerman wrote:
+ arch/powerpc/mm/hash_utils_64.c | 77 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 77 insertions(+)
 
-> Hi Petr,
-> 
-> On Thu, 2016-03-03 at 17:52 +0100, Petr Mladek wrote:
-> 
-> > From: Balbir Singh <bsingharora@gmail.com>
-> >
-> > Changelog v4:
-> > 	1. Renamed klp_matchaddr() to klp_get_ftrace_location()
-> > 	   and used it just to convert the function address.
-> > 	2. Synced klp_write_module_reloc() with s390(); made it
-> > 	   inline, no error message, return -ENOSYS
-> 
-> OK.
-> 
-> > 	3. Added an error message when including
-> > 	   powerpc/include/asm/livepatch.h without HAVE_LIVEPATCH
-> 
-> I don't know why we want to do that, I don't see how it is helpful. It doesn't
-> even do what it says:
-> 
-> > +#ifdef CONFIG_LIVEPATCH
-> ...
-> > +#else /* CONFIG_LIVEPATCH */
-> > +#error Include linux/livepatch.h, not asm/livepatch.h
-> > +#endif /* CONFIG_LIVEPATCH */
-> 
-> If I turn on CONFIG_LIVEPATCH then I can quite happily include asm/livepatch.h
-> and not get an error. So the check doesn't do what the message suggests.
-
-Well, yes. I looked into the archives to find if there was a reason to 
-even introduce it. It was not. It came up during a review process of the 
-livepatching patch set somehow and we left it there. I only changed the 
-error message to the mentioned one because we deemed it was better.
- 
-> If we *really* want to prevent people from including asm/livepatch.h then it
-> needs to check for _LINUX_LIVEPATCH_H_. But there's no reason I can see why we
-> *must* prevent people from including asm/livepatch.h.
->
-> And on x86 & s390 it does:
-> 
->   #else
->   #error Live patching support is disabled; check CONFIG_LIVEPATCH
->   #endif
-> 
-> Which is also not helpful AFAICS, and just likely to break the build for no
-> good reason.
-
-This is the old message. See 383bf44d1a8b ("livepatch: change the error 
-message in asm/livepatch.h header files").
-
-Anyway, it really does not mean much. I'll send a patch for s390 and x86 
-to remove it completely in a minute.
-
-Thanks,
-Miroslav
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index ba59d59..ee14df7 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1564,3 +1564,80 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	/* Finally limit subsequent allocations */
+ 	memblock_set_current_limit(ppc64_rma_size);
+ }
++
++/*
++ * PAPR says that each reserved virtual address range record
++ * contains three be32 elements which is of toal 12 bytes.
++ * First two be32 elements contain the abbreviated virtual
++ * address (high order 32 bits and low order 32 bits that
++ * generate the abbreviated virtual address of 64 bits which
++ * need to be concatenated with 24 bits of 0 at the end) and
++ * the third be32 element contains the size of the reserved
++ * virtual address range as number of consecutive 4K pages.
++ */
++struct reserved_va_record {
++	__be32	high_addr;
++	__be32	low_addr;
++	__be32	nr_pages_4K;
++};
++
++/*
++ * Linux uses 65 bits (CONTEXT_BITS + ESID_BITS + SID_SHIFT)
++ * of virtual address. As reserved virtual address comes in
++ * as an abbreviated form (64 bits) from the device tree, we
++ * will use a partial address bit mask (65 >> 24) to match it
++ * for simplicity.
++ */
++#define RVA_LESS_BITS		24
++#define LINUX_VA_BITS		CONTEXT_BITS + ESID_BITS + SID_SHIFT
++#define	PARTIAL_LINUX_VA_MASK	((1ULL << (LINUX_VA_BITS - RVA_LESS_BITS)) - 1)
++
++static int __init validate_reserved_va_range(void)
++{
++	struct reserved_va_record rva;
++	struct device_node *np;
++	int records, ret, i;
++	__be64 vaddr;
++
++	np = of_find_node_by_name(NULL, "vdevice");
++	if (!np)
++		return -ENODEV;
++
++	records = of_property_count_elems_of_size(np,
++			"ibm,reserved-virtual-addresses",
++				sizeof(struct reserved_va_record));
++	if (records < 0)
++		return records;
++
++	for (i = 0; i < records; i++) {
++		ret = of_property_read_u32_index(np,
++			"ibm,reserved-virtual-addresses",
++				3 * i, &rva.high_addr);
++		if (ret)
++			return ret;
++
++		ret = of_property_read_u32_index(np,
++			"ibm,reserved-virtual-addresses",
++				3 * i + 1, &rva.low_addr);
++		if (ret)
++			return ret;
++
++		ret = of_property_read_u32_index(np,
++			"ibm,reserved-virtual-addresses",
++				3 * i + 2, &rva.nr_pages_4K);
++		if (ret)
++			return ret;
++
++		vaddr =  rva.high_addr;
++		vaddr =  (vaddr << 32) | rva.low_addr;
++		if (vaddr & cpu_to_be64(~PARTIAL_LINUX_VA_MASK))
++			continue;
++
++		pr_err("RVA [0x%llx000000 (0x%x in bytes)] overlapped\n",
++					vaddr, rva.nr_pages_4K * 4096);
++		BUG();
++	}
++	of_node_put(np);
++	return 0;
++}
++__initcall(validate_reserved_va_range);
+-- 
+1.9.3
