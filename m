@@ -1,33 +1,34 @@
 Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C8B651A06A7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 22:27:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 78E851A0616
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 22:27:06 +1100 (AEDT)
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 4 Mar 2016 11:27:01 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9A8101B0806B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:27:22 +0000 (GMT)
+ Fri, 4 Mar 2016 11:27:03 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 15453219005C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:26:45 +0000 (GMT)
 Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
  [9.149.37.252])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u24BQxmv3015152
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:26:59 GMT
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u24BR18365732714
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:27:01 GMT
 Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u24BQwrQ007461
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 04:26:58 -0700
+ u24BR1rc007551
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 04:27:01 -0700
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com, manoj@linux.vnet.ibm.com,
  mrochs@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 12/20] cxl: Add guest-specific code
-Date: Fri,  4 Mar 2016 12:26:36 +0100
-Message-Id: <1457090804-9719-13-git-send-email-fbarrat@linux.vnet.ibm.com>
+Subject: [PATCH v6 14/20] cxl: Support to flash a new image on the adapter
+ from a guest
+Date: Fri,  4 Mar 2016 12:26:38 +0100
+Message-Id: <1457090804-9719-15-git-send-email-fbarrat@linux.vnet.ibm.com>
 In-Reply-To: <1457090804-9719-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 References: <1457090804-9719-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,1683 +42,836 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Christophe Lombard <clombard@linux.vnet.ibm.com>
 
-The new of.c file contains code to parse the device tree to find out
-about cxl adapters and AFUs.
+The new flash.c file contains the logic to flash a new image on the
+adapter, through a hcall. It is an iterative process, with chunks of
+data of 1M at a time. There are also 2 phases: write and verify. The
+flash operation itself is driven from a user-land tool.
+Once flashing is successful, an rtas call is made to update the device
+tree with the new properties values for the adapter and the AFU(s)
 
-guest.c implements the guest-specific callbacks for the backend API.
-
-The process element ID is not known until the context is attached, so
-we have to separate the context ID assigned by the cxl driver from the
-process element ID visible to the user applications. In bare-metal,
-the 2 IDs match.
+Add a new char device for the adapter, so that the flash tool can
+access the card, even if there is no valid AFU on it.
 
 Co-authored-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 Reviewed-by: Manoj Kumar <manoj@linux.vnet.ibm.com>
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/Makefile  |   1 +
- drivers/misc/cxl/api.c     |   2 +-
- drivers/misc/cxl/context.c |   6 +-
- drivers/misc/cxl/cxl.h     |  37 +-
- drivers/misc/cxl/file.c    |   2 +-
- drivers/misc/cxl/guest.c   | 950 +++++++++++++++++++++++++++++++++++++++++++++
- drivers/misc/cxl/main.c    |  18 +-
- drivers/misc/cxl/of.c      | 513 ++++++++++++++++++++++++
- 8 files changed, 1519 insertions(+), 10 deletions(-)
- create mode 100644 drivers/misc/cxl/guest.c
- create mode 100644 drivers/misc/cxl/of.c
+ Documentation/powerpc/cxl.txt |  55 +++++
+ drivers/misc/cxl/Makefile     |   2 +-
+ drivers/misc/cxl/base.c       |   7 +
+ drivers/misc/cxl/cxl.h        |   6 +
+ drivers/misc/cxl/file.c       |  11 +-
+ drivers/misc/cxl/flash.c      | 538 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/misc/cxl/guest.c      |  15 ++
+ include/uapi/misc/cxl.h       |  24 ++
+ 8 files changed, 653 insertions(+), 5 deletions(-)
+ create mode 100644 drivers/misc/cxl/flash.c
 
+diff --git a/Documentation/powerpc/cxl.txt b/Documentation/powerpc/cxl.txt
+index 205c1b8..d5506ba0 100644
+--- a/Documentation/powerpc/cxl.txt
++++ b/Documentation/powerpc/cxl.txt
+@@ -116,6 +116,8 @@ Work Element Descriptor (WED)
+ User API
+ ========
+ 
++1. AFU character devices
++
+     For AFUs operating in AFU directed mode, two character device
+     files will be created. /dev/cxl/afu0.0m will correspond to a
+     master context and /dev/cxl/afu0.0s will correspond to a slave
+@@ -362,6 +364,59 @@ read
+         reserved fields:
+             For future extensions and padding
+ 
++
++2. Card character device (powerVM guest only)
++
++    In a powerVM guest, an extra character device is created for the
++    card. The device is only used to write (flash) a new image on the
++    FPGA accelerator. Once the image is written and verified, the
++    device tree is updated and the card is reset to reload the updated
++    image.
++
++open
++----
++
++    Opens the device and allocates a file descriptor to be used with
++    the rest of the API. The device can only be opened once.
++
++ioctl
++-----
++
++CXL_IOCTL_DOWNLOAD_IMAGE:
++CXL_IOCTL_VALIDATE_IMAGE:
++    Starts and controls flashing a new FPGA image. Partial
++    reconfiguration is not supported (yet), so the image must contain
++    a copy of the PSL and AFU(s). Since an image can be quite large,
++    the caller may have to iterate, splitting the image in smaller
++    chunks.
++
++    Takes a pointer to a struct cxl_adapter_image:
++        struct cxl_adapter_image {
++            __u64 flags;
++            __u64 data;
++            __u64 len_data;
++            __u64 len_image;
++            __u64 reserved1;
++            __u64 reserved2;
++            __u64 reserved3;
++            __u64 reserved4;
++        };
++
++    flags:
++        These flags indicate which optional fields are present in
++        this struct. Currently all fields are mandatory.
++
++    data:
++        Pointer to a buffer with part of the image to write to the
++        card.
++
++    len_data:
++        Size of the buffer pointed to by data.
++
++    len_image:
++        Full size of the image.
++
++
+ Sysfs Class
+ ===========
+ 
 diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
-index be2ac5c..a3d4bef 100644
+index a3d4bef..9ab874f 100644
 --- a/drivers/misc/cxl/Makefile
 +++ b/drivers/misc/cxl/Makefile
-@@ -4,6 +4,7 @@ ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
+@@ -4,7 +4,7 @@ ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
  cxl-y				+= main.o file.o irq.o fault.o native.o
  cxl-y				+= context.o sysfs.o debugfs.o pci.o trace.o
  cxl-y				+= vphb.o api.o
-+cxl-y				+= guest.o of.o hcalls.o
+-cxl-y				+= guest.o of.o hcalls.o
++cxl-y				+= flash.o guest.o of.o hcalls.o
  obj-$(CONFIG_CXL)		+= cxl.o
  obj-$(CONFIG_CXL_BASE)		+= base.o
  
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index 31eb842..325f957 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -191,7 +191,7 @@ EXPORT_SYMBOL_GPL(cxl_start_context);
- 
- int cxl_process_element(struct cxl_context *ctx)
- {
--	return ctx->pe;
-+	return ctx->external_pe;
+diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
+index a9f0dd3..957f4dd 100644
+--- a/drivers/misc/cxl/base.c
++++ b/drivers/misc/cxl/base.c
+@@ -84,3 +84,10 @@ void unregister_cxl_calls(struct cxl_calls *calls)
+ 	synchronize_rcu();
  }
- EXPORT_SYMBOL_GPL(cxl_process_element);
- 
-diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-index 200837f..180c85a 100644
---- a/drivers/misc/cxl/context.c
-+++ b/drivers/misc/cxl/context.c
-@@ -95,8 +95,12 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master,
- 		return i;
- 
- 	ctx->pe = i;
--	if (cpu_has_feature(CPU_FTR_HVMODE))
-+	if (cpu_has_feature(CPU_FTR_HVMODE)) {
- 		ctx->elem = &ctx->afu->native->spa[i];
-+		ctx->external_pe = ctx->pe;
-+	} else {
-+		ctx->external_pe = -1; /* assigned when attaching */
-+	}
- 	ctx->pe_inserted = false;
- 
- 	/*
+ EXPORT_SYMBOL_GPL(unregister_cxl_calls);
++
++int cxl_update_properties(struct device_node *dn,
++			  struct property *new_prop)
++{
++	return of_update_property(dn, new_prop);
++}
++EXPORT_SYMBOL_GPL(cxl_update_properties);
 diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 3a1fabd..4372a87 100644
+index a7e75f1..24bd4ca 100644
 --- a/drivers/misc/cxl/cxl.h
 +++ b/drivers/misc/cxl/cxl.h
-@@ -433,6 +433,12 @@ struct cxl_irq_name {
- 	char *name;
+@@ -324,6 +324,10 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
+ #define CXL_MODE_TIME_SLICED 0x4
+ #define CXL_SUPPORTED_MODES (CXL_MODE_DEDICATED | CXL_MODE_DIRECTED)
+ 
++#define CXL_DEV_MINORS 13   /* 1 control + 4 AFUs * 3 (dedicated/master/shared) */
++#define CXL_CARD_MINOR(adapter) (adapter->adapter_num * CXL_DEV_MINORS)
++#define CXL_DEVT_ADAPTER(dev) (MINOR(dev) / CXL_DEV_MINORS)
++
+ enum cxl_context_status {
+ 	CLOSED,
+ 	OPENED,
+@@ -692,12 +696,14 @@ struct cxl_calls {
  };
+ int register_cxl_calls(struct cxl_calls *calls);
+ void unregister_cxl_calls(struct cxl_calls *calls);
++int cxl_update_properties(struct device_node *dn, struct property *new_prop);
  
-+struct irq_avail {
-+	irq_hw_number_t offset;
-+	irq_hw_number_t range;
-+	unsigned long   *bitmap;
-+};
-+
- /*
-  * This is a cxl context.  If the PSL is in dedicated mode, there will be one
-  * of these per AFU.  If in AFU directed there can be lots of these.
-@@ -488,7 +494,19 @@ struct cxl_context {
+ void cxl_remove_adapter_nr(struct cxl *adapter);
  
- 	struct cxl_process_element *elem;
+ int cxl_alloc_spa(struct cxl_afu *afu);
+ void cxl_release_spa(struct cxl_afu *afu);
  
--	int pe; /* process element handle */
-+	/*
-+	 * pe is the process element handle, assigned by this driver when the
-+	 * context is initialized.
-+	 *
-+	 * external_pe is the PE shown outside of cxl.
-+	 * On bare-metal, pe=external_pe, because we decide what the handle is.
-+	 * In a guest, we only find out about the pe used by pHyp when the
-+	 * context is attached, and that's the value we want to report outside
-+	 * of cxl.
-+	 */
-+	int pe;
-+	int external_pe;
-+
- 	u32 irq_count;
- 	bool pe_inserted;
- 	bool master;
-@@ -782,6 +800,7 @@ void cxl_pci_vphb_reconfigure(struct cxl_afu *afu);
- void cxl_pci_vphb_remove(struct cxl_afu *afu);
- 
- extern struct pci_driver cxl_pci_driver;
-+extern struct platform_driver cxl_of_driver;
- int afu_allocate_irqs(struct cxl_context *ctx, u32 count);
- 
- int afu_open(struct inode *inode, struct file *file);
-@@ -792,6 +811,21 @@ unsigned int afu_poll(struct file *file, struct poll_table_struct *poll);
- ssize_t afu_read(struct file *file, char __user *buf, size_t count, loff_t *off);
- extern const struct file_operations afu_fops;
- 
-+struct cxl *cxl_guest_init_adapter(struct device_node *np, struct platform_device *dev);
-+void cxl_guest_remove_adapter(struct cxl *adapter);
-+int cxl_of_read_adapter_handle(struct cxl *adapter, struct device_node *np);
-+int cxl_of_read_adapter_properties(struct cxl *adapter, struct device_node *np);
-+ssize_t cxl_guest_read_adapter_vpd(struct cxl *adapter, void *buf, size_t len);
-+ssize_t cxl_guest_read_afu_vpd(struct cxl_afu *afu, void *buf, size_t len);
-+int cxl_guest_init_afu(struct cxl *adapter, int slice, struct device_node *afu_np);
-+void cxl_guest_remove_afu(struct cxl_afu *afu);
-+int cxl_of_read_afu_handle(struct cxl_afu *afu, struct device_node *afu_np);
-+int cxl_of_read_afu_properties(struct cxl_afu *afu, struct device_node *afu_np);
-+int cxl_guest_add_chardev(struct cxl *adapter);
-+void cxl_guest_remove_chardev(struct cxl *adapter);
-+void cxl_guest_reload_module(struct cxl *adapter);
-+int cxl_of_probe(struct platform_device *pdev);
-+
- struct cxl_backend_ops {
- 	struct module *module;
- 	int (*adapter_reset)(struct cxl *adapter);
-@@ -824,6 +858,7 @@ struct cxl_backend_ops {
- 	int (*afu_cr_read64)(struct cxl_afu *afu, int cr_idx, u64 offset, u64 *val);
- };
- extern const struct cxl_backend_ops cxl_native_ops;
-+extern const struct cxl_backend_ops cxl_guest_ops;
- extern const struct cxl_backend_ops *cxl_ops;
- 
- #endif
++dev_t cxl_get_dev(void);
+ int cxl_file_init(void);
+ void cxl_file_exit(void);
+ int cxl_register_adapter(struct cxl *adapter);
 diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index b8ce29b..df4d49a 100644
+index df4d49a..e160462 100644
 --- a/drivers/misc/cxl/file.c
 +++ b/drivers/misc/cxl/file.c
-@@ -228,7 +228,7 @@ static long afu_ioctl_process_element(struct cxl_context *ctx,
+@@ -26,9 +26,7 @@
+ #include "trace.h"
+ 
+ #define CXL_NUM_MINORS 256 /* Total to reserve */
+-#define CXL_DEV_MINORS 13   /* 1 control + 4 AFUs * 3 (dedicated/master/shared) */
+ 
+-#define CXL_CARD_MINOR(adapter) (adapter->adapter_num * CXL_DEV_MINORS)
+ #define CXL_AFU_MINOR_D(afu) (CXL_CARD_MINOR(afu->adapter) + 1 + (3 * afu->slice))
+ #define CXL_AFU_MINOR_M(afu) (CXL_AFU_MINOR_D(afu) + 1)
+ #define CXL_AFU_MINOR_S(afu) (CXL_AFU_MINOR_D(afu) + 2)
+@@ -36,7 +34,6 @@
+ #define CXL_AFU_MKDEV_M(afu) MKDEV(MAJOR(cxl_dev), CXL_AFU_MINOR_M(afu))
+ #define CXL_AFU_MKDEV_S(afu) MKDEV(MAJOR(cxl_dev), CXL_AFU_MINOR_S(afu))
+ 
+-#define CXL_DEVT_ADAPTER(dev) (MINOR(dev) / CXL_DEV_MINORS)
+ #define CXL_DEVT_AFU(dev) ((MINOR(dev) % CXL_DEV_MINORS - 1) / 3)
+ 
+ #define CXL_DEVT_IS_CARD(dev) (MINOR(dev) % CXL_DEV_MINORS == 0)
+@@ -446,7 +443,8 @@ static const struct file_operations afu_master_fops = {
+ 
+ static char *cxl_devnode(struct device *dev, umode_t *mode)
  {
- 	pr_devel("%s: pe: %i\n", __func__, ctx->pe);
+-	if (CXL_DEVT_IS_CARD(dev->devt)) {
++	if (cpu_has_feature(CPU_FTR_HVMODE) &&
++	    CXL_DEVT_IS_CARD(dev->devt)) {
+ 		/*
+ 		 * These minor numbers will eventually be used to program the
+ 		 * PSL and AFUs once we have dynamic reprogramming support
+@@ -547,6 +545,11 @@ int cxl_register_adapter(struct cxl *adapter)
+ 	return device_register(&adapter->dev);
+ }
  
--	if (copy_to_user(upe, &ctx->pe, sizeof(__u32)))
-+	if (copy_to_user(upe, &ctx->external_pe, sizeof(__u32)))
- 		return -EFAULT;
- 
- 	return 0;
-diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
-new file mode 100644
-index 0000000..03eb83d
---- /dev/null
-+++ b/drivers/misc/cxl/guest.c
-@@ -0,0 +1,950 @@
-+/*
-+ * Copyright 2015 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
++dev_t cxl_get_dev(void)
++{
++	return cxl_dev;
++}
 +
-+#include <linux/spinlock.h>
+ int __init cxl_file_init(void)
+ {
+ 	int rc;
+diff --git a/drivers/misc/cxl/flash.c b/drivers/misc/cxl/flash.c
+new file mode 100644
+index 0000000..68dd0b7
+--- /dev/null
++++ b/drivers/misc/cxl/flash.c
+@@ -0,0 +1,538 @@
++#include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/semaphore.h>
++#include <linux/slab.h>
 +#include <linux/uaccess.h>
-+#include <linux/delay.h>
++#include <asm/rtas.h>
 +
 +#include "cxl.h"
 +#include "hcalls.h"
-+#include "trace.h"
 +
++#define DOWNLOAD_IMAGE 1
++#define VALIDATE_IMAGE 2
 +
-+static irqreturn_t guest_handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr,
-+					u64 errstat)
++struct ai_header {
++	u16 version;
++	u8  reserved0[6];
++	u16 vendor;
++	u16 device;
++	u16 subsystem_vendor;
++	u16 subsystem;
++	u64 image_offset;
++	u64 image_length;
++	u8  reserved1[96];
++};
++
++static struct semaphore sem;
++unsigned long *buffer[CXL_AI_MAX_ENTRIES];
++struct sg_list *le;
++static u64 continue_token;
++static unsigned int transfer;
++
++struct update_props_workarea {
++	__be32 phandle;
++	__be32 state;
++	__be64 reserved;
++	__be32 nprops;
++} __packed;
++
++struct update_nodes_workarea {
++	__be32 state;
++	__be64 unit_address;
++	__be32 reserved;
++} __packed;
++
++#define DEVICE_SCOPE 3
++#define NODE_ACTION_MASK	0xff000000
++#define NODE_COUNT_MASK		0x00ffffff
++#define OPCODE_DELETE	0x01000000
++#define OPCODE_UPDATE	0x02000000
++#define OPCODE_ADD	0x03000000
++
++static int rcall(int token, char *buf, s32 scope)
 +{
-+	pr_devel("in %s\n", __func__);
-+	dev_crit(&ctx->afu->dev, "PSL ERROR STATUS: 0x%.16llx\n", errstat);
++	int rc;
 +
-+	return cxl_ops->ack_irq(ctx, 0, errstat);
++	spin_lock(&rtas_data_buf_lock);
++
++	memcpy(rtas_data_buf, buf, RTAS_DATA_BUF_SIZE);
++	rc = rtas_call(token, 2, 1, NULL, rtas_data_buf, scope);
++	memcpy(buf, rtas_data_buf, RTAS_DATA_BUF_SIZE);
++
++	spin_unlock(&rtas_data_buf_lock);
++	return rc;
 +}
 +
-+static ssize_t guest_collect_vpd(struct cxl *adapter, struct cxl_afu *afu,
-+			void *buf, size_t len)
++static int update_property(struct device_node *dn, const char *name,
++			   u32 vd, char *value)
 +{
-+	unsigned int entries, mod;
-+	unsigned long **vpd_buf = NULL;
-+	struct sg_list *le;
-+	int rc = 0, i, tocopy;
-+	u64 out = 0;
++	struct property *new_prop;
++	u32 *val;
++	int rc;
 +
-+	if (buf == NULL)
++	new_prop = kzalloc(sizeof(*new_prop), GFP_KERNEL);
++	if (!new_prop)
++		return -ENOMEM;
++
++	new_prop->name = kstrdup(name, GFP_KERNEL);
++	if (!new_prop->name) {
++		kfree(new_prop);
++		return -ENOMEM;
++	}
++
++	new_prop->length = vd;
++	new_prop->value = kzalloc(new_prop->length, GFP_KERNEL);
++	if (!new_prop->value) {
++		kfree(new_prop->name);
++		kfree(new_prop);
++		return -ENOMEM;
++	}
++	memcpy(new_prop->value, value, vd);
++
++	val = (u32 *)new_prop->value;
++	rc = cxl_update_properties(dn, new_prop);
++	pr_devel("%s: update property (%s, length: %i, value: %#x)\n",
++		  dn->name, name, vd, be32_to_cpu(*val));
++
++	if (rc) {
++		kfree(new_prop->name);
++		kfree(new_prop->value);
++		kfree(new_prop);
++	}
++	return rc;
++}
++
++static int update_node(__be32 phandle, s32 scope)
++{
++	struct update_props_workarea *upwa;
++	struct device_node *dn;
++	int i, rc, ret;
++	char *prop_data;
++	char *buf;
++	int token;
++	u32 nprops;
++	u32 vd;
++
++	token = rtas_token("ibm,update-properties");
++	if (token == RTAS_UNKNOWN_SERVICE)
 +		return -EINVAL;
 +
++	buf = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	dn = of_find_node_by_phandle(be32_to_cpu(phandle));
++	if (!dn) {
++		kfree(buf);
++		return -ENOENT;
++	}
++
++	upwa = (struct update_props_workarea *)&buf[0];
++	upwa->phandle = phandle;
++	do {
++		rc = rcall(token, buf, scope);
++		if (rc < 0)
++			break;
++
++		prop_data = buf + sizeof(*upwa);
++		nprops = be32_to_cpu(upwa->nprops);
++
++		if (*prop_data == 0) {
++			prop_data++;
++			vd = be32_to_cpu(*(__be32 *)prop_data);
++			prop_data += vd + sizeof(vd);
++			nprops--;
++		}
++
++		for (i = 0; i < nprops; i++) {
++			char *prop_name;
++
++			prop_name = prop_data;
++			prop_data += strlen(prop_name) + 1;
++			vd = be32_to_cpu(*(__be32 *)prop_data);
++			prop_data += sizeof(vd);
++
++			if ((vd != 0x00000000) && (vd != 0x80000000)) {
++				ret = update_property(dn, prop_name, vd,
++						prop_data);
++				if (ret)
++					pr_err("cxl: Could not update property %s - %i\n",
++					       prop_name, ret);
++
++				prop_data += vd;
++			}
++		}
++	} while (rc == 1);
++
++	of_node_put(dn);
++	kfree(buf);
++	return rc;
++}
++
++static int update_devicetree(struct cxl *adapter, s32 scope)
++{
++	struct update_nodes_workarea *unwa;
++	u32 action, node_count;
++	int token, rc, i;
++	__be32 *data, drc_index, phandle;
++	char *buf;
++
++	token = rtas_token("ibm,update-nodes");
++	if (token == RTAS_UNKNOWN_SERVICE)
++		return -EINVAL;
++
++	buf = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	unwa = (struct update_nodes_workarea *)&buf[0];
++	unwa->unit_address = cpu_to_be64(adapter->guest->handle);
++	do {
++		rc = rcall(token, buf, scope);
++		if (rc && rc != 1)
++			break;
++
++		data = (__be32 *)buf + 4;
++		while (be32_to_cpu(*data) & NODE_ACTION_MASK) {
++			action = be32_to_cpu(*data) & NODE_ACTION_MASK;
++			node_count = be32_to_cpu(*data) & NODE_COUNT_MASK;
++			pr_devel("device reconfiguration - action: %#x, nodes: %#x\n",
++				 action, node_count);
++			data++;
++
++			for (i = 0; i < node_count; i++) {
++				phandle = *data++;
++
++				switch (action) {
++				case OPCODE_DELETE:
++					/* nothing to do */
++					break;
++				case OPCODE_UPDATE:
++					update_node(phandle, scope);
++					break;
++				case OPCODE_ADD:
++					/* nothing to do, just move pointer */
++					drc_index = *data++;
++					break;
++				}
++			}
++		}
++	} while (rc == 1);
++
++	kfree(buf);
++	return 0;
++}
++
++static int handle_image(struct cxl *adapter, int operation,
++			long (*fct)(u64, u64, u64, u64 *),
++			struct cxl_adapter_image *ai)
++{
++	size_t mod, s_copy, len_chunk = 0;
++	struct ai_header *header = NULL;
++	unsigned int entries = 0, i;
++	void *dest, *from;
++	int rc = 0, need_header;
++
++	/* base adapter image header */
++	need_header = (ai->flags & CXL_AI_NEED_HEADER);
++	if (need_header) {
++		header = kzalloc(sizeof(struct ai_header), GFP_KERNEL);
++		if (!header)
++			return -ENOMEM;
++		header->version = cpu_to_be16(1);
++		header->vendor = cpu_to_be16(adapter->guest->vendor);
++		header->device = cpu_to_be16(adapter->guest->device);
++		header->subsystem_vendor = cpu_to_be16(adapter->guest->subsystem_vendor);
++		header->subsystem = cpu_to_be16(adapter->guest->subsystem);
++		header->image_offset = cpu_to_be64(CXL_AI_HEADER_SIZE);
++		header->image_length = cpu_to_be64(ai->len_image);
++	}
++
 +	/* number of entries in the list */
-+	entries = len / SG_BUFFER_SIZE;
-+	mod = len % SG_BUFFER_SIZE;
++	len_chunk = ai->len_data;
++	if (need_header)
++		len_chunk += CXL_AI_HEADER_SIZE;
++
++	entries = len_chunk / CXL_AI_BUFFER_SIZE;
++	mod = len_chunk % CXL_AI_BUFFER_SIZE;
 +	if (mod)
 +		entries++;
 +
-+	if (entries > SG_MAX_ENTRIES) {
-+		entries = SG_MAX_ENTRIES;
-+		len = SG_MAX_ENTRIES * SG_BUFFER_SIZE;
-+		mod = 0;
++	if (entries > CXL_AI_MAX_ENTRIES) {
++		rc = -EINVAL;
++		goto err;
 +	}
 +
-+	vpd_buf = kzalloc(entries * sizeof(unsigned long *), GFP_KERNEL);
-+	if (!vpd_buf)
-+		return -ENOMEM;
-+
-+	le = (struct sg_list *)get_zeroed_page(GFP_KERNEL);
-+	if (!le) {
-+		rc = -ENOMEM;
-+		goto err1;
-+	}
-+
++	/*          < -- MAX_CHUNK_SIZE = 4096 * 256 = 1048576 bytes -->
++	 * chunk 0  ----------------------------------------------------
++	 *          | header   |  data                                 |
++	 *          ----------------------------------------------------
++	 * chunk 1  ----------------------------------------------------
++	 *          | data                                             |
++	 *          ----------------------------------------------------
++	 * ....
++	 * chunk n  ----------------------------------------------------
++	 *          | data                                             |
++	 *          ----------------------------------------------------
++	 */
++	from = (void *) ai->data;
 +	for (i = 0; i < entries; i++) {
-+		vpd_buf[i] = (unsigned long *)get_zeroed_page(GFP_KERNEL);
-+		if (!vpd_buf[i]) {
-+			rc = -ENOMEM;
-+			goto err2;
++		dest = buffer[i];
++		s_copy = CXL_AI_BUFFER_SIZE;
++
++		if ((need_header) && (i == 0)) {
++			/* add adapter image header */
++			memcpy(buffer[i], header, sizeof(struct ai_header));
++			s_copy = CXL_AI_BUFFER_SIZE - CXL_AI_HEADER_SIZE;
++			dest += CXL_AI_HEADER_SIZE; /* image offset */
 +		}
-+		le[i].phys_addr = cpu_to_be64(virt_to_phys(vpd_buf[i]));
-+		le[i].len = cpu_to_be64(SG_BUFFER_SIZE);
++		if ((i == (entries - 1)) && mod)
++			s_copy = mod;
++
++		/* copy data */
++		if (copy_from_user(dest, from, s_copy))
++			goto err;
++
++		/* fill in the list */
++		le[i].phys_addr = cpu_to_be64(virt_to_phys(buffer[i]));
++		le[i].len = cpu_to_be64(CXL_AI_BUFFER_SIZE);
 +		if ((i == (entries - 1)) && mod)
 +			le[i].len = cpu_to_be64(mod);
++		from += s_copy;
 +	}
++	pr_devel("%s (op: %i, need header: %i, entries: %i, token: %#llx)\n",
++		 __func__, operation, need_header, entries, continue_token);
 +
-+	if (adapter)
-+		rc = cxl_h_collect_vpd_adapter(adapter->guest->handle,
-+					virt_to_phys(le), entries, &out);
-+	else
-+		rc = cxl_h_collect_vpd(afu->guest->handle, 0,
-+				virt_to_phys(le), entries, &out);
-+	pr_devel("length of available (entries: %i), vpd: %#llx\n",
-+		entries, out);
++	/*
++	 * download/validate the adapter image to the coherent
++	 * platform facility
++	 */
++	rc = fct(adapter->guest->handle, virt_to_phys(le), entries,
++		&continue_token);
++	if (rc == 0) /* success of download/validation operation */
++		continue_token = 0;
 +
-+	if (!rc) {
-+		/*
-+		 * hcall returns in 'out' the size of available VPDs.
-+		 * It fills the buffer with as much data as possible.
-+		 */
-+		if (out < len)
-+			len = out;
-+		rc = len;
-+		if (out) {
-+			for (i = 0; i < entries; i++) {
-+				if (len < SG_BUFFER_SIZE)
-+					tocopy = len;
-+				else
-+					tocopy = SG_BUFFER_SIZE;
-+				memcpy(buf, vpd_buf[i], tocopy);
-+				buf += tocopy;
-+				len -= tocopy;
-+			}
-+		}
-+	}
-+err2:
-+	for (i = 0; i < entries; i++) {
-+		if (vpd_buf[i])
-+			free_page((unsigned long) vpd_buf[i]);
-+	}
-+	free_page((unsigned long) le);
-+err1:
-+	kfree(vpd_buf);
-+	return rc;
-+}
-+
-+static int guest_get_irq_info(struct cxl_context *ctx, struct cxl_irq_info *info)
-+{
-+	return cxl_h_collect_int_info(ctx->afu->guest->handle, ctx->process_token, info);
-+}
-+
-+static irqreturn_t guest_psl_irq(int irq, void *data)
-+{
-+	struct cxl_context *ctx = data;
-+	struct cxl_irq_info irq_info;
-+	int rc;
-+
-+	pr_devel("%d: received PSL interrupt %i\n", ctx->pe, irq);
-+	rc = guest_get_irq_info(ctx, &irq_info);
-+	if (rc) {
-+		WARN(1, "Unable to get IRQ info: %i\n", rc);
-+		return IRQ_HANDLED;
-+	}
-+
-+	rc = cxl_irq(irq, ctx, &irq_info);
-+	return rc;
-+}
-+
-+static irqreturn_t guest_slice_irq_err(int irq, void *data)
-+{
-+	struct cxl_afu *afu = data;
-+	int rc;
-+	u64 serr;
-+
-+	WARN(irq, "CXL SLICE ERROR interrupt %i\n", irq);
-+	rc = cxl_h_get_fn_error_interrupt(afu->guest->handle, &serr);
-+	if (rc) {
-+		dev_crit(&afu->dev, "Couldn't read PSL_SERR_An: %d\n", rc);
-+		return IRQ_HANDLED;
-+	}
-+	dev_crit(&afu->dev, "PSL_SERR_An: 0x%.16llx\n", serr);
-+
-+	rc = cxl_h_ack_fn_error_interrupt(afu->guest->handle, serr);
-+	if (rc)
-+		dev_crit(&afu->dev, "Couldn't ack slice error interrupt: %d\n",
-+			rc);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+
-+static int irq_alloc_range(struct cxl *adapter, int len, int *irq)
-+{
-+	int i, n;
-+	struct irq_avail *cur;
-+
-+	for (i = 0; i < adapter->guest->irq_nranges; i++) {
-+		cur = &adapter->guest->irq_avail[i];
-+		n = bitmap_find_next_zero_area(cur->bitmap, cur->range,
-+					0, len, 0);
-+		if (n < cur->range) {
-+			bitmap_set(cur->bitmap, n, len);
-+			*irq = cur->offset + n;
-+			pr_devel("guest: allocate IRQs %#x->%#x\n",
-+				*irq, *irq + len - 1);
-+
-+			return 0;
-+		}
-+	}
-+	return -ENOSPC;
-+}
-+
-+static int irq_free_range(struct cxl *adapter, int irq, int len)
-+{
-+	int i, n;
-+	struct irq_avail *cur;
-+
-+	if (len == 0)
-+		return -ENOENT;
-+
-+	for (i = 0; i < adapter->guest->irq_nranges; i++) {
-+		cur = &adapter->guest->irq_avail[i];
-+		if (irq >= cur->offset &&
-+			(irq + len) <= (cur->offset + cur->range)) {
-+			n = irq - cur->offset;
-+			bitmap_clear(cur->bitmap, n, len);
-+			pr_devel("guest: release IRQs %#x->%#x\n",
-+				irq, irq + len - 1);
-+			return 0;
-+		}
-+	}
-+	return -ENOENT;
-+}
-+
-+static int guest_reset(struct cxl *adapter)
-+{
-+	int rc;
-+
-+	pr_devel("Adapter reset request\n");
-+	rc = cxl_h_reset_adapter(adapter->guest->handle);
-+	return rc;
-+}
-+
-+static int guest_alloc_one_irq(struct cxl *adapter)
-+{
-+	int irq;
-+
-+	spin_lock(&adapter->guest->irq_alloc_lock);
-+	if (irq_alloc_range(adapter, 1, &irq))
-+		irq = -ENOSPC;
-+	spin_unlock(&adapter->guest->irq_alloc_lock);
-+	return irq;
-+}
-+
-+static void guest_release_one_irq(struct cxl *adapter, int irq)
-+{
-+	spin_lock(&adapter->guest->irq_alloc_lock);
-+	irq_free_range(adapter, irq, 1);
-+	spin_unlock(&adapter->guest->irq_alloc_lock);
-+}
-+
-+static int guest_alloc_irq_ranges(struct cxl_irq_ranges *irqs,
-+				struct cxl *adapter, unsigned int num)
-+{
-+	int i, try, irq;
-+
-+	memset(irqs, 0, sizeof(struct cxl_irq_ranges));
-+
-+	spin_lock(&adapter->guest->irq_alloc_lock);
-+	for (i = 0; i < CXL_IRQ_RANGES && num; i++) {
-+		try = num;
-+		while (try) {
-+			if (irq_alloc_range(adapter, try, &irq) == 0)
-+				break;
-+			try /= 2;
-+		}
-+		if (!try)
-+			goto error;
-+		irqs->offset[i] = irq;
-+		irqs->range[i] = try;
-+		num -= try;
-+	}
-+	if (num)
-+		goto error;
-+	spin_unlock(&adapter->guest->irq_alloc_lock);
-+	return 0;
-+
-+error:
-+	for (i = 0; i < CXL_IRQ_RANGES; i++)
-+		irq_free_range(adapter, irqs->offset[i], irqs->range[i]);
-+	spin_unlock(&adapter->guest->irq_alloc_lock);
-+	return -ENOSPC;
-+}
-+
-+static void guest_release_irq_ranges(struct cxl_irq_ranges *irqs,
-+				struct cxl *adapter)
-+{
-+	int i;
-+
-+	spin_lock(&adapter->guest->irq_alloc_lock);
-+	for (i = 0; i < CXL_IRQ_RANGES; i++)
-+		irq_free_range(adapter, irqs->offset[i], irqs->range[i]);
-+	spin_unlock(&adapter->guest->irq_alloc_lock);
-+}
-+
-+static int guest_register_serr_irq(struct cxl_afu *afu)
-+{
-+	afu->err_irq_name = kasprintf(GFP_KERNEL, "cxl-%s-err",
-+				      dev_name(&afu->dev));
-+	if (!afu->err_irq_name)
-+		return -ENOMEM;
-+
-+	if (!(afu->serr_virq = cxl_map_irq(afu->adapter, afu->serr_hwirq,
-+				 guest_slice_irq_err, afu, afu->err_irq_name))) {
-+		kfree(afu->err_irq_name);
-+		afu->err_irq_name = NULL;
-+		return -ENOMEM;
-+	}
-+
-+	return 0;
-+}
-+
-+static void guest_release_serr_irq(struct cxl_afu *afu)
-+{
-+	cxl_unmap_irq(afu->serr_virq, afu);
-+	cxl_ops->release_one_irq(afu->adapter, afu->serr_hwirq);
-+	kfree(afu->err_irq_name);
-+}
-+
-+static int guest_ack_irq(struct cxl_context *ctx, u64 tfc, u64 psl_reset_mask)
-+{
-+	return cxl_h_control_faults(ctx->afu->guest->handle, ctx->process_token,
-+				tfc >> 32, (psl_reset_mask != 0));
-+}
-+
-+static void disable_afu_irqs(struct cxl_context *ctx)
-+{
-+	irq_hw_number_t hwirq;
-+	unsigned int virq;
-+	int r, i;
-+
-+	pr_devel("Disabling AFU(%d) interrupts\n", ctx->afu->slice);
-+	for (r = 0; r < CXL_IRQ_RANGES; r++) {
-+		hwirq = ctx->irqs.offset[r];
-+		for (i = 0; i < ctx->irqs.range[r]; hwirq++, i++) {
-+			virq = irq_find_mapping(NULL, hwirq);
-+			disable_irq(virq);
-+		}
-+	}
-+}
-+
-+static void enable_afu_irqs(struct cxl_context *ctx)
-+{
-+	irq_hw_number_t hwirq;
-+	unsigned int virq;
-+	int r, i;
-+
-+	pr_devel("Enabling AFU(%d) interrupts\n", ctx->afu->slice);
-+	for (r = 0; r < CXL_IRQ_RANGES; r++) {
-+		hwirq = ctx->irqs.offset[r];
-+		for (i = 0; i < ctx->irqs.range[r]; hwirq++, i++) {
-+			virq = irq_find_mapping(NULL, hwirq);
-+			enable_irq(virq);
-+		}
-+	}
-+}
-+
-+static int _guest_afu_cr_readXX(int sz, struct cxl_afu *afu, int cr_idx,
-+			u64 offset, u64 *val)
-+{
-+	unsigned long cr;
-+	char c;
-+	int rc = 0;
-+
-+	if (afu->crs_len < sz)
-+		return -ENOENT;
-+
-+	if (unlikely(offset >= afu->crs_len))
-+		return -ERANGE;
-+
-+	cr = get_zeroed_page(GFP_KERNEL);
-+	if (!cr)
-+		return -ENOMEM;
-+
-+	rc = cxl_h_get_config(afu->guest->handle, cr_idx, offset,
-+			virt_to_phys((void *)cr), sz);
-+	if (rc)
-+		goto err;
-+
-+	switch (sz) {
-+	case 1:
-+		c = *((char *) cr);
-+		*val = c;
-+		break;
-+	case 2:
-+		*val = in_le16((u16 *)cr);
-+		break;
-+	case 4:
-+		*val = in_le32((unsigned *)cr);
-+		break;
-+	case 8:
-+		*val = in_le64((u64 *)cr);
-+		break;
-+	default:
-+		WARN_ON(1);
-+	}
 +err:
-+	free_page(cr);
++	kfree(header);
++
 +	return rc;
 +}
 +
-+static int guest_afu_cr_read32(struct cxl_afu *afu, int cr_idx,	u64 offset,
-+			u32 *out)
++static int transfer_image(struct cxl *adapter, int operation,
++			struct cxl_adapter_image *ai)
 +{
-+	int rc;
-+	u64 val;
++	int rc = 0;
++	int afu;
 +
-+	rc = _guest_afu_cr_readXX(4, afu, cr_idx, offset, &val);
-+	if (!rc)
-+		*out = (u32) val;
-+	return rc;
-+}
-+
-+static int guest_afu_cr_read16(struct cxl_afu *afu, int cr_idx,	u64 offset,
-+			u16 *out)
-+{
-+	int rc;
-+	u64 val;
-+
-+	rc = _guest_afu_cr_readXX(2, afu, cr_idx, offset, &val);
-+	if (!rc)
-+		*out = (u16) val;
-+	return rc;
-+}
-+
-+static int guest_afu_cr_read8(struct cxl_afu *afu, int cr_idx, u64 offset,
-+			u8 *out)
-+{
-+	int rc;
-+	u64 val;
-+
-+	rc = _guest_afu_cr_readXX(1, afu, cr_idx, offset, &val);
-+	if (!rc)
-+		*out = (u8) val;
-+	return rc;
-+}
-+
-+static int guest_afu_cr_read64(struct cxl_afu *afu, int cr_idx,	u64 offset,
-+			u64 *out)
-+{
-+	return _guest_afu_cr_readXX(8, afu, cr_idx, offset, out);
-+}
-+
-+static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 amr)
-+{
-+	struct cxl_process_element_hcall *elem;
-+	struct cxl *adapter = ctx->afu->adapter;
-+	const struct cred *cred;
-+	u32 pid, idx;
-+	int rc, r, i;
-+	u64 mmio_addr, mmio_size;
-+	__be64 flags = 0;
-+
-+	/* Must be 8 byte aligned and cannot cross a 4096 byte boundary */
-+	if (!(elem = (struct cxl_process_element_hcall *)
-+			get_zeroed_page(GFP_KERNEL)))
-+		return -ENOMEM;
-+
-+	elem->version = cpu_to_be64(CXL_PROCESS_ELEMENT_VERSION);
-+	if (ctx->kernel) {
-+		pid = 0;
-+		flags |= CXL_PE_TRANSLATION_ENABLED;
-+		flags |= CXL_PE_PRIVILEGED_PROCESS;
-+		if (mfmsr() & MSR_SF)
-+			flags |= CXL_PE_64_BIT;
-+	} else {
-+		pid = current->pid;
-+		flags |= CXL_PE_PROBLEM_STATE;
-+		flags |= CXL_PE_TRANSLATION_ENABLED;
-+		if (!test_tsk_thread_flag(current, TIF_32BIT))
-+			flags |= CXL_PE_64_BIT;
-+		cred = get_current_cred();
-+		if (uid_eq(cred->euid, GLOBAL_ROOT_UID))
-+			flags |= CXL_PE_PRIVILEGED_PROCESS;
-+		put_cred(cred);
-+	}
-+	elem->flags         = cpu_to_be64(flags);
-+	elem->common.tid    = cpu_to_be32(0); /* Unused */
-+	elem->common.pid    = cpu_to_be32(pid);
-+	elem->common.csrp   = cpu_to_be64(0); /* disable */
-+	elem->common.aurp0  = cpu_to_be64(0); /* disable */
-+	elem->common.aurp1  = cpu_to_be64(0); /* disable */
-+
-+	cxl_prefault(ctx, wed);
-+
-+	elem->common.sstp0  = cpu_to_be64(ctx->sstp0);
-+	elem->common.sstp1  = cpu_to_be64(ctx->sstp1);
-+	for (r = 0; r < CXL_IRQ_RANGES; r++) {
-+		for (i = 0; i < ctx->irqs.range[r]; i++) {
-+			if (r == 0 && i == 0) {
-+				elem->pslVirtualIsn = cpu_to_be32(ctx->irqs.offset[0]);
-+			} else {
-+				idx = ctx->irqs.offset[r] + i - adapter->guest->irq_base_offset;
-+				elem->applicationVirtualIsnBitmap[idx / 8] |= 0x80 >> (idx % 8);
-+			}
++	switch (operation) {
++	case DOWNLOAD_IMAGE:
++		rc = handle_image(adapter, operation,
++				&cxl_h_download_adapter_image, ai);
++		if (rc < 0) {
++			pr_devel("resetting adapter\n");
++			cxl_h_reset_adapter(adapter->guest->handle);
 +		}
-+	}
-+	elem->common.amr = cpu_to_be64(amr);
-+	elem->common.wed = cpu_to_be64(wed);
++		return rc;
 +
-+	disable_afu_irqs(ctx);
-+
-+	rc = cxl_h_attach_process(ctx->afu->guest->handle, elem,
-+				&ctx->process_token, &mmio_addr, &mmio_size);
-+	if (rc == H_SUCCESS) {
-+		if (ctx->master || !ctx->afu->pp_psa) {
-+			ctx->psn_phys = ctx->afu->psn_phys;
-+			ctx->psn_size = ctx->afu->adapter->ps_size;
-+		} else {
-+			ctx->psn_phys = mmio_addr;
-+			ctx->psn_size = mmio_size;
++	case VALIDATE_IMAGE:
++		rc = handle_image(adapter, operation,
++				&cxl_h_validate_adapter_image, ai);
++		if (rc < 0) {
++			pr_devel("resetting adapter\n");
++			cxl_h_reset_adapter(adapter->guest->handle);
++			return rc;
 +		}
-+		if (ctx->afu->pp_psa && mmio_size &&
-+			ctx->afu->pp_size == 0) {
-+			/*
-+			 * There's no property in the device tree to read the
-+			 * pp_size. We only find out at the 1st attach.
-+			 * Compared to bare-metal, it is too late and we
-+			 * should really lock here. However, on powerVM,
-+			 * pp_size is really only used to display in /sys.
-+			 * Being discussed with pHyp for their next release.
++		if (rc == 0) {
++			pr_devel("remove curent afu\n");
++			for (afu = 0; afu < adapter->slices; afu++)
++				cxl_guest_remove_afu(adapter->afu[afu]);
++
++			pr_devel("resetting adapter\n");
++			cxl_h_reset_adapter(adapter->guest->handle);
++
++			/* The entire image has now been
++			 * downloaded and the validation has
++			 * been successfully performed.
++			 * After that, the partition should call
++			 * ibm,update-nodes and
++			 * ibm,update-properties to receive the
++			 * current configuration
 +			 */
-+			ctx->afu->pp_size = mmio_size;
++			rc = update_devicetree(adapter, DEVICE_SCOPE);
++			transfer = 1;
 +		}
-+		/* from PAPR: process element is bytes 4-7 of process token */
-+		ctx->external_pe = ctx->process_token & 0xFFFFFFFF;
-+		pr_devel("CXL pe=%i is known as %i for pHyp, mmio_size=%#llx",
-+			ctx->pe, ctx->external_pe, ctx->psn_size);
-+		ctx->pe_inserted = true;
-+		enable_afu_irqs(ctx);
++		return rc;
 +	}
 +
-+	free_page((u64)elem);
-+	return rc;
-+}
-+
-+static int guest_attach_process(struct cxl_context *ctx, bool kernel, u64 wed, u64 amr)
-+{
-+	pr_devel("in %s\n", __func__);
-+
-+	ctx->kernel = kernel;
-+	if (ctx->afu->current_mode == CXL_MODE_DIRECTED)
-+		return attach_afu_directed(ctx, wed, amr);
-+
-+	/* dedicated mode not supported on FW840 */
-+
 +	return -EINVAL;
 +}
 +
-+static int detach_afu_directed(struct cxl_context *ctx)
++static long ioctl_transfer_image(struct cxl *adapter, int operation,
++				struct cxl_adapter_image __user *uai)
 +{
-+	if (!ctx->pe_inserted)
-+		return 0;
-+	if (cxl_h_detach_process(ctx->afu->guest->handle, ctx->process_token))
-+		return -1;
-+	return 0;
-+}
-+
-+static int guest_detach_process(struct cxl_context *ctx)
-+{
-+	pr_devel("in %s\n", __func__);
-+	trace_cxl_detach(ctx);
-+
-+	if (!cxl_ops->link_ok(ctx->afu->adapter))
-+		return -EIO;
-+
-+	if (ctx->afu->current_mode == CXL_MODE_DIRECTED)
-+		return detach_afu_directed(ctx);
-+
-+	return -EINVAL;
-+}
-+
-+static void guest_release_afu(struct device *dev)
-+{
-+	struct cxl_afu *afu = to_cxl_afu(dev);
++	struct cxl_adapter_image ai;
 +
 +	pr_devel("%s\n", __func__);
 +
-+	idr_destroy(&afu->contexts_idr);
-+
-+	kfree(afu->guest);
-+	kfree(afu);
-+}
-+
-+ssize_t cxl_guest_read_afu_vpd(struct cxl_afu *afu, void *buf, size_t len)
-+{
-+	return guest_collect_vpd(NULL, afu, buf, len);
-+}
-+
-+#define ERR_BUFF_MAX_COPY_SIZE PAGE_SIZE
-+static ssize_t guest_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
-+					loff_t off, size_t count)
-+{
-+	void *tbuf = NULL;
-+	int rc = 0;
-+
-+	tbuf = (void *) get_zeroed_page(GFP_KERNEL);
-+	if (!tbuf)
-+		return -ENOMEM;
-+
-+	rc = cxl_h_get_afu_err(afu->guest->handle,
-+			       off & 0x7,
-+			       virt_to_phys(tbuf),
-+			       count);
-+	if (rc)
-+		goto err;
-+
-+	if (count > ERR_BUFF_MAX_COPY_SIZE)
-+		count = ERR_BUFF_MAX_COPY_SIZE - (off & 0x7);
-+	memcpy(buf, tbuf, count);
-+err:
-+	free_page((u64)tbuf);
-+
-+	return rc;
-+}
-+
-+static int guest_afu_check_and_enable(struct cxl_afu *afu)
-+{
-+	return 0;
-+}
-+
-+static int activate_afu_directed(struct cxl_afu *afu)
-+{
-+	int rc;
-+
-+	dev_info(&afu->dev, "Activating AFU(%d) directed mode\n", afu->slice);
-+
-+	afu->current_mode = CXL_MODE_DIRECTED;
-+
-+	afu->num_procs = afu->max_procs_virtualised;
-+
-+	if ((rc = cxl_chardev_m_afu_add(afu)))
-+		return rc;
-+
-+	if ((rc = cxl_sysfs_afu_m_add(afu)))
-+		goto err;
-+
-+	if ((rc = cxl_chardev_s_afu_add(afu)))
-+		goto err1;
-+
-+	return 0;
-+err1:
-+	cxl_sysfs_afu_m_remove(afu);
-+err:
-+	cxl_chardev_afu_remove(afu);
-+	return rc;
-+}
-+
-+static int guest_afu_activate_mode(struct cxl_afu *afu, int mode)
-+{
-+	if (!mode)
-+		return 0;
-+	if (!(mode & afu->modes_supported))
-+		return -EINVAL;
-+
-+	if (mode == CXL_MODE_DIRECTED)
-+		return activate_afu_directed(afu);
-+
-+	if (mode == CXL_MODE_DEDICATED)
-+		dev_err(&afu->dev, "Dedicated mode not supported\n");
-+
-+	return -EINVAL;
-+}
-+
-+static int deactivate_afu_directed(struct cxl_afu *afu)
-+{
-+	dev_info(&afu->dev, "Deactivating AFU(%d) directed mode\n", afu->slice);
-+
-+	afu->current_mode = 0;
-+	afu->num_procs = 0;
-+
-+	cxl_sysfs_afu_m_remove(afu);
-+	cxl_chardev_afu_remove(afu);
-+
-+	cxl_ops->afu_reset(afu);
-+
-+	return 0;
-+}
-+
-+static int guest_afu_deactivate_mode(struct cxl_afu *afu, int mode)
-+{
-+	if (!mode)
-+		return 0;
-+	if (!(mode & afu->modes_supported))
-+		return -EINVAL;
-+
-+	if (mode == CXL_MODE_DIRECTED)
-+		return deactivate_afu_directed(afu);
-+	return 0;
-+}
-+
-+static int guest_afu_reset(struct cxl_afu *afu)
-+{
-+	pr_devel("AFU(%d) reset request\n", afu->slice);
-+	return cxl_h_reset_afu(afu->guest->handle);
-+}
-+
-+static int guest_map_slice_regs(struct cxl_afu *afu)
-+{
-+	if (!(afu->p2n_mmio = ioremap(afu->guest->p2n_phys, afu->guest->p2n_size))) {
-+		dev_err(&afu->dev, "Error mapping AFU(%d) MMIO regions\n",
-+			afu->slice);
-+		return -ENOMEM;
-+	}
-+	return 0;
-+}
-+
-+static void guest_unmap_slice_regs(struct cxl_afu *afu)
-+{
-+	if (afu->p2n_mmio)
-+		iounmap(afu->p2n_mmio);
-+}
-+
-+static bool guest_link_ok(struct cxl *cxl)
-+{
-+	return true;
-+}
-+
-+static int afu_properties_look_ok(struct cxl_afu *afu)
-+{
-+	if (afu->pp_irqs < 0) {
-+		dev_err(&afu->dev, "Unexpected per-process minimum interrupt value\n");
-+		return -EINVAL;
-+	}
-+
-+	if (afu->max_procs_virtualised < 1) {
-+		dev_err(&afu->dev, "Unexpected max number of processes virtualised value\n");
-+		return -EINVAL;
-+	}
-+
-+	if (afu->crs_len < 0) {
-+		dev_err(&afu->dev, "Unexpected configuration record size value\n");
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+int cxl_guest_init_afu(struct cxl *adapter, int slice, struct device_node *afu_np)
-+{
-+	struct cxl_afu *afu;
-+	bool free = true;
-+	int rc;
-+
-+	pr_devel("in %s - AFU(%d)\n", __func__, slice);
-+	if (!(afu = cxl_alloc_afu(adapter, slice)))
-+		return -ENOMEM;
-+
-+	if (!(afu->guest = kzalloc(sizeof(struct cxl_afu_guest), GFP_KERNEL))) {
-+		kfree(afu);
-+		return -ENOMEM;
-+	}
-+
-+	if ((rc = dev_set_name(&afu->dev, "afu%i.%i",
-+					  adapter->adapter_num,
-+					  slice)))
-+		goto err1;
-+
-+	adapter->slices++;
-+
-+	if ((rc = cxl_of_read_afu_handle(afu, afu_np)))
-+		goto err1;
-+
-+	if ((rc = cxl_ops->afu_reset(afu)))
-+		goto err1;
-+
-+	if ((rc = cxl_of_read_afu_properties(afu, afu_np)))
-+		goto err1;
-+
-+	if ((rc = afu_properties_look_ok(afu)))
-+		goto err1;
-+
-+	if ((rc = guest_map_slice_regs(afu)))
-+		goto err1;
-+
-+	if ((rc = guest_register_serr_irq(afu)))
-+		goto err2;
++	if (copy_from_user(&ai, uai, sizeof(struct cxl_adapter_image)))
++		return -EFAULT;
 +
 +	/*
-+	 * After we call this function we must not free the afu directly, even
-+	 * if it returns an error!
++	 * Make sure reserved fields and bits are set to 0
 +	 */
-+	if ((rc = cxl_register_afu(afu)))
-+		goto err_put1;
-+
-+	if ((rc = cxl_sysfs_afu_add(afu)))
-+		goto err_put1;
-+
-+	/*
-+	 * pHyp doesn't expose the programming models supported by the
-+	 * AFU. pHyp currently only supports directed mode. If it adds
-+	 * dedicated mode later, this version of cxl has no way to
-+	 * detect it. So we'll initialize the driver, but the first
-+	 * attach will fail.
-+	 * Being discussed with pHyp to do better (likely new property)
-+	 */
-+	if (afu->max_procs_virtualised == 1)
-+		afu->modes_supported = CXL_MODE_DEDICATED;
-+	else
-+		afu->modes_supported = CXL_MODE_DIRECTED;
-+
-+	if ((rc = cxl_afu_select_best_mode(afu)))
-+		goto err_put2;
-+
-+	adapter->afu[afu->slice] = afu;
-+
-+	afu->enabled = true;
-+
-+	return 0;
-+
-+err_put2:
-+	cxl_sysfs_afu_remove(afu);
-+err_put1:
-+	device_unregister(&afu->dev);
-+	free = false;
-+	guest_release_serr_irq(afu);
-+err2:
-+	guest_unmap_slice_regs(afu);
-+err1:
-+	if (free) {
-+		kfree(afu->guest);
-+		kfree(afu);
-+	}
-+	return rc;
-+}
-+
-+void cxl_guest_remove_afu(struct cxl_afu *afu)
-+{
-+	pr_devel("in %s - AFU(%d)\n", __func__, afu->slice);
-+
-+	if (!afu)
-+		return;
-+
-+	cxl_sysfs_afu_remove(afu);
-+
-+	spin_lock(&afu->adapter->afu_list_lock);
-+	afu->adapter->afu[afu->slice] = NULL;
-+	spin_unlock(&afu->adapter->afu_list_lock);
-+
-+	cxl_context_detach_all(afu);
-+	cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
-+	guest_release_serr_irq(afu);
-+	guest_unmap_slice_regs(afu);
-+
-+	device_unregister(&afu->dev);
-+}
-+
-+static void free_adapter(struct cxl *adapter)
-+{
-+	struct irq_avail *cur;
-+	int i;
-+
-+	if (adapter->guest->irq_avail) {
-+		for (i = 0; i < adapter->guest->irq_nranges; i++) {
-+			cur = &adapter->guest->irq_avail[i];
-+			kfree(cur->bitmap);
-+		}
-+		kfree(adapter->guest->irq_avail);
-+	}
-+	kfree(adapter->guest->status);
-+	cxl_remove_adapter_nr(adapter);
-+	kfree(adapter->guest);
-+	kfree(adapter);
-+}
-+
-+static int properties_look_ok(struct cxl *adapter)
-+{
-+	/* The absence of this property means that the operational
-+	 * status is unknown or okay
-+	 */
-+	if (strlen(adapter->guest->status) &&
-+	    strcmp(adapter->guest->status, "okay")) {
-+		pr_err("ABORTING:Bad operational status of the device\n");
++	if (ai.reserved1 || ai.reserved2 || ai.reserved3 || ai.reserved4 ||
++		(ai.flags & ~CXL_AI_ALL))
 +		return -EINVAL;
-+	}
 +
-+	return 0;
++	return transfer_image(adapter, operation, &ai);
 +}
 +
-+ssize_t cxl_guest_read_adapter_vpd(struct cxl *adapter,	void *buf, size_t len)
++static int device_open(struct inode *inode, struct file *file)
 +{
-+	return guest_collect_vpd(adapter, NULL, buf, len);
-+}
-+
-+void cxl_guest_remove_adapter(struct cxl *adapter)
-+{
-+	pr_devel("in %s\n", __func__);
-+
-+	cxl_sysfs_adapter_remove(adapter);
-+
-+	device_unregister(&adapter->dev);
-+}
-+
-+static void release_adapter(struct device *dev)
-+{
-+	free_adapter(to_cxl_adapter(dev));
-+}
-+
-+struct cxl *cxl_guest_init_adapter(struct device_node *np, struct platform_device *pdev)
-+{
++	int adapter_num = CXL_DEVT_ADAPTER(inode->i_rdev);
 +	struct cxl *adapter;
-+	bool free = true;
-+	int rc;
-+
-+	if (!(adapter = cxl_alloc_adapter()))
-+		return ERR_PTR(-ENOMEM);
-+
-+	if (!(adapter->guest = kzalloc(sizeof(struct cxl_guest), GFP_KERNEL))) {
-+		free_adapter(adapter);
-+		return ERR_PTR(-ENOMEM);
-+	}
-+
-+	adapter->slices = 0;
-+	adapter->guest->pdev = pdev;
-+	adapter->dev.parent = &pdev->dev;
-+	adapter->dev.release = release_adapter;
-+	dev_set_drvdata(&pdev->dev, adapter);
-+
-+	if ((rc = cxl_of_read_adapter_handle(adapter, np)))
-+		goto err1;
-+
-+	if ((rc = cxl_of_read_adapter_properties(adapter, np)))
-+		goto err1;
-+
-+	if ((rc = properties_look_ok(adapter)))
-+		goto err1;
-+
-+	/*
-+	 * After we call this function we must not free the adapter directly,
-+	 * even if it returns an error!
-+	 */
-+	if ((rc = cxl_register_adapter(adapter)))
-+		goto err_put1;
-+
-+	if ((rc = cxl_sysfs_adapter_add(adapter)))
-+		goto err_put1;
-+
-+	return adapter;
-+
-+err_put1:
-+	device_unregister(&adapter->dev);
-+	free = false;
-+err1:
-+	if (free)
-+		free_adapter(adapter);
-+	return ERR_PTR(rc);
-+}
-+
-+const struct cxl_backend_ops cxl_guest_ops = {
-+	.module = THIS_MODULE,
-+	.adapter_reset = guest_reset,
-+	.alloc_one_irq = guest_alloc_one_irq,
-+	.release_one_irq = guest_release_one_irq,
-+	.alloc_irq_ranges = guest_alloc_irq_ranges,
-+	.release_irq_ranges = guest_release_irq_ranges,
-+	.setup_irq = NULL,
-+	.handle_psl_slice_error = guest_handle_psl_slice_error,
-+	.psl_interrupt = guest_psl_irq,
-+	.ack_irq = guest_ack_irq,
-+	.attach_process = guest_attach_process,
-+	.detach_process = guest_detach_process,
-+	.link_ok = guest_link_ok,
-+	.release_afu = guest_release_afu,
-+	.afu_read_err_buffer = guest_afu_read_err_buffer,
-+	.afu_check_and_enable = guest_afu_check_and_enable,
-+	.afu_activate_mode = guest_afu_activate_mode,
-+	.afu_deactivate_mode = guest_afu_deactivate_mode,
-+	.afu_reset = guest_afu_reset,
-+	.afu_cr_read8 = guest_afu_cr_read8,
-+	.afu_cr_read16 = guest_afu_cr_read16,
-+	.afu_cr_read32 = guest_afu_cr_read32,
-+	.afu_cr_read64 = guest_afu_cr_read64,
-+};
-diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-index 927ba5a..b3c3ebf 100644
---- a/drivers/misc/cxl/main.c
-+++ b/drivers/misc/cxl/main.c
-@@ -285,9 +285,6 @@ static int __init init_cxl(void)
- {
- 	int rc = 0;
- 
--	if (!cpu_has_feature(CPU_FTR_HVMODE))
--		return -EPERM;
--
- 	if ((rc = cxl_file_init()))
- 		return rc;
- 
-@@ -296,8 +293,14 @@ static int __init init_cxl(void)
- 	if ((rc = register_cxl_calls(&cxl_calls)))
- 		goto err;
- 
--	cxl_ops = &cxl_native_ops;
--	if ((rc = pci_register_driver(&cxl_pci_driver)))
-+	if (cpu_has_feature(CPU_FTR_HVMODE)) {
-+		cxl_ops = &cxl_native_ops;
-+		rc = pci_register_driver(&cxl_pci_driver);
-+	} else {
-+		cxl_ops = &cxl_guest_ops;
-+		rc = platform_driver_register(&cxl_of_driver);
-+	}
-+	if (rc)
- 		goto err1;
- 
- 	return 0;
-@@ -312,7 +315,10 @@ err:
- 
- static void exit_cxl(void)
- {
--	pci_unregister_driver(&cxl_pci_driver);
-+	if (cpu_has_feature(CPU_FTR_HVMODE))
-+		pci_unregister_driver(&cxl_pci_driver);
-+	else
-+		platform_driver_unregister(&cxl_of_driver);
- 
- 	cxl_debugfs_exit();
- 	cxl_file_exit();
-diff --git a/drivers/misc/cxl/of.c b/drivers/misc/cxl/of.c
-new file mode 100644
-index 0000000..edc4583
---- /dev/null
-+++ b/drivers/misc/cxl/of.c
-@@ -0,0 +1,513 @@
-+/*
-+ * Copyright 2015 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+#include <linux/of_address.h>
-+#include <linux/of_platform.h>
-+
-+#include "cxl.h"
-+
-+
-+static const __be32 *read_prop_string(const struct device_node *np,
-+				const char *prop_name)
-+{
-+	const __be32 *prop;
-+
-+	prop = of_get_property(np, prop_name, NULL);
-+	if (cxl_verbose && prop)
-+		pr_info("%s: %s\n", prop_name, (char *) prop);
-+	return prop;
-+}
-+
-+static const __be32 *read_prop_dword(const struct device_node *np,
-+				const char *prop_name, u32 *val)
-+{
-+	const __be32 *prop;
-+
-+	prop = of_get_property(np, prop_name, NULL);
-+	if (prop)
-+		*val = be32_to_cpu(prop[0]);
-+	if (cxl_verbose && prop)
-+		pr_info("%s: %#x (%u)\n", prop_name, *val, *val);
-+	return prop;
-+}
-+
-+static const __be64 *read_prop64_dword(const struct device_node *np,
-+				const char *prop_name, u64 *val)
-+{
-+	const __be64 *prop;
-+
-+	prop = of_get_property(np, prop_name, NULL);
-+	if (prop)
-+		*val = be64_to_cpu(prop[0]);
-+	if (cxl_verbose && prop)
-+		pr_info("%s: %#llx (%llu)\n", prop_name, *val, *val);
-+	return prop;
-+}
-+
-+
-+static int read_handle(struct device_node *np, u64 *handle)
-+{
-+	const __be32 *prop;
-+	u64 size;
-+
-+	/* Get address and size of the node */
-+	prop = of_get_address(np, 0, &size, NULL);
-+	if (size)
-+		return -EINVAL;
-+
-+	/* Helper to read a big number; size is in cells (not bytes) */
-+	*handle = of_read_number(prop, of_n_addr_cells(np));
-+	return 0;
-+}
-+
-+static int read_phys_addr(struct device_node *np, char *prop_name,
-+			struct cxl_afu *afu)
-+{
-+	int i, len, entry_size, naddr, nsize, type;
-+	u64 addr, size;
-+	const __be32 *prop;
-+
-+	naddr = of_n_addr_cells(np);
-+	nsize = of_n_size_cells(np);
-+
-+	prop = of_get_property(np, prop_name, &len);
-+	if (prop) {
-+		entry_size = naddr + nsize;
-+		for (i = 0; i < (len / 4); i += entry_size, prop += entry_size) {
-+			type = be32_to_cpu(prop[0]);
-+			addr = of_read_number(prop, naddr);
-+			size = of_read_number(&prop[naddr], nsize);
-+			switch (type) {
-+			case 0: /* unit address */
-+				afu->guest->handle = addr;
-+				break;
-+			case 1: /* p2 area */
-+				afu->guest->p2n_phys += addr;
-+				afu->guest->p2n_size = size;
-+				break;
-+			case 2: /* problem state area */
-+				afu->psn_phys += addr;
-+				afu->adapter->ps_size = size;
-+				break;
-+			default:
-+				pr_err("Invalid address type %d found in %s property of AFU\n",
-+					type, prop_name);
-+				return -EINVAL;
-+			}
-+			if (cxl_verbose)
-+				pr_info("%s: %#x %#llx (size %#llx)\n",
-+					prop_name, type, addr, size);
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int read_vpd(struct cxl *adapter, struct cxl_afu *afu)
-+{
-+	char vpd[256];
-+	int rc;
-+	size_t len = sizeof(vpd);
-+
-+	memset(vpd, 0, len);
-+
-+	if (adapter)
-+		rc = cxl_guest_read_adapter_vpd(adapter, vpd, len);
-+	else
-+		rc = cxl_guest_read_afu_vpd(afu, vpd, len);
-+
-+	if (rc > 0) {
-+		cxl_dump_debug_buffer(vpd, rc);
-+		rc = 0;
-+	}
-+	return rc;
-+}
-+
-+int cxl_of_read_afu_handle(struct cxl_afu *afu, struct device_node *afu_np)
-+{
-+	if (read_handle(afu_np, &afu->guest->handle))
-+		return -EINVAL;
-+	pr_devel("AFU handle: 0x%.16llx\n", afu->guest->handle);
-+
-+	return 0;
-+}
-+
-+int cxl_of_read_afu_properties(struct cxl_afu *afu, struct device_node *np)
-+{
-+	int i, len, rc;
-+	char *p;
-+	const __be32 *prop;
-+	u16 device_id, vendor_id;
-+	u32 val = 0, class_code;
-+
-+	/* Properties are read in the same order as listed in PAPR */
-+
-+	if (cxl_verbose) {
-+		pr_info("Dump of the 'ibm,coherent-platform-function' node properties:\n");
-+
-+		prop = of_get_property(np, "compatible", &len);
-+		i = 0;
-+		while (i < len) {
-+			p = (char *) prop + i;
-+			pr_info("compatible: %s\n", p);
-+			i += strlen(p) + 1;
-+		}
-+		read_prop_string(np, "name");
-+	}
-+
-+	rc = read_phys_addr(np, "reg", afu);
-+	if (rc)
-+		return rc;
-+
-+	rc = read_phys_addr(np, "assigned-addresses", afu);
-+	if (rc)
-+		return rc;
-+
-+	if (afu->psn_phys == 0)
-+		afu->psa = false;
-+	else
-+		afu->psa = true;
-+
-+	if (cxl_verbose) {
-+		read_prop_string(np, "ibm,loc-code");
-+		read_prop_string(np, "device_type");
-+	}
-+
-+	read_prop_dword(np, "ibm,#processes", &afu->max_procs_virtualised);
-+
-+	if (cxl_verbose) {
-+		read_prop_dword(np, "ibm,scratchpad-size", &val);
-+		read_prop_dword(np, "ibm,programmable", &val);
-+		read_prop_string(np, "ibm,phandle");
-+		read_vpd(NULL, afu);
-+	}
-+
-+	read_prop_dword(np, "ibm,max-ints-per-process", &afu->guest->max_ints);
-+	afu->irqs_max = afu->guest->max_ints;
-+
-+	prop = read_prop_dword(np, "ibm,min-ints-per-process", &afu->pp_irqs);
-+	if (prop) {
-+		/* One extra interrupt for the PSL interrupt is already
-+		 * included. Remove it now to keep only AFU interrupts and
-+		 * match the native case.
-+		 */
-+		afu->pp_irqs--;
-+	}
-+
-+	if (cxl_verbose) {
-+		read_prop_dword(np, "ibm,max-ints", &val);
-+		read_prop_dword(np, "ibm,vpd-size", &val);
-+	}
-+
-+	read_prop64_dword(np, "ibm,error-buffer-size", &afu->eb_len);
-+	afu->eb_offset = 0;
-+
-+	if (cxl_verbose)
-+		read_prop_dword(np, "ibm,config-record-type", &val);
-+
-+	read_prop64_dword(np, "ibm,config-record-size", &afu->crs_len);
-+	afu->crs_offset = 0;
-+
-+	read_prop_dword(np, "ibm,#config-records", &afu->crs_num);
-+
-+	if (cxl_verbose) {
-+		for (i = 0; i < afu->crs_num; i++) {
-+			rc = cxl_ops->afu_cr_read16(afu, i, PCI_DEVICE_ID,
-+						&device_id);
-+			if (!rc)
-+				pr_info("record %d - device-id: %#x\n",
-+					i, device_id);
-+			rc = cxl_ops->afu_cr_read16(afu, i, PCI_VENDOR_ID,
-+						&vendor_id);
-+			if (!rc)
-+				pr_info("record %d - vendor-id: %#x\n",
-+					i, vendor_id);
-+			rc = cxl_ops->afu_cr_read32(afu, i, PCI_CLASS_REVISION,
-+						&class_code);
-+			if (!rc) {
-+				class_code >>= 8;
-+				pr_info("record %d - class-code: %#x\n",
-+					i, class_code);
-+			}
-+		}
-+
-+		read_prop_dword(np, "ibm,function-number", &val);
-+		read_prop_dword(np, "ibm,privileged-function", &val);
-+		read_prop_dword(np, "vendor-id", &val);
-+		read_prop_dword(np, "device-id", &val);
-+		read_prop_dword(np, "revision-id", &val);
-+		read_prop_dword(np, "class-code", &val);
-+		read_prop_dword(np, "subsystem-vendor-id", &val);
-+		read_prop_dword(np, "subsystem-id", &val);
-+	}
-+	/*
-+	 * if "ibm,process-mmio" doesn't exist then per-process mmio is
-+	 * not supported
-+	 */
-+	val = 0;
-+	prop = read_prop_dword(np, "ibm,process-mmio", &val);
-+	if (prop && val == 1)
-+		afu->pp_psa = true;
-+	else
-+		afu->pp_psa = false;
-+
-+	if (cxl_verbose) {
-+		read_prop_dword(np, "ibm,supports-aur", &val);
-+		read_prop_dword(np, "ibm,supports-csrp", &val);
-+		read_prop_dword(np, "ibm,supports-prr", &val);
-+	}
-+
-+	prop = read_prop_dword(np, "ibm,function-error-interrupt", &val);
-+	if (prop)
-+		afu->serr_hwirq = val;
-+
-+	pr_devel("AFU handle: %#llx\n", afu->guest->handle);
-+	pr_devel("p2n_phys: %#llx (size %#llx)\n",
-+		afu->guest->p2n_phys, afu->guest->p2n_size);
-+	pr_devel("psn_phys: %#llx (size %#llx)\n",
-+		afu->psn_phys, afu->adapter->ps_size);
-+	pr_devel("Max number of processes virtualised=%i\n",
-+		afu->max_procs_virtualised);
-+	pr_devel("Per-process irqs min=%i, max=%i\n", afu->pp_irqs,
-+		 afu->irqs_max);
-+	pr_devel("Slice error interrupt=%#lx\n", afu->serr_hwirq);
-+
-+	return 0;
-+}
-+
-+static int read_adapter_irq_config(struct cxl *adapter, struct device_node *np)
-+{
-+	const __be32 *ranges;
-+	int len, nranges, i;
-+	struct irq_avail *cur;
-+
-+	ranges = of_get_property(np, "interrupt-ranges", &len);
-+	if (ranges == NULL || len < (2 * sizeof(int)))
-+		return -EINVAL;
-+
-+	/*
-+	 * encoded array of two cells per entry, each cell encoded as
-+	 * with encode-int
-+	 */
-+	nranges = len / (2 * sizeof(int));
-+	if (nranges == 0 || (nranges * 2 * sizeof(int)) != len)
-+		return -EINVAL;
-+
-+	adapter->guest->irq_avail = kzalloc(nranges * sizeof(struct irq_avail),
-+					    GFP_KERNEL);
-+	if (adapter->guest->irq_avail == NULL)
-+		return -ENOMEM;
-+
-+	adapter->guest->irq_base_offset = be32_to_cpu(ranges[0]);
-+	for (i = 0; i < nranges; i++) {
-+		cur = &adapter->guest->irq_avail[i];
-+		cur->offset = be32_to_cpu(ranges[i * 2]);
-+		cur->range  = be32_to_cpu(ranges[i * 2 + 1]);
-+		cur->bitmap = kcalloc(BITS_TO_LONGS(cur->range),
-+				sizeof(*cur->bitmap), GFP_KERNEL);
-+		if (cur->bitmap == NULL)
-+			goto err;
-+		if (cur->offset < adapter->guest->irq_base_offset)
-+			adapter->guest->irq_base_offset = cur->offset;
-+		if (cxl_verbose)
-+			pr_info("available IRQ range: %#lx-%#lx (%lu)\n",
-+				cur->offset, cur->offset + cur->range - 1,
-+				cur->range);
-+	}
-+	adapter->guest->irq_nranges = nranges;
-+	spin_lock_init(&adapter->guest->irq_alloc_lock);
-+
-+	return 0;
-+err:
-+	for (i--; i >= 0; i--) {
-+		cur = &adapter->guest->irq_avail[i];
-+		kfree(cur->bitmap);
-+	}
-+	kfree(adapter->guest->irq_avail);
-+	adapter->guest->irq_avail = NULL;
-+	return -ENOMEM;
-+}
-+
-+int cxl_of_read_adapter_handle(struct cxl *adapter, struct device_node *np)
-+{
-+	if (read_handle(np, &adapter->guest->handle))
-+		return -EINVAL;
-+	pr_devel("Adapter handle: 0x%.16llx\n", adapter->guest->handle);
-+
-+	return 0;
-+}
-+
-+int cxl_of_read_adapter_properties(struct cxl *adapter, struct device_node *np)
-+{
-+	int rc, len, naddr, i;
-+	char *p;
-+	const __be32 *prop;
-+	u32 val = 0;
-+
-+	/* Properties are read in the same order as listed in PAPR */
-+
-+	naddr = of_n_addr_cells(np);
-+
-+	if (cxl_verbose) {
-+		pr_info("Dump of the 'ibm,coherent-platform-facility' node properties:\n");
-+
-+		read_prop_dword(np, "#address-cells", &val);
-+		read_prop_dword(np, "#size-cells", &val);
-+
-+		prop = of_get_property(np, "compatible", &len);
-+		i = 0;
-+		while (i < len) {
-+			p = (char *) prop + i;
-+			pr_info("compatible: %s\n", p);
-+			i += strlen(p) + 1;
-+		}
-+		read_prop_string(np, "name");
-+		read_prop_string(np, "model");
-+
-+		prop = of_get_property(np, "reg", NULL);
-+		if (prop) {
-+			pr_info("reg: addr:%#llx size:%#x\n",
-+				of_read_number(prop, naddr),
-+				be32_to_cpu(prop[naddr]));
-+		}
-+
-+		read_prop_string(np, "ibm,loc-code");
-+	}
-+
-+	if ((rc = read_adapter_irq_config(adapter, np)))
-+		return rc;
-+
-+	if (cxl_verbose) {
-+		read_prop_string(np, "device_type");
-+		read_prop_string(np, "ibm,phandle");
-+	}
-+
-+	prop = read_prop_dword(np, "ibm,caia-version", &val);
-+	if (prop) {
-+		adapter->caia_major = (val & 0xFF00) >> 8;
-+		adapter->caia_minor = val & 0xFF;
-+	}
-+
-+	prop = read_prop_dword(np, "ibm,psl-revision", &val);
-+	if (prop)
-+		adapter->psl_rev = val;
-+
-+	prop = read_prop_string(np, "status");
-+	if (prop) {
-+		adapter->guest->status = kasprintf(GFP_KERNEL, "%s", (char *) prop);
-+		if (adapter->guest->status == NULL)
-+			return -ENOMEM;
-+	}
-+
-+	prop = read_prop_dword(np, "vendor-id", &val);
-+	if (prop)
-+		adapter->guest->vendor = val;
-+
-+	prop = read_prop_dword(np, "device-id", &val);
-+	if (prop)
-+		adapter->guest->device = val;
-+
-+	if (cxl_verbose) {
-+		read_prop_dword(np, "ibm,privileged-facility", &val);
-+		read_prop_dword(np, "revision-id", &val);
-+		read_prop_dword(np, "class-code", &val);
-+	}
-+
-+	prop = read_prop_dword(np, "subsystem-vendor-id", &val);
-+	if (prop)
-+		adapter->guest->subsystem_vendor = val;
-+
-+	prop = read_prop_dword(np, "subsystem-id", &val);
-+	if (prop)
-+		adapter->guest->subsystem = val;
-+
-+	if (cxl_verbose)
-+		read_vpd(adapter, NULL);
-+
-+	return 0;
-+}
-+
-+static int cxl_of_remove(struct platform_device *pdev)
-+{
-+	struct cxl *adapter;
-+	int afu;
-+
-+	adapter = dev_get_drvdata(&pdev->dev);
-+	for (afu = 0; afu < adapter->slices; afu++)
-+		cxl_guest_remove_afu(adapter->afu[afu]);
-+
-+	cxl_guest_remove_adapter(adapter);
-+	return 0;
-+}
-+
-+static void cxl_of_shutdown(struct platform_device *pdev)
-+{
-+	cxl_of_remove(pdev);
-+}
-+
-+int cxl_of_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = NULL;
-+	struct device_node *afu_np = NULL;
-+	struct cxl *adapter = NULL;
-+	int ret;
-+	int slice, slice_ok;
++	int rc = 0, i;
 +
 +	pr_devel("in %s\n", __func__);
 +
-+	np = pdev->dev.of_node;
-+	if (np == NULL)
++	BUG_ON(sizeof(struct ai_header) != CXL_AI_HEADER_SIZE);
++
++	/* Allows one process to open the device by using a semaphore */
++	if (down_interruptible(&sem) != 0)
++		return -EPERM;
++
++	if (!(adapter = get_cxl_adapter(adapter_num)))
 +		return -ENODEV;
 +
-+	/* init adapter */
-+	adapter = cxl_guest_init_adapter(np, pdev);
-+	if (IS_ERR(adapter)) {
-+		dev_err(&pdev->dev, "guest_init_adapter failed: %li\n", PTR_ERR(adapter));
-+		return PTR_ERR(adapter);
++	file->private_data = adapter;
++	continue_token = 0;
++	transfer = 0;
++
++	for (i = 0; i < CXL_AI_MAX_ENTRIES; i++)
++		buffer[i] = NULL;
++
++	/* aligned buffer containing list entries which describes up to
++	 * 1 megabyte of data (256 entries of 4096 bytes each)
++	 *  Logical real address of buffer 0  -  Buffer 0 length in bytes
++	 *  Logical real address of buffer 1  -  Buffer 1 length in bytes
++	 *  Logical real address of buffer 2  -  Buffer 2 length in bytes
++	 *  ....
++	 *  ....
++	 *  Logical real address of buffer N  -  Buffer N length in bytes
++	 */
++	le = (struct sg_list *)get_zeroed_page(GFP_KERNEL);
++	if (!le) {
++		rc = -ENOMEM;
++		goto err;
 +	}
 +
-+	/* init afu */
-+	slice_ok = 0;
-+	for (afu_np = NULL, slice = 0; (afu_np = of_get_next_child(np, afu_np)); slice++) {
-+		if ((ret = cxl_guest_init_afu(adapter, slice, afu_np)))
-+			dev_err(&pdev->dev, "AFU %i failed to initialise: %i\n",
-+				slice, ret);
-+		else
-+			slice_ok++;
++	for (i = 0; i < CXL_AI_MAX_ENTRIES; i++) {
++		buffer[i] = (unsigned long *)get_zeroed_page(GFP_KERNEL);
++		if (!buffer[i]) {
++			rc = -ENOMEM;
++			goto err1;
++		}
 +	}
 +
-+	if (slice_ok == 0) {
-+		dev_info(&pdev->dev, "No active AFU");
-+		adapter->slices = 0;
++	return 0;
++
++err1:
++	for (i = 0; i < CXL_AI_MAX_ENTRIES; i++) {
++		if (buffer[i])
++			free_page((unsigned long) buffer[i]);
 +	}
 +
-+	if (afu_np)
-+		of_node_put(afu_np);
++	if (le)
++		free_page((unsigned long) le);
++err:
++	put_device(&adapter->dev);
++
++	return rc;
++}
++
++static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++{
++	struct cxl *adapter = file->private_data;
++
++	pr_devel("in %s\n", __func__);
++
++	if (cmd == CXL_IOCTL_DOWNLOAD_IMAGE)
++		return ioctl_transfer_image(adapter,
++					DOWNLOAD_IMAGE,
++					(struct cxl_adapter_image __user *)arg);
++	else if (cmd == CXL_IOCTL_VALIDATE_IMAGE)
++		return ioctl_transfer_image(adapter,
++					VALIDATE_IMAGE,
++					(struct cxl_adapter_image __user *)arg);
++	else
++		return -EINVAL;
++}
++
++static long device_compat_ioctl(struct file *file, unsigned int cmd,
++				unsigned long arg)
++{
++	return device_ioctl(file, cmd, arg);
++}
++
++static int device_close(struct inode *inode, struct file *file)
++{
++	struct cxl *adapter = file->private_data;
++	int i;
++
++	pr_devel("in %s\n", __func__);
++
++	for (i = 0; i < CXL_AI_MAX_ENTRIES; i++) {
++		if (buffer[i])
++			free_page((unsigned long) buffer[i]);
++	}
++
++	if (le)
++		free_page((unsigned long) le);
++
++	up(&sem);
++	put_device(&adapter->dev);
++	continue_token = 0;
++
++	/* reload the module */
++	if (transfer)
++		cxl_guest_reload_module(adapter);
++	else {
++		pr_devel("resetting adapter\n");
++		cxl_h_reset_adapter(adapter->guest->handle);
++	}
++
++	transfer = 0;
 +	return 0;
 +}
 +
-+static const struct of_device_id cxl_of_match[] = {
-+	{ .compatible = "ibm,coherent-platform-facility",},
-+	{},
++static const struct file_operations fops = {
++	.owner		= THIS_MODULE,
++	.open		= device_open,
++	.unlocked_ioctl	= device_ioctl,
++	.compat_ioctl	= device_compat_ioctl,
++	.release	= device_close,
 +};
-+MODULE_DEVICE_TABLE(of, cxl_of_match);
 +
-+struct platform_driver cxl_of_driver = {
-+	.driver = {
-+		.name = "cxl_of",
-+		.of_match_table = cxl_of_match,
-+		.owner = THIS_MODULE
-+	},
-+	.probe = cxl_of_probe,
-+	.remove = cxl_of_remove,
-+	.shutdown = cxl_of_shutdown,
++void cxl_guest_remove_chardev(struct cxl *adapter)
++{
++	cdev_del(&adapter->guest->cdev);
++}
++
++int cxl_guest_add_chardev(struct cxl *adapter)
++{
++	dev_t devt;
++	int rc;
++
++	devt = MKDEV(MAJOR(cxl_get_dev()), CXL_CARD_MINOR(adapter));
++	cdev_init(&adapter->guest->cdev, &fops);
++	if ((rc = cdev_add(&adapter->guest->cdev, devt, 1))) {
++		dev_err(&adapter->dev,
++			"Unable to add chardev on adapter (card%i): %i\n",
++			adapter->adapter_num, rc);
++		goto err;
++	}
++	adapter->dev.devt = devt;
++	sema_init(&sem, 1);
++err:
++	return rc;
++}
+diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+index 920e074..c539dfa 100644
+--- a/drivers/misc/cxl/guest.c
++++ b/drivers/misc/cxl/guest.c
+@@ -889,6 +889,7 @@ void cxl_guest_remove_adapter(struct cxl *adapter)
+ 
+ 	cxl_sysfs_adapter_remove(adapter);
+ 
++	cxl_guest_remove_chardev(adapter);
+ 	device_unregister(&adapter->dev);
+ }
+ 
+@@ -926,6 +927,9 @@ struct cxl *cxl_guest_init_adapter(struct device_node *np, struct platform_devic
+ 	if ((rc = properties_look_ok(adapter)))
+ 		goto err1;
+ 
++	if ((rc = cxl_guest_add_chardev(adapter)))
++		goto err1;
++
+ 	/*
+ 	 * After we call this function we must not free the adapter directly,
+ 	 * even if it returns an error!
+@@ -941,12 +945,23 @@ struct cxl *cxl_guest_init_adapter(struct device_node *np, struct platform_devic
+ err_put1:
+ 	device_unregister(&adapter->dev);
+ 	free = false;
++	cxl_guest_remove_chardev(adapter);
+ err1:
+ 	if (free)
+ 		free_adapter(adapter);
+ 	return ERR_PTR(rc);
+ }
+ 
++void cxl_guest_reload_module(struct cxl *adapter)
++{
++	struct platform_device *pdev;
++
++	pdev = adapter->guest->pdev;
++	cxl_guest_remove_adapter(adapter);
++
++	cxl_of_probe(pdev);
++}
++
+ const struct cxl_backend_ops cxl_guest_ops = {
+ 	.module = THIS_MODULE,
+ 	.adapter_reset = guest_reset,
+diff --git a/include/uapi/misc/cxl.h b/include/uapi/misc/cxl.h
+index 1e889aa..8cd334f 100644
+--- a/include/uapi/misc/cxl.h
++++ b/include/uapi/misc/cxl.h
+@@ -55,11 +55,35 @@ struct cxl_afu_id {
+ 	__u64 reserved6;
+ };
+ 
++/* base adapter image header is included in the image */
++#define CXL_AI_NEED_HEADER	0x0000000000000001ULL
++#define CXL_AI_ALL		CXL_AI_NEED_HEADER
++
++#define CXL_AI_HEADER_SIZE 128
++#define CXL_AI_BUFFER_SIZE 4096
++#define CXL_AI_MAX_ENTRIES 256
++#define CXL_AI_MAX_CHUNK_SIZE (CXL_AI_BUFFER_SIZE * CXL_AI_MAX_ENTRIES)
++
++struct cxl_adapter_image {
++	__u64 flags;
++	__u64 data;
++	__u64 len_data;
++	__u64 len_image;
++	__u64 reserved1;
++	__u64 reserved2;
++	__u64 reserved3;
++	__u64 reserved4;
 +};
++
+ /* ioctl numbers */
+ #define CXL_MAGIC 0xCA
++/* AFU devices */
+ #define CXL_IOCTL_START_WORK		_IOW(CXL_MAGIC, 0x00, struct cxl_ioctl_start_work)
+ #define CXL_IOCTL_GET_PROCESS_ELEMENT	_IOR(CXL_MAGIC, 0x01, __u32)
+ #define CXL_IOCTL_GET_AFU_ID            _IOR(CXL_MAGIC, 0x02, struct cxl_afu_id)
++/* adapter devices */
++#define CXL_IOCTL_DOWNLOAD_IMAGE        _IOW(CXL_MAGIC, 0x0A, struct cxl_adapter_image)
++#define CXL_IOCTL_VALIDATE_IMAGE        _IOW(CXL_MAGIC, 0x0B, struct cxl_adapter_image)
+ 
+ #define CXL_READ_MIN_SIZE 0x1000 /* 4K */
+ 
 -- 
 1.9.1
