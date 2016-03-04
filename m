@@ -1,28 +1,28 @@
-Return-Path: <pmladek@suse.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <zhlcindy@gmail.com>
+Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
+ [IPv6:2607:f8b0:4002:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 01B911A0615
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Mar 2016 00:01:43 +1100 (AEDT)
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 38513140291
- for <linuxppc-dev@ozlabs.org>; Sat,  5 Mar 2016 00:01:40 +1100 (AEDT)
-Date: Fri, 4 Mar 2016 14:01:37 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Torsten Duwe <duwe@lst.de>
-Cc: linuxppc-dev@ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com, jeyu@redhat.com, jkosina@suse.cz,
- live-patching@vger.kernel.org, mbenes@suse.cz
-Subject: Re: [PATCH][v4] livepatch/ppc: Enable livepatching on powerpc
-Message-ID: <20160304130137.GC3166@pathway.suse.cz>
-References: <1457023921-2051-1-git-send-email-pmladek@suse.com>
- <20160304124247.GA20914@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D59081A0615
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Mar 2016 00:52:55 +1100 (AEDT)
+Received: by mail-yw0-x242.google.com with SMTP id s188so2955749ywe.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Mar 2016 05:52:55 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160304124247.GA20914@lst.de>
+In-Reply-To: <56D94BEE.1080506@suse.cz>
+References: <1456988501-29046-1-git-send-email-zhlcindy@gmail.com>
+ <1456988501-29046-2-git-send-email-zhlcindy@gmail.com>
+ <56D94BEE.1080506@suse.cz>
+Date: Fri, 4 Mar 2016 21:52:53 +0800
+Message-ID: <CAD8of+rxkV85H5RDyzLZowkxUhJxgVuMt7-hjwP1yxYZCNsqUg@mail.gmail.com>
+Subject: Re: [PATCH RFC 1/2] mm: meminit: initialise more memory for
+ inode/dentry hash tables in early boot
+From: Li Zhang <zhlcindy@gmail.com>
+To: Vlastimil Babka <vbabka@suse.cz>
+Cc: mpe@ellerman.id.au, Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ aneesh.kumar@linux.vnet.ibm.com, mgorman@techsingularity.net,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Li Zhang <zhlcindy@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,90 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri 2016-03-04 13:42:47, Torsten Duwe wrote:
-> On Thu, Mar 03, 2016 at 05:52:01PM +0100, Petr Mladek wrote:
-> [...]
-> > index ec7f8aada697..2d5333c228f1 100644
-> > --- a/arch/powerpc/kernel/entry_64.S
-> > +++ b/arch/powerpc/kernel/entry_64.S
-> > @@ -1265,6 +1271,31 @@ ftrace_call:
-> >  	ld	r0, LRSAVE(r1)
-> >  	mtlr	r0
-> >  
-> > +#ifdef CONFIG_LIVEPATCH
-> > +	beq+	4f		/* likely(old_NIP == new_NIP) */
-> > +	/*
-> > +	 * For a local call, restore this TOC after calling the patch function.
-> > +	 * For a global call, it does not matter what we restore here,
-> > +	 * since the global caller does its own restore right afterwards,
-> > +	 * anyway. Just insert a klp_return_helper frame in any case,
-> > +	 * so a patch function can always count on the changed stack offsets.
-> > +	 * The patch introduces a frame such that from the patched function
-> > +	 * we return back to klp_return helper. For ABI compliance r12,
-> > +	 * lr and LRSAVE(r1) contain the address of klp_return_helper.
-> > +	 * We loaded ctr with the address of the patched function earlier
-> > +	 */
-> > +	stdu	r1, -32(r1)	/* open new mini stack frame */
-> > +	std	r2, 24(r1)	/* save TOC now, unconditionally. */
-> > +	bl	5f
-> > +5:	mflr	r12
-> > +	addi	r12, r12, (klp_return_helper + 4 - .)@l
-> > +	std	r12, LRSAVE(r1)
-> > +	mtlr	r12
-> > +	mfctr	r12		/* allow for TOC calculation in newfunc */
-> > +	bctr
-> > +4:
-> > +#endif
-> > +
-> >  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
-> >  	stdu	r1, -112(r1)
-> >  .globl ftrace_graph_call
-> > @@ -1281,6 +1312,25 @@ _GLOBAL(ftrace_graph_stub)
-> >  
-> >  _GLOBAL(ftrace_stub)
-> >  	blr
-> > +#ifdef CONFIG_LIVEPATCH
-> > +/* Helper function for local calls that are becoming global
-> > + * due to live patching.
-> > + * We can't simply patch the NOP after the original call,
-> > + * because, depending on the consistency model, some kernel
-> > + * threads may still have called the original, local function
-> > + * *without* saving their TOC in the respective stack frame slot,
-> > + * so the decision is made per-thread during function return by
-> > + * maybe inserting a klp_return_helper frame or not.
-> > +*/
-> > +klp_return_helper:
-> > +	ld	r2, 24(r1)	/* restore TOC (saved by ftrace_caller) */
-> > +	addi r1, r1, 32		/* destroy mini stack frame */
-> > +	ld	r0, LRSAVE(r1)	/* get the real return address */
-> > +	mtlr	r0
-> > +	blr
-> > +#endif
-> > +
-> > +
-> >  #else
-> >  _GLOBAL_TOC(_mcount)
-> >  	/* Taken from output of objdump from lib64/glibc */
-> 
-> We need a caveat here, at least in the comments, even better
-> in some documentation, that the klp_return_helper shifts the stack layout.
-> 
-> This is relevant for functions with more than 8 fixed integer arguments
-> or for any varargs creator. As soon as the patch function is to replace
-> an original with arguments on the stack, the extra stack frame needs to
-> be accounted for.
+On Fri, Mar 4, 2016 at 4:48 PM, Vlastimil Babka <vbabka@suse.cz> wrote:
+> On 03/03/2016 08:01 AM, Li Zhang wrote:
+>> --- a/mm/page_alloc.c
+>> +++ b/mm/page_alloc.c
+>> @@ -293,13 +293,20 @@ static inline bool update_defer_init(pg_data_t *pgdat,
+>>                               unsigned long pfn, unsigned long zone_end,
+>>                               unsigned long *nr_initialised)
+>>  {
+>> +     unsigned long max_initialise;
+>> +
+>>       /* Always populate low zones for address-contrained allocations */
+>>       if (zone_end < pgdat_end_pfn(pgdat))
+>>               return true;
+>> +     /*
+>> +     * Initialise at least 2G of a node but also take into account that
+>> +     * two large system hashes that can take up 1GB for 0.25TB/node.
+>> +     */
+>
+> The indentation is wrong here.
 
-Do I understand it correctly that we could not patch functions that
-pass arguments on the stack with this implementation? If yes, how hard
-would be to get it working, please? At least, it would be great to
-catch this problem and handle it with grace. Otherwise, it might
-be hard to debug.
+Thanks for reviewing, I will fix it in next version.
+
+>
+>> +     max_initialise = max(2UL << (30 - PAGE_SHIFT),
+>> +             (pgdat->node_spanned_pages >> 8));
+>>
+>> -     /* Initialise at least 2G of the highest zone */
+>>       (*nr_initialised)++;
+>> -     if (*nr_initialised > (2UL << (30 - PAGE_SHIFT)) &&
+>> +     if ((*nr_initialised > max_initialise) &&
+>>           (pfn & (PAGES_PER_SECTION - 1)) == 0) {
+>>               pgdat->first_deferred_pfn = pfn;
+>>               return false;
+>>
+>
 
 
-> Where shall we put this warning?
 
-Sadly, we do not have any Documentation/livepatch/ yet/.
-I still hope that we could handle it somehow in the code.
+-- 
 
-Best Regards,
-Petr
+Best Regards
+-Li
