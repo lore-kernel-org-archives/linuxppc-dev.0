@@ -1,28 +1,37 @@
-Return-Path: <zhlcindy@gmail.com>
-Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
- [IPv6:2607:f8b0:4002:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0FCA31A01EA
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 16:21:22 +1100 (AEDT)
-Received: by mail-yw0-x242.google.com with SMTP id h80so2565027ywc.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Mar 2016 21:21:21 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 33F711A0341
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 16:47:11 +1100 (AEDT)
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 4 Mar 2016 15:47:09 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1F2922BB0059
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 16:47:07 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u245kwfo54001856
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 16:47:07 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u245kYXq005355
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 16:46:34 +1100
+Message-ID: <56D92128.7060304@linux.vnet.ibm.com>
+Date: Fri, 04 Mar 2016 11:16:16 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <56D806B4.9040203@linux.vnet.ibm.com>
-References: <1456988501-29046-1-git-send-email-zhlcindy@gmail.com>
- <1456988501-29046-2-git-send-email-zhlcindy@gmail.com>
- <56D806B4.9040203@linux.vnet.ibm.com>
-Date: Fri, 4 Mar 2016 13:21:19 +0800
-Message-ID: <CAD8of+rT_vPma9YjTFu9XTe5cTLpcnUxsP4Fb_gFFuotidB4bg@mail.gmail.com>
-Subject: Re: [PATCH RFC 1/2] mm: meminit: initialise more memory for
- inode/dentry hash tables in early boot
-From: Li Zhang <zhlcindy@gmail.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com,
- mgorman@techsingularity.net, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Li Zhang <zhlcindy@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC] powerpc/mm: Add validation for platform reserved memory
+ ranges
+References: <20160302121055.B3D69140784@ozlabs.org>
+ <56D90830.3060102@linux.vnet.ibm.com> <87si06q249.fsf@linux.vnet.ibm.com>
+In-Reply-To: <87si06q249.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,115 +41,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 3, 2016 at 5:41 PM, Anshuman Khandual
-<khandual@linux.vnet.ibm.com> wrote:
-> On 03/03/2016 12:31 PM, Li Zhang wrote:
->> From: Li Zhang <zhlcindy@linux.vnet.ibm.com>
+On 03/04/2016 10:19 AM, Aneesh Kumar K.V wrote:
+> Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
+> 
+>> On 03/02/2016 05:40 PM, Michael Ellerman wrote:
+>>> On Wed, 2016-02-03 at 08:46:12 UTC, Anshuman Khandual wrote:
+>>>> For partition running on PHYP, there can be a adjunct partition
+>>>> which shares the virtual address range with the operating system.
+>>>> Virtual address ranges which can be used by the adjunct partition
+>>>> are communicated with virtual device node of the device tree with
+>>>> a property known as "ibm,reserved-virtual-addresses". This patch
+>>>> introduces a new function named 'validate_reserved_va_range' which
+>>>> is called inside 'setup_system' to validate that these reserved
+>>>> virtual address ranges do not overlap with the address ranges used
+>>>> by the kernel for all supported memory contexts. This helps prevent
+>>>> the possibility of getting return codes similar to H_RESOURCE for
+>>>> H_PROTECT hcalls for conflicting HPTE entries.
+>>>
+>>> Good plan.
 >>
->> This patch is based on Mel Gorman's old patch in the mailing list,
->> https://lkml.org/lkml/2015/5/5/280 which is dicussed but it is
->
-> Typo here ....................................^^^^^^^^
->
-
-Sorry, I will correct it.
-
->
->> fixed with a completion to wait for all memory initialised in
->> page_alloc_init_late(). It is to fix the oom problem on X86
->
-> You can just write *out of memory* instead of *oom* or put them in
-> capitals.
->
-OK
-
->> with 24TB memory which allocates memory in late initialisation.
->> But for Power platform with 32TB memory, it causes a call trace
->> in vfs_caches_init->inode_init() and inode hash table needs more
->> memory.
->> So this patch allocates 1GB for 0.25TB/node for large system
->> as it is mentioned in https://lkml.org/lkml/2015/5/1/627
->
-> I am wondering how its going to impact other architectures.
-
-I just saw some discussion for X86 in https://lkml.org/lkml/2015/5/1/627.
-And some tests are done for X86 with huge memory.
->From code view, this allocate more memory in early initialisation, it may
-cause boot time a little bit.
-
+>> Thanks !
 >>
->> This call trace is found on Power with 32TB memory, 1024CPUs, 16nodes.
->> The log from dmesg as the following:
+>>>
+>>>> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+>>>> index 3d5abfe..95257c1 100644
+>>>> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+>>>> index 5c03a6a..04bc592 100644
+>>>> --- a/arch/powerpc/kernel/setup_64.c
+>>>> +++ b/arch/powerpc/kernel/setup_64.c
+>>>> @@ -546,6 +546,8 @@ void __init setup_system(void)
+>>>>  	smp_release_cpus();
+>>>>  #endif
+>>>>  
+>>>> +	validate_reserved_va_range();
+>>>> +
+>>>
+>>> I don't see why this can't just be an initcall in hash_utils_64.c, rather than
+>>> being called from here.
 >>
->> [    0.091780] Dentry cache hash table entries: 2147483648 (order: 18,
->> 17179869184 bytes)
->> [    2.891012] vmalloc: allocation failure, allocated 16021913600 of
->> 17179934720 bytes
->> [    2.891034] swapper/0: page allocation failure: order:0,
->> mode:0x2080020
->> [    2.891038] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.4.0-0-ppc64
->> [    2.891041] Call Trace:
->> [    2.891046] [c0000000012bfa00] [c0000000007c4a50]
->>                 .dump_stack+0xb4/0xb664 (unreliable)
->> [    2.891051] [c0000000012bfa80] [c0000000001f93d4]
->>                 .warn_alloc_failed+0x114/0x160
->> [    2.891054] [c0000000012bfb30] [c00000000023c204]
->>                 .__vmalloc_area_node+0x1a4/0x2b0
->> [    2.891058] [c0000000012bfbf0] [c00000000023c3f4]
->>                 .__vmalloc_node_range+0xe4/0x110
->> [    2.891061] [c0000000012bfc90] [c00000000023c460]
->>                 .__vmalloc_node+0x40/0x50
->> [    2.891065] [c0000000012bfd10] [c000000000b67d60]
->>                 .alloc_large_system_hash+0x134/0x2a4
->> [    2.891068] [c0000000012bfdd0] [c000000000b70924]
->>                 .inode_init+0xa4/0xf0
->> [    2.891071] [c0000000012bfe60] [c000000000b706a0]
->>                 .vfs_caches_init+0x80/0x144
->> [    2.891074] [c0000000012bfef0] [c000000000b35208]
->>                 .start_kernel+0x40c/0x4e0
->> [    2.891078] [c0000000012bff90] [c000000000008cfc]
->>                 start_here_common+0x20/0x4a4
->> [    2.891080] Mem-Info:
->
-> The dmesg output here needs some formatting.
->
+>> That works, will change it.
 >>
->> Signed-off-by: Li Zhang <zhlcindy@linux.vnet.ibm.com>
->> ---
->>  mm/page_alloc.c | 11 +++++++++--
->>  1 file changed, 9 insertions(+), 2 deletions(-)
+>>>
+>>>>  	pr_info("Starting Linux %s %s\n", init_utsname()->machine,
+>>>>  		 init_utsname()->version);
+>>>>  
+>>>> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+>>>> index ba59d59..03adafc 100644
+>>>> --- a/arch/powerpc/mm/hash_utils_64.c
+>>>> +++ b/arch/powerpc/mm/hash_utils_64.c
+>>>> @@ -810,6 +810,57 @@ void __init early_init_mmu(void)
+>>>>  	slb_initialize();
+>>>>  }
+>>>>  
+>>>> +/*
+>>>> + * PAPR says that each record contains 3 * 32 bit element, hence 12 bytes.
+>>>> + * First two element contains the abbreviated virtual address (high order
+>>>> + * 32 bits and low order 32 bits generates the abbreviated virtual address
+>>>> + * of 64 bits which need to be concatenated with 12 bits of 0 at the end
+>>>> + * to generate the actual 76 bit reserved virtual address) and size of the
+>>>> + * reserved virtual address range is encoded in next 32 bit element as number
+>>>> + * of 4K pages.
+>>>> + */
+>>>> +#define	BYTES_PER_RVA_RECORD	12
+>>>
+>>> Please define a properly endian-annotated struct which encodes the layout.
 >>
->> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
->> index 838ca8bb..4847f25 100644
->> --- a/mm/page_alloc.c
->> +++ b/mm/page_alloc.c
->> @@ -293,13 +293,20 @@ static inline bool update_defer_init(pg_data_t *pgdat,
->>                               unsigned long pfn, unsigned long zone_end,
->>                               unsigned long *nr_initialised)
->>  {
->> +     unsigned long max_initialise;
->> +
->>       /* Always populate low zones for address-contrained allocations */
->>       if (zone_end < pgdat_end_pfn(pgdat))
->>               return true;
->> +     /*
->> +     * Initialise at least 2G of a node but also take into account that
->> +     * two large system hashes that can take up 1GB for 0.25TB/node.
->> +     */
->> +     max_initialise = max(2UL << (30 - PAGE_SHIFT),
->> +             (pgdat->node_spanned_pages >> 8));
+>> something like this ?
 >>
->> -     /* Initialise at least 2G of the highest zone */
->>       (*nr_initialised)++;
->> -     if (*nr_initialised > (2UL << (30 - PAGE_SHIFT)) &&
->> +     if ((*nr_initialised > max_initialise) &&
->
-> Does this change need to be tested on all architectures ?
+>> struct reserved_va_record {
+>> 	__be32	high_addr;	/* High 32 bits of the abbreviated VA */
+>> 	__be32	low_addr;	/* Low 32 bits of the abbreviated VA */
+>> 	__be32	nr_4k;		/* VA range in multiple of 4K pages */
+>> };
+>>
+>>>
+>>> It can be local to the function if that works.
+>>>
+>>
+>> Okay.
+>>
+>>>> +/*
+>>>> + * Linux uses 65 bits (MAX_PHYSMEM_BITS + CONTEXT_BITS) from available 78
+>>>> + * bit wide virtual address range. As reserved virtual address range comes
+>>>> + * as an abbreviated form of 64 bits, we will use a partial address mask
+>>>> + * (65 bit mask >> 12) to match it for simplicity.
+>>>> + */
+>>>> +#define	PARTIAL_USED_VA_MASK	0x1FFFFFFFFFFFFFULL
+>>>
+>>> Please calculate this from the appropriate constants. We don't want to have to
+>>> update it in future.
+>>
+>> Sure, I guess something like this works.
+>>
+>> #define RVA_SKIPPED_BITS        12      /* This changes with PAPR */
+>> #define USED_VA_BITS            MAX_PHYSMEM_BITS + CONTEXT_BITS
+> 
+> context + esid + sid shift it should be
 
-Currently, this feature is only supported for X86 in upstream.
-It can be tested more in the future if some architectures need to enable it.
-
--- 
-
-Best Regards
--Li
+Yeah its more appropriate but but we dont have any constants like
+ESID_SHIFT (or ESID_SHIFT_1T) to match SID_SHIFT (or SID_SHIFT_1T)
+which adds up to 46 bits of EA.
