@@ -1,26 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vbabka@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8C4601A045D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 19:43:40 +1100 (AEDT)
-Message-ID: <1457081014.20076.6.camel@ellerman.id.au>
-Subject: Re: hw_breakpoint: Fix Oops at destroying hw_breakpoint event on
- powerpc
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- acme@kernel.org,  mingo@redhat.com, paulus@samba.org
-Date: Fri, 04 Mar 2016 19:43:34 +1100
-In-Reply-To: <20160303102002.GK6356@twins.programming.kicks-ass.net>
-References: <1456912517-5711-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <20160302115324.63B35140BF5@ozlabs.org>
- <20160302115942.GC6356@twins.programming.kicks-ass.net>
- <1456997018.335.7.camel@ellerman.id.au>
- <20160303102002.GK6356@twins.programming.kicks-ass.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id C927D1A045D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 19:48:51 +1100 (AEDT)
+Subject: Re: [PATCH RFC 1/2] mm: meminit: initialise more memory for
+ inode/dentry hash tables in early boot
+To: Li Zhang <zhlcindy@gmail.com>, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ mgorman@techsingularity.net
+References: <1456988501-29046-1-git-send-email-zhlcindy@gmail.com>
+ <1456988501-29046-2-git-send-email-zhlcindy@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Li Zhang <zhlcindy@linux.vnet.ibm.com>
+From: Vlastimil Babka <vbabka@suse.cz>
+Message-ID: <56D94BEE.1080506@suse.cz>
+Date: Fri, 4 Mar 2016 09:48:46 +0100
+MIME-Version: 1.0
+In-Reply-To: <1456988501-29046-2-git-send-email-zhlcindy@gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,39 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-03-03 at 11:20 +0100, Peter Zijlstra wrote:
-> On Thu, Mar 03, 2016 at 08:23:38PM +1100, Michael Ellerman wrote:
-> > On Wed, 2016-03-02 at 12:59 +0100, Peter Zijlstra wrote:
->
-> Indeed, but if there's a preemption point in between setting and using
-> that state, the ctx->task pointer might not actually still point to the
-> same task. With inherited events the event might get swapped to the next
-> task if it has the exact same (inherited) event configuration instead of
-> reprogramming the hardware.
+On 03/03/2016 08:01 AM, Li Zhang wrote:
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -293,13 +293,20 @@ static inline bool update_defer_init(pg_data_t *pgdat,
+>  				unsigned long pfn, unsigned long zone_end,
+>  				unsigned long *nr_initialised)
+>  {
+> +	unsigned long max_initialise;
+> +
+>  	/* Always populate low zones for address-contrained allocations */
+>  	if (zone_end < pgdat_end_pfn(pgdat))
+>  		return true;
+> +	/*
+> +	* Initialise at least 2G of a node but also take into account that
+> +	* two large system hashes that can take up 1GB for 0.25TB/node.
+> +	*/
 
-Yep that sounds like it would be bad for this code.
+The indentation is wrong here.
 
-> > I can't think of a reason why we can't also store it per-cpu, but I could be
-> > wrong, I don't know the code well and I haven't thought about it for very long.
->
-> Right, so I'm not really up to snuff on the whole hw_breakpoint stuff
-> either, that was bolted onto perf by mingo, fweisbec, kprasad and others
-> while I was doing PMU bits, and I've never really dug into it.
->
-> I understand kprasad is no longer with IBM, his email bounced. That's a
-> shame because he knew about this stuff.. :/
-
-I don't know that for sure but I suspect you're right, which is definitely a
-shame.
-
-> > Do you mind if I merge the following fix for now as a band-aid, and we'll try
-> > and fix it up properly in the next few weeks (but maybe not in time for 4.5
-> > final).
->
-> OK, that works for me.
->
-> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-
-Thanks. I've merged it into my fixes branch.
-
-cheers
+> +	max_initialise = max(2UL << (30 - PAGE_SHIFT),
+> +		(pgdat->node_spanned_pages >> 8));
+>  
+> -	/* Initialise at least 2G of the highest zone */
+>  	(*nr_initialised)++;
+> -	if (*nr_initialised > (2UL << (30 - PAGE_SHIFT)) &&
+> +	if ((*nr_initialised > max_initialise) &&
+>  	    (pfn & (PAGES_PER_SECTION - 1)) == 0) {
+>  		pgdat->first_deferred_pfn = pfn;
+>  		return false;
+> 
