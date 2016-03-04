@@ -1,34 +1,33 @@
 Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 465B31A0B84
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 22:27:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0D7411A0B84
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 22:27:09 +1100 (AEDT)
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 4 Mar 2016 11:27:05 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9817D1B08061
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:27:26 +0000 (GMT)
+ Fri, 4 Mar 2016 11:27:06 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 1ACFE2190056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:26:47 +0000 (GMT)
 Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
  [9.149.37.252])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u24BR2aP59244782
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:27:02 GMT
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u24BR3oj7209434
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:27:03 GMT
 Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u24BR2cW007585
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 04:27:02 -0700
+ u24BR3W5007639
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 04:27:03 -0700
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com, manoj@linux.vnet.ibm.com,
  mrochs@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 15/20] cxl: Parse device tree and create cxl device(s) at
- boot
-Date: Fri,  4 Mar 2016 12:26:39 +0100
-Message-Id: <1457090804-9719-16-git-send-email-fbarrat@linux.vnet.ibm.com>
+Subject: [PATCH v6 16/20] cxl: Support the cxl kernel API from a guest
+Date: Fri,  4 Mar 2016 12:26:40 +0100
+Message-Id: <1457090804-9719-17-git-send-email-fbarrat@linux.vnet.ibm.com>
 In-Reply-To: <1457090804-9719-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 References: <1457090804-9719-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,8 +39,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add new entry point to scan the device tree at boot in a guest,
-looking for cxl devices.
+Like on bare-metal, the cxl driver creates a virtual PHB and a pci
+device for the AFU. The configuration space of the device is mapped to
+the configuration record of the AFU.
+
+Reuse the code defined in afu_cr_read8|16|32() when reading the
+configuration space of the AFU device.
+
+Even though the (virtual) AFU device is a pci device, the adapter is
+not. So a driver using the cxl kernel API cannot read the VPD of the
+adapter through the usual PCI interface. Therefore, we add a call to
+the cxl kernel API:
+ssize_t cxl_read_adapter_vpd(struct pci_dev *dev, void *buf, size_t count);
 
 Co-authored-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
@@ -49,48 +58,535 @@ Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 Reviewed-by: Manoj Kumar <manoj@linux.vnet.ibm.com>
 Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/base.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ drivers/misc/cxl/api.c    |  63 ++++++++++++++-----
+ drivers/misc/cxl/cxl.h    |   6 +-
+ drivers/misc/cxl/guest.c  |  26 ++++++++
+ drivers/misc/cxl/native.c |  50 +++++++++++++++
+ drivers/misc/cxl/pci.c    |   9 ++-
+ drivers/misc/cxl/vphb.c   | 154 +++++++++++++++++++---------------------------
+ include/misc/cxl.h        |   5 ++
+ 7 files changed, 203 insertions(+), 110 deletions(-)
 
-diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
-index 957f4dd..9b90ec6 100644
---- a/drivers/misc/cxl/base.c
-+++ b/drivers/misc/cxl/base.c
-@@ -11,6 +11,7 @@
- #include <linux/rcupdate.h>
- #include <asm/errno.h>
- #include <misc/cxl-base.h>
-+#include <linux/of_platform.h>
- #include "cxl.h"
- 
- /* protected by rcu */
-@@ -91,3 +92,27 @@ int cxl_update_properties(struct device_node *dn,
- 	return of_update_property(dn, new_prop);
+diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+index 325f957..75ec2f9 100644
+--- a/drivers/misc/cxl/api.c
++++ b/drivers/misc/cxl/api.c
+@@ -89,28 +89,11 @@ int cxl_release_context(struct cxl_context *ctx)
  }
- EXPORT_SYMBOL_GPL(cxl_update_properties);
-+
-+static int __init cxl_base_init(void)
+ EXPORT_SYMBOL_GPL(cxl_release_context);
+ 
+-int cxl_allocate_afu_irqs(struct cxl_context *ctx, int num)
+-{
+-	if (num == 0)
+-		num = ctx->afu->pp_irqs;
+-	return afu_allocate_irqs(ctx, num);
+-}
+-EXPORT_SYMBOL_GPL(cxl_allocate_afu_irqs);
+-
+-void cxl_free_afu_irqs(struct cxl_context *ctx)
+-{
+-	afu_irq_name_free(ctx);
+-	cxl_ops->release_irq_ranges(&ctx->irqs, ctx->afu->adapter);
+-}
+-EXPORT_SYMBOL_GPL(cxl_free_afu_irqs);
+-
+ static irq_hw_number_t cxl_find_afu_irq(struct cxl_context *ctx, int num)
+ {
+ 	__u16 range;
+ 	int r;
+ 
+-	WARN_ON(num == 0);
+-
+ 	for (r = 0; r < CXL_IRQ_RANGES; r++) {
+ 		range = ctx->irqs.range[r];
+ 		if (num < range) {
+@@ -121,6 +104,44 @@ static irq_hw_number_t cxl_find_afu_irq(struct cxl_context *ctx, int num)
+ 	return 0;
+ }
+ 
++int cxl_allocate_afu_irqs(struct cxl_context *ctx, int num)
 +{
-+	struct device_node *np = NULL;
-+	struct platform_device *dev;
-+	int count = 0;
++	int res;
++	irq_hw_number_t hwirq;
 +
-+	/*
-+	 * Scan for compatible devices in guest only
-+	 */
-+	if (cpu_has_feature(CPU_FTR_HVMODE))
-+		return 0;
-+
-+	while ((np = of_find_compatible_node(np, NULL,
-+				     "ibm,coherent-platform-facility"))) {
-+		dev = of_platform_device_create(np, NULL, NULL);
-+		if (dev)
-+			count++;
++	if (num == 0)
++		num = ctx->afu->pp_irqs;
++	res = afu_allocate_irqs(ctx, num);
++	if (!res && !cpu_has_feature(CPU_FTR_HVMODE)) {
++		/* In a guest, the PSL interrupt is not multiplexed. It was
++		 * allocated above, and we need to set its handler
++		 */
++		hwirq = cxl_find_afu_irq(ctx, 0);
++		if (hwirq)
++			cxl_map_irq(ctx->afu->adapter, hwirq, cxl_ops->psl_interrupt, ctx, "psl");
 +	}
-+	pr_devel("Found %d cxl device(s)\n", count);
++	return res;
++}
++EXPORT_SYMBOL_GPL(cxl_allocate_afu_irqs);
++
++void cxl_free_afu_irqs(struct cxl_context *ctx)
++{
++	irq_hw_number_t hwirq;
++	unsigned int virq;
++
++	if (!cpu_has_feature(CPU_FTR_HVMODE)) {
++		hwirq = cxl_find_afu_irq(ctx, 0);
++		if (hwirq) {
++			virq = irq_find_mapping(NULL, hwirq);
++			if (virq)
++				cxl_unmap_irq(virq, ctx);
++		}
++	}
++	afu_irq_name_free(ctx);
++	cxl_ops->release_irq_ranges(&ctx->irqs, ctx->afu->adapter);
++}
++EXPORT_SYMBOL_GPL(cxl_free_afu_irqs);
++
+ int cxl_map_afu_irq(struct cxl_context *ctx, int num,
+ 		    irq_handler_t handler, void *cookie, char *name)
+ {
+@@ -356,3 +377,11 @@ void cxl_perst_reloads_same_image(struct cxl_afu *afu,
+ 	afu->adapter->perst_same_image = perst_reloads_same_image;
+ }
+ EXPORT_SYMBOL_GPL(cxl_perst_reloads_same_image);
++
++ssize_t cxl_read_adapter_vpd(struct pci_dev *dev, void *buf, size_t count)
++{
++	struct cxl_afu *afu = cxl_pci_to_afu(dev);
++
++	return cxl_ops->read_adapter_vpd(afu->adapter, buf, count);
++}
++EXPORT_SYMBOL_GPL(cxl_read_adapter_vpd);
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 24bd4ca..b388c97 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -587,6 +587,7 @@ int cxl_pci_setup_irq(struct cxl *adapter, unsigned int hwirq, unsigned int virq
+ int cxl_update_image_control(struct cxl *adapter);
+ int cxl_pci_reset(struct cxl *adapter);
+ void cxl_pci_release_afu(struct device *dev);
++ssize_t cxl_pci_read_adapter_vpd(struct cxl *adapter, void *buf, size_t len);
+ 
+ /* common == phyp + powernv */
+ struct cxl_process_element_common {
+@@ -808,7 +809,6 @@ int cxl_psl_purge(struct cxl_afu *afu);
+ 
+ void cxl_stop_trace(struct cxl *cxl);
+ int cxl_pci_vphb_add(struct cxl_afu *afu);
+-void cxl_pci_vphb_reconfigure(struct cxl_afu *afu);
+ void cxl_pci_vphb_remove(struct cxl_afu *afu);
+ 
+ extern struct pci_driver cxl_pci_driver;
+@@ -869,6 +869,10 @@ struct cxl_backend_ops {
+ 	int (*afu_cr_read16)(struct cxl_afu *afu, int cr_idx, u64 offset, u16 *val);
+ 	int (*afu_cr_read32)(struct cxl_afu *afu, int cr_idx, u64 offset, u32 *val);
+ 	int (*afu_cr_read64)(struct cxl_afu *afu, int cr_idx, u64 offset, u64 *val);
++	int (*afu_cr_write8)(struct cxl_afu *afu, int cr_idx, u64 offset, u8 val);
++	int (*afu_cr_write16)(struct cxl_afu *afu, int cr_idx, u64 offset, u16 val);
++	int (*afu_cr_write32)(struct cxl_afu *afu, int cr_idx, u64 offset, u32 val);
++	ssize_t (*read_adapter_vpd)(struct cxl *adapter, void *buf, size_t count);
+ };
+ extern const struct cxl_backend_ops cxl_native_ops;
+ extern const struct cxl_backend_ops cxl_guest_ops;
+diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+index c539dfa..4326d66 100644
+--- a/drivers/misc/cxl/guest.c
++++ b/drivers/misc/cxl/guest.c
+@@ -418,6 +418,24 @@ static int guest_afu_cr_read64(struct cxl_afu *afu, int cr_idx,	u64 offset,
+ 	return _guest_afu_cr_readXX(8, afu, cr_idx, offset, out);
+ }
+ 
++static int guest_afu_cr_write32(struct cxl_afu *afu, int cr, u64 off, u32 in)
++{
++	/* config record is not writable from guest */
++	return -EPERM;
++}
++
++static int guest_afu_cr_write16(struct cxl_afu *afu, int cr, u64 off, u16 in)
++{
++	/* config record is not writable from guest */
++	return -EPERM;
++}
++
++static int guest_afu_cr_write8(struct cxl_afu *afu, int cr, u64 off, u8 in)
++{
++	/* config record is not writable from guest */
++	return -EPERM;
++}
++
+ static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 amr)
+ {
+ 	struct cxl_process_element_hcall *elem;
+@@ -807,6 +825,9 @@ int cxl_guest_init_afu(struct cxl *adapter, int slice, struct device_node *afu_n
+ 
+ 	afu->enabled = true;
+ 
++	if ((rc = cxl_pci_vphb_add(afu)))
++		dev_info(&afu->dev, "Can't register vPHB\n");
++
+ 	return 0;
+ 
+ err_put2:
+@@ -832,6 +853,7 @@ void cxl_guest_remove_afu(struct cxl_afu *afu)
+ 	if (!afu)
+ 		return;
+ 
++	cxl_pci_vphb_remove(afu);
+ 	cxl_sysfs_afu_remove(afu);
+ 
+ 	spin_lock(&afu->adapter->afu_list_lock);
+@@ -987,4 +1009,8 @@ const struct cxl_backend_ops cxl_guest_ops = {
+ 	.afu_cr_read16 = guest_afu_cr_read16,
+ 	.afu_cr_read32 = guest_afu_cr_read32,
+ 	.afu_cr_read64 = guest_afu_cr_read64,
++	.afu_cr_write8 = guest_afu_cr_write8,
++	.afu_cr_write16 = guest_afu_cr_write16,
++	.afu_cr_write32 = guest_afu_cr_write32,
++	.read_adapter_vpd = cxl_guest_read_adapter_vpd,
+ };
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 0e289c2..e564ae6 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -1019,6 +1019,52 @@ static int native_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off, u8 *out)
+ 	return rc;
+ }
+ 
++static int native_afu_cr_write32(struct cxl_afu *afu, int cr, u64 off, u32 in)
++{
++	if (unlikely(!cxl_ops->link_ok(afu->adapter)))
++		return -EIO;
++	if (unlikely(off >= afu->crs_len))
++		return -ERANGE;
++	out_le32(afu->native->afu_desc_mmio + afu->crs_offset +
++		(cr * afu->crs_len) + off, in);
 +	return 0;
 +}
 +
-+module_init(cxl_base_init);
++static int native_afu_cr_write16(struct cxl_afu *afu, int cr, u64 off, u16 in)
++{
++	u64 aligned_off = off & ~0x3L;
++	u32 val32, mask, shift;
++	int rc;
++
++	rc = native_afu_cr_read32(afu, cr, aligned_off, &val32);
++	if (rc)
++		return rc;
++	shift = (off & 0x3) * 8;
++	WARN_ON(shift == 24);
++	mask = 0xffff << shift;
++	val32 = (val32 & ~mask) | (in << shift);
++
++	rc = native_afu_cr_write32(afu, cr, aligned_off, val32);
++	return rc;
++}
++
++static int native_afu_cr_write8(struct cxl_afu *afu, int cr, u64 off, u8 in)
++{
++	u64 aligned_off = off & ~0x3L;
++	u32 val32, mask, shift;
++	int rc;
++
++	rc = native_afu_cr_read32(afu, cr, aligned_off, &val32);
++	if (rc)
++		return rc;
++	shift = (off & 0x3) * 8;
++	mask = 0xff << shift;
++	val32 = (val32 & ~mask) | (in << shift);
++
++	rc = native_afu_cr_write32(afu, cr, aligned_off, val32);
++	return rc;
++}
++
+ const struct cxl_backend_ops cxl_native_ops = {
+ 	.module = THIS_MODULE,
+ 	.adapter_reset = cxl_pci_reset,
+@@ -1044,4 +1090,8 @@ const struct cxl_backend_ops cxl_native_ops = {
+ 	.afu_cr_read16 = native_afu_cr_read16,
+ 	.afu_cr_read32 = native_afu_cr_read32,
+ 	.afu_cr_read64 = native_afu_cr_read64,
++	.afu_cr_write8 = native_afu_cr_write8,
++	.afu_cr_write16 = native_afu_cr_write16,
++	.afu_cr_write32 = native_afu_cr_write32,
++	.read_adapter_vpd = cxl_pci_read_adapter_vpd,
+ };
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index fb4fd45..6cae044 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -881,6 +881,7 @@ static void cxl_pci_remove_afu(struct cxl_afu *afu)
+ 	if (!afu)
+ 		return;
+ 
++	cxl_pci_vphb_remove(afu);
+ 	cxl_sysfs_afu_remove(afu);
+ 	cxl_debugfs_afu_remove(afu);
+ 
+@@ -1067,6 +1068,11 @@ static int cxl_vsec_looks_ok(struct cxl *adapter, struct pci_dev *dev)
+ 	return 0;
+ }
+ 
++ssize_t cxl_pci_read_adapter_vpd(struct cxl *adapter, void *buf, size_t len)
++{
++	return pci_read_vpd(to_pci_dev(adapter->dev.parent), 0, len, buf);
++}
++
+ static void cxl_release_adapter(struct device *dev)
+ {
+ 	struct cxl *adapter = to_cxl_adapter(dev);
+@@ -1272,7 +1278,6 @@ static void cxl_remove(struct pci_dev *dev)
+ 	 */
+ 	for (i = 0; i < adapter->slices; i++) {
+ 		afu = adapter->afu[i];
+-		cxl_pci_vphb_remove(afu);
+ 		cxl_pci_remove_afu(afu);
+ 	}
+ 	cxl_pci_remove_adapter(adapter);
+@@ -1451,8 +1456,6 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
+ 		if (cxl_afu_select_best_mode(afu))
+ 			goto err;
+ 
+-		cxl_pci_vphb_reconfigure(afu);
+-
+ 		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
+ 			/* Reset the device context.
+ 			 * TODO: make this less disruptive
+diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
+index baa4087..c960a09 100644
+--- a/drivers/misc/cxl/vphb.c
++++ b/drivers/misc/cxl/vphb.c
+@@ -99,113 +99,90 @@ static int cxl_pcie_cfg_record(u8 bus, u8 devfn)
+ 	return (bus << 8) + devfn;
+ }
+ 
+-static unsigned long cxl_pcie_cfg_addr(struct pci_controller* phb,
+-				       u8 bus, u8 devfn, int offset)
+-{
+-	int record = cxl_pcie_cfg_record(bus, devfn);
+-
+-	return (unsigned long)phb->cfg_addr + ((unsigned long)phb->cfg_data * record) + offset;
+-}
+-
+-
+ static int cxl_pcie_config_info(struct pci_bus *bus, unsigned int devfn,
+-				int offset, int len,
+-				volatile void __iomem **ioaddr,
+-				u32 *mask, int *shift)
++				struct cxl_afu **_afu, int *_record)
+ {
+ 	struct pci_controller *phb;
+ 	struct cxl_afu *afu;
+-	unsigned long addr;
++	int record;
+ 
+ 	phb = pci_bus_to_host(bus);
+ 	if (phb == NULL)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+-	afu = (struct cxl_afu *)phb->private_data;
+ 
+-	if (cxl_pcie_cfg_record(bus->number, devfn) > afu->crs_num)
++	afu = (struct cxl_afu *)phb->private_data;
++	record = cxl_pcie_cfg_record(bus->number, devfn);
++	if (record > afu->crs_num)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+-	if (offset >= (unsigned long)phb->cfg_data)
+-		return PCIBIOS_BAD_REGISTER_NUMBER;
+-	addr = cxl_pcie_cfg_addr(phb, bus->number, devfn, offset);
+ 
+-	*ioaddr = (void *)(addr & ~0x3ULL);
+-	*shift = ((addr & 0x3) * 8);
+-	switch (len) {
+-	case 1:
+-		*mask = 0xff;
+-		break;
+-	case 2:
+-		*mask = 0xffff;
+-		break;
+-	default:
+-		*mask = 0xffffffff;
+-		break;
+-	}
++	*_afu = afu;
++	*_record = record;
+ 	return 0;
+ }
+ 
+-
+-static inline bool cxl_config_link_ok(struct pci_bus *bus)
+-{
+-	struct pci_controller *phb;
+-	struct cxl_afu *afu;
+-
+-	/* Config space IO is based on phb->cfg_addr, which is based on
+-	 * afu_desc_mmio. This isn't safe to read/write when the link
+-	 * goes down, as EEH tears down MMIO space.
+-	 *
+-	 * Check if the link is OK before proceeding.
+-	 */
+-
+-	phb = pci_bus_to_host(bus);
+-	if (phb == NULL)
+-		return false;
+-	afu = (struct cxl_afu *)phb->private_data;
+-	return cxl_ops->link_ok(afu->adapter);
+-}
+-
+ static int cxl_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
+ 				int offset, int len, u32 *val)
+ {
+-	volatile void __iomem *ioaddr;
+-	int shift, rc;
+-	u32 mask;
++	int rc, record;
++	struct cxl_afu *afu;
++	u8 val8;
++	u16 val16;
++	u32 val32;
+ 
+-	rc = cxl_pcie_config_info(bus, devfn, offset, len, &ioaddr,
+-				  &mask, &shift);
++	rc = cxl_pcie_config_info(bus, devfn, &afu, &record);
+ 	if (rc)
+ 		return rc;
+ 
+-	if (!cxl_config_link_ok(bus))
++	switch (len) {
++	case 1:
++		rc = cxl_ops->afu_cr_read8(afu, record, offset,	&val8);
++		*val = val8;
++		break;
++	case 2:
++		rc = cxl_ops->afu_cr_read16(afu, record, offset, &val16);
++		*val = val16;
++		break;
++	case 4:
++		rc = cxl_ops->afu_cr_read32(afu, record, offset, &val32);
++		*val = val32;
++		break;
++	default:
++		WARN_ON(1);
++	}
++
++	if (rc)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+-	/* Can only read 32 bits */
+-	*val = (in_le32(ioaddr) >> shift) & mask;
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
+ static int cxl_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
+ 				 int offset, int len, u32 val)
+ {
+-	volatile void __iomem *ioaddr;
+-	u32 v, mask;
+-	int shift, rc;
++	int rc, record;
++	struct cxl_afu *afu;
+ 
+-	rc = cxl_pcie_config_info(bus, devfn, offset, len, &ioaddr,
+-				  &mask, &shift);
++	rc = cxl_pcie_config_info(bus, devfn, &afu, &record);
+ 	if (rc)
+ 		return rc;
+ 
+-	if (!cxl_config_link_ok(bus))
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-
+-	/* Can only write 32 bits so do read-modify-write */
+-	mask <<= shift;
+-	val <<= shift;
++	switch (len) {
++	case 1:
++		rc = cxl_ops->afu_cr_write8(afu, record, offset, val & 0xff);
++		break;
++	case 2:
++		rc = cxl_ops->afu_cr_write16(afu, record, offset, val & 0xffff);
++		break;
++	case 4:
++		rc = cxl_ops->afu_cr_write32(afu, record, offset, val);
++		break;
++	default:
++		WARN_ON(1);
++	}
+ 
+-	v = (in_le32(ioaddr) & ~mask) | (val & mask);
++	if (rc)
++		return PCIBIOS_SET_FAILED;
+ 
+-	out_le32(ioaddr, v);
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
+@@ -233,23 +210,31 @@ int cxl_pci_vphb_add(struct cxl_afu *afu)
+ {
+ 	struct pci_dev *phys_dev;
+ 	struct pci_controller *phb, *phys_phb;
+-
+-	phys_dev = to_pci_dev(afu->adapter->dev.parent);
+-	phys_phb = pci_bus_to_host(phys_dev->bus);
++	struct device_node *vphb_dn;
++	struct device *parent;
++
++	if (cpu_has_feature(CPU_FTR_HVMODE)) {
++		phys_dev = to_pci_dev(afu->adapter->dev.parent);
++		phys_phb = pci_bus_to_host(phys_dev->bus);
++		vphb_dn = phys_phb->dn;
++		parent = &phys_dev->dev;
++	} else {
++		vphb_dn = afu->adapter->dev.parent->of_node;
++		parent = afu->adapter->dev.parent;
++	}
+ 
+ 	/* Alloc and setup PHB data structure */
+-	phb = pcibios_alloc_controller(phys_phb->dn);
+-
++	phb = pcibios_alloc_controller(vphb_dn);
+ 	if (!phb)
+ 		return -ENODEV;
+ 
+ 	/* Setup parent in sysfs */
+-	phb->parent = &phys_dev->dev;
++	phb->parent = parent;
+ 
+ 	/* Setup the PHB using arch provided callback */
+ 	phb->ops = &cxl_pcie_pci_ops;
+-	phb->cfg_addr = afu->native->afu_desc_mmio + afu->crs_offset;
+-	phb->cfg_data = (void *)(u64)afu->crs_len;
++	phb->cfg_addr = NULL;
++	phb->cfg_data = 0;
+ 	phb->private_data = afu;
+ 	phb->controller_ops = cxl_pci_controller_ops;
+ 
+@@ -272,15 +257,6 @@ int cxl_pci_vphb_add(struct cxl_afu *afu)
+ 	return 0;
+ }
+ 
+-void cxl_pci_vphb_reconfigure(struct cxl_afu *afu)
+-{
+-	/* When we are reconfigured, the AFU's MMIO space is unmapped
+-	 * and remapped. We need to reflect this in the PHB's view of
+-	 * the world.
+-	 */
+-	afu->phb->cfg_addr = afu->native->afu_desc_mmio + afu->crs_offset;
+-}
+-
+ void cxl_pci_vphb_remove(struct cxl_afu *afu)
+ {
+ 	struct pci_controller *phb;
+diff --git a/include/misc/cxl.h b/include/misc/cxl.h
+index f2ffe5b..5bcf11a 100644
+--- a/include/misc/cxl.h
++++ b/include/misc/cxl.h
+@@ -210,4 +210,9 @@ ssize_t cxl_fd_read(struct file *file, char __user *buf, size_t count,
+ void cxl_perst_reloads_same_image(struct cxl_afu *afu,
+ 				  bool perst_reloads_same_image);
+ 
++/*
++ * Read the VPD for the card where the AFU resides
++ */
++ssize_t cxl_read_adapter_vpd(struct pci_dev *dev, void *buf, size_t count);
++
+ #endif /* _MISC_CXL_H */
 -- 
 1.9.1
