@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CB9FB1A0CA5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:40:08 +1100 (AEDT)
-In-Reply-To: <1456817364-3329-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1CC491A0CA4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:40:09 +1100 (AEDT)
+In-Reply-To: <1456805714-21774-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [2/8] powerpc/mm: add _PAGE_HASHPTE similar to 4K hash
-Message-Id: <20160304004008.A1145141B7B@ozlabs.org>
+Subject: Re: [3/4] powerpc/mm: Switch book3s 64 with 64K page size to 4 level
+ page table
+Message-Id: <20160304004008.F35CC141B86@ozlabs.org>
 Date: Fri,  4 Mar 2016 11:40:08 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,22 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-01-03 at 07:29:18 UTC, "Aneesh Kumar K.V" wrote:
-> We don't need to update linux page table entry with _PAGE_HASHPTE early
-> in hash pte fault. A parallel pte update will loop via _PAGE_BUSY
-> and look at _PAGE_HASHPTE for a required hpte flush only if
-> _PAGE_BUSY is cleared. That ensures a pte update will wait for a
-> parallel hpte insert to finish before looking at _PAGE_HASHPTE bit.
+On Tue, 2016-01-03 at 04:15:13 UTC, "Aneesh Kumar K.V" wrote:
+> This is needed so that we can support both hash and radix page table
+> using single kernel. Radix kernel uses a 4 level table.
 > 
-> To avoid further confusion drop setting _PAGE_HASHPTE in cmpxchg in __hash_page_4K.
-> 
-> commit 41743a4e34f0 ("powerpc: Free a PTE bit on ppc64 with 64K pages")
-> did similar change for 64K config
+> We now use physical address in upper page table tree levels. Even though
+> they are aligned to their size, for the masked bits we use the
+> bit positions as per PowerISA 3.0.
 > 
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c367a44133bcd7f94fb48b58e9
+https://git.kernel.org/powerpc/c/368ced78e6ed3d72c2acc61233
 
 cheers
