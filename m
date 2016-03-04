@@ -1,22 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6117B1A045D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 18:49:51 +1100 (AEDT)
-Date: Fri, 4 Mar 2016 18:49:50 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, "Kirill A.
- Shutemov" <kirill.shutemov@linux.intel.com>, Ebru Akagunduz
- <ebru.akagunduz@gmail.com>
-Subject: linux-next: manual merge of the akpm-current tree with the powerpc
- tree
-Message-ID: <20160304184950.7aead922@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2B94F1A045D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 18:58:52 +1100 (AEDT)
+Message-ID: <1457078325.20076.1.camel@ellerman.id.au>
+Subject: Re: [PATCH][v4] livepatch/ppc: Enable livepatching on powerpc
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Petr Mladek <pmladek@suse.com>, linuxppc-dev@ozlabs.org
+Cc: jeyu@redhat.com, jkosina@suse.cz, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, duwe@lst.de,
+ live-patching@vger.kernel.org, mbenes@suse.cz, Torsten Duwe <duwe@suse.de>
+Date: Fri, 04 Mar 2016 18:58:45 +1100
+In-Reply-To: <1457023921-2051-1-git-send-email-pmladek@suse.com>
+References: <1457023921-2051-1-git-send-email-pmladek@suse.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,61 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+Hi Petr,
 
-Today's linux-next merge of the akpm-current tree got a conflict in:
+On Thu, 2016-03-03 at 17:52 +0100, Petr Mladek wrote:
 
-  mm/huge_memory.c
+> From: Balbir Singh <bsingharora@gmail.com>
+>
+> Changelog v4:
+> 	1. Renamed klp_matchaddr() to klp_get_ftrace_location()
+> 	   and used it just to convert the function address.
+> 	2. Synced klp_write_module_reloc() with s390(); made it
+> 	   inline, no error message, return -ENOSYS
 
-between commit:
+OK.
 
-  ff20c2e0acc5 ("mm: Some arch may want to use HPAGE_PMD related values as variables")
+> 	3. Added an error message when including
+> 	   powerpc/include/asm/livepatch.h without HAVE_LIVEPATCH
 
-from the powerpc tree and commit:
+I don't know why we want to do that, I don't see how it is helpful. It doesn't
+even do what it says:
 
-  82fdbe051e29 ("mm: make optimistic check for swapin readahead")
+> +#ifdef CONFIG_LIVEPATCH
+...
+> +#else /* CONFIG_LIVEPATCH */
+> +#error Include linux/livepatch.h, not asm/livepatch.h
+> +#endif /* CONFIG_LIVEPATCH */
 
-from the akpm-current tree.
+If I turn on CONFIG_LIVEPATCH then I can quite happily include asm/livepatch.h
+and not get an error. So the check doesn't do what the message suggests.
 
-I fixed it up (see below) and can carry the fix as necessary (no action
-is required).
+If we *really* want to prevent people from including asm/livepatch.h then it
+needs to check for _LINUX_LIVEPATCH_H_. But there's no reason I can see why we
+*must* prevent people from including asm/livepatch.h.
 
--- 
-Cheers,
-Stephen Rothwell
+And on x86 & s390 it does:
 
-diff --cc mm/huge_memory.c
-index 43b11a695113,5b38aa24566f..000000000000
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@@ -98,7 -100,8 +100,8 @@@ static DECLARE_WAIT_QUEUE_HEAD(khugepag
-   * it would have happened if the vma was large enough during page
-   * fault.
-   */
- -static unsigned int khugepaged_max_ptes_none __read_mostly = HPAGE_PMD_NR-1;
- -static unsigned int khugepaged_max_ptes_swap __read_mostly = HPAGE_PMD_NR/8;
- +static unsigned int khugepaged_max_ptes_none __read_mostly;
-++static unsigned int khugepaged_max_ptes_swap __read_mostly;
-  
-  static int khugepaged(void *none);
-  static int khugepaged_slab_init(void);
-@@@ -660,18 -691,6 +691,19 @@@ static int __init hugepage_init(void
-  		return -EINVAL;
-  	}
-  
- +	khugepaged_pages_to_scan = HPAGE_PMD_NR * 8;
- +	khugepaged_max_ptes_none = HPAGE_PMD_NR - 1;
-++	khugepaged_max_ptes_swap = HPAGE_PMD_NR / 8;
- +	/*
- +	 * hugepages can't be allocated by the buddy allocator
- +	 */
- +	MAYBE_BUILD_BUG_ON(HPAGE_PMD_ORDER >= MAX_ORDER);
- +	/*
- +	 * we use page->mapping and page->index in second tail page
- +	 * as list_head: assuming THP order >= 2
- +	 */
- +	MAYBE_BUILD_BUG_ON(HPAGE_PMD_ORDER < 2);
- +
-  	err = hugepage_init_sysfs(&hugepage_kobj);
-  	if (err)
-  		goto err_sysfs;
+  #else
+  #error Live patching support is disabled; check CONFIG_LIVEPATCH
+  #endif
+
+Which is also not helpful AFAICS, and just likely to break the build for no
+good reason.
+
+> This applies on top of the patches posted by Michael
+> https://patchwork.ozlabs.org/patch/589791/
+>
+> It enables livepatching. This takes patch 6/8 and 7/8 of v8 as the base.
+> (See the reference [1] below) and adds logic for checking offset ranges
+> in livepatch with ftrace_location_range.
+>
+> I tested the sample in the livepatch
+
+Thanks.
+
+cheers
