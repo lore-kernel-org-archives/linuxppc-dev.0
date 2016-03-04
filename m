@@ -1,34 +1,33 @@
 Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 78E851A0616
+ by lists.ozlabs.org (Postfix) with ESMTPS id CA36F1A0B7A
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 22:27:06 +1100 (AEDT)
 Received: from localhost
- by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
  Fri, 4 Mar 2016 11:27:03 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 15453219005C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:26:45 +0000 (GMT)
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 0F71617D8068
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:27:26 +0000 (GMT)
 Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
  [9.149.37.252])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u24BR18365732714
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:27:01 GMT
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u24BR0gG7209416
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:27:00 GMT
 Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u24BR1rc007551
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 04:27:01 -0700
+ u24BQx8L007502
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 04:27:00 -0700
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com, manoj@linux.vnet.ibm.com,
  mrochs@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 14/20] cxl: Support to flash a new image on the adapter
- from a guest
-Date: Fri,  4 Mar 2016 12:26:38 +0100
-Message-Id: <1457090804-9719-15-git-send-email-fbarrat@linux.vnet.ibm.com>
+Subject: [PATCH v6 13/20] cxl: sysfs support for guests
+Date: Fri,  4 Mar 2016 12:26:37 +0100
+Message-Id: <1457090804-9719-14-git-send-email-fbarrat@linux.vnet.ibm.com>
 In-Reply-To: <1457090804-9719-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 References: <1457090804-9719-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,836 +41,341 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Christophe Lombard <clombard@linux.vnet.ibm.com>
 
-The new flash.c file contains the logic to flash a new image on the
-adapter, through a hcall. It is an iterative process, with chunks of
-data of 1M at a time. There are also 2 phases: write and verify. The
-flash operation itself is driven from a user-land tool.
-Once flashing is successful, an rtas call is made to update the device
-tree with the new properties values for the adapter and the AFU(s)
-
-Add a new char device for the adapter, so that the flash tool can
-access the card, even if there is no valid AFU on it.
+Filter out a few adapter parameters which don't make sense in a guest.
+Document the changes.
 
 Co-authored-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 Reviewed-by: Manoj Kumar <manoj@linux.vnet.ibm.com>
 ---
- Documentation/powerpc/cxl.txt |  55 +++++
- drivers/misc/cxl/Makefile     |   2 +-
- drivers/misc/cxl/base.c       |   7 +
- drivers/misc/cxl/cxl.h        |   6 +
- drivers/misc/cxl/file.c       |  11 +-
- drivers/misc/cxl/flash.c      | 538 ++++++++++++++++++++++++++++++++++++++++++
- drivers/misc/cxl/guest.c      |  15 ++
- include/uapi/misc/cxl.h       |  24 ++
- 8 files changed, 653 insertions(+), 5 deletions(-)
- create mode 100644 drivers/misc/cxl/flash.c
+ Documentation/ABI/testing/sysfs-class-cxl | 10 ++--
+ drivers/misc/cxl/cxl.h                    |  7 +++
+ drivers/misc/cxl/guest.c                  | 25 +++++++++
+ drivers/misc/cxl/native.c                 |  7 +++
+ drivers/misc/cxl/sysfs.c                  | 89 ++++++++++++++++++++++++-------
+ 5 files changed, 113 insertions(+), 25 deletions(-)
 
-diff --git a/Documentation/powerpc/cxl.txt b/Documentation/powerpc/cxl.txt
-index 205c1b8..d5506ba0 100644
---- a/Documentation/powerpc/cxl.txt
-+++ b/Documentation/powerpc/cxl.txt
-@@ -116,6 +116,8 @@ Work Element Descriptor (WED)
- User API
- ========
+diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
+index b07e86d..7fd737e 100644
+--- a/Documentation/ABI/testing/sysfs-class-cxl
++++ b/Documentation/ABI/testing/sysfs-class-cxl
+@@ -159,7 +159,7 @@ Description:    read only
+                 Decimal value of the Per Process MMIO space length.
+ Users:		https://github.com/ibm-capi/libcxl
  
-+1. AFU character devices
-+
-     For AFUs operating in AFU directed mode, two character device
-     files will be created. /dev/cxl/afu0.0m will correspond to a
-     master context and /dev/cxl/afu0.0s will correspond to a slave
-@@ -362,6 +364,59 @@ read
-         reserved fields:
-             For future extensions and padding
+-What:           /sys/class/cxl/<afu>m/pp_mmio_off
++What:           /sys/class/cxl/<afu>m/pp_mmio_off (not in a guest)
+ Date:           September 2014
+ Contact:        linuxppc-dev@lists.ozlabs.org
+ Description:    read only
+@@ -183,7 +183,7 @@ Description:    read only
+                 Identifies the revision level of the PSL.
+ Users:		https://github.com/ibm-capi/libcxl
  
-+
-+2. Card character device (powerVM guest only)
-+
-+    In a powerVM guest, an extra character device is created for the
-+    card. The device is only used to write (flash) a new image on the
-+    FPGA accelerator. Once the image is written and verified, the
-+    device tree is updated and the card is reset to reload the updated
-+    image.
-+
-+open
-+----
-+
-+    Opens the device and allocates a file descriptor to be used with
-+    the rest of the API. The device can only be opened once.
-+
-+ioctl
-+-----
-+
-+CXL_IOCTL_DOWNLOAD_IMAGE:
-+CXL_IOCTL_VALIDATE_IMAGE:
-+    Starts and controls flashing a new FPGA image. Partial
-+    reconfiguration is not supported (yet), so the image must contain
-+    a copy of the PSL and AFU(s). Since an image can be quite large,
-+    the caller may have to iterate, splitting the image in smaller
-+    chunks.
-+
-+    Takes a pointer to a struct cxl_adapter_image:
-+        struct cxl_adapter_image {
-+            __u64 flags;
-+            __u64 data;
-+            __u64 len_data;
-+            __u64 len_image;
-+            __u64 reserved1;
-+            __u64 reserved2;
-+            __u64 reserved3;
-+            __u64 reserved4;
-+        };
-+
-+    flags:
-+        These flags indicate which optional fields are present in
-+        this struct. Currently all fields are mandatory.
-+
-+    data:
-+        Pointer to a buffer with part of the image to write to the
-+        card.
-+
-+    len_data:
-+        Size of the buffer pointed to by data.
-+
-+    len_image:
-+        Full size of the image.
-+
-+
- Sysfs Class
- ===========
+-What:           /sys/class/cxl/<card>/base_image
++What:           /sys/class/cxl/<card>/base_image (not in a guest)
+ Date:           September 2014
+ Contact:        linuxppc-dev@lists.ozlabs.org
+ Description:    read only
+@@ -193,7 +193,7 @@ Description:    read only
+                 during the initial program load.
+ Users:		https://github.com/ibm-capi/libcxl
  
-diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
-index a3d4bef..9ab874f 100644
---- a/drivers/misc/cxl/Makefile
-+++ b/drivers/misc/cxl/Makefile
-@@ -4,7 +4,7 @@ ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
- cxl-y				+= main.o file.o irq.o fault.o native.o
- cxl-y				+= context.o sysfs.o debugfs.o pci.o trace.o
- cxl-y				+= vphb.o api.o
--cxl-y				+= guest.o of.o hcalls.o
-+cxl-y				+= flash.o guest.o of.o hcalls.o
- obj-$(CONFIG_CXL)		+= cxl.o
- obj-$(CONFIG_CXL_BASE)		+= base.o
+-What:           /sys/class/cxl/<card>/image_loaded
++What:           /sys/class/cxl/<card>/image_loaded (not in a guest)
+ Date:           September 2014
+ Contact:        linuxppc-dev@lists.ozlabs.org
+ Description:    read only
+@@ -201,7 +201,7 @@ Description:    read only
+                 onto the card.
+ Users:		https://github.com/ibm-capi/libcxl
  
-diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
-index a9f0dd3..957f4dd 100644
---- a/drivers/misc/cxl/base.c
-+++ b/drivers/misc/cxl/base.c
-@@ -84,3 +84,10 @@ void unregister_cxl_calls(struct cxl_calls *calls)
- 	synchronize_rcu();
- }
- EXPORT_SYMBOL_GPL(unregister_cxl_calls);
-+
-+int cxl_update_properties(struct device_node *dn,
-+			  struct property *new_prop)
-+{
-+	return of_update_property(dn, new_prop);
-+}
-+EXPORT_SYMBOL_GPL(cxl_update_properties);
+-What:           /sys/class/cxl/<card>/load_image_on_perst
++What:           /sys/class/cxl/<card>/load_image_on_perst (not in a guest)
+ Date:           December 2014
+ Contact:        linuxppc-dev@lists.ozlabs.org
+ Description:    read/write
+@@ -224,7 +224,7 @@ Description:    write only
+                 to reload the FPGA depending on load_image_on_perst.
+ Users:		https://github.com/ibm-capi/libcxl
+ 
+-What:		/sys/class/cxl/<card>/perst_reloads_same_image
++What:		/sys/class/cxl/<card>/perst_reloads_same_image (not in a guest)
+ Date:		July 2015
+ Contact:	linuxppc-dev@lists.ozlabs.org
+ Description:	read/write
 diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index a7e75f1..24bd4ca 100644
+index 4372a87..a7e75f1 100644
 --- a/drivers/misc/cxl/cxl.h
 +++ b/drivers/misc/cxl/cxl.h
-@@ -324,6 +324,10 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
- #define CXL_MODE_TIME_SLICED 0x4
- #define CXL_SUPPORTED_MODES (CXL_MODE_DEDICATED | CXL_MODE_DIRECTED)
- 
-+#define CXL_DEV_MINORS 13   /* 1 control + 4 AFUs * 3 (dedicated/master/shared) */
-+#define CXL_CARD_MINOR(adapter) (adapter->adapter_num * CXL_DEV_MINORS)
-+#define CXL_DEVT_ADAPTER(dev) (MINOR(dev) / CXL_DEV_MINORS)
-+
- enum cxl_context_status {
- 	CLOSED,
- 	OPENED,
-@@ -692,12 +696,14 @@ struct cxl_calls {
+@@ -336,6 +336,12 @@ enum prefault_modes {
+ 	CXL_PREFAULT_ALL,
  };
- int register_cxl_calls(struct cxl_calls *calls);
- void unregister_cxl_calls(struct cxl_calls *calls);
-+int cxl_update_properties(struct device_node *dn, struct property *new_prop);
  
- void cxl_remove_adapter_nr(struct cxl *adapter);
- 
- int cxl_alloc_spa(struct cxl_afu *afu);
- void cxl_release_spa(struct cxl_afu *afu);
- 
-+dev_t cxl_get_dev(void);
- int cxl_file_init(void);
- void cxl_file_exit(void);
- int cxl_register_adapter(struct cxl *adapter);
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index df4d49a..e160462 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -26,9 +26,7 @@
- #include "trace.h"
- 
- #define CXL_NUM_MINORS 256 /* Total to reserve */
--#define CXL_DEV_MINORS 13   /* 1 control + 4 AFUs * 3 (dedicated/master/shared) */
- 
--#define CXL_CARD_MINOR(adapter) (adapter->adapter_num * CXL_DEV_MINORS)
- #define CXL_AFU_MINOR_D(afu) (CXL_CARD_MINOR(afu->adapter) + 1 + (3 * afu->slice))
- #define CXL_AFU_MINOR_M(afu) (CXL_AFU_MINOR_D(afu) + 1)
- #define CXL_AFU_MINOR_S(afu) (CXL_AFU_MINOR_D(afu) + 2)
-@@ -36,7 +34,6 @@
- #define CXL_AFU_MKDEV_M(afu) MKDEV(MAJOR(cxl_dev), CXL_AFU_MINOR_M(afu))
- #define CXL_AFU_MKDEV_S(afu) MKDEV(MAJOR(cxl_dev), CXL_AFU_MINOR_S(afu))
- 
--#define CXL_DEVT_ADAPTER(dev) (MINOR(dev) / CXL_DEV_MINORS)
- #define CXL_DEVT_AFU(dev) ((MINOR(dev) % CXL_DEV_MINORS - 1) / 3)
- 
- #define CXL_DEVT_IS_CARD(dev) (MINOR(dev) % CXL_DEV_MINORS == 0)
-@@ -446,7 +443,8 @@ static const struct file_operations afu_master_fops = {
- 
- static char *cxl_devnode(struct device *dev, umode_t *mode)
- {
--	if (CXL_DEVT_IS_CARD(dev->devt)) {
-+	if (cpu_has_feature(CPU_FTR_HVMODE) &&
-+	    CXL_DEVT_IS_CARD(dev->devt)) {
- 		/*
- 		 * These minor numbers will eventually be used to program the
- 		 * PSL and AFUs once we have dynamic reprogramming support
-@@ -547,6 +545,11 @@ int cxl_register_adapter(struct cxl *adapter)
- 	return device_register(&adapter->dev);
- }
- 
-+dev_t cxl_get_dev(void)
-+{
-+	return cxl_dev;
-+}
-+
- int __init cxl_file_init(void)
- {
- 	int rc;
-diff --git a/drivers/misc/cxl/flash.c b/drivers/misc/cxl/flash.c
-new file mode 100644
-index 0000000..68dd0b7
---- /dev/null
-+++ b/drivers/misc/cxl/flash.c
-@@ -0,0 +1,538 @@
-+#include <linux/kernel.h>
-+#include <linux/fs.h>
-+#include <linux/semaphore.h>
-+#include <linux/slab.h>
-+#include <linux/uaccess.h>
-+#include <asm/rtas.h>
-+
-+#include "cxl.h"
-+#include "hcalls.h"
-+
-+#define DOWNLOAD_IMAGE 1
-+#define VALIDATE_IMAGE 2
-+
-+struct ai_header {
-+	u16 version;
-+	u8  reserved0[6];
-+	u16 vendor;
-+	u16 device;
-+	u16 subsystem_vendor;
-+	u16 subsystem;
-+	u64 image_offset;
-+	u64 image_length;
-+	u8  reserved1[96];
++enum cxl_attrs {
++	CXL_ADAPTER_ATTRS,
++	CXL_AFU_MASTER_ATTRS,
++	CXL_AFU_ATTRS,
 +};
 +
-+static struct semaphore sem;
-+unsigned long *buffer[CXL_AI_MAX_ENTRIES];
-+struct sg_list *le;
-+static u64 continue_token;
-+static unsigned int transfer;
-+
-+struct update_props_workarea {
-+	__be32 phandle;
-+	__be32 state;
-+	__be64 reserved;
-+	__be32 nprops;
-+} __packed;
-+
-+struct update_nodes_workarea {
-+	__be32 state;
-+	__be64 unit_address;
-+	__be32 reserved;
-+} __packed;
-+
-+#define DEVICE_SCOPE 3
-+#define NODE_ACTION_MASK	0xff000000
-+#define NODE_COUNT_MASK		0x00ffffff
-+#define OPCODE_DELETE	0x01000000
-+#define OPCODE_UPDATE	0x02000000
-+#define OPCODE_ADD	0x03000000
-+
-+static int rcall(int token, char *buf, s32 scope)
-+{
-+	int rc;
-+
-+	spin_lock(&rtas_data_buf_lock);
-+
-+	memcpy(rtas_data_buf, buf, RTAS_DATA_BUF_SIZE);
-+	rc = rtas_call(token, 2, 1, NULL, rtas_data_buf, scope);
-+	memcpy(buf, rtas_data_buf, RTAS_DATA_BUF_SIZE);
-+
-+	spin_unlock(&rtas_data_buf_lock);
-+	return rc;
-+}
-+
-+static int update_property(struct device_node *dn, const char *name,
-+			   u32 vd, char *value)
-+{
-+	struct property *new_prop;
-+	u32 *val;
-+	int rc;
-+
-+	new_prop = kzalloc(sizeof(*new_prop), GFP_KERNEL);
-+	if (!new_prop)
-+		return -ENOMEM;
-+
-+	new_prop->name = kstrdup(name, GFP_KERNEL);
-+	if (!new_prop->name) {
-+		kfree(new_prop);
-+		return -ENOMEM;
-+	}
-+
-+	new_prop->length = vd;
-+	new_prop->value = kzalloc(new_prop->length, GFP_KERNEL);
-+	if (!new_prop->value) {
-+		kfree(new_prop->name);
-+		kfree(new_prop);
-+		return -ENOMEM;
-+	}
-+	memcpy(new_prop->value, value, vd);
-+
-+	val = (u32 *)new_prop->value;
-+	rc = cxl_update_properties(dn, new_prop);
-+	pr_devel("%s: update property (%s, length: %i, value: %#x)\n",
-+		  dn->name, name, vd, be32_to_cpu(*val));
-+
-+	if (rc) {
-+		kfree(new_prop->name);
-+		kfree(new_prop->value);
-+		kfree(new_prop);
-+	}
-+	return rc;
-+}
-+
-+static int update_node(__be32 phandle, s32 scope)
-+{
-+	struct update_props_workarea *upwa;
-+	struct device_node *dn;
-+	int i, rc, ret;
-+	char *prop_data;
-+	char *buf;
-+	int token;
-+	u32 nprops;
-+	u32 vd;
-+
-+	token = rtas_token("ibm,update-properties");
-+	if (token == RTAS_UNKNOWN_SERVICE)
-+		return -EINVAL;
-+
-+	buf = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	dn = of_find_node_by_phandle(be32_to_cpu(phandle));
-+	if (!dn) {
-+		kfree(buf);
-+		return -ENOENT;
-+	}
-+
-+	upwa = (struct update_props_workarea *)&buf[0];
-+	upwa->phandle = phandle;
-+	do {
-+		rc = rcall(token, buf, scope);
-+		if (rc < 0)
-+			break;
-+
-+		prop_data = buf + sizeof(*upwa);
-+		nprops = be32_to_cpu(upwa->nprops);
-+
-+		if (*prop_data == 0) {
-+			prop_data++;
-+			vd = be32_to_cpu(*(__be32 *)prop_data);
-+			prop_data += vd + sizeof(vd);
-+			nprops--;
-+		}
-+
-+		for (i = 0; i < nprops; i++) {
-+			char *prop_name;
-+
-+			prop_name = prop_data;
-+			prop_data += strlen(prop_name) + 1;
-+			vd = be32_to_cpu(*(__be32 *)prop_data);
-+			prop_data += sizeof(vd);
-+
-+			if ((vd != 0x00000000) && (vd != 0x80000000)) {
-+				ret = update_property(dn, prop_name, vd,
-+						prop_data);
-+				if (ret)
-+					pr_err("cxl: Could not update property %s - %i\n",
-+					       prop_name, ret);
-+
-+				prop_data += vd;
-+			}
-+		}
-+	} while (rc == 1);
-+
-+	of_node_put(dn);
-+	kfree(buf);
-+	return rc;
-+}
-+
-+static int update_devicetree(struct cxl *adapter, s32 scope)
-+{
-+	struct update_nodes_workarea *unwa;
-+	u32 action, node_count;
-+	int token, rc, i;
-+	__be32 *data, drc_index, phandle;
-+	char *buf;
-+
-+	token = rtas_token("ibm,update-nodes");
-+	if (token == RTAS_UNKNOWN_SERVICE)
-+		return -EINVAL;
-+
-+	buf = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	unwa = (struct update_nodes_workarea *)&buf[0];
-+	unwa->unit_address = cpu_to_be64(adapter->guest->handle);
-+	do {
-+		rc = rcall(token, buf, scope);
-+		if (rc && rc != 1)
-+			break;
-+
-+		data = (__be32 *)buf + 4;
-+		while (be32_to_cpu(*data) & NODE_ACTION_MASK) {
-+			action = be32_to_cpu(*data) & NODE_ACTION_MASK;
-+			node_count = be32_to_cpu(*data) & NODE_COUNT_MASK;
-+			pr_devel("device reconfiguration - action: %#x, nodes: %#x\n",
-+				 action, node_count);
-+			data++;
-+
-+			for (i = 0; i < node_count; i++) {
-+				phandle = *data++;
-+
-+				switch (action) {
-+				case OPCODE_DELETE:
-+					/* nothing to do */
-+					break;
-+				case OPCODE_UPDATE:
-+					update_node(phandle, scope);
-+					break;
-+				case OPCODE_ADD:
-+					/* nothing to do, just move pointer */
-+					drc_index = *data++;
-+					break;
-+				}
-+			}
-+		}
-+	} while (rc == 1);
-+
-+	kfree(buf);
-+	return 0;
-+}
-+
-+static int handle_image(struct cxl *adapter, int operation,
-+			long (*fct)(u64, u64, u64, u64 *),
-+			struct cxl_adapter_image *ai)
-+{
-+	size_t mod, s_copy, len_chunk = 0;
-+	struct ai_header *header = NULL;
-+	unsigned int entries = 0, i;
-+	void *dest, *from;
-+	int rc = 0, need_header;
-+
-+	/* base adapter image header */
-+	need_header = (ai->flags & CXL_AI_NEED_HEADER);
-+	if (need_header) {
-+		header = kzalloc(sizeof(struct ai_header), GFP_KERNEL);
-+		if (!header)
-+			return -ENOMEM;
-+		header->version = cpu_to_be16(1);
-+		header->vendor = cpu_to_be16(adapter->guest->vendor);
-+		header->device = cpu_to_be16(adapter->guest->device);
-+		header->subsystem_vendor = cpu_to_be16(adapter->guest->subsystem_vendor);
-+		header->subsystem = cpu_to_be16(adapter->guest->subsystem);
-+		header->image_offset = cpu_to_be64(CXL_AI_HEADER_SIZE);
-+		header->image_length = cpu_to_be64(ai->len_image);
-+	}
-+
-+	/* number of entries in the list */
-+	len_chunk = ai->len_data;
-+	if (need_header)
-+		len_chunk += CXL_AI_HEADER_SIZE;
-+
-+	entries = len_chunk / CXL_AI_BUFFER_SIZE;
-+	mod = len_chunk % CXL_AI_BUFFER_SIZE;
-+	if (mod)
-+		entries++;
-+
-+	if (entries > CXL_AI_MAX_ENTRIES) {
-+		rc = -EINVAL;
-+		goto err;
-+	}
-+
-+	/*          < -- MAX_CHUNK_SIZE = 4096 * 256 = 1048576 bytes -->
-+	 * chunk 0  ----------------------------------------------------
-+	 *          | header   |  data                                 |
-+	 *          ----------------------------------------------------
-+	 * chunk 1  ----------------------------------------------------
-+	 *          | data                                             |
-+	 *          ----------------------------------------------------
-+	 * ....
-+	 * chunk n  ----------------------------------------------------
-+	 *          | data                                             |
-+	 *          ----------------------------------------------------
-+	 */
-+	from = (void *) ai->data;
-+	for (i = 0; i < entries; i++) {
-+		dest = buffer[i];
-+		s_copy = CXL_AI_BUFFER_SIZE;
-+
-+		if ((need_header) && (i == 0)) {
-+			/* add adapter image header */
-+			memcpy(buffer[i], header, sizeof(struct ai_header));
-+			s_copy = CXL_AI_BUFFER_SIZE - CXL_AI_HEADER_SIZE;
-+			dest += CXL_AI_HEADER_SIZE; /* image offset */
-+		}
-+		if ((i == (entries - 1)) && mod)
-+			s_copy = mod;
-+
-+		/* copy data */
-+		if (copy_from_user(dest, from, s_copy))
-+			goto err;
-+
-+		/* fill in the list */
-+		le[i].phys_addr = cpu_to_be64(virt_to_phys(buffer[i]));
-+		le[i].len = cpu_to_be64(CXL_AI_BUFFER_SIZE);
-+		if ((i == (entries - 1)) && mod)
-+			le[i].len = cpu_to_be64(mod);
-+		from += s_copy;
-+	}
-+	pr_devel("%s (op: %i, need header: %i, entries: %i, token: %#llx)\n",
-+		 __func__, operation, need_header, entries, continue_token);
-+
-+	/*
-+	 * download/validate the adapter image to the coherent
-+	 * platform facility
-+	 */
-+	rc = fct(adapter->guest->handle, virt_to_phys(le), entries,
-+		&continue_token);
-+	if (rc == 0) /* success of download/validation operation */
-+		continue_token = 0;
-+
-+err:
-+	kfree(header);
-+
-+	return rc;
-+}
-+
-+static int transfer_image(struct cxl *adapter, int operation,
-+			struct cxl_adapter_image *ai)
-+{
-+	int rc = 0;
-+	int afu;
-+
-+	switch (operation) {
-+	case DOWNLOAD_IMAGE:
-+		rc = handle_image(adapter, operation,
-+				&cxl_h_download_adapter_image, ai);
-+		if (rc < 0) {
-+			pr_devel("resetting adapter\n");
-+			cxl_h_reset_adapter(adapter->guest->handle);
-+		}
-+		return rc;
-+
-+	case VALIDATE_IMAGE:
-+		rc = handle_image(adapter, operation,
-+				&cxl_h_validate_adapter_image, ai);
-+		if (rc < 0) {
-+			pr_devel("resetting adapter\n");
-+			cxl_h_reset_adapter(adapter->guest->handle);
-+			return rc;
-+		}
-+		if (rc == 0) {
-+			pr_devel("remove curent afu\n");
-+			for (afu = 0; afu < adapter->slices; afu++)
-+				cxl_guest_remove_afu(adapter->afu[afu]);
-+
-+			pr_devel("resetting adapter\n");
-+			cxl_h_reset_adapter(adapter->guest->handle);
-+
-+			/* The entire image has now been
-+			 * downloaded and the validation has
-+			 * been successfully performed.
-+			 * After that, the partition should call
-+			 * ibm,update-nodes and
-+			 * ibm,update-properties to receive the
-+			 * current configuration
-+			 */
-+			rc = update_devicetree(adapter, DEVICE_SCOPE);
-+			transfer = 1;
-+		}
-+		return rc;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static long ioctl_transfer_image(struct cxl *adapter, int operation,
-+				struct cxl_adapter_image __user *uai)
-+{
-+	struct cxl_adapter_image ai;
-+
-+	pr_devel("%s\n", __func__);
-+
-+	if (copy_from_user(&ai, uai, sizeof(struct cxl_adapter_image)))
-+		return -EFAULT;
-+
-+	/*
-+	 * Make sure reserved fields and bits are set to 0
-+	 */
-+	if (ai.reserved1 || ai.reserved2 || ai.reserved3 || ai.reserved4 ||
-+		(ai.flags & ~CXL_AI_ALL))
-+		return -EINVAL;
-+
-+	return transfer_image(adapter, operation, &ai);
-+}
-+
-+static int device_open(struct inode *inode, struct file *file)
-+{
-+	int adapter_num = CXL_DEVT_ADAPTER(inode->i_rdev);
-+	struct cxl *adapter;
-+	int rc = 0, i;
-+
-+	pr_devel("in %s\n", __func__);
-+
-+	BUG_ON(sizeof(struct ai_header) != CXL_AI_HEADER_SIZE);
-+
-+	/* Allows one process to open the device by using a semaphore */
-+	if (down_interruptible(&sem) != 0)
-+		return -EPERM;
-+
-+	if (!(adapter = get_cxl_adapter(adapter_num)))
-+		return -ENODEV;
-+
-+	file->private_data = adapter;
-+	continue_token = 0;
-+	transfer = 0;
-+
-+	for (i = 0; i < CXL_AI_MAX_ENTRIES; i++)
-+		buffer[i] = NULL;
-+
-+	/* aligned buffer containing list entries which describes up to
-+	 * 1 megabyte of data (256 entries of 4096 bytes each)
-+	 *  Logical real address of buffer 0  -  Buffer 0 length in bytes
-+	 *  Logical real address of buffer 1  -  Buffer 1 length in bytes
-+	 *  Logical real address of buffer 2  -  Buffer 2 length in bytes
-+	 *  ....
-+	 *  ....
-+	 *  Logical real address of buffer N  -  Buffer N length in bytes
-+	 */
-+	le = (struct sg_list *)get_zeroed_page(GFP_KERNEL);
-+	if (!le) {
-+		rc = -ENOMEM;
-+		goto err;
-+	}
-+
-+	for (i = 0; i < CXL_AI_MAX_ENTRIES; i++) {
-+		buffer[i] = (unsigned long *)get_zeroed_page(GFP_KERNEL);
-+		if (!buffer[i]) {
-+			rc = -ENOMEM;
-+			goto err1;
-+		}
-+	}
-+
-+	return 0;
-+
-+err1:
-+	for (i = 0; i < CXL_AI_MAX_ENTRIES; i++) {
-+		if (buffer[i])
-+			free_page((unsigned long) buffer[i]);
-+	}
-+
-+	if (le)
-+		free_page((unsigned long) le);
-+err:
-+	put_device(&adapter->dev);
-+
-+	return rc;
-+}
-+
-+static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-+{
-+	struct cxl *adapter = file->private_data;
-+
-+	pr_devel("in %s\n", __func__);
-+
-+	if (cmd == CXL_IOCTL_DOWNLOAD_IMAGE)
-+		return ioctl_transfer_image(adapter,
-+					DOWNLOAD_IMAGE,
-+					(struct cxl_adapter_image __user *)arg);
-+	else if (cmd == CXL_IOCTL_VALIDATE_IMAGE)
-+		return ioctl_transfer_image(adapter,
-+					VALIDATE_IMAGE,
-+					(struct cxl_adapter_image __user *)arg);
-+	else
-+		return -EINVAL;
-+}
-+
-+static long device_compat_ioctl(struct file *file, unsigned int cmd,
-+				unsigned long arg)
-+{
-+	return device_ioctl(file, cmd, arg);
-+}
-+
-+static int device_close(struct inode *inode, struct file *file)
-+{
-+	struct cxl *adapter = file->private_data;
-+	int i;
-+
-+	pr_devel("in %s\n", __func__);
-+
-+	for (i = 0; i < CXL_AI_MAX_ENTRIES; i++) {
-+		if (buffer[i])
-+			free_page((unsigned long) buffer[i]);
-+	}
-+
-+	if (le)
-+		free_page((unsigned long) le);
-+
-+	up(&sem);
-+	put_device(&adapter->dev);
-+	continue_token = 0;
-+
-+	/* reload the module */
-+	if (transfer)
-+		cxl_guest_reload_module(adapter);
-+	else {
-+		pr_devel("resetting adapter\n");
-+		cxl_h_reset_adapter(adapter->guest->handle);
-+	}
-+
-+	transfer = 0;
-+	return 0;
-+}
-+
-+static const struct file_operations fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= device_open,
-+	.unlocked_ioctl	= device_ioctl,
-+	.compat_ioctl	= device_compat_ioctl,
-+	.release	= device_close,
-+};
-+
-+void cxl_guest_remove_chardev(struct cxl *adapter)
-+{
-+	cdev_del(&adapter->guest->cdev);
-+}
-+
-+int cxl_guest_add_chardev(struct cxl *adapter)
-+{
-+	dev_t devt;
-+	int rc;
-+
-+	devt = MKDEV(MAJOR(cxl_get_dev()), CXL_CARD_MINOR(adapter));
-+	cdev_init(&adapter->guest->cdev, &fops);
-+	if ((rc = cdev_add(&adapter->guest->cdev, devt, 1))) {
-+		dev_err(&adapter->dev,
-+			"Unable to add chardev on adapter (card%i): %i\n",
-+			adapter->adapter_num, rc);
-+		goto err;
-+	}
-+	adapter->dev.devt = devt;
-+	sema_init(&sem, 1);
-+err:
-+	return rc;
-+}
+ struct cxl_sste {
+ 	__be64 esid_data;
+ 	__be64 vsid_data;
+@@ -844,6 +850,7 @@ struct cxl_backend_ops {
+ 	int (*attach_process)(struct cxl_context *ctx, bool kernel,
+ 			u64 wed, u64 amr);
+ 	int (*detach_process)(struct cxl_context *ctx);
++	bool (*support_attributes)(const char *attr_name, enum cxl_attrs type);
+ 	bool (*link_ok)(struct cxl *cxl);
+ 	void (*release_afu)(struct device *dev);
+ 	ssize_t (*afu_read_err_buffer)(struct cxl_afu *afu, char *buf,
 diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
-index 920e074..c539dfa 100644
+index 03eb83d..920e074 100644
 --- a/drivers/misc/cxl/guest.c
 +++ b/drivers/misc/cxl/guest.c
-@@ -889,6 +889,7 @@ void cxl_guest_remove_adapter(struct cxl *adapter)
- 
- 	cxl_sysfs_adapter_remove(adapter);
- 
-+	cxl_guest_remove_chardev(adapter);
- 	device_unregister(&adapter->dev);
+@@ -596,6 +596,30 @@ static int guest_afu_check_and_enable(struct cxl_afu *afu)
+ 	return 0;
  }
  
-@@ -926,6 +927,9 @@ struct cxl *cxl_guest_init_adapter(struct device_node *np, struct platform_devic
- 	if ((rc = properties_look_ok(adapter)))
- 		goto err1;
- 
-+	if ((rc = cxl_guest_add_chardev(adapter)))
-+		goto err1;
-+
- 	/*
- 	 * After we call this function we must not free the adapter directly,
- 	 * even if it returns an error!
-@@ -941,12 +945,23 @@ struct cxl *cxl_guest_init_adapter(struct device_node *np, struct platform_devic
- err_put1:
- 	device_unregister(&adapter->dev);
- 	free = false;
-+	cxl_guest_remove_chardev(adapter);
- err1:
- 	if (free)
- 		free_adapter(adapter);
- 	return ERR_PTR(rc);
- }
- 
-+void cxl_guest_reload_module(struct cxl *adapter)
++static bool guest_support_attributes(const char *attr_name,
++				     enum cxl_attrs type)
 +{
-+	struct platform_device *pdev;
++	switch (type) {
++	case CXL_ADAPTER_ATTRS:
++		if ((strcmp(attr_name, "base_image") == 0) ||
++			(strcmp(attr_name, "load_image_on_perst") == 0) ||
++			(strcmp(attr_name, "perst_reloads_same_image") == 0) ||
++			(strcmp(attr_name, "image_loaded") == 0))
++			return false;
++		break;
++	case CXL_AFU_MASTER_ATTRS:
++		if ((strcmp(attr_name, "pp_mmio_off") == 0))
++			return false;
++		break;
++	case CXL_AFU_ATTRS:
++		break;
++	default:
++		break;
++	}
 +
-+	pdev = adapter->guest->pdev;
-+	cxl_guest_remove_adapter(adapter);
-+
-+	cxl_of_probe(pdev);
++	return true;
 +}
 +
- const struct cxl_backend_ops cxl_guest_ops = {
- 	.module = THIS_MODULE,
- 	.adapter_reset = guest_reset,
-diff --git a/include/uapi/misc/cxl.h b/include/uapi/misc/cxl.h
-index 1e889aa..8cd334f 100644
---- a/include/uapi/misc/cxl.h
-+++ b/include/uapi/misc/cxl.h
-@@ -55,11 +55,35 @@ struct cxl_afu_id {
- 	__u64 reserved6;
- };
+ static int activate_afu_directed(struct cxl_afu *afu)
+ {
+ 	int rc;
+@@ -936,6 +960,7 @@ const struct cxl_backend_ops cxl_guest_ops = {
+ 	.ack_irq = guest_ack_irq,
+ 	.attach_process = guest_attach_process,
+ 	.detach_process = guest_detach_process,
++	.support_attributes = guest_support_attributes,
+ 	.link_ok = guest_link_ok,
+ 	.release_afu = guest_release_afu,
+ 	.afu_read_err_buffer = guest_afu_read_err_buffer,
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index c0bca59..0e289c2 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -967,6 +967,12 @@ int cxl_check_error(struct cxl_afu *afu)
+ 	return (cxl_p1n_read(afu, CXL_PSL_SCNTL_An) == ~0ULL);
+ }
  
-+/* base adapter image header is included in the image */
-+#define CXL_AI_NEED_HEADER	0x0000000000000001ULL
-+#define CXL_AI_ALL		CXL_AI_NEED_HEADER
++static bool native_support_attributes(const char *attr_name,
++				      enum cxl_attrs type)
++{
++	return true;
++}
 +
-+#define CXL_AI_HEADER_SIZE 128
-+#define CXL_AI_BUFFER_SIZE 4096
-+#define CXL_AI_MAX_ENTRIES 256
-+#define CXL_AI_MAX_CHUNK_SIZE (CXL_AI_BUFFER_SIZE * CXL_AI_MAX_ENTRIES)
-+
-+struct cxl_adapter_image {
-+	__u64 flags;
-+	__u64 data;
-+	__u64 len_data;
-+	__u64 len_image;
-+	__u64 reserved1;
-+	__u64 reserved2;
-+	__u64 reserved3;
-+	__u64 reserved4;
-+};
-+
- /* ioctl numbers */
- #define CXL_MAGIC 0xCA
-+/* AFU devices */
- #define CXL_IOCTL_START_WORK		_IOW(CXL_MAGIC, 0x00, struct cxl_ioctl_start_work)
- #define CXL_IOCTL_GET_PROCESS_ELEMENT	_IOR(CXL_MAGIC, 0x01, __u32)
- #define CXL_IOCTL_GET_AFU_ID            _IOR(CXL_MAGIC, 0x02, struct cxl_afu_id)
-+/* adapter devices */
-+#define CXL_IOCTL_DOWNLOAD_IMAGE        _IOW(CXL_MAGIC, 0x0A, struct cxl_adapter_image)
-+#define CXL_IOCTL_VALIDATE_IMAGE        _IOW(CXL_MAGIC, 0x0B, struct cxl_adapter_image)
+ static int native_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off, u64 *out)
+ {
+ 	if (unlikely(!cxl_ops->link_ok(afu->adapter)))
+@@ -1026,6 +1032,7 @@ const struct cxl_backend_ops cxl_native_ops = {
+ 	.ack_irq = native_ack_irq,
+ 	.attach_process = native_attach_process,
+ 	.detach_process = native_detach_process,
++	.support_attributes = native_support_attributes,
+ 	.link_ok = cxl_adapter_link_ok,
+ 	.release_afu = cxl_pci_release_afu,
+ 	.afu_read_err_buffer = cxl_pci_afu_read_err_buffer,
+diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
+index 1a1409c..907c99b 100644
+--- a/drivers/misc/cxl/sysfs.c
++++ b/drivers/misc/cxl/sysfs.c
+@@ -253,8 +253,14 @@ static ssize_t irqs_max_store(struct device *device,
+ 	if (irqs_max < afu->pp_irqs)
+ 		return -EINVAL;
  
- #define CXL_READ_MIN_SIZE 0x1000 /* 4K */
+-	if (irqs_max > afu->adapter->user_irqs)
+-		return -EINVAL;
++	if (cpu_has_feature(CPU_FTR_HVMODE)) {
++		if (irqs_max > afu->adapter->user_irqs)
++			return -EINVAL;
++	} else {
++		/* pHyp sets a per-AFU limit */
++		if (irqs_max > afu->guest->max_ints)
++			return -EINVAL;
++	}
  
+ 	afu->irqs_max = irqs_max;
+ 	return count;
+@@ -406,24 +412,39 @@ static struct device_attribute afu_attrs[] = {
+ 
+ int cxl_sysfs_adapter_add(struct cxl *adapter)
+ {
++	struct device_attribute *dev_attr;
+ 	int i, rc;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(adapter_attrs); i++) {
+-		if ((rc = device_create_file(&adapter->dev, &adapter_attrs[i])))
+-			goto err;
++		dev_attr = &adapter_attrs[i];
++		if (cxl_ops->support_attributes(dev_attr->attr.name,
++						CXL_ADAPTER_ATTRS)) {
++			if ((rc = device_create_file(&adapter->dev, dev_attr)))
++				goto err;
++		}
+ 	}
+ 	return 0;
+ err:
+-	for (i--; i >= 0; i--)
+-		device_remove_file(&adapter->dev, &adapter_attrs[i]);
++	for (i--; i >= 0; i--) {
++		dev_attr = &adapter_attrs[i];
++		if (cxl_ops->support_attributes(dev_attr->attr.name,
++						CXL_ADAPTER_ATTRS))
++			device_remove_file(&adapter->dev, dev_attr);
++	}
+ 	return rc;
+ }
++
+ void cxl_sysfs_adapter_remove(struct cxl *adapter)
+ {
++	struct device_attribute *dev_attr;
+ 	int i;
+ 
+-	for (i = 0; i < ARRAY_SIZE(adapter_attrs); i++)
+-		device_remove_file(&adapter->dev, &adapter_attrs[i]);
++	for (i = 0; i < ARRAY_SIZE(adapter_attrs); i++) {
++		dev_attr = &adapter_attrs[i];
++		if (cxl_ops->support_attributes(dev_attr->attr.name,
++						CXL_ADAPTER_ATTRS))
++			device_remove_file(&adapter->dev, dev_attr);
++	}
+ }
+ 
+ struct afu_config_record {
+@@ -534,7 +555,7 @@ static struct afu_config_record *cxl_sysfs_afu_new_cr(struct cxl_afu *afu, int c
+ 	/*
+ 	 * Export raw AFU PCIe like config record. For now this is read only by
+ 	 * root - we can expand that later to be readable by non-root and maybe
+-	 * even writable provided we have a good use-case. Once we suport
++	 * even writable provided we have a good use-case. Once we support
+ 	 * exposing AFUs through a virtual PHB they will get that for free from
+ 	 * Linux' PCI infrastructure, but until then it's not clear that we
+ 	 * need it for anything since the main use case is just identifying
+@@ -572,6 +593,7 @@ err:
+ 
+ void cxl_sysfs_afu_remove(struct cxl_afu *afu)
+ {
++	struct device_attribute *dev_attr;
+ 	struct afu_config_record *cr, *tmp;
+ 	int i;
+ 
+@@ -579,8 +601,12 @@ void cxl_sysfs_afu_remove(struct cxl_afu *afu)
+ 	if (afu->eb_len)
+ 		device_remove_bin_file(&afu->dev, &afu->attr_eb);
+ 
+-	for (i = 0; i < ARRAY_SIZE(afu_attrs); i++)
+-		device_remove_file(&afu->dev, &afu_attrs[i]);
++	for (i = 0; i < ARRAY_SIZE(afu_attrs); i++) {
++		dev_attr = &afu_attrs[i];
++		if (cxl_ops->support_attributes(dev_attr->attr.name,
++						CXL_AFU_ATTRS))
++			device_remove_file(&afu->dev, &afu_attrs[i]);
++	}
+ 
+ 	list_for_each_entry_safe(cr, tmp, &afu->crs, list) {
+ 		sysfs_remove_bin_file(&cr->kobj, &cr->config_attr);
+@@ -590,14 +616,19 @@ void cxl_sysfs_afu_remove(struct cxl_afu *afu)
+ 
+ int cxl_sysfs_afu_add(struct cxl_afu *afu)
+ {
++	struct device_attribute *dev_attr;
+ 	struct afu_config_record *cr;
+ 	int i, rc;
+ 
+ 	INIT_LIST_HEAD(&afu->crs);
+ 
+ 	for (i = 0; i < ARRAY_SIZE(afu_attrs); i++) {
+-		if ((rc = device_create_file(&afu->dev, &afu_attrs[i])))
+-			goto err;
++		dev_attr = &afu_attrs[i];
++		if (cxl_ops->support_attributes(dev_attr->attr.name,
++						CXL_AFU_ATTRS)) {
++			if ((rc = device_create_file(&afu->dev, &afu_attrs[i])))
++				goto err;
++		}
+ 	}
+ 
+ 	/* conditionally create the add the binary file for error info buffer */
+@@ -636,32 +667,50 @@ err:
+ 	/* reset the eb_len as we havent created the bin attr */
+ 	afu->eb_len = 0;
+ 
+-	for (i--; i >= 0; i--)
++	for (i--; i >= 0; i--) {
++		dev_attr = &afu_attrs[i];
++		if (cxl_ops->support_attributes(dev_attr->attr.name,
++						CXL_AFU_ATTRS))
+ 		device_remove_file(&afu->dev, &afu_attrs[i]);
++	}
+ 	return rc;
+ }
+ 
+ int cxl_sysfs_afu_m_add(struct cxl_afu *afu)
+ {
++	struct device_attribute *dev_attr;
+ 	int i, rc;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(afu_master_attrs); i++) {
+-		if ((rc = device_create_file(afu->chardev_m, &afu_master_attrs[i])))
+-			goto err;
++		dev_attr = &afu_master_attrs[i];
++		if (cxl_ops->support_attributes(dev_attr->attr.name,
++						CXL_AFU_MASTER_ATTRS)) {
++			if ((rc = device_create_file(afu->chardev_m, &afu_master_attrs[i])))
++				goto err;
++		}
+ 	}
+ 
+ 	return 0;
+ 
+ err:
+-	for (i--; i >= 0; i--)
+-		device_remove_file(afu->chardev_m, &afu_master_attrs[i]);
++	for (i--; i >= 0; i--) {
++		dev_attr = &afu_master_attrs[i];
++		if (cxl_ops->support_attributes(dev_attr->attr.name,
++						CXL_AFU_MASTER_ATTRS))
++			device_remove_file(afu->chardev_m, &afu_master_attrs[i]);
++	}
+ 	return rc;
+ }
+ 
+ void cxl_sysfs_afu_m_remove(struct cxl_afu *afu)
+ {
++	struct device_attribute *dev_attr;
+ 	int i;
+ 
+-	for (i = 0; i < ARRAY_SIZE(afu_master_attrs); i++)
+-		device_remove_file(afu->chardev_m, &afu_master_attrs[i]);
++	for (i = 0; i < ARRAY_SIZE(afu_master_attrs); i++) {
++		dev_attr = &afu_master_attrs[i];
++		if (cxl_ops->support_attributes(dev_attr->attr.name,
++						CXL_AFU_MASTER_ATTRS))
++			device_remove_file(afu->chardev_m, &afu_master_attrs[i]);
++	}
+ }
 -- 
 1.9.1
