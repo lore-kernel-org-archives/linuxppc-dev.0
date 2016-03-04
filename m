@@ -1,35 +1,27 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <duwe@lst.de>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B1221A0B51
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 22:27:28 +1100 (AEDT)
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 4 Mar 2016 11:27:24 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 77F0E2190023
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:26:51 +0000 (GMT)
-Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
- [9.149.37.252])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u24BR8aF7930156
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:27:08 GMT
-Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u24BR784007860
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 04:27:07 -0700
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com, manoj@linux.vnet.ibm.com,
- mrochs@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 20/20] cxl: Remove cxl_get_phys_dev() kernel API
-Date: Fri,  4 Mar 2016 12:26:44 +0100
-Message-Id: <1457090804-9719-21-git-send-email-fbarrat@linux.vnet.ibm.com>
-In-Reply-To: <1457090804-9719-1-git-send-email-fbarrat@linux.vnet.ibm.com>
-References: <1457090804-9719-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8AD2C1A035C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 23:42:52 +1100 (AEDT)
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 1B55F140213
+ for <linuxppc-dev@ozlabs.org>; Fri,  4 Mar 2016 23:42:51 +1100 (AEDT)
+Date: Fri, 4 Mar 2016 13:42:47 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Petr Mladek <pmladek@suse.com>
+Cc: linuxppc-dev@ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com, jeyu@redhat.com, jkosina@suse.cz,
+ live-patching@vger.kernel.org, mbenes@suse.cz
+Subject: Re: [PATCH][v4] livepatch/ppc: Enable livepatching on powerpc
+Message-ID: <20160304124247.GA20914@lst.de>
+References: <1457023921-2051-1-git-send-email-pmladek@suse.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1457023921-2051-1-git-send-email-pmladek@suse.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,46 +31,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The cxl_get_phys_dev() API returns a struct device pointer which could
-belong to either a struct pci_dev (bare-metal) or platform_device
-(powerVM). To avoid potential problems in drivers, remove that API. It
-was introduced to allow drivers to read the VPD of the adapter, but
-the cxl driver now provides the cxl_pci_read_adapter_vpd() API for
-that purpose.
+On Thu, Mar 03, 2016 at 05:52:01PM +0100, Petr Mladek wrote:
+[...]
+> index ec7f8aada697..2d5333c228f1 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -1265,6 +1271,31 @@ ftrace_call:
+>  	ld	r0, LRSAVE(r1)
+>  	mtlr	r0
+>  
+> +#ifdef CONFIG_LIVEPATCH
+> +	beq+	4f		/* likely(old_NIP == new_NIP) */
+> +	/*
+> +	 * For a local call, restore this TOC after calling the patch function.
+> +	 * For a global call, it does not matter what we restore here,
+> +	 * since the global caller does its own restore right afterwards,
+> +	 * anyway. Just insert a klp_return_helper frame in any case,
+> +	 * so a patch function can always count on the changed stack offsets.
+> +	 * The patch introduces a frame such that from the patched function
+> +	 * we return back to klp_return helper. For ABI compliance r12,
+> +	 * lr and LRSAVE(r1) contain the address of klp_return_helper.
+> +	 * We loaded ctr with the address of the patched function earlier
+> +	 */
+> +	stdu	r1, -32(r1)	/* open new mini stack frame */
+> +	std	r2, 24(r1)	/* save TOC now, unconditionally. */
+> +	bl	5f
+> +5:	mflr	r12
+> +	addi	r12, r12, (klp_return_helper + 4 - .)@l
+> +	std	r12, LRSAVE(r1)
+> +	mtlr	r12
+> +	mfctr	r12		/* allow for TOC calculation in newfunc */
+> +	bctr
+> +4:
+> +#endif
+> +
+>  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+>  	stdu	r1, -112(r1)
+>  .globl ftrace_graph_call
+> @@ -1281,6 +1312,25 @@ _GLOBAL(ftrace_graph_stub)
+>  
+>  _GLOBAL(ftrace_stub)
+>  	blr
+> +#ifdef CONFIG_LIVEPATCH
+> +/* Helper function for local calls that are becoming global
+> + * due to live patching.
+> + * We can't simply patch the NOP after the original call,
+> + * because, depending on the consistency model, some kernel
+> + * threads may still have called the original, local function
+> + * *without* saving their TOC in the respective stack frame slot,
+> + * so the decision is made per-thread during function return by
+> + * maybe inserting a klp_return_helper frame or not.
+> +*/
+> +klp_return_helper:
+> +	ld	r2, 24(r1)	/* restore TOC (saved by ftrace_caller) */
+> +	addi r1, r1, 32		/* destroy mini stack frame */
+> +	ld	r0, LRSAVE(r1)	/* get the real return address */
+> +	mtlr	r0
+> +	blr
+> +#endif
+> +
+> +
+>  #else
+>  _GLOBAL_TOC(_mcount)
+>  	/* Taken from output of objdump from lib64/glibc */
 
-Co-authored-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
----
- drivers/misc/cxl/api.c | 1 -
- include/misc/cxl.h     | 3 ---
- 2 files changed, 4 deletions(-)
+We need a caveat here, at least in the comments, even better
+in some documentation, that the klp_return_helper shifts the stack layout.
 
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index 75ec2f9..2107c94 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -76,7 +76,6 @@ struct device *cxl_get_phys_dev(struct pci_dev *dev)
- 
- 	return afu->adapter->dev.parent;
- }
--EXPORT_SYMBOL_GPL(cxl_get_phys_dev);
- 
- int cxl_release_context(struct cxl_context *ctx)
- {
-diff --git a/include/misc/cxl.h b/include/misc/cxl.h
-index 5bcf11a..7d5e261 100644
---- a/include/misc/cxl.h
-+++ b/include/misc/cxl.h
-@@ -30,9 +30,6 @@ struct cxl_afu *cxl_pci_to_afu(struct pci_dev *dev);
- /* Get the AFU conf record number associated with a pci_dev */
- unsigned int cxl_pci_to_cfg_record(struct pci_dev *dev);
- 
--/* Get the physical device (ie. the PCIe card) which the AFU is attached */
--struct device *cxl_get_phys_dev(struct pci_dev *dev);
--
- 
- /*
-  * Context lifetime overview:
--- 
-1.9.1
+This is relevant for functions with more than 8 fixed integer arguments
+or for any varargs creator. As soon as the patch function is to replace
+an original with arguments on the stack, the extra stack frame needs to
+be accounted for.
+
+Where shall we put this warning?
+
+	Torsten
