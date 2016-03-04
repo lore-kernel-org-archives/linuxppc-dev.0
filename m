@@ -1,36 +1,36 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from e06smtp09.uk.ibm.com (e06smtp09.uk.ibm.com [195.75.94.105])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7B2121A0B99
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 21:28:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 144571A045E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 22:23:23 +1100 (AEDT)
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp09.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 4 Mar 2016 20:27:59 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4A58F3578053
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 21:27:56 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u24ARlWa6160888
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 21:27:56 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u24ARN54026400
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 21:27:23 +1100
-Message-ID: <56D962F9.9020503@linux.vnet.ibm.com>
-Date: Fri, 04 Mar 2016 15:57:05 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Fri, 4 Mar 2016 11:23:19 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 99C2517D8059
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:23:26 +0000 (GMT)
+Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
+ [9.149.37.249])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u24BN0Gb3146006
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:23:00 GMT
+Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u24BN02J020844
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 04:23:00 -0700
+Subject: Re: [PATCH] cxl: Add cxl_read_adapter_vpd() to the kernel API
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+References: <1453223694-5190-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Message-ID: <56D97013.2010703@linux.vnet.ibm.com>
+Date: Fri, 4 Mar 2016 12:22:59 +0100
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-CC: aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/mm: Add validation for platform reserved memory
- ranges
-References: <1457085039-27656-1-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1457085039-27656-1-git-send-email-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1453223694-5190-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,60 +40,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/04/2016 03:20 PM, Anshuman Khandual wrote:
-> For partition running on PHYP, there can be a adjunct partition
-> which shares the virtual address range with the operating system.
-> Virtual address ranges which can be used by the adjunct partition
-> are communicated with virtual device node of the device tree with
-> a property known as "ibm,reserved-virtual-addresses". This patch
-> introduces a new function named 'validate_reserved_va_range' which
-> is called  during initialization to validate that these reserved
-> virtual address ranges do not overlap with the address ranges used
-> by the kernel for all supported memory contexts. This helps prevent
-> the possibility of getting return codes similar to H_RESOURCE for
-> H_PROTECT hcalls for conflicting HPTE entries.
-> 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> ---
-> - It has been tested on both LE and BE POWER8 platforms
-> 
->  arch/powerpc/mm/hash_utils_64.c | 77 +++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 77 insertions(+)
-> 
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index ba59d59..ee14df7 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -1564,3 +1564,80 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
->  	/* Finally limit subsequent allocations */
->  	memblock_set_current_limit(ppc64_rma_size);
->  }
-> +
-> +/*
-> + * PAPR says that each reserved virtual address range record
-> + * contains three be32 elements which is of toal 12 bytes.
-> + * First two be32 elements contain the abbreviated virtual
-> + * address (high order 32 bits and low order 32 bits that
-> + * generate the abbreviated virtual address of 64 bits which
-> + * need to be concatenated with 24 bits of 0 at the end) and
-> + * the third be32 element contains the size of the reserved
-> + * virtual address range as number of consecutive 4K pages.
-> + */
-> +struct reserved_va_record {
-> +	__be32	high_addr;
-> +	__be32	low_addr;
-> +	__be32	nr_pages_4K;
-> +};
-> +
-> +/*
-> + * Linux uses 65 bits (CONTEXT_BITS + ESID_BITS + SID_SHIFT)
-> + * of virtual address. As reserved virtual address comes in
-> + * as an abbreviated form (64 bits) from the device tree, we
-> + * will use a partial address bit mask (65 >> 24) to match it
-> + * for simplicity.
-> + */
-> +#define RVA_LESS_BITS		24
-> +#define LINUX_VA_BITS		CONTEXT_BITS + ESID_BITS + SID_SHIFT
-> +#define	PARTIAL_LINUX_VA_MASK	((1ULL << (LINUX_VA_BITS - RVA_LESS_BITS)) - 1)
 
-Oops, the indentation should have been similar here. Will fix it.
+The point of this patch was to break a dependency with cxlflash, so that 
+they could drop their powerVM changes independently from cxl.
+
+Since this hasn't hit upstream or next yet, change of plan: we've agreed 
+with cxlflash that the cxl powerVM patchset will do the (small) 
+modification to cxlflash (and remove the now obsolete cxl_get_phys_dev() 
+kernel API, as discussed in this thread with Mikey). So no more 
+dependencies.
+It will be part of the powerVM patchset v6
+
+   Fred
+
+
+Le 19/01/2016 18:14, Frederic Barrat a écrit :
+> Introduce a new API to read the VPD of the adapter. In bare-metal, a
+> kernel driver can find out the adapter pci_dev behind the AFU device
+> and call pci_read_vpd() directly, but it won't work in a (powerVM)
+> guest.
+> Current implementation is a stub to allow existing drivers (cxlflash)
+> to start using it.
+>
+> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> ---
+>   drivers/misc/cxl/api.c | 8 ++++++++
+>   include/misc/cxl.h     | 5 +++++
+>   2 files changed, 13 insertions(+)
+>
+> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+> index ea3eeb7..c73aa3a 100644
+> --- a/drivers/misc/cxl/api.c
+> +++ b/drivers/misc/cxl/api.c
+> @@ -363,3 +363,11 @@ void cxl_perst_reloads_same_image(struct cxl_afu *afu,
+>   	afu->adapter->perst_same_image = perst_reloads_same_image;
+>   }
+>   EXPORT_SYMBOL_GPL(cxl_perst_reloads_same_image);
+> +
+> +ssize_t cxl_read_adapter_vpd(struct pci_dev *afu_dev, void *buf, size_t count)
+> +{
+> +	struct device *parent = cxl_get_phys_dev(afu_dev);
+> +
+> +	return pci_read_vpd(to_pci_dev(parent), 0, count, buf);
+> +}
+> +EXPORT_SYMBOL_GPL(cxl_read_adapter_vpd);
+> diff --git a/include/misc/cxl.h b/include/misc/cxl.h
+> index f2ffe5b..3f9e84f 100644
+> --- a/include/misc/cxl.h
+> +++ b/include/misc/cxl.h
+> @@ -210,4 +210,9 @@ ssize_t cxl_fd_read(struct file *file, char __user *buf, size_t count,
+>   void cxl_perst_reloads_same_image(struct cxl_afu *afu,
+>   				  bool perst_reloads_same_image);
+>
+> +/*
+> + * Read the VPD of the adapter where the AFU pci dev resides
+> + */
+> +ssize_t cxl_read_adapter_vpd(struct pci_dev *afu_dev, void *buf, size_t count);
+> +
+>   #endif /* _MISC_CXL_H */
+>
