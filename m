@@ -1,33 +1,33 @@
 Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 55EC01A09FE
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 22:27:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C8B651A06A7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 22:27:04 +1100 (AEDT)
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 4 Mar 2016 11:27:00 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 16260219005E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:26:40 +0000 (GMT)
+ Fri, 4 Mar 2016 11:27:01 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9A8101B0806B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:27:22 +0000 (GMT)
 Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
  [9.149.37.252])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u24BQuJn7930356
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:26:56 GMT
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u24BQxmv3015152
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:26:59 GMT
 Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u24BQuou007339
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 04:26:56 -0700
+ u24BQwrQ007461
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 04:26:58 -0700
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com, manoj@linux.vnet.ibm.com,
  mrochs@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 10/20] cxl: New hcalls to support cxl adapters
-Date: Fri,  4 Mar 2016 12:26:34 +0100
-Message-Id: <1457090804-9719-11-git-send-email-fbarrat@linux.vnet.ibm.com>
+Subject: [PATCH v6 12/20] cxl: Add guest-specific code
+Date: Fri,  4 Mar 2016 12:26:36 +0100
+Message-Id: <1457090804-9719-13-git-send-email-fbarrat@linux.vnet.ibm.com>
 In-Reply-To: <1457090804-9719-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 References: <1457090804-9719-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,26 +41,15 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Christophe Lombard <clombard@linux.vnet.ibm.com>
 
-The hypervisor calls provide an interface with a coherent platform
-facility and function. It matches version 0.16 of the 'PAPR changes'
-document.
+The new of.c file contains code to parse the device tree to find out
+about cxl adapters and AFUs.
 
-The following hcalls are supported:
-H_ATTACH_CA_PROCESS    Attach a process element to a coherent platform
-                       function.
-H_DETACH_CA_PROCESS    Detach a process element from a coherent
-                       platform function.
-H_CONTROL_CA_FUNCTION  Allow the partition to manipulate or query
-                       certain coherent platform function behaviors.
-H_COLLECT_CA_INT_INFO  Collect interrupt info about a coherent.
-                       platform function after an interrupt occurred
-H_CONTROL_CA_FAULTS    Control the operation of a coherent platform
-                       function after a fault occurs.
-H_DOWNLOAD_CA_FACILITY Support for downloading a base adapter image to
-                       the coherent platform facility, and for
-                       validating the entire image after the download.
-H_CONTROL_CA_FACILITY  Allow the partition to manipulate or query
-                       certain coherent platform facility behaviors.
+guest.c implements the guest-specific callbacks for the backend API.
+
+The process element ID is not known until the context is attached, so
+we have to separate the context ID assigned by the cxl driver from the
+process element ID visible to the user applications. In bare-metal,
+the 2 IDs match.
 
 Co-authored-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
@@ -68,70 +57,156 @@ Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 Reviewed-by: Manoj Kumar <manoj@linux.vnet.ibm.com>
 Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/cxl.h    |  23 +-
- drivers/misc/cxl/hcalls.c | 639 ++++++++++++++++++++++++++++++++++++++++++++++
- drivers/misc/cxl/hcalls.h | 203 +++++++++++++++
- drivers/misc/cxl/main.c   |  26 ++
- drivers/misc/cxl/native.c |   1 +
- 5 files changed, 890 insertions(+), 2 deletions(-)
- create mode 100644 drivers/misc/cxl/hcalls.c
- create mode 100644 drivers/misc/cxl/hcalls.h
+ drivers/misc/cxl/Makefile  |   1 +
+ drivers/misc/cxl/api.c     |   2 +-
+ drivers/misc/cxl/context.c |   6 +-
+ drivers/misc/cxl/cxl.h     |  37 +-
+ drivers/misc/cxl/file.c    |   2 +-
+ drivers/misc/cxl/guest.c   | 950 +++++++++++++++++++++++++++++++++++++++++++++
+ drivers/misc/cxl/main.c    |  18 +-
+ drivers/misc/cxl/of.c      | 513 ++++++++++++++++++++++++
+ 8 files changed, 1519 insertions(+), 10 deletions(-)
+ create mode 100644 drivers/misc/cxl/guest.c
+ create mode 100644 drivers/misc/cxl/of.c
 
+diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
+index be2ac5c..a3d4bef 100644
+--- a/drivers/misc/cxl/Makefile
++++ b/drivers/misc/cxl/Makefile
+@@ -4,6 +4,7 @@ ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
+ cxl-y				+= main.o file.o irq.o fault.o native.o
+ cxl-y				+= context.o sysfs.o debugfs.o pci.o trace.o
+ cxl-y				+= vphb.o api.o
++cxl-y				+= guest.o of.o hcalls.o
+ obj-$(CONFIG_CXL)		+= cxl.o
+ obj-$(CONFIG_CXL_BASE)		+= base.o
+ 
+diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+index 31eb842..325f957 100644
+--- a/drivers/misc/cxl/api.c
++++ b/drivers/misc/cxl/api.c
+@@ -191,7 +191,7 @@ EXPORT_SYMBOL_GPL(cxl_start_context);
+ 
+ int cxl_process_element(struct cxl_context *ctx)
+ {
+-	return ctx->pe;
++	return ctx->external_pe;
+ }
+ EXPORT_SYMBOL_GPL(cxl_process_element);
+ 
+diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+index 200837f..180c85a 100644
+--- a/drivers/misc/cxl/context.c
++++ b/drivers/misc/cxl/context.c
+@@ -95,8 +95,12 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master,
+ 		return i;
+ 
+ 	ctx->pe = i;
+-	if (cpu_has_feature(CPU_FTR_HVMODE))
++	if (cpu_has_feature(CPU_FTR_HVMODE)) {
+ 		ctx->elem = &ctx->afu->native->spa[i];
++		ctx->external_pe = ctx->pe;
++	} else {
++		ctx->external_pe = -1; /* assigned when attaching */
++	}
+ 	ctx->pe_inserted = false;
+ 
+ 	/*
 diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index c7ed265..ac655a6 100644
+index 3a1fabd..4372a87 100644
 --- a/drivers/misc/cxl/cxl.h
 +++ b/drivers/misc/cxl/cxl.h
-@@ -688,6 +688,7 @@ void cxl_prefault(struct cxl_context *ctx, u64 wed);
- 
- struct cxl *get_cxl_adapter(int num);
- int cxl_alloc_sst(struct cxl_context *ctx);
-+void cxl_dump_debug_buffer(void *addr, size_t size);
- 
- void init_cxl_native(void);
- 
-@@ -701,16 +702,34 @@ unsigned int cxl_map_irq(struct cxl *adapter, irq_hw_number_t hwirq,
- void cxl_unmap_irq(unsigned int virq, void *cookie);
- int __detach_context(struct cxl_context *ctx);
- 
--/* This matches the layout of the H_COLLECT_CA_INT_INFO retbuf */
-+/*
-+ * This must match the layout of the H_COLLECT_CA_INT_INFO retbuf defined
-+ * in PAPR.
-+ * A word about endianness: a pointer to this structure is passed when
-+ * calling the hcall. However, it is not a block of memory filled up by
-+ * the hypervisor. The return values are found in registers, and copied
-+ * one by one when returning from the hcall. See the end of the call to
-+ * plpar_hcall9() in hvCall.S
-+ * As a consequence:
-+ * - we don't need to do any endianness conversion
-+ * - the pid and tid are an exception. They are 32-bit values returned in
-+ *   the same 64-bit register. So we do need to worry about byte ordering.
-+ */
- struct cxl_irq_info {
- 	u64 dsisr;
- 	u64 dar;
- 	u64 dsr;
-+#ifndef CONFIG_CPU_LITTLE_ENDIAN
- 	u32 pid;
- 	u32 tid;
-+#else
-+	u32 tid;
-+	u32 pid;
-+#endif
- 	u64 afu_err;
- 	u64 errstat;
--	u64 padding[3]; /* to match the expected retbuf size for plpar_hcall9 */
-+	u64 proc_handle;
-+	u64 padding[2]; /* to match the expected retbuf size for plpar_hcall9 */
+@@ -433,6 +433,12 @@ struct cxl_irq_name {
+ 	char *name;
  };
  
- void cxl_assign_psn_space(struct cxl_context *ctx);
-diff --git a/drivers/misc/cxl/hcalls.c b/drivers/misc/cxl/hcalls.c
++struct irq_avail {
++	irq_hw_number_t offset;
++	irq_hw_number_t range;
++	unsigned long   *bitmap;
++};
++
+ /*
+  * This is a cxl context.  If the PSL is in dedicated mode, there will be one
+  * of these per AFU.  If in AFU directed there can be lots of these.
+@@ -488,7 +494,19 @@ struct cxl_context {
+ 
+ 	struct cxl_process_element *elem;
+ 
+-	int pe; /* process element handle */
++	/*
++	 * pe is the process element handle, assigned by this driver when the
++	 * context is initialized.
++	 *
++	 * external_pe is the PE shown outside of cxl.
++	 * On bare-metal, pe=external_pe, because we decide what the handle is.
++	 * In a guest, we only find out about the pe used by pHyp when the
++	 * context is attached, and that's the value we want to report outside
++	 * of cxl.
++	 */
++	int pe;
++	int external_pe;
++
+ 	u32 irq_count;
+ 	bool pe_inserted;
+ 	bool master;
+@@ -782,6 +800,7 @@ void cxl_pci_vphb_reconfigure(struct cxl_afu *afu);
+ void cxl_pci_vphb_remove(struct cxl_afu *afu);
+ 
+ extern struct pci_driver cxl_pci_driver;
++extern struct platform_driver cxl_of_driver;
+ int afu_allocate_irqs(struct cxl_context *ctx, u32 count);
+ 
+ int afu_open(struct inode *inode, struct file *file);
+@@ -792,6 +811,21 @@ unsigned int afu_poll(struct file *file, struct poll_table_struct *poll);
+ ssize_t afu_read(struct file *file, char __user *buf, size_t count, loff_t *off);
+ extern const struct file_operations afu_fops;
+ 
++struct cxl *cxl_guest_init_adapter(struct device_node *np, struct platform_device *dev);
++void cxl_guest_remove_adapter(struct cxl *adapter);
++int cxl_of_read_adapter_handle(struct cxl *adapter, struct device_node *np);
++int cxl_of_read_adapter_properties(struct cxl *adapter, struct device_node *np);
++ssize_t cxl_guest_read_adapter_vpd(struct cxl *adapter, void *buf, size_t len);
++ssize_t cxl_guest_read_afu_vpd(struct cxl_afu *afu, void *buf, size_t len);
++int cxl_guest_init_afu(struct cxl *adapter, int slice, struct device_node *afu_np);
++void cxl_guest_remove_afu(struct cxl_afu *afu);
++int cxl_of_read_afu_handle(struct cxl_afu *afu, struct device_node *afu_np);
++int cxl_of_read_afu_properties(struct cxl_afu *afu, struct device_node *afu_np);
++int cxl_guest_add_chardev(struct cxl *adapter);
++void cxl_guest_remove_chardev(struct cxl *adapter);
++void cxl_guest_reload_module(struct cxl *adapter);
++int cxl_of_probe(struct platform_device *pdev);
++
+ struct cxl_backend_ops {
+ 	struct module *module;
+ 	int (*adapter_reset)(struct cxl *adapter);
+@@ -824,6 +858,7 @@ struct cxl_backend_ops {
+ 	int (*afu_cr_read64)(struct cxl_afu *afu, int cr_idx, u64 offset, u64 *val);
+ };
+ extern const struct cxl_backend_ops cxl_native_ops;
++extern const struct cxl_backend_ops cxl_guest_ops;
+ extern const struct cxl_backend_ops *cxl_ops;
+ 
+ #endif
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index b8ce29b..df4d49a 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -228,7 +228,7 @@ static long afu_ioctl_process_element(struct cxl_context *ctx,
+ {
+ 	pr_devel("%s: pe: %i\n", __func__, ctx->pe);
+ 
+-	if (copy_to_user(upe, &ctx->pe, sizeof(__u32)))
++	if (copy_to_user(upe, &ctx->external_pe, sizeof(__u32)))
+ 		return -EFAULT;
+ 
+ 	return 0;
+diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
 new file mode 100644
-index 0000000..7e4c517
+index 0000000..03eb83d
 --- /dev/null
-+++ b/drivers/misc/cxl/hcalls.c
-@@ -0,0 +1,639 @@
++++ b/drivers/misc/cxl/guest.c
+@@ -0,0 +1,950 @@
 +/*
 + * Copyright 2015 IBM Corp.
 + *
@@ -141,642 +216,996 @@ index 0000000..7e4c517
 + * 2 of the License, or (at your option) any later version.
 + */
 +
-+
-+#include <linux/compiler.h>
-+#include <linux/types.h>
++#include <linux/spinlock.h>
++#include <linux/uaccess.h>
 +#include <linux/delay.h>
-+#include <asm/hvcall.h>
-+#include <asm/byteorder.h>
++
++#include "cxl.h"
 +#include "hcalls.h"
-+
-+#define CXL_HCALL_TIMEOUT 60000
-+#define CXL_HCALL_TIMEOUT_DOWNLOAD 120000
-+
-+#define H_ATTACH_CA_PROCESS    0x344
-+#define H_CONTROL_CA_FUNCTION  0x348
-+#define H_DETACH_CA_PROCESS    0x34C
-+#define H_COLLECT_CA_INT_INFO  0x350
-+#define H_CONTROL_CA_FAULTS    0x354
-+#define H_DOWNLOAD_CA_FUNCTION 0x35C
-+#define H_DOWNLOAD_CA_FACILITY 0x364
-+#define H_CONTROL_CA_FACILITY  0x368
-+
-+#define H_CONTROL_CA_FUNCTION_RESET                   1 /* perform a reset */
-+#define H_CONTROL_CA_FUNCTION_SUSPEND_PROCESS         2 /* suspend a process from being executed */
-+#define H_CONTROL_CA_FUNCTION_RESUME_PROCESS          3 /* resume a process to be executed */
-+#define H_CONTROL_CA_FUNCTION_READ_ERR_STATE          4 /* read the error state */
-+#define H_CONTROL_CA_FUNCTION_GET_AFU_ERR             5 /* collect the AFU error buffer */
-+#define H_CONTROL_CA_FUNCTION_GET_CONFIG              6 /* collect configuration record */
-+#define H_CONTROL_CA_FUNCTION_GET_DOWNLOAD_STATE      7 /* query to return download status */
-+#define H_CONTROL_CA_FUNCTION_TERMINATE_PROCESS       8 /* terminate the process before completion */
-+#define H_CONTROL_CA_FUNCTION_COLLECT_VPD             9 /* collect VPD */
-+#define H_CONTROL_CA_FUNCTION_GET_FUNCTION_ERR_INT   11 /* read the function-wide error data based on an interrupt */
-+#define H_CONTROL_CA_FUNCTION_ACK_FUNCTION_ERR_INT   12 /* acknowledge function-wide error data based on an interrupt */
-+#define H_CONTROL_CA_FUNCTION_GET_ERROR_LOG          13 /* retrieve the Platform Log ID (PLID) of an error log */
-+
-+#define H_CONTROL_CA_FAULTS_RESPOND_PSL         1
-+#define H_CONTROL_CA_FAULTS_RESPOND_AFU         2
-+
-+#define H_CONTROL_CA_FACILITY_RESET             1 /* perform a reset */
-+#define H_CONTROL_CA_FACILITY_COLLECT_VPD       2 /* collect VPD */
-+
-+#define H_DOWNLOAD_CA_FACILITY_DOWNLOAD         1 /* download adapter image */
-+#define H_DOWNLOAD_CA_FACILITY_VALIDATE         2 /* validate adapter image */
++#include "trace.h"
 +
 +
-+#define _CXL_LOOP_HCALL(call, rc, retbuf, fn, ...)			\
-+	{								\
-+		unsigned int delay, total_delay = 0;			\
-+		u64 token = 0;						\
-+									\
-+		memset(retbuf, 0, sizeof(retbuf));			\
-+		while (1) {						\
-+			rc = call(fn, retbuf, __VA_ARGS__, token);	\
-+			token = retbuf[0];				\
-+			if (rc != H_BUSY && !H_IS_LONG_BUSY(rc))	\
-+				break;					\
-+									\
-+			if (rc == H_BUSY)				\
-+				delay = 10;				\
-+			else						\
-+				delay = get_longbusy_msecs(rc);		\
-+									\
-+			total_delay += delay;				\
-+			if (total_delay > CXL_HCALL_TIMEOUT) {		\
-+				WARN(1, "Warning: Giving up waiting for CXL hcall " \
-+					"%#x after %u msec\n", fn, total_delay); \
-+				rc = H_BUSY;				\
-+				break;					\
-+			}						\
-+			msleep(delay);					\
-+		}							\
++static irqreturn_t guest_handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr,
++					u64 errstat)
++{
++	pr_devel("in %s\n", __func__);
++	dev_crit(&ctx->afu->dev, "PSL ERROR STATUS: 0x%.16llx\n", errstat);
++
++	return cxl_ops->ack_irq(ctx, 0, errstat);
++}
++
++static ssize_t guest_collect_vpd(struct cxl *adapter, struct cxl_afu *afu,
++			void *buf, size_t len)
++{
++	unsigned int entries, mod;
++	unsigned long **vpd_buf = NULL;
++	struct sg_list *le;
++	int rc = 0, i, tocopy;
++	u64 out = 0;
++
++	if (buf == NULL)
++		return -EINVAL;
++
++	/* number of entries in the list */
++	entries = len / SG_BUFFER_SIZE;
++	mod = len % SG_BUFFER_SIZE;
++	if (mod)
++		entries++;
++
++	if (entries > SG_MAX_ENTRIES) {
++		entries = SG_MAX_ENTRIES;
++		len = SG_MAX_ENTRIES * SG_BUFFER_SIZE;
++		mod = 0;
 +	}
-+#define CXL_H_WAIT_UNTIL_DONE(...)  _CXL_LOOP_HCALL(plpar_hcall, __VA_ARGS__)
-+#define CXL_H9_WAIT_UNTIL_DONE(...) _CXL_LOOP_HCALL(plpar_hcall9, __VA_ARGS__)
 +
-+#define _PRINT_MSG(rc, format, ...)					\
-+	{								\
-+		if ((rc != H_SUCCESS) && (rc != H_CONTINUE))		\
-+			pr_err(format, __VA_ARGS__);			\
-+		else							\
-+			pr_devel(format, __VA_ARGS__);			\
-+	}								\
++	vpd_buf = kzalloc(entries * sizeof(unsigned long *), GFP_KERNEL);
++	if (!vpd_buf)
++		return -ENOMEM;
 +
-+
-+static char *afu_op_names[] = {
-+	"UNKNOWN_OP",		/* 0 undefined */
-+	"RESET",		/* 1 */
-+	"SUSPEND_PROCESS",	/* 2 */
-+	"RESUME_PROCESS",	/* 3 */
-+	"READ_ERR_STATE",	/* 4 */
-+	"GET_AFU_ERR",		/* 5 */
-+	"GET_CONFIG",		/* 6 */
-+	"GET_DOWNLOAD_STATE",	/* 7 */
-+	"TERMINATE_PROCESS",	/* 8 */
-+	"COLLECT_VPD",		/* 9 */
-+	"UNKNOWN_OP",		/* 10 undefined */
-+	"GET_FUNCTION_ERR_INT",	/* 11 */
-+	"ACK_FUNCTION_ERR_INT",	/* 12 */
-+	"GET_ERROR_LOG",	/* 13 */
-+};
-+
-+static char *control_adapter_op_names[] = {
-+	"UNKNOWN_OP",		/* 0 undefined */
-+	"RESET",		/* 1 */
-+	"COLLECT_VPD",		/* 2 */
-+};
-+
-+static char *download_op_names[] = {
-+	"UNKNOWN_OP",		/* 0 undefined */
-+	"DOWNLOAD",		/* 1 */
-+	"VALIDATE",		/* 2 */
-+};
-+
-+static char *op_str(unsigned int op, char *name_array[], int array_len)
-+{
-+	if (op >= array_len)
-+		return "UNKNOWN_OP";
-+	return name_array[op];
-+}
-+
-+#define OP_STR(op, name_array)      op_str(op, name_array, ARRAY_SIZE(name_array))
-+
-+#define OP_STR_AFU(op)              OP_STR(op, afu_op_names)
-+#define OP_STR_CONTROL_ADAPTER(op)  OP_STR(op, control_adapter_op_names)
-+#define OP_STR_DOWNLOAD_ADAPTER(op) OP_STR(op, download_op_names)
-+
-+
-+long cxl_h_attach_process(u64 unit_address,
-+			struct cxl_process_element_hcall *element,
-+			u64 *process_token, u64 *mmio_addr, u64 *mmio_size)
-+{
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+	long rc;
-+
-+	CXL_H_WAIT_UNTIL_DONE(rc, retbuf, H_ATTACH_CA_PROCESS, unit_address, virt_to_phys(element));
-+	_PRINT_MSG(rc, "cxl_h_attach_process(%#.16llx, %#.16lx): %li\n",
-+		unit_address, virt_to_phys(element), rc);
-+
-+	pr_devel("token: 0x%.8lx mmio_addr: 0x%lx mmio_size: 0x%lx\nProcess Element Structure:\n",
-+		retbuf[0], retbuf[1], retbuf[2]);
-+	cxl_dump_debug_buffer(element, sizeof(*element));
-+
-+	switch (rc) {
-+	case H_SUCCESS:       /* The process info is attached to the coherent platform function */
-+		*process_token = retbuf[0];
-+		if (mmio_addr)
-+			*mmio_addr = retbuf[1];
-+		if (mmio_size)
-+			*mmio_size = retbuf[2];
-+		return 0;
-+	case H_PARAMETER:     /* An incorrect parameter was supplied. */
-+	case H_FUNCTION:      /* The function is not supported. */
-+		return -EINVAL;
-+	case H_AUTHORITY:     /* The partition does not have authority to perform this hcall */
-+	case H_RESOURCE:      /* The coherent platform function does not have enough additional resource to attach the process */
-+	case H_HARDWARE:      /* A hardware event prevented the attach operation */
-+	case H_STATE:         /* The coherent platform function is not in a valid state */
-+	case H_BUSY:
-+		return -EBUSY;
-+	default:
-+		WARN(1, "Unexpected return code: %lx", rc);
-+		return -EINVAL;
++	le = (struct sg_list *)get_zeroed_page(GFP_KERNEL);
++	if (!le) {
++		rc = -ENOMEM;
++		goto err1;
 +	}
-+}
 +
-+/**
-+ * cxl_h_detach_process - Detach a process element from a coherent
-+ *                        platform function.
-+ */
-+long cxl_h_detach_process(u64 unit_address, u64 process_token)
-+{
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+	long rc;
-+
-+	CXL_H_WAIT_UNTIL_DONE(rc, retbuf, H_DETACH_CA_PROCESS, unit_address, process_token);
-+	_PRINT_MSG(rc, "cxl_h_detach_process(%#.16llx, 0x%.8llx): %li\n", unit_address, process_token, rc);
-+
-+	switch (rc) {
-+	case H_SUCCESS:       /* The process was detached from the coherent platform function */
-+		return 0;
-+	case H_PARAMETER:     /* An incorrect parameter was supplied. */
-+		return -EINVAL;
-+	case H_AUTHORITY:     /* The partition does not have authority to perform this hcall */
-+	case H_RESOURCE:      /* The function has page table mappings for MMIO */
-+	case H_HARDWARE:      /* A hardware event prevented the detach operation */
-+	case H_STATE:         /* The coherent platform function is not in a valid state */
-+	case H_BUSY:
-+		return -EBUSY;
-+	default:
-+		WARN(1, "Unexpected return code: %lx", rc);
-+		return -EINVAL;
++	for (i = 0; i < entries; i++) {
++		vpd_buf[i] = (unsigned long *)get_zeroed_page(GFP_KERNEL);
++		if (!vpd_buf[i]) {
++			rc = -ENOMEM;
++			goto err2;
++		}
++		le[i].phys_addr = cpu_to_be64(virt_to_phys(vpd_buf[i]));
++		le[i].len = cpu_to_be64(SG_BUFFER_SIZE);
++		if ((i == (entries - 1)) && mod)
++			le[i].len = cpu_to_be64(mod);
 +	}
-+}
 +
-+/**
-+ * cxl_h_control_function - This H_CONTROL_CA_FUNCTION hypervisor call allows
-+ *                          the partition to manipulate or query
-+ *                          certain coherent platform function behaviors.
-+ */
-+static long cxl_h_control_function(u64 unit_address, u64 op,
-+				   u64 p1, u64 p2, u64 p3, u64 p4, u64 *out)
-+{
-+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
-+	long rc;
++	if (adapter)
++		rc = cxl_h_collect_vpd_adapter(adapter->guest->handle,
++					virt_to_phys(le), entries, &out);
++	else
++		rc = cxl_h_collect_vpd(afu->guest->handle, 0,
++				virt_to_phys(le), entries, &out);
++	pr_devel("length of available (entries: %i), vpd: %#llx\n",
++		entries, out);
 +
-+	CXL_H9_WAIT_UNTIL_DONE(rc, retbuf, H_CONTROL_CA_FUNCTION, unit_address, op, p1, p2, p3, p4);
-+	_PRINT_MSG(rc, "cxl_h_control_function(%#.16llx, %s(%#llx, %#llx, %#llx, %#llx, R4: %#lx)): %li\n",
-+		unit_address, OP_STR_AFU(op), p1, p2, p3, p4, retbuf[0], rc);
-+
-+	switch (rc) {
-+	case H_SUCCESS:       /* The operation is completed for the coherent platform function */
-+		if ((op == H_CONTROL_CA_FUNCTION_GET_FUNCTION_ERR_INT ||
-+		     op == H_CONTROL_CA_FUNCTION_READ_ERR_STATE ||
-+		     op == H_CONTROL_CA_FUNCTION_COLLECT_VPD))
-+			*out = retbuf[0];
-+		return 0;
-+	case H_PARAMETER:     /* An incorrect parameter was supplied. */
-+	case H_FUNCTION:      /* The function is not supported. */
-+	case H_NOT_FOUND:     /* The operation supplied was not valid */
-+	case H_NOT_AVAILABLE: /* The operation cannot be performed because the AFU has not been downloaded */
-+	case H_SG_LIST:       /* An block list entry was invalid */
-+		return -EINVAL;
-+	case H_AUTHORITY:     /* The partition does not have authority to perform this hcall */
-+	case H_RESOURCE:      /* The function has page table mappings for MMIO */
-+	case H_HARDWARE:      /* A hardware event prevented the attach operation */
-+	case H_STATE:         /* The coherent platform function is not in a valid state */
-+	case H_BUSY:
-+		return -EBUSY;
-+	default:
-+		WARN(1, "Unexpected return code: %lx", rc);
-+		return -EINVAL;
-+	}
-+}
-+
-+/**
-+ * cxl_h_reset_afu - Perform a reset to the coherent platform function.
-+ */
-+long cxl_h_reset_afu(u64 unit_address)
-+{
-+	return cxl_h_control_function(unit_address,
-+				H_CONTROL_CA_FUNCTION_RESET,
-+				0, 0, 0, 0,
-+				NULL);
-+}
-+
-+/**
-+ * cxl_h_suspend_process - Suspend a process from being executed
-+ * Parameter1 = process-token as returned from H_ATTACH_CA_PROCESS when
-+ *              process was attached.
-+ */
-+long cxl_h_suspend_process(u64 unit_address, u64 process_token)
-+{
-+	return cxl_h_control_function(unit_address,
-+				H_CONTROL_CA_FUNCTION_SUSPEND_PROCESS,
-+				process_token, 0, 0, 0,
-+				NULL);
-+}
-+
-+/**
-+ * cxl_h_resume_process - Resume a process to be executed
-+ * Parameter1 = process-token as returned from H_ATTACH_CA_PROCESS when
-+ *              process was attached.
-+ */
-+long cxl_h_resume_process(u64 unit_address, u64 process_token)
-+{
-+	return cxl_h_control_function(unit_address,
-+				H_CONTROL_CA_FUNCTION_RESUME_PROCESS,
-+				process_token, 0, 0, 0,
-+				NULL);
-+}
-+
-+/**
-+ * cxl_h_read_error_state - Checks the error state of the coherent
-+ *                          platform function.
-+ * R4 contains the error state
-+ */
-+long cxl_h_read_error_state(u64 unit_address, u64 *state)
-+{
-+	return cxl_h_control_function(unit_address,
-+				H_CONTROL_CA_FUNCTION_READ_ERR_STATE,
-+				0, 0, 0, 0,
-+				state);
-+}
-+
-+/**
-+ * cxl_h_get_afu_err - collect the AFU error buffer
-+ * Parameter1 = byte offset into error buffer to retrieve, valid values
-+ *              are between 0 and (ibm,error-buffer-size - 1)
-+ * Parameter2 = 4K aligned real address of error buffer, to be filled in
-+ * Parameter3 = length of error buffer, valid values are 4K or less
-+ */
-+long cxl_h_get_afu_err(u64 unit_address, u64 offset,
-+		u64 buf_address, u64 len)
-+{
-+	return cxl_h_control_function(unit_address,
-+				H_CONTROL_CA_FUNCTION_GET_AFU_ERR,
-+				offset, buf_address, len, 0,
-+				NULL);
-+}
-+
-+/**
-+ * cxl_h_get_config - collect configuration record for the
-+ *                    coherent platform function
-+ * Parameter1 = # of configuration record to retrieve, valid values are
-+ *              between 0 and (ibm,#config-records - 1)
-+ * Parameter2 = byte offset into configuration record to retrieve,
-+ *              valid values are between 0 and (ibm,config-record-size - 1)
-+ * Parameter3 = 4K aligned real address of configuration record buffer,
-+ *              to be filled in
-+ * Parameter4 = length of configuration buffer, valid values are 4K or less
-+ */
-+long cxl_h_get_config(u64 unit_address, u64 cr_num, u64 offset,
-+		u64 buf_address, u64 len)
-+{
-+	return cxl_h_control_function(unit_address,
-+				H_CONTROL_CA_FUNCTION_GET_CONFIG,
-+				cr_num, offset, buf_address, len,
-+				NULL);
-+}
-+
-+/**
-+ * cxl_h_terminate_process - Terminate the process before completion
-+ * Parameter1 = process-token as returned from H_ATTACH_CA_PROCESS when
-+ *              process was attached.
-+ */
-+long cxl_h_terminate_process(u64 unit_address, u64 process_token)
-+{
-+	return cxl_h_control_function(unit_address,
-+				H_CONTROL_CA_FUNCTION_TERMINATE_PROCESS,
-+				process_token, 0, 0, 0,
-+				NULL);
-+}
-+
-+/**
-+ * cxl_h_collect_vpd - Collect VPD for the coherent platform function.
-+ * Parameter1 = # of VPD record to retrieve, valid values are between 0
-+ *              and (ibm,#config-records - 1).
-+ * Parameter2 = 4K naturally aligned real buffer containing block
-+ *              list entries
-+ * Parameter3 = number of block list entries in the block list, valid
-+ *              values are between 0 and 256
-+ */
-+long cxl_h_collect_vpd(u64 unit_address, u64 record, u64 list_address,
-+		       u64 num, u64 *out)
-+{
-+	return cxl_h_control_function(unit_address,
-+				H_CONTROL_CA_FUNCTION_COLLECT_VPD,
-+				record, list_address, num, 0,
-+				out);
-+}
-+
-+/**
-+ * cxl_h_get_fn_error_interrupt - Read the function-wide error data based on an interrupt
-+ */
-+long cxl_h_get_fn_error_interrupt(u64 unit_address, u64 *reg)
-+{
-+	return cxl_h_control_function(unit_address,
-+				H_CONTROL_CA_FUNCTION_GET_FUNCTION_ERR_INT,
-+				0, 0, 0, 0, reg);
-+}
-+
-+/**
-+ * cxl_h_ack_fn_error_interrupt - Acknowledge function-wide error data
-+ *                                based on an interrupt
-+ * Parameter1 = value to write to the function-wide error interrupt register
-+ */
-+long cxl_h_ack_fn_error_interrupt(u64 unit_address, u64 value)
-+{
-+	return cxl_h_control_function(unit_address,
-+				H_CONTROL_CA_FUNCTION_ACK_FUNCTION_ERR_INT,
-+				value, 0, 0, 0,
-+				NULL);
-+}
-+
-+/**
-+ * cxl_h_get_error_log - Retrieve the Platform Log ID (PLID) of
-+ *                       an error log
-+ */
-+long cxl_h_get_error_log(u64 unit_address, u64 value)
-+{
-+	return cxl_h_control_function(unit_address,
-+				H_CONTROL_CA_FUNCTION_GET_ERROR_LOG,
-+				0, 0, 0, 0,
-+				NULL);
-+}
-+
-+/**
-+ * cxl_h_collect_int_info - Collect interrupt info about a coherent
-+ *                          platform function after an interrupt occurred.
-+ */
-+long cxl_h_collect_int_info(u64 unit_address, u64 process_token,
-+			    struct cxl_irq_info *info)
-+{
-+	long rc;
-+
-+	BUG_ON(sizeof(*info) != sizeof(unsigned long[PLPAR_HCALL9_BUFSIZE]));
-+
-+	rc = plpar_hcall9(H_COLLECT_CA_INT_INFO, (unsigned long *) info,
-+			unit_address, process_token);
-+	_PRINT_MSG(rc, "cxl_h_collect_int_info(%#.16llx, 0x%llx): %li\n",
-+		unit_address, process_token, rc);
-+
-+	switch (rc) {
-+	case H_SUCCESS:     /* The interrupt info is returned in return registers. */
-+		pr_devel("dsisr:%#llx, dar:%#llx, dsr:%#llx, pid:%u, tid:%u, afu_err:%#llx, errstat:%#llx\n",
-+			info->dsisr, info->dar, info->dsr, info->pid,
-+			info->tid, info->afu_err, info->errstat);
-+		return 0;
-+	case H_PARAMETER:   /* An incorrect parameter was supplied. */
-+		return -EINVAL;
-+	case H_AUTHORITY:   /* The partition does not have authority to perform this hcall. */
-+	case H_HARDWARE:    /* A hardware event prevented the collection of the interrupt info.*/
-+	case H_STATE:       /* The coherent platform function is not in a valid state to collect interrupt info. */
-+		return -EBUSY;
-+	default:
-+		WARN(1, "Unexpected return code: %lx", rc);
-+		return -EINVAL;
-+	}
-+}
-+
-+/**
-+ * cxl_h_control_faults - Control the operation of a coherent platform
-+ *                        function after a fault occurs.
-+ *
-+ * Parameters
-+ *    control-mask: value to control the faults
-+ *                  looks like PSL_TFC_An shifted >> 32
-+ *    reset-mask: mask to control reset of function faults
-+ *                Set reset_mask = 1 to reset PSL errors
-+ */
-+long cxl_h_control_faults(u64 unit_address, u64 process_token,
-+			  u64 control_mask, u64 reset_mask)
-+{
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+	long rc;
-+
-+	memset(retbuf, 0, sizeof(retbuf));
-+
-+	rc = plpar_hcall(H_CONTROL_CA_FAULTS, retbuf, unit_address,
-+			H_CONTROL_CA_FAULTS_RESPOND_PSL, process_token,
-+			control_mask, reset_mask);
-+	_PRINT_MSG(rc, "cxl_h_control_faults(%#.16llx, 0x%llx, %#llx, %#llx): %li (%#lx)\n",
-+		unit_address, process_token, control_mask, reset_mask,
-+		rc, retbuf[0]);
-+
-+	switch (rc) {
-+	case H_SUCCESS:    /* Faults were successfully controlled for the function. */
-+		return 0;
-+	case H_PARAMETER:  /* An incorrect parameter was supplied. */
-+		return -EINVAL;
-+	case H_HARDWARE:   /* A hardware event prevented the control of faults. */
-+	case H_STATE:      /* The function was in an invalid state. */
-+	case H_AUTHORITY:  /* The partition does not have authority to perform this hcall; the coherent platform facilities may need to be licensed. */
-+		return -EBUSY;
-+	case H_FUNCTION:   /* The function is not supported */
-+	case H_NOT_FOUND:  /* The operation supplied was not valid */
-+		return -EINVAL;
-+	default:
-+		WARN(1, "Unexpected return code: %lx", rc);
-+		return -EINVAL;
-+	}
-+}
-+
-+/**
-+ * cxl_h_control_facility - This H_CONTROL_CA_FACILITY hypervisor call
-+ *                          allows the partition to manipulate or query
-+ *                          certain coherent platform facility behaviors.
-+ */
-+static long cxl_h_control_facility(u64 unit_address, u64 op,
-+				   u64 p1, u64 p2, u64 p3, u64 p4, u64 *out)
-+{
-+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
-+	long rc;
-+
-+	CXL_H9_WAIT_UNTIL_DONE(rc, retbuf, H_CONTROL_CA_FACILITY, unit_address, op, p1, p2, p3, p4);
-+	_PRINT_MSG(rc, "cxl_h_control_facility(%#.16llx, %s(%#llx, %#llx, %#llx, %#llx, R4: %#lx)): %li\n",
-+		unit_address, OP_STR_CONTROL_ADAPTER(op), p1, p2, p3, p4, retbuf[0], rc);
-+
-+	switch (rc) {
-+	case H_SUCCESS:       /* The operation is completed for the coherent platform facility */
-+		if (op == H_CONTROL_CA_FACILITY_COLLECT_VPD)
-+			*out = retbuf[0];
-+		return 0;
-+	case H_PARAMETER:     /* An incorrect parameter was supplied. */
-+	case H_FUNCTION:      /* The function is not supported. */
-+	case H_NOT_FOUND:     /* The operation supplied was not valid */
-+	case H_NOT_AVAILABLE: /* The operation cannot be performed because the AFU has not been downloaded */
-+	case H_SG_LIST:       /* An block list entry was invalid */
-+		return -EINVAL;
-+	case H_AUTHORITY:     /* The partition does not have authority to perform this hcall */
-+	case H_RESOURCE:      /* The function has page table mappings for MMIO */
-+	case H_HARDWARE:      /* A hardware event prevented the attach operation */
-+	case H_STATE:         /* The coherent platform facility is not in a valid state */
-+	case H_BUSY:
-+		return -EBUSY;
-+	default:
-+		WARN(1, "Unexpected return code: %lx", rc);
-+		return -EINVAL;
-+	}
-+}
-+
-+/**
-+ * cxl_h_reset_adapter - Perform a reset to the coherent platform facility.
-+ */
-+long cxl_h_reset_adapter(u64 unit_address)
-+{
-+	return cxl_h_control_facility(unit_address,
-+				H_CONTROL_CA_FACILITY_RESET,
-+				0, 0, 0, 0,
-+				NULL);
-+}
-+
-+/**
-+ * cxl_h_collect_vpd - Collect VPD for the coherent platform function.
-+ * Parameter1 = 4K naturally aligned real buffer containing block
-+ *              list entries
-+ * Parameter2 = number of block list entries in the block list, valid
-+ *              values are between 0 and 256
-+ */
-+long cxl_h_collect_vpd_adapter(u64 unit_address, u64 list_address,
-+			       u64 num, u64 *out)
-+{
-+	return cxl_h_control_facility(unit_address,
-+				H_CONTROL_CA_FACILITY_COLLECT_VPD,
-+				list_address, num, 0, 0,
-+				out);
-+}
-+
-+/**
-+ * cxl_h_download_facility - This H_DOWNLOAD_CA_FACILITY
-+ *                    hypervisor call provide platform support for
-+ *                    downloading a base adapter image to the coherent
-+ *                    platform facility, and for validating the entire
-+ *                    image after the download.
-+ * Parameters
-+ *    op: operation to perform to the coherent platform function
-+ *      Download: operation = 1, the base image in the coherent platform
-+ *                               facility is first erased, and then
-+ *                               programmed using the image supplied
-+ *                               in the scatter/gather list.
-+ *      Validate: operation = 2, the base image in the coherent platform
-+ *                               facility is compared with the image
-+ *                               supplied in the scatter/gather list.
-+ *    list_address: 4K naturally aligned real buffer containing
-+ *                  scatter/gather list entries.
-+ *    num: number of block list entries in the scatter/gather list.
-+ */
-+static long cxl_h_download_facility(u64 unit_address, u64 op,
-+				    u64 list_address, u64 num,
-+				    u64 *out)
-+{
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+	unsigned int delay, total_delay = 0;
-+	u64 token = 0;
-+	long rc;
-+
-+	if (*out != 0)
-+		token = *out;
-+
-+	memset(retbuf, 0, sizeof(retbuf));
-+	while (1) {
-+		rc = plpar_hcall(H_DOWNLOAD_CA_FACILITY, retbuf,
-+				 unit_address, op, list_address, num,
-+				 token);
-+		token = retbuf[0];
-+		if (rc != H_BUSY && !H_IS_LONG_BUSY(rc))
-+			break;
-+
-+		if (rc != H_BUSY) {
-+			delay = get_longbusy_msecs(rc);
-+			total_delay += delay;
-+			if (total_delay > CXL_HCALL_TIMEOUT_DOWNLOAD) {
-+				WARN(1, "Warning: Giving up waiting for CXL hcall "
-+					"%#x after %u msec\n",
-+					H_DOWNLOAD_CA_FACILITY, total_delay);
-+				rc = H_BUSY;
-+				break;
++	if (!rc) {
++		/*
++		 * hcall returns in 'out' the size of available VPDs.
++		 * It fills the buffer with as much data as possible.
++		 */
++		if (out < len)
++			len = out;
++		rc = len;
++		if (out) {
++			for (i = 0; i < entries; i++) {
++				if (len < SG_BUFFER_SIZE)
++					tocopy = len;
++				else
++					tocopy = SG_BUFFER_SIZE;
++				memcpy(buf, vpd_buf[i], tocopy);
++				buf += tocopy;
++				len -= tocopy;
 +			}
-+			msleep(delay);
 +		}
 +	}
-+	_PRINT_MSG(rc, "cxl_h_download_facility(%#.16llx, %s(%#llx, %#llx), %#lx): %li\n",
-+		 unit_address, OP_STR_DOWNLOAD_ADAPTER(op), list_address, num, retbuf[0], rc);
++err2:
++	for (i = 0; i < entries; i++) {
++		if (vpd_buf[i])
++			free_page((unsigned long) vpd_buf[i]);
++	}
++	free_page((unsigned long) le);
++err1:
++	kfree(vpd_buf);
++	return rc;
++}
 +
-+	switch (rc) {
-+	case H_SUCCESS:       /* The operation is completed for the coherent platform facility */
-+		return 0;
-+	case H_PARAMETER:     /* An incorrect parameter was supplied */
-+	case H_FUNCTION:      /* The function is not supported. */
-+	case H_SG_LIST:       /* An block list entry was invalid */
-+	case H_BAD_DATA:      /* Image verification failed */
-+		return -EINVAL;
-+	case H_AUTHORITY:     /* The partition does not have authority to perform this hcall */
-+	case H_RESOURCE:      /* The function has page table mappings for MMIO */
-+	case H_HARDWARE:      /* A hardware event prevented the attach operation */
-+	case H_STATE:         /* The coherent platform facility is not in a valid state */
-+	case H_BUSY:
-+		return -EBUSY;
-+	case H_CONTINUE:
-+		*out = retbuf[0];
-+		return 1;  /* More data is needed for the complete image */
-+	default:
-+		WARN(1, "Unexpected return code: %lx", rc);
-+		return -EINVAL;
++static int guest_get_irq_info(struct cxl_context *ctx, struct cxl_irq_info *info)
++{
++	return cxl_h_collect_int_info(ctx->afu->guest->handle, ctx->process_token, info);
++}
++
++static irqreturn_t guest_psl_irq(int irq, void *data)
++{
++	struct cxl_context *ctx = data;
++	struct cxl_irq_info irq_info;
++	int rc;
++
++	pr_devel("%d: received PSL interrupt %i\n", ctx->pe, irq);
++	rc = guest_get_irq_info(ctx, &irq_info);
++	if (rc) {
++		WARN(1, "Unable to get IRQ info: %i\n", rc);
++		return IRQ_HANDLED;
++	}
++
++	rc = cxl_irq(irq, ctx, &irq_info);
++	return rc;
++}
++
++static irqreturn_t guest_slice_irq_err(int irq, void *data)
++{
++	struct cxl_afu *afu = data;
++	int rc;
++	u64 serr;
++
++	WARN(irq, "CXL SLICE ERROR interrupt %i\n", irq);
++	rc = cxl_h_get_fn_error_interrupt(afu->guest->handle, &serr);
++	if (rc) {
++		dev_crit(&afu->dev, "Couldn't read PSL_SERR_An: %d\n", rc);
++		return IRQ_HANDLED;
++	}
++	dev_crit(&afu->dev, "PSL_SERR_An: 0x%.16llx\n", serr);
++
++	rc = cxl_h_ack_fn_error_interrupt(afu->guest->handle, serr);
++	if (rc)
++		dev_crit(&afu->dev, "Couldn't ack slice error interrupt: %d\n",
++			rc);
++
++	return IRQ_HANDLED;
++}
++
++
++static int irq_alloc_range(struct cxl *adapter, int len, int *irq)
++{
++	int i, n;
++	struct irq_avail *cur;
++
++	for (i = 0; i < adapter->guest->irq_nranges; i++) {
++		cur = &adapter->guest->irq_avail[i];
++		n = bitmap_find_next_zero_area(cur->bitmap, cur->range,
++					0, len, 0);
++		if (n < cur->range) {
++			bitmap_set(cur->bitmap, n, len);
++			*irq = cur->offset + n;
++			pr_devel("guest: allocate IRQs %#x->%#x\n",
++				*irq, *irq + len - 1);
++
++			return 0;
++		}
++	}
++	return -ENOSPC;
++}
++
++static int irq_free_range(struct cxl *adapter, int irq, int len)
++{
++	int i, n;
++	struct irq_avail *cur;
++
++	if (len == 0)
++		return -ENOENT;
++
++	for (i = 0; i < adapter->guest->irq_nranges; i++) {
++		cur = &adapter->guest->irq_avail[i];
++		if (irq >= cur->offset &&
++			(irq + len) <= (cur->offset + cur->range)) {
++			n = irq - cur->offset;
++			bitmap_clear(cur->bitmap, n, len);
++			pr_devel("guest: release IRQs %#x->%#x\n",
++				irq, irq + len - 1);
++			return 0;
++		}
++	}
++	return -ENOENT;
++}
++
++static int guest_reset(struct cxl *adapter)
++{
++	int rc;
++
++	pr_devel("Adapter reset request\n");
++	rc = cxl_h_reset_adapter(adapter->guest->handle);
++	return rc;
++}
++
++static int guest_alloc_one_irq(struct cxl *adapter)
++{
++	int irq;
++
++	spin_lock(&adapter->guest->irq_alloc_lock);
++	if (irq_alloc_range(adapter, 1, &irq))
++		irq = -ENOSPC;
++	spin_unlock(&adapter->guest->irq_alloc_lock);
++	return irq;
++}
++
++static void guest_release_one_irq(struct cxl *adapter, int irq)
++{
++	spin_lock(&adapter->guest->irq_alloc_lock);
++	irq_free_range(adapter, irq, 1);
++	spin_unlock(&adapter->guest->irq_alloc_lock);
++}
++
++static int guest_alloc_irq_ranges(struct cxl_irq_ranges *irqs,
++				struct cxl *adapter, unsigned int num)
++{
++	int i, try, irq;
++
++	memset(irqs, 0, sizeof(struct cxl_irq_ranges));
++
++	spin_lock(&adapter->guest->irq_alloc_lock);
++	for (i = 0; i < CXL_IRQ_RANGES && num; i++) {
++		try = num;
++		while (try) {
++			if (irq_alloc_range(adapter, try, &irq) == 0)
++				break;
++			try /= 2;
++		}
++		if (!try)
++			goto error;
++		irqs->offset[i] = irq;
++		irqs->range[i] = try;
++		num -= try;
++	}
++	if (num)
++		goto error;
++	spin_unlock(&adapter->guest->irq_alloc_lock);
++	return 0;
++
++error:
++	for (i = 0; i < CXL_IRQ_RANGES; i++)
++		irq_free_range(adapter, irqs->offset[i], irqs->range[i]);
++	spin_unlock(&adapter->guest->irq_alloc_lock);
++	return -ENOSPC;
++}
++
++static void guest_release_irq_ranges(struct cxl_irq_ranges *irqs,
++				struct cxl *adapter)
++{
++	int i;
++
++	spin_lock(&adapter->guest->irq_alloc_lock);
++	for (i = 0; i < CXL_IRQ_RANGES; i++)
++		irq_free_range(adapter, irqs->offset[i], irqs->range[i]);
++	spin_unlock(&adapter->guest->irq_alloc_lock);
++}
++
++static int guest_register_serr_irq(struct cxl_afu *afu)
++{
++	afu->err_irq_name = kasprintf(GFP_KERNEL, "cxl-%s-err",
++				      dev_name(&afu->dev));
++	if (!afu->err_irq_name)
++		return -ENOMEM;
++
++	if (!(afu->serr_virq = cxl_map_irq(afu->adapter, afu->serr_hwirq,
++				 guest_slice_irq_err, afu, afu->err_irq_name))) {
++		kfree(afu->err_irq_name);
++		afu->err_irq_name = NULL;
++		return -ENOMEM;
++	}
++
++	return 0;
++}
++
++static void guest_release_serr_irq(struct cxl_afu *afu)
++{
++	cxl_unmap_irq(afu->serr_virq, afu);
++	cxl_ops->release_one_irq(afu->adapter, afu->serr_hwirq);
++	kfree(afu->err_irq_name);
++}
++
++static int guest_ack_irq(struct cxl_context *ctx, u64 tfc, u64 psl_reset_mask)
++{
++	return cxl_h_control_faults(ctx->afu->guest->handle, ctx->process_token,
++				tfc >> 32, (psl_reset_mask != 0));
++}
++
++static void disable_afu_irqs(struct cxl_context *ctx)
++{
++	irq_hw_number_t hwirq;
++	unsigned int virq;
++	int r, i;
++
++	pr_devel("Disabling AFU(%d) interrupts\n", ctx->afu->slice);
++	for (r = 0; r < CXL_IRQ_RANGES; r++) {
++		hwirq = ctx->irqs.offset[r];
++		for (i = 0; i < ctx->irqs.range[r]; hwirq++, i++) {
++			virq = irq_find_mapping(NULL, hwirq);
++			disable_irq(virq);
++		}
 +	}
 +}
 +
-+/**
-+ * cxl_h_download_adapter_image - Download the base image to the coherent
-+ *                                platform facility.
-+ */
-+long cxl_h_download_adapter_image(u64 unit_address,
-+				  u64 list_address, u64 num,
-+				  u64 *out)
++static void enable_afu_irqs(struct cxl_context *ctx)
 +{
-+	return cxl_h_download_facility(unit_address,
-+				       H_DOWNLOAD_CA_FACILITY_DOWNLOAD,
-+				       list_address, num, out);
++	irq_hw_number_t hwirq;
++	unsigned int virq;
++	int r, i;
++
++	pr_devel("Enabling AFU(%d) interrupts\n", ctx->afu->slice);
++	for (r = 0; r < CXL_IRQ_RANGES; r++) {
++		hwirq = ctx->irqs.offset[r];
++		for (i = 0; i < ctx->irqs.range[r]; hwirq++, i++) {
++			virq = irq_find_mapping(NULL, hwirq);
++			enable_irq(virq);
++		}
++	}
 +}
 +
-+/**
-+ * cxl_h_validate_adapter_image - Validate the base image in the coherent
-+ *                                platform facility.
-+ */
-+long cxl_h_validate_adapter_image(u64 unit_address,
-+				  u64 list_address, u64 num,
-+				  u64 *out)
++static int _guest_afu_cr_readXX(int sz, struct cxl_afu *afu, int cr_idx,
++			u64 offset, u64 *val)
 +{
-+	return cxl_h_download_facility(unit_address,
-+				       H_DOWNLOAD_CA_FACILITY_VALIDATE,
-+				       list_address, num, out);
++	unsigned long cr;
++	char c;
++	int rc = 0;
++
++	if (afu->crs_len < sz)
++		return -ENOENT;
++
++	if (unlikely(offset >= afu->crs_len))
++		return -ERANGE;
++
++	cr = get_zeroed_page(GFP_KERNEL);
++	if (!cr)
++		return -ENOMEM;
++
++	rc = cxl_h_get_config(afu->guest->handle, cr_idx, offset,
++			virt_to_phys((void *)cr), sz);
++	if (rc)
++		goto err;
++
++	switch (sz) {
++	case 1:
++		c = *((char *) cr);
++		*val = c;
++		break;
++	case 2:
++		*val = in_le16((u16 *)cr);
++		break;
++	case 4:
++		*val = in_le32((unsigned *)cr);
++		break;
++	case 8:
++		*val = in_le64((u64 *)cr);
++		break;
++	default:
++		WARN_ON(1);
++	}
++err:
++	free_page(cr);
++	return rc;
 +}
-diff --git a/drivers/misc/cxl/hcalls.h b/drivers/misc/cxl/hcalls.h
++
++static int guest_afu_cr_read32(struct cxl_afu *afu, int cr_idx,	u64 offset,
++			u32 *out)
++{
++	int rc;
++	u64 val;
++
++	rc = _guest_afu_cr_readXX(4, afu, cr_idx, offset, &val);
++	if (!rc)
++		*out = (u32) val;
++	return rc;
++}
++
++static int guest_afu_cr_read16(struct cxl_afu *afu, int cr_idx,	u64 offset,
++			u16 *out)
++{
++	int rc;
++	u64 val;
++
++	rc = _guest_afu_cr_readXX(2, afu, cr_idx, offset, &val);
++	if (!rc)
++		*out = (u16) val;
++	return rc;
++}
++
++static int guest_afu_cr_read8(struct cxl_afu *afu, int cr_idx, u64 offset,
++			u8 *out)
++{
++	int rc;
++	u64 val;
++
++	rc = _guest_afu_cr_readXX(1, afu, cr_idx, offset, &val);
++	if (!rc)
++		*out = (u8) val;
++	return rc;
++}
++
++static int guest_afu_cr_read64(struct cxl_afu *afu, int cr_idx,	u64 offset,
++			u64 *out)
++{
++	return _guest_afu_cr_readXX(8, afu, cr_idx, offset, out);
++}
++
++static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 amr)
++{
++	struct cxl_process_element_hcall *elem;
++	struct cxl *adapter = ctx->afu->adapter;
++	const struct cred *cred;
++	u32 pid, idx;
++	int rc, r, i;
++	u64 mmio_addr, mmio_size;
++	__be64 flags = 0;
++
++	/* Must be 8 byte aligned and cannot cross a 4096 byte boundary */
++	if (!(elem = (struct cxl_process_element_hcall *)
++			get_zeroed_page(GFP_KERNEL)))
++		return -ENOMEM;
++
++	elem->version = cpu_to_be64(CXL_PROCESS_ELEMENT_VERSION);
++	if (ctx->kernel) {
++		pid = 0;
++		flags |= CXL_PE_TRANSLATION_ENABLED;
++		flags |= CXL_PE_PRIVILEGED_PROCESS;
++		if (mfmsr() & MSR_SF)
++			flags |= CXL_PE_64_BIT;
++	} else {
++		pid = current->pid;
++		flags |= CXL_PE_PROBLEM_STATE;
++		flags |= CXL_PE_TRANSLATION_ENABLED;
++		if (!test_tsk_thread_flag(current, TIF_32BIT))
++			flags |= CXL_PE_64_BIT;
++		cred = get_current_cred();
++		if (uid_eq(cred->euid, GLOBAL_ROOT_UID))
++			flags |= CXL_PE_PRIVILEGED_PROCESS;
++		put_cred(cred);
++	}
++	elem->flags         = cpu_to_be64(flags);
++	elem->common.tid    = cpu_to_be32(0); /* Unused */
++	elem->common.pid    = cpu_to_be32(pid);
++	elem->common.csrp   = cpu_to_be64(0); /* disable */
++	elem->common.aurp0  = cpu_to_be64(0); /* disable */
++	elem->common.aurp1  = cpu_to_be64(0); /* disable */
++
++	cxl_prefault(ctx, wed);
++
++	elem->common.sstp0  = cpu_to_be64(ctx->sstp0);
++	elem->common.sstp1  = cpu_to_be64(ctx->sstp1);
++	for (r = 0; r < CXL_IRQ_RANGES; r++) {
++		for (i = 0; i < ctx->irqs.range[r]; i++) {
++			if (r == 0 && i == 0) {
++				elem->pslVirtualIsn = cpu_to_be32(ctx->irqs.offset[0]);
++			} else {
++				idx = ctx->irqs.offset[r] + i - adapter->guest->irq_base_offset;
++				elem->applicationVirtualIsnBitmap[idx / 8] |= 0x80 >> (idx % 8);
++			}
++		}
++	}
++	elem->common.amr = cpu_to_be64(amr);
++	elem->common.wed = cpu_to_be64(wed);
++
++	disable_afu_irqs(ctx);
++
++	rc = cxl_h_attach_process(ctx->afu->guest->handle, elem,
++				&ctx->process_token, &mmio_addr, &mmio_size);
++	if (rc == H_SUCCESS) {
++		if (ctx->master || !ctx->afu->pp_psa) {
++			ctx->psn_phys = ctx->afu->psn_phys;
++			ctx->psn_size = ctx->afu->adapter->ps_size;
++		} else {
++			ctx->psn_phys = mmio_addr;
++			ctx->psn_size = mmio_size;
++		}
++		if (ctx->afu->pp_psa && mmio_size &&
++			ctx->afu->pp_size == 0) {
++			/*
++			 * There's no property in the device tree to read the
++			 * pp_size. We only find out at the 1st attach.
++			 * Compared to bare-metal, it is too late and we
++			 * should really lock here. However, on powerVM,
++			 * pp_size is really only used to display in /sys.
++			 * Being discussed with pHyp for their next release.
++			 */
++			ctx->afu->pp_size = mmio_size;
++		}
++		/* from PAPR: process element is bytes 4-7 of process token */
++		ctx->external_pe = ctx->process_token & 0xFFFFFFFF;
++		pr_devel("CXL pe=%i is known as %i for pHyp, mmio_size=%#llx",
++			ctx->pe, ctx->external_pe, ctx->psn_size);
++		ctx->pe_inserted = true;
++		enable_afu_irqs(ctx);
++	}
++
++	free_page((u64)elem);
++	return rc;
++}
++
++static int guest_attach_process(struct cxl_context *ctx, bool kernel, u64 wed, u64 amr)
++{
++	pr_devel("in %s\n", __func__);
++
++	ctx->kernel = kernel;
++	if (ctx->afu->current_mode == CXL_MODE_DIRECTED)
++		return attach_afu_directed(ctx, wed, amr);
++
++	/* dedicated mode not supported on FW840 */
++
++	return -EINVAL;
++}
++
++static int detach_afu_directed(struct cxl_context *ctx)
++{
++	if (!ctx->pe_inserted)
++		return 0;
++	if (cxl_h_detach_process(ctx->afu->guest->handle, ctx->process_token))
++		return -1;
++	return 0;
++}
++
++static int guest_detach_process(struct cxl_context *ctx)
++{
++	pr_devel("in %s\n", __func__);
++	trace_cxl_detach(ctx);
++
++	if (!cxl_ops->link_ok(ctx->afu->adapter))
++		return -EIO;
++
++	if (ctx->afu->current_mode == CXL_MODE_DIRECTED)
++		return detach_afu_directed(ctx);
++
++	return -EINVAL;
++}
++
++static void guest_release_afu(struct device *dev)
++{
++	struct cxl_afu *afu = to_cxl_afu(dev);
++
++	pr_devel("%s\n", __func__);
++
++	idr_destroy(&afu->contexts_idr);
++
++	kfree(afu->guest);
++	kfree(afu);
++}
++
++ssize_t cxl_guest_read_afu_vpd(struct cxl_afu *afu, void *buf, size_t len)
++{
++	return guest_collect_vpd(NULL, afu, buf, len);
++}
++
++#define ERR_BUFF_MAX_COPY_SIZE PAGE_SIZE
++static ssize_t guest_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
++					loff_t off, size_t count)
++{
++	void *tbuf = NULL;
++	int rc = 0;
++
++	tbuf = (void *) get_zeroed_page(GFP_KERNEL);
++	if (!tbuf)
++		return -ENOMEM;
++
++	rc = cxl_h_get_afu_err(afu->guest->handle,
++			       off & 0x7,
++			       virt_to_phys(tbuf),
++			       count);
++	if (rc)
++		goto err;
++
++	if (count > ERR_BUFF_MAX_COPY_SIZE)
++		count = ERR_BUFF_MAX_COPY_SIZE - (off & 0x7);
++	memcpy(buf, tbuf, count);
++err:
++	free_page((u64)tbuf);
++
++	return rc;
++}
++
++static int guest_afu_check_and_enable(struct cxl_afu *afu)
++{
++	return 0;
++}
++
++static int activate_afu_directed(struct cxl_afu *afu)
++{
++	int rc;
++
++	dev_info(&afu->dev, "Activating AFU(%d) directed mode\n", afu->slice);
++
++	afu->current_mode = CXL_MODE_DIRECTED;
++
++	afu->num_procs = afu->max_procs_virtualised;
++
++	if ((rc = cxl_chardev_m_afu_add(afu)))
++		return rc;
++
++	if ((rc = cxl_sysfs_afu_m_add(afu)))
++		goto err;
++
++	if ((rc = cxl_chardev_s_afu_add(afu)))
++		goto err1;
++
++	return 0;
++err1:
++	cxl_sysfs_afu_m_remove(afu);
++err:
++	cxl_chardev_afu_remove(afu);
++	return rc;
++}
++
++static int guest_afu_activate_mode(struct cxl_afu *afu, int mode)
++{
++	if (!mode)
++		return 0;
++	if (!(mode & afu->modes_supported))
++		return -EINVAL;
++
++	if (mode == CXL_MODE_DIRECTED)
++		return activate_afu_directed(afu);
++
++	if (mode == CXL_MODE_DEDICATED)
++		dev_err(&afu->dev, "Dedicated mode not supported\n");
++
++	return -EINVAL;
++}
++
++static int deactivate_afu_directed(struct cxl_afu *afu)
++{
++	dev_info(&afu->dev, "Deactivating AFU(%d) directed mode\n", afu->slice);
++
++	afu->current_mode = 0;
++	afu->num_procs = 0;
++
++	cxl_sysfs_afu_m_remove(afu);
++	cxl_chardev_afu_remove(afu);
++
++	cxl_ops->afu_reset(afu);
++
++	return 0;
++}
++
++static int guest_afu_deactivate_mode(struct cxl_afu *afu, int mode)
++{
++	if (!mode)
++		return 0;
++	if (!(mode & afu->modes_supported))
++		return -EINVAL;
++
++	if (mode == CXL_MODE_DIRECTED)
++		return deactivate_afu_directed(afu);
++	return 0;
++}
++
++static int guest_afu_reset(struct cxl_afu *afu)
++{
++	pr_devel("AFU(%d) reset request\n", afu->slice);
++	return cxl_h_reset_afu(afu->guest->handle);
++}
++
++static int guest_map_slice_regs(struct cxl_afu *afu)
++{
++	if (!(afu->p2n_mmio = ioremap(afu->guest->p2n_phys, afu->guest->p2n_size))) {
++		dev_err(&afu->dev, "Error mapping AFU(%d) MMIO regions\n",
++			afu->slice);
++		return -ENOMEM;
++	}
++	return 0;
++}
++
++static void guest_unmap_slice_regs(struct cxl_afu *afu)
++{
++	if (afu->p2n_mmio)
++		iounmap(afu->p2n_mmio);
++}
++
++static bool guest_link_ok(struct cxl *cxl)
++{
++	return true;
++}
++
++static int afu_properties_look_ok(struct cxl_afu *afu)
++{
++	if (afu->pp_irqs < 0) {
++		dev_err(&afu->dev, "Unexpected per-process minimum interrupt value\n");
++		return -EINVAL;
++	}
++
++	if (afu->max_procs_virtualised < 1) {
++		dev_err(&afu->dev, "Unexpected max number of processes virtualised value\n");
++		return -EINVAL;
++	}
++
++	if (afu->crs_len < 0) {
++		dev_err(&afu->dev, "Unexpected configuration record size value\n");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++int cxl_guest_init_afu(struct cxl *adapter, int slice, struct device_node *afu_np)
++{
++	struct cxl_afu *afu;
++	bool free = true;
++	int rc;
++
++	pr_devel("in %s - AFU(%d)\n", __func__, slice);
++	if (!(afu = cxl_alloc_afu(adapter, slice)))
++		return -ENOMEM;
++
++	if (!(afu->guest = kzalloc(sizeof(struct cxl_afu_guest), GFP_KERNEL))) {
++		kfree(afu);
++		return -ENOMEM;
++	}
++
++	if ((rc = dev_set_name(&afu->dev, "afu%i.%i",
++					  adapter->adapter_num,
++					  slice)))
++		goto err1;
++
++	adapter->slices++;
++
++	if ((rc = cxl_of_read_afu_handle(afu, afu_np)))
++		goto err1;
++
++	if ((rc = cxl_ops->afu_reset(afu)))
++		goto err1;
++
++	if ((rc = cxl_of_read_afu_properties(afu, afu_np)))
++		goto err1;
++
++	if ((rc = afu_properties_look_ok(afu)))
++		goto err1;
++
++	if ((rc = guest_map_slice_regs(afu)))
++		goto err1;
++
++	if ((rc = guest_register_serr_irq(afu)))
++		goto err2;
++
++	/*
++	 * After we call this function we must not free the afu directly, even
++	 * if it returns an error!
++	 */
++	if ((rc = cxl_register_afu(afu)))
++		goto err_put1;
++
++	if ((rc = cxl_sysfs_afu_add(afu)))
++		goto err_put1;
++
++	/*
++	 * pHyp doesn't expose the programming models supported by the
++	 * AFU. pHyp currently only supports directed mode. If it adds
++	 * dedicated mode later, this version of cxl has no way to
++	 * detect it. So we'll initialize the driver, but the first
++	 * attach will fail.
++	 * Being discussed with pHyp to do better (likely new property)
++	 */
++	if (afu->max_procs_virtualised == 1)
++		afu->modes_supported = CXL_MODE_DEDICATED;
++	else
++		afu->modes_supported = CXL_MODE_DIRECTED;
++
++	if ((rc = cxl_afu_select_best_mode(afu)))
++		goto err_put2;
++
++	adapter->afu[afu->slice] = afu;
++
++	afu->enabled = true;
++
++	return 0;
++
++err_put2:
++	cxl_sysfs_afu_remove(afu);
++err_put1:
++	device_unregister(&afu->dev);
++	free = false;
++	guest_release_serr_irq(afu);
++err2:
++	guest_unmap_slice_regs(afu);
++err1:
++	if (free) {
++		kfree(afu->guest);
++		kfree(afu);
++	}
++	return rc;
++}
++
++void cxl_guest_remove_afu(struct cxl_afu *afu)
++{
++	pr_devel("in %s - AFU(%d)\n", __func__, afu->slice);
++
++	if (!afu)
++		return;
++
++	cxl_sysfs_afu_remove(afu);
++
++	spin_lock(&afu->adapter->afu_list_lock);
++	afu->adapter->afu[afu->slice] = NULL;
++	spin_unlock(&afu->adapter->afu_list_lock);
++
++	cxl_context_detach_all(afu);
++	cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
++	guest_release_serr_irq(afu);
++	guest_unmap_slice_regs(afu);
++
++	device_unregister(&afu->dev);
++}
++
++static void free_adapter(struct cxl *adapter)
++{
++	struct irq_avail *cur;
++	int i;
++
++	if (adapter->guest->irq_avail) {
++		for (i = 0; i < adapter->guest->irq_nranges; i++) {
++			cur = &adapter->guest->irq_avail[i];
++			kfree(cur->bitmap);
++		}
++		kfree(adapter->guest->irq_avail);
++	}
++	kfree(adapter->guest->status);
++	cxl_remove_adapter_nr(adapter);
++	kfree(adapter->guest);
++	kfree(adapter);
++}
++
++static int properties_look_ok(struct cxl *adapter)
++{
++	/* The absence of this property means that the operational
++	 * status is unknown or okay
++	 */
++	if (strlen(adapter->guest->status) &&
++	    strcmp(adapter->guest->status, "okay")) {
++		pr_err("ABORTING:Bad operational status of the device\n");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++ssize_t cxl_guest_read_adapter_vpd(struct cxl *adapter,	void *buf, size_t len)
++{
++	return guest_collect_vpd(adapter, NULL, buf, len);
++}
++
++void cxl_guest_remove_adapter(struct cxl *adapter)
++{
++	pr_devel("in %s\n", __func__);
++
++	cxl_sysfs_adapter_remove(adapter);
++
++	device_unregister(&adapter->dev);
++}
++
++static void release_adapter(struct device *dev)
++{
++	free_adapter(to_cxl_adapter(dev));
++}
++
++struct cxl *cxl_guest_init_adapter(struct device_node *np, struct platform_device *pdev)
++{
++	struct cxl *adapter;
++	bool free = true;
++	int rc;
++
++	if (!(adapter = cxl_alloc_adapter()))
++		return ERR_PTR(-ENOMEM);
++
++	if (!(adapter->guest = kzalloc(sizeof(struct cxl_guest), GFP_KERNEL))) {
++		free_adapter(adapter);
++		return ERR_PTR(-ENOMEM);
++	}
++
++	adapter->slices = 0;
++	adapter->guest->pdev = pdev;
++	adapter->dev.parent = &pdev->dev;
++	adapter->dev.release = release_adapter;
++	dev_set_drvdata(&pdev->dev, adapter);
++
++	if ((rc = cxl_of_read_adapter_handle(adapter, np)))
++		goto err1;
++
++	if ((rc = cxl_of_read_adapter_properties(adapter, np)))
++		goto err1;
++
++	if ((rc = properties_look_ok(adapter)))
++		goto err1;
++
++	/*
++	 * After we call this function we must not free the adapter directly,
++	 * even if it returns an error!
++	 */
++	if ((rc = cxl_register_adapter(adapter)))
++		goto err_put1;
++
++	if ((rc = cxl_sysfs_adapter_add(adapter)))
++		goto err_put1;
++
++	return adapter;
++
++err_put1:
++	device_unregister(&adapter->dev);
++	free = false;
++err1:
++	if (free)
++		free_adapter(adapter);
++	return ERR_PTR(rc);
++}
++
++const struct cxl_backend_ops cxl_guest_ops = {
++	.module = THIS_MODULE,
++	.adapter_reset = guest_reset,
++	.alloc_one_irq = guest_alloc_one_irq,
++	.release_one_irq = guest_release_one_irq,
++	.alloc_irq_ranges = guest_alloc_irq_ranges,
++	.release_irq_ranges = guest_release_irq_ranges,
++	.setup_irq = NULL,
++	.handle_psl_slice_error = guest_handle_psl_slice_error,
++	.psl_interrupt = guest_psl_irq,
++	.ack_irq = guest_ack_irq,
++	.attach_process = guest_attach_process,
++	.detach_process = guest_detach_process,
++	.link_ok = guest_link_ok,
++	.release_afu = guest_release_afu,
++	.afu_read_err_buffer = guest_afu_read_err_buffer,
++	.afu_check_and_enable = guest_afu_check_and_enable,
++	.afu_activate_mode = guest_afu_activate_mode,
++	.afu_deactivate_mode = guest_afu_deactivate_mode,
++	.afu_reset = guest_afu_reset,
++	.afu_cr_read8 = guest_afu_cr_read8,
++	.afu_cr_read16 = guest_afu_cr_read16,
++	.afu_cr_read32 = guest_afu_cr_read32,
++	.afu_cr_read64 = guest_afu_cr_read64,
++};
+diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+index 927ba5a..b3c3ebf 100644
+--- a/drivers/misc/cxl/main.c
++++ b/drivers/misc/cxl/main.c
+@@ -285,9 +285,6 @@ static int __init init_cxl(void)
+ {
+ 	int rc = 0;
+ 
+-	if (!cpu_has_feature(CPU_FTR_HVMODE))
+-		return -EPERM;
+-
+ 	if ((rc = cxl_file_init()))
+ 		return rc;
+ 
+@@ -296,8 +293,14 @@ static int __init init_cxl(void)
+ 	if ((rc = register_cxl_calls(&cxl_calls)))
+ 		goto err;
+ 
+-	cxl_ops = &cxl_native_ops;
+-	if ((rc = pci_register_driver(&cxl_pci_driver)))
++	if (cpu_has_feature(CPU_FTR_HVMODE)) {
++		cxl_ops = &cxl_native_ops;
++		rc = pci_register_driver(&cxl_pci_driver);
++	} else {
++		cxl_ops = &cxl_guest_ops;
++		rc = platform_driver_register(&cxl_of_driver);
++	}
++	if (rc)
+ 		goto err1;
+ 
+ 	return 0;
+@@ -312,7 +315,10 @@ err:
+ 
+ static void exit_cxl(void)
+ {
+-	pci_unregister_driver(&cxl_pci_driver);
++	if (cpu_has_feature(CPU_FTR_HVMODE))
++		pci_unregister_driver(&cxl_pci_driver);
++	else
++		platform_driver_unregister(&cxl_of_driver);
+ 
+ 	cxl_debugfs_exit();
+ 	cxl_file_exit();
+diff --git a/drivers/misc/cxl/of.c b/drivers/misc/cxl/of.c
 new file mode 100644
-index 0000000..6bfab32
+index 0000000..edc4583
 --- /dev/null
-+++ b/drivers/misc/cxl/hcalls.h
-@@ -0,0 +1,203 @@
++++ b/drivers/misc/cxl/of.c
+@@ -0,0 +1,513 @@
 +/*
 + * Copyright 2015 IBM Corp.
 + *
@@ -786,248 +1215,509 @@ index 0000000..6bfab32
 + * 2 of the License, or (at your option) any later version.
 + */
 +
-+#ifndef _HCALLS_H
-+#define _HCALLS_H
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++#include <linux/of_address.h>
++#include <linux/of_platform.h>
 +
-+#include <linux/types.h>
-+#include <asm/byteorder.h>
 +#include "cxl.h"
 +
-+#define SG_BUFFER_SIZE 4096
-+#define SG_MAX_ENTRIES 256
 +
-+struct sg_list {
-+	u64 phys_addr;
-+	u64 len;
-+};
-+
-+/*
-+ * This is straight out of PAPR, but replacing some of the compound fields with
-+ * a single field, where they were identical to the register layout.
-+ *
-+ * The 'flags' parameter regroups the various bit-fields
-+ */
-+#define CXL_PE_CSRP_VALID			(1ULL << 63)
-+#define CXL_PE_PROBLEM_STATE			(1ULL << 62)
-+#define CXL_PE_SECONDARY_SEGMENT_TBL_SRCH	(1ULL << 61)
-+#define CXL_PE_TAGS_ACTIVE			(1ULL << 60)
-+#define CXL_PE_USER_STATE			(1ULL << 59)
-+#define CXL_PE_TRANSLATION_ENABLED		(1ULL << 58)
-+#define CXL_PE_64_BIT				(1ULL << 57)
-+#define CXL_PE_PRIVILEGED_PROCESS		(1ULL << 56)
-+
-+#define CXL_PROCESS_ELEMENT_VERSION 1
-+struct cxl_process_element_hcall {
-+	__be64 version;
-+	__be64 flags;
-+	u8     reserved0[12];
-+	__be32 pslVirtualIsn;
-+	u8     applicationVirtualIsnBitmap[256];
-+	u8     reserved1[144];
-+	struct cxl_process_element_common common;
-+	u8     reserved4[12];
-+} __packed;
-+
-+#define H_STATE_NORMAL              1
-+#define H_STATE_DISABLE             2
-+#define H_STATE_TEMP_UNAVAILABLE    3
-+#define H_STATE_PERM_UNAVAILABLE    4
-+
-+/* NOTE: element must be a logical real address, and must be pinned */
-+long cxl_h_attach_process(u64 unit_address, struct cxl_process_element_hcall *element,
-+			u64 *process_token, u64 *mmio_addr, u64 *mmio_size);
-+
-+/**
-+ * cxl_h_detach_process - Detach a process element from a coherent
-+ *                        platform function.
-+ */
-+long cxl_h_detach_process(u64 unit_address, u64 process_token);
-+
-+/**
-+ * cxl_h_reset_afu - Perform a reset to the coherent platform function.
-+ */
-+long cxl_h_reset_afu(u64 unit_address);
-+
-+/**
-+ * cxl_h_suspend_process - Suspend a process from being executed
-+ * Parameter1 = process-token as returned from H_ATTACH_CA_PROCESS when
-+ *              process was attached.
-+ */
-+long cxl_h_suspend_process(u64 unit_address, u64 process_token);
-+
-+/**
-+ * cxl_h_resume_process - Resume a process to be executed
-+ * Parameter1 = process-token as returned from H_ATTACH_CA_PROCESS when
-+ *              process was attached.
-+ */
-+long cxl_h_resume_process(u64 unit_address, u64 process_token);
-+
-+/**
-+ * cxl_h_read_error_state - Reads the error state of the coherent
-+ *                          platform function.
-+ * R4 contains the error state
-+ */
-+long cxl_h_read_error_state(u64 unit_address, u64 *state);
-+
-+/**
-+ * cxl_h_get_afu_err - collect the AFU error buffer
-+ * Parameter1 = byte offset into error buffer to retrieve, valid values
-+ *              are between 0 and (ibm,error-buffer-size - 1)
-+ * Parameter2 = 4K aligned real address of error buffer, to be filled in
-+ * Parameter3 = length of error buffer, valid values are 4K or less
-+ */
-+long cxl_h_get_afu_err(u64 unit_address, u64 offset, u64 buf_address, u64 len);
-+
-+/**
-+ * cxl_h_get_config - collect configuration record for the
-+ *                    coherent platform function
-+ * Parameter1 = # of configuration record to retrieve, valid values are
-+ *              between 0 and (ibm,#config-records - 1)
-+ * Parameter2 = byte offset into configuration record to retrieve,
-+ *              valid values are between 0 and (ibm,config-record-size - 1)
-+ * Parameter3 = 4K aligned real address of configuration record buffer,
-+ *              to be filled in
-+ * Parameter4 = length of configuration buffer, valid values are 4K or less
-+ */
-+long cxl_h_get_config(u64 unit_address, u64 cr_num, u64 offset,
-+		u64 buf_address, u64 len);
-+
-+/**
-+ * cxl_h_terminate_process - Terminate the process before completion
-+ * Parameter1 = process-token as returned from H_ATTACH_CA_PROCESS when
-+ *              process was attached.
-+ */
-+long cxl_h_terminate_process(u64 unit_address, u64 process_token);
-+
-+/**
-+ * cxl_h_collect_vpd - Collect VPD for the coherent platform function.
-+ * Parameter1 = # of VPD record to retrieve, valid values are between 0
-+ *              and (ibm,#config-records - 1).
-+ * Parameter2 = 4K naturally aligned real buffer containing block
-+ *              list entries
-+ * Parameter3 = number of block list entries in the block list, valid
-+ *              values are between 0 and 256
-+ */
-+long cxl_h_collect_vpd(u64 unit_address, u64 record, u64 list_address,
-+		       u64 num, u64 *out);
-+
-+/**
-+ * cxl_h_get_fn_error_interrupt - Read the function-wide error data based on an interrupt
-+ */
-+long cxl_h_get_fn_error_interrupt(u64 unit_address, u64 *reg);
-+
-+/**
-+ * cxl_h_ack_fn_error_interrupt - Acknowledge function-wide error data
-+ *                                based on an interrupt
-+ * Parameter1 = value to write to the function-wide error interrupt register
-+ */
-+long cxl_h_ack_fn_error_interrupt(u64 unit_address, u64 value);
-+
-+/**
-+ * cxl_h_get_error_log - Retrieve the Platform Log ID (PLID) of
-+ *                       an error log
-+ */
-+long cxl_h_get_error_log(u64 unit_address, u64 value);
-+
-+/**
-+ * cxl_h_collect_int_info - Collect interrupt info about a coherent
-+ *                          platform function after an interrupt occurred.
-+ */
-+long cxl_h_collect_int_info(u64 unit_address, u64 process_token,
-+			struct cxl_irq_info *info);
-+
-+/**
-+ * cxl_h_control_faults - Control the operation of a coherent platform
-+ *                        function after a fault occurs.
-+ *
-+ * Parameters
-+ *    control-mask: value to control the faults
-+ *                  looks like PSL_TFC_An shifted >> 32
-+ *    reset-mask: mask to control reset of function faults
-+ *                Set reset_mask = 1 to reset PSL errors
-+ */
-+long cxl_h_control_faults(u64 unit_address, u64 process_token,
-+			u64 control_mask, u64 reset_mask);
-+
-+/**
-+ * cxl_h_reset_adapter - Perform a reset to the coherent platform facility.
-+ */
-+long cxl_h_reset_adapter(u64 unit_address);
-+
-+/**
-+ * cxl_h_collect_vpd - Collect VPD for the coherent platform function.
-+ * Parameter1 = 4K naturally aligned real buffer containing block
-+ *              list entries
-+ * Parameter2 = number of block list entries in the block list, valid
-+ *              values are between 0 and 256
-+ */
-+long cxl_h_collect_vpd_adapter(u64 unit_address, u64 list_address,
-+			       u64 num, u64 *out);
-+
-+/**
-+ * cxl_h_download_adapter_image - Download the base image to the coherent
-+ *                                platform facility.
-+ */
-+long cxl_h_download_adapter_image(u64 unit_address,
-+				  u64 list_address, u64 num,
-+				  u64 *out);
-+
-+/**
-+ * cxl_h_validate_adapter_image - Validate the base image in the coherent
-+ *                                platform facility.
-+ */
-+long cxl_h_validate_adapter_image(u64 unit_address,
-+				  u64 list_address, u64 num,
-+				  u64 *out);
-+#endif /* _HCALLS_H */
-diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-index a9051512..814257b 100644
---- a/drivers/misc/cxl/main.c
-+++ b/drivers/misc/cxl/main.c
-@@ -162,6 +162,32 @@ int cxl_alloc_sst(struct cxl_context *ctx)
- 	return 0;
- }
- 
-+/* print buffer content as integers when debugging */
-+void cxl_dump_debug_buffer(void *buf, size_t buf_len)
++static const __be32 *read_prop_string(const struct device_node *np,
++				const char *prop_name)
 +{
-+#ifdef DEBUG
-+	int i, *ptr;
++	const __be32 *prop;
 +
-+	/*
-+	 * We want to regroup up to 4 integers per line, which means they
-+	 * need to be in the same pr_devel() statement
-+	 */
-+	ptr = (int *) buf;
-+	for (i = 0; i * 4 < buf_len; i += 4) {
-+		if ((i + 3) * 4 < buf_len)
-+			pr_devel("%.8x %.8x %.8x %.8x\n", ptr[i], ptr[i + 1],
-+				ptr[i + 2], ptr[i + 3]);
-+		else if ((i + 2) * 4 < buf_len)
-+			pr_devel("%.8x %.8x %.8x\n", ptr[i], ptr[i + 1],
-+				ptr[i + 2]);
-+		else if ((i + 1) * 4 < buf_len)
-+			pr_devel("%.8x %.8x\n", ptr[i], ptr[i + 1]);
-+		else
-+			pr_devel("%.8x\n", ptr[i]);
-+	}
-+#endif /* DEBUG */
++	prop = of_get_property(np, prop_name, NULL);
++	if (cxl_verbose && prop)
++		pr_info("%s: %s\n", prop_name, (char *) prop);
++	return prop;
 +}
 +
- /* Find a CXL adapter by it's number and increase it's refcount */
- struct cxl *get_cxl_adapter(int num)
- {
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index b8a6ad5..7d52629 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -726,6 +726,7 @@ static int native_get_irq_info(struct cxl_afu *afu, struct cxl_irq_info *info)
- 	info->tid = pidtid & 0xffffffff;
- 	info->afu_err = cxl_p2n_read(afu, CXL_AFU_ERR_An);
- 	info->errstat = cxl_p2n_read(afu, CXL_PSL_ErrStat_An);
-+	info->proc_handle = 0;
- 
- 	return 0;
- }
++static const __be32 *read_prop_dword(const struct device_node *np,
++				const char *prop_name, u32 *val)
++{
++	const __be32 *prop;
++
++	prop = of_get_property(np, prop_name, NULL);
++	if (prop)
++		*val = be32_to_cpu(prop[0]);
++	if (cxl_verbose && prop)
++		pr_info("%s: %#x (%u)\n", prop_name, *val, *val);
++	return prop;
++}
++
++static const __be64 *read_prop64_dword(const struct device_node *np,
++				const char *prop_name, u64 *val)
++{
++	const __be64 *prop;
++
++	prop = of_get_property(np, prop_name, NULL);
++	if (prop)
++		*val = be64_to_cpu(prop[0]);
++	if (cxl_verbose && prop)
++		pr_info("%s: %#llx (%llu)\n", prop_name, *val, *val);
++	return prop;
++}
++
++
++static int read_handle(struct device_node *np, u64 *handle)
++{
++	const __be32 *prop;
++	u64 size;
++
++	/* Get address and size of the node */
++	prop = of_get_address(np, 0, &size, NULL);
++	if (size)
++		return -EINVAL;
++
++	/* Helper to read a big number; size is in cells (not bytes) */
++	*handle = of_read_number(prop, of_n_addr_cells(np));
++	return 0;
++}
++
++static int read_phys_addr(struct device_node *np, char *prop_name,
++			struct cxl_afu *afu)
++{
++	int i, len, entry_size, naddr, nsize, type;
++	u64 addr, size;
++	const __be32 *prop;
++
++	naddr = of_n_addr_cells(np);
++	nsize = of_n_size_cells(np);
++
++	prop = of_get_property(np, prop_name, &len);
++	if (prop) {
++		entry_size = naddr + nsize;
++		for (i = 0; i < (len / 4); i += entry_size, prop += entry_size) {
++			type = be32_to_cpu(prop[0]);
++			addr = of_read_number(prop, naddr);
++			size = of_read_number(&prop[naddr], nsize);
++			switch (type) {
++			case 0: /* unit address */
++				afu->guest->handle = addr;
++				break;
++			case 1: /* p2 area */
++				afu->guest->p2n_phys += addr;
++				afu->guest->p2n_size = size;
++				break;
++			case 2: /* problem state area */
++				afu->psn_phys += addr;
++				afu->adapter->ps_size = size;
++				break;
++			default:
++				pr_err("Invalid address type %d found in %s property of AFU\n",
++					type, prop_name);
++				return -EINVAL;
++			}
++			if (cxl_verbose)
++				pr_info("%s: %#x %#llx (size %#llx)\n",
++					prop_name, type, addr, size);
++		}
++	}
++	return 0;
++}
++
++static int read_vpd(struct cxl *adapter, struct cxl_afu *afu)
++{
++	char vpd[256];
++	int rc;
++	size_t len = sizeof(vpd);
++
++	memset(vpd, 0, len);
++
++	if (adapter)
++		rc = cxl_guest_read_adapter_vpd(adapter, vpd, len);
++	else
++		rc = cxl_guest_read_afu_vpd(afu, vpd, len);
++
++	if (rc > 0) {
++		cxl_dump_debug_buffer(vpd, rc);
++		rc = 0;
++	}
++	return rc;
++}
++
++int cxl_of_read_afu_handle(struct cxl_afu *afu, struct device_node *afu_np)
++{
++	if (read_handle(afu_np, &afu->guest->handle))
++		return -EINVAL;
++	pr_devel("AFU handle: 0x%.16llx\n", afu->guest->handle);
++
++	return 0;
++}
++
++int cxl_of_read_afu_properties(struct cxl_afu *afu, struct device_node *np)
++{
++	int i, len, rc;
++	char *p;
++	const __be32 *prop;
++	u16 device_id, vendor_id;
++	u32 val = 0, class_code;
++
++	/* Properties are read in the same order as listed in PAPR */
++
++	if (cxl_verbose) {
++		pr_info("Dump of the 'ibm,coherent-platform-function' node properties:\n");
++
++		prop = of_get_property(np, "compatible", &len);
++		i = 0;
++		while (i < len) {
++			p = (char *) prop + i;
++			pr_info("compatible: %s\n", p);
++			i += strlen(p) + 1;
++		}
++		read_prop_string(np, "name");
++	}
++
++	rc = read_phys_addr(np, "reg", afu);
++	if (rc)
++		return rc;
++
++	rc = read_phys_addr(np, "assigned-addresses", afu);
++	if (rc)
++		return rc;
++
++	if (afu->psn_phys == 0)
++		afu->psa = false;
++	else
++		afu->psa = true;
++
++	if (cxl_verbose) {
++		read_prop_string(np, "ibm,loc-code");
++		read_prop_string(np, "device_type");
++	}
++
++	read_prop_dword(np, "ibm,#processes", &afu->max_procs_virtualised);
++
++	if (cxl_verbose) {
++		read_prop_dword(np, "ibm,scratchpad-size", &val);
++		read_prop_dword(np, "ibm,programmable", &val);
++		read_prop_string(np, "ibm,phandle");
++		read_vpd(NULL, afu);
++	}
++
++	read_prop_dword(np, "ibm,max-ints-per-process", &afu->guest->max_ints);
++	afu->irqs_max = afu->guest->max_ints;
++
++	prop = read_prop_dword(np, "ibm,min-ints-per-process", &afu->pp_irqs);
++	if (prop) {
++		/* One extra interrupt for the PSL interrupt is already
++		 * included. Remove it now to keep only AFU interrupts and
++		 * match the native case.
++		 */
++		afu->pp_irqs--;
++	}
++
++	if (cxl_verbose) {
++		read_prop_dword(np, "ibm,max-ints", &val);
++		read_prop_dword(np, "ibm,vpd-size", &val);
++	}
++
++	read_prop64_dword(np, "ibm,error-buffer-size", &afu->eb_len);
++	afu->eb_offset = 0;
++
++	if (cxl_verbose)
++		read_prop_dword(np, "ibm,config-record-type", &val);
++
++	read_prop64_dword(np, "ibm,config-record-size", &afu->crs_len);
++	afu->crs_offset = 0;
++
++	read_prop_dword(np, "ibm,#config-records", &afu->crs_num);
++
++	if (cxl_verbose) {
++		for (i = 0; i < afu->crs_num; i++) {
++			rc = cxl_ops->afu_cr_read16(afu, i, PCI_DEVICE_ID,
++						&device_id);
++			if (!rc)
++				pr_info("record %d - device-id: %#x\n",
++					i, device_id);
++			rc = cxl_ops->afu_cr_read16(afu, i, PCI_VENDOR_ID,
++						&vendor_id);
++			if (!rc)
++				pr_info("record %d - vendor-id: %#x\n",
++					i, vendor_id);
++			rc = cxl_ops->afu_cr_read32(afu, i, PCI_CLASS_REVISION,
++						&class_code);
++			if (!rc) {
++				class_code >>= 8;
++				pr_info("record %d - class-code: %#x\n",
++					i, class_code);
++			}
++		}
++
++		read_prop_dword(np, "ibm,function-number", &val);
++		read_prop_dword(np, "ibm,privileged-function", &val);
++		read_prop_dword(np, "vendor-id", &val);
++		read_prop_dword(np, "device-id", &val);
++		read_prop_dword(np, "revision-id", &val);
++		read_prop_dword(np, "class-code", &val);
++		read_prop_dword(np, "subsystem-vendor-id", &val);
++		read_prop_dword(np, "subsystem-id", &val);
++	}
++	/*
++	 * if "ibm,process-mmio" doesn't exist then per-process mmio is
++	 * not supported
++	 */
++	val = 0;
++	prop = read_prop_dword(np, "ibm,process-mmio", &val);
++	if (prop && val == 1)
++		afu->pp_psa = true;
++	else
++		afu->pp_psa = false;
++
++	if (cxl_verbose) {
++		read_prop_dword(np, "ibm,supports-aur", &val);
++		read_prop_dword(np, "ibm,supports-csrp", &val);
++		read_prop_dword(np, "ibm,supports-prr", &val);
++	}
++
++	prop = read_prop_dword(np, "ibm,function-error-interrupt", &val);
++	if (prop)
++		afu->serr_hwirq = val;
++
++	pr_devel("AFU handle: %#llx\n", afu->guest->handle);
++	pr_devel("p2n_phys: %#llx (size %#llx)\n",
++		afu->guest->p2n_phys, afu->guest->p2n_size);
++	pr_devel("psn_phys: %#llx (size %#llx)\n",
++		afu->psn_phys, afu->adapter->ps_size);
++	pr_devel("Max number of processes virtualised=%i\n",
++		afu->max_procs_virtualised);
++	pr_devel("Per-process irqs min=%i, max=%i\n", afu->pp_irqs,
++		 afu->irqs_max);
++	pr_devel("Slice error interrupt=%#lx\n", afu->serr_hwirq);
++
++	return 0;
++}
++
++static int read_adapter_irq_config(struct cxl *adapter, struct device_node *np)
++{
++	const __be32 *ranges;
++	int len, nranges, i;
++	struct irq_avail *cur;
++
++	ranges = of_get_property(np, "interrupt-ranges", &len);
++	if (ranges == NULL || len < (2 * sizeof(int)))
++		return -EINVAL;
++
++	/*
++	 * encoded array of two cells per entry, each cell encoded as
++	 * with encode-int
++	 */
++	nranges = len / (2 * sizeof(int));
++	if (nranges == 0 || (nranges * 2 * sizeof(int)) != len)
++		return -EINVAL;
++
++	adapter->guest->irq_avail = kzalloc(nranges * sizeof(struct irq_avail),
++					    GFP_KERNEL);
++	if (adapter->guest->irq_avail == NULL)
++		return -ENOMEM;
++
++	adapter->guest->irq_base_offset = be32_to_cpu(ranges[0]);
++	for (i = 0; i < nranges; i++) {
++		cur = &adapter->guest->irq_avail[i];
++		cur->offset = be32_to_cpu(ranges[i * 2]);
++		cur->range  = be32_to_cpu(ranges[i * 2 + 1]);
++		cur->bitmap = kcalloc(BITS_TO_LONGS(cur->range),
++				sizeof(*cur->bitmap), GFP_KERNEL);
++		if (cur->bitmap == NULL)
++			goto err;
++		if (cur->offset < adapter->guest->irq_base_offset)
++			adapter->guest->irq_base_offset = cur->offset;
++		if (cxl_verbose)
++			pr_info("available IRQ range: %#lx-%#lx (%lu)\n",
++				cur->offset, cur->offset + cur->range - 1,
++				cur->range);
++	}
++	adapter->guest->irq_nranges = nranges;
++	spin_lock_init(&adapter->guest->irq_alloc_lock);
++
++	return 0;
++err:
++	for (i--; i >= 0; i--) {
++		cur = &adapter->guest->irq_avail[i];
++		kfree(cur->bitmap);
++	}
++	kfree(adapter->guest->irq_avail);
++	adapter->guest->irq_avail = NULL;
++	return -ENOMEM;
++}
++
++int cxl_of_read_adapter_handle(struct cxl *adapter, struct device_node *np)
++{
++	if (read_handle(np, &adapter->guest->handle))
++		return -EINVAL;
++	pr_devel("Adapter handle: 0x%.16llx\n", adapter->guest->handle);
++
++	return 0;
++}
++
++int cxl_of_read_adapter_properties(struct cxl *adapter, struct device_node *np)
++{
++	int rc, len, naddr, i;
++	char *p;
++	const __be32 *prop;
++	u32 val = 0;
++
++	/* Properties are read in the same order as listed in PAPR */
++
++	naddr = of_n_addr_cells(np);
++
++	if (cxl_verbose) {
++		pr_info("Dump of the 'ibm,coherent-platform-facility' node properties:\n");
++
++		read_prop_dword(np, "#address-cells", &val);
++		read_prop_dword(np, "#size-cells", &val);
++
++		prop = of_get_property(np, "compatible", &len);
++		i = 0;
++		while (i < len) {
++			p = (char *) prop + i;
++			pr_info("compatible: %s\n", p);
++			i += strlen(p) + 1;
++		}
++		read_prop_string(np, "name");
++		read_prop_string(np, "model");
++
++		prop = of_get_property(np, "reg", NULL);
++		if (prop) {
++			pr_info("reg: addr:%#llx size:%#x\n",
++				of_read_number(prop, naddr),
++				be32_to_cpu(prop[naddr]));
++		}
++
++		read_prop_string(np, "ibm,loc-code");
++	}
++
++	if ((rc = read_adapter_irq_config(adapter, np)))
++		return rc;
++
++	if (cxl_verbose) {
++		read_prop_string(np, "device_type");
++		read_prop_string(np, "ibm,phandle");
++	}
++
++	prop = read_prop_dword(np, "ibm,caia-version", &val);
++	if (prop) {
++		adapter->caia_major = (val & 0xFF00) >> 8;
++		adapter->caia_minor = val & 0xFF;
++	}
++
++	prop = read_prop_dword(np, "ibm,psl-revision", &val);
++	if (prop)
++		adapter->psl_rev = val;
++
++	prop = read_prop_string(np, "status");
++	if (prop) {
++		adapter->guest->status = kasprintf(GFP_KERNEL, "%s", (char *) prop);
++		if (adapter->guest->status == NULL)
++			return -ENOMEM;
++	}
++
++	prop = read_prop_dword(np, "vendor-id", &val);
++	if (prop)
++		adapter->guest->vendor = val;
++
++	prop = read_prop_dword(np, "device-id", &val);
++	if (prop)
++		adapter->guest->device = val;
++
++	if (cxl_verbose) {
++		read_prop_dword(np, "ibm,privileged-facility", &val);
++		read_prop_dword(np, "revision-id", &val);
++		read_prop_dword(np, "class-code", &val);
++	}
++
++	prop = read_prop_dword(np, "subsystem-vendor-id", &val);
++	if (prop)
++		adapter->guest->subsystem_vendor = val;
++
++	prop = read_prop_dword(np, "subsystem-id", &val);
++	if (prop)
++		adapter->guest->subsystem = val;
++
++	if (cxl_verbose)
++		read_vpd(adapter, NULL);
++
++	return 0;
++}
++
++static int cxl_of_remove(struct platform_device *pdev)
++{
++	struct cxl *adapter;
++	int afu;
++
++	adapter = dev_get_drvdata(&pdev->dev);
++	for (afu = 0; afu < adapter->slices; afu++)
++		cxl_guest_remove_afu(adapter->afu[afu]);
++
++	cxl_guest_remove_adapter(adapter);
++	return 0;
++}
++
++static void cxl_of_shutdown(struct platform_device *pdev)
++{
++	cxl_of_remove(pdev);
++}
++
++int cxl_of_probe(struct platform_device *pdev)
++{
++	struct device_node *np = NULL;
++	struct device_node *afu_np = NULL;
++	struct cxl *adapter = NULL;
++	int ret;
++	int slice, slice_ok;
++
++	pr_devel("in %s\n", __func__);
++
++	np = pdev->dev.of_node;
++	if (np == NULL)
++		return -ENODEV;
++
++	/* init adapter */
++	adapter = cxl_guest_init_adapter(np, pdev);
++	if (IS_ERR(adapter)) {
++		dev_err(&pdev->dev, "guest_init_adapter failed: %li\n", PTR_ERR(adapter));
++		return PTR_ERR(adapter);
++	}
++
++	/* init afu */
++	slice_ok = 0;
++	for (afu_np = NULL, slice = 0; (afu_np = of_get_next_child(np, afu_np)); slice++) {
++		if ((ret = cxl_guest_init_afu(adapter, slice, afu_np)))
++			dev_err(&pdev->dev, "AFU %i failed to initialise: %i\n",
++				slice, ret);
++		else
++			slice_ok++;
++	}
++
++	if (slice_ok == 0) {
++		dev_info(&pdev->dev, "No active AFU");
++		adapter->slices = 0;
++	}
++
++	if (afu_np)
++		of_node_put(afu_np);
++	return 0;
++}
++
++static const struct of_device_id cxl_of_match[] = {
++	{ .compatible = "ibm,coherent-platform-facility",},
++	{},
++};
++MODULE_DEVICE_TABLE(of, cxl_of_match);
++
++struct platform_driver cxl_of_driver = {
++	.driver = {
++		.name = "cxl_of",
++		.of_match_table = cxl_of_match,
++		.owner = THIS_MODULE
++	},
++	.probe = cxl_of_probe,
++	.remove = cxl_of_remove,
++	.shutdown = cxl_of_shutdown,
++};
 -- 
 1.9.1
