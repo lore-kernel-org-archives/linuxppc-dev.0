@@ -1,26 +1,26 @@
 Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 884C81A0B72
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Mar 2016 08:58:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D33061A0D72
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Mar 2016 08:58:43 +1100 (AEDT)
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Fri, 4 Mar 2016 14:58:28 -0700
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id DEA8F3E40044
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 14:58:26 -0700 (MST)
+ Fri, 4 Mar 2016 16:58:41 -0500
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 24A726E8040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 16:45:31 -0500 (EST)
 Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u24LwQE335651718
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 21:58:26 GMT
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u24LweUY33882210
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 21:58:40 GMT
 Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
  by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u24Ls8Oa031017
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 16:54:09 -0500
+ u24LsKFY031537
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 16:54:22 -0500
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -32,9 +32,9 @@ Cc: linuxppc-dev@lists.ozlabs.org, Brian King <brking@linux.vnet.ibm.com>,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH 6/7] cxlflash: Fix to avoid unnecessary scan with internal LUNs
-Date: Fri,  4 Mar 2016 15:55:19 -0600
-Message-Id: <1457128520-53056-6-git-send-email-ukrishn@linux.vnet.ibm.com>
+Subject: [PATCH 7/7] cxlflash: Increase cmd_per_lun for better throughput
+Date: Fri,  4 Mar 2016 15:55:20 -0600
+Message-Id: <1457128520-53056-7-git-send-email-ukrishn@linux.vnet.ibm.com>
 In-Reply-To: <1457128520-53056-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1457128424-53017-1-git-send-email-ukrishn@linux.vnet.ibm.com>
  <1457128520-53056-1-git-send-email-ukrishn@linux.vnet.ibm.com>
@@ -49,49 +49,67 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
 
-When switching to the internal LUN defined on the
-IBM CXL flash adapter, there is an unnecessary
-scan occurring on the second port. This scan leads
-to the following extra lines in the log:
+With the current value of cmd_per_lun at 16, the throughput
+over a single adapter is limited to around 150kIOPS.
 
-Dec 17 10:09:00 tul83p1 kernel: [ 3708.561134] cxlflash 0008:00:00.0: cxlflash_queuecommand: (scp=c0000000fc1f0f00) 11/1/0/0 cdb=(A0000000-00000000-10000000-00000000)
-Dec 17 10:09:00 tul83p1 kernel: [ 3708.561147] process_cmd_err: cmd failed afu_rc=32 scsi_rc=0 fc_rc=0 afu_extra=0xE, scsi_extra=0x0, fc_extra=0x0
-
-By definition, both of the internal LUNs are on the first port/channel.
-
-When the lun_mode is switched to internal LUN the
-same value for host->max_channel is retained. This
-causes an unnecessary scan over the second port/channel.
-
-This fix alters the host->max_channel to 0 (1 port), if internal
-LUNs are configured and switches it back to 1 (2 ports) while
-going back to external LUNs.
+Increase the value of cmd_per_lun to 256 to improve
+throughput. With this change a single adapter is able to
+attain close to the maximum throughput (380kIOPS).
+Also change the number of RRQ entries that can be queued.
 
 Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/main.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/scsi/cxlflash/common.h | 8 +++++---
+ drivers/scsi/cxlflash/main.c   | 2 +-
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
+index 5ada926..a8ac4c0 100644
+--- a/drivers/scsi/cxlflash/common.h
++++ b/drivers/scsi/cxlflash/common.h
+@@ -34,7 +34,6 @@ extern const struct file_operations cxlflash_cxl_fops;
+ 								   sectors
+ 								*/
+ 
+-#define NUM_RRQ_ENTRY    16     /* for master issued cmds */
+ #define MAX_RHT_PER_CONTEXT (PAGE_SIZE / sizeof(struct sisl_rht_entry))
+ 
+ /* AFU command retry limit */
+@@ -48,9 +47,12 @@ extern const struct file_operations cxlflash_cxl_fops;
+ 							   index derivation
+ 							 */
+ 
+-#define CXLFLASH_MAX_CMDS               16
++#define CXLFLASH_MAX_CMDS               256
+ #define CXLFLASH_MAX_CMDS_PER_LUN       CXLFLASH_MAX_CMDS
+ 
++/* RRQ for master issued cmds */
++#define NUM_RRQ_ENTRY                   CXLFLASH_MAX_CMDS
++
+ 
+ static inline void check_sizes(void)
+ {
+@@ -149,7 +151,7 @@ struct afu_cmd {
+ struct afu {
+ 	/* Stuff requiring alignment go first. */
+ 
+-	u64 rrq_entry[NUM_RRQ_ENTRY];	/* 128B RRQ */
++	u64 rrq_entry[NUM_RRQ_ENTRY];	/* 2K RRQ */
+ 	/*
+ 	 * Command & data for AFU commands.
+ 	 */
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index ca702d8..0f062a4 100644
+index 0f062a4..3879b46 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -2097,6 +2097,16 @@ static ssize_t lun_mode_store(struct device *dev,
- 	rc = kstrtouint(buf, 10, &lun_mode);
- 	if (!rc && (lun_mode < 5) && (lun_mode != afu->internal_lun)) {
- 		afu->internal_lun = lun_mode;
-+
-+		/*
-+		 * When configured for internal LUN, there is only one channel,
-+		 * channel number 0, else there will be 2 (default).
-+		 */
-+		if (afu->internal_lun)
-+			shost->max_channel = 0;
-+		else
-+			shost->max_channel = NUM_FC_PORTS - 1;
-+
- 		afu_reset(cfg);
- 		scsi_scan_host(cfg->host);
- 	}
+@@ -2253,7 +2253,7 @@ static struct scsi_host_template driver_template = {
+ 	.eh_device_reset_handler = cxlflash_eh_device_reset_handler,
+ 	.eh_host_reset_handler = cxlflash_eh_host_reset_handler,
+ 	.change_queue_depth = cxlflash_change_queue_depth,
+-	.cmd_per_lun = 16,
++	.cmd_per_lun = CXLFLASH_MAX_CMDS_PER_LUN,
+ 	.can_queue = CXLFLASH_MAX_CMDS,
+ 	.this_id = -1,
+ 	.sg_tablesize = SG_NONE,	/* No scatter gather support */
 -- 
 2.1.0
