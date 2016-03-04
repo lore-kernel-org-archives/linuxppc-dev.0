@@ -1,33 +1,33 @@
 Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7E75D1A0B68
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 22:26:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EFA381A06C2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 22:26:58 +1100 (AEDT)
 Received: from localhost
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 4 Mar 2016 11:26:54 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id CE3BC2190056
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:26:34 +0000 (GMT)
+ Fri, 4 Mar 2016 11:26:55 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 56CB417D805A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 11:27:20 +0000 (GMT)
 Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
  [9.149.37.252])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u24BQp1R3539438
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:26:51 GMT
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u24BQsvs8389040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 11:26:54 GMT
 Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u24BQp87007097
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 04:26:51 -0700
+ u24BQsRK007245
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Mar 2016 04:26:54 -0700
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: imunsie@au1.ibm.com, michael.neuling@au1.ibm.com, manoj@linux.vnet.ibm.com,
  mrochs@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 05/20] cxl: Rename some bare-metal specific functions
-Date: Fri,  4 Mar 2016 12:26:29 +0100
-Message-Id: <1457090804-9719-6-git-send-email-fbarrat@linux.vnet.ibm.com>
+Subject: [PATCH v6 08/20] cxl: IRQ allocation for guests
+Date: Fri,  4 Mar 2016 12:26:32 +0100
+Message-Id: <1457090804-9719-9-git-send-email-fbarrat@linux.vnet.ibm.com>
 In-Reply-To: <1457090804-9719-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 References: <1457090804-9719-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,12 +39,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rename a few functions, changing the 'cxl_' prefix to either
-'cxl_pci_' or 'cxl_native_', to make clear that the implementation is
-bare-metal specific.
-
-Those functions will have an equivalent implementation for a guest in
-a later patch.
+The PSL interrupt cannot be multiplexed in a guest, as it is not
+supported by the hypervisor. So an interrupt will be allocated
+for it for each context. It will still be the first interrupt found in
+the first interrupt range, but is treated almost like any other AFU
+interrupt when creating/deleting the context. Only the handler is
+different. Rework the code so that the range 0 is treated like the
+other ranges.
 
 Co-authored-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
@@ -52,632 +53,161 @@ Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 Reviewed-by: Manoj Kumar <manoj@linux.vnet.ibm.com>
 Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/cxl.h    | 28 +++++++-------
- drivers/misc/cxl/native.c | 98 ++++++++++++++++++++++++-----------------------
- drivers/misc/cxl/pci.c    | 78 +++++++++++++++++++------------------
- 3 files changed, 104 insertions(+), 100 deletions(-)
+ drivers/misc/cxl/irq.c | 78 +++++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 64 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 8233af3..02065b4 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -519,14 +519,14 @@ struct cxl {
- 	bool perst_same_image;
- };
+diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+index 5033869..3c04c14 100644
+--- a/drivers/misc/cxl/irq.c
++++ b/drivers/misc/cxl/irq.c
+@@ -19,6 +19,13 @@
+ #include "cxl.h"
+ #include "trace.h"
  
--int cxl_alloc_one_irq(struct cxl *adapter);
--void cxl_release_one_irq(struct cxl *adapter, int hwirq);
--int cxl_alloc_irq_ranges(struct cxl_irq_ranges *irqs, struct cxl *adapter, unsigned int num);
--void cxl_release_irq_ranges(struct cxl_irq_ranges *irqs, struct cxl *adapter);
--int cxl_setup_irq(struct cxl *adapter, unsigned int hwirq, unsigned int virq);
-+int cxl_pci_alloc_one_irq(struct cxl *adapter);
-+void cxl_pci_release_one_irq(struct cxl *adapter, int hwirq);
-+int cxl_pci_alloc_irq_ranges(struct cxl_irq_ranges *irqs, struct cxl *adapter, unsigned int num);
-+void cxl_pci_release_irq_ranges(struct cxl_irq_ranges *irqs, struct cxl *adapter);
-+int cxl_pci_setup_irq(struct cxl *adapter, unsigned int hwirq, unsigned int virq);
- int cxl_update_image_control(struct cxl *adapter);
--int cxl_reset(struct cxl *adapter);
--void cxl_release_afu(struct device *dev);
-+int cxl_pci_reset(struct cxl *adapter);
-+void cxl_pci_release_afu(struct device *dev);
- 
- /* common == phyp + powernv */
- struct cxl_process_element_common {
-@@ -623,7 +623,7 @@ static inline u64 cxl_p2n_read(struct cxl_afu *afu, cxl_p2n_reg_t reg)
- 		return ~0ULL;
- }
- 
--ssize_t cxl_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
-+ssize_t cxl_pci_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
- 				loff_t off, size_t count);
- 
- 
-@@ -663,12 +663,12 @@ struct cxl *cxl_alloc_adapter(void);
- struct cxl_afu *cxl_alloc_afu(struct cxl *adapter, int slice);
- int cxl_afu_select_best_mode(struct cxl_afu *afu);
- 
--int cxl_register_psl_irq(struct cxl_afu *afu);
--void cxl_release_psl_irq(struct cxl_afu *afu);
--int cxl_register_psl_err_irq(struct cxl *adapter);
--void cxl_release_psl_err_irq(struct cxl *adapter);
--int cxl_register_serr_irq(struct cxl_afu *afu);
--void cxl_release_serr_irq(struct cxl_afu *afu);
-+int cxl_native_register_psl_irq(struct cxl_afu *afu);
-+void cxl_native_release_psl_irq(struct cxl_afu *afu);
-+int cxl_native_register_psl_err_irq(struct cxl *adapter);
-+void cxl_native_release_psl_err_irq(struct cxl *adapter);
-+int cxl_native_register_serr_irq(struct cxl_afu *afu);
-+void cxl_native_release_serr_irq(struct cxl_afu *afu);
- int afu_register_irqs(struct cxl_context *ctx, u32 count);
- void afu_release_irqs(struct cxl_context *ctx, void *cookie);
- void afu_irq_name_free(struct cxl_context *ctx);
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index 16d3b1a..b8a6ad5 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -80,7 +80,7 @@ int cxl_afu_disable(struct cxl_afu *afu)
- }
- 
- /* This will disable as well as reset */
--static int __cxl_afu_reset(struct cxl_afu *afu)
-+static int native_afu_reset(struct cxl_afu *afu)
++static int afu_irq_range_start(void)
++{
++	if (cpu_has_feature(CPU_FTR_HVMODE))
++		return 1;
++	return 0;
++}
++
+ static irqreturn_t schedule_cxl_fault(struct cxl_context *ctx, u64 dsisr, u64 dar)
  {
- 	pr_devel("AFU reset request\n");
- 
-@@ -90,7 +90,7 @@ static int __cxl_afu_reset(struct cxl_afu *afu)
- 			   false);
- }
- 
--static int cxl_afu_check_and_enable(struct cxl_afu *afu)
-+static int native_afu_check_and_enable(struct cxl_afu *afu)
+ 	ctx->dsisr = dsisr;
+@@ -117,11 +124,23 @@ static irqreturn_t cxl_irq_afu(int irq, void *data)
  {
- 	if (!cxl_ops->link_ok(afu->adapter)) {
- 		WARN(1, "Refusing to enable afu while link down!\n");
-@@ -631,7 +631,7 @@ static int deactivate_dedicated_process(struct cxl_afu *afu)
- 	return 0;
- }
+ 	struct cxl_context *ctx = data;
+ 	irq_hw_number_t hwirq = irqd_to_hwirq(irq_get_irq_data(irq));
+-	int irq_off, afu_irq = 1;
++	int irq_off, afu_irq = 0;
+ 	__u16 range;
+ 	int r;
  
--static int cxl_afu_deactivate_mode(struct cxl_afu *afu, int mode)
-+static int native_afu_deactivate_mode(struct cxl_afu *afu, int mode)
- {
- 	if (mode == CXL_MODE_DIRECTED)
- 		return deactivate_afu_directed(afu);
-@@ -640,7 +640,7 @@ static int cxl_afu_deactivate_mode(struct cxl_afu *afu, int mode)
- 	return 0;
- }
- 
--static int cxl_afu_activate_mode(struct cxl_afu *afu, int mode)
-+static int native_afu_activate_mode(struct cxl_afu *afu, int mode)
- {
- 	if (!mode)
- 		return 0;
-@@ -660,7 +660,8 @@ static int cxl_afu_activate_mode(struct cxl_afu *afu, int mode)
- 	return -EINVAL;
- }
- 
--static int cxl_attach_process(struct cxl_context *ctx, bool kernel, u64 wed, u64 amr)
-+static int native_attach_process(struct cxl_context *ctx, bool kernel,
-+				u64 wed, u64 amr)
- {
- 	if (!cxl_ops->link_ok(ctx->afu->adapter)) {
- 		WARN(1, "Device link is down, refusing to attach process!\n");
-@@ -697,7 +698,7 @@ static inline int detach_process_native_afu_directed(struct cxl_context *ctx)
- 	return 0;
- }
- 
--static int cxl_detach_process(struct cxl_context *ctx)
-+static int native_detach_process(struct cxl_context *ctx)
- {
- 	trace_cxl_detach(ctx);
- 
-@@ -707,7 +708,7 @@ static int cxl_detach_process(struct cxl_context *ctx)
- 	return detach_process_native_afu_directed(ctx);
- }
- 
--static int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info)
-+static int native_get_irq_info(struct cxl_afu *afu, struct cxl_irq_info *info)
- {
- 	u64 pidtid;
- 
-@@ -729,7 +730,8 @@ static int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info)
- 	return 0;
- }
- 
--static irqreturn_t handle_psl_slice_error(struct cxl_context *ctx, u64 dsisr, u64 errstat)
-+static irqreturn_t native_handle_psl_slice_error(struct cxl_context *ctx,
-+						u64 dsisr, u64 errstat)
- {
- 	u64 fir1, fir2, fir_slice, serr, afu_debug;
- 
-@@ -762,7 +764,7 @@ static irqreturn_t fail_psl_irq(struct cxl_afu *afu, struct cxl_irq_info *irq_in
- 	return IRQ_HANDLED;
- }
- 
--static irqreturn_t cxl_irq_multiplexed(int irq, void *data)
-+static irqreturn_t native_irq_multiplexed(int irq, void *data)
- {
- 	struct cxl_afu *afu = data;
- 	struct cxl_context *ctx;
-@@ -770,7 +772,7 @@ static irqreturn_t cxl_irq_multiplexed(int irq, void *data)
- 	int ph = cxl_p2n_read(afu, CXL_PSL_PEHandle_An) & 0xffff;
- 	int ret;
- 
--	if ((ret = cxl_get_irq(afu, &irq_info))) {
-+	if ((ret = native_get_irq_info(afu, &irq_info))) {
- 		WARN(1, "Unable to get CXL IRQ Info: %i\n", ret);
- 		return fail_psl_irq(afu, &irq_info);
+-	for (r = 1; r < CXL_IRQ_RANGES; r++) {
++	/*
++	 * Look for the interrupt number.
++	 * On bare-metal, we know range 0 only contains the PSL
++	 * interrupt so we could start counting at range 1 and initialize
++	 * afu_irq at 1.
++	 * In a guest, range 0 also contains AFU interrupts, so it must
++	 * be counted for. Therefore we initialize afu_irq at 0 to take into
++	 * account the PSL interrupt.
++	 *
++	 * For code-readability, it just seems easier to go over all
++	 * the ranges on bare-metal and guest. The end result is the same.
++	 */
++	for (r = 0; r < CXL_IRQ_RANGES; r++) {
+ 		irq_off = hwirq - ctx->irqs.offset[r];
+ 		range = ctx->irqs.range[r];
+ 		if (irq_off >= 0 && irq_off < range) {
+@@ -131,7 +150,7 @@ static irqreturn_t cxl_irq_afu(int irq, void *data)
+ 		afu_irq += range;
  	}
-@@ -791,7 +793,7 @@ static irqreturn_t cxl_irq_multiplexed(int irq, void *data)
- 	return fail_psl_irq(afu, &irq_info);
- }
- 
--static irqreturn_t cxl_slice_irq_err(int irq, void *data)
-+static irqreturn_t native_slice_irq_err(int irq, void *data)
- {
- 	struct cxl_afu *afu = data;
- 	u64 fir_slice, errstat, serr, afu_debug;
-@@ -812,7 +814,7 @@ static irqreturn_t cxl_slice_irq_err(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
--static irqreturn_t cxl_irq_err(int irq, void *data)
-+static irqreturn_t native_irq_err(int irq, void *data)
- {
- 	struct cxl *adapter = data;
- 	u64 fir1, fir2, err_ivte;
-@@ -833,7 +835,7 @@ static irqreturn_t cxl_irq_err(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
--int cxl_register_psl_err_irq(struct cxl *adapter)
-+int cxl_native_register_psl_err_irq(struct cxl *adapter)
- {
- 	int rc;
- 
-@@ -842,7 +844,7 @@ int cxl_register_psl_err_irq(struct cxl *adapter)
- 	if (!adapter->irq_name)
- 		return -ENOMEM;
- 
--	if ((rc = cxl_register_one_irq(adapter, cxl_irq_err, adapter,
-+	if ((rc = cxl_register_one_irq(adapter, native_irq_err, adapter,
- 				       &adapter->err_hwirq,
- 				       &adapter->err_virq,
- 				       adapter->irq_name))) {
-@@ -856,7 +858,7 @@ int cxl_register_psl_err_irq(struct cxl *adapter)
- 	return 0;
- }
- 
--void cxl_release_psl_err_irq(struct cxl *adapter)
-+void cxl_native_release_psl_err_irq(struct cxl *adapter)
- {
- 	if (adapter->err_virq != irq_find_mapping(NULL, adapter->err_hwirq))
- 		return;
-@@ -867,7 +869,7 @@ void cxl_release_psl_err_irq(struct cxl *adapter)
- 	kfree(adapter->irq_name);
- }
- 
--int cxl_register_serr_irq(struct cxl_afu *afu)
-+int cxl_native_register_serr_irq(struct cxl_afu *afu)
- {
- 	u64 serr;
- 	int rc;
-@@ -877,7 +879,7 @@ int cxl_register_serr_irq(struct cxl_afu *afu)
- 	if (!afu->err_irq_name)
- 		return -ENOMEM;
- 
--	if ((rc = cxl_register_one_irq(afu->adapter, cxl_slice_irq_err, afu,
-+	if ((rc = cxl_register_one_irq(afu->adapter, native_slice_irq_err, afu,
- 				       &afu->serr_hwirq,
- 				       &afu->serr_virq, afu->err_irq_name))) {
- 		kfree(afu->err_irq_name);
-@@ -892,7 +894,7 @@ int cxl_register_serr_irq(struct cxl_afu *afu)
- 	return 0;
- }
- 
--void cxl_release_serr_irq(struct cxl_afu *afu)
-+void cxl_native_release_serr_irq(struct cxl_afu *afu)
- {
- 	if (afu->serr_virq != irq_find_mapping(NULL, afu->serr_hwirq))
- 		return;
-@@ -903,7 +905,7 @@ void cxl_release_serr_irq(struct cxl_afu *afu)
- 	kfree(afu->err_irq_name);
- }
- 
--int cxl_register_psl_irq(struct cxl_afu *afu)
-+int cxl_native_register_psl_irq(struct cxl_afu *afu)
- {
- 	int rc;
- 
-@@ -912,7 +914,7 @@ int cxl_register_psl_irq(struct cxl_afu *afu)
- 	if (!afu->psl_irq_name)
- 		return -ENOMEM;
- 
--	if ((rc = cxl_register_one_irq(afu->adapter, cxl_irq_multiplexed, afu,
-+	if ((rc = cxl_register_one_irq(afu->adapter, native_irq_multiplexed, afu,
- 				    &afu->psl_hwirq, &afu->psl_virq,
- 				    afu->psl_irq_name))) {
- 		kfree(afu->psl_irq_name);
-@@ -921,7 +923,7 @@ int cxl_register_psl_irq(struct cxl_afu *afu)
- 	return rc;
- }
- 
--void cxl_release_psl_irq(struct cxl_afu *afu)
-+void cxl_native_release_psl_irq(struct cxl_afu *afu)
- {
- 	if (afu->psl_virq != irq_find_mapping(NULL, afu->psl_hwirq))
- 		return;
-@@ -945,7 +947,7 @@ static void recover_psl_err(struct cxl_afu *afu, u64 errstat)
- 	cxl_p2n_write(afu, CXL_PSL_ErrStat_An, errstat);
- }
- 
--static int cxl_ack_irq(struct cxl_context *ctx, u64 tfc, u64 psl_reset_mask)
-+static int native_ack_irq(struct cxl_context *ctx, u64 tfc, u64 psl_reset_mask)
- {
- 	trace_cxl_psl_irq_ack(ctx, tfc);
- 	if (tfc)
-@@ -961,7 +963,7 @@ int cxl_check_error(struct cxl_afu *afu)
- 	return (cxl_p1n_read(afu, CXL_PSL_SCNTL_An) == ~0ULL);
- }
- 
--static int cxl_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off, u64 *out)
-+static int native_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off, u64 *out)
- {
- 	if (unlikely(!cxl_ops->link_ok(afu->adapter)))
- 		return -EIO;
-@@ -972,7 +974,7 @@ static int cxl_afu_cr_read64(struct cxl_afu *afu, int cr, u64 off, u64 *out)
- 	return 0;
- }
- 
--static int cxl_afu_cr_read32(struct cxl_afu *afu, int cr, u64 off, u32 *out)
-+static int native_afu_cr_read32(struct cxl_afu *afu, int cr, u64 off, u32 *out)
- {
- 	if (unlikely(!cxl_ops->link_ok(afu->adapter)))
- 		return -EIO;
-@@ -983,25 +985,25 @@ static int cxl_afu_cr_read32(struct cxl_afu *afu, int cr, u64 off, u32 *out)
- 	return 0;
- }
- 
--static int cxl_afu_cr_read16(struct cxl_afu *afu, int cr, u64 off, u16 *out)
-+static int native_afu_cr_read16(struct cxl_afu *afu, int cr, u64 off, u16 *out)
- {
- 	u64 aligned_off = off & ~0x3L;
- 	u32 val;
- 	int rc;
- 
--	rc = cxl_afu_cr_read32(afu, cr, aligned_off, &val);
-+	rc = native_afu_cr_read32(afu, cr, aligned_off, &val);
- 	if (!rc)
- 		*out = (val >> ((off & 0x3) * 8)) & 0xffff;
- 	return rc;
- }
- 
--static int cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off, u8 *out)
-+static int native_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off, u8 *out)
- {
- 	u64 aligned_off = off & ~0x3L;
- 	u32 val;
- 	int rc;
- 
--	rc = cxl_afu_cr_read32(afu, cr, aligned_off, &val);
-+	rc = native_afu_cr_read32(afu, cr, aligned_off, &val);
- 	if (!rc)
- 		*out = (val >> ((off & 0x3) * 8)) & 0xff;
- 	return rc;
-@@ -1009,26 +1011,26 @@ static int cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off, u8 *out)
- 
- const struct cxl_backend_ops cxl_native_ops = {
- 	.module = THIS_MODULE,
--	.adapter_reset = cxl_reset,
--	.alloc_one_irq = cxl_alloc_one_irq,
--	.release_one_irq = cxl_release_one_irq,
--	.alloc_irq_ranges = cxl_alloc_irq_ranges,
--	.release_irq_ranges = cxl_release_irq_ranges,
--	.setup_irq = cxl_setup_irq,
--	.handle_psl_slice_error = handle_psl_slice_error,
-+	.adapter_reset = cxl_pci_reset,
-+	.alloc_one_irq = cxl_pci_alloc_one_irq,
-+	.release_one_irq = cxl_pci_release_one_irq,
-+	.alloc_irq_ranges = cxl_pci_alloc_irq_ranges,
-+	.release_irq_ranges = cxl_pci_release_irq_ranges,
-+	.setup_irq = cxl_pci_setup_irq,
-+	.handle_psl_slice_error = native_handle_psl_slice_error,
- 	.psl_interrupt = NULL,
--	.ack_irq = cxl_ack_irq,
--	.attach_process = cxl_attach_process,
--	.detach_process = cxl_detach_process,
-+	.ack_irq = native_ack_irq,
-+	.attach_process = native_attach_process,
-+	.detach_process = native_detach_process,
- 	.link_ok = cxl_adapter_link_ok,
--	.release_afu = cxl_release_afu,
--	.afu_read_err_buffer = cxl_afu_read_err_buffer,
--	.afu_check_and_enable = cxl_afu_check_and_enable,
--	.afu_activate_mode = cxl_afu_activate_mode,
--	.afu_deactivate_mode = cxl_afu_deactivate_mode,
--	.afu_reset = __cxl_afu_reset,
--	.afu_cr_read8 = cxl_afu_cr_read8,
--	.afu_cr_read16 = cxl_afu_cr_read16,
--	.afu_cr_read32 = cxl_afu_cr_read32,
--	.afu_cr_read64 = cxl_afu_cr_read64,
-+	.release_afu = cxl_pci_release_afu,
-+	.afu_read_err_buffer = cxl_pci_afu_read_err_buffer,
-+	.afu_check_and_enable = native_afu_check_and_enable,
-+	.afu_activate_mode = native_afu_activate_mode,
-+	.afu_deactivate_mode = native_afu_deactivate_mode,
-+	.afu_reset = native_afu_reset,
-+	.afu_cr_read8 = native_afu_cr_read8,
-+	.afu_cr_read16 = native_afu_cr_read16,
-+	.afu_cr_read32 = native_afu_cr_read32,
-+	.afu_cr_read64 = native_afu_cr_read64,
- };
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 6e2c274..23b84c5 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -415,8 +415,8 @@ static int init_implementation_afu_regs(struct cxl_afu *afu)
- 	return 0;
- }
- 
--int cxl_setup_irq(struct cxl *adapter, unsigned int hwirq,
--			 unsigned int virq)
-+int cxl_pci_setup_irq(struct cxl *adapter, unsigned int hwirq,
-+		unsigned int virq)
- {
- 	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
- 
-@@ -458,28 +458,30 @@ int cxl_update_image_control(struct cxl *adapter)
- 	return 0;
- }
- 
--int cxl_alloc_one_irq(struct cxl *adapter)
-+int cxl_pci_alloc_one_irq(struct cxl *adapter)
- {
- 	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
- 
- 	return pnv_cxl_alloc_hwirqs(dev, 1);
- }
- 
--void cxl_release_one_irq(struct cxl *adapter, int hwirq)
-+void cxl_pci_release_one_irq(struct cxl *adapter, int hwirq)
- {
- 	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
- 
- 	return pnv_cxl_release_hwirqs(dev, hwirq, 1);
- }
- 
--int cxl_alloc_irq_ranges(struct cxl_irq_ranges *irqs, struct cxl *adapter, unsigned int num)
-+int cxl_pci_alloc_irq_ranges(struct cxl_irq_ranges *irqs,
-+			struct cxl *adapter, unsigned int num)
- {
- 	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
- 
- 	return pnv_cxl_alloc_hwirq_ranges(irqs, dev, num);
- }
- 
--void cxl_release_irq_ranges(struct cxl_irq_ranges *irqs, struct cxl *adapter)
-+void cxl_pci_release_irq_ranges(struct cxl_irq_ranges *irqs,
-+				struct cxl *adapter)
- {
- 	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
- 
-@@ -540,7 +542,7 @@ static int switch_card_to_cxl(struct pci_dev *dev)
- 	return 0;
- }
- 
--static int cxl_map_slice_regs(struct cxl_afu *afu, struct cxl *adapter, struct pci_dev *dev)
-+static int pci_map_slice_regs(struct cxl_afu *afu, struct cxl *adapter, struct pci_dev *dev)
- {
- 	u64 p1n_base, p2n_base, afu_desc;
- 	const u64 p1n_size = 0x100;
-@@ -570,7 +572,7 @@ err:
- 	return -ENOMEM;
- }
- 
--static void cxl_unmap_slice_regs(struct cxl_afu *afu)
-+static void pci_unmap_slice_regs(struct cxl_afu *afu)
- {
- 	if (afu->p2n_mmio) {
- 		iounmap(afu->p2n_mmio);
-@@ -586,11 +588,11 @@ static void cxl_unmap_slice_regs(struct cxl_afu *afu)
+ 	if (unlikely(r >= CXL_IRQ_RANGES)) {
+-		WARN(1, "Recieved AFU IRQ out of range for pe %i (virq %i hwirq %lx)\n",
++		WARN(1, "Received AFU IRQ out of range for pe %i (virq %i hwirq %lx)\n",
+ 		     ctx->pe, irq, hwirq);
+ 		return IRQ_HANDLED;
  	}
- }
+@@ -141,7 +160,7 @@ static irqreturn_t cxl_irq_afu(int irq, void *data)
+ 	       afu_irq, ctx->pe, irq, hwirq);
  
--void cxl_release_afu(struct device *dev)
-+void cxl_pci_release_afu(struct device *dev)
+ 	if (unlikely(!ctx->irq_bitmap)) {
+-		WARN(1, "Recieved AFU IRQ for context with no IRQ bitmap\n");
++		WARN(1, "Received AFU IRQ for context with no IRQ bitmap\n");
+ 		return IRQ_HANDLED;
+ 	}
+ 	spin_lock(&ctx->lock);
+@@ -227,17 +246,33 @@ int afu_allocate_irqs(struct cxl_context *ctx, u32 count)
  {
- 	struct cxl_afu *afu = to_cxl_afu(dev);
+ 	int rc, r, i, j = 1;
+ 	struct cxl_irq_name *irq_name;
++	int alloc_count;
++
++	/*
++	 * In native mode, range 0 is reserved for the multiplexed
++	 * PSL interrupt. It has been allocated when the AFU was initialized.
++	 *
++	 * In a guest, the PSL interrupt is not mutliplexed, but per-context,
++	 * and is the first interrupt from range 0. It still needs to be
++	 * allocated, so bump the count by one.
++	 */
++	if (cpu_has_feature(CPU_FTR_HVMODE))
++		alloc_count = count;
++	else
++		alloc_count = count + 1;
  
--	pr_devel("cxl_release_afu\n");
-+	pr_devel("%s\n", __func__);
+ 	/* Initialize the list head to hold irq names */
+ 	INIT_LIST_HEAD(&ctx->irq_names);
  
- 	idr_destroy(&afu->contexts_idr);
- 	cxl_release_spa(afu);
-@@ -729,7 +731,7 @@ static int sanitise_afu_regs(struct cxl_afu *afu)
-  * 4/8 bytes aligned access. So in case the requested offset/count arent 8 byte
-  * aligned the function uses a bounce buffer which can be max PAGE_SIZE.
-  */
--ssize_t cxl_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
-+ssize_t cxl_pci_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
- 				loff_t off, size_t count)
- {
- 	loff_t aligned_start, aligned_end;
-@@ -766,11 +768,11 @@ ssize_t cxl_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
- 	return count;
- }
- 
--static int cxl_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pci_dev *dev)
-+static int pci_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pci_dev *dev)
- {
- 	int rc;
- 
--	if ((rc = cxl_map_slice_regs(afu, adapter, dev)))
-+	if ((rc = pci_map_slice_regs(afu, adapter, dev)))
+ 	if ((rc = cxl_ops->alloc_irq_ranges(&ctx->irqs, ctx->afu->adapter,
+-							count)))
++							alloc_count)))
  		return rc;
  
- 	if ((rc = sanitise_afu_regs(afu)))
-@@ -792,29 +794,29 @@ static int cxl_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pc
- 	if ((rc = init_implementation_afu_regs(afu)))
- 		goto err1;
+-	/* Multiplexed PSL Interrupt */
+-	ctx->irqs.offset[0] = ctx->afu->psl_hwirq;
+-	ctx->irqs.range[0] = 1;
++	if (cpu_has_feature(CPU_FTR_HVMODE)) {
++		/* Multiplexed PSL Interrupt */
++		ctx->irqs.offset[0] = ctx->afu->psl_hwirq;
++		ctx->irqs.range[0] = 1;
++	}
  
--	if ((rc = cxl_register_serr_irq(afu)))
-+	if ((rc = cxl_native_register_serr_irq(afu)))
- 		goto err1;
- 
--	if ((rc = cxl_register_psl_irq(afu)))
-+	if ((rc = cxl_native_register_psl_irq(afu)))
- 		goto err2;
- 
- 	return 0;
- 
- err2:
--	cxl_release_serr_irq(afu);
-+	cxl_native_release_serr_irq(afu);
- err1:
--	cxl_unmap_slice_regs(afu);
-+	pci_unmap_slice_regs(afu);
- 	return rc;
- }
- 
--static void cxl_deconfigure_afu(struct cxl_afu *afu)
-+static void pci_deconfigure_afu(struct cxl_afu *afu)
+ 	ctx->irq_count = count;
+ 	ctx->irq_bitmap = kcalloc(BITS_TO_LONGS(count),
+@@ -249,7 +284,7 @@ int afu_allocate_irqs(struct cxl_context *ctx, u32 count)
+ 	 * Allocate names first.  If any fail, bail out before allocating
+ 	 * actual hardware IRQs.
+ 	 */
+-	for (r = 1; r < CXL_IRQ_RANGES; r++) {
++	for (r = afu_irq_range_start(); r < CXL_IRQ_RANGES; r++) {
+ 		for (i = 0; i < ctx->irqs.range[r]; i++) {
+ 			irq_name = kmalloc(sizeof(struct cxl_irq_name),
+ 					   GFP_KERNEL);
+@@ -279,15 +314,30 @@ static void afu_register_hwirqs(struct cxl_context *ctx)
  {
--	cxl_release_psl_irq(afu);
--	cxl_release_serr_irq(afu);
--	cxl_unmap_slice_regs(afu);
-+	cxl_native_release_psl_irq(afu);
-+	cxl_native_release_serr_irq(afu);
-+	pci_unmap_slice_regs(afu);
- }
+ 	irq_hw_number_t hwirq;
+ 	struct cxl_irq_name *irq_name;
+-	int r,i;
++	int r, i;
++	irqreturn_t (*handler)(int irq, void *data);
  
--static int cxl_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
-+static int pci_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
- {
- 	struct cxl_afu *afu;
- 	int rc;
-@@ -827,7 +829,7 @@ static int cxl_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
- 	if (rc)
- 		goto err_free;
- 
--	rc = cxl_configure_afu(afu, adapter, dev);
-+	rc = pci_configure_afu(afu, adapter, dev);
- 	if (rc)
- 		goto err_free;
- 
-@@ -852,7 +854,7 @@ static int cxl_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
- 	return 0;
- 
- err_put1:
--	cxl_deconfigure_afu(afu);
-+	pci_deconfigure_afu(afu);
- 	cxl_debugfs_afu_remove(afu);
- 	device_unregister(&afu->dev);
- 	return rc;
-@@ -863,9 +865,9 @@ err_free:
- 
- }
- 
--static void cxl_remove_afu(struct cxl_afu *afu)
-+static void cxl_pci_remove_afu(struct cxl_afu *afu)
- {
--	pr_devel("cxl_remove_afu\n");
-+	pr_devel("%s\n", __func__);
- 
- 	if (!afu)
- 		return;
-@@ -880,11 +882,11 @@ static void cxl_remove_afu(struct cxl_afu *afu)
- 	cxl_context_detach_all(afu);
- 	cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
- 
--	cxl_deconfigure_afu(afu);
-+	pci_deconfigure_afu(afu);
- 	device_unregister(&afu->dev);
- }
- 
--int cxl_reset(struct cxl *adapter)
-+int cxl_pci_reset(struct cxl *adapter)
- {
- 	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
- 	int rc;
-@@ -1130,7 +1132,7 @@ static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
- 	if ((rc = cxl_setup_psl_timebase(adapter, dev)))
- 		goto err;
- 
--	if ((rc = cxl_register_psl_err_irq(adapter)))
-+	if ((rc = cxl_native_register_psl_err_irq(adapter)))
- 		goto err;
- 
- 	return 0;
-@@ -1145,13 +1147,13 @@ static void cxl_deconfigure_adapter(struct cxl *adapter)
- {
- 	struct pci_dev *pdev = to_pci_dev(adapter->dev.parent);
- 
--	cxl_release_psl_err_irq(adapter);
-+	cxl_native_release_psl_err_irq(adapter);
- 	cxl_unmap_adapter_regs(adapter);
- 
- 	pci_disable_device(pdev);
- }
- 
--static struct cxl *cxl_init_adapter(struct pci_dev *dev)
-+static struct cxl *cxl_pci_init_adapter(struct pci_dev *dev)
- {
- 	struct cxl *adapter;
- 	int rc;
-@@ -1198,7 +1200,7 @@ err_put1:
- 	return ERR_PTR(rc);
- }
- 
--static void cxl_remove_adapter(struct cxl *adapter)
-+static void cxl_pci_remove_adapter(struct cxl *adapter)
- {
- 	pr_devel("cxl_remove_adapter\n");
- 
-@@ -1219,14 +1221,14 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	if (cxl_verbose)
- 		dump_cxl_config_space(dev);
- 
--	adapter = cxl_init_adapter(dev);
-+	adapter = cxl_pci_init_adapter(dev);
- 	if (IS_ERR(adapter)) {
- 		dev_err(&dev->dev, "cxl_init_adapter failed: %li\n", PTR_ERR(adapter));
- 		return PTR_ERR(adapter);
- 	}
- 
- 	for (slice = 0; slice < adapter->slices; slice++) {
--		if ((rc = cxl_init_afu(adapter, slice, dev))) {
-+		if ((rc = pci_init_afu(adapter, slice, dev))) {
- 			dev_err(&dev->dev, "AFU %i failed to initialise: %i\n", slice, rc);
- 			continue;
+ 	/* We've allocated all memory now, so let's do the irq allocations */
+ 	irq_name = list_first_entry(&ctx->irq_names, struct cxl_irq_name, list);
+-	for (r = 1; r < CXL_IRQ_RANGES; r++) {
++	for (r = afu_irq_range_start(); r < CXL_IRQ_RANGES; r++) {
+ 		hwirq = ctx->irqs.offset[r];
+ 		for (i = 0; i < ctx->irqs.range[r]; hwirq++, i++) {
+-			cxl_map_irq(ctx->afu->adapter, hwirq,
+-				    cxl_irq_afu, ctx, irq_name->name);
++			if (r == 0 && i == 0)
++				/*
++				 * The very first interrupt of range 0 is
++				 * always the PSL interrupt, but we only
++				 * need to connect a handler for guests,
++				 * because there's one PSL interrupt per
++				 * context.
++				 * On bare-metal, the PSL interrupt is
++				 * multiplexed and was setup when the AFU
++				 * was configured.
++				 */
++				handler = cxl_ops->psl_interrupt;
++			else
++				handler = cxl_irq_afu;
++			cxl_map_irq(ctx->afu->adapter, hwirq, handler, ctx,
++				irq_name->name);
+ 			irq_name = list_next_entry(irq_name, list);
  		}
-@@ -1252,9 +1254,9 @@ static void cxl_remove(struct pci_dev *dev)
- 	for (i = 0; i < adapter->slices; i++) {
- 		afu = adapter->afu[i];
- 		cxl_pci_vphb_remove(afu);
--		cxl_remove_afu(afu);
-+		cxl_pci_remove_afu(afu);
  	}
--	cxl_remove_adapter(adapter);
-+	cxl_pci_remove_adapter(adapter);
- }
+@@ -311,7 +361,7 @@ void afu_release_irqs(struct cxl_context *ctx, void *cookie)
+ 	unsigned int virq;
+ 	int r, i;
  
- static pci_ers_result_t cxl_vphb_error_detected(struct cxl_afu *afu,
-@@ -1401,7 +1403,7 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
- 
- 		cxl_context_detach_all(afu);
- 		cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
--		cxl_deconfigure_afu(afu);
-+		pci_deconfigure_afu(afu);
- 	}
- 	cxl_deconfigure_adapter(adapter);
- 
-@@ -1424,7 +1426,7 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
- 	for (i = 0; i < adapter->slices; i++) {
- 		afu = adapter->afu[i];
- 
--		if (cxl_configure_afu(afu, adapter, pdev))
-+		if (pci_configure_afu(afu, adapter, pdev))
- 			goto err;
- 
- 		if (cxl_afu_select_best_mode(afu))
+-	for (r = 1; r < CXL_IRQ_RANGES; r++) {
++	for (r = afu_irq_range_start(); r < CXL_IRQ_RANGES; r++) {
+ 		hwirq = ctx->irqs.offset[r];
+ 		for (i = 0; i < ctx->irqs.range[r]; hwirq++, i++) {
+ 			virq = irq_find_mapping(NULL, hwirq);
 -- 
 1.9.1
