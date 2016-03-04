@@ -1,17 +1,22 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 980991A03DF
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 17:57:42 +1100 (AEDT)
-Date: Fri, 4 Mar 2016 00:57:32 -0600
-From: Scott Wood <oss@buserror.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.org
-Message-ID: <20160304065732.GA17267@home.buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6117B1A045D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Mar 2016 18:49:51 +1100 (AEDT)
+Date: Fri, 4 Mar 2016 18:49:50 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, "Kirill A.
+ Shutemov" <kirill.shutemov@linux.intel.com>, Ebru Akagunduz
+ <ebru.akagunduz@gmail.com>
+Subject: linux-next: manual merge of the akpm-current tree with the powerpc
+ tree
+Message-ID: <20160304184950.7aead922@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: Pull request: scottwood/linux.git fixes
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,24 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes a regression that causes any usage of hugetlb
-on e5500 to oops.
+Hi all,
 
-The following changes since commit fb822e6076d972691c5dd33431c10f82dda94ae9:
+Today's linux-next merge of the akpm-current tree got a conflict in:
 
-  powerpc/hw_breakpoint: Fix oops when destroying hw_breakpoint event (2016-03-03 22:06:08 +1100)
+  mm/huge_memory.c
 
-are available in the git repository at:
+between commit:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git fixes
+  ff20c2e0acc5 ("mm: Some arch may want to use HPAGE_PMD related values as variables")
 
-for you to fetch changes up to 37c5e942bb2eedd98c1cd1fa1f94d79f6b830c38:
+from the powerpc tree and commit:
 
-  powerpc/fsl-book3e: Avoid lbarx on e5500 (2016-03-03 23:43:05 -0600)
+  82fdbe051e29 ("mm: make optimistic check for swapin readahead")
 
-----------------------------------------------------------------
-Scott Wood (1):
-      powerpc/fsl-book3e: Avoid lbarx on e5500
+from the akpm-current tree.
 
- arch/powerpc/mm/hugetlbpage-book3e.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+I fixed it up (see below) and can carry the fix as necessary (no action
+is required).
+
+-- 
+Cheers,
+Stephen Rothwell
+
+diff --cc mm/huge_memory.c
+index 43b11a695113,5b38aa24566f..000000000000
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@@ -98,7 -100,8 +100,8 @@@ static DECLARE_WAIT_QUEUE_HEAD(khugepag
+   * it would have happened if the vma was large enough during page
+   * fault.
+   */
+ -static unsigned int khugepaged_max_ptes_none __read_mostly = HPAGE_PMD_NR-1;
+ -static unsigned int khugepaged_max_ptes_swap __read_mostly = HPAGE_PMD_NR/8;
+ +static unsigned int khugepaged_max_ptes_none __read_mostly;
+++static unsigned int khugepaged_max_ptes_swap __read_mostly;
+  
+  static int khugepaged(void *none);
+  static int khugepaged_slab_init(void);
+@@@ -660,18 -691,6 +691,19 @@@ static int __init hugepage_init(void
+  		return -EINVAL;
+  	}
+  
+ +	khugepaged_pages_to_scan = HPAGE_PMD_NR * 8;
+ +	khugepaged_max_ptes_none = HPAGE_PMD_NR - 1;
+++	khugepaged_max_ptes_swap = HPAGE_PMD_NR / 8;
+ +	/*
+ +	 * hugepages can't be allocated by the buddy allocator
+ +	 */
+ +	MAYBE_BUILD_BUG_ON(HPAGE_PMD_ORDER >= MAX_ORDER);
+ +	/*
+ +	 * we use page->mapping and page->index in second tail page
+ +	 * as list_head: assuming THP order >= 2
+ +	 */
+ +	MAYBE_BUILD_BUG_ON(HPAGE_PMD_ORDER < 2);
+ +
+  	err = hugepage_init_sysfs(&hugepage_kobj);
+  	if (err)
+  		goto err_sysfs;
