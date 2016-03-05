@@ -1,23 +1,38 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 074411A02E6
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Mar 2016 16:29:11 +1100 (AEDT)
-Date: Fri, 4 Mar 2016 23:29:00 -0600
-From: Scott Wood <oss@buserror.net>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, scottwood@freescale.com,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Message-ID: <20160305052900.GA5742@home.buserror.net>
-References: <df593a56e52ccd24b758b9d40ae3b414cb4e5372.1442876807.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EF33A1A0311
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Mar 2016 19:29:11 +1100 (AEDT)
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sat, 5 Mar 2016 01:29:10 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 9FAE819D806A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Mar 2016 01:17:02 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u258T6Y536962466
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 5 Mar 2016 01:29:06 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u258T696027093
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 5 Mar 2016 01:29:06 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 2/2] powerpc/mm: Replace _PAGE_USER with _PAGE_PRIV
+In-Reply-To: <20160302010759.GB3160@oak.ozlabs.ibm.com>
+References: <1456456850-2679-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1456456850-2679-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20160302010759.GB3160@oak.ozlabs.ibm.com>
+Date: Sat, 05 Mar 2016 13:59:02 +0530
+Message-ID: <87lh5xs4z5.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <df593a56e52ccd24b758b9d40ae3b414cb4e5372.1442876807.git.christophe.leroy@c-s.fr>
-Subject: Re: [9/9] powerpc: optimise csum_partial() call when len is constant
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,61 +42,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 22, 2015 at 04:34:36PM +0200, Christophe Leroy wrote:
-> +/*
-> + * computes the checksum of a memory block at buff, length len,
-> + * and adds in "sum" (32-bit)
-> + *
-> + * returns a 32-bit number suitable for feeding into itself
-> + * or csum_tcpudp_magic
-> + *
-> + * this function must be called with even lengths, except
-> + * for the last fragment, which may be odd
-> + *
-> + * it's best to have buff aligned on a 32-bit boundary
-> + */
-> +__wsum __csum_partial(const void *buff, int len, __wsum sum);
-> +
-> +static inline __wsum csum_partial(const void *buff, int len, __wsum sum)
-> +{
-> +	if (__builtin_constant_p(len) && len == 0)
-> +		return sum;
-> +
-> +	if (__builtin_constant_p(len) && len <= 16 && (len & 1) == 0) {
-> +		__wsum sum1;
-> +
-> +		if (len == 2)
-> +			sum1 = (__force u32)*(u16 *)buff;
-> +		if (len >= 4)
-> +			sum1 = *(u32 *)buff;
-> +		if (len == 6)
-> +			sum1 = csum_add(sum1, (__force u32)*(u16 *)(buff + 4));
-> +		if (len >= 8)
-> +			sum1 = csum_add(sum1, *(u32 *)(buff + 4));
-> +		if (len == 10)
-> +			sum1 = csum_add(sum1, (__force u32)*(u16 *)(buff + 8));
-> +		if (len >= 12)
-> +			sum1 = csum_add(sum1, *(u32 *)(buff + 8));
-> +		if (len == 14)
-> +			sum1 = csum_add(sum1, (__force u32)*(u16 *)(buff + 12));
-> +		if (len >= 16)
-> +			sum1 = csum_add(sum1, *(u32 *)(buff + 12));
-> +
-> +		sum = csum_add(sum1, sum);
+Paul Mackerras <paulus@ozlabs.org> writes:
 
-Why the final csum_add instead of s/sum1/sum/ and putting csum_add in the
-"len == 2" and "len >= 4" cases?
+> [ text/plain ]
+> On Fri, Feb 26, 2016 at 08:50:50AM +0530, Aneesh Kumar K.V wrote:
+>> _PAGE_PRIV means the page can be accessed only by kernel. This is done
+>> to keep pte bits similar to PowerISA 3.0 radix PTE format. User
+>> pages are now makred by clearing _PAGE_PRIV bit.
+>
+>
 
-The (__force u32) casts are unnecessary.  Or rather, it should be
-(__force __wsum) -- on all of them, not just the 16-bit ones.
+.....
 
-The pointer casts should be const.
+>> @@ -40,6 +40,11 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+>>  		if (unlikely(access & ~old_pte))
+>>  			return 1;
+>
+> This check is going to do a different thing now as far as
+> _PAGE_USER/_PAGE_PRIV is concerned: previously it would prevent a
+> non-privileged access to a privileged page from creating a HPTE, now
+> it prevents a privileged access to a non-privileged page from creating
+> a HPTE.  A privileged access means an access by the kernel to a high
+> address, and arguably we would never have a non-privileged PTE at a
+> high (i.e. kernel) address, but it's still a semantic change that
+> should have been flagged in the patch description.
 
-> +	} else if (__builtin_constant_p(len) && (len & 3) == 0) {
-> +		sum = csum_add(ip_fast_csum_nofold(buff, len >> 2), sum);
 
-It may not make a functional difference, but based on the csum_add()
-argument names and other csum_add() usage, sum should come first
-and the new content second.
+We don't set _PAGE_PRIVILGED when we have a privilged acess to a non
+privilged page. We set it as below (with updated comments)
 
--Scott
+	/*
+	 * We set _PAGE_PRIVILEGED only when
+	 * kernel mode access kernel space.
+	 *
+	 * _PAGE_PRIVILGED is NOT set
+	 * 1) when kernel mode access user space
+	 * 2) user space access kernel space.
+	 */
+	if (!(msr & MSR_PR) && !(REGION_ID(ea) == USER_REGION_ID))
+		access |= _PAGE_PRIVILEGED;
+
+
+
+>
+> In fact it wouldn't really matter if we didn't check the privilege
+> here and went ahead and created the HPTE - if it's a non-privileged
+> access to a privileged page, the HPTE will get its permission bits set
+> so as to prevent non-privileged access anyway.
+>
+>>  		/*
+>> +		 * access from user, but pte in _PAGE_PRIV
+>> +		 */
+>> +		if (unlikely((access & _PAGE_PRIV) != (old_pte & _PAGE_PRIV)))
+>> +			return 1;
+>
+> And this catches both the privileged access to non-privileged page
+> case (which the previous statement already caught) and the
+> non-privileged access to privileged page case.
+
+The actual PRIVILEGED check is done by the above conditional. 
+
+
+-aneesh
