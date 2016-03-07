@@ -1,18 +1,18 @@
 Return-Path: <pku.leo@gmail.com>
-Received: from mail-wm0-x22c.google.com (mail-wm0-x22c.google.com
- [IPv6:2a00:1450:400c:c09::22c])
+Received: from mail-wm0-x229.google.com (mail-wm0-x229.google.com
+ [IPv6:2a00:1450:400c:c09::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 23F881A01EB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 10:47:53 +1100 (AEDT)
-Received: by mail-wm0-x22c.google.com with SMTP id n186so108671740wmn.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Mar 2016 15:47:53 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 087391A0B73
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 10:49:23 +1100 (AEDT)
+Received: by mail-wm0-x229.google.com with SMTP id p65so6355585wmp.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Mar 2016 15:49:22 -0800 (PST)
 MIME-Version: 1.0
 Sender: pku.leo@gmail.com
 In-Reply-To: <1450941981-11900-1-git-send-email-xuelin.shi@nxp.com>
 References: <1450941981-11900-1-git-send-email-xuelin.shi@nxp.com>
-Date: Mon, 7 Mar 2016 17:47:47 -0600
-Message-ID: <CADRPPNTmZLczeq9+_V6AOwkSEQVto-T55MCgqeLeXcPC+vMrUw@mail.gmail.com>
+Date: Mon, 7 Mar 2016 17:49:19 -0600
+Message-ID: <CADRPPNTH2+aH52rTpvDGT5k+KFFovb9spaDNR7SgR_j2KeQW1A@mail.gmail.com>
 Subject: Re: [PATCH] dma driver: fix potential oom issue of fsldma
 From: Li Yang <leoli@freescale.com>
 To: Xuelin Shi <xuelin.shi@nxp.com>
@@ -28,21 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The change looks to be correct.  But we need better formatting and description.
-
-Make the title something like:
-
-dmaengine: fsldma: fix memory leak
-
 On Thu, Dec 24, 2015 at 1:26 AM, Xuelin Shi <xuelin.shi@nxp.com> wrote:
 > From: Xuelin Shi <xuelin.shi@freescale.com>
+
+And please cc dmaengine maintainers and its mailing list when you send
+next version.
+
 >
 > missing unmap sources and destinations while doing dequeue.
-
-How can this describe your change?
-
-Regards,
-Leo
 >
 > Signed-off-by: Xuelin Shi <xuelin.shi@nxp.com>
 > ---
