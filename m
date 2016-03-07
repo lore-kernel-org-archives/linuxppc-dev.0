@@ -1,22 +1,22 @@
 Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2CF971A010A
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 18:49:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 64FB61A0B52
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 18:49:11 +1100 (AEDT)
 Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Mon, 7 Mar 2016 13:19:01 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u277mxeE42467444
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 13:18:59 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u277mmso009481
+ Mon, 7 Mar 2016 13:19:05 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u277moqj2359642
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 13:18:50 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u277mxBv012507
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 13:19:00 +0530
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -26,10 +26,12 @@ Cc: bhelgaas@google.com, corbet@lwn.net, aik@ozlabs.ru,
  mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
  zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
  Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Subject: [RFC PATCH v4 0/7] vfio-pci: Allow to mmap sub-page MMIO BARs and
- MSI-X table
-Date: Mon,  7 Mar 2016 15:48:31 +0800
-Message-Id: <1457336918-3893-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+Subject: [RFC PATCH v4 1/7] PCI: Add a new option for resource_alignment to
+ reassign alignment
+Date: Mon,  7 Mar 2016 15:48:32 +0800
+Message-Id: <1457336918-3893-2-git-send-email-xyjxie@linux.vnet.ibm.com>
+In-Reply-To: <1457336918-3893-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+References: <1457336918-3893-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,86 +41,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current vfio-pci implementation disallows to mmap
-sub-page(size < PAGE_SIZE) MMIO BARs and MSI-X table. This is because
-sub-page BARs' mmio page may be shared with other BARs and MSI-X table
-should not be accessed directly from the guest for security reasons.
+When using resource_alignment kernel parameter, the current
+implement reassigns the alignment by changing resources' size
+which can potentially break some drivers.
 
-But these will easily cause some performance issues for mmio accesses
-in guest when vfio passthrough sub-page BARs or BARs containing MSI-X
-table on PPC64 platform. This is because PAGE_SIZE is 64KB by default
-on PPC64 platform and the big page may easily hit the sub-page MMIO
-BARs' unmmapping and cause the unmmaping of the mmio page which
-MSI-X table locate in, which lead to mmio emulation in host.
+So this patch adds a new option "noresize" for the parameter
+to solve this problem.
 
-For sub-page MMIO BARs' unmmapping, this patchset modifies
-resource_alignment kernel parameter to enforce the alignment of all
-MMIO BARs to be at least PAGE_SZIE so that sub-page BAR's mmio page
-will not be shared with other BARs. Then we can mmap sub-page MMIO BARs
-in vfio-pci driver with the modified resource_alignment.
+Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+---
+ Documentation/kernel-parameters.txt |    5 ++++-
+ drivers/pci/pci.c                   |   36 +++++++++++++++++++++++++----------
+ 2 files changed, 30 insertions(+), 11 deletions(-)
 
-For MSI-X table's unmmapping, we think MSI-X table is safe to access
-directly from userspace if PCI host bridge support filtering of MSIs
-which can ensure that a given pci device can only shoot the MSIs
-assigned for it. So we allow to mmap MSI-X table if
-IOMMU_CAP_INTR_REMAP was set. And we add IOMMU_CAP_INTR_REMAP for
-IODA host bridge on PPC64 platform.
-
-With this patchset applied, we can get almost 100% improvement on
-performance for mmio accesses when we passthrough sub-page BARs to guest
-in our test.
-
-The two vfio related patches(patch 5 and patch 6) are based on the
-proposed patchset[1].
-
-Changelog v4:
-- Rebase on v4.5-rc6 with patchset[1] applied.
-- Remove resource_page_aligned kernel parameter
-- Fix some problems with resource_alignment kernel parameter
-- Modify resource_alignment kernel parameter to support multiple
-  devices.
-- Remove host bridge attribute: msi_filtered
-- Use IOMMU_CAP_INTR_REMAP to check if MSI-X table can be mmapped
-- Add IOMMU_CAP_INTR_REMAP for IODA host bridge on PPC64 platform
-
-Changelog v3:
-- Rebase on new linux kernel mainline with the patchset[1] applied.
-- Add a function to check whether PCI BARs'mmio page is shared with
-  other BARs.
-- Add a host bridge attribute to indicate PCI host bridge support
-  filtering of MSIs.
-- Use the new host bridge attribute to check if MSI-X table can
-  be mmapped instead of CONFIG_EEH.
-- Remove Kconfig option VFIO_PCI_MMAP_MSIX
-
-Changelog v2:
-- Rebase on v4.4-rc6 with the patchset[1] applied.
-- Use kernel parameter to enforce all MMIO BARs to be page aligned
-  on PCI core code instead of doing it on PPC64 arch code.
-- Remove flags: VFIO_DEVICE_FLAGS_PCI_PAGE_ALIGNED
-		VFIO_DEVICE_FLAGS_PCI_MSIX_MMAP
-- Add a Kconfig option to support for mmapping MSI-X table.
-
-[1] http://www.spinics.net/lists/kvm/msg127812.html
-
-Yongji Xie (7):
-  PCI: Add a new option for resource_alignment to reassign alignment
-  PCI: Use IORESOURCE_WINDOW to identify bridge resources
-  PCI: Ignore resource_alignment if PCI_PROBE_ONLY was set
-  PCI: Modify resource_alignment to support multiple devices
-  vfio-pci: Allow to mmap sub-page MMIO BARs if the mmio page is exclusive
-  vfio-pci: Allow to mmap MSI-X table if IOMMU_CAP_INTR_REMAP was set
-  powerpc/powernv/pci-ioda: Add IOMMU_CAP_INTR_REMAP for IODA host bridge
-
- Documentation/kernel-parameters.txt       |    9 ++-
- arch/powerpc/platforms/powernv/pci-ioda.c |   17 ++++
- drivers/pci/pci.c                         |  126 ++++++++++++++++++++++++-----
- drivers/pci/probe.c                       |    3 +-
- drivers/pci/setup-bus.c                   |   21 ++---
- drivers/vfio/pci/vfio_pci.c               |   15 +++-
- drivers/vfio/pci/vfio_pci_rdwr.c          |    4 +-
- include/linux/pci.h                       |    4 +
- 8 files changed, 162 insertions(+), 37 deletions(-)
-
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 9a53c92..d8b29ab 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2912,13 +2912,16 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 				window. The default value is 64 megabytes.
+ 		resource_alignment=
+ 				Format:
+-				[<order of align>@][<domain>:]<bus>:<slot>.<func>[; ...]
++				[<order of align>@][<domain>:]<bus>:<slot>.<func>
++				[:noresize][; ...]
+ 				Specifies alignment and device to reassign
+ 				aligned memory resources.
+ 				If <order of align> is not specified,
+ 				PAGE_SIZE is used as alignment.
+ 				PCI-PCI bridge can be specified, if resource
+ 				windows need to be expanded.
++				noresize: Don't change the resources' sizes when
++				reassigning alignment.
+ 		ecrc=		Enable/disable PCIe ECRC (transaction layer
+ 				end-to-end CRC checking).
+ 				bios: Use BIOS/firmware settings. This is the
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 602eb42..760cce5 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -4598,7 +4598,8 @@ static DEFINE_SPINLOCK(resource_alignment_lock);
+  * RETURNS: Resource alignment if it is specified.
+  *          Zero if it is not specified.
+  */
+-static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
++static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
++		bool *resize)
+ {
+ 	int seg, bus, slot, func, align_order, count;
+ 	resource_size_t align = 0;
+@@ -4626,6 +4627,11 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+ 			}
+ 		}
+ 		p += count;
++		if (!strncmp(p, ":noresize", 9)) {
++			*resize = false;
++			p += 9;
++		} else
++			*resize = true;
+ 		if (seg == pci_domain_nr(dev->bus) &&
+ 			bus == dev->bus->number &&
+ 			slot == PCI_SLOT(dev->devfn) &&
+@@ -4658,11 +4664,12 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+ {
+ 	int i;
+ 	struct resource *r;
++	bool resize;
+ 	resource_size_t align, size;
+ 	u16 command;
+ 
+ 	/* check if specified PCI is target device to reassign */
+-	align = pci_specified_resource_alignment(dev);
++	align = pci_specified_resource_alignment(dev, &resize);
+ 	if (!align)
+ 		return;
+ 
+@@ -4684,15 +4691,24 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+ 		if (!(r->flags & IORESOURCE_MEM))
+ 			continue;
+ 		size = resource_size(r);
+-		if (size < align) {
+-			size = align;
+-			dev_info(&dev->dev,
+-				"Rounding up size of resource #%d to %#llx.\n",
+-				i, (unsigned long long)size);
++		if (resize) {
++			if (size < align) {
++				size = align;
++				dev_info(&dev->dev,
++					"Rounding up size of resource #%d to %#llx.\n",
++					i, (unsigned long long)size);
++			}
++			r->flags |= IORESOURCE_UNSET;
++			r->end = size - 1;
++			r->start = 0;
++		} else {
++			if (size > align)
++				align = size;
++			r->flags &= ~IORESOURCE_SIZEALIGN;
++			r->flags |= IORESOURCE_STARTALIGN | IORESOURCE_UNSET;
++			r->start = align;
++			r->end = r->start + size - 1;
+ 		}
+-		r->flags |= IORESOURCE_UNSET;
+-		r->end = size - 1;
+-		r->start = 0;
+ 	}
+ 	/* Need to disable bridge's resource window,
+ 	 * to enable the kernel to reassign new resource
 -- 
 1.7.9.5
