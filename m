@@ -1,29 +1,26 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BAAC51A005D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 20:56:35 +1100 (AEDT)
-Received: from localhost
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 7 Mar 2016 15:26:27 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u279u2wQ37683296
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 15:26:03 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u27FPEKo015841
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 20:55:15 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
-Subject: [PATCH V2] powerpc/mm: Add validation for platform reserved memory
- ranges
-Date: Mon,  7 Mar 2016 15:25:59 +0530
-Message-Id: <1457344559-2505-1-git-send-email-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CE6C41A00BC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 21:06:02 +1100 (AEDT)
+Message-ID: <1457345161.18915.3.camel@ellerman.id.au>
+Subject: Re: How to merge? (was Re: [PATCH][v4] livepatch/ppc: Enable
+ livepatching on powerpc)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Jiri Kosina <jikos@kernel.org>
+Cc: Petr Mladek <pmladek@suse.com>, linuxppc-dev@ozlabs.org,
+ jeyu@redhat.com,  linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com,  duwe@lst.de, live-patching@vger.kernel.org,
+ mbenes@suse.cz, Torsten Duwe <duwe@suse.de>, vojtech@suse.com,
+ jpoimboe@redhat.com, sjenning@redhat.com
+Date: Mon, 07 Mar 2016 21:06:01 +1100
+In-Reply-To: <alpine.LNX.2.00.1603040952330.3656@cbobk.fhfr.pm>
+References: <1457023921-2051-1-git-send-email-pmladek@suse.com>
+ <1457078800.20076.4.camel@ellerman.id.au>
+ <alpine.LNX.2.00.1603040952330.3656@cbobk.fhfr.pm>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,113 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For partition running on PHYP, there can be a adjunct partition
-which shares the virtual address range with the operating system.
-Virtual address ranges which can be used by the adjunct partition
-are communicated with virtual device node of the device tree with
-a property known as "ibm,reserved-virtual-addresses". This patch
-introduces a new function named 'validate_reserved_va_range' which
-is called  during initialization to validate that these reserved
-virtual address ranges do not overlap with the address ranges used
-by the kernel for all supported memory contexts. This helps prevent
-the possibility of getting return codes similar to H_RESOURCE for
-H_PROTECT hcalls for conflicting HPTE entries.
+On Fri, 2016-03-04 at 09:56 +0100, Jiri Kosina wrote:
+> On Fri, 4 Mar 2016, Michael Ellerman wrote:
+>
+> > Obviously it depends heavily on the content of my series, which will go into
+> > powerpc#next, so it would make sense if this went there too.
+> >
+> > I don't see any changes in linux-next for livepatch, so merging it via powerpc
+> > would probably work fine and not cause any conflicts, unless there's some
+> > livepatch changes pending for 4.6 that aren't in linux-next yet?
+> >
+> > The other option is that I put my ftrace changes and this in a topic branch
+> > (based on v4.5-rc3), and then that can be merged into both powerpc#next and the
+> > livepatch tree.
+>
+> This aligns with my usual workflow, so that'd be my preferred way of doing
+> things; i.e. you put all the ftrace changes into a separate topic branch,
+> and then
+>
+> - you pull that branch into powerpc#next
+> - I pull that branch into livepatching tree
+> - I apply the ppc livepatching support on top of that
+> - I send a pull request to Linus only after powerpc#next gets merged to
+>   Linus' tree
+>
+> Sounds good?
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
-- Tested on both POWER8 LE and BE platforms
+Yep, here it is:
 
-Changes in V2:
-- Added braces to the definition of LINUX_VA_BITS
-- Adjusted tabs as spaces for the definition of PARTIAL_LINUX_VA_MASK
+  https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/log/?h=topic/mprofile-kernel
 
- arch/powerpc/mm/hash_utils_64.c | 77 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 77 insertions(+)
+aka:
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index ba59d59..b47f667 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1564,3 +1564,80 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	/* Finally limit subsequent allocations */
- 	memblock_set_current_limit(ppc64_rma_size);
- }
-+
-+/*
-+ * PAPR says that each reserved virtual address range record
-+ * contains three be32 elements which is of toal 12 bytes.
-+ * First two be32 elements contain the abbreviated virtual
-+ * address (high order 32 bits and low order 32 bits that
-+ * generate the abbreviated virtual address of 64 bits which
-+ * need to be concatenated with 24 bits of 0 at the end) and
-+ * the third be32 element contains the size of the reserved
-+ * virtual address range as number of consecutive 4K pages.
-+ */
-+struct reserved_va_record {
-+	__be32	high_addr;
-+	__be32	low_addr;
-+	__be32	nr_pages_4K;
-+};
-+
-+/*
-+ * Linux uses 65 bits (CONTEXT_BITS + ESID_BITS + SID_SHIFT)
-+ * of virtual address. As reserved virtual address comes in
-+ * as an abbreviated form (64 bits) from the device tree, we
-+ * will use a partial address bit mask (65 >> 24) to match it
-+ * for simplicity.
-+ */
-+#define RVA_LESS_BITS		24
-+#define LINUX_VA_BITS		(CONTEXT_BITS + ESID_BITS + SID_SHIFT)
-+#define PARTIAL_LINUX_VA_MASK	((1ULL << (LINUX_VA_BITS - RVA_LESS_BITS)) - 1)
-+
-+static int __init validate_reserved_va_range(void)
-+{
-+	struct reserved_va_record rva;
-+	struct device_node *np;
-+	int records, ret, i;
-+	__be64 vaddr;
-+
-+	np = of_find_node_by_name(NULL, "vdevice");
-+	if (!np)
-+		return -ENODEV;
-+
-+	records = of_property_count_elems_of_size(np,
-+			"ibm,reserved-virtual-addresses",
-+				sizeof(struct reserved_va_record));
-+	if (records < 0)
-+		return records;
-+
-+	for (i = 0; i < records; i++) {
-+		ret = of_property_read_u32_index(np,
-+			"ibm,reserved-virtual-addresses",
-+				3 * i, &rva.high_addr);
-+		if (ret)
-+			return ret;
-+
-+		ret = of_property_read_u32_index(np,
-+			"ibm,reserved-virtual-addresses",
-+				3 * i + 1, &rva.low_addr);
-+		if (ret)
-+			return ret;
-+
-+		ret = of_property_read_u32_index(np,
-+			"ibm,reserved-virtual-addresses",
-+				3 * i + 2, &rva.nr_pages_4K);
-+		if (ret)
-+			return ret;
-+
-+		vaddr =  rva.high_addr;
-+		vaddr =  (vaddr << 32) | rva.low_addr;
-+		if (vaddr & cpu_to_be64(~PARTIAL_LINUX_VA_MASK))
-+			continue;
-+
-+		pr_err("RVA [0x%llx000000 (0x%x in bytes)] overlapped\n",
-+					vaddr, rva.nr_pages_4K * 4096);
-+		BUG();
-+	}
-+	of_node_put(np);
-+	return 0;
-+}
-+__initcall(validate_reserved_va_range);
--- 
-2.1.0
+  git fetch git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git topic/mprofile-kernel
+
+
+I haven't merged it into my next yet, but I will tomorrow unless you tell me
+there's something wrong with it.
+
+cheers
