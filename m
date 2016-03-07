@@ -1,27 +1,35 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7F5771A0B6C
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 18:32:33 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id 63so7583144pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Mar 2016 23:32:33 -0800 (PST)
-Subject: Re: [PATCH kernel 4/9] powerpc/powernv/iommu: Add real mode version
- of xchg()
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <1457322077-26640-1-git-send-email-aik@ozlabs.ru>
- <1457322077-26640-5-git-send-email-aik@ozlabs.ru>
- <20160307060519.GM22546@voom.fritz.box>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <56DD2E87.1010504@ozlabs.ru>
-Date: Mon, 7 Mar 2016 18:32:23 +1100
-MIME-Version: 1.0
-In-Reply-To: <20160307060519.GM22546@voom.fritz.box>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2CF971A010A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 18:49:04 +1100 (AEDT)
+Received: from localhost
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Mon, 7 Mar 2016 13:19:01 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u277mxeE42467444
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 13:18:59 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u277mmso009481
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 13:18:50 +0530
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-doc@vger.kernel.org
+Cc: bhelgaas@google.com, corbet@lwn.net, aik@ozlabs.ru,
+ alex.williamson@redhat.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
+ zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Subject: [RFC PATCH v4 0/7] vfio-pci: Allow to mmap sub-page MMIO BARs and
+ MSI-X table
+Date: Mon,  7 Mar 2016 15:48:31 +0800
+Message-Id: <1457336918-3893-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,158 +39,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/07/2016 05:05 PM, David Gibson wrote:
-> On Mon, Mar 07, 2016 at 02:41:12PM +1100, Alexey Kardashevskiy wrote:
->> In real mode, TCE tables are invalidated using different
->> cache-inhibited store instructions which is different from
->> the virtual mode.
->>
->> This defines and implements exchange_rm() callback. This does not
->> define set_rm/clear_rm/flush_rm callbacks as there is no user for those -
->> exchange/exchange_rm are only to be used by KVM for VFIO.
->>
->> The exchange_rm callback is defined for IODA1/IODA2 powernv platforms.
->>
->> This replaces list_for_each_entry_rcu with its lockless version as
->> from now on pnv_pci_ioda2_tce_invalidate() can be called in
->> the real mode too.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->>   arch/powerpc/include/asm/iommu.h          |  7 +++++++
->>   arch/powerpc/kernel/iommu.c               | 15 +++++++++++++++
->>   arch/powerpc/platforms/powernv/pci-ioda.c | 28 +++++++++++++++++++++++++++-
->>   3 files changed, 49 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
->> index 7b87bab..3ca877a 100644
->> --- a/arch/powerpc/include/asm/iommu.h
->> +++ b/arch/powerpc/include/asm/iommu.h
->> @@ -64,6 +64,11 @@ struct iommu_table_ops {
->>   			long index,
->>   			unsigned long *hpa,
->>   			enum dma_data_direction *direction);
->> +	/* Real mode */
->> +	int (*exchange_rm)(struct iommu_table *tbl,
->> +			long index,
->> +			unsigned long *hpa,
->> +			enum dma_data_direction *direction);
->>   #endif
->>   	void (*clear)(struct iommu_table *tbl,
->>   			long index, long npages);
->> @@ -208,6 +213,8 @@ extern void iommu_del_device(struct device *dev);
->>   extern int __init tce_iommu_bus_notifier_init(void);
->>   extern long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
->>   		unsigned long *hpa, enum dma_data_direction *direction);
->> +extern long iommu_tce_xchg_rm(struct iommu_table *tbl, unsigned long entry,
->> +		unsigned long *hpa, enum dma_data_direction *direction);
->>   #else
->>   static inline void iommu_register_group(struct iommu_table_group *table_group,
->>   					int pci_domain_number,
->> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->> index a8e3490..2fcc48b 100644
->> --- a/arch/powerpc/kernel/iommu.c
->> +++ b/arch/powerpc/kernel/iommu.c
->> @@ -1062,6 +1062,21 @@ void iommu_release_ownership(struct iommu_table *tbl)
->>   }
->>   EXPORT_SYMBOL_GPL(iommu_release_ownership);
->>
->> +long iommu_tce_xchg_rm(struct iommu_table *tbl, unsigned long entry,
->> +		unsigned long *hpa, enum dma_data_direction *direction)
->> +{
->> +	long ret;
->> +
->> +	ret = tbl->it_ops->exchange_rm(tbl, entry, hpa, direction);
->> +
->> +	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
->> +			(*direction == DMA_BIDIRECTIONAL)))
->> +		SetPageDirty(realmode_pfn_to_page(*hpa >> PAGE_SHIFT));
->> +
->> +	return ret;
->> +}
->> +EXPORT_SYMBOL_GPL(iommu_tce_xchg_rm);
->
->>   int iommu_add_device(struct device *dev)
->>   {
->>   	struct iommu_table *tbl;
->> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->> index c5baaf3..bed1944 100644
->> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> @@ -1791,6 +1791,18 @@ static int pnv_ioda1_tce_xchg(struct iommu_table *tbl, long index,
->>
->>   	return ret;
->>   }
->> +
->> +static int pnv_ioda1_tce_xchg_rm(struct iommu_table *tbl, long index,
->> +		unsigned long *hpa, enum dma_data_direction *direction)
->> +{
->> +	long ret = pnv_tce_xchg(tbl, index, hpa, direction);
->> +
->> +	if (!ret && (tbl->it_type &
->> +			(TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE)))
->> +		pnv_pci_ioda1_tce_invalidate(tbl, index, 1, true);
->> +
->> +	return ret;
->> +}
->>   #endif
->
-> Both your _rm variants are identical to the non _rm versions.  Why not
-> just set the function poiinter to the same thing, rather than copying
-> the whole function.
+Current vfio-pci implementation disallows to mmap
+sub-page(size < PAGE_SIZE) MMIO BARs and MSI-X table. This is because
+sub-page BARs' mmio page may be shared with other BARs and MSI-X table
+should not be accessed directly from the guest for security reasons.
 
+But these will easily cause some performance issues for mmio accesses
+in guest when vfio passthrough sub-page BARs or BARs containing MSI-X
+table on PPC64 platform. This is because PAGE_SIZE is 64KB by default
+on PPC64 platform and the big page may easily hit the sub-page MMIO
+BARs' unmmapping and cause the unmmaping of the mmio page which
+MSI-X table locate in, which lead to mmio emulation in host.
 
-The last parameter - "rm" - to pnv_pci_ioda1_tce_invalidate() is different.
+For sub-page MMIO BARs' unmmapping, this patchset modifies
+resource_alignment kernel parameter to enforce the alignment of all
+MMIO BARs to be at least PAGE_SZIE so that sub-page BAR's mmio page
+will not be shared with other BARs. Then we can mmap sub-page MMIO BARs
+in vfio-pci driver with the modified resource_alignment.
 
+For MSI-X table's unmmapping, we think MSI-X table is safe to access
+directly from userspace if PCI host bridge support filtering of MSIs
+which can ensure that a given pci device can only shoot the MSIs
+assigned for it. So we allow to mmap MSI-X table if
+IOMMU_CAP_INTR_REMAP was set. And we add IOMMU_CAP_INTR_REMAP for
+IODA host bridge on PPC64 platform.
 
->
->>   static void pnv_ioda1_tce_free(struct iommu_table *tbl, long index,
->> @@ -1806,6 +1818,7 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
->>   	.set = pnv_ioda1_tce_build,
->>   #ifdef CONFIG_IOMMU_API
->>   	.exchange = pnv_ioda1_tce_xchg,
->> +	.exchange_rm = pnv_ioda1_tce_xchg_rm,
->>   #endif
->>   	.clear = pnv_ioda1_tce_free,
->>   	.get = pnv_tce_get,
->> @@ -1866,7 +1879,7 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
->>   {
->>   	struct iommu_table_group_link *tgl;
->>
->> -	list_for_each_entry_rcu(tgl, &tbl->it_group_list, next) {
->> +	list_for_each_entry_lockless(tgl, &tbl->it_group_list, next) {
->>   		struct pnv_ioda_pe *npe;
->>   		struct pnv_ioda_pe *pe = container_of(tgl->table_group,
->>   				struct pnv_ioda_pe, table_group);
->> @@ -1918,6 +1931,18 @@ static int pnv_ioda2_tce_xchg(struct iommu_table *tbl, long index,
->>
->>   	return ret;
->>   }
->> +
->> +static int pnv_ioda2_tce_xchg_rm(struct iommu_table *tbl, long index,
->> +		unsigned long *hpa, enum dma_data_direction *direction)
->> +{
->> +	long ret = pnv_tce_xchg(tbl, index, hpa, direction);
->> +
->> +	if (!ret && (tbl->it_type &
->> +			(TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE)))
->> +		pnv_pci_ioda2_tce_invalidate(tbl, index, 1, true);
->> +
->> +	return ret;
->> +}
->>   #endif
->>
->>   static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
->> @@ -1939,6 +1964,7 @@ static struct iommu_table_ops pnv_ioda2_iommu_ops = {
->>   	.set = pnv_ioda2_tce_build,
->>   #ifdef CONFIG_IOMMU_API
->>   	.exchange = pnv_ioda2_tce_xchg,
->> +	.exchange_rm = pnv_ioda2_tce_xchg_rm,
->>   #endif
->>   	.clear = pnv_ioda2_tce_free,
->>   	.get = pnv_tce_get,
->
+With this patchset applied, we can get almost 100% improvement on
+performance for mmio accesses when we passthrough sub-page BARs to guest
+in our test.
 
+The two vfio related patches(patch 5 and patch 6) are based on the
+proposed patchset[1].
+
+Changelog v4:
+- Rebase on v4.5-rc6 with patchset[1] applied.
+- Remove resource_page_aligned kernel parameter
+- Fix some problems with resource_alignment kernel parameter
+- Modify resource_alignment kernel parameter to support multiple
+  devices.
+- Remove host bridge attribute: msi_filtered
+- Use IOMMU_CAP_INTR_REMAP to check if MSI-X table can be mmapped
+- Add IOMMU_CAP_INTR_REMAP for IODA host bridge on PPC64 platform
+
+Changelog v3:
+- Rebase on new linux kernel mainline with the patchset[1] applied.
+- Add a function to check whether PCI BARs'mmio page is shared with
+  other BARs.
+- Add a host bridge attribute to indicate PCI host bridge support
+  filtering of MSIs.
+- Use the new host bridge attribute to check if MSI-X table can
+  be mmapped instead of CONFIG_EEH.
+- Remove Kconfig option VFIO_PCI_MMAP_MSIX
+
+Changelog v2:
+- Rebase on v4.4-rc6 with the patchset[1] applied.
+- Use kernel parameter to enforce all MMIO BARs to be page aligned
+  on PCI core code instead of doing it on PPC64 arch code.
+- Remove flags: VFIO_DEVICE_FLAGS_PCI_PAGE_ALIGNED
+		VFIO_DEVICE_FLAGS_PCI_MSIX_MMAP
+- Add a Kconfig option to support for mmapping MSI-X table.
+
+[1] http://www.spinics.net/lists/kvm/msg127812.html
+
+Yongji Xie (7):
+  PCI: Add a new option for resource_alignment to reassign alignment
+  PCI: Use IORESOURCE_WINDOW to identify bridge resources
+  PCI: Ignore resource_alignment if PCI_PROBE_ONLY was set
+  PCI: Modify resource_alignment to support multiple devices
+  vfio-pci: Allow to mmap sub-page MMIO BARs if the mmio page is exclusive
+  vfio-pci: Allow to mmap MSI-X table if IOMMU_CAP_INTR_REMAP was set
+  powerpc/powernv/pci-ioda: Add IOMMU_CAP_INTR_REMAP for IODA host bridge
+
+ Documentation/kernel-parameters.txt       |    9 ++-
+ arch/powerpc/platforms/powernv/pci-ioda.c |   17 ++++
+ drivers/pci/pci.c                         |  126 ++++++++++++++++++++++++-----
+ drivers/pci/probe.c                       |    3 +-
+ drivers/pci/setup-bus.c                   |   21 ++---
+ drivers/vfio/pci/vfio_pci.c               |   15 +++-
+ drivers/vfio/pci/vfio_pci_rdwr.c          |    4 +-
+ include/linux/pci.h                       |    4 +
+ 8 files changed, 162 insertions(+), 37 deletions(-)
 
 -- 
-Alexey
+1.7.9.5
