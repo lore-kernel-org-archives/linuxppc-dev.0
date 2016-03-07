@@ -1,26 +1,27 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from emea01-db3-obe.outbound.protection.outlook.com
- (mail-db3on0064.outbound.protection.outlook.com [157.55.234.64])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CA871A005D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 13:50:49 +1100 (AEDT)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: Rob Herring <robh@kernel.org>
-CC: "oss@buserror.net" <oss@buserror.net>, Yang-Leo Li <leoyang.li@nxp.com>,
- Xiaobo Xie <xiaobo.xie@nxp.com>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH v3 3/7] QE: Add uqe_serial document to bindings
-Date: Mon, 7 Mar 2016 02:35:28 +0000
-Message-ID: <AM3PR04MB11852B62A075A980A246D2D091B10@AM3PR04MB1185.eurprd04.prod.outlook.com>
-References: <1456816183-22340-1-git-send-email-qiang.zhao@nxp.com>
- <1456816183-22340-3-git-send-email-qiang.zhao@nxp.com>
- <20160305042536.GD13525@rob-hp-laptop>
-In-Reply-To: <20160305042536.GD13525@rob-hp-laptop>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id D32CC1A0118
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 14:00:27 +1100 (AEDT)
+Message-ID: <1457319627.19197.1.camel@ellerman.id.au>
+Subject: Re: Problems with swapping in v4.5-rc on POWER
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Hugh Dickins <hughd@google.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Paul Mackerras
+ <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Date: Mon, 07 Mar 2016 14:00:27 +1100
+In-Reply-To: <alpine.LSU.2.11.1603040948250.5477@eggly.anvils>
+References: <alpine.LSU.2.11.1602241716220.15121@eggly.anvils>
+ <877fhttmr1.fsf@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1602242136270.6876@eggly.anvils>
+ <alpine.LSU.2.11.1602251322130.8063@eggly.anvils>
+ <alpine.LSU.2.11.1602260157430.10399@eggly.anvils>
+ <alpine.LSU.2.11.1603021226300.31251@eggly.anvils>
+ <1456984266.28236.1.camel@ellerman.id.au>
+ <alpine.LSU.2.11.1603040948250.5477@eggly.anvils>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,81 +31,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 05, 2016 at 12:26PM, Rob Herring wrote:
-> -----Original Message-----
-> From: Rob Herring [mailto:robh@kernel.org]
-> Sent: Saturday, March 05, 2016 12:26 PM
-> To: Qiang Zhao <qiang.zhao@nxp.com>
-> Cc: oss@buserror.net; Yang-Leo Li <leoyang.li@nxp.com>; Xiaobo Xie
-> <xiaobo.xie@nxp.com>; linux-kernel@vger.kernel.org;
-> devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH v3 3/7] QE: Add uqe_serial document to bindings
->=20
-> On Tue, Mar 01, 2016 at 03:09:39PM +0800, Zhao Qiang wrote:
-> > Add uqe_serial document to
-> > Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
-> >
-> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
-> > ---
-> > Changes for v2
-> > 	- modify tx/rx-clock-name specification Changes for v2
-> > 	- NA
-> >
-> >  .../bindings/powerpc/fsl/cpm_qe/uqe_serial.txt        | 19
-> +++++++++++++++++++
-> >  1 file changed, 19 insertions(+)
-> >  create mode 100644
-> > Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
-> >
-> > diff --git
-> > a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
-> > b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
-> > new file mode 100644
-> > index 0000000..436c71c
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.
-> > +++ txt
-> > @@ -0,0 +1,19 @@
-> > +* Serial
-> > +
-> > +Currently defined compatibles:
-> > +- ucc_uart
->=20
-> I guess this is in use already and okay. However, looking at the driver t=
-here
-> really should be SoC specific compatible strings here since the driver is=
- looking
-> up the SoC compatible string and composing the firmware filename from tha=
-t.
+On Fri, 2016-03-04 at 09:58 -0800, Hugh Dickins wrote:
+> 
+> The alternative bisection was as unsatisfactory as the first:
+> again it fingered an irrelevant merge (rather than any commit
+> pulled in by that merge) as the bad commit.
+> 
+> It seems this issue is too intermittent for bisection to be useful,
+> on my load anyway.
 
-Ok, I will changed both driver and this compatible.
+Darn. Thanks for trying.
 
->=20
-> > +
-> > +Properties for ucc_uart:
-> > +port-number : port number of UCC-UART tx/rx-clock-name : should be
-> > +"brg1"-"brg16" for internal clock source,
-> > +		   should be "clk1"-"clk28" for external clock source.
-> > +
-> > +Example:
-> > +
-> > +	ucc_serial: ucc@2200 {
-> > +		device_type =3D "serial";
->=20
-> Drop device_type. It should only be used in a few legacy cases.
->=20
-> Looks like the driver is matching on this. Please drop it from the driver=
- too. I'd
-> leave dts files for now, but they should be updated too later.
+> The best I can do now is try v4.4 for a couple of days, to verify that
+> still comes out good (rather than the machine going bad coincident with
+> v4.5-rc), then try v4.5-rc7 to verify that that still comes out bad.
 
-Ok, Thank you for your Reviewing, I will drop it
+Thanks, that would still be helpful.
 
->=20
-> > +		compatible =3D "ucc_uart";
-> > +		port-number =3D <1>;
-> > +		rx-clock-name =3D "brg2";
-> > +		tx-clock-name =3D "brg2";
-> > +	};
-> > --
-> > 2.1.0.27.g96db324
-> >
+> I'll report back on those; but beyond that, I'll have to leave it to you.
+
+I haven't had any luck here :/
+
+Can you give us a more verbose description of your test setup?
+
+ - G5, which exact model?
+ - 4k pages, no THP.
+ - how much ram & swap?
+ - building linus' tree, make -j ?
+ - source and output on tmpfs? (how big?)
+ - what device is the swap device? (you said SSD I think?)
+ - anything else I've forgotten?
+
+Oh and can you send us your bisect logs, we can at least trust the bad results
+I think.
+
+cheers
