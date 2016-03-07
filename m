@@ -1,35 +1,40 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E77A21A048B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 01:51:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 580BF1A011D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 02:34:19 +1100 (AEDT)
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 7 Mar 2016 06:40:22 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0669F19D803F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 06:28:15 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u27DeJB042205294
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 06:40:19 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u27DeHKd031477
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 06:40:19 -0700
+ Mon, 7 Mar 2016 08:34:13 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id A0E0E3E40047
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 08:34:11 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u27FYBBD19267700
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 08:34:11 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u27FYAkk009240
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 08:34:11 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 14/14] powerpc/mm/hash: Add support for POWER9 hash
-Date: Mon,  7 Mar 2016 19:09:34 +0530
-Message-Id: <1457357974-20839-14-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1457357974-20839-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1457357974-20839-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Christoph Lameter <cl@linux.com>, Tiejun Chen <tiejun.chen@windriver.com>,
+ Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc: mm: fixup preempt undefflow with huge pages
+In-Reply-To: <20160307135506.GA12595@linutronix.de>
+References: <20160307135506.GA12595@linutronix.de>
+Date: Mon, 07 Mar 2016 21:04:05 +0530
+Message-ID: <877fheti8i.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,195 +44,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This add support for p9 hash with UPRT=0. ie, we don't have
-segment table support yet.
+Sebastian Andrzej Siewior <bigeasy@linutronix.de> writes:
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/mmu-hash.h | 13 +++++++--
- arch/powerpc/mm/hash_native_64.c              | 11 ++++++-
- arch/powerpc/mm/hash_utils_64.c               | 42 +++++++++++++++++++++++++--
- arch/powerpc/mm/pgtable_64.c                  |  7 +++++
- arch/powerpc/platforms/ps3/htab.c             |  2 +-
- arch/powerpc/platforms/pseries/lpar.c         |  2 +-
- 6 files changed, 70 insertions(+), 7 deletions(-)
+> [ text/plain ]
+> hugepd_free() used __get_cpu_var() once. Nothing ensured that the code
+> accessing the variable did not migrate from one CPU to another and soon
+> this was noticed by Tiejun Chen in 94b09d755462 ("powerpc/hugetlb:
+> Replace __get_cpu_var with get_cpu_var"). So we had it fixed.
+>
+> Christoph Lameter was doing his __get_cpu_var() replaces and forgot
+> PowerPC. Then he noticed this and sent his fixed up batch again which
+> got applied as 69111bac42f5 ("powerpc: Replace __get_cpu_var uses").
+>
+> The careful reader will noticed one little detail: get_cpu_var() got
+> replaced with this_cpu_ptr(). So now we have a put_cpu_var() which does
+> a preempt_enable() and nothing that does preempt_disable() so we
+> underflow the preempt counter.
+>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Christoph Lameter <cl@linux.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Tiejun Chen <tiejun.chen@windriver.com>
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> ---
+>  arch/powerpc/mm/hugetlbpage.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index 744e24bcb85c..9e8919b39640 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -414,7 +414,7 @@ static void hugepd_free(struct mmu_gather *tlb, void *hugepte)
+>  {
+>  	struct hugepd_freelist **batchp;
+>
+> -	batchp = this_cpu_ptr(&hugepd_freelist_cur);
+> +	batchp = get_cpu_ptr(&hugepd_freelist_cur);
+>
+>  	if (atomic_read(&tlb->mm->mm_users) < 2 ||
+>  	    cpumask_equal(mm_cpumask(tlb->mm),
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index ce73736b42db..843b5d839904 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -78,6 +78,10 @@
- #define HPTE_V_SECONDARY	ASM_CONST(0x0000000000000002)
- #define HPTE_V_VALID		ASM_CONST(0x0000000000000001)
- 
-+/*
-+ * ISA 3.0 have a different HPTE format.
-+ */
-+#define HPTE_R_3_0_SSIZE_SHIFT	58
- #define HPTE_R_PP0		ASM_CONST(0x8000000000000000)
- #define HPTE_R_TS		ASM_CONST(0x4000000000000000)
- #define HPTE_R_KEY_HI		ASM_CONST(0x3000000000000000)
-@@ -224,7 +228,8 @@ static inline unsigned long hpte_encode_avpn(unsigned long vpn, int psize,
- 	 */
- 	v = (vpn >> (23 - VPN_SHIFT)) & ~(mmu_psize_defs[psize].avpnm);
- 	v <<= HPTE_V_AVPN_SHIFT;
--	v |= ((unsigned long) ssize) << HPTE_V_SSIZE_SHIFT;
-+	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+		v |= ((unsigned long) ssize) << HPTE_V_SSIZE_SHIFT;
- 	return v;
- }
- 
-@@ -248,8 +253,12 @@ static inline unsigned long hpte_encode_v(unsigned long vpn, int base_psize,
-  * aligned for the requested page size
-  */
- static inline unsigned long hpte_encode_r(unsigned long pa, int base_psize,
--					  int actual_psize)
-+					  int actual_psize, int ssize)
- {
-+
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		pa |= ((unsigned long) ssize) << HPTE_R_3_0_SSIZE_SHIFT;
-+
- 	/* A 4K page needs no special encoding */
- 	if (actual_psize == MMU_PAGE_4K)
- 		return pa & HPTE_R_RPN;
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 8eaac81347fd..d873f6507f72 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -221,7 +221,7 @@ static long native_hpte_insert(unsigned long hpte_group, unsigned long vpn,
- 		return -1;
- 
- 	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
--	hpte_r = hpte_encode_r(pa, psize, apsize) | rflags;
-+	hpte_r = hpte_encode_r(pa, psize, apsize, ssize) | rflags;
- 
- 	if (!(vflags & HPTE_V_BOLTED)) {
- 		DBG_LOW(" i=%x hpte_v=%016lx, hpte_r=%016lx\n",
-@@ -719,6 +719,12 @@ static void native_flush_hash_range(unsigned long number, int local)
- 	local_irq_restore(flags);
- }
- 
-+static int native_update_partition_table(u64 patb1)
-+{
-+	partition_tb->patb1 = cpu_to_be64(patb1);
-+	return 0;
-+}
-+
- void __init hpte_init_native(void)
- {
- 	ppc_md.hpte_invalidate	= native_hpte_invalidate;
-@@ -729,4 +735,7 @@ void __init hpte_init_native(void)
- 	ppc_md.hpte_clear_all	= native_hpte_clear;
- 	ppc_md.flush_hash_range = native_flush_hash_range;
- 	ppc_md.hugepage_invalidate   = native_hugepage_invalidate;
-+
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		ppc_md.update_partition_table = native_update_partition_table;
- }
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 728acd17f2a6..0e25d2981e5e 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -673,6 +673,41 @@ int remove_section_mapping(unsigned long start, unsigned long end)
- }
- #endif /* CONFIG_MEMORY_HOTPLUG */
- 
-+static void __init hash_init_partition_table(phys_addr_t hash_table,
-+					     unsigned long pteg_count)
-+{
-+	unsigned long ps_field;
-+	unsigned long htab_size;
-+	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
-+
-+	/*
-+	 * slb llp encoding for the page size used in VPM real mode.
-+	 * We can ignore that for lpid 0
-+	 */
-+	ps_field = 0;
-+	htab_size =  __ilog2(pteg_count) - 11;
-+
-+	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 24), "Partition table size too large.");
-+	partition_tb = __va(memblock_alloc_base(patb_size, patb_size,
-+						MEMBLOCK_ALLOC_ANYWHERE));
-+
-+	/* Initialize the Partition Table with no entries */
-+	memset((void *)partition_tb, 0, patb_size);
-+	partition_tb->patb0 = cpu_to_be64(ps_field | hash_table | htab_size);
-+	/*
-+	 * FIXME!! This should be done via update_partition table
-+	 * For now UPRT is 0 for us.
-+	 */
-+	partition_tb->patb1 = 0;
-+	DBG("Partition table %p\n", partition_tb);
-+	/*
-+	 * update partition table control register,
-+	 * 64 K size.
-+	 */
-+	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
-+
-+}
-+
- static void __init htab_initialize(void)
- {
- 	unsigned long table;
-@@ -741,8 +776,11 @@ static void __init htab_initialize(void)
- 		/* Initialize the HPT with no entries */
- 		memset((void *)table, 0, htab_size_bytes);
- 
--		/* Set SDR1 */
--		mtspr(SPRN_SDR1, _SDR1);
-+		if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+			/* Set SDR1 */
-+			mtspr(SPRN_SDR1, _SDR1);
-+		else
-+			hash_init_partition_table(table, pteg_count);
- 	}
- 
- 	prot = pgprot_val(PAGE_KERNEL);
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 98c91ad18ba7..5fff787da17a 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -69,6 +69,13 @@
- #endif
- #endif
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
-+/*
-+ * partition table and process table for ISA 3.0
-+ */
-+struct prtb_entry *process_tb;
-+struct patb_entry *partition_tb;
-+#endif
- unsigned long ioremap_bot = IOREMAP_BASE;
- 
- #ifdef CONFIG_PPC_MMU_NOHASH
-diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
-index 2f95d33cf34a..c9a3e677192a 100644
---- a/arch/powerpc/platforms/ps3/htab.c
-+++ b/arch/powerpc/platforms/ps3/htab.c
-@@ -63,7 +63,7 @@ static long ps3_hpte_insert(unsigned long hpte_group, unsigned long vpn,
- 	vflags &= ~HPTE_V_SECONDARY;
- 
- 	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
--	hpte_r = hpte_encode_r(ps3_mm_phys_to_lpar(pa), psize, apsize) | rflags;
-+	hpte_r = hpte_encode_r(ps3_mm_phys_to_lpar(pa), psize, apsize, ssize) | rflags;
- 
- 	spin_lock_irqsave(&ps3_htab_lock, flags);
- 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 0d4608990702..e4ceba2b1551 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -139,7 +139,7 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
- 			 hpte_group, vpn,  pa, rflags, vflags, psize);
- 
- 	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
--	hpte_r = hpte_encode_r(pa, psize, apsize) | rflags;
-+	hpte_r = hpte_encode_r(pa, psize, apsize, ssize) | rflags;
- 
- 	if (!(vflags & HPTE_V_BOLTED))
- 		pr_devel(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
--- 
-2.5.0
+IMHO it would better if we do
+
+batchp = get_cpu_var(hugepd_freelist_cpu);
+
+so that it match the existing
+
+put_cpu_var(hugepd_freelist_cur);
+
+While you are there, can you also fix the wrong indentation on line 423
+?
+
+-aneesh
