@@ -1,40 +1,26 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 580BF1A011D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 02:34:19 +1100 (AEDT)
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 7 Mar 2016 08:34:13 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id A0E0E3E40047
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 08:34:11 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u27FYBBD19267700
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 08:34:11 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u27FYAkk009240
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 08:34:11 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Christoph Lameter <cl@linux.com>, Tiejun Chen <tiejun.chen@windriver.com>,
- Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc: mm: fixup preempt undefflow with huge pages
-In-Reply-To: <20160307135506.GA12595@linutronix.de>
-References: <20160307135506.GA12595@linutronix.de>
-Date: Mon, 07 Mar 2016 21:04:05 +0530
-Message-ID: <877fheti8i.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 765541A02A0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 04:28:15 +1100 (AEDT)
+Message-ID: <1457371686.5360.107.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Qiang Zhao <qiang.zhao@nxp.com>, Rob Herring <robh@kernel.org>
+Cc: Yang-Leo Li <leoyang.li@nxp.com>, Xiaobo Xie <xiaobo.xie@nxp.com>,
+ "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 07 Mar 2016 11:28:06 -0600
+In-Reply-To: <AM3PR04MB11852B62A075A980A246D2D091B10@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1456816183-22340-1-git-send-email-qiang.zhao@nxp.com>
+ <1456816183-22340-3-git-send-email-qiang.zhao@nxp.com>
+ <20160305042536.GD13525@rob-hp-laptop>
+ <AM3PR04MB11852B62A075A980A246D2D091B10@AM3PR04MB1185.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH v3 3/7] QE: Add uqe_serial document to bindings
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,56 +30,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sebastian Andrzej Siewior <bigeasy@linutronix.de> writes:
+On Mon, 2016-03-07 at 02:35 +0000, Qiang Zhao wrote:
+> On Tue, Mar 05, 2016 at 12:26PM, Rob Herring wrote:
+> > -----Original Message-----
+> > From: Rob Herring [mailto:robh@kernel.org]
+> > Sent: Saturday, March 05, 2016 12:26 PM
+> > To: Qiang Zhao <qiang.zhao@nxp.com>
+> > Cc: oss@buserror.net; Yang-Leo Li <leoyang.li@nxp.com>; Xiaobo Xie
+> > <xiaobo.xie@nxp.com>; linux-kernel@vger.kernel.org;
+> > devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [PATCH v3 3/7] QE: Add uqe_serial document to bindings
+> > 
+> > On Tue, Mar 01, 2016 at 03:09:39PM +0800, Zhao Qiang wrote:
+> > > Add uqe_serial document to
+> > > Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
+> > > 
+> > > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> > > ---
+> > > Changes for v2
+> > > 	- modify tx/rx-clock-name specification Changes for v2
+> > > 	- NA
+> > > 
+> > >  .../bindings/powerpc/fsl/cpm_qe/uqe_serial.txt        | 19
+> > +++++++++++++++++++
+> > >  1 file changed, 19 insertions(+)
+> > >  create mode 100644
+> > > Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
+> > > 
+> > > diff --git
+> > > a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
+> > > b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
+> > > new file mode 100644
+> > > index 0000000..436c71c
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.
+> > > +++ txt
+> > > @@ -0,0 +1,19 @@
+> > > +* Serial
+> > > +
+> > > +Currently defined compatibles:
+> > > +- ucc_uart
+> > 
+> > I guess this is in use already and okay. However, looking at the driver
+> > there
+> > really should be SoC specific compatible strings here since the driver is
+> > looking
+> > up the SoC compatible string and composing the firmware filename from
+> > that.
+> 
+> Ok, I will changed both driver and this compatible.
 
-> [ text/plain ]
-> hugepd_free() used __get_cpu_var() once. Nothing ensured that the code
-> accessing the variable did not migrate from one CPU to another and soon
-> this was noticed by Tiejun Chen in 94b09d755462 ("powerpc/hugetlb:
-> Replace __get_cpu_var with get_cpu_var"). So we had it fixed.
->
-> Christoph Lameter was doing his __get_cpu_var() replaces and forgot
-> PowerPC. Then he noticed this and sent his fixed up batch again which
-> got applied as 69111bac42f5 ("powerpc: Replace __get_cpu_var uses").
->
-> The careful reader will noticed one little detail: get_cpu_var() got
-> replaced with this_cpu_ptr(). So now we have a put_cpu_var() which does
-> a preempt_enable() and nothing that does preempt_disable() so we
-> underflow the preempt counter.
->
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Christoph Lameter <cl@linux.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Tiejun Chen <tiejun.chen@windriver.com>
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> ---
->  arch/powerpc/mm/hugetlbpage.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index 744e24bcb85c..9e8919b39640 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -414,7 +414,7 @@ static void hugepd_free(struct mmu_gather *tlb, void *hugepte)
->  {
->  	struct hugepd_freelist **batchp;
->
-> -	batchp = this_cpu_ptr(&hugepd_freelist_cur);
-> +	batchp = get_cpu_ptr(&hugepd_freelist_cur);
->
->  	if (atomic_read(&tlb->mm->mm_users) < 2 ||
->  	    cpumask_equal(mm_cpumask(tlb->mm),
+But don't break existing device trees while doing so.
 
-IMHO it would better if we do
-
-batchp = get_cpu_var(hugepd_freelist_cpu);
-
-so that it match the existing
-
-put_cpu_var(hugepd_freelist_cur);
-
-While you are there, can you also fix the wrong indentation on line 423
-?
-
--aneesh
+-Scott
