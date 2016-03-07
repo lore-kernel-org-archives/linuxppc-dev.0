@@ -1,33 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 631F51A0225
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 00:39:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 91CD31A0225
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 00:40:02 +1100 (AEDT)
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 7 Mar 2016 06:39:57 -0700
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 2B16019D8042
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 06:27:49 -0700 (MST)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u27DdrPd7471328
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 13:39:53 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u27DZSiw012728
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 08:35:28 -0500
+ Mon, 7 Mar 2016 06:40:00 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id F15653E40071
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 06:39:58 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u27DdwEa34996306
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 06:39:58 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u27Ddwt8030815
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 06:39:58 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 02/14] powerpc/mm: use _PAGE_READ to indicate Read access
-Date: Mon,  7 Mar 2016 19:09:22 +0530
-Message-Id: <1457357974-20839-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 05/14] powerpc/mm: Replace _PAGE_USER with _PAGE_PRIVILEGED
+Date: Mon,  7 Mar 2016 19:09:25 +0530
+Message-Id: <1457357974-20839-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1457357974-20839-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1457357974-20839-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,360 +39,351 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This split _PAGE_RW bit to _PAGE_READ and _PAGE_WRITE. It also remove
-the dependency on _PAGE_USER for implying read only. Few things to note
-here is that, we have read implied with write and execute permission.
-Hence we should always find _PAGE_READ set on hash pte fault.
+_PAGE_PRIVILEGED means the page can be accessed only by kernel. This is done
+to keep pte bits similar to PowerISA 3.0 radix PTE format. User
+pages are now makred by clearing _PAGE_PRIVILEGED bit.
 
-We still can't switch PROT_NONE to !(_PAGE_RWX). Auto numa do depend
-on marking a prot none pte _PAGE_WRITE. (For more details look at
-b191f9b106ea "mm: numa: preserve PTE write permissions across a NUMA hinting fault")
+Previously we allowed kernel to have a privileged page
+in the lower address range(USER_REGION). With this patch such access
+is denied.
+
+We also prevent a kernel access to a non-privileged page in
+higher address range (ie, REGION_ID != 0). Both the above access
+scenario should never happen.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash-64k.h |  4 +--
- arch/powerpc/include/asm/book3s/64/hash.h     | 35 ++++++++++++++++-----------
- arch/powerpc/include/asm/pte-common.h         |  5 ++++
- arch/powerpc/mm/hash64_4k.c                   |  2 +-
- arch/powerpc/mm/hash64_64k.c                  |  4 +--
- arch/powerpc/mm/hash_utils_64.c               |  9 ++++---
- arch/powerpc/mm/hugepage-hash64.c             |  2 +-
- arch/powerpc/mm/hugetlbpage-hash64.c          |  2 +-
- arch/powerpc/mm/hugetlbpage.c                 |  4 +--
- arch/powerpc/mm/pgtable.c                     |  4 +--
- arch/powerpc/mm/pgtable_64.c                  |  5 ++--
- arch/powerpc/platforms/cell/spu_base.c        |  2 +-
- arch/powerpc/platforms/cell/spufs/fault.c     |  4 +--
- drivers/misc/cxl/fault.c                      |  4 +--
- 14 files changed, 49 insertions(+), 37 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash.h    | 34 ++++++++++++++--------------
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 18 ++++++++++++++-
+ arch/powerpc/mm/hash64_4k.c                  |  2 +-
+ arch/powerpc/mm/hash64_64k.c                 |  4 ++--
+ arch/powerpc/mm/hash_utils_64.c              | 17 ++++++++------
+ arch/powerpc/mm/hugepage-hash64.c            |  2 +-
+ arch/powerpc/mm/hugetlbpage-hash64.c         |  3 ++-
+ arch/powerpc/mm/hugetlbpage.c                |  2 +-
+ arch/powerpc/mm/pgtable.c                    | 15 ++++++++++--
+ arch/powerpc/mm/pgtable_64.c                 | 15 +++++++++---
+ arch/powerpc/platforms/cell/spufs/fault.c    |  2 +-
+ drivers/misc/cxl/fault.c                     |  5 ++--
+ 12 files changed, 80 insertions(+), 39 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index 0a7956a80a08..279ded72f1db 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -291,10 +291,10 @@ static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
- 				      pmd_t *pmdp)
- {
- 
--	if ((pmd_val(*pmdp) & _PAGE_RW) == 0)
-+	if ((pmd_val(*pmdp) & _PAGE_WRITE) == 0)
- 		return;
- 
--	pmd_hugepage_update(mm, addr, pmdp, _PAGE_RW, 0);
-+	pmd_hugepage_update(mm, addr, pmdp, _PAGE_WRITE, 0);
- }
- 
- #endif /*  CONFIG_TRANSPARENT_HUGEPAGE */
 diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index 2113de051824..f092d83fa623 100644
+index f092d83fa623..fbefbaa92736 100644
 --- a/arch/powerpc/include/asm/book3s/64/hash.h
 +++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -16,8 +16,10 @@
- #define _PAGE_BIT_SWAP_TYPE	0
- 
- #define _PAGE_EXEC		0x00001 /* execute permission */
--#define _PAGE_RW		0x00002 /* read & write access allowed */
-+#define _PAGE_WRITE		0x00002 /* write access allowed */
+@@ -20,7 +20,7 @@
  #define _PAGE_READ		0x00004	/* read access allowed */
-+#define _PAGE_RW		(_PAGE_READ | _PAGE_WRITE)
-+#define _PAGE_RWX		(_PAGE_READ | _PAGE_WRITE | _PAGE_EXEC)
- #define _PAGE_USER		0x00008 /* page may be accessed by userspace */
+ #define _PAGE_RW		(_PAGE_READ | _PAGE_WRITE)
+ #define _PAGE_RWX		(_PAGE_READ | _PAGE_WRITE | _PAGE_EXEC)
+-#define _PAGE_USER		0x00008 /* page may be accessed by userspace */
++#define _PAGE_PRIVILEGED	0x00008 /* page can only be access by kernel */
  #define _PAGE_GUARDED		0x00010 /* G: guarded (side-effect) page */
  /* M (memory coherence) is always set in the HPTE, so we don't need it here */
-@@ -147,8 +149,8 @@
+ #define _PAGE_COHERENT		0x0
+@@ -114,10 +114,13 @@
+ #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
+ #endif /* CONFIG_PPC_MM_SLICES */
+ 
+-/* No separate kernel read-only */
+-#define _PAGE_KERNEL_RW		(_PAGE_RW | _PAGE_DIRTY) /* user access blocked by key */
++/*
++ * No separate kernel read-only, user access blocked by key
++ */
++#define _PAGE_KERNEL_RW		(_PAGE_PRIVILEGED | _PAGE_RW | _PAGE_DIRTY)
+ #define _PAGE_KERNEL_RO		 _PAGE_KERNEL_RW
+-#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW | _PAGE_EXEC)
++#define _PAGE_KERNEL_RWX	(_PAGE_PRIVILEGED | _PAGE_DIRTY | \
++				 _PAGE_RW | _PAGE_EXEC)
+ 
+ /* Strong Access Ordering */
+ #define _PAGE_SAO		(_PAGE_WRITETHRU | _PAGE_NO_CACHE | _PAGE_COHERENT)
+@@ -149,7 +152,7 @@
   */
  #define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
  			 _PAGE_WRITETHRU | _PAGE_4K_PFN | \
--			 _PAGE_USER | _PAGE_ACCESSED |  \
--			 _PAGE_RW |  _PAGE_DIRTY | _PAGE_EXEC | \
-+			 _PAGE_USER | _PAGE_ACCESSED |  _PAGE_READ |\
-+			 _PAGE_WRITE |  _PAGE_DIRTY | _PAGE_EXEC | \
+-			 _PAGE_USER | _PAGE_ACCESSED |  _PAGE_READ |\
++			 _PAGE_PRIVILEGED | _PAGE_ACCESSED |  _PAGE_READ |\
+ 			 _PAGE_WRITE |  _PAGE_DIRTY | _PAGE_EXEC | \
  			 _PAGE_SOFT_DIRTY)
  /*
-  * We define 2 sets of base prot bits, one for basic pages (ie,
-@@ -173,10 +175,12 @@
- #define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
- #define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | \
- 				 _PAGE_EXEC)
--#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER )
--#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
--#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER )
--#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
-+#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ)
-+#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ| \
-+				 _PAGE_EXEC)
-+#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ)
-+#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ| \
-+				 _PAGE_EXEC)
+@@ -171,16 +174,13 @@
+  *
+  * Note due to the way vm flags are laid out, the bits are XWR
+  */
+-#define PAGE_NONE	__pgprot(_PAGE_BASE)
+-#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
+-#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | \
+-				 _PAGE_EXEC)
+-#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ)
+-#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ| \
+-				 _PAGE_EXEC)
+-#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ)
+-#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ| \
+-				 _PAGE_EXEC)
++#define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_PRIVILEGED)
++#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_RW)
++#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_RW | _PAGE_EXEC)
++#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_READ)
++#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
++#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_READ)
++#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
  
  #define __P000	PAGE_NONE
  #define __P001	PAGE_READONLY
-@@ -300,19 +304,19 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
- 				      pte_t *ptep)
+@@ -421,8 +421,8 @@ static inline pte_t pte_clear_soft_dirty(pte_t pte)
+  */
+ static inline int pte_protnone(pte_t pte)
  {
+-	return (pte_val(pte) &
+-		(_PAGE_PRESENT | _PAGE_USER)) == _PAGE_PRESENT;
++	return (pte_val(pte) & (_PAGE_PRESENT | _PAGE_PRIVILEGED)) ==
++		(_PAGE_PRESENT | _PAGE_PRIVILEGED);
+ }
+ #endif /* CONFIG_NUMA_BALANCING */
  
--	if ((pte_val(*ptep) & _PAGE_RW) == 0)
-+	if ((pte_val(*ptep) & _PAGE_WRITE) == 0)
- 		return;
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 4ac6221802ad..97d06de8dbf6 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -187,7 +187,7 @@ extern struct page *pgd_page(pgd_t pgd);
  
--	pte_update(mm, addr, ptep, _PAGE_RW, 0, 0);
-+	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 0);
+ static inline bool pte_user(pte_t pte)
+ {
+-	return (pte_val(pte) & _PAGE_USER);
++	return !(pte_val(pte) & _PAGE_PRIVILEGED);
  }
  
- static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 					   unsigned long addr, pte_t *ptep)
- {
--	if ((pte_val(*ptep) & _PAGE_RW) == 0)
-+	if ((pte_val(*ptep) & _PAGE_WRITE) == 0)
- 		return;
- 
--	pte_update(mm, addr, ptep, _PAGE_RW, 0, 1);
-+	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 1);
+ #ifdef CONFIG_MEM_SOFT_DIRTY
+@@ -211,6 +211,22 @@ static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
  }
+ #endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
  
- /*
-@@ -352,7 +356,7 @@ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
- static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- {
- 	unsigned long bits = pte_val(entry) &
--		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC |
-+		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_READ | _PAGE_WRITE | _PAGE_EXEC |
- 		 _PAGE_SOFT_DIRTY);
- 
- 	unsigned long old, tmp;
-@@ -386,7 +390,7 @@ static inline unsigned long pgd_page_vaddr(pgd_t pgd)
- 
- 
- /* Generic accessors to PTE bits */
--static inline int pte_write(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_RW);}
-+static inline int pte_write(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_WRITE);}
- static inline int pte_dirty(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_DIRTY); }
- static inline int pte_young(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_ACCESSED); }
- static inline int pte_special(pte_t pte)	{ return !!(pte_val(pte) & _PAGE_SPECIAL); }
-@@ -447,7 +451,7 @@ static inline unsigned long pte_pfn(pte_t pte)
- /* Generic modifiers for PTE bits */
- static inline pte_t pte_wrprotect(pte_t pte)
- {
--	return __pte(pte_val(pte) & ~_PAGE_RW);
-+	return __pte(pte_val(pte) & ~_PAGE_WRITE);
- }
- 
- static inline pte_t pte_mkclean(pte_t pte)
-@@ -462,6 +466,9 @@ static inline pte_t pte_mkold(pte_t pte)
- 
- static inline pte_t pte_mkwrite(pte_t pte)
- {
++static inline bool check_pte_access(unsigned long access, unsigned long ptev)
++{
 +	/*
-+	 * write implies read, hence set both
++	 * This check for _PAGE_RWX and _PAG_PRESENT bits
 +	 */
- 	return __pte(pte_val(pte) | _PAGE_RW);
- }
++	if (access & ~ptev)
++		return false;
++	/*
++	 * This check for access to privilege space
++	 */
++	if ((access & _PAGE_PRIVILEGED) != (ptev & _PAGE_PRIVILEGED))
++		return false;
++
++	return true;
++}
++
+ void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
+ void pgtable_cache_init(void);
  
-diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
-index 1ec67b043065..9f5dea58b0db 100644
---- a/arch/powerpc/include/asm/pte-common.h
-+++ b/arch/powerpc/include/asm/pte-common.h
-@@ -198,3 +198,8 @@ extern unsigned long bad_call_to_PMD_PAGE_SIZE(void);
- /* Advertise support for _PAGE_SPECIAL */
- #define __HAVE_ARCH_PTE_SPECIAL
- 
-+#ifndef _PAGE_READ
-+/* if not defined, we should not find _PAGE_WRITE too */
-+#define _PAGE_READ 0
-+#define _PAGE_WRITE _PAGE_RW
-+#endif
 diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
-index 71abd4c44c27..7ebac279d38e 100644
+index 7ebac279d38e..42ba12c184e1 100644
 --- a/arch/powerpc/mm/hash64_4k.c
 +++ b/arch/powerpc/mm/hash64_4k.c
-@@ -46,7 +46,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 		 * also add _PAGE_COMBO
- 		 */
- 		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
--		if (access & _PAGE_RW)
-+		if (access & _PAGE_WRITE)
- 			new_pte |= _PAGE_DIRTY;
- 
- 		opte = cpu_to_be64(old_pte);
+@@ -38,7 +38,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		if (unlikely(old_pte & _PAGE_BUSY))
+ 			return 0;
+ 		/* If PTE permissions don't match, take page fault */
+-		if (unlikely(access & ~old_pte))
++		if (unlikely(!check_pte_access(access, old_pte)))
+ 			return 1;
+ 		/*
+ 		 * Try to lock the PTE, add ACCESSED and DIRTY if it was
 diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
-index 6f9b3c34a5c0..83ac9f658733 100644
+index 83ac9f658733..f33b410d6c8a 100644
 --- a/arch/powerpc/mm/hash64_64k.c
 +++ b/arch/powerpc/mm/hash64_64k.c
-@@ -78,7 +78,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 		 * also add _PAGE_COMBO
- 		 */
- 		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED | _PAGE_COMBO;
--		if (access & _PAGE_RW)
-+		if (access & _PAGE_WRITE)
- 			new_pte |= _PAGE_DIRTY;
- 
- 		opte = cpu_to_be64(old_pte);
-@@ -255,7 +255,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 		 * a write access.
- 		 */
- 		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
--		if (access & _PAGE_RW)
-+		if (access & _PAGE_WRITE)
- 			new_pte |= _PAGE_DIRTY;
- 		opte = cpu_to_be64(old_pte);
- 		npte = cpu_to_be64(new_pte);
+@@ -70,7 +70,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		if (unlikely(old_pte & _PAGE_BUSY))
+ 			return 0;
+ 		/* If PTE permissions don't match, take page fault */
+-		if (unlikely(access & ~old_pte))
++		if (unlikely(!check_pte_access(access, old_pte)))
+ 			return 1;
+ 		/*
+ 		 * Try to lock the PTE, add ACCESSED and DIRTY if it was
+@@ -241,7 +241,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
+ 		if (unlikely(old_pte & _PAGE_BUSY))
+ 			return 0;
+ 		/* If PTE permissions don't match, take page fault */
+-		if (unlikely(access & ~old_pte))
++		if (unlikely(!check_pte_access(access, old_pte)))
+ 			return 1;
+ 		/*
+ 		 * Check if PTE has the cache-inhibit bit set
 diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 90dd9280894f..ea23403b3fc0 100644
+index ec37f4b0a8ff..630603f74056 100644
 --- a/arch/powerpc/mm/hash_utils_64.c
 +++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -175,8 +175,9 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
+@@ -174,7 +174,7 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
+ 	 * User area is mapped with PP=0x2 for read/write
  	 * or PP=0x3 for read-only (including writeable but clean pages).
  	 */
- 	if (pteflags & _PAGE_USER) {
--		rflags |= 0x2;
--		if (!((pteflags & _PAGE_RW) && (pteflags & _PAGE_DIRTY)))
-+		if (pteflags & _PAGE_RWX)
-+			rflags |= 0x2;
-+		if (!((pteflags & _PAGE_WRITE) && (pteflags & _PAGE_DIRTY)))
- 			rflags |= 0x1;
- 	}
- 	/*
-@@ -1205,7 +1206,7 @@ EXPORT_SYMBOL_GPL(hash_page);
- int __hash_page(unsigned long ea, unsigned long msr, unsigned long trap,
- 		unsigned long dsisr)
- {
--	unsigned long access = _PAGE_PRESENT;
-+	unsigned long access = _PAGE_PRESENT | _PAGE_READ;
- 	unsigned long flags = 0;
- 	struct mm_struct *mm = current->mm;
- 
-@@ -1216,7 +1217,7 @@ int __hash_page(unsigned long ea, unsigned long msr, unsigned long trap,
- 		flags |= HPTE_NOHPTE_UPDATE;
- 
+-	if (pteflags & _PAGE_USER) {
++	if (!(pteflags & _PAGE_PRIVILEGED)) {
+ 		if (pteflags & _PAGE_RWX)
+ 			rflags |= 0x2;
+ 		if (!((pteflags & _PAGE_WRITE) && (pteflags & _PAGE_DIRTY)))
+@@ -1086,7 +1086,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
+ 	/* Pre-check access permissions (will be re-checked atomically
+ 	 * in __hash_page_XX but this pre-check is a fast path
+ 	 */
+-	if (access & ~pte_val(*ptep)) {
++	if (!check_pte_access(access, pte_val(*ptep))) {
+ 		DBG_LOW(" no access !\n");
+ 		rc = 1;
+ 		goto bail;
+@@ -1224,12 +1224,15 @@ int __hash_page(unsigned long ea, unsigned long msr, unsigned long trap,
  	if (dsisr & DSISR_ISSTORE)
--		access |= _PAGE_RW;
-+		access |= _PAGE_WRITE;
+ 		access |= _PAGE_WRITE;
  	/*
- 	 * We need to set the _PAGE_USER bit if MSR_PR is set or if we are
- 	 * accessing a userspace segment (even from the kernel). We assume
+-	 * We need to set the _PAGE_USER bit if MSR_PR is set or if we are
+-	 * accessing a userspace segment (even from the kernel). We assume
+-	 * kernel addresses always have the high bit set.
++	 * We set _PAGE_PRIVILEGED only when
++	 * kernel mode access kernel space.
++	 *
++	 * _PAGE_PRIVILEGED is NOT set
++	 * 1) when kernel mode access user space
++	 * 2) user space access kernel space.
+ 	 */
+-	if ((msr & MSR_PR) || (REGION_ID(ea) == USER_REGION_ID))
+-		access |= _PAGE_USER;
++	if (!(msr & MSR_PR) && !(REGION_ID(ea) == USER_REGION_ID))
++		access |= _PAGE_PRIVILEGED;
+ 
+ 	if (trap == 0x400)
+ 		access |= _PAGE_EXEC;
 diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
-index 98891139c044..39342638a498 100644
+index 39342638a498..182f1d3fe73c 100644
 --- a/arch/powerpc/mm/hugepage-hash64.c
 +++ b/arch/powerpc/mm/hugepage-hash64.c
-@@ -48,7 +48,7 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
- 		 * a write access
- 		 */
- 		new_pmd = old_pmd | _PAGE_BUSY | _PAGE_ACCESSED;
--		if (access & _PAGE_RW)
-+		if (access & _PAGE_WRITE)
- 			new_pmd |= _PAGE_DIRTY;
- 		opmd = cpu_to_be64(old_pmd);
- 		npmd = cpu_to_be64(new_pmd);
+@@ -41,7 +41,7 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		if (unlikely(old_pmd & _PAGE_BUSY))
+ 			return 0;
+ 		/* If PMD permissions don't match, take page fault */
+-		if (unlikely(access & ~old_pmd))
++		if (unlikely(!check_pte_access(access, old_pmd)))
+ 			return 1;
+ 		/*
+ 		 * Try to lock the PTE, add ACCESSED and DIRTY if it was
 diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index 5bcb28606158..e6e54a04bd32 100644
+index e6e54a04bd32..96765510a49c 100644
 --- a/arch/powerpc/mm/hugetlbpage-hash64.c
 +++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -56,7 +56,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+@@ -51,8 +51,9 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		if (unlikely(old_pte & _PAGE_BUSY))
+ 			return 0;
+ 		/* If PTE permissions don't match, take page fault */
+-		if (unlikely(access & ~old_pte))
++		if (unlikely(!check_pte_access(access, old_pte)))
+ 			return 1;
++
  		/* Try to lock the PTE, add ACCESSED and DIRTY if it was
  		 * a write access */
  		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
--		if (access & _PAGE_RW)
-+		if (access & _PAGE_WRITE)
- 			new_pte |= _PAGE_DIRTY;
- 		opte = cpu_to_be64(old_pte);
- 		npte = cpu_to_be64(new_pte);
 diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 6dd272b6196f..6e52e722d3f2 100644
+index 6e52e722d3f2..7201e9c624d5 100644
 --- a/arch/powerpc/mm/hugetlbpage.c
 +++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -1003,9 +1003,9 @@ int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
+@@ -1003,7 +1003,7 @@ int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
  		end = pte_end;
  
  	pte = READ_ONCE(*ptep);
--	mask = _PAGE_PRESENT | _PAGE_USER;
-+	mask = _PAGE_PRESENT | _PAGE_USER | _PAGE_READ;
+-	mask = _PAGE_PRESENT | _PAGE_USER | _PAGE_READ;
++	mask = _PAGE_PRESENT | _PAGE_READ;
  	if (write)
--		mask |= _PAGE_RW;
-+		mask |= _PAGE_WRITE;
+ 		mask |= _PAGE_WRITE;
  
- 	if ((pte_val(pte) & mask) != mask)
- 		return 0;
 diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index 83dfd7925c72..98b5c03e344d 100644
+index 98b5c03e344d..7b492283d502 100644
 --- a/arch/powerpc/mm/pgtable.c
 +++ b/arch/powerpc/mm/pgtable.c
-@@ -177,8 +177,8 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
- 	 * _PAGE_PRESENT, but we can be sure that it is not in hpte.
- 	 * Hence we can use set_pte_at for them.
- 	 */
--	VM_WARN_ON((pte_val(*ptep) & (_PAGE_PRESENT | _PAGE_USER)) ==
--		(_PAGE_PRESENT | _PAGE_USER));
-+	VM_WARN_ON(pte_present(*ptep) && !pte_protnone(*ptep));
+@@ -43,9 +43,20 @@ static inline int is_exec_fault(void)
+  */
+ static inline int pte_looks_normal(pte_t pte)
+ {
 +
- 	/*
- 	 * Add the pte bit when tryint set a pte
- 	 */
++#if defined(CONFIG_PPC_BOOK3S_64)
++	if ((pte_val(pte) &
++	     (_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE)) ==
++	    _PAGE_PRESENT) {
++		if (!(pte_val(pte) & _PAGE_PRIVILEGED))
++			return 1;
++	}
++	return 0;
++#else
+ 	return (pte_val(pte) &
+-	    (_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE | _PAGE_USER)) ==
+-	    (_PAGE_PRESENT | _PAGE_USER);
++		(_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE | _PAGE_USER)) ==
++		(_PAGE_PRESENT | _PAGE_USER);
++#endif
+ }
+ 
+ static struct page *maybe_pte_to_page(pte_t pte)
 diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index aa742aa35b64..00d8d985bba3 100644
+index 00d8d985bba3..441905f7bba4 100644
 --- a/arch/powerpc/mm/pgtable_64.c
 +++ b/arch/powerpc/mm/pgtable_64.c
-@@ -277,7 +277,7 @@ void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
- 	void *caller = __builtin_return_address(0);
- 
- 	/* writeable implies dirty for kernel addresses */
--	if (flags & _PAGE_RW)
-+	if (flags & _PAGE_WRITE)
+@@ -280,8 +280,17 @@ void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
+ 	if (flags & _PAGE_WRITE)
  		flags |= _PAGE_DIRTY;
  
- 	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
-@@ -681,8 +681,7 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
- 		pmd_t *pmdp, pmd_t pmd)
- {
- #ifdef CONFIG_DEBUG_VM
--	WARN_ON((pmd_val(*pmdp) & (_PAGE_PRESENT | _PAGE_USER)) ==
--		(_PAGE_PRESENT | _PAGE_USER));
-+	WARN_ON(pte_present(pmd_pte(*pmdp)) && !pte_protnone(pmd_pte(*pmdp)));
- 	assert_spin_locked(&mm->page_table_lock);
- 	WARN_ON(!pmd_trans_huge(pmd));
- #endif
-diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
-index f7af74f83693..7bc00b508128 100644
---- a/arch/powerpc/platforms/cell/spu_base.c
-+++ b/arch/powerpc/platforms/cell/spu_base.c
-@@ -197,7 +197,7 @@ static int __spu_trap_data_map(struct spu *spu, unsigned long ea, u64 dsisr)
- 	    (REGION_ID(ea) != USER_REGION_ID)) {
+-	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
+-	flags &= ~(_PAGE_USER | _PAGE_EXEC);
++	/* we don't want to let _PAGE_EXEC leak out */
++	flags &= ~_PAGE_EXEC;
++	/*
++	 * Force kernel mapping.
++	 */
++#if defined(CONFIG_PPC_BOOK3S_64)
++	flags |= _PAGE_PRIVILEGED;
++#else
++	flags &= ~_PAGE_USER;
++#endif
++
  
- 		spin_unlock(&spu->register_lock);
--		ret = hash_page(ea, _PAGE_PRESENT, 0x300, dsisr);
-+		ret = hash_page(ea, _PAGE_PRESENT | _PAGE_READ, 0x300, dsisr);
- 		spin_lock(&spu->register_lock);
+ #ifdef _PAGE_BAP_SR
+ 	/* _PAGE_USER contains _PAGE_BAP_SR on BookE using the new PTE format
+@@ -669,7 +678,7 @@ void pmdp_huge_split_prepare(struct vm_area_struct *vma,
+ 	 * the translation is still valid, because we will withdraw
+ 	 * pgtable_t after this.
+ 	 */
+-	pmd_hugepage_update(vma->vm_mm, address, pmdp, _PAGE_USER, 0);
++	pmd_hugepage_update(vma->vm_mm, address, pmdp, 0, _PAGE_PRIVILEGED);
+ }
  
- 		if (!ret) {
+ 
 diff --git a/arch/powerpc/platforms/cell/spufs/fault.c b/arch/powerpc/platforms/cell/spufs/fault.c
-index d98f845ac777..c3a3bf1745b7 100644
+index c3a3bf1745b7..e29e4d5afa2d 100644
 --- a/arch/powerpc/platforms/cell/spufs/fault.c
 +++ b/arch/powerpc/platforms/cell/spufs/fault.c
-@@ -141,8 +141,8 @@ int spufs_handle_class1(struct spu_context *ctx)
+@@ -141,7 +141,7 @@ int spufs_handle_class1(struct spu_context *ctx)
  	/* we must not hold the lock when entering copro_handle_mm_fault */
  	spu_release(ctx);
  
--	access = (_PAGE_PRESENT | _PAGE_USER);
--	access |= (dsisr & MFC_DSISR_ACCESS_PUT) ? _PAGE_RW : 0UL;
-+	access = (_PAGE_PRESENT | _PAGE_READ | _PAGE_USER);
-+	access |= (dsisr & MFC_DSISR_ACCESS_PUT) ? _PAGE_WRITE : 0UL;
+-	access = (_PAGE_PRESENT | _PAGE_READ | _PAGE_USER);
++	access = (_PAGE_PRESENT | _PAGE_READ);
+ 	access |= (dsisr & MFC_DSISR_ACCESS_PUT) ? _PAGE_WRITE : 0UL;
  	local_irq_save(flags);
  	ret = hash_page(ea, access, 0x300, dsisr);
- 	local_irq_restore(flags);
 diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-index 81c3f75b7330..a3d5e1e16c21 100644
+index a3d5e1e16c21..23e37cd41e64 100644
 --- a/drivers/misc/cxl/fault.c
 +++ b/drivers/misc/cxl/fault.c
-@@ -149,9 +149,9 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
- 	 * update_mmu_cache() will not have loaded the hash since current->trap
- 	 * is not a 0x400 or 0x300, so just call hash_page_mm() here.
- 	 */
--	access = _PAGE_PRESENT;
-+	access = _PAGE_PRESENT | _PAGE_READ;
+@@ -152,8 +152,9 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
+ 	access = _PAGE_PRESENT | _PAGE_READ;
  	if (dsisr & CXL_PSL_DSISR_An_S)
--		access |= _PAGE_RW;
-+		access |= _PAGE_WRITE;
- 	if ((!ctx->kernel) || ~(dar & (1ULL << 63)))
- 		access |= _PAGE_USER;
+ 		access |= _PAGE_WRITE;
+-	if ((!ctx->kernel) || ~(dar & (1ULL << 63)))
+-		access |= _PAGE_USER;
++
++	if (ctx->kernel && (dar & (1ULL << 63)))
++		access |= _PAGE_PRIVILEGED;
  
+ 	if (dsisr & DSISR_NOHPTE)
+ 		inv_flags |= HPTE_NOHPTE_UPDATE;
 -- 
 2.5.0
