@@ -1,41 +1,22 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <codrin.ciubotariu@nxp.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0060.outbound.protection.outlook.com [157.56.111.60])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 959E31A0225
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 06:00:43 +1100 (AEDT)
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4B208140B9A
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2016 06:00:42 +1100 (AEDT)
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Tue, 8 Mar 2016 05:00:41 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 190033578056
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2016 06:00:39 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u27J0V7B8454422
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2016 06:00:39 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u27J06Ta030730
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2016 06:00:06 +1100
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: Michael Ellerman <michaele@au1.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Matt Ochs <mrochs@us.ibm.com>, Manoj Kumar <kumarmn@us.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Ian Munsie <imunsie@au1.ibm.com>
-Subject: [PATCH v2 2/2] cxl: add set/get private data to context struct
-Date: Tue,  8 Mar 2016 05:59:24 +1100
-Message-Id: <1457377164-22234-2-git-send-email-imunsie@au.ibm.com>
-In-Reply-To: <1457377164-22234-1-git-send-email-imunsie@au.ibm.com>
-References: <1457377164-22234-1-git-send-email-imunsie@au.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 18CDF1A011D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 02:49:38 +1100 (AEDT)
+From: Codrin Ciubotariu <codrin.ciubotariu@nxp.com>
+To: <iommu@lists.linux-foundation.org>
+CC: <scottwood@freescale.com>, <Varun.Sethi@freescale.com>,
+ <linuxppc-dev@lists.ozlabs.org>, Codrin Ciubotariu
+ <codrin.ciubotariu@nxp.com>
+Subject: [PATCH 6/7] iommu/fsl: PAMU power management support
+Date: Mon, 7 Mar 2016 17:34:22 +0200
+Message-ID: <1457364863-18004-7-git-send-email-codrin.ciubotariu@nxp.com>
+In-Reply-To: <1457364863-18004-1-git-send-email-codrin.ciubotariu@nxp.com>
+References: <1457364863-18004-1-git-send-email-codrin.ciubotariu@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,87 +26,283 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Neuling <mikey@neuling.org>
+From: Varun Sethi <Varun.Sethi@freescale.com>
 
-This provides AFU drivers a means to associate private data with a cxl
-context. This is particularly intended for make the new callbacks for
-driver specific events easier for AFU drivers to use, as they can easily
-get back to any private data structures they may use.
+PAMU driver suspend and resume support.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+Signed-off-by: Codrin Ciubotariu <codrin.ciubotariu@nxp.com>
 ---
+ drivers/iommu/fsl_pamu.c | 155 +++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 123 insertions(+), 32 deletions(-)
 
-No changes since v1
-
- drivers/misc/cxl/api.c | 21 +++++++++++++++++++++
- drivers/misc/cxl/cxl.h |  3 +++
- include/misc/cxl.h     |  7 +++++++
- 3 files changed, 31 insertions(+)
-
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index eebc9c3..93b270c 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -91,6 +91,27 @@ int cxl_release_context(struct cxl_context *ctx)
- }
- EXPORT_SYMBOL_GPL(cxl_release_context);
+diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c
+index 181759e..290231a 100644
+--- a/drivers/iommu/fsl_pamu.c
++++ b/drivers/iommu/fsl_pamu.c
+@@ -23,6 +23,7 @@
+ #include <linux/fsl/guts.h>
+ #include <linux/interrupt.h>
+ #include <linux/genalloc.h>
++#include <linux/syscore_ops.h>
  
+ #include <asm/mpc85xx.h>
+ #include <asm/reg.h>
+@@ -35,10 +36,13 @@
+ 
+ #define make64(high, low) (((u64)(high) << 32) | (low))
+ 
+-struct pamu_isr_data {
++struct pamu_info {
+ 	void __iomem *pamu_reg_base;	/* Base address of PAMU regs */
+ 	unsigned int count;		/* The number of PAMUs */
+-};
++} pamu_info_data;
 +
-+int cxl_set_priv(struct cxl_context *ctx, void *priv)
++/* Pointer to the device configuration space */
++static struct ccsr_guts __iomem *guts_regs;
+ 
+ static struct paace *ppaact;
+ static struct paace *spaact;
+@@ -104,6 +108,36 @@ static struct paace *pamu_get_ppaace(int liodn)
+ 	return &ppaact[liodn];
+ }
+ 
++#ifdef CONFIG_SUSPEND
++/**
++ * set_dcfg_liodn() - set the device LIODN in DCFG
++ * @np: device tree node pointer
++ * @liodn: liodn value to program
++ *
++ * Returns 0 upon success else error code < 0 returned
++ */
++static int set_dcfg_liodn(struct device_node *np, int liodn)
 +{
-+	if (!ctx)
++	const __be32 *prop;
++	u32 liodn_reg_offset;
++	int len;
++	void __iomem *dcfg_region = (void *)guts_regs;
++
++	if (!dcfg_region)
++		return -ENODEV;
++
++	prop = of_get_property(np, "fsl,liodn-reg", &len);
++	if (!prop || len != 8)
 +		return -EINVAL;
 +
-+	ctx->priv = priv;
++	liodn_reg_offset = be32_to_cpup(&prop[1]);
++
++	out_be32((u32 *)(dcfg_region + liodn_reg_offset), liodn);
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(cxl_set_priv);
++#endif
 +
-+void *cxl_get_priv(struct cxl_context *ctx)
-+{
-+	if (!ctx)
-+		return ERR_PTR(-EINVAL);
-+
-+	return ctx->priv;
-+}
-+EXPORT_SYMBOL_GPL(cxl_get_priv);
-+
- int cxl_allocate_afu_irqs(struct cxl_context *ctx, int num)
+ /**
+  * pamu_enable_liodn() - Set valid bit of PACCE
+  * @liodn: liodn PAACT index for desired PAACE
+@@ -743,7 +777,7 @@ static void setup_omt(struct ome *omt)
+  * Get the maximum number of PAACT table entries
+  * and subwindows supported by PAMU
+  */
+-static void get_pamu_cap_values(unsigned long pamu_reg_base)
++static void get_pamu_cap_values(void *pamu_reg_base)
  {
- 	if (num == 0)
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 64e8e0a..71f66e7 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -454,6 +454,9 @@ struct cxl_context {
- 	/* Only used in PR mode */
- 	u64 process_token;
+ 	u32 pc_val;
  
-+	/* driver private data */
-+	void *priv;
-+
- 	unsigned long *irq_bitmap; /* Accessed from IRQ context */
- 	struct cxl_irq_ranges irqs;
- 	struct list_head irq_names;
-diff --git a/include/misc/cxl.h b/include/misc/cxl.h
-index f198a42..f99b383 100644
---- a/include/misc/cxl.h
-+++ b/include/misc/cxl.h
-@@ -89,6 +89,13 @@ struct cxl_context *cxl_dev_context_init(struct pci_dev *dev);
- int cxl_release_context(struct cxl_context *ctx);
+@@ -753,10 +787,8 @@ static void get_pamu_cap_values(unsigned long pamu_reg_base)
+ }
  
- /*
-+ * Set and get private data associated with a context. Allows drivers to have a
-+ * back pointer to some useful structure.
-+ */
-+int cxl_set_priv(struct cxl_context *ctx, void *priv);
-+void *cxl_get_priv(struct cxl_context *ctx);
+ /* Setup PAMU registers pointing to PAACT, SPAACT and OMT */
+-static int setup_one_pamu(unsigned long pamu_reg_base,
+-			  unsigned long pamu_reg_size,
+-			  phys_addr_t ppaact_phys, phys_addr_t spaact_phys,
+-			  phys_addr_t omt_phys)
++static int setup_one_pamu(void *pamu_reg_base, phys_addr_t ppaact_phys,
++			  phys_addr_t spaact_phys, phys_addr_t omt_phys)
+ {
+ 	u32 *pc;
+ 	struct pamu_mmap_regs *pamu_regs;
+@@ -846,7 +878,7 @@ static void setup_liodns(void)
+ 
+ static irqreturn_t pamu_av_isr(int irq, void *arg)
+ {
+-	struct pamu_isr_data *data = arg;
++	struct pamu_info *data = arg;
+ 	phys_addr_t phys;
+ 	unsigned int i, j, ret;
+ 
+@@ -1098,11 +1130,9 @@ static int fsl_pamu_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	void __iomem *pamu_regs = NULL;
+-	struct ccsr_guts __iomem *guts_regs = NULL;
+ 	u32 pamubypenr, pamu_counter;
++	void __iomem *pamu_reg_base;
+ 	unsigned long pamu_reg_off;
+-	unsigned long pamu_reg_base;
+-	struct pamu_isr_data *data = NULL;
+ 	struct device_node *guts_node;
+ 	u64 size;
+ 	struct page *p;
+@@ -1129,22 +1159,17 @@ static int fsl_pamu_probe(struct platform_device *pdev)
+ 	}
+ 	of_get_address(dev->of_node, 0, &size, NULL);
+ 
++	pamu_info_data.pamu_reg_base = pamu_regs;
++	pamu_info_data.count = size / PAMU_OFFSET;
 +
-+/*
-  * Allocate AFU interrupts for this context. num=0 will allocate the default
-  * for this AFU as given in the AFU descriptor. This number doesn't include the
-  * interrupt 0 (CAIA defines AFU IRQ 0 for page faults). Each interrupt to be
+ 	irq = irq_of_parse_and_map(dev->of_node, 0);
+ 	if (irq == NO_IRQ) {
+ 		dev_warn(dev, "no interrupts listed in PAMU node\n");
+ 		goto error;
+ 	}
+ 
+-	data = kzalloc(sizeof(*data), GFP_KERNEL);
+-	if (!data) {
+-		ret = -ENOMEM;
+-		goto error;
+-	}
+-	data->pamu_reg_base = pamu_regs;
+-	data->count = size / PAMU_OFFSET;
+-
+ 	/* The ISR needs access to the regs, so we won't iounmap them */
+-	ret = request_irq(irq, pamu_av_isr, 0, "pamu", data);
++	ret = request_irq(irq, pamu_av_isr, 0, "pamu", &pamu_info_data);
+ 	if (ret < 0) {
+ 		dev_err(dev, "error %i installing ISR for irq %i\n", ret, irq);
+ 		goto error;
+@@ -1167,7 +1192,7 @@ static int fsl_pamu_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	/* read in the PAMU capability registers */
+-	get_pamu_cap_values((unsigned long)pamu_regs);
++	get_pamu_cap_values(pamu_regs);
+ 	/*
+ 	 * To simplify the allocation of a coherency domain, we allocate the
+ 	 * PAACT and the OMT in the same memory buffer. Unfortunately, this
+@@ -1243,9 +1268,9 @@ static int fsl_pamu_probe(struct platform_device *pdev)
+ 	for (pamu_reg_off = 0, pamu_counter = 0x80000000; pamu_reg_off < size;
+ 	     pamu_reg_off += PAMU_OFFSET, pamu_counter >>= 1) {
+ 
+-		pamu_reg_base = (unsigned long)pamu_regs + pamu_reg_off;
+-		setup_one_pamu(pamu_reg_base, pamu_reg_off, ppaact_phys,
+-			       spaact_phys, omt_phys);
++		pamu_reg_base = pamu_regs + pamu_reg_off;
++		setup_one_pamu(pamu_reg_base, ppaact_phys, spaact_phys,
++			       omt_phys);
+ 		/* Disable PAMU bypass for this PAMU */
+ 		pamubypenr &= ~pamu_counter;
+ 	}
+@@ -1255,8 +1280,6 @@ static int fsl_pamu_probe(struct platform_device *pdev)
+ 	/* Enable all relevant PAMU(s) */
+ 	out_be32(&guts_regs->pamubypenr, pamubypenr);
+ 
+-	iounmap(guts_regs);
+-
+ 	/* Enable DMA for the LIODNs in the device tree */
+ 
+ 	setup_liodns();
+@@ -1268,12 +1291,7 @@ error_genpool:
+ 
+ error:
+ 	if (irq != NO_IRQ)
+-		free_irq(irq, data);
+-
+-	if (data) {
+-		memset(data, 0, sizeof(struct pamu_isr_data));
+-		kfree(data);
+-	}
++		free_irq(irq, &pamu_info_data);
+ 
+ 	if (pamu_regs)
+ 		iounmap(pamu_regs);
+@@ -1296,6 +1314,77 @@ static struct platform_driver fsl_of_pamu_driver = {
+ 	.probe = fsl_pamu_probe,
+ };
+ 
++#ifdef CONFIG_SUSPEND
++static int iommu_suspend(void)
++{
++	int i;
++
++	for (i = 0; i < pamu_info_data.count; i++) {
++		u32 val;
++		void __iomem *p;
++
++		p = pamu_info_data.pamu_reg_base + i * PAMU_OFFSET;
++		val = in_be32((u32 *)(p + PAMU_PICS));
++		/* Disable access violation interrupts */
++		out_be32((u32 *)(p + PAMU_PICS),
++			 val & ~PAMU_ACCESS_VIOLATION_ENABLE);
++	}
++
++	return 0;
++}
++
++static void restore_dcfg_liodns(void)
++{
++	struct device_node *node;
++	const __be32 *prop;
++	int ret, liodn;
++
++	for_each_node_with_property(node, "fsl,liodn-reg") {
++		prop = of_get_property(node, "fsl,liodn", 0);
++		if (!prop)
++			continue;
++		liodn = be32_to_cpup(prop);
++		ret = set_dcfg_liodn(node, liodn);
++		if (ret)
++			pr_debug("LIODN restore failed for %s\n",
++				 node->full_name);
++	}
++}
++
++static void iommu_resume(void)
++{
++	int i;
++	u32 pamubypenr, pamu_counter;
++
++	restore_dcfg_liodns();
++	pamubypenr = in_be32(&guts_regs->pamubypenr);
++	for (i = 0, pamu_counter = 0x80000000; i < pamu_info_data.count;
++		 i++, pamu_counter >>= 1) {
++		void __iomem *p;
++
++		p = pamu_info_data.pamu_reg_base + i * PAMU_OFFSET;
++		setup_one_pamu(p, virt_to_phys(ppaact), virt_to_phys(spaact),
++			       virt_to_phys(omt));
++		pamubypenr &= ~pamu_counter;
++	}
++	/* Enable all PAMUs */
++	out_be32(&guts_regs->pamubypenr, pamubypenr);
++}
++
++static struct syscore_ops iommu_syscore_ops = {
++	.resume		= iommu_resume,
++	.suspend	= iommu_suspend,
++};
++
++static void __init init_iommu_pm_ops(void)
++{
++	register_syscore_ops(&iommu_syscore_ops);
++}
++
++#else
++static inline void init_iommu_pm_ops(void) {}
++#endif	/* CONFIG_SUSPEND */
++
+ static __init int fsl_pamu_init(void)
+ {
+ 	struct platform_device *pdev = NULL;
+@@ -1353,6 +1442,8 @@ static __init int fsl_pamu_init(void)
+ 		goto error_device_add;
+ 	}
+ 
++	init_iommu_pm_ops();
++
+ 	return 0;
+ 
+ error_device_add:
 -- 
-2.1.4
+1.9.3
