@@ -1,24 +1,24 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8B2201A038E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 14:42:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0AF6B1A0B70
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 14:42:46 +1100 (AEDT)
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Mon, 7 Mar 2016 13:42:42 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 73EEA2CE805C
+ Mon, 7 Mar 2016 13:42:44 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 838E82CE805E
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 14:42:39 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u273gVNf5702068
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u273gVMP55967944
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 14:42:39 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u273g7Fm028560
+ u273g7GS028563
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 14:42:07 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
@@ -26,10 +26,10 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
  Alex Williamson <alex.williamson@redhat.com>,
  David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel 6/9] KVM: PPC: Associate IOMMU group with guest view of
- TCE table
-Date: Mon,  7 Mar 2016 14:41:14 +1100
-Message-Id: <1457322077-26640-7-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel 7/9] KVM: PPC: Create a virtual-mode only TCE table
+ handlers
+Date: Mon,  7 Mar 2016 14:41:15 +1100
+Message-Id: <1457322077-26640-8-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1457322077-26640-1-git-send-email-aik@ozlabs.ru>
 References: <1457322077-26640-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,226 +41,147 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The existing in-kernel TCE table for emulated devices contains
-guest physical addresses which are accesses by emulated devices.
-Since we need to keep this information for VFIO devices too
-in order to implement H_GET_TCE, we are reusing it.
+In-kernel VFIO acceleration needs different handling in real and virtual
+modes which makes it hard to support both modes in the same handler.
 
-This adds IOMMU group list to kvmppc_spapr_tce_table. Each group
-will have an iommu_table pointer.
-
-This adds kvm_spapr_tce_attach_iommu_group() helper and its detach
-counterpart to manage the lists.
-
-This puts a group when:
-- guest copy of TCE table is destroyed when TCE table fd is closed;
-- kvm_spapr_tce_detach_iommu_group() is called from
-the KVM_DEV_VFIO_GROUP_DEL ioctl handler in the case vfio-pci hotunplug
-(will be added in the following patch).
+This creates a copy of kvmppc_rm_h_stuff_tce and kvmppc_rm_h_put_tce
+in addition to the existing kvmppc_rm_h_put_tce_indirect.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/include/asm/kvm_host.h |   8 +++
- arch/powerpc/include/asm/kvm_ppc.h  |   6 ++
- arch/powerpc/kvm/book3s_64_vio.c    | 108 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 122 insertions(+)
+ arch/powerpc/kvm/book3s_64_vio.c        | 52 +++++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_64_vio_hv.c     |  8 ++---
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |  4 +--
+ 3 files changed, 57 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 2e7c791..2c5c823 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -178,6 +178,13 @@ struct kvmppc_pginfo {
- 	atomic_t refcnt;
- };
- 
-+struct kvmppc_spapr_tce_group {
-+	struct list_head next;
-+	struct rcu_head rcu;
-+	struct iommu_group *refgrp;/* for reference counting only */
-+	struct iommu_table *tbl;
-+};
-+
- struct kvmppc_spapr_tce_table {
- 	struct list_head list;
- 	struct kvm *kvm;
-@@ -186,6 +193,7 @@ struct kvmppc_spapr_tce_table {
- 	u32 page_shift;
- 	u64 offset;		/* in pages */
- 	u64 size;		/* window size in pages */
-+	struct list_head groups;
- 	struct page *pages[0];
- };
- 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 2544eda..d1482dc 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -164,6 +164,12 @@ extern void kvmppc_map_vrma(struct kvm_vcpu *vcpu,
- 			struct kvm_memory_slot *memslot, unsigned long porder);
- extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
- 
-+extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm,
-+				unsigned long liobn,
-+				phys_addr_t start_addr,
-+				struct iommu_group *grp);
-+extern void kvm_spapr_tce_detach_iommu_group(struct kvm *kvm,
-+				struct iommu_group *grp);
- extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 				struct kvm_create_spapr_tce_64 *args);
- extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
 diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 2c2d103..846d16d 100644
+index 846d16d..7965fc7 100644
 --- a/arch/powerpc/kvm/book3s_64_vio.c
 +++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -27,6 +27,7 @@
- #include <linux/hugetlb.h>
- #include <linux/list.h>
- #include <linux/anon_inodes.h>
-+#include <linux/iommu.h>
- 
- #include <asm/tlbflush.h>
- #include <asm/kvm_ppc.h>
-@@ -95,10 +96,18 @@ static void release_spapr_tce_table(struct rcu_head *head)
- 	struct kvmppc_spapr_tce_table *stt = container_of(head,
- 			struct kvmppc_spapr_tce_table, rcu);
- 	unsigned long i, npages = kvmppc_tce_pages(stt->size);
-+	struct kvmppc_spapr_tce_group *kg;
- 
- 	for (i = 0; i < npages; i++)
- 		__free_page(stt->pages[i]);
- 
-+	while (!list_empty(&stt->groups)) {
-+		kg = list_first_entry(&stt->groups,
-+				struct kvmppc_spapr_tce_group, next);
-+		list_del(&kg->next);
-+		kfree(kg);
-+	}
-+
- 	kfree(stt);
+@@ -317,6 +317,32 @@ fail:
+ 	return ret;
  }
  
-@@ -129,9 +138,15 @@ static int kvm_spapr_tce_mmap(struct file *file, struct vm_area_struct *vma)
- static int kvm_spapr_tce_release(struct inode *inode, struct file *filp)
- {
- 	struct kvmppc_spapr_tce_table *stt = filp->private_data;
-+	struct kvmppc_spapr_tce_group *kg;
- 
- 	list_del_rcu(&stt->list);
- 
-+	list_for_each_entry_rcu(kg, &stt->groups, next)	{
-+		iommu_group_put(kg->refgrp);
-+		kg->refgrp = NULL;
-+	}
-+
- 	kvm_put_kvm(stt->kvm);
- 
- 	kvmppc_account_memlimit(
-@@ -146,6 +161,98 @@ static const struct file_operations kvm_spapr_tce_fops = {
- 	.release	= kvm_spapr_tce_release,
- };
- 
-+extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm,
-+				unsigned long liobn,
-+				phys_addr_t start_addr,
-+				struct iommu_group *grp)
++long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
++		      unsigned long ioba, unsigned long tce)
 +{
-+	struct kvmppc_spapr_tce_table *stt = NULL;
-+	struct iommu_table_group *table_group;
-+	long i;
-+	bool found = false;
-+	struct kvmppc_spapr_tce_group *kg;
-+	struct iommu_table *tbltmp;
++	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
++	long ret;
 +
-+	/* Check this LIOBN hasn't been previously allocated */
-+	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list) {
-+		if (stt->liobn == liobn) {
-+			if ((stt->offset << stt->page_shift) != start_addr)
-+				return -EINVAL;
++	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
++	/* 	    liobn, ioba, tce); */
 +
-+			found = true;
-+			break;
-+		}
-+	}
++	if (!stt)
++		return H_TOO_HARD;
 +
-+	if (!found)
-+		return -ENODEV;
++	ret = kvmppc_ioba_validate(stt, ioba, 1);
++	if (ret != H_SUCCESS)
++		return ret;
 +
-+	/* Find IOMMU group and table at @start_addr */
-+	table_group = iommu_group_get_iommudata(grp);
-+	if (!table_group)
-+		return -EFAULT;
++	ret = kvmppc_tce_validate(stt, tce);
++	if (ret != H_SUCCESS)
++		return ret;
 +
-+	tbltmp = NULL;
-+	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
-+		struct iommu_table *tbl = table_group->tables[i];
++	kvmppc_tce_put(stt, ioba >> stt->page_shift, tce);
 +
-+		if (!tbl)
-+			continue;
-+
-+		if ((tbl->it_page_shift == stt->page_shift) &&
-+				(tbl->it_offset == stt->offset)) {
-+			tbltmp = tbl;
-+			break;
-+		}
-+	}
-+	if (!tbltmp)
-+		return -ENODEV;
-+
-+	list_for_each_entry_rcu(kg, &stt->groups, next) {
-+		if (kg->refgrp == grp)
-+			return -EBUSY;
-+	}
-+
-+	kg = kzalloc(sizeof(*kg), GFP_KERNEL);
-+	kg->refgrp = grp;
-+	kg->tbl = tbltmp;
-+	list_add_rcu(&kg->next, &stt->groups);
-+
-+	return 0;
++	return H_SUCCESS;
 +}
++EXPORT_SYMBOL_GPL(kvmppc_h_put_tce);
 +
-+static void kvm_spapr_tce_put_group(struct rcu_head *head)
-+{
-+	struct kvmppc_spapr_tce_group *kg = container_of(head,
-+			struct kvmppc_spapr_tce_group, rcu);
+ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 		unsigned long liobn, unsigned long ioba,
+ 		unsigned long tce_list, unsigned long npages)
+@@ -372,3 +398,29 @@ unlock_exit:
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_h_put_tce_indirect);
 +
-+	iommu_group_put(kg->refgrp);
-+	kg->refgrp = NULL;
-+	kfree(kg);
-+}
-+
-+extern void kvm_spapr_tce_detach_iommu_group(struct kvm *kvm,
-+				struct iommu_group *grp)
++long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
++		unsigned long liobn, unsigned long ioba,
++		unsigned long tce_value, unsigned long npages)
 +{
 +	struct kvmppc_spapr_tce_table *stt;
-+	struct iommu_table_group *table_group;
-+	struct kvmppc_spapr_tce_group *kg;
++	long i, ret;
 +
-+	table_group = iommu_group_get_iommudata(grp);
-+	if (!table_group)
-+		return;
++	stt = kvmppc_find_table(vcpu, liobn);
++	if (!stt)
++		return H_TOO_HARD;
 +
-+	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list) {
-+		list_for_each_entry_rcu(kg, &stt->groups, next) {
-+			if (kg->refgrp == grp) {
-+				list_del_rcu(&kg->next);
-+				call_rcu(&kg->rcu, kvm_spapr_tce_put_group);
-+				break;
-+			}
-+		}
-+	}
++	ret = kvmppc_ioba_validate(stt, ioba, npages);
++	if (ret != H_SUCCESS)
++		return ret;
++
++	/* Check permission bits only to allow userspace poison TCE for debug */
++	if (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ))
++		return H_PARAMETER;
++
++	for (i = 0; i < npages; ++i, ioba += (1ULL << stt->page_shift))
++		kvmppc_tce_put(stt, ioba >> stt->page_shift, tce_value);
++
++	return H_SUCCESS;
 +}
-+
- long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 				   struct kvm_create_spapr_tce_64 *args)
- {
-@@ -181,6 +288,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 	stt->offset = args->offset;
- 	stt->size = size;
- 	stt->kvm = kvm;
-+	INIT_LIST_HEAD_RCU(&stt->groups);
++EXPORT_SYMBOL_GPL(kvmppc_h_stuff_tce);
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index af155f6..11163ae 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -212,8 +212,8 @@ static struct mm_iommu_table_group_mem_t *kvmppc_rm_iommu_lookup(
+ 	return mm_iommu_lookup_rm(mm, ua, size);
+ }
  
- 	for (i = 0; i < npages; i++) {
- 		stt->pages[i] = alloc_page(GFP_KERNEL | __GFP_ZERO);
+-long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+-		      unsigned long ioba, unsigned long tce)
++long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
++		unsigned long ioba, unsigned long tce)
+ {
+ 	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
+ 	long ret;
+@@ -236,7 +236,6 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 
+ 	return H_SUCCESS;
+ }
+-EXPORT_SYMBOL_GPL(kvmppc_h_put_tce);
+ 
+ static long kvmppc_rm_ua_to_hpa(struct kvm_vcpu *vcpu,
+ 		unsigned long ua, unsigned long *phpa)
+@@ -350,7 +349,7 @@ unlock_exit:
+ 	return ret;
+ }
+ 
+-long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
++long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
+ 		unsigned long liobn, unsigned long ioba,
+ 		unsigned long tce_value, unsigned long npages)
+ {
+@@ -374,7 +373,6 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
+ 
+ 	return H_SUCCESS;
+ }
+-EXPORT_SYMBOL_GPL(kvmppc_h_stuff_tce);
+ 
+ long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 		      unsigned long ioba)
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index ed16182..d6dad2c 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1928,7 +1928,7 @@ hcall_real_table:
+ 	.long	DOTSYM(kvmppc_h_clear_ref) - hcall_real_table
+ 	.long	DOTSYM(kvmppc_h_protect) - hcall_real_table
+ 	.long	DOTSYM(kvmppc_h_get_tce) - hcall_real_table
+-	.long	DOTSYM(kvmppc_h_put_tce) - hcall_real_table
++	.long	DOTSYM(kvmppc_rm_h_put_tce) - hcall_real_table
+ 	.long	0		/* 0x24 - H_SET_SPRG0 */
+ 	.long	DOTSYM(kvmppc_h_set_dabr) - hcall_real_table
+ 	.long	0		/* 0x2c */
+@@ -2006,7 +2006,7 @@ hcall_real_table:
+ 	.long	0		/* 0x12c */
+ 	.long	0		/* 0x130 */
+ 	.long	DOTSYM(kvmppc_h_set_xdabr) - hcall_real_table
+-	.long	DOTSYM(kvmppc_h_stuff_tce) - hcall_real_table
++	.long	DOTSYM(kvmppc_rm_h_stuff_tce) - hcall_real_table
+ 	.long	DOTSYM(kvmppc_rm_h_put_tce_indirect) - hcall_real_table
+ 	.long	0		/* 0x140 */
+ 	.long	0		/* 0x144 */
 -- 
 2.5.0.rc3
