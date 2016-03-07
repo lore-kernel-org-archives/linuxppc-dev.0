@@ -2,33 +2,32 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA0281A0B86
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 01:50:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E77A21A048B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 01:51:04 +1100 (AEDT)
 Received: from localhost
  by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 7 Mar 2016 06:40:09 -0700
+ Mon, 7 Mar 2016 06:40:22 -0700
 Received: from b03cxnp08025.gho.boulder.ibm.com
  (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 787CD3E40048
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 06:40:05 -0700 (MST)
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0669F19D803F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 06:28:15 -0700 (MST)
 Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
  by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u27De54F36896936
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 06:40:05 -0700
+ u27DeJB042205294
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 06:40:19 -0700
 Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
  by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u27De4N6029856
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 06:40:05 -0700
+ u27DeHKd031477
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 06:40:19 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 08/14] powerpc/mm: Use helper for finding pte bits mapping I/O
- area
-Date: Mon,  7 Mar 2016 19:09:28 +0530
-Message-Id: <1457357974-20839-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 14/14] powerpc/mm/hash: Add support for POWER9 hash
+Date: Mon,  7 Mar 2016 19:09:34 +0530
+Message-Id: <1457357974-20839-14-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1457357974-20839-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1457357974-20839-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,99 +39,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use helper instead of opencoding with constants. Later patch will
-drop the WIMG bits and use PowerISA 3.0 defines
+This add support for p9 hash with UPRT=0. ie, we don't have
+segment table support yet.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/btext.c      | 2 +-
- arch/powerpc/kernel/isa-bridge.c | 4 ++--
- arch/powerpc/kernel/pci_64.c     | 2 +-
- arch/powerpc/mm/pgtable_64.c     | 4 ++--
- arch/powerpc/platforms/ps3/spu.c | 2 +-
- 5 files changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h | 13 +++++++--
+ arch/powerpc/mm/hash_native_64.c              | 11 ++++++-
+ arch/powerpc/mm/hash_utils_64.c               | 42 +++++++++++++++++++++++++--
+ arch/powerpc/mm/pgtable_64.c                  |  7 +++++
+ arch/powerpc/platforms/ps3/htab.c             |  2 +-
+ arch/powerpc/platforms/pseries/lpar.c         |  2 +-
+ 6 files changed, 70 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/btext.c b/arch/powerpc/kernel/btext.c
-index 41c011cb6070..8275858a434d 100644
---- a/arch/powerpc/kernel/btext.c
-+++ b/arch/powerpc/kernel/btext.c
-@@ -162,7 +162,7 @@ void btext_map(void)
- 	offset = ((unsigned long) dispDeviceBase) - base;
- 	size = dispDeviceRowBytes * dispDeviceRect[3] + offset
- 		+ dispDeviceRect[0];
--	vbase = __ioremap(base, size, _PAGE_NO_CACHE);
-+	vbase = __ioremap(base, size, pgprot_val(pgprot_noncached_wc(__pgprot(0))));
- 	if (vbase == 0)
- 		return;
- 	logicalDisplayBase = vbase + offset;
-diff --git a/arch/powerpc/kernel/isa-bridge.c b/arch/powerpc/kernel/isa-bridge.c
-index 0f1997097960..ae1316106e2b 100644
---- a/arch/powerpc/kernel/isa-bridge.c
-+++ b/arch/powerpc/kernel/isa-bridge.c
-@@ -109,14 +109,14 @@ static void pci_process_ISA_OF_ranges(struct device_node *isa_node,
- 		size = 0x10000;
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index ce73736b42db..843b5d839904 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -78,6 +78,10 @@
+ #define HPTE_V_SECONDARY	ASM_CONST(0x0000000000000002)
+ #define HPTE_V_VALID		ASM_CONST(0x0000000000000001)
  
- 	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
--		     size, _PAGE_NO_CACHE|_PAGE_GUARDED);
-+		     size, pgprot_val(pgprot_noncached(__pgprot(0))));
- 	return;
- 
- inval_range:
- 	printk(KERN_ERR "no ISA IO ranges or unexpected isa range, "
- 	       "mapping 64k\n");
- 	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
--		     0x10000, _PAGE_NO_CACHE|_PAGE_GUARDED);
-+		     0x10000, pgprot_val(pgprot_noncached(__pgprot(0))));
++/*
++ * ISA 3.0 have a different HPTE format.
++ */
++#define HPTE_R_3_0_SSIZE_SHIFT	58
+ #define HPTE_R_PP0		ASM_CONST(0x8000000000000000)
+ #define HPTE_R_TS		ASM_CONST(0x4000000000000000)
+ #define HPTE_R_KEY_HI		ASM_CONST(0x3000000000000000)
+@@ -224,7 +228,8 @@ static inline unsigned long hpte_encode_avpn(unsigned long vpn, int psize,
+ 	 */
+ 	v = (vpn >> (23 - VPN_SHIFT)) & ~(mmu_psize_defs[psize].avpnm);
+ 	v <<= HPTE_V_AVPN_SHIFT;
+-	v |= ((unsigned long) ssize) << HPTE_V_SSIZE_SHIFT;
++	if (!cpu_has_feature(CPU_FTR_ARCH_300))
++		v |= ((unsigned long) ssize) << HPTE_V_SSIZE_SHIFT;
+ 	return v;
  }
  
- 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 60bb187cb46a..41503d7d53a1 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -159,7 +159,7 @@ static int pcibios_map_phb_io_space(struct pci_controller *hose)
- 
- 	/* Establish the mapping */
- 	if (__ioremap_at(phys_page, area->addr, size_page,
--			 _PAGE_NO_CACHE | _PAGE_GUARDED) == NULL)
-+			 pgprot_val(pgprot_noncached(__pgprot(0)))) == NULL)
- 		return -ENOMEM;
- 
- 	/* Fixup hose IO resource */
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 1254cf107871..6f1b7064f822 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -253,7 +253,7 @@ void __iomem * __ioremap(phys_addr_t addr, unsigned long size,
- 
- void __iomem * ioremap(phys_addr_t addr, unsigned long size)
+@@ -248,8 +253,12 @@ static inline unsigned long hpte_encode_v(unsigned long vpn, int base_psize,
+  * aligned for the requested page size
+  */
+ static inline unsigned long hpte_encode_r(unsigned long pa, int base_psize,
+-					  int actual_psize)
++					  int actual_psize, int ssize)
  {
--	unsigned long flags = _PAGE_NO_CACHE | _PAGE_GUARDED;
-+	unsigned long flags = pgprot_val(pgprot_noncached(__pgprot(0)));
- 	void *caller = __builtin_return_address(0);
++
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
++		pa |= ((unsigned long) ssize) << HPTE_R_3_0_SSIZE_SHIFT;
++
+ 	/* A 4K page needs no special encoding */
+ 	if (actual_psize == MMU_PAGE_4K)
+ 		return pa & HPTE_R_RPN;
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 8eaac81347fd..d873f6507f72 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -221,7 +221,7 @@ static long native_hpte_insert(unsigned long hpte_group, unsigned long vpn,
+ 		return -1;
  
- 	if (ppc_md.ioremap)
-@@ -263,7 +263,7 @@ void __iomem * ioremap(phys_addr_t addr, unsigned long size)
+ 	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
+-	hpte_r = hpte_encode_r(pa, psize, apsize) | rflags;
++	hpte_r = hpte_encode_r(pa, psize, apsize, ssize) | rflags;
  
- void __iomem * ioremap_wc(phys_addr_t addr, unsigned long size)
+ 	if (!(vflags & HPTE_V_BOLTED)) {
+ 		DBG_LOW(" i=%x hpte_v=%016lx, hpte_r=%016lx\n",
+@@ -719,6 +719,12 @@ static void native_flush_hash_range(unsigned long number, int local)
+ 	local_irq_restore(flags);
+ }
+ 
++static int native_update_partition_table(u64 patb1)
++{
++	partition_tb->patb1 = cpu_to_be64(patb1);
++	return 0;
++}
++
+ void __init hpte_init_native(void)
  {
--	unsigned long flags = _PAGE_NO_CACHE;
-+	unsigned long flags = pgprot_val(pgprot_noncached_wc(__pgprot(0)));
- 	void *caller = __builtin_return_address(0);
+ 	ppc_md.hpte_invalidate	= native_hpte_invalidate;
+@@ -729,4 +735,7 @@ void __init hpte_init_native(void)
+ 	ppc_md.hpte_clear_all	= native_hpte_clear;
+ 	ppc_md.flush_hash_range = native_flush_hash_range;
+ 	ppc_md.hugepage_invalidate   = native_hugepage_invalidate;
++
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
++		ppc_md.update_partition_table = native_update_partition_table;
+ }
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 728acd17f2a6..0e25d2981e5e 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -673,6 +673,41 @@ int remove_section_mapping(unsigned long start, unsigned long end)
+ }
+ #endif /* CONFIG_MEMORY_HOTPLUG */
  
- 	if (ppc_md.ioremap)
-diff --git a/arch/powerpc/platforms/ps3/spu.c b/arch/powerpc/platforms/ps3/spu.c
-index 5e8a40f9739f..492b2575e0d2 100644
---- a/arch/powerpc/platforms/ps3/spu.c
-+++ b/arch/powerpc/platforms/ps3/spu.c
-@@ -216,7 +216,7 @@ static int __init setup_areas(struct spu *spu)
++static void __init hash_init_partition_table(phys_addr_t hash_table,
++					     unsigned long pteg_count)
++{
++	unsigned long ps_field;
++	unsigned long htab_size;
++	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
++
++	/*
++	 * slb llp encoding for the page size used in VPM real mode.
++	 * We can ignore that for lpid 0
++	 */
++	ps_field = 0;
++	htab_size =  __ilog2(pteg_count) - 11;
++
++	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 24), "Partition table size too large.");
++	partition_tb = __va(memblock_alloc_base(patb_size, patb_size,
++						MEMBLOCK_ALLOC_ANYWHERE));
++
++	/* Initialize the Partition Table with no entries */
++	memset((void *)partition_tb, 0, patb_size);
++	partition_tb->patb0 = cpu_to_be64(ps_field | hash_table | htab_size);
++	/*
++	 * FIXME!! This should be done via update_partition table
++	 * For now UPRT is 0 for us.
++	 */
++	partition_tb->patb1 = 0;
++	DBG("Partition table %p\n", partition_tb);
++	/*
++	 * update partition table control register,
++	 * 64 K size.
++	 */
++	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
++
++}
++
+ static void __init htab_initialize(void)
+ {
+ 	unsigned long table;
+@@ -741,8 +776,11 @@ static void __init htab_initialize(void)
+ 		/* Initialize the HPT with no entries */
+ 		memset((void *)table, 0, htab_size_bytes);
+ 
+-		/* Set SDR1 */
+-		mtspr(SPRN_SDR1, _SDR1);
++		if (!cpu_has_feature(CPU_FTR_ARCH_300))
++			/* Set SDR1 */
++			mtspr(SPRN_SDR1, _SDR1);
++		else
++			hash_init_partition_table(table, pteg_count);
  	}
  
- 	spu->local_store = (__force void *)ioremap_prot(spu->local_store_phys,
--		LS_SIZE, _PAGE_NO_CACHE);
-+		LS_SIZE, pgprot_val(pgprot_noncached_wc(__pgprot(0))));
+ 	prot = pgprot_val(PAGE_KERNEL);
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 98c91ad18ba7..5fff787da17a 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -69,6 +69,13 @@
+ #endif
+ #endif
  
- 	if (!spu->local_store) {
- 		pr_debug("%s:%d: ioremap local_store failed\n",
++#ifdef CONFIG_PPC_BOOK3S_64
++/*
++ * partition table and process table for ISA 3.0
++ */
++struct prtb_entry *process_tb;
++struct patb_entry *partition_tb;
++#endif
+ unsigned long ioremap_bot = IOREMAP_BASE;
+ 
+ #ifdef CONFIG_PPC_MMU_NOHASH
+diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
+index 2f95d33cf34a..c9a3e677192a 100644
+--- a/arch/powerpc/platforms/ps3/htab.c
++++ b/arch/powerpc/platforms/ps3/htab.c
+@@ -63,7 +63,7 @@ static long ps3_hpte_insert(unsigned long hpte_group, unsigned long vpn,
+ 	vflags &= ~HPTE_V_SECONDARY;
+ 
+ 	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
+-	hpte_r = hpte_encode_r(ps3_mm_phys_to_lpar(pa), psize, apsize) | rflags;
++	hpte_r = hpte_encode_r(ps3_mm_phys_to_lpar(pa), psize, apsize, ssize) | rflags;
+ 
+ 	spin_lock_irqsave(&ps3_htab_lock, flags);
+ 
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 0d4608990702..e4ceba2b1551 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -139,7 +139,7 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
+ 			 hpte_group, vpn,  pa, rflags, vflags, psize);
+ 
+ 	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
+-	hpte_r = hpte_encode_r(pa, psize, apsize) | rflags;
++	hpte_r = hpte_encode_r(pa, psize, apsize, ssize) | rflags;
+ 
+ 	if (!(vflags & HPTE_V_BOLTED))
+ 		pr_devel(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
 -- 
 2.5.0
