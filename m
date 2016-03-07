@@ -1,22 +1,22 @@
 Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 64FB61A0B52
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 18:49:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40C511A0B72
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 18:49:16 +1100 (AEDT)
 Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Mon, 7 Mar 2016 13:19:05 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u277moqj2359642
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 13:18:50 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u277mxBv012507
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 13:19:00 +0530
+ Mon, 7 Mar 2016 13:19:13 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u277mrhr11599908
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 13:18:53 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u277n0fJ025848
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 13:19:03 +0530
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -26,10 +26,10 @@ Cc: bhelgaas@google.com, corbet@lwn.net, aik@ozlabs.ru,
  mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
  zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
  Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Subject: [RFC PATCH v4 1/7] PCI: Add a new option for resource_alignment to
- reassign alignment
-Date: Mon,  7 Mar 2016 15:48:32 +0800
-Message-Id: <1457336918-3893-2-git-send-email-xyjxie@linux.vnet.ibm.com>
+Subject: [RFC PATCH v4 2/7] PCI: Use IORESOURCE_WINDOW to identify bridge
+ resources
+Date: Mon,  7 Mar 2016 15:48:33 +0800
+Message-Id: <1457336918-3893-3-git-send-email-xyjxie@linux.vnet.ibm.com>
 In-Reply-To: <1457336918-3893-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 References: <1457336918-3893-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,113 +41,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When using resource_alignment kernel parameter, the current
-implement reassigns the alignment by changing resources' size
-which can potentially break some drivers.
+Now we use the IORESOURCE_STARTALIGN to identify bridge
+resources in __assign_resources_sorted(). But there would
+be some problems because some PCI devices' resources may
+also use IORESOURCE_STARTALIGN, e.g. using "noresize"
+option of resource_alignment kernel parameter.
 
-So this patch adds a new option "noresize" for the parameter
-to solve this problem.
+So this patch replaces IORESOURCE_STARTALIGN with
+IORESOURCE_WINDOW.
 
 Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 ---
- Documentation/kernel-parameters.txt |    5 ++++-
- drivers/pci/pci.c                   |   36 +++++++++++++++++++++++++----------
- 2 files changed, 30 insertions(+), 11 deletions(-)
+ drivers/pci/setup-bus.c |   21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 9a53c92..d8b29ab 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2912,13 +2912,16 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 				window. The default value is 64 megabytes.
- 		resource_alignment=
- 				Format:
--				[<order of align>@][<domain>:]<bus>:<slot>.<func>[; ...]
-+				[<order of align>@][<domain>:]<bus>:<slot>.<func>
-+				[:noresize][; ...]
- 				Specifies alignment and device to reassign
- 				aligned memory resources.
- 				If <order of align> is not specified,
- 				PAGE_SIZE is used as alignment.
- 				PCI-PCI bridge can be specified, if resource
- 				windows need to be expanded.
-+				noresize: Don't change the resources' sizes when
-+				reassigning alignment.
- 		ecrc=		Enable/disable PCIe ECRC (transaction layer
- 				end-to-end CRC checking).
- 				bios: Use BIOS/firmware settings. This is the
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 602eb42..760cce5 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -4598,7 +4598,8 @@ static DEFINE_SPINLOCK(resource_alignment_lock);
-  * RETURNS: Resource alignment if it is specified.
-  *          Zero if it is not specified.
-  */
--static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
-+static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
-+		bool *resize)
- {
- 	int seg, bus, slot, func, align_order, count;
- 	resource_size_t align = 0;
-@@ -4626,6 +4627,11 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
- 			}
- 		}
- 		p += count;
-+		if (!strncmp(p, ":noresize", 9)) {
-+			*resize = false;
-+			p += 9;
-+		} else
-+			*resize = true;
- 		if (seg == pci_domain_nr(dev->bus) &&
- 			bus == dev->bus->number &&
- 			slot == PCI_SLOT(dev->devfn) &&
-@@ -4658,11 +4664,12 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
- {
- 	int i;
- 	struct resource *r;
-+	bool resize;
- 	resource_size_t align, size;
- 	u16 command;
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index 7796d0a..4ff10ca 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -411,11 +411,11 @@ static void __assign_resources_sorted(struct list_head *head,
  
- 	/* check if specified PCI is target device to reassign */
--	align = pci_specified_resource_alignment(dev);
-+	align = pci_specified_resource_alignment(dev, &resize);
- 	if (!align)
- 		return;
- 
-@@ -4684,15 +4691,24 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
- 		if (!(r->flags & IORESOURCE_MEM))
+ 		/*
+ 		 * There are two kinds of additional resources in the list:
+-		 * 1. bridge resource  -- IORESOURCE_STARTALIGN
+-		 * 2. SR-IOV resource   -- IORESOURCE_SIZEALIGN
++		 * 1. bridge resource -- IORESOURCE_WINDOW
++		 * 2. SR-IOV resource
+ 		 * Here just fix the additional alignment for bridge
+ 		 */
+-		if (!(dev_res->res->flags & IORESOURCE_STARTALIGN))
++		if (!(dev_res->res->flags & IORESOURCE_WINDOW))
  			continue;
- 		size = resource_size(r);
--		if (size < align) {
--			size = align;
--			dev_info(&dev->dev,
--				"Rounding up size of resource #%d to %#llx.\n",
--				i, (unsigned long long)size);
-+		if (resize) {
-+			if (size < align) {
-+				size = align;
-+				dev_info(&dev->dev,
-+					"Rounding up size of resource #%d to %#llx.\n",
-+					i, (unsigned long long)size);
-+			}
-+			r->flags |= IORESOURCE_UNSET;
-+			r->end = size - 1;
-+			r->start = 0;
-+		} else {
-+			if (size > align)
-+				align = size;
-+			r->flags &= ~IORESOURCE_SIZEALIGN;
-+			r->flags |= IORESOURCE_STARTALIGN | IORESOURCE_UNSET;
-+			r->start = align;
-+			r->end = r->start + size - 1;
- 		}
--		r->flags |= IORESOURCE_UNSET;
--		r->end = size - 1;
--		r->start = 0;
+ 
+ 		add_align = get_res_add_align(realloc_head, dev_res->res);
+@@ -956,7 +956,7 @@ static void pbus_size_io(struct pci_bus *bus, resource_size_t min_size,
+ 
+ 	b_res->start = min_align;
+ 	b_res->end = b_res->start + size0 - 1;
+-	b_res->flags |= IORESOURCE_STARTALIGN;
++	b_res->flags |= IORESOURCE_STARTALIGN | IORESOURCE_WINDOW;
+ 	if (size1 > size0 && realloc_head) {
+ 		add_to_list(realloc_head, bus->self, b_res, size1-size0,
+ 			    min_align);
+@@ -1104,7 +1104,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
  	}
- 	/* Need to disable bridge's resource window,
- 	 * to enable the kernel to reassign new resource
+ 	b_res->start = min_align;
+ 	b_res->end = size0 + min_align - 1;
+-	b_res->flags |= IORESOURCE_STARTALIGN;
++	b_res->flags |= IORESOURCE_STARTALIGN | IORESOURCE_WINDOW;
+ 	if (size1 > size0 && realloc_head) {
+ 		add_to_list(realloc_head, bus->self, b_res, size1-size0, add_align);
+ 		dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window %pR to %pR add_size %llx add_align %llx\n",
+@@ -1140,7 +1140,8 @@ static void pci_bus_size_cardbus(struct pci_bus *bus,
+ 	 */
+ 	b_res[0].start = pci_cardbus_io_size;
+ 	b_res[0].end = b_res[0].start + pci_cardbus_io_size - 1;
+-	b_res[0].flags |= IORESOURCE_IO | IORESOURCE_STARTALIGN;
++	b_res[0].flags |= IORESOURCE_IO | IORESOURCE_STARTALIGN |
++			  IORESOURCE_WINDOW;
+ 	if (realloc_head) {
+ 		b_res[0].end -= pci_cardbus_io_size;
+ 		add_to_list(realloc_head, bridge, b_res, pci_cardbus_io_size,
+@@ -1152,7 +1153,8 @@ handle_b_res_1:
+ 		goto handle_b_res_2;
+ 	b_res[1].start = pci_cardbus_io_size;
+ 	b_res[1].end = b_res[1].start + pci_cardbus_io_size - 1;
+-	b_res[1].flags |= IORESOURCE_IO | IORESOURCE_STARTALIGN;
++	b_res[1].flags |= IORESOURCE_IO | IORESOURCE_STARTALIGN |
++			  IORESOURCE_WINDOW;
+ 	if (realloc_head) {
+ 		b_res[1].end -= pci_cardbus_io_size;
+ 		add_to_list(realloc_head, bridge, b_res+1, pci_cardbus_io_size,
+@@ -1190,7 +1192,7 @@ handle_b_res_2:
+ 		b_res[2].start = pci_cardbus_mem_size;
+ 		b_res[2].end = b_res[2].start + pci_cardbus_mem_size - 1;
+ 		b_res[2].flags |= IORESOURCE_MEM | IORESOURCE_PREFETCH |
+-				  IORESOURCE_STARTALIGN;
++				  IORESOURCE_STARTALIGN | IORESOURCE_WINDOW;
+ 		if (realloc_head) {
+ 			b_res[2].end -= pci_cardbus_mem_size;
+ 			add_to_list(realloc_head, bridge, b_res+2,
+@@ -1206,7 +1208,8 @@ handle_b_res_3:
+ 		goto handle_done;
+ 	b_res[3].start = pci_cardbus_mem_size;
+ 	b_res[3].end = b_res[3].start + b_res_3_size - 1;
+-	b_res[3].flags |= IORESOURCE_MEM | IORESOURCE_STARTALIGN;
++	b_res[3].flags |= IORESOURCE_MEM | IORESOURCE_STARTALIGN |
++			  IORESOURCE_WINDOW;
+ 	if (realloc_head) {
+ 		b_res[3].end -= b_res_3_size;
+ 		add_to_list(realloc_head, bridge, b_res+3, b_res_3_size,
 -- 
 1.7.9.5
