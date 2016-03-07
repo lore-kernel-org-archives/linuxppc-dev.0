@@ -1,21 +1,32 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
- [IPv6:2607:f8b0:400e:c03::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jikos@kernel.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 09EE51A01EA
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 09:09:48 +1100 (AEDT)
-Received: by mail-pa0-x233.google.com with SMTP id tt10so23749120pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Mar 2016 14:09:47 -0800 (PST)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Oliver O'Halloran <oohall@gmail.com>,
-	Anton Blanchard <anton@samba.org>
-Subject: [PATCH] powerpc/process: fix altivec SPR not being saved
-Date: Tue,  8 Mar 2016 09:08:47 +1100
-Message-Id: <1457388527-14575-1-git-send-email-oohall@gmail.com>
-In-Reply-To: <1457303588-29173-1-git-send-email-oohall@gmail.com>
-References: <1457303588-29173-1-git-send-email-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B63EA1A01EB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 09:52:36 +1100 (AEDT)
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48F3A140271
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2016 09:52:35 +1100 (AEDT)
+Date: Mon, 7 Mar 2016 23:52:31 +0100 (CET)
+From: Jiri Kosina <jikos@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+cc: Petr Mladek <pmladek@suse.com>, linuxppc-dev@ozlabs.org, jeyu@redhat.com,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com, duwe@lst.de, live-patching@vger.kernel.org,
+ mbenes@suse.cz, Torsten Duwe <duwe@suse.de>, vojtech@suse.com,
+ jpoimboe@redhat.com, sjenning@redhat.com
+Subject: Re: How to merge? (was Re: [PATCH][v4] livepatch/ppc: Enable
+ livepatching on powerpc)
+In-Reply-To: <1457345161.18915.3.camel@ellerman.id.au>
+Message-ID: <alpine.LNX.2.00.1603072348280.3656@cbobk.fhfr.pm>
+References: <1457023921-2051-1-git-send-email-pmladek@suse.com>
+ <1457078800.20076.4.camel@ellerman.id.au>
+ <alpine.LNX.2.00.1603040952330.3656@cbobk.fhfr.pm>
+ <1457345161.18915.3.camel@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,43 +36,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In save_sprs() in process.c contains the following test:
+On Mon, 7 Mar 2016, Michael Ellerman wrote:
 
-	if (cpu_has_feature(cpu_has_feature(CPU_FTR_ALTIVEC)))
-		t->vrsave = mfspr(SPRN_VRSAVE);
+> > This aligns with my usual workflow, so that'd be my preferred way of doing
+> > things; i.e. you put all the ftrace changes into a separate topic branch,
+> > and then
+> >
+> > - you pull that branch into powerpc#next
+> > - I pull that branch into livepatching tree
+> > - I apply the ppc livepatching support on top of that
+> > - I send a pull request to Linus only after powerpc#next gets merged to
+> >   Linus' tree
+> >
+> > Sounds good?
+> 
+> Yep, here it is:
+> 
+>   https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/log/?h=topic/mprofile-kernel
+> 
+> aka:
+> 
+>   git fetch git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git topic/mprofile-kernel
 
-CPU feature with the mask 0x1 is CPU_FTR_COHERENT_ICACHE so the test
-is equivilent to:
+Excellent, thanks.
 
-	if (cpu_has_feature(CPU_FTR_ALTIVEC) &&
-		cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
+> I haven't merged it into my next yet, but I will tomorrow unless you tell me
+> there's something wrong with it.
 
-On CPUs without support for both (i.e G5) this results in vrsave not being
-saved between context switches. The vector register save/restore code
-doesn't use VRSAVE to determine which registers to save/restore,
-but the value of VRSAVE is used to determine if altivec is being used
-in several code paths.
+There is one remaining issue which I think would be really nice to 
+have(TM), and that's Steven's Ack for the whole thing :)
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Fixes: 152d523e6307 ("powerpc: Create context switch helpers save_sprs() and restore_sprs()")
-Cc: stable@vger.kernel.org
----
- arch/powerpc/kernel/process.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+For the livepatching part, I don't think we are quite there yet (so maybe 
+it'll miss the upcoming merge window anyway).
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index dccc87e8fee5..bc6aa87a3b12 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -854,7 +854,7 @@ void restore_tm_state(struct pt_regs *regs)
- static inline void save_sprs(struct thread_struct *t)
- {
- #ifdef CONFIG_ALTIVEC
--	if (cpu_has_feature(cpu_has_feature(CPU_FTR_ALTIVEC)))
-+	if (cpu_has_feature(CPU_FTR_ALTIVEC))
- 		t->vrsave = mfspr(SPRN_VRSAVE);
- #endif
- #ifdef CONFIG_PPC_BOOK3S_64
+My primary worry there is what Torsten pointed out, i.e. functions with 
+either varargs or more than 8 args needing special care.
+
+Also, I'd like to have this positively reviewed by at least one more 
+livepatching maintainer (I am currently looking into it myself, but my 
+understanding of powerpc arch is rather low, so the more eyes, the 
+better).
+
+Thanks!
+
 -- 
-2.5.0
+Jiri Kosina
+SUSE Labs
