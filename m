@@ -1,25 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D32CC1A0118
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 14:00:27 +1100 (AEDT)
-Message-ID: <1457319627.19197.1.camel@ellerman.id.au>
-Subject: Re: Problems with swapping in v4.5-rc on POWER
+ by lists.ozlabs.org (Postfix) with ESMTPS id A0F0C1A033D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 14:29:57 +1100 (AEDT)
+Message-ID: <1457321396.19197.3.camel@ellerman.id.au>
+Subject: Re: [PATCH][v4] livepatch/ppc: Enable livepatching on powerpc
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Hugh Dickins <hughd@google.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Paul Mackerras
- <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Date: Mon, 07 Mar 2016 14:00:27 +1100
-In-Reply-To: <alpine.LSU.2.11.1603040948250.5477@eggly.anvils>
-References: <alpine.LSU.2.11.1602241716220.15121@eggly.anvils>
- <877fhttmr1.fsf@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1602242136270.6876@eggly.anvils>
- <alpine.LSU.2.11.1602251322130.8063@eggly.anvils>
- <alpine.LSU.2.11.1602260157430.10399@eggly.anvils>
- <alpine.LSU.2.11.1603021226300.31251@eggly.anvils>
- <1456984266.28236.1.camel@ellerman.id.au>
- <alpine.LSU.2.11.1603040948250.5477@eggly.anvils>
+To: Miroslav Benes <mbenes@suse.cz>
+Cc: Petr Mladek <pmladek@suse.com>, linuxppc-dev@ozlabs.org,
+ jeyu@redhat.com,  jkosina@suse.cz, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org,  kamalesh@linux.vnet.ibm.com, duwe@lst.de,
+ live-patching@vger.kernel.org,  Torsten Duwe <duwe@suse.de>
+Date: Mon, 07 Mar 2016 14:29:56 +1100
+In-Reply-To: <alpine.LNX.2.00.1603041026320.31153@pobox.suse.cz>
+References: <1457023921-2051-1-git-send-email-pmladek@suse.com>
+ <1457078325.20076.1.camel@ellerman.id.au>
+ <alpine.LNX.2.00.1603041026320.31153@pobox.suse.cz>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,38 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-03-04 at 09:58 -0800, Hugh Dickins wrote:
+On Fri, 2016-03-04 at 10:31 +0100, Miroslav Benes wrote:
+> On Fri, 4 Mar 2016, Michael Ellerman wrote:
+> > On Thu, 2016-03-03 at 17:52 +0100, Petr Mladek wrote:
+> > 
+> > >     3. Added an error message when including
+> > >        powerpc/include/asm/livepatch.h without HAVE_LIVEPATCH
+> > 
+> > I don't know why we want to do that, I don't see how it is helpful. It doesn't
+> > even do what it says:
+> > 
+> > > +#ifdef CONFIG_LIVEPATCH
+> > ...
+> > > +#else /* CONFIG_LIVEPATCH */
+> > > +#error Include linux/livepatch.h, not asm/livepatch.h
+> > > +#endif /* CONFIG_LIVEPATCH */
+> > 
+> > If I turn on CONFIG_LIVEPATCH then I can quite happily include asm/livepatch.h
+> > and not get an error. So the check doesn't do what the message suggests.
 > 
-> The alternative bisection was as unsatisfactory as the first:
-> again it fingered an irrelevant merge (rather than any commit
-> pulled in by that merge) as the bad commit.
+> Well, yes. I looked into the archives to find if there was a reason to 
+> even introduce it. It was not. It came up during a review process of the 
+> livepatching patch set somehow and we left it there. I only changed the 
+> error message to the mentioned one because we deemed it was better.
+
+Thanks for looking into it.
+
+> > And on x86 & s390 it does:
+> > 
+> >   #else
+> >   #error Live patching support is disabled; check CONFIG_LIVEPATCH
+> >   #endif
 > 
-> It seems this issue is too intermittent for bisection to be useful,
-> on my load anyway.
+> This is the old message. See 383bf44d1a8b ("livepatch: change the error 
+> message in asm/livepatch.h header files").
+> 
+> Anyway, it really does not mean much. I'll send a patch for s390 and x86 
+> to remove it completely in a minute.
 
-Darn. Thanks for trying.
-
-> The best I can do now is try v4.4 for a couple of days, to verify that
-> still comes out good (rather than the machine going bad coincident with
-> v4.5-rc), then try v4.5-rc7 to verify that that still comes out bad.
-
-Thanks, that would still be helpful.
-
-> I'll report back on those; but beyond that, I'll have to leave it to you.
-
-I haven't had any luck here :/
-
-Can you give us a more verbose description of your test setup?
-
- - G5, which exact model?
- - 4k pages, no THP.
- - how much ram & swap?
- - building linus' tree, make -j ?
- - source and output on tmpfs? (how big?)
- - what device is the swap device? (you said SSD I think?)
- - anything else I've forgotten?
-
-Oh and can you send us your bisect logs, we can at least trust the bad results
-I think.
+Thanks. I know it's not a big deal, but the kernel is complicated enough
+without extra code we don't really need :)
 
 cheers
