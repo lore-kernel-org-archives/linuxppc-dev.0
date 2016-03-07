@@ -1,40 +1,27 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7835B1A0118
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 19:53:48 +1100 (AEDT)
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Mon, 7 Mar 2016 01:23:22 -0700
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 396AC3E40044
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 01:23:20 -0700 (MST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u278NJM029622336
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 08:23:19 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u278NJde010644
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 03:23:19 -0500
-Subject: Re: [PATCH V11 0/4]perf/powerpc: Add ability to sample intr machine
- state in powerpc
-To: linux-kernel@vger.kernel.org
-References: <1455944568-7231-1-git-send-email-anju@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
- dsahern@gmail.com, acme@redhat.com, sukadev@linux.vnet.ibm.com,
- hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, anju@linux.vnet.ibm.com
-From: Anju T <anju@linux.vnet.ibm.com>
-Message-ID: <56DD3A72.2080209@linux.vnet.ibm.com>
-Date: Mon, 7 Mar 2016 13:53:14 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B4161A0225
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 20:38:21 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id q129so7774706pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Mar 2016 01:38:21 -0800 (PST)
+Subject: Re: [PATCH kernel 6/9] KVM: PPC: Associate IOMMU group with guest
+ view of TCE table
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <1457322077-26640-1-git-send-email-aik@ozlabs.ru>
+ <1457322077-26640-7-git-send-email-aik@ozlabs.ru>
+ <20160307062523.GN22546@voom.fritz.box>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <56DD4C05.4060109@ozlabs.ru>
+Date: Mon, 7 Mar 2016 20:38:13 +1100
 MIME-Version: 1.0
-In-Reply-To: <1455944568-7231-1-git-send-email-anju@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+In-Reply-To: <20160307062523.GN22546@voom.fritz.box>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,173 +31,265 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On 03/07/2016 05:25 PM, David Gibson wrote:
+> On Mon, Mar 07, 2016 at 02:41:14PM +1100, Alexey Kardashevskiy wrote:
+>> The existing in-kernel TCE table for emulated devices contains
+>> guest physical addresses which are accesses by emulated devices.
+>> Since we need to keep this information for VFIO devices too
+>> in order to implement H_GET_TCE, we are reusing it.
+>>
+>> This adds IOMMU group list to kvmppc_spapr_tce_table. Each group
+>> will have an iommu_table pointer.
+>>
+>> This adds kvm_spapr_tce_attach_iommu_group() helper and its detach
+>> counterpart to manage the lists.
+>>
+>> This puts a group when:
+>> - guest copy of TCE table is destroyed when TCE table fd is closed;
+>> - kvm_spapr_tce_detach_iommu_group() is called from
+>> the KVM_DEV_VFIO_GROUP_DEL ioctl handler in the case vfio-pci hotunplug
+>> (will be added in the following patch).
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>   arch/powerpc/include/asm/kvm_host.h |   8 +++
+>>   arch/powerpc/include/asm/kvm_ppc.h  |   6 ++
+>>   arch/powerpc/kvm/book3s_64_vio.c    | 108 ++++++++++++++++++++++++++++++++++++
+>>   3 files changed, 122 insertions(+)
+>>
+>> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+>> index 2e7c791..2c5c823 100644
+>> --- a/arch/powerpc/include/asm/kvm_host.h
+>> +++ b/arch/powerpc/include/asm/kvm_host.h
+>> @@ -178,6 +178,13 @@ struct kvmppc_pginfo {
+>>   	atomic_t refcnt;
+>>   };
+>>
+>> +struct kvmppc_spapr_tce_group {
+>> +	struct list_head next;
+>> +	struct rcu_head rcu;
+>> +	struct iommu_group *refgrp;/* for reference counting only */
+>> +	struct iommu_table *tbl;
+>> +};
+>> +
+>>   struct kvmppc_spapr_tce_table {
+>>   	struct list_head list;
+>>   	struct kvm *kvm;
+>> @@ -186,6 +193,7 @@ struct kvmppc_spapr_tce_table {
+>>   	u32 page_shift;
+>>   	u64 offset;		/* in pages */
+>>   	u64 size;		/* window size in pages */
+>> +	struct list_head groups;
+>>   	struct page *pages[0];
+>>   };
+>>
+>> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+>> index 2544eda..d1482dc 100644
+>> --- a/arch/powerpc/include/asm/kvm_ppc.h
+>> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+>> @@ -164,6 +164,12 @@ extern void kvmppc_map_vrma(struct kvm_vcpu *vcpu,
+>>   			struct kvm_memory_slot *memslot, unsigned long porder);
+>>   extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
+>>
+>> +extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm,
+>> +				unsigned long liobn,
+>> +				phys_addr_t start_addr,
+>> +				struct iommu_group *grp);
+>> +extern void kvm_spapr_tce_detach_iommu_group(struct kvm *kvm,
+>> +				struct iommu_group *grp);
+>>   extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+>>   				struct kvm_create_spapr_tce_64 *args);
+>>   extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
+>> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+>> index 2c2d103..846d16d 100644
+>> --- a/arch/powerpc/kvm/book3s_64_vio.c
+>> +++ b/arch/powerpc/kvm/book3s_64_vio.c
+>> @@ -27,6 +27,7 @@
+>>   #include <linux/hugetlb.h>
+>>   #include <linux/list.h>
+>>   #include <linux/anon_inodes.h>
+>> +#include <linux/iommu.h>
+>>
+>>   #include <asm/tlbflush.h>
+>>   #include <asm/kvm_ppc.h>
+>> @@ -95,10 +96,18 @@ static void release_spapr_tce_table(struct rcu_head *head)
+>>   	struct kvmppc_spapr_tce_table *stt = container_of(head,
+>>   			struct kvmppc_spapr_tce_table, rcu);
+>>   	unsigned long i, npages = kvmppc_tce_pages(stt->size);
+>> +	struct kvmppc_spapr_tce_group *kg;
+>>
+>>   	for (i = 0; i < npages; i++)
+>>   		__free_page(stt->pages[i]);
+>>
+>> +	while (!list_empty(&stt->groups)) {
+>> +		kg = list_first_entry(&stt->groups,
+>> +				struct kvmppc_spapr_tce_group, next);
+>> +		list_del(&kg->next);
+>> +		kfree(kg);
+>> +	}
+>> +
+>>   	kfree(stt);
+>>   }
+>>
+>> @@ -129,9 +138,15 @@ static int kvm_spapr_tce_mmap(struct file *file, struct vm_area_struct *vma)
+>>   static int kvm_spapr_tce_release(struct inode *inode, struct file *filp)
+>>   {
+>>   	struct kvmppc_spapr_tce_table *stt = filp->private_data;
+>> +	struct kvmppc_spapr_tce_group *kg;
+>>
+>>   	list_del_rcu(&stt->list);
+>>
+>> +	list_for_each_entry_rcu(kg, &stt->groups, next)	{
+>> +		iommu_group_put(kg->refgrp);
+>> +		kg->refgrp = NULL;
+>> +	}
+>
+> What's the reason for this kind of two-phase deletion?  Dereffing the
+> group here, and setting to NULL, then actually removing from the liast above.
 
-Any updates on this?
+Well, this way I have only one RCU-delayed release_spapr_tce_table(). The 
+other option would be to call for each @kg:
+- list_del(&kg->next);
+- call_rcu()
 
-On Saturday 20 February 2016 10:32 AM, Anju T wrote:
+as release_spapr_tce_table() won't be able to delete them - they are not in 
+the list anymore.
 
-> This short patch series adds the ability to sample the interrupted
-> machine state for each hardware sample.
+I suppose I can reuse kvm_spapr_tce_put_group(), this looks inaccurate...
+
+
+
 >
-> To test this patchset,
-> Eg:
+>>   	kvm_put_kvm(stt->kvm);
+>>
+>>   	kvmppc_account_memlimit(
+>> @@ -146,6 +161,98 @@ static const struct file_operations kvm_spapr_tce_fops = {
+>>   	.release	= kvm_spapr_tce_release,
+>>   };
+>>
+>> +extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm,
+>> +				unsigned long liobn,
+>> +				phys_addr_t start_addr,
+>> +				struct iommu_group *grp)
+>> +{
+>> +	struct kvmppc_spapr_tce_table *stt = NULL;
+>> +	struct iommu_table_group *table_group;
+>> +	long i;
+>> +	bool found = false;
+>> +	struct kvmppc_spapr_tce_group *kg;
+>> +	struct iommu_table *tbltmp;
+>> +
+>> +	/* Check this LIOBN hasn't been previously allocated */
 >
-> $ perf record -I?       # list supported registers
+> This comment does not appear to be correct.
 >
-> output:
-> available registers: r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 r17 r18 r19 r20 r21 r22 r23 r24 r25 r26 r27 r28 r29 r30 r31 nip msr orig_r3 ctr link xer ccr softe trap dar dsisr
+>> +	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list) {
+>> +		if (stt->liobn == liobn) {
+>> +			if ((stt->offset << stt->page_shift) != start_addr)
+>> +				return -EINVAL;
+>> +
+>> +			found = true;
+>> +			break;
+>> +		}
+>> +	}
+>> +
+>> +	if (!found)
+>> +		return -ENODEV;
+>> +
+>> +	/* Find IOMMU group and table at @start_addr */
+>> +	table_group = iommu_group_get_iommudata(grp);
+>> +	if (!table_group)
+>> +		return -EFAULT;
+>> +
+>> +	tbltmp = NULL;
+>> +	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
+>> +		struct iommu_table *tbl = table_group->tables[i];
+>> +
+>> +		if (!tbl)
+>> +			continue;
+>> +
+>> +		if ((tbl->it_page_shift == stt->page_shift) &&
+>> +				(tbl->it_offset == stt->offset)) {
+>> +			tbltmp = tbl;
+>> +			break;
+>> +		}
+>> +	}
+>> +	if (!tbltmp)
+>> +		return -ENODEV;
+>> +
+>> +	list_for_each_entry_rcu(kg, &stt->groups, next) {
+>> +		if (kg->refgrp == grp)
+>> +			return -EBUSY;
+>> +	}
+>> +
+>> +	kg = kzalloc(sizeof(*kg), GFP_KERNEL);
+>> +	kg->refgrp = grp;
+>> +	kg->tbl = tbltmp;
+>> +	list_add_rcu(&kg->next, &stt->groups);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static void kvm_spapr_tce_put_group(struct rcu_head *head)
+>> +{
+>> +	struct kvmppc_spapr_tce_group *kg = container_of(head,
+>> +			struct kvmppc_spapr_tce_group, rcu);
+>> +
+>> +	iommu_group_put(kg->refgrp);
+>> +	kg->refgrp = NULL;
+>> +	kfree(kg);
+>> +}
+>> +
+>> +extern void kvm_spapr_tce_detach_iommu_group(struct kvm *kvm,
+>> +				struct iommu_group *grp)
 >
->   usage: perf record [<options>] [<command>]
->      or: perf record [<options>] -- <command> [<options>]
+> Hrm.  attach takes an explicit liobn, but this one iterates over all
+> liobns.  Why the asymmetry?
+
+
+For attach(), LIOBN is specified in an additional (to VFIO KVM device's 
+"add group") ioctl(). There is no need for "detach" ioctl() as we only want 
+this detach() to happen when a group is removed from a container, and in 
+this case the usual KVM_DEV_VFIO_GROUP_DEL is good enough hint that we need 
+to detach LIOBN. Since _DEL does not take LIOBN, here I have a loop.
+
+I'll put this in the commit log next time.
+
+
 >
->      -I, --intr-regs[=<any register>]
->                            sample selected machine registers on interrupt, use -I ? to list register names
+>> +{
+>> +	struct kvmppc_spapr_tce_table *stt;
+>> +	struct iommu_table_group *table_group;
+>> +	struct kvmppc_spapr_tce_group *kg;
+>> +
+>> +	table_group = iommu_group_get_iommudata(grp);
+>> +	if (!table_group)
+>> +		return;
+>> +
+>> +	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list) {
+>> +		list_for_each_entry_rcu(kg, &stt->groups, next) {
+>> +			if (kg->refgrp == grp) {
+>> +				list_del_rcu(&kg->next);
+>> +				call_rcu(&kg->rcu, kvm_spapr_tce_put_group);
+>> +				break;
+>> +			}
+>> +		}
+>> +	}
+>> +}
+>> +
+>>   long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+>>   				   struct kvm_create_spapr_tce_64 *args)
+>>   {
+>> @@ -181,6 +288,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+>>   	stt->offset = args->offset;
+>>   	stt->size = size;
+>>   	stt->kvm = kvm;
+>> +	INIT_LIST_HEAD_RCU(&stt->groups);
+>>
+>>   	for (i = 0; i < npages; i++) {
+>>   		stt->pages[i] = alloc_page(GFP_KERNEL | __GFP_ZERO);
 >
->
-> $ perf record -I ls   # record machine state at interrupt
-> $ perf script -D      # read the perf.data file
->
-> Sample output obtained for this patchset/ output looks like as follows:
->
-> 496768515470 0x1988 [0x188]: PERF_RECORD_SAMPLE(IP, 0x1): 4522/4522: 0xc0000000001e538c period: 1 addr: 0
-> ... intr regs: mask 0x7ffffffffff ABI 64-bit
-> .... r0    0xc0000000001e5e34
-> .... r1    0xc000000fe733f9a0
-> .... r2    0xc000000001523100
-> .... r3    0xc000000ffaadeb60
-> .... r4    0xc000000003456800
-> .... r5    0x73a9b5e000
-> .... r6    0x1e000000
-> .... r7    0x0
-> .... r8    0x0
-> .... r9    0x0
-> .... r10   0x1
-> .... r11   0x0
-> .... r12   0x24022822
-> .... r13   0xc00000000feec180
-> .... r14   0x0
-> .... r15   0xc000001e4be18800
-> .... r16   0x0
-> .... r17   0xc000000ffaac5000
-> .... r18   0xc000000fe733f8a0
-> .... r19   0xc000000001523100
-> .... r20   0xc00000000009fd1c
-> .... r21   0xc000000fcaa69000
-> .... r22   0xc0000000001e4968
-> .... r23   0xc000000001523100
-> .... r24   0xc000000fe733f850
-> .... r25   0xc000000fcaa69000
-> .... r26   0xc000000003b8fcf0
-> .... r27   0xfffffffffffffead
-> .... r28   0x0
-> .... r29   0xc000000fcaa69000
-> .... r30   0x1
-> .... r31   0x0
-> .... nip   0xc0000000001dd320
-> .... msr   0x9000000000009032
-> .... orig_r3 0xc0000000001e538c
-> .... ctr   0xc00000000009d550
-> .... link  0xc0000000001e5e34
-> .... xer   0x0
-> .... ccr   0x84022882
-> .... softe 0x0
-> .... trap  0xf01
-> .... dar   0x0
-> .... dsisr 0xf00040060000004
->   ... thread: :4522:4522
->   ...... dso: /root/.debug/.build-id/b0/ef11b1a1629e62ac9de75199117ee5ef9469e9
->             :4522  4522   496.768515:          1 cycles:  c0000000001e538c .perf_event_context_sched_in (/boot/vmlinux)
->
->
->
-> Changes from v10:
->
-> - Included SOFTE as suggested by mpe
-> - The name of registers displayed is  changed from
->    gpr* to r* also the macro names changed from
->    PERF_REG_POWERPC_GPR* to PERF_REG_POWERPC_R*.
-> - The conflict in returning the ABI is resolved.
-> - #define PERF_REG_SP  is again changed to  PERF_REG_POWERPC_R1
-> - Comment in tools/perf/config/Makefile is updated.
-> - removed the "Reviewed-By" tag as the patch has logic changes.
->
->
-> Changes from V9:
->
-> - Changed the name displayed for link register from "lnk" to "link" in
->    tools/perf/arch/powerpc/include/perf_regs.h
->
-> changes from V8:
->
-> - Corrected the indentation issue in the Makefile mentioned in 3rd patch
->
-> Changes from V7:
->
-> - Addressed the new line issue in 3rd patch.
->
-> Changes from V6:
->
-> - Corrected the typo in patch  tools/perf: Map the ID values with register names.
->    ie #define PERF_REG_SP  PERF_REG_POWERPC_R1 should be #define PERF_REG_SP   PERF_REG_POWERPC_GPR1
->
->
-> Changes from V5:
->
-> - Enabled perf_sample_regs_user also in this patch set.Functions added in
->     arch/powerpc/perf/perf_regs.c
-> - Added Maddy's patch to this patchset for enabling -I? option which will
->    list the supported register names.
->
->
-> Changes from V4:
->
-> - Removed the softe and MQ from all patches
-> - Switch case is replaced with an array in the 3rd patch
->
-> Changes from V3:
->
-> - Addressed the comments by Sukadev regarding the nits in the descriptions.
-> - Modified the subject of first patch.
-> - Included the sample output in the 3rd patch also.
->
-> Changes from V2:
->
-> - tools/perf/config/Makefile is moved to the patch tools/perf.
-> - The patchset is reordered.
-> - perf_regs_load() function is used for the dwarf unwind test.Since it is not required here,
->    it is removed from tools/perf/arch/powerpc/include/perf_regs.h
-> - PERF_REGS_POWERPC_RESULT is removed.
->
-> Changes from V1:
->
-> - Solved the name missmatch issue in the from and signed-off field of the patch series.
-> - Added necessary comments in the 3rd patch ie perf/powerpc ,as suggested by Maddy.
->
->
->
-> Anju T (3):
->    perf/powerpc: assign an id to each powerpc register
->    perf/powerpc: add support for sampling intr machine state
->    tools/perf: Map the ID values with register names
->
-> Madhavan Srinivasan (1):
->    tool/perf: Add sample_reg_mask to include all perf_regs regs
->
->
->   arch/powerpc/Kconfig                        |  1 +
->   arch/powerpc/include/uapi/asm/perf_regs.h   | 50 ++++++++++++++++
->   arch/powerpc/perf/Makefile                  |  1 +
->   arch/powerpc/perf/perf_regs.c               | 91 +++++++++++++++++++++++++++++
->   tools/perf/arch/powerpc/include/perf_regs.h | 69 ++++++++++++++++++++++
->   tools/perf/arch/powerpc/util/Build          |  1 +
->   tools/perf/arch/powerpc/util/perf_regs.c    | 49 ++++++++++++++++
->   tools/perf/config/Makefile                  |  5 ++
->   8 files changed, 267 insertions(+)
->   create mode 100644 arch/powerpc/include/uapi/asm/perf_regs.h
->   create mode 100644 arch/powerpc/perf/perf_regs.c
->   create mode 100644 tools/perf/arch/powerpc/include/perf_regs.h
->   create mode 100644 tools/perf/arch/powerpc/util/perf_regs.c
->
-Thanks
-Anju
+
+
+-- 
+Alexey
