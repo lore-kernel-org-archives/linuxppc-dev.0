@@ -1,27 +1,29 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B4161A0225
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 20:38:21 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id q129so7774706pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Mar 2016 01:38:21 -0800 (PST)
-Subject: Re: [PATCH kernel 6/9] KVM: PPC: Associate IOMMU group with guest
- view of TCE table
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <1457322077-26640-1-git-send-email-aik@ozlabs.ru>
- <1457322077-26640-7-git-send-email-aik@ozlabs.ru>
- <20160307062523.GN22546@voom.fritz.box>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <56DD4C05.4060109@ozlabs.ru>
-Date: Mon, 7 Mar 2016 20:38:13 +1100
-MIME-Version: 1.0
-In-Reply-To: <20160307062523.GN22546@voom.fritz.box>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id BAAC51A005D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 20:56:35 +1100 (AEDT)
+Received: from localhost
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 7 Mar 2016 15:26:27 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u279u2wQ37683296
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 15:26:03 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u27FPEKo015841
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 20:55:15 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
+Subject: [PATCH V2] powerpc/mm: Add validation for platform reserved memory
+ ranges
+Date: Mon,  7 Mar 2016 15:25:59 +0530
+Message-Id: <1457344559-2505-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,265 +33,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/07/2016 05:25 PM, David Gibson wrote:
-> On Mon, Mar 07, 2016 at 02:41:14PM +1100, Alexey Kardashevskiy wrote:
->> The existing in-kernel TCE table for emulated devices contains
->> guest physical addresses which are accesses by emulated devices.
->> Since we need to keep this information for VFIO devices too
->> in order to implement H_GET_TCE, we are reusing it.
->>
->> This adds IOMMU group list to kvmppc_spapr_tce_table. Each group
->> will have an iommu_table pointer.
->>
->> This adds kvm_spapr_tce_attach_iommu_group() helper and its detach
->> counterpart to manage the lists.
->>
->> This puts a group when:
->> - guest copy of TCE table is destroyed when TCE table fd is closed;
->> - kvm_spapr_tce_detach_iommu_group() is called from
->> the KVM_DEV_VFIO_GROUP_DEL ioctl handler in the case vfio-pci hotunplug
->> (will be added in the following patch).
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->>   arch/powerpc/include/asm/kvm_host.h |   8 +++
->>   arch/powerpc/include/asm/kvm_ppc.h  |   6 ++
->>   arch/powerpc/kvm/book3s_64_vio.c    | 108 ++++++++++++++++++++++++++++++++++++
->>   3 files changed, 122 insertions(+)
->>
->> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
->> index 2e7c791..2c5c823 100644
->> --- a/arch/powerpc/include/asm/kvm_host.h
->> +++ b/arch/powerpc/include/asm/kvm_host.h
->> @@ -178,6 +178,13 @@ struct kvmppc_pginfo {
->>   	atomic_t refcnt;
->>   };
->>
->> +struct kvmppc_spapr_tce_group {
->> +	struct list_head next;
->> +	struct rcu_head rcu;
->> +	struct iommu_group *refgrp;/* for reference counting only */
->> +	struct iommu_table *tbl;
->> +};
->> +
->>   struct kvmppc_spapr_tce_table {
->>   	struct list_head list;
->>   	struct kvm *kvm;
->> @@ -186,6 +193,7 @@ struct kvmppc_spapr_tce_table {
->>   	u32 page_shift;
->>   	u64 offset;		/* in pages */
->>   	u64 size;		/* window size in pages */
->> +	struct list_head groups;
->>   	struct page *pages[0];
->>   };
->>
->> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
->> index 2544eda..d1482dc 100644
->> --- a/arch/powerpc/include/asm/kvm_ppc.h
->> +++ b/arch/powerpc/include/asm/kvm_ppc.h
->> @@ -164,6 +164,12 @@ extern void kvmppc_map_vrma(struct kvm_vcpu *vcpu,
->>   			struct kvm_memory_slot *memslot, unsigned long porder);
->>   extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
->>
->> +extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm,
->> +				unsigned long liobn,
->> +				phys_addr_t start_addr,
->> +				struct iommu_group *grp);
->> +extern void kvm_spapr_tce_detach_iommu_group(struct kvm *kvm,
->> +				struct iommu_group *grp);
->>   extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->>   				struct kvm_create_spapr_tce_64 *args);
->>   extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
->> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
->> index 2c2d103..846d16d 100644
->> --- a/arch/powerpc/kvm/book3s_64_vio.c
->> +++ b/arch/powerpc/kvm/book3s_64_vio.c
->> @@ -27,6 +27,7 @@
->>   #include <linux/hugetlb.h>
->>   #include <linux/list.h>
->>   #include <linux/anon_inodes.h>
->> +#include <linux/iommu.h>
->>
->>   #include <asm/tlbflush.h>
->>   #include <asm/kvm_ppc.h>
->> @@ -95,10 +96,18 @@ static void release_spapr_tce_table(struct rcu_head *head)
->>   	struct kvmppc_spapr_tce_table *stt = container_of(head,
->>   			struct kvmppc_spapr_tce_table, rcu);
->>   	unsigned long i, npages = kvmppc_tce_pages(stt->size);
->> +	struct kvmppc_spapr_tce_group *kg;
->>
->>   	for (i = 0; i < npages; i++)
->>   		__free_page(stt->pages[i]);
->>
->> +	while (!list_empty(&stt->groups)) {
->> +		kg = list_first_entry(&stt->groups,
->> +				struct kvmppc_spapr_tce_group, next);
->> +		list_del(&kg->next);
->> +		kfree(kg);
->> +	}
->> +
->>   	kfree(stt);
->>   }
->>
->> @@ -129,9 +138,15 @@ static int kvm_spapr_tce_mmap(struct file *file, struct vm_area_struct *vma)
->>   static int kvm_spapr_tce_release(struct inode *inode, struct file *filp)
->>   {
->>   	struct kvmppc_spapr_tce_table *stt = filp->private_data;
->> +	struct kvmppc_spapr_tce_group *kg;
->>
->>   	list_del_rcu(&stt->list);
->>
->> +	list_for_each_entry_rcu(kg, &stt->groups, next)	{
->> +		iommu_group_put(kg->refgrp);
->> +		kg->refgrp = NULL;
->> +	}
->
-> What's the reason for this kind of two-phase deletion?  Dereffing the
-> group here, and setting to NULL, then actually removing from the liast above.
+For partition running on PHYP, there can be a adjunct partition
+which shares the virtual address range with the operating system.
+Virtual address ranges which can be used by the adjunct partition
+are communicated with virtual device node of the device tree with
+a property known as "ibm,reserved-virtual-addresses". This patch
+introduces a new function named 'validate_reserved_va_range' which
+is called  during initialization to validate that these reserved
+virtual address ranges do not overlap with the address ranges used
+by the kernel for all supported memory contexts. This helps prevent
+the possibility of getting return codes similar to H_RESOURCE for
+H_PROTECT hcalls for conflicting HPTE entries.
 
-Well, this way I have only one RCU-delayed release_spapr_tce_table(). The 
-other option would be to call for each @kg:
-- list_del(&kg->next);
-- call_rcu()
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+- Tested on both POWER8 LE and BE platforms
 
-as release_spapr_tce_table() won't be able to delete them - they are not in 
-the list anymore.
+Changes in V2:
+- Added braces to the definition of LINUX_VA_BITS
+- Adjusted tabs as spaces for the definition of PARTIAL_LINUX_VA_MASK
 
-I suppose I can reuse kvm_spapr_tce_put_group(), this looks inaccurate...
+ arch/powerpc/mm/hash_utils_64.c | 77 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 77 insertions(+)
 
-
-
->
->>   	kvm_put_kvm(stt->kvm);
->>
->>   	kvmppc_account_memlimit(
->> @@ -146,6 +161,98 @@ static const struct file_operations kvm_spapr_tce_fops = {
->>   	.release	= kvm_spapr_tce_release,
->>   };
->>
->> +extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm,
->> +				unsigned long liobn,
->> +				phys_addr_t start_addr,
->> +				struct iommu_group *grp)
->> +{
->> +	struct kvmppc_spapr_tce_table *stt = NULL;
->> +	struct iommu_table_group *table_group;
->> +	long i;
->> +	bool found = false;
->> +	struct kvmppc_spapr_tce_group *kg;
->> +	struct iommu_table *tbltmp;
->> +
->> +	/* Check this LIOBN hasn't been previously allocated */
->
-> This comment does not appear to be correct.
->
->> +	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list) {
->> +		if (stt->liobn == liobn) {
->> +			if ((stt->offset << stt->page_shift) != start_addr)
->> +				return -EINVAL;
->> +
->> +			found = true;
->> +			break;
->> +		}
->> +	}
->> +
->> +	if (!found)
->> +		return -ENODEV;
->> +
->> +	/* Find IOMMU group and table at @start_addr */
->> +	table_group = iommu_group_get_iommudata(grp);
->> +	if (!table_group)
->> +		return -EFAULT;
->> +
->> +	tbltmp = NULL;
->> +	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
->> +		struct iommu_table *tbl = table_group->tables[i];
->> +
->> +		if (!tbl)
->> +			continue;
->> +
->> +		if ((tbl->it_page_shift == stt->page_shift) &&
->> +				(tbl->it_offset == stt->offset)) {
->> +			tbltmp = tbl;
->> +			break;
->> +		}
->> +	}
->> +	if (!tbltmp)
->> +		return -ENODEV;
->> +
->> +	list_for_each_entry_rcu(kg, &stt->groups, next) {
->> +		if (kg->refgrp == grp)
->> +			return -EBUSY;
->> +	}
->> +
->> +	kg = kzalloc(sizeof(*kg), GFP_KERNEL);
->> +	kg->refgrp = grp;
->> +	kg->tbl = tbltmp;
->> +	list_add_rcu(&kg->next, &stt->groups);
->> +
->> +	return 0;
->> +}
->> +
->> +static void kvm_spapr_tce_put_group(struct rcu_head *head)
->> +{
->> +	struct kvmppc_spapr_tce_group *kg = container_of(head,
->> +			struct kvmppc_spapr_tce_group, rcu);
->> +
->> +	iommu_group_put(kg->refgrp);
->> +	kg->refgrp = NULL;
->> +	kfree(kg);
->> +}
->> +
->> +extern void kvm_spapr_tce_detach_iommu_group(struct kvm *kvm,
->> +				struct iommu_group *grp)
->
-> Hrm.  attach takes an explicit liobn, but this one iterates over all
-> liobns.  Why the asymmetry?
-
-
-For attach(), LIOBN is specified in an additional (to VFIO KVM device's 
-"add group") ioctl(). There is no need for "detach" ioctl() as we only want 
-this detach() to happen when a group is removed from a container, and in 
-this case the usual KVM_DEV_VFIO_GROUP_DEL is good enough hint that we need 
-to detach LIOBN. Since _DEL does not take LIOBN, here I have a loop.
-
-I'll put this in the commit log next time.
-
-
->
->> +{
->> +	struct kvmppc_spapr_tce_table *stt;
->> +	struct iommu_table_group *table_group;
->> +	struct kvmppc_spapr_tce_group *kg;
->> +
->> +	table_group = iommu_group_get_iommudata(grp);
->> +	if (!table_group)
->> +		return;
->> +
->> +	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list) {
->> +		list_for_each_entry_rcu(kg, &stt->groups, next) {
->> +			if (kg->refgrp == grp) {
->> +				list_del_rcu(&kg->next);
->> +				call_rcu(&kg->rcu, kvm_spapr_tce_put_group);
->> +				break;
->> +			}
->> +		}
->> +	}
->> +}
->> +
->>   long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->>   				   struct kvm_create_spapr_tce_64 *args)
->>   {
->> @@ -181,6 +288,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->>   	stt->offset = args->offset;
->>   	stt->size = size;
->>   	stt->kvm = kvm;
->> +	INIT_LIST_HEAD_RCU(&stt->groups);
->>
->>   	for (i = 0; i < npages; i++) {
->>   		stt->pages[i] = alloc_page(GFP_KERNEL | __GFP_ZERO);
->
-
-
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index ba59d59..b47f667 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1564,3 +1564,80 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	/* Finally limit subsequent allocations */
+ 	memblock_set_current_limit(ppc64_rma_size);
+ }
++
++/*
++ * PAPR says that each reserved virtual address range record
++ * contains three be32 elements which is of toal 12 bytes.
++ * First two be32 elements contain the abbreviated virtual
++ * address (high order 32 bits and low order 32 bits that
++ * generate the abbreviated virtual address of 64 bits which
++ * need to be concatenated with 24 bits of 0 at the end) and
++ * the third be32 element contains the size of the reserved
++ * virtual address range as number of consecutive 4K pages.
++ */
++struct reserved_va_record {
++	__be32	high_addr;
++	__be32	low_addr;
++	__be32	nr_pages_4K;
++};
++
++/*
++ * Linux uses 65 bits (CONTEXT_BITS + ESID_BITS + SID_SHIFT)
++ * of virtual address. As reserved virtual address comes in
++ * as an abbreviated form (64 bits) from the device tree, we
++ * will use a partial address bit mask (65 >> 24) to match it
++ * for simplicity.
++ */
++#define RVA_LESS_BITS		24
++#define LINUX_VA_BITS		(CONTEXT_BITS + ESID_BITS + SID_SHIFT)
++#define PARTIAL_LINUX_VA_MASK	((1ULL << (LINUX_VA_BITS - RVA_LESS_BITS)) - 1)
++
++static int __init validate_reserved_va_range(void)
++{
++	struct reserved_va_record rva;
++	struct device_node *np;
++	int records, ret, i;
++	__be64 vaddr;
++
++	np = of_find_node_by_name(NULL, "vdevice");
++	if (!np)
++		return -ENODEV;
++
++	records = of_property_count_elems_of_size(np,
++			"ibm,reserved-virtual-addresses",
++				sizeof(struct reserved_va_record));
++	if (records < 0)
++		return records;
++
++	for (i = 0; i < records; i++) {
++		ret = of_property_read_u32_index(np,
++			"ibm,reserved-virtual-addresses",
++				3 * i, &rva.high_addr);
++		if (ret)
++			return ret;
++
++		ret = of_property_read_u32_index(np,
++			"ibm,reserved-virtual-addresses",
++				3 * i + 1, &rva.low_addr);
++		if (ret)
++			return ret;
++
++		ret = of_property_read_u32_index(np,
++			"ibm,reserved-virtual-addresses",
++				3 * i + 2, &rva.nr_pages_4K);
++		if (ret)
++			return ret;
++
++		vaddr =  rva.high_addr;
++		vaddr =  (vaddr << 32) | rva.low_addr;
++		if (vaddr & cpu_to_be64(~PARTIAL_LINUX_VA_MASK))
++			continue;
++
++		pr_err("RVA [0x%llx000000 (0x%x in bytes)] overlapped\n",
++					vaddr, rva.nr_pages_4K * 4096);
++		BUG();
++	}
++	of_node_put(np);
++	return 0;
++}
++__initcall(validate_reserved_va_range);
 -- 
-Alexey
+2.1.0
