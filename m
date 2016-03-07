@@ -2,23 +2,23 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 62DE41A02B5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2B1361A0225
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 18:30:25 +1100 (AEDT)
-Date: Mon, 7 Mar 2016 17:05:19 +1100
+Date: Mon, 7 Mar 2016 17:00:14 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
  Alex Williamson <alex.williamson@redhat.com>,
  kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [PATCH kernel 4/9] powerpc/powernv/iommu: Add real mode version
- of xchg()
-Message-ID: <20160307060519.GM22546@voom.fritz.box>
+Subject: Re: [PATCH kernel 3/9] KVM: PPC: Use preregistered memory API to
+ access TCE list
+Message-ID: <20160307060014.GL22546@voom.fritz.box>
 References: <1457322077-26640-1-git-send-email-aik@ozlabs.ru>
- <1457322077-26640-5-git-send-email-aik@ozlabs.ru>
+ <1457322077-26640-4-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="vdqwC0msT4ilQ2it"
-In-Reply-To: <1457322077-26640-5-git-send-email-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="AQNmCumFClRcGgHG"
+In-Reply-To: <1457322077-26640-4-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,166 +29,151 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---vdqwC0msT4ilQ2it
+--AQNmCumFClRcGgHG
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Mar 07, 2016 at 02:41:12PM +1100, Alexey Kardashevskiy wrote:
-> In real mode, TCE tables are invalidated using different
-> cache-inhibited store instructions which is different from
-> the virtual mode.
+On Mon, Mar 07, 2016 at 02:41:11PM +1100, Alexey Kardashevskiy wrote:
+> VFIO on sPAPR already implements guest memory pre-registration
+> when the entire guest RAM gets pinned. This can be used to translate
+> the physical address of a guest page containing the TCE list
+> from H_PUT_TCE_INDIRECT.
 >=20
-> This defines and implements exchange_rm() callback. This does not
-> define set_rm/clear_rm/flush_rm callbacks as there is no user for those -
-> exchange/exchange_rm are only to be used by KVM for VFIO.
->=20
-> The exchange_rm callback is defined for IODA1/IODA2 powernv platforms.
->=20
-> This replaces list_for_each_entry_rcu with its lockless version as
-> from now on pnv_pci_ioda2_tce_invalidate() can be called in
-> the real mode too.
+> This makes use of the pre-registrered memory API to access TCE list
+> pages in order to avoid unnecessary locking on the KVM memory
+> reverse map.
 >=20
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+
+Ok.. so, what's the benefit of not having to lock the rmap?
+
 > ---
->  arch/powerpc/include/asm/iommu.h          |  7 +++++++
->  arch/powerpc/kernel/iommu.c               | 15 +++++++++++++++
->  arch/powerpc/platforms/powernv/pci-ioda.c | 28 +++++++++++++++++++++++++=
-++-
->  3 files changed, 49 insertions(+), 1 deletion(-)
+>  arch/powerpc/kvm/book3s_64_vio_hv.c | 86 ++++++++++++++++++++++++++++++-=
+------
+>  1 file changed, 70 insertions(+), 16 deletions(-)
 >=20
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/=
-iommu.h
-> index 7b87bab..3ca877a 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -64,6 +64,11 @@ struct iommu_table_ops {
->  			long index,
->  			unsigned long *hpa,
->  			enum dma_data_direction *direction);
-> +	/* Real mode */
-> +	int (*exchange_rm)(struct iommu_table *tbl,
-> +			long index,
-> +			unsigned long *hpa,
-> +			enum dma_data_direction *direction);
->  #endif
->  	void (*clear)(struct iommu_table *tbl,
->  			long index, long npages);
-> @@ -208,6 +213,8 @@ extern void iommu_del_device(struct device *dev);
->  extern int __init tce_iommu_bus_notifier_init(void);
->  extern long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
->  		unsigned long *hpa, enum dma_data_direction *direction);
-> +extern long iommu_tce_xchg_rm(struct iommu_table *tbl, unsigned long ent=
-ry,
-> +		unsigned long *hpa, enum dma_data_direction *direction);
->  #else
->  static inline void iommu_register_group(struct iommu_table_group *table_=
-group,
->  					int pci_domain_number,
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index a8e3490..2fcc48b 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -1062,6 +1062,21 @@ void iommu_release_ownership(struct iommu_table *t=
-bl)
->  }
->  EXPORT_SYMBOL_GPL(iommu_release_ownership);
+> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3=
+s_64_vio_hv.c
+> index 44be73e..af155f6 100644
+> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+> @@ -180,6 +180,38 @@ long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long=
+ gpa,
+>  EXPORT_SYMBOL_GPL(kvmppc_gpa_to_ua);
 > =20
-> +long iommu_tce_xchg_rm(struct iommu_table *tbl, unsigned long entry,
-> +		unsigned long *hpa, enum dma_data_direction *direction)
+>  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> +static mm_context_t *kvmppc_mm_context(struct kvm_vcpu *vcpu)
 > +{
-> +	long ret;
+> +	struct task_struct *task;
 > +
-> +	ret =3D tbl->it_ops->exchange_rm(tbl, entry, hpa, direction);
+> +	task =3D vcpu->arch.run_task;
+> +	if (unlikely(!task || !task->mm))
+> +		return NULL;
 > +
-> +	if (!ret && ((*direction =3D=3D DMA_FROM_DEVICE) ||
-> +			(*direction =3D=3D DMA_BIDIRECTIONAL)))
-> +		SetPageDirty(realmode_pfn_to_page(*hpa >> PAGE_SHIFT));
-> +
-> +	return ret;
+> +	return &task->mm->context;
 > +}
-> +EXPORT_SYMBOL_GPL(iommu_tce_xchg_rm);
-
->  int iommu_add_device(struct device *dev)
+> +
+> +static inline bool kvmppc_preregistered(struct kvm_vcpu *vcpu)
+> +{
+> +	mm_context_t *mm =3D kvmppc_mm_context(vcpu);
+> +
+> +	if (unlikely(!mm))
+> +		return false;
+> +
+> +	return mm_iommu_preregistered(mm);
+> +}
+> +
+> +static struct mm_iommu_table_group_mem_t *kvmppc_rm_iommu_lookup(
+> +		struct kvm_vcpu *vcpu, unsigned long ua, unsigned long size)
+> +{
+> +	mm_context_t *mm =3D kvmppc_mm_context(vcpu);
+> +
+> +	if (unlikely(!mm))
+> +		return NULL;
+> +
+> +	return mm_iommu_lookup_rm(mm, ua, size);
+> +}
+> +
+>  long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>  		      unsigned long ioba, unsigned long tce)
 >  {
->  	struct iommu_table *tbl;
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
-tforms/powernv/pci-ioda.c
-> index c5baaf3..bed1944 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1791,6 +1791,18 @@ static int pnv_ioda1_tce_xchg(struct iommu_table *=
-tbl, long index,
+> @@ -261,23 +293,44 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *=
+vcpu,
+>  	if (ret !=3D H_SUCCESS)
+>  		return ret;
+> =20
+> -	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
+> -		return H_TOO_HARD;
+> +	if (kvmppc_preregistered(vcpu)) {
+> +		/*
+> +		 * We get here if guest memory was pre-registered which
+> +		 * is normally VFIO case and gpa->hpa translation does not
+> +		 * depend on hpt.
+> +		 */
+> +		struct mm_iommu_table_group_mem_t *mem;
+> =20
+> -	rmap =3D (void *) vmalloc_to_phys(rmap);
+> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, NULL))
+> +			return H_TOO_HARD;
+> =20
+> -	/*
+> -	 * Synchronize with the MMU notifier callbacks in
+> -	 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
+> -	 * While we have the rmap lock, code running on other CPUs
+> -	 * cannot finish unmapping the host real page that backs
+> -	 * this guest real page, so we are OK to access the host
+> -	 * real page.
+> -	 */
+> -	lock_rmap(rmap);
+> -	if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
+> -		ret =3D H_TOO_HARD;
+> -		goto unlock_exit;
+> +		mem =3D kvmppc_rm_iommu_lookup(vcpu, ua, IOMMU_PAGE_SIZE_4K);
+> +		if (!mem || mm_iommu_rm_ua_to_hpa(mem, ua, &tces))
+> +			return H_TOO_HARD;
+> +	} else {
+> +		/*
+> +		 * This is emulated devices case.
+> +		 * We do not require memory to be preregistered in this case
+> +		 * so lock rmap and do __find_linux_pte_or_hugepte().
+> +		 */
+> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
+> +			return H_TOO_HARD;
+> +
+> +		rmap =3D (void *) vmalloc_to_phys(rmap);
+> +
+> +		/*
+> +		 * Synchronize with the MMU notifier callbacks in
+> +		 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
+> +		 * While we have the rmap lock, code running on other CPUs
+> +		 * cannot finish unmapping the host real page that backs
+> +		 * this guest real page, so we are OK to access the host
+> +		 * real page.
+> +		 */
+> +		lock_rmap(rmap);
+> +		if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
+> +			ret =3D H_TOO_HARD;
+> +			goto unlock_exit;
+> +		}
+>  	}
+> =20
+>  	for (i =3D 0; i < npages; ++i) {
+> @@ -291,7 +344,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vc=
+pu,
+>  	}
+> =20
+>  unlock_exit:
+> -	unlock_rmap(rmap);
+> +	if (rmap)
+
+I don't see where rmap is initialized to NULL in the case where it's
+not being used.
+
+> +		unlock_rmap(rmap);
 > =20
 >  	return ret;
 >  }
-> +
-> +static int pnv_ioda1_tce_xchg_rm(struct iommu_table *tbl, long index,
-> +		unsigned long *hpa, enum dma_data_direction *direction)
-> +{
-> +	long ret =3D pnv_tce_xchg(tbl, index, hpa, direction);
-> +
-> +	if (!ret && (tbl->it_type &
-> +			(TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE)))
-> +		pnv_pci_ioda1_tce_invalidate(tbl, index, 1, true);
-> +
-> +	return ret;
-> +}
->  #endif
-
-Both your _rm variants are identical to the non _rm versions.  Why not
-just set the function poiinter to the same thing, rather than copying
-the whole function.
-
->  static void pnv_ioda1_tce_free(struct iommu_table *tbl, long index,
-> @@ -1806,6 +1818,7 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops =
-=3D {
->  	.set =3D pnv_ioda1_tce_build,
->  #ifdef CONFIG_IOMMU_API
->  	.exchange =3D pnv_ioda1_tce_xchg,
-> +	.exchange_rm =3D pnv_ioda1_tce_xchg_rm,
->  #endif
->  	.clear =3D pnv_ioda1_tce_free,
->  	.get =3D pnv_tce_get,
-> @@ -1866,7 +1879,7 @@ static void pnv_pci_ioda2_tce_invalidate(struct iom=
-mu_table *tbl,
->  {
->  	struct iommu_table_group_link *tgl;
-> =20
-> -	list_for_each_entry_rcu(tgl, &tbl->it_group_list, next) {
-> +	list_for_each_entry_lockless(tgl, &tbl->it_group_list, next) {
->  		struct pnv_ioda_pe *npe;
->  		struct pnv_ioda_pe *pe =3D container_of(tgl->table_group,
->  				struct pnv_ioda_pe, table_group);
-> @@ -1918,6 +1931,18 @@ static int pnv_ioda2_tce_xchg(struct iommu_table *=
-tbl, long index,
-> =20
->  	return ret;
->  }
-> +
-> +static int pnv_ioda2_tce_xchg_rm(struct iommu_table *tbl, long index,
-> +		unsigned long *hpa, enum dma_data_direction *direction)
-> +{
-> +	long ret =3D pnv_tce_xchg(tbl, index, hpa, direction);
-> +
-> +	if (!ret && (tbl->it_type &
-> +			(TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE)))
-> +		pnv_pci_ioda2_tce_invalidate(tbl, index, 1, true);
-> +
-> +	return ret;
-> +}
->  #endif
-> =20
->  static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
-> @@ -1939,6 +1964,7 @@ static struct iommu_table_ops pnv_ioda2_iommu_ops =
-=3D {
->  	.set =3D pnv_ioda2_tce_build,
->  #ifdef CONFIG_IOMMU_API
->  	.exchange =3D pnv_ioda2_tce_xchg,
-> +	.exchange_rm =3D pnv_ioda2_tce_xchg_rm,
->  #endif
->  	.clear =3D pnv_ioda2_tce_free,
->  	.get =3D pnv_tce_get,
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -196,25 +181,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---vdqwC0msT4ilQ2it
+--AQNmCumFClRcGgHG
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJW3RofAAoJEGw4ysog2bOSmbMP/RBQTV6KbIuQu87h12uGhJJ4
-82Ct42CaF9nyfak0negeOfmsjHJTsAlrOzw3EtI6VrDwVLo3CT+ZB0sNaQrI9eMP
-dOoP3Pq2rNvioqF+phqi4Vmx3+h4Ptue2UNAgqdSjsZQRTJ6FSjeP8xqvS5MLW5B
-XEDmhtP1fE5Q/DHOPuf3lub3DeCW+1G+P7f5wvsBBnNXl/RNoBQi2VIQzhdGSvfz
-yYgLRIuWNEHc1uJ/KlkFGkgfphRM+5r0VWKYrGHYxYUjWkhHReqhAOInu5hBeHS3
-Pz7iUD/kH7oHNSPk86Ez8gktjdUGrE2a69/hFDwqxGS+/buAUHUh0CbYS4fykflB
-T/paXcF0Dx2GRLuuD7G+g99dQKDFdiQ8CJYRR1REQVI/RpBUnidK8EYrXH65qDRc
-zkhKoCnVTXV1QpIZe2sqEsxomWOnf4OsPohCJRoY6F0Dth6u4p2qq4v3ahRdoY6X
-w3MdLH/76AQ2ZwKhg83CnRhMY1OqgqbSa1ouPufBnINBXZ31oCHRtb2bMiuNFkuM
-TWmnDKi1CRIJai04mUPnSRG9ntv1wQwcvbL9PIKUKK7y3bdkpU1cnWEzay21X/Qp
-3dolSxvrKXmAfibD322cIMVpT9loQ/bHjsNLDtt4aXufZWMk9NE8oblHD5qVNCFU
-bJNGwvDcj1Sva9AyXoAf
-=773Y
+iQIcBAEBAgAGBQJW3RjuAAoJEGw4ysog2bOSoAgP/i63/zW5f5TZse0kTSV0sQ8b
+Qhcc1LQBcEEpgega+Sh7lF+s5ZJxVpXGyn53rd1Ou/WEGXVhQ09NlfWH4LqH9bsd
+QC9fq3/aiEVVv3qXbcUa0hrd45thkmGR/1wO2gTZvCFKorJk/IoNiHjyMjwUq5Lu
+x4SXHlqz/yBjqbrbnf/Qcd/zRShsnrdkWB86KQubBXnyrkm9Bngex41uFu3611FT
+xOIW/vPATjenfHCNpiWZkCIgl9GJ3P+51diWNjofaQ+4YSDuYsQaR+U4HXrtclro
+fK6+BrYFRzoppvUJqOkDXFvqlY7ekKlvu7DJS2PrZwmuWounEsKLQapoQxHH4syk
+4V0mEgxhCNPhzAOJ/6VyviKACsqcqxwsPg84hQ8BzWnHfjKPozByenx3nGEHXXzq
+m4bsgPNpL5kdCfWj4DeBijb68qcSMu3VXceFq0Oq8TzVT35ewYceRBQkQibdxItt
+6QRGWTEuAIULTxoa7gIZDPwSe7ZGLjK5J5YINF72aefOXhCmtH0Kv9t0Y75EhV8c
+dwCmTjhX6uEXtHtFI11oMjIK93Rt5v09EPUrax7J2uG31OEL4KrTGRM28sjDxzB+
+lHKuApyFycpcOeK3rLAb9V1GNCt4h8xCY1N0zMEEN8epREnMDRGRUQgEVOGH4I6J
+0tpvoaHLYUcCtRmrf4aQ
+=wkQf
 -----END PGP SIGNATURE-----
 
---vdqwC0msT4ilQ2it--
+--AQNmCumFClRcGgHG--
