@@ -2,32 +2,33 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 87F2D1A039A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 00:40:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B6CCE1A0B68
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 00:40:13 +1100 (AEDT)
 Received: from localhost
  by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 7 Mar 2016 06:40:05 -0700
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 266FA19D8053
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 06:27:59 -0700 (MST)
+ Mon, 7 Mar 2016 06:40:11 -0700
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 26CC119D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Mar 2016 06:28:05 -0700 (MST)
 Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u27De2GV30933048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 13:40:03 GMT
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u27De9ZO36372582
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 13:40:09 GMT
 Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
  by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u27DZcGH012945
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 08:35:38 -0500
+ u27DZiQo013167
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Mar 2016 08:35:44 -0500
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 07/14] powerpc/mm: Update _PAGE_KERNEL_RO
-Date: Mon,  7 Mar 2016 19:09:27 +0530
-Message-Id: <1457357974-20839-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 10/14] powerpc/mm: Use generic version of
+ pmdp_clear_flush_young
+Date: Mon,  7 Mar 2016 19:09:30 +0530
+Message-Id: <1457357974-20839-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1457357974-20839-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1457357974-20839-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,84 +40,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PS3 had used PPP bit hack to implement a read only mapping in the
-kernel area. Since we are bolt mapping the ioremap area, it used
-the pte flags _PAGE_PRESENT | _PAGE_USER to get a PPP value of 0x3
-there by resulting in a read only mapping. This means the area
-can be accessed by user space, but kernel will never return such an
-address to user space.
-
-Fix this by doing a read only kernel mapping using PPP bits 0b110
-
-This also allows us to do read only kernel mapping for radix in later
-patches.
+The radix variant is going to require a flush_pmd_tlb_range. With
+flush_pmd_tlb_range added, pmdp_clear_flush_young is same as the generic
+version. So drop the powerpc specific variant
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash.h |  4 ++--
- arch/powerpc/mm/hash_utils_64.c           | 17 +++++++++++------
- arch/powerpc/platforms/ps3/spu.c          |  2 +-
- 3 files changed, 14 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/book3s/64/pgtable.h |  3 ---
+ arch/powerpc/mm/pgtable_64.c                 | 13 +++----------
+ 2 files changed, 3 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index 8ccb2970f30f..c2b567456796 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -115,10 +115,10 @@
- #endif /* CONFIG_PPC_MM_SLICES */
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 144680382306..e7171323884a 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -298,9 +298,6 @@ extern int pmdp_set_access_flags(struct vm_area_struct *vma,
+ #define __HAVE_ARCH_PMDP_TEST_AND_CLEAR_YOUNG
+ extern int pmdp_test_and_clear_young(struct vm_area_struct *vma,
+ 				     unsigned long address, pmd_t *pmdp);
+-#define __HAVE_ARCH_PMDP_CLEAR_YOUNG_FLUSH
+-extern int pmdp_clear_flush_young(struct vm_area_struct *vma,
+-				  unsigned long address, pmd_t *pmdp);
  
+ #define __HAVE_ARCH_PMDP_HUGE_GET_AND_CLEAR
+ extern pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index db924c54f370..98c91ad18ba7 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -593,22 +593,15 @@ pmd_t pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long address,
+ 	return pmd;
+ }
+ 
+-int pmdp_test_and_clear_young(struct vm_area_struct *vma,
+-			      unsigned long address, pmd_t *pmdp)
+-{
+-	return __pmdp_test_and_clear_young(vma->vm_mm, address, pmdp);
+-}
+-
  /*
-- * No separate kernel read-only, user access blocked by key
-+ * user access blocked by key
+  * We currently remove entries from the hashtable regardless of whether
+- * the entry was young or dirty. The generic routines only flush if the
+- * entry was young or dirty which is not good enough.
++ * the entry was young or dirty.
+  *
+  * We should be more intelligent about this but for the moment we override
+  * these functions and force a tlb flush unconditionally
   */
- #define _PAGE_KERNEL_RW		(_PAGE_PRIVILEGED | _PAGE_RW | _PAGE_DIRTY)
--#define _PAGE_KERNEL_RO		 _PAGE_KERNEL_RW
-+#define _PAGE_KERNEL_RO		 (_PAGE_PRIVILEGED | _PAGE_READ)
- #define _PAGE_KERNEL_RWX	(_PAGE_PRIVILEGED | _PAGE_DIRTY | \
- 				 _PAGE_RW | _PAGE_EXEC)
- 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 630603f74056..c81c08aaff0e 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -167,14 +167,19 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
- 	if ((pteflags & _PAGE_EXEC) == 0)
- 		rflags |= HPTE_R_N;
- 	/*
--	 * PP bits:
-+	 * PPP bits:
- 	 * Linux uses slb key 0 for kernel and 1 for user.
--	 * kernel areas are mapped with PP=00
--	 * and there is no kernel RO (_PAGE_KERNEL_RO).
--	 * User area is mapped with PP=0x2 for read/write
--	 * or PP=0x3 for read-only (including writeable but clean pages).
-+	 * kernel RW areas are mapped with PPP=0b000
-+	 * User area is mapped with PPP=0b010 for read/write
-+	 * or PPP=0b011 for read-only (including writeable but clean pages).
- 	 */
--	if (!(pteflags & _PAGE_PRIVILEGED)) {
-+	if (pteflags & _PAGE_PRIVILEGED) {
-+		/*
-+		 * Kernel read only mapped with ppp bits 0b110
-+		 */
-+		if (!(pteflags & _PAGE_WRITE))
-+			rflags |= (HPTE_R_PP0 | 0x2);
-+	} else {
- 		if (pteflags & _PAGE_RWX)
- 			rflags |= 0x2;
- 		if (!((pteflags & _PAGE_WRITE) && (pteflags & _PAGE_DIRTY)))
-diff --git a/arch/powerpc/platforms/ps3/spu.c b/arch/powerpc/platforms/ps3/spu.c
-index a0bca05e26b0..5e8a40f9739f 100644
---- a/arch/powerpc/platforms/ps3/spu.c
-+++ b/arch/powerpc/platforms/ps3/spu.c
-@@ -205,7 +205,7 @@ static void spu_unmap(struct spu *spu)
- static int __init setup_areas(struct spu *spu)
+-int pmdp_clear_flush_young(struct vm_area_struct *vma,
+-				  unsigned long address, pmd_t *pmdp)
++int pmdp_test_and_clear_young(struct vm_area_struct *vma,
++			      unsigned long address, pmd_t *pmdp)
  {
- 	struct table {char* name; unsigned long addr; unsigned long size;};
--	static const unsigned long shadow_flags = _PAGE_NO_CACHE | 3;
-+	unsigned long shadow_flags = pgprot_val(pgprot_noncached_wc(PAGE_KERNEL_RO));
- 
- 	spu_pdata(spu)->shadow = __ioremap(spu_pdata(spu)->shadow_addr,
- 					   sizeof(struct spe_shadow),
+ 	return __pmdp_test_and_clear_young(vma->vm_mm, address, pmdp);
+ }
 -- 
 2.5.0
