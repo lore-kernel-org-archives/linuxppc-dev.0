@@ -1,46 +1,21 @@
-Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <linux@rasmusvillemoes.dk>
+Received: from mail-wm0-x22d.google.com (mail-wm0-x22d.google.com
+ [IPv6:2a00:1450:400c:c09::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 039A91A0D02
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 04:56:46 +1100 (AEDT)
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Tue, 8 Mar 2016 10:56:45 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id BECF519D803E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 10:44:37 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u28HugYu37814310
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Mar 2016 10:56:42 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u28HufHg027851
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Mar 2016 10:56:42 -0700
-Subject: Re: [PATCH 7/7] cxlflash: Increase cmd_per_lun for better throughput
-To: linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-References: <1457128424-53017-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1457128520-53056-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1457128520-53056-7-git-send-email-ukrishn@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Brian King <brking@linux.vnet.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Message-ID: <56DF125A.8000202@linux.vnet.ibm.com>
-Date: Tue, 8 Mar 2016 11:56:42 -0600
-MIME-Version: 1.0
-In-Reply-To: <1457128520-53056-7-git-send-email-ukrishn@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id C6B861A005D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 08:26:29 +1100 (AEDT)
+Received: by mail-wm0-x22d.google.com with SMTP id l68so45403514wml.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Mar 2016 13:26:29 -0800 (PST)
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/pseries: fix error return value in
+ cmm_mem_going_offline
+Date: Tue,  8 Mar 2016 22:26:17 +0100
+Message-Id: <1457472378-22274-1-git-send-email-linux@rasmusvillemoes.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,17 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/4/2016 3:55 PM, Uma Krishnan wrote:
-> From: "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
->
-> With the current value of cmd_per_lun at 16, the throughput
-> over a single adapter is limited to around 150kIOPS.
->
-> Increase the value of cmd_per_lun to 256 to improve
-> throughput. With this change a single adapter is able to
-> attain close to the maximum throughput (380kIOPS).
-> Also change the number of RRQ entries that can be queued.
->
-> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
+cmm_mem_going_offline is (only) called from cmm_memory_cb(), which
+sends the return value through notifier_from_errno(). The latter
+expects 0 or -errno (notifier_to_errno(notifier_from_errno(x)) is 0
+for any x >= 0, so passing a positive value cannot make sense). Hence
+negate ENOMEM.
 
-Reviewed-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+---
+ arch/powerpc/platforms/pseries/cmm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/pseries/cmm.c b/arch/powerpc/platforms/pseries/cmm.c
+index fc44ad0475f8..66e7227469b8 100644
+--- a/arch/powerpc/platforms/pseries/cmm.c
++++ b/arch/powerpc/platforms/pseries/cmm.c
+@@ -574,7 +574,7 @@ static int cmm_mem_going_offline(void *arg)
+ 				cmm_dbg("Failed to allocate memory for list "
+ 						"management. Memory hotplug "
+ 						"failed.\n");
+-				return ENOMEM;
++				return -ENOMEM;
+ 			}
+ 			memcpy(npa, pa_curr, PAGE_SIZE);
+ 			if (pa_curr == cmm_page_list)
+-- 
+2.1.4
