@@ -1,28 +1,33 @@
-Return-Path: <duwe@lst.de>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hughd@google.com>
+Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c03::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 28EB91A011E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 22:14:28 +1100 (AEDT)
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A7168140783
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2016 22:14:27 +1100 (AEDT)
-Date: Tue, 8 Mar 2016 12:14:23 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Petr Mladek <pmladek@suse.com>
-Cc: jeyu@redhat.com, jkosina@suse.cz, linux-kernel@vger.kernel.org,
- rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com,
- linuxppc-dev@ozlabs.org, live-patching@vger.kernel.org, mbenes@suse.cz
-Subject: Re: [PATCH][v4] livepatch/ppc: Enable livepatching on powerpc
-Message-ID: <20160308111423.GB16502@lst.de>
-References: <1457023921-2051-1-git-send-email-pmladek@suse.com>
- <20160304124247.GA20914@lst.de> <20160304130137.GC3166@pathway.suse.cz>
- <20160304181657.GA30434@lst.de> <20160304192222.GA31341@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 94CC81A0033
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 22:50:01 +1100 (AEDT)
+Received: by mail-pa0-x22c.google.com with SMTP id bj10so11210589pad.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Mar 2016 03:50:01 -0800 (PST)
+Date: Tue, 8 Mar 2016 03:49:55 -0800 (PST)
+From: Hugh Dickins <hughd@google.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+cc: Hugh Dickins <hughd@google.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org
+Subject: Re: Problems with swapping in v4.5-rc on POWER
+In-Reply-To: <1457319627.19197.1.camel@ellerman.id.au>
+Message-ID: <alpine.LSU.2.11.1603080239340.7589@eggly.anvils>
+References: <alpine.LSU.2.11.1602241716220.15121@eggly.anvils>
+ <877fhttmr1.fsf@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1602242136270.6876@eggly.anvils>
+ <alpine.LSU.2.11.1602251322130.8063@eggly.anvils>
+ <alpine.LSU.2.11.1602260157430.10399@eggly.anvils>
+ <alpine.LSU.2.11.1603021226300.31251@eggly.anvils>
+ <1456984266.28236.1.camel@ellerman.id.au>
+ <alpine.LSU.2.11.1603040948250.5477@eggly.anvils>
+ <1457319627.19197.1.camel@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160304192222.GA31341@lst.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,52 +37,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 04, 2016 at 08:22:22PM +0100, Torsten Duwe wrote:
-> On Fri, Mar 04, 2016 at 07:16:57PM +0100, Torsten Duwe wrote:
-> > On Fri, Mar 04, 2016 at 02:01:37PM +0100, Petr Mladek wrote:
-> > > 
-> > > Do I understand it correctly that we could not patch functions that
-> > > pass arguments on the stack with this implementation? If yes, how hard
-> > > would be to get it working, please? At least, it would be great to
-> > > catch this problem and handle it with grace. Otherwise, it might
-> > > be hard to debug.
+On Mon, 7 Mar 2016, Michael Ellerman wrote:
+> On Fri, 2016-03-04 at 09:58 -0800, Hugh Dickins wrote:
 > > 
-> > No, those functions only require special attention.
+> > The alternative bisection was as unsatisfactory as the first:
+> > again it fingered an irrelevant merge (rather than any commit
+> > pulled in by that merge) as the bad commit.
+> > 
+> > It seems this issue is too intermittent for bisection to be useful,
+> > on my load anyway.
 > 
-> So far it's correct. It's been a while since I wrote that code.
+> Darn. Thanks for trying.
 > 
-> > I needed _any_ location to store the caller's TOC;
-> > and the stack is thread-safe and recursion-safe.
-> > The current caller's frame is already full so I had
-> > to create a new one.
+> > The best I can do now is try v4.4 for a couple of days, to verify that
+> > still comes out good (rather than the machine going bad coincident with
+> > v4.5-rc), then try v4.5-rc7 to verify that that still comes out bad.
 > 
-> Correction: the TOC can be stored in the caller's stack frame at
-> the usual location. Only the restore instruction is a problem.
+> Thanks, that would still be helpful.
 
-Another correction :-( This is true only for local calls
+v4.4 ran under load for 56 hours without any trouble, before I stopped
+it to switch kernels.  v4.5-rc7 ran for 19.5 hours, then hit the problem
+(sigsegv in "as" on this occasion).
 
-    -*> Which become *global* calls due to live patching <*-
+> 
+> > I'll report back on those; but beyond that, I'll have to leave it to you.
+> 
+> I haven't had any luck here :/
+> 
+> Can you give us a more verbose description of your test setup?
 
-For callers that made a global call to the patched function originally,
-they already _have_ stored their TOC value there, and the r2 they enter
-ftrace caller with is bogus.
+I'll be a lot more terse than you'd like, not much time to spare.
+If I had a good reproducer, then of course I should specify it exactly
+to you; but no, 19.5 hours or 5 hours or a few minutes, that does not
+amount to a good reproducer.
 
-I see no way to determine which is the case, so my code preserves both:
-24(r1) in the caller's frame is left untouched. R2, as it came, is saved in
-the mini stack frame, as well as the caller's return address (LR,
-shifted 1 frame). Remember, LR got modified to point to klp_return_helper.
+> 
+>  - G5, which exact model?
 
-Removing this auxiliary stack frame causes even more problems than it solves.
+/proc/cpuinfo says:
 
-> So one solution could be to call the patch function via a small
-> trampoline or pre-prologue that just pops that frame, and have
-> the patch function restore R2 manually at the end.
+processor	: 0
+cpu		: PPC970MP, altivec supported
+clock		: 2500.000000MHz
+revision	: 1.1 (pvr 0044 0101)
 
-I'll try to demonstrate that. It's not so hard. And klp_return_helper will
-do the right thing for >90% of all function replacements automatically.
+processor	: 1
+cpu		: PPC970MP, altivec supported
+clock		: 2500.000000MHz
+revision	: 1.1 (pvr 0044 0101)
 
-> Sorry for the confusion,
+processor	: 2
+cpu		: PPC970MP, altivec supported
+clock		: 2500.000000MHz
+revision	: 1.1 (pvr 0044 0101)
 
-Once more.
+processor	: 3
+cpu		: PPC970MP, altivec supported
+clock		: 2500.000000MHz
+revision	: 1.1 (pvr 0044 0101)
 
-	Torsten
+timebase	: 33333333
+platform	: PowerMac
+model		: PowerMac11,2
+machine		: PowerMac11,2
+motherboard	: PowerMac11,2 MacRISC4 Power Macintosh 
+detected as	: 337 (PowerMac G5 Dual Core)
+pmac flags	: 00000000
+L2 cache	: 1024K unified
+pmac-generation	: NewWorld
+
+>  - 4k pages, no THP.
+
+Yes.
+
+>  - how much ram & swap?
+
+I boot with mem=700M, and use 1.5G swap.
+
+>  - building linus' tree, make -j ?
+
+Building an old 2.6.24 tree (which had a higher source to built ratio
+than nowadays; with patches to get it to build with more recent toolchain,
+from openSUSE 13.1); building some config I used to run on that machine.
+
+Building two of them, each make -j20, concurrently: one in tmpfs,
+one in 4kB-blocksize ext4 on loop on tmpfs file.  But I doubt that
+complication is relevant here: sometimes it's the build in tmpfs
+that collapses, sometimes the build in ext4, it's fairly even which.
+
+(Do not bother to attempt such a load on linux-next, only on v4.5:
+the OOM rework in mmotm has an unsolved problem with order=2 allocations,
+which means that such a load will be OOM-killed very quickly.)
+
+>  - source and output on tmpfs? (how big?)
+
+One source and output in ext4 on loop on file filling 470M tmpfs.
+Other source and output in tmpfs on /tmp which I happen to size at 1300M
+(but could be half that).  Sizes of course fitted to that source tree
+and config I happen to be building.
+
+>  - what device is the swap device? (you said SSD I think?)
+
+Old 75G Intel SSD:
+ata2.00: ATA-7: INTEL SSDSA2M080G2GN, 2CV102HD, max UDMA/133
+
+>  - anything else I've forgotten?
+
+I happen to run with /proc/sys/vm/swappiness 100,
+merely because it's swapping that I'm trying to exercise.
+
+I doubt that any of the details above are important: plenty of
+swapping is probably the only message (and doing everything in
+tmpfs in limited memory is a good way to force plenty of swapping).
+
+> 
+> Oh and can you send us your bisect logs, we can at least trust the bad results
+> I think.
+
+Remember that both of these bisections started from 4.5-rc1 as bad,
+and f689b742f217, the powerpc merge, as good - since I didn't see a
+problem at that commit in 12 hours.  But we all suspect that in fact
+something in that powerpc merge was actually the bad.
+
+git bisect start
+# good: [f689b742f217b2ffe7925f8a6521b208ee995309] Merge tag 'powerpc-4.5-1' of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux
+git bisect good f689b742f217b2ffe7925f8a6521b208ee995309
+# bad: [92e963f50fc74041b5e9e744c330dca48e04f08d] Linux 4.5-rc1
+git bisect bad 92e963f50fc74041b5e9e744c330dca48e04f08d
+# bad: [7f36f1b2a8c4f55f8226ed6c8bb4ed6de11c4015] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/ide
+git bisect bad 7f36f1b2a8c4f55f8226ed6c8bb4ed6de11c4015
+# bad: [6606b342febfd470b4a33acb73e360eeaca1d9bb] Merge git://www.linux-watchdog.org/linux-watchdog
+git bisect bad 6606b342febfd470b4a33acb73e360eeaca1d9bb
+# good: [d0021d3bdfe9d551859bca1f58da0e6be8e26043] Merge remote-tracking branch 'asoc/topic/wm8960' into asoc-next
+git bisect good d0021d3bdfe9d551859bca1f58da0e6be8e26043
+# good: [e3315b439c30c208582ac64e58f0c0d36b83181e] ALSA: oxfw: allocate own address region for SCS.1 series
+git bisect good e3315b439c30c208582ac64e58f0c0d36b83181e
+# good: [3da834e3e5a4a5d26882955298b55a9ed37a00bc] clk: remove duplicated COMMON_CLK_NXP record from clk/Kconfig
+git bisect good 3da834e3e5a4a5d26882955298b55a9ed37a00bc
+# bad: [e535d74bc50df2357d3253f8f3ca48c66d0d892a] Merge tag 'docs-4.5' of git://git.lwn.net/linux
+git bisect bad e535d74bc50df2357d3253f8f3ca48c66d0d892a
+# bad: [4e5448a31d73d0e944b7adb9049438a09bc332cb] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net
+git bisect bad 4e5448a31d73d0e944b7adb9049438a09bc332cb
+# good: [b70ce2ab41cb67ab3d661eda078f7c4029bbca95] dts: hisi: fixes no syscon fault when init mdio
+git bisect good b70ce2ab41cb67ab3d661eda078f7c4029bbca95
+# good: [4a658527271bce43afb1cf4feec89afe6716ca59] xen-netback: delete NAPI instance when queue fails to initialize
+git bisect good 4a658527271bce43afb1cf4feec89afe6716ca59
+# good: [c6894dec8ea9ae05747124dce98b3b5c2e69b168] bridge: fix lockdep addr_list_lock false positive splat
+git bisect good c6894dec8ea9ae05747124dce98b3b5c2e69b168
+# good: [36beca6571c941b28b0798667608239731f9bc3a] sparc64: Fix numa node distance initialization
+git bisect good 36beca6571c941b28b0798667608239731f9bc3a
+# good: [750afbf8ee9c6a1c74a1fe5fc9852146b1d72687] bgmac: Fix reversed test of build_skb() return value.
+git bisect good 750afbf8ee9c6a1c74a1fe5fc9852146b1d72687
+# good: [5a18d263f8d27418c98b8e8551dadfe975c054e3] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/sparc
+git bisect good 5a18d263f8d27418c98b8e8551dadfe975c054e3
+# first bad commit: [4e5448a31d73d0e944b7adb9049438a09bc332cb] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net
+
+And then I replayed, taking the davem/net merge as good instead,
+on the basis that it had taken longer than usual to hit the issue:
+
+git bisect start
+# good: [f689b742f217b2ffe7925f8a6521b208ee995309] Merge tag 'powerpc-4.5-1' of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux
+git bisect good f689b742f217b2ffe7925f8a6521b208ee995309
+# bad: [92e963f50fc74041b5e9e744c330dca48e04f08d] Linux 4.5-rc1
+git bisect bad 92e963f50fc74041b5e9e744c330dca48e04f08d
+# bad: [7f36f1b2a8c4f55f8226ed6c8bb4ed6de11c4015] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/ide
+git bisect bad 7f36f1b2a8c4f55f8226ed6c8bb4ed6de11c4015
+# bad: [6606b342febfd470b4a33acb73e360eeaca1d9bb] Merge git://www.linux-watchdog.org/linux-watchdog
+git bisect bad 6606b342febfd470b4a33acb73e360eeaca1d9bb
+# good: [d0021d3bdfe9d551859bca1f58da0e6be8e26043] Merge remote-tracking branch 'asoc/topic/wm8960' into asoc-next
+git bisect good d0021d3bdfe9d551859bca1f58da0e6be8e26043
+# good: [e3315b439c30c208582ac64e58f0c0d36b83181e] ALSA: oxfw: allocate own address region for SCS.1 series
+git bisect good e3315b439c30c208582ac64e58f0c0d36b83181e
+# good: [3da834e3e5a4a5d26882955298b55a9ed37a00bc] clk: remove duplicated COMMON_CLK_NXP record from clk/Kconfig
+git bisect good 3da834e3e5a4a5d26882955298b55a9ed37a00bc
+# bad: [e535d74bc50df2357d3253f8f3ca48c66d0d892a] Merge tag 'docs-4.5' of git://git.lwn.net/linux
+git bisect bad e535d74bc50df2357d3253f8f3ca48c66d0d892a
+# good: [4e5448a31d73d0e944b7adb9049438a09bc332cb] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net
+git bisect good 4e5448a31d73d0e944b7adb9049438a09bc332cb
+# good: [aa13a960fc1bd28cfd8b3aef43e523ade1817a2c] Documentation: cpu-hotplug: Fix sysfs mount instructions
+git bisect good aa13a960fc1bd28cfd8b3aef43e523ade1817a2c
+# good: [afd8c08446d6503adc1ccd2726a8e27f35d95b79] Documentation: Explain pci=conf1,conf2 more verbosely
+git bisect good afd8c08446d6503adc1ccd2726a8e27f35d95b79
+# good: [e5b6c1518878e157df4121c1caf70d9c470a6d31] firmware: dmi_scan: Save SMBIOS Type 9 System Slots
+git bisect good e5b6c1518878e157df4121c1caf70d9c470a6d31
+# good: [ec3fc58b1e7a32cc9f552b306f8dbb4454e83798] thermal: add description for integral_cutoff unit
+git bisect good ec3fc58b1e7a32cc9f552b306f8dbb4454e83798
+# bad: [ece6267878aed4eadff766112f1079984315d8c8] Merge tag 'clk-for-linus-4.5' of git://git.kernel.org/pub/scm/linux/kernel/git/clk/linux
+git bisect bad ece6267878aed4eadff766112f1079984315d8c8
+# bad: [d45187aaf0e256d23da2f7694a7826524499aa31] Merge branch 'dmi-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/jdelvare/staging
+git bisect bad d45187aaf0e256d23da2f7694a7826524499aa31
+# first bad commit: [d45187aaf0e256d23da2f7694a7826524499aa31] Merge branch 'dmi-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/jdelvare/staging
+
+Hugh
