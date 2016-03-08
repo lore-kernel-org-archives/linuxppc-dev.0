@@ -1,19 +1,18 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 835591A011E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 14:09:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D39D1A011D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 14:09:09 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
 	aik@ozlabs.ru,
 	benh@kernel.crashing.org
 Cc: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv2 08/25] pseries: Automatically resize HPT for memory hot
- add/remove
-Date: Tue,  8 Mar 2016 14:08:45 +1100
-Message-Id: <1457406542-6210-9-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFCv2 07/25] pseries: Advertise HPT resizing support via CAS
+Date: Tue,  8 Mar 2016 14:08:44 +1100
+Message-Id: <1457406542-6210-8-git-send-email-david@gibson.dropbear.id.au>
 In-Reply-To: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
 References: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,94 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We've now implemented code in the pseries platform to use the new PAPR
-interface to allow resizing the hash page table (HPT) at runtime.
+The hypervisor needs to know a guest is capable of using the HPT resizing
+PAPR extension in order to make full advantage of it for memory hotplug.
 
-This patch uses that interface to automatically attempt to resize the HPT
-when memory is hot added or removed.  This tries to always keep the HPT at
-a reasonable size for our current memory size.
+If the hypervisor knows the guest is HPT resize aware, it can size the
+initial HPT based on the initial guest RAM size, relying on the guest to
+resize the HPT when more memory is hot-added.  Without this, the hypervisor
+must size the HPT for the maximum possible guest RAM, which can lead to
+a huge waste of space if the guest never actually expends to that maximum
+size.
+
+This patch advertises the guest's support for HPT resizing via the
+ibm,client-architecture-support OF interface.  Obviously, the actual
+encoding in the CAS vector is tentative until the extension is officially
+incorporated into PAPR.  For now we use bit 0 of (previously unused) byte 8
+of option vector 5.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Reviewed-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Reviewed-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/sparsemem.h |  1 +
- arch/powerpc/mm/hash_utils_64.c      | 29 +++++++++++++++++++++++++++++
- arch/powerpc/mm/mem.c                |  4 ++++
- 3 files changed, 34 insertions(+)
+ arch/powerpc/include/asm/prom.h | 1 +
+ arch/powerpc/kernel/prom_init.c | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
-index f6fc0ee..737335c 100644
---- a/arch/powerpc/include/asm/sparsemem.h
-+++ b/arch/powerpc/include/asm/sparsemem.h
-@@ -16,6 +16,7 @@
- #endif /* CONFIG_SPARSEMEM */
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
-+extern void resize_hpt_for_hotplug(unsigned long new_mem_size);
- extern int create_section_mapping(unsigned long start, unsigned long end);
- extern int remove_section_mapping(unsigned long start, unsigned long end);
- #ifdef CONFIG_NUMA
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 0809bea..6fbc27a 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -645,6 +645,35 @@ static unsigned long __init htab_get_table_size(void)
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
-+void resize_hpt_for_hotplug(unsigned long new_mem_size)
-+{
-+	unsigned target_hpt_shift;
-+
-+	if (!ppc_md.resize_hpt)
-+		return;
-+
-+	target_hpt_shift = htab_shift_for_mem_size(new_mem_size);
-+
-+	/*
-+	 * To avoid lots of HPT resizes if memory size is fluctuating
-+	 * across a boundary, we deliberately have some hysterisis
-+	 * here: we immediately increase the HPT size if the target
-+	 * shift exceeds the current shift, but we won't attempt to
-+	 * reduce unless the target shift is at least 2 below the
-+	 * current shift
-+	 */
-+	if ((target_hpt_shift > ppc64_pft_size)
-+	    || (target_hpt_shift < (ppc64_pft_size - 1))) {
-+		int rc;
-+
-+		rc = ppc_md.resize_hpt(target_hpt_shift);
-+		if (rc)
-+			printk(KERN_WARNING
-+			       "Unable to resize hash page table to target order %d: %d\n",
-+			       target_hpt_shift, rc);
-+	}
-+}
-+
- int create_section_mapping(unsigned long start, unsigned long end)
- {
- 	int rc = htab_bolt_mapping(start, end, __pa(start),
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index f980da6..4938ee7 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -121,6 +121,8 @@ int arch_add_memory(int nid, u64 start, u64 size, bool for_device)
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 	int rc;
- 
-+	resize_hpt_for_hotplug(memblock_phys_mem_size());
-+
- 	pgdata = NODE_DATA(nid);
- 
- 	start = (unsigned long)__va(start);
-@@ -161,6 +163,8 @@ int arch_remove_memory(u64 start, u64 size)
- 	 */
- 	vm_unmap_aliases();
- 
-+	resize_hpt_for_hotplug(memblock_phys_mem_size());
-+
- 	return ret;
- }
- #endif
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 7f436ba..ef08208 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -151,6 +151,7 @@ struct of_drconf_cell {
+ #define OV5_XCMO		0x0440	/* Page Coalescing */
+ #define OV5_TYPE1_AFFINITY	0x0580	/* Type 1 NUMA affinity */
+ #define OV5_PRRN		0x0540	/* Platform Resource Reassignment */
++#define OV5_HPT_RESIZE		0x0880	/* Hash Page Table resizing */
+ #define OV5_PFO_HW_RNG		0x0E80	/* PFO Random Number Generator */
+ #define OV5_PFO_HW_842		0x0E40	/* PFO Compression Accelerator */
+ #define OV5_PFO_HW_ENCR		0x0E20	/* PFO Encryption Accelerator */
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index da51925..c6feafb 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -713,7 +713,7 @@ unsigned char ibm_architecture_vec[] = {
+ 	OV5_FEAT(OV5_TYPE1_AFFINITY) | OV5_FEAT(OV5_PRRN),
+ 	0,
+ 	0,
+-	0,
++	OV5_FEAT(OV5_HPT_RESIZE),
+ 	/* WARNING: The offset of the "number of cores" field below
+ 	 * must match by the macro below. Update the definition if
+ 	 * the structure layout changes.
 -- 
 2.5.0
