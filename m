@@ -1,8 +1,8 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 70C7C1A02EE
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8C1B01A0311
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 14:09:14 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
@@ -10,9 +10,9 @@ To: paulus@samba.org,
 	benh@kernel.crashing.org
 Cc: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv2 24/25] powerpc/kvm: HPT resize pivot
-Date: Tue,  8 Mar 2016 14:09:01 +1100
-Message-Id: <1457406542-6210-25-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFCv2 21/25] powerpc/kvm: Make MMU notifiers HPT resize aware
+Date: Tue,  8 Mar 2016 14:08:58 +1100
+Message-Id: <1457406542-6210-22-git-send-email-david@gibson.dropbear.id.au>
 In-Reply-To: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
 References: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,69 +24,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This implements the code for HPT resizing to actually pivot from the
-currently active HPT to the new HPT, which has previously been populated
-by rehashing entries from the old HPT.
+While an HPT resize operation is in progress, specifically when a tentative
+HPT has been allocated and we are possibly in the middle of populating it
+various host side MM events need to be reflected in the tentative resized
+HPT as well as the currently active one.
 
-This only occurs while the guest is executing the H_RESIZE_HPT_COMMIT
-hypercall, handling synchronization with the guest.  On the host side this
-is executed under the kvm->mmu_lock to prevent races with host side MMU
-notifiers.
+This extends the powerpc KVM MMU notifiers to act on both the active and
+tentative HPTs (and reverse maps) when there is an active resize in
+progress.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index d06aef6..45430fe 100644
+index db070ad..5b84347 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -1416,9 +1416,45 @@ static int resize_hpt_rehash(struct kvm_resize_hpt *resize)
- 	return H_SUCCESS;
+@@ -97,6 +97,17 @@ static void resize_hpt_set_state(struct kvm_resize_hpt *resize,
+ 	wake_up_all(&kvm->arch.resize_hpt_wq);
  }
  
-+static void resize_hpt_pivot_cpu(void *opaque)
++static struct kvm_resize_hpt *kvm_active_resize_hpt(struct kvm *kvm)
 +{
-+	/* Nothing to do, just force a KVM exit */
++	struct kvm_resize_hpt *resize = kvm->arch.resize_hpt;
++
++	if (resize && (resize->state & RESIZE_HPT_PREPARED)
++	    && !(resize->state & RESIZE_HPT_FAILED))
++		return resize;
++
++	return NULL;
 +}
 +
- static void resize_hpt_pivot(struct kvm_resize_hpt *resize,
- 			     struct kvm_memslots *slots)
- {
-+	struct kvm *kvm = resize->kvm;
-+	struct kvm_memory_slot *memslot;
-+	struct kvm_hpt_info hpt_tmp;
-+
-+	/* Exchange the pending tables in the resize structure with
-+	 * the active tables */
-+
-+	resize_hpt_debug(resize, "PIVOT!\n");
-+
-+	kvm_for_each_memslot(memslot, slots) {
-+		unsigned long *tmp;
-+
-+		tmp = memslot->arch.rmap;
-+		memslot->arch.rmap = resize->rmap[memslot->id];
-+		resize->rmap[memslot->id] = tmp;
-+	}
-+
-+	hpt_tmp = kvm->arch.hpt;
-+	kvmppc_set_hpt(kvm, &resize->hpt);
-+	resize->hpt = hpt_tmp;
-+
-+	spin_unlock(&kvm->mmu_lock);
-+
-+	synchronize_srcu_expedited(&kvm->srcu);
-+
-+	/* Force an exit on every vcpu, to make sure the real SDR1
-+	 * gets updated */
-+
-+	on_each_cpu(resize_hpt_pivot_cpu, NULL, 1);
-+
-+	spin_lock(&kvm->mmu_lock);
- }
+ static long kvmppc_virtmode_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 				long pte_index, unsigned long pteh,
+ 				unsigned long ptel, unsigned long *pte_idx_ret);
+@@ -755,6 +766,7 @@ static int kvm_handle_hva_range(struct kvm *kvm,
+ 	int retval = 0;
+ 	struct kvm_memslots *slots;
+ 	struct kvm_memory_slot *memslot;
++	struct kvm_resize_hpt *resize = kvm_active_resize_hpt(kvm);
  
- static void resize_hpt_flush_rmaps(struct kvm_resize_hpt *resize,
+ 	slots = kvm_memslots(kvm);
+ 	kvm_for_each_memslot(memslot, slots) {
+@@ -776,6 +788,10 @@ static int kvm_handle_hva_range(struct kvm *kvm,
+ 		retval |= kvm_handle_hva_range_slot(kvm, &kvm->arch.hpt,
+ 						    memslot, memslot->arch.rmap,
+ 						    gfn, gfn_end, handler);
++		if (resize)
++			retval |= kvm_handle_hva_range_slot(kvm, &resize->hpt,
++				memslot, resize->rmap[memslot->id],
++				gfn, gfn_end, handler);
+ 	}
+ 
+ 	return retval;
 -- 
 2.5.0
