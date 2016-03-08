@@ -1,46 +1,27 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0060.outbound.protection.outlook.com [157.56.112.60])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BCFCE1A0118
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 11:57:38 +1100 (AEDT)
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 8 Mar 2016 10:57:36 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 59A9E3578058
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 11:57:31 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u280vNPF5308710
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Mar 2016 11:57:31 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u280uwN4013766
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Mar 2016 11:56:59 +1100
-Date: Tue, 8 Mar 2016 11:56:33 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Rob Herring <robherring2@gmail.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6A9B91A01EA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 12:16:56 +1100 (AEDT)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: Scott Wood <oss@buserror.net>, Rob Herring <robh@kernel.org>
+CC: Yang-Leo Li <leoyang.li@nxp.com>, Xiaobo Xie <xiaobo.xie@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, aik@ozlabs.ru, dja@axtens.net,
- Bjorn Helgaas <bhelgaas@google.com>, Grant Likely <grant.likely@linaro.org>
-Subject: Re: [PATCH v8 42/45] drivers/of: Rename unflatten_dt_node()
-Message-ID: <20160308005633.GA30023@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1455680668-23298-43-git-send-email-gwshan@linux.vnet.ibm.com>
- <CAL_JsqJydgmkU=SGcr-0JHsYG8wXk5GEQCQXY7y+FHH2A0LZkw@mail.gmail.com>
- <20160219031655.GA10818@gwshan>
- <CAL_JsqJFacEMD6jwi=YsT83BTVp5Asjmw4nYU6Msct-DcR2W9Q@mail.gmail.com>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH v3 3/7] QE: Add uqe_serial document to bindings
+Date: Tue, 8 Mar 2016 01:16:49 +0000
+Message-ID: <AM3PR04MB1185D8F20D8D2763DB909B3791B20@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1456816183-22340-1-git-send-email-qiang.zhao@nxp.com>
+ <1456816183-22340-3-git-send-email-qiang.zhao@nxp.com>
+ <20160305042536.GD13525@rob-hp-laptop>
+ <AM3PR04MB11852B62A075A980A246D2D091B10@AM3PR04MB1185.eurprd04.prod.outlook.com>
+ <1457371686.5360.107.camel@buserror.net>
+In-Reply-To: <1457371686.5360.107.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAL_JsqJFacEMD6jwi=YsT83BTVp5Asjmw4nYU6Msct-DcR2W9Q@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,47 +31,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 01, 2016 at 08:40:12PM -0600, Rob Herring wrote:
->On Thu, Feb 18, 2016 at 9:16 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
->> On Wed, Feb 17, 2016 at 08:59:53AM -0600, Rob Herring wrote:
->>>On Tue, Feb 16, 2016 at 9:44 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
->>>> This renames unflatten_dt_node() to unflatten_dt_nodes() as it
->>>> populates multiple device nodes from FDT blob. No logical changes
->>>> introduced.
->>>>
->>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>> ---
->>>>  drivers/of/fdt.c | 14 +++++++-------
->>>>  1 file changed, 7 insertions(+), 7 deletions(-)
->>>
->>>Acked-by: Rob Herring <robh@kernel.org>
->>>
->>>I'm happy to take patches 40-42 for 4.6 if the rest of the series
->>>doesn't go in given they fix a separate problem. I just need to know
->>>soon (or at least they need to go into -next soon).
->>>
->>
->> Thanks for quick response, Rob. It depends how much comments I will
->> receive for the powerpc/powernv part. Except that, all parts including
->> this one have been ack'ed. I can discuss it with Michael Ellerman.
->> By the way, how soon you need the decision to merge 40-42? If that's
->> one or two weeks later, I don't think the reivew on the whole series
->> can be done.
->
->Well, it's been 2 weeks now. I need to know this week.
->
->> Also, I think you probably can merge 40-44 as they're all about
->> fdt.c. If they can be merged at one time, I needn't bother (cc)
->> you again if I need send a updated revision. Thanks for your
->> review.
->
->I did not include 43 and 44 as they are only needed for the rest of your series.
->
-
-Rob, sorry for late reponse. I really expect this series to be merged to 4.6 and
-I was checking reviewers' bandwidth to review it. Unfortunately, I didn't receive
-any comments except yours until now. That means this series has to miss 4.6. Please
-pick/merge 41 and 42 if no body has objection. Thanks again for your time on this.
-
-Thanks,
-Gavin
+T24gVHVlLCBNYXIgMDgsIDIwMTYgYXQgMToyOEFNLCBTY290dCBXb29kIHdyb3RlOg0KPiAtLS0t
+LU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTY290dCBXb29kIFttYWlsdG86b3NzQGJ1
+c2Vycm9yLm5ldF0NCj4gU2VudDogVHVlc2RheSwgTWFyY2ggMDgsIDIwMTYgMToyOCBBTQ0KPiBU
+bzogUWlhbmcgWmhhbyA8cWlhbmcuemhhb0BueHAuY29tPjsgUm9iIEhlcnJpbmcgPHJvYmhAa2Vy
+bmVsLm9yZz4NCj4gQ2M6IFlhbmctTGVvIExpIDxsZW95YW5nLmxpQG54cC5jb20+OyBYaWFvYm8g
+WGllIDx4aWFvYm8ueGllQG54cC5jb20+Ow0KPiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3Jn
+OyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxh
+YnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjMgMy83XSBRRTogQWRkIHVxZV9zZXJpYWwg
+ZG9jdW1lbnQgdG8gYmluZGluZ3MNCj4gDQo+IE9uIE1vbiwgMjAxNi0wMy0wNyBhdCAwMjozNSAr
+MDAwMCwgUWlhbmcgWmhhbyB3cm90ZToNCj4gPiBPbiBUdWUsIE1hciAwNSwgMjAxNiBhdCAxMjoy
+NlBNLCBSb2IgSGVycmluZyB3cm90ZToNCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0t
+DQo+ID4gPiBGcm9tOiBSb2IgSGVycmluZyBbbWFpbHRvOnJvYmhAa2VybmVsLm9yZ10NCj4gPiA+
+IFNlbnQ6IFNhdHVyZGF5LCBNYXJjaCAwNSwgMjAxNiAxMjoyNiBQTQ0KPiA+ID4gVG86IFFpYW5n
+IFpoYW8gPHFpYW5nLnpoYW9AbnhwLmNvbT4NCj4gPiA+IENjOiBvc3NAYnVzZXJyb3IubmV0OyBZ
+YW5nLUxlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPjsgWGlhb2JvIFhpZQ0KPiA+ID4gPHhpYW9i
+by54aWVAbnhwLmNvbT47IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4gPiBkZXZp
+Y2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4g
+PiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjMgMy83XSBRRTogQWRkIHVxZV9zZXJpYWwgZG9jdW1l
+bnQgdG8gYmluZGluZ3MNCj4gPiA+DQo+ID4gPiBPbiBUdWUsIE1hciAwMSwgMjAxNiBhdCAwMzow
+OTozOVBNICswODAwLCBaaGFvIFFpYW5nIHdyb3RlOg0KPiA+ID4gPiBBZGQgdXFlX3NlcmlhbCBk
+b2N1bWVudCB0bw0KPiA+ID4gPiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93
+ZXJwYy9mc2wvY3BtX3FlL3VxZV9zZXJpYWwudHgNCj4gPiA+ID4gdA0KPiA+ID4gPg0KPiA+ID4g
+PiBTaWduZWQtb2ZmLWJ5OiBaaGFvIFFpYW5nIDxxaWFuZy56aGFvQG54cC5jb20+DQo+ID4gPiA+
+IC0tLQ0KPiA+ID4gPiBDaGFuZ2VzIGZvciB2Mg0KPiA+ID4gPiAJLSBtb2RpZnkgdHgvcngtY2xv
+Y2stbmFtZSBzcGVjaWZpY2F0aW9uIENoYW5nZXMgZm9yIHYyDQo+ID4gPiA+IAktIE5BDQo+ID4g
+PiA+DQo+ID4gPiA+ICAuLi4vYmluZGluZ3MvcG93ZXJwYy9mc2wvY3BtX3FlL3VxZV9zZXJpYWwu
+dHh0ICAgICAgICB8IDE5DQo+ID4gPiArKysrKysrKysrKysrKysrKysrDQo+ID4gPiA+ICAxIGZp
+bGUgY2hhbmdlZCwgMTkgaW5zZXJ0aW9ucygrKQ0KPiA+ID4gPiAgY3JlYXRlIG1vZGUgMTAwNjQ0
+DQo+ID4gPiA+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBjL2ZzbC9j
+cG1fcWUvdXFlX3NlcmlhbC50eA0KPiA+ID4gPiB0DQo+ID4gPiA+DQo+ID4gPiA+IGRpZmYgLS1n
+aXQNCj4gPiA+ID4gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXJwYy9m
+c2wvY3BtX3FlL3VxZV9zZXJpYWwuDQo+ID4gPiA+IHR4dA0KPiA+ID4gPiBiL0RvY3VtZW50YXRp
+b24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBjL2ZzbC9jcG1fcWUvdXFlX3NlcmlhbC4NCj4g
+PiA+ID4gdHh0DQo+ID4gPiA+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+ID4gPiA+IGluZGV4IDAw
+MDAwMDAuLjQzNmM3MWMNCj4gPiA+ID4gLS0tIC9kZXYvbnVsbA0KPiA+ID4gPiArKysNCj4gYi9E
+b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXJwYy9mc2wvY3BtX3FlL3VxZV9z
+ZXJpYWwuDQo+ID4gPiA+ICsrKyB0eHQNCj4gPiA+ID4gQEAgLTAsMCArMSwxOSBAQA0KPiA+ID4g
+PiArKiBTZXJpYWwNCj4gPiA+ID4gKw0KPiA+ID4gPiArQ3VycmVudGx5IGRlZmluZWQgY29tcGF0
+aWJsZXM6DQo+ID4gPiA+ICstIHVjY191YXJ0DQo+ID4gPg0KPiA+ID4gSSBndWVzcyB0aGlzIGlz
+IGluIHVzZSBhbHJlYWR5IGFuZCBva2F5LiBIb3dldmVyLCBsb29raW5nIGF0IHRoZQ0KPiA+ID4g
+ZHJpdmVyIHRoZXJlIHJlYWxseSBzaG91bGQgYmUgU29DIHNwZWNpZmljIGNvbXBhdGlibGUgc3Ry
+aW5ncyBoZXJlDQo+ID4gPiBzaW5jZSB0aGUgZHJpdmVyIGlzIGxvb2tpbmcgdXAgdGhlIFNvQyBj
+b21wYXRpYmxlIHN0cmluZyBhbmQNCj4gPiA+IGNvbXBvc2luZyB0aGUgZmlybXdhcmUgZmlsZW5h
+bWUgZnJvbSB0aGF0Lg0KPiA+DQo+ID4gT2ssIEkgd2lsbCBjaGFuZ2VkIGJvdGggZHJpdmVyIGFu
+ZCB0aGlzIGNvbXBhdGlibGUuDQo+IA0KPiBCdXQgZG9uJ3QgYnJlYWsgZXhpc3RpbmcgZGV2aWNl
+IHRyZWVzIHdoaWxlIGRvaW5nIHNvLg0KDQpEbyBJIG5lZWQgdG8gc2VuZCBkcml2ZXIgcGF0Y2gg
+aW4gdGhpcyBwYXRjaHNldCBvciBhIGluZGl2aWR1YWwgcGF0Y2g/DQoNCkJSDQotWmhhbyBRaWFu
+Zw0KDQo=
