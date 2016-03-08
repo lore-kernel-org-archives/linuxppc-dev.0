@@ -1,21 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <zhlcindy@gmail.com>
+Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
+ [IPv6:2607:f8b0:4003:c06::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4025E1A0341
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 14:09:20 +1100 (AEDT)
-From: David Gibson <david@gibson.dropbear.id.au>
-To: paulus@samba.org,
-	aik@ozlabs.ru,
-	benh@kernel.crashing.org
-Cc: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv2 25/25] powerpc/kvm: Harvest RC bits from old HPT after HPT
- resize
-Date: Tue,  8 Mar 2016 14:09:02 +1100
-Message-Id: <1457406542-6210-26-git-send-email-david@gibson.dropbear.id.au>
-In-Reply-To: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
-References: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0AE5D1A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 14:56:35 +1100 (AEDT)
+Received: by mail-oi0-x241.google.com with SMTP id c203so247857oia.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Mar 2016 19:56:34 -0800 (PST)
+From: Li Zhang <zhlcindy@gmail.com>
+To: akpm@linux-foundation.org, vbabka@suse.cz, mgorman@techsingularity.net,
+ mpe@ellerman.id.au, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Li Zhang <zhlcindy@linux.vnet.ibm.com>
+Subject: [PATCH 0/2] mm: Enable page parallel initialisation for Power
+Date: Tue,  8 Mar 2016 11:55:52 +0800
+Message-Id: <1457409354-10867-1-git-send-email-zhlcindy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,96 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During an HPT resize operation we have two HPTs and sets of reverse maps
-for the guest: the active one, and the tentative resized one.  This means
-that information about a host page's referenced / dirty state as affected
-by the guest could end up in either HPT depending on exactly what moment
-it happens at.
+From: Li Zhang <zhlcindy@linux.vnet.ibm.com>
 
-During the transition we handle this by having things which need this
-information consult both the new and old HPTs.  However, in order to clean
-things up after, we need to harvest any such information left over in the
-old tables and store it in the new ones.
+Uptream has supported page parallel initialisation for X86 and the
+boot time is improved greately. Some tests have been done for Power.
 
-This implements this, first harvesting R & C bits from the old HPT into
-the old rmaps, then folding that information into the new (now current)
-rmaps.
+Here is the result I have done with different memory size.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
----
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 57 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+* 4GB memory:
+    boot time is as the following: 
+    with patch vs without patch: 10.4s vs 24.5s
+    boot time is improved 57%
+* 200GB memory: 
+    boot time looks the same with and without patches.
+    boot time is about 38s
+* 32TB memory: 
+    boot time looks the same with and without patches 
+    boot time is about 160s.
+    The boot time is much shorter than X86 with 24TB memory.
+    From community discussion, it costs about 694s for X86 24T system.
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 45430fe..f132f86 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -1457,9 +1457,66 @@ static void resize_hpt_pivot(struct kvm_resize_hpt *resize,
- 	spin_lock(&kvm->mmu_lock);
- }
- 
-+static void resize_hpt_harvest_rc(struct kvm_hpt_info *hpt,
-+				  unsigned long *rmapp)
-+{
-+	unsigned long idx;
-+
-+	if (!(*rmapp & KVMPPC_RMAP_PRESENT))
-+		return;
-+
-+	idx = *rmapp & KVMPPC_RMAP_INDEX;
-+	do {
-+		struct revmap_entry *rev = &hpt->rev[idx];
-+		__be64 *hptep = (__be64 *)(hpt->virt + (idx << 4));
-+		unsigned long hpte0 = be64_to_cpu(hptep[0]);
-+		unsigned long hpte1 = be64_to_cpu(hptep[1]);
-+		unsigned long psize = hpte_page_size(hpte0, hpte1);
-+		unsigned long rcbits = hpte1 & (HPTE_R_R | HPTE_R_C);
-+
-+		*rmapp |= rcbits << KVMPPC_RMAP_RC_SHIFT;
-+		if (rcbits & HPTE_R_C)
-+			kvmppc_update_rmap_change(rmapp, psize);
-+
-+		idx = rev->forw;
-+	} while (idx != (*rmapp & KVMPPC_RMAP_INDEX));
-+}
-+
- static void resize_hpt_flush_rmaps(struct kvm_resize_hpt *resize,
- 				   struct kvm_memslots *slots)
- {
-+	struct kvm_memory_slot *memslot;
-+
-+	kvm_for_each_memslot(memslot, slots) {
-+		unsigned long *old_rmap = resize->rmap[memslot->id];
-+		unsigned long *new_rmap = memslot->arch.rmap;
-+		unsigned long i;
-+
-+		resize_hpt_debug(resize, "Flushing RMAPS for memslot %d\n", memslot->id);
-+
-+		for (i = 0; i < memslot->npages; i++) {
-+			lock_rmap(old_rmap);
-+
-+			resize_hpt_harvest_rc(&resize->hpt, old_rmap);
-+
-+			lock_rmap(new_rmap);
-+
-+			*new_rmap |= *old_rmap & (KVMPPC_RMAP_REFERENCED
-+						  | KVMPPC_RMAP_CHANGED);
-+			if ((*old_rmap & KVMPPC_RMAP_CHG_ORDER)
-+			    > (*new_rmap & KVMPPC_RMAP_CHG_ORDER)) {
-+				*new_rmap &= ~KVMPPC_RMAP_CHG_ORDER;
-+				*new_rmap |= *old_rmap & KVMPPC_RMAP_CHG_ORDER;
-+			}
-+			unlock_rmap(new_rmap);
-+			unlock_rmap(old_rmap);
-+
-+			old_rmap++;
-+			new_rmap++;
-+		}
-+
-+		resize_hpt_debug(resize, "Flushed RMAPS for memslot %d\n", memslot->id);
-+	}
- }
- 
- static void resize_hpt_free(struct kvm_resize_hpt *resize)
+>From code view, parallel initialisation improve the performance by
+deferring memory initilisation to kswap with N kthreads, it should
+improve the performance therotically. 
+
+>From the test result, On X86, performance is improved greatly with huge
+memory. But on Power platform, it is improved greatly with less than 
+100GB memory. For huge memory, it is not improved greatly. But it saves 
+the time with several threads at least, as the following information 
+shows(32TB system log):
+
+[   22.648169] node 9 initialised, 16607461 pages in 280ms
+[   22.783772] node 3 initialised, 23937243 pages in 410ms
+[   22.858877] node 6 initialised, 29179347 pages in 490ms
+[   22.863252] node 2 initialised, 29179347 pages in 490ms
+[   22.907545] node 0 initialised, 32049614 pages in 540ms
+[   22.920891] node 15 initialised, 32212280 pages in 550ms
+[   22.923236] node 4 initialised, 32306127 pages in 550ms
+[   22.923384] node 12 initialised, 32314319 pages in 550ms
+[   22.924754] node 8 initialised, 32314319 pages in 550ms
+[   22.940780] node 13 initialised, 33353677 pages in 570ms
+[   22.940796] node 11 initialised, 33353677 pages in 570ms
+[   22.941700] node 5 initialised, 33353677 pages in 570ms
+[   22.941721] node 10 initialised, 33353677 pages in 570ms
+[   22.941876] node 7 initialised, 33353677 pages in 570ms
+[   22.944946] node 14 initialised, 33353677 pages in 570ms
+[   22.946063] node 1 initialised, 33345485 pages in 580ms
+
+It saves the time about 550*16 ms at least, although it can be ignore to compare 
+the boot time about 160 seconds. What's more, the boot time is much shorter 
+on Power even without patches than x86 for huge memory machine. 
+
+So this patchset is still necessary to be enabled for Power. 
+
+Li Zhang (2):
+  mm: meminit: initialise more memory for inode/dentry hash tables in
+    early boot
+  powerpc/mm: Enable page parallel initialisation
+
+ arch/powerpc/Kconfig |  1 +
+ mm/page_alloc.c      | 11 +++++++++--
+ 2 files changed, 10 insertions(+), 2 deletions(-)
+
 -- 
-2.5.0
+2.1.0
