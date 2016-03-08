@@ -1,18 +1,19 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D39D1A011D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 14:09:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A3B321A01EA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 14:09:06 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
 	aik@ozlabs.ru,
 	benh@kernel.crashing.org
 Cc: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv2 07/25] pseries: Advertise HPT resizing support via CAS
-Date: Tue,  8 Mar 2016 14:08:44 +1100
-Message-Id: <1457406542-6210-8-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFCv2 01/25] powerpc/mm: Clean up error handling for
+ htab_remove_mapping
+Date: Tue,  8 Mar 2016 14:08:38 +1100
+Message-Id: <1457406542-6210-2-git-send-email-david@gibson.dropbear.id.au>
 In-Reply-To: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
 References: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,54 +25,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The hypervisor needs to know a guest is capable of using the HPT resizing
-PAPR extension in order to make full advantage of it for memory hotplug.
+Currently, the only error that htab_remove_mapping() can report is -EINVAL,
+if removal of bolted HPTEs isn't implemeted for this platform.  We make
+a few clean ups to the handling of this:
 
-If the hypervisor knows the guest is HPT resize aware, it can size the
-initial HPT based on the initial guest RAM size, relying on the guest to
-resize the HPT when more memory is hot-added.  Without this, the hypervisor
-must size the HPT for the maximum possible guest RAM, which can lead to
-a huge waste of space if the guest never actually expends to that maximum
-size.
-
-This patch advertises the guest's support for HPT resizing via the
-ibm,client-architecture-support OF interface.  Obviously, the actual
-encoding in the CAS vector is tentative until the extension is officially
-incorporated into PAPR.  For now we use bit 0 of (previously unused) byte 8
-of option vector 5.
+ * EINVAL isn't really the right code - there's nothing wrong with the
+   function's arguments - use ENODEV instead
+ * We were also printing a warning message, but that's a decision better
+   left up to the callers, so remove it
+ * One caller is vmemmap_remove_mapping(), which will just BUG_ON() on
+   error, making the warning message redundant, so no change is needed
+   there.
+ * The other caller is remove_section_mapping().  This is called in the
+   memory hot remove path at a point after vmemmap_remove_mapping() so
+   if hpte_removebolted isn't implemented, we'd expect to have already
+   BUG()ed anyway.  Put a WARN_ON() here, in lieu of a printk() since this
+   really shouldn't be happening.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-Reviewed-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Reviewed-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/prom.h | 1 +
- arch/powerpc/kernel/prom_init.c | 2 +-
- 2 files changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/hash_utils_64.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index 7f436ba..ef08208 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -151,6 +151,7 @@ struct of_drconf_cell {
- #define OV5_XCMO		0x0440	/* Page Coalescing */
- #define OV5_TYPE1_AFFINITY	0x0580	/* Type 1 NUMA affinity */
- #define OV5_PRRN		0x0540	/* Platform Resource Reassignment */
-+#define OV5_HPT_RESIZE		0x0880	/* Hash Page Table resizing */
- #define OV5_PFO_HW_RNG		0x0E80	/* PFO Random Number Generator */
- #define OV5_PFO_HW_842		0x0E40	/* PFO Compression Accelerator */
- #define OV5_PFO_HW_ENCR		0x0E20	/* PFO Encryption Accelerator */
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index da51925..c6feafb 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -713,7 +713,7 @@ unsigned char ibm_architecture_vec[] = {
- 	OV5_FEAT(OV5_TYPE1_AFFINITY) | OV5_FEAT(OV5_PRRN),
- 	0,
- 	0,
--	0,
-+	OV5_FEAT(OV5_HPT_RESIZE),
- 	/* WARNING: The offset of the "number of cores" field below
- 	 * must match by the macro below. Update the definition if
- 	 * the structure layout changes.
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index ba59d59..9f7d727 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -273,11 +273,8 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
+ 	shift = mmu_psize_defs[psize].shift;
+ 	step = 1 << shift;
+ 
+-	if (!ppc_md.hpte_removebolted) {
+-		printk(KERN_WARNING "Platform doesn't implement "
+-				"hpte_removebolted\n");
+-		return -EINVAL;
+-	}
++	if (!ppc_md.hpte_removebolted)
++		return -ENODEV;
+ 
+ 	for (vaddr = vstart; vaddr < vend; vaddr += step)
+ 		ppc_md.hpte_removebolted(vaddr, psize, ssize);
+@@ -641,8 +638,10 @@ int create_section_mapping(unsigned long start, unsigned long end)
+ 
+ int remove_section_mapping(unsigned long start, unsigned long end)
+ {
+-	return htab_remove_mapping(start, end, mmu_linear_psize,
+-			mmu_kernel_ssize);
++	int rc = htab_remove_mapping(start, end, mmu_linear_psize,
++				     mmu_kernel_ssize);
++	WARN_ON(rc < 0);
++	return rc;
+ }
+ #endif /* CONFIG_MEMORY_HOTPLUG */
+ 
 -- 
 2.5.0
