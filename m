@@ -1,43 +1,15 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 914741A009A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 09:15:50 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 64F9B140328
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Mar 2016 09:15:50 +1100 (AEDT)
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 9 Mar 2016 08:15:49 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3C1682BB0055
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Mar 2016 09:15:46 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u28MFbgO9175394
- for <linuxppc-dev@ozlabs.org>; Wed, 9 Mar 2016 09:15:46 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u28MFCvO024698
- for <linuxppc-dev@ozlabs.org>; Wed, 9 Mar 2016 09:15:13 +1100
-Date: Wed, 9 Mar 2016 09:14:47 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>
-Subject: Re: powerpc/eeh: eeh_pci_enable(): fix checking of post-request state
-Message-ID: <20160308221447.GA4838@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <20160208113706.12246140B99@ozlabs.org>
- <56B92B74.8040108@au1.ibm.com> <56DE8280.6020302@au1.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <56DE8280.6020302@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1F4571A009A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 10:30:48 +1100 (AEDT)
+From: Scott Wood <oss@buserror.net>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <oss@buserror.net>, Brian Norris <computersforpeace@gmail.com>
+Date: Tue,  8 Mar 2016 17:30:36 -0600
+Message-Id: <1457479836-31918-1-git-send-email-oss@buserror.net>
+Subject: [PATCH] powerpc/fsl: Remove FSL_SOC dependency from FSL_LBC
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,30 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 08, 2016 at 06:42:56PM +1100, Andrew Donnellan wrote:
->On 09/02/16 10:57, Andrew Donnellan wrote:
->>It is a fix - I'm a bit hazy on the details now but IIRC, Daniel Axtens
->>and I encountered this when doing some cxl debugging, though I think we
->>decided not to tag this for stable since it was a secondary issue to the
->>primary bug we were looking for. It probably could go to stable though?
->>(Daniel - thoughts?)
->>
->>The line in question was last touched in 4d4f577e4b5e, but it looks like
->>the behaviour wasn't right even before that.
->
->Ping :)
->
->I think this patch should still go in, I don't really care whether it goes to
->stable or not.
->
+This dependency led to kconfig errors when MTD_NAND_FSL_ELBC was
+enabled, which selects FSL_LBC, in the absence of FSL_SOC, as reported
+in http://patchwork.ozlabs.org/patch/564405/
 
-Andrew, I lost the context about this. If you need any helps like review,
-please ping me from IRC.
+It was originally suggested to add an FSL_SOC dependency to
+MTD_NAND_FSL_ELBC, but the FSL_SOC symbol has been a growing problem
+due to hardware being shared between PPC and ARM SoCs.  Even though
+eLBC isn't found on ARM SoCs (the newer IFC is used instead), I don't
+want to expand the use of FSL_SOC for things other than functions
+exported by fsl_soc.c.  In particular, it would be odd to add it to
+MTD_NAND_FSL_ELBC and then remove it from MTD_NAND_FSL_IFC.
 
-Thanks,
-Gavin
+Removing artificial dependencies also helps get compile-test exposure
+via randconfig, allyesconfig, etc.
 
->-- 
->Andrew Donnellan              Software Engineer, OzLabs
->andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
->+61 2 6201 8874 (work)        IBM Australia Limited
+Reported-by: Brian Norris <computersforpeace@gmail.com>
+Cc: Brian Norris <computersforpeace@gmail.com>
+Signed-off-by: Scott Wood <oss@buserror.net>
+---
+ arch/powerpc/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index d500772..df42e09 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -774,7 +774,6 @@ config 4xx_SOC
+ 
+ config FSL_LBC
+ 	bool "Freescale Local Bus support"
+-	depends on FSL_SOC
+ 	help
+ 	  Enables reporting of errors from the Freescale local bus
+ 	  controller.  Also contains some common code used by
+-- 
+2.5.0
