@@ -1,23 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <duwe@lst.de>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9AD0C1A01EB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 20:36:40 +1100 (AEDT)
-Message-ID: <1457429794.31524.1.camel@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc/mm: Enable page parallel initialisation
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Li Zhang <zhlcindy@gmail.com>, akpm@linux-foundation.org,
- vbabka@suse.cz,  mgorman@techsingularity.net, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Li Zhang <zhlcindy@linux.vnet.ibm.com>
-Date: Tue, 08 Mar 2016 20:36:34 +1100
-In-Reply-To: <1457409354-10867-3-git-send-email-zhlcindy@gmail.com>
-References: <1457409354-10867-1-git-send-email-zhlcindy@gmail.com>
- <1457409354-10867-3-git-send-email-zhlcindy@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id F30F71A00BC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 21:46:02 +1100 (AEDT)
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8B210140BA7
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2016 21:46:01 +1100 (AEDT)
+Date: Tue, 8 Mar 2016 11:45:52 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, pmladek@suse.com, jeyu@redhat.com,
+ jkosina@suse.cz, jikos@kernel.org, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com,
+ live-patching@vger.kernel.org, mbenes@suse.cz
+Subject: Re: [v5][PATCH] livepatch/ppc: Enable livepatching on powerpc
+Message-ID: <20160308104552.GA16502@lst.de>
+References: <1457422437-3357-1-git-send-email-bsingharora@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1457422437-3357-1-git-send-email-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,56 +31,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Li,
+On Tue, Mar 08, 2016 at 06:33:57PM +1100, Balbir Singh wrote:
+> Changelog v5:
+> 	1. Removed the mini-stack frame created for klp_return_helper.
+> 	   As a result of the mini-stack frame, function with > 8
+> 	   arguments could not be patched
 
-On Tue, 2016-03-08 at 11:55 +0800, Li Zhang wrote:
+Did you get my previous mails? Those functions only require special
+care, the _can_ be patched. In general, writing replacement functions
+always requires attention!
 
-> From: Li Zhang <zhlcindy@linux.vnet.ibm.com>
->
-> Parallel initialisation has been enabled for X86, boot time is
-> improved greatly. On Power8, it is improved greatly for small
-> memory. Here is the result from my test on Power8 platform:
->
-> For 4GB memory: 57% is improved, boot time as the following:
-> with patch: 10s, without patch: 24.5s
+Have you *tested* this patch? Replacing a function in the kernel?
+Replacing a function in a module? For local calls? For global calls?
+I strongly doubt so because it does not work this way.
 
-This isn't worded quite right, and the numbers are a bit off.
+To be fair, my last mail still was not 100% correct, but the conclusion
+that the mini frame is not needed at all is invalid. Please leave it as it
+was, I'm working on a test / demonstrator for how to handle these.
 
-old = 24.5
-new = 10
+> +	 * Why do we need this?
+> +	 * After patching we need to return to a trampoline return function
+> +	 * that guarantees that we restore the TOC and return to the correct
+> +	 * caller back
+> +	 */
+> +	std	r2, 24(r1)	/* save TOC now, unconditionally. */
+> +	subf	r0, r2, r0	/* Calculate offset from current TOC */
+> +	stw	r0, 12(r1)	/* Of the final LR and save it in CR+4 */
+> +	bl	5f
+> +5:	mflr	r12
+> +	addi	r12, r12, (klp_return_helper + 4 - .)@l
+> +	std	r12, LRSAVE(r1)
+[...]
+> + * maybe inserting a klp_return_helper frame or not.
+> +*/
+> +klp_return_helper:
+> +	ld	r2, 24(r1)	/* restore TOC (saved by ftrace_caller) */
+> +	lwa	r0, 12(r1)	/* Load from CR+4, offset of LR w.r.t TOC */
+> +	add	r0, r0, r2	/* Add the offset to current TOC */
+> +	std	r0, LRSAVE(r1)	/* save the real return address */
+> +	mtlr	r0
+> +	blr
+> +#endif
 
-So the improvement is 14.5 (seconds).
+NAKed-by: Torsten Duwe <duwe@suse.de>
 
-That means the improvement (14.5) as a percentage of the original boot time is:
-
- = 14.5 / 24.5 * 100
- = 59.183673469387756
- = 59%
-
-So you would say:
-
-  For 4GB of memory, boot time is improved by 59%, from 24.5s to 10s.
-
-> For 50GB memory: 22% is improved, boot time as the following:
-> with patch: 43.8s, without patch: 56.8s
-
-  For 50GB memory, boot time is improved by 22%, from 56.8s to 43.8s.
-
-> Acked-by: Mel Gorman <mgorman@techsingularity.net>
-> Signed-off-by: Li Zhang <zhlcindy@linux.vnet.ibm.com>
-> ---
->  * Add boot time details in change log.
->  * Please apply this patch after [PATCH 1/2] mm: meminit: initialise
->     more memory for inode/dentry hash tables in early boot, because
->    [PATCH 1/2] is to fix a bug which can be reproduced on Power.
-
-Given that, I think it would be best if Andrew merged both of these patches.
-Because this patch is pretty trivial, whereas the patch to mm/ is less so.
-
-Is that OK Andrew?
-
-For this one:
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-
-cheers
+	Torsten
