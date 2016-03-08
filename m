@@ -1,25 +1,28 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <duwe@lst.de>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B87051A009D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 01:46:03 +1100 (AEDT)
-Received: by mail-pa0-x241.google.com with SMTP id hj7so1299614pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Mar 2016 06:46:03 -0800 (PST)
-Subject: Re: [PATCH 0/2] mm: Enable page parallel initialisation for Power
-To: Li Zhang <zhlcindy@gmail.com>, akpm@linux-foundation.org, vbabka@suse.cz,
- mgorman@techsingularity.net, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com
-References: <1457409354-10867-1-git-send-email-zhlcindy@gmail.com>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Li Zhang <zhlcindy@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <56DEE59F.7020602@gmail.com>
-Date: Wed, 9 Mar 2016 01:45:51 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9ECDA1A009D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 02:34:40 +1100 (AEDT)
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3731A140B99
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Mar 2016 02:34:39 +1100 (AEDT)
+Date: Tue, 8 Mar 2016 16:34:35 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, pmladek@suse.com, jeyu@redhat.com,
+ jkosina@suse.cz, jikos@kernel.org, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com,
+ live-patching@vger.kernel.org, mbenes@suse.cz
+Subject: Re: [v5][PATCH] livepatch/ppc: Enable livepatching on powerpc
+Message-ID: <20160308153435.GA23804@lst.de>
+References: <1457422437-3357-1-git-send-email-bsingharora@gmail.com>
+ <20160308104552.GA16502@lst.de> <56DED903.2000209@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1457409354-10867-1-git-send-email-zhlcindy@gmail.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <56DED903.2000209@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,72 +32,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Mar 09, 2016 at 12:52:03AM +1100, Balbir Singh wrote:
+> 
+> On 08/03/16 21:45, Torsten Duwe wrote:
+> > To be fair, my last mail still was not 100% correct, but the conclusion
 
+Wrote a correction to the correction. It should be clear now. Please nag me
+if it isn't clear why klp_return_helper and its stack frame is needed.
 
-On 08/03/16 14:55, Li Zhang wrote:
-> From: Li Zhang <zhlcindy@linux.vnet.ibm.com>
->
-> Uptream has supported page parallel initialisation for X86 and the
-> boot time is improved greately. Some tests have been done for Power.
->
-> Here is the result I have done with different memory size.
->
-> * 4GB memory:
->     boot time is as the following: 
->     with patch vs without patch: 10.4s vs 24.5s
->     boot time is improved 57%
-> * 200GB memory: 
->     boot time looks the same with and without patches.
->     boot time is about 38s
-> * 32TB memory: 
->     boot time looks the same with and without patches 
->     boot time is about 160s.
->     The boot time is much shorter than X86 with 24TB memory.
->     From community discussion, it costs about 694s for X86 24T system.
->
-> From code view, parallel initialisation improve the performance by
-> deferring memory initilisation to kswap with N kthreads, it should
-> improve the performance therotically. 
->
-> From the test result, On X86, performance is improved greatly with huge
-> memory. But on Power platform, it is improved greatly with less than 
-> 100GB memory. For huge memory, it is not improved greatly. But it saves 
-> the time with several threads at least, as the following information 
-> shows(32TB system log):
->
-> [   22.648169] node 9 initialised, 16607461 pages in 280ms
-> [   22.783772] node 3 initialised, 23937243 pages in 410ms
-> [   22.858877] node 6 initialised, 29179347 pages in 490ms
-> [   22.863252] node 2 initialised, 29179347 pages in 490ms
-> [   22.907545] node 0 initialised, 32049614 pages in 540ms
-> [   22.920891] node 15 initialised, 32212280 pages in 550ms
-> [   22.923236] node 4 initialised, 32306127 pages in 550ms
-> [   22.923384] node 12 initialised, 32314319 pages in 550ms
-> [   22.924754] node 8 initialised, 32314319 pages in 550ms
-> [   22.940780] node 13 initialised, 33353677 pages in 570ms
-> [   22.940796] node 11 initialised, 33353677 pages in 570ms
-> [   22.941700] node 5 initialised, 33353677 pages in 570ms
-> [   22.941721] node 10 initialised, 33353677 pages in 570ms
-> [   22.941876] node 7 initialised, 33353677 pages in 570ms
-> [   22.944946] node 14 initialised, 33353677 pages in 570ms
-> [   22.946063] node 1 initialised, 33345485 pages in 580ms
->
-> It saves the time about 550*16 ms at least, although it can be ignore to compare 
-> the boot time about 160 seconds. What's more, the boot time is much shorter 
-> on Power even without patches than x86 for huge memory machine. 
->
-> So this patchset is still necessary to be enabled for Power. 
->
->
+> > that the mini frame is not needed at all is invalid. Please leave it as it
+> > was, I'm working on a test / demonstrator for how to handle these.
+> Why, the magic will be in the patched function? Please share the test/demonstrator
 
-The patchset looks good, two questions
+Here it comes...
 
-1. The patchset is still necessary for
-    a. systems with smaller amount of RAM?
-    b. Theoretically it improves boot time?
-2. the pgdat->node_spanned_pages >> 8 sounds arbitrary
-    On a system with 2TB*16 nodes, it would initialize about 8GB before calling deferred init?
-    Don't we need at-least 32GB + space for other early hash allocations
-    BTW, My expectation was that 32TB would imply 32GB+32GB of large hash allocations early on
+> > NAKed-by: Torsten Duwe <duwe@suse.de>
+> Why? For using CR+4 or removing the frame? Or you believe there is a better way to
+> handle this that work, IOW what is broken?
 
-Balbir Singh.
+The stack frame removal. You're risking a memory access or jump into nirvana
+or and endless loop.
+
+klp_return_helper will do the right thing, and functions like e.g. printk
+I would live patch like this (untested :-) :
+
+------------------------8<----------------------
+#include <stdarg.h>
+
+/* compile using "-ffixed-r14"! */
+register unsigned long pass_TOC asm("r14");
+
+/*
+ * Function pre-prologue to pop the klp_return_helper
+ * mini stack frame. The saved r2 TOC value is read and
+ * passed in pass_TOC (r14), the original LR is passed
+ * in r0 and the LR itself. R12 is updated appropriately
+ * for local TOC recalculation.
+ */
+extern void caller(void) asm("printk");
+void caller(void)
+{
+  asm("ld %0,24(1)" : "=r" (pass_TOC));
+  asm("addi 1,1,32");
+  asm("addi 12,12,(real_printk-printk)@l");
+  asm("ld 0,16(1)\n\tmtlr 0");
+  asm("b real_printk");
+}
+
+extern int vprintk_default(const char *fmt, va_list args);
+
+extern int printk(const char *fmt, ...) asm("real_printk");
+int printk(const char *fmt, ...)
+{
+        va_list args;
+        int r;
+
+        va_start(args, fmt);
+
+        r = vprintk_default(fmt, args);
+
+        va_end(args);
+
+	asm("mr 2,%0" : : "r" (pass_TOC));
+        return r;
+}
+------------------------8<----------------------
+Signed-off-by: Torsten Duwe <duwe@suse.de>
+
+As you can see, the extra effort for args on the stack is limited.
+
+	Torsten
