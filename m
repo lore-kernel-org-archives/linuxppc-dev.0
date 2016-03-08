@@ -1,18 +1,19 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8025A1A011E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 14:09:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9DCF91A011E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 14:09:09 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
 	aik@ozlabs.ru,
 	benh@kernel.crashing.org
 Cc: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv2 02/25] powerpc/mm: Handle removing maybe-present bolted HPTEs
-Date: Tue,  8 Mar 2016 14:08:39 +1100
-Message-Id: <1457406542-6210-3-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFCv2 05/25] pseries: Add hypercall wrappers for hash page table
+ resizing
+Date: Tue,  8 Mar 2016 14:08:42 +1100
+Message-Id: <1457406542-6210-6-git-send-email-david@gibson.dropbear.id.au>
 In-Reply-To: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
 References: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,137 +25,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment the hpte_removebolted callback in ppc_md returns void and
-will BUG_ON() if the hpte it's asked to remove doesn't exist in the first
-place.  This is awkward for the case of cleaning up a mapping which was
-partially made before failing.
+This adds the hypercall numbers and wrapper functions for the hash page
+table resizing hypercalls.
 
-So, we add a return value to hpte_removebolted, and have it return ENOENT
-in the case that the HPTE to remove didn't exist in the first place.
+These are experimental "platform specific" values for now, until we have a
+formal PAPR update.
 
-In the (sole) caller, we propagate errors in hpte_removebolted to its
-caller to handle.  However, we handle ENOENT specially, continuing to
-complete the unmapping over the specified range before returning the error
-to the caller.
-
-This means that htab_remove_mapping() will work sanely on a partially
-present mapping, removing any HPTEs which are present, while also returning
-ENOENT to its caller in case it's important there.
-
-There are two callers of htab_remove_mapping():
-   - In remove_section_mapping() we already WARN_ON() any error return,
-     which is reasonable - in this case the mapping should be fully
-     present
-   - In vmemmap_remove_mapping() we BUG_ON() any error.  We change that to
-     just a WARN_ON() in the case of ENOENT, since failing to remove a
-     mapping that wasn't there in the first place probably shouldn't be
-     fatal.
+It also adds a new firmware feature flag to track the presence of the
+HPT resizing calls.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Reviewed-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/machdep.h    |  2 +-
- arch/powerpc/mm/hash_utils_64.c       | 15 ++++++++++++---
- arch/powerpc/mm/init_64.c             |  9 +++++----
- arch/powerpc/platforms/pseries/lpar.c |  9 ++++++---
- 4 files changed, 24 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/firmware.h       |  5 +++--
+ arch/powerpc/include/asm/hvcall.h         |  2 ++
+ arch/powerpc/include/asm/plpar_wrappers.h | 12 ++++++++++++
+ arch/powerpc/platforms/pseries/firmware.c |  1 +
+ 4 files changed, 18 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 3f191f5..fa25643 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -54,7 +54,7 @@ struct machdep_calls {
- 				       int psize, int apsize,
- 				       int ssize);
- 	long		(*hpte_remove)(unsigned long hpte_group);
--	void            (*hpte_removebolted)(unsigned long ea,
-+	int             (*hpte_removebolted)(unsigned long ea,
- 					     int psize, int ssize);
- 	void		(*flush_hash_range)(unsigned long number, int local);
- 	void		(*hugepage_invalidate)(unsigned long vsid,
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 9f7d727..99fbee0 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -269,6 +269,8 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
- {
- 	unsigned long vaddr;
- 	unsigned int step, shift;
-+	int rc;
-+	int ret = 0;
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index b062924..32435d2 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -42,7 +42,7 @@
+ #define FW_FEATURE_SPLPAR	ASM_CONST(0x0000000000100000)
+ #define FW_FEATURE_LPAR		ASM_CONST(0x0000000000400000)
+ #define FW_FEATURE_PS3_LV1	ASM_CONST(0x0000000000800000)
+-/* Free				ASM_CONST(0x0000000001000000) */
++#define FW_FEATURE_HPT_RESIZE	ASM_CONST(0x0000000001000000)
+ #define FW_FEATURE_CMO		ASM_CONST(0x0000000002000000)
+ #define FW_FEATURE_VPHN		ASM_CONST(0x0000000004000000)
+ #define FW_FEATURE_XCMO		ASM_CONST(0x0000000008000000)
+@@ -66,7 +66,8 @@ enum {
+ 		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
+ 		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
+ 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
+-		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
++		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
++		FW_FEATURE_HPT_RESIZE,
+ 	FW_FEATURE_PSERIES_ALWAYS = 0,
+ 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index e3b54dd..195e080 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -293,6 +293,8 @@
  
- 	shift = mmu_psize_defs[psize].shift;
- 	step = 1 << shift;
-@@ -276,10 +278,17 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
- 	if (!ppc_md.hpte_removebolted)
- 		return -ENODEV;
+ /* Platform specific hcalls, used by KVM */
+ #define H_RTAS			0xf000
++#define H_RESIZE_HPT_PREPARE	0xf003
++#define H_RESIZE_HPT_COMMIT	0xf004
  
--	for (vaddr = vstart; vaddr < vend; vaddr += step)
--		ppc_md.hpte_removebolted(vaddr, psize, ssize);
-+	for (vaddr = vstart; vaddr < vend; vaddr += step) {
-+		rc = ppc_md.hpte_removebolted(vaddr, psize, ssize);
-+		if (rc == -ENOENT) {
-+			ret = -ENOENT;
-+			continue;
-+		}
-+		if (rc < 0)
-+			return rc;
-+	}
- 
--	return 0;
-+	return ret;
+ /* "Platform specific hcalls", provided by PHYP */
+ #define H_GET_24X7_CATALOG_PAGE	0xF078
+diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+index 1b39424..b7ee6d9 100644
+--- a/arch/powerpc/include/asm/plpar_wrappers.h
++++ b/arch/powerpc/include/asm/plpar_wrappers.h
+@@ -242,6 +242,18 @@ static inline long plpar_pte_protect(unsigned long flags, unsigned long ptex,
+ 	return plpar_hcall_norets(H_PROTECT, flags, ptex, avpn);
  }
- #endif /* CONFIG_MEMORY_HOTPLUG */
  
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 379a6a9..baa1a23 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -232,10 +232,11 @@ static void __meminit vmemmap_create_mapping(unsigned long start,
- static void vmemmap_remove_mapping(unsigned long start,
- 				   unsigned long page_size)
- {
--	int mapped = htab_remove_mapping(start, start + page_size,
--					 mmu_vmemmap_psize,
--					 mmu_kernel_ssize);
--	BUG_ON(mapped < 0);
-+	int rc = htab_remove_mapping(start, start + page_size,
-+				     mmu_vmemmap_psize,
-+				     mmu_kernel_ssize);
-+	BUG_ON((rc < 0) && (rc != -ENOENT));
-+	WARN_ON(rc == -ENOENT);
- }
- #endif
- 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 477290a..2415a0d 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -505,8 +505,8 @@ static void pSeries_lpar_hugepage_invalidate(unsigned long vsid,
- }
- #endif
- 
--static void pSeries_lpar_hpte_removebolted(unsigned long ea,
--					   int psize, int ssize)
-+static int pSeries_lpar_hpte_removebolted(unsigned long ea,
-+					  int psize, int ssize)
- {
- 	unsigned long vpn;
- 	unsigned long slot, vsid;
-@@ -515,11 +515,14 @@ static void pSeries_lpar_hpte_removebolted(unsigned long ea,
- 	vpn = hpt_vpn(ea, vsid, ssize);
- 
- 	slot = pSeries_lpar_hpte_find(vpn, psize, ssize);
--	BUG_ON(slot == -1);
-+	if (slot == -1)
-+		return -ENOENT;
++static inline long plpar_resize_hpt_prepare(unsigned long flags,
++					    unsigned long shift)
++{
++	return plpar_hcall_norets(H_RESIZE_HPT_PREPARE, flags, shift);
++}
 +
- 	/*
- 	 * lpar doesn't use the passed actual page size
- 	 */
- 	pSeries_lpar_hpte_invalidate(slot, vpn, psize, 0, ssize, 0);
-+	return 0;
- }
++static inline long plpar_resize_hpt_commit(unsigned long flags,
++					   unsigned long shift)
++{
++	return plpar_hcall_norets(H_RESIZE_HPT_COMMIT, flags, shift);
++}
++
+ static inline long plpar_tce_get(unsigned long liobn, unsigned long ioba,
+ 		unsigned long *tce_ret)
+ {
+diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+index 8c80588..7b287be 100644
+--- a/arch/powerpc/platforms/pseries/firmware.c
++++ b/arch/powerpc/platforms/pseries/firmware.c
+@@ -63,6 +63,7 @@ hypertas_fw_features_table[] = {
+ 	{FW_FEATURE_VPHN,		"hcall-vphn"},
+ 	{FW_FEATURE_SET_MODE,		"hcall-set-mode"},
+ 	{FW_FEATURE_BEST_ENERGY,	"hcall-best-energy-1*"},
++	{FW_FEATURE_HPT_RESIZE,		"hcall-hpt-resize"},
+ };
  
- /*
+ /* Build up the firmware features bitmask using the contents of
 -- 
 2.5.0
