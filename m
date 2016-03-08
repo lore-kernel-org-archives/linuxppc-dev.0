@@ -2,14 +2,20 @@ Return-Path: <oss@buserror.net>
 Received: from host.buserror.net (host.buserror.net [209.198.135.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1F4571A009A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 10:30:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E0B511A009A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 10:37:29 +1100 (AEDT)
+Date: Tue, 8 Mar 2016 17:37:23 -0600
 From: Scott Wood <oss@buserror.net>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Scott Wood <oss@buserror.net>, Brian Norris <computersforpeace@gmail.com>
-Date: Tue,  8 Mar 2016 17:30:36 -0600
-Message-Id: <1457479836-31918-1-git-send-email-oss@buserror.net>
-Subject: [PATCH] powerpc/fsl: Remove FSL_SOC dependency from FSL_LBC
+To: Zhao Qiang <qiang.zhao@nxp.com>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, scottwood@freescale.com,
+ Priyanka.Jain@freescale.com, robh+dt@kernel.org
+Message-ID: <20160308233723.GA32122@home.buserror.net>
+References: <1452221215-12681-1-git-send-email-qiang.zhao@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1452221215-12681-1-git-send-email-qiang.zhao@nxp.com>
+Subject: Re: [1/3] TDM: Add maxim ds26522 document to bindings
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,39 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This dependency led to kconfig errors when MTD_NAND_FSL_ELBC was
-enabled, which selects FSL_LBC, in the absence of FSL_SOC, as reported
-in http://patchwork.ozlabs.org/patch/564405/
+On Fri, Jan 08, 2016 at 10:46:53AM +0800, Zhao Qiang wrote:
+> Add maxim ds26522 document to
+> Documentation/devicetree/bindings/tdm/maxim,ds26522.txt
+> 
+> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> Acked-by: Rob Herring <robh@kernel.org>
+> ---
+>  Documentation/devicetree/bindings/tdm/maxim,ds26522.txt | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/tdm/maxim,ds26522.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/tdm/maxim,ds26522.txt b/Documentation/devicetree/bindings/tdm/maxim,ds26522.txt
+> new file mode 100644
+> index 0000000..3548c51
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/tdm/maxim,ds26522.txt
+> @@ -0,0 +1,13 @@
+> +* Maxim (Dallas) DS26522 Octal T1/E1/J1 Transceiver
+> +
+> +Required properties:
+> +- compatible: Should contain "maxim,ds26522".
+> +- reg: SPI CS
+> +- spi-max-frequency: SPI bus max frequency.
+> +
+> +Example:
+> +	slic@2 {
+> +		compatible = "maxim,ds26522";
+> +		reg = <2>;
+> +		spi-max-frequency = <2000000>;
+> +	};
 
-It was originally suggested to add an FSL_SOC dependency to
-MTD_NAND_FSL_ELBC, but the FSL_SOC symbol has been a growing problem
-due to hardware being shared between PPC and ARM SoCs.  Even though
-eLBC isn't found on ARM SoCs (the newer IFC is used instead), I don't
-want to expand the use of FSL_SOC for things other than functions
-exported by fsl_soc.c.  In particular, it would be odd to add it to
-MTD_NAND_FSL_ELBC and then remove it from MTD_NAND_FSL_IFC.
+An almost identical file was added by you in commit
+a109752ea6a55c3682b6ac9114a125c5ce7e5353
 
-Removing artificial dependencies also helps get compile-test exposure
-via randconfig, allyesconfig, etc.
+There is also overlap in the later patches of this set.
 
-Reported-by: Brian Norris <computersforpeace@gmail.com>
-Cc: Brian Norris <computersforpeace@gmail.com>
-Signed-off-by: Scott Wood <oss@buserror.net>
----
- arch/powerpc/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
+Why did you send this again?  What tree are you basing your patches on?
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index d500772..df42e09 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -774,7 +774,6 @@ config 4xx_SOC
- 
- config FSL_LBC
- 	bool "Freescale Local Bus support"
--	depends on FSL_SOC
- 	help
- 	  Enables reporting of errors from the Freescale local bus
- 	  controller.  Also contains some common code used by
--- 
-2.5.0
+-Scott
