@@ -1,14 +1,19 @@
-Return-Path: <alessio.bogani@elettra.eu>
-Received: from elettra.eu (m1.elettra.trieste.it [140.105.206.201])
- by lists.ozlabs.org (Postfix) with ESMTP id CED081A011D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 18:59:16 +1100 (AEDT)
-From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-To: Scott Wood <oss@buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Alessio Igor Bogani <alessio.bogani@elettra.eu>
-Subject: [PATCH 1/1] powerpc/embedded6xx: Make reboot works on MVME5100
-Date: Tue,  8 Mar 2016 08:59:12 +0100
-Message-Id: <1457423952-13014-1-git-send-email-alessio.bogani@elettra.eu>
+Return-Path: <xuelin.shi@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0101.outbound.protection.outlook.com [65.55.169.101])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3AAAA1A0324
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 19:00:19 +1100 (AEDT)
+From: <xuelin.shi@nxp.com>
+To: <vinod.koul@intel.com>, <pku.leo@gmail.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <dmaengine@vger.kernel.org>, Xuelin Shi
+ <xuelin.shi@nxp.com>
+Subject: [PATCH] dmaengine:fsldma: fix memory leak
+Date: Tue, 8 Mar 2016 14:02:01 +0800
+Message-ID: <1457416921-29147-1-git-send-email-xuelin.shi@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,25 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The mtmsr() function hangs during restart. Make reboot works on
-MVME5100 removing that function call.
----
- arch/powerpc/platforms/embedded6xx/mvme5100.c | 2 --
- 1 file changed, 2 deletions(-)
+From: Xuelin Shi <xuelin.shi@nxp.com>
 
-diff --git a/arch/powerpc/platforms/embedded6xx/mvme5100.c b/arch/powerpc/platforms/embedded6xx/mvme5100.c
-index 8f65aa3..118cc33 100644
---- a/arch/powerpc/platforms/embedded6xx/mvme5100.c
-+++ b/arch/powerpc/platforms/embedded6xx/mvme5100.c
-@@ -179,9 +179,7 @@ static void mvme5100_show_cpuinfo(struct seq_file *m)
+adding unmap of sources and destinations while doing dequeue.
+
+Signed-off-by: Xuelin Shi <xuelin.shi@nxp.com>
+---
+ drivers/dma/fsldma.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 2209f75..aac85c3 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -522,6 +522,8 @@ static dma_cookie_t fsldma_run_tx_complete_actions(struct fsldma_chan *chan,
+ 			chan_dbg(chan, "LD %p callback\n", desc);
+ 			txd->callback(txd->callback_param);
+ 		}
++
++		dma_descriptor_unmap(txd);
+ 	}
  
- static void mvme5100_restart(char *cmd)
- {
--
- 	local_irq_disable();
--	mtmsr(mfmsr() | MSR_IP);
- 
- 	out_8((u_char *) restart, 0x01);
- 
+ 	/* Run any dependencies */
 -- 
-2.7.2
+1.8.4
