@@ -1,8 +1,8 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 59AED1A01EA
+ by lists.ozlabs.org (Postfix) with ESMTPS id 835591A011E
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 14:09:08 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
@@ -10,10 +10,10 @@ To: paulus@samba.org,
 	benh@kernel.crashing.org
 Cc: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv2 04/25] powerpc/mm: Split hash page table sizing heuristic into
- a helper
-Date: Tue,  8 Mar 2016 14:08:41 +1100
-Message-Id: <1457406542-6210-5-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFCv2 08/25] pseries: Automatically resize HPT for memory hot
+ add/remove
+Date: Tue,  8 Mar 2016 14:08:45 +1100
+Message-Id: <1457406542-6210-9-git-send-email-david@gibson.dropbear.id.au>
 In-Reply-To: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
 References: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,86 +25,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-htab_get_table_size() either retrieve the size of the hash page table (HPT)
-from the device tree - if the HPT size is determined by firmware - or
-uses a heuristic to determine a good size based on RAM size if the kernel
-is responsible for allocating the HPT.
+We've now implemented code in the pseries platform to use the new PAPR
+interface to allow resizing the hash page table (HPT) at runtime.
 
-To support a PAPR extension allowing resizing of the HPT, we're going to
-want the memory size -> HPT size logic elsewhere, so split it out into a
-helper function.
+This patch uses that interface to automatically attempt to resize the HPT
+when memory is hot added or removed.  This tries to always keep the HPT at
+a reasonable size for our current memory size.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Reviewed-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/mmu-hash64.h |  3 +++
- arch/powerpc/mm/hash_utils_64.c       | 32 +++++++++++++++++++-------------
- 2 files changed, 22 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/sparsemem.h |  1 +
+ arch/powerpc/mm/hash_utils_64.c      | 29 +++++++++++++++++++++++++++++
+ arch/powerpc/mm/mem.c                |  4 ++++
+ 3 files changed, 34 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 7352d3f..cf070fd 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -607,6 +607,9 @@ static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
- 	context = (MAX_USER_CONTEXT) + ((ea >> 60) - 0xc) + 1;
- 	return get_vsid(context, ea, ssize);
- }
-+
-+unsigned htab_shift_for_mem_size(unsigned long mem_size);
-+
- #endif /* __ASSEMBLY__ */
+diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
+index f6fc0ee..737335c 100644
+--- a/arch/powerpc/include/asm/sparsemem.h
++++ b/arch/powerpc/include/asm/sparsemem.h
+@@ -16,6 +16,7 @@
+ #endif /* CONFIG_SPARSEMEM */
  
- #endif /* _ASM_POWERPC_MMU_HASH64_H_ */
+ #ifdef CONFIG_MEMORY_HOTPLUG
++extern void resize_hpt_for_hotplug(unsigned long new_mem_size);
+ extern int create_section_mapping(unsigned long start, unsigned long end);
+ extern int remove_section_mapping(unsigned long start, unsigned long end);
+ #ifdef CONFIG_NUMA
 diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index fdcf9d1..da5d279 100644
+index 0809bea..6fbc27a 100644
 --- a/arch/powerpc/mm/hash_utils_64.c
 +++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -611,10 +611,26 @@ static int __init htab_dt_scan_pftsize(unsigned long node,
- 	return 0;
- }
- 
--static unsigned long __init htab_get_table_size(void)
-+unsigned htab_shift_for_mem_size(unsigned long mem_size)
- {
--	unsigned long mem_size, rnd_mem_size, pteg_count, psize;
-+	unsigned memshift = __ilog2(mem_size);
-+	unsigned pshift = mmu_psize_defs[mmu_virtual_psize].shift;
-+	unsigned pteg_shift;
-+
-+	/* round mem_size up to next power of 2 */
-+	if ((1UL << memshift) < mem_size)
-+		memshift += 1;
-+
-+	/* aim for 2 pages / pteg */
-+	pteg_shift = memshift - (pshift + 1);
-+
-+	/* 2^11 PTEGS / 2^18 bytes is the minimum htab size permitted
-+	 * by the architecture */
-+	return max(pteg_shift + 7, 18U);
-+}
- 
-+static unsigned long __init htab_get_table_size(void)
-+{
- 	/* If hash size isn't already provided by the platform, we try to
- 	 * retrieve it from the device-tree. If it's not there neither, we
- 	 * calculate it now based on the total RAM size
-@@ -624,17 +640,7 @@ static unsigned long __init htab_get_table_size(void)
- 	if (ppc64_pft_size)
- 		return 1UL << ppc64_pft_size;
- 
--	/* round mem_size up to next power of 2 */
--	mem_size = memblock_phys_mem_size();
--	rnd_mem_size = 1UL << __ilog2(mem_size);
--	if (rnd_mem_size < mem_size)
--		rnd_mem_size <<= 1;
--
--	/* # pages / 2 */
--	psize = mmu_psize_defs[mmu_virtual_psize].shift;
--	pteg_count = max(rnd_mem_size >> (psize + 1), 1UL << 11);
--
--	return pteg_count << 7;
-+	return 1UL << htab_shift_for_mem_size(memblock_phys_mem_size());
+@@ -645,6 +645,35 @@ static unsigned long __init htab_get_table_size(void)
  }
  
  #ifdef CONFIG_MEMORY_HOTPLUG
++void resize_hpt_for_hotplug(unsigned long new_mem_size)
++{
++	unsigned target_hpt_shift;
++
++	if (!ppc_md.resize_hpt)
++		return;
++
++	target_hpt_shift = htab_shift_for_mem_size(new_mem_size);
++
++	/*
++	 * To avoid lots of HPT resizes if memory size is fluctuating
++	 * across a boundary, we deliberately have some hysterisis
++	 * here: we immediately increase the HPT size if the target
++	 * shift exceeds the current shift, but we won't attempt to
++	 * reduce unless the target shift is at least 2 below the
++	 * current shift
++	 */
++	if ((target_hpt_shift > ppc64_pft_size)
++	    || (target_hpt_shift < (ppc64_pft_size - 1))) {
++		int rc;
++
++		rc = ppc_md.resize_hpt(target_hpt_shift);
++		if (rc)
++			printk(KERN_WARNING
++			       "Unable to resize hash page table to target order %d: %d\n",
++			       target_hpt_shift, rc);
++	}
++}
++
+ int create_section_mapping(unsigned long start, unsigned long end)
+ {
+ 	int rc = htab_bolt_mapping(start, end, __pa(start),
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index f980da6..4938ee7 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -121,6 +121,8 @@ int arch_add_memory(int nid, u64 start, u64 size, bool for_device)
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
+ 	int rc;
+ 
++	resize_hpt_for_hotplug(memblock_phys_mem_size());
++
+ 	pgdata = NODE_DATA(nid);
+ 
+ 	start = (unsigned long)__va(start);
+@@ -161,6 +163,8 @@ int arch_remove_memory(u64 start, u64 size)
+ 	 */
+ 	vm_unmap_aliases();
+ 
++	resize_hpt_for_hotplug(memblock_phys_mem_size());
++
+ 	return ret;
+ }
+ #endif
 -- 
 2.5.0
