@@ -1,45 +1,26 @@
-Return-Path: <mrochs@us.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0BF7D1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 15:06:35 +1100 (AEDT)
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5E42B1409C4
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2016 15:06:34 +1100 (AEDT)
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mrochs@us.ibm.com>;
- Mon, 7 Mar 2016 21:06:32 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id D88011FF0023
- for <linuxppc-dev@ozlabs.org>; Mon,  7 Mar 2016 20:54:39 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2846Usl35193004
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Mar 2016 21:06:30 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2846T0k014606
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Mar 2016 21:06:30 -0700
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
-Subject: Re: [PATCH v3 1/2] cxl: Add mechanism for delivering AFU driver
- specific events
-From: Matt Ochs <mrochs@us.ibm.com>
-In-Reply-To: <1457401715-26435-1-git-send-email-imunsie@au.ibm.com>
-Date: Mon, 7 Mar 2016 22:06:28 -0600
-Cc: Michael Ellerman <michaele@au1.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Manoj Kumar <kumarmn@us.ibm.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Neuling <mikey@neuling.org>
-Message-Id: <11B46653-99D3-4BF5-8F09-B14A9C0E06ED@us.ibm.com>
-References: <1457401715-26435-1-git-send-email-imunsie@au.ibm.com>
-To: Ian Munsie <imunsie@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EE9841A01EA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 16:10:53 +1100 (AEDT)
+Date: Tue, 8 Mar 2016 15:55:08 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH kernel 6/9] KVM: PPC: Associate IOMMU group with guest
+ view of TCE table
+Message-ID: <20160308045508.GY22546@voom.fritz.box>
+References: <1457322077-26640-1-git-send-email-aik@ozlabs.ru>
+ <1457322077-26640-7-git-send-email-aik@ozlabs.ru>
+ <20160307062523.GN22546@voom.fritz.box>
+ <56DD4C05.4060109@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="apSYfA7d5AHMku3c"
+In-Reply-To: <56DD4C05.4060109@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,34 +30,313 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Mar 7, 2016, at 7:48 PM, Ian Munsie <imunsie@au1.ibm.com> wrote:
-> 
-> From: Ian Munsie <imunsie@au1.ibm.com>
-> 
-> This adds an afu_driver_ops structure with event_pending and
-> deliver_event callbacks. An AFU driver such as cxlflash can fill these
-> out and associate it with a context to enable passing custom AFU
-> specific events to userspace.
-> 
-> The cxl driver will call event_pending() during poll, select, read, etc.
-> calls to check if an AFU driver specific event is pending, and will call
-> deliver_event() to deliver that event. This way, the cxl driver takes
-> care of all the usual locking semantics around these calls and handles
-> all the generic cxl events, so that the AFU driver only needs to worry
-> about it's own events.
-> 
-> The deliver_event() call is passed a struct cxl_event buffer to fill in.
-> The header will already be filled in for an AFU driver event, and the
-> AFU driver is expected to expand the header.size as necessary (up to
-> max_size, defined by struct cxl_event_afu_driver_reserved) and fill out
-> it's own information.
-> 
-> Since AFU drivers provide their own means for userspace to obtain the
-> AFU file descriptor (i.e. cxlflash uses an ioctl on their scsi file
-> descriptor to obtain the AFU file descriptor) and the generic cxl driver
-> will never use this event, the ABI of the event is up to each individual
-> AFU driver.
-> 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 
-Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+--apSYfA7d5AHMku3c
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Mar 07, 2016 at 08:38:13PM +1100, Alexey Kardashevskiy wrote:
+> On 03/07/2016 05:25 PM, David Gibson wrote:
+> >On Mon, Mar 07, 2016 at 02:41:14PM +1100, Alexey Kardashevskiy wrote:
+> >>The existing in-kernel TCE table for emulated devices contains
+> >>guest physical addresses which are accesses by emulated devices.
+> >>Since we need to keep this information for VFIO devices too
+> >>in order to implement H_GET_TCE, we are reusing it.
+> >>
+> >>This adds IOMMU group list to kvmppc_spapr_tce_table. Each group
+> >>will have an iommu_table pointer.
+> >>
+> >>This adds kvm_spapr_tce_attach_iommu_group() helper and its detach
+> >>counterpart to manage the lists.
+> >>
+> >>This puts a group when:
+> >>- guest copy of TCE table is destroyed when TCE table fd is closed;
+> >>- kvm_spapr_tce_detach_iommu_group() is called from
+> >>the KVM_DEV_VFIO_GROUP_DEL ioctl handler in the case vfio-pci hotunplug
+> >>(will be added in the following patch).
+> >>
+> >>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >>---
+> >>  arch/powerpc/include/asm/kvm_host.h |   8 +++
+> >>  arch/powerpc/include/asm/kvm_ppc.h  |   6 ++
+> >>  arch/powerpc/kvm/book3s_64_vio.c    | 108 +++++++++++++++++++++++++++=
++++++++++
+> >>  3 files changed, 122 insertions(+)
+> >>
+> >>diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include=
+/asm/kvm_host.h
+> >>index 2e7c791..2c5c823 100644
+> >>--- a/arch/powerpc/include/asm/kvm_host.h
+> >>+++ b/arch/powerpc/include/asm/kvm_host.h
+> >>@@ -178,6 +178,13 @@ struct kvmppc_pginfo {
+> >>  	atomic_t refcnt;
+> >>  };
+> >>
+> >>+struct kvmppc_spapr_tce_group {
+> >>+	struct list_head next;
+> >>+	struct rcu_head rcu;
+> >>+	struct iommu_group *refgrp;/* for reference counting only */
+> >>+	struct iommu_table *tbl;
+> >>+};
+> >>+
+> >>  struct kvmppc_spapr_tce_table {
+> >>  	struct list_head list;
+> >>  	struct kvm *kvm;
+> >>@@ -186,6 +193,7 @@ struct kvmppc_spapr_tce_table {
+> >>  	u32 page_shift;
+> >>  	u64 offset;		/* in pages */
+> >>  	u64 size;		/* window size in pages */
+> >>+	struct list_head groups;
+> >>  	struct page *pages[0];
+> >>  };
+> >>
+> >>diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/=
+asm/kvm_ppc.h
+> >>index 2544eda..d1482dc 100644
+> >>--- a/arch/powerpc/include/asm/kvm_ppc.h
+> >>+++ b/arch/powerpc/include/asm/kvm_ppc.h
+> >>@@ -164,6 +164,12 @@ extern void kvmppc_map_vrma(struct kvm_vcpu *vcpu,
+> >>  			struct kvm_memory_slot *memslot, unsigned long porder);
+> >>  extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
+> >>
+> >>+extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm,
+> >>+				unsigned long liobn,
+> >>+				phys_addr_t start_addr,
+> >>+				struct iommu_group *grp);
+> >>+extern void kvm_spapr_tce_detach_iommu_group(struct kvm *kvm,
+> >>+				struct iommu_group *grp);
+> >>  extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+> >>  				struct kvm_create_spapr_tce_64 *args);
+> >>  extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
+> >>diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s=
+_64_vio.c
+> >>index 2c2d103..846d16d 100644
+> >>--- a/arch/powerpc/kvm/book3s_64_vio.c
+> >>+++ b/arch/powerpc/kvm/book3s_64_vio.c
+> >>@@ -27,6 +27,7 @@
+> >>  #include <linux/hugetlb.h>
+> >>  #include <linux/list.h>
+> >>  #include <linux/anon_inodes.h>
+> >>+#include <linux/iommu.h>
+> >>
+> >>  #include <asm/tlbflush.h>
+> >>  #include <asm/kvm_ppc.h>
+> >>@@ -95,10 +96,18 @@ static void release_spapr_tce_table(struct rcu_head=
+ *head)
+> >>  	struct kvmppc_spapr_tce_table *stt =3D container_of(head,
+> >>  			struct kvmppc_spapr_tce_table, rcu);
+> >>  	unsigned long i, npages =3D kvmppc_tce_pages(stt->size);
+> >>+	struct kvmppc_spapr_tce_group *kg;
+> >>
+> >>  	for (i =3D 0; i < npages; i++)
+> >>  		__free_page(stt->pages[i]);
+> >>
+> >>+	while (!list_empty(&stt->groups)) {
+> >>+		kg =3D list_first_entry(&stt->groups,
+> >>+				struct kvmppc_spapr_tce_group, next);
+> >>+		list_del(&kg->next);
+> >>+		kfree(kg);
+> >>+	}
+> >>+
+> >>  	kfree(stt);
+> >>  }
+> >>
+> >>@@ -129,9 +138,15 @@ static int kvm_spapr_tce_mmap(struct file *file, s=
+truct vm_area_struct *vma)
+> >>  static int kvm_spapr_tce_release(struct inode *inode, struct file *fi=
+lp)
+> >>  {
+> >>  	struct kvmppc_spapr_tce_table *stt =3D filp->private_data;
+> >>+	struct kvmppc_spapr_tce_group *kg;
+> >>
+> >>  	list_del_rcu(&stt->list);
+> >>
+> >>+	list_for_each_entry_rcu(kg, &stt->groups, next)	{
+> >>+		iommu_group_put(kg->refgrp);
+> >>+		kg->refgrp =3D NULL;
+> >>+	}
+> >
+> >What's the reason for this kind of two-phase deletion?  Dereffing the
+> >group here, and setting to NULL, then actually removing from the liast a=
+bove.
+>=20
+> Well, this way I have only one RCU-delayed release_spapr_tce_table(). The
+> other option would be to call for each @kg:
+> - list_del(&kg->next);
+> - call_rcu()
+>=20
+> as release_spapr_tce_table() won't be able to delete them - they are not =
+in
+> the list anymore.
+
+Ah, ok, that makes sense.
+
+> I suppose I can reuse kvm_spapr_tce_put_group(), this looks inaccurate...
+>=20
+>=20
+>=20
+> >
+> >>  	kvm_put_kvm(stt->kvm);
+> >>
+> >>  	kvmppc_account_memlimit(
+> >>@@ -146,6 +161,98 @@ static const struct file_operations kvm_spapr_tce_=
+fops =3D {
+> >>  	.release	=3D kvm_spapr_tce_release,
+> >>  };
+> >>
+> >>+extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm,
+> >>+				unsigned long liobn,
+> >>+				phys_addr_t start_addr,
+> >>+				struct iommu_group *grp)
+> >>+{
+> >>+	struct kvmppc_spapr_tce_table *stt =3D NULL;
+> >>+	struct iommu_table_group *table_group;
+> >>+	long i;
+> >>+	bool found =3D false;
+> >>+	struct kvmppc_spapr_tce_group *kg;
+> >>+	struct iommu_table *tbltmp;
+> >>+
+> >>+	/* Check this LIOBN hasn't been previously allocated */
+> >
+> >This comment does not appear to be correct.
+> >
+> >>+	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list) {
+> >>+		if (stt->liobn =3D=3D liobn) {
+> >>+			if ((stt->offset << stt->page_shift) !=3D start_addr)
+> >>+				return -EINVAL;
+> >>+
+> >>+			found =3D true;
+> >>+			break;
+> >>+		}
+> >>+	}
+> >>+
+> >>+	if (!found)
+> >>+		return -ENODEV;
+> >>+
+> >>+	/* Find IOMMU group and table at @start_addr */
+> >>+	table_group =3D iommu_group_get_iommudata(grp);
+> >>+	if (!table_group)
+> >>+		return -EFAULT;
+> >>+
+> >>+	tbltmp =3D NULL;
+> >>+	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
+> >>+		struct iommu_table *tbl =3D table_group->tables[i];
+> >>+
+> >>+		if (!tbl)
+> >>+			continue;
+> >>+
+> >>+		if ((tbl->it_page_shift =3D=3D stt->page_shift) &&
+> >>+				(tbl->it_offset =3D=3D stt->offset)) {
+> >>+			tbltmp =3D tbl;
+> >>+			break;
+> >>+		}
+> >>+	}
+> >>+	if (!tbltmp)
+> >>+		return -ENODEV;
+> >>+
+> >>+	list_for_each_entry_rcu(kg, &stt->groups, next) {
+> >>+		if (kg->refgrp =3D=3D grp)
+> >>+			return -EBUSY;
+> >>+	}
+> >>+
+> >>+	kg =3D kzalloc(sizeof(*kg), GFP_KERNEL);
+> >>+	kg->refgrp =3D grp;
+> >>+	kg->tbl =3D tbltmp;
+> >>+	list_add_rcu(&kg->next, &stt->groups);
+> >>+
+> >>+	return 0;
+> >>+}
+> >>+
+> >>+static void kvm_spapr_tce_put_group(struct rcu_head *head)
+> >>+{
+> >>+	struct kvmppc_spapr_tce_group *kg =3D container_of(head,
+> >>+			struct kvmppc_spapr_tce_group, rcu);
+> >>+
+> >>+	iommu_group_put(kg->refgrp);
+> >>+	kg->refgrp =3D NULL;
+> >>+	kfree(kg);
+> >>+}
+> >>+
+> >>+extern void kvm_spapr_tce_detach_iommu_group(struct kvm *kvm,
+> >>+				struct iommu_group *grp)
+> >
+> >Hrm.  attach takes an explicit liobn, but this one iterates over all
+> >liobns.  Why the asymmetry?
+>=20
+>=20
+> For attach(), LIOBN is specified in an additional (to VFIO KVM device's "=
+add
+> group") ioctl(). There is no need for "detach" ioctl() as we only want th=
+is
+> detach() to happen when a group is removed from a container, and in this
+> case the usual KVM_DEV_VFIO_GROUP_DEL is good enough hint that we need to
+> detach LIOBN. Since _DEL does not take LIOBN, here I have a loop.
+>=20
+> I'll put this in the commit log next time.
+>=20
+>=20
+> >
+> >>+{
+> >>+	struct kvmppc_spapr_tce_table *stt;
+> >>+	struct iommu_table_group *table_group;
+> >>+	struct kvmppc_spapr_tce_group *kg;
+> >>+
+> >>+	table_group =3D iommu_group_get_iommudata(grp);
+> >>+	if (!table_group)
+> >>+		return;
+> >>+
+> >>+	list_for_each_entry_rcu(stt, &kvm->arch.spapr_tce_tables, list) {
+> >>+		list_for_each_entry_rcu(kg, &stt->groups, next) {
+> >>+			if (kg->refgrp =3D=3D grp) {
+> >>+				list_del_rcu(&kg->next);
+> >>+				call_rcu(&kg->rcu, kvm_spapr_tce_put_group);
+> >>+				break;
+> >>+			}
+> >>+		}
+> >>+	}
+> >>+}
+> >>+
+> >>  long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+> >>  				   struct kvm_create_spapr_tce_64 *args)
+> >>  {
+> >>@@ -181,6 +288,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+> >>  	stt->offset =3D args->offset;
+> >>  	stt->size =3D size;
+> >>  	stt->kvm =3D kvm;
+> >>+	INIT_LIST_HEAD_RCU(&stt->groups);
+> >>
+> >>  	for (i =3D 0; i < npages; i++) {
+> >>  		stt->pages[i] =3D alloc_page(GFP_KERNEL | __GFP_ZERO);
+> >
+>=20
+>=20
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--apSYfA7d5AHMku3c
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJW3lsrAAoJEGw4ysog2bOSW5YP/3CBH6/utnsxIBDnvKUO1EZS
+0aywypk/mA+pMOwa25o/PCWz/UiDsxR0LacqHydI6enYosfCUicJVsjf4khi4qos
+mofPGDKs4rOzVT8F47BHiMYF8kVj9Ev4vpx9GMjceM8GIeMyuSUp6RymtajkTmN4
+fvIGXvg5m7AwJCTHgH2qXY/uYdbc426zMKz3VNz4YYgjYESgbttQaU5vF8cdGMQm
+X13sxWqJwNXm69ooiKtdGN+LsVVv03em6CKQEClEyxG64/wHWgUl1eSsWcM/THU6
+AxwgFo0A2fiIh2ldGgbUCyuAzOVDK1Sebkpw9RE0DnY1SaOOjPkfodywDTgeOvvA
+U4UBW8f8Vs+h2EkqY8q5SZSmh09nn9KNwsAhDWPi/MrLv1Q8Wa8t8UTEQYPFSjt8
+M6lnofeJWso7xVdVRgT8mr8GuEYMAYb1YCKX8ZDTXzfnN9G6w8zlJ0nPzlGUpAPD
+yuhC4W+4yXPR6LDYZymmELdHBN72wPhHrcUFlHzZ1hJ1G3ufRLYP7nrXCtrg79ry
+km7qqZgKFnFxg4FysaACK30J2J0hHYlGcuZ43eoB9vaTY16rL/kWjPS7sgfLf9vi
+BSdnSGlIk1tLMYE0H6+a6GazZe902u7b4fztiDUpsypd3oo+l504JfCOK2ZHH3W+
+m/VccSXZzTNaGD64LsVr
+=l6CG
+-----END PGP SIGNATURE-----
+
+--apSYfA7d5AHMku3c--
