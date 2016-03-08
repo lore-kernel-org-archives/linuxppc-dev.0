@@ -1,8 +1,8 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 825641A011D
+ by lists.ozlabs.org (Postfix) with ESMTPS id CB96A1A01EA
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 14:09:11 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
@@ -10,9 +10,9 @@ To: paulus@samba.org,
 	benh@kernel.crashing.org
 Cc: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv2 14/25] powerpc/kvm: Split HPT allocation from activation
-Date: Tue,  8 Mar 2016 14:08:51 +1100
-Message-Id: <1457406542-6210-15-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFCv2 11/25] powerpc/kvm: Rename kvm_alloc_hpt() for clarity
+Date: Tue,  8 Mar 2016 14:08:48 +1100
+Message-Id: <1457406542-6210-12-git-send-email-david@gibson.dropbear.id.au>
 In-Reply-To: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
 References: <1457406542-6210-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,255 +24,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, kvmppc_alloc_hpt() both allocates a new hashed page table (HPT)
-and sets it up as the active page table for a VM.  For the upcoming HPT
-resize implementation we're going to want to allocate HPTs separately from
-activating them.
+The difference between kvm_alloc_hpt() and kvmppc_alloc_hpt() is not at
+all obvious from the name.  In practice kvmppc_alloc_hpt() allocates an HPT
+by whatever means, and clals kvm_alloc_hpt() which will attempt to allocate
+it with CMA only.
 
-So, split the allocation itself out into kvmppc_allocate_hpt() and perform
-the activation with a new kvmppc_set_hpt() function.  Likewise we split
-kvmppc_free_hpt(), which just frees the HPT, from kvmppc_release_hpt()
-which unsets it as an active HPT, then frees it.
-
-We also move the logic to fall back to smaller HPT sizes if the first try
-fails into the single caller which used that behaviour,
-kvmppc_hv_setup_htab_rma().  This introduces a slight semantic change, in
-that previously if the initial attempt at CMA allocation faile, we would
-fall back to attempting smaller sizes with the page allocator.  Now, we
-try first CMA, then the page allocator at each size.  As far as I can tell
-this change should be harmless.
-
-To match, we make kvmppc_free_hpt() just free the actual HPT itself.  The
-call to kvmppc_free_lpid() that was there, we move to the single caller.
+To make this less confusing, rename kvm_alloc_hpt() to kvm_alloc_hpt_cma().
+Similarly, kvm_release_hpt() is renamed kvm_free_hpt_cma().
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-
-# Conflicts:
-#	arch/powerpc/kvm/book3s_64_mmu_hv.c
 ---
- arch/powerpc/include/asm/kvm_book3s_64.h |  3 ++
- arch/powerpc/include/asm/kvm_ppc.h       |  5 +-
- arch/powerpc/kvm/book3s_64_mmu_hv.c      | 89 ++++++++++++++++----------------
- arch/powerpc/kvm/book3s_hv.c             | 18 +++++--
- 4 files changed, 65 insertions(+), 50 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h   | 4 ++--
+ arch/powerpc/kvm/book3s_64_mmu_hv.c  | 8 ++++----
+ arch/powerpc/kvm/book3s_hv_builtin.c | 8 ++++----
+ 3 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 75b2dee..f1b832c 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -20,6 +20,9 @@
- #ifndef __ASM_KVM_BOOK3S_64_H__
- #define __ASM_KVM_BOOK3S_64_H__
- 
-+/* Power architecture requires HPT is at least 256kB */
-+#define PPC_MIN_HPT_ORDER	18
-+
- #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- static inline struct kvmppc_book3s_shadow_vcpu *svcpu_get(struct kvm_vcpu *vcpu)
- {
 diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index f25947a..f77d0a0 100644
+index 2241d53..f25947a 100644
 --- a/arch/powerpc/include/asm/kvm_ppc.h
 +++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -155,9 +155,10 @@ extern void kvmppc_core_destroy_mmu(struct kvm_vcpu *vcpu);
- extern int kvmppc_kvm_pv(struct kvm_vcpu *vcpu);
- extern void kvmppc_map_magic(struct kvm_vcpu *vcpu);
- 
--extern long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp);
-+extern int kvmppc_allocate_hpt(struct kvm_hpt_info *info, u32 order);
-+extern void kvmppc_set_hpt(struct kvm *kvm, struct kvm_hpt_info *info);
- extern long kvmppc_alloc_reset_hpt(struct kvm *kvm, u32 *htab_orderp);
--extern void kvmppc_free_hpt(struct kvm *kvm);
-+extern void kvmppc_free_hpt(struct kvm_hpt_info *info);
- extern long kvmppc_prepare_vrma(struct kvm *kvm,
- 				struct kvm_userspace_memory_region *mem);
- extern void kvmppc_map_vrma(struct kvm_vcpu *vcpu,
+@@ -170,8 +170,8 @@ extern long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 			     unsigned long ioba, unsigned long tce);
+ extern long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 			     unsigned long ioba);
+-extern struct page *kvm_alloc_hpt(unsigned long nr_pages);
+-extern void kvm_release_hpt(struct page *page, unsigned long nr_pages);
++extern struct page *kvm_alloc_hpt_cma(unsigned long nr_pages);
++extern void kvm_free_hpt_cma(struct page *page, unsigned long nr_pages);
+ extern int kvmppc_core_init_vm(struct kvm *kvm);
+ extern void kvmppc_core_destroy_vm(struct kvm *kvm);
+ extern void kvmppc_core_free_memslot(struct kvm *kvm,
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 679c292..eb1aa3a 100644
+index fb37290..157285b0 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -40,74 +40,69 @@
+@@ -62,7 +62,7 @@ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
+ 	}
  
- #include "trace_hv.h"
- 
--/* Power architecture requires HPT is at least 256kB */
--#define PPC_MIN_HPT_ORDER	18
--
- static long kvmppc_virtmode_do_h_enter(struct kvm *kvm, unsigned long flags,
- 				long pte_index, unsigned long pteh,
- 				unsigned long ptel, unsigned long *pte_idx_ret);
- static void kvmppc_rmap_reset(struct kvm *kvm);
- 
--long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
-+int kvmppc_allocate_hpt(struct kvm_hpt_info *info, u32 order)
- {
--	unsigned long hpt = 0;
--	struct revmap_entry *rev;
-+	unsigned long hpt;
-+	int cma;
- 	struct page *page = NULL;
--	long order = KVM_DEFAULT_HPT_ORDER;
--
--	if (htab_orderp) {
--		order = *htab_orderp;
--		if (order < PPC_MIN_HPT_ORDER)
--			order = PPC_MIN_HPT_ORDER;
--	}
-+	struct revmap_entry *rev;
-+	unsigned long npte;
- 
--	kvm->arch.hpt.cma = 0;
-+	hpt = 0;
-+	cma = 0;
- 	page = kvm_alloc_hpt_cma(1ul << (order - PAGE_SHIFT));
+ 	kvm->arch.hpt_cma_alloc = 0;
+-	page = kvm_alloc_hpt(1ul << (order - PAGE_SHIFT));
++	page = kvm_alloc_hpt_cma(1ul << (order - PAGE_SHIFT));
  	if (page) {
  		hpt = (unsigned long)pfn_to_kaddr(page_to_pfn(page));
  		memset((void *)hpt, 0, (1ul << order));
--		kvm->arch.hpt.cma = 1;
-+		cma = 1;
- 	}
- 
--	/* Lastly try successively smaller sizes from the page allocator */
--	/* Only do this if userspace didn't specify a size via ioctl */
--	while (!hpt && order > PPC_MIN_HPT_ORDER && !htab_orderp) {
--		hpt = __get_free_pages(GFP_KERNEL|__GFP_ZERO|__GFP_REPEAT|
--				       __GFP_NOWARN, order - PAGE_SHIFT);
--		if (!hpt)
--			--order;
--	}
-+	if (!hpt)
-+		hpt = __get_free_pages(GFP_KERNEL|__GFP_ZERO|__GFP_REPEAT
-+				       |__GFP_NOWARN, order - PAGE_SHIFT);
- 
- 	if (!hpt)
- 		return -ENOMEM;
- 
--	kvm->arch.hpt.virt = hpt;
--	kvm->arch.hpt.order = order;
-+	/* HPTEs are 2**4 bytes long */
-+	npte = 1ul << (order - 4);
- 
- 	/* Allocate reverse map array */
--	rev = vmalloc(sizeof(struct revmap_entry) * kvmppc_hpt_npte(&kvm->arch.hpt));
-+	rev = vmalloc(sizeof(struct revmap_entry) * npte);
- 	if (!rev) {
--		pr_err("kvmppc_alloc_hpt: Couldn't alloc reverse map array\n");
-+		pr_err("kvmppc_allocate_hpt: Couldn't alloc reverse map array\n");
- 		goto out_freehpt;
- 	}
--	kvm->arch.hpt.rev = rev;
--	kvm->arch.sdr1 = __pa(hpt) | (order - 18);
- 
--	pr_info("KVM guest htab at %lx (order %ld), LPID %x\n",
--		hpt, order, kvm->arch.lpid);
-+	info->order = order;
-+	info->virt = hpt;
-+	info->cma = cma;
-+	info->rev = rev;
- 
--	if (htab_orderp)
--		*htab_orderp = order;
- 	return 0;
+@@ -106,7 +106,7 @@ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
  
   out_freehpt:
--	if (kvm->arch.hpt.cma)
-+	if (info->cma)
- 		kvm_free_hpt_cma(page, 1 << (order - PAGE_SHIFT));
+ 	if (kvm->arch.hpt_cma_alloc)
+-		kvm_release_hpt(page, 1 << (order - PAGE_SHIFT));
++		kvm_free_hpt_cma(page, 1 << (order - PAGE_SHIFT));
  	else
--		free_pages(hpt, order - PAGE_SHIFT);
-+		free_pages(info->virt, order - PAGE_SHIFT);
+ 		free_pages(hpt, order - PAGE_SHIFT);
  	return -ENOMEM;
- }
- 
-+void kvmppc_set_hpt(struct kvm *kvm, struct kvm_hpt_info *info)
-+{
-+	kvm->arch.hpt = *info;
-+	kvm->arch.sdr1 = __pa(info->virt) | (info->order - 18);
-+
-+	pr_info("KVM guest htab at %lx (order %ld), LPID %x\n",
-+		info->virt, (long)info->order, kvm->arch.lpid);
-+}
-+
- long kvmppc_alloc_reset_hpt(struct kvm *kvm, u32 *htab_orderp)
- {
- 	long err = -EBUSY;
-@@ -136,24 +131,28 @@ long kvmppc_alloc_reset_hpt(struct kvm *kvm, u32 *htab_orderp)
- 		*htab_orderp = order;
- 		err = 0;
- 	} else {
--		err = kvmppc_alloc_hpt(kvm, htab_orderp);
--		order = *htab_orderp;
-+		struct kvm_hpt_info info;
-+
-+		err = kvmppc_allocate_hpt(&info, *htab_orderp);
-+		if (err < 0)
-+			goto out;
-+		kvmppc_set_hpt(kvm, &info);
- 	}
-  out:
- 	mutex_unlock(&kvm->lock);
- 	return err;
- }
- 
--void kvmppc_free_hpt(struct kvm *kvm)
-+void kvmppc_free_hpt(struct kvm_hpt_info *info)
- {
--	kvmppc_free_lpid(kvm->arch.lpid);
--	vfree(kvm->arch.hpt.rev);
--	if (kvm->arch.hpt.cma)
--		kvm_free_hpt_cma(virt_to_page(kvm->arch.hpt.virt),
--				 1 << (kvm->arch.hpt.order - PAGE_SHIFT));
-+	vfree(info->rev);
-+	if (info->cma)
-+		kvm_free_hpt_cma(virt_to_page(info->virt),
-+				 1 << (info->order - PAGE_SHIFT));
+@@ -153,8 +153,8 @@ void kvmppc_free_hpt(struct kvm *kvm)
+ 	kvmppc_free_lpid(kvm->arch.lpid);
+ 	vfree(kvm->arch.revmap);
+ 	if (kvm->arch.hpt_cma_alloc)
+-		kvm_release_hpt(virt_to_page(kvm->arch.hpt_virt),
+-				1 << (kvm->arch.hpt_order - PAGE_SHIFT));
++		kvm_free_hpt_cma(virt_to_page(kvm->arch.hpt_virt),
++				 1 << (kvm->arch.hpt_order - PAGE_SHIFT));
  	else
--		free_pages(kvm->arch.hpt.virt,
--			   kvm->arch.hpt.order - PAGE_SHIFT);
-+		free_pages(info->virt, info->order - PAGE_SHIFT);
-+	info->virt = 0;
-+	info->order = 0;
+ 		free_pages(kvm->arch.hpt_virt,
+ 			   kvm->arch.hpt_order - PAGE_SHIFT);
+diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
+index fd7006b..bcc00b7 100644
+--- a/arch/powerpc/kvm/book3s_hv_builtin.c
++++ b/arch/powerpc/kvm/book3s_hv_builtin.c
+@@ -49,19 +49,19 @@ static int __init early_parse_kvm_cma_resv(char *p)
  }
+ early_param("kvm_cma_resv_ratio", early_parse_kvm_cma_resv);
  
- /* Bits in first HPTE dword for pagesize 4k, 64k or 16M */
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index eea4dbd..1199fb5 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2923,11 +2923,22 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
+-struct page *kvm_alloc_hpt(unsigned long nr_pages)
++struct page *kvm_alloc_hpt_cma(unsigned long nr_pages)
+ {
+ 	VM_BUG_ON(order_base_2(nr_pages) < KVM_CMA_CHUNK_ORDER - PAGE_SHIFT);
  
- 	/* Allocate hashed page table (if not done already) and reset it */
- 	if (!kvm->arch.hpt.virt) {
--		err = kvmppc_alloc_hpt(kvm, NULL);
--		if (err) {
-+		int order = KVM_DEFAULT_HPT_ORDER;
-+		struct kvm_hpt_info info;
-+
-+		err = kvmppc_allocate_hpt(&info, order);
-+		/* If we get here, it means userspace didn't specify a
-+		 * size explicitly.  So, try successively smaller
-+		 * sizes if the default failed. */
-+		while (err < 0 && --order > PPC_MIN_HPT_ORDER)
-+			err  = kvmppc_allocate_hpt(&info, order);
-+
-+		if (err < 0) {
- 			pr_err("KVM: Couldn't alloc HPT\n");
- 			goto out;
- 		}
-+
-+		kvmppc_set_hpt(kvm, &info);
- 	}
- 
- 	/* Look up the memslot for guest physical address 0 */
-@@ -3056,7 +3067,8 @@ static void kvmppc_core_destroy_vm_hv(struct kvm *kvm)
- 
- 	kvmppc_free_vcores(kvm);
- 
--	kvmppc_free_hpt(kvm);
-+	kvmppc_free_lpid(kvm->arch.lpid);
-+	kvmppc_free_hpt(&kvm->arch.hpt);
+ 	return cma_alloc(kvm_cma, nr_pages, order_base_2(HPT_ALIGN_PAGES));
  }
+-EXPORT_SYMBOL_GPL(kvm_alloc_hpt);
++EXPORT_SYMBOL_GPL(kvm_alloc_hpt_cma);
  
- /* We don't need to emulate any privileged instructions or dcbz */
+-void kvm_release_hpt(struct page *page, unsigned long nr_pages)
++void kvm_free_hpt_cma(struct page *page, unsigned long nr_pages)
+ {
+ 	cma_release(kvm_cma, page, nr_pages);
+ }
+-EXPORT_SYMBOL_GPL(kvm_release_hpt);
++EXPORT_SYMBOL_GPL(kvm_free_hpt_cma);
+ 
+ /**
+  * kvm_cma_reserve() - reserve area for kvm hash pagetable
 -- 
 2.5.0
