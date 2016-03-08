@@ -1,24 +1,31 @@
-Return-Path: <vbabka@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DB09B1A0034
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 00:25:46 +1100 (AEDT)
-Subject: Re: [PATCH 1/2] mm: meminit: initialise more memory for inode/dentry
- hash tables in early boot
-To: Li Zhang <zhlcindy@gmail.com>, akpm@linux-foundation.org,
- mgorman@techsingularity.net, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com
-References: <1457409354-10867-1-git-send-email-zhlcindy@gmail.com>
- <1457409354-10867-2-git-send-email-zhlcindy@gmail.com>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Li Zhang <zhlcindy@linux.vnet.ibm.com>
-From: Vlastimil Babka <vbabka@suse.cz>
-Message-ID: <56DED2D4.4060805@suse.cz>
-Date: Tue, 8 Mar 2016 14:25:40 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id DEFC61A009D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 00:52:17 +1100 (AEDT)
+Received: from mail-pf0-x236.google.com (mail-pf0-x236.google.com
+ [IPv6:2607:f8b0:400e:c00::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 628421402DE
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Mar 2016 00:52:17 +1100 (AEDT)
+Received: by mail-pf0-x236.google.com with SMTP id 124so13550083pfg.0
+ for <linuxppc-dev@ozlabs.org>; Tue, 08 Mar 2016 05:52:17 -0800 (PST)
+Subject: Re: [v5][PATCH] livepatch/ppc: Enable livepatching on powerpc
+To: Torsten Duwe <duwe@lst.de>
+References: <1457422437-3357-1-git-send-email-bsingharora@gmail.com>
+ <20160308104552.GA16502@lst.de>
+Cc: linuxppc-dev@ozlabs.org, pmladek@suse.com, jeyu@redhat.com,
+ jkosina@suse.cz, jikos@kernel.org, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com,
+ live-patching@vger.kernel.org, mbenes@suse.cz
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <56DED903.2000209@gmail.com>
+Date: Wed, 9 Mar 2016 00:52:03 +1100
 MIME-Version: 1.0
-In-Reply-To: <1457409354-10867-2-git-send-email-zhlcindy@gmail.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20160308104552.GA16502@lst.de>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,44 +35,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/08/2016 04:55 AM, Li Zhang wrote:
-> From: Li Zhang <zhlcindy@linux.vnet.ibm.com>
-> 
-> This patch is based on Mel Gorman's old patch in the mailing list,
-> https://lkml.org/lkml/2015/5/5/280 which is discussed but it is
-> fixed with a completion to wait for all memory initialised in
-> page_alloc_init_late(). It is to fix the OOM problem on X86
-> with 24TB memory which allocates memory in late initialisation.
-> But for Power platform with 32TB memory, it causes a call trace
-> in vfs_caches_init->inode_init() and inode hash table needs more
-> memory.
-> So this patch allocates 1GB for 0.25TB/node for large system
-> as it is mentioned in https://lkml.org/lkml/2015/5/1/627
-> 
-> This call trace is found on Power with 32TB memory, 1024CPUs, 16nodes.
-> Currently, it only allocates 2GB*16=32GB for early initialisation. But
-> Dentry cache hash table needes 16GB and Inode cache hash table needs
-> 16GB. So the system have no enough memory for it.
-> The log from dmesg as the following:
-> 
-> Dentry cache hash table entries: 2147483648 (order: 18,17179869184 bytes)
-> vmalloc: allocation failure, allocated 16021913600 of 17179934720 bytes
-> swapper/0: page allocation failure: order:0,mode:0x2080020
-> CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.4.0-0-ppc64
-> Call Trace:
-> [c0000000012bfa00] [c0000000007c4a50].dump_stack+0xb4/0xb664 (unreliable)
-> [c0000000012bfa80] [c0000000001f93d4].warn_alloc_failed+0x114/0x160
-> [c0000000012bfb30] [c00000000023c204].__vmalloc_area_node+0x1a4/0x2b0
-> [c0000000012bfbf0] [c00000000023c3f4].__vmalloc_node_range+0xe4/0x110
-> [c0000000012bfc90] [c00000000023c460].__vmalloc_node+0x40/0x50
-> [c0000000012bfd10] [c000000000b67d60].alloc_large_system_hash+0x134/0x2a4
-> [c0000000012bfdd0] [c000000000b70924].inode_init+0xa4/0xf0
-> [c0000000012bfe60] [c000000000b706a0].vfs_caches_init+0x80/0x144
-> [c0000000012bfef0] [c000000000b35208].start_kernel+0x40c/0x4e0
-> [c0000000012bff90] [c000000000008cfc]start_here_common+0x20/0x4a4
-> Mem-Info:
-> 
-> Acked-by: Mel Gorman <mgorman@techsingularity.net>
-> Signed-off-by: Li Zhang <zhlcindy@linux.vnet.ibm.com>
 
-Acked-by: Vlastimil Babka <vbabka@suse.cz>
+
+On 08/03/16 21:45, Torsten Duwe wrote:
+> On Tue, Mar 08, 2016 at 06:33:57PM +1100, Balbir Singh wrote:
+>> Changelog v5:
+>> 	1. Removed the mini-stack frame created for klp_return_helper.
+>> 	   As a result of the mini-stack frame, function with > 8
+>> 	   arguments could not be patched
+> Did you get my previous mails? Those functions only require special
+> care, the _can_ be patched. In general, writing replacement functions
+> always requires attention!
+Yes, I did. We did think about documenting that limitation, but the big concern
+was that the system can be panic'd with a simple test case. We expect live patches
+to be tested and signed so we should be OK, but there still is a window
+> Have you *tested* this patch? Replacing a function in the kernel?
+> Replacing a function in a module? For local calls? For global calls?
+> I strongly doubt so because it does not work this way.
+Yes, if you care to read the changelog
+"
+
+I tested the sample in the livepatch and an additional sample
+that patches int_to_scsilun. I'll post out that sample if there
+is interest later. I also tested ftrace functionality on the
+command line to check for breakage"
+
+I've tested patching calls from module to module
+(ibmvscsi to scsi_mod), within the kernel (livepatch-sample/
+proc_cmdline_show). I must admit there is more testing to
+be done
+
+> To be fair, my last mail still was not 100% correct, but the conclusion
+> that the mini frame is not needed at all is invalid. Please leave it as it
+> was, I'm working on a test / demonstrator for how to handle these.
+Why, the magic will be in the patched function? Please share the test/demonstrator
+>> +	 * Why do we need this?
+>> +	 * After patching we need to return to a trampoline return function
+>> +	 * that guarantees that we restore the TOC and return to the correct
+>> +	 * caller back
+>> +	 */
+>> +	std	r2, 24(r1)	/* save TOC now, unconditionally. */
+>> +	subf	r0, r2, r0	/* Calculate offset from current TOC */
+>> +	stw	r0, 12(r1)	/* Of the final LR and save it in CR+4 */
+>> +	bl	5f
+>> +5:	mflr	r12
+>> +	addi	r12, r12, (klp_return_helper + 4 - .)@l
+>> +	std	r12, LRSAVE(r1)
+> [...]
+>> + * maybe inserting a klp_return_helper frame or not.
+>> +*/
+>> +klp_return_helper:
+>> +	ld	r2, 24(r1)	/* restore TOC (saved by ftrace_caller) */
+>> +	lwa	r0, 12(r1)	/* Load from CR+4, offset of LR w.r.t TOC */
+>> +	add	r0, r0, r2	/* Add the offset to current TOC */
+>> +	std	r0, LRSAVE(r1)	/* save the real return address */
+>> +	mtlr	r0
+>> +	blr
+>> +#endif
+> NAKed-by: Torsten Duwe <duwe@suse.de>
+Why? For using CR+4 or removing the frame? Or you believe there is a better way to
+handle this that work, IOW what is broken?
+>
+> 	Torsten
+>
+Balbir Singh
