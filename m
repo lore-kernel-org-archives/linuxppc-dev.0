@@ -1,23 +1,45 @@
-Return-Path: <zhlcindy@gmail.com>
-Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
- [IPv6:2607:f8b0:4003:c06::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mrochs@us.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 03D571A0367
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 14:56:44 +1100 (AEDT)
-Received: by mail-oi0-x244.google.com with SMTP id c203so248030oia.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Mar 2016 19:56:43 -0800 (PST)
-From: Li Zhang <zhlcindy@gmail.com>
-To: akpm@linux-foundation.org, vbabka@suse.cz, mgorman@techsingularity.net,
- mpe@ellerman.id.au, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Li Zhang <zhlcindy@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] powerpc/mm: Enable page parallel initialisation
-Date: Tue,  8 Mar 2016 11:55:54 +0800
-Message-Id: <1457409354-10867-3-git-send-email-zhlcindy@gmail.com>
-In-Reply-To: <1457409354-10867-1-git-send-email-zhlcindy@gmail.com>
-References: <1457409354-10867-1-git-send-email-zhlcindy@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0BF7D1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 15:06:35 +1100 (AEDT)
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 5E42B1409C4
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2016 15:06:34 +1100 (AEDT)
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mrochs@us.ibm.com>;
+ Mon, 7 Mar 2016 21:06:32 -0700
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id D88011FF0023
+ for <linuxppc-dev@ozlabs.org>; Mon,  7 Mar 2016 20:54:39 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2846Usl35193004
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Mar 2016 21:06:30 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2846T0k014606
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Mar 2016 21:06:30 -0700
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
+Subject: Re: [PATCH v3 1/2] cxl: Add mechanism for delivering AFU driver
+ specific events
+From: Matt Ochs <mrochs@us.ibm.com>
+In-Reply-To: <1457401715-26435-1-git-send-email-imunsie@au.ibm.com>
+Date: Mon, 7 Mar 2016 22:06:28 -0600
+Cc: Michael Ellerman <michaele@au1.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Manoj Kumar <kumarmn@us.ibm.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Neuling <mikey@neuling.org>
+Message-Id: <11B46653-99D3-4BF5-8F09-B14A9C0E06ED@us.ibm.com>
+References: <1457401715-26435-1-git-send-email-imunsie@au.ibm.com>
+To: Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +49,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Li Zhang <zhlcindy@linux.vnet.ibm.com>
+> On Mar 7, 2016, at 7:48 PM, Ian Munsie <imunsie@au1.ibm.com> wrote:
+> 
+> From: Ian Munsie <imunsie@au1.ibm.com>
+> 
+> This adds an afu_driver_ops structure with event_pending and
+> deliver_event callbacks. An AFU driver such as cxlflash can fill these
+> out and associate it with a context to enable passing custom AFU
+> specific events to userspace.
+> 
+> The cxl driver will call event_pending() during poll, select, read, etc.
+> calls to check if an AFU driver specific event is pending, and will call
+> deliver_event() to deliver that event. This way, the cxl driver takes
+> care of all the usual locking semantics around these calls and handles
+> all the generic cxl events, so that the AFU driver only needs to worry
+> about it's own events.
+> 
+> The deliver_event() call is passed a struct cxl_event buffer to fill in.
+> The header will already be filled in for an AFU driver event, and the
+> AFU driver is expected to expand the header.size as necessary (up to
+> max_size, defined by struct cxl_event_afu_driver_reserved) and fill out
+> it's own information.
+> 
+> Since AFU drivers provide their own means for userspace to obtain the
+> AFU file descriptor (i.e. cxlflash uses an ioctl on their scsi file
+> descriptor to obtain the AFU file descriptor) and the generic cxl driver
+> will never use this event, the ABI of the event is up to each individual
+> AFU driver.
+> 
+> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 
-Parallel initialisation has been enabled for X86, boot time is
-improved greatly. On Power8, it is improved greatly for small
-memory. Here is the result from my test on Power8 platform:
-
-For 4GB memory: 57% is improved, boot time as the following:
-with patch: 10s, without patch: 24.5s
-
-For 50GB memory: 22% is improved, boot time as the following:
-with patch: 43.8s, without patch: 56.8s
-
-Acked-by: Mel Gorman <mgorman@techsingularity.net>
-Signed-off-by: Li Zhang <zhlcindy@linux.vnet.ibm.com>
----
- * Add boot time details in change log.
- * Please apply this patch after [PATCH 1/2] mm: meminit: initialise
-    more memory for inode/dentry hash tables in early boot, because
-   [PATCH 1/2] is to fix a bug which can be reproduced on Power.
-
- arch/powerpc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9faa18c..97d41ad 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -158,6 +158,7 @@ config PPC
- 	select ARCH_HAS_DEVMEM_IS_ALLOWED
- 	select HAVE_ARCH_SECCOMP_FILTER
- 	select ARCH_HAS_UBSAN_SANITIZE_ALL
-+	select ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
- 
- config GENERIC_CSUM
- 	def_bool CPU_LITTLE_ENDIAN
--- 
-2.1.0
+Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
