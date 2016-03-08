@@ -1,27 +1,41 @@
-Return-Path: <bsingharora@gmail.com>
+Return-Path: <andrew.donnellan@au1.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C47711A010A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 18:34:25 +1100 (AEDT)
-Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
- [IPv6:2607:f8b0:400e:c03::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3687B1A011D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 18:44:38 +1100 (AEDT)
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BA017140213
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2016 18:34:24 +1100 (AEDT)
-Received: by mail-pa0-x22a.google.com with SMTP id bj10so6862947pad.2
- for <linuxppc-dev@ozlabs.org>; Mon, 07 Mar 2016 23:34:24 -0800 (PST)
-From: Balbir Singh <bsingharora@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Cc: bsingharora@gmail.com, duwe@lst.de, linux-kernel@vger.kernel.org,
- rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
- jeyu@redhat.com, jkosina@suse.cz, live-patching@vger.kernel.org,
- mbenes@suse.cz, mpe@ellerman.id.au, jikos@kernel.org,
- Torsten Duwe <duwe@suse.de>
-Subject: [v5][PATCH] livepatch/ppc: Enable livepatching on powerpc
-Date: Tue,  8 Mar 2016 18:33:57 +1100
-Message-Id: <1457422437-3357-1-git-send-email-bsingharora@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id F248414012C
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2016 18:44:37 +1100 (AEDT)
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 8 Mar 2016 17:44:33 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 75CA82BB006A
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2016 18:43:53 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u287hjVS11010234
+ for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2016 18:43:53 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u287hK77031924
+ for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2016 18:43:21 +1100
+Subject: Re: powerpc/eeh: eeh_pci_enable(): fix checking of post-request state
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <20160208113706.12246140B99@ozlabs.org>
+ <56B92B74.8040108@au1.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-ID: <56DE8280.6020302@au1.ibm.com>
+Date: Tue, 8 Mar 2016 18:42:56 +1100
+MIME-Version: 1.0
+In-Reply-To: <56B92B74.8040108@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,407 +45,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changelog v5:
-	1. Removed the mini-stack frame created for klp_return_helper.
-	   As a result of the mini-stack frame, function with > 8
-	   arguments could not be patched
-	2. Removed camel casing in the comments
-Changelog v4:
-	1. Renamed klp_matchaddr() to klp_get_ftrace_location()
-	   and used it just to convert the function address.
-	2. Synced klp_write_module_reloc() with s390(); made it
-	   inline, no error message, return -ENOSYS
-	3. Added an error message when including
-	   powerpc/include/asm/livepatch.h without HAVE_LIVEPATCH
-	4. Update some comments.
-Changelog v3:
-	1. Moved -ENOSYS to -EINVAL in klp_write_module_reloc
-	2. Moved klp_matchaddr to use ftrace_location_range
-Changelog v2:
-	1. Implement review comments by Michael
-	2. The previous version compared _NIP from the
-	   wrong location to check for whether we
-	   are going to a patched location
+On 09/02/16 10:57, Andrew Donnellan wrote:
+> It is a fix - I'm a bit hazy on the details now but IIRC, Daniel Axtens
+> and I encountered this when doing some cxl debugging, though I think we
+> decided not to tag this for stable since it was a secondary issue to the
+> primary bug we were looking for. It probably could go to stable though?
+> (Daniel - thoughts?)
+>
+> The line in question was last touched in 4d4f577e4b5e, but it looks like
+> the behaviour wasn't right even before that.
 
-This patch enables live patching for powerpc. The current patch
-is applied on top of topic/mprofile-kernel at
-https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/
+Ping :)
 
-This patch builds on top of ftrace with regs changes and the
--mprofile-kernel changes. It detects a change in NIP after
-the klp subsystem has potentially changes the NIP as a result
-of a livepatch. In that case it saves the TOC in the parents
-stack and the offset of the return address from the TOC in
-the reserved (CR+4) space. This hack allows us to provide the
-complete frame of the calling function as is to the caller
-without having to create a mini-frame
+I think this patch should still go in, I don't really care whether it 
+goes to stable or not.
 
-Upon return from the patched function, the TOC and correct
-LR is restored.
-
-I tested the sample in the livepatch and an additional sample
-that patches int_to_scsilun. I'll post out that sample if there
-is interest later. I also tested ftrace functionality on the
-command line to check for breakage
-
-Signed-off-by: Torsten Duwe <duwe@suse.de>
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-Signed-off-by: Petr Mladek <pmladek@suse.com>
----
- arch/powerpc/Kconfig                 |  3 ++
- arch/powerpc/include/asm/livepatch.h | 47 ++++++++++++++++++++++++++++
- arch/powerpc/kernel/Makefile         |  1 +
- arch/powerpc/kernel/entry_64.S       | 60 ++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/livepatch.c      | 29 +++++++++++++++++
- include/linux/ftrace.h               |  1 +
- include/linux/livepatch.h            |  2 ++
- kernel/livepatch/core.c              | 28 +++++++++++++++--
- kernel/trace/ftrace.c                | 14 ++++++++-
- 9 files changed, 181 insertions(+), 4 deletions(-)
- create mode 100644 arch/powerpc/include/asm/livepatch.h
- create mode 100644 arch/powerpc/kernel/livepatch.c
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 91da283..926c0ea 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -159,6 +159,7 @@ config PPC
- 	select ARCH_HAS_DEVMEM_IS_ALLOWED
- 	select HAVE_ARCH_SECCOMP_FILTER
- 	select ARCH_HAS_UBSAN_SANITIZE_ALL
-+	select HAVE_LIVEPATCH if HAVE_DYNAMIC_FTRACE_WITH_REGS
- 
- config GENERIC_CSUM
- 	def_bool CPU_LITTLE_ENDIAN
-@@ -1110,3 +1111,5 @@ config PPC_LIB_RHEAP
- 	bool
- 
- source "arch/powerpc/kvm/Kconfig"
-+
-+source "kernel/livepatch/Kconfig"
-diff --git a/arch/powerpc/include/asm/livepatch.h b/arch/powerpc/include/asm/livepatch.h
-new file mode 100644
-index 0000000..b9856ce
---- /dev/null
-+++ b/arch/powerpc/include/asm/livepatch.h
-@@ -0,0 +1,47 @@
-+/*
-+ * livepatch.h - powerpc-specific Kernel Live Patching Core
-+ *
-+ * Copyright (C) 2015 SUSE
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+#ifndef _ASM_POWERPC64_LIVEPATCH_H
-+#define _ASM_POWERPC64_LIVEPATCH_H
-+
-+#include <linux/module.h>
-+
-+#ifdef CONFIG_LIVEPATCH
-+
-+static inline int klp_check_compiler_support(void)
-+{
-+	return 0;
-+}
-+
-+static inline int klp_write_module_reloc(struct module *mod, unsigned long
-+		type, unsigned long loc, unsigned long value)
-+{
-+	/* This requires infrastructure changes; we need the loadinfos. */
-+	return -ENOSYS;
-+}
-+
-+static inline void klp_arch_set_pc(struct pt_regs *regs, unsigned long ip)
-+{
-+	regs->nip = ip;
-+}
-+
-+#else /* CONFIG_LIVEPATCH */
-+#error Include linux/livepatch.h, not asm/livepatch.h
-+#endif /* CONFIG_LIVEPATCH */
-+
-+#endif /* _ASM_POWERPC64_LIVEPATCH_H */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 2da380f..b767e14 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -119,6 +119,7 @@ obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
- obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
- obj-$(CONFIG_FTRACE_SYSCALLS)	+= ftrace.o
- obj-$(CONFIG_TRACING)		+= trace_clock.o
-+obj-$(CONFIG_LIVEPATCH)		+= livepatch.o
- 
- ifneq ($(CONFIG_PPC_INDIRECT_PIO),y)
- obj-y				+= iomap.o
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index ec7f8aa..e0406e6 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -1224,6 +1224,9 @@ _GLOBAL(ftrace_caller)
- 	addi	r3,r3,function_trace_op@toc@l
- 	ld	r5,0(r3)
- 
-+#ifdef CONFIG_LIVEPATCH
-+	mr	r14,r7		/* remember old NIP */
-+#endif
- 	/* Calculate ip from nip-4 into r3 for call below */
- 	subi    r3, r7, MCOUNT_INSN_SIZE
- 
-@@ -1248,6 +1251,9 @@ ftrace_call:
- 	/* Load ctr with the possibly modified NIP */
- 	ld	r3, _NIP(r1)
- 	mtctr	r3
-+#ifdef CONFIG_LIVEPATCH
-+	cmpd	r14,r3		/* has NIP been altered? */
-+#endif
- 
- 	/* Restore gprs */
- 	REST_8GPRS(0,r1)
-@@ -1265,6 +1271,39 @@ ftrace_call:
- 	ld	r0, LRSAVE(r1)
- 	mtlr	r0
- 
-+#ifdef CONFIG_LIVEPATCH
-+	beq+	4f		/* likely(old_NIP == new_NIP) */
-+	/*
-+	 * For a local call, restore this TOC after calling the patch function.
-+	 * For a global call, it does not matter what we restore here,
-+	 * since the global caller does its own restore right afterwards,
-+	 * anyway. Just insert a klp_return_helper frame in any case,
-+	 * so a patch function can always count on the changed stack offsets.
-+	 * The patch introduces a frame such that from the patched function
-+	 * we return back to klp_return helper. For ABI compliance r12,
-+	 * lr and LRSAVE(r1) contain the address of klp_return_helper.
-+	 * We loaded ctr with the address of the patched function earlier
-+	 * We use the reserved space in the parent stack frame at CR+4.
-+	 * This space is stored with the contents of LR-TOC, where LR
-+	 * refers to the address to return to.
-+	 * Why do we need this?
-+	 * After patching we need to return to a trampoline return function
-+	 * that guarantees that we restore the TOC and return to the correct
-+	 * caller back
-+	 */
-+	std	r2, 24(r1)	/* save TOC now, unconditionally. */
-+	subf	r0, r2, r0	/* Calculate offset from current TOC */
-+	stw	r0, 12(r1)	/* Of the final LR and save it in CR+4 */
-+	bl	5f
-+5:	mflr	r12
-+	addi	r12, r12, (klp_return_helper + 4 - .)@l
-+	std	r12, LRSAVE(r1)
-+	mtlr	r12
-+	mfctr	r12		/* allow for TOC calculation in newfunc */
-+	bctr
-+4:
-+#endif
-+
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- 	stdu	r1, -112(r1)
- .globl ftrace_graph_call
-@@ -1281,6 +1320,27 @@ _GLOBAL(ftrace_graph_stub)
- 
- _GLOBAL(ftrace_stub)
- 	blr
-+#ifdef CONFIG_LIVEPATCH
-+/*
-+ * Helper function for local calls that are becoming global
-+ * due to live patching.
-+ * We can't simply patch the NOP after the original call,
-+ * because, depending on the consistency model, some kernel
-+ * threads may still have called the original, local function
-+ * *without* saving their TOC in the respective stack frame slot,
-+ * so the decision is made per-thread during function return by
-+ * maybe inserting a klp_return_helper frame or not.
-+*/
-+klp_return_helper:
-+	ld	r2, 24(r1)	/* restore TOC (saved by ftrace_caller) */
-+	lwa	r0, 12(r1)	/* Load from CR+4, offset of LR w.r.t TOC */
-+	add	r0, r0, r2	/* Add the offset to current TOC */
-+	std	r0, LRSAVE(r1)	/* save the real return address */
-+	mtlr	r0
-+	blr
-+#endif
-+
-+
- #else
- _GLOBAL_TOC(_mcount)
- 	/* Taken from output of objdump from lib64/glibc */
-diff --git a/arch/powerpc/kernel/livepatch.c b/arch/powerpc/kernel/livepatch.c
-new file mode 100644
-index 0000000..17f1a14
---- /dev/null
-+++ b/arch/powerpc/kernel/livepatch.c
-@@ -0,0 +1,29 @@
-+/*
-+ * livepatch.c - powerpc-specific Kernel Live Patching Core
-+ *
-+ * Copyright (C) 2015 SUSE
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+#include <linux/ftrace.h>
-+#include <asm/livepatch.h>
-+
-+/*
-+ * Live patch works only with -mprofile-kernel on PPC. In this case,
-+ * the ftrace location is always within the first 16 bytes.
-+ */
-+unsigned long klp_get_ftrace_location(unsigned long faddr)
-+{
-+	return ftrace_location_range(faddr, faddr + 16);
-+}
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 81de712..3481a8e 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -455,6 +455,7 @@ int ftrace_update_record(struct dyn_ftrace *rec, int enable);
- int ftrace_test_record(struct dyn_ftrace *rec, int enable);
- void ftrace_run_stop_machine(int command);
- unsigned long ftrace_location(unsigned long ip);
-+unsigned long ftrace_location_range(unsigned long start, unsigned long end);
- unsigned long ftrace_get_addr_new(struct dyn_ftrace *rec);
- unsigned long ftrace_get_addr_curr(struct dyn_ftrace *rec);
- 
-diff --git a/include/linux/livepatch.h b/include/linux/livepatch.h
-index a882865..25a267b 100644
---- a/include/linux/livepatch.h
-+++ b/include/linux/livepatch.h
-@@ -134,6 +134,8 @@ int klp_unregister_patch(struct klp_patch *);
- int klp_enable_patch(struct klp_patch *);
- int klp_disable_patch(struct klp_patch *);
- 
-+unsigned long klp_get_ftrace_location(unsigned long faddr);
-+
- #endif /* CONFIG_LIVEPATCH */
- 
- #endif /* _LINUX_LIVEPATCH_H_ */
-diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
-index bc2c85c..e2dbf01 100644
---- a/kernel/livepatch/core.c
-+++ b/kernel/livepatch/core.c
-@@ -298,22 +298,39 @@ unlock:
- 	rcu_read_unlock();
- }
- 
-+/*
-+ * Convert a function address into the appropriate ftrace location.
-+ *
-+ * The given address is returned on most architectures. Live patching
-+ * usually works only when the ftrace location is the first instruction
-+ * in the function.
-+ */
-+unsigned long __weak klp_get_ftrace_location(unsigned long faddr)
-+{
-+	return faddr;
-+}
-+
- static void klp_disable_func(struct klp_func *func)
- {
- 	struct klp_ops *ops;
-+	unsigned long ftrace_loc;
- 
- 	if (WARN_ON(func->state != KLP_ENABLED))
- 		return;
- 	if (WARN_ON(!func->old_addr))
- 		return;
- 
-+	ftrace_loc = klp_get_ftrace_location(func->old_addr);
-+	if (WARN_ON(!ftrace_loc))
-+		return;
-+
- 	ops = klp_find_ops(func->old_addr);
- 	if (WARN_ON(!ops))
- 		return;
- 
- 	if (list_is_singular(&ops->func_stack)) {
- 		WARN_ON(unregister_ftrace_function(&ops->fops));
--		WARN_ON(ftrace_set_filter_ip(&ops->fops, func->old_addr, 1, 0));
-+		WARN_ON(ftrace_set_filter_ip(&ops->fops, ftrace_loc, 1, 0));
- 
- 		list_del_rcu(&func->stack_node);
- 		list_del(&ops->node);
-@@ -328,6 +345,7 @@ static void klp_disable_func(struct klp_func *func)
- static int klp_enable_func(struct klp_func *func)
- {
- 	struct klp_ops *ops;
-+	unsigned long ftrace_loc;
- 	int ret;
- 
- 	if (WARN_ON(!func->old_addr))
-@@ -336,6 +354,10 @@ static int klp_enable_func(struct klp_func *func)
- 	if (WARN_ON(func->state != KLP_DISABLED))
- 		return -EINVAL;
- 
-+	ftrace_loc = klp_get_ftrace_location(func->old_addr);
-+	if (WARN_ON(!ftrace_loc))
-+		return -EINVAL;
-+
- 	ops = klp_find_ops(func->old_addr);
- 	if (!ops) {
- 		ops = kzalloc(sizeof(*ops), GFP_KERNEL);
-@@ -352,7 +374,7 @@ static int klp_enable_func(struct klp_func *func)
- 		INIT_LIST_HEAD(&ops->func_stack);
- 		list_add_rcu(&func->stack_node, &ops->func_stack);
- 
--		ret = ftrace_set_filter_ip(&ops->fops, func->old_addr, 0, 0);
-+		ret = ftrace_set_filter_ip(&ops->fops, ftrace_loc, 0, 0);
- 		if (ret) {
- 			pr_err("failed to set ftrace filter for function '%s' (%d)\n",
- 			       func->old_name, ret);
-@@ -363,7 +385,7 @@ static int klp_enable_func(struct klp_func *func)
- 		if (ret) {
- 			pr_err("failed to register ftrace handler for function '%s' (%d)\n",
- 			       func->old_name, ret);
--			ftrace_set_filter_ip(&ops->fops, func->old_addr, 1, 0);
-+			ftrace_set_filter_ip(&ops->fops, ftrace_loc, 1, 0);
- 			goto err;
- 		}
- 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index eca592f..e1b3f23 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -1533,7 +1533,19 @@ static int ftrace_cmp_recs(const void *a, const void *b)
- 	return 0;
- }
- 
--static unsigned long ftrace_location_range(unsigned long start, unsigned long end)
-+/**
-+ * ftrace_location_range - return the first address of a traced location
-+ *	if it touches the given ip range
-+ * @start: start of range to search.
-+ * @end: end of range to search (inclusive). @end points to the last byte
-+ *	to check.
-+ *
-+ * Returns rec->ip if the related ftrace location is a least partly within
-+ * the given address range. That is, the first address of the instruction
-+ * that is either a NOP or call to the function tracer. It checks the ftrace
-+ * internal tables to determine if the address belongs or not.
-+ */
-+unsigned long ftrace_location_range(unsigned long start, unsigned long end)
- {
- 	struct ftrace_page *pg;
- 	struct dyn_ftrace *rec;
 -- 
-2.5.0
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
