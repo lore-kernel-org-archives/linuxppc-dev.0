@@ -1,24 +1,26 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 030E81A01EA
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 17:33:02 +1100 (AEDT)
-Date: Tue, 8 Mar 2016 17:32:18 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id DD42E1A011E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2016 17:33:01 +1100 (AEDT)
+Date: Tue, 8 Mar 2016 17:30:18 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
  Alex Williamson <alex.williamson@redhat.com>,
  kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [PATCH kernel 7/9] KVM: PPC: Create a virtual-mode only TCE
- table handlers
-Message-ID: <20160308063218.GB22546@voom.fritz.box>
+Subject: Re: [PATCH kernel 3/9] KVM: PPC: Use preregistered memory API to
+ access TCE list
+Message-ID: <20160308063018.GA22546@voom.fritz.box>
 References: <1457322077-26640-1-git-send-email-aik@ozlabs.ru>
- <1457322077-26640-8-git-send-email-aik@ozlabs.ru>
+ <1457322077-26640-4-git-send-email-aik@ozlabs.ru>
+ <20160307060014.GL22546@voom.fritz.box>
+ <56DE6768.4030202@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="C311HLcnHV2CzHlo"
-In-Reply-To: <1457322077-26640-8-git-send-email-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="d6nDKxlhctiV7bVq"
+In-Reply-To: <56DE6768.4030202@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,164 +31,163 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---C311HLcnHV2CzHlo
+--d6nDKxlhctiV7bVq
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Mar 07, 2016 at 02:41:15PM +1100, Alexey Kardashevskiy wrote:
-> In-kernel VFIO acceleration needs different handling in real and virtual
-> modes which makes it hard to support both modes in the same handler.
+On Tue, Mar 08, 2016 at 04:47:20PM +1100, Alexey Kardashevskiy wrote:
+> On 03/07/2016 05:00 PM, David Gibson wrote:
+> >On Mon, Mar 07, 2016 at 02:41:11PM +1100, Alexey Kardashevskiy wrote:
+> >>VFIO on sPAPR already implements guest memory pre-registration
+> >>when the entire guest RAM gets pinned. This can be used to translate
+> >>the physical address of a guest page containing the TCE list
+> >>from H_PUT_TCE_INDIRECT.
+> >>
+> >>This makes use of the pre-registrered memory API to access TCE list
+> >>pages in order to avoid unnecessary locking on the KVM memory
+> >>reverse map.
+> >>
+> >>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >
+> >Ok.. so, what's the benefit of not having to lock the rmap?
 >=20
-> This creates a copy of kvmppc_rm_h_stuff_tce and kvmppc_rm_h_put_tce
-> in addition to the existing kvmppc_rm_h_put_tce_indirect.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Less locking -> less racing =3D=3D good, no?
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Well.. maybe.  The increased difficulty in verifying that the code is
+correct isn't always a good price to pay.
 
-> ---
->  arch/powerpc/kvm/book3s_64_vio.c        | 52 +++++++++++++++++++++++++++=
-++++++
->  arch/powerpc/kvm/book3s_64_vio_hv.c     |  8 ++---
->  arch/powerpc/kvm/book3s_hv_rmhandlers.S |  4 +--
->  3 files changed, 57 insertions(+), 7 deletions(-)
+> >>---
+> >>  arch/powerpc/kvm/book3s_64_vio_hv.c | 86 ++++++++++++++++++++++++++++=
+++-------
+> >>  1 file changed, 70 insertions(+), 16 deletions(-)
+> >>
+> >>diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/boo=
+k3s_64_vio_hv.c
+> >>index 44be73e..af155f6 100644
+> >>--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
+> >>+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+> >>@@ -180,6 +180,38 @@ long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned lo=
+ng gpa,
+> >>  EXPORT_SYMBOL_GPL(kvmppc_gpa_to_ua);
+> >>
+> >>  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> >>+static mm_context_t *kvmppc_mm_context(struct kvm_vcpu *vcpu)
+> >>+{
+> >>+	struct task_struct *task;
+> >>+
+> >>+	task =3D vcpu->arch.run_task;
+> >>+	if (unlikely(!task || !task->mm))
+> >>+		return NULL;
+> >>+
+> >>+	return &task->mm->context;
+> >>+}
+> >>+
+> >>+static inline bool kvmppc_preregistered(struct kvm_vcpu *vcpu)
+> >>+{
+> >>+	mm_context_t *mm =3D kvmppc_mm_context(vcpu);
+> >>+
+> >>+	if (unlikely(!mm))
+> >>+		return false;
+> >>+
+> >>+	return mm_iommu_preregistered(mm);
+> >>+}
+> >>+
+> >>+static struct mm_iommu_table_group_mem_t *kvmppc_rm_iommu_lookup(
+> >>+		struct kvm_vcpu *vcpu, unsigned long ua, unsigned long size)
+> >>+{
+> >>+	mm_context_t *mm =3D kvmppc_mm_context(vcpu);
+> >>+
+> >>+	if (unlikely(!mm))
+> >>+		return NULL;
+> >>+
+> >>+	return mm_iommu_lookup_rm(mm, ua, size);
+> >>+}
+> >>+
+> >>  long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+> >>  		      unsigned long ioba, unsigned long tce)
+> >>  {
+> >>@@ -261,23 +293,44 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu=
+ *vcpu,
+> >>  	if (ret !=3D H_SUCCESS)
+> >>  		return ret;
+> >>
+> >>-	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
+> >>-		return H_TOO_HARD;
+> >>+	if (kvmppc_preregistered(vcpu)) {
+> >>+		/*
+> >>+		 * We get here if guest memory was pre-registered which
+> >>+		 * is normally VFIO case and gpa->hpa translation does not
+> >>+		 * depend on hpt.
+> >>+		 */
+> >>+		struct mm_iommu_table_group_mem_t *mem;
+> >>
+> >>-	rmap =3D (void *) vmalloc_to_phys(rmap);
+> >>+		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, NULL))
+> >>+			return H_TOO_HARD;
+> >>
+> >>-	/*
+> >>-	 * Synchronize with the MMU notifier callbacks in
+> >>-	 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
+> >>-	 * While we have the rmap lock, code running on other CPUs
+> >>-	 * cannot finish unmapping the host real page that backs
+> >>-	 * this guest real page, so we are OK to access the host
+> >>-	 * real page.
+> >>-	 */
+> >>-	lock_rmap(rmap);
+> >>-	if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
+> >>-		ret =3D H_TOO_HARD;
+> >>-		goto unlock_exit;
+> >>+		mem =3D kvmppc_rm_iommu_lookup(vcpu, ua, IOMMU_PAGE_SIZE_4K);
+> >>+		if (!mem || mm_iommu_rm_ua_to_hpa(mem, ua, &tces))
+> >>+			return H_TOO_HARD;
+> >>+	} else {
+> >>+		/*
+> >>+		 * This is emulated devices case.
+> >>+		 * We do not require memory to be preregistered in this case
+> >>+		 * so lock rmap and do __find_linux_pte_or_hugepte().
+> >>+		 */
+> >>+		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
+> >>+			return H_TOO_HARD;
+> >>+
+> >>+		rmap =3D (void *) vmalloc_to_phys(rmap);
+> >>+
+> >>+		/*
+> >>+		 * Synchronize with the MMU notifier callbacks in
+> >>+		 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
+> >>+		 * While we have the rmap lock, code running on other CPUs
+> >>+		 * cannot finish unmapping the host real page that backs
+> >>+		 * this guest real page, so we are OK to access the host
+> >>+		 * real page.
+> >>+		 */
+> >>+		lock_rmap(rmap);
+> >>+		if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
+> >>+			ret =3D H_TOO_HARD;
+> >>+			goto unlock_exit;
+> >>+		}
+> >>  	}
+> >>
+> >>  	for (i =3D 0; i < npages; ++i) {
+> >>@@ -291,7 +344,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *=
+vcpu,
+> >>  	}
+> >>
+> >>  unlock_exit:
+> >>-	unlock_rmap(rmap);
+> >>+	if (rmap)
+> >
+> >I don't see where rmap is initialized to NULL in the case where it's
+> >not being used.
 >=20
-> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_6=
-4_vio.c
-> index 846d16d..7965fc7 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio.c
-> @@ -317,6 +317,32 @@ fail:
->  	return ret;
->  }
-> =20
-> +long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
-> +		      unsigned long ioba, unsigned long tce)
-> +{
-> +	struct kvmppc_spapr_tce_table *stt =3D kvmppc_find_table(vcpu, liobn);
-> +	long ret;
-> +
-> +	/* udbg_printf("H_PUT_TCE(): liobn=3D0x%lx ioba=3D0x%lx, tce=3D0x%lx\n"=
-, */
-> +	/* 	    liobn, ioba, tce); */
-> +
-> +	if (!stt)
-> +		return H_TOO_HARD;
-> +
-> +	ret =3D kvmppc_ioba_validate(stt, ioba, 1);
-> +	if (ret !=3D H_SUCCESS)
-> +		return ret;
-> +
-> +	ret =3D kvmppc_tce_validate(stt, tce);
-> +	if (ret !=3D H_SUCCESS)
-> +		return ret;
-> +
-> +	kvmppc_tce_put(stt, ioba >> stt->page_shift, tce);
-> +
-> +	return H_SUCCESS;
-> +}
-> +EXPORT_SYMBOL_GPL(kvmppc_h_put_tce);
-> +
->  long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
->  		unsigned long liobn, unsigned long ioba,
->  		unsigned long tce_list, unsigned long npages)
-> @@ -372,3 +398,29 @@ unlock_exit:
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(kvmppc_h_put_tce_indirect);
-> +
-> +long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
-> +		unsigned long liobn, unsigned long ioba,
-> +		unsigned long tce_value, unsigned long npages)
-> +{
-> +	struct kvmppc_spapr_tce_table *stt;
-> +	long i, ret;
-> +
-> +	stt =3D kvmppc_find_table(vcpu, liobn);
-> +	if (!stt)
-> +		return H_TOO_HARD;
-> +
-> +	ret =3D kvmppc_ioba_validate(stt, ioba, npages);
-> +	if (ret !=3D H_SUCCESS)
-> +		return ret;
-> +
-> +	/* Check permission bits only to allow userspace poison TCE for debug */
-> +	if (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ))
-> +		return H_PARAMETER;
-> +
-> +	for (i =3D 0; i < npages; ++i, ioba +=3D (1ULL << stt->page_shift))
-> +		kvmppc_tce_put(stt, ioba >> stt->page_shift, tce_value);
-> +
-> +	return H_SUCCESS;
-> +}
-> +EXPORT_SYMBOL_GPL(kvmppc_h_stuff_tce);
-> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3=
-s_64_vio_hv.c
-> index af155f6..11163ae 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-> @@ -212,8 +212,8 @@ static struct mm_iommu_table_group_mem_t *kvmppc_rm_i=
-ommu_lookup(
->  	return mm_iommu_lookup_rm(mm, ua, size);
->  }
-> =20
-> -long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
-> -		      unsigned long ioba, unsigned long tce)
-> +long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
-> +		unsigned long ioba, unsigned long tce)
->  {
->  	struct kvmppc_spapr_tce_table *stt =3D kvmppc_find_table(vcpu, liobn);
->  	long ret;
-> @@ -236,7 +236,6 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned=
- long liobn,
-> =20
->  	return H_SUCCESS;
->  }
-> -EXPORT_SYMBOL_GPL(kvmppc_h_put_tce);
-> =20
->  static long kvmppc_rm_ua_to_hpa(struct kvm_vcpu *vcpu,
->  		unsigned long ua, unsigned long *phpa)
-> @@ -350,7 +349,7 @@ unlock_exit:
->  	return ret;
->  }
-> =20
-> -long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
-> +long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
->  		unsigned long liobn, unsigned long ioba,
->  		unsigned long tce_value, unsigned long npages)
->  {
-> @@ -374,7 +373,6 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
-> =20
->  	return H_SUCCESS;
->  }
-> -EXPORT_SYMBOL_GPL(kvmppc_h_stuff_tce);
-> =20
->  long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->  		      unsigned long ioba)
-> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/b=
-ook3s_hv_rmhandlers.S
-> index ed16182..d6dad2c 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -1928,7 +1928,7 @@ hcall_real_table:
->  	.long	DOTSYM(kvmppc_h_clear_ref) - hcall_real_table
->  	.long	DOTSYM(kvmppc_h_protect) - hcall_real_table
->  	.long	DOTSYM(kvmppc_h_get_tce) - hcall_real_table
-> -	.long	DOTSYM(kvmppc_h_put_tce) - hcall_real_table
-> +	.long	DOTSYM(kvmppc_rm_h_put_tce) - hcall_real_table
->  	.long	0		/* 0x24 - H_SET_SPRG0 */
->  	.long	DOTSYM(kvmppc_h_set_dabr) - hcall_real_table
->  	.long	0		/* 0x2c */
-> @@ -2006,7 +2006,7 @@ hcall_real_table:
->  	.long	0		/* 0x12c */
->  	.long	0		/* 0x130 */
->  	.long	DOTSYM(kvmppc_h_set_xdabr) - hcall_real_table
-> -	.long	DOTSYM(kvmppc_h_stuff_tce) - hcall_real_table
-> +	.long	DOTSYM(kvmppc_rm_h_stuff_tce) - hcall_real_table
->  	.long	DOTSYM(kvmppc_rm_h_put_tce_indirect) - hcall_real_table
->  	.long	0		/* 0x140 */
->  	.long	0		/* 0x144 */
+> @rmap is not new to this function, and it has always been initialized to
+> NULL as it was returned via a pointer from kvmppc_gpa_to_ua().
+
+This comment confuses me.  Looking closer at the code I see you're
+right, and it's initialized to NULL where defined, which I missed.
+
+But that has nothing to do with being returned by pointer from
+kvmppc_gpa_to_ua(), since one of your branches in the new code no
+longer passes &rmap to that function.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -194,25 +195,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---C311HLcnHV2CzHlo
+--d6nDKxlhctiV7bVq
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJW3nHyAAoJEGw4ysog2bOSxN8P+gIvu4XWPdU9i8MEAfHszvNr
-/tfyA98rb10fGRmSO508t37I52c81KxEdrvsNYpHhjTTVq6nAdf4I5PgKWw4nCap
-xmR6Msm1r5EOfNuMLdVSBvxroTvRx1tO413DIB9fVKn8B8wGzjrAkRHdCxLog2Lj
-ZltmOxsS2Kw3x/nWC+jw8xsZim0SoVbmsp8z6KuWuGxOt63UafpUjmRVFkjUo2RO
-LEpYBqUPlAG5J4F1/JhBA4Oin4zS2zVuJTZh94Bz4ppISu2+5C8K4x2QmJz8gVN9
-asQ94cDhoSMQq4jAgf3c//H/Em42HjeaCiJUzyka4chY0m8gykJXGn841i1Bqx01
-8PXXjjnoilVmYx7ILgJK+Bkb7XVcKfGZESlAso7t5SY5iOEWByyJ3zwKKFOE7PAX
-34d0yqDNN0i6/bcDZ550SMf5fCDglCPC9mIk564KKMIHC31BH5w/KinAxiPyNqX9
-LCEQ6KmidOEqJtHFXGpbnz0SPbAfwRbfd2mXnpGWe41NjxXC8R1OczsyrgdfKTkg
-czmA1Lsf6Pu/L+IuaRYUSJd3iAKZEZelEI4wfX2HDf7BUA4CeS9rPocrwM1x8xSh
-J+o6e93uD6u0T5S6Hc0Cba7aam6k+ESuWL1eSOoUZkcuKIlbRyhLHLY9kLGcmH/F
-RGFaEveWeKtqP+G88+fk
-=JD3+
+iQIcBAEBAgAGBQJW3nF6AAoJEGw4ysog2bOS5LYQALQ+R+kAfdrutuioHcM0sczb
+tkVIBfFz50XWkxXxTy7CVnbIlwT/OzbLwuWzwYKq26iFmJ+OGQU2DlAAWOc+StqP
+k8YqlSWGxmO2E/gJyM8bIto8LN2pgMyKEjlSRH65srDu9bt4EQ4NMxx0pxxPSepw
+IguK58rMx7Ojl51Il0bpoM4JTpRY/ZIqU+FFZ5018lg2WW+n0UgJbNvUxAqyViyG
+HKG1B9iDG0A9q2bcjM6xp0MzqwHyOQlniexngEWR9ZJIPpXggIx1Ym4QZ080/1Np
+1qn399pQWiSmj2kbWLbK9ngWUmOeN9YRNqgYgeGeID/KTS0I+YTg4UD/CsUVPeSV
+99OeLTmbJz+vrF3PSpVJRkzEmy0W59yWHUpb++xr+dfU4X45ZnqPjTIcU4TiPYCx
+cYBUXAAhhXBYmpYZnp9koU7C6Z9z9NDO3fuuaXdjqEmJn9MUcaPoddNUytxyIuby
+zGIXTNBT84HOR6LEx5mwACjNq60AdYXr4tfLIu3BX20+8BxpXRORDKrtMxVgfycP
+b7C2Y0bZqx+X13+vG4G0HfxVDVTMzSkezAEHkRoXoHz6Z3yLnKnpMhCDvSwB6W27
+s6mFaWNVie/6k45E6Z+K0wLZv4Y51yGIytHEKeWWk4QZnk3J+2VV9EoMv1KRFrbT
++5jmqGOwnI2rs4NMa5nP
+=zsBl
 -----END PGP SIGNATURE-----
 
---C311HLcnHV2CzHlo--
+--d6nDKxlhctiV7bVq--
