@@ -1,28 +1,38 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 594E71A010A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 19:56:01 +1100 (AEDT)
-Received: by mail-pa0-x241.google.com with SMTP id hj7so2813432pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Mar 2016 00:56:01 -0800 (PST)
-Subject: Re: [PATCH kernel 3/9] KVM: PPC: Use preregistered memory API to
- access TCE list
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <1457322077-26640-1-git-send-email-aik@ozlabs.ru>
- <1457322077-26640-4-git-send-email-aik@ozlabs.ru>
- <20160307060014.GL22546@voom.fritz.box> <56DE6768.4030202@ozlabs.ru>
- <20160308063018.GA22546@voom.fritz.box>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <56DFE519.6040605@ozlabs.ru>
-Date: Wed, 9 Mar 2016 19:55:53 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id CE8061A0060
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 20:14:49 +1100 (AEDT)
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Wed, 9 Mar 2016 09:14:44 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 72F9D1B0805F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 09:15:06 +0000 (GMT)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u299Eebf61997230
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 09:14:40 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u299Ecrb030288
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 02:14:40 -0700
+Subject: Re: [v6,12/20] cxl: Add guest-specific code
+To: Michael Ellerman <mpe@ellerman.id.au>, imunsie@au1.ibm.com,
+ michael.neuling@au1.ibm.com, manoj@linux.vnet.ibm.com,
+ mrochs@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+References: <20160309055533.92479140BB4@ozlabs.org>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Message-ID: <56DFE97D.6040606@linux.vnet.ibm.com>
+Date: Wed, 9 Mar 2016 10:14:37 +0100
 MIME-Version: 1.0
-In-Reply-To: <20160308063018.GA22546@voom.fritz.box>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+In-Reply-To: <20160309055533.92479140BB4@ozlabs.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,164 +42,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/08/2016 05:30 PM, David Gibson wrote:
-> On Tue, Mar 08, 2016 at 04:47:20PM +1100, Alexey Kardashevskiy wrote:
->> On 03/07/2016 05:00 PM, David Gibson wrote:
->>> On Mon, Mar 07, 2016 at 02:41:11PM +1100, Alexey Kardashevskiy wrote:
->>>> VFIO on sPAPR already implements guest memory pre-registration
->>>> when the entire guest RAM gets pinned. This can be used to translate
->>>> the physical address of a guest page containing the TCE list
->>> >from H_PUT_TCE_INDIRECT.
->>>>
->>>> This makes use of the pre-registrered memory API to access TCE list
->>>> pages in order to avoid unnecessary locking on the KVM memory
->>>> reverse map.
->>>>
->>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>
->>> Ok.. so, what's the benefit of not having to lock the rmap?
->>
->> Less locking -> less racing == good, no?
+Hi Michael,
+
+Le 09/03/2016 06:55, Michael Ellerman a écrit :
+> This breaks the SMP=n build:
+
+Arg! I'm adding it to my checklist.
+
+Thanks for the fix.
+
+   Fred
+
+> I've fixed it up with:
 >
-> Well.. maybe.  The increased difficulty in verifying that the code is
-> correct isn't always a good price to pay.
- >
->>>> ---
->>>>   arch/powerpc/kvm/book3s_64_vio_hv.c | 86 ++++++++++++++++++++++++++++++-------
->>>>   1 file changed, 70 insertions(+), 16 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
->>>> index 44be73e..af155f6 100644
->>>> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
->>>> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
->>>> @@ -180,6 +180,38 @@ long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
->>>>   EXPORT_SYMBOL_GPL(kvmppc_gpa_to_ua);
->>>>
->>>>   #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->>>> +static mm_context_t *kvmppc_mm_context(struct kvm_vcpu *vcpu)
->>>> +{
->>>> +	struct task_struct *task;
->>>> +
->>>> +	task = vcpu->arch.run_task;
->>>> +	if (unlikely(!task || !task->mm))
->>>> +		return NULL;
->>>> +
->>>> +	return &task->mm->context;
->>>> +}
->>>> +
->>>> +static inline bool kvmppc_preregistered(struct kvm_vcpu *vcpu)
->>>> +{
->>>> +	mm_context_t *mm = kvmppc_mm_context(vcpu);
->>>> +
->>>> +	if (unlikely(!mm))
->>>> +		return false;
->>>> +
->>>> +	return mm_iommu_preregistered(mm);
->>>> +}
->>>> +
->>>> +static struct mm_iommu_table_group_mem_t *kvmppc_rm_iommu_lookup(
->>>> +		struct kvm_vcpu *vcpu, unsigned long ua, unsigned long size)
->>>> +{
->>>> +	mm_context_t *mm = kvmppc_mm_context(vcpu);
->>>> +
->>>> +	if (unlikely(!mm))
->>>> +		return NULL;
->>>> +
->>>> +	return mm_iommu_lookup_rm(mm, ua, size);
->>>> +}
->>>> +
->>>>   long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->>>>   		      unsigned long ioba, unsigned long tce)
->>>>   {
->>>> @@ -261,23 +293,44 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
->>>>   	if (ret != H_SUCCESS)
->>>>   		return ret;
->>>>
->>>> -	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
->>>> -		return H_TOO_HARD;
->>>> +	if (kvmppc_preregistered(vcpu)) {
->>>> +		/*
->>>> +		 * We get here if guest memory was pre-registered which
->>>> +		 * is normally VFIO case and gpa->hpa translation does not
->>>> +		 * depend on hpt.
->>>> +		 */
->>>> +		struct mm_iommu_table_group_mem_t *mem;
->>>>
->>>> -	rmap = (void *) vmalloc_to_phys(rmap);
->>>> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, NULL))
->>>> +			return H_TOO_HARD;
->>>>
->>>> -	/*
->>>> -	 * Synchronize with the MMU notifier callbacks in
->>>> -	 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
->>>> -	 * While we have the rmap lock, code running on other CPUs
->>>> -	 * cannot finish unmapping the host real page that backs
->>>> -	 * this guest real page, so we are OK to access the host
->>>> -	 * real page.
->>>> -	 */
->>>> -	lock_rmap(rmap);
->>>> -	if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
->>>> -		ret = H_TOO_HARD;
->>>> -		goto unlock_exit;
->>>> +		mem = kvmppc_rm_iommu_lookup(vcpu, ua, IOMMU_PAGE_SIZE_4K);
->>>> +		if (!mem || mm_iommu_rm_ua_to_hpa(mem, ua, &tces))
->>>> +			return H_TOO_HARD;
->>>> +	} else {
->>>> +		/*
->>>> +		 * This is emulated devices case.
->>>> +		 * We do not require memory to be preregistered in this case
->>>> +		 * so lock rmap and do __find_linux_pte_or_hugepte().
->>>> +		 */
->>>> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
->>>> +			return H_TOO_HARD;
->>>> +
->>>> +		rmap = (void *) vmalloc_to_phys(rmap);
->>>> +
->>>> +		/*
->>>> +		 * Synchronize with the MMU notifier callbacks in
->>>> +		 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
->>>> +		 * While we have the rmap lock, code running on other CPUs
->>>> +		 * cannot finish unmapping the host real page that backs
->>>> +		 * this guest real page, so we are OK to access the host
->>>> +		 * real page.
->>>> +		 */
->>>> +		lock_rmap(rmap);
->>>> +		if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
->>>> +			ret = H_TOO_HARD;
->>>> +			goto unlock_exit;
->>>> +		}
->>>>   	}
->>>>
->>>>   	for (i = 0; i < npages; ++i) {
->>>> @@ -291,7 +344,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
->>>>   	}
->>>>
->>>>   unlock_exit:
->>>> -	unlock_rmap(rmap);
->>>> +	if (rmap)
->>>
->>> I don't see where rmap is initialized to NULL in the case where it's
->>> not being used.
->>
->> @rmap is not new to this function, and it has always been initialized to
->> NULL as it was returned via a pointer from kvmppc_gpa_to_ua().
+> diff --git a/drivers/misc/cxl/hcalls.c b/drivers/misc/cxl/hcalls.c
+> index f01d4c012620..d6d11f4056d7 100644
+> --- a/drivers/misc/cxl/hcalls.c
+> +++ b/drivers/misc/cxl/hcalls.c
+> @@ -11,7 +11,6 @@
+>   #include <linux/compiler.h>
+>   #include <linux/types.h>
+>   #include <linux/delay.h>
+> -#include <asm/hvcall.h>
+>   #include <asm/byteorder.h>
+>   #include "hcalls.h"
+>   #include "trace.h"
+> diff --git a/drivers/misc/cxl/hcalls.h b/drivers/misc/cxl/hcalls.h
+> index 6bfab323578d..3e25522a5df6 100644
+> --- a/drivers/misc/cxl/hcalls.h
+> +++ b/drivers/misc/cxl/hcalls.h
+> @@ -12,6 +12,7 @@
 >
-> This comment confuses me.  Looking closer at the code I see you're
-> right, and it's initialized to NULL where defined, which I missed.
+>   #include <linux/types.h>
+>   #include <asm/byteorder.h>
+> +#include <asm/hvcall.h>
+>   #include "cxl.h"
 >
-> But that has nothing to do with being returned by pointer from
-> kvmppc_gpa_to_ua(), since one of your branches in the new code no
-> longer passes &rmap to that function.
-
-
-So? The code is still correct - the "preregistered branch" does not touch 
-NULL pointer, it remains NULL and unlock_rmap() is not called. I agree the 
-patch is not the easiest to read but how can I improve it to get your "rb"? 
-Replace "if(rmap)" with "if (kvmppc_preregistered(vcpu))"? Move that loop 
-between lock_rmap/unlock_rmap to a helper? kvmppc_rm_h_put_tce_indirect() 
-is not big enough to justify splitting, the comments inside it are though...
-
-
-
--- 
-Alexey
+>   #define SG_BUFFER_SIZE 4096
+>
+>
+> cheers
+>
