@@ -1,18 +1,18 @@
 Return-Path: <qiang.zhao@nxp.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0062.outbound.protection.outlook.com [65.55.169.62])
+ (mail-bl2on0073.outbound.protection.outlook.com [65.55.169.73])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 750851A0324
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 12:31:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EB38E1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 12:52:11 +1100 (AEDT)
 From: Zhao Qiang <qiang.zhao@nxp.com>
 To: <robh+dt@kernel.org>
 CC: <oss@buserror.net>, <leoyang.li@nxp.com>, <xiaobo.xie@nxp.com>,
  <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, Zhao Qiang <qiang.zhao@nxp.com>
-Subject: [PATCH v5 6/7] T104xRDB: Add qe node to t104xrdb
-Date: Wed, 9 Mar 2016 09:21:33 +0800
-Message-ID: <1457486494-11377-6-git-send-email-qiang.zhao@nxp.com>
+Subject: [PATCH v5 2/7] QE: Add ucc hdlc document to bindings
+Date: Wed, 9 Mar 2016 09:21:29 +0800
+Message-ID: <1457486494-11377-2-git-send-email-qiang.zhao@nxp.com>
 In-Reply-To: <1457486494-11377-1-git-send-email-qiang.zhao@nxp.com>
 References: <1457486494-11377-1-git-send-email-qiang.zhao@nxp.com>
 MIME-Version: 1.0
@@ -26,68 +26,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-add qe node to t104xrdb.dtsi
+Add ucc hdlc document to
+Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/network.txt
 
 Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
 Changes for v2
-	- rebase
+	- use ucc-hdlc instead of ucc_hdlc
+	- add more information to properties.
 Changes for v3
-	- rebase
+	- use fsl,tx-timeslot-mask instead of fsl,tx-timeslot 
+	- use fsl,rx-timeslot-mask instead of fsl,rx-timeslot 
+	- add more info
 Changes for v4
-	- rebase
+	- NA 
 Changes for v5
-	- rebase
+	- NA 
 
- arch/powerpc/boot/dts/fsl/t104xrdb.dtsi | 38 +++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ .../bindings/powerpc/fsl/cpm_qe/network.txt        | 81 ++++++++++++++++++++++
+ 1 file changed, 81 insertions(+)
 
-diff --git a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-index 830ea48..69d5057 100644
---- a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-@@ -186,4 +186,42 @@
- 				  0 0x00010000>;
- 		};
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/network.txt b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/network.txt
+index 29b28b8..03c7416 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/network.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/network.txt
+@@ -41,3 +41,84 @@ Example:
+ 		fsl,mdio-pin = <12>;
+ 		fsl,mdc-pin = <13>;
  	};
 +
-+	qe: qe@ffe140000 {
-+		ranges = <0x0 0xf 0xfe140000 0x40000>;
-+		reg = <0xf 0xfe140000 0 0x480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <0>;
++* HDLC
 +
-+		si1: si@700 {
-+			compatible = "fsl,t1040-qe-si";
-+			reg = <0x700 0x80>;
-+		};
++Currently defined compatibles:
++- fsl,ucc-hdlc
 +
-+		siram1: siram@1000 {
-+			compatible = "fsl,t1040-qe-siram";
-+			reg = <0x1000 0x800>;
-+		};
++Properties for fsl,ucc-hdlc:
++- rx-clock-name
++- tx-clock-name
++	Usage: required
++	Value type: <string>
++	Definition : Must be "brg1"-"brg16" for internal clock source,
++		     Must be "clk1"-"clk24" for external clock source.
 +
-+		ucc_hdlc: ucc@2000 {
-+			compatible = "fsl,ucc-hdlc";
-+			rx-clock-name = "clk8";
-+			tx-clock-name = "clk9";
-+			fsl,rx-sync-clock = "rsync_pin";
-+			fsl,tx-sync-clock = "tsync_pin";
-+			fsl,tx-timeslot-mask = <0xfffffffe>;
-+			fsl,rx-timeslot-mask = <0xfffffffe>;
-+			fsl,tdm-framer-type = "e1";
-+			fsl,tdm-id = <0>;
-+			fsl,siram-entry-id = <0>;
-+			fsl,tdm-interface;
-+		};
++- fsl,tdm-interface
++	Usage: optional
++	Value type: <empty>
++	Definition : Specify that hdlc is based on tdm-interface
 +
-+		ucc_serial: ucc@2200 {
-+			compatible = "fsl,t1040-ucc-uart";
-+			port-number = <0>;
-+			rx-clock-name = "brg2";
-+			tx-clock-name = "brg2";
-+		};
++The property below is dependent on fsl,tdm-interface:
++- fsl,rx-sync-clock
++	Usage: required
++	Value type: <string>
++	Definition : Must be "none", "rsync_pin", "brg9-11" and "brg13-15".
++
++- fsl,tx-sync-clock
++	Usage: required
++	Value type: <string>
++	Definition : Must be "none", "tsync_pin", "brg9-11" and "brg13-15".
++
++- fsl,tdm-framer-type
++	Usage: required for tdm interface
++	Value type: <string>
++	Definition : "e1" or "t1".Now e1 and t1 are used, other framer types
++		     are not supported.
++
++- fsl,tdm-id
++	Usage: required for tdm interface
++	Value type: <u32>
++	Definition : number of TDM ID
++
++- fsl,tx-timeslot-mask
++- fsl,rx-timeslot-mask
++	Usage: required for tdm interface
++	Value type: <u32>
++	Definition : time slot mask for TDM operation. Indicates which time
++		     slots used for transmitting and receiving.
++
++- fsl,siram-entry-id
++	Usage: required for tdm interface
++	Value type: <u32>
++	Definition : Must be 0,2,4...64. the number of TDM entry.
++
++- fsl,tdm-internal-loopback
++	usage: optional for tdm interface
++	value type: <empty>
++	Definition : Internal loopback connecting on TDM layer.
++
++Example for tdm interface:
++
++	ucc@2000 {
++		compatible = "fsl,ucc-hdlc";
++		rx-clock-name = "clk8";
++		tx-clock-name = "clk9";
++		fsl,rx-sync-clock = "rsync_pin";
++		fsl,tx-sync-clock = "tsync_pin";
++		fsl,tx-timeslot-mask = <0xfffffffe>;
++		fsl,rx-timeslot-mask = <0xfffffffe>;
++		fsl,tdm-framer-type = "e1";
++		fsl,tdm-id = <0>;
++		fsl,siram-entry-id = <0>;
++		fsl,tdm-interface;
 +	};
- };
++
++Example for hdlc without tdm interface:
++
++	ucc@2000 {
++		compatible = "fsl,ucc-hdlc";
++		rx-clock-name = "brg1";
++		tx-clock-name = "brg1";
++	};
 -- 
 2.1.0.27.g96db324
