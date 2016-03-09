@@ -1,28 +1,39 @@
-Return-Path: <pmladek@suse.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 15B671A0060
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 20:44:30 +1100 (AEDT)
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7EF86140216
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Mar 2016 20:44:28 +1100 (AEDT)
-Date: Wed, 9 Mar 2016 10:44:23 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Torsten Duwe <duwe@lst.de>
-Cc: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com, jeyu@redhat.com, jkosina@suse.cz,
- live-patching@vger.kernel.org, mbenes@suse.cz
-Subject: Re: [PATCH][v6][RFC] livepatch/ppc: Enable livepatching on powerpc
-Message-ID: <20160309094423.GH10940@pathway.suse.cz>
-References: <1457506780-19556-1-git-send-email-bsingharora@gmail.com>
- <20160309091904.GA23039@lst.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160309091904.GA23039@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8243F1A0060
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 20:48:54 +1100 (AEDT)
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Wed, 9 Mar 2016 16:30:48 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E5833357805B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 17:30:29 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u296ULmx21364770
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 17:30:29 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u296TvPf024485
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 17:29:57 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alistair Popple <alistair@popple.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Daniel Axtens <dja@axtens.net>, David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Russell Currey <ruscur@russell.cc>,
+ Alex Williamson <alex.williamson@redhat.com>
+Subject: [PATCH kernel 09/10] powerpc/powernv/ioda2: Export some helpers
+Date: Wed,  9 Mar 2016 17:29:05 +1100
+Message-Id: <1457504946-40649-10-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1457504946-40649-1-git-send-email-aik@ozlabs.ru>
+References: <1457504946-40649-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,58 +43,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 2016-03-09 10:19:04, Torsten Duwe wrote:
-> On Wed, Mar 09, 2016 at 05:59:40PM +1100, Balbir Singh wrote:
-> > 
-> > The previous revision was nacked by Torsten, but compared to the alternatives
-> 
-> I nacked it because I was confident it couldn't work. Same goes
-> for this one, sorry. My good intention was to save us all some work.
-> 
-> > @@ -1265,6 +1271,51 @@ ftrace_call:
-> >  	ld	r0, LRSAVE(r1)
-> >  	mtlr	r0
-> >  
-> > +#ifdef CONFIG_LIVEPATCH
-> > +	beq+	4f		/* likely(old_NIP == new_NIP) */
-> > +	/*
-> > +	 * For a local call, restore this TOC after calling the patch function.
-> 
-> This is the key issue.
-> 
-> Ftrace_caller can gather and save the current r2 contents, no problem;
-> but the point is, it needs to be restored *after* the replacement function.
-> I see 3 ways to accomplish this:
-> 
-> 1st: make _every_ replacement function aware of this, and make it restore
->      the TOC manually just before each return statement.
-> 
-> 2nd: provide a global hook to do the job, and use a stack frame to execute it.
-> 
-> 3rd: have a global hook like solution 2, but let it have its own data
->      structure, I'd call it a "shadow stack", for the real return addresses.
->      See struct fgraph_cpu_data in kernel/trace/trace_functions_graph.c
-> 
-> Using heuristics to determine whether the call was local or global
-> makes me feel highly uncomfortable; one day it will break and
-> nobody will remember why.
-> 
-> Balbir, the problem with your patch is that it goes only half the way from
-> my solution 2 towards solution 1. When you call a helper function on return,
-> you need a place to store the real return address.
-> 
-> I'll try to demonstrate a solution 1 as well, but you'll probably won't like
-> that either...
+We are going to support VFIO on NPU PHB type which will share some code
+with the normal IODA2 PHB.
 
-To be honest, I still do not have a good picture about all the
-problems in my head. Anyway, I would really appreciate if we could
-find a solution that would work transparently. I mean that adding
-an extra hacks into selected functions in the patch might be quite
-error prone and problems hard to debug. I think that we all want this
-but I wanted to be sure :-)
+This exports pnv_pci_ioda2_create_table and pnv_pci_ioda2_get_table_size.
 
-BTW: I am getting close to send a patch with some basic livepatch
-documentation. It might be used to document "temporary" limitations.
+This exports debugging helper pe_level_printk() as well.
 
-Best Regards,
-Petr
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 13 +++----------
+ arch/powerpc/platforms/powernv/pci.h      | 15 +++++++++++++++
+ 2 files changed, 18 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index becd168..1a96498 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -56,7 +56,7 @@
+ 
+ static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl);
+ 
+-static void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
++void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ 			    const char *fmt, ...)
+ {
+ 	struct va_format vaf;
+@@ -87,13 +87,6 @@ static void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ 	va_end(args);
+ }
+ 
+-#define pe_err(pe, fmt, ...)					\
+-	pe_level_printk(pe, KERN_ERR, fmt, ##__VA_ARGS__)
+-#define pe_warn(pe, fmt, ...)					\
+-	pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
+-#define pe_info(pe, fmt, ...)					\
+-	pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
+-
+ static bool pnv_iommu_bypass_disabled __read_mostly;
+ 
+ static int __init iommu_setup(char *str)
+@@ -2130,7 +2123,7 @@ static long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
+ 		__u32 page_shift, __u64 window_size, __u32 levels,
+ 		struct iommu_table *tbl);
+ 
+-static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
++long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
+ 		int num, __u32 page_shift, __u64 window_size, __u32 levels,
+ 		struct iommu_table **ptbl)
+ {
+@@ -2246,7 +2239,7 @@ static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
+ #endif
+ 
+ #ifdef CONFIG_IOMMU_API
+-static unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
++unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
+ 		__u64 window_size, __u32 levels)
+ {
+ 	unsigned long bytes = 0;
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 0c0083a..3017717d 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -232,6 +232,21 @@ extern void pnv_pci_dma_bus_setup(struct pci_bus *bus);
+ extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
+ extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
+ 
++extern unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
++		__u64 window_size, __u32 levels);
++extern long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
++		int num, __u32 page_shift, __u64 window_size, __u32 levels,
++		struct iommu_table **ptbl);
++
++extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
++			    const char *fmt, ...);
++#define pe_err(pe, fmt, ...)					\
++	pe_level_printk(pe, KERN_ERR, fmt, ##__VA_ARGS__)
++#define pe_warn(pe, fmt, ...)					\
++	pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
++#define pe_info(pe, fmt, ...)					\
++	pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
++
+ /* Nvlink functions */
+ extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
+ extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
+-- 
+2.5.0.rc3
