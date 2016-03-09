@@ -1,35 +1,28 @@
-Return-Path: <alessio.bogani@elettra.eu>
-Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
- [140.105.206.208])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 694941A00BC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 19:54:46 +1100 (AEDT)
-Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
- by localhost (Email Security Appliance) with SMTP id 38713440D9A_6DFE4D2B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 08:54:42 +0000 (GMT)
-Received: from mail-qg0-f45.google.com (mail-qg0-f45.google.com
- [209.85.192.45])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (verified OK))
- by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
- 40C5543E099_6DFE4B0F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 08:54:08 +0000 (GMT)
-Received: by mail-qg0-f45.google.com with SMTP id t4so35746008qge.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Mar 2016 00:54:08 -0800 (PST)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 594E71A010A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 19:56:01 +1100 (AEDT)
+Received: by mail-pa0-x241.google.com with SMTP id hj7so2813432pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Mar 2016 00:56:01 -0800 (PST)
+Subject: Re: [PATCH kernel 3/9] KVM: PPC: Use preregistered memory API to
+ access TCE list
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <1457322077-26640-1-git-send-email-aik@ozlabs.ru>
+ <1457322077-26640-4-git-send-email-aik@ozlabs.ru>
+ <20160307060014.GL22546@voom.fritz.box> <56DE6768.4030202@ozlabs.ru>
+ <20160308063018.GA22546@voom.fritz.box>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <56DFE519.6040605@ozlabs.ru>
+Date: Wed, 9 Mar 2016 19:55:53 +1100
 MIME-Version: 1.0
-In-Reply-To: <20160309063818.GA10069@home.buserror.net>
-References: <1457423952-13014-1-git-send-email-alessio.bogani@elettra.eu>
- <20160309063818.GA10069@home.buserror.net>
-Date: Wed, 9 Mar 2016 09:54:06 +0100
-Message-ID: <CAPk1OjGBKQPxvG1MOzLfxi3muJCCYcqDrtzf7TdfF6CA_xxOmg@mail.gmail.com>
-Subject: Re: [1/1] powerpc/embedded6xx: Make reboot works on MVME5100
-From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-To: Scott Wood <oss@buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- Stephen Chivers <schivers@csc.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20160308063018.GA22546@voom.fritz.box>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,30 +32,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+On 03/08/2016 05:30 PM, David Gibson wrote:
+> On Tue, Mar 08, 2016 at 04:47:20PM +1100, Alexey Kardashevskiy wrote:
+>> On 03/07/2016 05:00 PM, David Gibson wrote:
+>>> On Mon, Mar 07, 2016 at 02:41:11PM +1100, Alexey Kardashevskiy wrote:
+>>>> VFIO on sPAPR already implements guest memory pre-registration
+>>>> when the entire guest RAM gets pinned. This can be used to translate
+>>>> the physical address of a guest page containing the TCE list
+>>> >from H_PUT_TCE_INDIRECT.
+>>>>
+>>>> This makes use of the pre-registrered memory API to access TCE list
+>>>> pages in order to avoid unnecessary locking on the KVM memory
+>>>> reverse map.
+>>>>
+>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>
+>>> Ok.. so, what's the benefit of not having to lock the rmap?
+>>
+>> Less locking -> less racing == good, no?
+>
+> Well.. maybe.  The increased difficulty in verifying that the code is
+> correct isn't always a good price to pay.
+ >
+>>>> ---
+>>>>   arch/powerpc/kvm/book3s_64_vio_hv.c | 86 ++++++++++++++++++++++++++++++-------
+>>>>   1 file changed, 70 insertions(+), 16 deletions(-)
+>>>>
+>>>> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+>>>> index 44be73e..af155f6 100644
+>>>> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
+>>>> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+>>>> @@ -180,6 +180,38 @@ long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
+>>>>   EXPORT_SYMBOL_GPL(kvmppc_gpa_to_ua);
+>>>>
+>>>>   #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>>>> +static mm_context_t *kvmppc_mm_context(struct kvm_vcpu *vcpu)
+>>>> +{
+>>>> +	struct task_struct *task;
+>>>> +
+>>>> +	task = vcpu->arch.run_task;
+>>>> +	if (unlikely(!task || !task->mm))
+>>>> +		return NULL;
+>>>> +
+>>>> +	return &task->mm->context;
+>>>> +}
+>>>> +
+>>>> +static inline bool kvmppc_preregistered(struct kvm_vcpu *vcpu)
+>>>> +{
+>>>> +	mm_context_t *mm = kvmppc_mm_context(vcpu);
+>>>> +
+>>>> +	if (unlikely(!mm))
+>>>> +		return false;
+>>>> +
+>>>> +	return mm_iommu_preregistered(mm);
+>>>> +}
+>>>> +
+>>>> +static struct mm_iommu_table_group_mem_t *kvmppc_rm_iommu_lookup(
+>>>> +		struct kvm_vcpu *vcpu, unsigned long ua, unsigned long size)
+>>>> +{
+>>>> +	mm_context_t *mm = kvmppc_mm_context(vcpu);
+>>>> +
+>>>> +	if (unlikely(!mm))
+>>>> +		return NULL;
+>>>> +
+>>>> +	return mm_iommu_lookup_rm(mm, ua, size);
+>>>> +}
+>>>> +
+>>>>   long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>>>>   		      unsigned long ioba, unsigned long tce)
+>>>>   {
+>>>> @@ -261,23 +293,44 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+>>>>   	if (ret != H_SUCCESS)
+>>>>   		return ret;
+>>>>
+>>>> -	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
+>>>> -		return H_TOO_HARD;
+>>>> +	if (kvmppc_preregistered(vcpu)) {
+>>>> +		/*
+>>>> +		 * We get here if guest memory was pre-registered which
+>>>> +		 * is normally VFIO case and gpa->hpa translation does not
+>>>> +		 * depend on hpt.
+>>>> +		 */
+>>>> +		struct mm_iommu_table_group_mem_t *mem;
+>>>>
+>>>> -	rmap = (void *) vmalloc_to_phys(rmap);
+>>>> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, NULL))
+>>>> +			return H_TOO_HARD;
+>>>>
+>>>> -	/*
+>>>> -	 * Synchronize with the MMU notifier callbacks in
+>>>> -	 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
+>>>> -	 * While we have the rmap lock, code running on other CPUs
+>>>> -	 * cannot finish unmapping the host real page that backs
+>>>> -	 * this guest real page, so we are OK to access the host
+>>>> -	 * real page.
+>>>> -	 */
+>>>> -	lock_rmap(rmap);
+>>>> -	if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
+>>>> -		ret = H_TOO_HARD;
+>>>> -		goto unlock_exit;
+>>>> +		mem = kvmppc_rm_iommu_lookup(vcpu, ua, IOMMU_PAGE_SIZE_4K);
+>>>> +		if (!mem || mm_iommu_rm_ua_to_hpa(mem, ua, &tces))
+>>>> +			return H_TOO_HARD;
+>>>> +	} else {
+>>>> +		/*
+>>>> +		 * This is emulated devices case.
+>>>> +		 * We do not require memory to be preregistered in this case
+>>>> +		 * so lock rmap and do __find_linux_pte_or_hugepte().
+>>>> +		 */
+>>>> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
+>>>> +			return H_TOO_HARD;
+>>>> +
+>>>> +		rmap = (void *) vmalloc_to_phys(rmap);
+>>>> +
+>>>> +		/*
+>>>> +		 * Synchronize with the MMU notifier callbacks in
+>>>> +		 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
+>>>> +		 * While we have the rmap lock, code running on other CPUs
+>>>> +		 * cannot finish unmapping the host real page that backs
+>>>> +		 * this guest real page, so we are OK to access the host
+>>>> +		 * real page.
+>>>> +		 */
+>>>> +		lock_rmap(rmap);
+>>>> +		if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
+>>>> +			ret = H_TOO_HARD;
+>>>> +			goto unlock_exit;
+>>>> +		}
+>>>>   	}
+>>>>
+>>>>   	for (i = 0; i < npages; ++i) {
+>>>> @@ -291,7 +344,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+>>>>   	}
+>>>>
+>>>>   unlock_exit:
+>>>> -	unlock_rmap(rmap);
+>>>> +	if (rmap)
+>>>
+>>> I don't see where rmap is initialized to NULL in the case where it's
+>>> not being used.
+>>
+>> @rmap is not new to this function, and it has always been initialized to
+>> NULL as it was returned via a pointer from kvmppc_gpa_to_ua().
+>
+> This comment confuses me.  Looking closer at the code I see you're
+> right, and it's initialized to NULL where defined, which I missed.
+>
+> But that has nothing to do with being returned by pointer from
+> kvmppc_gpa_to_ua(), since one of your branches in the new code no
+> longer passes &rmap to that function.
 
-On 9 March 2016 at 07:38, Scott Wood <oss@buserror.net> wrote:
-> On Tue, Mar 08, 2016 at 08:59:12AM +0100, Alessio Igor Bogani wrote:
->> The mtmsr() function hangs during restart. Make reboot works on
->> MVME5100 removing that function call.
-[...]
-> Do you know why MSR_IP was there to begin with?
 
-I don't know that line came from arch/ppc pre git era.
+So? The code is still correct - the "preregistered branch" does not touch 
+NULL pointer, it remains NULL and unlock_rmap() is not called. I agree the 
+patch is not the easiest to read but how can I improve it to get your "rb"? 
+Replace "if(rmap)" with "if (kvmppc_preregistered(vcpu))"? Move that loop 
+between lock_rmap/unlock_rmap to a helper? kvmppc_rm_h_put_tce_indirect() 
+is not big enough to justify splitting, the comments inside it are though...
 
-> Does this board have a
-> switch that determines whether boot vectors are high or low (I remember
-> some 83xx boards that did), in which case is this fixing one config by
-> breaking another?
 
-I haven't found any in the documentation (Installation and Use Manual
-6806800A38C February 2011 Edition pag 3 Sect. "Hardware
-configuration"). Perhaps in the firmware (PPCBug)?
 
-In any case I added Stephen Chivers in CC who is the author of the
-code in hope that he knows better.
-
-Thanks!
-
-Ciao,
-Alessio
+-- 
+Alexey
