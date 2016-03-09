@@ -1,38 +1,27 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <duwe@lst.de>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CE8061A0060
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 20:14:49 +1100 (AEDT)
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 9 Mar 2016 09:14:44 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 72F9D1B0805F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 09:15:06 +0000 (GMT)
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
- [9.149.37.216])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u299Eebf61997230
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 09:14:40 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u299Ecrb030288
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 02:14:40 -0700
-Subject: Re: [v6,12/20] cxl: Add guest-specific code
-To: Michael Ellerman <mpe@ellerman.id.au>, imunsie@au1.ibm.com,
- michael.neuling@au1.ibm.com, manoj@linux.vnet.ibm.com,
- mrochs@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-References: <20160309055533.92479140BB4@ozlabs.org>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Message-ID: <56DFE97D.6040606@linux.vnet.ibm.com>
-Date: Wed, 9 Mar 2016 10:14:37 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1DE1B1A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 20:19:08 +1100 (AEDT)
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id A586E14031F
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Mar 2016 20:19:07 +1100 (AEDT)
+Date: Wed, 9 Mar 2016 10:19:04 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
+ jeyu@redhat.com, jkosina@suse.cz, live-patching@vger.kernel.org,
+ mbenes@suse.cz
+Subject: Re: [PATCH][v6][RFC] livepatch/ppc: Enable livepatching on powerpc
+Message-ID: <20160309091904.GA23039@lst.de>
+References: <1457506780-19556-1-git-send-email-bsingharora@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20160309055533.92479140BB4@ozlabs.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1457506780-19556-1-git-send-email-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,44 +31,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+On Wed, Mar 09, 2016 at 05:59:40PM +1100, Balbir Singh wrote:
+> 
+> The previous revision was nacked by Torsten, but compared to the alternatives
 
-Le 09/03/2016 06:55, Michael Ellerman a écrit :
-> This breaks the SMP=n build:
+I nacked it because I was confident it couldn't work. Same goes
+for this one, sorry. My good intention was to save us all some work.
 
-Arg! I'm adding it to my checklist.
+> @@ -1265,6 +1271,51 @@ ftrace_call:
+>  	ld	r0, LRSAVE(r1)
+>  	mtlr	r0
+>  
+> +#ifdef CONFIG_LIVEPATCH
+> +	beq+	4f		/* likely(old_NIP == new_NIP) */
+> +	/*
+> +	 * For a local call, restore this TOC after calling the patch function.
 
-Thanks for the fix.
+This is the key issue.
 
-   Fred
+Ftrace_caller can gather and save the current r2 contents, no problem;
+but the point is, it needs to be restored *after* the replacement function.
+I see 3 ways to accomplish this:
 
-> I've fixed it up with:
->
-> diff --git a/drivers/misc/cxl/hcalls.c b/drivers/misc/cxl/hcalls.c
-> index f01d4c012620..d6d11f4056d7 100644
-> --- a/drivers/misc/cxl/hcalls.c
-> +++ b/drivers/misc/cxl/hcalls.c
-> @@ -11,7 +11,6 @@
->   #include <linux/compiler.h>
->   #include <linux/types.h>
->   #include <linux/delay.h>
-> -#include <asm/hvcall.h>
->   #include <asm/byteorder.h>
->   #include "hcalls.h"
->   #include "trace.h"
-> diff --git a/drivers/misc/cxl/hcalls.h b/drivers/misc/cxl/hcalls.h
-> index 6bfab323578d..3e25522a5df6 100644
-> --- a/drivers/misc/cxl/hcalls.h
-> +++ b/drivers/misc/cxl/hcalls.h
-> @@ -12,6 +12,7 @@
->
->   #include <linux/types.h>
->   #include <asm/byteorder.h>
-> +#include <asm/hvcall.h>
->   #include "cxl.h"
->
->   #define SG_BUFFER_SIZE 4096
->
->
-> cheers
->
+1st: make _every_ replacement function aware of this, and make it restore
+     the TOC manually just before each return statement.
+
+2nd: provide a global hook to do the job, and use a stack frame to execute it.
+
+3rd: have a global hook like solution 2, but let it have its own data
+     structure, I'd call it a "shadow stack", for the real return addresses.
+     See struct fgraph_cpu_data in kernel/trace/trace_functions_graph.c
+
+Using heuristics to determine whether the call was local or global
+makes me feel highly uncomfortable; one day it will break and
+nobody will remember why.
+
+Balbir, the problem with your patch is that it goes only half the way from
+my solution 2 towards solution 1. When you call a helper function on return,
+you need a place to store the real return address.
+
+I'll try to demonstrate a solution 1 as well, but you'll probably won't like
+that either...
+
+	Torsten
