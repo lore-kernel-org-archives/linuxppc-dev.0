@@ -2,20 +2,20 @@ Return-Path: <oss@buserror.net>
 Received: from host.buserror.net (host.buserror.net [209.198.135.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EA7B81A009A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 10:57:53 +1100 (AEDT)
-Date: Tue, 8 Mar 2016 17:57:49 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3A8BA1A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 11:10:09 +1100 (AEDT)
+Message-ID: <1457482205.5360.114.camel@buserror.net>
 From: Scott Wood <oss@buserror.net>
-To: Ashish kumar <Ashish.kumar@nxp.com>
-Cc: scott.wood@nxp.com, linuxppc-dev@lists.ozlabs.org,
- Shaveta Leekha <Shaveta.Leekha@nxp.com>
-Message-ID: <20160308235749.GA1048@home.buserror.net>
-References: <1453987059-26263-1-git-send-email-Ashish.Kumar@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1453987059-26263-1-git-send-email-Ashish.Kumar@nxp.com>
-Subject: Re: arch/PPC:B4860qds/B4420qds: Updates to device trees for B4860
- for DSP clusters and their L2 caches
+To: luigi burdo <intermediadc@hotmail.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Cc: "matthew@a-eon.com" <matthew@a-eon.com>, Trevor Dickinson
+ <contact@a-eon.com>, "chzigotzky@xenosoft.de" <chzigotzky@xenosoft.de>
+Date: Tue, 08 Mar 2016 18:10:05 -0600
+In-Reply-To: <DUB117-W18044BE969CC05E69F545CC8BA0@phx.gbl>
+References: <DUB117-W18044BE969CC05E69F545CC8BA0@phx.gbl>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: Freescale P5020 cpu will be kvm-pr?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,49 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 28, 2016 at 06:47:39PM +0530, Ashish kumar wrote:
-> B4860 has 1 PPC core cluster and 3 DSP core clusters.
-> Similarly B4420 has 1 PPC core cluster and 1 DSP core cluster.
-> 
-> Each DSP core cluster consists of 2 SC3900 cores and a shared L2 cache.
-> 
-> Add DSP clusters for B4420
-> The L2 cache nodes such that they now appear in only the
-> soc specific dtsi files(b4860si-post.dtsi and b4420si-post.dtsi).
-> 
-> Signed-off-by: Ashish Kumar <Ashish.Kumar@nxp.com>
-> Signed-off-by: Shaveta Leekha  <Shaveta.Leekha@nxp.com>
+On Mon, 2016-02-29 at 20:03 +0100, luigi burdo wrote:
+> Hi all,
+> sorry for this email but i need to ask to  Alexander Graf and Michael
+> Ellerman if will be possible have kvm and kvm-pr for the Freescale/Nix P5020
+> cpu . 
 
-The subject line is way too long, and has a non-standard prefix.
+KVM for e5500 uses hardware hypervisor features.  PR-mode KVM is not
+supported.  Nested KVM is not supported.
 
-It should be something like "powerpc/fsl: Add DSP clusters and their L2 nodes"
+> We are testing a new desktop machine with this powerpc cpu classes
+> and right now we see kvm under qemu is working only on emb side, this
+> because the kernel
+> set the e5500 cpu as a emb and there is no an option for build the kernel
+> with book3s.
 
-> +
-> +	dsp-clusters {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		dsp-cluster0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			compatible = "fsl,sc3900-cluster";
-> +			reg = <0>;
-> +
-> +			dsp0: dsp@0 {
-> +				compatible = "fsl,sc3900";
-> +				reg = <0>;
-> +				next-level-cache = <&L2_2>;
-> +			};
-> +			dsp1: dsp@1 {
-> +				compatible = "fsl,sc3900";
-> +				reg = <1>;
-> +				next-level-cache = <&L2_2>;
-> +			};
-> +		};
-> +	};
+p5020 uses an e5500 core which is book3e.  You cannot use a book3s kernel with
+it.  Why would you want to?
 
-Where is the binding for this stuff?
-
-Why "dsp-cluster0" instead of "dsp-cluster@0"?
+I don't know what you mean by "working only on emb side".
 
 -Scott
