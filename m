@@ -1,34 +1,34 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D9D51A004B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 23:11:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8EC4F1A004B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 23:11:57 +1100 (AEDT)
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 9 Mar 2016 22:11:54 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3A271357805A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 23:11:46 +1100 (EST)
+ Wed, 9 Mar 2016 22:11:56 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9108F357805A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 23:11:53 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u29CBcJg33685654
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 23:11:46 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u29CBjCw3473680
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 23:11:53 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u29CBC6a021393
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 23:11:13 +1100
+ u29CBK4R021624
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 23:11:21 +1100
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
 Cc: hughd@google.com, kirill@shutemov.name, n-horiguchi@ah.jp.nec.com,
  akpm@linux-foundation.org, mgorman@techsingularity.net,
  aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
-Subject: [RFC 2/9] mm/hugetlb: Add follow_huge_pgd function
-Date: Wed,  9 Mar 2016 17:40:43 +0530
-Message-Id: <1457525450-4262-2-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [RFC 5/9] powerpc/mm: Split huge_pte_offset function for BOOK3S 64K
+Date: Wed,  9 Mar 2016 17:40:46 +0530
+Message-Id: <1457525450-4262-5-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1457525450-4262-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1457525450-4262-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,57 +40,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This just adds 'follow_huge_pgd' function which is will be used
-later in this series to make 'follow_page_mask' function aware
-of PGD based huge page implementation.
+Currently the 'huge_pte_offset' function has only one version for
+all the configuations and platforms. This change splits the function
+into two versions, one for 64K page size based BOOK3S implementation
+and the other one for everything else. This change is also one of the
+prerequisites towards enabling GENERAL_HUGETLB implementation for
+BOOK3S 64K based huge pages.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- include/linux/hugetlb.h |  3 +++
- mm/hugetlb.c            | 10 ++++++++++
- 2 files changed, 13 insertions(+)
+ arch/powerpc/mm/hugetlbpage.c | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index 7d953c2..71832e1 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -115,6 +115,8 @@ struct page *follow_huge_pmd(struct mm_struct *mm, unsigned long address,
- 				pmd_t *pmd, int flags);
- struct page *follow_huge_pud(struct mm_struct *mm, unsigned long address,
- 				pud_t *pud, int flags);
-+struct page *follow_huge_pgd(struct mm_struct *mm, unsigned long address,
-+				pgd_t *pgd, int flags);
- int pmd_huge(pmd_t pmd);
- int pud_huge(pud_t pmd);
- unsigned long hugetlb_change_protection(struct vm_area_struct *vma,
-@@ -143,6 +145,7 @@ static inline void hugetlb_show_meminfo(void)
- }
- #define follow_huge_pmd(mm, addr, pmd, flags)	NULL
- #define follow_huge_pud(mm, addr, pud, flags)	NULL
-+#define follow_huge_pgd(mm, addr, pgd, flags)	NULL
- #define prepare_hugepage_range(file, addr, len)	(-EINVAL)
- #define pmd_huge(x)	0
- #define pud_huge(x)	0
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index a478b7b..844c18f 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -4353,6 +4353,16 @@ follow_huge_pud(struct mm_struct *mm, unsigned long address,
- 	return pte_page(*(pte_t *)pud) + ((address & ~PUD_MASK) >> PAGE_SHIFT);
- }
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index a49c6ae..f834a74 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -53,11 +53,46 @@ static unsigned nr_gpages;
  
-+struct page * __weak
-+follow_huge_pgd(struct mm_struct *mm, unsigned long address,
-+		pgd_t *pgd, int flags)
+ #define hugepd_none(hpd)	((hpd).pd == 0)
+ 
++#if !defined(CONFIG_PPC_64K_PAGES) || !defined(CONFIG_PPC_BOOK3S_64)
+ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
+ {
+ 	/* Only called for hugetlbfs pages, hence can ignore THP */
+ 	return __find_linux_pte_or_hugepte(mm->pgd, addr, NULL, NULL);
+ }
++#else
++pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
 +{
-+	if (flags & FOLL_GET)
++	pgd_t pgd, *pgdp;
++	pud_t pud, *pudp;
++	pmd_t pmd, *pmdp;
++
++	pgdp = mm->pgd + pgd_index(addr);
++	pgd  = READ_ONCE(*pgdp);
++
++	if (pgd_none(pgd))
 +		return NULL;
 +
-+	return pte_page(*(pte_t *)pgd) + ((address & ~PGDIR_MASK) >> PAGE_SHIFT);
-+}
++	if (pgd_huge(pgd))
++		return (pte_t *)pgdp;
 +
- #ifdef CONFIG_MEMORY_FAILURE
++	pudp = pud_offset(&pgd, addr);
++	pud  = READ_ONCE(*pudp);
++	if (pud_none(pud))
++		return NULL;
++
++	if (pud_huge(pud))
++		return (pte_t *)pudp;
++
++	pmdp = pmd_offset(&pud, addr);
++	pmd  = READ_ONCE(*pmdp);
++	if (pmd_none(pmd))
++		return NULL;
++
++	if (pmd_huge(pmd))
++		return (pte_t *)pmdp;
++	return NULL;
++}
++#endif /* !defined(CONFIG_PPC_64K_PAGES) || !defined(CONFIG_PPC_BOOK3S_64) */
  
- /*
+ #if !defined(CONFIG_PPC_64K_PAGES) || !defined(CONFIG_PPC_BOOK3S_64)
+ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
 -- 
 2.1.0
