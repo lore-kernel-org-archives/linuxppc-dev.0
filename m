@@ -1,32 +1,22 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0079.outbound.protection.outlook.com [207.46.100.79])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF75F1A0060
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 14:41:23 +1100 (AEDT)
-Received: from mail-pf0-x235.google.com (mail-pf0-x235.google.com
- [IPv6:2607:f8b0:400e:c00::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 69EA9140327
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Mar 2016 14:41:23 +1100 (AEDT)
-Received: by mail-pf0-x235.google.com with SMTP id x188so28710109pfb.2
- for <linuxppc-dev@ozlabs.org>; Tue, 08 Mar 2016 19:41:23 -0800 (PST)
-Subject: Re: [v5][PATCH] livepatch/ppc: Enable livepatching on powerpc
-To: Torsten Duwe <duwe@lst.de>
-References: <1457422437-3357-1-git-send-email-bsingharora@gmail.com>
- <20160308104552.GA16502@lst.de> <56DED903.2000209@gmail.com>
- <20160308153435.GA23804@lst.de>
-Cc: linuxppc-dev@ozlabs.org, pmladek@suse.com, jeyu@redhat.com,
- jkosina@suse.cz, jikos@kernel.org, linux-kernel@vger.kernel.org,
- rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com,
- live-patching@vger.kernel.org, mbenes@suse.cz
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <56DF9B5B.6070300@gmail.com>
-Date: Wed, 9 Mar 2016 14:41:15 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 515341A0060
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 14:52:10 +1100 (AEDT)
+From: Zhao Qiang <qiang.zhao@nxp.com>
+To: <robh+dt@kernel.org>
+CC: <oss@buserror.net>, <leoyang.li@nxp.com>, <xiaobo.xie@nxp.com>,
+ <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, Zhao Qiang <qiang.zhao@nxp.com>
+Subject: [PATCH v5 7/7] T104xQDS: Add qe node to t104xqds
+Date: Wed, 9 Mar 2016 09:21:34 +0800
+Message-ID: <1457486494-11377-7-git-send-email-qiang.zhao@nxp.com>
+In-Reply-To: <1457486494-11377-1-git-send-email-qiang.zhao@nxp.com>
+References: <1457486494-11377-1-git-send-email-qiang.zhao@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <20160308153435.GA23804@lst.de>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,80 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+add qe node to t104xqds.dtsi
 
+Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+---
+Changes for v2
+	- rebase
+Changes for v3
+	- rebase
+Changes for v4
+	- rebase
+Changes for v5
+	- rebase
 
-On 09/03/16 02:34, Torsten Duwe wrote:
-> On Wed, Mar 09, 2016 at 12:52:03AM +1100, Balbir Singh wrote:
->> On 08/03/16 21:45, Torsten Duwe wrote:
->>> To be fair, my last mail still was not 100% correct, but the conclusion
-> Wrote a correction to the correction. It should be clear now. Please nag me
-> if it isn't clear why klp_return_helper and its stack frame is needed.
->
->>> that the mini frame is not needed at all is invalid. Please leave it as it
->>> was, I'm working on a test / demonstrator for how to handle these.
->> Why, the magic will be in the patched function? Please share the test/demonstrator
-> Here it comes...
->
->>> NAKed-by: Torsten Duwe <duwe@suse.de>
->> Why? For using CR+4 or removing the frame? Or you believe there is a better way to
->> handle this that work, IOW what is broken?
-> The stack frame removal. You're risking a memory access or jump into nirvana
-> or and endless loop.
->
-> klp_return_helper will do the right thing, and functions like e.g. printk
-> I would live patch like this (untested :-) :
->
-> ------------------------8<----------------------
-> #include <stdarg.h>
->
-> /* compile using "-ffixed-r14"! */
-> register unsigned long pass_TOC asm("r14");
->
-> /*
->  * Function pre-prologue to pop the klp_return_helper
->  * mini stack frame. The saved r2 TOC value is read and
->  * passed in pass_TOC (r14), the original LR is passed
->  * in r0 and the LR itself. R12 is updated appropriately
->  * for local TOC recalculation.
->  */
-> extern void caller(void) asm("printk");
-> void caller(void)
-> {
->   asm("ld %0,24(1)" : "=r" (pass_TOC));
->   asm("addi 1,1,32");
->   asm("addi 12,12,(real_printk-printk)@l");
->   asm("ld 0,16(1)\n\tmtlr 0");
->   asm("b real_printk");
-> }
->
-> extern int vprintk_default(const char *fmt, va_list args);
->
-> extern int printk(const char *fmt, ...) asm("real_printk");
-> int printk(const char *fmt, ...)
-> {
->         va_list args;
->         int r;
->
->         va_start(args, fmt);
->
->         r = vprintk_default(fmt, args);
->
->         va_end(args);
->
-> 	asm("mr 2,%0" : : "r" (pass_TOC));
->         return r;
-> }
-> ------------------------8<----------------------
-> Signed-off-by: Torsten Duwe <duwe@suse.de>
->
-> As you can see, the extra effort for args on the stack is limited.
+ arch/powerpc/boot/dts/fsl/t104xqds.dtsi | 38 +++++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
 
-Leaving it to the patch to do the right thing I think makes it more
-complex and each livepatch hardware dependent to a large extent.
-I find it hard to read the patch, let alone audit it and apply it or
-worse create one
-
->
-> 	Torsten
->
-Balbir Singh.
+diff --git a/arch/powerpc/boot/dts/fsl/t104xqds.dtsi b/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
+index 1498d1e..3358d4c 100644
+--- a/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
+@@ -190,4 +190,42 @@
+ 				  0 0x00010000>;
+ 		};
+ 	};
++
++	qe: qe@ffe140000 {
++		ranges = <0x0 0xf 0xfe140000 0x40000>;
++		reg = <0xf 0xfe140000 0 0x480>;
++		brg-frequency = <0>;
++		bus-frequency = <0>;
++
++		si1: si@700 {
++			compatible = "fsl,t1040-qe-si";
++			reg = <0x700 0x80>;
++		};
++
++		siram1: siram@1000 {
++			compatible = "fsl,t1040-qe-siram";
++			reg = <0x1000 0x800>;
++		};
++
++		ucc_hdlc: ucc@2000 {
++			compatible = "fsl,ucc-hdlc";
++			rx-clock-name = "clk8";
++			tx-clock-name = "clk9";
++			fsl,rx-sync-clock = "rsync_pin";
++			fsl,tx-sync-clock = "tsync_pin";
++			fsl,tx-timeslot-mask = <0xfffffffe>;
++			fsl,rx-timeslot-mask = <0xfffffffe>;
++			fsl,tdm-framer-type = "e1";
++			fsl,tdm-id = <0>;
++			fsl,siram-entry-id = <0>;
++			fsl,tdm-interface;
++		};
++
++		ucc_serial: ucc@2200 {
++			compatible = "fsl,t1040-ucc-uart";
++			port-number = <0>;
++			rx-clock-name = "brg2";
++			tx-clock-name = "brg2";
++		};
++	};
+ };
+-- 
+2.1.0.27.g96db324
