@@ -1,28 +1,29 @@
-Return-Path: <zhlcindy@gmail.com>
-Received: from mail-yw0-x243.google.com (mail-yw0-x243.google.com
- [IPv6:2607:f8b0:4002:c05::243])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1FA2B1A009D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 15:17:21 +1100 (AEDT)
-Received: by mail-yw0-x243.google.com with SMTP id g6so1960971ywb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Mar 2016 20:17:21 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <56DEE59F.7020602@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E1E6D1A009D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 15:28:39 +1100 (AEDT)
+Received: by mail-pa0-x243.google.com with SMTP id 1so2461832pal.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Mar 2016 20:28:39 -0800 (PST)
+Subject: Re: [PATCH 0/2] mm: Enable page parallel initialisation for Power
+To: Li Zhang <zhlcindy@gmail.com>
 References: <1457409354-10867-1-git-send-email-zhlcindy@gmail.com>
  <56DEE59F.7020602@gmail.com>
-Date: Wed, 9 Mar 2016 12:17:18 +0800
-Message-ID: <CAD8of+o9zbwae-JM2EtcEnUyZAr43+jQLz1YSVZVKfda+h+Xvg@mail.gmail.com>
-Subject: Re: [PATCH 0/2] mm: Enable page parallel initialisation for Power
-From: Li Zhang <zhlcindy@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
+ <CAD8of+o9zbwae-JM2EtcEnUyZAr43+jQLz1YSVZVKfda+h+Xvg@mail.gmail.com>
 Cc: akpm@linux-foundation.org, Vlastimil Babka <vbabka@suse.cz>,
  mgorman@techsingularity.net, Michael Ellerman <mpe@ellerman.id.au>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  aneesh.kumar@linux.vnet.ibm.com, linux-mm@kvack.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Li Zhang <zhlcindy@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <56DFA66F.2020002@gmail.com>
+Date: Wed, 9 Mar 2016 15:28:31 +1100
+MIME-Version: 1.0
+In-Reply-To: <CAD8of+o9zbwae-JM2EtcEnUyZAr43+jQLz1YSVZVKfda+h+Xvg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,135 +33,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 8, 2016 at 10:45 PM, Balbir Singh <bsingharora@gmail.com> wrote:
+
+
+On 09/03/16 15:17, Li Zhang wrote:
+> On Tue, Mar 8, 2016 at 10:45 PM, Balbir Singh <bsingharora@gmail.com> wrote:
+>>
+>> On 08/03/16 14:55, Li Zhang wrote:
+>>> From: Li Zhang <zhlcindy@linux.vnet.ibm.com>
+>>>
+>>> Uptream has supported page parallel initialisation for X86 and the
+>>> boot time is improved greately. Some tests have been done for Power.
+>>>
+>>> Here is the result I have done with different memory size.
+>>>
+>>> * 4GB memory:
+>>>     boot time is as the following:
+>>>     with patch vs without patch: 10.4s vs 24.5s
+>>>     boot time is improved 57%
+>>> * 200GB memory:
+>>>     boot time looks the same with and without patches.
+>>>     boot time is about 38s
+>>> * 32TB memory:
+>>>     boot time looks the same with and without patches
+>>>     boot time is about 160s.
+>>>     The boot time is much shorter than X86 with 24TB memory.
+>>>     From community discussion, it costs about 694s for X86 24T system.
+>>>
+>>> From code view, parallel initialisation improve the performance by
+>>> deferring memory initilisation to kswap with N kthreads, it should
+>>> improve the performance therotically.
+>>>
+>>> From the test result, On X86, performance is improved greatly with huge
+>>> memory. But on Power platform, it is improved greatly with less than
+>>> 100GB memory. For huge memory, it is not improved greatly. But it saves
+>>> the time with several threads at least, as the following information
+>>> shows(32TB system log):
+>>>
+>>> [   22.648169] node 9 initialised, 16607461 pages in 280ms
+>>> [   22.783772] node 3 initialised, 23937243 pages in 410ms
+>>> [   22.858877] node 6 initialised, 29179347 pages in 490ms
+>>> [   22.863252] node 2 initialised, 29179347 pages in 490ms
+>>> [   22.907545] node 0 initialised, 32049614 pages in 540ms
+>>> [   22.920891] node 15 initialised, 32212280 pages in 550ms
+>>> [   22.923236] node 4 initialised, 32306127 pages in 550ms
+>>> [   22.923384] node 12 initialised, 32314319 pages in 550ms
+>>> [   22.924754] node 8 initialised, 32314319 pages in 550ms
+>>> [   22.940780] node 13 initialised, 33353677 pages in 570ms
+>>> [   22.940796] node 11 initialised, 33353677 pages in 570ms
+>>> [   22.941700] node 5 initialised, 33353677 pages in 570ms
+>>> [   22.941721] node 10 initialised, 33353677 pages in 570ms
+>>> [   22.941876] node 7 initialised, 33353677 pages in 570ms
+>>> [   22.944946] node 14 initialised, 33353677 pages in 570ms
+>>> [   22.946063] node 1 initialised, 33345485 pages in 580ms
+>>>
+>>> It saves the time about 550*16 ms at least, although it can be ignore to compare
+>>> the boot time about 160 seconds. What's more, the boot time is much shorter
+>>> on Power even without patches than x86 for huge memory machine.
+>>>
+>>> So this patchset is still necessary to be enabled for Power.
+>>>
+>>>
+> Hi Balbir,
 >
+> Thanks for your reviewing.
 >
-> On 08/03/16 14:55, Li Zhang wrote:
->> From: Li Zhang <zhlcindy@linux.vnet.ibm.com>
+>> The patchset looks good, two questions
 >>
->> Uptream has supported page parallel initialisation for X86 and the
->> boot time is improved greately. Some tests have been done for Power.
->>
->> Here is the result I have done with different memory size.
->>
->> * 4GB memory:
->>     boot time is as the following:
->>     with patch vs without patch: 10.4s vs 24.5s
->>     boot time is improved 57%
->> * 200GB memory:
->>     boot time looks the same with and without patches.
->>     boot time is about 38s
->> * 32TB memory:
->>     boot time looks the same with and without patches
->>     boot time is about 160s.
->>     The boot time is much shorter than X86 with 24TB memory.
->>     From community discussion, it costs about 694s for X86 24T system.
->>
->> From code view, parallel initialisation improve the performance by
->> deferring memory initilisation to kswap with N kthreads, it should
->> improve the performance therotically.
->>
->> From the test result, On X86, performance is improved greatly with huge
->> memory. But on Power platform, it is improved greatly with less than
->> 100GB memory. For huge memory, it is not improved greatly. But it saves
->> the time with several threads at least, as the following information
->> shows(32TB system log):
->>
->> [   22.648169] node 9 initialised, 16607461 pages in 280ms
->> [   22.783772] node 3 initialised, 23937243 pages in 410ms
->> [   22.858877] node 6 initialised, 29179347 pages in 490ms
->> [   22.863252] node 2 initialised, 29179347 pages in 490ms
->> [   22.907545] node 0 initialised, 32049614 pages in 540ms
->> [   22.920891] node 15 initialised, 32212280 pages in 550ms
->> [   22.923236] node 4 initialised, 32306127 pages in 550ms
->> [   22.923384] node 12 initialised, 32314319 pages in 550ms
->> [   22.924754] node 8 initialised, 32314319 pages in 550ms
->> [   22.940780] node 13 initialised, 33353677 pages in 570ms
->> [   22.940796] node 11 initialised, 33353677 pages in 570ms
->> [   22.941700] node 5 initialised, 33353677 pages in 570ms
->> [   22.941721] node 10 initialised, 33353677 pages in 570ms
->> [   22.941876] node 7 initialised, 33353677 pages in 570ms
->> [   22.944946] node 14 initialised, 33353677 pages in 570ms
->> [   22.946063] node 1 initialised, 33345485 pages in 580ms
->>
->> It saves the time about 550*16 ms at least, although it can be ignore to compare
->> the boot time about 160 seconds. What's more, the boot time is much shorter
->> on Power even without patches than x86 for huge memory machine.
->>
->> So this patchset is still necessary to be enabled for Power.
->>
->>
+>> 1. The patchset is still necessary for
+>>     a. systems with smaller amount of RAM?
+>        I think it is. Currently, I tested systems for 4GB, 50GB, and
+> boot time is improved.
+>        We may test more systems with different memory size in the future.
+>>     b. Theoretically it improves boot time?
+>        The boot time is improved a little bit for huge memory system
+> and it can be ignored.
+>        But I think it's still necessary to enable this feature.
 >
-Hi Balbir,
-
-Thanks for your reviewing.
-
-> The patchset looks good, two questions
+>> 2. the pgdat->node_spanned_pages >> 8 sounds arbitrary
+>>     On a system with 2TB*16 nodes, it would initialize about 8GB before calling deferred init?
+>>     Don't we need at-least 32GB + space for other early hash allocations
+>>     BTW, My expectation was that 32TB would imply 32GB+32GB of large hash allocations early on
+>       pgdat->node_spanned_pages >> 8 means that it allocates the size
+> of the memory on one node.
+>       On a system with 2TB *16nodes, it will allocate 16*8GB = 128GB.
+>       I am not sure if it can be minimised to >> 16 to make sure all
+> the architectures with different
+>       memory size work well.  And this is also mentioned in early
+> discussion for X86, so I choose  >> 8.
 >
-> 1. The patchset is still necessary for
->     a. systems with smaller amount of RAM?
-       I think it is. Currently, I tested systems for 4GB, 50GB, and
-boot time is improved.
-       We may test more systems with different memory size in the future.
->     b. Theoretically it improves boot time?
-       The boot time is improved a little bit for huge memory system
-and it can be ignored.
-       But I think it's still necessary to enable this feature.
-
-> 2. the pgdat->node_spanned_pages >> 8 sounds arbitrary
->     On a system with 2TB*16 nodes, it would initialize about 8GB before calling deferred init?
->     Don't we need at-least 32GB + space for other early hash allocations
->     BTW, My expectation was that 32TB would imply 32GB+32GB of large hash allocations early on
-
-      pgdat->node_spanned_pages >> 8 means that it allocates the size
-of the memory on one node.
-      On a system with 2TB *16nodes, it will allocate 16*8GB = 128GB.
-      I am not sure if it can be minimised to >> 16 to make sure all
-the architectures with different
-      memory size work well.  And this is also mentioned in early
-discussion for X86, so I choose  >> 8.
-
-*    From the code as the following:
-
-      free_area_init_core ->
-                     memmap_init->
-                              update_defer_init
-     #define memmap_init(size, nid, zone, start_pfn) \
-           memmap_init_zone((size), (nid), (zone), (start_pfn), MEMMAP_EARLY)
-
-     memmap_init_zone is based on a zone, but free_area_init_core will
-help find the highest
-     zone on the node. And update_defer_init() get max initialised
-memory on highest zone for a node to
-     reserve for early initialisation.
-
-     static void __paginginit free_area_init_core(struct pglist_data *pgdat)
-     {
-            ...
-           for (j = 0; j < MAX_NR_ZONES; j++) {
-                  ....
-                 memmap_init(size, nid, j, zone_start_fn);   //find
-the highest zone on a node.
-                 ...
-           }
-     }
-
-*   From the dmesg log, after applying this patchset, it has
-123013440K(about 117GB),
-    which is enough for Dentry node hash table and Inode hash table in
-this system.
-
-    [    0.000000] Memory: 123013440K/31739871232K available (8000K
-kernel code, 1856K rwdata,
-    3384K rodata, 6208K init, 2544K bss, 28531136K reserved, 0K cma-reserved)
-
-Thanks :)
-
+> *    From the code as the following:
 >
-> Balbir Singh.
+>       free_area_init_core ->
+>                      memmap_init->
+>                               update_defer_init
+>      #define memmap_init(size, nid, zone, start_pfn) \
+>            memmap_init_zone((size), (nid), (zone), (start_pfn), MEMMAP_EARLY)
+>
+>      memmap_init_zone is based on a zone, but free_area_init_core will
+> help find the highest
+>      zone on the node. And update_defer_init() get max initialised
+> memory on highest zone for a node to
+>      reserve for early initialisation.
+>
+>      static void __paginginit free_area_init_core(struct pglist_data *pgdat)
+>      {
+>             ...
+>            for (j = 0; j < MAX_NR_ZONES; j++) {
+>                   ....
+>                  memmap_init(size, nid, j, zone_start_fn);   //find
+> the highest zone on a node.
+>                  ...
+>            }
+>      }
+>
+> *   From the dmesg log, after applying this patchset, it has
+> 123013440K(about 117GB),
+>     which is enough for Dentry node hash table and Inode hash table in
+> this system.
+>
+>     [    0.000000] Memory: 123013440K/31739871232K available (8000K
+> kernel code, 1856K rwdata,
+>     3384K rodata, 6208K init, 2544K bss, 28531136K reserved, 0K cma-reserved)
+>
+> Thanks :)
+>
+Looks good! It seems the real benefit is for smaller systems - thanks for clarifying
+Please check if CMA is affected in any way
 
+Acked-by: Balbir Singh <bsingharora@gmail.com>
 
--- 
-
-Best Regards
--Li
+Balbir Singh.
