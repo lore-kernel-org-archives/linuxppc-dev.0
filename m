@@ -1,32 +1,22 @@
-Return-Path: <n.borisov@siteground.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BCAAC1A0359
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2016 01:38:31 +1100 (AEDT)
-Received: from mail-wm0-f51.google.com (mail-wm0-f51.google.com [74.125.82.51])
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A201F1402DE
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Mar 2016 01:38:29 +1100 (AEDT)
-Received: by mail-wm0-f51.google.com with SMTP id n186so181512922wmn.1
- for <linuxppc-dev@ozlabs.org>; Wed, 09 Mar 2016 06:38:29 -0800 (PST)
-Subject: Re: [PATCH] livepatch: Add some basic LivePatch documentation
-To: Petr Mladek <pmladek@suse.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
- Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Vojtech Pavlik <vojtech@suse.com>, Miroslav Benes <mbenes@suse.cz>
-References: <1457532106-30925-1-git-send-email-pmladek@suse.com>
-Cc: live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, linuxppc-dev@ozlabs.org,
- Balbir Singh <bsingharora@gmail.com>, Torsten Duwe <duwe@suse.de>,
- Michael Ellerman <mpe@ellerman.id.au>
-From: Nikolay Borisov <kernel@kyup.com>
-Message-ID: <56E0355E.5000007@kyup.com>
-Date: Wed, 9 Mar 2016 16:38:22 +0200
-MIME-Version: 1.0
-In-Reply-To: <1457532106-30925-1-git-send-email-pmladek@suse.com>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 04A761A0033
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2016 08:26:32 +1100 (AEDT)
+Message-ID: <1457558781.5360.149.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Gabriel Paubert <paubert@iram.es>
+Cc: Alessio Igor Bogani <alessio.bogani@elettra.eu>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Wed, 09 Mar 2016 15:26:21 -0600
+In-Reply-To: <20160309102855.GA12303@visitor2.iram.es>
+References: <1457423952-13014-1-git-send-email-alessio.bogani@elettra.eu>
+ <20160309063818.GA10069@home.buserror.net>
+ <20160309102855.GA12303@visitor2.iram.es>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [1/1] powerpc/embedded6xx: Make reboot works on MVME5100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,385 +26,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 03/09/2016 04:01 PM, Petr Mladek wrote:
-> LivePatch framework deserves some documentation, definitely.
-> This is an attempt to provide some basic info. I hope that
-> it will be useful for both LivePatch producers and also
-> potential developers of the framework itself.
+On Wed, 2016-03-09 at 11:28 +0100, Gabriel Paubert wrote:
+> On Wed, Mar 09, 2016 at 12:38:18AM -0600, Scott Wood wrote:
+> > On Tue, Mar 08, 2016 at 08:59:12AM +0100, Alessio Igor Bogani wrote:
+> > > The mtmsr() function hangs during restart. Make reboot works on
+> > > MVME5100 removing that function call.
+> > > ---
+> > >  arch/powerpc/platforms/embedded6xx/mvme5100.c | 2 --
+> > >  1 file changed, 2 deletions(-)
+> > 
+> > Missing signoff
+> > 
+> > Do you know why MSR_IP was there to begin with? 
 > 
-> Signed-off-by: Petr Mladek <pmladek@suse.com>
-> ---
+> Huh? The patch sets MSR_IP for reset but it is cleared while running Linux.
+> I don't have any MVME5100, however I do have MVME2400/2700 with the same
+> bridge (Hawk), so I can say that the address space layout is quite standard:
+> memory at 0, ROM at the high end of the 32-bit address space. However the
+> reset method is quite different (no external register set on the Hawk).
+
+I meant why the line of code was there, not why the bit was ever set.  It
+seems odd to me that the pre-reset value of MSR would matter at all --
+shouldn't it get reset along with the rest of the CPU, as you later suggest? 
+ And if it does matter, then why are Alessio and whoever wrote the code
+(assuming it wasn't an untested copy-and-paste from somewhere else) seeing
+different results regarding whether IP needs to be set or unset?
+
+> > Does this board have a switch that determines whether boot vectors 
+> > are high or low (I remember some 83xx boards that did), in which 
+> > case is this fixing one config by breaking another?
 > 
-> This patch was motivated by the LivePatch port for PPC. The guys
-> might want to document some PPC-specific limitations on top of it.
-> 
-> I am sure that it is far from perfect. But I hope that it is
-> an acceptable start that can be improved later. I hope that
-> I did not write that many factual mistakes.
-> 
-> I wrote only some generic info about the consistency model.
-> I am not sure if we have agreed on some specification yet.
-> 
-> I am sorry for grammar mistakes. I hope that some hairs will
-> stay on your head if you are sensitive.
-> 
-> 
->  Documentation/livepatch/livepatch.txt | 277 ++++++++++++++++++++++++++++++++++
->  MAINTAINERS                           |   1 +
->  2 files changed, 278 insertions(+)
->  create mode 100644 Documentation/livepatch/livepatch.txt
-> 
-> diff --git a/Documentation/livepatch/livepatch.txt b/Documentation/livepatch/livepatch.txt
-> new file mode 100644
-> index 000000000000..28e8047abb61
-> --- /dev/null
-> +++ b/Documentation/livepatch/livepatch.txt
-> @@ -0,0 +1,277 @@
-> +=========
-> +LivePatch
-> +=========
-> +
-> +This document outlines basic information about kernel LivePatching.
-> +
-> +Table of Contents:
-> +
-> +1. Motivation
-> +2. Kprobes, Ftrace, LivePatching
-> +3. Consistency model
-> +4. LivePatch life-cycle
-> +   4.1. Registration
-> +   4.2. Enabling
-> +   4.3. Disabling
-> +   4.4. Unregistration
-> +5. Livepatch module
-> +   5.1. New functions
-> +   5.2. Metadata
-> +   5.3. Module handling
-> +6. Sysfs
-> +7. Limitations
-> +
-> +
-> +1. Motivation
-> +=============
-> +
-> +There are situations when people are really reluctant to reboot a system.
-> +It might be because the computer is in the middle of a complex scientific
-> +computation. Or the system is busy handling customer requests in the high
-> +season.
-> +
-> +On the other hand, people also want to keep the system stable and secure.
-> +This is where LivePatch infrastructure comes handy. It allows to redirect
-> +selected function calls to a fixed implementation without rebooting
-> +the system.
-> +
-> +
-> +2. Kprobes, Ftrace, LivePatching
-> +================================
-> +
-> +Linux kernel has more ways how to redirect an existing code into a new one.
-> +It happens with kernel probes, function tracing, and LivePatching:
-> +
-> +  + The kernel probes are the most generic way. The code can be redirected
-> +    by putting an interrupt instruction instead of any instruction.
-> +
-> +  + The function tracer calls the code from a predefined location that is
-> +    close the function entry. The location is generated by the compiler,
-> +    see -pg gcc option.
-> +
-> +  + LivePatching typically needs to redirect the code at the very beginning
-> +    of the function entry before the function parameters or the stack
-> +    are anyhow muffled.
-> +
-> +All three approaches need to modify the existing code at runtime. Therefore
-> +they need to be aware of each other and do not step over othres' toes. Most
-do not step over each other's toes
+> For the switch, no AFAICT. And the code is MVME5100 specific so I
+> suspect that it is very unlikely to break other boards.
+>
+> Very likely the source of the problem is that the restart address is
+> remapped 
+> (ioremap) but never accessed while the kernel is running (the only access to
+> *restart is in the reboot routine) so we take a DSI exception to fill the
+> hash 
+> table when attempting to reboot. 
+>
+> It would be enough to move the setting of MSR_IP until after triggering the 
+> restart, but this performs a hard reset of the CPU, which will set MSR_IP 
+> anyway (granted that the CPU will probably set MSR_IP way before the reset 
+> signal comes in).
 
-> +of these problems are solved by using the dynamic ftrace framework as a base.
-> +A Kprobe is registered as a ftrace handler when the function entry is probed,
-> +see CONFIG_KPROBES_ON_FTRACE. Also an alternative function from a live patch
-> +is called from a custom ftrace handler. But there are some limitations,
-> +see below.
-> +
-> +
-> +3. Consistency model
-> +====================
-> +
-> +Functions are there for a reason. They take some input parameters, get or
-> +release locks, read, process, and even write some data in a defined way,
-> +have return values. By other words, each function has a defined semantic.
-In other words
+How can you perform anything after the reset is triggered?  There might be
+some lag before it takes effect, but depending on that seems hackish and
+unreliable, and why would it make a difference?
 
-> +
-> +Many fixes do not change the semantic of the modified functions. For example,
-> +they add a NULL pointer or a boundary check, fix a race by adding a missing
-> +memory barrier, or add some locking about a critical section. Most of these
-> +changes are self contained and the function present itself the same way
-> +to the rest of the system. In this case, the functions might be updated
-> +independently one by one.
-> +
-> +But there are more complex fixes. For example, a patch might change
-> +ordering of locking in more functions at the same time. Or a patch
-> +might exchange meaning of some temporary structures and update
-> +all the relevant functions. In this case, the affected unit
-> +(thread, whole kernel) need to start using all new versions of
-> +the functions at the same time. Also the switch must happen only
-> +when it is safe to do so, e.g. when the affected locks are released,
-> +the data using the modified structures are empty.
-> +
-> +The theory about how to apply functions a safe way is rather complex.
-> +The aim is to define a so-called consistency model. It means to define
-> +conditions when the new implementation could be used so that the system
-> +stays consistent. The theory is not yet finished. See the discussion at
-> +http://thread.gmane.org/gmane.linux.kernel/1823033/focus=1828189
-> +
-> +The current implementation supports the easiest scenario that
-> +is sufficeint for the most common fixes. See the limitations below.
-> +
-> +
-> +4. LivePatch life-cycle
-> +=======================
-> +
-> +LivePatching defines four basic operations that define the life cycle
-> +of each live patch.
-> +
-> +4.1. Registration
-> +-----------------
-> +
-> +Each patch has to be registered using klp_register_patch().
-> +
-> +Here the patch is added into the list of known patches. The addresses
-> +of the patched functions are found according to their names.
-> +Relocations are applied. The relevant entries are created under
-> +/sys/kernel/livepatch/<name>.
+> One way to check this hypothesis would be to introduce a write of 0 to
+> the restart address before setting MSR_IP.
 
-Maybe expand a bit more on what type of relocations are applied. Or at
-least defer the explanation to a later paragraph (I saw there is a FIXME
-later in the file)
+I'm not familiar with the register interface for this board logic, but what
+would that demonstrate?
 
-> +
-> +
-> +4.2. Enabling
-> +-------------
-> +
-> +Registered patches might be enabled either by calling klp_enable_patch() or
-> +by writing '1' to /sys/kernel/livepatch/<name>/enabled.
-> +
-> +At this stage, an universal ftrace handler is registered for all newly patched
-> +functions with a function-specific ftrace_ops structure. The structure points
-> +to a list of struct klp_func, see func_stack. This way the same function
+> This said restart is declared as u_char *, so the cast in the out_8 
+> register access is useless and ugly.
 
-see struct func_stack. It's not obvious what func_stack is. Maybe 1-2
-sentences explaining what's the idea of func_stack
+Yes, and restart should be __iomem.
 
-> +can be patched more times. The last variant from the func_stack is used.
-> +
-> +Note that we could enable patches in a different order than they are
-> +registered. The actually used function is defined by the order in
-> +the func_stack list.
-> +
-> +
-> +4.3. Disabling
-> +--------------
-> +
-> +Enabled patches might get disabled either by calling klp_disable_patch() or
-> +by writing '0' to /sys/kernel/livepatch/<name>/enabled.
-> +
-> +Here all the struct klp_functions are removed from the appropriate
-> +ftrace_ops. The ftrace handler is unregistered when the func_stack
-> +list gets empty.
-> +
-> +Patches must be disabled in the exactly revese order in which they were
-> +enabled. It makes the problem and the implementation easier.
-> +
-> +
-> +4.4. Unregistration
-> +-------------------
-> +
-> +Disabled patched might be unregistered by calling klp_unregister_patch().
-> +
-> +At this stage, all the relevant sys-fs entries are removed and the patch
-> +is removed from the list of known patches.
-> +
-> +
-> +5. Livepatch module
-> +===================
-> +
-> +Live patches are distributed using kernel modules, see
-> +samples/livepatch/livepatch-sample.c.
-> +
-> +The module includes a new implementation of functions that we want
-> +to replace. In addition, it defines some structures describing what
-> +functions are replaced. Finally, there is a code for registering,
-> +enabling, and unregistering the patch.
-> +
-> +
-> +5.1. New functions
-> +------------------
-> +
-> +New versions of functions are typically just copied from the fixed sources.
-> +A good practice is to add a prefix to the names so that they can be
-> +distinguished from the original ones, e.g. in a backtrace. Also it
-> +is usually enough to have a local visibility (static).
-
-Maybe rephrase the last sentence of this paragraph. What does 'local
-visibility' refer to - the new function implementations in the patch
-module be static or something else?
-
-> +
-> +The patch contains only functions that are really modified. But they might
-> +want to access functions or data with local visibility from the original
-> +source.c file. This can be solved by relocation information. FIXME:
-> +The support and documentation for relocations is still in progress.
-> +
-> +
-> +5.2. Metadata
-> +------------
-> +
-> +The patch is described by several structures that split the information
-> +into three levels:
-> +
-> +  + struct klp_patch is defined for each patched function. It includes
-> +    a name (string) of the original function, optionaly the position
-> +    of the symbol within an object, and a name (pointer) to the new
-
-within which object - the resulting to-be-patched kernel or some other
-obejct?
-
-> +    function implementation. The old function will be later found via
-> +    kallsyms at runtime. The new function is defined in the same
-> +    source file.
-
-The last sentence is confusing, it seems it is not connected to the
-earlier sentences in the paragraph.
-
-> +
-> +  + struct klp_object defines an array of patched functions (struct
-> +    klp_patch) in the same object. Where object is either vmlinux (NULL)
-> +    or a module name. It helps to group and handle functions for each
-
-Here object is being explained, maybe move it to the first paragraph so
-that readers can continue reading and have an idea what "object" is
-referring to.
-
-> +    object together. Note that patched modules might be loaded later
-> +    then the patch itself and the relevant functions might be patched
-s/then/than/
-> +    only when they are available.
-> +
-> +  + struct klp_patch defines an array of patched objects (struct
-> +    klp_object). It allows to handle all patched functions consistently
-> +    and synchronously. The whole patch is applied only when all available
-> +    symbols can be patched. If a more complex consistency model is supported
-> +    then a selected unit (thread, kernel as a whole) will see the new code
-> +    from the entire patch only when they are in a safe state.
-> +
-> +
-> +5.3. Module handling
-> +-------------------
-> +
-> +The live patch is typically registered and enabled when the module
-> +is loaded. The reverse operations are called when the module
-> +is being removed.
-> +
-> +IMPORTANT: Livepatch modules could not be removed at the moment.
-s/could/can/
-> +See the limitations below.
-> +
-> +
-> +6. Sysfs
-> +========
-> +
-> +Information about the registered patches might be found under
-> +/sys/kernel/livepatch. The patches could be enabled and disabled
-> +by writing there.
-> +
-> +See Documentation/ABI/testing/sysfs-kernel-livepatch for more details.
-> +
-> +
-> +7. Limitations
-> +==============
-> +
-> +The initial Livepatch implementation has several limitations:
-s/initial/current
-
-Hopefully the documentation will be kept up to date as the livepatching
-framework evolves
-> +
-> +  + The modules with LivePatches could not be removed without forcing
-> +    at the moment.
-
-Livepatching modules can only be removed by force unloading them e.g.
-rmmod -f patch.ko . If that's what you meant.
-
-> +
-> +    The problem is how to detect if anyone is still using (sleeping inside)
-> +    a code from the patch. It will get most likely solved once a more complex
-> +    consistency model is supported. The idea is that a safe state for patching
-> +    should also mean a safe state for removing the patch.
-
-The impression I'm left with when reading this paragraph is that there
-is no consistency model whatsoever at present times. Whereas I believe
-there is a very crude one
-
-> +
-> +
-> +  + Only functions that can be traced could be patched.
-> +
-> +    Livepatch is based on the dynamic ftrace. In particular, functions
-> +    implementing ftrace or the livepatch ftrace handler could not be patched.
-> +    Otherwise, you would end up in an infinite loop. A potential mistake
-> +    is prevented by marking the problematic functions by "notrace".
-> +
-> +
-> +  + Livepatch works reliably only when the dynamic ftrace is located at
-> +    the very beginning of the function.
-> +
-> +    The function need to be redirected before the stack or the function
-> +    parameters are muffled any way. For example, LivePatch requires
-> +    using -fentry on x86_64.
-s/-fentry/-fentry compiler option/ if you are referring to
-https://gcc.gnu.org/onlinedocs/gccint/Function-Entry.html
-
-> +
-> +
-> +  + The patch must not change the semantic of the patched functions.
-> +
-> +    The current implementation guarantees only that either the old
-> +    or the new function is called. The functions are patched one
-> +    by one. It means that the patch must _not_ change the semantic
-> +    of the function.
-> +
-> +
-> +  + Kretprobes using the ftrace framework conflict with the patched functions.
-> +
-> +    Both Kretprobes and LivePatches use a ftrace handler that modifies
-> +    the return address. The first user wins. Either the probe or the patch
-> +    is rejected when the handler is already in use by the other.
-> +
-> +
-> +  + Kprobes in the original function are ignored when the code is redirected
-> +    to the new implementation.
-> +
-> +    There is a work in progress to add warnings about this situations.
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 4029c63d8a7d..0e7049688862 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -6590,6 +6590,7 @@ F:	kernel/livepatch/
->  F:	include/linux/livepatch.h
->  F:	arch/x86/include/asm/livepatch.h
->  F:	arch/x86/kernel/livepatch.c
-> +F:	Documentation/livepatch/
->  F:	Documentation/ABI/testing/sysfs-kernel-livepatch
->  F:	samples/livepatch/
->  L:	live-patching@vger.kernel.org
-> 
-
-It's a good starting point. Hopefully a bit of tweaking will make it
-even more friendly to newcomers of livepatching (I have read the sources
-but I'm in no way VERY familiar with it). I'm especially interested in
-the relocation and current consistency model documentation.
-
-Reviewed-by: Nikolay Borisov <kernel@kyup.com>
+-Scott
