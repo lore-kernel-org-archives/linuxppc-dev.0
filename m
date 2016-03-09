@@ -1,42 +1,39 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3FDD41A0007
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2016 06:34:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E54171A0033
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2016 06:56:20 +1100 (AEDT)
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 9 Mar 2016 12:34:34 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id AAD603E40067
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 12:34:32 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u29JYW8h16711692
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 12:34:32 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u29JYVS3013726
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 12:34:32 -0700
+ Wed, 9 Mar 2016 14:56:18 -0500
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 67D486E804F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 14:43:00 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u29Ju9bP30146740
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 19:56:09 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u29Ju7fT012074
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 14:56:09 -0500
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Christoph Lameter <cl@linux.com>, Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2] powerpc: mm: fixup preempt undefflow with huge pages
-In-Reply-To: <20160308090356.GA21842@linutronix.de>
-References: <20160307135506.GA12595@linutronix.de>
- <877fheti8i.fsf@linux.vnet.ibm.com>
- <1457394104.2943.69.camel@kernel.crashing.org>
- <20160308090356.GA21842@linutronix.de>
-Date: Thu, 10 Mar 2016 01:04:24 +0530
-Message-ID: <87bn6n1m4f.fsf@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: hughd@google.com, kirill@shutemov.name, n-horiguchi@ah.jp.nec.com,
+ akpm@linux-foundation.org, mgorman@techsingularity.net, mpe@ellerman.id.au
+Subject: Re: [RFC 4/9] powerpc/mm: Split huge_pte_alloc function for BOOK3S 64K
+In-Reply-To: <1457525450-4262-4-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1457525450-4262-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1457525450-4262-4-git-send-email-khandual@linux.vnet.ibm.com>
+Date: Thu, 10 Mar 2016 01:25:53 +0530
+Message-ID: <878u1r1l4m.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,58 +43,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sebastian Andrzej Siewior <bigeasy@linutronix.de> writes:
+Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
 
 > [ text/plain ]
-> hugepd_free() used __get_cpu_var() once. Nothing ensured that the code
-> accessing the variable did not migrate from one CPU to another and soon
-> this was noticed by Tiejun Chen in 94b09d755462 ("powerpc/hugetlb:
-> Replace __get_cpu_var with get_cpu_var"). So we had it fixed.
+> From: root <root@ltcalpine2-lp8.aus.stglabs.ibm.com>
 >
-> Christoph Lameter was doing his __get_cpu_var() replaces and forgot
-> PowerPC. Then he noticed this and sent his fixed up batch again which
-> got applied as 69111bac42f5 ("powerpc: Replace __get_cpu_var uses").
->
-> The careful reader will noticed one little detail: get_cpu_var() got
-> replaced with this_cpu_ptr(). So now we have a put_cpu_var() which does
-> a preempt_enable() and nothing that does preempt_disable() so we
-> underflow the preempt counter.
->
+> Currently the 'huge_pte_alloc' function has two versions, one for the
+> BOOK3S and the other one for the BOOK3E platforms. This change splits
+> the BOOK3S version into two parts, one for the 4K page size based
+> implementation and the other one for the 64K page sized implementation.
+> This change is one of the prerequisites towards enabling GENERAL_HUGETLB
+> implementation for BOOK3S 64K based huge pages.
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+I really wish we reduce #ifdefs in C code and start splitting hash
+and nonhash code out where ever we can. 
 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Christoph Lameter <cl@linux.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+What we really want here is a book3s version and in book3s version use
+powerpc specific huge_pte_alloc only if GENERAL_HUGETLB was not defined.
+Don't limit it to 64k linux page size. We should select between powerpc
+specific implementation and generic code using GENERAL_HUGETLB define.
+
+
+>
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 > ---
-> v1=E2=80=A6v2: - use get_cpu_var() instead of get_cpu_ptr()
->        - correct indentation of put_cpu_var()
->
->  arch/powerpc/mm/hugetlbpage.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  arch/powerpc/mm/hugetlbpage.c | 67 +++++++++++++++++++++++++++----------------
+>  1 file changed, 43 insertions(+), 24 deletions(-)
 >
 > diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index 744e24bcb85c..4a811ca7ac9d 100644
+> index 744e24b..a49c6ae 100644
 > --- a/arch/powerpc/mm/hugetlbpage.c
 > +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -414,13 +414,13 @@ static void hugepd_free(struct mmu_gather *tlb, voi=
-d *hugepte)
+> @@ -59,6 +59,7 @@ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
+>  	return __find_linux_pte_or_hugepte(mm->pgd, addr, NULL, NULL);
+>  }
+>
+> +#if !defined(CONFIG_PPC_64K_PAGES) || !defined(CONFIG_PPC_BOOK3S_64)
+>  static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+>  			   unsigned long address, unsigned pdshift, unsigned pshift)
 >  {
->  	struct hugepd_freelist **batchp;
->=20=20
-> -	batchp =3D this_cpu_ptr(&hugepd_freelist_cur);
-> +	batchp =3D &get_cpu_var(hugepd_freelist_cur);
->=20=20
->  	if (atomic_read(&tlb->mm->mm_users) < 2 ||
->  	    cpumask_equal(mm_cpumask(tlb->mm),
->  			  cpumask_of(smp_processor_id()))) {
->  		kmem_cache_free(hugepte_cache, hugepte);
-> -        put_cpu_var(hugepd_freelist_cur);
-> +		put_cpu_var(hugepd_freelist_cur);
->  		return;
+> @@ -117,6 +118,7 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+>  	spin_unlock(&mm->page_table_lock);
+>  	return 0;
+>  }
+> +#endif /* !defined(CONFIG_PPC_64K_PAGES) || !defined(CONFIG_PPC_BOOK3S_64) */
+>
+>  /*
+>   * These macros define how to determine which level of the page table holds
+> @@ -131,6 +133,7 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+>  #endif
+>
+>  #ifdef CONFIG_PPC_BOOK3S_64
+> +#ifdef CONFIG_PPC_4K_PAGES
+>  /*
+>   * At this point we do the placement change only for BOOK3S 64. This would
+>   * possibly work on other subarchs.
+> @@ -146,32 +149,23 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
+>
+>  	addr &= ~(sz-1);
+>  	pg = pgd_offset(mm, addr);
+> -
+> -	if (pshift == PGDIR_SHIFT)
+> -		/* 16GB huge page */
+> -		return (pte_t *) pg;
+> -	else if (pshift > PUD_SHIFT)
+> -		/*
+> -		 * We need to use hugepd table
+> -		 */
+> +	if (pshift > PUD_SHIFT) {
+>  		hpdp = (hugepd_t *)pg;
+> -	else {
+> -		pdshift = PUD_SHIFT;
+> -		pu = pud_alloc(mm, pg, addr);
+> -		if (pshift == PUD_SHIFT)
+> -			return (pte_t *)pu;
+> -		else if (pshift > PMD_SHIFT)
+> -			hpdp = (hugepd_t *)pu;
+> -		else {
+> -			pdshift = PMD_SHIFT;
+> -			pm = pmd_alloc(mm, pu, addr);
+> -			if (pshift == PMD_SHIFT)
+> -				/* 16MB hugepage */
+> -				return (pte_t *)pm;
+> -			else
+> -				hpdp = (hugepd_t *)pm;
+> -		}
+> +		goto hugepd_search;
+> +	}
+> +
+> +	pdshift = PUD_SHIFT;
+> +	pu = pud_alloc(mm, pg, addr);
+> +	if (pshift > PMD_SHIFT) {
+> +		hpdp = (hugepd_t *)pu;
+> +		goto hugepd_search;
 >  	}
->=20=20
-> --=20
-> 2.7.0
+> +
+> +	pdshift = PMD_SHIFT;
+> +	pm = pmd_alloc(mm, pu, addr);
+> +	hpdp = (hugepd_t *)pm;
+> +
+> +hugepd_search:
+>  	if (!hpdp)
+>  		return NULL;
+>
+> @@ -184,6 +178,31 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
+>  }
+>
+>  #else
+> +pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz)
+> +{
+> +	pgd_t *pg;
+> +	pud_t *pu;
+> +	pmd_t *pm;
+> +	unsigned pshift = __ffs(sz);
+> +
+> +	addr &= ~(sz-1);
+> +	pg = pgd_offset(mm, addr);
+> +
+> +	if (pshift == PGDIR_SHIFT)	/* 16GB Huge Page */
+> +		return (pte_t *)pg;
+> +
+> +	pu = pud_alloc(mm, pg, addr);	/* NA, skipped */
+> +	if (pshift == PUD_SHIFT)
+> +		return (pte_t *)pu;
+> +
+> +	pm = pmd_alloc(mm, pu, addr);	/* 16MB Huge Page */
+> +	if (pshift == PMD_SHIFT)
+> +		return (pte_t *)pm;
+> +
+> +	return NULL;
+> +}
+> +#endif
+> +#else
+>
+>  pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz)
+>  {
+> -- 
+> 2.1.0
