@@ -1,17 +1,38 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AD6651A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 16:55:33 +1100 (AEDT)
-In-Reply-To: <1457090804-9719-13-git-send-email-fbarrat@linux.vnet.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
- michael.neuling@au1.ibm.com, manoj@linux.vnet.ibm.com,
- mrochs@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v6,12/20] cxl: Add guest-specific code
-Message-Id: <20160309055533.92479140BB4@ozlabs.org>
-Date: Wed,  9 Mar 2016 16:55:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F6601A004C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 17:30:13 +1100 (AEDT)
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Wed, 9 Mar 2016 16:30:11 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2EFA1357805C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2016 17:30:08 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u296TviH53281012
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 17:30:08 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u296TWgn009802
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Mar 2016 17:29:33 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alistair Popple <alistair@popple.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Daniel Axtens <dja@axtens.net>, David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Russell Currey <ruscur@russell.cc>,
+ Alex Williamson <alex.williamson@redhat.com>
+Subject: [PATCH kernel 00/10] powerpc/powernv/npu: Enable PCI pass through for
+ NVLink
+Date: Wed,  9 Mar 2016 17:28:56 +1100
+Message-Id: <1457504946-40649-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,65 +42,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-04-03 at 11:26:36 UTC, Frederic Barrat wrote:
-> From: Christophe Lombard <clombard@linux.vnet.ibm.com>
->
-> The new of.c file contains code to parse the device tree to find out
-> about cxl adapters and AFUs.
->
-> guest.c implements the guest-specific callbacks for the backend API.
+IBM POWER8 NVlink systems contain usual Tesla K40-ish GPUs but also
+contain a couple of really fast links between GPU and CPU. These links
+are exposed to the userspace by the OPAL firmware as bridges.
+In order to make these links work when GPU is passed to the guest,
+these bridges need to be passed as well; otherwise performance will
+degrade. More details are in 10/10.
 
-...
+This reworks the existing NPU support in the powernv platform and adds
+VFIO support on top of that.
 
-> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
-> new file mode 100644
-> index 0000000..03eb83d
-> --- /dev/null
-> +++ b/drivers/misc/cxl/guest.c
-> @@ -0,0 +1,950 @@
-...
-> +static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 amr)
-> +{
-...
-> +	disable_afu_irqs(ctx);
-> +
-> +	rc = cxl_h_attach_process(ctx->afu->guest->handle, elem,
-> +				&ctx->process_token, &mmio_addr, &mmio_size);
-> +	if (rc == H_SUCCESS) {
+This was tested on POWER8NVL platform. pvr=0x004c0100.
 
-This breaks the SMP=n build:
-
-  drivers/misc/cxl/guest.c: In function 'attach_afu_directed':
-  drivers/misc/cxl/guest.c:572:12: error: 'H_SUCCESS' undeclared (first use in this function)
-  drivers/misc/cxl/guest.c:572:12: note: each undeclared identifier is reported only once for each function it appears in
+Please comment. Thanks.
 
 
-I've fixed it up with:
+Alexey Kardashevskiy (10):
+  vfio/spapr: Relax the IOMMU compatibility check
+  powerpc/powernv: Rename pnv_pci_ioda2_tce_invalidate_entire
+  powerpc/powernv: Define TCE Kill flags
+  powerpc/powernv/npu: TCE Kill helpers cleanup
+  powerpc/powernv/npu: Use the correct IOMMU page size
+  powerpc/powernv/npu: Simplify DMA setup
+  powerpc/powernv/npu: Rework TCE Kill handling
+  powerpc/powernv/npu: Add NPU devices to IOMMU group
+  powerpc/powernv/ioda2: Export some helpers
+  powerpc/powernv/npu: Enable passing through via VFIO
 
-diff --git a/drivers/misc/cxl/hcalls.c b/drivers/misc/cxl/hcalls.c
-index f01d4c012620..d6d11f4056d7 100644
---- a/drivers/misc/cxl/hcalls.c
-+++ b/drivers/misc/cxl/hcalls.c
-@@ -11,7 +11,6 @@
- #include <linux/compiler.h>
- #include <linux/types.h>
- #include <linux/delay.h>
--#include <asm/hvcall.h>
- #include <asm/byteorder.h>
- #include "hcalls.h"
- #include "trace.h"
-diff --git a/drivers/misc/cxl/hcalls.h b/drivers/misc/cxl/hcalls.h
-index 6bfab323578d..3e25522a5df6 100644
---- a/drivers/misc/cxl/hcalls.h
-+++ b/drivers/misc/cxl/hcalls.h
-@@ -12,6 +12,7 @@
+ arch/powerpc/platforms/powernv/npu-dma.c  | 387 ++++++++++++++++++------------
+ arch/powerpc/platforms/powernv/pci-ioda.c | 134 +++++------
+ arch/powerpc/platforms/powernv/pci.h      |  32 +--
+ drivers/vfio/vfio_iommu_spapr_tce.c       |   3 +-
+ 4 files changed, 309 insertions(+), 247 deletions(-)
 
- #include <linux/types.h>
- #include <asm/byteorder.h>
-+#include <asm/hvcall.h>
- #include "cxl.h"
-
- #define SG_BUFFER_SIZE 4096
-
-
-cheers
+-- 
+2.5.0.rc3
