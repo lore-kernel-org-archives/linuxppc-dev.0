@@ -1,30 +1,44 @@
-Return-Path: <cyrilbur@gmail.com>
+Return-Path: <imunsie@au1.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FACF1A006D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2016 12:03:01 +1100 (AEDT)
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7DB191A006D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2016 12:21:02 +1100 (AEDT)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 64A19140180
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Mar 2016 12:03:00 +1100 (AEDT)
-Received: by mail-pa0-x244.google.com with SMTP id q6so4448401pav.0
- for <linuxppc-dev@ozlabs.org>; Wed, 09 Mar 2016 17:03:00 -0800 (PST)
-Date: Thu, 10 Mar 2016 12:02:50 +1100
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Michael Neuling <mikey@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org
-Subject: Re: [PATCH 2/2] powerpc: Batch up loads/stores on saving and
- restoring VSX
-Message-ID: <20160310120250.4f6269f7@camb691>
-In-Reply-To: <1457568572.17010.12.camel@neuling.org>
-References: <1456811735-1289-1-git-send-email-cyrilbur@gmail.com>
- <1456811735-1289-2-git-send-email-cyrilbur@gmail.com>
- <1457568572.17010.12.camel@neuling.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by ozlabs.org (Postfix) with ESMTPS id 54C29140216
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Mar 2016 12:21:02 +1100 (AEDT)
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Thu, 10 Mar 2016 11:21:01 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 79B732BB0054
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Mar 2016 12:20:58 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2A1Ko9x56623202
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Mar 2016 12:20:58 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2A1IxBc030932
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Mar 2016 12:20:01 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Cc: Michael Ellerman <michaele@au1.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Matt Ochs <mrochs@us.ibm.com>, Manoj Kumar <kumarmn@us.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH v3 1/2] cxl: Add mechanism for delivering AFU driver
+ specific events
+In-reply-to: <87a8m7iunv.fsf@vajain21.in.ibm.com>
+References: <1457401715-26435-1-git-send-email-imunsie@au.ibm.com>
+ <87a8m7iunv.fsf@vajain21.in.ibm.com>
+Date: Thu, 10 Mar 2016 12:18:33 +1100
+Message-Id: <1457570763-sup-7740@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,324 +48,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 10 Mar 2016 11:09:32 +1100
-Michael Neuling <mikey@neuling.org> wrote:
+Excerpts from Vaibhav Jain's message of 2016-03-10 01:37:56 +1100:
+> > +    select CXL_AFU_DRIVER_OPS
+> I suggest wrapping the driver_ops struct definition and other related
+> functions inside a #ifdef CONFIG_CXL_AFU_DRIVER_OPS.
 
-> On Tue, 2016-03-01 at 16:55 +1100, Cyril Bur wrote:
-> 
-> > Currently the assembly to save and restore VSX registers boils down to a
-> > load immediate of the offset of the specific VSX register in memory
-> > followed by the load/store which repeats in sequence for each VSX register.
-> > 
-> > This patch attempts to do better by loading up four registers with
-> > immediates so that the loads and stores can be batched up and better
-> > pipelined by the processor.
-> > 
-> > This patch results in four load/stores in sequence and one add between
-> > groups of four. Also, by using a pair of base registers it means that the
-> > result of the add is not needed by the following instruction.
-> > 
-> > Due to the overlapping layout of FPU registers and VSX registers on POWER
-> > chips, this patch also benefits FPU loads and stores when VSX is compiled
-> > in and the CPU is VSX capable.  
-> 
-> The extra use of registers scares the hell out of me. That being said
-> I've eyeballed each use and they look ok to me though.
-> 
-> What is the performance gain?  I think there's a trade off here
-> between code complexity/fragility verse what it gains us.  If it's a
-> tiny improvement, this may not be worth it.
+No, the kconfig option is there so that cxlflash can add support for
+this and not have to worry about breaking any builds if their code is
+merged into the scsi tree that doesn't have our code yet.
 
-My suspicion is that gains will be overshadowed by something even slower. We
-can always shelve this patch and dust it off when we've got nothing else to
-speed up...
+There is nothing optional about this within our driver, which is why
+this is a select and has no configuration choice of it's own.
 
+On a related matter, we should send a patch to remove some of the
+leftover config options that were added to smooth the merging of
+cxlflash in the first place (CXL_KERNEL_API, CXL_EEH).
+
+> > +void cxl_set_driver_ops(struct cxl_context *ctx,
+> > +            struct cxl_afu_driver_ops *ops)
+> > +{
+> > +    WARN_ON(!ops->event_pending || !ops->deliver_event);
+> > +    ctx->afu_driver_ops = ops;
+> > +}
+> I would recommend adding a "struct module *" member to afu_driver_ops
+> and doing a __module_get on to it here and module_put when we destroy
+> the context. Since these callbacks will be residing within an external
+> module .text region hence it should stay in the memory until the context
+> is alive.
+
+ok
+
+> > diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+> > index 783337d..d1cc297 100644
+> > --- a/drivers/misc/cxl/file.c
+> > +++ b/drivers/misc/cxl/file.c
+> > @@ -295,6 +295,17 @@ int afu_mmap(struct file *file, struct vm_area_struct *vm)
+> >      return cxl_context_iomap(ctx, vm);
+> >  }
+> >  
+> > +static inline bool ctx_event_pending(struct cxl_context *ctx)
+> > +{
+> > +    if (ctx->pending_irq || ctx->pending_fault || ctx->pending_afu_err)
+> > +        return true;
+> > +
+> > +    if (ctx->afu_driver_ops)
+> > +        return ctx->afu_driver_ops->event_pending(ctx);
+> Should also check if ctx->afu_driver_ops->event_pending is NULL before
+> calling it.
+
+The v1 patch did exactly that and mpe rejected it as it made this code
+too ugly - we now check that event_pending field is valid when it is
+registered and WARN if it is not.
+
+> I would propose these two apis.
 > 
-> > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> > ---
-> >  arch/powerpc/include/asm/ppc_asm.h | 65 ++++++++++++++++++++++++++++++--------
-> >  arch/powerpc/kernel/fpu.S          | 43 ++++++++++++++++---------
-> >  arch/powerpc/kernel/tm.S           | 46 ++++++++++++++-------------
-> >  3 files changed, 104 insertions(+), 50 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-> > index 5ba69ed..dd0df12 100644
-> > --- a/arch/powerpc/include/asm/ppc_asm.h
-> > +++ b/arch/powerpc/include/asm/ppc_asm.h
-> > @@ -173,19 +173,58 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
-> >  #define LXVD2X_ROT(n,b,base)  	  	> LXVD2X(n,b,base);  	  \
-> >    	  	  	  	  	  XXSWAPD(n,n)
-> >  #endif
-> > -/* Save the lower 32 VSRs in the thread VSR region */
-> > -#define SAVE_VSR(n,b,base)  	  li b,16*(n);  STXVD2X_ROT(n,R##base,R##b)
-> > -#define SAVE_2VSRS(n,b,base)  	  SAVE_VSR(n,b,base); SAVE_VSR(n+1,b,base)
-> > -#define SAVE_4VSRS(n,b,base)  	  SAVE_2VSRS(n,b,base); SAVE_2VSRS(n+2,b,base)
-> > -#define SAVE_8VSRS(n,b,base)  	  SAVE_4VSRS(n,b,base); SAVE_4VSRS(n+4,b,base)
-> > -#define SAVE_16VSRS(n,b,base)  	  SAVE_8VSRS(n,b,base); SAVE_8VSRS(n+8,b,base)
-> > -#define SAVE_32VSRS(n,b,base)  	  SAVE_16VSRS(n,b,base); SAVE_16VSRS(n+16,b,base)
-> > -#define REST_VSR(n,b,base)  	  li b,16*(n); LXVD2X_ROT(n,R##base,R##b)
-> > -#define REST_2VSRS(n,b,base)  	  REST_VSR(n,b,base); REST_VSR(n+1,b,base)
-> > -#define REST_4VSRS(n,b,base)  	  REST_2VSRS(n,b,base); REST_2VSRS(n+2,b,base)
-> > -#define REST_8VSRS(n,b,base)  	  REST_4VSRS(n,b,base); REST_4VSRS(n+4,b,base)
-> > -#define REST_16VSRS(n,b,base)  	  REST_8VSRS(n,b,base); REST_8VSRS(n+8,b,base)
-> > -#define REST_32VSRS(n,b,base)  	  REST_16VSRS(n,b,base); REST_16VSRS(n+16,b,base)
-> > +
-> > +#define __SAVE_4VSRS(n,off0,off1,off2,off3,base) \
-> > +  	  STXVD2X_ROT(n,R##base,R##off0); \
-> > +  	  STXVD2X_ROT(n+1,R##base,R##off1); \
-> > +  	  STXVD2X_ROT(n+2,R##base,R##off2); \
-> > +  	  STXVD2X_ROT(n+3,R##base,R##off3)  
+> /*
+> *  fetches an event from the driver event queue. NULL means that queue
+> *  is empty. Can sleep if needed. The memory for cxl_event is allocated
+> *  by module being called. Hence it can be potentially be larger then
+> *  sizeof(struct cxl_event). Multiple calls to this should return same
+> *  pointer untill ack_event is called.
+> */
+> struct cxl_event * fetch_event(struct cxl_context * ctx);
 > 
-> same comment about off vs reg 
+> /*
+> * Returns and acknowledge the struct cxl_event * back to the driver
+> * which can then free it or maybe put it back in a kmem_cache. This
+> * should be called once we have completely returned the current
+> * struct cxl_event from the readcall
+> */
+> void ack_event(struct cxl_context * ctx, struct cxl_event *);
 > 
-> 
-> > +/* Restores the base for the caller */
-> > +#define SAVE_32VSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> > +  	  addi reg4,base,64; \
-> > +  	  li reg0,0; li reg1,16; li reg2,32; li reg3,48; \
-> > +  	  __SAVE_4VSRS(0,reg0,reg1,reg2,reg3,base); \
-> > +  	  addi base,base,128; \
-> > +  	  __SAVE_4VSRS(4,reg0,reg1,reg2,reg3,reg4); \
-> > +  	  addi reg4,reg4,128; \
-> > +  	  __SAVE_4VSRS(8,reg0,reg1,reg2,reg3,base); \
-> > +  	  addi base,base,128; \
-> > +  	  __SAVE_4VSRS(12,reg0,reg1,reg2,reg3,reg4); \
-> > +  	  addi reg4,reg4,128; \
-> > +  	  __SAVE_4VSRS(16,reg0,reg1,reg2,reg3,base); \
-> > +  	  addi base,base,128; \
-> > +  	  __SAVE_4VSRS(20,reg0,reg1,reg2,reg3,reg4); \
-> > +  	  addi reg4,reg4,128; \
-> > +  	  __SAVE_4VSRS(24,reg0,reg1,reg2,reg3,base); \
-> > +  	  __SAVE_4VSRS(28,reg0,reg1,reg2,reg3,reg4); \
-> > +  	  subi base,base,384
-> > +
-> > +#define __REST_4VSRS(n,off0,off1,off2,off3,base) \
-> > +  	  LXVD2X_ROT(n,R##base,R##off0); \
-> > +  	  LXVD2X_ROT(n+1,R##base,R##off1); \
-> > +  	  LXVD2X_ROT(n+2,R##base,R##off2); \
-> > +  	  LXVD2X_ROT(n+3,R##base,R##off3)
-> > +
-> > +/* Restores the base for the caller */
-> > +#define REST_32VSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> > +  	  addi reg4,base,64; \
-> > +  	  li reg0,0; li reg1,16; li reg2,32; li reg3,48; \
-> > +  	  __REST_4VSRS(0,reg0,reg1,reg2,reg3,base); \
-> > +  	  addi base,base,128; \
-> > +  	  __REST_4VSRS(4,reg0,reg1,reg2,reg3,reg4); \
-> > +  	  addi reg4,reg4,128; \
-> > +  	  __REST_4VSRS(8,reg0,reg1,reg2,reg3,base); \
-> > +  	  addi base,base,128; \
-> > +  	  __REST_4VSRS(12,reg0,reg1,reg2,reg3,reg4); \
-> > +  	  addi reg4,reg4,128; \
-> > +  	  __REST_4VSRS(16,reg0,reg1,reg2,reg3,base); \
-> > +  	  addi base,base,128; \
-> > +  	  __REST_4VSRS(20,reg0,reg1,reg2,reg3,reg4); \
-> > +  	  addi reg4,reg4,128; \
-> > +  	  __REST_4VSRS(24,reg0,reg1,reg2,reg3,base); \
-> > +  	  __REST_4VSRS(28,reg0,reg1,reg2,reg3,reg4); \
-> > +  	  subi base,base,384
-> >  
-> >  /*
-> >   * b = base register for addressing, o = base offset from register of 1st EVR
-> > diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-> > index 15da2b5..dc57ff1 100644
-> > --- a/arch/powerpc/kernel/fpu.S
-> > +++ b/arch/powerpc/kernel/fpu.S
-> > @@ -26,29 +26,32 @@
-> >  #include <asm/ptrace.h>
-> >  
-> >  #ifdef CONFIG_VSX
-> > -#define __REST_32FPVSRS(n,c,base)  	  	  	  	  	  \
-> > +#define __REST_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base)  	  \
-> >  BEGIN_FTR_SECTION  	  	  	  	  	  	  	  \
-> >    	  b  	  2f;  	  	  	  	  	  	  	  \
-> >  END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	  	  	  	  \
-> > -  	  REST_32FPRS(n,base);  	  	  	  	  	  	> \
-> > +  	  REST_32FPRS(0,base);  	  	  	  	  	  	> \
-> >    	  b  	  3f;  	  	  	  	  	  	  	  \
-> > -2:  	  REST_32VSRS(n,c,base);  	  	  	  	  	  	> \
-> > +2:  	  REST_32VSRS(reg0,reg1,reg2,reg3,reg4,base); \
-> >  3:
-> >  
-> > -#define __SAVE_32FPVSRS(n,c,base)  	  	  	  	  	  \
-> > +#define __SAVE_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> >  BEGIN_FTR_SECTION  	  	  	  	  	  	  	  \
-> >    	  b  	  2f;  	  	  	  	  	  	  	  \
-> >  END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	  	  	  	  \
-> > -  	  SAVE_32FPRS(n,base);  	  	  	  	  	  	> \
-> > +  	  SAVE_32FPRS(0,base);  	  	  	  	  	  	> \
-> >    	  b  	  3f;  	  	  	  	  	  	  	  \
-> > -2:  	  SAVE_32VSRS(n,c,base);  	  	  	  	  	  	> \
-> > +2:  	  SAVE_32VSRS(reg0,reg1,reg2,reg3,reg4,base); \
-> >  3:
-> >  #else
-> > -#define __REST_32FPVSRS(n,b,base)  	  REST_32FPRS(n, base)
-> > -#define __SAVE_32FPVSRS(n,b,base)  	  SAVE_32FPRS(n, base)
-> > +#define __REST_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base)  	  REST_32FPRS(0, base)
-> > +#define __SAVE_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base)  	  SAVE_32FPRS(0, base)
-> >  #endif
-> > -#define REST_32FPVSRS(n,c,base) __REST_32FPVSRS(n,__REG_##c,__REG_##base)
-> > -#define SAVE_32FPVSRS(n,c,base) __SAVE_32FPVSRS(n,__REG_##c,__REG_##base)
-> > +#define REST_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> > +__REST_32FPVSRS(__REG_##reg0,__REG_##reg1,__REG_##reg2,__REG_##reg3,__REG_##reg4,__REG_##base)
-> > +
-> > +#define SAVE_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> > +__SAVE_32FPVSRS(__REG_##reg0,__REG_##reg1,__REG_##reg2,__REG_##reg3,__REG_##reg4,__REG_##base)
-> >  
-> >  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> >  /* void do_load_up_transact_fpu(struct thread_struct *thread)
-> > @@ -56,6 +59,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	  	  	  	  \
-> >   * This is similar to load_up_fpu but for the transactional version of the FP
-> >   * register set.  It doesn't mess with the task MSR or valid flags.
-> >   * Furthermore, we don't do lazy FP with TM currently.
-> > + *
-> > + * Is called from C
-> >   */
-> >  _GLOBAL(do_load_up_transact_fpu)
-> >    	  mfmsr  	  r6
-> > @@ -71,7 +76,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
-> >    	  addi  	  r7,r3,THREAD_TRANSACT_FPSTATE
-> >    	  lfd  	  fr0,FPSTATE_FPSCR(r7)
-> >    	  MTFSF_L(fr0)
-> > -  	  REST_32FPVSRS(0, R4, R7)
-> > +  	  REST_32FPVSRS(R4,R5,R6,R8,R9,R7)
-> >  
-> >    	  blr
-> >  #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-> > @@ -79,19 +84,23 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
-> >  /*
-> >   * Load state from memory into FP registers including FPSCR.
-> >   * Assumes the caller has enabled FP in the MSR.
-> > + *
-> > + * Is called from C
-> >   */
-> >  _GLOBAL(load_fp_state)
-> >    	  lfd  	  fr0,FPSTATE_FPSCR(r3)
-> >    	  MTFSF_L(fr0)
-> > -  	  REST_32FPVSRS(0, R4, R3)
-> > +  	  REST_32FPVSRS(R4,R5,R6,R7,R8,R3)
-> >    	  blr
-> >  
-> >  /*
-> >   * Store FP state into memory, including FPSCR
-> >   * Assumes the caller has enabled FP in the MSR.
-> > + *
-> > + * NOT called from C
-> >   */
-> >  _GLOBAL(store_fp_state)
-> > -  	  SAVE_32FPVSRS(0, R4, R3)
-> > +  	  SAVE_32FPVSRS(R4,R5,R6,R7,R8,R3)
-> >    	  mffs  	  fr0
-> >    	  stfd  	  fr0,FPSTATE_FPSCR(r3)
-> >    	  blr
-> > @@ -104,6 +113,8 @@ _GLOBAL(store_fp_state)
-> >   * enable the FPU for the current task and return to the task.
-> >   * Note that on 32-bit this can only use registers that will be
-> >   * restored by fast_exception_return, i.e. r3 - r6, r10 and r11.
-> > + *
-> > + * NOT called from C
-> >   */
-> >  _GLOBAL(load_up_fpu)
-> >    	  mfmsr  	  r5
-> > @@ -137,7 +148,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
-> >    	  addi  	  r10,r5,THREAD_FPSTATE
-> >    	  lfd  	  fr0,FPSTATE_FPSCR(r10)
-> >    	  MTFSF_L(fr0)
-> > -  	  REST_32FPVSRS(0, R4, R10)
-> > +  	  REST_32FPVSRS(R3,R4,R5,R6,R11,R10)
-> >    	  /* restore registers and return */
-> >    	  /* we haven't used ctr or xer or lr */
-> >    	  blr
-> > @@ -146,6 +157,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
-> >   * save_fpu(tsk)
-> >   * Save the floating-point registers in its thread_struct.
-> >   * Enables the FPU for use in the kernel on return.
-> > + *
-> > + * Is called from C
-> >   */
-> >  _GLOBAL(save_fpu)
-> >    	  addi  	  r3,r3,THREAD  	          /* want THREAD of task */
-> > @@ -154,7 +167,7 @@ _GLOBAL(save_fpu)
-> >    	  PPC_LCMPI  	  0,r6,0
-> >    	  bne  	  2f
-> >    	  addi  	  r6,r3,THREAD_FPSTATE
-> > -2:  	  SAVE_32FPVSRS(0, R4, R6)
-> > +2:  	  SAVE_32FPVSRS(R4,R5,R7,R8,R9,R6)
-> >    	  mffs  	  fr0
-> >    	  stfd  	  fr0,FPSTATE_FPSCR(r6)
-> >    	  blr
-> > diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-> > index 81e1305..61900b8 100644
-> > --- a/arch/powerpc/kernel/tm.S
-> > +++ b/arch/powerpc/kernel/tm.S
-> > @@ -14,30 +14,32 @@
-> >  
-> >  #ifdef CONFIG_VSX
-> >  /* See fpu.S, this is borrowed from there */
-> > -#define __SAVE_32FPRS_VSRS(n,c,base)  	  	> \
-> > -BEGIN_FTR_SECTION  	  	  	  	> \
-> > -  	  b  	  2f;  	  	  	  	> \
-> > -END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	> \
-> > -  	  SAVE_32FPRS(n,base);  	  	  	  \
-> > -  	  b  	  3f;  	  	  	  	> \
-> > -2:  	  SAVE_32VSRS(n,c,base);  	  	  	  \
-> > +#define __SAVE_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> > +BEGIN_FTR_SECTION  	  	  	  	  	  	  	  \
-> > +  	  b  	  2f;  	  	  	  	  	  	  	  \
-> > +END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	  	  	  	  \
-> > +  	  SAVE_32FPRS(0,base);  	  	  	  	  	  	> \
-> > +  	  b  	  3f;  	  	  	  	  	  	  	  \
-> > +2:  	  SAVE_32VSRS(reg0,reg1,reg2,reg3,reg4,base); \
-> >  3:
-> > -#define __REST_32FPRS_VSRS(n,c,base)  	  	> \
-> > -BEGIN_FTR_SECTION  	  	  	  	> \
-> > -  	  b  	  2f;  	  	  	  	> \
-> > -END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	> \
-> > -  	  REST_32FPRS(n,base);  	  	  	  \
-> > -  	  b  	  3f;  	  	  	  	> \
-> > -2:  	  REST_32VSRS(n,c,base);  	  	  	  \
-> > +
-> > +#define __REST_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base)  	  \
-> > +BEGIN_FTR_SECTION  	  	  	  	  	  	  	  \
-> > +  	  b  	  2f;  	  	  	  	  	  	  	  \
-> > +END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	  	  	  	  \
-> > +  	  REST_32FPRS(0,base);  	  	  	  	  	  	> \
-> > +  	  b  	  3f;  	  	  	  	  	  	  	  \
-> > +2:  	  REST_32VSRS(reg0,reg1,reg2,reg3,reg4,base); \
-> >  3:
-> > +
-> >  #else
-> > -#define __SAVE_32FPRS_VSRS(n,c,base)  	  SAVE_32FPRS(n, base)
-> > -#define __REST_32FPRS_VSRS(n,c,base)  	  REST_32FPRS(n, base)
-> > +#define __SAVE_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base)  	  SAVE_32FPRS(0, base)
-> > +#define __REST_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base)  	  REST_32FPRS(0, base)
-> >  #endif
-> > -#define SAVE_32FPRS_VSRS(n,c,base) \
-> > -  	  __SAVE_32FPRS_VSRS(n,__REG_##c,__REG_##base)
-> > -#define REST_32FPRS_VSRS(n,c,base) \
-> > -  	  __REST_32FPRS_VSRS(n,__REG_##c,__REG_##base)
-> > +#define SAVE_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> > +__SAVE_32FPRS_VSRS(__REG_##reg0,__REG_##reg1,__REG_##reg2,__REG_##reg3,__REG_##reg4,__REG_##base)
-> > +#define REST_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> > +__REST_32FPRS_VSRS(__REG_##reg0,__REG_##reg1,__REG_##reg2,__REG_##reg3,__REG_##reg4,__REG_##base)
-> >  
-> >  /* Stack frame offsets for local variables. */
-> >  #define TM_FRAME_L0  	  TM_FRAME_SIZE-16
-> > @@ -165,7 +167,7 @@ dont_backup_vec:
-> >    	  beq  	  dont_backup_fp
-> >  
-> >    	  addi  	  r7, r3, THREAD_TRANSACT_FPSTATE
-> > -  	  SAVE_32FPRS_VSRS(0, R6, R7)  	  /* r6 scratch, r7 transact fp state */
-> > +  	  SAVE_32FPRS_VSRS(R6,R8,R9,R10,R11,R7) /* r6,r8,r9,r10,r11 scratch, r7 transact fp state */
-> >  
-> >    	  mffs    fr0
-> >    	  stfd    fr0,FPSTATE_FPSCR(r7)
-> > @@ -375,7 +377,7 @@ dont_restore_vec:
-> >    	  addi  	  r8, r3, THREAD_FPSTATE
-> >    	  lfd  	  fr0, FPSTATE_FPSCR(r8)
-> >    	  MTFSF_L(fr0)
-> > -  	  REST_32FPRS_VSRS(0, R4, R8)
-> > +  	  REST_32FPRS_VSRS(R4,R5,R6,R7,R9,R8)
-> >  
-> >  dont_restore_fp:
-> >    	  mtmsr  	  r6  	  	  	  	> /* FP/Vec off again! */  
+> I think above apis would give us more flexbility in the future when
+> drivers would want to send larger events without breaking the abi.
+
+I'm very reluctant to make this kind of change - while nice on paper,
+poll() and read() are already very easy calls to screw up, and we have
+seen that happen countless times in the past from different drivers that
+e.g. and end up in a situation where poll says there is an event but
+then read blocks, or poll blocks even though there is an event already
+pending.
+
+The API at the moment fits into the poll() / read() model and has
+appropriate locking and the correct waiting semantics to avoid those
+kind of issues (provided that the afu driver doesn't do something that
+violates these semantics like sleep in one of these calls, but the
+kernel has debug features to detect that), but any deviation from this
+is too risky in my view.
+
+Cheers,
+-Ian
