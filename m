@@ -1,28 +1,28 @@
-Return-Path: <pmladek@suse.com>
+Return-Path: <jikos@kernel.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 01BEF1A02DE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2016 23:51:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 831881A02DE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2016 23:58:43 +1100 (AEDT)
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5489814030F
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Mar 2016 23:51:25 +1100 (AEDT)
-Date: Thu, 10 Mar 2016 13:51:16 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Torsten Duwe <duwe@lst.de>
-Cc: jeyu@redhat.com, jkosina@suse.cz, jikos@kernel.org,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+ by ozlabs.org (Postfix) with ESMTPS id 120651401CA
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Mar 2016 23:58:42 +1100 (AEDT)
+Date: Thu, 10 Mar 2016 13:58:39 +0100 (CET)
+From: Jiri Kosina <jikos@kernel.org>
+To: Petr Mladek <pmladek@suse.com>
+cc: Torsten Duwe <duwe@lst.de>, jeyu@redhat.com, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
  live-patching@vger.kernel.org, mbenes@suse.cz
 Subject: Re: [PATCH 2/2] ppc64le live patch: get rid of mini stack frame
-Message-ID: <20160310125116.GS10940@pathway.suse.cz>
+In-Reply-To: <20160310125116.GS10940@pathway.suse.cz>
+Message-ID: <alpine.LNX.2.00.1603101357100.3656@cbobk.fhfr.pm>
 References: <20160309172821.GC27913@lst.de> <20160309173017.GD27913@lst.de>
  <20160310122508.GR10940@pathway.suse.cz>
+ <20160310125116.GS10940@pathway.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160310122508.GR10940@pathway.suse.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,20 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 2016-03-10 13:25:08, Petr Mladek wrote:
-> On Wed 2016-03-09 18:30:17, Torsten Duwe wrote:
-> > After the mini stack frame is no longer required for TOC storage, it can
-> > be eliminated iff the functionality of klp_return_helper, which required
-> > a stack frame for the extra return address previously, is carried out
-> > by the replacement function now. This requires _every_ live patch replacement
-> > function to execute the following (or similar) sequence of machine instructions
-> > just before every return to the original caller:
-> 
-> I have thought about it and it is a nono from my point of view.
-> It is too error prone, especially that there are functions that
-> call return on several locations.
+On Thu, 10 Mar 2016, Petr Mladek wrote:
 
-BTW: How is this solved in kretprobes? Or is it easier there?
+> BTW: How is this solved in kretprobes? Or is it easier there?
 
-Best Regards,
-Petr
+Is that really a problem? With kretprobes you're never performing the 
+module->core->module transition in "one" redirection, right?
+
+The 'kretprobe_trampoline' is a global symbol, and hence everybody is 
+generating 'global call' for it, and that's pretty much it.
+
+-- 
+Jiri Kosina
+SUSE Labs
