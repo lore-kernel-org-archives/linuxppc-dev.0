@@ -1,30 +1,24 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D76571A02EF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Mar 2016 08:08:46 +1100 (AEDT)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 600031401CD
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Mar 2016 08:08:45 +1100 (AEDT)
-Date: Thu, 10 Mar 2016 15:08:41 -0600
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Vojtech Pavlik <vojtech@suse.com>, Miroslav Benes <mbenes@suse.cz>,
- live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- linuxppc-dev@ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
- Torsten Duwe <duwe@suse.de>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] livepatch: Add some basic LivePatch documentation
-Message-ID: <20160310210841.GA12493@treble.redhat.com>
-References: <1457532106-30925-1-git-send-email-pmladek@suse.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1457532106-30925-1-git-send-email-pmladek@suse.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B95401A0311
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Mar 2016 08:57:44 +1100 (AEDT)
+Message-ID: <1457645698.24238.76.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/pci: Reuse PHB number on pci_controller add if
+ available
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: linux-pci@vger.kernel.org, mpe@ellerman.id.au, paulus@samba.org,
+ imunsie@au1.ibm.com, mikey@neuling.org, andrew.donnellan@au1.ibm.com,
+ gwshan@linux.vnet.ibm.com, bhelgaas@google.com
+Date: Fri, 11 Mar 2016 08:34:58 +1100
+In-Reply-To: <1457633505-19857-2-git-send-email-gpiccoli@linux.vnet.ibm.com>
+References: <1457633505-19857-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <1457633505-19857-2-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,369 +28,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 09, 2016 at 03:01:46PM +0100, Petr Mladek wrote:
-> LivePatch framework deserves some documentation, definitely.
-> This is an attempt to provide some basic info. I hope that
-> it will be useful for both LivePatch producers and also
-> potential developers of the framework itself.
+On Thu, 2016-03-10 at 15:11 -0300, Guilherme G. Piccoli wrote:
+> The domain/PHB field of PCI addresses has its value obtained from a
+> global variable, incremented each time a new domain (represented by
+> struct pci_controller) is added on the system. The domain addition
+> process happens during boot or due to PCI device hotplug.
+
+I'd rather we use a fixed numbering for domains, for example, under
+OPAL, use the opal-id, under phyp, there is also a number in the DT we
+can use (forgot what it's called) etc...
+
+> As recent kernels are using predictable naming for network
+> interfaces,
+> the network stack is more tied to PCI naming. This can be a problem
+> in
+> hotplug scenarios, because PCI addresses will change if a device is
+> removed and then re-added. This situation seems unusual, but it can
+> happen if a user wants to replace a NIC without rebooting the
+> machine,
+> for example.
 > 
-> Signed-off-by: Petr Mladek <pmladek@suse.com>
-
-Hi Petr,
-
-This is awesome.  Thank you for starting this!
-
-Some minor nits below.
-
-> This patch was motivated by the LivePatch port for PPC. The guys
-> might want to document some PPC-specific limitations on top of it.
+> This patch changes the way PCI domain values are generated: the
+> global
+> variable is no longer used; instead, a list is introduced, containing
+> a flag that indicates whenever a domain is in use or was released,
+> for
+> example by a PCI hotplug remove. If the new PHB being added finds a
+> free domain, it will use its number; otherwise a new number is
+> generated incrementing the higher domain value present on the system.
+> No functional changes were introduced.
 > 
-> I am sure that it is far from perfect. But I hope that it is
-> an acceptable start that can be improved later. I hope that
-> I did not write that many factual mistakes.
+> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/pci-common.c | 47
+> +++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 44 insertions(+), 3 deletions(-)
 > 
-> I wrote only some generic info about the consistency model.
-> I am not sure if we have agreed on some specification yet.
-> 
-> I am sorry for grammar mistakes. I hope that some hairs will
-> stay on your head if you are sensitive.
->
->  Documentation/livepatch/livepatch.txt | 277 ++++++++++++++++++++++++++++++++++
->  MAINTAINERS                           |   1 +
->  2 files changed, 278 insertions(+)
->  create mode 100644 Documentation/livepatch/livepatch.txt
-> 
-> diff --git a/Documentation/livepatch/livepatch.txt b/Documentation/livepatch/livepatch.txt
-> new file mode 100644
-> index 000000000000..28e8047abb61
-> --- /dev/null
-> +++ b/Documentation/livepatch/livepatch.txt
-> @@ -0,0 +1,277 @@
-> +=========
-> +LivePatch
-> +=========
-
-At the risk of sounding like a broken record, I have to say that I
-really don't like the CamelCase in LivePatch.  I don't have a good
-reason other than it gives me flashbacks to being exposed to
-EnterpriseApplicationObjectOrientedProgramming.
-
-And there's no existing precedent...
-
-  # git grep LivePatch
-  #
-
-...so can we please not create one now? :-)
-
-</end grammar pedantry>
-
-> +
-> +This document outlines basic information about kernel LivePatching.
-> +
-> +Table of Contents:
-> +
-> +1. Motivation
-> +2. Kprobes, Ftrace, LivePatching
-> +3. Consistency model
-> +4. LivePatch life-cycle
-> +   4.1. Registration
-> +   4.2. Enabling
-> +   4.3. Disabling
-> +   4.4. Unregistration
-> +5. Livepatch module
-> +   5.1. New functions
-> +   5.2. Metadata
-> +   5.3. Module handling
-> +6. Sysfs
-> +7. Limitations
-> +
-> +
-> +1. Motivation
-> +=============
-> +
-> +There are situations when people are really reluctant to reboot a system.
-> +It might be because the computer is in the middle of a complex scientific
-> +computation. Or the system is busy handling customer requests in the high
-> +season.
-> +
-> +On the other hand, people also want to keep the system stable and secure.
-> +This is where LivePatch infrastructure comes handy. It allows to redirect
-> +selected function calls to a fixed implementation without rebooting
-> +the system.
-> +
-> +
-> +2. Kprobes, Ftrace, LivePatching
-> +================================
-> +
-> +Linux kernel has more ways how to redirect an existing code into a new one.
-> +It happens with kernel probes, function tracing, and LivePatching:
-> +
-> +  + The kernel probes are the most generic way. The code can be redirected
-> +    by putting an interrupt instruction instead of any instruction.
-> +
-> +  + The function tracer calls the code from a predefined location that is
-> +    close the function entry. The location is generated by the compiler,
-> +    see -pg gcc option.
-> +
-> +  + LivePatching typically needs to redirect the code at the very beginning
-> +    of the function entry before the function parameters or the stack
-> +    are anyhow muffled.
-> +
-> +All three approaches need to modify the existing code at runtime. Therefore
-> +they need to be aware of each other and do not step over othres' toes. Most
-> +of these problems are solved by using the dynamic ftrace framework as a base.
-> +A Kprobe is registered as a ftrace handler when the function entry is probed,
-> +see CONFIG_KPROBES_ON_FTRACE. Also an alternative function from a live patch
-> +is called from a custom ftrace handler. But there are some limitations,
-> +see below.
-> +
-> +
-> +3. Consistency model
-> +====================
-> +
-> +Functions are there for a reason. They take some input parameters, get or
-> +release locks, read, process, and even write some data in a defined way,
-> +have return values. By other words, each function has a defined semantic.
-> +
-> +Many fixes do not change the semantic of the modified functions. For example,
-> +they add a NULL pointer or a boundary check, fix a race by adding a missing
-> +memory barrier, or add some locking about a critical section. Most of these
-> +changes are self contained and the function present itself the same way
-> +to the rest of the system. In this case, the functions might be updated
-> +independently one by one.
-> +
-> +But there are more complex fixes. For example, a patch might change
-> +ordering of locking in more functions at the same time. Or a patch
-> +might exchange meaning of some temporary structures and update
-> +all the relevant functions. In this case, the affected unit
-> +(thread, whole kernel) need to start using all new versions of
-> +the functions at the same time. Also the switch must happen only
-> +when it is safe to do so, e.g. when the affected locks are released,
-> +the data using the modified structures are empty.
-
-I can't grok "the data using the modified structures are empty".  Can you
-clarify?
-
-> +The theory about how to apply functions a safe way is rather complex.
-> +The aim is to define a so-called consistency model. It means to define
-> +conditions when the new implementation could be used so that the system
-> +stays consistent. The theory is not yet finished. See the discussion at
-> +http://thread.gmane.org/gmane.linux.kernel/1823033/focus=1828189
-> +
-> +The current implementation supports the easiest scenario that
-> +is sufficeint for the most common fixes. See the limitations below.
-> +
-> +
-> +4. LivePatch life-cycle
-> +=======================
-> +
-> +LivePatching defines four basic operations that define the life cycle
-> +of each live patch.
-> +
-> +4.1. Registration
-> +-----------------
-> +
-> +Each patch has to be registered using klp_register_patch().
-> +
-> +Here the patch is added into the list of known patches. The addresses
-> +of the patched functions are found according to their names.
-> +Relocations are applied. The relevant entries are created under
-> +/sys/kernel/livepatch/<name>.
-> +
-> +
-> +4.2. Enabling
-> +-------------
-> +
-> +Registered patches might be enabled either by calling klp_enable_patch() or
-> +by writing '1' to /sys/kernel/livepatch/<name>/enabled.
-> +
-> +At this stage, an universal ftrace handler is registered for all newly patched
-> +functions with a function-specific ftrace_ops structure. The structure points
-> +to a list of struct klp_func, see func_stack. This way the same function
-> +can be patched more times. The last variant from the func_stack is used.
-> +
-> +Note that we could enable patches in a different order than they are
-> +registered. The actually used function is defined by the order in
-> +the func_stack list.
-> +
-> +
-> +4.3. Disabling
-> +--------------
-> +
-> +Enabled patches might get disabled either by calling klp_disable_patch() or
-> +by writing '0' to /sys/kernel/livepatch/<name>/enabled.
-> +
-> +Here all the struct klp_functions are removed from the appropriate
-> +ftrace_ops. The ftrace handler is unregistered when the func_stack
-> +list gets empty.
-> +
-> +Patches must be disabled in the exactly revese order in which they were
-> +enabled. It makes the problem and the implementation easier.
-> +
-> +
-> +4.4. Unregistration
-> +-------------------
-> +
-> +Disabled patched might be unregistered by calling klp_unregister_patch().
-> +
-> +At this stage, all the relevant sys-fs entries are removed and the patch
-> +is removed from the list of known patches.
-> +
-> +
-> +5. Livepatch module
-> +===================
-> +
-> +Live patches are distributed using kernel modules, see
-> +samples/livepatch/livepatch-sample.c.
-> +
-> +The module includes a new implementation of functions that we want
-> +to replace. In addition, it defines some structures describing what
-> +functions are replaced. Finally, there is a code for registering,
-> +enabling, and unregistering the patch.
-> +
-> +
-> +5.1. New functions
-> +------------------
-> +
-> +New versions of functions are typically just copied from the fixed sources.
-> +A good practice is to add a prefix to the names so that they can be
-> +distinguished from the original ones, e.g. in a backtrace. Also it
-> +is usually enough to have a local visibility (static).
-> +
-> +The patch contains only functions that are really modified. But they might
-> +want to access functions or data with local visibility from the original
-> +source.c file. This can be solved by relocation information. FIXME:
-> +The support and documentation for relocations is still in progress.
-> +
-> +
-> +5.2. Metadata
-> +------------
-> +
-> +The patch is described by several structures that split the information
-> +into three levels:
-> +
-> +  + struct klp_patch is defined for each patched function. It includes
-
-s/klp_patch/klp_func/
-
-> +    a name (string) of the original function, optionaly the position
-> +    of the symbol within an object, and a name (pointer) to the new
-> +    function implementation. The old function will be later found via
-> +    kallsyms at runtime. The new function is defined in the same
-> +    source file.
-> +
-> +  + struct klp_object defines an array of patched functions (struct
-> +    klp_patch) in the same object. Where object is either vmlinux (NULL)
-
-s/klp_patch/klp_func/
-
-> +    or a module name. It helps to group and handle functions for each
-> +    object together. Note that patched modules might be loaded later
-> +    then the patch itself and the relevant functions might be patched
-> +    only when they are available.
-> +
-> +  + struct klp_patch defines an array of patched objects (struct
-> +    klp_object). It allows to handle all patched functions consistently
-> +    and synchronously. The whole patch is applied only when all available
-> +    symbols can be patched.
-
-This last sentence confuses me.  What does "all available symbols" mean?
-Does it imply a more complex consistency model?
-
-> If a more complex consistency model is supported
-> +    then a selected unit (thread, kernel as a whole) will see the new code
-> +    from the entire patch only when they are in a safe state.
-> +
-> +
-> +5.3. Module handling
-> +-------------------
-
-Similar to Jessica's comment, maybe change this header to "Livepatch
-module handling" to distinguish livepatch modules from patched modules.
-
-> +
-> +The live patch is typically registered and enabled when the module
-> +is loaded. The reverse operations are called when the module
-> +is being removed.
-> +
-> +IMPORTANT: Livepatch modules could not be removed at the moment.
-> +See the limitations below.
-> +
-> +
-> +6. Sysfs
-> +========
-> +
-> +Information about the registered patches might be found under
-> +/sys/kernel/livepatch. The patches could be enabled and disabled
-> +by writing there.
-> +
-> +See Documentation/ABI/testing/sysfs-kernel-livepatch for more details.
-> +
-> +
-> +7. Limitations
-> +==============
-> +
-> +The initial Livepatch implementation has several limitations:
-> +
-> +  + The modules with LivePatches could not be removed without forcing
-> +    at the moment.
-> +
-> +    The problem is how to detect if anyone is still using (sleeping inside)
-> +    a code from the patch. It will get most likely solved once a more complex
-> +    consistency model is supported. The idea is that a safe state for patching
-> +    should also mean a safe state for removing the patch.
-> +
-> +
-> +  + Only functions that can be traced could be patched.
-> +
-> +    Livepatch is based on the dynamic ftrace. In particular, functions
-> +    implementing ftrace or the livepatch ftrace handler could not be patched.
-> +    Otherwise, you would end up in an infinite loop. A potential mistake
-> +    is prevented by marking the problematic functions by "notrace".
-> +
-> +
-> +  + Livepatch works reliably only when the dynamic ftrace is located at
-> +    the very beginning of the function.
-> +
-> +    The function need to be redirected before the stack or the function
-> +    parameters are muffled any way. For example, LivePatch requires
-> +    using -fentry on x86_64.
-> +
-> +
-> +  + The patch must not change the semantic of the patched functions.
-> +
-> +    The current implementation guarantees only that either the old
-> +    or the new function is called. The functions are patched one
-> +    by one. It means that the patch must _not_ change the semantic
-> +    of the function.
-> +
-> +
-> +  + Kretprobes using the ftrace framework conflict with the patched functions.
-> +
-> +    Both Kretprobes and LivePatches use a ftrace handler that modifies
-> +    the return address. The first user wins. Either the probe or the patch
-> +    is rejected when the handler is already in use by the other.
-> +
-> +
-> +  + Kprobes in the original function are ignored when the code is redirected
-> +    to the new implementation.
-> +
-> +    There is a work in progress to add warnings about this situations.
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 4029c63d8a7d..0e7049688862 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -6590,6 +6590,7 @@ F:	kernel/livepatch/
->  F:	include/linux/livepatch.h
->  F:	arch/x86/include/asm/livepatch.h
->  F:	arch/x86/kernel/livepatch.c
-> +F:	Documentation/livepatch/
->  F:	Documentation/ABI/testing/sysfs-kernel-livepatch
->  F:	samples/livepatch/
->  L:	live-patching@vger.kernel.org
-> -- 
-> 1.8.5.6
-> 
-
--- 
-Josh
+> diff --git a/arch/powerpc/kernel/pci-common.c
+> b/arch/powerpc/kernel/pci-common.c
+> index 0f7a60f..6eac0dd 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -44,8 +44,12 @@
+>  static DEFINE_SPINLOCK(hose_spinlock);
+>  LIST_HEAD(hose_list);
+>  
+> -/* XXX kill that some day ... */
+> -static int global_phb_number;		/* Global phb counter
+> */
+> +/* Global PHB counter list */
+> +struct global_phb_number {
+> +	bool used;
+> +	struct list_head node;
+> +};
+> +LIST_HEAD(global_phb_number_list);
+>  
+>  /* ISA Memory physical address */
+>  resource_size_t isa_mem_base;
+> @@ -64,6 +68,42 @@ struct dma_map_ops *get_pci_dma_ops(void)
+>  }
+>  EXPORT_SYMBOL(get_pci_dma_ops);
+>  
+> +static int get_phb_number(void)
+> +{
+> +	struct global_phb_number *ptr;
+> +	int latest_number = 0;
+> +
+> +	list_for_each_entry(ptr, &global_phb_number_list, node) {
+> +		if (!ptr->used) {
+> +			ptr->used = true;
+> +			return latest_number;
+> +		}
+> +		latest_number++;
+> +	}
+> +
+> +	ptr = zalloc_maybe_bootmem(sizeof(struct global_phb_number),
+> GFP_KERNEL);
+> +	BUG_ON(ptr == NULL);
+> +
+> +	ptr->used = true;
+> +	list_add_tail(&ptr->node, &global_phb_number_list);
+> +
+> +	return latest_number;
+> +}
+> +
+> +static void release_phb_number(int phb_number)
+> +{
+> +	struct global_phb_number *ptr;
+> +	int current_number = 0;
+> +
+> +	list_for_each_entry(ptr, &global_phb_number_list, node) {
+> +		if (current_number == phb_number) {
+> +			ptr->used = false;
+> +			return;
+> +		}
+> +		current_number++;
+> +	}
+> +}
+> +
+>  struct pci_controller *pcibios_alloc_controller(struct device_node
+> *dev)
+>  {
+>  	struct pci_controller *phb;
+> @@ -72,7 +112,7 @@ struct pci_controller
+> *pcibios_alloc_controller(struct device_node *dev)
+>  	if (phb == NULL)
+>  		return NULL;
+>  	spin_lock(&hose_spinlock);
+> -	phb->global_number = global_phb_number++;
+> +	phb->global_number = get_phb_number();
+>  	list_add_tail(&phb->list_node, &hose_list);
+>  	spin_unlock(&hose_spinlock);
+>  	phb->dn = dev;
+> @@ -94,6 +134,7 @@ EXPORT_SYMBOL_GPL(pcibios_alloc_controller);
+>  void pcibios_free_controller(struct pci_controller *phb)
+>  {
+>  	spin_lock(&hose_spinlock);
+> +	release_phb_number(phb->global_number);
+>  	list_del(&phb->list_node);
+>  	spin_unlock(&hose_spinlock);
+>  
