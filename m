@@ -1,21 +1,30 @@
-Return-Path: <mikey@neuling.org>
+Return-Path: <jeyu@redhat.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4160F1A0060
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2016 11:09:33 +1100 (AEDT)
-Message-ID: <1457568572.17010.12.camel@neuling.org>
-Subject: Re: [PATCH 2/2] powerpc: Batch up loads/stores on saving and
- restoring VSX
-From: Michael Neuling <mikey@neuling.org>
-To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@ozlabs.org
-Cc: anton@samba.org
-Date: Thu, 10 Mar 2016 11:09:32 +1100
-In-Reply-To: <1456811735-1289-2-git-send-email-cyrilbur@gmail.com>
-References: <1456811735-1289-1-git-send-email-cyrilbur@gmail.com>
- <1456811735-1289-2-git-send-email-cyrilbur@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id BA7091A0060
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2016 11:25:40 +1100 (AEDT)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 1D6B3140B9E
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Mar 2016 11:25:39 +1100 (AEDT)
+Date: Wed, 9 Mar 2016 19:25:32 -0500
+From: Jessica Yu <jeyu@redhat.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Vojtech Pavlik <vojtech@suse.com>, Miroslav Benes <mbenes@suse.cz>,
+ live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+ linuxppc-dev@ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
+ Torsten Duwe <duwe@suse.de>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: livepatch: Add some basic LivePatch documentation
+Message-ID: <20160310002532.GB22055@packer-debian-8-amd64.digitalocean.com>
+References: <1457532106-30925-1-git-send-email-pmladek@suse.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <1457532106-30925-1-git-send-email-pmladek@suse.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,343 +34,379 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-03-01 at 16:55 +1100, Cyril Bur wrote:
++++ Petr Mladek [09/03/16 15:01 +0100]:
+>LivePatch framework deserves some documentation, definitely.
+>This is an attempt to provide some basic info. I hope that
+>it will be useful for both LivePatch producers and also
+>potential developers of the framework itself.
+>
+>Signed-off-by: Petr Mladek <pmladek@suse.com>
+>---
+>
+>This patch was motivated by the LivePatch port for PPC. The guys
+>might want to document some PPC-specific limitations on top of it.
+>
+>I am sure that it is far from perfect. But I hope that it is
+>an acceptable start that can be improved later. I hope that
+>I did not write that many factual mistakes.
+>
+>I wrote only some generic info about the consistency model.
+>I am not sure if we have agreed on some specification yet.
+>
+>I am sorry for grammar mistakes. I hope that some hairs will
+>stay on your head if you are sensitive.
 
-> Currently the assembly to save and restore VSX registers boils down to a
-> load immediate of the offset of the specific VSX register in memory
-> followed by the load/store which repeats in sequence for each VSX registe=
-r.
->=20
-> This patch attempts to do better by loading up four registers with
-> immediates so that the loads and stores can be batched up and better
-> pipelined by the processor.
->=20
-> This patch results in four load/stores in sequence and one add between
-> groups of four. Also, by using a pair of base registers it means that the
-> result of the add is not needed by the following instruction.
->=20
-> Due to the overlapping layout of FPU registers and VSX registers on POWER
-> chips, this patch also benefits FPU loads and stores when VSX is compiled
-> in and the CPU is VSX capable.
+Thanks for getting us started on much-needed documentation. :-) It's a
+good starting point.
 
-The extra use of registers scares the hell out of me. That being said
-I've eyeballed each use and they look ok to me though.
+I skimmed the document and it looks well organized. There are just some areas
+that need more clarification. I just provided some suggested rewordings, though
+they are subjective so you could either take them or leave them.
 
-What is the performance gain?  I think there's a trade off here
-between code complexity/fragility verse what it gains us.  If it's a
-tiny improvement, this may not be worth it.
+>
+> Documentation/livepatch/livepatch.txt | 277 ++++++++++++++++++++++++++++++++++
+> MAINTAINERS                           |   1 +
+> 2 files changed, 278 insertions(+)
+> create mode 100644 Documentation/livepatch/livepatch.txt
+>
+>diff --git a/Documentation/livepatch/livepatch.txt b/Documentation/livepatch/livepatch.txt
+>new file mode 100644
+>index 000000000000..28e8047abb61
+>--- /dev/null
+>+++ b/Documentation/livepatch/livepatch.txt
+>@@ -0,0 +1,277 @@
+>+=========
+>+LivePatch
+>+=========
+>+
+>+This document outlines basic information about kernel LivePatching.
+>+
+>+Table of Contents:
+>+
+>+1. Motivation
+>+2. Kprobes, Ftrace, LivePatching
+>+3. Consistency model
+>+4. LivePatch life-cycle
+>+   4.1. Registration
+>+   4.2. Enabling
+>+   4.3. Disabling
+>+   4.4. Unregistration
+>+5. Livepatch module
+>+   5.1. New functions
+>+   5.2. Metadata
+>+   5.3. Module handling
+>+6. Sysfs
+>+7. Limitations
+>+
+>+
+>+1. Motivation
+>+=============
+>+
+>+There are situations when people are really reluctant to reboot a system.
+>+It might be because the computer is in the middle of a complex scientific
+>+computation. Or the system is busy handling customer requests in the high
+>+season.
+>+
+>+On the other hand, people also want to keep the system stable and secure.
+>+This is where LivePatch infrastructure comes handy.
 
-> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> ---
->  arch/powerpc/include/asm/ppc_asm.h | 65 ++++++++++++++++++++++++++++++--=
-------
->  arch/powerpc/kernel/fpu.S          | 43 ++++++++++++++++---------
->  arch/powerpc/kernel/tm.S           | 46 ++++++++++++++-------------
->  3 files changed, 104 insertions(+), 50 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/as=
-m/ppc_asm.h
-> index 5ba69ed..dd0df12 100644
-> --- a/arch/powerpc/include/asm/ppc_asm.h
-> +++ b/arch/powerpc/include/asm/ppc_asm.h
-> @@ -173,19 +173,58 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
->  #define LXVD2X_ROT(n,b,base)  	  	> LXVD2X(n,b,base);  	  \
->    	  	  	  	  	  XXSWAPD(n,n)
->  #endif
-> -/* Save the lower 32 VSRs in the thread VSR region */
-> -#define SAVE_VSR(n,b,base)  	  li b,16*(n);  STXVD2X_ROT(n,R##base,R##b)
-> -#define SAVE_2VSRS(n,b,base)  	  SAVE_VSR(n,b,base); SAVE_VSR(n+1,b,base=
-)
-> -#define SAVE_4VSRS(n,b,base)  	  SAVE_2VSRS(n,b,base); SAVE_2VSRS(n+2,b,=
-base)
-> -#define SAVE_8VSRS(n,b,base)  	  SAVE_4VSRS(n,b,base); SAVE_4VSRS(n+4,b,=
-base)
-> -#define SAVE_16VSRS(n,b,base)  	  SAVE_8VSRS(n,b,base); SAVE_8VSRS(n+8,b=
-,base)
-> -#define SAVE_32VSRS(n,b,base)  	  SAVE_16VSRS(n,b,base); SAVE_16VSRS(n+1=
-6,b,base)
-> -#define REST_VSR(n,b,base)  	  li b,16*(n); LXVD2X_ROT(n,R##base,R##b)
-> -#define REST_2VSRS(n,b,base)  	  REST_VSR(n,b,base); REST_VSR(n+1,b,base=
-)
-> -#define REST_4VSRS(n,b,base)  	  REST_2VSRS(n,b,base); REST_2VSRS(n+2,b,=
-base)
-> -#define REST_8VSRS(n,b,base)  	  REST_4VSRS(n,b,base); REST_4VSRS(n+4,b,=
-base)
-> -#define REST_16VSRS(n,b,base)  	  REST_8VSRS(n,b,base); REST_8VSRS(n+8,b=
-,base)
-> -#define REST_32VSRS(n,b,base)  	  REST_16VSRS(n,b,base); REST_16VSRS(n+1=
-6,b,base)
-> +
-> +#define __SAVE_4VSRS(n,off0,off1,off2,off3,base) \
-> +  	  STXVD2X_ROT(n,R##base,R##off0); \
-> +  	  STXVD2X_ROT(n+1,R##base,R##off1); \
-> +  	  STXVD2X_ROT(n+2,R##base,R##off2); \
-> +  	  STXVD2X_ROT(n+3,R##base,R##off3)
+>It allows to redirect selected function calls to a fixed
+>implementation without rebooting the system.
 
-same comment about off vs reg=20
+It allows selected function calls to be redirected to a fixed
+implementation without requiring a system reboot.
 
+>+
+>+
+>+2. Kprobes, Ftrace, LivePatching
+>+================================
 
-> +/* Restores the base for the caller */
-> +#define SAVE_32VSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> +  	  addi reg4,base,64; \
-> +  	  li reg0,0; li reg1,16; li reg2,32; li reg3,48; \
-> +  	  __SAVE_4VSRS(0,reg0,reg1,reg2,reg3,base); \
-> +  	  addi base,base,128; \
-> +  	  __SAVE_4VSRS(4,reg0,reg1,reg2,reg3,reg4); \
-> +  	  addi reg4,reg4,128; \
-> +  	  __SAVE_4VSRS(8,reg0,reg1,reg2,reg3,base); \
-> +  	  addi base,base,128; \
-> +  	  __SAVE_4VSRS(12,reg0,reg1,reg2,reg3,reg4); \
-> +  	  addi reg4,reg4,128; \
-> +  	  __SAVE_4VSRS(16,reg0,reg1,reg2,reg3,base); \
-> +  	  addi base,base,128; \
-> +  	  __SAVE_4VSRS(20,reg0,reg1,reg2,reg3,reg4); \
-> +  	  addi reg4,reg4,128; \
-> +  	  __SAVE_4VSRS(24,reg0,reg1,reg2,reg3,base); \
-> +  	  __SAVE_4VSRS(28,reg0,reg1,reg2,reg3,reg4); \
-> +  	  subi base,base,384
-> +
-> +#define __REST_4VSRS(n,off0,off1,off2,off3,base) \
-> +  	  LXVD2X_ROT(n,R##base,R##off0); \
-> +  	  LXVD2X_ROT(n+1,R##base,R##off1); \
-> +  	  LXVD2X_ROT(n+2,R##base,R##off2); \
-> +  	  LXVD2X_ROT(n+3,R##base,R##off3)
-> +
-> +/* Restores the base for the caller */
-> +#define REST_32VSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> +  	  addi reg4,base,64; \
-> +  	  li reg0,0; li reg1,16; li reg2,32; li reg3,48; \
-> +  	  __REST_4VSRS(0,reg0,reg1,reg2,reg3,base); \
-> +  	  addi base,base,128; \
-> +  	  __REST_4VSRS(4,reg0,reg1,reg2,reg3,reg4); \
-> +  	  addi reg4,reg4,128; \
-> +  	  __REST_4VSRS(8,reg0,reg1,reg2,reg3,base); \
-> +  	  addi base,base,128; \
-> +  	  __REST_4VSRS(12,reg0,reg1,reg2,reg3,reg4); \
-> +  	  addi reg4,reg4,128; \
-> +  	  __REST_4VSRS(16,reg0,reg1,reg2,reg3,base); \
-> +  	  addi base,base,128; \
-> +  	  __REST_4VSRS(20,reg0,reg1,reg2,reg3,reg4); \
-> +  	  addi reg4,reg4,128; \
-> +  	  __REST_4VSRS(24,reg0,reg1,reg2,reg3,base); \
-> +  	  __REST_4VSRS(28,reg0,reg1,reg2,reg3,reg4); \
-> +  	  subi base,base,384
-> =20
->  /*
->   * b =3D base register for addressing, o =3D base offset from register o=
-f 1st EVR
-> diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-> index 15da2b5..dc57ff1 100644
-> --- a/arch/powerpc/kernel/fpu.S
-> +++ b/arch/powerpc/kernel/fpu.S
-> @@ -26,29 +26,32 @@
->  #include <asm/ptrace.h>
-> =20
->  #ifdef CONFIG_VSX
-> -#define __REST_32FPVSRS(n,c,base)  	  	  	  	  	  \
-> +#define __REST_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base)  	  \
->  BEGIN_FTR_SECTION  	  	  	  	  	  	  	  \
->    	  b  	  2f;  	  	  	  	  	  	  	  \
->  END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	  	  	  	  \
-> -  	  REST_32FPRS(n,base);  	  	  	  	  	  	> \
-> +  	  REST_32FPRS(0,base);  	  	  	  	  	  	> \
->    	  b  	  3f;  	  	  	  	  	  	  	  \
-> -2:  	  REST_32VSRS(n,c,base);  	  	  	  	  	  	> \
-> +2:  	  REST_32VSRS(reg0,reg1,reg2,reg3,reg4,base); \
->  3:
-> =20
-> -#define __SAVE_32FPVSRS(n,c,base)  	  	  	  	  	  \
-> +#define __SAVE_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base) \
->  BEGIN_FTR_SECTION  	  	  	  	  	  	  	  \
->    	  b  	  2f;  	  	  	  	  	  	  	  \
->  END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	  	  	  	  \
-> -  	  SAVE_32FPRS(n,base);  	  	  	  	  	  	> \
-> +  	  SAVE_32FPRS(0,base);  	  	  	  	  	  	> \
->    	  b  	  3f;  	  	  	  	  	  	  	  \
-> -2:  	  SAVE_32VSRS(n,c,base);  	  	  	  	  	  	> \
-> +2:  	  SAVE_32VSRS(reg0,reg1,reg2,reg3,reg4,base); \
->  3:
->  #else
-> -#define __REST_32FPVSRS(n,b,base)  	  REST_32FPRS(n, base)
-> -#define __SAVE_32FPVSRS(n,b,base)  	  SAVE_32FPRS(n, base)
-> +#define __REST_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base)  	  REST_32FPRS(0=
-, base)
-> +#define __SAVE_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base)  	  SAVE_32FPRS(0=
-, base)
->  #endif
-> -#define REST_32FPVSRS(n,c,base) __REST_32FPVSRS(n,__REG_##c,__REG_##base=
-)
-> -#define SAVE_32FPVSRS(n,c,base) __SAVE_32FPVSRS(n,__REG_##c,__REG_##base=
-)
-> +#define REST_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> +__REST_32FPVSRS(__REG_##reg0,__REG_##reg1,__REG_##reg2,__REG_##reg3,__RE=
-G_##reg4,__REG_##base)
-> +
-> +#define SAVE_32FPVSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> +__SAVE_32FPVSRS(__REG_##reg0,__REG_##reg1,__REG_##reg2,__REG_##reg3,__RE=
-G_##reg4,__REG_##base)
-> =20
->  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->  /* void do_load_up_transact_fpu(struct thread_struct *thread)
-> @@ -56,6 +59,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	  	  	  	  \
->   * This is similar to load_up_fpu but for the transactional version of t=
-he FP
->   * register set.  It doesn't mess with the task MSR or valid flags.
->   * Furthermore, we don't do lazy FP with TM currently.
-> + *
-> + * Is called from C
->   */
->  _GLOBAL(do_load_up_transact_fpu)
->    	  mfmsr  	  r6
-> @@ -71,7 +76,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
->    	  addi  	  r7,r3,THREAD_TRANSACT_FPSTATE
->    	  lfd  	  fr0,FPSTATE_FPSCR(r7)
->    	  MTFSF_L(fr0)
-> -  	  REST_32FPVSRS(0, R4, R7)
-> +  	  REST_32FPVSRS(R4,R5,R6,R8,R9,R7)
-> =20
->    	  blr
->  #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-> @@ -79,19 +84,23 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
->  /*
->   * Load state from memory into FP registers including FPSCR.
->   * Assumes the caller has enabled FP in the MSR.
-> + *
-> + * Is called from C
->   */
->  _GLOBAL(load_fp_state)
->    	  lfd  	  fr0,FPSTATE_FPSCR(r3)
->    	  MTFSF_L(fr0)
-> -  	  REST_32FPVSRS(0, R4, R3)
-> +  	  REST_32FPVSRS(R4,R5,R6,R7,R8,R3)
->    	  blr
-> =20
->  /*
->   * Store FP state into memory, including FPSCR
->   * Assumes the caller has enabled FP in the MSR.
-> + *
-> + * NOT called from C
->   */
->  _GLOBAL(store_fp_state)
-> -  	  SAVE_32FPVSRS(0, R4, R3)
-> +  	  SAVE_32FPVSRS(R4,R5,R6,R7,R8,R3)
->    	  mffs  	  fr0
->    	  stfd  	  fr0,FPSTATE_FPSCR(r3)
->    	  blr
-> @@ -104,6 +113,8 @@ _GLOBAL(store_fp_state)
->   * enable the FPU for the current task and return to the task.
->   * Note that on 32-bit this can only use registers that will be
->   * restored by fast_exception_return, i.e. r3 - r6, r10 and r11.
-> + *
-> + * NOT called from C
->   */
->  _GLOBAL(load_up_fpu)
->    	  mfmsr  	  r5
-> @@ -137,7 +148,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
->    	  addi  	  r10,r5,THREAD_FPSTATE
->    	  lfd  	  fr0,FPSTATE_FPSCR(r10)
->    	  MTFSF_L(fr0)
-> -  	  REST_32FPVSRS(0, R4, R10)
-> +  	  REST_32FPVSRS(R3,R4,R5,R6,R11,R10)
->    	  /* restore registers and return */
->    	  /* we haven't used ctr or xer or lr */
->    	  blr
-> @@ -146,6 +157,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
->   * save_fpu(tsk)
->   * Save the floating-point registers in its thread_struct.
->   * Enables the FPU for use in the kernel on return.
-> + *
-> + * Is called from C
->   */
->  _GLOBAL(save_fpu)
->    	  addi  	  r3,r3,THREAD  	          /* want THREAD of task */
-> @@ -154,7 +167,7 @@ _GLOBAL(save_fpu)
->    	  PPC_LCMPI  	  0,r6,0
->    	  bne  	  2f
->    	  addi  	  r6,r3,THREAD_FPSTATE
-> -2:  	  SAVE_32FPVSRS(0, R4, R6)
-> +2:  	  SAVE_32FPVSRS(R4,R5,R7,R8,R9,R6)
->    	  mffs  	  fr0
->    	  stfd  	  fr0,FPSTATE_FPSCR(r6)
->    	  blr
-> diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-> index 81e1305..61900b8 100644
-> --- a/arch/powerpc/kernel/tm.S
-> +++ b/arch/powerpc/kernel/tm.S
-> @@ -14,30 +14,32 @@
-> =20
->  #ifdef CONFIG_VSX
->  /* See fpu.S, this is borrowed from there */
-> -#define __SAVE_32FPRS_VSRS(n,c,base)  	  	> \
-> -BEGIN_FTR_SECTION  	  	  	  	> \
-> -  	  b  	  2f;  	  	  	  	> \
-> -END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	> \
-> -  	  SAVE_32FPRS(n,base);  	  	  	  \
-> -  	  b  	  3f;  	  	  	  	> \
-> -2:  	  SAVE_32VSRS(n,c,base);  	  	  	  \
-> +#define __SAVE_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> +BEGIN_FTR_SECTION  	  	  	  	  	  	  	  \
-> +  	  b  	  2f;  	  	  	  	  	  	  	  \
-> +END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	  	  	  	  \
-> +  	  SAVE_32FPRS(0,base);  	  	  	  	  	  	> \
-> +  	  b  	  3f;  	  	  	  	  	  	  	  \
-> +2:  	  SAVE_32VSRS(reg0,reg1,reg2,reg3,reg4,base); \
->  3:
-> -#define __REST_32FPRS_VSRS(n,c,base)  	  	> \
-> -BEGIN_FTR_SECTION  	  	  	  	> \
-> -  	  b  	  2f;  	  	  	  	> \
-> -END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	> \
-> -  	  REST_32FPRS(n,base);  	  	  	  \
-> -  	  b  	  3f;  	  	  	  	> \
-> -2:  	  REST_32VSRS(n,c,base);  	  	  	  \
-> +
-> +#define __REST_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base)  	  \
-> +BEGIN_FTR_SECTION  	  	  	  	  	  	  	  \
-> +  	  b  	  2f;  	  	  	  	  	  	  	  \
-> +END_FTR_SECTION_IFSET(CPU_FTR_VSX);  	  	  	  	  	  \
-> +  	  REST_32FPRS(0,base);  	  	  	  	  	  	> \
-> +  	  b  	  3f;  	  	  	  	  	  	  	  \
-> +2:  	  REST_32VSRS(reg0,reg1,reg2,reg3,reg4,base); \
->  3:
-> +
->  #else
-> -#define __SAVE_32FPRS_VSRS(n,c,base)  	  SAVE_32FPRS(n, base)
-> -#define __REST_32FPRS_VSRS(n,c,base)  	  REST_32FPRS(n, base)
-> +#define __SAVE_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base)  	  SAVE_32FPR=
-S(0, base)
-> +#define __REST_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base)  	  REST_32FPR=
-S(0, base)
->  #endif
-> -#define SAVE_32FPRS_VSRS(n,c,base) \
-> -  	  __SAVE_32FPRS_VSRS(n,__REG_##c,__REG_##base)
-> -#define REST_32FPRS_VSRS(n,c,base) \
-> -  	  __REST_32FPRS_VSRS(n,__REG_##c,__REG_##base)
-> +#define SAVE_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> +__SAVE_32FPRS_VSRS(__REG_##reg0,__REG_##reg1,__REG_##reg2,__REG_##reg3,_=
-_REG_##reg4,__REG_##base)
-> +#define REST_32FPRS_VSRS(reg0,reg1,reg2,reg3,reg4,base) \
-> +__REST_32FPRS_VSRS(__REG_##reg0,__REG_##reg1,__REG_##reg2,__REG_##reg3,_=
-_REG_##reg4,__REG_##base)
-> =20
->  /* Stack frame offsets for local variables. */
->  #define TM_FRAME_L0  	  TM_FRAME_SIZE-16
-> @@ -165,7 +167,7 @@ dont_backup_vec:
->    	  beq  	  dont_backup_fp
-> =20
->    	  addi  	  r7, r3, THREAD_TRANSACT_FPSTATE
-> -  	  SAVE_32FPRS_VSRS(0, R6, R7)  	  /* r6 scratch, r7 transact fp state=
- */
-> +  	  SAVE_32FPRS_VSRS(R6,R8,R9,R10,R11,R7) /* r6,r8,r9,r10,r11 scratch, =
-r7 transact fp state */
-> =20
->    	  mffs    fr0
->    	  stfd    fr0,FPSTATE_FPSCR(r7)
-> @@ -375,7 +377,7 @@ dont_restore_vec:
->    	  addi  	  r8, r3, THREAD_FPSTATE
->    	  lfd  	  fr0, FPSTATE_FPSCR(r8)
->    	  MTFSF_L(fr0)
-> -  	  REST_32FPRS_VSRS(0, R4, R8)
-> +  	  REST_32FPRS_VSRS(R4,R5,R6,R7,R9,R8)
-> =20
->  dont_restore_fp:
->    	  mtmsr  	  r6  	  	  	  	> /* FP/Vec off again! */
+>+Linux kernel has more ways how to redirect an existing code into a new one.
+>+It happens with kernel probes, function tracing, and LivePatching:
+
+There are multiple mechanisms in the Linux kernel that are directly related to
+redirection of code execution; namely: kernel probes, function tracing, and
+livepatching:
+
+>+
+>+  + The kernel probes are the most generic way. The code can be redirected
+>+    by putting an interrupt instruction instead of any instruction.
+>+
+>+  + The function tracer calls the code from a predefined location that is
+>+    close the function entry. The location is generated by the compiler,
+>+    see -pg gcc option.
+>+
+>+  + LivePatching typically needs to redirect the code at the very beginning
+>+    of the function entry before the function parameters or the stack
+>+    are anyhow muffled.
+>+
+>+All three approaches need to modify the existing code at runtime. Therefore
+>+they need to be aware of each other and do not step over othres' toes. Most
+>+of these problems are solved by using the dynamic ftrace framework as a base.
+>+A Kprobe is registered as a ftrace handler when the function entry is probed,
+>+see CONFIG_KPROBES_ON_FTRACE. Also an alternative function from a live patch
+>+is called from a custom ftrace handler. But there are some limitations,
+>+see below.
+>+
+>+
+>+3. Consistency model
+>+====================
+>+
+>+Functions are there for a reason. They take some input parameters, get or
+>+release locks, read, process, and even write some data in a defined way,
+>+have return values. By other words, each function has a defined semantic.
+>+
+>+Many fixes do not change the semantic of the modified functions. For example,
+>+they add a NULL pointer or a boundary check, fix a race by adding a missing
+>+memory barrier, or add some locking about a critical section. Most of these
+>+changes are self contained and the function present itself the same way
+>+to the rest of the system. In this case, the functions might be updated
+>+independently one by one.
+>+
+>+But there are more complex fixes. For example, a patch might change
+>+ordering of locking in more functions at the same time. Or a patch
+>+might exchange meaning of some temporary structures and update
+>+all the relevant functions. In this case, the affected unit
+>+(thread, whole kernel) need to start using all new versions of
+>+the functions at the same time. Also the switch must happen only
+>+when it is safe to do so, e.g. when the affected locks are released,
+>+the data using the modified structures are empty.
+>+
+>+The theory about how to apply functions a safe way is rather complex.
+>+The aim is to define a so-called consistency model. It means to define
+>+conditions when the new implementation could be used so that the system
+>+stays consistent. The theory is not yet finished. See the discussion at
+>+http://thread.gmane.org/gmane.linux.kernel/1823033/focus=1828189
+>+
+>+The current implementation supports the easiest scenario that
+>+is sufficeint for the most common fixes. See the limitations below.
+>+
+>+
+>+4. LivePatch life-cycle
+>+=======================
+>+
+>+LivePatching defines four basic operations that define the life cycle
+>+of each live patch.
+>+
+>+4.1. Registration
+>+-----------------
+>+
+>+Each patch has to be registered using klp_register_patch().
+>+
+>+Here the patch is added into the list of known patches. The addresses
+>+of the patched functions are found according to their names.
+>+Relocations are applied. The relevant entries are created under
+>+/sys/kernel/livepatch/<name>.
+>+
+>+
+>+4.2. Enabling
+>+-------------
+>+
+>+Registered patches might be enabled either by calling klp_enable_patch() or
+>+by writing '1' to /sys/kernel/livepatch/<name>/enabled.
+
+>+At this stage, an universal ftrace handler is registered for all newly patched
+>+functions with a function-specific ftrace_ops structure. The structure points
+>+to a list of struct klp_func, see func_stack. This way the same function
+>+can be patched more times. The last variant from the func_stack is used.
+
+I think "The structure" is a little ambiguous, and it's not quite clear what
+func_stack is. How about an explanation like the following:
+
+Each patched function is associated with a single klp_ops structure that points
+to a stack (see field `func_stack` in struct klp_ops) of different versions of
+replacement functions. The order of the stack depends on when the replacement
+function was enabled, with the most recently enabled replacement function (and
+therefore the currently active one) on top of the stack. Thus a function can be
+patched multiple times, and the func_stack list keeps track of which
+replacement function was the most recently enabled one.
+
+>+Note that we could enable patches in a different order than they are
+>+registered. The actually used function is defined by the order in
+>+the func_stack list.
+
+The replacement function that is currently active is defined by the order of
+the func_stack list.
+
+>+
+>+4.3. Disabling
+>+--------------
+>+
+>+Enabled patches might get disabled either by calling klp_disable_patch() or
+>+by writing '0' to /sys/kernel/livepatch/<name>/enabled.
+
+>+Here all the struct klp_functions are removed from the appropriate
+>+ftrace_ops. The ftrace handler is unregistered when the func_stack
+>+list gets empty.
+
+Here all the functions (struct klp_func) associated with the to-be-disabled
+patch are removed from the corresponding ftrace_ops. (I just reworded it to
+emphasize that not *all* the functions are removed from the function's ftrace
+ops, just the ones that are associated with the to-be-disabled patch)
+
+>+Patches must be disabled in the exactly revese order in which they were
+>+enabled. It makes the problem and the implementation easier.
+>+
+>+
+>+4.4. Unregistration
+>+-------------------
+>+
+>+Disabled patched might be unregistered by calling klp_unregister_patch().
+>+
+>+At this stage, all the relevant sys-fs entries are removed and the patch
+>+is removed from the list of known patches.
+
+It may be confusing for new livepatch users to differentiate between
+register vs. enable and disable vs. unregister, so perhaps it would be good
+to put a blurb differentiating those actions here somewhere.
+
+>+
+>+5. Livepatch module
+>+===================
+>+
+>+Live patches are distributed using kernel modules, see
+>+samples/livepatch/livepatch-sample.c.
+>+
+>+The module includes a new implementation of functions that we want
+>+to replace. In addition, it defines some structures describing what
+>+functions are replaced. Finally, there is a code for registering,
+>+enabling, and unregistering the patch.
+>+
+>+
+>+5.1. New functions
+>+------------------
+>+
+>+New versions of functions are typically just copied from the fixed sources.
+>+A good practice is to add a prefix to the names so that they can be
+>+distinguished from the original ones, e.g. in a backtrace. Also it
+>+is usually enough to have a local visibility (static).
+>+
+>+The patch contains only functions that are really modified. But they might
+>+want to access functions or data with local visibility from the original
+>+source.c file. This can be solved by relocation information. FIXME:
+>+The support and documentation for relocations is still in progress.
+>+
+>+
+>+5.2. Metadata
+>+------------
+>+
+>+The patch is described by several structures that split the information
+>+into three levels:
+>+
+>+  + struct klp_patch is defined for each patched function. It includes
+>+    a name (string) of the original function, optionaly the position
+
+s/optionaly/optionally
+
+>+    of the symbol within an object, and a name (pointer) to the new
+>+    function implementation. The old function will be later found via
+>+    kallsyms at runtime. The new function is defined in the same
+>+    source file.
+>+
+>+  + struct klp_object defines an array of patched functions (struct
+>+    klp_patch) in the same object. Where object is either vmlinux (NULL)
+>+    or a module name. It helps to group and handle functions for each
+>+    object together. Note that patched modules might be loaded later
+>+    then the patch itself and the relevant functions might be patched
+>+    only when they are available.
+>+
+>+  + struct klp_patch defines an array of patched objects (struct
+>+    klp_object). It allows to handle all patched functions consistently
+>+    and synchronously. The whole patch is applied only when all available
+>+    symbols can be patched. If a more complex consistency model is supported
+>+    then a selected unit (thread, kernel as a whole) will see the new code
+>+    from the entire patch only when they are in a safe state.
+>+
+>+
+>+5.3. Module handling
+>+-------------------
+>+
+>+The live patch is typically registered and enabled when the module
+>+is loaded. The reverse operations are called when the module
+>+is being removed.
+>+
+>+IMPORTANT: Livepatch modules could not be removed at the moment.
+>+See the limitations below.
+>+
+>+
+>+6. Sysfs
+>+========
+>+
+>+Information about the registered patches might be found under
+>+/sys/kernel/livepatch. The patches could be enabled and disabled
+>+by writing there.
+>+
+>+See Documentation/ABI/testing/sysfs-kernel-livepatch for more details.
+>+
+>+
+>+7. Limitations
+>+==============
+>+
+>+The initial Livepatch implementation has several limitations:
+>+
+>+  + The modules with LivePatches could not be removed without forcing
+>+    at the moment.
+
+You mean the livepatch modules, not the modules that livepatch patches, right?
+Let's make that a bit clearer :-)
+
+>+    The problem is how to detect if anyone is still using (sleeping inside)
+>+    a code from the patch. It will get most likely solved once a more complex
+>+    consistency model is supported. The idea is that a safe state for patching
+>+    should also mean a safe state for removing the patch.
+>+
+>+
+>+  + Only functions that can be traced could be patched.
+>+
+>+    Livepatch is based on the dynamic ftrace. In particular, functions
+>+    implementing ftrace or the livepatch ftrace handler could not be patched.
+>+    Otherwise, you would end up in an infinite loop. A potential mistake
+>+    is prevented by marking the problematic functions by "notrace".
+>+
+>+
+>+  + Livepatch works reliably only when the dynamic ftrace is located at
+>+    the very beginning of the function.
+>+
+>+    The function need to be redirected before the stack or the function
+>+    parameters are muffled any way. For example, LivePatch requires
+>+    using -fentry on x86_64.
+
+We should be specific and mention that we're talking about the gcc
+option -fentry that's required.
+
+>+
+>+
+>+  + The patch must not change the semantic of the patched functions.
+>+
+>+    The current implementation guarantees only that either the old
+>+    or the new function is called. The functions are patched one
+>+    by one. It means that the patch must _not_ change the semantic
+>+    of the function.
+>+
+>+
+>+  + Kretprobes using the ftrace framework conflict with the patched functions.
+>+
+>+    Both Kretprobes and LivePatches use a ftrace handler that modifies
+>+    the return address. The first user wins. Either the probe or the patch
+>+    is rejected when the handler is already in use by the other.
+>+
+>+
+>+  + Kprobes in the original function are ignored when the code is redirected
+>+    to the new implementation.
+>+
+>+    There is a work in progress to add warnings about this situations.
+>diff --git a/MAINTAINERS b/MAINTAINERS
+>index 4029c63d8a7d..0e7049688862 100644
+>--- a/MAINTAINERS
+>+++ b/MAINTAINERS
+>@@ -6590,6 +6590,7 @@ F:	kernel/livepatch/
+> F:	include/linux/livepatch.h
+> F:	arch/x86/include/asm/livepatch.h
+> F:	arch/x86/kernel/livepatch.c
+>+F:	Documentation/livepatch/
+> F:	Documentation/ABI/testing/sysfs-kernel-livepatch
+> F:	samples/livepatch/
+> L:	live-patching@vger.kernel.org
+>-- 
+>1.8.5.6
+>
