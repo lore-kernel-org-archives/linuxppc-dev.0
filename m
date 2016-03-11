@@ -1,44 +1,21 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE7A71A004C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Mar 2016 00:30:04 +1100 (AEDT)
-Received: from localhost
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Fri, 11 Mar 2016 10:30:00 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 343F3352005C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Mar 2016 08:29:46 -0500 (EST)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2BCTQiF14877080
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Mar 2016 09:29:27 -0300
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2BDTsU4010208
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Mar 2016 08:29:55 -0500
-Subject: Re: [PATCH] powerpc/pci: Reuse PHB number on pci_controller add if
- available
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <1457633505-19857-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1457633505-19857-2-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1457645698.24238.76.camel@kernel.crashing.org>
- <20160310231823.GA5270@gwshan>
- <1457693533.24238.99.camel@kernel.crashing.org>
- <20160311131419.GA7911@gwshan>
-Cc: mikey@neuling.org, paulus@samba.org, imunsie@au1.ibm.com,
- andrew.donnellan@au1.ibm.com, linux-pci@vger.kernel.org,
- bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Message-ID: <56E2C852.40508@linux.vnet.ibm.com>
-Date: Fri, 11 Mar 2016 10:29:54 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 50A361A004B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Mar 2016 09:52:12 +1100 (AEDT)
+Date: Fri, 11 Mar 2016 16:51:54 -0600
+From: Scott Wood <oss@buserror.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Message-ID: <20160311225154.GA30872@home.buserror.net>
+References: <3c627354c920c564c01cbdb1f960f3e2ed9eac10.1455032446.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <20160311131419.GA7911@gwshan>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3c627354c920c564c01cbdb1f960f3e2ed9eac10.1455032446.git.christophe.leroy@c-s.fr>
+Subject: Re: [v8,07/23] powerpc/8xx: Fix vaddr for IMMR early remap
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,16 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/11/2016 10:14 AM, Gavin Shan wrote:
-> Yeah, the BUID is PHB's identifier, but we only need the low 16-bits
-> as its base is 0x800000020000000ULL in QEMU or pHyp. I think other platforms
-> (like freescale's) still need dynamically allocated domain number, which
-> could be managed by a bitmap.
+On Tue, Feb 09, 2016 at 05:08:00PM +0100, Christophe Leroy wrote:
+> Memory: 124428K/131072K available (3748K kernel code, 188K rwdata,
+> 648K rodata, 508K init, 290K bss, 6644K reserved)
+> Kernel virtual memory layout:
+>   * 0xfffdf000..0xfffff000  : fixmap
+>   * 0xfde00000..0xfe000000  : consistent mem
+>   * 0xfddf6000..0xfde00000  : early ioremap
+>   * 0xc9000000..0xfddf6000  : vmalloc & ioremap
+> SLUB: HWalign=16, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+> 
+> Today, IMMR is mapped 1:1 at startup
+> 
+> Mapping IMMR 1:1 is just wrong because it may overlap with another
+> area. On most mpc8xx boards it is OK as IMMR is set to 0xff000000
+> but for instance on EP88xC board, IMMR is at 0xfa200000 which
+> overlaps with VM ioremap area
+> 
+> This patch fixes the virtual address for remapping IMMR with the fixmap
+> regardless of the value of IMMR.
+> 
+> The size of IMMR area is 256kbytes (CPM at offset 0, security engine
+> at offset 128k) so a 512k page is enough
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+> v2: no change
+> v3: Using fixmap instead of fixed address
+> v4: Fix a wrong #if notified by kbuild robot
+> v5: no change
+> v6: no change
+> v8: no change
+> 
+>  arch/powerpc/include/asm/fixmap.h |  7 +++++++
+>  arch/powerpc/kernel/asm-offsets.c |  8 ++++++++
+>  arch/powerpc/kernel/head_8xx.S    | 11 ++++++-----
+>  arch/powerpc/mm/mmu_decl.h        |  7 +++++++
+>  arch/powerpc/sysdev/cpm_common.c  | 15 ++++++++++++---
+>  5 files changed, 40 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/fixmap.h b/arch/powerpc/include/asm/fixmap.h
+> index 90f604b..d7dd8fb 100644
+> --- a/arch/powerpc/include/asm/fixmap.h
+> +++ b/arch/powerpc/include/asm/fixmap.h
+> @@ -51,6 +51,13 @@ enum fixed_addresses {
+>  	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
+>  	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
+>  #endif
+> +#ifdef CONFIG_PPC_8xx
+> +	/* For IMMR we need an aligned 512K area */
+> +	FIX_IMMR_START,
+> +	FIX_IMMR_TOP = (FIX_IMMR_START - 1 + ((512 * 1024) / PAGE_SIZE)) &
+> +		       ~(((512 * 1024) / PAGE_SIZE) - 1),
+> +	FIX_IMMR_BASE = FIX_IMMR_TOP - 1 + ((512 * 1024) / PAGE_SIZE),
+> +#endif
+>  	/* FIX_PCIE_MCFG, */
+>  	__end_of_fixed_addresses
+>  };
 
-Thanks very much for the suggestions Benjamin and Gavin.
-Will improve the patch and send a v2.
+This doesn't look correct -- shouldn't the last thing in the 8xx ifdef be the
+last byte of the IMMR, so that any subsequent fixmap entry would start at
+the correct location?
 
-Cheers,
+Also, can standard alignment macros be used?
 
-
-Guilherme
+-Scott
