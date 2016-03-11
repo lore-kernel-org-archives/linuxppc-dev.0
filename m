@@ -1,39 +1,31 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 16CB31A0406
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Mar 2016 14:03:33 +1100 (AEDT)
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 11 Mar 2016 13:03:31 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7E8732CE805A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Mar 2016 14:03:23 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2B33F511638736
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Mar 2016 14:03:23 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2B32oxE020040
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Mar 2016 14:02:51 +1100
-Message-ID: <56E23547.2040303@linux.vnet.ibm.com>
-Date: Fri, 11 Mar 2016 08:32:31 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 800391A0363
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Mar 2016 14:37:40 +1100 (AEDT)
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id EED31140213
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Mar 2016 14:37:39 +1100 (AEDT)
+Received: by mail-pa0-x241.google.com with SMTP id q6so6998138pav.0
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Mar 2016 19:37:39 -0800 (PST)
+Subject: Re: [PATCH 1/2] ppc64le live patch: clear out storage location(s) in
+ mini stack frame
+To: Torsten Duwe <duwe@lst.de>, Petr Mladek <pmladek@suse.com>
+References: <20160309172821.GC27913@lst.de>
+Cc: jeyu@redhat.com, jkosina@suse.cz, jikos@kernel.org,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+ live-patching@vger.kernel.org, mbenes@suse.cz
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <56E23D7A.4040903@gmail.com>
+Date: Fri, 11 Mar 2016 14:37:30 +1100
 MIME-Version: 1.0
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-CC: hughd@google.com, aneesh.kumar@linux.vnet.ibm.com, kirill@shutemov.name,
- n-horiguchi@ah.jp.nec.com, mgorman@techsingularity.net,
- akpm@linux-foundation.org
-Subject: Re: [RFC 2/9] mm/hugetlb: Add follow_huge_pgd function
-References: <1457525450-4262-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1457525450-4262-2-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1457525450-4262-2-git-send-email-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20160309172821.GC27913@lst.de>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,11 +35,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/09/2016 05:40 PM, Anshuman Khandual wrote:
-> This just adds 'follow_huge_pgd' function which is will be used
-> later in this series to make 'follow_page_mask' function aware
-> of PGD based huge page implementation.
 
-Hugh/Mel/Naoya/Andrew,
 
-	Thoughts/inputs/suggestions ? Does this change looks okay ?
+On 10/03/16 04:28, Torsten Duwe wrote:
+> This can be applied on top of Petr Mladek's v4 rework of the ppc64le
+> live patching. Inspired by Balbir Singh's v5, information about the
+> callee's r2 is stored in a "reserved" 32 bit location in the caller's
+> stack frame, instead of 64 bits in the newly created mini frame 24(r1).
+>
+> It only needs to work for a local call, when caller's TOC == callee's
+> TOC, and along with the return address (LR) it's all within a 4GiB
+> range (+-31 bits). If the original call already was global, we are
+> allowed to restore any nonsense into r2, because the global caller
+> will restore its TOC anyway from the ABI compliant location 24(r1)
+> right after return.
+>
+>
+Hi, Torsten
+
+Sorry, I've had no time to test this. Caught up with something else for the moment.
+Hopefully I'll get a chance over the weekend.
+
+Have you tested this against Petr's sample changes to patch printk?
+
+Balbir Singh.
