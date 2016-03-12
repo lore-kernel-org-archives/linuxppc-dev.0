@@ -2,21 +2,21 @@ Return-Path: <oss@buserror.net>
 Received: from host.buserror.net (host.buserror.net [209.198.135.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 978851A004B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Mar 2016 10:15:49 +1100 (AEDT)
-Date: Fri, 11 Mar 2016 17:15:39 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1F0901A004B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Mar 2016 12:59:41 +1100 (AEDT)
+Date: Fri, 11 Mar 2016 19:59:34 -0600
 From: Scott Wood <oss@buserror.net>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Message-ID: <20160311231539.GB30872@home.buserror.net>
-References: <469ed145e21be6720c186686039b569e30ca1ed4.1455032446.git.christophe.leroy@c-s.fr>
+To: "Igal.Liberman" <igal.liberman@freescale.com>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ scottwood@freescale.com, linux-kernel@vger.kernel.org,
+ Shaohui.Xie@freescale.com, madalin.bucur@freescale.com
+Message-ID: <20160312015934.GA3286@home.buserror.net>
+References: <1438589651-15007-1-git-send-email-igal.liberman@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <469ed145e21be6720c186686039b569e30ca1ed4.1455032446.git.christophe.leroy@c-s.fr>
-Subject: Re: [v8, 08/23] powerpc/8xx: Map IMMR area with 512k page at a fixed
- address
+In-Reply-To: <1438589651-15007-1-git-send-email-igal.liberman@freescale.com>
+Subject: Re: [v5] powerpc/mpc85xx: Add MDIO bus muxing support to the board
+ device tree(s)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 09, 2016 at 05:08:02PM +0100, Christophe Leroy wrote:
-> Once the linear memory space has been mapped with 8Mb pages, as
-> seen in the related commit, we get 11 millions DTLB missed during
-> the reference 600s period. 77% of the misses are on user addresses
-> and 23% are on kernel addresses (1 fourth for linear address space
-> and 3 fourth for virtual address space)
+On Mon, Aug 03, 2015 at 11:14:10AM +0300, Igal.Liberman wrote:
+> From: Igal Liberman <Igal.Liberman@freescale.com>
 > 
-> Traditionaly, each driver manages one computer board which has its
-> own components with its own memory maps.
-> But on embedded chips like the MPC8xx, the SOC has all registers
-> located in the same IO area.
+> Describe the PHY topology for all configurations supported by each board
 > 
-> When looking at ioremaps done during startup, we see that
-> many drivers are re-mapping small parts of the IMMR for their own use
-> and all those small pieces gets their own 4k page, amplifying the
-> number of TLB misses: in our system we get 0xff000000 mapped 31 times
-> and 0xff003000 mapped 9 times.
+> Based on prior work by Andy Fleming <afleming@freescale.com>
 > 
-> Even if each part of IMMR was mapped only once with 4k pages, it would
-> still be several small mappings towards linear area.
+> Signed-off-by: Shruti Kanetkar <Shruti@freescale.com>
+> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+> Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+> ---
 > 
-> With the patch, on the same principle as what was done for the RAM,
-> the IMMR gets mapped by a 512k page.
+> Depends on the following patch set:
+> 	https://patchwork.ozlabs.org/patch/503107/
+> 	https://patchwork.ozlabs.org/patch/503108/
+> 
+> v4 ---> v5:
+> 	- Correct "Signed-off-by" order
+> 
+> v3 ---> v4:
+> 	- Added T1024 support
+> 
+> v2 ---> v3:
+> 	- Fixed incorrect E-Mail address (signed-off-by)
+> 
+> v1 ---> v2
+> 	- Remove 'Change-Id'
+> 
+>  arch/powerpc/boot/dts/fsl/b4860qds.dts    |   60 ++++-
+>  arch/powerpc/boot/dts/fsl/b4qds.dtsi      |   51 ++++-
+>  arch/powerpc/boot/dts/fsl/p1023rdb.dts    |   24 +-
+>  arch/powerpc/boot/dts/fsl/p2041rdb.dts    |   92 +++++++-
+>  arch/powerpc/boot/dts/fsl/p3041ds.dts     |  112 ++++++++-
+>  arch/powerpc/boot/dts/fsl/p4080ds.dts     |  184 ++++++++++++++-
+>  arch/powerpc/boot/dts/fsl/p5020ds.dts     |  112 ++++++++-
+>  arch/powerpc/boot/dts/fsl/p5040ds.dts     |  234 ++++++++++++++++++-
+>  arch/powerpc/boot/dts/fsl/t1023rdb.dts    |   41 ++++
+>  arch/powerpc/boot/dts/fsl/t1024rdb.dts    |   45 ++++
+>  arch/powerpc/boot/dts/fsl/t1040rdb.dts    |   32 ++-
+>  arch/powerpc/boot/dts/fsl/t1042rdb.dts    |   30 ++-
+>  arch/powerpc/boot/dts/fsl/t1042rdb_pi.dts |   18 +-
+>  arch/powerpc/boot/dts/fsl/t104xqds.dtsi   |  178 ++++++++++++++-
+>  arch/powerpc/boot/dts/fsl/t104xrdb.dtsi   |   33 ++-
+>  arch/powerpc/boot/dts/fsl/t2080qds.dts    |  158 ++++++++++++-
+>  arch/powerpc/boot/dts/fsl/t2080rdb.dts    |   67 +++++-
+>  arch/powerpc/boot/dts/fsl/t2081qds.dts    |  221 +++++++++++++++++-
+>  arch/powerpc/boot/dts/fsl/t4240qds.dts    |  400 ++++++++++++++++++++++++++++++++-
+>  arch/powerpc/boot/dts/fsl/t4240rdb.dts    |  149 +++++++++++-
+>  20 files changed, 2221 insertions(+), 20 deletions(-)
 
-"the patch" -- this one, that below says it maps IMMR with other sizes?
+p1023rdb removed when applying, as it has dtc errors due to missing base
+fman support.
 
-> 
-> In 4k pages mode, we reserve a 4Mb area for mapping IMMR. The TLB
-> miss handler checks that we are within the first 512k and bail out
-> with page not marked valid if we are outside
-> 
-> In 16k pages mode, it is not realistic to reserve a 64Mb area, so
-> we do a standard mapping of the 512k area using 32 pages of 16k.
-> The CPM will be mapped via the first two pages, and the SEC engine
-> will be mapped via the 16th and 17th pages. As the pages are marked
-> guarded, there will be no speculative accesses.
-
-If IMMR is 512k, why do you need to reserve 4M/64M for it?
-
--Scott
+-SCott
