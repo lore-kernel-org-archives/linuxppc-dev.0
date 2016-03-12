@@ -1,21 +1,32 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qMfXR3RybzDq6V
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Mar 2016 20:55:50 +1100 (AEDT)
-Subject: Re: [v8, 08/23] powerpc/8xx: Map IMMR area with 512k page at a fixed
- address
-To: Scott Wood <oss@buserror.net>
-References: <469ed145e21be6720c186686039b569e30ca1ed4.1455032446.git.christophe.leroy@c-s.fr>
- <20160311231539.GB30872@home.buserror.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <56E3E7A1.4000908@c-s.fr>
-Date: Sat, 12 Mar 2016 10:55:45 +0100
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qMqT03qC8zDq6V
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Mar 2016 03:38:28 +1100 (AEDT)
+Date: Sat, 12 Mar 2016 16:52:54 +0100
+From: Wolfram Sang <wsa@the-dreams.de>
+To: Yangbo Lu <yangbo.lu@nxp.com>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-clk@vger.kernel.org, linux-i2c@vger.kernel.org,
+ iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
+ linux-mmc@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ scott.wood@nxp.com, Russell King <linux@arm.linux.org.uk>,
+ Jochen Friedrich <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>, ulf.hansson@linaro.org,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>,
+ Zhao Qiang <qiang.zhao@freescale.com>, Kumar Gala <galak@codeaurora.org>,
+ Santosh Shilimkar <ssantosh@kernel.org>, leoyang.li@nxp.com,
+ xiaobo.xie@nxp.com
+Subject: Re: [v6, 4/5] powerpc/fsl: move mpc85xx.h to include/linux/fsl
+Message-ID: <20160312155254.GJ1661@katana>
+References: <1457518131-11339-1-git-send-email-yangbo.lu@nxp.com>
+ <1457518131-11339-5-git-send-email-yangbo.lu@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <20160311231539.GB30872@home.buserror.net>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="AXxEqdD4tcVTjWte"
+In-Reply-To: <1457518131-11339-5-git-send-email-yangbo.lu@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,57 +37,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+--AXxEqdD4tcVTjWte
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Le 12/03/2016 00:15, Scott Wood a écrit :
-> On Tue, Feb 09, 2016 at 05:08:02PM +0100, Christophe Leroy wrote:
->> Once the linear memory space has been mapped with 8Mb pages, as
->> seen in the related commit, we get 11 millions DTLB missed during
->> the reference 600s period. 77% of the misses are on user addresses
->> and 23% are on kernel addresses (1 fourth for linear address space
->> and 3 fourth for virtual address space)
->>
->> Traditionaly, each driver manages one computer board which has its
->> own components with its own memory maps.
->> But on embedded chips like the MPC8xx, the SOC has all registers
->> located in the same IO area.
->>
->> When looking at ioremaps done during startup, we see that
->> many drivers are re-mapping small parts of the IMMR for their own use
->> and all those small pieces gets their own 4k page, amplifying the
->> number of TLB misses: in our system we get 0xff000000 mapped 31 times
->> and 0xff003000 mapped 9 times.
->>
->> Even if each part of IMMR was mapped only once with 4k pages, it would
->> still be several small mappings towards linear area.
->>
->> With the patch, on the same principle as what was done for the RAM,
->> the IMMR gets mapped by a 512k page.
-> "the patch" -- this one, that below says it maps IMMR with other sizes?
-No, the physical mapping is done using one 512k page. And this is done 
-in 4k pages mode only, for the reason explained below.
->
->> In 4k pages mode, we reserve a 4Mb area for mapping IMMR. The TLB
->> miss handler checks that we are within the first 512k and bail out
->> with page not marked valid if we are outside
->>
->> In 16k pages mode, it is not realistic to reserve a 64Mb area, so
->> we do a standard mapping of the 512k area using 32 pages of 16k.
->> The CPM will be mapped via the first two pages, and the SEC engine
->> will be mapped via the 16th and 17th pages. As the pages are marked
->> guarded, there will be no speculative accesses.
-> If IMMR is 512k, why do you need to reserve 4M/64M for it?
-The principle here, as for the 8M pages used for the mapping of RAM, is 
-to have the PTE in the PGD (level 1 table) and no level 2 table 
-associated with that PGD entry.
-Each PGD entry maps a 4M area in 4k pages mode and a 64M area in 16k 
-pages mode. That's the reason.
-We can afford "loosing" 4M virtual memory but I felt like "loosing" 64M 
-of virtual memory is not worth it taking into account that 2 16k pages 
-are enough to map the CPM internal memory and 2 other 16k pages are 
-enough to map the SEC engine internal memory.
+On Wed, Mar 09, 2016 at 06:08:50PM +0800, Yangbo Lu wrote:
+> Move mpc85xx.h to include/linux/fsl and rename it to svr.h as
+> a common header file. It has been used for mpc85xx and it will
+> be used for ARM-based SoC as well.
+>=20
+> Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
 
-Christophe
+=46rom a glimpse, looks like proper refactoring. Thanks!
 
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+For the I2C part:
+
+Acked-by: Wolfram Sang <wsa@the-dreams.de>
+
+
+--AXxEqdD4tcVTjWte
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJW5DtWAAoJEBQN5MwUoCm2N8wP/A+9PzzjAh69NdEWEYwAmYNQ
+O+VKHOPKJS8+cx+LgBtRcfEPQFa1Yjhbc67iLD3iCZmflpMTPkTxJaCXtCpX7spT
+czvjtG2dnaW57mkuuu1M1n6g2Pk8AqFScH7fgJ8/T0PsLo9n/+uZQOqsahYLYBA6
+eHz4NL7vhXW0X8K1v2VnPI8PzEc3jxz72ZsGo4JdKrrSNjs20rHpjXm4/c6L/IxY
+ww6eMTeOY+aXfNEHyWX67bwVX0j+9puiQ0RWdnQEo/3n9XMdketiEwpClO/fzAmb
+YGg7ChK0pVFqt54gk5Kj6eA9hCDiNsOK9LSeVNX5qsqmIcr1enxD9WNOV0zjPTfP
+pF1mR52ygaACR5KU8LQSZVyZBjar9lMq60Fw6KCRunwCMjpnkUxLWHFH8TrH5NAG
+bcVaO158C7FW7Ixk+d0uaZpqIMg2co62nUXXLxUvMSVbDNxuzvo6gCosZt5z3oKr
+9oEVkaqTk7QhX8szHB+BYKjoBVK+oi4UsgvQ3LnTCCt5r9vGGwGGnNEluOKHzB5o
+hEdKZ7/Ubd8yuCAkVzZHW4s0i248RxUY+a45u2adw6Zp5L7Dvw4JWPo0YD6qT4UN
+AMUJnu+dAf/WgL1wn1Nb1AKsbnN3dz8paP0kdGXTtfO51B1FeFrs7x9io1wvUFyn
+4zIuW6V0i4oZlV+/XynJ
+=VEQJ
+-----END PGP SIGNATURE-----
+
+--AXxEqdD4tcVTjWte--
