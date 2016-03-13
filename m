@@ -1,18 +1,20 @@
 Return-Path: <tianyu.lan@intel.com>
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qN5s73glrzDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Mar 2016 14:26:50 +1100 (AEDT)
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qN5sR27hvzDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Mar 2016 14:27:06 +1100 (AEDT)
 From: Lan Tianyu <tianyu.lan@intel.com>
-To: pbonzini@redhat.com, guangrong.xiao@linux.intel.com, agraf@suse.com,
- benh@kernel.crashing.org, gleb@kernel.org, hpa@zytor.com,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mingo@redhat.com, mpe@ellerman.id.au,
- paulus@samba.org, tglx@linutronix.de, x86@kernel.org
-Cc: Lan Tianyu <tianyu.lan@intel.com>
-Subject: [PATCH 0/7] KVM/X86/PPC: Clear up kvm mmu memory barriers and update
- related comments
-Date: Sun, 13 Mar 2016 11:10:23 +0800
-Message-Id: <1457838631-26775-1-git-send-email-tianyu.lan@intel.com>
+To: agraf@suse.com, gleb@kernel.org, pbonzini@redhat.com,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ guangrong.xiao@linux.intel.com
+Cc: Lan Tianyu <tianyu.lan@intel.com>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH 7/7] KVM/PPC: update the comment of memory barrier in the
+ kvmppc_prepare_to_enter()
+Date: Sun, 13 Mar 2016 11:10:30 +0800
+Message-Id: <1457838631-26775-8-git-send-email-tianyu.lan@intel.com>
+In-Reply-To: <1457838631-26775-1-git-send-email-tianyu.lan@intel.com>
+References: <1457838631-26775-1-git-send-email-tianyu.lan@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,32 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series is to clear up kvm mmu memory barriers.
-1) Remove redundant barrier (PATCH 1)
-2) Replace origin barrier functions with preferrable ones (PATCH 2, 3, 5)
-3) Fix unpaired barriers (PATCH 4)
-4) Update or add barrier related comments (PATCH 6, 7)
+The barrier also orders the write to mode from any reads
+to the page tables done and so update the comment.
 
-Lan Tianyu (7):
-  KVM: Remove redundant smp_mb() in the kvm_mmu_commit_zap_page()
-  KVM/x86: Replace smp_mb() with smp_store_mb/release() in the
-    walk_shadow_page_lockless_begin/end()
-  KVM: Replace smp_mb() with smp_mb_after_atomic() in the
-    kvm_make_all_cpus_request()
-  KVM/x86: Call smp_wmb() before increasing tlbs_dirty
-  KVM: Replace smp_mb() with smp_load_acquire() in the
-    kvm_flush_remote_tlbs()
-  KVM/x86: update the comment of memory barrier in the
-    vcpu_enter_guest()
-  KVM/PPC:  update the comment of memory barrier in the
-    kvmppc_prepare_to_enter()
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+---
+ arch/powerpc/kvm/powerpc.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
- arch/powerpc/kvm/powerpc.c |  3 +++
- arch/x86/kvm/mmu.c         | 23 ++++++++++-------------
- arch/x86/kvm/paging_tmpl.h | 11 +++++++++++
- arch/x86/kvm/x86.c         |  8 ++++++--
- virt/kvm/kvm_main.c        | 22 ++++++++++++++++++----
- 5 files changed, 48 insertions(+), 19 deletions(-)
-
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 19aa59b..6a68730 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -96,6 +96,9 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
+ 		 * so we don't miss a request because the requester sees
+ 		 * OUTSIDE_GUEST_MODE and assumes we'll be checking requests
+ 		 * before next entering the guest (and thus doesn't IPI).
++		 * This also orders the write to mode from any reads
++		 * to the page tables done while the VCPU is running.
++		 * Please see the comment in kvm_flush_remote_tlbs.
+ 		 */
+ 		smp_mb();
+ 
 -- 
 1.8.4.rc0.1.g8f6a3e5.dirty
