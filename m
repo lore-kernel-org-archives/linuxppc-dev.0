@@ -1,17 +1,20 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qPFc15BJRzDq6y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 11:19:29 +1100 (AEDT)
-Message-ID: <1458001168.8059.3.camel@ellerman.id.au>
-Subject: Re: Pull request: scottwood/linux.git next
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <oss@buserror.net>, benh@kernel.crashing.org
-Cc: linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.org
-Date: Tue, 15 Mar 2016 11:19:28 +1100
-In-Reply-To: <20160312031535.GA24351@home.buserror.net>
-References: <20160312031535.GA24351@home.buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qPFnF5HHXzDq6y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 11:27:29 +1100 (AEDT)
+Received: from localhost.localdomain (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id 3qPFnF4Lfdz9sdb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 11:27:29 +1100 (AEDT)
+Message-ID: <1458001649.12098.59.camel@neuling.org>
+Subject: Re: [PATCH next] cxl: Allow PSL timebase to not sync
+From: Michael Neuling <mikey@neuling.org>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Date: Tue, 15 Mar 2016 11:27:29 +1100
+In-Reply-To: <1457983772-4206-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+References: <1457983772-4206-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,44 +26,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-03-11 at 21:15 -0600, Scott Wood wrote:
+On Mon, 2016-03-14 at 20:29 +0100, Frederic Barrat wrote:
+> CXL driver synchronizes the PSL timebase with the CAPP during
+> initialization. If it can't synchronize, then the driver currently
+> fails and the cxl adapter is not usable. That behavior is a bit
+> extreme for the time being, as some adapters are known to have
+> troubles syncing their PSL timebase and there are no known use of it.
+>=20
+> Introduce a psl_timebase module parameter to control whether PSL
+> timebase is required or not. Default is to allow initializaton even
+> if
+> syncing failed.
+> Default behavior will be changed when current issues with some cxl
+> adapters are resolved.
 
-> Highlights include 8xx optimizations, 32-bit checksum optimizations, 86xx
-> consolidation, e5500/e6500 cpu hotplug, more fman and other dt bits, and
-> minor fixes/cleanup.
+I'm not happy with doing this unless we add something which advertises
+that it's synced or not to userspace.
 
-Hi Scott,
+If we do that, I'm happy to just fail without the need of the parameter
+but advertise it to userspace.
 
-This one's giving me a few troubles.
+The parameter is a bit of a PITA too, as it's a driver level config not
+card level.  You really want to turn it on/off based on the card, not
+the whole system.
 
-> chenhui zhao (6):
->       powerpc/mm: any thread in one core can be the first to setup TLB1
->       powerpc/cache: add cache flush operation for various e500
->       powerpc/rcpm: add RCPM driver
+Mikey
 
-That commit doesn't build with SMP=n, as reported by Guenter:
+>=20
+> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> ---
+>=20
+> Same as before, but this patch applies on 'next'
+>=20
+>  drivers/misc/cxl/cxl.h  | 1 +
+>  drivers/misc/cxl/main.c | 4 ++++
+>  drivers/misc/cxl/pci.c  | 7 +++++--
+>  3 files changed, 10 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index 38e21cf..84b563c 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -27,6 +27,7 @@
+>  #include <uapi/misc/cxl.h>
+> =20
+>  extern uint cxl_verbose;
+> +extern uint cxl_psl_timebase;
+> =20
+>  #define CXL_TIMEOUT 5
+> =20
+> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+> index ae68c32..0344010 100644
+> --- a/drivers/misc/cxl/main.c
+> +++ b/drivers/misc/cxl/main.c
+> @@ -32,6 +32,10 @@ uint cxl_verbose;
+>  module_param_named(verbose, cxl_verbose, uint, 0600);
+>  MODULE_PARM_DESC(verbose, "Enable verbose dmesg output");
+> =20
+> +uint cxl_psl_timebase;
+> +module_param_named(psl_timebase, cxl_psl_timebase, uint, 0600);
 
-  arch/powerpc/sysdev/fsl_rcpm.c:32:2: error: implicit declaration of function 'get_hard_smp_processor_id' [-Werror=implicit-function-declaration]
+Can we make this a bool?
 
-That's not a biggy, I can probably fix it up here.
-
->       powerpc/mpc85xx: Add CPU hotplug support for E6500
-
-And this one breaks with old binutils (<= 2.22) because of:
-
-  arch/powerpc/kernel/head_64.S:210: Error: Unrecognized opcode: `mttmr'
-
-If you're happy to break the build on older bintuils for those configs then
-that's OK with me.
-
-> Christophe Leroy (31):
->       powerpc/8xx: Handle CPU6 ERRATA directly in mtspr() macro
-
-This breaks mpc866_ads_defconfig for me, with lots of:
-
-  arch/powerpc/mm/8xx_mmu.c:139:2: error: memory input 1 is not directly addressable
-
-That's using gcc < 4.9. With >= 4.9 it builds OK. So again your call on whether
-we drop support for those compilers for that config.
-
-cheers
+> +MODULE_PARM_DESC(psl_timebase, "Require PSL timebase
+> synchronization");
+> +
+>  const struct cxl_backend_ops *cxl_ops;
+> =20
+>  int cxl_afu_slbia(struct cxl_afu *afu)
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 2844e97..02fd1f8 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -1144,8 +1144,11 @@ static int cxl_configure_adapter(struct cxl
+> *adapter, struct pci_dev *dev)
+>  	if ((rc =3D pnv_phb_to_cxl_mode(dev,
+> OPAL_PHB_CAPI_MODE_SNOOP_ON)))
+>  		goto err;
+> =20
+> -	if ((rc =3D cxl_setup_psl_timebase(adapter, dev)))
+> -		goto err;
+> +	if ((rc =3D cxl_setup_psl_timebase(adapter, dev))) {
+> +		if (cxl_psl_timebase)
+> +			goto err;
+> +		pr_err("PSL: Timebase sync: ignoring error\n");
+> +	}
+> =20
+>  	if ((rc =3D cxl_native_register_psl_err_irq(adapter)))
+>  		goto err;
