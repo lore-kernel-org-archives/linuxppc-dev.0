@@ -1,22 +1,21 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
- [IPv6:2607:f8b0:400e:c00::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qPL5D3HGGzDq7K
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 14:41:36 +1100 (AEDT)
-Received: by mail-pf0-x22a.google.com with SMTP id n5so9115508pfn.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Mar 2016 20:41:36 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powernv/hmi: Use the "unknown" checkstop type as a
- fallback
-In-Reply-To: <1458012409-32448-1-git-send-email-ruscur@russell.cc>
-References: <1458012409-32448-1-git-send-email-ruscur@russell.cc>
-Date: Tue, 15 Mar 2016 14:41:29 +1100
-Message-ID: <87lh5ke7bq.fsf@gamma.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qPLQM2k66zDqGd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 14:56:27 +1100 (AEDT)
+Message-ID: <1458014186.8059.5.camel@ellerman.id.au>
+Subject: Re: [PATCH next] cxl: Allow PSL timebase to not sync
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michael Neuling <mikey@neuling.org>, Frederic Barrat
+ <fbarrat@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Date: Tue, 15 Mar 2016 14:56:26 +1100
+In-Reply-To: <1458001649.12098.59.camel@neuling.org>
+References: <1457983772-4206-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+ <1458001649.12098.59.camel@neuling.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Russell Currey <ruscur@russell.cc> writes:
+On Tue, 2016-03-15 at 11:27 +1100, Michael Neuling wrote:
 
-> The HMI code knows about three types of errors: CORE, NX and UNKNOWN.
-> If OPAL were to add a new type, it would not be handled at all since
-> there is no fallback case.  Instead of explicitly checking for UNKNOWN,
-> treat any checkstop type without a handler as unknown.
->
+> On Mon, 2016-03-14 at 20:29 +0100, Frederic Barrat wrote:
 
-Just checked the surrounding function; you're quite right.
-Reviewed-by: Daniel Axtens <dja@axtens.net>
+> > CXL driver synchronizes the PSL timebase with the CAPP during
+> > initialization. If it can't synchronize, then the driver currently
+> > fails and the cxl adapter is not usable. That behavior is a bit
+> > extreme for the time being, as some adapters are known to have
+> > troubles syncing their PSL timebase and there are no known use of it.
+> > 
+> > Introduce a psl_timebase module parameter to control whether PSL
+> > timebase is required or not. Default is to allow initializaton even
+> > if
+> > syncing failed.
+> > Default behavior will be changed when current issues with some cxl
+> > adapters are resolved.
+> 
+> I'm not happy with doing this unless we add something which advertises
+> that it's synced or not to userspace.
+> 
+> If we do that, I'm happy to just fail without the need of the parameter
+> but advertise it to userspace.
+> 
+> The parameter is a bit of a PITA too, as it's a driver level config not
+> card level.  You really want to turn it on/off based on the card, not
+> the whole system.
 
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
-> ---
->  arch/powerpc/platforms/powernv/opal-hmi.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
-> index d000f4e..bff4dd1 100644
-> --- a/arch/powerpc/platforms/powernv/opal-hmi.c
-> +++ b/arch/powerpc/platforms/powernv/opal-hmi.c
-> @@ -157,7 +157,7 @@ static void print_checkstop_reason(const char *level,
->  	case CHECKSTOP_TYPE_NX:
->  		print_nx_checkstop_reason(level, hmi_evt);
->  		break;
-> -	case CHECKSTOP_TYPE_UNKNOWN:
-> +	default:
->  		printk("%s	Unknown Malfunction Alert.\n", level);
->  		break;
->  	}
-> -- 
-> 2.7.3
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+And it just sounds like a big hack around broken hardware, which we'll have to
+carry for the foreseeable future.
+
+cheers
