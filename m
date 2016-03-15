@@ -1,20 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qPQBf6PDTzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 17:46:34 +1100 (AEDT)
-Date: Tue, 15 Mar 2016 17:46:34 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin LaHaise <bcrl@kvack.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Michael
- Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>, Al Viro
- <viro@ZenIV.linux.org.uk>, Christoph Hellwig <hch@lst.de>
-Subject: linux-next: build failure after merge of the aio tree
-Message-ID: <20160315174634.6766cd88@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qPQD319vnzDqGh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 17:47:47 +1100 (AEDT)
+From: Scott Wood <oss@buserror.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Scott Wood <oss@buserror.net>,
+ chenhui.zhao@freescale.com
+Date: Tue, 15 Mar 2016 01:47:38 -0500
+Message-Id: <1458024458-19206-1-git-send-email-oss@buserror.net>
+Subject: [PATCH] powerpc/book3e-64: Use hardcoded mttmr opcode
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,83 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Benjamin,
+This preserves the ability to build using older binutils (reportedly <=
+2.22).
 
-After merging the aio tree, today's linux-next build (powerpc
-ppc44x_defconfig) failed like this:
-
-fs/built-in.o: In function `aio_thread_op_foo_at':
-aio.c:(.text+0x4dab4): undefined reference to `__get_user_bad'
-aio.c:(.text+0x4daec): undefined reference to `__get_user_bad'
-
-Caused by commit
-
-  150a0b4905f1 ("aio: add support for async openat()")
-
-despite commit
-
-  d2f7a973e11e ("aio: don't use __get_user() for 64 bit values")
-
-This is due to a bug in the powerpc __get_user_check() macro (the return
-value is defined to be "unsigned long" which is only 32 bits on a 32
-bit platform).
-
-I applied the patch below which seems to help (Michael, what do you
-think?), but given Al's and Christoph's reactions, I am inclined to
-remove the aio tree from tomorrow and maybe it can be revisited after
-the merge window.
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 15 Mar 2016 16:36:06 +1100
-Subject: [PATCH] powerpc: fix get_user for 64 bit typs on 32 bit platforms
-
-solution borrowed from the x86 uaccess.h
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Scott Wood <oss@buserror.net>
+Cc: chenhui.zhao@freescale.com
 ---
- arch/powerpc/include/asm/uaccess.h | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/head_64.S | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index b7c20f0b8fbe..52262b2f37fc 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -261,10 +261,13 @@ do {								\
- 	}							\
- } while (0)
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 2916283..4286775 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -41,6 +41,7 @@
+ #include <asm/ptrace.h>
+ #include <asm/hw_irq.h>
+ #include <asm/cputhreads.h>
++#include <asm/ppc-opcode.h>
  
-+#define __inttype(x) \
-+	__typeof__(__builtin_choose_expr(sizeof(x) > sizeof(0UL), 0ULL, 0UL))
-+
- #define __get_user_nocheck(x, ptr, size)			\
- ({								\
- 	long __gu_err;						\
--	unsigned long __gu_val;					\
-+	__inttype(*(ptr)) __gu_val;				\
- 	__typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
- 	__chk_user_ptr(ptr);					\
- 	if (!is_kernel_addr((unsigned long)__gu_addr))		\
-@@ -277,7 +280,7 @@ do {								\
- #define __get_user_check(x, ptr, size)					\
- ({									\
- 	long __gu_err = -EFAULT;					\
--	unsigned long  __gu_val = 0;					\
-+	__inttype(*(ptr)) __gu_val = 0;				\
- 	__typeof__(*(ptr)) __user *__gu_addr = (ptr);		\
- 	might_fault();							\
- 	if (access_ok(VERIFY_READ, __gu_addr, (size)))			\
-@@ -289,7 +292,7 @@ do {								\
- #define __get_user_nosleep(x, ptr, size)			\
- ({								\
- 	long __gu_err;						\
--	unsigned long __gu_val;					\
-+	__inttype(*(ptr)) __gu_val;				\
- 	__typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
- 	__chk_user_ptr(ptr);					\
- 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ /* The physical memory is laid out such that the secondary processor
+  * spin code sits at 0x0000...0x00ff. On server, the vectors follow
+@@ -207,12 +208,12 @@ _GLOBAL(book3e_start_thread)
+ 	/* If the thread id is invalid, just exit. */
+ 	b	13f
+ 10:
+-	mttmr	TMRN_IMSR0, r5
+-	mttmr	TMRN_INIA0, r4
++	MTTMR(TMRN_IMSR0, 5)
++	MTTMR(TMRN_INIA0, 4)
+ 	b	12f
+ 11:
+-	mttmr	TMRN_IMSR1, r5
+-	mttmr	TMRN_INIA1, r4
++	MTTMR(TMRN_IMSR1, 5)
++	MTTMR(TMRN_INIA1, 4)
+ 12:
+ 	isync
+ 	li	r6, 1
 -- 
-2.7.0
-
--- 
-Cheers,
-Stephen Rothwell
+2.5.0
