@@ -1,17 +1,27 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qPVvs4SZ3zDq6X
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 21:19:05 +1100 (AEDT)
-Subject: Re: [PATCH] powerpc/8xx: Fix do_mtspr_cpu6 build on older compilers
-To: Scott Wood <oss@buserror.net>, Michael Ellerman <mpe@ellerman.id.au>
-References: <1458023151-32066-1-git-send-email-oss@buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <56E7E18E.30207@c-s.fr>
-Date: Tue, 15 Mar 2016 11:18:54 +0100
+Return-Path: <mbenes@suse.cz>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qPW3j6cZGzDqGd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 21:25:53 +1100 (AEDT)
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3qPW3h6gd7z9sdQ
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Mar 2016 21:25:52 +1100 (AEDT)
+Date: Tue, 15 Mar 2016 11:25:48 +0100 (CET)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Balbir Singh <bsingharora@gmail.com>
+cc: linuxppc-dev@ozlabs.org, duwe@lst.de, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
+ jeyu@redhat.com, jkosina@suse.cz, live-patching@vger.kernel.org,
+ Torsten Duwe <duwe@suse.de>
+Subject: Re: [PATCH][v6][RFC] livepatch/ppc: Enable livepatching on powerpc
+In-Reply-To: <1457506780-19556-1-git-send-email-bsingharora@gmail.com>
+Message-ID: <alpine.LNX.2.00.1603151113020.20252@pobox.suse.cz>
+References: <1457506780-19556-1-git-send-email-bsingharora@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1458023151-32066-1-git-send-email-oss@buserror.net>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,94 +31,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 9 Mar 2016, Balbir Singh wrote:
 
-Le 15/03/2016 07:25, Scott Wood a écrit :
-> Some versions of GCC, reportedly before 4.9, fail with
-> arch/powerpc/mm/8xx_mmu.c:139:2: error: memory input 1 is not directly
-> addressable
->
-> Use a register constraint instead of a memory constraint to avoid this.
-> Also change the one-element array into a simple variable.
->
-> Signed-off-by: Scott Wood <oss@buserror.net>
-> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
-> Christope, could you test?  And was there any particular reason for the [1]?
-As far as I remember the idea behind the [1] was to ensure that the 
-variable was allocated from stack memory and not optimised in a register.
+> 
+> The previous revision was nacked by Torsten, but compared to the alternatives
+> at hand I think we should test this approach. Ideally we want all the complexity
+> of live-patching in the live-patching code and not in the patch. The other option
+> is to accept v4 and document the limitation to patch writers of not patching
+> functions > 8 arguments or marking such functions as notrace or equivalent
 
-I will not be able to test it as I don't have any CPU suffering CPU6 
-errata, but I observe that the result of your patch doesn't exactly 
-match the solution proposed by Freescale in the ERRATA:
+So I tried to read all the relevant emails and I must admit I am quite 
+lost. Unfortunately I cannot help much with powerpc part as my knowledge 
+is close to zero, but from live patching perspective there are only two 
+sustainable solutions (in my opinion). First, make it work transparently 
+for a patch writer. So no inline asm in patched functions. Second, make it 
+impossible to patch such problematic functions and document it as a 
+limitation. Well, this would be sad for sure.
 
-MPC860 CPU6 ERRATA says:
-each "mtspr" instruction which accesses one of these registers must be 
-preceded by a store word and a
-load word instruction of a data operand equal to the spr_address of the 
-respective register. As an
-example, to write the data from the general purpose register r1 to the 
-special purpose register
-M_TW, the procedure in Table 6 should be followed:
+So I think we are on the same page. Hopefully.
 
-Table 6. Writing Data from r1 to M_TW:
-lis r2, some address_msb
-li r3, 0x3f80
-stw r3, some address_lsb(r2)
-lwz r3, some address_lsb(r2)
-mtspr M_TW, r1
+One or two nits follow.
 
-Without your patch (with gcc 4.8.3), I get:
-c000d8cc <set_context>:
-[...]
-c000d8f4:    39 40 3f 80     li      r10,16256
-c000d8f8:    91 41 00 08     stw     r10,8(r1)
-c000d8fc:    81 41 00 08     lwz     r10,8(r1)
-c000d900:    7d 3f c3 a6     mtspr   799,r9
-c000d904:    39 20 33 80     li      r9,13184
-c000d908:    91 21 00 08     stw     r9,8(r1)
-c000d90c:    81 21 00 08     lwz     r9,8(r1)
-c000d910:    7c 79 c3 a6     mtspr   793,r3
-[...]
+>  static void klp_disable_func(struct klp_func *func)
+>  {
+>  	struct klp_ops *ops;
+> +	unsigned long ftrace_loc;
+>  
+>  	if (WARN_ON(func->state != KLP_ENABLED))
+>  		return;
+>  	if (WARN_ON(!func->old_addr))
+>  		return;
+>  
+> +	ftrace_loc = klp_get_ftrace_location(func->old_addr);
+> +	if (WARN_ON(!ftrace_loc))
+> +		return;
+> +
 
-With your patch (with gcc 4.8.3), I get:
-c000d8dc <set_context>:
-[...]
-c000d904:    39 40 3f 80     li      r10,16256
-c000d908:    39 21 00 08     addi    r9,r1,8
-c000d90c:    7d 40 49 2e     stwx    r10,0,r9
-c000d910:    7d 40 48 2e     lwzx    r10,0,r9
-c000d914:    7d 1f c3 a6     mtspr   799,r8
-c000d918:    39 40 33 80     li      r10,13184
-c000d91c:    7d 40 49 2e     stwx    r10,0,r9
-c000d920:    7d 40 48 2e     lwzx    r10,0,r9
-c000d924:    7c 79 c3 a6     mtspr   793,r3
-[...]
+WARN_ON here in klp_disable_func() is reasonable, because we registered a 
+stub for the function successfully, so something really wrong must 
+happened...
 
-I'm not able to tell if using stwx/lwzx instead of stw/lwz is valid.
+>  	ops = klp_find_ops(func->old_addr);
+>  	if (WARN_ON(!ops))
+>  		return;
+>  
+>  	if (list_is_singular(&ops->func_stack)) {
+>  		WARN_ON(unregister_ftrace_function(&ops->fops));
+> -		WARN_ON(ftrace_set_filter_ip(&ops->fops, func->old_addr, 1, 0));
+> +		WARN_ON(ftrace_set_filter_ip(&ops->fops, ftrace_loc, 1, 0));
+>  
+>  		list_del_rcu(&func->stack_node);
+>  		list_del(&ops->node);
+> @@ -328,6 +345,7 @@ static void klp_disable_func(struct klp_func *func)
+>  static int klp_enable_func(struct klp_func *func)
+>  {
+>  	struct klp_ops *ops;
+> +	unsigned long ftrace_loc;
+>  	int ret;
+>  
+>  	if (WARN_ON(!func->old_addr))
+> @@ -336,6 +354,10 @@ static int klp_enable_func(struct klp_func *func)
+>  	if (WARN_ON(func->state != KLP_DISABLED))
+>  		return -EINVAL;
+>  
+> +	ftrace_loc = klp_get_ftrace_location(func->old_addr);
+> +	if (WARN_ON(!ftrace_loc))
+> +		return -EINVAL;
+> +
 
-Christophe
+But here it might be too strong. I think simple
 
->
->   arch/powerpc/include/asm/reg_8xx.h | 8 ++++----
->   1 file changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/reg_8xx.h b/arch/powerpc/include/asm/reg_8xx.h
-> index d41412c..cb7dfb9 100644
-> --- a/arch/powerpc/include/asm/reg_8xx.h
-> +++ b/arch/powerpc/include/asm/reg_8xx.h
-> @@ -53,11 +53,11 @@
->   #ifdef CONFIG_8xx_CPU6
->   #define do_mtspr_cpu6(rn, rn_addr, v)	\
->   	do {								\
-> -		int _reg_cpu6 = rn_addr, _tmp_cpu6[1];		\
-> -		asm volatile("stw %0, %1;"				\
-> -			     "lwz %0, %1;"				\
-> +		int _reg_cpu6 = rn_addr, _tmp_cpu6;		\
-> +		asm volatile("stwx %0, 0, %1;"				\
-> +			     "lwzx %0, 0, %1;"				\
->   			     "mtspr " __stringify(rn) ",%2" :		\
-> -			     : "r" (_reg_cpu6), "m"(_tmp_cpu6),		\
-> +			     : "r" (_reg_cpu6), "r" (&_tmp_cpu6),	\
->   			       "r" ((unsigned long)(v))			\
->   			     : "memory");				\
->   	} while (0)
+if (!ftrace_loc) {
+	pr_err("...");
+	return -EINVAL;
+}
+
+would be enough I guess.
+
+>  	ops = klp_find_ops(func->old_addr);
+>  	if (!ops) {
+>  		ops = kzalloc(sizeof(*ops), GFP_KERNEL);
+> @@ -352,7 +374,7 @@ static int klp_enable_func(struct klp_func *func)
+>  		INIT_LIST_HEAD(&ops->func_stack);
+>  		list_add_rcu(&func->stack_node, &ops->func_stack);
+>  
+> -		ret = ftrace_set_filter_ip(&ops->fops, func->old_addr, 0, 0);
+> +		ret = ftrace_set_filter_ip(&ops->fops, ftrace_loc, 0, 0);
+>  		if (ret) {
+>  			pr_err("failed to set ftrace filter for function '%s' (%d)\n",
+>  			       func->old_name, ret);
+> @@ -363,7 +385,7 @@ static int klp_enable_func(struct klp_func *func)
+>  		if (ret) {
+>  			pr_err("failed to register ftrace handler for function '%s' (%d)\n",
+>  			       func->old_name, ret);
+> -			ftrace_set_filter_ip(&ops->fops, func->old_addr, 1, 0);
+> +			ftrace_set_filter_ip(&ops->fops, ftrace_loc, 1, 0);
+>  			goto err;
+>  		}
+
+Thinking about it, we need ftrace_loc only in cases where we call 
+ftrace_set_filter_ip() right? So we can move klp_get_ftrace_location() 
+call to appropriate if branch both in klp_disable_func() and 
+klp_enable_func().
+
+Thanks,
+Miroslav
