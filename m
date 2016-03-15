@@ -1,22 +1,27 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <jikos@kernel.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qPFnF5HHXzDq6y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 11:27:29 +1100 (AEDT)
-Received: from localhost.localdomain (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id 3qPFnF4Lfdz9sdb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 11:27:29 +1100 (AEDT)
-Message-ID: <1458001649.12098.59.camel@neuling.org>
-Subject: Re: [PATCH next] cxl: Allow PSL timebase to not sync
-From: Michael Neuling <mikey@neuling.org>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-Date: Tue, 15 Mar 2016 11:27:29 +1100
-In-Reply-To: <1457983772-4206-1-git-send-email-fbarrat@linux.vnet.ibm.com>
-References: <1457983772-4206-1-git-send-email-fbarrat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qPH652DqzzDq7K
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 12:27:09 +1100 (AEDT)
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3qPH6462ptz9ssP
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Mar 2016 12:27:08 +1100 (AEDT)
+Date: Tue, 15 Mar 2016 02:27:02 +0100 (CET)
+From: Jiri Kosina <jikos@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+cc: linuxppc-dev@ozlabs.org, pmladek@suse.com, jeyu@redhat.com,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com, duwe@lst.de, live-patching@vger.kernel.org,
+ mbenes@suse.cz
+Subject: Re: [v3,1/8] powerpc: Create a helper for getting the kernel toc value
+In-Reply-To: <3qNsms00H7z9snl@ozlabs.org>
+Message-ID: <alpine.LNX.2.00.1603150220231.3656@cbobk.fhfr.pm>
+References: <3qNsms00H7z9snl@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,91 +31,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-03-14 at 20:29 +0100, Frederic Barrat wrote:
-> CXL driver synchronizes the PSL timebase with the CAPP during
-> initialization. If it can't synchronize, then the driver currently
-> fails and the cxl adapter is not usable. That behavior is a bit
-> extreme for the time being, as some adapters are known to have
-> troubles syncing their PSL timebase and there are no known use of it.
->=20
-> Introduce a psl_timebase module parameter to control whether PSL
-> timebase is required or not. Default is to allow initializaton even
-> if
-> syncing failed.
-> Default behavior will be changed when current issues with some cxl
-> adapters are resolved.
+On Mon, 14 Mar 2016, Michael Ellerman wrote:
 
-I'm not happy with doing this unless we add something which advertises
-that it's synced or not to userspace.
+> > Move the logic to work out the kernel toc pointer into a header. This is
+> > a good cleanup, and also means we can use it elsewhere in future.
+> > 
+> > Reviewed-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> > Reviewed-by: Torsten Duwe <duwe@suse.de>
+> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> > Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> 
+> Series applied to powerpc next.
+> 
+> https://git.kernel.org/powerpc/c/a5cab83cd3d2d75d3893276cb5
 
-If we do that, I'm happy to just fail without the need of the parameter
-but advertise it to userspace.
+Thanks Michael; this is an excellent basis for ppc live patching, but FYI 
+I am not merging that one to my tree just yet.
 
-The parameter is a bit of a PITA too, as it's a driver level config not
-card level.  You really want to turn it on/off based on the card, not
-the whole system.
+The solution (*) for functions with non-trivial argument list is not there 
+yet, and it's my requirement for this to be taken care of in a way that's 
+not prone to easily-done human errors on the patch-producer side.
 
-Mikey
+(*) both "making it work" or "making it so broken that it's guaranteed 
+    that noone would ever produce a patch that brings the kernel down" is 
+    okay, but I really don't feel that just documenting the limitation is
+    sufficient and safe in this case; kudos to Torsten here for
+    idenfitfying the problem before it actually became The Problem
 
->=20
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> ---
->=20
-> Same as before, but this patch applies on 'next'
->=20
->  drivers/misc/cxl/cxl.h  | 1 +
->  drivers/misc/cxl/main.c | 4 ++++
->  drivers/misc/cxl/pci.c  | 7 +++++--
->  3 files changed, 10 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index 38e21cf..84b563c 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -27,6 +27,7 @@
->  #include <uapi/misc/cxl.h>
-> =20
->  extern uint cxl_verbose;
-> +extern uint cxl_psl_timebase;
-> =20
->  #define CXL_TIMEOUT 5
-> =20
-> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-> index ae68c32..0344010 100644
-> --- a/drivers/misc/cxl/main.c
-> +++ b/drivers/misc/cxl/main.c
-> @@ -32,6 +32,10 @@ uint cxl_verbose;
->  module_param_named(verbose, cxl_verbose, uint, 0600);
->  MODULE_PARM_DESC(verbose, "Enable verbose dmesg output");
-> =20
-> +uint cxl_psl_timebase;
-> +module_param_named(psl_timebase, cxl_psl_timebase, uint, 0600);
+Thanks,
 
-Can we make this a bool?
-
-> +MODULE_PARM_DESC(psl_timebase, "Require PSL timebase
-> synchronization");
-> +
->  const struct cxl_backend_ops *cxl_ops;
-> =20
->  int cxl_afu_slbia(struct cxl_afu *afu)
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 2844e97..02fd1f8 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -1144,8 +1144,11 @@ static int cxl_configure_adapter(struct cxl
-> *adapter, struct pci_dev *dev)
->  	if ((rc =3D pnv_phb_to_cxl_mode(dev,
-> OPAL_PHB_CAPI_MODE_SNOOP_ON)))
->  		goto err;
-> =20
-> -	if ((rc =3D cxl_setup_psl_timebase(adapter, dev)))
-> -		goto err;
-> +	if ((rc =3D cxl_setup_psl_timebase(adapter, dev))) {
-> +		if (cxl_psl_timebase)
-> +			goto err;
-> +		pr_err("PSL: Timebase sync: ignoring error\n");
-> +	}
-> =20
->  	if ((rc =3D cxl_native_register_psl_err_irq(adapter)))
->  		goto err;
+-- 
+Jiri Kosina
+SUSE Labs
