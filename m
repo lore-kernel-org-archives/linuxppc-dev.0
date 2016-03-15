@@ -1,34 +1,27 @@
-Return-Path: <felix@linux.vnet.ibm.com>
-Received: from e06smtp06.uk.ibm.com (e06smtp06.uk.ibm.com [195.75.94.102])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <andy.shevchenko@gmail.com>
+Received: from mail-ob0-x22b.google.com (mail-ob0-x22b.google.com
+ [IPv6:2607:f8b0:4003:c01::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qPcPZ2xHszDqk3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 01:26:42 +1100 (AEDT)
-Received: from localhost
- by e06smtp06.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Tue, 15 Mar 2016 14:26:37 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id CF914219004D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 14:26:15 +0000 (GMT)
-Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
- [9.149.37.217])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2FEQXBU56885320
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 14:26:33 GMT
-Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2FEQXWb022138
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 10:26:33 -0400
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: imunsie@au1.ibm.com, mikey@neuling.org,
- Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Subject: [PATCH] cxl: Configure the PSL for dual port CAPI on Naples
-Date: Tue, 15 Mar 2016 15:26:48 +0100
-Message-Id: <1458052008-29254-1-git-send-email-felix@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qPcgf4qtFzDqyC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 01:38:54 +1100 (AEDT)
+Received: by mail-ob0-x22b.google.com with SMTP id m7so18945274obh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 07:38:54 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20160315174634.6766cd88@canb.auug.org.au>
+References: <20160315174634.6766cd88@canb.auug.org.au>
+Date: Tue, 15 Mar 2016 16:38:51 +0200
+Message-ID: <CAHp75VcjmDsgStAZVA=0EU4nQwCx-s+4kF_CsmSrrZtVpVg1bA@mail.gmail.com>
+Subject: Re: linux-next: build failure after merge of the aio tree
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Benjamin LaHaise <bcrl@kvack.org>, linux-next <linux-next@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ Al Viro <viro@zeniv.linux.org.uk>, Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,55 +31,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Naples CPUs have two CAPI ports.  Configure the PSL to route data to
-the port corresponding to the PHB index.
+On Tue, Mar 15, 2016 at 8:46 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Benjamin,
+>
+> After merging the aio tree, today's linux-next build (powerpc
+> ppc44x_defconfig) failed like this:
+>
+> fs/built-in.o: In function `aio_thread_op_foo_at':
+> aio.c:(.text+0x4dab4): undefined reference to `__get_user_bad'
+> aio.c:(.text+0x4daec): undefined reference to `__get_user_bad'
 
-Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
----
- drivers/misc/cxl/pci.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+avr32 seems affected as well and the below solution is not suitable
+(should be much more verbose in asm, I guess).
 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 0c6c17a1..3db0a0b 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -340,12 +340,15 @@ static void dump_afu_descriptor(struct cxl_afu *afu)
- #undef show_reg
- }
- 
-+#define CPU_IS_NAPLES() (cur_cpu_spec->pvr_value == 0x004c0000)
-+
- static int init_implementation_adapter_regs(struct cxl *adapter, struct pci_dev *dev)
- {
- 	struct device_node *np;
- 	const __be32 *prop;
- 	u64 psl_dsnctl;
- 	u64 chipid;
-+	u64 phb_index;
- 
- 	if (!(np = pnv_pci_get_phb_node(dev)))
- 		return -ENODEV;
-@@ -355,10 +358,20 @@ static int init_implementation_adapter_regs(struct cxl *adapter, struct pci_dev
- 	if (!np)
- 		return -ENODEV;
- 	chipid = be32_to_cpup(prop);
--	of_node_put(np);
- 
- 	/* Tell PSL where to route data to */
- 	psl_dsnctl = 0x02E8900002000000ULL | (chipid << (63-5));
-+	if (CPU_IS_NAPLES()) {
-+		prop = of_get_property(np, "ibm,phb-index", NULL);
-+		if (!prop) {
-+			of_node_put(np);
-+			return -ENODEV;
-+		}
-+		phb_index = be32_to_cpup(prop);
-+		psl_dsnctl |= (phb_index << (63-11));
-+	}
-+	of_node_put(np);
-+
- 	cxl_p1_write(adapter, CXL_PSL_DSNDCTL, psl_dsnctl);
- 	cxl_p1_write(adapter, CXL_PSL_RESLCKTO, 0x20000000200ULL);
- 	/* snoop write mask */
+>
+> Caused by commit
+>
+>   150a0b4905f1 ("aio: add support for async openat()")
+>
+> despite commit
+>
+>   d2f7a973e11e ("aio: don't use __get_user() for 64 bit values")
+>
+> This is due to a bug in the powerpc __get_user_check() macro (the return
+> value is defined to be "unsigned long" which is only 32 bits on a 32
+> bit platform).
+>
+> I applied the patch below which seems to help (Michael, what do you
+> think?), but given Al's and Christoph's reactions, I am inclined to
+> remove the aio tree from tomorrow and maybe it can be revisited after
+> the merge window.
+>
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Tue, 15 Mar 2016 16:36:06 +1100
+> Subject: [PATCH] powerpc: fix get_user for 64 bit typs on 32 bit platforms
+>
+> solution borrowed from the x86 uaccess.h
+>
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/include/asm/uaccess.h | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+> index b7c20f0b8fbe..52262b2f37fc 100644
+> --- a/arch/powerpc/include/asm/uaccess.h
+> +++ b/arch/powerpc/include/asm/uaccess.h
+> @@ -261,10 +261,13 @@ do {                                                              \
+>         }                                                       \
+>  } while (0)
+>
+> +#define __inttype(x) \
+> +       __typeof__(__builtin_choose_expr(sizeof(x) > sizeof(0UL), 0ULL, 0UL))
+> +
+>  #define __get_user_nocheck(x, ptr, size)                       \
+>  ({                                                             \
+>         long __gu_err;                                          \
+> -       unsigned long __gu_val;                                 \
+> +       __inttype(*(ptr)) __gu_val;                             \
+>         __typeof__(*(ptr)) __user *__gu_addr = (ptr);   \
+>         __chk_user_ptr(ptr);                                    \
+>         if (!is_kernel_addr((unsigned long)__gu_addr))          \
+> @@ -277,7 +280,7 @@ do {                                                                \
+>  #define __get_user_check(x, ptr, size)                                 \
+>  ({                                                                     \
+>         long __gu_err = -EFAULT;                                        \
+> -       unsigned long  __gu_val = 0;                                    \
+> +       __inttype(*(ptr)) __gu_val = 0;                         \
+>         __typeof__(*(ptr)) __user *__gu_addr = (ptr);           \
+>         might_fault();                                                  \
+>         if (access_ok(VERIFY_READ, __gu_addr, (size)))                  \
+> @@ -289,7 +292,7 @@ do {                                                                \
+>  #define __get_user_nosleep(x, ptr, size)                       \
+>  ({                                                             \
+>         long __gu_err;                                          \
+> -       unsigned long __gu_val;                                 \
+> +       __inttype(*(ptr)) __gu_val;                             \
+>         __typeof__(*(ptr)) __user *__gu_addr = (ptr);   \
+>         __chk_user_ptr(ptr);                                    \
+>         __get_user_size(__gu_val, __gu_addr, (size), __gu_err); \
+> --
+> 2.7.0
+>
+> --
+> Cheers,
+> Stephen Rothwell
+
+
+
 -- 
-2.1.0
+With Best Regards,
+Andy Shevchenko
