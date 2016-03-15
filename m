@@ -1,27 +1,26 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qPPpq5mL2zDq7K
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 17:29:23 +1100 (AEDT)
-Date: Tue, 15 Mar 2016 17:04:00 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qPPpr0CDqzDqGh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 17:29:24 +1100 (AEDT)
+Date: Tue, 15 Mar 2016 17:00:24 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
  Alex Williamson <alex.williamson@redhat.com>,
  kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [PATCH kernel 9/9] KVM: PPC: VFIO device: support SPAPR TCE
-Message-ID: <20160315060400.GK15272@voom.fritz.box>
+Subject: Re: [PATCH kernel 8/9] KVM: PPC: Add in-kernel handling for VFIO
+Message-ID: <20160315060024.GJ15272@voom.fritz.box>
 References: <1457322077-26640-1-git-send-email-aik@ozlabs.ru>
- <1457322077-26640-10-git-send-email-aik@ozlabs.ru>
- <20160309054544.GM22546@voom.fritz.box>
- <56DFEACC.7030508@ozlabs.ru>
- <20160310052108.GV22546@voom.fritz.box>
- <56E1FEBE.5090602@ozlabs.ru>
+ <1457322077-26640-9-git-send-email-aik@ozlabs.ru>
+ <20160308110812.GC22546@voom.fritz.box> <56DFE2F7.80300@ozlabs.ru>
+ <20160310051828.GU22546@voom.fritz.box>
+ <56E22A38.1050204@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="7AwgMNpd3VkAVXjS"
-In-Reply-To: <56E1FEBE.5090602@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="AptwxgnoZDC4KQWS"
+In-Reply-To: <56E22A38.1050204@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,356 +31,248 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---7AwgMNpd3VkAVXjS
+--AptwxgnoZDC4KQWS
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Mar 11, 2016 at 10:09:50AM +1100, Alexey Kardashevskiy wrote:
-> On 03/10/2016 04:21 PM, David Gibson wrote:
-> >On Wed, Mar 09, 2016 at 08:20:12PM +1100, Alexey Kardashevskiy wrote:
-> >>On 03/09/2016 04:45 PM, David Gibson wrote:
-> >>>On Mon, Mar 07, 2016 at 02:41:17PM +1100, Alexey Kardashevskiy wrote:
-> >>>>sPAPR TCE IOMMU is para-virtualized and the guest does map/unmap
-> >>>>via hypercalls which take a logical bus id (LIOBN) as a target IOMMU
-> >>>>identifier. LIOBNs are made up, advertised to guest systems and
-> >>>>linked to IOMMU groups by the user space.
-> >>>>In order to enable acceleration for IOMMU operations in KVM, we need
-> >>>>to tell KVM the information about the LIOBN-to-group mapping.
+On Fri, Mar 11, 2016 at 01:15:20PM +1100, Alexey Kardashevskiy wrote:
+> On 03/10/2016 04:18 PM, David Gibson wrote:
+> >On Wed, Mar 09, 2016 at 07:46:47PM +1100, Alexey Kardashevskiy wrote:
+> >>On 03/08/2016 10:08 PM, David Gibson wrote:
+> >>>On Mon, Mar 07, 2016 at 02:41:16PM +1100, Alexey Kardashevskiy wrote:
+> >>>>This allows the host kernel to handle H_PUT_TCE, H_PUT_TCE_INDIRECT
+> >>>>and H_STUFF_TCE requests targeted an IOMMU TCE table used for VFIO
+> >>>>without passing them to user space which saves time on switching
+> >>>>to user space and back.
 > >>>>
-> >>>>For that, a new KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN parameter
-> >>>>is added which accepts:
-> >>>>- a VFIO group fd and IO base address to find the actual hardware
-> >>>>TCE table;
-> >>>>- a LIOBN to assign to the found table.
+> >>>>Both real and virtual modes are supported. The kernel tries to
+> >>>>handle a TCE request in the real mode, if fails it passes the request
+> >>>>to the virtual mode to complete the operation. If it a virtual mode
+> >>>>handler fails, the request is passed to user space; this is not expec=
+ted
+> >>>>to happen ever though.
+> >>>
+> >>>Well... not expect to happen with a qemu which uses this.  Presumably
+> >>>it will fall back to userspace routinely if you have an old qemu that
+> >>>doesn't add the liobn mappings.
+> >>
+> >>
+> >>Ah. Ok, thanks, I'll add this to the commit log.
+> >
+> >Ok.
+> >
+> >>>>The first user of this is VFIO on POWER. Trampolines to the VFIO exte=
+rnal
+> >>>>user API functions are required for this patch.
+> >>>
+> >>>I'm not sure what you mean by "trampoline" here.
+> >>
+> >>For example, look at kvm_vfio_group_get_external_user. It calls
+> >>symbol_get(vfio_group_get_external_user) and then calls a function via =
+the
+> >>returned pointer.
+> >>
+> >>Is there a better word for this?
+> >
+> >Uh.. probably although I don't immediately know what.  "Trampoline"
+> >usually refers to code on the stack used for bouncing places, which
+> >isn't what this resembles.
+>=20
+> "Dynamic wrapper"?
+
+Sure, that'll do.
+
+> >>>>This uses a VFIO KVM device to associate a logical bus number (LIOBN)
+> >>>>with an VFIO IOMMU group fd and enable in-kernel handling of map/unmap
+> >>>>requests.
+> >>>
+> >>>Group fd?  Or container fd?  The group fd wouldn't make a lot of
+> >>>sense.
+> >>
+> >>
+> >>Group. KVM has no idea about containers.
+> >
+> >That's not going to fly.  Having a liobn registered against just one
+> >group in a container makes no sense at all.  Conceptually, if not
+> >physically, the container shares a single set of TCE tables.  If
+> >handling that means teaching KVM the concept of containers, then so be
+> >it.
+> >
+> >Btw, I'm not sure yet if extending the existing vfio kvm device to
+> >make the vfio<->kvm linkages makes sense.  I think the reason some x86
+> >machines need that is quite different from how we're using it for
+> >Power.  I haven't got a clear enough picture yet to be sure either
+> >way.
+> >
+> >The other option that would seem likely to me would be a "bind VFIO
+> >container" ioctl() on the fd associated with a kernel accelerated TCE ta=
+ble.
+>=20
+>=20
+> Oh, I just noticed this response. I need to digest it. Looks like this is
+> going to take other 2 years to upstream...
+>=20
+>=20
+> >>>>To make use of the feature, the user space has to create a guest view
+> >>>>of the TCE table via KVM_CAP_SPAPR_TCE/KVM_CAP_SPAPR_TCE_64 and
+> >>>>then associate a LIOBN with this table via VFIO KVM device,
+> >>>>a KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN property (which is added in
+> >>>>the next patch).
 > >>>>
-> >>>>Before notifying KVM about new link, this check the group for being
-> >>>>registered with KVM device in order to release them at unexpected KVM
-> >>>>finish.
-> >>>>
-> >>>>This advertises the new KVM_CAP_SPAPR_TCE_VFIO capability to the user
-> >>>>space.
-> >>>>
-> >>>>While we are here, this also fixes VFIO KVM device compiling to let it
-> >>>>link to a KVM module.
-> >>>>
+> >>>>Tests show that this patch increases transmission speed from 220MB/s
+> >>>>to 750..1020MB/s on 10Gb network (Chelsea CXGB3 10Gb ethernet card).
+> >>>
+> >>>Is that with or without DDW (i.e. with or without a 64-bit DMA window)?
+> >>
+> >>
+> >>Without DDW, I should have mentioned this. The patch is from the times =
+when
+> >>there was no DDW :(
+> >
+> >Ok.
+> >
 > >>>>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 > >>>>---
-> >>>>  Documentation/virtual/kvm/devices/vfio.txt |  21 +++++-
-> >>>>  arch/powerpc/kvm/Kconfig                   |   1 +
-> >>>>  arch/powerpc/kvm/Makefile                  |   5 +-
-> >>>>  arch/powerpc/kvm/powerpc.c                 |   1 +
-> >>>>  include/uapi/linux/kvm.h                   |   9 +++
-> >>>>  virt/kvm/vfio.c                            | 106 ++++++++++++++++++=
+> >>>>  arch/powerpc/kvm/book3s_64_vio.c    | 184 +++++++++++++++++++++++++=
+++++++++++
+> >>>>  arch/powerpc/kvm/book3s_64_vio_hv.c | 186 +++++++++++++++++++++++++=
 +++++++++++
-> >>>>  6 files changed, 140 insertions(+), 3 deletions(-)
+> >>>>  2 files changed, 370 insertions(+)
 > >>>>
-> >>>>diff --git a/Documentation/virtual/kvm/devices/vfio.txt b/Documentati=
-on/virtual/kvm/devices/vfio.txt
-> >>>>index ef51740..c0d3eb7 100644
-> >>>>--- a/Documentation/virtual/kvm/devices/vfio.txt
-> >>>>+++ b/Documentation/virtual/kvm/devices/vfio.txt
-> >>>>@@ -16,7 +16,24 @@ Groups:
-> >>>>
-> >>>>  KVM_DEV_VFIO_GROUP attributes:
-> >>>>    KVM_DEV_VFIO_GROUP_ADD: Add a VFIO group to VFIO-KVM device track=
-ing
-> >>>>+	kvm_device_attr.addr points to an int32_t file descriptor
-> >>>>+	for the VFIO group.
-> >>>
-> >>>AFAICT these changes are accurate for VFIO as it is already, in which
-> >>>case it might be clearer to put them in a separate patch.
-> >>>
-> >>>>    KVM_DEV_VFIO_GROUP_DEL: Remove a VFIO group from VFIO-KVM device =
-tracking
-> >>>>+	kvm_device_attr.addr points to an int32_t file descriptor
-> >>>>+	for the VFIO group.
-> >>>>
-> >>>>-For each, kvm_device_attr.addr points to an int32_t file descriptor
-> >>>>-for the VFIO group.
-> >>>>+  KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN: sets a liobn for a VFIO gr=
-oup
-> >>>>+	kvm_device_attr.addr points to a struct:
-> >>>>+		struct kvm_vfio_spapr_tce_liobn {
-> >>>>+			__u32	argsz;
-> >>>>+			__s32	fd;
-> >>>>+			__u32	liobn;
-> >>>>+			__u8	pad[4];
-> >>>>+			__u64	start_addr;
-> >>>>+		};
-> >>>>+		where
-> >>>>+		@argsz is the size of kvm_vfio_spapr_tce_liobn;
-> >>>>+		@fd is a file descriptor for a VFIO group;
-> >>>>+		@liobn is a logical bus id to be associated with the group;
-> >>>>+		@start_addr is a DMA window offset on the IO (PCI) bus
-> >>>
-> >>>For the cause of DDW and multiple windows, I'm assuming you can call
-> >>>this multiple times with different LIOBNs and the same IOMMU group?
-> >>
-> >>
-> >>Yes. It is called twice per each group (when DDW is activated) - for 32=
-bit
-> >>and 64bit windows, this is why @start_addr is there.
-> >>
-> >>
-> >>>>diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-> >>>>index 1059846..dfa3488 100644
-> >>>>--- a/arch/powerpc/kvm/Kconfig
-> >>>>+++ b/arch/powerpc/kvm/Kconfig
-> >>>>@@ -65,6 +65,7 @@ config KVM_BOOK3S_64
-> >>>>  	select KVM
-> >>>>  	select KVM_BOOK3S_PR_POSSIBLE if !KVM_BOOK3S_HV_POSSIBLE
-> >>>>  	select SPAPR_TCE_IOMMU if IOMMU_SUPPORT
-> >>>>+	select KVM_VFIO if VFIO
-> >>>>  	---help---
-> >>>>  	  Support running unmodified book3s_64 and book3s_32 guest kernels
-> >>>>  	  in virtual machines on book3s_64 host processors.
-> >>>>diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-> >>>>index 7f7b6d8..71f577c 100644
-> >>>>--- a/arch/powerpc/kvm/Makefile
-> >>>>+++ b/arch/powerpc/kvm/Makefile
-> >>>>@@ -8,7 +8,7 @@ ccflags-y :=3D -Ivirt/kvm -Iarch/powerpc/kvm
-> >>>>  KVM :=3D ../../../virt/kvm
-> >>>>
-> >>>>  common-objs-y =3D $(KVM)/kvm_main.o $(KVM)/coalesced_mmio.o \
-> >>>>-		$(KVM)/eventfd.o $(KVM)/vfio.o
-> >>>>+		$(KVM)/eventfd.o
-> >>>
-> >>>Please don't disable the VFIO device for the non-book3s case.  I added
-> >>>it (even though it didn't do anything until now) so that libvirt
-> >>>wouldn't choke when it finds it's not available.  Obviously the new
-> >>>ioctl needs to be only for the right IOMMU setup, but the device
-> >>>itself should be available always.
-> >>
-> >>Ah. Ok, I'll fix this. I just wanted to be able to compile kvm as a mod=
-ule.
-> >>
-> >>
-> >>>>  CFLAGS_e500_mmu.o :=3D -I.
-> >>>>  CFLAGS_e500_mmu_host.o :=3D -I.
-> >>>>@@ -87,6 +87,9 @@ endif
-> >>>>  kvm-book3s_64-objs-$(CONFIG_KVM_XICS) +=3D \
-> >>>>  	book3s_xics.o
-> >>>>
-> >>>>+kvm-book3s_64-objs-$(CONFIG_KVM_VFIO) +=3D \
-> >>>>+	$(KVM)/vfio.o \
-> >>>>+
-> >>>>  kvm-book3s_64-module-objs +=3D \
-> >>>>  	$(KVM)/kvm_main.o \
-> >>>>  	$(KVM)/eventfd.o \
-> >>>>diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> >>>>index 19aa59b..63f188d 100644
-> >>>>--- a/arch/powerpc/kvm/powerpc.c
-> >>>>+++ b/arch/powerpc/kvm/powerpc.c
-> >>>>@@ -521,6 +521,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm,=
- long ext)
-> >>>>  #ifdef CONFIG_PPC_BOOK3S_64
-> >>>>  	case KVM_CAP_SPAPR_TCE:
-> >>>>  	case KVM_CAP_SPAPR_TCE_64:
-> >>>>+	case KVM_CAP_SPAPR_TCE_VFIO:
-> >>>>  	case KVM_CAP_PPC_ALLOC_HTAB:
-> >>>>  	case KVM_CAP_PPC_RTAS:
-> >>>>  	case KVM_CAP_PPC_FIXUP_HCALL:
-> >>>>diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> >>>>index 080ffbf..f1abbea 100644
-> >>>>--- a/include/uapi/linux/kvm.h
-> >>>>+++ b/include/uapi/linux/kvm.h
-> >>>>@@ -1056,6 +1056,7 @@ struct kvm_device_attr {
-> >>>>  #define  KVM_DEV_VFIO_GROUP			1
-> >>>>  #define   KVM_DEV_VFIO_GROUP_ADD			1
-> >>>>  #define   KVM_DEV_VFIO_GROUP_DEL			2
-> >>>>+#define   KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN	3
-> >>>>
-> >>>>  enum kvm_device_type {
-> >>>>  	KVM_DEV_TYPE_FSL_MPIC_20	=3D 1,
-> >>>>@@ -1075,6 +1076,14 @@ enum kvm_device_type {
-> >>>>  	KVM_DEV_TYPE_MAX,
-> >>>>  };
-> >>>>
-> >>>>+struct kvm_vfio_spapr_tce_liobn {
-> >>>>+	__u32	argsz;
-> >>>>+	__s32	fd;
-> >>>>+	__u32	liobn;
-> >>>>+	__u8	pad[4];
-> >>>>+	__u64	start_addr;
-> >>>>+};
-> >>>>+
-> >>>>  /*
-> >>>>   * ioctls for VM fds
-> >>>>   */
-> >>>>diff --git a/virt/kvm/vfio.c b/virt/kvm/vfio.c
-> >>>>index 1dd087d..87c771e 100644
-> >>>>--- a/virt/kvm/vfio.c
-> >>>>+++ b/virt/kvm/vfio.c
-> >>>>@@ -20,6 +20,10 @@
-> >>>>  #include <linux/vfio.h>
-> >>>>  #include "vfio.h"
-> >>>>
-> >>>>+#ifdef CONFIG_SPAPR_TCE_IOMMU
-> >>>>+#include <asm/kvm_ppc.h>
-> >>>>+#endif
-> >>>>+
-> >>>>  struct kvm_vfio_group {
-> >>>>  	struct list_head node;
-> >>>>  	struct vfio_group *vfio_group;
-> >>>>@@ -60,6 +64,22 @@ static void kvm_vfio_group_put_external_user(struc=
-t vfio_group *vfio_group)
-> >>>>  	symbol_put(vfio_group_put_external_user);
+> >>>>diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book=
+3s_64_vio.c
+> >>>>index 7965fc7..9417d12 100644
+> >>>>--- a/arch/powerpc/kvm/book3s_64_vio.c
+> >>>>+++ b/arch/powerpc/kvm/book3s_64_vio.c
+> >>>>@@ -33,6 +33,7 @@
+> >>>>  #include <asm/kvm_ppc.h>
+> >>>>  #include <asm/kvm_book3s.h>
+> >>>>  #include <asm/mmu-hash64.h>
+> >>>>+#include <asm/mmu_context.h>
+> >>>>  #include <asm/hvcall.h>
+> >>>>  #include <asm/synch.h>
+> >>>>  #include <asm/ppc-opcode.h>
+> >>>>@@ -317,11 +318,161 @@ fail:
+> >>>>  	return ret;
 > >>>>  }
 > >>>>
-> >>>>+static int kvm_vfio_external_user_iommu_id(struct vfio_group *vfio_g=
-roup)
+> >>>>+static long kvmppc_tce_iommu_mapped_dec(struct iommu_table *tbl,
+> >>>>+		unsigned long entry)
 > >>>>+{
-> >>>>+	int (*fn)(struct vfio_group *);
-> >>>>+	int ret =3D -1;
-> >>>
-> >>>Should this be -ESOMETHING?
-> >>>
-> >>>>+	fn =3D symbol_get(vfio_external_user_iommu_id);
-> >>>>+	if (!fn)
-> >>>>+		return ret;
+> >>>>+	struct mm_iommu_table_group_mem_t *mem =3D NULL;
+> >>>>+	const unsigned long pgsize =3D 1ULL << tbl->it_page_shift;
+> >>>>+	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
 > >>>>+
-> >>>>+	ret =3D fn(vfio_group);
+> >>>>+	if (!pua)
+> >>>>+		return H_HARDWARE;
 > >>>>+
-> >>>>+	symbol_put(vfio_external_user_iommu_id);
+> >>>>+	mem =3D mm_iommu_lookup(*pua, pgsize);
+> >>>>+	if (!mem)
+> >>>>+		return H_HARDWARE;
 > >>>>+
-> >>>>+	return ret;
+> >>>>+	mm_iommu_mapped_dec(mem);
+> >>>>+
+> >>>>+	*pua =3D 0;
+> >>>>+
+> >>>>+	return H_SUCCESS;
 > >>>>+}
 > >>>>+
-> >>>>  static bool kvm_vfio_group_is_coherent(struct vfio_group *vfio_grou=
-p)
-> >>>>  {
-> >>>>  	long (*fn)(struct vfio_group *, unsigned long);
-> >>>>@@ -110,6 +130,22 @@ static void kvm_vfio_update_coherency(struct kvm=
-_device *dev)
-> >>>>  	mutex_unlock(&kv->lock);
-> >>>>  }
-> >>>>
-> >>>>+#ifdef CONFIG_SPAPR_TCE_IOMMU
-> >>>>+static void kvm_vfio_spapr_detach_iommu_group(struct kvm *kvm,
-> >>>>+		struct vfio_group *vfio_group)
-> >>>
-> >>>
-> >>>Shouldn't this go in the same patch that introduced the attach
-> >>>function?
-> >>
-> >>Having less patches which touch different maintainers areas is better. I
-> >>cannot avoid touching both PPC KVM and VFIO in this patch but I can in
-> >>"[PATCH kernel 6/9] KVM: PPC: Associate IOMMU group with guest view of =
-TCE
-> >>table".
-> >>
-> >>
-> >>>
+> >>>>+static long kvmppc_tce_iommu_unmap(struct iommu_table *tbl,
+> >>>>+		unsigned long entry)
 > >>>>+{
-> >>>>+	int group_id;
-> >>>>+	struct iommu_group *grp;
+> >>>>+	enum dma_data_direction dir =3D DMA_NONE;
+> >>>>+	unsigned long hpa =3D 0;
 > >>>>+
-> >>>>+	group_id =3D kvm_vfio_external_user_iommu_id(vfio_group);
-> >>>>+	grp =3D iommu_group_get_by_id(group_id);
-> >>>>+	if (grp) {
-> >>>>+		kvm_spapr_tce_detach_iommu_group(kvm, grp);
-> >>>>+		iommu_group_put(grp);
+> >>>>+	if (iommu_tce_xchg(tbl, entry, &hpa, &dir))
+> >>>>+		return H_HARDWARE;
+> >>>>+
+> >>>>+	if (dir =3D=3D DMA_NONE)
+> >>>>+		return H_SUCCESS;
+> >>>>+
+> >>>>+	return kvmppc_tce_iommu_mapped_dec(tbl, entry);
+> >>>>+}
+> >>>>+
+> >>>>+long kvmppc_tce_iommu_map(struct kvm *kvm, struct iommu_table *tbl,
+> >>>>+		unsigned long entry, unsigned long gpa,
+> >>>>+		enum dma_data_direction dir)
+> >>>>+{
+> >>>>+	long ret;
+> >>>>+	unsigned long hpa, ua, *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, en=
+try);
+> >>>>+	struct mm_iommu_table_group_mem_t *mem;
+> >>>>+
+> >>>>+	if (!pua)
+> >>>>+		return H_HARDWARE;
+> >>>
+> >>>H_HARDWARE?  Or H_PARAMETER?  This essentially means the guest has
+> >>>supplied a bad physical address, doesn't it?
+> >>
+> >>Well, may be. I'll change. If it not H_TOO_HARD, it does not make any
+> >>difference after all :)
+> >>
+> >>
+> >>
+> >>>>+	if (kvmppc_gpa_to_ua(kvm, gpa, &ua, NULL))
+> >>>>+		return H_HARDWARE;
+> >>>>+
+> >>>>+	mem =3D mm_iommu_lookup(ua, 1ULL << tbl->it_page_shift);
+> >>>>+	if (!mem)
+> >>>>+		return H_HARDWARE;
+> >>>>+
+> >>>>+	if (mm_iommu_ua_to_hpa(mem, ua, &hpa))
+> >>>>+		return H_HARDWARE;
+> >>>>+
+> >>>>+	if (mm_iommu_mapped_inc(mem))
+> >>>>+		return H_HARDWARE;
+> >>>>+
+> >>>>+	ret =3D iommu_tce_xchg(tbl, entry, &hpa, &dir);
+> >>>>+	if (ret) {
+> >>>>+		mm_iommu_mapped_dec(mem);
+> >>>>+		return H_TOO_HARD;
 > >>>>+	}
-> >>>>+}
-> >>>>+#endif
 > >>>>+
-> >>>>  static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u6=
-4 arg)
-> >>>>  {
-> >>>>  	struct kvm_vfio *kv =3D dev->private;
-> >>>>@@ -186,6 +222,10 @@ static int kvm_vfio_set_group(struct kvm_device =
-*dev, long attr, u64 arg)
-> >>>>  				continue;
-> >>>>
-> >>>>  			list_del(&kvg->node);
-> >>>>+#ifdef CONFIG_SPAPR_TCE_IOMMU
+> >>>>+	if (dir !=3D DMA_NONE)
+> >>>>+		kvmppc_tce_iommu_mapped_dec(tbl, entry);
+> >>>>+
+> >>>>+	*pua =3D ua;
 > >>>
-> >>>Better to make a no-op version of the call than have to #ifdef at the
-> >>>callsite.
+> >>>IIUC this means you have a copy of the UA for every group attached to
+> >>>the TCE table, but they'll all be the same. Any way to avoid that
+> >>>duplication?
 > >>
-> >>It is questionable. A x86 reader may decide that
-> >>KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN is implemented for x86 and get
-> >>confused.
-> >>
-> >>
-> >>>
-> >>>>+			kvm_vfio_spapr_detach_iommu_group(dev->kvm,
-> >>>>+					kvg->vfio_group);
-> >>>>+#endif
-> >>>>  			kvm_vfio_group_put_external_user(kvg->vfio_group);
-> >>>>  			kfree(kvg);
-> >>>>  			ret =3D 0;
-> >>>>@@ -201,6 +241,69 @@ static int kvm_vfio_set_group(struct kvm_device =
-*dev, long attr, u64 arg)
-> >>>>  		kvm_vfio_update_coherency(dev);
-> >>>>
-> >>>>  		return ret;
-> >>>>+
-> >>>>+#ifdef CONFIG_SPAPR_TCE_IOMMU
-> >>>>+	case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN: {
-> >>>>+		struct kvm_vfio_spapr_tce_liobn param;
-> >>>>+		unsigned long minsz;
-> >>>>+		struct kvm_vfio *kv =3D dev->private;
-> >>>>+		struct vfio_group *vfio_group;
-> >>>>+		struct kvm_vfio_group *kvg;
-> >>>>+		struct fd f;
-> >>>>+
-> >>>>+		minsz =3D offsetofend(struct kvm_vfio_spapr_tce_liobn,
-> >>>>+				start_addr);
-> >>>>+
-> >>>>+		if (copy_from_user(&param, (void __user *)arg, minsz))
-> >>>>+			return -EFAULT;
-> >>>>+
-> >>>>+		if (param.argsz < minsz)
-> >>>>+			return -EINVAL;
-> >>>>+
-> >>>>+		f =3D fdget(param.fd);
-> >>>>+		if (!f.file)
-> >>>>+			return -EBADF;
-> >>>>+
-> >>>>+		vfio_group =3D kvm_vfio_group_get_external_user(f.file);
-> >>>>+		fdput(f);
-> >>>>+
-> >>>>+		if (IS_ERR(vfio_group))
-> >>>>+			return PTR_ERR(vfio_group);
-> >>>>+
-> >>>>+		ret =3D -ENOENT;
-> >>>
-> >>>Shouldn't there be some runtime test for the type of the IOMMU?  It's
-> >>>possible a kernel could be built for a platform supporting multiple
-> >>>IOMMU types.
-> >>
-> >>Well, may make sense but I do not know to test that. The IOMMU type is a
-> >>VFIO container property, not a group property and here (KVM) we only ha=
-ve
-> >>groups.
+> >>It is for every container, not a group. On P8, I allow multiple groups =
+to go
+> >>to the same container, that means that a container has one or two
+> >>iommu_table, and each iommu_table has this "ua" list but since tables a=
+re
+> >>different (window size, page size, content), these "ua" arrays are also
+> >>different.
 > >
-> >Which, as mentioned previously, is broken.
+> >Erm.. but h_put_tce iterates h_put_tce_iommu through all the groups
+> >attached to the stt, and each one seems to update pua.
+> >
+> >Or is that what the if (kg->tbl =3D=3D tbltmp) continue; is supposed to
+> >avoid?  In which case what ensures that the stt->groups list is
+> >ordered by tbl pointer?
 >=20
-> Which I am failing to follow you on this.
 >=20
-> What I am trying to achieve here is pretty much referencing a group so it
-> cannot be reused. Plus LIOBNs.
+> Nothing. In the normal case (POWER8 IODA2) all groups on the same liobn h=
+ave
+> the same iommu_table, so the first group's one gets updated, other do not
+> but it is ok as they use the same table.
 
-"Plus LIOBNs" is not a trivial change.  You are establishing a linkage
-=66rom LIOBNs to groups.  But that doesn't make sense; if mapping in one
-(guest) LIOBN affects a group it must affect all groups in the
-container.  i.e. LIOBN->container is the natural mapping, *not* LIOBN
-to group.
+Right, which is another indication that group is the wrong concept to
+use here.
 
-> Passing a container fd does not make much
-> sense here as the VFIO device would walk through groups, reference them a=
-nd
-> that is it, there is no locking on VFIO containters and so far there was =
-no
-> need to teach KVM about containers.
->=20
-> What do I miss now?
+> In a bad case (POWER7 IODA1, multiple containers per LIOBN) the same @ua =
+can
+> be updated more than once. Well, not a huge loss.
 
-Referencing the groups is essentially just a useful side effect.  The
-important functionality is informing VFIO of the guest LIOBNs; and
-LIOBNs map to containers, not groups.
+Ugh.. this really seems to be based on knowing the specific cases we
+have in practice, rather than writing code that's correct based on ly
+on the properties that the objects are defined to have.  The latter
+approach will make for much more robust and extensible code.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -389,25 +280,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---7AwgMNpd3VkAVXjS
+--AptwxgnoZDC4KQWS
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJW56XQAAoJEGw4ysog2bOSOWAQALAVeBIWtoxFNZwk/Lndgh85
-t1xLKYD57AMCyVotgl4lCDHK4GpC6pglSdN4K14gF5dho6Z9FJHkW6G2bvqilWTs
-HA7ItPS4ZIoS3KHudX27XhQWtI/Y1hWz2M910/OJrOQzGPrwb5HPbzj/YXBca4MG
-JZSsXP456ygEYbokoUVd4JH6TvYNp+OIhXl3IBydz0hiFEUGd0JYPF5C3GIUiQkE
-kf99BkfoNjhp8svpKNUcesFqyzlawMKrsv3O8n/qit89b4wwgiNX/B6WQ4CBXxdW
-n2QUxerYpTs9H6YyX9kHWULMaEQCe0QkItaT24EnEz5UkLsR++2rsfPpQ1ycjrcs
-Z80IBmtS1Ur91IX8WQiM75Af7ewofJJCiwhu3TwrxakDQQMx4RLFP//lQUKAuCtK
-07OHcB2Rhj/OBbumfKATspfhh1xeqTgp0RQPMNEjEi09ahaNcjtkTilRsdRv2Y8v
-QLljrtMCgPhGQG5vOd8zFfzIggIZ8jWOl7f4c7+wiJAfuIMLuyvN9FInUcl9bQP1
-94Ryy2CpP1ewQm1ET63M0hG6ObuEDhhYZps/vov1ENtqEOrlxOxTM8pJ4RybeWn6
-Ut4Y2FJL5UMr7q54muBbH6a+6V3k8Vc5JqsRN8uxPex4SnR086IOvejHZ9MZXi/z
-dmh1aL+NLwmZr4ArEckC
-=QQ+O
+iQIcBAEBAgAGBQJW56T4AAoJEGw4ysog2bOSacEQAKkqFl5C1ErTaoYBmqYxqb/p
+yh6FtAmJ6T0hmSMlaE8q2Z4cPzGC8F4Qezp279oXuK9ULQWrxSXR/d7KTi2sydw2
+LkfnBk2Q3b9eAJLveabKn9+m56MPRZu25Ign4ONoQb67YqtPItt+DVbEC/qfsXr4
+R/EMBtCuxGzDXB/YqWR74rt2sXSuwVb8KWEJRjWCI5LZD05Y/HpzgGzkdqgYVdej
++mYWu5mfE/p18a9IxvzT5i6pa0y9s42/xRfoAC7xqNctY6aVoNfX0XDr2dJuwX22
+x0yQgKNoh2YC0UeVWPG5++5nxRu0CrAgBi84mkeUX93UcLJHFggu+pe408ybJwnk
+1pEgYa9tQUtCIB4lA+7hf4MDsVGpBBhumcsLaegFR0i0/QrinTACkUOzUu0Mslsv
+/sISUbZEQahS+7Iv0kWmjJreWVLThI9+aL7hszLHZ7ecWG3zOw+YAWVa3O77ILIr
+zP2V4V07mX4czTALhyWyhLB1cdvImnduyyl11HqOr13iIbVeQXggcCPS1TFJqY6I
+oLKY0UAzAOsYtwVIZr2YOEfmUjG7QFopPeAPTQZRbwYzHnm5y88RcD9fjyaheCsh
+bJzpukv2MpdDt6XFWHplm39MfsJlB6AdryUmZeL/gKyn6kWDYXhOiSnelRuk6VNl
+7FcokCZmF4IJbtdz2ToJ
+=wkNC
 -----END PGP SIGNATURE-----
 
---7AwgMNpd3VkAVXjS--
+--AptwxgnoZDC4KQWS--
