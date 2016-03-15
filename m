@@ -1,22 +1,16 @@
-Return-Path: <ruscur@russell.cc>
-Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qPNl12Zs3zDqGh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 16:41:01 +1100 (AEDT)
-Message-ID: <1458020454.30802.5.camel@russell.cc>
-Subject: Re: [PATCH] powernv/hmi: Use the "unknown" checkstop type as a
- fallback
-From: Russell Currey <ruscur@russell.cc>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Date: Tue, 15 Mar 2016 16:40:54 +1100
-In-Reply-To: <56E79F56.6050006@au1.ibm.com>
-References: <1458012409-32448-1-git-send-email-ruscur@russell.cc>
- <56E787FE.1060104@au1.ibm.com> <1458018919.30802.4.camel@russell.cc>
- <56E79F56.6050006@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qPPkx6bh7zDq7K
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2016 17:26:01 +1100 (AEDT)
+From: Scott Wood <oss@buserror.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Scott Wood <oss@buserror.net>,
+ Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Tue, 15 Mar 2016 01:25:51 -0500
+Message-Id: <1458023151-32066-1-git-send-email-oss@buserror.net>
+Subject: [PATCH] powerpc/8xx: Fix do_mtspr_cpu6 build on older compilers
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,20 +20,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-03-15 at 16:36 +1100, Andrew Donnellan wrote:
-> On 15/03/16 16:15, Russell Currey wrote:
-> > 
-> > > 
-> > > Would it be useful to print xstop_type in the unknown case?
-> > I don't think so - if there's a new checkstop type, specific handling
-> > for
-> > it should be implemented in the kernel, and if you're getting unknown
-> > checkstops that are bringing down your machine you should be looking at
-> > the
-> > OPAL firmware log anyway, which would contain details if there was
-> > something "new".
-> That's fair, would primarily help debugging in the rather corner case of 
-> new skiboot, old kernel, and no access to the OPAL log...
-> 
-I think if you don't have access to the OPAL log, finding out what number
-OPAL sent isn't going to help you.
+Some versions of GCC, reportedly before 4.9, fail with
+arch/powerpc/mm/8xx_mmu.c:139:2: error: memory input 1 is not directly
+addressable
+
+Use a register constraint instead of a memory constraint to avoid this.
+Also change the one-element array into a simple variable.
+
+Signed-off-by: Scott Wood <oss@buserror.net>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+Christope, could you test?  And was there any particular reason for the [1]?
+
+ arch/powerpc/include/asm/reg_8xx.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/reg_8xx.h b/arch/powerpc/include/asm/reg_8xx.h
+index d41412c..cb7dfb9 100644
+--- a/arch/powerpc/include/asm/reg_8xx.h
++++ b/arch/powerpc/include/asm/reg_8xx.h
+@@ -53,11 +53,11 @@
+ #ifdef CONFIG_8xx_CPU6
+ #define do_mtspr_cpu6(rn, rn_addr, v)	\
+ 	do {								\
+-		int _reg_cpu6 = rn_addr, _tmp_cpu6[1];		\
+-		asm volatile("stw %0, %1;"				\
+-			     "lwz %0, %1;"				\
++		int _reg_cpu6 = rn_addr, _tmp_cpu6;		\
++		asm volatile("stwx %0, 0, %1;"				\
++			     "lwzx %0, 0, %1;"				\
+ 			     "mtspr " __stringify(rn) ",%2" :		\
+-			     : "r" (_reg_cpu6), "m"(_tmp_cpu6),		\
++			     : "r" (_reg_cpu6), "r" (&_tmp_cpu6),	\
+ 			       "r" ((unsigned long)(v))			\
+ 			     : "memory");				\
+ 	} while (0)
+-- 
+2.5.0
