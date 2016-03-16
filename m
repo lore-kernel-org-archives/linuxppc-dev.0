@@ -2,24 +2,30 @@ Return-Path: <bsingharora@gmail.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qQSyv6Mx1zDq6T
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 10:55:03 +1100 (AEDT)
-Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
- [IPv6:2607:f8b0:400e:c00::230])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qQT1203fKzDq70
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 10:56:54 +1100 (AEDT)
+Received: from mail-pf0-x232.google.com (mail-pf0-x232.google.com
+ [IPv6:2607:f8b0:400e:c00::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qQSyv2n4Dz9t0t
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Mar 2016 10:55:03 +1100 (AEDT)
-Received: by mail-pf0-x230.google.com with SMTP id n5so94301262pfn.2
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2016 16:55:03 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/mm: Remove long disabled SLB code
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <1458125780-22841-1-git-send-email-mpe@ellerman.id.au>
+ by ozlabs.org (Postfix) with ESMTPS id 3qQT113ZCvz9t3Y
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Mar 2016 10:56:53 +1100 (AEDT)
+Received: by mail-pf0-x232.google.com with SMTP id 124so94661181pfg.0
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2016 16:56:53 -0700 (PDT)
+Subject: Re: [v3,1/8] powerpc: Create a helper for getting the kernel toc value
+To: Torsten Duwe <duwe@lst.de>, Michael Ellerman <mpe@ellerman.id.au>
+References: <3qNsms00H7z9snl@ozlabs.org>
+ <alpine.LNX.2.00.1603150220231.3656@cbobk.fhfr.pm>
+ <1458123799.27361.3.camel@ellerman.id.au> <20160316145851.GA15870@lst.de>
+Cc: pmladek@suse.com, jeyu@redhat.com, Jiri Kosina <jikos@kernel.org>,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+ live-patching@vger.kernel.org, mbenes@suse.cz
 From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <56E9F251.7070005@gmail.com>
-Date: Thu, 17 Mar 2016 10:54:57 +1100
+Message-ID: <56E9F2BD.2050504@gmail.com>
+Date: Thu, 17 Mar 2016 10:56:45 +1100
 MIME-Version: 1.0
-In-Reply-To: <1458125780-22841-1-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <20160316145851.GA15870@lst.de>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,19 +38,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 16/03/16 21:56, Michael Ellerman wrote:
-> We have a bunch of SLB related code in the tree which is there to handle
-> dynamic VSIDs - but currently it's all disabled at compile time. The
-> comments say "Keep that around for when we re-implement dynamic VSIDs".
+On 17/03/16 01:58, Torsten Duwe wrote:
+> On Wed, Mar 16, 2016 at 09:23:19PM +1100, Michael Ellerman wrote:
+>> Sure. I'll try and get something working, though this merge window is not
+>> starting well so I may not get time for a few weeks :)
+> Do you already have something in mind?
+> Can you give us a hint?
 >
-> But that was over 10 years ago (commit 3c726f8dee6f ("[PATCH] ppc64:
-> support 64k pages")). The chance that it would still work unchanged is
-> minimal, and in the meantime it's confusing to folks browsing/grepping
-> the code. If we ever want to re-instate it, it's in the git history.
-and older kernels :)
 >
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->
-Makes sense, given that none of the code is exercised, it makes sense to remove it or keep it tested and updated. Removal makes more sense
+We need extra space in the stack, it can be on top of the stack with a pointer in PACA, we could use a fixed set size stack for only LR restore, if required TOC restore, but I think we only need LR space
 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+Balbir Singh.
