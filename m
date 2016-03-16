@@ -1,18 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qQ6zc3cYlzDr4L
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 21:24:28 +1100 (AEDT)
-In-Reply-To: <20160315130750.0E43C1A2375@localhost.localdomain>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qQ6zf3BMXzDr7r
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 21:24:30 +1100 (AEDT)
+In-Reply-To: <1458095370-26731-1-git-send-email-cyrilbur@gmail.com>
+To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [v2] powerpc/8xx: Fix do_mtspr_cpu6 build on older compilers
-Message-Id: <3qQ6zc2Nqrz9sRB@ozlabs.org>
-Date: Wed, 16 Mar 2016 21:24:28 +1100 (AEDT)
+Subject: Re: powerpc: Fix possible unrecoverable exception caused by '70fe3d9'
+Message-Id: <3qQ6zf1Kq9z9sDH@ozlabs.org>
+Date: Wed, 16 Mar 2016 21:24:30 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,18 +19,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-15-03 at 13:07:49 UTC, Christophe Leroy wrote:
-> Some versions of GCC, reportedly before 4.8, fail with
-> arch/powerpc/mm/8xx_mmu.c:139:2: error: memory input 1 is not directly
-> addressable
+On Wed, 2016-16-03 at 02:29:30 UTC, Cyril Bur wrote:
+> Commit 70fe3d9 "powerpc: Restore FPU/VEC/VSX if previously used" introduces a
+> call to restore_math() late in the syscall return path, after MSR_RI has been
+> cleared. The MSR_RI flag is used to indicate whether the kernel can take
+> another exception or not. A cleared MSR_RI flag indicates that the kernel
+> cannot.
 > 
-> Change the one-element array into a simple variable to avoid this.
+> Unfortunately when a machine is under high load an SLB miss can occur in
+> restore_math() which (with MSR_RI cleared) leads to an unrecoverable exception.
+...
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Cc: Scott Wood <oss@buserror.net>
+> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/2e098dcee6208a690f73e11feb
+https://git.kernel.org/powerpc/c/6e669f085d595cb6053920832c
 
 cheers
