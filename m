@@ -1,39 +1,29 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <duwe@lst.de>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qQD9x1NBFzDq70
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 01:18:44 +1100 (AEDT)
-Received: from localhost
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Wed, 16 Mar 2016 11:18:40 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id E0E103520077
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 10:18:26 -0400 (EDT)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2GDIkvM12779820
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 10:18:46 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2GEIZhs024795
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 11:18:36 -0300
-Subject: Re: [PATCH v2] powerpc/pci: Assign fixed PHB number based on
- device-tree properties
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1458082481-29916-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <20160316011715.GA4071@gwshan>
-Cc: mikey@neuling.org, linux-pci@vger.kernel.org, paulus@samba.org,
- imunsie@au1.ibm.com, andrew.donnellan@au1.ibm.com, bhelgaas@google.com,
- linuxppc-dev@lists.ozlabs.org
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Message-ID: <56E96B3B.50600@linux.vnet.ibm.com>
-Date: Wed, 16 Mar 2016 11:18:35 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qQF4H4pvmzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 01:58:55 +1100 (AEDT)
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3qQF4H1dk8z9t3V
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Mar 2016 01:58:54 +1100 (AEDT)
+Date: Wed, 16 Mar 2016 15:58:51 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Jiri Kosina <jikos@kernel.org>, linuxppc-dev@ozlabs.org,
+ pmladek@suse.com, jeyu@redhat.com, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com,
+ live-patching@vger.kernel.org, mbenes@suse.cz
+Subject: Re: [v3,1/8] powerpc: Create a helper for getting the kernel toc value
+Message-ID: <20160316145851.GA15870@lst.de>
+References: <3qNsms00H7z9snl@ozlabs.org>
+ <alpine.LNX.2.00.1603150220231.3656@cbobk.fhfr.pm>
+ <1458123799.27361.3.camel@ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20160316011715.GA4071@gwshan>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1458123799.27361.3.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,10 +33,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks very much for the comments Gavin! I agree with all of them, will 
-rework the patch and send a new version.
+On Wed, Mar 16, 2016 at 09:23:19PM +1100, Michael Ellerman wrote:
+> 
+> Sure. I'll try and get something working, though this merge window is not
+> starting well so I may not get time for a few weeks :)
 
-Cheers,
+Do you already have something in mind?
+Can you give us a hint?
 
-
-Guilherme
+	Torsten
