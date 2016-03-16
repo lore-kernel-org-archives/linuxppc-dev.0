@@ -2,9 +2,9 @@ Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qQH7h1N5mzDr39
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 03:32:00 +1100 (AEDT)
-Date: Wed, 16 Mar 2016 10:31:51 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qQH801d9kzDr4l
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 03:32:16 +1100 (AEDT)
+Date: Wed, 16 Mar 2016 10:32:07 -0600
 From: Alex Williamson <alex.williamson@redhat.com>
 To: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -13,12 +13,12 @@ Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
  aik@ozlabs.ru, benh@kernel.crashing.org, paulus@samba.org,
  mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
  zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com
-Subject: Re: [RFC PATCH v4 3/7] PCI: Ignore resource_alignment if
- PCI_PROBE_ONLY was set
-Message-ID: <20160316103151.0269f0c5@t450s.home>
-In-Reply-To: <1457336918-3893-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v4 7/7] powerpc/powernv/pci-ioda: Add
+ IOMMU_CAP_INTR_REMAP for IODA host bridge
+Message-ID: <20160316103207.6fffb9b5@t450s.home>
+In-Reply-To: <1457336918-3893-8-git-send-email-xyjxie@linux.vnet.ibm.com>
 References: <1457336918-3893-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1457336918-3893-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1457336918-3893-8-git-send-email-xyjxie@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,53 +30,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon,  7 Mar 2016 15:48:34 +0800
+On Mon,  7 Mar 2016 15:48:38 +0800
 Yongji Xie <xyjxie@linux.vnet.ibm.com> wrote:
 
-> The resource_alignment will releases memory resources
-> allocated by firmware so that kernel can reassign new
-> resources later on. But this will cause the problem
-> that no resources can be allocated by kernel if
-> PCI_PROBE_ONLY was set, e.g. on pSeries platform
-> because PCI_PROBE_ONLY force kernel to use firmware
-> setup and not to reassign any resources.
-> 
-> To solve this problem, this patch ignores
-> resource_alignment if PCI_PROBE_ONLY was set.
+> This patch adds IOMMU_CAP_INTR_REMAP for IODA host bridge so that
+> we can mmap MSI-X table in vfio driver.
 > 
 > Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 > ---
->  Documentation/kernel-parameters.txt |    2 ++
->  drivers/pci/probe.c                 |    3 ++-
->  2 files changed, 4 insertions(+), 1 deletion(-)
+>  arch/powerpc/platforms/powernv/pci-ioda.c |   17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
 > 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index d8b29ab..8028631 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -2922,6 +2922,8 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->  				windows need to be expanded.
->  				noresize: Don't change the resources' sizes when
->  				reassigning alignment.
-> +				Note that this option will not work if
-> +				PCI_PROBE_ONLY is set.
-
-How would a user have any idea if this is set?
-
->  		ecrc=		Enable/disable PCIe ECRC (transaction layer
->  				end-to-end CRC checking).
->  				bios: Use BIOS/firmware settings. This is the
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index 6d7ab9b..bc31cad 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -1719,7 +1719,8 @@ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
->  	pci_fixup_device(pci_fixup_header, dev);
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index f90dc04..f01b9ab 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1955,6 +1955,20 @@ static struct iommu_table_ops pnv_ioda2_iommu_ops = {
+>  	.free = pnv_ioda2_table_free,
+>  };
 >  
->  	/* moved out from quirk header fixup code */
-> -	pci_reassigndev_resource_alignment(dev);
-> +	if (!pci_has_flag(PCI_PROBE_ONLY))
-> +		pci_reassigndev_resource_alignment(dev);
+> +static bool pnv_ioda_iommu_capable(enum iommu_cap cap)
+> +{
+> +	switch (cap) {
+> +	case IOMMU_CAP_INTR_REMAP:
+> +		return true;
+> +	default:
+> +		return false;
+> +	}
+> +}
+> +
+> +static struct iommu_ops pnv_ioda_iommu_ops = {
+> +	.capable = pnv_ioda_iommu_capable,
+> +};
+> +
+>  static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>  				      struct pnv_ioda_pe *pe, unsigned int base,
+>  				      unsigned int segs)
+> @@ -3078,6 +3092,9 @@ static void pnv_pci_ioda_fixup(void)
 >  
->  	/* Clear the state_saved flag. */
->  	dev->state_saved = false;
+>  	/* Link NPU IODA tables to their PCI devices. */
+>  	pnv_npu_ioda_fixup();
+> +
+> +	/* Add IOMMU_CAP_INTR_REMAP */
+> +	bus_set_iommu(&pci_bus_type, &pnv_ioda_iommu_ops);
+>  }
+>  
+>  /*
+
+
+Doesn't this set you up for a world of hurt?  bus_set_iommu() calls
+iommu_bus_init() which sets up notifiers, which maybe you don't care
+about, but it also means that iommu_domain_alloc(&pci_bus_type) will
+segfault because you're not providing a domain_alloc callback here.
