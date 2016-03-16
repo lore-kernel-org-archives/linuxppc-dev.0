@@ -1,29 +1,39 @@
-Return-Path: <andy.shevchenko@gmail.com>
-Received: from mail-oi0-x236.google.com (mail-oi0-x236.google.com
- [IPv6:2607:f8b0:4003:c06::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qQ83C4RCTzDqGd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 22:12:39 +1100 (AEDT)
-Received: by mail-oi0-x236.google.com with SMTP id m82so35633870oif.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 04:12:39 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qQ8hl59k9zDqGd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 22:41:43 +1100 (AEDT)
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Wed, 16 Mar 2016 11:41:39 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id C7ABC1B085E7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 11:33:08 +0000 (GMT)
+Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
+ [9.149.37.217])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2GBWdWi65339576
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 11:32:39 GMT
+Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2GBWdSk005805
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 07:32:39 -0400
+Subject: Re: [PATCH next] cxl: Allow PSL timebase to not sync
+To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
+ <mikey@neuling.org>, imunsie@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
+References: <1457983772-4206-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+ <1458001649.12098.59.camel@neuling.org>
+ <1458014186.8059.5.camel@ellerman.id.au>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Message-ID: <56E94456.8070605@linux.vnet.ibm.com>
+Date: Wed, 16 Mar 2016 12:32:38 +0100
 MIME-Version: 1.0
-In-Reply-To: <15874870.hBfxUomX5V@wuerfel>
-References: <20160315174634.6766cd88@canb.auug.org.au>
- <20160315161901.GA2713@sudip-laptop>
- <20160315162228.GP17923@kvack.org> <15874870.hBfxUomX5V@wuerfel>
-Date: Wed, 16 Mar 2016 13:12:36 +0200
-Message-ID: <CAHp75VcxkBTSKY_bVg3jaUPUtcyxKZ14sbu=uJK403xRmTYbbQ@mail.gmail.com>
-Subject: Re: linux-next: build failure after merge of the aio tree
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org, Benjamin LaHaise <bcrl@kvack.org>,
- Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-next <linux-next@vger.kernel.org>,
- Al Viro <viro@zeniv.linux.org.uk>, Christoph Hellwig <hch@lst.de>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1458014186.8059.5.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,41 +43,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 16, 2016 at 12:02 AM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Tuesday 15 March 2016 12:22:28 Benjamin LaHaise wrote:
->> On Tue, Mar 15, 2016 at 04:19:02PM +0000, Sudip Mukherjee wrote:
->> > On Tue, Mar 15, 2016 at 05:46:34PM +1100, Stephen Rothwell wrote:
->> > > Hi Benjamin,
->> > >
->> > > After merging the aio tree, today's linux-next build (powerpc
->> > > ppc44x_defconfig) failed like this:
->> > >
->> > > fs/built-in.o: In function `aio_thread_op_foo_at':
->> > > aio.c:(.text+0x4dab4): undefined reference to `__get_user_bad'
->> > > aio.c:(.text+0x4daec): undefined reference to `__get_user_bad'
->> > >
->> > > Caused by commit
->> > >
->> > >   150a0b4905f1 ("aio: add support for async openat()")
->> > >
->> > > despite commit
->> > >
->> > >   d2f7a973e11e ("aio: don't use __get_user() for 64 bit values")
->> > >
 
->> I've removed everything from the aio-next.git tree for now.  Will revisit
->> after the merge window.
+Le 15/03/2016 04:56, Michael Ellerman a écrit :
+> And it just sounds like a big hack around broken hardware, which we'll have to
+> carry for the foreseeable future.
 
-I think it is the best solution right now.
+I discussed with Mikey about what would be acceptable here. There's 
+basically no good solution. No matter how we workaround the issue, we'll 
+have to pay a price in the future.
+Removing the psl timebase sync code is not desirable either as we cannot 
+be 100% sure it's not being used by someone (on the cards where it works).
+So our only option at this point is to just keep debugging the 
+problematic setups to come up with the real fix. In the meantime, this 
+patch can be dropped.
 
-> I've also sent a patch that fixes the link error on ARM and that should
-> work on all other architectures too.
 
-In case of avr32 signalfd_read() fails. Does your patch help with it as well?
-
-P.S. Bisecting shows same culprit: 150a0b4905f1 ("aio: add support for
-async openat()")
-
--- 
-With Best Regards,
-Andy Shevchenko
+   Fred
