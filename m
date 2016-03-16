@@ -2,16 +2,13 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qQ6zg6G9bzDr2d
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 21:24:31 +1100 (AEDT)
-In-Reply-To: <1458024458-19206-1-git-send-email-oss@buserror.net>
-To: Scott Wood <oss@buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qQ7F868CRzDqW7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2016 21:36:12 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- chenhui.zhao@freescale.com
-Subject: Re: powerpc/book3e-64: Use hardcoded mttmr opcode
-Message-Id: <3qQ6zg5H2dz9sdQ@ozlabs.org>
-Date: Wed, 16 Mar 2016 21:24:31 +1100 (AEDT)
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/2] powerpc: Remove orphaned asm implementation of abs()
+Date: Wed, 16 Mar 2016 21:36:05 +1100
+Message-Id: <1458124566-17763-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,15 +18,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-15-03 at 06:47:38 UTC, Scott Wood wrote:
-> This preserves the ability to build using older binutils (reportedly <=
-> 2.22).
-> 
-> Signed-off-by: Scott Wood <oss@buserror.net>
-> Cc: chenhui.zhao@freescale.com
+This has been unused since ~2004, remove it.
 
-Applied to powerpc next, thanks.
+Reported-by: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/misc_32.S | 6 ------
+ 1 file changed, 6 deletions(-)
 
-https://git.kernel.org/powerpc/c/7a25d91214cb22e642b9ed6e44
-
-cheers
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index be8edd67f05b..c0cd779adfc3 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -684,12 +684,6 @@ _GLOBAL(__bswapdi2)
+ 	mr      r4,r10
+ 	blr
+ 
+-_GLOBAL(abs)
+-	srawi	r4,r3,31
+-	xor	r3,r3,r4
+-	sub	r3,r3,r4
+-	blr
+-
+ #ifdef CONFIG_SMP
+ _GLOBAL(start_secondary_resume)
+ 	/* Reset stack */
+-- 
+2.5.0
