@@ -1,49 +1,34 @@
-Return-Path: <robh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qQx0l0xT1zDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 04:58:14 +1100 (AEDT)
-Received: from mail.kernel.org (localhost [127.0.0.1])
- by mail.kernel.org (Postfix) with ESMTP id 03F0C201B9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 17:58:12 +0000 (UTC)
-Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
- [209.85.161.181])
- (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 0086E20328
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 17:58:10 +0000 (UTC)
-Received: by mail-yw0-f181.google.com with SMTP id g127so109867913ywf.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 10:58:09 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <4107975.rId64mooHz@wuerfel>
-References: <1457518131-11339-1-git-send-email-yangbo.lu@nxp.com>
- <1457518131-11339-4-git-send-email-yangbo.lu@nxp.com>
- <20160317170640.GB21009@rob-hp-laptop> <4107975.rId64mooHz@wuerfel>
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 17 Mar 2016 12:57:49 -0500
-Message-ID: <CAL_JsqL8NkEQx2NoVHSUGYhtNsybCo-yfBCde+_OuMmfwbhYEw@mail.gmail.com>
-Subject: Re: [v6, 3/5] dt: move guts devicetree doc out of powerpc directory
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Yangbo Lu <yangbo.lu@nxp.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-clk <linux-clk@vger.kernel.org>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- Linux IOMMU <iommu@lists.linux-foundation.org>,
- netdev <netdev@vger.kernel.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, scott.wood@nxp.com,
- Russell King <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>,
- Joerg Roedel <joro@8bytes.org>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- Ulf Hansson <ulf.hansson@linaro.org>,
- Bhupesh Sharma <bhupesh.sharma@freescale.com>,
- Zhao Qiang <qiang.zhao@freescale.com>,
- Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- leoyang.li@nxp.com, xiaobo.xie@nxp.com
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qQz8z5J3YzDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 06:35:31 +1100 (AEDT)
+Date: Thu, 17 Mar 2016 12:35:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Jiri Kosina <jikos@kernel.org>, kbuild test robot <lkp@intel.com>,
+ kbuild-all@01.org, Peter Zijlstra <peterz@infradead.org>, Steven Rostedt
+ <rostedt@goodmis.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Daniel
+ Thompson <daniel.thompson@linaro.org>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-cris-kernel@axis.com,
+ linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, David Howells <dhowells@redhat.com>, Koichi
+ Yasutake <yasutake.koichi@jp.panasonic.com>, linux-am33-list@redhat.com
+Subject: Re: [PATCH v2 1/5] printk/nmi: Generic solution for safe printk in NMI
+Message-Id: <20160317123527.6346bce3284509849d061eaa@linux-foundation.org>
+In-Reply-To: <20151204165744.GD20935@pathway.suse.cz>
+References: <1448622572-16900-2-git-send-email-pmladek@suse.com>
+ <201511271919.aEZuZKNe%fengguang.wu@intel.com>
+ <20151127153804.GC2648@pathway.suse.cz>
+ <alpine.LNX.2.00.1512020022460.32500@pobox.suse.cz>
+ <20151204165744.GD20935@pathway.suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,40 +38,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 17, 2016 at 12:11 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Thursday 17 March 2016 12:06:40 Rob Herring wrote:
->> > diff --git a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt b/Documentation/devicetree/bindings/soc/fsl/guts.txt
->> > similarity index 91%
->> > rename from Documentation/devicetree/bindings/powerpc/fsl/guts.txt
->> > rename to Documentation/devicetree/bindings/soc/fsl/guts.txt
->> > index b71b203..07adca9 100644
->> > --- a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt
->> > +++ b/Documentation/devicetree/bindings/soc/fsl/guts.txt
->> > @@ -25,6 +25,9 @@ Recommended properties:
->> >   - fsl,liodn-bits : Indicates the number of defined bits in the LIODN
->> >     registers, for those SOCs that have a PAMU device.
->> >
->> > + - little-endian : Indicates that the global utilities block is little
->> > +   endian. The default is big endian.
->>
->> The default is "the native endianness of the system".
->
-> This may be what is currently documented, but not what we are doing
-> in practice, as there is no "native endianess" for either PowerPC or
-> ARM -- both allow running big-endian or little-endian kernels and the
-> device registers are fixed.
+On Fri, 4 Dec 2015 17:57:44 +0100 Petr Mladek <pmladek@suse.com> wrote:
 
-Notice I said system, not architecture. The way the device registers
-are fixed is what I mean by native endianness.
+> On Wed 2015-12-02 00:24:49, Jiri Kosina wrote:
+> > On Fri, 27 Nov 2015, Petr Mladek wrote:
+> > 
+> > > MN10300 has its own implementation for entering and exiting NMI 
+> > > handlers. It does not call nmi_enter() and nmi_exit(). Please, find 
+> > > below an updated patch that adds printk_nmi_enter() and 
+> > > printk_nmi_exit() to the custom entry points. Then we could add HAVE_NMI 
+> > > to arch/mn10300/Kconfig and avoid the above warning.
+> > 
+> > Hmm, so what exactly would go wrong if MN10300 (whatever that architecture 
+> > is) would call nmi_enter() and nmi_exit() at the places where it's 
+> > starting and finishing NMI handler?
+> > 
+> > >From a cursory look, it seems like most (if not all) of the things called 
+> > from nmi_{enter,exit}() would be nops there anyway.
+> 
+> Good point. Max mentioned in the other main that the NMI handler
+> should follow the NMI ruler. I do not why it could not work.
+> In fact, it might improve things, e.g. nmi_enter() blocks
+> recursive NMIs.
+> 
+> I think that it will move it into a separate patch, thought.
+> 
 
-If the purpose of adding this property now is to support GUTS on the
-ARM SoCs, then I'd argue using this property is probably wrong. If the
-PPC systems are designed with BE device registers and ARM systems with
-LE, then this property is not needed.
+I've sort of lost the plot on this patchset.
 
-> I think the property here is fine.
+I know Daniel had concerns (resolved?).  Sergey lost the ability to
+perform backtraces and has a proposed fix ("printk/nmi: restore
+printk_func in nmi_panic") but that wasn't fully resolved and I didn't
+merge anything.  I'm not sure what Jan's thinking is on it all.
 
-Unless you have studied the FSL ARM based SoCs, then there is not
-enough information here to tell.
+So... I'll retain 
 
-Rob
+printk-nmi-generic-solution-for-safe-printk-in-nmi.patch
+printk-nmi-use-irq-work-only-when-ready.patch
+printk-nmi-warn-when-some-message-has-been-lost-in-nmi-context.patch
+printk-nmi-increase-the-size-of-nmi-buffer-and-make-it-configurable.patch
+
+in -mm for now.  Perhaps I should drop them all and we start again
+after -rc1?
