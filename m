@@ -1,20 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qQXwC3QPWzDqHw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 13:52:59 +1100 (AEDT)
-Message-ID: <1458183179.7475.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Fix possible unrecoverable exception caused by
- '70fe3d9'
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: benh@au1.ibm.com, Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@ozlabs.org
-Date: Thu, 17 Mar 2016 13:52:59 +1100
-In-Reply-To: <1458128720.3107.66.camel@au1.ibm.com>
-References: <1458095370-26731-1-git-send-email-cyrilbur@gmail.com>
- <1458128720.3107.66.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qQZ793VVXzDqW7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 14:47:33 +1100 (AEDT)
+Message-ID: <1458186445.19333.3.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: luigi burdo <intermediadc@hotmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "matthew@a-eon.com" <matthew@a-eon.com>, Trevor Dickinson
+ <contact@a-eon.com>, Christian Zigotzky <chzigotzky@xenosoft.de>
+Date: Wed, 16 Mar 2016 22:47:25 -0500
+In-Reply-To: <DUB406-EAS2759FE0784777D029FB586BC88A0@phx.gbl>
+References: <DUB117-W18044BE969CC05E69F545CC8BA0@phx.gbl>
+ <1457482205.5360.114.camel@buserror.net>
+ <DUB117-W1369999A718E6C0B33E4DC8C8B30@phx.gbl>
+ <DUB117-W6931726DAC4EB1D528591DC8B40@phx.gbl>
+ <1458081467.12370.31.camel@buserror.net>
+ <DUB406-EAS2759FE0784777D029FB586BC88A0@phx.gbl>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Subject: Re: Freescale P5020 cpu will be kvm-pr?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-03-16 at 22:45 +1100, Benjamin Herrenschmidt wrote:
+On Wed, 2016-03-16 at 07:24 +0100, luigi burdo wrote:
+> hi Scott,
+> the P5020 mmu is signed by the kernel no book3e found 
 
-> On Wed, 2016-03-16 at 13:29 +1100, Cyril Bur wrote:
+I don't understand this sentence.
 
-> > +#ifdef CONFIG_PPC_BOOK3S
-> > +       ld      r10,PACAKMSR(r13)
-> > +       li      r9,MSR_RI
-> > +       andc    r11,r10,r9 /* Re-clear RI */
-> > +       mtmsrd  r11,1
-> > +#endif
->
-> Do you need that ? IE, mtmsrd with "1" will only update RI and EE, is
-> the value of EE in PACAMSR variable ?
+> kvm ppc64 crash if run by qemu.
 
-Yeah that's a bit brain dead when you look at it. But in Cyril's defence he
-just copied it from the existing code.
+You didn't show that log.
 
-PACAKMSR does not include EE, so the code is correct, just suboptimal.
+> in the kernel( 4.5 too)all is enabled we had a base .config by freescale/nix
+> where kvm options and book3e  where enabled.
 
-I've already merged it though in my rush to get my next branch working. Cyril
-is looking at reworking the EE/RI clearing in there so we'll fix it up as part
-of that.
+You should start with corenet64_smp_defconfig, and enable KVM options plus
+PPC_QEMU_E500.
 
-cheers
+> my suspect is this can be an generated issue by  the host uboot
+
+Host U-Boot has nothing to do with KVM.
+
+>  or a missed tdb parameter and not a linux kernel problem.
+
+What is tdb?
+
+-Scott
