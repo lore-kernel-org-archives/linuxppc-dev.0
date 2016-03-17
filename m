@@ -1,23 +1,46 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <robdclark@gmail.com>
+Received: from mail-yw0-x22c.google.com (mail-yw0-x22c.google.com
+ [IPv6:2607:f8b0:4002:c05::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qR1bR1rMpzDq6T
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 08:25:07 +1100 (AEDT)
-Date: Thu, 17 Mar 2016 22:15:34 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
- mahesh@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com
-Subject: Re: [PATCH 2/3] powerpc/powernv: Encapsulate idle preparation steps
- in a macro
-Message-ID: <20160317111534.GD28728@fergus.ozlabs.ibm.com>
-References: <1456748580-10519-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1456748580-10519-3-git-send-email-shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qR1cJ2JHRzDr35
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 08:25:52 +1100 (AEDT)
+Received: by mail-yw0-x22c.google.com with SMTP id g3so116806833ywa.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 14:25:52 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1456748580-10519-3-git-send-email-shreyas@linux.vnet.ibm.com>
+In-Reply-To: <20160317211910.GB2611@joana>
+References: <1458235817-28375-1-git-send-email-gustavo@padovan.org>
+ <1458235817-28375-2-git-send-email-gustavo@padovan.org>
+ <1458236486.9556.11.camel@perches.com>
+ <20160317180523.GA2619@joana> <20160317184318.GA2611@joana>
+ <1458246150.9556.17.camel@perches.com>
+ <CAF6AEGvQa8SOWCtoEfcFAxz6MQ0Nqc-ktqNCdfJU-32-m-mCEQ@mail.gmail.com>
+ <1458247207.9556.28.camel@perches.com>
+ <CAF6AEGuzr2Vm_yngN7WcoeMLiiqb8B+kEBaNaPNqXdV2ZC-u-Q@mail.gmail.com>
+ <1458249003.9556.30.camel@perches.com>
+ <20160317211910.GB2611@joana>
+Date: Thu, 17 Mar 2016 17:25:49 -0400
+Message-ID: <CAF6AEGuaLLx1iEeDyfc3WNunp6md-OjBothY8Fw_FMo0eGoP3Q@mail.gmail.com>
+Subject: Re: [PATCH v9 2/3] kernel.h: add to_user_ptr()
+From: Rob Clark <robdclark@gmail.com>
+To: Gustavo Padovan <gustavo@padovan.org>, Joe Perches <joe@perches.com>,
+ Rob Clark <robdclark@gmail.com>,
+ Gustavo Padovan <gustavo.padovan@collabora.co.uk>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ devel@driverdev.osuosl.org,
+ "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+ Daniel Stone <daniels@collabora.com>,
+ =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>,
+ Riley Andrews <riandrews@android.com>, Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Greg Hackmann <ghackmann@google.com>, John Harrison <John.C.Harrison@intel.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>, David Airlie <airlied@linux.ie>,
+ Daniel Vetter <daniel.vetter@intel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +50,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 29, 2016 at 05:52:59PM +0530, Shreyas B. Prabhu wrote:
-> Before entering any idle state which can result in a state loss
-> we currently save the context in the stack before entering idle.
-> Encapsulate these steps in a macro IDLE_STATE_PREP. Move this
-> and other macros to commonly accessible location.
+On Thu, Mar 17, 2016 at 5:19 PM, Gustavo Padovan <gustavo@padovan.org> wrote:
+> 2016-03-17 Joe Perches <joe@perches.com>:
+>
+>> On Thu, 2016-03-17 at 16:50 -0400, Rob Clark wrote:
+>> > On Thu, Mar 17, 2016 at 4:40 PM, Joe Perches <joe@perches.com> wrote:
+>> []
+>> > > It's a name that seems like it should be a straightforward
+>> > > cast of a kernel pointer to a __user pointer like:
+>> > >
+>> > > static inline void __user *to_user_ptr(void *p)
+>> > > {
+>> > >         return (void __user *)p;
+>> > > }
+>> > ahh, ok.  I guess I was used to using it in the context of ioctl
+>> > structs..  in that context u64 -> (void __user *) made more sense.
+>> >
+>> > Maybe uapi_to_ptr()?  (ok, not super-creative.. maybe someone has a
+>> > better idea)
+>>
+>> Maybe u64_to_user_ptr?
+>
+> That is a good name. If everyone agrees I can resend this patch
+> changing it to u64_to_user_ptr. Then should we still keep it on
+> kernel.h?
 
-There are two problems with this.  First, your new macro does much
-more than create a stack frame and save some registers.  It also
-messes with interrupts and potentially executes a blr instruction.
-That is not what people would expect from the name of the macro or the
-comments around it.  It also means that it would be hard to reuse the
-macro in another place.
 
-Secondly, I don't think this change helps readability.  Since the
-macro is only used in one place, it doesn't reduce the total number of
-lines of code, in fact it increases it slightly.  Having the macro
-just means that someone reading the code has to look in two places to
-see what power7_powersave_common is actually doing, rather than having
-all the code in one place.  If what your macro did was a single thing
-conceptually that took several instructions, then it might be helpful,
-but as it is, it doesn't help readability.
+works for me
 
-Paul.
+BR,
+-R
