@@ -1,23 +1,42 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qQk9C5Fy6zDq7K
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 20:49:51 +1100 (AEDT)
-Date: Thu, 17 Mar 2016 16:21:40 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
- mahesh@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/3] powerpc/powernv: Move CHECK_HMI_INTERRUPT to
- exception-64s header
-Message-ID: <20160317052140.GB4854@oak.ozlabs.ibm.com>
-References: <1456748580-10519-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1456748580-10519-2-git-send-email-shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qQlS10N5VzDq6T
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 21:47:45 +1100 (AEDT)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Thu, 17 Mar 2016 20:47:43 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6F36B2BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 21:47:34 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2HAlQhH19792026
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 21:47:34 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2HAl0nH012274
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 21:47:01 +1100
+Subject: Re: [RFC PATCH v4 0/7] vfio-pci: Allow to mmap sub-page MMIO BARs and
+ MSI-X table
+To: Bjorn Helgaas <helgaas@kernel.org>
+References: <1457336918-3893-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <56E93ACC.7080403@linux.vnet.ibm.com> <20160316141013.GA21809@localhost>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-doc@vger.kernel.org, bhelgaas@google.com, corbet@lwn.net,
+ aik@ozlabs.ru, alex.williamson@redhat.com, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
+ zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Message-ID: <56EA8B14.4070808@linux.vnet.ibm.com>
+Date: Thu, 17 Mar 2016 18:46:44 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1456748580-10519-2-git-send-email-shreyas@linux.vnet.ibm.com>
+In-Reply-To: <20160316141013.GA21809@localhost>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +46,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 29, 2016 at 05:52:58PM +0530, Shreyas B. Prabhu wrote:
-> CHECK_HMI_INTERRUPT is used to check for HMI's in reset vector. Move
-> the macro to a common location (exception-64s.h)
-> This patch does not change any functionality.
+On 2016/3/16 22:10, Bjorn Helgaas wrote:
+> On Wed, Mar 16, 2016 at 06:51:56PM +0800, Yongji Xie wrote:
+>> Ping.
+> This is mainly VFIO stuff, and Alex had some security concerns, so I'm
+> not going to spend much time looking at this until he's satisfied.
+>
+> When I do, I'll be looking hard at the resource_alignment kernel
+> parameter.  I'm opposed to kernel parameters in general because
+> they're very difficult for users to use correctly, and they lead to
+> kernel code paths that are rarely tested and hard to maintain.  So
+> I'll be looking for an excuse to reject changes in that area.
+>
+> The changelog for 2/7 says it "replaces IORESOURCE_STARTALIGN with
+> IORESOURCE_WINDOW."  But even a glance at the patch itself shows that
+> IORESOURCE_WINDOW is *added* to some places, and it doesn't *replace*
+> IORESOURCE_STARTALIGN.
 
-Comments below...
+There is a problem with my statement. I mean we can use
+IORESOURCE_WINDOW to identify bridge resources instead of
+IORESOURCE_STARTALIGN here.
 
-> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-> index 93ae809fe5ea..0082290314eb 100644
-> --- a/arch/powerpc/include/asm/exception-64s.h
-> +++ b/arch/powerpc/include/asm/exception-64s.h
-> @@ -254,6 +254,25 @@ do_kvm_##n:								\
->  #define KVM_HANDLER_SKIP(area, h, n)
->  #endif
->  
-> +#define CHECK_HMI_INTERRUPT						\
-> +	mfspr	r0,SPRN_SRR1;						\
-> +BEGIN_FTR_SECTION_NESTED(66);						\
-> +	rlwinm	r0,r0,45-31,0xf;  /* extract wake reason field (P8) */	\
-> +FTR_SECTION_ELSE_NESTED(66);						\
-> +	rlwinm	r0,r0,45-31,0xe;  /* P7 wake reason field is 3 bits */	\
-> +ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
-> +	cmpwi	r0,0xa;			/* Hypervisor maintenance ? */	\
-> +	bne	20f;							\
-> +	/* Invoke opal call to handle hmi */				\
-> +	ld	r2,PACATOC(r13);					\
-> +	ld	r1,PACAR1(r13);						\
-> +	std	r3,ORIG_GPR3(r1);	/* Save original r3 */		\
-> +	li	r0,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
-> +	bl	opal_call_realmode;					\
-> +	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
-> +20:	nop;
-> +
-> +
->  #define NOTEST(n)
+> The changelog for 4/7 says:
+>
+>    This is because vfio will not allow to passthrough one BAR's mmio
+>    page which may be shared with other BARs.  To solve this performance
+>    issue ...
+>
+> with no mention at all of the actual *reason* vfio doesn't allow that
+> passthrough.  If I understand correctly, that reason has to do with
+> security, so your justification must be much stronger than "solving a
+> performance issue."
 
-I'd rather keep NOTEST together with the definitions of KVMTEST etc.
-I suggest you add this block at the end of exceptions-64s.h (just
-before the final #endif).
+OK. I will try to make my justification become stronger.
 
-Paul.
+Thanks,
+Yongji Xie
