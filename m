@@ -1,34 +1,35 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qQz8z5J3YzDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 06:35:31 +1100 (AEDT)
-Date: Thu, 17 Mar 2016 12:35:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Jiri Kosina <jikos@kernel.org>, kbuild test robot <lkp@intel.com>,
- kbuild-all@01.org, Peter Zijlstra <peterz@infradead.org>, Steven Rostedt
- <rostedt@goodmis.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Daniel
- Thompson <daniel.thompson@linaro.org>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-cris-kernel@axis.com,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, David Howells <dhowells@redhat.com>, Koichi
- Yasutake <yasutake.koichi@jp.panasonic.com>, linux-am33-list@redhat.com
-Subject: Re: [PATCH v2 1/5] printk/nmi: Generic solution for safe printk in NMI
-Message-Id: <20160317123527.6346bce3284509849d061eaa@linux-foundation.org>
-In-Reply-To: <20151204165744.GD20935@pathway.suse.cz>
-References: <1448622572-16900-2-git-send-email-pmladek@suse.com>
- <201511271919.aEZuZKNe%fengguang.wu@intel.com>
- <20151127153804.GC2648@pathway.suse.cz>
- <alpine.LNX.2.00.1512020022460.32500@pobox.suse.cz>
- <20151204165744.GD20935@pathway.suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qQzpK13nSzDq70
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 07:04:24 +1100 (AEDT)
+Received: from localhost
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Thu, 17 Mar 2016 17:04:19 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id B420F1DC0089
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 16:04:10 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2HJ3iZo17433056
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 16:03:45 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2HK4ElY028400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 17:04:15 -0300
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-pci@vger.kernel.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
+ paulus@samba.org, imunsie@au1.ibm.com, mikey@neuling.org,
+ andrew.donnellan@au1.ibm.com, gwshan@linux.vnet.ibm.com,
+ bhelgaas@google.com, gpiccoli@linux.vnet.ibm.com
+Subject: [PATCH v3] powerpc/pci: Assign fixed PHB number based on device-tree
+ properties
+Date: Thu, 17 Mar 2016 17:03:46 -0300
+Message-Id: <1458245026-27635-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,45 +39,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 4 Dec 2015 17:57:44 +0100 Petr Mladek <pmladek@suse.com> wrote:
+The domain/PHB field of PCI addresses has its value obtained from a
+global variable, incremented each time a new domain (represented by
+struct pci_controller) is added on the system. The domain addition
+process happens during boot or due to PCI device hotplug.
 
-> On Wed 2015-12-02 00:24:49, Jiri Kosina wrote:
-> > On Fri, 27 Nov 2015, Petr Mladek wrote:
-> > 
-> > > MN10300 has its own implementation for entering and exiting NMI 
-> > > handlers. It does not call nmi_enter() and nmi_exit(). Please, find 
-> > > below an updated patch that adds printk_nmi_enter() and 
-> > > printk_nmi_exit() to the custom entry points. Then we could add HAVE_NMI 
-> > > to arch/mn10300/Kconfig and avoid the above warning.
-> > 
-> > Hmm, so what exactly would go wrong if MN10300 (whatever that architecture 
-> > is) would call nmi_enter() and nmi_exit() at the places where it's 
-> > starting and finishing NMI handler?
-> > 
-> > >From a cursory look, it seems like most (if not all) of the things called 
-> > from nmi_{enter,exit}() would be nops there anyway.
-> 
-> Good point. Max mentioned in the other main that the NMI handler
-> should follow the NMI ruler. I do not why it could not work.
-> In fact, it might improve things, e.g. nmi_enter() blocks
-> recursive NMIs.
-> 
-> I think that it will move it into a separate patch, thought.
-> 
+As recent kernels are using predictable naming for network interfaces,
+the network stack is more tied to PCI naming. This can be a problem in
+hotplug scenarios, because PCI addresses will change if devices are
+removed and then re-added. This situation seems unusual, but it can
+happen if a user wants to replace a NIC without rebooting the machine,
+for example.
 
-I've sort of lost the plot on this patchset.
+This patch changes the way PCI domain values are generated: now, we use
+device-tree properties to assign fixed PHB numbers to PCI addresses
+when available (meaning pSeries and PowerNV cases). We also use a bitmap
+to allow dynamic PHB numbering when device-tree properties are not
+used. This bitmap keeps track of used PHB numbers and if a PHB is
+released (by hotplug operations for example), it allows the reuse of
+this PHB number, avoiding PCI address to change in case of device remove
+and re-add soon after. No functional changes were introduced.
 
-I know Daniel had concerns (resolved?).  Sergey lost the ability to
-perform backtraces and has a proposed fix ("printk/nmi: restore
-printk_func in nmi_panic") but that wasn't fully resolved and I didn't
-merge anything.  I'm not sure what Jan's thinking is on it all.
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/pci-common.c | 41 +++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 38 insertions(+), 3 deletions(-)
 
-So... I'll retain 
-
-printk-nmi-generic-solution-for-safe-printk-in-nmi.patch
-printk-nmi-use-irq-work-only-when-ready.patch
-printk-nmi-warn-when-some-message-has-been-lost-in-nmi-context.patch
-printk-nmi-increase-the-size-of-nmi-buffer-and-make-it-configurable.patch
-
-in -mm for now.  Perhaps I should drop them all and we start again
-after -rc1?
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 0f7a60f..8777614 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -44,8 +44,11 @@
+ static DEFINE_SPINLOCK(hose_spinlock);
+ LIST_HEAD(hose_list);
+ 
+-/* XXX kill that some day ... */
+-static int global_phb_number;		/* Global phb counter */
++/* For dynamic PHB numbering on get_phb_number(): max number of PHBs. */
++#define	MAX_PHBS	8192
++
++/* For dynamic PHB numbering: used/free PHBs tracking bitmap. */
++static DECLARE_BITMAP(phb_bitmap, MAX_PHBS);
+ 
+ /* ISA Memory physical address */
+ resource_size_t isa_mem_base;
+@@ -64,6 +67,33 @@ struct dma_map_ops *get_pci_dma_ops(void)
+ }
+ EXPORT_SYMBOL(get_pci_dma_ops);
+ 
++static int get_phb_number(struct device_node *dn)
++{
++	const __be64 *prop64;
++	const __be32 *regs;
++	int phb_id = 0;
++
++	/* try fixed PHB numbering first, by checking archs and reading
++	 * the respective device-tree property. */
++	if (machine_is(pseries)) {
++		regs = of_get_property(dn, "reg", NULL);
++		if (regs)
++			return (int)(be32_to_cpu(regs[1]) & 0xFFFF);
++	} else {
++		if (machine_is(powernv)) {
++			prop64 = of_get_property(dn, "ibm,opal-phbid", NULL);
++			if (prop64)
++				return (int)(be64_to_cpup(prop64) & 0xFFFF);
++		}
++	}
++
++	/* if not pSeries nor PowerNV, fallback to dynamic PHB numbering */
++	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
++	BUG_ON(phb_id >= MAX_PHBS); /* reached maximum number of PHBs */
++	set_bit(phb_id, phb_bitmap);
++	return phb_id;
++}
++
+ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+ {
+ 	struct pci_controller *phb;
+@@ -72,7 +102,7 @@ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+ 	if (phb == NULL)
+ 		return NULL;
+ 	spin_lock(&hose_spinlock);
+-	phb->global_number = global_phb_number++;
++	phb->global_number = get_phb_number(dev);
+ 	list_add_tail(&phb->list_node, &hose_list);
+ 	spin_unlock(&hose_spinlock);
+ 	phb->dn = dev;
+@@ -94,6 +124,11 @@ EXPORT_SYMBOL_GPL(pcibios_alloc_controller);
+ void pcibios_free_controller(struct pci_controller *phb)
+ {
+ 	spin_lock(&hose_spinlock);
++
++	/* clear bit of phb_bitmap to allow reuse of this phb number */
++	if (phb->global_number < MAX_PHBS)
++		clear_bit(phb->global_number, phb_bitmap);
++
+ 	list_del(&phb->list_node);
+ 	spin_unlock(&hose_spinlock);
+ 
+-- 
+2.1.0
