@@ -1,44 +1,40 @@
-Return-Path: <robdclark@gmail.com>
-Received: from mail-yw0-x22c.google.com (mail-yw0-x22c.google.com
- [IPv6:2607:f8b0:4002:c05::22c])
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-wm0-x235.google.com (mail-wm0-x235.google.com
+ [IPv6:2a00:1450:400c:c09::235])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qR1cJ2JHRzDr35
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 08:25:52 +1100 (AEDT)
-Received: by mail-yw0-x22c.google.com with SMTP id g3so116806833ywa.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 14:25:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qR1nJ2yjZzDq6T
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 08:33:39 +1100 (AEDT)
+Received: by mail-wm0-x235.google.com with SMTP id p65so12185155wmp.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 14:33:39 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20160317211910.GB2611@joana>
-References: <1458235817-28375-1-git-send-email-gustavo@padovan.org>
- <1458235817-28375-2-git-send-email-gustavo@padovan.org>
- <1458236486.9556.11.camel@perches.com>
- <20160317180523.GA2619@joana> <20160317184318.GA2611@joana>
- <1458246150.9556.17.camel@perches.com>
- <CAF6AEGvQa8SOWCtoEfcFAxz6MQ0Nqc-ktqNCdfJU-32-m-mCEQ@mail.gmail.com>
- <1458247207.9556.28.camel@perches.com>
- <CAF6AEGuzr2Vm_yngN7WcoeMLiiqb8B+kEBaNaPNqXdV2ZC-u-Q@mail.gmail.com>
- <1458249003.9556.30.camel@perches.com>
- <20160317211910.GB2611@joana>
-Date: Thu, 17 Mar 2016 17:25:49 -0400
-Message-ID: <CAF6AEGuaLLx1iEeDyfc3WNunp6md-OjBothY8Fw_FMo0eGoP3Q@mail.gmail.com>
-Subject: Re: [PATCH v9 2/3] kernel.h: add to_user_ptr()
-From: Rob Clark <robdclark@gmail.com>
-To: Gustavo Padovan <gustavo@padovan.org>, Joe Perches <joe@perches.com>,
- Rob Clark <robdclark@gmail.com>,
- Gustavo Padovan <gustavo.padovan@collabora.co.uk>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- devel@driverdev.osuosl.org,
- "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
- Daniel Stone <daniels@collabora.com>,
- =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>,
- Riley Andrews <riandrews@android.com>, Daniel Vetter <daniel.vetter@ffwll.ch>,
- Greg Hackmann <ghackmann@google.com>, John Harrison <John.C.Harrison@intel.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, David Airlie <airlied@linux.ie>,
- Daniel Vetter <daniel.vetter@intel.com>,
+In-Reply-To: <CAL_JsqL8NkEQx2NoVHSUGYhtNsybCo-yfBCde+_OuMmfwbhYEw@mail.gmail.com>
+References: <1457518131-11339-1-git-send-email-yangbo.lu@nxp.com>
+ <1457518131-11339-4-git-send-email-yangbo.lu@nxp.com>
+ <20160317170640.GB21009@rob-hp-laptop> <4107975.rId64mooHz@wuerfel>
+ <CAL_JsqL8NkEQx2NoVHSUGYhtNsybCo-yfBCde+_OuMmfwbhYEw@mail.gmail.com>
+Date: Thu, 17 Mar 2016 16:33:35 -0500
+Message-ID: <CADRPPNRPP0cxrJT13OR+dAWuw8m0mr0=VJLY+JyTO=QsB_vVUw@mail.gmail.com>
+Subject: Re: [v6, 3/5] dt: move guts devicetree doc out of powerpc directory
+From: Leo Li <pku.leo@gmail.com>
+To: Rob Herring <robh@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Zhao Qiang <qiang.zhao@freescale.com>, xiaobo.xie@nxp.com,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ linux-clk <linux-clk@vger.kernel.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>,
+ Joerg Roedel <joro@8bytes.org>, scott.wood@nxp.com,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Yangbo Lu <yangbo.lu@nxp.com>, Santosh Shilimkar <ssantosh@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ netdev <netdev@vger.kernel.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Li Yang <leoyang.li@nxp.com>,
+ Linux IOMMU <iommu@lists.linux-foundation.org>,
+ Kumar Gala <galak@codeaurora.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -50,33 +46,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 17, 2016 at 5:19 PM, Gustavo Padovan <gustavo@padovan.org> wrote:
-> 2016-03-17 Joe Perches <joe@perches.com>:
->
->> On Thu, 2016-03-17 at 16:50 -0400, Rob Clark wrote:
->> > On Thu, Mar 17, 2016 at 4:40 PM, Joe Perches <joe@perches.com> wrote:
->> []
->> > > It's a name that seems like it should be a straightforward
->> > > cast of a kernel pointer to a __user pointer like:
->> > >
->> > > static inline void __user *to_user_ptr(void *p)
->> > > {
->> > >         return (void __user *)p;
->> > > }
->> > ahh, ok.  I guess I was used to using it in the context of ioctl
->> > structs..  in that context u64 -> (void __user *) made more sense.
->> >
->> > Maybe uapi_to_ptr()?  (ok, not super-creative.. maybe someone has a
->> > better idea)
+On Thu, Mar 17, 2016 at 12:57 PM, Rob Herring <robh@kernel.org> wrote:
+> On Thu, Mar 17, 2016 at 12:11 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+>> On Thursday 17 March 2016 12:06:40 Rob Herring wrote:
+>>> > diff --git a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt b/Documentation/devicetree/bindings/soc/fsl/guts.txt
+>>> > similarity index 91%
+>>> > rename from Documentation/devicetree/bindings/powerpc/fsl/guts.txt
+>>> > rename to Documentation/devicetree/bindings/soc/fsl/guts.txt
+>>> > index b71b203..07adca9 100644
+>>> > --- a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt
+>>> > +++ b/Documentation/devicetree/bindings/soc/fsl/guts.txt
+>>> > @@ -25,6 +25,9 @@ Recommended properties:
+>>> >   - fsl,liodn-bits : Indicates the number of defined bits in the LIODN
+>>> >     registers, for those SOCs that have a PAMU device.
+>>> >
+>>> > + - little-endian : Indicates that the global utilities block is little
+>>> > +   endian. The default is big endian.
+>>>
+>>> The default is "the native endianness of the system".
 >>
->> Maybe u64_to_user_ptr?
+>> This may be what is currently documented, but not what we are doing
+>> in practice, as there is no "native endianess" for either PowerPC or
+>> ARM -- both allow running big-endian or little-endian kernels and the
+>> device registers are fixed.
 >
-> That is a good name. If everyone agrees I can resend this patch
-> changing it to u64_to_user_ptr. Then should we still keep it on
-> kernel.h?
+> Notice I said system, not architecture. The way the device registers
+> are fixed is what I mean by native endianness.
 
+I think sometimes it's also hard to define the native endianess of the
+system too.  For whatever reason, we have hardware that having
+big-endian registers on some on-chip devices but using little-endian
+registers on other devices.  Even if all the devices on certain
+hardware use registers of the same endianess, it is also hard for the
+device driver to know what the native endianess really is.
 
-works for me
+>
+> If the purpose of adding this property now is to support GUTS on the
+> ARM SoCs, then I'd argue using this property is probably wrong. If the
+> PPC systems are designed with BE device registers and ARM systems with
+> LE, then this property is not needed.
+>
+>> I think the property here is fine.
+>
+> Unless you have studied the FSL ARM based SoCs, then there is not
+> enough information here to tell.
 
-BR,
--R
+Recent FSL ARM SoCs seems to have more weird endianess issue. :( The
+same IP could have registers of different endianess on different ARM
+SoCs.  That why we need to define the endianess explicitly in device
+tree.
+
+Regards,
+Leo
