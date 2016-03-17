@@ -1,47 +1,40 @@
-Return-Path: <gfpadovan@gmail.com>
-Received: from mail-yw0-f195.google.com (mail-yw0-f195.google.com
- [209.85.161.195])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qR2km28xczDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 09:16:31 +1100 (AEDT)
-Received: by mail-yw0-f195.google.com with SMTP id p65so8195400ywb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 15:16:31 -0700 (PDT)
-Date: Thu, 17 Mar 2016 19:16:19 -0300
-From: Gustavo Padovan <gustavo@padovan.org>
-To: Joe Perches <joe@perches.com>
-Cc: Rob Clark <robdclark@gmail.com>,
- Gustavo Padovan <gustavo.padovan@collabora.co.uk>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- devel@driverdev.osuosl.org,
- "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
- Daniel Stone <daniels@collabora.com>,
- Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
- Riley Andrews <riandrews@android.com>,
- Daniel Vetter <daniel.vetter@ffwll.ch>,
- Greg Hackmann <ghackmann@google.com>,
- John Harrison <John.C.Harrison@intel.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, David Airlie <airlied@linux.ie>,
- Daniel Vetter <daniel.vetter@intel.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v9 2/3] kernel.h: add to_user_ptr()
-Message-ID: <20160317221619.GA11578@joana>
-References: <1458236486.9556.11.camel@perches.com>
- <20160317180523.GA2619@joana> <20160317184318.GA2611@joana>
- <1458246150.9556.17.camel@perches.com>
- <CAF6AEGvQa8SOWCtoEfcFAxz6MQ0Nqc-ktqNCdfJU-32-m-mCEQ@mail.gmail.com>
- <1458247207.9556.28.camel@perches.com>
- <CAF6AEGuzr2Vm_yngN7WcoeMLiiqb8B+kEBaNaPNqXdV2ZC-u-Q@mail.gmail.com>
- <1458249003.9556.30.camel@perches.com>
- <20160317211910.GB2611@joana>
- <1458250430.9556.39.camel@perches.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qR3Dt36LqzDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 09:39:10 +1100 (AEDT)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 18 Mar 2016 08:39:08 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 230A22CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 09:39:01 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2HMckur41681124
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 09:39:01 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2HMcMbl023311
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 09:38:22 +1100
+Date: Fri, 18 Mar 2016 09:37:57 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+ imunsie@au1.ibm.com, mikey@neuling.org, andrew.donnellan@au1.ibm.com,
+ gwshan@linux.vnet.ibm.com, bhelgaas@google.com
+Subject: Re: [PATCH v3] powerpc/pci: Assign fixed PHB number based on
+ device-tree properties
+Message-ID: <20160317223757.GA6336@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1458245026-27635-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1458250430.9556.39.camel@perches.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1458245026-27635-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,49 +44,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2016-03-17 Joe Perches <joe@perches.com>:
+On Thu, Mar 17, 2016 at 05:03:46PM -0300, Guilherme G. Piccoli wrote:
+>The domain/PHB field of PCI addresses has its value obtained from a
+>global variable, incremented each time a new domain (represented by
+>struct pci_controller) is added on the system. The domain addition
+>process happens during boot or due to PCI device hotplug.
+>
+>As recent kernels are using predictable naming for network interfaces,
+>the network stack is more tied to PCI naming. This can be a problem in
+>hotplug scenarios, because PCI addresses will change if devices are
+>removed and then re-added. This situation seems unusual, but it can
+>happen if a user wants to replace a NIC without rebooting the machine,
+>for example.
+>
+>This patch changes the way PCI domain values are generated: now, we use
+>device-tree properties to assign fixed PHB numbers to PCI addresses
+>when available (meaning pSeries and PowerNV cases). We also use a bitmap
+>to allow dynamic PHB numbering when device-tree properties are not
+>used. This bitmap keeps track of used PHB numbers and if a PHB is
+>released (by hotplug operations for example), it allows the reuse of
+>this PHB number, avoiding PCI address to change in case of device remove
+>and re-add soon after. No functional changes were introduced.
+>
+>Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 
-> On Thu, 2016-03-17 at 18:19 -0300, Gustavo Padovan wrote:
-> > 2016-03-17 Joe Perches <joe@perches.com>:
-> > > On Thu, 2016-03-17 at 16:50 -0400, Rob Clark wrote:
-> > > > On Thu, Mar 17, 2016 at 4:40 PM, Joe Perches <joe@perches.com> wrot=
-e:
-> > > []
-> > > > > It's a name that seems like it should be a straightforward
-> > > > > cast of a kernel pointer to a __user pointer like:
-> > > > >=20
-> > > > > static inline void __user *to_user_ptr(void *p)
-> > > > > {
-> > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return (void __us=
-er *)p;
-> > > > > }
-> > > > ahh, ok.=C2=A0=C2=A0I guess I was used to using it in the context o=
-f ioctl
-> > > > structs..=C2=A0=C2=A0in that context u64 -> (void __user *) made mo=
-re sense.
-> > > >=20
-> > > > Maybe uapi_to_ptr()?=C2=A0=C2=A0(ok, not super-creative.. maybe som=
-eone has a
-> > > > better idea)
-> > > Maybe u64_to_user_ptr?
-> > That is a good name. If everyone agrees I can resend this patch
-> > changing it to u64_to_user_ptr. Then should we still keep it on
-> > kernel.h?
->=20
-> I've no particular opinion about location,
-> but maybe compat.h might be appropriate.
+Apart from below minor issues to be fixed, it looks good to me.
 
-I don't think this is really related to compat. I'd keep kernel.h.
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-The problem I'm trying to solve here is:
+>---
+> arch/powerpc/kernel/pci-common.c | 41 +++++++++++++++++++++++++++++++++++++---
+> 1 file changed, 38 insertions(+), 3 deletions(-)
+>
+>diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+>index 0f7a60f..8777614 100644
+>--- a/arch/powerpc/kernel/pci-common.c
+>+++ b/arch/powerpc/kernel/pci-common.c
+>@@ -44,8 +44,11 @@
+> static DEFINE_SPINLOCK(hose_spinlock);
+> LIST_HEAD(hose_list);
+>
+>-/* XXX kill that some day ... */
+>-static int global_phb_number;		/* Global phb counter */
+>+/* For dynamic PHB numbering on get_phb_number(): max number of PHBs. */
+>+#define	MAX_PHBS	8192
+>+
+>+/* For dynamic PHB numbering: used/free PHBs tracking bitmap. */
+>+static DECLARE_BITMAP(phb_bitmap, MAX_PHBS);
+>
+> /* ISA Memory physical address */
+> resource_size_t isa_mem_base;
+>@@ -64,6 +67,33 @@ struct dma_map_ops *get_pci_dma_ops(void)
+> }
+> EXPORT_SYMBOL(get_pci_dma_ops);
+>
+>+static int get_phb_number(struct device_node *dn)
+>+{
+>+	const __be64 *prop64;
+>+	const __be32 *regs;
+>+	int phb_id = 0;
+>+
+>+	/* try fixed PHB numbering first, by checking archs and reading
+>+	 * the respective device-tree property. */
+>+	if (machine_is(pseries)) {
+>+		regs = of_get_property(dn, "reg", NULL);
+>+		if (regs)
+>+			return (int)(be32_to_cpu(regs[1]) & 0xFFFF);
+>+	} else {
+>+		if (machine_is(powernv)) {
+>+			prop64 = of_get_property(dn, "ibm,opal-phbid", NULL);
+>+			if (prop64)
+>+				return (int)(be64_to_cpup(prop64) & 0xFFFF);
+>+		}
+>+	}
+>+
 
-CC      drivers/dma-buf/sync_file.o
-drivers/dma-buf/sync_file.c: In function =E2=80=98sync_file_ioctl_fence_inf=
-o=E2=80=99:
-drivers/dma-buf/sync_file.c:341:19: warning: cast to pointer from
-integer of different size [-Wint-to-pointer-cast]
-  if (copy_to_user((void __user *)info.sync_fence_info, fence_info,
+The nested statements can be merged to one with "else if (machine_is(powernv))".
 
-where info.sync_fence_info is __u64.
+>+	/* if not pSeries nor PowerNV, fallback to dynamic PHB numbering */
+>+	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
+>+	BUG_ON(phb_id >= MAX_PHBS); /* reached maximum number of PHBs */
+>+	set_bit(phb_id, phb_bitmap);
+>+	return phb_id;
 
-	Gustavo
+It's possible another CPU sets this bit before current CPU updates it, which
+will cause same domain number used by two PHBs though it's very rare. I guess
+it might be worthwhile to check if the bit is reserved by somebody else to
+avoid the issue.
+
+>+}
+>+
+> struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+> {
+> 	struct pci_controller *phb;
+>@@ -72,7 +102,7 @@ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+> 	if (phb == NULL)
+> 		return NULL;
+> 	spin_lock(&hose_spinlock);
+>-	phb->global_number = global_phb_number++;
+>+	phb->global_number = get_phb_number(dev);
+> 	list_add_tail(&phb->list_node, &hose_list);
+> 	spin_unlock(&hose_spinlock);
+> 	phb->dn = dev;
+>@@ -94,6 +124,11 @@ EXPORT_SYMBOL_GPL(pcibios_alloc_controller);
+> void pcibios_free_controller(struct pci_controller *phb)
+> {
+> 	spin_lock(&hose_spinlock);
+>+
+>+	/* clear bit of phb_bitmap to allow reuse of this phb number */
+>+	if (phb->global_number < MAX_PHBS)
+>+		clear_bit(phb->global_number, phb_bitmap);
+>+
+> 	list_del(&phb->list_node);
+> 	spin_unlock(&hose_spinlock);
+>
+
+Thanks,
+Gavin
