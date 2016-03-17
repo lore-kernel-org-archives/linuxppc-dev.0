@@ -1,21 +1,41 @@
-Return-Path: <gfpadovan@gmail.com>
-Received: from mail-yw0-f182.google.com (mail-yw0-f182.google.com
- [209.85.161.182])
+Return-Path: <robdclark@gmail.com>
+Received: from mail-yw0-x22f.google.com (mail-yw0-x22f.google.com
+ [IPv6:2607:f8b0:4002:c05::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qR06d67xBzDrLN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 07:18:33 +1100 (AEDT)
-Received: by mail-yw0-f182.google.com with SMTP id m126so90579635ywd.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 13:18:33 -0700 (PDT)
-From: Gustavo Padovan <gustavo@padovan.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qR0S95F2JzDq70
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 07:33:45 +1100 (AEDT)
+Received: by mail-yw0-x22f.google.com with SMTP id g3so115198904ywa.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 13:33:45 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1458246150.9556.17.camel@perches.com>
+References: <1458235817-28375-1-git-send-email-gustavo@padovan.org>
+ <1458235817-28375-2-git-send-email-gustavo@padovan.org>
+ <1458236486.9556.11.camel@perches.com>
+ <20160317180523.GA2619@joana> <20160317184318.GA2611@joana>
+ <1458246150.9556.17.camel@perches.com>
+Date: Thu, 17 Mar 2016 16:33:42 -0400
+Message-ID: <CAF6AEGvQa8SOWCtoEfcFAxz6MQ0Nqc-ktqNCdfJU-32-m-mCEQ@mail.gmail.com>
+Subject: Re: [PATCH v9 2/3] kernel.h: add to_user_ptr()
+From: Rob Clark <robdclark@gmail.com>
+To: Joe Perches <joe@perches.com>
+Cc: Gustavo Padovan <gustavo@padovan.org>,
  Gustavo Padovan <gustavo.padovan@collabora.co.uk>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc: rename to_user_ptr to __to_user_ptr
-Date: Thu, 17 Mar 2016 17:18:23 -0300
-Message-Id: <1458245903-3937-1-git-send-email-gustavo@padovan.org>
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ devel@driverdev.osuosl.org,
+ "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+ Daniel Stone <daniels@collabora.com>,
+ =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>,
+ Riley Andrews <riandrews@android.com>, Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Greg Hackmann <ghackmann@google.com>, John Harrison <John.C.Harrison@intel.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>, David Airlie <airlied@linux.ie>,
+ Daniel Vetter <daniel.vetter@intel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,89 +45,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Gustavo Padovan <gustavo.padovan@collabora.co.uk>
+On Thu, Mar 17, 2016 at 4:22 PM, Joe Perches <joe@perches.com> wrote:
+> On Thu, 2016-03-17 at 15:43 -0300, Gustavo Padovan wrote:
+>> 2016-03-17 Gustavo Padovan <gustavo.padovan@collabora.co.uk>:
+>> > 2016-03-17 Joe Perches <joe@perches.com>:
+>> > > On Thu, 2016-03-17 at 14:30 -0300, Gustavo Padovan wrote:
+>> > > >
+>> > > > This function had copies in 3 different files. Unify them in
+>> > > > kernel.h.
+>> > > This is only used by gpu/drm.
+>> > >
+>> > > I think this is a poor name for a generic function
+>> > > that would be in kernel.h.
+>> > >
+>> > > Isn't there an include file in linux/drm that's
+>> > > appropriate for this.  Maybe drmP.h
+>> > >
+>> > > Maybe prefix this function name with drm_ too.
+>> > No, the next patch adds a user to drivers/staging (which will be moved
+>> > to drivers/dma-buf) soon. Maybe move to a different header in
+>> > include/linux/? not sure which one.
+>> >
+>> > >
+>> > > Also, there's this that might conflict:
+>> > >
+>> > > arch/powerpc/kernel/signal_32.c:#define to_user_ptr(p)          ptr_to_compat(p)
+>> > > arch/powerpc/kernel/signal_32.c:#define to_user_ptr(p)          ((unsigned long)(p))
+>> > Right, I'll figure out how to replace these two too.
+>> The powerpc to_user_ptr has a different meaning from the one I'm adding
+>> in this patch. I propose we just rename powerpc's to_user_ptr to
+>> __to_user_ptr and leave the rest as is.
+>
+> I think that's not a good idea, and you should really check
+> this concept with the powerpc folk (added to to:s and cc:ed)
+>
+> If it were really added, then the function meaning is incorrect.
+>
+> This is taking a u64, casting that to (unsigned long/uint_ptr_t),
+> then converting that to a user pointer.
+>
+> Does that naming and use make sense on x86-32 or arm32?
+>
 
-to_user_ptr() is a local macro defined by signal_32.c, rename it to
-__to_user_ptr() as now we will have a global to_user_ptr() defined by
-kernel.h that has a different meaning from this one.
+fwiw Gustavo's version of to_user_ptr() is in use on arm32 and arm64..
+Not entirely sure what doesn't make sense about it
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Gustavo Padovan <gustavo.padovan@collabora.co.uk>
----
- arch/powerpc/kernel/signal_32.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index b6aa378..558acd6 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -129,8 +129,8 @@ static inline int get_sigset_t(sigset_t *set,
- 	return 0;
- }
- 
--#define to_user_ptr(p)		ptr_to_compat(p)
--#define from_user_ptr(p)	compat_ptr(p)
-+#define __to_user_ptr(p)	ptr_to_compat(p)
-+#define __from_user_ptr(p)	compat_ptr(p)
- 
- static inline int save_general_regs(struct pt_regs *regs,
- 		struct mcontext __user *frame)
-@@ -178,8 +178,8 @@ static inline int get_sigset_t(sigset_t *set, const sigset_t __user *uset)
- 	return copy_from_user(set, uset, sizeof(*uset));
- }
- 
--#define to_user_ptr(p)		((unsigned long)(p))
--#define from_user_ptr(p)	((void __user *)(p))
-+#define __to_user_ptr(p)	((unsigned long)(p))
-+#define __from_user_ptr(p)	((void __user *)(p))
- 
- static inline int save_general_regs(struct pt_regs *regs,
- 		struct mcontext __user *frame)
-@@ -992,7 +992,7 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	if (copy_siginfo_to_user(&rt_sf->info, &ksig->info)
- 	    || __put_user(0, &rt_sf->uc.uc_flags)
- 	    || __save_altstack(&rt_sf->uc.uc_stack, regs->gpr[1])
--	    || __put_user(to_user_ptr(&rt_sf->uc.uc_mcontext),
-+	    || __put_user(__to_user_ptr(&rt_sf->uc.uc_mcontext),
- 		    &rt_sf->uc.uc_regs)
- 	    || put_sigset_t(&rt_sf->uc.uc_sigmask, oldset))
- 		goto badframe;
-@@ -1181,7 +1181,7 @@ long sys_swapcontext(struct ucontext __user *old_ctx,
- 		if (!access_ok(VERIFY_WRITE, old_ctx, ctx_size)
- 		    || save_user_regs(regs, mctx, NULL, 0, ctx_has_vsx_region)
- 		    || put_sigset_t(&old_ctx->uc_sigmask, &current->blocked)
--		    || __put_user(to_user_ptr(mctx), &old_ctx->uc_regs))
-+		    || __put_user(__to_user_ptr(mctx), &old_ctx->uc_regs))
- 			return -EFAULT;
- 	}
- 	if (new_ctx == NULL)
-@@ -1414,14 +1414,14 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset, struct pt_regs *regs
- #if _NSIG != 64
- #error "Please adjust handle_signal()"
- #endif
--	if (__put_user(to_user_ptr(ksig->ka.sa.sa_handler), &sc->handler)
-+	if (__put_user(__to_user_ptr(ksig->ka.sa.sa_handler), &sc->handler)
- 	    || __put_user(oldset->sig[0], &sc->oldmask)
- #ifdef CONFIG_PPC64
- 	    || __put_user((oldset->sig[0] >> 32), &sc->_unused[3])
- #else
- 	    || __put_user(oldset->sig[1], &sc->_unused[3])
- #endif
--	    || __put_user(to_user_ptr(&frame->mctx), &sc->regs)
-+	    || __put_user(__to_user_ptr(&frame->mctx), &sc->regs)
- 	    || __put_user(ksig->sig, &sc->signal))
- 		goto badframe;
- 
-@@ -1526,7 +1526,7 @@ long sys_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
- 	} else
- #endif
- 	{
--		sr = (struct mcontext __user *)from_user_ptr(sigctx.regs);
-+		sr = (struct mcontext __user *)__from_user_ptr(sigctx.regs);
- 		addr = sr;
- 		if (!access_ok(VERIFY_READ, sr, sizeof(*sr))
- 		    || restore_user_regs(regs, sr, 1))
--- 
-2.5.0
+BR,
+-R
