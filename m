@@ -1,43 +1,32 @@
-Return-Path: <robdclark@gmail.com>
-Received: from mail-yw0-x22b.google.com (mail-yw0-x22b.google.com
- [IPv6:2607:f8b0:4002:c05::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qR0qF12RZzDr47
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 07:50:17 +1100 (AEDT)
-Received: by mail-yw0-x22b.google.com with SMTP id g127so115637134ywf.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 13:50:17 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1458247207.9556.28.camel@perches.com>
-References: <1458235817-28375-1-git-send-email-gustavo@padovan.org>
- <1458235817-28375-2-git-send-email-gustavo@padovan.org>
- <1458236486.9556.11.camel@perches.com>
- <20160317180523.GA2619@joana> <20160317184318.GA2611@joana>
- <1458246150.9556.17.camel@perches.com>
- <CAF6AEGvQa8SOWCtoEfcFAxz6MQ0Nqc-ktqNCdfJU-32-m-mCEQ@mail.gmail.com>
- <1458247207.9556.28.camel@perches.com>
-Date: Thu, 17 Mar 2016 16:50:14 -0400
-Message-ID: <CAF6AEGuzr2Vm_yngN7WcoeMLiiqb8B+kEBaNaPNqXdV2ZC-u-Q@mail.gmail.com>
-Subject: Re: [PATCH v9 2/3] kernel.h: add to_user_ptr()
-From: Rob Clark <robdclark@gmail.com>
-To: Joe Perches <joe@perches.com>
-Cc: Gustavo Padovan <gustavo@padovan.org>,
- Gustavo Padovan <gustavo.padovan@collabora.co.uk>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- devel@driverdev.osuosl.org,
- "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
- Daniel Stone <daniels@collabora.com>,
- =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>,
- Riley Andrews <riandrews@android.com>, Daniel Vetter <daniel.vetter@ffwll.ch>,
- Greg Hackmann <ghackmann@google.com>, John Harrison <John.C.Harrison@intel.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, David Airlie <airlied@linux.ie>,
- Daniel Vetter <daniel.vetter@intel.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qR0sc0RFwzDq70
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 07:52:19 +1100 (AEDT)
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Thu, 17 Mar 2016 20:52:16 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id B825D17D8059
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 20:52:46 +0000 (GMT)
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+ [9.149.37.228])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2HKqEj045351032
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 20:52:14 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2HKqEq5029966
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 14:52:14 -0600
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+To: imunsie@au1.ibm.com, mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] cxl: Don't fail initialization if PSL timebase can't be synced
+Date: Thu, 17 Mar 2016 21:52:12 +0100
+Message-Id: <1458247932-14100-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,70 +36,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 17, 2016 at 4:40 PM, Joe Perches <joe@perches.com> wrote:
-> On Thu, 2016-03-17 at 16:33 -0400, Rob Clark wrote:
->> On Thu, Mar 17, 2016 at 4:22 PM, Joe Perches <joe@perches.com> wrote:
->> > On Thu, 2016-03-17 at 15:43 -0300, Gustavo Padovan wrote:
->> > > 2016-03-17 Gustavo Padovan <gustavo.padovan@collabora.co.uk>:
->> > > > 2016-03-17 Joe Perches <joe@perches.com>:
->> > > > > On Thu, 2016-03-17 at 14:30 -0300, Gustavo Padovan wrote:
->> > > > > > This function had copies in 3 different files. Unify them in
->> > > > > > kernel.h.
->> > > > > This is only used by gpu/drm.
->> > > > >
->> > > > > I think this is a poor name for a generic function
->> > > > > that would be in kernel.h.
->> > > > >
->> > > > > Isn't there an include file in linux/drm that's
->> > > > > appropriate for this.  Maybe drmP.h
->> > > > >
->> > > > > Maybe prefix this function name with drm_ too.
->> > > > No, the next patch adds a user to drivers/staging (which will be moved
->> > > > to drivers/dma-buf) soon. Maybe move to a different header in
->> > > > include/linux/? not sure which one.
->> > > >
->> > > > >
->> > > > >
->> > > > > Also, there's this that might conflict:
->> > > > >
->> > > > > arch/powerpc/kernel/signal_32.c:#define to_user_ptr(p)          ptr_to_compat(p)
->> > > > > arch/powerpc/kernel/signal_32.c:#define to_user_ptr(p)          ((unsigned long)(p))
->> > > > Right, I'll figure out how to replace these two too.
->> > > The powerpc to_user_ptr has a different meaning from the one I'm adding
->> > > in this patch. I propose we just rename powerpc's to_user_ptr to
->> > > __to_user_ptr and leave the rest as is.
->> > I think that's not a good idea, and you should really check
->> > this concept with the powerpc folk (added to to:s and cc:ed)
->> >
->> > If it were really added, then the function meaning is incorrect.
->> >
->> > This is taking a u64, casting that to (unsigned long/uint_ptr_t),
->> > then converting that to a user pointer.
->> >
->> > Does that naming and use make sense on x86-32 or arm32?
->> >
->> fwiw Gustavo's version of to_user_ptr() is in use on arm32 and arm64..
->> Not entirely sure what doesn't make sense about it
->
-> It's a name that seems like it should be a straightforward
-> cast of a kernel pointer to a __user pointer like:
->
-> static inline void __user *to_user_ptr(void *p)
-> {
->         return (void __user *)p;
-> }
+Failure to synchronize the PSL timebase currently prevents the
+initialization of the cxl card, thus rendering the card useless. This
+is too extreme for a feature which is rarely used, if at all.
 
-ahh, ok.  I guess I was used to using it in the context of ioctl
-structs..  in that context u64 -> (void __user *) made more sense.
+This patch still tries to synchronize the PSL timebase when the card
+is initialized, but doesn't fail if it can't. Instead, it reports a
+status via /sys.
 
-Maybe uapi_to_ptr()?  (ok, not super-creative.. maybe someone has a better idea)
+Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+---
 
-BR,
--R
+Patch will need a small update for next, due to the powerVM patchset. Will send that as soon as this one is agreed upon.
 
-> As a static function in a single file, it's not
-> great, but OK, fine, it's static.
->
-> As a global function in kernel.h, it's misleading.
->
->
+ Documentation/ABI/testing/sysfs-class-cxl |  8 ++++++++
+ drivers/misc/cxl/cxl.h                    |  1 +
+ drivers/misc/cxl/pci.c                    | 21 ++++++++++++---------
+ drivers/misc/cxl/sysfs.c                  | 10 ++++++++++
+ 4 files changed, 31 insertions(+), 9 deletions(-)
+
+diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
+index b07e86d..ba33cdf 100644
+--- a/Documentation/ABI/testing/sysfs-class-cxl
++++ b/Documentation/ABI/testing/sysfs-class-cxl
+@@ -233,3 +233,11 @@ Description:	read/write
+ 		0 = don't trust, the image may be different (default)
+ 		1 = trust that the image will not change.
+ Users:		https://github.com/ibm-capi/libcxl
++
++What:           /sys/class/cxl/<card>/psl_timebase_synced
++Date:           March 2016
++Contact:        linuxppc-dev@lists.ozlabs.org
++Description:    read only
++                Returns 1 if the psl timebase register is synchronized
++                with the core timebase register, 0 otherwise.
++Users:          https://github.com/ibm-capi/libcxl
+\ No newline at end of file
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index a521bc7..baa5052 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -517,6 +517,7 @@ struct cxl {
+ 	bool perst_loads_image;
+ 	bool perst_select_user;
+ 	bool perst_same_image;
++	bool psl_timebase_synced;
+ };
+ 
+ int cxl_alloc_one_irq(struct cxl *adapter);
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 0c6c17a1..625df03 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -374,22 +374,24 @@ static int init_implementation_adapter_regs(struct cxl *adapter, struct pci_dev
+ #define TBSYNC_CNT(n) (((u64)n & 0x7) << (63-6))
+ #define _2048_250MHZ_CYCLES 1
+ 
+-static int cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
++static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+ {
+ 	u64 psl_tb;
+ 	int delta;
+ 	unsigned int retry = 0;
+ 	struct device_node *np;
+ 
++	adapter->psl_timebase_synced = false;
++
+ 	if (!(np = pnv_pci_get_phb_node(dev)))
+-		return -ENODEV;
++		return;
+ 
+ 	/* Do not fail when CAPP timebase sync is not supported by OPAL */
+ 	of_node_get(np);
+ 	if (! of_get_property(np, "ibm,capp-timebase-sync", NULL)) {
+ 		of_node_put(np);
+-		pr_err("PSL: Timebase sync: OPAL support missing\n");
+-		return 0;
++		dev_info(&dev->dev, "PSL timebase inactive: OPAL support missing\n");
++		return;
+ 	}
+ 	of_node_put(np);
+ 
+@@ -408,8 +410,8 @@ static int cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+ 	do {
+ 		msleep(1);
+ 		if (retry++ > 5) {
+-			pr_err("PSL: Timebase sync: giving up!\n");
+-			return -EIO;
++			dev_info(&dev->dev, "PSL timebase can't synchronize\n");
++			return;
+ 		}
+ 		psl_tb = cxl_p1_read(adapter, CXL_PSL_Timebase);
+ 		delta = mftb() - psl_tb;
+@@ -417,7 +419,8 @@ static int cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+ 			delta = -delta;
+ 	} while (tb_to_ns(delta) > 16000);
+ 
+-	return 0;
++	adapter->psl_timebase_synced = true;
++	return;
+ }
+ 
+ static int init_implementation_afu_regs(struct cxl_afu *afu)
+@@ -1189,8 +1192,8 @@ static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
+ 	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON)))
+ 		goto err;
+ 
+-	if ((rc = cxl_setup_psl_timebase(adapter, dev)))
+-		goto err;
++	/* psl timebase not syncing shouldn't prevent device init */
++	cxl_setup_psl_timebase(adapter, dev);
+ 
+ 	if ((rc = cxl_register_psl_err_irq(adapter)))
+ 		goto err;
+diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
+index 02006f71..b4bb9b2 100644
+--- a/drivers/misc/cxl/sysfs.c
++++ b/drivers/misc/cxl/sysfs.c
+@@ -57,6 +57,15 @@ static ssize_t image_loaded_show(struct device *device,
+ 	return scnprintf(buf, PAGE_SIZE, "factory\n");
+ }
+ 
++static ssize_t psl_timebase_synced_show(struct device *device,
++					struct device_attribute *attr,
++					char *buf)
++{
++	struct cxl *adapter = to_cxl_adapter(device);
++
++	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
++}
++
+ static ssize_t reset_adapter_store(struct device *device,
+ 				   struct device_attribute *attr,
+ 				   const char *buf, size_t count)
+@@ -142,6 +151,7 @@ static struct device_attribute adapter_attrs[] = {
+ 	__ATTR_RO(psl_revision),
+ 	__ATTR_RO(base_image),
+ 	__ATTR_RO(image_loaded),
++	__ATTR_RO(psl_timebase_synced),
+ 	__ATTR_RW(load_image_on_perst),
+ 	__ATTR_RW(perst_reloads_same_image),
+ 	__ATTR(reset, S_IWUSR, NULL, reset_adapter_store),
+-- 
+1.9.1
