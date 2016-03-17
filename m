@@ -1,33 +1,27 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-yw0-x229.google.com (mail-yw0-x229.google.com
- [IPv6:2607:f8b0:4002:c05::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <duwe@lst.de>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qQq562TGGzDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 00:31:38 +1100 (AEDT)
-Received: by mail-yw0-x229.google.com with SMTP id g127so99728610ywf.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2016 06:31:38 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qQt0j16zDzDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 02:43:01 +1100 (AEDT)
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3qQt0h4pvTz9sD5
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Mar 2016 02:43:00 +1100 (AEDT)
+Date: Thu, 17 Mar 2016 16:42:56 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
+ jeyu@redhat.com, jkosina@suse.cz, live-patching@vger.kernel.org,
+ mbenes@suse.cz
+Subject: Re: [PATCH][v6][RFC] livepatch/ppc: Enable livepatching on powerpc
+Message-ID: <20160317154256.GA32575@lst.de>
+References: <1457506780-19556-1-git-send-email-bsingharora@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20160308005633.GA30023@gwshan>
-References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1455680668-23298-43-git-send-email-gwshan@linux.vnet.ibm.com>
- <CAL_JsqJydgmkU=SGcr-0JHsYG8wXk5GEQCQXY7y+FHH2A0LZkw@mail.gmail.com>
- <20160219031655.GA10818@gwshan>
- <CAL_JsqJFacEMD6jwi=YsT83BTVp5Asjmw4nYU6Msct-DcR2W9Q@mail.gmail.com>
- <20160308005633.GA30023@gwshan>
-From: Rob Herring <robherring2@gmail.com>
-Date: Thu, 17 Mar 2016 08:31:16 -0500
-Message-ID: <CAL_Jsq+2M3iLMCwJhttiL3BTvefUa_5tUiYqvzp3Aix4uK7exw@mail.gmail.com>
-Subject: Re: [PATCH v8 42/45] drivers/of: Rename unflatten_dt_node()
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, aik@ozlabs.ru,
- dja@axtens.net, Bjorn Helgaas <bhelgaas@google.com>,
- Grant Likely <grant.likely@linaro.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1457506780-19556-1-git-send-email-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,49 +31,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 7, 2016 at 6:56 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
-> On Tue, Mar 01, 2016 at 08:40:12PM -0600, Rob Herring wrote:
->>On Thu, Feb 18, 2016 at 9:16 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
->>> On Wed, Feb 17, 2016 at 08:59:53AM -0600, Rob Herring wrote:
->>>>On Tue, Feb 16, 2016 at 9:44 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
->>>>> This renames unflatten_dt_node() to unflatten_dt_nodes() as it
->>>>> populates multiple device nodes from FDT blob. No logical changes
->>>>> introduced.
->>>>>
->>>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>>> ---
->>>>>  drivers/of/fdt.c | 14 +++++++-------
->>>>>  1 file changed, 7 insertions(+), 7 deletions(-)
->>>>
->>>>Acked-by: Rob Herring <robh@kernel.org>
->>>>
->>>>I'm happy to take patches 40-42 for 4.6 if the rest of the series
->>>>doesn't go in given they fix a separate problem. I just need to know
->>>>soon (or at least they need to go into -next soon).
->>>>
->>>
->>> Thanks for quick response, Rob. It depends how much comments I will
->>> receive for the powerpc/powernv part. Except that, all parts including
->>> this one have been ack'ed. I can discuss it with Michael Ellerman.
->>> By the way, how soon you need the decision to merge 40-42? If that's
->>> one or two weeks later, I don't think the reivew on the whole series
->>> can be done.
->>
->>Well, it's been 2 weeks now. I need to know this week.
->>
->>> Also, I think you probably can merge 40-44 as they're all about
->>> fdt.c. If they can be merged at one time, I needn't bother (cc)
->>> you again if I need send a updated revision. Thanks for your
->>> review.
->>
->>I did not include 43 and 44 as they are only needed for the rest of your series.
->>
->
-> Rob, sorry for late reponse. I really expect this series to be merged to 4.6 and
-> I was checking reviewers' bandwidth to review it. Unfortunately, I didn't receive
-> any comments except yours until now. That means this series has to miss 4.6. Please
-> pick/merge 41 and 42 if no body has objection. Thanks again for your time on this.
+On Wed, Mar 09, 2016 at 05:59:40PM +1100, Balbir Singh wrote:
+> 
+> Changelog v6:
+> 	1. Experimental changes -- need loads of testing
+> 	   Based on the assumption that very far TOC and LR values
+> 	   indicate the call happened through a stub and the
+> 	   stub return works differently from a local call which
+> 	   uses klp_return_helper.
 
-Too late for 4.6.
+Well, this is true, but the inverse is not.
+Less than 2GiB between LR and TOC is a necessary but not a sufficient
+condition for a local call.
 
-Rob
+I see the problem with your code that it hardly detects calls from one module
+to another nearby. It will fail iff you mistake a global call to a module loaded
+earlier to be local while patching AND you access global data / 64-bit constants
+after that call before the TOC is sanitised again.
+
+	Torsten
