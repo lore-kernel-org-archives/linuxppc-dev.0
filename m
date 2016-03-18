@@ -1,35 +1,26 @@
-Return-Path: <scott.wood@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0077.outbound.protection.outlook.com [157.56.112.77])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qRgsz0RsmzDq70
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2016 10:09:58 +1100 (AEDT)
-From: Scott Wood <scott.wood@nxp.com>
-To: Yangbo Lu <yangbo.lu@nxp.com>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-clk@vger.kernel.org"
- <linux-clk@vger.kernel.org>, "linux-i2c@vger.kernel.org"
- <linux-i2c@vger.kernel.org>, "iommu@lists.linux-foundation.org"
- <iommu@lists.linux-foundation.org>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "linux-mmc@vger.kernel.org"
- <linux-mmc@vger.kernel.org>
-CC: Rob Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>,
- Jochen Friedrich <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>, "Claudiu
- Manoil" <claudiu.manoil@freescale.com>, "ulf.hansson@linaro.org"
- <ulf.hansson@linaro.org>, Bhupesh Sharma <bhupesh.sharma@freescale.com>,
- "Zhao Qiang" <qiang.zhao@freescale.com>, Kumar Gala <galak@codeaurora.org>,
- "Santosh Shilimkar" <ssantosh@kernel.org>, Yang-Leo Li <leoyang.li@nxp.com>,
- Xiaobo Xie <xiaobo.xie@nxp.com>
-Subject: Re: [v6, 2/5] soc: fsl: add GUTS driver for QorIQ platforms
-Date: Fri, 18 Mar 2016 22:54:46 +0000
-Message-ID: <DB5PR0401MB1928302BB0DDE8D9B47E4361918C0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
-References: <1457518131-11339-1-git-send-email-yangbo.lu@nxp.com>
- <1457518131-11339-3-git-send-email-yangbo.lu@nxp.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qRh5x5KtFzDq6V
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2016 10:20:21 +1100 (AEDT)
+Message-ID: <1458343221.6622.88.camel@neuling.org>
+Subject: Re: [PATCH v8 3/6] cpufreq: powernv: Remove cpu_to_chip_id() from
+ hot-path
+From: Michael Neuling <mikey@neuling.org>
+To: benh@au1.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
+ shreyas@linux.vnet.ibm.com, rjw@rjwysocki.net, pc@us.ibm.com,
+ viresh.kumar@linaro.org, anton@samba.org
+Date: Sat, 19 Mar 2016 10:20:21 +1100
+In-Reply-To: <1458340635.3107.89.camel@au1.ibm.com>
+References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1454442102-1229-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1458273857.6622.75.camel@neuling.org>
+ <1458340635.3107.89.camel@au1.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,13 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/09/2016 04:18 AM, Yangbo Lu wrote:=0A=
-> +#ifdef CONFIG_FSL_GUTS=0A=
-> +u32 fsl_guts_get_svr(void);=0A=
-> +int fsl_guts_init(void);=0A=
-> +#endif=0A=
-=0A=
-Don't ifdef prototypes (when not providing a stub alternative).=0A=
-=0A=
--Scott=0A=
-=0A=
+On Sat, 2016-03-19 at 09:37 +1100, Benjamin Herrenschmidt wrote:
+> On Fri, 2016-03-18 at 15:04 +1100, Michael Neuling wrote:
+> >=20
+> >  static int nr_chips;
+> > +static DEFINE_PER_CPU(unsigned int, chip_id);
+> > =20
+> >  /*
+> >   * Note: The set of pstates consists of contiguous integers, the
+> > @@ -317,9 +318,7 @@ static void powernv_cpufreq_throttle_check(void
+> > *data)
+> > =20
+> >         pmsr =3D get_pmspr(SPRN_PMSR);
+> > =20
+> > -       for (i =3D 0; i < nr_chips; i++)
+> > -               if (chips[i].id =3D=3D cpu_to_chip_id(cpu))
+> > -                       break;
+> > +       i =3D this_cpu_read(chip_id);
+>=20
+> Except it's not a chip_id, so your patch confused me for a good 2mn
+> ...
+> Call it chip_idx maybe ? ie, index.
+
+Yeah, it was a badly named variable but I changed it even more and
+Shilpasri rebased it here:
+
+http://patchwork.ozlabs.org/patch/599523/
+
+Mikey
