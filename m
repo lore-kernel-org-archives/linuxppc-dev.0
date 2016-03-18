@@ -1,41 +1,46 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qRT0002LkzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2016 01:59:28 +1100 (AEDT)
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qRSzz5gV7z9t3v
- for <linuxppc-dev@ozlabs.org>; Sat, 19 Mar 2016 01:59:27 +1100 (AEDT)
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Sat, 19 Mar 2016 00:59:26 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 433992BB0055
- for <linuxppc-dev@ozlabs.org>; Sat, 19 Mar 2016 01:59:24 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2IExGY87274548
- for <linuxppc-dev@ozlabs.org>; Sat, 19 Mar 2016 01:59:24 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2IEwpX6012647
- for <linuxppc-dev@ozlabs.org>; Sat, 19 Mar 2016 01:58:51 +1100
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Cc: ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, viresh.kumar@linaro.org,
- rjw@rjwysocki.net, pc@us.ibm.com, shreyas@linux.vnet.ibm.com,
- anton@samba.org, mikey@neuling.org, shilpa.bhat@linux.vnet.ibm.com
-Subject: [PATCH] cpufreq: powernv: Define per_cpu chip pointer to optimize
- hot-path
-Date: Fri, 18 Mar 2016 20:28:20 +0530
-Message-Id: <1458313100-27676-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-In-Reply-To: <1458274308.6622.79.camel@neuling.org>
-References: <1458274308.6622.79.camel@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qRT1B5hzBzDqVw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2016 02:00:30 +1100 (AEDT)
+Subject: Re: [PATCH 2/3] swiotlb: prefix dma_to_phys and phys_to_dma functions
+To: Robin Murphy <robin.murphy@arm.com>,
+ linux-arm-kernel@lists.infradead.org, timur@codeaurora.org,
+ cov@codeaurora.org, nwatters@codeaurora.org
+References: <1458252137-24497-1-git-send-email-okaya@codeaurora.org>
+ <1458252137-24497-2-git-send-email-okaya@codeaurora.org>
+ <56EBF09A.1060503@arm.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Chris Metcalf <cmetcalf@ezchip.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Huacai Chen <chenhc@lemote.com>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Jisheng Zhang <jszhang@marvell.com>, Florian Fainelli
+ <f.fainelli@gmail.com>, Russell King <linux@arm.linux.org.uk>,
+ Aaro Koskinen <aaro.koskinen@iki.fi>, Michael Ellerman <mpe@ellerman.id.au>,
+ x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Guenter Roeck <linux@roeck-us.net>, Fenghua Yu <fenghua.yu@intel.com>,
+ Denys Vlasenko <dvlasenk@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Akinobu Mita <akinobu.mita@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Valentin Rothberg <valentinrothberg@gmail.com>,
+ Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Dean Nelson <dnelson@redhat.com>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "Suthikulpanit, Suravee" <Suravee.Suthikulpanit@amd.com>,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>
+From: Sinan Kaya <okaya@codeaurora.org>
+Message-ID: <56EC1805.5060207@codeaurora.org>
+Date: Fri, 18 Mar 2016 11:00:21 -0400
+MIME-Version: 1.0
+In-Reply-To: <56EBF09A.1060503@arm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,145 +50,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Neuling <mikey@neuling.org>
+On 3/18/2016 8:12 AM, Robin Murphy wrote:
+> Since we know for sure that swiotlb_to_phys is a no-op on arm64, it might be cleaner to simply not reference it at all. I suppose we could have some private local wrappers, e.g.:
+> 
+> #define swiotlb_to_virt(addr) phys_to_virt((phys_addr_t)(addr))
+> 
+> to keep the intent of the code clear (and just in case anyone ever builds a system mad enough to warrant switching out that definition, but I'd hope that never happens).
+> 
+> Otherwise, looks good - thanks for doing this!
 
-"cpufreq: powernv: Remove cpu_to_chip_id() from hot-path" introduced
-'core_to_chip_map' array to cache the chip-id of all cores. Replace
-this with per_cpu variable that stores the pointer to the chip-array.
-This removes the linear lookup and provides a neater and simpler
-solution.
+OK. I added this. Reviewed-by?
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Tested-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
----
+I'm not happy to submit such a big patch for all different ARCHs. I couldn't
+find a cleaner solution. I'm willing to split this patch into multiple if there
+is a better way.
 
-- Rebased the patch on top of linux-pm/linux-next
-- nr_chips is defined static, so it will be initialized to zero
-- Moved the initialization of the per_cpu variable after 'chips' is
-  allocated
-- Removed 'core_to_chip_map'
+diff --git a/arch/arm64/mm/dma-mapping.c b/arch/arm64/mm/dma-mapping.c
+index ada00c3..8c0f66b 100644
+--- a/arch/arm64/mm/dma-mapping.c
++++ b/arch/arm64/mm/dma-mapping.c
+@@ -29,6 +29,14 @@
 
- drivers/cpufreq/powernv-cpufreq.c | 50 +++++++++++++--------------------------
- 1 file changed, 17 insertions(+), 33 deletions(-)
+ #include <asm/cacheflush.h>
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 50bf120..a00bcc2 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -44,7 +44,6 @@
- 
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
- static bool rebooting, throttled, occ_reset;
--static unsigned int *core_to_chip_map;
- 
- static const char * const throttle_reason[] = {
- 	"No throttling",
-@@ -65,6 +64,7 @@ static struct chip {
- } *chips;
- 
- static int nr_chips;
-+static DEFINE_PER_CPU(struct chip *, chip_info);
- 
- /*
-  * Note: The set of pstates consists of contiguous integers, the
-@@ -324,34 +324,31 @@ static inline unsigned int get_nominal_index(void)
- 
- static void powernv_cpufreq_throttle_check(void *data)
++/*
++ * If you are building a system without IOMMU, then you are using SWIOTLB
++ * library. The ARM64 adaptation of this library does not support address
++ * translation and it assumes that physical address = dma address for such
++ * a use case. Please don't build a platform that violates this.
++ */
++#define swiotlb_to_virt(addr) phys_to_virt((phys_addr_t)(addr))
++
+ static pgprot_t __get_dma_pgprot(struct dma_attrs *attrs, pgprot_t prot,
+                                 bool coherent)
  {
-+	struct chip *chip;
- 	unsigned int cpu = smp_processor_id();
--	unsigned int chip_id = core_to_chip_map[cpu_core_index_of_thread(cpu)];
- 	unsigned long pmsr;
--	int pmsr_pmax, i;
-+	int pmsr_pmax;
- 
- 	pmsr = get_pmspr(SPRN_PMSR);
--
--	for (i = 0; i < nr_chips; i++)
--		if (chips[i].id == chip_id)
--			break;
-+	chip = this_cpu_read(chip_info);
- 
- 	/* Check for Pmax Capping */
- 	pmsr_pmax = (s8)PMSR_MAX(pmsr);
- 	if (pmsr_pmax != powernv_pstate_info.max) {
--		if (chips[i].throttled)
-+		if (chip->throttled)
- 			goto next;
--		chips[i].throttled = true;
-+		chip->throttled = true;
- 		if (pmsr_pmax < powernv_pstate_info.nominal)
- 			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
--				     cpu, chips[i].id, pmsr_pmax,
-+				     cpu, chip->id, pmsr_pmax,
- 				     powernv_pstate_info.nominal);
--		trace_powernv_throttle(chips[i].id,
--				      throttle_reason[chips[i].throttle_reason],
-+		trace_powernv_throttle(chip->id,
-+				      throttle_reason[chip->throttle_reason],
- 				      pmsr_pmax);
--	} else if (chips[i].throttled) {
--		chips[i].throttled = false;
--		trace_powernv_throttle(chips[i].id,
--				      throttle_reason[chips[i].throttle_reason],
-+	} else if (chip->throttled) {
-+		chip->throttled = false;
-+		trace_powernv_throttle(chip->id,
-+				      throttle_reason[chip->throttle_reason],
- 				      pmsr_pmax);
- 	}
- 
-@@ -558,47 +555,34 @@ static int init_chip_info(void)
- 	unsigned int chip[256];
- 	unsigned int cpu, i;
- 	unsigned int prev_chip_id = UINT_MAX;
--	cpumask_t cpu_mask;
--	int ret = -ENOMEM;
--
--	core_to_chip_map = kcalloc(cpu_nr_cores(), sizeof(unsigned int),
--				   GFP_KERNEL);
--	if (!core_to_chip_map)
--		goto out;
- 
--	cpumask_copy(&cpu_mask, cpu_possible_mask);
--	for_each_cpu(cpu, &cpu_mask) {
-+	for_each_possible_cpu(cpu) {
- 		unsigned int id = cpu_to_chip_id(cpu);
- 
- 		if (prev_chip_id != id) {
- 			prev_chip_id = id;
- 			chip[nr_chips++] = id;
- 		}
--		core_to_chip_map[cpu_core_index_of_thread(cpu)] = id;
--		cpumask_andnot(&cpu_mask, &cpu_mask, cpu_sibling_mask(cpu));
- 	}
- 
- 	chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
- 	if (!chips)
--		goto free_chip_map;
-+		return -ENOMEM;
- 
- 	for (i = 0; i < nr_chips; i++) {
- 		chips[i].id = chip[i];
- 		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
- 		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
-+		for_each_cpu(cpu, &chips[i].mask)
-+			per_cpu(chip_info, cpu) =  &chips[i];
- 	}
- 
- 	return 0;
--free_chip_map:
--	kfree(core_to_chip_map);
--out:
--	return ret;
- }
- 
- static inline void clean_chip_info(void)
+@@ -188,7 +196,7 @@ static void __dma_free(struct device *dev, size_t size,
+                       void *vaddr, dma_addr_t dma_handle,
+                       struct dma_attrs *attrs)
  {
- 	kfree(chips);
--	kfree(core_to_chip_map);
+-       void *swiotlb_addr = phys_to_virt(swiotlb_dma_to_phys(dev, dma_handle));
++       void *swiotlb_addr = swiotlb_to_virt(dma_handle);
+
+        size = PAGE_ALIGN(size);
+
+@@ -209,8 +217,7 @@ static dma_addr_t __swiotlb_map_page(struct device *dev, struct page *page,
+
+        dev_addr = swiotlb_map_page(dev, page, offset, size, dir, attrs);
+        if (!is_device_dma_coherent(dev))
+-               __dma_map_area(phys_to_virt(swiotlb_dma_to_phys(dev, dev_addr)),
+-                              size, dir);
++               __dma_map_area(swiotlb_to_virt(dev_addr), size, dir);
+
+        return dev_addr;
  }
- 
- static inline void unregister_all_notifiers(void)
+@@ -283,8 +290,7 @@ static void __swiotlb_sync_single_for_device(struct device *dev,
+ {
+        swiotlb_sync_single_for_device(dev, dev_addr, size, dir);
+        if (!is_device_dma_coherent(dev))
+-               __dma_map_area(phys_to_virt(swiotlb_dma_to_phys(dev, dev_addr)),
+-                              size, dir);
++               __dma_map_area(swiotlb_to_virt(dev_addr), size, dir);
+ }
+
+
+
+
 -- 
-1.9.3
+Sinan Kaya
+Qualcomm Technologies, Inc. on behalf of Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project
