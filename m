@@ -1,38 +1,40 @@
-Return-Path: <rjwysocki@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qRQfN2bfdzDqHw
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2016 00:14:04 +1100 (AEDT)
-Received: from mail-lb0-x244.google.com (mail-lb0-x244.google.com
- [IPv6:2a00:1450:4010:c04::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qRQfM3GPSz9sCk
- for <linuxppc-dev@ozlabs.org>; Sat, 19 Mar 2016 00:14:03 +1100 (AEDT)
-Received: by mail-lb0-x244.google.com with SMTP id bc4so6829649lbc.0
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Mar 2016 06:14:03 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qRStT32sbzDq6X
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2016 01:54:41 +1100 (AEDT)
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Sat, 19 Mar 2016 00:54:39 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id A08362CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2016 01:54:28 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2IEsFrs7143732
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2016 01:54:28 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2IErphF030439
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2016 01:53:51 +1100
+Message-ID: <56EC1664.8020905@linux.vnet.ibm.com>
+Date: Fri, 18 Mar 2016 20:23:24 +0530
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: rjwysocki@gmail.com
-In-Reply-To: <1458274308.6622.79.camel@neuling.org>
-References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1454442102-1229-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1458273857.6622.75.camel@neuling.org>
- <1458274308.6622.79.camel@neuling.org>
-Date: Fri, 18 Mar 2016 14:13:59 +0100
-Message-ID: <CAJZ5v0jj8+QWseRv0Qw+HqFmpEJdkg0v4iuu3rwM9rOXgMSXZQ@mail.gmail.com>
-Subject: Re: [PATCH v8 3/6] cpufreq: powernv: Remove cpu_to_chip_id() from
- hot-path
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Michael Neuling <mikey@neuling.org>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, pc@us.ibm.com,
- shreyas@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>
-Content-Type: text/plain; charset=UTF-8
+To: Paul Mackerras <paulus@ozlabs.org>
+CC: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+ mahesh@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com
+Subject: Re: [PATCH 2/3] powerpc/powernv: Encapsulate idle preparation steps
+ in a macro
+References: <1456748580-10519-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1456748580-10519-3-git-send-email-shreyas@linux.vnet.ibm.com>
+ <20160317111534.GD28728@fergus.ozlabs.ibm.com>
+In-Reply-To: <20160317111534.GD28728@fergus.ozlabs.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,52 +44,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 18, 2016 at 5:11 AM, Michael Neuling <mikey@neuling.org> wrote:
-> On Fri, 2016-03-18 at 15:04 +1100, Michael Neuling wrote:
->
->> On Wed, 2016-02-03 at 01:11 +0530, Shilpasri G Bhat wrote:
->>
->
->> > cpu_to_chip_id() does a DT walk through to find out the chip id by
->> > taking a contended device tree lock. This adds an unnecessary
->> > overhead
->> > in a hot path. So instead of calling cpu_to_chip_id() everytime
->> > cache
->> > the chip ids for all cores in the array 'core_to_chip_map' and use
->> > it
->> > in the hotpath.
->> >
->> > Reported-by: Anton Blanchard <anton@samba.org>
->> > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
->> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
->> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> > ---
->> > No changes from v7.
->>
->> How about this instead?  It removes the linear lookup and seems a lot
->> less complex.
+Hi Paul,
 
-This has gone in already.  Can you please send a patch on top of it?
+On 03/17/2016 04:45 PM, Paul Mackerras wrote:
+> On Mon, Feb 29, 2016 at 05:52:59PM +0530, Shreyas B. Prabhu wrote:
+>> Before entering any idle state which can result in a state loss
+>> we currently save the context in the stack before entering idle.
+>> Encapsulate these steps in a macro IDLE_STATE_PREP. Move this
+>> and other macros to commonly accessible location.
+> 
+> There are two problems with this.  First, your new macro does much
+> more than create a stack frame and save some registers.  It also
+> messes with interrupts and potentially executes a blr instruction.
+> That is not what people would expect from the name of the macro or the
+> comments around it.  It also means that it would be hard to reuse the
+> macro in another place.
+> 
+> Secondly, I don't think this change helps readability.  Since the
+> macro is only used in one place, it doesn't reduce the total number of
+> lines of code, in fact it increases it slightly. 
 
-> BTW we never init nr_chips before using it.  We also need something
-> like.
->
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index d63d2cb..c819ed4 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -556,6 +556,8 @@ static int init_chip_info(void)
->         unsigned int cpu, i;
->         unsigned int prev_chip_id = UINT_MAX;
->
-> +       nr_chips = 0;
-> +
->         for_each_possible_cpu(cpu) {
->                 unsigned int id = cpu_to_chip_id(cpu);
->
->
+This patch was in preparation for support for new POWER ISA v3 idle
+states. The idea was to have the common idle preparation steps in a
+macro which be reused while adding support for the new idle states. With
+this context do you think this macro with better comments make sense?
 
-Including this part too maybe?
 
 Thanks,
-Rafael
+Shreyas
