@@ -1,42 +1,23 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qRBdH15sjzDr3G
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 15:12:19 +1100 (AEDT)
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 18 Mar 2016 14:12:17 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0998D3578064
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 15:12:11 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2I4BAe458327154
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 15:12:00 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2I49nEX009302
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 15:09:50 +1100
-Date: Fri, 18 Mar 2016 15:00:36 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
- imunsie@au1.ibm.com, mikey@neuling.org, andrew.donnellan@au1.ibm.com,
- bhelgaas@google.com
-Subject: Re: [PATCH v3] powerpc/pci: Assign fixed PHB number based on
- device-tree properties
-Message-ID: <20160318040036.GA4078@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1458245026-27635-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <20160317223757.GA6336@gwshan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qRCVc6R6VzDqW4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 15:51:36 +1100 (AEDT)
+Date: Fri, 18 Mar 2016 15:51:32 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ KVM-PPC <kvm-ppc@vger.kernel.org>, KVM <kvm@vger.kernel.org>
+Subject: Re: [PATCH 2/3] powerpc/book3s: Fix TB corruption in guest exit path
+ on HMI interrupt.
+Message-ID: <20160318045132.GB1393@fergus.ozlabs.ibm.com>
+References: <20160114031457.1287.32132.stgit@mars>
+ <20160114031503.1287.54860.stgit@mars>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160317223757.GA6336@gwshan>
+In-Reply-To: <20160114031503.1287.54860.stgit@mars>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,124 +27,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 18, 2016 at 09:37:57AM +1100, Gavin Shan wrote:
->On Thu, Mar 17, 2016 at 05:03:46PM -0300, Guilherme G. Piccoli wrote:
->>The domain/PHB field of PCI addresses has its value obtained from a
->>global variable, incremented each time a new domain (represented by
->>struct pci_controller) is added on the system. The domain addition
->>process happens during boot or due to PCI device hotplug.
->>
->>As recent kernels are using predictable naming for network interfaces,
->>the network stack is more tied to PCI naming. This can be a problem in
->>hotplug scenarios, because PCI addresses will change if devices are
->>removed and then re-added. This situation seems unusual, but it can
->>happen if a user wants to replace a NIC without rebooting the machine,
->>for example.
->>
->>This patch changes the way PCI domain values are generated: now, we use
->>device-tree properties to assign fixed PHB numbers to PCI addresses
->>when available (meaning pSeries and PowerNV cases). We also use a bitmap
->>to allow dynamic PHB numbering when device-tree properties are not
->>used. This bitmap keeps track of used PHB numbers and if a PHB is
->>released (by hotplug operations for example), it allows the reuse of
->>this PHB number, avoiding PCI address to change in case of device remove
->>and re-add soon after. No functional changes were introduced.
->>
->>Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
->
->Apart from below minor issues to be fixed, it looks good to me.
->
->Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->
->>---
->> arch/powerpc/kernel/pci-common.c | 41 +++++++++++++++++++++++++++++++++++++---
->> 1 file changed, 38 insertions(+), 3 deletions(-)
->>
->>diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
->>index 0f7a60f..8777614 100644
->>--- a/arch/powerpc/kernel/pci-common.c
->>+++ b/arch/powerpc/kernel/pci-common.c
->>@@ -44,8 +44,11 @@
->> static DEFINE_SPINLOCK(hose_spinlock);
->> LIST_HEAD(hose_list);
->>
->>-/* XXX kill that some day ... */
->>-static int global_phb_number;		/* Global phb counter */
->>+/* For dynamic PHB numbering on get_phb_number(): max number of PHBs. */
->>+#define	MAX_PHBS	8192
->>+
->>+/* For dynamic PHB numbering: used/free PHBs tracking bitmap. */
->>+static DECLARE_BITMAP(phb_bitmap, MAX_PHBS);
->>
->> /* ISA Memory physical address */
->> resource_size_t isa_mem_base;
->>@@ -64,6 +67,33 @@ struct dma_map_ops *get_pci_dma_ops(void)
->> }
->> EXPORT_SYMBOL(get_pci_dma_ops);
->>
->>+static int get_phb_number(struct device_node *dn)
->>+{
->>+	const __be64 *prop64;
->>+	const __be32 *regs;
->>+	int phb_id = 0;
->>+
->>+	/* try fixed PHB numbering first, by checking archs and reading
->>+	 * the respective device-tree property. */
->>+	if (machine_is(pseries)) {
->>+		regs = of_get_property(dn, "reg", NULL);
->>+		if (regs)
->>+			return (int)(be32_to_cpu(regs[1]) & 0xFFFF);
->>+	} else {
->>+		if (machine_is(powernv)) {
->>+			prop64 = of_get_property(dn, "ibm,opal-phbid", NULL);
->>+			if (prop64)
->>+				return (int)(be64_to_cpup(prop64) & 0xFFFF);
->>+		}
->>+	}
->>+
->
->The nested statements can be merged to one with "else if (machine_is(powernv))".
->
->>+	/* if not pSeries nor PowerNV, fallback to dynamic PHB numbering */
->>+	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
->>+	BUG_ON(phb_id >= MAX_PHBS); /* reached maximum number of PHBs */
->>+	set_bit(phb_id, phb_bitmap);
->>+	return phb_id;
->
->It's possible another CPU sets this bit before current CPU updates it, which
->will cause same domain number used by two PHBs though it's very rare. I guess
->it might be worthwhile to check if the bit is reserved by somebody else to
->avoid the issue.
->
+On Thu, Jan 14, 2016 at 08:45:04AM +0530, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> 
+> When a guest is assigned to a core it converts the host Timebase (TB)
+> into guest TB by adding guest timebase offset before entering into
+> guest. During guest exit it restores the guest TB to host TB. This means
+> under certain conditions (Guest migration) host TB and guest TB can differ.
+> 
+> When we get an HMI for TB related issues the opal HMI handler would
+> try fixing errors and restore the correct host TB value. With no guest
+> running, we don't have any issues. But with guest running on the core
+> we run into TB corruption issues.
+> 
+> If we get an HMI while in the guest, the current HMI handler invokes opal
+> hmi handler before forcing guest to exit. The guest exit path subtracts
+> the guest TB offset from the current TB value which may have already
+> been restored with host value by opal hmi handler. This leads to incorrect
+> host and guest TB values.
+> 
+> With split-core, things become more complex. With split-core, TB also gets
+> split and each subcore gets its own TB register. When a hmi handler fixes
+> a TB error and restores the TB value, it affects all the TB values of
+> sibling subcores on the same core. On TB errors all the thread in the core
+> gets HMI. With existing code, the individual threads call opal hmi handle
+> independently which can easily throw TB out of sync if we have guest
+> running on subcores. Hence we will need to co-ordinate with all the
+> threads before making opal hmi handler call followed by TB resync.
+> 
+> This patch introduces a sibling subcore state structure (shared by all
+> threads in the core) in paca which holds information about whether sibling
+> subcores are in Guest mode or host mode. An array in_guest[] of size
+> MAX_SUBCORE_PER_CORE=4 is used to maintain the state of each subcore.
+> The subcore id is used as index into in_guest[] array. Only primary
+> thread entering/exiting the guest is responsible to set/unset its
+> designated array element.
+> 
+> On TB error, we get HMI interrupt on every thread on the core. Upon HMI,
+> this patch will now force guest to vacate the core/subcore. Primary
+> thread from each subcore will then turn off its respective bit
+> from the above bitmap during the guest exit path just after the
+> guest->host partition switch is complete.
+> 
+> All other threads that have just exited the guest OR were already in host
+> will wait until all other subcores clears their respective bit.
+> Once all the subcores turn off their respective bit, all threads will
+> will make call to opal hmi handler.
+> 
+> It is not necessary that opal hmi handler would resync the TB value for
+> every HMI interrupts. It would do so only for the HMI caused due to
+> TB errors. For rest, it would not touch TB value. Hence to make things
+> simpler, primary thread would call TB resync explicitly once for each
+> core immediately after opal hmi handler instead of subtracting guest
+> offset from TB. TB resync call will restore the TB with host value.
+> Thus we can be sure about the TB state.
+> 
+> One of the primary threads exiting the guest will take up the
+> responsibility of calling TB resync. It will use one of the top bits
+> (bit 63) from subcore state flags bitmap to make the decision. The first
+> primary thread (among the subcores) that is able to set the bit will
+> have to call the TB resync. Rest all other threads will wait until TB
+> resync is complete.  Once TB resync is complete all threads will then
+> proceed.
 
-Please ignore this comment: there is a lock (hose_spinlock) avoiding the issue.
+This patch looks pretty good; the one nit that I can see is that you
+have a vcpu parameter to kvmppc_realmode_hmi_handler which is
+completely unused; which is just as well, because you get it from r9
+at the point where it is called, but at that point r9 may or may not
+contain a vcpu pointer, depending on the path we take to get there.
 
->>+}
->>+
->> struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
->> {
->> 	struct pci_controller *phb;
->>@@ -72,7 +102,7 @@ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
->> 	if (phb == NULL)
->> 		return NULL;
->> 	spin_lock(&hose_spinlock);
->>-	phb->global_number = global_phb_number++;
->>+	phb->global_number = get_phb_number(dev);
->> 	list_add_tail(&phb->list_node, &hose_list);
->> 	spin_unlock(&hose_spinlock);
->> 	phb->dn = dev;
->>@@ -94,6 +124,11 @@ EXPORT_SYMBOL_GPL(pcibios_alloc_controller);
->> void pcibios_free_controller(struct pci_controller *phb)
->> {
->> 	spin_lock(&hose_spinlock);
->>+
->>+	/* clear bit of phb_bitmap to allow reuse of this phb number */
->>+	if (phb->global_number < MAX_PHBS)
->>+		clear_bit(phb->global_number, phb_bitmap);
->>+
->> 	list_del(&phb->list_node);
->> 	spin_unlock(&hose_spinlock);
->>
->
->Thanks,
->Gavin
+Why not just remove the vcpu argument?
+
+Also, patch 3/3 seems like it is just something that was missed from
+this patch (2/3).  Why not fold it in?
+
+Paul.
