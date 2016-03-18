@@ -1,23 +1,37 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qRCVc6R6VzDqW4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 15:51:36 +1100 (AEDT)
-Date: Fri, 18 Mar 2016 15:51:32 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- KVM-PPC <kvm-ppc@vger.kernel.org>, KVM <kvm@vger.kernel.org>
-Subject: Re: [PATCH 2/3] powerpc/book3s: Fix TB corruption in guest exit path
- on HMI interrupt.
-Message-ID: <20160318045132.GB1393@fergus.ozlabs.ibm.com>
-References: <20160114031457.1287.32132.stgit@mars>
- <20160114031503.1287.54860.stgit@mars>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160114031503.1287.54860.stgit@mars>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qRFvX0N75zDqWX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 17:39:52 +1100 (AEDT)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 18 Mar 2016 16:39:50 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id A8089357805C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 17:39:43 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2I6dZqw28115028
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 17:39:43 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2I6chc8015195
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 17:38:43 +1100
+Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ u2I6cgEe013960
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 17:38:42 +1100
+Received: from ajd.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ by ozlabs.au.ibm.com (Postfix) with ESMTP id EEA5BA0129
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 17:36:47 +1100 (AEDT)
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/rtas: fix array overrun in ppc_rtas() syscall
+Date: Fri, 18 Mar 2016 17:36:33 +1100
+Message-Id: <1458282993-6371-1-git-send-email-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,78 +41,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 14, 2016 at 08:45:04AM +0530, Mahesh J Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> 
-> When a guest is assigned to a core it converts the host Timebase (TB)
-> into guest TB by adding guest timebase offset before entering into
-> guest. During guest exit it restores the guest TB to host TB. This means
-> under certain conditions (Guest migration) host TB and guest TB can differ.
-> 
-> When we get an HMI for TB related issues the opal HMI handler would
-> try fixing errors and restore the correct host TB value. With no guest
-> running, we don't have any issues. But with guest running on the core
-> we run into TB corruption issues.
-> 
-> If we get an HMI while in the guest, the current HMI handler invokes opal
-> hmi handler before forcing guest to exit. The guest exit path subtracts
-> the guest TB offset from the current TB value which may have already
-> been restored with host value by opal hmi handler. This leads to incorrect
-> host and guest TB values.
-> 
-> With split-core, things become more complex. With split-core, TB also gets
-> split and each subcore gets its own TB register. When a hmi handler fixes
-> a TB error and restores the TB value, it affects all the TB values of
-> sibling subcores on the same core. On TB errors all the thread in the core
-> gets HMI. With existing code, the individual threads call opal hmi handle
-> independently which can easily throw TB out of sync if we have guest
-> running on subcores. Hence we will need to co-ordinate with all the
-> threads before making opal hmi handler call followed by TB resync.
-> 
-> This patch introduces a sibling subcore state structure (shared by all
-> threads in the core) in paca which holds information about whether sibling
-> subcores are in Guest mode or host mode. An array in_guest[] of size
-> MAX_SUBCORE_PER_CORE=4 is used to maintain the state of each subcore.
-> The subcore id is used as index into in_guest[] array. Only primary
-> thread entering/exiting the guest is responsible to set/unset its
-> designated array element.
-> 
-> On TB error, we get HMI interrupt on every thread on the core. Upon HMI,
-> this patch will now force guest to vacate the core/subcore. Primary
-> thread from each subcore will then turn off its respective bit
-> from the above bitmap during the guest exit path just after the
-> guest->host partition switch is complete.
-> 
-> All other threads that have just exited the guest OR were already in host
-> will wait until all other subcores clears their respective bit.
-> Once all the subcores turn off their respective bit, all threads will
-> will make call to opal hmi handler.
-> 
-> It is not necessary that opal hmi handler would resync the TB value for
-> every HMI interrupts. It would do so only for the HMI caused due to
-> TB errors. For rest, it would not touch TB value. Hence to make things
-> simpler, primary thread would call TB resync explicitly once for each
-> core immediately after opal hmi handler instead of subtracting guest
-> offset from TB. TB resync call will restore the TB with host value.
-> Thus we can be sure about the TB state.
-> 
-> One of the primary threads exiting the guest will take up the
-> responsibility of calling TB resync. It will use one of the top bits
-> (bit 63) from subcore state flags bitmap to make the decision. The first
-> primary thread (among the subcores) that is able to set the bit will
-> have to call the TB resync. Rest all other threads will wait until TB
-> resync is complete.  Once TB resync is complete all threads will then
-> proceed.
+If ppc_rtas() is called with args.nargs == 16 and args.nret == 0, args.rets
+is set to point to &args.args[16], which is beyond the end of the args.args
+array. This results in a minor read overrun of the array when we check the
+first return code (which, per PAPR, is a required output of all RTAS calls)
+to see if there's been a hardware error.
 
-This patch looks pretty good; the one nit that I can see is that you
-have a vcpu parameter to kvmppc_realmode_hmi_handler which is
-completely unused; which is just as well, because you get it from r9
-at the point where it is called, but at that point r9 may or may not
-contain a vcpu pointer, depending on the path we take to get there.
+Change the nargs/nret check to ensure nargs is <= 15, allowing room for the
+status code. Users shouldn't be calling with nret == 0, but there's no real
+harm if they do, so we don't stop them.
 
-Why not just remove the vcpu argument?
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Also, patch 3/3 seems like it is just something that was missed from
-this patch (2/3).  Why not fold it in?
+---
 
-Paul.
+Found with the assistance of Coverity Scan.
+
+The dodgy read doesn't currently leak anything at all to userspace, as
+args.rets isn't copied back to userspace.
+---
+ arch/powerpc/kernel/rtas.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 28736ff..8da209f 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -1070,7 +1070,7 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+ 	nret  = be32_to_cpu(args.nret);
+ 	token = be32_to_cpu(args.token);
+ 
+-	if (nargs > ARRAY_SIZE(args.args)
++	if (nargs >= ARRAY_SIZE(args.args)
+ 	    || nret > ARRAY_SIZE(args.args)
+ 	    || nargs + nret > ARRAY_SIZE(args.args))
+ 		return -EINVAL;
+-- 
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
