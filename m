@@ -1,17 +1,35 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qR9mW4QYyzDqHw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 14:33:31 +1100 (AEDT)
-In-Reply-To: <20160114031457.1287.32132.stgit@mars>
-To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: KVM <kvm@vger.kernel.org>, KVM-PPC <kvm-ppc@vger.kernel.org>
-Subject: Re: [1/3] Powernv: Remove the usage of PACAR1 from opal wrappers
-Message-Id: <3qR9mW32mxz9sCk@ozlabs.org>
-Date: Fri, 18 Mar 2016 14:33:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qRB2C1yWWzDqPm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 14:45:23 +1100 (AEDT)
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Fri, 18 Mar 2016 13:45:21 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1713C2CE805A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 14:45:03 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2I3itiZ1573244
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 14:45:03 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2I3iG1O003006
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 14:44:16 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: mikey <mikey@neuling.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] cxl: Don't fail initialization if PSL timebase can't be
+ synced
+In-reply-to: <1458247932-14100-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+References: <1458247932-14100-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+Date: Fri, 18 Mar 2016 14:43:31 +1100
+Message-Id: <1458272589-sup-9880@x230.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,22 +39,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-14-01 at 03:14:58 UTC, Mahesh Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> 
-> OPAL_CALL wrapper code sticks the r1 (stack pointer) into PACAR1 purely
-> for debugging purpose only. The power7_wakeup* functions relies on stack
-> pointer saved in PACAR1. Any opal call made using opal wrapper (directly
-> or in-directly) before we fall through power7_wakeup*, then it ends up
-> replacing r1 in PACAR1(r13) leading to kernel panic. So far we don't see
-> any issues because we have never made any opal calls using OPAL wrapper
-> before power7_wakeup*. But the subsequent HMI patch would need to invoke
-> C calls during cpu wakeup/idle path that in-directly makes opal call using
-> opal wrapper. This patch facilitates the subsequent HMI patch by removing
-> usage of PACAR1 from opal call wrapper.
-> 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-
-cheers
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
