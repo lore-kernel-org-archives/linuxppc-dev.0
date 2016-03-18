@@ -1,26 +1,17 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from emea01-db3-obe.outbound.protection.outlook.com
- (mail-db3on0090.outbound.protection.outlook.com [157.55.234.90])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <sam@mendozajonas.com>
+Received: from mendozajonas.com (mendozajonas.com [188.166.185.233])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qR66p3JfQzDq6X
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 11:49:05 +1100 (AEDT)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: Rob Herring <robh@kernel.org>
-CC: "oss@buserror.net" <oss@buserror.net>, Yang-Leo Li <leoyang.li@nxp.com>,
- Xiaobo Xie <xiaobo.xie@nxp.com>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH v5 3/7] QE: Add uqe_serial document to bindings
-Date: Fri, 18 Mar 2016 00:48:57 +0000
-Message-ID: <AM3PR04MB118502C29D83E6251367E4E8918C0@AM3PR04MB1185.eurprd04.prod.outlook.com>
-References: <1457486494-11377-1-git-send-email-qiang.zhao@nxp.com>
- <1457486494-11377-3-git-send-email-qiang.zhao@nxp.com>
- <20160317162749.GA7872@rob-hp-laptop>
-In-Reply-To: <20160317162749.GA7872@rob-hp-laptop>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qR6NV53MpzDqGd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 12:00:58 +1100 (AEDT)
+From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+To: 
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.com>, Samuel Mendoza-Jonas <sam@mendozajonas.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] tty/hvc: Use IRQF_SHARED for hvc consoles
+Date: Fri, 18 Mar 2016 11:54:43 +1100
+Message-Id: <1458262483-15149-1-git-send-email-sam@mendozajonas.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +21,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Commit 2def86a7200c
+("hvc: Convert to using interrupts instead of opal events")
+enabled the use of interrupts in the hvc_driver for OPAL platforms.
+However on machines with more than one hvc console, any console after
+the first will fail to register an interrupt handler in
+notifier_add_irq() since all consoles share the same IRQ number but do
+not set the IRQF_SHARED flag:
 
-On Fri, Mar 18, 2016 at 12:28AM, Rob Herring wrote:
-> -----Original Message-----
-> From: Rob Herring [mailto:robh@kernel.org]
-> Sent: Friday, March 18, 2016 12:28 AM
-> To: Qiang Zhao <qiang.zhao@nxp.com>
-> Cc: oss@buserror.net; Yang-Leo Li <leoyang.li@nxp.com>; Xiaobo Xie
-> <xiaobo.xie@nxp.com>; linux-kernel@vger.kernel.org;
-> devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH v5 3/7] QE: Add uqe_serial document to bindings
->=20
-> On Wed, Mar 09, 2016 at 09:21:30AM +0800, Zhao Qiang wrote:
-> > Add uqe_serial document to
-> > Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
-> >
-> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
-> > ---
-> > Changes for v2
-> > 	- modify tx/rx-clock-name specification Changes for v3
-> > 	- NA
-> > Changes for v4
-> > 	- drop device_type
-> > 	- modify to SoC specific compatible
-> > Changes for v5
-> > 	- add fsl to compatible as prefix
-> >
-> >  .../bindings/powerpc/fsl/cpm_qe/uqe_serial.txt         | 18
-> ++++++++++++++++++
-> >  1 file changed, 18 insertions(+)
-> >  create mode 100644
-> > Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
->=20
-> Acked-by: Rob Herring <robh@kernel.org>
+[   51.179907] genirq: Flags mismatch irq 31. 00000000 (hvc_console) vs.
+00000000 (hvc_console)
+[   51.180010] hvc_open: request_irq failed with rc -16.
 
-Thank you for reviewing!
+This error propagates up to hvc_open() and the console is closed, but
+OPAL will still generate interrupts that are not handled, leading to
+rcu_sched stall warnings.
 
-BR
--Zhao Qiang
+Set IRQF_SHARED when calling request_irq, allowing additional consoles
+to start properly.
+
+Signed-off-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+Cc: <stable@vger.kernel.org> # 4.1.x-
+---
+ drivers/tty/hvc/hvc_irq.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/tty/hvc/hvc_irq.c b/drivers/tty/hvc/hvc_irq.c
+index c9adb05..621263a 100644
+--- a/drivers/tty/hvc/hvc_irq.c
++++ b/drivers/tty/hvc/hvc_irq.c
+@@ -14,6 +14,9 @@ static irqreturn_t hvc_handle_interrupt(int irq, void *dev_instance)
+ 	/* if hvc_poll request a repoll, then kick the hvcd thread */
+ 	if (hvc_poll(dev_instance))
+ 		hvc_kick();
++	/* We're safe to always return IRQ_HANDLED as the hvcd thread will
++	 * iterate through each hvc_struct
++	 */
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -28,7 +31,7 @@ int notifier_add_irq(struct hvc_struct *hp, int irq)
+ 		hp->irq_requested = 0;
+ 		return 0;
+ 	}
+-	rc = request_irq(irq, hvc_handle_interrupt, 0,
++	rc = request_irq(irq, hvc_handle_interrupt, IRQF_SHARED,
+ 			   "hvc_console", hp);
+ 	if (!rc)
+ 		hp->irq_requested = 1;
+-- 
+2.7.3
