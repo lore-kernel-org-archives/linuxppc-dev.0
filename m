@@ -1,36 +1,35 @@
-Return-Path: <scott.wood@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0068.outbound.protection.outlook.com [157.56.112.68])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qRYct2WTrzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2016 05:28:13 +1100 (AEDT)
-From: Scott Wood <scott.wood@nxp.com>
-To: Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh@kernel.org>
-CC: Yangbo Lu <yangbo.lu@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "ulf.hansson@linaro.org"
- <ulf.hansson@linaro.org>, Zhao Qiang <qiang.zhao@freescale.com>, Russell King
- <linux@arm.linux.org.uk>, Bhupesh Sharma <bhupesh.sharma@freescale.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Joerg Roedel
- <joro@8bytes.org>, Kumar Gala <galak@codeaurora.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Yang-Leo Li
- <leoyang.li@nxp.com>, "iommu@lists.linux-foundation.org"
- <iommu@lists.linux-foundation.org>, "linux-i2c@vger.kernel.org"
- <linux-i2c@vger.kernel.org>, Claudiu Manoil <claudiu.manoil@freescale.com>,
- Santosh Shilimkar <ssantosh@kernel.org>, Xiaobo Xie <xiaobo.xie@nxp.com>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [v6, 5/5] mmc: sdhci-of-esdhc: fix host version for
- T4240-R1.0-R2.0
-Date: Fri, 18 Mar 2016 18:28:05 +0000
-Message-ID: <DB5PR0401MB1928DA88B03970E1EACFB1FF918C0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
-References: <1457518131-11339-1-git-send-email-yangbo.lu@nxp.com>
- <DB5PR0401MB19286B2D23D07F5C60DB799D91880@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <20160317170101.GA21009@rob-hp-laptop> <3706958.XeRFmKM0K5@wuerfel>
-Content-Type: text/plain; charset="Windows-1252"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qRf5D1JlBzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2016 08:49:35 +1100 (AEDT)
+Received: from localhost
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Fri, 18 Mar 2016 18:49:31 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id F279C1DC006E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 17:49:20 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2IKl9iB4771888
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 17:47:09 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2ILnPhm021329
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 18:49:26 -0300
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-pci@vger.kernel.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
+ paulus@samba.org, imunsie@au1.ibm.com, mikey@neuling.org,
+ andrew.donnellan@au1.ibm.com, gwshan@linux.vnet.ibm.com,
+ bhelgaas@google.com, gpiccoli@linux.vnet.ibm.com
+Subject: [PATCH v4] powerpc/pci: Assign fixed PHB number based on device-tree
+ properties
+Date: Fri, 18 Mar 2016 18:49:06 -0300
+Message-Id: <1458337746-20337-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,68 +39,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/17/2016 12:06 PM, Arnd Bergmann wrote:=0A=
-> On Thursday 17 March 2016 12:01:01 Rob Herring wrote:=0A=
->> On Mon, Mar 14, 2016 at 05:45:43PM +0000, Scott Wood wrote:=0A=
-> =0A=
->>>>> This makes the driver non-portable. Better identify the specific=0A=
->>>>> workarounds based on the compatible string for this device, or add a=
-=0A=
->>>>> boolean DT property for the quirk.=0A=
->>>>>=0A=
->>>>>    Arnd=0A=
->>>>=0A=
->>>> [Lu Yangbo-B47093] Hi Arnd, we did have a discussion about using DTS i=
-n v1 before.=0A=
->>>> https://patchwork.kernel.org/patch/6834221/=0A=
->>>>=0A=
->>>> We don=92t have a separate DTS file for each revision of an SOC and if=
- we did, we'd constantly have people using the wrong one.=0A=
->>>> In addition, the device tree is stable ABI and errata are often discov=
-ered after device tree are deployed.=0A=
->>>> See the link for details.=0A=
->>>>=0A=
->>>> So we decide to read SVR from the device-config/guts MMIO block other =
-than using DTS.=0A=
->>>> Thanks.=0A=
->>>=0A=
->>> Also note that this driver is already only for fsl-specific hardware,=
-=0A=
->>> and it will still work even if fsl_guts doesn't find anything to bind t=
-o=0A=
->>> -- it just wouldn't be able to detect errata based on SVR in that case.=
-=0A=
->>=0A=
->> IIRC, it is the same IP block as i.MX and Arnd's point is this won't =0A=
->> even compile on !PPC. It is things like this that prevent sharing the =
-=0A=
->> driver.=0A=
-=0A=
-The whole point of using the MMIO SVR instead of the PPC SPR is so that=0A=
-it will work on ARM...  The guts driver should build on any platform as=0A=
-long as OF is enabled, and if it doesn't find a node to bind to it will=0A=
-return 0 for SVR, and the eSDHC driver will continue (after printing an=0A=
-error that should be removed) without the ability to test for errata=0A=
-based on SVR.=0A=
-=0A=
-> I think the first four patches take care of building for ARM,=0A=
-> but the problem remains if you want to enable COMPILE_TEST as=0A=
-> we need for certain automated checking.=0A=
-=0A=
-What specific problem is there with COMPILE_TEST?=0A=
-=0A=
->> Dealing with Si revs is a common problem. We should have a =0A=
->> common solution. There is soc_device for this purpose.=0A=
-> =0A=
-> Exactly. The last time this came up, I think we agreed to implement a=0A=
-> helper using glob_match() on the soc_device strings. Unfortunately=0A=
-> this hasn't happened then, but I'd still prefer that over yet another=0A=
-> vendor-specific way of dealing with the generic issue.=0A=
-=0A=
-soc_device would require encoding the SVR as a string and then decoding=0A=
-the string, which is more complicated and error prone than having=0A=
-platform-specific code test a platform-specific number.  And when would=0A=
-it get registered on arm64, which doesn't have platform code?=0A=
-=0A=
--Scott=0A=
-=0A=
+The domain/PHB field of PCI addresses has its value obtained from a
+global variable, incremented each time a new domain (represented by
+struct pci_controller) is added on the system. The domain addition
+process happens during boot or due to PCI device hotplug.
+
+As recent kernels are using predictable naming for network interfaces,
+the network stack is more tied to PCI naming. This can be a problem in
+hotplug scenarios, because PCI addresses will change if devices are
+removed and then re-added. This situation seems unusual, but it can
+happen if a user wants to replace a NIC without rebooting the machine,
+for example.
+
+This patch changes the way PCI domain values are generated: now, we use
+device-tree properties to assign fixed PHB numbers to PCI addresses
+when available (meaning pSeries and PowerNV cases). We also use a bitmap
+to allow dynamic PHB numbering when device-tree properties are not
+used. This bitmap keeps track of used PHB numbers and if a PHB is
+released (by hotplug operations for example), it allows the reuse of
+this PHB number, avoiding PCI address to change in case of device remove
+and re-add soon after. No functional changes were introduced.
+
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/pci-common.c | 40 +++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 37 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 0f7a60f..bc31ac1 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -44,8 +44,11 @@
+ static DEFINE_SPINLOCK(hose_spinlock);
+ LIST_HEAD(hose_list);
+ 
+-/* XXX kill that some day ... */
+-static int global_phb_number;		/* Global phb counter */
++/* For dynamic PHB numbering on get_phb_number(): max number of PHBs. */
++#define	MAX_PHBS	8192
++
++/* For dynamic PHB numbering: used/free PHBs tracking bitmap. */
++static DECLARE_BITMAP(phb_bitmap, MAX_PHBS);
+ 
+ /* ISA Memory physical address */
+ resource_size_t isa_mem_base;
+@@ -64,6 +67,32 @@ struct dma_map_ops *get_pci_dma_ops(void)
+ }
+ EXPORT_SYMBOL(get_pci_dma_ops);
+ 
++static int get_phb_number(struct device_node *dn)
++{
++	const __be64 *prop64;
++	const __be32 *regs;
++	int phb_id = 0;
++
++	/* try fixed PHB numbering first, by checking archs and reading
++	 * the respective device-tree property. */
++	if (machine_is(pseries)) {
++		regs = of_get_property(dn, "reg", NULL);
++		if (regs)
++			return (int)(be32_to_cpu(regs[1]) & 0xFFFF);
++	} else if (machine_is(powernv)) {
++		prop64 = of_get_property(dn, "ibm,opal-phbid", NULL);
++		if (prop64)
++			return (int)(be64_to_cpup(prop64) & 0xFFFF);
++	}
++
++	/* if not pSeries nor PowerNV, fallback to dynamic PHB numbering */
++	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
++	BUG_ON(phb_id >= MAX_PHBS); /* reached maximum number of PHBs */
++	set_bit(phb_id, phb_bitmap);
++
++	return phb_id;
++}
++
+ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+ {
+ 	struct pci_controller *phb;
+@@ -72,7 +101,7 @@ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+ 	if (phb == NULL)
+ 		return NULL;
+ 	spin_lock(&hose_spinlock);
+-	phb->global_number = global_phb_number++;
++	phb->global_number = get_phb_number(dev);
+ 	list_add_tail(&phb->list_node, &hose_list);
+ 	spin_unlock(&hose_spinlock);
+ 	phb->dn = dev;
+@@ -94,6 +123,11 @@ EXPORT_SYMBOL_GPL(pcibios_alloc_controller);
+ void pcibios_free_controller(struct pci_controller *phb)
+ {
+ 	spin_lock(&hose_spinlock);
++
++	/* clear bit of phb_bitmap to allow reuse of this phb number */
++	if (phb->global_number < MAX_PHBS)
++		clear_bit(phb->global_number, phb_bitmap);
++
+ 	list_del(&phb->list_node);
+ 	spin_unlock(&hose_spinlock);
+ 
+-- 
+2.1.0
