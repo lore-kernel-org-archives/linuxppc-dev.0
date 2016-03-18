@@ -1,25 +1,42 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qRBch6lkXzDr30
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 15:11:48 +1100 (AEDT)
-Message-ID: <1458274308.6622.79.camel@neuling.org>
-Subject: Re: [PATCH v8 3/6] cpufreq: powernv: Remove cpu_to_chip_id() from
- hot-path
-From: Michael Neuling <mikey@neuling.org>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Cc: ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
- viresh.kumar@linaro.org,  rjw@rjwysocki.net, pc@us.ibm.com,
- shreyas@linux.vnet.ibm.com, anton@samba.org
-Date: Fri, 18 Mar 2016 15:11:48 +1100
-In-Reply-To: <1458273857.6622.75.camel@neuling.org>
-References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1454442102-1229-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1458273857.6622.75.camel@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qRBdH15sjzDr3G
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 15:12:19 +1100 (AEDT)
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 18 Mar 2016 14:12:17 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0998D3578064
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 15:12:11 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2I4BAe458327154
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 15:12:00 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2I49nEX009302
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Mar 2016 15:09:50 +1100
+Date: Fri, 18 Mar 2016 15:00:36 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+ imunsie@au1.ibm.com, mikey@neuling.org, andrew.donnellan@au1.ibm.com,
+ bhelgaas@google.com
+Subject: Re: [PATCH v3] powerpc/pci: Assign fixed PHB number based on
+ device-tree properties
+Message-ID: <20160318040036.GA4078@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1458245026-27635-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <20160317223757.GA6336@gwshan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160317223757.GA6336@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +46,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-03-18 at 15:04 +1100, Michael Neuling wrote:
+On Fri, Mar 18, 2016 at 09:37:57AM +1100, Gavin Shan wrote:
+>On Thu, Mar 17, 2016 at 05:03:46PM -0300, Guilherme G. Piccoli wrote:
+>>The domain/PHB field of PCI addresses has its value obtained from a
+>>global variable, incremented each time a new domain (represented by
+>>struct pci_controller) is added on the system. The domain addition
+>>process happens during boot or due to PCI device hotplug.
+>>
+>>As recent kernels are using predictable naming for network interfaces,
+>>the network stack is more tied to PCI naming. This can be a problem in
+>>hotplug scenarios, because PCI addresses will change if devices are
+>>removed and then re-added. This situation seems unusual, but it can
+>>happen if a user wants to replace a NIC without rebooting the machine,
+>>for example.
+>>
+>>This patch changes the way PCI domain values are generated: now, we use
+>>device-tree properties to assign fixed PHB numbers to PCI addresses
+>>when available (meaning pSeries and PowerNV cases). We also use a bitmap
+>>to allow dynamic PHB numbering when device-tree properties are not
+>>used. This bitmap keeps track of used PHB numbers and if a PHB is
+>>released (by hotplug operations for example), it allows the reuse of
+>>this PHB number, avoiding PCI address to change in case of device remove
+>>and re-add soon after. No functional changes were introduced.
+>>
+>>Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+>
+>Apart from below minor issues to be fixed, it looks good to me.
+>
+>Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>
+>>---
+>> arch/powerpc/kernel/pci-common.c | 41 +++++++++++++++++++++++++++++++++++++---
+>> 1 file changed, 38 insertions(+), 3 deletions(-)
+>>
+>>diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+>>index 0f7a60f..8777614 100644
+>>--- a/arch/powerpc/kernel/pci-common.c
+>>+++ b/arch/powerpc/kernel/pci-common.c
+>>@@ -44,8 +44,11 @@
+>> static DEFINE_SPINLOCK(hose_spinlock);
+>> LIST_HEAD(hose_list);
+>>
+>>-/* XXX kill that some day ... */
+>>-static int global_phb_number;		/* Global phb counter */
+>>+/* For dynamic PHB numbering on get_phb_number(): max number of PHBs. */
+>>+#define	MAX_PHBS	8192
+>>+
+>>+/* For dynamic PHB numbering: used/free PHBs tracking bitmap. */
+>>+static DECLARE_BITMAP(phb_bitmap, MAX_PHBS);
+>>
+>> /* ISA Memory physical address */
+>> resource_size_t isa_mem_base;
+>>@@ -64,6 +67,33 @@ struct dma_map_ops *get_pci_dma_ops(void)
+>> }
+>> EXPORT_SYMBOL(get_pci_dma_ops);
+>>
+>>+static int get_phb_number(struct device_node *dn)
+>>+{
+>>+	const __be64 *prop64;
+>>+	const __be32 *regs;
+>>+	int phb_id = 0;
+>>+
+>>+	/* try fixed PHB numbering first, by checking archs and reading
+>>+	 * the respective device-tree property. */
+>>+	if (machine_is(pseries)) {
+>>+		regs = of_get_property(dn, "reg", NULL);
+>>+		if (regs)
+>>+			return (int)(be32_to_cpu(regs[1]) & 0xFFFF);
+>>+	} else {
+>>+		if (machine_is(powernv)) {
+>>+			prop64 = of_get_property(dn, "ibm,opal-phbid", NULL);
+>>+			if (prop64)
+>>+				return (int)(be64_to_cpup(prop64) & 0xFFFF);
+>>+		}
+>>+	}
+>>+
+>
+>The nested statements can be merged to one with "else if (machine_is(powernv))".
+>
+>>+	/* if not pSeries nor PowerNV, fallback to dynamic PHB numbering */
+>>+	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
+>>+	BUG_ON(phb_id >= MAX_PHBS); /* reached maximum number of PHBs */
+>>+	set_bit(phb_id, phb_bitmap);
+>>+	return phb_id;
+>
+>It's possible another CPU sets this bit before current CPU updates it, which
+>will cause same domain number used by two PHBs though it's very rare. I guess
+>it might be worthwhile to check if the bit is reserved by somebody else to
+>avoid the issue.
+>
 
-> On Wed, 2016-02-03 at 01:11 +0530, Shilpasri G Bhat wrote:
->=20
+Please ignore this comment: there is a lock (hose_spinlock) avoiding the issue.
 
-> > cpu_to_chip_id() does a DT walk through to find out the chip id by
-> > taking a contended device tree lock. This adds an unnecessary
-> > overhead
-> > in a hot path. So instead of calling cpu_to_chip_id() everytime
-> > cache
-> > the chip ids for all cores in the array 'core_to_chip_map' and use
-> > it
-> > in the hotpath.
-> >=20
-> > Reported-by: Anton Blanchard <anton@samba.org>
-> > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> > No changes from v7.
->=20
-> How about this instead?  It removes the linear lookup and seems a lot
-> less complex.
-
-BTW we never init nr_chips before using it.  We also need something
-like.
-
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cp=
-ufreq.c
-index d63d2cb..c819ed4 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -556,6 +556,8 @@ static int init_chip_info(void)
- 	unsigned int cpu, i;
- 	unsigned int prev_chip_id =3D UINT_MAX;
-=20
-+	nr_chips =3D 0;
-+
- 	for_each_possible_cpu(cpu) {
- 		unsigned int id =3D cpu_to_chip_id(cpu);
-=20
+>>+}
+>>+
+>> struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+>> {
+>> 	struct pci_controller *phb;
+>>@@ -72,7 +102,7 @@ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+>> 	if (phb == NULL)
+>> 		return NULL;
+>> 	spin_lock(&hose_spinlock);
+>>-	phb->global_number = global_phb_number++;
+>>+	phb->global_number = get_phb_number(dev);
+>> 	list_add_tail(&phb->list_node, &hose_list);
+>> 	spin_unlock(&hose_spinlock);
+>> 	phb->dn = dev;
+>>@@ -94,6 +124,11 @@ EXPORT_SYMBOL_GPL(pcibios_alloc_controller);
+>> void pcibios_free_controller(struct pci_controller *phb)
+>> {
+>> 	spin_lock(&hose_spinlock);
+>>+
+>>+	/* clear bit of phb_bitmap to allow reuse of this phb number */
+>>+	if (phb->global_number < MAX_PHBS)
+>>+		clear_bit(phb->global_number, phb_bitmap);
+>>+
+>> 	list_del(&phb->list_node);
+>> 	spin_unlock(&hose_spinlock);
+>>
+>
+>Thanks,
+>Gavin
