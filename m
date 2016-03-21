@@ -1,33 +1,18 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qTQw93Vb3zDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Mar 2016 06:32:57 +1100 (AEDT)
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 21 Mar 2016 19:32:53 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 302D11B08090
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 19:33:22 +0000 (GMT)
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
- [9.149.37.216])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2LJWoVH8388864
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 19:32:50 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2LJWn5q010711
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 13:32:50 -0600
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-To: imunsie@au1.ibm.com, mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 next] cxl: Allow initialization on timebase sync failures
-Date: Mon, 21 Mar 2016 14:32:48 -0500
-Message-Id: <1458588768-21253-1-git-send-email-fbarrat@linux.vnet.ibm.com>
-In-Reply-To: <1458304941-19393-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qTVHY2k5HzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Mar 2016 09:04:57 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id u190so32362297pfb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 15:04:57 -0700 (PDT)
+From: Rashmica Gupta <rashmicy@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	mpe@ellerman.id.au
+Subject: [PATCH 1/2] powerpc/pagetable: Add option to dump the linux pagetables
+Date: Tue, 22 Mar 2016 09:04:44 +1100
+Message-Id: <1458597885-19804-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,167 +22,432 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Failure to synchronize the PSL timebase currently prevents the
-initialization of the cxl card, thus rendering the card useless. This
-is too extreme for a feature which is rarely used, if at all. No
-hardware AFUs or software is currently using PSL timebase.
+Useful to be able to dump the kernels page tables to check permissions
+and memory types - derived from arm64's implementation.
 
-This patch still tries to synchronize the PSL timebase when the card
-is initialized, but ignores the error if it can't. Instead, it reports
-a status via /sys.
+Add a debugfs file to check the page tables. To use this the PPC_PTDUMP
+config option must be selected.
 
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 ---
-Applies on current (4.6) tree.
+ arch/powerpc/Kconfig.debug             |  12 ++
+ arch/powerpc/mm/Makefile               |   1 +
+ arch/powerpc/mm/dump_linuxpagetables.c | 377 +++++++++++++++++++++++++++++++++
+ 3 files changed, 390 insertions(+)
+ create mode 100644 arch/powerpc/mm/dump_linuxpagetables.c
 
-Changelog:
-version for 4.6 adds definition of psl_timebase_synced attribute for LPARs
-v2: Update commit msg and a comment in code (Mikey's review)
-
- Documentation/ABI/testing/sysfs-class-cxl |  8 ++++++++
- drivers/misc/cxl/cxl.h                    |  1 +
- drivers/misc/cxl/guest.c                  |  6 ++++++
- drivers/misc/cxl/pci.c                    | 21 ++++++++++++---------
- drivers/misc/cxl/sysfs.c                  | 10 ++++++++++
- 5 files changed, 37 insertions(+), 9 deletions(-)
-
-diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
-index 7fd737e..4ba0a2a 100644
---- a/Documentation/ABI/testing/sysfs-class-cxl
-+++ b/Documentation/ABI/testing/sysfs-class-cxl
-@@ -233,3 +233,11 @@ Description:	read/write
- 		0 = don't trust, the image may be different (default)
- 		1 = trust that the image will not change.
- Users:		https://github.com/ibm-capi/libcxl
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 638f9ce740f5..26a60effea1a 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -344,4 +344,16 @@ config FAIL_IOMMU
+ 
+ 	  If you are unsure, say N.
+ 
++config PPC_PTDUMP
++        bool "Export kernel pagetable layout to userspace via debugfs"
++        depends on DEBUG_KERNEL
++        select DEBUG_FS
++        help
++	  This option exports the state of the kernel pagetables to a
++	  debugfs file. This is only useful for kernel developers who are
++	  working in architecture specific areas of the kernel - probably
++	  not a good idea to enable this feature in a production kernel.
 +
-+What:           /sys/class/cxl/<card>/psl_timebase_synced
-+Date:           March 2016
-+Contact:        linuxppc-dev@lists.ozlabs.org
-+Description:    read only
-+                Returns 1 if the psl timebase register is synchronized
-+                with the core timebase register, 0 otherwise.
-+Users:          https://github.com/ibm-capi/libcxl
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 38e21cf..dfdbfb0 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -579,6 +579,7 @@ struct cxl {
- 	bool perst_loads_image;
- 	bool perst_select_user;
- 	bool perst_same_image;
-+	bool psl_timebase_synced;
- };
- 
- int cxl_pci_alloc_one_irq(struct cxl *adapter);
-diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
-index 8213372..a83acf9 100644
---- a/drivers/misc/cxl/guest.c
-+++ b/drivers/misc/cxl/guest.c
-@@ -1101,6 +1101,12 @@ struct cxl *cxl_guest_init_adapter(struct device_node *np, struct platform_devic
- 	adapter->dev.release = release_adapter;
- 	dev_set_drvdata(&pdev->dev, adapter);
- 
-+	/*
-+	 * Hypervisor controls PSL timebase initialization (p1 register).
-+	 * On FW840, PSL is initialized.
-+	 */
-+	adapter->psl_timebase_synced = true;
++	  If you are unsure, say N.
 +
- 	if ((rc = cxl_of_read_adapter_handle(adapter, np)))
- 		goto err1;
- 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 2844e97..cfae1a8 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -355,22 +355,24 @@ static int init_implementation_adapter_regs(struct cxl *adapter, struct pci_dev
- #define TBSYNC_CNT(n) (((u64)n & 0x7) << (63-6))
- #define _2048_250MHZ_CYCLES 1
- 
--static int cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
-+static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
- {
- 	u64 psl_tb;
- 	int delta;
- 	unsigned int retry = 0;
- 	struct device_node *np;
- 
-+	adapter->psl_timebase_synced = false;
+ endmenu
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index adfee3f1aeb9..6935c6204fbc 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -41,3 +41,4 @@ obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
+ obj-$(CONFIG_HIGHMEM)		+= highmem.o
+ obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
+ obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_iommu.o
++obj-$(CONFIG_PPC_PTDUMP)	+= dump_linuxpagetables.o
+diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
+new file mode 100644
+index 000000000000..f97fbfdac4b9
+--- /dev/null
++++ b/arch/powerpc/mm/dump_linuxpagetables.c
+@@ -0,0 +1,377 @@
++/*
++ * Copyright 2016, Rashmica Gupta, IBM Corp.
++ *
++ * This traverses the kernel pagetables and dumps the
++ * information about the used sections of memory to
++ * /sys/kernel/debug/kernel_pagetables.
++ *
++ * Derived from the arm64 implementation:
++ * Copyright (c) 2014, The Linux Foundation, Laura Abbott.
++ * (C) Copyright 2008 Intel Corporation, Arjan van de Ven.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; version 2
++ * of the License.
++ */
++#include <linux/debugfs.h>
++#include <linux/fs.h>
++#include <linux/io.h>
++#include <linux/mm.h>
++#include <linux/sched.h>
++#include <linux/seq_file.h>
++#include <asm/fixmap.h>
++#include <asm/pgtable.h>
++#include <linux/const.h>
++#include <asm/page.h>
++#include <asm/pgalloc.h>
 +
- 	if (!(np = pnv_pci_get_phb_node(dev)))
--		return -ENODEV;
-+		return;
- 
- 	/* Do not fail when CAPP timebase sync is not supported by OPAL */
- 	of_node_get(np);
- 	if (! of_get_property(np, "ibm,capp-timebase-sync", NULL)) {
- 		of_node_put(np);
--		pr_err("PSL: Timebase sync: OPAL support missing\n");
--		return 0;
-+		dev_info(&dev->dev, "PSL timebase inactive: OPAL support missing\n");
-+		return;
- 	}
- 	of_node_put(np);
- 
-@@ -389,8 +391,8 @@ static int cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
- 	do {
- 		msleep(1);
- 		if (retry++ > 5) {
--			pr_err("PSL: Timebase sync: giving up!\n");
--			return -EIO;
-+			dev_info(&dev->dev, "PSL timebase can't synchronize\n");
-+			return;
- 		}
- 		psl_tb = cxl_p1_read(adapter, CXL_PSL_Timebase);
- 		delta = mftb() - psl_tb;
-@@ -398,7 +400,8 @@ static int cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
- 			delta = -delta;
- 	} while (tb_to_ns(delta) > 16000);
- 
--	return 0;
-+	adapter->psl_timebase_synced = true;
-+	return;
- }
- 
- static int init_implementation_afu_regs(struct cxl_afu *afu)
-@@ -1144,8 +1147,8 @@ static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
- 	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON)))
- 		goto err;
- 
--	if ((rc = cxl_setup_psl_timebase(adapter, dev)))
--		goto err;
-+	/* Ignore error, adapter init is not dependant on timebase sync */
-+	cxl_setup_psl_timebase(adapter, dev);
- 
- 	if ((rc = cxl_native_register_psl_err_irq(adapter)))
- 		goto err;
-diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-index 25913c0..b043c20 100644
---- a/drivers/misc/cxl/sysfs.c
-+++ b/drivers/misc/cxl/sysfs.c
-@@ -57,6 +57,15 @@ static ssize_t image_loaded_show(struct device *device,
- 	return scnprintf(buf, PAGE_SIZE, "factory\n");
- }
- 
-+static ssize_t psl_timebase_synced_show(struct device *device,
-+					struct device_attribute *attr,
-+					char *buf)
++struct addr_marker {
++	unsigned long start_address;
++	const char *name;
++};
++
++static struct addr_marker address_markers[] = {
++	{ VMALLOC_START,	"vmalloc() Area" },
++	{ VMALLOC_END,		"vmalloc() End" },
++	{ ISA_IO_BASE,		"isa I/O start" },
++	{ ISA_IO_END,		"isa I/O end" },
++	{ PHB_IO_BASE,		"phb I/O start" },
++	{ PHB_IO_END,		"phb I/O end" },
++	{ IOREMAP_BASE,		"I/O remap start" },
++	{ IOREMAP_END,		"I/O remap end" },
++	{ -1,			NULL },
++};
++
++/*
++ * To visualise what is happening,
++ *
++ *  - PTRS_PER_P** = how many entries there are in the corresponding P**
++ *  - P**_SHIFT = how many bits of the address we use to index into the
++ * corresponding P**
++ *  - P**_SIZE is how much memory we can access through the table - not the
++ * size of the table itself.
++ * P**={PGD, PUD, PMD, PTE}
++ *
++ *
++ * Each entry of the PGD points to a PUD. Each entry of a PUD points to a
++ * PMD. Each entry of a PMD points to a PTE. And every PTE entry points to
++ * a page.
++ *
++ * In the case where there are only 3 levels, the PUD is folded into the
++ * PGD: every PUD has only one entry which points to the PMD.
++ *
++ * The page dumper groups page table entries of the same type into a single
++ * description. It uses pg_state to track the range information while
++ * iterating over the PTE entries. When the continuity is broken it then
++ * dumps out a description of the range - ie PTEs that are virtually contiguous
++ * with the same PTE flags are chunked together. This is to make it clear how
++ * different areas of the kernel virtual memory are used.
++ *
++ */
++struct pg_state {
++	struct seq_file *seq;
++	const struct addr_marker *marker;
++	unsigned long start_address;
++	unsigned level;
++	u64 current_flags;
++};
++
++struct flag_info {
++	u64		mask;
++	u64		val;
++	const char	*set;
++	const char	*clear;
++};
++
++static const struct flag_info flag_array[] = {
++	{
++		.mask	= _PAGE_USER,
++		.val	= _PAGE_USER,
++		.set	= "user",
++		.clear	= "    ",
++	}, {
++		.mask	= _PAGE_RW,
++		.val	= _PAGE_RW,
++		.set	= "rw",
++		.clear	= "ro",
++	}, {
++		.mask	= _PAGE_EXEC,
++		.val	= _PAGE_EXEC,
++		.set	= " X ",
++		.clear	= "   ",
++	}, {
++		.mask	= _PAGE_PTE,
++		.val	= _PAGE_PTE,
++		.set	= "pte",
++		.clear	= "   ",
++	}, {
++		.mask	= _PAGE_PRESENT,
++		.val	= _PAGE_PRESENT,
++		.set	= "present",
++		.clear	= "       ",
++	}, {
++		.mask	= _PAGE_HASHPTE,
++		.val	= _PAGE_HASHPTE,
++		.set	= "hpte",
++		.clear	= "    ",
++	}, {
++		.mask	= _PAGE_GUARDED,
++		.val	= _PAGE_GUARDED,
++		.set	= "guarded",
++		.clear	= "       ",
++	}, {
++		.mask	= _PAGE_DIRTY,
++		.val	= _PAGE_DIRTY,
++		.set	= "dirty",
++		.clear	= "     ",
++	}, {
++		.mask	= _PAGE_ACCESSED,
++		.val	= _PAGE_ACCESSED,
++		.set	= "accessed",
++		.clear	= "        ",
++	}, {
++		.mask	= _PAGE_WRITETHRU,
++		.val	= _PAGE_WRITETHRU,
++		.set	= "write through",
++		.clear	= "             ",
++	}, {
++		.mask	= _PAGE_NO_CACHE,
++		.val	= _PAGE_NO_CACHE,
++		.set	= "no cache",
++		.clear	= "        ",
++	}, {
++		.mask	= _PAGE_BUSY,
++		.val	= _PAGE_BUSY,
++		.set	= "busy",
++	}, {
++		.mask	= _PAGE_COMBO,
++		.val	= _PAGE_COMBO,
++		.set	= "combo",
++	}, {
++		.mask	= _PAGE_F_GIX,
++		.val	= _PAGE_F_GIX,
++		.set	= "f_gix",
++	}, {
++		.mask	= _PAGE_F_SECOND,
++		.val	= _PAGE_F_SECOND,
++		.set	= "f_second",
++	}, {
++		.mask	= _PAGE_SPECIAL,
++		.val	= _PAGE_SPECIAL,
++		.set	= "special",
++	}, {
++		.mask	= _PAGE_4K_PFN,
++		.val	= _PAGE_4K_PFN,
++		.set	= "4K_pfn"
++	}
++};
++
++struct pgtable_level {
++	const struct flag_info *flag;
++	size_t num;
++	u64 mask;
++};
++
++static struct pgtable_level pg_level[] = {
++	{
++	}, { /* pgd */
++		.flag	= flag_array,
++		.num	= ARRAY_SIZE(flag_array),
++	}, { /* pud */
++		.flag	= flag_array,
++		.num	= ARRAY_SIZE(flag_array),
++	}, { /* pmd */
++		.flag	= flag_array,
++		.num	= ARRAY_SIZE(flag_array),
++	}, { /* pte */
++		.flag	= flag_array,
++		.num	= ARRAY_SIZE(flag_array),
++	},
++};
++
++static void dump_flag(struct pg_state *st, const struct flag_info *flag,
++			size_t num)
 +{
-+	struct cxl *adapter = to_cxl_adapter(device);
++	unsigned i;
 +
-+	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
++	for (i = 0; i < num; i++, flag++) {
++		const char *s;
++
++		if ((st->current_flags & flag->mask) == flag->val)
++			s = flag->set;
++		else
++			s = flag->clear;
++
++		if (s)
++			seq_printf(st->seq, " %s", s);
++	}
 +}
 +
- static ssize_t reset_adapter_store(struct device *device,
- 				   struct device_attribute *attr,
- 				   const char *buf, size_t count)
-@@ -142,6 +151,7 @@ static struct device_attribute adapter_attrs[] = {
- 	__ATTR_RO(psl_revision),
- 	__ATTR_RO(base_image),
- 	__ATTR_RO(image_loaded),
-+	__ATTR_RO(psl_timebase_synced),
- 	__ATTR_RW(load_image_on_perst),
- 	__ATTR_RW(perst_reloads_same_image),
- 	__ATTR(reset, S_IWUSR, NULL, reset_adapter_store),
++static void dump_addr(struct pg_state *st, unsigned long addr)
++{
++	static const char units[] = "KMGTPE";
++	const char *unit = units;
++	unsigned long delta;
++
++	seq_printf(st->seq, "0x%016lx-0x%016lx   ", st->start_address, addr-1);
++	delta = (addr - st->start_address) >> 10;
++	/* Work out what appropriate unit to use */
++	while (!(delta & 1023) && unit[1]) {
++		delta >>= 10;
++		unit++;
++	}
++	seq_printf(st->seq, "%9lu%c", delta, *unit);
++
++}
++
++static void note_page(struct pg_state *st, unsigned long addr, unsigned level,
++				u64 val)
++{
++	u64 flag = val & pg_level[level].mask;
++
++	/* At first no level is set */
++	if (!st->level) {
++		st->level = level;
++		st->current_flags = flag;
++		st->start_address = addr;
++		seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
++	/*
++	 * Dump the section of virtual memory when:
++	 *   - the PTE flags from one entry to the next differs.
++	 *   - we change levels in the tree.
++	 *   - the address is in a different section of memory and is thus
++	 *   used for a different purpose, regardless of the flags.
++	 */
++	} else if (flag != st->current_flags || level != st->level ||
++		   addr >= st->marker[1].start_address) {
++
++		/* Check the PTE flags */
++		if (st->current_flags) {
++			dump_addr(st, addr);
++
++			/* Dump all the flags */
++			if (pg_level[st->level].flag)
++				dump_flag(st, pg_level[st->level].flag,
++					  pg_level[st->level].num);
++			seq_puts(st->seq, "\n");
++		}
++
++		/* Address indicates we have passed the end of the
++		 * current section of virtual memory
++		 */
++		while (addr >= st->marker[1].start_address) {
++			st->marker++;
++			seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
++		}
++		st->start_address = addr;
++		st->current_flags = flag;
++		st->level = level;
++	}
++}
++
++static void walk_pte(struct pg_state *st, pmd_t *pmd, unsigned long start)
++{
++	pte_t *pte = pte_offset_kernel(pmd, 0);
++	unsigned long addr;
++	unsigned i;
++
++	for (i = 0; i < PTRS_PER_PTE; i++, pte++) {
++		addr = start + i * PAGE_SIZE;
++		note_page(st, addr, 4, pte_val(*pte));
++	}
++}
++
++static void walk_pmd(struct pg_state *st, pud_t *pud, unsigned long start)
++{
++	pmd_t *pmd = pmd_offset(pud, 0);
++	unsigned long addr;
++	unsigned i;
++
++	for (i = 0; i < PTRS_PER_PMD; i++, pmd++) {
++		addr = start + i * PMD_SIZE;
++		if (!pmd_none(*pmd))
++			/* pmd exists */
++			walk_pte(st, pmd, addr);
++		else
++			note_page(st, addr, 3, pmd_val(*pmd));
++	}
++}
++
++static void walk_pud(struct pg_state *st, pgd_t *pgd, unsigned long start)
++{
++	pud_t *pud = pud_offset(pgd, 0);
++	unsigned long addr;
++	unsigned i;
++
++	for (i = 0; i < PTRS_PER_PUD; i++, pud++) {
++		addr = start + i * PUD_SIZE;
++		if (!pud_none(*pud))
++			/* pud exists */
++			walk_pmd(st, pud, addr);
++		else
++			note_page(st, addr, 2, pud_val(*pud));
++	}
++}
++
++static void walk_pgd(struct pg_state *st, unsigned long start)
++{
++	pgd_t *pgd = pgd_offset_k(0UL);
++	unsigned i;
++	unsigned long addr;
++
++	for (i = 0; i < PTRS_PER_PGD; i++, pgd++) {
++		addr = start + i * PGDIR_SIZE;
++		if (!pgd_none(*pgd))
++			/* pgd exists */
++			walk_pud(st, pgd, addr);
++		else
++			note_page(st, addr, 1, pgd_val(*pgd));
++	}
++}
++
++static int ptdump_show(struct seq_file *m, void *v)
++{
++	struct pg_state st = {
++		.seq = m,
++		.start_address = KERN_VIRT_START,
++		.marker = address_markers,
++	};
++	/* Traverse kernel page tables */
++	walk_pgd(&st, KERN_VIRT_START);
++	note_page(&st, 0, 0, 0);
++	return 0;
++}
++
++static int ptdump_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, ptdump_show, NULL);
++}
++
++static const struct file_operations ptdump_fops = {
++	.open		= ptdump_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static void build_pgtable_complete_mask(void)
++{
++	unsigned i, j;
++
++	for (i = 0; i < ARRAY_SIZE(pg_level); i++)
++		if (pg_level[i].flag)
++			for (j = 0; j < pg_level[i].num; j++)
++				pg_level[i].mask |= pg_level[i].flag[j].mask;
++}
++
++static int ptdump_init(void)
++{
++	struct dentry *debugfs_file;
++
++	build_pgtable_complete_mask();
++	debugfs_file = debugfs_create_file("kernel_pagetables", 0400, NULL,
++			NULL, &ptdump_fops);
++	return debugfs_file ? 0 : -ENOMEM;
++}
++device_initcall(ptdump_init);
 -- 
-1.9.1
+2.5.0
