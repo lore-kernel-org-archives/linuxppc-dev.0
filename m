@@ -2,7 +2,7 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qT22r1mPjzDqCn
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qT22r6fs2zDq7K
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 14:52:20 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
@@ -10,9 +10,9 @@ To: paulus@samba.org,
 	benh@kernel.crashing.org
 Cc: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
  michael@ellerman.id.au, David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv3 13/17] powerpc/kvm: KVM-HV HPT resizing stub implementation
-Date: Mon, 21 Mar 2016 14:53:20 +1100
-Message-Id: <1458532404-21258-14-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFCv3 15/17] powerpc/kvm: KVM-HV HPT resizing, preparation path
+Date: Mon, 21 Mar 2016 14:53:22 +1100
+Message-Id: <1458532404-21258-16-git-send-email-david@gibson.dropbear.id.au>
 In-Reply-To: <1458532404-21258-1-git-send-email-david@gibson.dropbear.id.au>
 References: <1458532404-21258-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,103 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a stub (always failing) implementation of the hypercalls
-for the HPT resizing PAPR extension.
-
-For now we include a hack which makes it safe for qemu to call ENABLE_HCALL
-on these hypercalls, although it will have no effect.  That should go away
-once the PAPR change is formalized and we can use "real" hcall numbers.
+This adds code to initialize an HPT resize operation, and complete its
+prepare phase, including allocating and clearing a tentative new HPT.  It
+also includes corresponding code to free things afterwards.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/kvm_book3s.h |  6 ++++++
- arch/powerpc/kvm/book3s_64_mmu_hv.c   | 19 +++++++++++++++++++
- arch/powerpc/kvm/book3s_hv.c          |  8 ++++++++
- arch/powerpc/kvm/powerpc.c            |  6 ++++++
- 4 files changed, 39 insertions(+)
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index 8f39796..81f2b77 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -191,6 +191,12 @@ extern void kvmppc_copy_to_svcpu(struct kvmppc_book3s_shadow_vcpu *svcpu,
- 				 struct kvm_vcpu *vcpu);
- extern void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
- 				   struct kvmppc_book3s_shadow_vcpu *svcpu);
-+extern unsigned long do_h_resize_hpt_prepare(struct kvm_vcpu *vcpu,
-+					     unsigned long flags,
-+					     unsigned long shift);
-+extern unsigned long do_h_resize_hpt_commit(struct kvm_vcpu *vcpu,
-+					    unsigned long flags,
-+					    unsigned long shift);
- 
- static inline struct kvmppc_vcpu_book3s *to_book3s(struct kvm_vcpu *vcpu)
- {
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 89878a4..0a69b64 100644
+index 05e8d52..acc6dd4 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -1129,6 +1129,25 @@ void kvmppc_unpin_guest_page(struct kvm *kvm, void *va, unsigned long gpa,
+@@ -54,6 +54,10 @@ struct kvm_resize_hpt {
+ 	/* These fields protected by kvm->lock */
+ 	int error;
+ 	bool prepare_done;
++
++	/* Private to the work thread, until prepare_done is true,
++	 * then protected by kvm->resize_hpt_sem */
++	struct kvm_hpt_info hpt;
+ };
+ 
+ #ifdef DEBUG_RESIZE_HPT
+@@ -1157,6 +1161,17 @@ void kvmppc_unpin_guest_page(struct kvm *kvm, void *va, unsigned long gpa,
+  */
+ static int resize_hpt_allocate(struct kvm_resize_hpt *resize)
+ {
++	int rc;
++
++	rc = kvmppc_allocate_hpt(&resize->hpt, resize->order);
++	if (rc == -ENOMEM)
++		return H_NO_MEM;
++	else if (rc < 0)
++		return H_HARDWARE;
++
++	resize_hpt_debug(resize, "resize_hpt_allocate(): HPT @ 0x%lx\n",
++			 resize->hpt.virt);
++
+ 	return H_SUCCESS;
  }
  
- /*
-+ * HPT resizing
-+ */
+@@ -1172,6 +1187,10 @@ static void resize_hpt_pivot(struct kvm_resize_hpt *resize)
+ static void resize_hpt_release(struct kvm *kvm, struct kvm_resize_hpt *resize)
+ {
+ 	BUG_ON(kvm->arch.resize_hpt != resize);
 +
-+unsigned long do_h_resize_hpt_prepare(struct kvm_vcpu *vcpu,
-+				      unsigned long flags,
-+				      unsigned long shift)
-+{
-+	return H_HARDWARE;
-+}
++	if (resize->hpt.virt)
++		kvmppc_free_hpt(&resize->hpt);
 +
-+unsigned long do_h_resize_hpt_commit(struct kvm_vcpu *vcpu,
-+				     unsigned long flags,
-+				     unsigned long shift)
-+{
-+	return H_HARDWARE;
-+}
-+
-+
-+/*
-  * Functions for reading and writing the hash table via reads and
-  * writes on a file descriptor.
-  *
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 2289ce3..878b4a7 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -737,6 +737,14 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
- 					kvmppc_get_gpr(vcpu, 5),
- 					kvmppc_get_gpr(vcpu, 6));
- 		break;
-+	case H_RESIZE_HPT_PREPARE:
-+		ret = do_h_resize_hpt_prepare(vcpu, kvmppc_get_gpr(vcpu, 4),
-+					      kvmppc_get_gpr(vcpu, 5));
-+		break;
-+	case H_RESIZE_HPT_COMMIT:
-+		ret = do_h_resize_hpt_commit(vcpu, kvmppc_get_gpr(vcpu, 4),
-+					     kvmppc_get_gpr(vcpu, 5));
-+		break;
- 	case H_RTAS:
- 		if (list_empty(&vcpu->kvm->arch.rtas_tokens))
- 			return RESUME_HOST;
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 55ab059..900393b 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -1302,6 +1302,12 @@ static int kvm_vm_ioctl_enable_cap(struct kvm *kvm,
- 		unsigned long hcall = cap->args[0];
- 
- 		r = -EINVAL;
-+		/* Hack: until we have proper hcall numbers allocated */
-+		if ((hcall == H_RESIZE_HPT_PREPARE)
-+		    || (hcall == H_RESIZE_HPT_COMMIT)) {
-+			r = 0;
-+			break;
-+		}
- 		if (hcall > MAX_HCALL_OPCODE || (hcall & 3) ||
- 		    cap->args[1] > 1)
- 			break;
+ 	kvm->arch.resize_hpt = NULL;
+ 	kfree(resize);
+ }
 -- 
 2.5.0
