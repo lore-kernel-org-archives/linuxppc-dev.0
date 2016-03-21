@@ -1,8 +1,8 @@
 Return-Path: <alistair@popple.id.au>
 Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
  [150.101.137.129])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qT0hk6VCxzDq7K
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 13:51:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qT0qy3xKLzDq7K
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 13:57:50 +1100 (AEDT)
 From: Alistair Popple <alistair@popple.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -11,12 +11,13 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Gavin Shan <gwshan@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
  Russell Currey <ruscur@russell.cc>,
  Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH kernel 04/10] powerpc/powernv/npu: TCE Kill helpers cleanup
-Date: Mon, 21 Mar 2016 13:51:33 +1100
-Message-ID: <3559497.q44USTMyyK@new-mexico>
-In-Reply-To: <1457504946-40649-5-git-send-email-aik@ozlabs.ru>
+Subject: Re: [PATCH kernel 05/10] powerpc/powernv/npu: Use the correct IOMMU
+ page size
+Date: Mon, 21 Mar 2016 13:57:45 +1100
+Message-ID: <8632459.Qva2dseSrC@new-mexico>
+In-Reply-To: <1457504946-40649-6-git-send-email-aik@ozlabs.ru>
 References: <1457504946-40649-1-git-send-email-aik@ozlabs.ru>
- <1457504946-40649-5-git-send-email-aik@ozlabs.ru>
+ <1457504946-40649-6-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,166 +29,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 9 Mar 2016 17:29:00 Alexey Kardashevskiy wrote:
-> NPU PHB TCE Kill register is exactly the same as in the rest of POWER8
-> so let's reuse the existing code for NPU. The only bit missing is
-> a helper to reset the entire TCE cache so this moves such a helper
-> from NPU code and renames it.
+Thanks for fixing Alexey!
+
+On Wed, 9 Mar 2016 17:29:01 Alexey Kardashevskiy wrote:
+> This uses the page size from iommu_table instead of hard-coded 4K.
+> This should cause no change in behavior.
 > 
-> Since pnv_npu_tce_invalidate() does really invalidate the entire cache,
-> this uses pnv_pci_ioda2_tce_invalidate_entire() directly for NPU.
-> This adds an explicit comment for workaround for invalidating NPU TCE
-> cache.
+> While we are here, move bits around to prepare for further rework
+> which will define and use iommu_table_group_ops.
 > 
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 Reviewed-by: Alistair Popple <alistair@popple.id.au>
 
 > ---
->  arch/powerpc/platforms/powernv/npu-dma.c  | 41 -------------------------------
->  arch/powerpc/platforms/powernv/pci-ioda.c | 29 ++++++++++++++++++----
->  arch/powerpc/platforms/powernv/pci.h      |  7 +-----
->  3 files changed, 25 insertions(+), 52 deletions(-)
+>  arch/powerpc/platforms/powernv/npu-dma.c | 11 +++++------
+>  1 file changed, 5 insertions(+), 6 deletions(-)
 > 
 > diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-> index 7229acd..778570c 100644
+> index 778570c..5bd5fee 100644
 > --- a/arch/powerpc/platforms/powernv/npu-dma.c
 > +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> @@ -25,8 +25,6 @@
->   * Other types of TCE cache invalidation are not functional in the
->   * hardware.
->   */
-> -#define TCE_KILL_INVAL_ALL PPC_BIT(0)
-> -
->  static struct pci_dev *get_pci_dev(struct device_node *dn)
->  {
->  	return PCI_DN(dn)->pcidev;
-> @@ -161,45 +159,6 @@ static struct pnv_ioda_pe *get_gpu_pci_dev_and_pe(struct pnv_ioda_pe *npe,
->  	return pe;
->  }
->  
-> -void pnv_npu_tce_invalidate_entire(struct pnv_ioda_pe *npe)
-> -{
-> -	struct pnv_phb *phb = npe->phb;
-> -
-> -	if (WARN_ON(phb->type != PNV_PHB_NPU ||
-> -		    !phb->ioda.tce_inval_reg ||
-> -		    !(npe->flags & PNV_IODA_PE_DEV)))
-> -		return;
-> -
-> -	mb(); /* Ensure previous TCE table stores are visible */
-> -	__raw_writeq(cpu_to_be64(TCE_KILL_INVAL_ALL),
-> -		phb->ioda.tce_inval_reg);
-> -}
-> -
-> -void pnv_npu_tce_invalidate(struct pnv_ioda_pe *npe,
-> -				struct iommu_table *tbl,
-> -				unsigned long index,
-> -				unsigned long npages,
-> -				bool rm)
-> -{
-> -	struct pnv_phb *phb = npe->phb;
-> -
-> -	/* We can only invalidate the whole cache on NPU */
-> -	unsigned long val = TCE_KILL_INVAL_ALL;
-> -
-> -	if (WARN_ON(phb->type != PNV_PHB_NPU ||
-> -		    !phb->ioda.tce_inval_reg ||
-> -		    !(npe->flags & PNV_IODA_PE_DEV)))
-> -		return;
-> -
-> -	mb(); /* Ensure previous TCE table stores are visible */
-> -	if (rm)
-> -		__raw_rm_writeq(cpu_to_be64(val),
-> -		  (__be64 __iomem *) phb->ioda.tce_inval_reg_phys);
-> -	else
-> -		__raw_writeq(cpu_to_be64(val),
-> -			phb->ioda.tce_inval_reg);
-> -}
-> -
->  void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe)
->  {
+> @@ -204,8 +204,7 @@ static void pnv_npu_disable_bypass(struct pnv_ioda_pe *npe)
+>  	struct pnv_phb *phb = npe->phb;
+>  	struct pci_dev *gpdev;
 >  	struct pnv_ioda_pe *gpe;
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 33e9489..90cdf49 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1824,9 +1824,23 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
->  	.get = pnv_tce_get,
->  };
+> -	void *addr;
+> -	unsigned int size;
+> +	struct iommu_table *tbl;
+>  	int64_t rc;
 >  
-> +#define TCE_KILL_INVAL_ALL  PPC_BIT(0)
->  #define TCE_KILL_INVAL_PE   PPC_BIT(1)
->  #define TCE_KILL_INVAL_TCE  PPC_BIT(2)
+>  	/*
+> @@ -219,11 +218,11 @@ static void pnv_npu_disable_bypass(struct pnv_ioda_pe *npe)
+>  	if (!gpe)
+>  		return;
 >  
-> +void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm)
-> +{
-> +	const unsigned long val = TCE_KILL_INVAL_ALL;
-> +
-> +	mb(); /* Ensure previous TCE table stores are visible */
-> +	if (rm)
-> +		__raw_rm_writeq(cpu_to_be64(val),
-> +				(__be64 __iomem *)
-> +				phb->ioda.tce_inval_reg_phys);
-> +	else
-> +		__raw_writeq(cpu_to_be64(val), phb->ioda.tce_inval_reg);
-> +}
-> +
->  static inline void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
->  {
->  	/* 01xb - invalidate TCEs that match the specified PE# */
-> @@ -1847,7 +1861,7 @@ static inline void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
->  			if (!npe || npe->phb->type != PNV_PHB_NPU)
->  				continue;
->  
-> -			pnv_npu_tce_invalidate_entire(npe);
-> +			pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
->  		}
->  }
->  
-> @@ -1896,14 +1910,19 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
->  			index, npages);
->  
->  		if (pe->flags & PNV_IODA_PE_PEER)
-> -			/* Invalidate PEs using the same TCE table */
-> +			/*
-> +			 * The NVLink hardware does not support TCE kill
-> +			 * per TCE entry so we have to invalidate
-> +			 * the entire cache for it.
-> +			 */
->  			for (i = 0; i < PNV_IODA_MAX_PEER_PES; i++) {
->  				npe = pe->peers[i];
-> -				if (!npe || npe->phb->type != PNV_PHB_NPU)
-> +				if (!npe || npe->phb->type != PNV_PHB_NPU ||
-> +						!npe->phb->ioda.tce_inval_reg)
->  					continue;
->  
-> -				pnv_npu_tce_invalidate(npe, tbl, index,
-> -							npages, rm);
-> +				pnv_pci_ioda2_tce_invalidate_entire(npe->phb,
-> +						rm);
->  			}
->  	}
->  }
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> index 3f814f3..0b89a4c 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -237,15 +237,10 @@ extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
->  extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
->  
->  /* Nvlink functions */
-> -extern void pnv_npu_tce_invalidate_entire(struct pnv_ioda_pe *npe);
-> -extern void pnv_npu_tce_invalidate(struct pnv_ioda_pe *npe,
-> -				       struct iommu_table *tbl,
-> -				       unsigned long index,
-> -				       unsigned long npages,
-> -				       bool rm);
->  extern void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe);
->  extern void pnv_npu_setup_dma_pe(struct pnv_ioda_pe *npe);
->  extern int pnv_npu_dma_set_bypass(struct pnv_ioda_pe *npe, bool enabled);
->  extern int pnv_npu_dma_set_mask(struct pci_dev *npdev, u64 dma_mask);
-> +extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
->  
->  #endif /* __POWERNV_PCI_H */
+> -	addr = (void *)gpe->table_group.tables[0]->it_base;
+> -	size = gpe->table_group.tables[0]->it_size << 3;
+> +	tbl = gpe->table_group.tables[0];
+>  	rc = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
+> -					npe->pe_number, 1, __pa(addr),
+> -					size, 0x1000);
+> +					npe->pe_number, 1, __pa(tbl->it_base),
+> +					tbl->it_size << 3,
+> +					IOMMU_PAGE_SIZE(tbl));
+>  	if (rc != OPAL_SUCCESS)
+>  		pr_warn("%s: Error %lld setting DMA window on PHB#%d-PE#%d\n",
+>  			__func__, rc, phb->hose->global_number, npe->pe_number);
 > 
