@@ -1,49 +1,24 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
- [IPv6:2607:f8b0:4001:c06::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qSHYX1HdQzDq6X
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Mar 2016 09:57:52 +1100 (AEDT)
-Received: by mail-io0-x241.google.com with SMTP id v123so2285551ioe.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2016 15:57:52 -0700 (PDT)
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
+ [150.101.137.129])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qT0hk6VCxzDq7K
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 13:51:34 +1100 (AEDT)
+From: Alistair Popple <alistair@popple.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Daniel Axtens <dja@axtens.net>, David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Russell Currey <ruscur@russell.cc>,
+ Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH kernel 04/10] powerpc/powernv/npu: TCE Kill helpers cleanup
+Date: Mon, 21 Mar 2016 13:51:33 +1100
+Message-ID: <3559497.q44USTMyyK@new-mexico>
+In-Reply-To: <1457504946-40649-5-git-send-email-aik@ozlabs.ru>
+References: <1457504946-40649-1-git-send-email-aik@ozlabs.ru>
+ <1457504946-40649-5-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <1458302850.10432.2.camel@ellerman.id.au>
-References: <1458302850.10432.2.camel@ellerman.id.au>
-Date: Sat, 19 Mar 2016 15:57:48 -0700
-Message-ID: <CA+55aFwcVx5+oaBXqFT=+DPeTOx2xUKGr0nJ6GPpxzf6a5wSwA@mail.gmail.com>
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-4.6-1 tag
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Igal.Liberman@freescale.com, Zhiqiang.Hou@freescale.com,
- adam.buchbinder@gmail.com, aik@ozlabs.ru, alessio.bogani@elettra.eu,
- andrew.donnellan@au1.ibm.com,
- "Aneesh Kumar K. V" <aneesh.kumar@linux.vnet.ibm.com>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
- Boqun Feng <boqun.feng@gmail.com>, Balbir Singh <bsingharora@gmail.com>,
- chenhui.zhao@freescale.com,
- Christophe Leroy <christophe.leroy@c-s.fr>, clombard@linux.vnet.ibm.com,
- cyrilbur@gmail.com,
- david@gibson.dropbear.id.au, dongsheng.wang@freescale.com,
- dougmill@linux.vnet.ibm.com, Torsten Duwe <duwe@lst.de>, duwe@suse.de,
- fbarrat@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com,
- Ian Munsie <imunsie@au1.ibm.com>, Jeremy Kerr <jk@ozlabs.org>, joel@jms.id.au,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, leoyang.li@nxp.com,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- luis.henriques@canonical.com, maddy@linux.vnet.ibm.com,
- manoj@linux.vnet.ibm.com, Michael Neuling <mikey@neuling.org>,
- mrochs@linux.vnet.ibm.com,
- oss@buserror.net, Paul Mackerras <paulus@ozlabs.org>,
- Paul Mackerras <paulus@samba.org>,
- qiang.zhao@nxp.com, raghav.dogra@nxp.com, ruscur@russell.cc,
- saurabh.truth@gmail.com, sjitindarsingh@gmail.com, stewart@linux.vnet.ibm.com,
- sukadev@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com,
- Richard Yang <weiyang@linux.vnet.ibm.com>, xinhui.pan@linux.vnet.ibm.com,
- xuelin.shi@nxp.com
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,73 +28,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 18, 2016 at 5:07 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> I couldn't convince git request-pull to generate a sane diffstat below, it
-> seems to be confused because I merged powerpc-4.5-4 into my next.
+On Wed, 9 Mar 2016 17:29:00 Alexey Kardashevskiy wrote:
+> NPU PHB TCE Kill register is exactly the same as in the rest of POWER8
+> so let's reuse the existing code for NPU. The only bit missing is
+> a helper to reset the entire TCE cache so this moves such a helper
+> from NPU code and renames it.
+> 
+> Since pnv_npu_tce_invalidate() does really invalidate the entire cache,
+> this uses pnv_pci_ioda2_tce_invalidate_entire() directly for NPU.
+> This adds an explicit comment for workaround for invalidating NPU TCE
+> cache.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-Yes, if there are multiple merge bases (particularly cross-merges, but
-you can get it just from internal merges of work that started at
-different points), a plain "git diff" will often be unable to give
-reasonable results.
+Reviewed-by: Alistair Popple <alistair@popple.id.au>
 
-> So I just did the merge and took that diffstat. Hopefully that makes sense.
-
-Yes, that's the way to get a reliable diff if you have more complex history.
-
-Some people do that merge by default (ie both the networking tree and
-the ARM SoC trees tend to do this), not just to get the reliable diff,
-but also to inform me of the conflicts that they encountered.
-
-So it's actually "good practice", as long as you then send me the
-pre-merge state - I still want to do the merge myself to see what's
-going on.
-
-Exactly like you did, in other words.
-
-At the same time, it's absolutely not required. So if the diffstat
-looks odd, you can just send me the incorrect diffstat and just tell
-me so.  Yes, I will get a different diffstat when I do the merge, but
-I can still tell that it's what you intended to send me by just doing
-the non-merge diff.
-
-In general, the trees I pull tend to fall into two main camps:
-
- (a) "simple history" maintainers
-
-     These maintainers don't pull from sub-maintainers, and that don't
-ever hit the issue with "plain git diff cannot give the right end
-result".
-
-     The plain "git diff" that pull-request does always works for the
-simple history case, and I really don't expect these maintainers to do
-merges for me anyway, since they should have linear history and just
-generally use a simplified git model.
-
-     In fact, I will complain loudly if they start doing odd things
-like cross-merging etc, because they really really shouldn't, and they
-aren't ready and aware of the pain they cause.
-
- (b) the "complex top-level maintainer"
-
-     This group does pulls of their own from submaintainers, and can
-have fairly complex histories just within their own tree.
-
-     This group can encounter the "oops, I don't have a simple merge
-base, so 'gid diff' will not give sane results" situation.
-
-     This group is also usually savvy enough that they then can handle
-it and do the whole "let's do a test merge to see what conflicts I
-get, and get a good diff even if there are multiple merge bases".
-
-Of course, it's not _really_ that black-and-white, but it's a
-simplified model and close enough.
-
-Basically you should never hit that complicated case unless you are
-already using workflows that means that you can handle it, and by then
-you usually also end up understanding why clean history and avoiding
-back-merges is a good idea etc.
-
-Welcome to that second group.
-
-               Linus
+> ---
+>  arch/powerpc/platforms/powernv/npu-dma.c  | 41 -------------------------------
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 29 ++++++++++++++++++----
+>  arch/powerpc/platforms/powernv/pci.h      |  7 +-----
+>  3 files changed, 25 insertions(+), 52 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+> index 7229acd..778570c 100644
+> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+> @@ -25,8 +25,6 @@
+>   * Other types of TCE cache invalidation are not functional in the
+>   * hardware.
+>   */
+> -#define TCE_KILL_INVAL_ALL PPC_BIT(0)
+> -
+>  static struct pci_dev *get_pci_dev(struct device_node *dn)
+>  {
+>  	return PCI_DN(dn)->pcidev;
+> @@ -161,45 +159,6 @@ static struct pnv_ioda_pe *get_gpu_pci_dev_and_pe(struct pnv_ioda_pe *npe,
+>  	return pe;
+>  }
+>  
+> -void pnv_npu_tce_invalidate_entire(struct pnv_ioda_pe *npe)
+> -{
+> -	struct pnv_phb *phb = npe->phb;
+> -
+> -	if (WARN_ON(phb->type != PNV_PHB_NPU ||
+> -		    !phb->ioda.tce_inval_reg ||
+> -		    !(npe->flags & PNV_IODA_PE_DEV)))
+> -		return;
+> -
+> -	mb(); /* Ensure previous TCE table stores are visible */
+> -	__raw_writeq(cpu_to_be64(TCE_KILL_INVAL_ALL),
+> -		phb->ioda.tce_inval_reg);
+> -}
+> -
+> -void pnv_npu_tce_invalidate(struct pnv_ioda_pe *npe,
+> -				struct iommu_table *tbl,
+> -				unsigned long index,
+> -				unsigned long npages,
+> -				bool rm)
+> -{
+> -	struct pnv_phb *phb = npe->phb;
+> -
+> -	/* We can only invalidate the whole cache on NPU */
+> -	unsigned long val = TCE_KILL_INVAL_ALL;
+> -
+> -	if (WARN_ON(phb->type != PNV_PHB_NPU ||
+> -		    !phb->ioda.tce_inval_reg ||
+> -		    !(npe->flags & PNV_IODA_PE_DEV)))
+> -		return;
+> -
+> -	mb(); /* Ensure previous TCE table stores are visible */
+> -	if (rm)
+> -		__raw_rm_writeq(cpu_to_be64(val),
+> -		  (__be64 __iomem *) phb->ioda.tce_inval_reg_phys);
+> -	else
+> -		__raw_writeq(cpu_to_be64(val),
+> -			phb->ioda.tce_inval_reg);
+> -}
+> -
+>  void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe)
+>  {
+>  	struct pnv_ioda_pe *gpe;
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 33e9489..90cdf49 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1824,9 +1824,23 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
+>  	.get = pnv_tce_get,
+>  };
+>  
+> +#define TCE_KILL_INVAL_ALL  PPC_BIT(0)
+>  #define TCE_KILL_INVAL_PE   PPC_BIT(1)
+>  #define TCE_KILL_INVAL_TCE  PPC_BIT(2)
+>  
+> +void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm)
+> +{
+> +	const unsigned long val = TCE_KILL_INVAL_ALL;
+> +
+> +	mb(); /* Ensure previous TCE table stores are visible */
+> +	if (rm)
+> +		__raw_rm_writeq(cpu_to_be64(val),
+> +				(__be64 __iomem *)
+> +				phb->ioda.tce_inval_reg_phys);
+> +	else
+> +		__raw_writeq(cpu_to_be64(val), phb->ioda.tce_inval_reg);
+> +}
+> +
+>  static inline void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
+>  {
+>  	/* 01xb - invalidate TCEs that match the specified PE# */
+> @@ -1847,7 +1861,7 @@ static inline void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
+>  			if (!npe || npe->phb->type != PNV_PHB_NPU)
+>  				continue;
+>  
+> -			pnv_npu_tce_invalidate_entire(npe);
+> +			pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
+>  		}
+>  }
+>  
+> @@ -1896,14 +1910,19 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+>  			index, npages);
+>  
+>  		if (pe->flags & PNV_IODA_PE_PEER)
+> -			/* Invalidate PEs using the same TCE table */
+> +			/*
+> +			 * The NVLink hardware does not support TCE kill
+> +			 * per TCE entry so we have to invalidate
+> +			 * the entire cache for it.
+> +			 */
+>  			for (i = 0; i < PNV_IODA_MAX_PEER_PES; i++) {
+>  				npe = pe->peers[i];
+> -				if (!npe || npe->phb->type != PNV_PHB_NPU)
+> +				if (!npe || npe->phb->type != PNV_PHB_NPU ||
+> +						!npe->phb->ioda.tce_inval_reg)
+>  					continue;
+>  
+> -				pnv_npu_tce_invalidate(npe, tbl, index,
+> -							npages, rm);
+> +				pnv_pci_ioda2_tce_invalidate_entire(npe->phb,
+> +						rm);
+>  			}
+>  	}
+>  }
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+> index 3f814f3..0b89a4c 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -237,15 +237,10 @@ extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
+>  extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
+>  
+>  /* Nvlink functions */
+> -extern void pnv_npu_tce_invalidate_entire(struct pnv_ioda_pe *npe);
+> -extern void pnv_npu_tce_invalidate(struct pnv_ioda_pe *npe,
+> -				       struct iommu_table *tbl,
+> -				       unsigned long index,
+> -				       unsigned long npages,
+> -				       bool rm);
+>  extern void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe);
+>  extern void pnv_npu_setup_dma_pe(struct pnv_ioda_pe *npe);
+>  extern int pnv_npu_dma_set_bypass(struct pnv_ioda_pe *npe, bool enabled);
+>  extern int pnv_npu_dma_set_mask(struct pci_dev *npdev, u64 dma_mask);
+> +extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
+>  
+>  #endif /* __POWERNV_PCI_H */
+> 
