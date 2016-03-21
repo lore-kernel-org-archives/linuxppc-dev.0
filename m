@@ -2,35 +2,39 @@ Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qTMQ805nQzDq7K
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Mar 2016 03:55:11 +1100 (AEDT)
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qTMXl2hYFzDqDJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Mar 2016 04:00:55 +1100 (AEDT)
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qTMQ70s9Sz9s0k
- for <linuxppc-dev@ozlabs.org>; Tue, 22 Mar 2016 03:55:10 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3qTMXl0RChz9s3T
+ for <linuxppc-dev@ozlabs.org>; Tue, 22 Mar 2016 04:00:55 +1100 (AEDT)
 Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Mon, 21 Mar 2016 22:25:06 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2LGsW0w3604908
- for <linuxppc-dev@ozlabs.org>; Mon, 21 Mar 2016 22:24:33 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2LMNiGf031969
- for <linuxppc-dev@ozlabs.org>; Tue, 22 Mar 2016 03:53:45 +0530
+ Tue, 22 Mar 2016 03:00:54 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 522642BB0055
+ for <linuxppc-dev@ozlabs.org>; Tue, 22 Mar 2016 04:00:51 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2LH0hW464487544
+ for <linuxppc-dev@ozlabs.org>; Tue, 22 Mar 2016 04:00:51 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2LH0I6A021453
+ for <linuxppc-dev@ozlabs.org>; Tue, 22 Mar 2016 04:00:18 +1100
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 Cc: ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, viresh.kumar@linaro.org,
- rjw@rjwysocki.net, pc@us.ibm.com, shreyas@linux.vnet.ibm.com,
- anton@samba.org, mikey@neuling.org, shilpa.bhat@linux.vnet.ibm.com
-Subject: [PATCH RESEND] cpufreq: powernv: Define per_cpu chip pointer to
- optimize hot-path
-Date: Mon, 21 Mar 2016 22:24:52 +0530
-Message-Id: <1458579292-27424-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ rjw@rjwysocki.net, shreyas@linux.vnet.ibm.com,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ linux-api@vger.kernel.org
+Subject: [PATCH v11] cpufreq: powernv: Add sysfs attributes to show throttle
+ stats
+Date: Mon, 21 Mar 2016 22:29:51 +0530
+Message-Id: <1458579591-27573-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,142 +44,278 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Neuling <mikey@neuling.org>
+Create sysfs attributes to export throttle information in
+/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats directory. The
+newly added sysfs files are as follows:
 
-"96c4726f01cd cpufreq: powernv: Remove cpu_to_chip_id() from hot-path"
-introduced 'core_to_chip_map' array to cache the chip-id of all cores.
-Replace this with per_cpu variable that stores the pointer to the
-chip-array. This removes the linear lookup and provides a neater and
-simpler solution.
+1)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/turbo_stat
+2)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/sub-turbo_stat
+3)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/unthrottle
+4)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/powercap
+5)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overtemp
+6)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/supply_fault
+7)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overcurrent
+8)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/occ_reset
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Detailed explanation of each attribute is added to
+Documentation/ABI/testing/sysfs-devices-system-cpu
+
+CC: linux-api@vger.kernel.org
 Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
-- Included S-o-b and ACK tags
-- Added the commit id to the commit log
+Changes from v10:
+- Removed policy_notifiers to use driver->init() instead to create sysfs
+- sysfs attributes are removed by kobject_put(policy->kobj)
+- Rebased on top of
+  http://lkml.iu.edu/hypermail/linux/kernel/1603.2/02268.html 
 
- drivers/cpufreq/powernv-cpufreq.c | 50 +++++++++++++--------------------------
- 1 file changed, 17 insertions(+), 33 deletions(-)
+Changes from v9:
+- Modified documentation.
+- s/throttle_nominal/throttle_sub_turbo
 
+Changes from v8:
+- Moved the sysfs attributes from cpu/cpufreq/chipX to cpuX/cpufreq/throttle_stats
+- Adhering to one-value-per-file, replace throttle_table with multiple
+  sysfs files.
+- Using CPUFREQ_POLICY_NOTIFIER to add/remove attribute_group.
+
+ Documentation/ABI/testing/sysfs-devices-system-cpu | 69 +++++++++++++++++++
+ drivers/cpufreq/powernv-cpufreq.c                  | 80 +++++++++++++++++++++-
+ 2 files changed, 146 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index b683e8e..1650133 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -271,3 +271,72 @@ Description:	Parameters for the CPU cache attributes
+ 			- WriteBack: data is written only to the cache line and
+ 				     the modified cache line is written to main
+ 				     memory only when it is replaced
++
++What:		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/turbo_stat
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/sub_turbo_stat
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/unthrottle
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/powercap
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overtemp
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/supply_fault
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overcurrent
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/occ_reset
++Date:		March 2016
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++		Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	POWERNV CPUFreq driver's frequency throttle stats directory and
++		attributes
++
++		'cpuX/cpufreq/throttle_stats' directory contains the CPU frequency
++		throttle stat attributes for the chip. The throttle stats of a cpu
++		is common across all the cpus belonging to a chip. Below are the
++		throttle attributes exported in the 'throttle_stats' directory:
++
++		- turbo_stat : This file gives the total number of times the max
++		frequency is throttled to lower frequency in turbo (at and above
++		nominal frequency) range of frequencies.
++
++		- sub_turbo_stat : This file gives the total number of times the
++		max frequency is throttled to lower frequency in sub-turbo(below
++		nominal frequency) range of frequencies.
++
++		- unthrottle : This file gives the total number of times the max
++		frequency is unthrottled after being throttled.
++
++		- powercap : This file gives the total number of times the max
++		frequency is throttled due to 'Power Capping'.
++
++		- overtemp : This file gives the total number of times the max
++		frequency is throttled due to 'CPU Over Temperature'.
++
++		- supply_fault : This file gives the total number of times the
++		max frequency is throttled due to 'Power Supply Failure'.
++
++		- overcurrent : This file gives the total number of times the
++		max frequency is throttled due to 'Overcurrent'.
++
++		- occ_reset : This file gives the total number of times the max
++		frequency is throttled due to 'OCC Reset'.
++
++		The sysfs attributes representing different throttle reasons like
++		powercap, overtemp, supply_fault, overcurrent and occ_reset map to
++		the reasons provided by OCC firmware for throttling the frequency.
++
++What:		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/turbo_stat
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/sub_turbo_stat
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/unthrottle
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/powercap
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/overtemp
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/supply_fault
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/overcurrent
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/occ_reset
++Date:		March 2016
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++		Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	POWERNV CPUFreq driver's frequency throttle stats directory and
++		attributes
++
++		'policyX/throttle_stats' directory and all the attributes are same as
++		the /sys/devices/system/cpu/cpuX/cpufreq/throttle_stats directory and
++		attributes which give the frequency throttle information of the chip.
 diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 50bf120..a00bcc2 100644
+index a00bcc2..dc8363d 100644
 --- a/drivers/cpufreq/powernv-cpufreq.c
 +++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -44,7 +44,6 @@
+@@ -44,6 +44,7 @@
  
  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
  static bool rebooting, throttled, occ_reset;
--static unsigned int *core_to_chip_map;
++static bool *create_throttle_sysfs;
  
  static const char * const throttle_reason[] = {
  	"No throttling",
-@@ -65,6 +64,7 @@ static struct chip {
+@@ -54,6 +55,16 @@ static const char * const throttle_reason[] = {
+ 	"OCC Reset"
+ };
+ 
++enum throttle_reason_type {
++	NO_THROTTLE = 0,
++	POWERCAP,
++	CPU_OVERTEMP,
++	POWER_SUPPLY_FAILURE,
++	OVERCURRENT,
++	OCC_RESET_THROTTLE,
++	OCC_MAX_REASON
++};
++
+ static struct chip {
+ 	unsigned int id;
+ 	bool throttled;
+@@ -61,6 +72,9 @@ static struct chip {
+ 	u8 throttle_reason;
+ 	cpumask_t mask;
+ 	struct work_struct throttle;
++	int throttle_turbo;
++	int throttle_sub_turbo;
++	int reason[OCC_MAX_REASON];
  } *chips;
  
  static int nr_chips;
-+static DEFINE_PER_CPU(struct chip *, chip_info);
+@@ -196,6 +210,42 @@ static struct freq_attr *powernv_cpu_freq_attr[] = {
+ 	NULL,
+ };
  
- /*
-  * Note: The set of pstates consists of contiguous integers, the
-@@ -324,34 +324,31 @@ static inline unsigned int get_nominal_index(void)
++#define throttle_attr(name, member)					\
++static ssize_t name##_show(struct cpufreq_policy *policy, char *buf)	\
++{									\
++	struct chip *chip = per_cpu(chip_info, policy->cpu);		\
++									\
++	return sprintf(buf, "%u\n", chip->member);			\
++}									\
++									\
++static struct freq_attr throttle_attr_##name = __ATTR_RO(name)		\
++
++throttle_attr(unthrottle, reason[NO_THROTTLE]);
++throttle_attr(powercap, reason[POWERCAP]);
++throttle_attr(overtemp, reason[CPU_OVERTEMP]);
++throttle_attr(supply_fault, reason[POWER_SUPPLY_FAILURE]);
++throttle_attr(overcurrent, reason[OVERCURRENT]);
++throttle_attr(occ_reset, reason[OCC_RESET_THROTTLE]);
++throttle_attr(turbo_stat, throttle_turbo);
++throttle_attr(sub_turbo_stat, throttle_sub_turbo);
++
++static struct attribute *throttle_attrs[] = {
++	&throttle_attr_unthrottle.attr,
++	&throttle_attr_powercap.attr,
++	&throttle_attr_overtemp.attr,
++	&throttle_attr_supply_fault.attr,
++	&throttle_attr_overcurrent.attr,
++	&throttle_attr_occ_reset.attr,
++	&throttle_attr_turbo_stat.attr,
++	&throttle_attr_sub_turbo_stat.attr,
++	NULL,
++};
++
++static const struct attribute_group throttle_attr_grp = {
++	.name	= "throttle_stats",
++	.attrs	= throttle_attrs,
++};
++
+ /* Helper routines */
  
- static void powernv_cpufreq_throttle_check(void *data)
- {
-+	struct chip *chip;
- 	unsigned int cpu = smp_processor_id();
--	unsigned int chip_id = core_to_chip_map[cpu_core_index_of_thread(cpu)];
- 	unsigned long pmsr;
--	int pmsr_pmax, i;
-+	int pmsr_pmax;
- 
- 	pmsr = get_pmspr(SPRN_PMSR);
--
--	for (i = 0; i < nr_chips; i++)
--		if (chips[i].id == chip_id)
--			break;
-+	chip = this_cpu_read(chip_info);
- 
- 	/* Check for Pmax Capping */
- 	pmsr_pmax = (s8)PMSR_MAX(pmsr);
- 	if (pmsr_pmax != powernv_pstate_info.max) {
--		if (chips[i].throttled)
-+		if (chip->throttled)
+ /* Access helpers to power mgt SPR */
+@@ -338,10 +388,14 @@ static void powernv_cpufreq_throttle_check(void *data)
+ 		if (chip->throttled)
  			goto next;
--		chips[i].throttled = true;
-+		chip->throttled = true;
- 		if (pmsr_pmax < powernv_pstate_info.nominal)
+ 		chip->throttled = true;
+-		if (pmsr_pmax < powernv_pstate_info.nominal)
++		if (pmsr_pmax < powernv_pstate_info.nominal) {
  			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
--				     cpu, chips[i].id, pmsr_pmax,
-+				     cpu, chip->id, pmsr_pmax,
+ 				     cpu, chip->id, pmsr_pmax,
  				     powernv_pstate_info.nominal);
--		trace_powernv_throttle(chips[i].id,
--				      throttle_reason[chips[i].throttle_reason],
-+		trace_powernv_throttle(chip->id,
-+				      throttle_reason[chip->throttle_reason],
++			chip->throttle_sub_turbo++;
++		} else {
++			chip->throttle_turbo++;
++		}
+ 		trace_powernv_throttle(chip->id,
+ 				      throttle_reason[chip->throttle_reason],
  				      pmsr_pmax);
--	} else if (chips[i].throttled) {
--		chips[i].throttled = false;
--		trace_powernv_throttle(chips[i].id,
--				      throttle_reason[chips[i].throttle_reason],
-+	} else if (chip->throttled) {
-+		chip->throttled = false;
-+		trace_powernv_throttle(chip->id,
-+				      throttle_reason[chip->throttle_reason],
- 				      pmsr_pmax);
- 	}
+@@ -401,13 +455,23 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
  
-@@ -558,47 +555,34 @@ static int init_chip_info(void)
- 	unsigned int chip[256];
- 	unsigned int cpu, i;
- 	unsigned int prev_chip_id = UINT_MAX;
--	cpumask_t cpu_mask;
--	int ret = -ENOMEM;
--
--	core_to_chip_map = kcalloc(cpu_nr_cores(), sizeof(unsigned int),
--				   GFP_KERNEL);
--	if (!core_to_chip_map)
--		goto out;
+ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	int base, i;
++	int base, i, ret;
  
--	cpumask_copy(&cpu_mask, cpu_possible_mask);
--	for_each_cpu(cpu, &cpu_mask) {
-+	for_each_possible_cpu(cpu) {
- 		unsigned int id = cpu_to_chip_id(cpu);
+ 	base = cpu_first_thread_sibling(policy->cpu);
  
- 		if (prev_chip_id != id) {
- 			prev_chip_id = id;
- 			chip[nr_chips++] = id;
- 		}
--		core_to_chip_map[cpu_core_index_of_thread(cpu)] = id;
--		cpumask_andnot(&cpu_mask, &cpu_mask, cpu_sibling_mask(cpu));
- 	}
+ 	for (i = 0; i < threads_per_core; i++)
+ 		cpumask_set_cpu(base + i, policy->cpus);
  
- 	chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
++	i = cpu_core_index_of_thread(policy->cpu);
++	if (!create_throttle_sysfs[i]) {
++		ret = sysfs_create_group(&policy->kobj, &throttle_attr_grp);
++		if (ret) {
++			pr_info("Failed to create throttle stats directory for cpu %d\n",
++				policy->cpu);
++			return ret;
++		}
++		create_throttle_sysfs[i] = true;
++	}
+ 	return cpufreq_table_validate_and_show(policy, powernv_freqs);
+ }
+ 
+@@ -514,8 +578,10 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+ 				break;
+ 
+ 		if (omsg.throttle_status >= 0 &&
+-		    omsg.throttle_status <= OCC_MAX_THROTTLE_STATUS)
++		    omsg.throttle_status <= OCC_MAX_THROTTLE_STATUS) {
+ 			chips[i].throttle_reason = omsg.throttle_status;
++			chips[i].reason[omsg.throttle_status]++;
++		}
+ 
+ 		if (!omsg.throttle_status)
+ 			chips[i].restore = true;
+@@ -569,6 +635,13 @@ static int init_chip_info(void)
  	if (!chips)
--		goto free_chip_map;
-+		return -ENOMEM;
+ 		return -ENOMEM;
  
++	create_throttle_sysfs = kcalloc(cpu_nr_cores(), sizeof(bool),
++					GFP_KERNEL);
++	if (!create_throttle_sysfs) {
++		kfree(chips);
++		return -ENOMEM;
++	}
++
  	for (i = 0; i < nr_chips; i++) {
  		chips[i].id = chip[i];
  		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
- 		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
-+		for_each_cpu(cpu, &chips[i].mask)
-+			per_cpu(chip_info, cpu) =  &chips[i];
- 	}
- 
- 	return 0;
--free_chip_map:
--	kfree(core_to_chip_map);
--out:
--	return ret;
- }
+@@ -582,6 +655,7 @@ static int init_chip_info(void)
  
  static inline void clean_chip_info(void)
  {
++	kfree(create_throttle_sysfs);
  	kfree(chips);
--	kfree(core_to_chip_map);
  }
  
- static inline void unregister_all_notifiers(void)
 -- 
 1.9.3
