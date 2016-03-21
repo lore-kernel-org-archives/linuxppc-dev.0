@@ -1,21 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qT4YK1fcpzDq7K
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 16:45:25 +1100 (AEDT)
-Date: Mon, 21 Mar 2016 16:46:34 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: paulus@samba.org, aik@ozlabs.ru, benh@kernel.crashing.org
-Cc: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- michael@ellerman.id.au
-Subject: Re: [RFCv3 00/17] PAPR HPT resizing, guest & host side
-Message-ID: <20160321054634.GK23586@voom.redhat.com>
-References: <1458532404-21258-1-git-send-email-david@gibson.dropbear.id.au>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
+ [150.101.137.129])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qT61j3n2SzDq7K
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 17:51:37 +1100 (AEDT)
+From: Alistair Popple <alistair@popple.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Daniel Axtens <dja@axtens.net>, David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Russell Currey <ruscur@russell.cc>,
+ Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH kernel 07/10] powerpc/powernv/npu: Rework TCE Kill handling
+Date: Mon, 21 Mar 2016 17:50:35 +1100
+Message-ID: <3568229.mPg30sMOI8@new-mexico>
+In-Reply-To: <1457504946-40649-8-git-send-email-aik@ozlabs.ru>
+References: <1457504946-40649-1-git-send-email-aik@ozlabs.ru>
+ <1457504946-40649-8-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="pN9MePJoZbRKbUk1"
-In-Reply-To: <1458532404-21258-1-git-send-email-david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,112 +28,315 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 9 Mar 2016 17:29:03 Alexey Kardashevskiy wrote:
+> The pnv_ioda_pe struct keeps an array of peers. At the moment it is only
+> used to link GPU and NPU for 2 purposes:
+> 
+> 1. Access NPU _quickly_ when configuring DMA for GPU - this was addressed
+> in the previos patch by removing use of it as DMA setup is not what
+> the kernel would constantly do.
 
---pN9MePJoZbRKbUk1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This was implemented using peers[] because we had peers[] anyway to deal with 
+TCE cache invalidation. I agree there's no reason to keep it around solely for 
+speed.
 
-On Mon, Mar 21, 2016 at 02:53:07PM +1100, David Gibson wrote:
-> This is an implementation of the kernel parts of the PAPR hashed page
-> table (HPT) resizing extension.
->=20
-> It contains a complete guest-side implementation - or as complete as
-> it can be until we have a final PAPR change.
->=20
-> It also contains a draft host side implementation for KVM HV (the KVM
-> PR and TCG host-side implementations live in qemu).  This works, but
-> is very slow in the critical section (where the guest must be
-> stopped).  It is significantly slower than the TCG/PR implementation;
-> unusably slow for large hash tables (~2.8s for a 1G HPT).
+> 2. Invalidate TCE cache for NPU when it is invalidated for GPU.
+> GPU and NPU are in different PE. There is already a mechanism to
+> attach multiple iommu_table_group to the same iommu_table (used for VFIO),
+> we can reuse it here so does this patch.
 
-Since posting this, I've managed to bring this down to ~570ms for a 1G
-HPT.  Still slow, but much better.  The optimization to do this was to
-skip rehashing an HPTE if neither VALID|ABSENT are set *before*
-locking the HPTE.  I believe this is safe, since nothing should be
-able to add new VALID|ABSENT HPTEs while the guest is stopped.
+Ok, this makes sense. I wasn't aware of iommu_table_groups but it looks like a 
+more elegant way of solving the problem. I'm not familiar with the way iommu 
+groups work but the changes make sense to me as far as I can tell.
 
->=20
-> I'm still looking into what's the cause of the slowness, and I'm not
-> sure yet if the current approach can be tweaked to be fast enough, or
-> if it will require a new approach.
->=20
-> Changes since RFCv2:
->   * Completely new approach to handling KVM HV implementation.  Much
->     simpler synchronization requirements, but also slower
->   * Rebase to latest Linus' tree
->   * Changed number for capability, so as not to collide
->   * Host side now actually works
->=20
-> David Gibson (17):
->   pseries: Add hypercall wrappers for hash page table resizing
->   pseries: Add support for hash table resizing
->   pseries: Advertise HPT resizing support via CAS
->   pseries: Automatically resize HPT for memory hot add/remove
->   powerpc/kvm: Corectly report KVM_CAP_PPC_ALLOC_HTAB
->   powerpc/kvm: Add capability flag for hashed page table resizing
->   powerpc/kvm: Rename kvm_alloc_hpt() for clarity
->   powerpc/kvm: Gather HPT related variables into sub-structure
->   powerpc/kvm: Don't store values derivable from HPT order
->   powerpc/kvm: Split HPT allocation from activation
->   powerpc/kvm: Allow KVM_PPC_ALLOCATE_HTAB ioctl() to change HPT size
->   powerpc/kvm: Create kvmppc_unmap_hpte_helper()
->   powerpc/kvm: KVM-HV HPT resizing stub implementation
->   powerpc/kvm: Outline of KVM-HV HPT resizing implementation
->   powerpc/kvm: KVM-HV HPT resizing, preparation path
->   powerpc/kvm: HVM-HV HPT resizing, commit path
->   powerpc/kvm: Advertise availablity of HPT resizing on KVM HV
->=20
->  arch/powerpc/include/asm/firmware.h       |   5 +-
->  arch/powerpc/include/asm/hvcall.h         |   2 +
->  arch/powerpc/include/asm/kvm_book3s.h     |  12 +-
->  arch/powerpc/include/asm/kvm_book3s_64.h  |  15 +
->  arch/powerpc/include/asm/kvm_host.h       |  17 +-
->  arch/powerpc/include/asm/kvm_ppc.h        |  11 +-
->  arch/powerpc/include/asm/machdep.h        |   1 +
->  arch/powerpc/include/asm/plpar_wrappers.h |  12 +
->  arch/powerpc/include/asm/prom.h           |   1 +
->  arch/powerpc/include/asm/sparsemem.h      |   1 +
->  arch/powerpc/kernel/prom_init.c           |   2 +-
->  arch/powerpc/kvm/book3s_64_mmu_hv.c       | 626 ++++++++++++++++++++++++=
-------
->  arch/powerpc/kvm/book3s_hv.c              |  37 +-
->  arch/powerpc/kvm/book3s_hv_builtin.c      |   8 +-
->  arch/powerpc/kvm/book3s_hv_rm_mmu.c       |  68 ++--
->  arch/powerpc/kvm/powerpc.c                |  17 +-
->  arch/powerpc/mm/hash_utils_64.c           |  57 +++
->  arch/powerpc/mm/mem.c                     |   4 +
->  arch/powerpc/platforms/pseries/firmware.c |   1 +
->  arch/powerpc/platforms/pseries/lpar.c     | 110 ++++++
->  include/uapi/linux/kvm.h                  |   1 +
->  21 files changed, 825 insertions(+), 183 deletions(-)
->=20
+> This gets rid of peers[] array and PNV_IODA_PE_PEER flag as they are
+> not needed anymore.
+>
+> While we are here, add TCE cache invalidation after changing TVT.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Good idea, even though I guess we're unlikely to hit a problem in practice as 
+I'm pretty sure on a normal system the links would get retrained between runs 
+with different TVTs which implies the NPU gets reset too.
 
---pN9MePJoZbRKbUk1
-Content-Type: application/pgp-signature; name="signature.asc"
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Reviewed-By: Alistair Popple <alistair@popple.id.au>
 
-iQIcBAEBAgAGBQJW74q6AAoJEGw4ysog2bOSXXcP/it54SXTD6d/gq2ISm7Po2wI
-W37NYPFJgsaOAHCXi9N2iaVlawT7I5LOshvWULA9fPFsfbqvQrWUVMNIgLjjNMKS
-sr58uJgKCYM5fTLq5DOd/j8TzTnxVMEWjSIUoVXeLYnrWvlN5+CyLBiSxgcW2ViK
-MyeCE8paEzK8pu0hiyo+xsmpfwNUskHq5G4eGoP/VYDcC471NXnqCvgMsK1ZcW5A
-+6qi6jrSmuZEUFMjcgfaL/IWVehihsmFCSjwXhzZXG3LqwbSh+IgrBvrd65riM0l
-l/2sbUsxLIIOIiOZHUk1fSd+0h7heQeJXy05DJTPVOlJ/pVClD52Ow15Gc+q1ekm
-/McQuJCIZN4DVJt1n83qmn2Fm88D3Z2bRCrhw0vB3TqrflgGpYow5iLormhG1ZpR
-vOOM5PQxmxmrSyjB1g/X7iGyFGgwmVYqTc82RhJTTsEzerKSm5ckSLAK0NfpTmNN
-+bsaK2GRvLcG7NSTWMUzaE4U1ES8oECH6GXuOisNVGx4m8YtiKLUpjs0tuosJz0V
-tNGrmhn+MyUB3L0glXbA/pdo3Zd+Eh4CwqtBv0YydYbdkWHeRaBsPpMyRWzNKcwR
-24KyAyR7lDLQFLMFRTntNd2haRZ47UJ310OahOfhz0ehCWEdhUNIaZoHr7cknVGp
-r1Zk0EJHfH1TWhN0Olrj
-=c/7o
------END PGP SIGNATURE-----
-
---pN9MePJoZbRKbUk1--
+> ---
+>  arch/powerpc/platforms/powernv/npu-dma.c  | 75 
++++++++++----------------------
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 57 +++--------------------
+>  arch/powerpc/platforms/powernv/pci.h      |  6 ---
+>  3 files changed, 29 insertions(+), 109 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c 
+b/arch/powerpc/platforms/powernv/npu-dma.c
+> index 8960e46..866d3d3 100644
+> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+> @@ -136,22 +136,17 @@ static struct pnv_ioda_pe 
+*get_gpu_pci_dev_and_pe(struct pnv_ioda_pe *npe,
+>  	struct pnv_ioda_pe *pe;
+>  	struct pci_dn *pdn;
+>  
+> -	if (npe->flags & PNV_IODA_PE_PEER) {
+> -		pe = npe->peers[0];
+> -		pdev = pe->pdev;
+> -	} else {
+> -		pdev = pnv_pci_get_gpu_dev(npe->pdev);
+> -		if (!pdev)
+> -			return NULL;
+> +	pdev = pnv_pci_get_gpu_dev(npe->pdev);
+> +	if (!pdev)
+> +		return NULL;
+>  
+> -		pdn = pci_get_pdn(pdev);
+> -		if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
+> -			return NULL;
+> +	pdn = pci_get_pdn(pdev);
+> +	if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
+> +		return NULL;
+>  
+> -		hose = pci_bus_to_host(pdev->bus);
+> -		phb = hose->private_data;
+> -		pe = &phb->ioda.pe_array[pdn->pe_number];
+> -	}
+> +	hose = pci_bus_to_host(pdev->bus);
+> +	phb = hose->private_data;
+> +	pe = &phb->ioda.pe_array[pdn->pe_number];
+>  
+>  	if (gpdev)
+>  		*gpdev = pdev;
+> @@ -159,42 +154,6 @@ static struct pnv_ioda_pe 
+*get_gpu_pci_dev_and_pe(struct pnv_ioda_pe *npe,
+>  	return pe;
+>  }
+>  
+> -void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe)
+> -{
+> -	struct pnv_ioda_pe *gpe;
+> -	struct pci_dev *gpdev;
+> -	int i, avail = -1;
+> -
+> -	if (!npe->pdev || !(npe->flags & PNV_IODA_PE_DEV))
+> -		return;
+> -
+> -	gpe = get_gpu_pci_dev_and_pe(npe, &gpdev);
+> -	if (!gpe)
+> -		return;
+> -
+> -	for (i = 0; i < PNV_IODA_MAX_PEER_PES; i++) {
+> -		/* Nothing to do if the PE is already connected. */
+> -		if (gpe->peers[i] == npe)
+> -			return;
+> -
+> -		if (!gpe->peers[i])
+> -			avail = i;
+> -	}
+> -
+> -	if (WARN_ON(avail < 0))
+> -		return;
+> -
+> -	gpe->peers[avail] = npe;
+> -	gpe->flags |= PNV_IODA_PE_PEER;
+> -
+> -	/*
+> -	 * We assume that the NPU devices only have a single peer PE
+> -	 * (the GPU PCIe device PE).
+> -	 */
+> -	npe->peers[0] = gpe;
+> -	npe->flags |= PNV_IODA_PE_PEER;
+> -}
+> -
+>  /*
+>   * Enables 32 bit DMA on NPU.
+>   */
+> @@ -225,6 +184,13 @@ static void pnv_npu_dma_set_32(struct pnv_ioda_pe *npe)
+>  	if (rc != OPAL_SUCCESS)
+>  		pr_warn("%s: Error %lld setting DMA window on PHB#%d-PE#%d\n",
+>  			__func__, rc, phb->hose->global_number, npe-
+>pe_number);
+> +	else
+> +		pnv_pci_ioda2_tce_invalidate_entire(phb, false);
+> +
+> +	/* Add the table to the list so its TCE cache will get invalidated */
+> +	npe->table_group.tables[0] = tbl;
+> +	pnv_pci_link_table_and_group(phb->hose->node, 0,
+> +			tbl, &npe->table_group);
+>  
+>  	/*
+>  	 * We don't initialise npu_pe->tce32_table as we always use
+> @@ -245,10 +211,10 @@ static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe 
+*npe)
+>  	int64_t rc = 0;
+>  	phys_addr_t top = memblock_end_of_DRAM();
+>  
+> -	if (phb->type != PNV_PHB_NPU || !npe->pdev)
+> -		return -EINVAL;
+> -
+>  	/* Enable the bypass window */
+> +	pnv_pci_unlink_table_and_group(npe->table_group.tables[0],
+> +			&npe->table_group);
+> +	npe->table_group.tables[0] = NULL;
+>  
+>  	npe->tce_bypass_base = 0;
+>  	top = roundup_pow_of_two(top);
+> @@ -258,6 +224,9 @@ static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe 
+*npe)
+>  			npe->pe_number, npe->pe_number,
+>  			npe->tce_bypass_base, top);
+>  
+> +	if (rc == OPAL_SUCCESS)
+> +		pnv_pci_ioda2_tce_invalidate_entire(phb, false);
+> +
+>  	return rc;
+>  }
+>  
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c 
+b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 47085b7..5a6cf2e 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1836,23 +1836,12 @@ static inline void 
+pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
+>  	/* 01xb - invalidate TCEs that match the specified PE# */
+>  	unsigned long val = TCE_KILL_INVAL_PE | (pe->pe_number & 0xFF);
+>  	struct pnv_phb *phb = pe->phb;
+> -	struct pnv_ioda_pe *npe;
+> -	int i;
+>  
+>  	if (!phb->ioda.tce_inval_reg)
+>  		return;
+>  
+>  	mb(); /* Ensure above stores are visible */
+>  	__raw_writeq(cpu_to_be64(val), phb->ioda.tce_inval_reg);
+> -
+> -	if (pe->flags & PNV_IODA_PE_PEER)
+> -		for (i = 0; i < PNV_IODA_MAX_PEER_PES; i++) {
+> -			npe = pe->peers[i];
+> -			if (!npe || npe->phb->type != PNV_PHB_NPU)
+> -				continue;
+> -
+> -			pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
+> -		}
+>  }
+>  
+>  static void pnv_pci_ioda2_do_tce_invalidate(unsigned pe_number, bool rm,
+> @@ -1887,33 +1876,24 @@ static void pnv_pci_ioda2_tce_invalidate(struct 
+iommu_table *tbl,
+>  	struct iommu_table_group_link *tgl;
+>  
+>  	list_for_each_entry_lockless(tgl, &tbl->it_group_list, next) {
+> -		struct pnv_ioda_pe *npe;
+>  		struct pnv_ioda_pe *pe = container_of(tgl->table_group,
+>  				struct pnv_ioda_pe, table_group);
+>  		__be64 __iomem *invalidate = rm ?
+>  			(__be64 __iomem *)pe->phb->ioda.tce_inval_reg_phys :
+>  			pe->phb->ioda.tce_inval_reg;
+> -		int i;
+>  
+> -		pnv_pci_ioda2_do_tce_invalidate(pe->pe_number, rm,
+> -			invalidate, tbl->it_page_shift,
+> -			index, npages);
+> -
+> -		if (pe->flags & PNV_IODA_PE_PEER)
+> +		if (pe->phb->type == PNV_PHB_NPU) {
+>  			/*
+>  			 * The NVLink hardware does not support TCE kill
+>  			 * per TCE entry so we have to invalidate
+>  			 * the entire cache for it.
+>  			 */
+> -			for (i = 0; i < PNV_IODA_MAX_PEER_PES; i++) {
+> -				npe = pe->peers[i];
+> -				if (!npe || npe->phb->type != PNV_PHB_NPU ||
+> -						!npe->phb->ioda.tce_inval_reg)
+> -					continue;
+> -
+> -				pnv_pci_ioda2_tce_invalidate_entire(npe->phb,
+> -						rm);
+> -			}
+> +			pnv_pci_ioda2_tce_invalidate_entire(pe->phb, rm);
+> +			continue;
+> +		}
+> +		pnv_pci_ioda2_do_tce_invalidate(pe->pe_number, rm,
+> +			invalidate, tbl->it_page_shift,
+> +			index, npages);
+>  	}
+>  }
+>  
+> @@ -3094,26 +3074,6 @@ static void pnv_pci_ioda_create_dbgfs(void)
+>  #endif /* CONFIG_DEBUG_FS */
+>  }
+>  
+> -static void pnv_npu_ioda_fixup(void)
+> -{
+> -	bool enable_bypass;
+> -	struct pci_controller *hose, *tmp;
+> -	struct pnv_phb *phb;
+> -	struct pnv_ioda_pe *pe;
+> -
+> -	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+> -		phb = hose->private_data;
+> -		if (phb->type != PNV_PHB_NPU)
+> -			continue;
+> -
+> -		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
+> -			enable_bypass = dma_get_mask(&pe->pdev->dev) ==
+> -				DMA_BIT_MASK(64);
+> -			pnv_npu_init_dma_pe(pe);
+> -		}
+> -	}
+> -}
+> -
+>  static void pnv_pci_ioda_fixup(void)
+>  {
+>  	pnv_pci_ioda_setup_PEs();
+> @@ -3126,9 +3086,6 @@ static void pnv_pci_ioda_fixup(void)
+>  	eeh_init();
+>  	eeh_addr_cache_build();
+>  #endif
+> -
+> -	/* Link NPU IODA tables to their PCI devices. */
+> -	pnv_npu_ioda_fixup();
+>  }
+>  
+>  /*
+> diff --git a/arch/powerpc/platforms/powernv/pci.h 
+b/arch/powerpc/platforms/powernv/pci.h
+> index d574a9d..06405fd 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -24,7 +24,6 @@ enum pnv_phb_model {
+>  #define PNV_IODA_PE_MASTER	(1 << 3)	/* Master PE in compound case	
+*/
+>  #define PNV_IODA_PE_SLAVE	(1 << 4)	/* Slave PE in compound case	
+*/
+>  #define PNV_IODA_PE_VF		(1 << 5)	/* PE for one VF 	
+	*/
+> -#define PNV_IODA_PE_PEER	(1 << 6)	/* PE has peers			
+*/
+>  
+>  /* Data associated with a PE, including IOMMU tracking etc.. */
+>  struct pnv_phb;
+> @@ -32,9 +31,6 @@ struct pnv_ioda_pe {
+>  	unsigned long		flags;
+>  	struct pnv_phb		*phb;
+>  
+> -#define PNV_IODA_MAX_PEER_PES	8
+> -	struct pnv_ioda_pe	*peers[PNV_IODA_MAX_PEER_PES];
+> -
+>  	/* A PE can be associated with a single device or an
+>  	 * entire bus (& children). In the former case, pdev
+>  	 * is populated, in the later case, pbus is.
+> @@ -237,8 +233,6 @@ extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int 
+nvec, int type);
+>  extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
+>  
+>  /* Nvlink functions */
+> -extern void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe);
+> -extern void pnv_npu_setup_dma_pe(struct pnv_ioda_pe *npe);
+>  extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
+>  extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool 
+rm);
+>  
+> 
