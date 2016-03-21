@@ -1,19 +1,18 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qT22q5g7QzDqDJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 14:52:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qT22r0brMzDq7K
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 14:52:20 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
 	aik@ozlabs.ru,
 	benh@kernel.crashing.org
 Cc: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
  michael@ellerman.id.au, David Gibson <david@gibson.dropbear.id.au>
-Subject: [RFCv3 11/17] powerpc/kvm: Allow KVM_PPC_ALLOCATE_HTAB ioctl() to
- change HPT size
-Date: Mon, 21 Mar 2016 14:53:18 +1100
-Message-Id: <1458532404-21258-12-git-send-email-david@gibson.dropbear.id.au>
+Subject: [RFCv3 12/17] powerpc/kvm: Create kvmppc_unmap_hpte_helper()
+Date: Mon, 21 Mar 2016 14:53:19 +1100
+Message-Id: <1458532404-21258-13-git-send-email-david@gibson.dropbear.id.au>
 In-Reply-To: <1458532404-21258-1-git-send-email-david@gibson.dropbear.id.au>
 References: <1458532404-21258-1-git-send-email-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,143 +24,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The KVM_PPC_ALLOCATE_HTAB ioctl() is used to set the size of hashed page
-table (HPT) that userspace expects a guest VM to have, and is also used to
-clear that HPT when necessary (e.g. guest reboot).
+The kvm_unmap_rmapp() function, called from certain MMU notifiers, is used
+to force all guest mappings of a particular host page to be set ABSENT, and
+removed from the reverse mappings.
 
-At present, once the ioctl() is called for the first time, the HPT size can
-never be changed thereafter - it will be cleared but always sized as from
-the first call.
-
-With upcoming HPT resize implementation, we're going to need to allow
-userspace to resize the HPT at reset (to change it back to the default size
-if the guest changed it).
-
-So, we need to allow this ioctl() to change the HPT size.
+For HPT resizing, we will have some cases where we want to set just a
+single guest HPTE ABSENT and remove its reverse mappings.  To prepare with
+this, we split out the logic from kvm_unmap_rmapp() to evict a single HPTE,
+moving it to a new helper function.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/kvm_ppc.h  |  2 +-
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 52 ++++++++++++++++++++-----------------
- arch/powerpc/kvm/book3s_hv.c        |  5 +---
- 3 files changed, 30 insertions(+), 29 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 75 +++++++++++++++++++++----------------
+ 1 file changed, 43 insertions(+), 32 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 154dd63..5a1daa0 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -157,7 +157,7 @@ extern void kvmppc_map_magic(struct kvm_vcpu *vcpu);
- 
- extern int kvmppc_allocate_hpt(struct kvm_hpt_info *info, u32 order);
- extern void kvmppc_set_hpt(struct kvm *kvm, struct kvm_hpt_info *info);
--extern long kvmppc_alloc_reset_hpt(struct kvm *kvm, u32 *htab_orderp);
-+extern long kvmppc_alloc_reset_hpt(struct kvm *kvm, int order);
- extern void kvmppc_free_hpt(struct kvm_hpt_info *info);
- extern long kvmppc_prepare_vrma(struct kvm *kvm,
- 				struct kvm_userspace_memory_region *mem);
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 518b573..e975c5a 100644
+index e975c5a..89878a4 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -103,10 +103,22 @@ void kvmppc_set_hpt(struct kvm *kvm, struct kvm_hpt_info *info)
- 		info->virt, (long)info->order, kvm->arch.lpid);
+@@ -710,13 +710,52 @@ static int kvm_handle_hva(struct kvm *kvm, unsigned long hva,
+ 	return kvm_handle_hva_range(kvm, hva, hva + 1, handler);
  }
  
--long kvmppc_alloc_reset_hpt(struct kvm *kvm, u32 *htab_orderp)
-+void kvmppc_free_hpt(struct kvm_hpt_info *info)
++/* Must be called with both HPTE and rmap locked */
++static void kvmppc_unmap_hpte(struct kvm *kvm, unsigned long idx,
++			      unsigned long *rmapp, unsigned long gfn)
 +{
-+	vfree(info->rev);
-+	if (info->cma)
-+		kvm_free_hpt_cma(virt_to_page(info->virt),
-+				 1 << (info->order - PAGE_SHIFT));
-+	else
-+		free_pages(info->virt, info->order - PAGE_SHIFT);
-+	info->virt = 0;
-+	info->order = 0;
++	__be64 *hptep = (__be64 *) (kvm->arch.hpt.virt + (idx << 4));
++	struct revmap_entry *rev = kvm->arch.hpt.rev;
++	unsigned long j, h;
++	unsigned long ptel, psize, rcbits;
++
++	j = rev[idx].forw;
++	if (j == idx) {
++		/* chain is now empty */
++		*rmapp &= ~(KVMPPC_RMAP_PRESENT | KVMPPC_RMAP_INDEX);
++	} else {
++		/* remove idx from chain */
++		h = rev[idx].back;
++		rev[h].forw = j;
++		rev[j].back = h;
++		rev[idx].forw = rev[idx].back = idx;
++		*rmapp = (*rmapp & ~KVMPPC_RMAP_INDEX) | j;
++	}
++
++	/* Now check and modify the HPTE */
++	ptel = rev[idx].guest_rpte;
++	psize = hpte_page_size(be64_to_cpu(hptep[0]), ptel);
++	if ((be64_to_cpu(hptep[0]) & HPTE_V_VALID) &&
++	    hpte_rpn(ptel, psize) == gfn) {
++		hptep[0] |= cpu_to_be64(HPTE_V_ABSENT);
++		kvmppc_invalidate_hpte(kvm, hptep, idx);
++		/* Harvest R and C */
++		rcbits = be64_to_cpu(hptep[1]) & (HPTE_R_R | HPTE_R_C);
++		*rmapp |= rcbits << KVMPPC_RMAP_RC_SHIFT;
++		if (rcbits & HPTE_R_C)
++			kvmppc_update_rmap_change(rmapp, psize);
++		if (rcbits & ~rev[idx].guest_rpte) {
++			rev[idx].guest_rpte = ptel | rcbits;
++			note_hpte_modification(kvm, &rev[idx]);
++		}
++	}
 +}
 +
-+long kvmppc_alloc_reset_hpt(struct kvm *kvm, int order)
+ static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp,
+ 			   unsigned long gfn)
  {
- 	long err = -EBUSY;
--	long order;
-+	struct kvm_hpt_info info;
+-	struct revmap_entry *rev = kvm->arch.hpt.rev;
+-	unsigned long h, i, j;
++	unsigned long i;
+ 	__be64 *hptep;
+-	unsigned long ptel, psize, rcbits;
  
- 	mutex_lock(&kvm->lock);
- 	if (kvm->arch.hpte_setup_done) {
-@@ -118,8 +130,9 @@ long kvmppc_alloc_reset_hpt(struct kvm *kvm, u32 *htab_orderp)
- 			goto out;
+ 	for (;;) {
+ 		lock_rmap(rmapp);
+@@ -739,36 +778,8 @@ static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp,
+ 				cpu_relax();
+ 			continue;
  		}
- 	}
--	if (kvm->arch.hpt.virt) {
--		order = kvm->arch.hpt.order;
-+	if (kvm->arch.hpt.order == order) {
-+		/* We already have a suitable HPT */
-+
- 		/* Set the entire HPT to 0, i.e. invalid HPTEs */
- 		memset((void *)kvm->arch.hpt.virt, 0, 1ul << order);
- 		/*
-@@ -128,33 +141,24 @@ long kvmppc_alloc_reset_hpt(struct kvm *kvm, u32 *htab_orderp)
- 		kvmppc_rmap_reset(kvm);
- 		/* Ensure that each vcpu will flush its TLB on next entry. */
- 		cpumask_setall(&kvm->arch.need_tlb_flush);
--		*htab_orderp = order;
- 		err = 0;
--	} else {
--		struct kvm_hpt_info info;
--
--		err = kvmppc_allocate_hpt(&info, *htab_orderp);
--		if (err < 0)
--			goto out;
--		kvmppc_set_hpt(kvm, &info);
-+		goto out;
- 	}
-+
-+	if (kvm->arch.hpt.virt)
-+		kvmppc_free_hpt(&kvm->arch.hpt);
-+
-+	
-+	err = kvmppc_allocate_hpt(&info, order);
-+	if (err < 0)
-+		goto out;
-+	kvmppc_set_hpt(kvm, &info);
-+	
-  out:
- 	mutex_unlock(&kvm->lock);
- 	return err;
- }
+-		j = rev[i].forw;
+-		if (j == i) {
+-			/* chain is now empty */
+-			*rmapp &= ~(KVMPPC_RMAP_PRESENT | KVMPPC_RMAP_INDEX);
+-		} else {
+-			/* remove i from chain */
+-			h = rev[i].back;
+-			rev[h].forw = j;
+-			rev[j].back = h;
+-			rev[i].forw = rev[i].back = i;
+-			*rmapp = (*rmapp & ~KVMPPC_RMAP_INDEX) | j;
+-		}
  
--void kvmppc_free_hpt(struct kvm_hpt_info *info)
--{
--	vfree(info->rev);
--	if (info->cma)
--		kvm_free_hpt_cma(virt_to_page(info->virt),
--				 1 << (info->order - PAGE_SHIFT));
--	else
--		free_pages(info->virt, info->order - PAGE_SHIFT);
--	info->virt = 0;
--	info->order = 0;
--}
--
- /* Bits in first HPTE dword for pagesize 4k, 64k or 16M */
- static inline unsigned long hpte0_pgsize_encoding(unsigned long pgsize)
- {
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 18eb106..2289ce3 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3301,12 +3301,9 @@ static long kvm_arch_vm_ioctl_hv(struct file *filp,
- 		r = -EFAULT;
- 		if (get_user(htab_order, (u32 __user *)argp))
- 			break;
--		r = kvmppc_alloc_reset_hpt(kvm, &htab_order);
-+		r = kvmppc_alloc_reset_hpt(kvm, htab_order);
- 		if (r)
- 			break;
--		r = -EFAULT;
--		if (put_user(htab_order, (u32 __user *)argp))
--			break;
- 		r = 0;
- 		break;
+-		/* Now check and modify the HPTE */
+-		ptel = rev[i].guest_rpte;
+-		psize = hpte_page_size(be64_to_cpu(hptep[0]), ptel);
+-		if ((be64_to_cpu(hptep[0]) & HPTE_V_VALID) &&
+-		    hpte_rpn(ptel, psize) == gfn) {
+-			hptep[0] |= cpu_to_be64(HPTE_V_ABSENT);
+-			kvmppc_invalidate_hpte(kvm, hptep, i);
+-			/* Harvest R and C */
+-			rcbits = be64_to_cpu(hptep[1]) & (HPTE_R_R | HPTE_R_C);
+-			*rmapp |= rcbits << KVMPPC_RMAP_RC_SHIFT;
+-			if (rcbits & HPTE_R_C)
+-				kvmppc_update_rmap_change(rmapp, psize);
+-			if (rcbits & ~rev[i].guest_rpte) {
+-				rev[i].guest_rpte = ptel | rcbits;
+-				note_hpte_modification(kvm, &rev[i]);
+-			}
+-		}
++		kvmppc_unmap_hpte(kvm, i, rmapp, gfn);
+ 		unlock_rmap(rmapp);
+ 		__unlock_hpte(hptep, be64_to_cpu(hptep[0]));
  	}
 -- 
 2.5.0
