@@ -1,37 +1,26 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qT35d45GTzDq7K
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 15:39:49 +1100 (AEDT)
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 21 Mar 2016 14:39:46 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 70ED42BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 15:39:37 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2L4dT4Z54263856
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 15:39:37 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2L4d46J025321
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 15:39:05 +1100
-Subject: Re: [PATCH] cxl: fix setting of _PAGE_USER bit when handling page
- faults
-To: Ian Munsie <imunsie@au1.ibm.com>
-References: <1458273681-18588-1-git-send-email-andrew.donnellan@au1.ibm.com>
- <1458282296-sup-2460@x230.ozlabs.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, benh@kernel.crashing.org
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Message-ID: <56EF7ACF.5020506@au1.ibm.com>
-Date: Mon, 21 Mar 2016 15:38:39 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qT3HQ27pNzDq7K
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 15:48:18 +1100 (AEDT)
+Date: Mon, 21 Mar 2016 15:48:10 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Daniel Axtens <dja@axtens.net>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Russell Currey <ruscur@russell.cc>,
+ Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH kernel 08/10] powerpc/powernv/npu: Add NPU devices to
+ IOMMU group
+Message-ID: <20160321044810.GG23586@voom.redhat.com>
+References: <1457504946-40649-1-git-send-email-aik@ozlabs.ru>
+ <1457504946-40649-9-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <1458282296-sup-2460@x230.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="zGQnqpIoxlsbsOfg"
+In-Reply-To: <1457504946-40649-9-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,38 +30,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 18/03/16 17:30, Ian Munsie wrote:
-> Excerpts from andrew.donnellan's message of 2016-03-18 15:01:21 +1100:
->> Fixes: f204e0b8cedd ("cxl: Driver code for powernv PCIe based cards for
->> userspace access")
->
-> It doesn't fix that since there was no cxl kernel API support at the
-> time, so this wasn't a regression - just something we missed when the
-> kernel api was added (I believe the broken test in the code was a left
-> over from some early bringup work and would never have been exercised on
-> an upstream kernel until then).
 
-Ah, fair enough - I just looked at what git blame told me. You're right, 
-it's not a fix to that commit per se. Happy to drop this tag.
+--zGQnqpIoxlsbsOfg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> We haven't run into any problems because of this that I am aware of - do
-> we have a test case for this?
+On Wed, Mar 09, 2016 at 05:29:04PM +1100, Alexey Kardashevskiy wrote:
+> NPU devices have their own TVT which means they are isolated and can be
+> passed to the userspace via VFIO. The first step is to create an IOMMU
+> group and attach devices there so does the patch.
+>=20
+> This adds a helper to npu-dma.c which gets GPU from the NPU's pdev and
+> then walks through all devices on the same bus to determine which NPUs
+> belong to the same GPU.
+>=20
+> This adds an additional loop over PEs in pnv_ioda_setup_dma() as the main
+> loop skips NPU PEs as they do not have 32bit DMA segments.
+>=20
+> This uses get_gpu_pci_dev_and_pe() to get @gpdev rather than
+> pnv_pci_get_gpu_dev() as the following patch will use @gpe as well.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-I'd be surprised if it caused noticeable problems - the presence of the 
-_PAGE_USER bit when it's not necessary shouldn't break anything, as 
-opposed to the absence of _PAGE_USER when it is necessary. Not entirely 
-sure what the test case would be.
+I'm not entirely clear on how these devices are assigned to groups.
+Do they each get their own groups, or is the NPU device in the same
+group as its corresponding GPU (I would have thought the latter makes
+sense).
 
->
->> -    if ((!ctx->kernel) || ~(dar & (1ULL << 63)))
->> +    if ((!ctx->kernel) || !(dar & (1ULL << 63)))
->
-> Should it be the top two bits?
+> ---
+>  arch/powerpc/platforms/powernv/npu-dma.c  | 40 +++++++++++++++++++++++++=
+++++++
+>  arch/powerpc/platforms/powernv/pci-ioda.c |  8 +++++++
+>  arch/powerpc/platforms/powernv/pci.h      |  1 +
+>  3 files changed, 49 insertions(+)
+>=20
+> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/plat=
+forms/powernv/npu-dma.c
+> index 866d3d3..e5a5feb 100644
+> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+> @@ -263,3 +263,43 @@ void pnv_npu_try_dma_set_bypass(struct pci_dev *gpde=
+v, bool bypass)
+>  		}
+>  	}
+>  }
+> +
+> +void pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+> +{
+> +	struct iommu_table *tbl;
+> +	struct pnv_phb *phb =3D npe->phb;
+> +	struct pci_bus *pbus =3D phb->hose->bus;
+> +	struct pci_dev *npdev, *gpdev =3D NULL, *gptmp;
+> +	struct pnv_ioda_pe *gpe =3D get_gpu_pci_dev_and_pe(npe, &gpdev);
+> +
+> +	if (!gpe || !gpdev)
+> +		return;
+> +
+> +	iommu_register_group(&npe->table_group, phb->hose->global_number,
+> +			npe->pe_number);
+> +
+> +	tbl =3D pnv_pci_table_alloc(phb->hose->node);
+> +
+> +	list_for_each_entry(npdev, &pbus->devices, bus_list) {
+> +		gptmp =3D pnv_pci_get_gpu_dev(npdev);
+> +
+> +		if (gptmp !=3D gpdev)
+> +			continue;
+> +
+> +		/*
+> +		 * The iommu_add_device() picks an IOMMU group from
+> +		 * the first IOMMU group attached to the iommu_table
+> +		 * so we need to pretend that there is a table so
+> +		 * iommu_add_device() can complete the job.
+> +		 * We unlink the tempopary table from the group afterwards.
+> +		 */
+> +		pnv_pci_link_table_and_group(phb->hose->node, 0,
+> +				tbl, &npe->table_group);
+> +		set_iommu_table_base(&npdev->dev, tbl);
+> +		iommu_add_device(&npdev->dev);
+> +		set_iommu_table_base(&npdev->dev, NULL);
+> +		pnv_pci_unlink_table_and_group(tbl, &npe->table_group);
+> +	}
+> +
+> +	iommu_free_table(tbl, "");
+> +}
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
+tforms/powernv/pci-ioda.c
+> index 5a6cf2e..becd168 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2570,6 +2570,14 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+>  		remaining -=3D segs;
+>  		base +=3D segs;
+>  	}
+> +	/*
+> +	 * Create an IOMMU group and add devices to it.
+> +	 * DMA setup is to be done via GPU's dma_set_mask().
+> +	 */
+> +	if (phb->type =3D=3D PNV_PHB_NPU) {
+> +		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link)
+> +			pnv_pci_npu_setup_iommu(pe);
+> +	}
+>  }
+> =20
+>  #ifdef CONFIG_PCI_MSI
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platform=
+s/powernv/pci.h
+> index 06405fd..0c0083a 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -235,5 +235,6 @@ extern void pnv_teardown_msi_irqs(struct pci_dev *pde=
+v);
+>  /* Nvlink functions */
+>  extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypas=
+s);
+>  extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, boo=
+l rm);
+> +extern void pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe);
+> =20
+>  #endif /* __POWERNV_PCI_H */
 
-benh told me that the top bit should be enough - anything above 0x8000* 
-should be kernel space.
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
--- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+--zGQnqpIoxlsbsOfg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJW730KAAoJEGw4ysog2bOSwb0QANSx6Jhs6Kx7c0bNqG+Xooqu
+w3dG53n+ZEOAIVr56573tyxgTKxhb2ht30JslGV0sB/6EzGr+e60UCmmlYLQAx+Z
+uYUPEZ9U9nCYIU5D89LjnIIktIdhKP52DuhANiXfa9i/DoWPxPYHCRgqquboRbxR
+ReVC2PHhpDTe6DMW+eAaDgDZ/COQVbR8BJogBug/8Cz+GudXtoQBANg8JCWQqmfD
+l1dsOb3pes18Ywa8VQibR+S5Mf5NHYftVvLIBhj/6RHyqq5PcIH/VL715ti8zS5W
+XoEx7LYZdVTZhoQC9mmA8tIym/2XLzX4dw57lAWtQbDcyT9tmNxZqIzohkTjmAez
+re1U7jHibCeQOvMHMf/KcPIqKught8n4niWwAJJHk+N8TNOBIYQJzS5+zH1m9yTe
+WSWCw7KOjlpZ37PX0Pqkspu0fotfXz/G4Za7IuBVUCb6BDD63/COxXoYXITaYlcE
+GDiNYXrfPVDGg8cjiLRJm3nTErNfiTqcDPwHuPMVKG5fX6DZOzWkofYBnI7aANmV
+Gdke+hhk6ce0eP4XjTQHf2HLH49EcPuuzfL+eyDKC3Ipj9kgeXHjo/t43ol3rDrc
+YRn5Cj7FD9D/bkSH4mEkq4W02SMi+/s4fUCR+f6IkpTV50c/wuD2Uxs34CXSkcwf
+tELrpOt2hfMnkcaIrEpA
+=H2Hr
+-----END PGP SIGNATURE-----
+
+--zGQnqpIoxlsbsOfg--
