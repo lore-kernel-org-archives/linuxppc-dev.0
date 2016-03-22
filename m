@@ -1,27 +1,40 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qTsly3QfVzDq6X
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Mar 2016 23:42:22 +1100 (AEDT)
-Message-ID: <1458650516.3107.145.camel@kernel.crashing.org>
-Subject: Re: [PATCH kernel 08/10] powerpc/powernv/npu: Add NPU devices to
- IOMMU group
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, David Gibson
- <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>,
- Daniel Axtens <dja@axtens.net>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Russell Currey <ruscur@russell.cc>,
- Alex Williamson <alex.williamson@redhat.com>
-Date: Tue, 22 Mar 2016 23:41:56 +1100
-In-Reply-To: <56F0A46B.3040400@ozlabs.ru>
-References: <1457504946-40649-1-git-send-email-aik@ozlabs.ru>
- <1457504946-40649-9-git-send-email-aik@ozlabs.ru>
- <20160321044810.GG23586@voom.redhat.com> <56EFAFF3.5090404@ozlabs.ru>
- <20160322002550.GR23586@voom.redhat.com> <56F0A46B.3040400@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qTtnS67s5zDq6X
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Mar 2016 00:28:44 +1100 (AEDT)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3qTtnS4ggXz9s3s
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Mar 2016 00:28:44 +1100 (AEDT)
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Tue, 22 Mar 2016 23:28:42 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7AA0A2BB0055
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Mar 2016 00:28:37 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2MDSTlQ7340430
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Mar 2016 00:28:37 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2MDS5gk007152
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Mar 2016 00:28:05 +1100
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, viresh.kumar@linaro.org,
+ rjw@rjwysocki.net, shreyas@linux.vnet.ibm.com,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ linux-api@vger.kernel.org
+Subject: [PATCH v13] cpufreq: powernv: Add sysfs attributes to show throttle
+ stats
+Date: Tue, 22 Mar 2016 18:57:09 +0530
+Message-Id: <1458653229-10318-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +44,254 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-03-22 at 12:48 +1100, Alexey Kardashevskiy wrote:
-> 
-> I suppose GPU from guest1 could trigger DMA from NPU to guest2 memory. 
-> Which puts a constrain to management tools not to pass NPU without their 
-> GPU counterparts.
+Create sysfs attributes to export throttle information in
+/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats directory. The
+newly added sysfs files are as follows:
 
-Management tools will not be taught such constraints. The plan always
-was to make sure they are in the same group. So they should be.
+1)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/turbo_stat
+2)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/sub-turbo_stat
+3)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/unthrottle
+4)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/powercap
+5)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overtemp
+6)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/supply_fault
+7)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overcurrent
+8)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/occ_reset
 
-> The host can be affected as bypass is not disabled on NPU when GPU is taken 
-> by VFIO, I'll fix this.
->
-> >> If I put them to the same group as GPUs, I would have to have
-> >> IODA2-linked-to-NPU bridge type with different iommu_table_group_ops  or
-> >> have multiple hacks everywhere in IODA2 to enable/disable bypass,
-> >> etc.
-> >
-> > Well.. I suspect it would mean no longer having a 1:1 correspondance
-> > between user-visible IOMMU groups and the internal iommu_table.
-> 
-> Right.
+Detailed explanation of each attribute is added to
+Documentation/ABI/testing/sysfs-devices-system-cpu
 
-They can share the table too ...
+CC: linux-api@vger.kernel.org
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+Changes from v12:
+- Removed (void *) typecast
+- Move the definition of ret inside the 'if' block
 
-> Right now each GPU is sitting on a separate PHB and has its own PE. And all 
-> NPUs sit on a separate PHB and each couple of NPUs (2 links of the same 
-> GPU) gets a PE.
-> 
-> So we have separate PEs (struct pnv_ioda_pe) already, each has its own 
-> iommu_table_group_ops with all these VFIO IOMMU callbacks. So to make this 
-> all appear as one IOMMU group in sysfs, I will need to stop embedding 
-> iommu_table_group into pnv_ioda_pe but make it a pointer with reference 
-> counting, etc. Quite a massive change...
+Changes from v11:
+- Removed '*create_throttle_sysfs' 
+- policy->driver_data is used instead to maintain the flag for
+  one-time creation of throttle sysfs files.
 
-Or you just put a quirk flag of some sort and a pointer to the "linked"
-PE... sometimes that's a lot easier than lifting up the whole
-infrastructure.
-> 
-> 
-> 
-> >>>> ---
-> >>>>   arch/powerpc/platf
+Changes from v10:
+- Removed policy_notifiers to use driver->init() instead to create sysfs
+- sysfs attributes are removed by kobject_put(policy->kobj)
+- Rebased on top of
+  http://lkml.iu.edu/hypermail/linux/kernel/1603.2/02268.html
+
+Changes from v9:
+- Modified documentation.
+- s/throttle_nominal/throttle_sub_turbo
+
+Changes from v8:
+- Moved the sysfs attributes from cpu/cpufreq/chipX to cpuX/cpufreq/throttle_stats
+- Adhering to one-value-per-file, replace throttle_table with multiple
+  sysfs files.
+- Using CPUFREQ_POLICY_NOTIFIER to add/remove attribute_group.
+
+ Documentation/ABI/testing/sysfs-devices-system-cpu | 69 ++++++++++++++++++++
+ drivers/cpufreq/powernv-cpufreq.c                  | 74 +++++++++++++++++++++-
+ 2 files changed, 141 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index b683e8e..1650133 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -271,3 +271,72 @@ Description:	Parameters for the CPU cache attributes
+ 			- WriteBack: data is written only to the cache line and
+ 				     the modified cache line is written to main
+ 				     memory only when it is replaced
++
++What:		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/turbo_stat
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/sub_turbo_stat
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/unthrottle
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/powercap
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overtemp
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/supply_fault
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overcurrent
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/occ_reset
++Date:		March 2016
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++		Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	POWERNV CPUFreq driver's frequency throttle stats directory and
++		attributes
++
++		'cpuX/cpufreq/throttle_stats' directory contains the CPU frequency
++		throttle stat attributes for the chip. The throttle stats of a cpu
++		is common across all the cpus belonging to a chip. Below are the
++		throttle attributes exported in the 'throttle_stats' directory:
++
++		- turbo_stat : This file gives the total number of times the max
++		frequency is throttled to lower frequency in turbo (at and above
++		nominal frequency) range of frequencies.
++
++		- sub_turbo_stat : This file gives the total number of times the
++		max frequency is throttled to lower frequency in sub-turbo(below
++		nominal frequency) range of frequencies.
++
++		- unthrottle : This file gives the total number of times the max
++		frequency is unthrottled after being throttled.
++
++		- powercap : This file gives the total number of times the max
++		frequency is throttled due to 'Power Capping'.
++
++		- overtemp : This file gives the total number of times the max
++		frequency is throttled due to 'CPU Over Temperature'.
++
++		- supply_fault : This file gives the total number of times the
++		max frequency is throttled due to 'Power Supply Failure'.
++
++		- overcurrent : This file gives the total number of times the
++		max frequency is throttled due to 'Overcurrent'.
++
++		- occ_reset : This file gives the total number of times the max
++		frequency is throttled due to 'OCC Reset'.
++
++		The sysfs attributes representing different throttle reasons like
++		powercap, overtemp, supply_fault, overcurrent and occ_reset map to
++		the reasons provided by OCC firmware for throttling the frequency.
++
++What:		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/turbo_stat
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/sub_turbo_stat
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/unthrottle
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/powercap
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/overtemp
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/supply_fault
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/overcurrent
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/occ_reset
++Date:		March 2016
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++		Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	POWERNV CPUFreq driver's frequency throttle stats directory and
++		attributes
++
++		'policyX/throttle_stats' directory and all the attributes are same as
++		the /sys/devices/system/cpu/cpuX/cpufreq/throttle_stats directory and
++		attributes which give the frequency throttle information of the chip.
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index a00bcc2..39ac78c 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -54,6 +54,16 @@ static const char * const throttle_reason[] = {
+ 	"OCC Reset"
+ };
+ 
++enum throttle_reason_type {
++	NO_THROTTLE = 0,
++	POWERCAP,
++	CPU_OVERTEMP,
++	POWER_SUPPLY_FAILURE,
++	OVERCURRENT,
++	OCC_RESET_THROTTLE,
++	OCC_MAX_REASON
++};
++
+ static struct chip {
+ 	unsigned int id;
+ 	bool throttled;
+@@ -61,6 +71,9 @@ static struct chip {
+ 	u8 throttle_reason;
+ 	cpumask_t mask;
+ 	struct work_struct throttle;
++	int throttle_turbo;
++	int throttle_sub_turbo;
++	int reason[OCC_MAX_REASON];
+ } *chips;
+ 
+ static int nr_chips;
+@@ -196,6 +209,42 @@ static struct freq_attr *powernv_cpu_freq_attr[] = {
+ 	NULL,
+ };
+ 
++#define throttle_attr(name, member)					\
++static ssize_t name##_show(struct cpufreq_policy *policy, char *buf)	\
++{									\
++	struct chip *chip = per_cpu(chip_info, policy->cpu);		\
++									\
++	return sprintf(buf, "%u\n", chip->member);			\
++}									\
++									\
++static struct freq_attr throttle_attr_##name = __ATTR_RO(name)		\
++
++throttle_attr(unthrottle, reason[NO_THROTTLE]);
++throttle_attr(powercap, reason[POWERCAP]);
++throttle_attr(overtemp, reason[CPU_OVERTEMP]);
++throttle_attr(supply_fault, reason[POWER_SUPPLY_FAILURE]);
++throttle_attr(overcurrent, reason[OVERCURRENT]);
++throttle_attr(occ_reset, reason[OCC_RESET_THROTTLE]);
++throttle_attr(turbo_stat, throttle_turbo);
++throttle_attr(sub_turbo_stat, throttle_sub_turbo);
++
++static struct attribute *throttle_attrs[] = {
++	&throttle_attr_unthrottle.attr,
++	&throttle_attr_powercap.attr,
++	&throttle_attr_overtemp.attr,
++	&throttle_attr_supply_fault.attr,
++	&throttle_attr_overcurrent.attr,
++	&throttle_attr_occ_reset.attr,
++	&throttle_attr_turbo_stat.attr,
++	&throttle_attr_sub_turbo_stat.attr,
++	NULL,
++};
++
++static const struct attribute_group throttle_attr_grp = {
++	.name	= "throttle_stats",
++	.attrs	= throttle_attrs,
++};
++
+ /* Helper routines */
+ 
+ /* Access helpers to power mgt SPR */
+@@ -338,10 +387,14 @@ static void powernv_cpufreq_throttle_check(void *data)
+ 		if (chip->throttled)
+ 			goto next;
+ 		chip->throttled = true;
+-		if (pmsr_pmax < powernv_pstate_info.nominal)
++		if (pmsr_pmax < powernv_pstate_info.nominal) {
+ 			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
+ 				     cpu, chip->id, pmsr_pmax,
+ 				     powernv_pstate_info.nominal);
++			chip->throttle_sub_turbo++;
++		} else {
++			chip->throttle_turbo++;
++		}
+ 		trace_powernv_throttle(chip->id,
+ 				      throttle_reason[chip->throttle_reason],
+ 				      pmsr_pmax);
+@@ -408,6 +461,21 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	for (i = 0; i < threads_per_core; i++)
+ 		cpumask_set_cpu(base + i, policy->cpus);
+ 
++	if (!policy->driver_data) {
++		int ret;
++
++		ret = sysfs_create_group(&policy->kobj, &throttle_attr_grp);
++		if (ret) {
++			pr_info("Failed to create throttle stats directory for cpu %d\n",
++				policy->cpu);
++			return ret;
++		}
++		/*
++		 * policy->driver_data is used as a flag for one-time
++		 * creation of throttle sysfs files.
++		 */
++		policy->driver_data = policy;
++	}
+ 	return cpufreq_table_validate_and_show(policy, powernv_freqs);
+ }
+ 
+@@ -514,8 +582,10 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+ 				break;
+ 
+ 		if (omsg.throttle_status >= 0 &&
+-		    omsg.throttle_status <= OCC_MAX_THROTTLE_STATUS)
++		    omsg.throttle_status <= OCC_MAX_THROTTLE_STATUS) {
+ 			chips[i].throttle_reason = omsg.throttle_status;
++			chips[i].reason[omsg.throttle_status]++;
++		}
+ 
+ 		if (!omsg.throttle_status)
+ 			chips[i].restore = true;
+-- 
+1.9.3
