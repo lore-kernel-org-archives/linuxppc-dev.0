@@ -1,20 +1,28 @@
-Return-Path: <rashmicy@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qTVHc1fCTzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Mar 2016 09:05:00 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id q129so32834466pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 15:05:00 -0700 (PDT)
-From: Rashmica Gupta <rashmicy@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org,
-	mpe@ellerman.id.au
-Subject: [PATCH 2/2] powerpc/pagetable: Add option to dump kernel hashpagetable
-Date: Tue, 22 Mar 2016 09:04:45 +1100
-Message-Id: <1458597885-19804-2-git-send-email-rashmicy@gmail.com>
-In-Reply-To: <1458597885-19804-1-git-send-email-rashmicy@gmail.com>
-References: <1458597885-19804-1-git-send-email-rashmicy@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qTYNm43JvzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Mar 2016 11:24:40 +1100 (AEDT)
+Date: Tue, 22 Mar 2016 11:25:50 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Daniel Axtens <dja@axtens.net>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Russell Currey <ruscur@russell.cc>,
+ Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH kernel 08/10] powerpc/powernv/npu: Add NPU devices to
+ IOMMU group
+Message-ID: <20160322002550.GR23586@voom.redhat.com>
+References: <1457504946-40649-1-git-send-email-aik@ozlabs.ru>
+ <1457504946-40649-9-git-send-email-aik@ozlabs.ru>
+ <20160321044810.GG23586@voom.redhat.com>
+ <56EFAFF3.5090404@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="dO6Thh8T/cwyDjv9"
+In-Reply-To: <56EFAFF3.5090404@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,523 +32,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Useful to be able to dump the kernel hash page table to check
-which pages are hashed along with their sizes and other details.
 
-Add a debugfs file to check the page tables. To use this the PPC_PTDUMP
-config option must be selected.
+--dO6Thh8T/cwyDjv9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
----
- arch/powerpc/mm/Makefile             |   3 +-
- arch/powerpc/mm/dump_hashpagetable.c | 488 +++++++++++++++++++++++++++++++++++
- 2 files changed, 490 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/mm/dump_hashpagetable.c
+On Mon, Mar 21, 2016 at 07:25:23PM +1100, Alexey Kardashevskiy wrote:
+> On 03/21/2016 03:48 PM, David Gibson wrote:
+> >On Wed, Mar 09, 2016 at 05:29:04PM +1100, Alexey Kardashevskiy wrote:
+> >>NPU devices have their own TVT which means they are isolated and can be
+> >>passed to the userspace via VFIO. The first step is to create an IOMMU
+> >>group and attach devices there so does the patch.
+> >>
+> >>This adds a helper to npu-dma.c which gets GPU from the NPU's pdev and
+> >>then walks through all devices on the same bus to determine which NPUs
+> >>belong to the same GPU.
+> >>
+> >>This adds an additional loop over PEs in pnv_ioda_setup_dma() as the ma=
+in
+> >>loop skips NPU PEs as they do not have 32bit DMA segments.
+> >>
+> >>This uses get_gpu_pci_dev_and_pe() to get @gpdev rather than
+> >>pnv_pci_get_gpu_dev() as the following patch will use @gpe as well.
+> >>
+> >>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >
+> >I'm not entirely clear on how these devices are assigned to groups.
+> >Do they each get their own groups, or is the NPU device in the same
+> >group as its corresponding GPU (I would have thought the latter makes
+> >sense).
+>=20
+>=20
+> I am putting them to a separate group as they have their own TCE table
+> pointer even though they are expected to share it with GPU.
 
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index 6935c6204fbc..0bd48b345ff3 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -41,4 +41,5 @@ obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
- obj-$(CONFIG_HIGHMEM)		+= highmem.o
- obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
- obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_iommu.o
--obj-$(CONFIG_PPC_PTDUMP)	+= dump_linuxpagetables.o
-+obj-$(CONFIG_PPC_PTDUMP)	+= dump_linuxpagetables.o \
-+				   dump_hashpagetable.o
-diff --git a/arch/powerpc/mm/dump_hashpagetable.c b/arch/powerpc/mm/dump_hashpagetable.c
-new file mode 100644
-index 000000000000..044fd13e4d07
---- /dev/null
-+++ b/arch/powerpc/mm/dump_hashpagetable.c
-@@ -0,0 +1,488 @@
-+/*
-+ * Copyright 2016, Rashmica Gupta, IBM Corp.
-+ *
-+ * This traverses the kernel virtual memory and dumps the pages that are in
-+ * the hash pagetable, along with their flags to
-+ * /sys/kernel/debug/kernel_hash_pagetable.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2
-+ * of the License.
-+ */
-+#include <linux/debugfs.h>
-+#include <linux/fs.h>
-+#include <linux/io.h>
-+#include <linux/mm.h>
-+#include <linux/sched.h>
-+#include <linux/seq_file.h>
-+#include <asm/fixmap.h>
-+#include <asm/pgtable.h>
-+#include <linux/const.h>
-+#include <asm/page.h>
-+#include <asm/pgalloc.h>
-+#include <asm/plpar_wrappers.h>
-+#include <linux/memblock.h>
-+#include <asm/firmware.h>
-+
-+struct addr_marker {
-+	unsigned long start_address;
-+	const char *name;
-+};
-+
-+static struct addr_marker address_markers[] = {
-+	{ PAGE_OFFSET,		"Start of kernel VM"},
-+	{ VMALLOC_START,	"vmalloc() Area" },
-+	{ VMALLOC_END,		"vmalloc() End" },
-+	{ ISA_IO_BASE,		"isa I/O start" },
-+	{ ISA_IO_END,		"isa I/O end" },
-+	{ PHB_IO_BASE,		"phb I/O start" },
-+	{ PHB_IO_END,		"phb I/O end" },
-+	{ IOREMAP_BASE,		"I/O remap start" },
-+	{ IOREMAP_END,		"I/O remap end" },
-+	{ VMEMMAP_BASE,		"vmemmap start" },
-+	{ -1,			NULL },
-+};
-+
-+struct pg_state {
-+	struct seq_file *seq;
-+	const struct addr_marker *marker;
-+	unsigned long start_address;
-+	unsigned level;
-+	u64 current_flags;
-+};
-+
-+struct flag_info {
-+	u64		mask;
-+	u64		val;
-+	const char	*set;
-+	const char	*clear;
-+	bool		is_val;
-+};
-+
-+static const struct flag_info v_flag_array[] = {
-+	{
-+		.mask   = SLB_VSID_B,
-+		.val    = SLB_VSID_B_256M,
-+		.set    = "ssize: 256M",
-+		.clear  = "ssize: 1T  ",
-+	}, {
-+		.mask	= HPTE_V_SECONDARY,
-+		.val	= HPTE_V_SECONDARY,
-+		.set	= "secondary",
-+		.clear	= "primary  ",
-+	}, {
-+		.mask	= HPTE_V_VALID,
-+		.val	= HPTE_V_VALID,
-+		.set	= "valid  ",
-+		.clear	= "invalid",
-+	}, {
-+		.mask	= HPTE_V_BOLTED,
-+		.val	= HPTE_V_BOLTED,
-+		.set	= "bolted",
-+		.clear	= "",
-+	}
-+};
-+
-+static const struct flag_info r_flag_array[] = {
-+	{
-+		.mask	= HPTE_R_PP0 | HPTE_R_PP,
-+		.val	= HPTE_R_PP0 | HPTE_R_PP,
-+		.set	= "prot",
-+		.clear	= "",
-+		.is_val = true,
-+	}, {
-+		.mask	= HPTE_R_KEY_HI | HPTE_R_KEY_LO,
-+		.val	= HPTE_R_KEY_HI | HPTE_R_KEY_LO,
-+		.set	= "key",
-+		.clear	= "",
-+		.is_val = true,
-+	}, {
-+		.mask	= HPTE_R_R,
-+		.val	= HPTE_R_R,
-+		.set	= "ref",
-+		.clear	= "   ",
-+	}, {
-+		.mask	= HPTE_R_C,
-+		.val	= HPTE_R_C,
-+		.set	= "changed",
-+		.clear	= "       ",
-+	}, {
-+		.mask	= HPTE_R_N,
-+		.val	= HPTE_R_N,
-+		.set	= "no execute",
-+		.clear	= "",
-+	}, {
-+		.mask	= HPTE_R_WIMG,
-+		.val	= HPTE_R_W,
-+		.set	= "writethru",
-+		.clear	= "",
-+	}, {
-+		.mask	= HPTE_R_WIMG,
-+		.val	= HPTE_R_I,
-+		.set	= "no cache",
-+		.clear	= "",
-+	}, {
-+		.mask	= HPTE_R_WIMG,
-+		.val	= HPTE_R_G,
-+		.set	= "guarded",
-+		.clear	= "",
-+	}
-+};
-+
-+static void dump_flag_info(struct pg_state *st, const struct flag_info
-+		*flag, unsigned long pte, int num)
-+{
-+	unsigned i;
-+
-+	for (i = 0; i < num; i++, flag++) {
-+		const char *s = NULL;
-+
-+		if (flag->is_val) {
-+			seq_printf(st->seq, "  %s:%llx", flag->set, pte &
-+					flag->val);
-+		} else {
-+			if ((pte & flag->mask) == flag->val)
-+				s = flag->set;
-+			else
-+				s = flag->clear;
-+			seq_printf(st->seq, "  %s", s);
-+		}
-+	}
-+}
-+
-+static void dump_hpte_info(struct pg_state *st, unsigned long ea, unsigned long
-+		v, unsigned long r, unsigned long rpn, int bps, int aps,
-+		unsigned long lp)
-+{
-+	static const char units[] = "BKMGTPE";
-+	const char *unit = units;
-+
-+	while (ea >= st->marker[1].start_address) {
-+		st->marker++;
-+		seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
-+	}
-+	seq_printf(st->seq, "0x%lx:\t", ea);
-+	seq_printf(st->seq, "AVPN:%lx\t", HPTE_V_AVPN_VAL(v));
-+	dump_flag_info(st, v_flag_array, v, ARRAY_SIZE(v_flag_array));
-+	seq_printf(st->seq, "  rpn: %lx\t", rpn);
-+	dump_flag_info(st, r_flag_array, r, ARRAY_SIZE(r_flag_array));
-+
-+	while (bps > 9 && unit[1]) {
-+		bps -= 10;
-+		unit++;
-+	}
-+	seq_printf(st->seq, "base_ps: %i%c\t", 1<<bps, *unit);
-+	while (aps > 9 && unit[1]) {
-+		aps -= 10;
-+		unit++;
-+	}
-+	seq_printf(st->seq, "actual_ps: %i%c", 1<<aps, *unit);
-+	if (lp != -1)
-+		seq_printf(st->seq, "\tLP enc: %lx", lp);
-+	seq_puts(st->seq, "\n");
-+}
-+
-+static int native_find(unsigned long ea, int psize, bool primary, unsigned long
-+		*v, unsigned long *r)
-+{
-+	struct hash_pte *hptep;
-+	unsigned long hash, vsid, vpn, hpte_group, want_v, hpte_v;
-+	int i, ssize = mmu_kernel_ssize;
-+	unsigned long shift = mmu_psize_defs[psize].shift;
-+
-+	/* calculate hash */
-+	vsid = get_kernel_vsid(ea, ssize);
-+	vpn  = hpt_vpn(ea, vsid, ssize);
-+	hash = hpt_hash(vpn, shift, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
-+
-+	/* to check in the secondary hash table, we invert the hash */
-+	if (!primary)
-+		hash = ~hash;
-+	hpte_group = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-+	for (i = 0; i < HPTES_PER_GROUP; i++) {
-+		hptep = htab_address + hpte_group;
-+		hpte_v = be64_to_cpu(hptep->v);
-+
-+		if (HPTE_V_COMPARE(hpte_v, want_v) && (hpte_v & HPTE_V_VALID)) {
-+			/* HPTE matches */
-+			*v = be64_to_cpu(hptep->v);
-+			*r = be64_to_cpu(hptep->r);
-+			return 0;
-+		}
-+		++hpte_group;
-+	}
-+	return -1;
-+}
-+
-+static int pseries_find(unsigned long ea, int psize, bool primary, unsigned
-+		long *v, unsigned long *r)
-+{
-+	struct hash_pte ptes[4];
-+	unsigned long vsid, vpn, hash, hpte_group, want_v;
-+	int i, j, ssize = mmu_kernel_ssize;
-+	long lpar_rc = 0;
-+	unsigned long shift = mmu_psize_defs[psize].shift;
-+
-+	/* calculate hash */
-+	vsid = get_kernel_vsid(ea, ssize);
-+	vpn  = hpt_vpn(ea, vsid, ssize);
-+	hash = hpt_hash(vpn, shift, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
-+
-+	/* to check in the secondary hash table, we invert the hash */
-+	if (!primary)
-+		hash = ~hash;
-+	hpte_group = ((hash & htab_hash_mask) * HPTES_PER_GROUP) & ~0x7UL;
-+	/* see if we can find an entry in the hpte with this hash */
-+	for (i = 0; i < HPTES_PER_GROUP; i += 4, hpte_group += 4) {
-+		lpar_rc = plpar_pte_read_4(0, hpte_group, (void *)ptes);
-+
-+		if (lpar_rc != H_SUCCESS)
-+			continue;
-+		for (j = 0; j < 4; j++) {
-+			if (HPTE_V_COMPARE(ptes[j].v, want_v) &&
-+					(ptes[j].v & HPTE_V_VALID)) {
-+				/* HPTE matches */
-+				*v = ptes[j].v;
-+				*r = ptes[j].r;
-+				return 0;
-+			}
-+		}
-+	}
-+	return -1;
-+}
-+
-+static void decode_r(int bps, unsigned long r, unsigned long *rpn, int *aps,
-+		unsigned long *lp_bits)
-+{
-+	struct mmu_psize_def entry;
-+	unsigned long arpn, mask, lp;
-+	int penc = -2, idx = 0, shift;
-+
-+	/*.
-+	 * The LP field has 8 bits. Depending on the actual page size, some of
-+	 * these bits are concatenated with the APRN to get the RPN. The rest
-+	 * of the bits in the LP field is the LP value and is an encoding for
-+	 * the base page size and the actual page size.
-+	 *
-+	 *  -	find the mmu entry for our base page size
-+	 *  -	go through all page encodings and use the associated mask to
-+	 *	find an encoding that matches our encoding in the LP field.
-+	 */
-+	arpn = (r & HPTE_R_RPN) >> HPTE_R_RPN_SHIFT;
-+	lp = arpn & 0xff;
-+
-+	entry = mmu_psize_defs[bps];
-+	while (idx < MMU_PAGE_COUNT) {
-+		penc = entry.penc[idx];
-+		if ((penc != -1) && (mmu_psize_defs[idx].shift)) {
-+			shift = mmu_psize_defs[idx].shift -  HPTE_R_RPN_SHIFT;
-+			mask = (0x1 << (shift)) - 1;
-+			if ((lp & mask) == penc) {
-+				*aps = mmu_psize_to_shift(idx);
-+				*lp_bits = lp & mask;
-+				*rpn = arpn >> shift;
-+				return;
-+			}
-+		}
-+		idx++;
-+	}
-+}
-+
-+static unsigned long hpte_find(struct pg_state *st, unsigned long ea, int psize)
-+{
-+	unsigned long slot;
-+	unsigned long v  = 0, r = 0, rpn, lp_bits;
-+	int base_psize = 0, actual_psize = 0;
-+
-+	if (ea <= PAGE_OFFSET)
-+		return -1;
-+
-+	/* Look in primary table */
-+	if (firmware_has_feature(FW_FEATURE_LPAR))
-+		slot = pseries_find(ea, psize, true, &v, &r);
-+	else
-+		slot = native_find(ea, psize, true, &v, &r);
-+
-+	/* Look in secondary table */
-+	if (slot == -1) {
-+		if (firmware_has_feature(FW_FEATURE_LPAR))
-+			slot = pseries_find(ea, psize, false, &v, &r);
-+		else
-+			slot = native_find(ea, psize, false, &v, &r);
-+	}
-+
-+	/* No entry found */
-+	if (slot == -1)
-+		return -1;
-+
-+	/* We found an entry in the hash page table:
-+	 *  - check that this has the same base page
-+	 *  - find the actual page size
-+	 *  - find the RPN
-+	 */
-+	base_psize = mmu_psize_to_shift(psize);
-+
-+	if ((v & HPTE_V_LARGE) == HPTE_V_LARGE) {
-+		decode_r(psize, r, &rpn, &actual_psize, &lp_bits);
-+	} else {
-+		/* 4K actual page size */
-+		actual_psize = 12;
-+		rpn = (r & HPTE_R_RPN) >> HPTE_R_RPN_SHIFT;
-+		/* In this case there are no LP bits */
-+		lp_bits = -1;
-+	}
-+	/* We didn't find a matching encoding, so the PTE we found isn't for
-+	 * this address.
-+	 */
-+	if (actual_psize == -1)
-+		return -1;
-+
-+	dump_hpte_info(st, ea, v, r, rpn, base_psize, actual_psize, lp_bits);
-+	return 0;
-+}
-+
-+static void walk_pte(struct pg_state *st, pmd_t *pmd, unsigned long start)
-+{
-+	pte_t *pte = pte_offset_kernel(pmd, 0);
-+	unsigned long addr, pteval, psize;
-+	int i, status;
-+
-+	for (i = 0; i < PTRS_PER_PTE; i++, pte++) {
-+		addr = start + i * PAGE_SIZE;
-+		pteval = pte_val(*pte);
-+
-+		if (addr < VMALLOC_END)
-+			psize = mmu_vmalloc_psize;
-+		else
-+			psize = mmu_io_psize;
-+
-+		/* check for secret 4K mappings */
-+		if (((pteval & _PAGE_COMBO) == _PAGE_COMBO) ||
-+			((pteval & _PAGE_4K_PFN) == _PAGE_4K_PFN))
-+			psize = mmu_io_psize;
-+
-+		/* check for hashpte */
-+		status = hpte_find(st, addr, psize);
-+
-+		if (((pteval & _PAGE_HASHPTE) != _PAGE_HASHPTE)
-+				&& (status != -1)) {
-+		/* found a hpte that is not in the linux page tables */
-+			seq_printf(st->seq, "page probably bolted before linux"
-+				" pagetables were set: addr:%lx, pteval:%lx\n",
-+				addr, pteval);
-+		}
-+	}
-+}
-+
-+static void walk_pmd(struct pg_state *st, pud_t *pud, unsigned long start)
-+{
-+	pmd_t *pmd = pmd_offset(pud, 0);
-+	unsigned long addr;
-+	unsigned i;
-+
-+	for (i = 0; i < PTRS_PER_PMD; i++, pmd++) {
-+		addr = start + i * PMD_SIZE;
-+		if (!pmd_none(*pmd))
-+			/* pmd exists */
-+			walk_pte(st, pmd, addr);
-+	}
-+}
-+
-+static void walk_pud(struct pg_state *st, pgd_t *pgd, unsigned long start)
-+{
-+	pud_t *pud = pud_offset(pgd, 0);
-+	unsigned long addr;
-+	unsigned i;
-+
-+	for (i = 0; i < PTRS_PER_PUD; i++, pud++) {
-+		addr = start + i * PUD_SIZE;
-+		if (!pud_none(*pud))
-+			/* pud exists */
-+			walk_pmd(st, pud, addr);
-+	}
-+}
-+
-+static void walk_linearmapping(struct pg_state *st)
-+{
-+	unsigned long addr;
-+
-+	/* Traverse the linear mapping section of virtual memory and dump pages
-+	 * that are in the hash pagetable.
-+	 */
-+	for (addr = PAGE_OFFSET; addr < PAGE_OFFSET +
-+			memblock_phys_mem_size(); addr += PAGE_SIZE)
-+		hpte_find(st, addr, mmu_linear_psize);
-+}
-+
-+static void walk_pagetables(struct pg_state *st)
-+{
-+	pgd_t *pgd = pgd_offset_k(0UL);
-+	unsigned i;
-+	unsigned long addr;
-+
-+	/* Traverse the linux pagetable structure and dump pages that are in
-+	 * the hash pagetable.
-+	 */
-+	for (i = 0; i < PTRS_PER_PGD; i++, pgd++) {
-+		addr = VMALLOC_START + i * PGDIR_SIZE;
-+		if (!pgd_none(*pgd))
-+			/* pgd exists */
-+			walk_pud(st, pgd, addr);
-+	}
-+}
-+
-+static void walk_vmemmap(struct pg_state *st)
-+{
-+	struct vmemmap_backing *ptr = vmemmap_list;
-+
-+	/* Traverse the vmemmaped memory and dump pages that are in the hash
-+	 * pagetable.
-+	 */
-+	while (ptr->list) {
-+		hpte_find(st, ptr->virt_addr, mmu_vmemmap_psize);
-+		ptr = ptr->list;
-+	}
-+	seq_puts(st->seq, "---[ vmemmap end ]---\n");
-+}
-+
-+static int ptdump_show(struct seq_file *m, void *v)
-+{
-+	struct pg_state st = {
-+		.seq = m,
-+		.start_address = PAGE_OFFSET,
-+		.marker = address_markers,
-+	};
-+	/* Traverse the 0xc, 0xd and 0xf areas of the kernel virtual memory and
-+	 * dump pages that are in the hash pagetable.
-+	 */
-+	walk_linearmapping(&st);
-+	walk_pagetables(&st);
-+	walk_vmemmap(&st);
-+	return 0;
-+}
-+
-+static int ptdump_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, ptdump_show, NULL);
-+}
-+
-+static const struct file_operations ptdump_fops = {
-+	.open		= ptdump_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+
-+static int ptdump_init(void)
-+{
-+	struct dentry *debugfs_file;
-+
-+	debugfs_file = debugfs_create_file("kernel_hash_pagetable", 0400,
-+			NULL, NULL, &ptdump_fops);
-+	return debugfs_file ? 0 : -ENOMEM;
-+}
-+device_initcall(ptdump_init);
--- 
-2.5.0
+Hmm.. is this safe?  If the GPU and NPU got assigned to different
+owners, what would happen?  Could the interfere with each other?
+
+> If I put them to the same group as GPUs, I would have to have
+> IODA2-linked-to-NPU bridge type with different iommu_table_group_ops  or
+> have multiple hacks everywhere in IODA2 to enable/disable bypass,
+> etc.
+
+Well.. I suspect it would mean no longer having a 1:1 correspondance
+between user-visible IOMMU groups and the internal iommu_table.
+
+> >>---
+> >>  arch/powerpc/platforms/powernv/npu-dma.c  | 40 ++++++++++++++++++++++=
++++++++++
+> >>  arch/powerpc/platforms/powernv/pci-ioda.c |  8 +++++++
+> >>  arch/powerpc/platforms/powernv/pci.h      |  1 +
+> >>  3 files changed, 49 insertions(+)
+> >>
+> >>diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/pl=
+atforms/powernv/npu-dma.c
+> >>index 866d3d3..e5a5feb 100644
+> >>--- a/arch/powerpc/platforms/powernv/npu-dma.c
+> >>+++ b/arch/powerpc/platforms/powernv/npu-dma.c
+> >>@@ -263,3 +263,43 @@ void pnv_npu_try_dma_set_bypass(struct pci_dev *gp=
+dev, bool bypass)
+> >>  		}
+> >>  	}
+> >>  }
+> >>+
+> >>+void pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+> >>+{
+> >>+	struct iommu_table *tbl;
+> >>+	struct pnv_phb *phb =3D npe->phb;
+> >>+	struct pci_bus *pbus =3D phb->hose->bus;
+> >>+	struct pci_dev *npdev, *gpdev =3D NULL, *gptmp;
+> >>+	struct pnv_ioda_pe *gpe =3D get_gpu_pci_dev_and_pe(npe, &gpdev);
+> >>+
+> >>+	if (!gpe || !gpdev)
+> >>+		return;
+> >>+
+> >>+	iommu_register_group(&npe->table_group, phb->hose->global_number,
+> >>+			npe->pe_number);
+> >>+
+> >>+	tbl =3D pnv_pci_table_alloc(phb->hose->node);
+> >>+
+> >>+	list_for_each_entry(npdev, &pbus->devices, bus_list) {
+> >>+		gptmp =3D pnv_pci_get_gpu_dev(npdev);
+> >>+
+> >>+		if (gptmp !=3D gpdev)
+> >>+			continue;
+> >>+
+> >>+		/*
+> >>+		 * The iommu_add_device() picks an IOMMU group from
+> >>+		 * the first IOMMU group attached to the iommu_table
+> >>+		 * so we need to pretend that there is a table so
+> >>+		 * iommu_add_device() can complete the job.
+> >>+		 * We unlink the tempopary table from the group afterwards.
+> >>+		 */
+> >>+		pnv_pci_link_table_and_group(phb->hose->node, 0,
+> >>+				tbl, &npe->table_group);
+> >>+		set_iommu_table_base(&npdev->dev, tbl);
+> >>+		iommu_add_device(&npdev->dev);
+> >>+		set_iommu_table_base(&npdev->dev, NULL);
+> >>+		pnv_pci_unlink_table_and_group(tbl, &npe->table_group);
+> >>+	}
+> >>+
+> >>+	iommu_free_table(tbl, "");
+> >>+}
+> >>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/p=
+latforms/powernv/pci-ioda.c
+> >>index 5a6cf2e..becd168 100644
+> >>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> >>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> >>@@ -2570,6 +2570,14 @@ static void pnv_ioda_setup_dma(struct pnv_phb *p=
+hb)
+> >>  		remaining -=3D segs;
+> >>  		base +=3D segs;
+> >>  	}
+> >>+	/*
+> >>+	 * Create an IOMMU group and add devices to it.
+> >>+	 * DMA setup is to be done via GPU's dma_set_mask().
+> >>+	 */
+> >>+	if (phb->type =3D=3D PNV_PHB_NPU) {
+> >>+		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link)
+> >>+			pnv_pci_npu_setup_iommu(pe);
+> >>+	}
+> >>  }
+> >>
+> >>  #ifdef CONFIG_PCI_MSI
+> >>diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platfo=
+rms/powernv/pci.h
+> >>index 06405fd..0c0083a 100644
+> >>--- a/arch/powerpc/platforms/powernv/pci.h
+> >>+++ b/arch/powerpc/platforms/powernv/pci.h
+> >>@@ -235,5 +235,6 @@ extern void pnv_teardown_msi_irqs(struct pci_dev *p=
+dev);
+> >>  /* Nvlink functions */
+> >>  extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool by=
+pass);
+> >>  extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, =
+bool rm);
+> >>+extern void pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe);
+> >>
+> >>  #endif /* __POWERNV_PCI_H */
+> >
+>=20
+>=20
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--dO6Thh8T/cwyDjv9
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJW8JEOAAoJEGw4ysog2bOSru4QAOAbaEmKif2IcLhIj4BgvDCj
+WSwCoVT2q8W4PzQSFsqM0RiHDi1Jn/NmfTcka7haZBv39jiuyU6q3XSE6ZOD4rLy
+6PBszMXZQK8CGmeINb9O9hHwTrLRLwLFl4nGWllFGhOZ1AocD0+ab+TFJakmiYCC
+vG3kTBJVFeeewlZ+7bTR4BfXyt52JR9F3Zk1RQssj+vAgWd4TgCIIa4/pFoCfNgN
+ec9SfJPDL0nm3PQIzzdTeCKj4UJG2GW//fo94Cm+8TDfrVJQHO45q63oNmXYV8I/
+fc1rqs6rJhKIVPOyU+HyQYedA+evUnGaIpo3EZnGGoPUGBl6eQy5zPYLtjyK2a1x
+z3oN2Cet5rgASNJb24lwFADuhHr20XicMF1QcK/GcMCACZBByuO4W5VX5Th1AhyY
+44iln6izalx9k8lzTLHMgzoqlqcaPBCn1SRkXub4IqLDLJBNXXvgyYRjX8ThIbmI
+8/K2rhyBRusR1VEXk1cm8b96P0b6Vu7tuWavtlIs4iyChyXC32hSiMtotsCswS8o
+1tyNbWH9VIOIntoeay6cbvLFLNZZr6PD72cWHUNbubAUMLutPMxcTjabJJGf6g74
+WnDLHZ0c023O3jLKm8UxmlyJXc+4EgOT4YYMVSTyQnJm3Xof17LNNe7GbnHnWzAU
+W6oEppd12tmxxYMNJgOz
+=Y069
+-----END PGP SIGNATURE-----
+
+--dO6Thh8T/cwyDjv9--
