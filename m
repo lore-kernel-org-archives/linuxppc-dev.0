@@ -1,28 +1,31 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qTYNm43JvzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Mar 2016 11:24:40 +1100 (AEDT)
-Date: Tue, 22 Mar 2016 11:25:50 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Daniel Axtens <dja@axtens.net>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Russell Currey <ruscur@russell.cc>,
- Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH kernel 08/10] powerpc/powernv/npu: Add NPU devices to
- IOMMU group
-Message-ID: <20160322002550.GR23586@voom.redhat.com>
-References: <1457504946-40649-1-git-send-email-aik@ozlabs.ru>
- <1457504946-40649-9-git-send-email-aik@ozlabs.ru>
- <20160321044810.GG23586@voom.redhat.com>
- <56EFAFF3.5090404@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qTYcm2yPnzDq71
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Mar 2016 11:35:04 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id x3so32754437pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2016 17:35:04 -0700 (PDT)
+Subject: Re: [PATCH kernel 9/9] KVM: PPC: VFIO device: support SPAPR TCE
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <1457322077-26640-1-git-send-email-aik@ozlabs.ru>
+ <1457322077-26640-10-git-send-email-aik@ozlabs.ru>
+ <20160309054544.GM22546@voom.fritz.box> <56DFEACC.7030508@ozlabs.ru>
+ <20160310052108.GV22546@voom.fritz.box> <56E1FEBE.5090602@ozlabs.ru>
+ <20160315060400.GK15272@voom.fritz.box>
+ <15389a41428.27cb.1ca38dd7e845b990cd13d431eb58563d@ozlabs.ru>
+ <20160321051932.GJ23586@voom.redhat.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ kvm-ppc <kvm-ppc@vger.kernel.org>, kvm@vger.kernel.org
+Message-ID: <56F0932F.2050708@ozlabs.ru>
+Date: Tue, 22 Mar 2016 11:34:55 +1100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="dO6Thh8T/cwyDjv9"
-In-Reply-To: <56EFAFF3.5090404@ozlabs.ru>
+In-Reply-To: <20160321051932.GJ23586@voom.redhat.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,174 +35,384 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Uff, lost cc: list. Added back. Some comments below.
 
---dO6Thh8T/cwyDjv9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, Mar 21, 2016 at 07:25:23PM +1100, Alexey Kardashevskiy wrote:
-> On 03/21/2016 03:48 PM, David Gibson wrote:
-> >On Wed, Mar 09, 2016 at 05:29:04PM +1100, Alexey Kardashevskiy wrote:
-> >>NPU devices have their own TVT which means they are isolated and can be
-> >>passed to the userspace via VFIO. The first step is to create an IOMMU
-> >>group and attach devices there so does the patch.
-> >>
-> >>This adds a helper to npu-dma.c which gets GPU from the NPU's pdev and
-> >>then walks through all devices on the same bus to determine which NPUs
-> >>belong to the same GPU.
-> >>
-> >>This adds an additional loop over PEs in pnv_ioda_setup_dma() as the ma=
-in
-> >>loop skips NPU PEs as they do not have 32bit DMA segments.
-> >>
-> >>This uses get_gpu_pci_dev_and_pe() to get @gpdev rather than
-> >>pnv_pci_get_gpu_dev() as the following patch will use @gpe as well.
-> >>
-> >>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >
-> >I'm not entirely clear on how these devices are assigned to groups.
-> >Do they each get their own groups, or is the NPU device in the same
-> >group as its corresponding GPU (I would have thought the latter makes
-> >sense).
->=20
->=20
-> I am putting them to a separate group as they have their own TCE table
-> pointer even though they are expected to share it with GPU.
+On 03/21/2016 04:19 PM, David Gibson wrote:
+> On Fri, Mar 18, 2016 at 11:12:26PM +1100, Alexey Kardashevskiy wrote:
+>> On March 15, 2016 17:29:26 David Gibson <david@gibson.dropbear.id.au> wrote:
+>>
+>>> On Fri, Mar 11, 2016 at 10:09:50AM +1100, Alexey Kardashevskiy wrote:
+>>>> On 03/10/2016 04:21 PM, David Gibson wrote:
+>>>>> On Wed, Mar 09, 2016 at 08:20:12PM +1100, Alexey Kardashevskiy wrote:
+>>>>>> On 03/09/2016 04:45 PM, David Gibson wrote:
+>>>>>>> On Mon, Mar 07, 2016 at 02:41:17PM +1100, Alexey Kardashevskiy wrote:
+>>>>>>>> sPAPR TCE IOMMU is para-virtualized and the guest does map/unmap
+>>>>>>>> via hypercalls which take a logical bus id (LIOBN) as a target IOMMU
+>>>>>>>> identifier. LIOBNs are made up, advertised to guest systems and
+>>>>>>>> linked to IOMMU groups by the user space.
+>>>>>>>> In order to enable acceleration for IOMMU operations in KVM, we need
+>>>>>>>> to tell KVM the information about the LIOBN-to-group mapping.
+>>>>>>>>
+>>>>>>>> For that, a new KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN parameter
+>>>>>>>> is added which accepts:
+>>>>>>>> - a VFIO group fd and IO base address to find the actual hardware
+>>>>>>>> TCE table;
+>>>>>>>> - a LIOBN to assign to the found table.
+>>>>>>>>
+>>>>>>>> Before notifying KVM about new link, this check the group for being
+>>>>>>>> registered with KVM device in order to release them at unexpected KVM
+>>>>>>>> finish.
+>>>>>>>>
+>>>>>>>> This advertises the new KVM_CAP_SPAPR_TCE_VFIO capability to the user
+>>>>>>>> space.
+>>>>>>>>
+>>>>>>>> While we are here, this also fixes VFIO KVM device compiling to let it
+>>>>>>>> link to a KVM module.
+>>>>>>>>
+>>>>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>>>>>> ---
+>>>>>>>>   Documentation/virtual/kvm/devices/vfio.txt |  21 +++++-
+>>>>>>>>   arch/powerpc/kvm/Kconfig                   |   1 +
+>>>>>>>>   arch/powerpc/kvm/Makefile                  |   5 +-
+>>>>>>>>   arch/powerpc/kvm/powerpc.c                 |   1 +
+>>>>>>>>   include/uapi/linux/kvm.h                   |   9 +++
+>>>>>>>>   virt/kvm/vfio.c                            | 106
+>>>> +++++++++++++++++++++++++++++
+>>>>>>>>   6 files changed, 140 insertions(+), 3 deletions(-)
+>>>>>>>>
+>>>>>>>> diff --git a/Documentation/virtual/kvm/devices/vfio.txt
+>>>> b/Documentation/virtual/kvm/devices/vfio.txt
+>>>>>>>> index ef51740..c0d3eb7 100644
+>>>>>>>> --- a/Documentation/virtual/kvm/devices/vfio.txt
+>>>>>>>> +++ b/Documentation/virtual/kvm/devices/vfio.txt
+>>>>>>>> @@ -16,7 +16,24 @@ Groups:
+>>>>>>>>
+>>>>>>>>   KVM_DEV_VFIO_GROUP attributes:
+>>>>>>>>     KVM_DEV_VFIO_GROUP_ADD: Add a VFIO group to VFIO-KVM device tracking
+>>>>>>>> +	kvm_device_attr.addr points to an int32_t file descriptor
+>>>>>>>> +	for the VFIO group.
+>>>>>>>
+>>>>>>> AFAICT these changes are accurate for VFIO as it is already, in which
+>>>>>>> case it might be clearer to put them in a separate patch.
+>>>>>>>
+>>>>>>>>     KVM_DEV_VFIO_GROUP_DEL: Remove a VFIO group from VFIO-KVM device
+>>>> tracking
+>>>>>>>> +	kvm_device_attr.addr points to an int32_t file descriptor
+>>>>>>>> +	for the VFIO group.
+>>>>>>>>
+>>>>>>>> -For each, kvm_device_attr.addr points to an int32_t file descriptor
+>>>>>>>> -for the VFIO group.
+>>>>>>>> +  KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN: sets a liobn for a VFIO group
+>>>>>>>> +	kvm_device_attr.addr points to a struct:
+>>>>>>>> +		struct kvm_vfio_spapr_tce_liobn {
+>>>>>>>> +			__u32	argsz;
+>>>>>>>> +			__s32	fd;
+>>>>>>>> +			__u32	liobn;
+>>>>>>>> +			__u8	pad[4];
+>>>>>>>> +			__u64	start_addr;
+>>>>>>>> +		};
+>>>>>>>> +		where
+>>>>>>>> +		@argsz is the size of kvm_vfio_spapr_tce_liobn;
+>>>>>>>> +		@fd is a file descriptor for a VFIO group;
+>>>>>>>> +		@liobn is a logical bus id to be associated with the group;
+>>>>>>>> +		@start_addr is a DMA window offset on the IO (PCI) bus
+>>>>>>>
+>>>>>>> For the cause of DDW and multiple windows, I'm assuming you can call
+>>>>>>> this multiple times with different LIOBNs and the same IOMMU group?
+>>>>>>
+>>>>>>
+>>>>>> Yes. It is called twice per each group (when DDW is activated) - for 32bit
+>>>>>> and 64bit windows, this is why @start_addr is there.
+>>>>>>
+>>>>>>
+>>>>>>>> diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+>>>>>>>> index 1059846..dfa3488 100644
+>>>>>>>> --- a/arch/powerpc/kvm/Kconfig
+>>>>>>>> +++ b/arch/powerpc/kvm/Kconfig
+>>>>>>>> @@ -65,6 +65,7 @@ config KVM_BOOK3S_64
+>>>>>>>>   	select KVM
+>>>>>>>>   	select KVM_BOOK3S_PR_POSSIBLE if !KVM_BOOK3S_HV_POSSIBLE
+>>>>>>>>   	select SPAPR_TCE_IOMMU if IOMMU_SUPPORT
+>>>>>>>> +	select KVM_VFIO if VFIO
+>>>>>>>>   	---help---
+>>>>>>>>   	  Support running unmodified book3s_64 and book3s_32 guest kernels
+>>>>>>>>   	  in virtual machines on book3s_64 host processors.
+>>>>>>>> diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+>>>>>>>> index 7f7b6d8..71f577c 100644
+>>>>>>>> --- a/arch/powerpc/kvm/Makefile
+>>>>>>>> +++ b/arch/powerpc/kvm/Makefile
+>>>>>>>> @@ -8,7 +8,7 @@ ccflags-y := -Ivirt/kvm -Iarch/powerpc/kvm
+>>>>>>>>   KVM := ../../../virt/kvm
+>>>>>>>>
+>>>>>>>>   common-objs-y = $(KVM)/kvm_main.o $(KVM)/coalesced_mmio.o \
+>>>>>>>> -		$(KVM)/eventfd.o $(KVM)/vfio.o
+>>>>>>>> +		$(KVM)/eventfd.o
+>>>>>>>
+>>>>>>> Please don't disable the VFIO device for the non-book3s case.  I added
+>>>>>>> it (even though it didn't do anything until now) so that libvirt
+>>>>>>> wouldn't choke when it finds it's not available.  Obviously the new
+>>>>>>> ioctl needs to be only for the right IOMMU setup, but the device
+>>>>>>> itself should be available always.
+>>>>>>
+>>>>>> Ah. Ok, I'll fix this. I just wanted to be able to compile kvm as a module.
+>>>>>>
+>>>>>>
+>>>>>>>>   CFLAGS_e500_mmu.o := -I.
+>>>>>>>>   CFLAGS_e500_mmu_host.o := -I.
+>>>>>>>> @@ -87,6 +87,9 @@ endif
+>>>>>>>>   kvm-book3s_64-objs-$(CONFIG_KVM_XICS) += \
+>>>>>>>>   	book3s_xics.o
+>>>>>>>>
+>>>>>>>> +kvm-book3s_64-objs-$(CONFIG_KVM_VFIO) += \
+>>>>>>>> +	$(KVM)/vfio.o \
+>>>>>>>> +
+>>>>>>>>   kvm-book3s_64-module-objs += \
+>>>>>>>>   	$(KVM)/kvm_main.o \
+>>>>>>>>   	$(KVM)/eventfd.o \
+>>>>>>>> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+>>>>>>>> index 19aa59b..63f188d 100644
+>>>>>>>> --- a/arch/powerpc/kvm/powerpc.c
+>>>>>>>> +++ b/arch/powerpc/kvm/powerpc.c
+>>>>>>>> @@ -521,6 +521,7 @@ int kvm_vm_ioctl_check_extension(struct kvm
+>>>> *kvm, long ext)
+>>>>>>>>   #ifdef CONFIG_PPC_BOOK3S_64
+>>>>>>>>   	case KVM_CAP_SPAPR_TCE:
+>>>>>>>>   	case KVM_CAP_SPAPR_TCE_64:
+>>>>>>>> +	case KVM_CAP_SPAPR_TCE_VFIO:
+>>>>>>>>   	case KVM_CAP_PPC_ALLOC_HTAB:
+>>>>>>>>   	case KVM_CAP_PPC_RTAS:
+>>>>>>>>   	case KVM_CAP_PPC_FIXUP_HCALL:
+>>>>>>>> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+>>>>>>>> index 080ffbf..f1abbea 100644
+>>>>>>>> --- a/include/uapi/linux/kvm.h
+>>>>>>>> +++ b/include/uapi/linux/kvm.h
+>>>>>>>> @@ -1056,6 +1056,7 @@ struct kvm_device_attr {
+>>>>>>>>   #define  KVM_DEV_VFIO_GROUP			1
+>>>>>>>>   #define   KVM_DEV_VFIO_GROUP_ADD			1
+>>>>>>>>   #define   KVM_DEV_VFIO_GROUP_DEL			2
+>>>>>>>> +#define   KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN	3
+>>>>>>>>
+>>>>>>>>   enum kvm_device_type {
+>>>>>>>>   	KVM_DEV_TYPE_FSL_MPIC_20	= 1,
+>>>>>>>> @@ -1075,6 +1076,14 @@ enum kvm_device_type {
+>>>>>>>>   	KVM_DEV_TYPE_MAX,
+>>>>>>>>   };
+>>>>>>>>
+>>>>>>>> +struct kvm_vfio_spapr_tce_liobn {
+>>>>>>>> +	__u32	argsz;
+>>>>>>>> +	__s32	fd;
+>>>>>>>> +	__u32	liobn;
+>>>>>>>> +	__u8	pad[4];
+>>>>>>>> +	__u64	start_addr;
+>>>>>>>> +};
+>>>>>>>> +
+>>>>>>>>   /*
+>>>>>>>>    * ioctls for VM fds
+>>>>>>>>    */
+>>>>>>>> diff --git a/virt/kvm/vfio.c b/virt/kvm/vfio.c
+>>>>>>>> index 1dd087d..87c771e 100644
+>>>>>>>> --- a/virt/kvm/vfio.c
+>>>>>>>> +++ b/virt/kvm/vfio.c
+>>>>>>>> @@ -20,6 +20,10 @@
+>>>>>>>>   #include <linux/vfio.h>
+>>>>>>>>   #include "vfio.h"
+>>>>>>>>
+>>>>>>>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>>>>>>>> +#include <asm/kvm_ppc.h>
+>>>>>>>> +#endif
+>>>>>>>> +
+>>>>>>>>   struct kvm_vfio_group {
+>>>>>>>>   	struct list_head node;
+>>>>>>>>   	struct vfio_group *vfio_group;
+>>>>>>>> @@ -60,6 +64,22 @@ static void
+>>>> kvm_vfio_group_put_external_user(struct vfio_group *vfio_group)
+>>>>>>>>   	symbol_put(vfio_group_put_external_user);
+>>>>>>>>   }
+>>>>>>>>
+>>>>>>>> +static int kvm_vfio_external_user_iommu_id(struct vfio_group *vfio_group)
+>>>>>>>> +{
+>>>>>>>> +	int (*fn)(struct vfio_group *);
+>>>>>>>> +	int ret = -1;
+>>>>>>>
+>>>>>>> Should this be -ESOMETHING?
+>>>>>>>
+>>>>>>>> +	fn = symbol_get(vfio_external_user_iommu_id);
+>>>>>>>> +	if (!fn)
+>>>>>>>> +		return ret;
+>>>>>>>> +
+>>>>>>>> +	ret = fn(vfio_group);
+>>>>>>>> +
+>>>>>>>> +	symbol_put(vfio_external_user_iommu_id);
+>>>>>>>> +
+>>>>>>>> +	return ret;
+>>>>>>>> +}
+>>>>>>>> +
+>>>>>>>>   static bool kvm_vfio_group_is_coherent(struct vfio_group *vfio_group)
+>>>>>>>>   {
+>>>>>>>>   	long (*fn)(struct vfio_group *, unsigned long);
+>>>>>>>> @@ -110,6 +130,22 @@ static void kvm_vfio_update_coherency(struct
+>>>> kvm_device *dev)
+>>>>>>>>   	mutex_unlock(&kv->lock);
+>>>>>>>>   }
+>>>>>>>>
+>>>>>>>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>>>>>>>> +static void kvm_vfio_spapr_detach_iommu_group(struct kvm *kvm,
+>>>>>>>> +		struct vfio_group *vfio_group)
+>>>>>>>
+>>>>>>>
+>>>>>>> Shouldn't this go in the same patch that introduced the attach
+>>>>>>> function?
+>>>>>>
+>>>>>> Having less patches which touch different maintainers areas is better. I
+>>>>>> cannot avoid touching both PPC KVM and VFIO in this patch but I can in
+>>>>>> "[PATCH kernel 6/9] KVM: PPC: Associate IOMMU group with guest view of TCE
+>>>>>> table".
+>>>>>>
+>>>>>>
+>>>>>>>
+>>>>>>>> +{
+>>>>>>>> +	int group_id;
+>>>>>>>> +	struct iommu_group *grp;
+>>>>>>>> +
+>>>>>>>> +	group_id = kvm_vfio_external_user_iommu_id(vfio_group);
+>>>>>>>> +	grp = iommu_group_get_by_id(group_id);
+>>>>>>>> +	if (grp) {
+>>>>>>>> +		kvm_spapr_tce_detach_iommu_group(kvm, grp);
+>>>>>>>> +		iommu_group_put(grp);
+>>>>>>>> +	}
+>>>>>>>> +}
+>>>>>>>> +#endif
+>>>>>>>> +
+>>>>>>>>   static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
+>>>>>>>>   {
+>>>>>>>>   	struct kvm_vfio *kv = dev->private;
+>>>>>>>> @@ -186,6 +222,10 @@ static int kvm_vfio_set_group(struct kvm_device
+>>>> *dev, long attr, u64 arg)
+>>>>>>>>   				continue;
+>>>>>>>>
+>>>>>>>>   			list_del(&kvg->node);
+>>>>>>>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>>>>>>>
+>>>>>>> Better to make a no-op version of the call than have to #ifdef at the
+>>>>>>> callsite.
+>>>>>>
+>>>>>> It is questionable. A x86 reader may decide that
+>>>>>> KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN is implemented for x86 and get
+>>>>>> confused.
+>>>>>>
+>>>>>>
+>>>>>>>
+>>>>>>>> +			kvm_vfio_spapr_detach_iommu_group(dev->kvm,
+>>>>>>>> +					kvg->vfio_group);
+>>>>>>>> +#endif
+>>>>>>>>   			kvm_vfio_group_put_external_user(kvg->vfio_group);
+>>>>>>>>   			kfree(kvg);
+>>>>>>>>   			ret = 0;
+>>>>>>>> @@ -201,6 +241,69 @@ static int kvm_vfio_set_group(struct kvm_device
+>>>> *dev, long attr, u64 arg)
+>>>>>>>>   		kvm_vfio_update_coherency(dev);
+>>>>>>>>
+>>>>>>>>   		return ret;
+>>>>>>>> +
+>>>>>>>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>>>>>>>> +	case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN: {
+>>>>>>>> +		struct kvm_vfio_spapr_tce_liobn param;
+>>>>>>>> +		unsigned long minsz;
+>>>>>>>> +		struct kvm_vfio *kv = dev->private;
+>>>>>>>> +		struct vfio_group *vfio_group;
+>>>>>>>> +		struct kvm_vfio_group *kvg;
+>>>>>>>> +		struct fd f;
+>>>>>>>> +
+>>>>>>>> +		minsz = offsetofend(struct kvm_vfio_spapr_tce_liobn,
+>>>>>>>> +				start_addr);
+>>>>>>>> +
+>>>>>>>> +		if (copy_from_user(&param, (void __user *)arg, minsz))
+>>>>>>>> +			return -EFAULT;
+>>>>>>>> +
+>>>>>>>> +		if (param.argsz < minsz)
+>>>>>>>> +			return -EINVAL;
+>>>>>>>> +
+>>>>>>>> +		f = fdget(param.fd);
+>>>>>>>> +		if (!f.file)
+>>>>>>>> +			return -EBADF;
+>>>>>>>> +
+>>>>>>>> +		vfio_group = kvm_vfio_group_get_external_user(f.file);
+>>>>>>>> +		fdput(f);
+>>>>>>>> +
+>>>>>>>> +		if (IS_ERR(vfio_group))
+>>>>>>>> +			return PTR_ERR(vfio_group);
+>>>>>>>> +
+>>>>>>>> +		ret = -ENOENT;
+>>>>>>>
+>>>>>>> Shouldn't there be some runtime test for the type of the IOMMU?  It's
+>>>>>>> possible a kernel could be built for a platform supporting multiple
+>>>>>>> IOMMU types.
+>>>>>>
+>>>>>> Well, may make sense but I do not know to test that. The IOMMU type is a
+>>>>>> VFIO container property, not a group property and here (KVM) we only have
+>>>>>> groups.
+>>>>>
+>>>>> Which, as mentioned previously, is broken.
+>>>>
+>>>> Which I am failing to follow you on this.
+>>>>
+>>>> What I am trying to achieve here is pretty much referencing a group so it
+>>>> cannot be reused. Plus LIOBNs.
+>>>
+>>> "Plus LIOBNs" is not a trivial change.  You are establishing a linkage
+>> >from LIOBNs to groups.  But that doesn't make sense; if mapping in one
+>>> (guest) LIOBN affects a group it must affect all groups in the
+>>> container.  i.e. LIOBN->container is the natural mapping, *not* LIOBN
+>>> to group.
+>>
+>> I can see your point but i don't see how to proceed now, I'm totally stuck.
+>> Pass container fd and then implement new api to lock containers somehow and
+>
+> I'm not really understanding what the question is about locking containers.
+>
+>> enumerate groups when updating TCE table (including real mode)?
+>
+> Why do you need to enumerate groups?  The groups within the container
+> share a TCE table, so can't you just update that once?
 
-Hmm.. is this safe?  If the GPU and NPU got assigned to different
-owners, what would happen?  Could the interfere with each other?
+Well, they share a TCE table but they do not share TCE Kill (TCE cache 
+invalidate) register address, it is still per PE but this does not matter 
+here (pnv_pci_link_table_and_group() does that), just mentioned to complete 
+the picture.
 
-> If I put them to the same group as GPUs, I would have to have
-> IODA2-linked-to-NPU bridge type with different iommu_table_group_ops  or
-> have multiple hacks everywhere in IODA2 to enable/disable bypass,
-> etc.
 
-Well.. I suspect it would mean no longer having a 1:1 correspondance
-between user-visible IOMMU groups and the internal iommu_table.
+>> Plus new API when we remove a group from a container as the result of guest
+>> PCI hot unplug?
+>
+> I assume you mean a kernel internal API, since it shouldn't need
+> anything else visible to userspace.  Won't this happen naturally?
+> When the group is removed from the container, it will get its own TCE
+> table instead of the previously shared one.
+ >
+>>>> Passing a container fd does not make much
+>>>> sense here as the VFIO device would walk through groups, reference them and
+>>>> that is it, there is no locking on VFIO containters and so far there was no
+>>>> need to teach KVM about containers.
+>>>>
+>>>> What do I miss now?
+>>>
+>>> Referencing the groups is essentially just a useful side effect.  The
+>>> important functionality is informing VFIO of the guest LIOBNs; and
+>>> LIOBNs map to containers, not groups.
+>>
+>> No. One liobn maps to one KVM-allocated TCE table, not a container. There
+>> can be one or many or none containers per liobn.
+>
+> Ah, true.
 
-> >>---
-> >>  arch/powerpc/platforms/powernv/npu-dma.c  | 40 ++++++++++++++++++++++=
-+++++++++
-> >>  arch/powerpc/platforms/powernv/pci-ioda.c |  8 +++++++
-> >>  arch/powerpc/platforms/powernv/pci.h      |  1 +
-> >>  3 files changed, 49 insertions(+)
-> >>
-> >>diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/pl=
-atforms/powernv/npu-dma.c
-> >>index 866d3d3..e5a5feb 100644
-> >>--- a/arch/powerpc/platforms/powernv/npu-dma.c
-> >>+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> >>@@ -263,3 +263,43 @@ void pnv_npu_try_dma_set_bypass(struct pci_dev *gp=
-dev, bool bypass)
-> >>  		}
-> >>  	}
-> >>  }
-> >>+
-> >>+void pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
-> >>+{
-> >>+	struct iommu_table *tbl;
-> >>+	struct pnv_phb *phb =3D npe->phb;
-> >>+	struct pci_bus *pbus =3D phb->hose->bus;
-> >>+	struct pci_dev *npdev, *gpdev =3D NULL, *gptmp;
-> >>+	struct pnv_ioda_pe *gpe =3D get_gpu_pci_dev_and_pe(npe, &gpdev);
-> >>+
-> >>+	if (!gpe || !gpdev)
-> >>+		return;
-> >>+
-> >>+	iommu_register_group(&npe->table_group, phb->hose->global_number,
-> >>+			npe->pe_number);
-> >>+
-> >>+	tbl =3D pnv_pci_table_alloc(phb->hose->node);
-> >>+
-> >>+	list_for_each_entry(npdev, &pbus->devices, bus_list) {
-> >>+		gptmp =3D pnv_pci_get_gpu_dev(npdev);
-> >>+
-> >>+		if (gptmp !=3D gpdev)
-> >>+			continue;
-> >>+
-> >>+		/*
-> >>+		 * The iommu_add_device() picks an IOMMU group from
-> >>+		 * the first IOMMU group attached to the iommu_table
-> >>+		 * so we need to pretend that there is a table so
-> >>+		 * iommu_add_device() can complete the job.
-> >>+		 * We unlink the tempopary table from the group afterwards.
-> >>+		 */
-> >>+		pnv_pci_link_table_and_group(phb->hose->node, 0,
-> >>+				tbl, &npe->table_group);
-> >>+		set_iommu_table_base(&npdev->dev, tbl);
-> >>+		iommu_add_device(&npdev->dev);
-> >>+		set_iommu_table_base(&npdev->dev, NULL);
-> >>+		pnv_pci_unlink_table_and_group(tbl, &npe->table_group);
-> >>+	}
-> >>+
-> >>+	iommu_free_table(tbl, "");
-> >>+}
-> >>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/p=
-latforms/powernv/pci-ioda.c
-> >>index 5a6cf2e..becd168 100644
-> >>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>@@ -2570,6 +2570,14 @@ static void pnv_ioda_setup_dma(struct pnv_phb *p=
-hb)
-> >>  		remaining -=3D segs;
-> >>  		base +=3D segs;
-> >>  	}
-> >>+	/*
-> >>+	 * Create an IOMMU group and add devices to it.
-> >>+	 * DMA setup is to be done via GPU's dma_set_mask().
-> >>+	 */
-> >>+	if (phb->type =3D=3D PNV_PHB_NPU) {
-> >>+		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link)
-> >>+			pnv_pci_npu_setup_iommu(pe);
-> >>+	}
-> >>  }
-> >>
-> >>  #ifdef CONFIG_PCI_MSI
-> >>diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platfo=
-rms/powernv/pci.h
-> >>index 06405fd..0c0083a 100644
-> >>--- a/arch/powerpc/platforms/powernv/pci.h
-> >>+++ b/arch/powerpc/platforms/powernv/pci.h
-> >>@@ -235,5 +235,6 @@ extern void pnv_teardown_msi_irqs(struct pci_dev *p=
-dev);
-> >>  /* Nvlink functions */
-> >>  extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool by=
-pass);
-> >>  extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, =
-bool rm);
-> >>+extern void pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe);
-> >>
-> >>  #endif /* __POWERNV_PCI_H */
-> >
->=20
->=20
+So I need to add new kernel API for KVM to get table(s) from VFIO 
+container(s). And invent some locking mechanism to prevent table(s) (or 
+associated container(s)) from going away, like 
+vfio_group_get_external_user/vfio_group_put_external_user but for 
+containers. Correct?
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
 
---dO6Thh8T/cwyDjv9
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJW8JEOAAoJEGw4ysog2bOSru4QAOAbaEmKif2IcLhIj4BgvDCj
-WSwCoVT2q8W4PzQSFsqM0RiHDi1Jn/NmfTcka7haZBv39jiuyU6q3XSE6ZOD4rLy
-6PBszMXZQK8CGmeINb9O9hHwTrLRLwLFl4nGWllFGhOZ1AocD0+ab+TFJakmiYCC
-vG3kTBJVFeeewlZ+7bTR4BfXyt52JR9F3Zk1RQssj+vAgWd4TgCIIa4/pFoCfNgN
-ec9SfJPDL0nm3PQIzzdTeCKj4UJG2GW//fo94Cm+8TDfrVJQHO45q63oNmXYV8I/
-fc1rqs6rJhKIVPOyU+HyQYedA+evUnGaIpo3EZnGGoPUGBl6eQy5zPYLtjyK2a1x
-z3oN2Cet5rgASNJb24lwFADuhHr20XicMF1QcK/GcMCACZBByuO4W5VX5Th1AhyY
-44iln6izalx9k8lzTLHMgzoqlqcaPBCn1SRkXub4IqLDLJBNXXvgyYRjX8ThIbmI
-8/K2rhyBRusR1VEXk1cm8b96P0b6Vu7tuWavtlIs4iyChyXC32hSiMtotsCswS8o
-1tyNbWH9VIOIntoeay6cbvLFLNZZr6PD72cWHUNbubAUMLutPMxcTjabJJGf6g74
-WnDLHZ0c023O3jLKm8UxmlyJXc+4EgOT4YYMVSTyQnJm3Xof17LNNe7GbnHnWzAU
-W6oEppd12tmxxYMNJgOz
-=Y069
------END PGP SIGNATURE-----
-
---dO6Thh8T/cwyDjv9--
+-- 
+Alexey
