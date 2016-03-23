@@ -1,22 +1,30 @@
-Return-Path: <V.Sethi@nxp.com>
-Received: from emea01-db3-obe.outbound.protection.outlook.com
- (mail-db3on0063.outbound.protection.outlook.com [157.55.234.63])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <vaishali.thakkar@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qVYmD0TmxzDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2016 02:44:58 +1100 (AEDT)
-From: Varun Sethi <V.Sethi@nxp.com>
-To: Madalin-Cristian Bucur <madalin.bucur@nxp.com>, "joro@8bytes.org"
- <joro@8bytes.org>, Andy Fleming <afleming@gmail.com>
-CC: "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [v2] powerpc: Fix incorrect PPC32 PAMU dependency
-Date: Wed, 23 Mar 2016 12:12:31 +0000
-Message-ID: <VI1PR04MB11355CF1883CDDB39EACF4B3E8810@VI1PR04MB1135.eurprd04.prod.outlook.com>
-References: <AM4PR04MB16047A161F9CFDF7C65FCCC1EC810@AM4PR04MB1604.eurprd04.prod.outlook.com>
-In-Reply-To: <AM4PR04MB16047A161F9CFDF7C65FCCC1EC810@AM4PR04MB1604.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qVZ9b0qkSzDqG1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2016 03:03:30 +1100 (AEDT)
+Subject: Re: [PATCH v2 0/6] mm/hugetlb: Fix commandline parsing behavior for
+ invalid hugepagesize
+To: Michal Hocko <mhocko@kernel.org>
+References: <1458734844-14833-1-git-send-email-vaishali.thakkar@oracle.com>
+ <20160323133011.GG7059@dhcp22.suse.cz>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, n-horiguchi@ah.jp.nec.com, mike.kravetz@oracle.com,
+ hillf.zj@alibaba-inc.com, baiyaowei@cmss.chinamobile.com,
+ dingel@linux.vnet.ibm.com, kirill.shutemov@linux.intel.com,
+ dave.hansen@linux.intel.com, paul.gortmaker@windriver.com,
+ catalin.marinas@arm.com, will.deacon@arm.com, cmetcalf@ezchip.com,
+ linux-arm-kernel@lists.infradead.org, james.hogan@imgtec.com,
+ linux-metag@vger.kernel.org, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org
+From: Vaishali Thakkar <vaishali.thakkar@oracle.com>
+Message-ID: <56F2BDE3.40309@oracle.com>
+Date: Wed, 23 Mar 2016 21:31:39 +0530
 MIME-Version: 1.0
+In-Reply-To: <20160323133011.GG7059@dhcp22.suse.cz>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +34,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTGludXhwcGMtZGV2IFtt
-YWlsdG86bGludXhwcGMtZGV2LQ0KPiBib3VuY2VzK3ZhcnVuLnNldGhpPWZyZWVzY2FsZS5jb21A
-bGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmIE9mIE1hZGFsaW4tDQo+IENyaXN0aWFuIEJ1Y3Vy
-DQo+IFNlbnQ6IFdlZG5lc2RheSwgTWFyY2ggMjMsIDIwMTYgMzoyOSBQTQ0KPiBUbzogam9yb0A4
-Ynl0ZXMub3JnOyBBbmR5IEZsZW1pbmcgPGFmbGVtaW5nQGdtYWlsLmNvbT4NCj4gQ2M6IGlvbW11
-QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9y
-Zw0KPiBTdWJqZWN0OiBSZTogW3YyXSBwb3dlcnBjOiBGaXggaW5jb3JyZWN0IFBQQzMyIFBBTVUg
-ZGVwZW5kZW5jeQ0KPiANCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+IEZyb206
-IEFuZHkgRmxlbWluZyA8YWZsZW1pbmdAZ21haWwuY29tPg0KPiA+IFRvOiBqb3JvQDhieXRlcy5v
-cmcNCj4gPiBDYzogaW9tbXVAbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcsIGxpbnV4cHBjLWRl
-dkBsaXN0cy5vemxhYnMub3JnDQo+ID4gU3ViamVjdDogW3YyXSBwb3dlcnBjOiBGaXggaW5jb3Jy
-ZWN0IFBQQzMyIFBBTVUgZGVwZW5kZW5jeQ0KPiA+DQo+ID4gVGhlIEZyZWVzY2FsZSBQQU1VIGNh
-biBiZSBlbmFibGVkIG9uIGJvdGggMzIgYW5kIDY0LWJpdCBQb3dlciBjaGlwcy4NCj4gPiBDb21t
-aXQgNDc3YWI3YTE5Y2VjODQwOWU0ZTJkZDEwZTczNDhlNGNhYzNjMDZlNQ0KPiA+IChpb21tdTog
-TWFrZSBtb3JlIGRyaXZlcnMgZGVwZW5kIG9uIENPTVBJTEVfVEVTVCkgcmVzdHJpY3RlZCBQQU1V
-IHRvDQo+ID4gUFBDMzIuIFBQQyBjb3ZlcnMgYm90aC4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6
-IEFuZHkgRmxlbWluZyA8YWZsZW1pbmdAZ21haWwuY29tPg0KPiANCj4gVGVzdGVkLWJ5OiBNYWRh
-bGluIEJ1Y3VyIDxtYWRhbGluLmJ1Y3VyQGZyZWVzY2FsZS5jb20+DQo+IA0KQWNrZC1ieTogVmFy
-dW4gU2V0aGkgPFZhcnVuLlNldGhpQGZyZWVzY2FsZS5jb20+DQo=
+
+
+On Wednesday 23 March 2016 07:00 PM, Michal Hocko wrote:
+> On Wed 23-03-16 17:37:18, Vaishali Thakkar wrote:
+>> Current code fails to ignore the 'hugepages=' parameters when unsupported
+>> hugepagesize is specified. With this patchset, introduce new architecture
+>> independent routine hugetlb_bad_size to handle such command line options.
+>> And then call it in architecture specific code.
+>>
+>> Changes since v1:
+>> 	- Separated different architecture specific changes in different
+>> 	  patches
+>> 	- CC'ed all arch maintainers
+> The hugetlb parameters parsing is a bit mess but this at least makes it
+> behave more consistently. Feel free to add to all patches
+> Acked-by: Michal Hocko <mhocko@suse.com>
+>
+> On a side note. I have received patches with broken threading - the
+> follow up patches are not in the single thread under this cover email.
+> I thought this was the default behavior of git send-email but maybe your
+> (older) version doesn't do that. --thread option would enforce that
+> (with --no-chain-reply-to) or you can set it up in the git config. IMHO
+> it is always better to have the patchset in the single email thread.
+>
+Yes, now I have set up my git config for that. Hopefully, things will
+work properly - patchset in a single thread from the next time.
+
+Thanks.
+
+-- 
+Vaishali
