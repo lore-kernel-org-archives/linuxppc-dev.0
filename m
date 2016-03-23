@@ -1,18 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0089.outbound.protection.outlook.com [157.56.112.89])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qVR0M4chzzDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Mar 2016 21:40:03 +1100 (AEDT)
-Message-ID: <1458729597.13990.4.camel@ellerman.id.au>
-Subject: Re: pseries/eeh: Handle RTAS delay requests in configure_bridge
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 23 Mar 2016 21:39:57 +1100
-In-Reply-To: <1458701571.5945.8.camel@russell.cc>
-References: <3qV9fR1t3Bz9sDb@ozlabs.org> <1458701571.5945.8.camel@russell.cc>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qVSB0091WzDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Mar 2016 22:33:27 +1100 (AEDT)
+From: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
+To: "joro@8bytes.org" <joro@8bytes.org>, Andy Fleming <afleming@gmail.com>
+CC: "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [v2] powerpc: Fix incorrect PPC32 PAMU dependency
+Date: Wed, 23 Mar 2016 09:59:08 +0000
+Message-ID: <AM4PR04MB16047A161F9CFDF7C65FCCC1EC810@AM4PR04MB1604.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,26 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-03-23 at 13:52 +1100, Russell Currey wrote:
-> On Wed, 2016-03-23 at 11:38 +1100, Michael Ellerman wrote:
-> > On Tue, 2016-22-03 at 00:34:55 UTC, Russell Currey wrote:
-> > >
-> > > +		case RTAS_EXTENDED_DELAY_MIN+2:
-> > > +			mwait = 100;
-> > > +			break;
-> > > +		default:
-> > > +			goto err;
-> > > +		}
-> > > +
-> > > +		max_wait -= mwait;
-> > > +		msleep(mwait);
-
-> > Can you use rtas_busy_delay() ?
+> -----Original Message-----
+> From: Andy Fleming <afleming@gmail.com>
+> To: joro@8bytes.org
+> Cc: iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+> Subject: [v2] powerpc: Fix incorrect PPC32 PAMU dependency
 >
-> Wasn't aware of that, makes life a lot easier.  Do you know if the 0.2s
-> maximum delay also applies across the board?  I definitely want to enforce
-> it here, but if it is ubiquitous then it should be in rtas_busy_delay.
+> The Freescale PAMU can be enabled on both 32 and 64-bit Power
+> chips. Commit 477ab7a19cec8409e4e2dd10e7348e4cac3c06e5
+> (iommu: Make more drivers depend on COMPILE_TEST)
+> restricted PAMU to PPC32. PPC covers both.
+>
+> Signed-off-by: Andy Fleming <afleming@gmail.com>
 
-Not sure sorry, you'll have to read PAPR :)
-
-cheers
+Tested-by: Madalin Bucur <madalin.bucur@freescale.com>
