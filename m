@@ -1,30 +1,39 @@
-Return-Path: <vaishali.thakkar@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qVZ9b0qkSzDqG1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2016 03:03:30 +1100 (AEDT)
-Subject: Re: [PATCH v2 0/6] mm/hugetlb: Fix commandline parsing behavior for
- invalid hugepagesize
-To: Michal Hocko <mhocko@kernel.org>
-References: <1458734844-14833-1-git-send-email-vaishali.thakkar@oracle.com>
- <20160323133011.GG7059@dhcp22.suse.cz>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, n-horiguchi@ah.jp.nec.com, mike.kravetz@oracle.com,
- hillf.zj@alibaba-inc.com, baiyaowei@cmss.chinamobile.com,
- dingel@linux.vnet.ibm.com, kirill.shutemov@linux.intel.com,
- dave.hansen@linux.intel.com, paul.gortmaker@windriver.com,
- catalin.marinas@arm.com, will.deacon@arm.com, cmetcalf@ezchip.com,
- linux-arm-kernel@lists.infradead.org, james.hogan@imgtec.com,
- linux-metag@vger.kernel.org, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org
-From: Vaishali Thakkar <vaishali.thakkar@oracle.com>
-Message-ID: <56F2BDE3.40309@oracle.com>
-Date: Wed, 23 Mar 2016 21:31:39 +0530
-MIME-Version: 1.0
-In-Reply-To: <20160323133011.GG7059@dhcp22.suse.cz>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qVgFK6bZJzDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2016 06:52:05 +1100 (AEDT)
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Wed, 23 Mar 2016 13:52:03 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id E8CD63E4003E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Mar 2016 13:52:00 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2NJq00U36438058
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Mar 2016 12:52:00 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2NJpwQS032599
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Mar 2016 13:52:00 -0600
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, James Bottomley <jejb@us.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: [PATCH 0/2] Fix regression and performance issue in cxlflash
+Date: Wed, 23 Mar 2016 14:49:32 -0500
+Message-Id: <1458762572-44316-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,34 +43,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This series has a couple of patches in cxlflash.
 
+The first patch is critical as it fixes a regression that was introduced
+by Commit 6ded8b3cbd9a ("cxlflash: Unmap problem state area before
+detaching master context") as part of the first SCSI push for v4.6.
 
-On Wednesday 23 March 2016 07:00 PM, Michal Hocko wrote:
-> On Wed 23-03-16 17:37:18, Vaishali Thakkar wrote:
->> Current code fails to ignore the 'hugepages=' parameters when unsupported
->> hugepagesize is specified. With this patchset, introduce new architecture
->> independent routine hugetlb_bad_size to handle such command line options.
->> And then call it in architecture specific code.
->>
->> Changes since v1:
->> 	- Separated different architecture specific changes in different
->> 	  patches
->> 	- CC'ed all arch maintainers
-> The hugetlb parameters parsing is a bit mess but this at least makes it
-> behave more consistently. Feel free to add to all patches
-> Acked-by: Michal Hocko <mhocko@suse.com>
->
-> On a side note. I have received patches with broken threading - the
-> follow up patches are not in the single thread under this cover email.
-> I thought this was the default behavior of git send-email but maybe your
-> (older) version doesn't do that. --thread option would enforce that
-> (with --no-chain-reply-to) or you can set it up in the git config. IMHO
-> it is always better to have the patchset in the single email thread.
->
-Yes, now I have set up my git config for that. Hopefully, things will
-work properly - patchset in a single thread from the next time.
+The second patch addresses a performance issue.
 
-Thanks.
+This series is intended for v4.6 and is bisectable. We would like to see
+these included in the second merge window push for v4.6 (if there is one).
+Otherwise these can be a candidate for v4.6-rc2.
+
+Manoj N. Kumar (2):
+  cxlflash: Fix regression issue with re-ordering patch
+  cxlflash: Move to exponential back-off when cmd_room is not available
+
+ drivers/scsi/cxlflash/main.c | 138 +++++++++++++++++++++++++++++--------------
+ drivers/scsi/cxlflash/main.h |   5 +-
+ 2 files changed, 97 insertions(+), 46 deletions(-)
 
 -- 
-Vaishali
+2.1.0
