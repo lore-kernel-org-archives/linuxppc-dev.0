@@ -1,45 +1,27 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <rjw@rjwysocki.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qVjJK5brVzDq72
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2016 08:24:49 +1100 (AEDT)
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Wed, 23 Mar 2016 15:24:47 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 7BC1619D803E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Mar 2016 15:12:37 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2NLOhJq22937750
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Mar 2016 14:24:43 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2NLOhbs010822
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Mar 2016 15:24:43 -0600
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
-Subject: Re: [PATCH 2/2] cxlflash: Move to exponential back-off when cmd_room
- is not available
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <1458762636-44422-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Date: Wed, 23 Mar 2016 16:24:41 -0500
-Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@us.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-Message-Id: <B3487E74-E14C-41AA-A3D7-80599D5912F0@linux.vnet.ibm.com>
-References: <1458762572-44316-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1458762636-44422-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qVjRl134lzDq6y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2016 08:31:15 +1100 (AEDT)
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by ozlabs.org (Postfix) with SMTP id 3qVjGd4kmPz9sBf
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Mar 2016 08:23:20 +1100 (AEDT)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Viresh Kumar <viresh.kumar@linaro.org>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, shreyas@linux.vnet.ibm.com,
+ linux-api@vger.kernel.org
+Subject: Re: [PATCH v13] cpufreq: powernv: Add sysfs attributes to show
+ throttle stats
+Date: Wed, 23 Mar 2016 22:25:31 +0100
+Message-ID: <6318383.4ce58n55jt@vostro.rjw.lan>
+In-Reply-To: <20160322142507.GK5272@vireshk-i7>
+References: <1458653229-10318-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20160322142507.GK5272@vireshk-i7>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,28 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Mar 23, 2016, at 2:50 PM, Uma Krishnan <ukrishn@linux.vnet.ibm.com> =
-wrote:
->=20
-> From: "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
->=20
-> While profiling the cxlflash_queuecommand() path under a heavy load it
-> was found that number of retries to find cmd_room was fairly high.
->=20
-> There are two problems with the current back-off:
-> a) It starts with a udelay of 0
-> b) It backs-off linearly
->=20
-> Tried several approaches (a higher multiple 10*n, 100*n, as well as =
-n^2,
-> 2^n) and found that the exponential back-off(2^n) approach had the =
-least
-> overall cost. Cost as being defined as overall time spent waiting.
->=20
-> The fix is to change the linear back-off to an exponential back-off.
-> This solution also takes care of the problem with the initial
-> delay (starts with 1 usec).
->=20
-> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
+On Tuesday, March 22, 2016 07:55:07 PM Viresh Kumar wrote:
+> On 22-03-16, 18:57, Shilpasri G Bhat wrote:
+> > Create sysfs attributes to export throttle information in
+> > /sys/devices/system/cpu/cpuX/cpufreq/throttle_stats directory. The
+> > newly added sysfs files are as follows:
+> > 
+> > 1)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/turbo_stat
+> > 2)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/sub-turbo_stat
+> > 3)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/unthrottle
+> > 4)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/powercap
+> > 5)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overtemp
+> > 6)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/supply_fault
+> > 7)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overcurrent
+> > 8)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/occ_reset
+> > 
+> > Detailed explanation of each attribute is added to
+> > Documentation/ABI/testing/sysfs-devices-system-cpu
+> > 
+> > CC: linux-api@vger.kernel.org
+> > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> > ---
+> > Changes from v12:
+> > - Removed (void *) typecast
+> > - Move the definition of ret inside the 'if' block
+> 
+> Sorry for 12 versions :)
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+Applied, thanks!
