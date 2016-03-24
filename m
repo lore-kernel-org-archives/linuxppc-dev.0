@@ -1,17 +1,17 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qW6Dd5lpBzDq72
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2016 00:08:01 +1100 (AEDT)
-Date: Thu, 24 Mar 2016 14:03:03 +0100
-From: Peter Zijlstra <peterz@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qW9bq1cN0zDqCj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2016 02:39:51 +1100 (AEDT)
+Date: Thu, 24 Mar 2016 15:36:58 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 To: Jiri Slaby <jslaby@suse.cz>
 Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
  Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
  Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
- Russell King <linux@arm.linux.org.uk>,
  Catalin Marinas <catalin.marinas@arm.com>,
  Will Deacon <will.deacon@arm.com>,
  Haavard Skinnemoen <hskinnemoen@gmail.com>,
@@ -41,7 +41,8 @@ Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
  Guan Xuetao <gxt@mprc.pku.edu.cn>, Thomas Gleixner <tglx@linutronix.de>,
  Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
  x86@kernel.org, Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>, linux-alpha@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, linux-alpha@vger.kernel.org,
  linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
  adi-buildroot-devel@lists.sourceforge.net,
  linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com,
@@ -55,11 +56,12 @@ Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
  user-mode-linux-devel@lists.sourceforge.net,
  user-mode-linux-user@lists.sourceforge.net, linux-xtensa@linux-xtensa.org
 Subject: Re: [PATCH 3/4] exit_thread: accept a task parameter to be exited
-Message-ID: <20160324130303.GS6356@twins.programming.kicks-ass.net>
+Message-ID: <20160324153658.GU19428@n2100.arm.linux.org.uk>
 References: <1458824294-29733-1-git-send-email-jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <1458824294-29733-1-git-send-email-jslaby@suse.cz>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -70,12 +72,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, Mar 24, 2016 at 01:58:13PM +0100, Jiri Slaby wrote:
->  void
-> -exit_thread(void)
-> +exit_thread(struct task_struct *me)
->  {
->  }
+> We need to call exit_thread from copy_process in a fail path.  So make
+> it accept task_struct as a parameter.
 
-task_struct arguments are called: tsk, task, p
-'me' seems very wrong, as that could only mean 'current', and its
-clearly not that.
+Hmm, so what this means is that exit_thread() can now be called for
+threads which are not running on the CPU.  So, I think the comment
+in arch/arm/vfp/vfpmodule.c needs to be updated:
+
+ *  THREAD_NOTIFY_EXIT
+ *   - the thread (v) will be running on the local CPU, so
+ *      v === current_thread_info()
+
+along with this change, since that becomes false.
+
+The code, however, looks like it'll cope just fine with that being
+false, as will the other users of THREAD_NOTIFY_EXIT in ARM.
+
+Thanks.
+
+-- 
+RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
