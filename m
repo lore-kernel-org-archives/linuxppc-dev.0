@@ -2,17 +2,19 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qW3Tt2n9bzDq72
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2016 22:04:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qW3Tv63cczDq72
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2016 22:04:19 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: bsingharora@gmail.com, duwe@lst.de, <linux-kernel@vger.kernel.org>,
  rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
  jeyu@redhat.com, jkosina@suse.cz, live-patching@vger.kernel.org,
  mbenes@suse.cz
-Subject: [PATCH HACK 1/6] livepatch-test: Add more cases
-Date: Thu, 24 Mar 2016 22:04:00 +1100
-Message-Id: <1458817445-5855-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/6] ftrace: Make ftrace_location_range() global
+Date: Thu, 24 Mar 2016 22:04:01 +1100
+Message-Id: <1458817445-5855-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1458817445-5855-1-git-send-email-mpe@ellerman.id.au>
+References: <1458817445-5855-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,162 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Not for merging.
+In order to support live patching on powerpc we would like to call
+ftrace_location_range(), so make it global.
 
+Signed-off-by: Torsten Duwe <duwe@suse.de>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/setup_64.c       | 26 +++++++++++
- samples/livepatch/livepatch-sample.c | 90 ++++++++++++++++++++++++++++++++++--
- 2 files changed, 113 insertions(+), 3 deletions(-)
+ include/linux/ftrace.h |  1 +
+ kernel/trace/ftrace.c  | 14 +++++++++++++-
+ 2 files changed, 14 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index f98be8383a39..3807fb05b6de 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -823,3 +823,29 @@ static int __init disable_hardlockup_detector(void)
- }
- early_initcall(disable_hardlockup_detector);
- #endif
-+
-+int func_with_lots_of_args(int a, int b, int c, int d, int e, int f, int g,
-+			   int h, int i, int j, int k, int l)
-+{
-+	printk("%s: %d %d %d %d %d %d %d %d %d %d %d %d\n",
-+	       __func__, a, b, c, d, e, f, g, h, i, j, k, l);
-+
-+	return a + b + c + d + e + f + g + h + i + j + k + l;
-+}
-+EXPORT_SYMBOL(func_with_lots_of_args);
-+
-+int func_with_nested_func(int a, int b, int c)
-+{
-+	volatile int z;
-+
-+	int noinline nested_sum (int x, int y) {
-+		return z + x + y;
-+	}
-+
-+	z = a + b;
-+
-+	printk("%s: %d %d\n", __func__, nested_sum(a, b), nested_sum(a, c));
-+
-+	return nested_sum(nested_sum(a, b), nested_sum(b, c));
-+}
-+EXPORT_SYMBOL(func_with_nested_func);
-diff --git a/samples/livepatch/livepatch-sample.c b/samples/livepatch/livepatch-sample.c
-index fb8c8614e728..b34ffa4f82ae 100644
---- a/samples/livepatch/livepatch-sample.c
-+++ b/samples/livepatch/livepatch-sample.c
-@@ -40,24 +40,108 @@
-  */
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 6d9df3f7e334..93230e97e897 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -455,6 +455,7 @@ int ftrace_update_record(struct dyn_ftrace *rec, int enable);
+ int ftrace_test_record(struct dyn_ftrace *rec, int enable);
+ void ftrace_run_stop_machine(int command);
+ unsigned long ftrace_location(unsigned long ip);
++unsigned long ftrace_location_range(unsigned long start, unsigned long end);
+ unsigned long ftrace_get_addr_new(struct dyn_ftrace *rec);
+ unsigned long ftrace_get_addr_curr(struct dyn_ftrace *rec);
  
- #include <linux/seq_file.h>
-+
-+static struct seq_file *cmdline_seq_file = NULL;
-+
-+int func_with_lots_of_args(int a, int b, int c, int d, int e, int f, int g,
-+			   int h, int i, int j, int k, int l);
-+
-+int func_with_nested_func(int a, int b, int c);
-+
- static int livepatch_cmdline_proc_show(struct seq_file *m, void *v)
- {
--	seq_printf(m, "%s\n", "this has been live patched");
-+	int i, j;
-+
-+	cmdline_seq_file = m;
-+
-+	i = func_with_lots_of_args(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
-+	j = func_with_nested_func(8, 9, 10);
-+
-+	seq_printf(m, "%s %p i = %d j = %d\n", "this has been live patched", m, i, j);
-+
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 57a6eea84694..f4e6aae6ebe7 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -1533,7 +1533,19 @@ static int ftrace_cmp_recs(const void *a, const void *b)
  	return 0;
  }
  
-+static void livepatch_seq_printf(struct seq_file *m, const char *f, ...)
-+{
-+	va_list args;
-+
-+	va_start(args, f);
-+	seq_vprintf(m, f, args);
-+	va_end(args);
-+
-+	if (m == cmdline_seq_file) {
-+		printk("livepatch: patched seq_printf() called\n");
-+		dump_stack();
-+		m = NULL;
-+	}
-+}
-+
-+static int livepatch_func_with_lots_of_args(int a, int b, int c, int d, int e,
-+					    int f, int g, int h, int i, int j,
-+					    int k, int l)
-+{
-+	printk("%s: %d %d %d %d %d %d %d %d %d %d %d %d\n",
-+	       __func__, a, b, c, d, e, f, g, h, i, j, k, l);
-+
-+	return 1 + a + b + c + d + e + f + g + h + i + j + k + l;
-+}
-+
-+struct scsi_lun {
-+	__u8 scsi_lun[8];
-+};
-+
-+static void livepatch_int_to_scsilun(u64 lun, struct scsi_lun *scsilun)
-+{
-+	int i;
-+
-+	memset(scsilun->scsi_lun, 0, sizeof(scsilun->scsi_lun));
-+
-+	for (i = 0; i < sizeof(lun); i += 2) {
-+		scsilun->scsi_lun[i] = (lun >> 8) & 0xFF;
-+		scsilun->scsi_lun[i+1] = lun & 0xFF;
-+		lun = lun >> 16;
-+	}
-+
-+	printk("livepatch: patched int_to_scsilun()\n");
-+}
-+
- static struct klp_func funcs[] = {
- 	{
- 		.old_name = "cmdline_proc_show",
- 		.new_func = livepatch_cmdline_proc_show,
--	}, { }
-+	},
-+	{
-+		.old_name = "seq_printf",
-+		.new_func = livepatch_seq_printf,
-+	},
-+	{
-+		.old_name = "func_with_lots_of_args",
-+		.new_func = livepatch_func_with_lots_of_args,
-+	},
-+	{ }
-+};
-+
-+static struct klp_func scsi_funcs[] = {
-+	{
-+		.old_name = "int_to_scsilun",
-+		.new_func = livepatch_int_to_scsilun,
-+	},
-+	{ }
- };
- 
- static struct klp_object objs[] = {
- 	{
- 		/* name being NULL means vmlinux */
- 		.funcs = funcs,
--	}, { }
-+	},
-+	{
-+#if IS_MODULE(CONFIG_SCSI)
-+		.name = "scsi_mod",
-+#endif
-+		.funcs = scsi_funcs,
-+	},
-+	{ }
- };
- 
- static struct klp_patch patch = {
+-static unsigned long ftrace_location_range(unsigned long start, unsigned long end)
++/**
++ * ftrace_location_range - return the first address of a traced location
++ *	if it touches the given ip range
++ * @start: start of range to search.
++ * @end: end of range to search (inclusive). @end points to the last byte
++ *	to check.
++ *
++ * Returns rec->ip if the related ftrace location is a least partly within
++ * the given address range. That is, the first address of the instruction
++ * that is either a NOP or call to the function tracer. It checks the ftrace
++ * internal tables to determine if the address belongs or not.
++ */
++unsigned long ftrace_location_range(unsigned long start, unsigned long end)
+ {
+ 	struct ftrace_page *pg;
+ 	struct dyn_ftrace *rec;
 -- 
 2.5.0
