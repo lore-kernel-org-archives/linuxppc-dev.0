@@ -1,29 +1,19 @@
-Return-Path: <duwe@lst.de>
+Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qVzVt4S68zDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2016 19:04:54 +1100 (AEDT)
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qVzVt1KM5z9sC3
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Mar 2016 19:04:53 +1100 (AEDT)
-Date: Thu, 24 Mar 2016 09:04:49 +0100
-From: Torsten Duwe <torsten@lst.de>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Petr Mladek <pmladek@suse.com>,
- jeyu@redhat.com, jkosina@suse.cz, jikos@kernel.org,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
- live-patching@vger.kernel.org, mbenes@suse.cz
-Subject: Re: [PATCH/RFC] ppc64 livepatch: frameless klp_return_helper using
- odd TOC
-Message-ID: <20160324080449.GA13139@lst.de>
-References: <20160323155858.GB27110@lst.de> <56F34F85.7020408@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <56F34F85.7020408@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qW0NV3gHWzDq72
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2016 19:44:26 +1100 (AEDT)
+Message-ID: <1458809065.23205.106.camel@neuling.org>
+Subject: Re: [PATCH 3/5] powerpc: Fix TAR leak across exec() syscalls
+From: Michael Neuling <mikey@neuling.org>
+To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@ozlabs.org
+Date: Thu, 24 Mar 2016 19:44:25 +1100
+In-Reply-To: <1458712025-3525-3-git-send-email-cyrilbur@gmail.com>
+References: <1458712025-3525-1-git-send-email-cyrilbur@gmail.com>
+ <1458712025-3525-3-git-send-email-cyrilbur@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,35 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 24, 2016 at 01:23:01PM +1100, Balbir Singh wrote:
-> On 24/03/16 02:58, Torsten Duwe wrote:
-> >
-> > 1. Heuristics are bad. The better they are, the more subtly the
-> >    way they might fail.
-[...]
-> I missed this yesterday, not on cc, but caught it on the list today
+On Wed, 2016-03-23 at 16:47 +1100, Cyril Bur wrote:
+> Currently start_thread() doesn't sanitise TAR.
+>=20
+> The TAR SPR register is a register that can be set and branched to, not
+> sanitising it presents an information leak to the new executable.
+>=20
+> Other SPR registers such as the Performance registers used by perf (and a=
+re
+> managed entirely by perf) as well as the Event Based Branch (EBB) registe=
+rs are
+> left alone by design as these fall into the same category as leaving file
+> descriptors open across exec(), it is up the parent thread to sanitise wh=
+at it
+> deems necessary.
+>=20
+> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+> ---
+>  arch/powerpc/kernel/process.c | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>=20
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.=
+c
+> index d7a9df5..56444a6 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1577,6 +1577,8 @@ void start_thread(struct pt_regs *regs, unsigned lo=
+ng start, unsigned long sp)
+>  	current->thread.vr_state.vscr.u[3] =3D 0x00010000; /* Java mode disable=
+d */
+>  	current->thread.vr_save_area =3D NULL;
+>  	current->thread.vrsave =3D 0;
+> +	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+> +		mtspr(SPRN_VRSAVE, 0);
 
-I replied to Michael's last post and removed the back reference to start
-a new thread. The list is rather long... sorry I didn't notice.
+VRSAVE is not mentioned in the commit message.
 
-> Thanks for working on this. I did a quick look, so the CR+4 code
-
-Yes. It's only a proof of concept. That idea is yours, no doubt, and
-should be mentioned in the final submission. I already wrote it in my
-previous version, where I also have changed the arithmetic to produce
-small positive deltas.
-
-> plus heuristics for global/local call detection?
-
-Nope, definitely not! I flag global entries unambiguously.
-I had a version with R12/LR heuristics on Monday which I dumped.
-
->  I'll review this soon - hopefully tonight, but we have a long weekend coming up, so there might be delays. In the meanwhile feel free to add my signed-off-by for the CR+4 code. I am also looking at a different approach -- per thread lr0 stack.
-
-This CR+4 code leaves only 1 slot, so sibling calls are extremely dangerous,
-as I mentioned. But with a little attention, this patch works very well.
-
-I mostly wanted to hear opinions about a transient odd TOC value
-before I start polishing.
-
-	Torsten
+>  	current->thread.used_vr =3D 0;
+>  #endif /* CONFIG_ALTIVEC */
+>  #ifdef CONFIG_SPE
+> @@ -1592,6 +1594,18 @@ void start_thread(struct pt_regs *regs, unsigned l=
+ong start, unsigned long sp)
+>  	current->thread.tm_texasr =3D 0;
+>  	current->thread.tm_tfiar =3D 0;
+>  #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +	/*
+> +	 * Zero out the SPRs.
+> +	 * Don't touch the ones use by perf, it controls them.
+> +	 * Don't touch the EBB regs. This falls into the same category of
+> +	 *   responsibly as open file descriptors across exec(), the parent sho=
+uld
+> +	 *   sanitise if it feels it would be a problem
+> +	 */
+> +	current->thread.tar =3D 0;
+> +	if (cpu_has_feature(CPU_FTR_ARCH_206))
+> +		mtspr(SPRN_TAR, 0);
+> +#endif /* CONFIG_PPC_BOOK3S_64 */
+>  }
+>  EXPORT_SYMBOL(start_thread);
+> =20
