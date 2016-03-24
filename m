@@ -1,29 +1,29 @@
-Return-Path: <duwe@lst.de>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <rostedt@goodmis.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qW70K2sfnzDq72
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2016 00:42:25 +1100 (AEDT)
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qW99P70C6zDq80
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2016 02:20:25 +1100 (AEDT)
+Received: from smtprelay.hostedemail.com (smtprelay0123.hostedemail.com
+ [216.40.44.123])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qW70J5RPXz9sCk
- for <linuxppc-dev@ozlabs.org>; Fri, 25 Mar 2016 00:42:24 +1100 (AEDT)
-Date: Thu, 24 Mar 2016 14:42:21 +0100
-From: Torsten Duwe <duwe@lst.de>
+ by ozlabs.org (Postfix) with ESMTPS id 3qW99P4801z9sD5
+ for <linuxppc-dev@ozlabs.org>; Fri, 25 Mar 2016 02:20:25 +1100 (AEDT)
+Date: Thu, 24 Mar 2016 11:20:19 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, bsingharora@gmail.com,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
- jkosina@suse.cz, live-patching@vger.kernel.org, mbenes@suse.cz
-Subject: Re: [PATCH 6/6] powerpc/livepatch: Add live patching support on
- ppc64le
-Message-ID: <20160324134221.GB29197@lst.de>
+Cc: <linuxppc-dev@ozlabs.org>, bsingharora@gmail.com, duwe@lst.de,
+ <linux-kernel@vger.kernel.org>, kamalesh@linux.vnet.ibm.com,
+ pmladek@suse.com, jeyu@redhat.com, jkosina@suse.cz,
+ live-patching@vger.kernel.org, mbenes@suse.cz
+Subject: Re: [PATCH 2/6] ftrace: Make ftrace_location_range() global
+Message-ID: <20160324112019.0a61e0b3@gandalf.local.home>
+In-Reply-To: <1458817445-5855-2-git-send-email-mpe@ellerman.id.au>
 References: <1458817445-5855-1-git-send-email-mpe@ellerman.id.au>
- <1458817445-5855-6-git-send-email-mpe@ellerman.id.au>
+ <1458817445-5855-2-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1458817445-5855-6-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,48 +33,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 24, 2016 at 10:04:05PM +1100, Michael Ellerman wrote:
-> +livepatch_handler:
-> +	CURRENT_THREAD_INFO(r12, r1)
-[...]
-> +	/* Put ctr in r12 for global entry and branch there */
-> +	mfctr	r12
-> +	bctrl
-            ^
-I like this piece. No need to fiddle out the return helper address.
+On Thu, 24 Mar 2016 22:04:01 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-> +	/*
-> +	 * Now we are returning from the patched function to the original
-> +	 * caller A. We are free to use r0 and r12, and we can use r2 until we
-> +	 * restore it.
-> +	 */
-> +
-> +	CURRENT_THREAD_INFO(r12, r1)
-> +
-> +	/* Save stack pointer into r0 */
-> +	mr	r0, r1
-> +
-> +	ld	r1, TI_livepatch_sp(r12)
-> +
-> +	/* Check stack marker hasn't been trashed */
-> +	lis     r2,  STACK_END_MAGIC@h
-> +	ori     r2,  r2, STACK_END_MAGIC@l
-> +	ld	r12, -8(r1)
-> +1:	tdne	r12, r2
-> +	EMIT_BUG_ENTRY 1b, __FILE__, __LINE__ - 1, 0
+> In order to support live patching on powerpc we would like to call
+> ftrace_location_range(), so make it global.
 
-This however worries me a bit. Sure, in the end, a stack overflow is
-a stack overflow, and if all the information does not fit there,
-there's little you can do.
+Do you want me to try to get this into this merge window?
 
-But wouldn't it be better to kmalloc that area and realloc in
-klp_arch_set_pc when it's full? Maybe along with a warning message?
-That way a live patched kernel will not run into stack size problems
-any earlier than an unpatched kernel would.
-Just a thought.
-
-Anyway, patch 5+6
-
-Reviewed-by: Torsten Duwe <duwe@suse.de>
-
-	Torsten
+-- Steve
