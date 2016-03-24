@@ -1,19 +1,45 @@
-Return-Path: <mikey@neuling.org>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qW0NV3gHWzDq72
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2016 19:44:26 +1100 (AEDT)
-Message-ID: <1458809065.23205.106.camel@neuling.org>
-Subject: Re: [PATCH 3/5] powerpc: Fix TAR leak across exec() syscalls
-From: Michael Neuling <mikey@neuling.org>
-To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@ozlabs.org
-Date: Thu, 24 Mar 2016 19:44:25 +1100
-In-Reply-To: <1458712025-3525-3-git-send-email-cyrilbur@gmail.com>
-References: <1458712025-3525-1-git-send-email-cyrilbur@gmail.com>
- <1458712025-3525-3-git-send-email-cyrilbur@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qW2QN4pLLzDq72
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2016 21:16:12 +1100 (AEDT)
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3qW2QN3PvXz9s9Z
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Mar 2016 21:16:12 +1100 (AEDT)
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
+ Thu, 24 Mar 2016 20:16:11 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0FCD22CE8046
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Mar 2016 21:15:50 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2OAFfuW1114454
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Mar 2016 21:15:49 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2OAFHbk022519
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Mar 2016 21:15:17 +1100
+Date: Thu, 24 Mar 2016 15:44:55 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Torsten Duwe <duwe@lst.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Petr Mladek <pmladek@suse.com>,
+ jeyu@redhat.com, jkosina@suse.cz, jikos@kernel.org,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ linuxppc-dev@ozlabs.org, live-patching@vger.kernel.org, mbenes@suse.cz
+Subject: Re: [PATCH/RFC] ppc64 livepatch: frameless klp_return_helper using
+ odd TOC
+Message-ID: <20160324101453.GA1445@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20160323155858.GB27110@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20160323155858.GB27110@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,63 +49,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-03-23 at 16:47 +1100, Cyril Bur wrote:
-> Currently start_thread() doesn't sanitise TAR.
->=20
-> The TAR SPR register is a register that can be set and branched to, not
-> sanitising it presents an information leak to the new executable.
->=20
-> Other SPR registers such as the Performance registers used by perf (and a=
-re
-> managed entirely by perf) as well as the Event Based Branch (EBB) registe=
-rs are
-> left alone by design as these fall into the same category as leaving file
-> descriptors open across exec(), it is up the parent thread to sanitise wh=
-at it
-> deems necessary.
->=20
-> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> ---
->  arch/powerpc/kernel/process.c | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
->=20
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.=
-c
-> index d7a9df5..56444a6 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -1577,6 +1577,8 @@ void start_thread(struct pt_regs *regs, unsigned lo=
-ng start, unsigned long sp)
->  	current->thread.vr_state.vscr.u[3] =3D 0x00010000; /* Java mode disable=
-d */
->  	current->thread.vr_save_area =3D NULL;
->  	current->thread.vrsave =3D 0;
-> +	if (cpu_has_feature(CPU_FTR_ALTIVEC))
-> +		mtspr(SPRN_VRSAVE, 0);
+* Torsten Duwe <duwe@lst.de> [2016-03-23 16:58:58]:
 
-VRSAVE is not mentioned in the commit message.
+> 
+> Since nobody liked the extra stack frame nor its workarounds, here is
+> the next attempt. Assumptions:
+> 
+> 1. Heuristics are bad. The better they are, the more subtly the
+>    way they might fail.
+> 
+> 2. The TOC pointer is usually dividable by 4, if not by 8. An odd
+>    value never occurs.
+> 
+> Conclusively, this patch unambiguously creates an odd TOC value when
+> an ftraced function's global entry point is used. Ftrace_caller will
+> then immediately fix it, and alongside gather the information whether
+> the made call was local or global.
+> 
+> In case of live patching this information is furthermore used to decide
+> whether a klp_return_helper needs to be inserted or not.
+> CAVEAT: any frameless klp_return_helper does not play well with
+> sibling calls! There's an emergency exit that might work, at worst
+> it will cause an oops, but it surely avoids a lockup.
+> At least the live patching modules on ppc64le will need to be compiled
+> using the -fno-optimize-sibling-calls compiler flag!
+> 
+> Thanks go to Michael Matz and Richard Biener for reassurance about
+> heuristics and pointers to the compiler flag.
+> 
+> Signed-off-by: Torsten Duwe <duwe@suse.de>
 
->  	current->thread.used_vr =3D 0;
->  #endif /* CONFIG_ALTIVEC */
->  #ifdef CONFIG_SPE
-> @@ -1592,6 +1594,18 @@ void start_thread(struct pt_regs *regs, unsigned l=
-ong start, unsigned long sp)
->  	current->thread.tm_texasr =3D 0;
->  	current->thread.tm_tfiar =3D 0;
->  #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +	/*
-> +	 * Zero out the SPRs.
-> +	 * Don't touch the ones use by perf, it controls them.
-> +	 * Don't touch the EBB regs. This falls into the same category of
-> +	 *   responsibly as open file descriptors across exec(), the parent sho=
-uld
-> +	 *   sanitise if it feels it would be a problem
-> +	 */
-> +	current->thread.tar =3D 0;
-> +	if (cpu_has_feature(CPU_FTR_ARCH_206))
-> +		mtspr(SPRN_TAR, 0);
-> +#endif /* CONFIG_PPC_BOOK3S_64 */
->  }
->  EXPORT_SYMBOL(start_thread);
-> =20
+Hi Torsten,
+
+Should this patch be applied over Petr Mladek's v4 ?
+
+Thanks,
+Kamalesh.
