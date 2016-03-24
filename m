@@ -1,53 +1,25 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qWc3w3PH9zDq71
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2016 19:32:12 +1100 (AEDT)
-In-Reply-To: <1458824294-29733-1-git-send-email-jslaby@suse.cz>
-To: Jiri Slaby <jslaby@suse.cz>, akpm@linux-foundation.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-mips@linux-mips.org, linux-s390@vger.kernel.org,
- Rich Felker <dalias@libc.org>, Aurelien Jacquiot <a-jacquiot@ti.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Jiri Slaby <jslaby@suse.cz>,
- Lennox Wu <lennox.wu@gmail.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>,
- Jonas Bonn <jonas@southpole.se>, Chen Liqin <liqin.linux@gmail.com>,
- Jesper Nilsson <jesper.nilsson@axis.com>, linux-am33-list@redhat.com,
- Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org,
- Helge Deller <deller@gmx.de>, x86@kernel.org,
- "James E.J. Bottomley" <jejb@parisc-linux.org>, Ingo Molnar <mingo@redhat.com>
- , Geert Uytterhoeven <geert@linux-m68k.org>, Mark Salter <msalter@redhat.com>,
- Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org,
- Haavard Skinnemoen <hskinnemoen@gmail.com>,
- uclinux-h8-devel@lists.sourceforge.jp, Fenghua Yu <fenghua.yu@intel.com>,
- James Hogan <james.hogan@imgtec.com>, Chris Metcalf <cmetcalf@mellanox.com>,
- user-mode-linux-devel@lists.sourceforge.net, Steven Miao <realmz6@gmail.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Jeff Dike <jdike@addtoit.com>,
- linux-alpha@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
- Mikael Starvik <starvik@axis.com>, linux-m68k@lists.linux-m68k.org,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- user-mode-linux-user@lists.sourceforge.net, nios2-dev@lists.rocketboards.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-xtensa@linux-xtensa.org,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>, Chris Zankel <chris@zankel.net>,
- Michal Simek <monstr@mon
- str.eu>, Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
- Vineet Gupta <vgupta@synopsys.com>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Richard Kuo <rkuo@codeaurora.org>,
- Richard Weinberger <richard@nod.at>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Ley Foon Tan <lftan@altera.com>,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [3/4] exit_thread: accept a task parameter to be exited
-Message-Id: <3qWc3w0GCtz9sdm@ozlabs.org>
-Date: Fri, 25 Mar 2016 19:32:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qWc6l4wVqzDq71
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2016 19:34:39 +1100 (AEDT)
+Received: by mail-pa0-x244.google.com with SMTP id q6so5968579pav.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2016 01:34:39 -0700 (PDT)
+Date: Fri, 25 Mar 2016 01:12:21 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, simonguo@linux.vnet.ibm.com,
+ Simon Guo <wei.guo.simon@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: correct VSX used_vsr comment
+Message-ID: <20160324171221.GB10758@simonLocalRHEL7.x64>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,11 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-24-03 at 12:58:13 UTC, Jiri Slaby wrote:
-> We need to call exit_thread from copy_process in a fail path.  So make
-> it accept task_struct as a parameter.
+used_vsr flag is set if process has used VSX register, 
+instead of Altivec register. 
+This patch corrects the wrong comment.
 
-If I'm counting right 22 of those are empty functions, so would it be a good
-clean up to make it optional first?
+Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+---
+ arch/powerpc/include/asm/processor.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-cheers
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index ac23308..a3a25e4 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -244,7 +244,7 @@ struct thread_struct {
+ #endif /* CONFIG_ALTIVEC */
+ #ifdef CONFIG_VSX
+ 	/* VSR status */
+-	int		used_vsr;	/* set if process has used altivec */
++	int		used_vsr;	/* set if process has used VSX */
+ #endif /* CONFIG_VSX */
+ #ifdef CONFIG_SPE
+ 	unsigned long	evr[32];	/* upper 32-bits of SPE regs */
+-- 
+1.8.3.1
