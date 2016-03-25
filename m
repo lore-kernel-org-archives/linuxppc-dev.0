@@ -1,18 +1,24 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qWf976v8PzDqJs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2016 21:06:51 +1100 (AEDT)
-In-Reply-To: <1458145736-20326-1-git-send-email-felix@linux.vnet.ibm.com>
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qWfYC6s1GzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2016 21:24:15 +1100 (AEDT)
+Message-ID: <1458901449.30923.0.camel@ellerman.id.au>
+Subject: Re: [PATCH 2/6] ftrace: Make ftrace_location_range() global
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>, mikey@neuling.org,
- imunsie@au1.ibm.com
-Subject: Re: [v2,1/2] powerpc: Define PVR value for POWER8NVL processor
-Message-Id: <3qWf975ZFgz9sDG@ozlabs.org>
-Date: Fri, 25 Mar 2016 21:06:51 +1100 (AEDT)
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linuxppc-dev@ozlabs.org, bsingharora@gmail.com, duwe@lst.de,
+ linux-kernel@vger.kernel.org, kamalesh@linux.vnet.ibm.com,
+ pmladek@suse.com,  jeyu@redhat.com, jkosina@suse.cz,
+ live-patching@vger.kernel.org, mbenes@suse.cz
+Date: Fri, 25 Mar 2016 21:24:09 +1100
+In-Reply-To: <20160324112019.0a61e0b3@gandalf.local.home>
+References: <1458817445-5855-1-git-send-email-mpe@ellerman.id.au>
+ <1458817445-5855-2-git-send-email-mpe@ellerman.id.au>
+ <20160324112019.0a61e0b3@gandalf.local.home>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,22 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-16-03 at 16:28:55 UTC, Philippe Bergheaud wrote:
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index c4cb2ff..6a6de4a 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -1174,6 +1174,7 @@
->  #define PVR_970GX	0x0045
->  #define PVR_POWER7p	0x004A
->  #define PVR_POWER8E	0x004B
-> +#define PVR_POWER8NVL	0x004C
->  #define PVR_POWER8	0x004D
->  #define PVR_BE		0x0070
->  #define PVR_PA6T	0x0090
+On Thu, 2016-03-24 at 11:20 -0400, Steven Rostedt wrote:
 
-Oh wow, we have those defined separately to the cputable. That is "special" :/
+> On Thu, 24 Mar 2016 22:04:01 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> > In order to support live patching on powerpc we would like to call
+> > ftrace_location_range(), so make it global.
+>
+> Do you want me to try to get this into this merge window?
 
-Not your fault though.
+Nah, we can just take it next window with the whole series. If you're happy to
+ack it.
 
 cheers
