@@ -1,32 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qWp605Gv7zDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 03:04:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qWp7K2nM1zDqSZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 03:05:49 +1100 (AEDT)
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Sat, 26 Mar 2016 02:04:39 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id A9D6A2CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 03:04:36 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2PG4SS73866978
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 03:04:36 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2PG43ob029198
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 03:04:04 +1100
+ Fri, 25 Mar 2016 21:35:47 +0530
+Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2PG59hA20840726
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2016 21:35:09 +0530
+Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
+ by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2PG56Nb022146
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2016 21:35:08 +0530
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: zhlcindy@linux.vnet.ibm.com, mpe@ellerman.id.au,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH RFC] powerpc/mm: Support bootmem for PPC64 again
-Date: Sat, 26 Mar 2016 03:03:41 +1100
-Message-Id: <1458921821-14960-1-git-send-email-gwshan@linux.vnet.ibm.com>
+To: linux-mm@kvack.org
+Cc: linuxppc-dev@lists.ozlabs.org, zhlcindy@linux.vnet.ibm.com,
+ mpe@ellerman.id.au, mgorman@suse.de, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH RFC] mm: Fix memory corruption caused by deferred page
+ initialization
+Date: Sat, 26 Mar 2016 03:05:29 +1100
+Message-Id: <1458921929-15264-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,77 +34,218 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_NO_BOOTMEM is enabled on PPC platforms by default. However,
-user might disable that to have bootmem for other purpose. So it's
-resonable to support it.
+During deferred page initialization, the pages are moved from memblock
+or bootmem to buddy allocator without checking they were reserved. Those
+reserved pages can be reallocated to somebody else by buddy/slab allocator.
+It leads to memory corruption and potential kernel crash eventually.
 
-This implements setup_bootmem() which is called by initmem_init()
-to setup bootmem node and its free bitmap. In the meantime, the
-free pages frames tracked by memblock are released to bootmem.
-In theory, we also need similar thing for PPC32 platforms. However,
-I don't have machine for testing. So that would be something later
-when I have hardware to test.
+This fixes above issue by:
+
+   * Deferred releasing bootmem bitmap until the completion of deferred
+     page initialization.
+   * Implements __reserved_bootmem_region() to check if the specified
+     page is reserved by memblock or bootmem during the deferred
+     page initialization. The pages won't be released to buddy allocator
+     if they are reserved.
+   * In free_all_bootmem_core(), @cur is set to node's starting PFN and
+     that's incorrect. It's fixed as well.
+
+With this applied, the IBM's Power8 box boots up without reserved issues
+with all possible combinations of NO_BOOTMEM and DEFERRED_STRUCT_PAGE_INIT.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/numa.c | 38 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ include/linux/bootmem.h |  2 ++
+ mm/bootmem.c            | 45 +++++++++++++++++++++++++++++++++-----
+ mm/nobootmem.c          |  6 +++++
+ mm/page_alloc.c         | 58 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 4 files changed, 104 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 669a15e..288b1b5 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -951,6 +951,41 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
- 	NODE_DATA(nid)->node_spanned_pages = spanned_pages;
+diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+index 35b22f9..a64f378 100644
+--- a/include/linux/bootmem.h
++++ b/include/linux/bootmem.h
+@@ -78,6 +78,8 @@ extern int reserve_bootmem_node(pg_data_t *pgdat,
+ 				unsigned long size,
+ 				int flags);
+ 
++extern bool __reserved_bootmem_region(unsigned long base,
++				      unsigned long size);
+ extern void *__alloc_bootmem(unsigned long size,
+ 			     unsigned long align,
+ 			     unsigned long goal);
+diff --git a/mm/bootmem.c b/mm/bootmem.c
+index 0aa7dda..eaf13b0 100644
+--- a/mm/bootmem.c
++++ b/mm/bootmem.c
+@@ -172,7 +172,7 @@ void __init free_bootmem_late(unsigned long physaddr, unsigned long size)
+ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
+ {
+ 	struct page *page;
+-	unsigned long *map, start, end, pages, cur, count = 0;
++	unsigned long *map, start, end, cur, count = 0;
+ 
+ 	if (!bdata->node_bootmem_map)
+ 		return 0;
+@@ -229,14 +229,21 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
+ 		}
+ 	}
+ 
+-	cur = bdata->node_min_pfn;
++	/*
++	 * The information tracked by bootmem bitmap can be released when
++	 * deferred page initialization is disabled. Otherwise, we have
++	 * to release it right after deferred page initialization
++	 */
++#ifndef CONFIG_DEFERRED_STRUCT_PAGE_INIT
++	cur = PFN_DOWN(virt_to_phys(bdata->node_bootmem_map));
+ 	page = virt_to_page(bdata->node_bootmem_map);
+-	pages = bdata->node_low_pfn - bdata->node_min_pfn;
+-	pages = bootmem_bootmap_pages(pages);
+-	count += pages;
+-	while (pages--)
++	end = bdata->node_low_pfn - bdata->node_min_pfn;
++	end = bootmem_bootmap_pages(end);
++	count += end;
++	while (end--)
+ 		__free_pages_bootmem(page++, cur++, 0);
+ 	bdata->node_bootmem_map = NULL;
++#endif
+ 
+ 	bdebug("nid=%td released=%lx\n", bdata - bootmem_node_data, count);
+ 
+@@ -497,6 +504,32 @@ static unsigned long __init align_off(struct bootmem_data *bdata,
+ 	return ALIGN(base + off, align) - base;
+ }
+ 
++bool __init __reserved_bootmem_region(unsigned long base, unsigned long size)
++{
++	struct pglist_data *pgdat;
++	struct bootmem_data *bdata;
++	unsigned long pfn, start, end, idx;
++	int nid;
++
++	start = PFN_DOWN(base);
++	end = PFN_UP(base + size);
++	for (pfn = start; pfn < end; pfn++) {
++		nid = early_pfn_to_nid(pfn);
++		pgdat = NODE_DATA(nid);
++		bdata = pgdat ? pgdat->bdata : NULL;
++		if (!bdata ||
++		    pfn < bdata->node_min_pfn ||
++		    pfn > bdata->node_low_pfn)
++			continue;
++
++		idx = pfn - bdata->node_min_pfn;
++		if (test_bit(idx, bdata->node_bootmem_map))
++			return true;
++	}
++
++	return false;
++}
++
+ static void * __init alloc_bootmem_bdata(struct bootmem_data *bdata,
+ 					unsigned long size, unsigned long align,
+ 					unsigned long goal, unsigned long limit)
+diff --git a/mm/nobootmem.c b/mm/nobootmem.c
+index bd05a70..70bca8d2 100644
+--- a/mm/nobootmem.c
++++ b/mm/nobootmem.c
+@@ -33,6 +33,12 @@ unsigned long min_low_pfn;
+ unsigned long max_pfn;
+ unsigned long long max_possible_pfn;
+ 
++bool __init __reserved_bootmem_region(unsigned long base,
++				      unsigned long size)
++{
++	return memblock_is_region_reserved(base, size);
++}
++
+ static void * __init __alloc_memory_core_early(int nid, u64 size, u64 align,
+ 					u64 goal, u64 limit)
+ {
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index a762be5..9ca9546 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1227,6 +1227,57 @@ static void __init deferred_free_range(struct page *page,
+ 		__free_pages_boot_core(page, pfn, 0);
  }
  
 +#ifndef CONFIG_NO_BOOTMEM
-+static void __init setup_bootmem(struct pglist_data *pgdat,
-+				 unsigned long start_pfn,
-+				 unsigned long end_pfn)
++static unsigned long __init deferred_free_bootmem_bitmap(int nid)
 +{
-+	unsigned long map_size, addr;
-+	phys_addr_t cur[2], range[2];
-+	u64 i;
++	struct pglist_data *pgdat = NODE_DATA(nid);
++	struct bootmem_data *bdata = pgdat->bdata;
++	struct zone *zone;
++	struct page *page;
++	unsigned long pfn, cur, pages, count;
++	int zid;
 +
-+	/* Memory required for bootmem bitmap */
-+	map_size = bootmem_bootmap_pages(end_pfn - start_pfn);
-+	map_size <<= PAGE_SHIFT;
-+	addr = memblock_alloc_try_nid(map_size,
-+				      SMP_CACHE_BYTES, pgdat->node_id);
++	if (!bdata || !bdata->node_bootmem_map)
++		return 0UL;
 +
-+	/* Initialize bootmem allocator */
-+	pgdat->bdata = &bootmem_node_data[pgdat->node_id];
-+	init_bootmem_node(pgdat, PHYS_PFN(addr), start_pfn, end_pfn);
++	pfn = PFN_DOWN(virt_to_phys(bdata->node_bootmem_map));
++	page = virt_to_page(bdata->node_bootmem_map);
++	bdata->node_bootmem_map = NULL;
++	pages = bdata->node_low_pfn - bdata->node_min_pfn;
++	pages = bootmem_bootmap_pages(pages);
 +
-+	/* Release free pages in memblock */
-+	range[0] = PFN_PHYS(start_pfn);
-+	range[1] = PFN_PHYS(end_pfn);
-+	for_each_free_mem_range(i, pgdat->node_id, MEMBLOCK_NONE,
-+				&cur[0], &cur[1], NULL) {
-+		cur[0] = clamp(cur[0], range[0], range[1]);
-+		cur[1] = clamp(cur[1], range[0], range[1]);
-+		if (cur[0] >= cur[1])
-+			continue;
++	/*
++	 * We won't lose much performance to release pages one by one
++	 * as the amount of reserved memory for bootmem bitmap is usually
++	 * very small
++	 */
++	for (count = 0UL, cur = 0UL; cur < pages; cur++) {
++		for (zid = 0; zid < MAX_NR_ZONES; zid++) {
++			zone = &pgdat->node_zones[zid];
++			if (!zone->spanned_pages)
++				continue;
 +
-+		memblock_free_early_nid(cur[0], cur[1] - cur[0],
-+					pgdat->node_id);
++			if (pfn >= zone->zone_start_pfn &&
++			    pfn < zone->zone_start_pfn + zone->spanned_pages)
++				break;
++		}
++
++		if (zid < MAX_NR_ZONES) {
++			pr_info("%s: nid#%d, %s, 0x%lx\n",
++				__func__, nid, zone_names[zid], pfn);
++			__init_single_page(page, pfn, zid, nid);
++			__free_pages_boot_core(page, pfn, 0);
++			count++;
++		}
++
++		page++;
++		pfn++;
 +	}
++
++	return count;
 +}
 +#endif /* !CONFIG_NO_BOOTMEM */
 +
- void __init initmem_init(void)
- {
- 	int nid, cpu;
-@@ -977,6 +1012,9 @@ void __init initmem_init(void)
+ /* Completion tracking for deferred_init_memmap() threads */
+ static atomic_t pgdat_init_n_undone __initdata;
+ static __initdata DECLARE_COMPLETION(pgdat_init_all_done_comp);
+@@ -1301,7 +1352,9 @@ static int __init deferred_init_memmap(void *data)
+ 				}
+ 			}
  
- 		get_pfn_range_for_nid(nid, &start_pfn, &end_pfn);
- 		setup_node_data(nid, start_pfn, end_pfn);
+-			if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state)) {
++			if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state) ||
++			    __reserved_bootmem_region(PFN_PHYS(pfn),
++						      PAGE_SIZE)) {
+ 				page = NULL;
+ 				goto free_range;
+ 			}
+@@ -1350,6 +1403,9 @@ free_range:
+ 	/* Sanity check that the next zone really is unpopulated */
+ 	WARN_ON(++zid < MAX_NR_ZONES && populated_zone(++zone));
+ 
 +#ifndef CONFIG_NO_BOOTMEM
-+		setup_bootmem(NODE_DATA(nid), start_pfn, end_pfn);
++	nr_pages += deferred_free_bootmem_bitmap(nid);
 +#endif
- 		sparse_memory_present_with_active_regions(nid);
- 	}
+ 	pr_info("node %d initialised, %lu pages in %ums\n", nid, nr_pages,
+ 					jiffies_to_msecs(jiffies - start));
  
 -- 
 2.1.0
