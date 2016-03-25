@@ -1,67 +1,39 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from emea01-db3-obe.outbound.protection.outlook.com
+ (mail-db3on0055.outbound.protection.outlook.com [157.55.234.55])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qW9bq1cN0zDqCj
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2016 02:39:51 +1100 (AEDT)
-Date: Thu, 24 Mar 2016 15:36:58 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Haavard Skinnemoen <hskinnemoen@gmail.com>,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>,
- Steven Miao <realmz6@gmail.com>, Mark Salter <msalter@redhat.com>,
- Aurelien Jacquiot <a-jacquiot@ti.com>, Mikael Starvik <starvik@axis.com>,
- Jesper Nilsson <jesper.nilsson@axis.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- James Hogan <james.hogan@imgtec.com>,
- Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
- David Howells <dhowells@redhat.com>,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- Ley Foon Tan <lftan@altera.com>, Jonas Bonn <jonas@southpole.se>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Chen Liqin <liqin.linux@gmail.com>, Lennox Wu <lennox.wu@gmail.com>,
- Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>,
- Chris Metcalf <cmetcalf@mellanox.com>,
- Jeff Dike <jdike@addtoit.com>, Richard Weinberger <richard@nod.at>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>,
- Peter Zijlstra <peterz@infradead.org>, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com,
- uclinux-h8-devel@lists.sourceforge.jp,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org,
- linux-mips@linux-mips.org, linux-am33-list@redhat.com,
- nios2-dev@lists.rocketboards.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- user-mode-linux-user@lists.sourceforge.net, linux-xtensa@linux-xtensa.org
-Subject: Re: [PATCH 3/4] exit_thread: accept a task parameter to be exited
-Message-ID: <20160324153658.GU19428@n2100.arm.linux.org.uk>
-References: <1458824294-29733-1-git-send-email-jslaby@suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qWYfY5Jw5zDq71
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2016 17:43:33 +1100 (AEDT)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: Scott Wood <scott.wood@nxp.com>, Arnd Bergmann <arnd@arndb.de>, "Rob
+ Herring" <robh@kernel.org>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Zhao Qiang
+ <qiang.zhao@freescale.com>, Russell King <linux@arm.linux.org.uk>, "Bhupesh
+ Sharma" <bhupesh.sharma@freescale.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, Joerg Roedel <joro@8bytes.org>, Kumar Gala
+ <galak@codeaurora.org>, "linux-mmc@vger.kernel.org"
+ <linux-mmc@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, Yang-Leo Li <leoyang.li@nxp.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Claudiu Manoil
+ <claudiu.manoil@freescale.com>, Santosh Shilimkar <ssantosh@kernel.org>,
+ Xiaobo Xie <xiaobo.xie@nxp.com>, "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [v6, 5/5] mmc: sdhci-of-esdhc: fix host version for
+ T4240-R1.0-R2.0
+Date: Fri, 25 Mar 2016 06:43:24 +0000
+Message-ID: <HE1PR04MB08899E1161ADC80A455B7401F8830@HE1PR04MB0889.eurprd04.prod.outlook.com>
+References: <1457518131-11339-1-git-send-email-yangbo.lu@nxp.com>
+ <DB5PR0401MB19286B2D23D07F5C60DB799D91880@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+ <20160317170101.GA21009@rob-hp-laptop> <3706958.XeRFmKM0K5@wuerfel>
+ <DB5PR0401MB1928DA88B03970E1EACFB1FF918C0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+In-Reply-To: <DB5PR0401MB1928DA88B03970E1EACFB1FF918C0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1458824294-29733-1-git-send-email-jslaby@suse.cz>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -71,26 +43,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 24, 2016 at 01:58:13PM +0100, Jiri Slaby wrote:
-> We need to call exit_thread from copy_process in a fail path.  So make
-> it accept task_struct as a parameter.
+> -----Original Message-----
+> From: Scott Wood
+> Sent: Saturday, March 19, 2016 2:28 AM
+> To: Arnd Bergmann; Rob Herring
+> Cc: Yangbo Lu; linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org;
+> ulf.hansson@linaro.org; Zhao Qiang; Russell King; Bhupesh Sharma;
+> netdev@vger.kernel.org; Joerg Roedel; Kumar Gala; linux-
+> mmc@vger.kernel.org; linux-kernel@vger.kernel.org; Yang-Leo Li;
+> iommu@lists.linux-foundation.org; linux-i2c@vger.kernel.org; Claudiu
+> Manoil; Santosh Shilimkar; Xiaobo Xie; linux-clk@vger.kernel.org; linux-
+> arm-kernel@lists.infradead.org
+> Subject: Re: [v6, 5/5] mmc: sdhci-of-esdhc: fix host version for T4240-
+> R1.0-R2.0
+>=20
+> On 03/17/2016 12:06 PM, Arnd Bergmann wrote:
+> > On Thursday 17 March 2016 12:01:01 Rob Herring wrote:
+> >> On Mon, Mar 14, 2016 at 05:45:43PM +0000, Scott Wood wrote:
+> >
+> >>>>> This makes the driver non-portable. Better identify the specific
+> >>>>> workarounds based on the compatible string for this device, or add
+> >>>>> a boolean DT property for the quirk.
+> >>>>>
+> >>>>>    Arnd
+> >>>>
+> >>>> [Lu Yangbo-B47093] Hi Arnd, we did have a discussion about using DTS
+> in v1 before.
+> >>>> https://patchwork.kernel.org/patch/6834221/
+> >>>>
+> >>>> We don't have a separate DTS file for each revision of an SOC and if
+> we did, we'd constantly have people using the wrong one.
+> >>>> In addition, the device tree is stable ABI and errata are often
+> discovered after device tree are deployed.
+> >>>> See the link for details.
+> >>>>
+> >>>> So we decide to read SVR from the device-config/guts MMIO block
+> other than using DTS.
+> >>>> Thanks.
+> >>>
+> >>> Also note that this driver is already only for fsl-specific
+> >>> hardware, and it will still work even if fsl_guts doesn't find
+> >>> anything to bind to
+> >>> -- it just wouldn't be able to detect errata based on SVR in that
+> case.
+> >>
+> >> IIRC, it is the same IP block as i.MX and Arnd's point is this won't
+> >> even compile on !PPC. It is things like this that prevent sharing the
+> >> driver.
+>=20
+> The whole point of using the MMIO SVR instead of the PPC SPR is so that
+> it will work on ARM...  The guts driver should build on any platform as
+> long as OF is enabled, and if it doesn't find a node to bind to it will
+> return 0 for SVR, and the eSDHC driver will continue (after printing an
+> error that should be removed) without the ability to test for errata
+> based on SVR.
+>=20
+> > I think the first four patches take care of building for ARM, but the
+> > problem remains if you want to enable COMPILE_TEST as we need for
+> > certain automated checking.
+>=20
+> What specific problem is there with COMPILE_TEST?
+>=20
+> >> Dealing with Si revs is a common problem. We should have a common
+> >> solution. There is soc_device for this purpose.
+> >
+> > Exactly. The last time this came up, I think we agreed to implement a
+> > helper using glob_match() on the soc_device strings. Unfortunately
+> > this hasn't happened then, but I'd still prefer that over yet another
+> > vendor-specific way of dealing with the generic issue.
+>=20
+> soc_device would require encoding the SVR as a string and then decoding
+> the string, which is more complicated and error prone than having
+> platform-specific code test a platform-specific number.  And when would
+> it get registered on arm64, which doesn't have platform code?
+>=20
+> -Scott
 
-Hmm, so what this means is that exit_thread() can now be called for
-threads which are not running on the CPU.  So, I think the comment
-in arch/arm/vfp/vfpmodule.c needs to be updated:
-
- *  THREAD_NOTIFY_EXIT
- *   - the thread (v) will be running on the local CPU, so
- *      v === current_thread_info()
-
-along with this change, since that becomes false.
-
-The code, however, looks like it'll cope just fine with that being
-false, as will the other users of THREAD_NOTIFY_EXIT in ARM.
-
+[Lu Yangbo-B47093] Hi Arnd, could you answer Scott's questions?
+If you don't oppose this patch, I'd like to rework a new version for mergin=
+g.
 Thanks.
 
--- 
-RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+:)
