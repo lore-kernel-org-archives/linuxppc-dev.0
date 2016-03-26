@@ -1,33 +1,21 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qXBDG2S95zDq6y
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 18:11:26 +1100 (AEDT)
-Received: from mail-qk0-x22b.google.com (mail-qk0-x22b.google.com
- [IPv6:2607:f8b0:400d:c09::22b])
+Received: from mail-qk0-x22d.google.com (mail-qk0-x22d.google.com
+ [IPv6:2607:f8b0:400d:c09::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qXBDF3XpLz9s4x
- for <linuxppc-dev@ozlabs.org>; Sat, 26 Mar 2016 18:11:24 +1100 (AEDT)
-Received: by mail-qk0-x22b.google.com with SMTP id o6so51596621qkc.2
- for <linuxppc-dev@ozlabs.org>; Sat, 26 Mar 2016 00:11:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qXBKM2Xk7zDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 18:15:51 +1100 (AEDT)
+Received: by mail-qk0-x22d.google.com with SMTP id s5so51650055qkd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 00:15:51 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20160324163734.GA7493@linux.vnet.ibm.com>
-References: <1458817445-5855-1-git-send-email-mpe@ellerman.id.au>
- <20160324163734.GA7493@linux.vnet.ibm.com>
-Date: Sat, 26 Mar 2016 18:11:22 +1100
-Message-ID: <CAKTCnz=8giVb4_mdrPj0V1XvAnzpxLXZ9-XuJwB+R2NM16ZdzA@mail.gmail.com>
-Subject: Re: [PATCH HACK 1/6] livepatch-test: Add more cases
+In-Reply-To: <1458921821-14960-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1458921821-14960-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Date: Sat, 26 Mar 2016 18:15:48 +1100
+Message-ID: <CAKTCnzkm2wsvi8KkTOmowQ9a1a2KQPUoAT+rAb-3dYnwHB=gEg@mail.gmail.com>
+Subject: Re: [PATCH RFC] powerpc/mm: Support bootmem for PPC64 again
 From: Balbir Singh <bsingharora@gmail.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- Torsten Duwe <duwe@lst.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Petr Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>,
- Jiri Kosina <jkosina@suse.cz>,
- live-patching@vger.kernel.org, Miroslav Benes <mbenes@suse.cz>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Li Zhang <zhlcindy@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,22 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 25, 2016 at 3:37 AM, Kamalesh Babulal
-<kamalesh@linux.vnet.ibm.com> wrote:
-> * Michael Ellerman <mpe@ellerman.id.au> [2016-03-24 22:04:00]:
->
->> Not for merging.
->>
->
-> Hi Michael,
->
-> Loading the livepatch sample module, trigger following warning
+On Sat, Mar 26, 2016 at 3:03 AM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
+> CONFIG_NO_BOOTMEM is enabled on PPC platforms by default. However,
+> user might disable that to have bootmem for other purpose. So it's
+> resonable to support it.
 >
 
-The #if IS_MODULE(CONFIG_SCSI) code is buggy, you probably have
-CONFIG_SCSI=y, make it M or you can fix the code yourself. I had the
-same issue while testing
+The changelog could use some rewriting. What other purpose would
+bootmem would be used for?
 
-BTW, the tests worked fine with the changes proposed by Michael.
+> This implements setup_bootmem() which is called by initmem_init()
+> to setup bootmem node and its free bitmap. In the meantime, the
+> free pages frames tracked by memblock are released to bootmem.
+> In theory, we also need similar thing for PPC32 platforms. However,
+> I don't have machine for testing. So that would be something later
+> when I have hardware to test.
+>
 
 Balbir Singh
