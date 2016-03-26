@@ -1,22 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qZlZW1FxCzDq6y
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 22:21:07 +1100 (AEDT)
-Message-ID: <1459336866.23987.8.camel@ellerman.id.au>
-Subject: Re: [v2] ppc64/book3s: fix branching to out of line handlers in
- relocation kernel
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>, linuxppc-dev
- <linuxppc-dev@ozlabs.org>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, Michael Neuling
- <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>
-Date: Wed, 30 Mar 2016 22:21:06 +1100
-In-Reply-To: <56FB7CB8.1010801@linux.vnet.ibm.com>
-References: <3qZT2T1R7fz9sDC@ozlabs.org> <56FB7CB8.1010801@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qZmlb5bzLzDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 23:14:03 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id x3so6836596pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 05:14:03 -0700 (PDT)
+Date: Sat, 26 Mar 2016 08:47:31 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Kees Cook <keescook@chromium.org>,
+ Rashmica Gupta <rashmicy@gmail.com>,
+ Simon Guo <simonguo@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc: Export thread_struct.used_vr/used_vsr to user space
+Message-ID: <20160326004731.GD12457@simonLocalRHEL7.x64>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,42 +29,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-03-30 at 12:44 +0530, Hari Bathini wrote:
-> On 03/30/2016 05:55 AM, Michael Ellerman wrote:
-> > On Tue, 2016-29-03 at 18:34:37 UTC, Hari Bathini wrote:
-> > > @@ -1244,6 +1235,16 @@ __end_handlers:
-> > >   	STD_RELON_EXCEPTION_PSERIES_OOL(0xf60, facility_unavailable)
-> > >   	STD_RELON_EXCEPTION_HV_OOL(0xf80, hv_facility_unavailable)
-> > >
-> > > +	/* FIXME: For now, let us move the __end_interrupts marker down past
-> > Why is it FIXME?
-> >
-> > In general I don't want to merge code that adds a FIXME unless there is some
-> > very good reason.
-> >
-> > AFAICS this is a permanent solution isn't it?
->
-> Except for a few short interrupt vectors like 0x4f00, 04f20, etc., all other
-> vectors defined till __end_interrupts marker ensure that LOAD_HANDLER() is
-> used for branching to labels like system_call_entry, data_access_common,
-> etc. that are currently not copied to real 0 in relocation case.
->
-> So, we are forced to move the __end_interrupts marker down only to handle
-> space constraint in the short vectors. So, I added the FIXME to remind the
-> scope for improvement in the code. But after thinking over again now, moving
-> the marker down makes us copy an additional 1~2 KB along with the 21~22 KB
-> that we are copying already. So, not much of an improvement to lose
-> sleep over or to add a FIXME, I guess. Your thoughts?
+These 2 fields track whether user process has used Altivec/VSX registers
+or not. They are used by kernel to setup signal frame on user stack
+correctly regarding vector part.
 
-OK, that makes sense. I still wouldn't add a FIXME unless you have a plan to
-fix it "properly" in the medium term. And I don't think we really do.
+CRIU(Checkpoint and Restore In User space) builds signal frame for
+restored process. It will need this export information to setup signal
+frame correctly. And CRIU will need to restore these 2 fields for
+the restored process.
 
-So if we merge it with a FIXME there's a good chance the FIXME will be there in
-10 years, which is not really helpful. A comment saying "we only need this here
-because of xx, and we could move it to y if z happened" is helpful.
+Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+Reviewed-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/uapi/asm/ptrace.h | 11 ++++++++++
+ arch/powerpc/kernel/ptrace.c           | 39 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/ptrace32.c         |  2 ++
+ 3 files changed, 52 insertions(+)
 
-As far as the size of the copy, that doesn't really concern me at all. What I
-want is a solution that's robust into the future. This has been badly broken
-for quite a while and we didn't notice :/
-
-cheers
+diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
+index 8036b38..4456b8f 100644
+--- a/arch/powerpc/include/uapi/asm/ptrace.h
++++ b/arch/powerpc/include/uapi/asm/ptrace.h
+@@ -176,6 +176,17 @@ struct pt_regs {
+ #define PTRACE_GETREGS64	  0x16
+ #define PTRACE_SETREGS64	  0x17
+ 
++/*
++ * Get or set some register used bit.
++ * The flags will be saved in a 32 bit data.
++ * Currently it is only used for VR/VSR usage.
++ */
++#define PTRACE_GET_REGS_USAGE	  0x1e
++#define PTRACE_SET_REGS_USAGE	  0x1f
++
++#define PTRACE_REGS_USAGE_BIT_VR  0x0
++#define PTRACE_REGS_USAGE_BIT_VSR 0x1
++
+ /* Calls to trace a 64bit program from a 32bit program */
+ #define PPC_PTRACE_PEEKTEXT_3264 0x95
+ #define PPC_PTRACE_PEEKDATA_3264 0x94
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 30a03c0..43d3db3b 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1755,6 +1755,45 @@ long arch_ptrace(struct task_struct *child, long request,
+ 					     REGSET_SPE, 0, 35 * sizeof(u32),
+ 					     datavp);
+ #endif
++	case PTRACE_GET_REGS_USAGE:
++		{
++			u32 *u32_datap = (u32 *)datavp;
++			u32 reg_usage = 0;
++
++			if (addr != sizeof(u32))
++				return -EINVAL;
++
++#ifdef CONFIG_ALTIVEC
++			if (child->thread.used_vr)
++				reg_usage |= (1 << PTRACE_REGS_USAGE_BIT_VR);
++#endif
++#ifdef CONFIG_VSX
++			if (child->thread.used_vsr)
++				reg_usage |= (1 << PTRACE_REGS_USAGE_BIT_VSR);
++#endif
++			return put_user(reg_usage, u32_datap);
++		}
++	case PTRACE_SET_REGS_USAGE:
++		{
++			u32 *u32_datap = (u32 *)datavp;
++			u32 reg_usage = 0;
++
++			if (addr != sizeof(u32))
++				return -EINVAL;
++
++			ret = get_user(reg_usage, u32_datap);
++			if (ret)
++				return ret;
++#ifdef CONFIG_ALTIVEC
++			child->thread.used_vr =
++				((reg_usage >> PTRACE_REGS_USAGE_BIT_VR) & 1);
++#endif
++#ifdef CONFIG_VSX
++			child->thread.used_vsr =
++				((reg_usage >> PTRACE_REGS_USAGE_BIT_VSR) & 1);
++#endif
++			break;
++		}
+ 
+ 	default:
+ 		ret = ptrace_request(child, request, addr, data);
+diff --git a/arch/powerpc/kernel/ptrace32.c b/arch/powerpc/kernel/ptrace32.c
+index f52b7db..ff359a1 100644
+--- a/arch/powerpc/kernel/ptrace32.c
++++ b/arch/powerpc/kernel/ptrace32.c
+@@ -305,6 +305,8 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
+ 	case PPC_PTRACE_GETHWDBGINFO:
+ 	case PPC_PTRACE_SETHWDEBUG:
+ 	case PPC_PTRACE_DELHWDEBUG:
++	case PTRACE_GET_REGS_USAGE:
++	case PTRACE_SET_REGS_USAGE:
+ 		ret = arch_ptrace(child, request, addr, data);
+ 		break;
+ 
+-- 
+2.7.0
