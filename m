@@ -1,36 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qX83427kYzDq6y
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 16:33:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qX8vx613LzDq6y
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 17:12:13 +1100 (AEDT)
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 26 Mar 2016 15:33:18 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id C1DE02BB0059
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 16:32:59 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2Q5Wpt11376654
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 16:32:59 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2Q5WQ1F031684
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 16:32:27 +1100
+ Sat, 26 Mar 2016 11:42:10 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2Q6C7Si66781212
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 11:42:07 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2QBehkW025603
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2016 17:10:44 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org,
  paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 05/14] powerpc/mm: Replace _PAGE_USER with _PAGE_PRIVILEGED
-In-Reply-To: <1458626727.23205.9.camel@neuling.org>
+Subject: Re: [PATCH 09/14] powerpc/mm: Drop WIMG in favour of new constants
+In-Reply-To: <1458622797.23205.3.camel@neuling.org>
 References: <1457357974-20839-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1457357974-20839-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1458626727.23205.9.camel@neuling.org>
-Date: Sat, 26 Mar 2016 11:02:07 +0530
-Message-ID: <87fuvd7qjs.fsf@linux.vnet.ibm.com>
+ <1457357974-20839-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1458622797.23205.3.camel@neuling.org>
+Date: Sat, 26 Mar 2016 11:42:05 +0530
+Message-ID: <87d1qh7op6.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,429 +43,253 @@ Michael Neuling <mikey@neuling.org> writes:
 
 > [ text/plain ]
 > On Mon, 2016-03-07 at 19:09 +0530, Aneesh Kumar K.V wrote:
->> _PAGE_PRIVILEGED means the page can be accessed only by kernel. This is done
->> to keep pte bits similar to PowerISA 3.0 radix PTE format. User
->> pages are now makred by clearing _PAGE_PRIVILEGED bit.
+>
+>> PowerISA 3.0 introduce three pte bits with the below meaning
+>> 000 ->  Normal Memory
+>> 001 ->  Strong Access Order
+>> 010 -> Non idempotent I/O ( Also cache inhibited and guarded)
+>> 100 -> Tolerant I/O (Cache inhibited)
+>
+> Which PTE are you talking about here?  Radix, new Hash (ISA 3.0) or
+> old Hash (ISA 2.07)?
+
+Radix. Paul also pointed out that with latest ISA spec, this is now a
+two bit value. I have also updated the patchset accordingly.
+
+>
+> A couple more comments below
+>
+>> We drop the existing WIMG bits in linux page table in favour of above
+>> contants. We loose _PAGE_WRITETHRU with this conversion. We only use
+>> writethru via pgprot_cached_wthru() which is used by fbdev/controlfb.c
+>> which is Apple control display and also PPC32.
 >> 
->> Previously we allowed kernel to have a privileged page
->> in the lower address range(USER_REGION). With this patch such access
->> is denied.
+>> With respect to _PAGE_COHERENCE, we have been marking hpte
+>> always coherent for some time now. htab_convert_pte_flags always added
+>> HPTE_R_M.
 >> 
->> We also prevent a kernel access to a non-privileged page in
->> higher address range (ie, REGION_ID != 0). Both the above access
->> scenario should never happen.
->
-> A few comments below.  I didn't find any issues, just some potential
-> cleanups.
->
-> Mikey
->
+>> NOTE: KVM changes need closer review.
+>> 
 >> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 >> ---
->>  arch/powerpc/include/asm/book3s/64/hash.h    | 34 ++++++++++++++--------------
->>  arch/powerpc/include/asm/book3s/64/pgtable.h | 18 ++++++++++++++-
->>  arch/powerpc/mm/hash64_4k.c                  |  2 +-
->>  arch/powerpc/mm/hash64_64k.c                 |  4 ++--
->>  arch/powerpc/mm/hash_utils_64.c              | 17 ++++++++------
->>  arch/powerpc/mm/hugepage-hash64.c            |  2 +-
->>  arch/powerpc/mm/hugetlbpage-hash64.c         |  3 ++-
->>  arch/powerpc/mm/hugetlbpage.c                |  2 +-
->>  arch/powerpc/mm/pgtable.c                    | 15 ++++++++++--
->>  arch/powerpc/mm/pgtable_64.c                 | 15 +++++++++---
->>  arch/powerpc/platforms/cell/spufs/fault.c    |  2 +-
->>  drivers/misc/cxl/fault.c                     |  5 ++--
->>  12 files changed, 80 insertions(+), 39 deletions(-)
+>>  arch/powerpc/include/asm/book3s/64/hash.h | 47 +++++++++----------------------
+>>  arch/powerpc/include/asm/kvm_book3s_64.h  | 29 ++++++++++---------
+>>  arch/powerpc/kvm/book3s_64_mmu_hv.c       | 11 ++++----
+>>  arch/powerpc/kvm/book3s_hv_rm_mmu.c       | 12 ++++----
+>>  arch/powerpc/mm/hash64_64k.c              |  2 +-
+>>  arch/powerpc/mm/hash_utils_64.c           | 14 ++++-----
+>>  arch/powerpc/mm/pgtable.c                 |  2 +-
+>>  arch/powerpc/mm/pgtable_64.c              |  4 ---
+>>  arch/powerpc/platforms/pseries/lpar.c     |  4 ---
+>>  9 files changed, 48 insertions(+), 77 deletions(-)
 >> 
 >> diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
->> index f092d83fa623..fbefbaa92736 100644
+>> index c2b567456796..edd3d47ef9a4 100644
 >> --- a/arch/powerpc/include/asm/book3s/64/hash.h
 >> +++ b/arch/powerpc/include/asm/book3s/64/hash.h
->> @@ -20,7 +20,7 @@
->>  #define _PAGE_READ		0x00004	/* read access allowed */
+>> @@ -21,11 +21,9 @@
 >>  #define _PAGE_RW		(_PAGE_READ | _PAGE_WRITE)
 >>  #define _PAGE_RWX		(_PAGE_READ | _PAGE_WRITE | _PAGE_EXEC)
->> -#define _PAGE_USER		0x00008 /* page may be accessed by userspace */
->> +#define _PAGE_PRIVILEGED	0x00008 /* page can only be access by kernel */
->
-> /* page can only be accessed by kernel */
->
-> Or just
->
-> /* kernel access only */
->
-
-fixed
-
->>  #define _PAGE_GUARDED		0x00010 /* G: guarded (side-effect) page */
->>  /* M (memory coherence) is always set in the HPTE, so we don't need it here */
->>  #define _PAGE_COHERENT		0x0
->> @@ -114,10 +114,13 @@
->>  #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
->>  #endif /* CONFIG_PPC_MM_SLICES */
+>>  #define _PAGE_PRIVILEGED	0x00008 /* page can only be access by kernel */
+>> -#define _PAGE_GUARDED		0x00010 /* G: guarded (side-effect) page */
+>> -/* M (memory coherence) is always set in the HPTE, so we don't need it here */
+>> -#define _PAGE_COHERENT		0x0
+>> -#define _PAGE_NO_CACHE		0x00020 /* I: cache inhibit */
+>> -#define _PAGE_WRITETHRU		0x00040 /* W: cache write-through */
+>> +#define _PAGE_SAO		0x00010 /* Strong access order */
+>> +#define _PAGE_NON_IDEMPOTENT	0x00020 /* non idempotent memory */
+>> +#define _PAGE_TOLERANT		0x00040 /* tolerant memory, cache inhibited */
+>>  #define _PAGE_DIRTY		0x00080 /* C: page changed */
+>>  #define _PAGE_ACCESSED		0x00100 /* R: page referenced */
+>>  #define _PAGE_SPECIAL		0x00400 /* software: special page */
+>> @@ -122,9 +120,6 @@
+>>  #define _PAGE_KERNEL_RWX	(_PAGE_PRIVILEGED | _PAGE_DIRTY | \
+>>  				 _PAGE_RW | _PAGE_EXEC)
 >>  
->> -/* No separate kernel read-only */
->> -#define _PAGE_KERNEL_RW		(_PAGE_RW | _PAGE_DIRTY) /* user access blocked by key */
->> +/*
->> + * No separate kernel read-only, user access blocked by key
->> + */
->> +#define _PAGE_KERNEL_RW		(_PAGE_PRIVILEGED | _PAGE_RW | _PAGE_DIRTY)
->>  #define _PAGE_KERNEL_RO		 _PAGE_KERNEL_RW
->> -#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW | _PAGE_EXEC)
->> +#define _PAGE_KERNEL_RWX	(_PAGE_PRIVILEGED | _PAGE_DIRTY | \
->> +				 _PAGE_RW | _PAGE_EXEC)
+>> -/* Strong Access Ordering */
+>> -#define _PAGE_SAO		(_PAGE_WRITETHRU | _PAGE_NO_CACHE | _PAGE_COHERENT)
+>> -
+>>  /* No page size encoding in the linux PTE */
+>>  #define _PAGE_PSIZE		0
 >>  
->>  /* Strong Access Ordering */
->>  #define _PAGE_SAO		(_PAGE_WRITETHRU | _PAGE_NO_CACHE | _PAGE_COHERENT)
->> @@ -149,7 +152,7 @@
->>   */
->>  #define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
->>  			 _PAGE_WRITETHRU | _PAGE_4K_PFN | \
->> -			 _PAGE_USER | _PAGE_ACCESSED |  _PAGE_READ |\
->> +			 _PAGE_PRIVILEGED | _PAGE_ACCESSED |  _PAGE_READ |\
->>  			 _PAGE_WRITE |  _PAGE_DIRTY | _PAGE_EXEC | \
->>  			 _PAGE_SOFT_DIRTY)
+>> @@ -150,10 +145,9 @@
 >>  /*
->> @@ -171,16 +174,13 @@
+>>   * Mask of bits returned by pte_pgprot()
+>>   */
+>> -#define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
+>> -			 _PAGE_WRITETHRU | _PAGE_4K_PFN | \
+>> -			 _PAGE_PRIVILEGED | _PAGE_ACCESSED |  _PAGE_READ |\
+>> -			 _PAGE_WRITE |  _PAGE_DIRTY | _PAGE_EXEC | \
+>> +#define PAGE_PROT_BITS  (_PAGE_SAO | _PAGE_NON_IDEMPOTENT | _PAGE_TOLERANT | \
+>> +			 _PAGE_4K_PFN | _PAGE_PRIVILEGED | _PAGE_ACCESSED | \
+>> +			 _PAGE_READ | _PAGE_WRITE |  _PAGE_DIRTY | _PAGE_EXEC | \
+>>  			 _PAGE_SOFT_DIRTY)
+>>  /*is this
+>>   * We define 2 sets of base prot bits, one for basic pages (ie,
+>> @@ -162,7 +156,7 @@
+>>   * the processor might need it for DMA coherency.
+>>   */
+>>  #define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_PSIZE)
+>> -#define _PAGE_BASE	(_PAGE_BASE_NC | _PAGE_COHERENT)
+>> +#define _PAGE_BASE	(_PAGE_BASE_NC)
+>>  
+>>  /* Permission masks used to generate the __P and __S table,
 >>   *
->>   * Note due to the way vm flags are laid out, the bits are XWR
+>> @@ -203,9 +197,9 @@
+>>  /* Permission masks used for kernel mappings */
+>>  #define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
+>>  #define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
+>> -				 _PAGE_NO_CACHE)
+>> +				 _PAGE_TOLERANT)
+>>  #define PAGE_KERNEL_NCG	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
+>> -				 _PAGE_NO_CACHE | _PAGE_GUARDED)
+>> +				 _PAGE_NON_IDEMPOTENT)
+>>  #define PAGE_KERNEL_X	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RWX)
+>>  #define PAGE_KERNEL_RO	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RO)
+>>  #define PAGE_KERNEL_ROX	__pgprot(_PAGE_BASE | _PAGE_KERNEL_ROX)
+>> @@ -516,41 +510,26 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
+>>   * Macro to mark a page protection value as "uncacheable".
 >>   */
->> -#define PAGE_NONE	__pgprot(_PAGE_BASE)
->> -#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
->> -#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | \
->> -				 _PAGE_EXEC)
->> -#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ)
->> -#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ| \
->> -				 _PAGE_EXEC)
->> -#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ)
->> -#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ| \
->> -				 _PAGE_EXEC)
->> +#define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_PRIVILEGED)
->> +#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_RW)
->> +#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_RW | _PAGE_EXEC)
->> +#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_READ)
->> +#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
->> +#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_READ)
->> +#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
+>>  
+>> -#define _PAGE_CACHE_CTL	(_PAGE_COHERENT | _PAGE_GUARDED | _PAGE_NO_CACHE | \
+>> -			 _PAGE_WRITETHRU)
+>> +#define _PAGE_CACHE_CTL	(_PAGE_SAO | _PAGE_NON_IDEMPOTENT | _PAGE_TOLERANT)
 >
-> Eyeballing these, they seemed to have been converted ok
+> The comment here says 'Macro to mark a page protection value as
+> "uncacheable"' but why do we put _PAGE_SAO in that?
+
+yes, that comment is confusing and I removed that. Now we don't
+support a noncached SAO pte. Hence the idea of clearing all
+bits concerning pte attributes and enable only the requested caching
+attribute. Also if we don't clear SAO and set non-idempotent, it bcomes
+a tolerant mapping. Below is the bit mapping now
+
+#define _PAGE_SAO		0x00010 /* Strong access order */
+#define _PAGE_NON_IDEMPOTENT	0x00020 /* non idempotent memory */
+#define _PAGE_TOLERANT		0x00030 /* tolerant memory, cache inhibited */
+
 >
 >>  
->>  #define __P000	PAGE_NONE
->>  #define __P001	PAGE_READONLY
->> @@ -421,8 +421,8 @@ static inline pte_t pte_clear_soft_dirty(pte_t pte)
->>   */
->>  static inline int pte_protnone(pte_t pte)
+>>  #define pgprot_noncached pgprot_noncached
+>>  static inline pgprot_t pgprot_noncached(pgprot_t prot)
 >>  {
->> -	return (pte_val(pte) &
->> -		(_PAGE_PRESENT | _PAGE_USER)) == _PAGE_PRESENT;
->> +	return (pte_val(pte) & (_PAGE_PRESENT | _PAGE_PRIVILEGED)) ==
->> +		(_PAGE_PRESENT | _PAGE_PRIVILEGED);
+>>  	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
+>> -			_PAGE_NO_CACHE | _PAGE_GUARDED);
+>> +			_PAGE_NON_IDEMPOTENT);
 >>  }
->>  #endif /* CONFIG_NUMA_BALANCING */
 >>  
->> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> index 4ac6221802ad..97d06de8dbf6 100644
->> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
->> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> @@ -187,7 +187,7 @@ extern struct page *pgd_page(pgd_t pgd);
->>  
->>  static inline bool pte_user(pte_t pte)
+>>  #define pgprot_noncached_wc pgprot_noncached_wc
+>>  static inline pgprot_t pgprot_noncached_wc(pgprot_t prot)
 >>  {
->> -	return (pte_val(pte) & _PAGE_USER);
->> +	return !(pte_val(pte) & _PAGE_PRIVILEGED);
->
-> This function might be usable in some places you have in the patch.
->
+>>  	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
+>> -			_PAGE_NO_CACHE);
+>> +			_PAGE_TOLERANT);
 >>  }
 >>  
->>  #ifdef CONFIG_MEM_SOFT_DIRTY
->> @@ -211,6 +211,22 @@ static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
+>>  #define pgprot_cached pgprot_cached
+>>  static inline pgprot_t pgprot_cached(pgprot_t prot)
+>>  {
+>> -	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
+>> -			_PAGE_COHERENT);
+>> -}
+>> -
+>> -#define pgprot_cached_wthru pgprot_cached_wthru
+>> -static inline pgprot_t pgprot_cached_wthru(pgprot_t prot)
+>> -{
+>> -	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
+>> -			_PAGE_COHERENT | _PAGE_WRITETHRU);
+>> -}
+>> -
+>> -#define pgprot_cached_noncoherent pgprot_cached_noncoherent
+>> -static inline pgprot_t pgprot_cached_noncoherent(pgprot_t prot)
+>> -{
+>> -	return __pgprot(pgprot_val(prot) & ~_PAGE_CACHE_CTL);
+>> +	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL));
 >>  }
->>  #endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
 >>  
->> +static inline bool check_pte_access(unsigned long access, unsigned long ptev)
->> +{
+>>  #define pgprot_writecombine pgprot_writecombine
+>> diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+>> index f9a7a89a3e4f..f23b1698ad3c 100644
+>> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
+>> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+>> @@ -278,19 +278,24 @@ static inline unsigned long hpte_make_readonly(unsigned long ptel)
+>>  	return ptel;
+>>  }
+>>  
+>> -static inline int hpte_cache_flags_ok(unsigned long ptel, unsigned long io_type)
+>> +static inline bool hpte_cache_flags_ok(unsigned long hptel, bool is_ci)
+>>  {
+>> -	unsigned int wimg = ptel & HPTE_R_WIMG;
+>> +	unsigned int wimg = hptel & HPTE_R_WIMG;
+>>  
+>>  	/* Handle SAO */
+>>  	if (wimg == (HPTE_R_W | HPTE_R_I | HPTE_R_M) &&
+>>  	    cpu_has_feature(CPU_FTR_ARCH_206))
+>>  		wimg = HPTE_R_M;
+>>  
+>> -	if (!io_type)
+>> +	if (!is_ci)
+>>  		return wimg == HPTE_R_M;
+>> -
+>> -	return (wimg & (HPTE_R_W | HPTE_R_I)) == io_type;
 >> +	/*
->> +	 * This check for _PAGE_RWX and _PAG_PRESENT bits
+>> +	 * if host is mapped cache inhibited, make sure hptel also have
+>> +	 * cache inhibited.
 >> +	 */
->> +	if (access & ~ptev)
->
-> Is this really doing what the comment says?
-
-yes, we make sure we have the right prvilege bit in access when
-we call this function. Since privilege access is now checked by the
-presence of _PAGE_PRIVILGED the above won't check that.
-
->
-> Also small typo _PAG_ => _PAGE_
-
-fixed
-
->
+>> +	if (wimg & HPTE_R_W) /* FIXME!! is this ok for all guest. ? */
 >> +		return false;
->> +	/*
->> +	 * This check for access to privilege space
->> +	 */
->> +	if ((access & _PAGE_PRIVILEGED) != (ptev & _PAGE_PRIVILEGED))
->> +		return false;
->> +
->> +	return true;
->> +}
->> +
->>  void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
->>  void pgtable_cache_init(void);
+>> +	return !!(wimg & HPTE_R_I);
+>>  }
 >>  
->> diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
->> index 7ebac279d38e..42ba12c184e1 100644
->> --- a/arch/powerpc/mm/hash64_4k.c
->> +++ b/arch/powerpc/mm/hash64_4k.c
->> @@ -38,7 +38,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
->>  		if (unlikely(old_pte & _PAGE_BUSY))
->>  			return 0;
->>  		/* If PTE permissions don't match, take page fault */
->
-> Is this comment still relevant?  Same below.
-
-I would guess yes, if the pte permission which include R,W,X and
-privilege access don't match that in pte, take a fault.
-
->
->> -		if (unlikely(access & ~old_pte))
->> +		if (unlikely(!check_pte_access(access, old_pte)))
->>  			return 1;
->>  		/*
->>  		 * Try to lock the PTE, add ACCESSED and DIRTY if it was
->> diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
->> index 83ac9f658733..f33b410d6c8a 100644
->> --- a/arch/powerpc/mm/hash64_64k.c
->> +++ b/arch/powerpc/mm/hash64_64k.c
->> @@ -70,7 +70,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
->>  		if (unlikely(old_pte & _PAGE_BUSY))
->>  			return 0;
->>  		/* If PTE permissions don't match, take page fault */
->> -		if (unlikely(access & ~old_pte))
->> +		if (unlikely(!check_pte_access(access, old_pte)))
->>  			return 1;
->>  		/*
->>  		 * Try to lock the PTE, add ACCESSED and DIRTY if it was
->> @@ -241,7 +241,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
->>  		if (unlikely(old_pte & _PAGE_BUSY))
->>  			return 0;
->>  		/* If PTE permissions don't match, take page fault */
->> -		if (unlikely(access & ~old_pte))
->> +		if (unlikely(!check_pte_access(access, old_pte)))
->>  			return 1;
->>  		/*
->>  		 * Check if PTE has the cache-inhibit bit set
->> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
->> index ec37f4b0a8ff..630603f74056 100644
->> --- a/arch/powerpc/mm/hash_utils_64.c
->> +++ b/arch/powerpc/mm/hash_utils_64.c
->> @@ -174,7 +174,7 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
->>  	 * User area is mapped with PP=0x2 for read/write
->>  	 * or PP=0x3 for read-only (including writeable but clean pages).
->>  	 */
->> -	if (pteflags & _PAGE_USER) {
->> +	if (!(pteflags & _PAGE_PRIVILEGED)) {
->
-> Could use pte_user() here?  Maybe other places too.
-
-
-pte_user use pte_t type as argument. hence opencoded here.
-
->
->>  		if (pteflags & _PAGE_RWX)
->>  			rflags |= 0x2;
->>  		if (!((pteflags & _PAGE_WRITE) && (pteflags & _PAGE_DIRTY)))
->> @@ -1086,7 +1086,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
->>  	/* Pre-check access permissions (will be re-checked atomically
->>  	 * in __hash_page_XX but this pre-check is a fast path
->>  	 */
->> -	if (access & ~pte_val(*ptep)) {
->> +	if (!check_pte_access(access, pte_val(*ptep))) {
->>  		DBG_LOW(" no access !\n");
->>  		rc = 1;
->>  		goto bail;
->> @@ -1224,12 +1224,15 @@ int __hash_page(unsigned long ea, unsigned long msr, unsigned long trap,
->>  	if (dsisr & DSISR_ISSTORE)
->>  		access |= _PAGE_WRITE;
->>  	/*
->> -	 * We need to set the _PAGE_USER bit if MSR_PR is set or if we are
->> -	 * accessing a userspace segment (even from the kernel). We assume
->> -	 * kernel addresses always have the high bit set.
->> +	 * We set _PAGE_PRIVILEGED only when
->> +	 * kernel mode access kernel space.
->> +	 *
->> +	 * _PAGE_PRIVILEGED is NOT set
->> +	 * 1) when kernel mode access user space
->> +	 * 2) user space access kernel space.
->>  	 */
->> -	if ((msr & MSR_PR) || (REGION_ID(ea) == USER_REGION_ID))
->> -		access |= _PAGE_USER;
->> +	if (!(msr & MSR_PR) && !(REGION_ID(ea) == USER_REGION_ID))
->> +		access |= _PAGE_PRIVILEGED;
->
->
-> This is a bit ugly:
->  (!(msr & MSR_PR) && !(REGION_ID(ea) == USER_REGION_ID))
->
-> You could set  _PAGE_PRIVILEGED and then clear it using the same if
-> statement as before. Might be easier to read. ie
->
->  	access |= _PAGE_PRIVILEGED;
-> 	if ((msr & MSR_PR) || (REGION_ID(ea) == USER_REGION_ID))
-> 		access &= ~(_PAGE_PRIVILEGED);
->
-
-fixed
-
->
->
+>>  /*
+>> @@ -333,16 +338,12 @@ static inline pte_t kvmppc_read_update_linux_pte(pte_t *ptep, int writing)
+>>  	return new_pte;
+>>  }
 >>  
->>  	if (trap == 0x400)
->>  		access |= _PAGE_EXEC;
->> diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
->> index 39342638a498..182f1d3fe73c 100644
->> --- a/arch/powerpc/mm/hugepage-hash64.c
->> +++ b/arch/powerpc/mm/hugepage-hash64.c
->> @@ -41,7 +41,7 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
->>  		if (unlikely(old_pmd & _PAGE_BUSY))
->>  			return 0;
->>  		/* If PMD permissions don't match, take page fault */
->
-> As above, is this comment still correct?  The comment says
-> "permissions don't match" but the function call is
-> "check_pte_access()".  Seems like a different concept.
->
->> -		if (unlikely(access & ~old_pmd))
->> +		if (unlikely(!check_pte_access(access, old_pmd)))
->>  			return 1;
->>  		/*
->>  		 * Try to lock the PTE, add ACCESSED and DIRTY if it was
->> diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
->> index e6e54a04bd32..96765510a49c 100644
->> --- a/arch/powerpc/mm/hugetlbpage-hash64.c
->> +++ b/arch/powerpc/mm/hugetlbpage-hash64.c
->> @@ -51,8 +51,9 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
->>  		if (unlikely(old_pte & _PAGE_BUSY))
->>  			return 0;
->>  		/* If PTE permissions don't match, take page fault */
->> -		if (unlikely(access & ~old_pte))
->> +		if (unlikely(!check_pte_access(access, old_pte)))
->
-> Same comment again.... 
->
->>  			return 1;
->> +
->>  		/* Try to lock the PTE, add ACCESSED and DIRTY if it was
->>  		 * a write access */
->>  		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
->> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
->> index 6e52e722d3f2..7201e9c624d5 100644
->> --- a/arch/powerpc/mm/hugetlbpage.c
->> +++ b/arch/powerpc/mm/hugetlbpage.c
->> @@ -1003,7 +1003,7 @@ int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
->>  		end = pte_end;
->>  
->>  	pte = READ_ONCE(*ptep);
->> -	mask = _PAGE_PRESENT | _PAGE_USER | _PAGE_READ;
->> +	mask = _PAGE_PRESENT | _PAGE_READ;
->>  	if (write)
->>  		mask |= _PAGE_WRITE;
->>  
->> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
->> index 98b5c03e344d..7b492283d502 100644
->> --- a/arch/powerpc/mm/pgtable.c
->> +++ b/arch/powerpc/mm/pgtable.c
->> @@ -43,9 +43,20 @@ static inline int is_exec_fault(void)
->>   */
->>  static inline int pte_looks_normal(pte_t pte)
+>> -
+>> -/* Return HPTE cache control bits corresponding to Linux pte bits */
+>> -static inline unsigned long hpte_cache_bits(unsigned long pte_val)
+>> +/*
+>> + * check whether the mapping is cache inhibited
+>> + */
+>> +static inline bool hpte_is_cache_inhibited(unsigned long pte_val)
 >>  {
->> +
->> +#if defined(CONFIG_PPC_BOOK3S_64)
->> +	if ((pte_val(pte) &
->> +	     (_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE)) ==
->> +	    _PAGE_PRESENT) {
->> +		if (!(pte_val(pte) & _PAGE_PRIVILEGED))
->> +			return 1;
->> +	}
->> +	return 0;
->> +#else
->>  	return (pte_val(pte) &
->> -	    (_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE | _PAGE_USER)) ==
->> -	    (_PAGE_PRESENT | _PAGE_USER);
->> +		(_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE | _PAGE_USER)) ==
->> +		(_PAGE_PRESENT | _PAGE_USER);
->> +#endif
+>> -#if _PAGE_NO_CACHE == HPTE_R_I && _PAGE_WRITETHRU == HPTE_R_W
+>> -	return pte_val & (HPTE_R_W | HPTE_R_I);
+>> -#else
+>> -	return ((pte_val & _PAGE_NO_CACHE) ? HPTE_R_I : 0) +
+>> -		((pte_val & _PAGE_WRITETHRU) ? HPTE_R_W : 0);
+>> -#endif
+>> +	return !!(pte_val & (_PAGE_TOLERANT | _PAGE_NON_IDEMPOTENT));
+>
+> Can we use _PAGE_CACHE_CTL here?
+>
 >>  }
+
+This is different now
+
+/*
+ * check a pte mapping have cache inhibited property
+ */
+static inline bool pte_ci(pte_t pte)
+{
+	unsigned long pte_v = pte_val(pte);
+
+	if (((pte_v & _PAGE_CACHE_CTL) == _PAGE_TOLERANT) ||
+	    ((pte_v & _PAGE_CACHE_CTL) == _PAGE_NON_IDEMPOTENT))
+		return true;
+	return false;
+}
+
+
 >>  
->>  static struct page *maybe_pte_to_page(pte_t pte)
->> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
->> index 00d8d985bba3..441905f7bba4 100644
->> --- a/arch/powerpc/mm/pgtable_64.c
->> +++ b/arch/powerpc/mm/pgtable_64.c
->> @@ -280,8 +280,17 @@ void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
->>  	if (flags & _PAGE_WRITE)
->>  		flags |= _PAGE_DIRTY;
->>  
->> -	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
->> -	flags &= ~(_PAGE_USER | _PAGE_EXEC);
->> +	/* we don't want to let _PAGE_EXEC leak out */
->> +	flags &= ~_PAGE_EXEC;
->> +	/*
->> +	 * Force kernel mapping.
->> +	 */
->> +#if defined(CONFIG_PPC_BOOK3S_64)
->> +	flags |= _PAGE_PRIVILEGED;
->> +#else
->> +	flags &= ~_PAGE_USER;
->> +#endif
->> +
->>  
->>  #ifdef _PAGE_BAP_SR
->>  	/* _PAGE_USER contains _PAGE_BAP_SR on BookE using the new PTE format
->> @@ -669,7 +678,7 @@ void pmdp_huge_split_prepare(struct vm_area_struct *vma,
->>  	 * the translation is still valid, because we will withdraw
->>  	 * pgtable_t after this.
->>  	 */
->> -	pmd_hugepage_update(vma->vm_mm, address, pmdp, _PAGE_USER, 0);
->> +	pmd_hugepage_update(vma->vm_mm, address, pmdp, 0, _PAGE_PRIVILEGED);
->>  }
->>  
->>  
->> diff --git a/arch/powerpc/platforms/cell/spufs/fault.c b/arch/powerpc/platforms/cell/spufs/fault.c
->> index c3a3bf1745b7..e29e4d5afa2d 100644
->> --- a/arch/powerpc/platforms/cell/spufs/fault.c
->> +++ b/arch/powerpc/platforms/cell/spufs/fault.c
->
-> You need to CC the spufs maintainer for this one.
->
->
->> @@ -141,7 +141,7 @@ int spufs_handle_class1(struct spu_context *ctx)
->>  	/* we must not hold the lock when entering copro_handle_mm_fault */
->>  	spu_release(ctx);
->>  
->> -	access = (_PAGE_PRESENT | _PAGE_READ | _PAGE_USER);
->> +	access = (_PAGE_PRESENT | _PAGE_READ);
->>  	access |= (dsisr & MFC_DSISR_ACCESS_PUT) ? _PAGE_WRITE : 0UL;
->>  	local_irq_save(flags);
->>  	ret = hash_page(ea, access, 0x300, dsisr);
->> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
->> index a3d5e1e16c21..23e37cd41e64 100644
->> --- a/drivers/misc/cxl/fault.c
->> +++ b/drivers/misc/cxl/fault.c
->
-> You need to CC both cxl driver maintainers for this one.
->
->> @@ -152,8 +152,9 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
->>  	access = _PAGE_PRESENT | _PAGE_READ;
->>  	if (dsisr & CXL_PSL_DSISR_An_S)
->>  		access |= _PAGE_WRITE;
->> -	if ((!ctx->kernel) || ~(dar & (1ULL << 63)))
->> -		access |= _PAGE_USER;
->> +
->> +	if (ctx->kernel && (dar & (1ULL << 63)))
->> +		access |= _PAGE_PRIVILEGED;
->>  
->>  	if (dsisr & DSISR_NOHPTE)
->>  		inv_flags |= HPTE_NOHPTE_UPDATE;
+>>  static inline bool hpte_read_permission(unsigned long pp, unsigned long key)
+>> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+>> index c7b78d8336b2..40ad06c41ca1 100644
+>> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+>> @@ -447,7 +447,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+
+...
+
+-aneesh
