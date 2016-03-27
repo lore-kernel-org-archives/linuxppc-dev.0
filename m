@@ -1,34 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qXqpw6zRGzDq8V
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 19:25:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qXqpz0wHjzDqHH
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 19:25:14 +1100 (AEDT)
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 27 Mar 2016 02:25:11 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id F1AF319D803F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:13:00 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2R8P75D30277852
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 01:25:07 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2R8P7uL028321
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:25:07 -0600
+ Sun, 27 Mar 2016 02:25:13 -0600
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 46BFE3E4003B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:25:10 -0600 (MDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2R8P9H131588588
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 08:25:09 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2R8JqUc022136
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 04:19:53 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 19/65] powerpc/mm: Move common pte bits and accessors to
- book3s/64/pgtable.h
-Date: Sun, 27 Mar 2016 13:53:27 +0530
-Message-Id: <1459067053-10835-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 20/65] powerpc/mm: Move pte accessors that operate on common
+ pte bits to pgtable.h
+Date: Sun, 27 Mar 2016 13:53:28 +0530
+Message-Id: <1459067053-10835-20-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,338 +40,465 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have moved book3s hash64 linux pte bits to match PowerISA
-3.0 radix pte bit position, we move the matching pte bits to common
-header.
-
-Only code movement in this patch. No functionality change.
+These pte functions will remain the same between radix and hash. Move
+them to pgtable.h
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash.h    | 135 -------------------------
- arch/powerpc/include/asm/book3s/64/pgtable.h | 143 ++++++++++++++++++++++++++-
- 2 files changed, 141 insertions(+), 137 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash.h    | 205 --------------------------
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 209 +++++++++++++++++++++++++++
+ 2 files changed, 209 insertions(+), 205 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index 13489dccc532..4aaee95a30fe 100644
+index 4aaee95a30fe..a9bc8ca0df7b 100644
 --- a/arch/powerpc/include/asm/book3s/64/hash.h
 +++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -13,49 +13,12 @@
-  * We could create separate kernel read-only if we used the 3 PP bits
-  * combinations that newer processors provide but we currently don't.
+@@ -140,66 +140,6 @@ static inline unsigned long pte_update(struct mm_struct *mm,
+ 	return old;
+ }
+ 
+-/*
+- * We currently remove entries from the hashtable regardless of whether
+- * the entry was young or dirty.
+- *
+- * We should be more intelligent about this but for the moment we override
+- * these functions and force a tlb flush unconditionally
+- */
+-static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
+-					      unsigned long addr, pte_t *ptep)
+-{
+-	unsigned long old;
+-
+-	if ((pte_val(*ptep) & (_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
+-		return 0;
+-	old = pte_update(mm, addr, ptep, _PAGE_ACCESSED, 0, 0);
+-	return (old & _PAGE_ACCESSED) != 0;
+-}
+-#define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+-#define ptep_test_and_clear_young(__vma, __addr, __ptep)		   \
+-({									   \
+-	int __r;							   \
+-	__r = __ptep_test_and_clear_young((__vma)->vm_mm, __addr, __ptep); \
+-	__r;								   \
+-})
+-
+-#define __HAVE_ARCH_PTEP_SET_WRPROTECT
+-static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+-				      pte_t *ptep)
+-{
+-
+-	if ((pte_val(*ptep) & _PAGE_WRITE) == 0)
+-		return;
+-
+-	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 0);
+-}
+-
+-static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+-					   unsigned long addr, pte_t *ptep)
+-{
+-	if ((pte_val(*ptep) & _PAGE_WRITE) == 0)
+-		return;
+-
+-	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 1);
+-}
+-
+-#define __HAVE_ARCH_PTEP_GET_AND_CLEAR
+-static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
+-				       unsigned long addr, pte_t *ptep)
+-{
+-	unsigned long old = pte_update(mm, addr, ptep, ~0UL, 0, 0);
+-	return __pte(old);
+-}
+-
+-static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
+-			     pte_t * ptep)
+-{
+-	pte_update(mm, addr, ptep, ~0UL, 0, 0);
+-}
+-
+-
+ /* Set the dirty and/or accessed bits atomically in a linux PTE, this
+  * function doesn't need to flush the hash entry
   */
--#define _PAGE_BIT_SWAP_TYPE	0
--
--#define _PAGE_EXEC		0x00001 /* execute permission */
--#define _PAGE_WRITE		0x00002 /* write access allowed */
--#define _PAGE_READ		0x00004	/* read access allowed */
--#define _PAGE_RW		(_PAGE_READ | _PAGE_WRITE)
--#define _PAGE_RWX		(_PAGE_READ | _PAGE_WRITE | _PAGE_EXEC)
--#define _PAGE_PRIVILEGED	0x00008 /* kernel access only */
--#define _PAGE_SAO		0x00010 /* Strong access order */
--#define _PAGE_NON_IDEMPOTENT	0x00020 /* non idempotent memory */
--#define _PAGE_TOLERANT		0x00030 /* tolerant memory, cache inhibited */
--#define _PAGE_DIRTY		0x00080 /* C: page changed */
--#define _PAGE_ACCESSED		0x00100 /* R: page referenced */
--/*
-- * Software bits
-- */
--#ifdef CONFIG_MEM_SOFT_DIRTY
--#define _PAGE_SOFT_DIRTY	0x00200 /* software: software dirty tracking */
--#else
--#define _PAGE_SOFT_DIRTY	0x00000
--#endif
--#define _PAGE_SPECIAL		0x00400 /* software: special page */
- #define H_PAGE_BUSY		0x00800 /* software: PTE & hash are busy */
- #define H_PTE_NONE_MASK		_PAGE_HPTEFLAGS
- #define H_PAGE_F_GIX_SHIFT	57
- #define H_PAGE_F_GIX		(7ul << 57)	/* HPTE index within HPTEG */
- #define H_PAGE_F_SECOND		(1ul << 60)	/* HPTE is in 2ndary HPTEG */
- #define H_PAGE_HASHPTE		(1ul << 61)	/* PTE has associated HPTE */
--#define _PAGE_PTE		(1ul << 62)	/* distinguishes PTEs from pointers */
--#define _PAGE_PRESENT		(1ul << 63)	/* pte contains a translation */
--/*
-- * Drivers request for cache inhibited pte mapping using _PAGE_NO_CACHE
-- * Instead of fixing all of them, add an alternate define which
-- * maps CI pte mapping.
-- */
--#define _PAGE_NO_CACHE		_PAGE_TOLERANT
--/*
-- * set of bits not changed in pmd_modify.
-- */
--#define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS | _PAGE_DIRTY | \
--			 _PAGE_ACCESSED | H_PAGE_THP_HUGE | _PAGE_PTE | \
--			 _PAGE_SOFT_DIRTY)
--
+@@ -240,112 +180,7 @@ static inline unsigned long pgd_page_vaddr(pgd_t pgd)
  
- #ifdef CONFIG_PPC_64K_PAGES
- #include <asm/book3s/64/hash-64k.h>
-@@ -113,16 +76,6 @@
- #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
- #endif /* CONFIG_PPC_MM_SLICES */
  
--/*
-- * user access blocked by key
-- */
--#define _PAGE_KERNEL_RW		(_PAGE_PRIVILEGED | _PAGE_RW | _PAGE_DIRTY)
--#define _PAGE_KERNEL_RO		 (_PAGE_PRIVILEGED | _PAGE_READ)
--#define _PAGE_KERNEL_RWX	(_PAGE_PRIVILEGED | _PAGE_DIRTY | \
--				 _PAGE_RW | _PAGE_EXEC)
+ /* Generic accessors to PTE bits */
+-static inline int pte_write(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_WRITE);}
+-static inline int pte_dirty(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_DIRTY); }
+-static inline int pte_young(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_ACCESSED); }
+-static inline int pte_special(pte_t pte)	{ return !!(pte_val(pte) & _PAGE_SPECIAL); }
+ static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~H_PTE_NONE_MASK) == 0; }
+-static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
 -
--/* No page size encoding in the linux PTE */
--#define _PAGE_PSIZE		0
- 
- /* PTEIDX nibble */
- #define _PTEIDX_SECONDARY	0x8
-@@ -130,94 +83,6 @@
- 
- /* Hash table based platforms need atomic updates of the linux PTE */
- #define PTE_ATOMIC_UPDATES	1
--/*
-- * We support 57 bit real address in pte. Clear everything above 57, and
-- * every thing below PAGE_SHIFT;
-- */
--#define PTE_RPN_MASK	(((1UL << 57) - 1) & (PAGE_MASK))
--/*
-- * _PAGE_CHG_MASK masks of bits that are to be preserved across
-- * pgprot changes
-- */
--#define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_HPTEFLAGS | _PAGE_DIRTY | \
--			 _PAGE_ACCESSED | _PAGE_SPECIAL | _PAGE_PTE | \
--			 _PAGE_SOFT_DIRTY)
--/*
-- * Mask of bits returned by pte_pgprot()
-- */
--#define PAGE_PROT_BITS  (_PAGE_SAO | _PAGE_NON_IDEMPOTENT | _PAGE_TOLERANT | \
--			 H_PAGE_4K_PFN | _PAGE_PRIVILEGED | _PAGE_ACCESSED | \
--			 _PAGE_READ | _PAGE_WRITE |  _PAGE_DIRTY | _PAGE_EXEC | \
--			 _PAGE_SOFT_DIRTY)
--/*
-- * We define 2 sets of base prot bits, one for basic pages (ie,
-- * cacheable kernel and user pages) and one for non cacheable
-- * pages. We always set _PAGE_COHERENT when SMP is enabled or
-- * the processor might need it for DMA coherency.
-- */
--#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_PSIZE)
--#define _PAGE_BASE	(_PAGE_BASE_NC)
+-#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
+-static inline bool pte_soft_dirty(pte_t pte)
+-{
+-	return !!(pte_val(pte) & _PAGE_SOFT_DIRTY);
+-}
+-static inline pte_t pte_mksoft_dirty(pte_t pte)
+-{
+-	return __pte(pte_val(pte) | _PAGE_SOFT_DIRTY);
+-}
 -
--/* Permission masks used to generate the __P and __S table,
+-static inline pte_t pte_clear_soft_dirty(pte_t pte)
+-{
+-	return __pte(pte_val(pte) & ~_PAGE_SOFT_DIRTY);
+-}
+-#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
+-
+-#ifdef CONFIG_NUMA_BALANCING
+-/*
+- * These work without NUMA balancing but the kernel does not care. See the
+- * comment in include/asm-generic/pgtable.h . On powerpc, this will only
+- * work for user pages and always return true for kernel pages.
+- */
+-static inline int pte_protnone(pte_t pte)
+-{
+-	return (pte_val(pte) & (_PAGE_PRESENT | _PAGE_PRIVILEGED)) ==
+-		(_PAGE_PRESENT | _PAGE_PRIVILEGED);
+-}
+-#endif /* CONFIG_NUMA_BALANCING */
+-
+-static inline int pte_present(pte_t pte)
+-{
+-	return !!(pte_val(pte) & _PAGE_PRESENT);
+-}
+-
+-/* Conversion functions: convert a page and protection to a page entry,
+- * and a page entry and page directory to the page they refer to.
 - *
-- * Note:__pgprot is defined in arch/powerpc/include/asm/page.h
-- *
-- * Write permissions imply read permissions for now (we could make write-only
-- * pages on BookE but we don't bother for now). Execute permission control is
-- * possible on platforms that define _PAGE_EXEC
-- *
-- * Note due to the way vm flags are laid out, the bits are XWR
+- * Even if PTEs can be unsigned long long, a PFN is always an unsigned
+- * long for now.
 - */
--#define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_PRIVILEGED)
--#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_RW)
--#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_RW | _PAGE_EXEC)
--#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_READ)
--#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
--#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_READ)
--#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
+-static inline pte_t pfn_pte(unsigned long pfn, pgprot_t pgprot)
+-{
+-	return __pte((((pte_basic_t)(pfn) << PAGE_SHIFT) & PTE_RPN_MASK) |
+-		     pgprot_val(pgprot));
+-}
 -
--#define __P000	PAGE_NONE
--#define __P001	PAGE_READONLY
--#define __P010	PAGE_COPY
--#define __P011	PAGE_COPY
--#define __P100	PAGE_READONLY_X
--#define __P101	PAGE_READONLY_X
--#define __P110	PAGE_COPY_X
--#define __P111	PAGE_COPY_X
+-static inline unsigned long pte_pfn(pte_t pte)
+-{
+-	return (pte_val(pte) & PTE_RPN_MASK) >> PAGE_SHIFT;
+-}
 -
--#define __S000	PAGE_NONE
--#define __S001	PAGE_READONLY
--#define __S010	PAGE_SHARED
--#define __S011	PAGE_SHARED
--#define __S100	PAGE_READONLY_X
--#define __S101	PAGE_READONLY_X
--#define __S110	PAGE_SHARED_X
--#define __S111	PAGE_SHARED_X
+-/* Generic modifiers for PTE bits */
+-static inline pte_t pte_wrprotect(pte_t pte)
+-{
+-	return __pte(pte_val(pte) & ~_PAGE_WRITE);
+-}
 -
--/* Permission masks used for kernel mappings */
--#define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
--#define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
--				 _PAGE_TOLERANT)
--#define PAGE_KERNEL_NCG	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
--				 _PAGE_NON_IDEMPOTENT)
--#define PAGE_KERNEL_X	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RWX)
--#define PAGE_KERNEL_RO	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RO)
--#define PAGE_KERNEL_ROX	__pgprot(_PAGE_BASE | _PAGE_KERNEL_ROX)
+-static inline pte_t pte_mkclean(pte_t pte)
+-{
+-	return __pte(pte_val(pte) & ~_PAGE_DIRTY);
+-}
 -
--/* Protection used for kernel text. We want the debuggers to be able to
-- * set breakpoints anywhere, so don't write protect the kernel text
-- * on platforms where such control is possible.
-- */
--#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
--	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
--#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
--#else
--#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
--#endif
+-static inline pte_t pte_mkold(pte_t pte)
+-{
+-	return __pte(pte_val(pte) & ~_PAGE_ACCESSED);
+-}
 -
--/* Make modules code happy. We don't set RO yet */
--#define PAGE_KERNEL_EXEC	PAGE_KERNEL_X
--#define PAGE_AGP		(PAGE_KERNEL_NC)
+-static inline pte_t pte_mkwrite(pte_t pte)
+-{
+-	/*
+-	 * write implies read, hence set both
+-	 */
+-	return __pte(pte_val(pte) | _PAGE_RW);
+-}
+-
+-static inline pte_t pte_mkdirty(pte_t pte)
+-{
+-	return __pte(pte_val(pte) | _PAGE_DIRTY | _PAGE_SOFT_DIRTY);
+-}
+-
+-static inline pte_t pte_mkyoung(pte_t pte)
+-{
+-	return __pte(pte_val(pte) | _PAGE_ACCESSED);
+-}
+-
+-static inline pte_t pte_mkspecial(pte_t pte)
+-{
+-	return __pte(pte_val(pte) | _PAGE_SPECIAL);
+-}
+-
+-static inline pte_t pte_mkhuge(pte_t pte)
+-{
+-	return pte;
+-}
+-
+-static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+-{
+-	return __pte((pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot));
+-}
  
- #define PMD_BAD_BITS		(PTE_TABLE_SIZE-1)
- #define PUD_BAD_BITS		(PMD_TABLE_SIZE-1)
+ /* This low level function performs the actual PTE insertion
+  * Setting the PTE depends on the MMU type and other factors. It's
+@@ -362,46 +197,6 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 	*ptep = pte;
+ }
+ 
+-#define _PAGE_CACHE_CTL	(_PAGE_NON_IDEMPOTENT | _PAGE_TOLERANT)
+-
+-#define pgprot_noncached pgprot_noncached
+-static inline pgprot_t pgprot_noncached(pgprot_t prot)
+-{
+-	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
+-			_PAGE_NON_IDEMPOTENT);
+-}
+-
+-#define pgprot_noncached_wc pgprot_noncached_wc
+-static inline pgprot_t pgprot_noncached_wc(pgprot_t prot)
+-{
+-	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
+-			_PAGE_TOLERANT);
+-}
+-
+-#define pgprot_cached pgprot_cached
+-static inline pgprot_t pgprot_cached(pgprot_t prot)
+-{
+-	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL));
+-}
+-
+-#define pgprot_writecombine pgprot_writecombine
+-static inline pgprot_t pgprot_writecombine(pgprot_t prot)
+-{
+-	return pgprot_noncached_wc(prot);
+-}
+-/*
+- * check a pte mapping have cache inhibited property
+- */
+-static inline bool pte_ci(pte_t pte)
+-{
+-	unsigned long pte_v = pte_val(pte);
+-
+-	if (((pte_v & _PAGE_CACHE_CTL) == _PAGE_TOLERANT) ||
+-	    ((pte_v & _PAGE_CACHE_CTL) == _PAGE_NON_IDEMPOTENT))
+-		return true;
+-	return false;
+-}
+-
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ extern void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
+ 				   pmd_t *pmdp, unsigned long old_pmd);
 diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 65eb819609b1..b5d9019f68bb 100644
+index b5d9019f68bb..e2c2af34d71b 100644
 --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
 +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -1,9 +1,148 @@
- #ifndef _ASM_POWERPC_BOOK3S_64_PGTABLE_H_
- #define _ASM_POWERPC_BOOK3S_64_PGTABLE_H_
-+
-+/*
-+ * Common bits between hash and Radix page table
-+ */
-+#define _PAGE_BIT_SWAP_TYPE	0
-+
-+#define _PAGE_EXEC		0x00001 /* execute permission */
-+#define _PAGE_WRITE		0x00002 /* write access allowed */
-+#define _PAGE_READ		0x00004	/* read access allowed */
-+#define _PAGE_RW		(_PAGE_READ | _PAGE_WRITE)
-+#define _PAGE_RWX		(_PAGE_READ | _PAGE_WRITE | _PAGE_EXEC)
-+#define _PAGE_PRIVILEGED	0x00008 /* kernel access only */
-+#define _PAGE_SAO		0x00010 /* Strong access order */
-+#define _PAGE_NON_IDEMPOTENT	0x00020 /* non idempotent memory */
-+#define _PAGE_TOLERANT		0x00030 /* tolerant memory, cache inhibited */
-+#define _PAGE_DIRTY		0x00080 /* C: page changed */
-+#define _PAGE_ACCESSED		0x00100 /* R: page referenced */
-+/*
-+ * Software bits
-+ */
-+#ifdef CONFIG_MEM_SOFT_DIRTY
-+#define _PAGE_SOFT_DIRTY	0x00200 /* software: software dirty tracking */
-+#else
-+#define _PAGE_SOFT_DIRTY	0x00000
-+#endif
-+#define _PAGE_SPECIAL		0x00400 /* software: special page */
-+
-+
-+#define _PAGE_PTE		(1ul << 62)	/* distinguishes PTEs from pointers */
-+#define _PAGE_PRESENT		(1ul << 63)	/* pte contains a translation */
-+/*
-+ * Drivers request for cache inhibited pte mapping using _PAGE_NO_CACHE
-+ * Instead of fixing all of them, add an alternate define which
-+ * maps CI pte mapping.
-+ */
-+#define _PAGE_NO_CACHE		_PAGE_TOLERANT
-+/*
-+ * set of bits not changed in pmd_modify. Even though we have hash specific bits
-+ * in here, on radix we expect them to be zero.
-+ */
-+#define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS | _PAGE_DIRTY | \
-+			 _PAGE_ACCESSED | H_PAGE_THP_HUGE | _PAGE_PTE | \
-+			 _PAGE_SOFT_DIRTY)
-+/*
-+ * user access blocked by key
-+ */
-+#define _PAGE_KERNEL_RW		(_PAGE_PRIVILEGED | _PAGE_RW | _PAGE_DIRTY)
-+#define _PAGE_KERNEL_RO		 (_PAGE_PRIVILEGED | _PAGE_READ)
-+#define _PAGE_KERNEL_RWX	(_PAGE_PRIVILEGED | _PAGE_DIRTY |	\
-+				 _PAGE_RW | _PAGE_EXEC)
-+/*
-+ * No page size encoding in the linux PTE
-+ */
-+#define _PAGE_PSIZE		0
- /*
-- * This file contains the functions and defines necessary to modify and use
-- * the ppc64 hashed page table.
-+ * We support 57 bit real address in pte. Clear everything above 57, and
-+ * every thing below PAGE_SHIFT;
-  */
-+#define PTE_RPN_MASK	(((1UL << 57) - 1) & (PAGE_MASK))
-+/*
-+ * _PAGE_CHG_MASK masks of bits that are to be preserved across
-+ * pgprot changes
-+ */
-+#define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_HPTEFLAGS | _PAGE_DIRTY | \
-+			 _PAGE_ACCESSED | _PAGE_SPECIAL | _PAGE_PTE |	\
-+			 _PAGE_SOFT_DIRTY)
-+/*
-+ * Mask of bits returned by pte_pgprot()
-+ */
-+#define PAGE_PROT_BITS  (_PAGE_SAO | _PAGE_NON_IDEMPOTENT | _PAGE_TOLERANT | \
-+			 H_PAGE_4K_PFN | _PAGE_PRIVILEGED | _PAGE_ACCESSED | \
-+			 _PAGE_READ | _PAGE_WRITE |  _PAGE_DIRTY | _PAGE_EXEC | \
-+			 _PAGE_SOFT_DIRTY)
-+/*
-+ * We define 2 sets of base prot bits, one for basic pages (ie,
-+ * cacheable kernel and user pages) and one for non cacheable
-+ * pages. We always set _PAGE_COHERENT when SMP is enabled or
-+ * the processor might need it for DMA coherency.
-+ */
-+#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_PSIZE)
-+#define _PAGE_BASE	(_PAGE_BASE_NC)
-+
-+/* Permission masks used to generate the __P and __S table,
-+ *
-+ * Note:__pgprot is defined in arch/powerpc/include/asm/page.h
-+ *
-+ * Write permissions imply read permissions for now (we could make write-only
-+ * pages on BookE but we don't bother for now). Execute permission control is
-+ * possible on platforms that define _PAGE_EXEC
-+ *
-+ * Note due to the way vm flags are laid out, the bits are XWR
-+ */
-+#define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_PRIVILEGED)
-+#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_RW)
-+#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_RW | _PAGE_EXEC)
-+#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_READ)
-+#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
-+#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_READ)
-+#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
-+
-+#define __P000	PAGE_NONE
-+#define __P001	PAGE_READONLY
-+#define __P010	PAGE_COPY
-+#define __P011	PAGE_COPY
-+#define __P100	PAGE_READONLY_X
-+#define __P101	PAGE_READONLY_X
-+#define __P110	PAGE_COPY_X
-+#define __P111	PAGE_COPY_X
-+
-+#define __S000	PAGE_NONE
-+#define __S001	PAGE_READONLY
-+#define __S010	PAGE_SHARED
-+#define __S011	PAGE_SHARED
-+#define __S100	PAGE_READONLY_X
-+#define __S101	PAGE_READONLY_X
-+#define __S110	PAGE_SHARED_X
-+#define __S111	PAGE_SHARED_X
-+
-+/* Permission masks used for kernel mappings */
-+#define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
-+#define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
-+				 _PAGE_TOLERANT)
-+#define PAGE_KERNEL_NCG	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
-+				 _PAGE_NON_IDEMPOTENT)
-+#define PAGE_KERNEL_X	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RWX)
-+#define PAGE_KERNEL_RO	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RO)
-+#define PAGE_KERNEL_ROX	__pgprot(_PAGE_BASE | _PAGE_KERNEL_ROX)
-+
-+/*
-+ * Protection used for kernel text. We want the debuggers to be able to
-+ * set breakpoints anywhere, so don't write protect the kernel text
-+ * on platforms where such control is possible.
-+ */
-+#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) || \
-+	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
-+#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
-+#else
-+#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
-+#endif
-+
-+/* Make modules code happy. We don't set RO yet */
-+#define PAGE_KERNEL_EXEC	PAGE_KERNEL_X
-+#define PAGE_AGP		(PAGE_KERNEL_NC)
+@@ -201,6 +201,215 @@
  
- #include <asm/book3s/64/hash.h>
- #include <asm/barrier.h>
+ #endif /* __real_pte */
+ 
++/*
++ * For hash even if we have _PAGE_ACCESSED = 0, we do a pte_update.
++ * We currently remove entries from the hashtable regardless of whether
++ * the entry was young or dirty.
++ *
++ * We should be more intelligent about this but for the moment we override
++ * these functions and force a tlb flush unconditionally
++ * For radix: H_PAGE_HASHPTE should be zero. Hence we can use the same
++ * function for both hash and radix.
++ */
++static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
++					      unsigned long addr, pte_t *ptep)
++{
++	unsigned long old;
++
++	if ((pte_val(*ptep) & (_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
++		return 0;
++	old = pte_update(mm, addr, ptep, _PAGE_ACCESSED, 0, 0);
++	return (old & _PAGE_ACCESSED) != 0;
++}
++
++#define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
++#define ptep_test_and_clear_young(__vma, __addr, __ptep)	\
++({								\
++	int __r;						\
++	__r = __ptep_test_and_clear_young((__vma)->vm_mm, __addr, __ptep); \
++	__r;							\
++})
++
++#define __HAVE_ARCH_PTEP_SET_WRPROTECT
++static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
++				      pte_t *ptep)
++{
++
++	if ((pte_val(*ptep) & _PAGE_WRITE) == 0)
++		return;
++
++	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 0);
++}
++
++static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
++					   unsigned long addr, pte_t *ptep)
++{
++	if ((pte_val(*ptep) & _PAGE_WRITE) == 0)
++		return;
++
++	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 1);
++}
++
++#define __HAVE_ARCH_PTEP_GET_AND_CLEAR
++static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
++				       unsigned long addr, pte_t *ptep)
++{
++	unsigned long old = pte_update(mm, addr, ptep, ~0UL, 0, 0);
++	return __pte(old);
++}
++
++static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
++			     pte_t * ptep)
++{
++	pte_update(mm, addr, ptep, ~0UL, 0, 0);
++}
++static inline int pte_write(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_WRITE);}
++static inline int pte_dirty(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_DIRTY); }
++static inline int pte_young(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_ACCESSED); }
++static inline int pte_special(pte_t pte)	{ return !!(pte_val(pte) & _PAGE_SPECIAL); }
++static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
++
++#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
++static inline bool pte_soft_dirty(pte_t pte)
++{
++	return !!(pte_val(pte) & _PAGE_SOFT_DIRTY);
++}
++static inline pte_t pte_mksoft_dirty(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_SOFT_DIRTY);
++}
++
++static inline pte_t pte_clear_soft_dirty(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~_PAGE_SOFT_DIRTY);
++}
++#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
++
++#ifdef CONFIG_NUMA_BALANCING
++/*
++ * These work without NUMA balancing but the kernel does not care. See the
++ * comment in include/asm-generic/pgtable.h . On powerpc, this will only
++ * work for user pages and always return true for kernel pages.
++ */
++static inline int pte_protnone(pte_t pte)
++{
++	return (pte_val(pte) & (_PAGE_PRESENT | _PAGE_PRIVILEGED)) ==
++		(_PAGE_PRESENT | _PAGE_PRIVILEGED);
++}
++#endif /* CONFIG_NUMA_BALANCING */
++
++static inline int pte_present(pte_t pte)
++{
++	return !!(pte_val(pte) & _PAGE_PRESENT);
++}
++/*
++ * Conversion functions: convert a page and protection to a page entry,
++ * and a page entry and page directory to the page they refer to.
++ *
++ * Even if PTEs can be unsigned long long, a PFN is always an unsigned
++ * long for now.
++ */
++static inline pte_t pfn_pte(unsigned long pfn, pgprot_t pgprot)
++{
++	return __pte((((pte_basic_t)(pfn) << PAGE_SHIFT) & PTE_RPN_MASK) |
++		     pgprot_val(pgprot));
++}
++
++static inline unsigned long pte_pfn(pte_t pte)
++{
++	return (pte_val(pte) & PTE_RPN_MASK) >> PAGE_SHIFT;
++}
++
++/* Generic modifiers for PTE bits */
++static inline pte_t pte_wrprotect(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~_PAGE_WRITE);
++}
++
++static inline pte_t pte_mkclean(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~_PAGE_DIRTY);
++}
++
++static inline pte_t pte_mkold(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~_PAGE_ACCESSED);
++}
++
++static inline pte_t pte_mkwrite(pte_t pte)
++{
++	/*
++	 * write implies read, hence set both
++	 */
++	return __pte(pte_val(pte) | _PAGE_RW);
++}
++
++static inline pte_t pte_mkdirty(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_DIRTY | _PAGE_SOFT_DIRTY);
++}
++
++static inline pte_t pte_mkyoung(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_ACCESSED);
++}
++
++static inline pte_t pte_mkspecial(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_SPECIAL);
++}
++
++static inline pte_t pte_mkhuge(pte_t pte)
++{
++	return pte;
++}
++
++static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
++{
++	/* FIXME!! check whether this need to be a conditional */
++	return __pte((pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot));
++}
++
++#define _PAGE_CACHE_CTL	(_PAGE_NON_IDEMPOTENT | _PAGE_TOLERANT)
++
++#define pgprot_noncached pgprot_noncached
++static inline pgprot_t pgprot_noncached(pgprot_t prot)
++{
++	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
++			_PAGE_NON_IDEMPOTENT);
++}
++
++#define pgprot_noncached_wc pgprot_noncached_wc
++static inline pgprot_t pgprot_noncached_wc(pgprot_t prot)
++{
++	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
++			_PAGE_TOLERANT);
++}
++
++#define pgprot_cached pgprot_cached
++static inline pgprot_t pgprot_cached(pgprot_t prot)
++{
++	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL));
++}
++
++#define pgprot_writecombine pgprot_writecombine
++static inline pgprot_t pgprot_writecombine(pgprot_t prot)
++{
++	return pgprot_noncached_wc(prot);
++}
++/*
++ * check a pte mapping have cache inhibited property
++ */
++static inline bool pte_ci(pte_t pte)
++{
++	unsigned long pte_v = pte_val(pte);
++
++	if (((pte_v & _PAGE_CACHE_CTL) == _PAGE_TOLERANT) ||
++	    ((pte_v & _PAGE_CACHE_CTL) == _PAGE_NON_IDEMPOTENT))
++		return true;
++	return false;
++}
++
+ static inline void pmd_set(pmd_t *pmdp, unsigned long val)
+ {
+ 	*pmdp = __pmd(val);
 -- 
 2.5.0
