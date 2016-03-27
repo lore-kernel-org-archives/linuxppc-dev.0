@@ -1,33 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qXqrc4t3qzDqFb
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 19:26:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qXqrg4Ll3zDqG9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 19:26:43 +1100 (AEDT)
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 27 Mar 2016 02:26:38 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id DA4243E4003E
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:26:36 -0600 (MDT)
+ Sun, 27 Mar 2016 02:26:41 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 3AE351FF001E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:14:47 -0600 (MDT)
 Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id u2R8QaFQ43319462
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 01:26:36 -0700
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id u2R8Qc0r46399560
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 01:26:38 -0700
 Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
  by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2R8QZEG030354
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:26:36 -0600
+ u2R8QbWP030414
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:26:38 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 59/65] powerpc/mm/radix: Add hugetlb support 4K page size
-Date: Sun, 27 Mar 2016 13:54:07 +0530
-Message-Id: <1459067053-10835-59-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 60/65] powerpc/mm: Drop PTE_ATOMIC_UPDATES from
+ pmd_hugepage_update
+Date: Sun, 27 Mar 2016 13:54:08 +0530
+Message-Id: <1459067053-10835-60-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,110 +40,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have hugepage at the pmd level with 4K radix config. Hence we don't
-need to use hugepd format with radix.
+THP is only supported by hash64 now and for that we should always
+have PTE_ATOMIC_UPDATES always set. Drop the unnecessary #ifdef
+in the code.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash-4k.h    | 22 +-----------
- arch/powerpc/include/asm/book3s/64/pgtable-4k.h | 46 +++++++++++++++++++++++++
- 2 files changed, 47 insertions(+), 21 deletions(-)
+ arch/powerpc/mm/pgtable_64.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-index 10266ec97a83..4d2ae7fdc4f9 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-@@ -36,26 +36,7 @@
- 	remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE, (prot))
- 
- #ifdef CONFIG_HUGETLB_PAGE
--/*
-- * For 4k page size, we support explicit hugepage via hugepd
-- */
--static inline int pmd_huge(pmd_t pmd)
--{
--	return 0;
--}
--
--static inline int pud_huge(pud_t pud)
--{
--	return 0;
--}
--
--static inline int pgd_huge(pgd_t pgd)
--{
--	return 0;
--}
--#define pgd_huge pgd_huge
--
--static inline int hugepd_ok(hugepd_t hpd)
-+static inline int hl_hugepd_ok(hugepd_t hpd)
- {
- 	/*
- 	 * if it is not a pte and have hugepd shift mask
-@@ -66,7 +47,6 @@ static inline int hugepd_ok(hugepd_t hpd)
- 		return true;
- 	return false;
- }
--#define is_hugepd(hpd)		(hugepd_ok(hpd))
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 0e980204c4d5..092c07115612 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -475,7 +475,6 @@ unsigned long pmd_hugepage_update(struct mm_struct *mm, unsigned long addr,
+ 	assert_spin_locked(&mm->page_table_lock);
  #endif
  
- #endif /* !__ASSEMBLY__ */
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-index 423735f897f5..9860e769099f 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-@@ -3,5 +3,51 @@
- /*
-  * hash 4k can't share hugetlb and also doesn't support THP
-  */
-+#ifndef __ASSEMBLY__
-+#ifdef CONFIG_HUGETLB_PAGE
-+static inline int pmd_huge(pmd_t pmd)
-+{
-+	/*
-+	 * leaf pte for huge page
-+	 */
-+	if (radix_enabled())
-+		return !!(pmd_val(pmd) & _PAGE_PTE);
-+	return 0;
-+}
-+
-+static inline int pud_huge(pud_t pud)
-+{
-+	/*
-+	 * leaf pte for huge page
-+	 */
-+	if (radix_enabled())
-+		return !!(pud_val(pud) & _PAGE_PTE);
-+	return 0;
-+}
-+
-+static inline int pgd_huge(pgd_t pgd)
-+{
-+	/*
-+	 * leaf pte for huge page
-+	 */
-+	if (radix_enabled())
-+		return !!(pgd_val(pgd) & _PAGE_PTE);
-+	return 0;
-+}
-+#define pgd_huge pgd_huge
-+/*
-+ * With radix , we have hugepage ptes in the pud and pmd entries. We don't
-+ * need to setup hugepage directory for them. Our pte and page directory format
-+ * enable us to have this enabled.
-+ */
-+static inline int hugepd_ok(hugepd_t hpd)
-+{
-+	if (radix_enabled())
-+		return 0;
-+	return hl_hugepd_ok(hpd);
-+}
-+#define is_hugepd(hpd)		(hugepd_ok(hpd))
-+#endif /* CONFIG_HUGETLB_PAGE */
-+#endif /* __ASSEMBLY__ */
+-#ifdef PTE_ATOMIC_UPDATES
+ 	clr = cpu_to_be64(clr);
+ 	set = cpu_to_be64(set);
+ 	__asm__ __volatile__(
+@@ -491,10 +490,7 @@ unsigned long pmd_hugepage_update(struct mm_struct *mm, unsigned long addr,
+ 	: "cc" );
  
- #endif /*_ASM_POWERPC_BOOK3S_64_PGTABLE_4K_H */
+ 	old = be64_to_cpu(old);
+-#else
+-	old = pmd_val(*pmdp);
+-	*pmdp = __pmd((old & ~clr) | set);
+-#endif
++
+ 	trace_hugepage_update(addr, old, clr, set);
+ 	if (old & H_PAGE_HASHPTE)
+ 		hpte_do_hugepage_flush(mm, addr, pmdp, old);
 -- 
 2.5.0
