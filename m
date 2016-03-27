@@ -1,21 +1,36 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qXvgc5mWXzDqJ5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 22:19:08 +1100 (AEDT)
-Date: Sun, 27 Mar 2016 13:19:03 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Arnaldo Carvalho de Melo <acme@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/1] perf tools: Fix build break on powerpc
-Message-ID: <20160327111903.GC4015@krava.sund.root.ku.dk>
-References: <20160326180146.GA32441@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20160326180146.GA32441@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qY1P44dTJzDq7K
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 02:36:56 +1100 (AEDT)
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Mon, 28 Mar 2016 01:36:55 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 424C42CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 02:36:40 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2RFaRLa61145238
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 02:36:40 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2RFa27s006482
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 02:36:03 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh <benh@kernel.crashing.org>, paulus <paulus@samba.org>,
+ mpe <mpe@ellerman.id.au>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 02/65] powerpc/mm: use _PAGE_READ to indicate Read access
+In-reply-to: <1459067053-10835-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1459067053-10835-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Sun, 27 Mar 2016 10:35:35 -0500
+Message-Id: <1459092757-sup-379@x230.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +40,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Mar 26, 2016 at 11:01:47AM -0700, Sukadev Bhattiprolu wrote:
-> From 502e8236082412db1d33abfad95aaf14b539502e Mon Sep 17 00:00:00 2001
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Sat, 26 Mar 2016 17:31:39 -0400
-> Subject: [PATCH 1/1] perf tools: Fix build break on powerpc
-> MIME-Version: 1.0
-> Content-Type: text/plain; charset=UTF-8
-> Content-Transfer-Encoding: 8bit
-> 
-> 'Commit 531d2410635c ("perf tools: Do not include stringify.h from the
-> kernel sources")' seems to have accidentially removed the inclusion of
-> "util/header.h" from "arch/powerpc/util/header.c".
-> 
-> "util/header.h" provides the prototype for get_cpuid() and is needed to
-> build perf on Powerpc.
-> 
-> 	arch/powerpc/util/header.c:17:1: error: no previous prototype for
-> 	‘get_cpuid’ [-Werror=missing-prototypes]
-> 
-> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
->  tools/perf/arch/powerpc/util/header.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/tools/perf/arch/powerpc/util/header.c b/tools/perf/arch/powerpc/util/header.c
-> index 6138bde..5111e34 100644
-> --- a/tools/perf/arch/powerpc/util/header.c
-> +++ b/tools/perf/arch/powerpc/util/header.c
-> @@ -4,6 +4,7 @@
->  #include <stdlib.h>
->  #include <string.h>
->  #include <linux/stringify.h>
-> +#include "../../util/header.h"
+I'll leave it to others to work out whether the general approach & code
+in /arch/powerpc is right, but at least for the cxl driver:
 
-you could use just "header.h" right?
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 
-jirka
+Excerpts from Aneesh Kumar K.V's message of 2016-03-27 03:23:10 -0500:
+> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+> index 81c3f75b7330..a3d5e1e16c21 100644
+> --- a/drivers/misc/cxl/fault.c
+> +++ b/drivers/misc/cxl/fault.c
+> @@ -149,9 +149,9 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
+>       * update_mmu_cache() will not have loaded the hash since current->trap
+>       * is not a 0x400 or 0x300, so just call hash_page_mm() here.
+>       */
+> -    access = _PAGE_PRESENT;
+> +    access = _PAGE_PRESENT | _PAGE_READ;
+>      if (dsisr & CXL_PSL_DSISR_An_S)
+> -        access |= _PAGE_RW;
+> +        access |= _PAGE_WRITE;
+>      if ((!ctx->kernel) || ~(dar & (1ULL << 63)))
+>          access |= _PAGE_USER;
