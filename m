@@ -1,33 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qXqrq1NSfzDqG1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 19:26:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qXqrr4j2GzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 19:26:52 +1100 (AEDT)
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 27 Mar 2016 02:26:49 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 5E70619D8041
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:14:40 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2R8Qlrm46399594
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 01:26:47 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2R8Qk1w003433
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:26:46 -0600
+ Sun, 27 Mar 2016 04:26:50 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id EADAC38C8026
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 04:26:48 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2R8Qm1F22675556
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 08:26:48 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2R8QmTM021931
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 04:26:48 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 64/65] powerpc/mm/radix: Add THP support for 4k linux page size
-Date: Sun, 27 Mar 2016 13:54:12 +0530
-Message-Id: <1459067053-10835-64-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 65/65] powerpc/mm/radix: Cputable update for radix
+Date: Sun, 27 Mar 2016 13:54:13 +0530
+Message-Id: <1459067053-10835-65-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,243 +39,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/hash-4k.h     | 60 ++++++++++++++++++++++++
- arch/powerpc/include/asm/book3s/64/pgtable-64k.h | 60 ------------------------
- arch/powerpc/include/asm/book3s/64/pgtable.h     | 57 ++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig.cputype           |  2 +-
- 4 files changed, 118 insertions(+), 61 deletions(-)
+This patch move the existing p9 hash to a different PVR and add
+radix feature with p9 PVR. That implies we will not be able to
+runtime select P9 hash. With P9 Radix we need to do
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-index 4d2ae7fdc4f9..add4d554312c 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-@@ -29,6 +29,7 @@
- #define H_PAGE_THP_HUGE 0x0
- #define H_PTE_FRAG_NR	0
- #define H_PTE_FRAG_SIZE_SHIFT  0
-+#define H_PAGE_COMBO	0x0
- /*
-  * On all 4K setups, remap_4k_pfn() equates to remap_pfn_range()
-  */
-@@ -49,6 +50,65 @@ static inline int hl_hugepd_ok(hugepd_t hpd)
- }
- #endif
+* set UPRT = 0 in cpu setup
+* set different TLB set count
+
+We ideally want to use ibm,pa-features to enable disable radix. But
+we have already done setup cpu by the time we reach pa-features check.
+
+So for now use this hack.
+
+Not-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |  1 +
+ arch/powerpc/include/asm/reg.h                |  4 +++
+ arch/powerpc/kernel/cpu_setup_power.S         | 35 +++++++++++++++++++++++++++
+ arch/powerpc/kernel/cputable.c                | 29 +++++++++++++++++++---
+ arch/powerpc/kernel/mce_power.c               |  4 +++
+ 5 files changed, 70 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 7da61b85406b..290157e8d5b2 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -119,6 +119,7 @@
+ #define POWER7_TLB_SETS		128	/* # sets in POWER7 TLB */
+ #define POWER8_TLB_SETS		512	/* # sets in POWER8 TLB */
+ #define POWER9_TLB_SETS_HASH	256	/* # sets in POWER9 TLB Hash mode */
++#define POWER9_TLB_SETS_RADIX	128	/* # sets in POWER9 TLB Radix mode */
  
-+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-+
-+static inline char *get_hpte_slot_array(pmd_t *pmdp)
-+{
-+	BUG();
-+	return NULL;
-+}
-+
-+static inline unsigned int hpte_valid(unsigned char *hpte_slot_array, int index)
-+{
-+	BUG();
-+	return 0;
-+}
-+
-+static inline unsigned int hpte_hash_index(unsigned char *hpte_slot_array,
-+					   int index)
-+{
-+	BUG();
-+	return 0;
-+}
-+
-+static inline void mark_hpte_slot_valid(unsigned char *hpte_slot_array,
-+					unsigned int index, unsigned int hidx)
-+{
-+	BUG();
-+}
-+
-+static inline int hlpmd_trans_huge(pmd_t pmd)
-+{
-+	return 0;
-+}
-+
-+static inline int hlpmd_same(pmd_t pmd_a, pmd_t pmd_b)
-+{
-+	BUG();
-+	return 0;
-+}
-+
-+static inline pmd_t hlpmd_mkhuge(pmd_t pmd)
-+{
-+	BUG();
-+	return pmd;
-+}
-+
-+extern unsigned long hlpmd_hugepage_update(struct mm_struct *mm,
-+					   unsigned long addr, pmd_t *pmdp,
-+					   unsigned long clr, unsigned long set);
-+extern pmd_t hlpmdp_collapse_flush(struct vm_area_struct *vma,
-+				   unsigned long address, pmd_t *pmdp);
-+extern void hlpgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-+					 pgtable_t pgtable);
-+extern pgtable_t hlpgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
-+extern void hlpmdp_huge_split_prepare(struct vm_area_struct *vma,
-+				      unsigned long address, pmd_t *pmdp);
-+extern pmd_t hlpmdp_huge_get_and_clear(struct mm_struct *mm,
-+				       unsigned long addr, pmd_t *pmdp);
-+extern int hl_has_transparent_hugepage(void);
-+#endif
-+
- #endif /* !__ASSEMBLY__ */
+ #ifndef __ASSEMBLY__
  
- #endif /* _ASM_POWERPC_BOOK3S_64_HASH_4K_H */
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-index 1803458a3297..888c25a491b0 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-@@ -53,66 +53,6 @@ static inline int hugepd_ok(hugepd_t hpd)
- 
- #endif /* CONFIG_HUGETLB_PAGE */
- 
--#ifdef CONFIG_TRANSPARENT_HUGEPAGE
--static inline int pmd_large(pmd_t pmd)
--{
--	return !!(pmd_val(pmd) & _PAGE_PTE);
--}
--
--static inline pmd_t pmd_mknotpresent(pmd_t pmd)
--{
--	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
--}
--/*
-- * For radix we should always find H_PAGE_HASHPTE zero. Hence
-- * the below will work for radix too
-- */
--static inline int __pmdp_test_and_clear_young(struct mm_struct *mm,
--					      unsigned long addr, pmd_t *pmdp)
--{
--	unsigned long old;
--
--	if ((pmd_val(*pmdp) & (_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
--		return 0;
--	old = pmd_hugepage_update(mm, addr, pmdp, _PAGE_ACCESSED, 0);
--	return ((old & _PAGE_ACCESSED) != 0);
--}
--
--#define __HAVE_ARCH_PMDP_SET_WRPROTECT
--static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
--				      pmd_t *pmdp)
--{
--
--	if ((pmd_val(*pmdp) & _PAGE_WRITE) == 0)
--		return;
--
--	pmd_hugepage_update(mm, addr, pmdp, _PAGE_WRITE, 0);
--}
--
--static inline int pmd_trans_huge(pmd_t pmd)
--{
--	if (radix_enabled())
--		return rpmd_trans_huge(pmd);
--	return hlpmd_trans_huge(pmd);
--}
--
--#define __HAVE_ARCH_PMD_SAME
--static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)
--{
--	if (radix_enabled())
--		return rpmd_same(pmd_a, pmd_b);
--	return hlpmd_same(pmd_a, pmd_b);
--}
--
--static inline pmd_t pmd_mkhuge(pmd_t pmd)
--{
--	if (radix_enabled())
--		return rpmd_mkhuge(pmd);
--	return hlpmd_mkhuge(pmd);
--}
--
--#endif /*  CONFIG_TRANSPARENT_HUGEPAGE */
--
- static inline int remap_4k_pfn(struct vm_area_struct *vma, unsigned long addr,
- 			       unsigned long pfn, pgprot_t prot)
- {
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 7eda6d2e5124..24d89e9001e0 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -841,6 +841,63 @@ pmd_hugepage_update(struct mm_struct *mm, unsigned long addr, pmd_t *pmdp,
- 	return hlpmd_hugepage_update(mm, addr, pmdp, clr, set);
- }
- 
-+static inline int pmd_large(pmd_t pmd)
-+{
-+	return !!(pmd_val(pmd) & _PAGE_PTE);
-+}
-+
-+static inline pmd_t pmd_mknotpresent(pmd_t pmd)
-+{
-+	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
-+}
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 257251ada3a3..d39b5fedabfd 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -347,6 +347,10 @@
+ #define   LPCR_LPES_SH	2
+ #define   LPCR_RMI     0x00000002      /* real mode is cache inhibit */
+ #define   LPCR_HDICE   0x00000001      /* Hyp Decr enable (HV,PR,EE) */
 +/*
-+ * For radix we should always find H_PAGE_HASHPTE zero. Hence
-+ * the below will work for radix too
++ * Used in asm code, hence we don't want to use PPC_BITCOUNT
 + */
-+static inline int __pmdp_test_and_clear_young(struct mm_struct *mm,
-+					      unsigned long addr, pmd_t *pmdp)
-+{
-+	unsigned long old;
-+
-+	if ((pmd_val(*pmdp) & (_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
-+		return 0;
-+	old = pmd_hugepage_update(mm, addr, pmdp, _PAGE_ACCESSED, 0);
-+	return ((old & _PAGE_ACCESSED) != 0);
-+}
-+
-+#define __HAVE_ARCH_PMDP_SET_WRPROTECT
-+static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
-+				      pmd_t *pmdp)
-+{
-+
-+	if ((pmd_val(*pmdp) & _PAGE_WRITE) == 0)
-+		return;
-+
-+	pmd_hugepage_update(mm, addr, pmdp, _PAGE_WRITE, 0);
-+}
-+
-+static inline int pmd_trans_huge(pmd_t pmd)
-+{
-+	if (radix_enabled())
-+		return rpmd_trans_huge(pmd);
-+	return hlpmd_trans_huge(pmd);
-+}
-+
-+#define __HAVE_ARCH_PMD_SAME
-+static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)
-+{
-+	if (radix_enabled())
-+		return rpmd_same(pmd_a, pmd_b);
-+	return hlpmd_same(pmd_a, pmd_b);
-+}
-+
-+static inline pmd_t pmd_mkhuge(pmd_t pmd)
-+{
-+	if (radix_enabled())
-+		return rpmd_mkhuge(pmd);
-+	return hlpmd_mkhuge(pmd);
-+}
-+
- #define __HAVE_ARCH_PMDP_SET_ACCESS_FLAGS
- extern int pmdp_set_access_flags(struct vm_area_struct *vma,
- 				 unsigned long address, pmd_t *pmdp,
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 53299182dba9..ad9c77399aab 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -72,7 +72,7 @@ config PPC_BOOK3S_64
- 	select PPC_FPU
- 	select PPC_HAVE_PMU_SUPPORT
- 	select SYS_SUPPORTS_HUGETLBFS
--	select HAVE_ARCH_TRANSPARENT_HUGEPAGE if PPC_64K_PAGES
-+	select HAVE_ARCH_TRANSPARENT_HUGEPAGE
- 	select ARCH_SUPPORTS_NUMA_BALANCING
- 	select IRQ_WORK
++#define	  LPCR_UPRT	(ASM_CONST(0x1) << (64 - 42))
+ #ifndef SPRN_LPID
+ #define SPRN_LPID	0x13F	/* Logical Partition Identifier */
+ #endif
+diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
+index 584e119fa8b0..e9b76c651bd1 100644
+--- a/arch/powerpc/kernel/cpu_setup_power.S
++++ b/arch/powerpc/kernel/cpu_setup_power.S
+@@ -117,6 +117,41 @@ _GLOBAL(__restore_cpu_power9)
+ 	mtlr	r11
+ 	blr
  
++_GLOBAL(__setup_cpu_power9_uprt)
++	mflr	r11
++	bl	__init_FSCR
++	bl	__init_hvmode_206
++	mtlr	r11
++	beqlr
++	li	r0,0
++	mtspr	SPRN_LPID,r0
++	mfspr	r3,SPRN_LPCR
++	ori	r3, r3, LPCR_PECEDH
++	oris	r3,r3,(LPCR_UPRT >> 16)
++	bl	__init_LPCR
++	bl	__init_HFSCR
++	bl	__init_tlb_power7
++	mtlr	r11
++	blr
++
++_GLOBAL(__restore_cpu_power9_uprt)
++	mflr	r11
++	bl	__init_FSCR
++	mfmsr	r3
++	rldicl.	r0,r3,4,63
++	mtlr	r11
++	beqlr
++	li	r0,0
++	mtspr	SPRN_LPID,r0
++	mfspr   r3,SPRN_LPCR
++	ori	r3, r3, LPCR_PECEDH
++	oris	r3,r3,(LPCR_UPRT >> 16)
++	bl	__init_LPCR
++	bl	__init_HFSCR
++	bl	__init_tlb_power7
++	mtlr	r11
++	blr
++
+ __init_hvmode_206:
+ 	/* Disable CPU_FTR_HVMODE and exit if MSR:HV is not set */
+ 	mfmsr	r3
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index be4d73053bed..878bcc46ea04 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -72,10 +72,13 @@ extern void __setup_cpu_power8(unsigned long offset, struct cpu_spec* spec);
+ extern void __restore_cpu_power8(void);
+ extern void __setup_cpu_power9(unsigned long offset, struct cpu_spec* spec);
+ extern void __restore_cpu_power9(void);
++extern void __setup_cpu_power9_uprt(unsigned long offset, struct cpu_spec* spec);
++extern void __restore_cpu_power9_uprt(void);
+ extern void __restore_cpu_a2(void);
+ extern void __flush_tlb_power7(unsigned int action);
+ extern void __flush_tlb_power8(unsigned int action);
+ extern void __flush_tlb_power9(unsigned int action);
++extern void __flush_tlb_power9_radix(unsigned int action);
+ extern long __machine_check_early_realmode_p7(struct pt_regs *regs);
+ extern long __machine_check_early_realmode_p8(struct pt_regs *regs);
+ #endif /* CONFIG_PPC64 */
+@@ -508,9 +511,9 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.platform		= "power8",
+ 	},
+ 	{	/* Power9 */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x004e0000,
+-		.cpu_name		= "POWER9 (raw)",
++		.pvr_mask		= 0xffffff00,
++		.pvr_value		= 0x004e0200,
++		.cpu_name		= "POWER9/hash (raw)",
+ 		.cpu_features		= CPU_FTRS_POWER9,
+ 		.cpu_user_features	= COMMON_USER_POWER9,
+ 		.cpu_user_features2	= COMMON_USER2_POWER9,
+@@ -526,6 +529,26 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.flush_tlb		= __flush_tlb_power9,
+ 		.platform		= "power9",
+ 	},
++	{	/*  Power9 */
++		.pvr_mask		= 0xffff0000,
++		.pvr_value		= 0x004e0000,
++		.cpu_name		= "POWER9/radix (raw)",
++		.cpu_features		= CPU_FTRS_POWER9,
++		.cpu_user_features	= COMMON_USER_POWER9,
++		.cpu_user_features2	= COMMON_USER2_POWER9,
++		.mmu_features		= MMU_FTRS_POWER9 | MMU_FTR_RADIX,
++		.icache_bsize		= 128,
++		.dcache_bsize		= 128,
++		.num_pmcs		= 6,
++		.pmc_type		= PPC_PMC_IBM,
++		.oprofile_cpu_type	= "ppc64/power8",
++		.oprofile_type		= PPC_OPROFILE_INVALID,
++		.cpu_setup		= __setup_cpu_power9_uprt,
++		.cpu_restore		= __restore_cpu_power9_uprt,
++		.flush_tlb		= __flush_tlb_power9_radix,
++		.machine_check_early	= __machine_check_early_realmode_p8,
++		.platform		= "power9",
++	},
+ 	{	/* Cell Broadband Engine */
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x00700000,
+diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+index 92a66a2a9b85..f902ede263ab 100644
+--- a/arch/powerpc/kernel/mce_power.c
++++ b/arch/powerpc/kernel/mce_power.c
+@@ -75,6 +75,10 @@ void __flush_tlb_power9(unsigned int action)
+ 	flush_tlb_206(POWER9_TLB_SETS_HASH, action);
+ }
+ 
++void __flush_tlb_power9_radix(unsigned int action)
++{
++	flush_tlb_206(POWER9_TLB_SETS_RADIX, action);
++}
+ 
+ /* flush SLBs and reload */
+ #ifdef CONFIG_PPC_MMU_STD_64
 -- 
 2.5.0
