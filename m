@@ -1,33 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qXqqD21wqzDqD5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 19:25:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qXqqG37JGzDqJ8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 19:25:30 +1100 (AEDT)
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 27 Mar 2016 02:25:26 -0600
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 837681FF001F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:13:32 -0600 (MDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2R8PNJo20119556
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 08:25:23 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2R8PMVA004216
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 04:25:23 -0400
+ Sun, 27 Mar 2016 02:25:28 -0600
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 44D513E40030
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:25:26 -0600 (MDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2R8PPKL35717360
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 08:25:25 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2R8K8G9022293
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 04:20:09 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 26/65] powerpc/mm: Add radix callbacks to pte accessors
-Date: Sun, 27 Mar 2016 13:53:34 +0530
-Message-Id: <1459067053-10835-26-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 27/65] powerpc/mm: Move hugetlb and THP related pmd accessors
+ to pgtable.h
+Date: Sun, 27 Mar 2016 13:53:35 +0530
+Message-Id: <1459067053-10835-27-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,199 +40,260 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For those pte accessors, that operate on a different set of pte bits
-between hash/radix, we add a generic variant that does a conditional
-to hash linux or radix variant.
+Here we create pgtable-64/4k.h and move pmd accessors that is common
+between hash and radix there. We can't do much sharing with 4k linux
+page size [1]. So for now it is empty. In later patches we will add
+functions that does conditional hash/radix accessors there.
+
+[1] 4k linux page size with hash config don't support THP.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash.h    | 41 +++++++++---------
- arch/powerpc/include/asm/book3s/64/pgtable.h | 64 ++++++++++++++++++++++++++++
- 2 files changed, 84 insertions(+), 21 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash-64k.h    | 83 ---------------------
+ arch/powerpc/include/asm/book3s/64/pgtable-4k.h  |  7 ++
+ arch/powerpc/include/asm/book3s/64/pgtable-64k.h | 94 ++++++++++++++++++++++++
+ arch/powerpc/include/asm/book3s/64/pgtable.h     |  7 ++
+ 4 files changed, 108 insertions(+), 83 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/book3s/64/pgtable-4k.h
+ create mode 100644 arch/powerpc/include/asm/book3s/64/pgtable-64k.h
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index 833a897a0794..958491f59c2a 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -88,23 +88,26 @@
- /* Hash table based platforms need atomic updates of the linux PTE */
- #define PTE_ATOMIC_UPDATES	1
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index d60c431c96cb..173f35e9faef 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -118,57 +118,6 @@ static inline int remap_4k_pfn(struct vm_area_struct *vma, unsigned long addr,
+ #define H_PUD_TABLE_SIZE	(sizeof(pud_t) << PUD_INDEX_SIZE)
+ #define H_PGD_TABLE_SIZE	(sizeof(pgd_t) << PGD_INDEX_SIZE)
  
--#define PMD_BAD_BITS		(PTE_TABLE_SIZE-1)
--#define PUD_BAD_BITS		(PMD_TABLE_SIZE-1)
-+#define H_PMD_BAD_BITS		(PTE_TABLE_SIZE-1)
-+#define H_PUD_BAD_BITS		(PMD_TABLE_SIZE-1)
- 
- #ifndef __ASSEMBLY__
--#define	pmd_bad(pmd)		(pmd_val(pmd) & PMD_BAD_BITS)
+-#ifdef CONFIG_HUGETLB_PAGE
+-/*
+- * We have PGD_INDEX_SIZ = 12 and PTE_INDEX_SIZE = 8, so that we can have
+- * 16GB hugepage pte in PGD and 16MB hugepage pte at PMD;
+- *
+- * Defined in such a way that we can optimize away code block at build time
+- * if CONFIG_HUGETLB_PAGE=n.
+- */
+-static inline int pmd_huge(pmd_t pmd)
+-{
+-	/*
+-	 * leaf pte for huge page
+-	 */
+-	return !!(pmd_val(pmd) & _PAGE_PTE);
+-}
 -
--#define	pud_bad(pud)		(pud_val(pud) & PUD_BAD_BITS)
-+#define	hlpmd_bad(pmd)		(pmd_val(pmd) & H_PMD_BAD_BITS)
-+#define	hlpud_bad(pud)		(pud_val(pud) & H_PUD_BAD_BITS)
-+static inline int hlpgd_bad(pgd_t pgd)
-+{
-+	return (pgd_val(pgd) == 0);
-+}
- 
- extern void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 			    pte_t *ptep, unsigned long pte, int huge);
- extern unsigned long htab_convert_pte_flags(unsigned long pteflags);
- /* Atomic PTE updates */
--static inline unsigned long pte_update(struct mm_struct *mm,
--				       unsigned long addr,
--				       pte_t *ptep, unsigned long clr,
--				       unsigned long set,
--				       int huge)
-+static inline unsigned long hlpte_update(struct mm_struct *mm,
-+					 unsigned long addr,
-+					 pte_t *ptep, unsigned long clr,
-+					 unsigned long set,
-+					 int huge)
- {
- 	unsigned long old, tmp;
- 	unsigned long busy = cpu_to_be64(H_PAGE_BUSY);
-@@ -137,7 +140,7 @@ static inline unsigned long pte_update(struct mm_struct *mm,
- /* Set the dirty and/or accessed bits atomically in a linux PTE, this
-  * function doesn't need to flush the hash entry
-  */
--static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
-+static inline void __hlptep_set_access_flags(pte_t *ptep, pte_t entry)
- {
- 	unsigned long bits = pte_val(entry) &
- 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_READ | _PAGE_WRITE | _PAGE_EXEC |
-@@ -160,24 +163,20 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- 	:"cc");
+-static inline int pud_huge(pud_t pud)
+-{
+-	/*
+-	 * leaf pte for huge page
+-	 */
+-	return !!(pud_val(pud) & _PAGE_PTE);
+-}
+-
+-static inline int pgd_huge(pgd_t pgd)
+-{
+-	/*
+-	 * leaf pte for huge page
+-	 */
+-	return !!(pgd_val(pgd) & _PAGE_PTE);
+-}
+-#define pgd_huge pgd_huge
+-
+-#ifdef CONFIG_DEBUG_VM
+-extern int hugepd_ok(hugepd_t hpd);
+-#define is_hugepd(hpd)               (hugepd_ok(hpd))
+-#else
+-/*
+- * With 64k page size, we have hugepage ptes in the pgd and pmd entries. We don't
+- * need to setup hugepage directory for them. Our pte and page directory format
+- * enable us to have this enabled.
+- */
+-static inline int hugepd_ok(hugepd_t hpd)
+-{
+-	return 0;
+-}
+-#define is_hugepd(pdep)			0
+-#endif /* CONFIG_DEBUG_VM */
+-
+-#endif /* CONFIG_HUGETLB_PAGE */
+-
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ extern unsigned long pmd_hugepage_update(struct mm_struct *mm,
+ 					 unsigned long addr,
+@@ -239,44 +188,12 @@ static inline int pmd_trans_huge(pmd_t pmd)
+ 		  (_PAGE_PTE | H_PAGE_THP_HUGE));
  }
  
--static inline int pgd_bad(pgd_t pgd)
-+#define hlpte_same(A,B)	(((pte_val(A) ^ pte_val(B)) & ~_PAGE_HPTEFLAGS) == 0)
-+
-+static inline int hlpte_none(pte_t pte)
+-static inline int pmd_large(pmd_t pmd)
+-{
+-	return !!(pmd_val(pmd) & _PAGE_PTE);
+-}
+-
+-static inline pmd_t pmd_mknotpresent(pmd_t pmd)
+-{
+-	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
+-}
+-
+ #define __HAVE_ARCH_PMD_SAME
+ static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)
  {
--	return (pgd_val(pgd) == 0);
-+	return (pte_val(pte) & ~H_PTE_NONE_MASK) == 0;
+ 	return (((pmd_val(pmd_a) ^ pmd_val(pmd_b)) & ~_PAGE_HPTEFLAGS) == 0);
  }
  
--#define __HAVE_ARCH_PTE_SAME
--#define pte_same(A,B)	(((pte_val(A) ^ pte_val(B)) & ~_PAGE_HPTEFLAGS) == 0)
+-static inline int __pmdp_test_and_clear_young(struct mm_struct *mm,
+-					      unsigned long addr, pmd_t *pmdp)
+-{
+-	unsigned long old;
 -
--/* Generic accessors to PTE bits */
--static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~H_PTE_NONE_MASK) == 0; }
+-	if ((pmd_val(*pmdp) & (_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
+-		return 0;
+-	old = pmd_hugepage_update(mm, addr, pmdp, _PAGE_ACCESSED, 0);
+-	return ((old & _PAGE_ACCESSED) != 0);
+-}
 -
- /* This low level function performs the actual PTE insertion
-  * Setting the PTE depends on the MMU type and other factors. It's
-  * an horrible mess that I'm not going to try to clean up now but
-  * I'm keeping it in one place rather than spread around
-  */
--static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
--				pte_t *ptep, pte_t pte, int percpu)
-+static inline void __set_hlpte_at(struct mm_struct *mm, unsigned long addr,
-+				  pte_t *ptep, pte_t pte, int percpu)
- {
- 	/*
- 	 * Anything else just stores the PTE normally. That covers all 64-bit
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index d59292459f5e..18855437894f 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -262,6 +262,14 @@ extern unsigned long __pgd_table_size;
+-#define __HAVE_ARCH_PMDP_SET_WRPROTECT
+-static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+-				      pmd_t *pmdp)
+-{
+-
+-	if ((pmd_val(*pmdp) & _PAGE_WRITE) == 0)
+-		return;
+-
+-	pmd_hugepage_update(mm, addr, pmdp, _PAGE_WRITE, 0);
+-}
+-
+ #endif /*  CONFIG_TRANSPARENT_HUGEPAGE */
+ #endif	/* __ASSEMBLY__ */
  
- #endif /* __real_pte */
- 
-+static inline unsigned long pte_update(struct mm_struct *mm, unsigned long addr,
-+				       pte_t *ptep, unsigned long clr,
-+				       unsigned long set, int huge)
-+{
-+	if (radix_enabled())
-+		return rpte_update(mm, addr, ptep, clr, set, huge);
-+	return hlpte_update(mm, addr, ptep, clr, set, huge);
-+}
- /*
-  * For hash even if we have _PAGE_ACCESSED = 0, we do a pte_update.
-  * We currently remove entries from the hashtable regardless of whether
-@@ -501,6 +509,39 @@ static inline bool check_pte_access(unsigned long access, unsigned long ptev)
- 
- 	return true;
- }
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
+new file mode 100644
+index 000000000000..423735f897f5
+--- /dev/null
++++ b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
+@@ -0,0 +1,7 @@
++#ifndef _ASM_POWERPC_BOOK3S_64_PGTABLE_4K_H
++#define _ASM_POWERPC_BOOK3S_64_PGTABLE_4K_H
 +/*
-+ * Generic functions with hash/radix callbacks
++ * hash 4k can't share hugetlb and also doesn't support THP
 + */
 +
-+static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
++#endif /*_ASM_POWERPC_BOOK3S_64_PGTABLE_4K_H */
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
+new file mode 100644
+index 000000000000..ceadc2fd408f
+--- /dev/null
++++ b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
+@@ -0,0 +1,94 @@
++#ifndef _ASM_POWERPC_BOOK3S_64_PGTABLE_64K_H
++#define _ASM_POWERPC_BOOK3S_64_PGTABLE_64K_H
++
++#ifndef __ASSEMBLY__
++#ifdef CONFIG_HUGETLB_PAGE
++/*
++ * We have PGD_INDEX_SIZ = 12 and PTE_INDEX_SIZE = 8, so that we can have
++ * 16GB hugepage pte in PGD and 16MB hugepage pte at PMD;
++ *
++ * Defined in such a way that we can optimize away code block at build time
++ * if CONFIG_HUGETLB_PAGE=n.
++ */
++static inline int pmd_huge(pmd_t pmd)
 +{
-+	if (radix_enabled())
-+		return __rptep_set_access_flags(ptep, entry);
-+	return __hlptep_set_access_flags(ptep, entry);
++	/*
++	 * leaf pte for huge page
++	 */
++	return !!(pmd_val(pmd) & _PAGE_PTE);
 +}
 +
-+#define __HAVE_ARCH_PTE_SAME
-+static inline int pte_same(pte_t pte_a, pte_t pte_b)
++static inline int pud_huge(pud_t pud)
 +{
-+	if (radix_enabled())
-+		return rpte_same(pte_a, pte_b);
-+	return hlpte_same(pte_a, pte_b);
++	/*
++	 * leaf pte for huge page
++	 */
++	return !!(pud_val(pud) & _PAGE_PTE);
 +}
 +
-+static inline int pte_none(pte_t pte)
++static inline int pgd_huge(pgd_t pgd)
 +{
-+	if (radix_enabled())
-+		return rpte_none(pte);
-+	return hlpte_none(pte);
++	/*
++	 * leaf pte for huge page
++	 */
++	return !!(pgd_val(pgd) & _PAGE_PTE);
++}
++#define pgd_huge pgd_huge
++
++#ifdef CONFIG_DEBUG_VM
++extern int hugepd_ok(hugepd_t hpd);
++#define is_hugepd(hpd)               (hugepd_ok(hpd))
++#else
++/*
++ * With 64k page size, we have hugepage ptes in the pgd and pmd entries. We don't
++ * need to setup hugepage directory for them. Our pte and page directory format
++ * enable us to have this enabled.
++ */
++static inline int hugepd_ok(hugepd_t hpd)
++{
++	return 0;
++}
++#define is_hugepd(pdep)			0
++#endif /* CONFIG_DEBUG_VM */
++
++#endif /* CONFIG_HUGETLB_PAGE */
++
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++static inline int pmd_large(pmd_t pmd)
++{
++	return !!(pmd_val(pmd) & _PAGE_PTE);
 +}
 +
-+static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
-+				pte_t *ptep, pte_t pte, int percpu)
++static inline pmd_t pmd_mknotpresent(pmd_t pmd)
 +{
-+	if (radix_enabled())
-+		return __set_rpte_at(mm, addr, ptep, pte, percpu);
-+	return __set_hlpte_at(mm, addr, ptep, pte, percpu);
++	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
 +}
++/*
++ * For radix we should always find H_PAGE_HASHPTE zero. Hence
++ * the below will work for radix too
++ */
++static inline int __pmdp_test_and_clear_young(struct mm_struct *mm,
++					      unsigned long addr, pmd_t *pmdp)
++{
++	unsigned long old;
++
++	if ((pmd_val(*pmdp) & (_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
++		return 0;
++	old = pmd_hugepage_update(mm, addr, pmdp, _PAGE_ACCESSED, 0);
++	return ((old & _PAGE_ACCESSED) != 0);
++}
++
++#define __HAVE_ARCH_PMDP_SET_WRPROTECT
++static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
++				      pmd_t *pmdp)
++{
++
++	if ((pmd_val(*pmdp) & _PAGE_WRITE) == 0)
++		return;
++
++	pmd_hugepage_update(mm, addr, pmdp, _PAGE_WRITE, 0);
++}
++
++#endif /*  CONFIG_TRANSPARENT_HUGEPAGE */
++#endif	/* __ASSEMBLY__ */
++#endif /*_ASM_POWERPC_BOOK3S_64_PGTABLE_64K_H */
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 18855437894f..e3a8fc469460 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -206,6 +206,13 @@ extern unsigned long __pgd_table_size;
  
- #define _PAGE_CACHE_CTL	(_PAGE_NON_IDEMPOTENT | _PAGE_TOLERANT)
+ #include <asm/book3s/64/hash.h>
+ #include <asm/book3s/64/radix.h>
++
++#ifdef CONFIG_PPC_64K_PAGES
++#include <asm/book3s/64/pgtable-64k.h>
++#else
++#include <asm/book3s/64/pgtable-4k.h>
++#endif
++
+ #include <asm/barrier.h>
  
-@@ -555,6 +596,13 @@ static inline void pmd_clear(pmd_t *pmdp)
- #define pmd_none(pmd)		(!pmd_val(pmd))
- #define	pmd_present(pmd)	(!pmd_none(pmd))
- 
-+static inline int pmd_bad(pmd_t pmd)
-+{
-+	if (radix_enabled())
-+		return rpmd_bad(pmd);
-+	return hlpmd_bad(pmd);
-+}
-+
- static inline void pud_set(pud_t *pudp, unsigned long val)
- {
- 	*pudp = __pud(val);
-@@ -580,6 +628,15 @@ static inline pud_t pte_pud(pte_t pte)
- 	return __pud(pte_val(pte));
- }
- #define pud_write(pud)		pte_write(pud_pte(pud))
-+
-+static inline int pud_bad(pud_t pud)
-+{
-+	if (radix_enabled())
-+		return rpud_bad(pud);
-+	return hlpud_bad(pud);
-+}
-+
-+
- #define pgd_write(pgd)		pte_write(pgd_pte(pgd))
- static inline void pgd_set(pgd_t *pgdp, unsigned long val)
- {
-@@ -604,6 +661,13 @@ static inline pgd_t pte_pgd(pte_t pte)
- 	return __pgd(pte_val(pte));
- }
- 
-+static inline int pgd_bad(pgd_t pgd)
-+{
-+	if (radix_enabled())
-+		return rpgd_bad(pgd);
-+	return hlpgd_bad(pgd);
-+}
-+
- extern struct page *pgd_page(pgd_t pgd);
- 
- /* Pointers in the page table tree are physical addresses */
+ /*
 -- 
 2.5.0
