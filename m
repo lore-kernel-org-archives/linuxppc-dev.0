@@ -1,25 +1,22 @@
 Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qYCDn1Gb5zDqGM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 10:00:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qYCK00hvzzDqD5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 10:04:03 +1100 (AEDT)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: <linux-kernel@vger.kernel.org>
-CC: Paul Gortmaker <paul.gortmaker@windriver.com>, Andrzej Hajda
- <a.hajda@samsung.com>, Anton Blanchard <anton@samba.org>, Arnd Bergmann
- <arnd@arndb.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christian Krafft <krafft@de.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nathan Fontenot
- <nfont@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>, "Rafael J.
- Wysocki" <rjw@rjwysocki.net>,
- Viresh Kumar <viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 0/3] powerpc: remove unused modular code from non-modular
- drivers
-Date: Sun, 27 Mar 2016 18:08:14 -0400
-Message-ID: <1459116497-19991-1-git-send-email-paul.gortmaker@windriver.com>
+CC: Paul Gortmaker <paul.gortmaker@windriver.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, Andrzej Hajda
+ <a.hajda@samsung.com>,
+ Anton Blanchard <anton@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/3] powerpc: make kernel/nvram_64.c explicitly non-modular
+Date: Sun, 27 Mar 2016 18:08:16 -0400
+Message-ID: <1459116497-19991-3-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <1459116497-19991-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1459116497-19991-1-git-send-email-paul.gortmaker@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,57 +28,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-My ongoing audit looking for non-modular code that needlessly uses
-modular macros (vs. built-in equivalents) and/or has dead code
-relating to module unloading that can never be executed led to the
-creation of these three powerpc related commits.
+The Makefile/Kconfig currently controlling compilation of this code is:
 
-One is of the trivial kind, where we substitute in the non-modular
-versions that CPP would have put in place anyway, resulting in no
-actual changes, even at the binary output level.
+obj-$(CONFIG_PPC64)             += setup_64.o sys_ppc32.o \
+                                   signal_64.o ptrace32.o \
+                                   paca.o nvram_64.o firmware.o
 
-The other two are almost as trivial.  In addition to the above, we
-toss out the __exit function registered by module_exit, since that
-will never get called for non modular code/drivers.
+arch/powerpc/platforms/Kconfig.cputype:config PPC64
+arch/powerpc/platforms/Kconfig.cputype: bool "64-bit kernel"
 
-For anyone new to the underlying goal of this cleanup, we are trying to
-not use module support for code that can never be built as a module since:
+...meaning that it currently is not being built as a module by anyone.
 
- (1) it is easy to accidentally write unused module_exit and remove code
- (2) it can be misleading when reading the source, thinking it can be
-     modular when the Makefile and/or Kconfig prohibit it
- (3) it requires the include of the module.h header file which in turn
-     includes nearly everything else, thus adding to CPP overhead.
- (4) it gets copied/replicated into other code and spreads like weeds.
+Lets remove the modular code that is essentially orphaned, so that
+when reading the driver there is no doubt it is builtin-only.
 
-Build tested on v4.6-rc1 to ensure no silly typos that would break
-compilation crept in.
+Since module_init translates to device_initcall in the non-modular
+case, the init ordering remains unchanged with this commit.
 
----
+We don't replace module.h with init.h since the file already has that.
+
+We delete the MODULE_LICENSE tag since that information is already
+contained at the top of the file in the comments.
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 Cc: Andrzej Hajda <a.hajda@samsung.com>
 Cc: Anton Blanchard <anton@samba.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Christian Krafft <krafft@de.ibm.com>
-Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ arch/powerpc/kernel/nvram_64.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-Paul Gortmaker (3):
-  powerpc: make cell/spu_base.c explicitly non-modular
-  powerpc: make kernel/nvram_64.c explicitly non-modular
-  drivers/cpufreq: make ppc_cbe_cpufreq_pmi driver explicitly
-    non-modular
-
- arch/powerpc/kernel/nvram_64.c         | 12 +-----------
- arch/powerpc/platforms/cell/spu_base.c |  7 ++-----
- drivers/cpufreq/ppc_cbe_cpufreq_pmi.c  | 15 ++-------------
- 3 files changed, 5 insertions(+), 29 deletions(-)
-
+diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+index 0cab9e8c3794..856f9a7944cd 100644
+--- a/arch/powerpc/kernel/nvram_64.c
++++ b/arch/powerpc/kernel/nvram_64.c
+@@ -15,8 +15,6 @@
+  *       parsing code.
+  */
+ 
+-#include <linux/module.h>
+-
+ #include <linux/types.h>
+ #include <linux/errno.h>
+ #include <linux/fs.h>
+@@ -1231,12 +1229,4 @@ static int __init nvram_init(void)
+   	
+   	return rc;
+ }
+-
+-static void __exit nvram_cleanup(void)
+-{
+-        misc_deregister( &nvram_dev );
+-}
+-
+-module_init(nvram_init);
+-module_exit(nvram_cleanup);
+-MODULE_LICENSE("GPL");
++device_initcall(nvram_init);
 -- 
 2.6.1
