@@ -1,34 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qXqqP2yYxzDqHc
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 19:25:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qXqqR0mSSzDqGl
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 19:25:38 +1100 (AEDT)
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 27 Mar 2016 02:25:35 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 4564D3E40030
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:25:33 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2R8PXA835782752
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 01:25:33 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2R8PWBq026663
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:25:33 -0600
+ Sun, 27 Mar 2016 02:25:37 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id B11CA3E4003E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:25:35 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id u2R8PZ9O26411062
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 01:25:35 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2R8PYwX028319
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2016 02:25:35 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 30/65] powerpc/mm/radix: Add radix callback for early init
- routines
-Date: Sun, 27 Mar 2016 13:53:38 +0530
-Message-Id: <1459067053-10835-30-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 31/65] powerpc/mm: Abstraction for vmemmap and map_kernel_page
+Date: Sun, 27 Mar 2016 13:53:39 +0530
+Message-Id: <1459067053-10835-31-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,465 +39,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This add routines for early setup w.r.t radix. We use device tree
-property ibm,processor-radix-AP-encodings to find supported page sizes.
-If we don't find above we consider 64K and 4K as supported page sizes.
-
-We do map vmemap using 2M page size if we can. Linear mapping is done
-such that we use required page size for that range. For ex: memory of
-3.5G is mapped such that we use 1G mapping till 3G range and use 2M
-mapping for the rest.
-
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/mmu.h   |  17 +-
- arch/powerpc/include/asm/book3s/64/radix.h |   2 +
- arch/powerpc/mm/Makefile                   |   1 +
- arch/powerpc/mm/pgtable-radix.c            | 344 +++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/setup.c     |   5 +-
- 5 files changed, 367 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/mm/pgtable-radix.c
+ arch/powerpc/include/asm/book3s/64/hash.h    |  8 ++++++++
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 20 ++++++++++++++++++++
+ arch/powerpc/include/asm/nohash/64/pgtable.h |  7 +++++++
+ arch/powerpc/mm/init_64.c                    |  5 -----
+ arch/powerpc/mm/mmu_decl.h                   |  5 -----
+ arch/powerpc/mm/pgtable-hash64.c             | 12 ++++++------
+ 6 files changed, 41 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-index a66cd3e65a33..a526642f1c02 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -16,7 +16,10 @@ struct mmu_psize_def {
- 	int		penc[MMU_PAGE_COUNT];	/* HPTE encoding */
- 	unsigned int	tlbiel;	/* tlbiel supported for that page size */
- 	unsigned long	avpnm;	/* bits to mask out in AVPN in the HPTE */
--	unsigned long	sllp;	/* SLB L||LP (exact mask to use in slbmte) */
-+	union {
-+		unsigned long	sllp;	/* SLB L||LP (exact mask to use in slbmte) */
-+		unsigned long ap;	/* Ap encoding used by PowerISA 3.0 */
-+	};
- };
- extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
- 
-@@ -98,22 +101,34 @@ extern int mmu_vmemmap_psize;
- extern int mmu_io_psize;
- 
- /* MMU initialization */
-+extern void radix_init_native(void);
- extern void hlearly_init_mmu(void);
-+extern void rearly_init_mmu(void);
- static inline void early_init_mmu(void)
- {
-+	if (radix_enabled())
-+		return rearly_init_mmu();
- 	return hlearly_init_mmu();
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index 958491f59c2a..43bd7d15f41e 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -197,6 +197,14 @@ static inline void hpte_do_hugepage_flush(struct mm_struct *mm,
  }
- extern void hlearly_init_mmu_secondary(void);
-+extern void rearly_init_mmu_secondary(void);
- static inline void early_init_mmu_secondary(void)
- {
-+	if (radix_enabled())
-+		return rearly_init_mmu_secondary();
- 	return hlearly_init_mmu_secondary();
- }
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
  
- extern void hlsetup_initial_memory_limit(phys_addr_t first_memblock_base,
- 					 phys_addr_t first_memblock_size);
-+extern void rsetup_initial_memory_limit(phys_addr_t first_memblock_base,
-+					 phys_addr_t first_memblock_size);
- static inline void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 					      phys_addr_t first_memblock_size)
- {
-+	if (radix_enabled())
-+		return rsetup_initial_memory_limit(first_memblock_base,
-+						   first_memblock_size);
- 	return hlsetup_initial_memory_limit(first_memblock_base,
- 					   first_memblock_size);
- }
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index 46a5381324f5..806dc2195f85 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -133,5 +133,7 @@ static inline int rpmd_trans_huge(pmd_t pmd)
++
++extern int hlmap_kernel_page(unsigned long ea, unsigned long pa,
++			     unsigned long flags);
++extern int __meminit hlvmemmap_create_mapping(unsigned long start,
++					      unsigned long page_size,
++					      unsigned long phys);
++extern void hlvmemmap_remove_mapping(unsigned long start,
++				     unsigned long page_size);
+ #endif /* !__ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_BOOK3S_64_HASH_H */
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index e3a8fc469460..bf6a600cb109 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -722,6 +722,26 @@ extern struct page *pgd_page(pgd_t pgd);
+ void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
+ void pgtable_cache_init(void);
  
- #endif
++static inline int map_kernel_page(unsigned long ea, unsigned long pa,
++				  unsigned long flags)
++{
++	return hlmap_kernel_page(ea, pa, flags);
++}
++
++static inline int __meminit vmemmap_create_mapping(unsigned long start,
++						   unsigned long page_size,
++						   unsigned long phys)
++{
++	return hlvmemmap_create_mapping(start, page_size, phys);
++}
++
++#ifdef CONFIG_MEMORY_HOTPLUG
++static inline void vmemmap_remove_mapping(unsigned long start,
++					  unsigned long page_size)
++{
++	return hlvmemmap_remove_mapping(start, page_size);
++}
++#endif
+ struct page *realmode_pfn_to_page(unsigned long pfn);
  
-+extern int map_radix_kernel_page(unsigned long ea, unsigned long pa,
-+				 pgprot_t flags, unsigned int psz);
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+index 10debb93c4a4..f143d6fb3576 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+@@ -362,6 +362,13 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+ 
+ void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
+ void pgtable_cache_init(void);
++extern int map_kernel_page(unsigned long ea, unsigned long pa,
++			   unsigned long flags);
++extern int __meminit vmemmap_create_mapping(unsigned long start,
++					    unsigned long page_size,
++					    unsigned long phys);
++extern void vmemmap_remove_mapping(unsigned long start,
++				   unsigned long page_size);
  #endif /* __ASSEMBLY__ */
- #endif
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index 6b5cc805c7ba..d421719fcf21 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -15,6 +15,7 @@ obj-$(CONFIG_PPC_BOOK3E)	+= tlb_low_$(CONFIG_WORD_SIZE)e.o
- hash64-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
- obj-$(CONFIG_PPC_BOOK3E_64)   += pgtable-book3e.o
- obj-$(CONFIG_PPC_STD_MMU_64)	+= pgtable-hash64.o hash_utils_64.o slb_low.o slb.o $(hash64-y)
-+obj-$(CONFIG_PPC_RADIX_MMU)	+= pgtable-radix.o
- obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o hash_low_32.o
- obj-$(CONFIG_PPC_STD_MMU)	+= tlb_hash$(CONFIG_WORD_SIZE).o \
- 				   mmu_context_hash$(CONFIG_WORD_SIZE).o
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-new file mode 100644
-index 000000000000..900c3386c6e1
---- /dev/null
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -0,0 +1,344 @@
-+/*
-+ * page table handling routines for radix page table
-+ *
-+ *  Copyright (C) 2015 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; either version
-+ *  2 of the License, or (at your option) any later version.
-+ *
-+ */
-+#include <linux/sched.h>
-+#include <linux/memblock.h>
-+#include <linux/of_fdt.h>
-+
-+#include <asm/pgtable.h>
-+#include <asm/pgalloc.h>
-+#include <asm/dma.h>
-+#include <asm/machdep.h>
-+#include <asm/mmu.h>
-+#include <asm/firmware.h>
-+
-+static int native_update_partition_table(u64 patb1)
-+{
-+	partition_tb->patb1 = cpu_to_be64(patb1);
-+	return 0;
-+}
-+
-+static __ref void *early_alloc_pgtable(unsigned long size)
-+{
-+	void *pt;
-+
-+	pt = __va(memblock_alloc_base(size, size, __pa(MAX_DMA_ADDRESS)));
-+	memset(pt, 0, size);
-+
-+	return pt;
-+}
-+
-+int map_radix_kernel_page(unsigned long ea, unsigned long pa,
-+			  pgprot_t flags,
-+			  unsigned int map_page_size)
-+{
-+	pgd_t *pgdp;
-+	pud_t *pudp;
-+	pmd_t *pmdp;
-+	pte_t *ptep;
-+	/*
-+	 * Make sure task size is correct as per the max adddr
-+	 */
-+	BUILD_BUG_ON(TASK_SIZE_USER64 > R_PGTABLE_RANGE);
-+	if (slab_is_available()) {
-+		pgdp = pgd_offset_k(ea);
-+		pudp = pud_alloc(&init_mm, pgdp, ea);
-+		if (!pudp)
-+			return -ENOMEM;
-+		if (map_page_size == PUD_SIZE) {
-+			ptep = (pte_t *)pudp;
-+			goto set_the_pte;
-+		}
-+		pmdp = pmd_alloc(&init_mm, pudp, ea);
-+		if (!pmdp)
-+			return -ENOMEM;
-+		if (map_page_size == PMD_SIZE) {
-+			ptep = (pte_t *)pudp;
-+			goto set_the_pte;
-+		}
-+		ptep = pte_alloc_kernel(pmdp, ea);
-+		if (!ptep)
-+			return -ENOMEM;
-+	} else {
-+		pgdp = pgd_offset_k(ea);
-+		if (pgd_none(*pgdp)) {
-+			pudp = early_alloc_pgtable(PUD_TABLE_SIZE);
-+			BUG_ON(pudp == NULL);
-+			pgd_populate(&init_mm, pgdp, pudp);
-+		}
-+		pudp = pud_offset(pgdp, ea);
-+		if (map_page_size == PUD_SIZE) {
-+			ptep = (pte_t *)pudp;
-+			goto set_the_pte;
-+		}
-+		if (pud_none(*pudp)) {
-+			pmdp = early_alloc_pgtable(PMD_TABLE_SIZE);
-+			BUG_ON(pmdp == NULL);
-+			pud_populate(&init_mm, pudp, pmdp);
-+		}
-+		pmdp = pmd_offset(pudp, ea);
-+		if (map_page_size == PMD_SIZE) {
-+			ptep = (pte_t *)pudp;
-+			goto set_the_pte;
-+		}
-+		if (!pmd_present(*pmdp)) {
-+			ptep = early_alloc_pgtable(PAGE_SIZE);
-+			BUG_ON(ptep == NULL);
-+			pmd_populate_kernel(&init_mm, pmdp, ptep);
-+		}
-+		ptep = pte_offset_kernel(pmdp, ea);
-+	}
-+
-+set_the_pte:
-+	set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT, flags));
-+	smp_wmb();
-+	return 0;
-+}
-+
-+static void __init radix_init_pgtable(void)
-+{
-+	int loop_count;
-+	u64 base, end, start_addr;
-+	unsigned long rts_field;
-+	struct memblock_region *reg;
-+	unsigned long linear_page_size;
-+
-+	/* We don't support slb for radix */
-+	mmu_slb_size = 0;
-+	/*
-+	 * Create the linear mapping, using standard page size for now
-+	 */
-+	loop_count = 0;
-+	for_each_memblock(memory, reg) {
-+
-+		start_addr = reg->base;
-+
-+redo:
-+		if (loop_count < 1 && mmu_psize_defs[MMU_PAGE_1G].shift)
-+			linear_page_size = PUD_SIZE;
-+		else if (loop_count < 2 && mmu_psize_defs[MMU_PAGE_2M].shift)
-+			linear_page_size = PMD_SIZE;
-+		else
-+			linear_page_size = PAGE_SIZE;
-+
-+		base = _ALIGN_UP(start_addr, linear_page_size);
-+		end = _ALIGN_DOWN(reg->base + reg->size, linear_page_size);
-+
-+		pr_info("Mapping range 0x%lx - 0x%lx with 0x%lx\n",
-+			(unsigned long)base, (unsigned long)end,
-+			linear_page_size);
-+
-+		while (base < end) {
-+			map_radix_kernel_page((unsigned long)__va(base),
-+					      base, PAGE_KERNEL_X,
-+					      linear_page_size);
-+			base += linear_page_size;
-+		}
-+		/*
-+		 * map the rest using lower page size
-+		 */
-+		if (end < reg->base + reg->size) {
-+			start_addr = end;
-+			loop_count++;
-+			goto redo;
-+		}
-+	}
-+	/*
-+	 * Allocate Partition table and process table for the
-+	 * host.
-+	 */
-+	BUILD_BUG_ON_MSG((PRTB_SIZE_SHIFT > 23), "Process table size too large.");
-+	process_tb = early_alloc_pgtable(1UL << PRTB_SIZE_SHIFT);
-+	/*
-+	 * Fill in the process table.
-+	 * we support 52 bits, hence 52-28 = 24, 11000
-+	 */
-+	rts_field = 3ull << PPC_BITLSHIFT(2);
-+	process_tb->prtb0 = cpu_to_be64(rts_field | __pa(init_mm.pgd) | R_PGD_INDEX_SIZE);
-+	/*
-+	 * Fill in the partition table. We are suppose to use effective address
-+	 * of process table here. But our linear mapping also enable us to use
-+	 * physical address here.
-+	 */
-+	ppc_md.update_partition_table(__pa(process_tb) | (PRTB_SIZE_SHIFT - 12) | PATB_GR);
-+	pr_info("Process table %p and radix root for kernel: %p\n", process_tb, init_mm.pgd);
-+}
-+
-+static void __init radix_init_partition_table(void)
-+{
-+	unsigned long rts_field;
-+	/*
-+	 * we support 52 bits, hence 52-28 = 24, 11000
-+	 */
-+	rts_field = 3ull << PPC_BITLSHIFT(2);
-+
-+	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 24), "Partition table size too large.");
-+	partition_tb = early_alloc_pgtable(1UL << PATB_SIZE_SHIFT);
-+	partition_tb->patb0 = cpu_to_be64(rts_field | __pa(init_mm.pgd) |
-+					  R_PGD_INDEX_SIZE | PATB_HR);
-+	printk("Partition table %p\n", partition_tb);
-+
-+	memblock_set_current_limit(MEMBLOCK_ALLOC_ANYWHERE);
-+	/*
-+	 * update partition table control register,
-+	 * 64 K size.
-+	 */
-+	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
-+}
-+
-+void __init radix_init_native(void)
-+{
-+	ppc_md.update_partition_table = native_update_partition_table;
-+}
-+
-+static int __init get_idx_from_shift(unsigned int shift)
-+{
-+	int idx = -1;
-+
-+	switch (shift) {
-+	case 0xc:
-+		idx = MMU_PAGE_4K;
-+		break;
-+	case 0x10:
-+		idx = MMU_PAGE_64K;
-+		break;
-+	case 0x15:
-+		idx = MMU_PAGE_2M;
-+		break;
-+	case 0x1e:
-+		idx = MMU_PAGE_1G;
-+		break;
-+	}
-+	return idx;
-+}
-+
-+static int __init radix_dt_scan_page_sizes(unsigned long node,
-+					   const char *uname, int depth,
-+					   void *data)
-+{
-+	int size = 0;
-+	int shift, idx;
-+	unsigned int ap;
-+	const __be32 *prop;
-+	const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
-+
-+	/* We are scanning "cpu" nodes only */
-+	if (type == NULL || strcmp(type, "cpu") != 0)
-+		return 0;
-+
-+	prop = of_get_flat_dt_prop(node, "ibm,processor-radix-AP-encodings", &size);
-+	if (!prop)
-+		return 0;
-+
-+	pr_info("Page sizes from device-tree:\n");
-+	for (; size >= 4; size -= 4, ++prop) {
-+
-+		struct mmu_psize_def *def;
-+
-+		/* top 3 bit is AP encoding */
-+		shift = be32_to_cpu(prop[0]) & ~(0xe << 28);
-+		ap = be32_to_cpu(prop[0]) >> 29;
-+		pr_info("Page size sift = %d AP=0x%x\n", shift, ap);
-+
-+		idx = get_idx_from_shift(shift);
-+		if (idx < 0)
-+			continue;
-+
-+		def = &mmu_psize_defs[idx];
-+		def->shift = shift;
-+		def->ap  = ap;
-+	}
-+
-+	/* needed ? */
-+	cur_cpu_spec->mmu_features &= ~MMU_FTR_NO_SLBIE_B;
-+	return 1;
-+}
-+
-+static void __init radix_init_page_sizes(void)
-+{
-+	int rc;
-+
-+	/*
-+	 * Try to find the available page sizes in the device-tree
-+	 */
-+	rc = of_scan_flat_dt(radix_dt_scan_page_sizes, NULL);
-+	if (rc != 0)  /* Found */
-+		goto found;
-+	/*
-+	 * let's assume we have page 4k and 64k support
-+	 */
-+	mmu_psize_defs[MMU_PAGE_4K].shift = 12;
-+	mmu_psize_defs[MMU_PAGE_4K].ap = 0x0;
-+
-+	mmu_psize_defs[MMU_PAGE_64K].shift = 16;
-+	mmu_psize_defs[MMU_PAGE_64K].ap = 0x5;
-+found:
-+#ifdef CONFIG_SPARSEMEM_VMEMMAP
-+	if (mmu_psize_defs[MMU_PAGE_2M].shift) {
-+		/*
-+		 * map vmemmap using 2M if available
-+		 */
-+		mmu_vmemmap_psize = MMU_PAGE_2M;
-+	}
-+#endif /* CONFIG_SPARSEMEM_VMEMMAP */
-+	return;
-+}
-+
-+void __init rearly_init_mmu(void)
-+{
-+#ifdef CONFIG_PPC_64K_PAGES
-+	/* PAGE_SIZE mappings */
-+	mmu_virtual_psize = MMU_PAGE_64K;
-+#else
-+	mmu_virtual_psize = MMU_PAGE_4K;
-+#endif
-+
-+#ifdef CONFIG_SPARSEMEM_VMEMMAP
-+	/* vmemmap mapping */
-+	mmu_vmemmap_psize = mmu_virtual_psize;
-+#endif
-+	/*
-+	 * initialize page table size
-+	 */
-+	__pte_index_size = R_PTE_INDEX_SIZE;
-+	__pmd_index_size = R_PMD_INDEX_SIZE;
-+	__pud_index_size = R_PUD_INDEX_SIZE;
-+	__pgd_index_size = R_PGD_INDEX_SIZE;
-+	__pmd_cache_index = R_PMD_INDEX_SIZE;
-+	__pte_table_size = R_PTE_TABLE_SIZE;
-+	__pmd_table_size = R_PMD_TABLE_SIZE;
-+	__pud_table_size = R_PUD_TABLE_SIZE;
-+	__pgd_table_size = R_PGD_TABLE_SIZE;
-+
-+	radix_init_page_sizes();
-+
-+	if (!firmware_has_feature(FW_FEATURE_LPAR))
-+		radix_init_partition_table();
-+
-+	radix_init_pgtable();
-+}
-+
-+void rearly_init_mmu_secondary(void)
-+{
-+	/*
-+	 * update partition table control register, 64 K size.
-+	 */
-+	if (!firmware_has_feature(FW_FEATURE_LPAR))
-+		mtspr(SPRN_PTCR,
-+		      __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
-+}
-+
-+void rsetup_initial_memory_limit(phys_addr_t first_memblock_base,
-+				phys_addr_t first_memblock_size)
-+{
-+	/* Finally limit subsequent allocations */
-+	memblock_set_current_limit(first_memblock_base + first_memblock_size);
-+}
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 1acb0c72d923..ee6430bedcc3 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -273,7 +273,10 @@ static int __init pnv_probe(void)
- 	if (!of_flat_dt_is_compatible(root, "ibm,powernv"))
- 		return 0;
  
--	hpte_init_native();
-+	if (IS_ENABLED(CONFIG_PPC_RADIX_MMU) && radix_enabled())
-+		radix_init_native();
-+	else if (IS_ENABLED(CONFIG_PPC_STD_MMU_64))
-+		hpte_init_native();
+ #endif /* _ASM_POWERPC_NOHASH_64_PGTABLE_H */
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index 09ca65e55b58..33709bdb0419 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -240,9 +240,6 @@ static __meminit void vmemmap_list_populate(unsigned long phys,
+ 	vmemmap_list = vmem_back;
+ }
  
- 	if (firmware_has_feature(FW_FEATURE_OPAL))
- 		pnv_setup_machdep_opal();
+-extern int __meminit vmemmap_create_mapping(unsigned long start,
+-					    unsigned long page_size,
+-					    unsigned long phys);
+ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
+ {
+ 	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
+@@ -281,8 +278,6 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+-extern void vmemmap_remove_mapping(unsigned long start,
+-				   unsigned long page_size);
+ static unsigned long vmemmap_list_free(unsigned long start)
+ {
+ 	struct vmemmap_backing *vmem_back, *vmem_back_prev;
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 898d63365cdd..6360f54ef2d0 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -109,11 +109,6 @@ extern unsigned long Hash_size, Hash_mask;
+ 
+ #endif /* CONFIG_PPC32 */
+ 
+-#ifdef CONFIG_PPC64
+-extern int map_kernel_page(unsigned long ea, unsigned long pa,
+-			   unsigned long flags);
+-#endif /* CONFIG_PPC64 */
+-
+ extern unsigned long ioremap_bot;
+ extern unsigned long __max_low_memory;
+ extern phys_addr_t __initial_memory_limit_addr;
+diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
+index 183f80a528ba..b926b0a4ae0c 100644
+--- a/arch/powerpc/mm/pgtable-hash64.c
++++ b/arch/powerpc/mm/pgtable-hash64.c
+@@ -26,9 +26,9 @@
+  * On hash-based CPUs, the vmemmap is bolted in the hash table.
+  *
+  */
+-int __meminit vmemmap_create_mapping(unsigned long start,
+-				     unsigned long page_size,
+-				     unsigned long phys)
++int __meminit hlvmemmap_create_mapping(unsigned long start,
++				       unsigned long page_size,
++				       unsigned long phys)
+ {
+ 	int rc = htab_bolt_mapping(start, start + page_size, phys,
+ 				   pgprot_val(PAGE_KERNEL),
+@@ -43,8 +43,8 @@ int __meminit vmemmap_create_mapping(unsigned long start,
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+-void vmemmap_remove_mapping(unsigned long start,
+-			    unsigned long page_size)
++void hlvmemmap_remove_mapping(unsigned long start,
++			      unsigned long page_size)
+ {
+ 	int rc = htab_remove_mapping(start, start + page_size,
+ 				     mmu_vmemmap_psize,
+@@ -60,7 +60,7 @@ void vmemmap_remove_mapping(unsigned long start,
+  * map_kernel_page adds an entry to the ioremap page table
+  * and adds an entry to the HPT, possibly bolting it
+  */
+-int map_kernel_page(unsigned long ea, unsigned long pa, unsigned long flags)
++int hlmap_kernel_page(unsigned long ea, unsigned long pa, unsigned long flags)
+ {
+ 	pgd_t *pgdp;
+ 	pud_t *pudp;
 -- 
 2.5.0
