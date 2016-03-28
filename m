@@ -1,39 +1,21 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qYlrb50R9zDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 07:29:51 +1100 (AEDT)
-Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Mon, 28 Mar 2016 17:29:46 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id EFDFF1DC006F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 16:29:38 -0400 (EDT)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2SJTAci14483756
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 16:29:10 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2SKThqj023718
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 17:29:43 -0300
-Received: from hactar.localnet ([9.78.144.125])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- u2SKTh3b023714
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 17:29:43 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qYrBs2vDCzDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 10:45:57 +1100 (AEDT)
+Message-ID: <1459208757.8173.3.camel@ellerman.id.au>
 Subject: Re: [PATCH] Remove kretprobe_trampoline_holder.
-Date: Mon, 28 Mar 2016 17:29:41 -0300
-Message-ID: <2042788.6sAC9lOLzB@hactar>
-In-Reply-To: <1459195592-6559-1-git-send-email-bauerman@linux.vnet.ibm.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Tue, 29 Mar 2016 10:45:57 +1100
+In-Reply-To: <2042788.6sAC9lOLzB@hactar>
 References: <3qWbvb0yVwz9sdm@ozlabs.org>
  <1459195592-6559-1-git-send-email-bauerman@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+ <2042788.6sAC9lOLzB@hactar>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,47 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Montag, 28 M=E4rz 2016, 17:06:32 schrieb Thiago Jung Bauermann:
-> /home/bauermann/src/linux/tools/testing/selftests/ftrace/test.d/kprob=
-e/kp
-> robe_ftrace.tc: line 9: echo: write error: Invalid argument
->=20
->     But even without my patch that testcase fails in the same way, so=
- this
-> is not a problem introduced by the patch.
+On Mon, 2016-03-28 at 17:29 -0300, Thiago Jung Bauermann wrote:
 
-That failure is on this line of kprobe_ftrace.tc:
+> Am Montag, 28 März 2016, 17:06:32 schrieb Thiago Jung Bauermann:
 
-echo _do_fork > set_ftrace_filter
+> > /home/bauermann/src/linux/tools/testing/selftests/ftrace/test.d/kprobe/kp
+> > robe_ftrace.tc: line 9: echo: write error: Invalid argument
+> >
+> >     But even without my patch that testcase fails in the same way, so this
+> > is not a problem introduced by the patch.
+>
+> That failure is on this line of kprobe_ftrace.tc:
+>
+> echo _do_fork > set_ftrace_filter
+>
+> This fails because on powerpc the function symbol has a dot prepended to its
+> name:
 
-This fails because on powerpc the function symbol has a dot prepended t=
-o its=20
-name:
+Only on big endian powerpc. (Or actually ABI < ELFv2, but in practice that
+means BE)
 
-# cat available_filter_functions | grep _do_fork
-._do_fork
+> # cat available_filter_functions | grep _do_fork
+> ._do_fork
+>
+> If I do s/_do_fork/._do_fork/ in kprobe_ftrace.tc then all ftrace kprobe
+> tests pass:
+>
+> $ sudo ./ftracetest test.d/kprobe/
+> === Ftrace unit tests ===
+> [1] Kprobe dynamic event - adding and removing  [PASS]
+> [2] Kprobe dynamic event - busy event check     [PASS]
+> [3] Kprobe dynamic event with arguments [PASS]
+> [4] Kprobe dynamic event with function tracer   [PASS]
+> [5] Kretprobe dynamic event with arguments      [PASS]
 
-If I do s/_do_fork/._do_fork/ in kprobe_ftrace.tc then all ftrace kprob=
-e=20
-tests pass:
+OK. We fixed that in 'perf probe', but not if you're using the sysfs file
+directly.
 
-$ sudo ./ftracetest test.d/kprobe/
-=3D=3D=3D Ftrace unit tests =3D=3D=3D
-[1] Kprobe dynamic event - adding and removing  [PASS]
-[2] Kprobe dynamic event - busy event check     [PASS]
-[3] Kprobe dynamic event with arguments [PASS]
-[4] Kprobe dynamic event with function tracer   [PASS]
-[5] Kretprobe dynamic event with arguments      [PASS]
+Do you want to write a patch for ftracetest to try and handle it? I guess you'd
+try "_do_fork" and if that fails then try "._do_fork", and maybe only if uname -m
+says you're running on ppc64?
 
-# of passed:  5
-# of failed:  0
-# of unresolved:  0
-# of untested:  0
-# of unsupported:  0
-# of xfailed:  0
-# of undefined(test bug):  0
-
---=20
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+cheers
