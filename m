@@ -1,39 +1,31 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qYrRK3Qj4zDqBZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 10:56:45 +1100 (AEDT)
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 29 Mar 2016 09:56:44 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id CFDA0357805C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 10:56:35 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2SNuRPE55116004
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 10:56:35 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2SNu2BH027331
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 10:56:03 +1100
-Date: Mon, 28 Mar 2016 00:48:27 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, mgorman@suse.de, zhlcindy@linux.vnet.ibm.com
-Subject: Re: [RFC] mm: Fix memory corruption caused by deferred page
- initialization
-Message-ID: <20160327134827.GA24644@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1458921929-15264-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <3qXFh60DRNz9sDH@ozlabs.org> <20160326133708.GA382@gwshan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qYrW743fhzDqBZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 11:00:03 +1100 (AEDT)
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3qYrW70dwFz9sBM
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Mar 2016 11:00:02 +1100 (AEDT)
+Received: by mail-pa0-x22d.google.com with SMTP id tt10so109568761pab.3
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Mar 2016 17:00:02 -0700 (PDT)
+Subject: Re: [PATCH 5/6] powerpc/livepatch: Add livepatch stack to struct
+ thread_info
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <1458817445-5855-1-git-send-email-mpe@ellerman.id.au>
+ <1458817445-5855-5-git-send-email-mpe@ellerman.id.au>
+Cc: duwe@lst.de, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
+ jkosina@suse.cz, live-patching@vger.kernel.org, mbenes@suse.cz
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <56F9C531.3090703@gmail.com>
+Date: Tue, 29 Mar 2016 10:58:41 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160326133708.GA382@gwshan>
+In-Reply-To: <1458817445-5855-5-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,83 +35,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 27, 2016 at 12:37:09AM +1100, Gavin Shan wrote:
->On Sat, Mar 26, 2016 at 08:47:17PM +1100, Michael Ellerman wrote:
->>Hi Gavin,
->>
->>On Fri, 2016-25-03 at 16:05:29 UTC, Gavin Shan wrote:
->>> During deferred page initialization, the pages are moved from memblock
->>> or bootmem to buddy allocator without checking they were reserved. Those
->>> reserved pages can be reallocated to somebody else by buddy/slab allocator.
->>> It leads to memory corruption and potential kernel crash eventually.
->>
->>Can you give me a bit more detail on what the bug is?
->>
->>I haven't seen any issues on my systems, but I realise now I haven't enabled
->>DEFERRED_STRUCT_PAGE_INIT - I assumed it was enabled by default.
->>
->>How did this get tested before submission?
->>
+
+
+On 24/03/16 22:04, Michael Ellerman wrote:
+> In order to support live patching we need to maintain an alternate
+> stack of TOC & LR values. We use the base of the stack for this, and
+> store the "live patch stack pointer" in struct thread_info.
 >
->Michael, I have to reply with same context in another thread in case 
->somebody else wants to understand more: Li, who is in the cc list, is
->backporting deferred page initialization (CONFIG_DEFERRED_STRUCT_PAGE_INIT)
->from upstream kernel to RHEL 7.2 or 7.3 kernel (3.10.0-357.el7). RHEL kernel
->has (!CONFIG_NO_BOOTMEM && CONFIG_DEFERRED_STRUCT_PAGE_INIT), meaning
->bootmem is enabled. She eventually runs into kernel crash and I jumped
->in to help understanding the root cause.
+> Unlike the other fields of thread_info, we can not statically initialise
+> that value, so it must be done at run time.
 >
->There're two related kernel config options: ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
->and DEFERRED_STRUCT_PAGE_INIT. The former one is enabled on PPC by default.
->The later one isn't enabled by default.
+> This patch just adds the code to support that, it is not enabled until
+> the next patch which actually adds live patch support.
 >
->There are two test cases I had:
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/include/asm/livepatch.h   |  8 ++++++++
+>  arch/powerpc/include/asm/thread_info.h |  4 +++-
+>  arch/powerpc/kernel/irq.c              |  3 +++
+>  arch/powerpc/kernel/process.c          |  6 +++++-
+>  arch/powerpc/kernel/setup_64.c         | 17 ++++++++++-------
+>  5 files changed, 29 insertions(+), 9 deletions(-)
 >
->- With (!CONFIG_NO_BOOTMEM && CONFIG_DEFERRED_STRUCT_PAGE_INIT)
->on PowerNV platform, upstream kernel (4.5.rc7) and additional patch to support
->bootmem as it was removed on powerpc a while ago.
->
->- With (CONFIG_NO_BOOTMEM && CONFIG_DEFERRED_STRUCT_PAGE_INIT) on PowerNV platform,
->upstream kernel (4.5.rc7), I dumped the reserved memblock regions and added printk
->in function deferred_init_memmap() to check if memblock reserved PFN 0x1fff80 (one
->page in memblock reserved region#31, refer to the below kernel log) is released
->to buddy allocator or not when doing deferred page struct initialization. I did
->see that PFN is released to buddy allocator at that time. However, I didn't see
->kernel crash and it would be luck and the current deferred page struct initialization
->implementation: The pages in region [0, 2GB] except the memblock reserved ones are
->presented to buddy allocator at early stage. It's not deferred. So for the pages in
->[0, 2GB], we don't have consistency issue between memblock and buddy allocator.
->The pages in region [2GB ...] are all presented to buddy allocator despite they're
->reserved in memblock or not. It ensures the kernel text section isn't corrupted
->and we're lucky not seeing program interrupt because of illegal instruction.
->
-
-After more debugging, it turns out that Michael is correct: we don't have problem
-when CONFIG_NO_BOOTMEM=y. In the case, the page frames in [2G ...] is marked as
-reserved in early stage (as below function calls reveal). During the deferred
-initialization stage, those reserved pages won't be released to buddy allocator:
-
-- Below function calls mark reserved pages according to memblock reserved regions:
-  init/main.c::start_kernel()
-  init/main.c::mm_init()
-  arch/powerpc/mm/mem.c::mem_init()
-  nobootmem.c::free_all_bootmem()            <-> bootmem.c::free_all_bootmem() on !CONFIG_NO_BOOTMEM
-  nobootmem.c::free_low_memory_core_early()
-  nobootmem.c::reserve_bootmem_region()
-
-- In page_alloc.c::deferred_init_memmap(), the reserved pages aren't released
-  to buddy allocator with below check:
-
-                        if (page->flags) {
-                                VM_BUG_ON(page_zone(page) != zone);
-                                goto free_range;
-                        }
-
-
-So the issue is only existing when CONFIG_NO_BOOTMEM=n. The alternative fix would
-be similar to what we have on !CONFIG_NO_BOOTMEM: In early stage, all page structs
-for bootmem reserved pages are initialized and mark them with PG_reserved. I'm
-not sure it's worthy to fix it as we won't support bootmem as Michael mentioned.
-
-Thanks,
-Gavin
+> diff --git a/arch/powerpc/include/asm/livepatch.h b/arch/powerpc/include/asm/livepatch.h
+> index ad36e8e34fa1..a402f7f94896 100644
+> --- a/arch/powerpc/include/asm/livepatch.h
+> +++ b/arch/powerpc/include/asm/livepatch.h
+> @@ -49,6 +49,14 @@ static inline unsigned long klp_get_ftrace_location(unsigned long faddr)
+>  	 */
+>  	return ftrace_location_range(faddr, faddr + 16);
+>  }
+> +
+> +static inline void klp_init_thread_info(struct thread_info *ti)
+> +{
+> +	/* + 1 to account for STACK_END_MAGIC */
+> +	ti->livepatch_sp = (unsigned long *)(ti + 1) + 1;
+> +}
+> +#else
+> +static void klp_init_thread_info(struct thread_info *ti) { }
+>  #endif /* CONFIG_LIVEPATCH */
+>  
+>  #endif /* _ASM_POWERPC_LIVEPATCH_H */
+> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+> index 7efee4a3240b..8febc3f66d53 100644
+> --- a/arch/powerpc/include/asm/thread_info.h
+> +++ b/arch/powerpc/include/asm/thread_info.h
+> @@ -43,7 +43,9 @@ struct thread_info {
+>  	int		preempt_count;		/* 0 => preemptable,
+>  						   <0 => BUG */
+>  	unsigned long	local_flags;		/* private flags for thread */
+> -
+> +#ifdef CONFIG_LIVEPATCH
+> +	unsigned long *livepatch_sp;
+> +#endif
+>  	/* low level flags - has atomic operations done on it */
+>  	unsigned long	flags ____cacheline_aligned_in_smp;
+>  };
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index 290559df1e8b..3cb46a3b1de7 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -66,6 +66,7 @@
+>  #include <asm/udbg.h>
+>  #include <asm/smp.h>
+>  #include <asm/debug.h>
+> +#include <asm/livepatch.h>
+>  
+>  #ifdef CONFIG_PPC64
+>  #include <asm/paca.h>
+> @@ -607,10 +608,12 @@ void irq_ctx_init(void)
+>  		memset((void *)softirq_ctx[i], 0, THREAD_SIZE);
+>  		tp = softirq_ctx[i];
+>  		tp->cpu = i;
+> +		klp_init_thread_info(tp);
+At this point ti->livepatch_sp points to the next CPUs thread_info for softirq_ctx?
+>  
+>  		memset((void *)hardirq_ctx[i], 0, THREAD_SIZE);
+>  		tp = hardirq_ctx[i];
+>  		tp->cpu = i;
+> +		klp_init_thread_info(tp);
+Same question here
+>  	}
+>  }
+>  
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 612df305886b..c27215e6ef48 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -55,6 +55,8 @@
+>  #include <asm/firmware.h>
+>  #endif
+>  #include <asm/code-patching.h>
+> +#include <asm/livepatch.h>
+> +
+>  #include <linux/kprobes.h>
+>  #include <linux/kdebug.h>
+>  
+> @@ -1400,13 +1402,15 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
+>  	extern void ret_from_kernel_thread(void);
+>  	void (*f)(void);
+>  	unsigned long sp = (unsigned long)task_stack_page(p) + THREAD_SIZE;
+> +	struct thread_info *ti = task_thread_info(p);
+> +
+> +	klp_init_thread_info(ti);
+>  
+>  	/* Copy registers */
+>  	sp -= sizeof(struct pt_regs);
+>  	childregs = (struct pt_regs *) sp;
+>  	if (unlikely(p->flags & PF_KTHREAD)) {
+>  		/* kernel thread */
+> -		struct thread_info *ti = (void *)task_stack_page(p);
+>  		memset(childregs, 0, sizeof(struct pt_regs));
+>  		childregs->gpr[1] = sp + sizeof(struct pt_regs);
+>  		/* function */
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index 3807fb05b6de..1b6cabb8e715 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -69,6 +69,7 @@
+>  #include <asm/kvm_ppc.h>
+>  #include <asm/hugetlb.h>
+>  #include <asm/epapr_hcalls.h>
+> +#include <asm/livepatch.h>
+>  
+>  #ifdef DEBUG
+>  #define DBG(fmt...) udbg_printf(fmt)
+> @@ -667,16 +668,16 @@ static void __init emergency_stack_init(void)
+>  	limit = min(safe_stack_limit(), ppc64_rma_size);
+>  
+>  	for_each_possible_cpu(i) {
+> -		unsigned long sp;
+> -		sp  = memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
+> -		sp += THREAD_SIZE;
+> -		paca[i].emergency_sp = __va(sp);
+> +		struct thread_info *ti;
+> +		ti = __va(memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit));
+> +		klp_init_thread_info(ti);
+> +		paca[i].emergency_sp = (void *)ti + THREAD_SIZE;
+>  
+Does emergency_sp still end up 128 byte aligned after this?
+>  #ifdef CONFIG_PPC_BOOK3S_64
+>  		/* emergency stack for machine check exception handling. */
+> -		sp  = memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
+> -		sp += THREAD_SIZE;
+> -		paca[i].mc_emergency_sp = __va(sp);
+> +		ti = __va(memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit));
+> +		klp_init_thread_info(ti);
+Do we care about live-patching in this context? Are we mixing per-thread and per-cpu contexts?
+> +		paca[i].mc_emergency_sp = (void *)ti + THREAD_SIZE;
+>  #endif
+>  	}
+>  }
+> @@ -700,6 +701,8 @@ void __init setup_arch(char **cmdline_p)
+>  	if (ppc_md.panic)
+>  		setup_panic();
+>  
+> +	klp_init_thread_info(&init_thread_info);
+> +
+>  	init_mm.start_code = (unsigned long)_stext;
+>  	init_mm.end_code = (unsigned long) _etext;
+>  	init_mm.end_data = (unsigned long) _edata;
