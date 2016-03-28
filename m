@@ -1,50 +1,34 @@
-Return-Path: <ketuzsezr@gmail.com>
-Received: from mail-ig0-x243.google.com (mail-ig0-x243.google.com
- [IPv6:2607:f8b0:4001:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qYj9m38wCzDqCn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 05:29:32 +1100 (AEDT)
-Received: by mail-ig0-x243.google.com with SMTP id av4so11309418igc.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 11:29:32 -0700 (PDT)
-MIME-Version: 1.0
-Sender: ketuzsezr@gmail.com
-In-Reply-To: <56EC1805.5060207@codeaurora.org>
-References: <1458252137-24497-1-git-send-email-okaya@codeaurora.org>
- <1458252137-24497-2-git-send-email-okaya@codeaurora.org>
- <56EBF09A.1060503@arm.com> <56EC1805.5060207@codeaurora.org>
-Date: Mon, 28 Mar 2016 14:29:29 -0400
-Message-ID: <CACJDEmrzKOExg-Rchjy2hfVzkzbCZ=WNn4Bu3EVgim748VvRig@mail.gmail.com>
-Subject: Re: [PATCH 2/3] swiotlb: prefix dma_to_phys and phys_to_dma functions
-From: Konrad Rzeszutek Wilk <konrad@kernel.org>
-To: Sinan Kaya <okaya@codeaurora.org>
-Cc: Robin Murphy <robin.murphy@arm.com>, linux-arm-kernel@lists.infradead.org,
- timur@codeaurora.org, cov@codeaurora.org, nwatters@codeaurora.org,
- linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Chris Metcalf <cmetcalf@ezchip.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>,
- Huacai Chen <chenhc@lemote.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Jisheng Zhang <jszhang@marvell.com>,
- Florian Fainelli <f.fainelli@gmail.com>, Russell King <linux@arm.linux.org.uk>,
- Aaro Koskinen <aaro.koskinen@iki.fi>, Michael Ellerman <mpe@ellerman.id.au>,
- X86 <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Guenter Roeck <linux@roeck-us.net>, Fenghua Yu <fenghua.yu@intel.com>,
- Denys Vlasenko <dvlasenk@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Akinobu Mita <akinobu.mita@gmail.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- Valentin Rothberg <valentinrothberg@gmail.com>, Chris Zankel <chris@zankel.net>,
- Tony Luck <tony.luck@intel.com>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Dean Nelson <dnelson@redhat.com>,
- LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
- "Suthikulpanit, Suravee" <Suravee.Suthikulpanit@amd.com>,
- Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
- Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qYlLJ25BQzDq7n
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 07:07:03 +1100 (AEDT)
+Received: from localhost
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Mon, 28 Mar 2016 17:07:00 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 2EF961DC0054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 16:06:52 -0400 (EDT)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2SJ4egP4456578
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 16:04:41 -0300
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2SK6ub1020070
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 16:06:56 -0400
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: ananth@in.ibm.com, mpe@ellerman.id.au,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Subject: [PATCH] Remove kretprobe_trampoline_holder.
+Date: Mon, 28 Mar 2016 17:06:32 -0300
+Message-Id: <1459195592-6559-1-git-send-email-bauerman@linux.vnet.ibm.com>
+In-Reply-To: <3qWbvb0yVwz9sdm@ozlabs.org>
+References: <3qWbvb0yVwz9sdm@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,79 +38,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 18, 2016 at 11:00 AM, Sinan Kaya <okaya@codeaurora.org> wrote:
-> On 3/18/2016 8:12 AM, Robin Murphy wrote:
->> Since we know for sure that swiotlb_to_phys is a no-op on arm64, it might be cleaner to simply not reference it at all. I suppose we could have some private local wrappers, e.g.:
->>
->> #define swiotlb_to_virt(addr) phys_to_virt((phys_addr_t)(addr))
->>
->> to keep the intent of the code clear (and just in case anyone ever builds a system mad enough to warrant switching out that definition, but I'd hope that never happens).
->>
->> Otherwise, looks good - thanks for doing this!
->
-> OK. I added this. Reviewed-by?
->
-> I'm not happy to submit such a big patch for all different ARCHs. I couldn't
-> find a cleaner solution. I'm willing to split this patch into multiple if there
-> is a better way.
->
-> diff --git a/arch/arm64/mm/dma-mapping.c b/arch/arm64/mm/dma-mapping.c
-> index ada00c3..8c0f66b 100644
-> --- a/arch/arm64/mm/dma-mapping.c
-> +++ b/arch/arm64/mm/dma-mapping.c
-> @@ -29,6 +29,14 @@
->
->  #include <asm/cacheflush.h>
->
-> +/*
-> + * If you are building a system without IOMMU, then you are using SWIOTLB
-> + * library. The ARM64 adaptation of this library does not support address
-> + * translation and it assumes that physical address = dma address for such
-> + * a use case. Please don't build a platform that violates this.
-> + */
+Fixes the following testsuite failure:
 
-Why not just expand the ARM64 part to support address translation?
+$ sudo ./perf test -v kallsyms
+ 1: vmlinux symtab matches kallsyms                          :
+--- start ---
+test child forked, pid 12489
+Using /proc/kcore for kernel object code
+Looking at the vmlinux_path (8 entries long)
+Using /boot/vmlinux for symbols
+0xc00000000003d300: diff name v: .kretprobe_trampoline_holder k: kretprobe_trampoline
+Maps only in vmlinux:
+ c00000000086ca38-c000000000879b6c 87ca38 [kernel].text.unlikely
+ c000000000879b6c-c000000000bf0000 889b6c [kernel].meminit.text
+ c000000000bf0000-c000000000c53264 c00000 [kernel].init.text
+ c000000000c53264-d000000004250000 c63264 [kernel].exit.text
+ d000000004250000-d000000004450000 0 [libcrc32c]
+ d000000004450000-d000000004620000 0 [xfs]
+ d000000004620000-d000000004680000 0 [autofs4]
+ d000000004680000-d0000000046e0000 0 [x_tables]
+ d0000000046e0000-d000000004780000 0 [ip_tables]
+ d000000004780000-d0000000047e0000 0 [rng_core]
+ d0000000047e0000-ffffffffffffffff 0 [pseries_rng]
+Maps in vmlinux with a different name in kallsyms:
+Maps only in kallsyms:
+ d000000000000000-f000000000000000 1000000000010000 [kernel.kallsyms]
+ f000000000000000-ffffffffffffffff 3000000000010000 [kernel.kallsyms]
+test child finished with -1
+---- end ----
+vmlinux symtab matches kallsyms: FAILED!
 
-> +#define swiotlb_to_virt(addr) phys_to_virt((phys_addr_t)(addr))
-> +
+The problem is that the kretprobe_trampoline symbol looks like this:
 
-Adding Stefano here.
+$ eu-readelf -s /boot/vmlinux G kretprobe_trampoline
+ 2431: c000000001302368     24 NOTYPE  LOCAL  DEFAULT       37 kretprobe_trampoline_holder
+ 2432: c00000000003d300      8 FUNC    LOCAL  DEFAULT        1 .kretprobe_trampoline_holder
+97543: c00000000003d300      0 NOTYPE  GLOBAL DEFAULT        1 kretprobe_trampoline
 
->  static pgprot_t __get_dma_pgprot(struct dma_attrs *attrs, pgprot_t prot,
->                                  bool coherent)
->  {
-> @@ -188,7 +196,7 @@ static void __dma_free(struct device *dev, size_t size,
->                        void *vaddr, dma_addr_t dma_handle,
->                        struct dma_attrs *attrs)
->  {
-> -       void *swiotlb_addr = phys_to_virt(swiotlb_dma_to_phys(dev, dma_handle));
-> +       void *swiotlb_addr = swiotlb_to_virt(dma_handle);
->
->         size = PAGE_ALIGN(size);
->
-> @@ -209,8 +217,7 @@ static dma_addr_t __swiotlb_map_page(struct device *dev, struct page *page,
->
->         dev_addr = swiotlb_map_page(dev, page, offset, size, dir, attrs);
->         if (!is_device_dma_coherent(dev))
-> -               __dma_map_area(phys_to_virt(swiotlb_dma_to_phys(dev, dev_addr)),
-> -                              size, dir);
-> +               __dma_map_area(swiotlb_to_virt(dev_addr), size, dir);
->
->         return dev_addr;
->  }
-> @@ -283,8 +290,7 @@ static void __swiotlb_sync_single_for_device(struct device *dev,
->  {
->         swiotlb_sync_single_for_device(dev, dev_addr, size, dir);
->         if (!is_device_dma_coherent(dev))
-> -               __dma_map_area(phys_to_virt(swiotlb_dma_to_phys(dev, dev_addr)),
-> -                              size, dir);
-> +               __dma_map_area(swiotlb_to_virt(dev_addr), size, dir);
->  }
->
->
->
->
-> --
-> Sinan Kaya
-> Qualcomm Technologies, Inc. on behalf of Qualcomm Innovation Center, Inc.
-> Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project
+Its type is NOTYPE, and its size is 0, and this is a problem because
+symbol-elf.c:dso__load_sym skips function symbols that are not STT_FUNC
+or STT_GNU_IFUNC (this is determined by elf_sym__is_function). Even
+if the type is changed to STT_FUNC, when dso__load_sym calls
+symbols__fixup_duplicate, the kretprobe_trampoline symbol is dropped in
+favour of .kretprobe_trampoline_holder because the latter has non-zero
+size (as determined by choose_best_symbol).
+
+With this patch, all vmlinux symbols match /proc/kallsyms and the
+testcase passes.
+
+Commit c1c355c gets rid of kretprobe_trampoline_holder altogether on
+x86. This commit does the same on powerpc.
+
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+---
+
+Notes:
+    With this patch, all ftrace startup tests still pass.  There's one ftrace
+    testcase failure:
+    
+    [4] Kprobe dynamic event with function tracer   [FAIL]
+    execute:
+    /home/bauermann/src/linux/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_ftrace.tc
+    + .
+    /home/bauermann/src/linux/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_ftrace.tc
+    ++ '[' -f kprobe_events ']'
+    ++ grep function available_tracers
+    blk function_graph wakeup_dl wakeup_rt wakeup function nop
+    ++ echo nop
+    ++ echo _do_fork
+    /home/bauermann/src/linux/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_ftrace.tc:
+    line 9: echo: write error: Invalid argument
+    
+    But even without my patch that testcase fails in the same way, so this
+    is not a problem introduced by the patch.
+
+ arch/powerpc/kernel/kprobes.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+index 7c053f2..417c0ea 100644
+--- a/arch/powerpc/kernel/kprobes.c
++++ b/arch/powerpc/kernel/kprobes.c
+@@ -278,12 +278,11 @@ no_kprobe:
+  * 	- When the probed function returns, this probe
+  * 		causes the handlers to fire
+  */
+-static void __used kretprobe_trampoline_holder(void)
+-{
+-	asm volatile(".global kretprobe_trampoline\n"
+-			"kretprobe_trampoline:\n"
+-			"nop\n");
+-}
++asm(".global kretprobe_trampoline\n"
++	".type kretprobe_trampoline, @function\n"
++	"kretprobe_trampoline:\n"
++	"nop\n"
++	".size kretprobe_trampoline, .-kretprobe_trampoline\n");
+ 
+ /*
+  * Called when the probe at kretprobe trampoline is hit
+-- 
+1.9.1
