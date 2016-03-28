@@ -1,31 +1,35 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qYhTy43bvzDqCn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 04:58:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qYhYj4bgdzDqCn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 05:01:45 +1100 (AEDT)
 Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 28 Mar 2016 23:28:25 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2SHvcwv19988776
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 23:27:39 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2SHwGrm008854
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 23:28:17 +0530
+ Tue, 29 Mar 2016 04:01:44 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C4A6B3578052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 05:01:41 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2SI1XoS9240942
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 05:01:41 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2SI18La004136
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 05:01:09 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 37/65] powerpc/mm/radix: Add tlbflush routines
-In-Reply-To: <201603271729.OvhxxyUr%fengguang.wu@intel.com>
-References: <201603271729.OvhxxyUr%fengguang.wu@intel.com>
-Date: Mon, 28 Mar 2016 23:28:15 +0530
-Message-ID: <87shzao56w.fsf@linux.vnet.ibm.com>
+Cc: imunsie@au1.ibm.com
+Subject: Re: cxl: fix setting of _PAGE_USER bit when handling page faults
+In-Reply-To: <8737rau3b7.fsf@linux.vnet.ibm.com>
+References: <3qWf364wYxz9sDG@ozlabs.org> <8737rau3b7.fsf@linux.vnet.ibm.com>
+Date: Mon, 28 Mar 2016 23:30:49 +0530
+Message-ID: <87poueo52m.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,52 +41,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kbuild test robot <lkp@intel.com> writes:
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
 > [ text/plain ]
-> Hi Aneesh,
+> Michael Ellerman <mpe@ellerman.id.au> writes:
 >
-> [auto build test ERROR on powerpc/next]
-> [also build test ERROR on v4.6-rc1 next-20160324]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improving the system]
+>> [ text/plain ]
+>> On Fri, 2016-18-03 at 04:01:21 UTC, Andrew Donnellan wrote:
+>>> When handling page faults, cxl_handle_page_fault() checks whether the page
+>>> should be accessible by userspace and have its _PAGE_USER access bit set.
+>>> _PAGE_USER should be set if the context's kernel flag isn't set, or if the
+>>> page falls outside of kernel memory.
+>>> 
+>>> However, the check currently uses the wrong operator, causing it to always
+>>> evalute to true. As such, we always set the _PAGE_USER bit, even when it
+>>> should be restricted to the kernel.
+>>> 
+>>> Fix the check so that the _PAGE_USER bit is set only as intended.
+>>> 
+>> ..
+>>> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+>>> index 9a8650b..a76cb8a 100644
+>>> --- a/drivers/misc/cxl/fault.c
+>>> +++ b/drivers/misc/cxl/fault.c
+>>> @@ -152,7 +152,7 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
+>>>  	access = _PAGE_PRESENT;
+>>>  	if (dsisr & CXL_PSL_DSISR_An_S)
+>>>  		access |= _PAGE_RW;
+>>> -	if ((!ctx->kernel) || ~(dar & (1ULL << 63)))
+>>> +	if ((!ctx->kernel) || !(dar & (1ULL << 63)))
+>>>  		access |= _PAGE_USER;
+>>
+>> I think you can (should) use is_kernel_addr() for the DAR check.
+>>
+>> I'm also slightly worried by that logic in the case of a non-kernel context.
+>>
+>> ie. if ctx->kernel is false, we get:
+>>
+>> 	if (true || !is_kernel_addr(dar))
+>>  		access |= _PAGE_USER;
+>>
+>> Which means we just add _PAGE_USER for any address. What am I missing here?
 >
-> url:    https://github.com/0day-ci/linux/commits/Aneesh-Kumar-K-V/powerpc-mm-Use-big-endian-page-table-for-book3s-64/20160327-174557
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-> config: x86_64-randconfig-x001-201613 (attached as .config)
-> reproduce:
->         # save the attached .config to linux build tree
->         make ARCH=x86_64 
+> I noticed this when doing radix support and have a variant posted at
 >
-> All errors (new ones prefixed by >>):
->
->    kernel/fork.c: In function 'mm_alloc':
->>> kernel/fork.c:675:13: error: 'mm_context_t {aka struct <anonymous>}' has no member named 'id'
->      mm->context.id = MMU_NO_CONTEXT;
->                 ^
->>> kernel/fork.c:675:19: error: 'MMU_NO_CONTEXT' undeclared (first use in this function)
->      mm->context.id = MMU_NO_CONTEXT;
->                       ^
->    kernel/fork.c:675:19: note: each undeclared identifier is reported only once for each function it appears in
->
-> vim +675 kernel/fork.c
->
->    669			return NULL;
->    670	
->    671		memset(mm, 0, sizeof(*mm));
->    672		/*
->    673		 * FIXME!! we need a better way handle this
->    674		 */
->  > 675		mm->context.id = MMU_NO_CONTEXT;
->    676		return mm_init(mm, current);
->    677	}
->    678	
+> https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-March/141036.html
 >
 
-I added that change during development, based on some issue I hit that
-time (with a note to fix this correctly later). Now looking back I don't
-recollect what the bug was about. AFAIU the following mm_init() should
-properly initialize the context.id and we should not hit a tlbflush in between.
+My change also keep it similar to __hash_page.
 
-Hence for now I will remove this hunk.
+	/*
+	 * We need to set the _PAGE_USER bit if MSR_PR is set or if we are
+	 * accessing a userspace segment (even from the kernel). We assume
+	 * kernel addresses always have the high bit set.
+	 */
+	if ((msr & MSR_PR) || (REGION_ID(ea) == USER_REGION_ID))
+
+If we need this change to go in this merge window i can respin my patch.
 
 -aneesh
