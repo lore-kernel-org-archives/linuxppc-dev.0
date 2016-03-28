@@ -1,37 +1,50 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <ketuzsezr@gmail.com>
+Received: from mail-ig0-x243.google.com (mail-ig0-x243.google.com
+ [IPv6:2607:f8b0:4001:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qYhYj4bgdzDqCn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 05:01:45 +1100 (AEDT)
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 29 Mar 2016 04:01:44 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C4A6B3578052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 05:01:41 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2SI1XoS9240942
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 05:01:41 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2SI18La004136
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 05:01:09 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: imunsie@au1.ibm.com
-Subject: Re: cxl: fix setting of _PAGE_USER bit when handling page faults
-In-Reply-To: <8737rau3b7.fsf@linux.vnet.ibm.com>
-References: <3qWf364wYxz9sDG@ozlabs.org> <8737rau3b7.fsf@linux.vnet.ibm.com>
-Date: Mon, 28 Mar 2016 23:30:49 +0530
-Message-ID: <87poueo52m.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qYj9m38wCzDqCn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 05:29:32 +1100 (AEDT)
+Received: by mail-ig0-x243.google.com with SMTP id av4so11309418igc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2016 11:29:32 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+Sender: ketuzsezr@gmail.com
+In-Reply-To: <56EC1805.5060207@codeaurora.org>
+References: <1458252137-24497-1-git-send-email-okaya@codeaurora.org>
+ <1458252137-24497-2-git-send-email-okaya@codeaurora.org>
+ <56EBF09A.1060503@arm.com> <56EC1805.5060207@codeaurora.org>
+Date: Mon, 28 Mar 2016 14:29:29 -0400
+Message-ID: <CACJDEmrzKOExg-Rchjy2hfVzkzbCZ=WNn4Bu3EVgim748VvRig@mail.gmail.com>
+Subject: Re: [PATCH 2/3] swiotlb: prefix dma_to_phys and phys_to_dma functions
+From: Konrad Rzeszutek Wilk <konrad@kernel.org>
+To: Sinan Kaya <okaya@codeaurora.org>
+Cc: Robin Murphy <robin.murphy@arm.com>, linux-arm-kernel@lists.infradead.org,
+ timur@codeaurora.org, cov@codeaurora.org, nwatters@codeaurora.org,
+ linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Chris Metcalf <cmetcalf@ezchip.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ Huacai Chen <chenhc@lemote.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Jisheng Zhang <jszhang@marvell.com>,
+ Florian Fainelli <f.fainelli@gmail.com>, Russell King <linux@arm.linux.org.uk>,
+ Aaro Koskinen <aaro.koskinen@iki.fi>, Michael Ellerman <mpe@ellerman.id.au>,
+ X86 <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Guenter Roeck <linux@roeck-us.net>, Fenghua Yu <fenghua.yu@intel.com>,
+ Denys Vlasenko <dvlasenk@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Akinobu Mita <akinobu.mita@gmail.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Valentin Rothberg <valentinrothberg@gmail.com>, Chris Zankel <chris@zankel.net>,
+ Tony Luck <tony.luck@intel.com>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Dean Nelson <dnelson@redhat.com>,
+ LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
+ "Suthikulpanit, Suravee" <Suravee.Suthikulpanit@amd.com>,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,62 +54,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-
-> [ text/plain ]
-> Michael Ellerman <mpe@ellerman.id.au> writes:
+On Fri, Mar 18, 2016 at 11:00 AM, Sinan Kaya <okaya@codeaurora.org> wrote:
+> On 3/18/2016 8:12 AM, Robin Murphy wrote:
+>> Since we know for sure that swiotlb_to_phys is a no-op on arm64, it might be cleaner to simply not reference it at all. I suppose we could have some private local wrappers, e.g.:
+>>
+>> #define swiotlb_to_virt(addr) phys_to_virt((phys_addr_t)(addr))
+>>
+>> to keep the intent of the code clear (and just in case anyone ever builds a system mad enough to warrant switching out that definition, but I'd hope that never happens).
+>>
+>> Otherwise, looks good - thanks for doing this!
 >
->> [ text/plain ]
->> On Fri, 2016-18-03 at 04:01:21 UTC, Andrew Donnellan wrote:
->>> When handling page faults, cxl_handle_page_fault() checks whether the page
->>> should be accessible by userspace and have its _PAGE_USER access bit set.
->>> _PAGE_USER should be set if the context's kernel flag isn't set, or if the
->>> page falls outside of kernel memory.
->>> 
->>> However, the check currently uses the wrong operator, causing it to always
->>> evalute to true. As such, we always set the _PAGE_USER bit, even when it
->>> should be restricted to the kernel.
->>> 
->>> Fix the check so that the _PAGE_USER bit is set only as intended.
->>> 
->> ..
->>> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
->>> index 9a8650b..a76cb8a 100644
->>> --- a/drivers/misc/cxl/fault.c
->>> +++ b/drivers/misc/cxl/fault.c
->>> @@ -152,7 +152,7 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
->>>  	access = _PAGE_PRESENT;
->>>  	if (dsisr & CXL_PSL_DSISR_An_S)
->>>  		access |= _PAGE_RW;
->>> -	if ((!ctx->kernel) || ~(dar & (1ULL << 63)))
->>> +	if ((!ctx->kernel) || !(dar & (1ULL << 63)))
->>>  		access |= _PAGE_USER;
->>
->> I think you can (should) use is_kernel_addr() for the DAR check.
->>
->> I'm also slightly worried by that logic in the case of a non-kernel context.
->>
->> ie. if ctx->kernel is false, we get:
->>
->> 	if (true || !is_kernel_addr(dar))
->>  		access |= _PAGE_USER;
->>
->> Which means we just add _PAGE_USER for any address. What am I missing here?
+> OK. I added this. Reviewed-by?
 >
-> I noticed this when doing radix support and have a variant posted at
+> I'm not happy to submit such a big patch for all different ARCHs. I couldn't
+> find a cleaner solution. I'm willing to split this patch into multiple if there
+> is a better way.
 >
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-March/141036.html
+> diff --git a/arch/arm64/mm/dma-mapping.c b/arch/arm64/mm/dma-mapping.c
+> index ada00c3..8c0f66b 100644
+> --- a/arch/arm64/mm/dma-mapping.c
+> +++ b/arch/arm64/mm/dma-mapping.c
+> @@ -29,6 +29,14 @@
 >
+>  #include <asm/cacheflush.h>
+>
+> +/*
+> + * If you are building a system without IOMMU, then you are using SWIOTLB
+> + * library. The ARM64 adaptation of this library does not support address
+> + * translation and it assumes that physical address = dma address for such
+> + * a use case. Please don't build a platform that violates this.
+> + */
 
-My change also keep it similar to __hash_page.
+Why not just expand the ARM64 part to support address translation?
 
-	/*
-	 * We need to set the _PAGE_USER bit if MSR_PR is set or if we are
-	 * accessing a userspace segment (even from the kernel). We assume
-	 * kernel addresses always have the high bit set.
-	 */
-	if ((msr & MSR_PR) || (REGION_ID(ea) == USER_REGION_ID))
+> +#define swiotlb_to_virt(addr) phys_to_virt((phys_addr_t)(addr))
+> +
 
-If we need this change to go in this merge window i can respin my patch.
+Adding Stefano here.
 
--aneesh
+>  static pgprot_t __get_dma_pgprot(struct dma_attrs *attrs, pgprot_t prot,
+>                                  bool coherent)
+>  {
+> @@ -188,7 +196,7 @@ static void __dma_free(struct device *dev, size_t size,
+>                        void *vaddr, dma_addr_t dma_handle,
+>                        struct dma_attrs *attrs)
+>  {
+> -       void *swiotlb_addr = phys_to_virt(swiotlb_dma_to_phys(dev, dma_handle));
+> +       void *swiotlb_addr = swiotlb_to_virt(dma_handle);
+>
+>         size = PAGE_ALIGN(size);
+>
+> @@ -209,8 +217,7 @@ static dma_addr_t __swiotlb_map_page(struct device *dev, struct page *page,
+>
+>         dev_addr = swiotlb_map_page(dev, page, offset, size, dir, attrs);
+>         if (!is_device_dma_coherent(dev))
+> -               __dma_map_area(phys_to_virt(swiotlb_dma_to_phys(dev, dev_addr)),
+> -                              size, dir);
+> +               __dma_map_area(swiotlb_to_virt(dev_addr), size, dir);
+>
+>         return dev_addr;
+>  }
+> @@ -283,8 +290,7 @@ static void __swiotlb_sync_single_for_device(struct device *dev,
+>  {
+>         swiotlb_sync_single_for_device(dev, dev_addr, size, dir);
+>         if (!is_device_dma_coherent(dev))
+> -               __dma_map_area(phys_to_virt(swiotlb_dma_to_phys(dev, dev_addr)),
+> -                              size, dir);
+> +               __dma_map_area(swiotlb_to_virt(dev_addr), size, dir);
+>  }
+>
+>
+>
+>
+> --
+> Sinan Kaya
+> Qualcomm Technologies, Inc. on behalf of Qualcomm Innovation Center, Inc.
+> Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project
