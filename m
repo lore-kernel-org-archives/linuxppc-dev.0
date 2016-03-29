@@ -1,24 +1,37 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qYzb83LvvzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 16:19:00 +1100 (AEDT)
-Message-ID: <1459228740.8173.10.camel@ellerman.id.au>
-Subject: Re: [PATCH 5/6] powerpc/livepatch: Add livepatch stack to struct
- thread_info
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org
-Cc: duwe@lst.de, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
- jkosina@suse.cz,  live-patching@vger.kernel.org, mbenes@suse.cz
-Date: Tue, 29 Mar 2016 16:19:00 +1100
-In-Reply-To: <56F9C531.3090703@gmail.com>
-References: <1458817445-5855-1-git-send-email-mpe@ellerman.id.au>
- <1458817445-5855-5-git-send-email-mpe@ellerman.id.au>
- <56F9C531.3090703@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qYznD1QmmzDq5v
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 16:27:44 +1100 (AEDT)
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 29 Mar 2016 15:27:42 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 913342BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 16:27:36 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2T5RSSE11534844
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 16:27:36 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2T5R4Bb030324
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 16:27:04 +1100
+Date: Tue, 29 Mar 2016 16:26:09 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Russell Currey <ruscur@russell.cc>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V2 1/2] pseries/eeh: Refactor the configure bridge RTAS
+ tokens
+Message-ID: <20160329052608.GA2614@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1459219911-14110-1-git-send-email-ruscur@russell.cc>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1459219911-14110-1-git-send-email-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,73 +41,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-03-29 at 10:58 +1100, Balbir Singh wrote:
-> On 24/03/16 22:04, Michael Ellerman wrote:
-> > diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> > index 290559df1e8b..3cb46a3b1de7 100644
-> > --- a/arch/powerpc/kernel/irq.c
-> > +++ b/arch/powerpc/kernel/irq.c
-> > @@ -66,6 +66,7 @@
-> >  #include <asm/udbg.h>
-> >  #include <asm/smp.h>
-> >  #include <asm/debug.h>
-> > +#include <asm/livepatch.h>
-> >  
-> >  #ifdef CONFIG_PPC64
-> >  #include <asm/paca.h>
-> > @@ -607,10 +608,12 @@ void irq_ctx_init(void)
-> >  		memset((void *)softirq_ctx[i], 0, THREAD_SIZE);
-> >  		tp = softirq_ctx[i];
-> >  		tp->cpu = i;
-> > +		klp_init_thread_info(tp);
+On Tue, Mar 29, 2016 at 12:51:50PM +1000, Russell Currey wrote:
+>The RTAS calls configure-pe and configure-bridge perform the same
+>actions, however the former can skip configuration if unnecessary.  The
+>existing code treats them as different tokens even though only one will
+>ever be called.  Refactor this by making a single token that is assigned
+>during init.
+>
+>Cc: <stable@vger.kernel.org> # 3.10-
+>Signed-off-by: Russell Currey <ruscur@russell.cc>
+>---
+> arch/powerpc/platforms/pseries/eeh_pseries.c | 27 +++++++++++----------------
+> 1 file changed, 11 insertions(+), 16 deletions(-)
+>
+>diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>index ac3ffd9..231b1df 100644
+>--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+>+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>@@ -53,7 +53,6 @@ static int ibm_read_slot_reset_state2;
+> static int ibm_slot_error_detail;
+> static int ibm_get_config_addr_info;
+> static int ibm_get_config_addr_info2;
+>-static int ibm_configure_bridge;
+> static int ibm_configure_pe;
+> 
+> /*
+>@@ -81,7 +80,13 @@ static int pseries_eeh_init(void)
+> 	ibm_get_config_addr_info2	= rtas_token("ibm,get-config-addr-info2");
+> 	ibm_get_config_addr_info	= rtas_token("ibm,get-config-addr-info");
+> 	ibm_configure_pe		= rtas_token("ibm,configure-pe");
+>-	ibm_configure_bridge		= rtas_token("ibm,configure-bridge");
+>+
+>+	/*
+>+	 * configure-pe and configure-bridge perform the same actions, however
+>+	 * the former is preferred as it can skip configuration if unnecessary.
+>+	 */
+>+	if (ibm_configure_pe == RTAS_UNKNOWN_SERVICE)
+>+		ibm_configure_pe	= rtas_token("ibm,configure-bridge");
+> 
+> 	/*
+> 	 * Necessary sanity check. We needn't check "get-config-addr-info"
+>@@ -93,8 +98,7 @@ static int pseries_eeh_init(void)
+> 	    (ibm_read_slot_reset_state2 == RTAS_UNKNOWN_SERVICE &&
+> 	     ibm_read_slot_reset_state == RTAS_UNKNOWN_SERVICE)	||
+> 	    ibm_slot_error_detail == RTAS_UNKNOWN_SERVICE	||
+>-	    (ibm_configure_pe == RTAS_UNKNOWN_SERVICE		&&
+>-	     ibm_configure_bridge == RTAS_UNKNOWN_SERVICE)) {
+>+	    ibm_configure_pe == RTAS_UNKNOWN_SERVICE) {
+> 		pr_info("EEH functionality not supported\n");
+> 		return -EINVAL;
+> 	}
 
-> At this point ti->livepatch_sp points to the next CPUs thread_info for softirq_ctx?
+Since you're here, you can do similar thing to @ibm_read_slot_reset_state
+and @ibm_read_slot_reset_state?
 
-Sorry I'm not sure what you mean.
+>@@ -621,18 +625,9 @@ static int pseries_eeh_configure_bridge(struct eeh_pe *pe)
+> 	if (pe->addr)
+> 		config_addr = pe->addr;
+> 
+>-	/* Use new configure-pe function, if supported */
+>-	if (ibm_configure_pe != RTAS_UNKNOWN_SERVICE) {
+>-		ret = rtas_call(ibm_configure_pe, 3, 1, NULL,
+>-				config_addr, BUID_HI(pe->phb->buid),
+>-				BUID_LO(pe->phb->buid));
+>-	} else if (ibm_configure_bridge != RTAS_UNKNOWN_SERVICE) {
+>-		ret = rtas_call(ibm_configure_bridge, 3, 1, NULL,
+>-				config_addr, BUID_HI(pe->phb->buid),
+>-				BUID_LO(pe->phb->buid));
+>-	} else {
+>-		return -EFAULT;
+>-	}
+>+	ret = rtas_call(ibm_configure_pe, 3, 1, NULL,
+>+			config_addr, BUID_HI(pe->phb->buid),
+>+			BUID_LO(pe->phb->buid));
+> 
 
-None of this relates to the current CPUs thread info.
+Russell, it seems not working if "ibm,configure-pe" and "ibm,configure-bridge" are all
+missed from "/rtas". Also, I don't think we need backport it to 3.10+ as it's not fixing
+any bugs if I'm correct enough.
 
-> > diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-> > index 3807fb05b6de..1b6cabb8e715 100644
-> > --- a/arch/powerpc/kernel/setup_64.c
-> > +++ b/arch/powerpc/kernel/setup_64.c
-> > @@ -69,6 +69,7 @@
-> >  #include <asm/kvm_ppc.h>
-> >  #include <asm/hugetlb.h>
-> >  #include <asm/epapr_hcalls.h>
-> > +#include <asm/livepatch.h>
-> >  
-> >  #ifdef DEBUG
-> >  #define DBG(fmt...) udbg_printf(fmt)
-> > @@ -667,16 +668,16 @@ static void __init emergency_stack_init(void)
-> >  	limit = min(safe_stack_limit(), ppc64_rma_size);
-> >  
-> >  	for_each_possible_cpu(i) {
-> > -		unsigned long sp;
-> > -		sp  = memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
-> > -		sp += THREAD_SIZE;
-> > -		paca[i].emergency_sp = __va(sp);
-> > +		struct thread_info *ti;
-> > +		ti = __va(memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit));
-> > +		klp_init_thread_info(ti);
-> > +		paca[i].emergency_sp = (void *)ti + THREAD_SIZE;
->  
-> Does emergency_sp still end up 128 byte aligned after this?
+Thanks,
+Gavin
 
-It should end up THREAD_SIZE aligned as before, due to the memblock_alloc_base().
 
-> >  #ifdef CONFIG_PPC_BOOK3S_64
-> >  		/* emergency stack for machine check exception handling. */
-> > -		sp  = memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
-> > -		sp += THREAD_SIZE;
-> > -		paca[i].mc_emergency_sp = __va(sp);
-> > +		ti = __va(memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit));
-> > +		klp_init_thread_info(ti);
-
-> Do we care about live-patching in this context? Are we mixing per-thread and per-cpu contexts?
-
-Well we probably don't want to be doing live patching when we're on the
-emergency stacks. But we have no control over whether that happens so we have
-to support it.
-
-cheers
+> 	if (ret)
+> 		pr_warn("%s: Unable to configure bridge PHB#%d-PE#%x (%d)\n",
+>-- 
+>2.7.4
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
