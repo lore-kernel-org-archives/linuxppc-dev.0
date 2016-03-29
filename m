@@ -1,51 +1,28 @@
-Return-Path: <sstabellini@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sebastian@breakpoint.cc>
+Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
+ [IPv6:2001:4d88:1ffa:82:880:aa0:9009:64ae])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qZ9Vv5GTMzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 23:45:58 +1100 (AEDT)
-Date: Tue, 29 Mar 2016 13:44:41 +0100 (BST)
-From: Stefano Stabellini <sstabellini@kernel.org>
-To: Konrad Rzeszutek Wilk <konrad@kernel.org>
-cc: Sinan Kaya <okaya@codeaurora.org>, Robin Murphy <robin.murphy@arm.com>,
- linux-arm-kernel@lists.infradead.org, timur@codeaurora.org,
- cov@codeaurora.org, nwatters@codeaurora.org, linux-mips@linux-mips.org,
- linux-ia64@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Chris Metcalf <cmetcalf@ezchip.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Huacai Chen <chenhc@lemote.com>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Jisheng Zhang <jszhang@marvell.com>,
- Florian Fainelli <f.fainelli@gmail.com>,
- Russell King <linux@arm.linux.org.uk>,
- Aaro Koskinen <aaro.koskinen@iki.fi>,
- Michael Ellerman <mpe@ellerman.id.au>, X86 <x86@kernel.org>,
- Ingo Molnar <mingo@redhat.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qZC6q6jcZzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 00:58:43 +1100 (AEDT)
+Date: Tue, 29 Mar 2016 15:40:24 +0200
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Guenter Roeck <linux@roeck-us.net>, Fenghua Yu <fenghua.yu@intel.com>,
- Denys Vlasenko <dvlasenk@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Akinobu Mita <akinobu.mita@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Valentin Rothberg <valentinrothberg@gmail.com>,
- Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Dean Nelson <dnelson@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>,
- "Suthikulpanit, Suravee" <Suravee.Suthikulpanit@amd.com>,
- Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
- sstabellini@kernel.org
-Subject: Re: [PATCH 2/3] swiotlb: prefix dma_to_phys and phys_to_dma functions
-In-Reply-To: <CACJDEmrzKOExg-Rchjy2hfVzkzbCZ=WNn4Bu3EVgim748VvRig@mail.gmail.com>
-Message-ID: <alpine.DEB.2.02.1603291329460.18380@kaball.uk.xensource.com>
-References: <1458252137-24497-1-git-send-email-okaya@codeaurora.org>
- <1458252137-24497-2-git-send-email-okaya@codeaurora.org>
- <56EBF09A.1060503@arm.com> <56EC1805.5060207@codeaurora.org>
- <CACJDEmrzKOExg-Rchjy2hfVzkzbCZ=WNn4Bu3EVgim748VvRig@mail.gmail.com>
+ Scott Wood <scottwood@freescale.com>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Paul Mackerras <paulus@samba.org>, Christoph Lameter <cl@linux.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] powerpc: mm: fixup preempt undefflow with huge pages
+Message-ID: <20160329134024.GA25057@breakpoint.cc>
+References: <20160307135506.GA12595@linutronix.de>
+ <877fheti8i.fsf@linux.vnet.ibm.com>
+ <1457394104.2943.69.camel@kernel.crashing.org>
+ <20160308090356.GA21842@linutronix.de>
+ <87bn6n1m4f.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <87bn6n1m4f.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,96 +32,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 28 Mar 2016, Konrad Rzeszutek Wilk wrote:
-> On Fri, Mar 18, 2016 at 11:00 AM, Sinan Kaya <okaya@codeaurora.org> wrote:
-> > On 3/18/2016 8:12 AM, Robin Murphy wrote:
-> >> Since we know for sure that swiotlb_to_phys is a no-op on arm64, it might be cleaner to simply not reference it at all. I suppose we could have some private local wrappers, e.g.:
-> >>
-> >> #define swiotlb_to_virt(addr) phys_to_virt((phys_addr_t)(addr))
-> >>
-> >> to keep the intent of the code clear (and just in case anyone ever builds a system mad enough to warrant switching out that definition, but I'd hope that never happens).
-> >>
-> >> Otherwise, looks good - thanks for doing this!
-> >
-> > OK. I added this. Reviewed-by?
-> >
-> > I'm not happy to submit such a big patch for all different ARCHs. I couldn't
-> > find a cleaner solution. I'm willing to split this patch into multiple if there
-> > is a better way.
-> >
-> > diff --git a/arch/arm64/mm/dma-mapping.c b/arch/arm64/mm/dma-mapping.c
-> > index ada00c3..8c0f66b 100644
-> > --- a/arch/arm64/mm/dma-mapping.c
-> > +++ b/arch/arm64/mm/dma-mapping.c
-> > @@ -29,6 +29,14 @@
-> >
-> >  #include <asm/cacheflush.h>
-> >
-> > +/*
-> > + * If you are building a system without IOMMU, then you are using SWIOTLB
-> > + * library. The ARM64 adaptation of this library does not support address
-> > + * translation and it assumes that physical address = dma address for such
-> > + * a use case. Please don't build a platform that violates this.
-> > + */
-> 
-> Why not just expand the ARM64 part to support address translation?
->
-> > +#define swiotlb_to_virt(addr) phys_to_virt((phys_addr_t)(addr))
-> > +
-> 
-> Adding Stefano here.
+On 2016-03-10 01:04:24 [+0530], Aneesh Kumar K.V wrote:
+> Sebastian Andrzej Siewior <bigeasy@linutronix.de> writes:
 
-Could you please explain what is the problem that you are trying to
-solve? In other words, what is the issue with assuming that physical
-address = dma address (and the current dma_to_phys and phys_to_dma
-static inlines) if no arm64 platforms violate it? That's pretty much
-what is done on x86 too (without X86_DMA_REMAP).
+*ping*
+http://patchwork.ozlabs.org/patch/593943/
 
-If you want to make sure that the assumption is not violated, you can
-introduce a boot time check or a BUG_ON somewhere.
-
-If there is an arm64 platform with phys_addr != dma_addr, we need proper
-support for it. In fact even if there is an IOMMU on that platform, when
-running Xen on it, the IOMMU would be used by the hypervisor and Linux
-would still end up without it, using the swiotlb.
-
- 
-> >  static pgprot_t __get_dma_pgprot(struct dma_attrs *attrs, pgprot_t prot,
-> >                                  bool coherent)
+> > [ text/plain ]
+> > hugepd_free() used __get_cpu_var() once. Nothing ensured that the code
+> > accessing the variable did not migrate from one CPU to another and soon
+> > this was noticed by Tiejun Chen in 94b09d755462 ("powerpc/hugetlb:
+> > Replace __get_cpu_var with get_cpu_var"). So we had it fixed.
+> >
+> > Christoph Lameter was doing his __get_cpu_var() replaces and forgot
+> > PowerPC. Then he noticed this and sent his fixed up batch again which
+> > got applied as 69111bac42f5 ("powerpc: Replace __get_cpu_var uses").
+> >
+> > The careful reader will noticed one little detail: get_cpu_var() got
+> > replaced with this_cpu_ptr(). So now we have a put_cpu_var() which does
+> > a preempt_enable() and nothing that does preempt_disable() so we
+> > underflow the preempt counter.
+> >
+>=20
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>=20
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Cc: Christoph Lameter <cl@linux.com>
+> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> > Cc: <stable@vger.kernel.org>
+> > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> > ---
+> > v1=E2=80=A6v2: - use get_cpu_var() instead of get_cpu_ptr()
+> >        - correct indentation of put_cpu_var()
+> >
+> >  arch/powerpc/mm/hugetlbpage.c | 4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpag=
+e.c
+> > index 744e24bcb85c..4a811ca7ac9d 100644
+> > --- a/arch/powerpc/mm/hugetlbpage.c
+> > +++ b/arch/powerpc/mm/hugetlbpage.c
+> > @@ -414,13 +414,13 @@ static void hugepd_free(struct mmu_gather *tlb, v=
+oid *hugepte)
 > >  {
-> > @@ -188,7 +196,7 @@ static void __dma_free(struct device *dev, size_t size,
-> >                        void *vaddr, dma_addr_t dma_handle,
-> >                        struct dma_attrs *attrs)
-> >  {
-> > -       void *swiotlb_addr = phys_to_virt(swiotlb_dma_to_phys(dev, dma_handle));
-> > +       void *swiotlb_addr = swiotlb_to_virt(dma_handle);
-> >
-> >         size = PAGE_ALIGN(size);
-> >
-> > @@ -209,8 +217,7 @@ static dma_addr_t __swiotlb_map_page(struct device *dev, struct page *page,
-> >
-> >         dev_addr = swiotlb_map_page(dev, page, offset, size, dir, attrs);
-> >         if (!is_device_dma_coherent(dev))
-> > -               __dma_map_area(phys_to_virt(swiotlb_dma_to_phys(dev, dev_addr)),
-> > -                              size, dir);
-> > +               __dma_map_area(swiotlb_to_virt(dev_addr), size, dir);
-> >
-> >         return dev_addr;
-> >  }
-> > @@ -283,8 +290,7 @@ static void __swiotlb_sync_single_for_device(struct device *dev,
-> >  {
-> >         swiotlb_sync_single_for_device(dev, dev_addr, size, dir);
-> >         if (!is_device_dma_coherent(dev))
-> > -               __dma_map_area(phys_to_virt(swiotlb_dma_to_phys(dev, dev_addr)),
-> > -                              size, dir);
-> > +               __dma_map_area(swiotlb_to_virt(dev_addr), size, dir);
-> >  }
-> >
-> >
-> >
-> >
-> > --
-> > Sinan Kaya
-> > Qualcomm Technologies, Inc. on behalf of Qualcomm Innovation Center, Inc.
-> > Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project
-> 
+> >  	struct hugepd_freelist **batchp;
+> > =20
+> > -	batchp =3D this_cpu_ptr(&hugepd_freelist_cur);
+> > +	batchp =3D &get_cpu_var(hugepd_freelist_cur);
+> > =20
+> >  	if (atomic_read(&tlb->mm->mm_users) < 2 ||
+> >  	    cpumask_equal(mm_cpumask(tlb->mm),
+> >  			  cpumask_of(smp_processor_id()))) {
+> >  		kmem_cache_free(hugepte_cache, hugepte);
+> > -        put_cpu_var(hugepd_freelist_cur);
+> > +		put_cpu_var(hugepd_freelist_cur);
+> >  		return;
+> >  	}
+> > =20
+
+Sebastian
