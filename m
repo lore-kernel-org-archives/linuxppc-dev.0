@@ -1,20 +1,18 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0100.outbound.protection.outlook.com [65.55.169.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qZ1FY3SDTzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 17:33:52 +1100 (AEDT)
-From: Zhao Qiang <qiang.zhao@nxp.com>
-To: <tglx@linutronix.de>
-CC: <jason@lakedaemon.net>, <marc.zyngier@arm.com>, <oss@buserror.net>,
- <xiaobo.xie@nxp.com>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Zhao Qiang <qiang.zhao@nxp.com>
-Subject: [PATCH] fsl/qe_ic: move qe_ic to drivers/irqchip
-Date: Tue, 29 Mar 2016 14:24:38 +0800
-Message-ID: <1459232678-12939-1-git-send-email-qiang.zhao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qZ1qy1nxJzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 18:00:14 +1100 (AEDT)
+Date: Tue, 29 Mar 2016 17:59:44 +1100
+From: Anton Blanchard <anton@samba.org>
+To: eranian@google.com, sukadev@linux.vnet.ibm.com, acme@redhat.com,
+ mpe@ellerman.id.au, cel@us.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] perf jit: genelf makes assumptions about endian
+Message-ID: <20160329175944.33a211cc@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,48 +22,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-qe_ic was put in drivers/soc/fsl/qe, but it should be in
-drivers/irqchip.
+Commit 9b07e27f88b9 ("perf inject: Add jitdump mmap injection support")
+incorrectly assumed that PowerPC is big endian only.
 
-Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+Simplify things by consolidating the define of GEN_ELF_ENDIAN and checking
+for __BYTE_ORDER == __BIG_ENDIAN.
+
+The PowerPC checks were also incorrect, they do not match what gcc
+emits. We should first look for __powerpc64__, then __powerpc__.
+
+Fixes: 9b07e27f88b9 ("perf inject: Add jitdump mmap injection support")
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- drivers/irqchip/Makefile                | 1 +
- drivers/{soc/fsl/qe => irqchip}/qe_ic.c | 0
- drivers/{soc/fsl/qe => irqchip}/qe_ic.h | 0
- drivers/soc/fsl/qe/Makefile             | 2 +-
- 4 files changed, 2 insertions(+), 1 deletion(-)
- rename drivers/{soc/fsl/qe => irqchip}/qe_ic.c (100%)
- rename drivers/{soc/fsl/qe => irqchip}/qe_ic.h (100%)
 
-diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
-index 18caacb..2977a89 100644
---- a/drivers/irqchip/Makefile
-+++ b/drivers/irqchip/Makefile
-@@ -59,3 +59,4 @@ obj-$(CONFIG_ARCH_SA1100)		+= irq-sa11x0.o
- obj-$(CONFIG_INGENIC_IRQ)		+= irq-ingenic.o
- obj-$(CONFIG_IMX_GPCV2)			+= irq-imx-gpcv2.o
- obj-$(CONFIG_PIC32_EVIC)		+= irq-pic32-evic.o
-+obj-$(CONFIG_QUICC_ENGINE)		+= qe_ic.o
-diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/irqchip/qe_ic.c
-similarity index 100%
-rename from drivers/soc/fsl/qe/qe_ic.c
-rename to drivers/irqchip/qe_ic.c
-diff --git a/drivers/soc/fsl/qe/qe_ic.h b/drivers/irqchip/qe_ic.h
-similarity index 100%
-rename from drivers/soc/fsl/qe/qe_ic.h
-rename to drivers/irqchip/qe_ic.h
-diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
-index 2031d38..51e4726 100644
---- a/drivers/soc/fsl/qe/Makefile
-+++ b/drivers/soc/fsl/qe/Makefile
-@@ -1,7 +1,7 @@
- #
- # Makefile for the linux ppc-specific parts of QE
- #
--obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_ic.o qe_io.o
-+obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_io.o
- obj-$(CONFIG_CPM)	+= qe_common.o
- obj-$(CONFIG_UCC)	+= ucc.o
- obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
--- 
-2.1.0.27.g96db324
+diff --git a/tools/perf/util/genelf.h b/tools/perf/util/genelf.h
+index cd67e64..2fbeb59 100644
+--- a/tools/perf/util/genelf.h
++++ b/tools/perf/util/genelf.h
+@@ -9,36 +9,32 @@ int jit_add_debug_info(Elf *e, uint64_t code_addr, void *debug, int nr_debug_ent
+ 
+ #if   defined(__arm__)
+ #define GEN_ELF_ARCH	EM_ARM
+-#define GEN_ELF_ENDIAN	ELFDATA2LSB
+ #define GEN_ELF_CLASS	ELFCLASS32
+ #elif defined(__aarch64__)
+ #define GEN_ELF_ARCH	EM_AARCH64
+-#define GEN_ELF_ENDIAN	ELFDATA2LSB
+ #define GEN_ELF_CLASS	ELFCLASS64
+ #elif defined(__x86_64__)
+ #define GEN_ELF_ARCH	EM_X86_64
+-#define GEN_ELF_ENDIAN	ELFDATA2LSB
+ #define GEN_ELF_CLASS	ELFCLASS64
+ #elif defined(__i386__)
+ #define GEN_ELF_ARCH	EM_386
+-#define GEN_ELF_ENDIAN	ELFDATA2LSB
+ #define GEN_ELF_CLASS	ELFCLASS32
+-#elif defined(__ppcle__)
+-#define GEN_ELF_ARCH	EM_PPC
+-#define GEN_ELF_ENDIAN	ELFDATA2LSB
+-#define GEN_ELF_CLASS	ELFCLASS64
+-#elif defined(__powerpc__)
+-#define GEN_ELF_ARCH	EM_PPC64
+-#define GEN_ELF_ENDIAN	ELFDATA2MSB
+-#define GEN_ELF_CLASS	ELFCLASS64
+-#elif defined(__powerpcle__)
++#elif defined(__powerpc64__)
+ #define GEN_ELF_ARCH	EM_PPC64
+-#define GEN_ELF_ENDIAN	ELFDATA2LSB
+ #define GEN_ELF_CLASS	ELFCLASS64
++#elif defined(__powerpc__)
++#define GEN_ELF_ARCH	EM_PPC
++#define GEN_ELF_CLASS	ELFCLASS32
+ #else
+ #error "unsupported architecture"
+ #endif
+ 
++#if __BYTE_ORDER == __BIG_ENDIAN
++#define GEN_ELF_ENDIAN	ELFDATA2MSB
++#else
++#define GEN_ELF_ENDIAN	ELFDATA2LSB
++#endif
++
+ #if GEN_ELF_CLASS == ELFCLASS64
+ #define elf_newehdr	elf64_newehdr
+ #define elf_getshdr	elf64_getshdr
