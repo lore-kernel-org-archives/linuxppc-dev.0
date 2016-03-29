@@ -1,18 +1,20 @@
-Return-Path: <ruscur@russell.cc>
-Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qYwM64xY0zDq62
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 13:53:22 +1100 (AEDT)
-From: Russell Currey <ruscur@russell.cc>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Russell Currey <ruscur@russell.cc>
-Subject: [PATCH V2 2/2] pseries/eeh: Handle RTAS delay requests in
- configure_bridge
-Date: Tue, 29 Mar 2016 12:51:51 +1000
-Message-Id: <1459219911-14110-2-git-send-email-ruscur@russell.cc>
-In-Reply-To: <1459219911-14110-1-git-send-email-ruscur@russell.cc>
-References: <1459219911-14110-1-git-send-email-ruscur@russell.cc>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qYxCB2Jd7zDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 14:31:34 +1100 (AEDT)
+Message-ID: <1459222294.8173.8.camel@ellerman.id.au>
+Subject: Re: [PATCH] Remove kretprobe_trampoline_holder.
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Tue, 29 Mar 2016 14:31:34 +1100
+In-Reply-To: <1459195592-6559-1-git-send-email-bauerman@linux.vnet.ibm.com>
+References: <3qWbvb0yVwz9sdm@ozlabs.org>
+ <1459195592-6559-1-git-send-email-bauerman@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,76 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the configure_pe and configure_bridge RTAS calls, the spec states
-that values of 9900-9905 can be returned, indicating that software
-should delay for 10^x (where x is the last digit, i.e. 990x)
-milliseconds and attempt the call again. Currently, the kernel doesn't
-know about this, and respecting it fixes some PCI failures when the
-hypervisor is busy.
+On Mon, 2016-03-28 at 17:06 -0300, Thiago Jung Bauermann wrote:
 
-The delay is capped at 0.2 seconds.
+> Fixes the following testsuite failure:
+> 
+> $ sudo ./perf test -v kallsyms
+>  1: vmlinux symtab matches kallsyms                          :
+> --- start ---
+> test child forked, pid 12489
+> Using /proc/kcore for kernel object code
+> Looking at the vmlinux_path (8 entries long)
+> Using /boot/vmlinux for symbols
+> 0xc00000000003d300: diff name v: .kretprobe_trampoline_holder k: kretprobe_trampoline
+> Maps only in vmlinux:
+>  c00000000086ca38-c000000000879b6c 87ca38 [kernel].text.unlikely
+>  c000000000879b6c-c000000000bf0000 889b6c [kernel].meminit.text
+>  c000000000bf0000-c000000000c53264 c00000 [kernel].init.text
+>  c000000000c53264-d000000004250000 c63264 [kernel].exit.text
+>  d000000004250000-d000000004450000 0 [libcrc32c]
+>  d000000004450000-d000000004620000 0 [xfs]
+>  d000000004620000-d000000004680000 0 [autofs4]
+>  d000000004680000-d0000000046e0000 0 [x_tables]
+>  d0000000046e0000-d000000004780000 0 [ip_tables]
+>  d000000004780000-d0000000047e0000 0 [rng_core]
+>  d0000000047e0000-ffffffffffffffff 0 [pseries_rng]
+> Maps in vmlinux with a different name in kallsyms:
+> Maps only in kallsyms:
+>  d000000000000000-f000000000000000 1000000000010000 [kernel.kallsyms]
+>  f000000000000000-ffffffffffffffff 3000000000010000 [kernel.kallsyms]
+> test child finished with -1
+> ---- end ----
+> vmlinux symtab matches kallsyms: FAILED!
+> 
+> The problem is that the kretprobe_trampoline symbol looks like this:
+> 
+> $ eu-readelf -s /boot/vmlinux G kretprobe_trampoline
+>  2431: c000000001302368     24 NOTYPE  LOCAL  DEFAULT       37 kretprobe_trampoline_holder
+>  2432: c00000000003d300      8 FUNC    LOCAL  DEFAULT        1 .kretprobe_trampoline_holder
+> 97543: c00000000003d300      0 NOTYPE  GLOBAL DEFAULT        1 kretprobe_trampoline
+> 
+> Its type is NOTYPE, and its size is 0, and this is a problem because
+> symbol-elf.c:dso__load_sym skips function symbols that are not STT_FUNC
+> or STT_GNU_IFUNC (this is determined by elf_sym__is_function). Even
+> if the type is changed to STT_FUNC, when dso__load_sym calls
+> symbols__fixup_duplicate, the kretprobe_trampoline symbol is dropped in
+> favour of .kretprobe_trampoline_holder because the latter has non-zero
+> size (as determined by choose_best_symbol).
+> 
+> With this patch, all vmlinux symbols match /proc/kallsyms and the
+> testcase passes.
 
-Cc: <stable@vger.kernel.org> # 3.10-
-Signed-off-by: Russell Currey <ruscur@russell.cc>
----
-V2: Use rtas_busy_delay and the new ibm_configure_pe token, refactoring
----
- arch/powerpc/platforms/pseries/eeh_pseries.c | 35 +++++++++++++++++++++++-----
- 1 file changed, 29 insertions(+), 6 deletions(-)
+Have you tested this on an LE system? I did a quick test and it appears to be
+completely broken. Basically every symbol is not found, eg:
 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 231b1df..c442b11 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -619,20 +619,43 @@ static int pseries_eeh_configure_bridge(struct eeh_pe *pe)
- {
- 	int config_addr;
- 	int ret;
-+	/* Waiting 0.2s maximum before skipping configuration */
-+	int max_wait = 200;
-+	int mwait;
- 
- 	/* Figure out the PE address */
- 	config_addr = pe->config_addr;
- 	if (pe->addr)
- 		config_addr = pe->addr;
- 
--	ret = rtas_call(ibm_configure_pe, 3, 1, NULL,
--			config_addr, BUID_HI(pe->phb->buid),
--			BUID_LO(pe->phb->buid));
-+	while (max_wait > 0) {
-+		ret = rtas_call(ibm_configure_pe, 3, 1, NULL,
-+				config_addr, BUID_HI(pe->phb->buid),
-+				BUID_LO(pe->phb->buid));
- 
--	if (ret)
--		pr_warn("%s: Unable to configure bridge PHB#%d-PE#%x (%d)\n",
--			__func__, pe->phb->global_number, pe->addr, ret);
-+		/*
-+		 * RTAS can return a delay value of up to 10^5 milliseconds
-+		 * (RTAS_EXTENDED_DELAY_MAX), which is too long.  Only respect
-+		 * the delay if it's 100ms or less.
-+		 */
- 
-+		switch (ret) {
-+		case 0:
-+			return ret;
-+		case RTAS_EXTENDED_DELAY_MIN:
-+		case RTAS_EXTENDED_DELAY_MIN+1:
-+		case RTAS_EXTENDED_DELAY_MIN+2:
-+			mwait = rtas_busy_delay(ret);
-+			break;
-+		default:
-+			goto err;
-+		}
-+
-+		max_wait -= mwait;
-+	}
-+err:
-+	pr_warn("%s: Unable to configure bridge PHB#%d-PE#%x (%d)\n",
-+		__func__, pe->phb->global_number, pe->addr, ret);
- 	return ret;
- }
- 
--- 
-2.7.4
+ 1: vmlinux symtab matches kallsyms                          :
+--- start ---
+test child forked, pid 16222
+Using /proc/kcore for kernel object code
+Looking at the vmlinux_path (8 entries long)
+Using /boot/vmlinux-4.5.0-11318-gdf01bc5cf4ea for symbols
+0xc00000000000b428: run_init_process not on kallsyms
+0xc00000000000b478: try_to_run_init_process not on kallsyms
+0xc00000000000b4f8: do_one_initcall not on kallsyms
+0xc00000000000b768: match_dev_by_uuid not on kallsyms
+...
+0xc0000000009846b8: write_mem not on kallsyms
+0xc000000000984728: do_fp_store not on kallsyms
+0xc000000000984828: emulate_step not on kallsyms
+
+$ sudo grep emulate_step /proc/kallsyms
+c000000000984820 T emulate_step
+
+
+Notice it's off by 8. That's because of the local/global entry point on LE. So
+that will need to be fixed somewhere.
+
+cheers
