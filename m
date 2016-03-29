@@ -1,33 +1,40 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qZKGP44ZNzDqDT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 05:35:41 +1100 (AEDT)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qZKF952jJzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 05:34:37 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3qZKGP0HR8z9sC3
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Mar 2016 05:35:41 +1100 (AEDT)
 Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Tue, 29 Mar 2016 15:34:32 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 616261DC0054
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 14:34:24 -0400 (EDT)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2THXste3801506
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 14:33:55 -0300
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2TIYSmb019152
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 14:34:28 -0400
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] Remove kretprobe_trampoline_holder.
-Date: Tue, 29 Mar 2016 15:34:22 -0300
-Message-ID: <1625864.aO4Q1DYN9d@hactar>
-In-Reply-To: <1459208757.8173.3.camel@ellerman.id.au>
-References: <3qWbvb0yVwz9sdm@ozlabs.org> <2042788.6sAC9lOLzB@hactar>
- <1459208757.8173.3.camel@ellerman.id.au>
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Wed, 30 Mar 2016 04:35:40 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 142822CE8056
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Mar 2016 05:35:30 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2TIZMEr4129062
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Mar 2016 05:35:30 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2TIYvVk026589
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Mar 2016 05:34:57 +1100
+Subject: [PATCH v2] ppc64/book3s: fix branching to out of line handlers in
+ relocation kernel
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 30 Mar 2016 00:04:37 +0530
+Message-ID: <20160329183333.15267.29181.stgit@hbathini.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,131 +46,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Dienstag, 29 M=C3=A4rz 2016, 10:45:57 schrieb Michael Ellerman:
-> On Mon, 2016-03-28 at 17:29 -0300, Thiago Jung Bauermann wrote:
-> > If I do s/_do_fork/._do_fork/ in kprobe_ftrace.tc then all ftrace k=
-probe
-> > tests pass:
->=20
-> OK. We fixed that in 'perf probe', but not if you're using the sysfs =
-file
-> directly.
->=20
-> Do you want to write a patch for ftracetest to try and handle it? I g=
-uess
-> you'd try "_do_fork" and if that fails then try "._do_fork", and mayb=
-e
-> only if uname -m says you're running on ppc64?
+Some of the interrupt vectors on 64-bit POWER server processors  are
+only 32 bytes long (8 instructions), which is not enough for the full
+first-level interrupt handler. For these we need to branch to an out-
+of-line (OOL) handler. But when we are running a relocatable kernel,
+interrupt vectors till __end_interrupts marker are copied down to real
+address 0x100. So, branching to labels (read OOL handlers) outside this
+section should be handled differently (see LOAD_HANDLER()), considering
+relocatable kernel, which would need atleast 4 instructions.
 
-I did write a patch yesterday (included below for reference), but then =
-I
-noticed that the other ftrace tests use _do_fork and they work fine (I =
-guess
-because of the fix you mentioned). I think that ideally the ftrace filt=
-er
-mechanism should work with dot symbols as well as regular symbols.
+However, branching from interrupt vector means that we corrupt the CFAR
+(come-from address register) on POWER7 and later processors as mentioned
+in commit 1707dd16. So, EXCEPTION_PROLOG_0 (6 instructions) that contains
+the part up to the point where the CFAR is saved in the PACA should be
+part of the short interrupt vectors before we branch out to OOL handlers.
 
-I think this could work by creating a mechanism analogous to the
-ARCH_HAS_SYSCALL_MATCH_SYM_NAME one in trace_syscalls.c. Ftrace_match_r=
-ecord
-could call it to adjust the symbol name (like kprobe_lookup_name) befor=
-e
-calling ftrace_match.
+But as mentioned already, there are interrupt vectors on 64-bit POWER server
+processors that are only 32 bytes long (like vectors 0x4f00, 0x4f20, etc.),
+which cannot accomodate the above two cases at the same time owing to space
+constraint. Currently, in these interrupt vectors, we simply branch out to
+OOL handlers, without using LOAD_HANDLER(), which leaves us vulnerable when
+running a relocatable kernel (eg. kdump case). While this has been the case
+for sometime now and kdump is used widely, we were fortunate not to see any
+problems so far, for three reasons:
 
-But I=E2=80=99m wondering if it=E2=80=99s really worth the effort and m=
-aybe patching the
-testcase is enough? Also, I don=E2=80=99t know whether my idea would ha=
-ve any
-side effects.
+    1. In almost all cases, production kernel (relocatable) is used for
+       kdump as well, which would mean that crashed kernel's OOL handler
+       would be at the same place where we endup branching to, from short
+       interrupt vector of kdump kernel.
+    2. Also, OOL handler was unlikely the reason for crash in almost all
+       the kdump scenarios, which meant we had a sane OOL handler from
+       crashed kernel that we branched to.
+    3. On most 64-bit POWER server processors, page size is large enough
+       that marking interrupt vector code as executable (see commit
+       429d2e83) leads to marking OOL handler code from crashed kernel,
+       that sits right below interrupt vector code from kdump kernel, as
+       executable as well.
 
---=20
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Let us fix this undependable code path by moving the __end_interrupts marker
+down past OOL handlers to make sure that we also copy OOL handlers to real
+address 0x100 when running a relocatable kernel. This helps in cases discussed
+above, where interrupt vectors are not long enough to branch out to OOL handlers
+with LOAD_HANDLER(). While we are here, let us remove the virtually insignificant
+__end_handlers marker.
 
+This fix has been tested successfully in kdump scenario, on a lpar with 4K page
+size by using different default/production kernel and kdump kernel.
 
->From 2ea9b3545906932b9aa213506ec0dff03cffdbe5 Mon Sep 17 00:00:00 2001
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Date: Mon, 28 Mar 2016 18:39:56 -0300
-Subject: [PATCH] selftests: kprobe: Fix kprobe_ftrace.tc on ppc64
-
-On ppc64 (but not ppc64le), symbols for function entry points start wit=
-h
-a dot. There's no _do_fork but there is a ._do_fork.
-
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- .../selftests/ftrace/test.d/kprobe/kprobe_ftrace.tc  | 20 ++++++++++++=
-+-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
 
-diff --git a/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_ftrace=
-.tc b/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_ftrace.tc
-index d6f2f49..c3ec5c2 100644
---- a/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_ftrace.tc
-+++ b/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_ftrace.tc
-@@ -4,33 +4,39 @@
- [ -f kprobe_events ] || exit_unsupported # this is configurable
- grep function available_tracers || exit_unsupported # this is configur=
-able
-=20
-+if [ "$(uname -m)" =3D "ppc64" ]; then
-+    FILTER_FUNCTION=3D"._do_fork"
-+else
-+    FILTER_FUNCTION=3D"_do_fork"
-+fi
+changes from v1:
+1. Changed the subject from "copy interrupts till __end_handlers marker
+   instead of __end_interrupts" to a more generic one
+2. Used __end_interrupts marker instead of __end_handlers to make the fix
+   less complicated.
+3. Removed unused __end_handlers marker.
+
+
+ arch/powerpc/kernel/exceptions-64s.S |   23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 7716ceb..e598580 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -764,8 +764,8 @@ kvmppc_skip_Hinterrupt:
+ #endif
+ 
+ /*
+- * Code from here down to __end_handlers is invoked from the
+- * exception prologs above.  Because the prologs assemble the
++ * Code from here down to end of out of line handlers is invoked from
++ * the exception prologs above.  Because the prologs assemble the
+  * addresses of these handlers using the LOAD_HANDLER macro,
+  * which uses an ori instruction, these handlers must be in
+  * the first 64k of the kernel image.
+@@ -953,11 +953,6 @@ hv_facility_unavailable_relon_trampoline:
+ #endif
+ 	STD_RELON_EXCEPTION_PSERIES(0x5700, 0x1700, altivec_assist)
+ 
+-	/* Other future vectors */
+-	.align	7
+-	.globl	__end_interrupts
+-__end_interrupts:
+-
+ 	.align	7
+ system_call_entry:
+ 	b	system_call_common
+@@ -1230,10 +1225,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ 	STD_EXCEPTION_COMMON(0xf60, facility_unavailable, facility_unavailable_exception)
+ 	STD_EXCEPTION_COMMON(0xf80, hv_facility_unavailable, facility_unavailable_exception)
+ 
+-	.align	7
+-	.globl	__end_handlers
+-__end_handlers:
+-
+ 	/* Equivalents to the above handlers for relocation-on interrupt vectors */
+ 	STD_RELON_EXCEPTION_HV_OOL(0xe40, emulation_assist)
+ 	MASKABLE_RELON_EXCEPTION_HV_OOL(0xe80, h_doorbell)
+@@ -1244,6 +1235,16 @@ __end_handlers:
+ 	STD_RELON_EXCEPTION_PSERIES_OOL(0xf60, facility_unavailable)
+ 	STD_RELON_EXCEPTION_HV_OOL(0xf80, hv_facility_unavailable)
+ 
++	/* FIXME: For now, let us move the __end_interrupts marker down past
++	 * the out-of-line handlers, to make sure we also copy OOL handlers
++	 * to real adress 0x100 when running a relocatable kernel. This helps
++	 * in cases where interrupt vectors are not long enough (like 0x4f00,
++	 * 0x4f20, etc.) to branch out to OOL handlers with LOAD_HANDLER().
++	 */
++	.align	7
++	.globl	__end_interrupts
++__end_interrupts:
 +
- # prepare
- echo nop > current_tracer
--echo _do_fork > set_ftrace_filter
-+echo $FILTER_FUNCTION > set_ftrace_filter
- echo 0 > events/enable
- echo > kprobe_events
--echo 'p:testprobe _do_fork' > kprobe_events
-+echo "p:testprobe $FILTER_FUNCTION" > kprobe_events
-=20
- # kprobe on / ftrace off
- echo 1 > events/kprobes/testprobe/enable
- echo > trace
- ( echo "forked")
- grep testprobe trace
--! grep '_do_fork <-' trace
-+! grep "$FILTER_FUNCTION <-" trace
-=20
- # kprobe on / ftrace on
- echo function > current_tracer
- echo > trace
- ( echo "forked")
- grep testprobe trace
--grep '_do_fork <-' trace
-+grep "$FILTER_FUNCTION <-" trace
-=20
- # kprobe off / ftrace on
- echo 0 > events/kprobes/testprobe/enable
- echo > trace
- ( echo "forked")
- ! grep testprobe trace
--grep '_do_fork <-' trace
-+grep "$FILTER_FUNCTION <-" trace
-=20
- # kprobe on / ftrace on
- echo 1 > events/kprobes/testprobe/enable
-@@ -38,14 +44,14 @@ echo function > current_tracer
- echo > trace
- ( echo "forked")
- grep testprobe trace
--grep '_do_fork <-' trace
-+grep "$FILTER_FUNCTION <-" trace
-=20
- # kprobe on / ftrace off
- echo nop > current_tracer
- echo > trace
- ( echo "forked")
- grep testprobe trace
--! grep '_do_fork <-' trace
-+! grep "$FILTER_FUNCTION <-" trace
-=20
- # cleanup
- echo nop > current_tracer
---=20
-1.9.1
+ #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
+ /*
+  * Data area reserved for FWNMI option.
