@@ -1,21 +1,20 @@
-Return-Path: <ruscur@russell.cc>
-Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qZ0Lt4JTKzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 16:53:26 +1100 (AEDT)
-Message-ID: <1459230799.21529.2.camel@russell.cc>
-Subject: Re: [PATCH V2 1/2] pseries/eeh: Refactor the configure bridge RTAS
- tokens
-From: Russell Currey <ruscur@russell.cc>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Tue, 29 Mar 2016 15:53:19 +1000
-In-Reply-To: <20160329052608.GA2614@gwshan>
-References: <1459219911-14110-1-git-send-email-ruscur@russell.cc>
- <20160329052608.GA2614@gwshan>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <qiang.zhao@nxp.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0100.outbound.protection.outlook.com [65.55.169.100])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qZ1FY3SDTzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 17:33:52 +1100 (AEDT)
+From: Zhao Qiang <qiang.zhao@nxp.com>
+To: <tglx@linutronix.de>
+CC: <jason@lakedaemon.net>, <marc.zyngier@arm.com>, <oss@buserror.net>,
+ <xiaobo.xie@nxp.com>, <linux-kernel@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, Zhao Qiang <qiang.zhao@nxp.com>
+Subject: [PATCH] fsl/qe_ic: move qe_ic to drivers/irqchip
+Date: Tue, 29 Mar 2016 14:24:38 +0800
+Message-ID: <1459232678-12939-1-git-send-email-qiang.zhao@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,67 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-03-29 at 16:26 +1100, Gavin Shan wrote:
-> On Tue, Mar 29, 2016 at 12:51:50PM +1000, Russell Currey wrote:
-<snip>
-> > 	/*
-> > 	 * Necessary sanity check. We needn't check "get-config-addr-info"
-> > @@ -93,8 +98,7 @@ static int pseries_eeh_init(void)
-> > 	    (ibm_read_slot_reset_state2 == RTAS_UNKNOWN_SERVICE &&
-> > 	     ibm_read_slot_reset_state == RTAS_UNKNOWN_SERVICE)	||
-> > 	    ibm_slot_error_detail == RTAS_UNKNOWN_SERVICE	||
-> > -	    (ibm_configure_pe == RTAS_UNKNOWN_SERVICE		&
-> > &
-> > -	     ibm_configure_bridge == RTAS_UNKNOWN_SERVICE)) {
-> > +	    ibm_configure_pe == RTAS_UNKNOWN_SERVICE) {
-> > 		pr_info("EEH functionality not supported\n");
-> > 		return -EINVAL;
-> > 	}
-> Since you're here, you can do similar thing to @ibm_read_slot_reset_state
-> and @ibm_read_slot_reset_state?
+qe_ic was put in drivers/soc/fsl/qe, but it should be in
+drivers/irqchip.
 
-Ah, didn't notice there was a similar thing going on there.  Will fix.
-> 
-> > 
-> > @@ -621,18 +625,9 @@ static int pseries_eeh_configure_bridge(struct
-> > eeh_pe *pe)
-> > 	if (pe->addr)
-> > 		config_addr = pe->addr;
-> > 
-> > -	/* Use new configure-pe function, if supported */
-> > -	if (ibm_configure_pe != RTAS_UNKNOWN_SERVICE) {
-> > -		ret = rtas_call(ibm_configure_pe, 3, 1, NULL,
-> > -				config_addr, BUID_HI(pe->phb->buid),
-> > -				BUID_LO(pe->phb->buid));
-> > -	} else if (ibm_configure_bridge != RTAS_UNKNOWN_SERVICE) {
-> > -		ret = rtas_call(ibm_configure_bridge, 3, 1, NULL,
-> > -				config_addr, BUID_HI(pe->phb->buid),
-> > -				BUID_LO(pe->phb->buid));
-> > -	} else {
-> > -		return -EFAULT;
-> > -	}
-> > +	ret = rtas_call(ibm_configure_pe, 3, 1, NULL,
-> > +			config_addr, BUID_HI(pe->phb->buid),
-> > +			BUID_LO(pe->phb->buid));
-> > 
-> Russell, it seems not working if "ibm,configure-pe" and "ibm,configure-
-> bridge" are all
-> missed from "/rtas".
+Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+---
+ drivers/irqchip/Makefile                | 1 +
+ drivers/{soc/fsl/qe => irqchip}/qe_ic.c | 0
+ drivers/{soc/fsl/qe => irqchip}/qe_ic.h | 0
+ drivers/soc/fsl/qe/Makefile             | 2 +-
+ 4 files changed, 2 insertions(+), 1 deletion(-)
+ rename drivers/{soc/fsl/qe => irqchip}/qe_ic.c (100%)
+ rename drivers/{soc/fsl/qe => irqchip}/qe_ic.h (100%)
 
-If they're both missing, then the init should fail as ibm_configure_pe will
-be RTAS_UNKNOWN_SERVICE, so this code should never be called.
-
->  Also, I don't think we need backport it to 3.10+ as it's not fixing
-> any bugs if I'm correct enough.
-
-This patch doesn't, but the second patch does.
-
-> 
-> Thanks,
-> Gavin
-> 
-> 
-> > 
-> > 	if (ret)
-> > 		pr_warn("%s: Unable to configure bridge PHB#%d-PE#%x
-> > (%d)\n",
+diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
+index 18caacb..2977a89 100644
+--- a/drivers/irqchip/Makefile
++++ b/drivers/irqchip/Makefile
+@@ -59,3 +59,4 @@ obj-$(CONFIG_ARCH_SA1100)		+= irq-sa11x0.o
+ obj-$(CONFIG_INGENIC_IRQ)		+= irq-ingenic.o
+ obj-$(CONFIG_IMX_GPCV2)			+= irq-imx-gpcv2.o
+ obj-$(CONFIG_PIC32_EVIC)		+= irq-pic32-evic.o
++obj-$(CONFIG_QUICC_ENGINE)		+= qe_ic.o
+diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/irqchip/qe_ic.c
+similarity index 100%
+rename from drivers/soc/fsl/qe/qe_ic.c
+rename to drivers/irqchip/qe_ic.c
+diff --git a/drivers/soc/fsl/qe/qe_ic.h b/drivers/irqchip/qe_ic.h
+similarity index 100%
+rename from drivers/soc/fsl/qe/qe_ic.h
+rename to drivers/irqchip/qe_ic.h
+diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
+index 2031d38..51e4726 100644
+--- a/drivers/soc/fsl/qe/Makefile
++++ b/drivers/soc/fsl/qe/Makefile
+@@ -1,7 +1,7 @@
+ #
+ # Makefile for the linux ppc-specific parts of QE
+ #
+-obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_ic.o qe_io.o
++obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_io.o
+ obj-$(CONFIG_CPM)	+= qe_common.o
+ obj-$(CONFIG_UCC)	+= ucc.o
+ obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
+-- 
+2.1.0.27.g96db324
