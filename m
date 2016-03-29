@@ -1,19 +1,50 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qZ6Cs0q7pzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 21:17:45 +1100 (AEDT)
-In-Reply-To: <20160328112305.18048.43759.stgit@hbathini.in.ibm.com>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>
-Subject: Re: ppc64/book3s: copy interrupts till __end_handlers marker instead
- of __end_interrupts
-Message-Id: <3qZ6Cr6yXRz9s9N@ozlabs.org>
-Date: Tue, 29 Mar 2016 21:17:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qZ9mf6SK0zDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 23:57:54 +1100 (AEDT)
+Subject: Re: [PATCH 2/3] swiotlb: prefix dma_to_phys and phys_to_dma functions
+To: Stefano Stabellini <sstabellini@kernel.org>,
+ Konrad Rzeszutek Wilk <konrad@kernel.org>
+References: <1458252137-24497-1-git-send-email-okaya@codeaurora.org>
+ <1458252137-24497-2-git-send-email-okaya@codeaurora.org>
+ <56EBF09A.1060503@arm.com> <56EC1805.5060207@codeaurora.org>
+ <CACJDEmrzKOExg-Rchjy2hfVzkzbCZ=WNn4Bu3EVgim748VvRig@mail.gmail.com>
+ <alpine.DEB.2.02.1603291329460.18380@kaball.uk.xensource.com>
+Cc: Robin Murphy <robin.murphy@arm.com>,
+ linux-arm-kernel@lists.infradead.org, timur@codeaurora.org,
+ cov@codeaurora.org, nwatters@codeaurora.org, linux-mips@linux-mips.org,
+ linux-ia64@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Chris Metcalf <cmetcalf@ezchip.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Huacai Chen <chenhc@lemote.com>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Jisheng Zhang <jszhang@marvell.com>, Florian Fainelli
+ <f.fainelli@gmail.com>, Russell King <linux@arm.linux.org.uk>,
+ Aaro Koskinen <aaro.koskinen@iki.fi>, Michael Ellerman <mpe@ellerman.id.au>,
+ X86 <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Guenter Roeck <linux@roeck-us.net>, Fenghua Yu <fenghua.yu@intel.com>,
+ Denys Vlasenko <dvlasenk@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Akinobu Mita <akinobu.mita@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Valentin Rothberg <valentinrothberg@gmail.com>,
+ Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Dean Nelson <dnelson@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "Suthikulpanit, Suravee" <Suravee.Suthikulpanit@amd.com>,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>
+From: Sinan Kaya <okaya@codeaurora.org>
+Message-ID: <56FA7BC9.2010903@codeaurora.org>
+Date: Tue, 29 Mar 2016 08:57:45 -0400
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.02.1603291329460.18380@kaball.uk.xensource.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,74 +54,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Hari,
-
-You win the "Best Change Log of the Year" award.
-
-Some comments below ...
-
-On Mon, 2016-28-03 at 11:23:22 UTC, Hari Bathini wrote:
-> Some of the interrupt vectors on 64-bit POWER server processors  are
-> only 32 bytes long (8 instructions), which is not enough for the full
-> first-level interrupt handler. For these we need to branch to an out-
-> of-line (OOL) handler. But when we are running a relocatable kernel,
-> interrupt vectors till __end_interrupts marker are copied down to real
-> address 0x100. So, branching to labels (read OOL handlers) outside this
-> section should be handled differently (see LOAD_HANDLER()), considering
-> relocatable kernel, which would need atleast 4 instructions.
+On 3/29/2016 8:44 AM, Stefano Stabellini wrote:
+> Could you please explain what is the problem that you are trying to
+> solve? In other words, what is the issue with assuming that physical
+> address = dma address (and the current dma_to_phys and phys_to_dma
+> static inlines) if no arm64 platforms violate it? That's pretty much
+> what is done on x86 too (without X86_DMA_REMAP).
 > 
-> However, branching from interrupt vector means that we corrupt the CFAR
-> (come-from address register) on POWER7 and later processors as mentioned
-> in commit 1707dd16. So, EXCEPTION_PROLOG_0
-> (6 instructions) that contains the part up to the point where the CFAR is
-> saved in the PACA should be part of the short interrupt vectors before we
-> branch out to OOL handlers.
+> If you want to make sure that the assumption is not violated, you can
+> introduce a boot time check or a BUG_ON somewhere.
 > 
-> But as mentioned already, there are interrupt vectors on 64-bit POWER server
-> processors that are only 32 bytes long (like vectors 0x4f00, 0x4f20, etc.),
-> which cannot accomodate the above two cases at the same time owing to space
-> constraint. Currently, in these interrupt vectors, we simply branch out to
-> OOL handlers, without using LOAD_HANDLER(), which leaves us vulnerable when
-> running a relocatable kernel (eg. kdump case). While this has been the case
-> for sometime now and kdump is used widely, we were fortunate not to see any
-> problems so far, for three reasons:
-> 
->     1. In almost all cases, production kernel (relocatable) is used for
->        kdump as well, which would mean that crashed kernel's OOL handler
->        would be at the same place where we endup branching to, from short
->        interrupt vector of kdump kernel.
->     2. Also, OOL handler was unlikely the reason for crash in almost all
->        the kdump scenarios, which meant we had a sane OOL handler from
->        crashed kernel that we branched to.
->     3. On most 64-bit POWER server processors, page size is large enough
->        that marking interrupt vector code as executable (see commit
->        429d2e83) leads to marking OOL handler code from crashed kernel,
->        that sits right below interrupt vector code from kdump kernel, as
->        executable as well.
-> 
-> Let us fix this undependable code path firstly, by moving down __end_handlers
-> marker down past OOL handlers. Secondly, copying interrupt vectors down till
-> __end_handlers marker instead of __end_interrupts, when running a relocatable
-> kernel, to make sure we endup in relocated (kdump) kernel's OOL handler instead
-> of crashed kernel's. Thirdly, by marking all the interrupt vector code that is
-> copied down to real address 0x100 as executable, considering the relocation on
-> exception feature that allows exceptions to be raised in virtual mode (IR=DR=1).
-> 
-> This fix has been tested successfully in kdump scenario, on a lpar with 4K page
-> size by using different default/production kernel and kdump kernel.
+> If there is an arm64 platform with phys_addr != dma_addr, we need proper
+> support for it. In fact even if there is an IOMMU on that platform, when
+> running Xen on it, the IOMMU would be used by the hypervisor and Linux
+> would still end up without it, using the swiotlb.
 
-So I think you've missed one important case.
 
-In do_final_fixups() we recopy the (now patched) kernel code down to zero. That
-code uses __end_interrupts as its limit, so I think if you look closely your OOL
-handlers down at zero will not have had feature fixups applied to them.
+The problem is that device drivers are trying to use dma_to_phys and phys_to_dma
+APIs to do address translation even though these two API do not exist in DMA mapping
+layer. (see patch #1 and I made the same mistake in my HIDMA code)
 
-I think perhaps the better fix is just to move __end_interrupts down (up) to the
-right location. AFAICS all users of __end_interrupts actually want that address.
+Especially, when a device is behind an IOMMU; the DMA addresses are not equal
+to physical addresses. Usage of dma_to_phys causes a crash on the system.
 
-It would also mean we could remove __end_handlers as unused.
+I'm trying to prefix the dma_to_phys and phys_to_dma API with swiotlb so that
+we know what it is intended for and usage of these API in drivers need to be
+discouraged in the future during code reviews.
 
-So can you please check that I'm right about do_final_fixups(), and then try
-moving __end_interrupts and check that works?
+Since I renamed the API, Robin Murphy made a suggestion to convert this 
 
-cheers
+phys_to_virt(swiotlb_dma_to_phys(dev, dma_handle))
+
+to this
+
+#define swiotlb_to_virt(addr) phys_to_virt((phys_addr_t)(addr))
+
+swiotlb_to_virt(dma_handle)
+
+just to reduce code clutter since we know swiotlb_dma_to_phys returns phys already
+for ARM64 architecture.
+
+I think we can do this exercise later. I'll undo this change for the moment. 
+Let's focus on the API rename. 
+
+I don't want this general purpose dma_to_phys API returning phys=dma value. This is
+not correct.
+
+-- 
+Sinan Kaya
+Qualcomm Technologies, Inc. on behalf of Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project
