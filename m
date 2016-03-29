@@ -1,37 +1,40 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qZRwd54MlzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 10:35:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qZSQJ586hzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 10:58:00 +1100 (AEDT)
 Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Tue, 29 Mar 2016 20:35:39 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 219931DC006E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 19:35:32 -0400 (EDT)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2TMZ36V38600800
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 19:35:03 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2TNZae0014379
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 20:35:37 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, ananth@in.ibm.com
-Subject: Re: [PATCH] Remove kretprobe_trampoline_holder.
-Date: Tue, 29 Mar 2016 20:35:32 -0300
-Message-ID: <3337968.FTL1d9fOmu@hactar>
-In-Reply-To: <1459222294.8173.8.camel@ellerman.id.au>
-References: <3qWbvb0yVwz9sdm@ozlabs.org>
- <1459195592-6559-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1459222294.8173.8.camel@ellerman.id.au>
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 30 Mar 2016 09:27:39 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 515B62CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 10:27:36 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2TNRRjV12845516
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 10:27:36 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u2TNR35f032509
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 10:27:03 +1100
+Date: Wed, 30 Mar 2016 10:07:01 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Russell Currey <ruscur@russell.cc>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V2 2/2] pseries/eeh: Handle RTAS delay requests in
+ configure_bridge
+Message-ID: <20160329230701.GA5670@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1459219911-14110-1-git-send-email-ruscur@russell.cc>
+ <1459219911-14110-2-git-send-email-ruscur@russell.cc>
+ <20160329094936.GB10585@gwshan>
+ <1459288877.4182.4.camel@russell.cc>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1459288877.4182.4.camel@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,85 +44,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Dienstag, 29 M=C3=A4rz 2016, 14:31:34 schrieb Michael Ellerman:
-> On Mon, 2016-03-28 at 17:06 -0300, Thiago Jung Bauermann wrote:
-> > With this patch, all vmlinux symbols match /proc/kallsyms and the
-> > testcase passes.
->=20
-> Have you tested this on an LE system?
+On Wed, Mar 30, 2016 at 08:01:17AM +1000, Russell Currey wrote:
+>On Tue, 2016-03-29 at 20:49 +1100, Gavin Shan wrote:
+>> On Tue, Mar 29, 2016 at 12:51:51PM +1000, Russell Currey wrote:
+.../...
 
-No, I was focusing on ppc64 BE.
+>> > 
+>> > +		switch (ret) {
+>> > +		case 0:
+>> > +			return ret;
+>> > +		case RTAS_EXTENDED_DELAY_MIN:
+>> > +		case RTAS_EXTENDED_DELAY_MIN+1:
+>> > +		case RTAS_EXTENDED_DELAY_MIN+2:
+>> > +			mwait = rtas_busy_delay(ret);
+>> > +			break;
+>> > +		default:
+>> > +			goto err;
+>> > +		}
+>> > +
+>> > +		max_wait -= mwait;
+>> If you like, the block can be simplified to as below. In that case,
+>> tag #err isn't needed.
+>> 
+>>                 if (!ret)
+>>                         return ret;
+>> 
+>>                 max_wait -= rtas_busy_delay(ret);
+>> 
+>That doesn't catch the case where the return value is greater than
+>RTAS_EXTENDED_DELAY_MIN+2, in which case we would be sleeping for at least
+>1 second.  However, I am going to change it so that any delay above 100ms
+>is just treated as if it was 100ms, so I can simplify the code there and
+>probably remove the switch and goto.
+>
 
-> I did a quick test and it appears to
-> be completely broken. Basically every symbol is not found, eg:
->=20
->  1: vmlinux symtab matches kallsyms                          :
-> --- start ---
-> test child forked, pid 16222
-> Using /proc/kcore for kernel object code
-> Looking at the vmlinux_path (8 entries long)
-> Using /boot/vmlinux-4.5.0-11318-gdf01bc5cf4ea for symbols
-> 0xc00000000000b428: run_init_process not on kallsyms
-> 0xc00000000000b478: try_to_run_init_process not on kallsyms
-> 0xc00000000000b4f8: do_one_initcall not on kallsyms
-> 0xc00000000000b768: match_dev_by_uuid not on kallsyms
-> ...
-> 0xc0000000009846b8: write_mem not on kallsyms
-> 0xc000000000984728: do_fp_store not on kallsyms
-> 0xc000000000984828: emulate_step not on kallsyms
->=20
-> $ sudo grep emulate_step /proc/kallsyms
-> c000000000984820 T emulate_step
->=20
->=20
-> Notice it's off by 8. That's because of the local/global entry point =
-on
-> LE. So that will need to be fixed somewhere.
+Yeah, we need update @max_wait and check it in advance. The point
+is to remove the tag and simplify the switch block if you want, but
+it's not a big deal:
 
-Symbols loaded from the vmlinux file get adjusted to the local entry po=
-int=20
-because symbol-elf.c:dso__load_sym calls arch__elf_sym_adjust for each=20=
+		max_wait -= rtas_busy_delay_time(ret)
+		if (ret <= 0 || max_wait < 0)
+			return ret;
 
-function symbol, which on ppc64le adjusts the address to the local entr=
-y=20
-point. On the other hand, when symbols are loaded from /proc/kallsyms t=
-hey=20
-are used as-is (i.e., with the global entry point address).
+		rtas_busy_delay(ret);
 
-This seems inconsistent: dso__load_kernel_sym can end up loading symbol=
-s=20
-from either vmlinux or /proc/kallsyms, so it seems symbols should look =
-the=20
-same wherever they are loaded from. I am still trying to understand wha=
-t the=20
-rest of the perf code expects.
-
-If I comment out the call to arch__elf_sym_adjust in dso__load_sym, the=
-n all=20
-symbols are found in the vmlinux-kallsyms.c test (the test still fails=20=
-
-because two symbols have different names. I haven=E2=80=99t checked why=
-). Also, the=20
-code-reading.c test is able to read object code for a lot (but not all)=
- of=20
-the sample events, whereas in the adjusted symbols case it can=E2=80=99=
-t read object=20
-code for any sample event. The other perf tests are unaffected by the=20=
-
-change.
-
-I thought that if there=E2=80=99s no vmlinux available, then perf would=
- have to rely=20
-only on /proc/kallsyms and I would see some difference in the test resu=
-lts=20
-compared to when perf uses vmlinux and adjusts the symbols to the local=
-=20
-entry point, but I saw no difference at all.
-
-So at first glance, it looks like perf is better off using symbols that=
-=20
-point to the global entry point...
---=20
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Thanks,
+Gavin
