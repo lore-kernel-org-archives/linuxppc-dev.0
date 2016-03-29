@@ -1,37 +1,25 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qYznD1QmmzDq5v
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 16:27:44 +1100 (AEDT)
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 29 Mar 2016 15:27:42 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 913342BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 16:27:36 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2T5RSSE11534844
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 16:27:36 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2T5R4Bb030324
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 16:27:04 +1100
-Date: Tue, 29 Mar 2016 16:26:09 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Russell Currey <ruscur@russell.cc>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2 1/2] pseries/eeh: Refactor the configure bridge RTAS
- tokens
-Message-ID: <20160329052608.GA2614@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1459219911-14110-1-git-send-email-ruscur@russell.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1459219911-14110-1-git-send-email-ruscur@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qYzpY72jSzDqKl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 16:28:53 +1100 (AEDT)
+Message-ID: <1459229333.8173.12.camel@ellerman.id.au>
+Subject: Re: [PATCH 6/6] powerpc/livepatch: Add live patching support on
+ ppc64le
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Torsten Duwe <duwe@lst.de>
+Cc: linuxppc-dev@ozlabs.org, bsingharora@gmail.com,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com,  pmladek@suse.com, jeyu@redhat.com,
+ jkosina@suse.cz, live-patching@vger.kernel.org,  mbenes@suse.cz
+Date: Tue, 29 Mar 2016 16:28:53 +1100
+In-Reply-To: <20160324134221.GB29197@lst.de>
+References: <1458817445-5855-1-git-send-email-mpe@ellerman.id.au>
+ <1458817445-5855-6-git-send-email-mpe@ellerman.id.au>
+ <20160324134221.GB29197@lst.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,95 +29,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 29, 2016 at 12:51:50PM +1000, Russell Currey wrote:
->The RTAS calls configure-pe and configure-bridge perform the same
->actions, however the former can skip configuration if unnecessary.  The
->existing code treats them as different tokens even though only one will
->ever be called.  Refactor this by making a single token that is assigned
->during init.
->
->Cc: <stable@vger.kernel.org> # 3.10-
->Signed-off-by: Russell Currey <ruscur@russell.cc>
->---
-> arch/powerpc/platforms/pseries/eeh_pseries.c | 27 +++++++++++----------------
-> 1 file changed, 11 insertions(+), 16 deletions(-)
->
->diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
->index ac3ffd9..231b1df 100644
->--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
->+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
->@@ -53,7 +53,6 @@ static int ibm_read_slot_reset_state2;
-> static int ibm_slot_error_detail;
-> static int ibm_get_config_addr_info;
-> static int ibm_get_config_addr_info2;
->-static int ibm_configure_bridge;
-> static int ibm_configure_pe;
+On Thu, 2016-03-24 at 14:42 +0100, Torsten Duwe wrote:
+
+> On Thu, Mar 24, 2016 at 10:04:05PM +1100, Michael Ellerman wrote:
+
+> > +livepatch_handler:
+> > +	CURRENT_THREAD_INFO(r12, r1)
+> [...]
+
+> > +	/* Put ctr in r12 for global entry and branch there */
+> > +	mfctr	r12
+> > +	bctrl
+>             ^
+> I like this piece. No need to fiddle out the return helper address.
+
+Good.
+
+> > +	/*
+> > +	 * Now we are returning from the patched function to the original
+> > +	 * caller A. We are free to use r0 and r12, and we can use r2 until we
+> > +	 * restore it.
+> > +	 */
+> > +
+> > +	CURRENT_THREAD_INFO(r12, r1)
+> > +
+> > +	/* Save stack pointer into r0 */
+> > +	mr	r0, r1
+> > +
+> > +	ld	r1, TI_livepatch_sp(r12)
+> > +
+> > +	/* Check stack marker hasn't been trashed */
+> > +	lis     r2,  STACK_END_MAGIC@h
+> > +	ori     r2,  r2, STACK_END_MAGIC@l
+> > +	ld	r12, -8(r1)
+> > +1:	tdne	r12, r2
+> > +	EMIT_BUG_ENTRY 1b, __FILE__, __LINE__ - 1, 0
 > 
-> /*
->@@ -81,7 +80,13 @@ static int pseries_eeh_init(void)
-> 	ibm_get_config_addr_info2	= rtas_token("ibm,get-config-addr-info2");
-> 	ibm_get_config_addr_info	= rtas_token("ibm,get-config-addr-info");
-> 	ibm_configure_pe		= rtas_token("ibm,configure-pe");
->-	ibm_configure_bridge		= rtas_token("ibm,configure-bridge");
->+
->+	/*
->+	 * configure-pe and configure-bridge perform the same actions, however
->+	 * the former is preferred as it can skip configuration if unnecessary.
->+	 */
->+	if (ibm_configure_pe == RTAS_UNKNOWN_SERVICE)
->+		ibm_configure_pe	= rtas_token("ibm,configure-bridge");
-> 
-> 	/*
-> 	 * Necessary sanity check. We needn't check "get-config-addr-info"
->@@ -93,8 +98,7 @@ static int pseries_eeh_init(void)
-> 	    (ibm_read_slot_reset_state2 == RTAS_UNKNOWN_SERVICE &&
-> 	     ibm_read_slot_reset_state == RTAS_UNKNOWN_SERVICE)	||
-> 	    ibm_slot_error_detail == RTAS_UNKNOWN_SERVICE	||
->-	    (ibm_configure_pe == RTAS_UNKNOWN_SERVICE		&&
->-	     ibm_configure_bridge == RTAS_UNKNOWN_SERVICE)) {
->+	    ibm_configure_pe == RTAS_UNKNOWN_SERVICE) {
-> 		pr_info("EEH functionality not supported\n");
-> 		return -EINVAL;
-> 	}
+> This however worries me a bit. Sure, in the end, a stack overflow is
+> a stack overflow, and if all the information does not fit there,
+> there's little you can do.
 
-Since you're here, you can do similar thing to @ibm_read_slot_reset_state
-and @ibm_read_slot_reset_state?
+Yeah stack overflow in the kernel is very very fatal.
 
->@@ -621,18 +625,9 @@ static int pseries_eeh_configure_bridge(struct eeh_pe *pe)
-> 	if (pe->addr)
-> 		config_addr = pe->addr;
-> 
->-	/* Use new configure-pe function, if supported */
->-	if (ibm_configure_pe != RTAS_UNKNOWN_SERVICE) {
->-		ret = rtas_call(ibm_configure_pe, 3, 1, NULL,
->-				config_addr, BUID_HI(pe->phb->buid),
->-				BUID_LO(pe->phb->buid));
->-	} else if (ibm_configure_bridge != RTAS_UNKNOWN_SERVICE) {
->-		ret = rtas_call(ibm_configure_bridge, 3, 1, NULL,
->-				config_addr, BUID_HI(pe->phb->buid),
->-				BUID_LO(pe->phb->buid));
->-	} else {
->-		return -EFAULT;
->-	}
->+	ret = rtas_call(ibm_configure_pe, 3, 1, NULL,
->+			config_addr, BUID_HI(pe->phb->buid),
->+			BUID_LO(pe->phb->buid));
-> 
+> But wouldn't it be better to kmalloc that area and realloc in
+> klp_arch_set_pc when it's full? Maybe along with a warning message?
 
-Russell, it seems not working if "ibm,configure-pe" and "ibm,configure-bridge" are all
-missed from "/rtas". Also, I don't think we need backport it to 3.10+ as it's not fixing
-any bugs if I'm correct enough.
+You can't realloc in klp_arch_set_pc(), you might be patching sl*b and holding
+one of its locks. You might also recurse.
 
-Thanks,
-Gavin
+We could allocate a larger buffer as a "klp stack" for each task when the first
+live patch is installed, and for every task created afterward. But that
+potentially significantly increases memory usage on live patched kernels :)
 
+> That way a live patched kernel will not run into stack size problems
+> any earlier than an unpatched kernel would.
 
-> 	if (ret)
-> 		pr_warn("%s: Unable to configure bridge PHB#%d-PE#%x (%d)\n",
->-- 
->2.7.4
->
->_______________________________________________
->Linuxppc-dev mailing list
->Linuxppc-dev@lists.ozlabs.org
->https://lists.ozlabs.org/listinfo/linuxppc-dev
+Yeah that's true. I'm not sure what the best trade off is.
+
+cheers
