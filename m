@@ -1,29 +1,23 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
+Return-Path: <BATV+37b1b20dd3b4402b9944+4602+infradead.org+acme@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qb03g52k0zDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 07:43:43 +1100 (AEDT)
-Received: by mail-wm0-x244.google.com with SMTP id p65so18204827wmp.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 13:43:43 -0700 (PDT)
-MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <1455840434.2463.97.camel@buserror.net>
-References: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
- <CADRPPNS1i1XgtpyiT_=rDuDXBDn=ehNY32=RKTC9hdKXhWWq8A@mail.gmail.com>
- <1455840434.2463.97.camel@buserror.net>
-Date: Wed, 30 Mar 2016 15:43:40 -0500
-Message-ID: <CADRPPNTauz=T9oWCeZy8G8s0vo9fmieRhn=Gd3jVqqJJEHV_ag@mail.gmail.com>
-Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
-From: Li Yang <leoli@freescale.com>
-To: Scott Wood <oss@buserror.net>
-Cc: Raghav Dogra <raghav.dogra@nxp.com>, linux-mtd@lists.infradead.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>,
- Brian Norris <computersforpeace@gmail.com>,
- Raghav Dogra <raghav@freescale.com>, Jaiprakash Singh <b44839@freescale.com>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qb2421tKmzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 09:14:10 +1100 (AEDT)
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Andres Freund <andres@anarazel.de>, Anton Blanchard <anton@samba.org>,
+ Carl Love <cel@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>, Namhyung Kim <namhyung@kernel.org>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Stephane Eranian <eranian@google.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [GIT PULL 0/2] perf/urgent fixes
+Date: Wed, 30 Mar 2016 19:13:53 -0300
+Message-Id: <1459376035-22929-1-git-send-email-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,53 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Brian,
+Hi Ingo,
 
-Could you help to review and pull in this patch and the Kconfig update
-after this patch(https://patchwork.ozlabs.org/patch/557389/)?  It
-stated a dependency in the notes, but actually it should be applied
-cleanly without that patch.  These patches are critical to make NAND
-mtd feature work for our new chips.
+	Please consider pulling,
 
-Regards,
-Leo
+- Arnaldo
 
-On Thu, Feb 18, 2016 at 6:07 PM, Scott Wood <oss@buserror.net> wrote:
-> On Thu, 2016-02-18 at 15:18 -0600, Leo Li wrote:
->> On Wed, Feb 17, 2016 at 5:24 AM, Raghav Dogra <raghav.dogra@nxp.com> wrote:
->> > The new IFC controller version 2.0 has a different memory map page.
->> > Upto IFC 1.4 PAGE size is 4 KB and from IFC2.0 PAGE size is 64KB.
->> > This patch segregates the IFC global and runtime registers to appropriate
->> > PAGE sizes.
->> >
->> > Signed-off-by: Jaiprakash Singh <b44839@freescale.com>
->> > Signed-off-by: Raghav Dogra <raghav@freescale.com>
->> > Acked-by: Li Yang <leoyang.li@nxp.com>
->> > Signed-off-by: Raghav Dogra <raghav.dogra@nxp.com>
->> > ---
->> > Changes for v3: not dependent on
->> > "drivers/memory: Add deep sleep support for IFC" patch
->> >
->> > Changes for v2: rebased to resolve conflicts
->> > Applicable to git://git.infradead.org/l2-mtd.git
->> >
->> > This patch is dependent on "drivers/memory: Add deep sleep support for
->> > IFC"
->> > https://patchwork.ozlabs.org/patch/582762/
->> > which is also applicable to git://git.infradead.org/l2-mtd.git
->>
->> This patch seems to be in good shape, but the dependency is still
->> having quite some feedback to be addressed.  Depending on it will
->> greatly delay the time that this critical patch for LS2 to be merged.
->> Could you remove the dependency like Scott already suggested?
->
-> According to the changelog the dependency has been removed (it would have been
-> clearer to remove this comment as well...).
->
-> -Scott
->
+The following changes since commit f6343be96ebbae38a07e0878810f5bbc0c38cade:
 
+  Merge tag 'perf-urgent-for-mingo-20160329' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/urgent (2016-03-30 12:31:03 +0200)
 
+are available in the git repository at:
 
--- 
-- Leo
+  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-urgent-for-mingo-20160330
+
+for you to fetch changes up to 9f56c092b99b40ce3cf4c6d0134ff7e513c9f1a6:
+
+  perf jit: genelf makes assumptions about endian (2016-03-30 18:12:06 -0300)
+
+----------------------------------------------------------------
+perf/urgent fixes:
+
+- Fix determination of a callchain node's childlessness in
+  the top/report TUI, which was preventing navigating some
+  callchains, --stdio unnaffected (Andres Freund)
+
+- Fix jitdump's genelf assumption that PowerPC is big endian
+  only (Anton Blanchard)
+
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+
+----------------------------------------------------------------
+Andres Freund (1):
+      perf hists: Fix determination of a callchain node's childlessness
+
+Anton Blanchard (1):
+      perf jit: genelf makes assumptions about endian
+
+ tools/perf/ui/browsers/hists.c |  2 +-
+ tools/perf/util/genelf.h       | 24 ++++++++++--------------
+ 2 files changed, 11 insertions(+), 15 deletions(-)
