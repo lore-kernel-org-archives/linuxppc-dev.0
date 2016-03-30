@@ -1,18 +1,15 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qZWzJ2XT6zDq5v
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 13:38:20 +1100 (AEDT)
-Message-ID: <1459305500.25307.11.camel@ellerman.id.au>
-Subject: Re: [PATCH] perf jit: genelf makes assumptions about endian
+Message-ID: <1459306502.25307.13.camel@ellerman.id.au>
+Subject: Re: mailman From rewriting [was perf jit: genelf makes assumptions
+ about endian]
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anton Blanchard <anton@samba.org>, eranian@google.com,
- sukadev@linux.vnet.ibm.com, acme@redhat.com, cel@us.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Wed, 30 Mar 2016 13:38:20 +1100
-In-Reply-To: <20160329175944.33a211cc@kryten>
-References: <20160329175944.33a211cc@kryten>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Jeremy Kerr <jk@ozlabs.org>,
+ patchwork@lists.ozlabs.org
+Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 30 Mar 2016 13:55:02 +1100
+In-Reply-To: <20160329210639.12136fd5@canb.auug.org.au>
+References: <20160329175944.33a211cc@kryten> <56FA435A.5010804@ozlabs.org>
+ <20160329210639.12136fd5@canb.auug.org.au>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,47 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-03-29 at 17:59 +1100, Anton Blanchard wrote:
-
-> Commit 9b07e27f88b9 ("perf inject: Add jitdump mmap injection support")
-> incorrectly assumed that PowerPC is big endian only.
+On Tue, 2016-03-29 at 21:06 +1100, Stephen Rothwell wrote:
+> Hi Jeremy,
 > 
-> Simplify things by consolidating the define of GEN_ELF_ENDIAN and checking
-> for __BYTE_ORDER == __BIG_ENDIAN.
+> On Tue, 29 Mar 2016 16:56:58 +0800 Jeremy Kerr <jk@ozlabs.org> wrote:
+> > 
+> > From the mail that Anton has sent to linuxppc-dev:
+> > 
+> > > From: Anton Blanchard via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+> > > Reply-To: Anton Blanchard <anton@samba.org>  
+> > 
+> > Do you know why mailman would be re-writing From: there? It's confusing
+> > patchwork, as multiple mails are now coming from that address.
 > 
-> The PowerPC checks were also incorrect, they do not match what gcc
-> emits. We should first look for __powerpc64__, then __powerpc__.
+> Yep, Anton posts from samba.org.  They publish a DMARC policy that
+> breaks mailing lists.  The best thing we can do is to do the above
+> rewrite of the From header.
 > 
-> Fixes: 9b07e27f88b9 ("perf inject: Add jitdump mmap injection support")
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+> The alternative is that all our Yahoo, Gmail and Hotmail subscribers
+> (at least) would bounce the email.
+> 
+> So this rewriting will happen for any From: line that has an address
+> that has such a DMARC policy.  We have had posts from Yahoo subscribers
+> bounced in the past.
 
-The diff's a little hard to read because you're pulling the endian logic out,
-if I remove that I get something like:
+[adding patchwork list to cc]
 
->  #elif defined(__i386__)
->  #define GEN_ELF_ARCH	EM_386
->  #define GEN_ELF_CLASS	ELFCLASS32
-> -#elif defined(__ppcle__)
-> -#define GEN_ELF_ARCH	EM_PPC
-> -#define GEN_ELF_CLASS	ELFCLASS64
-> -#elif defined(__powerpc__)
-> -#define GEN_ELF_ARCH	EM_PPC64
-> -#define GEN_ELF_CLASS	ELFCLASS64
-> -#elif defined(__powerpcle__)
-> +#elif defined(__powerpc64__)
->  #define GEN_ELF_ARCH	EM_PPC64
->  #define GEN_ELF_CLASS	ELFCLASS64
-> +#elif defined(__powerpc__)
-> +#define GEN_ELF_ARCH	EM_PPC
-> +#define GEN_ELF_CLASS	ELFCLASS32
->  #else
->  #error "unsupported architecture"
->  #endif
+So it sounds like this is just something we're going to have to live with.
 
-Which looks correct to me.
+It's causing problems on patchwork because patchwork only uses the email
+address to lookup a user. This is causing patches to be misattributed on
+ozlabs.org, eg:
 
-And the consolidation of the endian logic is "obviously correct", so:
+  http://patchwork.ozlabs.org/project/linuxppc-dev/list/?submitter=68366&state=*
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Paul was the first person to have a From header rewritten, eg to:
+
+  From: Paul Mackerras via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+
+And so in the patchwork database the user "linuxppc-dev@lists.ozlabs.org" has a
+name of "Paul Mackerras via Linuxppc-dev".
+
+The subsequent two patches (ppc4xx-rng and perf jit) are from different people,
+who also had their From address rewritten due to DMARC.
+
+So I think patchwork needs to:
+ - detect mails that have been rewritten due to DMARC
+   - AFAICS the only way to do this is to notice that the From address is the
+     same as the list address.
+ - when it sees those mails, use the Reply-To header instead.
 
 cheers
