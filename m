@@ -1,40 +1,20 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qZSQJ586hzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 10:58:00 +1100 (AEDT)
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 30 Mar 2016 09:27:39 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 515B62CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 10:27:36 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2TNRRjV12845516
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 10:27:36 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2TNR35f032509
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 10:27:03 +1100
-Date: Wed, 30 Mar 2016 10:07:01 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Russell Currey <ruscur@russell.cc>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2 2/2] pseries/eeh: Handle RTAS delay requests in
- configure_bridge
-Message-ID: <20160329230701.GA5670@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1459219911-14110-1-git-send-email-ruscur@russell.cc>
- <1459219911-14110-2-git-send-email-ruscur@russell.cc>
- <20160329094936.GB10585@gwshan>
- <1459288877.4182.4.camel@russell.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1459288877.4182.4.camel@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qZSg44fxhzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 11:09:04 +1100 (AEDT)
+Message-ID: <1459296544.25307.2.camel@ellerman.id.au>
+Subject: Re: [PATCH] Remove kretprobe_trampoline_holder.
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Wed, 30 Mar 2016 11:09:04 +1100
+In-Reply-To: <1625864.aO4Q1DYN9d@hactar>
+References: <3qWbvb0yVwz9sdm@ozlabs.org> <2042788.6sAC9lOLzB@hactar>
+ <1459208757.8173.3.camel@ellerman.id.au> <1625864.aO4Q1DYN9d@hactar>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,49 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 30, 2016 at 08:01:17AM +1000, Russell Currey wrote:
->On Tue, 2016-03-29 at 20:49 +1100, Gavin Shan wrote:
->> On Tue, Mar 29, 2016 at 12:51:51PM +1000, Russell Currey wrote:
-.../...
+On Tue, 2016-03-29 at 15:34 -0300, Thiago Jung Bauermann wrote:
+> Am Dienstag, 29 MÃ¤rz 2016, 10:45:57 schrieb Michael Ellerman:
+> > On Mon, 2016-03-28 at 17:29 -0300, Thiago Jung Bauermann wrote:
+> > > If I do s/_do_fork/._do_fork/ in kprobe_ftrace.tc then all ftrace kprobe
+> > > tests pass:
+> > 
+> > OK. We fixed that in 'perf probe', but not if you're using the sysfs file
+> > directly.
+> > 
+> > Do you want to write a patch for ftracetest to try and handle it? I guess
+> > you'd try "_do_fork" and if that fails then try "._do_fork", and maybe
+> > only if uname -m says you're running on ppc64?
+> 
+> I did write a patch yesterday (included below for reference), but then I
+> noticed that the other ftrace tests use _do_fork and they work fine (I guess
+> because of the fix you mentioned). I think that ideally the ftrace filter
+> mechanism should work with dot symbols as well as regular symbols.
+> 
+> I think this could work by creating a mechanism analogous to the
+> ARCH_HAS_SYSCALL_MATCH_SYM_NAME one in trace_syscalls.c. Ftrace_match_record
+> could call it to adjust the symbol name (like kprobe_lookup_name) before
+> calling ftrace_match.
+> 
+> But Iâ€™m wondering if itâ€™s really worth the effort and maybe patching the
+> testcase is enough? Also, I donâ€™t know whether my idea would have any
+> side effects.
 
->> > 
->> > +		switch (ret) {
->> > +		case 0:
->> > +			return ret;
->> > +		case RTAS_EXTENDED_DELAY_MIN:
->> > +		case RTAS_EXTENDED_DELAY_MIN+1:
->> > +		case RTAS_EXTENDED_DELAY_MIN+2:
->> > +			mwait = rtas_busy_delay(ret);
->> > +			break;
->> > +		default:
->> > +			goto err;
->> > +		}
->> > +
->> > +		max_wait -= mwait;
->> If you like, the block can be simplified to as below. In that case,
->> tag #err isn't needed.
->> 
->>                 if (!ret)
->>                         return ret;
->> 
->>                 max_wait -= rtas_busy_delay(ret);
->> 
->That doesn't catch the case where the return value is greater than
->RTAS_EXTENDED_DELAY_MIN+2, in which case we would be sleeping for at least
->1 second.  However, I am going to change it so that any delay above 100ms
->is just treated as if it was 100ms, so I can simplify the code there and
->probably remove the switch and goto.
->
+It'd be nice if it worked properly. Reusing kprobe_lookup_name() looks like it
+would be the right fix, given this is "kprobe events".
 
-Yeah, we need update @max_wait and check it in advance. The point
-is to remove the tag and simplify the switch block if you want, but
-it's not a big deal:
-
-		max_wait -= rtas_busy_delay_time(ret)
-		if (ret <= 0 || max_wait < 0)
-			return ret;
-
-		rtas_busy_delay(ret);
-
-Thanks,
-Gavin
+cheers
