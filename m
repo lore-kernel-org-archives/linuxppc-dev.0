@@ -2,8 +2,8 @@ Return-Path: <pmladek@suse.com>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qZsdG73qWzDqBZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 02:53:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qZsdL0rHjzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 02:53:58 +1100 (AEDT)
 From: Petr Mladek <pmladek@suse.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Peter Zijlstra <peterz@infradead.org>,
@@ -23,9 +23,10 @@ Cc: Peter Zijlstra <peterz@infradead.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Martin Schwidefsky <schwidefsky@de.ibm.com>,
  David Miller <davem@davemloft.net>
-Subject: [PATCH v4 2/5] printk/nmi: use IRQ work only when ready
-Date: Wed, 30 Mar 2016 17:53:27 +0200
-Message-Id: <1459353210-20260-3-git-send-email-pmladek@suse.com>
+Subject: [PATCH v4 3/5] printk/nmi: warn when some message has been lost in
+ NMI context
+Date: Wed, 30 Mar 2016 17:53:28 +0200
+Message-Id: <1459353210-20260-4-git-send-email-pmladek@suse.com>
 In-Reply-To: <1459353210-20260-1-git-send-email-pmladek@suse.com>
 References: <1459353210-20260-1-git-send-email-pmladek@suse.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,12 +38,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-NMIs could happen at any time.  This patch makes sure that the safe
-printk() in NMI will schedule IRQ work only when the related structs are
-initialized.
+We could not resize the temporary buffer in NMI context.  Let's warn if a
+message is lost.
 
-All pending messages are flushed when the IRQ work is being initialized.
+This is rather theoretical.  printk() should not be used in NMI.  The only
+sensible use is when we want to print backtrace from all CPUs.  The
+current buffer should be enough for this purpose.
 
+[akpm@linux-foundation.org: whitespace fixlet]
 Signed-off-by: Petr Mladek <pmladek@suse.com>
 Cc: Jan Kara <jack@suse.cz>
 Cc: Peter Zijlstra <peterz@infradead.org>
@@ -58,47 +61,89 @@ Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Cc: David Miller <davem@davemloft.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- kernel/printk/nmi.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ kernel/printk/internal.h | 11 +++++++++++
+ kernel/printk/nmi.c      |  5 ++++-
+ kernel/printk/printk.c   | 10 ++++++++++
+ 3 files changed, 25 insertions(+), 1 deletion(-)
 
+diff --git a/kernel/printk/internal.h b/kernel/printk/internal.h
+index 2de99faedfc1..341bedccc065 100644
+--- a/kernel/printk/internal.h
++++ b/kernel/printk/internal.h
+@@ -34,6 +34,12 @@ static inline __printf(1, 0) int vprintk_func(const char *fmt, va_list args)
+ 	return this_cpu_read(printk_func)(fmt, args);
+ }
+ 
++extern atomic_t nmi_message_lost;
++static inline int get_nmi_message_lost(void)
++{
++	return atomic_xchg(&nmi_message_lost, 0);
++}
++
+ #else /* CONFIG_PRINTK_NMI */
+ 
+ static inline __printf(1, 0) int vprintk_func(const char *fmt, va_list args)
+@@ -41,4 +47,9 @@ static inline __printf(1, 0) int vprintk_func(const char *fmt, va_list args)
+ 	return vprintk_default(fmt, args);
+ }
+ 
++static inline int get_nmi_message_lost(void)
++{
++	return 0;
++}
++
+ #endif /* CONFIG_PRINTK_NMI */
 diff --git a/kernel/printk/nmi.c b/kernel/printk/nmi.c
-index 479e0764203c..303cf0d15e57 100644
+index 303cf0d15e57..572f94922230 100644
 --- a/kernel/printk/nmi.c
 +++ b/kernel/printk/nmi.c
-@@ -38,6 +38,7 @@
-  * were handled or when IRQs are blocked.
+@@ -39,6 +39,7 @@
   */
  DEFINE_PER_CPU(printk_func_t, printk_func) = vprintk_default;
-+static int printk_nmi_irq_ready;
+ static int printk_nmi_irq_ready;
++atomic_t nmi_message_lost;
  
  #define NMI_LOG_BUF_LEN (4096 - sizeof(atomic_t) - sizeof(struct irq_work))
  
-@@ -84,8 +85,11 @@ again:
- 		goto again;
+@@ -64,8 +65,10 @@ static int vprintk_nmi(const char *fmt, va_list args)
+ again:
+ 	len = atomic_read(&s->len);
  
- 	/* Get flushed in a more safe context. */
--	if (add)
-+	if (add && printk_nmi_irq_ready) {
-+		/* Make sure that IRQ work is really initialized. */
-+		smp_rmb();
- 		irq_work_queue(&s->work);
+-	if (len >= sizeof(s->buffer))
++	if (len >= sizeof(s->buffer)) {
++		atomic_inc(&nmi_message_lost);
+ 		return 0;
 +	}
  
- 	return add;
- }
-@@ -195,6 +199,13 @@ void __init printk_nmi_init(void)
- 
- 		init_irq_work(&s->work, __printk_nmi_flush);
+ 	/*
+ 	 * Make sure that all old data have been read before the buffer was
+diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+index 71eba0607034..e38579d730f4 100644
+--- a/kernel/printk/printk.c
++++ b/kernel/printk/printk.c
+@@ -1617,6 +1617,7 @@ asmlinkage int vprintk_emit(int facility, int level,
+ 	unsigned long flags;
+ 	int this_cpu;
+ 	int printed_len = 0;
++	int nmi_message_lost;
+ 	bool in_sched = false;
+ 	/* cpu currently holding logbuf_lock in this function */
+ 	static unsigned int logbuf_cpu = UINT_MAX;
+@@ -1667,6 +1668,15 @@ asmlinkage int vprintk_emit(int facility, int level,
+ 					 strlen(recursion_msg));
  	}
-+
-+	/* Make sure that IRQ works are initialized before enabling. */
-+	smp_wmb();
-+	printk_nmi_irq_ready = 1;
-+
-+	/* Flush pending messages that did not have scheduled IRQ works. */
-+	printk_nmi_flush();
- }
  
- void printk_nmi_enter(void)
++	nmi_message_lost = get_nmi_message_lost();
++	if (unlikely(nmi_message_lost)) {
++		text_len = scnprintf(textbuf, sizeof(textbuf),
++				     "BAD LUCK: lost %d message(s) from NMI context!",
++				     nmi_message_lost);
++		printed_len += log_store(0, 2, LOG_PREFIX|LOG_NEWLINE, 0,
++					 NULL, 0, textbuf, text_len);
++	}
++
+ 	/*
+ 	 * The printf needs to come first; we need the syslog
+ 	 * prefix which might be passed-in as a parameter.
 -- 
 1.8.5.6
