@@ -1,22 +1,16 @@
-Return-Path: <acme@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qb0mG0tCyzDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 08:15:26 +1100 (AEDT)
-Date: Wed, 30 Mar 2016 18:15:22 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Anton Blanchard <anton@samba.org>, eranian@google.com,
- sukadev@linux.vnet.ibm.com, cel@us.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf jit: genelf makes assumptions about endian
-Message-ID: <20160330211522.GC2793@redhat.com>
-References: <20160329175944.33a211cc@kryten>
- <1459305500.25307.11.camel@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1459305500.25307.11.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qb3lF1pX8zDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 10:29:45 +1100 (AEDT)
+In-Reply-To: <1457388527-14575-1-git-send-email-oohall@gmail.com>
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Oliver O'Halloran <oohall@gmail.com>, Anton Blanchard <anton@samba.org>
+Subject: Re: powerpc/process: fix altivec SPR not being saved
+Message-Id: <3qb3lF16RQz9sf6@ozlabs.org>
+Date: Thu, 31 Mar 2016 10:29:45 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Wed, Mar 30, 2016 at 01:38:20PM +1100, Michael Ellerman escreveu:
-> On Tue, 2016-03-29 at 17:59 +1100, Anton Blanchard wrote:
+On Mon, 2016-07-03 at 22:08:47 UTC, Oliver O'Halloran wrote:
+> In save_sprs() in process.c contains the following test:
 > 
-> > Commit 9b07e27f88b9 ("perf inject: Add jitdump mmap injection support")
-> > incorrectly assumed that PowerPC is big endian only.
-> > 
-> > Simplify things by consolidating the define of GEN_ELF_ENDIAN and checking
-> > for __BYTE_ORDER == __BIG_ENDIAN.
-> > 
-> > The PowerPC checks were also incorrect, they do not match what gcc
-> > emits. We should first look for __powerpc64__, then __powerpc__.
-> > 
-> > Fixes: 9b07e27f88b9 ("perf inject: Add jitdump mmap injection support")
-> > Signed-off-by: Anton Blanchard <anton@samba.org>
+> 	if (cpu_has_feature(cpu_has_feature(CPU_FTR_ALTIVEC)))
+> 		t->vrsave = mfspr(SPRN_VRSAVE);
 > 
-> The diff's a little hard to read because you're pulling the endian logic out,
-> if I remove that I get something like:
+> CPU feature with the mask 0x1 is CPU_FTR_COHERENT_ICACHE so the test
+> is equivilent to:
+> 
+> 	if (cpu_has_feature(CPU_FTR_ALTIVEC) &&
+> 		cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
+> 
+> On CPUs without support for both (i.e G5) this results in vrsave not being
+> saved between context switches. The vector register save/restore code
+> doesn't use VRSAVE to determine which registers to save/restore,
+> but the value of VRSAVE is used to determine if altivec is being used
+> in several code paths.
+> 
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> Fixes: 152d523e6307 ("powerpc: Create context switch helpers save_sprs() and restore_sprs()")
+> Cc: stable@vger.kernel.org
 
-Yeah, I'm taking this patch, but would be better next time to break it
-down in two, one doing the reorg, the other doing the actual fix...
+Applied to powerpc fixes, thanks.
 
-Thanks,
+https://git.kernel.org/powerpc/c/01d7c2a2de47890934faba91a7
 
-- Arnaldo
- 
-> >  #elif defined(__i386__)
-> >  #define GEN_ELF_ARCH	EM_386
-> >  #define GEN_ELF_CLASS	ELFCLASS32
-> > -#elif defined(__ppcle__)
-> > -#define GEN_ELF_ARCH	EM_PPC
-> > -#define GEN_ELF_CLASS	ELFCLASS64
-> > -#elif defined(__powerpc__)
-> > -#define GEN_ELF_ARCH	EM_PPC64
-> > -#define GEN_ELF_CLASS	ELFCLASS64
-> > -#elif defined(__powerpcle__)
-> > +#elif defined(__powerpc64__)
-> >  #define GEN_ELF_ARCH	EM_PPC64
-> >  #define GEN_ELF_CLASS	ELFCLASS64
-> > +#elif defined(__powerpc__)
-> > +#define GEN_ELF_ARCH	EM_PPC
-> > +#define GEN_ELF_CLASS	ELFCLASS32
-> >  #else
-> >  #error "unsupported architecture"
-> >  #endif
-> 
-> Which looks correct to me.
-> 
-> And the consolidation of the endian logic is "obviously correct", so:
-> 
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-> 
-> cheers
+cheers
