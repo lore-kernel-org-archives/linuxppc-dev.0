@@ -1,17 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1459306502.25307.13.camel@ellerman.id.au>
-Subject: Re: mailman From rewriting [was perf jit: genelf makes assumptions
- about endian]
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Jeremy Kerr <jk@ozlabs.org>,
- patchwork@lists.ozlabs.org
-Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 30 Mar 2016 13:55:02 +1100
-In-Reply-To: <20160329210639.12136fd5@canb.auug.org.au>
-References: <20160329175944.33a211cc@kryten> <56FA435A.5010804@ozlabs.org>
- <20160329210639.12136fd5@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x235.google.com (mail-pf0-x235.google.com
+ [IPv6:2607:f8b0:400e:c00::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qZY0c2qq4zDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 14:24:32 +1100 (AEDT)
+Received: by mail-pf0-x235.google.com with SMTP id 4so30699659pfd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2016 20:24:32 -0700 (PDT)
+Received: from cotter.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id ll7sm1541437pab.6.2016.03.29.20.24.28
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLSv1/SSLv3 cipher=OTHER);
+ Tue, 29 Mar 2016 20:24:29 -0700 (PDT)
+Subject: Re: [PATCH 1/2] powerpc/pagetable: Add option to dump the linux
+ pagetables
+To: linuxppc-dev@lists.ozlabs.org
+References: <1458597885-19804-1-git-send-email-rashmicy@gmail.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <56FB46E9.40904@gmail.com>
+Date: Wed, 30 Mar 2016 14:24:25 +1100
+MIME-Version: 1.0
+In-Reply-To: <1458597885-19804-1-git-send-email-rashmicy@gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,54 +31,444 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-03-29 at 21:06 +1100, Stephen Rothwell wrote:
-> Hi Jeremy,
-> 
-> On Tue, 29 Mar 2016 16:56:58 +0800 Jeremy Kerr <jk@ozlabs.org> wrote:
-> > 
-> > From the mail that Anton has sent to linuxppc-dev:
-> > 
-> > > From: Anton Blanchard via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-> > > Reply-To: Anton Blanchard <anton@samba.org>  
-> > 
-> > Do you know why mailman would be re-writing From: there? It's confusing
-> > patchwork, as multiple mails are now coming from that address.
-> 
-> Yep, Anton posts from samba.org.  They publish a DMARC policy that
-> breaks mailing lists.  The best thing we can do is to do the above
-> rewrite of the From header.
-> 
-> The alternative is that all our Yahoo, Gmail and Hotmail subscribers
-> (at least) would bounce the email.
-> 
-> So this rewriting will happen for any From: line that has an address
-> that has such a DMARC policy.  We have had posts from Yahoo subscribers
-> bounced in the past.
 
-[adding patchwork list to cc]
 
-So it sounds like this is just something we're going to have to live with.
+On 22/03/16 09:04, Rashmica Gupta wrote:
+> Useful to be able to dump the kernels page tables to check permissions
+> and memory types - derived from arm64's implementation.
+>
+> Add a debugfs file to check the page tables. To use this the PPC_PTDUMP
+> config option must be selected.
+>
+> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+> ---
+>  arch/powerpc/Kconfig.debug             |  12 ++
+>  arch/powerpc/mm/Makefile               |   1 +
+>  arch/powerpc/mm/dump_linuxpagetables.c | 377 +++++++++++++++++++++++++++++++++
+>  3 files changed, 390 insertions(+)
+>  create mode 100644 arch/powerpc/mm/dump_linuxpagetables.c
+>
+> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+> index 638f9ce740f5..26a60effea1a 100644
+> --- a/arch/powerpc/Kconfig.debug
+> +++ b/arch/powerpc/Kconfig.debug
+> @@ -344,4 +344,16 @@ config FAIL_IOMMU
+>  
+>  	  If you are unsure, say N.
+>  
+> +config PPC_PTDUMP
+> +        bool "Export kernel pagetable layout to userspace via debugfs"
+> +        depends on DEBUG_KERNEL
+> +        select DEBUG_FS
+> +        help
+> +	  This option exports the state of the kernel pagetables to a
+> +	  debugfs file. This is only useful for kernel developers who are
+> +	  working in architecture specific areas of the kernel - probably
+> +	  not a good idea to enable this feature in a production kernel.
+> +
+> +	  If you are unsure, say N.
+> +
 
-It's causing problems on patchwork because patchwork only uses the email
-address to lookup a user. This is causing patches to be misattributed on
-ozlabs.org, eg:
+Some minor comments below, but otherwise
 
-  http://patchwork.ozlabs.org/project/linuxppc-dev/list/?submitter=68366&state=*
+Acked-by: Balbir Singh <bsingharora@gmail.com>
 
-Paul was the first person to have a From header rewritten, eg to:
+>  endmenu
+> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+> index adfee3f1aeb9..6935c6204fbc 100644
+> --- a/arch/powerpc/mm/Makefile
+> +++ b/arch/powerpc/mm/Makefile
+> @@ -41,3 +41,4 @@ obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
+>  obj-$(CONFIG_HIGHMEM)		+= highmem.o
+>  obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
+>  obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_iommu.o
+> +obj-$(CONFIG_PPC_PTDUMP)	+= dump_linuxpagetables.o
+> diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
+> new file mode 100644
+> index 000000000000..f97fbfdac4b9
+> --- /dev/null
+> +++ b/arch/powerpc/mm/dump_linuxpagetables.c
+> @@ -0,0 +1,377 @@
+> +/*
+> + * Copyright 2016, Rashmica Gupta, IBM Corp.
+> + *
+> + * This traverses the kernel pagetables and dumps the
+> + * information about the used sections of memory to
+> + * /sys/kernel/debug/kernel_pagetables.
+> + *
+> + * Derived from the arm64 implementation:
+> + * Copyright (c) 2014, The Linux Foundation, Laura Abbott.
+> + * (C) Copyright 2008 Intel Corporation, Arjan van de Ven.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; version 2
+> + * of the License.
+> + */
+> +#include <linux/debugfs.h>
+> +#include <linux/fs.h>
+> +#include <linux/io.h>
+> +#include <linux/mm.h>
+> +#include <linux/sched.h>
+> +#include <linux/seq_file.h>
+> +#include <asm/fixmap.h>
+> +#include <asm/pgtable.h>
+> +#include <linux/const.h>
+> +#include <asm/page.h>
+> +#include <asm/pgalloc.h>
+> +
+> +struct addr_marker {
+> +	unsigned long start_address;
+> +	const char *name;
+> +};
+> +
+> +static struct addr_marker address_markers[] = {
+> +	{ VMALLOC_START,	"vmalloc() Area" },
+> +	{ VMALLOC_END,		"vmalloc() End" },
+> +	{ ISA_IO_BASE,		"isa I/O start" },
+> +	{ ISA_IO_END,		"isa I/O end" },
+> +	{ PHB_IO_BASE,		"phb I/O start" },
+> +	{ PHB_IO_END,		"phb I/O end" },
+> +	{ IOREMAP_BASE,		"I/O remap start" },
+> +	{ IOREMAP_END,		"I/O remap end" },
+> +	{ -1,			NULL },
+> +};
+> +
+> +/*
+> + * To visualise what is happening,
+> + *
+> + *  - PTRS_PER_P** = how many entries there are in the corresponding P**
+> + *  - P**_SHIFT = how many bits of the address we use to index into the
+> + * corresponding P**
+> + *  - P**_SIZE is how much memory we can access through the table - not the
+> + * size of the table itself.
+> + * P**={PGD, PUD, PMD, PTE}
+> + *
+> + *
+> + * Each entry of the PGD points to a PUD. Each entry of a PUD points to a
+> + * PMD. Each entry of a PMD points to a PTE. And every PTE entry points to
+> + * a page.
+> + *
+> + * In the case where there are only 3 levels, the PUD is folded into the
+> + * PGD: every PUD has only one entry which points to the PMD.
+> + *
+> + * The page dumper groups page table entries of the same type into a single
+> + * description. It uses pg_state to track the range information while
+> + * iterating over the PTE entries. When the continuity is broken it then
+> + * dumps out a description of the range - ie PTEs that are virtually contiguous
+> + * with the same PTE flags are chunked together. This is to make it clear how
+> + * different areas of the kernel virtual memory are used.
+> + *
+> + */
+> +struct pg_state {
+> +	struct seq_file *seq;
+> +	const struct addr_marker *marker;
+> +	unsigned long start_address;
+> +	unsigned level;
+> +	u64 current_flags;
+> +};
+> +
+> +struct flag_info {
+> +	u64		mask;
+> +	u64		val;
+> +	const char	*set;
+> +	const char	*clear;
+> +};
+> +
+> +static const struct flag_info flag_array[] = {
+> +	{
+> +		.mask	= _PAGE_USER,
+> +		.val	= _PAGE_USER,
+> +		.set	= "user",
+> +		.clear	= "    ",
+> +	}, {
+> +		.mask	= _PAGE_RW,
+> +		.val	= _PAGE_RW,
+> +		.set	= "rw",
+> +		.clear	= "ro",
+> +	}, {
+> +		.mask	= _PAGE_EXEC,
+> +		.val	= _PAGE_EXEC,
+> +		.set	= " X ",
+Can we make this small "x" to sort of go in line with "rw"/"ro"
+> +		.clear	= "   ",
+> +	}, {
+> +		.mask	= _PAGE_PTE,
+> +		.val	= _PAGE_PTE,
+> +		.set	= "pte",
+> +		.clear	= "   ",
+> +	}, {
+> +		.mask	= _PAGE_PRESENT,
+> +		.val	= _PAGE_PRESENT,
+> +		.set	= "present",
+> +		.clear	= "       ",
+> +	}, {
+> +		.mask	= _PAGE_HASHPTE,
+> +		.val	= _PAGE_HASHPTE,
+> +		.set	= "hpte",
+> +		.clear	= "    ",
+> +	}, {
+> +		.mask	= _PAGE_GUARDED,
+> +		.val	= _PAGE_GUARDED,
+> +		.set	= "guarded",
+> +		.clear	= "       ",
+> +	}, {
+> +		.mask	= _PAGE_DIRTY,
+> +		.val	= _PAGE_DIRTY,
+> +		.set	= "dirty",
+> +		.clear	= "     ",
+> +	}, {
+> +		.mask	= _PAGE_ACCESSED,
+> +		.val	= _PAGE_ACCESSED,
+> +		.set	= "accessed",
+> +		.clear	= "        ",
+> +	}, {
+> +		.mask	= _PAGE_WRITETHRU,
+> +		.val	= _PAGE_WRITETHRU,
+> +		.set	= "write through",
+> +		.clear	= "             ",
+> +	}, {
+> +		.mask	= _PAGE_NO_CACHE,
+> +		.val	= _PAGE_NO_CACHE,
+> +		.set	= "no cache",
+> +		.clear	= "        ",
+> +	}, {
+> +		.mask	= _PAGE_BUSY,
+> +		.val	= _PAGE_BUSY,
+> +		.set	= "busy",
+> +	}, {
+> +		.mask	= _PAGE_COMBO,
+> +		.val	= _PAGE_COMBO,
+> +		.set	= "combo",
+> +	}, {
+> +		.mask	= _PAGE_F_GIX,
+> +		.val	= _PAGE_F_GIX,
+> +		.set	= "f_gix",
+Can we use "primary"?
+> +	}, {
+> +		.mask	= _PAGE_F_SECOND,
+> +		.val	= _PAGE_F_SECOND,
+> +		.set	= "f_second",
+"secondary idx"
+> +	}, {
+> +		.mask	= _PAGE_SPECIAL,
+> +		.val	= _PAGE_SPECIAL,
+> +		.set	= "special",
+> +	}, {
+> +		.mask	= _PAGE_4K_PFN,
+> +		.val	= _PAGE_4K_PFN,
+> +		.set	= "4K_pfn"
+> +	}
+> +};
+> +
+> +struct pgtable_level {
+> +	const struct flag_info *flag;
+> +	size_t num;
+> +	u64 mask;
+> +};
+> +
+> +static struct pgtable_level pg_level[] = {
+> +	{
+> +	}, { /* pgd */
+> +		.flag	= flag_array,
+> +		.num	= ARRAY_SIZE(flag_array),
+> +	}, { /* pud */
+> +		.flag	= flag_array,
+> +		.num	= ARRAY_SIZE(flag_array),
+> +	}, { /* pmd */
+> +		.flag	= flag_array,
+> +		.num	= ARRAY_SIZE(flag_array),
+> +	}, { /* pte */
+> +		.flag	= flag_array,
+> +		.num	= ARRAY_SIZE(flag_array),
+> +	},
+> +};
+> +
+> +static void dump_flag(struct pg_state *st, const struct flag_info *flag,
+> +			size_t num)
+> +{
+> +	unsigned i;
+> +
+> +	for (i = 0; i < num; i++, flag++) {
+> +		const char *s;
+> +
+> +		if ((st->current_flags & flag->mask) == flag->val)
+> +			s = flag->set;
+> +		else
+> +			s = flag->clear;
+> +
+> +		if (s)
+> +			seq_printf(st->seq, " %s", s);
+> +	}
+> +}
+> +
+> +static void dump_addr(struct pg_state *st, unsigned long addr)
+> +{
+> +	static const char units[] = "KMGTPE";
+> +	const char *unit = units;
+> +	unsigned long delta;
+> +
+> +	seq_printf(st->seq, "0x%016lx-0x%016lx   ", st->start_address, addr-1);
+> +	delta = (addr - st->start_address) >> 10;
+> +	/* Work out what appropriate unit to use */
+> +	while (!(delta & 1023) && unit[1]) {
 
-  From: Paul Mackerras via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+1023, I think ((1 << 10) - 1) is easier to understand but again you may find a better way of encapsulating this
 
-And so in the patchwork database the user "linuxppc-dev@lists.ozlabs.org" has a
-name of "Paul Mackerras via Linuxppc-dev".
-
-The subsequent two patches (ppc4xx-rng and perf jit) are from different people,
-who also had their From address rewritten due to DMARC.
-
-So I think patchwork needs to:
- - detect mails that have been rewritten due to DMARC
-   - AFAICS the only way to do this is to notice that the From address is the
-     same as the list address.
- - when it sees those mails, use the Reply-To header instead.
-
-cheers
+> +		delta >>= 10;
+> +		unit++;
+> +	}
+> +	seq_printf(st->seq, "%9lu%c", delta, *unit);
+> +
+> +}
+> +
+> +static void note_page(struct pg_state *st, unsigned long addr, unsigned level,
+> +				u64 val)
+> +{
+> +	u64 flag = val & pg_level[level].mask;
+> +
+> +	/* At first no level is set */
+> +	if (!st->level) {
+> +		st->level = level;
+> +		st->current_flags = flag;
+> +		st->start_address = addr;
+> +		seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
+> +	/*
+> +	 * Dump the section of virtual memory when:
+> +	 *   - the PTE flags from one entry to the next differs.
+> +	 *   - we change levels in the tree.
+> +	 *   - the address is in a different section of memory and is thus
+> +	 *   used for a different purpose, regardless of the flags.
+> +	 */
+> +	} else if (flag != st->current_flags || level != st->level ||
+> +		   addr >= st->marker[1].start_address) {
+> +
+> +		/* Check the PTE flags */
+> +		if (st->current_flags) {
+> +			dump_addr(st, addr);
+> +
+> +			/* Dump all the flags */
+> +			if (pg_level[st->level].flag)
+> +				dump_flag(st, pg_level[st->level].flag,
+> +					  pg_level[st->level].num);
+> +			seq_puts(st->seq, "\n");
+> +		}
+> +
+> +		/* Address indicates we have passed the end of the
+> +		 * current section of virtual memory
+> +		 */
+> +		while (addr >= st->marker[1].start_address) {
+> +			st->marker++;
+> +			seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
+> +		}
+> +		st->start_address = addr;
+> +		st->current_flags = flag;
+> +		st->level = level;
+> +	}
+> +}
+> +
+> +static void walk_pte(struct pg_state *st, pmd_t *pmd, unsigned long start)
+> +{
+> +	pte_t *pte = pte_offset_kernel(pmd, 0);
+> +	unsigned long addr;
+> +	unsigned i;
+> +
+> +	for (i = 0; i < PTRS_PER_PTE; i++, pte++) {
+> +		addr = start + i * PAGE_SIZE;
+> +		note_page(st, addr, 4, pte_val(*pte));
+> +	}
+> +}
+> +
+> +static void walk_pmd(struct pg_state *st, pud_t *pud, unsigned long start)
+> +{
+> +	pmd_t *pmd = pmd_offset(pud, 0);
+> +	unsigned long addr;
+> +	unsigned i;
+> +
+> +	for (i = 0; i < PTRS_PER_PMD; i++, pmd++) {
+> +		addr = start + i * PMD_SIZE;
+> +		if (!pmd_none(*pmd))
+> +			/* pmd exists */
+> +			walk_pte(st, pmd, addr);
+> +		else
+> +			note_page(st, addr, 3, pmd_val(*pmd));
+> +	}
+> +}
+> +
+> +static void walk_pud(struct pg_state *st, pgd_t *pgd, unsigned long start)
+> +{
+> +	pud_t *pud = pud_offset(pgd, 0);
+> +	unsigned long addr;
+> +	unsigned i;
+> +
+> +	for (i = 0; i < PTRS_PER_PUD; i++, pud++) {
+> +		addr = start + i * PUD_SIZE;
+> +		if (!pud_none(*pud))
+> +			/* pud exists */
+> +			walk_pmd(st, pud, addr);
+> +		else
+> +			note_page(st, addr, 2, pud_val(*pud));
+> +	}
+> +}
+> +
+> +static void walk_pgd(struct pg_state *st, unsigned long start)
+> +{
+> +	pgd_t *pgd = pgd_offset_k(0UL);
+> +	unsigned i;
+> +	unsigned long addr;
+> +
+> +	for (i = 0; i < PTRS_PER_PGD; i++, pgd++) {
+> +		addr = start + i * PGDIR_SIZE;
+> +		if (!pgd_none(*pgd))
+> +			/* pgd exists */
+> +			walk_pud(st, pgd, addr);
+> +		else
+> +			note_page(st, addr, 1, pgd_val(*pgd));
+> +	}
+> +}
+> +
+> +static int ptdump_show(struct seq_file *m, void *v)
+> +{
+> +	struct pg_state st = {
+> +		.seq = m,
+> +		.start_address = KERN_VIRT_START,
+> +		.marker = address_markers,
+> +	};
+> +	/* Traverse kernel page tables */
+> +	walk_pgd(&st, KERN_VIRT_START);
+> +	note_page(&st, 0, 0, 0);
+> +	return 0;
+> +}
+> +
+> +static int ptdump_open(struct inode *inode, struct file *file)
+> +{
+> +	return single_open(file, ptdump_show, NULL);
+> +}
+> +
+> +static const struct file_operations ptdump_fops = {
+> +	.open		= ptdump_open,
+> +	.read		= seq_read,
+> +	.llseek		= seq_lseek,
+> +	.release	= single_release,
+> +};
+> +
+> +static void build_pgtable_complete_mask(void)
+> +{
+> +	unsigned i, j;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(pg_level); i++)
+> +		if (pg_level[i].flag)
+> +			for (j = 0; j < pg_level[i].num; j++)
+> +				pg_level[i].mask |= pg_level[i].flag[j].mask;
+> +}
+> +
+> +static int ptdump_init(void)
+> +{
+> +	struct dentry *debugfs_file;
+> +
+> +	build_pgtable_complete_mask();
+> +	debugfs_file = debugfs_create_file("kernel_pagetables", 0400, NULL,
+> +			NULL, &ptdump_fops);
+> +	return debugfs_file ? 0 : -ENOMEM;
+> +}
+> +device_initcall(ptdump_init);
