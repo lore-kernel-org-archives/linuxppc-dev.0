@@ -1,38 +1,29 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qZxJN0XP2zDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 05:39:31 +1100 (AEDT)
-Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Wed, 30 Mar 2016 15:39:27 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 98F34352005C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 14:39:10 -0400 (EDT)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2UHdQNq9503038
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 14:39:26 -0300
-Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2UIdKCH029486
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 15:39:20 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] Remove kretprobe_trampoline_holder.
-Date: Wed, 30 Mar 2016 15:38:07 -0300
-Message-ID: <1703586.buApXYfjM8@hactar>
-In-Reply-To: <1459328976.23987.4.camel@ellerman.id.au>
-References: <3qWbvb0yVwz9sdm@ozlabs.org>
- <20160330080459.GB21299@naverao1-tp.in.ibm.com>
- <1459328976.23987.4.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qb03g52k0zDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 07:43:43 +1100 (AEDT)
+Received: by mail-wm0-x244.google.com with SMTP id p65so18204827wmp.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 13:43:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Sender: pku.leo@gmail.com
+In-Reply-To: <1455840434.2463.97.camel@buserror.net>
+References: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
+ <CADRPPNS1i1XgtpyiT_=rDuDXBDn=ehNY32=RKTC9hdKXhWWq8A@mail.gmail.com>
+ <1455840434.2463.97.camel@buserror.net>
+Date: Wed, 30 Mar 2016 15:43:40 -0500
+Message-ID: <CADRPPNTauz=T9oWCeZy8G8s0vo9fmieRhn=Gd3jVqqJJEHV_ag@mail.gmail.com>
+Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
+From: Li Yang <leoli@freescale.com>
+To: Scott Wood <oss@buserror.net>
+Cc: Raghav Dogra <raghav.dogra@nxp.com>, linux-mtd@lists.infradead.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>,
+ Brian Norris <computersforpeace@gmail.com>,
+ Raghav Dogra <raghav@freescale.com>, Jaiprakash Singh <b44839@freescale.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,48 +33,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Mittwoch, 30 M=E4rz 2016, 20:09:36 schrieb Michael Ellerman:
-> On Wed, 2016-03-30 at 13:34 +0530, Naveen N. Rao wrote:
-> > On 2016/03/29 08:35PM, Thiago Jung Bauermann wrote:
-> > > Am Dienstag, 29 M=E4rz 2016, 14:31:34 schrieb Michael Ellerman:
-> > > > On Mon, 2016-03-28 at 17:06 -0300, Thiago Jung Bauermann wrote:=
+Hi Brian,
 
-> > > > > With this patch, all vmlinux symbols match /proc/kallsyms and=
- the
-> > > > > testcase passes.
-> > > >=20
-> > > > Have you tested this on an LE system?
-> > >=20
-> > > No, I was focusing on ppc64 BE.
-> >=20
-> > Which kernel did you use? I don't see this with the latest 4.6.0-rc=
-1.
->=20
-> Yeah I can't reproduce the perf test failure either.
+Could you help to review and pull in this patch and the Kconfig update
+after this patch(https://patchwork.ozlabs.org/patch/557389/)?  It
+stated a dependency in the notes, but actually it should be applied
+cleanly without that patch.  These patches are critical to make NAND
+mtd feature work for our new chips.
 
-I can still reproduce on 4.6.0-rc1.
+Regards,
+Leo
 
-> Not sure what's going on?
+On Thu, Feb 18, 2016 at 6:07 PM, Scott Wood <oss@buserror.net> wrote:
+> On Thu, 2016-02-18 at 15:18 -0600, Leo Li wrote:
+>> On Wed, Feb 17, 2016 at 5:24 AM, Raghav Dogra <raghav.dogra@nxp.com> wrote:
+>> > The new IFC controller version 2.0 has a different memory map page.
+>> > Upto IFC 1.4 PAGE size is 4 KB and from IFC2.0 PAGE size is 64KB.
+>> > This patch segregates the IFC global and runtime registers to appropriate
+>> > PAGE sizes.
+>> >
+>> > Signed-off-by: Jaiprakash Singh <b44839@freescale.com>
+>> > Signed-off-by: Raghav Dogra <raghav@freescale.com>
+>> > Acked-by: Li Yang <leoyang.li@nxp.com>
+>> > Signed-off-by: Raghav Dogra <raghav.dogra@nxp.com>
+>> > ---
+>> > Changes for v3: not dependent on
+>> > "drivers/memory: Add deep sleep support for IFC" patch
+>> >
+>> > Changes for v2: rebased to resolve conflicts
+>> > Applicable to git://git.infradead.org/l2-mtd.git
+>> >
+>> > This patch is dependent on "drivers/memory: Add deep sleep support for
+>> > IFC"
+>> > https://patchwork.ozlabs.org/patch/582762/
+>> > which is also applicable to git://git.infradead.org/l2-mtd.git
+>>
+>> This patch seems to be in good shape, but the dependency is still
+>> having quite some feedback to be addressed.  Depending on it will
+>> greatly delay the time that this critical patch for LS2 to be merged.
+>> Could you remove the dependency like Scott already suggested?
+>
+> According to the changelog the dependency has been removed (it would have been
+> clearer to remove this comment as well...).
+>
+> -Scott
+>
 
-Try disabling CONFIG_FUNCTION_TRACER. The test failure happens when .kr=
-etprobe_trampoline_holder and
-kretprobe_trampoline have the same address. If that option is enabled, =
-the symbols have different addresses:
 
-$ eu-readelf -s /boot/vmlinux-4.6.0-rc1-dirty | grep kretprobe_tramp   =
-                                                =20
- 2479: c000000000ef1d68     24 NOTYPE  LOCAL  DEFAULT       37 kretprob=
-e_trampoline_holder
- 2480: c000000000043ab0     40 FUNC    LOCAL  DEFAULT        1 .kretpro=
-be_trampoline_holder
-86903: c000000000043ac4      0 NOTYPE  GLOBAL DEFAULT        1 kretprob=
-e_trampoline
-$ grep kretprobe_tramp /proc/kallsyms
-c000000000043ab0 t .kretprobe_trampoline_holder
-c000000000043ac4 T kretprobe_trampoline
-c000000000ef1d68 d kretprobe_trampoline_holder
 
---=20
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+-- 
+- Leo
