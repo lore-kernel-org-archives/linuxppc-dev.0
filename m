@@ -2,18 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qZhdT09zpzDqfS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 20:08:29 +1100 (AEDT)
-Message-ID: <1459328908.23987.3.camel@ellerman.id.au>
-Subject: Re: mailman From rewriting [was perf jit: genelf makes assumptions
- about endian]
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qZhfm5zW0zDsMN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 20:09:36 +1100 (AEDT)
+Message-ID: <1459328976.23987.4.camel@ellerman.id.au>
+Subject: Re: [PATCH] Remove kretprobe_trampoline_holder.
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jeremy Kerr <jk@ozlabs.org>, Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 30 Mar 2016 20:08:28 +1100
-In-Reply-To: <56FB6464.4010609@ozlabs.org>
-References: <20160329175944.33a211cc@kryten> <56FA435A.5010804@ozlabs.org>
- <20160329210639.12136fd5@canb.auug.org.au> <56FB6464.4010609@ozlabs.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Thiago Jung Bauermann
+ <bauerman@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Wed, 30 Mar 2016 20:09:36 +1100
+In-Reply-To: <20160330080459.GB21299@naverao1-tp.in.ibm.com>
+References: <3qWbvb0yVwz9sdm@ozlabs.org>
+ <1459195592-6559-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1459222294.8173.8.camel@ellerman.id.au> <3337968.FTL1d9fOmu@hactar>
+ <20160330080459.GB21299@naverao1-tp.in.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,28 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-03-30 at 13:30 +0800, Jeremy Kerr wrote:
-> > > Do you know why mailman would be re-writing From: there? It's confusing
-> > > patchwork, as multiple mails are now coming from that address.
+On Wed, 2016-03-30 at 13:34 +0530, Naveen N. Rao wrote:
+> On 2016/03/29 08:35PM, Thiago Jung Bauermann wrote:
+> > Am Dienstag, 29 März 2016, 14:31:34 schrieb Michael Ellerman:
+> > > On Mon, 2016-03-28 at 17:06 -0300, Thiago Jung Bauermann wrote:
+> > > > With this patch, all vmlinux symbols match /proc/kallsyms and the
+> > > > testcase passes.
+> > >
+> > > Have you tested this on an LE system?
 > >
-> > Yep, Anton posts from samba.org.  They publish a DMARC policy that
-> > breaks mailing lists.
+> > No, I was focusing on ppc64 BE.
 >
-> (╯°□°)╯︵ ┻━━┻
->
-> This also breaks git-am:
->
->   [jk@pudge linux]$ git am incoming.eml
->   Applying: perf jit: genelf makes assumptions about endian
->   [jk@pudge linux]$ git log --format='format:%an <%ae>' -1
->   Anton Blanchard via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+> Which kernel did you use? I don't see this with the latest 4.6.0-rc1.
 
-Actually one thing that makes this less of a problem, is that if you get the
-mail directly then the From is fine.
+Yeah I can't reproduce the perf test failure either.
 
-ie. for this patch I was on Cc, so the list didn't send me a copy, I just got
-it straight from Anton. So if I was wanting to git-am this mail I'd be fine.
-
-Not saying that's a solution, but it's something.
+Not sure what's going on?
 
 cheers
