@@ -1,18 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qZSxx4PdbzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 11:21:57 +1100 (AEDT)
-In-Reply-To: <1458145736-20326-2-git-send-email-felix@linux.vnet.ibm.com>
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qZT2T350JzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 11:25:53 +1100 (AEDT)
+In-Reply-To: <20160329183333.15267.29181.stgit@hbathini.in.ibm.com>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>, mikey@neuling.org,
- imunsie@au1.ibm.com
-Subject: Re: [v2,2/2] cxl: Configure the PSL for two CAPI ports on POWER8NVL
-Message-Id: <3qZSxx3cszz9sBg@ozlabs.org>
-Date: Wed, 30 Mar 2016 11:21:57 +1100 (AEDT)
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [v2] ppc64/book3s: fix branching to out of line handlers in
+ relocation kernel
+Message-Id: <3qZT2T1R7fz9sDC@ozlabs.org>
+Date: Wed, 30 Mar 2016 11:25:53 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,93 +23,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-16-03 at 16:28:56 UTC, Philippe Bergheaud wrote:
-> The POWER8NVL chip has two CAPI ports.  Configure the PSL to route
-> data to the port corresponding to the CAPP unit.
-> 
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 0c6c17a1..924ba63 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -340,12 +341,35 @@ static void dump_afu_descriptor(struct cxl_afu *afu)
->  #undef show_reg
->  }
+On Tue, 2016-29-03 at 18:34:37 UTC, Hari Bathini wrote:
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index 7716ceb..e598580 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -764,8 +764,8 @@ kvmppc_skip_Hinterrupt:
+>  #endif
 >  
-> +#define CAPP_UNIT0_ID 0xBA
-> +#define CAPP_UNIT1_ID 0XBE
+>  /*
+> - * Code from here down to __end_handlers is invoked from the
+> - * exception prologs above.  Because the prologs assemble the
+> + * Code from here down to end of out of line handlers is invoked from
+> + * the exception prologs above.  Because the prologs assemble the
+
+I think it would be better to just replace __end_handlers with __end_interrupts,
+that way it's entirely clear what location you're talking about.
+
+> @@ -953,11 +953,6 @@ hv_facility_unavailable_relon_trampoline:
+>  #endif
+>  	STD_RELON_EXCEPTION_PSERIES(0x5700, 0x1700, altivec_assist)
+>  
+> -	/* Other future vectors */
+> -	.align	7
+> -	.globl	__end_interrupts
+> -__end_interrupts:
+> -
+>  	.align	7
+>  system_call_entry:
+>  	b	system_call_common
+> @@ -1230,10 +1225,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+>  	STD_EXCEPTION_COMMON(0xf60, facility_unavailable, facility_unavailable_exception)
+>  	STD_EXCEPTION_COMMON(0xf80, hv_facility_unavailable, facility_unavailable_exception)
+>  
+> -	.align	7
+> -	.globl	__end_handlers
+> -__end_handlers:
+> -
+
+Sorry I wasn't clear in my last mail, please do this as a separate cleanup patch
+after this patch.
+
+> @@ -1244,6 +1235,16 @@ __end_handlers:
+>  	STD_RELON_EXCEPTION_PSERIES_OOL(0xf60, facility_unavailable)
+>  	STD_RELON_EXCEPTION_HV_OOL(0xf80, hv_facility_unavailable)
+>  
+> +	/* FIXME: For now, let us move the __end_interrupts marker down past
+
+Why is it FIXME?
+
+In general I don't want to merge code that adds a FIXME unless there is some
+very good reason.
+
+AFAICS this is a permanent solution isn't it?
+
+> +	 * the out-of-line handlers, to make sure we also copy OOL handlers
+> +	 * to real adress 0x100 when running a relocatable kernel. This helps
+
+It doesn't "help" it's 100% required.
+
+> +	 * in cases where interrupt vectors are not long enough (like 0x4f00,
+> +	 * 0x4f20, etc.) to branch out to OOL handlers with LOAD_HANDLER().
+> +	 */
+> +	.align	7
+> +	.globl	__end_interrupts
+> +__end_interrupts:
 > +
-> +static u64 capp_unit_id(struct device_node *np)
-
-It's always nice if function names contain a verb, eg. get_capp_unit_id().
-
-> +{
-> +	const __be32 *prop;
-> +	u64 phb_index;
-> +
-> +	/* For chips other than POWER8NVL, we only have CAPP 0,
-> +	 * irrespective of which PHB is used */
-
-Can you use the standard block commenting style please, eg:
-
-/*
- * For chips ..
- */
-
-> +	if (!pvr_version_is(PVR_POWER8NVL))
-> +		return CAPP_UNIT0_ID ;
-                                    ^
-				    don't need a space here
-
-> +	/* For POWER8NVL, assume CAPP 0 is attached to PHB0 and
-> +	 * CAPP 1 is attached to PHB1 */
-> +	prop = of_get_property(np, "ibm,phb-index", NULL);
-
-Please use of_property_read_u32().
-
-> +	if (!prop)
-> +		return 0;
-> +	phb_index = be32_to_cpup(prop);
-
-Some blank lines here would help readability.
-
-> +	return phb_index ? CAPP_UNIT1_ID : CAPP_UNIT0_ID;
-
-This logic doesn't quite match your comment above. This says that any non-zero
-PHB index is CAPP1, whereas the comment says CAPP1 == PHB1.
-
-> +}
-> +
->  static int init_implementation_adapter_regs(struct cxl *adapter, struct pci_dev *dev)
->  {
->  	struct device_node *np;
->  	const __be32 *prop;
->  	u64 psl_dsnctl;
->  	u64 chipid;
-> +	u64 cappunitid;
-
-capp_unit_id ?
-
->  	if (!(np = pnv_pci_get_phb_node(dev)))
->  		return -ENODEV;
-> @@ -355,10 +379,15 @@ static int init_implementation_adapter_regs(struct cxl *adapter, struct pci_dev
->  	if (!np)
->  		return -ENODEV;
->  	chipid = be32_to_cpup(prop);
-> +	cappunitid = capp_unit_id(np);
->  	of_node_put(np);
-> +	if (!cappunitid)
-> +		return -ENODEV;
-
-You probably want a pr_xxx() there don't you?
-
->  	/* Tell PSL where to route data to */
-> -	psl_dsnctl = 0x02E8900002000000ULL | (chipid << (63-5));
-> +	psl_dsnctl = 0x0000900002000000ULL | (chipid << (63-5));
-> +	psl_dsnctl |= (cappunitid << (63-13));
-> +
->  	cxl_p1_write(adapter, CXL_PSL_DSNDCTL, psl_dsnctl);
->  	cxl_p1_write(adapter, CXL_PSL_RESLCKTO, 0x20000000200ULL);
->  	/* snoop write mask */
+>  #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
+>  /*
+>   * Data area reserved for FWNMI option.
 
 
 cheers
