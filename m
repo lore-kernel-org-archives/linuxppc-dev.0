@@ -1,24 +1,23 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x236.google.com (mail-pf0-x236.google.com
- [IPv6:2607:f8b0:400e:c00::236])
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qb6hg5btgzDq5v
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 12:42:43 +1100 (AEDT)
-Received: by mail-pf0-x236.google.com with SMTP id e128so35390758pfe.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 18:42:43 -0700 (PDT)
-Subject: Re: [PATCH 03/65] powerpc/mm/subpage: Clear RWX bit to indicate no
- access
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qb6mR1mzRzDq5v
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 12:45:58 +1100 (AEDT)
+Received: by mail-pa0-x229.google.com with SMTP id fe3so54141063pab.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 18:45:58 -0700 (PDT)
+Subject: Re: [PATCH 04/65] powerpc/mm: Use pte_user instead of opencoding
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 References: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1459067053-10835-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1459067053-10835-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <56FC808B.7030704@gmail.com>
-Date: Thu, 31 Mar 2016 12:42:35 +1100
+Message-ID: <56FC814F.5090102@gmail.com>
+Date: Thu, 31 Mar 2016 12:45:51 +1100
 MIME-Version: 1.0
-In-Reply-To: <1459067053-10835-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1459067053-10835-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,49 +31,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 On 27/03/16 19:23, Aneesh Kumar K.V wrote:
-> Subpage protection used to depend on _PAGE_USER bit to implement no
-> access mode. This patch switch that to use _PAGE_RWX. We clear READ,
-> Write and Execute access from pte instead of clearing _PAGE_USER now.
-> This was done so that we can switch to _PAGE_PRIVILEGED in later patch.
-> subpage_protection() returns pte bits that need to be cleared.
-Could you please clarify what bit needs to be cleared. I think the underlying
-assumption is that when this routine is called access cannot be _PAGE_RWX
-> Instead of updating the interface to handle no-access in a separate way,
-> it appears simple to clear RWX acecss to indicate no access.
+> We have common declaration in pte-common.h Add book3s specific one
+> and switch to pte_user. In the later patch we will be switching
+> _PAGE_USER to _PAGE_PRIVILEGED
 >
-> We still don't insert hash pte for no access implied by !_PAGE_RWX.
-> Hence we should not get PROT_FAULT with change.
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/mm/hash_utils_64.c | 11 ++++++++---
->  1 file changed, 8 insertions(+), 3 deletions(-)
+>  arch/powerpc/include/asm/book3s/64/pgtable.h | 5 +++++
+>  arch/powerpc/perf/callchain.c                | 2 +-
+>  2 files changed, 6 insertions(+), 1 deletion(-)
 >
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index ea23403b3fc0..ec37f4b0a8ff 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -917,7 +917,7 @@ void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
->   * Userspace sets the subpage permissions using the subpage_prot system call.
->   *
->   * Result is 0: full permissions, _PAGE_RW: read-only,
-> - * _PAGE_USER or _PAGE_USER|_PAGE_RW: no access.
-> + * _PAGE_RWX: no access.
->   */
->  static int subpage_protection(struct mm_struct *mm, unsigned long ea)
->  {
-> @@ -943,8 +943,13 @@ static int subpage_protection(struct mm_struct *mm, unsigned long ea)
->  	/* extract 2-bit bitfield for this 4k subpage */
->  	spp >>= 30 - 2 * ((ea >> 12) & 0xf);
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> index 77d3ce05798e..4ac6221802ad 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -185,6 +185,11 @@ extern struct page *pgd_page(pgd_t pgd);
+>  #define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val((pte)) & ~_PAGE_PTE })
+>  #define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
 >  
-> -	/* turn 0,1,2,3 into combination of _PAGE_USER and _PAGE_RW */
-> -	spp = ((spp & 2) ? _PAGE_USER : 0) | ((spp & 1) ? _PAGE_RW : 0);
-> +	/*
-> +	 * 0 -> full premission
-> +	 * 1 -> Read only
-> +	 * 2 -> no access.
-> +	 * We return the flag that need to be cleared.
-> +	 */
-> +	spp = ((spp & 2) ? _PAGE_RWX : 0) | ((spp & 1) ? _PAGE_WRITE : 0);
->  	return spp;
->  }
+> +static inline bool pte_user(pte_t pte)
+> +{
+> +	return (pte_val(pte) & _PAGE_USER);
+> +}
+Ideally this should be
+    return !!(pte_val(pte) & _PAGE_USER)
+for consistency with page_present() and the fact that it returns a bool
+
+> +
+>  #ifdef CONFIG_MEM_SOFT_DIRTY
+>  #define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
+>  #else
+> diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
+> index e04a6752b399..0071de76d776 100644
+> --- a/arch/powerpc/perf/callchain.c
+> +++ b/arch/powerpc/perf/callchain.c
+> @@ -137,7 +137,7 @@ static int read_user_stack_slow(void __user *ptr, void *buf, int nb)
+>  	offset = addr & ((1UL << shift) - 1);
 >  
+>  	pte = READ_ONCE(*ptep);
+> -	if (!pte_present(pte) || !(pte_val(pte) & _PAGE_USER))
+> +	if (!pte_present(pte) || !pte_user(pte))
+>  		goto err_out;
+>  	pfn = pte_pfn(pte);
+>  	if (!page_is_ram(pfn))
+
+Makes sense
+
+Acked-by: Balbir Singh <bsingharora@gmail.com>
