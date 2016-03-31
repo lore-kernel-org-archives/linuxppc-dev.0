@@ -1,23 +1,24 @@
 Return-Path: <prvs=3898f00e9f=ast@fb.com>
-Received: from mx0b-00082601.pphosted.com (mx0b-00082601.pphosted.com
- [67.231.153.30])
+Received: from mx0a-00082601.pphosted.com (mx0a-00082601.pphosted.com
+ [67.231.145.42])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qbXTN4N7pzDq6X
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 05:04:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qbZ9w20tHzDq71
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 06:21:08 +1100 (AEDT)
 Subject: Re: [PATCH 3/4] samples/bpf: Simplify building BPF samples
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 References: <922f95fb5d16686367a66d2d4bd176149a87e9ad.1459423412.git.naveen.n.rao@linux.vnet.ibm.com>
  <0ce1c8bdff478db55490a90db6732c4db9de6f22.1459423412.git.naveen.n.rao@linux.vnet.ibm.com>
-CC: "David S . Miller" <davem@davemloft.net>, Ananth N Mavinakayanahalli
+ <56FD632B.4040306@fb.com> <20160331185139.GD17907@naverao1-tp.ibm.com>
+CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, "David S
+ . Miller" <davem@davemloft.net>, Ananth N Mavinakayanahalli
  <ananth@in.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Daniel Borkmann
  <daniel@iogearbox.net>, <netdev@vger.kernel.org>
 From: Alexei Starovoitov <ast@fb.com>
-Message-ID: <56FD632B.4040306@fb.com>
-Date: Thu, 31 Mar 2016 10:49:31 -0700
+Message-ID: <56FD7888.9080902@fb.com>
+Date: Thu, 31 Mar 2016 12:20:40 -0700
 MIME-Version: 1.0
-In-Reply-To: <0ce1c8bdff478db55490a90db6732c4db9de6f22.1459423412.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <20160331185139.GD17907@naverao1-tp.ibm.com>
 Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,96 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/31/16 4:25 AM, Naveen N. Rao wrote:
-> Make BPF samples build depend on CONFIG_SAMPLE_BPF. We still don't add a
-> Kconfig option since that will add a dependency on llvm for allyesconfig
-> builds which may not be desirable.
+On 3/31/16 11:51 AM, Naveen N. Rao wrote:
+> On 2016/03/31 10:49AM, Alexei Starovoitov wrote:
+>> On 3/31/16 4:25 AM, Naveen N. Rao wrote:
+>>> Make BPF samples build depend on CONFIG_SAMPLE_BPF. We still don't add a
+>>> Kconfig option since that will add a dependency on llvm for allyesconfig
+>>> builds which may not be desirable.
+>>>
+>>> Those who need to build the BPF samples can now just do:
+>>>
+>>> make CONFIG_SAMPLE_BPF=y
+>>>
+>>> or:
+>>>
+>>> export CONFIG_SAMPLE_BPF=y
+>>> make
+>>
+>> I don't like this 'simplification'.
+>> make samples/bpf/
+>> is much easier to type than capital letters.
 >
-> Those who need to build the BPF samples can now just do:
+> This started out as a patch to have the BPF samples built with a Kconfig
+> option. As stated in the commit description, I realised that it won't
+> work for allyesconfig builds. However, the reason I retained this patch
+> is since it gets us one step closer to building the samples as part of
+> the kernel build.
 >
-> make CONFIG_SAMPLE_BPF=y
+> The 'simplification' is since I can now have the export in my .bashrc
+> and the kernel build will now build the BPF samples too without
+> requiring an additional 'make samples/bpf/' step.
 >
-> or:
->
-> export CONFIG_SAMPLE_BPF=y
-> make
+> I agree this is subjective, so I am ok if this isn't taken in.
 
-I don't like this 'simplification'.
-make samples/bpf/
-is much easier to type than capital letters.
-
-> diff --git a/samples/Makefile b/samples/Makefile
-> index 48001d7..3c77fc8 100644
-> --- a/samples/Makefile
-> +++ b/samples/Makefile
-> @@ -2,4 +2,4 @@
->
->   obj-$(CONFIG_SAMPLES)	+= kobject/ kprobes/ trace_events/ livepatch/ \
->   			   hw_breakpoint/ kfifo/ kdb/ hidraw/ rpmsg/ seccomp/ \
-> -			   configfs/
-> +			   configfs/ bpf/
-> diff --git a/samples/bpf/Makefile b/samples/bpf/Makefile
-> index 88bc5a0..bc5b675 100644
-> --- a/samples/bpf/Makefile
-> +++ b/samples/bpf/Makefile
-> @@ -2,23 +2,23 @@
->   obj- := dummy.o
->
->   # List of programs to build
-> -hostprogs-y := test_verifier test_maps
-> -hostprogs-y += sock_example
-> -hostprogs-y += fds_example
-> -hostprogs-y += sockex1
-> -hostprogs-y += sockex2
-> -hostprogs-y += sockex3
-> -hostprogs-y += tracex1
-> -hostprogs-y += tracex2
-> -hostprogs-y += tracex3
-> -hostprogs-y += tracex4
-> -hostprogs-y += tracex5
-> -hostprogs-y += tracex6
-> -hostprogs-y += trace_output
-> -hostprogs-y += lathist
-> -hostprogs-y += offwaketime
-> -hostprogs-y += spintest
-> -hostprogs-y += map_perf_test
-> +hostprogs-$(CONFIG_SAMPLE_BPF) := test_verifier test_maps
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += sock_example
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += fds_example
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += sockex1
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += sockex2
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += sockex3
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += tracex1
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += tracex2
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += tracex3
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += tracex4
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += tracex5
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += tracex6
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += trace_output
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += lathist
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += offwaketime
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += spintest
-> +hostprogs-$(CONFIG_SAMPLE_BPF) += map_perf_test
->
->   test_verifier-objs := test_verifier.o libbpf.o
->   test_maps-objs := test_maps.o libbpf.o
-> @@ -39,8 +39,8 @@ offwaketime-objs := bpf_load.o libbpf.o offwaketime_user.o
->   spintest-objs := bpf_load.o libbpf.o spintest_user.o
->   map_perf_test-objs := bpf_load.o libbpf.o map_perf_test_user.o
->
-> -# Tell kbuild to always build the programs
-> -always := $(hostprogs-y)
-> +ifdef CONFIG_SAMPLE_BPF
-> +always := $(hostprogs-$(CONFIG_SAMPLE_BPF))
->   always += sockex1_kern.o
->   always += sockex2_kern.o
->   always += sockex3_kern.o
-> @@ -56,6 +56,7 @@ always += lathist_kern.o
->   always += offwaketime_kern.o
->   always += spintest_kern.o
->   always += map_perf_test_kern.o
-> +endif
->
->   HOSTCFLAGS += -I$(objtree)/usr/include
->
->
+If you can change it that 'make samples/bpf/' still works then it would
+be fine. As it is it breaks our testing setup.
