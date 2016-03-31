@@ -1,40 +1,25 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qb7js722mzDq5v
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 13:28:49 +1100 (AEDT)
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 31 Mar 2016 12:28:48 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7D1162CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 13:28:33 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2V2SPDq57475268
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 13:28:33 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2V2Rxi9018961
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 13:28:00 +1100
-Date: Thu, 31 Mar 2016 13:27:34 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, mgorman@suse.de, zhlcindy@linux.vnet.ibm.com
-Subject: Re: [RFC] mm: Fix memory corruption caused by deferred page
- initialization
-Message-ID: <20160331022734.GA12552@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1458921929-15264-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <3qXFh60DRNz9sDH@ozlabs.org> <20160326133708.GA382@gwshan>
- <20160327134827.GA24644@gwshan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qb7xl5psjzDq5v
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 13:39:07 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id x3so9356265pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2016 19:39:07 -0700 (PDT)
+Date: Thu, 31 Mar 2016 10:39:01 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Kees Cook <keescook@chromium.org>,
+ Rashmica Gupta <rashmicy@gmail.com>,
+ Simon Guo <simonguo@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc: Export thread_struct.used_vr/used_vsr to user space
+Message-ID: <20160331023817.GC20131@simonLocalRHEL7.x64>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160327134827.GA24644@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,88 +29,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 28, 2016 at 12:48:27AM +1100, Gavin Shan wrote:
->On Sun, Mar 27, 2016 at 12:37:09AM +1100, Gavin Shan wrote:
->>On Sat, Mar 26, 2016 at 08:47:17PM +1100, Michael Ellerman wrote:
->>>Hi Gavin,
->>>
->>>On Fri, 2016-25-03 at 16:05:29 UTC, Gavin Shan wrote:
->>>> During deferred page initialization, the pages are moved from memblock
->>>> or bootmem to buddy allocator without checking they were reserved. Those
->>>> reserved pages can be reallocated to somebody else by buddy/slab allocator.
->>>> It leads to memory corruption and potential kernel crash eventually.
->>>
->>>Can you give me a bit more detail on what the bug is?
->>>
->>>I haven't seen any issues on my systems, but I realise now I haven't enabled
->>>DEFERRED_STRUCT_PAGE_INIT - I assumed it was enabled by default.
->>>
->>>How did this get tested before submission?
->>>
->>
->>Michael, I have to reply with same context in another thread in case 
->>somebody else wants to understand more: Li, who is in the cc list, is
->>backporting deferred page initialization (CONFIG_DEFERRED_STRUCT_PAGE_INIT)
->>from upstream kernel to RHEL 7.2 or 7.3 kernel (3.10.0-357.el7). RHEL kernel
->>has (!CONFIG_NO_BOOTMEM && CONFIG_DEFERRED_STRUCT_PAGE_INIT), meaning
->>bootmem is enabled. She eventually runs into kernel crash and I jumped
->>in to help understanding the root cause.
->>
->>There're two related kernel config options: ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
->>and DEFERRED_STRUCT_PAGE_INIT. The former one is enabled on PPC by default.
->>The later one isn't enabled by default.
->>
->>There are two test cases I had:
->>
->>- With (!CONFIG_NO_BOOTMEM && CONFIG_DEFERRED_STRUCT_PAGE_INIT)
->>on PowerNV platform, upstream kernel (4.5.rc7) and additional patch to support
->>bootmem as it was removed on powerpc a while ago.
->>
->>- With (CONFIG_NO_BOOTMEM && CONFIG_DEFERRED_STRUCT_PAGE_INIT) on PowerNV platform,
->>upstream kernel (4.5.rc7), I dumped the reserved memblock regions and added printk
->>in function deferred_init_memmap() to check if memblock reserved PFN 0x1fff80 (one
->>page in memblock reserved region#31, refer to the below kernel log) is released
->>to buddy allocator or not when doing deferred page struct initialization. I did
->>see that PFN is released to buddy allocator at that time. However, I didn't see
->>kernel crash and it would be luck and the current deferred page struct initialization
->>implementation: The pages in region [0, 2GB] except the memblock reserved ones are
->>presented to buddy allocator at early stage. It's not deferred. So for the pages in
->>[0, 2GB], we don't have consistency issue between memblock and buddy allocator.
->>The pages in region [2GB ...] are all presented to buddy allocator despite they're
->>reserved in memblock or not. It ensures the kernel text section isn't corrupted
->>and we're lucky not seeing program interrupt because of illegal instruction.
->>
->
->After more debugging, it turns out that Michael is correct: we don't have problem
->when CONFIG_NO_BOOTMEM=y. In the case, the page frames in [2G ...] is marked as
->reserved in early stage (as below function calls reveal). During the deferred
->initialization stage, those reserved pages won't be released to buddy allocator:
->
->- Below function calls mark reserved pages according to memblock reserved regions:
->  init/main.c::start_kernel()
->  init/main.c::mm_init()
->  arch/powerpc/mm/mem.c::mem_init()
->  nobootmem.c::free_all_bootmem()            <-> bootmem.c::free_all_bootmem() on !CONFIG_NO_BOOTMEM
->  nobootmem.c::free_low_memory_core_early()
->  nobootmem.c::reserve_bootmem_region()
->
->- In page_alloc.c::deferred_init_memmap(), the reserved pages aren't released
->  to buddy allocator with below check:
->
->                        if (page->flags) {
->                                VM_BUG_ON(page_zone(page) != zone);
->                                goto free_range;
->                        }
->
->
->So the issue is only existing when CONFIG_NO_BOOTMEM=n. The alternative fix would
->be similar to what we have on !CONFIG_NO_BOOTMEM: In early stage, all page structs
->for bootmem reserved pages are initialized and mark them with PG_reserved. I'm
->not sure it's worthy to fix it as we won't support bootmem as Michael mentioned.
->
+These 2 fields track whether user process has used Altivec/VSX registers
+or not. They are used by kernel to setup signal frame on user stack
+correctly regarding vector part.
 
-Mel, could you please confirm if we need a fix on !CONFIG_NO_BOOTMEM? If we need,
-I'll respin and send a patch for review.
+CRIU(Checkpoint and Restore In User space) builds signal frame for
+restored process. It will need this export information to setup signal
+frame correctly. And CRIU will need to restore these 2 fields for
+the restored process.
 
-Thanks,
-Gavin
+Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+Reviewed-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/uapi/asm/ptrace.h | 11 ++++++++++
+ arch/powerpc/kernel/ptrace.c           | 39 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/ptrace32.c         |  2 ++
+ 3 files changed, 52 insertions(+)
+
+diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
+index 8036b38..4456b8f 100644
+--- a/arch/powerpc/include/uapi/asm/ptrace.h
++++ b/arch/powerpc/include/uapi/asm/ptrace.h
+@@ -176,6 +176,17 @@ struct pt_regs {
+ #define PTRACE_GETREGS64	  0x16
+ #define PTRACE_SETREGS64	  0x17
+ 
++/*
++ * Get or set some register used bit.
++ * The flags will be saved in a 32 bit data.
++ * Currently it is only used for VR/VSR usage.
++ */
++#define PTRACE_GET_REGS_USAGE	  0x1e
++#define PTRACE_SET_REGS_USAGE	  0x1f
++
++#define PTRACE_REGS_USAGE_BIT_VR  0x0
++#define PTRACE_REGS_USAGE_BIT_VSR 0x1
++
+ /* Calls to trace a 64bit program from a 32bit program */
+ #define PPC_PTRACE_PEEKTEXT_3264 0x95
+ #define PPC_PTRACE_PEEKDATA_3264 0x94
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 30a03c0..43d3db3b 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1755,6 +1755,45 @@ long arch_ptrace(struct task_struct *child, long request,
+ 					     REGSET_SPE, 0, 35 * sizeof(u32),
+ 					     datavp);
+ #endif
++	case PTRACE_GET_REGS_USAGE:
++		{
++			u32 *u32_datap = (u32 *)datavp;
++			u32 reg_usage = 0;
++
++			if (addr != sizeof(u32))
++				return -EINVAL;
++
++#ifdef CONFIG_ALTIVEC
++			if (child->thread.used_vr)
++				reg_usage |= (1 << PTRACE_REGS_USAGE_BIT_VR);
++#endif
++#ifdef CONFIG_VSX
++			if (child->thread.used_vsr)
++				reg_usage |= (1 << PTRACE_REGS_USAGE_BIT_VSR);
++#endif
++			return put_user(reg_usage, u32_datap);
++		}
++	case PTRACE_SET_REGS_USAGE:
++		{
++			u32 *u32_datap = (u32 *)datavp;
++			u32 reg_usage = 0;
++
++			if (addr != sizeof(u32))
++				return -EINVAL;
++
++			ret = get_user(reg_usage, u32_datap);
++			if (ret)
++				return ret;
++#ifdef CONFIG_ALTIVEC
++			child->thread.used_vr =
++				((reg_usage >> PTRACE_REGS_USAGE_BIT_VR) & 1);
++#endif
++#ifdef CONFIG_VSX
++			child->thread.used_vsr =
++				((reg_usage >> PTRACE_REGS_USAGE_BIT_VSR) & 1);
++#endif
++			break;
++		}
+ 
+ 	default:
+ 		ret = ptrace_request(child, request, addr, data);
+diff --git a/arch/powerpc/kernel/ptrace32.c b/arch/powerpc/kernel/ptrace32.c
+index f52b7db..ff359a1 100644
+--- a/arch/powerpc/kernel/ptrace32.c
++++ b/arch/powerpc/kernel/ptrace32.c
+@@ -305,6 +305,8 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
+ 	case PPC_PTRACE_GETHWDBGINFO:
+ 	case PPC_PTRACE_SETHWDEBUG:
+ 	case PPC_PTRACE_DELHWDEBUG:
++	case PTRACE_GET_REGS_USAGE:
++	case PTRACE_SET_REGS_USAGE:
+ 		ret = arch_ptrace(child, request, addr, data);
+ 		break;
+ 
+-- 
+2.7.0
