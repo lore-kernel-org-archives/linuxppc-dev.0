@@ -1,28 +1,26 @@
-Return-Path: <linus.walleij@linaro.org>
-Received: from mail-oi0-x22b.google.com (mail-oi0-x22b.google.com
- [IPv6:2607:f8b0:4003:c06::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <daniel@iogearbox.net>
+Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qbPgh6sqDzDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 23:57:51 +1100 (AEDT)
-Received: by mail-oi0-x22b.google.com with SMTP id p188so26248582oih.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 05:57:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qbYFQ2prZzDq6y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 05:39:06 +1100 (AEDT)
+Message-ID: <56FD6A2C.2010506@iogearbox.net>
+Date: Thu, 31 Mar 2016 20:19:24 +0200
+From: Daniel Borkmann <daniel@iogearbox.net>
 MIME-Version: 1.0
-In-Reply-To: <1459418980.24848.1.camel@ellerman.id.au>
-References: <1459408452-3483-1-git-send-email-linus.walleij@linaro.org>
- <1459418980.24848.1.camel@ellerman.id.au>
-Date: Thu, 31 Mar 2016 14:57:49 +0200
-Message-ID: <CACRpkdbbUfbe6LWVDFsgvne7oOEp7ZzOKr9tX7y-P=J8g7c5=A@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: ppc4xx: drop unused variable
-From: Linus Walleij <linus.walleij@linaro.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
- Alexandre Courbot <acourbot@nvidia.com>,
- Anatolij Gustschin <agust@denx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+To: Alexei Starovoitov <ast@fb.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+CC: "David S . Miller" <davem@davemloft.net>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, netdev@vger.kernel.org
+Subject: Re: [PATCH 2/4] samples/bpf: Use llc in PATH, rather than a hardcoded
+ value
+References: <922f95fb5d16686367a66d2d4bd176149a87e9ad.1459423412.git.naveen.n.rao@linux.vnet.ibm.com>
+ <ba23d688b3550c3f22dd0dd6d5cb1233c2f34816.1459423412.git.naveen.n.rao@linux.vnet.ibm.com>
+ <56FD627D.5080405@fb.com>
+In-Reply-To: <56FD627D.5080405@fb.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,19 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 31, 2016 at 12:09 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> If you feel like cross building powerpc in future it should be as simple as:
+On 03/31/2016 07:46 PM, Alexei Starovoitov wrote:
+> On 3/31/16 4:25 AM, Naveen N. Rao wrote:
+>> While at it, fix some typos in the comment.
+>>
+>> Cc: Alexei Starovoitov <ast@fb.com>
+>> Cc: David S. Miller <davem@davemloft.net>
+>> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+>> ---
+>>   samples/bpf/Makefile | 11 ++++-------
+>>   1 file changed, 4 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/samples/bpf/Makefile b/samples/bpf/Makefile
+>> index 502c9fc..88bc5a0 100644
+>> --- a/samples/bpf/Makefile
+>> +++ b/samples/bpf/Makefile
+>> @@ -76,16 +76,13 @@ HOSTLOADLIBES_offwaketime += -lelf
+>>   HOSTLOADLIBES_spintest += -lelf
+>>   HOSTLOADLIBES_map_perf_test += -lelf -lrt
+>>
+>> -# point this to your LLVM backend with bpf support
+>> -LLC=$(srctree)/tools/bpf/llvm/bld/Debug+Asserts/bin/llc
+>> -
+>> -# asm/sysreg.h inline assmbly used by it is incompatible with llvm.
+>> -# But, ehere is not easy way to fix it, so just exclude it since it is
+>> +# asm/sysreg.h - inline assembly used by it is incompatible with llvm.
+>> +# But, there is no easy way to fix it, so just exclude it since it is
+>>   # useless for BPF samples.
+>>   $(obj)/%.o: $(src)/%.c
+>>       clang $(NOSTDINC_FLAGS) $(LINUXINCLUDE) $(EXTRA_CFLAGS) \
+>>           -D__KERNEL__ -D__ASM_SYSREG_H -Wno-unused-value -Wno-pointer-sign \
+>> -        -O2 -emit-llvm -c $< -o -| $(LLC) -march=bpf -filetype=obj -o $@
+>> +        -O2 -emit-llvm -c $< -o -| llc -march=bpf -filetype=obj -o $@
+>>       clang $(NOSTDINC_FLAGS) $(LINUXINCLUDE) $(EXTRA_CFLAGS) \
+>>           -D__KERNEL__ -D__ASM_SYSREG_H -Wno-unused-value -Wno-pointer-sign \
+>> -        -O2 -emit-llvm -c $< -o -| $(LLC) -march=bpf -filetype=asm -o $@.s
+>> +        -O2 -emit-llvm -c $< -o -| llc -march=bpf -filetype=asm -o $@.s
 >
->  $ dnf install gcc-powerpc64-linux-gnu || apt-get install gcc-powerpc-linux-gnu
->  $ make ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- ...
+> that was a workaround when clang/llvm didn't have bpf support.
+> Now clang 3.7 and 3.8 have bpf built-in, so make sense to remove
+> manual calls to llc completely.
+> Just use 'clang -target bpf -O2 -D... -c $< -o $@'
 
-Ah hm yeah I guess everyone "should", it's just that these days I
-mainly rely on Fenguang's kautobuild to do this job for me and
-get back with the result from a plethora of arches.
-
-Sometimes a buggy bit slips through the cracks though, sorry
-about that.
-
-Yours,
-Linus Walleij
++1, the clang part in that Makefile should also more correctly be called
+with '-target bpf' as it turns out (despite llc with '-march=bpf' ...).
+Better to use clang directly as suggested by Alexei.
