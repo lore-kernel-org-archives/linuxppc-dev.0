@@ -1,26 +1,26 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qbYR41R02zDq6y
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 05:47:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qbYYf5LqgzDq6y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 05:53:10 +1100 (AEDT)
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 1 Apr 2016 04:47:26 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 369603578053
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 05:47:20 +1100 (EST)
+ Fri, 1 Apr 2016 04:53:09 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B360E3578058
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 05:52:56 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u2VIlC3t46989460
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 05:47:20 +1100
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u2VIqm5O44826708
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 05:52:56 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u2VIkkcV013688
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 05:46:47 +1100
-Date: Fri, 1 Apr 2016 00:16:02 +0530
+ u2VIqNBi018345
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 05:52:24 +1100
+Date: Fri, 1 Apr 2016 00:21:39 +0530
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Alexei Starovoitov <ast@fb.com>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -28,14 +28,14 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>,
  Daniel Borkmann <daniel@iogearbox.net>, netdev@vger.kernel.org
-Subject: Re: [PATCH 1/4] samples/bpf: Fix build breakage with
- map_perf_test_user.c
-Message-ID: <20160331184602.GC17907@naverao1-tp.ibm.com>
+Subject: Re: [PATCH 3/4] samples/bpf: Simplify building BPF samples
+Message-ID: <20160331185139.GD17907@naverao1-tp.ibm.com>
 References: <922f95fb5d16686367a66d2d4bd176149a87e9ad.1459423412.git.naveen.n.rao@linux.vnet.ibm.com>
- <56FD61B6.9000102@fb.com>
+ <0ce1c8bdff478db55490a90db6732c4db9de6f22.1459423412.git.naveen.n.rao@linux.vnet.ibm.com>
+ <56FD632B.4040306@fb.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <56FD61B6.9000102@fb.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <56FD632B.4040306@fb.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,53 +45,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/03/31 10:43AM, Alexei Starovoitov wrote:
+On 2016/03/31 10:49AM, Alexei Starovoitov wrote:
 > On 3/31/16 4:25 AM, Naveen N. Rao wrote:
-> >Building BPF samples is failing with the below error:
+> >Make BPF samples build depend on CONFIG_SAMPLE_BPF. We still don't add a
+> >Kconfig option since that will add a dependency on llvm for allyesconfig
+> >builds which may not be desirable.
 > >
-> >samples/bpf/map_perf_test_user.c: In function ‘main’:
-> >samples/bpf/map_perf_test_user.c:134:9: error: variable ‘r’ has
-> >initializer but incomplete type
-> >   struct rlimit r = {RLIM_INFINITY, RLIM_INFINITY};
-> >          ^
-> >Fix this by including the necessary header file.
+> >Those who need to build the BPF samples can now just do:
 > >
-> >Cc: Alexei Starovoitov <ast@fb.com>
-> >Cc: David S. Miller <davem@davemloft.net>
-> >Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> >Cc: Michael Ellerman <mpe@ellerman.id.au>
-> >Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> >---
-> >  samples/bpf/map_perf_test_user.c | 1 +
-> >  1 file changed, 1 insertion(+)
+> >make CONFIG_SAMPLE_BPF=y
 > >
-> >diff --git a/samples/bpf/map_perf_test_user.c b/samples/bpf/map_perf_test_user.c
-> >index 95af56e..3147377 100644
-> >--- a/samples/bpf/map_perf_test_user.c
-> >+++ b/samples/bpf/map_perf_test_user.c
-> >@@ -17,6 +17,7 @@
-> >  #include <linux/bpf.h>
-> >  #include <string.h>
-> >  #include <time.h>
-> >+#include <sys/resource.h>
-> >  #include "libbpf.h"
-> >  #include "bpf_load.h"
+> >or:
+> >
+> >export CONFIG_SAMPLE_BPF=y
+> >make
 > 
-> It's failing this way on powerpc? Odd.
+> I don't like this 'simplification'.
+> make samples/bpf/
+> is much easier to type than capital letters.
 
-This fails for me on x86_64 too -- RHEL 7.1.
+This started out as a patch to have the BPF samples built with a Kconfig 
+option. As stated in the commit description, I realised that it won't 
+work for allyesconfig builds. However, the reason I retained this patch 
+is since it gets us one step closer to building the samples as part of 
+the kernel build.
 
-> Such hidden header dependency was always puzzling to me. Anyway:
-> Acked-by: Alexei Starovoitov <ast@kernel.org>
-> 
-> I'm assuming you want this set to go via 'net' tree, so please resubmit
-> with [PATCH net 1/4] subjects and cc netdev.
+The 'simplification' is since I can now have the export in my .bashrc 
+and the kernel build will now build the BPF samples too without 
+requiring an additional 'make samples/bpf/' step.
 
-Sure.
+I agree this is subjective, so I am ok if this isn't taken in.
 
-> 
-> Reviewing your other patches...
-
-Thanks for your review!
 
 - Naveen
