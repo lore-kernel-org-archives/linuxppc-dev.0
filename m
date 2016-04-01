@@ -1,35 +1,28 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0099.outbound.protection.outlook.com [157.56.110.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qbmv10G0DzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 14:23:56 +1100 (AEDT)
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 1 Apr 2016 00:23:52 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 79C133520070
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 23:23:38 -0400 (EDT)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u312NrJa29557104
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 23:23:54 -0300
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u313NmI2014336
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2016 23:23:48 -0400
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] ftrace: filter: Match dot symbols when searching functions on
- ppc64.
-Date: Fri,  1 Apr 2016 00:22:52 -0300
-Message-Id: <1459480972-20238-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qbn3p50J8zDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 14:31:34 +1100 (AEDT)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-clk@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
+ <iommu@lists.linux-foundation.org>, <netdev@vger.kernel.org>,
+ <linux-mmc@vger.kernel.org>
+CC: Rob Herring <robh+dt@kernel.org>, <scott.wood@nxp.com>, Russell King
+ <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, Joerg Roedel
+ <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>,
+ <ulf.hansson@linaro.org>, Bhupesh Sharma <bhupesh.sharma@freescale.com>,
+ "Zhao Qiang" <qiang.zhao@freescale.com>, Kumar Gala <galak@codeaurora.org>,
+ "Santosh Shilimkar" <ssantosh@kernel.org>, <leoyang.li@nxp.com>,
+ <xiaobo.xie@nxp.com>, Yangbo Lu <yangbo.lu@nxp.com>
+Subject: [v7, 0/5] Fix eSDHC host version register bug
+Date: Fri, 1 Apr 2016 11:07:26 +0800
+Message-ID: <1459480051-3701-1-git-send-email-yangbo.lu@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,93 +32,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the ppc64 big endian ABI, function symbols point to function
-descriptors. The symbols which point to the function entry points
-have a dot in front of the function name. Consequently, when the
-ftrace filter mechanism searches for the symbol corresponding to
-an entry point address, it gets the dot symbol.
+This patchset is used to fix a host version register bug in the T4240-R1.0-R2.0
+eSDHC controller. To get the SoC version and revision, it's needed to add the
+GUTS driver to access the global utilities registers.
 
-As a result, ftrace filter users have to be aware of this ABI detail on
-ppc64 and prepend a dot to the function name when setting the filter.
+So, the first three patches are to add the GUTS driver.
+The following two patches are to enable GUTS driver support to get SVR in eSDHC
+driver and fix host version for T4240.
 
-The perf probe command insulates the user from this by ignoring the dot
-in front of the symbol name when matching function names to symbols,
-but the sysfs interface does not. This patch makes the ftrace filter
-mechanism do the same when searching symbols.
+Yangbo Lu (5):
+  ARM64: dts: ls2080a: add device configuration node
+  soc: fsl: add GUTS driver for QorIQ platforms
+  dt: move guts devicetree doc out of powerpc directory
+  powerpc/fsl: move mpc85xx.h to include/linux/fsl
+  mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
 
-Fixes the following failure in ftracetest's kprobe_ftrace.tc:
+ .../bindings/{powerpc => soc}/fsl/guts.txt         |   3 +
+ arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi     |   6 ++
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S          |   2 +-
+ drivers/clk/clk-qoriq.c                            |   3 +-
+ drivers/i2c/busses/i2c-mpc.c                       |   2 +-
+ drivers/iommu/fsl_pamu.c                           |   3 +-
+ drivers/mmc/host/Kconfig                           |   1 +
+ drivers/mmc/host/sdhci-of-esdhc.c                  |  23 ++++
+ drivers/net/ethernet/freescale/gianfar.c           |   2 +-
+ drivers/soc/Kconfig                                |   2 +-
+ drivers/soc/fsl/Kconfig                            |   8 ++
+ drivers/soc/fsl/Makefile                           |   1 +
+ drivers/soc/fsl/guts.c                             | 119 +++++++++++++++++++++
+ include/linux/fsl/guts.h                           |  98 ++++++++---------
+ .../asm/mpc85xx.h => include/linux/fsl/svr.h       |   4 +-
+ 15 files changed, 219 insertions(+), 58 deletions(-)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/guts.txt (91%)
+ create mode 100644 drivers/soc/fsl/Kconfig
+ create mode 100644 drivers/soc/fsl/guts.c
+ rename arch/powerpc/include/asm/mpc85xx.h => include/linux/fsl/svr.h (97%)
 
-  .../kprobe_ftrace.tc: line 9: echo: write error: Invalid argument
-
-That failure is on this line of kprobe_ftrace.tc:
-
-  echo _do_fork > set_ftrace_filter
-
-This is because there's no _do_fork entry in the functions list:
-
-  # cat available_filter_functions | grep _do_fork
-  ._do_fork
-
-This change introduces no regressions on the perf and ftracetest
-testsuite results.
-
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/ftrace.h |  9 +++++++++
- kernel/trace/ftrace.c             | 13 +++++++++++++
- 2 files changed, 22 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-index 50ca7585abe2..68f1858796c6 100644
---- a/arch/powerpc/include/asm/ftrace.h
-+++ b/arch/powerpc/include/asm/ftrace.h
-@@ -58,6 +58,15 @@ struct dyn_arch_ftrace {
- 	struct module *mod;
- };
- #endif /*  CONFIG_DYNAMIC_FTRACE */
-+
-+#if CONFIG_PPC64 && (!defined(_CALL_ELF) || _CALL_ELF != 2)
-+#define ARCH_HAS_FTRACE_MATCH_ADJUST
-+static inline void arch_ftrace_match_adjust(char **str, char *search)
-+{
-+	if ((*str)[0] == '.' && search[0] != '.')
-+		(*str)++;
-+}
-+#endif /* CONFIG_PPC64 && (!defined(_CALL_ELF) || _CALL_ELF != 2) */
- #endif /* __ASSEMBLY__ */
- 
- #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index b1870fbd2b67..e806c2a3b7a8 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -3444,11 +3444,24 @@ struct ftrace_glob {
- 	int type;
- };
- 
-+#ifndef ARCH_HAS_FTRACE_MATCH_ADJUST
-+/*
-+ * If symbols in an architecture don't correspond exactly to the user-visible
-+ * name of what they represent, it is possible to define this function to
-+ * perform the necessary adjustments.
-+*/
-+static inline void arch_ftrace_match_adjust(char **str, char *search)
-+{
-+}
-+#endif
-+
- static int ftrace_match(char *str, struct ftrace_glob *g)
- {
- 	int matched = 0;
- 	int slen;
- 
-+	arch_ftrace_match_adjust(&str, g->search);
-+
- 	switch (g->type) {
- 	case MATCH_FULL:
- 		if (strcmp(str, g->search) == 0)
 -- 
-1.9.1
+2.1.0.27.g96db324
