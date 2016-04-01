@@ -1,25 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0080.outbound.protection.outlook.com [65.55.169.80])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qblkV16V8zDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 13:31:30 +1100 (AEDT)
-Message-ID: <1459477889.10334.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: ppc4xx: drop unused variable
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Alexandre
- Courbot <acourbot@nvidia.com>, Anatolij Gustschin <agust@denx.de>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>,  "linuxppc-dev@lists.ozlabs.org list"
- <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 01 Apr 2016 13:31:29 +1100
-In-Reply-To: <CACRpkdbbUfbe6LWVDFsgvne7oOEp7ZzOKr9tX7y-P=J8g7c5=A@mail.gmail.com>
-References: <1459408452-3483-1-git-send-email-linus.walleij@linaro.org>
- <1459418980.24848.1.camel@ellerman.id.au>
- <CACRpkdbbUfbe6LWVDFsgvne7oOEp7ZzOKr9tX7y-P=J8g7c5=A@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qbmlH26slzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 14:17:15 +1100 (AEDT)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-clk@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
+ <iommu@lists.linux-foundation.org>, <netdev@vger.kernel.org>,
+ <linux-mmc@vger.kernel.org>
+CC: Rob Herring <robh+dt@kernel.org>, <scott.wood@nxp.com>, Russell King
+ <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, Joerg Roedel
+ <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>,
+ <ulf.hansson@linaro.org>, Bhupesh Sharma <bhupesh.sharma@freescale.com>,
+ "Zhao Qiang" <qiang.zhao@freescale.com>, Kumar Gala <galak@codeaurora.org>,
+ "Santosh Shilimkar" <ssantosh@kernel.org>, <leoyang.li@nxp.com>,
+ <xiaobo.xie@nxp.com>, Yangbo Lu <yangbo.lu@nxp.com>
+Subject: [v7, 3/5] dt: move guts devicetree doc out of powerpc directory
+Date: Fri, 1 Apr 2016 11:07:29 +0800
+Message-ID: <1459480051-3701-4-git-send-email-yangbo.lu@nxp.com>
+In-Reply-To: <1459480051-3701-1-git-send-email-yangbo.lu@nxp.com>
+References: <1459480051-3701-1-git-send-email-yangbo.lu@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,29 +34,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-03-31 at 14:57 +0200, Linus Walleij wrote:
-> On Thu, Mar 31, 2016 at 12:09 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> 
-> > If you feel like cross building powerpc in future it should be as simple as:
-> > 
-> >  $ dnf install gcc-powerpc64-linux-gnu || apt-get install gcc-powerpc-linux-gnu
-> >  $ make ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- ...
-> 
-> Ah hm yeah I guess everyone "should", it's just that these days I
-> mainly rely on Fenguang's kautobuild to do this job for me and
-> get back with the result from a plethora of arches.
+Move guts devicetree doc to Documentation/devicetree/bindings/soc/fsl/
+since it's used by not only PowerPC but also ARM. And add a specification
+for 'little-endian' property.
 
-Sure. That makes sense for all the silly little architectures.
+Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+---
+Changes for v2:
+	- None
+Changes for v3:
+	- None
+Changes for v4:
+	- Added this patch
+Changes for v5:
+	- Modified the description for little-endian property
+Changes for v6:
+	- None
+Changes for v7:
+	- None
+---
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/guts.txt | 3 +++
+ 1 file changed, 3 insertions(+)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/guts.txt (91%)
 
-But for powerpc you should really cross compile.
-
-..
-
-:P
-
-> Sometimes a buggy bit slips through the cracks though, sorry
-> about that.
-
-No stress.
-
-cheers
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt b/Documentation/devicetree/bindings/soc/fsl/guts.txt
+similarity index 91%
+rename from Documentation/devicetree/bindings/powerpc/fsl/guts.txt
+rename to Documentation/devicetree/bindings/soc/fsl/guts.txt
+index b71b203..07adca9 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt
++++ b/Documentation/devicetree/bindings/soc/fsl/guts.txt
+@@ -25,6 +25,9 @@ Recommended properties:
+  - fsl,liodn-bits : Indicates the number of defined bits in the LIODN
+    registers, for those SOCs that have a PAMU device.
+ 
++ - little-endian : Indicates that the global utilities block is little
++   endian. The default is big endian.
++
+ Examples:
+ 	global-utilities@e0000 {	/* global utilities block */
+ 		compatible = "fsl,mpc8548-guts";
+-- 
+2.1.0.27.g96db324
