@@ -1,39 +1,34 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+Return-Path: <tlfalcon@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qcDyC0KBXzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Apr 2016 08:28:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qcG6j4GvszDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Apr 2016 09:20:45 +1100 (AEDT)
 Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 1 Apr 2016 18:28:12 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id BA3EC352005C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 17:27:58 -0400 (EDT)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u31KPrYC4694124
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 17:25:54 -0300
-Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u31LS8US016017
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 18:28:09 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: kbuild test robot <lkp@intel.com>, kbuild-all@01.org,
- linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
- Ingo Molnar <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- bauerman@linux.vnet.ibm.com
-Subject: Re: [PATCH] ftrace: filter: Match dot symbols when searching
- functions on ppc64.
-Date: Fri, 01 Apr 2016 18:28:06 -0300
-Message-ID: <3507082.VaWR3lh7Ni@hactar>
-In-Reply-To: <201604020331.kEOeyhX0%fengguang.wu@intel.com>
-References: <201604020331.kEOeyhX0%fengguang.wu@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+ for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
+ Fri, 1 Apr 2016 16:20:42 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id BABF019D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 16:08:29 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u31MKaRD32571480
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 15:20:36 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u31MKaD3025152
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 16:20:36 -0600
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+To: netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
+ John Allen <jallen@linux.vnet.ibm.com>
+Subject: [net-next PATCH 1/2 v4] ibmvnic: map L2/L3/L4 header descriptors to
+ firmware
+Date: Fri,  1 Apr 2016 17:20:34 -0500
+Message-Id: <1459549235-22039-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,126 +38,306 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Samstag, 02 April 2016, 03:51:21 schrieb kbuild test robot:
-> >> arch/powerpc/include/asm/ftrace.h:62:5: error: "CONFIG_PPC64" is n=
-ot
-> >> defined [-Werror=3Dundef]
->     #if CONFIG_PPC64 && (!defined(_CALL_ELF) || _CALL_ELF !=3D 2)
->         ^
->    cc1: all warnings being treated as errors
+Allow the VNIC driver to provide descriptors containing
+L2/L3/L4 headers to firmware.  This feature is needed
+for greater hardware compatibility and enablement of checksum
+and TCP offloading features.
 
-I forgot to use defined() in the #if expression. Here=E2=80=99s the fix=
-ed version.
+A new function is included for the hypervisor call,
+H_SEND_SUBCRQ_INDIRECT, allowing a DMA-mapped array of SCRQ
+descriptor elements to be sent to the VNIC server.
 
---=20
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+These additions will help fully enable checksum offloading as
+well as other features as they are included later.
 
-
----- 8< ---- 8< ---- 8< ---- 8< ----
-
-
->From 27660a3b6c4147f9e1811b103cc47a34a53817c1 Mon Sep 17 00:00:00 2001
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Date: Wed, 30 Mar 2016 21:26:32 -0300
-Subject: [PATCH] ftrace: Match dot symbols when searching functions on =
-ppc64
-
-In the ppc64 big endian ABI, function symbols point to function
-descriptors. The symbols which point to the function entry points
-have a dot in front of the function name. Consequently, when the
-ftrace filter mechanism searches for the symbol corresponding to
-an entry point address, it gets the dot symbol.
-
-As a result, ftrace filter users have to be aware of this ABI detail on=
-
-ppc64 and prepend a dot to the function name when setting the filter.
-
-The perf probe command insulates the user from this by ignoring the dot=
-
-in front of the symbol name when matching function names to symbols,
-but the sysfs interface does not. This patch makes the ftrace filter
-mechanism do the same when searching symbols.
-
-Fixes the following failure in ftracetest's kprobe_ftrace.tc:
-
-  .../kprobe_ftrace.tc: line 9: echo: write error: Invalid argument
-
-That failure is on this line of kprobe_ftrace.tc:
-
-  echo _do_fork > set_ftrace_filter
-
-This is because there's no _do_fork entry in the functions list:
-
-  # cat available_filter_functions | grep _do_fork
-  ._do_fork
-
-This change introduces no regressions on the perf and ftracetest
-testsuite results.
-
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Cc: John Allen <jallen@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/ftrace.h |  9 +++++++++
- kernel/trace/ftrace.c             | 13 +++++++++++++
- 2 files changed, 22 insertions(+)
+v2: Fixed typo error caught by kbuild test bot
+v3: Fixed erroneous patch sender
+v4: sorry for the delay in resending, Thanks to David Miller for comments,
+    removed all extra memory allocations,
+    merged some helper functions,
+    calculate all header lengths to meet firmware requirements,
+    fixed endian bugs in the send_subcrq_indirect
+---
+ drivers/net/ethernet/ibm/ibmvnic.c | 195 ++++++++++++++++++++++++++++++++++++-
+ drivers/net/ethernet/ibm/ibmvnic.h |   3 +
+ 2 files changed, 194 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/a=
-sm/ftrace.h
-index 50ca7585abe2..f6ed1908f0f7 100644
---- a/arch/powerpc/include/asm/ftrace.h
-+++ b/arch/powerpc/include/asm/ftrace.h
-@@ -58,6 +58,15 @@ struct dyn_arch_ftrace {
- =09struct module *mod;
- };
- #endif /*  CONFIG_DYNAMIC_FTRACE */
-+
-+#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF !=3D 2)=
-
-+#define ARCH_HAS_FTRACE_MATCH_ADJUST
-+static inline void arch_ftrace_match_adjust(char **str, char *search)
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 6e9e16ee..4e97e76 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -61,6 +61,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/in.h>
+ #include <linux/ip.h>
++#include <linux/ipv6.h>
+ #include <linux/irq.h>
+ #include <linux/kthread.h>
+ #include <linux/seq_file.h>
+@@ -94,6 +95,7 @@ static int ibmvnic_reenable_crq_queue(struct ibmvnic_adapter *);
+ static int ibmvnic_send_crq(struct ibmvnic_adapter *, union ibmvnic_crq *);
+ static int send_subcrq(struct ibmvnic_adapter *adapter, u64 remote_handle,
+ 		       union sub_crq *sub_crq);
++static int send_subcrq_indirect(struct ibmvnic_adapter *, u64, u64, u64);
+ static irqreturn_t ibmvnic_interrupt_rx(int irq, void *instance);
+ static int enable_scrq_irq(struct ibmvnic_adapter *,
+ 			   struct ibmvnic_sub_crq_queue *);
+@@ -561,10 +563,141 @@ static int ibmvnic_close(struct net_device *netdev)
+ 	return 0;
+ }
+ 
++/**
++ * build_hdr_data - creates L2/L3/L4 header data buffer
++ * @hdr_field - bitfield determining needed headers
++ * @skb - socket buffer
++ * @hdr_len - array of header lengths
++ * @tot_len - total length of data
++ *
++ * Reads hdr_field to determine which headers are needed by firmware.
++ * Builds a buffer containing these headers.  Saves individual header
++ * lengths and total buffer length to be used to build descriptors.
++ */
++static int build_hdr_data(u8 hdr_field, struct sk_buff *skb,
++			  int *hdr_len, u8 *hdr_data)
 +{
-+=09if ((*str)[0] =3D=3D '.' && search[0] !=3D '.')
-+=09=09(*str)++;
-+}
-+#endif /* defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF !=
-=3D 2) */
- #endif /* __ASSEMBLY__ */
-=20
- #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index b1870fbd2b67..e806c2a3b7a8 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -3444,11 +3444,24 @@ struct ftrace_glob {
- =09int type;
- };
-=20
-+#ifndef ARCH_HAS_FTRACE_MATCH_ADJUST
-+/*
-+ * If symbols in an architecture don't correspond exactly to the user-=
-visible
-+ * name of what they represent, it is possible to define this function=
- to
-+ * perform the necessary adjustments.
-+*/
-+static inline void arch_ftrace_match_adjust(char **str, char *search)
-+{
-+}
-+#endif
++	int len = 0;
++	u8 *hdr;
 +
- static int ftrace_match(char *str, struct ftrace_glob *g)
++	hdr_len[0] = sizeof(struct ethhdr);
++
++	if (skb->protocol == htons(ETH_P_IP)) {
++		hdr_len[1] = ip_hdr(skb)->ihl * 4;
++		if (ip_hdr(skb)->protocol == IPPROTO_TCP)
++			hdr_len[2] = tcp_hdrlen(skb);
++		else if (ip_hdr(skb)->protocol == IPPROTO_UDP)
++			hdr_len[2] = sizeof(struct udphdr);
++	} else if (skb->protocol == htons(ETH_P_IPV6)) {
++		hdr_len[1] = sizeof(struct ipv6hdr);
++		if (ipv6_hdr(skb)->nexthdr == IPPROTO_TCP)
++			hdr_len[2] = tcp_hdrlen(skb);
++		else if (ipv6_hdr(skb)->nexthdr == IPPROTO_UDP)
++			hdr_len[2] = sizeof(struct udphdr);
++	}
++
++	memset(hdr_data, 0, 120);
++	if ((hdr_field >> 6) & 1) {
++		hdr = skb_mac_header(skb);
++		memcpy(hdr_data, hdr, hdr_len[0]);
++		len += hdr_len[0];
++	}
++
++	if ((hdr_field >> 5) & 1) {
++		hdr = skb_network_header(skb);
++		memcpy(hdr_data + len, hdr, hdr_len[1]);
++		len += hdr_len[1];
++	}
++
++	if ((hdr_field >> 4) & 1) {
++		hdr = skb_transport_header(skb);
++		memcpy(hdr_data + len, hdr, hdr_len[2]);
++		len += hdr_len[2];
++	}
++	return len;
++}
++
++/**
++ * create_hdr_descs - create header and header extension descriptors
++ * @hdr_field - bitfield determining needed headers
++ * @data - buffer containing header data
++ * @len - length of data buffer
++ * @hdr_len - array of individual header lengths
++ * @scrq_arr - descriptor array
++ *
++ * Creates header and, if needed, header extension descriptors and
++ * places them in a descriptor array, scrq_arr
++ */
++
++static void create_hdr_descs(u8 hdr_field, u8 *hdr_data, int len, int *hdr_len,
++			     union sub_crq *scrq_arr)
++{
++	union sub_crq hdr_desc;
++	int tmp_len = len;
++	u8 *data, *cur;
++	int tmp;
++
++	while (tmp_len > 0) {
++		cur = hdr_data + len - tmp_len;
++
++		memset(&hdr_desc, 0, sizeof(hdr_desc));
++		if (cur != hdr_data) {
++			data = hdr_desc.hdr_ext.data;
++			tmp = tmp_len > 29 ? 29 : tmp_len;
++			hdr_desc.hdr_ext.first = IBMVNIC_CRQ_CMD;
++			hdr_desc.hdr_ext.type = IBMVNIC_HDR_EXT_DESC;
++			hdr_desc.hdr_ext.len = tmp;
++		} else {
++			data = hdr_desc.hdr.data;
++			tmp = tmp_len > 24 ? 24 : tmp_len;
++			hdr_desc.hdr.first = IBMVNIC_CRQ_CMD;
++			hdr_desc.hdr.type = IBMVNIC_HDR_DESC;
++			hdr_desc.hdr.len = tmp;
++			hdr_desc.hdr.l2_len = (u8)hdr_len[0];
++			hdr_desc.hdr.l3_len = cpu_to_be16((u16)hdr_len[1]);
++			hdr_desc.hdr.l4_len = (u8)hdr_len[2];
++			hdr_desc.hdr.flag = hdr_field << 1;
++		}
++		memcpy(data, cur, tmp);
++		tmp_len -= tmp;
++		*scrq_arr = hdr_desc;
++		scrq_arr++;
++	}
++}
++
++/**
++ * build_hdr_descs_arr - build a header descriptor array
++ * @skb - socket buffer
++ * @num_entries - number of descriptors to be sent
++ * @subcrq - first TX descriptor
++ * @hdr_field - bit field determining which headers will be sent
++ *
++ * This function will build a TX descriptor array with applicable
++ * L2/L3/L4 packet header descriptors to be sent by send_subcrq_indirect.
++ */
++
++static void build_hdr_descs_arr(struct ibmvnic_tx_buff *txbuff,
++				int *num_entries, u8 hdr_field)
++{
++	int hdr_len[3] = {0, 0, 0};
++	int tot_len, len;
++	u8 *hdr_data = txbuff->hdr_data;
++
++	tot_len = build_hdr_data(hdr_field, txbuff->skb, hdr_len,
++				 txbuff->hdr_data);
++	len = tot_len;
++	len -= 24;
++	if (len > 0)
++		num_entries += len % 29 ? len / 29 + 1 : len / 29;
++	create_hdr_descs(hdr_field, hdr_data, tot_len, hdr_len,
++			 txbuff->indir_arr + 1);
++}
++
+ static int ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
  {
- =09int matched =3D 0;
- =09int slen;
-=20
-+=09arch_ftrace_match_adjust(&str, g->search);
+ 	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
+ 	int queue_num = skb_get_queue_mapping(skb);
++	u8 *hdrs = (u8 *)&adapter->tx_rx_desc_req;
+ 	struct device *dev = &adapter->vdev->dev;
+ 	struct ibmvnic_tx_buff *tx_buff = NULL;
+ 	struct ibmvnic_tx_pool *tx_pool;
+@@ -579,6 +712,7 @@ static int ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
+ 	unsigned long lpar_rc;
+ 	union sub_crq tx_crq;
+ 	unsigned int offset;
++	int num_entries = 1;
+ 	unsigned char *dst;
+ 	u64 *handle_array;
+ 	int index = 0;
+@@ -644,11 +778,34 @@ static int ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
+ 			tx_crq.v1.flags1 |= IBMVNIC_TX_PROT_UDP;
+ 	}
+ 
+-	if (skb->ip_summed == CHECKSUM_PARTIAL)
++	if (skb->ip_summed == CHECKSUM_PARTIAL) {
+ 		tx_crq.v1.flags1 |= IBMVNIC_TX_CHKSUM_OFFLOAD;
+-
+-	lpar_rc = send_subcrq(adapter, handle_array[0], &tx_crq);
+-
++		hdrs += 2;
++	}
++	/* determine if l2/3/4 headers are sent to firmware */
++	if ((*hdrs >> 7) & 1 &&
++	    (skb->protocol == htons(ETH_P_IP) ||
++	     skb->protocol == htons(ETH_P_IPV6))) {
++		build_hdr_descs_arr(tx_buff, &num_entries, *hdrs);
++		tx_crq.v1.n_crq_elem = num_entries;
++		tx_buff->indir_arr[0] = tx_crq;
++		tx_buff->indir_dma = dma_map_single(dev, tx_buff->indir_arr,
++						    sizeof(tx_buff->indir_arr),
++						    DMA_TO_DEVICE);
++		if (dma_mapping_error(dev, tx_buff->indir_dma)) {
++			if (!firmware_has_feature(FW_FEATURE_CMO))
++				dev_err(dev, "tx: unable to map descriptor array\n");
++			tx_map_failed++;
++			tx_dropped++;
++			ret = NETDEV_TX_BUSY;
++			goto out;
++		}
++		lpar_rc = send_subcrq_indirect(adapter, handle_array[0],
++					       (u64)tx_buff->indir_dma,
++					       (u64)num_entries);
++	} else {
++		lpar_rc = send_subcrq(adapter, handle_array[0], &tx_crq);
++	}
+ 	if (lpar_rc != H_SUCCESS) {
+ 		dev_err(dev, "tx failed with code %ld\n", lpar_rc);
+ 
+@@ -1159,6 +1316,7 @@ static int ibmvnic_complete_tx(struct ibmvnic_adapter *adapter,
+ 	union sub_crq *next;
+ 	int index;
+ 	int i, j;
++	u8 first;
+ 
+ restart_loop:
+ 	while (pending_scrq(adapter, scrq)) {
+@@ -1181,6 +1339,13 @@ restart_loop:
+ 				txbuff->data_dma[j] = 0;
+ 				txbuff->used_bounce = false;
+ 			}
++			/* if sub_crq was sent indirectly */
++			first = txbuff->indir_arr[0].generic.first;
++			if (first == IBMVNIC_CRQ_CMD) {
++				dma_unmap_single(dev, txbuff->indir_dma,
++						 sizeof(txbuff->indir_arr),
++						 DMA_TO_DEVICE);
++			}
+ 
+ 			if (txbuff->last_frag)
+ 				dev_kfree_skb_any(txbuff->skb);
+@@ -1494,6 +1659,28 @@ static int send_subcrq(struct ibmvnic_adapter *adapter, u64 remote_handle,
+ 	return rc;
+ }
+ 
++static int send_subcrq_indirect(struct ibmvnic_adapter *adapter,
++				u64 remote_handle, u64 ioba, u64 num_entries)
++{
++	unsigned int ua = adapter->vdev->unit_address;
++	struct device *dev = &adapter->vdev->dev;
++	int rc;
 +
- =09switch (g->type) {
- =09case MATCH_FULL:
- =09=09if (strcmp(str, g->search) =3D=3D 0)
---=20
-1.9.1
++	/* Make sure the hypervisor sees the complete request */
++	mb();
++	rc = plpar_hcall_norets(H_SEND_SUB_CRQ_INDIRECT, ua,
++				cpu_to_be64(remote_handle),
++				ioba, num_entries);
++
++	if (rc) {
++		if (rc == H_CLOSED)
++			dev_warn(dev, "CRQ Queue closed\n");
++		dev_err(dev, "Send (indirect) error (rc=%d)\n", rc);
++	}
++
++	return rc;
++}
++
+ static int ibmvnic_send_crq(struct ibmvnic_adapter *adapter,
+ 			    union ibmvnic_crq *crq)
+ {
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
+index 1a9993c..5af8a79 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.h
++++ b/drivers/net/ethernet/ibm/ibmvnic.h
+@@ -879,6 +879,9 @@ struct ibmvnic_tx_buff {
+ 	int pool_index;
+ 	bool last_frag;
+ 	bool used_bounce;
++	union sub_crq indir_arr[6];
++	u8 hdr_data[140];
++	dma_addr_t indir_dma;
+ };
+ 
+ struct ibmvnic_tx_pool {
+-- 
+2.4.11
