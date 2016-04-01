@@ -1,35 +1,29 @@
-Return-Path: <tlfalcon@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qcG6j42h3zDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Apr 2016 09:20:45 +1100 (AEDT)
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
- Fri, 1 Apr 2016 16:20:42 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 5C0211FF001E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 16:08:46 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u31MKbKJ34406488
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 15:20:37 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u31MKaX4025199
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 16:20:37 -0600
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-To: netdev@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- John Allen <jallen@linux.vnet.ibm.com>
-Subject: [net-next PATCH 2/2 v4] ibmvnic: enable RX checksum offload
-Date: Fri,  1 Apr 2016 17:20:35 -0500
-Message-Id: <1459549235-22039-2-git-send-email-tlfalcon@linux.vnet.ibm.com>
-In-Reply-To: <1459549235-22039-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-References: <1459549235-22039-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qcGDg3c6MzDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Apr 2016 09:25:55 +1100 (AEDT)
+Message-ID: <1459549543.32510.28.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Yangbo Lu <yangbo.lu@nxp.com>, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org,
+ linux-i2c@vger.kernel.org, iommu@lists.linux-foundation.org,
+ netdev@vger.kernel.org, linux-mmc@vger.kernel.org
+Cc: ulf.hansson@linaro.org, Zhao Qiang <qiang.zhao@freescale.com>, Russell
+ King <linux@arm.linux.org.uk>, Bhupesh Sharma
+ <bhupesh.sharma@freescale.com>,  Joerg Roedel <joro@8bytes.org>, Santosh
+ Shilimkar <ssantosh@kernel.org>, Jochen Friedrich <jochen@scram.de>,
+ scott.wood@nxp.com, Rob Herring <robh+dt@kernel.org>, Claudiu Manoil
+ <claudiu.manoil@freescale.com>, Kumar Gala <galak@codeaurora.org>,
+ leoyang.li@nxp.com, xiaobo.xie@nxp.com
+Date: Fri, 01 Apr 2016 17:25:43 -0500
+In-Reply-To: <1459480051-3701-1-git-send-email-yangbo.lu@nxp.com>
+References: <1459480051-3701-1-git-send-email-yangbo.lu@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [v7, 0/5] Fix eSDHC host version register bug
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,30 +33,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable RX Checksum offload feature in the ibmvnic driver.
+On Fri, 2016-04-01 at 11:07 +0800, Yangbo Lu wrote:
+> This patchset is used to fix a host version register bug in the T4240-R1.0
+> -R2.0
+> eSDHC controller. To get the SoC version and revision, it's needed to add
+> the
+> GUTS driver to access the global utilities registers.
+> 
+> So, the first three patches are to add the GUTS driver.
+> The following two patches are to enable GUTS driver support to get SVR in
+> eSDHC
+> driver and fix host version for T4240.
+> 
+> Yangbo Lu (5):
+>   ARM64: dts: ls2080a: add device configuration node
+>   soc: fsl: add GUTS driver for QorIQ platforms
+>   dt: move guts devicetree doc out of powerpc directory
+>   powerpc/fsl: move mpc85xx.h to include/linux/fsl
+>   mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
 
-Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Cc: John Allen <jallen@linux.vnet.ibm.com>
----
-v4: this patch included since it is enabled by the previous patch
----
- drivers/net/ethernet/ibm/ibmvnic.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Acked-by: Scott Wood <oss@buserror.net>
 
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 4e97e76..21bccf6 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -2105,6 +2105,10 @@ static void handle_query_ip_offload_rsp(struct ibmvnic_adapter *adapter)
- 	if (buf->tcp_ipv6_chksum || buf->udp_ipv6_chksum)
- 		adapter->netdev->features |= NETIF_F_IPV6_CSUM;
- 
-+	if ((adapter->netdev->features &
-+	    (NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM)))
-+		adapter->netdev->features |= NETIF_F_RXCSUM;
-+
- 	memset(&crq, 0, sizeof(crq));
- 	crq.control_ip_offload.first = IBMVNIC_CRQ_CMD;
- 	crq.control_ip_offload.cmd = CONTROL_IP_OFFLOAD;
--- 
-2.4.11
+-Scott
