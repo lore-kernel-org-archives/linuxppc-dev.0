@@ -1,25 +1,25 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qbxj64FRpzDqHk
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 21:00:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qbxjB2kC8zDqDV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 21:01:02 +1100 (AEDT)
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 1 Apr 2016 20:00:56 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 421DE2BB005B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 21:00:47 +1100 (EST)
+ Fri, 1 Apr 2016 20:00:58 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C65A53578056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 21:00:53 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u31A0dB1721280
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 21:00:47 +1100
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u31A0jQ258654812
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 21:00:53 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u31A0DRC002107
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 21:00:14 +1100
+ u31A0KIL002312
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2016 21:00:21 +1100
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: oss@buserror.net, Matt Evans <matt@ozlabs.org>,
@@ -27,9 +27,9 @@ Cc: oss@buserror.net, Matt Evans <matt@ozlabs.org>,
  Paul Mackerras <paulus@samba.org>, Alexei Starovoitov <ast@fb.com>,
  "David S. Miller" <davem@davemloft.net>,
  Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: [RFC PATCH 2/6] ppc: bpf/jit: Optimize 64-bit Immediate loads
-Date: Fri,  1 Apr 2016 15:28:27 +0530
-Message-Id: <0ee6c297b15afae8391cd058ff03f999d62d8fa9.1459504223.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: [RFC PATCH 3/6] ppc: bpf/jit: Introduce rotate immediate instructions
+Date: Fri,  1 Apr 2016 15:28:28 +0530
+Message-Id: <3fa6d5f242ed57ed213f9c99e2eb431e0c7d274a.1459504223.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1459504222.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1459504222.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1459504222.git.naveen.n.rao@linux.vnet.ibm.com>
@@ -43,11 +43,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Similar to the LI32() optimization, if the value can be represented
-in 32-bits, use LI32(). Also handle loading a few specific forms of
-immediate values in an optimum manner.
-
-While at it, remove the semicolon at the end of the macro!
+Since we will be using the rotate immediate instructions for extended
+BPF JIT, let's introduce macros for the same. And since the shift
+immediate operations use the rotate immediate instructions, let's redo
+those macros to use the newly introduced instructions.
 
 Cc: Matt Evans <matt@ozlabs.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
@@ -57,44 +56,56 @@ Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/net/bpf_jit.h | 17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/ppc-opcode.h |  2 ++
+ arch/powerpc/net/bpf_jit.h            | 20 +++++++++++---------
+ 2 files changed, 13 insertions(+), 9 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 7ab04fc..95fd811 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -271,6 +271,8 @@
+ #define __PPC_SH(s)	__PPC_WS(s)
+ #define __PPC_MB(s)	(((s) & 0x1f) << 6)
+ #define __PPC_ME(s)	(((s) & 0x1f) << 1)
++#define __PPC_MB64(s)	(__PPC_MB(s) | ((s) & 0x20))
++#define __PPC_ME64(s)	__PPC_MB64(s)
+ #define __PPC_BI(s)	(((s) & 0x1f) << 16)
+ #define __PPC_CT(t)	(((t) & 0x0f) << 21)
+ 
 diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-index a9882db..4c1e055 100644
+index 4c1e055..95d0e38 100644
 --- a/arch/powerpc/net/bpf_jit.h
 +++ b/arch/powerpc/net/bpf_jit.h
-@@ -244,20 +244,25 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
- 		} } while(0)
+@@ -210,18 +210,20 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
+ 				     ___PPC_RS(a) | ___PPC_RB(s))
+ #define PPC_SRW(d, a, s)	EMIT(PPC_INST_SRW | ___PPC_RA(d) |	      \
+ 				     ___PPC_RS(a) | ___PPC_RB(s))
++#define PPC_RLWINM(d, a, i, mb, me)	EMIT(PPC_INST_RLWINM | ___PPC_RA(d) | \
++					___PPC_RS(a) | __PPC_SH(i) |	      \
++					__PPC_MB(mb) | __PPC_ME(me))
++#define PPC_RLDICR(d, a, i, me)		EMIT(PPC_INST_RLDICR | ___PPC_RA(d) | \
++					___PPC_RS(a) | __PPC_SH(i) |	      \
++					__PPC_ME64(me) | (((i) & 0x20) >> 4))
++
+ /* slwi = rlwinm Rx, Ry, n, 0, 31-n */
+-#define PPC_SLWI(d, a, i)	EMIT(PPC_INST_RLWINM | ___PPC_RA(d) |	      \
+-				     ___PPC_RS(a) | __PPC_SH(i) |	      \
+-				     __PPC_MB(0) | __PPC_ME(31-(i)))
++#define PPC_SLWI(d, a, i)	PPC_RLWINM(d, a, i, 0, 31-(i))
+ /* srwi = rlwinm Rx, Ry, 32-n, n, 31 */
+-#define PPC_SRWI(d, a, i)	EMIT(PPC_INST_RLWINM | ___PPC_RA(d) |	      \
+-				     ___PPC_RS(a) | __PPC_SH(32-(i)) |	      \
+-				     __PPC_MB(i) | __PPC_ME(31))
++#define PPC_SRWI(d, a, i)	PPC_RLWINM(d, a, 32-(i), i, 31)
+ /* sldi = rldicr Rx, Ry, n, 63-n */
+-#define PPC_SLDI(d, a, i)	EMIT(PPC_INST_RLDICR | ___PPC_RA(d) |	      \
+-				     ___PPC_RS(a) | __PPC_SH(i) |	      \
+-				     __PPC_MB(63-(i)) | (((i) & 0x20) >> 4))
++#define PPC_SLDI(d, a, i)	PPC_RLDICR(d, a, i, 63-(i))
++
+ #define PPC_NEG(d, a)		EMIT(PPC_INST_NEG | ___PPC_RT(d) | ___PPC_RA(a))
  
- #define PPC_LI64(d, i)		do {					      \
--		if (!((uintptr_t)(i) & 0xffffffff00000000ULL))		      \
-+		if ((long)(i) >= -2147483648 &&				      \
-+				(long)(i) < 2147483648)			      \
- 			PPC_LI32(d, i);					      \
- 		else {							      \
--			PPC_LIS(d, ((uintptr_t)(i) >> 48));		      \
--			if ((uintptr_t)(i) & 0x0000ffff00000000ULL)	      \
--				PPC_ORI(d, d,				      \
--					((uintptr_t)(i) >> 32) & 0xffff);     \
-+			if (!((uintptr_t)(i) & 0xffff800000000000ULL))	      \
-+				PPC_LI(d, ((uintptr_t)(i) >> 32) & 0xffff);   \
-+			else {						      \
-+				PPC_LIS(d, ((uintptr_t)(i) >> 48));	      \
-+				if ((uintptr_t)(i) & 0x0000ffff00000000ULL)   \
-+					PPC_ORI(d, d,			      \
-+					  ((uintptr_t)(i) >> 32) & 0xffff);   \
-+			}						      \
- 			PPC_SLDI(d, d, 32);				      \
- 			if ((uintptr_t)(i) & 0x00000000ffff0000ULL)	      \
- 				PPC_ORIS(d, d,				      \
- 					 ((uintptr_t)(i) >> 16) & 0xffff);    \
- 			if ((uintptr_t)(i) & 0x000000000000ffffULL)	      \
- 				PPC_ORI(d, d, (uintptr_t)(i) & 0xffff);	      \
--		} } while (0);
-+		} } while (0)
- 
- #ifdef CONFIG_PPC64
- #define PPC_FUNC_ADDR(d,i) do { PPC_LI64(d, i); } while(0)
+ /* Long jump; (unconditional 'branch') */
 -- 
 2.7.4
