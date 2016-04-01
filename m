@@ -1,31 +1,25 @@
-Return-Path: <bsingharora@gmail.com>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qbjxm5PXKzDq6T
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 12:11:08 +1100 (AEDT)
-Received: from mail-pf0-x229.google.com (mail-pf0-x229.google.com
- [IPv6:2607:f8b0:400e:c00::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qbjxl6spZz9sC3
- for <linuxppc-dev@ozlabs.org>; Fri,  1 Apr 2016 12:11:07 +1100 (AEDT)
-Received: by mail-pf0-x229.google.com with SMTP id x3so81746076pfb.1
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Mar 2016 18:11:07 -0700 (PDT)
-Subject: Re: [PATCH 6/6] powerpc/livepatch: Add live patching support on
- ppc64le
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <1458817445-5855-1-git-send-email-mpe@ellerman.id.au>
- <1458817445-5855-6-git-send-email-mpe@ellerman.id.au>
-Cc: duwe@lst.de, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
- jkosina@suse.cz, live-patching@vger.kernel.org, mbenes@suse.cz
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <56FDCAA3.8000503@gmail.com>
-Date: Fri, 1 Apr 2016 12:10:59 +1100
-MIME-Version: 1.0
-In-Reply-To: <1458817445-5855-6-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qblkV16V8zDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Apr 2016 13:31:30 +1100 (AEDT)
+Message-ID: <1459477889.10334.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: ppc4xx: drop unused variable
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Alexandre
+ Courbot <acourbot@nvidia.com>, Anatolij Gustschin <agust@denx.de>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>,  "linuxppc-dev@lists.ozlabs.org list"
+ <linuxppc-dev@lists.ozlabs.org>
+Date: Fri, 01 Apr 2016 13:31:29 +1100
+In-Reply-To: <CACRpkdbbUfbe6LWVDFsgvne7oOEp7ZzOKr9tX7y-P=J8g7c5=A@mail.gmail.com>
+References: <1459408452-3483-1-git-send-email-linus.walleij@linaro.org>
+ <1459418980.24848.1.camel@ellerman.id.au>
+ <CACRpkdbbUfbe6LWVDFsgvne7oOEp7ZzOKr9tX7y-P=J8g7c5=A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,42 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2016-03-31 at 14:57 +0200, Linus Walleij wrote:
+> On Thu, Mar 31, 2016 at 12:09 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> 
+> > If you feel like cross building powerpc in future it should be as simple as:
+> > 
+> >  $ dnf install gcc-powerpc64-linux-gnu || apt-get install gcc-powerpc-linux-gnu
+> >  $ make ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- ...
+> 
+> Ah hm yeah I guess everyone "should", it's just that these days I
+> mainly rely on Fenguang's kautobuild to do this job for me and
+> get back with the result from a plethora of arches.
 
+Sure. That makes sense for all the silly little architectures.
 
-On 24/03/16 22:04, Michael Ellerman wrote:
-> Add the kconfig logic & assembly support for handling live patched
-> functions. This depends on DYNAMIC_FTRACE_WITH_REGS, which in turn
-> depends on the new -mprofile-kernel ftrace ABI, which is only supported
-> currently on ppc64le.
->
-> Live patching is handled by a special ftrace handler. This means it runs
-> from ftrace_caller(). The live patch handler modifies the NIP so as to
-> redirect the return from ftrace_caller() to the new patched function.
->
-> However there is one particularly tricky case we need to handle.
->
-> If a function A calls another function B, and it is known at link time
-> that they share the same TOC, then A will not save or restore its TOC,
-> and will call the local entry point of B.
->
-> When we live patch B, we replace it with a new function C, which may
-> not have the same TOC as A. At live patch time it's too late to modify A
-> to do the TOC save/restore, so the live patching code must interpose
-> itself between A and C, and do the TOC save/restore that A omitted.
->
-> An additionaly complication is that the livepatch code can not create a
-> stack frame in order to save the TOC. That is because if C takes > 8
-> arguments, or is varargs, A will have written the arguments for C in
-> A's stack frame.
->
-> To solve this, we introduce a "livepatch stack" which grows upward from
-> the base of the regular stack, and is used to store the TOC & LR when
-> calling a live patched function.
->
-> When the patched function returns, we retrieve the real LR & TOC from
-> the livepatch stack, restore them, and pop the livepatch "stack frame".
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->
+But for powerpc you should really cross compile.
 
-Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+..
+
+:P
+
+> Sometimes a buggy bit slips through the cracks though, sorry
+> about that.
+
+No stress.
+
+cheers
