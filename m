@@ -1,27 +1,31 @@
-Return-Path: <daniel@iogearbox.net>
-Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sboyd@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qc96P5Yk3zDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Apr 2016 05:35:09 +1100 (AEDT)
-Message-ID: <56FEBF51.7090608@iogearbox.net>
-Date: Fri, 01 Apr 2016 20:34:57 +0200
-From: Daniel Borkmann <daniel@iogearbox.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qc9lB2xmKzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Apr 2016 06:03:33 +1100 (AEDT)
+Subject: Re: [v7, 4/5] powerpc/fsl: move mpc85xx.h to include/linux/fsl
+To: Yangbo Lu <yangbo.lu@nxp.com>, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org,
+ linux-i2c@vger.kernel.org, iommu@lists.linux-foundation.org,
+ netdev@vger.kernel.org, linux-mmc@vger.kernel.org
+References: <1459480051-3701-1-git-send-email-yangbo.lu@nxp.com>
+ <1459480051-3701-5-git-send-email-yangbo.lu@nxp.com>
+Cc: Rob Herring <robh+dt@kernel.org>, scott.wood@nxp.com,
+ Russell King <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>,
+ Joerg Roedel <joro@8bytes.org>, Claudiu Manoil
+ <claudiu.manoil@freescale.com>, ulf.hansson@linaro.org,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>,
+ Zhao Qiang <qiang.zhao@freescale.com>, Kumar Gala <galak@codeaurora.org>,
+ Santosh Shilimkar <ssantosh@kernel.org>, leoyang.li@nxp.com,
+ xiaobo.xie@nxp.com
+From: Stephen Boyd <sboyd@codeaurora.org>
+Message-ID: <56FEC601.7020800@codeaurora.org>
+Date: Fri, 1 Apr 2016 12:03:29 -0700
 MIME-Version: 1.0
-To: Alexei Starovoitov <ast@fb.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-CC: oss@buserror.net, Matt Evans <matt@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- "David S. Miller" <davem@davemloft.net>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>, netdev@vger.kernel.org
-Subject: Re: [RFC PATCH 6/6] ppc: ebpf/jit: Implement JIT compiler for extended
- BPF
-References: <cover.1459504222.git.naveen.n.rao@linux.vnet.ibm.com>
- <b58a289b51bbce73f8539290b721a5d461b7cebb.1459504224.git.naveen.n.rao@linux.vnet.ibm.com>
- <56FEB9AD.2080401@fb.com>
-In-Reply-To: <56FEB9AD.2080401@fb.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+In-Reply-To: <1459480051-3701-5-git-send-email-yangbo.lu@nxp.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,62 +35,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/01/2016 08:10 PM, Alexei Starovoitov wrote:
-> On 4/1/16 2:58 AM, Naveen N. Rao wrote:
->> PPC64 eBPF JIT compiler. Works for both ABIv1 and ABIv2.
->>
->> Enable with:
->> echo 1 > /proc/sys/net/core/bpf_jit_enable
->> or
->> echo 2 > /proc/sys/net/core/bpf_jit_enable
->>
->> ... to see the generated JIT code. This can further be processed with
->> tools/net/bpf_jit_disasm.
->>
->> With CONFIG_TEST_BPF=m and 'modprobe test_bpf':
->> test_bpf: Summary: 291 PASSED, 0 FAILED, [234/283 JIT'ed]
->>
->> ... on both ppc64 BE and LE.
->>
->> The details of the approach are documented through various comments in
->> the code, as are the TODOs. Some of the prominent TODOs include
->> implementing BPF tail calls and skb loads.
->>
->> Cc: Matt Evans <matt@ozlabs.org>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: Alexei Starovoitov <ast@fb.com>
->> Cc: "David S. Miller" <davem@davemloft.net>
->> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
->> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
->> ---
->>   arch/powerpc/include/asm/ppc-opcode.h |  19 +-
->>   arch/powerpc/net/Makefile             |   4 +
->>   arch/powerpc/net/bpf_jit.h            |  66 ++-
->>   arch/powerpc/net/bpf_jit64.h          |  58 +++
->>   arch/powerpc/net/bpf_jit_comp64.c     | 828 ++++++++++++++++++++++++++++++++++
->>   5 files changed, 973 insertions(+), 2 deletions(-)
->>   create mode 100644 arch/powerpc/net/bpf_jit64.h
->>   create mode 100644 arch/powerpc/net/bpf_jit_comp64.c
-> ...
->> -#ifdef CONFIG_PPC64
->> +#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF != 2)
+On 03/31/2016 08:07 PM, Yangbo Lu wrote:
+>  drivers/clk/clk-qoriq.c                                       | 3 +--
 >
-> impressive stuff!
 
-+1, awesome to see another one!
+For clk part:
 
-> Everything nicely documented. Could you add few words for the above
-> condition as well ?
-> Or may be a new macro, since it occurs many times?
-> What are these _CALL_ELF == 2 and != 2 conditions mean? ppc ABIs ?
-> Will there ever be v3 ?
+Acked-by: Stephen Boyd <sboyd@codeaurora.org>
 
-Minor TODO would also be to convert to use bpf_jit_binary_alloc() and
-bpf_jit_binary_free() API for the image, which is done by other eBPF
-jits, too.
-
-> So far most of the bpf jits were going via net-next tree, but if
-> in this case no changes to the core is necessary then I guess it's fine
-> to do it via powerpc tree. What's your plan?
->
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
