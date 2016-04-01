@@ -1,39 +1,26 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <prvs=3899432171=ast@fb.com>
+Received: from mx0a-00082601.pphosted.com (mx0a-00082601.pphosted.com
+ [67.231.145.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qc3yV37mQzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Apr 2016 01:42:58 +1100 (AEDT)
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Sat, 2 Apr 2016 00:42:56 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1F8F92CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Apr 2016 01:42:50 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u31EgfOk51708064
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 2 Apr 2016 01:42:49 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u31EgGjp023946
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 2 Apr 2016 01:42:17 +1100
-Date: Fri, 1 Apr 2016 20:11:31 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Alexei Starovoitov <ast@fb.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, "David S . Miller" <davem@davemloft.net>,
- Daniel Borkmann <daniel@iogearbox.net>
-Subject: Re: [PATCH 4/4] samples/bpf: Enable powerpc support
-Message-ID: <20160401144131.GG17907@naverao1-tp.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qc8G651vxzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Apr 2016 04:56:45 +1100 (AEDT)
+Subject: Re: [PATCH 2/4] samples/bpf: Use llc in PATH, rather than a hardcoded
+ value
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Daniel Borkmann
+ <daniel@iogearbox.net>
 References: <922f95fb5d16686367a66d2d4bd176149a87e9ad.1459423412.git.naveen.n.rao@linux.vnet.ibm.com>
- <28a3811d03f6e8f7dca989a4ade536bf9aa8c7ce.1459423412.git.naveen.n.rao@linux.vnet.ibm.com>
- <56FD63F4.2010500@fb.com>
+ <ba23d688b3550c3f22dd0dd6d5cb1233c2f34816.1459423412.git.naveen.n.rao@linux.vnet.ibm.com>
+ <56FD627D.5080405@fb.com> <56FD6A2C.2010506@iogearbox.net>
+ <20160401143751.GF17907@naverao1-tp.ibm.com>
+CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <netdev@vger.kernel.org>, "David S . Miller" <davem@davemloft.net>
+From: Alexei Starovoitov <ast@fb.com>
+Message-ID: <56FEB64B.1060500@fb.com>
+Date: Fri, 1 Apr 2016 10:56:27 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <56FD63F4.2010500@fb.com>
+In-Reply-To: <20160401143751.GF17907@naverao1-tp.ibm.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,38 +30,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/03/31 10:52AM, Alexei Starovoitov wrote:
-> On 3/31/16 4:25 AM, Naveen N. Rao wrote:
-> ...
-> >+
-> >+#ifdef __powerpc__
-> >+#define BPF_KPROBE_READ_RET_IP(ip, ctx)		{ (ip) = (ctx)->link; }
-> >+#define BPF_KRETPROBE_READ_RET_IP(ip, ctx)	BPF_KPROBE_READ_RET_IP(ip, ctx)
-> >+#else
-> >+#define BPF_KPROBE_READ_RET_IP(ip, ctx)						\
-> >+		bpf_probe_read(&(ip), sizeof(ip), (void *)PT_REGS_RET(ctx))
-> >+#define BPF_KRETPROBE_READ_RET_IP(ip, ctx)					\
-> >+		bpf_probe_read(&(ip), sizeof(ip),				\
-> >+				(void *)(PT_REGS_FP(ctx) + sizeof(ip)))
-> 
-> makes sense, but please use ({ }) gcc extension instead of {} and
-> open call to make sure that macro body is scoped.
+On 4/1/16 7:37 AM, Naveen N. Rao wrote:
+> On 2016/03/31 08:19PM, Daniel Borkmann wrote:
+>> On 03/31/2016 07:46 PM, Alexei Starovoitov wrote:
+>>> On 3/31/16 4:25 AM, Naveen N. Rao wrote:
+>>>>       clang $(NOSTDINC_FLAGS) $(LINUXINCLUDE) $(EXTRA_CFLAGS) \
+>>>>           -D__KERNEL__ -D__ASM_SYSREG_H -Wno-unused-value -Wno-pointer-sign \
+>>>> -        -O2 -emit-llvm -c $< -o -| $(LLC) -march=bpf -filetype=obj -o $@
+>>>> +        -O2 -emit-llvm -c $< -o -| llc -march=bpf -filetype=obj -o $@
+>>>>       clang $(NOSTDINC_FLAGS) $(LINUXINCLUDE) $(EXTRA_CFLAGS) \
+>>>>           -D__KERNEL__ -D__ASM_SYSREG_H -Wno-unused-value -Wno-pointer-sign \
+>>>> -        -O2 -emit-llvm -c $< -o -| $(LLC) -march=bpf -filetype=asm -o $@.s
+>>>> +        -O2 -emit-llvm -c $< -o -| llc -march=bpf -filetype=asm -o $@.s
+>>>
+>>> that was a workaround when clang/llvm didn't have bpf support.
+>>> Now clang 3.7 and 3.8 have bpf built-in, so make sense to remove
+>>> manual calls to llc completely.
+>>> Just use 'clang -target bpf -O2 -D... -c $< -o $@'
+>>
+>> +1, the clang part in that Makefile should also more correctly be called
+>> with '-target bpf' as it turns out (despite llc with '-march=bpf' ...).
+>> Better to use clang directly as suggested by Alexei.
+>
+> I'm likely missing something obvious, but I cannot get this to work.
+> With this diff:
+>
+> 	 $(obj)/%.o: $(src)/%.c
+> 		clang $(NOSTDINC_FLAGS) $(LINUXINCLUDE) $(EXTRA_CFLAGS) \
+> 			-D__KERNEL__ -D__ASM_SYSREG_H -Wno-unused-value -Wno-pointer-sign \
+> 	-               -O2 -emit-llvm -c $< -o -| $(LLC) -march=bpf -filetype=obj -o $@
+> 	-       clang $(NOSTDINC_FLAGS) $(LINUXINCLUDE) $(EXTRA_CFLAGS) \
+> 	-               -D__KERNEL__ -D__ASM_SYSREG_H -Wno-unused-value -Wno-pointer-sign \
+> 	-               -O2 -emit-llvm -c $< -o -| $(LLC) -march=bpf -filetype=asm -o $@.s
+> 	+               -O2 -target bpf -c $< -o $@
+>
+> I see far too many errors thrown starting with:
+> 	./arch/x86/include/asm/arch_hweight.h:31:10: error: invalid output constraint '=a' in asm
+> 			     : "="REG_OUT (res)
 
-To be sure I understand this right, do you mean something like this?
-
-+
-+#ifdef __powerpc__
-+#define BPF_KPROBE_READ_RET_IP(ip, ctx)                ({ (ip) = (ctx)->link; })
-+#define BPF_KRETPROBE_READ_RET_IP              BPF_KPROBE_READ_RET_IP
-+#else
-+#define BPF_KPROBE_READ_RET_IP(ip, ctx)                ({                              \
-+               bpf_probe_read(&(ip), sizeof(ip), (void *)PT_REGS_RET(ctx)); })
-+#define BPF_KRETPROBE_READ_RET_IP(ip, ctx)     ({                              \
-+               bpf_probe_read(&(ip), sizeof(ip),                               \
-+                               (void *)(PT_REGS_FP(ctx) + sizeof(ip))); })
-+#endif
-+
-
-
-Thanks,
-Naveen
+ahh. yes. when processing kernel headers clang has to assume x86 style
+inline asm, though all of these functions will be ignored.
+I don't have a quick fix for this yet.
+Let's go back to your original change $(LLC)->llc
