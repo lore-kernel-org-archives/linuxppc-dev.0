@@ -1,24 +1,23 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mgorman@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qdjZ52pKWzDq64
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Apr 2016 17:01:01 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id e190so4045553pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Apr 2016 00:01:00 -0700 (PDT)
-Subject: Re: PR KVM and TM issues
-To: Anton Blanchard <anton@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <20160404164457.539a55f0@kryten>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <57021123.6050506@ozlabs.ru>
-Date: Mon, 4 Apr 2016 17:00:51 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qdlm15HbbzDq6C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Apr 2016 18:39:45 +1000 (AEST)
+Date: Mon, 4 Apr 2016 09:39:39 +0100
+From: Mel Gorman <mgorman@suse.de>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, zhlcindy@linux.vnet.ibm.com
+Subject: Re: [RFC] mm: Fix memory corruption caused by deferred page
+ initialization
+Message-ID: <20160404083939.GC21128@suse.de>
+References: <1458921929-15264-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <3qXFh60DRNz9sDH@ozlabs.org> <20160326133708.GA382@gwshan>
+ <20160327134827.GA24644@gwshan> <20160331022734.GA12552@gwshan>
 MIME-Version: 1.0
-In-Reply-To: <20160404164457.539a55f0@kryten>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20160331022734.GA12552@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/04/2016 04:44 PM, Anton Blanchard wrote:
-> Hi,
->
-> I can't get an Ubuntu Wily guest to boot on an Ubuntu Wily host in PR KVM
-> mode. The kernel in both cases is 4.2. To reproduce:
->
-> wget -N https://cloud-images.ubuntu.com/wily/current/wily-server-cloudimg-ppc64el-disk1.img
->
-> qemu-system-ppc64 -cpu POWER8 -enable-kvm -machine pseries,kvm-type=PR -m 4G -nographic -vga none -drive file=wily-server-cloudimg-ppc64el-disk1.img,if=virtio
->
-> Should TM work inside a PR KVM guest?
+On Thu, Mar 31, 2016 at 01:27:34PM +1100, Gavin Shan wrote:
+> >So the issue is only existing when CONFIG_NO_BOOTMEM=n. The alternative fix would
+> >be similar to what we have on !CONFIG_NO_BOOTMEM: In early stage, all page structs
+> >for bootmem reserved pages are initialized and mark them with PG_reserved. I'm
+> >not sure it's worthy to fix it as we won't support bootmem as Michael mentioned.
+> >
+> 
+> Mel, could you please confirm if we need a fix on !CONFIG_NO_BOOTMEM? If we need,
+> I'll respin and send a patch for review.
+> 
 
-If I read the kernel code correctly (kvmppc_set_one_reg_hv vs. 
-kvmppc_set_one_reg_pr), no, it should not be expected to work.
-
-
-
+Given that CONFIG_NO_BOOTMEM is not supported and bootmem is meant to be
+slowly retiring, I would suggest instead making deferred memory init
+depend on NO_BOOTMEM. 
 
 -- 
-Alexey
+Mel Gorman
+SUSE Labs
