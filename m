@@ -1,35 +1,38 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qdwTY2DW4zDq6C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 01:12:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qdyxK0H3xzDq6C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 03:03:33 +1000 (AEST)
 Received: from localhost
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 4 Apr 2016 20:30:40 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u34F0b0a7864786
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Apr 2016 20:30:37 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u34F0Xfg032259
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Apr 2016 20:30:35 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 04/65] powerpc/mm: Use pte_user instead of opencoding
-In-Reply-To: <56FC814F.5090102@gmail.com>
-References: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1459067053-10835-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <56FC814F.5090102@gmail.com>
-Date: Mon, 04 Apr 2016 20:30:29 +0530
-Message-ID: <87lh4txvua.fsf@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 5 Apr 2016 03:03:31 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 38F112CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 03:03:18 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u34H3A6i31719494
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 03:03:18 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u34H2i4F021267
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 03:02:45 +1000
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
+Cc: Alexei Starovoitov <ast@fb.com>, Daniel Borkmann <daniel@iogearbox.net>,
+ "David S . Miller" <davem@davemloft.net>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCHv2 net 1/3] samples/bpf: Fix build breakage with
+ map_perf_test_user.c
+Date: Mon,  4 Apr 2016 22:31:32 +0530
+Message-Id: <5ab5eec91d2d0bc7f221d714ef84afac83b2604b.1459789086.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,41 +42,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
+Building BPF samples is failing with the below error:
 
-> [ text/plain ]
->
->
-> On 27/03/16 19:23, Aneesh Kumar K.V wrote:
->> We have common declaration in pte-common.h Add book3s specific one
->> and switch to pte_user. In the later patch we will be switching
->> _PAGE_USER to _PAGE_PRIVILEGED
->>
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/include/asm/book3s/64/pgtable.h | 5 +++++
->>  arch/powerpc/perf/callchain.c                | 2 +-
->>  2 files changed, 6 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> index 77d3ce05798e..4ac6221802ad 100644
->> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
->> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> @@ -185,6 +185,11 @@ extern struct page *pgd_page(pgd_t pgd);
->>  #define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val((pte)) & ~_PAGE_PTE })
->>  #define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
->>  
->> +static inline bool pte_user(pte_t pte)
->> +{
->> +	return (pte_val(pte) & _PAGE_USER);
->> +}
-> Ideally this should be
->     return !!(pte_val(pte) & _PAGE_USER)
-> for consistency with page_present() and the fact that it returns a bool
+samples/bpf/map_perf_test_user.c: In function ‘main’:
+samples/bpf/map_perf_test_user.c:134:9: error: variable ‘r’ has
+initializer but incomplete type
+  struct rlimit r = {RLIM_INFINITY, RLIM_INFINITY};
+         ^
+samples/bpf/map_perf_test_user.c:134:21: error: ‘RLIM_INFINITY’
+undeclared (first use in this function)
+  struct rlimit r = {RLIM_INFINITY, RLIM_INFINITY};
+                     ^
+samples/bpf/map_perf_test_user.c:134:21: note: each undeclared
+identifier is reported only once for each function it appears in
+samples/bpf/map_perf_test_user.c:134:9: warning: excess elements in
+struct initializer [enabled by default]
+  struct rlimit r = {RLIM_INFINITY, RLIM_INFINITY};
+         ^
+samples/bpf/map_perf_test_user.c:134:9: warning: (near initialization
+for ‘r’) [enabled by default]
+samples/bpf/map_perf_test_user.c:134:9: warning: excess elements in
+struct initializer [enabled by default]
+samples/bpf/map_perf_test_user.c:134:9: warning: (near initialization
+for ‘r’) [enabled by default]
+samples/bpf/map_perf_test_user.c:134:16: error: storage size of ‘r’
+isn’t known
+  struct rlimit r = {RLIM_INFINITY, RLIM_INFINITY};
+                ^
+samples/bpf/map_perf_test_user.c:139:2: warning: implicit declaration of
+function ‘setrlimit’ [-Wimplicit-function-declaration]
+  setrlimit(RLIMIT_MEMLOCK, &r);
+  ^
+samples/bpf/map_perf_test_user.c:139:12: error: ‘RLIMIT_MEMLOCK’
+undeclared (first use in this function)
+  setrlimit(RLIMIT_MEMLOCK, &r);
+            ^
+samples/bpf/map_perf_test_user.c:134:16: warning: unused variable ‘r’
+[-Wunused-variable]
+  struct rlimit r = {RLIM_INFINITY, RLIM_INFINITY};
+                ^
+make[2]: *** [samples/bpf/map_perf_test_user.o] Error 1
 
-Fixed. I missed that because later patch convert this to
+Fix this by including the necessary header file.
 
-!(pte_val(pte) & _PAGE_PRIVILEGED). 
+Cc: Alexei Starovoitov <ast@fb.com>
+Cc: Daniel Borkmann <daniel@iogearbox.net>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Acked-by: Alexei Starovoitov <ast@kernel.org>
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+v2: no changes
 
+ samples/bpf/map_perf_test_user.c | 1 +
+ 1 file changed, 1 insertion(+)
 
--aneesh
+diff --git a/samples/bpf/map_perf_test_user.c b/samples/bpf/map_perf_test_user.c
+index 95af56e..3147377 100644
+--- a/samples/bpf/map_perf_test_user.c
++++ b/samples/bpf/map_perf_test_user.c
+@@ -17,6 +17,7 @@
+ #include <linux/bpf.h>
+ #include <string.h>
+ #include <time.h>
++#include <sys/resource.h>
+ #include "libbpf.h"
+ #include "bpf_load.h"
+ 
+-- 
+2.7.4
