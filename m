@@ -1,24 +1,19 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <anna-maria@linutronix.de>
+Received: from Galois.linutronix.de (linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qdpWh1kw6zDq6C
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Apr 2016 20:44:16 +1000 (AEST)
-Date: Mon, 4 Apr 2016 20:43:46 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman
- <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Michael Neuling
- <mikey@neuling.org>, David Gibson <david@gibson.dropbear.id.au>, Alexander
- Graf <agraf@suse.de>
-Cc: linuxppc-dev@lists.ozlabs.org, qemu-devel@nongnu.org, qemu-ppc@nongnu.org
-Subject: Re: PR KVM and TM issues
-Message-ID: <20160404204346.1cf44df8@kryten>
-In-Reply-To: <57021123.6050506@ozlabs.ru>
-References: <20160404164457.539a55f0@kryten>
-	<57021123.6050506@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qdncx73N9zDq6C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Apr 2016 20:03:45 +1000 (AEST)
+From: Anna-Maria Gleixner <anna-maria@linutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: rt@linutronix.de, Anna-Maria Gleixner <anna-maria@linutronix.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/pmac/smp: Add missing FROZEN hotplug notifier
+ transitions
+Date: Mon,  4 Apr 2016 11:30:01 +0200
+Message-Id: <1459762201-183136-1-git-send-email-anna-maria@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,26 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Alexey,
+The FROZEN transitions are used when a CPU suspends/resumes. In case
+of a suspend/resume, only the up prepare (CPU_UP_PREPARE_FROZEN) is
+handled. The error handling transition CPU_UP_CANCELED_FROZEN as well
+as the CPU_ONLINE_FROZEN transition are not handled.
 
-> > I can't get an Ubuntu Wily guest to boot on an Ubuntu Wily host in
-> > PR KVM mode. The kernel in both cases is 4.2. To reproduce:
-> >
-> > wget -N https://cloud-images.ubuntu.com/wily/current/wily-server-cloudimg-ppc64el-disk1.img
-> >
-> > qemu-system-ppc64 -cpu POWER8 -enable-kvm -machine pseries,kvm-type=PR -m 4G -nographic -vga none -drive file=wily-server-cloudimg-ppc64el-disk1.img,if=virtio
-> >
-> > Should TM work inside a PR KVM guest?
-> 
-> If I read the kernel code correctly (kvmppc_set_one_reg_hv vs. 
-> kvmppc_set_one_reg_pr), no, it should not be expected to work.
+Masking the switch case action argument with ~CPU_TASKS_FROZEN, to
+handle all FROZEN tasks the same way than the corresponding non frozen
+tasks.
 
-I see a couple of issues, patches to follow:
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Anna-Maria Gleixner <anna-maria@linutronix.de>
+---
+ arch/powerpc/platforms/powermac/smp.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-1. QEMU needs to clear the TM feature bit in the ibm,pa-features array
-when running in PR KVM mode.
-
-2. Linux needs to clear the user TM feature bits if TM gets disabled
-at runtime via the ibm,pa-features bit.
-
-Anton
+--- a/arch/powerpc/platforms/powermac/smp.c
++++ b/arch/powerpc/platforms/powermac/smp.c
+@@ -857,9 +857,8 @@ static int smp_core99_cpu_notify(struct
+ {
+ 	int rc;
+ 
+-	switch(action) {
++	switch(action & ~CPU_TASKS_FROZEN) {
+ 	case CPU_UP_PREPARE:
+-	case CPU_UP_PREPARE_FROZEN:
+ 		/* Open i2c bus if it was used for tb sync */
+ 		if (pmac_tb_clock_chip_host) {
+ 			rc = pmac_i2c_open(pmac_tb_clock_chip_host, 1);
