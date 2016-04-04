@@ -1,23 +1,37 @@
-Return-Path: <mgorman@suse.de>
+Return-Path: <pmladek@suse.com>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qdlm15HbbzDq6C
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Apr 2016 18:39:45 +1000 (AEST)
-Date: Mon, 4 Apr 2016 09:39:39 +0100
-From: Mel Gorman <mgorman@suse.de>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, zhlcindy@linux.vnet.ibm.com
-Subject: Re: [RFC] mm: Fix memory corruption caused by deferred page
- initialization
-Message-ID: <20160404083939.GC21128@suse.de>
-References: <1458921929-15264-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <3qXFh60DRNz9sDH@ozlabs.org> <20160326133708.GA382@gwshan>
- <20160327134827.GA24644@gwshan> <20160331022734.GA12552@gwshan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qdn3l2m7HzDq6C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Apr 2016 19:38:26 +1000 (AEST)
+Date: Mon, 4 Apr 2016 11:38:19 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v4 1/5] printk/nmi: generic solution for safe printk in NMI
+Message-ID: <20160404093819.GH1023@pathway.suse.cz>
+References: <1459353210-20260-1-git-send-email-pmladek@suse.com>
+ <1459353210-20260-2-git-send-email-pmladek@suse.com>
+ <20160404044928.GD6164@swordfish>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20160331022734.GA12552@gwshan>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160404044928.GD6164@swordfish>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +41,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 31, 2016 at 01:27:34PM +1100, Gavin Shan wrote:
-> >So the issue is only existing when CONFIG_NO_BOOTMEM=n. The alternative fix would
-> >be similar to what we have on !CONFIG_NO_BOOTMEM: In early stage, all page structs
-> >for bootmem reserved pages are initialized and mark them with PG_reserved. I'm
-> >not sure it's worthy to fix it as we won't support bootmem as Michael mentioned.
-> >
+On Mon 2016-04-04 13:49:28, Sergey Senozhatsky wrote:
+> Hello,
 > 
-> Mel, could you please confirm if we need a fix on !CONFIG_NO_BOOTMEM? If we need,
-> I'll respin and send a patch for review.
+> On (03/30/16 17:53), Petr Mladek wrote:
+> [..]
+> > @@ -67,10 +67,12 @@ extern void irq_exit(void);
+> >  		preempt_count_add(NMI_OFFSET + HARDIRQ_OFFSET);	\
+> >  		rcu_nmi_enter();				\
+> >  		trace_hardirq_enter();				\
+> > +		printk_nmi_enter();				\
+> >  	} while (0)
+> >  
+> >  #define nmi_exit()						\
+> >  	do {							\
+> > +		printk_nmi_exit();				\
+> >  		trace_hardirq_exit();				\
+> >  		rcu_nmi_exit();					\
+> >  		BUG_ON(!in_nmi());				\
 > 
+> isn't it a bit too early to printk_nmi_exit()? rcu_nmi_exit() can
+> WARN_ON_ONCE() in 3 places.
+> 
+> the same goes for printk_nmi_enter(). rcu_nmi_enter() can WARN_ON_ONCE().
+> 
+> seems that in both cases we can endup having WARN_ON_ONCE() from nmi,
+> but with default printk function.
 
-Given that CONFIG_NO_BOOTMEM is not supported and bootmem is meant to be
-slowly retiring, I would suggest instead making deferred memory init
-depend on NO_BOOTMEM. 
+Great catch! You are right.
 
--- 
-Mel Gorman
-SUSE Labs
+
+> > +/*
+> > + * Flush data from the associated per_CPU buffer. The function
+> > + * can be called either via IRQ work or independently.
+> > + */
+> > +static void __printk_nmi_flush(struct irq_work *work)
+> > +{
+> > +	static raw_spinlock_t read_lock =
+> > +		__RAW_SPIN_LOCK_INITIALIZER(read_lock);
+> > +	struct nmi_seq_buf *s = container_of(work, struct nmi_seq_buf, work);
+> > +	unsigned long flags;
+> > +	size_t len, size;
+> > +	int i, last_i;
+> > +
+> > +	/*
+> > +	 * The lock has two functions. First, one reader has to flush all
+> > +	 * available message to make the lockless synchronization with
+> > +	 * writers easier. Second, we do not want to mix messages from
+> > +	 * different CPUs. This is especially important when printing
+> > +	 * a backtrace.
+> > +	 */
+> > +	raw_spin_lock_irqsave(&read_lock, flags);
+> > +
+> 
+> hm... so here we have
+> 	for (; i < size; i++)
+> 		printk()
+> 
+> under the spinlock. the thing is that one of printk() can end up
+> in console_unlock()->call_console_drivers() loop, iterating there
+> long enough to spinlock lockup other CPUs that might want to flush
+> NMI buffers (if any), assuming that there are enough printk() (or
+> may be a slow serial console) happening concurrently on other CPUs
+> to keep the current ->read_lock busy. async printk can help here,
+> but user can request sync version of printk.
+
+I think that printk() is called on many other locations under
+a spinlock and they all are waiting for the async printk.
+
+
+> how about using deferred printk for nmi flush?
+> print_nmi_seq_line()->printk_deferred() ?
+
+But this is great idea. It will help to avoid the ugly macro
+deferred_console_in_nmi() as you mentioned in the other mail.
+
+Heh, I remember that I thought about this but I did not want
+to override the original log level of the messages. Now, I see
+that LOGLEVEL_SCHED is added on top and the original level
+is preserved.
+
+Thanks a lot for review. I am going to wait with respin a bit
+and give others some time for feedback.
+
+
+Best Regards,
+Petr
