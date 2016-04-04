@@ -1,29 +1,40 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+Return-Path: <sergey.senozhatsky.work@gmail.com>
+Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c03::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qcGDg3c6MzDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Apr 2016 09:25:55 +1100 (AEDT)
-Message-ID: <1459549543.32510.28.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Yangbo Lu <yangbo.lu@nxp.com>, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org,
- linux-i2c@vger.kernel.org, iommu@lists.linux-foundation.org,
- netdev@vger.kernel.org, linux-mmc@vger.kernel.org
-Cc: ulf.hansson@linaro.org, Zhao Qiang <qiang.zhao@freescale.com>, Russell
- King <linux@arm.linux.org.uk>, Bhupesh Sharma
- <bhupesh.sharma@freescale.com>,  Joerg Roedel <joro@8bytes.org>, Santosh
- Shilimkar <ssantosh@kernel.org>, Jochen Friedrich <jochen@scram.de>,
- scott.wood@nxp.com, Rob Herring <robh+dt@kernel.org>, Claudiu Manoil
- <claudiu.manoil@freescale.com>, Kumar Gala <galak@codeaurora.org>,
- leoyang.li@nxp.com, xiaobo.xie@nxp.com
-Date: Fri, 01 Apr 2016 17:25:43 -0500
-In-Reply-To: <1459480051-3701-1-git-send-email-yangbo.lu@nxp.com>
-References: <1459480051-3701-1-git-send-email-yangbo.lu@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [v7, 0/5] Fix eSDHC host version register bug
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qdfcn6d3wzDqCn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Apr 2016 14:48:09 +1000 (AEST)
+Received: by mail-pa0-x22e.google.com with SMTP id zm5so135818331pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Apr 2016 21:48:09 -0700 (PDT)
+Date: Mon, 4 Apr 2016 13:49:28 +0900
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v4 1/5] printk/nmi: generic solution for safe printk in NMI
+Message-ID: <20160404044928.GD6164@swordfish>
+References: <1459353210-20260-1-git-send-email-pmladek@suse.com>
+ <1459353210-20260-2-git-send-email-pmladek@suse.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1459353210-20260-2-git-send-email-pmladek@suse.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,25 +44,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-04-01 at 11:07 +0800, Yangbo Lu wrote:
-> This patchset is used to fix a host version register bug in the T4240-R1.0
-> -R2.0
-> eSDHC controller. To get the SoC version and revision, it's needed to add
-> the
-> GUTS driver to access the global utilities registers.
-> 
-> So, the first three patches are to add the GUTS driver.
-> The following two patches are to enable GUTS driver support to get SVR in
-> eSDHC
-> driver and fix host version for T4240.
-> 
-> Yangbo Lu (5):
->   ARM64: dts: ls2080a: add device configuration node
->   soc: fsl: add GUTS driver for QorIQ platforms
->   dt: move guts devicetree doc out of powerpc directory
->   powerpc/fsl: move mpc85xx.h to include/linux/fsl
->   mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
+Hello,
 
-Acked-by: Scott Wood <oss@buserror.net>
+On (03/30/16 17:53), Petr Mladek wrote:
+[..]
+> @@ -67,10 +67,12 @@ extern void irq_exit(void);
+>  		preempt_count_add(NMI_OFFSET + HARDIRQ_OFFSET);	\
+>  		rcu_nmi_enter();				\
+>  		trace_hardirq_enter();				\
+> +		printk_nmi_enter();				\
+>  	} while (0)
+>  
+>  #define nmi_exit()						\
+>  	do {							\
+> +		printk_nmi_exit();				\
+>  		trace_hardirq_exit();				\
+>  		rcu_nmi_exit();					\
+>  		BUG_ON(!in_nmi());				\
 
--Scott
+isn't it a bit too early to printk_nmi_exit()? rcu_nmi_exit() can
+WARN_ON_ONCE() in 3 places.
+
+the same goes for printk_nmi_enter(). rcu_nmi_enter() can WARN_ON_ONCE().
+
+seems that in both cases we can endup having WARN_ON_ONCE() from nmi,
+but with default printk function.
+
+
+> +/*
+> + * Flush data from the associated per_CPU buffer. The function
+> + * can be called either via IRQ work or independently.
+> + */
+> +static void __printk_nmi_flush(struct irq_work *work)
+> +{
+> +	static raw_spinlock_t read_lock =
+> +		__RAW_SPIN_LOCK_INITIALIZER(read_lock);
+> +	struct nmi_seq_buf *s = container_of(work, struct nmi_seq_buf, work);
+> +	unsigned long flags;
+> +	size_t len, size;
+> +	int i, last_i;
+> +
+> +	/*
+> +	 * The lock has two functions. First, one reader has to flush all
+> +	 * available message to make the lockless synchronization with
+> +	 * writers easier. Second, we do not want to mix messages from
+> +	 * different CPUs. This is especially important when printing
+> +	 * a backtrace.
+> +	 */
+> +	raw_spin_lock_irqsave(&read_lock, flags);
+> +
+
+hm... so here we have
+	for (; i < size; i++)
+		printk()
+
+under the spinlock. the thing is that one of printk() can end up
+in console_unlock()->call_console_drivers() loop, iterating there
+long enough to spinlock lockup other CPUs that might want to flush
+NMI buffers (if any), assuming that there are enough printk() (or
+may be a slow serial console) happening concurrently on other CPUs
+to keep the current ->read_lock busy. async printk can help here,
+but user can request sync version of printk.
+
+how about using deferred printk for nmi flush?
+print_nmi_seq_line()->printk_deferred() ?
+
+	-ss
+
+> +	i = 0;
+> +more:
+> +	len = atomic_read(&s->len);
+> +
+> +	/*
+> +	 * This is just a paranoid check that nobody has manipulated
+> +	 * the buffer an unexpected way. If we printed something then
+> +	 * @len must only increase.
+> +	 */
+> +	if (i && i >= len)
+> +		pr_err("printk_nmi_flush: internal error: i=%d >= len=%zu\n",
+> +		       i, len);
+> +
+> +	if (!len)
+> +		goto out; /* Someone else has already flushed the buffer. */
+> +
+> +	/* Make sure that data has been written up to the @len */
+> +	smp_rmb();
+> +
+> +	size = min(len, sizeof(s->buffer));
+> +	last_i = i;
+> +
+> +	/* Print line by line. */
+> +	for (; i < size; i++) {
+> +		if (s->buffer[i] == '\n') {
+> +			print_nmi_seq_line(s, last_i, i);
+> +			last_i = i + 1;
+> +		}
+> +	}
+> +	/* Check if there was a partial line. */
+> +	if (last_i < size) {
+> +		print_nmi_seq_line(s, last_i, size - 1);
+> +		pr_cont("\n");
+> +	}
+> +
+> +	/*
+> +	 * Check that nothing has got added in the meantime and truncate
+> +	 * the buffer. Note that atomic_cmpxchg() is an implicit memory
+> +	 * barrier that makes sure that the data were copied before
+> +	 * updating s->len.
+> +	 */
+> +	if (atomic_cmpxchg(&s->len, len, 0) != len)
+> +		goto more;
+> +
+> +out:
+> +	raw_spin_unlock_irqrestore(&read_lock, flags);
+> +}
