@@ -1,39 +1,35 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qdqQs3bpYzDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Apr 2016 21:25:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qdw5g20gbzDq6C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 00:55:35 +1000 (AEST)
 Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 4 Apr 2016 16:55:05 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 4 Apr 2016 20:25:31 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
  by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u34BP0VE7799220
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Apr 2016 16:55:00 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u34BOtV7020120
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Apr 2016 16:54:58 +0530
-Date: Mon, 4 Apr 2016 21:24:33 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Mel Gorman <mgorman@suse.de>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, zhlcindy@linux.vnet.ibm.com
-Subject: Re: [RFC] mm: Fix memory corruption caused by deferred page
- initialization
-Message-ID: <20160404112433.GA9567@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1458921929-15264-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <3qXFh60DRNz9sDH@ozlabs.org> <20160326133708.GA382@gwshan>
- <20160327134827.GA24644@gwshan> <20160331022734.GA12552@gwshan>
- <20160404083939.GC21128@suse.de>
+ u34EtRE410420716
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Apr 2016 20:25:27 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u34EtPVP018371
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Apr 2016 20:25:26 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 02/65] powerpc/mm: use _PAGE_READ to indicate Read access
+In-Reply-To: <56FC75F0.9010500@gmail.com>
+References: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1459067053-10835-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <56FC75F0.9010500@gmail.com>
+Date: Mon, 04 Apr 2016 20:25:25 +0530
+Message-ID: <87shz1xw2q.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160404083939.GC21128@suse.de>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,30 +39,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 04, 2016 at 09:39:39AM +0100, Mel Gorman wrote:
->On Thu, Mar 31, 2016 at 01:27:34PM +1100, Gavin Shan wrote:
->> >So the issue is only existing when CONFIG_NO_BOOTMEM=n. The alternative fix would
->> >be similar to what we have on !CONFIG_NO_BOOTMEM: In early stage, all page structs
->> >for bootmem reserved pages are initialized and mark them with PG_reserved. I'm
->> >not sure it's worthy to fix it as we won't support bootmem as Michael mentioned.
->> >
->> 
->> Mel, could you please confirm if we need a fix on !CONFIG_NO_BOOTMEM? If we need,
->> I'll respin and send a patch for review.
->> 
+Balbir Singh <bsingharora@gmail.com> writes:
+
+> [ text/plain ]
 >
->Given that CONFIG_NO_BOOTMEM is not supported and bootmem is meant to be
->slowly retiring, I would suggest instead making deferred memory init
->depend on NO_BOOTMEM. 
+>
+> On 27/03/16 19:23, Aneesh Kumar K.V wrote:
+>> This split _PAGE_RW bit to _PAGE_READ and _PAGE_WRITE. It also remove
+>> the dependency on _PAGE_USER for implying read only. Few things to note
+>> here is that, we have read implied with write and execute permission.
+>> Hence we should always find _PAGE_READ set on hash pte fault.
+>>
+>> We still can't switch PROT_NONE to !(_PAGE_RWX). Auto numa do depend
+>> on marking a prot none pte _PAGE_WRITE. (For more details look at
+>> b191f9b106ea "mm: numa: preserve PTE write permissions across a NUMA hinting fault")
+>>
+
+......
+
+
+>> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+>> index 90dd9280894f..ea23403b3fc0 100644
+>> --- a/arch/powerpc/mm/hash_utils_64.c
+>> +++ b/arch/powerpc/mm/hash_utils_64.c
+>> @@ -175,8 +175,9 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
+>>  	 * or PP=0x3 for read-only (including writeable but clean pages).
+>>  	 */
+>>  	if (pteflags & _PAGE_USER) {
+>> -		rflags |= 0x2;
+>> -		if (!((pteflags & _PAGE_RW) && (pteflags & _PAGE_DIRTY)))
+>> +		if (pteflags & _PAGE_RWX)
+> Should this be pteflags & _PAGE_RW?
+
+That will work, because we always have _PAGE_READ set for _PAGE_EXEC.
+But what we really need to check here is READ/WRITE/EXEC.
+
+
+>> +			rflags |= 0x2;
+>> +		if (!((pteflags & _PAGE_WRITE) && (pteflags & _PAGE_DIRTY)))
+>>  			rflags |= 0x1;
+> if pteflags == _PAGE_USER | _PAGE_WRITE | _PAGE_DIRTY, what is rflags set to?
 >
 
-Thanks for confirm, Mel. It would be the best strategy to have simplest
-fix for this issue. I'll send a followup patch to address it.
 
-Thanks,
-Gavin
+rflags will be 0x2. and for readlyonly 0x3. That is documented above. 
 
->-- 
->Mel Gorman
->SUSE Labs
+
+
 >
+>
+>>  	}
+>>  	/*
+>> @@ -1205,7 +1206,7 @@ EXPORT_SYMBOL_GPL(hash_page);
+>>  int __hash_page(unsigned long ea, unsigned long msr, unsigned long trap,
+>>  		unsigned long dsisr)
+>>  {
+>> -	unsigned long access = _PAGE_PRESENT;
+>> +	unsigned long access = _PAGE_PRESENT | _PAGE_READ;
+>>  	unsigned long flags = 0;
+>>  	struct mm_struct *mm = current->mm;
+
+
+....
+
+>> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+>> index 83dfd7925c72..98b5c03e344d 100644
+>> --- a/arch/powerpc/mm/pgtable.c
+>> +++ b/arch/powerpc/mm/pgtable.c
+>> @@ -177,8 +177,8 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
+>>  	 * _PAGE_PRESENT, but we can be sure that it is not in hpte.
+>>  	 * Hence we can use set_pte_at for them.
+>>  	 */
+>> -	VM_WARN_ON((pte_val(*ptep) & (_PAGE_PRESENT | _PAGE_USER)) ==
+>> -		(_PAGE_PRESENT | _PAGE_USER));
+>> +	VM_WARN_ON(pte_present(*ptep) && !pte_protnone(*ptep));
+>> +
+> What was wrong with the previous check? The compiler will optimize it, but the new
+> check uses two pte_val() calls on *ptep
+
+That was confusing, even though we documented it clearly above, it does
+confuse, because checking for _PAGE_USER is an indirect hint for prot
+numa ptes.
+
+
+>>  	/*
+>>  	 * Add the pte bit when tryint set a pte
+>>  	 */
+>> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+>> index aa742aa35b64..00d8d985bba3 100644
+>> --- a/arch/powerpc/mm/pgtable_64.c
+>> +++ b/arch/powerpc/mm/pgtable_64.c
+>> @@ -277,7 +277,7 @@ void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
+>>  	void *caller = __builtin_return_address(0);
+>>  
+>>  	/* writeable implies dirty for kernel addresses */
+>> -	if (flags & _PAGE_RW)
+>> +	if (flags & _PAGE_WRITE)
+>>  		flags |= _PAGE_DIRTY;
+>>  
+>>  	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
+>> @@ -681,8 +681,7 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
+>>  		pmd_t *pmdp, pmd_t pmd)
+>>  {
+>>  #ifdef CONFIG_DEBUG_VM
+>> -	WARN_ON((pmd_val(*pmdp) & (_PAGE_PRESENT | _PAGE_USER)) ==
+>> -		(_PAGE_PRESENT | _PAGE_USER));
+>> +	WARN_ON(pte_present(pmd_pte(*pmdp)) && !pte_protnone(pmd_pte(*pmdp)));
+> Same as above, plus I think we can move these to VM_WARN_ON just to be consistent
+
+We already have #ifdef CONFIG_DEBUG_VM around, hence we can avoid using
+VM_WARN_ON.
+
+-aneesh
