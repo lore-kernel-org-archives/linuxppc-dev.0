@@ -1,39 +1,32 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <joro@8bytes.org>
+Received: from theia.8bytes.org (8bytes.org
+ [IPv6:2a01:238:4383:600:38bc:a715:4b6d:a889])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qfPc21ZBJzDqBY
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 20:05:06 +1000 (AEST)
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 5 Apr 2016 20:05:05 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4385D3578058
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 20:04:47 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u35A4aY915007750
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 20:04:47 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u35A4AF0002269
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 20:04:12 +1000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org
-Cc: Alexei Starovoitov <ast@fb.com>, Daniel Borkmann <daniel@iogearbox.net>,
- "David S. Miller" <davem@davemloft.net>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH net 4/4] lib/test_bpf: Add additional BPF_ADD tests
-Date: Tue,  5 Apr 2016 15:32:56 +0530
-Message-Id: <9b71e280481a9f84cd7dbb9e767fd08e6f4c0aef.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <5e3cf7c4a971e6d2ff7a2d50bbec2e6e26883b84.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <5e3cf7c4a971e6d2ff7a2d50bbec2e6e26883b84.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <5e3cf7c4a971e6d2ff7a2d50bbec2e6e26883b84.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <5e3cf7c4a971e6d2ff7a2d50bbec2e6e26883b84.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qfQTd01PnzDq6T
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 20:44:36 +1000 (AEST)
+Date: Tue, 5 Apr 2016 12:35:26 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Yangbo Lu <yangbo.lu@nxp.com>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-clk@vger.kernel.org, linux-i2c@vger.kernel.org,
+ iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
+ linux-mmc@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ scott.wood@nxp.com, Russell King <linux@arm.linux.org.uk>,
+ Jochen Friedrich <jochen@scram.de>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>, ulf.hansson@linaro.org,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>,
+ Zhao Qiang <qiang.zhao@freescale.com>, Kumar Gala <galak@codeaurora.org>,
+ Santosh Shilimkar <ssantosh@kernel.org>, leoyang.li@nxp.com,
+ xiaobo.xie@nxp.com
+Subject: Re: [v7, 4/5] powerpc/fsl: move mpc85xx.h to include/linux/fsl
+Message-ID: <20160405103526.GG17838@8bytes.org>
+References: <1459480051-3701-1-git-send-email-yangbo.lu@nxp.com>
+ <1459480051-3701-5-git-send-email-yangbo.lu@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1459480051-3701-5-git-send-email-yangbo.lu@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,167 +36,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some of these tests proved useful with the powerpc eBPF JIT port due to
-sign-extended 16-bit immediate loads. Though some of these aspects get
-covered in other tests, it is better to have explicit tests so as to
-quickly tag the precise problem.
+On Fri, Apr 01, 2016 at 11:07:30AM +0800, Yangbo Lu wrote:
+> Move mpc85xx.h to include/linux/fsl and rename it to svr.h as
+> a common header file. It has been used for mpc85xx and it will
+> be used for ARM-based SoC as well.
+> 
+> Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+> Acked-by: Wolfram Sang <wsa@the-dreams.de>
 
-Cc: Alexei Starovoitov <ast@fb.com>
-Cc: Daniel Borkmann <daniel@iogearbox.net>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- lib/test_bpf.c | 128 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 128 insertions(+)
-
-diff --git a/lib/test_bpf.c b/lib/test_bpf.c
-index 2fb31aa..8f22fbe 100644
---- a/lib/test_bpf.c
-+++ b/lib/test_bpf.c
-@@ -2566,6 +2566,70 @@ static struct bpf_test tests[] = {
- 		{ { 0, 0x1 } },
- 	},
- 	{
-+		"ALU_ADD_K: 0 + 0xffff = 0xffff",
-+		.u.insns_int = {
-+			BPF_LD_IMM64(R2, 0x0),
-+			BPF_LD_IMM64(R3, 0xffff),
-+			BPF_ALU32_IMM(BPF_ADD, R2, 0xffff),
-+			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
-+			BPF_MOV32_IMM(R0, 2),
-+			BPF_EXIT_INSN(),
-+			BPF_MOV32_IMM(R0, 1),
-+			BPF_EXIT_INSN(),
-+		},
-+		INTERNAL,
-+		{ },
-+		{ { 0, 0x1 } },
-+	},
-+	{
-+		"ALU_ADD_K: 0 + 0x7fffffff = 0x7fffffff",
-+		.u.insns_int = {
-+			BPF_LD_IMM64(R2, 0x0),
-+			BPF_LD_IMM64(R3, 0x7fffffff),
-+			BPF_ALU32_IMM(BPF_ADD, R2, 0x7fffffff),
-+			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
-+			BPF_MOV32_IMM(R0, 2),
-+			BPF_EXIT_INSN(),
-+			BPF_MOV32_IMM(R0, 1),
-+			BPF_EXIT_INSN(),
-+		},
-+		INTERNAL,
-+		{ },
-+		{ { 0, 0x1 } },
-+	},
-+	{
-+		"ALU_ADD_K: 0 + 0x80000000 = 0x80000000",
-+		.u.insns_int = {
-+			BPF_LD_IMM64(R2, 0x0),
-+			BPF_LD_IMM64(R3, 0x80000000),
-+			BPF_ALU32_IMM(BPF_ADD, R2, 0x80000000),
-+			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
-+			BPF_MOV32_IMM(R0, 2),
-+			BPF_EXIT_INSN(),
-+			BPF_MOV32_IMM(R0, 1),
-+			BPF_EXIT_INSN(),
-+		},
-+		INTERNAL,
-+		{ },
-+		{ { 0, 0x1 } },
-+	},
-+	{
-+		"ALU_ADD_K: 0 + 0x80008000 = 0x80008000",
-+		.u.insns_int = {
-+			BPF_LD_IMM64(R2, 0x0),
-+			BPF_LD_IMM64(R3, 0x80008000),
-+			BPF_ALU32_IMM(BPF_ADD, R2, 0x80008000),
-+			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
-+			BPF_MOV32_IMM(R0, 2),
-+			BPF_EXIT_INSN(),
-+			BPF_MOV32_IMM(R0, 1),
-+			BPF_EXIT_INSN(),
-+		},
-+		INTERNAL,
-+		{ },
-+		{ { 0, 0x1 } },
-+	},
-+	{
- 		"ALU64_ADD_K: 1 + 2 = 3",
- 		.u.insns_int = {
- 			BPF_LD_IMM64(R0, 1),
-@@ -2657,6 +2721,70 @@ static struct bpf_test tests[] = {
- 		{ },
- 		{ { 0, 0x1 } },
- 	},
-+	{
-+		"ALU64_ADD_K: 0 + 0xffff = 0xffff",
-+		.u.insns_int = {
-+			BPF_LD_IMM64(R2, 0x0),
-+			BPF_LD_IMM64(R3, 0xffff),
-+			BPF_ALU64_IMM(BPF_ADD, R2, 0xffff),
-+			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
-+			BPF_MOV32_IMM(R0, 2),
-+			BPF_EXIT_INSN(),
-+			BPF_MOV32_IMM(R0, 1),
-+			BPF_EXIT_INSN(),
-+		},
-+		INTERNAL,
-+		{ },
-+		{ { 0, 0x1 } },
-+	},
-+	{
-+		"ALU64_ADD_K: 0 + 0x7fffffff = 0x7fffffff",
-+		.u.insns_int = {
-+			BPF_LD_IMM64(R2, 0x0),
-+			BPF_LD_IMM64(R3, 0x7fffffff),
-+			BPF_ALU64_IMM(BPF_ADD, R2, 0x7fffffff),
-+			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
-+			BPF_MOV32_IMM(R0, 2),
-+			BPF_EXIT_INSN(),
-+			BPF_MOV32_IMM(R0, 1),
-+			BPF_EXIT_INSN(),
-+		},
-+		INTERNAL,
-+		{ },
-+		{ { 0, 0x1 } },
-+	},
-+	{
-+		"ALU64_ADD_K: 0 + 0x80000000 = 0xffffffff80000000",
-+		.u.insns_int = {
-+			BPF_LD_IMM64(R2, 0x0),
-+			BPF_LD_IMM64(R3, 0xffffffff80000000LL),
-+			BPF_ALU64_IMM(BPF_ADD, R2, 0x80000000),
-+			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
-+			BPF_MOV32_IMM(R0, 2),
-+			BPF_EXIT_INSN(),
-+			BPF_MOV32_IMM(R0, 1),
-+			BPF_EXIT_INSN(),
-+		},
-+		INTERNAL,
-+		{ },
-+		{ { 0, 0x1 } },
-+	},
-+	{
-+		"ALU_ADD_K: 0 + 0x80008000 = 0xffffffff80008000",
-+		.u.insns_int = {
-+			BPF_LD_IMM64(R2, 0x0),
-+			BPF_LD_IMM64(R3, 0xffffffff80008000LL),
-+			BPF_ALU64_IMM(BPF_ADD, R2, 0x80008000),
-+			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
-+			BPF_MOV32_IMM(R0, 2),
-+			BPF_EXIT_INSN(),
-+			BPF_MOV32_IMM(R0, 1),
-+			BPF_EXIT_INSN(),
-+		},
-+		INTERNAL,
-+		{ },
-+		{ { 0, 0x1 } },
-+	},
- 	/* BPF_ALU | BPF_SUB | BPF_X */
- 	{
- 		"ALU_SUB_X: 3 - 1 = 2",
--- 
-2.7.4
+Acked-by: Joerg Roedel <jroedel@suse.de>
