@@ -1,41 +1,36 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qfZg42fcXzDq6b
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 02:53:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qfdd11kv7zDq6Y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 05:06:44 +1000 (AEST)
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 6 Apr 2016 02:53:19 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2B1CB3578056
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 02:53:16 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u35Gr7Tl11469220
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 02:53:16 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u35GqgNc015829
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 02:52:43 +1000
-Date: Tue, 5 Apr 2016 22:21:47 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Alexei Starovoitov <ast@fb.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, Daniel Borkmann <daniel@iogearbox.net>,
- "David S. Miller" <davem@davemloft.net>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH net 4/4] lib/test_bpf: Add additional BPF_ADD tests
-Message-ID: <20160405165147.GC15993@naverao1-tp.in.ibm.com>
-References: <5e3cf7c4a971e6d2ff7a2d50bbec2e6e26883b84.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
- <9b71e280481a9f84cd7dbb9e767fd08e6f4c0aef.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
- <5703E7B2.6050706@fb.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Tue, 5 Apr 2016 15:06:41 -0400
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 306BB6E805C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 14:53:29 -0400 (EDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u35J6dkL37617670
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 19:06:39 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u35J0vmu029660
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 15:00:57 -0400
+Date: Tue, 5 Apr 2016 12:05:47 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, James Dykman <jdykman@us.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 1/1] powerpc/mm: Add memory barrier in __hugepte_alloc()
+Message-ID: <20160405190547.GA12673@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5703E7B2.6050706@fb.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,26 +40,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/04/05 09:28AM, Alexei Starovoitov wrote:
-> On 4/5/16 3:02 AM, Naveen N. Rao wrote:
-> >Some of these tests proved useful with the powerpc eBPF JIT port due to
-> >sign-extended 16-bit immediate loads. Though some of these aspects get
-> >covered in other tests, it is better to have explicit tests so as to
-> >quickly tag the precise problem.
-> >
-> >Cc: Alexei Starovoitov <ast@fb.com>
-> >Cc: Daniel Borkmann <daniel@iogearbox.net>
-> >Cc: "David S. Miller" <davem@davemloft.net>
-> >Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> >Cc: Michael Ellerman <mpe@ellerman.id.au>
-> >Cc: Paul Mackerras <paulus@samba.org>
-> >Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> 
-> Makes sense. Looks like ppc jit will be using quite a bit of
-> available ppc instructions. Nice.
-> 
-> I'm assuming all these new tests passed with x64 jit?
+>From f7b73c6b4508fe9b141a43d92be2f9dd7d3c4a58 Mon Sep 17 00:00:00 2001
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Thu, 24 Mar 2016 02:07:57 -0400
+Subject: [PATCH 1/1] powerpc/mm: Add memory barrier in __hugepte_alloc()
 
-Yes, all these tests pass on x86_64.
+__hugepte_alloc() uses kmem_cache_zalloc() to allocate a zeroed PTE
+and proceeds to use the newly allocated PTE. Add a memory barrier to
+make sure that the other CPUs see a properly initialized PTE.
 
-- Naveen
+Based on a fix suggested by James Dykman.
+
+Reported-by: James Dykman <jdykman@us.ibm.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Tested-by: James Dykman <jdykman@us.ibm.com>
+---
+Note:
+	The bug was encountered and fix tested on an older version
+	of the kernel. Forward porting to mainline.
+---
+ arch/powerpc/mm/hugetlbpage.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index d991b9e..081f679 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -81,6 +81,13 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+ 	if (! new)
+ 		return -ENOMEM;
+ 
++	/*
++	 * Make sure other cpus find the hugepd set only after a
++	 * properly initialized page table is visible to them.
++	 * For more details look for comment in __pte_alloc().
++	 */
++	smp_wmb();
++
+ 	spin_lock(&mm->page_table_lock);
+ #ifdef CONFIG_PPC_FSL_BOOK3E
+ 	/*
+-- 
+1.8.3.1
