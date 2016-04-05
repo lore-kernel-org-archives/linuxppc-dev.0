@@ -1,26 +1,25 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qfkMp5jXYzDq6L
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 08:40:38 +1000 (AEST)
-In-Reply-To: <1459850183.20087.67.camel@kernel.crashing.org>
-References: <3qfNxw4KcCz9sD5@ozlabs.org>
- <1459850183.20087.67.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qflxL0c01zDq6S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 09:51:18 +1000 (AEST)
+Received: by mail-pa0-x241.google.com with SMTP id 1so2471481pal.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Apr 2016 16:51:18 -0700 (PDT)
+Subject: Re: [PATCH 11/65] powerpc/mm: Use generic version of
+ pmdp_clear_flush_young
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+References: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1459067053-10835-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <57044F6E.1040705@gmail.com>
+Date: Wed, 6 Apr 2016 09:51:10 +1000
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=UTF-8
-Subject: Re: powerpc: Clear user CPU feature bits if TM is disabled at runtime
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 06 Apr 2016 08:40:27 +1000
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
- Michael Neuling <mikey@neuling.org>,
- David Gibson <david@gibson.dropbear.id.au>, Alexander Graf <agraf@suse.de>
-CC: qemu-ppc@nongnu.org,qemu-devel@nongnu.org
-Message-ID: <B7A5B48E-B50A-4C51-BBDE-B6AB52B24D3A@ellerman.id.au>
+In-Reply-To: <1459067053-10835-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,24 +31,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 5 April 2016 7:56:23 pm AEST, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->On Tue, 2016-04-05 at 19:35 +1000, Michael Ellerman wrote:
->> Shouldn't we be clearing the user feature there too?
->> 
->> The ibm_pa_features array and the logic in scan_features() knows to
->> flip the
->> cpu_user_features bits, it was just never updated to handle
->> cpu_user_features2.
->> 
->> So it seems to me that's where the bug is.
+On 27/03/16 19:23, Aneesh Kumar K.V wrote:
+> The radix variant is going to require a flush_pmd_tlb_range. With
+> flush_pmd_tlb_range added, pmdp_clear_flush_young is same as the generic
+> version. So drop the powerpc specific variant
 >
->I was about to make the same comment but then realized we are trying to
->clear *2* bits. And since that logic will also, I think, set the bits
->when the corresponding pa-feature is present, it means we will also set
->those 2 bits if we put both in the mask...
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>
+Make sense, what happens to the HPTE variant?
 
-That's what we want in this case. The 2nd bit describes Linux's behaviour of aborting active transactions in syscalls, so kernels that have that bit defined should be setting/clearing it in lock step with the main TM bit. 
-
-cheers
--- 
-Sent from my Android phone with K-9 Mail. Please excuse my brevity.
+Balbir Singh.
