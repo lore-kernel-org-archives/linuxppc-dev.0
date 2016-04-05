@@ -1,25 +1,20 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qflxL0c01zDq6S
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 09:51:18 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id 1so2471481pal.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Apr 2016 16:51:18 -0700 (PDT)
-Subject: Re: [PATCH 11/65] powerpc/mm: Use generic version of
- pmdp_clear_flush_young
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1459067053-10835-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <57044F6E.1040705@gmail.com>
-Date: Wed, 6 Apr 2016 09:51:10 +1000
-MIME-Version: 1.0
-In-Reply-To: <1459067053-10835-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qfly858NXzDqDX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 09:52:00 +1000 (AEST)
+Date: Tue, 05 Apr 2016 19:51:57 -0400 (EDT)
+Message-Id: <20160405.195157.2030686647042617056.davem@davemloft.net>
+To: tlfalcon@linux.vnet.ibm.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ jallen@linux.vnet.ibm.com
+Subject: Re: [net-next PATCH 1/2 v4] ibmvnic: map L2/L3/L4 header
+ descriptors to firmware
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1459549235-22039-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+References: <1459549235-22039-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,15 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Date: Fri,  1 Apr 2016 17:20:34 -0500
 
+> Allow the VNIC driver to provide descriptors containing
+> L2/L3/L4 headers to firmware.  This feature is needed
+> for greater hardware compatibility and enablement of checksum
+> and TCP offloading features.
+> 
+> A new function is included for the hypervisor call,
+> H_SEND_SUBCRQ_INDIRECT, allowing a DMA-mapped array of SCRQ
+> descriptor elements to be sent to the VNIC server.
+> 
+> These additions will help fully enable checksum offloading as
+> well as other features as they are included later.
+> 
+> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 
-On 27/03/16 19:23, Aneesh Kumar K.V wrote:
-> The radix variant is going to require a flush_pmd_tlb_range. With
-> flush_pmd_tlb_range added, pmdp_clear_flush_young is same as the generic
-> version. So drop the powerpc specific variant
->
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->
-Make sense, what happens to the HPTE variant?
-
-Balbir Singh.
+Applied.
