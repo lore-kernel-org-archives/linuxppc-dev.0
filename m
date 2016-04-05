@@ -1,22 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qfPQH4D5HzDq6T
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 19:56:39 +1000 (AEST)
-Message-ID: <1459850183.20087.67.camel@kernel.crashing.org>
-Subject: Re: powerpc: Clear user CPU feature bits if TM is disabled at runtime
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras via Linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, Alexey Kardashevskiy <aik@ozlabs.ru>, Paul
- Mackerras <paulus@samba.org>, Michael Neuling <mikey@neuling.org>, David
- Gibson <david@gibson.dropbear.id.au>, Alexander Graf <agraf@suse.de>
-Cc: qemu-ppc@nongnu.org, qemu-devel@nongnu.org
-Date: Tue, 05 Apr 2016 19:56:23 +1000
-In-Reply-To: <3qfNxw4KcCz9sD5@ozlabs.org>
-References: <3qfNxw4KcCz9sD5@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qfPbr1mjtzDq6T
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 20:04:56 +1000 (AEST)
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 5 Apr 2016 20:04:44 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2EB6E3578052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 20:04:33 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u35A4Oh458654804
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 20:04:33 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u35A3xGa001767
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 20:04:00 +1000
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
+Cc: Alexei Starovoitov <ast@fb.com>, Daniel Borkmann <daniel@iogearbox.net>,
+ "David S. Miller" <davem@davemloft.net>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH net 1/4] lib/test_bpf: Fix JMP_JSET tests
+Date: Tue,  5 Apr 2016 15:32:53 +0530
+Message-Id: <5e3cf7c4a971e6d2ff7a2d50bbec2e6e26883b84.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,23 +39,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-04-05 at 19:35 +1000, Michael Ellerman wrote:
-> Shouldn't we be clearing the user feature there too?
-> 
-> The ibm_pa_features array and the logic in scan_features() knows to
-> flip the
-> cpu_user_features bits, it was just never updated to handle
-> cpu_user_features2.
-> 
-> So it seems to me that's where the bug is.
+JMP_JSET tests incorrectly used BPF_JNE. Fix the same.
 
-I was about to make the same comment but then realized we are trying to
-clear *2* bits. And since that logic will also, I think, set the bits
-when the corresponding pa-feature is present, it means we will also set
-those 2 bits if we put both in the mask...
+Cc: Alexei Starovoitov <ast@fb.com>
+Cc: Daniel Borkmann <daniel@iogearbox.net>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+ lib/test_bpf.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Not sure that's quite what we want, but then I'm not sure what the 2
-bits are about, which is why I postponed commenting :-)
-
-Cheers,
-Ben.
+diff --git a/lib/test_bpf.c b/lib/test_bpf.c
+index 27a7a26..e76fa4d 100644
+--- a/lib/test_bpf.c
++++ b/lib/test_bpf.c
+@@ -4303,7 +4303,7 @@ static struct bpf_test tests[] = {
+ 		.u.insns_int = {
+ 			BPF_ALU32_IMM(BPF_MOV, R0, 0),
+ 			BPF_LD_IMM64(R1, 3),
+-			BPF_JMP_IMM(BPF_JNE, R1, 2, 1),
++			BPF_JMP_IMM(BPF_JSET, R1, 2, 1),
+ 			BPF_EXIT_INSN(),
+ 			BPF_ALU32_IMM(BPF_MOV, R0, 1),
+ 			BPF_EXIT_INSN(),
+@@ -4317,7 +4317,7 @@ static struct bpf_test tests[] = {
+ 		.u.insns_int = {
+ 			BPF_ALU32_IMM(BPF_MOV, R0, 0),
+ 			BPF_LD_IMM64(R1, 3),
+-			BPF_JMP_IMM(BPF_JNE, R1, 0xffffffff, 1),
++			BPF_JMP_IMM(BPF_JSET, R1, 0xffffffff, 1),
+ 			BPF_EXIT_INSN(),
+ 			BPF_ALU32_IMM(BPF_MOV, R0, 1),
+ 			BPF_EXIT_INSN(),
+@@ -4474,7 +4474,7 @@ static struct bpf_test tests[] = {
+ 			BPF_ALU32_IMM(BPF_MOV, R0, 0),
+ 			BPF_LD_IMM64(R1, 3),
+ 			BPF_LD_IMM64(R2, 2),
+-			BPF_JMP_REG(BPF_JNE, R1, R2, 1),
++			BPF_JMP_REG(BPF_JSET, R1, R2, 1),
+ 			BPF_EXIT_INSN(),
+ 			BPF_ALU32_IMM(BPF_MOV, R0, 1),
+ 			BPF_EXIT_INSN(),
+@@ -4489,7 +4489,7 @@ static struct bpf_test tests[] = {
+ 			BPF_ALU32_IMM(BPF_MOV, R0, 0),
+ 			BPF_LD_IMM64(R1, 3),
+ 			BPF_LD_IMM64(R2, 0xffffffff),
+-			BPF_JMP_REG(BPF_JNE, R1, R2, 1),
++			BPF_JMP_REG(BPF_JSET, R1, R2, 1),
+ 			BPF_EXIT_INSN(),
+ 			BPF_ALU32_IMM(BPF_MOV, R0, 1),
+ 			BPF_EXIT_INSN(),
+-- 
+2.7.4
