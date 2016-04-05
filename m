@@ -1,36 +1,24 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <daniel@iogearbox.net>
+Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qfdd11kv7zDq6Y
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 05:06:44 +1000 (AEST)
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 5 Apr 2016 15:06:41 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 306BB6E805C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 14:53:29 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u35J6dkL37617670
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 19:06:39 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u35J0vmu029660
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 15:00:57 -0400
-Date: Tue, 5 Apr 2016 12:05:47 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, James Dykman <jdykman@us.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 1/1] powerpc/mm: Add memory barrier in __hugepte_alloc()
-Message-ID: <20160405190547.GA12673@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qffBN0FZqzDq6Y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 05:32:10 +1000 (AEST)
+Message-ID: <570412B0.9000203@iogearbox.net>
+Date: Tue, 05 Apr 2016 21:32:00 +0200
+From: Daniel Borkmann <daniel@iogearbox.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
+CC: Alexei Starovoitov <ast@fb.com>, "David S. Miller" <davem@davemloft.net>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Michael Holzheu <holzheu@linux.vnet.ibm.com>
+Subject: Re: [PATCH net 1/4] lib/test_bpf: Fix JMP_JSET tests
+References: <5e3cf7c4a971e6d2ff7a2d50bbec2e6e26883b84.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <5e3cf7c4a971e6d2ff7a2d50bbec2e6e26883b84.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,46 +28,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From f7b73c6b4508fe9b141a43d92be2f9dd7d3c4a58 Mon Sep 17 00:00:00 2001
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Thu, 24 Mar 2016 02:07:57 -0400
-Subject: [PATCH 1/1] powerpc/mm: Add memory barrier in __hugepte_alloc()
+On 04/05/2016 12:02 PM, Naveen N. Rao wrote:
+> JMP_JSET tests incorrectly used BPF_JNE. Fix the same.
+>
+> Cc: Alexei Starovoitov <ast@fb.com>
+> Cc: Daniel Borkmann <daniel@iogearbox.net>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
-__hugepte_alloc() uses kmem_cache_zalloc() to allocate a zeroed PTE
-and proceeds to use the newly allocated PTE. Add a memory barrier to
-make sure that the other CPUs see a properly initialized PTE.
+Acked-by: Daniel Borkmann <daniel@iogearbox.net>
 
-Based on a fix suggested by James Dykman.
-
-Reported-by: James Dykman <jdykman@us.ibm.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Tested-by: James Dykman <jdykman@us.ibm.com>
----
-Note:
-	The bug was encountered and fix tested on an older version
-	of the kernel. Forward porting to mainline.
----
- arch/powerpc/mm/hugetlbpage.c | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index d991b9e..081f679 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -81,6 +81,13 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
- 	if (! new)
- 		return -ENOMEM;
- 
-+	/*
-+	 * Make sure other cpus find the hugepd set only after a
-+	 * properly initialized page table is visible to them.
-+	 * For more details look for comment in __pte_alloc().
-+	 */
-+	smp_wmb();
-+
- 	spin_lock(&mm->page_table_lock);
- #ifdef CONFIG_PPC_FSL_BOOK3E
- 	/*
--- 
-1.8.3.1
+> ---
+>   lib/test_bpf.c | 8 ++++----
+>   1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/lib/test_bpf.c b/lib/test_bpf.c
+> index 27a7a26..e76fa4d 100644
+> --- a/lib/test_bpf.c
+> +++ b/lib/test_bpf.c
+> @@ -4303,7 +4303,7 @@ static struct bpf_test tests[] = {
+>   		.u.insns_int = {
+>   			BPF_ALU32_IMM(BPF_MOV, R0, 0),
+>   			BPF_LD_IMM64(R1, 3),
+> -			BPF_JMP_IMM(BPF_JNE, R1, 2, 1),
+> +			BPF_JMP_IMM(BPF_JSET, R1, 2, 1),
+>   			BPF_EXIT_INSN(),
+>   			BPF_ALU32_IMM(BPF_MOV, R0, 1),
+>   			BPF_EXIT_INSN(),
+> @@ -4317,7 +4317,7 @@ static struct bpf_test tests[] = {
+>   		.u.insns_int = {
+>   			BPF_ALU32_IMM(BPF_MOV, R0, 0),
+>   			BPF_LD_IMM64(R1, 3),
+> -			BPF_JMP_IMM(BPF_JNE, R1, 0xffffffff, 1),
+> +			BPF_JMP_IMM(BPF_JSET, R1, 0xffffffff, 1),
+>   			BPF_EXIT_INSN(),
+>   			BPF_ALU32_IMM(BPF_MOV, R0, 1),
+>   			BPF_EXIT_INSN(),
+> @@ -4474,7 +4474,7 @@ static struct bpf_test tests[] = {
+>   			BPF_ALU32_IMM(BPF_MOV, R0, 0),
+>   			BPF_LD_IMM64(R1, 3),
+>   			BPF_LD_IMM64(R2, 2),
+> -			BPF_JMP_REG(BPF_JNE, R1, R2, 1),
+> +			BPF_JMP_REG(BPF_JSET, R1, R2, 1),
+>   			BPF_EXIT_INSN(),
+>   			BPF_ALU32_IMM(BPF_MOV, R0, 1),
+>   			BPF_EXIT_INSN(),
+> @@ -4489,7 +4489,7 @@ static struct bpf_test tests[] = {
+>   			BPF_ALU32_IMM(BPF_MOV, R0, 0),
+>   			BPF_LD_IMM64(R1, 3),
+>   			BPF_LD_IMM64(R2, 0xffffffff),
+> -			BPF_JMP_REG(BPF_JNE, R1, R2, 1),
+> +			BPF_JMP_REG(BPF_JSET, R1, R2, 1),
+>   			BPF_EXIT_INSN(),
+>   			BPF_ALU32_IMM(BPF_MOV, R0, 1),
+>   			BPF_EXIT_INSN(),
+>
