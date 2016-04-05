@@ -1,25 +1,25 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qfPbw5NfXzDq97
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 20:05:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qfPc21ZBJzDqBY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 20:05:06 +1000 (AEST)
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 5 Apr 2016 20:04:57 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id DBF4F2CE805F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 20:04:39 +1000 (EST)
+ Tue, 5 Apr 2016 20:05:05 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4385D3578058
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Apr 2016 20:04:47 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u35A4VGH50528464
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 20:04:39 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u35A4aY915007750
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 20:04:47 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u35A46tJ002068
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 20:04:07 +1000
+ u35A4AF0002269
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Apr 2016 20:04:12 +1000
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  netdev@vger.kernel.org
@@ -27,9 +27,9 @@ Cc: Alexei Starovoitov <ast@fb.com>, Daniel Borkmann <daniel@iogearbox.net>,
  "David S. Miller" <davem@davemloft.net>,
  Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH net 2/4] lib/test_bpf: Add tests for unsigned BPF_JGT
-Date: Tue,  5 Apr 2016 15:32:54 +0530
-Message-Id: <6b946d54d20d96052ce4f4baec308cdb20ace39a.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: [PATCH net 4/4] lib/test_bpf: Add additional BPF_ADD tests
+Date: Tue,  5 Apr 2016 15:32:56 +0530
+Message-Id: <9b71e280481a9f84cd7dbb9e767fd08e6f4c0aef.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <5e3cf7c4a971e6d2ff7a2d50bbec2e6e26883b84.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <5e3cf7c4a971e6d2ff7a2d50bbec2e6e26883b84.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <5e3cf7c4a971e6d2ff7a2d50bbec2e6e26883b84.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
@@ -43,7 +43,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Unsigned Jump-if-Greater-Than.
+Some of these tests proved useful with the powerpc eBPF JIT port due to
+sign-extended 16-bit immediate loads. Though some of these aspects get
+covered in other tests, it is better to have explicit tests so as to
+quickly tag the precise problem.
 
 Cc: Alexei Starovoitov <ast@fb.com>
 Cc: Daniel Borkmann <daniel@iogearbox.net>
@@ -53,55 +56,154 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- lib/test_bpf.c | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+ lib/test_bpf.c | 128 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 128 insertions(+)
 
 diff --git a/lib/test_bpf.c b/lib/test_bpf.c
-index e76fa4d..7e6fb49 100644
+index 2fb31aa..8f22fbe 100644
 --- a/lib/test_bpf.c
 +++ b/lib/test_bpf.c
-@@ -4222,6 +4222,20 @@ static struct bpf_test tests[] = {
- 		{ },
- 		{ { 0, 1 } },
+@@ -2566,6 +2566,70 @@ static struct bpf_test tests[] = {
+ 		{ { 0, 0x1 } },
  	},
-+	{
-+		"JMP_JGT_K: Unsigned jump: if (-1 > 1) return 1",
+ 	{
++		"ALU_ADD_K: 0 + 0xffff = 0xffff",
 +		.u.insns_int = {
-+			BPF_ALU32_IMM(BPF_MOV, R0, 0),
-+			BPF_LD_IMM64(R1, -1),
-+			BPF_JMP_IMM(BPF_JGT, R1, 1, 1),
++			BPF_LD_IMM64(R2, 0x0),
++			BPF_LD_IMM64(R3, 0xffff),
++			BPF_ALU32_IMM(BPF_ADD, R2, 0xffff),
++			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
++			BPF_MOV32_IMM(R0, 2),
 +			BPF_EXIT_INSN(),
-+			BPF_ALU32_IMM(BPF_MOV, R0, 1),
++			BPF_MOV32_IMM(R0, 1),
 +			BPF_EXIT_INSN(),
 +		},
 +		INTERNAL,
 +		{ },
-+		{ { 0, 1 } },
++		{ { 0, 0x1 } },
 +	},
- 	/* BPF_JMP | BPF_JGE | BPF_K */
- 	{
- 		"JMP_JGE_K: if (3 >= 2) return 1",
-@@ -4404,6 +4418,21 @@ static struct bpf_test tests[] = {
- 		{ },
- 		{ { 0, 1 } },
- 	},
 +	{
-+		"JMP_JGT_X: Unsigned jump: if (-1 > 1) return 1",
++		"ALU_ADD_K: 0 + 0x7fffffff = 0x7fffffff",
 +		.u.insns_int = {
-+			BPF_ALU32_IMM(BPF_MOV, R0, 0),
-+			BPF_LD_IMM64(R1, -1),
-+			BPF_LD_IMM64(R2, 1),
-+			BPF_JMP_REG(BPF_JGT, R1, R2, 1),
++			BPF_LD_IMM64(R2, 0x0),
++			BPF_LD_IMM64(R3, 0x7fffffff),
++			BPF_ALU32_IMM(BPF_ADD, R2, 0x7fffffff),
++			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
++			BPF_MOV32_IMM(R0, 2),
 +			BPF_EXIT_INSN(),
-+			BPF_ALU32_IMM(BPF_MOV, R0, 1),
++			BPF_MOV32_IMM(R0, 1),
 +			BPF_EXIT_INSN(),
 +		},
 +		INTERNAL,
 +		{ },
-+		{ { 0, 1 } },
++		{ { 0, 0x1 } },
 +	},
- 	/* BPF_JMP | BPF_JGE | BPF_X */
++	{
++		"ALU_ADD_K: 0 + 0x80000000 = 0x80000000",
++		.u.insns_int = {
++			BPF_LD_IMM64(R2, 0x0),
++			BPF_LD_IMM64(R3, 0x80000000),
++			BPF_ALU32_IMM(BPF_ADD, R2, 0x80000000),
++			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
++			BPF_MOV32_IMM(R0, 2),
++			BPF_EXIT_INSN(),
++			BPF_MOV32_IMM(R0, 1),
++			BPF_EXIT_INSN(),
++		},
++		INTERNAL,
++		{ },
++		{ { 0, 0x1 } },
++	},
++	{
++		"ALU_ADD_K: 0 + 0x80008000 = 0x80008000",
++		.u.insns_int = {
++			BPF_LD_IMM64(R2, 0x0),
++			BPF_LD_IMM64(R3, 0x80008000),
++			BPF_ALU32_IMM(BPF_ADD, R2, 0x80008000),
++			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
++			BPF_MOV32_IMM(R0, 2),
++			BPF_EXIT_INSN(),
++			BPF_MOV32_IMM(R0, 1),
++			BPF_EXIT_INSN(),
++		},
++		INTERNAL,
++		{ },
++		{ { 0, 0x1 } },
++	},
++	{
+ 		"ALU64_ADD_K: 1 + 2 = 3",
+ 		.u.insns_int = {
+ 			BPF_LD_IMM64(R0, 1),
+@@ -2657,6 +2721,70 @@ static struct bpf_test tests[] = {
+ 		{ },
+ 		{ { 0, 0x1 } },
+ 	},
++	{
++		"ALU64_ADD_K: 0 + 0xffff = 0xffff",
++		.u.insns_int = {
++			BPF_LD_IMM64(R2, 0x0),
++			BPF_LD_IMM64(R3, 0xffff),
++			BPF_ALU64_IMM(BPF_ADD, R2, 0xffff),
++			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
++			BPF_MOV32_IMM(R0, 2),
++			BPF_EXIT_INSN(),
++			BPF_MOV32_IMM(R0, 1),
++			BPF_EXIT_INSN(),
++		},
++		INTERNAL,
++		{ },
++		{ { 0, 0x1 } },
++	},
++	{
++		"ALU64_ADD_K: 0 + 0x7fffffff = 0x7fffffff",
++		.u.insns_int = {
++			BPF_LD_IMM64(R2, 0x0),
++			BPF_LD_IMM64(R3, 0x7fffffff),
++			BPF_ALU64_IMM(BPF_ADD, R2, 0x7fffffff),
++			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
++			BPF_MOV32_IMM(R0, 2),
++			BPF_EXIT_INSN(),
++			BPF_MOV32_IMM(R0, 1),
++			BPF_EXIT_INSN(),
++		},
++		INTERNAL,
++		{ },
++		{ { 0, 0x1 } },
++	},
++	{
++		"ALU64_ADD_K: 0 + 0x80000000 = 0xffffffff80000000",
++		.u.insns_int = {
++			BPF_LD_IMM64(R2, 0x0),
++			BPF_LD_IMM64(R3, 0xffffffff80000000LL),
++			BPF_ALU64_IMM(BPF_ADD, R2, 0x80000000),
++			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
++			BPF_MOV32_IMM(R0, 2),
++			BPF_EXIT_INSN(),
++			BPF_MOV32_IMM(R0, 1),
++			BPF_EXIT_INSN(),
++		},
++		INTERNAL,
++		{ },
++		{ { 0, 0x1 } },
++	},
++	{
++		"ALU_ADD_K: 0 + 0x80008000 = 0xffffffff80008000",
++		.u.insns_int = {
++			BPF_LD_IMM64(R2, 0x0),
++			BPF_LD_IMM64(R3, 0xffffffff80008000LL),
++			BPF_ALU64_IMM(BPF_ADD, R2, 0x80008000),
++			BPF_JMP_REG(BPF_JEQ, R2, R3, 2),
++			BPF_MOV32_IMM(R0, 2),
++			BPF_EXIT_INSN(),
++			BPF_MOV32_IMM(R0, 1),
++			BPF_EXIT_INSN(),
++		},
++		INTERNAL,
++		{ },
++		{ { 0, 0x1 } },
++	},
+ 	/* BPF_ALU | BPF_SUB | BPF_X */
  	{
- 		"JMP_JGE_X: if (3 >= 2) return 1",
+ 		"ALU_SUB_X: 3 - 1 = 2",
 -- 
 2.7.4
