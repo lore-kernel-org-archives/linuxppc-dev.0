@@ -1,20 +1,25 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qflyF6bKxzDqDp
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 09:52:05 +1000 (AEST)
-Date: Tue, 05 Apr 2016 19:52:03 -0400 (EDT)
-Message-Id: <20160405.195203.59410266397381583.davem@davemloft.net>
-To: tlfalcon@linux.vnet.ibm.com
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- jallen@linux.vnet.ibm.com
-Subject: Re: [net-next PATCH 2/2 v4] ibmvnic: enable RX checksum offload
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1459549235-22039-2-git-send-email-tlfalcon@linux.vnet.ibm.com>
-References: <1459549235-22039-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
- <1459549235-22039-2-git-send-email-tlfalcon@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qflzt1xG6zDqQK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 09:53:30 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id r187so2599642pfr.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Apr 2016 16:53:30 -0700 (PDT)
+Subject: Re: [PATCH 12/65] powerpc/mm: Use generic version of
+ ptep_clear_flush_young
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+References: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1459067053-10835-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <57044FF3.1050001@gmail.com>
+Date: Wed, 6 Apr 2016 09:53:23 +1000
+MIME-Version: 1.0
+In-Reply-To: <1459067053-10835-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,11 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Date: Fri,  1 Apr 2016 17:20:35 -0500
 
-> Enable RX Checksum offload feature in the ibmvnic driver.
-> 
-> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 
-Applied.
+On 27/03/16 19:23, Aneesh Kumar K.V wrote:
+> The radix variant is going to require a flush_tlb_range. With
+> flush_tlb_range added, ptep_clear_flush_young is same as the generic
+> version. So drop the powerpc specific variant
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>
+The changelog is same as 11/65.. May be you could merge 11 and 12 or help
+understand the difference better.
