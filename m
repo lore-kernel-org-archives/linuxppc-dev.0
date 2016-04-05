@@ -3,22 +3,22 @@ Received: from mx0b-00082601.pphosted.com (mx0b-00082601.pphosted.com
  [67.231.153.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qfYRV3hJJzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 01:58:14 +1000 (AEST)
-Subject: Re: [PATCH net 1/4] lib/test_bpf: Fix JMP_JSET tests
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qfYxj6QwlzDq6S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 02:20:57 +1000 (AEST)
+Subject: Re: [PATCH net 2/4] lib/test_bpf: Add tests for unsigned BPF_JGT
 To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <netdev@vger.kernel.org>
 References: <5e3cf7c4a971e6d2ff7a2d50bbec2e6e26883b84.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
+ <6b946d54d20d96052ce4f4baec308cdb20ace39a.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
 CC: Daniel Borkmann <daniel@iogearbox.net>, "David S. Miller"
  <davem@davemloft.net>, Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Michael Holzheu <holzheu@linux.vnet.ibm.com>
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
 From: Alexei Starovoitov <ast@fb.com>
-Message-ID: <5703E06C.5060907@fb.com>
-Date: Tue, 5 Apr 2016 08:57:32 -0700
+Message-ID: <5703E5C5.5060901@fb.com>
+Date: Tue, 5 Apr 2016 09:20:21 -0700
 MIME-Version: 1.0
-In-Reply-To: <5e3cf7c4a971e6d2ff7a2d50bbec2e6e26883b84.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <6b946d54d20d96052ce4f4baec308cdb20ace39a.1459850410.git.naveen.n.rao@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,7 +30,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 4/5/16 3:02 AM, Naveen N. Rao wrote:
-> JMP_JSET tests incorrectly used BPF_JNE. Fix the same.
+> Unsigned Jump-if-Greater-Than.
 >
 > Cc: Alexei Starovoitov <ast@fb.com>
 > Cc: Daniel Borkmann <daniel@iogearbox.net>
@@ -40,6 +40,11 @@ On 4/5/16 3:02 AM, Naveen N. Rao wrote:
 > Cc: Paul Mackerras <paulus@samba.org>
 > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
-Good catch.
-Fixes: cffc642d93f9 ("test_bpf: add 173 new testcases for eBPF")
+I think some of the tests already cover it, but extra tests are
+always great.
 Acked-by: Alexei Starovoitov <ast@kernel.org>
+
+I think the whole set belongs in net-next.
+Next time you submit the patches please say [PATCH net-next] in subject.
+[PATCH net] is for bugfixes only.
+Thanks a bunch!
