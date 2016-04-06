@@ -1,44 +1,44 @@
 Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qfqnv25T2zDq6S
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 12:45:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qfrZ62brdzDq6S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 13:19:58 +1000 (AEST)
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Wed, 6 Apr 2016 12:45:06 +1000
+ Wed, 6 Apr 2016 13:19:57 +1000
 Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 586293578052
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 12:44:50 +1000 (EST)
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 51A223578056
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 13:19:40 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u362igPg59965686
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 12:44:50 +1000
+ u363JSKT35782710
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 13:19:40 +1000
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u362iH4s001093
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 12:44:17 +1000
-Subject: Re: [RFC v5 3/7] PCI: Add a new option for resource_alignment to
- reassign alignment
+ u363J34e010053
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 13:19:04 +1000
+Subject: Re: [RFC v5 6/7] PCI: Add a new bit to pci_bus_flags to indicate
+ interrupt remapping
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1459863813-2830-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1459863813-2830-4-git-send-email-xyjxie@linux.vnet.ibm.com>
- <20160406014309.GA17201@gwshan>
+References: <1459864004-2869-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <20160406001114.GA4976@gwshan>
 Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-doc@vger.kernel.org, bhelgaas@google.com, corbet@lwn.net,
  aik@ozlabs.ru, alex.williamson@redhat.com, benh@kernel.crashing.org,
  paulus@samba.org, mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
- zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com
+ zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ eric.auger@linaro.org, will.deacon@arm.com, alistair@popple.id.au,
+ ruscur@russell.cc
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Message-ID: <570477ED.7030400@linux.vnet.ibm.com>
-Date: Wed, 6 Apr 2016 10:43:57 +0800
+Message-ID: <57048013.5070802@linux.vnet.ibm.com>
+Date: Wed, 6 Apr 2016 11:18:43 +0800
 MIME-Version: 1.0
-In-Reply-To: <20160406014309.GA17201@gwshan>
-Content-Type: multipart/alternative;
- boundary="------------080603050105070708030307"
+In-Reply-To: <20160406001114.GA4976@gwshan>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,373 +48,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------080603050105070708030307
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-
-On 2016/4/6 9:43, Gavin Shan wrote:
-> On Tue, Apr 05, 2016 at 09:43:31PM +0800, Yongji Xie wrote:
->> When using resource_alignment kernel parameter,
->> the current implement reassigns the alignment by
->> changing resources' size which can potentially
->> break some drivers. For example, the driver uses
->> the size to locate some register whose length is
->> related to the size.
+On 2016/4/6 8:11, Gavin Shan wrote:
+> On Tue, Apr 05, 2016 at 09:46:43PM +0800, Yongji Xie wrote:
+>> I'm trying to find a proper way to indicate
+>> the capability of interrupt remapping on PPC64
+>> because we need this to determine whether it is
+>> safe to mmap MSI-X table in VFIO driver.
 >>
->> This adds a new option "noresize" for the
->> parameter to solve this problem.
+>> There is a existing flag for this in the IOMMU
+>> space:
+>>
+>> enum iommu_cap {
+>> 	IOMMU_CAP_CACHE_COHERENCY,
+>> --->    IOMMU_CAP_INTR_REMAP,
+>> 	IOMMU_CAP_NOEXEC,
+>> };
+>>
+>> But it seems to be not a good idea to use
+>> bus_set_iommu() to add this flag on PPC64 which
+>> never set/use iommu_ops.
+>>
+>> Eric also posted a patchset [1] to abstract
+>> this capability on MSI controller side for ARM.
+>> But I found we also never use msi_domain_info
+>> on PPC64. We have to rework the MSI code on
+>> PPC64 to support msi_domain_ops if we want to
+>> use msi_domain_info.
+>>
+>> Then I noticed that interrupt remapping is
+>> abstracted on PCI host bridge side on PPC64.
+>> So I'm thinking whether we could add a new
+>> bit to pci_bus_flags to indicate this
+>> capability, like this patch does.
+>>
+>> Compared with IOMMU_CAP_INTR_REMAP, this
+>> flag is more common. Any arch can set/use this
+>> easily. And it can provide a better granularity
+>> (pci_bus_type -> pci_bus).
+>>
+>> [1] http://www.spinics.net/lists/kvm/msg130262.html
 >>
 >> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 >> ---
->> Documentation/kernel-parameters.txt |    5 ++++-
->> drivers/pci/pci.c                   |   37 +++++++++++++++++++++++++----------
->> 2 files changed, 31 insertions(+), 11 deletions(-)
+>> arch/powerpc/platforms/powernv/pci-ioda.c |    8 ++++++++
+>> include/linux/pci.h                       |    1 +
+>> 2 files changed, 9 insertions(+)
 >>
->> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
->> index 9a53c92..d8b29ab 100644
->> --- a/Documentation/kernel-parameters.txt
->> +++ b/Documentation/kernel-parameters.txt
->> @@ -2912,13 +2912,16 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->> 				window. The default value is 64 megabytes.
->> 		resource_alignment=
->> 				Format:
->> -				[<order of align>@][<domain>:]<bus>:<slot>.<func>[; ...]
->> +				[<order of align>@][<domain>:]<bus>:<slot>.<func>
->> +				[:noresize][; ...]
-> If I'm correct enough, it breaks existing application using this interface. "noresize"
-> would be a optinal parallel property to "align". So the string would have below format
-> if nobody else objects:
->
-> 	order,noresize@domain:bus:slot.func
-
-Sorry. I don't get your point. Why [:noresize] would break
-existing application using this interface? Doesn't
-[:noresize] mean an optional property?
-
-[<order of align>@] is also an optional property.
-Sometimes, we would not specify it. So we should
-not put "noresize" into [<order of align>@] in case
-that we want to use "noresize" but we don't want
-to specify <order of align>.
-
->
->> 				Specifies alignment and device to reassign
->> 				aligned memory resources.
->> 				If <order of align> is not specified,
->> 				PAGE_SIZE is used as alignment.
->> 				PCI-PCI bridge can be specified, if resource
->> 				windows need to be expanded.
->> +				noresize: Don't change the resources' sizes when
->> +				reassigning alignment.
->> 		ecrc=		Enable/disable PCIe ECRC (transaction layer
->> 				end-to-end CRC checking).
->> 				bios: Use BIOS/firmware settings. This is the
->> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
->> index 1db9267..7271ce3 100644
->> --- a/drivers/pci/pci.c
->> +++ b/drivers/pci/pci.c
->> @@ -4594,11 +4594,13 @@ static DEFINE_SPINLOCK(resource_alignment_lock);
->> /**
->>   * pci_specified_resource_alignment - get resource alignment specified by user.
->>   * @dev: the PCI device to get
->> + * @resize: whether or not to change resources' size when reassigning alignment
->>   *
->>   * RETURNS: Resource alignment if it is specified.
->>   *          Zero if it is not specified.
->>   */
->> -static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
->> +static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
->> +		bool *resize)
->> {
->> 	int seg, bus, slot, func, align_order, count;
->> 	resource_size_t align = 0;
->> @@ -4632,6 +4634,11 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
->> 			}
->> 		}
->> 		p += count;
->> +		if (!strncmp(p, ":noresize", 9)) {
->> +			*resize = false;
->> +			p += 9;
->> +		} else
->> +			*resize = true;
->> 		if (seg == pci_domain_nr(dev->bus) &&
->> 			bus == dev->bus->number &&
->> 			slot == PCI_SLOT(dev->devfn) &&
->> @@ -4664,11 +4671,12 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
->> {
->> 	int i;
->> 	struct resource *r;
->> +	bool resize = true;
->> 	resource_size_t align, size;
->> 	u16 command;
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index f90dc04..9557638 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -3080,6 +3080,12 @@ static void pnv_pci_ioda_fixup(void)
+>> 	pnv_npu_ioda_fixup();
+>> }
 >>
->> 	/* check if specified PCI is target device to reassign */
->> -	align = pci_specified_resource_alignment(dev);
->> +	align = pci_specified_resource_alignment(dev, &resize);
->> 	if (!align)
->> 		return;
->>
->> @@ -4690,15 +4698,24 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
->> 		if (!(r->flags & IORESOURCE_MEM))
->> 			continue;
->> 		size = resource_size(r);
->> -		if (size < align) {
->> -			size = align;
->> -			dev_info(&dev->dev,
->> -				"Rounding up size of resource #%d to %#llx.\n",
->> -				i, (unsigned long long)size);
->> +		if (resize) {
->> +			if (size < align) {
->> +				size = align;
->> +				dev_info(&dev->dev,
->> +					"Rounding up size of resource #%d to %#llx.\n",
->> +					i, (unsigned long long)size);
->> +			}
->> +			r->flags |= IORESOURCE_UNSET;
->> +			r->end = size - 1;
->> +			r->start = 0;
->> +		} else {
->> +			if (size > align)
->> +				align = size;
->> +			r->flags &= ~IORESOURCE_SIZEALIGN;
->> +			r->flags |= IORESOURCE_STARTALIGN | IORESOURCE_UNSET;
->> +			r->start = align;
->> +			r->end = r->start + size - 1;
-> It could be something like below if you like:
->
-> 			r->start = max(align, size);
-> 			r->end = r->start + size - 1;
+>> +int pnv_pci_ioda_root_bridge_prepare(struct pci_host_bridge *bridge)
+>> +{
+>> +	bridge->bus->bus_flags |= PCI_BUS_FLAGS_MSI_REMAP;
+>> +	return 0;
+>> +}
+>> +
+> A irelevent question: Here we set the flag unconditionally. Can the
+> MSIx table be exposed to user space unconditionally? Do we have issues
+> if the MSIx related BAR isn't page aligned or overlapped with others?
 
-Sounds good!
+This flag is just used to indicate the capability of MSI
+remapping which means PCI devices on this bus
+can only shoot the MSIs assigned for them. It does
+not mean MSIx table can be exposed to user space
+unconditionally.
+
+>> /*
+>>   * Returns the alignment for I/O or memory windows for P2P
+>>   * bridges. That actually depends on how PEs are segmented.
+>> @@ -3364,6 +3370,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>> 	 */
+>> 	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
+>>
+>> +	ppc_md.pcibios_root_bridge_prepare = pnv_pci_ioda_root_bridge_prepare;
+>> +
+>> 	if (phb->type == PNV_PHB_NPU)
+>> 		hose->controller_ops = pnv_npu_ioda_controller_ops;
+>> 	else
+>> diff --git a/include/linux/pci.h b/include/linux/pci.h
+>> index 27df4a6..741dcaf 100644
+>> --- a/include/linux/pci.h
+>> +++ b/include/linux/pci.h
+>> @@ -193,6 +193,7 @@ typedef unsigned short __bitwise pci_bus_flags_t;
+>> enum pci_bus_flags {
+>> 	PCI_BUS_FLAGS_NO_MSI   = (__force pci_bus_flags_t) 1,
+>> 	PCI_BUS_FLAGS_NO_MMRBC = (__force pci_bus_flags_t) 2,
+>> +	PCI_BUS_FLAGS_MSI_REMAP = (__force pci_bus_flags_t) 3,
+> Yongji, I guess the corresponding value to PCI_BUS_FLAGS_MSI_REMAP
+> would be 4 other than 3. Otherwise, two of the flags cannot exist
+> at the same time.
+>
+> Thanks,
+> Gavin
+
+Yes, you are right. It should be 4 (1 << 2).
 
 Thanks,
 Yongji
 
->> 		}
->> -		r->flags |= IORESOURCE_UNSET;
->> -		r->end = size - 1;
->> -		r->start = 0;
->> 	}
->> 	/* Need to disable bridge's resource window,
->> 	 * to enable the kernel to reassign new resource
-> Thanks,
-> Gavin
->
+>> };
+>>
+>> /* These values come from the PCI Express Spec */
 >> -- 
 >> 1.7.9.5
 >>
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
-
---------------080603050105070708030307
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    On 2016/4/6 9:43, Gavin Shan wrote:<br>
-    <blockquote cite="mid:20160406014309.GA17201@gwshan" type="cite">
-      <pre wrap="">On Tue, Apr 05, 2016 at 09:43:31PM +0800, Yongji Xie wrote:
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">When using resource_alignment kernel parameter,
-the current implement reassigns the alignment by
-changing resources' size which can potentially
-break some drivers. For example, the driver uses
-the size to locate some register whose length is
-related to the size.
-
-This adds a new option "noresize" for the
-parameter to solve this problem.
-
-Signed-off-by: Yongji Xie <a class="moz-txt-link-rfc2396E" href="mailto:xyjxie@linux.vnet.ibm.com">&lt;xyjxie@linux.vnet.ibm.com&gt;</a>
----
-Documentation/kernel-parameters.txt |    5 ++++-
-drivers/pci/pci.c                   |   37 +++++++++++++++++++++++++----------
-2 files changed, 31 insertions(+), 11 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 9a53c92..d8b29ab 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2912,13 +2912,16 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
-				window. The default value is 64 megabytes.
-		resource_alignment=
-				Format:
--				[&lt;order of align&gt;@][&lt;domain&gt;:]&lt;bus&gt;:&lt;slot&gt;.&lt;func&gt;[; ...]
-+				[&lt;order of align&gt;@][&lt;domain&gt;:]&lt;bus&gt;:&lt;slot&gt;.&lt;func&gt;
-+				[:noresize][; ...]
-</pre>
-      </blockquote>
-      <pre wrap="">
-If I'm correct enough, it breaks existing application using this interface. "noresize"
-would be a optinal parallel property to "align". So the string would have below format
-if nobody else objects:
-
-	order,<a class="moz-txt-link-abbreviated" href="mailto:noresize@domain:bus:slot.func">noresize@domain:bus:slot.func</a></pre>
-    </blockquote>
-    <br>
-    Sorry. I don't get your point. Why [:noresize] would break <br>
-    existing application using this interface? Doesn't <br>
-    [:noresize] mean an optional property?<br>
-    <br>
-    [&lt;order of align&gt;@] is also an optional property. <br>
-    Sometimes, we would not specify it. So we should<br>
-    not put "noresize" into [&lt;order of align&gt;@] in case<br>
-    that we want to use "noresize" but we don't want<br>
-    to specify &lt;order of align&gt;.<br>
-    <br>
-    <span style="color: rgb(51, 51, 51); font-family: arial; font-size:
-      24px; font-style: normal; font-variant: normal; font-weight:
-      normal; letter-spacing: normal; line-height: 24px; orphans: auto;
-      text-align: start; text-indent: 0px; text-transform: none;
-      white-space: normal; widows: 1; word-spacing: 0px;
-      -webkit-text-stroke-width: 0px; display: inline !important; float:
-      none; background-color: rgb(255, 255, 255);"></span>
-    <blockquote cite="mid:20160406014309.GA17201@gwshan" type="cite">
-      <pre wrap="">
-
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">				Specifies alignment and device to reassign
-				aligned memory resources.
-				If &lt;order of align&gt; is not specified,
-				PAGE_SIZE is used as alignment.
-				PCI-PCI bridge can be specified, if resource
-				windows need to be expanded.
-+				noresize: Don't change the resources' sizes when
-+				reassigning alignment.
-		ecrc=		Enable/disable PCIe ECRC (transaction layer
-				end-to-end CRC checking).
-				bios: Use BIOS/firmware settings. This is the
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 1db9267..7271ce3 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -4594,11 +4594,13 @@ static DEFINE_SPINLOCK(resource_alignment_lock);
-/**
- * pci_specified_resource_alignment - get resource alignment specified by user.
- * @dev: the PCI device to get
-+ * @resize: whether or not to change resources' size when reassigning alignment
- *
- * RETURNS: Resource alignment if it is specified.
- *          Zero if it is not specified.
- */
--static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
-+static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
-+		bool *resize)
-{
-	int seg, bus, slot, func, align_order, count;
-	resource_size_t align = 0;
-@@ -4632,6 +4634,11 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
-			}
-		}
-		p += count;
-+		if (!strncmp(p, ":noresize", 9)) {
-+			*resize = false;
-+			p += 9;
-+		} else
-+			*resize = true;
-		if (seg == pci_domain_nr(dev-&gt;bus) &amp;&amp;
-			bus == dev-&gt;bus-&gt;number &amp;&amp;
-			slot == PCI_SLOT(dev-&gt;devfn) &amp;&amp;
-@@ -4664,11 +4671,12 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
-{
-	int i;
-	struct resource *r;
-+	bool resize = true;
-	resource_size_t align, size;
-	u16 command;
-
-	/* check if specified PCI is target device to reassign */
--	align = pci_specified_resource_alignment(dev);
-+	align = pci_specified_resource_alignment(dev, &amp;resize);
-	if (!align)
-		return;
-
-@@ -4690,15 +4698,24 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
-		if (!(r-&gt;flags &amp; IORESOURCE_MEM))
-			continue;
-		size = resource_size(r);
--		if (size &lt; align) {
--			size = align;
--			dev_info(&amp;dev-&gt;dev,
--				"Rounding up size of resource #%d to %#llx.\n",
--				i, (unsigned long long)size);
-+		if (resize) {
-+			if (size &lt; align) {
-+				size = align;
-+				dev_info(&amp;dev-&gt;dev,
-+					"Rounding up size of resource #%d to %#llx.\n",
-+					i, (unsigned long long)size);
-+			}
-+			r-&gt;flags |= IORESOURCE_UNSET;
-+			r-&gt;end = size - 1;
-+			r-&gt;start = 0;
-+		} else {
-+			if (size &gt; align)
-+				align = size;
-+			r-&gt;flags &amp;= ~IORESOURCE_SIZEALIGN;
-+			r-&gt;flags |= IORESOURCE_STARTALIGN | IORESOURCE_UNSET;
-+			r-&gt;start = align;
-+			r-&gt;end = r-&gt;start + size - 1;
-</pre>
-      </blockquote>
-      <pre wrap="">
-It could be something like below if you like:
-
-			r-&gt;start = max(align, size);
-			r-&gt;end = r-&gt;start + size - 1;
-</pre>
-    </blockquote>
-    <br>
-    Sounds good!<br>
-    <br>
-    Thanks,<br>
-    Yongji<br>
-    <br>
-    <blockquote cite="mid:20160406014309.GA17201@gwshan" type="cite">
-      <pre wrap="">
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">		}
--		r-&gt;flags |= IORESOURCE_UNSET;
--		r-&gt;end = size - 1;
--		r-&gt;start = 0;
-	}
-	/* Need to disable bridge's resource window,
-	 * to enable the kernel to reassign new resource
-</pre>
-      </blockquote>
-      <pre wrap="">
-Thanks,
-Gavin
-
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">-- 
-1.7.9.5
-
-</pre>
-      </blockquote>
-      <pre wrap="">
---
-To unsubscribe from this list: send the line "unsubscribe kvm" in
-the body of a message to <a class="moz-txt-link-abbreviated" href="mailto:majordomo@vger.kernel.org">majordomo@vger.kernel.org</a>
-More majordomo info at  <a class="moz-txt-link-freetext" href="http://vger.kernel.org/majordomo-info.html">http://vger.kernel.org/majordomo-info.html</a>
-
-</pre>
-    </blockquote>
-    <br>
-  </body>
-</html>
-
---------------080603050105070708030307--
