@@ -1,42 +1,28 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qg7Vy6f6kzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 00:33:14 +1000 (AEST)
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
- Wed, 6 Apr 2016 08:33:10 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 3F68019D8045
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 08:20:56 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u36EX3mY37945568
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 07:33:03 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u36EX3oi002211
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 08:33:03 -0600
-Date: Wed, 6 Apr 2016 20:02:58 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Mark Wielaard <mjw@redhat.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-Subject: Re: [PATCH 2/2] tools/perf: Fix kallsyms perf test on ppc64le
-Message-ID: <20160406143258.GA3620@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <cover.1459942081.git.naveen.n.rao@linux.vnet.ibm.com>
- <04f25362721352e7681db4aed572b3ea5154b64d.1459942081.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qg7mk1rSmzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 00:45:10 +1000 (AEST)
+Date: Wed, 6 Apr 2016 08:45:04 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-doc@vger.kernel.org, bhelgaas@google.com, corbet@lwn.net,
+ aik@ozlabs.ru, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
+ zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ eric.auger@linaro.org, will.deacon@arm.com, gwshan@linux.vnet.ibm.com,
+ alistair@popple.id.au, ruscur@russell.cc
+Subject: Re: [RFC v5 7/7] vfio-pci: Allow to mmap MSI-X table if interrupt
+ remapping is supported
+Message-ID: <20160406084504.1a1cc16d@t450s.home>
+In-Reply-To: <1459864004-2869-2-git-send-email-xyjxie@linux.vnet.ibm.com>
+References: <1459864004-2869-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1459864004-2869-2-git-send-email-xyjxie@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <04f25362721352e7681db4aed572b3ea5154b64d.1459942081.git.naveen.n.rao@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,24 +32,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 06, 2016 at 06:02:58PM +0530, Naveen N. Rao wrote:
-> ppc64le functions have a Global Entry Point (GEP) and a Local Entry
-> Point (LEP). While placing a probe, we always prefer the LEP since it
-> catches function calls through both the GEP and the LEP. In order to do
-> this, we fixup the function entry points during elf symbol table lookup
-> to point to the LEPs. This works, but breaks 'perf test kallsyms' since
-> the symbols loaded from the symbol table (pointing to the LEP) do not
-> match the symbols in kallsyms.
-> 
-> To fix this, we do not adjust all the symbols during symbol table load,
-> but only adjust the probe trace point.
-> 
-> Cc: Mark Wielaard <mjw@redhat.com>
-> Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> Cc: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+On Tue,  5 Apr 2016 21:46:44 +0800
+Yongji Xie <xyjxie@linux.vnet.ibm.com> wrote:
 
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> This patch enables mmapping MSI-X tables if
+> hardware supports interrupt remapping which
+> can ensure that a given pci device can only
+> shoot the MSIs assigned for it.
+> 
+> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+> ---
+>  drivers/vfio/pci/vfio_pci.c         |    9 +++++++--
+>  drivers/vfio/pci/vfio_pci_private.h |    1 +
+>  drivers/vfio/pci/vfio_pci_rdwr.c    |    2 +-
+>  3 files changed, 9 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+> index c60d790..ef02896 100644
+> --- a/drivers/vfio/pci/vfio_pci.c
+> +++ b/drivers/vfio/pci/vfio_pci.c
+> @@ -201,6 +201,10 @@ static int vfio_pci_enable(struct vfio_pci_device *vdev)
+>  	} else
+>  		vdev->msix_bar = 0xFF;
+>  
+> +	if (iommu_capable(pdev->dev.bus, IOMMU_CAP_INTR_REMAP) ||
+
+This doesn't address the issue I raised earlier where ARM SMMU sets
+this capability, but doesn't really provide per vector isolation.  ARM
+either needs to be fixed or we need to consider the whole capability
+tainted for this application and standardize around the bus flags.
+It's not very desirable to have two different ways to test this anyway.
+
+> +		pdev->bus->bus_flags | PCI_BUS_FLAGS_MSI_REMAP)
+
+Perhaps some sort of wrapper for testing these flags would help avoid
+this kind of coding error (| vs &)
+
+> +		vdev->msi_remap = true;
+> +
+>  	if (!vfio_vga_disabled() && vfio_pci_is_vga(pdev))
+>  		vdev->has_vga = true;
+>  
+> @@ -635,7 +639,8 @@ static long vfio_pci_ioctl(void *device_data,
+>  				     VFIO_REGION_INFO_FLAG_WRITE;
+>  			if (vdev->bar_mmap_supported[info.index]) {
+>  				info.flags |= VFIO_REGION_INFO_FLAG_MMAP;
+> -				if (info.index == vdev->msix_bar) {
+> +				if (info.index == vdev->msix_bar &&
+> +						!vdev->msi_remap) {
+>  					ret = msix_sparse_mmap_cap(vdev, &caps);
+>  					if (ret)
+>  						return ret;
+> @@ -1067,7 +1072,7 @@ static int vfio_pci_mmap(void *device_data, struct vm_area_struct *vma)
+>  	if (req_start + req_len > phys_len)
+>  		return -EINVAL;
+>  
+> -	if (index == vdev->msix_bar) {
+> +	if (index == vdev->msix_bar && !vdev->msi_remap) {
+>  		/*
+>  		 * Disallow mmaps overlapping the MSI-X table; users don't
+>  		 * get to touch this directly.  We could find somewhere
+> diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
+> index 0ea4c62..4f20963 100644
+> --- a/drivers/vfio/pci/vfio_pci_private.h
+> +++ b/drivers/vfio/pci/vfio_pci_private.h
+> @@ -78,6 +78,7 @@ struct vfio_pci_device {
+>  	int			irq_type;
+>  	int			num_regions;
+>  	struct vfio_pci_region	*region;
+> +	bool			msi_remap;
+>  	u8			msi_qmax;
+>  	u8			msix_bar;
+>  	u16			msix_size;
+> diff --git a/drivers/vfio/pci/vfio_pci_rdwr.c b/drivers/vfio/pci/vfio_pci_rdwr.c
+> index 5ffd1d9..606ee3c 100644
+> --- a/drivers/vfio/pci/vfio_pci_rdwr.c
+> +++ b/drivers/vfio/pci/vfio_pci_rdwr.c
+> @@ -164,7 +164,7 @@ ssize_t vfio_pci_bar_rw(struct vfio_pci_device *vdev, char __user *buf,
+>  	} else
+>  		io = vdev->barmap[bar];
+>  
+> -	if (bar == vdev->msix_bar) {
+> +	if (bar == vdev->msix_bar && !vdev->msi_remap) {
+>  		x_start = vdev->msix_offset;
+>  		x_end = vdev->msix_offset + vdev->msix_size;
+>  	}
