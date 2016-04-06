@@ -1,24 +1,36 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0068.outbound.protection.outlook.com [157.56.112.68])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qfwND6L6dzDq6S
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 16:11:40 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id zy2so3170238pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Apr 2016 23:11:40 -0700 (PDT)
-Subject: Re: [PATCH 14/65] powerpc/mm/power9: Add partition table format
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1459067053-10835-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1459067053-10835-14-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <5704A88E.5090906@gmail.com>
-Date: Wed, 6 Apr 2016 16:11:26 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qfwkq4lq0zDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 16:27:46 +1000 (AEST)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-i2c@vger.kernel.org"
+ <linux-i2c@vger.kernel.org>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, Rob Herring
+ <robh+dt@kernel.org>, Scott Wood <scott.wood@nxp.com>, Russell King
+ <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, Joerg Roedel
+ <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>, "Bhupesh
+ Sharma" <bhupesh.sharma@freescale.com>, Zhao Qiang
+ <qiang.zhao@freescale.com>, Kumar Gala <galak@codeaurora.org>, Santosh
+ Shilimkar <ssantosh@kernel.org>, Yang-Leo Li <leoyang.li@nxp.com>, Xiaobo Xie
+ <xiaobo.xie@nxp.com>
+Subject: RE: [v7, 0/5] Fix eSDHC host version register bug
+Date: Wed, 6 Apr 2016 06:12:58 +0000
+Message-ID: <HE1PR04MB0889D75DC56E180D3508E7A1F89F0@HE1PR04MB0889.eurprd04.prod.outlook.com>
+References: <1459480051-3701-1-git-send-email-yangbo.lu@nxp.com>
+ <CAPDyKFqgMCvbqMYZ-uM-rTnVvfJkCYbhv2kucCRyNyc9FWoR=Q@mail.gmail.com>
+In-Reply-To: <CAPDyKFqgMCvbqMYZ-uM-rTnVvfJkCYbhv2kucCRyNyc9FWoR=Q@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <1459067053-10835-14-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,86 +40,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 27/03/16 19:23, Aneesh Kumar K.V wrote:
-> We also add mach dep call back for updating partition table entry.
-The changelog needs to be enhanced.
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/mmu.h | 31 +++++++++++++++++++++++++++++--
->  arch/powerpc/include/asm/machdep.h       |  1 +
->  arch/powerpc/include/asm/reg.h           |  1 +
->  3 files changed, 31 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-> index aadb0bbc5c71..b86786f2521c 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-> @@ -21,12 +21,39 @@ struct mmu_psize_def {
->  extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
->  #endif /* __ASSEMBLY__ */
->  
-> -#ifdef CONFIG_PPC_STD_MMU_64
->  /* 64-bit classic hash table MMU */
->  #include <asm/book3s/64/mmu-hash.h>
-> -#endif
->  
->  #ifndef __ASSEMBLY__
-> +/*
-> + * ISA 3.0 partiton and process table entry format
-> + */
-> +struct prtb_entry {
-> +	__be64 prtb0;
-> +	__be64 prtb1;
-> +};
-> +extern struct prtb_entry *process_tb;
-> +
-> +struct patb_entry {
-> +	__be64 patb0;
-> +	__be64 patb1;
-> +};
-> +extern struct patb_entry *partition_tb;
-> +
-> +#define PATB_HR		(1UL << 63)
-> +#define PATB_GR		(1UL << 63)
-> +#define RPDB_MASK	0x0ffffffffffff00fUL
-> +#define RPDB_SHIFT	(1UL << 8)
-Some comments on the fields and constants?
-> +/*
-> + * Limit process table to PAGE_SIZE table. This
-> + * also limit the max pid we can support.
-> + * MAX_USER_CONTEXT * 16 bytes of space.
-> + */
-> +#define PRTB_SIZE_SHIFT	(CONTEXT_BITS + 4)
-> +/*
-> + * Power9 currently only support 64K partition table size.
-> + */
-> +#define PATB_SIZE_SHIFT	16
->  
->  typedef unsigned long mm_context_id_t;
->  struct spinlock;
-> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-> index fd22442d30a9..6bdcd0da9e21 100644
-> --- a/arch/powerpc/include/asm/machdep.h
-> +++ b/arch/powerpc/include/asm/machdep.h
-> @@ -256,6 +256,7 @@ struct machdep_calls {
->  #ifdef CONFIG_ARCH_RANDOM
->  	int (*get_random_seed)(unsigned long *v);
->  #endif
-> +	int (*update_partition_table)(u64);
->  };
->  
->  extern void e500_idle(void);
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index 52ed654d01ba..257251ada3a3 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -587,6 +587,7 @@
->  #define SPRN_PIR	0x3FF	/* Processor Identification Register */
->  #endif
->  #define SPRN_TIR	0x1BE	/* Thread Identification Register */
-> +#define SPRN_PTCR	0x1D0	/* Partition table control Register */
->  #define SPRN_PSPB	0x09F	/* Problem State Priority Boost reg */
->  #define SPRN_PTEHI	0x3D5	/* 981 7450 PTE HI word (S/W TLB load) */
->  #define SPRN_PTELO	0x3D6	/* 982 7450 PTE LO word (S/W TLB load) */
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBVbGYgSGFuc3NvbiBbbWFpbHRv
+OnVsZi5oYW5zc29uQGxpbmFyby5vcmddDQo+IFNlbnQ6IFR1ZXNkYXksIEFwcmlsIDA1LCAyMDE2
+IDc6MjggUE0NCj4gVG86IFlhbmdibyBMdQ0KPiBDYzogZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5v
+cmc7IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsNCj4gbGludXgta2VybmVs
+QHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LQ0K
+PiBjbGtAdmdlci5rZXJuZWwub3JnOyBsaW51eC1pMmNAdmdlci5rZXJuZWwub3JnOyBpb21tdUBs
+aXN0cy5saW51eC0NCj4gZm91bmRhdGlvbi5vcmc7IG5ldGRldkB2Z2VyLmtlcm5lbC5vcmc7IGxp
+bnV4LW1tYzsgUm9iIEhlcnJpbmc7IFNjb3R0DQo+IFdvb2Q7IFJ1c3NlbGwgS2luZzsgSm9jaGVu
+IEZyaWVkcmljaDsgSm9lcmcgUm9lZGVsOyBDbGF1ZGl1IE1hbm9pbDsNCj4gQmh1cGVzaCBTaGFy
+bWE7IFpoYW8gUWlhbmc7IEt1bWFyIEdhbGE7IFNhbnRvc2ggU2hpbGlta2FyOyBZYW5nLUxlbyBM
+aTsNCj4gWGlhb2JvIFhpZQ0KPiBTdWJqZWN0OiBSZTogW3Y3LCAwLzVdIEZpeCBlU0RIQyBob3N0
+IHZlcnNpb24gcmVnaXN0ZXIgYnVnDQo+IA0KPiBPbiAxIEFwcmlsIDIwMTYgYXQgMDU6MDcsIFlh
+bmdibyBMdSA8eWFuZ2JvLmx1QG54cC5jb20+IHdyb3RlOg0KPiA+IFRoaXMgcGF0Y2hzZXQgaXMg
+dXNlZCB0byBmaXggYSBob3N0IHZlcnNpb24gcmVnaXN0ZXIgYnVnIGluIHRoZQ0KPiA+IFQ0MjQw
+LVIxLjAtUjIuMCBlU0RIQyBjb250cm9sbGVyLiBUbyBnZXQgdGhlIFNvQyB2ZXJzaW9uIGFuZCBy
+ZXZpc2lvbiwNCj4gPiBpdCdzIG5lZWRlZCB0byBhZGQgdGhlIEdVVFMgZHJpdmVyIHRvIGFjY2Vz
+cyB0aGUgZ2xvYmFsIHV0aWxpdGllcw0KPiByZWdpc3RlcnMuDQo+ID4NCj4gPiBTbywgdGhlIGZp
+cnN0IHRocmVlIHBhdGNoZXMgYXJlIHRvIGFkZCB0aGUgR1VUUyBkcml2ZXIuDQo+ID4gVGhlIGZv
+bGxvd2luZyB0d28gcGF0Y2hlcyBhcmUgdG8gZW5hYmxlIEdVVFMgZHJpdmVyIHN1cHBvcnQgdG8g
+Z2V0IFNWUg0KPiA+IGluIGVTREhDIGRyaXZlciBhbmQgZml4IGhvc3QgdmVyc2lvbiBmb3IgVDQy
+NDAuDQo+ID4NCj4gPiBZYW5nYm8gTHUgKDUpOg0KPiA+ICAgQVJNNjQ6IGR0czogbHMyMDgwYTog
+YWRkIGRldmljZSBjb25maWd1cmF0aW9uIG5vZGUNCj4gPiAgIHNvYzogZnNsOiBhZGQgR1VUUyBk
+cml2ZXIgZm9yIFFvcklRIHBsYXRmb3Jtcw0KPiA+ICAgZHQ6IG1vdmUgZ3V0cyBkZXZpY2V0cmVl
+IGRvYyBvdXQgb2YgcG93ZXJwYyBkaXJlY3RvcnkNCj4gPiAgIHBvd2VycGMvZnNsOiBtb3ZlIG1w
+Yzg1eHguaCB0byBpbmNsdWRlL2xpbnV4L2ZzbA0KPiA+ICAgbW1jOiBzZGhjaS1vZi1lc2RoYzog
+Zml4IGhvc3QgdmVyc2lvbiBmb3IgVDQyNDAtUjEuMC1SMi4wDQo+ID4NCj4gPiAgLi4uL2JpbmRp
+bmdzL3twb3dlcnBjID0+IHNvY30vZnNsL2d1dHMudHh0ICAgICAgICAgfCAgIDMgKw0KPiA+ICBh
+cmNoL2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2FsZS9mc2wtbHMyMDgwYS5kdHNpICAgICB8ICAgNiAr
+Kw0KPiA+ICBhcmNoL3Bvd2VycGMva2VybmVsL2NwdV9zZXR1cF9mc2xfYm9va2UuUyAgICAgICAg
+ICB8ICAgMiArLQ0KPiA+ICBkcml2ZXJzL2Nsay9jbGstcW9yaXEuYyAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICB8ICAgMyArLQ0KPiA+ICBkcml2ZXJzL2kyYy9idXNzZXMvaTJjLW1wYy5jICAg
+ICAgICAgICAgICAgICAgICAgICB8ICAgMiArLQ0KPiA+ICBkcml2ZXJzL2lvbW11L2ZzbF9wYW11
+LmMgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAgMyArLQ0KPiA+ICBkcml2ZXJzL21tYy9o
+b3N0L0tjb25maWcgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAgMSArDQo+ID4gIGRyaXZl
+cnMvbW1jL2hvc3Qvc2RoY2ktb2YtZXNkaGMuYyAgICAgICAgICAgICAgICAgIHwgIDIzICsrKysN
+Cj4gPiAgZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2dpYW5mYXIuYyAgICAgICAgICAg
+fCAgIDIgKy0NCj4gPiAgZHJpdmVycy9zb2MvS2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgfCAgIDIgKy0NCj4gPiAgZHJpdmVycy9zb2MvZnNsL0tjb25maWcgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgfCAgIDggKysNCj4gPiAgZHJpdmVycy9zb2MvZnNsL01ha2VmaWxl
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAgIDEgKw0KPiA+ICBkcml2ZXJzL3NvYy9mc2wv
+Z3V0cy5jICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8IDExOQ0KPiArKysrKysrKysrKysr
+KysrKysrKysNCj4gPiAgaW5jbHVkZS9saW51eC9mc2wvZ3V0cy5oICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgfCAgOTggKysrKysrKystLS0tLQ0KPiAtLS0tDQo+ID4gIC4uLi9hc20vbXBjODV4
+eC5oID0+IGluY2x1ZGUvbGludXgvZnNsL3N2ci5oICAgICAgIHwgICA0ICstDQo+ID4gIDE1IGZp
+bGVzIGNoYW5nZWQsIDIxOSBpbnNlcnRpb25zKCspLCA1OCBkZWxldGlvbnMoLSkgIHJlbmFtZQ0K
+PiA+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy97cG93ZXJwYyA9PiBzb2N9L2Zz
+bC9ndXRzLnR4dCAoOTElKQ0KPiA+IGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3NvYy9mc2wv
+S2NvbmZpZyAgY3JlYXRlIG1vZGUgMTAwNjQ0DQo+ID4gZHJpdmVycy9zb2MvZnNsL2d1dHMuYyAg
+cmVuYW1lIGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9tcGM4NXh4LmggPT4NCj4gPiBpbmNsdWRl
+L2xpbnV4L2ZzbC9zdnIuaCAoOTclKQ0KPiA+DQo+ID4gLS0NCj4gPiAyLjEuMC4yNy5nOTZkYjMy
+NA0KPiA+DQo+IA0KPiBJIHdhcyBhYm91dCB0byBxdWV1ZSB0aGlzIGZvciBuZXh0LCB3aGVuIEkg
+bm90aWNlZCB0aGF0IGNoZWNrcGF0Y2ggaXMNCj4gY29tcGxhaW5pbmcvd2FybmluZyBsb3RzIGFi
+b3V0IHRoZXNlIHBhdGNoZXMuIENhbiB5b3UgcGxlYXNlIGEgcm91bmQgb2YNCj4gY2hlY2twYXRj
+aCBhbmQgZml4IHdoYXQgbWFrZXMgc2Vuc2UuDQo+IA0KPiBLaW5kIHJlZ2FyZHMNCj4gVWZmZQ0K
+DQpbTHUgWWFuZ2JvLUI0NzA5M10gU29ycnkgYWJvdXQgdGhpcywgVWZmZS4uLg0KU2hvdWxkIEkg
+aWdub3JlIHRoZSB3YXJuaW5ncyB0aGF0IHVwZGF0ZSBNQUlOVEFJTkVSUz8NClJlZ2FyZGluZyB0
+aGUgJ3VuZG9jdW1lbnRlZCcgd2FybmluZywgSSB3aWxsIGFkZGVkIGEgcGF0Y2ggdXBkYXRlcyBk
+b2MgYmVmb3JlIGFsbCB0aGUgcGF0Y2hlcywgT2s/DQoNClRoYW5rcyBhIGxvdCA6KQ0KIA0K
