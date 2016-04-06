@@ -1,39 +1,30 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-wm0-x235.google.com (mail-wm0-x235.google.com
- [IPv6:2a00:1450:400c:c09::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bharata@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qfz6C1GRLzDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 18:14:41 +1000 (AEST)
-Received: by mail-wm0-x235.google.com with SMTP id 191so49066128wmq.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Apr 2016 01:14:41 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <HE1PR04MB0889D75DC56E180D3508E7A1F89F0@HE1PR04MB0889.eurprd04.prod.outlook.com>
-References: <1459480051-3701-1-git-send-email-yangbo.lu@nxp.com>
- <CAPDyKFqgMCvbqMYZ-uM-rTnVvfJkCYbhv2kucCRyNyc9FWoR=Q@mail.gmail.com>
- <HE1PR04MB0889D75DC56E180D3508E7A1F89F0@HE1PR04MB0889.eurprd04.prod.outlook.com>
-Date: Wed, 6 Apr 2016 10:14:36 +0200
-Message-ID: <CAPDyKFp8GDzSkpbTKoRL=rwiBrsWmsgN95zB-QJwfZTnq4M8BA@mail.gmail.com>
-Subject: Re: [v7, 0/5] Fix eSDHC host version register bug
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Yangbo Lu <yangbo.lu@nxp.com>, Scott Wood <scott.wood@nxp.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- linux-mmc <linux-mmc@vger.kernel.org>,
- Rob Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>,
- Jochen Friedrich <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- Bhupesh Sharma <bhupesh.sharma@freescale.com>,
- Zhao Qiang <qiang.zhao@freescale.com>,
- Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- Yang-Leo Li <leoyang.li@nxp.com>, Xiaobo Xie <xiaobo.xie@nxp.com>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qg16c4zsDzDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 19:45:11 +1000 (AEST)
+Received: from localhost
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.vnet.ibm.com>;
+ Wed, 6 Apr 2016 15:15:08 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u369j4HK50987258
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 15:15:04 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u369iuea001978
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 15:15:00 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: david@gibson.dropbear.id.au, nfonteno@us.ibm.com,
+ mdroth@linux.vnet.ibm.com, aik@au1.ibm.com,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>
+Subject: [RFC FIX PATCH v0] powerpc,numa: Fix memory_hotplug_max()
+Date: Wed,  6 Apr 2016 15:14:43 +0530
+Message-Id: <1459935883-29445-1-git-send-email-bharata@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,40 +34,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>
->> I was about to queue this for next, when I noticed that checkpatch is
->> complaining/warning lots about these patches. Can you please a round of
->> checkpatch and fix what makes sense.
->>
->> Kind regards
->> Uffe
->
-> [Lu Yangbo-B47093] Sorry about this, Uffe...
+memory_hotplug_max() uses hot_add_drconf_memory_max() to get maxmimum
+addressable memory by referring to ibm,dyanamic-memory property. There
+are three problems with the current approach:
 
-No worries!
+1 hot_add_drconf_memory_max() assumes that ibm,dynamic-memory includes
+  all the LMBs of the guest, but that is not true for PowerKVM which
+  populates only DR LMBs (LMBs that can be hotplugged/removed) in that
+  property.
+2 hot_add_drconf_memory_max() multiplies lmb-size with lmb-count to arrive
+  at the max possible address. Since ibm,dynamic-memory doesn't include
+  RMA LMBs, the address thus obtained will be less than the actual max
+  address. For example, if max possible memory size is 32G, with lmb-size
+  of 256MB there can be 127 LMBs in ibm,dynamic-memory (1 LMB for RMA
+  which won't be present here).  hot_add_drconf_memory_max() would then
+  return the max addressable memory as 127 * 256MB = 31.75GB, the max
+  address should have been 32G which is what ibm,lrdr-capacity shows.
+3 In PowerKVM, there can be a gap between the end of boot time RAM and
+  beginning of hotplug RAM area. So just multiplying lmb-count with
+  lmb-size will not provide the correct max possible address for PowerKVM.
 
-> Should I ignore the warnings that update MAINTAINERS?
+This patch fixes 1 by using ibm,lrdr-capacity property to return the max
+addressable memory whenever the property is present. Then it fixes 2 & 3
+by fetching the address of the last LMB in ibm,dynamic-memory property.
 
-drivers/soc/fsl/guts.c isn't part of the MAINTAINERS file, it should be.
+NOTE: There are some unnecessary changes in the patch because of converting
+spaces to tabs w/o which checkpatch.pl complains.
 
-I also realize that the FREESCALE QUICC ENGINE LIBRARY section
-drivers/soc/fsl/qe/* also need an active maintainer, as it's currently
-orphan.
+Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/numa.c | 29 ++++++++++++++++++++++-------
+ 1 file changed, 22 insertions(+), 7 deletions(-)
 
-Perhaps we should have create a new section for drivers/soc/fsl/*
-instead that covers all of the above? Maybe you or Scott are
-interested to pick it up?
-
-I also noted that, "include/linux/fsl/" isn't present in MAINTAINERS,
-please add that as well.
-
-> Regarding the 'undocumented' warning, I will added a patch updates doc before all the patches, Ok?
-
-Yes, good!
-
->
-> Thanks a lot :)
->
-
-Kind regards
-Uffe
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 669a15e..57d5877 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1164,17 +1164,32 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
+ static u64 hot_add_drconf_memory_max(void)
+ {
+         struct device_node *memory = NULL;
+-        unsigned int drconf_cell_cnt = 0;
+-        u64 lmb_size = 0;
++	struct device_node *dn = NULL;
++	unsigned int drconf_cell_cnt = 0;
++	u64 lmb_size = 0;
+ 	const __be32 *dm = NULL;
++	const __be64 *lrdr = NULL;
++	struct of_drconf_cell drmem;
++
++	dn = of_find_node_by_path("/rtas");
++	if (dn) {
++		lrdr = of_get_property(dn, "ibm,lrdr-capacity", NULL);
++		of_node_put(dn);
++		if (lrdr)
++			return be64_to_cpup(lrdr);
++	}
+ 
+         memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+         if (memory) {
+-                drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
+-                lmb_size = of_get_lmb_size(memory);
+-                of_node_put(memory);
+-        }
+-        return lmb_size * drconf_cell_cnt;
++		drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
++		lmb_size = of_get_lmb_size(memory);
++
++		/* Advance to the last cell, each cell has 6 32 bit integers */
++		dm += (drconf_cell_cnt - 1) * 6;
++		read_drconf_cell(&drmem, &dm);
++		of_node_put(memory);
++	}
++	return drmem.base_addr + lmb_size;
+ }
+ 
+ /*
+-- 
+2.1.0
