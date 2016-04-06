@@ -1,30 +1,31 @@
 Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qfrZ62brdzDq6S
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 13:19:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qfrnQ17zhzDq6S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 13:29:46 +1000 (AEST)
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Wed, 6 Apr 2016 13:19:57 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 51A223578056
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 13:19:40 +1000 (EST)
+ Wed, 6 Apr 2016 13:29:44 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 321E92BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 13:29:42 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u363JSKT35782710
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 13:19:40 +1000
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u363TXUm000262
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 13:29:42 +1000
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u363J34e010053
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 13:19:04 +1000
-Subject: Re: [RFC v5 6/7] PCI: Add a new bit to pci_bus_flags to indicate
- interrupt remapping
+ u363T8E1000393
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 13:29:09 +1000
+Subject: Re: [RFC v5 7/7] vfio-pci: Allow to mmap MSI-X table if interrupt
+ remapping is supported
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1459864004-2869-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <20160406001114.GA4976@gwshan>
+ <1459864004-2869-2-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <20160406000052.GA4545@gwshan>
 Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-doc@vger.kernel.org, bhelgaas@google.com, corbet@lwn.net,
@@ -34,10 +35,10 @@ Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
  eric.auger@linaro.org, will.deacon@arm.com, alistair@popple.id.au,
  ruscur@russell.cc
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Message-ID: <57048013.5070802@linux.vnet.ibm.com>
-Date: Wed, 6 Apr 2016 11:18:43 +0800
+Message-ID: <57048270.9040802@linux.vnet.ibm.com>
+Date: Wed, 6 Apr 2016 11:28:48 +0800
 MIME-Version: 1.0
-In-Reply-To: <20160406001114.GA4976@gwshan>
+In-Reply-To: <20160406000052.GA4545@gwshan>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -48,112 +49,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/4/6 8:11, Gavin Shan wrote:
-> On Tue, Apr 05, 2016 at 09:46:43PM +0800, Yongji Xie wrote:
->> I'm trying to find a proper way to indicate
->> the capability of interrupt remapping on PPC64
->> because we need this to determine whether it is
->> safe to mmap MSI-X table in VFIO driver.
->>
->> There is a existing flag for this in the IOMMU
->> space:
->>
->> enum iommu_cap {
->> 	IOMMU_CAP_CACHE_COHERENCY,
->> --->    IOMMU_CAP_INTR_REMAP,
->> 	IOMMU_CAP_NOEXEC,
->> };
->>
->> But it seems to be not a good idea to use
->> bus_set_iommu() to add this flag on PPC64 which
->> never set/use iommu_ops.
->>
->> Eric also posted a patchset [1] to abstract
->> this capability on MSI controller side for ARM.
->> But I found we also never use msi_domain_info
->> on PPC64. We have to rework the MSI code on
->> PPC64 to support msi_domain_ops if we want to
->> use msi_domain_info.
->>
->> Then I noticed that interrupt remapping is
->> abstracted on PCI host bridge side on PPC64.
->> So I'm thinking whether we could add a new
->> bit to pci_bus_flags to indicate this
->> capability, like this patch does.
->>
->> Compared with IOMMU_CAP_INTR_REMAP, this
->> flag is more common. Any arch can set/use this
->> easily. And it can provide a better granularity
->> (pci_bus_type -> pci_bus).
->>
->> [1] http://www.spinics.net/lists/kvm/msg130262.html
+On 2016/4/6 8:00, Gavin Shan wrote:
+> On Tue, Apr 05, 2016 at 09:46:44PM +0800, Yongji Xie wrote:
+>> This patch enables mmapping MSI-X tables if
+>> hardware supports interrupt remapping which
+>> can ensure that a given pci device can only
+>> shoot the MSIs assigned for it.
 >>
 >> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 >> ---
->> arch/powerpc/platforms/powernv/pci-ioda.c |    8 ++++++++
->> include/linux/pci.h                       |    1 +
->> 2 files changed, 9 insertions(+)
+>> drivers/vfio/pci/vfio_pci.c         |    9 +++++++--
+>> drivers/vfio/pci/vfio_pci_private.h |    1 +
+>> drivers/vfio/pci/vfio_pci_rdwr.c    |    2 +-
+>> 3 files changed, 9 insertions(+), 3 deletions(-)
 >>
->> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->> index f90dc04..9557638 100644
->> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> @@ -3080,6 +3080,12 @@ static void pnv_pci_ioda_fixup(void)
->> 	pnv_npu_ioda_fixup();
->> }
+>> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+>> index c60d790..ef02896 100644
+>> --- a/drivers/vfio/pci/vfio_pci.c
+>> +++ b/drivers/vfio/pci/vfio_pci.c
+>> @@ -201,6 +201,10 @@ static int vfio_pci_enable(struct vfio_pci_device *vdev)
+>> 	} else
+>> 		vdev->msix_bar = 0xFF;
 >>
->> +int pnv_pci_ioda_root_bridge_prepare(struct pci_host_bridge *bridge)
->> +{
->> +	bridge->bus->bus_flags |= PCI_BUS_FLAGS_MSI_REMAP;
->> +	return 0;
->> +}
+>> +	if (iommu_capable(pdev->dev.bus, IOMMU_CAP_INTR_REMAP) ||
+>> +		pdev->bus->bus_flags | PCI_BUS_FLAGS_MSI_REMAP)
+>> +		vdev->msi_remap = true;
 >> +
-> A irelevent question: Here we set the flag unconditionally. Can the
-> MSIx table be exposed to user space unconditionally? Do we have issues
-> if the MSIx related BAR isn't page aligned or overlapped with others?
+> I guess you probably need a "&" here. Otherwise, the condition
+> is always true.
 
-This flag is just used to indicate the capability of MSI
-remapping which means PCI devices on this bus
-can only shoot the MSIs assigned for them. It does
-not mean MSIx table can be exposed to user space
-unconditionally.
+Yes, you are right. I'll fix it.
 
->> /*
->>   * Returns the alignment for I/O or memory windows for P2P
->>   * bridges. That actually depends on how PEs are segmented.
->> @@ -3364,6 +3370,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
->> 	 */
->> 	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
+>> 	if (!vfio_vga_disabled() && vfio_pci_is_vga(pdev))
+>> 		vdev->has_vga = true;
 >>
->> +	ppc_md.pcibios_root_bridge_prepare = pnv_pci_ioda_root_bridge_prepare;
->> +
->> 	if (phb->type == PNV_PHB_NPU)
->> 		hose->controller_ops = pnv_npu_ioda_controller_ops;
->> 	else
->> diff --git a/include/linux/pci.h b/include/linux/pci.h
->> index 27df4a6..741dcaf 100644
->> --- a/include/linux/pci.h
->> +++ b/include/linux/pci.h
->> @@ -193,6 +193,7 @@ typedef unsigned short __bitwise pci_bus_flags_t;
->> enum pci_bus_flags {
->> 	PCI_BUS_FLAGS_NO_MSI   = (__force pci_bus_flags_t) 1,
->> 	PCI_BUS_FLAGS_NO_MMRBC = (__force pci_bus_flags_t) 2,
->> +	PCI_BUS_FLAGS_MSI_REMAP = (__force pci_bus_flags_t) 3,
-> Yongji, I guess the corresponding value to PCI_BUS_FLAGS_MSI_REMAP
-> would be 4 other than 3. Otherwise, two of the flags cannot exist
-> at the same time.
+>> @@ -635,7 +639,8 @@ static long vfio_pci_ioctl(void *device_data,
+>> 				     VFIO_REGION_INFO_FLAG_WRITE;
+>> 			if (vdev->bar_mmap_supported[info.index]) {
+>> 				info.flags |= VFIO_REGION_INFO_FLAG_MMAP;
+>> -				if (info.index == vdev->msix_bar) {
+>> +				if (info.index == vdev->msix_bar &&
+>> +						!vdev->msi_remap) {
+>> 					ret = msix_sparse_mmap_cap(vdev, &caps);
+>> 					if (ret)
+>> 						return ret;
+>> @@ -1067,7 +1072,7 @@ static int vfio_pci_mmap(void *device_data, struct vm_area_struct *vma)
+>> 	if (req_start + req_len > phys_len)
+>> 		return -EINVAL;
+>>
+>> -	if (index == vdev->msix_bar) {
+>> +	if (index == vdev->msix_bar && !vdev->msi_remap) {
+>> 		/*
+>> 		 * Disallow mmaps overlapping the MSI-X table; users don't
+>> 		 * get to touch this directly.  We could find somewhere
+>> diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
+>> index 0ea4c62..4f20963 100644
+>> --- a/drivers/vfio/pci/vfio_pci_private.h
+>> +++ b/drivers/vfio/pci/vfio_pci_private.h
+>> @@ -78,6 +78,7 @@ struct vfio_pci_device {
+>> 	int			irq_type;
+>> 	int			num_regions;
+>> 	struct vfio_pci_region	*region;
+>> +	bool			msi_remap;
+>> 	u8			msi_qmax;
+>> 	u8			msix_bar;
+>> 	u16			msix_size;
+>> diff --git a/drivers/vfio/pci/vfio_pci_rdwr.c b/drivers/vfio/pci/vfio_pci_rdwr.c
+>> index 5ffd1d9..606ee3c 100644
+>> --- a/drivers/vfio/pci/vfio_pci_rdwr.c
+>> +++ b/drivers/vfio/pci/vfio_pci_rdwr.c
+>> @@ -164,7 +164,7 @@ ssize_t vfio_pci_bar_rw(struct vfio_pci_device *vdev, char __user *buf,
+>> 	} else
+>> 		io = vdev->barmap[bar];
+>>
+>> -	if (bar == vdev->msix_bar) {
+>> +	if (bar == vdev->msix_bar && !vdev->msi_remap) {
+>> 		x_start = vdev->msix_offset;
+>> 		x_end = vdev->msix_offset + vdev->msix_size;
+>> 	}
+> When PCI_BUS_FLAGS_MSI_REMAP is set, the MSIx table can be accessed by
+> read/write interface except mmap(). The commit log doesn't mention it.
+> It would be better if you have some words about it.
 >
 > Thanks,
 > Gavin
+>
 
-Yes, you are right. It should be 4 (1 << 2).
+OK. I will mention it in commit log.
 
 Thanks,
 Yongji
 
->> };
->>
->> /* These values come from the PCI Express Spec */
 >> -- 
 >> 1.7.9.5
 >>
