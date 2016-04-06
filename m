@@ -1,45 +1,27 @@
-Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qfrnQ17zhzDq6S
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 13:29:46 +1000 (AEST)
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Wed, 6 Apr 2016 13:29:44 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 321E92BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 13:29:42 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u363TXUm000262
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 13:29:42 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u363T8E1000393
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 13:29:09 +1000
-Subject: Re: [RFC v5 7/7] vfio-pci: Allow to mmap MSI-X table if interrupt
- remapping is supported
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1459864004-2869-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1459864004-2869-2-git-send-email-xyjxie@linux.vnet.ibm.com>
- <20160406000052.GA4545@gwshan>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-doc@vger.kernel.org, bhelgaas@google.com, corbet@lwn.net,
- aik@ozlabs.ru, alex.williamson@redhat.com, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
- zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- eric.auger@linaro.org, will.deacon@arm.com, alistair@popple.id.au,
- ruscur@russell.cc
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Message-ID: <57048270.9040802@linux.vnet.ibm.com>
-Date: Wed, 6 Apr 2016 11:28:48 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qfs250WyJzDq6S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 13:40:44 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id zy2so2878421pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Apr 2016 20:40:44 -0700 (PDT)
+Subject: Re: [PATCH kernel v2] powerpc/powernv/npu: Enable NVLink pass through
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <20160323024518.GR23586@voom.redhat.com>
+ <1458783735-29658-1-git-send-email-aik@ozlabs.ru>
+ <57046A3E.1010409@ozlabs.ru> <20160406024104.GY16485@voom.fritz.box>
+Cc: linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Daniel Axtens <dja@axtens.net>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <57048534.3000304@ozlabs.ru>
+Date: Wed, 6 Apr 2016 13:40:36 +1000
 MIME-Version: 1.0
-In-Reply-To: <20160406000052.GA4545@gwshan>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20160406024104.GY16485@voom.fritz.box>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,97 +31,429 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/4/6 8:00, Gavin Shan wrote:
-> On Tue, Apr 05, 2016 at 09:46:44PM +0800, Yongji Xie wrote:
->> This patch enables mmapping MSI-X tables if
->> hardware supports interrupt remapping which
->> can ensure that a given pci device can only
->> shoot the MSIs assigned for it.
+On 04/06/2016 12:41 PM, David Gibson wrote:
+> On Wed, Apr 06, 2016 at 11:45:34AM +1000, Alexey Kardashevskiy wrote:
+>> Ping?
 >>
->> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
->> ---
->> drivers/vfio/pci/vfio_pci.c         |    9 +++++++--
->> drivers/vfio/pci/vfio_pci_private.h |    1 +
->> drivers/vfio/pci/vfio_pci_rdwr.c    |    2 +-
->> 3 files changed, 9 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
->> index c60d790..ef02896 100644
->> --- a/drivers/vfio/pci/vfio_pci.c
->> +++ b/drivers/vfio/pci/vfio_pci.c
->> @@ -201,6 +201,10 @@ static int vfio_pci_enable(struct vfio_pci_device *vdev)
->> 	} else
->> 		vdev->msix_bar = 0xFF;
->>
->> +	if (iommu_capable(pdev->dev.bus, IOMMU_CAP_INTR_REMAP) ||
->> +		pdev->bus->bus_flags | PCI_BUS_FLAGS_MSI_REMAP)
->> +		vdev->msi_remap = true;
->> +
-> I guess you probably need a "&" here. Otherwise, the condition
-> is always true.
-
-Yes, you are right. I'll fix it.
-
->> 	if (!vfio_vga_disabled() && vfio_pci_is_vga(pdev))
->> 		vdev->has_vga = true;
->>
->> @@ -635,7 +639,8 @@ static long vfio_pci_ioctl(void *device_data,
->> 				     VFIO_REGION_INFO_FLAG_WRITE;
->> 			if (vdev->bar_mmap_supported[info.index]) {
->> 				info.flags |= VFIO_REGION_INFO_FLAG_MMAP;
->> -				if (info.index == vdev->msix_bar) {
->> +				if (info.index == vdev->msix_bar &&
->> +						!vdev->msi_remap) {
->> 					ret = msix_sparse_mmap_cap(vdev, &caps);
->> 					if (ret)
->> 						return ret;
->> @@ -1067,7 +1072,7 @@ static int vfio_pci_mmap(void *device_data, struct vm_area_struct *vma)
->> 	if (req_start + req_len > phys_len)
->> 		return -EINVAL;
->>
->> -	if (index == vdev->msix_bar) {
->> +	if (index == vdev->msix_bar && !vdev->msi_remap) {
->> 		/*
->> 		 * Disallow mmaps overlapping the MSI-X table; users don't
->> 		 * get to touch this directly.  We could find somewhere
->> diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
->> index 0ea4c62..4f20963 100644
->> --- a/drivers/vfio/pci/vfio_pci_private.h
->> +++ b/drivers/vfio/pci/vfio_pci_private.h
->> @@ -78,6 +78,7 @@ struct vfio_pci_device {
->> 	int			irq_type;
->> 	int			num_regions;
->> 	struct vfio_pci_region	*region;
->> +	bool			msi_remap;
->> 	u8			msi_qmax;
->> 	u8			msix_bar;
->> 	u16			msix_size;
->> diff --git a/drivers/vfio/pci/vfio_pci_rdwr.c b/drivers/vfio/pci/vfio_pci_rdwr.c
->> index 5ffd1d9..606ee3c 100644
->> --- a/drivers/vfio/pci/vfio_pci_rdwr.c
->> +++ b/drivers/vfio/pci/vfio_pci_rdwr.c
->> @@ -164,7 +164,7 @@ ssize_t vfio_pci_bar_rw(struct vfio_pci_device *vdev, char __user *buf,
->> 	} else
->> 		io = vdev->barmap[bar];
->>
->> -	if (bar == vdev->msix_bar) {
->> +	if (bar == vdev->msix_bar && !vdev->msi_remap) {
->> 		x_start = vdev->msix_offset;
->> 		x_end = vdev->msix_offset + vdev->msix_size;
->> 	}
-> When PCI_BUS_FLAGS_MSI_REMAP is set, the MSIx table can be accessed by
-> read/write interface except mmap(). The commit log doesn't mention it.
-> It would be better if you have some words about it.
+>> On 03/24/2016 12:42 PM, Alexey Kardashevskiy wrote:
+>>> IBM POWER8 NVlink systems come with Tesla K40-ish GPUs each of which
+>>> also has a couple of fast speed links (NVLink). The interface to links
+>>> is exposed as an emulated PCI bridge which is included into the same
+>>> IOMMU group as the corresponding GPU.
+>>>
+>>> In the kernel, NPUs get a separate PHB of the PNV_PHB_NPU type and a PE.
+>>>
+>>> In order to make these links work when GPU is passed to the guest,
+>>> these bridges need to be passed as well; otherwise performance will
+>>> degrade.
+>>>
+>>> This implements and exports API to manage NPU state in regard to VFIO;
+>>> it replicates iommu_table_group_ops.
+>>>
+>>> This defines a new pnv_pci_ioda2_npu_ops which is assigned to
+>>> the IODA2 bridge if there are NPUs for a GPU on the bridge.
+>>> The new callbacks call the default IODA2 callbacks plus new NPU API.
+>>> This adds a gpe_table_group_to_npe() helper to find NPU PE for the IODA2
+>>> table_group, it is not expected to fail as the helper is only called
+>> >from the pnv_pci_ioda2_npu_ops.
+>>>
+>>> This adds a pnv_pci_npu_setup_iommu() helper which adds NPUs to
+>>> the GPU group if any found. The helper uses helpers to look for
+>>> the "ibm,gpu" property in the device tree which is a phandle of
+>>> the corresponding GPU.
+>>>
+>>> This adds an additional loop over PEs in pnv_ioda_setup_dma() as the main
+>>> loop skips NPU PEs as they do not have 32bit DMA segments.
+>>>
+>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 >
-> Thanks,
-> Gavin
+> Looks correct conceptually, a few smallish queries below.
+>
+>
+>>> ---
+>>> Changes:
+>>> v2:
+>>> * reimplemented to support NPU + GPU in the same group
+>>> * merged "powerpc/powernv/npu: Add NPU devices to IOMMU group" and
+>>> "powerpc/powernv/npu: Enable passing through via VFIO" into this patch
+>>>
+>>> ---
+>>>
+>>> The rest of the series is the same, I only merged 2 patches into one and
+>>> reworked it to have GPU and NPU in the same IOMMU group like:
+>>>
+>>> aik@g86L:~$ lspci | grep -e '\(NVIDIA\|IBM Device 04ea\)'
+>>> 0002:01:00.0 3D controller: NVIDIA Corporation Device 15ff (rev a1)
+>>> 0003:01:00.0 3D controller: NVIDIA Corporation Device 15ff (rev a1)
+>>> 0006:01:00.0 3D controller: NVIDIA Corporation Device 15ff (rev a1)
+>>> 0007:01:00.0 3D controller: NVIDIA Corporation Device 15ff (rev a1)
+>>> 0008:00:00.0 Bridge: IBM Device 04ea
+>>> 0008:00:00.1 Bridge: IBM Device 04ea
+>>> 0008:00:01.0 Bridge: IBM Device 04ea
+>>> 0008:00:01.1 Bridge: IBM Device 04ea
+>>> 0009:00:00.0 Bridge: IBM Device 04ea
+>>> 0009:00:00.1 Bridge: IBM Device 04ea
+>>> 0009:00:01.0 Bridge: IBM Device 04ea
+>>> 0009:00:01.1 Bridge: IBM Device 04ea
+>>> aik@g86L:~$ ls /sys/bus/pci/devices/0002\:01\:00.0/iommu_group/devices/
+>>> 0002:01:00.0  0008:00:01.0  0008:00:01.1
+>>> aik@g86L:~$ ls /sys/bus/pci/devices/0003\:01\:00.0/iommu_group/devices/
+>>> 0003:01:00.0  0008:00:00.0  0008:00:00.1
+>>> aik@g86L:~$ ls /sys/bus/pci/devices/0006\:01\:00.0/iommu_group/devices/
+>>> 0006:01:00.0  0009:00:01.0  0009:00:01.1
+>>> aik@g86L:~$ ls /sys/bus/pci/devices/0007\:01\:00.0/iommu_group/devices/
+>>> 0007:01:00.0  0009:00:00.0  0009:00:00.1
+>>>
+>>>
+>>> Please comment. If this one is ok, I'll repost the whole thing. Thanks!
+>>>
+>>>
+>>> ---
+>>>   arch/powerpc/platforms/powernv/npu-dma.c  | 129 ++++++++++++++++++++++++++++++
+>>>   arch/powerpc/platforms/powernv/pci-ioda.c | 101 +++++++++++++++++++++++
+>>>   arch/powerpc/platforms/powernv/pci.h      |   6 ++
+>>>   3 files changed, 236 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+>>> index 8e70221..d048e0e 100644
+>>> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+>>> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+>>> @@ -262,3 +262,132 @@ void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass)
+>>>   		}
+>>>   	}
+>>>   }
+>>> +
+>>> +long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+>>> +		struct iommu_table *tbl)
+>>> +{
+>>> +	struct pnv_phb *phb = npe->phb;
+>>> +	int64_t rc;
+>>> +	const unsigned long size = tbl->it_indirect_levels ?
+>>> +		tbl->it_level_size : tbl->it_size;
+>>> +	const __u64 start_addr = tbl->it_offset << tbl->it_page_shift;
+>>> +	const __u64 win_size = tbl->it_size << tbl->it_page_shift;
+>>> +
+>>> +	pe_info(npe, "Setting up window#%d %llx..%llx pg=%lx\n", num,
+>>> +			start_addr, start_addr + win_size - 1,
+>>> +			IOMMU_PAGE_SIZE(tbl));
+>>> +
+>>> +	rc = opal_pci_map_pe_dma_window(phb->opal_id,
+>>> +			npe->pe_number,
+>>> +			npe->pe_number,
+>>> +			tbl->it_indirect_levels + 1,
+>>> +			__pa(tbl->it_base),
+>>> +			size << 3,
+>>> +			IOMMU_PAGE_SIZE(tbl));
+>>> +	if (rc) {
+>>> +		pe_err(npe, "Failed to configure TCE table, err %lld\n", rc);
+>>> +		return rc;
+>>> +	}
+>>> +
+>>> +	pnv_pci_link_table_and_group(phb->hose->node, num,
+>>> +			tbl, &npe->table_group);
+>>> +	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
+>>> +
+>>> +	return rc;
+>>> +}
+>>> +
+>>> +long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num)
+>>> +{
+>>> +	struct pnv_phb *phb = npe->phb;
+>>> +	long ret;
+>>> +
+>>> +	pe_info(npe, "Removing DMA window #%d\n", num);
+>>> +
+>>> +	ret = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
+>>> +			npe->pe_number,
+>>> +			0/* levels */, 0/* table address */,
+>>> +			0/* table size */, 0/* page size */);
+>>> +	if (ret)
+>>> +		pe_warn(npe, "Unmapping failed, ret = %ld\n", ret);
+>>> +	else
+>>> +		pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
+>>> +
+>>> +	pnv_pci_unlink_table_and_group(npe->table_group.tables[num],
+>>> +			&npe->table_group);
+>>> +
+>>> +	return ret;
+>>> +}
+>>> +
+>>> +/* Switch ownership from platform code to external user (e.g. VFIO) */
+>>> +void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
+>>> +{
+>>> +	struct pnv_phb *phb = npe->phb;
+>>> +	int64_t ret;
+>>> +
+>>> +	if (npe->table_group.tables[0]) {
+>>> +		pnv_pci_unlink_table_and_group(npe->table_group.tables[0],
+>>> +				&npe->table_group);
+>>> +		npe->table_group.tables[0] = NULL;
+>>> +		ret = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
+>>> +				npe->pe_number,
+>>> +				0/* levels */, 0/* table address */,
+>>> +				0/* table size */, 0/* page size */);
+>>> +	} else {
+>>> +		ret = opal_pci_map_pe_dma_window_real(phb->opal_id,
+>>> +				npe->pe_number, npe->pe_number,
+>>> +				0 /* bypass base */, 0);
+>
+> I take it this call disables iommu bypass on the NPU?
+
+
+Yes.
+
+
+>
+>>> +	}
+>>> +
+>>> +	if (ret != OPAL_SUCCESS)
+>>> +		pe_err(npe, "Failed to remove DMA window");
+>>> +	else
+>>> +		pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
+>>> +}
+>>> +
+>>> +/* Switch ownership from external user (e.g. VFIO) back to core */
+>>> +void pnv_npu_release_ownership(struct pnv_ioda_pe *npe)
+>>> +{
+>>> +	struct pnv_phb *phb = npe->phb;
+>>> +	int64_t ret;
+>>> +
+>>> +	ret = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
+>>> +			npe->pe_number,
+>>> +			0/* levels */, 0/* table address */,
+>>> +			0/* table size */, 0/* page size */);
+>>> +	if (ret != OPAL_SUCCESS)
+>>> +		pe_err(npe, "Failed to remove DMA window");
+>>> +	else
+>>> +		pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
+>>> +}
+>>> +
+>>> +struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+>>> +{
+>>> +	struct iommu_table *tbl;
+>>> +	struct pnv_phb *phb = npe->phb;
+>>> +	struct pci_bus *pbus = phb->hose->bus;
+>>> +	struct pci_dev *npdev, *gpdev = NULL, *gptmp;
+>>> +	struct pnv_ioda_pe *gpe = get_gpu_pci_dev_and_pe(npe, &gpdev);
+>>> +
+>>> +	if (!gpe || !gpdev)
+>>> +		return NULL;
+>>> +
+>>> +	list_for_each_entry(npdev, &pbus->devices, bus_list) {
+>>> +		gptmp = pnv_pci_get_gpu_dev(npdev);
+>>> +
+>>> +		if (gptmp != gpdev)
+>>> +			continue;
+>>> +		/*
+>>> +		 * The iommu_add_device() picks an IOMMU group from
+>>> +		 * the first IOMMU group attached to the iommu_table
+>>> +		 * so we need to pretend that there is a table so
+>>> +		 * iommu_add_device() can complete the job.
+>>> +		 * We unlink the tempopary table from the group afterwards.
+>>> +		 */
+>>> +		tbl = get_iommu_table_base(&gpdev->dev);
+>>> +		set_iommu_table_base(&npdev->dev, tbl);
+>>> +		iommu_add_device(&npdev->dev);
+>>> +		set_iommu_table_base(&npdev->dev, NULL);
+>
+> As far as I can tell, this is correct, but it's a bit icky,
+> temporarily changing the state just so iommu_add_device() can use it -
+> and I worry a bit about races.
+
+This is a boot time thing, not racy afaict.
+
+
+> I'd prefer to see a new variant of iommu_add_device() which takes an
+> explicit table instead of getting it from get_iommu_table_base().  The
+> regular iommu_add_device() could be implemented in terms of that
+> variant, obviously.
+
+
+Hm. After reading the code, I could actually just call the generic 
+iommu_group_add_device() directly here as I do not really care about the 
+checks which iommu_add_device() performs (may be except 
+device_is_registered()) in addition to just calling 
+iommu_group_add_device(), would not this be better?
+
+
+
+>
+>>> +	}
+>>> +
+>>> +	return gpe;
+>>> +}
+>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> index e765870..fa6278b 100644
+>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> @@ -2299,6 +2299,96 @@ static struct iommu_table_group_ops pnv_pci_ioda2_ops = {
+>>>   	.take_ownership = pnv_ioda2_take_ownership,
+>>>   	.release_ownership = pnv_ioda2_release_ownership,
+>>>   };
+>>> +
+>>> +static int gpe_table_group_to_npe_cb(struct device *dev, void *opaque)
+>>> +{
+>>> +	struct pnv_ioda_pe **ptmppe = opaque;
+>>> +	struct pci_dev *pdev = container_of(dev, struct pci_dev, dev);
+>>> +	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+>>> +	struct pnv_phb *phb = hose->private_data;
+>>> +	struct pci_dn *pdn = pci_get_pdn(pdev);
+>>> +	struct pnv_ioda_pe *pe;
+>>> +
+>>> +	if (!pdn || pdn->pe_number == IODA_INVALID_PE)
+>>> +		return 0;
+>>> +
+>>> +	pe = &phb->ioda.pe_array[pdn->pe_number];
+>>> +	if (pe == *ptmppe)
+>>> +		return 0;
+>
+> I'm not quite sure what the test above is for.  It looks like you're
+> excluding devices in the PE of the GPU device, because you're trying
+> to find the NPU device instead, but shouldn't that be covered by the
+> test below?
+
+
+Just an extra check which I'll remove. And I won't have to rely on the 
+initial content of *ptmppe which is cleaner.
+
+
+>>> +	if (phb->type != PNV_PHB_NPU)
+>>> +		return 0;
+>>> +
+>>> +	*ptmppe = pe;
+>>> +	return 1;
+>>> +}
+>>> +
+>>> +/*
+>>> + * This returns PE of associated NPU.
+>>> + * This assumes that NPU is in the same IOMMU group with GPU and there is
+>>> + * no other PEs.
+>>> + */
+>>> +static struct pnv_ioda_pe *gpe_table_group_to_npe(
+>>> +		struct iommu_table_group *table_group)
+>>> +{
+>>> +	struct pnv_ioda_pe *npe = container_of(table_group, struct pnv_ioda_pe,
+>>> +			table_group);
+>>> +	int ret = iommu_group_for_each_dev(table_group->group, &npe,
+>>> +			gpe_table_group_to_npe_cb);
+>>> +
+>>> +	BUG_ON(!ret || !npe);
+>>> +
+>>> +	return npe;
+>>> +}
+>
+> Am I correct in thinking that this logic (and indeed, this interface)
+> depends on there being at most one NPU per iommu group?  That's not
+> necessarily a problem, just trying to make sure I understand
+> correctly.
+
+One NPU PE per a GPU PE. Each NPU PE has 2 NPU devices (i.e. 2 links).
+
+
+>>> +static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group *table_group,
+>>> +		int num, struct iommu_table *tbl)
+>>> +{
+>>> +	long ret = pnv_pci_ioda2_set_window(table_group, num, tbl);
+>>> +
+>>> +	if (ret)
+>>> +		return ret;
+>>> +
+>>> +	ret = pnv_npu_set_window(gpe_table_group_to_npe(table_group), num, tbl);
+>>> +	if (ret)
+>>> +		pnv_pci_ioda2_unset_window(table_group, num);
+>>> +
+>>> +	return ret;
+>>> +}
+>>> +
+>>> +static long pnv_pci_ioda2_npu_unset_window(
+>>> +		struct iommu_table_group *table_group,
+>>> +		int num)
+>>> +{
+>>> +	long ret = pnv_pci_ioda2_unset_window(table_group, num);
+>>> +
+>>> +	if (ret)
+>>> +		return ret;
+>>> +
+>>> +	return pnv_npu_unset_window(gpe_table_group_to_npe(table_group), num);
+>>> +}
+>>> +
+>>> +static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
+>>> +{
+>>> +	pnv_ioda2_take_ownership(table_group);
+>>> +	pnv_npu_take_ownership(gpe_table_group_to_npe(table_group));
+>>> +}
+>>> +
+>>> +static void pnv_ioda2_npu_release_ownership(
+>>> +		struct iommu_table_group *table_group)
+>>> +{
+>>> +	pnv_npu_release_ownership(gpe_table_group_to_npe(table_group));
+>>> +	pnv_ioda2_release_ownership(table_group);
+>>> +}
+>>> +
+>>> +static struct iommu_table_group_ops pnv_pci_ioda2_npu_ops = {
+>>> +	.get_table_size = pnv_pci_ioda2_get_table_size,
+>>> +	.create_table = pnv_pci_ioda2_create_table,
+>>> +	.set_window = pnv_pci_ioda2_npu_set_window,
+>>> +	.unset_window = pnv_pci_ioda2_npu_unset_window,
+>>> +	.take_ownership = pnv_ioda2_npu_take_ownership,
+>>> +	.release_ownership = pnv_ioda2_npu_release_ownership,
+>>> +};
+>>>   #endif
+>>>
+>>>   static void pnv_pci_ioda_setup_opal_tce_kill(struct pnv_phb *phb)
+>>> @@ -2563,6 +2653,17 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+>>>   		remaining -= segs;
+>>>   		base += segs;
+>>>   	}
+>>> +	/*
+>>> +	 * Create an IOMMU group and add devices to it.
+>>> +	 * DMA setup is done via GPU's dma_set_mask().
+>>> +	 */
+>>> +	if (phb->type == PNV_PHB_NPU) {
+>>> +		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
+>>> +			struct pnv_ioda_pe *gpe = pnv_pci_npu_setup_iommu(pe);
+>>> +			if (gpe)
+>>> +				gpe->table_group.ops = &pnv_pci_ioda2_npu_ops;
+>>> +		}
+>>> +	}
+>
+> It looks like this relies on running *after* the setup for the
+> ordinary GPU devices has been done, so it can modify the ops pointer
+> to add the NPU stuff.  Does anything ensure that the bridge discovery
+> happens in that order?
+
+
+Good point. No, it is possible (at least in theory) that NPU PHBs appear 
+first and GPU later, this will fail. I'll move this part after all PHBs are 
+discovered, to pnv_pci_ioda_fixup().
+
+Thanks for the review!
+
+
+>>>   }
+>>>
+>>>   #ifdef CONFIG_PCI_MSI
+>>> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>>> index f9c3aca..4200bb9 100644
+>>> --- a/arch/powerpc/platforms/powernv/pci.h
+>>> +++ b/arch/powerpc/platforms/powernv/pci.h
+>>> @@ -250,5 +250,11 @@ extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+>>>   /* Nvlink functions */
+>>>   extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
+>>>   extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
+>>> +extern struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe);
+>>> +extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+>>> +		struct iommu_table *tbl);
+>>> +extern long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num);
+>>> +extern void pnv_npu_take_ownership(struct pnv_ioda_pe *npe);
+>>> +extern void pnv_npu_release_ownership(struct pnv_ioda_pe *npe);
+>>>
+>>>   #endif /* __POWERNV_PCI_H */
+>>>
+>>
+>>
 >
 
-OK. I will mention it in commit log.
 
-Thanks,
-Yongji
-
->> -- 
->> 1.7.9.5
->>
+-- 
+Alexey
