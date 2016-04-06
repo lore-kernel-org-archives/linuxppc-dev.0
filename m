@@ -1,25 +1,44 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qfr6Y5pdmzDq6h
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 12:59:33 +1000 (AEST)
-Date: Wed, 6 Apr 2016 12:41:04 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH kernel v2] powerpc/powernv/npu: Enable NVLink pass through
-Message-ID: <20160406024104.GY16485@voom.fritz.box>
-References: <20160323024518.GR23586@voom.redhat.com>
- <1458783735-29658-1-git-send-email-aik@ozlabs.ru>
- <57046A3E.1010409@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qfqnv25T2zDq6S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 12:45:07 +1000 (AEST)
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Wed, 6 Apr 2016 12:45:06 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 586293578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 12:44:50 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u362igPg59965686
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 12:44:50 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u362iH4s001093
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 12:44:17 +1000
+Subject: Re: [RFC v5 3/7] PCI: Add a new option for resource_alignment to
+ reassign alignment
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1459863813-2830-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1459863813-2830-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <20160406014309.GA17201@gwshan>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-doc@vger.kernel.org, bhelgaas@google.com, corbet@lwn.net,
+ aik@ozlabs.ru, alex.williamson@redhat.com, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
+ zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Message-ID: <570477ED.7030400@linux.vnet.ibm.com>
+Date: Wed, 6 Apr 2016 10:43:57 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="XZLT0nNRngx3qG4/"
-In-Reply-To: <57046A3E.1010409@ozlabs.ru>
+In-Reply-To: <20160406014309.GA17201@gwshan>
+Content-Type: multipart/alternative;
+ boundary="------------080603050105070708030307"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,441 +48,373 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------080603050105070708030307
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
---XZLT0nNRngx3qG4/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 2016/4/6 9:43, Gavin Shan wrote:
+> On Tue, Apr 05, 2016 at 09:43:31PM +0800, Yongji Xie wrote:
+>> When using resource_alignment kernel parameter,
+>> the current implement reassigns the alignment by
+>> changing resources' size which can potentially
+>> break some drivers. For example, the driver uses
+>> the size to locate some register whose length is
+>> related to the size.
+>>
+>> This adds a new option "noresize" for the
+>> parameter to solve this problem.
+>>
+>> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+>> ---
+>> Documentation/kernel-parameters.txt |    5 ++++-
+>> drivers/pci/pci.c                   |   37 +++++++++++++++++++++++++----------
+>> 2 files changed, 31 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+>> index 9a53c92..d8b29ab 100644
+>> --- a/Documentation/kernel-parameters.txt
+>> +++ b/Documentation/kernel-parameters.txt
+>> @@ -2912,13 +2912,16 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+>> 				window. The default value is 64 megabytes.
+>> 		resource_alignment=
+>> 				Format:
+>> -				[<order of align>@][<domain>:]<bus>:<slot>.<func>[; ...]
+>> +				[<order of align>@][<domain>:]<bus>:<slot>.<func>
+>> +				[:noresize][; ...]
+> If I'm correct enough, it breaks existing application using this interface. "noresize"
+> would be a optinal parallel property to "align". So the string would have below format
+> if nobody else objects:
+>
+> 	order,noresize@domain:bus:slot.func
 
-On Wed, Apr 06, 2016 at 11:45:34AM +1000, Alexey Kardashevskiy wrote:
-> Ping?
->=20
-> On 03/24/2016 12:42 PM, Alexey Kardashevskiy wrote:
-> >IBM POWER8 NVlink systems come with Tesla K40-ish GPUs each of which
-> >also has a couple of fast speed links (NVLink). The interface to links
-> >is exposed as an emulated PCI bridge which is included into the same
-> >IOMMU group as the corresponding GPU.
-> >
-> >In the kernel, NPUs get a separate PHB of the PNV_PHB_NPU type and a PE.
-> >
-> >In order to make these links work when GPU is passed to the guest,
-> >these bridges need to be passed as well; otherwise performance will
-> >degrade.
-> >
-> >This implements and exports API to manage NPU state in regard to VFIO;
-> >it replicates iommu_table_group_ops.
-> >
-> >This defines a new pnv_pci_ioda2_npu_ops which is assigned to
-> >the IODA2 bridge if there are NPUs for a GPU on the bridge.
-> >The new callbacks call the default IODA2 callbacks plus new NPU API.
-> >This adds a gpe_table_group_to_npe() helper to find NPU PE for the IODA2
-> >table_group, it is not expected to fail as the helper is only called
-> >from the pnv_pci_ioda2_npu_ops.
-> >
-> >This adds a pnv_pci_npu_setup_iommu() helper which adds NPUs to
-> >the GPU group if any found. The helper uses helpers to look for
-> >the "ibm,gpu" property in the device tree which is a phandle of
-> >the corresponding GPU.
-> >
-> >This adds an additional loop over PEs in pnv_ioda_setup_dma() as the main
-> >loop skips NPU PEs as they do not have 32bit DMA segments.
-> >
-> >Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Sorry. I don't get your point. Why [:noresize] would break
+existing application using this interface? Doesn't
+[:noresize] mean an optional property?
 
-Looks correct conceptually, a few smallish queries below.
+[<order of align>@] is also an optional property.
+Sometimes, we would not specify it. So we should
+not put "noresize" into [<order of align>@] in case
+that we want to use "noresize" but we don't want
+to specify <order of align>.
 
+>
+>> 				Specifies alignment and device to reassign
+>> 				aligned memory resources.
+>> 				If <order of align> is not specified,
+>> 				PAGE_SIZE is used as alignment.
+>> 				PCI-PCI bridge can be specified, if resource
+>> 				windows need to be expanded.
+>> +				noresize: Don't change the resources' sizes when
+>> +				reassigning alignment.
+>> 		ecrc=		Enable/disable PCIe ECRC (transaction layer
+>> 				end-to-end CRC checking).
+>> 				bios: Use BIOS/firmware settings. This is the
+>> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+>> index 1db9267..7271ce3 100644
+>> --- a/drivers/pci/pci.c
+>> +++ b/drivers/pci/pci.c
+>> @@ -4594,11 +4594,13 @@ static DEFINE_SPINLOCK(resource_alignment_lock);
+>> /**
+>>   * pci_specified_resource_alignment - get resource alignment specified by user.
+>>   * @dev: the PCI device to get
+>> + * @resize: whether or not to change resources' size when reassigning alignment
+>>   *
+>>   * RETURNS: Resource alignment if it is specified.
+>>   *          Zero if it is not specified.
+>>   */
+>> -static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+>> +static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
+>> +		bool *resize)
+>> {
+>> 	int seg, bus, slot, func, align_order, count;
+>> 	resource_size_t align = 0;
+>> @@ -4632,6 +4634,11 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+>> 			}
+>> 		}
+>> 		p += count;
+>> +		if (!strncmp(p, ":noresize", 9)) {
+>> +			*resize = false;
+>> +			p += 9;
+>> +		} else
+>> +			*resize = true;
+>> 		if (seg == pci_domain_nr(dev->bus) &&
+>> 			bus == dev->bus->number &&
+>> 			slot == PCI_SLOT(dev->devfn) &&
+>> @@ -4664,11 +4671,12 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+>> {
+>> 	int i;
+>> 	struct resource *r;
+>> +	bool resize = true;
+>> 	resource_size_t align, size;
+>> 	u16 command;
+>>
+>> 	/* check if specified PCI is target device to reassign */
+>> -	align = pci_specified_resource_alignment(dev);
+>> +	align = pci_specified_resource_alignment(dev, &resize);
+>> 	if (!align)
+>> 		return;
+>>
+>> @@ -4690,15 +4698,24 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+>> 		if (!(r->flags & IORESOURCE_MEM))
+>> 			continue;
+>> 		size = resource_size(r);
+>> -		if (size < align) {
+>> -			size = align;
+>> -			dev_info(&dev->dev,
+>> -				"Rounding up size of resource #%d to %#llx.\n",
+>> -				i, (unsigned long long)size);
+>> +		if (resize) {
+>> +			if (size < align) {
+>> +				size = align;
+>> +				dev_info(&dev->dev,
+>> +					"Rounding up size of resource #%d to %#llx.\n",
+>> +					i, (unsigned long long)size);
+>> +			}
+>> +			r->flags |= IORESOURCE_UNSET;
+>> +			r->end = size - 1;
+>> +			r->start = 0;
+>> +		} else {
+>> +			if (size > align)
+>> +				align = size;
+>> +			r->flags &= ~IORESOURCE_SIZEALIGN;
+>> +			r->flags |= IORESOURCE_STARTALIGN | IORESOURCE_UNSET;
+>> +			r->start = align;
+>> +			r->end = r->start + size - 1;
+> It could be something like below if you like:
+>
+> 			r->start = max(align, size);
+> 			r->end = r->start + size - 1;
 
-> >---
-> >Changes:
-> >v2:
-> >* reimplemented to support NPU + GPU in the same group
-> >* merged "powerpc/powernv/npu: Add NPU devices to IOMMU group" and
-> >"powerpc/powernv/npu: Enable passing through via VFIO" into this patch
-> >
-> >---
-> >
-> >The rest of the series is the same, I only merged 2 patches into one and
-> >reworked it to have GPU and NPU in the same IOMMU group like:
-> >
-> >aik@g86L:~$ lspci | grep -e '\(NVIDIA\|IBM Device 04ea\)'
-> >0002:01:00.0 3D controller: NVIDIA Corporation Device 15ff (rev a1)
-> >0003:01:00.0 3D controller: NVIDIA Corporation Device 15ff (rev a1)
-> >0006:01:00.0 3D controller: NVIDIA Corporation Device 15ff (rev a1)
-> >0007:01:00.0 3D controller: NVIDIA Corporation Device 15ff (rev a1)
-> >0008:00:00.0 Bridge: IBM Device 04ea
-> >0008:00:00.1 Bridge: IBM Device 04ea
-> >0008:00:01.0 Bridge: IBM Device 04ea
-> >0008:00:01.1 Bridge: IBM Device 04ea
-> >0009:00:00.0 Bridge: IBM Device 04ea
-> >0009:00:00.1 Bridge: IBM Device 04ea
-> >0009:00:01.0 Bridge: IBM Device 04ea
-> >0009:00:01.1 Bridge: IBM Device 04ea
-> >aik@g86L:~$ ls /sys/bus/pci/devices/0002\:01\:00.0/iommu_group/devices/
-> >0002:01:00.0  0008:00:01.0  0008:00:01.1
-> >aik@g86L:~$ ls /sys/bus/pci/devices/0003\:01\:00.0/iommu_group/devices/
-> >0003:01:00.0  0008:00:00.0  0008:00:00.1
-> >aik@g86L:~$ ls /sys/bus/pci/devices/0006\:01\:00.0/iommu_group/devices/
-> >0006:01:00.0  0009:00:01.0  0009:00:01.1
-> >aik@g86L:~$ ls /sys/bus/pci/devices/0007\:01\:00.0/iommu_group/devices/
-> >0007:01:00.0  0009:00:00.0  0009:00:00.1
-> >
-> >
-> >Please comment. If this one is ok, I'll repost the whole thing. Thanks!
-> >
-> >
-> >---
-> >  arch/powerpc/platforms/powernv/npu-dma.c  | 129 ++++++++++++++++++++++=
-++++++++
-> >  arch/powerpc/platforms/powernv/pci-ioda.c | 101 +++++++++++++++++++++++
-> >  arch/powerpc/platforms/powernv/pci.h      |   6 ++
-> >  3 files changed, 236 insertions(+)
-> >
-> >diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/pla=
-tforms/powernv/npu-dma.c
-> >index 8e70221..d048e0e 100644
-> >--- a/arch/powerpc/platforms/powernv/npu-dma.c
-> >+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> >@@ -262,3 +262,132 @@ void pnv_npu_try_dma_set_bypass(struct pci_dev *gp=
-dev, bool bypass)
-> >  		}
-> >  	}
-> >  }
-> >+
-> >+long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
-> >+		struct iommu_table *tbl)
-> >+{
-> >+	struct pnv_phb *phb =3D npe->phb;
-> >+	int64_t rc;
-> >+	const unsigned long size =3D tbl->it_indirect_levels ?
-> >+		tbl->it_level_size : tbl->it_size;
-> >+	const __u64 start_addr =3D tbl->it_offset << tbl->it_page_shift;
-> >+	const __u64 win_size =3D tbl->it_size << tbl->it_page_shift;
-> >+
-> >+	pe_info(npe, "Setting up window#%d %llx..%llx pg=3D%lx\n", num,
-> >+			start_addr, start_addr + win_size - 1,
-> >+			IOMMU_PAGE_SIZE(tbl));
-> >+
-> >+	rc =3D opal_pci_map_pe_dma_window(phb->opal_id,
-> >+			npe->pe_number,
-> >+			npe->pe_number,
-> >+			tbl->it_indirect_levels + 1,
-> >+			__pa(tbl->it_base),
-> >+			size << 3,
-> >+			IOMMU_PAGE_SIZE(tbl));
-> >+	if (rc) {
-> >+		pe_err(npe, "Failed to configure TCE table, err %lld\n", rc);
-> >+		return rc;
-> >+	}
-> >+
-> >+	pnv_pci_link_table_and_group(phb->hose->node, num,
-> >+			tbl, &npe->table_group);
-> >+	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-> >+
-> >+	return rc;
-> >+}
-> >+
-> >+long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num)
-> >+{
-> >+	struct pnv_phb *phb =3D npe->phb;
-> >+	long ret;
-> >+
-> >+	pe_info(npe, "Removing DMA window #%d\n", num);
-> >+
-> >+	ret =3D opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
-> >+			npe->pe_number,
-> >+			0/* levels */, 0/* table address */,
-> >+			0/* table size */, 0/* page size */);
-> >+	if (ret)
-> >+		pe_warn(npe, "Unmapping failed, ret =3D %ld\n", ret);
-> >+	else
-> >+		pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-> >+
-> >+	pnv_pci_unlink_table_and_group(npe->table_group.tables[num],
-> >+			&npe->table_group);
-> >+
-> >+	return ret;
-> >+}
-> >+
-> >+/* Switch ownership from platform code to external user (e.g. VFIO) */
-> >+void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
-> >+{
-> >+	struct pnv_phb *phb =3D npe->phb;
-> >+	int64_t ret;
-> >+
-> >+	if (npe->table_group.tables[0]) {
-> >+		pnv_pci_unlink_table_and_group(npe->table_group.tables[0],
-> >+				&npe->table_group);
-> >+		npe->table_group.tables[0] =3D NULL;
-> >+		ret =3D opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
-> >+				npe->pe_number,
-> >+				0/* levels */, 0/* table address */,
-> >+				0/* table size */, 0/* page size */);
-> >+	} else {
-> >+		ret =3D opal_pci_map_pe_dma_window_real(phb->opal_id,
-> >+				npe->pe_number, npe->pe_number,
-> >+				0 /* bypass base */, 0);
+Sounds good!
 
-I take it this call disables iommu bypass on the NPU?
+Thanks,
+Yongji
 
-> >+	}
-> >+
-> >+	if (ret !=3D OPAL_SUCCESS)
-> >+		pe_err(npe, "Failed to remove DMA window");
-> >+	else
-> >+		pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-> >+}
-> >+
-> >+/* Switch ownership from external user (e.g. VFIO) back to core */
-> >+void pnv_npu_release_ownership(struct pnv_ioda_pe *npe)
-> >+{
-> >+	struct pnv_phb *phb =3D npe->phb;
-> >+	int64_t ret;
-> >+
-> >+	ret =3D opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
-> >+			npe->pe_number,
-> >+			0/* levels */, 0/* table address */,
-> >+			0/* table size */, 0/* page size */);
-> >+	if (ret !=3D OPAL_SUCCESS)
-> >+		pe_err(npe, "Failed to remove DMA window");
-> >+	else
-> >+		pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-> >+}
-> >+
-> >+struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
-> >+{
-> >+	struct iommu_table *tbl;
-> >+	struct pnv_phb *phb =3D npe->phb;
-> >+	struct pci_bus *pbus =3D phb->hose->bus;
-> >+	struct pci_dev *npdev, *gpdev =3D NULL, *gptmp;
-> >+	struct pnv_ioda_pe *gpe =3D get_gpu_pci_dev_and_pe(npe, &gpdev);
-> >+
-> >+	if (!gpe || !gpdev)
-> >+		return NULL;
-> >+
-> >+	list_for_each_entry(npdev, &pbus->devices, bus_list) {
-> >+		gptmp =3D pnv_pci_get_gpu_dev(npdev);
-> >+
-> >+		if (gptmp !=3D gpdev)
-> >+			continue;
-> >+		/*
-> >+		 * The iommu_add_device() picks an IOMMU group from
-> >+		 * the first IOMMU group attached to the iommu_table
-> >+		 * so we need to pretend that there is a table so
-> >+		 * iommu_add_device() can complete the job.
-> >+		 * We unlink the tempopary table from the group afterwards.
-> >+		 */
-> >+		tbl =3D get_iommu_table_base(&gpdev->dev);
-> >+		set_iommu_table_base(&npdev->dev, tbl);
-> >+		iommu_add_device(&npdev->dev);
-> >+		set_iommu_table_base(&npdev->dev, NULL);
-
-As far as I can tell, this is correct, but it's a bit icky,
-temporarily changing the state just so iommu_add_device() can use it -
-and I worry a bit about races.
-
-I'd prefer to see a new variant of iommu_add_device() which takes an
-explicit table instead of getting it from get_iommu_table_base().  The
-regular iommu_add_device() could be implemented in terms of that
-variant, obviously.
+>> 		}
+>> -		r->flags |= IORESOURCE_UNSET;
+>> -		r->end = size - 1;
+>> -		r->start = 0;
+>> 	}
+>> 	/* Need to disable bridge's resource window,
+>> 	 * to enable the kernel to reassign new resource
+> Thanks,
+> Gavin
+>
+>> -- 
+>> 1.7.9.5
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
 
-> >+	}
-> >+
-> >+	return gpe;
-> >+}
-> >diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pl=
-atforms/powernv/pci-ioda.c
-> >index e765870..fa6278b 100644
-> >--- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> >+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >@@ -2299,6 +2299,96 @@ static struct iommu_table_group_ops pnv_pci_ioda2=
-_ops =3D {
-> >  	.take_ownership =3D pnv_ioda2_take_ownership,
-> >  	.release_ownership =3D pnv_ioda2_release_ownership,
-> >  };
-> >+
-> >+static int gpe_table_group_to_npe_cb(struct device *dev, void *opaque)
-> >+{
-> >+	struct pnv_ioda_pe **ptmppe =3D opaque;
-> >+	struct pci_dev *pdev =3D container_of(dev, struct pci_dev, dev);
-> >+	struct pci_controller *hose =3D pci_bus_to_host(pdev->bus);
-> >+	struct pnv_phb *phb =3D hose->private_data;
-> >+	struct pci_dn *pdn =3D pci_get_pdn(pdev);
-> >+	struct pnv_ioda_pe *pe;
-> >+
-> >+	if (!pdn || pdn->pe_number =3D=3D IODA_INVALID_PE)
-> >+		return 0;
-> >+
-> >+	pe =3D &phb->ioda.pe_array[pdn->pe_number];
-> >+	if (pe =3D=3D *ptmppe)
-> >+		return 0;
+--------------080603050105070708030307
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
 
-I'm not quite sure what the test above is for.  It looks like you're
-excluding devices in the PE of the GPU device, because you're trying
-to find the NPU device instead, but shouldn't that be covered by the
-test below?
+<html>
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    On 2016/4/6 9:43, Gavin Shan wrote:<br>
+    <blockquote cite="mid:20160406014309.GA17201@gwshan" type="cite">
+      <pre wrap="">On Tue, Apr 05, 2016 at 09:43:31PM +0800, Yongji Xie wrote:
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">When using resource_alignment kernel parameter,
+the current implement reassigns the alignment by
+changing resources' size which can potentially
+break some drivers. For example, the driver uses
+the size to locate some register whose length is
+related to the size.
 
-> >+	if (phb->type !=3D PNV_PHB_NPU)
-> >+		return 0;
-> >+
-> >+	*ptmppe =3D pe;
-> >+	return 1;
-> >+}
-> >+
-> >+/*
-> >+ * This returns PE of associated NPU.
-> >+ * This assumes that NPU is in the same IOMMU group with GPU and there =
-is
-> >+ * no other PEs.
-> >+ */
-> >+static struct pnv_ioda_pe *gpe_table_group_to_npe(
-> >+		struct iommu_table_group *table_group)
-> >+{
-> >+	struct pnv_ioda_pe *npe =3D container_of(table_group, struct pnv_ioda_=
-pe,
-> >+			table_group);
-> >+	int ret =3D iommu_group_for_each_dev(table_group->group, &npe,
-> >+			gpe_table_group_to_npe_cb);
-> >+
-> >+	BUG_ON(!ret || !npe);
-> >+
-> >+	return npe;
-> >+}
+This adds a new option "noresize" for the
+parameter to solve this problem.
 
-Am I correct in thinking that this logic (and indeed, this interface)
-depends on there being at most one NPU per iommu group?  That's not
-necessarily a problem, just trying to make sure I understand
-correctly.
+Signed-off-by: Yongji Xie <a class="moz-txt-link-rfc2396E" href="mailto:xyjxie@linux.vnet.ibm.com">&lt;xyjxie@linux.vnet.ibm.com&gt;</a>
+---
+Documentation/kernel-parameters.txt |    5 ++++-
+drivers/pci/pci.c                   |   37 +++++++++++++++++++++++++----------
+2 files changed, 31 insertions(+), 11 deletions(-)
 
-> >+static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group *tabl=
-e_group,
-> >+		int num, struct iommu_table *tbl)
-> >+{
-> >+	long ret =3D pnv_pci_ioda2_set_window(table_group, num, tbl);
-> >+
-> >+	if (ret)
-> >+		return ret;
-> >+
-> >+	ret =3D pnv_npu_set_window(gpe_table_group_to_npe(table_group), num, t=
-bl);
-> >+	if (ret)
-> >+		pnv_pci_ioda2_unset_window(table_group, num);
-> >+
-> >+	return ret;
-> >+}
-> >+
-> >+static long pnv_pci_ioda2_npu_unset_window(
-> >+		struct iommu_table_group *table_group,
-> >+		int num)
-> >+{
-> >+	long ret =3D pnv_pci_ioda2_unset_window(table_group, num);
-> >+
-> >+	if (ret)
-> >+		return ret;
-> >+
-> >+	return pnv_npu_unset_window(gpe_table_group_to_npe(table_group), num);
-> >+}
-> >+
-> >+static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *tabl=
-e_group)
-> >+{
-> >+	pnv_ioda2_take_ownership(table_group);
-> >+	pnv_npu_take_ownership(gpe_table_group_to_npe(table_group));
-> >+}
-> >+
-> >+static void pnv_ioda2_npu_release_ownership(
-> >+		struct iommu_table_group *table_group)
-> >+{
-> >+	pnv_npu_release_ownership(gpe_table_group_to_npe(table_group));
-> >+	pnv_ioda2_release_ownership(table_group);
-> >+}
-> >+
-> >+static struct iommu_table_group_ops pnv_pci_ioda2_npu_ops =3D {
-> >+	.get_table_size =3D pnv_pci_ioda2_get_table_size,
-> >+	.create_table =3D pnv_pci_ioda2_create_table,
-> >+	.set_window =3D pnv_pci_ioda2_npu_set_window,
-> >+	.unset_window =3D pnv_pci_ioda2_npu_unset_window,
-> >+	.take_ownership =3D pnv_ioda2_npu_take_ownership,
-> >+	.release_ownership =3D pnv_ioda2_npu_release_ownership,
-> >+};
-> >  #endif
-> >
-> >  static void pnv_pci_ioda_setup_opal_tce_kill(struct pnv_phb *phb)
-> >@@ -2563,6 +2653,17 @@ static void pnv_ioda_setup_dma(struct pnv_phb *ph=
-b)
-> >  		remaining -=3D segs;
-> >  		base +=3D segs;
-> >  	}
-> >+	/*
-> >+	 * Create an IOMMU group and add devices to it.
-> >+	 * DMA setup is done via GPU's dma_set_mask().
-> >+	 */
-> >+	if (phb->type =3D=3D PNV_PHB_NPU) {
-> >+		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
-> >+			struct pnv_ioda_pe *gpe =3D pnv_pci_npu_setup_iommu(pe);
-> >+			if (gpe)
-> >+				gpe->table_group.ops =3D &pnv_pci_ioda2_npu_ops;
-> >+		}
-> >+	}
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 9a53c92..d8b29ab 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2912,13 +2912,16 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+				window. The default value is 64 megabytes.
+		resource_alignment=
+				Format:
+-				[&lt;order of align&gt;@][&lt;domain&gt;:]&lt;bus&gt;:&lt;slot&gt;.&lt;func&gt;[; ...]
++				[&lt;order of align&gt;@][&lt;domain&gt;:]&lt;bus&gt;:&lt;slot&gt;.&lt;func&gt;
++				[:noresize][; ...]
+</pre>
+      </blockquote>
+      <pre wrap="">
+If I'm correct enough, it breaks existing application using this interface. "noresize"
+would be a optinal parallel property to "align". So the string would have below format
+if nobody else objects:
 
-It looks like this relies on running *after* the setup for the
-ordinary GPU devices has been done, so it can modify the ops pointer
-to add the NPU stuff.  Does anything ensure that the bridge discovery
-happens in that order?
+	order,<a class="moz-txt-link-abbreviated" href="mailto:noresize@domain:bus:slot.func">noresize@domain:bus:slot.func</a></pre>
+    </blockquote>
+    <br>
+    Sorry. I don't get your point. Why [:noresize] would break <br>
+    existing application using this interface? Doesn't <br>
+    [:noresize] mean an optional property?<br>
+    <br>
+    [&lt;order of align&gt;@] is also an optional property. <br>
+    Sometimes, we would not specify it. So we should<br>
+    not put "noresize" into [&lt;order of align&gt;@] in case<br>
+    that we want to use "noresize" but we don't want<br>
+    to specify &lt;order of align&gt;.<br>
+    <br>
+    <span style="color: rgb(51, 51, 51); font-family: arial; font-size:
+      24px; font-style: normal; font-variant: normal; font-weight:
+      normal; letter-spacing: normal; line-height: 24px; orphans: auto;
+      text-align: start; text-indent: 0px; text-transform: none;
+      white-space: normal; widows: 1; word-spacing: 0px;
+      -webkit-text-stroke-width: 0px; display: inline !important; float:
+      none; background-color: rgb(255, 255, 255);"></span>
+    <blockquote cite="mid:20160406014309.GA17201@gwshan" type="cite">
+      <pre wrap="">
 
-> >  }
-> >
-> >  #ifdef CONFIG_PCI_MSI
-> >diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platfor=
-ms/powernv/pci.h
-> >index f9c3aca..4200bb9 100644
-> >--- a/arch/powerpc/platforms/powernv/pci.h
-> >+++ b/arch/powerpc/platforms/powernv/pci.h
-> >@@ -250,5 +250,11 @@ extern void pe_level_printk(const struct pnv_ioda_p=
-e *pe, const char *level,
-> >  /* Nvlink functions */
-> >  extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool byp=
-ass);
-> >  extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, b=
-ool rm);
-> >+extern struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *=
-npe);
-> >+extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
-> >+		struct iommu_table *tbl);
-> >+extern long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num);
-> >+extern void pnv_npu_take_ownership(struct pnv_ioda_pe *npe);
-> >+extern void pnv_npu_release_ownership(struct pnv_ioda_pe *npe);
-> >
-> >  #endif /* __POWERNV_PCI_H */
-> >
->=20
->=20
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">				Specifies alignment and device to reassign
+				aligned memory resources.
+				If &lt;order of align&gt; is not specified,
+				PAGE_SIZE is used as alignment.
+				PCI-PCI bridge can be specified, if resource
+				windows need to be expanded.
++				noresize: Don't change the resources' sizes when
++				reassigning alignment.
+		ecrc=		Enable/disable PCIe ECRC (transaction layer
+				end-to-end CRC checking).
+				bios: Use BIOS/firmware settings. This is the
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 1db9267..7271ce3 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -4594,11 +4594,13 @@ static DEFINE_SPINLOCK(resource_alignment_lock);
+/**
+ * pci_specified_resource_alignment - get resource alignment specified by user.
+ * @dev: the PCI device to get
++ * @resize: whether or not to change resources' size when reassigning alignment
+ *
+ * RETURNS: Resource alignment if it is specified.
+ *          Zero if it is not specified.
+ */
+-static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
++static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
++		bool *resize)
+{
+	int seg, bus, slot, func, align_order, count;
+	resource_size_t align = 0;
+@@ -4632,6 +4634,11 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+			}
+		}
+		p += count;
++		if (!strncmp(p, ":noresize", 9)) {
++			*resize = false;
++			p += 9;
++		} else
++			*resize = true;
+		if (seg == pci_domain_nr(dev-&gt;bus) &amp;&amp;
+			bus == dev-&gt;bus-&gt;number &amp;&amp;
+			slot == PCI_SLOT(dev-&gt;devfn) &amp;&amp;
+@@ -4664,11 +4671,12 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+{
+	int i;
+	struct resource *r;
++	bool resize = true;
+	resource_size_t align, size;
+	u16 command;
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+	/* check if specified PCI is target device to reassign */
+-	align = pci_specified_resource_alignment(dev);
++	align = pci_specified_resource_alignment(dev, &amp;resize);
+	if (!align)
+		return;
 
---XZLT0nNRngx3qG4/
-Content-Type: application/pgp-signature; name="signature.asc"
+@@ -4690,15 +4698,24 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+		if (!(r-&gt;flags &amp; IORESOURCE_MEM))
+			continue;
+		size = resource_size(r);
+-		if (size &lt; align) {
+-			size = align;
+-			dev_info(&amp;dev-&gt;dev,
+-				"Rounding up size of resource #%d to %#llx.\n",
+-				i, (unsigned long long)size);
++		if (resize) {
++			if (size &lt; align) {
++				size = align;
++				dev_info(&amp;dev-&gt;dev,
++					"Rounding up size of resource #%d to %#llx.\n",
++					i, (unsigned long long)size);
++			}
++			r-&gt;flags |= IORESOURCE_UNSET;
++			r-&gt;end = size - 1;
++			r-&gt;start = 0;
++		} else {
++			if (size &gt; align)
++				align = size;
++			r-&gt;flags &amp;= ~IORESOURCE_SIZEALIGN;
++			r-&gt;flags |= IORESOURCE_STARTALIGN | IORESOURCE_UNSET;
++			r-&gt;start = align;
++			r-&gt;end = r-&gt;start + size - 1;
+</pre>
+      </blockquote>
+      <pre wrap="">
+It could be something like below if you like:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+			r-&gt;start = max(align, size);
+			r-&gt;end = r-&gt;start + size - 1;
+</pre>
+    </blockquote>
+    <br>
+    Sounds good!<br>
+    <br>
+    Thanks,<br>
+    Yongji<br>
+    <br>
+    <blockquote cite="mid:20160406014309.GA17201@gwshan" type="cite">
+      <pre wrap="">
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">		}
+-		r-&gt;flags |= IORESOURCE_UNSET;
+-		r-&gt;end = size - 1;
+-		r-&gt;start = 0;
+	}
+	/* Need to disable bridge's resource window,
+	 * to enable the kernel to reassign new resource
+</pre>
+      </blockquote>
+      <pre wrap="">
+Thanks,
+Gavin
 
-iQIcBAEBAgAGBQJXBHc/AAoJEGw4ysog2bOSPfEP/22LREWCS5xOR4U/ApdJlfAn
-RjMiLT6uxBc2EDCyOqs5f4S3iSB90kDfIVyLHAqDtke0TQrwa3mUqLEQHs24ms5i
-GSAYemFrNc/8ECjtSj2AapEH5mZiaFwM2pUZXw13Z5hVvVz4jDD0o6S4ok6amws/
-c2M80wtWlyUtLiw2eUdVgq/AiLfE19bkMZNxhoNGEUZ3YeUTshK3URzbBa3lSKj/
-RagCkvC28i9GaYCEuSW/8sEa8zevCNFjsF2RQ52PbCJNDSruRZB+8LwBQfBDhjMt
-QFYhPvHX3mZ2ew3wtiGDFnjgdDDyFWrHQUhZOoMM/XpFCaQLCJx28Bku2pt7l1cz
-3SJBG4XA4FjZlCPNx0H8/9hs1bBIr5xJ8tyrc6vwX7h62Frd7hA9yC3lWtMpIjVr
-ZgI0H4IuIbzp2qQMgpflMNX6w5ksDFizSku7BreDaHw+VBQLJ5+LeKC/lb7Ab4JL
-IhmtadBE9m++11hRdAhPDb0qwIo10Ixy7EbglR7A0qyVW4+9WbVX1DQUe+rj5ZZF
-AeQm+sI7rmOMYLBvupCUWrfkpkV4OSD6aHaeXtT5U0JSUWinrTzV1bO5Pp+jj82X
-auXK7WUPCIypEH+IZKIyn90KqFVPZjoj4mCXzYMDbVKnmqI/Th+YJvM/pWtUIoZI
-vmC1bLZPt5ZhwmTp5hKv
-=RdiJ
------END PGP SIGNATURE-----
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">-- 
+1.7.9.5
 
---XZLT0nNRngx3qG4/--
+</pre>
+      </blockquote>
+      <pre wrap="">
+--
+To unsubscribe from this list: send the line "unsubscribe kvm" in
+the body of a message to <a class="moz-txt-link-abbreviated" href="mailto:majordomo@vger.kernel.org">majordomo@vger.kernel.org</a>
+More majordomo info at  <a class="moz-txt-link-freetext" href="http://vger.kernel.org/majordomo-info.html">http://vger.kernel.org/majordomo-info.html</a>
+
+</pre>
+    </blockquote>
+    <br>
+  </body>
+</html>
+
+--------------080603050105070708030307--
