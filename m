@@ -1,26 +1,29 @@
-Return-Path: <mstsxfx@gmail.com>
-Received: from mail-wm0-f66.google.com (mail-wm0-f66.google.com [74.125.82.66])
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qg3NK4YHTzDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 21:27:13 +1000 (AEST)
-Received: by mail-wm0-f66.google.com with SMTP id o129so2808879wmo.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Apr 2016 04:27:13 -0700 (PDT)
-Date: Wed, 6 Apr 2016 13:27:08 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- James Dykman <jdykman@us.ibm.com>
-Subject: Re: [PATCH 1/1] powerpc/mm: Add memory barrier in __hugepte_alloc()
-Message-ID: <20160406112708.GF24272@dhcp22.suse.cz>
-References: <20160405190547.GA12673@us.ibm.com>
- <20160406095623.GA24283@dhcp22.suse.cz>
- <8737qzxd4i.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qg47905zxzDq6S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 22:00:53 +1000 (AEST)
+Date: Wed, 6 Apr 2016 21:59:50 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@kernel.org>, Srikar Dronamraju
+ <srikar@linux.vnet.ibm.com>, tglx@linutronix.de, efault@gmx.de,
+ htejun@gmail.com, linux-kernel@vger.kernel.org, tj@kernel.org,
+ torvalds@linux-foundation.org, zhaolei@cn.fujitsu.com,
+ yangds.fnst@cn.fujitsu.com, hpa@zytor.com, Stephen Rothwell
+ <sfr@canb.auug.org.au>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] sched/cpuacct: Check for NULL when using task_pt_regs()
+Message-ID: <20160406215950.04bc3f0b@kryten>
+In-Reply-To: <20160406110803.GI2906@worktop>
+References: <aa171da036b520b51c79549e9b3215d29473f19d.1458635566.git.zhaolei@cn.fujitsu.com>
+ <tip-d740037fac7052e49450f6fa1454f1144a103b55@git.kernel.org>
+ <20160404140312.GA28495@linux.vnet.ibm.com>
+ <20160406065436.GB3078@gmail.com> <20160406203219.788ae7cf@kryten>
+ <20160406110803.GI2906@worktop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8737qzxd4i.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,54 +33,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 06-04-16 15:39:17, Aneesh Kumar K.V wrote:
-> Michal Hocko <mhocko@kernel.org> writes:
-> 
-> > [ text/plain ]
-> > On Tue 05-04-16 12:05:47, Sukadev Bhattiprolu wrote:
-> > [...]
-> >> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> >> index d991b9e..081f679 100644
-> >> --- a/arch/powerpc/mm/hugetlbpage.c
-> >> +++ b/arch/powerpc/mm/hugetlbpage.c
-> >> @@ -81,6 +81,13 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
-> >>  	if (! new)
-> >>  		return -ENOMEM;
-> >>  
-> >> +	/*
-> >> +	 * Make sure other cpus find the hugepd set only after a
-> >> +	 * properly initialized page table is visible to them.
-> >> +	 * For more details look for comment in __pte_alloc().
-> >> +	 */
-> >> +	smp_wmb();
-> >> +
-> >
-> > what is the pairing memory barrier?
-> >
-> >>  	spin_lock(&mm->page_table_lock);
-> >>  #ifdef CONFIG_PPC_FSL_BOOK3E
-> >>  	/*
-> 
-> This is documented in __pte_alloc(). I didn't want to repeat the same
-> here.
-> 
-> 	/*
-> 	 * Ensure all pte setup (eg. pte page lock and page clearing) are
-> 	 * visible before the pte is made visible to other CPUs by being
-> 	 * put into page tables.
-> 	 *
-> 	 * The other side of the story is the pointer chasing in the page
-> 	 * table walking code (when walking the page table without locking;
-> 	 * ie. most of the time). Fortunately, these data accesses consist
-> 	 * of a chain of data-dependent loads, meaning most CPUs (alpha
-> 	 * being the notable exception) will already guarantee loads are
-> 	 * seen in-order. See the alpha page table accessors for the
-> 	 * smp_read_barrier_depends() barriers in page table walking code.
-> 	 */
-> 	smp_wmb(); /* Could be smp_wmb__xxx(before|after)_spin_lock */
+Hi Peter,
 
-OK, I have missed the reference to __pte_alloc. My bad!
+> Ah, so sometihng like:
+> 
+> 	struct pt_regs *regs = task_pt_regs();
+> 	int index = CPUACCT_USAGE_SYSTEM;
+> 
+> 	if (regs && user_mode(regs))
+> 		index = CPUACCT_USAGE_USER;
+> 
+> should work, right?
 
--- 
-Michal Hocko
-SUSE Labs
+Looks good, and the patch below does fix the oops for me.
+
+Anton
+--
+
+task_pt_regs() can return NULL for kernel threads, so add a check.
+This fixes an oops at boot on ppc64.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+diff --git a/kernel/sched/cpuacct.c b/kernel/sched/cpuacct.c
+index df947e0..41f85c4 100644
+--- a/kernel/sched/cpuacct.c
++++ b/kernel/sched/cpuacct.c
+@@ -316,12 +316,11 @@ static struct cftype files[] = {
+ void cpuacct_charge(struct task_struct *tsk, u64 cputime)
+ {
+ 	struct cpuacct *ca;
+-	int index;
++	int index = CPUACCT_USAGE_SYSTEM;
++	struct pt_regs *regs = task_pt_regs(tsk);
+ 
+-	if (user_mode(task_pt_regs(tsk)))
++	if (regs && user_mode(regs))
+ 		index = CPUACCT_USAGE_USER;
+-	else
+-		index = CPUACCT_USAGE_SYSTEM;
+ 
+ 	rcu_read_lock();
+ 
