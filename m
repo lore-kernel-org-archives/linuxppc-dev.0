@@ -1,31 +1,21 @@
-Return-Path: <computersforpeace@gmail.com>
-Received: from mail-pf0-x22f.google.com (mail-pf0-x22f.google.com
- [IPv6:2607:f8b0:400e:c00::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qgCxY6Y11zDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 03:53:05 +1000 (AEST)
-Received: by mail-pf0-x22f.google.com with SMTP id c20so38164925pfc.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Apr 2016 10:53:05 -0700 (PDT)
-Date: Wed, 6 Apr 2016 10:52:54 -0700
-From: Brian Norris <computersforpeace@gmail.com>
-To: Li Yang <leoli@freescale.com>
-Cc: Scott Wood <oss@buserror.net>, Raghav Dogra <raghav.dogra@nxp.com>,
- linux-mtd@lists.infradead.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>,
- Raghav Dogra <raghav@freescale.com>,
- Jaiprakash Singh <b44839@freescale.com>,
- Boris Brezillon <boris.brezillon@free-electrons.com>
-Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
-Message-ID: <20160406175254.GC5243@localhost>
-References: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
- <CADRPPNS1i1XgtpyiT_=rDuDXBDn=ehNY32=RKTC9hdKXhWWq8A@mail.gmail.com>
- <1455840434.2463.97.camel@buserror.net>
- <CADRPPNTauz=T9oWCeZy8G8s0vo9fmieRhn=Gd3jVqqJJEHV_ag@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CADRPPNTauz=T9oWCeZy8G8s0vo9fmieRhn=Gd3jVqqJJEHV_ag@mail.gmail.com>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qgGpN4DlszDq65
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 06:02:03 +1000 (AEST)
+Date: Wed, 06 Apr 2016 16:01:59 -0400 (EDT)
+Message-Id: <20160406.160159.1499495061682417737.davem@davemloft.net>
+To: naveen.n.rao@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, ast@fb.com, daniel@iogearbox.net,
+ ananth@in.ibm.com, mpe@ellerman.id.au
+Subject: Re: [PATCHv2 net 1/3] samples/bpf: Fix build breakage with
+ map_perf_test_user.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <5ab5eec91d2d0bc7f221d714ef84afac83b2604b.1459789086.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <5ab5eec91d2d0bc7f221d714ef84afac83b2604b.1459789086.git.naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,63 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Date: Mon,  4 Apr 2016 22:31:32 +0530
 
-On Wed, Mar 30, 2016 at 03:43:40PM -0500, Li Yang wrote:
-> Hi Brian,
+> Building BPF samples is failing with the below error:
+ ...
+> Fix this by including the necessary header file.
 > 
-> Could you help to review and pull in this patch and the Kconfig update
-> after this patch(https://patchwork.ozlabs.org/patch/557389/)?  It
+> Cc: Alexei Starovoitov <ast@fb.com>
+> Cc: Daniel Borkmann <daniel@iogearbox.net>
+> Cc: David S. Miller <davem@davemloft.net>
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Alexei Starovoitov <ast@kernel.org>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
-It's probably best for Boris to apply this now.
-
-> stated a dependency in the notes, but actually it should be applied
-> cleanly without that patch.  These patches are critical to make NAND
-> mtd feature work for our new chips.
-> 
-> Regards,
-> Leo
-> 
-> On Thu, Feb 18, 2016 at 6:07 PM, Scott Wood <oss@buserror.net> wrote:
-> > On Thu, 2016-02-18 at 15:18 -0600, Leo Li wrote:
-> >> On Wed, Feb 17, 2016 at 5:24 AM, Raghav Dogra <raghav.dogra@nxp.com> wrote:
-> >> > The new IFC controller version 2.0 has a different memory map page.
-> >> > Upto IFC 1.4 PAGE size is 4 KB and from IFC2.0 PAGE size is 64KB.
-> >> > This patch segregates the IFC global and runtime registers to appropriate
-> >> > PAGE sizes.
-> >> >
-> >> > Signed-off-by: Jaiprakash Singh <b44839@freescale.com>
-> >> > Signed-off-by: Raghav Dogra <raghav@freescale.com>
-> >> > Acked-by: Li Yang <leoyang.li@nxp.com>
-> >> > Signed-off-by: Raghav Dogra <raghav.dogra@nxp.com>
-> >> > ---
-> >> > Changes for v3: not dependent on
-> >> > "drivers/memory: Add deep sleep support for IFC" patch
-> >> >
-> >> > Changes for v2: rebased to resolve conflicts
-> >> > Applicable to git://git.infradead.org/l2-mtd.git
-> >> >
-> >> > This patch is dependent on "drivers/memory: Add deep sleep support for
-> >> > IFC"
-> >> > https://patchwork.ozlabs.org/patch/582762/
-> >> > which is also applicable to git://git.infradead.org/l2-mtd.git
-
-For the patch:
-
-Acked-by: Brian Norris <computersforpeace@gmail.com>
-
-> >> This patch seems to be in good shape, but the dependency is still
-> >> having quite some feedback to be addressed.  Depending on it will
-> >> greatly delay the time that this critical patch for LS2 to be merged.
-> >> Could you remove the dependency like Scott already suggested?
-> >
-> > According to the changelog the dependency has been removed (it would have been
-> > clearer to remove this comment as well...).
-> >
-> > -Scott
-> >
-> 
-> 
-> 
-> -- 
-> - Leo
+Applied.
