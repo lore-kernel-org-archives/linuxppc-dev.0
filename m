@@ -1,39 +1,46 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qg5633DzNzDq6S
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 22:44:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qg63b3zLZzDq6Y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 23:27:55 +1000 (AEST)
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 6 Apr 2016 22:34:54 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8A2172BB005F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 22:34:48 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u36CYe0c59768960
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 22:34:48 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u36CYF6i013893
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 22:34:15 +1000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Mark Wielaard <mjw@redhat.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-Subject: [PATCH 2/2] tools/perf: Fix kallsyms perf test on ppc64le
-Date: Wed,  6 Apr 2016 18:02:58 +0530
-Message-Id: <04f25362721352e7681db4aed572b3ea5154b64d.1459942081.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <cover.1459942081.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1459942081.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <cover.1459942081.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1459942081.git.naveen.n.rao@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Wed, 6 Apr 2016 23:27:54 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 622BE3578058
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 23:27:39 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u36DRUSf62259404
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 23:27:39 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u36DR5Ui015253
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 23:27:06 +1000
+Date: Wed, 6 Apr 2016 18:56:37 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ tglx@linutronix.de, efault@gmx.de, htejun@gmail.com,
+ linux-kernel@vger.kernel.org, tj@kernel.org,
+ torvalds@linux-foundation.org, zhaolei@cn.fujitsu.com,
+ yangds.fnst@cn.fujitsu.com, hpa@zytor.com,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] sched/cpuacct: Check for NULL when using task_pt_regs()
+Message-ID: <20160406132637.GA2108@linux.vnet.ibm.com>
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <aa171da036b520b51c79549e9b3215d29473f19d.1458635566.git.zhaolei@cn.fujitsu.com>
+ <tip-d740037fac7052e49450f6fa1454f1144a103b55@git.kernel.org>
+ <20160404140312.GA28495@linux.vnet.ibm.com>
+ <20160406065436.GB3078@gmail.com> <20160406203219.788ae7cf@kryten>
+ <20160406110803.GI2906@worktop> <20160406215950.04bc3f0b@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20160406215950.04bc3f0b@kryten>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,177 +50,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ppc64le functions have a Global Entry Point (GEP) and a Local Entry
-Point (LEP). While placing a probe, we always prefer the LEP since it
-catches function calls through both the GEP and the LEP. In order to do
-this, we fixup the function entry points during elf symbol table lookup
-to point to the LEPs. This works, but breaks 'perf test kallsyms' since
-the symbols loaded from the symbol table (pointing to the LEP) do not
-match the symbols in kallsyms.
+* Anton Blanchard <anton@samba.org> [2016-04-06 21:59:50]:
 
-To fix this, we do not adjust all the symbols during symbol table load,
-but only adjust the probe trace point.
+> Looks good, and the patch below does fix the oops for me.
+> 
+> Anton
+> --
+> 
+> task_pt_regs() can return NULL for kernel threads, so add a check.
+> This fixes an oops at boot on ppc64.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-Cc: Mark Wielaard <mjw@redhat.com>
-Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- tools/perf/arch/powerpc/util/sym-handling.c | 24 ++++++++++++++++--------
- tools/perf/util/probe-event.c               |  5 +++--
- tools/perf/util/probe-event.h               |  3 ++-
- tools/perf/util/symbol-elf.c                |  7 ++++---
- tools/perf/util/symbol.h                    |  3 ++-
- 5 files changed, 27 insertions(+), 15 deletions(-)
+Works for me too.
 
-diff --git a/tools/perf/arch/powerpc/util/sym-handling.c b/tools/perf/arch/powerpc/util/sym-handling.c
-index c5b4756..2f72aec 100644
---- a/tools/perf/arch/powerpc/util/sym-handling.c
-+++ b/tools/perf/arch/powerpc/util/sym-handling.c
-@@ -19,12 +19,6 @@ bool elf__needs_adjust_symbols(GElf_Ehdr ehdr)
- 	       ehdr.e_type == ET_DYN;
- }
- 
--#if defined(_CALL_ELF) && _CALL_ELF == 2
--void arch__elf_sym_adjust(GElf_Sym *sym)
--{
--	sym->st_value += PPC64_LOCAL_ENTRY_OFFSET(sym->st_other);
--}
--#endif
- #endif
- 
- #if !defined(_CALL_ELF) || _CALL_ELF != 2
-@@ -65,11 +59,21 @@ bool arch__prefers_symtab(void)
- 	return true;
- }
- 
-+#ifdef HAVE_LIBELF_SUPPORT
-+void arch__sym_update(struct symbol *s, GElf_Sym *sym)
-+{
-+	s->arch_sym = sym->st_other;
-+}
-+#endif
-+
- #define PPC64LE_LEP_OFFSET	8
- 
- void arch__fix_tev_from_maps(struct perf_probe_event *pev,
--			     struct probe_trace_event *tev, struct map *map)
-+			     struct probe_trace_event *tev, struct map *map,
-+			     struct symbol *sym)
- {
-+	int lep_offset;
-+
- 	/*
- 	 * When probing at a function entry point, we normally always want the
- 	 * LEP since that catches calls to the function through both the GEP and
-@@ -82,10 +86,14 @@ void arch__fix_tev_from_maps(struct perf_probe_event *pev,
- 	 *
- 	 * In addition, we shouldn't specify an offset for kretprobes.
- 	 */
--	if (pev->point.offset || pev->point.retprobe)
-+	if (pev->point.offset || pev->point.retprobe || !map || !sym)
- 		return;
- 
-+	lep_offset = PPC64_LOCAL_ENTRY_OFFSET(sym->arch_sym);
-+
- 	if (!pev->uprobes && map->dso->symtab_type == DSO_BINARY_TYPE__KALLSYMS)
- 		tev->point.offset += PPC64LE_LEP_OFFSET;
-+	else if (lep_offset)
-+		tev->point.offset += lep_offset;
- }
- #endif
-diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-index 8319fbb..d786a49 100644
---- a/tools/perf/util/probe-event.c
-+++ b/tools/perf/util/probe-event.c
-@@ -2498,7 +2498,8 @@ static int find_probe_functions(struct map *map, char *name,
- 
- void __weak arch__fix_tev_from_maps(struct perf_probe_event *pev __maybe_unused,
- 				struct probe_trace_event *tev __maybe_unused,
--				struct map *map __maybe_unused) { }
-+				struct map *map __maybe_unused,
-+				struct symbol *sym __maybe_unused) { }
- 
- /*
-  * Find probe function addresses from map.
-@@ -2624,7 +2625,7 @@ static int find_probe_trace_events_from_map(struct perf_probe_event *pev,
- 					strdup_or_goto(pev->args[i].type,
- 							nomem_out);
- 		}
--		arch__fix_tev_from_maps(pev, tev, map);
-+		arch__fix_tev_from_maps(pev, tev, map, sym);
- 	}
- 	if (ret == skipped) {
- 		ret = -ENOENT;
-diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
-index e54e7b0..9bbc0c1 100644
---- a/tools/perf/util/probe-event.h
-+++ b/tools/perf/util/probe-event.h
-@@ -154,7 +154,8 @@ int show_available_vars(struct perf_probe_event *pevs, int npevs,
- int show_available_funcs(const char *module, struct strfilter *filter, bool user);
- bool arch__prefers_symtab(void);
- void arch__fix_tev_from_maps(struct perf_probe_event *pev,
--			     struct probe_trace_event *tev, struct map *map);
-+			     struct probe_trace_event *tev, struct map *map,
-+			     struct symbol *sym);
- 
- /* If there is no space to write, returns -E2BIG. */
- int e_snprintf(char *str, size_t size, const char *format, ...)
-diff --git a/tools/perf/util/symbol-elf.c b/tools/perf/util/symbol-elf.c
-index bc229a7..e6c032e 100644
---- a/tools/perf/util/symbol-elf.c
-+++ b/tools/perf/util/symbol-elf.c
-@@ -777,7 +777,8 @@ static bool want_demangle(bool is_kernel_sym)
- 	return is_kernel_sym ? symbol_conf.demangle_kernel : symbol_conf.demangle;
- }
- 
--void __weak arch__elf_sym_adjust(GElf_Sym *sym __maybe_unused) { }
-+void __weak arch__sym_update(struct symbol *s __maybe_unused,
-+		GElf_Sym *sym __maybe_unused) { }
- 
- int dso__load_sym(struct dso *dso, struct map *map,
- 		  struct symsrc *syms_ss, struct symsrc *runtime_ss,
-@@ -954,8 +955,6 @@ int dso__load_sym(struct dso *dso, struct map *map,
- 		    (sym.st_value & 1))
- 			--sym.st_value;
- 
--		arch__elf_sym_adjust(&sym);
--
- 		if (dso->kernel || kmodule) {
- 			char dso_name[PATH_MAX];
- 
-@@ -1089,6 +1088,8 @@ new_symbol:
- 		if (!f)
- 			goto out_elf_end;
- 
-+		arch__sym_update(f, &sym);
-+
- 		if (filter && filter(curr_map, f))
- 			symbol__delete(f);
- 		else {
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index c8b7544..f0e62e8 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -55,6 +55,7 @@ struct symbol {
- 	u16		namelen;
- 	u8		binding;
- 	bool		ignore;
-+	u8		arch_sym;
- 	char		name[0];
- };
- 
-@@ -310,7 +311,7 @@ int setup_intlist(struct intlist **list, const char *list_str,
- 
- #ifdef HAVE_LIBELF_SUPPORT
- bool elf__needs_adjust_symbols(GElf_Ehdr ehdr);
--void arch__elf_sym_adjust(GElf_Sym *sym);
-+void arch__sym_update(struct symbol *s, GElf_Sym *sym);
- #endif
- 
- #define SYMBOL_A 0
+Reported-and-Tested-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+
 -- 
-2.7.4
+Thanks and Regards
+Srikar Dronamraju
